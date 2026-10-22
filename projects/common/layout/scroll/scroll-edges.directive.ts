@@ -13,14 +13,17 @@ import { createScrollEdges } from './scroll-edges-core';
  * the scroll metrics per animation frame; the attributes are present (empty
  * value) while true and absent otherwise:
  *
- * - `data-scroll-block-start` / `canScrollBlockStart()` - content hidden above
- * - `data-scroll-block-end` / `canScrollBlockEnd()` - content hidden below
+ * - `data-scroll-block-start` / `canScrollBlockStart()` - hidden toward block start
+ * - `data-scroll-block-end` / `canScrollBlockEnd()` - hidden toward block end
  * - `data-scroll-inline-start` / `canScrollInlineStart()` - hidden toward inline start
  * - `data-scroll-inline-end` / `canScrollInlineEnd()` - hidden toward inline end
  *
- * Inline start / end follow the writing direction: in `dir="rtl"` the start
- * edge is on the right. The direction is derived from the scroll offset
- * itself, so a `dir="rtl"` subtree inside an LTR page reports correctly.
+ * In a horizontal writing mode block start / end are the top and bottom
+ * edges; under a `vertical-*` or `sideways-*` writing mode they are the
+ * horizontal ones. Inline start / end follow the writing direction: in
+ * `dir="rtl"` the start edge is on the right. The direction is derived from
+ * the scroll offset itself, so a `dir="rtl"` subtree inside an LTR page
+ * reports correctly.
  *
  * The directive paints nothing. The four attributes (present only while true)
  * are its public, stable contract; every visual belongs to the consumer CSS,
@@ -86,12 +89,12 @@ export class CngxScrollEdges {
     isPlatformBrowser(inject(PLATFORM_ID)) ? inject(DOCUMENT).defaultView : null,
   );
 
-  /** Content is hidden toward the block-start edge (above). */
+  /** Content is hidden toward the block-start edge (top in horizontal writing modes). */
   readonly canScrollBlockStart = this.edges.canScrollBlockStart;
-  /** Content is hidden toward the block-end edge (below). */
+  /** Content is hidden toward the block-end edge (bottom in horizontal writing modes). */
   readonly canScrollBlockEnd = this.edges.canScrollBlockEnd;
-  /** Content is hidden toward the inline-start edge (left in LTR, right in RTL). */
+  /** Content is hidden toward the inline-start edge (left in LTR, right in RTL, horizontally). */
   readonly canScrollInlineStart = this.edges.canScrollInlineStart;
-  /** Content is hidden toward the inline-end edge (right in LTR, left in RTL). */
+  /** Content is hidden toward the inline-end edge (right in LTR, left in RTL, horizontally). */
   readonly canScrollInlineEnd = this.edges.canScrollInlineEnd;
 }

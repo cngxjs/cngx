@@ -122,7 +122,7 @@ function readEdges(element: HTMLElement, vertical: boolean): ScrollEdgesSnapshot
  *   inject(DestroyRef),
  *   inject(DOCUMENT).defaultView,
  * );
- * const showTopShadow = edges.canScrollBlockStart;
+ * const showStartShadow = edges.canScrollBlockStart;
  * ```
  *
  * @param element The scrollport to read.
