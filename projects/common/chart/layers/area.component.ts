@@ -61,7 +61,12 @@ import {
         [style.fill-opacity]="opacity()"
       />
       @for (p of pointMarks(); track $index) {
-        <svg:circle class="cngx-area__point" [attr.cx]="p.cx" [attr.cy]="p.cy" />
+        <svg:circle
+          class="cngx-area__point"
+          [attr.cx]="p.cx"
+          [attr.cy]="p.cy"
+          [style.fill]="color()"
+        />
       }
     }
   `,
@@ -99,13 +104,13 @@ import {
          CanvasText wash at its own fill-opacity. It takes no pattern and does
          not count as a series: an area is the fill under the line it pairs
          with, which carries the series step. !important beats the inline
-         [style.fill] of the [color] input. */
+         [style.fill] of the [color] input and of the point markers. */
       @media (forced-colors: active) {
         .cngx-area {
           fill: CanvasText !important;
         }
         .cngx-area__point {
-          fill: CanvasText;
+          fill: CanvasText !important;
         }
       }
     `,

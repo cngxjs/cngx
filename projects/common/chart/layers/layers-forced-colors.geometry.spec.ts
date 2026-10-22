@@ -49,7 +49,7 @@ const SCHEMES = ['light', 'dark'] as const;
       <svg:g cngxThreshold [value]="8" [dashed]="true"></svg:g>
       <svg:g cngxLine [data]="[3, 5, 4, 6]"></svg:g>
       <svg:g cngxLine [data]="[4, 6, 5, 7]"></svg:g>
-      <svg:g cngxLine [data]="[5, 7, 6, 8]" [points]="'always'"></svg:g>
+      <svg:g cngxLine [data]="[5, 7, 6, 8]" [color]="'rgb(200, 0, 0)'" [points]="'always'"></svg:g>
     </cngx-chart>
     <cngx-chart class="areas" [data]="[1, 3, 2, 4]" [width]="240" [height]="120" aria-label="area">
       <svg:g cngxArea [color]="'rgb(200, 0, 0)'" [points]="'always'"></svg:g>
@@ -168,6 +168,13 @@ describe.each(SCHEMES)('chart series under forced colors, %s', (scheme) => {
       }
     });
 
+    it('point markers fill CanvasText, the inline [color] included', async () => {
+      const root = await mountForced();
+      const point = one(root, '.lines .cngx-line__point');
+      expect((point as SVGElement).style.fill).not.toBe('');
+      expect(computedValue(point, 'fill')).toBe(probe(root, 'canvastext'));
+    });
+
     it('cycle solid, dashed, dotted, dash-dot by series index, skipping the threshold', async () => {
       const root = await mountForced();
       const dashes = all(root, '.lines .cngx-line').map((l) => computedValue(l, 'stroke-dasharray'));
@@ -182,6 +189,13 @@ describe.each(SCHEMES)('chart series under forced colors, %s', (scheme) => {
       expect(computedValue(area, 'fill')).toBe(probe(root, 'canvastext'));
       expect(computedValue(area, 'fill-opacity')).toBe('0.18');
       expect(computedValue(one(root, '.areas .cngx-area__point'), 'fill')).toBe(probe(root, 'canvastext'));
+    });
+
+    it('point markers fill CanvasText, the inline [color] included', async () => {
+      const root = await mountForced();
+      const point = one(root, '.areas .cngx-area__point');
+      expect((point as SVGElement).style.fill).not.toBe('');
+      expect(computedValue(point, 'fill')).toBe(probe(root, 'canvastext'));
     });
 
     it('do not count as a series: the lines after an area start the cycle', async () => {
@@ -336,6 +350,8 @@ describe('chart series without forced colors', () => {
     expect(computedValue(one(root, '.marks .cngx-threshold__line'), 'stroke')).toBe('rgb(200, 0, 0)');
     expect(computedValue(one(root, '.marks .cngx-band__rect'), 'fill')).toBe('rgb(200, 0, 0)');
     expect(computedValue(one(root, '.lines .cngx-axis__grid-line'), 'stroke-opacity')).toBe('0.6');
+    expect(computedValue(one(root, '.lines .cngx-line__point'), 'fill')).toBe('rgb(200, 0, 0)');
+    expect(computedValue(one(root, '.areas .cngx-area__point'), 'fill')).toBe('rgb(200, 0, 0)');
     const dots = all(root, '.points .cngx-scatter');
     expect(computedValue(dots[3], 'fill')).toBe('rgb(200, 0, 0)');
     expect(dots.some((d) => computedValue(d, 'fill').startsWith('url('))).toBe(false);

@@ -181,3 +181,52 @@ describe('CngxArea [color] parity', () => {
     );
   });
 });
+
+describe('CngxArea point markers [color]', () => {
+  beforeEach(() => createResizeObserverMock().install(window));
+  afterEach(() => vi.unstubAllGlobals());
+
+  @Component({
+    standalone: true,
+    imports: [CngxChart, CngxAxis, CngxArea],
+    template: `
+      <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
+        <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 2]"></svg:g>
+        <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+        <svg:g cngxArea [color]="color()" [points]="'always'"></svg:g>
+      </cngx-chart>
+    `,
+  })
+  class MarkerHost {
+    color = signal<string | null>('#f00');
+  }
+
+  function circles(fixture: ReturnType<typeof TestBed.createComponent<MarkerHost>>): SVGElement[] {
+    return Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll<SVGElement>('.cngx-area__point'),
+    );
+  }
+
+  it('paints every marker with the bound colour as an inline fill', () => {
+    TestBed.configureTestingModule({ imports: [MarkerHost] });
+    const fixture = TestBed.createComponent(MarkerHost);
+    fixture.detectChanges();
+    const marks = circles(fixture);
+    expect(marks.length).toBe(3);
+    for (const mark of marks) {
+      expect(mark.style.fill).toBe('rgb(255, 0, 0)');
+    }
+  });
+
+  it('sets no inline fill on the markers when color is null', () => {
+    TestBed.configureTestingModule({ imports: [MarkerHost] });
+    const fixture = TestBed.createComponent(MarkerHost);
+    fixture.componentInstance.color.set(null);
+    fixture.detectChanges();
+    const marks = circles(fixture);
+    expect(marks.length).toBe(3);
+    for (const mark of marks) {
+      expect(mark.style.fill).toBe('');
+    }
+  });
+});

@@ -71,7 +71,12 @@ import {
         [attr.stroke-linecap]="'round'"
       />
       @for (p of pointMarks(); track $index) {
-        <svg:circle class="cngx-line__point" [attr.cx]="p.cx" [attr.cy]="p.cy" />
+        <svg:circle
+          class="cngx-line__point"
+          [attr.cx]="p.cx"
+          [attr.cy]="p.cy"
+          [style.fill]="color()"
+        />
       }
     }
   `,
@@ -110,13 +115,13 @@ import {
          dotted, dash-dot. The index counts the .cngx-chart-series layers
          (line, bar, scatter) of one chart, so legend entry N and the Nth such
          layer share a step. !important beats the inline [style.stroke] of the
-         [color] input. */
+         [color] input and the marker's inline [style.fill]. */
       @media (forced-colors: active) {
         .cngx-line {
           stroke: CanvasText !important;
         }
         .cngx-line__point {
-          fill: CanvasText;
+          fill: CanvasText !important;
         }
         cngx-chart > svg > :nth-child(4n + 2 of .cngx-chart-series) > .cngx-line {
           stroke-dasharray: 6 3;
