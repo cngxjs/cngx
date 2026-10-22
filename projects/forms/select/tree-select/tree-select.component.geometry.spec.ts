@@ -166,3 +166,103 @@ describe('CngxTreeSelect twisty glyph direction', () => {
     expect(computedValue(twisty, 'transform')).toBe(openLtr);
   });
 });
+
+// Under the touch floor the twisty grows to `--cngx-target-min` while a leaf's
+// spacer kept its 1.25rem, so a leaf child's checkbox sat inline-start of its
+// parent's. Every child must start inline-end of its parent by at least one
+// indent step, in both directions (RTL mirrors: inline-end is the left side).
+interface Deep {
+  readonly id: string;
+}
+
+function deepTree(): CngxTreeNode<Deep>[] {
+  return [
+    {
+      value: { id: 'p' },
+      children: [
+        {
+          value: { id: 'c' },
+          children: [{ value: { id: 'g' } }],
+        },
+        { value: { id: 'c2' } },
+      ],
+    },
+  ];
+}
+
+@Component({
+  selector: 'cngx-tree-select-touch-indent-host',
+  standalone: true,
+  imports: [CngxTreeSelect],
+  template: `
+    <div style="--cngx-target-min: 44px; width: 20rem">
+      <cngx-tree-select
+        [nodes]="nodes"
+        [nodeIdFn]="idFn"
+        [labelFn]="idFn"
+        [keyFn]="idFn"
+        initiallyExpanded="all"
+      />
+    </div>
+  `,
+})
+class TouchIndentHost {
+  readonly nodes = deepTree();
+  readonly idFn = (v: Deep): string => v.id;
+}
+
+function openTouchIndentPanel(): HTMLElement {
+  const fixture = TestBed.createComponent(TouchIndentHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  const trigger = query(mountedRoot, '[role="combobox"]');
+  trigger.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
+  );
+  fixture.detectChanges();
+  TestBed.flushEffects();
+  fixture.detectChanges();
+  return mountedRoot;
+}
+
+// The default indent step (1.25rem) at the 16px root; the floored step may be
+// wider, never narrower.
+const MIN_STEP_PX = 20;
+
+function indicatorRect(root: HTMLElement, depth: number, nth = 0): DOMRect {
+  const rows = root.querySelectorAll<HTMLElement>(`[role="treeitem"][aria-level="${depth + 1}"]`);
+  const row = rows[nth];
+  if (!row) {
+    throw new Error(`no treeitem at depth ${depth}`);
+  }
+  return query(row, 'cngx-checkbox-indicator').getBoundingClientRect();
+}
+
+describe('CngxTreeSelect indent under the touch floor', () => {
+  it('starts every child checkbox inline-end of its parent in LTR', () => {
+    const root = openTouchIndentPanel();
+    const parent = indicatorRect(root, 0);
+    const child = indicatorRect(root, 1);
+    const leafChild = indicatorRect(root, 1, 1);
+    const grandchild = indicatorRect(root, 2);
+    expect(child.left - parent.left).toBeGreaterThanOrEqual(MIN_STEP_PX);
+    expect(leafChild.left - parent.left).toBeGreaterThanOrEqual(MIN_STEP_PX);
+    expect(grandchild.left - child.left).toBeGreaterThanOrEqual(MIN_STEP_PX);
+    // Leaf and parent siblings line up: the spacer floors like the twisty.
+    expect(leafChild.left).toBe(child.left);
+  });
+
+  it('starts every child checkbox inline-end of its parent in RTL', () => {
+    document.documentElement.dir = 'rtl';
+    const root = openTouchIndentPanel();
+    const parent = indicatorRect(root, 0);
+    const child = indicatorRect(root, 1);
+    const leafChild = indicatorRect(root, 1, 1);
+    const grandchild = indicatorRect(root, 2);
+    expect(parent.right - child.right).toBeGreaterThanOrEqual(MIN_STEP_PX);
+    expect(parent.right - leafChild.right).toBeGreaterThanOrEqual(MIN_STEP_PX);
+    expect(child.right - grandchild.right).toBeGreaterThanOrEqual(MIN_STEP_PX);
+    expect(leafChild.right).toBe(child.right);
+  });
+});

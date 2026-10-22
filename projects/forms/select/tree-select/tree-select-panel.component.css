@@ -262,9 +262,11 @@
       align-items: center;
       gap: var(--cngx-tree-select-node-gap, 0.5rem);
       min-height: max(var(--cngx-tree-select-node-height, 2rem), var(--cngx-target-min, 0px));
+      /* Under the touch floor the step widens to half the target, so a deeper
+         row still moves visibly inline-end next to a 44px twisty. */
       padding-inline-start: calc(
         var(--cngx-tree-select-base-indent, 0.5rem) + var(--cngx-tree-depth, 0) *
-          var(--cngx-tree-select-level-indent, 1.25rem)
+          max(var(--cngx-tree-select-level-indent, 1.25rem), calc(var(--cngx-target-min, 0px) / 2))
       );
       padding-inline-end: var(--cngx-tree-select-node-padding-end, 0.75rem);
       cursor: pointer;
@@ -338,11 +340,15 @@
       transform: scaleX(-1);
     }
 
-    /* Reserve the twisty gutter for leaves so labels line up across depths. */
+    /* Reserve the twisty gutter for leaves so labels line up across depths.
+       Floors like the twisty: a leaf beside a floored twisty must not start
+       inline-start of its parent's checkbox. */
     .cngx-tree-select__twisty-spacer {
       display: inline-block;
       inline-size: var(--cngx-tree-select-twisty-size, 1.25rem);
       block-size: var(--cngx-tree-select-twisty-size, 1.25rem);
+      min-inline-size: var(--cngx-target-min, 0px);
+      min-block-size: var(--cngx-target-min, 0px);
     }
 
     .cngx-tree-select__label {
