@@ -656,12 +656,14 @@ export class CngxPopover {
       if (desired === undefined) {
         return;
       }
+      // show()/hide() read state, exclusivity, anchoring and the seam; none
+      // of those may become a dependency - only `controlledOpen` drives this.
       const current = untracked(() => this.stateSignal());
       if (desired && current === 'closed') {
-        this.show();
+        untracked(() => this.show());
       }
       if (!desired && (current === 'open' || current === 'opening')) {
-        this.hide();
+        untracked(() => this.hide());
       }
     });
 

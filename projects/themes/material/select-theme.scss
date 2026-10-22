@@ -111,14 +111,8 @@
   $scale: mat.get-theme-density($theme);
   $scale: math.max(-4, math.min(0, $scale));
 
-  // Option metrics - Material 3 menu/select options.
-  $opt-paddings: (
-    0: 12px 16px,
-    -1: 10px 14px,
-    -2: 8px 12px,
-    -3: 6px 10px,
-    -4: 4px 8px,
-  );
+  // Option metrics - Material 3 menu/select options. The option padding is
+  // emitted by `-option-padding` on the row itself, see `theme`.
   $opt-min-heights: (
     0: 48px,
     -1: 44px,
@@ -127,7 +121,6 @@
     -4: 32px,
   );
 
-  --cngx-select-option-padding: #{map.get($opt-paddings, $scale)};
   --cngx-select-option-min-height: #{map.get($opt-min-heights, $scale)};
   --cngx-select-option-radius: 0;
   // Options sit edge-to-edge with no outer panel inset (the highlight reaches
@@ -184,6 +177,21 @@
   --cngx-select-radius: #{$trig-radius};
 }
 
+// Option padding - Material 3 menu/select options. Emitted on the option row,
+// not through `density`: see the row rule in `theme`.
+@mixin -option-padding($theme) {
+  $scale: mat.get-theme-density($theme);
+  $scale: math.max(-4, math.min(0, $scale));
+  $opt-paddings: (
+    0: 12px 16px,
+    -1: 10px 14px,
+    -2: 8px 12px,
+    -3: 6px 10px,
+    -4: 4px 8px,
+  );
+  --cngx-select-option-padding: #{map.get($opt-paddings, $scale)};
+}
+
 @mixin theme($theme) {
   // Token map covers two surfaces simultaneously:
   //   - the popover panel (.cngx-select__panel) plus the tree-select host
@@ -212,5 +220,29 @@
   ) {
     @include color($theme);
     @include density($theme);
+  }
+
+  // `--cngx-select-option-padding` is registered `inherits: false` and SET on
+  // the row by select-base.css (`.cngx-select__option`, 0,1,0, same layer), so
+  // a zero-specificity bridge value never lands. The row rule carries real
+  // specificity (0,2,0) and reaches rows in a host, a detached panel and the
+  // tree panel alike.
+  @layer cngx.components {
+    :is(
+        .cngx-select__panel,
+        cngx-tree-select-panel,
+        cngx-select,
+        cngx-multi-select,
+        cngx-combobox,
+        cngx-typeahead,
+        cngx-tree-select,
+        cngx-reorderable-multi-select,
+        cngx-action-select,
+        cngx-action-multi-select,
+        cngx-select-shell
+      )
+      .cngx-select__option {
+      @include -option-padding($theme);
+    }
   }
 }

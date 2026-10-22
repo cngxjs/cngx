@@ -1185,6 +1185,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     handlePageJumpKey(event, {
       listbox: this.listboxRef(),
       popover: this.popoverRef(),
+      flatOptions: this.flatOptions,
     });
   }
 }

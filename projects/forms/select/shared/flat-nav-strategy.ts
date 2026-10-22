@@ -27,15 +27,20 @@ export interface CngxFlatNavContext<T> {
   readonly options: readonly CngxSelectOptionDef<T>[];
 
   /**
-   * Items as seen by the AD directive - page-jump indices refer to THIS
-   * array, which may omit entries `options` contains (filtered combobox).
+   * Items in the AD index space - page-jump indices refer to THIS array,
+   * which may omit entries `options` contains (filtered combobox). Under
+   * virtualisation it is the full list, so indices are absolute, not
+   * relative to the rendered window.
    */
   readonly listboxItems: readonly CngxFlatNavListboxItem[];
 
   /** Index inside {@link options} for typeahead round-robin. `-1` = none. */
   readonly currentFlatIndex: number;
 
-  /** Index inside {@link listboxItems} for page-jump clamping. `-1` = none. */
+  /**
+   * Index inside {@link listboxItems} (the AD index space, absolute under
+   * virtualisation) for page-jump clamping. `-1` = none.
+   */
   readonly currentListboxIndex: number;
 
   readonly compareWith: CngxSelectCompareFn<T>;

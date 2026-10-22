@@ -36,9 +36,12 @@ export interface TypeaheadController<T> {
   /**
    * Appends `char` to the buffer and returns the first non-disabled
    * option whose label starts with it, case- and accent-tolerant in
-   * `locale` (`createTypeaheadMatcher`). `currentIndex < 0`
-   * walks inclusively from 0; `currentIndex >= 0` walks exclusively
-   * with round-robin (native `<select>` parity). Returns `null` for
+   * `locale` (`createTypeaheadMatcher`). A buffer of one repeated
+   * character matches as that character. `currentIndex < 0` walks
+   * inclusively from 0; otherwise a single-character term walks from
+   * after the current option with round-robin (each press advances) and a
+   * multi-character term starts at the current option, the same walk as
+   * the open listbox. Returns `null` for
    * non-printable input, disabled state, empty options, or no match.
    * Buffer auto-clears after `debounceMs`.
    */
@@ -96,10 +99,15 @@ export function createTypeaheadController<T>(
     if (count === 0) {
       return null;
     }
-    // currentIndex < 0: no highlight, walk inclusively from 0.
-    // Otherwise: start after current for native `<select>` parity.
-    const effectiveStart = currentIndex < 0 ? 0 : (currentIndex + 1) % count;
-    const matches = createTypeaheadMatcher(next, locale);
+    // Same walk as the open listbox (CngxActiveDescendant): a repeated
+    // letter collapses to that letter, and a single-character term cycles
+    // from AFTER the current option. A genuine multi-character term keeps
+    // matching the current option first. No highlight walks from 0.
+    const sameChar = next.length > 1 && [...next].every((c) => c === next[0]);
+    const term = sameChar ? next[0] : next;
+    const cycles = term.length === 1 && currentIndex >= 0;
+    const effectiveStart = cycles ? currentIndex + 1 : Math.max(0, currentIndex);
+    const matches = createTypeaheadMatcher(term, locale);
     for (let i = 0; i < count; i++) {
       const idx = (effectiveStart + i) % count;
       const candidate = opts[idx];

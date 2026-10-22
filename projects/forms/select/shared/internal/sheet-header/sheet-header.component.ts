@@ -31,7 +31,8 @@ import { CngxSelectSheetSearchFocus } from './sheet-search-focus.directive';
  * the input variants, a header input that drives the listbox. First child
  * of the variant's `cngxPopover` element; hidden while anchored.
  *
- * The heading reads the field label once per open (no observer):
+ * The heading follows the field label text the form-field host publishes
+ * (`labelText`), else reads the label element once per open:
  * `[sheetLabel]` → field label → `[label]` → `ariaLabels.fieldLabelFallback`.
  */
 @Component({
@@ -62,11 +63,16 @@ export class CngxSelectSheetHeader {
 
   protected readonly closeGlyph = CNGX_SELECT_GLYPHS.clear;
 
-  // Read once per open: the label text is not observed, a closed panel
-  // reads nothing.
+  // A host that publishes `labelText` (cngx-form-field) keeps the heading on
+  // the current label text, so a language flip while the sheet is open
+  // reaches it. Other hosts fall back to one DOM read per open.
   private readonly fieldLabel = computed(() => {
     if (!this.host.panelVisible()) {
       return '';
+    }
+    const labelText = this.fieldHost?.labelText;
+    if (labelText) {
+      return labelText();
     }
     return untracked(() => {
       const id = this.fieldHost?.labelId?.();

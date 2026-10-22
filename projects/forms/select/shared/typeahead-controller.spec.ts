@@ -85,6 +85,21 @@ describe('createTypeaheadController', () => {
     expect(controller.matchFromIndex('l', -1)).toEqual(opt('Salt'));
   });
 
+  it('cycles a repeated key like the open listbox instead of searching the doubled term', () => {
+    const { controller } = makeController([opt('Apple'), opt('Avocado'), opt('Banana')]);
+    // Apple highlighted; 'a' advances to Avocado, a second 'a' (buffer 'aa')
+    // collapses to 'a' and wraps back to Apple.
+    expect(controller.matchFromIndex('a', 0)).toEqual(opt('Avocado'));
+    expect(controller.matchFromIndex('a', 1)).toEqual(opt('Apple'));
+  });
+
+  it('matches a multi-character term from the current option, not after it', () => {
+    const { controller } = makeController([opt('Avocado'), opt('Avalanche'), opt('Banana')]);
+    expect(controller.matchFromIndex('a', -1)).toEqual(opt('Avocado'));
+    // Buffer 'av' with Avocado highlighted stays on Avocado.
+    expect(controller.matchFromIndex('v', 0)).toEqual(opt('Avocado'));
+  });
+
   it('resets the buffer after debounceMs and reverts to single-char jump', () => {
     const { controller } = makeController([opt('Sand'), opt('Salt')], 200);
     controller.matchFromIndex('s', -1);

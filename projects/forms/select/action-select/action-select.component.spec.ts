@@ -584,6 +584,64 @@ describe('CngxActionSelect - first search term after a value write', () => {
   });
 });
 
+@Component({
+  template: `<cngx-action-select [label]="'Letter'" [options]="options" [(value)]="value" />`,
+  imports: [CngxActionSelect],
+})
+class DefaultCompareActionHost {
+  readonly options: CngxSelectOptionsInput<string> = [
+    { value: 'a', label: 'Alpha' },
+    { value: 'b', label: 'Bravo' },
+    { value: 'c', label: 'Charlie' },
+  ];
+  readonly value = signal<string | undefined>('b');
+}
+
+describe('CngxActionSelect - selected survives a filtering term', () => {
+  function typeTerm(
+    fixture: { nativeElement: HTMLElement; detectChanges: () => void },
+    term: string,
+  ): void {
+    const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+    input.focus();
+    input.value = term;
+    input.dispatchEvent(new Event('input'));
+    vi.advanceTimersByTime(300);
+    flush(fixture);
+  }
+
+  it('keeps the selected option while the term hides it (default compareWith)', () => {
+    vi.useFakeTimers();
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [DefaultCompareActionHost] });
+    const fixture = TestBed.createComponent(DefaultCompareActionHost);
+    flush(fixture);
+    const select = fixture.debugElement.query(By.directive(CngxActionSelect))
+      .componentInstance as CngxActionSelect<string>;
+    expect(select.selected()?.label).toBe('Bravo');
+
+    typeTerm(fixture, 'cha');
+    const visible = (select as unknown as { flatOptions: () => { value: string }[] })
+      .flatOptions()
+      .map((o) => o.value);
+    expect(visible).not.toContain('b');
+    expect(fixture.componentInstance.value()).toBe('b');
+    expect(select.selected()?.label).toBe('Bravo');
+  });
+
+  it('keeps the selected option while the term hides it (custom compareWith)', () => {
+    vi.useFakeTimers();
+    const { fixture, select } = setup();
+    fixture.componentInstance.value.set({ id: 't2', name: 'Dev' });
+    flush(fixture);
+    expect(select.selected()?.label).toBe('Dev');
+
+    typeTerm(fixture, 'desi');
+    expect(fixture.componentInstance.value()?.id).toBe('t2');
+    expect(select.selected()?.label).toBe('Dev');
+  });
+});
+
 describeFieldSkinHost('CngxActionSelect', CngxActionSelect, 'cngx-action-select', () =>
   createMockField({ name: 'pick' }).accessor,
 );

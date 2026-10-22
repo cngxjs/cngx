@@ -51,6 +51,8 @@ import {
   type PopoverPlacement,
 } from '@cngx/common/popover';
 
+import { cngxDevWarn } from '@cngx/utils';
+
 import {
   CNGX_FORM_FIELD_CONTROL,
   CngxFieldSkinHost,
@@ -103,6 +105,7 @@ import {
 } from '../declarative/select-search-host';
 import { CngxSelectSearch } from '../declarative/select-search.component';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
+import { resolvePageJumpSpace } from '../shared/internal/page-jump-handler';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
   type ScalarCommitHandler,
@@ -869,10 +872,28 @@ export class CngxSelectShell<T = unknown>
   protected readonly unfilteredCount = computed(() => this.core.unfilteredFlatOptions().length);
   protected readonly previousLoadedCount = computed(() => this.flatOptions().length);
 
+  /**
+   * Panel-host contract member. The shell renders projected `<cngx-option>`
+   * elements only, so a patched item never reaches the panel; dev mode warns
+   * with CNGX2024. The buffer still feeds value resolution.
+   */
   patchData(item: CngxSelectOptionDef<T>): void {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      cngxDevWarn(
+        'CNGX2024',
+        '[cngx-select-shell] patchData(): projected options are the source of truth; the patched item is not rendered. Project a <cngx-option> instead.',
+      );
+    }
     this.localItemsBuffer.patch(item);
   }
+  /** Panel-host contract member; see `patchData`. Dev mode warns with CNGX2024. */
   clearLocalItems(): void {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      cngxDevWarn(
+        'CNGX2024',
+        '[cngx-select-shell] clearLocalItems(): projected options are the source of truth; there are no local items to clear. Remove the <cngx-option> instead.',
+      );
+    }
     this.localItemsBuffer.clear();
   }
 
@@ -1084,10 +1105,10 @@ export class CngxSelectShell<T = unknown>
       if (!pop.isVisible()) {
         pop.show();
       }
-      const items = lb.options();
-      const ad = lb.ad;
-      const currentId = ad.activeId();
-      const currentListboxIndex = items.findIndex((o) => o.id === currentId);
+      const { items, currentIndex: currentListboxIndex } = resolvePageJumpSpace(
+        lb,
+        this.visibleProjectedOptions,
+      );
       const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
       const action = this.flatNavStrategy.onPageJump(
         {
@@ -1102,7 +1123,7 @@ export class CngxSelectShell<T = unknown>
         direction,
       );
       if (action.kind === 'highlight') {
-        ad.highlightByIndex(action.index);
+        lb.ad.highlightByIndex(action.index);
       }
     }
   }

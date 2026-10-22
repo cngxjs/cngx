@@ -9,6 +9,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { adaptFormControl } from './form-control-adapter';
+import { writeFieldValue } from './field-sync';
 import { CngxFormField } from './form-field.component';
 import { CngxFormFieldPresenter } from './form-field-presenter';
 import { CngxInput, CngxNumericInput } from '@cngx/forms/input';
@@ -88,6 +89,28 @@ describe('adaptFormControl', () => {
     control.markAsDirty();
     TestBed.flushEffects();
 
+    expect(ref.dirty()).toBe(true);
+  });
+
+  it('leaves the control pristine on a programmatic seed write', () => {
+    const control = new FormControl<string | null>(null);
+    const ref = adapt(control, 'test')();
+    writeFieldValue(ref, 'x', 'seed');
+    TestBed.flushEffects();
+
+    expect(control.value).toBe('x');
+    expect(control.pristine).toBe(true);
+    expect(ref.dirty()).toBe(false);
+  });
+
+  it('dirties the control on a user write', () => {
+    const control = new FormControl<string | null>(null);
+    const ref = adapt(control, 'test')();
+    writeFieldValue(ref, 'x', 'user');
+    TestBed.flushEffects();
+
+    expect(control.value).toBe('x');
+    expect(control.dirty).toBe(true);
     expect(ref.dirty()).toBe(true);
   });
 

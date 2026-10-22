@@ -99,9 +99,12 @@ class SheetHost {
   readonly handle = viewChild.required<TemplateRef<CngxSelectSheetHandleContext>>('handle');
 }
 
-function setup(options: { fieldHost?: boolean } = {}) {
+function setup(options: { fieldHost?: boolean; labelText?: WritableSignal<string> } = {}) {
   const harness = createHarness();
-  const fieldHost = { labelId: signal('field-label') } as unknown as CngxFormFieldHostContract;
+  const fieldHost = {
+    labelId: signal('field-label'),
+    ...(options.labelText ? { labelText: options.labelText } : {}),
+  } as unknown as CngxFormFieldHostContract;
   TestBed.configureTestingModule({
     providers: [
       { provide: CNGX_SELECT_SHEET_HEADER_HOST, useValue: harness.host },
@@ -142,6 +145,18 @@ describe('CngxSelectSheetHeader', () => {
     close();
     open();
     expect(title().textContent?.trim()).toBe('Colour');
+  });
+
+  it('follows the host label text while the sheet is open', () => {
+    const labelText = signal('Favourite colour');
+    const { fixture, open, title } = setup({ labelText });
+    open();
+    expect(title().textContent?.trim()).toBe('Favourite colour');
+
+    labelText.set('Lieblingsfarbe');
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(title().textContent?.trim()).toBe('Lieblingsfarbe');
   });
 
   it('lets sheetLabel win over the field label', () => {

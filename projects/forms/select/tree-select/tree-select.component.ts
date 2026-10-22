@@ -928,7 +928,11 @@ export class CngxTreeSelect<T = unknown>
   }
 
   private cascadeToggle(node: FlatTreeNode<T>): void {
-    const descendants = this.treeController.descendantsOfValue(node.value);
+    // A disabled descendant keeps whatever state it had: the user cannot
+    // reverse a change on a row they cannot activate.
+    const descendants = this.treeController
+      .descendantsOfValue(node.value)
+      .filter((v) => this.treeController.findByValue(v)?.disabled !== true);
     const allValues = [node.value, ...descendants];
     const previous = untracked(() => [...this.values()]);
     const parentSelected = previous.some((v) => this.membersEqual(v, node.value));
@@ -1038,7 +1042,10 @@ export class CngxTreeSelect<T = unknown>
       onError: (err, rollbackTo) => {
         this.stateChange.emit('error');
         this.commitError.emit(err);
-        if (this.commitMode() === 'optimistic') {
+        // An external write during the pending window wins over the stale
+        // rollback snapshot (same rule as the array commit handler).
+        const stillOptimistic = sameArrayContents(this.values(), next, this.compareWith());
+        if (this.commitMode() === 'optimistic' && stillOptimistic) {
           this.values.set([...(rollbackTo ?? previous)]);
         }
         // Same order as the array commit handler: rollback, then speak.

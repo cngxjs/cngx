@@ -644,6 +644,29 @@ test.describe('material-bridge rendered values: select family trigger chain', ()
     }
   });
 
+  // --cngx-select-option-padding is registered inherits: false and SET on
+  // the option row by select-base.css, so the bridge value must land on the
+  // row itself: an assignment on the panel or host never reaches it.
+  test('the bridge option padding reaches the option rows', async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: ['projects/forms/select/shared/select-base.css', ...SELECT_CSS],
+      bridgeCss: BRIDGE_CSS,
+      html: `
+<cngx-select class="cngx-select">
+  <div class="cngx-select__panel">
+    <div id="option-in-host" class="cngx-select__option" role="option">Red</div>
+  </div>
+</cngx-select>
+<div class="cngx-select__panel">
+  <div id="option-in-panel" class="cngx-select__option" role="option">Red</div>
+</div>`,
+    });
+    for (const option of ['#option-in-host', '#option-in-panel']) {
+      expect(await computedValue(page, option, 'padding-top'), option).toBe('12px');
+      expect(await computedValue(page, option, 'padding-left'), option).toBe('16px');
+    }
+  });
+
   test('the bridge focus offset reaches every variant trigger', async ({ page }) => {
     for (const [tag] of VARIANTS) {
       expect(await computedValue(page, `#${tag}-trigger`, '--cngx-select-focus-offset'), tag).toBe(

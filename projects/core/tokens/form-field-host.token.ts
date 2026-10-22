@@ -45,6 +45,10 @@ export type CngxFieldSkin = 'outline' | 'fill' | 'bare';
  *   and nothing else; resolving the cascade is the reader's job.
  * - `readonly?: Signal<boolean>` - whether the field is readonly, so a
  *   field box can paint the readonly state of the field it sits in.
+ * - `labelText?: Signal<string>` - the rendered text of the field's label,
+ *   kept current while it changes (a language flip), so a surface that
+ *   repeats the label (a mobile sheet heading) follows it without reading
+ *   the DOM itself.
  *
  * Deliberately scoped to these members. The full presenter exposes
  * many more signals (constraints, ARIA IDs, dirty / pending /
@@ -90,6 +94,13 @@ export interface CngxFormFieldHostContract {
    * not implement it; consumers read it as `host.readonly?.() ?? false`.
    */
   readonly readonly?: Signal<boolean>;
+  /**
+   * Rendered text of the field's label element, trimmed; `''` while no
+   * label is rendered. Updates when the label text changes, for example on
+   * a language flip. Optional so hosts without a label surface keep
+   * satisfying the contract; consumers read it as `host.labelText?.() ?? ''`.
+   */
+  readonly labelText?: Signal<string>;
 }
 
 /**

@@ -82,6 +82,8 @@ export function adaptFormControl(
 
   // Writable value proxy. `set()` must push into both the internal signal and the
   // `FormControl` itself - the RxJS subscription above only mirrors RF → signal.
+  // A write here is programmatic (RF semantics: setValue never dirties); the
+  // user-write path (`writeFieldValue(..., 'user')`) dirties via `markAsDirty`.
   const writableValue = Object.assign(() => valueSignal(), {
     set(next: unknown): void {
       if (Object.is(control.value, next)) {
@@ -89,7 +91,6 @@ export function adaptFormControl(
       }
       valueSignal.set(next);
       control.setValue(next);
-      control.markAsDirty();
     },
     update(updater: (current: unknown) => unknown): void {
       writableValue.set(updater(valueSignal()));

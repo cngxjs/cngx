@@ -99,8 +99,14 @@ export function createArrayCommitHandler<T>(
     }
   };
 
-  const rollbackIfOptimistic = (rollbackTo: T[] | undefined): void => {
+  // An external write during the pending window wins over the stale
+  // rollback snapshot: roll back only while the model still holds the
+  // optimistic array this commit wrote.
+  const rollbackIfOptimistic = (rollbackTo: T[] | undefined, intended: readonly T[]): void => {
     if (opts.commitMode() !== 'optimistic') {
+      return;
+    }
+    if (!sameArrayContents(opts.values(), intended, opts.compareWith())) {
       return;
     }
     reconcileValues(rollbackTo ?? []);
@@ -141,7 +147,7 @@ export function createArrayCommitHandler<T>(
       onError: (err, rollbackTo) => {
         opts.onStateChange('error');
         opts.onError(err);
-        rollbackIfOptimistic(rollbackTo);
+        rollbackIfOptimistic(rollbackTo, next);
         announceOnError(err);
       },
     });
@@ -165,7 +171,7 @@ export function createArrayCommitHandler<T>(
       onError: (err, rollbackTo) => {
         opts.onStateChange('error');
         opts.onError(err);
-        rollbackIfOptimistic(rollbackTo);
+        rollbackIfOptimistic(rollbackTo, []);
         announceOnError(err);
       },
     });

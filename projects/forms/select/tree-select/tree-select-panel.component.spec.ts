@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
 import { Component, signal, TemplateRef, viewChild, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -624,5 +627,35 @@ describe('CngxTreeSelectPanel - highlight across a nodes refresh', () => {
   it('loses the highlighted node under identity equality', () => {
     const ad = highlightBravoThenRefresh();
     expect((ad.activeValue() as Row | null)?.id).not.toBe('b');
+  });
+});
+
+describe('CngxTreeSelectPanel stylesheet', () => {
+  // A @media nested in @scope applies unreliably across engines; every
+  // media override of this panel must sit outside its @scope blocks.
+  it('nests no @media inside an @scope block', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'projects/forms/select/tree-select/tree-select-panel.component.css'),
+      'utf8',
+    ).replace(/\/\*[\s\S]*?\*\//g, '');
+    const nested: string[] = [];
+    const scopeDepths: number[] = [];
+    let depth = 0;
+    for (let i = 0; i < css.length; i++) {
+      const ch = css[i];
+      if (css.startsWith('@scope', i)) {
+        scopeDepths.push(depth);
+      } else if (css.startsWith('@media', i) && scopeDepths.length > 0) {
+        nested.push(css.slice(i, css.indexOf('{', i)).trim());
+      } else if (ch === '{') {
+        depth++;
+      } else if (ch === '}') {
+        depth--;
+        if (scopeDepths.length > 0 && depth === scopeDepths[scopeDepths.length - 1]) {
+          scopeDepths.pop();
+        }
+      }
+    }
+    expect(nested).toEqual([]);
   });
 });
