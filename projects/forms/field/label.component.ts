@@ -1,7 +1,10 @@
 import {
+  afterEveryRender,
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
+  ElementRef,
   inject,
   input,
   ViewEncapsulation,
@@ -107,6 +110,17 @@ export class CngxLabel {
   protected readonly markerText = computed(() =>
     typeof this.config.requiredMarker === 'string' ? this.config.requiredMarker : '*',
   );
+
+  constructor() {
+    // Publishes the rendered label text on the host contract. Read after
+    // every render because the text is projected content: a binding in the
+    // consumer's view (a language flip) changes it without this view running.
+    const el = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    afterEveryRender({
+      read: () => this.presenter.reportLabelText(el.textContent?.trim() ?? ''),
+    });
+    inject(DestroyRef).onDestroy(() => this.presenter.reportLabelText(''));
+  }
 
   /** @internal - whether to show the auto-marker. */
   protected readonly markerVisible = computed(() => {

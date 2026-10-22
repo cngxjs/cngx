@@ -2,7 +2,11 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CNGX_FORM_FIELD_CONTROL, type CngxFormFieldControl } from '@cngx/core/tokens';
+import {
+  CNGX_FORM_FIELD_CONTROL,
+  CNGX_FORM_FIELD_HOST,
+  type CngxFormFieldControl,
+} from '@cngx/core/tokens';
 import { CngxFormField } from './form-field.component';
 import { CngxLabel } from './label.component';
 import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
@@ -58,6 +62,41 @@ class StubIdControl implements CngxFormFieldControl {
 class ControlHost {
   field = signal<CngxFieldAccessor>(createMockField({ name: 'email' }).accessor);
 }
+
+@Component({
+  template: `
+    <cngx-form-field [field]="field">
+      @if (shown()) {
+        <label cngxLabel>{{ text() }}</label>
+      }
+    </cngx-form-field>
+  `,
+  imports: [CngxFormField, CngxLabel],
+})
+class TextHost {
+  readonly field = createMockField({ name: 'colour' }).accessor;
+  readonly text = signal('Colour');
+  readonly shown = signal(true);
+}
+
+describe('CngxLabel - labelText on the host contract', () => {
+  it('publishes the rendered label text and follows a text change', () => {
+    const fixture = TestBed.createComponent(TextHost);
+    fixture.detectChanges();
+    const presenter = fixture.debugElement
+      .query(By.directive(CngxFormField))
+      .injector.get(CNGX_FORM_FIELD_HOST);
+    expect(presenter.labelText?.()).toBe('Colour');
+
+    fixture.componentInstance.text.set('Farbe');
+    fixture.detectChanges();
+    expect(presenter.labelText?.()).toBe('Farbe');
+
+    fixture.componentInstance.shown.set(false);
+    fixture.detectChanges();
+    expect(presenter.labelText?.()).toBe('');
+  });
+});
 
 describe('CngxLabel', () => {
   // ── Basic (no global marker) ───────────────────────────────────
