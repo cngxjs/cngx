@@ -69,7 +69,7 @@ export function canPrompt(isTTY: boolean | undefined, prompts: boolean | undefin
   return isTTY === true && prompts !== false;
 }
 
-export const inquirerAdapter: PromptAdapter = {
+const inquirerAdapter: PromptAdapter = {
   select: (question) =>
     select({
       message: question.message,
