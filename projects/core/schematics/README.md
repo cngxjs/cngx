@@ -188,8 +188,9 @@ rewrites every literal of it in the bundles.
 ## CLI behaviour worth knowing
 
 - `ng add` strips `interactive`, `dryRun`, `force`, `defaults`, `registry`,
-  `verbose` and `skipConfirmation` before the rule runs, so the schema uses
-  none of those names. `prompts` and `yes` are the schematic's own switches.
+  `verbose`, `skipConfirmation`, `collection` and `schematicName` before the
+  rule runs, so the schema uses none of those names (`schematics-smoke`
+  checks every one). `prompts` and `yes` are the schematic's own switches.
   The context's `interactive` stays `true` either way (the workflow never
   passes the flag on), so the shell reads `--interactive=false`,
   `--no-interactive` and `--defaults` from `process.argv` through the pure

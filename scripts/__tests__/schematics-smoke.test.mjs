@@ -102,6 +102,25 @@ function overwriteRecord(tree, patch) {
   tree.overwrite('.cngx/install.json', JSON.stringify({ ...manifest, projects }, null, 2));
 }
 
+// What `ng add` (@angular/cli 21 `commands/add/cli.js`) takes out of the
+// options before it runs the schematic; a schema property of that name never
+// reaches the rule.
+const NG_ADD_STRIPPED = [
+  'interactive',
+  'dryRun',
+  'force',
+  'defaults',
+  'registry',
+  'verbose',
+  'skipConfirmation',
+  'collection',
+  'schematicName',
+];
+
+function strippedOptions(schema) {
+  return Object.keys(schema.properties).filter((name) => NG_ADD_STRIPPED.includes(name));
+}
+
 describe('dist/core/schematics', () => {
   let runner;
   let appTree;
@@ -168,9 +187,11 @@ describe('dist/core/schematics', () => {
   it('declares no option the ng add command strips', () => {
     const schema = JSON.parse(readFileSync(join(ROOT, 'dist', 'core', 'schematics', 'ng-add', 'schema.json'), 'utf8'));
 
-    expect(Object.keys(schema.properties)).not.toContain('dryRun');
-    expect(Object.keys(schema.properties)).not.toContain('interactive');
-    expect(Object.keys(schema.properties)).not.toContain('verbose');
+    expect(strippedOptions(schema)).toEqual([]);
+    expect(strippedOptions({ properties: { ...schema.properties, force: {}, skipConfirmation: {} } })).toEqual([
+      'force',
+      'skipConfirmation',
+    ]);
   });
 
   describe('with the flags ng add passes before the install', () => {
