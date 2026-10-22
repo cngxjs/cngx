@@ -76,8 +76,9 @@ jobs:
     needs: [changes, pack]
     # Runs even when pack was skipped, so every matrix row reports its check
     # under its expanded name; a skipped matrix job would report the
-    # unexpanded name and leave the required check pending.
-    if: ${{ !cancelled() && needs.changes.result == 'success' && needs.pack.result != 'failure' }}
+    # unexpanded name and leave the required check pending. A failed
+    # `changes` job fails every row in its first step instead.
+    if: ${{ !cancelled() && needs.pack.result != 'failure' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -112,15 +113,22 @@ jobs:
           # The other path the docs name: ng add @cngx/ui on a fresh app once
           # the CDK is on the app's major. On 21 the CDK must come first, or
           # the CLI's pre-install fetches CDK 22 and stops with ERESOLVE.
-          - { angular: '21', variant: onboarding, args: '--add ui --preset full' }
+          - { angular: '21', variant: onboarding, add: ui, args: '--add ui --preset full' }
           # The same path on an ng new --standalone=false app with routing:
           # the outlets go into the root NgModule and the stock spec gets
           # the outlet classes and the providers, so ng test still passes.
           # CLI 21 only: from 22.2 the stock NgModule app fails ng test on
           # its own, and ng add leaves the outlets out there.
           - { angular: '21', variant: ngmodule, args: '--preset full' }
-    name: angular-${{ matrix.angular }}-${{ matrix.variant }}
+    # `add` keeps the check name of a row that onboards through another
+    # package apart from the core onboarding row of the same major.
+    name: angular-${{ matrix.angular }}-${{ matrix.variant }}${{ matrix.add && format('-{0}', matrix.add) || '' }}
     steps:
+      - name: Fail, the changes job did not decide
+        if: needs.changes.result != 'success'
+        run: |
+          echo "The changes job ended with '${{ needs.changes.result }}'; no row may report success without it."
+          exit 1
       - name: Skip, no consumer-facing path changed
         if: needs.changes.outputs.relevant != 'true'
         run: echo "No consumer-facing path changed in this PR; the fixture build is skipped."

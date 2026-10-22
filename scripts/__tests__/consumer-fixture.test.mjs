@@ -454,7 +454,23 @@ describe('the consumer-compat workflow', () => {
   });
 
   it('proves the shim ng add @cngx/ui the docs name, on the major where the CDK must come first', () => {
-    expect(workflow).toContain("- { angular: '21', variant: onboarding, args: '--add ui --preset full' }");
+    expect(workflow).toContain("- { angular: '21', variant: onboarding, add: ui, args: '--add ui --preset full' }");
+  });
+
+  // Branch protection gates a required check by name; two rows under one
+  // name would let a red row hide behind a green one.
+  it('gives every fixture row its own check name', () => {
+    const rows = [...workflow.matchAll(/^\s*- \{ angular: '([^']+)', variant: (\w+)(?:, add: (\w+))?/gm)];
+    const names = rows.map(([, angular, variant, add]) => `angular-${angular}-${variant}${add ? `-${add}` : ''}`);
+
+    expect(rows.length).toBeGreaterThan(10);
+    expect(workflow).toContain("name: angular-${{ matrix.angular }}-${{ matrix.variant }}${{ matrix.add && format('-{0}', matrix.add) || '' }}");
+    expect(names.filter((name, index) => names.indexOf(name) !== index)).toEqual([]);
+  });
+
+  it('fails every row when the changes job did not decide, instead of leaving it pending', () => {
+    expect(workflow).toContain("if: ${{ !cancelled() && needs.pack.result != 'failure' }}");
+    expect(workflow).toContain("if: needs.changes.result != 'success'");
   });
 
   it('runs the stale core and stale update legs on the full preset on both majors', () => {
