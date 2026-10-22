@@ -33,4 +33,26 @@ describe('addDependency', () => {
   it('adds no newline the file did not have', async () => {
     expect(await add('{\n  "devDependencies": {}\n}')).toBe('{\n  "devDependencies": {\n    "@cngx/eslint-plugin": "0.2.0"\n  }\n}');
   });
+
+  it.each([
+    ['tabs', '\t'],
+    ['four spaces', '    '],
+  ])('keeps a package.json indented with %s, so only the added lines differ', async (_name, indent) => {
+    const before = JSON.stringify({ name: 'app', devDependencies: { eslint: '^9.0.0' } }, null, indent) + '\n';
+    const after = JSON.stringify(
+      { name: 'app', devDependencies: { '@cngx/eslint-plugin': '0.2.0', eslint: '^9.0.0' } },
+      null,
+      indent,
+    ) + '\n';
+
+    expect(await add(before)).toBe(after);
+  });
+
+  it('leaves package.json untouched when the dependency is already declared', async () => {
+    const manifest = '{\n\t"devDependencies": { "@cngx/eslint-plugin": "0.2.0" }\n}\n';
+    const rule = addDependency('@cngx/eslint-plugin', '0.2.0', { type: DependencyType.Dev, install: InstallBehavior.None });
+    const tree = await lastValueFrom(callRule(rule, createMemoryTree({ 'package.json': manifest }), context));
+
+    expect(tree.readText('package.json')).toBe(manifest);
+  });
 });
