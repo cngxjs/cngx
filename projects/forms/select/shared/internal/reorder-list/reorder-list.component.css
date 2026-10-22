@@ -106,3 +106,19 @@
     pointer-events: none;
   }
 }
+
+/* Unlayered so it wins over the layered drag rules. WHCM forces box-shadow to
+   none and every background to Canvas, so the lifted row loses its shadow and
+   its tint and the drop bar vanishes. The row re-signals with a Highlight
+   outline, the bar paints in Highlight with the forcing opted out. */
+@media (forced-colors: active) {
+  .cngx-select-reorder-list__row--dragging {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+
+  .cngx-select-reorder-list__row--drag-over::before {
+    background: Highlight;
+    forced-color-adjust: none;
+  }
+}

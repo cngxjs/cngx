@@ -115,6 +115,10 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // with Highlight. Triggers/panels self-heal via their solid borders.
   'projects/forms/select/shared/select-base.css',
   'projects/forms/select/tree-select/tree-select-panel.component.css',
+  // @cngx/forms/select - the dragged panel reorder row is lifted by a
+  // box-shadow and a tint, both lost under WHCM; it re-signals with a
+  // Highlight outline and the drop bar paints in Highlight.
+  'projects/forms/select/shared/internal/reorder-list/reorder-list.component.css',
   // @cngx/forms/field - the fill and bare skins replace the focus outline with
   // an inset box-shadow underline, which WHCM strips entirely; the block
   // restores the reset outline and redraws the edge in FieldText.
@@ -325,7 +329,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(53);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(54);
   });
 });
 
