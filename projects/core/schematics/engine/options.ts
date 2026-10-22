@@ -205,25 +205,33 @@ export function readPromptFlags(argv: readonly string[]): string | undefined {
   return undefined;
 }
 
+const DRY_RUN_FLAGS: ReadonlySet<string> = new Set(['--dry-run', '-d']);
+
 /**
  * Whether the CLI runs the schematic as `--dry-run` (or `-d`). The CLI
  * drops the writes itself and passes no flag to the rule, so `argv` is the
- * only place to read it, the same as for `readPromptFlags`.
+ * only place to read it, the same as for `readPromptFlags`. The spellings
+ * are those the CLI's parser accepts: `--dry-run` and `-d`, bare, with an
+ * attached or a following `true` / `false`, and `--no-dry-run`; the last
+ * one wins, as it does for the CLI. `--dryRun` never gets here: the CLI
+ * refuses it as an unknown argument.
  */
 export function readDryRunFlag(argv: readonly string[]): boolean {
+  let dryRun = false;
   for (const [index, arg] of argv.entries()) {
-    if (arg === '-d') {
-      return true;
+    if (arg === '--no-dry-run') {
+      dryRun = false;
+      continue;
     }
     const [name, attached] = arg.split('=', 2);
-    if (name !== '--dry-run') {
+    if (!DRY_RUN_FLAGS.has(name)) {
       continue;
     }
     const next = argv[index + 1];
     const value = attached ?? (next === 'true' || next === 'false' ? next : 'true');
-    return value === 'true';
+    dryRun = value === 'true';
   }
-  return false;
+  return dryRun;
 }
 
 /**

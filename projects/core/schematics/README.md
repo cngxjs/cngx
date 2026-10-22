@@ -212,6 +212,11 @@ rewrites every literal of it in the bundles.
 - A list flag has no `[]` default: the registry fills none for a `oneOf`
   property, so an unset list arrives as `undefined`. The parser also reads a
   programmatic `[]` as "not given".
+- The CLI passes no dry-run flag to the rule either; `readDryRunFlag` reads
+  `--dry-run`, `-d` (bare or with `true` / `false`) and `--no-dry-run` from
+  `process.argv`, the last one winning as in the CLI's parser. `--dryRun`
+  never reaches a rule: CLI 21 parses without camel-case expansion and stops
+  on it as an unknown argument.
 - `ng add <pkg> --dry-run` for a package that is not installed never reaches a
   rule. Preview with `ng add`, then `ng g @cngx/core:ng-add --dry-run`.
 - Prompts run inside the rule after the CLI's install spinner has finished,

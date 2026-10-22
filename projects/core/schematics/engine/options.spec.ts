@@ -211,6 +211,31 @@ describe('readDryRunFlag', () => {
   it.each([[], ['--dry-run=false'], ['--dry-run', 'false'], ['--defaults']])('reads %s as a real run', (...flags) => {
     expect(readDryRunFlag(argv(...flags))).toBe(false);
   });
+
+  // The CLI's yargs keeps the last of a repeated boolean flag.
+  it('reads --no-dry-run as a real run, also after --dry-run', () => {
+    expect(readDryRunFlag(argv('--no-dry-run'))).toBe(false);
+    expect(readDryRunFlag(argv('--dry-run', '--no-dry-run'))).toBe(false);
+  });
+
+  it('reads -d after --no-dry-run as a dry run', () => {
+    expect(readDryRunFlag(argv('--no-dry-run', '-d'))).toBe(true);
+  });
+
+  it('reads -d with a false value as a real run', () => {
+    expect(readDryRunFlag(argv('-d', 'false'))).toBe(false);
+    expect(readDryRunFlag(argv('-d=false'))).toBe(false);
+  });
+
+  it('reads --dry-run=true after --dry-run=false as a dry run', () => {
+    expect(readDryRunFlag(argv('--dry-run=false', '--dry-run=true'))).toBe(true);
+  });
+
+  // @angular/cli 21.2 parses with camel-case-expansion off and strict, so
+  // `--dryRun` stops with "Unknown argument: dryRun" before any rule runs.
+  it('never reads --dryRun, which the CLI refuses before the rule runs', () => {
+    expect(readDryRunFlag(argv('--dryRun'))).toBe(false);
+  });
 });
 
 describe('readPromptFlags', () => {
