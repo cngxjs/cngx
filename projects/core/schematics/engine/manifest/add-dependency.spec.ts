@@ -37,13 +37,19 @@ describe('addDependency', () => {
   it.each([
     ['tabs', '\t'],
     ['four spaces', '    '],
+    ['twelve spaces, past the ten JSON.stringify takes', ' '.repeat(12)],
   ])('keeps a package.json indented with %s, so only the added lines differ', async (_name, indent) => {
-    const before = JSON.stringify({ name: 'app', devDependencies: { eslint: '^9.0.0' } }, null, indent) + '\n';
-    const after = JSON.stringify(
-      { name: 'app', devDependencies: { '@cngx/eslint-plugin': '0.2.0', eslint: '^9.0.0' } },
-      null,
-      indent,
-    ) + '\n';
+    const before = ['{', `${indent}"name": "app",`, `${indent}"devDependencies": {`, `${indent}${indent}"eslint": "^9.0.0"`, `${indent}}`, '}', ''].join('\n');
+    const after = [
+      '{',
+      `${indent}"name": "app",`,
+      `${indent}"devDependencies": {`,
+      `${indent}${indent}"@cngx/eslint-plugin": "0.2.0",`,
+      `${indent}${indent}"eslint": "^9.0.0"`,
+      `${indent}}`,
+      '}',
+      '',
+    ].join('\n');
 
     expect(await add(before)).toBe(after);
   });

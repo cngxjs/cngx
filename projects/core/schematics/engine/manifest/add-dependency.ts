@@ -11,6 +11,13 @@ function indentationOf(content: string): string {
   return /\n([ \t]+)\S/.exec(content)?.[1] ?? '  ';
 }
 
+// JSON.stringify takes at most ten characters of a string indent, so the
+// file is written with one tab per level and each leading tab widened. JSON
+// escapes a tab inside a string, so every literal tab is indentation.
+function reindent(content: string, indent: string): string {
+  return JSON.stringify(JSON.parse(content), null, '\t').replace(/^\t+/gm, (tabs) => indent.repeat(tabs.length));
+}
+
 /**
  * `addDependency` from `@schematics/angular/utility`, keeping the
  * indentation, the line endings and the trailing newline of package.json.
@@ -33,7 +40,7 @@ export function addDependency(...args: Parameters<typeof addAngularDependency>):
           return;
         }
         const indent = indentationOf(original);
-        const indented = indent === '  ' ? content : JSON.stringify(JSON.parse(content), null, indent);
+        const indented = indent === '  ' ? content : reindent(content, indent);
         const newline = newlineOf(original);
         const ended = original.endsWith('\n') && !indented.endsWith('\n') ? `${indented}\n` : indented;
         const restored = newline === '\n' ? ended : ended.replace(/\r?\n/g, newline);
