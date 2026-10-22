@@ -51,7 +51,7 @@
 //               onboarded app, checks both feedback outlets in the DOM and
 //               clicks the starter's toast and banner buttons. With
 //               --stale-core a third sandbox installs utils, core, common and
-//               forms at the stale release and runs a real
+//               forms at the stale release (`previous` only) and runs a real
 //               `ng update @cngx/core` (no --migrate-only): the CLI must move
 //               the whole package group to the packed release and run its
 //               migration. Every schematics run also has two terminal legs
@@ -744,16 +744,22 @@ async function runSteps(appDir, version, steps, tag) {
   }
 }
 
+// The newest registry release of @cngx/core below the packed one.
+function previousRelease(version) {
+  const previous = newestListed(capture('npm', ['view', `@cngx/core@<${version}`, 'version', '--json']));
+  if (previous === undefined) {
+    throw new Error(`the registry lists no @cngx/core below ${version}`);
+  }
+  return previous;
+}
+
 // `previous` is the newest registry release of @cngx/core below the packed
 // one; anything else is a tarball path.
 function resolveStaleCore(spec, version, sandbox) {
   if (spec !== 'previous') {
     return resolve(spec);
   }
-  const previous = newestListed(capture('npm', ['view', `@cngx/core@<${version}`, 'version', '--json']));
-  if (previous === undefined) {
-    throw new Error(`the registry lists no @cngx/core below ${version}`);
-  }
+  const previous = previousRelease(version);
   const [packed] = JSON.parse(capture('npm', ['pack', `@cngx/core@${previous}`, '--json', '--pack-destination', sandbox]));
   return join(sandbox, packed.filename);
 }
@@ -1041,10 +1047,10 @@ export function staleUpdateSteps(version) {
  * through the local registry must install the packed release of every
  * member and run the migration keyed to it.
  */
-async function runStaleUpdateLeg({ cliSpec, work, version, registryUrl, staleCore }) {
+async function runStaleUpdateLeg({ cliSpec, work, version, registryUrl }) {
   const sandbox = mkdtempSync(join(work, 'stale-update-'));
   const appDir = join(sandbox, 'fixture');
-  const stale = tarballManifest(resolveStaleCore(staleCore, version, sandbox)).version;
+  const stale = previousRelease(version);
   console.log(`\nStale update leg: ${STALE_UPDATE_LIBS.join(', ')} at ${stale}, packed ${version}\nSandbox: ${sandbox}\n`);
   run('npx', ['-y', `@angular/cli@${cliSpec}`, 'new', 'fixture', '--defaults', '--skip-git', '--skip-install', '--style=css', '--routing=false', '--ssr=false', '--zoneless=true'], { cwd: sandbox });
   run('npm', ['install'], { cwd: appDir });
@@ -1175,7 +1181,13 @@ async function main() {
     }
     if (plan.schematics && staleCore !== null) {
       await runStaleCoreLeg({ cliSpec, work, tarballFiles, version, registryUrl: registry.url, staleCore, preset });
-      await runStaleUpdateLeg({ cliSpec, work, version, registryUrl: registry.url, staleCore });
+      if (staleCore === 'previous') {
+        await runStaleUpdateLeg({ cliSpec, work, version, registryUrl: registry.url });
+      } else {
+        // ng update moves registry releases only, so a stale core from a
+        // tarball has no older group to install and update from.
+        console.log('\nStale update leg: skipped (needs --stale-core previous; ng update cannot move a tarball install)');
+      }
     } else if (plan.schematics) {
       console.log('\nStale core and stale update legs: skipped (pass --stale-core <tgz | previous> to run them)');
     }
