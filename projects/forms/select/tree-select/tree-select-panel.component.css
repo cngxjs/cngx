@@ -486,6 +486,22 @@
       min-block-size: var(--cngx-target-min, 0px);
     }
 
+    /* The checkbox is its own tap target under the touch floor, where a row
+       tap expands a parent. */
+    .cngx-tree-select__check {
+      display: inline-flex;
+      flex: none;
+      align-items: center;
+      justify-content: center;
+      min-inline-size: var(--cngx-target-min, 0px);
+      min-block-size: var(--cngx-target-min, 0px);
+      cursor: pointer;
+    }
+
+    .cngx-tree-select__node[aria-disabled='true'] .cngx-tree-select__check {
+      cursor: not-allowed;
+    }
+
     .cngx-tree-select__label {
       flex: 1 1 auto;
       overflow: hidden;

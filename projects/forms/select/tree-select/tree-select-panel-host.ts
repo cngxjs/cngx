@@ -31,6 +31,12 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
   readonly panelOpen: Signal<boolean>;
   /** A disabled select drops every activation. */
   readonly disabled: Signal<boolean>;
+  /**
+   * Under the touch floor a touch / pen tap on a parent row expands it and
+   * the checkbox target selects. A click without that pointer gesture (AT
+   * activation, keyboard, mouse) keeps selecting.
+   */
+  readonly rowTapExpands: Signal<boolean>;
   /** Id of the `role="tree"` container; the trigger's `aria-controls` names it. */
   readonly listboxId: string;
   /**

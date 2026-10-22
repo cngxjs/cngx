@@ -238,6 +238,41 @@ export class CngxTreeSelectPanel<T = unknown> {
     }
   }
 
+  /**
+   * Id of the row a touch / pen press started on. Only the click that ends
+   * that press expands a parent under the touch floor; VoiceOver and TalkBack
+   * activate a focused node with a simulated click and no pointer events, so
+   * their activation keeps the select path `aria-checked` promises. Plain
+   * field: event plumbing, not state.
+   */
+  private pendingTapId: string | null = null;
+
+  protected handleRowPointerDown(event: PointerEvent, node: FlatTreeNode<T>): void {
+    const touch = event.pointerType === 'touch' || event.pointerType === 'pen';
+    this.pendingTapId = touch ? node.id : null;
+  }
+
+  protected handleRowClick(node: FlatTreeNode<T>): void {
+    const tapped = this.pendingTapId === node.id;
+    this.pendingTapId = null;
+    if (node.disabled) {
+      return;
+    }
+    if (tapped && node.hasChildren && this.host.rowTapExpands()) {
+      this.host.treeController.toggle(node.id);
+      return;
+    }
+    this.host.handleSelect(node);
+  }
+
+  protected handleCheckClick(event: MouseEvent, node: FlatTreeNode<T>): void {
+    event.stopPropagation();
+    this.pendingTapId = null;
+    if (!node.disabled) {
+      this.host.handleSelect(node);
+    }
+  }
+
   protected toggleExpand(event: MouseEvent, node: FlatTreeNode<T>): void {
     event.stopPropagation();
     this.host.treeController.toggle(node.id);

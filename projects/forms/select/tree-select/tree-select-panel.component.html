@@ -40,7 +40,8 @@
           [style.--cngx-tree-depth]="node.depth"
           class="cngx-tree-select__node"
           [class.cngx-tree-select__node--active]="ad.activeId() === node.id"
-          (click)="!node.disabled && host.handleSelect(node)"
+          (pointerdown)="handleRowPointerDown($event, node)"
+          (click)="handleRowClick(node)"
         >
           @if (node.hasChildren) {
             @let isOpen = host.treeController.isExpanded(node.id)();
@@ -82,12 +83,21 @@
           <!-- Tree-select hard-codes checkbox-indicator;
                'radio' / 'checkmark' from selectionIndicatorVariant
                are flat-panel-only. Note: select-family-accepted-debt. -->
-          <cngx-checkbox-indicator
-            [checked]="host.isSelected(node.value)"
-            [indeterminate]="host.isIndeterminate(node.value)"
-            [checkGlyph]="host.checkGlyph()"
-            [dashGlyph]="host.dashGlyph()"
-          />
+          <!-- Pointer target for select under the touch floor, where a row
+               tap expands. aria-hidden: the treeitem with aria-checked is the
+               one AT channel, and its activation selects. -->
+          <span
+            class="cngx-tree-select__check"
+            aria-hidden="true"
+            (click)="handleCheckClick($event, node)"
+          >
+            <cngx-checkbox-indicator
+              [checked]="host.isSelected(node.value)"
+              [indeterminate]="host.isIndeterminate(node.value)"
+              [checkGlyph]="host.checkGlyph()"
+              [dashGlyph]="host.dashGlyph()"
+            />
+          </span>
           <span class="cngx-tree-select__label">{{ node.label }}</span>
           @if (host.nodeCount(node); as count) {
             <!-- aria-checked (true / mixed / false) already carries the state

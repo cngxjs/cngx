@@ -200,6 +200,8 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
 
   readonly lastSelected = signal<FlatTreeNode<Row> | null>(null);
 
+  readonly rowTapExpandsState = signal(false);
+  readonly rowTapExpands = this.rowTapExpandsState.asReadonly();
   readonly nodeCountTpl = signal(null).asReadonly();
   readonly selectionCount = signal(0).asReadonly();
   readonly selectionCountText = signal('0 selected').asReadonly();
@@ -710,5 +712,91 @@ describe('CngxTreeSelectPanel stylesheet', () => {
       }
     }
     expect(nested).toEqual([]);
+  });
+});
+
+describe('CngxTreeSelectPanel - row tap under the touch floor', () => {
+  function pointer(type: string, pointerType: string): Event {
+    const event = new MouseEvent(type, { bubbles: true, cancelable: true });
+    Object.defineProperty(event, 'pointerType', { value: pointerType });
+    return event;
+  }
+
+  function rows() {
+    const { fixture, host, root } = setup();
+    const row = (id: string): HTMLElement =>
+      root.querySelector<HTMLElement>(`[role="treeitem"][id="${id}"]`)!;
+    return { fixture, host, row };
+  }
+
+  it('expands a parent on a touch tap and leaves the selection alone', () => {
+    const { fixture, host, row } = rows();
+    host.rowTapExpandsState.set(true);
+    fixture.detectChanges();
+    row('a').dispatchEvent(pointer('pointerdown', 'touch'));
+    row('a').click();
+    fixture.detectChanges();
+    expect(row('a').getAttribute('aria-expanded')).toBe('true');
+    expect(host.lastSelected()).toBeNull();
+  });
+
+  it('keeps an AT activation (a click without a pointer gesture) on the select path', () => {
+    const { fixture, host, row } = rows();
+    host.rowTapExpandsState.set(true);
+    fixture.detectChanges();
+    row('a').click();
+    fixture.detectChanges();
+    expect(host.lastSelected()?.id).toBe('a');
+    expect(row('a').getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('selects through the checkbox target on a touch tap', () => {
+    const { fixture, host, row } = rows();
+    host.rowTapExpandsState.set(true);
+    fixture.detectChanges();
+    const check = row('a').querySelector<HTMLElement>('.cngx-tree-select__check')!;
+    expect(check.getAttribute('aria-hidden')).toBe('true');
+    check.dispatchEvent(pointer('pointerdown', 'touch'));
+    check.click();
+    fixture.detectChanges();
+    expect(host.lastSelected()?.id).toBe('a');
+    expect(row('a').getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('selects a row whose click does not end the touch gesture recorded on it', () => {
+    const { fixture, host, row } = rows();
+    host.rowTapExpandsState.set(true);
+    fixture.detectChanges();
+    row('a').dispatchEvent(pointer('pointerdown', 'touch'));
+    row('b').click();
+    fixture.detectChanges();
+    expect(host.lastSelected()?.id).toBe('b');
+    // The record is consumed: a later bare click on the parent selects.
+    row('a').click();
+    fixture.detectChanges();
+    expect(host.lastSelected()?.id).toBe('a');
+  });
+
+  it('keeps mouse and every pointer on select while the floor is off', () => {
+    const { fixture, host, row } = rows();
+    row('a').dispatchEvent(pointer('pointerdown', 'mouse'));
+    row('a').click();
+    fixture.detectChanges();
+    expect(host.lastSelected()?.id).toBe('a');
+    host.rowTapExpandsState.set(false);
+    row('b').dispatchEvent(pointer('pointerdown', 'touch'));
+    row('b').click();
+    fixture.detectChanges();
+    expect(host.lastSelected()?.id).toBe('b');
+  });
+
+  it('leaves a leaf row on select under the floor', () => {
+    const { fixture, host, row } = rows();
+    host.rowTapExpandsState.set(true);
+    fixture.detectChanges();
+    row('b').dispatchEvent(pointer('pointerdown', 'touch'));
+    row('b').click();
+    fixture.detectChanges();
+    expect(host.lastSelected()?.id).toBe('b');
   });
 });

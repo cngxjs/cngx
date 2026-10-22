@@ -280,3 +280,46 @@ test.describe('CngxTreeSelect demo', () => {
     await expect(leaf).toHaveAttribute('aria-checked', 'true');
   });
 });
+
+test.describe('CngxTreeSelect on a phone (touch floor)', () => {
+  test.use({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 844 } });
+  test.skip(({ browserName }) => browserName === 'firefox', 'Firefox has no isMobile emulation');
+
+  async function openSheet(page: Page): Promise<Locator> {
+    await page.goto(R.cascade);
+    const trigger = triggerOf(ex(page));
+    await trigger.tap();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    return panelTree(page).first();
+  }
+
+  test('a row tap on a parent expands it and does not select', async ({ page }) => {
+    const tree = await openSheet(page);
+    const frontend = tree.locator('[role="treeitem"]').filter({ hasText: 'Frontend' }).first();
+    const before = await frontend.getAttribute('aria-expanded');
+    await frontend.locator('.cngx-tree-select__label').tap();
+    await expect(frontend).toHaveAttribute('aria-expanded', before === 'true' ? 'false' : 'true');
+    await expect(frontend).toHaveAttribute('aria-checked', 'false');
+    expect(
+      await page.evaluate(() => !!document.activeElement?.closest('.cngx-select__panel')),
+    ).toBe(true);
+  });
+
+  test('a tap on the checkbox selects the parent', async ({ page }) => {
+    const tree = await openSheet(page);
+    const frontend = tree.locator('[role="treeitem"]').filter({ hasText: 'Frontend' }).first();
+    const before = await frontend.getAttribute('aria-expanded');
+    await frontend.locator('.cngx-tree-select__check').tap();
+    await expect(frontend).toHaveAttribute('aria-checked', 'true');
+    await expect(frontend).toHaveAttribute('aria-expanded', before ?? 'false');
+  });
+
+  test('an AT-style activation of a parent treeitem selects it', async ({ page }) => {
+    const tree = await openSheet(page);
+    const frontend = tree.locator('[role="treeitem"]').filter({ hasText: 'Frontend' }).first();
+    // VoiceOver / TalkBack activate the focused node with a simulated click
+    // and no pointer events.
+    await frontend.dispatchEvent('click');
+    await expect(frontend).toHaveAttribute('aria-checked', 'true');
+  });
+});

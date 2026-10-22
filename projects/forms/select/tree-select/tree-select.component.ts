@@ -935,6 +935,8 @@ export class CngxTreeSelect<T = unknown>
     fallbackLabels: this.config.fallbackLabels,
   });
 
+  /** @internal - the touch floor; the panel's row tap expands under it. */
+  readonly rowTapExpands = this.summary.active;
   private readonly chipStrip = this.summary.strip;
   /** @internal - displayed chips up to the cap. */
   protected readonly visibleSelected = this.chipStrip.visibleSelected;
