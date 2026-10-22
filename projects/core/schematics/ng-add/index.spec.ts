@@ -39,6 +39,7 @@ const terminal = vi.hoisted(() => ({
   editorPicks: [] as string[],
   git: 'clean',
   confirms: [] as string[],
+  decline: false,
   asked: [] as string[],
 }));
 
@@ -78,7 +79,7 @@ vi.mock('@inquirer/select', () => ({
 vi.mock('@inquirer/confirm', () => ({
   default: (question: { message: string; default: boolean }) => {
     terminal.confirms.push(question.message);
-    return Promise.resolve(question.default);
+    return Promise.resolve(terminal.decline ? false : question.default);
   },
 }));
 
@@ -694,6 +695,43 @@ bootstrapApplication(App, mergeApplicationConfig(baseConfig))
 
   describe('an existing app', () => {
     const existing = () => createFixtureTree('standalone-app', { 'src/app/other.ts': SECOND_COMPONENT });
+
+    it('leaves the tree as it was when the confirm is declined, the pins a shim handed over included', async () => {
+      vi.stubEnv('CI', '');
+      vi.stubEnv('NO_COLOR', '1');
+      process.stdout.isTTY = true;
+      terminal.decline = true;
+      try {
+        const tree = existing();
+        const before = readTree(tree);
+        const run = await runRule(ngAdd({ pins: ['@cngx/core', '@cngx/forms'] }), tree);
+
+        expect(terminal.confirms).toContain('Apply these changes?');
+        expect(run.logs).toContain('Nothing changed.');
+        expect(readTree(run.tree)).toEqual(before);
+        expect(run.tasks).toEqual([]);
+      } finally {
+        terminal.decline = false;
+        vi.unstubAllEnvs();
+      }
+    });
+
+    it('applies the pins a shim handed over with the rest of the plan', async () => {
+      release.stamped = { cngx: '0.4.0', mcp: '0.3.0', eslintPlugin: '0.2.0', angular: '>=21.1.0 <23.0.0' };
+      try {
+        const run = await runRule(
+          ngAdd({ yes: true, libs: 'utils', theme: 'none', pins: ['@cngx/core', '@cngx/themes'] }),
+          existing(),
+        );
+        const dependencies = json<{ dependencies: Record<string, string> }>(run.tree, 'package.json').dependencies;
+
+        expect(dependencies['@cngx/core']).toBe('0.4.0');
+        expect(dependencies['@cngx/themes']).toBe('0.4.0');
+        expect(run.tasks).toContain('node-package');
+      } finally {
+        release.stamped = undefined;
+      }
+    });
 
     it('applies without a terminal to confirm in and says so', async () => {
       vi.stubEnv('CI', '');

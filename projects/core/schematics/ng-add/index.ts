@@ -54,6 +54,8 @@ interface StepContext {
   readonly explicitFeedback: boolean;
   /** The starter's files, read from next to this entry. */
   readonly starterTemplates: StarterTemplates;
+  /** The packages a shim handed over to pin. */
+  readonly pins: readonly string[];
 }
 
 /**
@@ -65,9 +67,9 @@ interface StepContext {
  * helper README is workspace-wide, so it lists the libs of every project's
  * record, not only this run's.
  */
-function planSteps({ withdrawn, workspaceLibs, projectSteps, explicitFeedback, starterTemplates }: StepContext): readonly Step[] {
+function planSteps({ withdrawn, workspaceLibs, projectSteps, explicitFeedback, starterTemplates, pins }: StepContext): readonly Step[] {
   return [
-    planDependencies,
+    (facts, answers, versions) => planDependencies(facts, answers, versions, pins),
     planTheme,
     planProviders,
     (facts, answers, versions) => planStarter(facts, answers, versions, projectSteps, starterTemplates),
@@ -211,6 +213,7 @@ export function ngAdd(flags: NgAddFlags): Rule {
           explicitFeedback,
           // Next to this entry in the sources and in the bundle alike.
           starterTemplates: readStarterTemplates(join(__dirname, 'files', 'starter')),
+          pins: options.pins ?? [],
         }).map((step) => step(facts, answers, versions)),
         presetChangeNote(options, recorded, provenance),
         libsFloorNote(answeredLibs, answers.libs, facts.project, provenance),

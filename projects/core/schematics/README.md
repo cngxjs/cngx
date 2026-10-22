@@ -2,12 +2,14 @@
 
 `ng add` for every `@cngx/*` package. Build-time tooling: it runs in Node under
 the Angular CLI, never in an app bundle. `@cngx/core` owns the onboarding; every
-other package ships a one-line shim that delegates to it. The shim pins its own
-package beside core before it delegates, and folds its lib into a given
-`--libs`, so `ng add @cngx/<lib>` always installs and records `<lib>`. It reads
-the installed core version before it loads core: missing or older installs
-the shim's core and runs its ng-add as a follow-up task, newer is followed
-without any pin, so a shim never downgrades core.
+other package ships a one-line shim that delegates to it. The shim folds its
+lib into a given `--libs`, so `ng add @cngx/<lib>` always installs and
+records `<lib>`. It reads the installed core version before it loads core:
+the same release delegates in the run and hands core its own package and
+core to pin, so the pins sit in core's plan and a declined confirm leaves
+`package.json` as it was; missing or older pins both, installs the shim's
+core and runs its ng-add as a follow-up task; newer is followed without any
+pin, so a shim never downgrades core.
 
 ## Layout
 

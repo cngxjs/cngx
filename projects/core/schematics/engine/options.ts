@@ -85,6 +85,8 @@ export interface NgAddOptions {
   readonly prompts?: boolean;
   /** Print only the summary. */
   readonly quiet?: boolean;
+  /** The `@cngx/*` packages a shim handed over; core's plan pins each beside the selected ones. */
+  readonly pins?: readonly string[];
 }
 
 /** A boolean flag as `ng add` passes it before the install (`--lint=false`) or after. */
@@ -113,6 +115,8 @@ export interface NgAddFlags {
   readonly yes?: BooleanFlag;
   readonly prompts?: BooleanFlag;
   readonly quiet?: BooleanFlag;
+  /** Set only by a package shim delegating in the same run: the `@cngx/*` packages core's plan pins. */
+  readonly pins?: readonly string[];
 }
 
 const BOOLEAN_FLAG_VALUES = ['true', 'false'] as const;
@@ -244,5 +248,6 @@ export function parseNgAddOptions(raw: NgAddFlags): NgAddOptions {
     yes: parseBoolean('yes', raw.yes),
     prompts: parseBoolean('prompts', raw.prompts),
     quiet: parseBoolean('quiet', raw.quiet),
+    pins: raw.pins?.filter((name) => name.startsWith('@cngx/')),
   };
 }

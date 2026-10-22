@@ -158,12 +158,20 @@ function cdkDependency(facts: ProjectFacts, provenance: Provenance): StepResult 
  * app's Angular when a package needs it, and `@floating-ui/dom` on request
  * when `@cngx/common` (which provides the fallback) is selected.
  * `@angular/material` is never added: the bridge themes an app that has it.
+ * `pins` are the packages a shim handed over; each is pinned the same way,
+ * so a declined confirm leaves them out with the rest of the plan.
  */
-export function planDependencies(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): StepResult {
+export function planDependencies(
+  facts: ProjectFacts,
+  answers: OnboardingAnswers,
+  versions: Versions,
+  pins: readonly string[] = [],
+): StepResult {
   const provenance = createProvenance('ng-add', versions.cngx);
   const libs = selectedLibs(answers.libs);
   const missing = answers.theme === 'none' ? [] : missingThemePeers(libs);
-  const packages = cngxPackages(libs, answers.theme);
+  const selected = cngxPackages(libs, answers.theme);
+  const packages = [...selected, ...pins.filter((name, index) => !selected.includes(name) && pins.indexOf(name) === index)];
 
   return mergeStepResults([
     ...(isUnstampedVersion(versions.cngx)
