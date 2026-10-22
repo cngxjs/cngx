@@ -11,8 +11,9 @@ Run `ng add @cngx/ui` (or any other `@cngx/*` package). One run pins the package
 
 </aside>
 
-Every published `@cngx/*` package ships an `ng add` schematic. `@cngx/core`
-owns the onboarding; the other packages delegate to it, so `ng add @cngx/forms`
+Every library package (utils, core, common, interop, forms, data-display, ui,
+themes) ships an `ng add` schematic; `@cngx/mcp`, `@cngx/eslint-plugin` and
+`@cngx/doctor` are plain installs. `@cngx/core` owns the onboarding; the other packages delegate to it, so `ng add @cngx/forms`
 and `ng add @cngx/ui` run the same flow and produce the same files. The package
 you name is always installed and recorded: `ng add @cngx/forms --libs core`
 installs `core` and `forms`.

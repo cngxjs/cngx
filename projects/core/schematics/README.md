@@ -170,7 +170,8 @@ one of those externals. Each `dist/<lib>/schematics/` carries a
 `package.json` with `"type": "commonjs"` (and an `!schematics/package.json`
 line in the ng-packagr `.npmignore`, so it is packed), which keeps the
 bundles CommonJS under a package root with `"type": "module"`.
-Budgets: 256 KB minified / 90 KB gzip per entry, 20 KB per shim.
+Budgets: 320 KB minified / 96 KB gzip per entry, 20 KB per shim, checked by
+`scripts/__tests__/schematics-smoke.test.mjs` in `npm run test:scripts`.
 `scripts/publish.mjs` writes `dist/core/schematics/versions.json` (the cngx,
 `@cngx/mcp` and `@cngx/eslint-plugin` pins, plus the `@angular/core` range
 `@cngx/core` peers on, which `ng add` refuses an older app against and warns
