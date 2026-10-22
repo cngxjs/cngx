@@ -19,12 +19,17 @@ export interface RenderLogger {
   error(message: string): void;
 }
 
-/** How the plan list reads: `pending` when nothing has run yet and may not. */
+/**
+ * What follows the plan list: `apply` (the default) ticks the tasks as they
+ * run; ahead of a `dry-run` or a `confirm` nothing has run yet and no task
+ * may read as done, and ahead of a `confirm` the plan prints even under
+ * `--quiet`, so the question has something to answer.
+ */
+export type TodoNext = 'apply' | 'dry-run' | 'confirm';
+
+/** How the plan list reads. */
 export interface TodoOptions {
-  /** A confirm comes next or the run is a dry run: no task may read as done. */
-  readonly pending?: boolean;
-  /** A confirm comes next: the plan prints even under `--quiet`, so the question has something to answer. */
-  readonly confirming?: boolean;
+  readonly next?: TodoNext;
 }
 
 /**

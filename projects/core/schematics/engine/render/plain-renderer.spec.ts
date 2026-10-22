@@ -89,7 +89,7 @@ describe('createPlainRenderer', () => {
     const pending = renderer(false);
 
     await done.renderer.todo(PLAN);
-    await pending.renderer.todo(PLAN, { pending: true });
+    await pending.renderer.todo(PLAN, { next: 'dry-run' });
 
     expect(pending.lines).toEqual(done.lines);
   });
@@ -184,7 +184,7 @@ describe('createPlainRenderer', () => {
     const { lines, renderer: plain } = renderer(true);
     const { lines: loud, renderer: listed } = renderer(false);
 
-    await plain.todo(PLAN, { pending: true, confirming: true });
+    await plain.todo(PLAN, { next: 'confirm' });
     await listed.todo(PLAN);
 
     expect(lines).toEqual(loud);

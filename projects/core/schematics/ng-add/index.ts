@@ -23,6 +23,7 @@ import {
   readDryRunFlag,
   readPromptFlags,
   resolveVersions,
+  type TodoNext,
 } from '../engine';
 import { detectProject, type ProjectFacts } from './detect/detect';
 import { readGitState } from './shell/git-state';
@@ -143,6 +144,14 @@ function unconfirmedApplyLine({ isTTY, ci, prompts, promptsOff }: ConfirmContext
   return undefined;
 }
 
+// A confirm under a dry run still asks first, so it takes precedence.
+function todoNext(confirming: boolean, dryRun: boolean): TodoNext {
+  if (confirming) {
+    return 'confirm';
+  }
+  return dryRun ? 'dry-run' : 'apply';
+}
+
 function scheduleInstall(plan: ChangePlan): Rule {
   return (_tree: Tree, context: SchematicContext) => {
     if (plan.changes.some((change) => change.kind === 'add-dependency')) {
@@ -231,7 +240,7 @@ export function ngAdd(flags: NgAddFlags): Rule {
     const confirmAhead = facts.maturity === 'existing' && changesFiles && options.yes !== true;
     const dryRun = readDryRunFlag(process.argv);
     const confirming = confirmAhead && interactive;
-    await renderer.todo(plan, { pending: dryRun || confirming, confirming });
+    await renderer.todo(plan, { next: todoNext(confirming, dryRun) });
 
     if (confirmAhead) {
       const unconfirmed = unconfirmedApplyLine({
