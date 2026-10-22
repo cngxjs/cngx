@@ -138,6 +138,51 @@ function rootProvidersArrays(source: ts.SourceFile): readonly ts.ArrayLiteralExp
   );
 }
 
+/**
+ * Why the root providers of a file are out of reach of an array edit: a root
+ * config whose `providers` is not an array literal (a variable, a call, a
+ * shorthand property), one that spreads another object and holds no
+ * `providers` array (a new key would shadow the spread one), or a config
+ * variable built by `mergeApplicationConfig`.
+ */
+export type UnfollowedRootProviders = 'not-literal' | 'spread' | 'merged';
+
+function isMergeCall(source: ts.SourceFile, expression: ts.Expression): boolean {
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isSatisfiesExpression(expression)) {
+    return isMergeCall(source, expression.expression);
+  }
+  return ts.isCallExpression(expression) && referenceOf(source, expression.expression).name === 'mergeApplicationConfig';
+}
+
+function configBlock(config: ts.ObjectLiteralExpression): UnfollowedRootProviders | undefined {
+  const providers = config.properties.filter((property) => staticKey(property) === 'providers');
+  if (providers.some((property) => !ts.isPropertyAssignment(property) || !ts.isArrayLiteralExpression(property.initializer))) {
+    return 'not-literal';
+  }
+  return providers.length === 0 && config.properties.some(ts.isSpreadAssignment) ? 'spread' : undefined;
+}
+
+/**
+ * Reads whether the root providers of a file cannot be edited as an array
+ * literal, and why; `undefined` when every root config holds a `providers`
+ * array or none at all, so a new one can be added.
+ */
+export function unfollowedRootProviders(content: string): UnfollowedRootProviders | undefined {
+  const source = parse(content);
+  const blocked = rootConfigs(source).map(configBlock).find((cause) => cause !== undefined);
+  if (blocked !== undefined) {
+    return blocked;
+  }
+  const merged = source.statements.some(
+    (statement) =>
+      ts.isVariableStatement(statement) &&
+      statement.declarationList.declarations.some(
+        (declaration) => declaration.initializer !== undefined && isMergeCall(source, declaration.initializer),
+      ),
+  );
+  return merged ? 'merged' : undefined;
+}
+
 const ANGULAR_DECORATORS = new Set(['Component', 'NgModule']);
 
 // The `@Component` / `@NgModule` calls on the top-level `class <name>`, or

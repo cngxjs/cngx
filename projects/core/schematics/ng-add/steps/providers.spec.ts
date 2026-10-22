@@ -360,6 +360,31 @@ describe('planProviders', () => {
     ]);
   });
 
+  it('names every missing provider in one note when the root providers are out of reach', () => {
+    const facts = createFacts({ rootProvidersUnfollowed: 'not-literal', rootProviders: ['provideA11yPreferences'] });
+    const result = planProviders(facts, createAnswers({ feedback: true, i18n: 'de', runtimeSwitch: true }), VERSIONS);
+
+    expect(result.changes.map((change) => [change.kind, change.id])).toEqual([
+      ['create-file', 'provider:i18n-file'],
+      ['note', 'provider:by-hand'],
+    ]);
+    expect(result.changes[1]).toMatchObject({
+      label: 'Add the cngx providers to src/app/app.config.ts by hand',
+      reason:
+        'its `providers` is not an array literal cngx can edit; add provideFeedback(withToasts(), withAlerts(), withBanners()), ' +
+        'provideCngxI18n(withPack(cngxLanguagePack)) to the root providers and ' +
+        "import { provideFeedback, withToasts, withAlerts, withBanners } from '@cngx/ui/feedback'; " +
+        "import { provideCngxI18n, withPack } from '@cngx/core/i18n'; import { cngxLanguagePack } from './cngx-language'",
+    });
+    expect(result.skipped.map((step) => step.id)).toEqual(['provider:a11y-preferences']);
+  });
+
+  it('plans no note for out-of-reach root providers that already hold everything', () => {
+    const facts = createFacts({ rootProvidersUnfollowed: 'merged', rootProviders: ['provideA11yPreferences'] });
+
+    expect(planProviders(facts, createAnswers(), VERSIONS).changes).toEqual([]);
+  });
+
   it('names the edit when an existing language provider passes no pack for German', () => {
     const result = planProviders(
       createFacts({ rootProviders: ['provideCngxI18n'] }),

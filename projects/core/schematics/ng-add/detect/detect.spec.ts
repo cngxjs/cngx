@@ -72,6 +72,7 @@ describe('detectProject', () => {
       tailwind: undefined,
       rootProvidersFile: 'src/app/app.config.ts',
       rootProviders: ['provideBrowserGlobalErrorListeners', 'provideRouter'],
+      rootProvidersUnfollowed: undefined,
       appShell: {
         kind: 'followed',
         componentFile: 'src/app/app.ts',
@@ -172,6 +173,19 @@ describe('detectProject', () => {
       eslintConfig: undefined,
       maturity: 'existing',
     });
+  });
+
+  it('reads root providers held in a variable as out of reach of an array edit', async () => {
+    const facts = await detect({
+      'src/app/app.config.ts': `import { ApplicationConfig } from '@angular/core';
+
+const providers = [];
+
+export const appConfig: ApplicationConfig = { providers };
+`,
+    });
+
+    expect(facts.rootProvidersUnfollowed).toBe('not-literal');
   });
 
   it('tells a generated language file next to the app config from one someone else wrote', async () => {

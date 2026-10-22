@@ -28,7 +28,7 @@ import {
   type Change,
   type CreateFile,
   type EditFile,
-  type ProviderArg,
+  renderProviderCall,
   type WriteJson,
 } from '../plan/change';
 import { type ChangePlan } from '../plan/plan';
@@ -82,23 +82,6 @@ function insertImportInto(tree: Tree, path: string, symbol: string, module: stri
   tree.commitUpdate(recorder);
 }
 
-function renderCall(call: ProviderArg, external: (symbol: string, module: string) => string): string {
-  if ('literal' in call) {
-    return call.literal;
-  }
-  if ('array' in call) {
-    return `[${call.array.map((item) => renderCall(item, external)).join(', ')}]`;
-  }
-  if (call.reference === true) {
-    return external(call.symbol, call.module);
-  }
-  // The callee first: `external` imports in call order, so the provider
-  // leads its own import specifiers.
-  const callee = external(call.symbol, call.module);
-  const args = (call.args ?? []).map((arg) => renderCall(arg, external)).join(', ');
-  return `${callee}(${args})`;
-}
-
 const ROOT_PROVIDERS: ArraySelector = { kind: 'root-providers' };
 
 // Every name the call imports is free in the file or imported from the same
@@ -118,7 +101,7 @@ function importsFit(content: string, imports: readonly (readonly [string, string
 // cleanly, append there in the array's own layout; otherwise `addRootProvider`
 // resolves the file from the bootstrap call and aliases a clashing name.
 function addProvider(change: AddProvider, onUnchanged: OnUnchanged): Rule {
-  const fallback = addRootProvider(change.project, ({ code, external }) => code`${renderCall(change.call, external)}`);
+  const fallback = addRootProvider(change.project, ({ code, external }) => code`${renderProviderCall(change.call, external)}`);
   return (tree: Tree) => {
     const path = change.path;
     const content = path !== undefined && tree.exists(path) ? tree.readText(path) : undefined;
@@ -126,7 +109,7 @@ function addProvider(change: AddProvider, onUnchanged: OnUnchanged): Rule {
       return fallback;
     }
     const imports: (readonly [string, string])[] = [];
-    const expression = renderCall(change.call, (symbol, module) => {
+    const expression = renderProviderCall(change.call, (symbol, module) => {
       imports.push([symbol, module]);
       return symbol;
     });

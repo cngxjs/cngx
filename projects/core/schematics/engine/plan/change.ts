@@ -75,6 +75,26 @@ export interface ProviderCall {
   readonly reference?: boolean;
 }
 
+/**
+ * A provider call as source text. `external` binds each imported symbol and
+ * returns the name to write; it sees the callee before its arguments, so the
+ * provider leads its own import specifiers.
+ */
+export function renderProviderCall(call: ProviderArg, external: (symbol: string, module: string) => string): string {
+  if ('literal' in call) {
+    return call.literal;
+  }
+  if ('array' in call) {
+    return `[${call.array.map((item) => renderProviderCall(item, external)).join(', ')}]`;
+  }
+  const callee = external(call.symbol, call.module);
+  if (call.reference === true) {
+    return callee;
+  }
+  const args = (call.args ?? []).map((arg) => renderProviderCall(arg, external)).join(', ');
+  return `${callee}(${args})`;
+}
+
 export interface AddProvider extends ChangeBase {
   readonly kind: 'add-provider';
   readonly project: string;

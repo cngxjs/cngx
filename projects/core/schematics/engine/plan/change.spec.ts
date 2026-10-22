@@ -6,6 +6,7 @@ import {
   type CreateFile,
   createProvenance,
   mergeStepResults,
+  renderProviderCall,
   skipChange,
   type StepResult,
 } from './change';
@@ -111,5 +112,28 @@ describe('createNote', () => {
     const input = { ...README, provenance: PROVENANCE };
 
     expect(Object.keys(createNote(input))).toEqual(['kind', 'id', 'label', 'reason', 'provenance']);
+  });
+});
+
+describe('renderProviderCall', () => {
+  it('renders nested calls, references, arrays and literals, the callee bound before its arguments', () => {
+    const bound: string[] = [];
+    const text = renderProviderCall(
+      {
+        symbol: 'provideFloatingFallback',
+        module: '@cngx/common/popover',
+        args: [
+          { symbol: 'computePosition', module: '@floating-ui/dom', reference: true },
+          { array: [{ symbol: 'flip', module: '@floating-ui/dom' }, { literal: "'x'" }] },
+        ],
+      },
+      (symbol) => {
+        bound.push(symbol);
+        return symbol;
+      },
+    );
+
+    expect(text).toBe("provideFloatingFallback(computePosition, [flip(), 'x'])");
+    expect(bound).toEqual(['provideFloatingFallback', 'computePosition', 'flip']);
   });
 });

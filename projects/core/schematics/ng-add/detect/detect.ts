@@ -16,6 +16,8 @@ import {
   readBootstrapCall,
   readProviderCalls,
   type Tree,
+  unfollowedRootProviders,
+  type UnfollowedRootProviders,
 } from '../../engine';
 import {
   claudeInstructionsOf,
@@ -169,6 +171,8 @@ export interface ProjectFacts {
   readonly rootProvidersFile: string;
   /** Every `provide*()` call already in that file. */
   readonly rootProviders: readonly string[];
+  /** Why that file's root providers cannot be edited as an array literal; `undefined` when they can. */
+  readonly rootProvidersUnfollowed: UnfollowedRootProviders | undefined;
   /** The bootstrapped root component, or why `main.ts` cannot be followed to it. */
   readonly appShell: AppShell | AppShellUnfollowed;
   /** Whether the root component's files are the untouched `ng new` scaffold, a cngx starter, or anything else. */
@@ -256,7 +260,8 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
   const main = read(mainPath) ?? '';
   const standalone = readBootstrapCall(main)?.kind !== 'module';
   const rootProvidersFile = rootProvidersPath(mainPath, main, standalone, sourceRoot);
-  const providerCalls = readProviderCalls(read(rootProvidersFile) ?? '');
+  const rootProvidersSource = read(rootProvidersFile) ?? '';
+  const providerCalls = readProviderCalls(rootProvidersSource);
   const providers = providerCalls.names;
 
   const entries = styleEntries(options);
@@ -295,6 +300,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     tailwind: detectTailwind(read, manifest, entries),
     rootProvidersFile,
     rootProviders: providers,
+    rootProvidersUnfollowed: unfollowedRootProviders(rootProvidersSource),
     appShell,
     scaffold: scaffoldOf(read, appShell, names),
     indexHtml: { path: indexPath, state: indexHtmlStateOf(read(indexPath), names) },

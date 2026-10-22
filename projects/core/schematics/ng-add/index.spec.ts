@@ -581,6 +581,97 @@ describe('ngAdd', () => {
     });
   });
 
+  describe('a root providers cngx cannot edit', () => {
+    const HEAD = `import { ApplicationConfig, mergeApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { provideRouter } from '@angular/router';
+
+import { routes } from './app.routes';
+import { baseConfig } from './base.config';
+`;
+    const LABEL = 'Add the cngx providers to src/app/app.config.ts by hand';
+
+    it.each([
+      [
+        'a variable',
+        `${HEAD}
+const baseProviders = [provideBrowserGlobalErrorListeners(), provideRouter(routes)];
+
+export const appConfig: ApplicationConfig = { providers: baseProviders };
+`,
+      ],
+      [
+        'a call',
+        `${HEAD}
+function buildProviders() {
+  return [provideBrowserGlobalErrorListeners(), provideRouter(routes)];
+}
+
+export const appConfig: ApplicationConfig = {
+  providers: buildProviders(),
+};
+`,
+      ],
+      [
+        'a shorthand property',
+        `${HEAD}
+const providers = [provideBrowserGlobalErrorListeners(), provideRouter(routes)];
+
+export const appConfig: ApplicationConfig = { providers };
+`,
+      ],
+      [
+        'mergeApplicationConfig',
+        `${HEAD}
+export const appConfig = mergeApplicationConfig(baseConfig, {
+  providers: [provideBrowserGlobalErrorListeners(), provideRouter(routes)],
+});
+`,
+      ],
+    ])('leaves %s alone and names the providers to add', async (_shape, config) => {
+      const run = await runRule(ngAdd({ yes: true }), createFixtureTree('standalone-app', { 'src/app/app.config.ts': config }));
+      const note = run.logs.find((line) => line.includes(LABEL));
+
+      expect(run.tree.readContent('src/app/app.config.ts')).toBe(config);
+      expect(note).toContain('provideA11yPreferences(withPersistence())');
+      expect(note).toContain("import { provideA11yPreferences, withPersistence } from '@cngx/core'");
+      expect(run.tree.readContent('src/styles.css')).toContain("@import '@cngx/themes/cngx.css';");
+    });
+
+    it('leaves an inline config in main.ts alone', async () => {
+      const main = `import { provideBrowserGlobalErrorListeners } from '@angular/core';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { App } from './app/app';
+
+const providers = [provideBrowserGlobalErrorListeners()];
+
+bootstrapApplication(App, { providers })
+  .catch((err) => console.error(err));
+`;
+      const tree = createFixtureTree('standalone-app', { 'src/main.ts': main });
+      tree.delete('src/app/app.config.ts');
+      const run = await runRule(ngAdd({ yes: true }), tree);
+
+      expect(run.tree.readContent('src/main.ts')).toBe(main);
+      expect(run.logs.some((line) => line.includes('Add the cngx providers to src/main.ts by hand'))).toBe(true);
+    });
+
+    it('still provides into an inline mergeApplicationConfig, which takes one more config', async () => {
+      const main = `import { mergeApplicationConfig } from '@angular/core';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { App } from './app/app';
+import { baseConfig } from './app/base.config';
+
+bootstrapApplication(App, mergeApplicationConfig(baseConfig))
+  .catch((err) => console.error(err));
+`;
+      const tree = createFixtureTree('standalone-app', { 'src/main.ts': main });
+      tree.delete('src/app/app.config.ts');
+      const run = await runRule(ngAdd({ yes: true }), tree);
+
+      expect(run.tree.readContent('src/main.ts')).toContain('mergeApplicationConfig(baseConfig, {\n  providers: [provideA11yPreferences(withPersistence())]\n})');
+    });
+  });
+
   it('provides the rtl direction for an RTL source locale', async () => {
     const tree = createFixtureTree('standalone-app', {
       'angular.json': withWorkspace((project) => {

@@ -19,6 +19,7 @@ import {
   readProviderCalls,
   reexportSources,
   topLevelBindings,
+  unfollowedRootProviders,
 } from './ts-edit';
 
 const ROOT_PROVIDERS: ArraySelector = { kind: 'root-providers' };
@@ -279,6 +280,42 @@ describe('parsesCleanly', () => {
     expect(parsesCleanly("import { a } from 'm';\nexport const b = [a];\n")).toBe(true);
     expect(parsesCleanly('export const b = ;\n')).toBe(false);
     expect(parsesCleanly('@Component({ imports: [A /* x */,, ] })\nexport class App {}\n')).toBe(true);
+  });
+});
+
+describe('unfollowedRootProviders', () => {
+  const typed = (body: string) => `import { ApplicationConfig } from '@angular/core';\n\nexport const appConfig: ApplicationConfig = ${body};\n`;
+
+  it('reads a providers array literal, a config without providers and a stock NgModule as editable', () => {
+    expect(unfollowedRootProviders(typed('{ providers: [provideRouter(routes)] }'))).toBeUndefined();
+    expect(unfollowedRootProviders(typed('{}'))).toBeUndefined();
+    expect(unfollowedRootProviders(typed('{ ...base, providers: [] }'))).toBeUndefined();
+    expect(unfollowedRootProviders(readFixture('scaffold-21-ngmodule')['src/app/app-module.ts'])).toBeUndefined();
+    expect(unfollowedRootProviders(readFixture('standalone-app')['src/app/app.config.ts'])).toBeUndefined();
+  });
+
+  it.each([
+    ['a variable', typed('{ providers: baseProviders }')],
+    ['a call', typed('{ providers: buildProviders() }')],
+    ['a shorthand property', typed('{ providers }')],
+    ['an NgModule variable', '@NgModule({ providers: rootProviders })\nexport class AppModule {}\n'],
+    ['an inline bootstrap shorthand', 'bootstrapApplication(App, { providers });\n'],
+  ])('reads %s as not an array literal', (_shape, content) => {
+    expect(unfollowedRootProviders(content)).toBe('not-literal');
+  });
+
+  it('reads a spread without a providers array as one a new key would shadow', () => {
+    expect(unfollowedRootProviders(typed('{ ...baseConfig }'))).toBe('spread');
+  });
+
+  it('reads a config variable built by mergeApplicationConfig, also aliased or typed', () => {
+    expect(unfollowedRootProviders("export const appConfig = mergeApplicationConfig(base, { providers: [] });\n")).toBe('merged');
+    expect(
+      unfollowedRootProviders(
+        "import { mergeApplicationConfig as merge } from '@angular/core';\nexport const config = merge(a, b) satisfies ApplicationConfig;\n",
+      ),
+    ).toBe('merged');
+    expect(unfollowedRootProviders('bootstrapApplication(App, mergeApplicationConfig(base));\n')).toBeUndefined();
   });
 });
 

@@ -50,6 +50,7 @@ export {
   type ProvenanceSource,
   type ProviderArg,
   type ProviderCall,
+  renderProviderCall,
   type SkippedStep,
   skipChange,
   type StepResult,
@@ -84,6 +85,8 @@ export {
   reexportSources,
   type TopLevelBinding,
   topLevelBindings,
+  unfollowedRootProviders,
+  type UnfollowedRootProviders,
 } from './edit/ts-edit';
 export {
   appendElements,

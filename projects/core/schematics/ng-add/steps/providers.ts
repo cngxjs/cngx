@@ -8,8 +8,10 @@ import {
   createProvenanceStamp,
   type LanguagePackArgument,
   type ProviderCall,
+  renderProviderCall,
   skipChange,
   type StepResult,
+  type UnfollowedRootProviders,
 } from '../../engine';
 import { CNGX_LANGUAGE_FILE, type GeneratedFileState, type ProjectFacts } from '../detect/detect';
 import { selectedLibs } from './dependencies';
@@ -174,6 +176,44 @@ function wantedProviders(facts: ProjectFacts, answers: OnboardingAnswers): reado
   return wanted.filter((entry): entry is Wanted => entry !== false);
 }
 
+const UNFOLLOWED_REASON: Readonly<Record<UnfollowedRootProviders, string>> = {
+  'not-literal': 'its `providers` is not an array literal cngx can edit',
+  spread: 'its config spreads another object and holds no `providers` array, which a new one would shadow',
+  merged: 'its config comes from mergeApplicationConfig',
+};
+
+// What to paste: the calls, then one import line per module.
+function providersSnippet(calls: readonly ProviderCall[]): string {
+  const imports = new Map<string, readonly string[]>();
+  const expressions = calls.map((call) =>
+    renderProviderCall(call, (symbol, module) => {
+      const names = imports.get(module) ?? [];
+      imports.set(module, names.includes(symbol) ? names : [...names, symbol]);
+      return symbol;
+    }),
+  );
+  const lines = [...imports].map(([module, names]) => `import { ${names.join(', ')} } from '${module}'`);
+  return `add ${expressions.join(', ')} to the root providers and ${lines.join('; ')}`;
+}
+
+// Root providers cngx cannot edit as an array get one note with the snippet
+// in place of the provider changes; `addRootProvider` would write a second
+// `providers` key there or stop the run after the plan was printed.
+function unfollowedNote(changes: readonly Change[], facts: ProjectFacts, cause: UnfollowedRootProviders): readonly Change[] {
+  const calls = changes.flatMap((change) => (change.kind === 'add-provider' ? [change.call] : []));
+  const [first] = changes;
+  if (calls.length === 0 || first === undefined) {
+    return changes;
+  }
+  const note = createNote({
+    id: 'provider:by-hand',
+    label: `Add the cngx providers to ${facts.rootProvidersFile} by hand`,
+    reason: `${UNFOLLOWED_REASON[cause]}; ${providersSnippet(calls)}`,
+    provenance: first.provenance,
+  });
+  return [...changes.filter((change) => change.kind !== 'add-provider'), note];
+}
+
 /**
  * Plans the root providers onboarding wires into the app config (or the
  * root NgModule; `addRootProvider` finds either): the a11y preferences, the
@@ -185,7 +225,9 @@ function wantedProviders(facts: ProjectFacts, answers: OnboardingAnswers): reado
  * unless it already passes the signal from `cngx-language.ts`; without it,
  * one passing no pack gets that note and one passing its own pack is kept,
  * with the skip naming that pack. `cngx-language.ts` is created only when
- * missing; a file cngx did not write blocks the switch with a note.
+ * missing; a file cngx did not write blocks the switch with a note. Root
+ * providers cngx cannot edit as an array literal get one note naming every
+ * missing provider and its imports instead.
  */
 export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): StepResult {
   const provenance = createProvenance('ng-add', versions.cngx);
@@ -287,8 +329,10 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
     change.id === 'provider:i18n' && facts.languagePack !== undefined && facts.languagePack.name !== pack.symbol
       ? `already passes \`withPack(${facts.languagePack.text})\`; cngx keeps that pack`
       : 'already provided';
+  const missing = providers.filter((change) => !isProvided(change));
+  const cause = facts.rootProvidersUnfollowed;
   return {
-    changes: [...providers.filter((change) => !isProvided(change)), ...packEdit, ...notes],
+    changes: [...(cause === undefined ? missing : unfollowedNote(missing, facts, cause)), ...packEdit, ...notes],
     skipped: [
       ...provided.filter((change) => !needsPackEdit(change)).map((change) => skipChange(change, providedReason(change))),
       ...existingFile,

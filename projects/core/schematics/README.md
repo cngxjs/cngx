@@ -255,7 +255,11 @@ rewrites every literal of it in the bundles.
   `bootstrapApplication` config) when the planned file holds exactly one and
   the call's imports bind cleanly. Otherwise `addRootProvider` places it: it
   covers standalone app configs and root NgModules alike, aliases a clashing
-  import, and appends to the last provider line.
+  import, and appends to the last provider line. A root config whose
+  `providers` is not an array literal (a variable, a call, a shorthand), one
+  that spreads another object without a `providers` array, or a config
+  variable built by `mergeApplicationConfig` is never edited: the plan holds
+  one note with every missing provider and its imports to paste.
 - Material's own ng-add writes a `mat.theme((...))` map with `density: 0` into
   the scss global stylesheet, or into a new `src/material-theme.scss` placed
   first in the build styles of a css app. The bridge entry cngx adds follows
