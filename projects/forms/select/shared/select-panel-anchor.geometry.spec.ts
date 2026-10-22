@@ -32,6 +32,10 @@ import { CngxSelectAction, CngxSelectInputPrefix } from './template-slots';
 // option labels stay shorter than the row to keep that exact. The bare skin
 // and the affix-row nesting are out of scope: there the visible border
 // belongs to the surrounding row, not to `.cngx-field-trigger`.
+//
+// The tree panel has its own minimum inline size (16rem, wider than this
+// row); the harness zeroes it so the anchoring contract is measured alone.
+// The tree sizing lives in tree-select.component.geometry.spec.ts.
 
 const HARNESS_STYLES = [
   '../../../core/theming/layers.css',
@@ -93,7 +97,7 @@ interface Openable {
   template: `
     <div
       class="slot"
-      style="display: block; width: 20rem; margin: 1rem"
+      style="display: block; width: 20rem; margin: 1rem; --cngx-tree-select-panel-min-inline-size: 0px"
       [style.--cngx-select-action-border]="actionBorder()"
     >
       @switch (variant()) {

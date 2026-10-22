@@ -179,6 +179,34 @@
     syntax: '*';
     inherits: true;
   }
+
+  /**
+   * Minimum inline size of the anchored tree panel. The panel is at least as
+   * wide as the trigger and never narrower than this, so indented rows keep
+   * room for their labels. Tree-only: the flat selects keep the anchor width.
+   * The sheet presentation owns its own width. Stands alone (no family
+   * fallback): `--cngx-select-panel-min-width` is the anchor width the panel
+   * also honours.
+   * @group Layout
+   * @default 16rem
+   */
+  @property --cngx-tree-select-panel-min-inline-size {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Height cap of the anchored tree panel before it scrolls. Stands alone:
+   * the family `--cngx-select-panel-max-height` registers an
+   * `initial-value`, so a chain to it would never reach this default. The
+   * sheet presentation owns its own height.
+   * @group Layout
+   * @default 20rem
+   */
+  @property --cngx-tree-select-panel-max-block-size {
+    syntax: '*';
+    inherits: true;
+  }
 }
 
 @layer cngx.components {
@@ -287,6 +315,21 @@
       background: transparent;
       color: var(--cngx-select-clear-color, inherit);
       cursor: pointer;
+    }
+
+    /* The anchored panel only; a sheet / fullscreen panel keeps the family
+       geometry the sheet owns. */
+    .cngx-select__panel:not(
+      .cngx-popover-sheet:is(
+        [data-cngx-presentation='sheet'],
+        [data-cngx-presentation='fullscreen']
+      )
+    ) {
+      min-width: max(
+        var(--cngx-select-panel-min-width, anchor-size(width)),
+        var(--cngx-tree-select-panel-min-inline-size, 16rem)
+      );
+      max-height: var(--cngx-tree-select-panel-max-block-size, 20rem);
     }
 
     .cngx-tree-select__caret {

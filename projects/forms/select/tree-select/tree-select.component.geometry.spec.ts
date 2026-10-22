@@ -297,3 +297,35 @@ describe('CngxTreeSelect selected row', () => {
     );
   });
 });
+
+// The anchored tree panel needs room for depth: at least 16rem wide even under
+// a narrow trigger, capped at 20rem tall. Tree-local tokens only; the sheet
+// presentation keeps the family geometry.
+describe('CngxTreeSelect anchored panel size', () => {
+  it('opens at least 16rem wide with a 20rem height cap', () => {
+    const { fixture } = mountOpenTwisty();
+    fixture.detectChanges();
+    const panel = query(mountedRoot!, '.cngx-select__panel');
+    expect(panel.matches(':popover-open')).toBe(true);
+    expect(panel.getBoundingClientRect().width).toBeGreaterThanOrEqual(256);
+    expect(computedValue(panel, 'max-height')).toBe('320px');
+  });
+
+  it('honours the tree panel tokens set on an ancestor', () => {
+    const { fixture } = mountOpenTwisty();
+    mountedRoot!.style.setProperty('--cngx-tree-select-panel-min-inline-size', '20rem');
+    mountedRoot!.style.setProperty('--cngx-tree-select-panel-max-block-size', '12rem');
+    fixture.detectChanges();
+    const panel = query(mountedRoot!, '.cngx-select__panel');
+    expect(panel.getBoundingClientRect().width).toBeGreaterThanOrEqual(320);
+    expect(computedValue(panel, 'max-height')).toBe('192px');
+  });
+
+  it('leaves the sheet presentation on the family geometry', () => {
+    mountOpenTwisty();
+    const panel = query(mountedRoot!, '.cngx-select__panel');
+    panel.classList.add('cngx-popover-sheet');
+    panel.setAttribute('data-cngx-presentation', 'sheet');
+    expect(computedValue(panel, 'max-height')).toBe('256px');
+  });
+});
