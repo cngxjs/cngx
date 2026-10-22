@@ -880,7 +880,7 @@ export class CngxSelectShell<T = unknown>
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       cngxDevWarn(
         'CNGX2024',
-        'CngxSelectShell.patchData(): projected options are the source of truth; the patched item is not rendered. Project a <cngx-option> instead.',
+        '[cngx-select-shell] patchData(): projected options are the source of truth; the patched item is not rendered. Project a <cngx-option> instead.',
       );
     }
     this.localItemsBuffer.patch(item);
@@ -890,7 +890,7 @@ export class CngxSelectShell<T = unknown>
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       cngxDevWarn(
         'CNGX2024',
-        'CngxSelectShell.clearLocalItems(): projected options are the source of truth; there are no local items to clear. Remove the <cngx-option> instead.',
+        '[cngx-select-shell] clearLocalItems(): projected options are the source of truth; there are no local items to clear. Remove the <cngx-option> instead.',
       );
     }
     this.localItemsBuffer.clear();

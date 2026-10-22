@@ -1855,11 +1855,11 @@
       "messages": [
         {
           "file": "projects/forms/select/select-shell/select-shell.component.ts",
-          "text": "CngxSelectShell.clearLocalItems(): projected options are the source of truth; there are no local items to clear. Remove the <cngx-option> instead."
+          "text": "[cngx-select-shell] clearLocalItems(): projected options are the source of truth; there are no local items to clear. Remove the <cngx-option> instead."
         },
         {
           "file": "projects/forms/select/select-shell/select-shell.component.ts",
-          "text": "CngxSelectShell.patchData(): projected options are the source of truth; the patched item is not rendered. Project a <cngx-option> instead."
+          "text": "[cngx-select-shell] patchData(): projected options are the source of truth; the patched item is not rendered. Project a <cngx-option> instead."
         }
       ]
     },

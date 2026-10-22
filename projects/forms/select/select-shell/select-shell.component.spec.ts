@@ -272,9 +272,9 @@ describe('CngxSelectShell - Phase 5 scaffold', () => {
     flush(fixture);
 
     expect(warn).toHaveBeenCalledTimes(2);
-    expect(String(warn.mock.calls[0][0])).toMatch(/^CNGX2024: CngxSelectShell\.patchData\(\)/);
+    expect(String(warn.mock.calls[0][0])).toMatch(/^CNGX2024: \[cngx-select-shell\] patchData\(\)/);
     expect(String(warn.mock.calls[1][0])).toMatch(
-      /^CNGX2024: CngxSelectShell\.clearLocalItems\(\)/,
+      /^CNGX2024: \[cngx-select-shell\] clearLocalItems\(\)/,
     );
     const rendered = Array.from(
       (fixture.nativeElement as HTMLElement).querySelectorAll('cngx-option'),

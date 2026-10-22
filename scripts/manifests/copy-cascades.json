@@ -524,7 +524,7 @@
     {
       "class": "CngxSelectShell",
       "file": "projects/forms/select/select-shell/select-shell.component.ts",
-      "line": 328,
+      "line": 330,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
