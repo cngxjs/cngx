@@ -20,10 +20,7 @@ import {
 } from './reorderable-multi-select.component';
 import type { CngxSelectOptionDef } from '../shared/option.model';
 import { CngxSelectAnnouncer } from '../shared/announcer';
-import type {
-  CngxSelectCommitAction,
-  CngxSelectCommitMode,
-} from '../shared/commit-action.types';
+import type { CngxSelectCommitAction, CngxSelectCommitMode } from '../shared/commit-action.types';
 
 function polyfillPopover(): void {
   const proto = HTMLElement.prototype as unknown as {
@@ -116,8 +113,7 @@ function handleOf(chip: HTMLElement): HTMLElement {
   // element for tests that want to cover the "user grabs the grip"
   // path specifically - fallback to the chip body when no grip is
   // rendered (e.g. disabled or custom-chip consumers).
-  const h =
-    chip.querySelector<HTMLElement>('.cngx-select__chip-handle') ?? chip;
+  const h = chip.querySelector<HTMLElement>('.cngx-select__chip-handle') ?? chip;
   return h;
 }
 
@@ -162,9 +158,7 @@ function pointerMoveOver(targetEl: HTMLElement, pointerId = 1): void {
 }
 
 function pointerUp(pointerId = 1): void {
-  document.dispatchEvent(
-    new PointerEvent('pointerup', { bubbles: true, pointerId }),
-  );
+  document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId }));
 }
 
 function fireKey(
@@ -227,9 +221,7 @@ describe('CngxReorderableMultiSelect - pointer reorder', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
     const root = fixture.nativeElement as HTMLElement;
-    const removeBtn = chipAt(root, 0).querySelector<HTMLElement>(
-      '.cngx-chip__remove',
-    );
+    const removeBtn = chipAt(root, 0).querySelector<HTMLElement>('.cngx-chip__remove');
     expect(removeBtn).not.toBeNull();
 
     pointerDown(removeBtn!);
@@ -409,7 +401,7 @@ describe('CngxReorderableMultiSelect - a11y + surface', () => {
     expect(String(message)).toMatch(/moved/);
   });
 
-  it('keydown on a chip does not bubble to the trigger\'s combobox handler', () => {
+  it("keydown on a chip does not bubble to the trigger's combobox handler", () => {
     // Regression: pressing Enter on the focused ✕ used to bubble to
     // CngxListboxTrigger.handleKeyDown, which opened the popover AND
     // swallowed the native Enter→click synthesis (chip stayed, panel
@@ -418,9 +410,7 @@ describe('CngxReorderableMultiSelect - a11y + surface', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
     const root = fixture.nativeElement as HTMLElement;
-    const removeBtn = chipAt(root, 0).querySelector<HTMLElement>(
-      '.cngx-chip__remove',
-    );
+    const removeBtn = chipAt(root, 0).querySelector<HTMLElement>('.cngx-chip__remove');
     expect(removeBtn).not.toBeNull();
     let triggerSawKeydown = false;
     const trigger = root.querySelector<HTMLElement>('[role="combobox"]');
@@ -561,21 +551,29 @@ describe('CngxReorderableMultiSelect - panel Escape handling', () => {
 
 describeCommitControllerCascade('CngxReorderableMultiSelect');
 
-describeFieldSkinHost('CngxReorderableMultiSelect', CngxReorderableMultiSelect, 'cngx-reorderable-multi-select', () =>
-  createMockField({ name: 'pick' }).accessor,
+describeFieldSkinHost(
+  'CngxReorderableMultiSelect',
+  CngxReorderableMultiSelect,
+  'cngx-reorderable-multi-select',
+  () => createMockField({ name: 'pick' }).accessor,
 );
 
-describeFieldAriaHost('CngxReorderableMultiSelect', CngxReorderableMultiSelect, 'cngx-reorderable-multi-select', {
-  ctx: () => ({
-    options: [
-      { value: 'a', label: 'A' },
-      { value: 'b', label: 'B' },
-    ],
-  }),
-  inputs: '[options]="ctx[\'options\']"',
-  initial: [],
-  userWrite: (cmp) => (cmp as CngxReorderableMultiSelect<string>).values.set(['a']),
-});
+describeFieldAriaHost(
+  'CngxReorderableMultiSelect',
+  CngxReorderableMultiSelect,
+  'cngx-reorderable-multi-select',
+  {
+    ctx: () => ({
+      options: [
+        { value: 'a', label: 'A' },
+        { value: 'b', label: 'B' },
+      ],
+    }),
+    inputs: '[options]="ctx[\'options\']"',
+    initial: [],
+    userWrite: (cmp) => (cmp as CngxReorderableMultiSelect<string>).values.set(['a']),
+  },
+);
 
 describeMobileSheet(
   'CngxReorderableMultiSelect',
@@ -594,11 +592,16 @@ describeMobileSheet(
   },
 );
 
-describeSelectBehaviourHost('CngxReorderableMultiSelect', CngxReorderableMultiSelect, 'cngx-reorderable-multi-select', {
-  inputs: '[options]="options"',
-  optionSelector: '[cngxOption]',
-  readValue: (cmp) => (cmp as { values: () => unknown }).values(),
-});
+describeSelectBehaviourHost(
+  'CngxReorderableMultiSelect',
+  CngxReorderableMultiSelect,
+  'cngx-reorderable-multi-select',
+  {
+    inputs: '[options]="options"',
+    optionSelector: '[cngxOption]',
+    readValue: (cmp) => (cmp as { values: () => unknown }).values(),
+  },
+);
 
 // ── Summary trigger under the touch floor ───────────────────────────
 
@@ -768,7 +771,9 @@ describe('CngxReorderableMultiSelect - sorting in the panel under the touch floo
     const header = panel.querySelector('cngx-select-sheet-header')!;
     const listbox = panel.querySelector('[cngxListbox]')!;
     expect(header.compareDocumentPosition(list()!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(list()!.compareDocumentPosition(listbox) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(
+      list()!.compareDocumentPosition(listbox) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it('renders no list without a value and none on a fine pointer', () => {
@@ -857,6 +862,15 @@ describe('CngxReorderableMultiSelect - sorting in the panel under the touch floo
 
   it('keeps focus in the list after a move instead of the trigger strip', async () => {
     const { fixture, list, open, move } = render();
+    // The chip-strip refocus must not run: the strip is not rendered while
+    // the summary is on, so a focusAt there would only race the list.
+    const { chipStripRoving: roving } = fixture.debugElement.query(
+      By.directive(CngxReorderableMultiSelect),
+    ).componentInstance as unknown as {
+      chipStripRoving: { setActive(i: number): void; focusAt(i: number): void };
+    };
+    const setActive = vi.spyOn(roving, 'setActive');
+    const focusAt = vi.spyOn(roving, 'focusAt');
     open();
     move(1, 'up').focus();
     move(1, 'up').click();
@@ -864,5 +878,7 @@ describe('CngxReorderableMultiSelect - sorting in the panel under the touch floo
     await fixture.whenStable();
     expect(document.activeElement).toBe(move(0, 'up'));
     expect(list()!.contains(document.activeElement)).toBe(true);
+    expect(setActive).not.toHaveBeenCalled();
+    expect(focusAt).not.toHaveBeenCalled();
   });
 });
