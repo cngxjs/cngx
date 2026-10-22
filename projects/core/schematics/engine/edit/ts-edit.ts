@@ -669,6 +669,34 @@ export function promoteTypeOnlyImport(content: string, symbol: string, module: s
     .reduce((text, [from, to, insert]) => `${text.slice(0, from)}${insert}${text.slice(to)}`, content);
 }
 
+/**
+ * Rewrites every `import type { a, b } from 'module'` as `import { type a,
+ * type b } from 'module'`, so a value name added to an import of `module`
+ * never lands in a type-only clause. Returns the content unchanged when
+ * there is none.
+ */
+export function openTypeOnlyImports(content: string, module: string): string {
+  const source = parse(content);
+  const edits = source.statements.flatMap((statement): readonly (readonly [number, number, string])[] => {
+    const clause = ts.isImportDeclaration(statement) ? statement.importClause : undefined;
+    const bindings = clause?.namedBindings;
+    const fromModule =
+      ts.isImportDeclaration(statement) && ts.isStringLiteral(statement.moduleSpecifier) && statement.moduleSpecifier.text === module;
+    if (!fromModule || clause === undefined || !clause.isTypeOnly || bindings === undefined || !ts.isNamedImports(bindings)) {
+      return [];
+    }
+    const keyword = typeKeywordRange(content, clause.getStart(source));
+    if (keyword === undefined || clause.name !== undefined) {
+      return [];
+    }
+    const types = bindings.elements.map((element) => [element.getStart(source), element.getStart(source), 'type '] as const);
+    return [[...keyword, ''], ...types];
+  });
+  return [...edits]
+    .sort(([a], [b]) => b - a)
+    .reduce((text, [from, to, insert]) => `${text.slice(0, from)}${insert}${text.slice(to)}`, content);
+}
+
 function collectCalls(node: ts.Node, calls: ts.CallExpression[]): readonly ts.CallExpression[] {
   if (ts.isCallExpression(node)) {
     calls.push(node);

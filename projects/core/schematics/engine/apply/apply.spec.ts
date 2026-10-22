@@ -339,6 +339,36 @@ export const appConfig: ApplicationConfig = {
       expect(config).toContain('providers: [provideA11yPreferences(withPersistence())]');
     });
 
+    it('adds value names next to a type-only import of the same module, once over two runs', async () => {
+      const i18n: Change = {
+        ...BASE,
+        kind: 'add-provider',
+        id: 'i18n',
+        project: 'app',
+        path: PATH,
+        call: {
+          symbol: 'provideCngxI18n',
+          module: '@cngx/core/i18n',
+          args: [{ symbol: 'withPack', module: '@cngx/core/i18n', args: [{ symbol: 'CNGX_LANGUAGE_DE', module: '@cngx/core/i18n/de', reference: true }] }],
+        },
+      };
+      const config = `import type { CngxCompleteLanguagePack } from '@cngx/core/i18n';
+
+export const pack: CngxCompleteLanguagePack | undefined = undefined;
+
+export const appConfig: ApplicationConfig = {
+  providers: [],
+};
+`;
+      const once = (await apply([i18n], createMemoryTree({ [PATH]: config }))).readText(PATH);
+      const twice = (await apply([i18n], createMemoryTree({ [PATH]: once }))).readText(PATH);
+
+      expect(once).toContain("import { type CngxCompleteLanguagePack, provideCngxI18n, withPack } from '@cngx/core/i18n';");
+      expect(once).not.toMatch(/import type \{[^}]*provideCngxI18n/);
+      expect(once).toContain('providers: [provideCngxI18n(withPack(CNGX_LANGUAGE_DE))]');
+      expect(twice).toBe(once);
+    });
+
     it('adds to an import of the same module', async () => {
       const config = await edited(`import { withPersistence } from '@cngx/core';
 

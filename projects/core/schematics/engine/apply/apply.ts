@@ -16,6 +16,7 @@ import {
   addToArrayLiteral,
   type ArraySelector,
   countArrayLiterals,
+  openTypeOnlyImports,
   promoteTypeOnlyImport,
   topLevelBindings,
 } from '../edit/ts-edit';
@@ -121,7 +122,9 @@ function addProvider(change: AddProvider, onUnchanged: OnUnchanged): Rule {
       onUnchanged(change.id);
       return undefined;
     }
-    const next = imports.reduce((text, [symbol, module]) => promoteTypeOnlyImport(text, symbol, module), added);
+    const promoted = imports.reduce((text, [symbol, module]) => promoteTypeOnlyImport(text, symbol, module), added);
+    // `insertImport` appends to any import of the module, a type-only one too.
+    const next = imports.reduce((text, [, module]) => openTypeOnlyImports(text, module), promoted);
     tree.overwrite(path, next);
     for (const [symbol, module] of imports) {
       insertImportInto(tree, path, symbol, module);

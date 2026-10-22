@@ -12,6 +12,7 @@ import {
   hasArrayLiteral,
   importsModule,
   insertAfterImports,
+  openTypeOnlyImports,
   parsesCleanly,
   promoteTypeOnlyImport,
   readBootstrapCall,
@@ -316,6 +317,17 @@ describe('unfollowedRootProviders', () => {
       ),
     ).toBe('merged');
     expect(unfollowedRootProviders('bootstrapApplication(App, mergeApplicationConfig(base));\n')).toBeUndefined();
+  });
+});
+
+describe('openTypeOnlyImports', () => {
+  it('turns a type-only clause of the module into inline type modifiers and leaves others alone', () => {
+    const content = "import type { A, B } from 'm';\nimport type { C } from 'other';\nimport { d } from 'm';\n";
+
+    expect(openTypeOnlyImports(content, 'm')).toBe(
+      "import { type A, type B } from 'm';\nimport type { C } from 'other';\nimport { d } from 'm';\n",
+    );
+    expect(openTypeOnlyImports("import { type A } from 'm';\n", 'm')).toBe("import { type A } from 'm';\n");
   });
 });
 
