@@ -11,7 +11,14 @@ import { NodeModulesEngineHost } from '@angular-devkit/schematics/tools';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { PACKED_LIBS } from '../cngx-libs.mjs';
-import { checkReleaseMigrations, declaresSchematics, replaceVersionInDist, stampManifest } from '../publish.mjs';
+import {
+  checkReleaseMigrations,
+  declaresSchematics,
+  refreshMigrationKey,
+  replaceVersionInDist,
+  stampManifest,
+  stampSchematicsDist,
+} from '../publish.mjs';
 import { externalRequireViolations } from '../schematics-externals.mjs';
 
 /**
@@ -33,6 +40,11 @@ const stamped = (lib, ...path) => join(STAMPED_ROOT, lib, ...path);
 const CORE_COLLECTION = stamped('core', 'schematics', 'collection.json');
 const UI_COLLECTION = stamped('ui', 'schematics', 'collection.json');
 const UNSTAMPED_CORE_COLLECTION = join(ROOT, 'dist', 'core', 'schematics', 'collection.json');
+// The pins publish writes into the stamped core's versions.json; neither is
+// the fallback a local build pins, so a run that misses the file shows.
+const STAMPED_MCP_VERSION = '7.7.1';
+const STAMPED_ESLINT_PLUGIN_VERSION = '7.7.2';
+const NO_VERSIONS_FILE = 'No usable versions.json';
 
 beforeAll(() => {
   rmSync(STAMPED_ROOT, { recursive: true, force: true });
@@ -45,6 +57,15 @@ beforeAll(() => {
     const manifest = stampManifest(JSON.parse(readFileSync(join(source, 'package.json'), 'utf8')), STAMPED_VERSION);
     writeFileSync(stamped(lib, 'package.json'), JSON.stringify(manifest, null, 2));
     replaceVersionInDist(stamped(lib), STAMPED_VERSION);
+    if (lib === 'core') {
+      stampSchematicsDist({
+        schematicsDir: stamped('core', 'schematics'),
+        nextVersion: STAMPED_VERSION,
+        mcpVersion: STAMPED_MCP_VERSION,
+        eslintPluginVersion: STAMPED_ESLINT_PLUGIN_VERSION,
+        angularRange: manifest.peerDependencies['@angular/core'],
+      });
+    }
   }
 });
 
@@ -95,6 +116,18 @@ function withInstalledCore(tree, version) {
 // The install record ng add keeps for the one project `createAppTree` makes.
 function recordOf(tree) {
   return JSON.parse(tree.readText('.cngx/install.json')).projects.app;
+}
+
+// The versions.json publish stamped next to the core bundles of the smoke copy.
+function stampedVersions() {
+  return JSON.parse(readFileSync(stamped('core', 'schematics', 'versions.json'), 'utf8'));
+}
+
+// Every message the runner logs from here on.
+function loggedBy(runner) {
+  const messages = [];
+  runner.logger.subscribe((entry) => messages.push(entry.message));
+  return messages;
 }
 
 function overwriteRecord(tree, patch) {
@@ -161,6 +194,18 @@ describe('dist/core/schematics', () => {
     const manifest = JSON.parse(tree.readText('package.json'));
 
     expect(manifest.dependencies['@cngx/utils']).toBe(version);
+  });
+
+  it('ng-add pins the releases of the versions.json publish wrote next to the bundles', async () => {
+    const pins = stampedVersions();
+    const ngAdd = new SchematicTestRunner('@cngx/core', requireDist(CORE_COLLECTION));
+    const messages = loggedBy(ngAdd);
+    const tree = await ngAdd.runSchematic('ng-add', { preset: 'minimal', aiTools: 'claude' }, await createAppTree(ngAdd));
+
+    expect(pins).toMatchObject({ cngx: version, mcp: STAMPED_MCP_VERSION, eslintPlugin: STAMPED_ESLINT_PLUGIN_VERSION });
+    expect(recordOf(tree)).toMatchObject({ cngxVersion: pins.cngx, mcpVersion: pins.mcp, eslintPluginVersion: pins.eslintPlugin });
+    expect(tree.readText('.mcp.json')).toContain(`@cngx/mcp@${pins.mcp}`);
+    expect(messages.filter((message) => message.includes(NO_VERSIONS_FILE))).toEqual([]);
   });
 
   it('ng-add of an unstamped local build keeps the declared @cngx versions and names pack-libs', async () => {
@@ -327,6 +372,25 @@ describe('dist/core/schematics migrations', () => {
 // The CLI finds a collection through `require.resolve('<pkg>/package.json')`
 // and fails hard on anything but MODULE_NOT_FOUND, so a package whose
 // `exports` map hides its manifest cannot answer `ng add`.
+describe('the stamped core migrations', () => {
+  // The collection publish stamps for a release without a migration of its
+  // own, run from the copy that carries the stamped versions.json.
+  it('the refresh entry moves an older record to the pins of versions.json', async () => {
+    const pins = stampedVersions();
+    const ngAdd = new SchematicTestRunner('@cngx/core', requireDist(CORE_COLLECTION));
+    const onboarded = await ngAdd.runSchematic('ng-add', { preset: 'minimal', aiTools: 'claude' }, await createAppTree(ngAdd));
+    overwriteRecord(onboarded, { cngxVersion: '0.0.9', mcpVersion: '0.0.1', eslintPluginVersion: '0.0.1' });
+    const refresh = new SchematicTestRunner('@cngx/core', requireDist(stamped('core', 'schematics', 'migrations', 'migrations.json')));
+    const messages = loggedBy(refresh);
+
+    const tree = await refresh.runSchematic(refreshMigrationKey(STAMPED_VERSION), {}, onboarded);
+
+    expect(recordOf(tree)).toMatchObject({ cngxVersion: pins.cngx, mcpVersion: pins.mcp, eslintPluginVersion: pins.eslintPlugin });
+    expect(messages[0]).toBe(`cngx ${STAMPED_VERSION} migration`);
+    expect(messages.filter((message) => message.includes(NO_VERSIONS_FILE))).toEqual([]);
+  });
+});
+
 describe('every published package as the CLI resolves it', () => {
   let modules;
 
