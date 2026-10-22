@@ -1,5 +1,6 @@
 import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { CngxButton } from '@cngx/common/button';
 import { CngxIcon } from '@cngx/common/display';
 import { CngxFormField, CngxLabel, CngxPrefix, CngxSuffix } from '@cngx/forms/field';
 import { createMockField } from '@cngx/forms/field/testing';
@@ -68,7 +69,16 @@ const HARNESS_STYLES = [
 @Component({
   selector: 'cngx-field-box-matrix-host',
   standalone: true,
-  imports: [CngxFieldBox, CngxInput, CngxPrefix, CngxSuffix, CngxSelect, CngxMultiSelect, CngxIcon],
+  imports: [
+    CngxFieldBox,
+    CngxInput,
+    CngxPrefix,
+    CngxSuffix,
+    CngxSelect,
+    CngxMultiSelect,
+    CngxIcon,
+    CngxButton,
+  ],
   styleUrls: HARNESS_STYLES,
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -113,6 +123,7 @@ const HARNESS_STYLES = [
           [options]="options"
         />
       </p>
+      <p><button cngxButton class="c-button">Apply</button></p>
     </div>
   `,
 })
@@ -334,6 +345,9 @@ const CASES: readonly [string, (root: HTMLElement) => HTMLElement][] = [
   ['box with a nested cngx-select', (root) => query(root, '.c-nested-select')],
   ['single trigger', (root) => query(root, '.c-single .cngx-field-trigger')],
   ['chip trigger', (root) => query(root, '.c-chips .cngx-field-trigger')],
+  // The md button is a control row too: same line box, padding and border, so
+  // it shares the top and bottom edge with an input in a toolbar.
+  ['md button', (root) => query(root, '.c-button')],
 ];
 
 const MATRIX = (['outline', 'fill', 'bare'] as const).flatMap((skin) =>

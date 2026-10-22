@@ -1,0 +1,387 @@
+/**
+ * @overview
+ * Default visuals for `CngxButton`. The host is the native `<button>` or
+ * `<a>` and carries `.cngx-button` plus `data-variant`, `data-tone` and
+ * `data-size`; the component renders the start slot, the label, the end
+ * slot and, while a co-hosted `cngxAsyncClick` runs, a busy layer.
+ *
+ * **Axes**
+ *
+ * - `data-variant` - emphasis: `solid` (filled), `secondary` (tonal fill),
+ *   `outline` (border), `ghost` (no chrome until hover), `link` (inline
+ *   text, no control height, no touch floor - WCAG 2.5.8 inline exception)
+ * - `data-tone` - intent: `neutral`, `primary`, `danger`; sets the three
+ *   tone tokens every variant paints from
+ * - `data-size` - `xs`, `sm`, `md`, `lg`; `md` is the form-control row
+ *   (`line box + 2 * --cngx-space-sm + 2 * 1px`)
+ *
+ * **State modifiers**
+ *
+ * - `:hover` / `:active` - the variant's surface mixed towards the tone
+ * - `[aria-disabled='true']:not([data-busy])` - disabled by colour, never
+ *   opacity; `cursor: not-allowed`; GrayText under forced colors
+ * - `[data-busy]` - label kept but invisible (width stable), spinner ring
+ *   centred over it; the ring stops rotating under reduced motion
+ * - `[data-start]` / `[data-end]` - a filled slot trims the padding on its
+ *   side
+ *
+ * **Inheritance**
+ *
+ * - padding -> `--cngx-space-*` (SET per size, so `[data-density]` re-scales)
+ * - font-size -> `--cngx-font-size-control` at `md`
+ * - tone -> `--cngx-color-text` / `--cngx-color-primary` / `--cngx-color-danger`
+ * - radius -> `--cngx-radius-md`
+ * - touch floor -> `--cngx-target-min`
+ * - transition -> `--cngx-duration-fast`
+ */
+
+@layer cngx.tokens {
+  /**
+   * Block padding. SET per size from `--cngx-space-*`.
+   * @group Layout
+   */
+  @property --cngx-button-padding-block {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Inline padding. SET per size from `--cngx-space-*`.
+   * @group Layout
+   */
+  @property --cngx-button-padding-inline {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1rem;
+  }
+
+  /**
+   * Gap between the slots and the label.
+   * @group Layout
+   */
+  @property --cngx-button-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Font size. `md` reads the form-control font so the button shares the
+   * control line box.
+   * @group Typography
+   */
+  @property --cngx-button-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1rem;
+  }
+
+  /**
+   * Corner radius.
+   * @group Layout
+   */
+  @property --cngx-button-radius {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Border width on all four sides; transparent where the variant paints
+   * none, so every variant shares one box.
+   * @group Layout
+   */
+  @property --cngx-button-border-width {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1px;
+  }
+
+  /**
+   * Transition duration for colour changes. Derives from the
+   * `--cngx-duration-fast` rung of the motion scale.
+   * @group Motion
+   * @relatedTo provideMotion, CngxMotionScope, injectMotion
+   */
+  @property --cngx-button-transition {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 150ms;
+  }
+
+  /**
+   * Tone colour: the solid fill, the outline border, the hover wash.
+   * @group Tone
+   */
+  @property --cngx-button-tone {
+    syntax: '*';
+    inherits: false;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Text colour on a transparent or tonal surface.
+   * @group Tone
+   */
+  @property --cngx-button-tone-text {
+    syntax: '*';
+    inherits: false;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Text colour on the solid tone fill.
+   * @group Tone
+   */
+  @property --cngx-button-on-tone {
+    syntax: '*';
+    inherits: false;
+    initial-value: Canvas;
+  }
+
+  /**
+   * Diameter of the busy spinner ring.
+   * @group Busy
+   */
+  @property --cngx-button-spinner-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1em;
+  }
+
+  /* Derive the colour transition from the motion scale; the registered
+   * initial-value wins over a read-site fallback, so the token must be SET. */
+  :where(.cngx-button) {
+    --cngx-button-transition: var(--cngx-duration-fast);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-button) {
+    :scope {
+      /* md: the form-control row. Padding SET from the scale so a root
+         [data-density] swap re-scales it (8/16 -> sm/md). */
+      --cngx-button-padding-block: var(--cngx-space-sm);
+      --cngx-button-padding-inline: var(--cngx-space-md);
+      --cngx-button-gap: var(--cngx-space-sm);
+      --cngx-button-font-size: var(--cngx-font-size-control, 1rem);
+      --cngx-button-radius: var(--cngx-radius-md, 0.5rem);
+      --cngx-button-tone: var(--cngx-color-text, oklch(0.2 0.01 250));
+      --cngx-button-tone-text: var(--cngx-color-text, oklch(0.2 0.01 250));
+      --cngx-button-on-tone: var(--cngx-color-surface, oklch(1 0 0));
+
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--cngx-button-gap, 0.5rem);
+      box-sizing: border-box;
+      /* Touch-target floor: inert at 0px on a fine pointer, 44px on coarse. */
+      min-block-size: var(--cngx-target-min, 0px);
+      padding-block: var(--cngx-button-padding-block, 0.5rem);
+      padding-inline: var(--cngx-button-padding-inline, 1rem);
+      border: var(--cngx-button-border-width, 1px) solid transparent;
+      border-radius: var(--cngx-button-radius, 0.5rem);
+      background: transparent;
+      color: var(--cngx-button-tone-text, currentColor);
+      font: inherit;
+      font-size: var(--cngx-button-font-size, 1rem);
+      font-weight: var(--cngx-button-font-weight, 500);
+      line-height: var(--cngx-line-height-base, 1.5);
+      text-decoration: none;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      user-select: none;
+      transition:
+        background-color var(--cngx-button-transition, 150ms) ease,
+        border-color var(--cngx-button-transition, 150ms) ease,
+        color var(--cngx-button-transition, 150ms) ease;
+    }
+
+    /* Size steps, each SET from the scale. */
+    :scope[data-size='xs'] {
+      --cngx-button-padding-block: 0px;
+      --cngx-button-padding-inline: var(--cngx-space-sm);
+      --cngx-button-gap: var(--cngx-space-xs);
+      --cngx-button-font-size: var(--cngx-font-size-sm, 0.8125rem);
+    }
+    :scope[data-size='sm'] {
+      --cngx-button-padding-block: var(--cngx-space-xs);
+      --cngx-button-padding-inline: var(--cngx-space-sm);
+      --cngx-button-gap: var(--cngx-space-xs);
+      --cngx-button-font-size: var(--cngx-font-size-sm, 0.8125rem);
+    }
+    :scope[data-size='lg'] {
+      --cngx-button-padding-block: var(--cngx-space-md);
+      --cngx-button-padding-inline: var(--cngx-space-lg);
+      --cngx-button-font-size: var(--cngx-font-size-lg, 1.0625rem);
+    }
+
+    /* A filled slot trims the padding on its side. */
+    :scope[data-start] {
+      padding-inline-start: calc(var(--cngx-button-padding-inline, 1rem) * 0.75);
+    }
+    :scope[data-end] {
+      padding-inline-end: calc(var(--cngx-button-padding-inline, 1rem) * 0.75);
+    }
+
+    /* Tones set the three colours every variant paints from. */
+    :scope[data-tone='primary'] {
+      --cngx-button-tone: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      --cngx-button-tone-text: var(--cngx-color-primary-text, oklch(0.5 0.15 50));
+      --cngx-button-on-tone: var(--cngx-color-on-primary, oklch(0.99 0.01 250));
+    }
+    :scope[data-tone='danger'] {
+      --cngx-button-tone: var(--cngx-color-danger, oklch(0.58 0.2 25));
+      --cngx-button-tone-text: var(--cngx-color-danger-text, oklch(0.48 0.17 25));
+      --cngx-button-on-tone: var(--cngx-color-on-danger, oklch(0.99 0.01 250));
+    }
+
+    /* Variants. */
+    :scope[data-variant='solid'] {
+      background: var(--cngx-button-tone, currentColor);
+      border-color: var(--cngx-button-tone, currentColor);
+      color: var(--cngx-button-on-tone, Canvas);
+    }
+    :scope[data-variant='solid']:hover {
+      background: color-mix(in oklch, var(--cngx-button-tone, currentColor) 88%, black);
+      border-color: color-mix(in oklch, var(--cngx-button-tone, currentColor) 88%, black);
+    }
+    :scope[data-variant='secondary'] {
+      background: color-mix(in oklch, var(--cngx-button-tone, currentColor) 12%, transparent);
+    }
+    :scope[data-variant='secondary']:hover {
+      background: color-mix(in oklch, var(--cngx-button-tone, currentColor) 18%, transparent);
+    }
+    :scope[data-variant='outline'] {
+      border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
+    }
+    :scope[data-variant='outline']:not([data-tone='neutral']) {
+      border-color: color-mix(in oklch, var(--cngx-button-tone, currentColor) 60%, transparent);
+    }
+    :scope:is([data-variant='outline'], [data-variant='ghost']):hover {
+      background: color-mix(in oklch, var(--cngx-button-tone, currentColor) 8%, transparent);
+    }
+    :scope[data-variant='link'] {
+      /* Inline text: no control height and no touch floor (WCAG 2.5.8 inline
+         exception). The border stays transparent so the box keeps its shape. */
+      min-block-size: 0;
+      padding: 0;
+      border-width: 0;
+      text-decoration: underline;
+      text-underline-offset: 0.15em;
+      vertical-align: baseline;
+    }
+    :scope[data-variant='link'][data-tone='neutral'] {
+      --cngx-button-tone-text: var(--cngx-color-primary-text, oklch(0.5 0.15 50));
+    }
+    :scope[data-variant='link']:hover {
+      text-decoration-thickness: 2px;
+    }
+
+    /* Disabled by colour, never opacity. A busy button is aria-disabled too
+       but reads as busy, not disabled. */
+    :scope[aria-disabled='true']:not([data-busy]) {
+      color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+      cursor: not-allowed;
+    }
+    :scope[aria-disabled='true']:not([data-busy]):is([data-variant='solid'], [data-variant='secondary']) {
+      background: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 8%, transparent);
+      border-color: transparent;
+    }
+    :scope[aria-disabled='true']:not([data-busy])[data-variant='outline'] {
+      background: transparent;
+      border-color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 20%, transparent);
+    }
+    :scope[aria-disabled='true']:not([data-busy]):is([data-variant='ghost'], [data-variant='link']) {
+      background: transparent;
+    }
+
+    /* Busy: the label keeps its box (width stable) under the ring. */
+    :scope[data-busy] {
+      cursor: progress;
+    }
+    :scope[data-busy] > :not(.cngx-button__busy) {
+      visibility: hidden;
+    }
+    .cngx-button__busy {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+    }
+    .cngx-button__spinner {
+      inline-size: var(--cngx-button-spinner-size, 1em);
+      block-size: var(--cngx-button-spinner-size, 1em);
+      border: 2px solid currentColor;
+      border-block-start-color: transparent;
+      border-radius: 50%;
+      animation: cngx-button-spin var(--cngx-spin-duration, 0.8s) linear infinite;
+    }
+
+    /* Content slots scale with the button font. */
+    .cngx-button__slot {
+      display: inline-flex;
+      align-items: center;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .cngx-button__slot > svg {
+      inline-size: 1.25em;
+      block-size: 1.25em;
+    }
+
+    /* Stronger chrome on the more-contrast axis: outline borders take the
+       tone text, ghost buttons gain a border. */
+    [data-contrast='more'] :scope[data-variant='outline'] {
+      border-color: var(--cngx-button-tone-text, currentColor);
+    }
+    [data-contrast='more'] :scope[data-variant='ghost'] {
+      border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
+    }
+  }
+}
+
+@keyframes cngx-button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Reduced motion: the ring stops, the static ring plus aria-busy (owned by
+ * cngxAsyncClick) still say "working". */
+[data-motion='reduced'] .cngx-button__spinner {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion='full']) .cngx-button__spinner {
+    animation: none;
+  }
+}
+
+/* forced-colors (WHCM): the host is a form control, so the UA forces its
+ * background to ButtonFace over an author fill. `forced-color-adjust: none`
+ * opts out so the system pair paints: every variant is a ButtonText border on
+ * ButtonFace (link stays LinkText), disabled is GrayText. Unlayered, outside
+ * @scope, `!important` because the base uses `:scope[data-*]` compounds. */
+@media (forced-colors: active) {
+  .cngx-button {
+    forced-color-adjust: none;
+    background: ButtonFace !important;
+    color: ButtonText !important;
+    border-color: ButtonText !important;
+  }
+  .cngx-button[data-variant='link'] {
+    background: transparent !important;
+    color: LinkText !important;
+  }
+  .cngx-button:hover {
+    border-color: Highlight !important;
+  }
+  .cngx-button[aria-disabled='true']:not([data-busy]) {
+    color: GrayText !important;
+    border-color: GrayText !important;
+  }
+}
