@@ -235,6 +235,11 @@
       "artifact": "pack/recipes/core-utils-transition-tracker.md",
       "source": "examples/stories/core/utils/transition-tracker/status-transitions.story.ts",
       "contentHash": "sha256:b183db020d6f60e1122fab6750b2b4eb6e4575eefc7233160636405df950e021"
+    },
+    {
+      "artifact": "pack/recipes/common-button-button.md",
+      "source": "examples/stories/common/button/button/async-click-busy.story.ts",
+      "contentHash": "sha256:2942d0073c452a833619efa45d9ed0a2d2840d8f68409997e0fab5557faf61b6"
     }
   ],
   "theming": {

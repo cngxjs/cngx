@@ -53,6 +53,14 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button.component.ts
  * @since 0.1.0
  * @relatedTo CngxIconButton, CngxButtonStart, CngxButtonEnd, CngxAsyncClick, provideButtonConfig
+ * <example-url>http://localhost:4200/#/common/button/button/variants</example-url>
+ * <example-url>http://localhost:4200/#/common/button/button/tones</example-url>
+ * <example-url>http://localhost:4200/#/common/button/button/sizes</example-url>
+ * <example-url>http://localhost:4200/#/common/button/button/start-and-end-slots</example-url>
+ * <example-url>http://localhost:4200/#/common/button/button/disabled-with-reason</example-url>
+ * <example-url>http://localhost:4200/#/common/button/button/async-click-busy</example-url>
+ * <example-url>http://localhost:4200/#/common/button/button/aligned-with-inputs</example-url>
+ * <example-url>http://localhost:4200/#/common/button/button/link-host</example-url>
  */
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector -- attribute selector by design (sits on the native button / anchor)
