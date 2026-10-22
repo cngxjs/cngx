@@ -7,6 +7,7 @@ import {
   createProvenance,
   createProvenanceStamp,
   type LanguagePackArgument,
+  promoteTypeOnlyImport,
   type ProviderCall,
   renderProviderCall,
   skipChange,
@@ -214,6 +215,27 @@ function unfollowedNote(changes: readonly Change[], facts: ProjectFacts, cause: 
   return [...changes.filter((change) => change.kind !== 'add-provider'), note];
 }
 
+// Names an older run appended to a type-only import of the same module are
+// promoted to values in place; the edit re-reads the file, so names fixed
+// by hand since detection are left alone.
+function typeOnlyRepair(facts: ProjectFacts, provenance: Change['provenance']): readonly Change[] {
+  const names = facts.rootProvidersTypeOnly;
+  if (names.length === 0) {
+    return [];
+  }
+  return [
+    {
+      kind: 'edit-file',
+      id: 'provider:value-imports',
+      label: `Import ${names.map(({ symbol }) => symbol).join(', ')} as values in ${facts.rootProvidersFile}`,
+      reason: 'a type-only import binds them, so the build fails with TS1361',
+      provenance,
+      path: facts.rootProvidersFile,
+      edit: (content) => names.reduce((text, { symbol, module }) => promoteTypeOnlyImport(text, symbol, module), content),
+    },
+  ];
+}
+
 /**
  * Plans the root providers onboarding wires into the app config (or the
  * root NgModule; `addRootProvider` finds either): the a11y preferences, the
@@ -332,7 +354,12 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
   const missing = providers.filter((change) => !isProvided(change));
   const cause = facts.rootProvidersUnfollowed;
   return {
-    changes: [...(cause === undefined ? missing : unfollowedNote(missing, facts, cause)), ...packEdit, ...notes],
+    changes: [
+      ...typeOnlyRepair(facts, provenance),
+      ...(cause === undefined ? missing : unfollowedNote(missing, facts, cause)),
+      ...packEdit,
+      ...notes,
+    ],
     skipped: [
       ...provided.filter((change) => !needsPackEdit(change)).map((change) => skipChange(change, providedReason(change))),
       ...existingFile,

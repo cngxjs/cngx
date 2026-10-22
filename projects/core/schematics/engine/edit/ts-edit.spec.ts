@@ -20,6 +20,7 @@ import {
   readProviderCalls,
   reexportSources,
   topLevelBindings,
+  typeOnlyValueImports,
   unfollowedRootProviders,
 } from './ts-edit';
 
@@ -328,6 +329,26 @@ describe('unfollowedRootProviders', () => {
 export const appConfig = mergeApplicationConfig(base, serverConfig);
 `;
     expect(unfollowedRootProviders(content)).toBeUndefined();
+  });
+});
+
+describe('typeOnlyValueImports', () => {
+  it('names the @cngx names a type-only import binds and a call uses as a value', () => {
+    const content = `import type { CngxCompleteLanguagePack, provideCngxI18n, withPack } from '@cngx/core/i18n';
+import { type CNGX_LANGUAGE_DE } from '@cngx/core/i18n/de';
+import type { Routes } from '@angular/router';
+import type { helper } from './local';
+
+const pack: CngxCompleteLanguagePack | undefined = undefined;
+export const providers = [provideCngxI18n(withPack(CNGX_LANGUAGE_DE)), helper()];
+`;
+
+    expect(typeOnlyValueImports(content)).toEqual([
+      { symbol: 'provideCngxI18n', module: '@cngx/core/i18n' },
+      { symbol: 'withPack', module: '@cngx/core/i18n' },
+      { symbol: 'CNGX_LANGUAGE_DE', module: '@cngx/core/i18n/de' },
+    ]);
+    expect(typeOnlyValueImports("import { provideCngxI18n } from '@cngx/core/i18n';\nprovideCngxI18n();\n")).toEqual([]);
   });
 });
 

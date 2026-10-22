@@ -85,6 +85,8 @@ export {
   reexportSources,
   type TopLevelBinding,
   topLevelBindings,
+  type TypeOnlyValueImport,
+  typeOnlyValueImports,
   unfollowedRootProviders,
   type UnfollowedRootProviders,
 } from './edit/ts-edit';

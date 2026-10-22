@@ -591,6 +591,28 @@ describe('ngAdd', () => {
     expect(run.tree.readContent('src/app/app.config.ts')).toContain('provideA11yPreferences(withPersistence())');
   });
 
+  it('repairs provider names an older run left inside a type-only import, once over two runs', async () => {
+    const config = `import type { CngxCompleteLanguagePack, provideCngxI18n, withPack } from '@cngx/core/i18n';
+import { CNGX_LANGUAGE_DE } from '@cngx/core/i18n/de';
+import { ApplicationConfig } from '@angular/core';
+
+export const pack: CngxCompleteLanguagePack = CNGX_LANGUAGE_DE;
+
+export const appConfig: ApplicationConfig = {
+  providers: [provideCngxI18n(withPack(CNGX_LANGUAGE_DE))],
+};
+`;
+    const first = await runRule(ngAdd({ yes: true, i18n: 'de' }), createFixtureTree('standalone-app', { 'src/app/app.config.ts': config }));
+    const repaired = first.tree.readContent('src/app/app.config.ts');
+
+    expect(repaired).toContain("import { type CngxCompleteLanguagePack, provideCngxI18n, withPack } from '@cngx/core/i18n';");
+    expect(first.logs.some((line) => line.includes('Import provideCngxI18n, withPack as values in src/app/app.config.ts'))).toBe(true);
+
+    const second = await runRule(ngAdd({ yes: true, i18n: 'de' }), first.tree);
+
+    expect(second.tree.readContent('src/app/app.config.ts')).toBe(repaired);
+  });
+
   describe('a root providers cngx cannot edit', () => {
     const HEAD = `import { ApplicationConfig, mergeApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter } from '@angular/router';

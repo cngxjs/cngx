@@ -705,6 +705,34 @@ export function openTypeOnlyImports(content: string, module: string): string {
     .reduce((text, [from, to, insert]) => `${text.slice(0, from)}${insert}${text.slice(to)}`, content);
 }
 
+/** A name a type-only import binds that the file calls or passes to a call. */
+export interface TypeOnlyValueImport {
+  readonly symbol: string;
+  readonly module: string;
+}
+
+/**
+ * The names a type-only import from a `@cngx/*` module binds that the file
+ * uses as values: a callee or an identifier argument of a call. An older
+ * provider edit appended such names to a type-only import of the same
+ * module, which fails the build with TS1361; `promoteTypeOnlyImport`
+ * repairs each.
+ */
+export function typeOnlyValueImports(content: string): readonly TypeOnlyValueImport[] {
+  const source = parse(content);
+  const bindings = topLevelBindings(content);
+  const used = new Set(
+    collectCalls(source, []).flatMap((call) =>
+      [call.expression, ...call.arguments].flatMap((node) => (ts.isIdentifier(node) ? [node.text] : [])),
+    ),
+  );
+  return [...bindings].flatMap(([symbol, binding]) =>
+    binding.typeOnly && binding.module?.startsWith('@cngx/') === true && used.has(symbol)
+      ? [{ symbol, module: binding.module }]
+      : [],
+  );
+}
+
 function collectCalls(node: ts.Node, calls: ts.CallExpression[]): readonly ts.CallExpression[] {
   if (ts.isCallExpression(node)) {
     calls.push(node);

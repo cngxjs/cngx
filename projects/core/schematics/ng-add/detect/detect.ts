@@ -16,6 +16,8 @@ import {
   readBootstrapCall,
   readProviderCalls,
   type Tree,
+  type TypeOnlyValueImport,
+  typeOnlyValueImports,
   unfollowedRootProviders,
   type UnfollowedRootProviders,
 } from '../../engine';
@@ -173,6 +175,8 @@ export interface ProjectFacts {
   readonly rootProviders: readonly string[];
   /** Why that file's root providers cannot be edited as an array literal; `undefined` when they can. */
   readonly rootProvidersUnfollowed: UnfollowedRootProviders | undefined;
+  /** `@cngx` names that file calls although a type-only import binds them, as an older run could leave them. */
+  readonly rootProvidersTypeOnly: readonly TypeOnlyValueImport[];
   /** The bootstrapped root component, or why `main.ts` cannot be followed to it. */
   readonly appShell: AppShell | AppShellUnfollowed;
   /** Whether the root component's files are the untouched `ng new` scaffold, a cngx starter, or anything else. */
@@ -321,6 +325,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     rootProvidersFile,
     rootProviders: providers,
     rootProvidersUnfollowed: unfollowedRootProviders(rootProvidersSource),
+    rootProvidersTypeOnly: typeOnlyValueImports(rootProvidersSource),
     appShell,
     scaffold: scaffoldOf(read, appShell, names),
     indexHtml: { path: indexPath, state: indexHtmlStateOf(read(indexPath), names) },

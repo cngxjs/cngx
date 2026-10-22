@@ -379,6 +379,20 @@ describe('planProviders', () => {
     expect(result.skipped.map((step) => step.id)).toEqual(['provider:a11y-preferences']);
   });
 
+  it('repairs provider names a type-only import binds before anything else', () => {
+    const facts = createFacts({
+      rootProviders: ['provideA11yPreferences'],
+      rootProvidersTypeOnly: [{ symbol: 'provideA11yPreferences', module: '@cngx/core' }],
+    });
+    const [repair, ...rest] = planProviders(facts, createAnswers(), VERSIONS).changes;
+
+    expect(rest).toEqual([]);
+    expect(repair).toMatchObject({ kind: 'edit-file', id: 'provider:value-imports', path: 'src/app/app.config.ts' });
+    expect(repair.kind === 'edit-file' && repair.edit("import type { provideA11yPreferences } from '@cngx/core';\n")).toBe(
+      "import { provideA11yPreferences } from '@cngx/core';\n",
+    );
+  });
+
   it('plans no note for out-of-reach root providers that already hold everything', () => {
     const facts = createFacts({ rootProvidersUnfollowed: 'merged', rootProviders: ['provideA11yPreferences'] });
 

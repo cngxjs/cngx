@@ -31,6 +31,7 @@ export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts
     rootProvidersFile: 'src/app/app.config.ts',
     rootProviders: ['provideBrowserGlobalErrorListeners', 'provideRouter'],
     rootProvidersUnfollowed: undefined,
+    rootProvidersTypeOnly: [],
     appShell: {
       kind: 'followed',
       componentFile: 'src/app/app.ts',
