@@ -113,10 +113,9 @@ export interface CngxChartContext<TX = XScaleInput, TY = number> {
    * order: `0`-`3` for line, bar and scatter, `null` for the kinds outside
    * the cycle and for a layer the chart does not know. The series layers
    * write it to `data-cngx-series-step`, so the SVG cycle counts the same
-   * layers the Canvas backend counts, wrapped or not. Optional, so a test
-   * double or a custom context may leave it out.
-   *
-   * @internal
+   * layers the Canvas backend counts, wrapped or not. A custom layer that
+   * draws its own forced-colors pattern can read it to join the cycle.
+   * Optional, so a test double or a custom context may leave it out.
    */
   seriesStepOf?(layer: CngxChartLayer): number | null;
 }

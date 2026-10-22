@@ -117,8 +117,9 @@ import {
          and takes the legend's four-step cycle by series index: solid, dashed,
          dotted, dash-dot. The index counts the line, bar and scatter layers of
          one chart in layer order, wrapped or not (data-cngx-series-step), so
-         legend entry N and the Nth such layer share a step. !important beats the inline [style.stroke] of the
-         [color] input and the marker's inline [style.fill]. */
+         legend entry N and the Nth such layer share a step. !important beats
+         the inline [style.stroke] of the [color] input and the marker's
+         inline [style.fill]. */
       @media (forced-colors: active) {
         .cngx-line {
           stroke: CanvasText !important;
@@ -165,8 +166,8 @@ export class CngxLine<T = unknown> implements CngxChartLayer {
 
   /**
    * Inline style, not a presentation attribute: the `.cngx-line` class rule
-   * beats an attribute. A number gets `px` because a unitless value is not
-   * portable CSS.
+   * beats an attribute. A number gets `px`; a string passes through as
+   * written, so it carries its own unit.
    */
   protected readonly strokeWidthStyle = computed<string | null>(() => {
     const sw = this.strokeWidth();

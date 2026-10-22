@@ -107,10 +107,10 @@ const FALLBACK_BASELINE = 0;
          legend swatches turn into patterns. Bars follow the user palette and
          take the legend's four-step cycle by series index: solid, 45deg
          hatch, hollow, 0deg hatch. The index counts the line, bar and scatter
-         layers of one chart in layer order (data-cngx-series-step). The hatches are patterns
-         CngxChart renders once per chart; they carry a Canvas gap, so a bar
-         drawn over another keeps its hatch. !important beats the inline
-         [style.fill] of the [color] input. */
+         layers of one chart in layer order (data-cngx-series-step). The
+         hatches are patterns CngxChart renders once per chart; they carry a
+         Canvas gap, so a bar drawn over another keeps its hatch. !important
+         beats the inline [style.fill] of the [color] input. */
       @media (forced-colors: active) {
         .cngx-bar {
           fill: CanvasText !important;
