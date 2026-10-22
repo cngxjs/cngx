@@ -318,6 +318,17 @@ describe('unfollowedRootProviders', () => {
     ).toBe('merged');
     expect(unfollowedRootProviders('bootstrapApplication(App, mergeApplicationConfig(base));\n')).toBeUndefined();
   });
+
+  it('reads a default export built by mergeApplicationConfig as merged', () => {
+    expect(unfollowedRootProviders('export default mergeApplicationConfig(base, server);\n')).toBe('merged');
+  });
+
+  it('reads a merge over a typed config with a providers array in the same file as editable', () => {
+    const content = `${typed('{ providers: [provideRouter(routes)] }').replace('export const appConfig', 'const base')}
+export const appConfig = mergeApplicationConfig(base, serverConfig);
+`;
+    expect(unfollowedRootProviders(content)).toBeUndefined();
+  });
 });
 
 describe('openTypeOnlyImports', () => {

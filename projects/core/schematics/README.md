@@ -267,8 +267,10 @@ rewrites every literal of it in the bundles.
   import, and appends to the last provider line. A root config whose
   `providers` is not an array literal (a variable, a call, a shorthand), one
   that spreads another object without a `providers` array, or a config
-  variable built by `mergeApplicationConfig` is never edited: the plan holds
-  one note with every missing provider and its imports to paste.
+  variable or default export built by `mergeApplicationConfig` is never
+  edited: the plan holds one note with every missing provider and its imports
+  to paste. A merge next to exactly one typed config with a `providers` array
+  in the same file is edited there.
 - Material's own ng-add writes a `mat.theme((...))` map with `density: 0` into
   the scss global stylesheet, or into a new `src/material-theme.scss` placed
   first in the build styles of a css app. The bridge entry cngx adds follows

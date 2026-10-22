@@ -143,7 +143,8 @@ function rootProvidersArrays(source: ts.SourceFile): readonly ts.ArrayLiteralExp
  * config whose `providers` is not an array literal (a variable, a call, a
  * shorthand property), one that spreads another object and holds no
  * `providers` array (a new key would shadow the spread one), or a config
- * variable built by `mergeApplicationConfig`.
+ * variable or default export built by `mergeApplicationConfig` without
+ * exactly one typed config in the file whose `providers` array can take it.
  */
 export type UnfollowedRootProviders = 'not-literal' | 'spread' | 'merged';
 
@@ -173,14 +174,21 @@ export function unfollowedRootProviders(content: string): UnfollowedRootProvider
   if (blocked !== undefined) {
     return blocked;
   }
-  const merged = source.statements.some(
-    (statement) =>
+  const merged = source.statements.some((statement) => {
+    if (ts.isExportAssignment(statement)) {
+      return isMergeCall(source, statement.expression);
+    }
+    return (
       ts.isVariableStatement(statement) &&
       statement.declarationList.declarations.some(
         (declaration) => declaration.initializer !== undefined && isMergeCall(source, declaration.initializer),
-      ),
-  );
-  return merged ? 'merged' : undefined;
+      )
+    );
+  });
+  // One typed config with a providers array next to the merge is edited in
+  // place; with none or several, `addRootProvider` would follow the merge
+  // call and stop.
+  return merged && rootProvidersArrays(source).length !== 1 ? 'merged' : undefined;
 }
 
 const ANGULAR_DECORATORS = new Set(['Component', 'NgModule']);

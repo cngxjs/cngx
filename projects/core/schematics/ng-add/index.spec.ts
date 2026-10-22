@@ -647,6 +647,22 @@ export const appConfig = mergeApplicationConfig(baseConfig, {
       expect(run.tree.readContent('src/styles.css')).toContain("@import '@cngx/themes/cngx.css';");
     });
 
+    it('provides into a typed base config that a mergeApplicationConfig in the same file merges', async () => {
+      const config = `${HEAD}
+const base: ApplicationConfig = {
+  providers: [provideBrowserGlobalErrorListeners(), provideRouter(routes)],
+};
+
+export const appConfig = mergeApplicationConfig(base, baseConfig);
+`;
+      const run = await runRule(ngAdd({ yes: true }), createFixtureTree('standalone-app', { 'src/app/app.config.ts': config }));
+
+      expect(run.tree.readContent('src/app/app.config.ts')).toContain(
+        '  providers: [provideBrowserGlobalErrorListeners(), provideRouter(routes), provideA11yPreferences(withPersistence())],',
+      );
+      expect(run.logs.some((line) => line.includes(LABEL))).toBe(false);
+    });
+
     it('leaves an inline config in main.ts alone', async () => {
       const main = `import { provideBrowserGlobalErrorListeners } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
