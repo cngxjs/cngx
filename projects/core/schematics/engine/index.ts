@@ -4,7 +4,7 @@
 export type { Tree } from './fs/tree';
 export { createMemoryTree } from './fs/memory-tree';
 export { BUILD_OUTPUT_DIRS, isAppSource, NON_SOURCE_DIRS } from './fs/source-files';
-export { listFiles, type ListFilesOptions } from './fs/walk';
+export { listFiles } from './fs/walk';
 
 export { companionRange } from './manifest/companion';
 export { addLockstepDependency } from './manifest/lockstep';
@@ -39,30 +39,24 @@ export { planThirdPartyDependency } from './manifest/third-party';
 export {
   type AddDependency,
   type AddProvider,
-  type AddStyleEntry,
-  type AddStyleImport,
   type Change,
   createNote,
   type CreateFile,
   createProvenance,
   type EditFile,
   type JsonEntry,
-  type JsonPath,
   mergeStepResults,
-  type Note,
   type Provenance,
   type ProvenanceSource,
   type ProviderArg,
-  type ProviderArray,
   type ProviderCall,
-  type ProviderLiteral,
   type SkippedStep,
   skipChange,
   type StepResult,
   type WriteJson,
 } from './plan/change';
 export { type ChangePlan, createChangePlan, LOCKSTEP_REASON } from './plan/plan';
-export { createReport, type Report, type ReportLink } from './plan/report';
+export { createReport } from './plan/report';
 export { errorMessage, isRecord, joinNames, newlineOf } from './plan/text';
 export {
   contentFingerprint,
@@ -74,7 +68,6 @@ export {
 export {
   addNamedImports,
   addToArrayLiteral,
-  type ArraySelector,
   declaresClass,
   ensureArrayProperty,
   hasArrayElement,
@@ -107,7 +100,7 @@ export {
   styleEntryPath,
   styleImportUrls,
 } from './edit/style-edit';
-export { EMPTY_RENAME_TABLE, type MemberRename, type RenameTable } from './migrate/rename-table';
+export { EMPTY_RENAME_TABLE, type RenameTable } from './migrate/rename-table';
 export { planRenames } from './migrate/plan-renames';
 export { type Codemod, planCodemods } from './migrate/codemod';
 export { applyChangePlan } from './apply/apply';
@@ -117,30 +110,20 @@ export {
   DEFAULT_MCP_VERSION,
   isUnstampedVersion,
   type ReleaseVersions,
-  type ResolvedVersions,
   resolveVersions,
 } from './versions';
 export {
   canPrompt,
-  type ConfirmQuestion,
   createPromptFlow,
   type MultiSelectQuestion,
   type PromptAdapter,
-  type PromptAnswer,
   type PromptAnswers,
   type PromptChoice,
   type PromptFlow,
-  type PromptFlowOptions,
-  type SelectQuestion,
 } from './prompt/prompt';
-export { type ColorEnv, type Palette } from './render/palette';
 export {
   createRenderer,
   type PreflightItem,
-  type PreflightStatus,
-  type Renderer,
-  type RendererOptions,
-  type RenderLogger,
 } from './render/renderer';
 export { createSummary, type SummaryHeadlines } from './render/summary';
-export { canReachPrompts, createShellRendererOptions, isCi, type TerminalStream } from './render/terminal';
+export { canReachPrompts, createShellRendererOptions, isCi } from './render/terminal';

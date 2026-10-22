@@ -79,7 +79,7 @@ export interface StarterBlocks {
 }
 
 /** The blocks the answers enable on this app; the same on a first run and a re-run. */
-export function starterBlocks(facts: ProjectFacts, answers: OnboardingAnswers, routing: boolean): StarterBlocks {
+function starterBlocks(facts: ProjectFacts, answers: OnboardingAnswers, routing: boolean): StarterBlocks {
   const libs = selectedLibs(answers.libs);
   return {
     routing,
