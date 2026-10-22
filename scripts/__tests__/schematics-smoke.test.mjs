@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 
 import { SchematicTestRunner } from '@angular-devkit/schematics/testing';
+import ts from 'typescript';
 import { SchematicEngine } from '@angular-devkit/schematics';
 import { NodeModulesEngineHost } from '@angular-devkit/schematics/tools';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -102,6 +103,48 @@ function overwriteRecord(tree, patch) {
   tree.overwrite('.cngx/install.json', JSON.stringify({ ...manifest, projects }, null, 2));
 }
 
+// What `ng add` (@angular/cli 21 `commands/add/cli.js`) takes out of the
+// options before it runs the schematic; a schema property of that name never
+// reaches the rule.
+const NG_ADD_STRIPPED = [
+  'interactive',
+  'dryRun',
+  'force',
+  'defaults',
+  'registry',
+  'verbose',
+  'skipConfirmation',
+  'collection',
+  'schematicName',
+];
+
+function strippedOptions(schema) {
+  return Object.keys(schema.properties).filter((name) => NG_ADD_STRIPPED.includes(name));
+}
+
+// The names the installed CLI's `executeSchematic` destructures out of the
+// options next to `...schematicOptions`, read from its syntax tree. The
+// CLI exports no list of them, so the hand copy above is checked against it.
+function cliStrippedOptions(source) {
+  const file = ts.createSourceFile('cli.js', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+  const found = [];
+  const visit = (node) => {
+    if (
+      ts.isObjectBindingPattern(node) &&
+      node.elements.some((element) => element.dotDotDotToken !== undefined && element.name.getText(file) === 'schematicOptions')
+    ) {
+      found.push(
+        ...node.elements
+          .filter((element) => element.dotDotDotToken === undefined)
+          .map((element) => (element.propertyName ?? element.name).getText(file)),
+      );
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+  return found;
+}
+
 describe('dist/core/schematics', () => {
   let runner;
   let appTree;
@@ -168,9 +211,17 @@ describe('dist/core/schematics', () => {
   it('declares no option the ng add command strips', () => {
     const schema = JSON.parse(readFileSync(join(ROOT, 'dist', 'core', 'schematics', 'ng-add', 'schema.json'), 'utf8'));
 
-    expect(Object.keys(schema.properties)).not.toContain('dryRun');
-    expect(Object.keys(schema.properties)).not.toContain('interactive');
-    expect(Object.keys(schema.properties)).not.toContain('verbose');
+    const source = JSON.parse(readFileSync(join(ROOT, 'projects', 'core', 'schematics', 'ng-add', 'schema.json'), 'utf8'));
+
+    expect(strippedOptions(schema)).toEqual([]);
+    expect(strippedOptions(source)).toEqual([]);
+  });
+
+  it('strips the same option names as the installed ng add command', () => {
+    const cli = readFileSync(join(ROOT, 'node_modules', '@angular', 'cli', 'src', 'commands', 'add', 'cli.js'), 'utf8');
+
+    expect([...cliStrippedOptions(cli)].sort()).toEqual([...NG_ADD_STRIPPED].sort());
+    expect(cliStrippedOptions('const { force, ...rest } = options;')).toEqual([]);
   });
 
   describe('with the flags ng add passes before the install', () => {
@@ -454,11 +505,11 @@ describe('dist/ui/schematics ng-add shim', () => {
 
     expect(result.dependencies['@cngx/core']).toBe(version);
     expect(result.dependencies['@cngx/utils']).toBe(version);
-    // The shim pins @cngx/core before core plans anything and says so; the
-    // plan names the pin it replaces itself.
-    const named = (name) => messages.filter((message) => message.includes(name) && message.includes('0.0.1'));
-    expect(named('@cngx/core')).toEqual([`Replacing @cngx/core@0.0.1 with ${version} so every @cngx package stays on one version.`]);
-    expect(named('@cngx/utils')).toEqual([expect.stringContaining(`Add @cngx/utils@${version} - replaces 0.0.1;`)]);
+    // The shim hands its pins to core, so the plan names every replacement
+    // once and the shim prints none of its own.
+    const named = messages.filter((message) => message.includes('0.0.1'));
+    expect(named).toEqual([expect.stringMatching(/^ {2}\+ Add 2 @cngx packages at \S+ - utils, core; replaces 0\.0\.1$/)]);
+    expect(messages.filter((message) => message.startsWith('Replacing'))).toEqual([]);
   });
 
   it('stays silent when the app already pins the lockstep version', async () => {

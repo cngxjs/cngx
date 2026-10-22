@@ -84,8 +84,8 @@ export function createPlainRenderer({ color, quiet, logger }: PlainOptions): Ren
       logger.info(color.bold('Preflight:'));
       items.forEach(preflightLine);
     },
-    todo(plan) {
-      if (!quiet) {
+    todo(plan, todoOptions) {
+      if (!quiet || todoOptions?.next === 'confirm') {
         planLines(plan, color).forEach((line) => logger.info(line));
       }
       return Promise.resolve();

@@ -2,12 +2,14 @@
 
 `ng add` for every `@cngx/*` package. Build-time tooling: it runs in Node under
 the Angular CLI, never in an app bundle. `@cngx/core` owns the onboarding; every
-other package ships a one-line shim that delegates to it. The shim pins its own
-package beside core before it delegates, and folds its lib into a given
-`--libs`, so `ng add @cngx/<lib>` always installs and records `<lib>`. It reads
-the installed core version before it loads core: missing or older installs
-the shim's core and runs its ng-add as a follow-up task, newer is followed
-without any pin, so a shim never downgrades core.
+other package ships a one-line shim that delegates to it. The shim folds its
+lib into a given `--libs`, so `ng add @cngx/<lib>` always installs and
+records `<lib>`. It reads the installed core version before it loads core:
+the same release delegates in the run and hands core its own package and
+core to pin, so the pins sit in core's plan and a declined confirm leaves
+`package.json` as it was; missing or older pins both, installs the shim's
+core and runs its ng-add as a follow-up task; newer is followed without any
+pin, so a shim never downgrades core.
 
 ## Layout
 
@@ -113,8 +115,9 @@ breaking change adds a migration:
    `<version>-<slug>`, so every breaking PR brings a new key. The guard
    (`scripts/migrations-well-formed.mjs`) derives the key from the entry's
    `version`, so the slug is lowercase letters, digits and hyphens.
-4. A spec next to the entry with a case that runs `migrate` or
-   `createMigration`, and a fixture pair under
+4. A spec next to the entry with a case that calls `migrate` or
+   `createMigration` and reads the pair through
+   `readMigrationFixture('<folder>')`, and a fixture pair under
    `testing/fixtures/migrations/<folder>/{before,after}` holding only the
    files that differ from the stock app; `after` must differ from `before`
    and a `.gitkeep` alone is no fixture. The migration-gate reads only the
@@ -186,8 +189,9 @@ rewrites every literal of it in the bundles.
 ## CLI behaviour worth knowing
 
 - `ng add` strips `interactive`, `dryRun`, `force`, `defaults`, `registry`,
-  `verbose` and `skipConfirmation` before the rule runs, so the schema uses
-  none of those names. `prompts` and `yes` are the schematic's own switches.
+  `verbose`, `skipConfirmation`, `collection` and `schematicName` before the
+  rule runs, so the schema uses none of those names (`schematics-smoke`
+  checks every one). `prompts` and `yes` are the schematic's own switches.
   The context's `interactive` stays `true` either way (the workflow never
   passes the flag on), so the shell reads `--interactive=false`,
   `--no-interactive` and `--defaults` from `process.argv` through the pure
@@ -210,6 +214,11 @@ rewrites every literal of it in the bundles.
 - A list flag has no `[]` default: the registry fills none for a `oneOf`
   property, so an unset list arrives as `undefined`. The parser also reads a
   programmatic `[]` as "not given".
+- The CLI passes no dry-run flag to the rule either; `readDryRunFlag` reads
+  `--dry-run`, `-d` (bare or with `true` / `false`) and `--no-dry-run` from
+  `process.argv`, the last one winning as in the CLI's parser. `--dryRun`
+  never reaches a rule: CLI 21 parses without camel-case expansion and stops
+  on it as an unknown argument.
 - `ng add <pkg> --dry-run` for a package that is not installed never reaches a
   rule. Preview with `ng add`, then `ng g @cngx/core:ng-add --dry-run`.
 - Prompts run inside the rule after the CLI's install spinner has finished,
@@ -255,7 +264,13 @@ rewrites every literal of it in the bundles.
   `bootstrapApplication` config) when the planned file holds exactly one and
   the call's imports bind cleanly. Otherwise `addRootProvider` places it: it
   covers standalone app configs and root NgModules alike, aliases a clashing
-  import, and appends to the last provider line.
+  import, and appends to the last provider line. A root config whose
+  `providers` is not an array literal (a variable, a call, a shorthand), one
+  that spreads another object without a `providers` array, or a config
+  variable or default export built by `mergeApplicationConfig` is never
+  edited: the plan holds one note with every missing provider and its imports
+  to paste. A merge next to exactly one typed config with a `providers` array
+  in the same file is edited there.
 - Material's own ng-add writes a `mat.theme((...))` map with `density: 0` into
   the scss global stylesheet, or into a new `src/material-theme.scss` placed
   first in the build styles of a css app. The bridge entry cngx adds follows

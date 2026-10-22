@@ -33,6 +33,11 @@ describe('rootProvidersPath', () => {
     expect(rootProvidersPath('src/main.ts', main, true, 'src')).toBe('src/main.ts');
   });
 
+  it('keeps main.ts for a config written into the bootstrap call that cngx cannot edit', () => {
+    const main = 'const providers = [];\nbootstrapApplication(App, { providers });\n';
+    expect(rootProvidersPath('src/main.ts', main, true, 'src')).toBe('src/main.ts');
+  });
+
   it('never follows a commented-out bootstrap call', () => {
     const main = `// bootstrapApplication(App, otherConfig);\n// platformBrowser().bootstrapModule(OtherModule);\nimport { otherConfig } from './other/other.config';\nimport { appConfig } from './app/app.config';\n\nbootstrapApplication(App, appConfig);\n`;
 

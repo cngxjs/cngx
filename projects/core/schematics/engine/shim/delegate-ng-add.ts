@@ -56,7 +56,7 @@ function libOf(name: string): CngxLib | undefined {
 /**
  * The flags with the shim's own lib folded into a given `libs`, in package
  * order. Without the flag, core asks or takes every lib, and it reads the
- * shim's package as declared because the shim pinned it first.
+ * shim's package as declared because `ng add` installed it first.
  */
 function withOwnLib(options: NgAddFlags, ownName: string): NgAddFlags {
   const own = libOf(ownName);
@@ -93,7 +93,8 @@ function installReason(installed: string | undefined, order: number | undefined,
  *
  * - missing or older than the shim: pin core and the shim's own package,
  *   install, then run the new core's ng-add as a follow-up task;
- * - the shim's version: pin both and delegate in the same run;
+ * - the shim's version: delegate in the same run and hand both pins to
+ *   core, whose plan applies them with everything else;
  * - newer than the shim: never downgrade; pin nothing and delegate to the
  *   installed core, whose dependency step pins every selected package to
  *   its own version.
@@ -131,11 +132,14 @@ export function delegateNgAdd(options: NgAddFlags, bundleDir: string = __dirname
       return externalSchematic(CORE, 'ng-add', forwarded);
     }
 
-    const pins = chain([addLockstepDependency(CORE, version, true), addLockstepDependency(ownName, version, true)]);
+    // Core of the shim's own release plans the pins, so they show in its
+    // plan and a declined confirm leaves package.json as it was.
     if (order === 0) {
       loadCore(context);
-      return chain([pins, externalSchematic(CORE, 'ng-add', forwarded)]);
+      return externalSchematic(CORE, 'ng-add', { ...forwarded, pins: [CORE, ownName] });
     }
+
+    const pins = chain([addLockstepDependency(CORE, version, true), addLockstepDependency(ownName, version, true)]);
 
     log.info(installReason(installed, order, ownName, version));
     // The shim's own install runs before core plans anything, so the CDK the

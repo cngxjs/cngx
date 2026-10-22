@@ -12,6 +12,7 @@ import {
   hasArrayLiteral,
   importsModule,
   insertAfterImports,
+  openTypeOnlyImports,
   parsesCleanly,
   promoteTypeOnlyImport,
   readBootstrapCall,
@@ -19,6 +20,8 @@ import {
   readProviderCalls,
   reexportSources,
   topLevelBindings,
+  typeOnlyValueImports,
+  unfollowedRootProviders,
 } from './ts-edit';
 
 const ROOT_PROVIDERS: ArraySelector = { kind: 'root-providers' };
@@ -279,6 +282,84 @@ describe('parsesCleanly', () => {
     expect(parsesCleanly("import { a } from 'm';\nexport const b = [a];\n")).toBe(true);
     expect(parsesCleanly('export const b = ;\n')).toBe(false);
     expect(parsesCleanly('@Component({ imports: [A /* x */,, ] })\nexport class App {}\n')).toBe(true);
+  });
+});
+
+describe('unfollowedRootProviders', () => {
+  const typed = (body: string) => `import { ApplicationConfig } from '@angular/core';\n\nexport const appConfig: ApplicationConfig = ${body};\n`;
+
+  it('reads a providers array literal, a config without providers and a stock NgModule as editable', () => {
+    expect(unfollowedRootProviders(typed('{ providers: [provideRouter(routes)] }'))).toBeUndefined();
+    expect(unfollowedRootProviders(typed('{}'))).toBeUndefined();
+    expect(unfollowedRootProviders(typed('{ ...base, providers: [] }'))).toBeUndefined();
+    expect(unfollowedRootProviders(readFixture('scaffold-21-ngmodule')['src/app/app-module.ts'])).toBeUndefined();
+    expect(unfollowedRootProviders(readFixture('standalone-app')['src/app/app.config.ts'])).toBeUndefined();
+  });
+
+  it.each([
+    ['a variable', typed('{ providers: baseProviders }')],
+    ['a call', typed('{ providers: buildProviders() }')],
+    ['a shorthand property', typed('{ providers }')],
+    ['an NgModule variable', '@NgModule({ providers: rootProviders })\nexport class AppModule {}\n'],
+    ['an inline bootstrap shorthand', 'bootstrapApplication(App, { providers });\n'],
+  ])('reads %s as not an array literal', (_shape, content) => {
+    expect(unfollowedRootProviders(content)).toBe('not-literal');
+  });
+
+  it('reads a spread without a providers array as one a new key would shadow', () => {
+    expect(unfollowedRootProviders(typed('{ ...baseConfig }'))).toBe('spread');
+  });
+
+  it('reads a config variable built by mergeApplicationConfig, also aliased or typed', () => {
+    expect(unfollowedRootProviders("export const appConfig = mergeApplicationConfig(base, { providers: [] });\n")).toBe('merged');
+    expect(
+      unfollowedRootProviders(
+        "import { mergeApplicationConfig as merge } from '@angular/core';\nexport const config = merge(a, b) satisfies ApplicationConfig;\n",
+      ),
+    ).toBe('merged');
+    expect(unfollowedRootProviders('bootstrapApplication(App, mergeApplicationConfig(base));\n')).toBeUndefined();
+  });
+
+  it('reads a default export built by mergeApplicationConfig as merged', () => {
+    expect(unfollowedRootProviders('export default mergeApplicationConfig(base, server);\n')).toBe('merged');
+  });
+
+  it('reads a merge over a typed config with a providers array in the same file as editable', () => {
+    const content = `${typed('{ providers: [provideRouter(routes)] }').replace('export const appConfig', 'const base')}
+export const appConfig = mergeApplicationConfig(base, serverConfig);
+`;
+    expect(unfollowedRootProviders(content)).toBeUndefined();
+  });
+});
+
+describe('typeOnlyValueImports', () => {
+  it('names the @cngx names a type-only import binds and a call uses as a value', () => {
+    const content = `import type { CngxCompleteLanguagePack, provideCngxI18n, withPack } from '@cngx/core/i18n';
+import { type CNGX_LANGUAGE_DE } from '@cngx/core/i18n/de';
+import type { Routes } from '@angular/router';
+import type { helper } from './local';
+
+const pack: CngxCompleteLanguagePack | undefined = undefined;
+export const providers = [provideCngxI18n(withPack(CNGX_LANGUAGE_DE)), helper()];
+`;
+
+    expect(typeOnlyValueImports(content)).toEqual([
+      { symbol: 'provideCngxI18n', module: '@cngx/core/i18n' },
+      { symbol: 'withPack', module: '@cngx/core/i18n' },
+      { symbol: 'CNGX_LANGUAGE_DE', module: '@cngx/core/i18n/de' },
+    ]);
+    expect(typeOnlyValueImports("import { provideCngxI18n } from '@cngx/core/i18n';\nprovideCngxI18n();\n")).toEqual([]);
+  });
+});
+
+describe('openTypeOnlyImports', () => {
+  it('turns a type-only clause of the module into inline type modifiers and leaves others alone', () => {
+    const content = "import type { A, B } from 'm';\nimport type { C } from 'other';\nimport { d } from 'm';\n";
+
+    expect(openTypeOnlyImports(content, 'm')).toBe(
+      "import { type A, type B } from 'm';\nimport type { C } from 'other';\nimport { d } from 'm';\n",
+    );
+    expect(openTypeOnlyImports("import { type A } from 'm';\n", 'm')).toBe("import { type A } from 'm';\n");
   });
 });
 

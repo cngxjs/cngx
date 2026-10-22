@@ -138,6 +138,59 @@ function rootProvidersArrays(source: ts.SourceFile): readonly ts.ArrayLiteralExp
   );
 }
 
+/**
+ * Why the root providers of a file are out of reach of an array edit: a root
+ * config whose `providers` is not an array literal (a variable, a call, a
+ * shorthand property), one that spreads another object and holds no
+ * `providers` array (a new key would shadow the spread one), or a config
+ * variable or default export built by `mergeApplicationConfig` without
+ * exactly one typed config in the file whose `providers` array can take it.
+ */
+export type UnfollowedRootProviders = 'not-literal' | 'spread' | 'merged';
+
+function isMergeCall(source: ts.SourceFile, expression: ts.Expression): boolean {
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isSatisfiesExpression(expression)) {
+    return isMergeCall(source, expression.expression);
+  }
+  return ts.isCallExpression(expression) && referenceOf(source, expression.expression).name === 'mergeApplicationConfig';
+}
+
+function configBlock(config: ts.ObjectLiteralExpression): UnfollowedRootProviders | undefined {
+  const providers = config.properties.filter((property) => staticKey(property) === 'providers');
+  if (providers.some((property) => !ts.isPropertyAssignment(property) || !ts.isArrayLiteralExpression(property.initializer))) {
+    return 'not-literal';
+  }
+  return providers.length === 0 && config.properties.some(ts.isSpreadAssignment) ? 'spread' : undefined;
+}
+
+/**
+ * Reads whether the root providers of a file cannot be edited as an array
+ * literal, and why; `undefined` when every root config holds a `providers`
+ * array or none at all, so a new one can be added.
+ */
+export function unfollowedRootProviders(content: string): UnfollowedRootProviders | undefined {
+  const source = parse(content);
+  const blocked = rootConfigs(source).map(configBlock).find((cause) => cause !== undefined);
+  if (blocked !== undefined) {
+    return blocked;
+  }
+  const merged = source.statements.some((statement) => {
+    if (ts.isExportAssignment(statement)) {
+      return isMergeCall(source, statement.expression);
+    }
+    return (
+      ts.isVariableStatement(statement) &&
+      statement.declarationList.declarations.some(
+        (declaration) => declaration.initializer !== undefined && isMergeCall(source, declaration.initializer),
+      )
+    );
+  });
+  // One typed config with a providers array next to the merge is edited in
+  // place; with none or several, `addRootProvider` would follow the merge
+  // call and stop.
+  return merged && rootProvidersArrays(source).length !== 1 ? 'merged' : undefined;
+}
+
 const ANGULAR_DECORATORS = new Set(['Component', 'NgModule']);
 
 // The `@Component` / `@NgModule` calls on the top-level `class <name>`, or
@@ -622,6 +675,62 @@ export function promoteTypeOnlyImport(content: string, symbol: string, module: s
   return edits
     .sort(([a], [b]) => b - a)
     .reduce((text, [from, to, insert]) => `${text.slice(0, from)}${insert}${text.slice(to)}`, content);
+}
+
+/**
+ * Rewrites every `import type { a, b } from 'module'` as `import { type a,
+ * type b } from 'module'`, so a value name added to an import of `module`
+ * never lands in a type-only clause. Returns the content unchanged when
+ * there is none.
+ */
+export function openTypeOnlyImports(content: string, module: string): string {
+  const source = parse(content);
+  const edits = source.statements.flatMap((statement): readonly (readonly [number, number, string])[] => {
+    const clause = ts.isImportDeclaration(statement) ? statement.importClause : undefined;
+    const bindings = clause?.namedBindings;
+    const fromModule =
+      ts.isImportDeclaration(statement) && ts.isStringLiteral(statement.moduleSpecifier) && statement.moduleSpecifier.text === module;
+    if (!fromModule || clause === undefined || !clause.isTypeOnly || bindings === undefined || !ts.isNamedImports(bindings)) {
+      return [];
+    }
+    const keyword = typeKeywordRange(content, clause.getStart(source));
+    if (keyword === undefined || clause.name !== undefined) {
+      return [];
+    }
+    const types = bindings.elements.map((element) => [element.getStart(source), element.getStart(source), 'type '] as const);
+    return [[...keyword, ''], ...types];
+  });
+  return [...edits]
+    .sort(([a], [b]) => b - a)
+    .reduce((text, [from, to, insert]) => `${text.slice(0, from)}${insert}${text.slice(to)}`, content);
+}
+
+/** A name a type-only import binds that the file calls or passes to a call. */
+export interface TypeOnlyValueImport {
+  readonly symbol: string;
+  readonly module: string;
+}
+
+/**
+ * The names a type-only import from a `@cngx/*` module binds that the file
+ * uses as values: a callee or an identifier argument of a call. An older
+ * provider edit appended such names to a type-only import of the same
+ * module, which fails the build with TS1361; `promoteTypeOnlyImport`
+ * repairs each.
+ */
+export function typeOnlyValueImports(content: string): readonly TypeOnlyValueImport[] {
+  const source = parse(content);
+  const bindings = topLevelBindings(content);
+  const used = new Set(
+    collectCalls(source, []).flatMap((call) =>
+      [call.expression, ...call.arguments].flatMap((node) => (ts.isIdentifier(node) ? [node.text] : [])),
+    ),
+  );
+  return [...bindings].flatMap(([symbol, binding]) =>
+    binding.typeOnly && binding.module?.startsWith('@cngx/') === true && used.has(symbol)
+      ? [{ symbol, module: binding.module }]
+      : [],
+  );
 }
 
 function collectCalls(node: ts.Node, calls: ts.CallExpression[]): readonly ts.CallExpression[] {

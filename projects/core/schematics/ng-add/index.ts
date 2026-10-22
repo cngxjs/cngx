@@ -23,6 +23,7 @@ import {
   readDryRunFlag,
   readPromptFlags,
   resolveVersions,
+  type TodoNext,
 } from '../engine';
 import { detectProject, type ProjectFacts } from './detect/detect';
 import { readGitState } from './shell/git-state';
@@ -54,6 +55,8 @@ interface StepContext {
   readonly explicitFeedback: boolean;
   /** The starter's files, read from next to this entry. */
   readonly starterTemplates: StarterTemplates;
+  /** The packages a shim handed over to pin. */
+  readonly pins: readonly string[];
 }
 
 /**
@@ -65,9 +68,9 @@ interface StepContext {
  * helper README is workspace-wide, so it lists the libs of every project's
  * record, not only this run's.
  */
-function planSteps({ withdrawn, workspaceLibs, projectSteps, explicitFeedback, starterTemplates }: StepContext): readonly Step[] {
+function planSteps({ withdrawn, workspaceLibs, projectSteps, explicitFeedback, starterTemplates, pins }: StepContext): readonly Step[] {
   return [
-    planDependencies,
+    (facts, answers, versions) => planDependencies(facts, answers, versions, pins),
     planTheme,
     planProviders,
     (facts, answers, versions) => planStarter(facts, answers, versions, projectSteps, starterTemplates),
@@ -141,6 +144,14 @@ function unconfirmedApplyLine({ isTTY, ci, prompts, promptsOff }: ConfirmContext
   return undefined;
 }
 
+// A confirm under a dry run still asks first, so it takes precedence.
+function todoNext(confirming: boolean, dryRun: boolean): TodoNext {
+  if (confirming) {
+    return 'confirm';
+  }
+  return dryRun ? 'dry-run' : 'apply';
+}
+
 function scheduleInstall(plan: ChangePlan): Rule {
   return (_tree: Tree, context: SchematicContext) => {
     if (plan.changes.some((change) => change.kind === 'add-dependency')) {
@@ -211,6 +222,7 @@ export function ngAdd(flags: NgAddFlags): Rule {
           explicitFeedback,
           // Next to this entry in the sources and in the bundle alike.
           starterTemplates: readStarterTemplates(join(__dirname, 'files', 'starter')),
+          pins: options.pins ?? [],
         }).map((step) => step(facts, answers, versions)),
         presetChangeNote(options, recorded, provenance),
         libsFloorNote(answeredLibs, answers.libs, facts.project, provenance),
@@ -227,7 +239,8 @@ export function ngAdd(flags: NgAddFlags): Rule {
     const changesFiles = plan.changes.some((change) => change.kind !== 'note');
     const confirmAhead = facts.maturity === 'existing' && changesFiles && options.yes !== true;
     const dryRun = readDryRunFlag(process.argv);
-    await renderer.todo(plan, { pending: dryRun || (confirmAhead && interactive) });
+    const confirming = confirmAhead && interactive;
+    await renderer.todo(plan, { next: todoNext(confirming, dryRun) });
 
     if (confirmAhead) {
       const unconfirmed = unconfirmedApplyLine({
@@ -253,7 +266,7 @@ export function ngAdd(flags: NgAddFlags): Rule {
       () =>
         renderer.summary(
           createSummary(createReport(plan, unchanged), {
-            planListed: options.quiet !== true,
+            planListed: options.quiet !== true || confirming,
             outcome: dryRun ? 'planned' : 'applied',
           }),
         ),

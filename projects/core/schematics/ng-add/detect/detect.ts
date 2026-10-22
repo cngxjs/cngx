@@ -16,6 +16,10 @@ import {
   readBootstrapCall,
   readProviderCalls,
   type Tree,
+  type TypeOnlyValueImport,
+  typeOnlyValueImports,
+  unfollowedRootProviders,
+  type UnfollowedRootProviders,
 } from '../../engine';
 import {
   claudeInstructionsOf,
@@ -169,6 +173,10 @@ export interface ProjectFacts {
   readonly rootProvidersFile: string;
   /** Every `provide*()` call already in that file. */
   readonly rootProviders: readonly string[];
+  /** Why that file's root providers cannot be edited as an array literal; `undefined` when they can. */
+  readonly rootProvidersUnfollowed: UnfollowedRootProviders | undefined;
+  /** `@cngx` names that file calls although a type-only import binds them, as an older run could leave them. */
+  readonly rootProvidersTypeOnly: readonly TypeOnlyValueImport[];
   /** The bootstrapped root component, or why `main.ts` cannot be followed to it. */
   readonly appShell: AppShell | AppShellUnfollowed;
   /** Whether the root component's files are the untouched `ng new` scaffold, a cngx starter, or anything else. */
@@ -219,6 +227,24 @@ function indexPathOf(options: Readonly<Record<string, unknown>>, sourceRoot: str
   return typeof input === 'string' ? input : posix.join(sourceRoot, 'index.html');
 }
 
+// devkit's `readText` decodes with a fatal utf-8 decoder too, but wraps its
+// failure in a plain `Error`; decoding here keeps the one failure that means
+// "not utf-8" (a `TypeError`) apart from any other, which still stops the run.
+function readUtf8(tree: Tree, path: string): string | undefined {
+  const data = tree.read(path);
+  if (data === null) {
+    return tree.readText(path);
+  }
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(data);
+  } catch (error: unknown) {
+    if (error instanceof TypeError) {
+      return undefined;
+    }
+    throw error;
+  }
+}
+
 /**
  * Reads the facts every onboarding step branches on from the tree and the
  * parsed workspace. Pure: it only reads, and git state, time and the
@@ -235,14 +261,16 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
 
   // The component count is the only fact read from source contents, so only
   // the source files are read up front; the cache serves them to later reads.
+  // A file that is not utf-8 text counts as no component and stays out of
+  // the cache, so a later read of it still fails loudly.
   const appSources = listFiles(tree, sourceRoot, {
     skipDirs: NON_SOURCE_DIRS,
     skipRootDirs: BUILD_OUTPUT_DIRS,
     accept: isAppSource,
-  }).map((path) => ({
-    path,
-    content: tree.readText(path),
-  }));
+  }).flatMap((path) => {
+    const content = readUtf8(tree, path);
+    return content === undefined ? [] : [{ path, content }];
+  });
   const contents = new Map<string, string | undefined>(appSources.map(({ path, content }) => [path, content]));
   const read: Read = (path) => {
     if (!contents.has(path)) {
@@ -256,7 +284,8 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
   const main = read(mainPath) ?? '';
   const standalone = readBootstrapCall(main)?.kind !== 'module';
   const rootProvidersFile = rootProvidersPath(mainPath, main, standalone, sourceRoot);
-  const providerCalls = readProviderCalls(read(rootProvidersFile) ?? '');
+  const rootProvidersSource = read(rootProvidersFile) ?? '';
+  const providerCalls = readProviderCalls(rootProvidersSource);
   const providers = providerCalls.names;
 
   const entries = styleEntries(options);
@@ -295,6 +324,8 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     tailwind: detectTailwind(read, manifest, entries),
     rootProvidersFile,
     rootProviders: providers,
+    rootProvidersUnfollowed: unfollowedRootProviders(rootProvidersSource),
+    rootProvidersTypeOnly: typeOnlyValueImports(rootProvidersSource),
     appShell,
     scaffold: scaffoldOf(read, appShell, names),
     indexHtml: { path: indexPath, state: indexHtmlStateOf(read(indexPath), names) },

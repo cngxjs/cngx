@@ -50,6 +50,7 @@ export {
   type ProvenanceSource,
   type ProviderArg,
   type ProviderCall,
+  renderProviderCall,
   type SkippedStep,
   skipChange,
   type StepResult,
@@ -84,6 +85,10 @@ export {
   reexportSources,
   type TopLevelBinding,
   topLevelBindings,
+  type TypeOnlyValueImport,
+  typeOnlyValueImports,
+  unfollowedRootProviders,
+  type UnfollowedRootProviders,
 } from './edit/ts-edit';
 export {
   appendElements,
@@ -124,6 +129,7 @@ export {
 export {
   createRenderer,
   type PreflightItem,
+  type TodoNext,
 } from './render/renderer';
 export { createSummary, type SummaryHeadlines } from './render/summary';
 export { canReachPrompts, createShellRendererOptions, isCi } from './render/terminal';

@@ -112,13 +112,13 @@ describe('delegateNgAdd', () => {
     return runner;
   }
 
-  it('pins core and delegates in the same run when the installed core is the shim version', async () => {
-    const { tree, tasks } = await run(resolvingRunner(), { installed: VERSION });
+  it('hands its pins to core and writes nothing itself when the installed core is the shim version', async () => {
+    const manifest = '{ "dependencies": { "@cngx/core": "^0.1.0" } }\n';
+    const { tree, tasks } = await run(resolvingRunner(), { installed: VERSION, manifest });
 
-    expect(JSON.parse(tree.readText('package.json')).dependencies['@cngx/core']).toBe(VERSION);
-    expect(JSON.parse(tree.readText('package.json')).dependencies['@cngx/forms']).toBe(VERSION);
-    expect(tree.readText('package.json').endsWith('}\n')).toBe(true);
-    expect(JSON.parse(tree.readText('delegated.json'))).toEqual({ preset: 'minimal' });
+    // The stand-in core writes no package.json, as a declined confirm leaves it.
+    expect(tree.readText('package.json')).toBe(manifest);
+    expect(JSON.parse(tree.readText('delegated.json'))).toEqual({ preset: 'minimal', pins: ['@cngx/core', '@cngx/forms'] });
     expect(tasks).toEqual([]);
   });
 
@@ -224,7 +224,7 @@ describe('delegateNgAdd', () => {
   ])('adds its own package to the libs given as %s', async (_form, libs) => {
     const { tree } = await run(resolvingRunner(), { installed: VERSION, flags: { libs } });
 
-    expect(JSON.parse(tree.readText('delegated.json'))).toEqual({ libs: ['core', 'forms'] });
+    expect(JSON.parse(tree.readText('delegated.json'))).toMatchObject({ libs: ['core', 'forms'] });
   });
 
   describe('the CDK its packages peer on', () => {
@@ -286,13 +286,13 @@ describe('delegateNgAdd', () => {
   it('keeps the libs in package order and names each once', async () => {
     const { tree } = await run(resolvingRunner(), { installed: VERSION, flags: { libs: 'ui,forms,core' } });
 
-    expect(JSON.parse(tree.readText('delegated.json'))).toEqual({ libs: ['core', 'forms', 'ui'] });
+    expect(JSON.parse(tree.readText('delegated.json'))).toMatchObject({ libs: ['core', 'forms', 'ui'] });
   });
 
   it('forwards no libs when the flag is not given', async () => {
     const { tree } = await run(resolvingRunner(), { installed: VERSION, flags: {} });
 
-    expect(JSON.parse(tree.readText('delegated.json'))).toEqual({});
+    expect(JSON.parse(tree.readText('delegated.json'))).toEqual({ pins: ['@cngx/core', '@cngx/forms'] });
   });
 
   it('adds its own package to the libs of the follow-up ng-add', async () => {
@@ -301,10 +301,9 @@ describe('delegateNgAdd', () => {
     expect(taskOptions[1]).toMatchObject({ options: { libs: ['core', 'forms'] } });
   });
 
-  it('pins @cngx/themes but leaves libs to the theme answer', async () => {
+  it('hands @cngx/themes to core to pin but leaves libs to the theme answer', async () => {
     const { tree } = await run(resolvingRunner(), { installed: VERSION, flags: { libs: 'core' }, bundle: themesBundle });
 
-    expect(JSON.parse(tree.readText('package.json')).dependencies['@cngx/themes']).toBe(VERSION);
-    expect(JSON.parse(tree.readText('delegated.json'))).toEqual({ libs: 'core' });
+    expect(JSON.parse(tree.readText('delegated.json'))).toEqual({ libs: 'core', pins: ['@cngx/core', '@cngx/themes'] });
   });
 });

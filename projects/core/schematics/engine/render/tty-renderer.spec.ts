@@ -72,7 +72,7 @@ function finished(events: readonly ListrEvent[]): readonly string[] {
 }
 
 describe('createTtyRenderer', () => {
-  it('prints a pending plan as plain lines instead of ticked tasks', async () => {
+  it.each(['dry-run', 'confirm'] as const)('prints the plan ahead of a %s as plain lines instead of ticked tasks', async (next) => {
     const { renderer, events, lines } = tty();
     const plan = createChangePlan([
       {
@@ -81,7 +81,7 @@ describe('createTtyRenderer', () => {
       },
     ]);
 
-    await renderer.todo(plan, { pending: true });
+    await renderer.todo(plan, { next });
 
     expect(finished(events)).toEqual([]);
     expect(lines).toEqual([

@@ -89,7 +89,7 @@ describe('createPlainRenderer', () => {
     const pending = renderer(false);
 
     await done.renderer.todo(PLAN);
-    await pending.renderer.todo(PLAN, { pending: true });
+    await pending.renderer.todo(PLAN, { next: 'dry-run' });
 
     expect(pending.lines).toEqual(done.lines);
   });
@@ -178,6 +178,17 @@ describe('createPlainRenderer', () => {
     plain.summary(['cngx is set up.', 'Next: npx @cngx/doctor']);
 
     expect(lines).toEqual(['info cngx is set up.', 'info Next: npx @cngx/doctor']);
+  });
+
+  it('prints the plan when quiet and a confirm follows, so the question has something to answer', async () => {
+    const { lines, renderer: plain } = renderer(true);
+    const { lines: loud, renderer: listed } = renderer(false);
+
+    await plain.todo(PLAN, { next: 'confirm' });
+    await listed.todo(PLAN);
+
+    expect(lines).toEqual(loud);
+    expect(lines.length).toBeGreaterThan(0);
   });
 
   it('strips ANSI under NO_COLOR even on a terminal', async () => {

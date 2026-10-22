@@ -39,6 +39,7 @@ const terminal = vi.hoisted(() => ({
   editorPicks: [] as string[],
   git: 'clean',
   confirms: [] as string[],
+  decline: false,
   asked: [] as string[],
 }));
 
@@ -78,7 +79,7 @@ vi.mock('@inquirer/select', () => ({
 vi.mock('@inquirer/confirm', () => ({
   default: (question: { message: string; default: boolean }) => {
     terminal.confirms.push(question.message);
-    return Promise.resolve(question.default);
+    return Promise.resolve(terminal.decline ? false : question.default);
   },
 }));
 
@@ -581,6 +582,144 @@ describe('ngAdd', () => {
     });
   });
 
+  it('plans over a source file that is not utf-8 text', async () => {
+    const tree = createFixtureTree();
+    tree.create('src/app/legacy.ts', Buffer.from([...Buffer.from('// Gr'), 0xfc, ...Buffer.from('e\nexport const legacy = 1;\n')]));
+
+    const run = await runRule(ngAdd({ yes: true }), tree);
+
+    expect(run.tree.readContent('src/app/app.config.ts')).toContain('provideA11yPreferences(withPersistence())');
+  });
+
+  it('repairs provider names an older run left inside a type-only import, once over two runs', async () => {
+    const config = `import type { CngxCompleteLanguagePack, provideCngxI18n, withPack } from '@cngx/core/i18n';
+import { CNGX_LANGUAGE_DE } from '@cngx/core/i18n/de';
+import { ApplicationConfig } from '@angular/core';
+
+export const pack: CngxCompleteLanguagePack = CNGX_LANGUAGE_DE;
+
+export const appConfig: ApplicationConfig = {
+  providers: [provideCngxI18n(withPack(CNGX_LANGUAGE_DE))],
+};
+`;
+    const first = await runRule(ngAdd({ yes: true, i18n: 'de' }), createFixtureTree('standalone-app', { 'src/app/app.config.ts': config }));
+    const repaired = first.tree.readContent('src/app/app.config.ts');
+
+    expect(repaired).toContain("import { type CngxCompleteLanguagePack, provideCngxI18n, withPack } from '@cngx/core/i18n';");
+    expect(first.logs.some((line) => line.includes('Import provideCngxI18n, withPack as values in src/app/app.config.ts'))).toBe(true);
+
+    const second = await runRule(ngAdd({ yes: true, i18n: 'de' }), first.tree);
+
+    expect(second.tree.readContent('src/app/app.config.ts')).toBe(repaired);
+  });
+
+  describe('a root providers cngx cannot edit', () => {
+    const HEAD = `import { ApplicationConfig, mergeApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { provideRouter } from '@angular/router';
+
+import { routes } from './app.routes';
+import { baseConfig } from './base.config';
+`;
+    const LABEL = 'Add the cngx providers to src/app/app.config.ts by hand';
+
+    it.each([
+      [
+        'a variable',
+        `${HEAD}
+const baseProviders = [provideBrowserGlobalErrorListeners(), provideRouter(routes)];
+
+export const appConfig: ApplicationConfig = { providers: baseProviders };
+`,
+      ],
+      [
+        'a call',
+        `${HEAD}
+function buildProviders() {
+  return [provideBrowserGlobalErrorListeners(), provideRouter(routes)];
+}
+
+export const appConfig: ApplicationConfig = {
+  providers: buildProviders(),
+};
+`,
+      ],
+      [
+        'a shorthand property',
+        `${HEAD}
+const providers = [provideBrowserGlobalErrorListeners(), provideRouter(routes)];
+
+export const appConfig: ApplicationConfig = { providers };
+`,
+      ],
+      [
+        'mergeApplicationConfig',
+        `${HEAD}
+export const appConfig = mergeApplicationConfig(baseConfig, {
+  providers: [provideBrowserGlobalErrorListeners(), provideRouter(routes)],
+});
+`,
+      ],
+    ])('leaves %s alone and names the providers to add', async (_shape, config) => {
+      const run = await runRule(ngAdd({ yes: true }), createFixtureTree('standalone-app', { 'src/app/app.config.ts': config }));
+      const note = run.logs.find((line) => line.includes(LABEL));
+
+      expect(run.tree.readContent('src/app/app.config.ts')).toBe(config);
+      expect(note).toContain('provideA11yPreferences(withPersistence())');
+      expect(note).toContain("import { provideA11yPreferences, withPersistence } from '@cngx/core'");
+      expect(run.tree.readContent('src/styles.css')).toContain("@import '@cngx/themes/cngx.css';");
+    });
+
+    it('provides into a typed base config that a mergeApplicationConfig in the same file merges', async () => {
+      const config = `${HEAD}
+const base: ApplicationConfig = {
+  providers: [provideBrowserGlobalErrorListeners(), provideRouter(routes)],
+};
+
+export const appConfig = mergeApplicationConfig(base, baseConfig);
+`;
+      const run = await runRule(ngAdd({ yes: true }), createFixtureTree('standalone-app', { 'src/app/app.config.ts': config }));
+
+      expect(run.tree.readContent('src/app/app.config.ts')).toContain(
+        '  providers: [provideBrowserGlobalErrorListeners(), provideRouter(routes), provideA11yPreferences(withPersistence())],',
+      );
+      expect(run.logs.some((line) => line.includes(LABEL))).toBe(false);
+    });
+
+    it('leaves an inline config in main.ts alone', async () => {
+      const main = `import { provideBrowserGlobalErrorListeners } from '@angular/core';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { App } from './app/app';
+
+const providers = [provideBrowserGlobalErrorListeners()];
+
+bootstrapApplication(App, { providers })
+  .catch((err) => console.error(err));
+`;
+      const tree = createFixtureTree('standalone-app', { 'src/main.ts': main });
+      tree.delete('src/app/app.config.ts');
+      const run = await runRule(ngAdd({ yes: true }), tree);
+
+      expect(run.tree.readContent('src/main.ts')).toBe(main);
+      expect(run.logs.some((line) => line.includes('Add the cngx providers to src/main.ts by hand'))).toBe(true);
+    });
+
+    it('still provides into an inline mergeApplicationConfig, which takes one more config', async () => {
+      const main = `import { mergeApplicationConfig } from '@angular/core';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { App } from './app/app';
+import { baseConfig } from './app/base.config';
+
+bootstrapApplication(App, mergeApplicationConfig(baseConfig))
+  .catch((err) => console.error(err));
+`;
+      const tree = createFixtureTree('standalone-app', { 'src/main.ts': main });
+      tree.delete('src/app/app.config.ts');
+      const run = await runRule(ngAdd({ yes: true }), tree);
+
+      expect(run.tree.readContent('src/main.ts')).toContain('mergeApplicationConfig(baseConfig, {\n  providers: [provideA11yPreferences(withPersistence())]\n})');
+    });
+  });
+
   it('provides the rtl direction for an RTL source locale', async () => {
     const tree = createFixtureTree('standalone-app', {
       'angular.json': withWorkspace((project) => {
@@ -594,6 +733,59 @@ describe('ngAdd', () => {
 
   describe('an existing app', () => {
     const existing = () => createFixtureTree('standalone-app', { 'src/app/other.ts': SECOND_COMPONENT });
+
+    it('leaves the tree as it was when the confirm is declined, the pins a shim handed over included', async () => {
+      vi.stubEnv('CI', '');
+      vi.stubEnv('NO_COLOR', '1');
+      process.stdout.isTTY = true;
+      terminal.decline = true;
+      try {
+        const tree = existing();
+        const before = readTree(tree);
+        const run = await runRule(ngAdd({ pins: ['@cngx/core', '@cngx/forms'] }), tree);
+
+        expect(terminal.confirms).toContain('Apply these changes?');
+        expect(run.logs).toContain('Nothing changed.');
+        expect(readTree(run.tree)).toEqual(before);
+        expect(run.tasks).toEqual([]);
+      } finally {
+        terminal.decline = false;
+        vi.unstubAllEnvs();
+      }
+    });
+
+    it('applies the pins a shim handed over with the rest of the plan', async () => {
+      release.stamped = { cngx: '0.4.0', mcp: '0.3.0', eslintPlugin: '0.2.0', angular: '>=21.1.0 <23.0.0' };
+      try {
+        const run = await runRule(
+          ngAdd({ yes: true, libs: 'utils', theme: 'none', pins: ['@cngx/core', '@cngx/themes'] }),
+          existing(),
+        );
+        const dependencies = json<{ dependencies: Record<string, string> }>(run.tree, 'package.json').dependencies;
+
+        expect(dependencies['@cngx/core']).toBe('0.4.0');
+        expect(dependencies['@cngx/themes']).toBe('0.4.0');
+        expect(run.tasks).toContain('node-package');
+      } finally {
+        release.stamped = undefined;
+      }
+    });
+
+    it('prints the plan under --quiet before it asks to confirm', async () => {
+      vi.stubEnv('CI', '');
+      vi.stubEnv('NO_COLOR', '1');
+      process.stdout.isTTY = true;
+      terminal.confirms = [];
+      try {
+        const run = await runRule(ngAdd({ quiet: true }), existing());
+
+        expect(terminal.confirms).toContain('Apply these changes?');
+        expect(run.logs.some((line) => /^Planned \(\d+\):$/.test(line))).toBe(true);
+        expect(run.logs).not.toContain('Preflight:');
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
 
     it('applies without a terminal to confirm in and says so', async () => {
       vi.stubEnv('CI', '');
@@ -1519,6 +1711,11 @@ describe('the ng-add collection', () => {
       'yes',
       'prompts',
       'quiet',
+      'pins',
     ]);
+  });
+
+  it('keeps the shim-only pins option out of the help', () => {
+    expect(SCHEMA.properties['pins']).toMatchObject({ visible: false, oneOf: [{ type: 'string' }, { type: 'array' }] });
   });
 });

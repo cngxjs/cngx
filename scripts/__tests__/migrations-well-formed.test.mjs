@@ -4,7 +4,8 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { factoryProblems, fixtureProblems, folderOf, keyProblems, specProblems } from '../migrations-well-formed.mjs';
+import { entryProblems, fixtureProblems, folderOf, keyProblems, specProblems } from '../migrations-well-formed.mjs';
+import { SELF_TEST_ENTRIES, SELF_TEST_FILES, SELF_TEST_FIXTURES } from './migrations-well-formed.fixtures.mjs';
 
 /**
  * Every `ng update` migration is a real factory with a spec and a fixture
@@ -41,24 +42,47 @@ function readFixture(dir) {
   return files;
 }
 
-// The hand-written map is empty until a release needs its own migration;
-// the rules themselves run against synthetic inputs below.
+const SOURCE = {
+  readFile: (path) => readOptional(join(MIGRATIONS, path)),
+  readFixture: (path) => readFixture(join(FIXTURES, path)),
+};
+
+const SELF_TEST = {
+  readFile: (path) => SELF_TEST_FILES[path],
+  readFixture: (path) => SELF_TEST_FIXTURES[path],
+};
+
+// The hand-written map is empty until a release needs its own migration, so
+// the same per-entry rules also run on a one-entry self-test collection.
 describe.skipIf(entries.length === 0)('migrations.json entries', () => {
-  it.each(entries)('%s is well formed', (key, entry) => {
-    expect(keyProblems(key, entry)).toEqual([]);
+  it.each(entries)('%s has a well-formed key, factory, spec and fixture pair', (key, entry) => {
+    expect(entryProblems(key, entry, SOURCE)).toEqual([]);
+  });
+});
+
+describe('the self-test collection', () => {
+  const [[key, entry]] = Object.entries(SELF_TEST_ENTRIES);
+  const withFile = (path, content) => ({ ...SELF_TEST, readFile: (file) => (file === path ? content : SELF_TEST.readFile(file)) });
+
+  it('passes every per-entry rule', () => {
+    expect(entryProblems(key, entry, SELF_TEST)).toEqual([]);
   });
 
-  it.each(entries)('%s resolves to an exported factory with a spec', (key) => {
-    const dir = join(MIGRATIONS, folderOf(key));
-
-    expect(factoryProblems(readOptional(join(dir, 'index.ts')))).toEqual([]);
-    expect(specProblems(readOptional(join(dir, 'index.spec.ts')))).toEqual([]);
+  it('fails on a missing factory, a missing spec and a missing fixture pair', () => {
+    expect(entryProblems(key, entry, withFile('0.2.0/index.ts', undefined))).toContain('index.ts is missing');
+    expect(entryProblems(key, entry, withFile('0.2.0/index.spec.ts', undefined))).toContain('index.spec.ts is missing');
+    expect(entryProblems(key, entry, { ...SELF_TEST, readFixture: () => undefined })).not.toEqual([]);
   });
 
-  it.each(entries)('%s has a before and after fixture', (key) => {
-    const dir = join(FIXTURES, folderOf(key));
+  it('fails on a spec that names migrate only in a comment or never reads its own pair', () => {
+    const spec = SELF_TEST_FILES['0.2.0/index.spec.ts'];
 
-    expect(fixtureProblems(readFixture(join(dir, 'before')), readFixture(join(dir, 'after')))).toEqual([]);
+    expect(entryProblems(key, entry, withFile('0.2.0/index.spec.ts', spec.replace('runRule(migrate(),', '/* migrate() */ runRule(other(),')))).toContain(
+      'index.spec.ts has no case that calls migrate or createMigration',
+    );
+    expect(entryProblems(key, entry, withFile('0.2.0/index.spec.ts', spec.replace("readMigrationFixture('0.2.0')", "readMigrationFixture('refresh')")))).toContain(
+      "index.spec.ts never reads its fixture pair through readMigrationFixture('0.2.0')",
+    );
   });
 });
 
@@ -81,7 +105,7 @@ describe('migrations.json', () => {
 
 describe('well-formed rules', () => {
   const entry = (version, folder) => ({ version, description: 'x', factory: `./${folder}/index#migrate` });
-  const SPEC = "it('renames the trigger', async () => { await runMigration(migrate, tree); });";
+  const SPEC = "it('renames the trigger', async () => { await runRule(migrate(), tree); });";
 
   it('accepts a release key and a slug key derived from the entry version', () => {
     expect(keyProblems('migration-v0.2.0', entry('0.2.0', '0.2.0'))).toEqual([]);
@@ -96,10 +120,36 @@ describe('well-formed rules', () => {
   });
 
   it('rejects an empty spec and a spec without a case that runs the migration', () => {
-    expect(specProblems('')).not.toEqual([]);
-    expect(specProblems("it('is pending', () => {});")).not.toEqual([]);
-    expect(specProblems(SPEC)).toEqual([]);
-    expect(specProblems("it('re-runs', async () => { await runRule(createMigration({}), tree); });")).toEqual([]);
+    const pair = "const { before } = readMigrationFixture('0.2.0');";
+
+    expect(specProblems('', '0.2.0')).not.toEqual([]);
+    expect(specProblems(`${pair} it('is pending', () => {});`, '0.2.0')).not.toEqual([]);
+    expect(specProblems(`${pair} it('passes it on', async () => { await runMigration(migrate, tree); });`, '0.2.0')).not.toEqual([]);
+    expect(specProblems(`${pair} ${SPEC}`, '0.2.0')).toEqual([]);
+    expect(specProblems(`${pair} it('re-runs', async () => { await runRule(createMigration({}), tree); });`, '0.2.0')).toEqual([]);
+    expect(specProblems(SPEC, '0.2.0')).not.toEqual([]);
+  });
+
+  it.each([
+    ['it.skip', "it.skip('renames', async () => { await runRule(migrate(), tree); });"],
+    ['it.only', "it.only('renames', async () => { await runRule(migrate(), tree); });"],
+    ['test.skip', "test.skip('renames', async () => { await runRule(migrate(), tree); });"],
+    ['test.todo', "test.todo('renames'); it('reads', () => { migrate(); });"],
+    ['it.skipIf', "it.skipIf(true)('renames', async () => { await runRule(migrate(), tree); });"],
+    ['describe.skip', "describe.skip('x', () => { it('renames', async () => { await runRule(migrate(), tree); }); });"],
+  ])('rejects a spec with %s', (_variant, spec) => {
+    expect(specProblems(`const { before } = readMigrationFixture('0.2.0'); ${spec}`, '0.2.0')).toContain(
+      'index.spec.ts skips, focuses or leaves a case to do',
+    );
+  });
+
+  it('rejects a migrate call outside every case', () => {
+    expect(
+      specProblems("readMigrationFixture('0.2.0'); const rule = migrate(); it('is a case', () => { expect(rule).toBeDefined(); });", '0.2.0'),
+    ).toContain('index.spec.ts has no case that calls migrate or createMigration');
+    expect(
+      specProblems("readMigrationFixture('0.2.0'); it.each([1])('runs %s', async () => { await runRule(migrate(), tree); });", '0.2.0'),
+    ).toEqual([]);
   });
 
   it('rejects placeholder fixtures and an after that equals before', () => {

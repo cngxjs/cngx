@@ -67,17 +67,33 @@ html {
 }
 `;
 
+// The inputs that load the bridge and include one of its mixins; a run that
+// compiles without emitting the bridge passes `compile` all the same.
+function bridged(inputs: readonly string[]): readonly string[] {
+  return inputs.filter(
+    (input) =>
+      input.includes("@use '@cngx/themes/material/theme' as cngx-material;") && /@include cngx-material\.[\w-]+\(/.test(input),
+  );
+}
+
 describe('the Material bridge compiles', () => {
+  it('finds no bridge in a stylesheet cngx did not edit', () => {
+    expect(bridged([MAP_API, DEFINE_THEME, M2_THEME])).toEqual([]);
+  });
+
   it.each([
     ['a mat.theme() map', MAP_API],
     ['a define-theme object', DEFINE_THEME],
     ['an M2 object', M2_THEME],
   ])('for %s', async (_, stylesheet) => {
     const run = await runRule(ngAdd({ theme: 'material' }), createFixtureTree('standalone-app', scssApp(stylesheet)));
+    const inputs = ['src/styles.scss', 'src/cngx-theme.scss']
+      .filter((path) => run.tree.exists(path))
+      .map((path) => run.tree.readContent(path));
 
-    expect(() => compile(run.tree.readContent('src/styles.scss'))).not.toThrow();
-    if (run.tree.exists('src/cngx-theme.scss')) {
-      expect(() => compile(run.tree.readContent('src/cngx-theme.scss'))).not.toThrow();
+    expect(bridged(inputs)).toHaveLength(1);
+    for (const input of inputs) {
+      expect(() => compile(input)).not.toThrow();
     }
   });
 });

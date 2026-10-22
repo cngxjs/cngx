@@ -122,7 +122,9 @@ never installed for you; the bridge only themes an app that already has it.
    changes.` (`cngx planned <n> changes.` under `--dry-run`), counts the
    steps already in place and names the next steps. The plan list above it
    already named every change and note, so the summary does not repeat them;
-   under `--quiet` the summary is all that prints and lists the files touched,
+   under `--quiet` the summary is all that prints (unless a confirmation
+   follows: then the plan list prints first, so the question has something
+   to answer) and lists the files touched,
    the notes (what a step refused or left to you) and the warnings, such as
    a local build without a usable `versions.json`. A planned change that found its edit already in the file
    when it ran (an import an earlier change wrote, say) counts as already in
@@ -202,7 +204,7 @@ Every answer has a flag. A flag skips its question.
 |`--yes`|`--yes`|Apply to an existing app without the confirmation.|
 |`--prompts`|`--prompts`, `--no-prompts`, default `true`|`--no-prompts` answers every question from flags, the recorded answers of a re-run and the preset defaults.|
 |`--interactive`, `--defaults`|`--interactive=false`, `--no-interactive`, `--defaults`|Angular CLI flags; either one also turns the schematic's questions off, like `--no-prompts`.|
-|`--quiet`|`--quiet`|Print only the summary, not the planned changes.|
+|`--quiet`|`--quiet`|Print only the summary, not the planned changes; an existing app asked to confirm still sees the plan first.|
 
 A boolean flag also takes `=true` or `=false` (`--lint=false`). A list flag
 takes its values in one comma-separated argument: repeating the flag
