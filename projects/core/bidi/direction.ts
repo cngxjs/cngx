@@ -76,7 +76,8 @@ function readDocumentDirection(): Signal<CngxDirection> {
   const browser = isPlatformBrowser(inject(PLATFORM_ID));
   // Enumerated attributes match ASCII-case-insensitively but are not trimmed,
   // so `" rtl"` is as invalid for the browser as it is here.
-  const rawDir = (): string => (root?.getAttribute('dir') ?? doc.dir ?? '').toLowerCase();
+  const authoredDir = (): string => root?.getAttribute('dir') ?? doc.dir ?? '';
+  const rawDir = (): string => authoredDir().toLowerCase();
   let lastWarned: string | null = null;
 
   const resolveAuto = (): CngxDirection => {
@@ -92,7 +93,9 @@ function readDocumentDirection(): Signal<CngxDirection> {
   };
 
   const read = (): CngxDirection => {
-    const raw = rawDir();
+    const authored = authoredDir();
+    // Deduped on the lowercased value, the one the browser compares.
+    const raw = authored.toLowerCase();
     if (raw === 'rtl' || raw === 'ltr' || raw === 'auto' || raw === '') {
       lastWarned = null;
       if (raw === 'rtl') {
@@ -104,7 +107,7 @@ function readDocumentDirection(): Signal<CngxDirection> {
       lastWarned = raw;
       cngxDevWarn(
         'CNGX0006',
-        `injectDirection() ignores <html dir="${raw}">; only "ltr", "rtl" and "auto" are valid, so the direction reads 'ltr'.`,
+        `injectDirection() ignores <html dir="${authored}">; only "ltr", "rtl" and "auto" are valid, so the direction reads 'ltr'.`,
       );
     }
     return 'ltr';

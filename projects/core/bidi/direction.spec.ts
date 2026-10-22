@@ -172,6 +172,15 @@ describe('injectDirection / CNGX_DIRECTION reader', () => {
       expect(warn).toHaveBeenCalledTimes(2);
     });
 
+    it('names the dir value as authored in CNGX0006', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      document.documentElement.setAttribute('dir', 'RLTX');
+      TestBed.runInInjectionContext(() => injectDirection());
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringMatching(/^CNGX0006: injectDirection\(\) ignores <html dir="RLTX">/),
+      );
+    });
+
     it('treats a padded dir value as invalid, like the browser', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
       document.documentElement.setAttribute('dir', ' rtl');
