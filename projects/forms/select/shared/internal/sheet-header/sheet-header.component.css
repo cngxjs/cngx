@@ -63,10 +63,12 @@
     font: inherit;
   }
 
+  /* Disabled by colour, the field disabled recipe (38% text), never by
+     opacity: opacity would also fade the focus ring. */
   .cngx-select-sheet-header__done[aria-disabled='true'],
   .cngx-select-sheet-header__close[aria-disabled='true'] {
     cursor: not-allowed;
-    opacity: var(--cngx-select-sheet-disabled-opacity, 0.5);
+    color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
   }
 
   .cngx-select-sheet-header__done:focus-visible,
@@ -85,5 +87,14 @@
     box-sizing: border-box;
     min-block-size: var(--cngx-target-min, 0px);
     font: inherit;
+  }
+}
+
+/* The forced palette overrides the faded colour with ButtonText; GrayText is
+   the system colour for a disabled control. */
+@media (forced-colors: active) {
+  .cngx-select-sheet-header__done[aria-disabled='true'],
+  .cngx-select-sheet-header__close[aria-disabled='true'] {
+    color: GrayText;
   }
 }

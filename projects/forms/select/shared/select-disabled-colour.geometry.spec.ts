@@ -44,12 +44,30 @@ const SCHEMES = ['light', 'dark'] as const;
     '../../../core/theming/system-tokens.css',
     './select-base.css',
     '../tree-select/tree-select-panel.component.css',
+    './internal/sheet-header/sheet-header.component.css',
   ],
   encapsulation: ViewEncapsulation.None,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     @for (scheme of schemes; track scheme) {
       <div [attr.data-color-scheme]="scheme" [class]="'scheme-' + scheme">
+        <div class="cngx-select-sheet-header">
+          <button type="button" class="cngx-select-sheet-header__done done-on">Done</button>
+          <button
+            type="button"
+            class="cngx-select-sheet-header__done done-off"
+            aria-disabled="true"
+          >
+            Done
+          </button>
+          <button
+            type="button"
+            class="cngx-select-sheet-header__close close-off"
+            aria-disabled="true"
+          >
+            X
+          </button>
+        </div>
         <div class="cngx-select__option opt-on">Red</div>
         <div class="cngx-select__option opt-off" aria-disabled="true">
           Off <span class="cngx-select__check check-off">✓</span>
@@ -195,6 +213,20 @@ describe('select-family disabled and quiet states by colour', () => {
       expect(computedValue(at(root, '.twisty-off'), 'color')).toBe(computedValue(off, 'color'));
     });
 
+    it('fades the disabled sheet header Done and X by the field recipe, not opacity', () => {
+      const root = mount(PanelRowsHost);
+      for (const selector of ['.done-off', '.close-off']) {
+        const off = at(root, selector);
+        expect(effectiveOpacity(off)).toBe(1);
+        expect(computedValue(off, 'color')).toBe(
+          computedValue(at(root, '.probe-disabled'), 'color'),
+        );
+      }
+      expect(computedValue(at(root, '.done-off'), 'color')).not.toBe(
+        computedValue(at(root, '.done-on'), 'color'),
+      );
+    });
+
     it('quiets the group headers and the message row by the muted colour, not opacity', () => {
       const root = mount(PanelRowsHost);
       const muted = computedValue(at(root, '.probe-muted'), 'color');
@@ -234,6 +266,8 @@ describe('select-family disabled and quiet states by colour', () => {
       ['data-mode option', '.opt-off'],
       ['declarative option', '.decl-off'],
       ['tree node', '.node-off'],
+      ['sheet header Done', '.done-off'],
+      ['sheet header X', '.close-off'],
     ])('names GrayText for a disabled %s', async (_name, selector) => {
       await cdp().send('Emulation.setEmulatedMedia', {
         features: [{ name: 'forced-colors', value: 'active' }],
