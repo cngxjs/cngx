@@ -1,5 +1,5 @@
 import { readWorkspace } from '@schematics/angular/utility';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { createProvenanceStamp, parseManifest } from '../../engine';
 import { createFixtureTree } from '../../testing/run-schematic';
@@ -186,6 +186,19 @@ describe('detectProject', () => {
 
     expect(facts.maturity).toBe('existing');
     expect(facts.rootProvidersFile).toBe('src/app/app.config.ts');
+  });
+
+  it('stops on a source file it cannot read for any reason but its encoding', async () => {
+    const tree = createFixtureTree('standalone-app', { 'src/app/other.ts': OTHER_COMPONENT });
+    const read = tree.read.bind(tree);
+    vi.spyOn(tree, 'read').mockImplementation((path) => {
+      if (path.endsWith('src/app/other.ts')) {
+        throw new Error('EIO: i/o error');
+      }
+      return read(path);
+    });
+
+    await expect(readWorkspace(tree).then((workspace) => detectProject(tree, workspace))).rejects.toThrow('EIO: i/o error');
   });
 
   it('reads root providers held in a variable as out of reach of an array edit', async () => {

@@ -223,12 +223,21 @@ function indexPathOf(options: Readonly<Record<string, unknown>>, sourceRoot: str
   return typeof input === 'string' ? input : posix.join(sourceRoot, 'index.html');
 }
 
-// devkit's `readText` decodes with a fatal utf-8 decoder.
+// devkit's `readText` decodes with a fatal utf-8 decoder too, but wraps its
+// failure in a plain `Error`; decoding here keeps the one failure that means
+// "not utf-8" (a `TypeError`) apart from any other, which still stops the run.
 function readUtf8(tree: Tree, path: string): string | undefined {
-  try {
+  const data = tree.read(path);
+  if (data === null) {
     return tree.readText(path);
-  } catch {
-    return undefined;
+  }
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(data);
+  } catch (error: unknown) {
+    if (error instanceof TypeError) {
+      return undefined;
+    }
+    throw error;
   }
 }
 
