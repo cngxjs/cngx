@@ -3,6 +3,7 @@
   role="list"
   [attr.aria-label]="label()"
   [attr.aria-describedby]="hintRef()"
+  [attr.aria-busy]="ariaBusy()"
   [class.cngx-select-reorder-list__list--reordering]="reorder.dragging()"
   [cngxReorder]="values"
   [disabled]="disabled()"

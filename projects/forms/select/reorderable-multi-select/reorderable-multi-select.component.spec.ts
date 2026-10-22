@@ -820,7 +820,7 @@ describe('CngxReorderableMultiSelect - sorting in the panel under the touch floo
   });
 
   it('holds a pessimistic move until the commit settles and freezes the list meanwhile', async () => {
-    const { fixture, host, open, move } = render();
+    const { fixture, host, open, move, list } = render();
     let resolve!: () => void;
     host.commitMode.set('pessimistic');
     host.commitAction.set(
@@ -835,6 +835,8 @@ describe('CngxReorderableMultiSelect - sorting in the panel under the touch floo
     flush(fixture);
     expect(host.values()).toEqual(['a', 'b', 'c', 'd']);
     expect(move(2, 'down').getAttribute('aria-disabled')).toBe('true');
+    const ul = () => list()!.querySelector('ul[role="list"]')!;
+    expect(ul().getAttribute('aria-busy')).toBe('true');
 
     move(2, 'down').click();
     flush(fixture);
@@ -844,6 +846,7 @@ describe('CngxReorderableMultiSelect - sorting in the panel under the touch floo
     flush(fixture);
     expect(host.values()).toEqual(['b', 'a', 'c', 'd']);
     expect(move(2, 'down').getAttribute('aria-disabled')).toBeNull();
+    expect(ul().hasAttribute('aria-busy')).toBe(false);
   });
 
   it('announces a list move from the sheet region', () => {

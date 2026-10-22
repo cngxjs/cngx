@@ -75,6 +75,8 @@ export class CngxSelectReorderList<T = unknown> {
   readonly keyboardModifier = input<CngxReorderModifier>('alt');
   /** Freezes every reorder path (a commit in flight, a disabled control). */
   readonly disabled = input<boolean>(false);
+  /** A commit holds the list frozen; reported as `aria-busy` on the list. */
+  readonly busy = input<boolean>(false);
 
   /** A drag, a modifier-key move or a move button settled on a new order. */
   readonly reordered = output<CngxReorderEvent<T>>();
@@ -85,6 +87,9 @@ export class CngxSelectReorderList<T = unknown> {
   /** @internal */ protected readonly hintId = nextUid('cngx-select-reorder-hint');
   /** @internal */ protected readonly atStartId = nextUid('cngx-select-reorder-start');
   /** @internal */ protected readonly atEndId = nextUid('cngx-select-reorder-end');
+
+  /** @internal `aria-busy` of the list, present only while a commit is pending. */
+  protected readonly ariaBusy = computed<'true' | null>(() => (this.busy() ? 'true' : null));
 
   /** @internal The hint applies only while there is something to reorder. */
   protected readonly hintRef = computed<string | null>(() =>

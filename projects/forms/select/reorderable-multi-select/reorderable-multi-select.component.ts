@@ -921,15 +921,17 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * reorders are sub-second and a freeze is clearer than mid-gesture
    * visual noise.
    */
-  protected readonly reorderDisabled = computed<boolean>(() => {
-    if (this.disabled()) {
-      return true;
-    }
-    if (this.reorderableConfig.freezeStripOnCommit && this.isCommitting()) {
-      return true;
-    }
-    return false;
-  });
+  protected readonly reorderDisabled = computed<boolean>(
+    () => this.disabled() || this.reorderFrozenOnCommit(),
+  );
+
+  /**
+   * @internal A commit in flight holds the reorder paths frozen. The panel
+   * list reports it as `aria-busy`; a disabled control is not busy.
+   */
+  protected readonly reorderFrozenOnCommit = computed<boolean>(
+    () => this.reorderableConfig.freezeStripOnCommit && this.isCommitting(),
+  );
 
   /** @internal */ protected readonly isGroup = this.core.panelHostAdapter.isGroup;
   /** @internal */ protected readonly isSelected = this.core.panelHostAdapter.isSelected;

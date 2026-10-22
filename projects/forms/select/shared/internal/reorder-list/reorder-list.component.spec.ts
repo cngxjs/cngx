@@ -27,6 +27,7 @@ const OPTIONS: CngxSelectOptionDef<string>[] = [
       [atStartText]="'Already first'"
       [atEndText]="'Already last'"
       [disabled]="disabled()"
+      [busy]="busy()"
       (reordered)="handle($event)"
     />
   `,
@@ -34,6 +35,7 @@ const OPTIONS: CngxSelectOptionDef<string>[] = [
 class Host {
   readonly items = signal<readonly CngxSelectOptionDef<string>[]>(OPTIONS);
   readonly disabled = signal(false);
+  readonly busy = signal(false);
   readonly events: CngxReorderEvent<string>[] = [];
   readonly up = (label: string): string => `${label}: move up`;
   readonly down = (label: string): string => `${label}: move down`;
@@ -158,6 +160,25 @@ describe('CngxSelectReorderList', () => {
     button(root, 1, 'up').click();
     key(button(root, 1, 'up'), 'ArrowUp');
     expect(host.events).toEqual([]);
+  });
+
+  it('reports aria-busy on the list only while busy', () => {
+    const { host, root } = setup();
+    const list = root.querySelector('ul')!;
+    expect(list.hasAttribute('aria-busy')).toBe(false);
+
+    host.disabled.set(true);
+    settle();
+    expect(list.hasAttribute('aria-busy')).toBe(false);
+
+    host.busy.set(true);
+    settle();
+    expect(list.getAttribute('aria-busy')).toBe('true');
+
+    host.busy.set(false);
+    host.disabled.set(false);
+    settle();
+    expect(list.hasAttribute('aria-busy')).toBe(false);
   });
 
   it('moves a row with the modifier keys on a focused row button', () => {

@@ -232,6 +232,7 @@
         [atEndText]="reorderableConfig.atEnd()"
         [keyboardModifier]="reorderKeyboardModifier()"
         [disabled]="reorderDisabled()"
+        [busy]="reorderFrozenOnCommit()"
         (reordered)="handleReorder($event)"
       />
     }
