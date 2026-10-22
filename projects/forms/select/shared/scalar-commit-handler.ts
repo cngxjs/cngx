@@ -136,7 +136,11 @@ export function createScalarCommitHandler<T>(
       onError: (err, rollbackTo) => {
         opts.onStateChange('error');
         opts.onError(err);
-        if (mode === 'optimistic') {
+        // An external write during the pending window wins over the stale
+        // rollback snapshot: roll back only while the model still holds the
+        // optimistic value this commit wrote.
+        const eq = opts.compareWith() as CngxSelectCompareFn<unknown>;
+        if (mode === 'optimistic' && eq(opts.value(), intended)) {
           const rollback = (rollbackTo ?? undefined) as T | undefined;
           reconcileValue(rollback);
           mirrorWrite(rollback);

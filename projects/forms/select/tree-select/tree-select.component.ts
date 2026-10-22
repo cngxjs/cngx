@@ -1035,7 +1035,10 @@ export class CngxTreeSelect<T = unknown>
       onError: (err, rollbackTo) => {
         this.stateChange.emit('error');
         this.commitError.emit(err);
-        if (this.commitMode() === 'optimistic') {
+        // An external write during the pending window wins over the stale
+        // rollback snapshot (same rule as the array commit handler).
+        const stillOptimistic = sameArrayContents(this.values(), next, this.compareWith());
+        if (this.commitMode() === 'optimistic' && stillOptimistic) {
           this.values.set([...(rollbackTo ?? previous)]);
         }
         // Same order as the array commit handler: rollback, then speak.

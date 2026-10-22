@@ -715,6 +715,28 @@ describe('CngxTreeSelect - commit retry', () => {
       expect(host.onCleared).not.toHaveBeenCalled();
     },
   );
+
+  it('keeps an external write made while an optimistic toggle was pending', () => {
+    const fixture = TestBed.createComponent(RetryTreeHost);
+    const host = fixture.componentInstance;
+    fixture.detectChanges();
+    const tree = fixture.debugElement.query(By.directive(CngxTreeSelect))
+      .componentInstance as CngxTreeSelect<Row>;
+    tree.open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('[role="treeitem"]')!.click();
+    fixture.detectChanges();
+    expect(host.values().map((r) => r.id)).toEqual(['a']);
+
+    const external = host.nodes[1].value;
+    host.values.set([external]);
+    fixture.detectChanges();
+    host.pending[0].error(new Error('server down'));
+    fixture.detectChanges();
+
+    expect(host.values()).toEqual([external]);
+  });
 });
 
 describe('CngxTreeSelect - per-instance node ids', () => {

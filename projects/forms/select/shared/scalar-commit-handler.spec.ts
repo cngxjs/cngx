@@ -138,6 +138,27 @@ describe('createScalarCommitHandler', () => {
       expect(h.valueWriteLog.at(-1)).toBe('a');
     });
 
+    it('in optimistic mode keeps an external write made while the commit was pending', () => {
+      h.value.set('b');
+      const pending = new Subject<T>();
+      h.handler.beginCommit('b', 'a', () => pending);
+      h.value.set('c');
+      pending.error(new Error('boom'));
+      expect(h.stateLog).toEqual(['pending', 'error']);
+      expect(h.value()).toBe('c');
+      expect(h.valueWriteLog).not.toContain('a');
+      expect(h.commitErrorLog.length).toBe(1);
+    });
+
+    it('in optimistic mode still rolls back after a pending window without external write', () => {
+      h.value.set('b');
+      const pending = new Subject<T>();
+      h.handler.beginCommit('b', 'a', () => pending);
+      pending.error(new Error('boom'));
+      expect(h.value()).toBe('a');
+      expect(h.valueWriteLog.at(-1)).toBe('a');
+    });
+
     it('in pessimistic mode leaves the value untouched on error', () => {
       h.commitMode.set('pessimistic');
       h.value.set('a');
