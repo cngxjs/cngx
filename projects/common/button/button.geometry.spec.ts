@@ -132,6 +132,9 @@ describe.each(['comfortable', 'compact', 'spacious'] as const)('CngxButton geome
       expect(heights[i]).toBeGreaterThan(heights[i - 1]);
     }
     expect(px(query(root, '.b-sm'), 'padding-top')).toBe(SPACE[density].xs);
+    expect(px(query(root, '.b-xs'), 'padding-top')).toBe(SPACE[density].xs / 2);
+    expect(px(query(root, '.b-lg'), 'padding-top')).toBe(SPACE[density].sm * 1.5);
+    expect(heights[3] - heights[2]).toBeLessThan(heights[2] - heights[1]);
   });
 
   it('floors every control size to 44px on a coarse pointer', () => {

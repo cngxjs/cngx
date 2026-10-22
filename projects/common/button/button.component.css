@@ -260,7 +260,8 @@
 
     /* Size steps, each SET from the scale. */
     :scope[data-size='xs'] {
-      --cngx-button-padding-block: 0px;
+      /* Half the xs rung: tight, but still re-scaled by [data-density]. */
+      --cngx-button-padding-block: calc(var(--cngx-space-xs) / 2);
       --cngx-button-padding-inline: var(--cngx-space-sm);
       --cngx-button-gap: var(--cngx-space-xs);
       --cngx-button-font-size: var(--cngx-font-size-sm, 0.8125rem);
@@ -272,7 +273,9 @@
       --cngx-button-font-size: var(--cngx-font-size-sm, 0.8125rem);
     }
     :scope[data-size='lg'] {
-      --cngx-button-padding-block: var(--cngx-space-md);
+      /* One and a half sm rungs: a step above md about as large as sm to md,
+         not a full rung jump. */
+      --cngx-button-padding-block: calc(var(--cngx-space-sm) * 1.5);
       --cngx-button-padding-inline: var(--cngx-space-lg);
       --cngx-button-font-size: var(--cngx-font-size-lg, 1.0625rem);
     }
