@@ -162,6 +162,52 @@
     initial-value: 1.25em;
   }
 
+  /**
+   * Tint strength of a neutral `secondary` fill and its hover. Light text on
+   * a dark surface reads a small tint as almost nothing, so the dark scheme
+   * steps both up.
+   * @group Tone
+   */
+  @property --cngx-button-neutral-tint {
+    syntax: '*';
+    inherits: true;
+    initial-value: 5%;
+  }
+
+  /**
+   * Hover tint strength of a neutral `secondary` fill.
+   * @group Tone
+   */
+  @property --cngx-button-neutral-tint-hover {
+    syntax: '*';
+    inherits: true;
+    initial-value: 9%;
+  }
+
+  :root {
+    --cngx-button-neutral-tint: 5%;
+    --cngx-button-neutral-tint-hover: 9%;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-button-neutral-tint: 10%;
+      --cngx-button-neutral-tint-hover: 15%;
+    }
+  }
+
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-button-neutral-tint: 10%;
+    --cngx-button-neutral-tint-hover: 15%;
+  }
+
+  [data-color-scheme='light'],
+  .light {
+    --cngx-button-neutral-tint: 5%;
+    --cngx-button-neutral-tint-hover: 9%;
+  }
+
   /* Derive the colour transition from the motion scale; the registered
    * initial-value wins over a read-site fallback, so the token must be SET. */
   :where(.cngx-button) {
@@ -281,10 +327,14 @@
     }
     /* Neutral secondary steps below the neutral solid fill so the two stay apart. */
     :scope[data-variant='secondary'][data-tone='neutral'] {
-      background: color-mix(in oklch, var(--cngx-button-tone, currentColor) 5%, transparent);
+      background: color-mix(in oklch, var(--cngx-button-tone, currentColor) var(--cngx-button-neutral-tint, 5%), transparent);
     }
     :scope[data-variant='secondary'][data-tone='neutral']:hover {
-      background: color-mix(in oklch, var(--cngx-button-tone, currentColor) 9%, transparent);
+      background: color-mix(
+        in oklch,
+        var(--cngx-button-tone, currentColor) var(--cngx-button-neutral-tint-hover, 9%),
+        transparent
+      );
     }
     :scope[data-variant='outline'] {
       border-color: var(--cngx-color-border, oklch(0.88 0.005 250));

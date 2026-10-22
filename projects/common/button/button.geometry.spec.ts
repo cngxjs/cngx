@@ -45,6 +45,8 @@ type Density = 'comfortable' | 'compact' | 'spacious';
         </button>
       </p>
       <p>Read the <a cngxButton="link" class="b-link" href="#docs">docs</a> first.</p>
+      <p data-color-scheme="light"><button cngxButton="secondary" class="b-secondary-light">Save</button></p>
+      <p data-color-scheme="dark"><button cngxButton="secondary" class="b-secondary-dark">Save</button></p>
       <p>
         <button cngxButton class="b-busy" [cngxAsyncClick]="action">Save changes</button>
       </p>
@@ -193,6 +195,19 @@ describe('CngxButton paint: neutral solid', () => {
     expect(computedValue(md, 'color')).toBe(text);
     expect(computedValue(md, 'background-color')).not.toBe(text);
     expect(computedValue(md, 'border-top-color')).not.toBe('rgba(0, 0, 0, 0)');
+  });
+});
+
+describe('CngxButton paint: neutral secondary', () => {
+  it('steps the tint up on a dark scheme', () => {
+    const { root } = mount();
+    const alpha = (el: Element): number => {
+      const match = computedValue(el, 'background-color').match(/\/\s*([\d.]+)\)$|,\s*([\d.]+)\)$/);
+      return match ? parseFloat(match[1] ?? match[2]) : 1;
+    };
+    expect(computedValue(query(root, '.b-secondary-light'), '--cngx-button-neutral-tint').trim()).toBe('5%');
+    expect(computedValue(query(root, '.b-secondary-dark'), '--cngx-button-neutral-tint').trim()).toBe('10%');
+    expect(alpha(query(root, '.b-secondary-dark'))).toBeGreaterThan(alpha(query(root, '.b-secondary-light')));
   });
 });
 
