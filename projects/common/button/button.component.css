@@ -146,8 +146,20 @@
    */
   @property --cngx-button-spinner-size {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1em;
+  }
+
+  /**
+   * Edge length of an `svg` or `img` in a start or end slot. Same rung as
+   * `--cngx-icon-size-md`, so a projected `cngx-icon` and a bare `svg` match.
+   * Inherits so a value set on the button reaches the slot glyph.
+   * @group Layout
+   */
+  @property --cngx-button-icon-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1.25em;
   }
 
   /* Derive the colour transition from the motion scale; the registered
@@ -328,9 +340,11 @@
       flex-shrink: 0;
       line-height: 1;
     }
-    .cngx-button__slot > svg {
-      inline-size: 1.25em;
-      block-size: 1.25em;
+    /* The slot marker sits on the glyph itself or on a wrapper around it. */
+    :is(svg, img).cngx-button__slot,
+    .cngx-button__slot > :is(svg, img) {
+      inline-size: var(--cngx-button-icon-size, 1.25em);
+      block-size: var(--cngx-button-icon-size, 1.25em);
     }
 
     /* Stronger chrome on the more-contrast axis: outline borders take the

@@ -57,5 +57,7 @@ Density, text scale, touch floor, motion and contrast are not inputs. They come 
 ## Composition
 
 - `CngxButtonStart` / `CngxButtonEnd` mark projected icons, badges or `<kbd>` hints; they are sized in `em` and trim the padding on their side.
+- Slot glyphs: an `svg` or `img` is sized to `--cngx-button-icon-size` (`1.25em`, the `cngx-icon` `md` rung) whether it carries the slot marker itself or sits inside the marked element. A `<cngx-icon cngxButtonStart>` scales the same way.
+- Icon fonts set their own pixel size outside any layer, so they ignore the slot size: `.material-icons` and `<mat-icon>` stay at 24px. Wrap the glyph in `<cngx-icon cngxButtonStart>` and let it inherit the size: `<mat-icon inline>` does that by itself, a plain icon-font span needs `font-size: inherit`.
 - `CNGX_BUTTON_GROUP` is the contract a group provides so its children read variant and size without importing the group class.
 - `CNGX_HOST_INTERACTION_STATE` (`@cngx/common/interactive`) is how the button tells a co-hosted `cngxAsyncClick` it is disabled, so both directives render the same `aria-disabled`.

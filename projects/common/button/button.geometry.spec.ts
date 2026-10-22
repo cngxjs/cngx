@@ -36,6 +36,14 @@ type Density = 'comfortable' | 'compact' | 'spacious';
       <p>
         <button cngxButton class="b-start"><span cngxButtonStart>+</span>Save</button>
       </p>
+      <p>
+        <button cngxButton class="b-svg-self">
+          <svg cngxButtonStart viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14" /></svg>Save
+        </button>
+        <button cngxButton class="b-svg-child">
+          <span cngxButtonStart><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14" /></svg></span>Save
+        </button>
+      </p>
       <p>Read the <a cngxButton="link" class="b-link" href="#docs">docs</a> first.</p>
       <p>
         <button cngxButton class="b-busy" [cngxAsyncClick]="action">Save changes</button>
@@ -159,6 +167,18 @@ describe('CngxButton geometry: slots', () => {
     const start = query(root, '.b-start');
     expect(px(start, 'padding-left')).toBeLessThan(px(query(root, '.b-md'), 'padding-left'));
     expect(px(start, 'padding-right')).toBe(px(query(root, '.b-md'), 'padding-right'));
+  });
+
+  it('sizes an svg to 1.25em whether it carries the slot marker or sits inside one', () => {
+    const { root } = mount();
+    const md = query(root, '.b-md');
+    for (const host of ['.b-svg-self', '.b-svg-child']) {
+      const btn = query(root, host);
+      const svg = query(btn, 'svg').getBoundingClientRect();
+      expect(svg.width).toBeCloseTo(px(btn, 'font-size') * 1.25, 0);
+      expect(svg.height).toBeCloseTo(px(btn, 'font-size') * 1.25, 0);
+      expect(height(btn)).toBeCloseTo(height(md), 0);
+    }
   });
 });
 
