@@ -7,6 +7,11 @@ import { injectCngxAudio } from '../inject-audio';
 /** Throttle key - the pitch directive plays a single ad-hoc voice. */
 const PITCH_VOICE = 'pitch';
 
+/** No span to interpolate across: equal ends, or an end that is `NaN` / infinite. */
+function isDegenerateDomain(lo: number, hi: number): boolean {
+  return lo === hi || !Number.isFinite(lo) || !Number.isFinite(hi);
+}
+
 /**
  * Pitch-mode audio binder. Sonifies a continuous numeric value: each change of
  * `[cngxAudioPitch]` clamps against a fixed domain, linear-scales into an output
@@ -50,8 +55,9 @@ export class CngxAudioPitch {
 
   /**
    * Fixed input domain `[lo, hi]` the value is clamped against; `lo > hi`
-   * inverts the mapping. An empty domain (`lo === hi`) plays the range low
-   * for every value and warns in dev mode (CNGX1069).
+   * inverts the mapping. An empty domain (`lo === hi`) or one with a `NaN` /
+   * infinite end plays the range low for every value and warns in dev mode
+   * (CNGX1069).
    */
   readonly pitchDomain = input.required<[number, number]>();
 
@@ -105,7 +111,7 @@ export class CngxAudioPitch {
       let lastWarned: string | null = null;
       effect(() => {
         const [lo, hi] = this.pitchDomain();
-        if (lo !== hi) {
+        if (!isDegenerateDomain(lo, hi)) {
           lastWarned = null;
           return;
         }
@@ -117,7 +123,7 @@ export class CngxAudioPitch {
         const rangeLo = untracked(() => this.pitchRange()[0]);
         cngxDevWarn(
           'CNGX1069',
-          `[cngxAudioPitch] [pitchDomain] [${lo}, ${hi}] is empty; every value plays ${rangeLo} Hz, the low end of [pitchRange].`,
+          `[cngxAudioPitch] [pitchDomain] [${lo}, ${hi}] is empty or not finite; every value plays ${rangeLo} Hz, the low end of [pitchRange].`,
         );
       });
     }
@@ -131,12 +137,12 @@ export class CngxAudioPitch {
   private scale(value: number): number {
     const [domainLo, domainHi] = this.pitchDomain();
     const [rangeLo, rangeHi] = this.pitchRange();
+    if (isDegenerateDomain(domainLo, domainHi)) {
+      return rangeLo;
+    }
     const min = Math.min(domainLo, domainHi);
     const max = Math.max(domainLo, domainHi);
     const clamped = Math.max(min, Math.min(max, value));
-    if (domainHi === domainLo) {
-      return rangeLo;
-    }
     const t = (clamped - domainLo) / (domainHi - domainLo);
     return rangeLo + t * (rangeHi - rangeLo);
   }

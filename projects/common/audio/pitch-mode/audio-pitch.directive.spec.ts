@@ -171,7 +171,20 @@ describe('CngxAudioPitch directive', () => {
       setDomain(host, fixture, [5, 5]);
       expect(warnCount(warn)).toBe(1);
       expect(warn).toHaveBeenCalledWith(
-        expect.stringMatching(/^CNGX1069: \[cngxAudioPitch\] \[pitchDomain\] \[5, 5\] is empty; every value plays 220 Hz/),
+        expect.stringMatching(/^CNGX1069: \[cngxAudioPitch\] \[pitchDomain\] \[5, 5\] is empty or not finite; every value plays 220 Hz/),
+      );
+
+      sweep(host, fixture, 70);
+      expect(lastToneFreq(handle)).toBe(220);
+    });
+
+    it('treats a NaN bound like an empty domain: warns and plays range low', () => {
+      const warn = warnSpy();
+      const { host, fixture, handle } = setup({ value: 0, domain: [0, 100], range: [220, 880] });
+
+      setDomain(host, fixture, [Number.NaN, 5]);
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringMatching(/^CNGX1069: \[cngxAudioPitch\] \[pitchDomain\] \[NaN, 5\] is empty or not finite/),
       );
 
       sweep(host, fixture, 70);
