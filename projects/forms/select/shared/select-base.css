@@ -1428,7 +1428,7 @@
   .cngx-select__chip-wrap:focus-visible {
     outline: var(
       --cngx-select-focus-outline,
-      2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
+      2px solid var(--_cngx-select-focus-ring-color, var(--cngx-color-primary, oklch(0.66 0.19 50)))
     );
     outline-offset: var(--cngx-select-focus-offset, 2px);
   }
@@ -1570,7 +1570,7 @@
   .cngx-select__error-retry:focus-visible {
     outline: var(
       --cngx-select-focus-outline,
-      2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
+      2px solid var(--_cngx-select-focus-ring-color, var(--cngx-color-primary, oklch(0.66 0.19 50)))
     );
     outline-offset: var(--cngx-select-focus-offset, 2px);
   }
@@ -1660,6 +1660,14 @@
      Error and disabled read the trigger's own ARIA first, then the inner
      `[role='combobox']` input: combobox, typeahead and both action variants
      wrap a real input that carries `aria-invalid` / `disabled` itself. */
+
+  /* The tinted fill surface drops the primary ring under 3:1, so the inner
+     focus rings (clear, chip, retry, sheet buttons, reorder handle) fall
+     back to the strong accent there. Private and unregistered: it only
+     feeds the fallback, `--cngx-select-focus-outline` still wins. */
+  [data-skin='fill'] {
+    --_cngx-select-focus-ring-color: var(--cngx-color-primary-strong, oklch(0.58 0.19 50));
+  }
 
   @scope ([data-skin='fill']:not(.cngx-field-box > *) > * > .cngx-field-trigger) {
     :scope.cngx-field-trigger {
