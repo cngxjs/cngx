@@ -369,6 +369,18 @@ export const appConfig: ApplicationConfig = {
       expect(twice).toBe(once);
     });
 
+    it('leaves a type-only import of a module it inserts no name from byte for byte', async () => {
+      const head = "import type { CngxA11yAxes } from '@cngx/core';\nimport { provideA11yPreferences, withPersistence } from '@cngx/core';\n";
+      const config = await edited(`${head}
+export const appConfig: ApplicationConfig = {
+  providers: [],
+};
+`);
+
+      expect(config.startsWith(head)).toBe(true);
+      expect(config).toContain('providers: [provideA11yPreferences(withPersistence())]');
+    });
+
     it('adds to an import of the same module', async () => {
       const config = await edited(`import { withPersistence } from '@cngx/core';
 

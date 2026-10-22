@@ -123,8 +123,11 @@ function addProvider(change: AddProvider, onUnchanged: OnUnchanged): Rule {
       return undefined;
     }
     const promoted = imports.reduce((text, [symbol, module]) => promoteTypeOnlyImport(text, symbol, module), added);
-    // `insertImport` appends to any import of the module, a type-only one too.
-    const next = imports.reduce((text, [, module]) => openTypeOnlyImports(text, module), promoted);
+    // `insertImport` appends to any import of the module, a type-only one
+    // too; only a module that gets a new name has its type-only clauses opened.
+    const bound = topLevelBindings(promoted);
+    const inserting = new Set(imports.filter(([symbol]) => bound.get(symbol) === undefined).map(([, module]) => module));
+    const next = [...inserting].reduce((text, module) => openTypeOnlyImports(text, module), promoted);
     tree.overwrite(path, next);
     for (const [symbol, module] of imports) {
       insertImportInto(tree, path, symbol, module);
