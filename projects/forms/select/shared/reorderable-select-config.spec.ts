@@ -10,6 +10,7 @@ import {
   resolveReorderableSelectConfig,
   withReorderAriaLabel,
   withReorderKeyboardModifier,
+  withReorderListLabels,
   withReorderStripFreeze,
 } from './reorderable-select-config';
 
@@ -111,5 +112,47 @@ describe('resolveReorderableSelectConfig - runtime language switch', () => {
     TestBed.configureTestingModule({ providers: [provideReorderableSelectConfig(withReorderAriaLabel('Reorder'))] });
     const [a, b] = TestBed.runInInjectionContext(() => [resolveReorderableSelectConfig(), resolveReorderableSelectConfig()]);
     expect(a.ariaLabel).toBe(b.ariaLabel);
+  });
+});
+
+describe('resolveReorderableSelectConfig - sortable list copy', () => {
+  it('defaults every list key to the English section', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({});
+    const cfg = TestBed.runInInjectionContext(() => resolveReorderableSelectConfig());
+    expect(cfg.listLabel()).toBe(CNGX_REORDERABLE_SELECT_DEFAULTS.listLabel);
+    expect(cfg.atStart()).toBe(CNGX_REORDERABLE_SELECT_DEFAULTS.atStart);
+    expect(cfg.atEnd()).toBe(CNGX_REORDERABLE_SELECT_DEFAULTS.atEnd);
+    expect(typeof cfg.moveUp()).toBe('function');
+    expect(typeof cfg.moveDown()).toBe('function');
+  });
+
+  it('lets withReorderListLabels replace single keys and keeps the rest', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideReorderableSelectConfig(
+          withReorderListLabels({ listLabel: 'Order', moveUp: (label) => `Up ${label}` }),
+        ),
+      ],
+    });
+    const cfg = TestBed.runInInjectionContext(() => resolveReorderableSelectConfig());
+    expect(cfg.listLabel()).toBe('Order');
+    expect(cfg.moveUp()('Red')).toBe('Up Red');
+    expect(cfg.atEnd()).toBe(CNGX_REORDERABLE_SELECT_DEFAULTS.atEnd);
+  });
+
+  it('follows Signal values of the list keys', () => {
+    const listLabel = signal('Order');
+    const moveDown = signal((label: string) => `Down ${label}`);
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideReorderableSelectConfigAt(withReorderListLabels({ listLabel, moveDown }))],
+    });
+    const cfg = TestBed.runInInjectionContext(() => resolveReorderableSelectConfig());
+    listLabel.set('Reihenfolge');
+    moveDown.set((label) => `Runter ${label}`);
+    expect(cfg.listLabel()).toBe('Reihenfolge');
+    expect(cfg.moveDown()('Rot')).toBe('Runter Rot');
   });
 });

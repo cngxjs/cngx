@@ -78,6 +78,10 @@ import {
 } from '../shared/chip-removal-handler';
 import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
 import { sameArrayContents } from '../shared/internal/compare';
+import { CngxSelectReorderList } from '../shared/internal/reorder-list/reorder-list.component';
+import { CngxSelectSummary } from '../shared/internal/summary/select-summary.component';
+import { createSelectSummary } from '../shared/internal/summary/select-summary';
+import { injectTouchFloorSignal } from '../shared/internal/touch-floor';
 import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createFieldSync } from '../shared/field-sync';
 import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
@@ -233,6 +237,8 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
     CngxPopoverTrigger,
     CngxReorder,
     CngxSelectPanel,
+    CngxSelectReorderList,
+    CngxSelectSummary,
     NgTemplateOutlet,
   ],
   providers: [
@@ -271,7 +277,8 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
 export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = resolveSelectConfig();
-  private readonly reorderableConfig = resolveReorderableSelectConfig();
+  /** @internal Reorder copy and settings; the panel list reads its copy here. */
+  protected readonly reorderableConfig = resolveReorderableSelectConfig();
   private readonly injector = inject(Injector);
 
   readonly label = input<string>('');
@@ -894,6 +901,18 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   });
 
   /**
+   * @internal - one-line summary instead of the reorderable chips under the
+   * touch floor. Sorting then moves into the panel list, so the strip is a
+   * plain value display while this is active.
+   */
+  protected readonly summary = createSelectSummary<T>({
+    selectedOptions: this.selectedOptions,
+    active: injectTouchFloorSignal(),
+    ariaLabels: this.config.ariaLabels,
+    fallbackLabels: this.config.fallbackLabels,
+  });
+
+  /**
    * Pointer/keyboard reorder is suppressed while a commit is in flight
    * (pessimistic freeze, default) or when disabled. App-wide
    * `provideReorderableSelectConfig(withReorderStripFreeze(false))`
@@ -902,15 +921,17 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * reorders are sub-second and a freeze is clearer than mid-gesture
    * visual noise.
    */
-  protected readonly reorderDisabled = computed<boolean>(() => {
-    if (this.disabled()) {
-      return true;
-    }
-    if (this.reorderableConfig.freezeStripOnCommit && this.isCommitting()) {
-      return true;
-    }
-    return false;
-  });
+  protected readonly reorderDisabled = computed<boolean>(
+    () => this.disabled() || this.reorderFrozenOnCommit(),
+  );
+
+  /**
+   * @internal A commit in flight holds the reorder paths frozen. The panel
+   * list reports it as `aria-busy`; a disabled control is not busy.
+   */
+  protected readonly reorderFrozenOnCommit = computed<boolean>(
+    () => this.reorderableConfig.freezeStripOnCommit && this.isCommitting(),
+  );
 
   /** @internal */ protected readonly isGroup = this.core.panelHostAdapter.isGroup;
   /** @internal */ protected readonly isSelected = this.core.panelHostAdapter.isSelected;
@@ -1153,6 +1174,11 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     const opt = this.core.findOption(movedValue);
     this.reorderCommit.dispatch([...next], previous, fromIndex, toIndex, opt);
 
+    // The panel list keeps focus on its own moved row; the chip strip is
+    // not rendered while the summary is on.
+    if (this.summary.active()) {
+      return;
+    }
     // Keep focus on the moved chip. Runs after the next render so the
     // DOM reflects the updated @for ordering before the roving
     // controller probes for [data-reorder-index=toIndex]. `setActive`

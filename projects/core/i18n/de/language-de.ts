@@ -417,6 +417,11 @@ export const CNGX_LANGUAGE_DE = {
     announceMovedNoOption: '{field}: verschoben',
     actionGroup: 'Inline-Aktion',
     reorderHint: 'Mit Alt + Pfeiltasten neu anordnen',
+    reorderListLabel: 'Ausgewählt, in Reihenfolge',
+    reorderMoveUp: '{label}: nach oben verschieben',
+    reorderMoveDown: '{label}: nach unten verschieben',
+    reorderAtStart: 'Bereits an erster Stelle',
+    reorderAtEnd: 'Bereits an letzter Stelle',
   },
   sidenav: {
     resizeHandle: 'Navigationsbreite ändern',

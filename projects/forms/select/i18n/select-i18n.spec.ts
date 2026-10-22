@@ -422,3 +422,51 @@ describe('select label matching', () => {
     controller.clearBuffer();
   });
 });
+
+describe('sortable selection list copy', () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+  });
+
+  it('defaults to the English section', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const cfg = TestBed.runInInjectionContext(() => resolveReorderableSelectConfig());
+    expect(cfg.listLabel()).toBe('Selected, in order');
+    expect(stripBidiIsolates(cfg.moveUp()('Red'))).toBe('Red: move up');
+    expect(stripBidiIsolates(cfg.moveDown()('Red'))).toBe('Red: move down');
+    expect(cfg.atStart()).toBe('Already first');
+    expect(cfg.atEnd()).toBe('Already last');
+    expect(EN_SECTION.reorderMoveUp).toBe('{label}: move up');
+  });
+
+  it('reads the German pack', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(withPartialPack(CNGX_LANGUAGE_DE), withDocumentLanguage('off')),
+      ],
+    });
+    const cfg = TestBed.runInInjectionContext(() => resolveReorderableSelectConfig());
+    expect(cfg.listLabel()).toBe('Ausgewählt, in Reihenfolge');
+    expect(stripBidiIsolates(cfg.moveUp()('Rot'))).toBe('Rot: nach oben verschieben');
+    expect(stripBidiIsolates(cfg.moveDown()('Rot'))).toBe('Rot: nach unten verschieben');
+    expect(cfg.atStart()).toBe('Bereits an erster Stelle');
+    expect(cfg.atEnd()).toBe('Bereits an letzter Stelle');
+  });
+
+  it('follows a pack switch', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
+      ],
+    });
+    const cfg = TestBed.runInInjectionContext(() => resolveReorderableSelectConfig());
+    expect(cfg.listLabel()).toBe('Selected, in order');
+    pack.set({ locale: 'de', select: { reorderListLabel: 'Reihenfolge', reorderMoveUp: 'Hoch: {label}' } });
+    expect(cfg.listLabel()).toBe('Reihenfolge');
+    expect(stripBidiIsolates(cfg.moveUp()('Rot'))).toBe('Hoch: Rot');
+    expect(cfg.atEnd()).toBe('Already last');
+  });
+});

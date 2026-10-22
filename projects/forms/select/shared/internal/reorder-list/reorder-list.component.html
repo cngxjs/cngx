@@ -1,0 +1,79 @@
+<ul
+  class="cngx-select-reorder-list__list"
+  role="list"
+  [attr.aria-label]="label()"
+  [attr.aria-describedby]="hintRef()"
+  [attr.aria-busy]="ariaBusy()"
+  [class.cngx-select-reorder-list__list--reordering]="reorder.dragging()"
+  [cngxReorder]="values"
+  [disabled]="disabled()"
+  [keyboardModifier]="keyboardModifier()"
+  handleSelector="[data-reorder-handle]"
+  ignoreSelector="button"
+  #reorder="cngxReorder"
+  (reordered)="handleReorder($event)"
+>
+  @for (opt of items(); track opt.value; let i = $index, first = $first, last = $last) {
+    <li
+      class="cngx-select-reorder-list__row"
+      [attr.data-reorder-index]="i"
+      [class.cngx-select-reorder-list__row--dragging]="reorder.dragFromIndex() === i"
+      [class.cngx-select-reorder-list__row--drag-over]="
+        reorder.dragOverIndex() === i && reorder.dragFromIndex() !== i
+      "
+    >
+      <span class="cngx-select-reorder-list__handle" data-reorder-handle aria-hidden="true">
+        <svg viewBox="0 0 10 16" width="0.625em" height="1em" focusable="false">
+          <circle cx="2.5" cy="3" r="1.5" fill="currentColor" />
+          <circle cx="7.5" cy="3" r="1.5" fill="currentColor" />
+          <circle cx="2.5" cy="8" r="1.5" fill="currentColor" />
+          <circle cx="7.5" cy="8" r="1.5" fill="currentColor" />
+          <circle cx="2.5" cy="13" r="1.5" fill="currentColor" />
+          <circle cx="7.5" cy="13" r="1.5" fill="currentColor" />
+        </svg>
+      </span>
+      <span class="cngx-select-reorder-list__label">{{ opt.label }}</span>
+      <button
+        type="button"
+        class="cngx-select-reorder-list__move"
+        data-move="up"
+        [attr.aria-label]="moveUpLabel()(opt.label)"
+        [attr.aria-disabled]="first || disabled() ? 'true' : null"
+        [attr.aria-describedby]="first ? atStartId : null"
+        (click)="handleMove(i, 'up')"
+      >
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 12 12"
+          width="0.75em"
+          height="0.75em"
+          focusable="false"
+        >
+          <path d="M6 2 1.5 7h9z" fill="currentColor" />
+        </svg>
+      </button>
+      <button
+        type="button"
+        class="cngx-select-reorder-list__move"
+        data-move="down"
+        [attr.aria-label]="moveDownLabel()(opt.label)"
+        [attr.aria-disabled]="last || disabled() ? 'true' : null"
+        [attr.aria-describedby]="last ? atEndId : null"
+        (click)="handleMove(i, 'down')"
+      >
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 12 12"
+          width="0.75em"
+          height="0.75em"
+          focusable="false"
+        >
+          <path d="M6 10 1.5 5h9z" fill="currentColor" />
+        </svg>
+      </button>
+    </li>
+  }
+</ul>
+<span hidden [id]="hintId">{{ hint() }}</span>
+<span hidden [id]="atStartId">{{ atStartText() }}</span>
+<span hidden [id]="atEndId">{{ atEndText() }}</span>

@@ -8,7 +8,9 @@ import { gotoDemo } from '../../_helpers';
 // the iPad Pro 11 (834px, above the 48rem sheet breakpoint) keeps the anchored
 // panel; a desktop pointer keeps the chips. The input variants (combobox,
 // action multi-select) put the summary in front of their search input and
-// describe the input with the whole selection.
+// describe the input with the whole selection. The reorderable multi-select
+// moves its sorting into a list above the options, in the sheet and in the
+// anchored panel alike.
 
 const ALL = 'forms/select/mobile-sheet/all-variants';
 
@@ -36,6 +38,12 @@ const VARIANTS: readonly Variant[] = [
     checkedAttr: 'aria-checked',
     expand: 'North',
     picks: ['Oslo', 'Stockholm', 'Helsinki'],
+  },
+  {
+    host: 'cngx-reorderable-multi-select',
+    role: 'option',
+    checkedAttr: 'aria-selected',
+    picks: ['Athens', 'Berlin', 'Rome'],
   },
   {
     host: 'cngx-combobox',
@@ -243,4 +251,136 @@ test.describe('select summary trigger on a desktop pointer', () => {
       await expect(row.locator('cngx-select-summary')).toHaveCount(0);
     });
   }
+});
+
+const REORDERABLE = VARIANTS.find((variant) => variant.host === 'cngx-reorderable-multi-select')!;
+
+const reorderListOf = (panel: Locator) => panel.locator('cngx-select-reorder-list');
+const reorderRow = (list: Locator, index: number) =>
+  list.locator(`[data-reorder-index="${index}"]`);
+
+function listLabels(list: Locator): Promise<string[]> {
+  return list.locator('.cngx-select-reorder-list__label').allTextContents();
+}
+
+/** Text of every live region inside the panel. */
+function liveText(panel: Locator): Promise<string> {
+  return panel
+    .locator('[aria-live]')
+    .allTextContents()
+    .then((texts) => texts.join(' ').replace(/[\u2066-\u2069]/g, ''));
+}
+
+/** Whether the element sits at the same top across two animation frames. */
+function settledTop(el: Locator): Promise<boolean> {
+  return el.evaluate(
+    (node) =>
+      new Promise<boolean>((resolve) => {
+        const first = node.getBoundingClientRect().top;
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => resolve(node.getBoundingClientRect().top === first)),
+        );
+      }),
+  );
+}
+
+async function openReorderList(
+  page: Page,
+): Promise<{ host: Locator; panel: Locator; list: Locator }> {
+  await gotoDemo(page, ALL);
+  const host = page.locator(REORDERABLE.host).first();
+  await pickThree(page, host, REORDERABLE, true);
+  await triggerOf(host).tap();
+  const panel = panelOf(host);
+  await expect(panel).toBeVisible();
+  const list = reorderListOf(panel);
+  await expect(list).toBeVisible();
+  expect(await listLabels(list)).toEqual([...REORDERABLE.picks]);
+  return { host, panel, list };
+}
+
+for (const device of ['iPhone 13', 'Pixel 7'] as const) {
+  test.describe(`reorderable multi-select sorting in the sheet on ${device}`, () => {
+    const { viewport, userAgent, deviceScaleFactor, isMobile, hasTouch } = devices[device];
+    test.use({ viewport, userAgent, deviceScaleFactor, isMobile, hasTouch });
+
+    test.beforeEach(({ browserName }) => {
+      test.skip(browserName === 'firefox', 'isMobile context is unsupported in Firefox');
+    });
+
+    test('dragging a row handle reorders the values and the summary follows', async ({ page }) => {
+      const { host, panel, list } = await openReorderList(page);
+      await expect(panel).toHaveAttribute('aria-modal', 'true');
+
+      const handle = reorderRow(list, 2).locator('[data-reorder-handle]');
+      // The sheet slides in; measure once the rows stop moving.
+      await expect(panel).not.toHaveAttribute('data-cngx-sheet-settling');
+      await expect.poll(() => settledTop(handle)).toBe(true);
+      const target = await reorderRow(list, 0).boundingBox();
+      const from = await handle.boundingBox();
+      await page.mouse.move(from!.x + from!.width / 2, from!.y + from!.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(target!.x + target!.width / 2, target!.y + target!.height / 2, {
+        steps: 8,
+      });
+      await page.mouse.up();
+
+      await expect.poll(() => listLabels(list)).toEqual(['Rome', 'Athens', 'Berlin']);
+      await panel.locator('.cngx-select-sheet-header__done').tap();
+      await expect(panel).toBeHidden();
+      await expect(rowBoxOf(host).locator('.cngx-select-summary__label')).toHaveText('Rome');
+    });
+
+    test('the move-up button reorders a row and announces the move in the sheet', async ({
+      page,
+    }) => {
+      const { panel, list } = await openReorderList(page);
+      const up = reorderRow(list, 1).locator('[data-move="up"]');
+      const box = await up.boundingBox();
+      expect(Math.round(box!.height)).toBeGreaterThanOrEqual(44);
+      expect(Math.round(box!.width)).toBeGreaterThanOrEqual(44);
+
+      await up.tap();
+      await expect.poll(() => listLabels(list)).toEqual(['Berlin', 'Athens', 'Rome']);
+      await expect.poll(() => liveText(panel)).toContain('Berlin moved to position 1');
+      await expect(reorderRow(list, 0).locator('[data-move="up"]')).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      );
+    });
+  });
+}
+
+test.describe('reorderable multi-select sorting in the anchored panel on iPad Pro 11', () => {
+  const { viewport, userAgent, deviceScaleFactor, isMobile, hasTouch } = devices['iPad Pro 11'];
+  test.use({ viewport, userAgent, deviceScaleFactor, isMobile, hasTouch });
+
+  test.beforeEach(({ browserName }) => {
+    test.skip(browserName === 'firefox', 'isMobile context is unsupported in Firefox');
+  });
+
+  test('shows the sortable list above the options and moves a row', async ({ page }) => {
+    const { panel, list } = await openReorderList(page);
+    await expect(panel).not.toHaveAttribute('aria-modal', 'true');
+    const listbox = panel.locator('[role="listbox"]').first();
+    const listBox = await list.boundingBox();
+    const optionsBox = await listbox.boundingBox();
+    expect(listBox!.y + listBox!.height).toBeLessThanOrEqual(optionsBox!.y + 1);
+
+    await reorderRow(list, 0).locator('[data-move="down"]').tap();
+    await expect.poll(() => listLabels(list)).toEqual(['Berlin', 'Athens', 'Rome']);
+  });
+});
+
+test.describe('reorderable multi-select on a desktop pointer', () => {
+  test('keeps the sorting in the chips and renders no panel list', async ({ page }) => {
+    await gotoDemo(page, ALL);
+    const host = page.locator(REORDERABLE.host).first();
+    await pickThree(page, host, REORDERABLE, false);
+    // A click on the trigger centre lands on a chip, which keeps its own click.
+    await host.locator('.cngx-reorderable-multi-select__caret').click();
+    const panel = panelOf(host);
+    await expect(panel).toBeVisible();
+    await expect(reorderListOf(panel)).toHaveCount(0);
+  });
 });

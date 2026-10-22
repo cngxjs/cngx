@@ -40,6 +40,16 @@ export interface CngxSelectCopy {
   readonly actionGroup: string;
   /** Default accessible name of the reorderable-select reorder hint. */
   readonly reorderHint: string;
+  /** Default accessible name of the sortable selected-values list. */
+  readonly reorderListLabel: string;
+  /** Default accessible name of a sortable row's move-up button. */
+  readonly reorderMoveUp: (label: string) => string;
+  /** Default accessible name of a sortable row's move-down button. */
+  readonly reorderMoveDown: (label: string) => string;
+  /** Default reason the first row cannot move up. */
+  readonly reorderAtStart: string;
+  /** Default reason the last row cannot move down. */
+  readonly reorderAtEnd: string;
 }
 
 /** @internal One conjunction list format per locale for the selection summary. */
@@ -139,6 +149,11 @@ export function selectCopyFrom(section: CngxSelectLanguageSection, locale: strin
     resetSelection: section.resetSelection,
     actionGroup: section.actionGroup,
     reorderHint: section.reorderHint,
+    reorderListLabel: section.reorderListLabel,
+    reorderMoveUp: (label) => formatMessage(section.reorderMoveUp, { label }, locale),
+    reorderMoveDown: (label) => formatMessage(section.reorderMoveDown, { label }, locale),
+    reorderAtStart: section.reorderAtStart,
+    reorderAtEnd: section.reorderAtEnd,
   };
 }
 
@@ -170,17 +185,23 @@ export function injectSelectCopy(): Signal<CngxSelectCopy> {
   return selectBundle.resolve(inject(SELECT_SECTION_COPY));
 }
 
-/** Keys of the select copy that hold a plain word read on its own. */
-type CngxSelectWordKey = 'actionGroup' | 'reorderHint';
+/** Keys of the select copy read on their own: a plain word or a one-label message. */
+type CngxSelectWordKey =
+  | 'actionGroup'
+  | 'reorderHint'
+  | 'reorderListLabel'
+  | 'reorderMoveUp'
+  | 'reorderMoveDown'
+  | 'reorderAtStart'
+  | 'reorderAtEnd';
 
-const WORDS = new WeakMap<Signal<CngxSelectCopy>, Map<CngxSelectWordKey, Signal<string>>>();
+const WORDS = new WeakMap<Signal<CngxSelectCopy>, Map<CngxSelectWordKey, Signal<unknown>>>();
 
 /**
- * @internal One plain word of the select copy at the reading site, as a
- * signal shared by every reader under the injector. Injection context
- * required.
+ * @internal One key of the select copy at the reading site, as a signal
+ * shared by every reader under the injector. Injection context required.
  */
-export function injectSelectWord(key: CngxSelectWordKey): Signal<string> {
+export function injectSelectWord<K extends CngxSelectWordKey>(key: K): Signal<CngxSelectCopy[K]> {
   const copy = injectSelectCopy();
   let byKey = WORDS.get(copy);
   if (!byKey) {
@@ -192,5 +213,5 @@ export function injectSelectWord(key: CngxSelectWordKey): Signal<string> {
     word = computed(() => copy()[key]);
     byKey.set(key, word);
   }
-  return word;
+  return word as Signal<CngxSelectCopy[K]>;
 }

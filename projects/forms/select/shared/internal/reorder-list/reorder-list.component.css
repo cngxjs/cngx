@@ -1,0 +1,124 @@
+/**
+ * @overview
+ * Sortable list of the selected values in a reorderable select panel under
+ * the touch floor. Every row, handle and move button floors to
+ * `--cngx-target-min`, so each target meets the 44px touch size. The drag
+ * state reuses the chip drag tokens (`--cngx-select-chip-drag-*`,
+ * `--cngx-select-chip-drop-bar-*`), so a themed chip drag and a themed row
+ * drag look alike.
+ */
+
+@layer cngx.components {
+  .cngx-select-reorder-list {
+    display: block;
+    border-block-end: 1px solid var(--cngx-color-border, oklch(0.88 0.01 250));
+  }
+
+  .cngx-select-reorder-list__list {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding-block: var(--cngx-space-xs, 0.25rem);
+    padding-inline: 0;
+    list-style: none;
+  }
+
+  .cngx-select-reorder-list__list--reordering {
+    cursor: grabbing;
+    user-select: none;
+  }
+
+  .cngx-select-reorder-list__row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--cngx-space-xs, 0.25rem);
+    min-block-size: var(--cngx-target-min, 0px);
+    padding-inline: var(--cngx-space-xs, 0.25rem);
+  }
+
+  .cngx-select-reorder-list__handle {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: var(--cngx-target-min, 0px);
+    min-block-size: var(--cngx-target-min, 0px);
+    color: var(--cngx-select-chip-handle-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .cngx-select-reorder-list__label {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .cngx-select-reorder-list__move {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: var(--cngx-target-min, 0px);
+    min-block-size: var(--cngx-target-min, 0px);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: var(--cngx-radius-sm, 0.25rem);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  /* Disabled fades by colour, never opacity, as a disabled option does. */
+  .cngx-select-reorder-list__move[aria-disabled='true'] {
+    color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+    cursor: not-allowed;
+  }
+
+  .cngx-select-reorder-list__move:focus-visible {
+    outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
+    outline-offset: var(--cngx-select-focus-offset, 2px);
+  }
+
+  .cngx-select-reorder-list__row--dragging {
+    z-index: 1;
+    box-shadow: var(--cngx-select-chip-drag-shadow, 0 8px 20px oklch(0 0 0 / 0.28));
+    background: var(--cngx-select-chip-drag-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+    color: var(--cngx-select-chip-drag-color, oklch(1 0 0));
+  }
+
+  .cngx-select-reorder-list__row--drag-over::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: -1px;
+    block-size: var(--cngx-select-chip-drop-bar-width, 3px);
+    background: var(
+      --cngx-select-chip-drop-bar-color,
+      var(--cngx-color-primary, oklch(0.66 0.19 50))
+    );
+    border-radius: 2px;
+    pointer-events: none;
+  }
+}
+
+/* Unlayered so it wins over the layered drag rules. WHCM forces box-shadow to
+   none and every background to Canvas, so the lifted row loses its shadow and
+   its tint and the drop bar vanishes. The row re-signals with a Highlight
+   outline, the bar paints in Highlight with the forcing opted out. */
+@media (forced-colors: active) {
+  .cngx-select-reorder-list__row--dragging {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+
+  .cngx-select-reorder-list__row--drag-over::before {
+    background: Highlight;
+    forced-color-adjust: none;
+  }
+}

@@ -1006,6 +1006,28 @@
     overflow: visible;
   }
 
+  /* The sortable selection list of the reorderable select keeps its rows
+     instead of shrinking to one under the scrolling listbox; a long
+     selection scrolls inside its own cap. */
+  .cngx-select__panel.cngx-popover-sheet:is(
+      [data-cngx-presentation='sheet'],
+      [data-cngx-presentation='fullscreen']
+    )
+    > cngx-select-reorder-list {
+    flex: none;
+    /**
+     * Height cap of the sortable list of selected values that a
+     * reorderable select shows in its sheet under the touch floor. A
+     * longer selection scrolls inside the list, so the options below
+     * stay reachable.
+     * @cssprop {<length>} [--cngx-select-reorder-list-max-block-size=40dvh]
+     * @default 40dvh
+     * @group Layout
+     */
+    max-block-size: var(--cngx-select-reorder-list-max-block-size, 40dvh);
+    overflow: auto;
+  }
+
   /* A virtualized panel only ever renders a window of options, so the default
      shrink-to-fit width jitters as the window recycles through options of
      differing widths (proportional digits, variable labels). Lock the width to

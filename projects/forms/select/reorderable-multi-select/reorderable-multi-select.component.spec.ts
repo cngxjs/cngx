@@ -1,7 +1,10 @@
 import { Component, signal } from '@angular/core';
+import { CngxPopoverSheet, type CngxPopoverPresentationRequest } from '@cngx/common/popover';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { stripBidiIsolates } from '@cngx/testing';
 
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { createMockField } from '@cngx/forms/field/testing';
@@ -9,16 +12,15 @@ import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host'
 import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
 import { describeSelectBehaviourHost } from '../shared/__test-helpers/select-behaviour-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
+import { stubTouchFloor } from '../shared/__test-helpers/touch-floor';
+import { CngxMultiSelectTriggerLabel } from '../shared/template-slots';
 import {
   CngxReorderableMultiSelect,
   type CngxReorderableMultiSelectChange,
 } from './reorderable-multi-select.component';
 import type { CngxSelectOptionDef } from '../shared/option.model';
 import { CngxSelectAnnouncer } from '../shared/announcer';
-import type {
-  CngxSelectCommitAction,
-  CngxSelectCommitMode,
-} from '../shared/commit-action.types';
+import type { CngxSelectCommitAction, CngxSelectCommitMode } from '../shared/commit-action.types';
 
 function polyfillPopover(): void {
   const proto = HTMLElement.prototype as unknown as {
@@ -111,8 +113,7 @@ function handleOf(chip: HTMLElement): HTMLElement {
   // element for tests that want to cover the "user grabs the grip"
   // path specifically - fallback to the chip body when no grip is
   // rendered (e.g. disabled or custom-chip consumers).
-  const h =
-    chip.querySelector<HTMLElement>('.cngx-select__chip-handle') ?? chip;
+  const h = chip.querySelector<HTMLElement>('.cngx-select__chip-handle') ?? chip;
   return h;
 }
 
@@ -157,9 +158,7 @@ function pointerMoveOver(targetEl: HTMLElement, pointerId = 1): void {
 }
 
 function pointerUp(pointerId = 1): void {
-  document.dispatchEvent(
-    new PointerEvent('pointerup', { bubbles: true, pointerId }),
-  );
+  document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId }));
 }
 
 function fireKey(
@@ -222,9 +221,7 @@ describe('CngxReorderableMultiSelect - pointer reorder', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
     const root = fixture.nativeElement as HTMLElement;
-    const removeBtn = chipAt(root, 0).querySelector<HTMLElement>(
-      '.cngx-chip__remove',
-    );
+    const removeBtn = chipAt(root, 0).querySelector<HTMLElement>('.cngx-chip__remove');
     expect(removeBtn).not.toBeNull();
 
     pointerDown(removeBtn!);
@@ -404,7 +401,7 @@ describe('CngxReorderableMultiSelect - a11y + surface', () => {
     expect(String(message)).toMatch(/moved/);
   });
 
-  it('keydown on a chip does not bubble to the trigger\'s combobox handler', () => {
+  it("keydown on a chip does not bubble to the trigger's combobox handler", () => {
     // Regression: pressing Enter on the focused ✕ used to bubble to
     // CngxListboxTrigger.handleKeyDown, which opened the popover AND
     // swallowed the native Enter→click synthesis (chip stayed, panel
@@ -413,9 +410,7 @@ describe('CngxReorderableMultiSelect - a11y + surface', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
     const root = fixture.nativeElement as HTMLElement;
-    const removeBtn = chipAt(root, 0).querySelector<HTMLElement>(
-      '.cngx-chip__remove',
-    );
+    const removeBtn = chipAt(root, 0).querySelector<HTMLElement>('.cngx-chip__remove');
     expect(removeBtn).not.toBeNull();
     let triggerSawKeydown = false;
     const trigger = root.querySelector<HTMLElement>('[role="combobox"]');
@@ -556,21 +551,29 @@ describe('CngxReorderableMultiSelect - panel Escape handling', () => {
 
 describeCommitControllerCascade('CngxReorderableMultiSelect');
 
-describeFieldSkinHost('CngxReorderableMultiSelect', CngxReorderableMultiSelect, 'cngx-reorderable-multi-select', () =>
-  createMockField({ name: 'pick' }).accessor,
+describeFieldSkinHost(
+  'CngxReorderableMultiSelect',
+  CngxReorderableMultiSelect,
+  'cngx-reorderable-multi-select',
+  () => createMockField({ name: 'pick' }).accessor,
 );
 
-describeFieldAriaHost('CngxReorderableMultiSelect', CngxReorderableMultiSelect, 'cngx-reorderable-multi-select', {
-  ctx: () => ({
-    options: [
-      { value: 'a', label: 'A' },
-      { value: 'b', label: 'B' },
-    ],
-  }),
-  inputs: '[options]="ctx[\'options\']"',
-  initial: [],
-  userWrite: (cmp) => (cmp as CngxReorderableMultiSelect<string>).values.set(['a']),
-});
+describeFieldAriaHost(
+  'CngxReorderableMultiSelect',
+  CngxReorderableMultiSelect,
+  'cngx-reorderable-multi-select',
+  {
+    ctx: () => ({
+      options: [
+        { value: 'a', label: 'A' },
+        { value: 'b', label: 'B' },
+      ],
+    }),
+    inputs: '[options]="ctx[\'options\']"',
+    initial: [],
+    userWrite: (cmp) => (cmp as CngxReorderableMultiSelect<string>).values.set(['a']),
+  },
+);
 
 describeMobileSheet(
   'CngxReorderableMultiSelect',
@@ -589,8 +592,296 @@ describeMobileSheet(
   },
 );
 
-describeSelectBehaviourHost('CngxReorderableMultiSelect', CngxReorderableMultiSelect, 'cngx-reorderable-multi-select', {
-  inputs: '[options]="options"',
-  optionSelector: '[cngxOption]',
-  readValue: (cmp) => (cmp as { values: () => unknown }).values(),
+describeSelectBehaviourHost(
+  'CngxReorderableMultiSelect',
+  CngxReorderableMultiSelect,
+  'cngx-reorderable-multi-select',
+  {
+    inputs: '[options]="options"',
+    optionSelector: '[cngxOption]',
+    readValue: (cmp) => (cmp as { values: () => unknown }).values(),
+  },
+);
+
+// ── Summary trigger under the touch floor ───────────────────────────
+
+@Component({
+  template: `
+    <cngx-reorderable-multi-select [label]="'Letters'" [options]="options" [(values)]="values">
+      @if (withTriggerLabel()) {
+        <ng-template cngxMultiSelectTriggerLabel let-count="count">
+          <span class="trigger-summary">{{ count }} letters</span>
+        </ng-template>
+      }
+    </cngx-reorderable-multi-select>
+  `,
+  imports: [CngxReorderableMultiSelect, CngxMultiSelectTriggerLabel],
+})
+class SummaryHost {
+  readonly options = OPTIONS;
+  readonly values = signal<string[]>(['a', 'b', 'c']);
+  readonly withTriggerLabel = signal(false);
+}
+
+describe('CngxReorderableMultiSelect - summary trigger under the touch floor', () => {
+  let restore: (() => void) | null = null;
+
+  beforeEach(() => {
+    polyfillPopover();
+  });
+
+  afterEach(() => {
+    restore?.();
+    restore = null;
+  });
+
+  function render(touch: boolean) {
+    if (touch) {
+      restore = stubTouchFloor();
+    }
+    const fixture = TestBed.createComponent(SummaryHost);
+    flush(fixture);
+    const el = fixture.nativeElement as HTMLElement;
+    return { fixture, el };
+  }
+
+  it('shows the first label plus the +N badge instead of chips', () => {
+    const { el } = render(true);
+    expect(el.querySelectorAll('cngx-chip').length).toBe(0);
+    expect(el.querySelector('.cngx-select-summary__label')?.textContent?.trim()).toBe('Alpha');
+    expect(el.querySelector('.cngx-select__chip-overflow-badge')?.textContent?.trim()).toBe('+2');
+    expect(chipStrip(el).getAttribute('data-overflow')).toBe('truncate');
+  });
+
+  it('drops the reorder group from the strip', () => {
+    const { el } = render(true);
+    const strip = chipStrip(el);
+    expect(strip.getAttribute('role')).toBeNull();
+    expect(strip.getAttribute('aria-label')).toBeNull();
+    expect(strip.querySelector('[data-reorder-index]')).toBeNull();
+  });
+
+  it('exposes the whole selection as the trigger value for AT', () => {
+    const { el } = render(true);
+    const trigger = el.querySelector('[role="combobox"]')!;
+    const sr = trigger.querySelector('cngx-select-summary .cngx-sr-only');
+    expect(stripBidiIsolates(sr?.textContent?.trim() ?? '')).toBe(
+      '3 selected: Alpha, Bravo, and Charlie',
+    );
+    expect(trigger.querySelector('.cngx-select-summary__label')?.getAttribute('aria-hidden')).toBe(
+      'true',
+    );
+  });
+
+  it('follows a reorder of the values with the first label', () => {
+    const { fixture, el } = render(true);
+    fixture.componentInstance.values.set(['c', 'a', 'b']);
+    flush(fixture);
+    expect(el.querySelector('.cngx-select-summary__label')?.textContent?.trim()).toBe('Charlie');
+  });
+
+  it('shows the placeholder for no value', () => {
+    const { fixture, el } = render(true);
+    fixture.componentInstance.values.set([]);
+    flush(fixture);
+    expect(el.querySelector('cngx-select-summary')).toBeNull();
+    expect(el.querySelector('.cngx-reorderable-multi-select__placeholder')).not.toBeNull();
+  });
+
+  it('lets a projected trigger-label template win over the summary', () => {
+    const { fixture, el } = render(true);
+    fixture.componentInstance.withTriggerLabel.set(true);
+    flush(fixture);
+    expect(el.querySelector('cngx-select-summary')).toBeNull();
+    expect(el.querySelector('.trigger-summary')?.textContent?.trim()).toBe('3 letters');
+  });
+
+  it('keeps the reorderable chips on a fine pointer', () => {
+    const { el } = render(false);
+    expect(el.querySelector('cngx-select-summary')).toBeNull();
+    expect(el.querySelectorAll('cngx-chip').length).toBe(3);
+    expect(chipStrip(el).getAttribute('role')).toBe('group');
+  });
+});
+
+// ── Sorting in the panel under the touch floor ──────────────────────
+
+@Component({
+  template: `
+    <cngx-reorderable-multi-select
+      [label]="'Letters'"
+      [options]="options"
+      [presentation]="presentation()"
+      [commitAction]="commitAction()"
+      [commitMode]="commitMode()"
+      [(values)]="values"
+    />
+  `,
+  imports: [CngxReorderableMultiSelect],
+})
+class PanelListHost {
+  readonly options = OPTIONS;
+  readonly values = signal<string[]>(['a', 'b', 'c', 'd']);
+  readonly presentation = signal<CngxPopoverPresentationRequest | undefined>('sheet');
+  readonly commitAction = signal<CngxSelectCommitAction<string[]> | null>(null);
+  readonly commitMode = signal<CngxSelectCommitMode>('optimistic');
+}
+
+describe('CngxReorderableMultiSelect - sorting in the panel under the touch floor', () => {
+  let restore: (() => void) | null = null;
+
+  afterEach(() => {
+    restore?.();
+    restore = null;
+  });
+
+  function render(touch = true) {
+    polyfillPopover();
+    if (touch) {
+      restore = stubTouchFloor();
+    }
+    const fixture = TestBed.createComponent(PanelListHost);
+    flush(fixture);
+    const de = fixture.debugElement.query(By.directive(CngxReorderableMultiSelect));
+    const cmp = de.componentInstance as CngxReorderableMultiSelect<string>;
+    const el = de.nativeElement as HTMLElement;
+    const panel = el.querySelector<HTMLElement>('.cngx-select__panel')!;
+    const open = () => {
+      cmp.open();
+      flush(fixture);
+    };
+    const list = () => panel.querySelector<HTMLElement>('cngx-select-reorder-list');
+    const move = (index: number, dir: 'up' | 'down') =>
+      list()!.querySelector<HTMLButtonElement>(
+        `[data-reorder-index="${index}"] [data-move="${dir}"]`,
+      )!;
+    const sheet = () => de.query(By.directive(CngxPopoverSheet)).injector.get(CngxPopoverSheet);
+    return { fixture, host: fixture.componentInstance, el, panel, open, list, move, sheet };
+  }
+
+  it('renders the selected values as a named list between the header and the options', () => {
+    const { panel, open, list } = render();
+    open();
+    const ul = list()!.querySelector('ul[role="list"]')!;
+    expect(ul.getAttribute('aria-label')).toBe('Selected, in order');
+    const labels = Array.from(ul.querySelectorAll('.cngx-select-reorder-list__label')).map((n) =>
+      n.textContent?.trim(),
+    );
+    expect(labels).toEqual(['Alpha', 'Bravo', 'Charlie', 'Delta']);
+    const header = panel.querySelector('cngx-select-sheet-header')!;
+    const listbox = panel.querySelector('[cngxListbox]')!;
+    expect(header.compareDocumentPosition(list()!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(
+      list()!.compareDocumentPosition(listbox) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it('renders no list without a value and none on a fine pointer', () => {
+    const empty = render();
+    empty.host.values.set([]);
+    flush(empty.fixture);
+    empty.open();
+    expect(empty.list()).toBeNull();
+    restore?.();
+    restore = null;
+    TestBed.resetTestingModule();
+
+    const fine = render(false);
+    fine.open();
+    expect(fine.list()).toBeNull();
+  });
+
+  it('keeps the listbox as the initial focus of the sheet', () => {
+    const { panel, open } = render();
+    open();
+    expect(document.activeElement).toBe(panel.querySelector('[cngxListbox]'));
+  });
+
+  it('commits a move-button move optimistically through the reorder handler', async () => {
+    const { fixture, host, open, move } = render();
+    let reject!: (err: unknown) => void;
+    host.commitAction.set(
+      () =>
+        new Promise<string[] | undefined>((_res, rej) => {
+          reject = rej;
+        }),
+    );
+    flush(fixture);
+    open();
+    move(0, 'down').click();
+    flush(fixture);
+    expect(host.values()).toEqual(['b', 'a', 'c', 'd']);
+
+    reject(new Error('network down'));
+    await Promise.resolve();
+    await Promise.resolve();
+    flush(fixture);
+    expect(host.values()).toEqual(['a', 'b', 'c', 'd']);
+  });
+
+  it('holds a pessimistic move until the commit settles and freezes the list meanwhile', async () => {
+    const { fixture, host, open, move, list } = render();
+    let resolve!: () => void;
+    host.commitMode.set('pessimistic');
+    host.commitAction.set(
+      () =>
+        new Promise<string[] | undefined>((res) => {
+          resolve = () => res(undefined);
+        }),
+    );
+    flush(fixture);
+    open();
+    move(0, 'down').click();
+    flush(fixture);
+    expect(host.values()).toEqual(['a', 'b', 'c', 'd']);
+    expect(move(2, 'down').getAttribute('aria-disabled')).toBe('true');
+    const ul = () => list()!.querySelector('ul[role="list"]')!;
+    expect(ul().getAttribute('aria-busy')).toBe('true');
+
+    move(2, 'down').click();
+    flush(fixture);
+    resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    flush(fixture);
+    expect(host.values()).toEqual(['b', 'a', 'c', 'd']);
+    expect(move(2, 'down').getAttribute('aria-disabled')).toBeNull();
+    expect(ul().hasAttribute('aria-busy')).toBe(false);
+  });
+
+  it('announces a list move from the sheet region', () => {
+    const { open, move, sheet, fixture } = render();
+    const root = vi
+      .spyOn(TestBed.inject(CngxSelectAnnouncer), 'announce')
+      .mockImplementation(() => undefined);
+    open();
+    const inSheet = vi.spyOn(sheet(), 'announce');
+    move(1, 'up').click();
+    flush(fixture);
+    expect(root).not.toHaveBeenCalled();
+    expect(inSheet).toHaveBeenCalled();
+    expect(String(inSheet.mock.calls.at(-1)?.[0])).toMatch(/moved/);
+  });
+
+  it('keeps focus in the list after a move instead of the trigger strip', async () => {
+    const { fixture, list, open, move } = render();
+    // The chip-strip refocus must not run: the strip is not rendered while
+    // the summary is on, so a focusAt there would only race the list.
+    const { chipStripRoving: roving } = fixture.debugElement.query(
+      By.directive(CngxReorderableMultiSelect),
+    ).componentInstance as unknown as {
+      chipStripRoving: { setActive(i: number): void; focusAt(i: number): void };
+    };
+    const setActive = vi.spyOn(roving, 'setActive');
+    const focusAt = vi.spyOn(roving, 'focusAt');
+    open();
+    move(1, 'up').focus();
+    move(1, 'up').click();
+    flush(fixture);
+    await fixture.whenStable();
+    expect(document.activeElement).toBe(move(0, 'up'));
+    expect(list()!.contains(document.activeElement)).toBe(true);
+    expect(setActive).not.toHaveBeenCalled();
+    expect(focusAt).not.toHaveBeenCalled();
+  });
 });

@@ -93,8 +93,18 @@ export interface CngxSelectLanguageSection {
   readonly announceMovedNoOption: CngxMessage;
   /** Accessible name of the `*cngxSelectAction` group in a select panel. */
   readonly actionGroup: string;
-  /** Keyboard hint of the reorderable chip strip. */
+  /** Keyboard hint of the reorderable chip strip and of the sortable list of selected values. */
   readonly reorderHint: string;
+  /** Accessible name of the sortable list of selected values in a reorderable select panel. */
+  readonly reorderListLabel: string;
+  /** `{label}`: accessible name of the move-up button of a row in the sortable list. */
+  readonly reorderMoveUp: CngxMessage;
+  /** `{label}`: accessible name of the move-down button of a row in the sortable list. */
+  readonly reorderMoveDown: CngxMessage;
+  /** Why the move-up button of the first row in the sortable list is unavailable. */
+  readonly reorderAtStart: string;
+  /** Why the move-down button of the last row in the sortable list is unavailable. */
+  readonly reorderAtEnd: string;
 }
 
 /**
@@ -146,6 +156,11 @@ export const CNGX_SELECT_LANGUAGE_EN: CngxSelectLanguageSection = {
   announceMovedNoOption: '{field}: moved',
   actionGroup: 'Inline action',
   reorderHint: 'Reorder with Alt + arrow keys',
+  reorderListLabel: 'Selected, in order',
+  reorderMoveUp: '{label}: move up',
+  reorderMoveDown: '{label}: move down',
+  reorderAtStart: 'Already first',
+  reorderAtEnd: 'Already last',
 };
 
 declare module '@cngx/core/i18n' {
