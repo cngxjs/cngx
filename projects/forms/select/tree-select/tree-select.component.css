@@ -207,6 +207,19 @@
     syntax: '*';
     inherits: true;
   }
+
+  /**
+   * Extra space between a trigger chip's label and its remove button, on top
+   * of the chip's inner gap. The remove button keeps its 24px hit box; this
+   * keeps that box off the label, so a click aimed at the trigger does not
+   * remove a value.
+   * @group Layout
+   * @default 0px
+   */
+  @property --cngx-tree-select-chip-remove-gap {
+    syntax: '*';
+    inherits: true;
+  }
 }
 
 @layer cngx.components {
@@ -326,6 +339,15 @@
 
     .cngx-select__chip-list[data-overflow='truncate'] > .cngx-select__chip-overflow-badge {
       flex: none;
+    }
+
+    /* The remove button's AA hit box bleeds past its glyph by a negative
+       margin. Inline-start it would reach over the label, so it starts after
+       the chip's inner gap instead; inline-end the chip padding absorbs the
+       bleed, so the box ends inside the chip. Block margins stay, the chip
+       keeps the control line box. */
+    .cngx-select__chip-list cngx-chip .cngx-chip__remove {
+      margin-inline-start: var(--cngx-tree-select-chip-remove-gap, 0px);
     }
 
     /* The anchored panel only; a sheet / fullscreen panel keeps the family

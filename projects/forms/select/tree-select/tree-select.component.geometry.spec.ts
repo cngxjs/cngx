@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import type { CngxTreeNode } from '@cngx/utils';
@@ -443,4 +443,73 @@ describe('CngxTreeSelect truncated chip shrink', () => {
       expect(rect.left).toBeGreaterThanOrEqual(strip.left - 0.5);
     }
   });
+});
+
+// The chip remove button keeps its 24px AA hit box, but on a fine pointer the
+// box must stay inside its chip and clear of the label: a click aimed at the
+// trigger (the label, the chip edge) must open the panel, not remove a value.
+// The chip keeps the control line box. 4px is the chip's inner gap (xs).
+// The shipped token layers, so chip padding and font size are the real ones.
+@Component({
+  selector: 'cngx-tree-select-chip-target-host',
+  standalone: true,
+  imports: [CngxTreeSelect],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    '../../../core/theming/reset.css',
+    '../../../core/theming/base.css',
+    '../../theming/components/cngx-field-skin.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div style="width: 20rem">
+      <cngx-tree-select
+        [nodes]="nodes"
+        [nodeIdFn]="idFn"
+        [labelFn]="idFn"
+        [keyFn]="idFn"
+        [(values)]="values"
+      />
+    </div>
+  `,
+})
+class ChipTargetHost {
+  readonly nodes: CngxTreeNode<Deep>[] = ['alpha', 'bravo'].map((id) => ({ value: { id } }));
+  readonly values = signal<Deep[]>(this.nodes.map((n) => n.value));
+  readonly idFn = (v: Deep): string => v.id;
+}
+
+function chipBoxes(rtl: boolean): { chip: DOMRect; label: DOMRect; remove: DOMRect }[] {
+  if (rtl) {
+    document.documentElement.dir = 'rtl';
+  }
+  const fixture = TestBed.createComponent(ChipTargetHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  TestBed.flushEffects();
+  fixture.detectChanges();
+  return Array.from(mountedRoot.querySelectorAll('cngx-chip')).map((chip) => ({
+    chip: chip.getBoundingClientRect(),
+    label: query(chip as HTMLElement, '.cngx-chip__label').getBoundingClientRect(),
+    remove: query(chip as HTMLElement, '.cngx-chip__remove').getBoundingClientRect(),
+  }));
+}
+
+describe('CngxTreeSelect chip remove target', () => {
+  for (const rtl of [false, true]) {
+    it(`keeps each remove hit box inside its chip and clear of the label (${rtl ? 'rtl' : 'ltr'})`, () => {
+      const boxes = chipBoxes(rtl);
+      expect(boxes.length).toBe(2);
+      for (const { chip, label, remove } of boxes) {
+        expect(remove.width).toBeGreaterThanOrEqual(24);
+        const clearance = rtl ? label.left - remove.right : remove.left - label.right;
+        expect(clearance).toBeGreaterThanOrEqual(4);
+        expect(remove.left).toBeGreaterThanOrEqual(chip.left - 0.5);
+        expect(remove.right).toBeLessThanOrEqual(chip.right + 0.5);
+        expect(chip.height).toBe(24);
+      }
+    });
+  }
 });
