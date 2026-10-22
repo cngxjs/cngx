@@ -50,7 +50,12 @@
 //               forms at the stale release and runs a real
 //               `ng update @cngx/core` (no --migrate-only): the CLI must move
 //               the whole package group to the packed release and run its
-//               migration.
+//               migration. Every schematics run also has two terminal legs
+//               on copies of the fresh app, under a pseudo-terminal (python3's
+//               pty module): a plain `ng add @cngx/core` whose preset, libs,
+//               language, feedback and editor questions are answered by key
+//               presses, and the same command under CI=true, which must ask
+//               nothing and take the defaults.
 //
 // The schematics variant serves the tarballs from a local registry for the
 // @cngx scope (other @cngx packages are proxied to the public registry), so
@@ -59,7 +64,7 @@
 
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -810,6 +815,192 @@ async function runStaleCoreLeg({ cliSpec, work, tarballFiles, version, registryU
   console.log(`\nStale core leg: @cngx/core ${stale} replaced by ${version} in the same ng add`);
 }
 
+// Runs the command on a pseudo-terminal (python3's pty module) and copies
+// this process's stdin into it and its output out, so the Angular CLI and the
+// schematic see a terminal while the fixture types the answers. Not
+// `pty.spawn`: on Python 3.9 its loop keeps polling stdin after the command
+// exits and never returns. The terminal gets a size before the command
+// starts; at 0x0 the CLI's install spinner erases lines without end.
+const PTY_BRIDGE = `
+import fcntl, os, pty, select, struct, sys, termios
+pid, fd = pty.fork()
+if pid == 0:
+    fcntl.ioctl(0, termios.TIOCSWINSZ, struct.pack('HHHH', 50, 120, 0, 0))
+    os.execvp(sys.argv[1], sys.argv[1:])
+inputs = [fd, 0]
+while fd in inputs:
+    ready = select.select(inputs, [], [])[0]
+    if fd in ready:
+        try:
+            data = os.read(fd, 4096)
+        except OSError:
+            data = b''
+        if data:
+            os.write(1, data)
+        else:
+            inputs.remove(fd)
+    if 0 in ready:
+        data = os.read(0, 4096)
+        if data:
+            os.write(fd, data)
+        else:
+            inputs.remove(0)
+status = os.waitpid(pid, 0)[1]
+sys.exit(os.WEXITSTATUS(status) if os.WIFEXITED(status) else 1)
+`;
+const KEYS = { enter: '\r', down: '\u001b[B', space: ' ' };
+const ANSI = /\u001b\[[0-9;?]*[A-Za-z]/g;
+// More output than any ng add prints; past it a terminal leg is redrawing
+// without end and stops before it floods the CI log.
+const MAX_TERMINAL_OUTPUT = 20 * 1024 * 1024;
+
+// Every question a fresh standalone app without ESLint or Material gets on
+// the full preset, in the order the schematic asks them.
+const QUESTIONS = {
+  preset: 'Which cngx setup do you want?',
+  libs: 'Which cngx packages do you want?',
+  i18n: 'Which language should cngx speak?',
+  feedback: 'Provide toasts, alerts and banners at the root?',
+  aiTools: 'Which editors should get the cngx MCP server?',
+};
+
+/**
+ * The terminal legs of the schematics variant. `script` is what the
+ * interactive run types once each question shows: `full` one row below the
+ * `recommended` default, `data-display` (sixth of the libs) unchecked, the
+ * rest left at their defaults. `answers` is what `.cngx/install.json` must
+ * record afterwards; `forbid` is output that fails the leg at once.
+ */
+export function terminalLegs(version) {
+  const args = ['ng', 'add', `@cngx/core@${version}`, '--skip-confirmation'];
+  const allLibs = ['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui'];
+  return [
+    {
+      label: 'ng add @cngx/core in a terminal',
+      args,
+      env: { CI: undefined },
+      script: [
+        { prompt: QUESTIONS.preset, keys: [KEYS.down, KEYS.enter] },
+        { prompt: QUESTIONS.libs, keys: [...Array(5).fill(KEYS.down), KEYS.space, KEYS.enter] },
+        { prompt: QUESTIONS.i18n, keys: [KEYS.enter] },
+        { prompt: QUESTIONS.feedback, keys: [KEYS.enter] },
+        { prompt: QUESTIONS.aiTools, keys: [KEYS.enter] },
+      ],
+      forbid: [],
+      answers: { preset: 'full', libs: allLibs.filter((lib) => lib !== 'data-display') },
+    },
+    {
+      label: 'ng add @cngx/core in a terminal under CI=true',
+      args,
+      env: { CI: 'true' },
+      script: [],
+      forbid: Object.values(QUESTIONS),
+      answers: { preset: 'recommended', libs: allLibs },
+    },
+  ];
+}
+
+/** The text of a terminal's output without its colour and cursor sequences. */
+export function plainTerminalText(output) {
+  return output.replace(ANSI, '');
+}
+
+/**
+ * The environment of a terminal leg: the fixture's own, with the CLI's
+ * analytics question off and `overrides` applied; an `undefined` override
+ * removes the variable (GitHub Actions sets CI=true for every step).
+ */
+export function terminalEnv(base, overrides) {
+  const merged = { ...base, NG_CLI_ANALYTICS: 'false', ...overrides };
+  return Object.fromEntries(Object.entries(merged).filter(([, value]) => value !== undefined));
+}
+
+/**
+ * Runs `args` through `npx` under a pseudo-terminal. Each `script` entry
+ * waits for its prompt in the output and then types its keys, one at a time;
+ * any `forbid` text in the output kills the run. Resolves to the output.
+ */
+function runInTerminal(args, { cwd, env, script, forbid, timeout = 600_000 }) {
+  console.log(`  $ [pty] npx ${args.join(' ')}`);
+  return new Promise((done, fail) => {
+    const child = spawn('python3', ['-c', PTY_BRIDGE, 'npx', ...args], {
+      cwd,
+      env: terminalEnv(process.env, env),
+      stdio: ['pipe', 'pipe', 'inherit'],
+    });
+    const pending = [...script];
+    let output = '';
+    let typing = Promise.resolve();
+    let failure;
+    const stop = (reason) => {
+      failure ??= new Error(reason);
+      child.kill('SIGKILL');
+    };
+    const timer = setTimeout(() => stop(`no exit within ${timeout / 1000}s; waiting for "${pending[0]?.prompt ?? 'the exit'}"`), timeout);
+    child.stdout.on('data', (chunk) => {
+      output += chunk;
+      process.stdout.write(chunk);
+      if (output.length > MAX_TERMINAL_OUTPUT) {
+        stop(`printed more than ${MAX_TERMINAL_OUTPUT / 1024 / 1024} MB; waiting for "${pending[0]?.prompt ?? 'the exit'}"`);
+        return;
+      }
+      const text = plainTerminalText(output);
+      const forbidden = forbid.find((line) => text.includes(line));
+      if (forbidden !== undefined) {
+        stop(`asked "${forbidden}"`);
+        return;
+      }
+      while (pending.length > 0 && text.includes(pending[0].prompt)) {
+        const { keys } = pending.shift();
+        typing = typing.then(async () => {
+          for (const key of keys) {
+            await new Promise((wait) => setTimeout(wait, 150));
+            child.stdin.write(key);
+          }
+        });
+      }
+    });
+    child.on('error', fail);
+    child.on('close', (code) => {
+      clearTimeout(timer);
+      child.stdin.end();
+      if (failure !== undefined) {
+        fail(failure);
+      } else if (code !== 0) {
+        fail(new Error(`npx ${args.join(' ')} exited with ${code}`));
+      } else if (pending.length > 0) {
+        fail(new Error(`never asked "${pending[0].prompt}"`));
+      } else {
+        done(output);
+      }
+    });
+  });
+}
+
+/** What of `expected` the install record of `project` answers differently. */
+export function answerMismatches(installManifest, project, expected) {
+  const answers = installManifest.projects?.[project]?.answers ?? {};
+  return Object.entries(expected)
+    .filter(([key, value]) => JSON.stringify(answers[key]) !== JSON.stringify(value))
+    .map(([key, value]) => `${key} is ${JSON.stringify(answers[key])}, expected ${JSON.stringify(value)}`);
+}
+
+// The terminal legs, each on its own copy of the fresh app, which installs
+// from the local registry like the main app.
+async function runTerminalLegs(copies, version, registryUrl) {
+  for (const [leg, appDir] of terminalLegs(version).map((leg, index) => [leg, copies[index]])) {
+    console.log(`\n[terminal] ${leg.label}`);
+    useLocalRegistry(appDir, registryUrl);
+    await runInTerminal(leg.args, { cwd: appDir, env: leg.env, script: leg.script, forbid: leg.forbid });
+    const installManifest = JSON.parse(readFileSync(join(appDir, '.cngx', 'install.json'), 'utf8'));
+    const mismatches = answerMismatches(installManifest, 'fixture', leg.answers);
+    if (mismatches.length > 0) {
+      throw new Error(`${leg.label}: ${mismatches.join('; ')}`);
+    }
+  }
+  console.log('\nTerminal legs: the questions took typed answers, CI=true asked none');
+}
+
 /** The packages the stale update leg installs at the older release, the ones `ng add @cngx/forms` pins. */
 export const STALE_UPDATE_LIBS = ['utils', 'core', 'common', 'forms'];
 
@@ -893,6 +1084,20 @@ async function main() {
   const installedAngular = JSON.parse(readFileSync(join(appDir, 'node_modules/@angular/core/package.json'), 'utf8')).version;
   console.log(`\nInstalled @angular/core ${installedAngular}`);
 
+  const version = plan.schematics
+    ? tarballManifest(tarballFiles.find((file) => tarballManifest(file).name === '@cngx/core')).version
+    : null;
+  // Copies of the app before anything cngx needs is installed, so the
+  // terminal legs onboard a fresh app without a second ng new and install.
+  const terminalCopies =
+    plan.schematics && !plan.onboarding
+      ? terminalLegs(version).map((_leg, index) => {
+          const copy = join(sandbox, `fixture-terminal-${index}`);
+          cpSync(appDir, copy, { recursive: true, verbatimSymlinks: true });
+          return copy;
+        })
+      : [];
+
   if (!plan.onboarding) {
     // Peers first: npm resolves a peer requested in the same command as a file
     // tarball to "undefined" and reports a false ERESOLVE.
@@ -909,9 +1114,7 @@ async function main() {
   }
 
   let registry = null;
-  let version = null;
   if (plan.schematics) {
-    version = tarballManifest(tarballFiles.find((file) => tarballManifest(file).name === '@cngx/core')).version;
     registry = await startLocalRegistry(tarballFiles);
     useLocalRegistry(appDir, registry.url);
   }
@@ -951,6 +1154,9 @@ async function main() {
       await runStaleUpdateLeg({ cliSpec, work, version, registryUrl: registry.url, staleCore });
     } else if (plan.schematics) {
       console.log('\nStale core and stale update legs: skipped (pass --stale-core <tgz | previous> to run them)');
+    }
+    if (terminalCopies.length > 0) {
+      await runTerminalLegs(terminalCopies, version, registry.url);
     }
   } finally {
     await registry?.close();

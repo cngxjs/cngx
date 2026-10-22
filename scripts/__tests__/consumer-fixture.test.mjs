@@ -26,6 +26,10 @@ import {
   staleCoreAddArgs,
   STALE_UPDATE_LIBS,
   staleUpdateSteps,
+  answerMismatches,
+  plainTerminalText,
+  terminalEnv,
+  terminalLegs,
   usageText,
   VARIANTS,
   variantPlan,
@@ -306,6 +310,57 @@ describe('staleUpdateSteps', () => {
 
   it('finds nothing on the second run and leaves the tree clean', () => {
     expect(again).toMatchObject({ expect: "Package '@cngx/core' is already up to date.", clean: true });
+  });
+});
+
+describe('terminalLegs', () => {
+  const [typed, ci] = terminalLegs('0.2.0');
+
+  it('runs both legs without a cngx flag, only the CLI install confirmation skipped', () => {
+    expect(typed.args).toEqual(['ng', 'add', '@cngx/core@0.2.0', '--skip-confirmation']);
+    expect(ci.args).toEqual(typed.args);
+  });
+
+  it('types an answer to every question in the order the schematic asks them', () => {
+    expect(typed.script.map((step) => step.prompt)).toEqual([
+      'Which cngx setup do you want?',
+      'Which cngx packages do you want?',
+      'Which language should cngx speak?',
+      'Provide toasts, alerts and banners at the root?',
+      'Which editors should get the cngx MCP server?',
+    ]);
+    expect(typed.answers).toEqual({ preset: 'full', libs: ['utils', 'core', 'common', 'interop', 'forms', 'ui'] });
+  });
+
+  it('runs the typed leg outside CI and fails the CI leg on any question', () => {
+    expect(typed.env).toEqual({ CI: undefined });
+    expect(ci.env).toEqual({ CI: 'true' });
+    expect(ci.script).toEqual([]);
+    expect(ci.forbid).toEqual(typed.script.map((step) => step.prompt));
+    expect(ci.answers.preset).toBe('recommended');
+  });
+});
+
+describe('terminalEnv', () => {
+  it('turns the CLI analytics question off and drops an undefined override', () => {
+    expect(terminalEnv({ CI: 'true', PATH: '/bin' }, { CI: undefined })).toEqual({ PATH: '/bin', NG_CLI_ANALYTICS: 'false' });
+    expect(terminalEnv({ PATH: '/bin' }, { CI: 'true' })).toEqual({ PATH: '/bin', NG_CLI_ANALYTICS: 'false', CI: 'true' });
+  });
+});
+
+describe('plainTerminalText', () => {
+  it('drops colour and cursor sequences', () => {
+    expect(plainTerminalText('\u001b[1mWhich cngx setup\u001b[22m\u001b[?25l do you want?')).toBe('Which cngx setup do you want?');
+  });
+});
+
+describe('answerMismatches', () => {
+  const manifest = { projects: { fixture: { answers: { preset: 'full', libs: ['core', 'ui'] } } } };
+
+  it('names every recorded answer that differs', () => {
+    expect(answerMismatches(manifest, 'fixture', { preset: 'full', libs: ['core', 'ui'] })).toEqual([]);
+    expect(answerMismatches(manifest, 'fixture', { preset: 'recommended' })).toEqual(['preset is "full", expected "recommended"']);
+    expect(answerMismatches({}, 'fixture', { preset: 'full' })).toEqual(['preset is undefined, expected "full"']);
   });
 });
 

@@ -287,8 +287,12 @@ the whole round trip against the tarballs of `scripts/pack-libs.mjs`: a fresh
 app, `ng add @cngx/core` twice (the second must change nothing),
 `ng add @cngx/forms --libs core` (exact pins for utils, core, common, forms),
 `ng update @cngx/core --migrate-only` twice (the second finds nothing), then
-`ng build` and a browser load. It serves the tarballs from a local registry
-for the `@cngx` scope inside the script. `--stale-core <tgz | previous>` adds
+`ng build` and a browser load. Two more legs run `ng add @cngx/core` without
+a cngx flag on copies of the fresh app, under a pseudo-terminal (python3's
+`pty` module): one answers the preset, libs, language, feedback and editor
+questions by key presses and checks the answers `.cngx/install.json`
+records, the other runs under `CI=true` and fails on any question. It serves
+the tarballs from a local registry for the `@cngx` scope inside the script. `--stale-core <tgz | previous>` adds
 a sandbox with an older core installed, where `ng add @cngx/forms` must
 replace it in the same run, and a sandbox with utils, core, common and forms
 at that older release, where a real `ng update @cngx/core` (no
