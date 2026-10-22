@@ -378,7 +378,9 @@
 /* forced-colors (WHCM): the host is a form control, so the UA forces its
  * background to ButtonFace over an author fill. `forced-color-adjust: none`
  * opts out so the system pair paints: every variant is a ButtonText border on
- * ButtonFace (link stays LinkText), disabled is GrayText. Unlayered, outside
+ * ButtonFace (link stays LinkText), disabled is GrayText. A solid primary or
+ * danger button fills with Highlight so the main action still stands out once
+ * colour emphasis is gone. Unlayered, outside
  * @scope, `!important` because the base uses `:scope[data-*]` compounds. */
 @media (forced-colors: active) {
   .cngx-button {
@@ -394,7 +396,16 @@
   .cngx-button:hover {
     border-color: Highlight !important;
   }
+  .cngx-button[data-variant='solid']:is([data-tone='primary'], [data-tone='danger']) {
+    background: Highlight !important;
+    color: HighlightText !important;
+    border-color: Highlight !important;
+  }
+  .cngx-button[data-variant='solid']:is([data-tone='primary'], [data-tone='danger']):hover {
+    border-color: ButtonText !important;
+  }
   .cngx-button[aria-disabled='true']:not([data-busy]) {
+    background: ButtonFace !important;
     color: GrayText !important;
     border-color: GrayText !important;
   }
