@@ -27,6 +27,7 @@ export const LIBRARY_SCOPES = [
   'common/stepper',
   'common/tabs',
   'common/card',
+  'common/button',
   'common/dialog',
   'common/data',
   'common/layout',

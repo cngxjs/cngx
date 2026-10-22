@@ -15,7 +15,7 @@ CDK and Material are opt-in primitives, not foundations.
 
 > **State is derived, not managed. Communication is architecture, not an afterthought.**
 
-Angular 21.1 through 22, Signal-native, no NgModules. Eight packages, 57 surgical secondary entry points, `sideEffects: false`. Five-level dependency hierarchy enforced by Sheriff.
+Angular 21.1 through 22, Signal-native, no NgModules. Eight packages, 58 surgical secondary entry points, `sideEffects: false`. Five-level dependency hierarchy enforced by Sheriff.
 
 ---
 
@@ -299,7 +299,7 @@ The only way to lie to assistive tech is to break the signal that also lies to t
 RxJS is only at the I/O boundary (HTTP, WebSocket, DOM streams) and never exposed on the public API.
 - **Typed end to end.** `model<T>()`, `input<T>()`, `Field<T>`, `CngxAsyncState<T>`. 
 **_Zero_** `any` in the codebase, zero `as` casts, strict TypeScript across all libs.
-- **Surgical imports.** 57 secondary entry points means `import { CngxRovingTabindex } from '@cngx/common/a11y'` pulls in roving tabindex, not the entire common surface. 
+- **Surgical imports.** 58 secondary entry points means `import { CngxRovingTabindex } from '@cngx/common/a11y'` pulls in roving tabindex, not the entire common surface. 
 `sideEffects: false` plus standalone-by-default plus no NgModules means tree-shaking actually works.
 - **Runnable docs, not snippets.** Every component's Examples tab embeds the live demo as a naked iframe, side-by-side with its API. 
 The code panel shows the actual artifact (no chrome, no toggles, no fail-flag plumbing) so you can copy-paste what you actually need. Selected components (`@playground` tag) ship a Stackblitz launcher with pinned dependencies. 
