@@ -251,7 +251,7 @@ export const COPY_TOKENS = [
   {
     token: 'CNGX_REORDERABLE_SELECT_CONFIG',
     kind: 'config',
-    copyKeys: ['ariaLabel', 'listLabel', 'moveUp', 'moveDown', 'atStart', 'atEnd'],
+    copyKeys: ['ariaLabel'],
     settingsKeys: ['keyboardModifier', 'dragHandle', 'freezeStripOnCommit'],
   },
   {

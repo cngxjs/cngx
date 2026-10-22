@@ -27,7 +27,7 @@ import { injectSelectConfig, provideSelectConfigAt } from '../public-api';
 import type { CngxSelectOptionDef } from '../shared/option.model';
 import { resolveReorderableSelectConfig } from '../shared/reorderable-select-config';
 import { createTypeaheadController } from '../shared/typeahead-controller';
-import { injectSelectCopy, type CngxSelectAnnounceFormat } from './select-i18n';
+import { injectSelectCopy, injectSelectWord, type CngxSelectAnnounceFormat } from './select-i18n';
 import { CNGX_SELECT_LANGUAGE_EN } from './select-language-section';
 
 // Compile-checked: the English section is a complete select section of a pack.
@@ -428,9 +428,20 @@ describe('sortable selection list copy', () => {
     TestBed.resetTestingModule();
   });
 
+  /** The keys the panel reorder list reads, as it reads them. */
+  function listCopy() {
+    return TestBed.runInInjectionContext(() => ({
+      listLabel: injectSelectWord('reorderListLabel'),
+      moveUp: injectSelectWord('reorderMoveUp'),
+      moveDown: injectSelectWord('reorderMoveDown'),
+      atStart: injectSelectWord('reorderAtStart'),
+      atEnd: injectSelectWord('reorderAtEnd'),
+    }));
+  }
+
   it('defaults to the English section', () => {
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
-    const cfg = TestBed.runInInjectionContext(() => resolveReorderableSelectConfig());
+    const cfg = listCopy();
     expect(cfg.listLabel()).toBe('Selected, in order');
     expect(stripBidiIsolates(cfg.moveUp()('Red'))).toBe('Red: move up');
     expect(stripBidiIsolates(cfg.moveDown()('Red'))).toBe('Red: move down');
@@ -446,7 +457,7 @@ describe('sortable selection list copy', () => {
         provideCngxI18n(withPartialPack(CNGX_LANGUAGE_DE), withDocumentLanguage('off')),
       ],
     });
-    const cfg = TestBed.runInInjectionContext(() => resolveReorderableSelectConfig());
+    const cfg = listCopy();
     expect(cfg.listLabel()).toBe('Ausgewählt, in Reihenfolge');
     expect(stripBidiIsolates(cfg.moveUp()('Rot'))).toBe('Rot: nach oben verschieben');
     expect(stripBidiIsolates(cfg.moveDown()('Rot'))).toBe('Rot: nach unten verschieben');
@@ -462,9 +473,12 @@ describe('sortable selection list copy', () => {
         provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
       ],
     });
-    const cfg = TestBed.runInInjectionContext(() => resolveReorderableSelectConfig());
+    const cfg = listCopy();
     expect(cfg.listLabel()).toBe('Selected, in order');
-    pack.set({ locale: 'de', select: { reorderListLabel: 'Reihenfolge', reorderMoveUp: 'Hoch: {label}' } });
+    pack.set({
+      locale: 'de',
+      select: { reorderListLabel: 'Reihenfolge', reorderMoveUp: 'Hoch: {label}' },
+    });
     expect(cfg.listLabel()).toBe('Reihenfolge');
     expect(stripBidiIsolates(cfg.moveUp()('Rot'))).toBe('Hoch: Rot');
     expect(cfg.atEnd()).toBe('Already last');

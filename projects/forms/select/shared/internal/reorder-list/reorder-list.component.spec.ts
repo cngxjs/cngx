@@ -3,6 +3,13 @@ import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import type { CngxReorderEvent } from '@cngx/common/interactive';
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+} from '@cngx/core/i18n';
+import { stripBidiIsolates } from '@cngx/testing';
 
 import type { CngxSelectOptionDef } from '../../option.model';
 import { CngxSelectReorderList } from './reorder-list.component';
@@ -20,12 +27,7 @@ const OPTIONS: CngxSelectOptionDef<string>[] = [
   template: `
     <cngx-select-reorder-list
       [items]="items()"
-      [label]="'Selected, in order'"
       [hint]="'Reorder with Alt + arrow keys'"
-      [moveUpLabel]="up"
-      [moveDownLabel]="down"
-      [atStartText]="'Already first'"
-      [atEndText]="'Already last'"
       [disabled]="disabled()"
       (reordered)="handle($event)"
     />
@@ -35,8 +37,6 @@ class Host {
   readonly items = signal<readonly CngxSelectOptionDef<string>[]>(OPTIONS);
   readonly disabled = signal(false);
   readonly events: CngxReorderEvent<string>[] = [];
-  readonly up = (label: string): string => `${label}: move up`;
-  readonly down = (label: string): string => `${label}: move down`;
   /** Applies the move, as the host select's optimistic commit does. */
   apply = true;
 
@@ -94,11 +94,50 @@ describe('CngxSelectReorderList', () => {
     expect(list.getAttribute('role')).toBe('list');
     expect(list.getAttribute('aria-label')).toBe('Selected, in order');
     expect(labels(root)).toEqual(['Red', 'Green', 'Blue']);
-    expect(button(root, 1, 'up').getAttribute('aria-label')).toBe('Green: move up');
-    expect(button(root, 1, 'down').getAttribute('aria-label')).toBe('Green: move down');
+    expect(stripBidiIsolates(button(root, 1, 'up').getAttribute('aria-label')!)).toBe(
+      'Green: move up',
+    );
+    expect(stripBidiIsolates(button(root, 1, 'down').getAttribute('aria-label')!)).toBe(
+      'Green: move down',
+    );
     expect(rows(root)[0].querySelector('[data-reorder-handle]')!.getAttribute('aria-hidden')).toBe(
       'true',
     );
+  });
+
+  it('reads its copy from the select language section and follows a pack switch', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
+    });
+    const { root } = setup();
+    const list = root.querySelector('ul')!;
+    const firstUp = button(root, 0, 'up');
+    const lastDown = button(root, 2, 'down');
+    const reason = (el: HTMLElement) =>
+      root.querySelector(`#${el.getAttribute('aria-describedby')}`)!.textContent;
+    expect(list.getAttribute('aria-label')).toBe('Selected, in order');
+
+    pack.set({
+      locale: 'de',
+      select: {
+        reorderListLabel: 'Reihenfolge',
+        reorderMoveUp: '{label}: hoch',
+        reorderMoveDown: '{label}: runter',
+        reorderAtStart: 'Schon oben',
+        reorderAtEnd: 'Schon unten',
+      },
+    });
+    settle();
+    expect(list.getAttribute('aria-label')).toBe('Reihenfolge');
+    expect(stripBidiIsolates(button(root, 1, 'up').getAttribute('aria-label')!)).toBe(
+      'Green: hoch',
+    );
+    expect(stripBidiIsolates(button(root, 1, 'down').getAttribute('aria-label')!)).toBe(
+      'Green: runter',
+    );
+    expect(reason(firstUp)).toBe('Schon oben');
+    expect(reason(lastDown)).toBe('Schon unten');
   });
 
   it('describes the list with the keyboard hint only while two or more rows can move', () => {
