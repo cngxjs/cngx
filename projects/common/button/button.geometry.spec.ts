@@ -182,6 +182,20 @@ describe('CngxButton geometry: slots', () => {
   });
 });
 
+describe('CngxButton paint: neutral solid', () => {
+  it('fills light under the text colour instead of filling with the text colour', () => {
+    const { root } = mount();
+    const md = query(root, '.b-md');
+    const probe = document.createElement('span');
+    probe.style.color = 'var(--cngx-color-text)';
+    root.appendChild(probe);
+    const text = computedValue(probe, 'color');
+    expect(computedValue(md, 'color')).toBe(text);
+    expect(computedValue(md, 'background-color')).not.toBe(text);
+    expect(computedValue(md, 'border-top-color')).not.toBe('rgba(0, 0, 0, 0)');
+  });
+});
+
 describe('CngxButton geometry: busy', () => {
   it('keeps the width while the busy layer covers the label', () => {
     const { fixture, root } = mount();

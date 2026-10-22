@@ -261,11 +261,30 @@
       background: color-mix(in oklch, var(--cngx-button-tone, currentColor) 88%, black);
       border-color: color-mix(in oklch, var(--cngx-button-tone, currentColor) 88%, black);
     }
+    /* Neutral solid is the browser-native default: a light grey fill under the
+       text colour, not a fill in the text colour. The loud action is
+       tone="primary". */
+    :scope[data-variant='solid'][data-tone='neutral'] {
+      background: color-mix(in oklch, var(--cngx-button-tone, currentColor) 10%, var(--cngx-color-surface, Canvas));
+      border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
+      color: var(--cngx-button-tone-text, currentColor);
+    }
+    :scope[data-variant='solid'][data-tone='neutral']:hover {
+      background: color-mix(in oklch, var(--cngx-button-tone, currentColor) 15%, var(--cngx-color-surface, Canvas));
+      border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
+    }
     :scope[data-variant='secondary'] {
       background: color-mix(in oklch, var(--cngx-button-tone, currentColor) 12%, transparent);
     }
     :scope[data-variant='secondary']:hover {
       background: color-mix(in oklch, var(--cngx-button-tone, currentColor) 18%, transparent);
+    }
+    /* Neutral secondary steps below the neutral solid fill so the two stay apart. */
+    :scope[data-variant='secondary'][data-tone='neutral'] {
+      background: color-mix(in oklch, var(--cngx-button-tone, currentColor) 5%, transparent);
+    }
+    :scope[data-variant='secondary'][data-tone='neutral']:hover {
+      background: color-mix(in oklch, var(--cngx-button-tone, currentColor) 9%, transparent);
     }
     :scope[data-variant='outline'] {
       border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
@@ -349,7 +368,7 @@
 
     /* Stronger chrome on the more-contrast axis: outline borders take the
        tone text, ghost buttons gain a border. */
-    [data-contrast='more'] :scope[data-variant='outline'] {
+    [data-contrast='more'] :scope:is([data-variant='outline'], [data-variant='solid'][data-tone='neutral']) {
       border-color: var(--cngx-button-tone-text, currentColor);
     }
     [data-contrast='more'] :scope[data-variant='ghost'] {
