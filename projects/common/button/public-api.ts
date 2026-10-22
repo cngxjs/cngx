@@ -10,6 +10,7 @@ export type {
 } from './button.types';
 
 export { CngxButton } from './button.component';
+export { CngxIconButton } from './icon-button.component';
 export { CngxButtonStart, CngxButtonEnd } from './slots';
 export {
   CNGX_BUTTON_CONFIG,
