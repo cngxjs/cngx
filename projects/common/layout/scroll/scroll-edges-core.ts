@@ -23,7 +23,7 @@ export interface ScrollEdgesHost extends ResizeObserverHost {
 /**
  * Per-edge scroll state of one scrollport. Each signal is `true` while content
  * is hidden toward that edge, i.e. while the user can still scroll toward it.
- * The edges are logical: under `writing-mode: vertical-rl` / `vertical-lr` the
+ * The edges are logical: under a `vertical-*` or `sideways-*` writing mode the
  * block edges are the horizontal ones and the inline edges the vertical ones.
  * The writing mode is read once per scrollport, so a runtime `writing-mode`
  * flip on a live scrollport is not picked up.
@@ -66,6 +66,11 @@ function sameEdges(a: ScrollEdgesSnapshot, b: ScrollEdgesSnapshot): boolean {
     a.inlineStart === b.inlineStart &&
     a.inlineEnd === b.inlineEnd
   );
+}
+
+/** `vertical-*` and `sideways-*` both lay the block axis out horizontally. */
+function isVerticalWritingMode(writingMode: string): boolean {
+  return writingMode.startsWith('vertical-') || writingMode.startsWith('sideways-');
 }
 
 /**
@@ -159,7 +164,7 @@ export function createScrollEdges(
     if (destroyed) {
       return;
     }
-    vertical ??= (host.getComputedStyle?.(element).writingMode ?? '').startsWith('vertical-');
+    vertical ??= isVerticalWritingMode(host.getComputedStyle?.(element).writingMode ?? '');
     edges.set(readEdges(element, vertical));
   };
 

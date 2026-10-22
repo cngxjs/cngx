@@ -8,6 +8,8 @@ import { CngxScrollEdges } from './scroll-edges.directive';
 // Runs in a real Chromium (the `test-geometry` target): real scroll metrics,
 // real negative `scrollLeft` under `dir="rtl"`, real scroll / resize events.
 
+type WritingMode = 'horizontal-tb' | 'vertical-rl' | 'vertical-lr' | 'sideways-lr';
+
 const EDGE_ATTRIBUTES = [
   'data-scroll-block-start',
   'data-scroll-block-end',
@@ -56,7 +58,7 @@ const EDGE_ATTRIBUTES = [
 class GeometryHost {
   readonly dir = signal<'ltr' | 'rtl'>('ltr');
   readonly tight = signal(false);
-  readonly writingMode = signal<'horizontal-tb' | 'vertical-rl' | 'vertical-lr'>('horizontal-tb');
+  readonly writingMode = signal<WritingMode>('horizontal-tb');
 }
 
 /** Enough frames for the scroll / resize event, the coalesced read and a spare. */
@@ -77,7 +79,7 @@ describe('CngxScrollEdges geometry', () => {
   async function mount(
     dir: 'ltr' | 'rtl',
     tight = false,
-    writingMode: 'horizontal-tb' | 'vertical-rl' | 'vertical-lr' = 'horizontal-tb',
+    writingMode: WritingMode = 'horizontal-tb',
   ) {
     fixture = TestBed.createComponent(GeometryHost);
     fixture.componentInstance.dir.set(dir);
@@ -211,6 +213,26 @@ describe('CngxScrollEdges geometry', () => {
     expect(box.scrollLeft).toBe(maxLeft);
     expect(await scrollTo(maxLeft / 2, maxTop / 2)).toEqual([...EDGE_ATTRIBUTES]);
     expect(await scrollTo(maxLeft, maxTop)).toEqual([
+      'data-scroll-block-start',
+      'data-scroll-inline-start',
+    ]);
+  });
+
+  it('reads a negative scrollTop as the inline offset under writing-mode: sideways-lr', async () => {
+    const { box, edges, scrollTo } = await mount('ltr', false, 'sideways-lr');
+    const maxLeft = box.scrollWidth - box.clientWidth;
+    const maxTop = box.scrollHeight - box.clientHeight;
+    expect(maxLeft).toBe(300);
+    expect(maxTop).toBe(400);
+
+    expect(await edges()).toEqual(['data-scroll-block-end', 'data-scroll-inline-end']);
+    // Inline-start is the bottom edge: scrolling toward inline-end drives scrollTop negative.
+    expect(await scrollTo(0, -maxTop)).toEqual([
+      'data-scroll-block-end',
+      'data-scroll-inline-start',
+    ]);
+    expect(box.scrollTop).toBe(-maxTop);
+    expect(await scrollTo(maxLeft, -maxTop)).toEqual([
       'data-scroll-block-start',
       'data-scroll-inline-start',
     ]);

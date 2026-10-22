@@ -303,6 +303,19 @@ describe('createScrollEdges', () => {
       });
     });
 
+    it.each(['sideways-rl', 'sideways-lr'])('maps scrollLeft to the block axis under %s', (mode) => {
+      const { fake, host } = withWritingMode(mode);
+      const element = makeScrollport({ scrollWidth: 400, clientWidth: 100, scrollLeft: 150 });
+      const state = createScrollEdges(element, makeDestroyRef().destroyRef, host);
+      fake.flushFrames();
+      expect(edgesOf(state)).toEqual({
+        blockStart: true,
+        blockEnd: true,
+        inlineStart: false,
+        inlineEnd: false,
+      });
+    });
+
     it('reads the writing mode once, on the first frame, not at creation', () => {
       const { fake, getComputedStyle, host } = withWritingMode('vertical-rl');
       const element = makeScrollport({ scrollWidth: 400, clientWidth: 100 });
