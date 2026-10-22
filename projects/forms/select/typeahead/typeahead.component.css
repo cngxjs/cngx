@@ -255,8 +255,11 @@
     }
 
     .cngx-typeahead__clear:focus-visible {
-      outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
-      outline-offset: 1px;
+      outline: var(
+        --cngx-select-focus-outline,
+        2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
+      );
+      outline-offset: var(--cngx-select-focus-offset, 2px);
       border-radius: 0.25rem;
     }
   }
