@@ -7,6 +7,7 @@ import {
   type Provider,
   type Signal,
 } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
 
 import type { CngxCommand } from './command';
 
@@ -24,7 +25,9 @@ export type CngxCommandSource = Signal<readonly CngxCommand[]> | readonly CngxCo
  * A source that needs injection. `provideCommands` runs it once, as a provider
  * factory in the injection context of the level it is registered at, so it can
  * call `inject()`. It is not a `computed`: a factory returning a plain array is
- * frozen at that first call. Return a `Signal` to stay reactive.
+ * frozen at that first call. Return a `Signal` to stay reactive. A factory that
+ * returns anything else contributes no commands and warns in dev mode
+ * (CNGX1070).
  *
  * @category common/command
  * @since 0.1.0
@@ -101,7 +104,7 @@ export function provideCommands(
     ...sources.map((source) =>
       isSourceValue(source)
         ? { provide: CNGX_COMMAND_SOURCE, useValue: source, multi: true }
-        : { provide: CNGX_COMMAND_SOURCE, useFactory: source, multi: true },
+        : { provide: CNGX_COMMAND_SOURCE, useFactory: () => runFactory(source), multi: true },
     ),
     {
       provide: CNGX_COMMAND_REGISTRY,
@@ -163,10 +166,27 @@ function mergeSources(...lists: (readonly CngxCommandSource[])[]): readonly Cngx
  * @internal A `Signal` is callable too, so `isSignal` must decide before any
  * function is taken for a factory.
  */
-function isSourceValue(
-  source: CngxCommandSource | CngxCommandSourceFactory,
-): source is CngxCommandSource {
+function isSourceValue(source: unknown): source is CngxCommandSource {
   return isSignal(source) || Array.isArray(source);
+}
+
+/**
+ * @internal Runs a factory source. A non-source result (a JS caller, a cast)
+ * would otherwise surface as a TypeError deep inside the merged `computed`, so
+ * it is dropped here instead.
+ */
+function runFactory(factory: CngxCommandSourceFactory): CngxCommandSource {
+  const source: unknown = factory();
+  if (isSourceValue(source)) {
+    return source;
+  }
+  if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+    cngxDevWarn(
+      'CNGX1070',
+      `provideCommands() factory returned ${source === null ? 'null' : typeof source}, not a command array or a Signal of one; it contributes no commands.`,
+    );
+  }
+  return [];
 }
 
 /** @internal Reads a source, unwrapping a signal or passing an array through. */

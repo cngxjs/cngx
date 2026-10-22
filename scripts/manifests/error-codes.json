@@ -1388,6 +1388,23 @@
       ]
     },
     {
+      "code": "CNGX1070",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Command source factory returned no source",
+      "page": "core-concepts/error-codes/cngx1070.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1070.html",
+      "status": "active",
+      "files": ["projects/common/command/provide-commands.ts"],
+      "messages": [
+        {
+          "file": "projects/common/command/provide-commands.ts",
+          "text": "provideCommands() factory returned ${...}, not a command array or a Signal of one; it contributes no commands."
+        }
+      ]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",

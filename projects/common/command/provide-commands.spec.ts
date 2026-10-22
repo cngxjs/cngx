@@ -12,7 +12,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router, RouterOutlet } from '@angular/router';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { CngxCommand } from './command';
 import { injectCommands, provideCommands } from './provide-commands';
@@ -447,6 +447,21 @@ describe('provideCommands / injectCommands factory sources', () => {
     expect(ids(commands)).toEqual(['a']);
     items.set([cmd('a'), cmd('b')]);
     expect(ids(commands)).toEqual(['a']);
+  });
+
+  it('drops a factory that returns no source and warns CNGX1070', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const broken = (() => undefined) as unknown as () => readonly CngxCommand[];
+    TestBed.configureTestingModule({
+      providers: [provideCommands([cmd('a')]), provideCommands(broken)],
+    });
+
+    expect(ids(merged())).toEqual(['a']);
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toMatch(
+      /^CNGX1070: provideCommands\(\) factory returned undefined, not a command array/,
+    );
+    warn.mockRestore();
   });
 });
 
