@@ -1,10 +1,16 @@
 import { Directive, booleanAttribute, effect, input, linkedSignal, untracked } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { createDebouncer } from '../debouncer/debouncer';
 import { injectCngxAudio } from '../inject-audio';
 
 /** Throttle key - the pitch directive plays a single ad-hoc voice. */
 const PITCH_VOICE = 'pitch';
+
+/** No span to interpolate across: equal ends, or an end that is `NaN` / infinite. */
+function isDegenerateDomain(lo: number, hi: number): boolean {
+  return lo === hi || !Number.isFinite(lo) || !Number.isFinite(hi);
+}
 
 /**
  * Pitch-mode audio binder. Sonifies a continuous numeric value: each change of
@@ -47,7 +53,12 @@ export class CngxAudioPitch {
   /** Output frequency range `[lo, hi]` in Hz. Default `[220, 880]`. */
   readonly pitchRange = input<[number, number]>([220, 880]);
 
-  /** Fixed input domain `[min, max]` the value is clamped against. */
+  /**
+   * Fixed input domain `[lo, hi]` the value is clamped against; `lo > hi`
+   * inverts the mapping. An empty domain (`lo === hi`) or one with a `NaN` /
+   * infinite end plays the range low for every value and warns in dev mode
+   * (CNGX1069).
+   */
   readonly pitchDomain = input.required<[number, number]>();
 
   /** Tone duration in ms. Default `120`. */
@@ -93,16 +104,45 @@ export class CngxAudioPitch {
         this.audio.tone(this.scale(current), this.pitchDurationMs(), undefined, this.audioVolume());
       });
     });
+
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      // [pitchDomain] is a live input, so the check re-runs on every change;
+      // the key keeps a re-bound identical empty tuple silent.
+      let lastWarned: string | null = null;
+      effect(() => {
+        const [lo, hi] = this.pitchDomain();
+        if (!isDegenerateDomain(lo, hi)) {
+          lastWarned = null;
+          return;
+        }
+        const key = `${lo},${hi}`;
+        if (key === lastWarned) {
+          return;
+        }
+        lastWarned = key;
+        const rangeLo = untracked(() => this.pitchRange()[0]);
+        cngxDevWarn(
+          'CNGX1069',
+          `[cngxAudioPitch] [pitchDomain] [${lo}, ${hi}] is empty or not finite; every value plays ${rangeLo} Hz, the low end of [pitchRange].`,
+        );
+      });
+    }
   }
 
-  /** Clamp to the domain, then linear-scale into the frequency range. */
+  /**
+   * Clamp to the domain, then linear-scale into the frequency range. The
+   * interpolation runs against the declared pair, so an inverted domain maps
+   * `lo` to the range low and `hi` to the range high.
+   */
   private scale(value: number): number {
     const [domainLo, domainHi] = this.pitchDomain();
     const [rangeLo, rangeHi] = this.pitchRange();
-    const clamped = Math.max(domainLo, Math.min(domainHi, value));
-    if (domainHi === domainLo) {
+    if (isDegenerateDomain(domainLo, domainHi)) {
       return rangeLo;
     }
+    const min = Math.min(domainLo, domainHi);
+    const max = Math.max(domainLo, domainHi);
+    const clamped = Math.max(min, Math.min(max, value));
     const t = (clamped - domainLo) / (domainHi - domainLo);
     return rangeLo + t * (rangeHi - rangeLo);
   }

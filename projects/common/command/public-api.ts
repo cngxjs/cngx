@@ -3,10 +3,10 @@
  */
 export { type CngxCommand, type CngxCommandGroup, type CommandGroup } from './command';
 export {
-  CNGX_COMMAND_SOURCE,
   provideCommands,
   injectCommands,
   type CngxCommandSource,
+  type CngxCommandSourceFactory,
 } from './provide-commands';
 export {
   createDefaultCommandMatcher,

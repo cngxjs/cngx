@@ -7,7 +7,8 @@ import { observeResize, type ResizeObserverHost } from '../observers/resize-sign
  * or a test double. Every member is optional so SSR and jsdom hosts pass the
  * type and fall back at runtime: no `ResizeObserver` means no resize
  * tracking, no `MutationObserver` means the child set is captured once, no
- * `requestAnimationFrame` means every trigger reads synchronously.
+ * `requestAnimationFrame` means every trigger reads synchronously, no
+ * `getComputedStyle` means the scrollport is read as horizontal-tb.
  *
  * @category common/layout
  * @since 0.1.0
@@ -16,23 +17,28 @@ export interface ScrollEdgesHost extends ResizeObserverHost {
   MutationObserver?: typeof MutationObserver;
   requestAnimationFrame?: (callback: FrameRequestCallback) => number;
   cancelAnimationFrame?: (handle: number) => void;
+  getComputedStyle?: (element: Element) => CSSStyleDeclaration;
 }
 
 /**
  * Per-edge scroll state of one scrollport. Each signal is `true` while content
  * is hidden toward that edge, i.e. while the user can still scroll toward it.
+ * The edges are logical: under a `vertical-*` or `sideways-*` writing mode the
+ * block edges are the horizontal ones and the inline edges the vertical ones.
+ * The writing mode is read once per scrollport, so a runtime `writing-mode`
+ * flip on a live scrollport is not picked up.
  *
  * @category common/layout
  * @since 0.1.0
  */
 export interface CngxScrollEdgesState {
-  /** Content is hidden above (toward the block-start edge). */
+  /** Content is hidden toward the block-start edge (top in horizontal writing modes). */
   readonly canScrollBlockStart: Signal<boolean>;
-  /** Content is hidden below (toward the block-end edge). */
+  /** Content is hidden toward the block-end edge (bottom in horizontal writing modes). */
   readonly canScrollBlockEnd: Signal<boolean>;
-  /** Content is hidden toward the inline-start edge (left in LTR, right in RTL). */
+  /** Content is hidden toward the inline-start edge (left in LTR, right in RTL, horizontally). */
   readonly canScrollInlineStart: Signal<boolean>;
-  /** Content is hidden toward the inline-end edge (right in LTR, left in RTL). */
+  /** Content is hidden toward the inline-end edge (right in LTR, left in RTL, horizontally). */
   readonly canScrollInlineEnd: Signal<boolean>;
 }
 
@@ -62,19 +68,33 @@ function sameEdges(a: ScrollEdgesSnapshot, b: ScrollEdgesSnapshot): boolean {
   );
 }
 
+/** `vertical-*` and `sideways-*` both lay the block axis out horizontally. */
+function isVerticalWritingMode(writingMode: string): boolean {
+  return writingMode.startsWith('vertical-') || writingMode.startsWith('sideways-');
+}
+
 /**
  * One read of the six scroll metrics. RTL `scrollLeft` runs over `[-max, 0]`
  * in every evergreen engine and LTR over `[0, max]`, so its magnitude is the
  * distance from the inline-start edge in both directions - no direction lookup
- * and no `getComputedStyle` in the scroll path.
+ * in the scroll path. A vertical writing mode swaps the axes: the block axis
+ * runs on `scrollLeft` (negative under `vertical-rl`, whose block-start is the
+ * right edge) and the inline axis on `scrollTop`.
  */
-function readEdges(element: HTMLElement): ScrollEdgesSnapshot {
-  const inlineOffset = Math.abs(element.scrollLeft);
+function readEdges(element: HTMLElement, vertical: boolean): ScrollEdgesSnapshot {
+  const horizontalOffset = Math.abs(element.scrollLeft);
+  const verticalOffset = Math.abs(element.scrollTop);
+  const horizontalMax = element.scrollWidth - element.clientWidth;
+  const verticalMax = element.scrollHeight - element.clientHeight;
+  const blockOffset = vertical ? horizontalOffset : verticalOffset;
+  const blockMax = vertical ? horizontalMax : verticalMax;
+  const inlineOffset = vertical ? verticalOffset : horizontalOffset;
+  const inlineMax = vertical ? verticalMax : horizontalMax;
   return {
-    blockStart: element.scrollTop > EDGE_TOLERANCE,
-    blockEnd: element.scrollHeight - element.clientHeight - element.scrollTop > EDGE_TOLERANCE,
+    blockStart: blockOffset > EDGE_TOLERANCE,
+    blockEnd: blockMax - blockOffset > EDGE_TOLERANCE,
     inlineStart: inlineOffset > EDGE_TOLERANCE,
-    inlineEnd: element.scrollWidth - element.clientWidth - inlineOffset > EDGE_TOLERANCE,
+    inlineEnd: inlineMax - inlineOffset > EDGE_TOLERANCE,
   };
 }
 
@@ -102,7 +122,7 @@ function readEdges(element: HTMLElement): ScrollEdgesSnapshot {
  *   inject(DestroyRef),
  *   inject(DOCUMENT).defaultView,
  * );
- * const showTopShadow = edges.canScrollBlockStart;
+ * const showStartShadow = edges.canScrollBlockStart;
  * ```
  *
  * @param element The scrollport to read.
@@ -135,13 +155,17 @@ export function createScrollEdges(
   let destroyed = false;
   let framePending = false;
   let frameHandle = 0;
+  // Resolved on the first frame read, not here: a getComputedStyle at
+  // construction would force a style recalc before the first render.
+  let vertical: boolean | null = null;
 
   const read = (): void => {
     framePending = false;
     if (destroyed) {
       return;
     }
-    edges.set(readEdges(element));
+    vertical ??= isVerticalWritingMode(host.getComputedStyle?.(element).writingMode ?? '');
+    edges.set(readEdges(element, vertical));
   };
 
   const schedule = (): void => {

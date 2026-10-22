@@ -1,5 +1,6 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
+  afterNextRender,
   DestroyRef,
   inject,
   InjectionToken,
@@ -10,13 +11,14 @@ import {
   type Provider,
   type Signal,
 } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
 
 /**
  * The writing-direction axis cngx derives from the DOM. `ltr` and `rtl`
- * are the only two values the reactive graph reasons about; `dir="auto"`,
- * an unknown value, and an absent `dir` all normalise to `'ltr'` (native
- * CSS/bidi still honour `dir="auto"` in the DOM - the signal is a binary
- * axis for logic, not a mirror of the browser's per-content resolution).
+ * are the only two values the reactive graph reasons about. A root
+ * `dir="auto"` reports what the browser resolved for `<html>` (its
+ * `:dir(rtl)` state); an absent `dir` reports `'ltr'`, and so does an
+ * invalid value, with a dev-mode warning (CNGX0006).
  *
  * @category core/bidi
  * @since 0.1.0
@@ -38,13 +40,20 @@ export type CngxDirection = 'ltr' | 'rtl';
  * `<html dir>` from the active language pack and provides this token from
  * the same pack instead of reading the DOM.
  *
- * Resolution reads `documentElement.dir` (falling back to `document.dir`)
- * and normalises via `d === 'rtl' ? 'rtl' : 'ltr'`. On a browser platform
- * it installs a single `MutationObserver` on `documentElement`
- * (`attributeFilter: ['dir']`, no `subtree`) that re-reads on a root flip;
- * `inject(DestroyRef)` disconnects it. In SSR (`isPlatformBrowser` is
- * false) the signal seeds once and no observer is installed - the same
- * platform guard `window.token.ts` uses.
+ * Resolution reads the root `dir` attribute (falling back to `document.dir`),
+ * lowercased and untrimmed like the browser does: `rtl` is `'rtl'`; `ltr`,
+ * empty or absent is `'ltr'`; `auto` is the root's `:dir(rtl)` match on a
+ * browser and `'ltr'` on the server; anything else is `'ltr'` plus a
+ * dev-mode CNGX0006 warning, once per distinct value. A root `dir="auto"` is
+ * decided by the first strong character in tree order, so text in `<head>`
+ * (a `<title>`) wins over the app. Without such text, a client-rendered app
+ * has nothing to decide on when the token is first injected, so the value is
+ * read once more after the first render. On
+ * a browser platform it installs a single `MutationObserver` on
+ * `documentElement` (`attributeFilter: ['dir']`, no `subtree`) that re-reads
+ * on a root flip; `inject(DestroyRef)` disconnects it. In SSR
+ * (`isPlatformBrowser` is false) the signal seeds once and no observer is
+ * installed - the same platform guard `window.token.ts` uses.
  *
  * @remarks
  * Two behaviours are registered debt (see the direction accepted-debt
@@ -54,25 +63,69 @@ export type CngxDirection = 'ltr' | 'rtl';
  *   uses {@link CngxDir} (CSS/bidi) or {@link provideDirectionAt} in
  *   `viewProviders` (the reported signal). The reader does not walk
  *   `closest('[dir]')` or observe the ancestor chain.
- * - **`dir="auto"` resolves to `'ltr'`.** The signal is a binary logic
- *   axis; reading the browser's per-content resolution would mean
- *   measuring rendered text.
+ * - **`dir="auto"` is not re-resolved when content changes.** It is read at
+ *   construction, after the first render and on every root `dir` mutation.
+ *   Content that lands later (routed views, lazy routes, late data) does
+ *   not re-read it; observing every text change would cost a permanent
+ *   subtree observer. Set `dir` explicitly when the direction depends on
+ *   such content.
  *
  * @internal
  */
 function readDocumentDirection(): Signal<CngxDirection> {
   const doc = inject(DOCUMENT);
   const root = doc.documentElement;
-  const normalise = (value: string | null | undefined): CngxDirection =>
-    value === 'rtl' ? 'rtl' : 'ltr';
-  const read = (): CngxDirection => normalise(root?.dir || doc.dir);
+  const browser = isPlatformBrowser(inject(PLATFORM_ID));
+  // Enumerated attributes match ASCII-case-insensitively but are not trimmed,
+  // so `" rtl"` is as invalid for the browser as it is here.
+  const authoredDir = (): string => root?.getAttribute('dir') ?? doc.dir ?? '';
+  const rawDir = (): string => authoredDir().toLowerCase();
+  let lastWarned: string | null = null;
+
+  const resolveAuto = (): CngxDirection => {
+    if (!browser || !root) {
+      return 'ltr';
+    }
+    try {
+      return root.matches(':dir(rtl)') ? 'rtl' : 'ltr';
+    } catch {
+      // An engine without `:dir()` throws a SyntaxError on the selector.
+      return 'ltr';
+    }
+  };
+
+  const read = (): CngxDirection => {
+    const authored = authoredDir();
+    // Deduped on the lowercased value, the one the browser compares.
+    const raw = authored.toLowerCase();
+    if (raw === 'rtl' || raw === 'ltr' || raw === 'auto' || raw === '') {
+      lastWarned = null;
+      if (raw === 'rtl') {
+        return 'rtl';
+      }
+      return raw === 'auto' ? resolveAuto() : 'ltr';
+    }
+    if (typeof ngDevMode !== 'undefined' && ngDevMode && raw !== lastWarned) {
+      lastWarned = raw;
+      cngxDevWarn(
+        'CNGX0006',
+        `injectDirection() ignores <html dir="${authored}">; only "ltr", "rtl" and "auto" are valid, so the direction reads 'ltr'.`,
+      );
+    }
+    return 'ltr';
+  };
 
   const direction = signal<CngxDirection>(read());
 
-  if (isPlatformBrowser(inject(PLATFORM_ID))) {
+  if (browser) {
     const observer = new MutationObserver(() => direction.set(read()));
     observer.observe(root, { attributes: true, attributeFilter: ['dir'] });
     inject(DestroyRef).onDestroy(() => observer.disconnect());
+    // Strong text in `<head>` already decided `dir="auto"`; without it the
+    // decision waits for the app's own text, which lands with the first render.
+    if (rawDir() === 'auto') {
+      afterNextRender(() => direction.set(read()));
+    }
   }
 
   return direction.asReadonly();

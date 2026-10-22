@@ -33,7 +33,7 @@ One read-only signal carries the direction through the component graph.
 
 ### `injectDirection()`
 
-Returns a `Signal<'ltr' | 'rtl'>`. It resolves the document-root `dir` and re-signals when the root flips at runtime. It is read-only: CNGX reports the direction the DOM owns, it never writes it.
+Returns a `Signal<'ltr' | 'rtl'>`. It resolves the document-root `dir` and re-signals when the root flips at runtime. It is read-only: CNGX reports the direction the DOM owns, it never writes it. A root `dir="auto"` is honoured at read time: the signal reports what the browser resolved for `<html>` (its `:dir(rtl)` state), read at construction, after the first render and on every root `dir` change, so content that arrives later does not re-resolve it. An invalid value reads as `'ltr'` and warns in development mode (CNGX0006).
 
 ```ts
 import { injectDirection } from '@cngx/core';
