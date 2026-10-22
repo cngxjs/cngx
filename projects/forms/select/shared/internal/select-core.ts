@@ -401,8 +401,10 @@ export function createSelectCore<T, TCommit>(
       if (eq !== (cngxSelectDefaultCompare as unknown)) {
         return null;
       }
+      // Unfiltered: a search term that hides the selected option must not
+      // drop it from value resolution (the trigger would flicker to empty).
       const map = new Map<unknown, CngxSelectOptionDef<T>>();
-      for (const opt of flatOptions()) {
+      for (const opt of unfilteredFlatOptions()) {
         map.set(opt.value as unknown, opt);
       }
       return map;
@@ -728,7 +730,7 @@ export function createSelectCore<T, TCommit>(
       return map.get(value as unknown) ?? null;
     }
     const eq = deps.compareWith();
-    return flatOptions().find((o) => eq(o.value, value)) ?? null;
+    return unfilteredFlatOptions().find((o) => eq(o.value, value)) ?? null;
   }
 
   // Read untracked by the commit-error announcer, so a language flip never

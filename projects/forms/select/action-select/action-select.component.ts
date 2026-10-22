@@ -787,7 +787,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
         return map.get(v as unknown) ?? null;
       }
       const eq = this.compareWith();
-      return this.flatOptions().find((o) => eq(o.value, v)) ?? null;
+      return this.core.unfilteredFlatOptions().find((o) => eq(o.value, v)) ?? null;
     },
     {
       equal: (a, b) => {

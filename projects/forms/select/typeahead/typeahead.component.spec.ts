@@ -552,6 +552,71 @@ describe('CngxTypeahead - first search term after a value write', () => {
 
 // ── Glyph-slot & input-prefix/suffix pattern ────────────────────────────
 
+@Component({
+  template: ` <cngx-typeahead [label]="'Letter'" [options]="options" [(value)]="value" /> `,
+  imports: [CngxTypeahead],
+})
+class DefaultCompareHost {
+  readonly options: CngxSelectOptionsInput<string> = [
+    { value: 'a', label: 'Alpha' },
+    { value: 'b', label: 'Bravo' },
+    { value: 'c', label: 'Charlie' },
+  ];
+  readonly value = signal<string | undefined>('b');
+}
+
+describe('CngxTypeahead - selected survives a filtering term', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [StandaloneHost, DefaultCompareHost] });
+  });
+
+  function typeTerm(
+    fixture: { nativeElement: HTMLElement; detectChanges: () => void },
+    term: string,
+  ): void {
+    const input = fixture.nativeElement.querySelector(
+      'input.cngx-typeahead__input',
+    ) as HTMLInputElement;
+    input.focus();
+    input.value = term;
+    input.dispatchEvent(new Event('input'));
+    vi.advanceTimersByTime(300);
+    flush(fixture);
+  }
+
+  it('keeps the selected option while the term hides it (default compareWith)', () => {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(DefaultCompareHost);
+    flush(fixture);
+    const typeahead = fixture.debugElement.query(By.directive(CngxTypeahead))
+      .componentInstance as CngxTypeahead<string>;
+    expect(typeahead.selected()?.label).toBe('Bravo');
+
+    typeTerm(fixture, 'cha');
+    const visible = (typeahead as unknown as { flatOptions: () => { value: string }[] })
+      .flatOptions()
+      .map((o) => o.value);
+    expect(visible).not.toContain('b');
+    expect(fixture.componentInstance.value()).toBe('b');
+    expect(typeahead.selected()?.label).toBe('Bravo');
+  });
+
+  it('keeps the selected option while the term hides it (custom compareWith)', () => {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(StandaloneHost);
+    fixture.componentInstance.value.set({ id: 2, name: 'Bob' });
+    flush(fixture);
+    const typeahead = fixture.debugElement.query(By.directive(CngxTypeahead))
+      .componentInstance as CngxTypeahead<User>;
+    expect(typeahead.selected()?.label).toBe('Bob');
+
+    typeTerm(fixture, 'cha');
+    expect(fixture.componentInstance.value()?.id).toBe(2);
+    expect(typeahead.selected()?.label).toBe('Bob');
+  });
+});
+
 describe('CngxTypeahead - glyph inputs + input prefix/suffix', () => {
   @Component({
     template: `
