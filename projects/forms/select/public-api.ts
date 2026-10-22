@@ -30,7 +30,9 @@ export {
   withDefaultDragHandle,
   withReorderAriaLabel,
   withReorderKeyboardModifier,
+  withReorderListLabels,
   withReorderStripFreeze,
+  type CngxReorderMoveLabel,
   type CngxReorderableSelectConfig,
   type CngxReorderableSelectConfigFeature,
 } from './shared/reorderable-select-config';

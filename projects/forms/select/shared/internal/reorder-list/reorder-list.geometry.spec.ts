@@ -29,7 +29,7 @@ const OPTIONS: CngxSelectOptionDef<string>[] = [
   encapsulation: ViewEncapsulation.None,
   template: `
     <div data-touch="on" style="display: block; width: 20rem">
-      <cngx-select-reorder-list [items]="options" />
+      <cngx-select-reorder-list [items]="options" [label]="'Selected'" />
     </div>
   `,
 })

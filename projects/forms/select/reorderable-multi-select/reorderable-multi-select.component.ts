@@ -277,7 +277,8 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
 export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = resolveSelectConfig();
-  private readonly reorderableConfig = resolveReorderableSelectConfig();
+  /** @internal Reorder copy and settings; the panel list reads its copy here. */
+  protected readonly reorderableConfig = resolveReorderableSelectConfig();
   private readonly injector = inject(Injector);
 
   readonly label = input<string>('');
