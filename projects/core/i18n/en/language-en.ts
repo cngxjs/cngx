@@ -421,6 +421,11 @@ export const CNGX_LANGUAGE_EN = {
     announceMovedNoOption: '{field}: moved',
     actionGroup: 'Inline action',
     reorderHint: 'Reorder with Alt + arrow keys',
+    reorderListLabel: 'Selected, in order',
+    reorderMoveUp: '{label}: move up',
+    reorderMoveDown: '{label}: move down',
+    reorderAtStart: 'Already first',
+    reorderAtEnd: 'Already last',
   },
   sidenav: {
     resizeHandle: 'Resize navigation',

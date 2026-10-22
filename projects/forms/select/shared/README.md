@@ -441,7 +441,7 @@ Public exports:
 `CNGX_REORDERABLE_SELECT_CONFIG` token + `provideReorderableSelectConfig(...)` /
 `*At` providers + 4 features:
 
-- **Features**: `withReorderKeyboardModifier`, `withReorderAriaLabel`, `withReorderStripFreeze`, `withDefaultDragHandle`.
+- **Features**: `withReorderKeyboardModifier`, `withReorderAriaLabel`, `withReorderListLabels`, `withReorderStripFreeze`, `withDefaultDragHandle`.
 - **Types**: `CngxReorderableSelectConfig`, `CngxReorderableSelectConfigFeature`.
 
 ### `provide-cngx-select.ts`
