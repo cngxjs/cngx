@@ -733,6 +733,22 @@ bootstrapApplication(App, mergeApplicationConfig(baseConfig))
       }
     });
 
+    it('prints the plan under --quiet before it asks to confirm', async () => {
+      vi.stubEnv('CI', '');
+      vi.stubEnv('NO_COLOR', '1');
+      process.stdout.isTTY = true;
+      terminal.confirms = [];
+      try {
+        const run = await runRule(ngAdd({ quiet: true }), existing());
+
+        expect(terminal.confirms).toContain('Apply these changes?');
+        expect(run.logs.some((line) => /^Planned \(\d+\):$/.test(line))).toBe(true);
+        expect(run.logs).not.toContain('Preflight:');
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
     it('applies without a terminal to confirm in and says so', async () => {
       vi.stubEnv('CI', '');
       try {

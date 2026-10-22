@@ -23,6 +23,8 @@ export interface RenderLogger {
 export interface TodoOptions {
   /** A confirm comes next or the run is a dry run: no task may read as done. */
   readonly pending?: boolean;
+  /** A confirm comes next: the plan prints even under `--quiet`, so the question has something to answer. */
+  readonly confirming?: boolean;
 }
 
 /**
