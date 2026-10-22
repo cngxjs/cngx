@@ -78,6 +78,7 @@ import {
 } from '../shared/chip-removal-handler';
 import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
 import { sameArrayContents } from '../shared/internal/compare';
+import { CngxSelectReorderList } from '../shared/internal/reorder-list/reorder-list.component';
 import { CngxSelectSummary } from '../shared/internal/summary/select-summary.component';
 import { createSelectSummary } from '../shared/internal/summary/select-summary';
 import { injectTouchFloorSignal } from '../shared/internal/touch-floor';
@@ -236,6 +237,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
     CngxPopoverTrigger,
     CngxReorder,
     CngxSelectPanel,
+    CngxSelectReorderList,
     CngxSelectSummary,
     NgTemplateOutlet,
   ],
@@ -275,7 +277,8 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
 export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = resolveSelectConfig();
-  private readonly reorderableConfig = resolveReorderableSelectConfig();
+  /** @internal Reorder copy and settings; the panel list reads its copy here. */
+  protected readonly reorderableConfig = resolveReorderableSelectConfig();
   private readonly injector = inject(Injector);
 
   readonly label = input<string>('');
@@ -1169,6 +1172,11 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     const opt = this.core.findOption(movedValue);
     this.reorderCommit.dispatch([...next], previous, fromIndex, toIndex, opt);
 
+    // The panel list keeps focus on its own moved row; the chip strip is
+    // not rendered while the summary is on.
+    if (this.summary.active()) {
+      return;
+    }
     // Keep focus on the moved chip. Runs after the next render so the
     // DOM reflects the updated @for ordering before the roving
     // controller probes for [data-reorder-index=toIndex]. `setActive`

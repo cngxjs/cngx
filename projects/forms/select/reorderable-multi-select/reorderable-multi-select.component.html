@@ -221,6 +221,20 @@
     (closing)="hostFocus.refocusOwnerBeforeRemoval()"
   >
     <cngx-select-sheet-header />
+    @if (summary.active() && !isEmpty()) {
+      <cngx-select-reorder-list
+        [items]="selectedOptions()"
+        [label]="reorderableConfig.listLabel()"
+        [hint]="resolvedReorderAriaLabel()"
+        [moveUpLabel]="reorderableConfig.moveUp()"
+        [moveDownLabel]="reorderableConfig.moveDown()"
+        [atStartText]="reorderableConfig.atStart()"
+        [atEndText]="reorderableConfig.atEnd()"
+        [keyboardModifier]="reorderKeyboardModifier()"
+        [disabled]="reorderDisabled()"
+        (reordered)="handleReorder($event)"
+      />
+    }
     <div
       cngxListbox
       [attr.id]="listboxId"

@@ -486,7 +486,7 @@
     {
       "class": "CngxReorderableMultiSelect",
       "file": "projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.ts",
-      "line": 324,
+      "line": 327,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -508,7 +508,7 @@
     {
       "class": "CngxReorderableMultiSelect",
       "file": "projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.ts",
-      "line": 331,
+      "line": 334,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [

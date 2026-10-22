@@ -1,4 +1,5 @@
 import { Component, signal } from '@angular/core';
+import { CngxPopoverSheet, type CngxPopoverPresentationRequest } from '@cngx/common/popover';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -697,5 +698,171 @@ describe('CngxReorderableMultiSelect - summary trigger under the touch floor', (
     expect(el.querySelector('cngx-select-summary')).toBeNull();
     expect(el.querySelectorAll('cngx-chip').length).toBe(3);
     expect(chipStrip(el).getAttribute('role')).toBe('group');
+  });
+});
+
+// ── Sorting in the panel under the touch floor ──────────────────────
+
+@Component({
+  template: `
+    <cngx-reorderable-multi-select
+      [label]="'Letters'"
+      [options]="options"
+      [presentation]="presentation()"
+      [commitAction]="commitAction()"
+      [commitMode]="commitMode()"
+      [(values)]="values"
+    />
+  `,
+  imports: [CngxReorderableMultiSelect],
+})
+class PanelListHost {
+  readonly options = OPTIONS;
+  readonly values = signal<string[]>(['a', 'b', 'c', 'd']);
+  readonly presentation = signal<CngxPopoverPresentationRequest | undefined>('sheet');
+  readonly commitAction = signal<CngxSelectCommitAction<string[]> | null>(null);
+  readonly commitMode = signal<CngxSelectCommitMode>('optimistic');
+}
+
+describe('CngxReorderableMultiSelect - sorting in the panel under the touch floor', () => {
+  let restore: (() => void) | null = null;
+
+  afterEach(() => {
+    restore?.();
+    restore = null;
+  });
+
+  function render(touch = true) {
+    polyfillPopover();
+    if (touch) {
+      restore = stubTouchFloor();
+    }
+    const fixture = TestBed.createComponent(PanelListHost);
+    flush(fixture);
+    const de = fixture.debugElement.query(By.directive(CngxReorderableMultiSelect));
+    const cmp = de.componentInstance as CngxReorderableMultiSelect<string>;
+    const el = de.nativeElement as HTMLElement;
+    const panel = el.querySelector<HTMLElement>('.cngx-select__panel')!;
+    const open = () => {
+      cmp.open();
+      flush(fixture);
+    };
+    const list = () => panel.querySelector<HTMLElement>('cngx-select-reorder-list');
+    const move = (index: number, dir: 'up' | 'down') =>
+      list()!.querySelector<HTMLButtonElement>(
+        `[data-reorder-index="${index}"] [data-move="${dir}"]`,
+      )!;
+    const sheet = () => de.query(By.directive(CngxPopoverSheet)).injector.get(CngxPopoverSheet);
+    return { fixture, host: fixture.componentInstance, el, panel, open, list, move, sheet };
+  }
+
+  it('renders the selected values as a named list between the header and the options', () => {
+    const { panel, open, list } = render();
+    open();
+    const ul = list()!.querySelector('ul[role="list"]')!;
+    expect(ul.getAttribute('aria-label')).toBe('Selected, in order');
+    const labels = Array.from(ul.querySelectorAll('.cngx-select-reorder-list__label')).map((n) =>
+      n.textContent?.trim(),
+    );
+    expect(labels).toEqual(['Alpha', 'Bravo', 'Charlie', 'Delta']);
+    const header = panel.querySelector('cngx-select-sheet-header')!;
+    const listbox = panel.querySelector('[cngxListbox]')!;
+    expect(header.compareDocumentPosition(list()!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(list()!.compareDocumentPosition(listbox) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('renders no list without a value and none on a fine pointer', () => {
+    const empty = render();
+    empty.host.values.set([]);
+    flush(empty.fixture);
+    empty.open();
+    expect(empty.list()).toBeNull();
+    restore?.();
+    restore = null;
+    TestBed.resetTestingModule();
+
+    const fine = render(false);
+    fine.open();
+    expect(fine.list()).toBeNull();
+  });
+
+  it('keeps the listbox as the initial focus of the sheet', () => {
+    const { panel, open } = render();
+    open();
+    expect(document.activeElement).toBe(panel.querySelector('[cngxListbox]'));
+  });
+
+  it('commits a move-button move optimistically through the reorder handler', async () => {
+    const { fixture, host, open, move } = render();
+    let reject!: (err: unknown) => void;
+    host.commitAction.set(
+      () =>
+        new Promise<string[] | undefined>((_res, rej) => {
+          reject = rej;
+        }),
+    );
+    flush(fixture);
+    open();
+    move(0, 'down').click();
+    flush(fixture);
+    expect(host.values()).toEqual(['b', 'a', 'c', 'd']);
+
+    reject(new Error('network down'));
+    await Promise.resolve();
+    await Promise.resolve();
+    flush(fixture);
+    expect(host.values()).toEqual(['a', 'b', 'c', 'd']);
+  });
+
+  it('holds a pessimistic move until the commit settles and freezes the list meanwhile', async () => {
+    const { fixture, host, open, move } = render();
+    let resolve!: () => void;
+    host.commitMode.set('pessimistic');
+    host.commitAction.set(
+      () =>
+        new Promise<string[] | undefined>((res) => {
+          resolve = () => res(undefined);
+        }),
+    );
+    flush(fixture);
+    open();
+    move(0, 'down').click();
+    flush(fixture);
+    expect(host.values()).toEqual(['a', 'b', 'c', 'd']);
+    expect(move(2, 'down').getAttribute('aria-disabled')).toBe('true');
+
+    move(2, 'down').click();
+    flush(fixture);
+    resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    flush(fixture);
+    expect(host.values()).toEqual(['b', 'a', 'c', 'd']);
+    expect(move(2, 'down').getAttribute('aria-disabled')).toBeNull();
+  });
+
+  it('announces a list move from the sheet region', () => {
+    const { open, move, sheet, fixture } = render();
+    const root = vi
+      .spyOn(TestBed.inject(CngxSelectAnnouncer), 'announce')
+      .mockImplementation(() => undefined);
+    open();
+    const inSheet = vi.spyOn(sheet(), 'announce');
+    move(1, 'up').click();
+    flush(fixture);
+    expect(root).not.toHaveBeenCalled();
+    expect(inSheet).toHaveBeenCalled();
+    expect(String(inSheet.mock.calls.at(-1)?.[0])).toMatch(/moved/);
+  });
+
+  it('keeps focus in the list after a move instead of the trigger strip', async () => {
+    const { fixture, list, open, move } = render();
+    open();
+    move(1, 'up').focus();
+    move(1, 'up').click();
+    flush(fixture);
+    await fixture.whenStable();
+    expect(document.activeElement).toBe(move(0, 'up'));
+    expect(list()!.contains(document.activeElement)).toBe(true);
   });
 });
