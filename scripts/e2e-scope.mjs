@@ -4,14 +4,17 @@
 //   node scripts/e2e-scope.mjs --all          (push: everything)
 //
 // Decides which example e2e specs and console-sweep routes a pull request has
-// to run. A change reaches an example demo (`<lib>/<category>/<demo>`, the
-// folder of its stories and the first three segments of its routes) through
-// the import graph: a lib entry point is affected when it changes or imports
-// an affected entry, and a demo when its stories reach an affected entry. A
-// story reaches an entry through its import lines and through every public
-// symbol or selector it names, because the generator imports those itself
-// (scripts/examples-gen). A spec runs when one of its routes lies in an
-// affected demo; a spec whose routes cannot be read always runs.
+// to run. Every story file is one example route: its path under
+// examples/stories without `.story.ts`, at any depth. A change reaches a
+// route through the import graph: a lib entry point is affected when it
+// changes or imports an affected entry, and a route when its story reaches
+// an affected entry. A story reaches an entry through its import lines,
+// through every public symbol or selector it names (the generator imports
+// those itself, scripts/examples-gen), and through every file it imports by
+// a relative path (fixtures, helper components), followed transitively. A
+// spec runs when one of its routes (route helper calls and route literals,
+// any depth) covers an affected route; a spec whose routes cannot be read
+// always runs.
 //
 // A change to what every route is built from (the examples app, the
 // generator, the e2e helpers, themes, the toolchain) runs everything, and so
@@ -21,7 +24,7 @@
 // Writes to $GITHUB_OUTPUT when set:
 //   mode=all|some|none
 //   specs=<spec path filters for playwright, space-separated>  (mode=some)
-//   grep=<title regex for the console sweep>                    (mode=some)
+//   grep=<title regex for the console sweep, empty for all>    (mode=some)
 //   examples-shards, sweep-shards=<JSON list of shard numbers for the matrix>
 
 import { execFileSync } from 'node:child_process';
@@ -54,17 +57,21 @@ const IGNORED = [
 ];
 
 const LIB_SOURCE = /^projects\/([^/]+)\//;
-const STORY = /^examples\/stories\/([^/]+)\/([^/]+)\/([^/]+)\//;
+const STORY = /^examples\/stories\/(.+)\.story\.ts$/;
+// Files a story or the app shell may import by a relative path.
+const EXAMPLE_SOURCE = /^examples\/(?:stories|fixtures)\//;
 const SPEC = /^examples\/e2e\/.+\.e2e-spec\.ts$/;
 // A baseline sits in `<spec>-snapshots/` next to the spec it belongs to.
 const BASELINE = /^(examples\/e2e\/.+\.e2e-spec\.ts)-snapshots\//;
-// `from '@cngx/...'` and `import('@cngx/...')`, also inside a story's string
-// of import lines (`from \'@cngx/forms/select\'`).
-const CNGX_IMPORT = /(?:\bfrom\s*|\bimport\s*\(\s*)\\?['"](@cngx\/[a-z0-9-]+(?:\/[a-z0-9-]+)*)\\?['"]/g;
-// The route helpers of examples/e2e/_routes.ts, with one to three segments.
-const ROUTE_CALL = /\broutes(?:In|Under)\(\s*'([a-z0-9-]+)'(?:\s*,\s*'([a-z0-9-]+)')?(?:\s*,\s*'([a-z0-9-]+)')?/g;
-// A route literal, with or without its leading slash.
-const ROUTE_LITERAL = /['"`]\/?([a-z0-9-]+)\/([a-z0-9-]+)\/([a-z0-9-]+)(?:\/[a-z0-9-]+)?\/?['"`]/g;
+// `from '...'` and `import('...')`, also inside a story's string of import
+// lines (`from \'@cngx/forms/select\'`, `from \'../../../../fixtures\'`).
+const IMPORT_STRING = /(?:\bfrom\s*|\bimport\s*\(\s*)\\?['"]([^'"\\]+)\\?['"]/g;
+const ROUTE_CALL = /\broutes(?:In|Under)\(([^)]*)\)/g;
+// A route literal of at least two segments, with or without its leading slash.
+const ROUTE_LITERAL = /['"`]\/?([a-z0-9-]+(?:\/[a-z0-9-]+)+)\/?['"`]/g;
+// Past this many characters the sweep filter would outgrow a command line
+// argument; the sweep then runs every route.
+const MAX_GREP = 30_000;
 
 // Folders that are no part of what the examples app compiles.
 const SKIPPED_DIRS = new Set(['node_modules', 'schematics']);
@@ -82,25 +89,40 @@ function walk(dir, keep) {
   });
 }
 
-/** The `@cngx/...` modules a story's import strings name. */
-export function cngxNames(text) {
-  return [...new Set([...text.matchAll(CNGX_IMPORT)].map(([, name]) => name))];
+/** Every module a text imports, in code and in a story's import strings alike. */
+export function importStrings(text) {
+  return [...new Set([...text.matchAll(IMPORT_STRING)].map(([, name]) => name))];
 }
 
-/** The `@cngx/...` modules TypeScript source imports; a comment or doc string is no import. */
+/** The modules TypeScript source imports; a comment or doc string is no import. */
 export function sourceImports(text) {
-  const { importedFiles } = ts.preProcessFile(text, true, true);
-  return [...new Set(importedFiles.map(({ fileName }) => fileName).filter((name) => name.startsWith('@cngx/')))];
+  return [...new Set(ts.preProcessFile(text, true, true).importedFiles.map(({ fileName }) => fileName))];
 }
 
-/** The route prefixes (`lib`, `lib/category` or `lib/category/demo`) a spec text visits. */
+/**
+ * The route prefixes a spec text visits: the segments of every route helper
+ * call and every route literal under a lib. `undefined` when a call takes
+ * anything but string literals, so the spec's routes cannot be read.
+ */
 export function specRoutes(text, libs) {
-  const calls = [...text.matchAll(ROUTE_CALL)].map((match) => match.slice(1).filter(Boolean).join('/'));
-  const literals = [...text.matchAll(ROUTE_LITERAL)]
-    .filter(([, lib]) => libs.includes(lib))
-    .map(([, lib, category, demo]) => `${lib}/${category}/${demo}`);
-  return [...new Set([...calls, ...literals])];
+  const routes = [];
+  for (const [, args] of text.matchAll(ROUTE_CALL)) {
+    const segments = [...args.matchAll(/'([a-z0-9-]+)'/g)].map(([, segment]) => segment);
+    if (segments.length === 0 || args.replace(/'[a-z0-9-]+'|[\s,]/g, '') !== '') {
+      return undefined;
+    }
+    routes.push(segments.join('/'));
+  }
+  for (const [, route] of text.matchAll(ROUTE_LITERAL)) {
+    if (libs.includes(route.split('/')[0])) {
+      routes.push(route);
+    }
+  }
+  return [...new Set(routes)];
 }
+
+/** Whether route prefix `prefix` covers `route`. */
+export const covers = (prefix, route) => route === prefix || route.startsWith(`${prefix}/`);
 
 /** The deepest entry point among `entries` (`@cngx/<lib>[/<path>]`) that owns a module name. */
 export function ownerEntry(entries, name) {
@@ -115,10 +137,17 @@ function entryOfFile(entries, file) {
   return lib === undefined ? undefined : ownerEntry(entries, `@cngx/${lib}/${dirname(rest)}`.replace(/\/\.$/, ''));
 }
 
+// The file a relative module name points at from `from`, or undefined.
+function resolveRelative(from, name) {
+  const base = resolve(dirname(from), name);
+  return [base, `${base}.ts`, join(base, 'index.ts')].find((candidate) => candidate.endsWith('.ts') && existsSync(candidate));
+}
+
 /**
  * The graph the scope reads, from the working tree: every entry point and
- * the entries it imports, the entries each demo's stories reach, the route
- * prefixes each spec visits, and the entries the examples app shell imports.
+ * the entries it imports; per story route the entries and example files it
+ * reaches; the route prefixes each spec visits; and the entries and files
+ * the examples app shell reaches.
  */
 export function readGraph(root = ROOT) {
   const rel = (path) => relative(root, path).split('\\').join('/');
@@ -126,29 +155,43 @@ export function readGraph(root = ROOT) {
     (path) => `@cngx/${rel(dirname(path)).slice('projects/'.length)}`,
   );
   const libs = [...new Set(entries.map((entry) => entry.split('/')[1]))];
+  const owned = (names) =>
+    names.filter((name) => name.startsWith('@cngx/')).map((name) => ownerEntry(entries, name)).filter(Boolean);
   const imports = Object.fromEntries(entries.map((entry) => [entry, new Set()]));
   for (const file of walk(join(root, 'projects'), (path) => path.endsWith('.ts') && !path.endsWith('.spec.ts'))) {
     const owner = entryOfFile(entries, rel(file));
-    for (const name of owner === undefined ? [] : sourceImports(readFileSync(file, 'utf8'))) {
-      const target = ownerEntry(entries, name);
-      if (target !== undefined && target !== owner) {
+    for (const target of owner === undefined ? [] : owned(sourceImports(readFileSync(file, 'utf8')))) {
+      if (target !== owner) {
         imports[owner].add(target);
       }
     }
   }
-  const owned = (names) => names.map((name) => ownerEntry(entries, name)).filter(Boolean);
 
+  // Public symbols and selectors, so a name in a story's `imports`,
+  // `hostDirectives` or template reaches the entry that exports it.
   const symbols = new Map();
   const mark = (key, entry) => symbols.set(key, new Set([...(symbols.get(key) ?? []), entry]));
+  const exportedNames = (file, seen = new Set()) => {
+    if (file === undefined || seen.has(file)) {
+      return [];
+    }
+    seen.add(file);
+    const text = readFileSync(file, 'utf8');
+    const listed = [...text.matchAll(/export\s+(?:type\s+)?\{([^}]+)\}/g)].flatMap(([, list]) =>
+      list.split(',').map((raw) => raw.trim().replace(/^type\s+/, '').split(/\s+as\s+/).at(-1)),
+    );
+    const declared = [
+      ...text.matchAll(/export\s+(?:declare\s+)?(?:abstract\s+)?(?:const|let|function|class|interface|type|enum)\s+([A-Za-z_$][\w$]*)/g),
+    ].map(([, name]) => name);
+    const starred = [...text.matchAll(/export\s+\*\s+from\s+'(\.[^']+)'/g)].flatMap(([, name]) =>
+      exportedNames(resolveRelative(file, name), seen),
+    );
+    return [...listed, ...declared, ...starred].filter(Boolean);
+  };
   for (const entry of entries) {
     const api = join(root, 'projects', entry.slice('@cngx/'.length), 'public-api.ts');
-    const text = existsSync(api) ? readFileSync(api, 'utf8') : '';
-    for (const [, list] of text.matchAll(/export\s+(?:type\s+)?\{([^}]+)\}/g)) {
-      for (const name of list.split(',').map((raw) => raw.trim().replace(/^type\s+/, '').split(/\s+as\s+/).at(-1))) {
-        if (name) {
-          mark(name, entry);
-        }
-      }
+    for (const name of existsSync(api) ? exportedNames(api) : []) {
+      mark(name, entry);
     }
   }
   for (const file of walk(join(root, 'projects'), isSelectorSource)) {
@@ -161,22 +204,56 @@ export function readGraph(root = ROOT) {
   }
   const named = (text) => (text.match(/[A-Za-z_$][\w$-]*/g) ?? []).flatMap((word) => [...(symbols.get(word) ?? [])]);
 
-  const demos = {};
-  for (const file of walk(join(root, 'examples', 'stories'), (path) => path.endsWith('.ts'))) {
-    const [, lib, category, demo] = STORY.exec(rel(file)) ?? [];
-    if (lib !== undefined) {
-      const key = `${lib}/${category}/${demo}`;
+  // What one file reaches on its own: entries, and the files it imports by a
+  // relative path inside examples/. A story (or a shell file) also reaches
+  // what its symbols name, since the generator imports those.
+  const ownReach = new Map();
+  const reachOfFile = (file, root) => {
+    const key = `${file}${root ? '#root' : ''}`;
+    if (!ownReach.has(key)) {
       const text = readFileSync(file, 'utf8');
-      demos[key] = new Set([...(demos[key] ?? []), ...owned(cngxNames(text)), ...named(text)]);
+      const names = root ? [...new Set([...importStrings(text), ...sourceImports(text)])] : sourceImports(text);
+      const relatives = names
+        .filter((name) => name.startsWith('.'))
+        .map((name) => resolveRelative(file, name))
+        .filter((path) => path !== undefined && rel(path).startsWith('examples/'));
+      ownReach.set(key, { entries: [...owned(names), ...(root ? named(text) : [])], relatives });
     }
+    return ownReach.get(key);
+  };
+  // A file and everything it imports by a relative path, transitively.
+  const reachOf = (file) => {
+    const files = new Set();
+    const reached = new Set();
+    const queue = [[file, true]];
+    while (queue.length > 0) {
+      const [next, root] = queue.shift();
+      if (files.has(next)) {
+        continue;
+      }
+      files.add(next);
+      const own = reachOfFile(next, root);
+      own.entries.forEach((entry) => reached.add(entry));
+      queue.push(...own.relatives.map((path) => [path, false]));
+    }
+    return { entries: reached, files: new Set([...files].map(rel)) };
+  };
+
+  const routes = {};
+  for (const file of walk(join(root, 'examples', 'stories'), (path) => path.endsWith('.story.ts'))) {
+    routes[STORY.exec(rel(file))[1]] = reachOf(file);
   }
   const specs = {};
   for (const file of walk(join(root, 'examples', 'e2e'), (path) => path.endsWith('.e2e-spec.ts'))) {
     specs[rel(file)] = specRoutes(readFileSync(file, 'utf8'), libs);
   }
   const shellFiles = walk(join(root, 'examples', 'src'), (path) => path.endsWith('.ts') && !rel(path).includes('/app/features/'));
-  const shell = new Set(owned(shellFiles.flatMap((file) => sourceImports(readFileSync(file, 'utf8')))));
-  return { entries, imports, demos, specs, shell };
+  const shellReach = shellFiles.map(reachOf);
+  const shell = {
+    entries: new Set(shellReach.flatMap((reach) => [...reach.entries])),
+    files: new Set(shellReach.flatMap((reach) => [...reach.files])),
+  };
+  return { entries, imports, routes, specs, shell };
 }
 
 /** `entries` plus every entry that imports one of them, directly or through others. */
@@ -195,59 +272,69 @@ export function withDependents(graph, entries) {
   return affected;
 }
 
-const covers = (prefix, demo) => demo === prefix || demo.startsWith(`${prefix}/`);
-
 /**
  * What a pull request with `files` changed has to run: `all`, `none`, or the
- * affected demos and the spec files that visit them.
+ * affected routes and the spec files that visit them.
  */
 export function scopeFor(files, graph) {
   const changedEntries = new Set();
-  const demos = new Set();
+  const changedExamples = new Set();
+  const routes = new Set();
   const changedSpecs = new Set();
   for (const file of files) {
     if (IGNORED.some((pattern) => pattern.test(file))) {
       continue;
     }
-    const story = STORY.exec(file);
+    const story = STORY.exec(file)?.[1];
     const spec = SPEC.test(file) ? file : BASELINE.exec(file)?.[1];
     const lib = LIB_SOURCE.exec(file)?.[1];
     const entry = lib === undefined || lib === 'themes' ? undefined : entryOfFile(graph.entries, file);
-    if (story !== null) {
-      demos.add(`${story[1]}/${story[2]}/${story[3]}`);
+    if (story !== undefined) {
+      routes.add(story);
     } else if (spec !== undefined) {
       changedSpecs.add(spec);
     } else if (entry !== undefined) {
       changedEntries.add(entry);
+    } else if (EXAMPLE_SOURCE.test(file) && !graph.shell.files.has(file)) {
+      changedExamples.add(file);
     } else {
       return { mode: 'all', reason: file };
     }
   }
   const affected = withDependents(graph, changedEntries);
-  for (const [demo, reached] of Object.entries(graph.demos)) {
-    if ([...reached].some((entry) => affected.has(entry))) {
-      demos.add(demo);
+  const taken = new Set();
+  for (const [route, reach] of Object.entries(graph.routes)) {
+    const viaFile = [...changedExamples].filter((file) => reach.files.has(file));
+    viaFile.forEach((file) => taken.add(file));
+    if (viaFile.length > 0 || [...reach.entries].some((entry) => affected.has(entry))) {
+      routes.add(route);
     }
+  }
+  // A helper or fixture no story reaches still compiles into the app.
+  const orphan = [...changedExamples].find((file) => !taken.has(file));
+  if (orphan !== undefined) {
+    return { mode: 'all', reason: `${orphan} (no story reaches it)` };
   }
   // Every route renders the app shell, so the selected ones cover a change
   // the shell imports; with no route selected only a full run would.
-  const shellHit = [...graph.shell].find((entry) => affected.has(entry));
-  if (shellHit !== undefined && demos.size === 0) {
+  const shellHit = [...graph.shell.entries].find((entry) => affected.has(entry));
+  if (shellHit !== undefined && routes.size === 0) {
     return { mode: 'all', reason: `${shellHit} (the examples app shell imports it)` };
   }
+  const selected = [...routes];
   const specs = Object.entries(graph.specs)
     .filter(
-      ([path, routes]) =>
+      ([path, visits]) =>
         changedSpecs.has(path) ||
-        (demos.size > 0 && routes.length === 0) ||
-        routes.some((prefix) => [...demos].some((demo) => covers(prefix, demo))),
+        (selected.length > 0 && (visits === undefined || visits.length === 0)) ||
+        (visits ?? []).some((prefix) => selected.some((route) => covers(prefix, route))),
     )
     .map(([path]) => path)
     .sort();
-  if (demos.size === 0 && specs.length === 0) {
+  if (selected.length === 0 && specs.length === 0) {
     return { mode: 'none' };
   }
-  return { mode: 'some', demos: [...demos].sort(), specs };
+  return { mode: 'some', routes: selected.sort(), specs };
 }
 
 // Full runs: examples-e2e takes 16 to 21 minutes on one worker and the
@@ -256,7 +343,14 @@ export const FULL_SHARDS = { examples: 3, sweep: 2 };
 // About how much one shard takes on before a second one pays for its own
 // install and `ng serve`.
 const SPECS_PER_SHARD = 40;
-const DEMOS_PER_SHARD = 130;
+const ROUTES_PER_SHARD = 400;
+
+/** The console-sweep title filter: the allowlist checks and the selected routes; empty runs every route. */
+export function sweepGrep(routes) {
+  const exact = routes.map((route) => `(?:^| )${route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
+  const grep = ['console allowlist', ...exact].join('|');
+  return grep.length > MAX_GREP ? '' : grep;
+}
 
 /** The shard numbers of each suite's matrix for a scope; a small selection runs on fewer runners. */
 export function shardsFor(scope) {
@@ -265,20 +359,11 @@ export function shardsFor(scope) {
     return { examples: list(FULL_SHARDS.examples), sweep: list(FULL_SHARDS.sweep) };
   }
   const count = (size, per, max) => Math.max(1, Math.min(max, Math.ceil(size / per)));
+  const sweepAll = sweepGrep(scope.routes) === '';
   return {
     examples: list(count(scope.specs.length, SPECS_PER_SHARD, FULL_SHARDS.examples)),
-    sweep: list(count(scope.demos.length, DEMOS_PER_SHARD, FULL_SHARDS.sweep)),
+    sweep: list(sweepAll ? FULL_SHARDS.sweep : count(scope.routes.length, ROUTES_PER_SHARD, FULL_SHARDS.sweep)),
   };
-}
-
-/**
- * The console-sweep title filter: the allowlist checks, and every route of
- * the demos. A sweep test is titled with its route (`ui/tabs/basic/...`),
- * after a space in the title path Playwright matches against.
- */
-export function sweepGrep(demos) {
-  const routes = demos.map((demo) => `(?:^| )${demo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/`);
-  return ['console allowlist', ...routes].join('|');
 }
 
 /** The playwright path filters of a scope, relative to the repo root it runs from: the app smoke and its spec files. */
@@ -312,10 +397,10 @@ function main() {
   } else if (scope.mode === 'none') {
     console.log('e2e scope: nothing the examples app renders changed');
   } else {
-    console.log(`e2e scope: ${scope.demos.length} demos, ${scope.specs.length} spec files`);
-    scope.demos.forEach((demo) => console.log(`  demo ${demo}`));
+    console.log(`e2e scope: ${scope.routes.length} routes, ${scope.specs.length} spec files`);
+    scope.routes.forEach((route) => console.log(`  route ${route}`));
     scope.specs.forEach((spec) => console.log(`  spec ${spec}`));
-    lines.push(`specs=${specFilters(scope.specs).join(' ')}`, `grep=${sweepGrep(scope.demos)}`);
+    lines.push(`specs=${specFilters(scope.specs).join(' ')}`, `grep=${sweepGrep(scope.routes)}`);
   }
   if (process.env.GITHUB_OUTPUT) {
     appendFileSync(process.env.GITHUB_OUTPUT, `${lines.join('\n')}\n`);

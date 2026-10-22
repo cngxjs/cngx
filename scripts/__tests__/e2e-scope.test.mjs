@@ -4,8 +4,9 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import {
-  cngxNames,
+  covers,
   FULL_SHARDS,
+  importStrings,
   readGraph,
   scopeFor,
   shardsFor,
@@ -18,8 +19,11 @@ import {
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
-// A small graph: forms/select imports common/popover; the select demo
-// reaches forms/select, the tabs demo ui/tabs; the shell imports core.
+const reach = (entries, files = []) => ({ entries: new Set(entries), files: new Set(files) });
+
+// A small graph: forms/select imports common/popover; the select route
+// reaches forms/select and a fixture, the empty-state route ui/tabs; the
+// shell imports core and its own fixture.
 function graph(overrides = {}) {
   return {
     entries: ['@cngx/core', '@cngx/common/popover', '@cngx/forms/select', '@cngx/ui/tabs'],
@@ -29,16 +33,17 @@ function graph(overrides = {}) {
       '@cngx/forms/select': new Set(['@cngx/common/popover']),
       '@cngx/ui/tabs': new Set(['@cngx/core']),
     },
-    demos: {
-      'forms/select/single-select': new Set(['@cngx/forms/select']),
-      'ui/tabs/basic': new Set(['@cngx/ui/tabs']),
+    routes: {
+      'forms/select/single-select/clearable': reach(['@cngx/forms/select'], ['examples/fixtures/people.fixture.ts']),
+      'ui/empty-state/basic': reach(['@cngx/ui/tabs']),
     },
     specs: {
       'examples/e2e/forms/select.e2e-spec.ts': ['forms/select'],
-      'examples/e2e/ui/tabs/keyboard.e2e-spec.ts': ['ui/tabs/basic'],
+      'examples/e2e/ui/empty-state.e2e-spec.ts': ['ui/empty-state'],
       'examples/e2e/core/density.e2e-spec.ts': [],
+      'examples/e2e/core/i18n/de-pack.e2e-spec.ts': undefined,
     },
-    shell: new Set(['@cngx/core']),
+    shell: reach(['@cngx/core'], ['examples/fixtures/i18n-de.fixture.ts']),
     ...overrides,
   };
 }
@@ -46,7 +51,16 @@ function graph(overrides = {}) {
 describe('scopeFor', () => {
   it('runs nothing for a change that never reaches the examples app', () => {
     expect(
-      scopeFor(['README.md', 'core-concepts/install.md', 'projects/forms/select/select.spec.ts', 'packages/mcp/src/x.ts', 'projects/core/schematics/ng-add/index.ts'], graph()),
+      scopeFor(
+        [
+          'README.md',
+          'core-concepts/install.md',
+          'projects/forms/select/select.spec.ts',
+          'packages/mcp/src/x.ts',
+          'projects/core/schematics/ng-add/index.ts',
+        ],
+        graph(),
+      ),
     ).toEqual({ mode: 'none' });
   });
 
@@ -59,6 +73,7 @@ describe('scopeFor', () => {
     'examples/e2e/_helpers.ts',
     'examples/e2e-sweep/console-allowlist.ts',
     'examples/playwright.config.ts',
+    'examples/fixtures/i18n-de.fixture.ts',
     'scripts/examples-gen/index.mjs',
     'scripts/e2e-scope.mjs',
     'something/new.txt',
@@ -66,32 +81,55 @@ describe('scopeFor', () => {
     expect(scopeFor([file], graph())).toMatchObject({ mode: 'all', reason: file });
   });
 
-  it('runs the demos that reach a changed entry through its dependents, and the specs that visit them', () => {
+  it('runs everything for an example helper no story reaches', () => {
+    expect(scopeFor(['examples/stories/ui/tabs/_unused.component.ts'], graph())).toMatchObject({ mode: 'all' });
+  });
+
+  it('runs the routes that reach a changed entry through its dependents, the specs that visit them, and the unreadable ones', () => {
     expect(scopeFor(['projects/common/popover/popover.ts'], graph())).toEqual({
       mode: 'some',
-      demos: ['forms/select/single-select'],
-      specs: ['examples/e2e/core/density.e2e-spec.ts', 'examples/e2e/forms/select.e2e-spec.ts'],
+      routes: ['forms/select/single-select/clearable'],
+      specs: [
+        'examples/e2e/core/density.e2e-spec.ts',
+        'examples/e2e/core/i18n/de-pack.e2e-spec.ts',
+        'examples/e2e/forms/select.e2e-spec.ts',
+      ],
     });
   });
 
-  it('runs a changed story demo and a changed spec or baseline on their own', () => {
-    expect(scopeFor(['examples/stories/ui/tabs/basic/basic.story.ts'], graph()).specs).toContain('examples/e2e/ui/tabs/keyboard.e2e-spec.ts');
-    expect(scopeFor(['examples/e2e/ui/tabs/keyboard.e2e-spec.ts'], graph())).toEqual({
+  it('runs a route whose story sits right in its category folder', () => {
+    expect(scopeFor(['examples/stories/ui/empty-state/basic.story.ts'], graph()).specs).toContain(
+      'examples/e2e/ui/empty-state.e2e-spec.ts',
+    );
+  });
+
+  it('runs the routes whose story reaches a changed fixture by a relative import', () => {
+    expect(scopeFor(['examples/fixtures/people.fixture.ts'], graph())).toMatchObject({
       mode: 'some',
-      demos: [],
-      specs: ['examples/e2e/ui/tabs/keyboard.e2e-spec.ts'],
+      routes: ['forms/select/single-select/clearable'],
     });
-    expect(scopeFor(['examples/e2e/ui/tabs/keyboard.e2e-spec.ts-snapshots/tabs-chromium-darwin.png'], graph()).specs).toEqual([
-      'examples/e2e/ui/tabs/keyboard.e2e-spec.ts',
+  });
+
+  it('runs a changed spec or baseline on its own', () => {
+    expect(scopeFor(['examples/e2e/ui/empty-state.e2e-spec.ts'], graph())).toEqual({
+      mode: 'some',
+      routes: [],
+      specs: ['examples/e2e/ui/empty-state.e2e-spec.ts'],
+    });
+    expect(scopeFor(['examples/e2e/ui/empty-state.e2e-spec.ts-snapshots/basic-chromium-linux.png'], graph()).specs).toEqual([
+      'examples/e2e/ui/empty-state.e2e-spec.ts',
     ]);
   });
 
-  it('runs everything when only the app shell is reached and no demo would render it', () => {
+  it('runs everything when only the app shell is reached and no route would render it', () => {
     const shellOnly = graph({
       imports: { '@cngx/core': new Set(), '@cngx/common/popover': new Set(), '@cngx/forms/select': new Set(), '@cngx/ui/tabs': new Set() },
     });
 
-    expect(scopeFor(['projects/core/utils/x.ts'], shellOnly)).toMatchObject({ mode: 'all', reason: '@cngx/core (the examples app shell imports it)' });
+    expect(scopeFor(['projects/core/utils/x.ts'], shellOnly)).toMatchObject({
+      mode: 'all',
+      reason: '@cngx/core (the examples app shell imports it)',
+    });
   });
 });
 
@@ -102,36 +140,61 @@ describe('withDependents', () => {
 });
 
 describe('the import readers', () => {
-  it('reads story import strings, escaped quotes included', () => {
-    expect(cngxNames("'import { CngxSelect } from \\'@cngx/forms/select\\';', 'import { of } from \\'rxjs\\';'")).toEqual(['@cngx/forms/select']);
+  it('reads story import strings, escaped quotes and relative fixtures included', () => {
+    expect(
+      importStrings("'import { CngxSelect } from \\'@cngx/forms/select\\';', 'import { people } from \\'../../../../fixtures\\';'"),
+    ).toEqual(['@cngx/forms/select', '../../../../fixtures']);
   });
 
   it('reads source imports and ignores a module named in a comment', () => {
-    const source = "// import { X } from '@cngx/forms/field'\n/** `@cngx/ui/tabs` */\nimport { clamp } from '@cngx/utils';\nexport { Y } from '@cngx/core/tokens';";
+    const source =
+      "// import { X } from '@cngx/forms/field'\n/** `@cngx/ui/tabs` */\nimport { clamp } from '@cngx/utils';\nexport { Y } from '@cngx/core/tokens';";
 
     expect(sourceImports(source)).toEqual(['@cngx/utils', '@cngx/core/tokens']);
   });
 
-  it('reads the route helpers and route literals of a spec', () => {
-    const spec = "routesIn('common', 'data', 'smart-data-source'); routesUnder('forms', 'select'); gotoDemo(page, 'ui/paginator/paginator-skins/numbered'); gotoDemo(page, '/ui/tabs/basic/x'); const n = 'a/b/c';";
+  it('reads route helpers and route literals of any depth', () => {
+    const spec = [
+      "routesIn('common', 'data', 'smart-data-source');",
+      "routesUnder('ui', 'empty-state');",
+      "gotoDemo(page, 'common/interactive/button-toggle/group/basic-view-switcher');",
+      "gotoDemo(page, '/ui/tabs/basic/x');",
+      "const n = 'a/b/c';",
+    ].join('\n');
 
-    expect(specRoutes(spec, ['common', 'forms', 'ui'])).toEqual([
+    expect(specRoutes(spec, ['common', 'ui'])).toEqual([
       'common/data/smart-data-source',
-      'forms/select',
-      'ui/paginator/paginator-skins',
-      'ui/tabs/basic',
+      'ui/empty-state',
+      'common/interactive/button-toggle/group/basic-view-switcher',
+      'ui/tabs/basic/x',
     ]);
+  });
+
+  it('cannot read a route helper call that takes anything but string literals', () => {
+    expect(specRoutes('for (const s of all) routesIn(...s);', ['ui'])).toBeUndefined();
+  });
+
+  it('covers a route by whole segments only', () => {
+    expect(covers('ui/tabs', 'ui/tabs/basic/x')).toBe(true);
+    expect(covers('ui/tabs', 'ui/tabs-overflow/x')).toBe(false);
   });
 });
 
 describe('the playwright arguments', () => {
-  it('filters the sweep to the allowlist checks and the routes of the demos', () => {
-    const grep = new RegExp(sweepGrep(['ui/tabs/basic']));
+  it('filters the sweep to the allowlist checks and exactly the selected routes', () => {
+    const grep = new RegExp(sweepGrep(['ui/tabs/basic/with-icons']));
 
     expect(grep.test('chromium console-sweep.sweep-spec.ts console sweep ui/tabs/basic/with-icons')).toBe(true);
     expect(grep.test('chromium console-sweep.sweep-spec.ts console allowlist holds at most 3 rows')).toBe(true);
-    expect(grep.test('chromium console-sweep.sweep-spec.ts console sweep ui/tabs/basic-skins/x')).toBe(false);
-    expect(grep.test('chromium console-sweep.sweep-spec.ts console sweep mat-ui/tabs/basic/x')).toBe(false);
+    expect(grep.test('chromium console-sweep.sweep-spec.ts console sweep ui/tabs/basic/with-icons-rtl')).toBe(false);
+    expect(grep.test('chromium console-sweep.sweep-spec.ts console sweep mat-ui/tabs/basic/with-icons')).toBe(false);
+  });
+
+  it('sweeps every route when the filter would outgrow a command line argument', () => {
+    const many = Array.from({ length: 2000 }, (_, index) => `ui/tabs/basic/route-${index}`);
+
+    expect(sweepGrep(many)).toBe('');
+    expect(shardsFor({ mode: 'some', specs: ['a'], routes: many }).sweep).toHaveLength(FULL_SHARDS.sweep);
   });
 
   it('always runs the app smoke next to the selected specs, from the repo root', () => {
@@ -143,29 +206,49 @@ describe('the playwright arguments', () => {
 
   it('shards a full run fully and a small selection on one runner', () => {
     expect(shardsFor({ mode: 'all' })).toEqual({ examples: [1, 2, 3], sweep: [1, 2] });
-    expect(shardsFor({ mode: 'some', specs: ['a'], demos: ['x'] })).toEqual({ examples: [1], sweep: [1] });
-    expect(shardsFor({ mode: 'some', specs: Array(500).fill('a'), demos: Array(500).fill('x') }).examples).toHaveLength(FULL_SHARDS.examples);
+    expect(shardsFor({ mode: 'some', specs: ['a'], routes: ['x/y'] })).toEqual({ examples: [1], sweep: [1] });
+    expect(shardsFor({ mode: 'some', specs: Array(500).fill('a'), routes: ['x/y'] }).examples).toHaveLength(FULL_SHARDS.examples);
   });
 });
 
 describe('the scope on this repo', () => {
   const real = readGraph(ROOT);
+  const routes = Object.keys(real.routes);
 
-  it('reads the entries, demos and specs', () => {
-    expect(real.entries).toContain('@cngx/forms/select');
-    expect(Object.keys(real.demos).length).toBeGreaterThan(100);
-    expect(Object.keys(real.specs).length).toBeGreaterThan(50);
+  it('reads every story as a route, at any folder depth', () => {
+    expect(routes.length).toBeGreaterThan(500);
+    expect(routes.some((route) => route.split('/').length === 3)).toBe(true);
+    expect(routes.some((route) => route.split('/').length >= 5)).toBe(true);
+  });
+
+  // A spec route that matches no story would never be selected by a lib
+  // change; a spec without readable routes runs on every selection instead.
+  it('maps every spec to at least one story route, or runs it on every selection', () => {
+    const lost = Object.entries(real.specs)
+      .filter(([, visits]) => visits !== undefined && visits.length > 0)
+      .filter(([, visits]) => !visits.some((prefix) => routes.some((route) => covers(prefix, route))))
+      .map(([path]) => path);
+
+    expect(lost).toEqual([]);
   });
 
   it('does not take a module named in a doc comment for an import', () => {
     expect([...real.imports['@cngx/core/tokens']]).not.toContain('@cngx/forms/field');
   });
 
-  it('runs the breadcrumb spec for a breadcrumb change, not the whole suite', () => {
+  it.each([
+    ['projects/common/interactive/public-api.ts', 'examples/e2e/common/interactive/button-toggle-group.e2e-spec.ts'],
+    ['projects/ui/empty-state/empty-state.component.ts', 'examples/e2e/ui/empty-state.e2e-spec.ts'],
+    ['projects/forms/filter-builder/public-api.ts', 'examples/e2e/core/i18n/de-pack.e2e-spec.ts'],
+    ['projects/ui/breadcrumb/breadcrumb-bar.component.ts', 'examples/e2e/ui/breadcrumb/responsive-collapse.e2e-spec.ts'],
+  ])('a change to %s runs %s', (file, spec) => {
+    expect(scopeFor([file], real).specs).toContain(spec);
+  });
+
+  it('runs a fraction of the suite for a leaf organism', () => {
     const scope = scopeFor(['projects/ui/breadcrumb/breadcrumb-bar.component.ts'], real);
 
     expect(scope.mode).toBe('some');
-    expect(scope.specs).toContain('examples/e2e/ui/breadcrumb/responsive-collapse.e2e-spec.ts');
     expect(scope.specs.length).toBeLessThan(Object.keys(real.specs).length / 4);
   });
 });
