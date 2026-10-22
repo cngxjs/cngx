@@ -127,4 +127,27 @@ export interface CngxTreeSelectNodeCountContext<T = unknown> {
   readonly node: FlatTreeNode<T>;
 }
 
+/**
+ * Context for `*cngxTreeSelectFooter`, the footer below the tree in the
+ * panel: the selected count and the clear-all action. In the mobile sheet the
+ * footer is the bottom bar. `clear` runs the same commit-aware clear path as
+ * the trigger clear button (announcement, `cleared`, `selectionChange`
+ * included) and is a no-op while nothing is selected.
+ *
+ * @category forms/select/tree-select
+ */
+export interface CngxTreeSelectFooterContext {
+  /** Number of selected values. */
+  readonly $implicit: number;
+  readonly count: number;
+  /** The `selectedCount` copy for `count` (default `'{count} selected'`). */
+  readonly countText: string;
+  /** Clear the whole selection. */
+  readonly clear: () => void;
+  /** Visible label of the clear action (the clear-button copy cascade). */
+  readonly clearLabel: string;
+  /** `true` while nothing is selected. */
+  readonly empty: boolean;
+}
+
 export { type CngxTreeNode } from '@cngx/utils';

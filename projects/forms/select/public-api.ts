@@ -56,6 +56,7 @@ export {
 export { type CngxSelectCreateAction } from './shared/create-action.types';
 export { CngxTreeSelectNode } from './tree-select/tree-select-node.directive';
 export { CngxTreeSelectNodeCount } from './tree-select/tree-select-node-count.directive';
+export { CngxTreeSelectFooter } from './tree-select/tree-select-footer.directive';
 export { CngxTreeSelectChip } from './tree-select/tree-select-chip.directive';
 export { CngxTreeSelectTriggerLabel } from './tree-select/tree-select-trigger-label.directive';
 export {
@@ -63,6 +64,7 @@ export {
   type CngxTreeSelectAction,
   type CngxTreeSelectChipContext,
   type CngxTreeSelectChipDisplay,
+  type CngxTreeSelectFooterContext,
   type CngxTreeSelectNodeContext,
   type CngxTreeSelectNodeCountContext,
   type CngxTreeSelectTriggerLabelContext,

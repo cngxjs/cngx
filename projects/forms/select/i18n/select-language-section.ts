@@ -31,6 +31,8 @@ export interface CngxSelectLanguageSection {
   readonly selectionSummary: CngxMessage;
   /** `{selected}`, `{total}`: the selected-of-total count on a tree-select parent row. */
   readonly treeNodeCount: CngxMessage;
+  /** `{count}`: the number of selected values in the tree-select panel footer and sheet header. */
+  readonly selectedCount: CngxMessage;
   /** Status region while the options load. */
   readonly statusLoading: string;
   /** Overlay while loaded options refresh. */
@@ -126,6 +128,7 @@ export const CNGX_SELECT_LANGUAGE_EN: CngxSelectLanguageSection = {
   chipOverflowBadge: '+{count}',
   selectionSummary: '{count} selected: {list}',
   treeNodeCount: '{selected}/{total}',
+  selectedCount: '{count} selected',
   statusLoading: 'Loading options',
   statusRefreshing: 'Refreshing options',
   fieldLabelFallback: 'Selection',

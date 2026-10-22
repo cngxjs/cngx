@@ -12,7 +12,10 @@ import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
 
 import type { CngxSelectCommitErrorDisplay } from './commit-action.types';
 import type { CngxCommitErrorAnnouncePolicy } from './commit-error-announcer';
-import type { CngxTreeSelectNodeCountContext } from '../tree-select/tree-select.model';
+import type {
+  CngxTreeSelectFooterContext,
+  CngxTreeSelectNodeCountContext,
+} from '../tree-select/tree-select.model';
 import type {
   CngxSelectActionContext,
   CngxSelectCaretContext,
@@ -242,6 +245,8 @@ export interface CngxSelectFallbackLabels {
    * numbers in the locale's digits.
    */
   readonly treeNodeCount?: (selected: number, total: number) => string;
+  /** Selected count in the tree-select panel footer. Default `'{count} selected'`. */
+  readonly selectedCount?: (count: number) => string;
 }
 
 /**
@@ -421,6 +426,8 @@ export interface CngxSelectConfig {
     readonly sheetHandle?: TemplateRef<CngxSelectSheetHandleContext> | null;
     /** Selected-of-total count on a `CngxTreeSelect` parent row. */
     readonly treeNodeCount?: TemplateRef<CngxTreeSelectNodeCountContext> | null;
+    /** Panel footer (count and clear-all) of `CngxTreeSelect`. */
+    readonly treeFooter?: TemplateRef<CngxTreeSelectFooterContext> | null;
   };
 }
 
@@ -485,6 +492,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
     action: null,
     sheetHandle: null,
     treeNodeCount: null,
+    treeFooter: null,
   },
 };
 

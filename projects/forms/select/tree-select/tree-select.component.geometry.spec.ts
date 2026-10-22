@@ -513,3 +513,17 @@ describe('CngxTreeSelect chip remove target', () => {
     });
   }
 });
+
+// The footer clear-all is a tap target: under the touch floor it is at least
+// 44px tall, and the footer sits below the tree in the panel.
+describe('CngxTreeSelect panel footer', () => {
+  it('floors the clear-all to the touch target and lays the footer out as a row', () => {
+    const root = openTouchIndentPanel();
+    const footer = query(root, '.cngx-tree-select__footer');
+    expect(computedValue(footer, 'display')).toBe('flex');
+    const button = query(footer, '.cngx-tree-select__footer-clear');
+    expect(button.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
+    const tree = query(root, '[role="tree"]').getBoundingClientRect();
+    expect(footer.getBoundingClientRect().top).toBeGreaterThanOrEqual(tree.bottom - 0.5);
+  });
+});

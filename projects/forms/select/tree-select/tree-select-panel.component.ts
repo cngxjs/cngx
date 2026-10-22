@@ -24,6 +24,7 @@ import {
   CNGX_TREE_SELECT_PANEL_HOST,
   type CngxTreeSelectPanelHost,
 } from './tree-select-panel-host';
+import { CngxTreeSelectFooterBar } from './tree-select-footer.component';
 import type { CngxTreeSelectNodeContext } from './tree-select.model';
 
 /**
@@ -57,6 +58,7 @@ import type { CngxTreeSelectNodeContext } from './tree-select.model';
     CngxCheckboxIndicator,
     CngxHierarchicalNav,
     CngxSelectPanelShell,
+    CngxTreeSelectFooterBar,
     NgTemplateOutlet,
   ],
   host: {

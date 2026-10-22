@@ -34,6 +34,8 @@
  * - `.cngx-tree-select__label` - ellipsis-truncating node label
  * - `.cngx-tree-select__count` - selected-of-total count at the inline end
  *   of a parent row (`aria-hidden`, muted)
+ * - `.cngx-tree-select__footer` - count and clear-all below the tree; in the
+ *   mobile sheet the bottom Clear bar (the count moves to the sheet header)
  * - `.cngx-tree-select__node::before` - depth guide lines, one per
  *   ancestor level, centred under the ancestor twisty; `0px` guide width
  *   switches them off
@@ -259,6 +261,37 @@
     inherits: true;
   }
 
+  /**
+   * Padding of the panel footer (count and clear-all).
+   * @group Footer
+   * @default var(--cngx-space-xs, 0.25rem) var(--cngx-space-sm, 0.5rem)
+   */
+  @property --cngx-tree-select-footer-padding {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Gap between the footer count and the clear-all button.
+   * @group Footer
+   * @default var(--cngx-space-sm, 0.5rem)
+   */
+  @property --cngx-tree-select-footer-gap {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Separator above the panel footer.
+   * @group Footer
+   * @default 1px solid var(--cngx-color-border, oklch(0.85 0.01 250))
+   * @see [[--cngx-color-border]]
+   */
+  @property --cngx-tree-select-footer-border {
+    syntax: '*';
+    inherits: true;
+  }
+
   /* Dark-mode component-local swap - an alpha-on-black hover surface
    * dissolves into a dark panel-bg, so the dark blocks flip it to
    * alpha-on-white. */
@@ -460,6 +493,51 @@
       text-overflow: ellipsis;
     }
 
+    .cngx-tree-select__footer {
+      display: flex;
+      align-items: center;
+      gap: var(--cngx-tree-select-footer-gap, var(--cngx-space-sm, 0.5rem));
+      padding: var(
+        --cngx-tree-select-footer-padding,
+        var(--cngx-space-xs, 0.25rem) var(--cngx-space-sm, 0.5rem)
+      );
+      border-block-start: var(
+        --cngx-tree-select-footer-border,
+        1px solid var(--cngx-color-border, oklch(0.85 0.01 250))
+      );
+    }
+
+    .cngx-tree-select__footer-count {
+      color: var(
+        --cngx-tree-select-count-color,
+        color-mix(in oklab, currentColor 65%, transparent)
+      );
+      font-size: var(--cngx-font-size-sm, 0.875rem);
+      unicode-bidi: isolate;
+    }
+
+    .cngx-tree-select__footer-clear {
+      margin-inline-start: auto;
+      min-block-size: var(--cngx-target-min, 0px);
+      padding: var(--cngx-space-xs, 0.25rem) var(--cngx-space-sm, 0.5rem);
+      border: none;
+      border-radius: var(--cngx-tree-select-node-radius, 0.125rem);
+      background: transparent;
+      color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .cngx-tree-select__footer-clear:hover {
+      background: var(--cngx-tree-select-node-hover-bg, oklch(0.66 0.19 50 / 0.1));
+    }
+
+    .cngx-tree-select__footer-clear[aria-disabled='true'] {
+      cursor: not-allowed;
+      color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+      background: transparent;
+    }
+
     /* Numbers in the reading locale's digits; isolate fences them from the
        label in either direction. */
     .cngx-tree-select__count {
@@ -473,6 +551,13 @@
       font-variant-numeric: tabular-nums;
       unicode-bidi: isolate;
     }
+  }
+
+  /* In the mobile sheet the count lives in the sheet header; the footer is
+     the bottom Clear bar. */
+  .cngx-popover-sheet:is([data-cngx-presentation='sheet'], [data-cngx-presentation='fullscreen'])
+    .cngx-tree-select__footer-count {
+    display: none;
   }
 
   /* Outside the @scope: a @media nested in @scope applies unreliably across

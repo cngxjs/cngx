@@ -29,9 +29,11 @@ import { CngxSelectChipOverflow } from '../shared/template-slots';
 import { CngxTreeSelect } from './tree-select.component';
 import { CngxTreeSelectChip } from './tree-select-chip.directive';
 import { CngxTreeSelectTriggerLabel } from './tree-select-trigger-label.directive';
+import { CngxTreeSelectFooter } from './tree-select-footer.directive';
 import { CngxTreeSelectNodeCount } from './tree-select-node-count.directive';
 import type {
   CngxTreeSelectChipDisplay,
+  CngxTreeSelectFooterContext,
   CngxTreeSelectNodeCountContext,
 } from './tree-select.model';
 
@@ -1327,6 +1329,177 @@ describe('CngxTreeSelect - parent row counts', () => {
       expect(row('a').querySelector('.config-count')?.textContent?.trim()).toBe('1/2');
     } finally {
       configNodeCountTpl = null;
+    }
+  });
+});
+
+// ── Panel footer: selected count and clear-all ──────────────────────
+
+let configFooterTpl: TemplateRef<CngxTreeSelectFooterContext> | null = null;
+
+@Component({
+  imports: [CngxTreeSelect, CngxTreeSelectFooter],
+  template: `
+    <cngx-tree-select
+      [label]="'Teams'"
+      [nodes]="nodes"
+      [nodeIdFn]="idFn"
+      [labelFn]="labelFn"
+      [keyFn]="keyFn"
+      [(values)]="values"
+      [initiallyExpanded]="'all'"
+      (cleared)="onCleared()"
+      (selectionChange)="onChange($event)"
+    >
+      @if (withSlot()) {
+        <ng-template
+          cngxTreeSelectFooter
+          let-count
+          let-countText="countText"
+          let-clear="clear"
+          let-clearLabel="clearLabel"
+          let-empty="empty"
+        >
+          <div class="my-footer" [attr.data-count]="count" [attr.data-empty]="empty">
+            {{ countText }}
+            <button type="button" class="my-clear" (click)="clear()">{{ clearLabel }}</button>
+          </div>
+        </ng-template>
+      }
+    </cngx-tree-select>
+  `,
+})
+class TreeFooterHost {
+  readonly nodes = tree();
+  readonly values = signal<Row[]>([
+    { id: 'a1', name: 'Alpha-1' },
+    { id: 'b', name: 'Bravo' },
+  ]);
+  readonly withSlot = signal(false);
+  readonly onCleared = vi.fn();
+  readonly onChange = vi.fn();
+  readonly idFn = (v: Row): string => v.id;
+  readonly labelFn = (v: Row): string => v.name;
+  readonly keyFn = (v: Row): unknown => v.id;
+}
+
+@Component({
+  imports: [CngxTreeSelect],
+  providers: [
+    {
+      provide: CNGX_SELECT_CONFIG,
+      useFactory: () => makeSelectConfig(withTemplates({ treeFooter: configFooterTpl })),
+    },
+  ],
+  template: `
+    <cngx-tree-select
+      [label]="'Teams'"
+      [nodes]="nodes"
+      [nodeIdFn]="idFn"
+      [labelFn]="labelFn"
+      [(values)]="values"
+    />
+  `,
+})
+class TreeFooterConfigHost {
+  readonly nodes = tree();
+  readonly values = signal<Row[]>([{ id: 'b', name: 'Bravo' }]);
+  readonly idFn = (v: Row): string => v.id;
+  readonly labelFn = (v: Row): string => v.name;
+}
+
+@Component({
+  template: `<ng-template #footer let-countText="countText"
+    ><p class="config-footer">{{ countText }}</p></ng-template
+  >`,
+})
+class FooterTemplateHolder {
+  readonly footer = viewChild.required<TemplateRef<CngxTreeSelectFooterContext>>('footer');
+}
+
+describe('CngxTreeSelect - panel footer', () => {
+  beforeAll(() => polyfillPopover());
+
+  it('shows the selected count and a clear-all labelled by the clear cascade', () => {
+    const { el } = openTree(TreeFooterHost);
+    const footer = el.querySelector('.cngx-tree-select__footer');
+    expect(footer?.querySelector('.cngx-tree-select__footer-count')?.textContent?.trim()).toBe(
+      '2 selected',
+    );
+    const button = footer?.querySelector<HTMLButtonElement>('button');
+    expect(button?.getAttribute('type')).toBe('button');
+    expect(button?.textContent?.trim()).toBe('Reset selection');
+    expect(button?.hasAttribute('aria-disabled')).toBe(false);
+    expect(button?.hasAttribute('aria-describedby')).toBe(false);
+  });
+
+  it('clears every value, emits cleared and keeps focus inside the host', () => {
+    const { fixture, el } = openTree(TreeFooterHost);
+    const button = el.querySelector<HTMLButtonElement>('.cngx-tree-select__footer button')!;
+    button.focus();
+    button.click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.values()).toEqual([]);
+    expect(fixture.componentInstance.onCleared).toHaveBeenCalledTimes(1);
+    expect(fixture.componentInstance.onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ action: 'clear' }),
+    );
+    expect(el.contains(document.activeElement)).toBe(true);
+    expect(el.querySelector('.cngx-tree-select__footer')).not.toBeNull();
+  });
+
+  it('marks an empty clear-all aria-disabled and describes it by the count', () => {
+    const { fixture, el } = openTree(TreeFooterHost);
+    fixture.componentInstance.values.set([]);
+    fixture.detectChanges();
+    const count = el.querySelector<HTMLElement>('.cngx-tree-select__footer-count')!;
+    const button = el.querySelector<HTMLButtonElement>('.cngx-tree-select__footer button')!;
+    expect(count.textContent?.trim()).toBe('0 selected');
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    expect(count.id).not.toBe('');
+    expect(button.getAttribute('aria-describedby')).toBe(count.id);
+    button.click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.onCleared).not.toHaveBeenCalled();
+  });
+
+  it('follows a runtime copy switch', () => {
+    const labels = signal<CngxSelectFallbackLabels>({});
+    TestBed.configureTestingModule({
+      providers: [provideSelectConfig(withFallbackLabels(labels))],
+    });
+    const { fixture, el } = openTree(TreeFooterHost);
+    labels.set({ selectedCount: (count) => `${count} gewählt` });
+    fixture.detectChanges();
+    expect(el.querySelector('.cngx-tree-select__footer-count')?.textContent?.trim()).toBe(
+      '2 gewählt',
+    );
+  });
+
+  it('lets a projected *cngxTreeSelectFooter replace the footer with its context', () => {
+    const { fixture, el } = openTree(TreeFooterHost);
+    fixture.componentInstance.withSlot.set(true);
+    fixture.detectChanges();
+    expect(el.querySelector('.cngx-tree-select__footer-count')).toBeNull();
+    const custom = el.querySelector<HTMLElement>('.my-footer')!;
+    expect(custom.dataset['count']).toBe('2');
+    expect(custom.dataset['empty']).toBe('false');
+    expect(custom.textContent).toContain('2 selected');
+    custom.querySelector<HTMLButtonElement>('.my-clear')!.click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.values()).toEqual([]);
+    expect(fixture.componentInstance.onCleared).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to a CNGX_SELECT_CONFIG.templates.treeFooter default', () => {
+    const holder = TestBed.createComponent(FooterTemplateHolder);
+    holder.detectChanges();
+    configFooterTpl = holder.componentInstance.footer();
+    try {
+      const { el } = openTree(TreeFooterConfigHost);
+      expect(el.querySelector('.config-footer')?.textContent?.trim()).toBe('1 selected');
+    } finally {
+      configFooterTpl = null;
     }
   });
 });

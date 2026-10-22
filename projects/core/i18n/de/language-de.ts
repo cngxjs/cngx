@@ -385,6 +385,7 @@ export const CNGX_LANGUAGE_DE = {
     chipOverflowBadge: '+{count}',
     selectionSummary: '{count} ausgewählt: {list}',
     treeNodeCount: '{selected}/{total}',
+    selectedCount: '{count} ausgewählt',
     statusLoading: 'Optionen werden geladen',
     statusRefreshing: 'Optionen werden aktualisiert',
     fieldLabelFallback: 'Auswahl',

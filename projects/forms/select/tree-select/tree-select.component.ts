@@ -121,6 +121,7 @@ import { CngxTreeSelectPanel } from './tree-select-panel.component';
 import { createTreeChipDisplay } from './internal/tree-chip-display';
 import { createTreeSelectionCounts } from './internal/tree-selection-counts';
 import { CngxTreeSelectNodeCount } from './tree-select-node-count.directive';
+import { CngxTreeSelectFooter } from './tree-select-footer.directive';
 import { injectResolvedTemplate } from '../shared/internal/resolve-template';
 import { createTreeToggleDispatch, type TreeToggleDispatch } from './internal/tree-toggle-dispatch';
 import type {
@@ -128,6 +129,7 @@ import type {
   CngxTreeSelectChipContext,
   CngxTreeSelectChipDisplay,
   CngxTreeSelectNodeContext,
+  CngxTreeSelectFooterContext,
   CngxTreeSelectNodeCountContext,
   CngxTreeSelectTriggerLabelContext,
   CngxTreeSelectedItem,
@@ -221,6 +223,7 @@ export interface CngxTreeSelectChange<T = unknown> {
  * @slot cngxTreeSelectChip Replaces each chip in the trigger strip unless cngxTreeSelectTriggerLabel is projected; gets option, remove.
  * @slot cngxTreeSelectTriggerLabel Replaces the whole chip strip while at least one value is selected; gets selected, values, count.
  * @slot cngxTreeSelectNodeCount Replaces the selected-of-total count at the inline end of each parent row in the default row; gets text ($implicit), selected, total, node. Renders inside an aria-hidden wrapper the host keeps; global default via CNGX_SELECT_CONFIG.templates.treeNodeCount.
+ * @slot cngxTreeSelectFooter Replaces the panel footer below the tree (selected count and clear-all; the bottom bar in the mobile sheet); gets count ($implicit), countText, clear, clearLabel, empty. clear() keeps the host's clear announcement and outputs; global default via CNGX_SELECT_CONFIG.templates.treeFooter.
  * @slot cngxSelectChipOverflow Replaces the `+N` overflow chip after the first maxVisibleChips displayed chips, and the badge of the touch summary; gets count, label, hidden. The host keeps the hidden values readable for AT.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
  */
@@ -485,6 +488,12 @@ export class CngxTreeSelect<T = unknown>
   readonly nodeCountTpl = injectResolvedTemplate<CngxTreeSelectNodeCountContext<T>>(
     this.nodeCountDir,
     'treeNodeCount',
+  );
+  private readonly footerDir = contentChild(CngxTreeSelectFooter);
+  /** @internal - `*cngxTreeSelectFooter`, else `CNGX_SELECT_CONFIG.templates.treeFooter`. */
+  readonly footerTpl = injectResolvedTemplate<CngxTreeSelectFooterContext>(
+    this.footerDir,
+    'treeFooter',
   );
   private readonly chipOverflowDir = contentChild<CngxSelectChipOverflow<T>>(CngxSelectChipOverflow);
   /** @internal - directive-only like the family's other chip-strip slots. */
@@ -880,6 +889,20 @@ export class CngxTreeSelect<T = unknown>
     values: this.values,
     findByValue: (value) => this.treeController.findByValue(value),
   });
+
+  /** @internal Number of selected values (the count the announcer speaks). */
+  readonly selectionCount = computed(() => this.values().length);
+  /** @internal */
+  readonly selectionCountText = computed(() =>
+    this.fallbackLabels().selectedCount(this.selectionCount()),
+  );
+  /** @internal Footer clear-all label, the trigger clear-button cascade. */
+  readonly clearAllLabel = computed(() => this.resolvedClearButtonAriaLabel());
+
+  /** @internal Clear from the panel footer; focus stays in the panel. */
+  clearAllInPanel(): void {
+    this.dispatch.clearAll();
+  }
 
   /** @internal */
   nodeCount(node: FlatTreeNode<T>): { readonly selected: number; readonly total: number } | null {

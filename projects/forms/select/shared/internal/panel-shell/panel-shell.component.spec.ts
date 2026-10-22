@@ -56,6 +56,7 @@ const EN_FALLBACK: Required<CngxSelectFallbackLabels> = {
   commitFailedRetry: 'Retry',
   chipOverflowBadge: (count: number) => `+${count}`,
   treeNodeCount: (selected: number, total: number) => `${selected}/${total}`,
+  selectedCount: (count: number) => `${count} selected`,
 };
 
 const EN_ARIA: CngxResolvedSelectAriaLabels = {
