@@ -1,12 +1,12 @@
 ---
 title: "CngxButton: Busy with cngxAsyncClick"
-whenToUse: "The button does not own async state; cngxAsyncClick on the same element does. While its action is pending the button keeps the label in the layout (invisible), so the width never jumps, and draws a spinner ring over it. aria-busy, the double-click guard and the success or failure announcement all stay with cngxAsyncClick. Under reduced motion the ring stops turning. Toggle the failure switch to see the error path."
+whenToUse: "The button does not own async state; cngxAsyncClick on the same element does. While its action is pending the button keeps the label in the layout (invisible), so the width never jumps, and draws a spinner ring over it. aria-busy, the double-click guard and the success or failure announcement all stay with cngxAsyncClick. Under reduced motion the ring stops turning. The label stays fixed on purpose: swapping it per status would change the accessible name under focus and the width after the run. Per-status labels belong to CngxActionButton. Toggle the failure switch to see the error path."
 symbols: [CngxButton, CngxAsyncClick]
 ---
 
 # CngxButton: Busy with cngxAsyncClick
 
-The button does not own async state; cngxAsyncClick on the same element does. While its action is pending the button keeps the label in the layout (invisible), so the width never jumps, and draws a spinner ring over it. aria-busy, the double-click guard and the success or failure announcement all stay with cngxAsyncClick. Under reduced motion the ring stops turning. Toggle the failure switch to see the error path.
+The button does not own async state; cngxAsyncClick on the same element does. While its action is pending the button keeps the label in the layout (invisible), so the width never jumps, and draws a spinner ring over it. aria-busy, the double-click guard and the success or failure announcement all stay with cngxAsyncClick. Under reduced motion the ring stops turning. The label stays fixed on purpose: swapping it per status would change the accessible name under focus and the width after the run. Per-status labels belong to CngxActionButton. Toggle the failure switch to see the error path.
 
 ## Symbols
 
@@ -27,11 +27,5 @@ protected readonly save = (): Promise<void> =>
 ## Wiring
 
 ```html
-<button cngxButton tone="primary" [cngxAsyncClick]="save" #btn="cngxAsyncClick">
-  @switch (btn.status()) {
-    @case ('success') { Saved }
-    @case ('error') { Try again }
-    @default { Save changes }
-  }
-</button>
+<button cngxButton tone="primary" [cngxAsyncClick]="save">Save changes</button>
 ```

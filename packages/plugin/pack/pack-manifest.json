@@ -239,7 +239,7 @@
     {
       "artifact": "pack/recipes/common-button-button.md",
       "source": "examples/stories/common/button/button/async-click-busy.story.ts",
-      "contentHash": "sha256:2942d0073c452a833619efa45d9ed0a2d2840d8f68409997e0fab5557faf61b6"
+      "contentHash": "sha256:f525cb12a8b7ef1c9380e32160d953b5a120995b0ab2bc4e1969e026151f44bb"
     }
   ],
   "theming": {
