@@ -223,6 +223,15 @@ function indexPathOf(options: Readonly<Record<string, unknown>>, sourceRoot: str
   return typeof input === 'string' ? input : posix.join(sourceRoot, 'index.html');
 }
 
+// devkit's `readText` decodes with a fatal utf-8 decoder.
+function readUtf8(tree: Tree, path: string): string | undefined {
+  try {
+    return tree.readText(path);
+  } catch {
+    return undefined;
+  }
+}
+
 /**
  * Reads the facts every onboarding step branches on from the tree and the
  * parsed workspace. Pure: it only reads, and git state, time and the
@@ -239,14 +248,16 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
 
   // The component count is the only fact read from source contents, so only
   // the source files are read up front; the cache serves them to later reads.
+  // A file that is not utf-8 text counts as no component and stays out of
+  // the cache, so a later read of it still fails loudly.
   const appSources = listFiles(tree, sourceRoot, {
     skipDirs: NON_SOURCE_DIRS,
     skipRootDirs: BUILD_OUTPUT_DIRS,
     accept: isAppSource,
-  }).map((path) => ({
-    path,
-    content: tree.readText(path),
-  }));
+  }).flatMap((path) => {
+    const content = readUtf8(tree, path);
+    return content === undefined ? [] : [{ path, content }];
+  });
   const contents = new Map<string, string | undefined>(appSources.map(({ path, content }) => [path, content]));
   const read: Read = (path) => {
     if (!contents.has(path)) {

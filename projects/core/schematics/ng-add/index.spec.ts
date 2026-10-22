@@ -581,6 +581,15 @@ describe('ngAdd', () => {
     });
   });
 
+  it('plans over a source file that is not utf-8 text', async () => {
+    const tree = createFixtureTree();
+    tree.create('src/app/legacy.ts', Buffer.from([...Buffer.from('// Gr'), 0xfc, ...Buffer.from('e\nexport const legacy = 1;\n')]));
+
+    const run = await runRule(ngAdd({ yes: true }), tree);
+
+    expect(run.tree.readContent('src/app/app.config.ts')).toContain('provideA11yPreferences(withPersistence())');
+  });
+
   describe('a root providers cngx cannot edit', () => {
     const HEAD = `import { ApplicationConfig, mergeApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter } from '@angular/router';

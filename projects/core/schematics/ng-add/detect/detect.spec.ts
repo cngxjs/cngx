@@ -48,6 +48,8 @@ function withPackage(dependencies: Record<string, string>): string {
   return JSON.stringify({ ...manifest, dependencies: { ...manifest.dependencies, ...dependencies } });
 }
 
+const OTHER_COMPONENT = "import { Component } from '@angular/core';\n\n@Component({ selector: 'app-other', template: '' })\nexport class Other {}\n";
+
 async function detect(overrides: Record<string, string> = {}): Promise<ProjectFacts> {
   const tree = createFixtureTree('standalone-app', overrides);
   return detectProject(tree, await readWorkspace(tree));
@@ -173,6 +175,17 @@ describe('detectProject', () => {
       eslintConfig: undefined,
       maturity: 'existing',
     });
+  });
+
+  it('skips a source file that is not utf-8 text and counts the components it can read', async () => {
+    const tree = createFixtureTree('standalone-app', { 'src/app/other.ts': OTHER_COMPONENT });
+    // "Grüße" in Windows-1252: 0xFC is no valid utf-8 byte there.
+    tree.create('src/app/legacy.ts', Buffer.from([...Buffer.from("// Gr"), 0xfc, ...Buffer.from("\u00dfe\n@Component({})\nexport class Legacy {}\n", 'latin1')]));
+
+    const facts = detectProject(tree, await readWorkspace(tree));
+
+    expect(facts.maturity).toBe('existing');
+    expect(facts.rootProvidersFile).toBe('src/app/app.config.ts');
   });
 
   it('reads root providers held in a variable as out of reach of an array edit', async () => {
