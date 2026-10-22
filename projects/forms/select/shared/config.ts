@@ -32,6 +32,7 @@ import type {
   CngxSelectOptionPendingContext,
   CngxSelectPlaceholderContext,
   CngxSelectRefreshingContext,
+  CngxSelectSheetCountContext,
   CngxSelectSheetHandleContext,
   CngxSelectTriggerLabelContext,
 } from './template-slots';
@@ -426,6 +427,8 @@ export interface CngxSelectConfig {
     readonly sheetHandle?: TemplateRef<CngxSelectSheetHandleContext> | null;
     /** Selected-of-total count on a `CngxTreeSelect` parent row. */
     readonly treeNodeCount?: TemplateRef<CngxTreeSelectNodeCountContext> | null;
+    /** Selected count in the mobile sheet header (variants that report one). */
+    readonly sheetCount?: TemplateRef<CngxSelectSheetCountContext> | null;
     /** Panel footer (count and clear-all) of `CngxTreeSelect`. */
     readonly treeFooter?: TemplateRef<CngxTreeSelectFooterContext> | null;
   };
@@ -493,6 +496,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
     sheetHandle: null,
     treeNodeCount: null,
     treeFooter: null,
+    sheetCount: null,
   },
 };
 

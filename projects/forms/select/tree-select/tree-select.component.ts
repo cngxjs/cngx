@@ -103,6 +103,7 @@ import {
   CngxSelectLoading,
   CngxSelectLoadingGlyph,
   CngxSelectSheetHandle,
+  CngxSelectSheetCount,
   CngxSelectChipOverflow,
   type CngxSelectChipOverflowContext,
   CngxSelectPlaceholder,
@@ -225,6 +226,7 @@ export interface CngxTreeSelectChange<T = unknown> {
  * @slot cngxTreeSelectNodeCount Replaces the selected-of-total count at the inline end of each parent row in the default row; gets text ($implicit), selected, total, node. Renders inside an aria-hidden wrapper the host keeps; global default via CNGX_SELECT_CONFIG.templates.treeNodeCount.
  * @slot cngxTreeSelectFooter Replaces the panel footer below the tree (selected count and clear-all; the bottom bar in the mobile sheet); gets count ($implicit), countText, clear, clearLabel, empty. clear() keeps the host's clear announcement and outputs; global default via CNGX_SELECT_CONFIG.templates.treeFooter.
  * @slot cngxSelectChipOverflow Replaces the `+N` overflow chip after the first maxVisibleChips displayed chips, and the badge of the touch summary; gets count, label, hidden. The host keeps the hidden values readable for AT.
+ * @slot cngxSelectSheetCount Replaces the selected count after the mobile sheet title; gets text ($implicit). Global default via CNGX_SELECT_CONFIG.templates.sheetCount.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
  */
 @Component({
@@ -480,6 +482,7 @@ export class CngxTreeSelect<T = unknown>
   private readonly refreshingDir = contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
   private readonly commitErrorDir = contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
   private readonly sheetHandleDir = contentChild(CngxSelectSheetHandle);
+  private readonly sheetCountDir = contentChild(CngxSelectSheetCount);
 
   private readonly nodeDir = contentChild<CngxTreeSelectNode<T>>(CngxTreeSelectNode);
   private readonly chipDir = contentChild<CngxTreeSelectChip<T>>(CngxTreeSelectChip);
@@ -524,6 +527,7 @@ export class CngxTreeSelect<T = unknown>
     commitError: this.commitErrorDir,
     clearButton: this.clearButtonDir,
     sheetHandle: this.sheetHandleDir,
+    sheetCount: this.sheetCountDir,
   });
 
   /** @internal */
@@ -825,6 +829,8 @@ export class CngxTreeSelect<T = unknown>
     popoverRef: this.popoverRef,
     listboxRef: signal(undefined),
     tpl: this.tplRegistry,
+    // Lazy: the count is declared further down in field order.
+    selectionCount: computed(() => this.selectionCountText()),
     commitMode: this.commitMode,
     dismissOn: this.config.dismissOn,
     showDone: true,

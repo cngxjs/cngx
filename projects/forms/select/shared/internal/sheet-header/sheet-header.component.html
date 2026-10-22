@@ -12,6 +12,15 @@
     <span cngxPopoverSheetHandle></span>
   }
   <span cngxPopoverSheetTitle class="cngx-select-sheet-header__title">{{ heading() }}</span>
+  @if (host.selectionCount(); as count) {
+    <span class="cngx-select-sheet-header__count">
+      @if (host.tpl.sheetCount(); as countTpl) {
+        <ng-container *ngTemplateOutlet="countTpl; context: { $implicit: count, text: count }" />
+      } @else {
+        {{ count }}
+      }
+    </span>
+  }
   @if (host.showDone()) {
     <button
       type="button"

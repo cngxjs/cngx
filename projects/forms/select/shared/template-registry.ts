@@ -19,6 +19,8 @@ import type {
   CngxSelectLoadingGlyph,
   CngxSelectRefreshing,
   CngxSelectRetryButton,
+  CngxSelectSheetCount,
+  CngxSelectSheetCountContext,
   CngxSelectSheetHandle,
   CngxSelectSheetHandleContext,
   CngxSelectCaretContext,
@@ -71,6 +73,8 @@ export interface CngxSelectTemplateRegistryQueries<T = unknown> {
   readonly action?: Signal<CngxSelectAction | undefined>;
   /** Optional. Config-level `templates.sheetHandle` still resolves via cascade. */
   readonly sheetHandle?: Signal<CngxSelectSheetHandle | undefined>;
+  /** Optional. Config-level `templates.sheetCount` still resolves via cascade. */
+  readonly sheetCount?: Signal<CngxSelectSheetCount | undefined>;
 }
 
 /**
@@ -97,6 +101,7 @@ export interface CngxSelectTemplateRegistry<T = unknown> {
   readonly optionError: Signal<TemplateRef<CngxSelectOptionErrorContext<T>> | null>;
   readonly action: Signal<TemplateRef<CngxSelectActionContext> | null>;
   readonly sheetHandle: Signal<TemplateRef<CngxSelectSheetHandleContext> | null>;
+  readonly sheetCount: Signal<TemplateRef<CngxSelectSheetCountContext> | null>;
 }
 
 /**
@@ -126,6 +131,7 @@ export interface CngxSelectTemplateRegistry<T = unknown> {
 const NO_TEMPLATE: Signal<null> = signal(null);
 
 const NO_SHEET_HANDLE_DIRECTIVE: Signal<CngxSelectSheetHandle | undefined> = signal(undefined);
+const NO_SHEET_COUNT_DIRECTIVE: Signal<CngxSelectSheetCount | undefined> = signal(undefined);
 
 /**
  * Build a resolved {@link CngxSelectTemplateRegistry} from raw
@@ -170,6 +176,10 @@ export function createTemplateRegistry<T = unknown>(
     sheetHandle: injectResolvedTemplate(
       queries.sheetHandle ?? NO_SHEET_HANDLE_DIRECTIVE,
       'sheetHandle',
+    ),
+    sheetCount: injectResolvedTemplate(
+      queries.sheetCount ?? NO_SHEET_COUNT_DIRECTIVE,
+      'sheetCount',
     ),
   };
 }

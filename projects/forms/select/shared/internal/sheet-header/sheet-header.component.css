@@ -46,6 +46,15 @@
     font-weight: var(--cngx-select-sheet-title-weight, 600);
   }
 
+  /* Selected count after the title (tree-select); muted, numbers isolated
+     from the title in either direction. */
+  .cngx-select-sheet-header__count {
+    flex: none;
+    color: var(--cngx-select-sheet-count-color, color-mix(in oklab, currentColor 65%, transparent));
+    font-size: var(--cngx-font-size-sm, 0.875rem);
+    unicode-bidi: isolate;
+  }
+
   .cngx-select-sheet-header__done,
   .cngx-select-sheet-header__close {
     flex: none;
