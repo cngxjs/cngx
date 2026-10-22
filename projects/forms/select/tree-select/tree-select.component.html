@@ -45,7 +45,7 @@
           />
         } @else {
           <span class="cngx-tree-select__placeholder">
-            {{ placeholder() || label() }}
+            {{ resolvedPlaceholder() }}
           </span>
         }
       } @else if (triggerLabelTpl(); as labelTpl) {

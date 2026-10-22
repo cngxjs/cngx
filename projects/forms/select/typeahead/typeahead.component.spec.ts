@@ -694,3 +694,46 @@ describeSelectBehaviourHost('CngxTypeahead', CngxTypeahead, 'cngx-typeahead', {
   optionSelector: '[cngxOption]',
   readValue: (cmp) => (cmp as { value: () => unknown }).value(),
 });
+
+describe('CngxTypeahead - placeholder falls back to the label', () => {
+  @Component({
+    template: `
+      <cngx-typeahead [label]="label()" [placeholder]="placeholder()" [options]="options" />
+    `,
+    imports: [CngxTypeahead],
+  })
+  class PlaceholderHost {
+    readonly options = USERS;
+    readonly label = signal('User');
+    readonly placeholder = signal('');
+  }
+
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [PlaceholderHost] });
+  });
+
+  function setup(): {
+    fixture: ReturnType<typeof TestBed.createComponent<PlaceholderHost>>;
+    input: HTMLInputElement;
+  } {
+    const fixture = TestBed.createComponent(PlaceholderHost);
+    flush(fixture);
+    const input = fixture.nativeElement.querySelector(
+      'input.cngx-typeahead__input',
+    ) as HTMLInputElement;
+    return { fixture, input };
+  }
+
+  it('shows the label as the input placeholder when no placeholder is set', () => {
+    const { input } = setup();
+    expect(input.placeholder).toBe('User');
+  });
+
+  it('shows the placeholder over the label when one is set', () => {
+    const { fixture, input } = setup();
+    fixture.componentInstance.placeholder.set('Search users');
+    flush(fixture);
+    expect(input.placeholder).toBe('Search users');
+  });
+});

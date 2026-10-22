@@ -196,6 +196,12 @@ export interface CngxSelectCore<T, TCommit> {
   readonly resolvedAriaLabelledBy: Signal<string | null>;
   readonly resolvedAriaRequired: Signal<boolean | null>;
   readonly resolvedListboxLabel: Signal<string>;
+  /**
+   * Placeholder text every variant shows while nothing is selected:
+   * `placeholder || label || ''`, so an empty `placeholder` input falls back
+   * to the visible label instead of leaving the field blank.
+   */
+  readonly resolvedPlaceholder: Signal<string>;
   readonly resolvedShowSelectionIndicator: Signal<boolean>;
   readonly resolvedShowCaret: Signal<boolean>;
   /**
@@ -543,6 +549,8 @@ export function createSelectCore<T, TCommit>(
 
   const resolvedAriaRequired = fieldAria.ariaRequired;
 
+  const resolvedPlaceholder = computed<string>(() => deps.placeholder() || deps.label() || '');
+
   const resolvedListboxLabel = computed<string>(() => {
     const label = deps.label();
     if (label.length > 0) {
@@ -822,6 +830,7 @@ export function createSelectCore<T, TCommit>(
     resolvedAriaLabelledBy,
     resolvedAriaRequired,
     resolvedListboxLabel,
+    resolvedPlaceholder,
     resolvedShowSelectionIndicator,
     resolvedShowCaret,
     resolvedSelectionIndicatorVariant,

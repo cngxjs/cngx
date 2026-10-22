@@ -258,6 +258,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   readonly label = input<string>('');
   readonly options = input<CngxSelectOptionsInput<T>>([] as CngxSelectOptionsInput<T>);
+  /** Placeholder rendered inside the input while it is empty; falls back to `label` when unset. */
   readonly placeholder = input<string>('');
   readonly disabledInput = input<boolean>(false, { alias: 'disabled' });
   readonly requiredInput = input<boolean>(false, { alias: 'required' });
@@ -585,6 +586,8 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   protected readonly resolvedId = this.core.resolvedId;
   /** @internal */
   protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
+  /** @internal */
+  protected readonly resolvedPlaceholder = this.core.resolvedPlaceholder;
   /** @internal */
   protected readonly resolvedShowSelectionIndicator = this.core.resolvedShowSelectionIndicator;
   /** @internal */

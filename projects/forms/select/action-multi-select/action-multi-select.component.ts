@@ -304,6 +304,10 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
 
   readonly label = input<string>('');
   readonly options = input<CngxSelectOptionsInput<T>>([] as CngxSelectOptionsInput<T>);
+  /**
+   * Placeholder rendered inside the input when nothing is selected; falls back
+   * to `label` when unset.
+   */
   readonly placeholder = input<string>('');
   readonly disabledInput = input<boolean>(false, { alias: 'disabled' });
   readonly requiredInput = input<boolean>(false, { alias: 'required' });
@@ -839,7 +843,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     if (!this.isEmpty()) {
       return '';
     }
-    return this.placeholder() || this.label() || '';
+    return this.core.resolvedPlaceholder();
   });
 
   /** @internal */
