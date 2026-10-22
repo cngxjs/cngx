@@ -29,7 +29,12 @@ export type CngxCommandSource = Signal<readonly CngxCommand[]> | readonly CngxCo
  * returns anything else contributes no commands and warns in dev mode
  * (CNGX1070).
  *
+ * The factory must not call `injectCommands()`, directly or through a service
+ * it injects at the same level: that reads the registry the factory is still
+ * building, and Angular throws a circular-dependency error (NG0200).
+ *
  * @category common/command
+ * @relatedTo provideCommands
  * @since 0.1.0
  */
 export type CngxCommandSourceFactory = () => CngxCommandSource;

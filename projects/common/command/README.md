@@ -87,6 +87,12 @@ Return the `Signal` itself to stay reactive. A factory that reads the signal
 (`() => inject(EditorStore).commands()`) returns a plain array, and that array
 is frozen at the first call.
 
+A factory must not read the registry it contributes to. `injectCommands()`
+inside it, or in a service it injects at the same level, resolves that level's
+merged list while the factory is still building it, and Angular throws a
+circular-dependency error (NG0200). Hand the factory the source, not the
+merged result.
+
 ## Read Them
 
 ```typescript
