@@ -32,6 +32,9 @@
  * - `.cngx-tree-select__twisty-spacer` - same-sized placeholder for
  *   leaves so labels align across depths
  * - `.cngx-tree-select__label` - ellipsis-truncating node label
+ * - `.cngx-tree-select__node::before` - depth guide lines, one per
+ *   ancestor level, centred under the ancestor twisty; `0px` guide width
+ *   switches them off
  *
  * **Inheritance**
  *
@@ -221,6 +224,28 @@
     initial-value: 1rem;
   }
 
+  /**
+   * Stroke width of the depth guide lines. `0px` switches them off in every
+   * mode, forced colors included.
+   * @group Guide lines
+   */
+  @property --cngx-tree-select-guide-width {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 1px;
+  }
+
+  /**
+   * Colour of the depth guide lines. Unset, the lines take the border colour.
+   * @group Guide lines
+   * @default var(--cngx-color-border, oklch(0.85 0.01 250))
+   * @see [[--cngx-color-border]]
+   */
+  @property --cngx-tree-select-guide-color {
+    syntax: '*';
+    inherits: true;
+  }
+
   /* Dark-mode component-local swap - an alpha-on-black hover surface
    * dissolves into a dark panel-bg, so the dark blocks flip it to
    * alpha-on-white. */
@@ -276,11 +301,55 @@
           max(var(--cngx-tree-select-level-indent, 1.25rem), calc(var(--cngx-target-min, 0px) / 2))
       );
       padding-inline-end: var(--cngx-tree-select-node-padding-end, 0.75rem);
+      position: relative;
       cursor: pointer;
       user-select: none;
       border-radius: var(--cngx-tree-select-node-radius, 0.125rem);
       color: var(--cngx-tree-select-node-color, inherit);
       background: var(--cngx-tree-select-node-bg, transparent);
+    }
+
+    /* Depth guide lines. The box starts at the first ancestor's twisty centre
+       (base indent + half the floored twisty - half the line) and spans one
+       indent step per level; each step-wide tile paints its line at the tile
+       start, so the lines land under every ancestor twisty. Physical gradient
+       direction, so RTL anchors the tiles and the line on the right. */
+    .cngx-tree-select__node::before {
+      --_cngx-tree-step: max(
+        var(--cngx-tree-select-level-indent, 1.25rem),
+        calc(var(--cngx-target-min, 0px) / 2)
+      );
+      --_cngx-tree-twisty: max(
+        var(--cngx-tree-select-twisty-size, 1.25rem),
+        var(--cngx-target-min, 0px)
+      );
+      content: '';
+      position: absolute;
+      inset-block: 0;
+      inset-inline-start: calc(
+        var(--cngx-tree-select-base-indent, 0.5rem) + var(--_cngx-tree-twisty) / 2 -
+          var(--cngx-tree-select-guide-width, 1px) / 2
+      );
+      inline-size: calc(var(--cngx-tree-depth, 0) * var(--_cngx-tree-step));
+      background-image: linear-gradient(
+        to right,
+        var(--cngx-tree-select-guide-color, var(--cngx-color-border, oklch(0.85 0.01 250)))
+          var(--cngx-tree-select-guide-width, 1px),
+        transparent var(--cngx-tree-select-guide-width, 1px)
+      );
+      background-size: var(--_cngx-tree-step) 100%;
+      background-repeat: repeat-x;
+      pointer-events: none;
+    }
+
+    .cngx-tree-select__node:where(:dir(rtl))::before {
+      background-image: linear-gradient(
+        to left,
+        var(--cngx-tree-select-guide-color, var(--cngx-color-border, oklch(0.85 0.01 250)))
+          var(--cngx-tree-select-guide-width, 1px),
+        transparent var(--cngx-tree-select-guide-width, 1px)
+      );
+      background-position-x: 100%;
     }
 
     /* Selection is carried by the checkbox and the label weight; the fill is
@@ -405,6 +474,13 @@
      * opt-out is inherited, so the node declares its ink for its checkbox. */
     forced-color-adjust: none;
     --_cngx-forced-ink: HighlightText;
+  }
+
+  /* A forced palette leaves the author colour inside the guide gradient
+     alone, where it can vanish against Canvas; redraw the lines in GrayText
+     at the same width. */
+  cngx-tree-select-panel .cngx-tree-select__node {
+    --cngx-tree-select-guide-color: GrayText;
   }
 
   /* The faded disabled colour is forced to CanvasText; GrayText keeps the

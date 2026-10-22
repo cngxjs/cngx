@@ -329,3 +329,46 @@ describe('CngxTreeSelect anchored panel size', () => {
     expect(computedValue(panel, 'max-height')).toBe('256px');
   });
 });
+
+// Depth guide lines: a row at depth d carries a `::before` spanning d indent
+// steps from the base indent, painting one line per ancestor level centred
+// under that ancestor's twisty. Under the 44px floor the step is 22px and the
+// twisty 44px wide, so the first line sits at base 8px + 22px - half the 1px
+// line. `--cngx-tree-select-guide-width: 0px` switches the lines off.
+function guideOf(root: HTMLElement, depth: number): CSSStyleDeclaration {
+  const row = root.querySelector<HTMLElement>(`[role="treeitem"][aria-level="${depth + 1}"]`);
+  if (!row) {
+    throw new Error(`no treeitem at depth ${depth}`);
+  }
+  return getComputedStyle(row, '::before');
+}
+
+describe('CngxTreeSelect depth guide lines', () => {
+  it('spans two indent steps on a depth-2 row, from the inline-start side in LTR', () => {
+    const root = openTouchIndentPanel();
+    const guide = guideOf(root, 2);
+    expect(guide.position).toBe('absolute');
+    expect(guide.pointerEvents).toBe('none');
+    expect(guide.width).toBe('44px');
+    expect(guide.left).toBe('29.5px');
+    expect(guide.backgroundImage).toMatch(/^linear-gradient\(to right, .+ 1px, .+ 1px\)$/);
+    expect(guide.backgroundSize).toBe('22px 100%');
+    expect(guideOf(root, 0).width).toBe('0px');
+  });
+
+  it('mirrors to the inline-start side in RTL', () => {
+    document.documentElement.dir = 'rtl';
+    const root = openTouchIndentPanel();
+    const guide = guideOf(root, 2);
+    expect(guide.width).toBe('44px');
+    expect(guide.right).toBe('29.5px');
+    expect(guide.backgroundImage).toMatch(/^linear-gradient\(to left, /);
+    expect(guide.backgroundPositionX).toBe('100%');
+  });
+
+  it('paints no line at guide width 0px', () => {
+    const root = openTouchIndentPanel();
+    root.style.setProperty('--cngx-tree-select-guide-width', '0px');
+    expect(guideOf(root, 2).backgroundImage).toMatch(/ 0px, .+ 0px\)$/);
+  });
+});
