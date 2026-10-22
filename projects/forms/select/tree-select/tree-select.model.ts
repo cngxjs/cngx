@@ -57,8 +57,9 @@ export interface CngxTreeSelectChipContext<T = unknown> {
   readonly $implicit: CngxTreeSelectedItem<T>;
   readonly option: CngxTreeSelectedItem<T>;
   /**
-   * Commit-aware removal. Always single-deselect, even with
-   * `[cascadeChildren]="true"` - chip × represents one explicit value.
+   * Commit-aware removal. A chip that summarizes a fully selected subtree
+   * (`chipDisplay` `'parents'`) deselects that subtree; any other chip
+   * deselects its one value.
    */
   readonly remove: () => void;
 }
