@@ -197,6 +197,7 @@ jobs:
   # routes, on as many shards as the selection needs. A push runs everything.
   e2e-scope:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     outputs:
       mode: ${{ steps.scope.outputs.mode }}
       specs: ${{ steps.scope.outputs.specs }}
