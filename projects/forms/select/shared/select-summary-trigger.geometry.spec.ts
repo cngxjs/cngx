@@ -71,6 +71,25 @@ function optionsWith(firstLabel: string): { value: string; label: string }[] {
         [values]="values()"
       />
     </div>
+    <div
+      data-touch="on"
+      class="input-row-rtl"
+      dir="rtl"
+      style="display: block; width: 390px; margin: 1rem"
+    >
+      <cngx-combobox
+        style="display: block"
+        [label]="'B'"
+        [options]="options()"
+        [values]="values()"
+      />
+      <cngx-action-multi-select
+        style="display: block"
+        [label]="'A'"
+        [options]="options()"
+        [values]="values()"
+      />
+    </div>
   `,
 })
 class SummaryTriggerHost {
@@ -208,5 +227,40 @@ describe('select summary trigger next to the search input at 390px', () => {
         expect(part.bottom).toBeLessThanOrEqual(rect.bottom);
       }
     });
+  }
+});
+
+describe('select summary trigger without a value under the touch floor', () => {
+  for (const tag of INPUT_VARIANTS) {
+    for (const [dir, rowClass] of [
+      ['ltr', 'input-row'],
+      ['rtl', 'input-row-rtl'],
+    ] as const) {
+      it(`${tag} starts the input at the inline start of the row (${dir})`, async () => {
+        await mount();
+        const row = mountedRoot!.querySelector<HTMLElement>(
+          `.${rowClass} ${tag} .cngx-field-trigger`,
+        )!;
+        const rect = row.getBoundingClientRect();
+        const style = getComputedStyle(row);
+        const gap = parseFloat(style.columnGap);
+        const input = row
+          .querySelector<HTMLElement>('input[role="combobox"]')!
+          .getBoundingClientRect();
+        const strip = row
+          .querySelector<HTMLElement>('.cngx-select__chip-list')!
+          .getBoundingClientRect();
+        // The empty strip stays in the row so the trigger keeps one width at
+        // every selection count, but it takes no free space: the input starts
+        // one row gap after the content edge, where the placeholder belongs.
+        const contentStart =
+          dir === 'ltr'
+            ? rect.left + parseFloat(style.borderLeftWidth) + parseFloat(style.paddingLeft)
+            : rect.right - parseFloat(style.borderRightWidth) - parseFloat(style.paddingRight);
+        const inputStart = dir === 'ltr' ? input.left : input.right;
+        expect(Math.round(strip.width)).toBe(0);
+        expect(Math.abs(inputStart - contentStart)).toBeLessThanOrEqual(gap + 0.5);
+      });
+    }
   }
 });

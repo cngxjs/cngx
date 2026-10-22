@@ -319,6 +319,7 @@ export class CngxTreeSelect<T = unknown>
   readonly expandToReveal = input<boolean>(false);
 
   readonly label = input<string>('');
+  /** Trigger text while nothing is selected; falls back to `label` when unset. */
   readonly placeholder = input<string>('');
   readonly disabledInput = input<boolean>(false, { alias: 'disabled' });
   readonly requiredInput = input<boolean>(false, { alias: 'required' });
@@ -632,6 +633,8 @@ export class CngxTreeSelect<T = unknown>
   /** @internal */ readonly resolvedId = this.core.resolvedId;
   /** @internal Accessible name of the `role="tree"` panel body. */
   readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
+  /** @internal */
+  protected readonly resolvedPlaceholder = this.core.resolvedPlaceholder;
   /** @internal The tree's active descendant matches values like the selection does. */
   readonly adCompareWith = computed<(a: T, b: T) => boolean>(() => {
     const keyFn = this.keyFn();

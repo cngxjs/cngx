@@ -42,8 +42,13 @@ export interface CngxChartRenderer {
   readonly mode: 'svg' | 'canvas';
   /** Attach to the chart host (insert a `<canvas>`, wire teardown, ...). */
   mount(host: HTMLElement, ctx: CngxChartContext): void;
-  /** Paint the current layer geometries. Called on every geometry emission. */
-  paint(geometries: readonly LayerGeometry[]): void;
+  /**
+   * Paint the current layer geometries. Called on every geometry emission.
+   * `elements[i]`, when given, is the host element of the layer that emitted
+   * `geometries[i]`; a backend that resolves CSS custom properties reads them
+   * there, so a per-layer token override reaches it. A backend may ignore it.
+   */
+  paint(geometries: readonly LayerGeometry[], elements?: readonly Element[]): void;
   /** Detach and release resources. */
   destroy(): void;
   /** Drop any cached theme colors (called on layout/theming reflow). Optional. */

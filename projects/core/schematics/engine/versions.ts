@@ -24,7 +24,7 @@ export interface ResolvedVersions {
  * replace every occurrence of the literal in the bundles, so it is joined at
  * runtime: a stamped bundle must still recognise the placeholder.
  */
-export const PLACEHOLDER_VERSION = ['0.0.0', 'PLACEHOLDER'].join('-');
+const PLACEHOLDER_VERSION = ['0.0.0', 'PLACEHOLDER'].join('-');
 
 /** Whether `version` is the placeholder of an unstamped local build, which no registry serves. */
 export function isUnstampedVersion(version: string): boolean {

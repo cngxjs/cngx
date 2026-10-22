@@ -53,11 +53,14 @@ import {
   sameNumberArr,
   slotContextEqual,
 } from './equal-helpers';
-import { CNGX_CHART_LAYER, type LayerGeometry } from '../layers/chart-layer';
+import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from '../layers/chart-layer';
 import { createChartRendererController } from '../renderer/chart-renderer-controller';
+import { forcedSeriesSteps } from '../renderer/forced-series';
 import { CNGX_CHART_RENDERER_FACTORY } from '../renderer/renderer-factory';
 import { CNGX_CHART_RENDERER_THRESHOLD } from '../renderer/renderer-threshold';
 
+/** @internal `Node.ELEMENT_NODE`, without reaching for the DOM global on the server. */
+const ELEMENT_NODE = 1;
 /** @internal */
 const NOOP_SCALE: ScaleFn<XScaleInput> = () => 0;
 /** @internal */
@@ -553,6 +556,22 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   private readonly axes = contentChildren(CNGX_CHART_AXIS, { descendants: true });
   private readonly thresholds = contentChildren(CngxThreshold, { descendants: true });
   private readonly layers = contentChildren(CNGX_CHART_LAYER, { descendants: true });
+  // Same predicate and order as `layers`: node i hosts layer i. The
+  // Canvas backend resolves per-layer tokens against these elements. A
+  // custom layer on an `<ng-container>` has a comment node as its host,
+  // which has no computed style, so it reads the chart host instead.
+  private readonly layerHosts = contentChildren(CNGX_CHART_LAYER, {
+    descendants: true,
+    read: ElementRef,
+  });
+  private readonly layerElements = computed<readonly Element[]>(
+    () =>
+      this.layerHosts().map((r) => {
+        const node = r.nativeElement as Node;
+        return node.nodeType === ELEMENT_NODE ? (node as Element) : this.hostEl.nativeElement;
+      }),
+    { equal: sameItemsArr },
+  );
   protected readonly i18n = injectChartI18n();
   protected readonly dataTableId = nextUid('cngx-chart-data-table');
   protected readonly hatchId = nextUid('cngx-chart-hatch');
@@ -721,6 +740,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
       ctx: this,
       mode: this.renderMode,
       geometries: this.geometries,
+      layerElements: this.layerElements,
       factory: this.rendererFactory,
       destroyRef: this.destroyRef,
     });
@@ -958,6 +978,21 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
     () => this.layers().map((l) => l.geometry()),
     { equal: sameItemsArr },
   );
+
+  /**
+   * Forced-colors series step per layer, the rule the Canvas backend
+   * paints by. Element-wise guarded: a data tick re-emits the same steps,
+   * so the layers' `data-cngx-series-step` bindings stay untouched.
+   */
+  private readonly seriesSteps = computed(() => forcedSeriesSteps(this.geometries()), {
+    equal: sameItemsArr,
+  });
+
+  /** See {@link CngxChartContext.seriesStepOf}. */
+  seriesStepOf(layer: CngxChartLayer): number | null {
+    const index = this.layers().indexOf(layer);
+    return index < 0 ? null : (this.seriesSteps()[index] ?? null);
+  }
 
   protected readonly viewBox = computed(() => {
     const { width, height } = this.dimensions();

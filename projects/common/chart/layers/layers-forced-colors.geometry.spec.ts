@@ -43,18 +43,38 @@ const SCHEMES = ['light', 'dark'] as const;
   encapsulation: ViewEncapsulation.None,
   template: `
     <cngx-chart class="lines" [data]="[1, 3, 2, 4]" [width]="240" [height]="120" aria-label="lines">
-      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]" [grid]="true" label="Units"></svg:g>
+      <svg:g
+        cngxAxis
+        position="left"
+        type="linear"
+        [domain]="[0, 10]"
+        [grid]="true"
+        label="Units"
+      ></svg:g>
       <svg:g cngxLine></svg:g>
       <svg:g cngxLine [data]="[2, 4, 3, 5]" [color]="'rgb(200, 0, 0)'"></svg:g>
       <svg:g cngxThreshold [value]="8" [dashed]="true"></svg:g>
       <svg:g cngxLine [data]="[3, 5, 4, 6]"></svg:g>
       <svg:g cngxLine [data]="[4, 6, 5, 7]"></svg:g>
-      <svg:g cngxLine [data]="[5, 7, 6, 8]" [points]="'always'"></svg:g>
+      <svg:g cngxLine [data]="[5, 7, 6, 8]" [color]="'rgb(200, 0, 0)'" [points]="'always'"></svg:g>
     </cngx-chart>
     <cngx-chart class="areas" [data]="[1, 3, 2, 4]" [width]="240" [height]="120" aria-label="area">
       <svg:g cngxArea [color]="'rgb(200, 0, 0)'" [points]="'always'"></svg:g>
       <svg:g cngxLine></svg:g>
       <svg:g cngxLine [data]="[2, 4, 3, 5]"></svg:g>
+    </cngx-chart>
+    <cngx-chart
+      class="wrapped"
+      [data]="[1, 3, 2, 4]"
+      [width]="240"
+      [height]="120"
+      aria-label="wrapped"
+    >
+      <svg:g cngxLine></svg:g>
+      <svg:g>
+        <svg:g cngxLine [data]="[2, 4, 3, 5]"></svg:g>
+      </svg:g>
+      <svg:g cngxLine [data]="[3, 5, 4, 6]"></svg:g>
     </cngx-chart>
     <cngx-chart class="bars" [data]="[8, 6, 9]" [width]="240" [height]="120" aria-label="bars">
       <svg:g cngxAxis position="bottom" type="band" [domain]="['a', 'b', 'c']"></svg:g>
@@ -70,13 +90,26 @@ const SCHEMES = ['light', 'dark'] as const;
       <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
       <svg:g cngxScatter [x]="index" [y]="value" [radius]="5"></svg:g>
       <svg:g cngxLine [data]="[2, 4, 3]"></svg:g>
-      <svg:g cngxScatter [data]="[3, 5, 4]" [x]="index" [y]="value" [radius]="5" [color]="'rgb(200, 0, 0)'"></svg:g>
+      <svg:g
+        cngxScatter
+        [data]="[3, 5, 4]"
+        [x]="index"
+        [y]="value"
+        [radius]="5"
+        [color]="'rgb(200, 0, 0)'"
+      ></svg:g>
       <svg:g cngxScatter [data]="[4, 6, 5]" [x]="index" [y]="value" [radius]="5"></svg:g>
     </cngx-chart>
     <cngx-chart class="marks" [data]="[1, 3, 2]" [width]="240" [height]="120" aria-label="marks">
       <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
       <svg:g cngxBand [from]="2" [to]="4" label="zone" [color]="'rgb(200, 0, 0)'"></svg:g>
-      <svg:g cngxThreshold [value]="6" [label]="'limit'" [dashed]="true" [color]="'rgb(200, 0, 0)'"></svg:g>
+      <svg:g
+        cngxThreshold
+        [value]="6"
+        [label]="'limit'"
+        [dashed]="true"
+        [color]="'rgb(200, 0, 0)'"
+      ></svg:g>
     </cngx-chart>
     <div class="paired">
       <cngx-chart [data]="[4, 6, 5]" [width]="240" [height]="120" aria-label="paired">
@@ -168,9 +201,26 @@ describe.each(SCHEMES)('chart series under forced colors, %s', (scheme) => {
       }
     });
 
+    it('point markers fill CanvasText, the inline [color] included', async () => {
+      const root = await mountForced();
+      const point = one(root, '.lines .cngx-line__point');
+      expect((point as SVGElement).style.fill).not.toBe('');
+      expect(computedValue(point, 'fill')).toBe(probe(root, 'canvastext'));
+    });
+
+    it('count a series wrapped in an extra <svg:g> in layer order', async () => {
+      const root = await mountForced();
+      const dashes = all(root, '.wrapped .cngx-line').map((l) =>
+        computedValue(l, 'stroke-dasharray'),
+      );
+      expect(dashes).toEqual(['none', '6px, 3px', '0.1px, 4px']);
+    });
+
     it('cycle solid, dashed, dotted, dash-dot by series index, skipping the threshold', async () => {
       const root = await mountForced();
-      const dashes = all(root, '.lines .cngx-line').map((l) => computedValue(l, 'stroke-dasharray'));
+      const dashes = all(root, '.lines .cngx-line').map((l) =>
+        computedValue(l, 'stroke-dasharray'),
+      );
       expect(dashes).toEqual(['none', '6px, 3px', '0.1px, 4px', '8px, 3px, 0.1px, 3px', 'none']);
     });
   });
@@ -181,12 +231,23 @@ describe.each(SCHEMES)('chart series under forced colors, %s', (scheme) => {
       const area = one(root, '.areas .cngx-area');
       expect(computedValue(area, 'fill')).toBe(probe(root, 'canvastext'));
       expect(computedValue(area, 'fill-opacity')).toBe('0.18');
-      expect(computedValue(one(root, '.areas .cngx-area__point'), 'fill')).toBe(probe(root, 'canvastext'));
+      expect(computedValue(one(root, '.areas .cngx-area__point'), 'fill')).toBe(
+        probe(root, 'canvastext'),
+      );
+    });
+
+    it('point markers fill CanvasText, the inline [color] included', async () => {
+      const root = await mountForced();
+      const point = one(root, '.areas .cngx-area__point');
+      expect((point as SVGElement).style.fill).not.toBe('');
+      expect(computedValue(point, 'fill')).toBe(probe(root, 'canvastext'));
     });
 
     it('do not count as a series: the lines after an area start the cycle', async () => {
       const root = await mountForced();
-      const dashes = all(root, '.areas .cngx-line').map((l) => computedValue(l, 'stroke-dasharray'));
+      const dashes = all(root, '.areas .cngx-line').map((l) =>
+        computedValue(l, 'stroke-dasharray'),
+      );
       expect(dashes).toEqual(['none', '6px, 3px']);
     });
   });
@@ -213,7 +274,9 @@ describe.each(SCHEMES)('chart series under forced colors, %s', (scheme) => {
       expect(computedValue(bars[4], 'fill')).toBe(ink);
       const second = barsOf(root, 1);
       expect(second).toHaveLength(3);
-      expect(new Set(second.map((b) => computedValue(b, 'fill')))).toEqual(new Set([computedValue(bars[1], 'fill')]));
+      expect(new Set(second.map((b) => computedValue(b, 'fill')))).toEqual(
+        new Set([computedValue(bars[1], 'fill')]),
+      );
     });
 
     it('reference hatch patterns of their own chart, with ink stripes on a Canvas gap', async () => {
@@ -224,8 +287,12 @@ describe.each(SCHEMES)('chart series under forced colors, %s', (scheme) => {
         const id = /url\("#(.+)"\)/.exec(computedValue(bar, 'fill'))?.[1] ?? '';
         const pattern = chart.querySelector(`svg > defs > pattern[id="${id}"]`);
         expect(pattern).not.toBeNull();
-        expect(computedValue(one(pattern as Element, '.cngx-chart__hatch-ink'), 'fill')).toBe(probe(root, 'canvastext'));
-        expect(computedValue(one(pattern as Element, '.cngx-chart__hatch-gap'), 'fill')).toBe(probe(root, 'canvas'));
+        expect(computedValue(one(pattern as Element, '.cngx-chart__hatch-ink'), 'fill')).toBe(
+          probe(root, 'canvastext'),
+        );
+        expect(computedValue(one(pattern as Element, '.cngx-chart__hatch-gap'), 'fill')).toBe(
+          probe(root, 'canvas'),
+        );
       }
       const otherIds = all(root, '.lines svg > defs > pattern').map((p) => p.id);
       const ownIds = all(chart, 'svg > defs > pattern').map((p) => p.id);
@@ -248,7 +315,9 @@ describe.each(SCHEMES)('chart series under forced colors, %s', (scheme) => {
       expect(computedValue(dot(2), 'stroke')).toBe(ink);
       expect(computedValue(dot(3), 'fill')).toMatch(/^url\(".*-horizontal"\)$/);
       expect(computedValue(dot(3), 'stroke')).toBe(ink);
-      expect(new Set(all(series[2], '.cngx-scatter').map((d) => computedValue(d, 'fill'))).size).toBe(1);
+      expect(
+        new Set(all(series[2], '.cngx-scatter').map((d) => computedValue(d, 'fill'))).size,
+      ).toBe(1);
     });
   });
 
@@ -314,7 +383,9 @@ describe.each(SCHEMES)('chart series under forced colors, %s', (scheme) => {
     it('give legend entry N and series N the same step, whatever the series kind', async () => {
       const root = await mountForced();
       const canvas = probe(root, 'canvas');
-      const swatches = all(root, '.paired .cngx-chart-legend__swatch').map((s) => swatchStep(s, canvas));
+      const swatches = all(root, '.paired .cngx-chart-legend__swatch').map((s) =>
+        swatchStep(s, canvas),
+      );
       const series = all(root, '.paired .cngx-chart-series').map((g) => seriesStep(g, canvas));
       expect(swatches).toEqual([1, 2, 3, 4, 1]);
       expect(series).toEqual(swatches);
@@ -333,9 +404,13 @@ describe('chart series without forced colors', () => {
     expect(computedValue(bars[1], 'fill')).toBe('rgb(200, 0, 0)');
     expect(bars.map((b) => computedValue(b, 'fill')).some((f) => f.startsWith('url('))).toBe(false);
     expect(computedValue(bars[2], 'stroke')).toBe('none');
-    expect(computedValue(one(root, '.marks .cngx-threshold__line'), 'stroke')).toBe('rgb(200, 0, 0)');
+    expect(computedValue(one(root, '.marks .cngx-threshold__line'), 'stroke')).toBe(
+      'rgb(200, 0, 0)',
+    );
     expect(computedValue(one(root, '.marks .cngx-band__rect'), 'fill')).toBe('rgb(200, 0, 0)');
     expect(computedValue(one(root, '.lines .cngx-axis__grid-line'), 'stroke-opacity')).toBe('0.6');
+    expect(computedValue(one(root, '.lines .cngx-line__point'), 'fill')).toBe('rgb(200, 0, 0)');
+    expect(computedValue(one(root, '.areas .cngx-area__point'), 'fill')).toBe('rgb(200, 0, 0)');
     const dots = all(root, '.points .cngx-scatter');
     expect(computedValue(dots[3], 'fill')).toBe('rgb(200, 0, 0)');
     expect(dots.some((d) => computedValue(d, 'fill').startsWith('url('))).toBe(false);

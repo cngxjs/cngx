@@ -1,8 +1,12 @@
 import {
+  afterRenderEffect,
   ChangeDetectionStrategy,
   Component,
   computed,
+  ElementRef,
+  inject,
   input,
+  signal,
   ViewEncapsulation,
 } from '@angular/core';
 import { injectChartContext, type CngxChartPlotArea } from '../chart/chart-context';
@@ -26,20 +30,18 @@ const AXIS_LABEL_OFFSET_BLOCK = 36;
  * The declared default of `--cngx-axis-font-size` (see the tick-label
  * rule in `styles` below), in viewBox user units.
  *
- * Duplicated here because {@link CngxAxis.reservation} is arithmetic
- * over label strings and reads nothing from the DOM - resolving the
- * custom property would mean a `getComputedStyle` call in the reactive
- * graph. A consumer restyling the property therefore gets tick labels
- * at their size inside a gutter sized for the default; that is the
- * single limitation the chart-area debt register covers.
+ * The gutter arithmetic uses it until the rendered tick label's font
+ * size has been read after the first render, and on the server, where
+ * nothing is read. A consumer restyling the property gets a gutter sized
+ * for the default for one frame, then for the size the label renders at.
  *
  * @internal
  */
 const AXIS_FONT_SIZE = 11;
 
 /**
- * The declared default of `--cngx-axis-axis-label-font-size`. Same
- * no-DOM-read reasoning as {@link AXIS_FONT_SIZE}.
+ * The declared default of `--cngx-axis-axis-label-font-size`, used the
+ * same way as {@link AXIS_FONT_SIZE} until the rendered title is read.
  *
  * @internal
  */
@@ -79,6 +81,15 @@ const CHAR_ADVANCE_RATIO = 0.65;
  * @internal
  */
 const LINE_BOX_RATIO = 1.5;
+
+/** @internal Computed font size of `el` in px, or `null` when absent or unresolved. */
+function readFontPx(el: Element | null): number | null {
+  if (!el) {
+    return null;
+  }
+  const px = parseFloat(getComputedStyle(el).fontSize);
+  return Number.isFinite(px) && px > 0 ? px : null;
+}
 
 /** @internal */
 interface AxisLabelGeometry {
@@ -300,6 +311,14 @@ export class CngxAxis implements CngxChartAxis {
 
   private readonly ctx = injectChartContext('cngxAxis');
   private readonly locale = injectLocale();
+  private readonly host = inject<ElementRef<Element>>(ElementRef);
+
+  /** Rendered font size of a tick label, `null` until read (and on the server). */
+  private readonly tickFontPx = signal<number | null>(null);
+  /** Rendered font size of the axis title, `null` until read. */
+  private readonly titleFontPx = signal<number | null>(null);
+  private readonly fontSize = computed(() => this.tickFontPx() ?? AXIS_FONT_SIZE);
+  private readonly titleFontSize = computed(() => this.titleFontPx() ?? AXIS_LABEL_FONT_SIZE);
 
   /**
    * The bound `[format]`, or the default tick formatter bound to the app
@@ -370,6 +389,34 @@ export class CngxAxis implements CngxChartAxis {
     },
   );
 
+  private readonly hasTicks = computed(() => this.tickValues().length > 0);
+
+  constructor() {
+    // Font-size probe for the gutter arithmetic. Reads the computed
+    // `font-size` of the rendered labels, so `rem` / `em` / `calc()` in the
+    // custom properties resolve. Re-runs when labels first appear, a title
+    // is added or removed, or the chart resizes; it never reads the signals
+    // it writes or the reservation they feed, so the extra render a new
+    // size causes ends the cycle. Browser-only (afterRender never runs on
+    // the server); jsdom resolves no `var()`, a NaN read keeps the default.
+    afterRenderEffect({
+      read: () => {
+        this.hasTicks();
+        this.axisLabel();
+        this.ctx.dimensions();
+        const host = this.host.nativeElement;
+        const tick = readFontPx(host.querySelector('.cngx-axis__tick-label'));
+        if (tick !== null) {
+          this.tickFontPx.set(tick);
+        }
+        const title = readFontPx(host.querySelector('.cngx-axis__axis-label'));
+        if (title !== null) {
+          this.titleFontPx.set(title);
+        }
+      },
+    });
+  }
+
   /**
    * How far this axis's decoration extends perpendicular to its own
    * line, in viewBox user units. The parent chart reads it to size the
@@ -389,10 +436,14 @@ export class CngxAxis implements CngxChartAxis {
    *
    * Character width is an estimate ({@link CHAR_ADVANCE_RATIO}), which
    * is the one value here that is not derived from state the axis
-   * owns. Everything else comes from {@link tickValues} and
-   * {@link format}, which the component already computes to render the
-   * labels themselves - so this reads no DOM, measures no text, and
-   * returns the same number under SSR as in the browser.
+   * owns. The font size it multiplies is the size the tick label and the
+   * title render at, read once per axis after render (the declared
+   * defaults until then and on the server, so SSR and the first frame
+   * agree and an override moves the gutter one frame later). Everything
+   * else comes from {@link tickValues} and {@link format}, which the
+   * component already computes to render the labels themselves - so this
+   * measures no text. A font-size custom property changed at runtime with
+   * no resize and no re-render of the axis is not picked up.
    *
    * Acyclic by construction: {@link tickValues} reads `domain` /
    * `ticks` / `type` and never the scale, so
@@ -402,12 +453,12 @@ export class CngxAxis implements CngxChartAxis {
   readonly reservation = computed<number>(() => {
     const horizontal = this.position() === 'top' || this.position() === 'bottom';
 
-    const labelExtent = horizontal ? AXIS_FONT_SIZE * LINE_BOX_RATIO : this.widestTickLabel();
+    const labelExtent = horizontal ? this.fontSize() * LINE_BOX_RATIO : this.widestTickLabel();
     const tickRoom = TICK_LENGTH + LABEL_OFFSET + labelExtent;
 
     const titleRoom = this.axisLabel()
       ? (horizontal ? AXIS_LABEL_OFFSET_INLINE : AXIS_LABEL_OFFSET_BLOCK) +
-        AXIS_LABEL_FONT_SIZE * LINE_BOX_RATIO
+        this.titleFontSize() * LINE_BOX_RATIO
       : 0;
 
     // Whole user units, rounded up: the estimate is already an
@@ -438,7 +489,7 @@ export class CngxAxis implements CngxChartAxis {
    */
   readonly crossReservation = computed<number>(() => {
     const horizontal = this.position() === 'top' || this.position() === 'bottom';
-    const extent = horizontal ? this.widestTickLabel() : AXIS_FONT_SIZE * LINE_BOX_RATIO;
+    const extent = horizontal ? this.widestTickLabel() : this.fontSize() * LINE_BOX_RATIO;
     return Math.ceil(extent / 2);
   });
 
@@ -449,7 +500,7 @@ export class CngxAxis implements CngxChartAxis {
    * only its cross-axis overhang depends on the strings.
    */
   private readonly widestTickLabel = computed<number>(
-    () => this.longestTickLabel() * AXIS_FONT_SIZE * CHAR_ADVANCE_RATIO,
+    () => this.longestTickLabel() * this.fontSize() * CHAR_ADVANCE_RATIO,
   );
 
   /**

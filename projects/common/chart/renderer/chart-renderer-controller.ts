@@ -17,6 +17,12 @@ export interface ChartRendererControllerDeps {
   readonly ctx: CngxChartContext;
   readonly mode: Signal<'svg' | 'canvas'>;
   readonly geometries: Signal<readonly LayerGeometry[]>;
+  /**
+   * Host element of each layer, in the order of {@link geometries}. Passed to
+   * `paint()` as read, never tracked: a layer added, removed or reordered
+   * already emits new geometries.
+   */
+  readonly layerElements?: Signal<readonly Element[]>;
   readonly factory: CngxChartRendererFactory;
   readonly destroyRef: DestroyRef;
 }
@@ -90,7 +96,7 @@ export function createChartRendererController(
         forcedColors: forced,
       });
       current.mount(deps.host, deps.ctx);
-      current.paint(deps.geometries());
+      current.paint(deps.geometries(), deps.layerElements?.());
     });
   });
 
@@ -110,7 +116,7 @@ export function createChartRendererController(
         lastDark = nextDark;
         current?.invalidateColorCache?.();
       }
-      current?.paint(geometries);
+      current?.paint(geometries, deps.layerElements?.());
     });
   });
 
