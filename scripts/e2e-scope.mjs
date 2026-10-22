@@ -17,7 +17,8 @@
 // always runs.
 //
 // A change to what every route is built from (the examples app, the
-// generator, the e2e helpers, themes, the toolchain) runs everything, and so
+// generator, the e2e helpers, the global theming CSS, the toolchain) runs
+// everything, and so
 // does any path this file does not know; only paths that never reach the
 // examples app (docs, specs, other packages and scripts) are left out.
 //
@@ -57,6 +58,9 @@ const IGNORED = [
 ];
 
 const LIB_SOURCE = /^projects\/([^/]+)\//;
+// The global stylesheets: projects/themes/cngx.css imports every lib's
+// theming folder, and examples/src/styles.scss loads it on every route.
+const GLOBAL_THEMING = /^projects\/(?:themes\/|[^/]+\/theming\/)/;
 const STORY = /^examples\/stories\/(.+)\.story\.ts$/;
 // Files a story or the app shell may import by a relative path.
 const EXAMPLE_SOURCE = /^examples\/(?:stories|fixtures)\//;
@@ -99,20 +103,30 @@ export function sourceImports(text) {
   return [...new Set(ts.preProcessFile(text, true, true).importedFiles.map(({ fileName }) => fileName))];
 }
 
+/** The prefixes of a spec's route helper calls; `undefined` when one takes anything but string literals. */
+export function routeCalls(text) {
+  const prefixes = [];
+  for (const [, args] of text.matchAll(ROUTE_CALL)) {
+    const segments = [...args.matchAll(/'([a-z0-9-]+)'/g)].map(([, segment]) => segment);
+    if (segments.length === 0 || args.replace(/'[a-z0-9-]+'|[\s,]/g, '') !== '') {
+      return undefined;
+    }
+    prefixes.push(segments.join('/'));
+  }
+  return prefixes;
+}
+
 /**
  * The route prefixes a spec text visits: the segments of every route helper
  * call and every route literal under a lib. `undefined` when a call takes
  * anything but string literals, so the spec's routes cannot be read.
  */
 export function specRoutes(text, libs) {
-  const routes = [];
-  for (const [, args] of text.matchAll(ROUTE_CALL)) {
-    const segments = [...args.matchAll(/'([a-z0-9-]+)'/g)].map(([, segment]) => segment);
-    if (segments.length === 0 || args.replace(/'[a-z0-9-]+'|[\s,]/g, '') !== '') {
-      return undefined;
-    }
-    routes.push(segments.join('/'));
+  const calls = routeCalls(text);
+  if (calls === undefined) {
+    return undefined;
   }
+  const routes = [...calls];
   for (const [, route] of text.matchAll(ROUTE_LITERAL)) {
     if (libs.includes(route.split('/')[0])) {
       routes.push(route);
@@ -141,6 +155,23 @@ function entryOfFile(entries, file) {
 function resolveRelative(from, name) {
   const base = resolve(dirname(from), name);
   return [base, `${base}.ts`, join(base, 'index.ts')].find((candidate) => candidate.endsWith('.ts') && existsSync(candidate));
+}
+
+/**
+ * The files a relative module name in a story stands for: the path as
+ * written, and the one the generator rewrites it to (scripts/examples-gen,
+ * `rewritePaths`): `../_fixtures/X` at any depth is examples/src/app/_fixtures/X,
+ * any other path naming `fixtures` is the examples/fixtures index.
+ */
+export function storyRelativeTargets(root, from, name) {
+  const fixture = /^(?:\.\.\/)+_fixtures\/(.+)$/.exec(name)?.[1];
+  const rewritten =
+    fixture !== undefined
+      ? resolveRelative(join(root, 'examples', 'src', 'app', '_fixtures', 'x.ts'), `./${fixture}`)
+      : /^(?:\.\.\/)+[^']*fixtures/.test(name)
+        ? join(root, 'examples', 'fixtures', 'index.ts')
+        : undefined;
+  return [...new Set([resolveRelative(from, name), rewritten].filter((path) => path !== undefined && existsSync(path)))];
 }
 
 /**
@@ -207,25 +238,36 @@ export function readGraph(root = ROOT) {
   // What one file reaches on its own: entries, and the files it imports by a
   // relative path inside examples/. A story (or a shell file) also reaches
   // what its symbols name, since the generator imports those.
+  // Only tracked files: the generated routes and feature components are
+  // gitignored, so a local tree follows the same imports the CI checkout has.
+  const tracked = new Set(trackedFiles(root, 'examples'));
   const ownReach = new Map();
-  const reachOfFile = (file, root) => {
-    const key = `${file}${root ? '#root' : ''}`;
+  const unresolved = [];
+  const reachOfFile = (file, story) => {
+    const key = `${file}${story ? '#story' : ''}`;
     if (!ownReach.has(key)) {
       const text = readFileSync(file, 'utf8');
-      const names = root ? [...new Set([...importStrings(text), ...sourceImports(text)])] : sourceImports(text);
+      const names = story ? [...new Set([...importStrings(text), ...sourceImports(text)])] : sourceImports(text);
+      // The DemoSpec type import is the story contract, never part of the page.
       const relatives = names
-        .filter((name) => name.startsWith('.'))
-        .map((name) => resolveRelative(file, name))
-        .filter((path) => path !== undefined && rel(path).startsWith('examples/'));
-      ownReach.set(key, { entries: [...owned(names), ...(root ? named(text) : [])], relatives });
+        .filter((name) => name.startsWith('.') && !name.includes('dev-tools/'))
+        .flatMap((name) => {
+          const targets = story ? storyRelativeTargets(root, file, name) : [resolveRelative(file, name)].filter(Boolean);
+          if (targets.length === 0 && story) {
+            unresolved.push(`${rel(file)}: ${name}`);
+          }
+          return targets;
+        })
+        .filter((path) => tracked.has(rel(path)));
+      ownReach.set(key, { entries: [...owned(names), ...(story ? named(text) : [])], relatives });
     }
     return ownReach.get(key);
   };
   // A file and everything it imports by a relative path, transitively.
-  const reachOf = (file) => {
+  const reachOf = (file, story) => {
     const files = new Set();
     const reached = new Set();
-    const queue = [[file, true]];
+    const queue = [[file, story]];
     while (queue.length > 0) {
       const [next, root] = queue.shift();
       if (files.has(next)) {
@@ -241,19 +283,31 @@ export function readGraph(root = ROOT) {
 
   const routes = {};
   for (const file of walk(join(root, 'examples', 'stories'), (path) => path.endsWith('.story.ts'))) {
-    routes[STORY.exec(rel(file))[1]] = reachOf(file);
+    routes[STORY.exec(rel(file))[1]] = reachOf(file, true);
   }
   const specs = {};
   for (const file of walk(join(root, 'examples', 'e2e'), (path) => path.endsWith('.e2e-spec.ts'))) {
     specs[rel(file)] = specRoutes(readFileSync(file, 'utf8'), libs);
   }
-  const shellFiles = walk(join(root, 'examples', 'src'), (path) => path.endsWith('.ts') && !rel(path).includes('/app/features/'));
-  const shellReach = shellFiles.map(reachOf);
+  const shellReach = shellSources(root).map((file) => reachOf(file, false));
   const shell = {
     entries: new Set(shellReach.flatMap((reach) => [...reach.entries])),
     files: new Set(shellReach.flatMap((reach) => [...reach.files])),
   };
-  return { entries, imports, routes, specs, shell };
+  return { entries, imports, routes, specs, shell, unresolved };
+}
+
+// The tracked files under `dir`, repo-relative.
+function trackedFiles(root, dir) {
+  return execFileSync('git', ['ls-files', '--', dir], { cwd: root, encoding: 'utf8' }).split('\n').filter(Boolean);
+}
+
+// The app shell's own sources: the tracked TypeScript under examples/src.
+function shellSources(root) {
+  return trackedFiles(root, 'examples/src')
+    .filter((path) => path.endsWith('.ts') && !path.endsWith('.spec.ts'))
+    .map((path) => join(root, path))
+    .filter((path) => existsSync(path));
 }
 
 /** `entries` plus every entry that imports one of them, directly or through others. */
@@ -288,7 +342,7 @@ export function scopeFor(files, graph) {
     const story = STORY.exec(file)?.[1];
     const spec = SPEC.test(file) ? file : BASELINE.exec(file)?.[1];
     const lib = LIB_SOURCE.exec(file)?.[1];
-    const entry = lib === undefined || lib === 'themes' ? undefined : entryOfFile(graph.entries, file);
+    const entry = lib === undefined || GLOBAL_THEMING.test(file) ? undefined : entryOfFile(graph.entries, file);
     if (story !== undefined) {
       routes.add(story);
     } else if (spec !== undefined) {

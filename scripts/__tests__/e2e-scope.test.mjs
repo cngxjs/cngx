@@ -1,4 +1,5 @@
-import { dirname, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
@@ -8,7 +9,9 @@ import {
   FULL_SHARDS,
   importStrings,
   readGraph,
+  routeCalls,
   scopeFor,
+  storyRelativeTargets,
   shardsFor,
   sourceImports,
   specFilters,
@@ -69,6 +72,9 @@ describe('scopeFor', () => {
     'package-lock.json',
     'angular.json',
     'projects/themes/cngx.css',
+    'projects/forms/theming/components/cngx-field-skin.css',
+    'projects/common/theming/components/cngx-badge.css',
+    'projects/core/theming/system-tokens.css',
     'examples/src/app/app.ts',
     'examples/e2e/_helpers.ts',
     'examples/e2e-sweep/console-allowlist.ts',
@@ -223,6 +229,50 @@ describe('the scope on this repo', () => {
 
   // A spec route that matches no story would never be selected by a lib
   // change; a spec without readable routes runs on every selection instead.
+  it('resolves every relative import of every story, as the generator rewrites it', () => {
+    expect(real.unresolved).toEqual([]);
+  });
+
+  it('points every route helper call of every spec at a story route', () => {
+    const lost = Object.keys(real.specs).flatMap((path) =>
+      (routeCalls(readFileSync(join(ROOT, path), 'utf8')) ?? [])
+        .filter((prefix) => !routes.some((route) => covers(prefix, route)))
+        .map((prefix) => `${path}: ${prefix}`),
+    );
+
+    expect(lost).toEqual([]);
+  });
+
+  it('reads the fixture paths of a story the way the generator rewrites them', () => {
+    const story = join(ROOT, 'examples/stories/forms/filter-builder/filter-builder-async-state/x.story.ts');
+
+    expect(storyRelativeTargets(ROOT, story, '../../../fixtures')).toEqual([join(ROOT, 'examples/fixtures/index.ts')]);
+    expect(storyRelativeTargets(ROOT, story, '../../../../../_fixtures/demo-mount-counter.component')).toEqual([
+      join(ROOT, 'examples/src/app/_fixtures/demo-mount-counter.component.ts'),
+    ]);
+  });
+
+  it('runs a story whose fixture import only resolves through the generator rewrite', () => {
+    expect(scopeFor(['examples/fixtures/filter-builder-fixtures.ts'], real).routes).toContain(
+      'forms/filter-builder/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container',
+    );
+  });
+
+  // projects/themes/cngx.css pulls every lib's theming folder into the
+  // global stylesheet, which every route loads.
+  it.each([
+    'projects/forms/theming/components/cngx-field-skin.css',
+    'projects/common/theming/components/cngx-badge.css',
+    'projects/data-display/theming/system-tokens.css',
+    'projects/ui/theming/system-tokens.css',
+  ])('runs everything for the global theming file %s', (file) => {
+    expect(scopeFor([file], real)).toEqual({ mode: 'all', reason: file });
+  });
+
+  it('reads the same app shell as a CI checkout, without the generated routes', () => {
+    expect([...real.shell.files].some((file) => file.includes('/app/features/') || file.endsWith('app.routes.ts'))).toBe(false);
+  });
+
   it('maps every spec to at least one story route, or runs it on every selection', () => {
     const lost = Object.entries(real.specs)
       .filter(([, visits]) => visits !== undefined && visits.length > 0)
