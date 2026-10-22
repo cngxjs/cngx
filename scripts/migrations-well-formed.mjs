@@ -3,6 +3,8 @@
 // Pure, so the rules run against synthetic inputs as well as the real
 // collection (which may hold no hand-written entry at all).
 
+import ts from 'typescript';
+
 // `migration-v<version>` for a release's first migration; a later breaking
 // change in the same release adds `migration-v<version>-<slug>`, so every
 // breaking PR brings its own key. The version comes from the entry, not from
@@ -11,10 +13,7 @@
 const VERSION = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)?$/;
 const SLUG = /^[a-z][a-z0-9-]*$/;
 
-// A spec case that runs the migration: an `it(` and a call through the
-// factory or `createMigration`, not a placeholder.
-const RUNS_MIGRATION = /\bit\(/;
-const NAMES_MIGRATION = /\b(migrate|createMigration)\b/;
+const FACTORIES = new Set(['migrate', 'createMigration']);
 
 const PLACEHOLDER = '.gitkeep';
 
@@ -53,14 +52,59 @@ export function factoryProblems(source) {
   return /export function migrate\(/.test(source) ? [] : ['index.ts exports no migrate factory'];
 }
 
-/** What is wrong with a migration's `index.spec.ts`; `undefined` when the file is missing. */
-export function specProblems(source) {
+// Every call in the file, read from its syntax tree, so a name in a comment
+// or a string never counts.
+function calls(source) {
+  const file = ts.createSourceFile('index.spec.ts', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const found = [];
+  const visit = (node) => {
+    if (ts.isCallExpression(node)) {
+      found.push(node);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+  return found.map((call) => ({
+    callee: ts.isIdentifier(call.expression) ? call.expression.text : call.expression.getText(file),
+    argument: call.arguments[0] !== undefined && ts.isStringLiteralLike(call.arguments[0]) ? call.arguments[0].text : undefined,
+  }));
+}
+
+/**
+ * What is wrong with a migration's `index.spec.ts`; `undefined` when the
+ * file is missing. A spec needs a case (`it` / `test`), a call of `migrate`
+ * or `createMigration` (passing the name along is no run), and a
+ * `readMigrationFixture('<folder>')` call for the migration's own pair.
+ */
+export function specProblems(source, folder) {
   if (source === undefined) {
     return ['index.spec.ts is missing'];
   }
-  return RUNS_MIGRATION.test(source) && NAMES_MIGRATION.test(source)
-    ? []
-    : ['index.spec.ts has no case that runs migrate or createMigration'];
+  const found = calls(source);
+  const problems = [];
+  if (!found.some(({ callee }) => /^(it|test)\b/.test(callee)) || !found.some(({ callee }) => FACTORIES.has(callee))) {
+    problems.push('index.spec.ts has no case that calls migrate or createMigration');
+  }
+  if (!found.some(({ callee, argument }) => callee === 'readMigrationFixture' && argument === folder)) {
+    problems.push(`index.spec.ts never reads its fixture pair through readMigrationFixture('${folder}')`);
+  }
+  return problems;
+}
+
+/**
+ * Every problem of one entry: its key, its factory, its spec and its fixture
+ * pair. `readFile` reads a path under the migrations folder, `readFixture`
+ * a folder under the fixtures folder (path to content, `undefined` when
+ * missing), so the rules run on the real collection and on a self-test one.
+ */
+export function entryProblems(key, entry, { readFile, readFixture }) {
+  const folder = folderOf(key);
+  return [
+    ...keyProblems(key, entry),
+    ...factoryProblems(readFile(`${folder}/index.ts`)),
+    ...specProblems(readFile(`${folder}/index.spec.ts`), folder),
+    ...fixtureProblems(readFixture(`${folder}/before`), readFixture(`${folder}/after`)),
+  ];
 }
 
 /**

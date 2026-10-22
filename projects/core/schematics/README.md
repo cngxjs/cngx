@@ -115,8 +115,9 @@ breaking change adds a migration:
    `<version>-<slug>`, so every breaking PR brings a new key. The guard
    (`scripts/migrations-well-formed.mjs`) derives the key from the entry's
    `version`, so the slug is lowercase letters, digits and hyphens.
-4. A spec next to the entry with a case that runs `migrate` or
-   `createMigration`, and a fixture pair under
+4. A spec next to the entry with a case that calls `migrate` or
+   `createMigration` and reads the pair through
+   `readMigrationFixture('<folder>')`, and a fixture pair under
    `testing/fixtures/migrations/<folder>/{before,after}` holding only the
    files that differ from the stock app; `after` must differ from `before`
    and a `.gitkeep` alone is no fixture. The migration-gate reads only the
