@@ -369,9 +369,6 @@ describe('dist/core/schematics migrations', () => {
   });
 });
 
-// The CLI finds a collection through `require.resolve('<pkg>/package.json')`
-// and fails hard on anything but MODULE_NOT_FOUND, so a package whose
-// `exports` map hides its manifest cannot answer `ng add`.
 describe('the stamped core migrations', () => {
   // The collection publish stamps for a release without a migration of its
   // own, run from the copy that carries the stamped versions.json.
@@ -391,6 +388,9 @@ describe('the stamped core migrations', () => {
   });
 });
 
+// The CLI finds a collection through `require.resolve('<pkg>/package.json')`
+// and fails hard on anything but MODULE_NOT_FOUND, so a package whose
+// `exports` map hides its manifest cannot answer `ng add`.
 describe('every published package as the CLI resolves it', () => {
   let modules;
 
