@@ -45,8 +45,10 @@ export type CngxDirection = 'ltr' | 'rtl';
  * empty or absent is `'ltr'`; `auto` is the root's `:dir(rtl)` match on a
  * browser and `'ltr'` on the server; anything else is `'ltr'` plus a
  * dev-mode CNGX0006 warning, once per distinct value. A root `dir="auto"` is
- * read at construction and once more after the first render, because a
- * client-rendered app has no text yet when the token is first injected. On
+ * decided by the first strong character in tree order, so text in `<head>`
+ * (a `<title>`) wins over the app. Without such text, a client-rendered app
+ * has nothing to decide on when the token is first injected, so the value is
+ * read once more after the first render. On
  * a browser platform it installs a single `MutationObserver` on
  * `documentElement` (`attributeFilter: ['dir']`, no `subtree`) that re-reads
  * on a root flip; `inject(DestroyRef)` disconnects it. In SSR
@@ -119,8 +121,8 @@ function readDocumentDirection(): Signal<CngxDirection> {
     const observer = new MutationObserver(() => direction.set(read()));
     observer.observe(root, { attributes: true, attributeFilter: ['dir'] });
     inject(DestroyRef).onDestroy(() => observer.disconnect());
-    // A client-rendered app has an empty `<app-root>` at construction, so a
-    // root `dir="auto"` is read once more when the first render has run.
+    // Strong text in `<head>` already decided `dir="auto"`; without it the
+    // decision waits for the app's own text, which lands with the first render.
     if (rawDir() === 'auto') {
       afterNextRender(() => direction.set(read()));
     }
