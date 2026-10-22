@@ -28,6 +28,7 @@ import {
   VARIANTS,
   variantPlan,
 } from '../consumer-fixture.mjs';
+import { changedInputs } from '../schematics-consumer-inputs.mjs';
 
 describe('parseAngularSpec', () => {
   it('treats a major or minor as a range and a full version as a pin', () => {
@@ -329,10 +330,11 @@ describe('the consumer-compat workflow', () => {
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
   const workflow = readFileSync(join(root, '.github', 'workflows', 'consumer-compat.yml'), 'utf8');
 
-  it('runs on a pull request that touches the schematics', () => {
-    const pattern = /pattern='([^']+)'/.exec(workflow)?.[1] ?? '';
-    expect(new RegExp(pattern).test('projects/core/schematics/ng-add/index.ts')).toBe(true);
-    expect(new RegExp(pattern).test('projects/forms/select/select.component.css')).toBe(false);
+  it('runs on a pull request that touches the schematics or what builds them, not on the demo app', () => {
+    expect(workflow).toContain('--workflow consumer-compat');
+    expect(changedInputs(['projects/core/schematics/ng-add/index.ts'], 'consumer-compat')).toHaveLength(1);
+    expect(changedInputs(['scripts/build-schematics.mjs'], 'consumer-compat')).toHaveLength(1);
+    expect(changedInputs(['examples/stories/forms/select/single-select/clearable.story.ts'], 'consumer-compat')).toEqual([]);
   });
 
   // The fixture rows are required checks: a path filter on the trigger, or a

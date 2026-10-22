@@ -5,7 +5,14 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { changedInputs, INPUTS, matchesInput } from '../schematics-consumer-inputs.mjs';
+import {
+  changedInputs,
+  INPUTS,
+  matchesEntry,
+  matchesInput,
+  WORKFLOW_INPUTS,
+  workflowInputs,
+} from '../schematics-consumer-inputs.mjs';
 
 /**
  * The schematics-consumer job skips its fixture when no input changed, so a
@@ -61,5 +68,53 @@ describe('schematics-consumer inputs', () => {
 
     expect(workflow).toContain('node scripts/schematics-consumer-inputs.mjs --base');
     expect(workflow).not.toMatch(/^\s*paths:/m);
+  });
+
+  it.each(Object.entries(WORKFLOW_INPUTS).flatMap(([workflow, entries]) => entries.map((entry) => [workflow, entry])))(
+    '%s adds %o, which matches a tracked file',
+    (_workflow, entry) => {
+      expect(tracked.some((file) => matchesEntry(entry, file))).toBe(true);
+    },
+  );
+
+  it('runs each workflow on its own file only', () => {
+    expect(changedInputs(['.github/workflows/consumer-compat.yml'])).toEqual([]);
+    expect(changedInputs(['.github/workflows/consumer-compat.yml'], 'consumer-compat')).toHaveLength(1);
+    expect(changedInputs(['.github/workflows/schematics-consumer.yml'], 'consumer-compat')).toEqual([]);
+    expect(() => workflowInputs('nightly')).toThrow(/Unknown workflow "nightly"/);
+  });
+});
+
+describe('consumer-compat inputs', () => {
+  // The paths the workflow's own pattern covered before it read this list.
+  const EARLIER_PATTERN = [
+    'projects/core/package.json',
+    'projects/forms/schematics/ng-add/index.ts',
+    'scripts/consumer-fixture.mjs',
+    'scripts/pack-libs.mjs',
+    'scripts/peer-deps-guard.mjs',
+    '.github/workflows/consumer-compat.yml',
+  ];
+  // A change to how the libs are built, stamped or installed, with no
+  // schematic source or lib manifest in it.
+  const BUILD_ONLY = [
+    'scripts/build-schematics.mjs',
+    'scripts/publish.mjs',
+    'scripts/schematics-externals.mjs',
+    'projects/common/a11y/live-region.ts',
+    'package.json',
+    'package-lock.json',
+  ];
+
+  it.each([...EARLIER_PATTERN, ...BUILD_ONLY])('runs the fixture rows on a change to %s', (file) => {
+    expect(changedInputs([file], 'consumer-compat')).toEqual([file]);
+  });
+
+  it('is what the changes job reads, in place of a pattern of its own', () => {
+    const workflow = readFileSync(join(ROOT, '.github', 'workflows', 'consumer-compat.yml'), 'utf8');
+
+    expect(workflow).toContain('node scripts/schematics-consumer-inputs.mjs --base "$BASE_SHA" --workflow consumer-compat');
+    expect(workflow).toContain('relevant: ${{ steps.filter.outputs.changed }}');
+    expect(workflow).not.toMatch(/grep -E/);
   });
 });

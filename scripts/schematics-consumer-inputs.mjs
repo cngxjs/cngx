@@ -1,16 +1,18 @@
 #!/usr/bin/env node
-// Usage (the schematics-consumer workflow's first step):
+// Usage (the first step of the schematics-consumer job and of the
+// consumer-compat `changes` job):
 //   node scripts/schematics-consumer-inputs.mjs --base origin/main
+//   node scripts/schematics-consumer-inputs.mjs --base origin/main --workflow consumer-compat
 //
-// The schematics-consumer job is a required check, so it runs on every pull
-// request and decides inside the job whether its fixture has to run. This
-// file is the one list of what the fixture reads: the schematics, the lib
-// manifests, the release scripts, the workspace config and every library
-// source the onboarded app compiles against (renaming an export the
-// onboarding writes, such as `provideA11yPreferences`, must run the job).
-// scripts/__tests__/schematics-consumer-inputs.test.mjs keeps it in sync with
-// the scripts' import graph. Prints and writes `changed=true|false` to
-// $GITHUB_OUTPUT when set.
+// Both workflows carry required checks, so they run on every pull request
+// and decide inside the job whether the fixture has to run. This file is the
+// one list of what the fixture reads: the schematics, the lib manifests, the
+// release scripts, the workspace config and every library source the
+// onboarded app compiles against (renaming an export the onboarding writes,
+// such as `provideA11yPreferences`, must run the job). Each workflow adds its
+// own file. scripts/__tests__/schematics-consumer-inputs.test.mjs keeps the
+// list in sync with the scripts' import graph. Prints and writes
+// `changed=true|false` to $GITHUB_OUTPUT when set.
 
 import { execFileSync } from 'node:child_process';
 import { appendFileSync } from 'node:fs';
@@ -28,13 +30,20 @@ export const INPUTS = [
   { include: 'scripts/publish.mjs' },
   { include: 'scripts/cngx-libs.mjs' },
   { include: 'scripts/schematics-consumer-inputs.mjs' },
-  { include: '.github/workflows/schematics-consumer.yml' },
   { include: 'package.json' },
   { include: 'package-lock.json' },
   { include: 'angular.json' },
   { include: 'tsconfig*.json' },
   { include: 'projects/**', exclude: ['**/*.spec.ts', '**/*.md', 'projects/testing/**'] },
 ];
+
+/** What each workflow reads beyond `INPUTS`: its own file, and for consumer-compat the peer guard it always ran on. */
+export const WORKFLOW_INPUTS = {
+  'schematics-consumer': [{ include: '.github/workflows/schematics-consumer.yml' }],
+  'consumer-compat': [{ include: '.github/workflows/consumer-compat.yml' }, { include: 'scripts/peer-deps-guard.mjs' }],
+};
+
+const DEFAULT_WORKFLOW = 'schematics-consumer';
 
 function globToRegExp(glob) {
   let source = '';
@@ -52,38 +61,53 @@ function globToRegExp(glob) {
   return new RegExp(`^${source}$`);
 }
 
-const COMPILED = INPUTS.map(({ include, exclude = [] }) => ({
-  include: globToRegExp(include),
-  exclude: exclude.map(globToRegExp),
-}));
+/** The input entries of `workflow`: the shared list plus its own. */
+export function workflowInputs(workflow = DEFAULT_WORKFLOW) {
+  const own = WORKFLOW_INPUTS[workflow];
+  if (own === undefined) {
+    throw new Error(`Unknown workflow "${workflow}". Available: ${Object.keys(WORKFLOW_INPUTS).join(', ')}`);
+  }
+  return [...INPUTS, ...own];
+}
 
 /** Whether one input entry covers a repo-relative path. */
+export function matchesEntry({ include, exclude = [] }, path) {
+  return globToRegExp(include).test(path) && !exclude.some((pattern) => globToRegExp(pattern).test(path));
+}
+
+/** Whether entry `index` of `INPUTS` covers a repo-relative path. */
 export function matchesInput(index, path) {
-  const { include, exclude } = COMPILED[index];
-  return include.test(path) && !exclude.some((pattern) => pattern.test(path));
+  return matchesEntry(INPUTS[index], path);
 }
 
-/** The repo-relative paths among `files` the fixture reads. */
-export function changedInputs(files) {
-  return files.filter((file) => INPUTS.some((_entry, index) => matchesInput(index, file)));
+/** The repo-relative paths among `files` the fixture of `workflow` reads. */
+export function changedInputs(files, workflow = DEFAULT_WORKFLOW) {
+  const entries = workflowInputs(workflow);
+  return files.filter((file) => entries.some((entry) => matchesEntry(entry, file)));
 }
 
-function parseBase(argv) {
-  const at = argv.indexOf('--base');
-  const base = at === -1 ? undefined : argv[at + 1];
-  if (base === undefined) {
-    console.error('Usage: node scripts/schematics-consumer-inputs.mjs --base <ref>');
+const USAGE = `Usage: node scripts/schematics-consumer-inputs.mjs --base <ref> [--workflow <${Object.keys(WORKFLOW_INPUTS).join(' | ')}>]`;
+
+function parseArgs(argv) {
+  const valueOf = (flag) => {
+    const at = argv.indexOf(flag);
+    return at === -1 ? undefined : argv[at + 1];
+  };
+  const base = valueOf('--base');
+  const workflow = valueOf('--workflow') ?? DEFAULT_WORKFLOW;
+  if (base === undefined || !(workflow in WORKFLOW_INPUTS)) {
+    console.error(USAGE);
     process.exit(1);
   }
-  return base;
+  return { base, workflow };
 }
 
 function main() {
-  const base = parseBase(process.argv.slice(2));
+  const { base, workflow } = parseArgs(process.argv.slice(2));
   const files = execFileSync('git', ['diff', '--name-only', `${base}...HEAD`], { encoding: 'utf8' })
     .split('\n')
     .filter(Boolean);
-  const changed = changedInputs(files);
+  const changed = changedInputs(files, workflow);
   for (const file of changed) {
     console.log(`input changed: ${file}`);
   }
