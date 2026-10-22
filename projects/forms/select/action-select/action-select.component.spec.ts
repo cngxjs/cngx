@@ -617,3 +617,43 @@ describeSelectBehaviourHost('CngxActionSelect', CngxActionSelect, 'cngx-action-s
   optionSelector: '[cngxOption]',
   readValue: (cmp) => (cmp as { value: () => unknown }).value(),
 });
+
+describe('CngxActionSelect - placeholder falls back to the label', () => {
+  @Component({
+    template: `
+      <cngx-action-select [label]="label()" [placeholder]="placeholder()" [options]="options" />
+    `,
+    imports: [CngxActionSelect],
+  })
+  class PlaceholderHost {
+    readonly options = TAGS;
+    readonly label = signal('Tag');
+    readonly placeholder = signal('');
+  }
+
+  function setup(): {
+    fixture: ReturnType<typeof TestBed.createComponent<PlaceholderHost>>;
+    input: HTMLInputElement;
+  } {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [PlaceholderHost] });
+    const fixture = TestBed.createComponent(PlaceholderHost);
+    flush(fixture);
+    const input = fixture.nativeElement.querySelector(
+      'cngx-action-select input',
+    ) as HTMLInputElement;
+    return { fixture, input };
+  }
+
+  it('shows the label as the input placeholder when no placeholder is set', () => {
+    const { input } = setup();
+    expect(input.placeholder).toBe('Tag');
+  });
+
+  it('shows the placeholder over the label when one is set', () => {
+    const { fixture, input } = setup();
+    fixture.componentInstance.placeholder.set('Pick a tag');
+    flush(fixture);
+    expect(input.placeholder).toBe('Pick a tag');
+  });
+});

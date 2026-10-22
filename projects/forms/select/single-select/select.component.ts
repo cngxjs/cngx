@@ -248,6 +248,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   readonly label = input<string>('');
   readonly options = input<CngxSelectOptionsInput<T>>([] as CngxSelectOptionsInput<T>);
+  /** Trigger text while nothing is selected; falls back to `label` when unset. */
   readonly placeholder = input<string>('');
   readonly disabledInput = input<boolean>(false, { alias: 'disabled' });
   readonly requiredInput = input<boolean>(false, { alias: 'required' });
@@ -584,6 +585,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly virtualWindowStart = this.virtualSetup.virtualWindowStart;
   /** @internal */ protected readonly resolvedId = this.core.resolvedId;
   /** @internal */ protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
+  /** @internal */ protected readonly resolvedPlaceholder = this.core.resolvedPlaceholder;
   /** @internal */ protected readonly resolvedShowSelectionIndicator =
     this.core.resolvedShowSelectionIndicator;
   /** @internal */ protected readonly resolvedSelectionIndicatorVariant =
@@ -674,8 +676,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected readonly triggerText = computed<string>(() => {
-    const fallback = this.placeholder() || this.label();
-    return this.selectedOption()?.label ?? fallback;
+    return this.selectedOption()?.label ?? this.core.resolvedPlaceholder();
   });
 
   private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({

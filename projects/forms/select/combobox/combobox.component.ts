@@ -290,7 +290,10 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** Options in data-driven mode (flat or grouped). */
   readonly options = input<CngxSelectOptionsInput<T>>([] as CngxSelectOptionsInput<T>);
 
-  /** Placeholder rendered inside the input when nothing is selected. */
+  /**
+   * Placeholder rendered inside the input when nothing is selected; falls back
+   * to `label` when unset.
+   */
   readonly placeholder = input<string>('');
 
   /** Disabled state. Merges with `presenter.disabled()`. */
@@ -857,7 +860,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     if (!this.isEmpty()) {
       return '';
     }
-    return this.placeholder() || this.label() || '';
+    return this.core.resolvedPlaceholder();
   });
 
   /** @internal */

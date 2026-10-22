@@ -283,6 +283,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
 
   readonly label = input<string>('');
   readonly options = input<CngxSelectOptionsInput<T>>([] as CngxSelectOptionsInput<T>);
+  /** Trigger text while nothing is selected; falls back to `label` when unset. */
   readonly placeholder = input<string>('');
   readonly disabledInput = input<boolean>(false, { alias: 'disabled' });
   readonly requiredInput = input<boolean>(false, { alias: 'required' });
@@ -653,6 +654,8 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   protected readonly resolvedId = this.core.resolvedId;
   /** @internal */
   protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
+  /** @internal */
+  protected readonly resolvedPlaceholder = this.core.resolvedPlaceholder;
   /** @internal */
   protected readonly resolvedShowSelectionIndicator = this.core.resolvedShowSelectionIndicator;
   /** @internal */

@@ -346,6 +346,12 @@
       contain: inline-size;
     }
 
+    /* Without a value the strip keeps its zero basis but takes no free space,
+       so the input fills the row and the placeholder sits at the inline start. */
+    .cngx-select__chip-list.cngx-combobox__summary[data-empty] {
+      flex-grow: 0;
+    }
+
     .cngx-combobox__clear-all {
       flex: 0 0 auto;
       appearance: none;

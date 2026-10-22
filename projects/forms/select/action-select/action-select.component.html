@@ -38,7 +38,7 @@
       [popover]="pop"
       [closeOnSelect]="true"
       [disabled]="disabled()"
-      [placeholder]="placeholder()"
+      [placeholder]="resolvedPlaceholder()"
       [attr.id]="resolvedId() || null"
       [attr.tabindex]="effectiveTabIndex()"
       [attr.aria-autocomplete]="'list'"

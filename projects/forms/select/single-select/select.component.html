@@ -46,7 +46,7 @@
             "
           />
         } @else {
-          {{ placeholder() || label() }}
+          {{ resolvedPlaceholder() }}
         }
       } @else if (isEmpty()) {
         @if (tpl.placeholder(); as phTpl) {
@@ -57,7 +57,7 @@
             "
           />
         } @else {
-          {{ placeholder() || label() }}
+          {{ resolvedPlaceholder() }}
         }
       } @else {
         {{ triggerText() }}
