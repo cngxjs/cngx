@@ -925,7 +925,11 @@ export class CngxTreeSelect<T = unknown>
   }
 
   private cascadeToggle(node: FlatTreeNode<T>): void {
-    const descendants = this.treeController.descendantsOfValue(node.value);
+    // A disabled descendant keeps whatever state it had: the user cannot
+    // reverse a change on a row they cannot activate.
+    const descendants = this.treeController
+      .descendantsOfValue(node.value)
+      .filter((v) => this.treeController.findByValue(v)?.disabled !== true);
     const allValues = [node.value, ...descendants];
     const previous = untracked(() => [...this.values()]);
     const parentSelected = previous.some((v) => this.membersEqual(v, node.value));

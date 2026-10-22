@@ -190,6 +190,54 @@ describe('CngxTreeSelect', () => {
     );
   });
 
+  it('cascade-toggle selection leaves a disabled descendant unselected', () => {
+    f.host.cascade.set(true);
+    f.host.nodes.set([
+      {
+        value: { id: 'a', name: 'Alpha' },
+        children: [
+          { value: { id: 'a1', name: 'Alpha-1' } },
+          { value: { id: 'a2', name: 'Alpha-2' }, disabled: true },
+        ],
+      },
+      { value: { id: 'b', name: 'Bravo' } },
+    ]);
+    f.fixture.detectChanges();
+    const parent = f.tree.treeController.flatNodes().find((n) => n.value.id === 'a')!;
+    f.tree.handleSelect(parent);
+    f.fixture.detectChanges();
+    expect(
+      f.host
+        .values()
+        .map((v) => v.id)
+        .sort(),
+    ).toEqual(['a', 'a1']);
+  });
+
+  it('cascade-toggle deselection keeps a selected disabled descendant', () => {
+    f.host.cascade.set(true);
+    f.host.nodes.set([
+      {
+        value: { id: 'a', name: 'Alpha' },
+        children: [
+          { value: { id: 'a1', name: 'Alpha-1' } },
+          { value: { id: 'a2', name: 'Alpha-2' }, disabled: true },
+        ],
+      },
+      { value: { id: 'b', name: 'Bravo' } },
+    ]);
+    f.host.values.set([
+      { id: 'a', name: 'Alpha' },
+      { id: 'a1', name: 'Alpha-1' },
+      { id: 'a2', name: 'Alpha-2' },
+    ]);
+    f.fixture.detectChanges();
+    const parent = f.tree.treeController.flatNodes().find((n) => n.value.id === 'a')!;
+    f.tree.handleSelect(parent);
+    f.fixture.detectChanges();
+    expect(f.host.values().map((v) => v.id)).toEqual(['a2']);
+  });
+
   it('cascade-toggle deselection removes parent + descendants that were selected', () => {
     f.host.cascade.set(true);
     f.host.values.set([
