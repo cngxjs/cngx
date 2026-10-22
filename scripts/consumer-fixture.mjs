@@ -29,7 +29,11 @@
 //               CDK it installed must be on the app's Angular major (npm
 //               would otherwise fetch the newest CDK the peers allow); a
 //               second `ng add` changes nothing; the app builds and loads.
-//               Takes --preset like schematics.
+//               Takes --preset like schematics. --add ui runs the shim
+//               `ng add @cngx/ui` instead, after installing @angular/cdk on
+//               the app's major as the docs ask (without it the CLI's
+//               pre-install of @cngx/ui on Angular 21 fetches CDK 22 and
+//               stops with ERESOLVE).
 //   ngmodule    onboarding on an `ng new --standalone=false` app with
 //               routing: the outlets go into the root NgModule and the stock
 //               spec, no starter is written; with --preset full `ng test`
@@ -117,6 +121,7 @@ export function usageText() {
   return [
     'Usage: node scripts/consumer-fixture.mjs --angular <21 | 22 | 21.1.0> [--variant <variant>]',
     `       [--ignore-peers] [--stale-core <tgz | previous>] [--preset <${PRESETS.join(' | ')}>]`,
+    `       [--add <${ONBOARDING_PACKAGES.join(' | ')}>] (onboarding only)`,
     '       [--tarballs <dir>] [--work <dir>]',
     `Variants: ${VARIANTS.join(', ')}`,
   ].join('\n');
@@ -510,6 +515,7 @@ function parseArgs(argv) {
     ignorePeers: false,
     staleCore: null,
     preset: null,
+    add: null,
     work: join(tmpdir(), 'cngx-consumer-compat'),
   };
   for (let i = 0; i < argv.length; i++) {
@@ -521,6 +527,7 @@ function parseArgs(argv) {
       case '--work': args.work = resolve(argv[++i]); break;
       case '--stale-core': args.staleCore = argv[++i]; break;
       case '--preset': args.preset = argv[++i]; break;
+      case '--add': args.add = argv[++i]; break;
       default:
         console.error(`Unknown argument: ${argv[i]}\n${usageText()}`);
         process.exit(1);
@@ -542,7 +549,15 @@ function parseArgs(argv) {
     console.error(`Unknown --preset "${args.preset}". Available: ${PRESETS.join(', ')}`);
     process.exit(1);
   }
-  return { ...args, preset: args.preset ?? DEFAULT_PRESET };
+  if (args.add !== null && args.variant !== 'onboarding') {
+    console.error('--add needs --variant onboarding');
+    process.exit(1);
+  }
+  if (args.add !== null && !ONBOARDING_PACKAGES.includes(args.add)) {
+    console.error(`Unknown --add "${args.add}". Available: ${ONBOARDING_PACKAGES.join(', ')}`);
+    process.exit(1);
+  }
+  return { ...args, preset: args.preset ?? DEFAULT_PRESET, add: args.add ?? 'core' };
 }
 
 function angularVersionsInTree(appDir) {
@@ -743,17 +758,20 @@ function resolveStaleCore(spec, version, sandbox) {
   return join(sandbox, packed.filename);
 }
 
+/** The packages the onboarding variant can `ng add` on the fresh app; core is the documented one. */
+export const ONBOARDING_PACKAGES = ['core', 'ui'];
+
 /** The `ng add` of the onboarding variant. */
-export function onboardingAddArgs(version, preset = DEFAULT_PRESET) {
-  return ['ng', 'add', `@cngx/core@${version}`, ...NG_ADD_FLAGS, ...presetFlags(preset)];
+export function onboardingAddArgs(version, preset = DEFAULT_PRESET, lib = 'core') {
+  return ['ng', 'add', `@cngx/${lib}@${version}`, ...NG_ADD_FLAGS, ...presetFlags(preset)];
 }
 
 /** The onboarding `ng add`, then the same command again, which must change nothing. */
-export function onboardingSteps(version, preset = DEFAULT_PRESET) {
-  const args = onboardingAddArgs(version, preset);
+export function onboardingSteps(version, preset = DEFAULT_PRESET, lib = 'core') {
+  const args = onboardingAddArgs(version, preset, lib);
   return [
-    { label: 'ng add @cngx/core', args, commit: true },
-    { label: 'ng add @cngx/core again', args, expect: 'cngx is already set up; nothing changed.', clean: true },
+    { label: `ng add @cngx/${lib}`, args, commit: true },
+    { label: `ng add @cngx/${lib} again`, args, expect: 'cngx is already set up; nothing changed.', clean: true },
   ];
 }
 
@@ -1049,7 +1067,7 @@ async function runStaleUpdateLeg({ cliSpec, work, version, registryUrl, staleCor
 }
 
 async function main() {
-  const { angular, variant, tarballs, work, ignorePeers, staleCore, preset } = parseArgs(process.argv.slice(2));
+  const { angular, variant, tarballs, work, ignorePeers, staleCore, preset, add } = parseArgs(process.argv.slice(2));
   const { cliSpec, exact } = parseAngularSpec(angular);
   const plan = variantPlan(variant);
   const checks = presetPlan(preset, { standalone: plan.standalone });
@@ -1120,7 +1138,13 @@ async function main() {
   }
   try {
     if (plan.onboarding) {
-      await runSteps(appDir, version, onboardingSteps(version, preset), 'onboarding');
+      if (add !== 'core') {
+        // What the docs ask before any package but core on a fresh app: the
+        // CDK on the app's major, or the CLI's pre-install of the package
+        // fetches the newest CDK the peers allow and stops with ERESOLVE.
+        run('npm', ['install', ...peerInstallSpecs(plan, installedAngular)], { cwd: appDir });
+      }
+      await runSteps(appDir, version, onboardingSteps(version, preset, add), 'onboarding');
       const mismatch = companionMismatch(installedAngular, installedPackageVersion(appDir, '@angular/cdk'));
       if (mismatch !== undefined) {
         throw new Error(`onboarding: ${mismatch}`);

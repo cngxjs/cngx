@@ -27,6 +27,7 @@ import {
   STALE_UPDATE_LIBS,
   staleUpdateSteps,
   answerMismatches,
+  ONBOARDING_PACKAGES,
   plainTerminalText,
   terminalEnv,
   terminalLegs,
@@ -364,6 +365,18 @@ describe('answerMismatches', () => {
   });
 });
 
+describe('onboardingSteps with --add', () => {
+  it('runs the shim ng add of the named package twice', () => {
+    const [first, again] = onboardingSteps('0.2.0', 'full', 'ui');
+
+    expect(ONBOARDING_PACKAGES).toEqual(['core', 'ui']);
+    expect(first.label).toBe('ng add @cngx/ui');
+    expect(first.args.slice(0, 3)).toEqual(['ng', 'add', '@cngx/ui@0.2.0']);
+    expect(again).toMatchObject({ args: first.args, clean: true });
+    expect(onboardingSteps('0.2.0')[0].args[2]).toBe('@cngx/core@0.2.0');
+  });
+});
+
 describe('missingRecordedLibs', () => {
   const record = (libs) => ({ projects: { fixture: { answers: { libs } } } });
 
@@ -438,6 +451,10 @@ describe('the consumer-compat workflow', () => {
   it('proves the fresh-app onboarding on both majors on the full preset', () => {
     expect(workflow).toContain("- { angular: '21', variant: onboarding, args: '--preset full' }");
     expect(workflow).toContain("- { angular: '22', variant: onboarding, args: '--preset full' }");
+  });
+
+  it('proves the shim ng add @cngx/ui the docs name, on the major where the CDK must come first', () => {
+    expect(workflow).toContain("- { angular: '21', variant: onboarding, args: '--add ui --preset full' }");
   });
 
   it('runs the stale core and stale update legs on the full preset on both majors', () => {

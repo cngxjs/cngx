@@ -109,6 +109,10 @@ jobs:
           # plan nothing on a second ng add.
           - { angular: '21', variant: onboarding, args: '--preset full' }
           - { angular: '22', variant: onboarding, args: '--preset full' }
+          # The other path the docs name: ng add @cngx/ui on a fresh app once
+          # the CDK is on the app's major. On 21 the CDK must come first, or
+          # the CLI's pre-install fetches CDK 22 and stops with ERESOLVE.
+          - { angular: '21', variant: onboarding, args: '--add ui --preset full' }
           # The same path on an ng new --standalone=false app with routing:
           # the outlets go into the root NgModule and the stock spec gets
           # the outlet classes and the providers, so ng test still passes.
