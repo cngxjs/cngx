@@ -66,7 +66,7 @@ import {
         [attr.d]="d()"
         [attr.fill]="'none'"
         [style.stroke]="color()"
-        [attr.stroke-width]="strokeWidth()"
+        [style.stroke-width]="strokeWidthStyle()"
         [attr.stroke-linejoin]="'round'"
         [attr.stroke-linecap]="'round'"
       />
@@ -153,6 +153,19 @@ export class CngxLine<T = unknown> implements CngxChartLayer {
   readonly points = input<'auto' | 'always' | 'never'>('auto');
 
   protected readonly ctx = injectChartContext('cngxLine');
+
+  /**
+   * Inline style, not a presentation attribute: the `.cngx-line` class rule
+   * beats an attribute. A number gets `px` because a unitless value is not
+   * portable CSS.
+   */
+  protected readonly strokeWidthStyle = computed<string | null>(() => {
+    const sw = this.strokeWidth();
+    if (typeof sw === 'number') {
+      return `${sw}px`;
+    }
+    return sw;
+  });
 
   private readonly builder = computed<PathBuilder<T>>(() =>
     createPathBuilder<T>({
