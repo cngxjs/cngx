@@ -58,7 +58,10 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   providers: [{ provide: CNGX_CHART_LAYER, useExisting: CngxLine }],
-  host: { class: 'cngx-chart-series' },
+  host: {
+    class: 'cngx-chart-series',
+    '[attr.data-cngx-series-step]': 'seriesStep()',
+  },
   template: `
     @if (ctx.renderSvg()) {
       <svg:path
@@ -66,12 +69,17 @@ import {
         [attr.d]="d()"
         [attr.fill]="'none'"
         [style.stroke]="color()"
-        [attr.stroke-width]="strokeWidth()"
+        [style.stroke-width]="strokeWidthStyle()"
         [attr.stroke-linejoin]="'round'"
         [attr.stroke-linecap]="'round'"
       />
       @for (p of pointMarks(); track $index) {
-        <svg:circle class="cngx-line__point" [attr.cx]="p.cx" [attr.cy]="p.cy" />
+        <svg:circle
+          class="cngx-line__point"
+          [attr.cx]="p.cx"
+          [attr.cy]="p.cy"
+          [style.fill]="color()"
+        />
       }
     }
   `,
@@ -107,24 +115,25 @@ import {
          SVG (preserve-parent-color), so the line kept its colour while the
          legend swatches turn into patterns. The line follows the user palette
          and takes the legend's four-step cycle by series index: solid, dashed,
-         dotted, dash-dot. The index counts the .cngx-chart-series layers
-         (line, bar, scatter) of one chart, so legend entry N and the Nth such
-         layer share a step. !important beats the inline [style.stroke] of the
-         [color] input. */
+         dotted, dash-dot. The index counts the line, bar and scatter layers of
+         one chart in layer order, wrapped or not (data-cngx-series-step), so
+         legend entry N and the Nth such layer share a step. !important beats
+         the inline [style.stroke] of the [color] input and the marker's
+         inline [style.fill]. */
       @media (forced-colors: active) {
         .cngx-line {
           stroke: CanvasText !important;
         }
         .cngx-line__point {
-          fill: CanvasText;
+          fill: CanvasText !important;
         }
-        cngx-chart > svg > :nth-child(4n + 2 of .cngx-chart-series) > .cngx-line {
+        [data-cngx-series-step='1'] > .cngx-line {
           stroke-dasharray: 6 3;
         }
-        cngx-chart > svg > :nth-child(4n + 3 of .cngx-chart-series) > .cngx-line {
+        [data-cngx-series-step='2'] > .cngx-line {
           stroke-dasharray: 0.1 4;
         }
-        cngx-chart > svg > :nth-child(4n + 4 of .cngx-chart-series) > .cngx-line {
+        [data-cngx-series-step='3'] > .cngx-line {
           stroke-dasharray: 8 3 0.1 3;
         }
       }
@@ -148,6 +157,25 @@ export class CngxLine<T = unknown> implements CngxChartLayer {
   readonly points = input<'auto' | 'always' | 'never'>('auto');
 
   protected readonly ctx = injectChartContext('cngxLine');
+
+  /**
+   * Forced-colors series step from the chart's layer order, written to
+   * `data-cngx-series-step` for the dash / hatch cycle in the styles.
+   */
+  protected readonly seriesStep = computed(() => this.ctx.seriesStepOf?.(this) ?? null);
+
+  /**
+   * Inline style, not a presentation attribute: the `.cngx-line` class rule
+   * beats an attribute. A number gets `px`; a string passes through as
+   * written, so it carries its own unit.
+   */
+  protected readonly strokeWidthStyle = computed<string | null>(() => {
+    const sw = this.strokeWidth();
+    if (typeof sw === 'number') {
+      return `${sw}px`;
+    }
+    return sw;
+  });
 
   private readonly builder = computed<PathBuilder<T>>(() =>
     createPathBuilder<T>({

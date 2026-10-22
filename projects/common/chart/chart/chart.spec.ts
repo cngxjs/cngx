@@ -28,7 +28,9 @@ import { CngxLine } from '../layers/line.component';
 import { CngxBar } from '../layers/bar.component';
 import { CngxThreshold } from '../layers/threshold.component';
 import { CngxBand } from '../layers/band.component';
-import { type LayerGeometry } from '../layers/chart-layer';
+import { CngxArea } from '../layers/area.component';
+import { CngxScatter } from '../layers/scatter.component';
+import { CNGX_CHART_LAYER, type LayerGeometry } from '../layers/chart-layer';
 import { type CngxChartRendererFactory } from '../renderer/chart-renderer';
 import { createCanvasRenderer } from '../renderer/canvas-renderer';
 import {
@@ -1862,5 +1864,135 @@ describe('CngxChart - connection copy flip', () => {
     lang.set('en');
     fixture.detectChanges();
     expect(region.textContent?.trim()).toBe('Verbindung wiederhergestellt');
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxChart, CngxLine, CngxArea, CngxBar, CngxThreshold, CngxScatter],
+  template: `
+    <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
+      @if (leading()) {
+        <svg:g cngxLine data-testid="leading"></svg:g>
+      }
+      <svg:g cngxLine data-testid="line"></svg:g>
+      <svg:g cngxArea data-testid="area"></svg:g>
+      <svg:g cngxBar data-testid="bar"></svg:g>
+      <svg:g cngxThreshold [value]="2" data-testid="threshold"></svg:g>
+      <svg:g>
+        <svg:g cngxScatter [x]="xOf" [y]="yOf" data-testid="wrapped-scatter"></svg:g>
+      </svg:g>
+      <svg:g cngxLine data-testid="line-2"></svg:g>
+      <svg:g cngxLine data-testid="line-3"></svg:g>
+    </cngx-chart>
+  `,
+})
+class SeriesStepHost {
+  readonly leading = signal(false);
+  readonly xOf = (_: unknown, i: number): number => i;
+  readonly yOf = (d: unknown): number => Number(d);
+}
+
+describe('CngxChart - forced-colors series step', () => {
+  beforeEach(() => createResizeObserverMock().install(window));
+  afterEach(() => vi.unstubAllGlobals());
+
+  function steps(
+    fixture: ReturnType<typeof TestBed.createComponent<SeriesStepHost>>,
+  ): Record<string, string | null> {
+    const out: Record<string, string | null> = {};
+    for (const el of Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('[data-testid]'),
+    )) {
+      out[el.getAttribute('data-testid') as string] = el.getAttribute('data-cngx-series-step');
+    }
+    return out;
+  }
+
+  it('numbers line, bar and scatter in layer order, wrapped or not, and skips area and threshold', () => {
+    TestBed.configureTestingModule({ imports: [SeriesStepHost] });
+    const fixture = TestBed.createComponent(SeriesStepHost);
+    fixture.detectChanges();
+    expect(steps(fixture)).toEqual({
+      line: '0',
+      area: null,
+      bar: '1',
+      threshold: null,
+      'wrapped-scatter': '2',
+      'line-2': '3',
+      'line-3': '0',
+    });
+  });
+
+  it('shifts the steps when a series is added in front', () => {
+    TestBed.configureTestingModule({ imports: [SeriesStepHost] });
+    const fixture = TestBed.createComponent(SeriesStepHost);
+    fixture.detectChanges();
+    fixture.componentInstance.leading.set(true);
+    fixture.detectChanges();
+    const s = steps(fixture);
+    expect([
+      s['leading'],
+      s['line'],
+      s['bar'],
+      s['wrapped-scatter'],
+      s['line-2'],
+      s['line-3'],
+    ]).toEqual(['0', '1', '2', '3', '0', '1']);
+  });
+});
+
+@Directive({
+  selector: '[testCommentLayer]',
+  standalone: true,
+  providers: [{ provide: CNGX_CHART_LAYER, useExisting: CommentLayer }],
+})
+class CommentLayer {
+  readonly geometry = computed<LayerGeometry>(() => ({
+    kind: 'line',
+    d: 'M 0 0 L 1 1',
+    color: null,
+    strokeWidth: null,
+    fill: 'none',
+  }));
+}
+
+@Component({
+  standalone: true,
+  imports: [CngxChart, CngxLine, CommentLayer],
+  template: `
+    <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100" data-testid="chart">
+      <svg:g cngxLine data-testid="line"></svg:g>
+      <ng-container testCommentLayer></ng-container>
+    </cngx-chart>
+  `,
+})
+class CommentLayerHost {}
+
+describe('CngxChart - layer elements handed to the renderer', () => {
+  beforeEach(() => createResizeObserverMock().install(window));
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('passes each layer host element, and the chart host for a layer on <ng-container>', () => {
+    const painted: (readonly Element[] | undefined)[] = [];
+    const spy: CngxChartRendererFactory = () => ({
+      mode: 'canvas',
+      mount: () => undefined,
+      paint: (_g, elements) => painted.push(elements),
+      destroy: () => undefined,
+    });
+    TestBed.configureTestingModule({
+      imports: [CommentLayerHost],
+      providers: [provideChartRenderer(withChartRendererFactory(spy))],
+    });
+    const fixture = TestBed.createComponent(CommentLayerHost);
+    fixture.detectChanges();
+    TestBed.tick();
+    const root = fixture.nativeElement as HTMLElement;
+    const elements = painted.at(-1);
+    expect(elements).toEqual([
+      root.querySelector('[data-testid="line"]'),
+      root.querySelector('[data-testid="chart"]'),
+    ]);
   });
 });

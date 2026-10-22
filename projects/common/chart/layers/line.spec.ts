@@ -221,3 +221,98 @@ describe('CngxLine [color]', () => {
     );
   });
 });
+
+describe('CngxLine point markers [color]', () => {
+  beforeEach(() => createResizeObserverMock().install(window));
+  afterEach(() => vi.unstubAllGlobals());
+
+  @Component({
+    standalone: true,
+    imports: [CngxChart, CngxAxis, CngxLine],
+    template: `
+      <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
+        <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 2]"></svg:g>
+        <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+        <svg:g cngxLine [color]="color()" [points]="'always'"></svg:g>
+      </cngx-chart>
+    `,
+  })
+  class MarkerHost {
+    color = signal<string | null>('#f00');
+  }
+
+  function circles(fixture: ReturnType<typeof TestBed.createComponent<MarkerHost>>): SVGElement[] {
+    return Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll<SVGElement>('.cngx-line__point'),
+    );
+  }
+
+  it('paints every marker with the bound colour as an inline fill', () => {
+    TestBed.configureTestingModule({ imports: [MarkerHost] });
+    const fixture = TestBed.createComponent(MarkerHost);
+    fixture.detectChanges();
+    const marks = circles(fixture);
+    expect(marks.length).toBe(3);
+    for (const mark of marks) {
+      expect(mark.style.fill).toBe('rgb(255, 0, 0)');
+    }
+  });
+
+  it('sets no inline fill on the markers when color is null', () => {
+    TestBed.configureTestingModule({ imports: [MarkerHost] });
+    const fixture = TestBed.createComponent(MarkerHost);
+    fixture.componentInstance.color.set(null);
+    fixture.detectChanges();
+    const marks = circles(fixture);
+    expect(marks.length).toBe(3);
+    for (const mark of marks) {
+      expect(mark.style.fill).toBe('');
+    }
+  });
+});
+
+describe('CngxLine [strokeWidth]', () => {
+  beforeEach(() => createResizeObserverMock().install(window));
+  afterEach(() => vi.unstubAllGlobals());
+
+  @Component({
+    standalone: true,
+    imports: [CngxChart, CngxAxis, CngxLine],
+    template: `
+      <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
+        <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 2]"></svg:g>
+        <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+        <svg:g cngxLine [strokeWidth]="width()"></svg:g>
+      </cngx-chart>
+    `,
+  })
+  class StrokeHost {
+    width = signal<number | string | null>(null);
+  }
+
+  function render(width: number | string | null): SVGElement {
+    TestBed.configureTestingModule({ imports: [StrokeHost] });
+    const fixture = TestBed.createComponent(StrokeHost);
+    fixture.componentInstance.width.set(width);
+    fixture.detectChanges();
+    return fixture.nativeElement.querySelector('.cngx-line') as SVGElement;
+  }
+
+  it('writes a numeric width as an inline px style', () => {
+    const mark = render(4);
+    expect(mark.style.strokeWidth).toBe('4px');
+    expect(mark.getAttribute('stroke-width')).toBeNull();
+  });
+
+  it('passes a string width through as an inline style', () => {
+    const mark = render('3px');
+    expect(mark.style.strokeWidth).toBe('3px');
+    expect(mark.getAttribute('stroke-width')).toBeNull();
+  });
+
+  it('sets no inline width when strokeWidth is null', () => {
+    const mark = render(null);
+    expect(mark.style.strokeWidth).toBe('');
+    expect(mark.getAttribute('stroke-width')).toBeNull();
+  });
+});

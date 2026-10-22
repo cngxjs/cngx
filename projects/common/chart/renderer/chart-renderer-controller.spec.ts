@@ -31,6 +31,7 @@ class ControllerHost {
   readonly mode = signal<'svg' | 'canvas'>('svg');
   readonly geometries = signal<readonly LayerGeometry[]>([]);
   readonly dims = signal({ width: 100, height: 50 });
+  readonly layerElements = signal<readonly Element[]>([]);
   readonly factoryCalls: Array<'svg' | 'canvas'> = [];
   readonly renderers: RendererSpy[] = [];
   readonly depsSeen: ChartRendererDeps[] = [];
@@ -59,6 +60,7 @@ class ControllerHost {
       ctx,
       mode: this.mode,
       geometries: this.geometries,
+      layerElements: this.layerElements,
       factory: this.factory,
       destroyRef: inject(DestroyRef),
     });
@@ -183,5 +185,26 @@ describe('createChartRendererController palette media queries', () => {
     for (const l of palette) {
       expect(l.removeEventListener).toHaveBeenCalledOnce();
     }
+  });
+
+  it('hands the layer elements to every paint, on mount and on repaint', () => {
+    const el = document.createElement('span');
+    host.layerElements.set([el]);
+    host.geometries.set([GEOM]);
+    TestBed.tick();
+    expect(host.last.paint).toHaveBeenLastCalledWith([GEOM], [el]);
+
+    host.mode.set('canvas');
+    TestBed.tick();
+    expect(host.last.paint).toHaveBeenCalledWith([GEOM], [el]);
+  });
+
+  it('does not repaint when only the layer elements change', () => {
+    host.geometries.set([GEOM]);
+    TestBed.tick();
+    const calls = host.last.paint.mock.calls.length;
+    host.layerElements.set([document.createElement('span')]);
+    TestBed.tick();
+    expect(host.last.paint.mock.calls.length).toBe(calls);
   });
 });

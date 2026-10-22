@@ -56,7 +56,10 @@ interface ScatterCircle {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   providers: [{ provide: CNGX_CHART_LAYER, useExisting: CngxScatter }],
-  host: { class: 'cngx-chart-series' },
+  host: {
+    class: 'cngx-chart-series',
+    '[attr.data-cngx-series-step]': 'seriesStep()',
+  },
   template: `
     @if (ctx.renderSvg()) {
       @for (c of circles(); track c.key) {
@@ -104,17 +107,17 @@ interface ScatterCircle {
         .cngx-scatter {
           fill: CanvasText !important;
         }
-        cngx-chart > svg > :nth-child(4n + 2 of .cngx-chart-series) > .cngx-scatter {
+        [data-cngx-series-step='1'] > .cngx-scatter {
           fill: var(--_cngx-chart-hatch-diagonal, CanvasText) !important;
           stroke: CanvasText;
           stroke-width: 1px;
         }
-        cngx-chart > svg > :nth-child(4n + 3 of .cngx-chart-series) > .cngx-scatter {
+        [data-cngx-series-step='2'] > .cngx-scatter {
           fill: Canvas !important;
           stroke: CanvasText;
           stroke-width: 1.5px;
         }
-        cngx-chart > svg > :nth-child(4n + 4 of .cngx-chart-series) > .cngx-scatter {
+        [data-cngx-series-step='3'] > .cngx-scatter {
           fill: var(--_cngx-chart-hatch-horizontal, CanvasText) !important;
           stroke: CanvasText;
           stroke-width: 1px;
@@ -131,6 +134,12 @@ export class CngxScatter<T = unknown> implements CngxChartLayer {
   readonly color = input<string | null>(null);
 
   protected readonly ctx = injectChartContext('cngxScatter');
+
+  /**
+   * Forced-colors series step from the chart's layer order, written to
+   * `data-cngx-series-step` for the dash / hatch cycle in the styles.
+   */
+  protected readonly seriesStep = computed(() => this.ctx.seriesStepOf?.(this) ?? null);
 
   private readonly resolvedData = computed<readonly T[]>(() => {
     const local = this.data();
