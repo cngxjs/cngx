@@ -45,9 +45,6 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
   readonly twistyOpenGlyph: Signal<TemplateRef<void> | null>;
   readonly checkGlyph: Signal<TemplateRef<void> | null>;
   readonly dashGlyph: Signal<TemplateRef<void> | null>;
-  /** Localised aria-labels for the twisty button; follow a language switch. */
-  readonly resolvedTwistyExpandLabel: Signal<string>;
-  readonly resolvedTwistyCollapseLabel: Signal<string>;
   /**
    * Accessible name of the `role="tree"` body: `[label]`, else
    * `aria-label`, else the placeholder, else the `listboxFallback` copy.

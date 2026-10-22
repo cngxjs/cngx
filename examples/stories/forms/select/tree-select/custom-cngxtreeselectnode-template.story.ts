@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxTreeSelect: custom cngxtreeselectnode template',
   subtitle:
-    'A projected <code>*cngxTreeSelectNode</code> replaces the ENTIRE built-in row - the custom markup owns the treeitem. Carry <code>role="treeitem"</code>, an <code>id</code>, the level/posinset/setsize attributes, and mirror <code>aria-checked</code> (<code>mixed</code> when indeterminate) from the context flags, per the APG checkbox-tree guidance. The context exposes every reactive flag plus the <code>toggleExpand</code> and <code>handleSelect</code> callbacks so custom markup still routes through cascade, commit, and announce.',
+    'A projected <code>*cngxTreeSelectNode</code> replaces the ENTIRE built-in row - the custom markup owns the treeitem. Carry <code>role="treeitem"</code>, an <code>id</code>, the level/posinset/setsize attributes, and mirror <code>aria-checked</code> (<code>mixed</code> when indeterminate) from the context flags, per the APG checkbox-tree guidance. Keep the expand control a pointer-only, <code>aria-hidden</code> glyph like the default row: the treeitem is named by its label, <code>aria-expanded</code> carries the state, and ArrowRight / ArrowLeft expand and collapse. The context exposes every reactive flag plus the <code>toggleExpand</code> and <code>handleSelect</code> callbacks so custom markup still routes through cascade, commit, and announce.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -71,15 +71,17 @@ export const STORY: DemoSpec = {
         (click)="handleSelect()"
       >
         @if (hasChildren) {
-          <button
-            type="button"
-            tabindex="-1"
+          <!-- Pointer-only expand control: the treeitem is named by its label
+               and aria-expanded carries the state, so the glyph stays hidden
+               from AT and is no focus stop. ArrowRight / ArrowLeft expand and
+               collapse from the keyboard. -->
+          <span
+            aria-hidden="true"
             class="tree-node-twisty"
-            [attr.aria-label]="expanded ? 'Collapse' : 'Expand'"
             (click)="toggleExpand(); $event.stopPropagation()"
           >
             {{ expanded ? '▾' : '▸' }}
-          </button>
+          </span>
         }
         <cngx-checkbox-indicator [checked]="selected" [indeterminate]="indeterminate" />
         <span class="tree-node-label">{{ node.label }}</span>

@@ -795,18 +795,6 @@ describe('CngxTreeSelect - per-instance node ids', () => {
 describe('CngxTreeSelect - runtime language switch', () => {
   beforeAll(() => polyfillPopover());
 
-  it('resolves the twisty labels from a Signal of ariaLabels', () => {
-    const labels = signal<CngxSelectAriaLabels>({ treeExpand: 'Expand node' });
-    TestBed.configureTestingModule({ providers: [provideSelectConfig(withAriaLabels(labels))] });
-    const { tree } = setup();
-    expect(tree.resolvedTwistyExpandLabel()).toBe('Expand node');
-    expect(tree.resolvedTwistyCollapseLabel()).toBe('Collapse node');
-
-    labels.set({ treeExpand: 'Knoten erweitern', treeCollapse: 'Knoten reduzieren' });
-    expect(tree.resolvedTwistyExpandLabel()).toBe('Knoten erweitern');
-    expect(tree.resolvedTwistyCollapseLabel()).toBe('Knoten reduzieren');
-  });
-
   it('flips the clear label while unbound', () => {
     const labels = signal<CngxSelectAriaLabels>({});
     TestBed.configureTestingModule({ providers: [provideSelectConfig(withAriaLabels(labels))] });

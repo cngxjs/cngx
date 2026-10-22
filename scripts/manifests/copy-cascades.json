@@ -568,39 +568,7 @@
     {
       "class": "CngxTreeSelect",
       "file": "projects/forms/select/tree-select/tree-select.component.ts",
-      "line": 371,
-      "member": "resolvedTwistyExpandLabel",
-      "enclosing": "computed",
-      "tiers": [
-        { "kind": "input", "field": "twistyExpandLabel" },
-        {
-          "kind": "bundle",
-          "field": "config",
-          "path": ["ariaLabels", "treeExpand"],
-          "token": "CNGX_SELECT_CONFIG"
-        }
-      ]
-    },
-    {
-      "class": "CngxTreeSelect",
-      "file": "projects/forms/select/tree-select/tree-select.component.ts",
-      "line": 376,
-      "member": "resolvedTwistyCollapseLabel",
-      "enclosing": "computed",
-      "tiers": [
-        { "kind": "input", "field": "twistyCollapseLabel" },
-        {
-          "kind": "bundle",
-          "field": "config",
-          "path": ["ariaLabels", "treeCollapse"],
-          "token": "CNGX_SELECT_CONFIG"
-        }
-      ]
-    },
-    {
-      "class": "CngxTreeSelect",
-      "file": "projects/forms/select/tree-select/tree-select.component.ts",
-      "line": 385,
+      "line": 370,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -622,7 +590,7 @@
     {
       "class": "CngxTreeSelect",
       "file": "projects/forms/select/tree-select/tree-select.component.ts",
-      "line": 392,
+      "line": 377,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [

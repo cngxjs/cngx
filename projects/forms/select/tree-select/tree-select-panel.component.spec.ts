@@ -79,8 +79,6 @@ function makeShellHost(): CngxSelectPanelHost {
     ariaLabels: signal({
       chipRemove: 'Remove',
       chipRemoveFor: (action: string, label: string) => `${action}: ${label}`,
-      treeExpand: 'Expand node',
-      treeCollapse: 'Collapse node',
       statusLoading: 'Loading options',
       statusRefreshing: 'Refreshing options',
       fieldLabelFallback: 'Selection',
@@ -165,8 +163,6 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
   readonly twistyOpenGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
   readonly checkGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
   readonly dashGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
-  readonly resolvedTwistyExpandLabel = signal('Expand').asReadonly();
-  readonly resolvedTwistyCollapseLabel = signal('Collapse').asReadonly();
   readonly resolvedListboxLabel = signal('Teams').asReadonly();
   readonly adCompare = signal<(a: Row, b: Row) => boolean>(Object.is);
   readonly adCompareWith = this.adCompare.asReadonly();
@@ -215,6 +211,26 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
       return next;
     });
   }
+}
+
+/**
+ * Name-from-content per accname 1.2 step 2F, reduced to what the default
+ * row renders: an `aria-hidden` subtree contributes nothing, an
+ * `aria-label` replaces its subtree, text nodes contribute their text.
+ */
+function accessibleNameFromContent(el: Element): string {
+  const parts: string[] = [];
+  for (const child of Array.from(el.childNodes)) {
+    if (child.nodeType === Node.TEXT_NODE) {
+      parts.push(child.textContent ?? '');
+      continue;
+    }
+    if (!(child instanceof Element) || child.getAttribute('aria-hidden') === 'true') {
+      continue;
+    }
+    parts.push(child.getAttribute('aria-label') ?? accessibleNameFromContent(child));
+  }
+  return parts.join(' ').replace(/\s+/g, ' ').trim();
 }
 
 function setup() {
@@ -314,7 +330,7 @@ describe('CngxTreeSelectPanel', () => {
 
   it('twisty click toggles the controller expansion state', () => {
     const { fixture, host, root } = setup();
-    const twisty = root.querySelector<HTMLButtonElement>('.cngx-tree-select__twisty');
+    const twisty = root.querySelector<HTMLElement>('.cngx-tree-select__twisty');
     expect(twisty).toBeTruthy();
     expect(host.treeController.isExpanded('a')()).toBe(false);
 
@@ -325,6 +341,25 @@ describe('CngxTreeSelectPanel', () => {
     twisty!.click();
     fixture.detectChanges();
     expect(host.treeController.isExpanded('a')()).toBe(false);
+  });
+
+  it('names a parent treeitem by its label alone, the twisty stays out of the name', () => {
+    const { fixture, host, root } = setup();
+    const parent = (): HTMLElement =>
+      root.querySelector<HTMLElement>('[role="treeitem"][id="a"]')!;
+
+    expect(accessibleNameFromContent(parent())).toBe('Alpha');
+    const twisty = parent().querySelector<HTMLElement>('.cngx-tree-select__twisty')!;
+    expect(twisty.getAttribute('aria-hidden')).toBe('true');
+    expect(twisty.hasAttribute('aria-label')).toBe(false);
+    expect(twisty.tagName).not.toBe('BUTTON');
+    expect(twisty.hasAttribute('tabindex')).toBe(false);
+
+    // Expanded state rides on aria-expanded, never on the name.
+    host.treeController.expand('a');
+    fixture.detectChanges();
+    expect(parent().getAttribute('aria-expanded')).toBe('true');
+    expect(accessibleNameFromContent(parent())).toBe('Alpha');
   });
 
   it('projected *cngxTreeSelectNode template wins over the default row markup', () => {

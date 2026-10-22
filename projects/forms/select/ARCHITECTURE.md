@@ -359,8 +359,6 @@ provideCngxSelect(
     fieldLabelFallback: 'Auswahl',
     commitFailedMessage: (label, detail) =>
       detail ? `${label}: Speichern fehlgeschlagen - ${detail}` : `${label}: Speichern fehlgeschlagen`,
-    treeExpand: 'Knoten erweitern',
-    treeCollapse: 'Knoten reduzieren',
   }),
   withFallbackLabels({
     refreshFailed: 'Aktualisieren fehlgeschlagen',
@@ -502,7 +500,7 @@ This lives in `createPanelLifecycleEmitter` (one factory across all variants), w
 - **Field focus and touched** follow focus entering and leaving the whole host (`(focusin)` / `(focusout)` with `relatedTarget` outside the host), the rule `CngxFormBridge` and `createFieldControlAria` already apply. Every variant renders its `cngxPopover` inside the host, so moving into the own panel (tree container, `<cngx-select-search>`, retry or action button) is not a leave: the form-field keeps `cngx-field--focused` while the panel holds focus, and `touched` flips only once focus moves outside the host.
 - **Trigger focus** (`CNGX_TRIGGER_FOCUS_FACTORY`) tracks the trigger or the combobox input alone. It drives the display binding and the slot contexts' `focused`, and hosts the variant reactions (openOn focus, `clearOnBlur`).
 
-A mouse press on an option never moves focus: `CngxOption` cancels `mousedown`, so a pick takes the same path as an Enter pick with focus on the owner. The tree container cancels `mousedown` for the same reason - `CngxActiveDescendant` reads keys only while the container has focus, and the `tabindex="-1"` twisty would take it.
+A mouse press on an option never moves focus: `CngxOption` cancels `mousedown`, so a pick takes the same path as an Enter pick with focus on the owner. The tree container cancels `mousedown` for the same reason - `CngxActiveDescendant` reads keys only while the container has focus, and a focusable control in a projected node row would take it. The default row's twisty is an `aria-hidden` span, not a button: the treeitem is named by its label alone and `aria-expanded` carries the state.
 
 A focused control that disappears would drop focus to `body`, which reads as leaving the field. Chip x, clear, clear-all and retry (the built-in buttons and the `remove` / `clear` / `retry` callbacks in the chip, clear-button and retry slot contexts) move focus to the owner first. A panel close does the same, because `CngxPopover` blurs focus inside the panel before it hides it: `close()`, the commit-mode hides and the `closeOnSelect` hide of `createADActivationDispatcher` (via `beforeHide`) all refocus the owner when focus is inside the host and is not the owner. Under `restoreFocus: false` a close leaves focus alone. The refocus reuses the close restore's suppression window, so an `openOn: 'focus'` trigger does not reopen.
 

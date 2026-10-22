@@ -26,7 +26,8 @@
  * - `.cngx-tree-select__tree` - the outer tree container
  * - `.cngx-tree-select__node` - one row, depth-indented via
  *   `--cngx-tree-depth`
- * - `.cngx-tree-select__twisty` - expand / collapse toggle button
+ * - `.cngx-tree-select__twisty` - pointer-only expand / collapse toggle
+ *   (`aria-hidden`, no focus stop; keys toggle through the tree)
  * - `.cngx-tree-select__twisty-spacer` - same-sized placeholder for
  *   leaves so labels align across depths
  * - `.cngx-tree-select__label` - ellipsis-truncating node label
@@ -331,7 +332,7 @@
        `:not(--open)` so the open twisty - rotated 90deg to a neutral down-caret
        - is excluded and keeps its rotate. `:where()` keeps zero specificity so
        the `--open` rotate still wins by source order (context-menu precedent
-       context-menu-item.component.css). scaleX is safe: the twisty button holds
+       context-menu-item.component.css). scaleX is safe: the twisty holds
        only the glyph span, no label text a mirror reverses. */
     .cngx-tree-select__twisty:not(.cngx-tree-select__twisty--open):where(:dir(rtl)) {
       transform: scaleX(-1);

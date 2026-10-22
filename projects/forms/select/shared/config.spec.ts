@@ -29,7 +29,7 @@ function resolveIn(providers: unknown[]): ReturnType<typeof resolveSelectConfig>
 }
 
 describe('withAriaLabels', () => {
-  it('resolves to library EN defaults for status/tree/fallback keys when no override is supplied', () => {
+  it('resolves to library EN defaults for status/fallback keys when no override is supplied', () => {
     const config = resolveIn([]);
     // clearButton intentionally stays undefined: its default differs per
     // variant (single 'Clear selection', multi 'Reset selection').
@@ -40,8 +40,6 @@ describe('withAriaLabels', () => {
     );
     // Library-defaulted keys are populated up-front so panel-shell,
     // select-core, and tree-select can read them directly.
-    expect(config.ariaLabels().treeExpand).toBe('Expand node');
-    expect(config.ariaLabels().treeCollapse).toBe('Collapse node');
     expect(config.ariaLabels().statusLoading).toBe('Loading options');
     expect(config.ariaLabels().statusRefreshing).toBe('Refreshing options');
     expect(config.ariaLabels().fieldLabelFallback).toBe('Selection');
@@ -84,7 +82,7 @@ describe('withAriaLabels', () => {
     expect(config.ariaLabels().clearButton).toBe('Clear all');
     expect(config.ariaLabels().chipRemove).toBe('Delete');
     // Library defaults preserved for unset keys.
-    expect(config.ariaLabels().treeExpand).toBe('Expand node');
+    expect(config.ariaLabels().statusLoading).toBe('Loading options');
   });
 
   it('preserves non-overridden keys when partial ariaLabels are supplied', () => {
@@ -93,7 +91,7 @@ describe('withAriaLabels', () => {
     ]);
     expect(config.ariaLabels().clearButton).toBeUndefined();
     expect(config.ariaLabels().chipRemove).toBe('Delete');
-    expect(config.ariaLabels().treeExpand).toBe('Expand node');
+    expect(config.ariaLabels().statusLoading).toBe('Loading options');
   });
 
   it('merges multiple withAriaLabels calls in feature list order', () => {
@@ -105,15 +103,13 @@ describe('withAriaLabels', () => {
     ]);
     expect(config.ariaLabels().clearButton).toBe('Clear');
     expect(config.ariaLabels().chipRemove).toBe('Delete');
-    expect(config.ariaLabels().treeExpand).toBe('Expand node');
+    expect(config.ariaLabels().statusLoading).toBe('Loading options');
   });
 
-  it('routes tree/status/fallback keys through a DE locale override roundtrip', () => {
+  it('routes status/fallback keys through a DE locale override roundtrip', () => {
     const config = resolveIn([
       provideSelectConfig(
         withAriaLabels({
-          treeExpand: 'Knoten erweitern',
-          treeCollapse: 'Knoten reduzieren',
           statusLoading: 'Lade Optionen',
           statusRefreshing: 'Aktualisiere Optionen',
           fieldLabelFallback: 'Auswahl',
@@ -122,8 +118,6 @@ describe('withAriaLabels', () => {
         }),
       ),
     ]);
-    expect(config.ariaLabels().treeExpand).toBe('Knoten erweitern');
-    expect(config.ariaLabels().treeCollapse).toBe('Knoten reduzieren');
     expect(config.ariaLabels().statusLoading).toBe('Lade Optionen');
     expect(config.ariaLabels().statusRefreshing).toBe('Aktualisiere Optionen');
     expect(config.ariaLabels().fieldLabelFallback).toBe('Auswahl');
@@ -161,7 +155,7 @@ describe('runtime language switch', () => {
     const config = resolveIn([provideSelectConfig(withAriaLabels(labels))]);
     labels.set({ statusLoading: 'Lade Optionen' });
     expect(config.ariaLabels().statusLoading).toBe('Lade Optionen');
-    expect(config.ariaLabels().treeExpand).toBe('Expand node');
+    expect(config.ariaLabels().statusRefreshing).toBe('Refreshing options');
   });
 
   it('merges a static and a Signal withAriaLabels key by key', () => {
