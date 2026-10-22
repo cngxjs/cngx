@@ -2,6 +2,8 @@ import { Component, computed, signal, ViewEncapsulation } from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { CngxActionMultiSelect } from '../action-multi-select/action-multi-select.component';
+import { CngxCombobox } from '../combobox/combobox.component';
 import { CngxMultiSelect } from '../multi-select/multi-select.component';
 import { CngxTreeSelect } from '../tree-select/tree-select.component';
 
@@ -23,7 +25,7 @@ function optionsWith(firstLabel: string): { value: string; label: string }[] {
 @Component({
   selector: 'cngx-select-summary-trigger-host',
   standalone: true,
-  imports: [CngxMultiSelect, CngxTreeSelect],
+  imports: [CngxMultiSelect, CngxTreeSelect, CngxCombobox, CngxActionMultiSelect],
   styleUrls: [
     '../../../core/theming/layers.css',
     '../../../core/theming/system-tokens.css',
@@ -44,6 +46,22 @@ function optionsWith(firstLabel: string): { value: string; label: string }[] {
         [labelFn]="treeLabel"
         [values]="values()"
       />
+      <cngx-combobox [label]="'B'" [options]="options()" [values]="values()" />
+      <cngx-action-multi-select [label]="'A'" [options]="options()" [values]="values()" />
+    </div>
+    <div data-touch="on" class="input-row" style="display: block; width: 390px; margin: 1rem">
+      <cngx-combobox
+        style="display: block"
+        [label]="'B'"
+        [options]="options()"
+        [values]="values()"
+      />
+      <cngx-action-multi-select
+        style="display: block"
+        [label]="'A'"
+        [options]="options()"
+        [values]="values()"
+      />
     </div>
   `,
 })
@@ -52,12 +70,19 @@ class SummaryTriggerHost {
   readonly values = signal<string[]>([]);
   readonly treeNodes = computed(() => this.options().map((o) => ({ value: o.value })));
   readonly treeId = (v: string): string => v;
-  readonly treeLabel = (v: string): string =>
-    this.options().find((o) => o.value === v)?.label ?? v;
+  readonly treeLabel = (v: string): string => this.options().find((o) => o.value === v)?.label ?? v;
 }
 
 /** Every summary variant: its host tag. */
-const VARIANTS = ['cngx-multi-select', 'cngx-tree-select'] as const;
+const VARIANTS = [
+  'cngx-multi-select',
+  'cngx-tree-select',
+  'cngx-combobox',
+  'cngx-action-multi-select',
+] as const;
+
+/** The variants whose trigger keeps a search input next to the summary. */
+const INPUT_VARIANTS = ['cngx-combobox', 'cngx-action-multi-select'] as const;
 
 let mountedRoot: HTMLElement | null = null;
 
@@ -93,7 +118,9 @@ async function select(fixture: ComponentFixture<SummaryTriggerHost>, count: numb
 }
 
 function trigger(tag: string): HTMLElement {
-  return mountedRoot!.querySelector<HTMLElement>(`${tag} .cngx-field-trigger`)!;
+  return mountedRoot!.querySelector<HTMLElement>(
+    `[data-touch]:not(.input-row) ${tag} .cngx-field-trigger`,
+  )!;
 }
 
 function box(tag: string): { width: number; height: number } {
@@ -140,6 +167,37 @@ describe('select summary trigger under the touch floor', () => {
       expect(badge.right).toBeLessThanOrEqual(row.right);
       expect(badge.top).toBeGreaterThanOrEqual(row.top);
       expect(badge.bottom).toBeLessThanOrEqual(row.bottom);
+    });
+  }
+});
+
+describe('select summary trigger next to the search input at 390px', () => {
+  for (const tag of INPUT_VARIANTS) {
+    it(`${tag} keeps the input and the summary inside one 44px row`, async () => {
+      const fixture = await mount();
+      fixture.componentInstance.options.set(optionsWith(LONG_LABEL));
+      await select(fixture, 5);
+      const row = mountedRoot!.querySelector<HTMLElement>(`.input-row ${tag} .cngx-field-trigger`)!;
+      const rect = row.getBoundingClientRect();
+      expect(Math.round(rect.height)).toBe(44);
+      expect(Math.round(rect.width)).toBe(390);
+      expect(row.querySelectorAll('cngx-chip')).toHaveLength(0);
+
+      const input = row
+        .querySelector<HTMLElement>('input[role="combobox"]')!
+        .getBoundingClientRect();
+      const summary = row
+        .querySelector<HTMLElement>('cngx-select-summary')!
+        .getBoundingClientRect();
+      // The input keeps its 4rem floor as the tap and typing target.
+      expect(input.width).toBeGreaterThanOrEqual(64);
+      expect(summary.right).toBeLessThanOrEqual(input.left);
+      for (const part of [input, summary]) {
+        expect(part.left).toBeGreaterThanOrEqual(rect.left);
+        expect(part.right).toBeLessThanOrEqual(rect.right);
+        expect(part.top).toBeGreaterThanOrEqual(rect.top);
+        expect(part.bottom).toBeLessThanOrEqual(rect.bottom);
+      }
     });
   }
 });

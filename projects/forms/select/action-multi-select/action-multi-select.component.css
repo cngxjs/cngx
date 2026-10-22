@@ -372,6 +372,17 @@
       flex: 0 1 auto;
     }
 
+    /* Under the touch floor the one-line summary sits in front of the input.
+       It never sizes the trigger (inline-size containment, zero basis): the
+       row keeps the width it has without a value, the summary takes the
+       free space next to the input and cuts its label, and the input keeps
+       its flex basis as the tap and typing target. */
+    .cngx-select__chip-list.cngx-action-multi-select__summary {
+      flex: 3 1 0;
+      min-width: 0;
+      contain: inline-size;
+    }
+
     .cngx-action-multi-select__clear-all {
       flex: 0 0 auto;
       appearance: none;

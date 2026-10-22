@@ -21,6 +21,7 @@ import {
 import {
   CNGX_STATEFUL,
   injectLocale,
+  nextUid,
   type CngxAsyncState,
   type AsyncStatus,
 } from '@cngx/core/utils';
@@ -78,7 +79,9 @@ import {
   type CngxCommitErrorAnnouncePolicy,
 } from '../shared/commit-error-announcer';
 import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
-import { createChipOverflow } from '../shared/internal/chip-overflow';
+import { CngxSelectSummary } from '../shared/internal/summary/select-summary.component';
+import { createSelectSummary } from '../shared/internal/summary/select-summary';
+import { injectTouchFloorSignal } from '../shared/internal/touch-floor';
 import { sameArrayContents } from '../shared/internal/compare';
 import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createFieldSync } from '../shared/field-sync';
@@ -244,6 +247,7 @@ export interface CngxComboboxChange<T = unknown> {
     CngxPopoverAnchor,
     CngxPopoverTrigger,
     CngxSelectPanel,
+    CngxSelectSummary,
     NgTemplateOutlet,
   ],
   providers: [
@@ -684,6 +688,8 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       presentationInput: this.presentation,
       // Lazy: the wiring is built from the core right below.
       presentation: computed<CngxPopoverPresentation>(() => this.sheetWiring.presentation()),
+      // Lazy: the summary is declared further down in field order.
+      summaryDescribedBy: computed<string | null>(() => this.summaryDescribedBy()),
     },
     {
       announceChanges: this.announceChanges,
@@ -884,11 +890,31 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     },
   );
 
-  private readonly chipStrip = createChipOverflow<T>({
+  /**
+   * @internal - one-line summary in front of the input instead of chips under
+   * the touch floor. The chip strip below is its truncated-at-one derivation
+   * while it is active.
+   */
+  protected readonly summary = createSelectSummary<T>({
     selectedOptions: this.selectedOptions,
+    active: injectTouchFloorSignal(),
     chipOverflow: this.chipOverflow,
     maxVisibleChips: this.maxVisibleChips,
+    ariaLabels: this.config.ariaLabels,
+    fallbackLabels: this.config.fallbackLabels,
   });
+  /**
+   * @internal - id of the sr-only node with the whole selection. The input's
+   * value is the search term, so the selection reaches AT as a description.
+   */
+  protected readonly summaryDescriptionId = nextUid('cngx-combobox-summary');
+  /** @internal - the description reference, gated on a shown summary. */
+  private readonly summaryDescribedBy = computed<string | null>(() =>
+    this.summary.active() && !this.triggerLabelTpl() && this.values().length > 0
+      ? this.summaryDescriptionId
+      : null,
+  );
+  private readonly chipStrip = this.summary.strip;
   /** @internal - chip subset + overflow badge count (see createChipOverflow). */
   protected readonly visibleSelected = this.chipStrip.visibleSelected;
   /** @internal */

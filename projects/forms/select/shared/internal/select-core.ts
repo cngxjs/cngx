@@ -141,6 +141,13 @@ export interface CngxSelectCoreDeps<T, TCommit> {
    * commit, not the create.
    */
   readonly createErrorMessage?: Signal<string | null>;
+
+  /**
+   * Id of the node that describes the whole selection while the input
+   * variants show the one-line summary, `null` while it does not apply.
+   * Joined after the field and commit-error references.
+   */
+  readonly summaryDescribedBy?: Signal<string | null>;
 }
 
 /**
@@ -623,7 +630,8 @@ export function createSelectCore<T, TCommit>(
   const commitErrorShown = computed<boolean>(() => commitErrorText() !== '');
   const describedBy = computed<string | null>(() => {
     const commitRef = commitErrorShown() ? commitErrorId : null;
-    return [fieldAria.describedBy(), commitRef].filter(Boolean).join(' ') || null;
+    const summaryRef = deps.summaryDescribedBy?.() ?? null;
+    return [fieldAria.describedBy(), commitRef, summaryRef].filter(Boolean).join(' ') || null;
   });
   const ariaInvalid = fieldAria.ariaInvalid;
   const ariaReadonly = fieldAria.ariaReadonly;

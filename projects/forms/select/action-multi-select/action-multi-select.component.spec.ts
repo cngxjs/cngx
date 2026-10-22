@@ -3,9 +3,9 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { CngxListbox } from '@cngx/common/interactive';
 import { Subject } from 'rxjs';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { CngxSelectAction } from '../shared/template-slots';
+import { CngxComboboxTriggerLabel, CngxSelectAction } from '../shared/template-slots';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { stripBidiIsolates } from '@cngx/testing';
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
@@ -14,6 +14,7 @@ import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host'
 import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
 import { describeSelectBehaviourHost } from '../shared/__test-helpers/select-behaviour-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
+import { stubTouchFloor } from '../shared/__test-helpers/touch-floor';
 import {
   CngxActionMultiSelect,
   type CngxActionMultiSelectChange,
@@ -467,6 +468,114 @@ describe('CngxActionMultiSelect - dismiss guard', () => {
     select.actionCallbacks().commit({ label: 'Purple' });
     flush(fixture);
     expect(select.actionDirty()).toBe(false);
+  });
+});
+
+// ── Summary trigger under the touch floor ────────────────────────────
+
+@Component({
+  template: `
+    <cngx-action-multi-select [label]="'Letters'" [options]="options" [(values)]="values">
+      @if (withTriggerLabel()) {
+        <ng-template cngxComboboxTriggerLabel let-count="count">
+          <span class="trigger-summary">{{ count }} letters</span>
+        </ng-template>
+      }
+    </cngx-action-multi-select>
+  `,
+  imports: [CngxActionMultiSelect, CngxComboboxTriggerLabel],
+})
+class SummaryHost {
+  readonly options: CngxSelectOptionDef<string>[] = [
+    { value: 'a', label: 'A' },
+    { value: 'b', label: 'B' },
+    { value: 'c', label: 'C' },
+  ];
+  readonly values = signal<string[]>(['a', 'b', 'c']);
+  readonly withTriggerLabel = signal(false);
+}
+
+describe('CngxActionMultiSelect - summary trigger under the touch floor', () => {
+  let restore: (() => void) | null = null;
+
+  afterEach(() => {
+    restore?.();
+    restore = null;
+  });
+
+  function render(touch: boolean) {
+    polyfillPopover();
+    if (touch) {
+      restore = stubTouchFloor();
+    }
+    const fixture = TestBed.createComponent(SummaryHost);
+    flush(fixture);
+    const el = fixture.nativeElement as HTMLElement;
+    const input = el.querySelector('input[role="combobox"]') as HTMLInputElement;
+    return { fixture, el, input };
+  }
+
+  function describedText(el: HTMLElement, input: HTMLInputElement): string[] {
+    const ids = (input.getAttribute('aria-describedby') ?? '').split(' ').filter(Boolean);
+    return ids.map((id) =>
+      stripBidiIsolates(el.querySelector(`[id="${id}"]`)?.textContent?.trim() ?? ''),
+    );
+  }
+
+  it('shows the first label plus the +N badge in front of the input instead of chips', () => {
+    const { el } = render(true);
+    expect(el.querySelectorAll('cngx-chip').length).toBe(0);
+    const strip = el.querySelector('.cngx-select__chip-list');
+    expect(strip?.getAttribute('data-overflow')).toBe('truncate');
+    expect(strip?.querySelector('.cngx-select-summary__label')?.textContent?.trim()).toBe('A');
+    expect(el.querySelector('.cngx-select__chip-overflow-badge')?.textContent?.trim()).toBe('+2');
+    expect(strip?.nextElementSibling?.getAttribute('role')).toBe('combobox');
+  });
+
+  it('describes the input with the whole selection, not the group', () => {
+    const { el, input } = render(true);
+    expect(el.querySelector('cngx-select-summary .cngx-sr-only')).toBeNull();
+    expect(describedText(el, input)).toEqual(['3 selected: A, B, and C']);
+  });
+
+  it('references the description only while the summary shows a selection', () => {
+    const { fixture, el, input } = render(true);
+    fixture.componentInstance.values.set(['b']);
+    flush(fixture);
+    expect(describedText(el, input)).toEqual(['B']);
+    fixture.componentInstance.values.set([]);
+    flush(fixture);
+    expect(input.getAttribute('aria-describedby')).toBeNull();
+    expect(el.querySelector('cngx-select-summary')).toBeNull();
+  });
+
+  it('removes and announces the last value on Backspace in an empty input', () => {
+    const { fixture, input } = render(true);
+    const announce = vi.spyOn(TestBed.inject(CngxSelectAnnouncer), 'announce');
+    input.focus();
+    flush(fixture);
+    input.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true, cancelable: true }),
+    );
+    flush(fixture);
+    expect(fixture.componentInstance.values()).toEqual(['a', 'b']);
+    expect(announce).toHaveBeenCalled();
+  });
+
+  it('lets a projected trigger-label template win over the summary', () => {
+    const { fixture, el, input } = render(true);
+    fixture.componentInstance.withTriggerLabel.set(true);
+    flush(fixture);
+    expect(el.querySelector('cngx-select-summary')).toBeNull();
+    expect(el.querySelector('.trigger-summary')?.textContent?.trim()).toBe('3 letters');
+    expect(input.getAttribute('aria-describedby')).toBeNull();
+  });
+
+  it('keeps the chips and no summary description on a fine pointer', () => {
+    const { el, input } = render(false);
+    expect(el.querySelector('cngx-select-summary')).toBeNull();
+    expect(el.querySelectorAll('cngx-chip').length).toBe(3);
+    expect(input.getAttribute('aria-describedby')).toBeNull();
   });
 });
 
