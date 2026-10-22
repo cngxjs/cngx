@@ -60,7 +60,10 @@ const FALLBACK_BASELINE = 0;
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   providers: [{ provide: CNGX_CHART_LAYER, useExisting: CngxBar }],
-  host: { class: 'cngx-chart-series' },
+  host: {
+    class: 'cngx-chart-series',
+    '[attr.data-cngx-series-step]': 'seriesStep()',
+  },
   template: `
     @if (ctx.renderSvg()) {
       @for (rect of rects(); track rect.key) {
@@ -103,8 +106,8 @@ const FALLBACK_BASELINE = 0;
          (preserve-parent-color), so the bars kept their colour while the
          legend swatches turn into patterns. Bars follow the user palette and
          take the legend's four-step cycle by series index: solid, 45deg
-         hatch, hollow, 0deg hatch. The index counts the .cngx-chart-series
-         layers (line, bar, scatter) of one chart. The hatches are patterns
+         hatch, hollow, 0deg hatch. The index counts the line, bar and scatter
+         layers of one chart in layer order (data-cngx-series-step). The hatches are patterns
          CngxChart renders once per chart; they carry a Canvas gap, so a bar
          drawn over another keeps its hatch. !important beats the inline
          [style.fill] of the [color] input. */
@@ -112,17 +115,17 @@ const FALLBACK_BASELINE = 0;
         .cngx-bar {
           fill: CanvasText !important;
         }
-        cngx-chart > svg > :nth-child(4n + 2 of .cngx-chart-series) > .cngx-bar {
+        [data-cngx-series-step="1"] > .cngx-bar {
           fill: var(--_cngx-chart-hatch-diagonal, CanvasText) !important;
           stroke: CanvasText;
           stroke-width: 1px;
         }
-        cngx-chart > svg > :nth-child(4n + 3 of .cngx-chart-series) > .cngx-bar {
+        [data-cngx-series-step="2"] > .cngx-bar {
           fill: Canvas !important;
           stroke: CanvasText;
           stroke-width: 1.5px;
         }
-        cngx-chart > svg > :nth-child(4n + 4 of .cngx-chart-series) > .cngx-bar {
+        [data-cngx-series-step="3"] > .cngx-bar {
           fill: var(--_cngx-chart-hatch-horizontal, CanvasText) !important;
           stroke: CanvasText;
           stroke-width: 1px;
@@ -139,6 +142,12 @@ export class CngxBar<T = unknown> implements CngxChartLayer {
   readonly color = input<string | null>(null);
 
   protected readonly ctx = injectChartContext('cngxBar');
+
+  /**
+   * Forced-colors series step from the chart's layer order, written to
+   * `data-cngx-series-step` for the dash / hatch cycle in the styles.
+   */
+  protected readonly seriesStep = computed(() => this.ctx.seriesStepOf?.(this) ?? null);
 
   private readonly resolvedData = computed<readonly T[]>(() => {
     const local = this.data();

@@ -80,9 +80,7 @@ const SOLID_DASH: number[] = [];
  * other engines are unverified, so the backend paints the probed values.
  * The renderer controller watches `(forced-colors: active)` and
  * `(prefers-color-scheme: dark)` and invalidates the colour cache before
- * repainting on a flip, so a contrast-theme switch repaints at once. One
- * difference from SVG: a layer wrapped in an extra `<svg:g>` still counts
- * here, since the backend only sees the layer order.
+ * repainting on a flip, so a contrast-theme switch repaints at once.
  *
  * @category common/chart/renderer
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/renderer/canvas-renderer.ts

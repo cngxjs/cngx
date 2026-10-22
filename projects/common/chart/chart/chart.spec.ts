@@ -28,6 +28,8 @@ import { CngxLine } from '../layers/line.component';
 import { CngxBar } from '../layers/bar.component';
 import { CngxThreshold } from '../layers/threshold.component';
 import { CngxBand } from '../layers/band.component';
+import { CngxArea } from '../layers/area.component';
+import { CngxScatter } from '../layers/scatter.component';
 import { type LayerGeometry } from '../layers/chart-layer';
 import { type CngxChartRendererFactory } from '../renderer/chart-renderer';
 import { createCanvasRenderer } from '../renderer/canvas-renderer';
@@ -1862,5 +1864,80 @@ describe('CngxChart - connection copy flip', () => {
     lang.set('en');
     fixture.detectChanges();
     expect(region.textContent?.trim()).toBe('Verbindung wiederhergestellt');
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxChart, CngxLine, CngxArea, CngxBar, CngxThreshold, CngxScatter],
+  template: `
+    <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
+      @if (leading()) {
+        <svg:g cngxLine data-testid="leading"></svg:g>
+      }
+      <svg:g cngxLine data-testid="line"></svg:g>
+      <svg:g cngxArea data-testid="area"></svg:g>
+      <svg:g cngxBar data-testid="bar"></svg:g>
+      <svg:g cngxThreshold [value]="2" data-testid="threshold"></svg:g>
+      <svg:g>
+        <svg:g cngxScatter [x]="xOf" [y]="yOf" data-testid="wrapped-scatter"></svg:g>
+      </svg:g>
+      <svg:g cngxLine data-testid="line-2"></svg:g>
+      <svg:g cngxLine data-testid="line-3"></svg:g>
+    </cngx-chart>
+  `,
+})
+class SeriesStepHost {
+  readonly leading = signal(false);
+  readonly xOf = (_: unknown, i: number): number => i;
+  readonly yOf = (d: unknown): number => Number(d);
+}
+
+describe('CngxChart - forced-colors series step', () => {
+  beforeEach(() => createResizeObserverMock().install(window));
+  afterEach(() => vi.unstubAllGlobals());
+
+  function steps(
+    fixture: ReturnType<typeof TestBed.createComponent<SeriesStepHost>>,
+  ): Record<string, string | null> {
+    const out: Record<string, string | null> = {};
+    for (const el of Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('[data-testid]'),
+    )) {
+      out[el.getAttribute('data-testid') as string] = el.getAttribute('data-cngx-series-step');
+    }
+    return out;
+  }
+
+  it('numbers line, bar and scatter in layer order, wrapped or not, and skips area and threshold', () => {
+    TestBed.configureTestingModule({ imports: [SeriesStepHost] });
+    const fixture = TestBed.createComponent(SeriesStepHost);
+    fixture.detectChanges();
+    expect(steps(fixture)).toEqual({
+      line: '0',
+      area: null,
+      bar: '1',
+      threshold: null,
+      'wrapped-scatter': '2',
+      'line-2': '3',
+      'line-3': '0',
+    });
+  });
+
+  it('shifts the steps when a series is added in front', () => {
+    TestBed.configureTestingModule({ imports: [SeriesStepHost] });
+    const fixture = TestBed.createComponent(SeriesStepHost);
+    fixture.detectChanges();
+    fixture.componentInstance.leading.set(true);
+    fixture.detectChanges();
+    const s = steps(fixture);
+    expect([
+      s['leading'],
+      s['line'],
+      s['bar'],
+      s['wrapped-scatter'],
+      s['line-2'],
+      s['line-3'],
+    ]).toEqual(['0', '1', '2', '3', '0', '1']);
   });
 });

@@ -51,7 +51,9 @@ type Rgb = readonly [number, number, number];
       <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 3]"></svg:g>
       <svg:g cngxAxis position="left" type="linear" [domain]="[0, 12]"></svg:g>
       <svg:g cngxLine></svg:g>
-      <svg:g cngxLine [data]="[5, 5, 5, 5]" [color]="author"></svg:g>
+      <svg:g>
+        <svg:g cngxLine [data]="[5, 5, 5, 5]" [color]="author"></svg:g>
+      </svg:g>
       <svg:g cngxArea [data]="[1, 1, 1, 1]"></svg:g>
       <svg:g cngxLine [data]="[7, 7, 7, 7]"></svg:g>
       <svg:g cngxThreshold [value]="11" [dashed]="true"></svg:g>
@@ -371,7 +373,7 @@ describe.each(SCHEMES)('canvas backend under forced colors, %s', (scheme) => {
     expect(steps).toEqual(CYCLE);
   });
 
-  it('lines: the canvas dash matches the SVG dash per series, area and threshold skipped', async () => {
+  it('lines: the canvas dash matches the SVG dash per series, wrapped or not, area and threshold skipped', async () => {
     const svgRoot = await mountForced(false);
     const svgDashes = all(svgRoot, '.lines .cngx-line').map(
       (l) => SVG_DASHES[computedValue(l, 'stroke-dasharray')] ?? 'unknown',

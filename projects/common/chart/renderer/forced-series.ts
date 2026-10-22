@@ -70,8 +70,8 @@ const stepMemo = new WeakMap<readonly LayerGeometry[], readonly (ForcedSeriesSte
 /**
  * @internal The forced-colors step of every geometry, `null` for the kinds
  * outside the cycle. Line, bar and scatter count, area, threshold and band
- * do not - the same rule as the SVG
- * `:nth-child(4n + k of .cngx-chart-series)` selectors. Memoised by the
+ * do not. The SVG layers take the same steps
+ * through `data-cngx-series-step`, so both backends count alike. Memoised by the
  * array reference: the chart keeps the same geometries array while no
  * layer emits a new geometry, so repaints without data (resize, DPR or
  * palette flip) reuse the steps. A streaming chart gets a new array on

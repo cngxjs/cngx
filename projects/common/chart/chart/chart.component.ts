@@ -53,8 +53,9 @@ import {
   sameNumberArr,
   slotContextEqual,
 } from './equal-helpers';
-import { CNGX_CHART_LAYER, type LayerGeometry } from '../layers/chart-layer';
+import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from '../layers/chart-layer';
 import { createChartRendererController } from '../renderer/chart-renderer-controller';
+import { forcedSeriesSteps } from '../renderer/forced-series';
 import { CNGX_CHART_RENDERER_FACTORY } from '../renderer/renderer-factory';
 import { CNGX_CHART_RENDERER_THRESHOLD } from '../renderer/renderer-threshold';
 
@@ -958,6 +959,21 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
     () => this.layers().map((l) => l.geometry()),
     { equal: sameItemsArr },
   );
+
+  /**
+   * Forced-colors series step per layer, the rule the Canvas backend
+   * paints by. Element-wise guarded: a data tick re-emits the same steps,
+   * so the layers' `data-cngx-series-step` bindings stay untouched.
+   */
+  private readonly seriesSteps = computed(() => forcedSeriesSteps(this.geometries()), {
+    equal: sameItemsArr,
+  });
+
+  /** @internal See {@link CngxChartContext.seriesStepOf}. */
+  seriesStepOf(layer: CngxChartLayer): number | null {
+    const index = this.layers().indexOf(layer);
+    return index < 0 ? null : (this.seriesSteps()[index] ?? null);
+  }
 
   protected readonly viewBox = computed(() => {
     const { width, height } = this.dimensions();
