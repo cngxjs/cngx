@@ -22,10 +22,10 @@ Angular 21.1 through 22, Signal-native, no NgModules. Eight packages, 57 surgica
 ## Installation
 
 ```bash
-ng add @cngx/ui
+ng add @cngx/core
 ```
 
-One run pins the `@cngx/*` packages, adds the theme, wires the root providers and the lint rules, and records the install in `.cngx/install.json`. Every package ships the same `ng add`; `--preset=minimal|recommended|full` sets how much it does. `ng update @cngx/core` moves all packages to the next release and runs its migrations. See [Install](./core-concepts/install.md) and [Update](./core-concepts/update.md).
+One run pins the `@cngx/*` packages, adds the theme, wires the root providers and the lint rules, and records the install in `.cngx/install.json`. Every library package ships the same `ng add`; `--preset=minimal|recommended|full` sets how much it does. Start with `@cngx/core`: the CLI installs any other package with plain npm before its `ng add` runs, and on an app without `@angular/cdk` that install fetches the newest CDK the peers allow, which on Angular 21 needs Angular 22 and fails. Once the CDK is on your Angular major (or cngx is set up), `ng add @cngx/ui` and the others run the same flow. `ng update @cngx/core` moves all packages to the next release and runs its migrations. See [Install](./core-concepts/install.md) and [Update](./core-concepts/update.md).
 
 Manual install, with the CDK (and Material, if used) on your Angular major first, because npm would otherwise pick the newest CDK the cngx peers allow, which may need a newer Angular:
 

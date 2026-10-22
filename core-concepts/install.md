@@ -7,7 +7,7 @@
 
 <aside class="cc-tldr">
 
-Run `ng add @cngx/ui` (or any other `@cngx/*` package). One run pins the packages, adds the theme, wires the root providers and the lint rules, records what it did in `.cngx/install.json`, and installs once at the end. A second run changes nothing.
+Run `ng add @cngx/core`. One run pins the packages, adds the theme, wires the root providers and the lint rules, records what it did in `.cngx/install.json`, and installs once at the end. A second run changes nothing. Any other library package runs the same `ng add` once `@angular/cdk` is on your Angular major.
 
 </aside>
 
@@ -16,10 +16,11 @@ themes) ships an `ng add` schematic; `@cngx/mcp`, `@cngx/eslint-plugin` and
 `@cngx/doctor` are plain installs. `@cngx/core` owns the onboarding; the other packages delegate to it, so `ng add @cngx/forms`
 and `ng add @cngx/ui` run the same flow and produce the same files. The package
 you name is always installed and recorded: `ng add @cngx/forms --libs core`
-installs `core` and `forms`.
+installs `core` and `forms`. On a fresh app, start with `@cngx/core` (see
+[Supported Angular versions](#supported-angular-versions) for why).
 
 ```bash
-ng add @cngx/ui
+ng add @cngx/core
 ```
 
 The run reads the app first, asks only what it cannot detect, lists the
@@ -47,7 +48,8 @@ range in the same install as the cngx packages. On an app without the CDK,
 start with `ng add @cngx/core`, or install `@angular/cdk` at your Angular major
 first (see [Manual install](#manual-install)): the CLI installs any other
 `@cngx/*` package before its `ng add` runs, the same way a plain
-`npm install` would, and that install would fetch the newer CDK. `@angular/material` is
+`npm install` would, and that install fetches the newer CDK and stops with
+`ERESOLVE` before any cngx code runs. `@angular/material` is
 never installed for you; the bridge only themes an app that already has it.
 
 ---
@@ -144,7 +146,7 @@ never installed for you; the bridge only themes an app that already has it.
 |`full`|`recommended` plus the root feedback services (toasts, alerts, banners), the popover positioning fallback, the cngx starter page in place of the Angular welcome page, and the MCP setup for every editor folder found in the project. English throughout; `--i18n de` adds the German pack.|
 
 ```bash
-ng add @cngx/ui --preset=minimal
+ng add @cngx/core --preset=minimal
 ```
 
 ---
@@ -218,7 +220,7 @@ values it takes.
 For CI and scripted runs, pass the answers and skip the questions:
 
 ```bash
-ng add @cngx/ui --preset=recommended --no-prompts --yes --skip-confirmation
+ng add @cngx/core --preset=recommended --no-prompts --yes --skip-confirmation
 ```
 
 `--skip-confirmation` belongs to the Angular CLI (it skips the CLI's own
@@ -430,7 +432,7 @@ and `@forward`, before any other `@import`.
 ## Previewing with `--dry-run`
 
 ```bash
-ng add @cngx/ui --dry-run
+ng add @cngx/core --dry-run
 ```
 
 When the package is not installed yet, the CLI has to install it before any
