@@ -1689,6 +1689,11 @@ describe('the ng-add collection', () => {
       'yes',
       'prompts',
       'quiet',
+      'pins',
     ]);
+  });
+
+  it('keeps the shim-only pins option out of the help', () => {
+    expect(SCHEMA.properties['pins']).toMatchObject({ visible: false, oneOf: [{ type: 'string' }, { type: 'array' }] });
   });
 });

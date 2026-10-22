@@ -107,6 +107,14 @@ describe('createInvalidAnswerError', () => {
 });
 
 describe('parseNgAddOptions', () => {
+  it('reads the pins a shim hands over as @cngx package names only', () => {
+    expect(parseNgAddOptions({ pins: ['@cngx/core', '@cngx/forms'] }).pins).toEqual(['@cngx/core', '@cngx/forms']);
+    expect(parseNgAddOptions({ pins: '@cngx/core,@cngx/forms' }).pins).toEqual(['@cngx/core', '@cngx/forms']);
+    expect(parseNgAddOptions({ pins: ['@cngx/core', 'lodash', 7] as unknown as readonly string[] }).pins).toEqual(['@cngx/core']);
+    expect(parseNgAddOptions({ pins: 7 as unknown as string }).pins).toBeUndefined();
+    expect(parseNgAddOptions({ pins: { 0: '@cngx/core' } as unknown as string }).pins).toBeUndefined();
+  });
+
   it('splits a comma list and trims each entry', () => {
     expect(parseNgAddOptions({ aiTools: 'claude,vscode' }).aiTools).toEqual(['claude', 'vscode']);
     expect(parseNgAddOptions({ libs: 'core, forms , ui' }).libs).toEqual(['core', 'forms', 'ui']);

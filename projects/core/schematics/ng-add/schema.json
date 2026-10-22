@@ -85,6 +85,11 @@
       "oneOf": [{ "type": "boolean" }, { "type": "string", "enum": ["true", "false"] }],
       "description": "Print only the summary, not the planned changes.",
       "default": false
+    },
+    "pins": {
+      "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+      "description": "Set by a @cngx package shim that delegates in the same run: the @cngx packages core's plan pins beside the selected ones.",
+      "visible": false
     }
   },
   "required": []
