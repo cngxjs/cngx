@@ -52,6 +52,35 @@ export function factoryProblems(source) {
   return /export function migrate\(/.test(source) ? [] : ['index.ts exports no migrate factory'];
 }
 
+const RUNNERS = new Set(['it', 'test', 'describe', 'suite']);
+const CASES = new Set(['it', 'test']);
+// Modifiers that keep a case from running (or passing as written), or keep
+// the others from running.
+const NOT_RUN = new Set(['skip', 'skipIf', 'runIf', 'only', 'todo', 'fails']);
+
+// `it`, `test.each([...])`, `it.skip`: the runner a callee starts from and
+// the modifiers chained after it; `undefined` when it is no runner.
+function runnerOf(expression) {
+  if (ts.isIdentifier(expression)) {
+    return RUNNERS.has(expression.text) ? { name: expression.text, modifiers: [] } : undefined;
+  }
+  if (ts.isPropertyAccessExpression(expression)) {
+    const inner = runnerOf(expression.expression);
+    return inner && { ...inner, modifiers: [...inner.modifiers, expression.name.text] };
+  }
+  if (ts.isCallExpression(expression)) {
+    return runnerOf(expression.expression);
+  }
+  return undefined;
+}
+
+function callsFactory(node) {
+  if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && FACTORIES.has(node.expression.text)) {
+    return true;
+  }
+  return ts.forEachChild(node, callsFactory) === true;
+}
+
 // Every call in the file, read from its syntax tree, so a name in a comment
 // or a string never counts.
 function calls(source) {
@@ -64,16 +93,14 @@ function calls(source) {
     ts.forEachChild(node, visit);
   };
   visit(file);
-  return found.map((call) => ({
-    callee: ts.isIdentifier(call.expression) ? call.expression.text : call.expression.getText(file),
-    argument: call.arguments[0] !== undefined && ts.isStringLiteralLike(call.arguments[0]) ? call.arguments[0].text : undefined,
-  }));
+  return found;
 }
 
 /**
  * What is wrong with a migration's `index.spec.ts`; `undefined` when the
- * file is missing. A spec needs a case (`it` / `test`), a call of `migrate`
- * or `createMigration` (passing the name along is no run), and a
+ * file is missing. A spec needs a case (`it` / `test`, also `.each`) whose
+ * body calls `migrate` or `createMigration` (passing the name along is no
+ * run), no skipped, focused or todo runner, and a
  * `readMigrationFixture('<folder>')` call for the migration's own pair.
  */
 export function specProblems(source, folder) {
@@ -81,11 +108,29 @@ export function specProblems(source, folder) {
     return ['index.spec.ts is missing'];
   }
   const found = calls(source);
+  const runners = found.flatMap((call) => {
+    const runner = runnerOf(call.expression);
+    return runner === undefined ? [] : [{ call, ...runner }];
+  });
   const problems = [];
-  if (!found.some(({ callee }) => /^(it|test)\b/.test(callee)) || !found.some(({ callee }) => FACTORIES.has(callee))) {
+  if (runners.some(({ modifiers }) => modifiers.some((modifier) => NOT_RUN.has(modifier)))) {
+    problems.push('index.spec.ts skips, focuses or leaves a case to do');
+  }
+  const runs = runners.some(
+    ({ call, name }) => CASES.has(name) && call.arguments.some((argument) => ts.isFunctionLike(argument) && callsFactory(argument)),
+  );
+  if (!runs) {
     problems.push('index.spec.ts has no case that calls migrate or createMigration');
   }
-  if (!found.some(({ callee, argument }) => callee === 'readMigrationFixture' && argument === folder)) {
+  const reads = found.some(
+    (call) =>
+      ts.isIdentifier(call.expression) &&
+      call.expression.text === 'readMigrationFixture' &&
+      call.arguments[0] !== undefined &&
+      ts.isStringLiteralLike(call.arguments[0]) &&
+      call.arguments[0].text === folder,
+  );
+  if (!reads) {
     problems.push(`index.spec.ts never reads its fixture pair through readMigrationFixture('${folder}')`);
   }
   return problems;

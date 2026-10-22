@@ -130,6 +130,28 @@ describe('well-formed rules', () => {
     expect(specProblems(SPEC, '0.2.0')).not.toEqual([]);
   });
 
+  it.each([
+    ['it.skip', "it.skip('renames', async () => { await runRule(migrate(), tree); });"],
+    ['it.only', "it.only('renames', async () => { await runRule(migrate(), tree); });"],
+    ['test.skip', "test.skip('renames', async () => { await runRule(migrate(), tree); });"],
+    ['test.todo', "test.todo('renames'); it('reads', () => { migrate(); });"],
+    ['it.skipIf', "it.skipIf(true)('renames', async () => { await runRule(migrate(), tree); });"],
+    ['describe.skip', "describe.skip('x', () => { it('renames', async () => { await runRule(migrate(), tree); }); });"],
+  ])('rejects a spec with %s', (_variant, spec) => {
+    expect(specProblems(`const { before } = readMigrationFixture('0.2.0'); ${spec}`, '0.2.0')).toContain(
+      'index.spec.ts skips, focuses or leaves a case to do',
+    );
+  });
+
+  it('rejects a migrate call outside every case', () => {
+    expect(
+      specProblems("readMigrationFixture('0.2.0'); const rule = migrate(); it('is a case', () => { expect(rule).toBeDefined(); });", '0.2.0'),
+    ).toContain('index.spec.ts has no case that calls migrate or createMigration');
+    expect(
+      specProblems("readMigrationFixture('0.2.0'); it.each([1])('runs %s', async () => { await runRule(migrate(), tree); });", '0.2.0'),
+    ).toEqual([]);
+  });
+
   it('rejects placeholder fixtures and an after that equals before', () => {
     const before = { '.cngx/install.json': '{"a":1}' };
 
