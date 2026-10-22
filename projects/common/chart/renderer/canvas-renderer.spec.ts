@@ -369,6 +369,7 @@ describe('createCanvasRenderer - per-layer tokens', () => {
     renderer.invalidateColorCache?.();
     renderer.paint([POINT_LINE], [layer]);
     expect(gcs.mock.calls.length).toBe(afterFirst * 2);
+    expect(afterFirst).toBe(1);
   });
 
   it('keeps the layer elements for a DPR-only repaint', () => {

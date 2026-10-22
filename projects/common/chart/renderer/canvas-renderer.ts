@@ -104,6 +104,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
   // host as fallback); replaced wholesale on invalidation.
   let colorCache = new WeakMap<Element, Map<string, string>>();
   let numberCache = new WeakMap<Element, Map<string, number>>();
+  let styleCache = new WeakMap<Element, CSSStyleDeclaration>();
   // Snapshot of deps.forcedColors, taken once per paint() so the per-mark
   // colour lookups do not re-read the signal.
   let forcedNow = false;
@@ -115,7 +116,15 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
   let hatchDpr = -1;
 
   function readVar(name: string, el: Element | null): string {
-    return el ? getComputedStyle(el).getPropertyValue(name).trim() : '';
+    if (!el) {
+      return '';
+    }
+    let style = styleCache.get(el);
+    if (!style) {
+      style = getComputedStyle(el);
+      styleCache.set(el, style);
+    }
+    return style.getPropertyValue(name).trim();
   }
 
   function cacheOf<V>(cache: WeakMap<Element, Map<string, V>>, el: Element): Map<string, V> {
@@ -440,6 +449,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
   function invalidateColorCache(): void {
     colorCache = new WeakMap();
     numberCache = new WeakMap();
+    styleCache = new WeakMap();
     sysColors = null;
     hatches = null;
   }
@@ -459,6 +469,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     lastH = -1;
     colorCache = new WeakMap();
     numberCache = new WeakMap();
+    styleCache = new WeakMap();
     sysColors = null;
     hatches = null;
   }
