@@ -23,6 +23,7 @@ import { createManualState } from '@cngx/common/data';
 import { CngxTreeSelect } from './tree-select.component';
 import { CngxTreeSelectChip } from './tree-select-chip.directive';
 import { CngxTreeSelectTriggerLabel } from './tree-select-trigger-label.directive';
+import type { CngxTreeSelectChipDisplay } from './tree-select.model';
 
 // jsdom does not implement the Popover API - polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
@@ -80,6 +81,7 @@ function tree(): CngxTreeNode<Row>[] {
       [keyFn]="keyFn"
       [(values)]="values"
       [cascadeChildren]="cascade()"
+      [chipDisplay]="chipDisplay()"
       [clearable]="true"
       [initiallyExpanded]="'all'"
       (selectionChange)="onChange($event)"
@@ -91,6 +93,7 @@ class TreeHost {
   readonly nodes = signal<CngxTreeNode<Row>[]>(tree());
   readonly values = signal<Row[]>([]);
   readonly cascade = signal(false);
+  readonly chipDisplay = signal<CngxTreeSelectChipDisplay | undefined>(undefined);
   readonly idFn = (v: Row): string => v.id;
   readonly labelFn = (v: Row): string => v.name;
   readonly keyFn = (v: Row): unknown => v.id;
@@ -291,8 +294,9 @@ describe('CngxTreeSelect', () => {
     );
   });
 
-  it('chip remove deselects one value (no cascade even if cascadeChildren is on)', () => {
+  it('chip remove deselects one value with chipDisplay all, even with cascadeChildren on', () => {
     f.host.cascade.set(true);
+    f.host.chipDisplay.set('all');
     f.host.values.set([
       { id: 'a', name: 'Alpha' },
       { id: 'a1', name: 'Alpha-1' },
@@ -308,6 +312,56 @@ describe('CngxTreeSelect', () => {
     // Single deselect (first chip = Alpha). Cascade must not fire here.
     const ids = f.host.values().map((v) => v.id).sort();
     expect(ids).toEqual(['a1', 'a2']);
+  });
+
+  const fullAlpha = (): Row[] => [
+    { id: 'a', name: 'Alpha' },
+    { id: 'a1', name: 'Alpha-1' },
+    { id: 'a2', name: 'Alpha-2' },
+  ];
+  const chipLabels = (): string[] =>
+    Array.from(f.root.querySelectorAll('cngx-chip')).map((c) =>
+      (c.firstChild?.textContent ?? c.textContent ?? '').trim(),
+    );
+
+  it('summarizes a fully selected subtree as one parent chip under cascadeChildren', () => {
+    f.host.cascade.set(true);
+    f.host.values.set([...fullAlpha(), { id: 'b', name: 'Bravo' }]);
+    f.fixture.detectChanges();
+    expect(f.root.querySelectorAll('cngx-chip').length).toBe(2);
+    expect(f.tree.selected()).toHaveLength(4);
+  });
+
+  it('removes the whole subtree through the summarizing parent chip', () => {
+    f.host.cascade.set(true);
+    f.host.values.set(fullAlpha());
+    f.fixture.detectChanges();
+    expect(f.root.querySelectorAll('cngx-chip').length).toBe(1);
+    f.root.querySelector<HTMLButtonElement>('.cngx-chip__remove')!.click();
+    f.fixture.detectChanges();
+    expect(f.host.values()).toEqual([]);
+    expect(f.host.onChange).toHaveBeenCalledTimes(1);
+    expect(f.host.onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ action: 'cascade-toggle' }),
+    );
+  });
+
+  it('keeps every chip with chipDisplay all and shows descendants with leaves', () => {
+    f.host.cascade.set(true);
+    f.host.values.set(fullAlpha());
+    f.host.chipDisplay.set('all');
+    f.fixture.detectChanges();
+    expect(f.root.querySelectorAll('cngx-chip').length).toBe(3);
+    f.host.chipDisplay.set('leaves');
+    f.fixture.detectChanges();
+    expect(f.root.querySelectorAll('cngx-chip').length).toBe(2);
+  });
+
+  it('defaults to every chip without cascadeChildren', () => {
+    f.host.values.set(fullAlpha());
+    f.fixture.detectChanges();
+    expect(f.root.querySelectorAll('cngx-chip').length).toBe(3);
+    expect(chipLabels().length).toBe(3);
   });
 
   it('selected() derives label via labelFn + emits chip for each value', () => {
@@ -961,7 +1015,7 @@ describe('CngxTreeSelect - summary trigger under the touch floor', () => {
     );
   });
 
-  it('counts a cascaded selection the way the chips did', () => {
+  it('summarizes a cascaded selection the way the chips do', () => {
     const { fixture, tree, el } = render(true);
     fixture.componentInstance.values.set([]);
     fixture.detectChanges();
@@ -971,13 +1025,15 @@ describe('CngxTreeSelect - summary trigger under the touch floor', () => {
     TestBed.flushEffects();
     fixture.detectChanges();
     expect(fixture.componentInstance.values()).toHaveLength(3);
+    // The summary reads the displayed chip list: the parent stands for its
+    // fully selected subtree.
     expect(el.querySelector('.cngx-select-summary__label')?.textContent?.trim()).toBe('Alpha');
-    expect(el.querySelector('.cngx-select__chip-overflow-badge')?.textContent?.trim()).toBe('+2');
+    expect(el.querySelector('.cngx-select__chip-overflow-badge')).toBeNull();
     expect(
       stripBidiIsolates(
         el.querySelector('cngx-select-summary .cngx-sr-only')?.textContent?.trim() ?? '',
       ),
-    ).toBe('3 selected: Alpha, Alpha-1, and Alpha-2');
+    ).toBe('Alpha');
   });
 
   it('speaks a single value as its label and shows the placeholder for none', () => {

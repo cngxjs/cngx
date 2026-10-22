@@ -116,10 +116,12 @@ import {
   type CngxTreeSelectPanelHost,
 } from './tree-select-panel-host';
 import { CngxTreeSelectPanel } from './tree-select-panel.component';
+import { createTreeChipDisplay } from './internal/tree-chip-display';
 import { createTreeToggleDispatch, type TreeToggleDispatch } from './internal/tree-toggle-dispatch';
 import type {
   CngxTreeSelectAction,
   CngxTreeSelectChipContext,
+  CngxTreeSelectChipDisplay,
   CngxTreeSelectNodeContext,
   CngxTreeSelectTriggerLabelContext,
   CngxTreeSelectedItem,
@@ -300,6 +302,21 @@ export class CngxTreeSelect<T = unknown>
    * atomically; single `selectionChange` with `action: 'cascade-toggle'`.
    */
   readonly cascadeChildren = input<boolean>(false);
+  /**
+   * Which selected values the trigger shows as chips. `'parents'` shows a
+   * fully selected subtree (the node and every non-disabled descendant
+   * selected) as one chip for its topmost node, and removing that chip
+   * deselects the subtree; `'leaves'` hides a fully selected parent and
+   * shows its descendants; `'all'` shows one chip per value, each removing
+   * only its value. Default: `'parents'` with `[cascadeChildren]="true"`,
+   * else `'all'`. `selected()` and the `*cngxTreeSelectTriggerLabel`
+   * context always carry the full selection.
+   */
+  readonly chipDisplay = input<CngxTreeSelectChipDisplay | undefined>(undefined);
+  /** @internal */
+  protected readonly resolvedChipDisplay = computed<CngxTreeSelectChipDisplay>(
+    () => this.chipDisplay() ?? (this.cascadeChildren() ? 'parents' : 'all'),
+  );
   /**
    * Opt-in expand-to-reveal type-to-find. When `true`, a typeahead
    * query with no match among the VISIBLE nodes searches the full
@@ -818,12 +835,21 @@ export class CngxTreeSelect<T = unknown>
     },
   );
 
+  /** @internal Chip list for the resolved `chipDisplay` mode. */
+  private readonly chipView = createTreeChipDisplay<T>({
+    selected: this.selected,
+    mode: this.resolvedChipDisplay,
+    treeController: this.treeController,
+  });
+  /** @internal */
+  protected readonly displayedChips = this.chipView.displayed;
+
   /**
    * @internal - one-line summary instead of chips under the touch floor,
-   * counted over the same `selected()` the chips render.
+   * counted over the same displayed list the chips render.
    */
   protected readonly summary = createSelectSummary<T>({
-    selectedOptions: computed(() => [...this.selected()]),
+    selectedOptions: computed(() => [...this.displayedChips()]),
     active: injectTouchFloorSignal(),
     ariaLabels: this.config.ariaLabels,
     fallbackLabels: this.config.fallbackLabels,
@@ -976,8 +1002,10 @@ export class CngxTreeSelect<T = unknown>
    * the disabled-guard + WeakMap closure cache while the override
    * keeps the tree-aware mutation path:
    *
-   *   - in-tree value → single toggle (always single-deselect,
-   *     never cascades, even with `[cascadeChildren]="true"`).
+   *   - chip that summarizes a fully selected subtree (`chipDisplay`
+   *     `'parents'`) → cascade deselect of that subtree (disabled
+   *     descendants keep their state).
+   *   - any other in-tree value → single toggle (single deselect).
    *   - stale value (not in tree) → strip from `values` + emit +
    *     announce.
    *
@@ -999,13 +1027,19 @@ export class CngxTreeSelect<T = unknown>
 
   /**
    * Shared removal path for chip × and the `remove` callback in
-   * `*cngxTreeSelectChip`. Always single-deselect regardless of
-   * `cascadeChildren` - the consumer removed ONE chip for ONE value;
-   * cascade would surprise-remove invisible descendants.
+   * `*cngxTreeSelectChip`. A summarizing parent chip stands for its whole
+   * subtree, so it cascades; every other chip removes its one value.
    *
    * Disabled-guard lives in the handler; this method assumes safe.
    */
   private removeSelectedItem(opt: CngxTreeSelectedItem<T>): void {
+    const node = this.chipView.summarizes(opt.value)
+      ? this.treeController.findByValue(opt.value)
+      : undefined;
+    if (node) {
+      this.dispatch.cascadeToggle(node);
+      return;
+    }
     this.dispatch.removeValue(opt.value, opt.label);
   }
 

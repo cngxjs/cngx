@@ -61,6 +61,7 @@ export {
   type CngxTreeNode,
   type CngxTreeSelectAction,
   type CngxTreeSelectChipContext,
+  type CngxTreeSelectChipDisplay,
   type CngxTreeSelectNodeContext,
   type CngxTreeSelectTriggerLabelContext,
   type CngxTreeSelectedItem,

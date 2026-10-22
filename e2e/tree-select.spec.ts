@@ -71,12 +71,15 @@ test.describe('CngxTreeSelect demo', () => {
     await trigger.click();
 
     // "Frontend" has three leaf children (Angular, Signals, RxJS). Cascade mode
-    // is on in this section; clicking the parent should check all four rows
-    // (parent + three children) in one toggle.
+    // is on in this section; clicking the parent checks all four rows
+    // (parent + three children) in one toggle, and the trigger summarizes the
+    // fully selected subtree as one parent chip (chipDisplay 'parents').
     const frontend = section.locator('[role="treeitem"]').filter({ hasText: 'Frontend' });
     await frontend.click();
+    await expect(frontend).toHaveAttribute('aria-checked', 'true');
     const chips = section.locator('cngx-chip');
-    await expect(chips).toHaveCount(4);
+    await expect(chips).toHaveCount(1);
+    await expect(chips.first()).toContainText('Frontend');
   });
 
   test('keyboard: ArrowDown opens + highlights first, Enter toggles, Escape closes', async ({ page }) => {
@@ -120,7 +123,7 @@ test.describe('CngxTreeSelect demo', () => {
     await expect(frontend).toHaveAttribute('aria-expanded', 'false');
   });
 
-  test('chip × removes a single value (no cascade even with cascadeChildren on)', async ({ page }) => {
+  test('a parent chip removes its subtree', async ({ page }) => {
     await page.goto(R.cascade);
     const section = ex(page);
     const trigger = triggerOf(section);
@@ -131,31 +134,52 @@ test.describe('CngxTreeSelect demo', () => {
     await page.keyboard.press('Escape');
 
     const chips = section.locator('cngx-chip');
-    await expect(chips).toHaveCount(4);
-    // Remove one chip — cascade must NOT fire on removal, so only one value drops.
+    await expect(chips).toHaveCount(1);
+    // The summarizing chip stands for the whole subtree: removing it
+    // deselects the parent and every descendant.
     await chips.first().locator('.cngx-chip__remove').click();
-    await expect(chips).toHaveCount(3);
+    await expect(chips).toHaveCount(0);
+    await trigger.click();
+    await expect(frontend).toHaveAttribute('aria-checked', 'false');
   });
 
-  test('keyboard: Enter and Space on a chip remove button remove the chip', async ({ page }) => {
-    await page.goto(R.cascade);
+  test('a child chip removes one value', async ({ page }) => {
+    await page.goto(R.basic);
     const section = ex(page);
     const trigger = triggerOf(section);
     await trigger.click();
-    await section.locator('[role="treeitem"]').filter({ hasText: 'Frontend' }).click();
+    await section.locator('[role="treeitem"]').filter({ hasText: 'Angular' }).click();
+    await section.locator('[role="treeitem"]').filter({ hasText: 'Signals' }).click();
     await page.keyboard.press('Escape');
 
     const chips = section.locator('cngx-chip');
-    await expect(chips).toHaveCount(4);
+    await expect(chips).toHaveCount(2);
+    await chips.first().locator('.cngx-chip__remove').click();
+    await expect(chips).toHaveCount(1);
+  });
+
+  test('keyboard: Enter and Space on a chip remove button remove the chip', async ({ page }) => {
+    // Non-cascade route: one chip per value, so each key removes one chip.
+    await page.goto(R.basic);
+    const section = ex(page);
+    const trigger = triggerOf(section);
+    await trigger.click();
+    for (const name of ['Angular', 'Signals', 'RxJS']) {
+      await section.locator('[role="treeitem"]').filter({ hasText: name }).click();
+    }
+    await page.keyboard.press('Escape');
+
+    const chips = section.locator('cngx-chip');
+    await expect(chips).toHaveCount(3);
 
     await chips.first().locator('.cngx-chip__remove').focus();
     await page.keyboard.press('Enter');
-    await expect(chips).toHaveCount(3);
+    await expect(chips).toHaveCount(2);
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
 
     await chips.first().locator('.cngx-chip__remove').focus();
     await page.keyboard.press('Space');
-    await expect(chips).toHaveCount(2);
+    await expect(chips).toHaveCount(1);
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 

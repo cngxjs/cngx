@@ -21,6 +21,21 @@ export type { FlatTreeNode };
 export type CngxTreeSelectAction = 'toggle' | 'cascade-toggle' | 'clear';
 
 /**
+ * Which selected values the trigger shows as chips.
+ *
+ *   - `'parents'` - a fully selected subtree (the node and every
+ *     non-disabled descendant selected) shows as one chip for its topmost
+ *     node; removing that chip deselects the subtree.
+ *   - `'leaves'` - a fully selected parent is hidden; its descendants show.
+ *   - `'all'` - one chip per selected value.
+ *
+ * Default: `'parents'` with `[cascadeChildren]="true"`, else `'all'`.
+ *
+ * @category forms/select/tree-select
+ */
+export type CngxTreeSelectChipDisplay = 'parents' | 'leaves' | 'all';
+
+/**
  * Resolved selection entry surfaced to the chip strip and the chip /
  * trigger-label slots. Carries a display label alongside the raw value
  * so custom markup never has to call `labelFn`.

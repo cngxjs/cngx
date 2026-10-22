@@ -68,7 +68,7 @@
           [fullText]="summary.fullText()"
         />
       } @else {
-        @for (opt of selected(); track keyFnInternal()(opt.value)) {
+        @for (opt of displayedChips(); track keyFnInternal()(opt.value)) {
           @if (chipTpl(); as chipT) {
             <ng-container
               *ngTemplateOutlet="
