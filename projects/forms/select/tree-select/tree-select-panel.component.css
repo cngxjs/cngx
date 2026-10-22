@@ -338,12 +338,6 @@
       transform: scaleX(-1);
     }
 
-    @media (prefers-reduced-motion: reduce) {
-      .cngx-tree-select__twisty {
-        transition: none;
-      }
-    }
-
     /* Reserve the twisty gutter for leaves so labels line up across depths. */
     .cngx-tree-select__twisty-spacer {
       display: inline-block;
@@ -356,6 +350,14 @@
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
+    }
+  }
+
+  /* Outside the @scope: a @media nested in @scope applies unreliably across
+     engines, so the reduced-motion override lives at layer level. */
+  @media (prefers-reduced-motion: reduce) {
+    cngx-tree-select-panel .cngx-tree-select__twisty {
+      transition: none;
     }
   }
 }
