@@ -1843,6 +1843,27 @@
       ]
     },
     {
+      "code": "CNGX2024",
+      "lib": "forms",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "patchData or clearLocalItems called on the select shell",
+      "page": "core-concepts/error-codes/cngx2024.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2024.html",
+      "status": "active",
+      "files": ["projects/forms/select/select-shell/select-shell.component.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/select/select-shell/select-shell.component.ts",
+          "text": "CngxSelectShell.clearLocalItems(): projected options are the source of truth; there are no local items to clear. Remove the <cngx-option> instead."
+        },
+        {
+          "file": "projects/forms/select/select-shell/select-shell.component.ts",
+          "text": "CngxSelectShell.patchData(): projected options are the source of truth; the patched item is not rendered. Project a <cngx-option> instead."
+        }
+      ]
+    },
+    {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",

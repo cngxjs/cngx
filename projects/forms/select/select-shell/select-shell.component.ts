@@ -51,6 +51,8 @@ import {
   type PopoverPlacement,
 } from '@cngx/common/popover';
 
+import { cngxDevWarn } from '@cngx/utils';
+
 import {
   CNGX_FORM_FIELD_CONTROL,
   CngxFieldSkinHost,
@@ -869,10 +871,28 @@ export class CngxSelectShell<T = unknown>
   protected readonly unfilteredCount = computed(() => this.core.unfilteredFlatOptions().length);
   protected readonly previousLoadedCount = computed(() => this.flatOptions().length);
 
+  /**
+   * Panel-host contract member. The shell renders projected `<cngx-option>`
+   * elements only, so a patched item never reaches the panel; dev mode warns
+   * with CNGX2024. The buffer still feeds value resolution.
+   */
   patchData(item: CngxSelectOptionDef<T>): void {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      cngxDevWarn(
+        'CNGX2024',
+        'CngxSelectShell.patchData(): projected options are the source of truth; the patched item is not rendered. Project a <cngx-option> instead.',
+      );
+    }
     this.localItemsBuffer.patch(item);
   }
+  /** Panel-host contract member; see `patchData`. Dev mode warns with CNGX2024. */
   clearLocalItems(): void {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      cngxDevWarn(
+        'CNGX2024',
+        'CngxSelectShell.clearLocalItems(): projected options are the source of truth; there are no local items to clear. Remove the <cngx-option> instead.',
+      );
+    }
     this.localItemsBuffer.clear();
   }
 

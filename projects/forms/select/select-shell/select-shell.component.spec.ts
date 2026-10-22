@@ -11,7 +11,7 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Subject, type Observable } from 'rxjs';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxListbox, type CngxOption } from '@cngx/common/interactive';
 import {
@@ -256,6 +256,31 @@ describe('CngxSelectShell - Phase 5 scaffold', () => {
     expect(opts[0]).toMatchObject({ value: 'red', label: 'Rot' });
     expect(opts[1]).toMatchObject({ value: 'green', label: 'Grün', disabled: false });
     expect(opts[2]).toMatchObject({ value: 'blue', label: 'Blau' });
+  });
+
+  it('warns CNGX2024 in dev mode on patchData and clearLocalItems, and renders nothing new', () => {
+    const fixture = TestBed.createComponent(FlatHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const shell = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .componentInstance as CngxSelectShell<string>;
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    shell.patchData({ value: 'x', label: 'X' });
+    flush(fixture);
+    shell.clearLocalItems();
+    flush(fixture);
+
+    expect(warn).toHaveBeenCalledTimes(2);
+    expect(String(warn.mock.calls[0][0])).toMatch(/^CNGX2024: CngxSelectShell\.patchData\(\)/);
+    expect(String(warn.mock.calls[1][0])).toMatch(
+      /^CNGX2024: CngxSelectShell\.clearLocalItems\(\)/,
+    );
+    const rendered = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('cngx-option'),
+    ).map((el) => el.textContent?.trim());
+    expect(rendered).not.toContain('X');
+    warn.mockRestore();
   });
 
   it('toggling [disabled] on a projected option updates derivedOptions', () => {
