@@ -12,6 +12,7 @@ import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
 
 import type { CngxSelectCommitErrorDisplay } from './commit-action.types';
 import type { CngxCommitErrorAnnouncePolicy } from './commit-error-announcer';
+import type { CngxTreeSelectNodeCountContext } from '../tree-select/tree-select.model';
 import type {
   CngxSelectActionContext,
   CngxSelectCaretContext,
@@ -235,6 +236,12 @@ export interface CngxSelectFallbackLabels {
    * the hidden count. Default `'+{count}'`, the count in the locale's digits.
    */
   readonly chipOverflowBadge?: (count: number) => string;
+  /**
+   * Selected-of-total count on a tree-select parent row. Receives the
+   * selected and the total descendants. Default `'{selected}/{total}'`, the
+   * numbers in the locale's digits.
+   */
+  readonly treeNodeCount?: (selected: number, total: number) => string;
 }
 
 /**
@@ -412,6 +419,8 @@ export interface CngxSelectConfig {
     readonly action?: TemplateRef<CngxSelectActionContext> | null;
     /** Decorative drag handle of the mobile sheet. */
     readonly sheetHandle?: TemplateRef<CngxSelectSheetHandleContext> | null;
+    /** Selected-of-total count on a `CngxTreeSelect` parent row. */
+    readonly treeNodeCount?: TemplateRef<CngxTreeSelectNodeCountContext> | null;
   };
 }
 
@@ -475,6 +484,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
     optionError: null,
     action: null,
     sheetHandle: null,
+    treeNodeCount: null,
   },
 };
 

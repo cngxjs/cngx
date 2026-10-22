@@ -29,6 +29,8 @@ export interface CngxSelectLanguageSection {
    * more values. `{list}` is the labels joined for the reading locale.
    */
   readonly selectionSummary: CngxMessage;
+  /** `{selected}`, `{total}`: the selected-of-total count on a tree-select parent row. */
+  readonly treeNodeCount: CngxMessage;
   /** Status region while the options load. */
   readonly statusLoading: string;
   /** Overlay while loaded options refresh. */
@@ -123,6 +125,7 @@ export const CNGX_SELECT_LANGUAGE_EN: CngxSelectLanguageSection = {
   chipRemoveFor: '{action}: {label}',
   chipOverflowBadge: '+{count}',
   selectionSummary: '{count} selected: {list}',
+  treeNodeCount: '{selected}/{total}',
   statusLoading: 'Loading options',
   statusRefreshing: 'Refreshing options',
   fieldLabelFallback: 'Selection',

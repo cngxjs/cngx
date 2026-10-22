@@ -32,6 +32,8 @@
  * - `.cngx-tree-select__twisty-spacer` - same-sized placeholder for
  *   leaves so labels align across depths
  * - `.cngx-tree-select__label` - ellipsis-truncating node label
+ * - `.cngx-tree-select__count` - selected-of-total count at the inline end
+ *   of a parent row (`aria-hidden`, muted)
  * - `.cngx-tree-select__node::before` - depth guide lines, one per
  *   ancestor level, centred under the ancestor twisty; `0px` guide width
  *   switches them off
@@ -246,6 +248,17 @@
     inherits: true;
   }
 
+  /**
+   * Colour of the selected-of-total count on a parent row. Unset, the count
+   * mutes the row colour.
+   * @group Surface
+   * @default color-mix(in oklab, currentColor 65%, transparent)
+   */
+  @property --cngx-tree-select-count-color {
+    syntax: '*';
+    inherits: true;
+  }
+
   /* Dark-mode component-local swap - an alpha-on-black hover surface
    * dissolves into a dark panel-bg, so the dark blocks flip it to
    * alpha-on-white. */
@@ -445,6 +458,20 @@
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
+    }
+
+    /* Numbers in the reading locale's digits; isolate fences them from the
+       label in either direction. */
+    .cngx-tree-select__count {
+      flex: none;
+      margin-inline-start: auto;
+      color: var(
+        --cngx-tree-select-count-color,
+        color-mix(in oklab, currentColor 65%, transparent)
+      );
+      font-size: var(--cngx-font-size-sm, 0.875rem);
+      font-variant-numeric: tabular-nums;
+      unicode-bidi: isolate;
     }
   }
 

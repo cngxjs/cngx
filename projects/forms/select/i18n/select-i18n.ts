@@ -143,6 +143,8 @@ export function selectCopyFrom(section: CngxSelectLanguageSection, locale: strin
       commitFailed: section.commitFailed,
       commitFailedRetry: section.commitFailedRetry,
       chipOverflowBadge: (count) => formatMessage(section.chipOverflowBadge, { count }, locale),
+      treeNodeCount: (selected, total) =>
+        formatMessage(section.treeNodeCount, { selected, total }, locale),
     },
     announceFormat: announceFormatFrom(section, locale),
     clearSelection: section.clearSelection,

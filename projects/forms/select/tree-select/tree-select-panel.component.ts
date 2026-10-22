@@ -141,6 +141,8 @@ export class CngxTreeSelectPanel<T = unknown> {
       readonly expanded: boolean;
       readonly selected: boolean;
       readonly indeterminate: boolean;
+      readonly selectedCount: number;
+      readonly descendantCount: number;
       readonly context: CngxTreeSelectNodeContext<T>;
     }
   >();
@@ -151,13 +153,18 @@ export class CngxTreeSelectPanel<T = unknown> {
     const expanded = this.host.treeController.isExpanded(node.id)();
     const selected = this.host.isSelected(node.value);
     const indeterminate = this.host.isIndeterminate(node.value);
+    const count = this.host.nodeCount(node);
+    const selectedCount = count?.selected ?? 0;
+    const descendantCount = count?.total ?? 0;
 
     const cached = this.contextCache.get(node.id);
     if (
       cached?.node === node &&
       cached?.expanded === expanded &&
       cached?.selected === selected &&
-      cached?.indeterminate === indeterminate
+      cached?.indeterminate === indeterminate &&
+      cached?.selectedCount === selectedCount &&
+      cached?.descendantCount === descendantCount
     ) {
       return cached.context;
     }
@@ -171,6 +178,8 @@ export class CngxTreeSelectPanel<T = unknown> {
       selected,
       indeterminate,
       disabled: node.disabled,
+      selectedCount,
+      descendantCount,
       toggleExpand: this.getToggleExpand(node.id),
       handleSelect: this.getHandleSelect(node),
     };
@@ -179,6 +188,8 @@ export class CngxTreeSelectPanel<T = unknown> {
       expanded,
       selected,
       indeterminate,
+      selectedCount,
+      descendantCount,
       context,
     });
     return context;

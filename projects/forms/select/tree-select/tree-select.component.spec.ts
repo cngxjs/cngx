@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, viewChild, type TemplateRef } from '@angular/core';
 import { Subject, type Observable } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -14,17 +14,26 @@ import { stubTouchFloor } from '../shared/__test-helpers/touch-floor';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { stripBidiIsolates } from '@cngx/testing';
 import {
+  CNGX_SELECT_CONFIG,
+  makeSelectConfig,
   provideSelectConfig,
   withAriaLabels,
+  withFallbackLabels,
   withPanelClass,
+  withTemplates,
   type CngxSelectAriaLabels,
+  type CngxSelectFallbackLabels,
 } from '../shared/config';
 import { createManualState } from '@cngx/common/data';
 import { CngxSelectChipOverflow } from '../shared/template-slots';
 import { CngxTreeSelect } from './tree-select.component';
 import { CngxTreeSelectChip } from './tree-select-chip.directive';
 import { CngxTreeSelectTriggerLabel } from './tree-select-trigger-label.directive';
-import type { CngxTreeSelectChipDisplay } from './tree-select.model';
+import { CngxTreeSelectNodeCount } from './tree-select-node-count.directive';
+import type {
+  CngxTreeSelectChipDisplay,
+  CngxTreeSelectNodeCountContext,
+} from './tree-select.model';
 
 // jsdom does not implement the Popover API - polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
@@ -1171,5 +1180,153 @@ describe('CngxTreeSelect - one-line chip strip', () => {
     expect(el.querySelector('.cngx-select__chip-overflow-badge')).toBeNull();
     // The host keeps the AT text when the badge is projected.
     expect(el.querySelector('.cngx-select__hidden-summary')).not.toBeNull();
+  });
+});
+
+// ── Selected-of-total count on parent rows ──────────────────────────
+
+let configNodeCountTpl: TemplateRef<CngxTreeSelectNodeCountContext> | null = null;
+
+@Component({
+  imports: [CngxTreeSelect, CngxTreeSelectNodeCount],
+  template: `
+    <cngx-tree-select
+      [label]="'Teams'"
+      [nodes]="nodes"
+      [nodeIdFn]="idFn"
+      [labelFn]="labelFn"
+      [keyFn]="keyFn"
+      [(values)]="values"
+      [initiallyExpanded]="'all'"
+    >
+      @if (withSlot()) {
+        <ng-template
+          cngxTreeSelectNodeCount
+          let-text
+          let-selected="selected"
+          let-total="total"
+          let-node="node"
+        >
+          <b class="my-count" [attr.data-node]="node.id"
+            >{{ selected }} of {{ total }} ({{ text }})</b
+          >
+        </ng-template>
+      }
+    </cngx-tree-select>
+  `,
+})
+class TreeCountHost {
+  readonly nodes = tree();
+  readonly values = signal<Row[]>([{ id: 'a1', name: 'Alpha-1' }]);
+  readonly withSlot = signal(false);
+  readonly idFn = (v: Row): string => v.id;
+  readonly labelFn = (v: Row): string => v.name;
+  readonly keyFn = (v: Row): unknown => v.id;
+}
+
+@Component({
+  imports: [CngxTreeSelect],
+  providers: [
+    {
+      provide: CNGX_SELECT_CONFIG,
+      useFactory: () => makeSelectConfig(withTemplates({ treeNodeCount: configNodeCountTpl })),
+    },
+  ],
+  template: `
+    <cngx-tree-select
+      [label]="'Teams'"
+      [nodes]="nodes"
+      [nodeIdFn]="idFn"
+      [labelFn]="labelFn"
+      [keyFn]="keyFn"
+      [(values)]="values"
+      [initiallyExpanded]="'all'"
+    />
+  `,
+})
+class TreeCountConfigHost {
+  readonly nodes = tree();
+  readonly values = signal<Row[]>([{ id: 'a1', name: 'Alpha-1' }]);
+  readonly idFn = (v: Row): string => v.id;
+  readonly labelFn = (v: Row): string => v.name;
+  readonly keyFn = (v: Row): unknown => v.id;
+}
+
+@Component({
+  template: `<ng-template #count let-text
+    ><i class="config-count">{{ text }}</i></ng-template
+  >`,
+})
+class CountTemplateHolder {
+  readonly count = viewChild.required<TemplateRef<CngxTreeSelectNodeCountContext>>('count');
+}
+
+function openTree<H>(type: new () => H) {
+  const fixture = TestBed.createComponent(type);
+  fixture.detectChanges();
+  TestBed.flushEffects();
+  fixture.detectChanges();
+  const el = fixture.nativeElement as HTMLElement;
+  el.querySelector<HTMLElement>('[role="combobox"]')!.click();
+  fixture.detectChanges();
+  TestBed.flushEffects();
+  fixture.detectChanges();
+  const row = (id: string): HTMLElement =>
+    el.querySelector<HTMLElement>(`[role="treeitem"][id$="-${id}"]`)!;
+  return { fixture, el, row };
+}
+
+describe('CngxTreeSelect - parent row counts', () => {
+  beforeAll(() => polyfillPopover());
+
+  it('shows selected-of-total on parent rows only, hidden from AT', () => {
+    const { fixture, row } = openTree(TreeCountHost);
+    const count = row('a').querySelector('.cngx-tree-select__count');
+    expect(count?.textContent?.trim()).toBe('1/2');
+    expect(count?.getAttribute('aria-hidden')).toBe('true');
+    expect(row('a1').querySelector('.cngx-tree-select__count')).toBeNull();
+    expect(row('b').querySelector('.cngx-tree-select__count')).toBeNull();
+    fixture.componentInstance.values.set([
+      { id: 'a', name: 'Alpha' },
+      { id: 'a1', name: 'Alpha-1' },
+      { id: 'a2', name: 'Alpha-2' },
+    ]);
+    fixture.detectChanges();
+    expect(row('a').querySelector('.cngx-tree-select__count')?.textContent?.trim()).toBe('2/2');
+  });
+
+  it('follows a runtime copy switch', () => {
+    const labels = signal<CngxSelectFallbackLabels>({});
+    TestBed.configureTestingModule({
+      providers: [provideSelectConfig(withFallbackLabels(labels))],
+    });
+    const { fixture, row } = openTree(TreeCountHost);
+    expect(row('a').querySelector('.cngx-tree-select__count')?.textContent?.trim()).toBe('1/2');
+    labels.set({ treeNodeCount: (selected, total) => `${selected} von ${total}` });
+    fixture.detectChanges();
+    expect(row('a').querySelector('.cngx-tree-select__count')?.textContent?.trim()).toBe('1 von 2');
+  });
+
+  it('lets a projected *cngxTreeSelectNodeCount replace the count, still AT-hidden', () => {
+    const { fixture, row } = openTree(TreeCountHost);
+    fixture.componentInstance.withSlot.set(true);
+    fixture.detectChanges();
+    const custom = row('a').querySelector('.my-count');
+    expect(custom?.textContent?.trim()).toBe('1 of 2 (1/2)');
+    expect(custom?.getAttribute('data-node')).toMatch(/-a$/);
+    expect(custom?.closest('[aria-hidden="true"]')).not.toBeNull();
+    expect(row('b').querySelector('.my-count')).toBeNull();
+  });
+
+  it('falls back to a CNGX_SELECT_CONFIG.templates.treeNodeCount default', () => {
+    const holder = TestBed.createComponent(CountTemplateHolder);
+    holder.detectChanges();
+    configNodeCountTpl = holder.componentInstance.count();
+    try {
+      const { row } = openTree(TreeCountConfigHost);
+      expect(row('a').querySelector('.config-count')?.textContent?.trim()).toBe('1/2');
+    } finally {
+      configNodeCountTpl = null;
+    }
   });
 });

@@ -1,7 +1,10 @@
 import { InjectionToken, type Signal, type TemplateRef } from '@angular/core';
 import { type CngxTreeController } from '@cngx/common/interactive';
 import { type FlatTreeNode } from '@cngx/utils';
-import type { CngxTreeSelectNodeContext } from './tree-select.model';
+import type {
+  CngxTreeSelectNodeContext,
+  CngxTreeSelectNodeCountContext,
+} from './tree-select.model';
 
 /**
  * Minimal surface the tree-body panel needs from `CngxTreeSelect`.
@@ -56,6 +59,12 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
    * node again after the nodes change (`keyFn`, else `compareWith`).
    */
   readonly adCompareWith: Signal<(a: T, b: T) => boolean>;
+  /** Resolved `*cngxTreeSelectNodeCount` template (instance, then config), or `null`. */
+  readonly nodeCountTpl: Signal<TemplateRef<CngxTreeSelectNodeCountContext<T>> | null>;
+  /** Selected and total descendants of a parent node; `null` for a leaf. */
+  nodeCount(node: FlatTreeNode<T>): { readonly selected: number; readonly total: number } | null;
+  /** The `treeNodeCount` copy for a parent node; `''` for a leaf. */
+  nodeCountText(node: FlatTreeNode<T>): string;
   /** Whether the value is selected. */
   isSelected(value: T): boolean;
   /** Whether the value is partially selected via cascade descendants. */

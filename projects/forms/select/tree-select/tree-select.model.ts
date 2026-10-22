@@ -98,10 +98,33 @@ export interface CngxTreeSelectNodeContext<T = unknown> {
   readonly selected: boolean;
   readonly indeterminate: boolean;
   readonly disabled: boolean;
+  /** Selected descendants of this node, all levels. `0` on a leaf. */
+  readonly selectedCount: number;
+  /** All descendants of this node, all levels. `0` on a leaf. */
+  readonly descendantCount: number;
   /** Flip the expansion state of this node. No-op on leaves. */
   readonly toggleExpand: () => void;
   /** Run the select-path for this node (respects cascade / commit). */
   readonly handleSelect: () => void;
+}
+
+/**
+ * Context for `*cngxTreeSelectNodeCount`, the selected-of-total count at the
+ * inline end of a parent row in the default row markup. The count renders
+ * inside an `aria-hidden` wrapper the host owns: `aria-checked` (true /
+ * mixed / false) already carries the state it summarizes.
+ *
+ * @category forms/select/tree-select
+ */
+export interface CngxTreeSelectNodeCountContext<T = unknown> {
+  /** The built-in count text (`treeNodeCount` copy, default `'{selected}/{total}'`). */
+  readonly $implicit: string;
+  readonly text: string;
+  /** Selected descendants, all levels. */
+  readonly selected: number;
+  /** All descendants, all levels. */
+  readonly total: number;
+  readonly node: FlatTreeNode<T>;
 }
 
 export { type CngxTreeNode } from '@cngx/utils';

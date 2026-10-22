@@ -78,6 +78,7 @@ function makeShellHost(): CngxSelectPanelHost {
       commitFailed: 'Save failed',
       commitFailedRetry: 'Retry',
       chipOverflowBadge: (count: number) => `+${count}`,
+      treeNodeCount: (selected: number, total: number) => `${selected}/${total}`,
     }),
     ariaLabels: signal({
       chipRemove: 'Remove',
@@ -196,6 +197,14 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
   })();
 
   readonly lastSelected = signal<FlatTreeNode<Row> | null>(null);
+
+  readonly nodeCountTpl = signal(null).asReadonly();
+  nodeCount(): null {
+    return null;
+  }
+  nodeCountText(): string {
+    return '';
+  }
 
   isSelected(v: Row): boolean {
     return this.selected().has(v.id);

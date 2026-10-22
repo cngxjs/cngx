@@ -119,12 +119,16 @@ import {
 } from './tree-select-panel-host';
 import { CngxTreeSelectPanel } from './tree-select-panel.component';
 import { createTreeChipDisplay } from './internal/tree-chip-display';
+import { createTreeSelectionCounts } from './internal/tree-selection-counts';
+import { CngxTreeSelectNodeCount } from './tree-select-node-count.directive';
+import { injectResolvedTemplate } from '../shared/internal/resolve-template';
 import { createTreeToggleDispatch, type TreeToggleDispatch } from './internal/tree-toggle-dispatch';
 import type {
   CngxTreeSelectAction,
   CngxTreeSelectChipContext,
   CngxTreeSelectChipDisplay,
   CngxTreeSelectNodeContext,
+  CngxTreeSelectNodeCountContext,
   CngxTreeSelectTriggerLabelContext,
   CngxTreeSelectedItem,
 } from './tree-select.model';
@@ -213,9 +217,10 @@ export interface CngxTreeSelectChange<T = unknown> {
  * @slot cngxSelectRefreshing Replaces the refresh indicator shown above the tree while a reload runs; previousCount is always 0 on this host.
  * @slot cngxSelectCommitError Replaces the panel's commit-error banner when a commit fails and commitErrorDisplay is 'banner'; gets error and retry (option is always null on this host).
  * @slot cngxSelectClearButton Replaces the clear-all button, shown when clearable is set, a value is selected and the control is enabled; gets clear, disabled.
- * @slot cngxTreeSelectNode Replaces each whole treeitem row, twisty and checkbox included, so the template owns the treeitem ARIA; gets node, depth, expanded, hasChildren, selected, indeterminate, disabled, toggleExpand, handleSelect.
+ * @slot cngxTreeSelectNode Replaces each whole treeitem row, twisty and checkbox included, so the template owns the treeitem ARIA; gets node, depth, expanded, hasChildren, selected, indeterminate, disabled, selectedCount, descendantCount, toggleExpand, handleSelect.
  * @slot cngxTreeSelectChip Replaces each chip in the trigger strip unless cngxTreeSelectTriggerLabel is projected; gets option, remove.
  * @slot cngxTreeSelectTriggerLabel Replaces the whole chip strip while at least one value is selected; gets selected, values, count.
+ * @slot cngxTreeSelectNodeCount Replaces the selected-of-total count at the inline end of each parent row in the default row; gets text ($implicit), selected, total, node. Renders inside an aria-hidden wrapper the host keeps; global default via CNGX_SELECT_CONFIG.templates.treeNodeCount.
  * @slot cngxSelectChipOverflow Replaces the `+N` overflow chip after the first maxVisibleChips displayed chips, and the badge of the touch summary; gets count, label, hidden. The host keeps the hidden values readable for AT.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
  */
@@ -475,6 +480,12 @@ export class CngxTreeSelect<T = unknown>
 
   private readonly nodeDir = contentChild<CngxTreeSelectNode<T>>(CngxTreeSelectNode);
   private readonly chipDir = contentChild<CngxTreeSelectChip<T>>(CngxTreeSelectChip);
+  private readonly nodeCountDir = contentChild<CngxTreeSelectNodeCount<T>>(CngxTreeSelectNodeCount);
+  /** @internal - `*cngxTreeSelectNodeCount`, else `CNGX_SELECT_CONFIG.templates.treeNodeCount`. */
+  readonly nodeCountTpl = injectResolvedTemplate<CngxTreeSelectNodeCountContext<T>>(
+    this.nodeCountDir,
+    'treeNodeCount',
+  );
   private readonly chipOverflowDir = contentChild<CngxSelectChipOverflow<T>>(CngxSelectChipOverflow);
   /** @internal - directive-only like the family's other chip-strip slots. */
   protected readonly chipOverflowTpl = computed<TemplateRef<
@@ -862,6 +873,24 @@ export class CngxTreeSelect<T = unknown>
   });
   /** @internal */
   protected readonly displayedChips = this.chipView.displayed;
+
+  /** Per-parent selected-of-total, one pass per change. */
+  private readonly counts = createTreeSelectionCounts<T>({
+    flatNodes: this.treeController.flatNodes,
+    values: this.values,
+    findByValue: (value) => this.treeController.findByValue(value),
+  });
+
+  /** @internal */
+  nodeCount(node: FlatTreeNode<T>): { readonly selected: number; readonly total: number } | null {
+    return this.counts().get(node.id) ?? null;
+  }
+
+  /** @internal */
+  nodeCountText(node: FlatTreeNode<T>): string {
+    const count = this.counts().get(node.id);
+    return count ? this.fallbackLabels().treeNodeCount(count.selected, count.total) : '';
+  }
 
   /**
    * @internal - one-line summary instead of chips under the touch floor,
