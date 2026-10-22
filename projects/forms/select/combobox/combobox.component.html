@@ -35,10 +35,12 @@
       </span>
     } @else if (!isEmpty() || summary.active()) {
       <!-- Under the touch floor the strip stays in the row without a value as
-           well, so the trigger keeps one width at every selection count. -->
+           well, so the trigger keeps one width at every selection count;
+           data-empty keeps it from taking the free space while it is empty. -->
       <span
         class="cngx-select__chip-list"
         [class.cngx-combobox__summary]="summary.active()"
+        [attr.data-empty]="isEmpty() ? '' : null"
         [attr.data-overflow]="summary.active() ? 'truncate' : chipOverflow()"
       >
         @if (summary.active()) {
