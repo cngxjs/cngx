@@ -79,7 +79,7 @@ describe('planTheme', () => {
 
   it('skips what is already wired', () => {
     const result = planTheme(
-      createFacts({ cngxStylesheet: true, cngxThemePath: 'src/cngx-theme.css' }),
+      createFacts({ cngxStylesheet: true, cngxThemePath: 'src/cngx-theme.css', cngxThemeListed: true }),
       createAnswers(),
       VERSIONS,
     );
@@ -87,8 +87,22 @@ describe('planTheme', () => {
     expect(result.changes).toEqual([]);
     expect(result.skipped.map((step) => [step.id, step.reason])).toEqual([
       ['theme:stylesheet', 'already imported'],
-      ['theme:file', 'already wired in src/cngx-theme.css'],
-      ['theme:entry', 'already wired in src/cngx-theme.css'],
+      ['theme:file', 'already generated'],
+      ['theme:entry', 'src/cngx-theme.css is already in the build styles'],
+    ]);
+  });
+
+  it('names the file that wires the theme when it is not the one it would create', () => {
+    const result = planTheme(
+      createFacts({ cngxStylesheet: true, cngxThemePath: 'src/styles.scss' }),
+      createAnswers(),
+      VERSIONS,
+    );
+
+    expect(result.skipped.map((step) => [step.id, step.reason])).toEqual([
+      ['theme:stylesheet', 'already imported'],
+      ['theme:file', 'a cngx theme is already wired in src/styles.scss'],
+      ['theme:entry', 'a cngx theme is already wired in src/styles.scss'],
     ]);
   });
 

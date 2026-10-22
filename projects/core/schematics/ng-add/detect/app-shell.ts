@@ -1,6 +1,7 @@
 import { posix } from 'node:path';
 
 import {
+  addNamedImports,
   addToArrayLiteral,
   appendElements,
   type DecoratorReading,
@@ -173,6 +174,14 @@ export const FEEDBACK_SPEC_PROVIDERS = 'provideFeedback(withToasts(), withBanner
 
 const FEEDBACK_SPEC_PROVIDERS_LINE = `providers: [${FEEDBACK_SPEC_PROVIDERS}],`;
 
+// The one import of the NgModule spec, outlet classes and providers together,
+// already in the layout Prettier gives an import too long for one line, so
+// the CLI's format pass leaves it as it is and a re-run reads it back.
+function moduleSpecImport(newline: string): string {
+  const names = [...FEEDBACK_OUTLETS.map((outlet) => outlet.className), 'provideFeedback', 'withBanners', 'withToasts'];
+  return ['import {', ...names.map((name) => `  ${name},`), `} from '${FEEDBACK_MODULE}';`].join(newline);
+}
+
 // How many `export ... from` hops a class lookup follows before giving up.
 const MAX_REEXPORTS = 4;
 
@@ -259,7 +268,7 @@ const TESTBED_PROVIDERS = { kind: 'testbed-providers' } as const;
  * The NgModule spec with what a TestBed that declares the root component
  * needs for the outlets: both outlet classes in its `imports` and the
  * feedback providers in its `providers` (each property added when it is
- * missing), and both import statements. An AST edit, no re-check: the step
+ * missing), and one import statement for all of them. An AST edit, no re-check: the step
  * runs it only on a spec that still reads `module-stock`, and detection runs
  * it on the catalog bodies to know the provided form exactly.
  */
@@ -269,7 +278,7 @@ export function moduleSpecWithFeedback(content: string): string {
     ensureArrayProperty(content, TESTBED_IMPORTS),
   );
   const provided = addToArrayLiteral(ensureArrayProperty(imported, TESTBED_PROVIDERS), TESTBED_PROVIDERS, FEEDBACK_SPEC_PROVIDERS);
-  return insertAfterImports(insertAfterImports(provided, FEEDBACK_SPEC_OUTLETS_IMPORT), FEEDBACK_SPEC_IMPORT);
+  return insertAfterImports(provided, moduleSpecImport(newlineOf(provided)));
 }
 
 interface ModuleSpecForms {
@@ -476,7 +485,7 @@ function importOutlets(content: string, className: string): string {
   );
   const bindings = topLevelBindings(promoted);
   const unbound = FEEDBACK_OUTLETS.map((outlet) => outlet.className).filter((name) => !bindings.has(name));
-  return unbound.length === 0 ? promoted : insertAfterImports(promoted, `import { ${unbound.join(', ')} } from '${FEEDBACK_MODULE}';`);
+  return addNamedImports(promoted, unbound, FEEDBACK_MODULE);
 }
 
 /** One file the outlets step edits, and whether the edit places the outlet elements, imports the classes, or both. */

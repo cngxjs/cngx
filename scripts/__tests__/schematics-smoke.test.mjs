@@ -438,7 +438,7 @@ describe('dist/ui/schematics ng-add shim', () => {
     }
   });
 
-  it('replaces an older @cngx pin with the lockstep version and says so', async () => {
+  it('replaces an older @cngx pin with the lockstep version and names each replacement once', async () => {
     const runner = new SchematicTestRunner('@cngx/ui', UI_COLLECTION);
     runner.registerCollection('@cngx/core', requireDist(CORE_COLLECTION));
     const pinned = await runner.runSchematic('ng-add', {}, withInstalledCore(await createAppTree(runner), version));
@@ -454,12 +454,11 @@ describe('dist/ui/schematics ng-add shim', () => {
 
     expect(result.dependencies['@cngx/core']).toBe(version);
     expect(result.dependencies['@cngx/utils']).toBe(version);
-    expect(messages).toEqual(
-      expect.arrayContaining([
-        `Replacing @cngx/core@0.0.1 with ${version} so every @cngx package stays on one version.`,
-        `Replacing @cngx/utils@0.0.1 with ${version} so every @cngx package stays on one version.`,
-      ]),
-    );
+    // The shim pins @cngx/core before core plans anything and says so; the
+    // plan names the pin it replaces itself.
+    const named = (name) => messages.filter((message) => message.includes(name) && message.includes('0.0.1'));
+    expect(named('@cngx/core')).toEqual([`Replacing @cngx/core@0.0.1 with ${version} so every @cngx package stays on one version.`]);
+    expect(named('@cngx/utils')).toEqual([expect.stringContaining(`Add @cngx/utils@${version} - replaces 0.0.1;`)]);
   });
 
   it('stays silent when the app already pins the lockstep version', async () => {

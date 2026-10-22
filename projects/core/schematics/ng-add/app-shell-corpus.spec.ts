@@ -633,6 +633,18 @@ function expectPlacedOnce(files: Files, facts: ProjectFacts, originalImports: re
   }
 }
 
+// The import declarations of `@cngx/ui/feedback` in a file: the outlet
+// classes and the feedback providers share one, so a lint rule against
+// duplicate imports stays quiet.
+function feedbackImportCount(content: string): number {
+  return parseTs(content).statements.filter(
+    (statement) =>
+      ts.isImportDeclaration(statement) &&
+      ts.isStringLiteral(statement.moduleSpecifier) &&
+      statement.moduleSpecifier.text === '@cngx/ui/feedback',
+  ).length;
+}
+
 const OUTLET_NAMES = /CngxBannerOutlet|CngxToastOutlet|cngx-banner-outlet|cngx-toast-outlet/g;
 
 // No source or template the run changed gains an outlet element or class.
@@ -813,6 +825,9 @@ describe('every planned app shell edit', () => {
     expectPreserved(before, after, [shell.componentFile, templateFileOf(shell), shell.specPath ?? '', shell.importsHost.file]);
     const placed = await factsOf(first.tree);
     expectPlacedOnce(after, placed, originalImports);
+    for (const path of [shell.importsHost.file, shell.specPath ?? '']) {
+      expect({ path, declarations: feedbackImportCount(after[path] ?? '') }).toEqual({ path, declarations: Math.min(1, feedbackImportCount(after[path] ?? '')) });
+    }
     expect(followed(placed).spec).toBe(PROVIDED_SPEC[shell.spec]);
     expectTidyOutlets(templateText(before, detected), templateText(after, placed));
     expectOutsidePlaceholder(templateText(before, detected), templateText(after, placed));
@@ -875,6 +890,13 @@ interface StarterShape {
 const STARTER_FILES = ['src/app/app.ts', 'src/app/app.html', 'src/app/app.css', 'src/app/app.scss'];
 const SCAFFOLD_FILES = [...STARTER_FILES, 'src/index.html'];
 const STOCK_INDEX = readFixture('scaffold-21')['src/index.html'];
+// Every text file of the scaffold a full run edits, the state of a Windows
+// clone with `core.autocrlf=true`.
+const CRLF_CHECKOUT: Files = Object.fromEntries(
+  ['package.json', 'angular.json', 'src/app/app.ts', 'src/app/app.html', 'src/app/app.spec.ts', 'src/app/app.config.ts', 'src/index.html', 'src/styles.css'].map(
+    (path) => [path, readFixture('scaffold-21')[path]],
+  ),
+);
 const STOCK_STYLES = readFixture('scaffold-21')['src/styles.css'];
 
 const STARTER_CORPUS: readonly StarterShape[] = [
@@ -905,6 +927,7 @@ const STARTER_CORPUS: readonly StarterShape[] = [
   { name: 'one changed character in the scaffold-22 index.html', fixture: 'scaffold-22', files: { 'src/index.html': oneChanged(STOCK_INDEX) }, outcome: 'icon-left' },
   { name: 'scaffold-22 starter of a run with other answers', fixture: 'scaffold-22', installedFirst: true, flags: { a11yPreferences: false }, outcome: 'other-answers' },
   { name: 'CRLF scaffold-21', files: crlf({ 'src/app/app.ts': STOCK_APP, 'src/app/app.html': STOCK_HTML, 'src/index.html': STOCK_INDEX }), outcome: 'written' },
+  { name: 'CRLF checkout of scaffold-21', files: crlf(CRLF_CHECKOUT), outcome: 'written' },
   { name: 'feedback off', fixture: 'scaffold-21', flags: { feedback: false }, outcome: 'written' },
   { name: 'a11y preferences off', fixture: 'scaffold-21', flags: { a11yPreferences: false }, outcome: 'written' },
   { name: 'theme none', fixture: 'scaffold-21', flags: { theme: 'none' }, outcome: 'written' },
@@ -954,8 +977,17 @@ function starterFiles(files: Files): readonly string[] {
   return STARTER_FILES.filter((path) => files[path] !== undefined);
 }
 
+// A file that had CRLF keeps it whole, whether cngx edited it in place or
+// replaced it: no line ending of the run's own text is a bare LF.
+function expectLineEndingsKept(before: Files, after: Files): void {
+  for (const path of changed(before, after).filter((candidate) => before[candidate]?.includes('\r\n'))) {
+    expect({ path, bareLf: /(?<!\r)\n/.test(after[path] ?? '') }).toEqual({ path, bareLf: false });
+  }
+}
+
 function expectStarterWritten(before: Files, after: Files, facts: ProjectFacts, shape: StarterShape): void {
   expect(facts.scaffold.kind).toBe('starter');
+  expectLineEndingsKept(before, after);
   for (const path of starterFiles(after)) {
     expect({ path, fingerprint: /^(\/\* cngx:fingerprint [0-9a-f]{8} \*\/|<!-- cngx:fingerprint [0-9a-f]{8} -->)\r?\n/.test(after[path]) }).toEqual({
       path,

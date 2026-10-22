@@ -9,6 +9,7 @@ import { addLockstepDependency } from './lockstep';
 async function run(
   dependencies: Record<string, string>,
   devDependencies?: Record<string, string>,
+  announce = false,
 ): Promise<{ tree: Tree; messages: string[] }> {
   const tree = createMemoryTree({ 'package.json': JSON.stringify({ dependencies, devDependencies }) });
   const logger = new logging.Logger('lockstep-spec');
@@ -16,7 +17,7 @@ async function run(
   logger.subscribe((entry) => messages.push(entry.message));
   // addDependency touches only the logger when it schedules no install.
   const context = { logger } as unknown as SchematicContext;
-  const result = await lastValueFrom(callRule(addLockstepDependency('@cngx/core', '0.1.0'), tree, context));
+  const result = await lastValueFrom(callRule(addLockstepDependency('@cngx/core', '0.1.0', announce), tree, context));
   return { tree: result, messages };
 }
 
@@ -44,10 +45,16 @@ describe('addLockstepDependency', () => {
     expect(messages).toEqual([]);
   });
 
-  it('replaces an older pin and logs the replacement', async () => {
+  it('replaces an older pin without a log line of its own; the plan names the replacement', async () => {
     const { tree, messages } = await run({ '@cngx/core': '^0.0.9' });
 
     expect(declared(tree)['@cngx/core']).toBe('0.1.0');
+    expect(messages).toEqual([]);
+  });
+
+  it('logs the replacement for a caller with no plan step for the pin', async () => {
+    const { messages } = await run({ '@cngx/core': '^0.0.9' }, undefined, true);
+
     expect(messages).toEqual(['Replacing @cngx/core@^0.0.9 with 0.1.0 so every @cngx package stays on one version.']);
   });
 
@@ -77,6 +84,6 @@ describe('addLockstepDependency', () => {
 
     expect(manifest.dependencies['@cngx/core']).toBe('0.1.0');
     expect(manifest.devDependencies).toEqual({ vitest: '4.0.0' });
-    expect(messages).toEqual(['Replacing @cngx/core@^0.0.9 with 0.1.0 so every @cngx package stays on one version.']);
+    expect(messages).toEqual([]);
   });
 });

@@ -5,6 +5,7 @@ import {
   contentFingerprint,
   createNote,
   createProvenance,
+  newlineOf,
   type Provenance,
   type SkippedStep,
   type StepResult,
@@ -284,7 +285,8 @@ function faviconLabel(path: string): string {
 }
 
 // The whole-file writes: each re-checks its file against the catalog entry
-// detection matched at apply time and leaves anything else as it is.
+// detection matched at apply time and leaves anything else as it is, and
+// takes the line endings of the file it replaces.
 function fileWrites(scaffold: Untouched, written: StarterBodies, provenance: Provenance): readonly Change[] {
   const entries = scaffoldEntries(scaffold);
   return FILE_KEYS.map((key) => ({
@@ -294,7 +296,8 @@ function fileWrites(scaffold: Untouched, written: StarterBodies, provenance: Pro
     reason: 'the first screen shows what cngx installed, working',
     provenance,
     path: scaffold.files[key],
-    edit: (content: string) => (matchesScaffoldEntry(content, entries[key], scaffold.names) ? written[key] : content),
+    edit: (content: string) =>
+      matchesScaffoldEntry(content, entries[key], scaffold.names) ? written[key].replace(/\r?\n/g, newlineOf(content)) : content,
   }));
 }
 
