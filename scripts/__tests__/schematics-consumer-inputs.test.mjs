@@ -82,6 +82,7 @@ describe('schematics-consumer inputs', () => {
     expect(changedInputs(['.github/workflows/consumer-compat.yml'], 'consumer-compat')).toHaveLength(1);
     expect(changedInputs(['.github/workflows/schematics-consumer.yml'], 'consumer-compat')).toEqual([]);
     expect(() => workflowInputs('nightly')).toThrow(/Unknown workflow "nightly"/);
+    expect(() => workflowInputs('toString')).toThrow(/Unknown workflow "toString"/);
   });
 });
 

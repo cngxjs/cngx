@@ -63,16 +63,25 @@ function globToRegExp(glob) {
 
 /** The input entries of `workflow`: the shared list plus its own. */
 export function workflowInputs(workflow = DEFAULT_WORKFLOW) {
-  const own = WORKFLOW_INPUTS[workflow];
+  const own = Object.hasOwn(WORKFLOW_INPUTS, workflow) ? WORKFLOW_INPUTS[workflow] : undefined;
   if (own === undefined) {
     throw new Error(`Unknown workflow "${workflow}". Available: ${Object.keys(WORKFLOW_INPUTS).join(', ')}`);
   }
   return [...INPUTS, ...own];
 }
 
+const COMPILED = new Map();
+
+function compiled(glob) {
+  if (!COMPILED.has(glob)) {
+    COMPILED.set(glob, globToRegExp(glob));
+  }
+  return COMPILED.get(glob);
+}
+
 /** Whether one input entry covers a repo-relative path. */
 export function matchesEntry({ include, exclude = [] }, path) {
-  return globToRegExp(include).test(path) && !exclude.some((pattern) => globToRegExp(pattern).test(path));
+  return compiled(include).test(path) && !exclude.some((pattern) => compiled(pattern).test(path));
 }
 
 /** Whether entry `index` of `INPUTS` covers a repo-relative path. */
@@ -95,7 +104,7 @@ function parseArgs(argv) {
   };
   const base = valueOf('--base');
   const workflow = valueOf('--workflow') ?? DEFAULT_WORKFLOW;
-  if (base === undefined || !(workflow in WORKFLOW_INPUTS)) {
+  if (base === undefined || !Object.hasOwn(WORKFLOW_INPUTS, workflow)) {
     console.error(USAGE);
     process.exit(1);
   }
