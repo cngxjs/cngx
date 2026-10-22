@@ -20,3 +20,11 @@ export type CngxButtonTone = 'neutral' | 'primary' | 'danger';
  * @category common/button
  */
 export type CngxButtonSize = 'xs' | 'sm' | 'md' | 'lg';
+
+/**
+ * Value of the `type` input. Applies to `<button>` hosts only; an `<a>` host
+ * renders no `type` attribute.
+ *
+ * @category common/button
+ */
+export type CngxButtonType = 'button' | 'submit' | 'reset';
