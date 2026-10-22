@@ -475,11 +475,11 @@ describe('dist/ui/schematics ng-add shim', () => {
 
     expect(result.dependencies['@cngx/core']).toBe(version);
     expect(result.dependencies['@cngx/utils']).toBe(version);
-    // The shim pins @cngx/core before core plans anything and says so; the
-    // plan names the pin it replaces itself.
-    const named = (name) => messages.filter((message) => message.includes(name) && message.includes('0.0.1'));
-    expect(named('@cngx/core')).toEqual([`Replacing @cngx/core@0.0.1 with ${version} so every @cngx package stays on one version.`]);
-    expect(named('@cngx/utils')).toEqual([expect.stringContaining(`Add @cngx/utils@${version} - replaces 0.0.1;`)]);
+    // The shim hands its pins to core, so the plan names every replacement
+    // once and the shim prints none of its own.
+    const named = messages.filter((message) => message.includes('0.0.1'));
+    expect(named).toEqual([expect.stringMatching(/^ {2}\+ Add 2 @cngx packages at \S+ - utils, core; replaces 0\.0\.1$/)]);
+    expect(messages.filter((message) => message.startsWith('Replacing'))).toEqual([]);
   });
 
   it('stays silent when the app already pins the lockstep version', async () => {
