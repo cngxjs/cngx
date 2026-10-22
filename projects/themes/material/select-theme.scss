@@ -84,13 +84,9 @@
     // token, so zeroing it here flattens them alike.
     --cngx-select-focus-offset: 0px;
 
-    // Tree-select node states
+    // Tree-select node states. A checked row takes no fill (an M3 checkbox
+    // list does not fill a checked row); the checkbox carries selection.
     --cngx-tree-select-node-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 6%, transparent);
-    --cngx-tree-select-node-selected-bg: color-mix(
-      in srgb,
-      var(--mat-sys-primary) 12%,
-      transparent
-    );
   } @else {
     --cngx-select-panel-bg: #{mat.get-theme-color($theme, background, card)};
     --cngx-select-panel-color: #{mat.get-theme-color($theme, foreground, text)};
@@ -141,7 +137,7 @@
   // match the tree node rows so the body reads identically under the bridge.
   --cngx-tree-select-node-radius: 0;
   // Material's tree expand toggle reads as a ~24px chevron; the cngx default
-  // 1.25rem button with a 0.75rem glyph is too small next to mat-tree. Bump the
+  // 1.25rem button with a 1rem chevron is small next to mat-tree. Bump the
   // button and glyph so the twisty matches the option row's visual weight.
   --cngx-tree-select-twisty-size: 1.5rem;
   --cngx-tree-select-twisty-font-size: 1.125rem;

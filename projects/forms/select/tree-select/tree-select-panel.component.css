@@ -11,10 +11,11 @@
  * **State modifiers**
  *
  * - `:hover` on `.cngx-tree-select__node` - hover-tinted background
- * - `[aria-checked='true']` on a node - selected-tint background
- *   (`mixed` gets NO tint - the indeterminate indicator communicates the
- *   partial state; a background tint would visually equate it with fully
- *   selected)
+ * - `[aria-checked='true']` on a node - the checked checkbox plus a
+ *   heavier label weight; no row fill (the checkbox and `aria-checked`
+ *   are the one selection channel, like an M3 checkbox list). A consumer
+ *   opts back into a fill with `--cngx-tree-select-node-selected-bg`.
+ *   `mixed` gets the indeterminate indicator only
  * - `[aria-disabled='true']` on a node - 38% text colour (twisty and
  *   checkbox follow it) + `cursor: not-allowed`; GrayText under forced
  *   colors
@@ -34,23 +35,21 @@
  *
  * **Inheritance**
  *
- * Node tokens fall back to hardcoded defaults; hover and selected
- * backgrounds carry their own light / dark pair (no foundation
- * delegation since the alpha-on-black surfaces would dissolve on a
- * dark page).
+ * Node tokens fall back to hardcoded defaults; the hover background
+ * carries its own light / dark pair (no foundation delegation since the
+ * alpha-on-black surface would dissolve on a dark page).
  *
  * - `--cngx-tree-select-node-color` - currentColor
  * - `--cngx-tree-select-node-bg` - transparent
  * - `--cngx-tree-select-node-hover-bg` - light: `oklch(0 0 0 / 0.04)`,
  *   dark: `oklch(1 0 0 / 0.06)`
- * - `--cngx-tree-select-node-selected-bg` - light: `oklch(0 0 0 / 0.08)`,
- *   dark: `oklch(1 0 0 / 0.12)` (slightly deeper alpha than hover to
- *   keep the visual rank)
+ * - `--cngx-tree-select-node-selected-bg` - transparent (opt-in fill)
+ * - `--cngx-tree-select-node-selected-font-weight` - 600
  *
  * **Dark mode**
  *
- * Three hooks swap the hover and selected tints from alpha-on-black to
- * alpha-on-white so they read on a dark panel-bg:
+ * Three hooks swap the hover tint from alpha-on-black to alpha-on-white
+ * so it reads on a dark panel-bg:
  *
  * - `prefers-color-scheme: dark`
  * - `[data-color-scheme="dark"]`
@@ -169,15 +168,27 @@
   }
 
   /**
-   * Background of the selected node row. `inherits: true` so the
-   * :root dark-mode override (alpha-on-white on dark) reaches the
-   * selected node inside the floating panel.
+   * Background of a checked node row. Transparent by default: the checkbox
+   * and the label weight carry selection. Assign a colour to opt back into a
+   * row fill; hover and keyboard-active still win over it. `inherits: true`
+   * so an assignment on any ancestor reaches the rows in the floating panel.
    * @group State / Selected
    */
   @property --cngx-tree-select-node-selected-bg {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.66 0.19 50 / 0.22);
+    initial-value: transparent;
+  }
+
+  /**
+   * Font weight of a checked node's label, the visible selection cue next to
+   * the checkbox.
+   * @group State / Selected
+   */
+  @property --cngx-tree-select-node-selected-font-weight {
+    syntax: '*';
+    inherits: true;
+    initial-value: 600;
   }
 
   /**
@@ -210,25 +221,21 @@
     initial-value: 1rem;
   }
 
-  /* Dark-mode component-local swap - alpha-on-black hover/selected
-   * surfaces dissolve into a dark panel-bg, so the dark blocks flip
-   * them to alpha-on-white. The selected bg gets a slightly deeper
-   * alpha than the hover to keep the visual rank. */
+  /* Dark-mode component-local swap - an alpha-on-black hover surface
+   * dissolves into a dark panel-bg, so the dark blocks flip it to
+   * alpha-on-white. */
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
       --cngx-tree-select-node-hover-bg: oklch(0.72 0.18 50 / 0.16);
-      --cngx-tree-select-node-selected-bg: oklch(0.72 0.18 50 / 0.32);
     }
   }
   [data-color-scheme='dark'],
   .dark {
     --cngx-tree-select-node-hover-bg: oklch(0.72 0.18 50 / 0.16);
-    --cngx-tree-select-node-selected-bg: oklch(0.72 0.18 50 / 0.32);
   }
   [data-color-scheme='light'],
   .light {
     --cngx-tree-select-node-hover-bg: oklch(0.66 0.19 50 / 0.1);
-    --cngx-tree-select-node-selected-bg: oklch(0.66 0.19 50 / 0.22);
   }
 }
 
@@ -276,15 +283,19 @@
       background: var(--cngx-tree-select-node-bg, transparent);
     }
 
-    /* Selected is the persistent dark fill (the resting "chosen" state). */
+    /* Selection is carried by the checkbox and the label weight; the fill is
+       an opt-in token, transparent by default. */
     .cngx-tree-select__node[aria-checked='true'] {
-      background: var(--cngx-tree-select-node-selected-bg, oklch(0.66 0.19 50 / 0.22));
+      background: var(--cngx-tree-select-node-selected-bg, transparent);
+    }
+
+    .cngx-tree-select__node[aria-checked='true'] .cngx-tree-select__label {
+      font-weight: var(--cngx-tree-select-node-selected-font-weight, 600);
     }
 
     /* Hover and keyboard-active (active-descendant) are transient "pointing at
-     * this row" states and intentionally win over the persistent selected fill,
-     * so moving onto a selected node shows the lighter cursor tone rather than
-     * staying dark. Both sit after the selected rule; --active is doubled
+     * this row" states and intentionally win over an opted-in selected fill.
+     * Both sit after the selected rule; --active is doubled
      * (.node.node--active) to clear the [aria-checked] attribute selector's
      * specificity. The active state reuses the flat option-list highlight token
      * so the tree highlights identically to the rest of the family and themes
@@ -376,7 +387,7 @@
  * token), which the forced palette flattens to Canvas. Re-signal it with the
  * Highlight pair, mirroring the flat option list. Node selection self-heals
  * via the checkbox indicator (a currentColor border the UA forces to an opaque
- * system colour), so the selected-row tint needs no block. Kept top-level and
+ * system colour) and the label weight, so selection needs no block. Kept top-level and
  * unlayered so it beats the layered `--active` base rule; the plain two-class
  * compound wins without !important (unlayered beats layered). */
 @media (forced-colors: active) {

@@ -266,3 +266,34 @@ describe('CngxTreeSelect indent under the touch floor', () => {
     expect(leafChild.right).toBe(child.right);
   });
 });
+
+// Selection rides on the checkbox and aria-checked, not a row fill: a checked
+// row stays transparent and its label gains weight, while the transient
+// keyboard-active row keeps its highlight fill.
+const TRANSPARENT = 'rgba(0, 0, 0, 0)';
+
+describe('CngxTreeSelect selected row', () => {
+  it('paints no fill on a checked row and keeps the active highlight', () => {
+    const { fixture } = mountOpenTwisty();
+    const host = fixture.componentInstance;
+    host.values.set([{ id: 'b', name: 'Bravo' }]);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    const checked = query(mountedRoot!, '[role="treeitem"][aria-checked="true"]');
+    expect(checked.id).not.toBe('');
+    expect(checked.classList.contains('cngx-tree-select__node--active')).toBe(false);
+    expect(computedValue(checked, 'background-color')).toBe(TRANSPARENT);
+    expect(Number(computedValue(query(checked, '.cngx-tree-select__label'), 'font-weight'))).toBe(
+      600,
+    );
+
+    const active = query(mountedRoot!, '.cngx-tree-select__node--active');
+    expect(active.getAttribute('aria-checked')).toBe('false');
+    expect(computedValue(active, 'background-color')).not.toBe(TRANSPARENT);
+    expect(Number(computedValue(query(active, '.cngx-tree-select__label'), 'font-weight'))).toBe(
+      400,
+    );
+  });
+});
