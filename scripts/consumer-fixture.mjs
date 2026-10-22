@@ -844,13 +844,23 @@ async function runStaleCoreLeg({ cliSpec, work, tarballFiles, version, registryU
 // schematic see a terminal while the fixture types the answers. Not
 // `pty.spawn`: on Python 3.9 its loop keeps polling stdin after the command
 // exits and never returns. The terminal gets a size before the command
-// starts; at 0x0 the CLI's install spinner erases lines without end.
+// starts; at 0x0 the CLI's install spinner erases lines without end. The
+// command runs in its own session, so a SIGTERM to the bridge takes its
+// whole process group down (npx, ng, npm) instead of orphaning it, and a key
+// typed after it exited is dropped.
 const PTY_BRIDGE = `
-import fcntl, os, pty, select, struct, sys, termios
+import fcntl, os, pty, select, signal, struct, sys, termios
 pid, fd = pty.fork()
 if pid == 0:
     fcntl.ioctl(0, termios.TIOCSWINSZ, struct.pack('HHHH', 50, 120, 0, 0))
     os.execvp(sys.argv[1], sys.argv[1:])
+def stop(signum, frame):
+    try:
+        os.killpg(pid, signal.SIGKILL)
+    except OSError:
+        pass
+    os._exit(1)
+signal.signal(signal.SIGTERM, stop)
 inputs = [fd, 0]
 while fd in inputs:
     ready = select.select(inputs, [], [])[0]
@@ -863,11 +873,14 @@ while fd in inputs:
             os.write(1, data)
         else:
             inputs.remove(fd)
-    if 0 in ready:
+    if 0 in ready and 0 in inputs:
         data = os.read(0, 4096)
-        if data:
-            os.write(fd, data)
-        else:
+        try:
+            if data:
+                os.write(fd, data)
+            else:
+                inputs.remove(0)
+        except OSError:
             inputs.remove(0)
 status = os.waitpid(pid, 0)[1]
 sys.exit(os.WEXITSTATUS(status) if os.WIFEXITED(status) else 1)
@@ -942,7 +955,8 @@ export function terminalEnv(base, overrides) {
 /**
  * Runs `args` through `npx` under a pseudo-terminal. Each `script` entry
  * waits for its prompt in the output and then types its keys, one at a time;
- * any `forbid` text in the output kills the run. Resolves to the output.
+ * any `forbid` text in the output stops the run. Resolves once the command
+ * exits cleanly with every prompt seen.
  */
 function runInTerminal(args, { cwd, env, script, forbid, timeout = 600_000 }) {
   console.log(`  $ [pty] npx ${args.join(' ')}`);
@@ -952,23 +966,32 @@ function runInTerminal(args, { cwd, env, script, forbid, timeout = 600_000 }) {
       env: terminalEnv(process.env, env),
       stdio: ['pipe', 'pipe', 'inherit'],
     });
+    // A key typed as the command exits meets a closed pipe; the exit status
+    // and the checks below report the outcome, not the write.
+    child.stdin.on('error', () => undefined);
     const pending = [...script];
-    let output = '';
+    let text = '';
+    let printed = 0;
     let typing = Promise.resolve();
+    let ended = false;
     let failure;
+    const waitingFor = () => `waiting for "${pending[0]?.prompt ?? 'the exit'}"`;
     const stop = (reason) => {
       failure ??= new Error(reason);
-      child.kill('SIGKILL');
+      child.kill('SIGTERM');
+      setTimeout(() => child.kill('SIGKILL'), 5_000).unref();
     };
-    const timer = setTimeout(() => stop(`no exit within ${timeout / 1000}s; waiting for "${pending[0]?.prompt ?? 'the exit'}"`), timeout);
+    const timer = setTimeout(() => stop(`no exit within ${timeout / 1000}s; ${waitingFor()}`), timeout);
     child.stdout.on('data', (chunk) => {
-      output += chunk;
+      printed += chunk.length;
       process.stdout.write(chunk);
-      if (output.length > MAX_TERMINAL_OUTPUT) {
-        stop(`printed more than ${MAX_TERMINAL_OUTPUT / 1024 / 1024} MB; waiting for "${pending[0]?.prompt ?? 'the exit'}"`);
+      if (printed > MAX_TERMINAL_OUTPUT) {
+        stop(`printed more than ${MAX_TERMINAL_OUTPUT / 1024 / 1024} MB; ${waitingFor()}`);
         return;
       }
-      const text = plainTerminalText(output);
+      // Stripped per chunk; a sequence split across two chunks leaves a
+      // fragment in front of the next text, never inside a question.
+      text += plainTerminalText(String(chunk));
       const forbidden = forbid.find((line) => text.includes(line));
       if (forbidden !== undefined) {
         stop(`asked "${forbidden}"`);
@@ -979,6 +1002,9 @@ function runInTerminal(args, { cwd, env, script, forbid, timeout = 600_000 }) {
         typing = typing.then(async () => {
           for (const key of keys) {
             await new Promise((wait) => setTimeout(wait, 150));
+            if (ended || failure !== undefined) {
+              return;
+            }
             child.stdin.write(key);
           }
         });
@@ -986,6 +1012,7 @@ function runInTerminal(args, { cwd, env, script, forbid, timeout = 600_000 }) {
     });
     child.on('error', fail);
     child.on('close', (code) => {
+      ended = true;
       clearTimeout(timer);
       child.stdin.end();
       if (failure !== undefined) {
@@ -995,7 +1022,7 @@ function runInTerminal(args, { cwd, env, script, forbid, timeout = 600_000 }) {
       } else if (pending.length > 0) {
         fail(new Error(`never asked "${pending[0].prompt}"`));
       } else {
-        done(output);
+        done();
       }
     });
   });
