@@ -103,6 +103,8 @@ import {
   CngxSelectLoading,
   CngxSelectLoadingGlyph,
   CngxSelectSheetHandle,
+  CngxSelectChipOverflow,
+  type CngxSelectChipOverflowContext,
   CngxSelectPlaceholder,
   CngxSelectRefreshing,
   CngxSelectRetryButton,
@@ -126,6 +128,10 @@ import type {
   CngxTreeSelectTriggerLabelContext,
   CngxTreeSelectedItem,
 } from './tree-select.model';
+
+const TRUNCATE: Signal<'wrap' | 'scroll-x' | 'truncate'> = signal<
+  'wrap' | 'scroll-x' | 'truncate'
+>('truncate').asReadonly();
 
 /**
  * Change event emitted by `CngxTreeSelect.selectionChange`. Shape
@@ -210,6 +216,7 @@ export interface CngxTreeSelectChange<T = unknown> {
  * @slot cngxTreeSelectNode Replaces each whole treeitem row, twisty and checkbox included, so the template owns the treeitem ARIA; gets node, depth, expanded, hasChildren, selected, indeterminate, disabled, toggleExpand, handleSelect.
  * @slot cngxTreeSelectChip Replaces each chip in the trigger strip unless cngxTreeSelectTriggerLabel is projected; gets option, remove.
  * @slot cngxTreeSelectTriggerLabel Replaces the whole chip strip while at least one value is selected; gets selected, values, count.
+ * @slot cngxSelectChipOverflow Replaces the `+N` overflow chip after the first maxVisibleChips displayed chips, and the badge of the touch summary; gets count, label, hidden. The host keeps the hidden values readable for AT.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
  */
 @Component({
@@ -313,6 +320,13 @@ export class CngxTreeSelect<T = unknown>
    * context always carry the full selection.
    */
   readonly chipDisplay = input<CngxTreeSelectChipDisplay | undefined>(undefined);
+  /**
+   * Chip cap of the one-line trigger strip on a fine pointer; the rest shows
+   * as a `+N` overflow chip (`*cngxSelectChipOverflow` replaces it). Counts
+   * displayed chips (see `chipDisplay`). Defaults to
+   * `CngxSelectConfig.maxVisibleChips`.
+   */
+  readonly maxVisibleChips = input<number>(this.config.maxVisibleChips);
   /** @internal */
   protected readonly resolvedChipDisplay = computed<CngxTreeSelectChipDisplay>(
     () => this.chipDisplay() ?? (this.cascadeChildren() ? 'parents' : 'all'),
@@ -461,6 +475,11 @@ export class CngxTreeSelect<T = unknown>
 
   private readonly nodeDir = contentChild<CngxTreeSelectNode<T>>(CngxTreeSelectNode);
   private readonly chipDir = contentChild<CngxTreeSelectChip<T>>(CngxTreeSelectChip);
+  private readonly chipOverflowDir = contentChild<CngxSelectChipOverflow<T>>(CngxSelectChipOverflow);
+  /** @internal - directive-only like the family's other chip-strip slots. */
+  protected readonly chipOverflowTpl = computed<TemplateRef<
+    CngxSelectChipOverflowContext<T>
+  > | null>(() => this.chipOverflowDir()?.templateRef ?? null);
   private readonly triggerLabelDir = contentChild<CngxTreeSelectTriggerLabel<T>>(
     CngxTreeSelectTriggerLabel,
   );
@@ -851,9 +870,24 @@ export class CngxTreeSelect<T = unknown>
   protected readonly summary = createSelectSummary<T>({
     selectedOptions: computed(() => [...this.displayedChips()]),
     active: injectTouchFloorSignal(),
+    // One line on every pointer: the strip always truncates.
+    chipOverflow: TRUNCATE,
+    maxVisibleChips: this.maxVisibleChips,
     ariaLabels: this.config.ariaLabels,
     fallbackLabels: this.config.fallbackLabels,
   });
+
+  private readonly chipStrip = this.summary.strip;
+  /** @internal - displayed chips up to the cap. */
+  protected readonly visibleSelected = this.chipStrip.visibleSelected;
+  /** @internal */
+  protected readonly overflowBadgeCount = this.chipStrip.overflowBadgeCount;
+  /** @internal Displayed chips behind the `+N` chip, for the overflow slot. */
+  protected readonly hiddenSelected = this.chipStrip.hiddenSelected;
+  /** @internal Visible `+N` text, the count in the reading locale's digits. */
+  protected readonly overflowBadgeText = computed<string>(() =>
+    this.config.fallbackLabels().chipOverflowBadge(this.overflowBadgeCount()),
+  );
 
   open(): void {
     this.popoverRef()?.show();

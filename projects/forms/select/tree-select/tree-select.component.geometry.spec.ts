@@ -372,3 +372,75 @@ describe('CngxTreeSelect depth guide lines', () => {
     expect(guideOf(root, 2).backgroundImage).toMatch(/ 0px, .+ 0px\)$/);
   });
 });
+
+// The fine-pointer chip strip stays on one line: with every node selected the
+// trigger is as tall as the empty trigger, in both directions.
+@Component({
+  selector: 'cngx-tree-select-one-line-host',
+  standalone: true,
+  imports: [CngxTreeSelect],
+  template: `
+    <div style="width: 16rem">
+      <cngx-tree-select
+        [nodes]="nodes"
+        [nodeIdFn]="idFn"
+        [labelFn]="idFn"
+        [keyFn]="idFn"
+        [(values)]="values"
+      />
+    </div>
+  `,
+})
+class OneLineHost {
+  readonly nodes: CngxTreeNode<Deep>[] = ['alpha', 'bravo', 'charlie', 'delta', 'echo'].map(
+    (id) => ({ value: { id } }),
+  );
+  readonly values = signal<Deep[]>([]);
+  readonly idFn = (v: Deep): string => v.id;
+}
+
+function triggerHeight(selectAll: boolean): number {
+  const fixture = TestBed.createComponent(OneLineHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  if (selectAll) {
+    fixture.componentInstance.values.set(fixture.componentInstance.nodes.map((n) => n.value));
+  }
+  fixture.detectChanges();
+  TestBed.flushEffects();
+  fixture.detectChanges();
+  const height = query(mountedRoot, '.cngx-tree-select__trigger').getBoundingClientRect().height;
+  mountedRoot.remove();
+  mountedRoot = null;
+  return height;
+}
+
+describe('CngxTreeSelect one-line chip strip', () => {
+  it('keeps the trigger height with every node selected in LTR', () => {
+    expect(triggerHeight(true)).toBe(triggerHeight(false));
+  });
+
+  it('keeps the trigger height with every node selected in RTL', () => {
+    document.documentElement.dir = 'rtl';
+    expect(triggerHeight(true)).toBe(triggerHeight(false));
+  });
+});
+
+describe('CngxTreeSelect truncated chip shrink', () => {
+  it('shrinks the last chip inside the strip instead of clipping it', () => {
+    const fixture = TestBed.createComponent(OneLineHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    const long = { id: 'an-unusually-long-node-label-that-cannot-fit-the-trigger' };
+    fixture.componentInstance.values.set([long, { id: 'bravo' }]);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const strip = query(mountedRoot, '.cngx-select__chip-list').getBoundingClientRect();
+    for (const chip of Array.from(mountedRoot.querySelectorAll('cngx-chip'))) {
+      const rect = chip.getBoundingClientRect();
+      expect(rect.right).toBeLessThanOrEqual(strip.right + 0.5);
+      expect(rect.left).toBeGreaterThanOrEqual(strip.left - 0.5);
+    }
+  });
+});

@@ -317,6 +317,17 @@
       cursor: pointer;
     }
 
+    /* The strip is one line: the last chip that fits shrinks and its label
+       ellipsizes instead of being clipped; the +N chip keeps its size. */
+    .cngx-select__chip-list[data-overflow='truncate'] > cngx-chip {
+      flex: 0 1 auto;
+      min-inline-size: 0;
+    }
+
+    .cngx-select__chip-list[data-overflow='truncate'] > .cngx-select__chip-overflow-badge {
+      flex: none;
+    }
+
     /* The anchored panel only; a sheet / fullscreen panel keeps the family
        geometry the sheet owns. */
     .cngx-select__panel:not(

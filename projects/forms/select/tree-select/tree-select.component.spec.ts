@@ -20,6 +20,7 @@ import {
   type CngxSelectAriaLabels,
 } from '../shared/config';
 import { createManualState } from '@cngx/common/data';
+import { CngxSelectChipOverflow } from '../shared/template-slots';
 import { CngxTreeSelect } from './tree-select.component';
 import { CngxTreeSelectChip } from './tree-select-chip.directive';
 import { CngxTreeSelectTriggerLabel } from './tree-select-trigger-label.directive';
@@ -1063,7 +1064,10 @@ describe('CngxTreeSelect - summary trigger under the touch floor', () => {
     const { el } = render(false);
     expect(el.querySelector('cngx-select-summary')).toBeNull();
     expect(el.querySelectorAll('cngx-chip').length).toBe(3);
-    expect(el.querySelector('.cngx-select__chip-list')?.hasAttribute('data-overflow')).toBe(false);
+    // The tree strip is one line on every pointer.
+    expect(el.querySelector('.cngx-select__chip-list')?.getAttribute('data-overflow')).toBe(
+      'truncate',
+    );
   });
 });
 
@@ -1085,4 +1089,87 @@ describeSelectBehaviourHost('CngxTreeSelect', CngxTreeSelect, 'cngx-tree-select'
   inputs: '[nodes]="nodes" [nodeIdFn]="idFn" [labelFn]="labelFn"',
   optionSelector: '[role="treeitem"]',
   readValue: (cmp) => (cmp as { values: () => unknown }).values(),
+});
+
+// ── One-line chip strip with a +N overflow chip ─────────────────────
+
+@Component({
+  imports: [CngxTreeSelect, CngxSelectChipOverflow],
+  template: `
+    <cngx-tree-select
+      [label]="'Letters'"
+      [nodes]="nodes"
+      [nodeIdFn]="idFn"
+      [labelFn]="labelFn"
+      [keyFn]="keyFn"
+      [(values)]="values"
+      [maxVisibleChips]="cap()"
+    >
+      @if (withOverflowSlot()) {
+        <ng-template cngxSelectChipOverflow let-count let-label="label" let-hidden="hidden">
+          <span class="my-overflow" [attr.data-count]="count" [attr.data-label]="label">{{
+            hidden.length
+          }}</span>
+        </ng-template>
+      }
+    </cngx-tree-select>
+  `,
+})
+class TreeOverflowHost {
+  readonly nodes: CngxTreeNode<Row>[] = ['A', 'B', 'C', 'D', 'E'].map((name) => ({
+    value: { id: name.toLowerCase(), name },
+  }));
+  readonly values = signal<Row[]>(this.nodes.map((n) => n.value));
+  readonly cap = signal(3);
+  readonly withOverflowSlot = signal(false);
+  readonly idFn = (v: Row): string => v.id;
+  readonly labelFn = (v: Row): string => v.name;
+  readonly keyFn = (v: Row): unknown => v.id;
+}
+
+describe('CngxTreeSelect - one-line chip strip', () => {
+  beforeAll(() => polyfillPopover());
+
+  function render() {
+    const fixture = TestBed.createComponent(TreeOverflowHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    return { fixture, el: fixture.nativeElement as HTMLElement };
+  }
+
+  it('truncates at maxVisibleChips with an aria-hidden +N badge', () => {
+    const { el } = render();
+    const strip = el.querySelector('.cngx-select__chip-list')!;
+    expect(strip.getAttribute('data-overflow')).toBe('truncate');
+    expect(strip.querySelectorAll('cngx-chip').length).toBe(3);
+    const badge = strip.querySelector('.cngx-select__chip-overflow-badge');
+    expect(badge?.textContent?.trim()).toBe('+2');
+    expect(badge?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('reads the whole displayed selection for AT while values are hidden', () => {
+    const { fixture, el } = render();
+    const sr = el.querySelector('.cngx-select__chip-list .cngx-select__hidden-summary');
+    expect(sr?.classList.contains('cngx-sr-only')).toBe(true);
+    expect(stripBidiIsolates(sr?.textContent?.trim() ?? '')).toBe('5 selected: A, B, C, D, and E');
+    fixture.componentInstance.cap.set(5);
+    fixture.detectChanges();
+    expect(el.querySelector('.cngx-select__hidden-summary')).toBeNull();
+    expect(el.querySelector('.cngx-select__chip-overflow-badge')).toBeNull();
+  });
+
+  it('hands count, label and hidden values to a projected *cngxSelectChipOverflow', () => {
+    const { fixture, el } = render();
+    fixture.componentInstance.withOverflowSlot.set(true);
+    fixture.detectChanges();
+    const custom = el.querySelector<HTMLElement>('.my-overflow');
+    expect(custom).not.toBeNull();
+    expect(custom!.dataset['count']).toBe('2');
+    expect(custom!.dataset['label']).toBe('+2');
+    expect(custom!.textContent?.trim()).toBe('2');
+    expect(el.querySelector('.cngx-select__chip-overflow-badge')).toBeNull();
+    // The host keeps the AT text when the badge is projected.
+    expect(el.querySelector('.cngx-select__hidden-summary')).not.toBeNull();
+  });
 });
