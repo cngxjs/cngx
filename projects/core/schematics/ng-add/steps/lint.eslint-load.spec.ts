@@ -156,7 +156,7 @@ function createApp(base: string): string {
 }
 
 describe('the lint step edit, loaded by ESLint', () => {
-  let base: string;
+  let base: string | undefined;
   let tsRules: readonly string[];
   let templateRules: readonly string[];
 
@@ -169,7 +169,9 @@ describe('the lint step edit, loaded by ESLint', () => {
   });
 
   afterAll(() => {
-    rmSync(base, { recursive: true, force: true });
+    if (base !== undefined) {
+      rmSync(base, { recursive: true, force: true });
+    }
   });
 
   it('expects the recommended rules of both surfaces', () => {
@@ -178,7 +180,7 @@ describe('the lint step edit, loaded by ESLint', () => {
   });
 
   it.each(CONFIGS)('%s loads with the recommended cngx rules on a component and its template', async (name, content) => {
-    const app = createApp(base);
+    const app = createApp(base ?? tmpdir());
     const configFile = join(app, name);
     writeFileSync(configFile, editedConfig(name, content));
     const ESLint = await loadESLint({ useFlatConfig: true });
