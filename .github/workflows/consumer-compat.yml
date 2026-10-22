@@ -92,12 +92,16 @@ jobs:
           # Highest major the peer range allows.
           - { angular: '22', variant: full }
           - { angular: '22', variant: minimal }
-          # The required schematics-consumer job runs this variant without a
-          # registry download on the recommended preset; nightly adds the leg
-          # where an older published core must be replaced by the packed one
-          # in the same ng add, and runs both legs on the full preset, which
-          # places the feedback outlets and adds ng test.
+          # The required schematics-consumer job runs this variant on 21
+          # without a registry download on the recommended preset; these rows
+          # add the leg where an older published core must be replaced by the
+          # packed one in the same ng add, and the leg where a real
+          # ng update @cngx/core moves the older release of the package
+          # group to the packed one, and run them on the full preset, which
+          # places the feedback outlets and adds ng test. Standalone apps
+          # only, so the 22 row needs no NgModule outlets.
           - { angular: '21', variant: schematics, args: '--stale-core previous --preset full' }
+          - { angular: '22', variant: schematics, args: '--stale-core previous --preset full' }
           # The documented path on a fresh app with no @angular/cdk: one
           # ng add @cngx/core must install the CDK on the app's own major
           # (npm alone would fetch the newest CDK the peers allow), write the

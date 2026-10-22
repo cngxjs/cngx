@@ -45,7 +45,12 @@
 //               tarballs. `--preset <name>` picks the ng add preset
 //               (default `recommended`); `full` also runs `ng test` on the
 //               onboarded app, checks both feedback outlets in the DOM and
-//               clicks the starter's toast and banner buttons.
+//               clicks the starter's toast and banner buttons. With
+//               --stale-core a third sandbox installs utils, core, common and
+//               forms at the stale release and runs a real
+//               `ng update @cngx/core` (no --migrate-only): the CLI must move
+//               the whole package group to the packed release and run its
+//               migration.
 //
 // The schematics variant serves the tarballs from a local registry for the
 // @cngx scope (other @cngx packages are proxied to the public registry), so
@@ -805,6 +810,53 @@ async function runStaleCoreLeg({ cliSpec, work, tarballFiles, version, registryU
   console.log(`\nStale core leg: @cngx/core ${stale} replaced by ${version} in the same ng add`);
 }
 
+/** The packages the stale update leg installs at the older release, the ones `ng add @cngx/forms` pins. */
+export const STALE_UPDATE_LIBS = ['utils', 'core', 'common', 'forms'];
+
+/**
+ * The real `ng update` of the stale update leg: no --migrate-only, so the
+ * CLI reads the release from the registry, moves the package group and runs
+ * the migrations of the range it crossed; then the same command again, which
+ * must change nothing.
+ */
+export function staleUpdateSteps(version) {
+  const args = ['ng', 'update', '@cngx/core'];
+  return [
+    { label: 'ng update @cngx/core', args, expect: `cngx ${version} migration`, pins: STALE_UPDATE_LIBS, commit: true },
+    { label: 'ng update @cngx/core again', args, expect: "Package '@cngx/core' is already up to date.", clean: true },
+  ];
+}
+
+/**
+ * An app on an older release of the package group: `ng update @cngx/core`
+ * through the local registry must install the packed release of every
+ * member and run the migration keyed to it.
+ */
+async function runStaleUpdateLeg({ cliSpec, work, version, registryUrl, staleCore }) {
+  const sandbox = mkdtempSync(join(work, 'stale-update-'));
+  const appDir = join(sandbox, 'fixture');
+  const stale = tarballManifest(resolveStaleCore(staleCore, version, sandbox)).version;
+  console.log(`\nStale update leg: ${STALE_UPDATE_LIBS.join(', ')} at ${stale}, packed ${version}\nSandbox: ${sandbox}\n`);
+  run('npx', ['-y', `@angular/cli@${cliSpec}`, 'new', 'fixture', '--defaults', '--skip-git', '--skip-install', '--style=css', '--routing=false', '--ssr=false', '--zoneless=true'], { cwd: sandbox });
+  run('npm', ['install'], { cwd: appDir });
+  const angularVersion = installedPackageVersion(appDir, '@angular/core');
+  run('npm', ['install', ...peerInstallSpecs(variantPlan('schematics'), angularVersion)], { cwd: appDir });
+  // The older release comes from the public registry, before the scope is
+  // routed to the local one, which serves the packed release only; a
+  // `file:` dependency is one ng update cannot move. Pinned exactly, as
+  // ng add pins. Its peer range may stop below the app's Angular major,
+  // which is what the update repairs.
+  const staleSpecs = STALE_UPDATE_LIBS.map((lib) => `@cngx/${lib}@${stale}`);
+  run('npm', ['install', '--legacy-peer-deps', '--save-exact', ...staleSpecs], { cwd: appDir });
+  useLocalRegistry(appDir, registryUrl);
+  await runSteps(appDir, version, staleUpdateSteps(version), 'stale update');
+  const installed = installedPackageVersion(appDir, '@cngx/core');
+  if (installed !== version) {
+    throw new Error(`stale update leg: node_modules holds @cngx/core ${installed}, expected ${version}`);
+  }
+  console.log(`\nStale update leg: ng update moved ${STALE_UPDATE_LIBS.join(', ')} from ${stale} to ${version}`);
+}
+
 async function main() {
   const { angular, variant, tarballs, work, ignorePeers, staleCore, preset } = parseArgs(process.argv.slice(2));
   const { cliSpec, exact } = parseAngularSpec(angular);
@@ -896,8 +948,9 @@ async function main() {
     }
     if (plan.schematics && staleCore !== null) {
       await runStaleCoreLeg({ cliSpec, work, tarballFiles, version, registryUrl: registry.url, staleCore, preset });
+      await runStaleUpdateLeg({ cliSpec, work, version, registryUrl: registry.url, staleCore });
     } else if (plan.schematics) {
-      console.log('\nStale core leg: skipped (pass --stale-core <tgz | previous> to run it)');
+      console.log('\nStale core and stale update legs: skipped (pass --stale-core <tgz | previous> to run them)');
     }
   } finally {
     await registry?.close();

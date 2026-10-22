@@ -24,6 +24,8 @@ import {
   PRESETS,
   schematicsSteps,
   staleCoreAddArgs,
+  STALE_UPDATE_LIBS,
+  staleUpdateSteps,
   usageText,
   VARIANTS,
   variantPlan,
@@ -289,6 +291,24 @@ describe('staleCoreAddArgs', () => {
   });
 });
 
+describe('staleUpdateSteps', () => {
+  const [update, again] = staleUpdateSteps('0.2.0');
+
+  it('runs a real ng update: no --migrate-only, no --from, the release read from the registry', () => {
+    expect(update.args).toEqual(['ng', 'update', '@cngx/core']);
+    expect(again.args).toEqual(update.args);
+  });
+
+  it('expects the migration of the packed release and every installed member moved to it', () => {
+    expect(update).toMatchObject({ expect: 'cngx 0.2.0 migration', pins: STALE_UPDATE_LIBS, commit: true });
+    expect(STALE_UPDATE_LIBS).toEqual(['utils', 'core', 'common', 'forms']);
+  });
+
+  it('finds nothing on the second run and leaves the tree clean', () => {
+    expect(again).toMatchObject({ expect: "Package '@cngx/core' is already up to date.", clean: true });
+  });
+});
+
 describe('missingRecordedLibs', () => {
   const record = (libs) => ({ projects: { fixture: { answers: { libs } } } });
 
@@ -365,8 +385,10 @@ describe('the consumer-compat workflow', () => {
     expect(workflow).toContain("- { angular: '22', variant: onboarding, args: '--preset full' }");
   });
 
-  it('runs the stale-core leg on the full preset in its schematics row', () => {
-    expect(workflow).toMatch(/variant: schematics, args: '--stale-core previous --preset full'/);
+  it('runs the stale core and stale update legs on the full preset on both majors', () => {
+    for (const major of ['21', '22']) {
+      expect(workflow).toContain(`- { angular: '${major}', variant: schematics, args: '--stale-core previous --preset full' }`);
+    }
   });
 
   it('keeps the required schematics-consumer job on the default preset', () => {

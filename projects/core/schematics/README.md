@@ -289,8 +289,11 @@ app, `ng add @cngx/core` twice (the second must change nothing),
 `ng build` and a browser load. It serves the tarballs from a local registry
 for the `@cngx` scope inside the script. `--stale-core <tgz | previous>` adds
 a sandbox with an older core installed, where `ng add @cngx/forms` must
-replace it in the same run; `previous` packs the newest registry release
-below the tarballs.
+replace it in the same run, and a sandbox with utils, core, common and forms
+at that older release, where a real `ng update @cngx/core` (no
+`--migrate-only`) must move all four to the tarballs and run the migration
+keyed to them; `previous` packs the newest registry release below the
+tarballs. `consumer-compat` runs both legs on Angular 21 and 22.
 
 For anything the fixture does not cover, scratch apps must live outside this workspace: `ng new` refuses to run inside
 it, and an install there resolves the repo's tree. Use npm 11 (npm 10 fails
