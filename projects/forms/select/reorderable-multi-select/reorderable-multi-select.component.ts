@@ -78,6 +78,9 @@ import {
 } from '../shared/chip-removal-handler';
 import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
 import { sameArrayContents } from '../shared/internal/compare';
+import { CngxSelectSummary } from '../shared/internal/summary/select-summary.component';
+import { createSelectSummary } from '../shared/internal/summary/select-summary';
+import { injectTouchFloorSignal } from '../shared/internal/touch-floor';
 import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createFieldSync } from '../shared/field-sync';
 import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
@@ -233,6 +236,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
     CngxPopoverTrigger,
     CngxReorder,
     CngxSelectPanel,
+    CngxSelectSummary,
     NgTemplateOutlet,
   ],
   providers: [
@@ -891,6 +895,18 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   protected readonly effectiveChipOverflow = computed<'wrap' | 'scroll-x'>(() => {
     const mode = this.chipOverflow();
     return mode === 'truncate' ? 'scroll-x' : mode;
+  });
+
+  /**
+   * @internal - one-line summary instead of the reorderable chips under the
+   * touch floor. Sorting then moves into the panel list, so the strip is a
+   * plain value display while this is active.
+   */
+  protected readonly summary = createSelectSummary<T>({
+    selectedOptions: this.selectedOptions,
+    active: injectTouchFloorSignal(),
+    ariaLabels: this.config.ariaLabels,
+    fallbackLabels: this.config.fallbackLabels,
   });
 
   /**

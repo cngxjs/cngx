@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { CngxActionMultiSelect } from '../action-multi-select/action-multi-select.component';
 import { CngxCombobox } from '../combobox/combobox.component';
 import { CngxMultiSelect } from '../multi-select/multi-select.component';
+import { CngxReorderableMultiSelect } from '../reorderable-multi-select/reorderable-multi-select.component';
 import { CngxTreeSelect } from '../tree-select/tree-select.component';
 
 // Runs in a real Chromium (the `test-geometry` target). Under the touch floor
@@ -25,7 +26,13 @@ function optionsWith(firstLabel: string): { value: string; label: string }[] {
 @Component({
   selector: 'cngx-select-summary-trigger-host',
   standalone: true,
-  imports: [CngxMultiSelect, CngxTreeSelect, CngxCombobox, CngxActionMultiSelect],
+  imports: [
+    CngxMultiSelect,
+    CngxTreeSelect,
+    CngxReorderableMultiSelect,
+    CngxCombobox,
+    CngxActionMultiSelect,
+  ],
   styleUrls: [
     '../../../core/theming/layers.css',
     '../../../core/theming/system-tokens.css',
@@ -46,6 +53,7 @@ function optionsWith(firstLabel: string): { value: string; label: string }[] {
         [labelFn]="treeLabel"
         [values]="values()"
       />
+      <cngx-reorderable-multi-select [label]="'R'" [options]="options()" [values]="values()" />
       <cngx-combobox [label]="'B'" [options]="options()" [values]="values()" />
       <cngx-action-multi-select [label]="'A'" [options]="options()" [values]="values()" />
     </div>
@@ -77,6 +85,7 @@ class SummaryTriggerHost {
 const VARIANTS = [
   'cngx-multi-select',
   'cngx-tree-select',
+  'cngx-reorderable-multi-select',
   'cngx-combobox',
   'cngx-action-multi-select',
 ] as const;

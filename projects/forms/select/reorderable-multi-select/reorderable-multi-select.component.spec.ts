@@ -1,7 +1,9 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { stripBidiIsolates } from '@cngx/testing';
 
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { createMockField } from '@cngx/forms/field/testing';
@@ -9,6 +11,8 @@ import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host'
 import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
 import { describeSelectBehaviourHost } from '../shared/__test-helpers/select-behaviour-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
+import { stubTouchFloor } from '../shared/__test-helpers/touch-floor';
+import { CngxMultiSelectTriggerLabel } from '../shared/template-slots';
 import {
   CngxReorderableMultiSelect,
   type CngxReorderableMultiSelectChange,
@@ -593,4 +597,105 @@ describeSelectBehaviourHost('CngxReorderableMultiSelect', CngxReorderableMultiSe
   inputs: '[options]="options"',
   optionSelector: '[cngxOption]',
   readValue: (cmp) => (cmp as { values: () => unknown }).values(),
+});
+
+// ── Summary trigger under the touch floor ───────────────────────────
+
+@Component({
+  template: `
+    <cngx-reorderable-multi-select [label]="'Letters'" [options]="options" [(values)]="values">
+      @if (withTriggerLabel()) {
+        <ng-template cngxMultiSelectTriggerLabel let-count="count">
+          <span class="trigger-summary">{{ count }} letters</span>
+        </ng-template>
+      }
+    </cngx-reorderable-multi-select>
+  `,
+  imports: [CngxReorderableMultiSelect, CngxMultiSelectTriggerLabel],
+})
+class SummaryHost {
+  readonly options = OPTIONS;
+  readonly values = signal<string[]>(['a', 'b', 'c']);
+  readonly withTriggerLabel = signal(false);
+}
+
+describe('CngxReorderableMultiSelect - summary trigger under the touch floor', () => {
+  let restore: (() => void) | null = null;
+
+  beforeEach(() => {
+    polyfillPopover();
+  });
+
+  afterEach(() => {
+    restore?.();
+    restore = null;
+  });
+
+  function render(touch: boolean) {
+    if (touch) {
+      restore = stubTouchFloor();
+    }
+    const fixture = TestBed.createComponent(SummaryHost);
+    flush(fixture);
+    const el = fixture.nativeElement as HTMLElement;
+    return { fixture, el };
+  }
+
+  it('shows the first label plus the +N badge instead of chips', () => {
+    const { el } = render(true);
+    expect(el.querySelectorAll('cngx-chip').length).toBe(0);
+    expect(el.querySelector('.cngx-select-summary__label')?.textContent?.trim()).toBe('Alpha');
+    expect(el.querySelector('.cngx-select__chip-overflow-badge')?.textContent?.trim()).toBe('+2');
+    expect(chipStrip(el).getAttribute('data-overflow')).toBe('truncate');
+  });
+
+  it('drops the reorder group from the strip', () => {
+    const { el } = render(true);
+    const strip = chipStrip(el);
+    expect(strip.getAttribute('role')).toBeNull();
+    expect(strip.getAttribute('aria-label')).toBeNull();
+    expect(strip.querySelector('[data-reorder-index]')).toBeNull();
+  });
+
+  it('exposes the whole selection as the trigger value for AT', () => {
+    const { el } = render(true);
+    const trigger = el.querySelector('[role="combobox"]')!;
+    const sr = trigger.querySelector('cngx-select-summary .cngx-sr-only');
+    expect(stripBidiIsolates(sr?.textContent?.trim() ?? '')).toBe(
+      '3 selected: Alpha, Bravo, and Charlie',
+    );
+    expect(trigger.querySelector('.cngx-select-summary__label')?.getAttribute('aria-hidden')).toBe(
+      'true',
+    );
+  });
+
+  it('follows a reorder of the values with the first label', () => {
+    const { fixture, el } = render(true);
+    fixture.componentInstance.values.set(['c', 'a', 'b']);
+    flush(fixture);
+    expect(el.querySelector('.cngx-select-summary__label')?.textContent?.trim()).toBe('Charlie');
+  });
+
+  it('shows the placeholder for no value', () => {
+    const { fixture, el } = render(true);
+    fixture.componentInstance.values.set([]);
+    flush(fixture);
+    expect(el.querySelector('cngx-select-summary')).toBeNull();
+    expect(el.querySelector('.cngx-reorderable-multi-select__placeholder')).not.toBeNull();
+  });
+
+  it('lets a projected trigger-label template win over the summary', () => {
+    const { fixture, el } = render(true);
+    fixture.componentInstance.withTriggerLabel.set(true);
+    flush(fixture);
+    expect(el.querySelector('cngx-select-summary')).toBeNull();
+    expect(el.querySelector('.trigger-summary')?.textContent?.trim()).toBe('3 letters');
+  });
+
+  it('keeps the reorderable chips on a fine pointer', () => {
+    const { el } = render(false);
+    expect(el.querySelector('cngx-select-summary')).toBeNull();
+    expect(el.querySelectorAll('cngx-chip').length).toBe(3);
+    expect(chipStrip(el).getAttribute('role')).toBe('group');
+  });
 });
