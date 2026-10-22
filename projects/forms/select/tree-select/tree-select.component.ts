@@ -11,7 +11,6 @@ import {
   model,
   output,
   signal,
-  untracked,
   viewChild,
   type ElementRef,
   type Signal,
@@ -117,6 +116,7 @@ import {
   type CngxTreeSelectPanelHost,
 } from './tree-select-panel-host';
 import { CngxTreeSelectPanel } from './tree-select-panel.component';
+import { createTreeToggleDispatch, type TreeToggleDispatch } from './internal/tree-toggle-dispatch';
 import type {
   CngxTreeSelectAction,
   CngxTreeSelectChipContext,
@@ -524,16 +524,6 @@ export class CngxTreeSelect<T = unknown>
     },
   );
 
-  /** Rollback target for a commit in flight. */
-  private lastCommittedValues: T[] = untracked(() => [...this.values()]);
-
-  /**
-   * Last commit this tree started, replayed by the commit-error Retry. A
-   * toggle replays through `dispatchValueChange` (cascade meta included);
-   * a clear goes back to the array handler, which owns that path.
-   */
-  private lastCommit: TreeSelectLastCommit<T> | null = null;
-
   /** @internal */ readonly panelOpen = computed<boolean>(
     () => this.popoverRef()?.isVisible() ?? false,
   );
@@ -603,7 +593,7 @@ export class CngxTreeSelect<T = unknown>
     commitMode: this.commitMode,
     core: this.core,
     commitAction: this.commitAction,
-    getLastCommitted: () => this.lastCommittedValues,
+    getLastCommitted: () => this.dispatch.lastCommitted(),
     onToggleFinalize: () => {
       // Tree commit success uses cascade-aware
       // `dispatchValueChange` directly. The handler's per-option
@@ -624,6 +614,27 @@ export class CngxTreeSelect<T = unknown>
     onStateChange: (status) => this.stateChange.emit(status),
     onError: (err) => this.commitError.emit(err),
     announceError: (err) => this.announceCommitError(err),
+  });
+
+  /**
+   * Toggle / cascade / remove / clear mutations with their commit paths. A
+   * toggle Retry replays through it (cascade meta included); a clear goes
+   * back to the array handler, which owns that path.
+   */
+  private readonly dispatch: TreeToggleDispatch<T> = createTreeToggleDispatch<T>({
+    values: this.values,
+    membersEqual: (a, b) => this.membersEqual(a, b),
+    compareWith: this.compareWith,
+    treeController: this.treeController,
+    commitAction: this.commitAction,
+    commitMode: this.commitMode,
+    core: this.core,
+    commitHandler: () => this.commitHandler,
+    emitChange: (change) => this.emitChange(change),
+    emitCleared: () => this.cleared.emit(),
+    emitState: (status) => this.stateChange.emit(status),
+    emitCommitError: (err) => this.commitError.emit(err),
+    announceCommitError: (err) => this.announceCommitError(err),
   });
 
   /** @internal */ readonly activeView = this.core.activeView;
@@ -695,15 +706,7 @@ export class CngxTreeSelect<T = unknown>
   // `*ngTemplateOutlet` consumers of the commit-error context.
   private readonly commitRetryBound: () => void = () => {
     this.hostFocus.refocusOwnerBeforeRemoval();
-    const last = this.lastCommit;
-    if (!last) {
-      return;
-    }
-    if (last.kind === 'clear') {
-      this.commitHandler.retryLast();
-      return;
-    }
-    this.dispatchValueChange(last.next, last.previous, last.meta);
+    this.dispatch.retryLast();
   };
 
   /** @internal */
@@ -890,10 +893,10 @@ export class CngxTreeSelect<T = unknown>
       return;
     }
     if (this.cascadeChildren() && node.hasChildren) {
-      this.cascadeToggle(node);
+      this.dispatch.cascadeToggle(node);
       return;
     }
-    this.singleToggle(node);
+    this.dispatch.singleToggle(node);
   }
 
   /**
@@ -910,149 +913,6 @@ export class CngxTreeSelect<T = unknown>
     }
     return this.compareWith()(a, b);
   };
-
-  private singleToggle(node: FlatTreeNode<T>): void {
-    const value = node.value;
-    const previous = untracked(() => [...this.values()]);
-    const wasSelected = previous.some((v) => this.membersEqual(v, value));
-    const next = wasSelected
-      ? previous.filter((v) => !this.membersEqual(v, value))
-      : [...previous, value];
-
-    this.dispatchValueChange(next, previous, {
-      added: wasSelected ? [] : [value],
-      removed: wasSelected ? [value] : [],
-      node,
-      action: 'toggle',
-    });
-  }
-
-  private cascadeToggle(node: FlatTreeNode<T>): void {
-    // A disabled descendant keeps whatever state it had: the user cannot
-    // reverse a change on a row they cannot activate.
-    const descendants = this.treeController
-      .descendantsOfValue(node.value)
-      .filter((v) => this.treeController.findByValue(v)?.disabled !== true);
-    const allValues = [node.value, ...descendants];
-    const previous = untracked(() => [...this.values()]);
-    const parentSelected = previous.some((v) => this.membersEqual(v, node.value));
-
-    const next = parentSelected
-      ? previous.filter((v) => !allValues.some((a) => this.membersEqual(v, a)))
-      : dedup([...previous, ...allValues], this.membersEqual);
-
-    const added = parentSelected
-      ? []
-      : allValues.filter((a) => !previous.some((v) => this.membersEqual(v, a)));
-    const removed = parentSelected
-      ? allValues.filter((a) => previous.some((v) => this.membersEqual(v, a)))
-      : [];
-
-    this.dispatchValueChange(next, previous, {
-      added,
-      removed,
-      node,
-      action: 'cascade-toggle',
-    });
-  }
-
-  /**
-   * Commit dispatch for toggle + cascade-toggle. Bypasses
-   * `ArrayCommitHandler.beginToggle` (its `CngxSelectOptionDef<T>`
-   * shape doesn't fit the tree world) and drives the commit-controller
-   * directly; reconciliation and rollback semantics match.
-   */
-  private dispatchValueChange(
-    next: T[],
-    previous: T[],
-    meta: TreeSelectToggleMeta<T>,
-  ): void {
-    const action = this.commitAction();
-    // Announce: single-toggle reports the node's label + direction;
-    // cascade-toggle has many added/removed, so announce a null-label
-    // with the count (format function's `selectedLabel: null` path).
-    const announceLabel = meta.action === 'toggle' ? meta.node.label : null;
-    const announceAction: 'added' | 'removed' = meta.added.length > 0 ? 'added' : 'removed';
-    if (!action) {
-      this.values.set(next);
-      this.emitChange({
-        values: next,
-        previousValues: previous,
-        added: meta.added,
-        removed: meta.removed,
-        node: meta.node,
-        action: meta.action,
-      });
-      this.core.announce(
-        announceLabel ? { value: meta.node.value, label: announceLabel } : null,
-        announceAction,
-        next.length,
-        true,
-      );
-      return;
-    }
-
-    this.lastCommittedValues = previous;
-    this.lastCommit = { kind: 'toggle', next, previous, meta };
-    if (this.commitMode() === 'optimistic') {
-      this.values.set(next);
-      // Emit the intent immediately so `(selectionChange)` consumers
-      // see the change; rollback on commit error reverts `values`.
-      this.emitChange({
-        values: next,
-        previousValues: previous,
-        added: meta.added,
-        removed: meta.removed,
-        node: meta.node,
-        action: meta.action,
-      });
-      this.core.announce(
-        announceLabel ? { value: meta.node.value, label: announceLabel } : null,
-        announceAction,
-        next.length,
-        true,
-      );
-    }
-    this.stateChange.emit('pending');
-    this.core.commitController.begin(action, next, previous, {
-      onSuccess: (committed) => {
-        this.stateChange.emit('success');
-        const finalValues = committed ?? next;
-        if (!sameArrayContents(this.values(), finalValues, this.compareWith())) {
-          this.values.set([...finalValues]);
-        }
-        this.lastCommittedValues = [...finalValues];
-        if (this.commitMode() === 'pessimistic') {
-          this.emitChange({
-            values: finalValues,
-            previousValues: previous,
-            added: meta.added,
-            removed: meta.removed,
-            node: meta.node,
-            action: meta.action,
-          });
-          this.core.announce(
-            announceLabel ? { value: meta.node.value, label: announceLabel } : null,
-            announceAction,
-            finalValues.length,
-            true,
-          );
-        }
-      },
-      onError: (err, rollbackTo) => {
-        this.stateChange.emit('error');
-        this.commitError.emit(err);
-        // An external write during the pending window wins over the stale
-        // rollback snapshot (same rule as the array commit handler).
-        const stillOptimistic = sameArrayContents(this.values(), next, this.compareWith());
-        if (this.commitMode() === 'optimistic' && stillOptimistic) {
-          this.values.set([...(rollbackTo ?? previous)]);
-        }
-        // Same order as the array commit handler: rollback, then speak.
-        this.announceCommitError(err);
-      },
-    });
-  }
 
   /** @internal */
   protected handleTriggerClick(): void {
@@ -1116,14 +976,14 @@ export class CngxTreeSelect<T = unknown>
    * the disabled-guard + WeakMap closure cache while the override
    * keeps the tree-aware mutation path:
    *
-   *   - in-tree value → `singleToggle(node)` (always single-deselect,
+   *   - in-tree value → single toggle (always single-deselect,
    *     never cascades, even with `[cascadeChildren]="true"`).
    *   - stale value (not in tree) → strip from `values` + emit +
    *     announce.
    *
-   * Standard sync/commit branches are bypassed because
-   * `dispatchValueChange` (via `singleToggle`) owns commit-action,
-   * optimistic write, and rollback for the tree world.
+   * Standard sync/commit branches are bypassed because the tree toggle
+   * dispatch owns commit-action, optimistic write, and rollback for the
+   * tree world.
    */
   private readonly chipRemovalHandler: CngxChipRemovalHandler<CngxTreeSelectedItem<T>> = inject(
     CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
@@ -1146,55 +1006,13 @@ export class CngxTreeSelect<T = unknown>
    * Disabled-guard lives in the handler; this method assumes safe.
    */
   private removeSelectedItem(opt: CngxTreeSelectedItem<T>): void {
-    const node = this.flatNodeForValue(opt.value);
-    if (node) {
-      this.singleToggle(node);
-      return;
-    }
-    // Stale selection (value not in tree). Strip from `values`
-    // without routing through the tree.
-    const previous = untracked(() => [...this.values()]);
-    const next = previous.filter((v) => !this.membersEqual(v, opt.value));
-    this.values.set(next);
-    this.emitChange({
-      values: next,
-      previousValues: previous,
-      added: [],
-      removed: [opt.value],
-      node: null,
-      action: 'toggle',
-    });
-    this.core.announce({ value: opt.value, label: opt.label }, 'removed', next.length, true);
+    this.dispatch.removeValue(opt.value, opt.label);
   }
 
   /** @internal - exposed for the `*cngxSelectClearButton` slot. */
   protected readonly clearAll: () => void = () => {
     this.hostFocus.refocusOwnerBeforeRemoval();
-    const previous = untracked(() => [...this.values()]);
-    if (previous.length === 0) {
-      return;
-    }
-    const action = this.commitAction();
-    if (action) {
-      this.lastCommittedValues = previous;
-      this.lastCommit = { kind: 'clear' };
-      if (this.commitMode() === 'optimistic') {
-        this.values.set([]);
-      }
-      this.commitHandler.beginClear(previous, action);
-      return;
-    }
-    this.values.set([]);
-    this.cleared.emit();
-    this.emitChange({
-      values: [],
-      previousValues: previous,
-      added: [],
-      removed: previous,
-      node: null,
-      action: 'clear',
-    });
-    this.core.announce(null, 'removed', 0, true);
+    this.dispatch.clearAll();
   };
 
   /** @internal */
@@ -1235,39 +1053,7 @@ export class CngxTreeSelect<T = unknown>
     return this.treeController.findByValue(value)?.label ?? String(value);
   }
 
-  private flatNodeForValue(value: T): FlatTreeNode<T> | null {
-    return this.treeController.findByValue(value) ?? null;
-  }
-
   private emitChange(change: Omit<CngxTreeSelectChange<T>, 'source'>): void {
     this.selectionChange.emit({ ...change, source: this });
   }
-}
-
-/** Change meta of one toggle or cascade-toggle dispatch. */
-interface TreeSelectToggleMeta<T> {
-  readonly added: readonly T[];
-  readonly removed: readonly T[];
-  readonly node: FlatTreeNode<T>;
-  readonly action: 'toggle' | 'cascade-toggle';
-}
-
-/** The commit a tree-select Retry replays. */
-type TreeSelectLastCommit<T> =
-  | {
-      readonly kind: 'toggle';
-      readonly next: T[];
-      readonly previous: T[];
-      readonly meta: TreeSelectToggleMeta<T>;
-    }
-  | { readonly kind: 'clear' };
-
-function dedup<T>(arr: readonly T[], eq: (a: T, b: T) => boolean): T[] {
-  const out: T[] = [];
-  for (const v of arr) {
-    if (!out.some((o) => eq(o, v))) {
-      out.push(v);
-    }
-  }
-  return out;
 }
