@@ -1,7 +1,7 @@
 import { computed, Directive, effect, inject, untracked } from '@angular/core';
 
 import { CngxListbox } from '@cngx/common/interactive';
-import { cngxDevWarn } from '@cngx/utils';
+import { arrayEqual, cngxDevWarn } from '@cngx/utils';
 
 import { writeFieldValue, type FieldWriteMode } from './field-sync';
 import { createFieldControlAria } from './field-control-aria';
@@ -126,7 +126,7 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
       if (this.listbox.multiple()) {
         const current = untracked(() => this.listbox.selectedValues());
         const next = Array.isArray(fieldValue) ? [...(fieldValue as unknown[])] : [];
-        if (!arrayEq(current, next)) {
+        if (!arrayEqual(current, next)) {
           this.listbox.selectedValues.set(next);
         }
       } else {
@@ -160,7 +160,7 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
         this.listbox.multiple() &&
         Array.isArray(current) &&
         Array.isArray(listboxValue) &&
-        arrayEq(current as readonly unknown[], listboxValue as readonly unknown[])
+        arrayEqual(current as readonly unknown[], listboxValue as readonly unknown[])
       ) {
         return;
       }
@@ -173,17 +173,4 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
 
   /** @internal */
   protected readonly handleBlur = this.aria.handleFocusOut;
-}
-
-/** @internal */
-function arrayEq(a: readonly unknown[], b: readonly unknown[]): boolean {
-  if (a.length !== b.length) {
-    return false;
-  }
-  for (let i = 0; i < a.length; i++) {
-    if (!Object.is(a[i], b[i])) {
-      return false;
-    }
-  }
-  return true;
 }
