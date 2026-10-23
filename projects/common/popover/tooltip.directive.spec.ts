@@ -134,10 +134,21 @@ class PlacementTooltipHost {
 }
 
 @Component({
-  template: `<button cngxTooltip="Tip" aria-describedby="static-hint" id="trigger">Btn</button>`,
+  template: `
+    <button
+      cngxTooltip="Tip"
+      aria-describedby="static-hint other-hint"
+      [enabled]="enabled()"
+      id="trigger"
+    >
+      Btn
+    </button>
+  `,
   imports: [CngxTooltip],
 })
-class StaticDescribedByHost {}
+class StaticDescribedByHost {
+  readonly enabled = signal(true);
+}
 
 /**
  * Stands in for a host that owns aria-describedby (CngxButton): provides the
@@ -274,10 +285,19 @@ describe('CngxTooltip', () => {
       expect(triggerEl.getAttribute('aria-describedby')).toBeNull();
     });
 
-    it('should overwrite a static aria-describedby on a plain host, as before', () => {
-      const { triggerEl } = setup(StaticDescribedByHost);
-      const tooltipEl = getTooltipEl(triggerEl);
-      expect(triggerEl.getAttribute('aria-describedby')).toBe(tooltipEl!.id);
+    it('should keep a static aria-describedby ahead of the tooltip id on a plain host', () => {
+      const { fixture, triggerEl } = setup(StaticDescribedByHost);
+      const host = fixture.componentInstance as StaticDescribedByHost;
+      const tipId = getTooltipEl(triggerEl)!.id;
+      expect(triggerEl.getAttribute('aria-describedby')).toBe(`static-hint other-hint ${tipId}`);
+
+      host.enabled.set(false);
+      fixture.detectChanges();
+      expect(triggerEl.getAttribute('aria-describedby')).toBe('static-hint other-hint');
+
+      host.enabled.set(true);
+      fixture.detectChanges();
+      expect(triggerEl.getAttribute('aria-describedby')).toBe(`static-hint other-hint ${tipId}`);
     });
 
     for (const [order, hostType] of [

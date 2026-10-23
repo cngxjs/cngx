@@ -4,6 +4,7 @@ import {
   Directive,
   effect,
   ElementRef,
+  HostAttributeToken,
   inject,
   input,
   Renderer2,
@@ -13,7 +14,12 @@ import {
 
 import { CngxReducedMotion } from '@cngx/common/a11y';
 import { injectDirection } from '@cngx/core';
-import { injectDescribedByContribution, nextUid } from '@cngx/core/utils';
+import {
+  type CngxDescribedByRegistry,
+  createDescribedByRegistry,
+  injectDescribedByContribution,
+  nextUid,
+} from '@cngx/core/utils';
 
 import {
   ANCHOR_AREA_PROPERTY,
@@ -167,15 +173,15 @@ export class CngxTooltip {
    * A host that owns `aria-describedby` (`CngxButton`, `CngxIconButton`)
    * provides `CNGX_DESCRIBED_BY` on its element: the tooltip id joins that
    * registry and this binding renders the merged value the host renders, so
-   * neither binding drops the other's ids. Without one, the tooltip binds
-   * its own id.
+   * neither binding drops the other's ids. Without one, the tooltip owns a
+   * local registry seeded with the static `aria-describedby`, so the
+   * consumer's ids stay ahead of the tooltip id instead of being overwritten.
    */
-  private readonly describedByRegistry = injectDescribedByContribution(
-    this.idSignal(),
-    this.ownDescribedBy,
-  );
+  private readonly describedByRegistry =
+    injectDescribedByContribution(this.idSignal(), this.ownDescribedBy) ??
+    this.createLocalDescribedBy();
 
-  protected readonly ariaDescribedBy = this.describedByRegistry?.value ?? this.ownDescribedBy;
+  protected readonly ariaDescribedBy = this.describedByRegistry.value;
 
   protected readonly cssAnchorName = computed(() =>
     SUPPORTS_ANCHOR ? `--cngx-tip-${this.idSignal()}` : null,
@@ -366,6 +372,15 @@ export class CngxTooltip {
       return;
     }
     this.floatingPositioner.start();
+  }
+
+  private createLocalDescribedBy(): CngxDescribedByRegistry {
+    const registry = createDescribedByRegistry({
+      name: 'cngxTooltip aria-describedby',
+      seed: inject(new HostAttributeToken('aria-describedby'), { optional: true }),
+    });
+    registry.contribute(this.idSignal(), this.ownDescribedBy);
+    return registry;
   }
 
   private createTooltipElement(): void {
