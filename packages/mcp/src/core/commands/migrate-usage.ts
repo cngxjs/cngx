@@ -1,9 +1,10 @@
 // migrate_usage - answers "what breaks between cngx vX and vY" with a structured
 // API delta. It resolves each version to a `DocsIndex` (the bundled snapshot when
 // the version matches it, else the release asset fetched via `gh` or, when `gh`
-// fails, over HTTPS), then runs the pure in-process diff. This is the server's only
-// network touch, and it is fail-safe: no network or an absent asset returns a typed
-// error result, never a throw - preserving the server's don't-crash-stdout contract.
+// fails, over HTTPS), then runs the pure in-process diff. The fetch is the same one
+// the version-scoped query tools use, and it is fail-safe: no network or an absent
+// asset returns a typed error result, never a throw - preserving the server's
+// don't-crash-stdout contract.
 
 import { z } from 'zod';
 import { defineCommand } from '../command.js';

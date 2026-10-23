@@ -9,8 +9,9 @@
 // `scripts/__tests__/schematics-mcp-capabilities.test.mjs` fails when the
 // generated module falls behind them.
 //
-// The sources are read as TypeScript ASTs, not imported: they import the MCP
-// SDK and zod, which the schematics build never loads.
+// The sources are read as TypeScript ASTs, not imported: the command
+// definitions import zod and the resource and prompt registrations import the
+// MCP SDK, neither of which the schematics build loads.
 
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
