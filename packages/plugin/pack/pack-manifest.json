@@ -244,7 +244,7 @@
     {
       "artifact": "pack/recipes/common-button-composition.md",
       "source": "examples/stories/common/button/composition/split-button.story.ts",
-      "contentHash": "sha256:df70bbdabac07286aa71a400c9f738682d1fbc6db577d88fe8b0068a00d62308"
+      "contentHash": "sha256:18bd5bb990b843f10ba52e67408b36e0c5e361f0e92b8443bc625b10f53c3e3f"
     }
   ],
   "theming": {
