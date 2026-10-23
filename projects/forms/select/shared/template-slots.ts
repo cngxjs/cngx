@@ -673,7 +673,7 @@ export class CngxMultiSelectChipHandle {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
- * @relatedTo CngxMultiSelect, CngxCombobox, CngxActionMultiSelect, CngxMultiSelectChip, CngxComboboxChip
+ * @relatedTo CngxMultiSelect, CngxCombobox, CngxActionMultiSelect, CngxTreeSelect, CngxMultiSelectChip, CngxComboboxChip
  */
 @Directive({
   selector: 'ng-template[cngxSelectChipOverflow]',

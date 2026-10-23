@@ -209,6 +209,9 @@ export interface CngxTreeSelectChange<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/tree-select/basic-single-level-toggle</example-url>
  * <example-url>http://localhost:4200/#/forms/select/tree-select/cascade-children-parent-toggle-selects-the-whole-subtree</example-url>
  * <example-url>http://localhost:4200/#/forms/select/tree-select/custom-cngxtreeselectnode-template</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/tree-select/chip-display-parents-leaves-all</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/tree-select/custom-count-footer-and-overflow-slots</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/tree-select/touch-row-tap-expands-checkbox-selects</example-url>
  * <example-url>http://localhost:4200/#/forms/select/mobile-sheet/all-variants</example-url>
  * @slot cngxSelectCaret Replaces the trigger caret unless hideCaret is set; gets open.
  * @slot cngxSelectPlaceholder Renders in the trigger while nothing is selected; gets placeholder.
