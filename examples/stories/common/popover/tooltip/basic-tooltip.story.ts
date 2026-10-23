@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Hover or focus the button to reveal the tooltip. Default placement is <code>top</code>, default open delay is 300 ms.',
   description:
-    'A bare <code>cngxTooltip="..."</code> directive on three buttons. The directive creates a sibling <code>role="tooltip"</code> element, points the trigger\'s <code>aria-describedby</code> at it while visible, and unwinds both on blur or pointer leave.',
+    'A bare <code>cngxTooltip="..."</code> directive on three buttons. The directive creates a sibling <code>role="tooltip"</code> element, points the trigger\'s <code>aria-describedby</code> at it for as long as the tooltip is enabled, and hides the tooltip on blur or pointer leave.',
   level: 'atom',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',

@@ -54,6 +54,13 @@ const FOCUS_DEBOUNCE_MS = 50;
  *
  * The consumer sees only the attribute - no extra elements in the template.
  *
+ * The tooltip joins the host's `aria-describedby` instead of replacing it. On
+ * a plain host the static `aria-describedby` ids are kept and the tooltip id
+ * is appended after them. When the host provides `CNGX_DESCRIBED_BY`
+ * (`CngxButton`, `CngxIconButton`), the tooltip contributes its id to that
+ * registry next to the host's own ids. The id is referenced while the
+ * tooltip is `enabled`, whether or not the popup is open.
+ *
  * ### Basic
  * ```html
  * <button cngxTooltip="Ctrl+S">Save</button>
@@ -71,7 +78,7 @@ const FOCUS_DEBOUNCE_MS = 50;
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/tooltip.directive.ts
  * @since 0.1.0
- * @relatedTo CngxPopover, CngxPopoverTrigger
+ * @relatedTo CngxPopover, CngxPopoverTrigger, CNGX_DESCRIBED_BY
  * <example-url>http://localhost:4200/#/common/popover/tooltip/basic-tooltip</example-url>
  * <example-url>http://localhost:4200/#/common/popover/tooltip/custom-delay</example-url>
  * <example-url>http://localhost:4200/#/common/popover/tooltip/disabled-state</example-url>
