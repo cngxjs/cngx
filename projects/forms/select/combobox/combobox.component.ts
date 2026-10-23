@@ -911,9 +911,12 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
    * value is the search term, so the selection reaches AT as a description.
    */
   protected readonly summaryDescriptionId = nextUid('cngx-combobox-summary');
-  /** @internal - the description reference, gated on a shown summary. */
+  /**
+   * @internal - the description reference, gated on a shown summary or on a
+   * truncated strip that hides values behind its `aria-hidden` badge.
+   */
   private readonly summaryDescribedBy = computed<string | null>(() =>
-    this.summary.active() && !this.triggerLabelTpl() && this.values().length > 0
+    this.summary.accessibleText() !== '' && !this.triggerLabelTpl()
       ? this.summaryDescriptionId
       : null,
   );

@@ -55,6 +55,8 @@ const EN_FALLBACK: Required<CngxSelectFallbackLabels> = {
   commitFailed: 'Save failed',
   commitFailedRetry: 'Retry',
   chipOverflowBadge: (count: number) => `+${count}`,
+  treeNodeCount: (selected: number, total: number) => `${selected}/${total}`,
+  selectedCount: (count: number) => `${count} selected`,
 };
 
 const EN_ARIA: CngxResolvedSelectAriaLabels = {
@@ -140,6 +142,7 @@ function createMockHost(): {
       optionError: nullTpl,
       action: nullTpl,
       sheetHandle: nullTpl,
+      sheetCount: nullTpl,
     },
     commitErrorValue: signal(null),
     activeId: signal(null),

@@ -78,6 +78,8 @@ function makeShellHost(): CngxSelectPanelHost {
       commitFailed: 'Save failed',
       commitFailedRetry: 'Retry',
       chipOverflowBadge: (count: number) => `+${count}`,
+      treeNodeCount: (selected: number, total: number) => `${selected}/${total}`,
+      selectedCount: (count: number) => `${count} selected`,
     }),
     ariaLabels: signal({
       chipRemove: 'Remove',
@@ -118,6 +120,7 @@ function makeShellHost(): CngxSelectPanelHost {
       optionError: nullTpl,
       action: nullTpl,
       sheetHandle: nullTpl,
+      sheetCount: nullTpl,
     },
     commitErrorValue: signal(null),
     activeId: signal(null),
@@ -149,6 +152,7 @@ function makeShellHost(): CngxSelectPanelHost {
     <ng-template cngxTreeSelectNode let-node>
       <div class="custom-slot" [attr.data-id]="node.id">custom: {{ node.label }}</div>
     </ng-template>
+    <ng-template #customTwisty><span class="custom-twisty">+</span></ng-template>
   `,
 })
 class TreeHost implements CngxTreeSelectPanelHost<Row> {
@@ -162,10 +166,12 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
   readonly expandToReveal = signal(false);
   // Glyph overrides + i18n labels - null / default literals keep the
   // harness on the built-in node-row visuals.
-  readonly twistyGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
+  readonly twistyGlyphState = signal<TemplateRef<void> | null>(null);
+  readonly twistyGlyph = this.twistyGlyphState.asReadonly();
   readonly twistyOpenGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
   readonly checkGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
   readonly dashGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
+  readonly customTwisty = viewChild.required<TemplateRef<void>>('customTwisty');
   readonly resolvedListboxLabel = signal('Teams').asReadonly();
   readonly adCompare = signal<(a: Row, b: Row) => boolean>(Object.is);
   readonly adCompareWith = this.adCompare.asReadonly();
@@ -193,6 +199,23 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
   })();
 
   readonly lastSelected = signal<FlatTreeNode<Row> | null>(null);
+
+  readonly rowTapExpandsState = signal(false);
+  readonly rowTapExpands = this.rowTapExpandsState.asReadonly();
+  readonly nodeCountTpl = signal(null).asReadonly();
+  readonly selectionCount = signal(0).asReadonly();
+  readonly selectionCountText = signal('0 selected').asReadonly();
+  readonly clearAllLabel = signal('Reset selection').asReadonly();
+  readonly footerTpl = signal(null).asReadonly();
+  clearAllInPanel(): void {
+    /* no-op in the spec harness */
+  }
+  nodeCount(): null {
+    return null;
+  }
+  nodeCountText(): string {
+    return '';
+  }
 
   isSelected(v: Row): boolean {
     return this.selected().has(v.id);
@@ -344,6 +367,38 @@ describe('CngxTreeSelectPanel', () => {
     twisty!.click();
     fixture.detectChanges();
     expect(host.treeController.isExpanded('a')()).toBe(false);
+  });
+
+  it('draws the default twisty as an AT-hidden chevron SVG, open and closed', () => {
+    const { fixture, host, root } = setup();
+    const twisty = (): HTMLElement =>
+      root.querySelector<HTMLElement>('[role="treeitem"][id="a"] .cngx-tree-select__twisty')!;
+
+    const closed = twisty().querySelector('svg');
+    expect(closed).toBeTruthy();
+    expect(closed!.getAttribute('focusable')).toBe('false');
+    expect(closed!.getAttribute('fill')).toBe('none');
+    expect(closed!.getAttribute('stroke')).toBe('currentColor');
+    expect(twisty().textContent?.trim()).toBe('');
+    expect(twisty().getAttribute('aria-hidden')).toBe('true');
+    expect(twisty().classList.contains('cngx-tree-select__twisty--open')).toBe(false);
+
+    host.treeController.expand('a');
+    fixture.detectChanges();
+    expect(twisty().classList.contains('cngx-tree-select__twisty--open')).toBe(true);
+    expect(twisty().querySelector('svg')).toBeTruthy();
+    expect(twisty().textContent?.trim()).toBe('');
+  });
+
+  it('lets a projected twistyGlyph win over the default chevron', () => {
+    const { fixture, host, root } = setup();
+    host.twistyGlyphState.set(host.customTwisty());
+    fixture.detectChanges();
+    const twisty = root.querySelector<HTMLElement>(
+      '[role="treeitem"][id="a"] .cngx-tree-select__twisty',
+    )!;
+    expect(twisty.querySelector('.custom-twisty')).toBeTruthy();
+    expect(twisty.querySelector('svg')).toBeNull();
   });
 
   it('names a parent treeitem by its label alone, the twisty stays out of the name', () => {
@@ -657,5 +712,91 @@ describe('CngxTreeSelectPanel stylesheet', () => {
       }
     }
     expect(nested).toEqual([]);
+  });
+});
+
+describe('CngxTreeSelectPanel - row tap under the touch floor', () => {
+  function pointer(type: string, pointerType: string): Event {
+    const event = new MouseEvent(type, { bubbles: true, cancelable: true });
+    Object.defineProperty(event, 'pointerType', { value: pointerType });
+    return event;
+  }
+
+  function rows() {
+    const { fixture, host, root } = setup();
+    const row = (id: string): HTMLElement =>
+      root.querySelector<HTMLElement>(`[role="treeitem"][id="${id}"]`)!;
+    return { fixture, host, row };
+  }
+
+  it('expands a parent on a touch tap and leaves the selection alone', () => {
+    const { fixture, host, row } = rows();
+    host.rowTapExpandsState.set(true);
+    fixture.detectChanges();
+    row('a').dispatchEvent(pointer('pointerdown', 'touch'));
+    row('a').click();
+    fixture.detectChanges();
+    expect(row('a').getAttribute('aria-expanded')).toBe('true');
+    expect(host.lastSelected()).toBeNull();
+  });
+
+  it('keeps an AT activation (a click without a pointer gesture) on the select path', () => {
+    const { fixture, host, row } = rows();
+    host.rowTapExpandsState.set(true);
+    fixture.detectChanges();
+    row('a').click();
+    fixture.detectChanges();
+    expect(host.lastSelected()?.id).toBe('a');
+    expect(row('a').getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('selects through the checkbox target on a touch tap', () => {
+    const { fixture, host, row } = rows();
+    host.rowTapExpandsState.set(true);
+    fixture.detectChanges();
+    const check = row('a').querySelector<HTMLElement>('.cngx-tree-select__check')!;
+    expect(check.getAttribute('aria-hidden')).toBe('true');
+    check.dispatchEvent(pointer('pointerdown', 'touch'));
+    check.click();
+    fixture.detectChanges();
+    expect(host.lastSelected()?.id).toBe('a');
+    expect(row('a').getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('selects a row whose click does not end the touch gesture recorded on it', () => {
+    const { fixture, host, row } = rows();
+    host.rowTapExpandsState.set(true);
+    fixture.detectChanges();
+    row('a').dispatchEvent(pointer('pointerdown', 'touch'));
+    row('b').click();
+    fixture.detectChanges();
+    expect(host.lastSelected()?.id).toBe('b');
+    // The record is consumed: a later bare click on the parent selects.
+    row('a').click();
+    fixture.detectChanges();
+    expect(host.lastSelected()?.id).toBe('a');
+  });
+
+  it('keeps mouse and every pointer on select while the floor is off', () => {
+    const { fixture, host, row } = rows();
+    row('a').dispatchEvent(pointer('pointerdown', 'mouse'));
+    row('a').click();
+    fixture.detectChanges();
+    expect(host.lastSelected()?.id).toBe('a');
+    host.rowTapExpandsState.set(false);
+    row('b').dispatchEvent(pointer('pointerdown', 'touch'));
+    row('b').click();
+    fixture.detectChanges();
+    expect(host.lastSelected()?.id).toBe('b');
+  });
+
+  it('leaves a leaf row on select under the floor', () => {
+    const { fixture, host, row } = rows();
+    host.rowTapExpandsState.set(true);
+    fixture.detectChanges();
+    row('b').dispatchEvent(pointer('pointerdown', 'touch'));
+    row('b').click();
+    fixture.detectChanges();
+    expect(host.lastSelected()?.id).toBe('b');
   });
 });

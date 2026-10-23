@@ -32,6 +32,43 @@ function harness(values: string[], locale = 'en', active = true) {
 }
 
 describe('createSelectSummary', () => {
+  it('reads the whole selection for AT only while a truncate strip hides values', () => {
+    const { summary, isActive, chipOverflow, selectedOptions } = harness(
+      ['a', 'b', 'c', 'd', 'e'],
+      'en',
+      false,
+    );
+    expect(summary.hiddenSummaryText()).toBe('');
+    chipOverflow.set('truncate');
+    expect(stripBidiIsolates(summary.hiddenSummaryText())).toBe('5 selected: A, B, C, D, and E');
+    expect(summary.accessibleText()).toBe(summary.hiddenSummaryText());
+    selectedOptions.set(['a', 'b'].map(opt));
+    expect(summary.hiddenSummaryText()).toBe('');
+    // The summary branch owns the text while it is on.
+    selectedOptions.set(['a', 'b', 'c', 'd', 'e'].map(opt));
+    isActive.set(true);
+    expect(summary.hiddenSummaryText()).toBe('');
+    expect(summary.accessibleText()).toBe(summary.fullText());
+  });
+
+  it('follows a copy switch in the hidden summary', () => {
+    const copy = selectCopyFrom(CNGX_SELECT_LANGUAGE_EN, 'en');
+    const ariaLabels = signal(copy.ariaLabels);
+    const summary = createSelectSummary<string>({
+      selectedOptions: signal(['a', 'b', 'c', 'd'].map(opt)),
+      active: signal(false),
+      chipOverflow: signal<'wrap' | 'scroll-x' | 'truncate'>('truncate'),
+      maxVisibleChips: signal(2),
+      ariaLabels,
+      fallbackLabels: signal(copy.fallbackLabels),
+    });
+    ariaLabels.set({
+      ...copy.ariaLabels,
+      selectionSummary: (labels) => `picked ${labels.join('/')}`,
+    });
+    expect(summary.hiddenSummaryText()).toBe('picked A/B/C/D');
+  });
+
   it('has no label, badge or text for no value', () => {
     const { summary } = harness([]);
     expect(summary.first()).toBeNull();

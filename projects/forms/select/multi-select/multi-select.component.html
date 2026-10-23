@@ -118,6 +118,11 @@
               {{ overflowBadgeText() }}
             </span>
           }
+          <!-- The badge is aria-hidden; the whole selection reaches AT here,
+               whether the badge is built in or projected. -->
+          @if (summary.hiddenSummaryText(); as text) {
+            <span class="cngx-sr-only cngx-select__hidden-summary">{{ text }}</span>
+          }
         }
       }
     </span>

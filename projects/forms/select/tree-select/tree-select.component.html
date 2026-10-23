@@ -31,10 +31,7 @@
     (blur)="handleBlur()"
     (keydown)="handleTriggerKeydown($event)"
   >
-    <span
-      class="cngx-select__chip-list"
-      [attr.data-overflow]="summary.active() ? 'truncate' : null"
-    >
+    <span class="cngx-select__chip-list" data-overflow="truncate">
       @if (isEmpty()) {
         @if (placeholderTpl(); as tpl) {
           <ng-container
@@ -65,10 +62,17 @@
           exposeValue
           [label]="summary.first()?.label ?? ''"
           [badge]="summary.badgeText()"
+          [badgeTpl]="chipOverflowTpl()"
+          [badgeContext]="{
+            $implicit: summary.badgeCount(),
+            count: summary.badgeCount(),
+            label: summary.badgeText(),
+            hidden: summary.hidden(),
+          }"
           [fullText]="summary.fullText()"
         />
       } @else {
-        @for (opt of selected(); track keyFnInternal()(opt.value)) {
+        @for (opt of visibleSelected(); track keyFnInternal()(opt.value)) {
           @if (chipTpl(); as chipT) {
             <ng-container
               *ngTemplateOutlet="
@@ -88,6 +92,30 @@
             >
               {{ opt.label }}
             </cngx-chip>
+          }
+        }
+        @if (overflowBadgeCount() > 0) {
+          @if (chipOverflowTpl(); as overflowT) {
+            <ng-container
+              *ngTemplateOutlet="
+                overflowT;
+                context: {
+                  $implicit: overflowBadgeCount(),
+                  count: overflowBadgeCount(),
+                  label: overflowBadgeText(),
+                  hidden: hiddenSelected(),
+                }
+              "
+            />
+          } @else {
+            <span class="cngx-select__chip-overflow-badge" aria-hidden="true">
+              {{ overflowBadgeText() }}
+            </span>
+          }
+          <!-- The badge is aria-hidden; the displayed selection reaches AT
+               here, whether the badge is built in or projected. -->
+          @if (summary.hiddenSummaryText(); as text) {
+            <span class="cngx-sr-only cngx-select__hidden-summary">{{ text }}</span>
           }
         }
       }
@@ -149,7 +177,7 @@
   <div
     cngxPopover
     #pop="cngxPopover"
-    [placement]="popoverPlacement()"
+    [placement]="resolvedPopoverPlacement()"
     class="cngx-select__panel"
     [class]="panelClassList()"
     [style.--cngx-select-panel-min-width]="panelWidthCss()"

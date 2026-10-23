@@ -38,7 +38,9 @@ export interface CngxSelectSheetWiringOptions {
   readonly sheet: Signal<CngxPopoverSheet | undefined>;
   readonly popoverRef: Signal<CngxPopover | undefined>;
   readonly listboxRef: Signal<CngxListbox | undefined>;
-  readonly tpl: Pick<CngxSelectTemplateRegistry, 'sheetHandle'>;
+  readonly tpl: Pick<CngxSelectTemplateRegistry, 'sheetHandle' | 'sheetCount'>;
+  /** Selected count after the sheet title; omitted, the header shows none. */
+  readonly selectionCount?: Signal<string>;
   /** Variants without a commit mode never block a close. */
   readonly commitMode?: Signal<CngxSelectCommitMode>;
   readonly dismissOn: 'outside' | 'escape' | 'both';
@@ -145,6 +147,7 @@ export interface CngxSelectSheetWiring extends CngxSelectSheetScope {
   readonly headerHost: CngxSelectSheetHeaderHost;
 }
 
+const NO_SELECTION_COUNT: Signal<string> = signal('').asReadonly();
 const NO_SEARCH_TERM = signal('').asReadonly();
 
 /**
@@ -287,6 +290,7 @@ export function createSelectSheetWiring(opts: CngxSelectSheetWiringOptions): Cng
     label: opts.label,
     ariaLabels: opts.core.ariaLabels,
     tpl: opts.tpl,
+    selectionCount: opts.selectionCount ?? NO_SELECTION_COUNT,
     searchTerm: opts.searchTerm ?? NO_SEARCH_TERM,
     setSearchTerm: (term) => {
       const input = opts.searchInput?.()?.nativeElement;

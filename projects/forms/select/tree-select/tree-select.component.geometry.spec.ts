@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import type { CngxTreeNode } from '@cngx/utils';
@@ -103,7 +103,7 @@ describe('CngxTreeSelect geometry', () => {
   });
 });
 
-// The collapsed panel twisty `▸` is directional and must point inline-end (left
+// The collapsed panel twisty chevron is directional and must point inline-end (left
 // under RTL) at the node it discloses. The `:not(--open)` gate mirrors only the
 // collapsed twisty; the open twisty (rotated 90deg to a neutral down-caret)
 // keeps its rotate. jsdom reports `transform: ''`, so this reads the browser
@@ -164,5 +164,425 @@ describe('CngxTreeSelect twisty glyph direction', () => {
 
     document.documentElement.dir = 'rtl';
     expect(computedValue(twisty, 'transform')).toBe(openLtr);
+  });
+});
+
+// Under the touch floor the twisty grows to `--cngx-target-min` while a leaf's
+// spacer kept its 1.25rem, so a leaf child's checkbox sat inline-start of its
+// parent's. Every child must start inline-end of its parent by at least one
+// indent step, in both directions (RTL mirrors: inline-end is the left side).
+interface Deep {
+  readonly id: string;
+}
+
+function deepTree(): CngxTreeNode<Deep>[] {
+  return [
+    {
+      value: { id: 'p' },
+      children: [
+        {
+          value: { id: 'c' },
+          children: [{ value: { id: 'g' } }],
+        },
+        { value: { id: 'c2' } },
+      ],
+    },
+  ];
+}
+
+@Component({
+  selector: 'cngx-tree-select-touch-indent-host',
+  standalone: true,
+  imports: [CngxTreeSelect],
+  template: `
+    <div style="--cngx-target-min: 44px; width: 20rem">
+      <cngx-tree-select
+        [nodes]="nodes"
+        [nodeIdFn]="idFn"
+        [labelFn]="idFn"
+        [keyFn]="idFn"
+        initiallyExpanded="all"
+      />
+    </div>
+  `,
+})
+class TouchIndentHost {
+  readonly nodes = deepTree();
+  readonly idFn = (v: Deep): string => v.id;
+}
+
+function openTouchIndentPanel(): HTMLElement {
+  const fixture = TestBed.createComponent(TouchIndentHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  const trigger = query(mountedRoot, '[role="combobox"]');
+  trigger.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
+  );
+  fixture.detectChanges();
+  TestBed.flushEffects();
+  fixture.detectChanges();
+  return mountedRoot;
+}
+
+// The default indent step (1.25rem) at the 16px root; the floored step may be
+// wider, never narrower.
+const MIN_STEP_PX = 20;
+
+function indicatorRect(root: HTMLElement, depth: number, nth = 0): DOMRect {
+  const rows = root.querySelectorAll<HTMLElement>(`[role="treeitem"][aria-level="${depth + 1}"]`);
+  const row = rows[nth];
+  if (!row) {
+    throw new Error(`no treeitem at depth ${depth}`);
+  }
+  return query(row, 'cngx-checkbox-indicator').getBoundingClientRect();
+}
+
+describe('CngxTreeSelect indent under the touch floor', () => {
+  it('starts every child checkbox inline-end of its parent in LTR', () => {
+    const root = openTouchIndentPanel();
+    const parent = indicatorRect(root, 0);
+    const child = indicatorRect(root, 1);
+    const leafChild = indicatorRect(root, 1, 1);
+    const grandchild = indicatorRect(root, 2);
+    expect(child.left - parent.left).toBeGreaterThanOrEqual(MIN_STEP_PX);
+    expect(leafChild.left - parent.left).toBeGreaterThanOrEqual(MIN_STEP_PX);
+    expect(grandchild.left - child.left).toBeGreaterThanOrEqual(MIN_STEP_PX);
+    // Leaf and parent siblings line up: the spacer floors like the twisty.
+    expect(leafChild.left).toBe(child.left);
+  });
+
+  it('starts every child checkbox inline-end of its parent in RTL', () => {
+    document.documentElement.dir = 'rtl';
+    const root = openTouchIndentPanel();
+    const parent = indicatorRect(root, 0);
+    const child = indicatorRect(root, 1);
+    const leafChild = indicatorRect(root, 1, 1);
+    const grandchild = indicatorRect(root, 2);
+    expect(parent.right - child.right).toBeGreaterThanOrEqual(MIN_STEP_PX);
+    expect(parent.right - leafChild.right).toBeGreaterThanOrEqual(MIN_STEP_PX);
+    expect(child.right - grandchild.right).toBeGreaterThanOrEqual(MIN_STEP_PX);
+    expect(leafChild.right).toBe(child.right);
+  });
+});
+
+// Selection rides on the checkbox and aria-checked, not a row fill: a checked
+// row stays transparent and its label gains weight, while the transient
+// keyboard-active row keeps its highlight fill.
+const TRANSPARENT = 'rgba(0, 0, 0, 0)';
+
+describe('CngxTreeSelect selected row', () => {
+  it('paints no fill on a checked row and keeps the active highlight', () => {
+    const { fixture } = mountOpenTwisty();
+    const host = fixture.componentInstance;
+    host.values.set([{ id: 'b', name: 'Bravo' }]);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    const checked = query(mountedRoot!, '[role="treeitem"][aria-checked="true"]');
+    expect(checked.id).not.toBe('');
+    expect(checked.classList.contains('cngx-tree-select__node--active')).toBe(false);
+    expect(computedValue(checked, 'background-color')).toBe(TRANSPARENT);
+    expect(Number(computedValue(query(checked, '.cngx-tree-select__label'), 'font-weight'))).toBe(
+      600,
+    );
+
+    const active = query(mountedRoot!, '.cngx-tree-select__node--active');
+    expect(active.getAttribute('aria-checked')).toBe('false');
+    expect(computedValue(active, 'background-color')).not.toBe(TRANSPARENT);
+    expect(Number(computedValue(query(active, '.cngx-tree-select__label'), 'font-weight'))).toBe(
+      400,
+    );
+  });
+});
+
+// The anchored tree panel needs room for depth: at least 16rem wide even under
+// a narrow trigger, capped at 20rem tall. Tree-local tokens only; the sheet
+// presentation keeps the family geometry.
+describe('CngxTreeSelect anchored panel size', () => {
+  it('opens at least 16rem wide with a 20rem height cap', () => {
+    const { fixture } = mountOpenTwisty();
+    fixture.detectChanges();
+    const panel = query(mountedRoot!, '.cngx-select__panel');
+    expect(panel.matches(':popover-open')).toBe(true);
+    expect(panel.getBoundingClientRect().width).toBeGreaterThanOrEqual(256);
+    expect(computedValue(panel, 'max-height')).toBe('320px');
+  });
+
+  it('honours the tree panel tokens set on an ancestor', () => {
+    const { fixture } = mountOpenTwisty();
+    mountedRoot!.style.setProperty('--cngx-tree-select-panel-min-inline-size', '20rem');
+    mountedRoot!.style.setProperty('--cngx-tree-select-panel-max-block-size', '12rem');
+    fixture.detectChanges();
+    const panel = query(mountedRoot!, '.cngx-select__panel');
+    expect(panel.getBoundingClientRect().width).toBeGreaterThanOrEqual(320);
+    expect(computedValue(panel, 'max-height')).toBe('192px');
+  });
+
+  it('leaves the sheet presentation on the family geometry', () => {
+    mountOpenTwisty();
+    const panel = query(mountedRoot!, '.cngx-select__panel');
+    panel.classList.add('cngx-popover-sheet');
+    panel.setAttribute('data-cngx-presentation', 'sheet');
+    expect(computedValue(panel, 'max-height')).toBe('256px');
+  });
+});
+
+// Depth guide lines: a row at depth d carries a `::before` spanning d indent
+// steps from the base indent, painting one line per ancestor level centred
+// under that ancestor's twisty. Under the 44px floor the step is 22px and the
+// twisty 44px wide, so the first line sits at base 8px + 22px - half the 1px
+// line. `--cngx-tree-select-guide-width: 0px` switches the lines off.
+function guideOf(root: HTMLElement, depth: number): CSSStyleDeclaration {
+  const row = root.querySelector<HTMLElement>(`[role="treeitem"][aria-level="${depth + 1}"]`);
+  if (!row) {
+    throw new Error(`no treeitem at depth ${depth}`);
+  }
+  return getComputedStyle(row, '::before');
+}
+
+describe('CngxTreeSelect depth guide lines', () => {
+  it('spans two indent steps on a depth-2 row, from the inline-start side in LTR', () => {
+    const root = openTouchIndentPanel();
+    const guide = guideOf(root, 2);
+    expect(guide.position).toBe('absolute');
+    expect(guide.pointerEvents).toBe('none');
+    expect(guide.width).toBe('44px');
+    expect(guide.left).toBe('29.5px');
+    expect(guide.backgroundImage).toMatch(/^linear-gradient\(to right, .+ 1px, .+ 1px\)$/);
+    expect(guide.backgroundSize).toBe('22px 100%');
+    expect(guideOf(root, 0).width).toBe('0px');
+  });
+
+  it('mirrors to the inline-start side in RTL', () => {
+    document.documentElement.dir = 'rtl';
+    const root = openTouchIndentPanel();
+    const guide = guideOf(root, 2);
+    expect(guide.width).toBe('44px');
+    expect(guide.right).toBe('29.5px');
+    expect(guide.backgroundImage).toMatch(/^linear-gradient\(to left, /);
+    expect(guide.backgroundPositionX).toBe('100%');
+  });
+
+  it('paints no line at guide width 0px', () => {
+    const root = openTouchIndentPanel();
+    root.style.setProperty('--cngx-tree-select-guide-width', '0px');
+    expect(guideOf(root, 2).backgroundImage).toMatch(/ 0px, .+ 0px\)$/);
+  });
+});
+
+// The fine-pointer chip strip stays on one line: with every node selected the
+// trigger is as tall as the empty trigger, in both directions.
+@Component({
+  selector: 'cngx-tree-select-one-line-host',
+  standalone: true,
+  imports: [CngxTreeSelect],
+  template: `
+    <div style="width: 16rem">
+      <cngx-tree-select
+        [nodes]="nodes"
+        [nodeIdFn]="idFn"
+        [labelFn]="idFn"
+        [keyFn]="idFn"
+        [(values)]="values"
+      />
+    </div>
+  `,
+})
+class OneLineHost {
+  readonly nodes: CngxTreeNode<Deep>[] = ['alpha', 'bravo', 'charlie', 'delta', 'echo'].map(
+    (id) => ({ value: { id } }),
+  );
+  readonly values = signal<Deep[]>([]);
+  readonly idFn = (v: Deep): string => v.id;
+}
+
+function triggerHeight(selectAll: boolean): number {
+  const fixture = TestBed.createComponent(OneLineHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  if (selectAll) {
+    fixture.componentInstance.values.set(fixture.componentInstance.nodes.map((n) => n.value));
+  }
+  fixture.detectChanges();
+  TestBed.flushEffects();
+  fixture.detectChanges();
+  const height = query(mountedRoot, '.cngx-tree-select__trigger').getBoundingClientRect().height;
+  mountedRoot.remove();
+  mountedRoot = null;
+  return height;
+}
+
+describe('CngxTreeSelect one-line chip strip', () => {
+  it('keeps the trigger height with every node selected in LTR', () => {
+    expect(triggerHeight(true)).toBe(triggerHeight(false));
+  });
+
+  it('keeps the trigger height with every node selected in RTL', () => {
+    document.documentElement.dir = 'rtl';
+    expect(triggerHeight(true)).toBe(triggerHeight(false));
+  });
+});
+
+describe('CngxTreeSelect truncated chip shrink', () => {
+  it('shrinks the last chip inside the strip instead of clipping it', () => {
+    const fixture = TestBed.createComponent(OneLineHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    const long = { id: 'an-unusually-long-node-label-that-cannot-fit-the-trigger' };
+    fixture.componentInstance.values.set([long, { id: 'bravo' }]);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const strip = query(mountedRoot, '.cngx-select__chip-list').getBoundingClientRect();
+    for (const chip of Array.from(mountedRoot.querySelectorAll('cngx-chip'))) {
+      const rect = chip.getBoundingClientRect();
+      expect(rect.right).toBeLessThanOrEqual(strip.right + 0.5);
+      expect(rect.left).toBeGreaterThanOrEqual(strip.left - 0.5);
+    }
+  });
+});
+
+// The chip remove button keeps its 24px AA hit box, but on a fine pointer the
+// box must stay inside its chip and clear of the label: a click aimed at the
+// trigger (the label, the chip edge) must open the panel, not remove a value.
+// The chip keeps the control line box. 4px is the chip's inner gap (xs).
+// The shipped token layers, so chip padding and font size are the real ones.
+@Component({
+  selector: 'cngx-tree-select-chip-target-host',
+  standalone: true,
+  imports: [CngxTreeSelect],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    '../../../core/theming/reset.css',
+    '../../../core/theming/base.css',
+    '../../theming/components/cngx-field-skin.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div style="width: 20rem">
+      <cngx-tree-select
+        [nodes]="nodes"
+        [nodeIdFn]="idFn"
+        [labelFn]="idFn"
+        [keyFn]="idFn"
+        [(values)]="values"
+      />
+    </div>
+  `,
+})
+class ChipTargetHost {
+  readonly nodes: CngxTreeNode<Deep>[] = ['alpha', 'bravo'].map((id) => ({ value: { id } }));
+  readonly values = signal<Deep[]>(this.nodes.map((n) => n.value));
+  readonly idFn = (v: Deep): string => v.id;
+}
+
+function chipBoxes(rtl: boolean): { chip: DOMRect; label: DOMRect; remove: DOMRect }[] {
+  if (rtl) {
+    document.documentElement.dir = 'rtl';
+  }
+  const fixture = TestBed.createComponent(ChipTargetHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  TestBed.flushEffects();
+  fixture.detectChanges();
+  return Array.from(mountedRoot.querySelectorAll('cngx-chip')).map((chip) => ({
+    chip: chip.getBoundingClientRect(),
+    label: query(chip as HTMLElement, '.cngx-chip__label').getBoundingClientRect(),
+    remove: query(chip as HTMLElement, '.cngx-chip__remove').getBoundingClientRect(),
+  }));
+}
+
+describe('CngxTreeSelect chip remove target', () => {
+  for (const rtl of [false, true]) {
+    it(`keeps each remove hit box inside its chip and clear of the label (${rtl ? 'rtl' : 'ltr'})`, () => {
+      const boxes = chipBoxes(rtl);
+      expect(boxes.length).toBe(2);
+      for (const { chip, label, remove } of boxes) {
+        expect(remove.width).toBeGreaterThanOrEqual(24);
+        const clearance = rtl ? label.left - remove.right : remove.left - label.right;
+        expect(clearance).toBeGreaterThanOrEqual(4);
+        expect(remove.left).toBeGreaterThanOrEqual(chip.left - 0.5);
+        expect(remove.right).toBeLessThanOrEqual(chip.right + 0.5);
+        expect(chip.height).toBe(24);
+      }
+    });
+  }
+});
+
+// The footer clear-all is a tap target: under the touch floor it is at least
+// 44px tall, and the footer sits below the tree in the panel.
+describe('CngxTreeSelect panel footer', () => {
+  it('floors the clear-all to the touch target and lays the footer out as a row', () => {
+    const root = openTouchIndentPanel();
+    const footer = query(root, '.cngx-tree-select__footer');
+    expect(computedValue(footer, 'display')).toBe('flex');
+    const button = query(footer, '.cngx-tree-select__footer-clear');
+    expect(button.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
+    const tree = query(root, '[role="tree"]').getBoundingClientRect();
+    expect(footer.getBoundingClientRect().top).toBeGreaterThanOrEqual(tree.bottom - 0.5);
+  });
+});
+
+// A tree panel wider than its trigger starts at the trigger's inline-start
+// edge and grows toward inline-end, instead of centring on the trigger. The
+// shipped token layers and room on both sides, like the demo page.
+@Component({
+  selector: 'cngx-tree-select-align-host',
+  standalone: true,
+  imports: [CngxTreeSelect],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    '../../../core/theming/reset.css',
+    '../../../core/theming/base.css',
+    '../../theming/components/cngx-field-skin.css',
+    '../shared/select-base.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div style="display: block; width: 12rem; margin: 1rem 30rem">
+      <cngx-tree-select [nodes]="nodes" [nodeIdFn]="idFn" [labelFn]="idFn" [keyFn]="idFn" />
+    </div>
+  `,
+})
+class AlignHost {
+  readonly nodes: CngxTreeNode<Deep>[] = [{ value: { id: 'alpha' } }, { value: { id: 'bravo' } }];
+  readonly idFn = (v: Deep): string => v.id;
+}
+
+async function openPanelRects(): Promise<{ trigger: DOMRect; panel: DOMRect }> {
+  const fixture = TestBed.createComponent(AlignHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  query(mountedRoot, '[role="combobox"]').dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
+  );
+  fixture.detectChanges();
+  TestBed.flushEffects();
+  fixture.detectChanges();
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  const trigger = query(mountedRoot, '.cngx-tree-select__trigger').getBoundingClientRect();
+  const panel = query(mountedRoot, '.cngx-select__panel').getBoundingClientRect();
+  return { trigger, panel };
+}
+
+describe('CngxTreeSelect wide panel alignment', () => {
+  it('aligns the wider panel to the trigger start in LTR', async () => {
+    const { trigger, panel } = await openPanelRects();
+    expect(panel.width).toBeGreaterThan(trigger.width + 8);
+    expect(Math.abs(panel.left - trigger.left)).toBeLessThanOrEqual(1);
+  });
+
+  it('aligns the wider panel to the trigger start (right edge) in RTL', async () => {
+    document.documentElement.dir = 'rtl';
+    const { trigger, panel } = await openPanelRects();
+    expect(panel.width).toBeGreaterThan(trigger.width + 8);
+    expect(Math.abs(panel.right - trigger.right)).toBeLessThanOrEqual(1);
   });
 });

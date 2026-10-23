@@ -246,10 +246,13 @@ Variant-specific slots that complement the shared 18:
 - `*cngxMultiSelectTriggerLabel` (multi)
 - `*cngxComboboxChip` (combobox)
 - `*cngxComboboxTriggerLabel` (combobox)
-- `*cngxSelectChipOverflow` (multi + combobox + action-multi - `+N` overflow badge under `chipOverflow: 'truncate'`)
+- `*cngxSelectChipOverflow` (multi + combobox + action-multi - `+N` overflow badge under `chipOverflow: 'truncate'`; tree - the `+N` chip of its always one-line strip)
 - `*cngxTreeSelectNode` (tree - node row override)
 - `*cngxTreeSelectChip` (tree)
 - `*cngxTreeSelectTriggerLabel` (tree)
+- `*cngxTreeSelectNodeCount` (tree - selected-of-total count on a parent row)
+- `*cngxTreeSelectFooter` (tree - panel footer with count and clear-all; the bottom bar in the sheet)
+- `*cngxSelectSheetCount` (sheet header count; resolved by every variant, only the tree reports a count)
 
 ### Three-stage cascade
 
@@ -488,6 +491,7 @@ All are reactive computeds - they always reflect the current state, never go sta
 - Home/End + typeahead) composed with `CngxHierarchicalNav`
   (ArrowLeft/Right collapse-and-traverse) on the same element - no double-fire because the two directives own disjoint key sets.
   Per-node `role="treeitem"` carries `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded` (only on parents), `aria-checked` (true / false / `mixed` for partial cascade selection - APG checkbox-tree pattern), `aria-disabled`, all reactive.
+  The treeitem is the one AT channel: the row checkbox and the parent-row count (`2/3`) are `aria-hidden`, because `aria-checked` already carries what they show. Under the touch floor the checkbox wrapper is the selection tap target and a pointer tap on the row expands a parent: the row expands only for the `click` that ends a `pointerdown` with `pointerType` `touch` or `pen` on that row (`rowTapExpands` on `CNGX_TREE_SELECT_PANEL_HOST`, read from the touch-floor signal). Every other activation, including a screen reader's double tap (a click without pointer events), runs `handleSelect`; AT expands through `aria-expanded`. The footer clear-all is `aria-disabled` and described by the count while nothing is selected, so it keeps focus instead of dropping it to `body`.
 
 **Live region announcer.** `CngxSelectAnnouncer` is `providedIn: 'root'` and announces every selection change through a global polite live region.
 `CngxSelectAnnouncerConfig.format()` builds the sentence; override for custom locales or sentence shapes.

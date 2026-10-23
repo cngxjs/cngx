@@ -1263,3 +1263,56 @@ describeSelectBehaviourHost('CngxCombobox', CngxCombobox, 'cngx-combobox', {
   optionSelector: '[cngxOption]',
   readValue: (cmp) => (cmp as { values: () => unknown }).values(),
 });
+
+// ── chipOverflow 'truncate' on a fine pointer: hidden values stay reachable ──
+
+const TRUNCATE_OPTIONS = ['A', 'B', 'C', 'D', 'E'].map((label) => ({
+  value: label.toLowerCase(),
+  label,
+}));
+
+@Component({
+  template: `
+    <cngx-combobox
+      [label]="'Letters'"
+      [options]="options"
+      [(values)]="values"
+      chipOverflow="truncate"
+      [maxVisibleChips]="3"
+    />
+  `,
+  imports: [CngxCombobox],
+})
+class TruncateHost {
+  readonly options = TRUNCATE_OPTIONS;
+  readonly values = signal<string[]>(['a', 'b', 'c', 'd', 'e']);
+}
+
+describe('CngxCombobox - truncated chips stay reachable for AT', () => {
+  function describedTexts(el: HTMLElement): string[] {
+    const input = el.querySelector('input[role="combobox"]')!;
+    const ids = (input.getAttribute('aria-describedby') ?? '').split(' ').filter(Boolean);
+    return ids.map((id) =>
+      stripBidiIsolates(el.querySelector(`[id="${id}"]`)?.textContent?.trim() ?? ''),
+    );
+  }
+
+  it('describes the input with the whole selection while the +N badge hides values', () => {
+    const fixture = TestBed.createComponent(TruncateHost);
+    flush(fixture);
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelectorAll('cngx-chip').length).toBe(3);
+    expect(el.querySelector('.cngx-select__chip-overflow-badge')?.getAttribute('aria-hidden')).toBe(
+      'true',
+    );
+    expect(describedTexts(el)).toContain('5 selected: A, B, C, D, and E');
+  });
+
+  it('drops the description once nothing is hidden', () => {
+    const fixture = TestBed.createComponent(TruncateHost);
+    fixture.componentInstance.values.set(['a', 'b']);
+    flush(fixture);
+    const el = fixture.nativeElement as HTMLElement;
+    expect(describedTexts(el).some((t) => t.includes('selected:'))).toBe(false);
+  });
+});

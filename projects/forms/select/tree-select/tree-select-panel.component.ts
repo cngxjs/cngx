@@ -24,6 +24,7 @@ import {
   CNGX_TREE_SELECT_PANEL_HOST,
   type CngxTreeSelectPanelHost,
 } from './tree-select-panel-host';
+import { CngxTreeSelectFooterBar } from './tree-select-footer.component';
 import type { CngxTreeSelectNodeContext } from './tree-select.model';
 
 /**
@@ -57,6 +58,7 @@ import type { CngxTreeSelectNodeContext } from './tree-select.model';
     CngxCheckboxIndicator,
     CngxHierarchicalNav,
     CngxSelectPanelShell,
+    CngxTreeSelectFooterBar,
     NgTemplateOutlet,
   ],
   host: {
@@ -141,6 +143,8 @@ export class CngxTreeSelectPanel<T = unknown> {
       readonly expanded: boolean;
       readonly selected: boolean;
       readonly indeterminate: boolean;
+      readonly selectedCount: number;
+      readonly descendantCount: number;
       readonly context: CngxTreeSelectNodeContext<T>;
     }
   >();
@@ -151,13 +155,18 @@ export class CngxTreeSelectPanel<T = unknown> {
     const expanded = this.host.treeController.isExpanded(node.id)();
     const selected = this.host.isSelected(node.value);
     const indeterminate = this.host.isIndeterminate(node.value);
+    const count = this.host.nodeCount(node);
+    const selectedCount = count?.selected ?? 0;
+    const descendantCount = count?.total ?? 0;
 
     const cached = this.contextCache.get(node.id);
     if (
       cached?.node === node &&
       cached?.expanded === expanded &&
       cached?.selected === selected &&
-      cached?.indeterminate === indeterminate
+      cached?.indeterminate === indeterminate &&
+      cached?.selectedCount === selectedCount &&
+      cached?.descendantCount === descendantCount
     ) {
       return cached.context;
     }
@@ -171,6 +180,8 @@ export class CngxTreeSelectPanel<T = unknown> {
       selected,
       indeterminate,
       disabled: node.disabled,
+      selectedCount,
+      descendantCount,
       toggleExpand: this.getToggleExpand(node.id),
       handleSelect: this.getHandleSelect(node),
     };
@@ -179,6 +190,8 @@ export class CngxTreeSelectPanel<T = unknown> {
       expanded,
       selected,
       indeterminate,
+      selectedCount,
+      descendantCount,
       context,
     });
     return context;
@@ -222,6 +235,41 @@ export class CngxTreeSelectPanel<T = unknown> {
     const container = this.treeContainer()?.nativeElement;
     if (container && container.ownerDocument.activeElement !== container) {
       container.focus();
+    }
+  }
+
+  /**
+   * Id of the row a touch / pen press started on. Only the click that ends
+   * that press expands a parent under the touch floor; VoiceOver and TalkBack
+   * activate a focused node with a simulated click and no pointer events, so
+   * their activation keeps the select path `aria-checked` promises. Plain
+   * field: event plumbing, not state.
+   */
+  private pendingTapId: string | null = null;
+
+  protected handleRowPointerDown(event: PointerEvent, node: FlatTreeNode<T>): void {
+    const touch = event.pointerType === 'touch' || event.pointerType === 'pen';
+    this.pendingTapId = touch ? node.id : null;
+  }
+
+  protected handleRowClick(node: FlatTreeNode<T>): void {
+    const tapped = this.pendingTapId === node.id;
+    this.pendingTapId = null;
+    if (node.disabled) {
+      return;
+    }
+    if (tapped && node.hasChildren && this.host.rowTapExpands()) {
+      this.host.treeController.toggle(node.id);
+      return;
+    }
+    this.host.handleSelect(node);
+  }
+
+  protected handleCheckClick(event: MouseEvent, node: FlatTreeNode<T>): void {
+    event.stopPropagation();
+    this.pendingTapId = null;
+    if (!node.disabled) {
+      this.host.handleSelect(node);
     }
   }
 
