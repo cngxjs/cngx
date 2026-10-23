@@ -314,6 +314,19 @@ describe('CngxOption', () => {
       expect(opt.label()).toBe('Rouge');
     });
 
+    it('derives the current text on [label] clear without a MutationObserver', async () => {
+      const { fixture, host, opt } = await mount();
+      vi.stubGlobal('MutationObserver', undefined);
+      host.explicit.set('Crimson');
+      await settle(fixture);
+      host.text.set('Rot');
+      await settle(fixture);
+
+      host.explicit.set(undefined);
+      await settle(fixture);
+      expect(opt.label()).toBe('Rot');
+    });
+
     it('leaves a chrome-marked child out of the label', async () => {
       const { fixture, host, opt } = await mount();
       host.chrome.set(true);

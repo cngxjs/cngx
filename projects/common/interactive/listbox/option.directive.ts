@@ -131,11 +131,12 @@ export class CngxOption implements CngxAdItemHandle {
   private readonly filterHost = inject(CNGX_OPTION_FILTER_HOST, { optional: true });
   private readonly selectedState = signal(false);
   /**
-   * Trimmed text of the host, chrome subtrees excluded. The `textContent`
-   * getter is not a signal, so a MutationObserver writes it here: first in
-   * `afterNextRender`, then on every text change while no `[label]` is bound.
+   * Bumped whenever the host text may have changed: once in `afterNextRender`,
+   * then by the MutationObserver while no `[label]` is bound. The
+   * `textContent` getter is not a signal, so `label` reads the DOM and tracks
+   * this version instead of a written text copy.
    */
-  private readonly projectedText = signal('');
+  private readonly textVersion = signal(0);
   private readonly rendered = signal(false);
 
   /**
@@ -212,7 +213,8 @@ export class CngxOption implements CngxAdItemHandle {
     if (explicit) {
       return explicit;
     }
-    return this.projectedText();
+    this.textVersion();
+    return readOptionText(this.elementRef.nativeElement as HTMLElement);
   });
 
   /**
@@ -225,7 +227,7 @@ export class CngxOption implements CngxAdItemHandle {
 
   constructor() {
     const el = this.elementRef.nativeElement as HTMLElement;
-    const readText = (): void => this.projectedText.set(readOptionText(el));
+    const bumpText = (): void => this.textVersion.update((v) => v + 1);
     let observer: MutationObserver | null = null;
     const disconnect = (): void => {
       observer?.disconnect();
@@ -233,7 +235,9 @@ export class CngxOption implements CngxAdItemHandle {
     };
 
     // Observe only while the text is the label source; `rendered` keeps the
-    // observer browser-only and after the first render.
+    // observer browser-only and after the first render. Text changed while a
+    // label was bound needs no catch-up: clearing `[label]` re-runs `label`,
+    // which reads the DOM fresh.
     effect(() => {
       const textIsLabel = this.rendered() && !this.labelInput();
       untracked(() => {
@@ -244,16 +248,14 @@ export class CngxOption implements CngxAdItemHandle {
         if (observer || typeof MutationObserver === 'undefined') {
           return;
         }
-        // The text may have changed while a label was bound.
-        readText();
-        observer = new MutationObserver(readText);
+        observer = new MutationObserver(bumpText);
         observer.observe(el, { characterData: true, childList: true, subtree: true });
       });
     });
     inject(DestroyRef).onDestroy(disconnect);
 
     afterNextRender(() => {
-      readText();
+      bumpText();
       this.rendered.set(true);
       if (typeof ngDevMode !== 'undefined' && ngDevMode && !this.label()) {
         cngxDevError(
