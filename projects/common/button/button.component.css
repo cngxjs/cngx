@@ -452,7 +452,8 @@
  * opts out so the system pair paints: every variant is a ButtonText border on
  * ButtonFace (link stays LinkText), disabled is GrayText. A solid primary or
  * danger button fills with Highlight so the main action still stands out once
- * colour emphasis is gone. Unlayered, outside
+ * colour emphasis is gone. The reset's focus outline would keep its author
+ * colour under the opt-out, so it is re-pointed at Highlight. Unlayered, outside
  * @scope, `!important` because the base uses `:scope[data-*]` compounds. */
 @media (forced-colors: active) {
   .cngx-button {
@@ -480,5 +481,8 @@
     background: ButtonFace !important;
     color: GrayText !important;
     border-color: GrayText !important;
+  }
+  .cngx-button:focus-visible {
+    outline-color: Highlight !important;
   }
 }
