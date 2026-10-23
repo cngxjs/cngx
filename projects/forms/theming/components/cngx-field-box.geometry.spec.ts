@@ -124,6 +124,10 @@ const HARNESS_STYLES = [
         />
       </p>
       <p><button cngxButton class="c-button">Apply</button></p>
+      <p class="c-small-row" style="display: flex; align-items: flex-start; font-size: 14px">
+        <input cngxInput class="c-small-input" [skin]="skin()" />
+        <button cngxButton class="c-small-button">Apply</button>
+      </p>
     </div>
   `,
 })
@@ -429,6 +433,21 @@ describe.each(MATRIX)('field box matrix: %s skin, %s, touch %s', (skin, density,
       }
     },
   );
+
+  // Both controls read the control font (`--cngx-font-size-control`, 1rem),
+  // not the container's, so a 14px toolbar keeps them on one row.
+  it('shares the top and bottom edge with an md button in a 14px container', () => {
+    const root = mountMatrix(skin, density, touch);
+    expect(px(query(root, '.c-small-row'), 'font-size')).toBe(14);
+    const input = query(root, '.c-small-input');
+    const button = query(root, '.c-small-button');
+    expect(px(button, 'font-size')).toBe(px(input, 'font-size'));
+    expect(px(button, 'line-height')).toBe(px(input, 'line-height'));
+    const a = input.getBoundingClientRect();
+    const b = button.getBoundingClientRect();
+    expect(b.top).toBeCloseTo(a.top, 0);
+    expect(b.bottom).toBeCloseTo(a.bottom, 0);
+  });
 
   it('keeps an interactive affix as tall as the line box', () => {
     const root = mountMatrix(skin, density, touch);
