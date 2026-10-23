@@ -89,24 +89,31 @@ describe('diffSnapshots rename inference is fingerprint-gated', () => {
 });
 
 describe('fetchSnapshot failure classification', () => {
-  const stubDir = { makeTempDir: () => '/tmp/cngx-mcp-snapshot-test' };
+  const stub = {
+    makeTempDir: () => '/tmp/cngx-mcp-snapshot-test',
+    releaseBaseUrl: 'https://example.test/releases/download',
+    writeFile: () => undefined,
+  };
+  const notFound = async () => ({ status: 404, body: '' });
 
-  it('returns gh-missing when the gh CLI is absent', async () => {
+  it('falls through to HTTPS when the gh CLI is absent, so gh-missing never surfaces', async () => {
     const result = await fetchSnapshot('9.9.9', {
-      ...stubDir,
-      download: async () => {
+      ...stub,
+      httpGet: notFound,
+      runGh: async () => {
         const error = new Error('spawn gh ENOENT') as NodeJS.ErrnoException;
         error.code = 'ENOENT';
         throw error;
       },
     });
-    expect(result).toEqual({ ok: false, reason: 'gh-missing', message: expect.any(String) });
+    expect(result).toMatchObject({ ok: false, reason: 'asset-missing' });
   });
 
   it('classifies a missing release asset', async () => {
     const result = await fetchSnapshot('9.9.9', {
-      ...stubDir,
-      download: async () => {
+      ...stub,
+      httpGet: notFound,
+      runGh: async () => {
         throw new Error('release not found');
       },
     });
@@ -115,8 +122,11 @@ describe('fetchSnapshot failure classification', () => {
 
   it('classifies a network failure', async () => {
     const result = await fetchSnapshot('9.9.9', {
-      ...stubDir,
-      download: async () => {
+      ...stub,
+      httpGet: async () => {
+        throw new TypeError('fetch failed');
+      },
+      runGh: async () => {
         throw new Error('dial tcp: lookup api.github.com: no such host');
       },
     });
@@ -124,7 +134,12 @@ describe('fetchSnapshot failure classification', () => {
   });
 
   it('returns the downloaded path on success', async () => {
-    const result = await fetchSnapshot('0.2.0', { makeTempDir: () => '/tmp/cngx-mcp-ok', download: async () => undefined });
+    const result = await fetchSnapshot('0.2.0', {
+      ...stub,
+      makeTempDir: () => '/tmp/cngx-mcp-ok',
+      httpGet: notFound,
+      runGh: async () => undefined,
+    });
     expect(result).toEqual({ ok: true, path: '/tmp/cngx-mcp-ok/documentation.json' });
   });
 

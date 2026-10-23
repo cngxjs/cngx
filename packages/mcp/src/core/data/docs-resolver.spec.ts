@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { loadDocsFromFile, SchemaVersionError } from './loader.js';
 import type { DocsResolverDeps } from './docs-resolver.js';
 import { answerVersioned, DOCS_CACHE_LIMIT, resetDocsCache, resolveDocs } from './docs-resolver.js';
+import { fetchSnapshot } from '../diff/snapshot-fetch.js';
 import type { SnapshotFetchFailureReason } from '../diff/types.js';
 
 const SAMPLE = fileURLToPath(new URL('../../../test/fixtures/documentation.sample.json', import.meta.url));
@@ -69,6 +70,21 @@ describe('resolveDocs', () => {
       const resolution = await resolveDocs(bundled, '9.9.9', deps);
 
       expect(resolution).toEqual({ ok: false, reason, message: `${reason} detail` });
+    },
+  );
+
+  it.each(['../x', '1.0/../..', 'latest'])(
+    'rejects the non-release version %s as asset-missing before any fetch',
+    async (version) => {
+      const loadDocs = vi.fn(loadDocsFromFile);
+      const resolution = await resolveDocs(bundled, version, { fetchSnapshot, loadDocs });
+
+      expect(resolution).toMatchObject({
+        ok: false,
+        reason: 'asset-missing',
+        message: expect.stringContaining('not a release version'),
+      });
+      expect(loadDocs).not.toHaveBeenCalled();
     },
   );
 
