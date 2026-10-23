@@ -41,13 +41,14 @@ export class AppToolbar {
 | `tone` | `neutral`, `primary`, `danger` | `tone` | `neutral` |
 | `size` | `xs`, `sm`, `md`, `lg` | `size` | `md` |
 
-Each axis resolves `input ?? group ?? config ?? default`. Set app defaults with `provideButtonConfig(withButtonVariant(...), withButtonTone(...), withButtonSize(...))`, a subtree with `provideButtonConfigAt(...)` in `viewProviders`.
+`variant` and `size` resolve `input ?? group ?? config ?? default`; `tone` resolves `input ?? config ?? default`, because a group passes only variant and size. Set app defaults with `provideButtonConfig(withButtonVariant(...), withButtonTone(...), withButtonSize(...))`, a subtree with `provideButtonConfigAt(...)` in `viewProviders`.
 
 Density, text scale, touch floor, motion and contrast are not inputs. They come from the preference axes in `@cngx/core`: padding is SET from `--cngx-space-*`, text from the font tokens, the hit area from `--cngx-target-min`. `md` is the form-control row, so an `md` button lines up with `cngxInput` and every select trigger.
 
 ## Accessibility
 
-- **Disabled says why.** `[disabled]` renders `aria-disabled="true"` instead of the native attribute: the button stays in the tab order, and `disabledReason` is referenced through `aria-describedby` while the button is disabled. Clicks, middle clicks, `routerLink` navigation and form submission are swallowed by a capture-phase guard.
+- **Disabled says why.** `[disabled]` renders `aria-disabled="true"` instead of the native attribute: the button stays in the tab order, and `disabledReason` is referenced through `aria-describedby` while the button is disabled. Clicks, middle clicks, `routerLink` navigation and form submission are swallowed by a capture-phase guard. A static `aria-describedby` on the host stays; the reason id is appended to it.
+- **Disabled links keep their `href`.** A disabled `<a cngxButton>` is marked with `aria-disabled` only, so the context menu can still open the link in a new tab; clicks and middle clicks are swallowed.
 - **`type="button"` by default** on a `<button>` host, so a button inside a `<form>` never submits by accident. `type="submit"` and `[type]` both work. An `<a>` host gets no `type`.
 - **Icon buttons need a name.** `cngxIconButton` warns `CNGX1071` in development when the host has no `aria-label`, `aria-labelledby` or `title`. A tooltip is optional and a per-icon decision; compose `[cngxTooltip]` where the glyph alone is ambiguous.
 - **Busy.** Co-host `cngxAsyncClick`: the label keeps its place under a spinner, `aria-busy` and the announcement stay with the directive. Under reduced motion the ring stops turning.

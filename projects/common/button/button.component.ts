@@ -25,8 +25,9 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
  * Two orthogonal axes plus a size: `variant` (emphasis: `solid`,
  * `secondary`, `outline`, `ghost`, `link`) is the selector's own value,
  * `tone` (intent: `neutral`, `primary`, `danger`) and `size`
- * (`xs`..`lg`) are inputs. Each resolves `input ?? group ?? config ??
- * default`. Density, text scale, touch floor, motion and contrast come from
+ * (`xs`..`lg`) are inputs. `variant` and `size` resolve `input ?? group ??
+ * config ?? default`; `tone` skips the group, which passes only variant and
+ * size. Density, text scale, touch floor, motion and contrast come from
  * the preference axes in `@cngx/core`, not from inputs.
  *
  * `disabled` renders `aria-disabled="true"` instead of the native
