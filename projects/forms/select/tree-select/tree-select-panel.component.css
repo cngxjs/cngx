@@ -509,8 +509,13 @@
       text-overflow: ellipsis;
     }
 
+    /* The footer takes the width the tree gives the panel and never widens
+       it: inline-size containment drops its intrinsic width, and a long
+       count or label wraps instead. */
     .cngx-tree-select__footer {
+      contain: inline-size;
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: var(--cngx-tree-select-footer-gap, var(--cngx-space-sm, 0.5rem));
       padding: var(
