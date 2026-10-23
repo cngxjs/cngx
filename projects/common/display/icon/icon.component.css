@@ -20,28 +20,22 @@
  *
  * **Slots**
  *
- * - `:scope > svg` - projected SVG fills the host box, `fill:
- *   currentColor` so brand color flows through
+ * - `:scope > svg` - projected SVG fills the host box; one without
+ *   its own `fill` attribute gets `fill: currentColor` so brand color
+ *   flows through, while a stroke icon's `fill="none"` is kept
  *
  * **Inheritance**
  *
- * Leaf tokens - the active size and color are component-local.
+ * The size scale (`--cngx-icon-size-xs..xl`) is unregistered and
+ * declared on `:root`, so an override on any ancestor reaches every
+ * icon below it; the em value resolves against the font size the icon
+ * sits in. `--cngx-icon-size` is set on the host by the variant, so set
+ * it on the icon itself (inline or a rule targeting the icon).
  * `--cngx-icon-color` defaults to `currentColor` so no fallback
  * chain is needed for the color cascade.
  */
 
 @layer cngx.tokens {
-  /**
-   * Active size of the icon - consumed by the `:scope` rule. Driven
-   * by the size-variant classes or set inline for one-off overrides.
-   * @group Layout
-   */
-  @property --cngx-icon-size {
-    syntax: '*';
-    inherits: false;
-    initial-value: 1.25em;
-  }
-
   /**
    * Text color of the icon glyph. Defaults to `currentColor` so the
    * icon inherits its container's text color.
@@ -53,54 +47,47 @@
     initial-value: currentColor;
   }
 
-  /**
-   * Size token for the `.cngx-icon--xs` variant.
-   * @group Variant / Size
-   */
-  @property --cngx-icon-size-xs {
-    syntax: '*';
-    inherits: false;
-    initial-value: 0.75em;
-  }
-
-  /**
-   * Size token for the `.cngx-icon--sm` variant.
-   * @group Variant / Size
-   */
-  @property --cngx-icon-size-sm {
-    syntax: '*';
-    inherits: false;
-    initial-value: 1em;
-  }
-
-  /**
-   * Size token for the `.cngx-icon--md` variant (default).
-   * @group Variant / Size
-   */
-  @property --cngx-icon-size-md {
-    syntax: '*';
-    inherits: false;
-    initial-value: 1.25em;
-  }
-
-  /**
-   * Size token for the `.cngx-icon--lg` variant.
-   * @group Variant / Size
-   */
-  @property --cngx-icon-size-lg {
-    syntax: '*';
-    inherits: false;
-    initial-value: 1.5em;
-  }
-
-  /**
-   * Size token for the `.cngx-icon--xl` variant.
-   * @group Variant / Size
-   */
-  @property --cngx-icon-size-xl {
-    syntax: '*';
-    inherits: false;
-    initial-value: 2em;
+  /* The size tokens are deliberately NOT registered as @property. The
+   * host reads them through `font-size`, and their values are in `em`.
+   * Chromium treats a registered custom property that is declared on an
+   * element with an em or var() value, and read by that element's
+   * font-size, as a font-size dependency cycle: the token computes to
+   * the guaranteed-invalid value and font-size falls back to inherit, so
+   * every preset rendered at 1em. Unregistered, the value is substituted
+   * as plain tokens and the em resolves against the parent font size.
+   * Unregistered also means the scale tokens inherit, so an override on
+   * any ancestor (or `:root`) reaches the icon. */
+  :root {
+    /**
+     * Size token for the `.cngx-icon--xs` variant.
+     * @type <length>
+     * @group Variant / Size
+     */
+    --cngx-icon-size-xs: 0.75em;
+    /**
+     * Size token for the `.cngx-icon--sm` variant.
+     * @type <length>
+     * @group Variant / Size
+     */
+    --cngx-icon-size-sm: 1em;
+    /**
+     * Size token for the `.cngx-icon--md` variant (default).
+     * @type <length>
+     * @group Variant / Size
+     */
+    --cngx-icon-size-md: 1.25em;
+    /**
+     * Size token for the `.cngx-icon--lg` variant.
+     * @type <length>
+     * @group Variant / Size
+     */
+    --cngx-icon-size-lg: 1.5em;
+    /**
+     * Size token for the `.cngx-icon--xl` variant.
+     * @type <length>
+     * @group Variant / Size
+     */
+    --cngx-icon-size-xl: 2em;
   }
 }
 
@@ -115,24 +102,35 @@
       line-height: 1;
       flex: 0 0 auto;
 
+      /**
+       * Active size of the icon - consumed by `font-size` on the host.
+       * Driven by the size-variant classes (`md` here) or set inline on
+       * the icon for one-off overrides.
+       * @type <length>
+       * @default 1.25em
+       * @group Layout
+       */
+      --cngx-icon-size: var(--cngx-icon-size-md, 1.25em);
+
       /* Themable */
-      font-size: var(--cngx-icon-size, var(--cngx-icon-size-md, 1.25em));
+      font-size: var(--cngx-icon-size, 1.25em);
       color: var(--cngx-icon-color, currentColor);
     }
 
-    :scope.cngx-icon--xs {
+    /* `:where()` keeps the variants at the `:scope` specificity, so a
+     * consumer rule that sets `--cngx-icon-size` on the icon (e.g. a
+     * field affix) wins without a specificity contest. `md` is the
+     * `:scope` default above. */
+    :scope:where(.cngx-icon--xs) {
       --cngx-icon-size: var(--cngx-icon-size-xs, 0.75em);
     }
-    :scope.cngx-icon--sm {
+    :scope:where(.cngx-icon--sm) {
       --cngx-icon-size: var(--cngx-icon-size-sm, 1em);
     }
-    :scope.cngx-icon--md {
-      --cngx-icon-size: var(--cngx-icon-size-md, 1.25em);
-    }
-    :scope.cngx-icon--lg {
+    :scope:where(.cngx-icon--lg) {
       --cngx-icon-size: var(--cngx-icon-size-lg, 1.5em);
     }
-    :scope.cngx-icon--xl {
+    :scope:where(.cngx-icon--xl) {
       --cngx-icon-size: var(--cngx-icon-size-xl, 2em);
     }
 
@@ -141,8 +139,15 @@
     :scope > svg {
       width: 1em;
       height: 1em;
-      fill: currentColor;
       display: block;
+    }
+
+    /* Only an svg without its own `fill` follows the text color. A
+     * stroke icon (Lucide, Feather) ships `fill="none"`, and a presentation
+     * attribute loses to any class rule, so an unconditional fill here
+     * would paint its outline shapes solid. */
+    :scope > svg:not([fill]) {
+      fill: currentColor;
     }
   }
 }

@@ -76,13 +76,13 @@ If a third-party glyph component sets its own ARIA (e.g. Material's `<mat-icon>`
 | `lg` | `1.5em` | `--cngx-icon-size-lg` |
 | `xl` | `2em` | `--cngx-icon-size-xl` |
 
-For one-off overrides use inline `--cngx-icon-size`:
+The scale tokens inherit, so re-tuning them on `:root` or any ancestor reaches every icon below it. For one-off overrides set `--cngx-icon-size` on the icon itself:
 
 ```html
 <cngx-icon style="--cngx-icon-size: 32px">…</cngx-icon>
 ```
 
-Projected `<svg>` children get `width: 1em; height: 1em; fill: currentColor` automatically, so an inline SVG inherits both size and color without further setup.
+Projected `<svg>` children get `width: 1em; height: 1em` automatically, and `fill: currentColor` when they carry no `fill` attribute of their own, so an inline SVG inherits both size and color without further setup. A stroke icon that ships `fill="none"` (Lucide, Feather) keeps it.
 
 ## Working with icon libraries
 
@@ -109,7 +109,7 @@ Note that `<mat-icon>` ships its own fixed `font-size: 24px`. To respect `CngxIc
 </cngx-icon>
 ```
 
-The `:scope > svg` rule pins it to `1em × 1em` with `fill: currentColor`.
+The `:scope > svg` rule pins it to `1em × 1em`. Its `fill="none"` is kept, so the outline is drawn by `stroke="currentColor"`; an SVG without a `fill` attribute gets `fill: currentColor` instead.
 
 ### Font Awesome / icon fonts
 
