@@ -39,7 +39,7 @@
         data-move="up"
         [attr.aria-label]="moveUpLabel()(opt.label)"
         [attr.aria-disabled]="first || disabled() ? 'true' : null"
-        [attr.aria-describedby]="first ? atStartId : null"
+        [attr.aria-describedby]="describedBy(first ? atStartId : null)"
         (click)="handleMove(i, 'up')"
       >
         <svg
@@ -58,7 +58,7 @@
         data-move="down"
         [attr.aria-label]="moveDownLabel()(opt.label)"
         [attr.aria-disabled]="last || disabled() ? 'true' : null"
-        [attr.aria-describedby]="last ? atEndId : null"
+        [attr.aria-describedby]="describedBy(last ? atEndId : null)"
         (click)="handleMove(i, 'down')"
       >
         <svg
@@ -77,3 +77,4 @@
 <span hidden [id]="hintId">{{ hint() }}</span>
 <span hidden [id]="atStartId">{{ atStartText() }}</span>
 <span hidden [id]="atEndId">{{ atEndText() }}</span>
+<span hidden [id]="pendingId">{{ pendingText() }}</span>

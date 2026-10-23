@@ -16,6 +16,7 @@ import {
   CngxPopoverSheetTitle,
 } from '@cngx/common/popover';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
+import { nextUid } from '@cngx/core/utils';
 
 import { CNGX_SELECT_SHEET_HEADER_HOST } from '../../sheet-header-host';
 import type { CngxSelectSheetHandleContext } from '../../template-slots';
@@ -91,6 +92,13 @@ export class CngxSelectSheetHeader {
   protected readonly activeId = computed(() => this.host.listboxRef()?.ad.activeId() ?? null);
 
   protected readonly closeDisabled = computed(() => (this.host.closeBlocked() ? 'true' : null));
+
+  /** @internal Always-rendered reason node; referenced only while a commit is pending. */
+  protected readonly pendingId = nextUid('cngx-select-sheet-pending');
+
+  protected readonly closeDescribedBy = computed(() =>
+    this.host.closeBlocked() ? this.pendingId : null,
+  );
 
   protected readonly handleContext = computed<CngxSelectSheetHandleContext>(
     () => {

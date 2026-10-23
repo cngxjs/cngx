@@ -189,6 +189,12 @@ export interface CngxSelectAriaLabels {
   readonly sheetClose?: string;
   /** Done button in the header of the mobile sheet (multi and input variants). Default `'Done'`. */
   readonly sheetDone?: string;
+  /**
+   * Why the sheet header's close and Done buttons and the panel reorder list's
+   * move buttons are unavailable while a commit is pending; referenced through
+   * `aria-describedby` only in that state. Default `'Unavailable while saving'`.
+   */
+  readonly commitPending?: string;
 }
 
 /**

@@ -94,6 +94,7 @@ function makeShellHost(): CngxSelectPanelHost {
       listboxFallback: 'Options',
       sheetClose: 'Close',
       sheetDone: 'Done',
+      commitPending: 'Unavailable while saving',
       selectionSummary: (labels: readonly string[]) => labels.join(', '),
     }),
     resolvedListboxLabel: signal(''),

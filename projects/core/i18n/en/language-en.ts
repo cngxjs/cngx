@@ -401,6 +401,7 @@ export const CNGX_LANGUAGE_EN = {
     listboxFallback: 'Options',
     sheetClose: 'Close',
     sheetDone: 'Done',
+    commitPending: 'Unavailable while saving',
     loading: 'Loading…',
     empty: 'No options',
     loadFailed: 'Could not load',

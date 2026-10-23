@@ -131,6 +131,7 @@ export function selectCopyFrom(section: CngxSelectLanguageSection, locale: strin
       listboxFallback: section.listboxFallback,
       sheetClose: section.sheetClose,
       sheetDone: section.sheetDone,
+      commitPending: section.commitPending,
     },
     fallbackLabels: {
       loading: section.loading,

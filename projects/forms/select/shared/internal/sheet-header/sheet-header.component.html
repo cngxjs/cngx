@@ -26,6 +26,7 @@
       type="button"
       class="cngx-select-sheet-header__done"
       [attr.aria-disabled]="closeDisabled()"
+      [attr.aria-describedby]="closeDescribedBy()"
       (click)="handleClose()"
     >
       {{ host.ariaLabels().sheetDone }}
@@ -36,10 +37,14 @@
     class="cngx-select-sheet-header__close"
     [attr.aria-label]="host.ariaLabels().sheetClose"
     [attr.aria-disabled]="closeDisabled()"
+    [attr.aria-describedby]="closeDescribedBy()"
     (click)="handleClose()"
   >
     <span aria-hidden="true">{{ closeGlyph }}</span>
   </button>
+  <span hidden class="cngx-select-sheet-header__pending" [id]="pendingId">{{
+    host.ariaLabels().commitPending
+  }}</span>
   @if (host.showInput()) {
     <input
       type="search"
