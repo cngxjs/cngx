@@ -8,12 +8,12 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
   focus: ['composition', 'a11y-pattern'],
-  apiComponents: ['CngxIconButton', 'CngxBadge'],
+  apiComponents: ['CngxIconButton', 'CngxBadge', 'CngxIcon'],
   moduleImports: [
     "import { CngxIconButton } from '@cngx/common/button';",
-    "import { CngxBadge } from '@cngx/common/display';",
+    "import { CngxBadge, CngxIcon } from '@cngx/common/display';",
   ],
-  imports: ['CngxIconButton', 'CngxBadge'],
+  imports: ['CngxIconButton', 'CngxBadge', 'CngxIcon'],
   setup: `
   protected readonly unread = signal(3);`,
   template: `
@@ -23,7 +23,9 @@ export const STORY: DemoSpec = {
     [hidden]="unread() === 0"
     [attr.aria-label]="'Notifications, ' + unread() + ' unread'"
   >
-    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4l2-2zM10 20h4" /></svg>
+    <cngx-icon>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4l2-2zM10 20h4" /></svg>
+    </cngx-icon>
   </button>`,
   templateChrome: `
   <div class="button-row" style="margin-top:12px">

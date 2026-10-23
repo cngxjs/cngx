@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Composition: Menu button',
   subtitle: 'A <code>cngxButton</code> that opens a menu: <code>cngxMenuTrigger</code> plus <code>cngxPopoverTrigger</code> on the same element.',
-  description: 'There is no menu-button class. The button keeps its own look and states, <code>cngxMenuTrigger</code> adds the keyboard model and <code>aria-haspopup</code> / <code>aria-expanded</code>, <code>cngxPopoverTrigger</code> anchors the panel to the button. ArrowDown, Enter or Space opens the menu and highlights the first item; the button keeps focus and drives <code>aria-activedescendant</code>. Escape closes the menu and focus stays on the button. The caret sits in <code>cngxButtonEnd</code> and is hidden from assistive technology.',
+  description: 'There is no menu-button class. The button keeps its own look and states, <code>cngxMenuTrigger</code> adds the keyboard model and <code>aria-haspopup</code> / <code>aria-expanded</code>, <code>cngxPopoverTrigger</code> anchors the panel to the button. ArrowDown, Enter or Space opens the menu and highlights the first item; the button keeps focus and drives <code>aria-activedescendant</code>. Escape closes the menu and focus stays on the button. The caret is a <code>cngx-icon</code> in <code>cngxButtonEnd</code>, decorative by default and so hidden from assistive technology.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -14,13 +14,14 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/',
     },
   ],
-  apiComponents: ['CngxButton', 'CngxButtonEnd', 'CngxMenuTrigger', 'CngxMenu', 'CngxMenuItem', 'CngxPopoverTrigger'],
+  apiComponents: ['CngxButton', 'CngxButtonEnd', 'CngxIcon', 'CngxMenuTrigger', 'CngxMenu', 'CngxMenuItem', 'CngxPopoverTrigger'],
   moduleImports: [
     "import { CngxButton, CngxButtonEnd } from '@cngx/common/button';",
+    "import { CngxIcon } from '@cngx/common/display';",
     "import { CngxMenu, CngxMenuItem, CngxMenuTrigger } from '@cngx/common/interactive';",
     "import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';",
   ],
-  imports: ['CngxButton', 'CngxButtonEnd', 'CngxMenu', 'CngxMenuItem', 'CngxMenuTrigger', 'CngxPopover', 'CngxPopoverTrigger'],
+  imports: ['CngxButton', 'CngxButtonEnd', 'CngxIcon', 'CngxMenu', 'CngxMenuItem', 'CngxMenuTrigger', 'CngxPopover', 'CngxPopoverTrigger'],
   setup: `protected readonly lastFormat = signal<string | null>(null);`,
   template: `
   <button
@@ -33,7 +34,9 @@ export const STORY: DemoSpec = {
     #trigger="cngxMenuTrigger"
   >
     Export
-    <svg cngxButtonEnd aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+    <cngx-icon cngxButtonEnd>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+    </cngx-icon>
   </button>
   <div cngxPopover placement="bottom-start" #pop="cngxPopover">
     <ul
