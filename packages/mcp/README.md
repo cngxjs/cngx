@@ -41,10 +41,12 @@ Every tool is read-only, and read-only tools answer offline against the bundled
 snapshot by default. The network is reached only when a caller asks for another
 release: `migrate_usage` always spans two versions, and `find_component`,
 `get_api`, `get_slots`, `get_theme_tokens`, `get_di_tokens`, and `get_config` reach
-it only when their optional `version` differs from the bundled one. Every such fetch is
-fail-safe - a missing `gh`, no network, or an absent asset returns a typed error
-result (`{ ok: false, reason }`, one of `gh-missing` / `network` / `asset-missing`),
-never a crash.
+it only when their optional `version` differs from the bundled one. Every such fetch
+tries `gh` first and falls back to a plain HTTPS download of the public release asset
+when `gh` is missing, unauthenticated or fails; both paths time out after 15 seconds.
+The fetch is fail-safe - no network or an absent asset returns a typed error result
+(`{ ok: false, reason }`, `network` or `asset-missing`), never a crash. The HTTPS
+fallback does not read `HTTPS_PROXY`; behind a proxy, use an authenticated `gh`.
 
 ### Version-scoped queries
 
@@ -53,7 +55,9 @@ never a crash.
 snapshot version, they answer offline against the bundled snapshot with no fetch.
 Given a different version they resolve that release's `documentation.json` from the
 cngx GitHub Release assets via `gh` (pinned to `cngxjs/cngx` with `--repo`, so the
-fetch works from any working directory, not just a cngx checkout; fetched once,
+fetch works from any working directory, not just a cngx checkout), or over HTTPS from
+`https://github.com/cngxjs/cngx/releases/download/v<version>/documentation.json` when
+`gh` is unavailable (fetched once,
 then cached in memory for the session) and query that instead. Either way the answer is wrapped as
 `{ ok: true, groundedVersion, result }` so the caller always knows which release it
 grounds against - the previously bare payload sits under `result`, including on the

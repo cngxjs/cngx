@@ -9,8 +9,9 @@
 // `scripts/__tests__/schematics-mcp-capabilities.test.mjs` fails when the
 // generated module falls behind them.
 //
-// The sources are read as TypeScript ASTs, not imported: they import the MCP
-// SDK and zod, which the schematics build never loads.
+// The sources are read as TypeScript ASTs, not imported: the command
+// definitions import zod and the resource and prompt registrations import the
+// MCP SDK, neither of which the schematics build loads.
 
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -23,12 +24,13 @@ import { normalizeDashes } from './normalize-dashes.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-// The one place that knows where the registry lives. When the tool
-// definitions move, update this constant and the `example` lookup below.
+// The one place that knows where the registry lives. When the command
+// definitions move, update these constants and the `example` lookup below.
 export const MCP_REGISTRY_ROOT = 'packages/mcp/src';
 export const OUT = 'projects/core/schematics/ng-add/steps/mcp-capabilities.generated.ts';
 
-const TOOLS_DIR = posix.join(MCP_REGISTRY_ROOT, 'tools');
+const TOOLS_DIR = posix.join(MCP_REGISTRY_ROOT, 'core/commands');
+export const COMMAND_REGISTRY = posix.join(MCP_REGISTRY_ROOT, 'core/registry.ts');
 const RESOURCES = posix.join(MCP_REGISTRY_ROOT, 'resources/register-resources.ts');
 const PROMPTS = posix.join(MCP_REGISTRY_ROOT, 'prompts/register-prompts.ts');
 
@@ -116,23 +118,127 @@ function requireString(path, value, what) {
     : normalizeDashes(value);
 }
 
-/** `registerTool(name, { title, description })` plus the module's exported `example`. */
+function defineCommandCalls(source) {
+  const calls = [];
+  const visit = (node) => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === 'defineCommand'
+    ) {
+      calls.push(node);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  return calls;
+}
+
+/** `defineCommand({ name, title, description })` plus the module's exported `example`. */
 export function collectTools(files) {
   return files.flatMap(({ path, text }) => {
     const source = parse(path, text);
-    return registrationCalls(source, 'registerTool').map((call) => {
-      const [nameArg, config] = call.arguments;
-      if (config === undefined || !ts.isObjectLiteralExpression(config)) {
-        fail(path, 'registerTool config is not an object literal');
+    return defineCommandCalls(source).map((call) => {
+      const [definition] = call.arguments;
+      if (definition === undefined || !ts.isObjectLiteralExpression(definition)) {
+        fail(path, 'defineCommand argument is not an object literal');
       }
       return {
-        name: requireString(path, stringValue(nameArg), 'the tool name'),
-        title: requireString(path, property(config, 'title'), 'title'),
-        description: requireString(path, property(config, 'description'), 'description'),
+        name: requireString(path, property(definition, 'name'), 'the tool name'),
+        title: requireString(path, property(definition, 'title'), 'title'),
+        description: requireString(path, property(definition, 'description'), 'description'),
         example: requireString(path, exportedString(source, 'example'), 'the exported `example`'),
       };
     });
   });
+}
+
+// The exported const a definition file binds its `defineCommand(...)` to.
+function definedCommandExports(source) {
+  const names = [];
+  for (const statement of source.statements) {
+    if (!ts.isVariableStatement(statement)) {
+      continue;
+    }
+    for (const declaration of statement.declarationList.declarations) {
+      const init = declaration.initializer;
+      const isDefinition =
+        init !== undefined &&
+        ts.isCallExpression(init) &&
+        ts.isIdentifier(init.expression) &&
+        init.expression.text === 'defineCommand';
+      if (isDefinition && ts.isIdentifier(declaration.name)) {
+        names.push(declaration.name.text);
+      }
+    }
+  }
+  return names;
+}
+
+/**
+ * Cross-checks `COMMANDS` in the registry against the definition files. Returns
+ * one problem per definition the registry does not list and per registry entry
+ * that no definition file exports; empty when both agree.
+ */
+export function registryCoverage(registry, toolFiles) {
+  const source = parse(registry.path, registry.text);
+  const importedFrom = new Map();
+  for (const statement of source.statements) {
+    if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) {
+      continue;
+    }
+    const bindings = statement.importClause?.namedBindings;
+    if (bindings === undefined || !ts.isNamedImports(bindings)) {
+      continue;
+    }
+    for (const element of bindings.elements) {
+      importedFrom.set(element.name.text, statement.moduleSpecifier.text);
+    }
+  }
+
+  const listed = [];
+  for (const statement of source.statements) {
+    if (!ts.isVariableStatement(statement)) {
+      continue;
+    }
+    for (const declaration of statement.declarationList.declarations) {
+      const init = declaration.initializer;
+      if (
+        ts.isIdentifier(declaration.name) &&
+        declaration.name.text === 'COMMANDS' &&
+        init !== undefined &&
+        ts.isArrayLiteralExpression(init)
+      ) {
+        listed.push(...init.elements.filter(ts.isIdentifier).map((element) => element.text));
+      }
+    }
+  }
+
+  const registryDir = posix.dirname(registry.path);
+  const defined = new Map();
+  for (const file of toolFiles) {
+    for (const name of definedCommandExports(parse(file.path, file.text))) {
+      defined.set(name, file.path);
+    }
+  }
+
+  const problems = [];
+  for (const name of listed) {
+    const specifier = importedFrom.get(name);
+    const file =
+      specifier === undefined
+        ? undefined
+        : posix.join(registryDir, specifier.replace(/\.js$/, '.ts'));
+    if (file === undefined || defined.get(name) !== file) {
+      problems.push(`COMMANDS lists ${name} but no definition file exports it`);
+    }
+  }
+  for (const [name, file] of defined) {
+    if (!listed.includes(name)) {
+      problems.push(`${file} defines ${name} but COMMANDS does not list it`);
+    }
+  }
+  return problems;
 }
 
 // The URI is a literal or the first argument of `new ResourceTemplate(...)`.

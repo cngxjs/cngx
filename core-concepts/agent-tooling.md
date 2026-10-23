@@ -78,7 +78,8 @@ The shape and config queries - `find_component`, `get_api`, `get_slots`,
 Omitted, or equal to the bundled snapshot, they answer offline against the bundled
 release with no fetch. Given a different version they resolve that release's
 snapshot from the CNGX release assets via `gh release download` (pinned to the
-CNGX repo, so it works from any working directory), cache it in memory for the
+CNGX repo, so it works from any working directory), or over HTTPS from the public
+release asset URL when `gh` is missing, unauthenticated or fails, cache it in memory for the
 session, and query that instead. Either way the answer names the release it
 grounded against, so a caller reading one component's API at an older version knows
 the reply reflects that version and not the bundled one. A fetch that fails returns
@@ -89,18 +90,18 @@ rather than throwing.
 
 `migrate_usage` is the version-upgrade answer. It resolves each version to a
 snapshot - the bundled one when the version matches it, otherwise fetched from the
-release assets via `gh release download` - and diffs the two into a categorized
+release assets via `gh release download`, or over HTTPS when `gh` fails - and diffs the two into a categorized
 delta. Rename inference is conservative: it only pairs a removed symbol with an
 added one where a structural fingerprint supports it (a top-level entry's category
 plus its input and output names, or a slot's description). A leaf member keyed only
 by a bare type reports the removal rather than guessing a rename.
 
-The fetch never throws across the tool boundary. A missing `gh`, no network, or an
-absent asset returns a typed error result instead:
+The fetch never throws across the tool boundary. Both paths time out after 15
+seconds. No network or an absent asset returns a typed error result instead:
 
 |Reason|Meaning|
 |-|-|
-|`gh-missing`|The `gh` CLI is not installed or not on PATH.|
+|`gh-missing`|No longer produced: a missing `gh` falls back to HTTPS. Kept in the type for compatibility.|
 |`network`|The download failed for a network reason.|
 |`asset-missing`|The release or its `documentation.json` asset does not exist.|
 

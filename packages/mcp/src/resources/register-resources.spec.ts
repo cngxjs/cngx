@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { loadDocsFromFile, type DocsIndex } from '../data/loader.js';
-import type { ComponentSummary } from '../tools/list-components.js';
+import { loadDocsFromFile, type DocsIndex } from '../core/data/loader.js';
+import type { ComponentSummary } from '../core/commands/list-components.js';
 import {
   completeApiName,
   readApi,
