@@ -101,9 +101,11 @@
           <span class="cngx-tree-select__label">{{ node.label }}</span>
           @if (host.nodeCount(node); as count) {
             <!-- aria-checked (true / mixed / false) already carries the state
-                 the count summarizes, so the count stays out of AT. -->
-            <span class="cngx-tree-select__count" aria-hidden="true">
-              @if (host.nodeCountTpl(); as countTpl) {
+                 the count summarizes, so the count stays out of AT. The
+                 built-in count waits for a selected descendant; a projected
+                 template gets every parent and decides itself. -->
+            @if (host.nodeCountTpl(); as countTpl) {
+              <span class="cngx-tree-select__count" aria-hidden="true">
                 <ng-container
                   *ngTemplateOutlet="
                     countTpl;
@@ -116,10 +118,12 @@
                     }
                   "
                 />
-              } @else {
+              </span>
+            } @else if (count.selected > 0) {
+              <span class="cngx-tree-select__count" aria-hidden="true">
                 {{ host.nodeCountText(node) }}
-              }
-            </span>
+              </span>
+            }
           }
         </div>
       }

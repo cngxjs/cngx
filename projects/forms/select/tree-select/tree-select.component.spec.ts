@@ -1297,6 +1297,26 @@ describe('CngxTreeSelect - parent row counts', () => {
     expect(row('a').querySelector('.cngx-tree-select__count')?.textContent?.trim()).toBe('2/2');
   });
 
+  it('shows the built-in count only once a descendant is selected', () => {
+    const { fixture, row } = openTree(TreeCountHost);
+    fixture.componentInstance.values.set([]);
+    fixture.detectChanges();
+    expect(row('a').querySelector('.cngx-tree-select__count')).toBeNull();
+    fixture.componentInstance.values.set([{ id: 'a2', name: 'Alpha-2' }]);
+    fixture.detectChanges();
+    expect(row('a').querySelector('.cngx-tree-select__count')?.textContent?.trim()).toBe('1/2');
+  });
+
+  it('hands every parent to a projected *cngxTreeSelectNodeCount, zero included', () => {
+    const { fixture, row } = openTree(TreeCountHost);
+    fixture.componentInstance.values.set([]);
+    fixture.componentInstance.withSlot.set(true);
+    fixture.detectChanges();
+    const custom = row('a').querySelector('.my-count');
+    expect(custom?.textContent?.trim()).toBe('0 of 2 (0/2)');
+    expect(custom?.closest('[aria-hidden="true"]')).not.toBeNull();
+  });
+
   it('follows a runtime copy switch', () => {
     const labels = signal<CngxSelectFallbackLabels>({});
     TestBed.configureTestingModule({

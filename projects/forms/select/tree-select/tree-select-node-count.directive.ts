@@ -7,6 +7,10 @@ import { type CngxTreeSelectNodeCountContext } from './tree-select.model';
  * (`*cngxTreeSelectNode` replaces the whole row and gets `selectedCount` /
  * `descendantCount` instead). Leaves render no count.
  *
+ * The built-in count shows only once at least one descendant is selected.
+ * A projected template is rendered for every parent, zero included, and
+ * gets `selected` / `total`, so the template decides whether to show `0/N`.
+ *
  * The host keeps the count inside an `aria-hidden` wrapper: the row's
  * `aria-checked` already tells AT what the count summarizes. A global
  * default goes in `CNGX_SELECT_CONFIG.templates.treeNodeCount`.
