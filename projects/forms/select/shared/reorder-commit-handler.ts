@@ -1,6 +1,7 @@
 import { InjectionToken, type Signal, type WritableSignal } from '@angular/core';
 
 import type { AsyncStatus } from '@cngx/core/utils';
+import { arrayEqual } from '@cngx/utils';
 
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-action.types';
 import type { CngxCommitController } from './commit-controller.token';
@@ -145,7 +146,10 @@ export function createReorderCommitHandler<T>(
       onError: (err, rollbackTo) => {
         opts.onStateChange('error');
         opts.onError(err);
-        if (opts.commitMode() === 'optimistic') {
+        // An external write during the pending window wins over the stale
+        // rollback snapshot: roll back only while the model still holds the
+        // optimistic order this commit wrote.
+        if (opts.commitMode() === 'optimistic' && arrayEqual(opts.values(), next)) {
           opts.values.set([...(rollbackTo ?? previous)]);
         }
       },

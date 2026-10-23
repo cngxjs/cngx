@@ -1,7 +1,11 @@
 import { InjectionToken, type Signal, type TemplateRef } from '@angular/core';
 import { type CngxTreeController } from '@cngx/common/interactive';
 import { type FlatTreeNode } from '@cngx/utils';
-import type { CngxTreeSelectNodeContext } from './tree-select.model';
+import type {
+  CngxTreeSelectFooterContext,
+  CngxTreeSelectNodeContext,
+  CngxTreeSelectNodeCountContext,
+} from './tree-select.model';
 
 /**
  * Minimal surface the tree-body panel needs from `CngxTreeSelect`.
@@ -27,6 +31,12 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
   readonly panelOpen: Signal<boolean>;
   /** A disabled select drops every activation. */
   readonly disabled: Signal<boolean>;
+  /**
+   * Under the touch floor a touch / pen tap on a parent row expands it and
+   * the checkbox target selects. A click without that pointer gesture (AT
+   * activation, keyboard, mouse) keeps selecting.
+   */
+  readonly rowTapExpands: Signal<boolean>;
   /** Id of the `role="tree"` container; the trigger's `aria-controls` names it. */
   readonly listboxId: string;
   /**
@@ -56,6 +66,22 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
    * node again after the nodes change (`keyFn`, else `compareWith`).
    */
   readonly adCompareWith: Signal<(a: T, b: T) => boolean>;
+  /** Resolved `*cngxTreeSelectNodeCount` template (instance, then config), or `null`. */
+  readonly nodeCountTpl: Signal<TemplateRef<CngxTreeSelectNodeCountContext<T>> | null>;
+  /** Selected and total descendants of a parent node; `null` for a leaf. */
+  nodeCount(node: FlatTreeNode<T>): { readonly selected: number; readonly total: number } | null;
+  /** The `treeNodeCount` copy for a parent node; `''` for a leaf. */
+  nodeCountText(node: FlatTreeNode<T>): string;
+  /** Number of selected values. */
+  readonly selectionCount: Signal<number>;
+  /** The `selectedCount` copy for `selectionCount`. */
+  readonly selectionCountText: Signal<string>;
+  /** Visible label of the footer clear-all (the clear-button copy cascade). */
+  readonly clearAllLabel: Signal<string>;
+  /** Resolved `*cngxTreeSelectFooter` template (instance, then config), or `null`. */
+  readonly footerTpl: Signal<TemplateRef<CngxTreeSelectFooterContext> | null>;
+  /** Clear the selection from inside the panel; focus stays in the panel. */
+  clearAllInPanel(): void;
   /** Whether the value is selected. */
   isSelected(value: T): boolean;
   /** Whether the value is partially selected via cascade descendants. */

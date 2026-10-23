@@ -15,7 +15,10 @@ import {
   CNGX_SELECT_SHEET_HEADER_HOST,
   type CngxSelectSheetHeaderHost,
 } from '../../sheet-header-host';
-import type { CngxSelectSheetHandleContext } from '../../template-slots';
+import type {
+  CngxSelectSheetCountContext,
+  CngxSelectSheetHandleContext,
+} from '../../template-slots';
 import type { CngxResolvedSelectAriaLabels } from '../resolve-labels';
 import { CngxSelectSheetHeader } from './sheet-header.component';
 
@@ -28,6 +31,8 @@ interface Harness {
   readonly sheetLabel: WritableSignal<string | undefined>;
   readonly label: WritableSignal<string>;
   readonly handleTpl: WritableSignal<TemplateRef<CngxSelectSheetHandleContext> | null>;
+  readonly countTpl: WritableSignal<TemplateRef<CngxSelectSheetCountContext> | null>;
+  readonly selectionCount: WritableSignal<string>;
   readonly close: ReturnType<typeof vi.fn>;
   readonly host: CngxSelectSheetHeaderHost;
 }
@@ -41,6 +46,8 @@ function createHarness(): Harness {
   const sheetLabel = signal<string | undefined>(undefined);
   const label = signal('');
   const handleTpl = signal<TemplateRef<CngxSelectSheetHandleContext> | null>(null);
+  const countTpl = signal<TemplateRef<CngxSelectSheetCountContext> | null>(null);
+  const selectionCount = signal('');
   const close = vi.fn();
   const host: CngxSelectSheetHeaderHost = {
     panelVisible,
@@ -56,7 +63,8 @@ function createHarness(): Harness {
       sheetClose: 'Close',
       sheetDone: 'Done',
     } as CngxResolvedSelectAriaLabels),
-    tpl: { sheetHandle: handleTpl },
+    tpl: { sheetHandle: handleTpl, sheetCount: countTpl },
+    selectionCount,
     searchTerm: signal(''),
     setSearchTerm: vi.fn(),
     listboxRef: signal<CngxListbox | undefined>(undefined),
@@ -73,6 +81,8 @@ function createHarness(): Harness {
     sheetLabel,
     label,
     handleTpl,
+    countTpl,
+    selectionCount,
     close,
     host,
   };
@@ -91,17 +101,24 @@ function createHarness(): Harness {
     <ng-template #handle let-dragging="dragging">
       <i class="custom-grip" [attr.data-dragging]="dragging"></i>
     </ng-template>
+    <ng-template #count let-text>
+      <b class="custom-count">{{ text }}!</b>
+    </ng-template>
   `,
 })
 class SheetHost {
   readonly request = signal<CngxPopoverPresentationRequest>('sheet');
   readonly pop = viewChild.required(CngxPopover);
   readonly handle = viewChild.required<TemplateRef<CngxSelectSheetHandleContext>>('handle');
+  readonly count = viewChild.required<TemplateRef<CngxSelectSheetCountContext>>('count');
 }
 
-function setup(options: { fieldHost?: boolean } = {}) {
+function setup(options: { fieldHost?: boolean; labelText?: WritableSignal<string> } = {}) {
   const harness = createHarness();
-  const fieldHost = { labelId: signal('field-label') } as unknown as CngxFormFieldHostContract;
+  const fieldHost = {
+    labelId: signal('field-label'),
+    ...(options.labelText ? { labelText: options.labelText } : {}),
+  } as unknown as CngxFormFieldHostContract;
   TestBed.configureTestingModule({
     providers: [
       { provide: CNGX_SELECT_SHEET_HEADER_HOST, useValue: harness.host },
@@ -142,6 +159,18 @@ describe('CngxSelectSheetHeader', () => {
     close();
     open();
     expect(title().textContent?.trim()).toBe('Colour');
+  });
+
+  it('follows the host label text while the sheet is open', () => {
+    const labelText = signal('Favourite colour');
+    const { fixture, open, title } = setup({ labelText });
+    open();
+    expect(title().textContent?.trim()).toBe('Favourite colour');
+
+    labelText.set('Lieblingsfarbe');
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(title().textContent?.trim()).toBe('Lieblingsfarbe');
   });
 
   it('lets sheetLabel win over the field label', () => {
@@ -279,5 +308,37 @@ describe('CngxSelectSheetHeader', () => {
       .injector.get(CngxSwipeDismiss);
     // The gesture engine is gated on `enabled`, so no swipe emits while anchored.
     expect(swipe.enabled()).toBe(false);
+  });
+});
+
+describe('CngxSelectSheetHeader - selection count', () => {
+  const countEl = (el: HTMLElement) => el.querySelector('.cngx-select-sheet-header__count');
+
+  it('renders nothing for a host that passes no count', () => {
+    const { el, open } = setup();
+    open();
+    expect(countEl(el)).toBeNull();
+  });
+
+  it('shows the count after the title and follows a copy switch', () => {
+    const { harness, fixture, el, open } = setup();
+    harness.selectionCount.set('2 selected');
+    open();
+    const count = countEl(el)!;
+    expect(count.textContent?.trim()).toBe('2 selected');
+    expect(
+      count.previousElementSibling?.classList.contains('cngx-select-sheet-header__title'),
+    ).toBe(true);
+    harness.selectionCount.set('2 ausgewählt');
+    fixture.detectChanges();
+    expect(countEl(el)?.textContent?.trim()).toBe('2 ausgewählt');
+  });
+
+  it('lets a *cngxSelectSheetCount template replace the count with its text', () => {
+    const { harness, fixture, el, open } = setup();
+    harness.selectionCount.set('3 selected');
+    harness.countTpl.set(fixture.componentInstance.count());
+    open();
+    expect(countEl(el)?.querySelector('.custom-count')?.textContent?.trim()).toBe('3 selected!');
   });
 });

@@ -134,13 +134,6 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
       - name: Install dependencies
         run: npm ci
       - name: Download build output
@@ -148,15 +141,22 @@ jobs:
         with:
           name: build-output
       - name: Install Playwright chromium
-        run: npx playwright install --with-deps chromium
+        uses: ./.github/actions/setup-playwright
       # Geometry specs run in the browser-mode vitest provider. CI sets CI=1,
       # so Chromium runs headless. A geometry regression fails the PR.
       - name: Run geometry specs
         run: npm run test:geometry
 
-  e2e:
+  # The root suite is not route-scoped, so every pull request runs all of it,
+  # split by test across a fixed matrix.
+  e2e-shard:
     needs: build
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    name: e2e (${{ matrix.shard }}/${{ strategy.job-total }})
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -170,13 +170,6 @@ jobs:
           key: ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-${{ github.ref_name }}
           restore-keys: |
             ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
       - name: Install dependencies
         run: npm ci
       - name: Download build output
@@ -184,17 +177,71 @@ jobs:
         with:
           name: build-output
       - name: Install Playwright chromium
-        run: npx playwright install --with-deps chromium
+        uses: ./.github/actions/setup-playwright
       # The Playwright webServer boots `ng serve examples`; it serves the
       # generated feature components restored from the build artifact. Route-drift
       # specs with no migrated example are test.fixme-quarantined in-file; the
       # whole remaining suite gates the PR.
       - name: e2e suite
-        run: npm run e2e -- --project=chromium
+        run: npm run e2e -- --project=chromium --shard=${{ matrix.shard }}/${{ strategy.job-total }}
 
-  examples-e2e:
-    needs: build
+  # The required check. It also runs when build fails, so the check turns red
+  # instead of staying pending; the suite has no scope, hence the fixed
+  # "success all" arguments.
+  e2e:
+    needs: e2e-shard
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Collect the shards
+        env:
+          SHARDS: ${{ needs.e2e-shard.result }}
+        run: node scripts/e2e-gate.mjs success all "$SHARDS"
+
+  # Which example demos a pull request reaches through the import graph
+  # (scripts/e2e-scope.mjs); the two example suites run only their specs and
+  # routes, on as many shards as the selection needs. A push runs everything.
+  e2e-scope:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      mode: ${{ steps.scope.outputs.mode }}
+      specs: ${{ steps.scope.outputs.specs }}
+      grep: ${{ steps.scope.outputs.grep }}
+      examples-shards: ${{ steps.scope.outputs.examples-shards }}
+      sweep-shards: ${{ steps.scope.outputs.sweep-shards }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Decide the e2e scope
+        id: scope
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ "$EVENT" = "pull_request" ]; then
+            node scripts/e2e-scope.mjs --base "$BASE_SHA"
+          else
+            node scripts/e2e-scope.mjs --all
+          fi
+
+  examples-e2e-shard:
+    needs: [build, e2e-scope]
+    if: needs.e2e-scope.outputs.mode != 'none'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.e2e-scope.outputs.examples-shards) }}
+    name: examples-e2e (${{ matrix.shard }}/${{ strategy.job-total }})
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -208,13 +255,6 @@ jobs:
           key: ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-${{ github.ref_name }}
           restore-keys: |
             ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
       - name: Install dependencies
         run: npm ci
       - name: Download build output
@@ -222,20 +262,47 @@ jobs:
         with:
           name: build-output
       - name: Install Playwright chromium
-        run: npx playwright install --with-deps chromium
+        uses: ./.github/actions/setup-playwright
       # The examples suite drives its smoke matrices off examples/src/app/_routes-meta.ts,
       # which is gitignored and regenerated by the Playwright webServer's
       # `ng serve examples`. Quarantined specs are registered in
       # .internal/architektur/examples-e2e-accepted-debt.md, capped at 3.
+      # SPECS is empty on a full run and a space-separated list of spec files
+      # otherwise; a shard the filters leave empty passes. --fully-parallel
+      # splits the shards by test instead of by file, which evens them out;
+      # one worker per shard still runs every test of a file in order.
       - name: examples-e2e suite
-        run: npm run test:e2e:examples
+        env:
+          SPECS: ${{ needs.e2e-scope.outputs.specs }}
+        run: npm run test:e2e:examples -- --shard=${{ matrix.shard }}/${{ strategy.job-total }} --fully-parallel --pass-with-no-tests $SPECS
 
-  console-sweep:
-    needs: build
+  # The required check: green when every shard passed, or when the pull
+  # request reaches no example demo.
+  examples-e2e:
+    needs: [e2e-scope, examples-e2e-shard]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Collect the shards
+        env:
+          SCOPE: ${{ needs.e2e-scope.result }}
+          MODE: ${{ needs.e2e-scope.outputs.mode }}
+          SHARDS: ${{ needs.examples-e2e-shard.result }}
+        run: node scripts/e2e-gate.mjs "$SCOPE" "$MODE" "$SHARDS"
+
+  console-sweep-shard:
+    needs: [build, e2e-scope]
+    if: needs.e2e-scope.outputs.mode != 'none'
     runs-on: ubuntu-latest
     # 8.5 minutes locally for every route; the cap stops a hung server or page
     # long before the 6-hour default.
     timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.e2e-scope.outputs.sweep-shards) }}
+    name: console-sweep (${{ matrix.shard }}/${{ strategy.job-total }})
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -249,13 +316,6 @@ jobs:
           key: ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-${{ github.ref_name }}
           restore-keys: |
             ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
       - name: Install dependencies
         run: npm ci
       - name: Download build output
@@ -263,13 +323,28 @@ jobs:
         with:
           name: build-output
       - name: Install Playwright chromium
-        run: npx playwright install --with-deps chromium
+        uses: ./.github/actions/setup-playwright
       # Loads every route in examples/src/app/_routes-meta.ts once and fails on a
       # console warning, console error or page error not on the capped allowlist
-      # in examples/e2e-sweep/console-allowlist.ts. Shard with --shard when the
-      # job runs over 10 minutes.
+      # in examples/e2e-sweep/console-allowlist.ts. GREP is empty on a full run
+      # and names the selected routes (and the allowlist checks) otherwise.
       - name: console sweep
-        run: npm run test:e2e:sweep
+        env:
+          GREP: ${{ needs.e2e-scope.outputs.grep }}
+        run: npm run test:e2e:sweep -- --shard=${{ matrix.shard }}/${{ strategy.job-total }} --pass-with-no-tests ${GREP:+--grep "$GREP"}
+
+  console-sweep:
+    needs: [e2e-scope, console-sweep-shard]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Collect the shards
+        env:
+          SCOPE: ${{ needs.e2e-scope.result }}
+          MODE: ${{ needs.e2e-scope.outputs.mode }}
+          SHARDS: ${{ needs.console-sweep-shard.result }}
+        run: node scripts/e2e-gate.mjs "$SCOPE" "$MODE" "$SHARDS"
 
   build-examples:
     needs: build

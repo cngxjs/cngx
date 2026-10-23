@@ -5,6 +5,7 @@ import {
   effect,
   inject,
   input,
+  signal,
   type Signal,
   untracked,
 } from '@angular/core';
@@ -133,6 +134,22 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
   readonly inputId = computed(() => `cngx-${this.name()}-input`);
   /** Deterministic label element ID: `cngx-{name}-label`. */
   readonly labelId = computed(() => `cngx-${this.name()}-label`);
+  private readonly labelTextState = signal('');
+  /**
+   * Rendered text of the projected `cngxLabel`, trimmed; `''` without one.
+   * Published on the host contract so surfaces that repeat the label (the
+   * select family's mobile sheet heading) follow a label text change.
+   */
+  readonly labelText: Signal<string> = this.labelTextState.asReadonly();
+
+  /**
+   * @internal Written by `CngxLabel` after each render with its current
+   * text; the signal's equality drops unchanged writes.
+   */
+  reportLabelText(text: string): void {
+    this.labelTextState.set(text);
+  }
+
   /** Deterministic hint element ID: `cngx-{name}-hint`. */
   readonly hintId = computed(() => `cngx-${this.name()}-hint`);
   /** Deterministic error element ID: `cngx-{name}-error`. */

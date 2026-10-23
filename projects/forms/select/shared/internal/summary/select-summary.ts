@@ -55,6 +55,14 @@ export interface SelectSummary<T> {
    * for one, the `selectionSummary` copy for two or more.
    */
   readonly fullText: Signal<string>;
+  /**
+   * The whole selection for AT while the summary is off and a `'truncate'`
+   * strip hides values behind its `aria-hidden` badge: the `selectionSummary`
+   * copy. Empty while nothing is hidden or the summary is on.
+   */
+  readonly hiddenSummaryText: Signal<string>;
+  /** `fullText` while the summary is on, else `hiddenSummaryText`. */
+  readonly accessibleText: Signal<string>;
 }
 
 /**
@@ -100,6 +108,13 @@ export function createSelectSummary<T>(opts: SelectSummaryOptions<T>): SelectSum
     }
     return opts.ariaLabels().selectionSummary(all.map((option) => option.label));
   });
+  const hiddenSummaryText = computed(() => {
+    if (opts.active() || strip.overflowBadgeCount() === 0) {
+      return '';
+    }
+    return opts.ariaLabels().selectionSummary(opts.selectedOptions().map((o) => o.label));
+  });
+  const accessibleText = computed(() => fullText() || hiddenSummaryText());
 
   return {
     active: opts.active,
@@ -109,5 +124,7 @@ export function createSelectSummary<T>(opts: SelectSummaryOptions<T>): SelectSum
     badgeText,
     hidden: strip.hiddenSelected,
     fullText,
+    hiddenSummaryText,
+    accessibleText,
   };
 }

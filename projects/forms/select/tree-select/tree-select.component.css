@@ -179,6 +179,47 @@
     syntax: '*';
     inherits: true;
   }
+
+  /**
+   * Minimum inline size of the anchored tree panel. The panel is at least as
+   * wide as the trigger and never narrower than this, so indented rows keep
+   * room for their labels. Tree-only: the flat selects keep the anchor width.
+   * The sheet presentation owns its own width. Stands alone (no family
+   * fallback): `--cngx-select-panel-min-width` is the anchor width the panel
+   * also honours.
+   * @group Layout
+   * @default 16rem
+   */
+  @property --cngx-tree-select-panel-min-inline-size {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Height cap of the anchored tree panel before it scrolls. Stands alone:
+   * the family `--cngx-select-panel-max-height` registers an
+   * `initial-value`, so a chain to it would never reach this default. The
+   * sheet presentation owns its own height.
+   * @group Layout
+   * @default 20rem
+   */
+  @property --cngx-tree-select-panel-max-block-size {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Extra space between a trigger chip's label and its remove button, on top
+   * of the chip's inner gap. The remove button keeps its 24px hit box; this
+   * keeps that box off the label, so a click aimed at the trigger does not
+   * remove a value.
+   * @group Layout
+   * @default 0px
+   */
+  @property --cngx-tree-select-chip-remove-gap {
+    syntax: '*';
+    inherits: true;
+  }
 }
 
 @layer cngx.components {
@@ -287,6 +328,41 @@
       background: transparent;
       color: var(--cngx-select-clear-color, inherit);
       cursor: pointer;
+    }
+
+    /* The strip is one line: the last chip that fits shrinks and its label
+       ellipsizes instead of being clipped; the +N chip keeps its size. */
+    .cngx-select__chip-list[data-overflow='truncate'] > cngx-chip {
+      flex: 0 1 auto;
+      min-inline-size: 0;
+    }
+
+    .cngx-select__chip-list[data-overflow='truncate'] > .cngx-select__chip-overflow-badge {
+      flex: none;
+    }
+
+    /* The remove button's AA hit box bleeds past its glyph by a negative
+       margin. Inline-start it would reach over the label, so it starts after
+       the chip's inner gap instead; inline-end the chip padding absorbs the
+       bleed, so the box ends inside the chip. Block margins stay, the chip
+       keeps the control line box. */
+    .cngx-select__chip-list cngx-chip .cngx-chip__remove {
+      margin-inline-start: var(--cngx-tree-select-chip-remove-gap, 0px);
+    }
+
+    /* The anchored panel only; a sheet / fullscreen panel keeps the family
+       geometry the sheet owns. */
+    .cngx-select__panel:not(
+      .cngx-popover-sheet:is(
+        [data-cngx-presentation='sheet'],
+        [data-cngx-presentation='fullscreen']
+      )
+    ) {
+      min-width: max(
+        var(--cngx-select-panel-min-width, anchor-size(width)),
+        var(--cngx-tree-select-panel-min-inline-size, 16rem)
+      );
+      max-height: var(--cngx-tree-select-panel-max-block-size, 20rem);
     }
 
     .cngx-tree-select__caret {

@@ -27,7 +27,12 @@ export interface CngxSelectSheetHeaderHost {
   /** The variant's `[label]` input, used when no field label exists. */
   readonly label: Signal<string>;
   readonly ariaLabels: Signal<CngxResolvedSelectAriaLabels>;
-  readonly tpl: Pick<CngxSelectTemplateRegistry, 'sheetHandle'>;
+  readonly tpl: Pick<CngxSelectTemplateRegistry, 'sheetHandle' | 'sheetCount'>;
+  /**
+   * Selected count shown after the title, e.g. `'2 selected'`. Empty by
+   * default: only a variant that passes it (`CngxTreeSelect`) shows a count.
+   */
+  readonly selectionCount: Signal<string>;
   /** Shared search term of the trigger input and the header input. */
   readonly searchTerm: Signal<string>;
   setSearchTerm(term: string): void;

@@ -155,6 +155,24 @@ describe('createArrayCommitHandler', () => {
       expect(h.values()).toEqual(['a']);
     });
 
+    it('in optimistic mode, keeps an external write made while the commit was pending', () => {
+      h.values.set(['a', 'b']);
+      const pending = new Subject<T[]>();
+      h.handler.beginToggle(['a', 'b'], ['a'], opt('b'), () => pending);
+      h.values.set(['c']);
+      pending.error(new Error('boom'));
+      expect(h.stateLog).toEqual(['pending', 'error']);
+      expect(h.values()).toEqual(['c']);
+    });
+
+    it('in optimistic mode, still rolls back after a pending window without external write', () => {
+      h.values.set(['a', 'b']);
+      const pending = new Subject<T[]>();
+      h.handler.beginToggle(['a', 'b'], ['a'], opt('b'), () => pending);
+      pending.error(new Error('boom'));
+      expect(h.values()).toEqual(['a']);
+    });
+
     it('in pessimistic mode, leaves values untouched on error', () => {
       h.commitMode.set('pessimistic');
       h.values.set(['a']); // no optimistic write yet
@@ -206,6 +224,15 @@ describe('createArrayCommitHandler', () => {
       h.handler.beginClear(['a', 'b'], action);
       expect(h.values()).toEqual(['a', 'b']);
       expect(h.clearFinalizeLog).toEqual([]);
+    });
+
+    it('error in optimistic mode keeps an external write made while the clear was pending', () => {
+      h.values.set([]);
+      const pending = new Subject<T[]>();
+      h.handler.beginClear(['a', 'b'], () => pending);
+      h.values.set(['c']);
+      pending.error(new Error('nope'));
+      expect(h.values()).toEqual(['c']);
     });
 
     it('announces "removed" after a successful clear with the final-length count', () => {

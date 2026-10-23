@@ -11,6 +11,7 @@ import {
   linkedSignal,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import {
   injectDirection,
@@ -161,6 +162,21 @@ export class CngxActiveDescendant {
   });
 
   /**
+   * Rendered items paired with the window start they were rendered for. A
+   * recycler moves `windowStart` first and the content-child items follow
+   * one render later, so the offset is captured when the items change, not
+   * read live: re-resolving the old items against the new offset would shift
+   * the active index by the window delta.
+   */
+  private readonly renderedWindow = computed<{
+    readonly items: readonly ActiveDescendantItem[];
+    readonly offset: number;
+  }>(() => {
+    const items = this.resolvedItems();
+    return { items, offset: untracked(() => this.windowOffset()) };
+  });
+
+  /**
    * -1 means "no active item". Range is `[0, totalCount())`.
    *
    * Navigation writes the index; a change of the item space re-derives it.
@@ -172,7 +188,8 @@ export class CngxActiveDescendant {
    */
   private readonly activeIndexState = linkedSignal<ActiveIndexSource, number>({
     source: () => ({
-      items: this.resolvedItems(),
+      items: this.renderedWindow().items,
+      itemsOffset: this.renderedWindow().offset,
       total: this.totalCount(),
       offset: this.windowOffset(),
       virtual: this.virtualCount() != null,
@@ -574,6 +591,8 @@ export class CngxActiveDescendant {
 /** @internal Item space the active index is derived against. */
 interface ActiveIndexSource {
   readonly items: readonly ActiveDescendantItem[];
+  /** Window start `items` were rendered for (may trail `offset` by one render). */
+  readonly itemsOffset: number;
   readonly total: number;
   readonly offset: number;
   readonly virtual: boolean;
@@ -594,13 +613,13 @@ function reResolveIndex(
   if (previousSource.items === source.items || previousIndex < 0) {
     return previousIndex;
   }
-  const previous = previousSource.items[previousIndex - previousSource.offset];
+  const previous = previousSource.items[previousIndex - previousSource.itemsOffset];
   if (!previous) {
     return previousIndex;
   }
   const match = source.items.findIndex((it) => source.compareWith(it.value, previous.value));
   if (match >= 0) {
-    return match + source.offset;
+    return match + source.itemsOffset;
   }
   return source.virtual ? previousIndex : -1;
 }

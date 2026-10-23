@@ -40,7 +40,8 @@
           [style.--cngx-tree-depth]="node.depth"
           class="cngx-tree-select__node"
           [class.cngx-tree-select__node--active]="ad.activeId() === node.id"
-          (click)="!node.disabled && host.handleSelect(node)"
+          (pointerdown)="handleRowPointerDown($event, node)"
+          (click)="handleRowClick(node)"
         >
           @if (node.hasChildren) {
             @let isOpen = host.treeController.isExpanded(node.id)();
@@ -54,20 +55,26 @@
               [class.cngx-tree-select__twisty--open]="isOpen"
               (click)="toggleExpand($event, node)"
             >
-              @if (isOpen) {
-                @if (host.twistyOpenGlyph(); as glyph) {
-                  <ng-container *ngTemplateOutlet="glyph" />
-                } @else if (host.twistyGlyph(); as glyph) {
-                  <ng-container *ngTemplateOutlet="glyph" />
-                } @else {
-                  <span aria-hidden="true">▸</span>
-                }
+              @let glyph =
+                isOpen ? (host.twistyOpenGlyph() ?? host.twistyGlyph()) : host.twistyGlyph();
+              @if (glyph) {
+                <ng-container *ngTemplateOutlet="glyph" />
               } @else {
-                @if (host.twistyGlyph(); as glyph) {
-                  <ng-container *ngTemplateOutlet="glyph" />
-                } @else {
-                  <span aria-hidden="true">▸</span>
-                }
+                <!-- Chevron pointing inline-end; the --open rotate turns it
+                     down, the RTL rule mirrors the closed state. -->
+                <svg
+                  viewBox="0 0 16 16"
+                  width="1em"
+                  height="1em"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  focusable="false"
+                >
+                  <path d="M6 3.5 10.5 8 6 12.5" />
+                </svg>
               }
             </span>
           } @else {
@@ -76,15 +83,51 @@
           <!-- Tree-select hard-codes checkbox-indicator;
                'radio' / 'checkmark' from selectionIndicatorVariant
                are flat-panel-only. Note: select-family-accepted-debt. -->
-          <cngx-checkbox-indicator
-            [checked]="host.isSelected(node.value)"
-            [indeterminate]="host.isIndeterminate(node.value)"
-            [checkGlyph]="host.checkGlyph()"
-            [dashGlyph]="host.dashGlyph()"
-          />
+          <!-- Pointer target for select under the touch floor, where a row
+               tap expands. aria-hidden: the treeitem with aria-checked is the
+               one AT channel, and its activation selects. -->
+          <span
+            class="cngx-tree-select__check"
+            aria-hidden="true"
+            (click)="handleCheckClick($event, node)"
+          >
+            <cngx-checkbox-indicator
+              [checked]="host.isSelected(node.value)"
+              [indeterminate]="host.isIndeterminate(node.value)"
+              [checkGlyph]="host.checkGlyph()"
+              [dashGlyph]="host.dashGlyph()"
+            />
+          </span>
           <span class="cngx-tree-select__label">{{ node.label }}</span>
+          @if (host.nodeCount(node); as count) {
+            <!-- aria-checked (true / mixed / false) already carries the state
+                 the count summarizes, so the count stays out of AT. The
+                 built-in count waits for a selected descendant; a projected
+                 template gets every parent and decides itself. -->
+            @if (host.nodeCountTpl(); as countTpl) {
+              <span class="cngx-tree-select__count" aria-hidden="true">
+                <ng-container
+                  *ngTemplateOutlet="
+                    countTpl;
+                    context: {
+                      $implicit: host.nodeCountText(node),
+                      text: host.nodeCountText(node),
+                      selected: count.selected,
+                      total: count.total,
+                      node: node,
+                    }
+                  "
+                />
+              </span>
+            } @else if (count.selected > 0) {
+              <span class="cngx-tree-select__count" aria-hidden="true">
+                {{ host.nodeCountText(node) }}
+              </span>
+            }
+          }
         </div>
       }
     }
   </div>
+  <cngx-tree-select-footer />
 </cngx-select-panel-shell>

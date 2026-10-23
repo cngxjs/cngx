@@ -7,8 +7,10 @@ name: Consumer compat
 # Fixture rows are required checks (e.g. angular-22-full), so the workflow
 # starts on every PR: a path filter on the trigger would leave those checks
 # pending forever on a PR that does not touch the paths. The `changes` job
-# decides instead; on an unrelated PR every fixture row reports success
-# without running its slow steps.
+# decides instead, from the same input list the schematics-consumer job
+# reads (scripts/schematics-consumer-inputs.mjs), so a build-only PR runs the
+# rows too; on an unrelated PR every fixture row reports success without
+# running its slow steps.
 
 on:
   schedule:
@@ -27,11 +29,14 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      relevant: ${{ steps.filter.outputs.relevant }}
+      relevant: ${{ steps.filter.outputs.changed }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
       - name: Decide whether a consumer-facing path changed
         id: filter
         env:
@@ -39,15 +44,10 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           if [ "$EVENT" != "pull_request" ]; then
-            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          pattern='^(projects/[^/]+/package\.json|projects/[^/]+/schematics/|scripts/consumer-fixture\.mjs|scripts/pack-libs\.mjs|scripts/peer-deps-guard\.mjs|\.github/workflows/consumer-compat\.yml)'
-          if git diff --name-only "$BASE_SHA" HEAD | grep -Eq "$pattern"; then
-            echo "relevant=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "relevant=false" >> "$GITHUB_OUTPUT"
-          fi
+          node scripts/schematics-consumer-inputs.mjs --base "$BASE_SHA" --workflow consumer-compat
 
   pack:
     needs: changes
@@ -76,8 +76,9 @@ jobs:
     needs: [changes, pack]
     # Runs even when pack was skipped, so every matrix row reports its check
     # under its expanded name; a skipped matrix job would report the
-    # unexpanded name and leave the required check pending.
-    if: ${{ !cancelled() && needs.changes.result == 'success' && needs.pack.result != 'failure' }}
+    # unexpanded name and leave the required check pending. A failed
+    # `changes` job fails every row in its first step instead.
+    if: ${{ !cancelled() && needs.pack.result != 'failure' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -92,12 +93,16 @@ jobs:
           # Highest major the peer range allows.
           - { angular: '22', variant: full }
           - { angular: '22', variant: minimal }
-          # The required schematics-consumer job runs this variant without a
-          # registry download on the recommended preset; nightly adds the leg
-          # where an older published core must be replaced by the packed one
-          # in the same ng add, and runs both legs on the full preset, which
-          # places the feedback outlets and adds ng test.
+          # The required schematics-consumer job runs this variant on 21
+          # without a registry download on the recommended preset; these rows
+          # add the leg where an older published core must be replaced by the
+          # packed one in the same ng add, and the leg where a real
+          # ng update @cngx/core moves the older release of the package
+          # group to the packed one, and run them on the full preset, which
+          # places the feedback outlets and adds ng test. Standalone apps
+          # only, so the 22 row needs no NgModule outlets.
           - { angular: '21', variant: schematics, args: '--stale-core previous --preset full' }
+          - { angular: '22', variant: schematics, args: '--stale-core previous --preset full' }
           # The documented path on a fresh app with no @angular/cdk: one
           # ng add @cngx/core must install the CDK on the app's own major
           # (npm alone would fetch the newest CDK the peers allow), write the
@@ -105,14 +110,25 @@ jobs:
           # plan nothing on a second ng add.
           - { angular: '21', variant: onboarding, args: '--preset full' }
           - { angular: '22', variant: onboarding, args: '--preset full' }
+          # The other path the docs name: ng add @cngx/ui on a fresh app once
+          # the CDK is on the app's major. On 21 the CDK must come first, or
+          # the CLI's pre-install fetches CDK 22 and stops with ERESOLVE.
+          - { angular: '21', variant: onboarding, add: ui, args: '--add ui --preset full' }
           # The same path on an ng new --standalone=false app with routing:
           # the outlets go into the root NgModule and the stock spec gets
           # the outlet classes and the providers, so ng test still passes.
           # CLI 21 only: from 22.2 the stock NgModule app fails ng test on
           # its own, and ng add leaves the outlets out there.
           - { angular: '21', variant: ngmodule, args: '--preset full' }
-    name: angular-${{ matrix.angular }}-${{ matrix.variant }}
+    # `add` keeps the check name of a row that onboards through another
+    # package apart from the core onboarding row of the same major.
+    name: angular-${{ matrix.angular }}-${{ matrix.variant }}${{ matrix.add && format('-{0}', matrix.add) || '' }}
     steps:
+      - name: Fail, the changes job did not decide
+        if: needs.changes.result != 'success'
+        run: |
+          echo "The changes job ended with '${{ needs.changes.result }}'; no row may report success without it."
+          exit 1
       - name: Skip, no consumer-facing path changed
         if: needs.changes.outputs.relevant != 'true'
         run: echo "No consumer-facing path changed in this PR; the fixture build is skipped."

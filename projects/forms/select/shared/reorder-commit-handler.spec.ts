@@ -128,6 +128,20 @@ describe('createReorderCommitHandler', () => {
     expect(onError).toHaveBeenCalledExactlyOnceWith(expect.any(Error));
   });
 
+  it('optimistic: keeps an external write made while the commit was pending', () => {
+    commitMode.set('optimistic');
+    const act: CngxSelectCommitAction<string[]> = () =>
+      Promise.resolve<string[] | undefined>(undefined);
+    commitAction.set(act);
+    const { handler, reject } = make();
+    handler.dispatch(['b', 'c', 'a', 'd'], ['a', 'b', 'c', 'd'], 0, 2, option('a'));
+    values.set(['d', 'c', 'b', 'a']);
+
+    reject(new Error('boom'));
+    expect(values()).toEqual(['d', 'c', 'b', 'a']);
+    expect(onStateChange).toHaveBeenCalledWith('error');
+  });
+
   it('pessimistic: holds values, writes + emits on success only', () => {
     commitMode.set('pessimistic');
     const act: CngxSelectCommitAction<string[]> = () =>

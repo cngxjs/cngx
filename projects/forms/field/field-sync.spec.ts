@@ -1,10 +1,22 @@
-import { Component, computed, model, signal, VERSION, viewChild, type ModelSignal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  model,
+  signal,
+  VERSION,
+  viewChild,
+  type ModelSignal,
+} from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { TestBed } from '@angular/core/testing';
 import { debounce, form } from '@angular/forms/signals';
 import { createMockField } from './testing/public-api';
 import { CngxFormField } from './form-field.component';
 import { CNGX_FORM_FIELD_CONTROL, type CngxFormFieldControl } from './form-field.token';
 import { createFieldSync } from './field-sync';
+import { adaptFormControl } from './form-control-adapter';
 
 // `debounce(path, 'blur')` arrives in Signal Forms 21.2; 21.1 debounces by
 // milliseconds only. The lagging-value row needs a field value that waits for
@@ -133,6 +145,30 @@ describe('createFieldSync', () => {
     ref.value.set(3);
     TestBed.flushEffects();
     expect(fixture.componentInstance.control().value()).toBe(3);
+  });
+
+  describe('on an adapted Reactive Forms control', () => {
+    it('keeps the control pristine when the mount seed writes the control value', () => {
+      @Component({
+        template: `
+          <cngx-form-field [field]="field">
+            <test-seeding-control />
+          </cngx-form-field>
+        `,
+        imports: [CngxFormField, SeedingControl],
+      })
+      class Host {
+        readonly control = new FormControl<number>(Number.NaN);
+        readonly field = adaptFormControl(this.control, 'volume', inject(DestroyRef));
+      }
+
+      const fixture = TestBed.createComponent(Host);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(fixture.componentInstance.control.value).toBe(7);
+      expect(fixture.componentInstance.control.pristine).toBe(true);
+    });
   });
 
   describe('on a real Signal Forms field', () => {

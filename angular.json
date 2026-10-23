@@ -39,7 +39,8 @@
           "options": {
             "tsConfig": "projects/common/tsconfig.spec.json",
             "setupFiles": ["projects/testing/setup/vitest-setup.ts"],
-            "browsers": ["chromium"],
+            "browsers": ["chromiumHeadless"],
+            "watch": false,
             "include": ["**/*.geometry.spec.ts"],
             "browserViewport": "1280x720"
           }
@@ -150,7 +151,8 @@
           "options": {
             "tsConfig": "projects/forms/tsconfig.spec.json",
             "setupFiles": ["projects/testing/setup/vitest-setup.ts"],
-            "browsers": ["chromium"],
+            "browsers": ["chromiumHeadless"],
+            "watch": false,
             "include": ["**/*.geometry.spec.ts"],
             "browserViewport": "1280x720"
           }
@@ -194,7 +196,8 @@
           "options": {
             "tsConfig": "projects/ui/tsconfig.spec.json",
             "setupFiles": ["projects/testing/setup/vitest-setup.ts"],
-            "browsers": ["chromium"],
+            "browsers": ["chromiumHeadless"],
+            "watch": false,
             "include": ["**/*.geometry.spec.ts"],
             "browserViewport": "1280x720"
           }
@@ -238,7 +241,8 @@
           "options": {
             "tsConfig": "projects/data-display/tsconfig.spec.json",
             "setupFiles": ["projects/testing/setup/vitest-setup.ts"],
-            "browsers": ["chromium"],
+            "browsers": ["chromiumHeadless"],
+            "watch": false,
             "include": ["**/*.geometry.spec.ts"],
             "browserViewport": "1280x720"
           }

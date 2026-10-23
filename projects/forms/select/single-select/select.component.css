@@ -284,7 +284,8 @@
     .cngx-select__trigger:focus-visible {
       outline: var(
         --cngx-select-focus-outline,
-        2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
+        2px solid
+          var(--_cngx-select-focus-ring-color, var(--cngx-color-primary, oklch(0.66 0.19 50)))
       );
       outline-offset: var(--cngx-select-focus-offset, 2px);
     }
@@ -342,7 +343,12 @@
       color: var(--cngx-color-text, oklch(0.2 0.01 250));
     }
     .cngx-select__clear:focus-visible {
-      outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
+      outline: var(
+        --cngx-select-focus-outline,
+        2px solid
+          var(--_cngx-select-focus-ring-color, var(--cngx-color-primary, oklch(0.66 0.19 50)))
+      );
+      outline-offset: var(--cngx-select-focus-offset, 2px);
       border-radius: 0.125rem;
     }
   }

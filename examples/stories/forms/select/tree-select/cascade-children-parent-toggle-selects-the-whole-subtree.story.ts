@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxTreeSelect: cascade children parent toggle selects the whole subtree',
   subtitle:
-    'With <code>[cascadeChildren]="true"</code>, toggling a parent selects or deselects every descendant atomically. One <code>(selectionChange)</code> fires per parent toggle with <code>action: "cascade-toggle"</code> and the aggregated added/removed values.',
+    'With <code>[cascadeChildren]="true"</code>, toggling a parent selects or deselects every descendant atomically. One <code>(selectionChange)</code> fires per parent toggle with <code>action: "cascade-toggle"</code> and the aggregated added/removed values. A fully selected parent shows as one summarizing chip in the trigger; removing that chip clears its subtree.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',

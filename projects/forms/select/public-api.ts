@@ -55,13 +55,18 @@ export {
 } from './shared/create-commit-handler';
 export { type CngxSelectCreateAction } from './shared/create-action.types';
 export { CngxTreeSelectNode } from './tree-select/tree-select-node.directive';
+export { CngxTreeSelectNodeCount } from './tree-select/tree-select-node-count.directive';
+export { CngxTreeSelectFooter } from './tree-select/tree-select-footer.directive';
 export { CngxTreeSelectChip } from './tree-select/tree-select-chip.directive';
 export { CngxTreeSelectTriggerLabel } from './tree-select/tree-select-trigger-label.directive';
 export {
   type CngxTreeNode,
   type CngxTreeSelectAction,
   type CngxTreeSelectChipContext,
+  type CngxTreeSelectChipDisplay,
+  type CngxTreeSelectFooterContext,
   type CngxTreeSelectNodeContext,
+  type CngxTreeSelectNodeCountContext,
   type CngxTreeSelectTriggerLabelContext,
   type CngxTreeSelectedItem,
   type FlatTreeNode,
@@ -206,6 +211,7 @@ export {
   CngxSelectRefreshing,
   CngxSelectCommitError,
   CngxSelectClearButton,
+  CngxSelectSheetCount,
   CngxSelectSheetHandle,
   CngxSelectOptionPending,
   CngxSelectOptionError,
@@ -233,6 +239,7 @@ export {
   type CngxSelectRefreshingContext,
   type CngxSelectCommitErrorContext,
   type CngxSelectClearButtonContext,
+  type CngxSelectSheetCountContext,
   type CngxSelectSheetHandleContext,
   type CngxSelectOptionPendingContext,
   type CngxSelectOptionErrorContext,

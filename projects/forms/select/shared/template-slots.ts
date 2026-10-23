@@ -673,7 +673,7 @@ export class CngxMultiSelectChipHandle {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
- * @relatedTo CngxMultiSelect, CngxCombobox, CngxActionMultiSelect, CngxMultiSelectChip, CngxComboboxChip
+ * @relatedTo CngxMultiSelect, CngxCombobox, CngxActionMultiSelect, CngxTreeSelect, CngxMultiSelectChip, CngxComboboxChip
  */
 @Directive({
   selector: 'ng-template[cngxSelectChipOverflow]',
@@ -771,6 +771,53 @@ export class CngxSelectClearButton {
 })
 export class CngxSelectSheetHandle {
   readonly templateRef = inject<TemplateRef<CngxSelectSheetHandleContext>>(TemplateRef);
+}
+
+/**
+ * Context for `*cngxSelectSheetCount`.
+ *
+ * @category forms/select/templates
+ */
+export interface CngxSelectSheetCountContext {
+  /** The built-in count text (`selectedCount` copy, e.g. `'2 selected'`). */
+  readonly $implicit: string;
+  readonly text: string;
+}
+
+/**
+ * `*cngxSelectSheetCount` slot - replaces the selected count after the title
+ * of the mobile sheet header. Renders only on a variant that reports a count
+ * (today `CngxTreeSelect`); the other variants pass none and the header shows
+ * nothing there. A global default goes in
+ * `CNGX_SELECT_CONFIG.templates.sheetCount`.
+ *
+ * ```html
+ * <cngx-tree-select ...>
+ *   <ng-template cngxSelectSheetCount let-text>
+ *     <span class="my-sheet-count">{{ text }}</span>
+ *   </ng-template>
+ * </cngx-tree-select>
+ * ```
+ *
+ * @category forms/select/templates
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxTreeSelect, CngxSelectSheetHandle
+ */
+@Directive({
+  selector: 'ng-template[cngxSelectSheetCount]',
+  standalone: true,
+  exportAs: 'cngxSelectSheetCount',
+})
+export class CngxSelectSheetCount {
+  readonly templateRef = inject<TemplateRef<CngxSelectSheetCountContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: CngxSelectSheetCount,
+    ctx: unknown,
+  ): ctx is CngxSelectSheetCountContext {
+    return true;
+  }
 }
 
 /**

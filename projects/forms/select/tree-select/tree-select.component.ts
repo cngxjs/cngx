@@ -11,7 +11,6 @@ import {
   model,
   output,
   signal,
-  untracked,
   viewChild,
   type ElementRef,
   type Signal,
@@ -104,6 +103,9 @@ import {
   CngxSelectLoading,
   CngxSelectLoadingGlyph,
   CngxSelectSheetHandle,
+  CngxSelectSheetCount,
+  CngxSelectChipOverflow,
+  type CngxSelectChipOverflowContext,
   CngxSelectPlaceholder,
   CngxSelectRefreshing,
   CngxSelectRetryButton,
@@ -117,13 +119,26 @@ import {
   type CngxTreeSelectPanelHost,
 } from './tree-select-panel-host';
 import { CngxTreeSelectPanel } from './tree-select-panel.component';
+import { createTreeChipDisplay } from './internal/tree-chip-display';
+import { createTreeSelectionCounts } from './internal/tree-selection-counts';
+import { CngxTreeSelectNodeCount } from './tree-select-node-count.directive';
+import { CngxTreeSelectFooter } from './tree-select-footer.directive';
+import { injectResolvedTemplate } from '../shared/internal/resolve-template';
+import { createTreeToggleDispatch, type TreeToggleDispatch } from './internal/tree-toggle-dispatch';
 import type {
   CngxTreeSelectAction,
   CngxTreeSelectChipContext,
+  CngxTreeSelectChipDisplay,
   CngxTreeSelectNodeContext,
+  CngxTreeSelectFooterContext,
+  CngxTreeSelectNodeCountContext,
   CngxTreeSelectTriggerLabelContext,
   CngxTreeSelectedItem,
 } from './tree-select.model';
+
+const TRUNCATE: Signal<'wrap' | 'scroll-x' | 'truncate'> = signal<
+  'wrap' | 'scroll-x' | 'truncate'
+>('truncate').asReadonly();
 
 /**
  * Change event emitted by `CngxTreeSelect.selectionChange`. Shape
@@ -194,6 +209,9 @@ export interface CngxTreeSelectChange<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/tree-select/basic-single-level-toggle</example-url>
  * <example-url>http://localhost:4200/#/forms/select/tree-select/cascade-children-parent-toggle-selects-the-whole-subtree</example-url>
  * <example-url>http://localhost:4200/#/forms/select/tree-select/custom-cngxtreeselectnode-template</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/tree-select/chip-display-parents-leaves-all</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/tree-select/custom-count-footer-and-overflow-slots</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/tree-select/touch-row-tap-expands-checkbox-selects</example-url>
  * <example-url>http://localhost:4200/#/forms/select/mobile-sheet/all-variants</example-url>
  * @slot cngxSelectCaret Replaces the trigger caret unless hideCaret is set; gets open.
  * @slot cngxSelectPlaceholder Renders in the trigger while nothing is selected; gets placeholder.
@@ -205,9 +223,13 @@ export interface CngxTreeSelectChange<T = unknown> {
  * @slot cngxSelectRefreshing Replaces the refresh indicator shown above the tree while a reload runs; previousCount is always 0 on this host.
  * @slot cngxSelectCommitError Replaces the panel's commit-error banner when a commit fails and commitErrorDisplay is 'banner'; gets error and retry (option is always null on this host).
  * @slot cngxSelectClearButton Replaces the clear-all button, shown when clearable is set, a value is selected and the control is enabled; gets clear, disabled.
- * @slot cngxTreeSelectNode Replaces each whole treeitem row, twisty and checkbox included, so the template owns the treeitem ARIA; gets node, depth, expanded, hasChildren, selected, indeterminate, disabled, toggleExpand, handleSelect.
+ * @slot cngxTreeSelectNode Replaces each whole treeitem row, twisty and checkbox included, so the template owns the treeitem ARIA; gets node, depth, expanded, hasChildren, selected, indeterminate, disabled, selectedCount, descendantCount, toggleExpand, handleSelect.
  * @slot cngxTreeSelectChip Replaces each chip in the trigger strip unless cngxTreeSelectTriggerLabel is projected; gets option, remove.
  * @slot cngxTreeSelectTriggerLabel Replaces the whole chip strip while at least one value is selected; gets selected, values, count.
+ * @slot cngxTreeSelectNodeCount Replaces the selected-of-total count at the inline end of each parent row in the default row; gets text ($implicit), selected, total, node. The built-in count shows only once a descendant is selected; the template renders for every parent, zero included. Renders inside an aria-hidden wrapper the host keeps; global default via CNGX_SELECT_CONFIG.templates.treeNodeCount.
+ * @slot cngxTreeSelectFooter Replaces the panel footer below the tree (selected count and clear-all; the bottom bar in the mobile sheet); gets count ($implicit), countText, clear, clearLabel, empty. clear() keeps the host's clear announcement and outputs; global default via CNGX_SELECT_CONFIG.templates.treeFooter.
+ * @slot cngxSelectChipOverflow Replaces the `+N` overflow chip after the first maxVisibleChips displayed chips, and the badge of the touch summary; gets count, label, hidden. The host keeps the hidden values readable for AT.
+ * @slot cngxSelectSheetCount Replaces the selected count after the mobile sheet title; gets text ($implicit). Global default via CNGX_SELECT_CONFIG.templates.sheetCount.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
  */
 @Component({
@@ -301,6 +323,28 @@ export class CngxTreeSelect<T = unknown>
    */
   readonly cascadeChildren = input<boolean>(false);
   /**
+   * Which selected values the trigger shows as chips. `'parents'` shows a
+   * fully selected subtree (the node and every non-disabled descendant
+   * selected) as one chip for its topmost node, and removing that chip
+   * deselects the subtree; `'leaves'` hides a fully selected parent and
+   * shows its descendants; `'all'` shows one chip per value, each removing
+   * only its value. Default: `'parents'` with `[cascadeChildren]="true"`,
+   * else `'all'`. `selected()` and the `*cngxTreeSelectTriggerLabel`
+   * context always carry the full selection.
+   */
+  readonly chipDisplay = input<CngxTreeSelectChipDisplay | undefined>(undefined);
+  /**
+   * Chip cap of the one-line trigger strip on a fine pointer; the rest shows
+   * as a `+N` overflow chip (`*cngxSelectChipOverflow` replaces it). Counts
+   * displayed chips (see `chipDisplay`). Defaults to
+   * `CngxSelectConfig.maxVisibleChips`.
+   */
+  readonly maxVisibleChips = input<number>(this.config.maxVisibleChips);
+  /** @internal */
+  protected readonly resolvedChipDisplay = computed<CngxTreeSelectChipDisplay>(
+    () => this.chipDisplay() ?? (this.cascadeChildren() ? 'parents' : 'all'),
+  );
+  /**
    * Opt-in expand-to-reveal type-to-find. When `true`, a typeahead
    * query with no match among the VISIBLE nodes searches the full
    * flat tree; the first match gets its ancestors expanded
@@ -335,21 +379,36 @@ export class CngxTreeSelect<T = unknown>
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   /**
    * Popover placement relative to the trigger. Per-instance input wins
-   * over `CngxSelectConfig.popoverPlacement`.
+   * over `CngxSelectConfig.popoverPlacement`. A centred `'bottom'` / `'top'`
+   * aligns the tree panel to the trigger's inline-start edge, since the panel
+   * can be wider than the trigger.
    */
   readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
+  /**
+   * @internal - a centred block placement starts at the trigger's inline-start
+   * edge instead: the tree panel is wider than a narrow trigger and grows
+   * toward inline-end (the popover mirrors `-start` under RTL, and its
+   * `flip-inline` fallback keeps the viewport collision recovery).
+   */
+  protected readonly resolvedPopoverPlacement = computed<PopoverPlacement>(() => {
+    const placement = this.popoverPlacement();
+    if (placement === 'bottom') {
+      return 'bottom-start';
+    }
+    return placement === 'top' ? 'top-start' : placement;
+  });
   readonly hideCaret = input<boolean>(!this.config.showCaret);
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
   /**
-   * Replaces the default `▸` twisty glyph in the default node row.
+   * Replaces the default chevron twisty in the default node row.
    * Applied to both states unless `twistyOpenGlyph` is set. Ignored
    * when `*cngxTreeSelectNode` is projected.
    */
   readonly twistyGlyph = input<TemplateRef<void> | null>(null);
   /**
    * Override for the expanded-state twisty glyph. Falls back to
-   * `twistyGlyph` then to `▸` (rotated via CSS). Use when expand and
+   * `twistyGlyph` then to the chevron (rotated via CSS). Use when expand and
    * collapse glyphs are semantically different shapes.
    */
   readonly twistyOpenGlyph = input<TemplateRef<void> | null>(null);
@@ -441,9 +500,27 @@ export class CngxTreeSelect<T = unknown>
   private readonly refreshingDir = contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
   private readonly commitErrorDir = contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
   private readonly sheetHandleDir = contentChild(CngxSelectSheetHandle);
+  private readonly sheetCountDir = contentChild(CngxSelectSheetCount);
 
   private readonly nodeDir = contentChild<CngxTreeSelectNode<T>>(CngxTreeSelectNode);
   private readonly chipDir = contentChild<CngxTreeSelectChip<T>>(CngxTreeSelectChip);
+  private readonly nodeCountDir = contentChild<CngxTreeSelectNodeCount<T>>(CngxTreeSelectNodeCount);
+  /** @internal - `*cngxTreeSelectNodeCount`, else `CNGX_SELECT_CONFIG.templates.treeNodeCount`. */
+  readonly nodeCountTpl = injectResolvedTemplate<CngxTreeSelectNodeCountContext<T>>(
+    this.nodeCountDir,
+    'treeNodeCount',
+  );
+  private readonly footerDir = contentChild(CngxTreeSelectFooter);
+  /** @internal - `*cngxTreeSelectFooter`, else `CNGX_SELECT_CONFIG.templates.treeFooter`. */
+  readonly footerTpl = injectResolvedTemplate<CngxTreeSelectFooterContext>(
+    this.footerDir,
+    'treeFooter',
+  );
+  private readonly chipOverflowDir = contentChild<CngxSelectChipOverflow<T>>(CngxSelectChipOverflow);
+  /** @internal - directive-only like the family's other chip-strip slots. */
+  protected readonly chipOverflowTpl = computed<TemplateRef<
+    CngxSelectChipOverflowContext<T>
+  > | null>(() => this.chipOverflowDir()?.templateRef ?? null);
   private readonly triggerLabelDir = contentChild<CngxTreeSelectTriggerLabel<T>>(
     CngxTreeSelectTriggerLabel,
   );
@@ -468,6 +545,7 @@ export class CngxTreeSelect<T = unknown>
     commitError: this.commitErrorDir,
     clearButton: this.clearButtonDir,
     sheetHandle: this.sheetHandleDir,
+    sheetCount: this.sheetCountDir,
   });
 
   /** @internal */
@@ -523,16 +601,6 @@ export class CngxTreeSelect<T = unknown>
       childrenFn: (v: T) => this.treeController.childrenOfValue(v),
     },
   );
-
-  /** Rollback target for a commit in flight. */
-  private lastCommittedValues: T[] = untracked(() => [...this.values()]);
-
-  /**
-   * Last commit this tree started, replayed by the commit-error Retry. A
-   * toggle replays through `dispatchValueChange` (cascade meta included);
-   * a clear goes back to the array handler, which owns that path.
-   */
-  private lastCommit: TreeSelectLastCommit<T> | null = null;
 
   /** @internal */ readonly panelOpen = computed<boolean>(
     () => this.popoverRef()?.isVisible() ?? false,
@@ -603,7 +671,7 @@ export class CngxTreeSelect<T = unknown>
     commitMode: this.commitMode,
     core: this.core,
     commitAction: this.commitAction,
-    getLastCommitted: () => this.lastCommittedValues,
+    getLastCommitted: () => this.dispatch.lastCommitted(),
     onToggleFinalize: () => {
       // Tree commit success uses cascade-aware
       // `dispatchValueChange` directly. The handler's per-option
@@ -624,6 +692,27 @@ export class CngxTreeSelect<T = unknown>
     onStateChange: (status) => this.stateChange.emit(status),
     onError: (err) => this.commitError.emit(err),
     announceError: (err) => this.announceCommitError(err),
+  });
+
+  /**
+   * Toggle / cascade / remove / clear mutations with their commit paths. A
+   * toggle Retry replays through it (cascade meta included); a clear goes
+   * back to the array handler, which owns that path.
+   */
+  private readonly dispatch: TreeToggleDispatch<T> = createTreeToggleDispatch<T>({
+    values: this.values,
+    membersEqual: (a, b) => this.membersEqual(a, b),
+    compareWith: this.compareWith,
+    treeController: this.treeController,
+    commitAction: this.commitAction,
+    commitMode: this.commitMode,
+    core: this.core,
+    commitHandler: () => this.commitHandler,
+    emitChange: (change) => this.emitChange(change),
+    emitCleared: () => this.cleared.emit(),
+    emitState: (status) => this.stateChange.emit(status),
+    emitCommitError: (err) => this.commitError.emit(err),
+    announceCommitError: (err) => this.announceCommitError(err),
   });
 
   /** @internal */ readonly activeView = this.core.activeView;
@@ -695,15 +784,7 @@ export class CngxTreeSelect<T = unknown>
   // `*ngTemplateOutlet` consumers of the commit-error context.
   private readonly commitRetryBound: () => void = () => {
     this.hostFocus.refocusOwnerBeforeRemoval();
-    const last = this.lastCommit;
-    if (!last) {
-      return;
-    }
-    if (last.kind === 'clear') {
-      this.commitHandler.retryLast();
-      return;
-    }
-    this.dispatchValueChange(last.next, last.previous, last.meta);
+    this.dispatch.retryLast();
   };
 
   /** @internal */
@@ -766,6 +847,8 @@ export class CngxTreeSelect<T = unknown>
     popoverRef: this.popoverRef,
     listboxRef: signal(undefined),
     tpl: this.tplRegistry,
+    // Lazy: the count is declared further down in field order.
+    selectionCount: computed(() => this.selectionCountText()),
     commitMode: this.commitMode,
     dismissOn: this.config.dismissOn,
     showDone: true,
@@ -815,16 +898,74 @@ export class CngxTreeSelect<T = unknown>
     },
   );
 
+  /** @internal Chip list for the resolved `chipDisplay` mode. */
+  private readonly chipView = createTreeChipDisplay<T>({
+    selected: this.selected,
+    mode: this.resolvedChipDisplay,
+    treeController: this.treeController,
+  });
+  /** @internal */
+  protected readonly displayedChips = this.chipView.displayed;
+
+  /** Per-parent selected-of-total, one pass per change. */
+  private readonly counts = createTreeSelectionCounts<T>({
+    flatNodes: this.treeController.flatNodes,
+    values: this.values,
+    findByValue: (value) => this.treeController.findByValue(value),
+  });
+
+  /** @internal Number of selected values (the count the announcer speaks). */
+  readonly selectionCount = computed(() => this.values().length);
+  /** @internal */
+  readonly selectionCountText = computed(() =>
+    this.fallbackLabels().selectedCount(this.selectionCount()),
+  );
+  /** @internal Footer clear-all label, the trigger clear-button cascade. */
+  readonly clearAllLabel = computed(() => this.resolvedClearButtonAriaLabel());
+
+  /** @internal Clear from the panel footer; focus stays in the panel. */
+  clearAllInPanel(): void {
+    this.dispatch.clearAll();
+  }
+
+  /** @internal */
+  nodeCount(node: FlatTreeNode<T>): { readonly selected: number; readonly total: number } | null {
+    return this.counts().get(node.id) ?? null;
+  }
+
+  /** @internal */
+  nodeCountText(node: FlatTreeNode<T>): string {
+    const count = this.counts().get(node.id);
+    return count ? this.fallbackLabels().treeNodeCount(count.selected, count.total) : '';
+  }
+
   /**
    * @internal - one-line summary instead of chips under the touch floor,
-   * counted over the same `selected()` the chips render.
+   * counted over the same displayed list the chips render.
    */
   protected readonly summary = createSelectSummary<T>({
-    selectedOptions: computed(() => [...this.selected()]),
+    selectedOptions: computed(() => [...this.displayedChips()]),
     active: injectTouchFloorSignal(),
+    // One line on every pointer: the strip always truncates.
+    chipOverflow: TRUNCATE,
+    maxVisibleChips: this.maxVisibleChips,
     ariaLabels: this.config.ariaLabels,
     fallbackLabels: this.config.fallbackLabels,
   });
+
+  /** @internal - the touch floor; the panel's row tap expands under it. */
+  readonly rowTapExpands = this.summary.active;
+  private readonly chipStrip = this.summary.strip;
+  /** @internal - displayed chips up to the cap. */
+  protected readonly visibleSelected = this.chipStrip.visibleSelected;
+  /** @internal */
+  protected readonly overflowBadgeCount = this.chipStrip.overflowBadgeCount;
+  /** @internal Displayed chips behind the `+N` chip, for the overflow slot. */
+  protected readonly hiddenSelected = this.chipStrip.hiddenSelected;
+  /** @internal Visible `+N` text, the count in the reading locale's digits. */
+  protected readonly overflowBadgeText = computed<string>(() =>
+    this.config.fallbackLabels().chipOverflowBadge(this.overflowBadgeCount()),
+  );
 
   open(): void {
     this.popoverRef()?.show();
@@ -890,10 +1031,10 @@ export class CngxTreeSelect<T = unknown>
       return;
     }
     if (this.cascadeChildren() && node.hasChildren) {
-      this.cascadeToggle(node);
+      this.dispatch.cascadeToggle(node);
       return;
     }
-    this.singleToggle(node);
+    this.dispatch.singleToggle(node);
   }
 
   /**
@@ -910,142 +1051,6 @@ export class CngxTreeSelect<T = unknown>
     }
     return this.compareWith()(a, b);
   };
-
-  private singleToggle(node: FlatTreeNode<T>): void {
-    const value = node.value;
-    const previous = untracked(() => [...this.values()]);
-    const wasSelected = previous.some((v) => this.membersEqual(v, value));
-    const next = wasSelected
-      ? previous.filter((v) => !this.membersEqual(v, value))
-      : [...previous, value];
-
-    this.dispatchValueChange(next, previous, {
-      added: wasSelected ? [] : [value],
-      removed: wasSelected ? [value] : [],
-      node,
-      action: 'toggle',
-    });
-  }
-
-  private cascadeToggle(node: FlatTreeNode<T>): void {
-    const descendants = this.treeController.descendantsOfValue(node.value);
-    const allValues = [node.value, ...descendants];
-    const previous = untracked(() => [...this.values()]);
-    const parentSelected = previous.some((v) => this.membersEqual(v, node.value));
-
-    const next = parentSelected
-      ? previous.filter((v) => !allValues.some((a) => this.membersEqual(v, a)))
-      : dedup([...previous, ...allValues], this.membersEqual);
-
-    const added = parentSelected
-      ? []
-      : allValues.filter((a) => !previous.some((v) => this.membersEqual(v, a)));
-    const removed = parentSelected
-      ? allValues.filter((a) => previous.some((v) => this.membersEqual(v, a)))
-      : [];
-
-    this.dispatchValueChange(next, previous, {
-      added,
-      removed,
-      node,
-      action: 'cascade-toggle',
-    });
-  }
-
-  /**
-   * Commit dispatch for toggle + cascade-toggle. Bypasses
-   * `ArrayCommitHandler.beginToggle` (its `CngxSelectOptionDef<T>`
-   * shape doesn't fit the tree world) and drives the commit-controller
-   * directly; reconciliation and rollback semantics match.
-   */
-  private dispatchValueChange(
-    next: T[],
-    previous: T[],
-    meta: TreeSelectToggleMeta<T>,
-  ): void {
-    const action = this.commitAction();
-    // Announce: single-toggle reports the node's label + direction;
-    // cascade-toggle has many added/removed, so announce a null-label
-    // with the count (format function's `selectedLabel: null` path).
-    const announceLabel = meta.action === 'toggle' ? meta.node.label : null;
-    const announceAction: 'added' | 'removed' = meta.added.length > 0 ? 'added' : 'removed';
-    if (!action) {
-      this.values.set(next);
-      this.emitChange({
-        values: next,
-        previousValues: previous,
-        added: meta.added,
-        removed: meta.removed,
-        node: meta.node,
-        action: meta.action,
-      });
-      this.core.announce(
-        announceLabel ? { value: meta.node.value, label: announceLabel } : null,
-        announceAction,
-        next.length,
-        true,
-      );
-      return;
-    }
-
-    this.lastCommittedValues = previous;
-    this.lastCommit = { kind: 'toggle', next, previous, meta };
-    if (this.commitMode() === 'optimistic') {
-      this.values.set(next);
-      // Emit the intent immediately so `(selectionChange)` consumers
-      // see the change; rollback on commit error reverts `values`.
-      this.emitChange({
-        values: next,
-        previousValues: previous,
-        added: meta.added,
-        removed: meta.removed,
-        node: meta.node,
-        action: meta.action,
-      });
-      this.core.announce(
-        announceLabel ? { value: meta.node.value, label: announceLabel } : null,
-        announceAction,
-        next.length,
-        true,
-      );
-    }
-    this.stateChange.emit('pending');
-    this.core.commitController.begin(action, next, previous, {
-      onSuccess: (committed) => {
-        this.stateChange.emit('success');
-        const finalValues = committed ?? next;
-        if (!sameArrayContents(this.values(), finalValues, this.compareWith())) {
-          this.values.set([...finalValues]);
-        }
-        this.lastCommittedValues = [...finalValues];
-        if (this.commitMode() === 'pessimistic') {
-          this.emitChange({
-            values: finalValues,
-            previousValues: previous,
-            added: meta.added,
-            removed: meta.removed,
-            node: meta.node,
-            action: meta.action,
-          });
-          this.core.announce(
-            announceLabel ? { value: meta.node.value, label: announceLabel } : null,
-            announceAction,
-            finalValues.length,
-            true,
-          );
-        }
-      },
-      onError: (err, rollbackTo) => {
-        this.stateChange.emit('error');
-        this.commitError.emit(err);
-        if (this.commitMode() === 'optimistic') {
-          this.values.set([...(rollbackTo ?? previous)]);
-        }
-        // Same order as the array commit handler: rollback, then speak.
-        this.announceCommitError(err);
-      },
-    });
-  }
 
   /** @internal */
   protected handleTriggerClick(): void {
@@ -1109,14 +1114,16 @@ export class CngxTreeSelect<T = unknown>
    * the disabled-guard + WeakMap closure cache while the override
    * keeps the tree-aware mutation path:
    *
-   *   - in-tree value → `singleToggle(node)` (always single-deselect,
-   *     never cascades, even with `[cascadeChildren]="true"`).
+   *   - chip that summarizes a fully selected subtree (`chipDisplay`
+   *     `'parents'`) → cascade deselect of that subtree (disabled
+   *     descendants keep their state).
+   *   - any other in-tree value → single toggle (single deselect).
    *   - stale value (not in tree) → strip from `values` + emit +
    *     announce.
    *
-   * Standard sync/commit branches are bypassed because
-   * `dispatchValueChange` (via `singleToggle`) owns commit-action,
-   * optimistic write, and rollback for the tree world.
+   * Standard sync/commit branches are bypassed because the tree toggle
+   * dispatch owns commit-action, optimistic write, and rollback for the
+   * tree world.
    */
   private readonly chipRemovalHandler: CngxChipRemovalHandler<CngxTreeSelectedItem<T>> = inject(
     CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
@@ -1132,62 +1139,26 @@ export class CngxTreeSelect<T = unknown>
 
   /**
    * Shared removal path for chip × and the `remove` callback in
-   * `*cngxTreeSelectChip`. Always single-deselect regardless of
-   * `cascadeChildren` - the consumer removed ONE chip for ONE value;
-   * cascade would surprise-remove invisible descendants.
+   * `*cngxTreeSelectChip`. A summarizing parent chip stands for its whole
+   * subtree, so it cascades; every other chip removes its one value.
    *
    * Disabled-guard lives in the handler; this method assumes safe.
    */
   private removeSelectedItem(opt: CngxTreeSelectedItem<T>): void {
-    const node = this.flatNodeForValue(opt.value);
+    const node = this.chipView.summarizes(opt.value)
+      ? this.treeController.findByValue(opt.value)
+      : undefined;
     if (node) {
-      this.singleToggle(node);
+      this.dispatch.cascadeToggle(node);
       return;
     }
-    // Stale selection (value not in tree). Strip from `values`
-    // without routing through the tree.
-    const previous = untracked(() => [...this.values()]);
-    const next = previous.filter((v) => !this.membersEqual(v, opt.value));
-    this.values.set(next);
-    this.emitChange({
-      values: next,
-      previousValues: previous,
-      added: [],
-      removed: [opt.value],
-      node: null,
-      action: 'toggle',
-    });
-    this.core.announce({ value: opt.value, label: opt.label }, 'removed', next.length, true);
+    this.dispatch.removeValue(opt.value, opt.label);
   }
 
   /** @internal - exposed for the `*cngxSelectClearButton` slot. */
   protected readonly clearAll: () => void = () => {
     this.hostFocus.refocusOwnerBeforeRemoval();
-    const previous = untracked(() => [...this.values()]);
-    if (previous.length === 0) {
-      return;
-    }
-    const action = this.commitAction();
-    if (action) {
-      this.lastCommittedValues = previous;
-      this.lastCommit = { kind: 'clear' };
-      if (this.commitMode() === 'optimistic') {
-        this.values.set([]);
-      }
-      this.commitHandler.beginClear(previous, action);
-      return;
-    }
-    this.values.set([]);
-    this.cleared.emit();
-    this.emitChange({
-      values: [],
-      previousValues: previous,
-      added: [],
-      removed: previous,
-      node: null,
-      action: 'clear',
-    });
-    this.core.announce(null, 'removed', 0, true);
+    this.dispatch.clearAll();
   };
 
   /** @internal */
@@ -1228,39 +1199,7 @@ export class CngxTreeSelect<T = unknown>
     return this.treeController.findByValue(value)?.label ?? String(value);
   }
 
-  private flatNodeForValue(value: T): FlatTreeNode<T> | null {
-    return this.treeController.findByValue(value) ?? null;
-  }
-
   private emitChange(change: Omit<CngxTreeSelectChange<T>, 'source'>): void {
     this.selectionChange.emit({ ...change, source: this });
   }
-}
-
-/** Change meta of one toggle or cascade-toggle dispatch. */
-interface TreeSelectToggleMeta<T> {
-  readonly added: readonly T[];
-  readonly removed: readonly T[];
-  readonly node: FlatTreeNode<T>;
-  readonly action: 'toggle' | 'cascade-toggle';
-}
-
-/** The commit a tree-select Retry replays. */
-type TreeSelectLastCommit<T> =
-  | {
-      readonly kind: 'toggle';
-      readonly next: T[];
-      readonly previous: T[];
-      readonly meta: TreeSelectToggleMeta<T>;
-    }
-  | { readonly kind: 'clear' };
-
-function dedup<T>(arr: readonly T[], eq: (a: T, b: T) => boolean): T[] {
-  const out: T[] = [];
-  for (const v of arr) {
-    if (!out.some((o) => eq(o, v))) {
-      out.push(v);
-    }
-  }
-  return out;
 }

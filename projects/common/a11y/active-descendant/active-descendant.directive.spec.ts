@@ -682,6 +682,82 @@ describe('CngxActiveDescendant - virtual window offset', () => {
   });
 });
 
+/* --- Virtual window whose rendered items lag the window start ----------- */
+
+@Component({
+  template: `
+    <div
+      cngxActiveDescendant
+      [items]="windowItems()"
+      [virtualCount]="100"
+      [windowStart]="start()"
+      tabindex="0"
+    ></div>
+  `,
+  imports: [CngxActiveDescendant],
+})
+class LaggingWindowHost {
+  // A recycler moves windowStart first; the rendered items (content
+  // children) follow one render later.
+  readonly start = signal(40);
+  readonly itemsStart = signal(40);
+  readonly windowItems = computed<ActiveDescendantItem[]>(() =>
+    Array.from({ length: 10 }, (_, i) => {
+      const abs = this.itemsStart() + i;
+      return { id: `opt-${abs}`, value: abs, label: `Item ${abs}` };
+    }),
+  );
+}
+
+describe('CngxActiveDescendant - window start leading the rendered items', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [LaggingWindowHost] });
+  });
+
+  function settle(fixture: { detectChanges: () => void }): void {
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+  }
+
+  it('keeps the absolute active index when the window shifts before its items re-render', () => {
+    const fixture = TestBed.createComponent(LaggingWindowHost);
+    settle(fixture);
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    const dir = container.injector.get(CngxActiveDescendant);
+    dir.highlightByIndex(45);
+    TestBed.flushEffects();
+
+    fixture.componentInstance.start.set(41);
+    settle(fixture);
+    fixture.componentInstance.itemsStart.set(41);
+    settle(fixture);
+
+    expect(dir.activeIndex()).toBe(45);
+    expect(dir.activeId()).toBe('opt-45');
+  });
+
+  it('keeps the absolute active index across one-step window moves while arrowing down', () => {
+    const fixture = TestBed.createComponent(LaggingWindowHost);
+    settle(fixture);
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    const dir = container.injector.get(CngxActiveDescendant);
+    dir.highlightByIndex(49);
+    TestBed.flushEffects();
+
+    for (let next = 50; next <= 53; next++) {
+      dir.highlightNext();
+      TestBed.flushEffects();
+      fixture.componentInstance.start.set(next - 9);
+      settle(fixture);
+      fixture.componentInstance.itemsStart.set(next - 9);
+      settle(fixture);
+      expect(dir.activeIndex()).toBe(next);
+      expect(dir.activeId()).toBe(`opt-${next}`);
+    }
+  });
+});
+
 /* --- highlighted emission contract --------------------------------------- */
 
 @Component({

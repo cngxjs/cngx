@@ -3,6 +3,7 @@ import type { ElementRef, Signal } from '@angular/core';
 import type { CngxListbox } from '@cngx/common/interactive';
 import type { CngxPopover } from '@cngx/common/popover';
 
+import type { CngxFlatNavListboxItem } from '../flat-nav-strategy';
 import { handlePageJumpKey } from './page-jump-handler';
 
 /**
@@ -15,6 +16,8 @@ import { handlePageJumpKey } from './page-jump-handler';
 export interface ActionTriggerInputDeps<Prev> {
   readonly listbox: () => CngxListbox | undefined;
   readonly popover: () => CngxPopover | undefined;
+  /** Full flat option list; the page-jump index space of a virtual panel. */
+  readonly flatOptions: () => readonly CngxFlatNavListboxItem[];
   readonly input: () => ElementRef<HTMLInputElement> | undefined;
   readonly searchTerm: Signal<string>;
   readonly liveInputFallback: Signal<boolean>;
@@ -101,6 +104,7 @@ export function createActionTriggerInput<Prev>(
     handlePageJumpKey(event, {
       listbox: deps.listbox(),
       popover: deps.popover(),
+      flatOptions: deps.flatOptions,
     });
   };
 

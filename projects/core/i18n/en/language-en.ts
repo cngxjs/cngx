@@ -388,6 +388,8 @@ export const CNGX_LANGUAGE_EN = {
     chipRemoveFor: '{action}: {label}',
     chipOverflowBadge: '+{count}',
     selectionSummary: '{count} selected: {list}',
+    treeNodeCount: '{selected}/{total}',
+    selectedCount: '{count} selected',
     statusLoading: 'Loading options',
     statusRefreshing: 'Refreshing options',
     fieldLabelFallback: 'Selection',

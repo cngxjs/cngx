@@ -153,16 +153,26 @@ export class CngxSelectPanel<T = unknown> {
    * `*cngxSelectOptionLabel` can render a highlight-reactive style.
    */
   protected isHighlighted(opt: CngxSelectOptionDef<T>): boolean {
+    const highlighted = this.highlightedValue();
+    if (!highlighted) {
+      return false;
+    }
+    return this.host.listboxCompareWith()(highlighted.value, opt.value);
+  }
+
+  /**
+   * Value of the AD-highlighted row, resolved once per `activeId` change
+   * instead of once per rendered row. Boxed so an `undefined` option value
+   * stays distinguishable from "nothing highlighted".
+   */
+  private readonly highlightedValue = computed<{ readonly value: unknown } | null>(() => {
     const activeId = this.host.activeId();
     if (!activeId) {
-      return false;
+      return null;
     }
     const match = this.options().find((o) => o.id === activeId);
-    if (!match) {
-      return false;
-    }
-    return this.host.listboxCompareWith()(match.value(), opt.value);
-  }
+    return match ? { value: match.value() } : null;
+  });
 
   /**
    * Builds the `*cngxSelectCheck` context for an option row. Radio

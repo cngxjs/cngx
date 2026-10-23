@@ -13,6 +13,10 @@ import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
 import type { CngxSelectCommitErrorDisplay } from './commit-action.types';
 import type { CngxCommitErrorAnnouncePolicy } from './commit-error-announcer';
 import type {
+  CngxTreeSelectFooterContext,
+  CngxTreeSelectNodeCountContext,
+} from '../tree-select/tree-select.model';
+import type {
   CngxSelectActionContext,
   CngxSelectCaretContext,
   CngxSelectCheckContext,
@@ -28,6 +32,7 @@ import type {
   CngxSelectOptionPendingContext,
   CngxSelectPlaceholderContext,
   CngxSelectRefreshingContext,
+  CngxSelectSheetCountContext,
   CngxSelectSheetHandleContext,
   CngxSelectTriggerLabelContext,
 } from './template-slots';
@@ -235,6 +240,14 @@ export interface CngxSelectFallbackLabels {
    * the hidden count. Default `'+{count}'`, the count in the locale's digits.
    */
   readonly chipOverflowBadge?: (count: number) => string;
+  /**
+   * Selected-of-total count on a tree-select parent row. Receives the
+   * selected and the total descendants. Default `'{selected}/{total}'`, the
+   * numbers in the locale's digits.
+   */
+  readonly treeNodeCount?: (selected: number, total: number) => string;
+  /** Selected count in the tree-select panel footer. Default `'{count} selected'`. */
+  readonly selectedCount?: (count: number) => string;
 }
 
 /**
@@ -412,6 +425,12 @@ export interface CngxSelectConfig {
     readonly action?: TemplateRef<CngxSelectActionContext> | null;
     /** Decorative drag handle of the mobile sheet. */
     readonly sheetHandle?: TemplateRef<CngxSelectSheetHandleContext> | null;
+    /** Selected-of-total count on a `CngxTreeSelect` parent row. */
+    readonly treeNodeCount?: TemplateRef<CngxTreeSelectNodeCountContext> | null;
+    /** Selected count in the mobile sheet header (variants that report one). */
+    readonly sheetCount?: TemplateRef<CngxSelectSheetCountContext> | null;
+    /** Panel footer (count and clear-all) of `CngxTreeSelect`. */
+    readonly treeFooter?: TemplateRef<CngxTreeSelectFooterContext> | null;
   };
 }
 
@@ -475,6 +494,9 @@ export const CNGX_SELECT_DEFAULTS: Required<
     optionError: null,
     action: null,
     sheetHandle: null,
+    treeNodeCount: null,
+    treeFooter: null,
+    sheetCount: null,
   },
 };
 

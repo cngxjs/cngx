@@ -385,6 +385,37 @@ describe('CngxPopover', () => {
       expect(host.popover().state()).toBe('closed');
     });
 
+    it('does not snap back open after an internal dismiss while controlled open', () => {
+      const { fixture, popoverEl } = setup(ControlledHost);
+      const host = fixture.componentInstance as ControlledHost;
+      host.controlledOpen.set(true);
+      TestBed.flushEffects();
+      expect(popoverEl.showPopover).toHaveBeenCalledTimes(1);
+
+      host.popover().hide();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(popoverEl.showPopover).toHaveBeenCalledTimes(1);
+      expect(host.popover().state()).not.toBe('opening');
+      expect(host.popover().state()).not.toBe('open');
+    });
+
+    it('keeps an imperative show() while controlled closed', () => {
+      const { fixture } = setup(ControlledHost);
+      const host = fixture.componentInstance as ControlledHost;
+      host.controlledOpen.set(false);
+      TestBed.flushEffects();
+
+      host.popover().show();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(['opening', 'open']).toContain(host.popover().state());
+    });
+
     it('should not react when controlledOpen is undefined', () => {
       const { fixture, popoverEl } = setup(ControlledHost);
       const host = fixture.componentInstance as ControlledHost;

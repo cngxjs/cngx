@@ -46,6 +46,15 @@
     font-weight: var(--cngx-select-sheet-title-weight, 600);
   }
 
+  /* Selected count after the title (tree-select); muted, numbers isolated
+     from the title in either direction. */
+  .cngx-select-sheet-header__count {
+    flex: none;
+    color: var(--cngx-select-sheet-count-color, color-mix(in oklab, currentColor 65%, transparent));
+    font-size: var(--cngx-font-size-sm, 0.875rem);
+    unicode-bidi: isolate;
+  }
+
   .cngx-select-sheet-header__done,
   .cngx-select-sheet-header__close {
     flex: none;
@@ -63,16 +72,21 @@
     font: inherit;
   }
 
+  /* Disabled by colour, the field disabled recipe (38% text), never by
+     opacity: opacity would also fade the focus ring. */
   .cngx-select-sheet-header__done[aria-disabled='true'],
   .cngx-select-sheet-header__close[aria-disabled='true'] {
     cursor: not-allowed;
-    opacity: var(--cngx-select-sheet-disabled-opacity, 0.5);
+    color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
   }
 
   .cngx-select-sheet-header__done:focus-visible,
   .cngx-select-sheet-header__close:focus-visible {
-    outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
-    outline-offset: 2px;
+    outline: var(
+      --cngx-select-focus-outline,
+      2px solid var(--_cngx-select-focus-ring-color, var(--cngx-color-primary, oklch(0.66 0.19 50)))
+    );
+    outline-offset: var(--cngx-select-focus-offset, 2px);
   }
 
   .cngx-select-sheet-header__input,
@@ -85,5 +99,14 @@
     box-sizing: border-box;
     min-block-size: var(--cngx-target-min, 0px);
     font: inherit;
+  }
+}
+
+/* The forced palette overrides the faded colour with ButtonText; GrayText is
+   the system colour for a disabled control. */
+@media (forced-colors: active) {
+  .cngx-select-sheet-header__done[aria-disabled='true'],
+  .cngx-select-sheet-header__close[aria-disabled='true'] {
+    color: GrayText;
   }
 }
