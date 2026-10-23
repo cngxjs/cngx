@@ -5,8 +5,8 @@ import type { DocsResolverDeps } from '../data/docs-resolver.js';
 import { answerVersioned, resetDocsCache } from '../data/docs-resolver.js';
 import { getThemeTokens } from './get-theme-tokens.js';
 
-const FIXTURE = fileURLToPath(new URL('../../test/fixtures/documentation.sample.json', import.meta.url));
-const NEW = fileURLToPath(new URL('../../test/fixtures/documentation.v-new.sample.json', import.meta.url));
+const FIXTURE = fileURLToPath(new URL('../../../test/fixtures/documentation.sample.json', import.meta.url));
+const NEW = fileURLToPath(new URL('../../../test/fixtures/documentation.v-new.sample.json', import.meta.url));
 const docs = loadDocsFromFile(FIXTURE);
 
 describe('getThemeTokens', () => {

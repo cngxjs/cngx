@@ -6,11 +6,18 @@
 // diagnostics go to stderr only.
 
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { loadBundledDocs, loadBundledLlmDump } from './data/loader.js';
+import { fileURLToPath } from 'node:url';
+import { loadBundledDocs, loadBundledLlmDump } from './core/data/loader.js';
 import { createServer } from './server.js';
 
+// `src/index.ts` and `dist/index.js` both sit one level below the package root.
+const DATA_DIR = fileURLToPath(new URL('../data/', import.meta.url));
+
 async function main(): Promise<void> {
-  const server = createServer({ docs: loadBundledDocs(), llmDump: loadBundledLlmDump() });
+  const server = createServer({
+    docs: loadBundledDocs(DATA_DIR),
+    llmDump: loadBundledLlmDump(DATA_DIR),
+  });
   const transport = new StdioServerTransport();
   await server.connect(transport);
 }

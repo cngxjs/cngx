@@ -4,7 +4,7 @@ import { loadDocsFromFile } from '../data/loader.js';
 import { entryLib } from '../query.js';
 import { listComponents } from './list-components.js';
 
-const FIXTURE = fileURLToPath(new URL('../../test/fixtures/documentation.sample.json', import.meta.url));
+const FIXTURE = fileURLToPath(new URL('../../../test/fixtures/documentation.sample.json', import.meta.url));
 const docs = loadDocsFromFile(FIXTURE);
 
 describe('listComponents', () => {

@@ -4,8 +4,8 @@ import { loadDocsFromFile } from '../data/loader.js';
 import { diffSnapshots } from './snapshot-diff.js';
 import { classifyGhFailure, fetchSnapshot } from './snapshot-fetch.js';
 
-const OLD = fileURLToPath(new URL('../../test/fixtures/documentation.v-old.sample.json', import.meta.url));
-const NEW = fileURLToPath(new URL('../../test/fixtures/documentation.v-new.sample.json', import.meta.url));
+const OLD = fileURLToPath(new URL('../../../test/fixtures/documentation.v-old.sample.json', import.meta.url));
+const NEW = fileURLToPath(new URL('../../../test/fixtures/documentation.v-new.sample.json', import.meta.url));
 
 describe('diffSnapshots', () => {
   const delta = diffSnapshots(loadDocsFromFile(OLD), loadDocsFromFile(NEW));

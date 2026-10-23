@@ -2,7 +2,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { loadDocsFromFile, loadLlmDumpFromFile } from './data/loader.js';
+import { loadDocsFromFile, loadLlmDumpFromFile } from './core/data/loader.js';
 import { createServer } from './server.js';
 
 const DOCS_FIXTURE = fileURLToPath(new URL('../test/fixtures/documentation.sample.json', import.meta.url));

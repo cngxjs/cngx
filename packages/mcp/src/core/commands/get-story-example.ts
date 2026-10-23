@@ -5,9 +5,8 @@
 // `playgrounds` resolve only inside the cngx repo, so they are returned as
 // labelled source references, never as openable links.
 
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { jsonResult } from './tool-result.js';
+import { defineCommand } from '../command.js';
 import type { DocsIndex } from '../data/loader.js';
 import type { DocPlayground } from '../data/types.js';
 import type { EntryKind } from '../query.js';
@@ -47,19 +46,15 @@ export function getStoryExample(docs: DocsIndex, name: string): StoryExampleResu
 /** A question this tool answers; the ng-add helper README lists it. */
 export const example = 'Show me a working example of CngxTreeSelect.';
 
-export function registerGetStoryExample(server: McpServer, docs: DocsIndex): void {
-  server.registerTool(
-    'get_story_example',
-    {
-      title: 'Get cngx example URLs',
-      description:
-        "Return a component's runnable example URLs (public documentation links a consumer can open), plus a " +
-        'StackBlitz URL when one exists. Playground entries are repo-internal source references, not openable ' +
-        'links. Returns null when the name resolves to nothing.',
-      inputSchema: {
-        name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect".'),
-      },
-    },
-    ({ name }) => jsonResult(getStoryExample(docs, name)),
-  );
-}
+export const getStoryExampleCommand = defineCommand({
+  name: 'get_story_example',
+  title: 'Get cngx example URLs',
+  description:
+    "Return a component's runnable example URLs (public documentation links a consumer can open), plus a " +
+    'StackBlitz URL when one exists. Playground entries are repo-internal source references, not openable ' +
+    'links. Returns null when the name resolves to nothing.',
+  input: {
+    name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect".'),
+  },
+  run: (ctx, { name }) => getStoryExample(ctx.bundled, name),
+});

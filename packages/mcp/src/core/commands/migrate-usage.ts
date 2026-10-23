@@ -5,9 +5,8 @@
 // it is fail-safe: a missing `gh`, no network, or an absent asset returns a typed
 // error result, never a throw - preserving the server's don't-crash-stdout contract.
 
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { jsonResult } from './tool-result.js';
+import { defineCommand } from '../command.js';
 import type { DocsIndex } from '../data/loader.js';
 import { loadDocsFromFile } from '../data/loader.js';
 import { resolveDocs } from '../data/docs-resolver.js';
@@ -68,37 +67,33 @@ export function migrateUsage(bundled: DocsIndex, args: MigrateUsageArgs, deps: M
 /** A question this tool answers; the ng-add helper README lists it. */
 export const example = 'What breaks between cngx 0.1.0-rc.5 and 0.1.0?';
 
-export function registerMigrateUsage(server: McpServer, docs: DocsIndex): void {
-  server.registerTool(
-    'migrate_usage',
-    {
-      title: 'Diff two cngx releases',
-      description:
-        'Return a structured API delta between two cngx releases: removed / renamed / signature-changed ' +
-        'components, inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version. ' +
-        'A version other than the bundled one is fetched from the GitHub Release assets via `gh`; a missing ' +
-        '`gh`, no network, or an absent asset returns a typed error result ({ ok: false, reason }), never a throw.',
-      inputSchema: {
-        from: z.string().describe('The cngx version to upgrade FROM, e.g. "0.1.0" (without the leading "v").'),
-        to: z
-          .string()
-          .optional()
-          .describe('The cngx version to upgrade TO. Defaults to the bundled snapshot version.'),
-      },
-    },
-    ({ from, to }) => {
-      try {
-        return jsonResult(migrateUsage(docs, { from, to }));
-      } catch (error) {
-        // Final safety net: the tool must answer, never throw across the boundary.
-        const failure: UsageDeltaError = {
-          ok: false,
-          meta: { from, to: to ?? docs.meta.cngxVersion ?? 'unknown' },
-          reason: 'asset-missing',
-          message: error instanceof Error ? error.message : String(error),
-        };
-        return jsonResult(failure);
-      }
-    },
-  );
-}
+export const migrateUsageCommand = defineCommand({
+  name: 'migrate_usage',
+  title: 'Diff two cngx releases',
+  description:
+    'Return a structured API delta between two cngx releases: removed / renamed / signature-changed ' +
+    'components, inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version. ' +
+    'A version other than the bundled one is fetched from the GitHub Release assets via `gh`; a missing ' +
+    '`gh`, no network, or an absent asset returns a typed error result ({ ok: false, reason }), never a throw.',
+  input: {
+    from: z.string().describe('The cngx version to upgrade FROM, e.g. "0.1.0" (without the leading "v").'),
+    to: z
+      .string()
+      .optional()
+      .describe('The cngx version to upgrade TO. Defaults to the bundled snapshot version.'),
+  },
+  run: (ctx, { from, to }) => {
+    try {
+      return migrateUsage(ctx.bundled, { from, to });
+    } catch (error) {
+      // Final safety net: the tool must answer, never throw across the boundary.
+      const failure: UsageDeltaError = {
+        ok: false,
+        meta: { from, to: to ?? ctx.bundled.meta.cngxVersion ?? 'unknown' },
+        reason: 'asset-missing',
+        message: error instanceof Error ? error.message : String(error),
+      };
+      return failure;
+    }
+  },
+});

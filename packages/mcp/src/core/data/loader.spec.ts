@@ -1,8 +1,12 @@
-import { readFileSync } from 'node:fs';
+import { copyFileSync, mkdtempSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
   createDocsIndex,
+  loadBundledDocs,
+  loadBundledLlmDump,
   loadDocsFromFile,
   loadLlmDumpFromFile,
   SchemaVersionError,
@@ -10,8 +14,8 @@ import {
 } from './loader.js';
 import type { DocumentationJson } from './types.js';
 
-const FIXTURE = fileURLToPath(new URL('../../test/fixtures/documentation.sample.json', import.meta.url));
-const LLM_DUMP_FIXTURE = fileURLToPath(new URL('../../test/fixtures/llm-context.sample.md', import.meta.url));
+const FIXTURE = fileURLToPath(new URL('../../../test/fixtures/documentation.sample.json', import.meta.url));
+const LLM_DUMP_FIXTURE = fileURLToPath(new URL('../../../test/fixtures/llm-context.sample.md', import.meta.url));
 
 function readFixture(): DocumentationJson {
   return JSON.parse(readFileSync(FIXTURE, 'utf8')) as DocumentationJson;
@@ -48,6 +52,19 @@ describe('loadLlmDumpFromFile', () => {
 
   it('returns null for a missing path', () => {
     expect(loadLlmDumpFromFile(FIXTURE.replace('documentation.sample.json', 'nope.md'))).toBeNull();
+  });
+});
+
+describe('bundled loaders', () => {
+  it('read documentation.json and llm-context.md from the data directory the caller passes', () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'cngx-mcp-data-'));
+    copyFileSync(FIXTURE, join(dataDir, 'documentation.json'));
+
+    expect(loadBundledDocs(dataDir).meta.cngxVersion).toBe('0.1.0-rc.6');
+    expect(loadBundledLlmDump(dataDir)).toBeNull();
+
+    copyFileSync(LLM_DUMP_FIXTURE, join(dataDir, 'llm-context.md'));
+    expect(loadBundledLlmDump(dataDir)).toBe(readFileSync(LLM_DUMP_FIXTURE, 'utf8'));
   });
 });
 

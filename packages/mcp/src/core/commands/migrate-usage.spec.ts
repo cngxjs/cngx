@@ -6,8 +6,8 @@ import type { MigrateUsageDeps } from './migrate-usage.js';
 import { migrateUsage } from './migrate-usage.js';
 import type { UsageDelta } from '../diff/types.js';
 
-const OLD = fileURLToPath(new URL('../../test/fixtures/documentation.v-old.sample.json', import.meta.url));
-const NEW = fileURLToPath(new URL('../../test/fixtures/documentation.v-new.sample.json', import.meta.url));
+const OLD = fileURLToPath(new URL('../../../test/fixtures/documentation.v-old.sample.json', import.meta.url));
+const NEW = fileURLToPath(new URL('../../../test/fixtures/documentation.v-new.sample.json', import.meta.url));
 
 const bundledNew = loadDocsFromFile(NEW); // cngxVersion 0.2.0
 

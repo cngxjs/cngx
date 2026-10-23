@@ -14,7 +14,7 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { loadDocsFromFile, loadLlmDumpFromFile } from './data/loader.js';
+import { loadDocsFromFile, loadLlmDumpFromFile } from './core/data/loader.js';
 import { createServer } from './server.js';
 import { diffSurface, type ToolSurface } from './tool-surface.js';
 

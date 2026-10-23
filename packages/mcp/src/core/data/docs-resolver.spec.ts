@@ -5,8 +5,8 @@ import type { DocsResolverDeps } from './docs-resolver.js';
 import { answerVersioned, DOCS_CACHE_LIMIT, resetDocsCache, resolveDocs } from './docs-resolver.js';
 import type { SnapshotFetchFailureReason } from '../diff/types.js';
 
-const SAMPLE = fileURLToPath(new URL('../../test/fixtures/documentation.sample.json', import.meta.url));
-const NEW = fileURLToPath(new URL('../../test/fixtures/documentation.v-new.sample.json', import.meta.url));
+const SAMPLE = fileURLToPath(new URL('../../../test/fixtures/documentation.sample.json', import.meta.url));
+const NEW = fileURLToPath(new URL('../../../test/fixtures/documentation.v-new.sample.json', import.meta.url));
 
 const bundled = loadDocsFromFile(SAMPLE); // cngxVersion 0.1.0-rc.6
 

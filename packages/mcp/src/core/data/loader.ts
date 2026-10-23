@@ -4,8 +4,7 @@
 // rather than silently answering from a shape it does not understand.
 
 import { existsSync, readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import type { DocEntry, DocFunction, DocToken, DocumentationJson } from './types.js';
 
 /** The single `documentation.json` schema version this server supports. */
@@ -77,13 +76,13 @@ export function loadDocsFromFile(path: string): DocsIndex {
   return createDocsIndex(JSON.parse(raw) as DocumentationJson);
 }
 
-// The bundled snapshot ships at `<package>/data/documentation.json`. From the
-// compiled `dist/data/loader.js`, two levels up reach the package root.
-const BUNDLED_DATA_PATH = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'data', 'documentation.json');
+// The bundled snapshot ships at `<package>/data/documentation.json`. The caller
+// passes that directory: only the entry module knows its own depth below the
+// package root, so no path here is relative to this file.
 
-/** Load the snapshot bundled into the published package. */
-export function loadBundledDocs(): DocsIndex {
-  return loadDocsFromFile(BUNDLED_DATA_PATH);
+/** Load the snapshot bundled into the published package from its `data/` directory. */
+export function loadBundledDocs(dataDir: string): DocsIndex {
+  return loadDocsFromFile(join(dataDir, 'documentation.json'));
 }
 
 // The verbatim compodocx llm-md dump - the full offline API text. Deliberately a
@@ -99,12 +98,11 @@ export function loadLlmDumpFromFile(path: string): string | null {
   return readFileSync(path, 'utf8');
 }
 
-// Ships alongside `documentation.json` at `<package>/data/llm-context.md`,
-// mirroring BUNDLED_DATA_PATH. Optional: a checkout that has not run `docs:llm`
-// bundles no dump, and the resource then degrades to an empty read.
-const BUNDLED_LLM_DUMP_PATH = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'data', 'llm-context.md');
+// Ships alongside `documentation.json` at `<package>/data/llm-context.md`.
+// Optional: a checkout that has not run `docs:llm` bundles no dump, and the
+// resource then degrades to an empty read.
 
 /** Load the llm-md dump bundled into the published package; `null` when absent. */
-export function loadBundledLlmDump(): string | null {
-  return loadLlmDumpFromFile(BUNDLED_LLM_DUMP_PATH);
+export function loadBundledLlmDump(dataDir: string): string | null {
+  return loadLlmDumpFromFile(join(dataDir, 'llm-context.md'));
 }

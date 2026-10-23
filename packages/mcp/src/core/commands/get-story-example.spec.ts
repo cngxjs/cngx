@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { loadDocsFromFile } from '../data/loader.js';
 import { getStoryExample } from './get-story-example.js';
 
-const FIXTURE = fileURLToPath(new URL('../../test/fixtures/documentation.sample.json', import.meta.url));
+const FIXTURE = fileURLToPath(new URL('../../../test/fixtures/documentation.sample.json', import.meta.url));
 const docs = loadDocsFromFile(FIXTURE);
 
 describe('getStoryExample', () => {

@@ -10,9 +10,8 @@
 // functions instead survives every naming deviation and the shared
 // forms/select/shared/ directory (each surface owns its own token file).
 
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { jsonResult } from './tool-result.js';
+import { defineCommand } from '../command.js';
 import { versionInput } from './version-input.js';
 import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
@@ -190,23 +189,19 @@ export function getConfig(docs: DocsIndex, name: string): ConfigResult | null {
 /** A question this tool answers; the ng-add helper README lists it. */
 export const example = 'How do I set app-wide defaults for CngxSelect?';
 
-export function registerGetConfig(server: McpServer, docs: DocsIndex): void {
-  server.registerTool(
-    'get_config',
-    {
-      title: 'Get a cngx configuration cascade',
-      description:
-        'Return a config surface: the CNGX_<X>_CONFIG token, its co-located provider functions, the ' +
-        'with* feature functions, and the resolution-priority ordering. Accepts a config token name ' +
-        '(CNGX_SELECT_CONFIG), a config stem (select), or best-effort a component/directive name ' +
-        '(CngxCombobox -> CNGX_SELECT_CONFIG). Returns null when the input maps to no config token.',
-      inputSchema: {
-        name: z
-          .string()
-          .describe('A config token (CNGX_SELECT_CONFIG), a stem (select), or a component name (CngxSelect).'),
-        version: versionInput,
-      },
-    },
-    ({ name, version }) => jsonResult(answerVersioned(docs, version, (resolved) => getConfig(resolved, name))),
-  );
-}
+export const getConfigCommand = defineCommand({
+  name: 'get_config',
+  title: 'Get a cngx configuration cascade',
+  description:
+    'Return a config surface: the CNGX_<X>_CONFIG token, its co-located provider functions, the ' +
+    'with* feature functions, and the resolution-priority ordering. Accepts a config token name ' +
+    '(CNGX_SELECT_CONFIG), a config stem (select), or best-effort a component/directive name ' +
+    '(CngxCombobox -> CNGX_SELECT_CONFIG). Returns null when the input maps to no config token.',
+  input: {
+    name: z
+      .string()
+      .describe('A config token (CNGX_SELECT_CONFIG), a stem (select), or a component name (CngxSelect).'),
+    version: versionInput,
+  },
+  run: (ctx, { name, version }) => answerVersioned(ctx.bundled, version, (resolved) => getConfig(resolved, name)),
+});

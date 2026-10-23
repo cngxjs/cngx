@@ -7,11 +7,11 @@ import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ReadResourceResult } from '@modelcontextprotocol/sdk/types.js';
 import type { Variables } from '@modelcontextprotocol/sdk/shared/uriTemplate.js';
-import type { DocsIndex } from '../data/loader.js';
-import { allEntries } from '../query.js';
-import { listComponents } from '../tools/list-components.js';
-import { getDiTokens } from '../tools/get-di-tokens.js';
-import { getApi } from '../tools/get-api.js';
+import type { DocsIndex } from '../core/data/loader.js';
+import { allEntries } from '../core/query.js';
+import { listComponents } from '../core/commands/list-components.js';
+import { getDiTokens } from '../core/commands/get-di-tokens.js';
+import { getApi } from '../core/commands/get-api.js';
 
 const JSON_MIME = 'application/json';
 

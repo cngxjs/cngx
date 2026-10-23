@@ -3,9 +3,8 @@
 // service's API surface: inputs, outputs, signal flag, host bindings, public
 // methods, and description.
 
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { jsonResult } from './tool-result.js';
+import { defineCommand } from '../command.js';
 import { versionInput } from './version-input.js';
 import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
@@ -81,22 +80,18 @@ export function getApi(docs: DocsIndex, name: string): ApiResult | null {
 /** A question this tool answers; the ng-add helper README lists it. */
 export const example = 'What inputs and outputs does CngxSelect take?';
 
-export function registerGetApi(server: McpServer, docs: DocsIndex): void {
-  server.registerTool(
-    'get_api',
-    {
-      title: 'Get cngx component API',
-      description:
-        "Return a single component's, directive's, or injectable service's API surface - inputs, " +
-        'outputs, signal flag, host bindings, public methods, and description - by class name or ' +
-        'selector. Returns null when the name resolves to nothing.',
-      inputSchema: {
-        name: z
-          .string()
-          .describe('A component/directive/service class name or selector, e.g. "CngxSelect" or "cngx-select".'),
-        version: versionInput,
-      },
-    },
-    ({ name, version }) => jsonResult(answerVersioned(docs, version, (resolved) => getApi(resolved, name))),
-  );
-}
+export const getApiCommand = defineCommand({
+  name: 'get_api',
+  title: 'Get cngx component API',
+  description:
+    "Return a single component's, directive's, or injectable service's API surface - inputs, " +
+    'outputs, signal flag, host bindings, public methods, and description - by class name or ' +
+    'selector. Returns null when the name resolves to nothing.',
+  input: {
+    name: z
+      .string()
+      .describe('A component/directive/service class name or selector, e.g. "CngxSelect" or "cngx-select".'),
+    version: versionInput,
+  },
+  run: (ctx, { name, version }) => answerVersioned(ctx.bundled, version, (resolved) => getApi(resolved, name)),
+});

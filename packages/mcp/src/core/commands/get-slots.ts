@@ -3,9 +3,8 @@
 // plus its one-line doc. The data has no selector/context key on a slot, so the
 // payload is exactly { name, description } per slot.
 
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { jsonResult } from './tool-result.js';
+import { defineCommand } from '../command.js';
 import { versionInput } from './version-input.js';
 import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
@@ -35,20 +34,16 @@ export function getSlots(docs: DocsIndex, name: string): SlotsResult | null {
 /** A question this tool answers; the ng-add helper README lists it. */
 export const example = 'Which template slots can I override on CngxSelect?';
 
-export function registerGetSlots(server: McpServer, docs: DocsIndex): void {
-  server.registerTool(
-    'get_slots',
-    {
-      title: 'Get cngx component template slots',
-      description:
-        "Return a component's projected template slots - each the slot directive selector name plus " +
-        'its one-line doc - by class name or selector. An empty slots array means the component projects ' +
-        'no overridable slots. Returns null when the name resolves to nothing.',
-      inputSchema: {
-        name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect".'),
-        version: versionInput,
-      },
-    },
-    ({ name, version }) => jsonResult(answerVersioned(docs, version, (resolved) => getSlots(resolved, name))),
-  );
-}
+export const getSlotsCommand = defineCommand({
+  name: 'get_slots',
+  title: 'Get cngx component template slots',
+  description:
+    "Return a component's projected template slots - each the slot directive selector name plus " +
+    'its one-line doc - by class name or selector. An empty slots array means the component projects ' +
+    'no overridable slots. Returns null when the name resolves to nothing.',
+  input: {
+    name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect".'),
+    version: versionInput,
+  },
+  run: (ctx, { name, version }) => answerVersioned(ctx.bundled, version, (resolved) => getSlots(resolved, name)),
+});

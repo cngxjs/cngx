@@ -3,9 +3,8 @@
 // dual-mode get_tokens so the return shape is predictable - an agent always gets
 // theme tokens here, never a DI-token list.
 
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { jsonResult } from './tool-result.js';
+import { defineCommand } from '../command.js';
 import { versionInput } from './version-input.js';
 import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
@@ -47,20 +46,16 @@ export function getThemeTokens(docs: DocsIndex, name: string): ThemeTokensResult
 /** A question this tool answers; the ng-add helper README lists it. */
 export const example = 'Which custom properties theme CngxChip?';
 
-export function registerGetThemeTokens(server: McpServer, docs: DocsIndex): void {
-  server.registerTool(
-    'get_theme_tokens',
-    {
-      title: 'Get cngx component theming tokens',
-      description:
-        "Return a component's theming tokens (the CSS custom properties it exposes) and its theme " +
-        'overview, by class name or selector. An empty themeTokens array means the component exposes ' +
-        'none. Returns null when the name resolves to nothing. For DI tokens, use get_di_tokens.',
-      inputSchema: {
-        name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect".'),
-        version: versionInput,
-      },
-    },
-    ({ name, version }) => jsonResult(answerVersioned(docs, version, (resolved) => getThemeTokens(resolved, name))),
-  );
-}
+export const getThemeTokensCommand = defineCommand({
+  name: 'get_theme_tokens',
+  title: 'Get cngx component theming tokens',
+  description:
+    "Return a component's theming tokens (the CSS custom properties it exposes) and its theme " +
+    'overview, by class name or selector. An empty themeTokens array means the component exposes ' +
+    'none. Returns null when the name resolves to nothing. For DI tokens, use get_di_tokens.',
+  input: {
+    name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect".'),
+    version: versionInput,
+  },
+  run: (ctx, { name, version }) => answerVersioned(ctx.bundled, version, (resolved) => getThemeTokens(resolved, name)),
+});

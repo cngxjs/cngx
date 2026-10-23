@@ -6,16 +6,9 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { DocsIndex } from './data/loader.js';
-import { registerFindComponent } from './tools/find-component.js';
-import { registerListComponents } from './tools/list-components.js';
-import { registerGetApi } from './tools/get-api.js';
-import { registerGetSlots } from './tools/get-slots.js';
-import { registerGetThemeTokens } from './tools/get-theme-tokens.js';
-import { registerGetDiTokens } from './tools/get-di-tokens.js';
-import { registerGetConfig } from './tools/get-config.js';
-import { registerGetStoryExample } from './tools/get-story-example.js';
-import { registerMigrateUsage } from './tools/migrate-usage.js';
+import type { DocsIndex } from './core/data/loader.js';
+import { COMMANDS } from './core/registry.js';
+import { registerCommands } from './mcp-adapter.js';
 import { registerResources } from './resources/register-resources.js';
 import { registerPrompts } from './prompts/register-prompts.js';
 
@@ -55,16 +48,7 @@ export function createServer({ docs, llmDump }: CreateServerOptions): McpServer 
     },
   );
 
-  registerFindComponent(server, docs);
-  registerListComponents(server, docs);
-  registerGetApi(server, docs);
-  registerGetSlots(server, docs);
-  registerGetThemeTokens(server, docs);
-  registerGetDiTokens(server, docs);
-  registerGetConfig(server, docs);
-  registerGetStoryExample(server, docs);
-  registerMigrateUsage(server, docs);
-
+  registerCommands(server, COMMANDS, { bundled: docs });
   registerResources(server, docs, llmDump);
   registerPrompts(server);
 
