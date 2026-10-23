@@ -224,8 +224,9 @@
        here it only gets a size and a muted tint. Driven through CngxIcon's
        own knobs rather than by overriding its geometry - both stylesheets
        sit in cngx.components, so setting the token is the contract, not a
-       specificity contest. Both knobs are registered inherits:false and read
-       on the icon host, which is the element this rule targets. */
+       specificity contest (the icon's size variants sit at :scope
+       specificity). Both knobs are read on the icon host, which is the
+       element this rule targets. */
     .cngx-field-prefix > cngx-icon,
     .cngx-field-suffix > cngx-icon {
       --cngx-icon-size: var(--cngx-field-affix-icon-size, 1.25em);

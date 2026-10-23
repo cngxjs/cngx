@@ -76,7 +76,7 @@ If a third-party glyph component sets its own ARIA (e.g. Material's `<mat-icon>`
 | `lg` | `1.5em` | `--cngx-icon-size-lg` |
 | `xl` | `2em` | `--cngx-icon-size-xl` |
 
-For one-off overrides use inline `--cngx-icon-size`:
+The scale tokens inherit, so re-tuning them on `:root` or any ancestor reaches every icon below it. For one-off overrides set `--cngx-icon-size` on the icon itself:
 
 ```html
 <cngx-icon style="--cngx-icon-size: 32px">…</cngx-icon>
