@@ -15,7 +15,7 @@ Angular ships three form systems today:
 
 - **`ControlValueAccessor`** (CVA) - the contract behind `[(ngModel)]` and Reactive Forms.
 - **Reactive Forms** - `FormControl`, `FormGroup`, `Validators`.
-- **Signal Forms** (`@angular/forms/signals`) - `form()`, `schema()`, `Field<T>`, `[control]`.
+- **Signal Forms** (`@angular/forms/signals`) - `form()`, `schema()`, `Field<T>`, `[formField]`.
 
 CNGX commits to the third, integrates with the second through one explicit adapter, and tolerates the first only at the consumer boundary (Material, native `<input>`, third-party widgets that pre-date signals). No new CNGX atom implements CVA.
 
@@ -23,7 +23,7 @@ This page lays out the contracts, how CNGX bridges between them, and which path 
 
 <aside class="cc-note">
 
-**The mental model: two channels that never overlap.** A *field token* carries the ARIA surface - `id`, `aria-invalid`, `aria-required`, focus/blur plumbing. A *binding directive* carries the value - `[control]` for Signal Forms, `[formControl]` for Reactive Forms. Keeping them separate is what lets one CNGX control serve all three form systems.
+**The mental model: two channels that never overlap.** A *field token* carries the ARIA surface - `id`, `aria-invalid`, `aria-required`, focus/blur plumbing. A *binding directive* carries the value - `[formField]` for Signal Forms, `[formControl]` for Reactive Forms. Keeping them separate is what lets one CNGX control serve all three form systems.
 
 </aside>
 
@@ -37,7 +37,7 @@ The integration rests on three small, orthogonal DI tokens. A control declares o
 
 |Token|Carries|Provided by|
 |-|-|-|
-|`CNGX_FORM_FIELD_CONTROL`|Control metadata: `inputId`, `focused`, `empty`, `disabled`, `errorState`. No value channel.|Every focusable control.|
+|`CNGX_FORM_FIELD_CONTROL`|Control metadata: `id`, `focused`, `empty`, `disabled`, `errorState`. No value channel.|Every focusable control.|
 |`CNGX_FORM_FIELD_HOST`|Field-level gating read back from the form-field: `showError`, `markAsTouched()`. Optional.|`<cngx-form-field>`.|
 |`CNGX_VALUE_TRANSFORMER`|Value translation: `format(raw: T)`, `parse(display: string): T`.|The three `@cngx/forms/input` directives.|
 
@@ -68,7 +68,7 @@ The contracts above describe what a control *is*. A bridge is the wiring that le
 
 Two things to read off this:
 
-- **Whether a bridge owns the value channel is the key distinction.** `cngxBindField` deliberately does *not* - the foreign host already has a CVA, so `[control]`/`[formControl]` drives the value and the bridge carries only ARIA. The control bridges *do* own it: a `CngxListbox` or `CngxSlider` exposes a `value = model<T>()` but no CVA, so the bridge two-way-syncs that model with the field. That value sync is the whole reason these are dedicated directives rather than another `cngxBindField`.
+- **Whether a bridge owns the value channel is the key distinction.** `cngxBindField` deliberately does *not* - the foreign host already has a CVA, so its own `[formControl]` (or other binding) drives the value and the bridge carries only ARIA. The control bridges *do* own it: a `CngxListbox` or `CngxSlider` exposes a `value = model<T>()` but no CVA, so the bridge two-way-syncs that model with the field. That value sync is the whole reason these are dedicated directives rather than another `cngxBindField`.
 - **The atom stays Forms-agnostic.** A control bridge is the *only* file that imports from `@cngx/forms/field` / `@angular/forms`; the slider and listbox atoms in `@cngx/common/interactive` never learn that forms exist. New composite controls get their own bridge as they need one - the slider bridge is the most recent, and the list is open.
 
 Bridges are the cost of meeting a consumer (or an atom) where it already is, not a tax on the default path: a control that provides `CNGX_FORM_FIELD_CONTROL` directly needs none for ARIA, and a feature on Signal Forms needs none for field shape.
@@ -81,9 +81,9 @@ Bridges are the cost of meeting a consumer (or an atom) where it already is, not
 
 - A plain signal holds the data: `const model = signal({ name: '' });`
 - `form(model, schema)` returns a `FieldTree<T>` whose leaves are callable `Field<T>` accessors.
-- `<input [control]="myField">` is the binding directive. It writes the field's value into the directive's `value = model<T>()` signal on user input, and writes back into the model on every field update.
+- `[formField]="myField"` on the control is the binding directive. User input writes the value into the field, and every field update flows back into the control.
 
-CNGX wraps the form-field UI around it with `[field]`.
+CNGX wraps the form-field UI around it with `[field]` on the shell.
 
 ### Setup
 
@@ -103,26 +103,26 @@ readonly emailForm = form(this.model, schema(root => {
 ```html
 <cngx-form-field [field]="emailForm.email">
   <label cngxLabel>Email</label>
-  <input cngxInput [control]="emailForm.email" />
+  <input cngxInput [formField]="emailForm.email" />
   <cngx-field-errors />
 </cngx-form-field>
 ```
 
-`CngxInput` provides `CNGX_FORM_FIELD_CONTROL` directly, so the form-field can paint `aria-invalid`, `aria-required`, and the error list without a bridge. The value channel runs through `[control]`.
+`CngxInput` provides `CNGX_FORM_FIELD_CONTROL` directly, so the form-field can paint `aria-invalid`, `aria-required`, and the error list without a bridge. The value channel runs through `[formField]` on the element.
 
 ### With a value transformer
 
-For atoms whose value flow needs translating (locale-formatted numbers, masked phone strings, currency display on blur), the same binding shape applies - the directive's `value = model<T>()` is what `[control]` writes against:
+For controls whose value needs translating (locale-formatted numbers, masked phone strings, currency display on blur), add the value directive next to `cngxInput`. The field binding stays on the element:
 
 ```html
 <cngx-form-field [field]="amountForm.amount">
   <label cngxLabel>Amount</label>
-  <input cngxNumericInput cngxBindField [control]="amountForm.amount" />
+  <input cngxInput cngxNumericInput [formField]="amountForm.amount" />
   <cngx-field-errors />
 </cngx-form-field>
 ```
 
-`cngxBindField` is the universal bridge for inputs that don't provide `CNGX_FORM_FIELD_CONTROL` themselves. It projects the form-field's `id`, `aria-*`, and `focus`/`blur` plumbing onto the host element. It does not touch the value channel - `[control]` owns that, talking to the directive's `value` model directly.
+`cngxInput` is the field control here; `cngxNumericInput` supplies the value translation. `cngxBindField` is the bridge for hosts that do not provide `CNGX_FORM_FIELD_CONTROL` themselves. It projects the form-field's `id`, `aria-*`, and `focus`/`blur` plumbing onto the host element and does not touch the value channel, which stays with the element's own binding.
 
 ---
 
@@ -154,7 +154,7 @@ readonly emailField = signal<CngxFieldAccessor>(
 </cngx-form-field>
 ```
 
-`[formControl]` continues to drive the value channel (CVA on `CngxInput`'s host element). `adaptFormControl` only synthesises the *field shape* - value, errors, touched, dirty, required, validity - into the `Field<T>` interface the form-field expects. The RF control remains the source of truth.
+`[formControl]` continues to drive the value channel through Angular's built-in value accessor on the native `<input>`. `adaptFormControl` only synthesises the *field shape* - value, errors, touched, dirty, required, validity - into the `Field<T>` interface the form-field expects. The RF control remains the source of truth.
 
 The adapter is a one-shot factory: call it once, store the result, pass it to `[field]`. Subsequent RF changes propagate through the adapter's internal `effect()`s.
 
@@ -182,7 +182,7 @@ CVA is no longer a CNGX authoring pattern. A new atom in `@cngx/common/*` or `@c
 - **Provides `CNGX_FORM_FIELD_CONTROL` directly** - most controls. See `CngxInput`, `CngxSelect`, `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`, `CngxTreeSelect`, `CngxReorderableMultiSelect`, `CngxActionSelect`, `CngxActionMultiSelect`.
 - **Provides `CNGX_VALUE_TRANSFORMER`** - when its job is to translate between a typed raw value and a display string: `CngxInputFormat`, `CngxNumericInput`, `CngxInputMask`.
 
-Both paths expose `value = model<T>()`, the same shape Signal Forms' `[control]` directive binds against.
+Both paths expose `value = model<T>()`, which the field binding reads and writes.
 
 CVA is allowed at the consumer boundary, attached to a host element the consumer brings - a Material control, a native `<input>`, a third-party widget. CNGX never authors it.
 
@@ -196,7 +196,7 @@ The architectural reason is documented in `projects/forms/select/ARCHITECTURE.md
 
 |Consumer has|Use|Notes|
 |-|-|-|
-|Signal-native code, fresh feature|Signal Forms + `[control]`|The default. Smallest binding, full signal-graph integration.|
+|Signal-native code, fresh feature|Signal Forms + `[formField]`|The default. Smallest binding, full signal-graph integration.|
 |Reactive Forms control already in place|`adaptFormControl` + `[formControl]`|One-line bridge; RF stays the source of truth.|
 |Material / native / third-party CVA control|`cngxBindField` + `[formControl]`|`[formControl]` drives the value via the host's existing CVA; `cngxBindField` carries the form-field ARIA.|
 |Standalone usage, no form involved|`[(value)]` or template-variable read|Works on every CNGX control with a `value` model.|

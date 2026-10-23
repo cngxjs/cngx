@@ -156,9 +156,15 @@ npm run test:e2e:examples:update  # refresh examples snapshots
 ### Linting
 
 ```bash
-npm run lint       # eslint .
-npm run lint:fix   # eslint --fix + prettier
+npm run examples:generate   # once per fresh checkout, before lint
+npm run lint                # eslint .
+npm run lint:fix            # eslint --fix + prettier
 ```
+
+`examples/src/app/features/` and `examples/src/app/_routes-meta.ts` are
+generated and gitignored. `examples/e2e/_routes.ts` imports the latter, so
+`npm run lint` fails with `no-unsafe-*` errors until the generator has run.
+CI runs it before lint.
 
 Run lint and the unit tests locally before pushing - they catch what the
 AOT build does not.

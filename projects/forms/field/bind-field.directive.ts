@@ -29,7 +29,7 @@ import type { CngxFormFieldControl } from './models';
  * ```html
  * <cngx-form-field [field]="f.color">
  *   <label cngxLabel>Color</label>
- *   <mat-select cngxBindField [control]="f.color">
+ *   <mat-select cngxBindField [formField]="f.color">
  *     <mat-option value="red">Red</mat-option>
  *     <mat-option value="green">Green</mat-option>
  *   </mat-select>
