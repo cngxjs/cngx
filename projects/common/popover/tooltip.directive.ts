@@ -13,7 +13,7 @@ import {
 
 import { CngxReducedMotion } from '@cngx/common/a11y';
 import { injectDirection } from '@cngx/core';
-import { nextUid } from '@cngx/core/utils';
+import { injectDescribedByContribution, nextUid } from '@cngx/core/utils';
 
 import {
   ANCHOR_AREA_PROPERTY,
@@ -161,7 +161,21 @@ export class CngxTooltip {
   private openTimer: ReturnType<typeof setTimeout> | null = null;
   private closeTimer: ReturnType<typeof setTimeout> | null = null;
 
-  protected readonly ariaDescribedBy = computed(() => (this.enabled() ? this.idSignal() : null));
+  private readonly ownDescribedBy = computed(() => (this.enabled() ? this.idSignal() : null));
+
+  /**
+   * A host that owns `aria-describedby` (`CngxButton`, `CngxIconButton`)
+   * provides `CNGX_DESCRIBED_BY` on its element: the tooltip id joins that
+   * registry and this binding renders the merged value the host renders, so
+   * neither binding drops the other's ids. Without one, the tooltip binds
+   * its own id.
+   */
+  private readonly describedByRegistry = injectDescribedByContribution(
+    this.idSignal(),
+    this.ownDescribedBy,
+  );
+
+  protected readonly ariaDescribedBy = this.describedByRegistry?.value ?? this.ownDescribedBy;
 
   protected readonly cssAnchorName = computed(() =>
     SUPPORTS_ANCHOR ? `--cngx-tip-${this.idSignal()}` : null,
