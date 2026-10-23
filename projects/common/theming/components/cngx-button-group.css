@@ -27,7 +27,9 @@
  *
  * A group whose direct children are groups spaces them by
  * `--cngx-button-group-gap`, floored to `--cngx-target-gap` so a coarse
- * pointer keeps 8px between sub-groups (WCAG 2.5.8).
+ * pointer keeps 8px between sub-groups (WCAG 2.5.8). One group child is
+ * enough: a loose button next to sub-groups then gets no segment geometry,
+ * so wrap it in a group of its own.
  *
  * **Parts**
  *

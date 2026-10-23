@@ -25,7 +25,9 @@ export type CngxButtonGroupOrientation = 'horizontal' | 'vertical';
  * hovered or focused segment is lifted above its neighbours so its border
  * and focus ring are never clipped at a seam. A group whose direct children
  * are groups is a toolbar: the sub-groups sit apart, the gap floored to
- * `--cngx-target-gap` on a coarse pointer.
+ * `--cngx-target-gap` on a coarse pointer. One group child is enough to make
+ * the whole group a toolbar, so a loose button next to sub-groups gets no
+ * segment geometry; wrap it in a group of its own.
  *
  * `variant` and `size` set once on the group reach every `cngxButton` and
  * `cngxIconButton` inside through `CNGX_BUTTON_GROUP`; a child's own input
