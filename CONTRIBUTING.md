@@ -6,7 +6,7 @@ Thank you for your interest in contributing to the CNGX UI Component Libraries!
 
 ### Prerequisites
 
-- Node.js 20 (CI runs on Node 20)
+- Node.js 24 (`.nvmrc`; CI reads the same file)
 - npm
 
 ### Installation
@@ -171,7 +171,7 @@ AOT build does not.
 
 ## Continuous Integration
 
-CI (`.github/workflows/ci.yml`, Node 20) runs on pushes to `main` and on PRs:
+CI (`.github/workflows/ci.yml`, Node 24 via `.nvmrc`) runs on pushes to `main` and on PRs:
 
 `build:libs` -> `docs:json` -> `examples:generate` -> `lint` -> `test` -> `build:examples`.
 

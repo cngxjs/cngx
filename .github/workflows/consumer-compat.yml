@@ -142,11 +142,6 @@ jobs:
       - name: Install dependencies
         if: needs.changes.outputs.relevant == 'true'
         run: npm ci
-      # npm 10.9 (bundled with Node 22) crashes with "reading 'edgesOut'" on a
-      # plain install of a fresh Angular 21 app; npm 11 installs it cleanly.
-      - name: Use npm 11 for the fixture install
-        if: needs.changes.outputs.relevant == 'true'
-        run: npm install -g npm@11
       - name: Install Playwright chromium
         if: needs.changes.outputs.relevant == 'true'
         run: npx playwright install --with-deps chromium
