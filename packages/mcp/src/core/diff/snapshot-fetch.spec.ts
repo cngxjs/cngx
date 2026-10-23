@@ -48,21 +48,21 @@ describe('classifyGhFailure', () => {
 });
 
 describe('fetchSnapshot', () => {
-  it('returns the documentation.json path inside the temp dir on success', () => {
-    const deps: SnapshotFetchDeps = { download: () => undefined, makeTempDir: () => '/tmp/cngx-mcp-test' };
+  it('returns the documentation.json path inside the temp dir on success', async () => {
+    const deps: SnapshotFetchDeps = { download: async () => undefined, makeTempDir: () => '/tmp/cngx-mcp-test' };
 
-    expect(fetchSnapshot('0.2.0', deps)).toEqual({ ok: true, path: '/tmp/cngx-mcp-test/documentation.json' });
+    expect(await fetchSnapshot('0.2.0', deps)).toEqual({ ok: true, path: '/tmp/cngx-mcp-test/documentation.json' });
   });
 
-  it('returns the classified failure instead of throwing when the download fails', () => {
+  it('returns the classified failure instead of throwing when the download fails', async () => {
     const deps: SnapshotFetchDeps = {
-      download: () => {
+      download: async () => {
         throw Object.assign(new Error('spawn gh ENOENT'), { code: 'ENOENT' });
       },
       makeTempDir: () => '/tmp/cngx-mcp-test',
     };
 
-    expect(fetchSnapshot('0.2.0', deps)).toEqual({
+    expect(await fetchSnapshot('0.2.0', deps)).toEqual({
       ok: false,
       reason: 'gh-missing',
       message: 'The `gh` CLI is not installed or not on PATH.',

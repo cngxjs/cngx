@@ -91,10 +91,10 @@ describe('diffSnapshots rename inference is fingerprint-gated', () => {
 describe('fetchSnapshot failure classification', () => {
   const stubDir = { makeTempDir: () => '/tmp/cngx-mcp-snapshot-test' };
 
-  it('returns gh-missing when the gh CLI is absent', () => {
-    const result = fetchSnapshot('9.9.9', {
+  it('returns gh-missing when the gh CLI is absent', async () => {
+    const result = await fetchSnapshot('9.9.9', {
       ...stubDir,
-      download: () => {
+      download: async () => {
         const error = new Error('spawn gh ENOENT') as NodeJS.ErrnoException;
         error.code = 'ENOENT';
         throw error;
@@ -103,28 +103,28 @@ describe('fetchSnapshot failure classification', () => {
     expect(result).toEqual({ ok: false, reason: 'gh-missing', message: expect.any(String) });
   });
 
-  it('classifies a missing release asset', () => {
-    const result = fetchSnapshot('9.9.9', {
+  it('classifies a missing release asset', async () => {
+    const result = await fetchSnapshot('9.9.9', {
       ...stubDir,
-      download: () => {
+      download: async () => {
         throw new Error('release not found');
       },
     });
     expect(result).toMatchObject({ ok: false, reason: 'asset-missing' });
   });
 
-  it('classifies a network failure', () => {
-    const result = fetchSnapshot('9.9.9', {
+  it('classifies a network failure', async () => {
+    const result = await fetchSnapshot('9.9.9', {
       ...stubDir,
-      download: () => {
+      download: async () => {
         throw new Error('dial tcp: lookup api.github.com: no such host');
       },
     });
     expect(result).toMatchObject({ ok: false, reason: 'network' });
   });
 
-  it('returns the downloaded path on success', () => {
-    const result = fetchSnapshot('0.2.0', { makeTempDir: () => '/tmp/cngx-mcp-ok', download: () => undefined });
+  it('returns the downloaded path on success', async () => {
+    const result = await fetchSnapshot('0.2.0', { makeTempDir: () => '/tmp/cngx-mcp-ok', download: async () => undefined });
     expect(result).toEqual({ ok: true, path: '/tmp/cngx-mcp-ok/documentation.json' });
   });
 

@@ -31,10 +31,10 @@ describe('getDiTokens', () => {
 describe('get_di_tokens version wiring', () => {
   beforeEach(() => resetDocsCache());
 
-  it('grounds the array answer against a fetched non-bundled version', () => {
-    const deps: DocsResolverDeps = { fetchSnapshot: () => ({ ok: true, path: NEW }), loadDocs: loadDocsFromFile };
+  it('grounds the array answer against a fetched non-bundled version', async () => {
+    const deps: DocsResolverDeps = { fetchSnapshot: async () => ({ ok: true, path: NEW }), loadDocs: loadDocsFromFile };
 
-    const answer = answerVersioned(docs, '0.2.0', (resolved) => getDiTokens(resolved), deps);
+    const answer = await answerVersioned(docs, '0.2.0', (resolved) => getDiTokens(resolved), deps);
 
     // Array-returning tool: the version rides the envelope, not the payload.
     expect(answer).toMatchObject({ ok: true, groundedVersion: '0.2.0' });
@@ -42,13 +42,13 @@ describe('get_di_tokens version wiring', () => {
     expect(result.map((t) => t.name)).toContain('CNGX_SELECT_CONFIG');
   });
 
-  it('passes a fetch failure through as a typed result', () => {
+  it('passes a fetch failure through as a typed result', async () => {
     const deps: DocsResolverDeps = {
-      fetchSnapshot: () => ({ ok: false, reason: 'asset-missing', message: 'no release' }),
+      fetchSnapshot: async () => ({ ok: false, reason: 'asset-missing', message: 'no release' }),
       loadDocs: loadDocsFromFile,
     };
 
-    const answer = answerVersioned(docs, '999.0.0', (resolved) => getDiTokens(resolved), deps);
+    const answer = await answerVersioned(docs, '999.0.0', (resolved) => getDiTokens(resolved), deps);
 
     expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'no release' });
   });

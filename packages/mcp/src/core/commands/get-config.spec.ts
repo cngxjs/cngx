@@ -200,23 +200,23 @@ describe('get_config version wiring', () => {
     miscellaneous: { functions: [] },
   } as DocumentationJson);
 
-  it('grounds the config answer against a fetched non-bundled version', () => {
-    const deps: DocsResolverDeps = { fetchSnapshot: () => ({ ok: true, path: '/tmp/fetched.json' }), loadDocs: () => fetched };
+  it('grounds the config answer against a fetched non-bundled version', async () => {
+    const deps: DocsResolverDeps = { fetchSnapshot: async () => ({ ok: true, path: '/tmp/fetched.json' }), loadDocs: () => fetched };
 
-    const answer = answerVersioned(bundled, '0.2.0', (resolved) => getConfig(resolved, 'CNGX_FOO_CONFIG'), deps);
+    const answer = await answerVersioned(bundled, '0.2.0', (resolved) => getConfig(resolved, 'CNGX_FOO_CONFIG'), deps);
 
     expect(answer).toMatchObject({ ok: true, groundedVersion: '0.2.0' });
     // The bundled snapshot has no config tokens; only the fetched v0.2.0 resolves this one.
     expect((answer as { result: { token: string } }).result.token).toBe('CNGX_FOO_CONFIG');
   });
 
-  it('passes a fetch failure through as a typed result', () => {
+  it('passes a fetch failure through as a typed result', async () => {
     const deps: DocsResolverDeps = {
-      fetchSnapshot: () => ({ ok: false, reason: 'asset-missing', message: 'no release' }),
+      fetchSnapshot: async () => ({ ok: false, reason: 'asset-missing', message: 'no release' }),
       loadDocs: () => fetched,
     };
 
-    const answer = answerVersioned(bundled, '999.0.0', (resolved) => getConfig(resolved, 'CNGX_FOO_CONFIG'), deps);
+    const answer = await answerVersioned(bundled, '999.0.0', (resolved) => getConfig(resolved, 'CNGX_FOO_CONFIG'), deps);
 
     expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'no release' });
   });

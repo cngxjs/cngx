@@ -58,7 +58,11 @@ export function resetDocsCache(): void {
  * snapshot - `loadDocsFromFile` throwing `SchemaVersionError` or a read error - maps
  * to `asset-missing`, mirroring `migrate_usage` so the three-reason failure union holds.
  */
-export function resolveDocs(bundled: DocsIndex, version?: string, deps: DocsResolverDeps = defaultDeps): DocsResolution {
+export async function resolveDocs(
+  bundled: DocsIndex,
+  version?: string,
+  deps: DocsResolverDeps = defaultDeps,
+): Promise<DocsResolution> {
   const requested = version?.trim() ?? '';
   const bundledVersion = bundled.meta.cngxVersion;
 
@@ -71,7 +75,7 @@ export function resolveDocs(bundled: DocsIndex, version?: string, deps: DocsReso
     return { ok: true, docs: cached, version: cached.meta.cngxVersion ?? requested };
   }
 
-  const fetched = deps.fetchSnapshot(requested);
+  const fetched = await deps.fetchSnapshot(requested);
   if (!fetched.ok) {
     return { ok: false, reason: fetched.reason, message: fetched.message };
   }
@@ -105,13 +109,13 @@ export type VersionedAnswer<T> =
  * not inline per tool: `get_di_tokens` / `find_component` return arrays that cannot
  * carry the version otherwise, so every tool wraps identically.
  */
-export function answerVersioned<T>(
+export async function answerVersioned<T>(
   bundled: DocsIndex,
   version: string | undefined,
   query: (docs: DocsIndex) => T,
   deps: DocsResolverDeps = defaultDeps,
-): VersionedAnswer<T> {
-  const resolution = resolveDocs(bundled, version, deps);
+): Promise<VersionedAnswer<T>> {
+  const resolution = await resolveDocs(bundled, version, deps);
   if (!resolution.ok) {
     return { ok: false, reason: resolution.reason, message: resolution.message };
   }

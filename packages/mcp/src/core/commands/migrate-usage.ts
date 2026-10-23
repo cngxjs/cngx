@@ -35,15 +35,19 @@ const defaultDeps: MigrateUsageDeps = { fetchSnapshot, loadDocs: loadDocsFromFil
  * seam, the schema-error mapping, and the in-memory cache are the same ones the
  * version-scoped query tools use.
  */
-export function migrateUsage(bundled: DocsIndex, args: MigrateUsageArgs, deps: MigrateUsageDeps = defaultDeps): MigrateUsageResult {
+export async function migrateUsage(
+  bundled: DocsIndex,
+  args: MigrateUsageArgs,
+  deps: MigrateUsageDeps = defaultDeps,
+): Promise<MigrateUsageResult> {
   const from = args.from;
   const to = args.to ?? bundled.meta.cngxVersion ?? 'unknown';
 
-  const fromResolved = resolveDocs(bundled, from, deps);
+  const fromResolved = await resolveDocs(bundled, from, deps);
   if (!fromResolved.ok) {
     return { ok: false, meta: { from, to }, reason: fromResolved.reason, message: fromResolved.message };
   }
-  const toResolved = resolveDocs(bundled, to, deps);
+  const toResolved = await resolveDocs(bundled, to, deps);
   if (!toResolved.ok) {
     return { ok: false, meta: { from, to }, reason: toResolved.reason, message: toResolved.message };
   }
@@ -82,9 +86,9 @@ export const migrateUsageCommand = defineCommand({
       .optional()
       .describe('The cngx version to upgrade TO. Defaults to the bundled snapshot version.'),
   },
-  run: (ctx, { from, to }) => {
+  run: async (ctx, { from, to }) => {
     try {
-      return migrateUsage(ctx.bundled, { from, to });
+      return await migrateUsage(ctx.bundled, { from, to });
     } catch (error) {
       // Final safety net: the tool must answer, never throw across the boundary.
       const failure: UsageDeltaError = {

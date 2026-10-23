@@ -25,4 +25,20 @@ describe('createServer', () => {
     expect(tools).toHaveLength(9);
     await client.close();
   });
+
+  it('answers a version-scoped tool call through the registry adapter', async () => {
+    const docs = loadDocsFromFile(DOCS_FIXTURE);
+    const server = createServer({ docs, llmDump: null });
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    const client = new Client({ name: 'server-spec', version: '0.0.0' });
+    await server.connect(serverTransport);
+    await client.connect(clientTransport);
+
+    const result = await client.callTool({ name: 'get_api', arguments: { name: 'CngxSelect' } });
+    const [content] = result.content as { type: string; text: string }[];
+    const answer = JSON.parse(content!.text) as { ok: boolean; groundedVersion: string; result: { name: string } };
+
+    expect(answer).toMatchObject({ ok: true, groundedVersion: '0.1.0-rc.6', result: { name: 'CngxSelect' } });
+    await client.close();
+  });
 });

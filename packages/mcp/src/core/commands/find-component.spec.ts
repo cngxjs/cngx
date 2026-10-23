@@ -47,24 +47,24 @@ describe('findComponents', () => {
 describe('find_component version wiring', () => {
   beforeEach(() => resetDocsCache());
 
-  it('grounds the array answer against a fetched non-bundled version', () => {
-    const deps: DocsResolverDeps = { fetchSnapshot: () => ({ ok: true, path: NEW }), loadDocs: loadDocsFromFile };
+  it('grounds the array answer against a fetched non-bundled version', async () => {
+    const deps: DocsResolverDeps = { fetchSnapshot: async () => ({ ok: true, path: NEW }), loadDocs: loadDocsFromFile };
 
     // `CngxNewPanel` exists only in v0.2.0; the bundled snapshot has no "Panel" match.
-    const answer = answerVersioned(docs, '0.2.0', (resolved) => findComponents(resolved, 'Panel'), deps);
+    const answer = await answerVersioned(docs, '0.2.0', (resolved) => findComponents(resolved, 'Panel'), deps);
 
     expect(answer).toMatchObject({ ok: true, groundedVersion: '0.2.0' });
     const result = (answer as { result: { name: string }[] }).result;
     expect(result.map((m) => m.name)).toEqual(['CngxNewPanel']);
   });
 
-  it('passes a fetch failure through as a typed result', () => {
+  it('passes a fetch failure through as a typed result', async () => {
     const deps: DocsResolverDeps = {
-      fetchSnapshot: () => ({ ok: false, reason: 'asset-missing', message: 'no release' }),
+      fetchSnapshot: async () => ({ ok: false, reason: 'asset-missing', message: 'no release' }),
       loadDocs: loadDocsFromFile,
     };
 
-    const answer = answerVersioned(docs, '999.0.0', (resolved) => findComponents(resolved, 'Panel'), deps);
+    const answer = await answerVersioned(docs, '999.0.0', (resolved) => findComponents(resolved, 'Panel'), deps);
 
     expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'no release' });
   });

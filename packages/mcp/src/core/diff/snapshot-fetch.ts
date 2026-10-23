@@ -6,10 +6,11 @@
 // the repo from the git remote of the CURRENT working directory - and `npx @cngx/mcp`
 // runs inside the consumer's checkout, not the cngx one.
 
-import { execFileSync } from 'node:child_process';
+import { execFile } from 'node:child_process';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { promisify } from 'node:util';
 import type { SnapshotFetchFailureReason } from './types.js';
 
 export type SnapshotFetchResult =
@@ -21,8 +22,8 @@ export type SnapshotFetchResult =
  * spawning `gh` or touching the network. Production wiring is {@link defaultDeps}.
  */
 export interface SnapshotFetchDeps {
-  /** Download `documentation.json` for `v<version>` into `dir`; throws on any failure. */
-  download: (version: string, dir: string) => void;
+  /** Download `documentation.json` for `v<version>` into `dir`; rejects on any failure. */
+  download: (version: string, dir: string) => Promise<void>;
   /** Create a fresh temp directory and return its path. */
   makeTempDir: () => string;
 }
@@ -38,8 +39,12 @@ export function ghDownloadArgs(version: string, dir: string): string[] {
   return ['release', 'download', `v${version}`, '--repo', CNGX_REPO, '--pattern', 'documentation.json', '--dir', dir];
 }
 
+const execFileAsync = promisify(execFile);
+
 const defaultDeps: SnapshotFetchDeps = {
-  download: (version, dir) => execFileSync('gh', ghDownloadArgs(version, dir), { stdio: 'pipe' }),
+  download: async (version, dir) => {
+    await execFileAsync('gh', ghDownloadArgs(version, dir));
+  },
   makeTempDir: () => mkdtempSync(join(tmpdir(), 'cngx-mcp-snapshot-')),
 };
 
@@ -62,10 +67,10 @@ export function classifyGhFailure(error: unknown): { reason: SnapshotFetchFailur
   return { reason: 'asset-missing', message };
 }
 
-export function fetchSnapshot(version: string, deps: SnapshotFetchDeps = defaultDeps): SnapshotFetchResult {
+export async function fetchSnapshot(version: string, deps: SnapshotFetchDeps = defaultDeps): Promise<SnapshotFetchResult> {
   const dir = deps.makeTempDir();
   try {
-    deps.download(version, dir);
+    await deps.download(version, dir);
   } catch (error) {
     return { ok: false, ...classifyGhFailure(error) };
   }

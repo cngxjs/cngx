@@ -16,8 +16,8 @@ describe('migrateUsage', () => {
   // fetched in one test cannot satisfy a later test that injects different deps.
   beforeEach(() => resetDocsCache());
 
-  it('defaults `to` to the bundled snapshot version', () => {
-    const result = migrateUsage(bundledNew, { from: '0.2.0' });
+  it('defaults `to` to the bundled snapshot version', async () => {
+    const result = await migrateUsage(bundledNew, { from: '0.2.0' });
 
     expect(result.ok).toBe(true);
     const delta = result as UsageDelta;
@@ -27,13 +27,13 @@ describe('migrateUsage', () => {
     expect(delta.inputs).toEqual({ removed: [], renamed: [], signatureChanged: [] });
   });
 
-  it('fetches a non-bundled `from` and returns the delta (fetch stubbed to a fixture)', () => {
+  it('fetches a non-bundled `from` and returns the delta (fetch stubbed to a fixture)', async () => {
     const deps: MigrateUsageDeps = {
-      fetchSnapshot: () => ({ ok: true, path: OLD }),
+      fetchSnapshot: async () => ({ ok: true, path: OLD }),
       loadDocs: loadDocsFromFile,
     };
 
-    const result = migrateUsage(bundledNew, { from: '0.1.0', to: '0.2.0' }, deps);
+    const result = await migrateUsage(bundledNew, { from: '0.1.0', to: '0.2.0' }, deps);
 
     expect(result.ok).toBe(true);
     const delta = result as UsageDelta;
@@ -42,7 +42,7 @@ describe('migrateUsage', () => {
     expect(delta.components.renamed).toEqual([{ from: 'CngxOldPanel', to: 'CngxNewPanel' }]);
   });
 
-  it('falls back the resolved label to the requested version when a fetched snapshot is unstamped', () => {
+  it('falls back the resolved label to the requested version when a fetched snapshot is unstamped', async () => {
     // The M0 Release asset is the raw, un-stamped compodocx export (cngxVersion null).
     const rawUnstamped = {
       meta: { schemaVersion: 2, cngxVersion: null, generatedAt: null, compodocxVersion: null },
@@ -52,11 +52,11 @@ describe('migrateUsage', () => {
       tokens: [],
     };
     const deps: MigrateUsageDeps = {
-      fetchSnapshot: () => ({ ok: true, path: '/tmp/raw-unstamped.json' }),
+      fetchSnapshot: async () => ({ ok: true, path: '/tmp/raw-unstamped.json' }),
       loadDocs: () => rawUnstamped,
     };
 
-    const result = migrateUsage(bundledNew, { from: '0.1.0', to: '0.2.0' }, deps);
+    const result = await migrateUsage(bundledNew, { from: '0.1.0', to: '0.2.0' }, deps);
 
     expect(result.ok).toBe(true);
     const delta = result as UsageDelta;
@@ -65,13 +65,13 @@ describe('migrateUsage', () => {
     expect(delta.meta).toEqual({ from: '0.1.0', to: '0.2.0', resolvedFrom: '0.1.0', resolvedTo: '0.2.0' });
   });
 
-  it('surfaces a fetch failure as a typed result, never a throw', () => {
+  it('surfaces a fetch failure as a typed result, never a throw', async () => {
     const deps: MigrateUsageDeps = {
-      fetchSnapshot: () => ({ ok: false, reason: 'asset-missing', message: 'release not found' }),
+      fetchSnapshot: async () => ({ ok: false, reason: 'asset-missing', message: 'release not found' }),
       loadDocs: loadDocsFromFile,
     };
 
-    const result = migrateUsage(bundledNew, { from: '9.9.9', to: '0.2.0' }, deps);
+    const result = await migrateUsage(bundledNew, { from: '9.9.9', to: '0.2.0' }, deps);
 
     expect(result).toEqual({
       ok: false,
@@ -81,15 +81,15 @@ describe('migrateUsage', () => {
     });
   });
 
-  it('surfaces an unreadable fetched snapshot inside the typed reason set', () => {
+  it('surfaces an unreadable fetched snapshot inside the typed reason set', async () => {
     const deps: MigrateUsageDeps = {
-      fetchSnapshot: () => ({ ok: true, path: '/tmp/does-not-exist.json' }),
+      fetchSnapshot: async () => ({ ok: true, path: '/tmp/does-not-exist.json' }),
       loadDocs: () => {
         throw new Error('ENOENT');
       },
     };
 
-    const result = migrateUsage(bundledNew, { from: '0.1.0', to: '0.2.0' }, deps);
+    const result = await migrateUsage(bundledNew, { from: '0.1.0', to: '0.2.0' }, deps);
 
     expect(result).toMatchObject({ ok: false, reason: 'asset-missing' });
   });
