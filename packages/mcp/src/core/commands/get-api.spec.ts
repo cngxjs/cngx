@@ -7,6 +7,7 @@ import { getApi } from './get-api.js';
 
 const FIXTURE = fileURLToPath(new URL('../../../test/fixtures/documentation.sample.json', import.meta.url));
 const NEW = fileURLToPath(new URL('../../../test/fixtures/documentation.v-new.sample.json', import.meta.url));
+const V6 = fileURLToPath(new URL('../../../test/fixtures/documentation.v6.sample.json', import.meta.url));
 const docs = loadDocsFromFile(FIXTURE);
 
 describe('getApi', () => {
@@ -36,6 +37,17 @@ describe('getApi', () => {
 
   it('returns null for an unknown name', () => {
     expect(getApi(docs, 'CngxDoesNotExist')).toBeNull();
+  });
+});
+
+describe('getApi over a schema-6 snapshot', () => {
+  it('returns inputs, outputs and methods', () => {
+    const api = getApi(loadDocsFromFile(V6), 'CngxSelect');
+
+    expect(api).toMatchObject({ name: 'CngxSelect', kind: 'component', selector: 'cngx-select' });
+    expect(api?.inputs.map((i) => i.name)).toContain('value');
+    expect(api?.outputs.map((o) => o.name)).toContain('selectionChange');
+    expect(api?.methods.map((m) => m.name)).toContain('open');
   });
 });
 

@@ -1,0 +1,853 @@
+{
+  "schemaVersion": 6,
+  "generatedAt": "2026-10-23T13:59:04.427Z",
+  "compodocxVersion": "0.9.0",
+  "cngxVersion": "0.1.0-rc.9",
+  "components": [
+    {
+      "name": "CngxAlert",
+      "selector": "cngx-alert",
+      "file": "projects/ui/feedback/alert/alert.ts",
+      "description": "<p>Inline alert atom with enter/exit animations, state-driven visibility,",
+      "signal": false,
+      "inputsClass": [
+        {
+          "name": "autoDismissDelay",
+          "type": "number | undefined",
+          "defaultValue": "5000",
+          "description": "<p>Auto-dismiss delay in ms for success state or timed alerts.\nSet to <code>undefined</code> to disable auto-dismiss (persistent).</p>\n",
+          "rawdescription": "\n\nAuto-dismiss delay in ms for success state or timed alerts.\nSet to `undefined` to disable auto-dismiss (persistent).\n"
+        },
+        {
+          "name": "closable",
+          "type": "boolean",
+          "defaultValue": "false",
+          "description": "<p>Shows a dismiss button. Preferred over deprecated <code>dismissible</code>.</p>\n",
+          "rawdescription": "\nShows a dismiss button. Preferred over deprecated `dismissible`."
+        },
+        {
+          "name": "collapseDelay",
+          "type": "number | undefined",
+          "defaultValue": "undefined",
+          "description": "<p>Delay in ms before auto-collapsing. Defaults to <code>autoDismissDelay</code>.</p>\n",
+          "rawdescription": "\nDelay in ms before auto-collapsing. Defaults to `autoDismissDelay`."
+        },
+        {
+          "name": "collapsible",
+          "type": "boolean",
+          "defaultValue": "false",
+          "description": "<p>Enables auto-collapse after <code>collapseDelay</code>. Visual only - SR reads full content.</p>\n",
+          "rawdescription": "\nEnables auto-collapse after `collapseDelay`. Visual only - SR reads full content."
+        },
+        {
+          "name": "dismissible",
+          "type": "boolean",
+          "defaultValue": "false",
+          "description": "<p>Shows a dismiss button.</p>\n",
+          "rawdescription": "\n\nShows a dismiss button.\n"
+        },
+        {
+          "name": "severity",
+          "type": "AlertSeverity",
+          "defaultValue": "'info'",
+          "description": "<p>Alert severity - determines visual style, default icon, and ARIA role.</p>\n",
+          "rawdescription": "\nAlert severity - determines visual style, default icon, and ARIA role."
+        },
+        {
+          "name": "state",
+          "type": "CngxAsyncState<unknown> | undefined",
+          "defaultValue": "undefined",
+          "description": "<p>Bind an async state - auto-shows on error/success/loading, auto-hides on idle.</p>\n",
+          "rawdescription": "\nBind an async state - auto-shows on error/success/loading, auto-hides on idle."
+        },
+        {
+          "name": "title",
+          "type": "string | undefined",
+          "defaultValue": "undefined",
+          "description": "<p>Optional title displayed above the content.</p>\n",
+          "rawdescription": "\nOptional title displayed above the content."
+        },
+        {
+          "name": "when",
+          "type": "boolean | undefined",
+          "defaultValue": "undefined",
+          "description": "<p>Boolean visibility trigger. When set, controls alert visibility directly.\n<code>[state]</code> takes precedence over <code>[when]</code>.</p>\n",
+          "rawdescription": "\n\nBoolean visibility trigger. When set, controls alert visibility directly.\n`[state]` takes precedence over `[when]`.\n"
+        }
+      ],
+      "outputsClass": [
+        {
+          "name": "dismissed",
+          "type": "void",
+          "description": "<p>Emitted when the dismiss button is clicked.</p>\n",
+          "rawdescription": "\nEmitted when the dismiss button is clicked."
+        }
+      ],
+      "hostBindings": [
+        {
+          "name": "class.cngx-alert--info",
+          "type": "",
+          "defaultValue": "severity() === \"info\"",
+          "description": "host: { '[class.cngx-alert--info]': 'severity() === \"info\"' }"
+        },
+        {
+          "name": "class.cngx-alert--success",
+          "type": "",
+          "defaultValue": "severity() === \"success\"",
+          "description": "host: { '[class.cngx-alert--success]': 'severity() === \"success\"' }"
+        },
+        {
+          "name": "class.cngx-alert--warning",
+          "type": "",
+          "defaultValue": "severity() === \"warning\"",
+          "description": "host: { '[class.cngx-alert--warning]': 'severity() === \"warning\"' }"
+        },
+        {
+          "name": "class.cngx-alert--error",
+          "type": "",
+          "defaultValue": "severity() === \"error\"",
+          "description": "host: { '[class.cngx-alert--error]': 'severity() === \"error\"' }"
+        },
+        {
+          "name": "class.cngx-alert--hidden",
+          "type": "",
+          "defaultValue": "visibilityPhase() === \"hidden\"",
+          "description": "host: { '[class.cngx-alert--hidden]': 'visibilityPhase() === \"hidden\"' }"
+        },
+        {
+          "name": "class.cngx-alert--entering",
+          "type": "",
+          "defaultValue": "visibilityPhase() === \"entering\"",
+          "description": "host: { '[class.cngx-alert--entering]': 'visibilityPhase() === \"entering\"' }"
+        },
+        {
+          "name": "class.cngx-alert--visible",
+          "type": "",
+          "defaultValue": "visibilityPhase() === \"visible\"",
+          "description": "host: { '[class.cngx-alert--visible]': 'visibilityPhase() === \"visible\"' }"
+        },
+        {
+          "name": "class.cngx-alert--exiting",
+          "type": "",
+          "defaultValue": "visibilityPhase() === \"exiting\"",
+          "description": "host: { '[class.cngx-alert--exiting]': 'visibilityPhase() === \"exiting\"' }"
+        },
+        {
+          "name": "class.cngx-alert--collapsed",
+          "type": "",
+          "defaultValue": "collapsed()",
+          "description": "host: { '[class.cngx-alert--collapsed]': 'collapsed()' }"
+        },
+        {
+          "name": "attr.role",
+          "type": "",
+          "defaultValue": "isVisible() ? ariaRole() : null",
+          "description": "host: { '[attr.role]': 'isVisible() ? ariaRole() : null' }"
+        },
+        {
+          "name": "attr.aria-atomic",
+          "type": "",
+          "defaultValue": "isVisible() ? ariaAtomic() : null",
+          "description": "host: { '[attr.aria-atomic]': 'isVisible() ? ariaAtomic() : null' }"
+        },
+        {
+          "name": "attr.aria-label",
+          "type": "",
+          "defaultValue": "isVisible() ? (title() || null) : null",
+          "description": "host: { '[attr.aria-label]': 'isVisible() ? (title() || null) : null' }"
+        },
+        {
+          "name": "attr.aria-busy",
+          "type": "",
+          "defaultValue": "isStateBusy() || null",
+          "description": "host: { '[attr.aria-busy]': 'isStateBusy() || null' }"
+        },
+        {
+          "name": "attr.hidden",
+          "type": "",
+          "defaultValue": "!isVisible() || null",
+          "description": "host: { '[attr.hidden]': '!isVisible() || null' }"
+        }
+      ],
+      "methodsClass": [],
+      "slots": [],
+      "themeTokens": [
+        {
+          "name": "--cngx-feedback-info-bg",
+          "kind": "css-custom-property",
+          "type": "<color>",
+          "defaultValue": "oklch(from var(--cngx-color-info, oklch(0.65 0.12 240)) 0.96 0.025 h)",
+          "description": "Background tint of info alerts and banners.",
+          "group": "Severity",
+          "examples": [],
+          "since": "",
+          "deprecated": null,
+          "see": [],
+          "file": "projects/ui/feedback/styles/feedback-severity.css",
+          "line": 33
+        },
+        {
+          "name": "--cngx-feedback-info-border",
+          "kind": "css-custom-property",
+          "type": "<color>",
+          "defaultValue": "oklch(\n      from var(--cngx-color-info, oklch(0.65 0.12 240)) 0.85 0.07 h\n    )",
+          "description": "Border colour of info alerts and banners.",
+          "group": "Severity",
+          "examples": [],
+          "since": "",
+          "deprecated": null,
+          "see": [],
+          "file": "projects/ui/feedback/styles/feedback-severity.css",
+          "line": 39
+        }
+      ],
+      "themeOverview": "Shared severity palette of the feedback family. `CngxAlert`,",
+      "playgrounds": [],
+      "exampleUrls": [
+        "http://localhost:4200/#/ui/feedback/alert/action-buttons",
+        "http://localhost:4200/#/ui/feedback/alert/auto-collapse"
+      ],
+      "stackblitzUrl": "",
+      "entryPoint": "@cngx/ui/feedback",
+      "feature": {
+        "entryPoint": "@cngx/ui/feedback",
+        "key": "alert"
+      },
+      "di": {
+        "readsTokens": [
+          {
+            "name": "CngxLiveAnnouncer",
+            "file": "projects/common/a11y/aria/live-announcer.ts"
+          },
+          {
+            "name": "CNGX_FEEDBACK_CONFIG",
+            "file": "projects/ui/feedback/config/feedback-config.ts"
+          }
+        ],
+        "usesInjectionContext": "direct"
+      }
+    },
+    {
+      "name": "CngxSelect",
+      "selector": "cngx-select",
+      "file": "projects/forms/select/single-select/select.component.ts",
+      "description": "<p>Native-feeling single-select dropdown. Behaves like <code>&lt;select&gt;</code>,",
+      "signal": false,
+      "inputsClass": [
+        {
+          "name": "announceChanges",
+          "type": "boolean | null",
+          "defaultValue": "null",
+          "description": ""
+        },
+        {
+          "name": "announceTemplate",
+          "type": "CngxSelectAnnouncerConfig['format'] | null",
+          "defaultValue": "null",
+          "description": ""
+        },
+        {
+          "name": "ariaLabel",
+          "type": "string | null",
+          "defaultValue": "null",
+          "description": ""
+        },
+        {
+          "name": "ariaLabelledBy",
+          "type": "string | null",
+          "defaultValue": "null",
+          "description": ""
+        },
+        {
+          "name": "autofocus",
+          "type": "boolean",
+          "defaultValue": "false",
+          "description": ""
+        },
+        {
+          "name": "caretGlyph",
+          "type": "TemplateRef<void> | null",
+          "defaultValue": "null",
+          "description": "<p>Replaces the built-in caret glyph. Ignored when\n<code>*cngxSelectCaret</code> is projected.</p>\n",
+          "rawdescription": "\n\nReplaces the built-in caret glyph. Ignored when\n`*cngxSelectCaret` is projected.\n"
+        },
+        {
+          "name": "clearable",
+          "type": "boolean",
+          "defaultValue": "false",
+          "description": ""
+        },
+        {
+          "name": "clearButtonAriaLabel",
+          "type": "string | undefined",
+          "defaultValue": "undefined",
+          "description": ""
+        },
+        {
+          "name": "clearGlyph",
+          "type": "TemplateRef<void> | null",
+          "defaultValue": "null",
+          "description": "<p>Replaces the built-in <code>✕</code> glyph inside the default clear button\nwhile keeping the button frame, ARIA, and click handler. Ignored\nwhen <code>*cngxSelectClearButton</code> is projected.</p>\n",
+          "rawdescription": "\n\nReplaces the built-in `✕` glyph inside the default clear button\nwhile keeping the button frame, ARIA, and click handler. Ignored\nwhen `*cngxSelectClearButton` is projected.\n"
+        },
+        {
+          "name": "commitAction",
+          "type": "CngxSelectCommitAction<T> | null",
+          "defaultValue": "null",
+          "description": ""
+        },
+        {
+          "name": "commitErrorAnnouncePolicy",
+          "type": "CngxCommitErrorAnnouncePolicy",
+          "defaultValue": "this.config.commitErrorAnnouncePolicy ?? { kind: 'verbose', severity: 'assertive' }",
+          "description": "<p>Scalar-commit error-announce policy. <code>&#39;verbose&#39;</code> reads the error\nmessage; <code>&#39;soft&#39;</code> reads &quot;selection removed&quot;. Per-instance input wins\nover <code>CngxSelectConfig.commitErrorAnnouncePolicy</code>; default\n<code>{ kind: &#39;verbose&#39;, severity: &#39;assertive&#39; }</code>.</p>\n",
+          "rawdescription": "\n\nScalar-commit error-announce policy. `'verbose'` reads the error\nmessage; `'soft'` reads \"selection removed\". Per-instance input wins\nover `CngxSelectConfig.commitErrorAnnouncePolicy`; default\n`{ kind: 'verbose', severity: 'assertive' }`.\n"
+        },
+        {
+          "name": "commitErrorDisplay",
+          "type": "CngxSelectCommitErrorDisplay",
+          "defaultValue": "this.config.commitErrorDisplay",
+          "description": ""
+        },
+        {
+          "name": "commitMode",
+          "type": "CngxSelectCommitMode",
+          "defaultValue": "'optimistic'",
+          "description": ""
+        },
+        {
+          "name": "compareWith",
+          "type": "CngxSelectCompareFn<T>",
+          "defaultValue": "cngxSelectDefaultCompare as CngxSelectCompareFn<T>",
+          "description": ""
+        },
+        {
+          "name": "disabledInput",
+          "type": "boolean",
+          "defaultValue": "false",
+          "description": ""
+        },
+        {
+          "name": "hideCaret",
+          "type": "boolean",
+          "defaultValue": "!this.config.showCaret",
+          "description": ""
+        },
+        {
+          "name": "hideSelectionIndicator",
+          "type": "boolean",
+          "defaultValue": "!this.config.showSelectionIndicator",
+          "description": ""
+        },
+        {
+          "name": "idInput",
+          "type": "string | null",
+          "defaultValue": "null",
+          "description": ""
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "defaultValue": "''",
+          "description": ""
+        },
+        {
+          "name": "loading",
+          "type": "boolean",
+          "defaultValue": "false",
+          "description": ""
+        },
+        {
+          "name": "loadingVariant",
+          "type": "CngxSelectLoadingVariant",
+          "defaultValue": "this.config.loadingVariant",
+          "description": ""
+        },
+        {
+          "name": "options",
+          "type": "CngxSelectOptionsInput<T>",
+          "defaultValue": "[] as CngxSelectOptionsInput<T>",
+          "description": ""
+        },
+        {
+          "name": "panelClass",
+          "type": "string | readonly string[] | null",
+          "defaultValue": "null",
+          "description": ""
+        },
+        {
+          "name": "panelWidth",
+          "type": "'trigger' | number | null",
+          "defaultValue": "this.config.panelWidth",
+          "description": ""
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "defaultValue": "''",
+          "description": "<p>Trigger text while nothing is selected; falls back to <code>label</code> when unset.</p>\n",
+          "rawdescription": "\nTrigger text while nothing is selected; falls back to `label` when unset."
+        },
+        {
+          "name": "popoverPlacement",
+          "type": "PopoverPlacement",
+          "defaultValue": "this.config.popoverPlacement",
+          "description": "<p>Popover placement relative to the trigger. Per-instance input\nwins over <code>CngxSelectConfig.popoverPlacement</code>.</p>\n",
+          "rawdescription": "\n\nPopover placement relative to the trigger. Per-instance input\nwins over `CngxSelectConfig.popoverPlacement`.\n"
+        },
+        {
+          "name": "presentation",
+          "type": "CngxPopoverPresentationRequest | undefined",
+          "defaultValue": "undefined",
+          "description": "<p>Panel presentation. Unset follows <code>CNGX_SELECT_CONFIG.mobileSheet</code>:\n<code>&#39;auto&#39;</code> opens a modal bottom sheet on coarse, narrow viewports and\nstays anchored elsewhere. <code>&#39;anchored&#39;</code>, <code>&#39;sheet&#39;</code> and <code>&#39;fullscreen&#39;</code>\nforce one presentation.</p>\n",
+          "rawdescription": "\n\nPanel presentation. Unset follows `CNGX_SELECT_CONFIG.mobileSheet`:\n`'auto'` opens a modal bottom sheet on coarse, narrow viewports and\nstays anchored elsewhere. `'anchored'`, `'sheet'` and `'fullscreen'`\nforce one presentation.\n"
+        },
+        {
+          "name": "refreshingVariant",
+          "type": "CngxSelectRefreshingVariant",
+          "defaultValue": "this.config.refreshingVariant",
+          "description": ""
+        },
+        {
+          "name": "requiredInput",
+          "type": "boolean",
+          "defaultValue": "false",
+          "description": ""
+        },
+        {
+          "name": "retryFn",
+          "type": "(() => void) | null",
+          "defaultValue": "null",
+          "description": ""
+        },
+        {
+          "name": "selectionIndicatorPosition",
+          "type": "'before' | 'after' | null",
+          "defaultValue": "null",
+          "description": ""
+        },
+        {
+          "name": "selectionIndicatorVariant",
+          "type": "CngxSelectSelectionIndicatorVariant | null",
+          "defaultValue": "null",
+          "description": ""
+        },
+        {
+          "name": "sheetLabel",
+          "type": "string | undefined",
+          "defaultValue": "undefined",
+          "description": "<p>Title of the mobile sheet. Unset reads the field label once per open,\nthen <code>[label]</code>, then <code>ariaLabels.fieldLabelFallback</code>.</p>\n",
+          "rawdescription": "\n\nTitle of the mobile sheet. Unset reads the field label once per open,\nthen `[label]`, then `ariaLabels.fieldLabelFallback`.\n"
+        },
+        {
+          "name": "skeletonRowCount",
+          "type": "number",
+          "defaultValue": "this.config.skeletonRowCount",
+          "description": ""
+        },
+        {
+          "name": "state",
+          "type": "CngxAsyncState<CngxSelectOptionsInput<T>> | null",
+          "defaultValue": "null",
+          "description": ""
+        },
+        {
+          "name": "tabIndex",
+          "type": "number",
+          "defaultValue": "0",
+          "description": ""
+        },
+        {
+          "name": "typeaheadDebounceInterval",
+          "type": "number",
+          "defaultValue": "this.config.typeaheadDebounceInterval",
+          "description": ""
+        },
+        {
+          "name": "value",
+          "type": "T | undefined",
+          "defaultValue": "undefined",
+          "description": ""
+        }
+      ],
+      "outputsClass": [
+        {
+          "name": "closed",
+          "type": "void",
+          "description": ""
+        },
+        {
+          "name": "commitError",
+          "type": "unknown",
+          "description": ""
+        },
+        {
+          "name": "opened",
+          "type": "void",
+          "description": ""
+        },
+        {
+          "name": "openedChange",
+          "type": "boolean",
+          "description": ""
+        },
+        {
+          "name": "optionSelected",
+          "type": "CngxSelectOptionDef<T> | null",
+          "description": ""
+        },
+        {
+          "name": "retry",
+          "type": "void",
+          "description": ""
+        },
+        {
+          "name": "selectionChange",
+          "type": "CngxSelectChange<T>",
+          "description": ""
+        },
+        {
+          "name": "stateChange",
+          "type": "AsyncStatus",
+          "description": ""
+        },
+        {
+          "name": "value",
+          "type": "T | undefined",
+          "defaultValue": "undefined",
+          "description": ""
+        }
+      ],
+      "hostBindings": [
+        {
+          "name": "id",
+          "type": "",
+          "defaultValue": "resolvedId()",
+          "description": "host: { '[id]': 'resolvedId()' }"
+        },
+        {
+          "name": "attr.aria-readonly",
+          "type": "",
+          "defaultValue": "ariaReadonly()",
+          "description": "host: { '[attr.aria-readonly]': 'ariaReadonly()' }"
+        }
+      ],
+      "methodsClass": [
+        {
+          "name": "clearLocalItems",
+          "description": "<p>Reset the local buffer. Idempotent.</p>\n",
+          "args": [],
+          "returnType": "void",
+          "rawdescription": "\n\nReset the local buffer. Idempotent.\n"
+        },
+        {
+          "name": "close",
+          "args": [],
+          "returnType": "void"
+        },
+        {
+          "name": "focus",
+          "args": [
+            {
+              "name": "options",
+              "type": "FocusOptions",
+              "optional": true,
+              "dotDotDotToken": false,
+              "deprecated": false,
+              "deprecationMessage": ""
+            }
+          ],
+          "returnType": "void"
+        },
+        {
+          "name": "handleFocus",
+          "args": [],
+          "returnType": "void"
+        },
+        {
+          "name": "isEmpty",
+          "args": [],
+          "returnType": "boolean"
+        },
+        {
+          "name": "open",
+          "args": [],
+          "returnType": "void"
+        },
+        {
+          "name": "patchData",
+          "description": "<p>Append a pre-built option to the local buffer. Renders in the next\npanel emission and silently drops once the server includes a\nmatching value. Idempotent under <code>compareWith</code>.</p>\n",
+          "args": [
+            {
+              "name": "item",
+              "type": "CngxSelectOptionDef<T>",
+              "optional": false,
+              "dotDotDotToken": false,
+              "deprecated": false,
+              "deprecationMessage": ""
+            }
+          ],
+          "returnType": "void",
+          "rawdescription": "\n\nAppend a pre-built option to the local buffer. Renders in the next\npanel emission and silently drops once the server includes a\nmatching value. Idempotent under `compareWith`.\n"
+        },
+        {
+          "name": "toggle",
+          "args": [],
+          "returnType": "void"
+        }
+      ],
+      "slots": [
+        {
+          "name": "cngxSelectCheck",
+          "description": "Replaces the selection indicator on each option row unless [hideSelectionIndicator] is set; gets $implicit/option, selected, variant (radio, checkbox or checkmark), position, and indeterminate (always false here, absent on radio)."
+        },
+        {
+          "name": "cngxSelectCaret",
+          "description": "Replaces the trigger caret unless [hideCaret] is set; gets $implicit/open."
+        }
+      ],
+      "themeTokens": [
+        {
+          "name": "--cngx-select-panel-border",
+          "kind": "css-at-property",
+          "type": "*",
+          "defaultValue": "1px solid oklch(0.85 0.01 250)",
+          "description": "Border shorthand of the dropdown panel. Falls back through\n`--cngx-color-border`. `inherits: true` so the :root delegating\nvalue reaches the floating panel host (anchor-positioned, may\nsit outside the normal DOM flow).",
+          "group": "Surface",
+          "examples": [],
+          "since": "",
+          "deprecated": null,
+          "see": [
+            "[[--cngx-color-border]]"
+          ],
+          "file": "projects/forms/select/shared/select-base.css",
+          "line": 145
+        },
+        {
+          "name": "--cngx-select-panel-radius",
+          "kind": "css-at-property",
+          "type": "*",
+          "defaultValue": "0.25rem",
+          "description": "Corner radius of the dropdown panel.",
+          "group": "Layout",
+          "examples": [],
+          "since": "",
+          "deprecated": null,
+          "see": [],
+          "file": "projects/forms/select/shared/select-base.css",
+          "line": 155
+        }
+      ],
+      "themeOverview": "Structural styles shared across the entire `CngxSelect` family -",
+      "playgrounds": [
+        {
+          "title": "Material theme",
+          "fileRef": "./examples/material-theme/material-theme.component.ts",
+          "line": 0
+        },
+        {
+          "title": "Commit action",
+          "fileRef": "./examples/commit-action/commit-action-example.component.ts",
+          "line": 0
+        }
+      ],
+      "exampleUrls": [
+        "http://localhost:4200/#/forms/select/single-select/autofocus-on-mount",
+        "http://localhost:4200/#/forms/select/single-select/clearable"
+      ],
+      "stackblitzUrl": "",
+      "entryPoint": "@cngx/forms/select",
+      "feature": {
+        "entryPoint": "@cngx/forms/select",
+        "key": ""
+      },
+      "di": {
+        "readsTokens": [
+          {
+            "name": "CngxFormFieldPresenter",
+            "file": "projects/forms/field/form-field-presenter.ts"
+          },
+          {
+            "name": "CNGX_ACTION_HOST_BRIDGE_FACTORY",
+            "file": "projects/forms/select/shared/action-host-bridge.ts"
+          },
+          {
+            "name": "CngxSelectAnnouncer",
+            "file": "projects/forms/select/shared/announcer.ts"
+          },
+          {
+            "name": "CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY",
+            "file": "projects/forms/select/shared/commit-error-announcer.ts"
+          },
+          {
+            "name": "CNGX_FLAT_NAV_STRATEGY",
+            "file": "projects/forms/select/shared/flat-nav-strategy.ts"
+          },
+          {
+            "name": "CNGX_LOCAL_ITEMS_BUFFER_FACTORY",
+            "file": "projects/forms/select/shared/local-items-buffer.ts"
+          },
+          {
+            "name": "CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY",
+            "file": "projects/forms/select/shared/panel-lifecycle-emitter.ts"
+          },
+          {
+            "name": "CNGX_SCALAR_COMMIT_HANDLER_FACTORY",
+            "file": "projects/forms/select/shared/scalar-commit-handler.ts"
+          },
+          {
+            "name": "CNGX_TEMPLATE_REGISTRY_FACTORY",
+            "file": "projects/forms/select/shared/template-registry.ts"
+          },
+          {
+            "name": "CNGX_TRIGGER_FOCUS_FACTORY",
+            "file": "projects/forms/select/shared/trigger-focus.ts"
+          }
+        ],
+        "usesInjectionContext": "direct"
+      }
+    }
+  ],
+  "directives": [],
+  "injectables": [
+    {
+      "name": "CngxToaster",
+      "file": "projects/ui/feedback/toast/toast.service.ts",
+      "description": "<p>Feature-scoped toast service - not <code>providedIn: &#39;root&#39;</code>.</p>",
+      "methods": [
+        {
+          "name": "dismiss",
+          "description": "<p>Dismiss a toast by id.</p>\n",
+          "args": [
+            {
+              "name": "id",
+              "type": "number",
+              "optional": false,
+              "dotDotDotToken": false,
+              "deprecated": false,
+              "deprecationMessage": ""
+            }
+          ],
+          "returnType": "void",
+          "rawdescription": "\nDismiss a toast by id."
+        },
+        {
+          "name": "dismissAll",
+          "description": "<p>Dismiss all toasts.</p>\n",
+          "args": [],
+          "returnType": "void",
+          "rawdescription": "\nDismiss all toasts."
+        },
+        {
+          "name": "show",
+          "description": "<p>Show a toast. Returns a ref for programmatic control.</p>\n",
+          "args": [
+            {
+              "name": "config",
+              "type": "ToastConfig",
+              "optional": false,
+              "dotDotDotToken": false,
+              "deprecated": false,
+              "deprecationMessage": ""
+            }
+          ],
+          "returnType": "ToastRef",
+          "rawdescription": "\nShow a toast. Returns a ref for programmatic control."
+        }
+      ],
+      "exampleUrls": [
+        "http://localhost:4200/#/ui/feedback/toast/custom-component-body",
+        "http://localhost:4200/#/ui/feedback/toast/declarative-cngx-toast"
+      ],
+      "entryPoint": "@cngx/ui/feedback",
+      "feature": {
+        "entryPoint": "@cngx/ui/feedback",
+        "key": "alert"
+      },
+      "di": {
+        "readsTokens": [
+          {
+            "name": "CNGX_FEEDBACK_CONFIG",
+            "file": "projects/ui/feedback/config/feedback-config.ts"
+          }
+        ],
+        "usesInjectionContext": "direct"
+      }
+    }
+  ],
+  "tokens": [
+    {
+      "name": "CNGX_SELECT_CONFIG",
+      "file": "projects/forms/select/shared/config.ts",
+      "type": "token",
+      "description": "<p>Resolved configuration shared by every select-family composite - panel"
+    }
+  ],
+  "miscellaneous": {
+    "functions": [
+      {
+        "name": "injectSelectConfig",
+        "file": "projects/forms/select/shared/inject-helpers.ts",
+        "returnType": "ReturnType<unknown>",
+        "description": "<p>Effective select config for the current injector, merged with library",
+        "entryPoint": "@cngx/forms/select",
+        "feature": {
+          "entryPoint": "@cngx/forms/select",
+          "key": ""
+        }
+      },
+      {
+        "name": "provideSelectConfig",
+        "file": "projects/forms/select/shared/config.ts",
+        "returnType": "EnvironmentProviders",
+        "description": "<p>App-wide defaults for the Select family. <code>provideSelectConfigAt</code> and",
+        "entryPoint": "@cngx/forms/select",
+        "feature": {
+          "entryPoint": "@cngx/forms/select",
+          "key": ""
+        },
+        "di": {
+          "role": "provider",
+          "featureType": {
+            "name": "CngxSelectConfigFeature",
+            "file": "projects/forms/select/shared/config.ts"
+          },
+          "providesTokens": [
+            {
+              "name": "CNGX_SELECT_CONFIG",
+              "file": "projects/forms/select/shared/config.ts"
+            }
+          ]
+        }
+      },
+      {
+        "name": "withFallback",
+        "file": "projects/core/testing/vitest/announcement-matchers.ts",
+        "returnType": "string[]",
+        "description": "",
+        "feature": {
+          "entryPoint": "@cngx/core/testing/vitest",
+          "key": ""
+        }
+      },
+      {
+        "name": "withPanelWidth",
+        "file": "projects/forms/select/shared/config.ts",
+        "returnType": "CngxSelectConfigFeature",
+        "description": "<p>Panel width: <code>&#39;trigger&#39;</code> (match), fixed px number, or <code>null</code> (natural).</p>",
+        "entryPoint": "@cngx/forms/select",
+        "feature": {
+          "entryPoint": "@cngx/forms/select",
+          "key": ""
+        },
+        "di": {
+          "role": "feature",
+          "featureType": {
+            "name": "CngxSelectConfigFeature",
+            "file": "projects/forms/select/shared/config.ts"
+          }
+        }
+      }
+    ]
+  }
+}

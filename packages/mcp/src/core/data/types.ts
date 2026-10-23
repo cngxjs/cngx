@@ -1,7 +1,20 @@
 // Structural types for the slices of compodocx's `documentation.json` the tools
 // read. This is a minimal projection - not the full compodocx schema - covering
 // only the component/directive/token keys the five query tools ground against.
-// Grounded on the shape emitted by `compodocx -e json` (schemaVersion 2).
+// Grounded on the shape emitted by `compodocx -e json`, schemaVersion 2 and 6.
+// Schema 6 drops `category` and `factoryKind`; `schema-v6.ts` derives both from
+// the schema-6 `feature` and `di` fields at load time.
+
+/** Schema 6: the public entry point and feature group an artifact belongs to. */
+export interface DocFeature {
+  entryPoint: string;
+  key: string;
+}
+
+/** Schema 6: DI metadata on a function. Only `role` is read. */
+export interface DocDi {
+  role?: string;
+}
 
 /** A named API input on a component/directive. */
 export interface DocInput {
@@ -89,6 +102,8 @@ export interface DocEntry {
   playgrounds?: DocPlayground[];
   exampleUrls?: string[];
   stackblitzUrl?: string;
+  entryPoint?: string;
+  feature?: DocFeature;
 }
 
 /** A top-level DI token entry (`tokens[]`). */
@@ -112,6 +127,9 @@ export interface DocFunction {
   factoryKind?: 'provider' | 'feature' | 'inject' | 'factory';
   returnType?: string;
   description?: string;
+  entryPoint?: string;
+  feature?: DocFeature;
+  di?: DocDi;
 }
 
 /**

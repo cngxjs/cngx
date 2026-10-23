@@ -7,6 +7,7 @@ import { findComponents } from './find-component.js';
 
 const FIXTURE = fileURLToPath(new URL('../../../test/fixtures/documentation.sample.json', import.meta.url));
 const NEW = fileURLToPath(new URL('../../../test/fixtures/documentation.v-new.sample.json', import.meta.url));
+const V6 = fileURLToPath(new URL('../../../test/fixtures/documentation.v6.sample.json', import.meta.url));
 const docs = loadDocsFromFile(FIXTURE);
 
 describe('findComponents', () => {
@@ -41,6 +42,23 @@ describe('findComponents', () => {
   it('returns an empty array for an empty query and for no match', () => {
     expect(findComponents(docs, '')).toEqual([]);
     expect(findComponents(docs, 'no-such-symbol')).toEqual([]);
+  });
+});
+
+describe('findComponents over a schema-6 snapshot', () => {
+  const v6 = loadDocsFromFile(V6);
+
+  it('matches through the category derived from feature', () => {
+    const matches = findComponents(v6, 'feedback');
+
+    expect(matches.find((m) => m.name === 'CngxAlert')).toMatchObject({ kind: 'component', category: 'ui/feedback/alert' });
+  });
+
+  // Schema 2 carried the retired `@category` tag `forms/select/single-select`;
+  // schema 6 publishes the coarser feature taxonomy. The drift is intended.
+  it('reports the feature taxonomy, so the retired category fragment no longer matches', () => {
+    expect(findComponents(v6, 'single-select').map((m) => m.name)).not.toContain('CngxSelect');
+    expect(findComponents(v6, 'cngx-select').find((m) => m.name === 'CngxSelect')?.category).toBe('forms/select');
   });
 });
 
