@@ -1635,6 +1635,22 @@ describe('CngxSelect - mobile sheet', () => {
     },
   );
 
+  it("announces a 'dialog' popup while modal and 'listbox' once anchored", () => {
+    const { fixture, host, select, trigger, open } = setup();
+    host.presentation.set('sheet');
+    flush(fixture);
+    expect(trigger.getAttribute('aria-haspopup')).toBe('dialog');
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    open();
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+    select.close();
+    flush(fixture);
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    host.presentation.set('anchored');
+    flush(fixture);
+    expect(trigger.getAttribute('aria-haspopup')).toBe('listbox');
+  });
+
   it('stays anchored without a request on a desktop viewport', () => {
     const { fixture, host, panel, open } = setup();
     host.presentation.set(undefined);
