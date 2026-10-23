@@ -46,6 +46,35 @@ describe('resolveDocs', () => {
     expect(fetchSnapshot).toHaveBeenCalledTimes(1);
   });
 
+  it('shares one fetch between concurrent requests for the same version', async () => {
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => (release = resolve));
+    const fetchSnapshot = vi.fn(async () => {
+      await gate;
+      return { ok: true as const, path: NEW };
+    });
+    const deps: DocsResolverDeps = { fetchSnapshot, loadDocs: loadDocsFromFile };
+
+    const both = Promise.all([resolveDocs(bundled, '0.2.0', deps), resolveDocs(bundled, '0.2.0', deps)]);
+    release();
+    const [first, second] = await both;
+
+    expect(fetchSnapshot).toHaveBeenCalledTimes(1);
+    expect(first).toBe(second);
+  });
+
+  it('fetches again after a failed fetch instead of replaying the failure', async () => {
+    const fetchSnapshot = vi
+      .fn<DocsResolverDeps['fetchSnapshot']>()
+      .mockResolvedValueOnce({ ok: false, reason: 'network', message: 'offline' })
+      .mockResolvedValueOnce({ ok: true, path: NEW });
+    const deps: DocsResolverDeps = { fetchSnapshot, loadDocs: loadDocsFromFile };
+
+    expect(await resolveDocs(bundled, '0.2.0', deps)).toMatchObject({ ok: false, reason: 'network' });
+    expect(await resolveDocs(bundled, '0.2.0', deps)).toMatchObject({ ok: true, version: '0.2.0' });
+    expect(fetchSnapshot).toHaveBeenCalledTimes(2);
+  });
+
   it('maps a SchemaVersionError from the fetched snapshot to asset-missing', async () => {
     const deps: DocsResolverDeps = {
       fetchSnapshot: async () => ({ ok: true, path: '/tmp/wrong-schema.json' }),

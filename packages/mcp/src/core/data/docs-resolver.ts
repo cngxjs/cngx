@@ -30,6 +30,10 @@ const defaultDeps: DocsResolverDeps = { fetchSnapshot, loadDocs: loadDocsFromFil
 // only - a session-scoped stdio server needs no disk-backed cache.
 const cache = new Map<string, DocsIndex>();
 
+// Resolutions still waiting on their fetch, keyed like `cache`. A second request for
+// the same version joins the first instead of starting its own download.
+const pending = new Map<string, Promise<DocsResolution>>();
+
 /**
  * Upper bound on distinct release snapshots held at once. A parsed snapshot is a few
  * hundred KB, and no realistic session grounds against more than a handful of releases;
@@ -62,6 +66,7 @@ export function createDocsResolver(bundled: DocsIndex, deps: DocsResolverDeps = 
 /** Drop the in-memory cache. Test seam so a cache-hit assertion starts from empty. */
 export function resetDocsCache(): void {
   cache.clear();
+  pending.clear();
 }
 
 /**
@@ -87,6 +92,16 @@ export async function resolveDocs(
     return { ok: true, docs: cached, version: cached.meta.cngxVersion ?? requested };
   }
 
+  const inFlight = pending.get(requested);
+  if (inFlight) {
+    return inFlight;
+  }
+  const resolution = fetchAndLoad(requested, deps).finally(() => pending.delete(requested));
+  pending.set(requested, resolution);
+  return resolution;
+}
+
+async function fetchAndLoad(requested: string, deps: DocsResolverDeps): Promise<DocsResolution> {
   const fetched = await deps.fetchSnapshot(requested);
   if (!fetched.ok) {
     return { ok: false, reason: fetched.reason, message: fetched.message };
