@@ -46,7 +46,7 @@
       line-height: 1;
     }
 
-    .cngx-icon-button__glyph > svg {
+    .cngx-icon-button__glyph > :is(svg, img) {
       inline-size: 1.25em;
       block-size: 1.25em;
     }

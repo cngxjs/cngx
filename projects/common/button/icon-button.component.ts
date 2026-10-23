@@ -26,9 +26,13 @@ import type {
  * co-hosted `cngxAsyncClick`. The variant defaults to `ghost` unless a group
  * or `provideButtonConfig` picks one.
  *
- * The glyph carries no text, so the accessible name is the consumer's job:
- * set `aria-label` (or `aria-labelledby` / `title`). A host without any of
- * them warns `CNGX1071` in development mode. A tooltip is a separate,
+ * Any icon works in the slot: an inline `svg`, an `img`, a `cngx-icon`
+ * (recommended, it sizes itself) or a `mat-icon` through the Material
+ * bridge. A bare `svg` or `img` is sized to `1.25em` of the button font. The
+ * glyph is hidden from assistive technology, so nothing projected (alt text,
+ * a ligature name, a font glyph) ever becomes the button's name; the name is
+ * the consumer's job: set `aria-label` (or `aria-labelledby` / `title`) on
+ * the host. A host without any of them warns `CNGX1071` in development mode. A tooltip is a separate,
  * per-icon decision; co-host `[cngxTooltip]` where the icon alone is
  * ambiguous. Its id joins the button's `aria-describedby` through
  * `CNGX_DESCRIBED_BY`, next to the static ids, the `[cngxDescribedBy]` ids
@@ -75,7 +79,7 @@ import type {
     '[attr.disabled]': 'null',
   },
   template: `
-    <span class="cngx-button__label cngx-icon-button__glyph"><ng-content /></span>
+    <span class="cngx-button__label cngx-icon-button__glyph" aria-hidden="true"><ng-content /></span>
     @if (core.busy()) {
       <span class="cngx-button__busy" aria-hidden="true">
         <span class="cngx-button__spinner"></span>

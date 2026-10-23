@@ -24,3 +24,6 @@ export {
   injectButtonConfig,
 } from './button-config';
 export { CNGX_BUTTON_GROUP, type CngxButtonGroupContext } from './button-group.token';
+export { CngxButtonGroup, type CngxButtonGroupOrientation } from './button-group.directive';
+export { CngxButtonGroupAddon } from './button-group-addon.directive';
+export { CngxButtonGroupSeparator } from './button-group-separator.directive';

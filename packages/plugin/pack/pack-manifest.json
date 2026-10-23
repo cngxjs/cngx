@@ -240,6 +240,11 @@
       "artifact": "pack/recipes/common-button-button.md",
       "source": "examples/stories/common/button/button/async-click-busy.story.ts",
       "contentHash": "sha256:f525cb12a8b7ef1c9380e32160d953b5a120995b0ab2bc4e1969e026151f44bb"
+    },
+    {
+      "artifact": "pack/recipes/common-button-composition.md",
+      "source": "examples/stories/common/button/composition/split-button.story.ts",
+      "contentHash": "sha256:df70bbdabac07286aa71a400c9f738682d1fbc6db577d88fe8b0068a00d62308"
     }
   ],
   "theming": {

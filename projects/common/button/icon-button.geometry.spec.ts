@@ -1,5 +1,6 @@
 import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { accessibleName } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxButton } from './button.component';
@@ -120,5 +121,75 @@ describe('CngxIconButton geometry: touch', () => {
     // 100% of the padding box: the two border pixels short of the box.
     expect(pseudoSize(btn).width).toBeGreaterThanOrEqual(rect.width - 2.5);
     expect(pseudoSize(btn).width).toBeLessThanOrEqual(rect.width);
+  });
+});
+
+// A 3:1 image, so a stretched or overflowing img shows in its box.
+const WIDE_IMG =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='20'%3E%3Crect width='60' height='20'/%3E%3C/svg%3E";
+
+@Component({
+  selector: 'cngx-icon-button-glyph-host',
+  standalone: true,
+  imports: [CngxIconButton],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../core/theming/system-tokens.css',
+    '../../core/theming/reset.css',
+    '../../core/theming/base.css',
+    '../../core/theming/density-tokens.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    @for (size of sizes; track size) {
+      <p>
+        <button cngxIconButton class="svg-{{ size }}" [size]="size" aria-label="Delete row">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" /></svg>
+        </button>
+        <button cngxIconButton class="img-{{ size }}" [size]="size" aria-label="Delete row">
+          <img alt="Trash can" [src]="img" />
+        </button>
+      </p>
+    }
+  `,
+})
+class GlyphHost {
+  readonly sizes: readonly CngxButtonSize[] = ['sm', 'md', 'lg'];
+  readonly img = WIDE_IMG;
+}
+
+function mountGlyphs(): HTMLElement {
+  const fixture = TestBed.createComponent(GlyphHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  return mountedRoot;
+}
+
+describe.each(['sm', 'md', 'lg'] as const)('CngxIconButton geometry: projected glyph at %s', (size) => {
+  it('renders a bare svg and an img at the same box size', () => {
+    const root = mountGlyphs();
+    const svg = query(root, `.svg-${size} svg`).getBoundingClientRect();
+    const img = query(root, `.img-${size} img`).getBoundingClientRect();
+    expect(svg.width).toBeGreaterThan(0);
+    expect(Math.abs(img.width - svg.width)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(img.height - svg.height)).toBeLessThanOrEqual(0.5);
+  });
+
+  it('keeps a wide img inside the button box', () => {
+    const root = mountGlyphs();
+    const box = query(root, `.img-${size}`).getBoundingClientRect();
+    const img = query(root, `.img-${size} img`).getBoundingClientRect();
+    expect(img.left).toBeGreaterThanOrEqual(box.left);
+    expect(img.right).toBeLessThanOrEqual(box.right);
+    expect(img.top).toBeGreaterThanOrEqual(box.top);
+    expect(img.bottom).toBeLessThanOrEqual(box.bottom);
+  });
+});
+
+describe('CngxIconButton geometry: accessible name', () => {
+  it('takes the name from the host, never from the alt text of a projected img', async () => {
+    mountGlyphs();
+    expect(await accessibleName('.img-md')).toBe('Delete row');
   });
 });
