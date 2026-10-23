@@ -151,6 +151,39 @@
   }
 
   /**
+   * Stroke width of the busy spinner ring. Inherits so a value set on the
+   * button reaches the ring inside the busy layer.
+   * @group Busy
+   */
+  @property --cngx-button-spinner-thickness {
+    syntax: '*';
+    inherits: true;
+    initial-value: 2px;
+  }
+
+  /**
+   * Colour a solid button's tone mixes towards on hover (12% of it), so the
+   * fill darkens without a second tone token.
+   * @group Tone
+   */
+  @property --cngx-button-hover-shade {
+    syntax: '*';
+    inherits: false;
+    initial-value: oklch(0 0 0);
+  }
+
+  /**
+   * Underline thickness of a `link` button on hover; at rest it keeps the
+   * font's own underline.
+   * @group Tone
+   */
+  @property --cngx-button-link-hover-thickness {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
    * Edge length of an `svg` or `img` in a start or end slot. Same rung as
    * `--cngx-icon-size-md`, so a projected `cngx-icon` and a bare `svg` match.
    * Inherits so a value set on the button reaches the slot glyph.
@@ -307,8 +340,16 @@
       color: var(--cngx-button-on-tone, Canvas);
     }
     :scope[data-variant='solid']:hover {
-      background: color-mix(in oklch, var(--cngx-button-tone, currentColor) 88%, black);
-      border-color: color-mix(in oklch, var(--cngx-button-tone, currentColor) 88%, black);
+      background: color-mix(
+        in oklch,
+        var(--cngx-button-tone, currentColor) 88%,
+        var(--cngx-button-hover-shade, oklch(0 0 0))
+      );
+      border-color: color-mix(
+        in oklch,
+        var(--cngx-button-tone, currentColor) 88%,
+        var(--cngx-button-hover-shade, oklch(0 0 0))
+      );
     }
     /* Neutral solid is the browser-native default: a light grey fill under the
        text colour, not a fill in the text colour. The loud action is
@@ -362,7 +403,7 @@
       --cngx-button-tone-text: var(--cngx-color-primary-text, oklch(0.5 0.15 50));
     }
     :scope[data-variant='link']:hover {
-      text-decoration-thickness: 2px;
+      text-decoration-thickness: var(--cngx-button-link-hover-thickness, 2px);
     }
 
     /* Disabled by colour, never opacity. A busy button is aria-disabled too
@@ -399,7 +440,7 @@
     .cngx-button__spinner {
       inline-size: var(--cngx-button-spinner-size, 1em);
       block-size: var(--cngx-button-spinner-size, 1em);
-      border: 2px solid currentColor;
+      border: var(--cngx-button-spinner-thickness, 2px) solid currentColor;
       border-block-start-color: transparent;
       border-radius: 50%;
       animation: cngx-button-spin var(--cngx-spin-duration, 0.8s) linear infinite;

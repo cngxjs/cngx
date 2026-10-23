@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { CngxAsyncClick, type AsyncAction } from '@cngx/common/interactive';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
+import { userEvent } from 'vitest/browser';
 
 import { CngxButton } from './button.component';
 import type { CngxButtonSize } from './button.types';
@@ -49,6 +50,21 @@ type Density = 'comfortable' | 'compact' | 'spacious';
       <p data-color-scheme="dark"><button cngxButton="secondary" class="b-secondary-dark">Save</button></p>
       <p>
         <button cngxButton class="b-busy" [cngxAsyncClick]="action">Save changes</button>
+      </p>
+      <!-- Transition off so a computed colour read right after hover is the end state. -->
+      <p style="--cngx-button-transition: 0s">
+        <button cngxButton tone="primary" class="b-shade-default">Save</button>
+        <button
+          cngxButton
+          tone="primary"
+          class="b-shade-tone"
+          style="--cngx-button-hover-shade: var(--cngx-button-tone)"
+        >
+          Save
+        </button>
+        <a cngxButton="link" class="b-link-thick" href="#docs" style="--cngx-button-link-hover-thickness: 4px"
+          >docs</a
+        >
       </p>
     </div>
   `,
@@ -227,5 +243,42 @@ describe('CngxButton geometry: busy', () => {
     const busy = query(btn, '.cngx-button__busy');
     // inset: 0 spans the padding box, so it misses only the two border pixels.
     expect(busy.getBoundingClientRect().width).toBeGreaterThanOrEqual(width - 2.5);
+  });
+});
+
+describe('CngxButton paint: tokens', () => {
+  it('mixes the solid hover fill towards --cngx-button-hover-shade', async () => {
+    const { root } = mount();
+    const shaded = query(root, '.b-shade-default');
+    const rest = computedValue(shaded, 'background-color');
+    await userEvent.hover(shaded);
+    expect(computedValue(shaded, 'background-color')).not.toBe(rest);
+
+    // A shade equal to the tone leaves the hover fill on the rest fill.
+    const toned = query(root, '.b-shade-tone');
+    const tonedRest = computedValue(toned, 'background-color');
+    await userEvent.hover(toned);
+    expect(computedValue(toned, 'background-color')).toBe(tonedRest);
+  });
+
+  it('thickens the link underline on hover from --cngx-button-link-hover-thickness', async () => {
+    const { root } = mount();
+    const link = query(root, '.b-link');
+    await userEvent.hover(link);
+    expect(computedValue(link, 'text-decoration-thickness')).toBe('2px');
+    const thick = query(root, '.b-link-thick');
+    await userEvent.hover(thick);
+    expect(computedValue(thick, 'text-decoration-thickness')).toBe('4px');
+  });
+
+  it('strokes the busy ring from --cngx-button-spinner-thickness', () => {
+    const { fixture, root } = mount();
+    const btn = query(root, '.b-busy');
+    btn.click();
+    fixture.detectChanges();
+    const ring = query(btn, '.cngx-button__spinner');
+    expect(computedValue(ring, 'border-inline-start-width')).toBe('2px');
+    btn.style.setProperty('--cngx-button-spinner-thickness', '3px');
+    expect(computedValue(ring, 'border-inline-start-width')).toBe('3px');
   });
 });
