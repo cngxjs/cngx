@@ -82,7 +82,7 @@ export async function resolveDocs(
   try {
     const docs = deps.loadDocs(fetched.path);
     cacheDocs(requested, docs);
-    // A successful `gh release download v<version>` means the asset IS that version,
+    // A successful download of the `v<version>` asset means the asset IS that version,
     // so an unstamped raw export still resolves to the requested label.
     return { ok: true, docs, version: docs.meta.cngxVersion ?? requested };
   } catch (error) {

@@ -1,8 +1,8 @@
 // migrate_usage - answers "what breaks between cngx vX and vY" with a structured
 // API delta. It resolves each version to a `DocsIndex` (the bundled snapshot when
-// the version matches it, else a `gh release download` of the non-bundled snapshot),
-// then runs the pure in-process diff. This is the server's only network touch, and
-// it is fail-safe: a missing `gh`, no network, or an absent asset returns a typed
+// the version matches it, else the release asset fetched via `gh` or, when `gh`
+// fails, over HTTPS), then runs the pure in-process diff. This is the server's only
+// network touch, and it is fail-safe: no network or an absent asset returns a typed
 // error result, never a throw - preserving the server's don't-crash-stdout contract.
 
 import { z } from 'zod';
@@ -54,7 +54,7 @@ export async function migrateUsage(
 
   const delta = diffSnapshots(fromResolved.docs, toResolved.docs);
   // `resolveDocs` already labels an unstamped fetched asset with its requested version
-  // (a successful `gh release download v<version>` means the asset IS that version),
+  // (a successful download of the `v<version>` asset means the asset IS that version),
   // so `.version` is the truthful resolved label; fall back to the request only for the
   // theoretical null case an unstamped bundled short-circuit would produce.
   return {
@@ -77,8 +77,9 @@ export const migrateUsageCommand = defineCommand({
   description:
     'Return a structured API delta between two cngx releases: removed / renamed / signature-changed ' +
     'components, inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version. ' +
-    'A version other than the bundled one is fetched from the GitHub Release assets via `gh`; a missing ' +
-    '`gh`, no network, or an absent asset returns a typed error result ({ ok: false, reason }), never a throw.',
+    'A version other than the bundled one is fetched from the GitHub Release assets via `gh`, or over HTTPS ' +
+    'when `gh` is missing or fails; no network or an absent asset returns a typed error result ' +
+    '({ ok: false, reason }), never a throw.',
   input: {
     from: z.string().describe('The cngx version to upgrade FROM, e.g. "0.1.0" (without the leading "v").'),
     to: z

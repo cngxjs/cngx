@@ -1,5 +1,5 @@
 {
-  "instructions": "Query layer over the cngx (@cngx/*) public API. Answers ground against cngx 0.1.0-rc.6 (snapshot 2026-08-17T11:21:23.588Z, schemaVersion 2). Confirm the consuming app runs a matching cngx release before relying on an answer, or pass an optional version argument to ground a query against another release. The eight query tools are read-only and answer offline by default; find_component, get_api, get_slots, get_theme_tokens, get_di_tokens, and get_config accept an optional version that - when it differs from the bundled snapshot - fetches that release snapshot via the gh CLI (fail-safe: a missing gh, no network, or an absent asset returns a typed { ok: false, reason }) and answers as { ok: true, groundedVersion, result }. migrate_usage additionally answers cross-version deltas over the same fetch. The server also serves resources (browse: cngx://catalog, cngx://tokens, cngx://provenance, the cngx://api/{name} template, the cngx://llms index and the cngx://llms-full API dump) and prompts (wire_component, theme_component, migrate_cngx) - all three MCP surface types over the same offline snapshot.",
+  "instructions": "Query layer over the cngx (@cngx/*) public API. Answers ground against cngx 0.1.0-rc.6 (snapshot 2026-08-17T11:21:23.588Z, schemaVersion 2). Confirm the consuming app runs a matching cngx release before relying on an answer, or pass an optional version argument to ground a query against another release. The eight query tools are read-only and answer offline by default; find_component, get_api, get_slots, get_theme_tokens, get_di_tokens, and get_config accept an optional version that - when it differs from the bundled snapshot - fetches that release snapshot via the gh CLI, or over HTTPS when gh is missing or fails (fail-safe: no network or an absent asset returns a typed { ok: false, reason }) and answers as { ok: true, groundedVersion, result }. migrate_usage additionally answers cross-version deltas over the same fetch. The server also serves resources (browse: cngx://catalog, cngx://tokens, cngx://provenance, the cngx://api/{name} template, the cngx://llms index and the cngx://llms-full API dump) and prompts (wire_component, theme_component, migrate_cngx) - all three MCP surface types over the same offline snapshot.",
   "tools": [
     {
       "name": "find_component",
@@ -13,7 +13,7 @@
             "description": "A name, selector, or category fragment, e.g. \"select\" or \"cngx-chip\"."
           },
           "version": {
-            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\". Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh (fail-safe).",
+            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\". Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh, or over HTTPS when gh is missing or fails (fail-safe).",
             "type": "string"
           }
         },
@@ -59,7 +59,7 @@
             "description": "A component/directive/service class name or selector, e.g. \"CngxSelect\" or \"cngx-select\"."
           },
           "version": {
-            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\". Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh (fail-safe).",
+            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\". Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh, or over HTTPS when gh is missing or fails (fail-safe).",
             "type": "string"
           }
         },
@@ -81,7 +81,7 @@
             "description": "A component/directive class name or selector, e.g. \"CngxSelect\"."
           },
           "version": {
-            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\". Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh (fail-safe).",
+            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\". Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh, or over HTTPS when gh is missing or fails (fail-safe).",
             "type": "string"
           }
         },
@@ -103,7 +103,7 @@
             "description": "A component/directive class name or selector, e.g. \"CngxSelect\"."
           },
           "version": {
-            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\". Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh (fail-safe).",
+            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\". Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh, or over HTTPS when gh is missing or fails (fail-safe).",
             "type": "string"
           }
         },
@@ -125,7 +125,7 @@
             "type": "string"
           },
           "version": {
-            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\". Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh (fail-safe).",
+            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\". Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh, or over HTTPS when gh is missing or fails (fail-safe).",
             "type": "string"
           }
         },
@@ -144,7 +144,7 @@
             "description": "A config token (CNGX_SELECT_CONFIG), a stem (select), or a component name (CngxSelect)."
           },
           "version": {
-            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\". Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh (fail-safe).",
+            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\". Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh, or over HTTPS when gh is missing or fails (fail-safe).",
             "type": "string"
           }
         },
@@ -175,7 +175,7 @@
     {
       "name": "migrate_usage",
       "title": "Diff two cngx releases",
-      "description": "Return a structured API delta between two cngx releases: removed / renamed / signature-changed components, inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version. A version other than the bundled one is fetched from the GitHub Release assets via `gh`; a missing `gh`, no network, or an absent asset returns a typed error result ({ ok: false, reason }), never a throw.",
+      "description": "Return a structured API delta between two cngx releases: removed / renamed / signature-changed components, inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version. A version other than the bundled one is fetched from the GitHub Release assets via `gh`, or over HTTPS when `gh` is missing or fails; no network or an absent asset returns a typed error result ({ ok: false, reason }), never a throw.",
       "inputSchema": {
         "type": "object",
         "properties": {
