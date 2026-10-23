@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { CNGX_HOST_INTERACTION_STATE } from '@cngx/common/interactive';
 
-import { injectButtonCore } from './button-core';
+import { injectButtonCore, provideButtonDescribedBy } from './button-core';
 import type {
   CngxButtonSize,
   CngxButtonTone,
@@ -34,6 +34,9 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
  * attribute, so the button stays focusable and a `disabledReason` can be
  * read through `aria-describedby`. Activation is swallowed while disabled:
  * `(click)`, `routerLink`, link navigation and form submission do not run.
+ * The button owns `aria-describedby` through `CNGX_DESCRIBED_BY`: a static
+ * `aria-describedby`, the reason and a co-hosted `[cngxTooltip]` id are
+ * merged, so none of them is lost.
  *
  * Co-host `cngxAsyncClick` for an async action: the label stays in place
  * (width stable) under a busy layer while the action runs, and the
@@ -70,7 +73,10 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
   exportAs: 'cngxButton',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  providers: [{ provide: CNGX_HOST_INTERACTION_STATE, useExisting: CngxButton }],
+  providers: [
+    { provide: CNGX_HOST_INTERACTION_STATE, useExisting: CngxButton },
+    provideButtonDescribedBy('CngxButton'),
+  ],
   host: {
     class: 'cngx-button',
     '[attr.data-variant]': 'core.variant()',

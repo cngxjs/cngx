@@ -11,7 +11,7 @@ import {
 import { CNGX_HOST_INTERACTION_STATE } from '@cngx/common/interactive';
 import { cngxDevWarn } from '@cngx/utils';
 
-import { injectButtonCore } from './button-core';
+import { injectButtonCore, provideButtonDescribedBy } from './button-core';
 import type {
   CngxButtonSize,
   CngxButtonTone,
@@ -30,7 +30,8 @@ import type {
  * set `aria-label` (or `aria-labelledby` / `title`). A host without any of
  * them warns `CNGX1071` in development mode. A tooltip is a separate,
  * per-icon decision; co-host `[cngxTooltip]` where the icon alone is
- * ambiguous.
+ * ambiguous. Its id joins the button's `aria-describedby` through
+ * `CNGX_DESCRIBED_BY`, next to the static ids and the disabled reason.
  *
  * The visual box follows `size` and stays square; on a coarse pointer the
  * hit area grows to `--cngx-target-min` through a pseudo-element, so the
@@ -57,7 +58,10 @@ import type {
   exportAs: 'cngxIconButton',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  providers: [{ provide: CNGX_HOST_INTERACTION_STATE, useExisting: CngxIconButton }],
+  providers: [
+    { provide: CNGX_HOST_INTERACTION_STATE, useExisting: CngxIconButton },
+    provideButtonDescribedBy('CngxIconButton'),
+  ],
   host: {
     class: 'cngx-button cngx-icon-button',
     '[attr.data-variant]': 'core.variant()',

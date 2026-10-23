@@ -5,10 +5,16 @@ import {
   HostAttributeToken,
   inject,
   Injector,
+  type Provider,
   type Signal,
 } from '@angular/core';
 import { CngxAsyncClick } from '@cngx/common/interactive';
-import { nextUid } from '@cngx/core/utils';
+import {
+  CNGX_DESCRIBED_BY,
+  createDescribedByRegistry,
+  injectDescribedByContribution,
+  nextUid,
+} from '@cngx/core/utils';
 
 import { injectButtonConfig } from './button-config';
 import { CNGX_BUTTON_GROUP } from './button-group.token';
@@ -57,7 +63,11 @@ export interface CngxButtonCore {
   /** `true` while a co-hosted `CngxAsyncClick` runs its action. */
   readonly busy: Signal<boolean>;
   readonly ariaDisabled: Signal<'true' | null>;
-  /** The consumer's static `aria-describedby` ids plus the reason id while disabled with a reason. */
+  /**
+   * The element's merged `aria-describedby`: the consumer's static ids, the
+   * reason id while disabled with a reason, and the ids of co-hosted
+   * contributors such as `[cngxTooltip]`.
+   */
   readonly describedBy: Signal<string | null>;
   readonly reasonId: string;
   /** `type` attribute value: the input or `'button'` on a `<button>`, `null` on an `<a>`. */
@@ -66,6 +76,25 @@ export interface CngxButtonCore {
 
 const DEFAULT_TONE: CngxButtonTone = 'neutral';
 const DEFAULT_SIZE: CngxButtonSize = 'md';
+
+/**
+ * Element-level `aria-describedby` owner of a button host. Seeds the
+ * registry with the consumer's static `aria-describedby`, so those ids
+ * survive the host binding, and lets a co-hosted `[cngxTooltip]` contribute
+ * its id instead of overwriting the attribute.
+ *
+ * @internal
+ */
+export function provideButtonDescribedBy(name: string): Provider {
+  return {
+    provide: CNGX_DESCRIBED_BY,
+    useFactory: () =>
+      createDescribedByRegistry({
+        name,
+        seed: inject(new HostAttributeToken('aria-describedby'), { optional: true }),
+      }),
+  };
+}
 
 /**
  * Shared brain of the button family. Resolves the three visual axes
@@ -95,9 +124,6 @@ export function injectButtonCore(
   let asyncClick: CngxAsyncClick | null | undefined;
   const coHostedAsyncClick = (): CngxAsyncClick | null =>
     (asyncClick ??= injector.get(CngxAsyncClick, null, { self: true, optional: true }));
-  // A static aria-describedby the consumer writes on the host survives:
-  // the binding below owns the attribute, so it re-emits the consumer's ids.
-  const ownDescribedBy = inject(new HostAttributeToken('aria-describedby'), { optional: true });
   const reasonId = nextUid('cngx-button-reason-');
   const isButtonHost = host.tagName === 'BUTTON';
 
@@ -117,10 +143,12 @@ export function injectButtonCore(
   const ariaDisabled = computed<'true' | null>(() =>
     inputs.disabled() || busy() || asyncClickRefuses() ? 'true' : null,
   );
-  const describedBy = computed(() => {
-    const reason = inputs.disabled() && inputs.disabledReason() ? reasonId : null;
-    return [ownDescribedBy, reason].filter(Boolean).join(' ') || null;
-  });
+  const reasonIds = computed(() =>
+    inputs.disabled() && inputs.disabledReason() ? reasonId : null,
+  );
+  // The host provides the registry (provideButtonDescribedBy), so the
+  // fallback only covers a class that forgot it.
+  const describedBy = injectDescribedByContribution(reasonId, reasonIds)?.value ?? reasonIds;
   const hostType = computed<CngxButtonType | null>(() =>
     isButtonHost ? (inputs.type() ?? 'button') : null,
   );

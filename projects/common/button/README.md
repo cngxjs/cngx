@@ -62,3 +62,4 @@ Density, text scale, touch floor, motion and contrast are not inputs. They come 
 - Icon fonts set their own pixel size outside any layer, so they ignore the slot size: `.material-icons` and `<mat-icon>` stay at 24px. Wrap the glyph in `<cngx-icon cngxButtonStart>` and let it inherit the size: `<mat-icon inline>` does that by itself, a plain icon-font span needs `font-size: inherit`.
 - `CNGX_BUTTON_GROUP` is the contract a group provides so its children read variant and size without importing the group class.
 - `CNGX_HOST_INTERACTION_STATE` (`@cngx/common/interactive`) is how the button tells a co-hosted `cngxAsyncClick` it is disabled, so both directives render the same `aria-disabled`.
+- `CNGX_DESCRIBED_BY` (`@cngx/core/utils`) is the `aria-describedby` registry each button provides on its element: the static ids, the disabled reason and a co-hosted `[cngxTooltip]` id all land in one attribute, in that order, instead of one binding overwriting the other.
