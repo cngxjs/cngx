@@ -119,6 +119,26 @@ class DisabledHost {
 }
 
 @Component({
+  template: `
+    <span id="hint">Opens in a dialog</span>
+    <button
+      id="described"
+      cngxButton
+      aria-describedby="hint"
+      [disabled]="disabled()"
+      [disabledReason]="reason()"
+    >
+      Edit
+    </button>
+  `,
+  imports: [CngxButton],
+})
+class DescribedHost {
+  readonly disabled = signal(false);
+  readonly reason = signal<string | undefined>('Read-only record');
+}
+
+@Component({
   template: `<a id="link" cngxButton routerLink="/next" [disabled]="disabled()">Next</a>`,
   imports: [CngxButton, RouterLink],
 })
@@ -299,6 +319,26 @@ describe('CngxButton', () => {
       fixture.detectChanges();
       expect(btn.hasAttribute('aria-describedby')).toBe(false);
       expect(btn.querySelector('.cngx-button__reason')).not.toBeNull();
+    });
+
+    it('keeps a static aria-describedby and appends the reason only while it applies', () => {
+      const { fixture, host, q } = render(DescribedHost);
+      const btn = q('#described');
+      expect(btn.getAttribute('aria-describedby')).toBe('hint');
+
+      host.disabled.set(true);
+      fixture.detectChanges();
+      const reasonId = btn.querySelector('.cngx-button__reason')?.id;
+      expect(btn.getAttribute('aria-describedby')).toBe(`hint ${reasonId}`);
+
+      host.reason.set(undefined);
+      fixture.detectChanges();
+      expect(btn.getAttribute('aria-describedby')).toBe('hint');
+
+      host.reason.set('Locked');
+      host.disabled.set(false);
+      fixture.detectChanges();
+      expect(btn.getAttribute('aria-describedby')).toBe('hint');
     });
 
     it('keeps the hidden reason out of the accessible name', () => {

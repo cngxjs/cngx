@@ -1,4 +1,12 @@
-import { computed, DestroyRef, ElementRef, inject, Injector, type Signal } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  ElementRef,
+  HostAttributeToken,
+  inject,
+  Injector,
+  type Signal,
+} from '@angular/core';
 import { CngxAsyncClick } from '@cngx/common/interactive';
 import { nextUid } from '@cngx/core/utils';
 
@@ -49,6 +57,7 @@ export interface CngxButtonCore {
   /** `true` while a co-hosted `CngxAsyncClick` runs its action. */
   readonly busy: Signal<boolean>;
   readonly ariaDisabled: Signal<'true' | null>;
+  /** The consumer's static `aria-describedby` ids plus the reason id while disabled with a reason. */
   readonly describedBy: Signal<string | null>;
   readonly reasonId: string;
   /** `type` attribute value: the input or `'button'` on a `<button>`, `null` on an `<a>`. */
@@ -86,6 +95,9 @@ export function injectButtonCore(
   let asyncClick: CngxAsyncClick | null | undefined;
   const coHostedAsyncClick = (): CngxAsyncClick | null =>
     (asyncClick ??= injector.get(CngxAsyncClick, null, { self: true, optional: true }));
+  // A static aria-describedby the consumer writes on the host survives:
+  // the binding below owns the attribute, so it re-emits the consumer's ids.
+  const ownDescribedBy = inject(new HostAttributeToken('aria-describedby'), { optional: true });
   const reasonId = nextUid('cngx-button-reason-');
   const isButtonHost = host.tagName === 'BUTTON';
 
@@ -98,9 +110,10 @@ export function injectButtonCore(
   );
   const busy = computed(() => coHostedAsyncClick()?.pending() ?? false);
   const ariaDisabled = computed<'true' | null>(() => (inputs.disabled() || busy() ? 'true' : null));
-  const describedBy = computed(() =>
-    inputs.disabled() && inputs.disabledReason() ? reasonId : null,
-  );
+  const describedBy = computed(() => {
+    const reason = inputs.disabled() && inputs.disabledReason() ? reasonId : null;
+    return [ownDescribedBy, reason].filter(Boolean).join(' ') || null;
+  });
   const hostType = computed<CngxButtonType | null>(() =>
     isButtonHost ? (inputs.type() ?? 'button') : null,
   );
