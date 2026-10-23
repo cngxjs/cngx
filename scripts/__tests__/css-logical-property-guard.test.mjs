@@ -50,6 +50,12 @@ import { describe, expect, it } from 'vitest';
  *       deliberately the colour/width/style longhand only - a real directional
  *       `padding-left` / `text-align: left` inside a spinner-named rule is NOT
  *       geometry and stays flagged.
+ *   (e) ONLY a bare `left: 0` inside a rule whose selector contains
+ *       `.cngx-ripple__wave`. `CngxRipple` measures the wave origin from the
+ *       host's physical left edge (`clientX - rect.left`) and the wave is
+ *       placed with a physical `translate`, so the anchor must be the
+ *       physical left edge in every writing direction. Any other value or
+ *       property in a ripple rule stays flagged.
  */
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -155,6 +161,7 @@ function hasCenteringTranslate(block) {
 const ARROW_SELECTOR = /\.cngx-popover-panel__arrow/;
 const SPINNER_SELECTOR = /spinner/;
 const SPINNER_BORDER_LONGHAND = /^border-(?:left|right)-(?:color|width|style)$/;
+const RIPPLE_WAVE_SELECTOR = /\.cngx-ripple__wave/;
 
 const BARE_INSET = /(?<![-\w])(left|right)\s*:\s*([^;{}]+)[;}]/g;
 // `env(safe-area-inset-left)` is an environment variable name, not a property.
@@ -170,6 +177,8 @@ function findOffenders(rawCss, rel = 'fixture') {
   const spinner = gatedRanges(css, SPINNER_SELECTOR);
   const inArrow = (idx) => arrow.some(([s, e]) => idx >= s && idx < e);
   const inSpinner = (idx) => spinner.some(([s, e]) => idx >= s && idx < e);
+  const rippleWave = gatedRanges(css, RIPPLE_WAVE_SELECTOR);
+  const inRippleWave = (idx) => rippleWave.some(([s, e]) => idx >= s && idx < e);
   const offenders = [];
 
   let m;
@@ -179,6 +188,9 @@ function findOffenders(rawCss, rel = 'fixture') {
       continue; // (b) arrow geometry
     }
     const value = m[2].trim();
+    if (m[1] === 'left' && value === '0' && inRippleWave(m.index)) {
+      continue; // (e) ripple wave anchored on the physical origin
+    }
     if (/^50%/.test(value) && hasCenteringTranslate(enclosingBlock(css, m.index))) {
       continue; // (a) centering, transform-verified
     }
@@ -226,7 +238,7 @@ describe('css logical-property (RTL) regression guard', () => {
       `these declarations are directional PHYSICAL properties - convert to the logical twin ` +
         `(inset-inline-*, margin-inline-*, border-inline-*, text-align: start/end), or, if the ` +
         `side is placement/animation geometry, move the rule under an allowlisted selector ` +
-        `(.cngx-popover-panel__arrow / *spinner* border-color):\n${offenders.join('\n')}`,
+        `(.cngx-popover-panel__arrow / *spinner* border-color / .cngx-ripple__wave left: 0):\n${offenders.join('\n')}`,
     ).toEqual([]);
   });
 
@@ -258,6 +270,13 @@ describe('css logical-property (RTL) regression guard', () => {
     expect(findOffenders('.cngx-tabs__busy-spinner { border-right-color: red; }')).toEqual([]);
     // but a non-geometry directional prop in a spinner rule is still caught
     expect(findOffenders('.cngx-spinner-label { text-align: left; }')).toHaveLength(1);
+
+    // allowlist (e) ripple wave origin - bare `left: 0` only
+    expect(findOffenders('@scope (.cngx-ripple__wave) { :scope { top: 0; left: 0; } }')).toEqual([]);
+    expect(findOffenders('.cngx-ripple__wave { left: 4px; }')).toHaveLength(1);
+    expect(findOffenders('.cngx-ripple__wave { right: 0; }')).toHaveLength(1);
+    expect(findOffenders('.cngx-ripple__wave { margin-left: 0; }')).toHaveLength(1);
+    expect(findOffenders('.cngx-ripple__container { left: 0; }')).toHaveLength(1);
     expect(findOffenders('.cngx-spinner-label { padding-left: 8px; }')).toHaveLength(1);
 
     // env(safe-area-inset-*) names a device inset, not a directional property

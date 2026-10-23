@@ -86,35 +86,13 @@ Ripple and Pressable are typically composed together via CngxPressRipple, but ca
 
 ### CngxRipple
 
-The ripple creates a `<span class="cngx-ripple__wave">` injected into the DOM. All visual styling is your responsibility. Ships with `_ripple.scss` defaults:
+On the first press the directive appends one `<span class="cngx-ripple__container" aria-hidden="true">` to the host and renders every `<span class="cngx-ripple__wave">` into it. The host gets the `cngx-ripple` class. Default styles ship in `cngx-ripple.css` (imported by `@cngx/themes/cngx.css`):
 
-```scss
-// projects/common/interactive/ripple/_ripple.scss
-.cngx-ripple__wave {
-  position: absolute;
-  pointer-events: none;
-  top: calc(var(--cngx-ripple-y) - var(--cngx-ripple-size) / 2);
-  left: calc(var(--cngx-ripple-x) - var(--cngx-ripple-size) / 2);
-  width: var(--cngx-ripple-size);
-  height: var(--cngx-ripple-size);
-  border-radius: 50%;
-  background: var(--cngx-ripple-color, currentColor);
-  opacity: 0.3;
-  animation: cngx-ripple-animation var(--cngx-ripple-duration, 0.6s)
-    var(--cngx-ripple-easing, cubic-bezier(0.4, 0, 0.2, 1)) forwards;
-}
+- `.cngx-ripple` sets `position: relative` at zero specificity, so a host that is already positioned keeps its own value.
+- `.cngx-ripple__container` covers the host (`position: absolute; inset: 0`), inherits its `border-radius`, clips with `overflow: hidden` and ignores pointer events.
+- `.cngx-ripple__wave` is positioned from `--cngx-ripple-x`, `--cngx-ripple-y` and `--cngx-ripple-size` (set inline per press) and animates with `--cngx-ripple-duration` / `--cngx-ripple-opacity`.
 
-@keyframes cngx-ripple-animation {
-  from {
-    opacity: 0.3;
-    transform: scale(0);
-  }
-  to {
-    opacity: 0;
-    transform: scale(1);
-  }
-}
-```
+Only the wave is clipped. The host is never clipped, so the coarse-pointer hit area of `cngxButton` / `cngxIconButton` (a `::before` that overhangs the box up to `--cngx-target-min`), a corner badge or a focus ring stay intact.
 
 Override in your component:
 
@@ -245,6 +223,6 @@ The `theme()` mixin sets `--cngx-ripple-color` from the Material palette (`on-su
 ## See Also
 
 - [compodocx API documentation](https://cngxjs.github.io/cngx/)
-- `_ripple.scss` - Default ripple animation styles
-- Demo: `examples/stories/common/ripple-demo/`
+- `cngx-ripple.css` - Default container and wave styles
+- Demo: `examples/stories/common/interactive/ripple/`
 - Tests: `projects/common/interactive/ripple/ripple.directive.spec.ts`
