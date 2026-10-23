@@ -52,7 +52,7 @@ import { CngxOption } from '@cngx/common/interactive';
     <ng-content />
     @let s = option.statusSignal();
     @if (s !== null && s.tpl !== null) {
-      <span class="cngx-option__status" [attr.data-state]="s.kind">
+      <span class="cngx-option__status" [attr.data-state]="s.kind" data-cngx-option-chrome>
         <ng-container *ngTemplateOutlet="s.tpl" />
       </span>
     }

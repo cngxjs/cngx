@@ -13,7 +13,7 @@ import { By } from '@angular/platform-browser';
 import { Subject, type Observable } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CngxListbox, type CngxOption } from '@cngx/common/interactive';
+import { CNGX_OPTION_CHROME_ATTR, CngxListbox, type CngxOption } from '@cngx/common/interactive';
 import {
   CngxPopover,
   CngxPopoverSheet,
@@ -931,6 +931,25 @@ describe('CngxSelectShell - commit action producer', () => {
     expect(glyph).not.toBeNull();
     expect(glyph!.textContent).toBe('!');
   });
+
+  it('keeps the status glyph out of the live option label', async () => {
+    const { fixture, listbox, host, shell } = setup();
+    const greenOption = fixture.debugElement.queryAll(By.css('cngx-option'))[1]
+      .nativeElement as HTMLElement;
+
+    pickValue(listbox, 'green');
+    flush(fixture);
+    host.pending!.error(new Error('server down'));
+    flush(fixture);
+    // MutationObserver records are delivered in a microtask.
+    await Promise.resolve();
+    flush(fixture);
+
+    const slot = greenOption.querySelector('.cngx-option__status');
+    expect(slot?.hasAttribute(CNGX_OPTION_CHROME_ATTR)).toBe(true);
+    expect(slot?.textContent).toContain('!');
+    expect(shellInternals(shell).flatOptions()[1].label).toBe('Grün');
+  });
 });
 
 describe('CngxSelectShell - factory token wiring', () => {
@@ -1536,4 +1555,56 @@ describeSelectBehaviourHost('CngxSelectShell', CngxSelectShell, 'cngx-select-she
   contentImports: [CngxSelectOption],
   optionSelector: 'cngx-option',
   readValue: (cmp) => (cmp as { value: () => unknown }).value(),
+});
+
+describe('CngxSelectShell - live projected option text', () => {
+  @Component({
+    template: `
+      <cngx-select-shell [label]="'Fruit'" [(value)]="value">
+        <cngx-option [value]="'a'">{{ label() }}</cngx-option>
+        <cngx-option [value]="'b'">Banana</cngx-option>
+      </cngx-select-shell>
+    `,
+    imports: [CngxSelectShell, CngxSelectOption],
+  })
+  class LiveLabelHost {
+    readonly value = signal<string | undefined>(undefined);
+    readonly label = signal('Apple');
+  }
+
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({});
+  });
+
+  async function settle(fixture: { detectChanges: () => void }): Promise<void> {
+    flush(fixture);
+    // MutationObserver records are delivered in a microtask.
+    await Promise.resolve();
+    flush(fixture);
+  }
+
+  it('echoes the new option text on the trigger and in the closed-trigger typeahead', async () => {
+    const fixture = TestBed.createComponent(LiveLabelHost);
+    await settle(fixture);
+    const shellEl = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .nativeElement as HTMLElement;
+    const labelEl = shellEl.querySelector('.cngx-select-shell__label') as HTMLElement;
+    const trigger = shellEl.querySelector('.cngx-select-shell__trigger') as HTMLElement;
+
+    fixture.componentInstance.value.set('a');
+    await settle(fixture);
+    expect(labelEl.textContent?.trim()).toBe('Apple');
+
+    fixture.componentInstance.label.set('Cherry');
+    await settle(fixture);
+    expect(labelEl.textContent?.trim()).toBe('Cherry');
+
+    fixture.componentInstance.value.set('b');
+    await settle(fixture);
+    trigger.focus();
+    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'c', bubbles: true }));
+    await settle(fixture);
+    expect(fixture.componentInstance.value()).toBe('a');
+  });
 });
