@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { loadDocsFromFile } from '../data/loader.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
-import { answerVersioned, resetDocsCache } from '../data/docs-resolver.js';
+import { answerVersioned, createDocsResolver, resetDocsCache } from '../data/docs-resolver.js';
 import { getApi } from './get-api.js';
 
 const FIXTURE = fileURLToPath(new URL('../../../test/fixtures/documentation.sample.json', import.meta.url));
@@ -45,7 +45,7 @@ describe('get_api version wiring', () => {
   it('grounds the answer against a fetched non-bundled version', async () => {
     const deps: DocsResolverDeps = { fetchSnapshot: async () => ({ ok: true, path: NEW }), loadDocs: loadDocsFromFile };
 
-    const answer = await answerVersioned(docs, '0.2.0', (resolved) => getApi(resolved, 'CngxSelect'), deps);
+    const answer = await answerVersioned(createDocsResolver(docs, deps), '0.2.0', (resolved) => getApi(resolved, 'CngxSelect'));
 
     expect(answer).toMatchObject({ ok: true, groundedVersion: '0.2.0' });
     // v0.2.0 dropped the `disabled` input the bundled snapshot still lists.
@@ -59,7 +59,7 @@ describe('get_api version wiring', () => {
       loadDocs: loadDocsFromFile,
     };
 
-    const answer = await answerVersioned(docs, '999.0.0', (resolved) => getApi(resolved, 'CngxSelect'), deps);
+    const answer = await answerVersioned(createDocsResolver(docs, deps), '999.0.0', (resolved) => getApi(resolved, 'CngxSelect'));
 
     expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'no release' });
   });

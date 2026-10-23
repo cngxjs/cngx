@@ -1,14 +1,18 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { resetDocsCache } from './core/data/docs-resolver.js';
 import { loadDocsFromFile, loadLlmDumpFromFile } from './core/data/loader.js';
 import { createServer } from './server.js';
 
 const DOCS_FIXTURE = fileURLToPath(new URL('../test/fixtures/documentation.sample.json', import.meta.url));
+const NEW_FIXTURE = fileURLToPath(new URL('../test/fixtures/documentation.v-new.sample.json', import.meta.url));
 const LLM_FIXTURE = fileURLToPath(new URL('../test/fixtures/llm-context.sample.md', import.meta.url));
 
 describe('createServer', () => {
+  beforeEach(() => resetDocsCache());
+
   it('builds a transport-free server whose instructions ground against the loaded snapshot', async () => {
     const server = createServer({
       docs: loadDocsFromFile(DOCS_FIXTURE),
@@ -39,6 +43,27 @@ describe('createServer', () => {
     const answer = JSON.parse(content!.text) as { ok: boolean; groundedVersion: string; result: { name: string } };
 
     expect(answer).toMatchObject({ ok: true, groundedVersion: '0.1.0-rc.6', result: { name: 'CngxSelect' } });
+    await client.close();
+  });
+
+  it('resolves a requested version through the injected resolver deps', async () => {
+    const fetchSnapshot = vi.fn(async () => ({ ok: true as const, path: NEW_FIXTURE }));
+    const server = createServer({
+      docs: loadDocsFromFile(DOCS_FIXTURE),
+      llmDump: null,
+      resolverDeps: { fetchSnapshot, loadDocs: loadDocsFromFile },
+    });
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    const client = new Client({ name: 'server-spec', version: '0.0.0' });
+    await server.connect(serverTransport);
+    await client.connect(clientTransport);
+
+    const result = await client.callTool({ name: 'get_api', arguments: { name: 'CngxSelect', version: '0.2.0' } });
+    const [content] = result.content as { type: string; text: string }[];
+    const answer = JSON.parse(content!.text) as { ok: boolean; groundedVersion: string };
+
+    expect(answer).toMatchObject({ ok: true, groundedVersion: '0.2.0' });
+    expect(fetchSnapshot).toHaveBeenCalledExactlyOnceWith('0.2.0');
     await client.close();
   });
 });

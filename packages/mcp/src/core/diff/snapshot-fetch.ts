@@ -19,6 +19,9 @@ export type SnapshotFetchResult =
   | { ok: true; path: string }
   | { ok: false; reason: SnapshotFetchFailureReason; message: string };
 
+/** The fetch a resolver depends on: one release version in, a snapshot path or a typed failure out. */
+export type FetchSnapshot = (version: string) => Promise<SnapshotFetchResult>;
+
 /** What the HTTPS path reads off a response. `body` is only read for a 200. */
 export interface HttpGetResponse {
   status: number;

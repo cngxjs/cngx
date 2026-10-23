@@ -39,5 +39,5 @@ export const getDiTokensCommand = defineCommand({
     query: z.string().optional().describe('A DI-token name fragment, e.g. "SELECT". Omit for all DI tokens.'),
     version: versionInput,
   },
-  run: (ctx, { query, version }) => answerVersioned(ctx.bundled, version, (resolved) => getDiTokens(resolved, query)),
+  run: (ctx, { query, version }) => answerVersioned(ctx.resolve, version, (resolved) => getDiTokens(resolved, query)),
 });

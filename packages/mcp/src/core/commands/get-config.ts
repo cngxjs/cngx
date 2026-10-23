@@ -203,5 +203,5 @@ export const getConfigCommand = defineCommand({
       .describe('A config token (CNGX_SELECT_CONFIG), a stem (select), or a component name (CngxSelect).'),
     version: versionInput,
   },
-  run: (ctx, { name, version }) => answerVersioned(ctx.bundled, version, (resolved) => getConfig(resolved, name)),
+  run: (ctx, { name, version }) => answerVersioned(ctx.resolve, version, (resolved) => getConfig(resolved, name)),
 });

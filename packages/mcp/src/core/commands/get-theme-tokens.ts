@@ -57,5 +57,5 @@ export const getThemeTokensCommand = defineCommand({
     name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect".'),
     version: versionInput,
   },
-  run: (ctx, { name, version }) => answerVersioned(ctx.bundled, version, (resolved) => getThemeTokens(resolved, name)),
+  run: (ctx, { name, version }) => answerVersioned(ctx.resolve, version, (resolved) => getThemeTokens(resolved, name)),
 });

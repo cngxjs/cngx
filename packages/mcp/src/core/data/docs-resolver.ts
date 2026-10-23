@@ -9,6 +9,7 @@
 
 import type { DocsIndex } from './loader.js';
 import { loadDocsFromFile } from './loader.js';
+import type { FetchSnapshot } from '../diff/snapshot-fetch.js';
 import { fetchSnapshot } from '../diff/snapshot-fetch.js';
 import type { SnapshotFetchFailureReason } from '../diff/types.js';
 
@@ -19,7 +20,7 @@ export type DocsResolution =
 
 /** Injectable side-effect seam so the cache + short-circuit are testable without `gh`. */
 export interface DocsResolverDeps {
-  fetchSnapshot: typeof fetchSnapshot;
+  fetchSnapshot: FetchSnapshot;
   loadDocs: typeof loadDocsFromFile;
 }
 
@@ -45,6 +46,17 @@ function cacheDocs(version: string, docs: DocsIndex): void {
     }
   }
   cache.set(version, docs);
+}
+
+/** Resolves a version against one bundled snapshot; what a command reaches through its context. */
+export type DocsResolver = (version?: string) => Promise<DocsResolution>;
+
+/**
+ * Bind {@link resolveDocs} to `bundled` and `deps` once. Each adapter builds its
+ * resolver here, so a command never sees the fetch or cache wiring.
+ */
+export function createDocsResolver(bundled: DocsIndex, deps: DocsResolverDeps = defaultDeps): DocsResolver {
+  return (version) => resolveDocs(bundled, version, deps);
 }
 
 /** Drop the in-memory cache. Test seam so a cache-hit assertion starts from empty. */
@@ -104,18 +116,17 @@ export type VersionedAnswer<T> =
   | { ok: false; reason: SnapshotFetchFailureReason; message: string };
 
 /**
- * Resolve `version`, then run `query` against the resolved snapshot and wrap the
+ * Resolve `version` through `resolve`, then run `query` against the resolved snapshot and wrap the
  * result with `groundedVersion`. The uniform envelope is why this lives here and
  * not inline per tool: `get_di_tokens` / `find_component` return arrays that cannot
  * carry the version otherwise, so every tool wraps identically.
  */
 export async function answerVersioned<T>(
-  bundled: DocsIndex,
+  resolve: DocsResolver,
   version: string | undefined,
   query: (docs: DocsIndex) => T,
-  deps: DocsResolverDeps = defaultDeps,
 ): Promise<VersionedAnswer<T>> {
-  const resolution = await resolveDocs(bundled, version, deps);
+  const resolution = await resolve(version);
   if (!resolution.ok) {
     return { ok: false, reason: resolution.reason, message: resolution.message };
   }

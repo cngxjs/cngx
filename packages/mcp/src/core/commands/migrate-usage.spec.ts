@@ -1,8 +1,8 @@
 import { fileURLToPath } from 'node:url';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { loadDocsFromFile } from '../data/loader.js';
-import { resetDocsCache } from '../data/docs-resolver.js';
-import type { MigrateUsageDeps } from './migrate-usage.js';
+import type { DocsResolverDeps } from '../data/docs-resolver.js';
+import { createDocsResolver, resetDocsCache } from '../data/docs-resolver.js';
 import { migrateUsage } from './migrate-usage.js';
 import type { UsageDelta } from '../diff/types.js';
 
@@ -28,12 +28,12 @@ describe('migrateUsage', () => {
   });
 
   it('fetches a non-bundled `from` and returns the delta (fetch stubbed to a fixture)', async () => {
-    const deps: MigrateUsageDeps = {
+    const deps: DocsResolverDeps = {
       fetchSnapshot: async () => ({ ok: true, path: OLD }),
       loadDocs: loadDocsFromFile,
     };
 
-    const result = await migrateUsage(bundledNew, { from: '0.1.0', to: '0.2.0' }, deps);
+    const result = await migrateUsage(bundledNew, { from: '0.1.0', to: '0.2.0' }, createDocsResolver(bundledNew, deps));
 
     expect(result.ok).toBe(true);
     const delta = result as UsageDelta;
@@ -51,12 +51,12 @@ describe('migrateUsage', () => {
       injectables: [],
       tokens: [],
     };
-    const deps: MigrateUsageDeps = {
+    const deps: DocsResolverDeps = {
       fetchSnapshot: async () => ({ ok: true, path: '/tmp/raw-unstamped.json' }),
       loadDocs: () => rawUnstamped,
     };
 
-    const result = await migrateUsage(bundledNew, { from: '0.1.0', to: '0.2.0' }, deps);
+    const result = await migrateUsage(bundledNew, { from: '0.1.0', to: '0.2.0' }, createDocsResolver(bundledNew, deps));
 
     expect(result.ok).toBe(true);
     const delta = result as UsageDelta;
@@ -66,12 +66,12 @@ describe('migrateUsage', () => {
   });
 
   it('surfaces a fetch failure as a typed result, never a throw', async () => {
-    const deps: MigrateUsageDeps = {
+    const deps: DocsResolverDeps = {
       fetchSnapshot: async () => ({ ok: false, reason: 'asset-missing', message: 'release not found' }),
       loadDocs: loadDocsFromFile,
     };
 
-    const result = await migrateUsage(bundledNew, { from: '9.9.9', to: '0.2.0' }, deps);
+    const result = await migrateUsage(bundledNew, { from: '9.9.9', to: '0.2.0' }, createDocsResolver(bundledNew, deps));
 
     expect(result).toEqual({
       ok: false,
@@ -82,14 +82,14 @@ describe('migrateUsage', () => {
   });
 
   it('surfaces an unreadable fetched snapshot inside the typed reason set', async () => {
-    const deps: MigrateUsageDeps = {
+    const deps: DocsResolverDeps = {
       fetchSnapshot: async () => ({ ok: true, path: '/tmp/does-not-exist.json' }),
       loadDocs: () => {
         throw new Error('ENOENT');
       },
     };
 
-    const result = await migrateUsage(bundledNew, { from: '0.1.0', to: '0.2.0' }, deps);
+    const result = await migrateUsage(bundledNew, { from: '0.1.0', to: '0.2.0' }, createDocsResolver(bundledNew, deps));
 
     expect(result).toMatchObject({ ok: false, reason: 'asset-missing' });
   });

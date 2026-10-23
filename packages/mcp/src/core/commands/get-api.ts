@@ -93,5 +93,5 @@ export const getApiCommand = defineCommand({
       .describe('A component/directive/service class name or selector, e.g. "CngxSelect" or "cngx-select".'),
     version: versionInput,
   },
-  run: (ctx, { name, version }) => answerVersioned(ctx.bundled, version, (resolved) => getApi(resolved, name)),
+  run: (ctx, { name, version }) => answerVersioned(ctx.resolve, version, (resolved) => getApi(resolved, name)),
 });

@@ -8,10 +8,9 @@
 import { z } from 'zod';
 import { defineCommand } from '../command.js';
 import type { DocsIndex } from '../data/loader.js';
-import { loadDocsFromFile } from '../data/loader.js';
-import { resolveDocs } from '../data/docs-resolver.js';
+import type { DocsResolver } from '../data/docs-resolver.js';
+import { createDocsResolver } from '../data/docs-resolver.js';
 import { diffSnapshots } from '../diff/snapshot-diff.js';
-import { fetchSnapshot } from '../diff/snapshot-fetch.js';
 import type { MigrateUsageResult, UsageDeltaError } from '../diff/types.js';
 
 export interface MigrateUsageArgs {
@@ -19,41 +18,33 @@ export interface MigrateUsageArgs {
   to?: string;
 }
 
-/** Injectable side-effect seam so the pure query is testable without `gh` or the network. */
-export interface MigrateUsageDeps {
-  fetchSnapshot: typeof fetchSnapshot;
-  loadDocs: typeof loadDocsFromFile;
-}
-
-const defaultDeps: MigrateUsageDeps = { fetchSnapshot, loadDocs: loadDocsFromFile };
-
 /**
  * Pure query behind the tool. `to` defaults to the bundled snapshot's `cngxVersion`.
  * Returns the structured {@link MigrateUsageResult} - a delta on success, a typed
  * failure when a non-bundled snapshot cannot be resolved. Both endpoints resolve
- * through the shared {@link resolveDocs}, so the bundled short-circuit, the fetch
- * seam, the schema-error mapping, and the in-memory cache are the same ones the
- * version-scoped query tools use.
+ * through `resolve`, the same resolver the version-scoped query tools get from
+ * their context, so the bundled short-circuit, the fetch, the schema-error mapping
+ * and the cache are shared.
  */
 export async function migrateUsage(
   bundled: DocsIndex,
   args: MigrateUsageArgs,
-  deps: MigrateUsageDeps = defaultDeps,
+  resolve: DocsResolver = createDocsResolver(bundled),
 ): Promise<MigrateUsageResult> {
   const from = args.from;
   const to = args.to ?? bundled.meta.cngxVersion ?? 'unknown';
 
-  const fromResolved = await resolveDocs(bundled, from, deps);
+  const fromResolved = await resolve(from);
   if (!fromResolved.ok) {
     return { ok: false, meta: { from, to }, reason: fromResolved.reason, message: fromResolved.message };
   }
-  const toResolved = await resolveDocs(bundled, to, deps);
+  const toResolved = await resolve(to);
   if (!toResolved.ok) {
     return { ok: false, meta: { from, to }, reason: toResolved.reason, message: toResolved.message };
   }
 
   const delta = diffSnapshots(fromResolved.docs, toResolved.docs);
-  // `resolveDocs` already labels an unstamped fetched asset with its requested version
+  // The resolver already labels an unstamped fetched asset with its requested version
   // (a successful download of the `v<version>` asset means the asset IS that version),
   // so `.version` is the truthful resolved label; fall back to the request only for the
   // theoretical null case an unstamped bundled short-circuit would produce.
@@ -89,7 +80,7 @@ export const migrateUsageCommand = defineCommand({
   },
   run: async (ctx, { from, to }) => {
     try {
-      return await migrateUsage(ctx.bundled, { from, to });
+      return await migrateUsage(ctx.bundled, { from, to }, ctx.resolve);
     } catch (error) {
       // Final safety net: the tool must answer, never throw across the boundary.
       const failure: UsageDeltaError = {

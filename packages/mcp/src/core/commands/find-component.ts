@@ -45,5 +45,5 @@ export const findComponentCommand = defineCommand({
     query: z.string().describe('A name, selector, or category fragment, e.g. "select" or "cngx-chip".'),
     version: versionInput,
   },
-  run: (ctx, { query, version }) => answerVersioned(ctx.bundled, version, (resolved) => findComponents(resolved, query)),
+  run: (ctx, { query, version }) => answerVersioned(ctx.resolve, version, (resolved) => findComponents(resolved, query)),
 });

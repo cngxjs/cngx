@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createDocsIndex } from '../data/loader.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
-import { answerVersioned, resetDocsCache } from '../data/docs-resolver.js';
+import { answerVersioned, createDocsResolver, resetDocsCache } from '../data/docs-resolver.js';
 import type { DocFunction, DocumentationJson } from '../data/types.js';
 import { getConfig } from './get-config.js';
 
@@ -203,7 +203,7 @@ describe('get_config version wiring', () => {
   it('grounds the config answer against a fetched non-bundled version', async () => {
     const deps: DocsResolverDeps = { fetchSnapshot: async () => ({ ok: true, path: '/tmp/fetched.json' }), loadDocs: () => fetched };
 
-    const answer = await answerVersioned(bundled, '0.2.0', (resolved) => getConfig(resolved, 'CNGX_FOO_CONFIG'), deps);
+    const answer = await answerVersioned(createDocsResolver(bundled, deps), '0.2.0', (resolved) => getConfig(resolved, 'CNGX_FOO_CONFIG'));
 
     expect(answer).toMatchObject({ ok: true, groundedVersion: '0.2.0' });
     // The bundled snapshot has no config tokens; only the fetched v0.2.0 resolves this one.
@@ -216,7 +216,7 @@ describe('get_config version wiring', () => {
       loadDocs: () => fetched,
     };
 
-    const answer = await answerVersioned(bundled, '999.0.0', (resolved) => getConfig(resolved, 'CNGX_FOO_CONFIG'), deps);
+    const answer = await answerVersioned(createDocsResolver(bundled, deps), '999.0.0', (resolved) => getConfig(resolved, 'CNGX_FOO_CONFIG'));
 
     expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'no release' });
   });

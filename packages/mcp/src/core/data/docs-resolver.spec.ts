@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { loadDocsFromFile, SchemaVersionError } from './loader.js';
 import type { DocsResolverDeps } from './docs-resolver.js';
-import { answerVersioned, DOCS_CACHE_LIMIT, resetDocsCache, resolveDocs } from './docs-resolver.js';
+import { answerVersioned, createDocsResolver, DOCS_CACHE_LIMIT, resetDocsCache, resolveDocs } from './docs-resolver.js';
 import { fetchSnapshot } from '../diff/snapshot-fetch.js';
 import type { SnapshotFetchFailureReason } from '../diff/types.js';
 
@@ -115,7 +115,7 @@ describe('resolveDocs', () => {
 
 describe('answerVersioned', () => {
   it('wraps a bundled answer with ok: true and the bundled groundedVersion', async () => {
-    const answer = await answerVersioned(bundled, undefined, (docs) => docs.components.length);
+    const answer = await answerVersioned(createDocsResolver(bundled), undefined, (docs) => docs.components.length);
 
     expect(answer).toEqual({ ok: true, groundedVersion: '0.1.0-rc.6', result: bundled.components.length });
   });
@@ -123,7 +123,7 @@ describe('answerVersioned', () => {
   it('grounds the query against a fetched non-bundled snapshot', async () => {
     const deps: DocsResolverDeps = { fetchSnapshot: async () => ({ ok: true, path: NEW }), loadDocs: loadDocsFromFile };
 
-    const answer = await answerVersioned(bundled, '0.2.0', (docs) => docs.meta.cngxVersion, deps);
+    const answer = await answerVersioned(createDocsResolver(bundled, deps), '0.2.0', (docs) => docs.meta.cngxVersion);
 
     expect(answer).toEqual({ ok: true, groundedVersion: '0.2.0', result: '0.2.0' });
   });
@@ -135,14 +135,14 @@ describe('answerVersioned', () => {
       loadDocs: loadDocsFromFile,
     };
 
-    const answer = await answerVersioned(bundled, '9.9.9', query, deps);
+    const answer = await answerVersioned(createDocsResolver(bundled, deps), '9.9.9', query);
 
     expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'no release' });
     expect(query).not.toHaveBeenCalled();
   });
 
   it('surfaces a throwing query as a typed failure, never a throw across the boundary', async () => {
-    const answer = await answerVersioned(bundled, undefined, () => {
+    const answer = await answerVersioned(createDocsResolver(bundled), undefined, () => {
       throw new Error('boom');
     });
 

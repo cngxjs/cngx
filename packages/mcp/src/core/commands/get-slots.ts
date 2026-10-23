@@ -45,5 +45,5 @@ export const getSlotsCommand = defineCommand({
     name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect".'),
     version: versionInput,
   },
-  run: (ctx, { name, version }) => answerVersioned(ctx.bundled, version, (resolved) => getSlots(resolved, name)),
+  run: (ctx, { name, version }) => answerVersioned(ctx.resolve, version, (resolved) => getSlots(resolved, name)),
 });

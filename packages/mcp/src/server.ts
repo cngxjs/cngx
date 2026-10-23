@@ -6,6 +6,8 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { DocsResolverDeps } from './core/data/docs-resolver.js';
+import { createDocsResolver } from './core/data/docs-resolver.js';
 import type { DocsIndex } from './core/data/loader.js';
 import { COMMANDS } from './core/registry.js';
 import { registerCommands } from './mcp-adapter.js';
@@ -19,9 +21,11 @@ const pkg = JSON.parse(
 export interface CreateServerOptions {
   docs: DocsIndex;
   llmDump: string | null;
+  /** How a version other than the bundled one is fetched; the production fetch when omitted. */
+  resolverDeps?: DocsResolverDeps;
 }
 
-export function createServer({ docs, llmDump }: CreateServerOptions): McpServer {
+export function createServer({ docs, llmDump, resolverDeps }: CreateServerOptions): McpServer {
   const { cngxVersion, generatedAt, schemaVersion } = docs.meta;
 
   // The instructions report the snapshot provenance once, at connect, so an
@@ -48,7 +52,7 @@ export function createServer({ docs, llmDump }: CreateServerOptions): McpServer 
     },
   );
 
-  registerCommands(server, COMMANDS, { bundled: docs });
+  registerCommands(server, COMMANDS, { bundled: docs, resolve: createDocsResolver(docs, resolverDeps) });
   registerResources(server, docs, llmDump);
   registerPrompts(server);
 

@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { loadDocsFromFile } from '../data/loader.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
-import { answerVersioned, resetDocsCache } from '../data/docs-resolver.js';
+import { answerVersioned, createDocsResolver, resetDocsCache } from '../data/docs-resolver.js';
 import { findComponents } from './find-component.js';
 
 const FIXTURE = fileURLToPath(new URL('../../../test/fixtures/documentation.sample.json', import.meta.url));
@@ -51,7 +51,7 @@ describe('find_component version wiring', () => {
     const deps: DocsResolverDeps = { fetchSnapshot: async () => ({ ok: true, path: NEW }), loadDocs: loadDocsFromFile };
 
     // `CngxNewPanel` exists only in v0.2.0; the bundled snapshot has no "Panel" match.
-    const answer = await answerVersioned(docs, '0.2.0', (resolved) => findComponents(resolved, 'Panel'), deps);
+    const answer = await answerVersioned(createDocsResolver(docs, deps), '0.2.0', (resolved) => findComponents(resolved, 'Panel'));
 
     expect(answer).toMatchObject({ ok: true, groundedVersion: '0.2.0' });
     const result = (answer as { result: { name: string }[] }).result;
@@ -64,7 +64,7 @@ describe('find_component version wiring', () => {
       loadDocs: loadDocsFromFile,
     };
 
-    const answer = await answerVersioned(docs, '999.0.0', (resolved) => findComponents(resolved, 'Panel'), deps);
+    const answer = await answerVersioned(createDocsResolver(docs, deps), '999.0.0', (resolved) => findComponents(resolved, 'Panel'));
 
     expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'no release' });
   });
