@@ -36,6 +36,12 @@ const PRESETS = [
       </span>
       <cngx-icon class="o-inline" size="lg" style="--cngx-icon-size: 24px">★</cngx-icon>
       <cngx-icon class="o-inline-em" size="xs" style="--cngx-icon-size: 2.5em">★</cngx-icon>
+      <cngx-icon class="svg-host" style="color: rgb(255, 0, 0)">
+        <svg class="stroke" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M4 12h16" />
+        </svg>
+        <svg class="filled" viewBox="0 0 24 24"><path d="M4 4h16v16H4z" /></svg>
+      </cngx-icon>
     </div>
   `,
 })
@@ -96,5 +102,15 @@ describe('CngxIcon geometry', () => {
     const root = mount();
     expect(fontPx(query(root, '.o-inline'))).toBeCloseTo(24, 0);
     expect(fontPx(query(root, '.o-inline-em'))).toBeCloseTo(2.5 * CONTEXT_PX, 0);
+  });
+
+  it('keeps an explicit fill="none" on a stroke svg', () => {
+    const root = mount();
+    expect(computedValue(query(root, '.stroke'), 'fill')).toBe('none');
+  });
+
+  it('fills an svg without a fill attribute with currentColor', () => {
+    const root = mount();
+    expect(computedValue(query(root, '.filled'), 'fill')).toBe('rgb(255, 0, 0)');
   });
 });

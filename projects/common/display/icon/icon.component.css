@@ -20,8 +20,9 @@
  *
  * **Slots**
  *
- * - `:scope > svg` - projected SVG fills the host box, `fill:
- *   currentColor` so brand color flows through
+ * - `:scope > svg` - projected SVG fills the host box; one without
+ *   its own `fill` attribute gets `fill: currentColor` so brand color
+ *   flows through, while a stroke icon's `fill="none"` is kept
  *
  * **Inheritance**
  *
@@ -138,8 +139,15 @@
     :scope > svg {
       width: 1em;
       height: 1em;
-      fill: currentColor;
       display: block;
+    }
+
+    /* Only an svg without its own `fill` follows the text color. A
+     * stroke icon (Lucide, Feather) ships `fill="none"`, and a presentation
+     * attribute loses to any class rule, so an unconditional fill here
+     * would paint its outline shapes solid. */
+    :scope > svg:not([fill]) {
+      fill: currentColor;
     }
   }
 }
