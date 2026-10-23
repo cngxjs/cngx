@@ -81,6 +81,39 @@ async function emulate(features: { name: string; value: string }[]): Promise<voi
   await cdp().send('Emulation.setEmulatedMedia', { features });
 }
 
+interface AXNode {
+  readonly properties?: readonly { name: string; value: { value: unknown } }[];
+}
+
+interface FrameTree {
+  readonly frame: { id: string };
+  readonly childFrames?: readonly FrameTree[];
+}
+
+const frameIds = (tree: FrameTree): string[] => [
+  tree.frame.id,
+  ...(tree.childFrames ?? []).flatMap(frameIds),
+];
+
+// Every node Chromium keeps in the accessibility tree of any frame (the spec
+// runs inside the runner's iframe), ignored ones included, that carries a
+// live politeness.
+async function liveRegionNodes(): Promise<AXNode[]> {
+  const { frameTree } = (await cdp().send('Page.getFrameTree')) as { frameTree: FrameTree };
+  const live: AXNode[] = [];
+  for (const frameId of frameIds(frameTree)) {
+    const { nodes } = (await cdp().send('Accessibility.getFullAXTree', { frameId })) as {
+      nodes: AXNode[];
+    };
+    live.push(
+      ...nodes.filter((node) =>
+        node.properties?.some((p) => p.name === 'live' && p.value.value !== 'off'),
+      ),
+    );
+  }
+  return live;
+}
+
 async function open(configure?: (host: SheetGeometryHost) => void) {
   const fixture = TestBed.createComponent(SheetGeometryHost);
   mountedRoot = fixture.nativeElement as HTMLElement;
@@ -188,6 +221,18 @@ describe('CngxPopoverSheet geometry', () => {
       expect(computedValue(panel, 'display')).toBe('none');
       mountedRoot?.remove();
     }
+  });
+
+  it('leaves no sheet live region in the accessibility tree after close', async () => {
+    const { host, panel } = await open();
+    const live = await liveRegionNodes();
+    expect(panel.querySelectorAll('span[aria-live]')).toHaveLength(2);
+    expect(live.length).toBeGreaterThanOrEqual(2);
+
+    host.popover().hide();
+    await frames(2);
+    expect(await liveRegionNodes()).toHaveLength(live.length - 2);
+    expect(panel.querySelector('span[aria-live]')).toBeNull();
   });
 
   it('writes no anchor, margin or floating inline styles while not anchored', async () => {

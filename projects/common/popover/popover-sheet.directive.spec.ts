@@ -581,6 +581,58 @@ describe('CngxPopoverSheet', () => {
       expect(ctx.panel.querySelector('span[aria-live="assertive"]')).not.toBeNull();
     });
 
+    it('removes both scoped live regions on close and on a flip back to anchored, and recreates them on the next open', () => {
+      const ctx = setup();
+      const regions = () => ctx.panel.querySelectorAll('span[aria-live]').length;
+      openFromOpener(ctx);
+      expect(regions()).toBe(2);
+
+      ctx.host.popover().hide();
+      ctx.flush();
+      expect(regions()).toBe(0);
+
+      openFromOpener(ctx);
+      expect(regions()).toBe(2);
+
+      ctx.host.request.set('anchored');
+      ctx.flush();
+      expect(ctx.host.popover().isVisible()).toBe(true);
+      expect(regions()).toBe(0);
+
+      ctx.host.popover().hide();
+      ctx.flush();
+      ctx.host.request.set('sheet');
+      openFromOpener(ctx);
+      expect(regions()).toBe(2);
+    });
+
+    it('removes both scoped live regions on a native close that skips hide()', () => {
+      const ctx = setup();
+      openFromOpener(ctx);
+      expect(ctx.panel.querySelectorAll('span[aria-live]')).toHaveLength(2);
+
+      const event = new Event('beforetoggle') as Event & { newState: string };
+      Object.defineProperty(event, 'newState', { value: 'closed' });
+      ctx.panel.dispatchEvent(event);
+
+      expect(ctx.panel.querySelector('span[aria-live]')).toBeNull();
+    });
+
+    it('hands a message pending at a flip back to anchored to the root announcer', () => {
+      vi.useFakeTimers();
+      const ctx = setup();
+      const root = vi.spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce');
+      openFromOpener(ctx);
+      ctx.host.sheet().announce('Picked Vienna');
+
+      ctx.host.request.set('anchored');
+      ctx.flush();
+      vi.advanceTimersByTime(CLEAR_DELAY_MS);
+
+      expect(root).toHaveBeenCalledWith('Picked Vienna', 'polite');
+      expect(ctx.panel.querySelector('span[aria-live]')).toBeNull();
+    });
+
     it('pins the page while open and releases on close and on destroy', () => {
       const ctx = setup();
       openFromOpener(ctx);
@@ -758,7 +810,7 @@ describe('CngxPopoverSheet', () => {
 
       expect(root).toHaveBeenCalledWith('Picked Vienna', 'polite');
       expect(root).toHaveBeenCalledWith('Save failed', 'assertive');
-      expect(ctx.panel.querySelector('span[aria-live="polite"]')?.textContent).toBe('');
+      expect(ctx.panel.querySelector('span[aria-live]')).toBeNull();
     });
   });
 

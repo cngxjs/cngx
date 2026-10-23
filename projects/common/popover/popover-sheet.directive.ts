@@ -555,7 +555,9 @@ export class CngxPopoverSheet
   }
 
   // Idempotent: hide(), the native toggle, a flip back to anchored and
-  // destroy can all reach it.
+  // destroy can all reach it. A flip back to anchored skips disengage(), so
+  // the pending hand-off runs here too before the scoped regions go; the next
+  // engage() recreates them.
   private release(): void {
     this.doc.removeEventListener('pointerdown', this.outsidePointerDown, true);
     this.doc.removeEventListener('keydown', this.escapeKeydown, true);
@@ -568,6 +570,8 @@ export class CngxPopoverSheet
     this.releaseLock?.();
     this.releaseLock = null;
     this.stopSettling();
+    this.handOffPendingAnnouncements();
+    this.region.destroy();
     this.engaged = false;
     this.savedFocus = null;
     const index = engagedSheets.indexOf(this);
