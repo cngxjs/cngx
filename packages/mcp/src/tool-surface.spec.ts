@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadDocsFromFile, loadLlmDumpFromFile } from './core/data/loader.js';
 import { createServer } from './server.js';
-import { diffSurface, type ToolSurface } from './tool-surface.js';
+import { diffSurface, type ToolSurface } from './testing/tool-surface.js';
 
 const DOCS_FIXTURE = fileURLToPath(new URL('../test/fixtures/documentation.sample.json', import.meta.url));
 const LLM_FIXTURE = fileURLToPath(new URL('../test/fixtures/llm-context.sample.md', import.meta.url));
