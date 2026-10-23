@@ -11,7 +11,15 @@ import { createMediaQuerySignal } from '@cngx/core/utils';
  * and removes it after the animation completes. ALL visual treatment - color, duration,
  * shape - is the consumer's CSS responsibility.
  *
- * Ships a companion `_ripple.scss` with sensible defaults.
+ * Waves render into a lazily created `<span class="cngx-ripple__container" aria-hidden="true">`
+ * that `cngx-ripple.css` lays over the host (`inset: 0`, `border-radius: inherit`,
+ * `overflow: hidden`, `pointer-events: none`). Only the wave is clipped to the host
+ * shape; the host itself is never clipped, so a hit-area pseudo-element (the touch
+ * floor of `cngxButton` / `cngxIconButton`), a corner badge or any other overhang
+ * stays intact. The host gets the `cngx-ripple` class, which sets `position: relative`
+ * at zero specificity, so a host that is already positioned keeps its own value.
+ *
+ * Ships default styles in `cngx-ripple.css` (part of `@cngx/themes/cngx.css`).
  *
  * ### Button with ripple
  * ```html
@@ -43,8 +51,7 @@ import { createMediaQuerySignal } from '@cngx/core/utils';
   exportAs: 'cngxRipple',
   standalone: true,
   host: {
-    '[style.position]': '"relative"',
-    '[style.overflow]': '"hidden"',
+    class: 'cngx-ripple',
     '(pointerdown)': 'handlePointerDown($event)',
   },
 })
@@ -76,12 +83,33 @@ export class CngxRipple {
    */
   private readonly pendingCleanups = new Set<() => void>();
 
+  /**
+   * Clipping layer the waves render into. Created on the first ripple so a
+   * host that is never pressed carries no extra node; removed on destroy.
+   */
+  private container: HTMLElement | null = null;
+
   constructor() {
     this.destroyRef.onDestroy(() => {
       for (const cleanup of [...this.pendingCleanups]) {
         cleanup();
       }
+      this.container?.remove();
+      this.container = null;
     });
+  }
+
+  private ensureContainer(host: HTMLElement): HTMLElement {
+    if (this.container?.parentNode === host) {
+      return this.container;
+    }
+    const container = this.doc.createElement('span');
+    container.className = 'cngx-ripple__container';
+    // Decorative layer: keep it and every wave out of the accessibility tree.
+    container.setAttribute('aria-hidden', 'true');
+    host.appendChild(container);
+    this.container = container;
+    return container;
   }
 
   /** @internal */
@@ -122,7 +150,7 @@ export class CngxRipple {
     wave.style.setProperty('--cngx-ripple-size', `${size}px`);
     wave.style.setProperty('--cngx-ripple-color', this.color());
 
-    host.appendChild(wave);
+    this.ensureContainer(host).appendChild(wave);
     this.activeState.set(true);
 
     // Remove after animation completes - guard against double-invocation

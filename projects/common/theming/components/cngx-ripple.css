@@ -1,10 +1,19 @@
 /**
  * @overview
  * Theming bridge for the `CngxRipple` directive. The directive
- * injects `<span class="cngx-ripple__wave">` into the host on
- * pointerdown and removes it after the animation completes; all
- * visual treatment lives here, the directive only handles geometry
- * and DOM injection.
+ * injects `<span class="cngx-ripple__wave">` into a
+ * `<span class="cngx-ripple__container">` on pointerdown and removes
+ * the wave after the animation completes; all visual treatment lives
+ * here, the directive only handles geometry and DOM injection.
+ *
+ * **Clipping**
+ *
+ * The container covers the host (`inset: 0`), inherits its
+ * `border-radius` and clips with `overflow: hidden`, so only the wave
+ * is cut to the host shape. The host is never clipped: a touch hit-area
+ * pseudo-element, a corner badge or a focus ring may overhang it. The
+ * `.cngx-ripple` host class adds `position: relative` at zero
+ * specificity so an already positioned host keeps its own value.
  *
  * **Animation**
  *
@@ -67,6 +76,20 @@
 }
 
 @layer cngx.components {
+  :where(.cngx-ripple) {
+    position: relative;
+  }
+
+  @scope (.cngx-ripple__container) {
+    :scope {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      overflow: hidden;
+      pointer-events: none;
+    }
+  }
+
   @scope (.cngx-ripple__wave) {
     :scope {
       position: absolute;

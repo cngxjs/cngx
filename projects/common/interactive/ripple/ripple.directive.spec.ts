@@ -68,6 +68,49 @@ describe('CngxRipple', () => {
     expect(wave.getAttribute('aria-hidden')).toBe('true');
   });
 
+  it('renders waves into one aria-hidden clipping container', () => {
+    const { host } = setup();
+    expect(host.querySelector('.cngx-ripple__container')).toBeNull();
+
+    host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 50, clientY: 25 }));
+    host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 10, clientY: 10 }));
+
+    const containers = host.querySelectorAll('.cngx-ripple__container');
+    expect(containers.length).toBe(1);
+    const container = containers[0] as HTMLElement;
+    expect(container.parentElement).toBe(host);
+    expect(container.getAttribute('aria-hidden')).toBe('true');
+    const waves = host.querySelectorAll('.cngx-ripple__wave');
+    expect(waves.length).toBe(2);
+    for (const wave of Array.from(waves)) {
+      expect(wave.parentElement).toBe(container);
+    }
+  });
+
+  it('does not clip or position the host inline', () => {
+    const { host } = setup();
+    host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 50, clientY: 25 }));
+    expect(host.style.overflow).toBe('');
+    expect(host.style.position).toBe('');
+    expect(host.classList.contains('cngx-ripple')).toBe(true);
+  });
+
+  it('does not create the container when disabled', () => {
+    const { fixture, host } = setup();
+    fixture.componentInstance.disabled.set(true);
+    fixture.detectChanges();
+    host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 50, clientY: 25 }));
+    expect(host.querySelector('.cngx-ripple__container')).toBeNull();
+  });
+
+  it('removes the container on destroy', () => {
+    const { fixture, host } = setup();
+    host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 50, clientY: 25 }));
+    expect(host.querySelector('.cngx-ripple__container')).not.toBeNull();
+    fixture.destroy();
+    expect(host.querySelector('.cngx-ripple__container')).toBeNull();
+  });
+
   it('flushes pending waves and their fallback timers on destroy', () => {
     vi.useFakeTimers();
     const { fixture, host, dir } = setup();
