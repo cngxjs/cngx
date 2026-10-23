@@ -17,8 +17,11 @@
  * - a hovered segment is lifted above its neighbours (`z-index: 1`), a
  *   focused one above that (`z-index: 2`), so neither a border nor the focus
  *   ring is clipped at a seam
- * - adjacent solid `primary` / `danger` segments get a seam line mixed from
- *   the on-tone colour, since their fill and border share one colour
+ * - a solid `primary` / `danger` segment after another one gets a seam line
+ *   mixed from the on-tone colour, since their fill and border share one
+ *   colour
+ * - an `[aria-live]` child (the sr-only status `cngxAsyncClick` inserts next
+ *   to its host) is not a segment and never counts as first or last
  *
  * **Toolbar (a group of groups)**
  *
@@ -105,47 +108,50 @@
       gap: max(var(--cngx-button-group-gap, 0.5rem), var(--cngx-target-gap, 0px));
     }
 
-    /* Attached segments. The :not(:has()) compound lifts these rules to
+    /* Attached segments. The :not(:has()) compound lifts these rules to at least
      * (0,2,0), above the (0,1,0) `:scope` base of the button sheet, whose own
-     * @scope root is closer and would win a specificity tie. */
-    :scope:not(:has(> .cngx-button-group)) > * {
+     * @scope root is closer and would win a specificity tie. Live regions are
+     * not segments: `cngxAsyncClick` inserts its sr-only status next to its
+     * host, so first / last / seam count only the other children. */
+    :scope:not(:has(> .cngx-button-group)) > :not([aria-live]) {
       position: relative;
       margin: 0;
       border-radius: 0;
     }
-    :scope:not(:has(> .cngx-button-group)) > * + * {
+    :scope:not(:has(> .cngx-button-group)) > :nth-child(n + 2 of :not([aria-live])) {
       margin-inline-start: calc(-1 * var(--cngx-button-border-width, 1px));
     }
-    :scope:not(:has(> .cngx-button-group)) > :first-child {
+    :scope:not(:has(> .cngx-button-group)) > :nth-child(1 of :not([aria-live])) {
       border-start-start-radius: var(--cngx-button-group-radius, 0.5rem);
       border-end-start-radius: var(--cngx-button-group-radius, 0.5rem);
     }
-    :scope:not(:has(> .cngx-button-group)) > :last-child {
+    :scope:not(:has(> .cngx-button-group)) > :nth-last-child(1 of :not([aria-live])) {
       border-start-end-radius: var(--cngx-button-group-radius, 0.5rem);
       border-end-end-radius: var(--cngx-button-group-radius, 0.5rem);
     }
 
-    :scope[data-orientation='vertical']:not(:has(> .cngx-button-group)) > * + * {
+    :scope[data-orientation='vertical']:not(:has(> .cngx-button-group)) > :nth-child(n + 2 of :not([aria-live])) {
       margin-inline-start: 0;
       margin-block-start: calc(-1 * var(--cngx-button-border-width, 1px));
     }
-    :scope[data-orientation='vertical']:not(:has(> .cngx-button-group)) > :first-child {
+    :scope[data-orientation='vertical']:not(:has(> .cngx-button-group)) > :nth-child(1 of :not([aria-live])) {
       border-radius: 0;
       border-start-start-radius: var(--cngx-button-group-radius, 0.5rem);
       border-start-end-radius: var(--cngx-button-group-radius, 0.5rem);
     }
-    :scope[data-orientation='vertical']:not(:has(> .cngx-button-group)) > :last-child {
+    :scope[data-orientation='vertical']:not(:has(> .cngx-button-group)) > :nth-last-child(1 of :not([aria-live])) {
       border-radius: 0;
       border-end-start-radius: var(--cngx-button-group-radius, 0.5rem);
       border-end-end-radius: var(--cngx-button-group-radius, 0.5rem);
     }
-    :scope[data-orientation='vertical']:not(:has(> .cngx-button-group)) > :first-child:last-child {
+    :scope[data-orientation='vertical']:not(:has(> .cngx-button-group)) > :nth-child(1 of :not([aria-live])):nth-last-child(1 of :not([aria-live])) {
       border-radius: var(--cngx-button-group-radius, 0.5rem);
     }
 
     /* A separator keeps its neighbours apart instead of collapsing the seam.
-     * Restates the attached prefix so it outranks the segment margins above. */
-    :scope:not(:has(> .cngx-button-group)) > .cngx-button-group__separator + * {
+     * The `:nth-child(n of ...)` compound always matches; it only lifts the
+     * rule above the segment margins. */
+    :scope:not(:has(> .cngx-button-group)) > .cngx-button-group__separator + :nth-child(n of :not([aria-live])) {
       margin-inline-start: 0;
       margin-block-start: 0;
     }
@@ -159,22 +165,23 @@
     }
 
     /* Solid primary / danger segments share fill and border colour; a seam
-     * line mixed from the on-tone colour keeps them apart. */
+     * line mixed from the on-tone colour keeps them apart. Mixed in oklab:
+     * an oklch mix would swing the hue between the two colours. */
     :scope:not(:has(> .cngx-button-group))
       > [data-variant='solid']:not([data-tone='neutral'])
-      + [data-variant='solid']:not([data-tone='neutral'], [aria-disabled='true']) {
+      ~ [data-variant='solid']:not([data-tone='neutral'], [aria-disabled='true']) {
       border-inline-start-color: color-mix(
-        in oklch,
+        in oklab,
         var(--cngx-button-on-tone, Canvas) 40%,
         var(--cngx-button-tone, currentColor)
       );
     }
     :scope[data-orientation='vertical']:not(:has(> .cngx-button-group))
       > [data-variant='solid']:not([data-tone='neutral'])
-      + [data-variant='solid']:not([data-tone='neutral'], [aria-disabled='true']) {
+      ~ [data-variant='solid']:not([data-tone='neutral'], [aria-disabled='true']) {
       border-inline-start-color: var(--cngx-button-tone, currentColor);
       border-block-start-color: color-mix(
-        in oklch,
+        in oklab,
         var(--cngx-button-on-tone, Canvas) 40%,
         var(--cngx-button-tone, currentColor)
       );
@@ -216,9 +223,9 @@
       font-size: var(--cngx-font-size-lg, 1.0625rem);
     }
 
-    /* Separator: a border, so forced colors keep it. The attached prefix
-     * outranks the segment margin reset. */
-    :scope:not(:has(> .cngx-button-group)) > .cngx-button-group__separator {
+    /* Separator: a border, so forced colors keep it. The `:nth-child(n of
+     * ...)` compound lifts it above the segment margins. */
+    :scope:not(:has(> .cngx-button-group)) > .cngx-button-group__separator:nth-child(n of :not([aria-live])) {
       flex: none;
       align-self: stretch;
       inline-size: 0;
@@ -227,7 +234,7 @@
       border: 0;
       border-inline-start: 1px solid var(--cngx-color-border, oklch(0.88 0.005 250));
     }
-    :scope[data-orientation='vertical']:not(:has(> .cngx-button-group)) > .cngx-button-group__separator {
+    :scope[data-orientation='vertical']:not(:has(> .cngx-button-group)) > .cngx-button-group__separator:nth-child(n of :not([aria-live])) {
       inline-size: auto;
       block-size: 0;
       border-inline-start: 0;
@@ -249,12 +256,12 @@
 @media (forced-colors: active) {
   .cngx-button-group:not([data-orientation='vertical'])
     > .cngx-button[data-variant='solid']:is([data-tone='primary'], [data-tone='danger'])
-    + .cngx-button[data-variant='solid']:is([data-tone='primary'], [data-tone='danger']) {
+    ~ .cngx-button[data-variant='solid']:is([data-tone='primary'], [data-tone='danger']) {
     border-inline-start-color: HighlightText !important;
   }
   .cngx-button-group[data-orientation='vertical']
     > .cngx-button[data-variant='solid']:is([data-tone='primary'], [data-tone='danger'])
-    + .cngx-button[data-variant='solid']:is([data-tone='primary'], [data-tone='danger']) {
+    ~ .cngx-button[data-variant='solid']:is([data-tone='primary'], [data-tone='danger']) {
     border-block-start-color: HighlightText !important;
   }
 }

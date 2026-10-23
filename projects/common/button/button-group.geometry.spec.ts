@@ -1,5 +1,6 @@
 import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { CngxAsyncClick } from '@cngx/common/interactive';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
@@ -20,7 +21,7 @@ type Density = 'comfortable' | 'compact' | 'spacious';
 @Component({
   selector: 'cngx-button-group-geometry-host',
   standalone: true,
-  imports: [CngxButtonGroup, CngxButtonGroupAddon, CngxButtonGroupSeparator, CngxButton, CngxIconButton],
+  imports: [CngxButtonGroup, CngxButtonGroupAddon, CngxButtonGroupSeparator, CngxButton, CngxIconButton, CngxAsyncClick],
   styleUrls: [
     '../../core/theming/layers.css',
     '../../core/theming/system-tokens.css',
@@ -73,6 +74,12 @@ type Density = 'comfortable' | 'compact' | 'spacious';
         >
       </p>
       <p>
+        <span class="g-async" cngxButtonGroup variant="solid" aria-label="Save"
+          ><button cngxButton class="x-1" tone="primary" [cngxAsyncClick]="action">Save</button
+          ><button cngxButton class="x-2" tone="primary" [cngxAsyncClick]="action">Save all</button></span
+        >
+      </p>
+      <p>
         <span class="g-toolbar" cngxButtonGroup variant="outline" aria-label="Formatting"
           ><span class="t-1" cngxButtonGroup aria-label="Style"
             ><button cngxButton class="t-1a">B</button><button cngxButton class="t-1b">I</button></span
@@ -88,6 +95,7 @@ class GeometryHost {
   readonly density = signal<Density>('comfortable');
   readonly touch = signal<'on' | null>(null);
   readonly dir = signal<'ltr' | 'rtl'>('ltr');
+  readonly action = (): Promise<void> => Promise.resolve();
 }
 
 let mountedRoot: HTMLElement | null = null;
@@ -239,6 +247,19 @@ describe('CngxButtonGroup geometry: ends, seams and lift', () => {
     const root = mount();
     const second = query(root, '.o-2');
     expect(computedValue(second, 'border-left-color')).not.toBe(computedValue(second, 'border-right-color'));
+  });
+
+  it('ignores the live region cngxAsyncClick inserts: ends, seam and seam line hold', () => {
+    const root = mount();
+    const group = query(root, '.g-async');
+    expect(group.querySelectorAll(':scope > [aria-live]').length).toBe(2);
+    const first = query(root, '.x-1');
+    const last = query(root, '.x-2');
+    expect(px(last, 'border-top-right-radius')).toBeGreaterThan(0);
+    expect(px(last, 'border-top-left-radius')).toBe(0);
+    expect(px(first, 'border-top-left-radius')).toBeGreaterThan(0);
+    expect(last.getBoundingClientRect().left).toBeCloseTo(first.getBoundingClientRect().right - 1, 1);
+    expect(computedValue(last, 'border-left-color')).not.toBe(computedValue(last, 'border-right-color'));
   });
 
   it('lifts a hovered segment and a focused one above it, never clipping the ring', async () => {
