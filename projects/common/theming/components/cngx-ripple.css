@@ -93,8 +93,12 @@
   @scope (.cngx-ripple__wave) {
     :scope {
       position: absolute;
+      /* Physical on purpose: the directive measures --cngx-ripple-x from the
+         host's left edge (clientX - rect.left) and the translate below is
+         physical too, so a logical start anchor would put the wave on the
+         wrong side under dir="rtl". */
       top: 0;
-      inset-inline-start: 0;
+      left: 0;
       width: var(--cngx-ripple-size, 100px);
       height: var(--cngx-ripple-size, 100px);
       border-radius: 50%;
