@@ -9,9 +9,9 @@ export default defineConfig({
   // Ephemeral test artifacts (traces, failure screenshots) — gitignored.
   outputDir: '../.tmp/test-results',
 
-  // Story tests touch shared overlay roots; keep serial within a file. The
-  // CI shards pass --fully-parallel only to split by test; with one worker
-  // per shard every test still runs alone, in file order.
+  // Story tests touch shared overlay roots; keep serial within a file locally.
+  // The CI shards pass --fully-parallel to split by test and run two workers,
+  // each its own browser, so no two tests ever share a page.
   fullyParallel: false,
 
   forbidOnly: !!process.env['CI'],
@@ -19,7 +19,7 @@ export default defineConfig({
   // The retry stays as a flake diagnostic, but a pass on retry still fails the
   // job: otherwise an intermittent console-guard hit would go green as flaky.
   failOnFlakyTests: !!process.env['CI'],
-  workers: process.env['CI'] ? 1 : undefined,
+  workers: process.env['CI'] ? 2 : undefined,
 
   reporter: [
     ['list'],
