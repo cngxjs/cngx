@@ -35,6 +35,15 @@ class NamedHost {
 })
 class UnnamedHost {}
 
+@Component({
+  template: `
+    <button id="img" cngxIconButton aria-label="Delete row"><img alt="Trash can" src="data:," /></button>
+    <button id="ligature" cngxIconButton aria-label="Delete row"><span class="material-icons">delete</span></button>
+  `,
+  imports: [CngxIconButton],
+})
+class GlyphHost {}
+
 function render<T>(type: new () => T) {
   const fixture = TestBed.createComponent(type);
   fixture.detectChanges();
@@ -77,6 +86,17 @@ describe('CngxIconButton', () => {
     expect(btn.hasAttribute('aria-describedby')).toBe(false);
     btn.click();
     expect(host.clicks).toBe(1);
+  });
+
+  it('hides the glyph from assistive technology so projected content never names the button', () => {
+    const { q } = render(GlyphHost);
+    for (const id of ['#img', '#ligature']) {
+      const btn = q(id);
+      const glyph = btn.querySelector('.cngx-icon-button__glyph');
+      expect(glyph?.getAttribute('aria-hidden')).toBe('true');
+      expect(glyph?.contains(btn.querySelector('img, .material-icons'))).toBe(true);
+      expect(btn.getAttribute('aria-label')).toBe('Delete row');
+    }
   });
 
   it('stays silent when aria-label, aria-labelledby or title names the button', async () => {
