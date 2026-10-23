@@ -44,11 +44,6 @@ jobs:
       - name: Pack the tarballs
         if: github.event_name != 'pull_request' || steps.inputs.outputs.changed == 'true'
         run: node scripts/pack-libs.mjs
-      # npm 10.9 (bundled with Node 22) crashes with "reading 'edgesOut'" on a
-      # plain install of a fresh Angular 21 app; npm 11 installs it cleanly.
-      - name: Use npm 11 for the fixture install
-        if: github.event_name != 'pull_request' || steps.inputs.outputs.changed == 'true'
-        run: npm install -g npm@11
       - name: Install Playwright chromium
         if: github.event_name != 'pull_request' || steps.inputs.outputs.changed == 'true'
         run: npx playwright install --with-deps chromium
