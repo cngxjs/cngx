@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { createDocsIndex } from '../data/loader.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
-import { answerVersioned, createDocsResolver, resetDocsCache } from '../data/docs-resolver.js';
+import { answerVersioned, createDocsResolver } from '../data/docs-resolver.js';
 import type { DocFunction, DocumentationJson } from '../data/types.js';
 import { getConfig } from './get-config.js';
 
@@ -181,7 +181,6 @@ describe('getConfig', () => {
 });
 
 describe('get_config version wiring', () => {
-  beforeEach(() => resetDocsCache());
 
   const bundled = createDocsIndex({
     schemaVersion: 2,

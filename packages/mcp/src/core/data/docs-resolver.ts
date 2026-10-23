@@ -2,9 +2,9 @@
 // bundled `DocsIndex`; this resolver lets them answer for another release without
 // a second network path. When a version is absent or matches the bundled snapshot
 // the bundled index is returned with no fetch (the offline default). Otherwise the
-// release's snapshot is fetched once through the same fail-safe `fetchSnapshot`
-// seam `migrate_usage` uses, cached in memory for the process lifetime, and read
-// through `loadDocsFromFile`. Every path stays inside the tools' don't-crash
+// release's snapshot is fetched once through the fail-safe `fetchSnapshot` seam,
+// cached in memory for the resolver's lifetime, and read through
+// `loadDocsFromFile`. Every path stays inside the tools' don't-crash
 // contract: a fetch or schema failure is returned as data, never thrown.
 
 import type { DocsIndex } from './loader.js';
@@ -26,23 +26,55 @@ export interface DocsResolverDeps {
 
 const defaultDeps: DocsResolverDeps = { fetchSnapshot, loadDocs: loadDocsFromFile };
 
-// Keyed by requested version. Populated on first successful fetch; process-lifetime
-// only - a session-scoped stdio server needs no disk-backed cache.
-const cache = new Map<string, DocsIndex>();
-
-// Resolutions still waiting on their fetch, keyed like `cache`. A second request for
-// the same version joins the first instead of starting its own download.
-const pending = new Map<string, Promise<DocsResolution>>();
-
 /**
- * Upper bound on distinct release snapshots held at once. A parsed snapshot is a few
- * hundred KB, and no realistic session grounds against more than a handful of releases;
- * the bound keeps a pathological caller from growing the map without limit.
+ * Upper bound on distinct release snapshots one resolver holds at once. A parsed
+ * snapshot is a few hundred KB, and no realistic session grounds against more than a
+ * handful of releases; the bound keeps a pathological caller from growing the map
+ * without limit.
  */
 export const DOCS_CACHE_LIMIT = 16;
 
+/** Resolves a version against one bundled snapshot; what a command reaches through its context. */
+export type DocsResolver = (version?: string) => Promise<DocsResolution>;
+
+/**
+ * Build a resolver over `bundled` and `deps`. Each adapter builds one, so a command
+ * never sees the fetch or cache wiring. Short-circuits to `bundled` (no fetch) when
+ * the version is empty or equals the bundled `cngxVersion`. A fetched-but-unreadable
+ * snapshot - `loadDocsFromFile` throwing `SchemaVersionError` or a read error - maps
+ * to `asset-missing`, so the three-reason failure union holds.
+ */
+export function createDocsResolver(bundled: DocsIndex, deps: DocsResolverDeps = defaultDeps): DocsResolver {
+  // Fetched snapshots and fetches still in flight, keyed by requested version. Owned by
+  // this resolver alone, so resolvers built over different deps never share an answer.
+  const cache = new Map<string, DocsIndex>();
+  const pending = new Map<string, Promise<DocsResolution>>();
+  const bundledVersion = bundled.meta.cngxVersion;
+
+  return async (version) => {
+    const requested = version?.trim() ?? '';
+    if (requested === '' || (bundledVersion !== null && requested === bundledVersion)) {
+      return { ok: true, docs: bundled, version: bundledVersion };
+    }
+
+    const cached = cache.get(requested);
+    if (cached) {
+      return { ok: true, docs: cached, version: cached.meta.cngxVersion ?? requested };
+    }
+
+    // A second request for the same version joins the first instead of downloading again.
+    const inFlight = pending.get(requested);
+    if (inFlight) {
+      return inFlight;
+    }
+    const resolution = fetchAndLoad(requested, deps, cache).finally(() => pending.delete(requested));
+    pending.set(requested, resolution);
+    return resolution;
+  };
+}
+
 /** Cache a fetched snapshot, evicting the oldest entry (insertion order) once at capacity. */
-function cacheDocs(version: string, docs: DocsIndex): void {
+function cacheDocs(cache: Map<string, DocsIndex>, version: string, docs: DocsIndex): void {
   if (cache.size >= DOCS_CACHE_LIMIT) {
     const oldest = cache.keys().next().value;
     if (oldest !== undefined) {
@@ -52,63 +84,18 @@ function cacheDocs(version: string, docs: DocsIndex): void {
   cache.set(version, docs);
 }
 
-/** Resolves a version against one bundled snapshot; what a command reaches through its context. */
-export type DocsResolver = (version?: string) => Promise<DocsResolution>;
-
-/**
- * Bind {@link resolveDocs} to `bundled` and `deps` once. Each adapter builds its
- * resolver here, so a command never sees the fetch or cache wiring.
- */
-export function createDocsResolver(bundled: DocsIndex, deps: DocsResolverDeps = defaultDeps): DocsResolver {
-  return (version) => resolveDocs(bundled, version, deps);
-}
-
-/** Drop the in-memory cache. Test seam so a cache-hit assertion starts from empty. */
-export function resetDocsCache(): void {
-  cache.clear();
-  pending.clear();
-}
-
-/**
- * Resolve `version` to a `DocsIndex`. Short-circuits to `bundled` (no fetch) when
- * `version` is empty or equals the bundled `cngxVersion`. A fetched-but-unreadable
- * snapshot - `loadDocsFromFile` throwing `SchemaVersionError` or a read error - maps
- * to `asset-missing`, mirroring `migrate_usage` so the three-reason failure union holds.
- */
-export async function resolveDocs(
-  bundled: DocsIndex,
-  version?: string,
-  deps: DocsResolverDeps = defaultDeps,
+async function fetchAndLoad(
+  requested: string,
+  deps: DocsResolverDeps,
+  cache: Map<string, DocsIndex>,
 ): Promise<DocsResolution> {
-  const requested = version?.trim() ?? '';
-  const bundledVersion = bundled.meta.cngxVersion;
-
-  if (requested === '' || (bundledVersion !== null && requested === bundledVersion)) {
-    return { ok: true, docs: bundled, version: bundledVersion };
-  }
-
-  const cached = cache.get(requested);
-  if (cached) {
-    return { ok: true, docs: cached, version: cached.meta.cngxVersion ?? requested };
-  }
-
-  const inFlight = pending.get(requested);
-  if (inFlight) {
-    return inFlight;
-  }
-  const resolution = fetchAndLoad(requested, deps).finally(() => pending.delete(requested));
-  pending.set(requested, resolution);
-  return resolution;
-}
-
-async function fetchAndLoad(requested: string, deps: DocsResolverDeps): Promise<DocsResolution> {
   const fetched = await deps.fetchSnapshot(requested);
   if (!fetched.ok) {
     return { ok: false, reason: fetched.reason, message: fetched.message };
   }
   try {
     const docs = deps.loadDocs(fetched.path);
-    cacheDocs(requested, docs);
+    cacheDocs(cache, requested, docs);
     // A successful download of the `v<version>` asset means the asset IS that version,
     // so an unstamped raw export still resolves to the requested label.
     return { ok: true, docs, version: docs.meta.cngxVersion ?? requested };

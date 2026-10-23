@@ -1,8 +1,8 @@
 import { fileURLToPath } from 'node:url';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { loadDocsFromFile } from '../data/loader.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
-import { createDocsResolver, resetDocsCache } from '../data/docs-resolver.js';
+import { createDocsResolver } from '../data/docs-resolver.js';
 import { migrateUsage } from './migrate-usage.js';
 import type { UsageDelta } from '../diff/types.js';
 
@@ -12,9 +12,6 @@ const NEW = fileURLToPath(new URL('../../../test/fixtures/documentation.v-new.sa
 const bundledNew = loadDocsFromFile(NEW); // cngxVersion 0.2.0
 
 describe('migrateUsage', () => {
-  // migrateUsage now resolves through the shared version cache; clear it so a snapshot
-  // fetched in one test cannot satisfy a later test that injects different deps.
-  beforeEach(() => resetDocsCache());
 
   it('defaults `to` to the bundled snapshot version', async () => {
     const result = await migrateUsage(bundledNew, { from: '0.2.0' });

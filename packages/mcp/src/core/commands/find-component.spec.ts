@@ -1,8 +1,8 @@
 import { fileURLToPath } from 'node:url';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { loadDocsFromFile } from '../data/loader.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
-import { answerVersioned, createDocsResolver, resetDocsCache } from '../data/docs-resolver.js';
+import { answerVersioned, createDocsResolver } from '../data/docs-resolver.js';
 import { findComponents } from './find-component.js';
 
 const FIXTURE = fileURLToPath(new URL('../../../test/fixtures/documentation.sample.json', import.meta.url));
@@ -45,7 +45,6 @@ describe('findComponents', () => {
 });
 
 describe('find_component version wiring', () => {
-  beforeEach(() => resetDocsCache());
 
   it('grounds the array answer against a fetched non-bundled version', async () => {
     const deps: DocsResolverDeps = { fetchSnapshot: async () => ({ ok: true, path: NEW }), loadDocs: loadDocsFromFile };

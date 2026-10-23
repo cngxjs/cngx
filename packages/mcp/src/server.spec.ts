@@ -1,8 +1,7 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { fileURLToPath } from 'node:url';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { resetDocsCache } from './core/data/docs-resolver.js';
+import { describe, expect, it, vi } from 'vitest';
 import { loadDocsFromFile, loadLlmDumpFromFile } from './core/data/loader.js';
 import { createServer } from './server.js';
 
@@ -11,7 +10,6 @@ const NEW_FIXTURE = fileURLToPath(new URL('../test/fixtures/documentation.v-new.
 const LLM_FIXTURE = fileURLToPath(new URL('../test/fixtures/llm-context.sample.md', import.meta.url));
 
 describe('createServer', () => {
-  beforeEach(() => resetDocsCache());
 
   it('builds a transport-free server whose instructions ground against the loaded snapshot', async () => {
     const server = createServer({

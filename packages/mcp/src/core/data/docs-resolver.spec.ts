@@ -1,8 +1,8 @@
 import { fileURLToPath } from 'node:url';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { loadDocsFromFile, SchemaVersionError } from './loader.js';
 import type { DocsResolverDeps } from './docs-resolver.js';
-import { answerVersioned, createDocsResolver, DOCS_CACHE_LIMIT, resetDocsCache, resolveDocs } from './docs-resolver.js';
+import { answerVersioned, createDocsResolver, DOCS_CACHE_LIMIT } from './docs-resolver.js';
 import { fetchSnapshot } from '../diff/snapshot-fetch.js';
 import type { SnapshotFetchFailureReason } from '../diff/types.js';
 
@@ -11,14 +11,10 @@ const NEW = fileURLToPath(new URL('../../../test/fixtures/documentation.v-new.sa
 
 const bundled = loadDocsFromFile(SAMPLE); // cngxVersion 0.1.0-rc.6
 
-beforeEach(() => {
-  resetDocsCache();
-});
-
-describe('resolveDocs', () => {
+describe('createDocsResolver', () => {
   it('short-circuits to the bundled snapshot with no fetch when version is absent', async () => {
     const fetchSnapshot = vi.fn();
-    const resolution = await resolveDocs(bundled, undefined, { fetchSnapshot, loadDocs: loadDocsFromFile });
+    const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile })(undefined);
 
     expect(resolution).toEqual({ ok: true, docs: bundled, version: '0.1.0-rc.6' });
     expect(fetchSnapshot).not.toHaveBeenCalled();
@@ -26,7 +22,7 @@ describe('resolveDocs', () => {
 
   it('short-circuits with no fetch when version equals the bundled cngxVersion', async () => {
     const fetchSnapshot = vi.fn();
-    const resolution = await resolveDocs(bundled, '0.1.0-rc.6', { fetchSnapshot, loadDocs: loadDocsFromFile });
+    const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile })('0.1.0-rc.6');
 
     expect(resolution).toMatchObject({ ok: true, version: '0.1.0-rc.6' });
     expect(fetchSnapshot).not.toHaveBeenCalled();
@@ -36,8 +32,10 @@ describe('resolveDocs', () => {
     const fetchSnapshot = vi.fn(async () => ({ ok: true as const, path: NEW }));
     const deps: DocsResolverDeps = { fetchSnapshot, loadDocs: loadDocsFromFile };
 
-    const first = await resolveDocs(bundled, '0.2.0', deps);
-    const second = await resolveDocs(bundled, '0.2.0', deps);
+    const resolve = createDocsResolver(bundled, deps);
+
+    const first = await resolve('0.2.0');
+    const second = await resolve('0.2.0');
 
     expect(first).toMatchObject({ ok: true, version: '0.2.0' });
     expect(second).toMatchObject({ ok: true, version: '0.2.0' });
@@ -55,7 +53,9 @@ describe('resolveDocs', () => {
     });
     const deps: DocsResolverDeps = { fetchSnapshot, loadDocs: loadDocsFromFile };
 
-    const both = Promise.all([resolveDocs(bundled, '0.2.0', deps), resolveDocs(bundled, '0.2.0', deps)]);
+    const resolve = createDocsResolver(bundled, deps);
+
+    const both = Promise.all([resolve('0.2.0'), resolve('0.2.0')]);
     release();
     const [first, second] = await both;
 
@@ -70,9 +70,24 @@ describe('resolveDocs', () => {
       .mockResolvedValueOnce({ ok: true, path: NEW });
     const deps: DocsResolverDeps = { fetchSnapshot, loadDocs: loadDocsFromFile };
 
-    expect(await resolveDocs(bundled, '0.2.0', deps)).toMatchObject({ ok: false, reason: 'network' });
-    expect(await resolveDocs(bundled, '0.2.0', deps)).toMatchObject({ ok: true, version: '0.2.0' });
+    const resolve = createDocsResolver(bundled, deps);
+
+    expect(await resolve('0.2.0')).toMatchObject({ ok: false, reason: 'network' });
+    expect(await resolve('0.2.0')).toMatchObject({ ok: true, version: '0.2.0' });
     expect(fetchSnapshot).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps each resolver\'s cache to itself', async () => {
+    const realFetch = vi.fn(async () => ({ ok: true as const, path: NEW }));
+    const failingFetch = vi.fn(async () => ({ ok: false as const, reason: 'network' as const, message: 'offline' }));
+
+    expect(await createDocsResolver(bundled, { fetchSnapshot: realFetch, loadDocs: loadDocsFromFile })('0.2.0')).toMatchObject({
+      ok: true,
+    });
+    const isolated = createDocsResolver(bundled, { fetchSnapshot: failingFetch, loadDocs: loadDocsFromFile });
+
+    expect(await isolated('0.2.0')).toMatchObject({ ok: false, reason: 'network' });
+    expect(failingFetch).toHaveBeenCalledTimes(1);
   });
 
   it('maps a SchemaVersionError from the fetched snapshot to asset-missing', async () => {
@@ -83,7 +98,7 @@ describe('resolveDocs', () => {
       },
     };
 
-    const resolution = await resolveDocs(bundled, '0.2.0', deps);
+    const resolution = await createDocsResolver(bundled, deps)('0.2.0');
 
     expect(resolution).toMatchObject({ ok: false, reason: 'asset-missing' });
   });
@@ -96,7 +111,7 @@ describe('resolveDocs', () => {
         loadDocs: loadDocsFromFile,
       };
 
-      const resolution = await resolveDocs(bundled, '9.9.9', deps);
+      const resolution = await createDocsResolver(bundled, deps)('9.9.9');
 
       expect(resolution).toEqual({ ok: false, reason, message: `${reason} detail` });
     },
@@ -106,7 +121,7 @@ describe('resolveDocs', () => {
     'rejects the non-release version %s as asset-missing before any fetch',
     async (version) => {
       const loadDocs = vi.fn(loadDocsFromFile);
-      const resolution = await resolveDocs(bundled, version, { fetchSnapshot, loadDocs });
+      const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs })(version);
 
       expect(resolution).toMatchObject({
         ok: false,
@@ -127,17 +142,19 @@ describe('resolveDocs', () => {
       loadDocs: loadDocsFromFile,
     };
 
+    const resolve = createDocsResolver(bundled, deps);
+
     // One past capacity: "9.0.0" .. "9.<LIMIT>.0" is LIMIT+1 distinct versions.
     for (let i = 0; i <= DOCS_CACHE_LIMIT; i++) {
-      await resolveDocs(bundled, `9.${i}.0`, deps);
+      await resolve(`9.${i}.0`);
     }
 
     // The most-recent version stays cached: a re-query does not re-fetch.
-    await resolveDocs(bundled, `9.${DOCS_CACHE_LIMIT}.0`, deps);
+    await resolve(`9.${DOCS_CACHE_LIMIT}.0`);
     expect(fetchCounts.get(`9.${DOCS_CACHE_LIMIT}.0`)).toBe(1);
 
     // The oldest version was evicted: a re-query fetches it a second time.
-    await resolveDocs(bundled, '9.0.0', deps);
+    await resolve('9.0.0');
     expect(fetchCounts.get('9.0.0')).toBe(2);
   });
 });
