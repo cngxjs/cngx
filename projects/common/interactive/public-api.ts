@@ -2,6 +2,10 @@
  * @module @cngx/common/interactive
  */
 export { CngxAsyncClick, type AsyncAction } from './async-click/async-click.directive';
+export {
+  CNGX_HOST_INTERACTION_STATE,
+  type CngxHostInteractionState,
+} from './async-click/host-interaction-state.token';
 export { CngxPending, CngxSucceeded, CngxFailed } from './async-click/async-status-templates';
 export {
   CNGX_INTERACTIVE_I18N,

@@ -163,6 +163,50 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     expect(s.backgroundColor).toBe(s.highlight);
   });
 
+  test('solid primary button fills with Highlight, the other variants stay ButtonFace', async ({ page }) => {
+    await openForced(page, '/#/common/button/button/variants');
+    const solidPrimary = page.locator('.cngx-ex-artifact .cngx-button[data-variant="solid"][data-tone="primary"]').first();
+    const outline = page.locator('.cngx-ex-artifact .cngx-button[data-variant="outline"]').first();
+    await expect(solidPrimary).toBeVisible();
+    // Colours transition over 150ms; settle before reading.
+    await page.waitForTimeout(300);
+    const solid = await readAffordance(solidPrimary);
+    expect(solid.backgroundColor).toBe(solid.highlight);
+    const plain = await readAffordance(outline);
+    expect(plain.backgroundColor).not.toBe(plain.highlight);
+    expect(isOpaque(plain.borderTopColor)).toBe(true);
+  });
+
+  test('keyboard-focused button draws its focus outline in Highlight (author colour opted out)', async ({ page }) => {
+    await openForced(page, '/#/common/button/button/variants');
+    const buttons = page.locator('.cngx-ex-artifact .cngx-button');
+    await expect(buttons.nth(1)).toBeVisible();
+    // Land on the button through the keyboard so :focus-visible applies: focus
+    // its predecessor, then Tab forward onto it.
+    await buttons.nth(0).focus();
+    await page.keyboard.press('Tab');
+    const target = buttons.nth(1);
+    await expect(target).toBeFocused();
+    await page.waitForTimeout(300);
+    const ring = await target.evaluate((el) => {
+      const probe = document.createElement('span');
+      probe.style.backgroundColor = 'Highlight';
+      document.body.appendChild(probe);
+      const highlight = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      const cs = getComputedStyle(el);
+      return {
+        focusVisible: el.matches(':focus-visible'),
+        outlineStyle: cs.outlineStyle,
+        outlineColor: cs.outlineColor,
+        highlight,
+      };
+    });
+    expect(ring.focusVisible).toBe(true);
+    expect(ring.outlineStyle).toBe('solid');
+    expect(ring.outlineColor).toBe(ring.highlight);
+  });
+
   test('selected card re-signals with a Highlight border (base :scope rule beaten)', async ({ page }) => {
     await openForced(page, '/#/common/card/action-card-with-selection');
     const clickable = page.locator('.cngx-ex-artifact .cngx-card--interactive').first();

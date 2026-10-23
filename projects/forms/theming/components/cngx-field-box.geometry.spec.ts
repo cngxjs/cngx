@@ -1,5 +1,6 @@
 import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { CngxButton } from '@cngx/common/button';
 import { CngxIcon } from '@cngx/common/display';
 import { CngxFormField, CngxLabel, CngxPrefix, CngxSuffix } from '@cngx/forms/field';
 import { createMockField } from '@cngx/forms/field/testing';
@@ -68,7 +69,16 @@ const HARNESS_STYLES = [
 @Component({
   selector: 'cngx-field-box-matrix-host',
   standalone: true,
-  imports: [CngxFieldBox, CngxInput, CngxPrefix, CngxSuffix, CngxSelect, CngxMultiSelect, CngxIcon],
+  imports: [
+    CngxFieldBox,
+    CngxInput,
+    CngxPrefix,
+    CngxSuffix,
+    CngxSelect,
+    CngxMultiSelect,
+    CngxIcon,
+    CngxButton,
+  ],
   styleUrls: HARNESS_STYLES,
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -112,6 +122,11 @@ const HARNESS_STYLES = [
           [label]="'Colours'"
           [options]="options"
         />
+      </p>
+      <p><button cngxButton class="c-button">Apply</button></p>
+      <p class="c-small-row" style="display: flex; align-items: flex-start; font-size: 14px">
+        <input cngxInput class="c-small-input" [skin]="skin()" />
+        <button cngxButton class="c-small-button">Apply</button>
       </p>
     </div>
   `,
@@ -334,6 +349,9 @@ const CASES: readonly [string, (root: HTMLElement) => HTMLElement][] = [
   ['box with a nested cngx-select', (root) => query(root, '.c-nested-select')],
   ['single trigger', (root) => query(root, '.c-single .cngx-field-trigger')],
   ['chip trigger', (root) => query(root, '.c-chips .cngx-field-trigger')],
+  // The md button is a control row too: same line box, padding and border, so
+  // it shares the top and bottom edge with an input in a toolbar.
+  ['md button', (root) => query(root, '.c-button')],
 ];
 
 const MATRIX = (['outline', 'fill', 'bare'] as const).flatMap((skin) =>
@@ -415,6 +433,21 @@ describe.each(MATRIX)('field box matrix: %s skin, %s, touch %s', (skin, density,
       }
     },
   );
+
+  // Both controls read the control font (`--cngx-font-size-control`, 1rem),
+  // not the container's, so a 14px toolbar keeps them on one row.
+  it('shares the top and bottom edge with an md button in a 14px container', () => {
+    const root = mountMatrix(skin, density, touch);
+    expect(px(query(root, '.c-small-row'), 'font-size')).toBe(14);
+    const input = query(root, '.c-small-input');
+    const button = query(root, '.c-small-button');
+    expect(px(button, 'font-size')).toBe(px(input, 'font-size'));
+    expect(px(button, 'line-height')).toBe(px(input, 'line-height'));
+    const a = input.getBoundingClientRect();
+    const b = button.getBoundingClientRect();
+    expect(b.top).toBeCloseTo(a.top, 0);
+    expect(b.bottom).toBeCloseTo(a.bottom, 0);
+  });
 
   it('keeps an interactive affix as tall as the line box', () => {
     const root = mountMatrix(skin, density, touch);

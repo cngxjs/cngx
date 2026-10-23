@@ -1,9 +1,23 @@
-import { Component, ElementRef, Renderer2, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  Directive,
+  ElementRef,
+  input,
+  Renderer2,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMatchMediaMock } from '@cngx/testing';
 
 import { provideDirection } from '@cngx/core';
+import {
+  CNGX_DESCRIBED_BY,
+  createDescribedByRegistry,
+  injectDescribedByContribution,
+} from '@cngx/core/utils';
 
 import { CngxTooltip } from './tooltip.directive';
 import {
@@ -119,6 +133,79 @@ class PlacementTooltipHost {
   readonly tooltip = viewChild.required(CngxTooltip);
 }
 
+@Component({
+  template: `
+    <button
+      cngxTooltip="Tip"
+      aria-describedby="static-hint other-hint"
+      [enabled]="enabled()"
+      id="trigger"
+    >
+      Btn
+    </button>
+  `,
+  imports: [CngxTooltip],
+})
+class StaticDescribedByHost {
+  readonly enabled = signal(true);
+}
+
+/**
+ * Stands in for a host that owns aria-describedby (CngxButton): provides the
+ * registry on its element, seeds the static id and contributes a gated one.
+ */
+@Directive({
+  selector: '[testDescribedByOwner]',
+  providers: [
+    {
+      provide: CNGX_DESCRIBED_BY,
+      useFactory: () => createDescribedByRegistry({ seed: 'static-hint' }),
+    },
+  ],
+  host: { '[attr.aria-describedby]': 'registry?.value()' },
+})
+class TestDescribedByOwner {
+  readonly reason = input(false, { alias: 'testDescribedByOwner' });
+  private readonly reasonIds = computed(() => (this.reason() ? 'owner-reason' : null));
+  protected readonly registry = injectDescribedByContribution('owner', this.reasonIds);
+}
+
+@Component({
+  template: `
+    <button
+      [testDescribedByOwner]="reason()"
+      cngxTooltip="Owned tip"
+      [enabled]="enabled()"
+      id="trigger"
+    >
+      Owned
+    </button>
+  `,
+  imports: [CngxTooltip, TestDescribedByOwner],
+})
+class OwnedDescribedByHost {
+  readonly reason = signal(false);
+  readonly enabled = signal(true);
+}
+
+@Component({
+  template: `
+    <button
+      cngxTooltip="Owned tip"
+      [enabled]="enabled()"
+      [testDescribedByOwner]="reason()"
+      id="trigger"
+    >
+      Owned
+    </button>
+  `,
+  imports: [CngxTooltip, TestDescribedByOwner],
+})
+class OwnedDescribedByReversedHost {
+  readonly reason = signal(false);
+  readonly enabled = signal(true);
+}
+
 function setup<T>(hostType: new () => T) {
   installMatchMediaStub();
   installPopoverStubs();
@@ -197,6 +284,48 @@ describe('CngxTooltip', () => {
       fixture.detectChanges();
       expect(triggerEl.getAttribute('aria-describedby')).toBeNull();
     });
+
+    it('should keep a static aria-describedby ahead of the tooltip id on a plain host', () => {
+      const { fixture, triggerEl } = setup(StaticDescribedByHost);
+      const host = fixture.componentInstance as StaticDescribedByHost;
+      const tipId = getTooltipEl(triggerEl)!.id;
+      expect(triggerEl.getAttribute('aria-describedby')).toBe(`static-hint other-hint ${tipId}`);
+
+      host.enabled.set(false);
+      fixture.detectChanges();
+      expect(triggerEl.getAttribute('aria-describedby')).toBe('static-hint other-hint');
+
+      host.enabled.set(true);
+      fixture.detectChanges();
+      expect(triggerEl.getAttribute('aria-describedby')).toBe(`static-hint other-hint ${tipId}`);
+    });
+
+    for (const [order, hostType] of [
+      ['owner first', OwnedDescribedByHost],
+      ['tooltip first', OwnedDescribedByReversedHost],
+    ] as const) {
+      it(`should join the host registry and render the merged ids (${order})`, () => {
+        const { fixture, triggerEl } = setup(hostType);
+        const host = fixture.componentInstance;
+        const tipId = getTooltipEl(triggerEl)!.id;
+        const ids = () => (triggerEl.getAttribute('aria-describedby') ?? '').split(' ').sort();
+
+        expect(ids()).toEqual(['static-hint', tipId].sort());
+
+        host.reason.set(true);
+        fixture.detectChanges();
+        expect(ids()).toEqual(['owner-reason', 'static-hint', tipId].sort());
+
+        host.enabled.set(false);
+        fixture.detectChanges();
+        expect(ids()).toEqual(['owner-reason', 'static-hint'].sort());
+
+        host.enabled.set(true);
+        host.reason.set(false);
+        fixture.detectChanges();
+        expect(ids()).toEqual(['static-hint', tipId].sort());
+      });
+    }
   });
 
   describe('hover interaction', () => {
