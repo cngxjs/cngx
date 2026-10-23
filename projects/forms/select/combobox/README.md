@@ -137,7 +137,7 @@ Under the touch floor the chips give way to the one-line summary in front of the
 
 ## Template slots
 
-All [`CngxMultiSelect` slots](../multi-select/README.md#template-slots) plus:
+All [`CngxMultiSelect` slots](../multi-select/README.md#template-slots) except `*cngxSelectPlaceholder`, `*cngxMultiSelectChip` and `*cngxMultiSelectTriggerLabel`, which this variant does not query. Plus:
 
 | Slot | Replaces |
 |-|-|

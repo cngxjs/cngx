@@ -1,6 +1,6 @@
 # `@cngx/forms/select` - Architecture
 
-> The eight-component select family - single, multi, combobox, typeahead, tree, reorderable, action-select, action-multi-select.
+> The nine-composite select family - eight data-driven variants (single, multi, combobox, typeahead, tree, reorderable, action-select, action-multi-select) plus the declarative `<cngx-select-shell>`.
 > Same commit machinery, same async-state machine, same slot system, eight different value-shape × panel-surface combinations.
 
 This document is the canonical entry point for understanding how the family is composed, where to override behaviour, and which variant to reach for.
@@ -29,7 +29,6 @@ For day-to-day API reference (inputs, outputs, signals, CSS variables) see the c
 - [Panel-shell + panel split](#panel-shell--panel-split)
 - [Mobile sheet](#mobile-sheet)
 - [Class size and decompose strategy](#class-size-and-decompose-strategy)
-- [Tracked architectural debt](#tracked-architectural-debt)
 - [How to extend](#how-to-extend)
 
 ---
@@ -46,7 +45,7 @@ The select family delivers eight distinct widget shapes against three non-negoti
    (live region announcer). A11y is in the `computed()` graph, not
    bolted on.
 3. **Composition over configuration** - small focused units.
-   Eight components rather than one monolith with `[multiple]` /
+   Nine composites rather than one monolith with `[multiple]` /
    `[searchable]` / `[hierarchical]` flags. Every internal logic
    block is a swappable DI factory; every visual element is a
    slot-overrideable template.
@@ -68,7 +67,7 @@ The family is **decompose-ready** - every `@Component` is a thin declaration del
 | `CngxActionSelect`           | `T \| undefined` | `<input>` + action panel                    | flat listbox + action slot | combobox + listbox |
 | `CngxActionMultiSelect`      | `T[]`            | `<input>` + chips + action panel            | flat listbox + action slot | combobox + listbox |
 
-Each variant provides `CNGX_FORM_FIELD_CONTROL` directly - no bridge directive needed. All eight share the same slot directives, the same config surface, the same announcer, and the same commit lifecycle.
+Each variant provides `CNGX_FORM_FIELD_CONTROL` directly - no bridge directive needed. All eight share the same slot directives, the same config surface, the same announcer, and the same commit lifecycle. `<cngx-select-shell>` shares them too; it differs only in where its options come from (projected `<cngx-option>` children instead of `[options]`).
 What differs is the _value-shape adapter_ on top of `createSelectCore` and the _trigger-element template_.
 
 ---
@@ -147,7 +146,7 @@ flowchart TD
   Q7 -->|Yes| CngxActionMultiSelect[CngxActionMultiSelect]
 ```
 
-Live walkthrough is at `dev-app/.../select-compare-demo/`.
+The variants are compared side by side in the examples app under `examples/stories/forms/select/`.
 
 ---
 
@@ -201,9 +200,11 @@ Every shared factory has a corresponding DI token - providers can swap the defau
 | `CNGX_ACTION_HOST_BRIDGE_FACTORY`       | `createActionHostBridge`       | Action-host workflow bridge                                 |
 | `CNGX_LOCAL_ITEMS_BUFFER_FACTORY`       | `createLocalItemsBuffer`       | Quick-create local-items persistence                        |
 | `CNGX_PANEL_RENDERER_FACTORY`           | `createIdentityPanelRenderer`  | Panel render strategy (default = identity, opt-in recycler) |
-| `CNGX_SELECTION_CONTROLLER_FACTORY`     | `createSelectionController`    | Multi-mode membership engine (in `@cngx/core/utils`)        |
+| `CNGX_PROJECTED_OPTION_MODEL_FACTORY`   | `createProjectedOptionModel`   | Option model for projected `<cngx-option>` children (shell) |
 | `CNGX_CHIP_REMOVAL_HANDLER_FACTORY`     | `createChipRemovalHandler`     | Chip ✕ disabled-guard + commit branch + WeakMap closure     |
 | `CNGX_FLAT_NAV_STRATEGY`                | `createDefaultFlatNavStrategy` | PageUp/Down + typeahead-while-closed policy                 |
+
+`CNGX_SELECTION_CONTROLLER_FACTORY` (`createSelectionController`, from `@cngx/core/utils`) is the multi-mode membership engine. The core and the tree variant inject it; it is a core token, so it is not counted in the table above.
 
 All eighteen tokens are `providedIn: 'root'` with sensible defaults, overrideable per-component via `viewProviders`.
 The override never breaks because the factory shape is captured in a `Cngx<Name>Factory` type alias - overrides match the exact signature.
@@ -215,7 +216,9 @@ The override never breaks because the factory shape is captured in a `Cngx<Name>
 Every visible piece of a select panel has an override slot.
 The slot directives live in `shared/template-slots.ts` and project a typed context object so consumer markup can read live state.
 
-### The 18 public slots
+### The shared slots
+
+`shared/template-slots.ts` exports 27 slot directives. The table covers the shared slots; the list below covers the variant-specific ones.
 
 | Slot directive | Where it renders | Context |
 |-|-|-|
@@ -238,7 +241,7 @@ The slot directives live in `shared/template-slots.ts` and project a typed conte
 | `*cngxSelectInputPrefix` / `*cngxSelectInputSuffix` | Input adornments (combobox + typeahead) | `{ disabled, focused, panelOpen }`                                     |
 | `*cngxSelectSheetHandle` | Decorative drag handle of the mobile sheet (inside an `aria-hidden` wrapper) | `{ presentation, dragging }` |
 
-Variant-specific slots that complement the shared 18:
+Variant-specific slots that complement the table above:
 
 - `*cngxSelectTriggerLabel` (single only)
 - `*cngxMultiSelectChip` (multi + reorderable)
@@ -286,21 +289,20 @@ sequenceDiagram
 ```
 
 The cascade is `Instance contentChild → CNGX_SELECT_CONFIG.templates.<key> → null`.
-Variant components declare 13 `contentChild` queries inline (Angular's AOT compiler requires the call as a direct field initialiser - NG8110 rejects it from helper functions) and pass them as a bundle to `createTemplateRegistry {...})`. The factory wires each query through `resolveTemplate` to deliver the resolved `Signal<TemplateRef | null>` in one place.
+Variant components declare their `contentChild` queries inline (Angular's AOT compiler requires the call as a direct field initialiser - NG8110 rejects it from helper functions) and pass them as a bundle to `createTemplateRegistry {...})`. The factory wires each query through `resolveTemplate` to deliver the resolved `Signal<TemplateRef | null>` in one place.
 
 ### Internal `CNGX_SELECT_GLYPHS` const
 
-Default glyphs for the slots that fall back to a single character (`✕ ▾ ▸ !`) live in `shared/internal/glyphs.ts` as a plain `as const` object. **NOT exported** - the const exists only to absorb internal duplicates.
+Default glyphs for the slots that fall back to a single character (`✕ ▾ ▸ !`) are declared in `shared/internal/glyphs.ts` as a plain `as const` object. **NOT exported** from `public-api.ts`. Only the sheet header reads `CNGX_SELECT_GLYPHS.clear`; the variant templates write their glyph literals inline, so the other keys (`caret`, `treeTwisty`, `commitError`) are not read by any template.
 Consumers override via:
 
 1. `*cngxSelectClearButton` / `*cngxSelectCaret` directives (highest precedence).
 2. `[clearGlyph]` / `[caretGlyph]` Inputs (mid).
-3. `CNGX_SELECT_GLYPHS.<key>` falls back automatically (lowest).
+3. The inline glyph literal in the variant template (lowest).
 
 The reorderable chip drag handle has no glyph fallback: `*cngxMultiSelectChipHandle` wins over `[chipDragHandle]` (app-wide default via `withDefaultDragHandle`), and with neither no grip renders.
 
 The library deliberately ships no `<cngx-icon>` / `<cngx-button>` component - we assume consumers bring their own design system.
-The const stays tree-shakeable; calls drop from the bundle when unused.
 
 ---
 
@@ -413,8 +415,7 @@ The `(retry)` output fires on every retry click, letting consumers re-fetch.
 
 ## Commit-action lifecycle
 
-Bind `[commitAction]` to a function returning `Observable | Promise | T | undefined` and the family routes user picks through it. T
-wo modes, identical state machine.
+Bind `[commitAction]` to a function returning `Observable | Promise | T | undefined` and the family routes user picks through it. Two modes, identical state machine.
 
 ```mermaid
 sequenceDiagram
@@ -493,7 +494,7 @@ All are reactive computeds - they always reflect the current state, never go sta
   Per-node `role="treeitem"` carries `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded` (only on parents), `aria-checked` (true / false / `mixed` for partial cascade selection - APG checkbox-tree pattern), `aria-disabled`, all reactive.
   The treeitem is the one AT channel: the row checkbox and the parent-row count (`2/3`) are `aria-hidden`, because `aria-checked` already carries what they show. Under the touch floor the checkbox wrapper is the selection tap target and a pointer tap on the row expands a parent: the row expands only for the `click` that ends a `pointerdown` with `pointerType` `touch` or `pen` on that row (`rowTapExpands` on `CNGX_TREE_SELECT_PANEL_HOST`, read from the touch-floor signal). Every other activation, including a screen reader's double tap (a click without pointer events), runs `handleSelect`; AT expands through `aria-expanded`. The footer clear-all is `aria-disabled` and described by the count while nothing is selected, so it keeps focus instead of dropping it to `body`.
 
-**Live region announcer.** `CngxSelectAnnouncer` is `providedIn: 'root'` and announces every selection change through a global polite live region.
+**Live region announcer.** `CngxSelectAnnouncer` is `providedIn: 'root'` and announces selection changes through a global polite live region. While a mobile sheet is modal and open, the variant's `CngxScopedSelectAnnouncer` speaks through the region inside the sheet instead (see [Mobile sheet](#mobile-sheet)).
 `CngxSelectAnnouncerConfig.format()` builds the sentence; override for custom locales or sentence shapes.
 
 **Focus restoration.** On panel close, focus returns to the trigger. Only an open -> closed flip restores; the closed state a select mounts in never moves focus.
@@ -588,8 +589,8 @@ On a coarse, narrow viewport every variant opens its panel as a modal sheet inst
 
 ## Class size and decompose strategy
 
-The `@Component` body of each variant lands between 700 and 1100 LOC depending on value-shape complexity.
-Sub-200-LOC targets are structurally unreachable under the locked patterns (no inheritance, no abstract base classes.
+Each variant's `*.component.ts` file runs from roughly 860 to 1220 lines, depending on value-shape complexity.
+Sub-200-LOC targets are structurally unreachable under the locked patterns (no inheritance, no abstract base classes).
 The 18 DI tokens + the slot system ARE the real decompose strategy: they eliminate cross-variant duplication and let consumers swap implementations.
 
 **Atomic-decompose contract.** Each variant is decompose-ready:

@@ -135,7 +135,7 @@ Under the touch floor the chips give way to the one-line summary in front of the
 
 ## Template slots
 
-All [`CngxCombobox` slots](../combobox/README.md#template-slots) plus the action slot from [`CngxActionSelect`](../action-select/README.md#template-slots):
+All [`CngxCombobox` slots](../combobox/README.md#template-slots) except `*cngxComboboxChip`, which this variant does not query (it renders `*cngxMultiSelectChip` with the same context), plus the action slot from [`CngxActionSelect`](../action-select/README.md#template-slots):
 
 | Slot | Replaces |
 |-|-|

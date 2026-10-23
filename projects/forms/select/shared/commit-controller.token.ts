@@ -51,7 +51,7 @@ export interface CngxCommitController<T>
 
 /**
  * Wraps a generic {@link CngxGenericCommitController} with the
- * select-side action-shape adapter. {@link runCommitAction} handles
+ * select-side action-shape adapter. `runCommitAction` handles
  * Observable/Promise/sync results and routes through the generic
  * controller's runner-callback `begin`.
  *

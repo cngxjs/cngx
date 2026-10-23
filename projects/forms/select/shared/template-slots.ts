@@ -122,7 +122,11 @@ export interface CngxSelectRetryButtonContext {
   readonly $implicit: () => void;
   readonly retry: () => void;
   readonly error: unknown;
-  /** `true` mid-retry - disable the override button. */
+  /**
+   * Always `false` in the built-in surfaces: the panel shell passes `false`
+   * for the load, inline-error and commit-error retry buttons. Do not rely on
+   * it to disable an override button.
+   */
   readonly disabled: boolean;
   /** Library-default label per surface. */
   readonly label: string;

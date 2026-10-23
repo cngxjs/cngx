@@ -119,7 +119,7 @@ While a commit is pending every path is frozen. The move buttons are `aria-disab
 
 ## Template slots
 
-All [`CngxMultiSelect` slots](../multi-select/README.md#template-slots) plus:
+All [`CngxMultiSelect` slots](../multi-select/README.md#template-slots) except `*cngxSelectChipOverflow`, which this variant does not query, plus:
 
 | Slot | Replaces |
 |-|-|
@@ -136,7 +136,7 @@ All [`CngxMultiSelect` slots](../multi-select/README.md#template-slots) plus:
 | Plain `Arrow Left` / `Right`      | Roving focus across chips (no reorder) |
 | Backspace on chip                 | Remove (commit-aware, single deselect) |
 
-Modifier defaults to `Ctrl`; configurable via
+Modifier defaults to `Alt`; configurable via
 `provideReorderableSelectConfig(withReorderKeyboardModifier('alt'))`.
 
 Pointer drag works regardless of keyboard modifier - drag a chip (or

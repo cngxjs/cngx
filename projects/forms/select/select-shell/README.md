@@ -72,7 +72,7 @@ On a touch screen narrower than 48rem the panel opens as a modal bottom sheet, o
 
 ## Template slots
 
-Same 17-slot cascade as the rest of the family. Project a slot directive as a direct child to override:
+The shell uses the same slot cascade as the rest of the family. Project a slot directive as a direct child to override:
 
 ```html
 <cngx-select-shell label="Country" [(value)]="country">
@@ -86,7 +86,7 @@ Same 17-slot cascade as the rest of the family. Project a slot directive as a di
 </cngx-select-shell>
 ```
 
-Cascade per slot: instance `contentChild` &rarr; `CNGX_SELECT_CONFIG.templates.<key>` &rarr; fallback. See the `shared/` README for the full slot list.
+Cascade per slot: instance `contentChild` &rarr; `CNGX_SELECT_CONFIG.templates.<key>` &rarr; fallback. The shell queries these 14 slot directives: `*cngxSelectCaret`, `*cngxSelectPlaceholder`, `*cngxSelectEmpty`, `*cngxSelectLoading`, `*cngxSelectLoadingGlyph`, `*cngxSelectTriggerLabel`, `*cngxSelectError`, `*cngxSelectRetryButton`, `*cngxSelectRefreshing`, `*cngxSelectCommitError`, `*cngxSelectClearButton`, `*cngxSelectOptionPending`, `*cngxSelectOptionError` and `*cngxSelectSheetHandle`. It does not query `*cngxSelectCheck`, `*cngxSelectOptgroup` or `*cngxSelectOptionLabel`. See the `shared/` README for the full slot list.
 
 ## A11y
 
@@ -95,5 +95,5 @@ Trigger carries `role="combobox"` with `aria-expanded`, `aria-controls`, `aria-h
 ## See also
 
 - [API on compodocx](https://cngxjs.github.io/cngx/) for inputs, outputs, slot directives, and the 18 DI factory tokens.
-- The six sibling variants in `@cngx/forms/select`: `CngxSelect`, `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`, `CngxTreeSelect`, `CngxReorderableMultiSelect`.
+- The eight data-driven sibling variants in `@cngx/forms/select`: `CngxSelect`, `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`, `CngxTreeSelect`, `CngxReorderableMultiSelect`, `CngxActionSelect`, `CngxActionMultiSelect`.
 - [`@cngx/forms/select/shared`](../shared/README.md) for the core factory, commit machinery, panel infrastructure, and configuration cascade.

@@ -153,7 +153,7 @@ The trigger shows the one-line summary from the displayed chip list: the placeho
 
 ## Template slots
 
-All [`CngxMultiSelect` shared slots](../multi-select/README.md#template-slots) (placeholder / loading / error / commitError / retry / etc.) plus:
+The shared slots this variant queries are `*cngxSelectPlaceholder`, `*cngxSelectCaret`, `*cngxSelectClearButton`, `*cngxSelectEmpty`, `*cngxSelectLoading`, `*cngxSelectLoadingGlyph`, `*cngxSelectError`, `*cngxSelectRetryButton`, `*cngxSelectRefreshing`, `*cngxSelectCommitError` and `*cngxSelectSheetHandle`. It does not query `*cngxSelectCheck`, `*cngxSelectOptgroup`, `*cngxSelectOptionLabel`, `*cngxSelectOptionPending`, `*cngxSelectOptionError` or the `*cngxMultiSelect*` slots; its own slots are below:
 
 | Slot | Replaces |
 |-|-|

@@ -1,8 +1,8 @@
 # @cngx/forms/select
 
-The select family - eight specialised dropdown components sharing one signal-native core. Replaces the monolithic `[multiple]` / `[searchable]` / `[hierarchical]` flag pattern with one component per intent.
+The select family - nine specialised dropdown composites (eight data-driven variants plus the declarative `<cngx-select-shell>`) sharing one signal-native core. Replaces the monolithic `[multiple]` / `[searchable]` / `[hierarchical]` flag pattern with one component per intent.
 
-> For the deep architectural rationale and accepted-debt notes, see [`ARCHITECTURE.md`](./ARCHITECTURE.md) in this folder.
+> For the deep architectural rationale, see [`ARCHITECTURE.md`](./ARCHITECTURE.md) in this folder.
 
 ## When you reach for it
 
@@ -19,7 +19,7 @@ You need a dropdown surface in a form. The right variant follows the value shape
 | Pick one and dispatch an action immediately              | `<cngx-action-select>`            |
 | Pick many and dispatch on each toggle                    | `<cngx-action-multi-select>`      |
 
-All eight integrate directly with `<cngx-form-field>` - no bridge directive needed.
+All nine integrate directly with `<cngx-form-field>` - no bridge directive needed. `<cngx-select-shell>` takes its options from projected `<cngx-option>` children instead of `[options]`; see [`declarative/README.md`](./declarative/README.md).
 
 ## Mental model
 
