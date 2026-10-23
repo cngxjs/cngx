@@ -213,9 +213,9 @@ export interface CngxComboboxChange<T = unknown> {
  * @slot cngxSelectEmpty Replaces the panel's empty message when no option exists or none matches the typed term; gets searchTerm, filtered.
  * @slot cngxSelectLoading Replaces the panel's loading indicator during the first load of [state], or while [loading] is true without [state]; gets retry.
  * @slot cngxSelectLoadingGlyph Replaces the inner glyph of the spinner or bar loading view and of the refresh indicator when no cngxSelectLoading / cngxSelectRefreshing template is set; no context.
- * @slot cngxComboboxTriggerLabel Replaces the chip strip whenever projected, including with no selection, while the search input stays; gets selected, values, count.
- * @slot cngxComboboxChip Replaces each chip in the trigger strip unless cngxComboboxTriggerLabel is projected; gets option, remove, index.
- * @slot cngxSelectChipOverflow Replaces the +N badge after the visible chips when chipOverflow is 'truncate' and selected options are hidden; gets count, label.
+ * @slot cngxComboboxTriggerLabel Replaces the chip strip and the touch summary whenever projected, including with no selection, while the search input stays; gets selected, values, count.
+ * @slot cngxComboboxChip Replaces each chip in the trigger strip unless cngxComboboxTriggerLabel is projected; gets option, remove, index. Fine pointer only.
+ * @slot cngxSelectChipOverflow Replaces the +N badge after the visible chips when chipOverflow is 'truncate' and selected options are hidden, and the badge of the touch summary; gets count, label, hidden. The chip-strip badge is fine pointer only.
  * @slot cngxSelectOptionLabel Replaces the label content of each option row; gets option, selected, highlighted.
  * @slot cngxSelectError Replaces the panel's error block on a failed load and the inline error above the options on a failed refresh; gets error, retry.
  * @slot cngxSelectRetryButton Replaces the retry button inside the built-in load-error, inline-error and commit-error blocks; gets retry, error, disabled, label.

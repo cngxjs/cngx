@@ -1346,7 +1346,15 @@
      :has() selector re-states the interactive-chip touch floor CngxChip
      applies to removable chips so it keeps winning under a coarse pointer
      via max(line-box, --cngx-target-min). Scoped to the trigger strip - a
-     standalone <cngx-chip> keeps its intrinsic size. */
+     standalone <cngx-chip> keeps its intrinsic size.
+
+     Under the touch floor the default chips are not rendered: the strip
+     holds the `cngx-select-summary` line instead, and a consumer chip
+     template (`*cngxMultiSelectChip` and its siblings) is not rendered
+     either. The floor reaches a `cngx-chip` here only where a consumer puts
+     one into the strip under the floor, such as markup projected through a
+     trigger-label slot. On a fine pointer, or with the `'off'` opt-out, the
+     default chips are back and these rules apply to them as before. */
   .cngx-select__chip-list cngx-chip,
   .cngx-select__chip-list cngx-chip:has(.cngx-chip__remove) {
     padding-block: 0;

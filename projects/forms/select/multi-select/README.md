@@ -103,6 +103,14 @@ provideCngxSelect(withTypeaheadWhileClosed(true));
 
 On a touch screen narrower than 48rem the panel opens as a modal bottom sheet, named by the field label, with a close button, Done and a decorative handle. Focus moves into the sheet and back to the trigger on close. Force a presentation with `[presentation]` (`'anchored'`, `'sheet'`, `'fullscreen'`), set the title with `[sheetLabel]`, or turn the sheet off with `withMobileSheet('off')`. Details: [Mobile sheet](../README.md#mobile-sheet).
 
+## Touch
+
+Under the touch floor the chip strip becomes a one-line summary: the placeholder with no value, the label with one value, and the first label plus a `+N` badge with two or more. The row keeps its 44px height. Full behaviour and opt-out: [Summary trigger under the touch floor](../README.md#summary-trigger-under-the-touch-floor).
+
+- `*cngxMultiSelectTriggerLabel` replaces the summary once a value is selected. With no value the placeholder still shows first.
+- `*cngxSelectChipOverflow` replaces the summary's `+N` badge as well as the chip-strip badge.
+- `*cngxMultiSelectChip`, `chipOverflow` and `maxVisibleChips` apply on a fine pointer only. `[cngxTouchTarget]="'off'"` (or `data-touch="off"`) brings the chips back on a touch screen.
+
 ## Template slots
 
 All [`CngxSelect` slots](../single-select/README.md#template-slots) plus:

@@ -50,6 +50,17 @@ On a touch screen narrower than 48rem every variant opens its panel as a modal s
 - `[sheetLabel]` sets the sheet title when the field label is not the right one.
 - `*cngxSelectSheetHandle` replaces the decorative drag handle.
 
+### Summary trigger under the touch floor
+
+The touch floor is on while `--cngx-target-min` resolves above `0px`: on a coarse pointer (`(any-pointer: coarse)`), with `[cngxTouchTarget]="'on'"`, `data-touch="on"` or the `.cngx-touch-on` class. Under it the five multi-value selects (`CngxMultiSelect`, `CngxCombobox`, `CngxTreeSelect`, `CngxReorderableMultiSelect`, `CngxActionMultiSelect`) replace the chip strip with one line in the 44px row: the placeholder with no value, the label with one value, and the first label plus a `+N` badge with two or more values.
+
+- Assistive technology gets the whole selection. The div-based triggers (multi, tree, reorderable) carry it as visually hidden text inside the trigger. The input-led variants (combobox, action-multi) keep the input for the search term and reference a visually hidden copy of the selection through `aria-describedby`.
+- Opt out with `[cngxTouchTarget]="'off'"` or `data-touch="off"` on the select or an ancestor. The chips come back.
+- `chipOverflow`, `maxVisibleChips` and the chip slots (`*cngxMultiSelectChip`, `*cngxComboboxChip`, `*cngxTreeSelectChip`, `*cngxMultiSelectChipHandle`) apply on a fine pointer only, or with the opt-out.
+- `*cngxSelectChipOverflow` also replaces the `+N` badge of the summary. `CngxReorderableMultiSelect` keeps the built-in `+N` badge; it does not render `*cngxSelectChipOverflow`.
+- A trigger-label slot (`*cngxMultiSelectTriggerLabel`, `*cngxComboboxTriggerLabel`, `*cngxTreeSelectTriggerLabel`) replaces the summary in the same place it replaces the chips. The per-variant READMEs state the precedence against the placeholder.
+- `CngxReorderableMultiSelect` moves its sorting into a list in the panel; see its README.
+
 ## Localisation
 
 To translate the whole app, set a language pack with `provideCngxI18n(withPack(...))` from `@cngx/core/i18n` (see the localisation guide); the `select` section covers every string below.
