@@ -245,9 +245,9 @@ describe('the angular-libs CI job', () => {
   const next = rest.search(/\n {2}[a-z-]+:\n/);
   const job = next === -1 ? rest : rest.slice(0, next);
 
-  it('runs an exact Angular 22 row and an exact framework-only 21.1.0 floor row on Node 22', () => {
+  it('runs an exact Angular 22 row and an exact framework-only 21.1.0 floor row on the .nvmrc Node', () => {
     expect(start).toBeGreaterThan(-1);
-    expect(job).toContain('node-version: 22');
+    expect(job).toContain('node-version-file: .nvmrc');
     expect(job).toMatch(/overlay: '--angular 22\.\d+\.\d+'/);
     expect(job).toContain("overlay: '--angular 21.1.0 --framework-only'");
     expect(job).not.toContain('--before');

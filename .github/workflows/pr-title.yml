@@ -136,7 +136,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
       - name: Require a migration for a breaking change
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
