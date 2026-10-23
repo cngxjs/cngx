@@ -20,6 +20,21 @@ export function injectSelectConfigSource(): CngxSelectConfig {
 }
 
 /**
+ * The one coercion for a chip cap, shared by the config path and the
+ * per-instance `[maxVisibleChips]` input: a finite number is floored and
+ * clamped to at least 1; `undefined` or a non-finite value falls back to
+ * the library default.
+ *
+ * @internal
+ */
+export function coerceMaxVisibleChips(count: number | undefined): number {
+  if (count === undefined || !Number.isFinite(count)) {
+    return CNGX_SELECT_DEFAULTS.maxVisibleChips;
+  }
+  return Math.max(1, Math.floor(count));
+}
+
+/**
  * Effective {@link CngxSelectConfig} for the current injector, merged
  * with library defaults. Always fully populated. The copy keys
  * (`ariaLabels`, `fallbackLabels`, `announcer`) are `Signal`s, read lazily
@@ -54,10 +69,7 @@ export function resolveSelectConfig(): Required<
         ? CNGX_SELECT_DEFAULTS.enterKeyHint
         : user.enterKeyHint,
     chipOverflow: user.chipOverflow ?? CNGX_SELECT_DEFAULTS.chipOverflow,
-    maxVisibleChips:
-      user.maxVisibleChips !== undefined && user.maxVisibleChips > 0
-        ? user.maxVisibleChips
-        : CNGX_SELECT_DEFAULTS.maxVisibleChips,
+    maxVisibleChips: coerceMaxVisibleChips(user.maxVisibleChips),
     virtualization:
       user.virtualization === undefined
         ? CNGX_SELECT_DEFAULTS.virtualization

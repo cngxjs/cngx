@@ -21,7 +21,7 @@ import { stubTouchFloor } from '../shared/__test-helpers/touch-floor';
 import { CngxMultiSelect, type CngxMultiSelectChange } from './multi-select.component';
 import type { CngxSelectOptionDef } from '../shared/option.model';
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from '../shared/commit-action.types';
-import { provideSelectConfig, withAriaLabels } from '../shared/config';
+import { CNGX_SELECT_CONFIG, provideSelectConfig, withAriaLabels } from '../shared/config';
 import {
   CngxMultiSelectChip,
   CngxMultiSelectTriggerLabel,
@@ -1247,5 +1247,65 @@ describe('CngxMultiSelect - truncated chips stay reachable for AT', () => {
     flush(fixture);
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelector('.cngx-select__hidden-summary')).toBeNull();
+  });
+});
+
+// ── maxVisibleChips coercion: config and per-instance input floor alike ──
+
+@Component({
+  template: `
+    <cngx-multi-select
+      [label]="'Letters'"
+      [options]="options"
+      [(values)]="values"
+      chipOverflow="truncate"
+    />
+  `,
+  imports: [CngxMultiSelect],
+})
+class ConfigCapHost {
+  readonly options = TRUNCATE_OPTIONS;
+  readonly values = signal<string[]>(['a', 'b', 'c', 'd', 'e']);
+}
+
+@Component({
+  template: `
+    <cngx-multi-select
+      [label]="'Letters'"
+      [options]="options"
+      [(values)]="values"
+      chipOverflow="truncate"
+      [maxVisibleChips]="2.7"
+    />
+  `,
+  imports: [CngxMultiSelect],
+})
+class InputCapHost {
+  readonly options = TRUNCATE_OPTIONS;
+  readonly values = signal<string[]>(['a', 'b', 'c', 'd', 'e']);
+}
+
+describe('CngxMultiSelect - fractional maxVisibleChips', () => {
+  function expectTwoChipsPlusThree(el: HTMLElement): void {
+    const strip = el.querySelector('.cngx-select__chip-list')!;
+    expect(strip.querySelectorAll('cngx-chip').length).toBe(2);
+    expect(strip.querySelector('.cngx-select__chip-overflow-badge')?.textContent?.trim()).toBe(
+      '+3',
+    );
+  }
+
+  it('floors a config value of 2.7 to 2 chips and +3', () => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: CNGX_SELECT_CONFIG, useValue: { maxVisibleChips: 2.7 } }],
+    });
+    const fixture = TestBed.createComponent(ConfigCapHost);
+    flush(fixture);
+    expectTwoChipsPlusThree(fixture.nativeElement as HTMLElement);
+  });
+
+  it('floors a per-instance [maxVisibleChips]="2.7" to 2 chips and +3', () => {
+    const fixture = TestBed.createComponent(InputCapHost);
+    flush(fixture);
+    expectTwoChipsPlusThree(fixture.nativeElement as HTMLElement);
   });
 });
