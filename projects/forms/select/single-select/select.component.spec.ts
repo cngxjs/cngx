@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 import { Subject, type Observable } from 'rxjs';
 
-import { CngxListbox } from '@cngx/common/interactive';
+import { CngxListbox, CngxOption } from '@cngx/common/interactive';
 import {
   CngxPopover,
   CngxPopoverSheet,
@@ -1837,5 +1837,52 @@ describe('CngxSelect - highlight across an options swap', () => {
     ]);
     flush(fixture);
     expect([null, 'green']).toContain(ad.activeValue());
+  });
+});
+
+describe('CngxSelect - panel row labels across an options swap', () => {
+  @Component({
+    template: `<cngx-select [label]="'Colour'" [options]="options()" [presentation]="'anchored'" />`,
+    imports: [CngxSelect],
+  })
+  class SwapHost {
+    readonly options = signal([
+      { value: 'red', label: 'Red' },
+      { value: 'green', label: 'Green' },
+    ]);
+  }
+
+  it('a reused row reports the new option label and typeahead matches it', () => {
+    polyfillPopover();
+    const fixture = TestBed.createComponent(SwapHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const de = fixture.debugElement.query(By.directive(CngxSelect));
+    (de.componentInstance as CngxSelect<string>).open();
+    flush(fixture);
+    const firstRow = (): HTMLElement =>
+      de.nativeElement.querySelector('[cngxOption]') as HTMLElement;
+    const rowBefore = firstRow();
+
+    fixture.componentInstance.options.set([
+      { value: 'teal', label: 'Teal' },
+      { value: 'navy', label: 'Navy' },
+    ]);
+    flush(fixture);
+
+    // Precondition: `track $index` reuses the row view, so the row is the
+    // same node and its option directive saw only an input change.
+    expect(firstRow()).toBe(rowBefore);
+    const option = de
+      .queryAll(By.directive(CngxOption))
+      .map((o) => o.injector.get(CngxOption))
+      .find((o) => o.value() === 'teal');
+    expect(option?.label()).toBe('Teal');
+
+    const trigger = de.nativeElement.querySelector('.cngx-select__trigger') as HTMLElement;
+    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 't', bubbles: true }));
+    flush(fixture);
+    const ad = de.query(By.directive(CngxListbox)).injector.get(CngxListbox).ad;
+    expect(ad.activeValue()).toBe('teal');
   });
 });
