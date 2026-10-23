@@ -1,6 +1,6 @@
 # Declarative Select Elements
 
-The template-driven authoring path. Four projection elements (`<cngx-option>`, `<cngx-optgroup>`, `<cngx-select-divider>`, `<cngx-select-search>`) for cases where the six Level-3 composites do not fit: rich per-option markup, listbox surfaces assembled from atoms, or the `<cngx-select-shell>` projection variant. Not a seventh select - these elements have no value model of their own and no panel chrome. The host (a `[cngxListbox]` instance or `<cngx-select-shell>`) owns selection, ARIA, and commit.
+The template-driven authoring path. Four projection elements (`<cngx-option>`, `<cngx-optgroup>`, `<cngx-select-divider>`, `<cngx-select-search>`) for cases where the eight data-driven composites do not fit: rich per-option markup, listbox surfaces assembled from atoms, or the `<cngx-select-shell>` projection variant. Not a select of their own - these elements have no value model of their own and no panel chrome. The host (a `[cngxListbox]` instance or `<cngx-select-shell>`) owns selection, ARIA, and commit.
 
 ## Import
 
@@ -74,19 +74,21 @@ Or as direct children of `<cngx-select-shell>` (panel chrome plus form-field bri
 |Single async value with typing|`<cngx-typeahead>`|
 |Hierarchical multi-select|`<cngx-tree-select>`|
 |Reorderable chip strip|`<cngx-reorderable-multi-select>`|
-|All chrome of the six above, but options written as template DOM|`<cngx-select-shell>` + the declarative elements|
+|Pick one and dispatch an action immediately|`<cngx-action-select>`|
+|Pick many and dispatch on each toggle|`<cngx-action-multi-select>`|
+|All chrome of the data-driven variants above, but options written as template DOM|`<cngx-select-shell>` + the declarative elements|
 |Rich per-row content (icons, sublines, badges) without an options array|consumer-assembled `[cngxListbox]` + the declarative elements|
 |Custom trigger or popover surface, declarative option list|consumer-assembled `[cngxListbox]` + the declarative elements|
 
-The six Level-3 composites consume options as a data array via `[options]`. The declarative elements **are not supported as children of data-mode `<cngx-select>`/`<cngx-multi-select>`/etc.** - those components project from `[options]`, not from light DOM.
+The eight data-driven composites consume options as a data array via `[options]`. The declarative elements **are not supported as children of data-mode `<cngx-select>`/`<cngx-multi-select>`/etc.** - those components project from `[options]`, not from light DOM.
 
 ## Inside `<cngx-select-shell>`
 
-`<cngx-select-shell>` is the projection-mode variant of the family: trigger button, panel, popover, form-field bridge, async-state views, commit lifecycle - everything the six composites provide, except options come from the projected DOM instead of an `[options]` array. The shell builds its option list from `<cngx-option>` / `<cngx-optgroup>` / `<cngx-select-divider>` children via `CNGX_OPTION_CONTAINER`, and projects `<cngx-select-search>` above the listbox.
+`<cngx-select-shell>` is the projection-mode variant of the family: trigger button, panel, popover, form-field bridge, async-state views, commit lifecycle - everything the data-driven composites provide, except options come from the projected DOM instead of an `[options]` array. The shell builds its option list from `<cngx-option>` / `<cngx-optgroup>` / `<cngx-select-divider>` children via `CNGX_OPTION_CONTAINER`, and projects `<cngx-select-search>` above the listbox.
 
 ## See also
 
 - [API on compodocx](https://cngxjs.github.io/cngx/) for inputs, exposed signals, and tokens.
-- Sibling READMEs for the six composites: [`CngxSelect`](../single-select/README.md), [`CngxMultiSelect`](../multi-select/README.md), [`CngxCombobox`](../combobox/README.md), [`CngxTypeahead`](../typeahead/README.md), [`CngxTreeSelect`](../tree-select/README.md), [`CngxReorderableMultiSelect`](../reorderable-multi-select/README.md).
+- Sibling READMEs for the eight data-driven composites: [`CngxSelect`](../single-select/README.md), [`CngxMultiSelect`](../multi-select/README.md), [`CngxCombobox`](../combobox/README.md), [`CngxTypeahead`](../typeahead/README.md), [`CngxTreeSelect`](../tree-select/README.md), [`CngxReorderableMultiSelect`](../reorderable-multi-select/README.md), [`CngxActionSelect`](../action-select/README.md), [`CngxActionMultiSelect`](../action-multi-select/README.md).
 - [`CngxSelectShell`](../select-shell/README.md) - the projection-mode host these elements were built for.
 - Stories: `examples/stories/forms/select/select-shell/` and `examples/stories/forms/select/single-select/assemble-it-yourself-atoms-element-components.story.ts`.

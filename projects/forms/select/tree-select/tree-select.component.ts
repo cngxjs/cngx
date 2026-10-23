@@ -224,11 +224,11 @@ export interface CngxTreeSelectChange<T = unknown> {
  * @slot cngxSelectCommitError Replaces the panel's commit-error banner when a commit fails and commitErrorDisplay is 'banner'; gets error and retry (option is always null on this host).
  * @slot cngxSelectClearButton Replaces the clear-all button, shown when clearable is set, a value is selected and the control is enabled; gets clear, disabled.
  * @slot cngxTreeSelectNode Replaces each whole treeitem row, twisty and checkbox included, so the template owns the treeitem ARIA; gets node, depth, expanded, hasChildren, selected, indeterminate, disabled, selectedCount, descendantCount, toggleExpand, handleSelect.
- * @slot cngxTreeSelectChip Replaces each chip in the trigger strip unless cngxTreeSelectTriggerLabel is projected; gets option, remove.
- * @slot cngxTreeSelectTriggerLabel Replaces the whole chip strip while at least one value is selected; gets selected, values, count.
+ * @slot cngxTreeSelectChip Replaces each chip in the trigger strip unless cngxTreeSelectTriggerLabel is projected; gets option, remove. Fine pointer only.
+ * @slot cngxTreeSelectTriggerLabel Replaces the whole chip strip, and the touch summary, while at least one value is selected; gets selected, values, count.
  * @slot cngxTreeSelectNodeCount Replaces the selected-of-total count at the inline end of each parent row in the default row; gets text ($implicit), selected, total, node. The built-in count shows only once a descendant is selected; the template renders for every parent, zero included. Renders inside an aria-hidden wrapper the host keeps; global default via CNGX_SELECT_CONFIG.templates.treeNodeCount.
  * @slot cngxTreeSelectFooter Replaces the panel footer below the tree (selected count and clear-all; the bottom bar in the mobile sheet); gets count ($implicit), countText, clear, clearLabel, empty. clear() keeps the host's clear announcement and outputs; global default via CNGX_SELECT_CONFIG.templates.treeFooter.
- * @slot cngxSelectChipOverflow Replaces the `+N` overflow chip after the first maxVisibleChips displayed chips, and the badge of the touch summary; gets count, label, hidden. The host keeps the hidden values readable for AT.
+ * @slot cngxSelectChipOverflow Replaces the `+N` overflow chip after the first maxVisibleChips displayed chips, and the badge of the touch summary; gets count, label, hidden. The `+N` chip is fine pointer only. The host keeps the hidden values readable for AT.
  * @slot cngxSelectSheetCount Replaces the selected count after the mobile sheet title; gets text ($implicit). Global default via CNGX_SELECT_CONFIG.templates.sheetCount.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
  */

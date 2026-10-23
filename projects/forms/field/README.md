@@ -212,7 +212,7 @@ with no extra attribute. The same holds for `CngxInputMask` and
 a second skin host on one element throws NG0309.
 
 ```html
-<input cngxInput cngxNumericInput [field]="f.amount" />
+<input cngxInput cngxNumericInput [formField]="f.amount" />
 ```
 
 A lone value directive is not a field control, and an OTP slot or a listbox
@@ -338,9 +338,13 @@ All derived from Signal Forms `FieldState` via `computed()`:
 
 - `[cngxBindField]` - universal bridge; place on any Material, native, or custom
   control. Derives all form-field state from the bound field. Value-flow runs
-  through the control's own bindings (`[control]` or `[formControl]`).
+  through the control's own bindings (`[formField]` or `[formControl]`).
 - `CngxListboxFieldBridge` - specialised bridge for `CngxListbox` that handles
   multi-select and `compareWith` value-sync.
+
+A control with a `value = model<T>()` and no `ControlValueAccessor` can sync
+that model with the field yourself: `createFieldSync` from `@cngx/forms/field`,
+called in an injection context. Outside a `cngx-form-field` it does nothing.
 
 ## Optional Material Theme
 

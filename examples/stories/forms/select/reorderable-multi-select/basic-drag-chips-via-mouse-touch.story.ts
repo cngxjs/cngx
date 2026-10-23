@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxReorderableMultiSelect: basic drag chips via mouse touch',
   subtitle: 'Grab the six-dot handle on any chip and drop it elsewhere in the strip. Order is written back into <code>[(values)]</code> - the signal is the single source of truth, everything else derives from it.',
-  description: 'CngxReorderableMultiSelect - multi-value picker whose selected chips can be reordered via pointer drag and Alt+Arrow keyboard moves. Thin organism on top of createSelectCore + CngxReorder.',
+  description: 'CngxReorderableMultiSelect - multi-value picker whose selected chips can be reordered via pointer drag and Alt+Arrow keyboard moves. Thin organism on top of createSelectCore + CngxReorder. Under the touch floor the trigger shows a one-line summary instead of chips, and the drag moves into a list above the options in the panel or sheet.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',

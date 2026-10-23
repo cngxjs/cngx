@@ -55,6 +55,8 @@ export interface CngxSelectLanguageSection {
   readonly sheetClose: string;
   /** Done button in the header of the mobile sheet. */
   readonly sheetDone: string;
+  /** Why the sheet close / Done and the reorder move buttons are unavailable during a pending commit. */
+  readonly commitPending: string;
   /** Body of `loadingVariant: 'text'`. */
   readonly loading: string;
   /** The empty panel. */
@@ -140,6 +142,7 @@ export const CNGX_SELECT_LANGUAGE_EN: CngxSelectLanguageSection = {
   listboxFallback: 'Options',
   sheetClose: 'Close',
   sheetDone: 'Done',
+  commitPending: 'Unavailable while saving',
   loading: 'Loading…',
   empty: 'No options',
   loadFailed: 'Could not load',

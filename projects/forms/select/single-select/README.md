@@ -160,6 +160,7 @@ Drop a `<ng-template>` with one of these directives inside `<cngx-select>` to ov
 | `*cngxSelectTriggerLabel`  | Trigger summary (single-select only)                           |
 | `*cngxSelectOptionPending` | Per-row commit-pending glyph                                   |
 | `*cngxSelectOptionError`   | Per-row commit-error glyph                                     |
+| `*cngxSelectSheetHandle`   | Decorative drag handle of the mobile sheet                     |
 
 Full list with context shapes: [`ARCHITECTURE.md` § Template slot system](../../../ARCHITECTURE.md#template-slot-system).
 
@@ -170,7 +171,7 @@ Full list with context shapes: [`ARCHITECTURE.md` § Template slot system](../..
 | `Space` / `Enter` (trigger)           | Toggle panel open                                                              |
 | `Arrow Up` / `Down` (trigger)         | Open + move highlight                                                          |
 | `Page Up` / `Page Down` (trigger)     | Open + jump ±10 (clamped, disabled-aware)                                      |
-| Printable key (trigger, panel closed) | Native-`<select>`-style typeahead pick - opt-in via `withTypeaheadWhileClosed` |
+| Printable key (trigger, panel closed) | Native-`<select>`-style typeahead pick - on by default; turn off via `withTypeaheadWhileClosed(false)` |
 | `Escape`                              | Close panel                                                                    |
 
 ## Configuration

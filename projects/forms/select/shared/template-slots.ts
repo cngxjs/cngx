@@ -122,7 +122,11 @@ export interface CngxSelectRetryButtonContext {
   readonly $implicit: () => void;
   readonly retry: () => void;
   readonly error: unknown;
-  /** `true` mid-retry - disable the override button. */
+  /**
+   * Always `false` in the built-in surfaces: the panel shell passes `false`
+   * for the load, inline-error and commit-error retry buttons. Do not rely on
+   * it to disable an override button.
+   */
   readonly disabled: boolean;
   /** Library-default label per surface. */
   readonly label: string;
@@ -595,6 +599,8 @@ export class CngxSelectCommitError<T = unknown> {
 
 /**
  * `*cngxMultiSelectChip` slot. `remove` routes through the commit flow.
+ * Fine pointer only: under the touch floor the trigger shows the summary
+ * instead of chips, so this template is not rendered there.
  *
  * ```html
  * <cngx-multi-select ...>
@@ -624,7 +630,9 @@ export class CngxMultiSelectChip<T = unknown> {
  * Cascade: this slot > `[chipDragHandle]` Input (app-wide default via
  * `withDefaultDragHandle`). With neither, no grip renders and the whole chip
  * is the drag surface. Handle span stays `aria-hidden="true"` (AT reads
- * `[reorderAriaLabel]` instead).
+ * `[reorderAriaLabel]` instead). Fine pointer only: under the touch floor the
+ * chip strip is not rendered; the reorder list in the panel has its own
+ * handle.
  *
  * ```html
  * <cngx-reorderable-multi-select ...>
@@ -652,11 +660,14 @@ export class CngxMultiSelectChipHandle {
 /**
  * `*cngxSelectChipOverflow` slot - replaces the `+N` badge that follows the
  * visible chips when `chipOverflow` is `'truncate'` and selected options are
- * hidden. Rendered by `CngxMultiSelect`, `CngxCombobox` and
- * `CngxActionMultiSelect`; not rendered while a trigger-label slot replaces
- * the chip strip. The default badge is `aria-hidden` because the selection is
- * announced through the control; keep a projected badge `aria-hidden` unless
- * it adds its own interaction.
+ * hidden. Rendered by `CngxMultiSelect`, `CngxCombobox`,
+ * `CngxActionMultiSelect` and `CngxTreeSelect`; `CngxReorderableMultiSelect`
+ * does not render it (its touch summary keeps the built-in badge). The
+ * chip-strip badge is fine pointer only. Under the touch floor the same slot
+ * replaces the badge of the summary trigger. Not rendered while a trigger-label slot
+ * replaces the chip strip. The default badge is `aria-hidden` because the
+ * selection is announced through the control; keep a projected badge
+ * `aria-hidden` unless it adds its own interaction.
  *
  * ```html
  * <cngx-multi-select [options]="..." ...>
@@ -903,7 +914,8 @@ export class CngxComboboxTriggerLabel<T = unknown> {
 
 /**
  * `*cngxComboboxChip` slot. Mirrors `CngxMultiSelectChip` so a chip
- * template can target either variant unchanged.
+ * template can target either variant unchanged. Fine pointer only: under the
+ * touch floor the trigger shows the summary instead of chips.
  *
  * ```html
  * <cngx-combobox ...>

@@ -6,7 +6,7 @@ import { type DestroyRef, signal, type Signal } from '@angular/core';
  * jsdom hosts pass the type and hit the runtime guard instead.
  *
  * @category core/utils/media-query
- * @since 0.3.0
+ * @since 0.1.0
  */
 export interface MediaQueryHost {
   matchMedia?: (query: string) => MediaQueryList;
@@ -31,7 +31,7 @@ export interface MediaQueryHost {
  * @returns Teardown that removes the change listener.
  * @category core/utils/media-query
  * @relatedTo createMediaQuerySignal
- * @since 0.3.0
+ * @since 0.1.0
  */
 export function observeMediaQuery(
   host: MediaQueryHost | null | undefined,
@@ -76,7 +76,7 @@ export function observeMediaQuery(
  * @returns A readonly `Signal<boolean>` tracking the query's match state.
  * @category core/utils/media-query
  * @relatedTo observeMediaQuery
- * @since 0.3.0
+ * @since 0.1.0
  */
 export function createMediaQuerySignal(
   query: string,

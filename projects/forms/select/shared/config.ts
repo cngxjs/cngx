@@ -189,6 +189,12 @@ export interface CngxSelectAriaLabels {
   readonly sheetClose?: string;
   /** Done button in the header of the mobile sheet (multi and input variants). Default `'Done'`. */
   readonly sheetDone?: string;
+  /**
+   * Why the sheet header's close and Done buttons and the panel reorder list's
+   * move buttons are unavailable while a commit is pending; referenced through
+   * `aria-describedby` only in that state. Default `'Unavailable while saving'`.
+   */
+  readonly commitPending?: string;
 }
 
 /**
@@ -215,6 +221,8 @@ export interface CngxSelectVirtualizationConfig {
  * Fallback labels for `CngxSelectPanelShell`'s built-in views and the visible
  * chip-strip copy. Per-instance template projection wins. Unset keys read the
  * `select` section of the active language pack, English by default.
+ *
+ * @category forms/select/config
  */
 export interface CngxSelectFallbackLabels {
   /** `loadingVariant === 'text'` body. Default `'Loading…'`. */
@@ -293,6 +301,8 @@ export interface CngxSelectMatchOption<T = unknown> {
  * `provideSelectConfigAt`; consumed via the `CNGX_SELECT_CONFIG`
  * injection token. Every field is optional - unset keys fall back to
  * the library defaults.
+ *
+ * @category forms/select/config
  */
 export interface CngxSelectConfig {
   /**
@@ -524,12 +534,14 @@ export const CNGX_SELECT_DEFAULTS: Required<
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/config.ts
  * @since 0.1.0
- * @relatedTo provideSelectConfig, provideSelectConfigAt, CngxSelectConfig, CNGX_ACTION_SELECT_CONFIG, CNGX_REORDERABLE_SELECT_CONFIG
+ * @relatedTo provideSelectConfig, provideSelectConfigAt, CngxSelectConfig, CNGX_ACTION_SELECT_CONFIG, CNGX_REORDERABLE_SELECT_CONFIG, CngxSelectLanguageSection
  */
 export const CNGX_SELECT_CONFIG = new InjectionToken<CngxSelectConfig>('CngxSelectConfig');
 
 /**
  * Feature returned by a `with*` helper. Merged by `provideSelectConfig`.
+ *
+ * @category forms/select/config
  */
 export interface CngxSelectConfigFeature {
   readonly config: Partial<CngxSelectConfig>;
@@ -654,7 +666,8 @@ export function withVirtualization(
 /**
  * Sets the panel-shell visible-fallback labels. Partial. Per-instance
  * template projection wins. Pass a `Signal` to follow a runtime language
- * switch. A later `withFallbackLabels` replaces an earlier one.
+ * switch. A later `withFallbackLabels` replaces an earlier one as a whole;
+ * the keys of the two bundles are not merged.
  *
  * ```ts
  * bootstrapApplication(App, {
@@ -867,6 +880,9 @@ const NO_ARIA_LABELS: CngxSelectAriaLabels = {};
  * e.g. to carry `TemplateRef` payloads that only exist once a holder
  * view is live (see `withTemplates`). For static values, prefer the
  * two provide functions.
+ *
+ * `fallbackLabels` is the exception to the merge: a later
+ * `withFallbackLabels` feature replaces an earlier one as a whole.
  */
 export function makeSelectConfig(...features: CngxSelectConfigFeature[]): CngxSelectConfig {
   const merged: {

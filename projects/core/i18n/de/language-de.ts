@@ -397,6 +397,7 @@ export const CNGX_LANGUAGE_DE = {
     listboxFallback: 'Optionen',
     sheetClose: 'Schließen',
     sheetDone: 'Fertig',
+    commitPending: 'Während des Speicherns nicht verfügbar',
     loading: 'Wird geladen…',
     empty: 'Keine Optionen',
     loadFailed: 'Konnte nicht geladen werden',

@@ -26,6 +26,7 @@ const OPTIONS: CngxSelectOptionDef<string>[] = [
       [moveDownLabel]="down"
       [atStartText]="'Already first'"
       [atEndText]="'Already last'"
+      [pendingText]="pendingText()"
       [disabled]="disabled()"
       [busy]="busy()"
       (reordered)="handle($event)"
@@ -36,6 +37,7 @@ class Host {
   readonly items = signal<readonly CngxSelectOptionDef<string>[]>(OPTIONS);
   readonly disabled = signal(false);
   readonly busy = signal(false);
+  readonly pendingText = signal('Unavailable while saving');
   readonly events: CngxReorderEvent<string>[] = [];
   readonly up = (label: string): string => `${label}: move up`;
   readonly down = (label: string): string => `${label}: move down`;
@@ -179,6 +181,35 @@ describe('CngxSelectReorderList', () => {
     host.disabled.set(false);
     settle();
     expect(list.hasAttribute('aria-busy')).toBe(false);
+  });
+
+  it('names the pending commit on every move button only while busy', () => {
+    const { host, root } = setup();
+    const describedBy = (el: Element): string[] =>
+      (el.getAttribute('aria-describedby') ?? '').split(' ').filter(Boolean);
+    const textOf = (id: string): string => root.querySelector(`#${id}`)!.textContent!.trim();
+    const middleUp = button(root, 1, 'up');
+    const firstUp = button(root, 0, 'up');
+    expect(middleUp.hasAttribute('aria-describedby')).toBe(false);
+
+    host.disabled.set(true);
+    settle();
+    expect(middleUp.hasAttribute('aria-describedby')).toBe(false);
+
+    host.busy.set(true);
+    settle();
+    expect(describedBy(middleUp).map(textOf)).toEqual(['Unavailable while saving']);
+    expect(describedBy(firstUp).map(textOf)).toEqual(['Already first', 'Unavailable while saving']);
+
+    host.pendingText.set('Wird gespeichert');
+    settle();
+    expect(describedBy(middleUp).map(textOf)).toEqual(['Wird gespeichert']);
+
+    host.busy.set(false);
+    host.disabled.set(false);
+    settle();
+    expect(middleUp.hasAttribute('aria-describedby')).toBe(false);
+    expect(describedBy(firstUp).map(textOf)).toEqual(['Already first']);
   });
 
   it('moves a row with the modifier keys on a focused row button', () => {

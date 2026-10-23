@@ -33,6 +33,7 @@ interface Harness {
   readonly handleTpl: WritableSignal<TemplateRef<CngxSelectSheetHandleContext> | null>;
   readonly countTpl: WritableSignal<TemplateRef<CngxSelectSheetCountContext> | null>;
   readonly selectionCount: WritableSignal<string>;
+  readonly ariaLabels: WritableSignal<CngxResolvedSelectAriaLabels>;
   readonly close: ReturnType<typeof vi.fn>;
   readonly host: CngxSelectSheetHeaderHost;
 }
@@ -48,6 +49,12 @@ function createHarness(): Harness {
   const handleTpl = signal<TemplateRef<CngxSelectSheetHandleContext> | null>(null);
   const countTpl = signal<TemplateRef<CngxSelectSheetCountContext> | null>(null);
   const selectionCount = signal('');
+  const ariaLabels = signal({
+    fieldLabelFallback: 'Selection',
+    sheetClose: 'Close',
+    sheetDone: 'Done',
+    commitPending: 'Unavailable while saving',
+  } as CngxResolvedSelectAriaLabels);
   const close = vi.fn();
   const host: CngxSelectSheetHeaderHost = {
     panelVisible,
@@ -58,11 +65,7 @@ function createHarness(): Harness {
     searchLeads,
     sheetLabel,
     label,
-    ariaLabels: signal({
-      fieldLabelFallback: 'Selection',
-      sheetClose: 'Close',
-      sheetDone: 'Done',
-    } as CngxResolvedSelectAriaLabels),
+    ariaLabels,
     tpl: { sheetHandle: handleTpl, sheetCount: countTpl },
     selectionCount,
     searchTerm: signal(''),
@@ -83,6 +86,7 @@ function createHarness(): Harness {
     handleTpl,
     countTpl,
     selectionCount,
+    ariaLabels,
     close,
     host,
   };
@@ -222,6 +226,37 @@ describe('CngxSelectSheetHeader', () => {
     fixture.detectChanges();
     x.click();
     expect(harness.close).toHaveBeenCalledTimes(1);
+  });
+
+  it('names why X and Done are blocked only while a commit is pending', () => {
+    const { harness, fixture, el, open } = setup();
+    open();
+    const done = el.querySelector<HTMLButtonElement>('.cngx-select-sheet-header__done')!;
+    const x = el.querySelector<HTMLButtonElement>('.cngx-select-sheet-header__close')!;
+    const reason = el.querySelector<HTMLElement>('.cngx-select-sheet-header__pending')!;
+    expect(reason).not.toBeNull();
+    expect(reason.id).not.toBe('');
+    expect(reason.textContent?.trim()).toBe('Unavailable while saving');
+    expect(x.hasAttribute('aria-describedby')).toBe(false);
+    expect(done.hasAttribute('aria-describedby')).toBe(false);
+
+    harness.closeBlocked.set(true);
+    fixture.detectChanges();
+    expect(x.getAttribute('aria-describedby')).toBe(reason.id);
+    expect(done.getAttribute('aria-describedby')).toBe(reason.id);
+
+    harness.ariaLabels.set({
+      ...harness.ariaLabels(),
+      commitPending: 'Wird gespeichert',
+    });
+    fixture.detectChanges();
+    expect(reason.textContent?.trim()).toBe('Wird gespeichert');
+
+    harness.closeBlocked.set(false);
+    fixture.detectChanges();
+    expect(x.hasAttribute('aria-describedby')).toBe(false);
+    expect(done.hasAttribute('aria-describedby')).toBe(false);
+    expect(el.querySelector('.cngx-select-sheet-header__pending')).toBe(reason);
   });
 
   it('hides Done when the variant does not show it', () => {

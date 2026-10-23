@@ -71,6 +71,8 @@ export class CngxSelectReorderList<T = unknown> {
   readonly atStartText = input<string>('');
   /** Why the last row cannot move down. */
   readonly atEndText = input<string>('');
+  /** Why every move is unavailable while `busy` (a commit in flight). */
+  readonly pendingText = input<string>('');
   /** Modifier that arms the keyboard reorder of `CngxReorder`. */
   readonly keyboardModifier = input<CngxReorderModifier>('alt');
   /** Freezes every reorder path (a commit in flight, a disabled control). */
@@ -87,6 +89,13 @@ export class CngxSelectReorderList<T = unknown> {
   /** @internal */ protected readonly hintId = nextUid('cngx-select-reorder-hint');
   /** @internal */ protected readonly atStartId = nextUid('cngx-select-reorder-start');
   /** @internal */ protected readonly atEndId = nextUid('cngx-select-reorder-end');
+  /** @internal */ protected readonly pendingId = nextUid('cngx-select-reorder-pending');
+
+  /** @internal The busy reason, appended to a row button's own boundary reason. */
+  protected describedBy(boundaryId: string | null): string | null {
+    const ids = [boundaryId, this.busy() ? this.pendingId : null].filter(Boolean);
+    return ids.length > 0 ? ids.join(' ') : null;
+  }
 
   /** @internal `aria-busy` of the list, present only while a commit is pending. */
   protected readonly ariaBusy = computed<'true' | null>(() => (this.busy() ? 'true' : null));

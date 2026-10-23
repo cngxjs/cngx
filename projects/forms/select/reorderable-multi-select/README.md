@@ -100,9 +100,26 @@ Context includes `index` so consumer markup can render position-aware UI.
 
 On a touch screen narrower than 48rem the panel opens as a modal bottom sheet, named by the field label, with a close button, Done and a decorative handle. Focus moves into the sheet and back to the trigger on close. Force a presentation with `[presentation]` (`'anchored'`, `'sheet'`, `'fullscreen'`), set the title with `[sheetLabel]`, or turn the sheet off with `withMobileSheet('off')`. Details: [Mobile sheet](../README.md#mobile-sheet).
 
+## Touch
+
+Under the touch floor the trigger shows the summary (placeholder, label, or label plus `+N`) instead of the reorderable chip strip, and the sorting moves into a list above the options in the panel or sheet (`cngx-select-reorder-list`). The list appears while at least one value is selected. Full behaviour and opt-out: [Summary trigger under the touch floor](../README.md#summary-trigger-under-the-touch-floor).
+
+Each row moves in one of three ways, all reporting the same reorder:
+
+- Drag the row handle with a pointer.
+- Hold the keyboard modifier (Alt by default, the `keyboardModifier` config) and press an arrow key on a focused row button.
+- Press the move-up or move-down button. These are the single-pointer alternative. The first row's up button and the last row's down button stay focusable with `aria-disabled` and say why.
+
+While a commit is pending every path is frozen. The move buttons are `aria-disabled` and reference the `commitPending` reason, and the list is `aria-busy`. In a pessimistic commit the sheet header X and Done reference the same reason. In a sheet or fullscreen panel the list scrolls past `--cngx-select-reorder-list-max-block-size` (default `40dvh`).
+
+- `*cngxMultiSelectChip`, `*cngxMultiSelectChipHandle` and `chipOverflow` apply on a fine pointer only, or with the opt-out.
+- `*cngxSelectChipOverflow` is not rendered by this variant. The summary badge is always the built-in `+N`.
+- `*cngxMultiSelectTriggerLabel` replaces the summary once a value is selected. The panel list still shows the values.
+- `[cngxTouchTarget]="'off'"` (or `data-touch="off"`) brings the reorderable chip strip back on a touch screen, and the panel list is not shown.
+
 ## Template slots
 
-All [`CngxMultiSelect` slots](../multi-select/README.md#template-slots) plus:
+All [`CngxMultiSelect` slots](../multi-select/README.md#template-slots) except `*cngxSelectChipOverflow`, which this variant does not query, plus:
 
 | Slot | Replaces |
 |-|-|
@@ -119,7 +136,7 @@ All [`CngxMultiSelect` slots](../multi-select/README.md#template-slots) plus:
 | Plain `Arrow Left` / `Right`      | Roving focus across chips (no reorder) |
 | Backspace on chip                 | Remove (commit-aware, single deselect) |
 
-Modifier defaults to `Ctrl`; configurable via
+Modifier defaults to `Alt`; configurable via
 `provideReorderableSelectConfig(withReorderKeyboardModifier('alt'))`.
 
 Pointer drag works regardless of keyboard modifier - drag a chip (or

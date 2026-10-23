@@ -71,6 +71,7 @@ const EN_ARIA: CngxResolvedSelectAriaLabels = {
   listboxFallback: 'Options',
   sheetClose: 'Close',
   sheetDone: 'Done',
+  commitPending: 'Unavailable while saving',
   selectionSummary: (labels: readonly string[]) => labels.join(', '),
 };
 

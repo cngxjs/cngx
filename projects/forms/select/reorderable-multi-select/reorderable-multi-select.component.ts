@@ -208,14 +208,14 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
  * @slot cngxSelectEmpty Replaces the panel's empty message when there are no options; searchTerm is always '' on this host.
  * @slot cngxSelectLoading Replaces the panel's loading indicator during the first load of [state], or while [loading] is true without [state]; gets retry.
  * @slot cngxSelectLoadingGlyph Replaces the inner glyph of the spinner or bar loading view and of the refresh indicator when no cngxSelectLoading / cngxSelectRefreshing template is set; no context.
- * @slot cngxMultiSelectTriggerLabel Replaces the whole reorderable chip strip while at least one value is selected; gets selected, values, count.
+ * @slot cngxMultiSelectTriggerLabel Replaces the whole reorderable chip strip, and the touch summary, while at least one value is selected; gets selected, values, count.
  * @slot cngxSelectOptionLabel Replaces the label content of each option row; gets option, selected, highlighted.
  * @slot cngxSelectError Replaces the panel's error block on a failed load and the inline error above the options on a failed refresh; gets error, retry.
  * @slot cngxSelectRetryButton Replaces the retry button inside the built-in load-error, inline-error and commit-error blocks; gets retry, error, disabled, label.
  * @slot cngxSelectRefreshing Replaces the refresh indicator shown above the options while a reload runs; previousCount is always 0 on this host.
  * @slot cngxSelectCommitError Replaces the panel's commit-error banner when a commit fails and commitErrorDisplay is 'banner'; gets error, option, retry.
- * @slot cngxMultiSelectChip Replaces each chip inside its drag wrapper unless cngxMultiSelectTriggerLabel is projected; gets option, remove, index.
- * @slot cngxMultiSelectChipHandle Renders the drag-handle glyph before each chip in an aria-hidden span and wins over [chipDragHandle]; no context.
+ * @slot cngxMultiSelectChip Replaces each chip inside its drag wrapper unless cngxMultiSelectTriggerLabel is projected; gets option, remove, index. Fine pointer only.
+ * @slot cngxMultiSelectChipHandle Renders the drag-handle glyph before each chip in an aria-hidden span and wins over [chipDragHandle]; no context. Fine pointer only.
  * @slot cngxSelectClearButton Replaces the clear-all button, shown when clearable is set, a value is selected and the control is enabled; gets clear, disabled.
  * @slot cngxSelectOptionPending Replaces the spinner on an option row while its commit is in flight; gets option.
  * @slot cngxSelectOptionError Replaces the error mark on selected rows when a commit fails and commitErrorDisplay is 'inline'; gets option, error.

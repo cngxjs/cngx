@@ -32,7 +32,7 @@ Every factory has a corresponding DI token (`Cngx<Name>Factory` type + `CNGX_<NA
 
 Every variant calls it once in a field initialiser and stores the returned `CngxSelectCore<T, TCommit>` instance. What stays in the variant body is the trigger template and the value-shape adapter - everything else flows through this factory.
 
-Public exports re-emitted from `@cngx/forms/select`:
+Internal symbols. None of these is in `public-api.ts`; the variants use them and consumers do not import them:
 
 | Symbol | Purpose |
 |-|-|
@@ -189,8 +189,7 @@ Two host-contract tokens that the panel-shell + panel components consume from th
 ### `panel-shell/`
 
 Subfolder containing `panel-shell.component.ts` - the shared frame around every variant's panel body.
-Owns the `activeView()` switch (loading variants, empty/none, first-load error, refresh indicator, commit-error banner) and projects the variant-specific body via `<ng-content />`. Internal - `@internal` JSDoc tag - but exported as
-`CngxSelectPanelShell` for variant components that compose it.
+Owns the `activeView()` switch (loading variants, empty/none, first-load error, refresh indicator, commit-error banner) and projects the variant-specific body via `<ng-content />`. Internal - `@internal` JSDoc tag - and not in `public-api.ts`. The variant components compose `CngxSelectPanelShell` directly.
 
 ### `panel/`
 
@@ -330,12 +329,12 @@ Persistent buffer of just-created items merged into the option list before the c
 
 ### `inject-helpers.ts`
 
-Two thin convenience helpers for the most-injected tokens:
+Four thin convenience helpers for the most-injected tokens. All four are exported from `public-api.ts`:
 
 | Symbol | Purpose |
 |-|-|
-| `injectSelectConfig()`    | `inject(CNGX_SELECT_CONFIG, { optional: true }) ?? CNGX_SELECT_DEFAULTS` cascade |
-| `injectSelectAnnouncer()` | `inject(CngxSelectAnnouncer)`                                                    |
+| `injectSelectConfig()`    | Resolved `CngxSelectConfig` for the current injector (`resolveSelectConfig()`) |
+| `injectSelectAnnouncer()` | `inject(CngxSelectAnnouncer)`                                                  |
 
 
 
@@ -343,7 +342,7 @@ Two thin convenience helpers for the most-injected tokens:
 
 ### `template-slots.ts`
 
-The 17 public slot directives + their context interfaces.
+The 27 slot directives + their context interfaces, all exported from `public-api.ts`.
 Each slot is a structural directive whose only job is to project a `TemplateRef` with the documented context shape.
 
 Slot list (with the cascade tier each slot belongs to - every slot flows through the three-stage cascade in `template-registry.ts`):
@@ -390,20 +389,20 @@ The factory wires each query through `resolveTemplate` to deliver the resolved `
 | `CngxTemplateRegistryFactory`          | DI factory type                          |
 | `CNGX_TEMPLATE_REGISTRY_FACTORY`       | DI token                                 |
 
-### `resolve-template.ts`
+### `internal/resolve-template.ts`
 
 The actual three-stage cascade primitive: `instance contentChild → CNGX_SELECT_CONFIG.templates.<key> → null`.
 Used internally by the registry + by tree-select for tree-specific slots that aren't part of the shared registry shape.
 
 | Symbol | Purpose |
 |-|-|
-| `injectResolvedTemplate(directive, configKey)` | Public helper for ad-hoc slot resolution |
-| `resolveTemplate(...)`                         | Lower-level alias kept for back-compat   |
+| `injectResolvedTemplate(directive, configKey)` | Internal helper for ad-hoc slot resolution (not in `public-api.ts`) |
+| `resolveTemplate(...)`                         | Alias of `injectResolvedTemplate`, kept for back-compat              |
 
-### `glyphs.ts`
+### `internal/glyphs.ts`
 
-**Internal-only**, NOT exported from `public-api.ts`. The 4 default glyph strings (`✕ ▾ ▸ !`) shared by the slot fallbacks.
-Plain `as const` object - tree-shakeable, `aria-hidden` stays at the call site.
+**Internal-only**, NOT exported from `public-api.ts`. The 4 glyph strings (`✕ ▾ ▸ !`) are declared here. Only `clear` is read (by the sheet header); the variant templates write their glyph literals inline.
+Plain `as const` object - `aria-hidden` stays at the call site.
 
 | Symbol | Purpose |
 |-|-|
@@ -422,15 +421,15 @@ The main `CNGX_SELECT_CONFIG` token + `provideSelectConfig(...)` / `provideSelec
 
 Public exports:
 
-- **Token**: `CNGX_SELECT_CONFIG`, `CNGX_SELECT_DEFAULTS`.
+- **Token**: `CNGX_SELECT_CONFIG`.
 - **Providers**: `provideSelectConfig`, `provideSelectConfigAt`.
 - **Type aliases**: `CngxSelectConfig`, `CngxSelectAnnouncerConfig`, `CngxSelectAriaLabels`, `CngxSelectFallbackLabels`, `CngxSelectTemplateContexts`, `CngxSelectConfigFeature`, `CngxSelectVirtualizationConfig`, plus the four enum types (`CngxSelectLoadingVariant`, `CngxSelectRefreshingVariant`, `CngxSelectSelectionIndicatorPosition`, `CngxSelectSelectionIndicatorVariant`).
-- **Features (32+)**: `withPanelWidth`, `withPanelClass`, `withTypeaheadDebounce`, `withTypeaheadWhileClosed`, `withSelectionIndicator`, `withSelectionIndicatorPosition`, `withSelectionIndicatorVariant`, `withCaret`, `withRestoreFocus`, `withDismissOn`, `withOpenOn`, `withAnnouncer`, `withAriaLabels`, `withFallbackLabels`, `withLoadingVariant`, `withSkeletonRowCount`, `withRefreshingVariant`, `withCommitErrorDisplay`, `withCommitErrorAnnouncePolicy`, `withChipOverflow`, `withMaxVisibleChips`, `withInputMode`, `withEnterKeyHint`, `withPopoverPlacement`, `withVirtualization`.
+- **Features** (examples; the full `with*` list is in `public-api.ts`): `withPanelWidth`, `withPanelClass`, `withTypeaheadDebounce`, `withTypeaheadWhileClosed`, `withSelectionIndicator`, `withSelectionIndicatorPosition`, `withSelectionIndicatorVariant`, `withCaret`, `withRestoreFocus`, `withDismissOn`, `withOpenOn`, `withAnnouncer`, `withAriaLabels`, `withFallbackLabels`, `withLoadingVariant`, `withSkeletonRowCount`, `withRefreshingVariant`, `withCommitErrorDisplay`, `withCommitErrorAnnouncePolicy`, `withChipOverflow`, `withMaxVisibleChips`, `withInputMode`, `withEnterKeyHint`, `withPopoverPlacement`, `withVirtualization`.
 
 ### `action-select-config.ts`
 
 `CNGX_ACTION_SELECT_CONFIG` token + `provideActionSelectConfig(...)` /
-`*At` providers + 7 features specific to the action-host:
+`*At` providers + 6 features specific to the action-host:
 
 - **Features**: `withFocusTrapBehavior`, `withCloseOnCreate`, `withActionPopoverPlacement`, `withLiveInputFallback`, `withActionPosition`, `withActionAriaLabel`.
 - **Type aliases**: `CngxActionSelectConfig`, `CngxActionFocusTrapBehavior`, `CngxActionPosition`, `CngxActionSelectConfigFeature`.
@@ -458,10 +457,10 @@ Unified aggregator across all three config surfaces.
 The three individual `provide*` providers stay exported for back-compat - the aggregator is purely additive.
 See [`ARCHITECTURE.md` § Configuration cascade](../../../ARCHITECTURE.md#configuration-cascade).
 
-### `resolve-config.ts`
+### `internal/resolve-config.ts`
 
 Internal injector-context resolver. Returns the merged `CngxSelectConfig` for the current scope (instance-level `CNGX_SELECT_CONFIG` overrides root-level overrides override library defaults).
-Variants call `resolveSelectConfig()` once at construction.
+Backs `injectSelectConfig()` in `inject-helpers.ts`.
 
 ### `announcer.ts`
 

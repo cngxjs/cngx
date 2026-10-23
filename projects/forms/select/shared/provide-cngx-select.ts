@@ -78,7 +78,7 @@ function bucket(
  *       withAriaLabels({ clearButton: 'Clear', chipRemove: 'Remove' }),
  *
  *       // CngxActionSelectConfig features
- *       withFocusTrapBehavior('strict'),
+ *       withFocusTrapBehavior('dirty'),
  *       withCloseOnCreate(true),
  *
  *       // CngxReorderableSelectConfig features

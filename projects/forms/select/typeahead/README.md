@@ -145,7 +145,7 @@ On a touch screen narrower than 48rem the panel opens as a modal fullscreen pane
 
 ## Template slots
 
-All [`CngxSelect` slots](../single-select/README.md#template-slots) except `*cngxSelectTriggerLabel` (no chip strip - the input IS the trigger). Plus:
+All [`CngxSelect` slots](../single-select/README.md#template-slots) except `*cngxSelectTriggerLabel` and `*cngxSelectPlaceholder`, which this variant does not query (no chip strip - the input IS the trigger). Plus:
 
 | Slot | Replaces |
 |-|-|

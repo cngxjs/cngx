@@ -1,11 +1,12 @@
 /**
  * Public API Surface of @cngx/forms/select
  *
- * The whole select family (CngxSelect single, planned CngxMultiSelect,
- * planned CngxCombobox) ships in this one secondary entry. Variants
- * live in sibling folders under this secondary entry; `shared/` hosts
- * reused building blocks (commit controller, option helpers,
- * select-base.css, template slots, config + config features).
+ * The whole select family (CngxSelect, CngxMultiSelect, CngxCombobox,
+ * CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect,
+ * CngxActionSelect, CngxActionMultiSelect, CngxSelectShell) ships in this
+ * one secondary entry. Variants live in sibling folders under this
+ * secondary entry; `shared/` hosts reused building blocks (commit
+ * controller, option helpers, template slots, config + config features).
  *
  * @module @cngx/forms/select
  */

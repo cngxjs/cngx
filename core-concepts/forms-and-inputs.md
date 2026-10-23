@@ -42,7 +42,7 @@ Everything visible and audible around a control is a **slot** you drop into `<cn
 ```html
 <cngx-form-field [field]="form.email">
   <label cngxLabel>Email <cngx-required /></label>
-  <input cngxInput [control]="form.email" autocomplete="email" />
+  <input cngxInput [formField]="form.email" autocomplete="email" />
   <span cngxHint>We never share it.</span>
   <cngx-field-errors />
 </cngx-form-field>
@@ -74,7 +74,7 @@ This is the only real decision, and it is a one-way door: pick the form system y
 
 |Your situation|Binding|What you write|
 |-|-|-|
-|New feature, signal-native|**Signal Forms** (the default)|`[field]` on the shell, `[control]` on the input|
+|New feature, signal-native|**Signal Forms** (the default)|`[field]` on the shell, `[formField]` on the input|
 |Reactive Forms already in place|**RF bridge**|`adaptFormControl(...)` once, then `[formControl]` on the input|
 |A single control, no form|**Plain two-way**|`[(value)]` on the control|
 
@@ -93,12 +93,12 @@ readonly form = form(this.model, schema(root => {
 ```html
 <cngx-form-field [field]="form.email">
   <label cngxLabel>Email</label>
-  <input cngxInput [control]="form.email" />
+  <input cngxInput [formField]="form.email" />
   <cngx-field-errors />
 </cngx-form-field>
 ```
 
-`[field]` feeds the shell the validity, touched, and required state it needs to paint itself. `[control]` moves the value. They read the same field but do different jobs - that separation is the whole design.
+`[field]` feeds the shell the validity, touched, and required state it needs to paint itself. `[formField]` moves the value. They read the same field but do different jobs - that separation is the whole design.
 
 ### Reactive Forms (still fully supported)
 
@@ -152,7 +152,7 @@ Every CNGX control with a value exposes a two-way `value`. Used outside a form, 
 These compose. A masked, clearable phone field is just three directives on one input - no special "phone field" component is needed for the simple case:
 
 ```html
-<input cngxInput cngxInputMask="phone" cngxInputClear [control]="form.phone" />
+<input cngxInput cngxInputMask="phone" cngxInputClear [formField]="form.phone" />
 ```
 
 Mask patterns, numeric defaults, and similar knobs are set app-wide through `provideInputConfig(withPhonePatterns(...), withNumericDefaults(...), ...)` rather than repeated on every field.
@@ -208,7 +208,7 @@ Nine controls, one per job, instead of one component with a pile of flags. Pick 
 |`CngxActionSelect` / `CngxActionMultiSelect`|a selection that triggers an action|
 |`CngxSelectShell`|build your own from `<cngx-option>` / `<cngx-optgroup>`|
 
-They all expose `value = model<T>()`, so they bind exactly like an input: `[control]` under Signal Forms, `[formControl]` under Reactive Forms, `[(value)]` standalone.
+They all expose `value = model<T>()`, but they are not `<input>` elements and take no value binding of their own. Under Signal Forms, put the field on the shell (`<cngx-form-field [field]="form.color">`). Under Reactive Forms, do the same with an adapted field. Do not put `[formControl]` on a select. Standalone, use `[(value)]`.
 
 ### Checkboxes, radios, toggles, chips
 
@@ -243,7 +243,7 @@ Have a Material control, a native element, or a third-party widget that already 
 
 A failing field is useless if the user cannot tell. CNGX treats the message, not just the rule, as part of the field:
 
-- **`<cngx-field-errors />`** renders whatever is currently invalid, reading messages from configuration so they stay consistent and translatable. Configure them with `provideFormField(withErrorMessages({ required: 'This field is required.' }))`.
+- **`<cngx-field-errors />`** renders whatever is currently invalid, reading messages from configuration so they stay consistent and translatable. Configure them with `provideFormField(withErrorMessages({ required: () => 'This field is required.' }))`.
 - **`withConstraintHints(...)`** can turn a validator (min length, pattern) into an automatic hint, so the rule is visible *before* the user trips it, not only after.
 - **`<cngx-required />`** marks required fields from their validators, so the mark cannot drift out of sync with the rule.
 - **`<cngx-form-errors />`** renders a form-level summary - one accessible list of every failing field, the pattern screen-reader users rely on to navigate a long form.

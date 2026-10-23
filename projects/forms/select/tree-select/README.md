@@ -145,9 +145,15 @@ Under the touch floor (`--cngx-target-min` above `0px`: `(any-pointer: coarse)`,
 
 A finger or pen tap on a parent row expands or collapses it; a tap on its checkbox selects. The row expands only for the `click` that ends a `pointerdown` with `pointerType` `touch` or `pen` on that row. Every other activation selects, as `aria-checked` on a treeitem promises: a mouse click, Enter / Space, and a screen reader's double tap (VoiceOver and TalkBack activate with a click that has no pointer events). Screen readers expand through `aria-expanded` (TalkBack actions, ArrowRight / ArrowLeft). A fine pointer and the keyboard behave as before.
 
+The trigger shows the one-line summary from the displayed chip list: the placeholder with no value, the first displayed chip's label with one value, and that label plus a `+N` badge with two or more. The summary counts the same displayed list as the chips, and the whole displayed selection is visually hidden text in the trigger. Full behaviour and opt-out: [Summary trigger under the touch floor](../README.md#summary-trigger-under-the-touch-floor).
+
+- `*cngxTreeSelectTriggerLabel` replaces the summary once a value is selected.
+- `*cngxSelectChipOverflow` replaces the summary's `+N` badge as well as the chip-strip badge.
+- `*cngxTreeSelectChip`, the `+N` chip and `maxVisibleChips` apply on a fine pointer only. `[cngxTouchTarget]="'off'"` (or `data-touch="off"`) brings the chips back on a touch screen.
+
 ## Template slots
 
-All [`CngxMultiSelect` shared slots](../multi-select/README.md#template-slots) (placeholder / loading / error / commitError / retry / etc.) plus:
+The shared slots this variant queries are `*cngxSelectPlaceholder`, `*cngxSelectCaret`, `*cngxSelectClearButton`, `*cngxSelectEmpty`, `*cngxSelectLoading`, `*cngxSelectLoadingGlyph`, `*cngxSelectError`, `*cngxSelectRetryButton`, `*cngxSelectRefreshing`, `*cngxSelectCommitError` and `*cngxSelectSheetHandle`. It does not query `*cngxSelectCheck`, `*cngxSelectOptgroup`, `*cngxSelectOptionLabel`, `*cngxSelectOptionPending`, `*cngxSelectOptionError` or the `*cngxMultiSelect*` slots; its own slots are below:
 
 | Slot | Replaces |
 |-|-|
