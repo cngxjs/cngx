@@ -4506,6 +4506,60 @@ mat-icon.demo-breadcrumb-icon {
   font-weight: 600;
 }
 
+/* Tree-select count, footer and overflow slot story. */
+.demo-tree-count {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: color-mix(in oklch, currentColor 10%, transparent);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.demo-tree-count--full {
+  font-weight: 600;
+}
+
+.demo-tree-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cngx-space-sm, 8px);
+  padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 12px);
+  border-block-start: 1px solid var(--cngx-ex-border, currentColor);
+  font-size: 0.8125rem;
+}
+
+.demo-tree-footer__clear {
+  padding: 2px 8px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.demo-tree-footer__clear[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.demo-tree-footer__clear:focus-visible {
+  outline: 2px solid var(--cngx-ex-focus, currentColor);
+  outline-offset: 1px;
+}
+
+.demo-tree-sheet-count {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
+
+.demo-tree-overflow {
+  font-size: 0.8125rem;
+  font-style: italic;
+  white-space: nowrap;
+}
+
 /* Slot override stories: incremental list first-load placeholder. */
 .demo-list-placeholder {
   display: flex;
