@@ -8,6 +8,7 @@ import type { UsageDelta } from '../diff/types.js';
 
 const OLD = fileURLToPath(new URL('../../../test/fixtures/documentation.v-old.sample.json', import.meta.url));
 const NEW = fileURLToPath(new URL('../../../test/fixtures/documentation.v-new.sample.json', import.meta.url));
+const V6 = fileURLToPath(new URL('../../../test/fixtures/documentation.v6.sample.json', import.meta.url));
 
 const bundledNew = loadDocsFromFile(NEW); // cngxVersion 0.2.0
 
@@ -37,6 +38,20 @@ describe('migrateUsage', () => {
     expect(delta.meta).toMatchObject({ from: '0.1.0', to: '0.2.0', resolvedFrom: '0.1.0', resolvedTo: '0.2.0' });
     expect(delta.inputs.removed).toEqual([{ name: 'legacyMode', owner: 'CngxSelect' }]);
     expect(delta.components.renamed).toEqual([{ from: 'CngxOldPanel', to: 'CngxNewPanel' }]);
+  });
+
+  it('diffs a schema-2 `from` against a schema-6 bundled `to`', async () => {
+    const bundledV6 = loadDocsFromFile(V6); // schemaVersion 6, cngxVersion 0.1.0-rc.9
+    const deps: DocsResolverDeps = {
+      fetchSnapshot: async () => ({ ok: true, path: OLD }),
+      loadDocs: loadDocsFromFile,
+    };
+
+    const result = await migrateUsage(bundledV6, { from: '0.1.0' }, createDocsResolver(bundledV6, deps));
+
+    expect(result.ok).toBe(true);
+    const delta = result as UsageDelta;
+    expect(delta.meta).toEqual({ from: '0.1.0', to: '0.1.0-rc.9', resolvedFrom: '0.1.0', resolvedTo: '0.1.0-rc.9' });
   });
 
   it('falls back the resolved label to the requested version when a fetched snapshot is unstamped', async () => {

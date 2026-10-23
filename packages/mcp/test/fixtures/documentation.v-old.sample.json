@@ -40,6 +40,7 @@
       "name": "CngxOldPanel",
       "selector": "cngx-old-panel",
       "category": "ui/overlay",
+      "file": "projects/ui/overlay/old-panel.ts",
       "description": "Overlay panel.",
       "signal": true,
       "inputsClass": [
