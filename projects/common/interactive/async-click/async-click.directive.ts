@@ -17,6 +17,7 @@ import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cng
 import { firstValueFrom, isObservable, type Observable } from 'rxjs';
 
 import { injectInteractiveI18n } from '../i18n/interactive-i18n';
+import { CNGX_HOST_INTERACTION_STATE } from './host-interaction-state.token';
 
 /**
  * Action function that returns a Promise or Observable.
@@ -85,12 +86,16 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
     '[class.cngx-async--success]': 'succeeded()',
     '[class.cngx-async--error]': 'failed()',
     '[attr.aria-busy]': 'pending() || busy() || null',
-    '[attr.aria-disabled]': 'pending() || !enabled() || null',
+    '[attr.aria-disabled]': 'pending() || blocked() || null',
   },
 })
 export class CngxAsyncClick {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly hostState = inject(CNGX_HOST_INTERACTION_STATE, {
+    self: true,
+    optional: true,
+  });
 
   /** The async action to execute on click. */
   readonly action = input.required<AsyncAction>({ alias: 'cngxAsyncClick' });
@@ -134,6 +139,17 @@ export class CngxAsyncClick {
    * same element already announces the settle, or the user hears it twice.
    */
   readonly autoAnnounce = input<boolean>(true);
+
+  /**
+   * `true` when clicks are refused outside a running action: `enabled` is
+   * `false` or a co-hosted component reports itself disabled through
+   * `CNGX_HOST_INTERACTION_STATE`.
+   *
+   * @internal
+   */
+  protected readonly blocked = computed(
+    () => !this.enabled() || (this.hostState?.disabled() ?? false),
+  );
 
   private readonly pendingState = signal(false);
   private readonly succeededState = signal(false);
@@ -264,7 +280,7 @@ export class CngxAsyncClick {
 
   /** @internal */
   protected async handleClick(event: Event): Promise<void> {
-    if (!this.enabled() || this.pendingState()) {
+    if (this.blocked() || this.pendingState()) {
       event.preventDefault();
       return;
     }

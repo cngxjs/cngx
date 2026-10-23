@@ -1405,6 +1405,23 @@
       ]
     },
     {
+      "code": "CNGX1071",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Icon button without an accessible name",
+      "page": "core-concepts/error-codes/cngx1071.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1071.html",
+      "status": "active",
+      "files": ["projects/common/button/icon-button.component.ts"],
+      "messages": [
+        {
+          "file": "projects/common/button/icon-button.component.ts",
+          "text": "[cngxIconButton] has no accessible name. Set aria-label, aria-labelledby or title on the host; the icon alone is silent to assistive technology."
+        }
+      ]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",

@@ -4,6 +4,7 @@ import {
   Directive,
   effect,
   ElementRef,
+  HostAttributeToken,
   inject,
   input,
   Renderer2,
@@ -13,7 +14,12 @@ import {
 
 import { CngxReducedMotion } from '@cngx/common/a11y';
 import { injectDirection } from '@cngx/core';
-import { nextUid } from '@cngx/core/utils';
+import {
+  type CngxDescribedByRegistry,
+  createDescribedByRegistry,
+  injectDescribedByContribution,
+  nextUid,
+} from '@cngx/core/utils';
 
 import {
   ANCHOR_AREA_PROPERTY,
@@ -48,6 +54,13 @@ const FOCUS_DEBOUNCE_MS = 50;
  *
  * The consumer sees only the attribute - no extra elements in the template.
  *
+ * The tooltip joins the host's `aria-describedby` instead of replacing it. On
+ * a plain host the static `aria-describedby` ids are kept and the tooltip id
+ * is appended after them. When the host provides `CNGX_DESCRIBED_BY`
+ * (`CngxButton`, `CngxIconButton`), the tooltip contributes its id to that
+ * registry next to the host's own ids. The id is referenced while the
+ * tooltip is `enabled`, whether or not the popup is open.
+ *
  * ### Basic
  * ```html
  * <button cngxTooltip="Ctrl+S">Save</button>
@@ -65,7 +78,7 @@ const FOCUS_DEBOUNCE_MS = 50;
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/tooltip.directive.ts
  * @since 0.1.0
- * @relatedTo CngxPopover, CngxPopoverTrigger
+ * @relatedTo CngxPopover, CngxPopoverTrigger, CNGX_DESCRIBED_BY
  * <example-url>http://localhost:4200/#/common/popover/tooltip/basic-tooltip</example-url>
  * <example-url>http://localhost:4200/#/common/popover/tooltip/custom-delay</example-url>
  * <example-url>http://localhost:4200/#/common/popover/tooltip/disabled-state</example-url>
@@ -161,7 +174,21 @@ export class CngxTooltip {
   private openTimer: ReturnType<typeof setTimeout> | null = null;
   private closeTimer: ReturnType<typeof setTimeout> | null = null;
 
-  protected readonly ariaDescribedBy = computed(() => (this.enabled() ? this.idSignal() : null));
+  private readonly ownDescribedBy = computed(() => (this.enabled() ? this.idSignal() : null));
+
+  /**
+   * A host that owns `aria-describedby` (`CngxButton`, `CngxIconButton`)
+   * provides `CNGX_DESCRIBED_BY` on its element: the tooltip id joins that
+   * registry and this binding renders the merged value the host renders, so
+   * neither binding drops the other's ids. Without one, the tooltip owns a
+   * local registry seeded with the static `aria-describedby`, so the
+   * consumer's ids stay ahead of the tooltip id instead of being overwritten.
+   */
+  private readonly describedByRegistry =
+    injectDescribedByContribution(this.idSignal(), this.ownDescribedBy) ??
+    this.createLocalDescribedBy();
+
+  protected readonly ariaDescribedBy = this.describedByRegistry.value;
 
   protected readonly cssAnchorName = computed(() =>
     SUPPORTS_ANCHOR ? `--cngx-tip-${this.idSignal()}` : null,
@@ -352,6 +379,15 @@ export class CngxTooltip {
       return;
     }
     this.floatingPositioner.start();
+  }
+
+  private createLocalDescribedBy(): CngxDescribedByRegistry {
+    const registry = createDescribedByRegistry({
+      name: 'cngxTooltip aria-describedby',
+      seed: inject(new HostAttributeToken('aria-describedby'), { optional: true }),
+    });
+    registry.contribute(this.idSignal(), this.ownDescribedBy);
+    return registry;
   }
 
   private createTooltipElement(): void {

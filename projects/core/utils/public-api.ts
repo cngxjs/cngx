@@ -66,6 +66,13 @@ export {
   type RegistryOptions,
   type SlotRegistry,
 } from './registry';
+export {
+  CNGX_DESCRIBED_BY,
+  createDescribedByRegistry,
+  injectDescribedByContribution,
+  type CngxDescribedByRegistry,
+  type CngxDescribedByRegistryOptions,
+} from './described-by';
 export { CNGX_STATEFUL, type CngxStateful } from './stateful';
 export {
   CNGX_SELECTION_CONTROLLER_FACTORY,

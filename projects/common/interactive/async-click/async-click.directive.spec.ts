@@ -1,9 +1,10 @@
-import { Component, computed, signal, viewChild } from '@angular/core';
+import { Component, computed, Directive, input, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { of, type Observable } from 'rxjs';
 import { provideInteractiveI18n, withInteractiveI18nLabels } from '../i18n/interactive-i18n';
 import { CngxAsyncClick, type AsyncAction } from './async-click.directive';
+import { CNGX_HOST_INTERACTION_STATE } from './host-interaction-state.token';
 
 // ── Deferred promise helper ─────────────────────────────────────────────
 
@@ -303,5 +304,69 @@ describe('CngxAsyncClick language switch', () => {
       flush(fixture);
       expect(region.textContent?.trim()).toBe('Fehlgeschlagen');
     });
+  });
+});
+
+@Directive({
+  selector: '[testHostState]',
+  providers: [{ provide: CNGX_HOST_INTERACTION_STATE, useExisting: TestHostState }],
+})
+class TestHostState {
+  readonly disabled = input(false, { alias: 'testHostState' });
+}
+
+@Component({
+  template: `
+    <button id="state-first" [testHostState]="disabled()" [cngxAsyncClick]="action">A</button>
+    <button id="click-first" [cngxAsyncClick]="action" [testHostState]="disabled()">B</button>
+    <span [testHostState]="disabled()"><button id="outside" [cngxAsyncClick]="action">C</button></span>
+  `,
+  imports: [CngxAsyncClick, TestHostState],
+})
+class HostStateHost {
+  readonly disabled = signal(true);
+  callCount = 0;
+  readonly action: AsyncAction = () => {
+    this.callCount++;
+    return Promise.resolve();
+  };
+}
+
+describe('CngxAsyncClick with a co-hosted CNGX_HOST_INTERACTION_STATE', () => {
+  function setup() {
+    const fixture = TestBed.createComponent(HostStateHost);
+    flush(fixture);
+    const el = fixture.nativeElement as HTMLElement;
+    const button = (id: string) => el.querySelector(`#${id}`) as HTMLButtonElement;
+    return { fixture, host: fixture.componentInstance, button };
+  }
+
+  it('sets aria-disabled from the host state in both attribute orders', () => {
+    const { button } = setup();
+    expect(button('state-first').getAttribute('aria-disabled')).toBe('true');
+    expect(button('click-first').getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('swallows clicks while the host state is disabled', () => {
+    const { button, host } = setup();
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+    button('state-first').dispatchEvent(event);
+    button('click-first').click();
+    expect(host.callCount).toBe(0);
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('releases aria-disabled and runs the action once the host state enables', () => {
+    const { fixture, button, host } = setup();
+    host.disabled.set(false);
+    flush(fixture);
+    expect(button('state-first').hasAttribute('aria-disabled')).toBe(false);
+    button('state-first').click();
+    expect(host.callCount).toBe(1);
+  });
+
+  it('ignores a host state provided on an ancestor element', () => {
+    const { button } = setup();
+    expect(button('outside').hasAttribute('aria-disabled')).toBe(false);
   });
 });
