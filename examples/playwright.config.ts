@@ -9,7 +9,9 @@ export default defineConfig({
   // Ephemeral test artifacts (traces, failure screenshots) — gitignored.
   outputDir: '../.tmp/test-results',
 
-  // Story tests touch shared overlay roots; keep serial within a file.
+  // Story tests touch shared overlay roots; keep serial within a file. The
+  // CI shards pass --fully-parallel only to split by test; with one worker
+  // per shard every test still runs alone, in file order.
   fullyParallel: false,
 
   forbidOnly: !!process.env['CI'],
