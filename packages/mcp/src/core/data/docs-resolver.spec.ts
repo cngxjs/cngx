@@ -177,4 +177,18 @@ describe('answerVersioned', () => {
 
     expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'boom' });
   });
+
+  it('surfaces a throwing resolver as a typed failure', async () => {
+    const query = vi.fn();
+    const answer = await answerVersioned(
+      async () => {
+        throw new Error('EACCES: temp dir');
+      },
+      '0.2.0',
+      query,
+    );
+
+    expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'EACCES: temp dir' });
+    expect(query).not.toHaveBeenCalled();
+  });
 });

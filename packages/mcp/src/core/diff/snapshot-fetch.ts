@@ -100,7 +100,12 @@ export function createDefaultDeps({
     },
     httpGet: async (url) => {
       const response = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
-      return { status: response.status, body: response.status === 200 ? await response.text() : '' };
+      if (response.status !== 200) {
+        // An unread body keeps the connection open until GC; cancel it so the socket is released now.
+        await response.body?.cancel();
+        return { status: response.status, body: '' };
+      }
+      return { status: 200, body: await response.text() };
     },
     releaseBaseUrl,
     writeFile: (path, body) => writeFileSync(path, body),
@@ -141,7 +146,12 @@ export async function fetchSnapshot(version: string, deps: SnapshotFetchDeps = d
       message: `"${version}" is not a release version; expected <major>.<minor>.<patch> with an optional -<prerelease>.`,
     };
   }
-  const dir = deps.makeTempDir();
+  let dir: string;
+  try {
+    dir = deps.makeTempDir();
+  } catch (error) {
+    return { ok: false, reason: 'asset-missing', message: `No temp directory for the snapshot: ${extractMessage(error)}` };
+  }
   const path = join(dir, 'documentation.json');
   let ghMessage: string;
   try {

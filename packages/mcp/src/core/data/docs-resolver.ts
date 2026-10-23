@@ -141,14 +141,14 @@ export async function answerVersioned<T>(
   version: string | undefined,
   query: (docs: DocsIndex) => T,
 ): Promise<VersionedAnswer<T>> {
-  const resolution = await resolve(version);
-  if (!resolution.ok) {
-    return { ok: false, reason: resolution.reason, message: resolution.message };
-  }
   try {
+    const resolution = await resolve(version);
+    if (!resolution.ok) {
+      return { ok: false, reason: resolution.reason, message: resolution.message };
+    }
     return { ok: true, groundedVersion: resolution.version, result: query(resolution.docs) };
   } catch (error) {
-    // The query runs over an already-resolved snapshot, so a throw here is unexpected -
+    // Neither the resolver nor a query over a resolved snapshot is expected to throw,
     // but a version-scoped tool reaches the network and must answer as data, never throw
     // across the stdio boundary. Map to the catch-all reason migrate_usage's outer net uses.
     return { ok: false, reason: 'asset-missing', message: error instanceof Error ? error.message : String(error) };

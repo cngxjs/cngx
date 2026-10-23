@@ -113,6 +113,21 @@ describe('fetchSnapshot', () => {
     expect(deps.httpGet).not.toHaveBeenCalled();
   });
 
+  it('returns a typed failure when no temp directory can be created', async () => {
+    const deps = makeDeps({
+      makeTempDir: vi.fn(() => {
+        throw new Error('EACCES: permission denied');
+      }),
+    });
+
+    expect(await fetchSnapshot('0.2.0', deps)).toEqual({
+      ok: false,
+      reason: 'asset-missing',
+      message: 'No temp directory for the snapshot: EACCES: permission denied',
+    });
+    expect(deps.runGh).not.toHaveBeenCalled();
+  });
+
   it('falls back to HTTPS when gh is not installed', async () => {
     const deps = makeDeps({ runGh: ghThrows(Object.assign(new Error('spawn gh ENOENT'), { code: 'ENOENT' })) });
 

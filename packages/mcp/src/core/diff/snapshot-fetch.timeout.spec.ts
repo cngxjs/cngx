@@ -53,6 +53,27 @@ describe('snapshot fetch timeouts', () => {
     expect(Date.now() - started).toBeLessThan(2000);
   });
 
+  it('releases the connection of a non-200 response instead of leaving its body unread', async () => {
+    let closed!: () => void;
+    const connectionClosed = new Promise<void>((resolve) => (closed = resolve));
+    const streaming = createServer((_req, res) => {
+      res.on('close', closed);
+      res.writeHead(503);
+      res.write('x'.repeat(1024));
+    });
+    await new Promise<void>((resolve) => streaming.listen(0, '127.0.0.1', resolve));
+    const url = `http://127.0.0.1:${(streaming.address() as AddressInfo).port}`;
+    const { httpGet } = createDefaultDeps({ timeoutMs: 5000 });
+
+    try {
+      expect(await httpGet(url)).toEqual({ status: 503, body: '' });
+      await connectionClosed;
+    } finally {
+      streaming.closeAllConnections();
+      await new Promise<void>((resolve) => streaming.close(() => resolve()));
+    }
+  });
+
   it('uses a 15 s production timeout', () => {
     expect(SNAPSHOT_FETCH_TIMEOUT_MS).toBe(15_000);
     expect(createDefaultDeps().timeoutMs).toBe(SNAPSHOT_FETCH_TIMEOUT_MS);
