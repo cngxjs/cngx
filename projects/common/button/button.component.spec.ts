@@ -185,6 +185,30 @@ class AsyncHost {
 
 @Component({
   template: `
+    <button
+      id="refusing"
+      cngxButton
+      [cngxAsyncClick]="action"
+      [enabled]="enabled()"
+      [disabled]="disabled()"
+    >
+      Run
+    </button>
+  `,
+  imports: [CngxButton, CngxAsyncClick],
+})
+class RefusingAsyncHost {
+  readonly enabled = signal(false);
+  readonly disabled = signal(true);
+  calls = 0;
+  readonly action: AsyncAction = () => {
+    this.calls++;
+    return Promise.resolve();
+  };
+}
+
+@Component({
+  template: `
     <button id="slots" cngxButton>
       <span cngxButtonStart>S</span>Label<span cngxButtonEnd>E</span>
     </button>
@@ -393,6 +417,39 @@ describe('CngxButton', () => {
         q(id).click();
       }
       expect(host.calls).toBe(0);
+    });
+
+    it('keeps aria-disabled while [enabled]="false" outlives the button disabled flag', () => {
+      const { fixture, host, q } = render(RefusingAsyncHost);
+      const btn = q('#refusing');
+      expect(btn.getAttribute('aria-disabled')).toBe('true');
+
+      host.disabled.set(false);
+      fixture.detectChanges();
+      expect(btn.getAttribute('aria-disabled')).toBe('true');
+      btn.click();
+      expect(host.calls).toBe(0);
+
+      host.enabled.set(true);
+      fixture.detectChanges();
+      expect(btn.hasAttribute('aria-disabled')).toBe(false);
+    });
+
+    it('keeps aria-disabled while the button disabled flag outlives [enabled]="false"', () => {
+      const { fixture, host, q } = render(RefusingAsyncHost);
+      const btn = q('#refusing');
+
+      host.enabled.set(true);
+      fixture.detectChanges();
+      expect(btn.getAttribute('aria-disabled')).toBe('true');
+      btn.click();
+      expect(host.calls).toBe(0);
+
+      host.disabled.set(false);
+      fixture.detectChanges();
+      expect(btn.hasAttribute('aria-disabled')).toBe(false);
+      btn.click();
+      expect(host.calls).toBe(1);
     });
 
     it('shows the busy layer while the action runs and keeps the label', async () => {

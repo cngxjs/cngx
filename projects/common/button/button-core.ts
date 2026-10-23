@@ -109,7 +109,14 @@ export function injectButtonCore(
     () => inputs.size() ?? group?.size() ?? config.size ?? DEFAULT_SIZE,
   );
   const busy = computed(() => coHostedAsyncClick()?.pending() ?? false);
-  const ariaDisabled = computed<'true' | null>(() => (inputs.disabled() || busy() ? 'true' : null));
+  // CngxAsyncClick binds aria-disabled on the same host and only rewrites it
+  // when its own value changes, so the button folds the directive's
+  // `[enabled]="false"` in; otherwise a disabled -> enabled flip here writes
+  // null while the directive still refuses clicks.
+  const asyncClickRefuses = computed(() => coHostedAsyncClick()?.enabled() === false);
+  const ariaDisabled = computed<'true' | null>(() =>
+    inputs.disabled() || busy() || asyncClickRefuses() ? 'true' : null,
+  );
   const describedBy = computed(() => {
     const reason = inputs.disabled() && inputs.disabledReason() ? reasonId : null;
     return [ownDescribedBy, reason].filter(Boolean).join(' ') || null;
