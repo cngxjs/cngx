@@ -40,6 +40,17 @@ describe('the ci workflow', () => {
     expect(workflow).toContain('node scripts/e2e-scope.mjs --all');
     expect(workflow).toContain('fromJSON(needs.e2e-scope.outputs.examples-shards)');
     expect(workflow).toContain('fromJSON(needs.e2e-scope.outputs.sweep-shards)');
-    expect(workflow.match(/--shard=\$\{\{ matrix\.shard \}\}\/\$\{\{ strategy\.job-total \}\}/g)).toHaveLength(2);
+    expect(workflow.match(/--shard=\$\{\{ matrix\.shard \}\}\/\$\{\{ strategy\.job-total \}\}/g)).toHaveLength(3);
+  });
+
+  // The root suite has no scope: its gate needs only the shards, and a failed
+  // build skips them, which the gate reports as red.
+  it('keeps the required check e2e as a gate over the root suite shards', () => {
+    const block = workflow.slice(workflow.indexOf('\n  e2e:\n'), workflow.indexOf('\n  e2e:\n') + 600);
+
+    expect(block).toContain('needs: e2e-shard');
+    expect(block).toContain('if: ${{ !cancelled() }}');
+    expect(block).toContain('node scripts/e2e-gate.mjs success all "$SHARDS"');
+    expect(gateFailure('success', 'all', 'skipped')).toBe('the shards ended with "skipped" (scope all)');
   });
 });

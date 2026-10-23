@@ -154,9 +154,16 @@ jobs:
       - name: Run geometry specs
         run: npm run test:geometry
 
-  e2e:
+  # The root suite is not route-scoped, so every pull request runs all of it,
+  # split by test across a fixed matrix.
+  e2e-shard:
     needs: build
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    name: e2e (${{ matrix.shard }}/${{ strategy.job-total }})
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -190,7 +197,21 @@ jobs:
       # specs with no migrated example are test.fixme-quarantined in-file; the
       # whole remaining suite gates the PR.
       - name: e2e suite
-        run: npm run e2e -- --project=chromium
+        run: npm run e2e -- --project=chromium --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+
+  # The required check. It also runs when build fails, so the check turns red
+  # instead of staying pending; the suite has no scope, hence the fixed
+  # "success all" arguments.
+  e2e:
+    needs: e2e-shard
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Collect the shards
+        env:
+          SHARDS: ${{ needs.e2e-shard.result }}
+        run: node scripts/e2e-gate.mjs success all "$SHARDS"
 
   # Which example demos a pull request reaches through the import graph
   # (scripts/e2e-scope.mjs); the two example suites run only their specs and
