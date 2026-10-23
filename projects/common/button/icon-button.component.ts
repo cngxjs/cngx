@@ -31,7 +31,8 @@ import type {
  * them warns `CNGX1071` in development mode. A tooltip is a separate,
  * per-icon decision; co-host `[cngxTooltip]` where the icon alone is
  * ambiguous. Its id joins the button's `aria-describedby` through
- * `CNGX_DESCRIBED_BY`, next to the static ids and the disabled reason.
+ * `CNGX_DESCRIBED_BY`, next to the static ids, the `[cngxDescribedBy]` ids
+ * and the disabled reason.
  *
  * The visual box follows `size` and stays square; on a coarse pointer the
  * hit area grows to `--cngx-target-min` through a pseudo-element, so the
@@ -106,6 +107,18 @@ export class CngxIconButton {
   /** Why the button is disabled; referenced through `aria-describedby` while disabled. */
   readonly disabledReason = input<string | undefined>(undefined);
 
+  /**
+   * Ids of external description elements, space-separated, joined into the
+   * button's `aria-describedby` after a static `aria-describedby` and before
+   * the disabled reason and a co-hosted `[cngxTooltip]`. Reactive: changed
+   * ids replace the old ones, `null` removes them. Same surface as
+   * `CngxChipInteraction` and the slider, but merged instead of replaced by
+   * the reason.
+   */
+  readonly describedBy = input<string | null>(null, {
+    alias: 'cngxDescribedBy',
+  });
+
   /** Native `type` on a `<button>` host. Defaults to `'button'`; ignored on `<a>`. */
   readonly type = input<CngxButtonType | undefined>(undefined);
 
@@ -117,6 +130,7 @@ export class CngxIconButton {
       size: this.size,
       disabled: this.disabled,
       disabledReason: this.disabledReason,
+      describedBy: this.describedBy,
       type: this.type,
     },
     { variant: 'ghost' },

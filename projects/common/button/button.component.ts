@@ -35,8 +35,8 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
  * read through `aria-describedby`. Activation is swallowed while disabled:
  * `(click)`, `routerLink`, link navigation and form submission do not run.
  * The button owns `aria-describedby` through `CNGX_DESCRIBED_BY`: a static
- * `aria-describedby`, the reason and a co-hosted `[cngxTooltip]` id are
- * merged, so none of them is lost.
+ * `aria-describedby`, the `[cngxDescribedBy]` ids, the reason and a
+ * co-hosted `[cngxTooltip]` id are merged, so none of them is lost.
  *
  * Co-host `cngxAsyncClick` for an async action: the label stays in place
  * (width stable) under a busy layer while the action runs, and the
@@ -128,6 +128,18 @@ export class CngxButton {
   /** Why the button is disabled; referenced through `aria-describedby` while disabled. */
   readonly disabledReason = input<string | undefined>(undefined);
 
+  /**
+   * Ids of external description elements, space-separated, joined into the
+   * button's `aria-describedby` after a static `aria-describedby` and before
+   * the disabled reason and a co-hosted `[cngxTooltip]`. Reactive: changed
+   * ids replace the old ones, `null` removes them. Same surface as
+   * `CngxChipInteraction` and the slider, but merged instead of replaced by
+   * the reason.
+   */
+  readonly describedBy = input<string | null>(null, {
+    alias: 'cngxDescribedBy',
+  });
+
   /** Native `type` on a `<button>` host. Defaults to `'button'`; ignored on `<a>`. */
   readonly type = input<CngxButtonType | undefined>(undefined);
 
@@ -142,6 +154,7 @@ export class CngxButton {
       size: this.size,
       disabled: this.disabled,
       disabledReason: this.disabledReason,
+      describedBy: this.describedBy,
       type: this.type,
     },
     { variant: 'solid' },

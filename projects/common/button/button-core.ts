@@ -38,6 +38,7 @@ export interface CngxButtonCoreInputs {
   readonly size: Signal<CngxButtonSize | undefined>;
   readonly disabled: Signal<boolean>;
   readonly disabledReason: Signal<string | undefined>;
+  readonly describedBy: Signal<string | null>;
   readonly type: Signal<CngxButtonType | undefined>;
 }
 
@@ -65,8 +66,8 @@ export interface CngxButtonCore {
   readonly ariaDisabled: Signal<'true' | null>;
   /**
    * The element's merged `aria-describedby`: the consumer's static ids, the
-   * reason id while disabled with a reason, and the ids of co-hosted
-   * contributors such as `[cngxTooltip]`.
+   * `cngxDescribedBy` ids, the reason id while disabled with a reason, and
+   * the ids of co-hosted contributors such as `[cngxTooltip]`.
    */
   readonly describedBy: Signal<string | null>;
   readonly reasonId: string;
@@ -125,6 +126,7 @@ export function injectButtonCore(
   const coHostedAsyncClick = (): CngxAsyncClick | null =>
     (asyncClick ??= injector.get(CngxAsyncClick, null, { self: true, optional: true }));
   const reasonId = nextUid('cngx-button-reason-');
+  const describedByKey = nextUid('cngx-button-describedby-');
   const isButtonHost = host.tagName === 'BUTTON';
 
   const variant = computed<CngxButtonVariant>(
@@ -146,9 +148,14 @@ export function injectButtonCore(
   const reasonIds = computed(() =>
     inputs.disabled() && inputs.disabledReason() ? reasonId : null,
   );
+  // Contributed before the reason: the registry keeps registration order,
+  // so the consumer's dynamic ids sit between the static seed and the reason.
+  injectDescribedByContribution(describedByKey, inputs.describedBy);
   // The host provides the registry (provideButtonDescribedBy), so the
   // fallback only covers a class that forgot it.
-  const describedBy = injectDescribedByContribution(reasonId, reasonIds)?.value ?? reasonIds;
+  const describedBy =
+    injectDescribedByContribution(reasonId, reasonIds)?.value ??
+    computed(() => [inputs.describedBy(), reasonIds()].filter(Boolean).join(' ') || null);
   const hostType = computed<CngxButtonType | null>(() =>
     isButtonHost ? (inputs.type() ?? 'button') : null,
   );
