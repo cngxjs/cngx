@@ -4,7 +4,7 @@
 // generate their surface from the same object.
 
 import type { z } from 'zod';
-import type { DocsResolution } from './data/docs-resolver.js';
+import type { DocsResolver } from './data/docs-resolver.js';
 import type { DocsIndex } from './data/loader.js';
 
 /** A zod field per input name; the adapter turns it into a tool schema or flags. */
@@ -17,8 +17,8 @@ export type CommandInput<S extends CommandShape> = { [K in keyof S]: z.output<S[
 export interface CommandContext {
   /** The snapshot bundled into the package. */
   readonly bundled: DocsIndex;
-  /** Resolve a requested release; the adapter decides how it fetches and caches. */
-  readonly resolve: (version?: string) => Promise<DocsResolution>;
+  /** Resolve a requested release. The adapter builds it, so the adapter decides how it fetches and caches. */
+  readonly resolve: DocsResolver;
 }
 
 export interface CngxCommand<S extends CommandShape = CommandShape> {

@@ -14,7 +14,7 @@ const bundledNew = loadDocsFromFile(NEW); // cngxVersion 0.2.0
 describe('migrateUsage', () => {
 
   it('defaults `to` to the bundled snapshot version', async () => {
-    const result = await migrateUsage(bundledNew, { from: '0.2.0' });
+    const result = await migrateUsage(bundledNew, { from: '0.2.0' }, createDocsResolver(bundledNew));
 
     expect(result.ok).toBe(true);
     const delta = result as UsageDelta;

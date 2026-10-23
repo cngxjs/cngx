@@ -10,7 +10,6 @@ import { z } from 'zod';
 import { defineCommand } from '../command.js';
 import type { DocsIndex } from '../data/loader.js';
 import type { DocsResolver } from '../data/docs-resolver.js';
-import { createDocsResolver } from '../data/docs-resolver.js';
 import { diffSnapshots } from '../diff/snapshot-diff.js';
 import type { MigrateUsageResult, UsageDeltaError } from '../diff/types.js';
 
@@ -30,7 +29,7 @@ export interface MigrateUsageArgs {
 export async function migrateUsage(
   bundled: DocsIndex,
   args: MigrateUsageArgs,
-  resolve: DocsResolver = createDocsResolver(bundled),
+  resolve: DocsResolver,
 ): Promise<MigrateUsageResult> {
   const from = args.from;
   const to = args.to ?? bundled.meta.cngxVersion ?? 'unknown';
