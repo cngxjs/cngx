@@ -391,8 +391,8 @@ export function scopeFor(files, graph) {
   return { mode: 'some', routes: selected.sort(), specs };
 }
 
-// Full runs: examples-e2e takes 16 to 21 minutes on one worker and the
-// sweep 10 to 12 on four, so three and two shards keep each near 6.
+// Full runs: examples-e2e takes 11 to 13 minutes on two workers and the
+// sweep 10 to 12 on four, so three and two shards keep each near 4 and 6.
 export const FULL_SHARDS = { examples: 3, sweep: 2 };
 // About how much one shard takes on before a second one pays for its own
 // install and `ng serve`.

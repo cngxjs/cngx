@@ -270,7 +270,7 @@ jobs:
       # SPECS is empty on a full run and a space-separated list of spec files
       # otherwise; a shard the filters leave empty passes. --fully-parallel
       # splits the shards by test instead of by file, which evens them out;
-      # one worker per shard still runs every test of a file in order.
+      # each shard runs two workers (examples/playwright.config.ts).
       - name: examples-e2e suite
         env:
           SPECS: ${{ needs.e2e-scope.outputs.specs }}
