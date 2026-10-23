@@ -376,9 +376,24 @@ export class CngxTreeSelect<T = unknown>
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   /**
    * Popover placement relative to the trigger. Per-instance input wins
-   * over `CngxSelectConfig.popoverPlacement`.
+   * over `CngxSelectConfig.popoverPlacement`. A centred `'bottom'` / `'top'`
+   * aligns the tree panel to the trigger's inline-start edge, since the panel
+   * can be wider than the trigger.
    */
   readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
+  /**
+   * @internal - a centred block placement starts at the trigger's inline-start
+   * edge instead: the tree panel is wider than a narrow trigger and grows
+   * toward inline-end (the popover mirrors `-start` under RTL, and its
+   * `flip-inline` fallback keeps the viewport collision recovery).
+   */
+  protected readonly resolvedPopoverPlacement = computed<PopoverPlacement>(() => {
+    const placement = this.popoverPlacement();
+    if (placement === 'bottom') {
+      return 'bottom-start';
+    }
+    return placement === 'top' ? 'top-start' : placement;
+  });
   readonly hideCaret = input<boolean>(!this.config.showCaret);
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   readonly caretGlyph = input<TemplateRef<void> | null>(null);

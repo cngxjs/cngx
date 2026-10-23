@@ -527,3 +527,62 @@ describe('CngxTreeSelect panel footer', () => {
     expect(footer.getBoundingClientRect().top).toBeGreaterThanOrEqual(tree.bottom - 0.5);
   });
 });
+
+// A tree panel wider than its trigger starts at the trigger's inline-start
+// edge and grows toward inline-end, instead of centring on the trigger. The
+// shipped token layers and room on both sides, like the demo page.
+@Component({
+  selector: 'cngx-tree-select-align-host',
+  standalone: true,
+  imports: [CngxTreeSelect],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    '../../../core/theming/reset.css',
+    '../../../core/theming/base.css',
+    '../../theming/components/cngx-field-skin.css',
+    '../shared/select-base.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div style="display: block; width: 12rem; margin: 1rem 30rem">
+      <cngx-tree-select [nodes]="nodes" [nodeIdFn]="idFn" [labelFn]="idFn" [keyFn]="idFn" />
+    </div>
+  `,
+})
+class AlignHost {
+  readonly nodes: CngxTreeNode<Deep>[] = [{ value: { id: 'alpha' } }, { value: { id: 'bravo' } }];
+  readonly idFn = (v: Deep): string => v.id;
+}
+
+async function openPanelRects(): Promise<{ trigger: DOMRect; panel: DOMRect }> {
+  const fixture = TestBed.createComponent(AlignHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  query(mountedRoot, '[role="combobox"]').dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
+  );
+  fixture.detectChanges();
+  TestBed.flushEffects();
+  fixture.detectChanges();
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  const trigger = query(mountedRoot, '.cngx-tree-select__trigger').getBoundingClientRect();
+  const panel = query(mountedRoot, '.cngx-select__panel').getBoundingClientRect();
+  return { trigger, panel };
+}
+
+describe('CngxTreeSelect wide panel alignment', () => {
+  it('aligns the wider panel to the trigger start in LTR', async () => {
+    const { trigger, panel } = await openPanelRects();
+    expect(panel.width).toBeGreaterThan(trigger.width + 8);
+    expect(Math.abs(panel.left - trigger.left)).toBeLessThanOrEqual(1);
+  });
+
+  it('aligns the wider panel to the trigger start (right edge) in RTL', async () => {
+    document.documentElement.dir = 'rtl';
+    const { trigger, panel } = await openPanelRects();
+    expect(panel.width).toBeGreaterThan(trigger.width + 8);
+    expect(Math.abs(panel.right - trigger.right)).toBeLessThanOrEqual(1);
+  });
+});

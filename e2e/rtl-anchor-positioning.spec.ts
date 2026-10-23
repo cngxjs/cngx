@@ -149,36 +149,39 @@ test.describe('RTL anchor positioning: side-placed panels mirror to the inline-s
     await clearRtl(page);
   });
 
-  test('tree-select panel keeps its block-axis placement under rtl (no inline flip leaks)', async ({
+  test('tree-select panel starts at the trigger inline-start edge in both directions', async ({
     page,
   }) => {
-    // The tree-select default popoverPlacement is 'bottom' - a block-axis token
-    // with no inline component. resolveDirectionalPlacement must be the identity
-    // for it: the panel stays centered below the trigger in both directions. This
-    // guards the invariant the plan's Risk section names - a wrong axis must not
-    // leak into vertical top/bottom placements.
+    // The tree resolves a centred 'bottom' to 'bottom-start': the panel can be
+    // wider than the trigger, so it starts at the trigger's inline-start edge
+    // (left in ltr, right in rtl) and stays below it - the block axis never
+    // flips with the direction.
     await page.goto(R.treeSelect);
     await page.setViewportSize({ width: 1280, height: 900 });
 
     const trigger = page.locator('cngx-tree-select [role="combobox"]').first();
+    const row = page.locator('cngx-tree-select .cngx-tree-select__trigger').first();
+    const panel = page.locator('cngx-tree-select .cngx-select__panel').first();
 
-    // ltr baseline: panel's inline offset from the trigger.
     await trigger.click();
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
-    const panel = page.locator('[role="tree"]').first();
     await expect(panel).toBeVisible();
-    const ltrOffset = (await leftEdge(panel)) - (await leftEdge(trigger));
+    const ltrRow = await row.boundingBox();
+    const ltrPanel = await panel.boundingBox();
+    expect(Math.abs(ltrPanel!.x - ltrRow!.x)).toBeLessThan(2);
+    expect(ltrPanel!.y).toBeGreaterThan(ltrRow!.y);
     await page.keyboard.press('Escape');
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
 
-    // rtl: the same block placement -> the same inline offset (no mirror).
     await setRtl(page);
     await trigger.click();
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
     await expect(panel).toBeVisible();
-    const rtlOffset = (await leftEdge(panel)) - (await leftEdge(trigger));
+    const rtlRow = await row.boundingBox();
+    const rtlPanel = await panel.boundingBox();
     await clearRtl(page);
 
-    expect(Math.abs(rtlOffset - ltrOffset)).toBeLessThan(4);
+    expect(Math.abs(rtlPanel!.x + rtlPanel!.width - (rtlRow!.x + rtlRow!.width))).toBeLessThan(2);
+    expect(rtlPanel!.y).toBeGreaterThan(rtlRow!.y);
   });
 });
