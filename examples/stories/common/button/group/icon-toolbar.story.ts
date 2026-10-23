@@ -12,27 +12,27 @@ export const STORY: DemoSpec = {
   moduleImports: ["import { CngxButtonGroup, CngxIconButton } from '@cngx/common/button';"],
   imports: ['CngxButtonGroup', 'CngxIconButton'],
   template: `
-  <div cngxButtonGroup variant="outline" size="sm" aria-label="Formatting">
-    <div cngxButtonGroup aria-label="Text style">
-      <button cngxIconButton aria-label="Bold">
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"><path d="M7 4h6a4 4 0 0 1 0 8H7zM7 12h7a4 4 0 0 1 0 8H7z" /></svg>
+  <div cngxButtonGroup variant="outline" size="sm" aria-label="Editor actions">
+    <div cngxButtonGroup aria-label="Clipboard">
+      <button cngxIconButton aria-label="Cut">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="3" /><circle cx="18" cy="18" r="3" /><path d="M8.1 15.9 19 4M15.9 15.9 5 4" /></svg>
       </button>
-      <button cngxIconButton aria-label="Italic">
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 4h8M6 20h8M14 4l-4 16" /></svg>
+      <button cngxIconButton aria-label="Copy">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V5a2 2 0 0 1 2-2h10" /></svg>
       </button>
-      <button cngxIconButton aria-label="Underline">
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 4v7a5 5 0 0 0 10 0V4M5 20h14" /></svg>
+      <button cngxIconButton aria-label="Paste">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2" /><path d="M9 4V3h6v1M9 10h6M9 14h6" /></svg>
       </button>
     </div>
-    <div cngxButtonGroup aria-label="Alignment">
-      <button cngxIconButton aria-label="Align left">
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h14" /></svg>
+    <div cngxButtonGroup aria-label="Zoom">
+      <button cngxIconButton aria-label="Zoom out">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4M8 11h6" /></svg>
       </button>
-      <button cngxIconButton aria-label="Align center">
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M5 18h14" /></svg>
+      <button cngxIconButton aria-label="Zoom in">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4M8 11h6M11 8v6" /></svg>
       </button>
-      <button cngxIconButton aria-label="Align right">
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M10 12h10M6 18h14" /></svg>
+      <button cngxIconButton aria-label="Fit to window">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
       </button>
     </div>
     <div cngxButtonGroup aria-label="History">
