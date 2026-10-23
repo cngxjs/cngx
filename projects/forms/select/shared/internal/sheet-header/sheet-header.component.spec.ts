@@ -284,6 +284,9 @@ describe('CngxSelectSheetHeader', () => {
     fixture.detectChanges();
     const input = el.querySelector<HTMLInputElement>('.cngx-select-sheet-header__input')!;
     expect(input.getAttribute('role')).toBe('combobox');
+    expect(input.getAttribute('aria-expanded')).toBe('false');
+    harness.panelVisible.set(true);
+    fixture.detectChanges();
     expect(input.getAttribute('aria-expanded')).toBe('true');
     expect(input.getAttribute('aria-controls')).toBe('panel-1');
     expect(input.getAttribute('aria-labelledby')).toBe(title().id);
