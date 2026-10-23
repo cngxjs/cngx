@@ -1,9 +1,14 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createMemoryTree, createProvenanceStamp, DEFAULT_MCP_VERSION } from '../../engine';
+import { createMemoryTree, createProvenanceStamp, DEFAULT_MCP_VERSION, EMPTY_RENAME_TABLE } from '../../engine';
 import { helperReadmeFingerprintLine } from '../../ng-add/detect/detect';
 import { type InstallManifest, type ProjectRecord } from '../../ng-add/steps/manifest';
 import { readFixture, readMigrationFixture, readTree, runRule } from '../../testing/run-schematic';
+import { createMigration } from '../migration';
 import { migrate } from './index';
 
 const NOW = '2026-10-12T12:00:00.000Z';
@@ -68,12 +73,36 @@ describe('refresh migration', () => {
     expect(readTree(tree)).toEqual(after);
   });
 
-  it('falls back to the release in versions.json outside a collection', async () => {
+  it('falls back to the release of the package manifest without a versions.json', async () => {
     const { before, after } = readMigrationFixture('refresh');
 
     const { logs } = await runRule(migrate(), createMemoryTree(before));
 
     expect(logs[0]).toBe(`cngx ${recordOf(after).cngxVersion} migration`);
+    expect(logs.some((line) => line.includes('No usable versions.json'))).toBe(true);
+  });
+
+  it('names and records the releases of a versions.json beside the bundle outside a collection', async () => {
+    const schematicsDir = join(mkdtempSync(join(tmpdir(), 'cngx-refresh-')), 'schematics');
+    const bundleDir = join(schematicsDir, 'migrations', 'refresh');
+    mkdirSync(bundleDir, { recursive: true });
+    writeFileSync(
+      join(schematicsDir, 'versions.json'),
+      JSON.stringify({ cngx: '9.9.0', mcp: '9.9.1', eslintPlugin: '9.9.2', angular: '>=21.1.0 <23.0.0' }),
+    );
+    const { before } = readMigrationFixture('refresh');
+
+    try {
+      // What `migrate` builds, run from a bundle folder publish stamped.
+      const rule = createMigration({ renames: EMPTY_RENAME_TABLE, codemods: [], bundleDir });
+      const { tree, logs } = await runRule(rule, createMemoryTree(before));
+
+      expect(logs[0]).toBe('cngx 9.9.0 migration');
+      expect(logs.some((line) => line.includes('No usable versions.json'))).toBe(false);
+      expect(recordOf(readTree(tree))).toMatchObject({ cngxVersion: '9.9.0', mcpVersion: '9.9.1', eslintPluginVersion: '9.9.2' });
+    } finally {
+      rmSync(dirname(schematicsDir), { recursive: true, force: true });
+    }
   });
 
   it('names the release of the collection entry that ran', async () => {

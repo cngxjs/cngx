@@ -24,10 +24,18 @@ import {
   PRESETS,
   schematicsSteps,
   staleCoreAddArgs,
+  STALE_UPDATE_LIBS,
+  staleUpdateSteps,
+  answerMismatches,
+  ONBOARDING_PACKAGES,
+  plainTerminalText,
+  terminalEnv,
+  terminalLegs,
   usageText,
   VARIANTS,
   variantPlan,
 } from '../consumer-fixture.mjs';
+import { changedInputs } from '../schematics-consumer-inputs.mjs';
 
 describe('parseAngularSpec', () => {
   it('treats a major or minor as a range and a full version as a pin', () => {
@@ -288,6 +296,87 @@ describe('staleCoreAddArgs', () => {
   });
 });
 
+describe('staleUpdateSteps', () => {
+  const [update, again] = staleUpdateSteps('0.2.0');
+
+  it('runs a real ng update: no --migrate-only, no --from, the release read from the registry', () => {
+    expect(update.args).toEqual(['ng', 'update', '@cngx/core']);
+    expect(again.args).toEqual(update.args);
+  });
+
+  it('expects the migration of the packed release and every installed member moved to it', () => {
+    expect(update).toMatchObject({ expect: 'cngx 0.2.0 migration', pins: STALE_UPDATE_LIBS, commit: true });
+    expect(STALE_UPDATE_LIBS).toEqual(['utils', 'core', 'common', 'forms']);
+  });
+
+  it('finds nothing on the second run and leaves the tree clean', () => {
+    expect(again).toMatchObject({ expect: "Package '@cngx/core' is already up to date.", clean: true });
+  });
+});
+
+describe('terminalLegs', () => {
+  const [typed, ci] = terminalLegs('0.2.0');
+
+  it('runs both legs without a cngx flag, only the CLI install confirmation skipped', () => {
+    expect(typed.args).toEqual(['ng', 'add', '@cngx/core@0.2.0', '--skip-confirmation']);
+    expect(ci.args).toEqual(typed.args);
+  });
+
+  it('types an answer to every question in the order the schematic asks them', () => {
+    expect(typed.script.map((step) => step.prompt)).toEqual([
+      'Which cngx setup do you want?',
+      'Which cngx packages do you want?',
+      'Which language should cngx speak?',
+      'Provide toasts, alerts and banners at the root?',
+      'Which editors should get the cngx MCP server?',
+    ]);
+    expect(typed.answers).toEqual({ preset: 'full', libs: ['utils', 'core', 'common', 'interop', 'forms', 'ui'] });
+  });
+
+  it('runs the typed leg outside CI and fails the CI leg on any question', () => {
+    expect(typed.env).toEqual({ CI: undefined });
+    expect(ci.env).toEqual({ CI: 'true' });
+    expect(ci.script).toEqual([]);
+    expect(ci.forbid).toEqual(typed.script.map((step) => step.prompt));
+    expect(ci.answers.preset).toBe('recommended');
+  });
+});
+
+describe('terminalEnv', () => {
+  it('turns the CLI analytics question off and drops an undefined override', () => {
+    expect(terminalEnv({ CI: 'true', PATH: '/bin' }, { CI: undefined })).toEqual({ PATH: '/bin', NG_CLI_ANALYTICS: 'false' });
+    expect(terminalEnv({ PATH: '/bin' }, { CI: 'true' })).toEqual({ PATH: '/bin', NG_CLI_ANALYTICS: 'false', CI: 'true' });
+  });
+});
+
+describe('plainTerminalText', () => {
+  it('drops colour and cursor sequences', () => {
+    expect(plainTerminalText('\u001b[1mWhich cngx setup\u001b[22m\u001b[?25l do you want?')).toBe('Which cngx setup do you want?');
+  });
+});
+
+describe('answerMismatches', () => {
+  const manifest = { projects: { fixture: { answers: { preset: 'full', libs: ['core', 'ui'] } } } };
+
+  it('names every recorded answer that differs', () => {
+    expect(answerMismatches(manifest, 'fixture', { preset: 'full', libs: ['core', 'ui'] })).toEqual([]);
+    expect(answerMismatches(manifest, 'fixture', { preset: 'recommended' })).toEqual(['preset is "full", expected "recommended"']);
+    expect(answerMismatches({}, 'fixture', { preset: 'full' })).toEqual(['preset is undefined, expected "full"']);
+  });
+});
+
+describe('onboardingSteps with --add', () => {
+  it('runs the shim ng add of the named package twice', () => {
+    const [first, again] = onboardingSteps('0.2.0', 'full', 'ui');
+
+    expect(ONBOARDING_PACKAGES).toEqual(['core', 'ui']);
+    expect(first.label).toBe('ng add @cngx/ui');
+    expect(first.args.slice(0, 3)).toEqual(['ng', 'add', '@cngx/ui@0.2.0']);
+    expect(again).toMatchObject({ args: first.args, clean: true });
+    expect(onboardingSteps('0.2.0')[0].args[2]).toBe('@cngx/core@0.2.0');
+  });
+});
+
 describe('missingRecordedLibs', () => {
   const record = (libs) => ({ projects: { fixture: { answers: { libs } } } });
 
@@ -329,10 +418,11 @@ describe('the consumer-compat workflow', () => {
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
   const workflow = readFileSync(join(root, '.github', 'workflows', 'consumer-compat.yml'), 'utf8');
 
-  it('runs on a pull request that touches the schematics', () => {
-    const pattern = /pattern='([^']+)'/.exec(workflow)?.[1] ?? '';
-    expect(new RegExp(pattern).test('projects/core/schematics/ng-add/index.ts')).toBe(true);
-    expect(new RegExp(pattern).test('projects/forms/select/select.component.css')).toBe(false);
+  it('runs on a pull request that touches the schematics or what builds them, not on the demo app', () => {
+    expect(workflow).toContain('--workflow consumer-compat');
+    expect(changedInputs(['projects/core/schematics/ng-add/index.ts'], 'consumer-compat')).toHaveLength(1);
+    expect(changedInputs(['scripts/build-schematics.mjs'], 'consumer-compat')).toHaveLength(1);
+    expect(changedInputs(['examples/stories/forms/select/single-select/clearable.story.ts'], 'consumer-compat')).toEqual([]);
   });
 
   // The fixture rows are required checks: a path filter on the trigger, or a
@@ -363,8 +453,30 @@ describe('the consumer-compat workflow', () => {
     expect(workflow).toContain("- { angular: '22', variant: onboarding, args: '--preset full' }");
   });
 
-  it('runs the stale-core leg on the full preset in its schematics row', () => {
-    expect(workflow).toMatch(/variant: schematics, args: '--stale-core previous --preset full'/);
+  it('proves the shim ng add @cngx/ui the docs name, on the major where the CDK must come first', () => {
+    expect(workflow).toContain("- { angular: '21', variant: onboarding, add: ui, args: '--add ui --preset full' }");
+  });
+
+  // Branch protection gates a required check by name; two rows under one
+  // name would let a red row hide behind a green one.
+  it('gives every fixture row its own check name', () => {
+    const rows = [...workflow.matchAll(/^\s*- \{ angular: '([^']+)', variant: (\w+)(?:, add: (\w+))?/gm)];
+    const names = rows.map(([, angular, variant, add]) => `angular-${angular}-${variant}${add ? `-${add}` : ''}`);
+
+    expect(rows.length).toBeGreaterThan(10);
+    expect(workflow).toContain("name: angular-${{ matrix.angular }}-${{ matrix.variant }}${{ matrix.add && format('-{0}', matrix.add) || '' }}");
+    expect(names.filter((name, index) => names.indexOf(name) !== index)).toEqual([]);
+  });
+
+  it('fails every row when the changes job did not decide, instead of leaving it pending', () => {
+    expect(workflow).toContain("if: ${{ !cancelled() && needs.pack.result != 'failure' }}");
+    expect(workflow).toContain("if: needs.changes.result != 'success'");
+  });
+
+  it('runs the stale core and stale update legs on the full preset on both majors', () => {
+    for (const major of ['21', '22']) {
+      expect(workflow).toContain(`- { angular: '${major}', variant: schematics, args: '--stale-core previous --preset full' }`);
+    }
   });
 
   it('keeps the required schematics-consumer job on the default preset', () => {
