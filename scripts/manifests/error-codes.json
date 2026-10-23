@@ -1422,6 +1422,23 @@
       ]
     },
     {
+      "code": "CNGX1072",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Button group without an accessible name",
+      "page": "core-concepts/error-codes/cngx1072.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1072.html",
+      "status": "active",
+      "files": ["projects/common/button/button-group.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/button/button-group.directive.ts",
+          "text": "[cngxButtonGroup] has no accessible name. Set aria-label or aria-labelledby on the host; a role=\"group\" without a name gives assistive technology no context for the buttons inside."
+        }
+      ]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",

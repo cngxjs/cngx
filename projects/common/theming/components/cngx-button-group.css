@@ -1,0 +1,260 @@
+/**
+ * @overview
+ * Segment geometry for the `cngxButtonGroup` directive. Directives carry no
+ * `styleUrl`, so this sheet ships in the global `cngx.css` bundle. The host
+ * carries `.cngx-button-group`, `role="group"`, `data-orientation` and, when
+ * a size is set, `data-size`.
+ *
+ * **Attached segments (default)**
+ *
+ * Every direct child is a segment, whatever it is (a `cngxButton`, a
+ * `cngxIconButton`, an addon, an app component):
+ *
+ * - seams collapse: each segment after the first overlaps its predecessor by
+ *   one border width, so neighbouring borders draw one line
+ * - only the two outer ends keep the radius, on logical corners, so the
+ *   frame follows `dir="rtl"` and `data-orientation="vertical"`
+ * - a hovered segment is lifted above its neighbours (`z-index: 1`), a
+ *   focused one above that (`z-index: 2`), so neither a border nor the focus
+ *   ring is clipped at a seam
+ * - adjacent solid `primary` / `danger` segments get a seam line mixed from
+ *   the on-tone colour, since their fill and border share one colour
+ *
+ * **Toolbar (a group of groups)**
+ *
+ * A group whose direct children are groups spaces them by
+ * `--cngx-button-group-gap`, floored to `--cngx-target-gap` so a coarse
+ * pointer keeps 8px between sub-groups (WCAG 2.5.8).
+ *
+ * **Parts**
+ *
+ * - `.cngx-button-group__addon` - a non-interactive segment box: the group's
+ *   border, the row height of the group's `data-size`, content centred
+ * - `.cngx-button-group__separator` - a divider drawn as a border (survives
+ *   forced colors); it never collapses into its neighbours
+ *
+ * **Inheritance**
+ *
+ * - toolbar gap -> `--cngx-space-sm` (SET, so `[data-density]` re-scales)
+ * - addon inline padding -> `--cngx-space-md`
+ * - end radius -> `--cngx-radius-md`, the same rung as `--cngx-button-radius`
+ * - addon and separator colour -> `--cngx-color-border` /
+ *   `--cngx-color-surface` / `--cngx-color-text`
+ */
+
+@layer cngx.tokens {
+  /**
+   * Space between the sub-groups of a group of groups. Floored to
+   * `--cngx-target-gap` at the use site.
+   * @group Layout
+   */
+  @property --cngx-button-group-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Inline padding of an addon segment.
+   * @group Layout
+   */
+  @property --cngx-button-group-addon-padding-inline {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1rem;
+  }
+
+  /**
+   * Radius of the two outer ends. Inherits, so a value set on the group
+   * reaches the segments that read it.
+   * @group Layout
+   */
+  @property --cngx-button-group-radius {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.5rem;
+  }
+
+  /* SET from the scale on the host; the registered initial-value would beat a
+   * read-site fallback. */
+  :where(.cngx-button-group) {
+    --cngx-button-group-gap: var(--cngx-space-sm);
+    --cngx-button-group-radius: var(--cngx-radius-md, 0.5rem);
+  }
+  :where(.cngx-button-group__addon) {
+    --cngx-button-group-addon-padding-inline: var(--cngx-space-md);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-button-group) {
+    :scope {
+      display: inline-flex;
+      flex-direction: row;
+      align-items: stretch;
+      vertical-align: middle;
+      /* The z-index lift of a hovered or focused segment stays inside the group. */
+      isolation: isolate;
+    }
+    :scope[data-orientation='vertical'] {
+      flex-direction: column;
+    }
+
+    /* A group of groups: sub-groups sit apart. */
+    :scope:has(> .cngx-button-group) {
+      gap: max(var(--cngx-button-group-gap, 0.5rem), var(--cngx-target-gap, 0px));
+    }
+
+    /* Attached segments. The :not(:has()) compound lifts these rules to
+     * (0,2,0), above the (0,1,0) `:scope` base of the button sheet, whose own
+     * @scope root is closer and would win a specificity tie. */
+    :scope:not(:has(> .cngx-button-group)) > * {
+      position: relative;
+      margin: 0;
+      border-radius: 0;
+    }
+    :scope:not(:has(> .cngx-button-group)) > * + * {
+      margin-inline-start: calc(-1 * var(--cngx-button-border-width, 1px));
+    }
+    :scope:not(:has(> .cngx-button-group)) > :first-child {
+      border-start-start-radius: var(--cngx-button-group-radius, 0.5rem);
+      border-end-start-radius: var(--cngx-button-group-radius, 0.5rem);
+    }
+    :scope:not(:has(> .cngx-button-group)) > :last-child {
+      border-start-end-radius: var(--cngx-button-group-radius, 0.5rem);
+      border-end-end-radius: var(--cngx-button-group-radius, 0.5rem);
+    }
+
+    :scope[data-orientation='vertical']:not(:has(> .cngx-button-group)) > * + * {
+      margin-inline-start: 0;
+      margin-block-start: calc(-1 * var(--cngx-button-border-width, 1px));
+    }
+    :scope[data-orientation='vertical']:not(:has(> .cngx-button-group)) > :first-child {
+      border-radius: 0;
+      border-start-start-radius: var(--cngx-button-group-radius, 0.5rem);
+      border-start-end-radius: var(--cngx-button-group-radius, 0.5rem);
+    }
+    :scope[data-orientation='vertical']:not(:has(> .cngx-button-group)) > :last-child {
+      border-radius: 0;
+      border-end-start-radius: var(--cngx-button-group-radius, 0.5rem);
+      border-end-end-radius: var(--cngx-button-group-radius, 0.5rem);
+    }
+    :scope[data-orientation='vertical']:not(:has(> .cngx-button-group)) > :first-child:last-child {
+      border-radius: var(--cngx-button-group-radius, 0.5rem);
+    }
+
+    /* A separator keeps its neighbours apart instead of collapsing the seam.
+     * Restates the attached prefix so it outranks the segment margins above. */
+    :scope:not(:has(> .cngx-button-group)) > .cngx-button-group__separator + * {
+      margin-inline-start: 0;
+      margin-block-start: 0;
+    }
+
+    /* Lift above the neighbours: hover over rest, focus over hover. */
+    :scope > :hover {
+      z-index: 1;
+    }
+    :scope > :is(:focus-visible, :has(:focus-visible)) {
+      z-index: 2;
+    }
+
+    /* Solid primary / danger segments share fill and border colour; a seam
+     * line mixed from the on-tone colour keeps them apart. */
+    :scope:not(:has(> .cngx-button-group))
+      > [data-variant='solid']:not([data-tone='neutral'])
+      + [data-variant='solid']:not([data-tone='neutral'], [aria-disabled='true']) {
+      border-inline-start-color: color-mix(
+        in oklch,
+        var(--cngx-button-on-tone, Canvas) 40%,
+        var(--cngx-button-tone, currentColor)
+      );
+    }
+    :scope[data-orientation='vertical']:not(:has(> .cngx-button-group))
+      > [data-variant='solid']:not([data-tone='neutral'])
+      + [data-variant='solid']:not([data-tone='neutral'], [aria-disabled='true']) {
+      border-inline-start-color: var(--cngx-button-tone, currentColor);
+      border-block-start-color: color-mix(
+        in oklch,
+        var(--cngx-button-on-tone, Canvas) 40%,
+        var(--cngx-button-tone, currentColor)
+      );
+    }
+
+    /* Addon: a non-interactive segment box at the row height of the group size. */
+    .cngx-button-group__addon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--cngx-space-xs, 4px);
+      box-sizing: border-box;
+      padding-block: var(--cngx-space-sm);
+      padding-inline: var(--cngx-button-group-addon-padding-inline, 1rem);
+      border: var(--cngx-button-border-width, 1px) solid var(--cngx-color-border, oklch(0.88 0.005 250));
+      background: color-mix(
+        in oklab,
+        var(--cngx-color-text, oklch(0.2 0.01 250)) 4%,
+        var(--cngx-color-surface, oklch(1 0 0))
+      );
+      color: var(--cngx-color-text, oklch(0.2 0.01 250));
+      font-size: var(--cngx-font-size-control, 1rem);
+      line-height: var(--cngx-line-height-base, 1.5);
+      white-space: nowrap;
+    }
+    :scope[data-size='xs'] > .cngx-button-group__addon {
+      padding-block: calc(var(--cngx-space-xs) / 2);
+      --cngx-button-group-addon-padding-inline: var(--cngx-space-sm);
+      font-size: var(--cngx-font-size-sm, 0.8125rem);
+    }
+    :scope[data-size='sm'] > .cngx-button-group__addon {
+      padding-block: var(--cngx-space-xs);
+      --cngx-button-group-addon-padding-inline: var(--cngx-space-sm);
+      font-size: var(--cngx-font-size-sm, 0.8125rem);
+    }
+    :scope[data-size='lg'] > .cngx-button-group__addon {
+      padding-block: calc(var(--cngx-space-sm) * 1.5);
+      --cngx-button-group-addon-padding-inline: var(--cngx-space-lg);
+      font-size: var(--cngx-font-size-lg, 1.0625rem);
+    }
+
+    /* Separator: a border, so forced colors keep it. The attached prefix
+     * outranks the segment margin reset. */
+    :scope:not(:has(> .cngx-button-group)) > .cngx-button-group__separator {
+      flex: none;
+      align-self: stretch;
+      inline-size: 0;
+      margin-block: var(--cngx-space-xs, 4px);
+      margin-inline: var(--cngx-space-xs, 4px);
+      border: 0;
+      border-inline-start: 1px solid var(--cngx-color-border, oklch(0.88 0.005 250));
+    }
+    :scope[data-orientation='vertical']:not(:has(> .cngx-button-group)) > .cngx-button-group__separator {
+      inline-size: auto;
+      block-size: 0;
+      border-inline-start: 0;
+      border-block-start: 1px solid var(--cngx-color-border, oklch(0.88 0.005 250));
+    }
+
+    /* More contrast: the addon frame takes the text colour like the outline
+     * buttons beside it. */
+    [data-contrast='more'] :scope > .cngx-button-group__addon {
+      border-color: currentColor;
+    }
+  }
+}
+
+/* forced-colors (WHCM): the button sheet paints a solid primary / danger
+ * segment with Highlight fill and border (`!important`), so two of them merge.
+ * A HighlightText seam keeps them apart. Unlayered, outside @scope,
+ * `!important` to beat the button's own forced rule. */
+@media (forced-colors: active) {
+  .cngx-button-group:not([data-orientation='vertical'])
+    > .cngx-button[data-variant='solid']:is([data-tone='primary'], [data-tone='danger'])
+    + .cngx-button[data-variant='solid']:is([data-tone='primary'], [data-tone='danger']) {
+    border-inline-start-color: HighlightText !important;
+  }
+  .cngx-button-group[data-orientation='vertical']
+    > .cngx-button[data-variant='solid']:is([data-tone='primary'], [data-tone='danger'])
+    + .cngx-button[data-variant='solid']:is([data-tone='primary'], [data-tone='danger']) {
+    border-block-start-color: HighlightText !important;
+  }
+}
