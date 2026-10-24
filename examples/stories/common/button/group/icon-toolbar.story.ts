@@ -8,39 +8,58 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'a11y', 'design'],
   artifact: 'standalone',
   focus: ['composition', 'a11y-pattern'],
-  apiComponents: ['CngxButtonGroup', 'CngxIconButton'],
-  moduleImports: ["import { CngxButtonGroup, CngxIconButton } from '@cngx/common/button';"],
-  imports: ['CngxButtonGroup', 'CngxIconButton'],
+  apiComponents: ['CngxButtonGroup', 'CngxIconButton', 'CngxIcon'],
+  moduleImports: [
+    "import { CngxButtonGroup, CngxIconButton } from '@cngx/common/button';",
+    "import { CngxIcon } from '@cngx/common/display';",
+  ],
+  imports: ['CngxButtonGroup', 'CngxIconButton', 'CngxIcon'],
   template: `
   <div cngxButtonGroup variant="outline" size="sm" aria-label="Editor actions">
     <div cngxButtonGroup aria-label="Clipboard">
       <button cngxIconButton aria-label="Cut">
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="3" /><circle cx="18" cy="18" r="3" /><path d="M8.1 15.9 19 4M15.9 15.9 5 4" /></svg>
+        <cngx-icon>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="3" /><circle cx="18" cy="18" r="3" /><path d="M8.1 15.9 19 4M15.9 15.9 5 4" /></svg>
+        </cngx-icon>
       </button>
       <button cngxIconButton aria-label="Copy">
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V5a2 2 0 0 1 2-2h10" /></svg>
+        <cngx-icon>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V5a2 2 0 0 1 2-2h10" /></svg>
+        </cngx-icon>
       </button>
       <button cngxIconButton aria-label="Paste">
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2" /><path d="M9 4V3h6v1M9 10h6M9 14h6" /></svg>
+        <cngx-icon>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2" /><path d="M9 4V3h6v1M9 10h6M9 14h6" /></svg>
+        </cngx-icon>
       </button>
     </div>
     <div cngxButtonGroup aria-label="Zoom">
       <button cngxIconButton aria-label="Zoom out">
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4M8 11h6" /></svg>
+        <cngx-icon>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4M8 11h6" /></svg>
+        </cngx-icon>
       </button>
       <button cngxIconButton aria-label="Zoom in">
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4M8 11h6M11 8v6" /></svg>
+        <cngx-icon>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4M8 11h6M11 8v6" /></svg>
+        </cngx-icon>
       </button>
       <button cngxIconButton aria-label="Fit to window">
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+        <cngx-icon>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+        </cngx-icon>
       </button>
     </div>
     <div cngxButtonGroup aria-label="History">
       <button cngxIconButton aria-label="Undo">
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5" /><path d="M4 9h11a5 5 0 0 1 0 10h-3" /></svg>
+        <cngx-icon>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5" /><path d="M4 9h11a5 5 0 0 1 0 10h-3" /></svg>
+        </cngx-icon>
       </button>
       <button cngxIconButton aria-label="Redo">
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5" /><path d="M20 9H9a5 5 0 0 0 0 10h3" /></svg>
+        <cngx-icon>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5" /><path d="M20 9H9a5 5 0 0 0 0 10h3" /></svg>
+        </cngx-icon>
       </button>
     </div>
   </div>`,

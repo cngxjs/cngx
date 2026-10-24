@@ -1,7 +1,7 @@
 ---
 title: "Composition: Split button"
 whenToUse: "A split button is a group of two buttons, not a new class. The main button runs the default action through cngxAsyncClick; the caret is an icon button with its own aria-label that opens a menu through cngxMenuTrigger and cngxPopoverTrigger. Both parts are separate Tab stops. The busy state is shared: a menu choice runs through the same action, and while it is pending the main button shows its busy layer and both parts refuse activation. Solid primary segments get a seam line so the two parts stay readable."
-symbols: [CngxButtonGroup, CngxButton, CngxIconButton, CngxAsyncClick, CngxMenuTrigger, CngxMenu, CngxMenuItem, CngxPopoverTrigger]
+symbols: [CngxButtonGroup, CngxButton, CngxIconButton, CngxIcon, CngxAsyncClick, CngxMenuTrigger, CngxMenu, CngxMenuItem, CngxPopoverTrigger]
 ---
 
 # Composition: Split button
@@ -13,6 +13,7 @@ A split button is a group of two buttons, not a new class. The main button runs 
 - `CngxButtonGroup`
 - `CngxButton`
 - `CngxIconButton`
+- `CngxIcon`
 - `CngxAsyncClick`
 - `CngxMenuTrigger`
 - `CngxMenu`
@@ -60,7 +61,9 @@ protected handleChoice(choice: string): void {
     [popover]="pop"
     (click)="pop.toggle()"
   >
-    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+    <cngx-icon>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+    </cngx-icon>
   </button>
 </div>
 <div cngxPopover placement="bottom-end" #pop="cngxPopover">
