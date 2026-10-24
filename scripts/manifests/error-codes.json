@@ -2060,7 +2060,7 @@
       "messages": [
         {
           "file": "projects/ui/action-button/action-button.ts",
-          "text": "[cngx-action-button] [toastSuccess]/[toastError] inputs and [cngxToastOn] on the same element will fire duplicate toasts. Use one or the other."
+          "text": "[cngxActionButton] [toastSuccess]/[toastError] inputs and [cngxToastOn] on the same element will fire duplicate toasts. Use one or the other."
         }
       ]
     },

@@ -321,18 +321,19 @@ test.describe('ui/action-button - padding derives from the density scale', () =>
   test('action-button padding tracks a root [data-density] (sm/md: 8px 16px -> 4px 8px)', async ({
     page,
   }) => {
-    // An action-button route loads the global .cngx-action-button CSS
-    // (ViewEncapsulation.None); the rule SETs --cngx-action-btn-padding from the scale.
+    // The action button renders on the button core and loads the global
+    // .cngx-button sheet (ViewEncapsulation.None); its :scope SETs the block
+    // and inline padding from --cngx-space-sm / --cngx-space-md.
     await gotoDemo(page, 'ui/action-button/async-button/random-outcome');
-    await page.locator('.cngx-action-button').first().waitFor({ state: 'attached' });
-    expect(await resolveVar(page, 'cngx-action-button', '--cngx-action-btn-padding')).toBe(
-      '8px 16px',
-    );
+    await page.locator('button.cngx-action-button').first().waitFor({ state: 'attached' });
+    expect(await resolveVar(page, 'cngx-button', '--cngx-button-padding-block')).toBe('8px');
+    expect(await resolveVar(page, 'cngx-button', '--cngx-button-padding-inline')).toBe('16px');
     expect(
-      await resolveVar(page, 'cngx-action-button', '--cngx-action-btn-padding', {
-        density: 'compact',
-      }),
-    ).toBe('4px 8px');
+      await resolveVar(page, 'cngx-button', '--cngx-button-padding-block', { density: 'compact' }),
+    ).toBe('4px');
+    expect(
+      await resolveVar(page, 'cngx-button', '--cngx-button-padding-inline', { density: 'compact' }),
+    ).toBe('8px');
   });
 });
 

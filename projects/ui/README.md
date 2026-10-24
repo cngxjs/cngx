@@ -161,30 +161,34 @@ element of your own lands in the body instead.
 
 ### CngxActionButton
 
-Action button molecule with built-in async status communication. Composes
-`CngxAsyncClick` internally, adding template projection for pending/succeeded/failed
-states, an `aria-live` region for screen reader announcements, optional toast
-integration, and a `state` property for downstream feedback consumers.
+Action button organism with built-in async status communication, on the cngx
+button core. `button[cngxActionButton]` sits on the native `<button>`: it
+co-hosts `CngxAsyncClick` as a host directive, takes the `CngxButton` axes
+(`variant` through the selector, `tone`, `size`) and `disabled` /
+`disabledReason`, and adds status labels or templates, optional toast
+integration and a `state` property for downstream feedback consumers. The
+labels sit stacked in one cell, so the button keeps the width of its widest
+label in every state.
 
 ```html
 <!-- Minimal -->
-<cngx-action-button [action]="save">Save</cngx-action-button>
+<button cngxActionButton tone="primary" [action]="save">Save</button>
 
 <!-- With template slots -->
-<cngx-action-button [action]="save">
+<button cngxActionButton [action]="save">
   Save
-  <ng-template cngxPending><mat-spinner diameter="18" /> Saving...</ng-template>
+  <ng-template cngxPending>Saving...</ng-template>
   <ng-template cngxSucceeded>Saved!</ng-template>
-  <ng-template cngxFailed let-err>{{ err }} -- retry?</ng-template>
-</cngx-action-button>
+  <ng-template cngxFailed let-err>{{ err }} - retry?</ng-template>
+</button>
 
 <!-- With toast feedback -->
-<cngx-action-button [action]="save" toastSuccess="Saved" toastError="Save failed">
+<button cngxActionButton [action]="save" toastSuccess="Saved" toastError="Save failed">
   Save
-</cngx-action-button>
+</button>
 
 <!-- Downstream state binding -->
-<cngx-action-button [action]="save" #btn="cngxActionButton">Save</cngx-action-button>
+<button cngxActionButton [action]="save" #btn="cngxActionButton">Save</button>
 <cngx-alert [state]="btn.state" severity="error" title="Details" />
 ```
 
@@ -192,14 +196,17 @@ integration, and a `state` property for downstream feedback consumers.
 
 | Input | Type | Default | Description |
 |-|-|-|-|
-| `action` | `AsyncAction` | required | Async action to execute on click |
+| `action` | `AsyncAction` | required | Async action to execute on click (the host directive's `cngxAsyncClick`) |
 | `feedbackDuration` | `number` | `2000` | Duration in ms to show feedback state |
-| `enabled` | `boolean` | `true` | When `false`, clicks are ignored |
-| `type` | `'button' \| 'submit' \| 'reset'` | `'button'` | Button type attribute |
-| `variant` | `ActionButtonVariant` | `'primary'` | Visual variant (`'primary'`, `'secondary'`, `'ghost'`) |
-| `pendingLabel` | `string` | -- | Fallback text while pending (when no `cngxPending` template) |
-| `succeededLabel` | `string` | -- | Fallback text after success (when no `cngxSucceeded` template) |
-| `failedLabel` | `string` | -- | Fallback text after failure (when no `cngxFailed` template) |
+| `cngxActionButton` | `CngxButtonVariant` | `solid` | Emphasis, bound through the selector; falls through group and config |
+| `tone` | `CngxButtonTone` | `neutral` | Intent |
+| `size` | `CngxButtonSize` | `md` | Size; `md` is the form-control row |
+| `disabled` | `boolean` | `false` | Rendered as `aria-disabled`; the button stays focusable, clicks are swallowed |
+| `disabledReason` | `string` | -- | Referenced through `aria-describedby` while disabled |
+| `type` | `'button' \| 'submit' \| 'reset'` | `'button'` | Native type |
+| `pendingLabel` | `string` | -- | Text while pending (when no `cngxPending` template); without one the idle label stays under the spinner |
+| `succeededLabel` | `string` | -- | Text after success (when no `cngxSucceeded` template) |
+| `failedLabel` | `string` | -- | Text after failure (when no `cngxFailed` template) |
 | `succeededAnnouncement` | `string` | -- | SR announcement on success (falls back to `succeededLabel`) |
 | `failedAnnouncement` | `string` | -- | SR announcement on failure (falls back to `failedLabel`) |
 | `externalState` | `CngxAsyncState<unknown>` | -- | External state override for visual status |
@@ -220,9 +227,9 @@ element -- a dev-mode warning is emitted if both are active.
 
 **Template directives:** `cngxPending`, `cngxSucceeded`, `cngxFailed` (project `<ng-template>` for each state)
 
-**CSS Classes:** `cngx-action-button`, `cngx-action-button--{variant}`
+**CSS Classes:** `cngx-button`, `cngx-action-button`; `data-variant` / `data-tone` / `data-size` / `data-status` on the host
 
-**Selector:** `cngx-action-button` -- exportAs `"cngxActionButton"`
+**Selector:** `button[cngxActionButton]` -- exportAs `"cngxActionButton"`
 
 ### CngxSidenav
 

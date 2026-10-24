@@ -12,6 +12,18 @@ import { InjectionToken, type Signal } from '@angular/core';
 export interface CngxHostInteractionState {
   /** `true` while the host is disabled; clicks are swallowed and `aria-disabled` is set. */
   readonly disabled: Signal<boolean>;
+  /**
+   * `true` while the host shows a run the directive did not start itself
+   * (an external async state the host reflects). Folded into `aria-busy`.
+   */
+  readonly busy?: Signal<boolean>;
+  /**
+   * Text the directive's live region speaks instead of its own settle
+   * announcement, for a host that derives the announcement from more than
+   * the directive's runs (labels, an external state). The host reads its
+   * copy untracked, so a language switch never re-voices the region.
+   */
+  readonly announcement?: Signal<string>;
 }
 
 /**

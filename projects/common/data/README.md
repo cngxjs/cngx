@@ -227,10 +227,10 @@ protected handleSave(): void {
 ### Template with action button
 
 ```html
-<cngx-action-button [action]="handleSave" variant="primary"
+<button cngxActionButton tone="primary" [action]="handleSave"
   pendingLabel="Saving..." succeededLabel="Saved">
   Save Resident
-</cngx-action-button>
+</button>
 ```
 
 ### Template with manual status
@@ -626,10 +626,10 @@ import { CngxEmptyState } from '@cngx/ui/empty-state';
               <header cngxCardHeader>{{ r.name }}</header>
               <div cngxCardBody>Room {{ r.room }}</div>
               <footer cngxCardFooter>
-                <cngx-action-button [action]="makeDelete(r.id)"
-                  variant="ghost" pendingLabel="Deleting...">
+                <button cngxActionButton="ghost" [action]="makeDelete(r.id)"
+                  pendingLabel="Deleting...">
                   Delete
-                </cngx-action-button>
+                </button>
               </footer>
             </cngx-card>
           }

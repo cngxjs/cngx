@@ -14,9 +14,9 @@
  *
  * **Inheritance**
  *
- * Tokens reuse the action-button namespace so the standalone
- * `cngxAsyncClick` variant inherits the same visual contract as
- * `CngxActionButton`:
+ * Tokens keep the action-button namespace (registered by
+ * `button[cngxActionButton]`, which co-hosts `cngxAsyncClick`), so a
+ * standalone `cngxAsyncClick` shares the same visual contract:
  *
  * - `--cngx-action-btn-succeeded-bg` -> `--cngx-color-success`
  * - `--cngx-action-btn-succeeded-color` -> `--cngx-color-success`

@@ -1,22 +1,26 @@
 # CngxActionButton
 
-Action button molecule combining async state tracking, visual feedback, and optional toast notifications.
+Async action button on the cngx button core: status labels, visual feedback and optional toast notifications on the native `<button>`.
 
 ## Import
 
 ```typescript
-import { CngxActionButton } from '@cngx/ui';
+import { CngxActionButton } from '@cngx/ui/action-button';
 ```
 
 ## Quick Start
 
 ```typescript
 import { Component } from '@angular/core';
-import { CngxActionButton } from '@cngx/ui';
+import { CngxActionButton } from '@cngx/ui/action-button';
 
 @Component({
   selector: 'app-example',
-  template: ` <cngx-action-button [action]="save"> Save Draft </cngx-action-button> `,
+  template: `
+    <button cngxActionButton tone="primary" [action]="save" pendingLabel="Saving..." succeededLabel="Saved">
+      Save Draft
+    </button>
+  `,
   imports: [CngxActionButton],
 })
 export class ExampleComponent {
@@ -26,71 +30,42 @@ export class ExampleComponent {
 
 ## Overview
 
-`CngxActionButton` is a molecule wrapping the `CngxAsyncClick` directive with built-in state communication, template slots, and optional toast integration. It uses `display: contents` - the host produces no DOM box; the inner `<button>` carries the directive directly.
+`button[cngxActionButton]` is an attribute component on the native `<button>`. `CngxAsyncClick` runs as a host directive on the same element, so the button carries `aria-busy`, the async state classes and the click guard itself; every attribute you write lands on the real button. The visual axes are the `CngxButton` ones: `cngxActionButton="outline"` binds the variant, `tone` and `size` are inputs, and `provideButtonConfig` / a button group apply as for `cngxButton`.
 
-The component supports three visual feedback pathways:
+Three feedback pathways:
 
-1. **Fallback labels** - `pendingLabel`, `succeededLabel`, `failedLabel` strings
+1. **Labels** - `pendingLabel`, `succeededLabel`, `failedLabel` strings
 2. **Template slots** - `cngxPending`, `cngxSucceeded`, `cngxFailed` directives
-3. **Automatic state prop** - bind `btn.state` to any state consumer
+3. **State** - bind `btn.state` to any state consumer
 
-A screen-reader-only `aria-live` region announces state transitions without visual noise.
+The idle content and the status labels render stacked in one cell; only the active one is visible and part of the button name. The button is always as wide as its widest label, so it never jumps after a run. Without a pending label or template, the idle label stays in place under the busy spinner.
 
 ## Accessibility
 
-- **ARIA roles:** The inner `<button>` carries all ARIA attributes from `CngxAsyncClick` - `aria-busy` when pending, no explicit role (semantic `<button>`).
-- **Keyboard interaction:**
-  - `Enter` / `Space` - Activate the action
-  - `Escape` - No special behavior (standard button)
-- **Screen reader:** `aria-live="polite"` region announces state transitions: "Action succeeded", "Action failed", and the optional custom announcements via `succeededAnnouncement` / `failedAnnouncement`.
-- **Focus management:** Focus remains on the button throughout the lifecycle - no focus trap or restoration.
+- **Name:** the visible label is the name; inactive labels are `aria-hidden`.
+- **Busy:** `aria-busy` while the action (or a bound `[externalState]`) is pending; the button is `aria-disabled` and swallows clicks until it settles.
+- **Disabled says why:** `[disabled]` renders `aria-disabled="true"` (the button stays focusable) and `disabledReason` is referenced through `aria-describedby` while disabled.
+- **Announcements:** the `cngxAsyncClick` live region next to the button speaks the settle, including an external success or failure: `succeededAnnouncement` -> `succeededLabel` -> the `CNGX_INTERACTIVE_I18N` default, same for failure. A language switch never re-voices a shown announcement.
+- **Keyboard:** native button; `Enter` / `Space` run the action, focus stays on the button.
 
 ## Composition
 
-`CngxActionButton` is built from these atomic units and integrates with:
+- **Host directive:** `CngxAsyncClick` (`action` and `feedbackDuration` forwarded).
+- **Core:** the `CngxButton` brain from `@cngx/common/button`; `CNGX_HOST_INTERACTION_STATE` tells the directive about `[disabled]`, an external run and the announcement text.
+- **Combines with:** `CngxPending`, `CngxSucceeded`, `CngxFailed`; `CngxToaster` for toast integration; `[cngxToastOn]` on the same element as an alternative to the toast inputs (not both, `CNGX3008`).
 
-- **Host directives:** Applies `CngxAsyncClick` directly on the inner `<button>` (not exposed as hostDirective).
-- **Combines with:** `CngxPending`, `CngxSucceeded`, `CngxFailed` template marker directives; `CngxToaster` for toast integration.
-- **Provides:** The `state` signal export for binding to any async state consumer.
-
-### Example: Composition Pattern
-
-```typescript
-// Bind button state to an alert
-<cngx-action-button #btn="cngxActionButton" [action]="save">
-  Save
-</cngx-action-button>
-<cngx-alert [state]="btn.state" title="Save Status" />
+```html
+<button cngxActionButton #btn="cngxActionButton" [action]="save">Save</button>
+<cngx-alert [state]="btn.state" title="Save status" />
 ```
 
 ## Styling
 
-All colors and spacing use CSS Custom Properties with Material 3 defaults. Override at any scope:
+The box, paint, sizes, disabled and busy states come from the `CngxButton` sheet (`--cngx-button-*` tokens). This component only adds the label stack. The async state tokens `--cngx-action-btn-pending-opacity`, `--cngx-action-btn-succeeded-*`, `--cngx-action-btn-failed-*` and `--cngx-action-btn-transition` stay for the `cngxAsyncClick` state classes.
 
-```scss
-// Override defaults in your component or global styles
-:host {
-  --cngx-action-btn-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --cngx-action-btn-radius: 8px;
-  --cngx-action-btn-primary-bg: #1565c0;
-  --cngx-action-btn-primary-color: #fff;
-}
-```
+## Migrating from `<cngx-action-button>`
 
-## Material Theme
-
-To apply Material Design 3 theme colors, include the theme SCSS in your global stylesheet:
-
-```scss
-@use '@angular/material' as mat;
-@use '@cngx/themes/material/action-button-theme' as action-btn;
-
-$theme: mat.define-theme((...));
-
-html {
-  @include mat.all-component-themes($theme);
-  @include action-btn.theme($theme);
-}
-```
-
-The theme mixin automatically derives success/error colors from Material's primary and error palettes. Both Material 3 (M3) and Material 2 (M2) are supported; colors adapt to the theme version automatically.
+- `<cngx-action-button [action]="save">Save</cngx-action-button>` becomes `<button cngxActionButton [action]="save">Save</button>`.
+- `variant="primary" | "secondary" | "ghost"` and `ActionButtonVariant` are gone: use `tone="primary"` for the old filled default, `cngxActionButton="outline"` or `"ghost"` for the others.
+- `[enabled]="false"` becomes `[disabled]="true"`; `disabledReason` keeps working.
+- The `--cngx-action-btn-*` colour, radius and padding tokens are gone; theme the `--cngx-button-*` tokens instead.

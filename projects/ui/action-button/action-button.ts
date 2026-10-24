@@ -1,88 +1,98 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
+  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
   contentChild,
   effect,
   inject,
+  Injector,
   input,
   signal,
   untracked,
-  viewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import {
+  injectButtonCore,
+  provideButtonDescribedBy,
+  type CngxButtonSize,
+  type CngxButtonTone,
+  type CngxButtonType,
+  type CngxButtonVariant,
+} from '@cngx/common/button';
+import {
+  CNGX_HOST_INTERACTION_STATE,
   CngxAsyncClick,
   CngxFailed,
   CngxPending,
   CngxSucceeded,
   injectInteractiveI18n,
   reflectAsyncDisplayStatus,
-  type AsyncAction,
+  type CngxHostInteractionState,
 } from '@cngx/common/interactive';
-import {
-  buildAsyncStateView,
-  createTransitionTracker,
-  nextUid,
-  type CngxAsyncState,
-} from '@cngx/core/utils';
+import { buildAsyncStateView, createTransitionTracker, type CngxAsyncState } from '@cngx/core/utils';
 import { CngxToastOn, CngxToaster, injectErrorDetail, injectFeedbackI18n } from '@cngx/ui/feedback';
 import { cngxDevWarn } from '@cngx/utils';
 
-/**
- * Visual variant for the action button - maps to a CSS class.
- */
-export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
+type LabelCell = 'idle' | 'pending' | 'success' | 'error';
 
 /**
- * Action button organism with built-in status communication.
+ * Action button organism with built-in status communication, on the
+ * cngx button core.
  *
- * Coordinates between the `CngxAsyncClick` atom (mechanism, ARIA, lifecycle)
- * and the consumer (intent, styling, labels). Provides template projection
- * for pending/succeeded/failed states and an `aria-live` region for screen
- * reader announcements.
+ * Sits on the native `<button>`: `cngxAsyncClick` runs as a host directive
+ * on the same element, the visual axes (`variant`, `tone`, `size`) and
+ * `disabled` / `disabledReason` come from the `CngxButton` brain, and every
+ * attribute the consumer writes lands on the real button. The component
+ * adds the status labels, the toast integration and the `state` view.
  *
- * Uses `display: contents` - the host produces no DOM box. The inner `<button>`
- * carries the `[cngxAsyncClick]` directive directly.
+ * The idle content and the pending, succeeded and failed labels (or
+ * templates) render stacked in one grid cell; only the active one is
+ * visible and named, so the button is always as wide as its widest label
+ * and never jumps after a run. Without a pending label or template, the
+ * idle label stays in place under the busy spinner.
  *
- * For full control, use `[cngxAsyncClick]` directly on any element instead.
+ * The status announcement is spoken through the `cngxAsyncClick` live
+ * region next to the button, also for a bound `[externalState]`.
+ *
+ * For full control, use `cngxButton` with `[cngxAsyncClick]` directly.
  *
  * ### Minimal (covers 80% of cases)
  * ```html
- * <cngx-action-button [action]="save">Save</cngx-action-button>
+ * <button cngxActionButton tone="primary" [action]="save">Save</button>
  * ```
  *
  * ### With string labels
  * ```html
- * <cngx-action-button [action]="save"
+ * <button cngxActionButton [action]="save"
  *   pendingLabel="Saving..." succeededLabel="Saved!" failedLabel="Failed">
  *   Save
- * </cngx-action-button>
+ * </button>
  * ```
  *
  * ### With template slots
  * ```html
- * <cngx-action-button [action]="save">
+ * <button cngxActionButton [action]="save">
  *   Save Draft
- *   <ng-template cngxPending><mat-spinner diameter="18" /> Saving...</ng-template>
+ *   <ng-template cngxPending>Saving...</ng-template>
  *   <ng-template cngxSucceeded>Saved!</ng-template>
  *   <ng-template cngxFailed let-err>{{ err }} - retry?</ng-template>
- * </cngx-action-button>
+ * </button>
  * ```
  *
  * ### With toast feedback
  * ```html
- * <cngx-action-button [action]="save" toastSuccess="Saved" toastError="Save failed">
+ * <button cngxActionButton [action]="save" toastSuccess="Saved" toastError="Save failed">
  *   Save
- * </cngx-action-button>
+ * </button>
  * ```
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/action-button/action-button.ts
  * @since 0.1.0
- * @relatedTo CngxAsyncClick, CngxPending, CngxSucceeded, CngxFailed, CngxToaster
+ * @relatedTo CngxButton, CngxAsyncClick, CngxPending, CngxSucceeded, CngxFailed, CngxToaster
  * @slot cngxPending Replaces the label while the action runs.
  * @slot cngxSucceeded Replaces the label after the action succeeds.
  * @slot cngxFailed Replaces the label when the action fails; gets the error.
@@ -92,73 +102,97 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
  * @axis level organism
  */
 @Component({
-  selector: 'cngx-action-button',
+  // eslint-disable-next-line @angular-eslint/component-selector -- attribute selector by design (sits on the native button)
+  selector: 'button[cngxActionButton]',
   standalone: true,
-  imports: [NgTemplateOutlet, CngxAsyncClick],
+  imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxActionButton',
+  hostDirectives: [
+    {
+      directive: CngxAsyncClick,
+      inputs: ['cngxAsyncClick: action', 'feedbackDuration'],
+    },
+  ],
+  providers: [
+    {
+      provide: CNGX_HOST_INTERACTION_STATE,
+      useFactory: (): CngxHostInteractionState => inject(CngxActionButton).hostInteraction,
+    },
+    provideButtonDescribedBy('CngxActionButton'),
+  ],
   host: {
-    style: 'display: contents',
+    class: 'cngx-button cngx-action-button',
+    '[attr.data-variant]': 'core.variant()',
+    '[attr.data-tone]': 'core.tone()',
+    '[attr.data-size]': 'core.size()',
+    '[attr.data-busy]': 'effectiveBusy() ? "true" : null',
+    '[attr.data-status]': 'effectiveStatus()',
+    '[attr.data-status-label]': 'activeCell() === "idle" ? null : ""',
+    '[attr.aria-disabled]': 'core.ariaDisabled()',
+    '[attr.aria-describedby]': 'core.describedBy()',
+    '[attr.type]': 'core.hostType()',
+    '[attr.disabled]': 'null',
   },
   template: `
-    <ng-template #idle><ng-content /></ng-template>
-
-    <button
-      [type]="type()"
-      [cngxAsyncClick]="action()"
-      [feedbackDuration]="feedbackDuration()"
-      [enabled]="clickEnabled()"
-      [busy]="effectiveBusy()"
-      [autoAnnounce]="false"
-      [succeededAnnouncement]="succeededAnnouncement() ?? succeededLabel()"
-      [failedAnnouncement]="failedAnnouncement() ?? failedLabel()"
-      [attr.aria-describedby]="describedBy()"
-      [class]="'cngx-action-button cngx-action-button--' + variant()"
-    >
-      @switch (effectiveStatus()) {
-        @case ('pending') {
+    <span class="cngx-button__label cngx-action-button__labels">
+      <span
+        class="cngx-action-button__label"
+        [attr.data-active]="activeCell() === 'idle' ? '' : null"
+        [attr.aria-hidden]="activeCell() === 'idle' ? null : 'true'"
+        ><ng-content
+      /></span>
+      @if (hasCell().pending) {
+        <span
+          class="cngx-action-button__label"
+          [attr.data-active]="activeCell() === 'pending' ? '' : null"
+          [attr.aria-hidden]="activeCell() === 'pending' ? null : 'true'"
+        >
           @if (pendingTpl(); as tpl) {
             <ng-container *ngTemplateOutlet="tpl.templateRef" />
-          } @else if (pendingLabel()) {
-            {{ pendingLabel() }}
           } @else {
-            <ng-container *ngTemplateOutlet="idle" />
+            {{ pendingLabel() }}
           }
-        }
-        @case ('success') {
+        </span>
+      }
+      @if (hasCell().success) {
+        <span
+          class="cngx-action-button__label"
+          [attr.data-active]="activeCell() === 'success' ? '' : null"
+          [attr.aria-hidden]="activeCell() === 'success' ? null : 'true'"
+        >
           @if (succeededTpl(); as tpl) {
             <ng-container *ngTemplateOutlet="tpl.templateRef" />
-          } @else if (succeededLabel()) {
-            {{ succeededLabel() }}
           } @else {
-            <ng-container *ngTemplateOutlet="idle" />
+            {{ succeededLabel() }}
           }
-        }
-        @case ('error') {
+        </span>
+      }
+      @if (hasCell().error) {
+        <span
+          class="cngx-action-button__label"
+          [attr.data-active]="activeCell() === 'error' ? '' : null"
+          [attr.aria-hidden]="activeCell() === 'error' ? null : 'true'"
+        >
           @if (failedTpl(); as tpl) {
             <ng-container
               *ngTemplateOutlet="tpl.templateRef; context: { $implicit: effectiveError() }"
             />
-          } @else if (failedLabel()) {
-            {{ failedLabel() }}
           } @else {
-            <ng-container *ngTemplateOutlet="idle" />
+            {{ failedLabel() }}
           }
-        }
-        @default {
-          <ng-container *ngTemplateOutlet="idle" />
-        }
+        </span>
       }
-    </button>
-    @if (disabledReason(); as reason) {
-      <span [id]="reasonId" class="cngx-action-button__sr-only">{{ reason }}</span>
+    </span>
+    @if (effectiveBusy() && activeCell() === 'idle') {
+      <span class="cngx-button__busy" aria-hidden="true">
+        <span class="cngx-button__spinner"></span>
+      </span>
     }
-    <span aria-live="polite" aria-atomic="true" class="cngx-action-button__sr-only">{{
-      effectiveAnnouncement()
-    }}</span>
+    <span class="cngx-button__reason" [id]="core.reasonId" hidden>{{ disabledReason() }}</span>
   `,
-  styleUrls: ['./action-button.css'],
+  styleUrls: ['../../common/button/button.component.css', './action-button.css'],
 })
 export class CngxActionButton {
   private readonly toaster = inject(CngxToaster, { optional: true });
@@ -167,20 +201,50 @@ export class CngxActionButton {
   private readonly externalToastOn = inject(CngxToastOn, { self: true, optional: true });
   protected readonly i18n = injectInteractiveI18n();
 
-  /** The async action to execute on click. */
-  readonly action = input.required<AsyncAction>();
+  // The host directive is resolved on first read: CngxAsyncClick is created
+  // before this component and injects the CNGX_HOST_INTERACTION_STATE it
+  // provides, so an eager inject here would be a cycle.
+  private readonly injector = inject(Injector);
+  private asyncClickRef: CngxAsyncClick | undefined;
+  private get asyncClick(): CngxAsyncClick {
+    return (this.asyncClickRef ??= this.injector.get(CngxAsyncClick, undefined, { self: true }));
+  }
 
-  /** Duration in ms to show success/error feedback. Passed through to `cngxAsyncClick`. */
-  readonly feedbackDuration = input<number>(2000);
+  /**
+   * Emphasis, bound through the selector: `cngxActionButton="outline"`. The
+   * bare attribute falls through to the group, the config and `solid`.
+   */
+  readonly variant = input<CngxButtonVariant | undefined, CngxButtonVariant | '' | undefined>(
+    undefined,
+    { alias: 'cngxActionButton', transform: (v) => (v === '' ? undefined : v) },
+  );
 
-  /** When `false`, clicks are ignored. Passed through to `cngxAsyncClick`. */
-  readonly enabled = input<boolean>(true);
+  /** Intent. Falls through to the config and `neutral`. */
+  readonly tone = input<CngxButtonTone | undefined>(undefined);
 
-  /** Button type attribute. Defaults to `'button'` to prevent accidental form submits. */
-  readonly type = input<'button' | 'submit' | 'reset'>('button');
+  /** Size. `md` matches the form-control row. Falls through to the group, the config and `md`. */
+  readonly size = input<CngxButtonSize | undefined>(undefined);
 
-  /** Visual variant - sets CSS class `cngx-action-button--{variant}`. */
-  readonly variant = input<ActionButtonVariant>('primary');
+  /**
+   * Rendered as `aria-disabled`; the button stays focusable and clicks are
+   * swallowed, so the action never starts.
+   */
+  readonly disabled = input(false, { transform: booleanAttribute });
+
+  /**
+   * Why the button is disabled, referenced through `aria-describedby` only
+   * while `[disabled]` is set.
+   */
+  readonly disabledReason = input<string | undefined>(undefined);
+
+  /**
+   * Ids of external description elements, joined into the button's
+   * `aria-describedby` before the disabled reason.
+   */
+  readonly describedBy = input<string | null>(null, { alias: 'cngxDescribedBy' });
+
+  /** Native `type`. Defaults to `'button'` so the button never submits a form by accident. */
+  readonly type = input<CngxButtonType | undefined>(undefined);
 
   /**
    * SR announcement on success. Falls back to `succeededLabel`, then
@@ -210,14 +274,6 @@ export class CngxActionButton {
   readonly externalState = input<CngxAsyncState<unknown> | undefined>(undefined);
 
   /**
-   * Reason the button is disabled, announced to screen readers while
-   * `[enabled]` is `false`. Rendered into a hidden region and referenced by
-   * `aria-describedby` only while disabled - an enabled button never carries
-   * the reference. No effect when `[enabled]` is `true`.
-   */
-  readonly disabledReason = input<string | undefined>(undefined);
-
-  /**
    * Toast message on success. Requires `CngxToaster` (via `provideFeedback(withToasts())`
    * or `provideToasts()`). Silently ignored when toaster is not provided.
    *
@@ -238,52 +294,84 @@ export class CngxActionButton {
   /** Duration for error toasts - `'persistent'` means manual dismiss only. */
   readonly toastErrorDuration = input<number | 'persistent'>('persistent');
 
-  /** @internal - inner CngxAsyncClick directive instance. Non-required to allow safe pre-view-init reads. */
-  private readonly asyncClick = viewChild(CngxAsyncClick);
-
   /**
    * @internal - effective status: reflects external `[externalState]` if
    * bound (through the shared `CngxAsyncStatus` reflection - one home for
-   * the state→display-bucket mapping), otherwise reads the inner
-   * `CngxAsyncClick` directive.
+   * the state->display-bucket mapping), otherwise reads the co-hosted
+   * `CngxAsyncClick`.
    */
   protected readonly effectiveStatus = computed(() => {
     const ext = this.externalState();
     if (ext) {
       return reflectAsyncDisplayStatus(ext);
     }
-    // Guard against pre-view-init reads of `state` from consumers.
-    const click = this.asyncClick();
-    return click ? click.status() : ('idle' as const);
+    return this.asyncClick.status();
   });
 
-  /** @internal - effective error value from external state or inner directive. */
+  /** @internal - effective error value from external state or the directive. */
   protected readonly effectiveError = computed(() => {
     const ext = this.externalState();
     if (ext) {
       return ext.error();
     }
-    const click = this.asyncClick();
-    return click ? click.error() : undefined;
+    return this.asyncClick.error();
   });
 
-  /** @internal - busy while the effective status (inner or external) is pending. */
+  /** @internal - busy while the effective status (directive or external) is pending. */
   protected readonly effectiveBusy = computed(() => this.effectiveStatus() === 'pending');
 
-  /**
-   * @internal - what the inner `CngxAsyncClick` may act on: only when the
-   * consumer enabled it AND no effective operation is in flight. Feeding this
-   * as `[enabled]` routes external-pending through the atom's own click guard,
-   * so a click cannot start a second run while an external state is pending.
-   */
-  protected readonly clickEnabled = computed(
-    () => this.enabled() && this.effectiveStatus() !== 'pending',
+  /** @internal - an external run in flight; the directive does not know about it. */
+  private readonly externalBusy = computed(
+    () => this.externalState() !== undefined && this.effectiveBusy(),
   );
 
   /**
+   * @internal - what the button core and the directive refuse: the
+   * consumer's `[disabled]`, or an external run in flight, so a click cannot
+   * start a second run while an external state is pending.
+   */
+  private readonly blocked = computed(() => this.disabled() || this.externalBusy());
+
+  /** @internal - the reason applies to the consumer's `[disabled]` only. */
+  private readonly reason = computed(() => (this.disabled() ? this.disabledReason() : undefined));
+
+  /** @internal - which status cells render: a label or a template for the state. */
+  protected readonly hasCell = computed(
+    () => ({
+      pending: !!this.pendingTpl() || !!this.pendingLabel(),
+      success: !!this.succeededTpl() || !!this.succeededLabel(),
+      error: !!this.failedTpl() || !!this.failedLabel(),
+    }),
+    {
+      equal: (a, b) => a.pending === b.pending && a.success === b.success && a.error === b.error,
+    },
+  );
+
+  /**
+   * @internal - the visible, named cell: the status cell when it exists,
+   * else the idle content.
+   */
+  protected readonly activeCell = computed<LabelCell>(() => {
+    const status = this.effectiveStatus();
+    const cells = this.hasCell();
+    if (status === 'pending' && cells.pending) {
+      return 'pending';
+    }
+    if (status === 'success' && cells.success) {
+      return 'success';
+    }
+    if (status === 'error' && cells.error) {
+      return 'error';
+    }
+    return 'idle';
+  });
+
+  /**
    * @internal - SR announcement derived from the effective status, so an
-   * external success/error settles audibly too (the inner directive only
-   * knows its own runs). Mirrors the label fallback chain the template uses.
+   * external success/error settles audibly too (the directive only knows
+   * its own runs). Spoken by the directive's live region through
+   * `CNGX_HOST_INTERACTION_STATE.announcement`. Mirrors the label fallback
+   * chain the template uses.
    */
   protected readonly effectiveAnnouncement = computed(() => {
     switch (this.effectiveStatus()) {
@@ -303,17 +391,28 @@ export class CngxActionButton {
     }
   });
 
-  /** @internal - stable id for the disabled-reason region. */
-  protected readonly reasonId = nextUid('cngx-action-button-reason');
-
   /**
-   * @internal - reference the reason region only while actually disabled by
-   * intent and a reason exists. accname traverses a directly referenced hidden
-   * node, so the id must be gated on the state it describes rather than left
-   * permanently pointing at a hidden region.
+   * @internal - what the co-hosted `CngxAsyncClick` folds in: the blocked
+   * flag, the external busy bit and the announcement.
    */
-  protected readonly describedBy = computed(() =>
-    !this.enabled() && this.disabledReason() ? this.reasonId : null,
+  readonly hostInteraction: CngxHostInteractionState = {
+    disabled: this.blocked,
+    busy: this.externalBusy,
+    announcement: this.effectiveAnnouncement,
+  };
+
+  /** @internal */
+  protected readonly core = injectButtonCore(
+    {
+      variant: this.variant,
+      tone: this.tone,
+      size: this.size,
+      disabled: this.blocked,
+      disabledReason: this.reason,
+      describedBy: this.describedBy,
+      type: this.type,
+    },
+    { variant: 'solid' },
   );
 
   private readonly lastUpdatedState = signal<Date | undefined>(undefined);
@@ -322,7 +421,7 @@ export class CngxActionButton {
    * Full `CngxAsyncState` view of this button's effective lifecycle.
    *
    * Reflects the external state when `[externalState]` is bound,
-   * otherwise the inner `CngxAsyncClick` directive's state.
+   * otherwise the co-hosted `CngxAsyncClick` state.
    *
    * Bind to any state consumer: `<cngx-alert [state]="btn.state" />`.
    */
@@ -348,7 +447,7 @@ export class CngxActionButton {
         if (this.toastSuccess() || this.toastError()) {
           cngxDevWarn(
             'CNGX3008',
-            '[cngx-action-button] [toastSuccess]/[toastError] inputs and [cngxToastOn] ' +
+            '[cngxActionButton] [toastSuccess]/[toastError] inputs and [cngxToastOn] ' +
               'on the same element will fire duplicate toasts. Use one or the other.',
           );
         }

@@ -782,12 +782,6 @@ export const LIVE_REGIONS = [
     testName: 'does not re-announce on a language flip',
   },
   {
-    file: 'projects/ui/action-button/action-button.ts',
-    region: 'CngxActionButton.span(effectiveAnnouncement)',
-    spec: 'projects/ui/action-button/action-button.spec.ts',
-    testName: 'does not re-announce on a language flip',
-  },
-  {
     file: 'projects/ui/chart-panel/chart-panel.component.ts',
     region: 'CngxChartPanel.span(busyStatus)',
     spec: 'projects/ui/chart-panel/chart-panel.component.spec.ts',
