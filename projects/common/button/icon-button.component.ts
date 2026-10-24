@@ -11,6 +11,7 @@ import {
 import { CNGX_HOST_INTERACTION_STATE } from '@cngx/common/interactive';
 import { cngxDevWarn } from '@cngx/utils';
 
+import { hasAccessibleName } from './accessible-name';
 import { injectButtonCore, provideButtonDescribedBy } from './button-core';
 import type {
   CngxButtonSize,
@@ -144,10 +145,7 @@ export class CngxIconButton {
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
       afterNextRender(() => {
-        const named = ['aria-label', 'aria-labelledby', 'title'].some(
-          (attr) => (host.getAttribute(attr) ?? '').trim() !== '',
-        );
-        if (named) {
+        if (hasAccessibleName(host)) {
           return;
         }
         cngxDevWarn(

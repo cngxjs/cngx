@@ -11,6 +11,7 @@ export type {
 
 export { CngxButton } from './button.component';
 export { CngxIconButton } from './icon-button.component';
+export { CngxCloseButton, CNGX_CLOSE_ICON } from './close-button.component';
 export { CngxButtonStart, CngxButtonEnd } from './slots';
 export {
   CNGX_BUTTON_CONFIG,

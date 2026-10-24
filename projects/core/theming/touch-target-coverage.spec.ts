@@ -39,11 +39,10 @@ const SIZE_FLOOR_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
   { file: 'projects/common/interactive/checkbox/checkbox.component.css', note: 'checkbox row' },
   { file: 'projects/common/interactive/radio/radio.component.css', note: 'radio row' },
   { file: 'projects/common/interactive/toggle/toggle.component.css', note: 'toggle row' },
-  { file: 'projects/common/interactive/close-button/close-button.css', note: 'close button' },
   { file: 'projects/common/interactive/copy/copy-block.css', note: 'copy button' },
   // @cngx/common/button
   { file: 'projects/common/button/button.component.css', note: 'button row (link variant exempt: inline text)' },
-  { file: 'projects/common/button/icon-button.component.css', note: 'icon button hit area (::before) + adjacent gap' },
+  { file: 'projects/common/button/icon-button.component.css', note: 'icon button hit area (::before) + adjacent gap; also floors cngxCloseButton' },
   // @cngx/common - display + directive-base skins (theming/components)
   { file: 'projects/common/display/chip/chip.component.css', note: 'interactive chip + remove button' },
   { file: 'projects/common/theming/components/cngx-button-toggle.css', note: 'segmented toggle button' },
@@ -100,10 +99,10 @@ const SIZE_FLOOR_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
   // @cngx/data-display
   { file: 'projects/data-display/treetable/treetable.component.css', note: 'treetable expander twisty' },
   // @cngx/ui - feedback
-  { file: 'projects/ui/feedback/alert/alert.css', note: 'alert dismiss + action' },
+  { file: 'projects/ui/feedback/alert/alert.css', note: 'alert action (dismiss floored by cngxCloseButton)' },
   { file: 'projects/ui/feedback/alert/alert-stack.css', note: 'alert-stack overflow toggle' },
-  { file: 'projects/ui/feedback/banner/banner-outlet.css', note: 'banner dismiss + action' },
-  { file: 'projects/ui/feedback/toast/toast-outlet.css', note: 'toast dismiss + action' },
+  { file: 'projects/ui/feedback/banner/banner-outlet.css', note: 'banner action (dismiss floored by cngxCloseButton)' },
+  { file: 'projects/ui/feedback/toast/toast-outlet.css', note: 'toast action (dismiss floored by cngxCloseButton)' },
   // @cngx/ui - tabs
   { file: 'projects/ui/tabs/tab-nav.component.css', note: 'tab-nav link' },
   { file: 'projects/ui/tabs/tab-overflow.component.css', note: 'tab-overflow trigger + item' },
@@ -233,7 +232,7 @@ describe('touch-target size-floor coverage manifest', () => {
     // The registry itself (system-tokens.css) declares the token and is not a
     // consumer, so it is excluded by construction. This count is the coarse net
     // alongside the per-file assertions and the source scan below.
-    expect(SIZE_FLOOR_HOSTS.length).toBe(58);
+    expect(SIZE_FLOOR_HOSTS.length).toBe(57);
   });
 });
 

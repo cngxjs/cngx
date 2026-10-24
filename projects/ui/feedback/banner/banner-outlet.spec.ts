@@ -95,7 +95,7 @@ describe('CngxBannerOutlet', () => {
     banner.show({ id: 'offline', message: 'Offline', severity: 'warning' });
     fixture.detectChanges();
     const dismissLabels = (): (string | null)[] =>
-      Array.from(outletEl.querySelectorAll('.cngx-banner__dismiss button')).map((b) =>
+      Array.from(outletEl.querySelectorAll('button.cngx-banner__dismiss')).map((b) =>
         b.getAttribute('aria-label'),
       );
     expect(dismissLabels()).toEqual(['Dismiss']);

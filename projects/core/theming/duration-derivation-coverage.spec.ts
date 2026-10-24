@@ -86,11 +86,6 @@ const DURATION_DERIVED_FAMILIES: readonly DurationFamily[] = [
     kind: 'real',
   },
   {
-    file: 'projects/common/interactive/close-button/close-button.css',
-    token: '--cngx-close-button-transition',
-    kind: 'real',
-  },
-  {
     file: 'projects/common/button/button.component.css',
     token: '--cngx-button-transition',
     kind: 'real',
@@ -281,7 +276,7 @@ describe('duration-derivation coverage manifest', () => {
   );
 
   it('fixes the manifest size so a bulk edit dropping a family is caught', () => {
-    expect(DURATION_DERIVED_FAMILIES.length).toBe(27);
+    expect(DURATION_DERIVED_FAMILIES.length).toBe(26);
   });
 });
 

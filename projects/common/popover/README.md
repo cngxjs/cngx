@@ -147,7 +147,7 @@ Add `cngxPopoverSheet` to a `[cngxPopover]` and the popover opens as a modal bot
   <header cngxPopoverSheetHeader cngxSwipeDismiss="down">
     <span cngxPopoverSheetHandle></span>
     <h2 cngxPopoverSheetTitle>City</h2>
-    <cngx-close-button label="Close" (click)="sheet.requestClose('close')" />
+    <button cngxCloseButton aria-label="Close" (click)="sheet.requestClose('close')"></button>
   </header>
   <ul>...</ul>
 </div>

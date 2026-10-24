@@ -1,5 +1,4 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { CngxCloseButton } from '@cngx/common/interactive';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -13,6 +12,7 @@ import {
   untracked,
   ViewEncapsulation,
 } from '@angular/core';
+import { CngxCloseButton } from '@cngx/common/button';
 import { createLanguageSection } from '@cngx/core/i18n';
 import type { CngxAsyncState } from '@cngx/core/utils';
 import { createOverrideMerge, nextUid } from '@cngx/core/utils';
@@ -159,11 +159,12 @@ const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER
             @if (closeTpl(); as tpl) {
               <ng-container *ngTemplateOutlet="tpl.templateRef" />
             } @else {
-              <cngx-close-button
-                [label]="closeLabel()"
+              <button
+                cngxCloseButton
+                [attr.aria-label]="closeLabel()"
                 class="cngx-popover-panel__close"
                 (click)="popover.hide()"
-              />
+              ></button>
             }
           }
         </div>

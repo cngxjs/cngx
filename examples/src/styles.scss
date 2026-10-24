@@ -512,6 +512,21 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   transition: min-block-size 0.15s ease;
 }
 
+// Icon and close buttons keep their visual box and grow the hit area through
+// a centred ::before, so the overlay moves onto the pseudo-element and the
+// host keeps its own paint and focus ring.
+.tt-hitbox.cngx-icon-button {
+  outline: revert-layer;
+  background: revert-layer;
+  border-radius: revert-layer;
+}
+.tt-hitbox.cngx-icon-button::before {
+  outline: 2px dashed var(--cngx-color-primary, oklch(0.66 0.19 50));
+  outline-offset: -1px;
+  background: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%, transparent);
+  border-radius: var(--cngx-radius-sm, 4px);
+}
+
 // Composite widgets render their tap targets internally, so their hosts can't
 // carry .tt-hitbox directly. Under the .tt-hitboxes marker (set on the demo
 // subtree) every internal tap target gets the same dashed hit-area overlay, so

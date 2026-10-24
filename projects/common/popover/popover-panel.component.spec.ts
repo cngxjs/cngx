@@ -269,7 +269,7 @@ describe('CngxPopoverPanel', () => {
 
   it('names the close button with the English default', () => {
     const { panelEl } = setup(CloseButtonHost);
-    const btn = panelEl.querySelector('.cngx-popover-panel__close button');
+    const btn = panelEl.querySelector('button.cngx-popover-panel__close');
     expect(btn?.getAttribute('aria-label')).toBe('Close');
   });
 
@@ -278,7 +278,7 @@ describe('CngxPopoverPanel', () => {
     const { fixture, panelEl } = setup(CloseButtonHost, [
       providePopoverPanel(withPopoverPanelLabels(labels)),
     ]);
-    const btn = panelEl.querySelector('.cngx-popover-panel__close button');
+    const btn = panelEl.querySelector('button.cngx-popover-panel__close');
     expect(btn?.getAttribute('aria-label')).toBe('Schliessen');
 
     labels.set({});
@@ -291,7 +291,7 @@ describe('CngxPopoverPanel', () => {
     const { fixture, panelEl } = setup(CloseButtonHost, [
       provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
     ]);
-    const btn = panelEl.querySelector('.cngx-popover-panel__close button');
+    const btn = panelEl.querySelector('button.cngx-popover-panel__close');
     expect(btn?.getAttribute('aria-label')).toBe('Close');
 
     pack.set({ locale: 'de', popover: { close: 'Schließen' } });
@@ -308,7 +308,7 @@ describe('CngxPopoverPanel', () => {
       ),
       providePopoverPanel(withPopoverPanelLabels(labels)),
     ]);
-    const btn = panelEl.querySelector('.cngx-popover-panel__close button');
+    const btn = panelEl.querySelector('button.cngx-popover-panel__close');
     expect(btn?.getAttribute('aria-label')).toBe('Zu');
 
     labels.set({});
@@ -488,19 +488,13 @@ describe('CngxPopoverPanel', () => {
         .join('\n');
 
       expect(styleText).toMatch(
-        /\.cngx-popover-panel__close\s*\{[\s\S]*?--cngx-close-button-radius:\s*999px/,
-      );
-      // The radius token reads on the atom's inner __btn (inherits:false), so
-      // the host override alone cannot reach it - the circular hover wash is fed
-      // at the read site.
-      expect(styleText).toMatch(
-        /\.cngx-popover-panel__close\s+\.cngx-close-button__btn\s*\{[\s\S]*?--cngx-close-button-radius:\s*999px/,
+        /\.cngx-popover-panel__close\.cngx-close-button\s*\{[\s\S]*?--cngx-close-button-radius:\s*999px/,
       );
       expect(styleText).toMatch(
-        /\.cngx-popover-panel__close\s*\{[\s\S]*?--cngx-close-button-size:\s*var\(--cngx-popover-panel-close-size/,
+        /\.cngx-popover-panel__close\.cngx-close-button\s*\{[\s\S]*?--cngx-close-button-size:\s*var\(--cngx-popover-panel-close-size/,
       );
       expect(styleText).toMatch(
-        /\.cngx-popover-panel__close\s*\{[\s\S]*?--cngx-close-button-hover-bg:\s*var\(--cngx-popover-panel-close-hover-bg/,
+        /\.cngx-popover-panel__close\.cngx-close-button\s*\{[\s\S]*?--cngx-close-button-hover-bg:\s*var\(--cngx-popover-panel-close-hover-bg/,
       );
       expect(styleText).not.toMatch(/\.cngx-popover-panel__close:hover\s*\{/);
       expect(styleText).not.toMatch(/\.cngx-popover-panel__close:focus-visible\s*\{/);
@@ -514,9 +508,9 @@ describe('CngxPopoverPanel', () => {
         .map((node) => node.textContent ?? '')
         .join('\n');
 
-      expect(styleText).toMatch(/\.cngx-popover-panel__close\s*\{[\s\S]*?position:\s*absolute/);
+      expect(styleText).toMatch(/\.cngx-popover-panel__close\.cngx-close-button\s*\{[\s\S]*?position:\s*absolute/);
       expect(styleText).toMatch(
-        /\.cngx-popover-panel__close\s*\{[\s\S]*?inset-inline-end:\s*var\(--cngx-popover-panel-close-offset/,
+        /\.cngx-popover-panel__close\.cngx-close-button\s*\{[\s\S]*?inset-inline-end:\s*var\(--cngx-popover-panel-close-offset/,
       );
     });
   });

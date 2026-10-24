@@ -73,7 +73,7 @@ describe('CngxToastOutlet', () => {
     const { fixture, outletEl } = setup();
     const toaster = fixture.debugElement.children[0].injector.get(CngxToaster);
     const dismissLabels = (): (string | null)[] =>
-      Array.from(outletEl.querySelectorAll('.cngx-toast__dismiss button')).map((b) =>
+      Array.from(outletEl.querySelectorAll('button.cngx-toast__dismiss')).map((b) =>
         b.getAttribute('aria-label'),
       );
     toaster.show({ message: 'Saved' });

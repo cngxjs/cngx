@@ -41,7 +41,7 @@
  * - `__body` - main content
  * - `__footer` - action row, divided by top border
  * - `__header-row` - header + optional close button
- * - `__close` - circular dismiss button, hover wash + focus ring
+ * - `__close` - circular dismiss button (`button[cngxCloseButton]`), hover wash
  * - `__arrow` - 45-degree square positioned by arrow-placement
  * - `__loading` / `__error` / `__empty` - async-state surfaces;
  *   `__error` picks up `--cngx-color-danger`, `__empty` dims to 0.6
@@ -460,29 +460,18 @@
     /* Pin the close to the panel's top inline-end corner (the panel host is
        position:fixed, so it is the containing block). Absolute takes it out of
        the header-row flow, so the button no longer floats in a tall row nor
-       depends on a header being present. */
-    .cngx-popover-panel__close {
+       depends on a header being present. The compound selector outranks the
+       button sheet's own position: relative on the same element. */
+    .cngx-popover-panel__close.cngx-close-button {
       position: absolute;
       top: var(--cngx-popover-panel-close-offset, 4px);
       inset-inline-end: var(--cngx-popover-panel-close-offset, 4px);
       z-index: 1;
       --cngx-close-button-size: var(--cngx-popover-panel-close-size, 28px);
-      /* Pill radius -> full circle on the square button. The close-button
-         radius token is typed <length>, so 50% would be rejected; a large
-         length renders the same circle and stays valid. */
+      /* Pill radius -> full circle on the square button; a large length
+         renders the same circle as 50%. */
       --cngx-close-button-radius: 999px;
-      --cngx-close-button-padding: 0;
       --cngx-close-button-hover-bg: var(--cngx-popover-panel-close-hover-bg, oklch(0 0 0 / 0.06));
-      --cngx-close-button-focus-outline: 2px solid var(--cngx-popover-panel-accent-text, currentColor);
-    }
-
-    /* Circular hover wash. The host-level --cngx-close-button-radius:50% above
-       is inert because the atom reads that token on its inner __btn with
-       inherits:false; feed it at the read site so the hover / focus surface is
-       a full circle rather than a rounded square. Panel-local by design - the
-       shared close-button atom stays untouched. */
-    .cngx-popover-panel__close .cngx-close-button__btn {
-      --cngx-close-button-radius: 999px;
     }
 
     .cngx-popover-panel__arrow {

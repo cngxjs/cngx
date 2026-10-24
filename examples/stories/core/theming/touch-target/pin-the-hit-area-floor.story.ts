@@ -13,7 +13,8 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxTouchTarget'],
   moduleImports: [
     "import { CngxTouchTarget } from '@cngx/core';",
-    "import { CngxCheckbox, CngxToggle, CngxRadioGroup, CngxRadio, CngxButtonToggleGroup, CngxButtonToggle, CngxCloseButton, CngxChipGroup, CngxChipInGroup } from '@cngx/common/interactive';",
+    "import { CngxCheckbox, CngxToggle, CngxRadioGroup, CngxRadio, CngxButtonToggleGroup, CngxButtonToggle, CngxChipGroup, CngxChipInGroup } from '@cngx/common/interactive';",
+    "import { CngxCloseButton } from '@cngx/common/button';",
     "import { CngxChip } from '@cngx/common/display';",
     "import { CngxTab, CngxTabContent } from '@cngx/common/tabs';",
     "import { CngxStep, CngxStepContent } from '@cngx/common/stepper';",
@@ -121,7 +122,7 @@ export const STORY: DemoSpec = {
       }
     </div>
 
-    <cngx-close-button class="tt-hitbox" label="Dismiss notice" />
+    <button cngxCloseButton class="tt-hitbox" aria-label="Dismiss notice"></button>
 
     <cngx-tab-group [(activeIndex)]="activeTab" aria-label="Account settings">
       <div cngxTab [label]="'Profile'">

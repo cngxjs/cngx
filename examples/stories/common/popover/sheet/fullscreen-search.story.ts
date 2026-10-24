@@ -13,7 +13,7 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxPopoverSheet', 'CngxPopoverSheetInitialFocus'],
   moduleImports: [
     "import { CngxPopover, CngxPopoverSheet, CngxPopoverSheetHeader, CngxPopoverSheetInitialFocus, CngxPopoverSheetTitle, CngxPopoverTrigger } from '@cngx/common/popover';",
-    "import { CngxCloseButton } from '@cngx/common/interactive';",
+    "import { CngxCloseButton } from '@cngx/common/button';",
   ],
   imports: [
     'CngxPopover',
@@ -52,7 +52,7 @@ export const STORY: DemoSpec = {
   >
     <header cngxPopoverSheetHeader>
       <h2 cngxPopoverSheetTitle style="margin: 0; font-size: 1rem; flex: 1">Country</h2>
-      <cngx-close-button label="Close" (click)="sheet.requestClose('close')" />
+      <button cngxCloseButton aria-label="Close" (click)="sheet.requestClose('close')"></button>
       <input
         cngxPopoverSheetInitialFocus
         type="search"

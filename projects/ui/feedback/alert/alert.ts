@@ -19,7 +19,7 @@ import {
 import { createMediaQuerySignal, type CngxAsyncState } from '@cngx/core/utils';
 
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
-import { CngxCloseButton } from '@cngx/common/interactive';
+import { CngxCloseButton } from '@cngx/common/button';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 import { injectFeedbackI18n } from '../config/feedback-i18n';
@@ -168,11 +168,12 @@ export class CngxAlertAction {}
       </div>
     </div>
     @if (effectiveClosable()) {
-      <cngx-close-button
-        [label]="dismissLabel()"
+      <button
+        cngxCloseButton
+        [attr.aria-label]="dismissLabel()"
         class="cngx-alert__dismiss"
         (click)="handleDismiss()"
-      />
+      ></button>
     }
   `,
   styleUrls: ['../styles/feedback-severity.css', './alert.css'],

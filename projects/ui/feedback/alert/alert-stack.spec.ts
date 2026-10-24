@@ -106,7 +106,7 @@ describe('CngxAlertStack', () => {
     alerter.show({ message: 'Dismissable', severity: 'error', scope: 'test' });
     fixture.detectChanges();
 
-    const dismiss = stackEl.querySelector('cngx-close-button') as HTMLElement;
+    const dismiss = stackEl.querySelector('button.cngx-close-button') as HTMLElement;
     expect(dismiss).toBeTruthy();
     dismiss.click();
     fixture.detectChanges();
@@ -194,7 +194,7 @@ describe('CngxAlertStack', () => {
     envAlerter.show({ message: 'Env alert', dismissible: true });
     fixture.detectChanges();
 
-    const dismiss = stackEl.querySelector('cngx-close-button') as HTMLElement;
+    const dismiss = stackEl.querySelector('button.cngx-close-button') as HTMLElement;
     dismiss.click();
     fixture.detectChanges();
 
@@ -412,7 +412,7 @@ describe('CngxAlertStack', () => {
     alerter.show({ message: 'Saved', severity: 'success', scope: 'test', dismissible: true });
     fixture.detectChanges();
     const dismissLabels = (): (string | null)[] =>
-      Array.from(stackEl.querySelectorAll('.cngx-alert-stack__dismiss button')).map((b) =>
+      Array.from(stackEl.querySelectorAll('button.cngx-alert-stack__dismiss')).map((b) =>
         b.getAttribute('aria-label'),
       );
     expect(dismissLabels()).toEqual(['Dismiss']);
