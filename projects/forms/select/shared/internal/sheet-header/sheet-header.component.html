@@ -23,28 +23,23 @@
   }
   @if (host.showDone()) {
     <button
-      type="button"
+      cngxButton="ghost"
       class="cngx-select-sheet-header__done"
-      [attr.aria-disabled]="closeDisabled()"
-      [attr.aria-describedby]="closeDescribedBy()"
+      [disabled]="host.closeBlocked()"
+      [disabledReason]="host.ariaLabels().commitPending"
       (click)="handleClose()"
     >
       {{ host.ariaLabels().sheetDone }}
     </button>
   }
   <button
-    type="button"
+    cngxCloseButton
     class="cngx-select-sheet-header__close"
     [attr.aria-label]="host.ariaLabels().sheetClose"
-    [attr.aria-disabled]="closeDisabled()"
-    [attr.aria-describedby]="closeDescribedBy()"
+    [disabled]="host.closeBlocked()"
+    [disabledReason]="host.ariaLabels().commitPending"
     (click)="handleClose()"
-  >
-    <span aria-hidden="true">{{ closeGlyph }}</span>
-  </button>
-  <span hidden class="cngx-select-sheet-header__pending" [id]="pendingId">{{
-    host.ariaLabels().commitPending
-  }}</span>
+  ></button>
   @if (host.showInput()) {
     <input
       type="search"

@@ -211,7 +211,7 @@ describe('CngxSelectSheetHeader', () => {
     const done = el.querySelector<HTMLButtonElement>('.cngx-select-sheet-header__done')!;
     const x = el.querySelector<HTMLButtonElement>('.cngx-select-sheet-header__close')!;
     expect(x.getAttribute('aria-label')).toBe('Close');
-    expect(done.textContent?.trim()).toBe('Done');
+    expect(done.querySelector('.cngx-button__label')!.textContent?.trim()).toBe('Done');
     expect(x.hasAttribute('aria-disabled')).toBe(false);
 
     harness.closeBlocked.set(true);
@@ -228,35 +228,52 @@ describe('CngxSelectSheetHeader', () => {
     expect(harness.close).toHaveBeenCalledTimes(1);
   });
 
+  it('renders X and Done as cngx buttons on the native element', () => {
+    const { el, open } = setup();
+    open();
+    const done = el.querySelector<HTMLButtonElement>('.cngx-select-sheet-header__done')!;
+    const x = el.querySelector<HTMLButtonElement>('.cngx-select-sheet-header__close')!;
+    expect(x.tagName).toBe('BUTTON');
+    expect(x.classList).toContain('cngx-close-button');
+    expect(x.getAttribute('type')).toBe('button');
+    expect(x.querySelector('.cngx-icon-button__glyph')!.getAttribute('aria-hidden')).toBe('true');
+    expect(done.classList).toContain('cngx-button');
+    expect(done.dataset['variant']).toBe('ghost');
+    expect(done.getAttribute('type')).toBe('button');
+  });
+
   it('names why X and Done are blocked only while a commit is pending', () => {
     const { harness, fixture, el, open } = setup();
     open();
     const done = el.querySelector<HTMLButtonElement>('.cngx-select-sheet-header__done')!;
     const x = el.querySelector<HTMLButtonElement>('.cngx-select-sheet-header__close')!;
-    const reason = el.querySelector<HTMLElement>('.cngx-select-sheet-header__pending')!;
-    expect(reason).not.toBeNull();
-    expect(reason.id).not.toBe('');
-    expect(reason.textContent?.trim()).toBe('Unavailable while saving');
+    const reasonOf = (btn: HTMLElement) =>
+      document.getElementById(btn.getAttribute('aria-describedby') ?? '')?.textContent?.trim();
     expect(x.hasAttribute('aria-describedby')).toBe(false);
     expect(done.hasAttribute('aria-describedby')).toBe(false);
 
     harness.closeBlocked.set(true);
     fixture.detectChanges();
-    expect(x.getAttribute('aria-describedby')).toBe(reason.id);
-    expect(done.getAttribute('aria-describedby')).toBe(reason.id);
+    expect(x.getAttribute('aria-disabled')).toBe('true');
+    expect(done.getAttribute('aria-disabled')).toBe('true');
+    expect(x.hasAttribute('disabled')).toBe(false);
+    expect(done.hasAttribute('disabled')).toBe(false);
+    expect(reasonOf(x)).toBe('Unavailable while saving');
+    expect(reasonOf(done)).toBe('Unavailable while saving');
 
     harness.ariaLabels.set({
       ...harness.ariaLabels(),
       commitPending: 'Wird gespeichert',
     });
     fixture.detectChanges();
-    expect(reason.textContent?.trim()).toBe('Wird gespeichert');
+    expect(reasonOf(x)).toBe('Wird gespeichert');
+    expect(reasonOf(done)).toBe('Wird gespeichert');
 
     harness.closeBlocked.set(false);
     fixture.detectChanges();
     expect(x.hasAttribute('aria-describedby')).toBe(false);
     expect(done.hasAttribute('aria-describedby')).toBe(false);
-    expect(el.querySelector('.cngx-select-sheet-header__pending')).toBe(reason);
+    expect(x.hasAttribute('aria-disabled')).toBe(false);
   });
 
   it('hides Done when the variant does not show it', () => {

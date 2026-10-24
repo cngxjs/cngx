@@ -8,6 +8,7 @@ import {
   viewChild,
   ViewEncapsulation,
 } from '@angular/core';
+import { CngxButton, CngxCloseButton } from '@cngx/common/button';
 import { CngxSwipeDismiss } from '@cngx/common/interactive';
 import {
   CngxPopoverSheet,
@@ -16,11 +17,9 @@ import {
   CngxPopoverSheetTitle,
 } from '@cngx/common/popover';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
-import { nextUid } from '@cngx/core/utils';
 
 import { CNGX_SELECT_SHEET_HEADER_HOST } from '../../sheet-header-host';
 import type { CngxSelectSheetHandleContext } from '../../template-slots';
-import { CNGX_SELECT_GLYPHS } from '../glyphs';
 import { createListboxKeyForward } from '../listbox-key-forward';
 import { CngxSelectSheetSearchFocus } from './sheet-search-focus.directive';
 
@@ -28,8 +27,11 @@ import { CngxSelectSheetSearchFocus } from './sheet-search-focus.directive';
  * @internal
  *
  * Header of a select-family panel while it is presented as a mobile sheet:
- * decorative handle, the field label as the dialog title, Done, X and, on
- * the input variants, a header input that drives the listbox. First child
+ * decorative handle, the field label as the dialog title, Done
+ * (`cngxButton`), X (`cngxCloseButton`) and, on the input variants, a header
+ * input that drives the listbox. While a pessimistic commit is pending, X
+ * and Done stay focusable, render `aria-disabled` and reference the
+ * `commitPending` copy as their disabled reason. First child
  * of the variant's `cngxPopover` element; hidden while anchored.
  *
  * The heading follows the field label text the form-field host publishes
@@ -41,6 +43,8 @@ import { CngxSelectSheetSearchFocus } from './sheet-search-focus.directive';
   standalone: true,
   imports: [
     NgTemplateOutlet,
+    CngxButton,
+    CngxCloseButton,
     CngxSwipeDismiss,
     CngxPopoverSheetHandle,
     CngxPopoverSheetTitle,
@@ -61,8 +65,6 @@ export class CngxSelectSheetHeader {
 
   private readonly swipe = viewChild(CngxSwipeDismiss);
   private readonly title = viewChild.required(CngxPopoverSheetTitle);
-
-  protected readonly closeGlyph = CNGX_SELECT_GLYPHS.clear;
 
   // A host that publishes `labelText` (cngx-form-field) keeps the heading on
   // the current label text, so a language flip while the sheet is open
@@ -91,15 +93,6 @@ export class CngxSelectSheetHeader {
 
   protected readonly activeId = computed(() => this.host.listboxRef()?.ad.activeId() ?? null);
 
-  protected readonly closeDisabled = computed(() => (this.host.closeBlocked() ? 'true' : null));
-
-  /** @internal Always-rendered reason node; referenced only while a commit is pending. */
-  protected readonly pendingId = nextUid('cngx-select-sheet-pending');
-
-  protected readonly closeDescribedBy = computed(() =>
-    this.host.closeBlocked() ? this.pendingId : null,
-  );
-
   protected readonly handleContext = computed<CngxSelectSheetHandleContext>(
     () => {
       const presentation = this.host.presentation();
@@ -116,6 +109,8 @@ export class CngxSelectSheetHeader {
     this.host.setSearchTerm((event.target as HTMLInputElement).value);
   }
 
+  // The buttons swallow activation while disabled; the guard keeps a
+  // programmatic call honest too.
   protected handleClose(): void {
     if (this.host.closeBlocked()) {
       return;
