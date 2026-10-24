@@ -54,3 +54,17 @@ export interface CngxOptionStatusHost {
 export const CNGX_OPTION_STATUS_HOST = new InjectionToken<CngxOptionStatusHost>(
   'CNGX_OPTION_STATUS_HOST',
 );
+
+/**
+ * Attribute that marks option chrome: a status rendering inside the option
+ * host (a commit-pending spinner, an error glyph) that must not count as
+ * option text. `CngxOption` skips every subtree carrying it when it derives
+ * its label from the projected text, so a status host that renders into the
+ * option sets it on the wrapper element of that rendering.
+ *
+ * @category common/interactive/listbox
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/option-status-host.ts
+ * @since 0.1.0
+ * @relatedTo CNGX_OPTION_STATUS_HOST, CngxOption
+ */
+export const CNGX_OPTION_CHROME_ATTR = 'data-cngx-option-chrome';

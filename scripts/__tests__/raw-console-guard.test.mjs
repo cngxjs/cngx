@@ -107,6 +107,7 @@ const EXPECTED_DEV_WRAPPERS = [
   'projects/common/stepper/warn-stepper-unhosted.ts#warnStepperControlUnhosted',
   'projects/common/popover/popover.directive.ts#warnMissingPopoverApi',
   'projects/common/popover/popover.directive.ts#warnMissingFloatingMiddleware',
+  'projects/common/popover/popover-sheet.directive.ts#warnSheetMisconfiguration',
 ];
 
 const CODE_PATTERN = /^CNGX\d{4}$/;

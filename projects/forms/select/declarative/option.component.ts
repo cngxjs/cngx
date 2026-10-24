@@ -48,11 +48,14 @@ import { CngxOption } from '@cngx/common/interactive';
   // so the enclosing listbox / AD discovers it.
   providers: [{ provide: CNGX_AD_ITEM, useExisting: CngxOption }],
   imports: [NgTemplateOutlet],
+  // `data-cngx-option-chrome` must equal CNGX_OPTION_CHROME_ATTR: a template
+  // cannot take an attribute name from a constant, so the select-shell spec
+  // asserts the status span by the constant instead.
   template: `
     <ng-content />
     @let s = option.statusSignal();
     @if (s !== null && s.tpl !== null) {
-      <span class="cngx-option__status" [attr.data-state]="s.kind">
+      <span class="cngx-option__status" [attr.data-state]="s.kind" data-cngx-option-chrome>
         <ng-container *ngTemplateOutlet="s.tpl" />
       </span>
     }

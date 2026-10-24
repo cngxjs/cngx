@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Subject, type Observable } from 'rxjs';
 
-import { CngxListbox, createListboxLabelMatch } from '@cngx/common/interactive';
+import { CngxListbox, CngxOption, createListboxLabelMatch } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
 import { CNGX_STATEFUL } from '@cngx/core/utils';
 import { stripBidiIsolates } from '@cngx/testing';
@@ -353,6 +353,38 @@ describe('CngxCombobox - search + filter', () => {
     const rows = fixture.nativeElement.querySelectorAll('[cngxOption]');
     expect(rows.length).toBe(1);
     expect((rows[0] as HTMLElement).textContent).toContain('Rot');
+  });
+
+  it('a row reused by the filter reports the new option label to the active descendant', () => {
+    const fixture = TestBed.createComponent(Host);
+    flush(fixture);
+    const input: HTMLInputElement = fixture.nativeElement.querySelector(
+      '.cngx-combobox__input',
+    );
+    input.focus();
+    flush(fixture);
+    const rowBefore = fixture.nativeElement.querySelector('[cngxOption]') as HTMLElement;
+    expect(rowBefore.textContent).toContain('Rot');
+
+    setInputValue(input, 'gr');
+    vi.advanceTimersByTime(350);
+    flush(fixture);
+
+    // Precondition: the filtered row at index 0 is the same node, now
+    // rendering a different option.
+    const rowAfter = fixture.nativeElement.querySelector('[cngxOption]') as HTMLElement;
+    expect(rowAfter).toBe(rowBefore);
+    const option = fixture.debugElement
+      .queryAll(By.directive(CngxOption))
+      .find((o) => o.nativeElement === rowAfter)
+      ?.injector.get(CngxOption);
+    expect(option?.value()).toBe('green');
+    expect(option?.label()).toBe('Grün');
+
+    const ad = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox).ad;
+    ad.highlightByValue('green');
+    flush(fixture);
+    expect(ad.activeItem()?.label).toBe('Grün');
   });
 
   it('[skipInitial] suppresses the hydrate-time empty emission but lets user terms through', () => {

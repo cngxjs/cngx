@@ -26,7 +26,29 @@ class ShellHost {
   readonly value = signal<string | undefined>(undefined);
 }
 
+@Component({
+  selector: 'cngx-select-shell-live-label-host',
+  standalone: true,
+  imports: [CngxSelectShell, CngxSelectOption],
+  template: `
+    <cngx-select-shell [label]="'Fruit'" [(value)]="value">
+      <cngx-option [value]="'a'">{{ label() }}</cngx-option>
+      <cngx-option [value]="'b'">Banana</cngx-option>
+    </cngx-select-shell>
+  `,
+})
+class LiveLabelHost {
+  readonly value = signal<string | undefined>('a');
+  readonly label = signal('Apple');
+}
+
 let mountedRoot: HTMLElement | null = null;
+
+const frames = async (count: number): Promise<void> => {
+  for (let i = 0; i < count; i++) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+};
 
 function mount(): HTMLElement {
   const fixture = TestBed.createComponent(ShellHost);
@@ -62,6 +84,24 @@ describe('CngxSelectShell geometry', () => {
     const host = mount();
     expect(computedValue(query(host, '.cngx-select-shell__trigger'), 'display')).toMatch(/flex$/);
     expect(computedValue(query(host, '.cngx-select-shell__caret'), 'flex-grow')).toBe('0');
+  });
+
+  it('echoes the current projected option text on the trigger after it changes', async () => {
+    const fixture = TestBed.createComponent(LiveLabelHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await frames(2);
+    fixture.detectChanges();
+    const label = query(mountedRoot, '.cngx-select-shell__label');
+    expect(label.textContent?.trim()).toBe('Apple');
+
+    fixture.componentInstance.label.set('Cherry');
+    fixture.detectChanges();
+    await frames(2);
+    fixture.detectChanges();
+    expect(label.textContent?.trim()).toBe('Cherry');
   });
 
   it('starts the value at the shared md inline padding of the field box', () => {

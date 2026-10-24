@@ -1,12 +1,15 @@
 import {
   afterNextRender,
   computed,
+  DestroyRef,
   Directive,
+  effect,
   ElementRef,
   inject,
   input,
   signal,
   type Signal,
+  untracked,
 } from '@angular/core';
 
 import { CNGX_AD_ITEM, CngxActiveDescendant, type CngxAdItemHandle } from '@cngx/common/a11y';
@@ -16,7 +19,36 @@ import { cngxDevError } from '@cngx/utils';
 import { CNGX_OPTION_CONTAINER } from './option-container';
 import { CNGX_OPTION_FILTER_HOST } from './option-filter-host';
 import { CNGX_OPTION_INTERACTION_HOST } from './option-interaction-host';
-import { CNGX_OPTION_STATUS_HOST, type CngxOptionStatus } from './option-status-host';
+import {
+  CNGX_OPTION_CHROME_ATTR,
+  CNGX_OPTION_STATUS_HOST,
+  type CngxOptionStatus,
+} from './option-status-host';
+
+const CHROME_SELECTOR = `[${CNGX_OPTION_CHROME_ATTR}]`;
+
+// Plain-text projection of the option, minus chrome subtrees (a status glyph
+// rendered into the host must not become part of the name).
+function readOptionText(el: HTMLElement): string {
+  if (!el.querySelector(CHROME_SELECTOR)) {
+    return (el.textContent ?? '').trim();
+  }
+  const collect = (node: Node): string => {
+    let text = '';
+    for (const child of Array.from(node.childNodes)) {
+      if (child.nodeType === child.TEXT_NODE) {
+        text += child.textContent ?? '';
+      } else if (
+        child.nodeType === child.ELEMENT_NODE &&
+        !(child as Element).hasAttribute(CNGX_OPTION_CHROME_ATTR)
+      ) {
+        text += collect(child);
+      }
+    }
+    return text;
+  };
+  return collect(el).trim();
+}
 
 /**
  * A single selectable option registered with a surrounding `CngxActiveDescendant`.
@@ -83,7 +115,10 @@ export class CngxOption implements CngxAdItemHandle {
   readonly value = input<unknown>(undefined);
   /** Disabled options are skipped in navigation and reject clicks. */
   readonly disabled = input<boolean>(false);
-  /** Optional explicit label used by typeahead. Falls back to trimmed `textContent`. */
+  /**
+   * Optional explicit label used by typeahead. Without it the label is the
+   * current trimmed text of the option, re-read whenever that text changes.
+   */
   readonly labelInput = input<string | undefined>(undefined, { alias: 'label' });
 
   /** Stable unique id set on the host, used by `aria-activedescendant`. */
@@ -96,12 +131,13 @@ export class CngxOption implements CngxAdItemHandle {
   private readonly filterHost = inject(CNGX_OPTION_FILTER_HOST, { optional: true });
   private readonly selectedState = signal(false);
   /**
-   * Snapshot of `nativeElement.textContent` taken in `afterNextRender`. The
-   * `textContent` getter is not a signal, so a reactive `label` cannot
-   * subscribe to it directly; the snapshot bridges DOM state into the
-   * reactive graph once the first render has populated text.
+   * Bumped whenever the host text may have changed: once in `afterNextRender`,
+   * then by the MutationObserver while no `[label]` is bound. The
+   * `textContent` getter is not a signal, so `label` reads the DOM and tracks
+   * this version instead of a written text copy.
    */
-  private readonly textContentSnapshot = signal('');
+  private readonly textVersion = signal(0);
+  private readonly rendered = signal(false);
 
   /**
    * Whether this option is currently highlighted. Reads the surrounding
@@ -165,18 +201,20 @@ export class CngxOption implements CngxAdItemHandle {
    * `innerHTML`. Consumers can text-interpolate this safely on a closed
    * trigger (`{{ option.label() }}`) without an XSS surface.
    *
-   * The textContent fallback is captured as a post-render snapshot
-   * (`afterNextRender`), so the signal is reactive on `labelInput` while
-   * still giving callers a non-empty value for static-text declarative
-   * options. Consumers with dynamic option text should bind `[label]`
-   * explicitly rather than relying on the projection.
+   * The text fallback is live: while no `[label]` is bound, a
+   * MutationObserver on the host re-reads the text after every change
+   * (an interpolation, a language flip), so typeahead, filtering, the
+   * active-descendant items and a trigger echo follow the current name.
+   * Subtrees marked with {@link CNGX_OPTION_CHROME_ATTR} are not part of it.
+   * With `[label]` bound the observer is disconnected.
    */
   readonly label: Signal<string> = computed(() => {
     const explicit = this.labelInput();
     if (explicit) {
       return explicit;
     }
-    return this.textContentSnapshot();
+    this.textVersion();
+    return readOptionText(this.elementRef.nativeElement as HTMLElement);
   });
 
   /**
@@ -188,9 +226,37 @@ export class CngxOption implements CngxAdItemHandle {
   readonly resolvedLabel = (): string => this.label();
 
   constructor() {
+    const el = this.elementRef.nativeElement as HTMLElement;
+    const bumpText = (): void => this.textVersion.update((v) => v + 1);
+    let observer: MutationObserver | null = null;
+    const disconnect = (): void => {
+      observer?.disconnect();
+      observer = null;
+    };
+
+    // Observe only while the text is the label source; `rendered` keeps the
+    // observer browser-only and after the first render. Text changed while a
+    // label was bound needs no catch-up: clearing `[label]` re-runs `label`,
+    // which reads the DOM fresh.
+    effect(() => {
+      const textIsLabel = this.rendered() && !this.labelInput();
+      untracked(() => {
+        if (!textIsLabel) {
+          disconnect();
+          return;
+        }
+        if (observer || typeof MutationObserver === 'undefined') {
+          return;
+        }
+        observer = new MutationObserver(bumpText);
+        observer.observe(el, { characterData: true, childList: true, subtree: true });
+      });
+    });
+    inject(DestroyRef).onDestroy(disconnect);
+
     afterNextRender(() => {
-      const el = this.elementRef.nativeElement as HTMLElement;
-      this.textContentSnapshot.set((el.textContent ?? '').trim());
+      bumpText();
+      this.rendered.set(true);
       if (typeof ngDevMode !== 'undefined' && ngDevMode && !this.label()) {
         cngxDevError(
           'CNGX1023',

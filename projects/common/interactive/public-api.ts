@@ -197,6 +197,7 @@ export {
   type CngxOptionContainerOption,
 } from './listbox/option-container';
 export {
+  CNGX_OPTION_CHROME_ATTR,
   CNGX_OPTION_STATUS_HOST,
   type CngxOptionStatus,
   type CngxOptionStatusHost,

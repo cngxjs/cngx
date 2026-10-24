@@ -62,7 +62,7 @@ import {
 | Directive | Selector | Role |
 |-|-|-|
 | `CngxListbox<T>` | `[cngxListbox]` | Container. Owns `value` / `selectedValues`, drives `aria-selected` / `aria-multiselectable`, hosts `CngxActiveDescendant` for roving navigation and typeahead. |
-| `CngxOption` | `[cngxOption]` | Single selectable row. Renders `role="option"`, stable `id` for `aria-activedescendant`, click + hover handlers. Label resolves from `[label]` input or trimmed `textContent`. |
+| `CngxOption` | `[cngxOption]` | Single selectable row. Renders `role="option"`, stable `id` for `aria-activedescendant`, click + hover handlers. Label resolves from `[label]` input or the current trimmed text (re-read while no `[label]` is bound). |
 | `CngxOptionGroup` | `[cngxOptionGroup]` | Visual + semantic grouping under `role="group"`. Children stay flat in the AD item list - groups are presentational. Nested groups dev-warn. |
 | `CngxListboxSearch` | `input[cngxListboxSearch]` | Search input. Hosts `CngxSearch` for debounce + term tracking; exposes `term` and `matchFn`. Bind via `[cngxSearchRef]` on the listbox - orthogonal composition, no ancestor injection. |
 | `CngxListboxTrigger<T>` | `[cngxListboxTrigger]` | Trigger atom. Pairs a focusable element with a listbox and a popover via explicit template refs. Owns the keyboard model (open/close, navigate, activate, focus return). Fires `backspaceOnEmpty` for tag-input deletion when co-located with a `CngxListboxSearch`. |

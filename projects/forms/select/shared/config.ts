@@ -349,7 +349,7 @@ export interface CngxSelectConfig {
    * provide `CNGX_PANEL_RENDERER_FACTORY` directly - that token wins.
    */
   readonly virtualization?: CngxSelectVirtualizationConfig | null;
-  /** Truncate threshold. Values ≤ 0 coerced to `1`. Default `3`. */
+  /** Truncate threshold. Values below 1 resolve to `1`, fractions are floored, non-finite values fall back to `3`. Default `3`. */
   readonly maxVisibleChips?: number;
   /**
    * Forces the scalar-commit error announce policy. `null` keeps each
@@ -639,10 +639,11 @@ export function withChipOverflow(
 }
 
 /**
- * Sets `maxVisibleChips` for truncate mode. Coerces ≤ 0 to `1`. Default `3`.
+ * Sets `maxVisibleChips` for truncate mode. Default `3`. Values below 1
+ * resolve to 1, fractions are floored, non-finite values fall back to 3.
  */
 export function withMaxVisibleChips(count: number): CngxSelectConfigFeature {
-  return feature({ maxVisibleChips: Math.max(1, count) });
+  return feature({ maxVisibleChips: count });
 }
 
 /**

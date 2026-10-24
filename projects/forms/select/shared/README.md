@@ -379,7 +379,7 @@ Plus the variant-specific slots (also defined here):
 ### `template-registry.ts`
 
 Three-stage cascade resolver. Variants declare their `contentChild()` queries inline (Angular's NG8110 rejects the call from helper functions) and pass the bundle to `createTemplateRegistry({...})`.
-The factory wires each query through `resolveTemplate` to deliver the resolved `Signal<TemplateRef | null>` per slot.
+The factory wires each query through `injectResolvedTemplate` to deliver the resolved `Signal<TemplateRef | null>` per slot.
 
 | Symbol | Purpose |
 |-|-|
@@ -397,7 +397,7 @@ Used internally by the registry + by tree-select for tree-specific slots that ar
 | Symbol | Purpose |
 |-|-|
 | `injectResolvedTemplate(directive, configKey)` | Internal helper for ad-hoc slot resolution (not in `public-api.ts`) |
-| `resolveTemplate(...)`                         | Alias of `injectResolvedTemplate`, kept for back-compat              |
+| `resolveTemplate(...)`                         | Deprecated alias of `injectResolvedTemplate`, kept for back-compat; lint-banned as an import |
 
 ### `internal/glyphs.ts`
 

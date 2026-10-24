@@ -263,13 +263,13 @@ Variant-specific slots that complement the table above:
 sequenceDiagram
   participant Panel as Panel template
   participant Registry as createTemplateRegistry
-  participant Cascade as resolveTemplate
+  participant Cascade as injectResolvedTemplate
   participant Instance as Instance contentChild
   participant Config as CNGX_SELECT_CONFIG
   participant Default as Library default
 
   Panel->>Registry: tpl.empty()
-  Registry->>Cascade: resolveTemplate(emptyDirective, 'empty')
+  Registry->>Cascade: injectResolvedTemplate(emptyDirective, 'empty')
   Cascade->>Instance: contentChild(CngxSelectEmpty)?
   alt Instance projected
     Instance-->>Cascade: TemplateRef
@@ -289,7 +289,7 @@ sequenceDiagram
 ```
 
 The cascade is `Instance contentChild → CNGX_SELECT_CONFIG.templates.<key> → null`.
-Variant components declare their `contentChild` queries inline (Angular's AOT compiler requires the call as a direct field initialiser - NG8110 rejects it from helper functions) and pass them as a bundle to `createTemplateRegistry {...})`. The factory wires each query through `resolveTemplate` to deliver the resolved `Signal<TemplateRef | null>` in one place.
+Variant components declare their `contentChild` queries inline (Angular's AOT compiler requires the call as a direct field initialiser - NG8110 rejects it from helper functions) and pass them as a bundle to `createTemplateRegistry {...})`. The factory wires each query through `injectResolvedTemplate` to deliver the resolved `Signal<TemplateRef | null>` in one place.
 
 ### Internal `CNGX_SELECT_GLYPHS` const
 
@@ -619,7 +619,7 @@ A few representative extension paths.
 
 1. Add the directive class + context interface in `shared/template-slots.ts`.
 2. Add the slot key to `CngxSelectTemplateContexts` and `CNGX_SELECT_DEFAULTS.templates` in `shared/config.ts`.
-3. Add the slot to `CngxSelectTemplateRegistryQueries` + `CngxSelectTemplateRegistry` in `shared/template-registry.ts`, then wire `resolveTemplate(...)` inside `createTemplateRegistry`.
+3. Add the slot to `CngxSelectTemplateRegistryQueries` + `CngxSelectTemplateRegistry` in `shared/template-registry.ts`, then wire `injectResolvedTemplate(...)` inside `createTemplateRegistry`.
 4. Each variant declares the corresponding `contentChild` and adds the field to the registry call.
 5. Bind the resolved `host.tpl.<slot>()` in the panel template with an `@else` default.
 6. Export the directive + context from `public-api.ts`.

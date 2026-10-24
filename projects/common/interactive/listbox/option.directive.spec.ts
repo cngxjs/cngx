@@ -1,13 +1,14 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxActiveDescendant } from '@cngx/common/a11y';
 import { mousePick } from '@cngx/testing';
 
 import { CngxOption } from './option.directive';
 import { CngxOptionGroup } from './option-group.directive';
+import { CNGX_OPTION_CHROME_ATTR } from './option-status-host';
 
 @Component({
   template: `
@@ -206,6 +207,140 @@ describe('CngxOption', () => {
       expect(opt.label()).toBe('Premium Service');
       expect(opt.label()).not.toContain('<');
       expect(opt.label()).not.toContain('>');
+    });
+  });
+
+  describe('live text fallback', () => {
+    @Component({
+      template: `<div cngxActiveDescendant tabindex="0">
+        <div cngxOption value="r" [label]="explicit()">
+          {{ text() }}
+          @if (chrome()) {
+            <span data-cngx-option-chrome>Saving</span>
+          }
+        </div>
+      </div>`,
+      imports: [CngxActiveDescendant, CngxOption],
+    })
+    class LiveTextHost {
+      readonly text = signal('Red');
+      readonly explicit = signal<string | undefined>(undefined);
+      readonly chrome = signal(false);
+    }
+
+    // Observers per observed node; other directives (the AD host) observe
+    // their own elements, so only the option host counts.
+    const observed = new Map<Node, number>();
+    class CountingObserver extends MutationObserver {
+      private targets = new Set<Node>();
+      override observe(target: Node, options?: MutationObserverInit): void {
+        if (!this.targets.has(target)) {
+          this.targets.add(target);
+          observed.set(target, (observed.get(target) ?? 0) + 1);
+        }
+        super.observe(target, options);
+      }
+      override disconnect(): void {
+        for (const target of this.targets) {
+          observed.set(target, (observed.get(target) ?? 1) - 1);
+        }
+        this.targets.clear();
+        super.disconnect();
+      }
+    }
+
+    async function settle(fixture: ReturnType<typeof TestBed.createComponent>): Promise<void> {
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      // MutationObserver records are delivered in a microtask.
+      await Promise.resolve();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+    }
+
+    async function mount() {
+      observed.clear();
+      vi.stubGlobal('MutationObserver', CountingObserver);
+      TestBed.configureTestingModule({});
+      const fixture = TestBed.createComponent(LiveTextHost);
+      await settle(fixture);
+      const optionDe = fixture.debugElement.query(By.directive(CngxOption));
+      const opt = optionDe.injector.get(CngxOption);
+      const active = () => observed.get(optionDe.nativeElement as Node) ?? 0;
+      return { fixture, host: fixture.componentInstance, opt, active };
+    }
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('follows an interpolated text change while no label is bound', async () => {
+      const { fixture, host, opt } = await mount();
+      expect(opt.label()).toBe('Red');
+
+      host.text.set('Rot');
+      await settle(fixture);
+      expect(opt.label()).toBe('Rot');
+    });
+
+    it('lets [label] win and keeps no observer while it is set', async () => {
+      const { fixture, host, opt, active } = await mount();
+      expect(active()).toBe(1);
+
+      host.explicit.set('Crimson');
+      await settle(fixture);
+      expect(opt.label()).toBe('Crimson');
+      expect(active()).toBe(0);
+
+      host.text.set('Rot');
+      await settle(fixture);
+      expect(opt.label()).toBe('Crimson');
+    });
+
+    it('re-observes when [label] is cleared after first render', async () => {
+      const { fixture, host, opt, active } = await mount();
+      host.explicit.set('Crimson');
+      await settle(fixture);
+      host.text.set('Rot');
+      await settle(fixture);
+
+      host.explicit.set(undefined);
+      await settle(fixture);
+      expect(active()).toBe(1);
+      expect(opt.label()).toBe('Rot');
+
+      host.text.set('Rouge');
+      await settle(fixture);
+      expect(opt.label()).toBe('Rouge');
+    });
+
+    it('derives the current text on [label] clear without a MutationObserver', async () => {
+      const { fixture, host, opt } = await mount();
+      vi.stubGlobal('MutationObserver', undefined);
+      host.explicit.set('Crimson');
+      await settle(fixture);
+      host.text.set('Rot');
+      await settle(fixture);
+
+      host.explicit.set(undefined);
+      await settle(fixture);
+      expect(opt.label()).toBe('Rot');
+    });
+
+    it('leaves a chrome-marked child out of the label', async () => {
+      const { fixture, host, opt } = await mount();
+      host.chrome.set(true);
+      await settle(fixture);
+      const chrome = fixture.nativeElement.querySelector('span') as HTMLElement;
+      expect(chrome.hasAttribute(CNGX_OPTION_CHROME_ATTR)).toBe(true);
+      expect(opt.label()).toBe('Red');
+    });
+
+    it('disconnects its observer on destroy', async () => {
+      const { fixture, active } = await mount();
+      expect(active()).toBe(1);
+      fixture.destroy();
+      expect(active()).toBe(0);
     });
   });
 });

@@ -2,6 +2,7 @@ import { computed, type Signal } from '@angular/core';
 
 import type { CngxSelectOptionDef } from '../option.model';
 import { sameArrayContents } from './compare';
+import { coerceMaxVisibleChips } from './resolve-config';
 
 const NO_HIDDEN: readonly never[] = Object.freeze([]) as readonly never[];
 
@@ -15,7 +16,7 @@ export interface ChipOverflowOptions<T> {
   readonly selectedOptions: Signal<CngxSelectOptionDef<T>[]>;
   /** Overflow strategy. See `CngxSelectConfig.chipOverflow`. */
   readonly chipOverflow: Signal<'wrap' | 'scroll-x' | 'truncate'>;
-  /** Chip cap in `'truncate'`; floored to 1. */
+  /** Chip cap in `'truncate'`; coerced by `coerceMaxVisibleChips`. */
   readonly maxVisibleChips: Signal<number>;
 }
 
@@ -60,7 +61,7 @@ export function createChipOverflow<T>(opts: ChipOverflowOptions<T>): ChipOverflo
       if (opts.chipOverflow() !== 'truncate') {
         return all;
       }
-      const cap = Math.max(1, opts.maxVisibleChips());
+      const cap = coerceMaxVisibleChips(opts.maxVisibleChips());
       return all.length <= cap ? all : all.slice(0, cap);
     },
     // Structural equal - the truncate slice mints a new array per read.
@@ -72,7 +73,7 @@ export function createChipOverflow<T>(opts: ChipOverflowOptions<T>): ChipOverflo
       return 0;
     }
     const total = opts.selectedOptions().length;
-    const cap = Math.max(1, opts.maxVisibleChips());
+    const cap = coerceMaxVisibleChips(opts.maxVisibleChips());
     return total > cap ? total - cap : 0;
   });
 
@@ -82,7 +83,7 @@ export function createChipOverflow<T>(opts: ChipOverflowOptions<T>): ChipOverflo
         return NO_HIDDEN;
       }
       const all = opts.selectedOptions();
-      const cap = Math.max(1, opts.maxVisibleChips());
+      const cap = coerceMaxVisibleChips(opts.maxVisibleChips());
       return all.length <= cap ? NO_HIDDEN : all.slice(cap);
     },
     { equal: (a, b) => sameArrayContents(a, b, Object.is) },

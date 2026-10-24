@@ -89,6 +89,37 @@ function injectSheetPopover(): CngxPopover {
   return popover;
 }
 
+// Once per sheet instance and per flag: a nameless modal sheet, and a popover
+// mode that lets native light dismiss and Escape bypass closeRequested.
+function warnSheetMisconfiguration(
+  host: HTMLElement,
+  unnamed: boolean,
+  mode: string,
+  warned: { title: boolean; mode: boolean },
+): void {
+  if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
+    return;
+  }
+  if (!warned.title && unnamed) {
+    warned.title = true;
+    cngxDevWarn(
+      'CNGX1064',
+      '[cngxPopoverSheet] opened as a modal sheet without a name. Add a ' +
+        'cngxPopoverSheetTitle inside the panel or bind [labelledBy].',
+      host,
+    );
+  }
+  if (!warned.mode && mode !== 'manual') {
+    warned.mode = true;
+    cngxDevWarn(
+      'CNGX1065',
+      `[cngxPopoverSheet] needs mode="manual" on the popover, got "${mode}". ` +
+        'Native light dismiss and Escape bypass closeRequested in that mode.',
+      host,
+    );
+  }
+}
+
 /**
  * Turns a `CngxPopover` into a modal bottom sheet or fullscreen panel on
  * coarse, narrow viewports, and leaves it anchored everywhere else.
@@ -269,8 +300,7 @@ export class CngxPopoverSheet
   private lifted: HTMLElement[] = [];
   private releaseLock: (() => void) | null = null;
   private settlingFrame: number | null = null;
-  private warnedTitle = false;
-  private warnedMode = false;
+  private readonly devWarned = { title: false, mode: false };
   private closeWatcher: CloseWatcherLike | null = null;
 
   // Capture phase: the tap must be seen before anything under it reacts.
@@ -457,7 +487,12 @@ export class CngxPopoverSheet
     this.engaged = true;
     engagedSheets.push(this);
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-      this.warnOnMisconfiguration();
+      warnSheetMisconfiguration(
+        this.host,
+        !this.labelledBy() && !this.titleRegistry.current(),
+        this.popover.mode(),
+        this.devWarned,
+      );
     }
     this.savedFocus = this.openerToRestore();
     this.region.ensure();
@@ -520,7 +555,9 @@ export class CngxPopoverSheet
   }
 
   // Idempotent: hide(), the native toggle, a flip back to anchored and
-  // destroy can all reach it.
+  // destroy can all reach it. A flip back to anchored skips disengage(), so
+  // the pending hand-off runs here too before the scoped regions go; the next
+  // engage() recreates them.
   private release(): void {
     this.doc.removeEventListener('pointerdown', this.outsidePointerDown, true);
     this.doc.removeEventListener('keydown', this.escapeKeydown, true);
@@ -533,6 +570,8 @@ export class CngxPopoverSheet
     this.releaseLock?.();
     this.releaseLock = null;
     this.stopSettling();
+    this.handOffPendingAnnouncements();
+    this.region.destroy();
     this.engaged = false;
     this.savedFocus = null;
     const index = engagedSheets.indexOf(this);
@@ -688,28 +727,5 @@ export class CngxPopoverSheet
       this.settlingFrame = null;
     }
     this.host.removeAttribute(SETTLING_ATTRIBUTE);
-  }
-
-  private warnOnMisconfiguration(): void {
-    const unnamed = !this.labelledBy() && !this.titleRegistry.current();
-    if (typeof ngDevMode !== 'undefined' && ngDevMode && !this.warnedTitle && unnamed) {
-      this.warnedTitle = true;
-      cngxDevWarn(
-        'CNGX1064',
-        '[cngxPopoverSheet] opened as a modal sheet without a name. Add a ' +
-          'cngxPopoverSheetTitle inside the panel or bind [labelledBy].',
-        this.host,
-      );
-    }
-    const mode = this.popover.mode();
-    if (typeof ngDevMode !== 'undefined' && ngDevMode && !this.warnedMode && mode !== 'manual') {
-      this.warnedMode = true;
-      cngxDevWarn(
-        'CNGX1065',
-        `[cngxPopoverSheet] needs mode="manual" on the popover, got "${mode}". ` +
-          'Native light dismiss and Escape bypass closeRequested in that mode.',
-        this.host,
-      );
-    }
   }
 }

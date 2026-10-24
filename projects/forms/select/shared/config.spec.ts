@@ -12,6 +12,7 @@ import {
   withAnnouncer,
   withAriaLabels,
   withFallbackLabels,
+  withMaxVisibleChips,
   withMobileSheet,
   withPanelWidth,
   withTemplates,
@@ -452,5 +453,31 @@ describe('withMobileSheet', () => {
 
   it('turns the sheet off app-wide', () => {
     expect(resolveIn([provideSelectConfig(withMobileSheet('off'))]).mobileSheet).toBe('off');
+  });
+});
+
+describe('maxVisibleChips coercion', () => {
+  it.each([
+    [0, 1],
+    [-2, 1],
+    [2.7, 2],
+    [Number.NaN, 3],
+    [Number.POSITIVE_INFINITY, 3],
+  ])('a raw CNGX_SELECT_CONFIG value of %s resolves to %s', (raw, expected) => {
+    const config = resolveIn([{ provide: CNGX_SELECT_CONFIG, useValue: { maxVisibleChips: raw } }]);
+    expect(config.maxVisibleChips).toBe(expected);
+  });
+
+  it('an unset key resolves to the default 3', () => {
+    expect(resolveIn([]).maxVisibleChips).toBe(3);
+  });
+
+  it.each([
+    [0, 1],
+    [2.7, 2],
+    [Number.NaN, 3],
+  ])('withMaxVisibleChips(%s) resolves to %s', (count, expected) => {
+    const config = resolveIn([provideSelectConfig(withMaxVisibleChips(count))]);
+    expect(config.maxVisibleChips).toBe(expected);
   });
 });

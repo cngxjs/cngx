@@ -358,6 +358,17 @@ export function describeMobileSheet(
     });
 
     if (opts.showInput) {
+      it('derives aria-expanded on the header input from the panel state', () => {
+        const { fixture, variant, panel, open } = setup();
+        open();
+        const input = panel.querySelector<HTMLInputElement>('.cngx-select-sheet-header__input')!;
+        expect(input.getAttribute('aria-expanded')).toBe('true');
+        variant.close();
+        flush(fixture);
+        expect(input.isConnected).toBe(true);
+        expect(input.getAttribute('aria-expanded')).toBe('false');
+      });
+
       it('keeps the sheet open on Escape in the header input while a pessimistic commit is pending', () => {
         const { fixture, host, el, variant, panel, open, pickSecond } = setup();
         host.mode.set('pessimistic');

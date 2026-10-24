@@ -83,7 +83,7 @@ import {
   type ScalarCommitHandler,
 } from '../shared/scalar-commit-handler';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
-import { resolveTemplate } from '../shared/internal/resolve-template';
+import { injectResolvedTemplate } from '../shared/internal/resolve-template';
 import {
   CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
   type CngxCommitErrorAnnouncePolicy,
@@ -393,7 +393,10 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
    *
    * @internal
    */
-  protected readonly triggerLabelTpl = resolveTemplate(this.triggerLabelDirective, 'triggerLabel');
+  protected readonly triggerLabelTpl = injectResolvedTemplate(
+    this.triggerLabelDirective,
+    'triggerLabel',
+  );
 
   /**
    * Context bound to the `*cngxSelectTriggerLabel` outlet. Selected
