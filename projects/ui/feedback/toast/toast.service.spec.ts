@@ -99,6 +99,49 @@ describe('CngxToaster', () => {
     expect(toaster.toasts().length).toBe(2);
   });
 
+  it('never merges toasts that carry an action, so each keeps its own handler', () => {
+    const undoFirst = vi.fn();
+    const undoSecond = vi.fn();
+    const ref1 = toaster.show({
+      message: 'Item deleted',
+      severity: 'info',
+      title: 'Deleted',
+      action: { label: 'Undo', handler: undoFirst },
+    });
+    const ref2 = toaster.show({
+      message: 'Item deleted',
+      severity: 'info',
+      title: 'Deleted',
+      action: { label: 'Undo', handler: undoSecond },
+    });
+
+    const [second, first] = toaster.toasts();
+    expect(toaster.toasts().length).toBe(2);
+    expect(first.id).not.toBe(second.id);
+    expect(first.count).toBe(1);
+    expect(second.count).toBe(1);
+
+    first.config.action?.handler();
+    expect(undoFirst).toHaveBeenCalledTimes(1);
+    expect(undoSecond).not.toHaveBeenCalled();
+    second.config.action?.handler();
+    expect(undoSecond).toHaveBeenCalledTimes(1);
+    expect(undoFirst).toHaveBeenCalledTimes(1);
+
+    ref1.dismiss();
+    expect(toaster.toasts().map((t) => t.id)).toEqual([second.id]);
+    ref2.dismiss();
+    expect(toaster.toasts().length).toBe(0);
+  });
+
+  it('does not merge a plain toast into an identical toast that carries an action', () => {
+    const handler = vi.fn();
+    toaster.show({ message: 'Saved', action: { label: 'Undo', handler } });
+    toaster.show({ message: 'Saved' });
+    expect(toaster.toasts().length).toBe(2);
+    expect(toaster.toasts()[1].config.action?.handler).toBe(handler);
+  });
+
   it('does not dedup toasts with different severity', () => {
     toaster.show({ message: 'Same', severity: 'info' });
     toaster.show({ message: 'Same', severity: 'error' });

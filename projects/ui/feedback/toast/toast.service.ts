@@ -39,7 +39,11 @@ export interface ToastConfig {
   severity?: AlertSeverity;
   /** Auto-dismiss duration in ms, or `'persistent'` for manual dismiss only. */
   duration?: number | 'persistent';
-  /** Optional action button inside the toast. */
+  /**
+   * Optional action button inside the toast. A toast with an action is never
+   * merged by dedup: each `show()` gets its own toast, so every handler stays
+   * reachable.
+   */
   action?: { label: string; handler: () => void };
   /** Show dismiss button. */
   dismissible?: boolean;
@@ -156,9 +160,13 @@ export class CngxToaster {
     // Dedup key includes title but excludes description - same event with
     // different context detail is still the same event. Distinct content
     // templates never merge: the second template would be silently dropped.
+    // Toasts with an action never merge either, on either side: each one
+    // keeps its own handler (two "Item deleted" toasts need two Undo buttons).
     const now = Date.now();
     const existing = this.toasts().find(
       (t) =>
+        !config.action &&
+        !t.config.action &&
         t.config.message === config.message &&
         t.config.severity === severity &&
         (t.config.title ?? '') === (config.title ?? '') &&

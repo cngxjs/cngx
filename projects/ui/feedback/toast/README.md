@@ -190,6 +190,8 @@ key = message + severity + title
 
 When an identical toast fires again within the window, the existing toast's count is incremented and the timer restarts. The message displays as "X (2)" after dedup.
 
+Toasts that carry an `action` are never merged. Two "Item deleted" toasts with an Undo action each render as two toasts, and each Undo calls its own handler. Toasts with different content templates never merge either.
+
 
 
 ## Behavior
