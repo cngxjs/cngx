@@ -94,7 +94,7 @@ describe('createDocsResolver', () => {
     const deps: DocsResolverDeps = {
       fetchSnapshot: async () => ({ ok: true, path: '/tmp/wrong-schema.json' }),
       loadDocs: () => {
-        throw new SchemaVersionError(3, 2);
+        throw new SchemaVersionError(3);
       },
     };
 

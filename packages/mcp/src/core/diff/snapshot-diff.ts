@@ -2,7 +2,7 @@
 // each snapshot is loaded through the existing `loadDocsFromFile` (loader.ts:71) by
 // the caller, and this module walks the parsed entries and emits the categorized
 // `UsageDelta`. Renames are inferred only where a category has a structural
-// fingerprint strong enough to trust: a top-level entry (category + input/output
+// fingerprint strong enough to trust: a top-level entry (lib + input/output
 // name-sets) or a slot (its full description). A leaf member keyed only by a bare
 // type (an input/output/token) is NOT rename-inferred - an unrelated same-typed
 // add/remove pair would masquerade as a rename - so it reports the removal and
@@ -10,6 +10,7 @@
 
 import type { DocsIndex } from '../data/loader.js';
 import type { DocEntry } from '../data/types.js';
+import { entryLib } from '../query.js';
 import type {
   CategoryDelta,
   RemovedEntry,
@@ -81,11 +82,16 @@ function diffNamedList<T extends Named>(from: T[], to: T[], options: DiffOptions
   return { removed, renamed, signatureChanged };
 }
 
-/** A component/directive rename keeps its category and its input/output name sets. */
+/**
+ * A component/directive rename keeps its lib and its input/output name sets. The
+ * lib comes from `file`, which schema 2 and schema 6 produce identically; the
+ * schema-6 `category` is derived at a different granularity, so a cross-schema
+ * diff keyed on it would miss renames.
+ */
 function entryShapeKey(entry: DocEntry): string {
   const inputs = (entry.inputsClass ?? []).map((input) => input.name).sort().join(',');
   const outputs = (entry.outputsClass ?? []).map((output) => output.name).sort().join(',');
-  return `${entry.category ?? ''}|${inputs}|${outputs}`;
+  return `${entryLib(entry) ?? ''}|${inputs}|${outputs}`;
 }
 
 const selectorOf = (entry: DocEntry): string => entry.selector ?? '';

@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { loadDocsFromFile } from '../data/loader.js';
+import { createDocsIndex, loadDocsFromFile } from '../data/loader.js';
+import type { DocEntry, DocumentationJson } from '../data/types.js';
 import { diffSnapshots } from './snapshot-diff.js';
 import { classifyGhFailure, fetchSnapshot } from './snapshot-fetch.js';
 
@@ -20,7 +21,7 @@ describe('diffSnapshots', () => {
     expect(delta.inputs.signatureChanged).toEqual([]);
   });
 
-  it('infers a component rename from a stable category and shape', () => {
+  it('infers a component rename from a stable lib and shape', () => {
     expect(delta.components.renamed).toEqual([{ from: 'CngxOldPanel', to: 'CngxNewPanel' }]);
     expect(delta.components.signatureChanged).toEqual([]);
   });
@@ -80,11 +81,69 @@ describe('diffSnapshots rename inference is fingerprint-gated', () => {
   });
 
   it('still infers a top-level rename from the entry-shape fingerprint', () => {
-    const from = index('1.0.0', [{ name: 'CngxOld', category: 'ui', inputsClass: [{ name: 'open', type: 'boolean' }] }]);
-    const to = index('2.0.0', [{ name: 'CngxNew', category: 'ui', inputsClass: [{ name: 'open', type: 'boolean' }] }]);
+    const open = [{ name: 'open', type: 'boolean' }];
+    const from = index('1.0.0', [{ name: 'CngxOld', file: 'projects/ui/overlay/old.ts', inputsClass: open }]);
+    const to = index('2.0.0', [{ name: 'CngxNew', file: 'projects/ui/overlay/new.ts', inputsClass: open }]);
     const delta = diffSnapshots(from, to);
 
     expect(delta.components.renamed).toEqual([{ from: 'CngxOld', to: 'CngxNew' }]);
+  });
+
+  it('reports a removal when two added entries share the lib and shape, never a guess', () => {
+    const open = [{ name: 'open', type: 'boolean' }];
+    const from = index('1.0.0', [{ name: 'CngxOld', file: 'projects/ui/overlay/old.ts', inputsClass: open }]);
+    const to = index('2.0.0', [
+      { name: 'CngxNewA', file: 'projects/ui/overlay/a.ts', inputsClass: open },
+      { name: 'CngxNewB', file: 'projects/ui/sidenav/b.ts', inputsClass: open },
+    ]);
+    const delta = diffSnapshots(from, to);
+
+    expect(delta.components.renamed).toEqual([]);
+    expect(delta.components.removed).toEqual([{ name: 'CngxOld' }]);
+  });
+
+  it('pairs two file-less entries through the empty-lib key', () => {
+    const open = [{ name: 'open', type: 'boolean' }];
+    const from = index('1.0.0', [{ name: 'CngxOld', inputsClass: open }]);
+    const to = index('2.0.0', [{ name: 'CngxNew', inputsClass: open }]);
+    const delta = diffSnapshots(from, to);
+
+    expect(delta.components.renamed).toEqual([{ from: 'CngxOld', to: 'CngxNew' }]);
+  });
+});
+
+describe('diffSnapshots across schema 2 and schema 6', () => {
+  const shape: Pick<DocEntry, 'inputsClass' | 'outputsClass'> = {
+    inputsClass: [{ name: 'value' }],
+    outputsClass: [{ name: 'valueChange' }],
+  };
+
+  it('pairs a rename whose derived category differs from the schema-2 tag', () => {
+    const from: DocumentationJson = {
+      schemaVersion: 2,
+      cngxVersion: '0.1.0-rc.8',
+      components: [
+        { name: 'CngxOldSelect', category: 'forms/select/single-select', file: 'projects/forms/select/single-select/old.ts', ...shape },
+      ],
+    };
+    const to: DocumentationJson = {
+      schemaVersion: 6,
+      cngxVersion: '0.1.0-rc.9',
+      components: [
+        {
+          name: 'CngxNewSelect',
+          file: 'projects/forms/select/single-select/new.ts',
+          feature: { entryPoint: '@cngx/forms/select', key: '' },
+          ...shape,
+        },
+      ],
+    };
+    const toIndex = createDocsIndex(to);
+
+    expect(toIndex.components[0].category).toBe('forms/select');
+    expect(diffSnapshots(createDocsIndex(from), toIndex).components.renamed).toEqual([
+      { from: 'CngxOldSelect', to: 'CngxNewSelect' },
+    ]);
   });
 });
 

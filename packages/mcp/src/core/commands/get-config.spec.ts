@@ -1,5 +1,6 @@
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { createDocsIndex } from '../data/loader.js';
+import { createDocsIndex, loadDocsFromFile } from '../data/loader.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
 import { answerVersioned, createDocsResolver } from '../data/docs-resolver.js';
 import type { DocFunction, DocumentationJson } from '../data/types.js';
@@ -177,6 +178,20 @@ describe('getConfig', () => {
     expect(result?.token).toBe('CNGX_NO_FILE_CONFIG');
     expect(result?.providers).toEqual([]);
     expect(result?.features).toEqual([]);
+  });
+});
+
+describe('getConfig over a schema-6 snapshot', () => {
+  const V6 = fileURLToPath(new URL('../../../test/fixtures/documentation.v6.sample.json', import.meta.url));
+
+  // Schema 6 carries no factoryKind; the loader derives it from di.role, so the
+  // file-proximity join answers as it did over schema 2.
+  it('lists the provider and feature co-located with CNGX_SELECT_CONFIG', () => {
+    const result = getConfig(loadDocsFromFile(V6), 'CNGX_SELECT_CONFIG');
+
+    expect(result).toMatchObject({ token: 'CNGX_SELECT_CONFIG', resolvedVia: 'token' });
+    expect(result?.providers).toEqual(['provideSelectConfig']);
+    expect(result?.features).toEqual([{ name: 'withPanelWidth', returnType: 'CngxSelectConfigFeature' }]);
   });
 });
 

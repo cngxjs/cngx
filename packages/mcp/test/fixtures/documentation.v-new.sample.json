@@ -35,6 +35,7 @@
       "name": "CngxNewPanel",
       "selector": "cngx-new-panel",
       "category": "ui/overlay",
+      "file": "projects/ui/overlay/new-panel.ts",
       "description": "Overlay panel.",
       "signal": true,
       "inputsClass": [

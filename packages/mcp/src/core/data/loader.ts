@@ -5,10 +5,18 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { projectSchemaV6 } from './schema-v6.js';
 import type { DocEntry, DocFunction, DocToken, DocumentationJson } from './types.js';
 
-/** The single `documentation.json` schema version this server supports. */
-export const SUPPORTED_SCHEMA_VERSION = 2;
+/**
+ * The `documentation.json` schema versions this server reads. Schema 6 is
+ * projected onto the schema-2 shape at load time (`schema-v6.ts`).
+ */
+export const SUPPORTED_SCHEMA_VERSIONS = [2, 6] as const;
+
+function isSupportedSchemaVersion(version: number): boolean {
+  return (SUPPORTED_SCHEMA_VERSIONS as readonly number[]).includes(version);
+}
 
 /**
  * Provenance the server reports at connect so an agent knows which cngx release
@@ -36,10 +44,10 @@ export interface DocsIndex {
 export class SchemaVersionError extends Error {
   constructor(
     readonly found: number,
-    readonly supported: number,
+    readonly supported: readonly number[] = SUPPORTED_SCHEMA_VERSIONS,
   ) {
     super(
-      `Unsupported documentation.json schemaVersion ${found}; @cngx/mcp supports ${supported}. ` +
+      `Unsupported documentation.json schemaVersion ${found}; @cngx/mcp supports ${supported.join(' and ')}. ` +
         `Regenerate the snapshot with a matching compodocx.`,
     );
     this.name = 'SchemaVersionError';
@@ -51,10 +59,11 @@ export class SchemaVersionError extends Error {
  * Throws {@link SchemaVersionError} on a schema mismatch - the guard the loader
  * spec pins in both directions.
  */
-export function createDocsIndex(doc: DocumentationJson): DocsIndex {
-  if (doc.schemaVersion !== SUPPORTED_SCHEMA_VERSION) {
-    throw new SchemaVersionError(doc.schemaVersion, SUPPORTED_SCHEMA_VERSION);
+export function createDocsIndex(raw: DocumentationJson): DocsIndex {
+  if (!isSupportedSchemaVersion(raw.schemaVersion)) {
+    throw new SchemaVersionError(raw.schemaVersion);
   }
+  const doc = raw.schemaVersion === 6 ? projectSchemaV6(raw) : raw;
   return {
     meta: {
       schemaVersion: doc.schemaVersion,
