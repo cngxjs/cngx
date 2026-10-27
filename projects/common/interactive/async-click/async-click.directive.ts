@@ -82,7 +82,7 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
     '[class.cngx-async--pending]': 'pending()',
     '[class.cngx-async--success]': 'succeeded()',
     '[class.cngx-async--error]': 'failed()',
-    '[attr.aria-busy]': 'pending() || busy() || null',
+    '[attr.aria-busy]': 'pending() || busy() || hostBusy() || null',
     '[attr.aria-disabled]': 'pending() || blocked() || null',
   },
 })
@@ -148,6 +148,9 @@ export class CngxAsyncClick {
     () => !this.enabled() || (this.hostState?.disabled() ?? false),
   );
 
+  /** @internal - a host-reflected run (`CNGX_HOST_INTERACTION_STATE.busy`). */
+  protected readonly hostBusy = computed(() => this.hostState?.busy?.() ?? false);
+
   private readonly pendingState = signal(false);
   private readonly succeededState = signal(false);
   private readonly failedState = signal(false);
@@ -176,7 +179,7 @@ export class CngxAsyncClick {
 
     effect(() => {
       const enabled = this.autoAnnounce();
-      const text = this.announcement();
+      const text = this.hostState?.announcement?.() ?? this.announcement();
 
       untracked(() => {
         if (!enabled) {

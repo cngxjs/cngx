@@ -1,5 +1,5 @@
 import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
-import { CngxCloseButton } from '@cngx/common/interactive';
+import { CngxCloseButton } from '@cngx/common/button';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -122,11 +122,12 @@ export type ToastPosition =
           }
         </div>
         @if (toast.config.dismissible) {
-          <cngx-close-button
-            [label]="dismissLabel()"
+          <button
+            cngxCloseButton
+            [attr.aria-label]="dismissLabel()"
             class="cngx-toast__dismiss"
             (click)="service.dismiss(toast.id)"
-          />
+          ></button>
         }
       </div>
     }

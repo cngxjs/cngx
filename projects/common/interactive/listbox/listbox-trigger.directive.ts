@@ -6,8 +6,8 @@ import { CngxListboxSearch } from './listbox-search.directive';
 /**
  * Minimum popover contract this trigger expects. Matches `CngxPopover` from
  * `@cngx/common/popover`, but declared structurally here to avoid an
- * entry-point circular dependency (popover already imports from interactive
- * for `CngxCloseButton`).
+ * entry-point circular dependency (popover imports from interactive, for
+ * `CngxSwipeDismiss` and the listbox among others).
  */
 interface PopoverController {
   readonly isVisible: () => boolean;

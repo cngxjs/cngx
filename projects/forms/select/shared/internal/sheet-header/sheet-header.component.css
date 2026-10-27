@@ -5,8 +5,9 @@
  * non-scrolling first row of `cngx-popover-sheet.css`.
  *
  * `--cngx-select-sheet-header-gap` is SET from the spacing scale, so the
- * header follows density. X and Done floor their hit area to
- * `--cngx-target-min`.
+ * header follows density. X (`cngxCloseButton`) and Done (`cngxButton`)
+ * take their box, paint, disabled colour and touch floor from the button
+ * family; this sheet keeps the select focus ring on them.
  */
 
 @layer cngx.components {
@@ -55,29 +56,12 @@
     unicode-bidi: isolate;
   }
 
+  /* X is a cngxCloseButton and Done a cngxButton: the button sheets own the
+     box, the paint, the disabled colour (GrayText under forced colors) and
+     the touch floor (X through its ::before hit area). */
   .cngx-select-sheet-header__done,
   .cngx-select-sheet-header__close {
     flex: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-block-size: var(--cngx-target-min, 0px);
-    min-inline-size: var(--cngx-target-min, 0px);
-    appearance: none;
-    border: 0;
-    background: transparent;
-    color: inherit;
-    cursor: pointer;
-    padding-inline: var(--cngx-select-sheet-header-gap, 8px);
-    font: inherit;
-  }
-
-  /* Disabled by colour, the field disabled recipe (38% text), never by
-     opacity: opacity would also fade the focus ring. */
-  .cngx-select-sheet-header__done[aria-disabled='true'],
-  .cngx-select-sheet-header__close[aria-disabled='true'] {
-    cursor: not-allowed;
-    color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
   }
 
   .cngx-select-sheet-header__done:focus-visible,
@@ -99,14 +83,5 @@
     box-sizing: border-box;
     min-block-size: var(--cngx-target-min, 0px);
     font: inherit;
-  }
-}
-
-/* The forced palette overrides the faded colour with ButtonText; GrayText is
-   the system colour for a disabled control. */
-@media (forced-colors: active) {
-  .cngx-select-sheet-header__done[aria-disabled='true'],
-  .cngx-select-sheet-header__close[aria-disabled='true'] {
-    color: GrayText;
   }
 }

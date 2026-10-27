@@ -9,7 +9,7 @@ import { CngxAlert } from './alert';
 // `@scope (.cngx-alert)` block SETs (alert.css): the alert is a top-aligned flex
 // row (icon, body, dismiss), the body grows and may shrink past its intrinsic
 // width so a long message wraps instead of pushing the dismiss off the edge, and
-// the dismiss is a centred inline-flex box whose hit area floors to the
+// the dismiss (a cngxCloseButton) keeps its box while its hit area floors to the
 // pointer-derived target. This one spec sits in `feedback/alert/`, which also
 // carries `alert-stack.css` under the folder-level coverage heuristic. jsdom
 // reports `''` for every one of these reads.
@@ -66,13 +66,20 @@ describe('CngxAlert geometry', () => {
   it('floors the dismiss hit area to the pointer-derived minimum', () => {
     const host = mount();
     const dismiss = query(host, '.cngx-alert__dismiss');
-    // min-inline-size / min-block-size are var(--cngx-target-min, 0px): inert on a
-    // fine pointer, lift to the floor on a coarse pointer so the close affordance
-    // always meets the touch-target minimum.
-    expect(computedValue(dismiss, 'min-inline-size')).toBe('0px');
-    expect(computedValue(dismiss, 'min-block-size')).toBe('0px');
+    // The dismiss is a cngxCloseButton: its visual box keeps its size and the
+    // centred ::before hit area is max(100%, var(--cngx-target-min, 0px)), inert
+    // on a fine pointer and lifted to the floor on a coarse one.
+    // 100% resolves against the padding box (the containing block of the
+    // absolutely positioned pseudo-element), so it is compared to clientWidth.
+    const box = dismiss.getBoundingClientRect();
+    const hit = (prop: 'inline-size' | 'block-size') =>
+      parseFloat(getComputedStyle(dismiss, '::before').getPropertyValue(prop));
+    expect(Math.abs(hit('inline-size') - dismiss.clientWidth)).toBeLessThanOrEqual(1);
+    expect(Math.abs(hit('block-size') - dismiss.clientHeight)).toBeLessThanOrEqual(1);
+    expect(hit('inline-size')).toBeLessThan(44);
     host.style.setProperty('--cngx-target-min', '44px');
-    expect(computedValue(dismiss, 'min-inline-size')).toBe('44px');
-    expect(computedValue(dismiss, 'min-block-size')).toBe('44px');
+    expect(hit('inline-size')).toBe(44);
+    expect(hit('block-size')).toBe(44);
+    expect(dismiss.getBoundingClientRect().width).toBeCloseTo(box.width, 0);
   });
 });

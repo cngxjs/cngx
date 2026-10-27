@@ -23,7 +23,7 @@ export const STORY: DemoSpec = {
     setTimeout(() => Math.random() > 0.4 ? resolve() : reject(new Error('Random failure')), 1200),
   );`,
   template: `
-  <cngx-action-button [action]="submitAction">
+  <button cngxActionButton tone="primary" [action]="submitAction">
     Submit Order
     <ng-template cngxPending>
       <span style="display:inline-flex;align-items:center;gap:6px">
@@ -32,5 +32,5 @@ export const STORY: DemoSpec = {
     </ng-template>
     <ng-template cngxSucceeded>Order placed!</ng-template>
     <ng-template cngxFailed let-err>{{ err }} - retry?</ng-template>
-  </cngx-action-button>`,
+  </button>`,
 };

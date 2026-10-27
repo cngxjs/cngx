@@ -1,6 +1,6 @@
 # @cngx/common/button
 
-Buttons that sit on the native element. `cngxButton` and `cngxIconButton` are attribute components on `<button>` and `<a>`, so native semantics, forms, `routerLink`, middle click and every attribute you write keep working on the real element. No wrapper, no inner button.
+Buttons that sit on the native element. `cngxButton` and `cngxIconButton` are attribute components on `<button>` and `<a>`, `cngxCloseButton` on `<button>`, so native semantics, forms, `routerLink`, middle click and every attribute you write keep working on the real element. No wrapper, no inner button.
 
 ## Quick Start
 
@@ -55,6 +55,18 @@ Density, text scale, touch floor, motion and contrast are not inputs. They come 
 - **Busy.** Co-host `cngxAsyncClick`: the label keeps its place under a spinner, `aria-busy` and the announcement stay with the directive. Under reduced motion the ring stops turning.
 - **Touch.** Every control size floors to 44px on a coarse pointer; an icon button grows its hit area through a pseudo-element and keeps its visual size. The `link` variant is the inline exception (WCAG 2.5.8).
 - **Forced colors.** Every variant re-signals with system colours; disabled is `GrayText`.
+
+## Close button
+
+`button[cngxCloseButton]` is the icon button with the cngx X glyph, used by alerts, toasts, banners and the popover panel. Project a glyph to replace the X per instance, or provide `CNGX_CLOSE_ICON` (`provideFeedback(withCloseIcon(...))` in `@cngx/ui/feedback`) to swap it app-wide. The name is your copy on the host:
+
+```html
+<button cngxCloseButton aria-label="Close settings dialog" (click)="close()"></button>
+```
+
+It rests in the muted hint colour and lifts to the text colour on hover. It stays `ghost` and `sm` inside a group and under `provideButtonConfig`, so a dismiss affordance never turns loud by an app default; set `cngxCloseButton="outline"`, `size` or `tone` per instance. `[disabled]` with `disabledReason` keeps a blocked close focusable and says why. Size the box and the glyph with `--cngx-close-button-size` and `--cngx-close-button-icon-size`; `--cngx-close-button-color`, `--cngx-close-button-hover-bg` and `--cngx-close-button-radius` are the paint hooks. The coarse-pointer hit area grows through the icon button's `::before`, so a small box still meets the 44px floor. Without a name it warns `CNGX1071`.
+
+Migrating from `<cngx-close-button label="...">` in `@cngx/common/interactive`: import `CngxCloseButton` from `@cngx/common/button`, write `<button cngxCloseButton aria-label="...">`, and drop the inner `.cngx-close-button__btn` from selectors; `--cngx-close-button-padding`, `-focus-outline`, `-focus-offset`, `-bg`, `-border` and `-transition` are gone (the button tokens and the global focus ring take over).
 
 ## Composition
 

@@ -20,6 +20,7 @@
       "@cngx/common/popover": ["dist/common/types/cngx-common-popover.d.ts"],
       "@cngx/common/data": ["dist/common/types/cngx-common-data.d.ts"],
       "@cngx/common/display": ["dist/common/types/cngx-common-display.d.ts"],
+      "@cngx/common/button": ["dist/common/types/cngx-common-button.d.ts"],
       "@cngx/common/layout": ["dist/common/types/cngx-common-layout.d.ts"],
       "@cngx/forms/field": ["projects/forms/field/public-api.ts"],
       "@cngx/forms/select": ["projects/forms/select/public-api.ts"]

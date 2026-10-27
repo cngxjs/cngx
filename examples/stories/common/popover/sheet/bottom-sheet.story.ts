@@ -18,7 +18,8 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     "import { CngxPopover, CngxPopoverSheet, CngxPopoverSheetHandle, CngxPopoverSheetHeader, CngxPopoverSheetTitle, CngxPopoverTrigger } from '@cngx/common/popover';",
-    "import { CngxCloseButton, CngxSwipeDismiss } from '@cngx/common/interactive';",
+    "import { CngxCloseButton } from '@cngx/common/button';",
+    "import { CngxSwipeDismiss } from '@cngx/common/interactive';",
   ],
   imports: [
     'CngxPopover',
@@ -54,7 +55,7 @@ export const STORY: DemoSpec = {
       <header cngxPopoverSheetHeader cngxSwipeDismiss="down">
         <span cngxPopoverSheetHandle></span>
         <h2 cngxPopoverSheetTitle style="margin: 0; font-size: 1rem; flex: 1">City</h2>
-        <cngx-close-button label="Close" (click)="sheet.requestClose('close')" />
+        <button cngxCloseButton aria-label="Close" (click)="sheet.requestClose('close')"></button>
       </header>
       <ul style="margin: 0; padding: 0; list-style: none">
         @for (name of cities; track name) {

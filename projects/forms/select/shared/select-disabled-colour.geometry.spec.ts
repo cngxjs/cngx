@@ -2,6 +2,7 @@
 
 import { CUSTOM_ELEMENTS_SCHEMA, Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { CngxButton, CngxCloseButton } from '@cngx/common/button';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 import { cdp } from 'vitest/browser';
@@ -35,11 +36,13 @@ const SCHEMES = ['light', 'dark'] as const;
 
 // The panel rows are static markup under the shipped stylesheets, so the
 // data-mode rules are read without opening a popover. The declarative option
-// and optgroup are the real components.
+// and optgroup are the real components, and so are the sheet header's Done
+// (`cngxButton`) and X (`cngxCloseButton`), whose disabled paint the button
+// family owns.
 @Component({
   selector: 'cngx-select-disabled-colour-host',
   standalone: true,
-  imports: [CngxSelectOption, CngxSelectOptgroup],
+  imports: [CngxSelectOption, CngxSelectOptgroup, CngxButton, CngxCloseButton],
   styleUrls: [
     '../../../core/theming/system-tokens.css',
     './select-base.css',
@@ -52,21 +55,22 @@ const SCHEMES = ['light', 'dark'] as const;
     @for (scheme of schemes; track scheme) {
       <div [attr.data-color-scheme]="scheme" [class]="'scheme-' + scheme">
         <div class="cngx-select-sheet-header">
-          <button type="button" class="cngx-select-sheet-header__done done-on">Done</button>
+          <button cngxButton="ghost" class="cngx-select-sheet-header__done done-on">Done</button>
           <button
-            type="button"
+            cngxButton="ghost"
             class="cngx-select-sheet-header__done done-off"
-            aria-disabled="true"
+            [disabled]="true"
+            disabledReason="Saving"
           >
             Done
           </button>
           <button
-            type="button"
+            cngxCloseButton
             class="cngx-select-sheet-header__close close-off"
-            aria-disabled="true"
-          >
-            X
-          </button>
+            aria-label="Close"
+            [disabled]="true"
+            disabledReason="Saving"
+          ></button>
         </div>
         <div class="cngx-select__option opt-on">Red</div>
         <div class="cngx-select__option opt-off" aria-disabled="true">

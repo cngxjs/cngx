@@ -199,7 +199,7 @@ describe('announcement recorder over ui/feedback', () => {
   describe('CngxAlert', () => {
     function dismissButton(fixture: { nativeElement: HTMLElement }): HTMLButtonElement {
       return fixture.nativeElement.querySelector(
-        '.cngx-alert__dismiss button',
+        'button.cngx-alert__dismiss',
       ) as HTMLButtonElement;
     }
 

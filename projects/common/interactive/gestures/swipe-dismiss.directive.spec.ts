@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it, vi } from 'vitest';
 import { CngxSwipeDismiss } from './swipe-dismiss.directive';
+import { SWIPE_CAPTURE_SLOP_PX } from './swipe-engine';
 
 @Component({
   template: `<div
@@ -119,5 +120,100 @@ describe('CngxSwipeDismiss', () => {
     const { el } = setup();
     // Horizontal dismiss hands vertical panning back to the browser.
     expect(el.style.touchAction).toBe('pan-y');
+  });
+  describe('pointer capture', () => {
+    // Capture retargets the follow-up click to the host, so it must wait
+    // until the gesture is a swipe; a tap has to reach the child button.
+    function spyCapture(el: HTMLElement) {
+      const capture = vi.fn();
+      const release = vi.fn();
+      el.setPointerCapture = capture;
+      el.releasePointerCapture = release;
+      return { capture, release };
+    }
+
+    function down(el: HTMLElement, x: number): void {
+      el.dispatchEvent(
+        new PointerEvent('pointerdown', { pointerId: 7, clientX: x, clientY: 100, bubbles: true }),
+      );
+    }
+
+    function docEvent(type: string, x: number): void {
+      document.dispatchEvent(
+        new PointerEvent(type, { pointerId: 7, clientX: x, clientY: 100, bubbles: true }),
+      );
+    }
+
+    it('does not capture on pointerdown or a move inside the slop', () => {
+      const { el } = setup();
+      const { capture, release } = spyCapture(el);
+      down(el, 200);
+      expect(capture).not.toHaveBeenCalled();
+
+      docEvent('pointermove', 200 - SWIPE_CAPTURE_SLOP_PX);
+      expect(capture).not.toHaveBeenCalled();
+
+      docEvent('pointerup', 200 - SWIPE_CAPTURE_SLOP_PX);
+      expect(capture).not.toHaveBeenCalled();
+      expect(release).not.toHaveBeenCalled();
+    });
+
+    it('lets a tap on a child button deliver its click', () => {
+      const { el } = setup();
+      spyCapture(el);
+      const button = document.createElement('button');
+      const clicked = vi.fn();
+      button.addEventListener('click', clicked);
+      el.appendChild(button);
+
+      button.dispatchEvent(
+        new PointerEvent('pointerdown', {
+          pointerId: 7,
+          clientX: 200,
+          clientY: 100,
+          bubbles: true,
+        }),
+      );
+      expect(el.setPointerCapture).not.toHaveBeenCalled();
+      docEvent('pointerup', 200);
+      button.click();
+      expect(clicked).toHaveBeenCalledOnce();
+    });
+
+    it('captures once the move crosses the slop and releases on pointerup', () => {
+      const { el } = setup();
+      const { capture, release } = spyCapture(el);
+      down(el, 200);
+      docEvent('pointermove', 200 - SWIPE_CAPTURE_SLOP_PX - 1);
+      expect(capture).toHaveBeenCalledExactlyOnceWith(7);
+
+      docEvent('pointermove', 100);
+      expect(capture).toHaveBeenCalledOnce();
+
+      docEvent('pointerup', 100);
+      expect(release).toHaveBeenCalledExactlyOnceWith(7);
+    });
+
+    it('releases a captured pointer on pointercancel', () => {
+      const { el, dir } = setup();
+      const { capture, release } = spyCapture(el);
+      down(el, 200);
+      docEvent('pointermove', 150);
+      expect(capture).toHaveBeenCalledOnce();
+
+      docEvent('pointercancel', 150);
+      expect(release).toHaveBeenCalledExactlyOnceWith(7);
+      expect(dir.swiping()).toBe(false);
+    });
+
+    it('releases a captured pointer when the host is destroyed mid-swipe', () => {
+      const { fixture, el } = setup();
+      const { release } = spyCapture(el);
+      down(el, 200);
+      docEvent('pointermove', 150);
+
+      fixture.destroy();
+      expect(release).toHaveBeenCalledExactlyOnceWith(7);
+    });
   });
 });

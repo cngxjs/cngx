@@ -1,5 +1,15 @@
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { filter, fromEvent, map, merge, switchMap, takeUntil, tap } from 'rxjs';
+import { filter, finalize, fromEvent, map, merge, switchMap, takeUntil, tap } from 'rxjs';
+
+/**
+ * Movement in px a pointer may travel before the engine treats the gesture
+ * as a swipe and captures the pointer. Matches the tap tolerance of
+ * `CngxLongPress` (`moveThreshold` default) so both gestures agree on where
+ * a tap ends.
+ *
+ * @internal
+ */
+export const SWIPE_CAPTURE_SLOP_PX = 10;
 
 /** Raw pointer deltas of a settled gesture. @internal */
 export interface SwipeSettle {
@@ -19,8 +29,8 @@ export interface SwipeEngineHooks {
 /**
  * Shared pointer-gesture engine behind `CngxSwipe` and `CngxSwipeDismiss`.
  *
- * Owns the full hardening set so both directives stay in parity: pointer
- * capture on the host, a `pointercancel` arm, per-gesture `pointerId`
+ * Owns the full hardening set so both directives stay in parity: lazy
+ * pointer capture on the host, a `pointercancel` arm, per-gesture `pointerId`
  * filtering on the document-level streams, and `takeUntilDestroyed`
  * teardown. Must be called in an injection context.
  *
@@ -46,16 +56,29 @@ export function createSwipeEngine(el: HTMLElement, doc: Document, hooks: SwipeEn
         // hovering mid-gesture must not steer this gesture's deltas.
         const samePointer = (e: PointerEvent) => e.pointerId === pointerId;
 
-        // Capture the pointer on the host so subsequent move / up events
-        // route here even when the cursor leaves the original element
-        // (real mouse drags drift off the panel into the page chrome).
-        try {
-          el.setPointerCapture(pointerId);
-        } catch {
-          // setPointerCapture throws if pointerId is invalid (e.g.
-          // synthetic event in some test envs) - safe to ignore.
-        }
+        // Capture lazily: only once the pointer leaves the tap slop. Capturing
+        // on pointerdown retargets the follow-up `click` to the host, which
+        // kills every interactive child (close / done buttons in a sheet
+        // header). Past the slop it is a swipe, and capture keeps the
+        // pointerup coming even when it is released outside the window.
+        let captured = false;
+        const captureOnSlop = (dx: number, dy: number): void => {
+          if (captured || Math.hypot(dx, dy) <= SWIPE_CAPTURE_SLOP_PX) {
+            return;
+          }
+          captured = true;
+          try {
+            el.setPointerCapture(pointerId);
+          } catch {
+            // setPointerCapture throws if pointerId is invalid (e.g.
+            // synthetic event in some test envs) - safe to ignore.
+          }
+        };
         const release = (): void => {
+          if (!captured) {
+            return;
+          }
+          captured = false;
           try {
             el.releasePointerCapture(pointerId);
           } catch {
@@ -81,7 +104,12 @@ export function createSwipeEngine(el: HTMLElement, doc: Document, hooks: SwipeEn
 
         return pointerMove$.pipe(
           filter(samePointer),
-          tap((move) => hooks.onMove(move.clientX - startX, move.clientY - startY)),
+          tap((move) => {
+            const dx = move.clientX - startX;
+            const dy = move.clientY - startY;
+            captureOnSlop(dx, dy);
+            hooks.onMove(dx, dy);
+          }),
           takeUntil(
             settle$.pipe(
               tap((settle) => {
@@ -90,6 +118,9 @@ export function createSwipeEngine(el: HTMLElement, doc: Document, hooks: SwipeEn
               }),
             ),
           ),
+          // A new pointerdown (switchMap) or host destroy mid-drag must not
+          // strand the capture on the host.
+          finalize(release),
         );
       }),
       takeUntilDestroyed(),

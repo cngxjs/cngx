@@ -25,6 +25,11 @@ function deferred<T = void>() {
   return { promise, resolve, reject };
 }
 
+/** Text of the visible status cell; the inactive cells stay in the DOM, stacked. */
+function activeText(btn: HTMLElement): string {
+  return btn.querySelector('.cngx-action-button__label[data-active]')?.textContent?.trim() ?? '';
+}
+
 function buildMockState(initial: AsyncStatus = 'idle'): {
   state: CngxAsyncState<unknown>;
   status: ReturnType<typeof signal<AsyncStatus>>;
@@ -44,14 +49,14 @@ function buildMockState(initial: AsyncStatus = 'idle'): {
 
 @Component({
   template: `
-    <cngx-action-button
+    <button cngxActionButton
       [action]="action"
       pendingLabel="Saving..."
       succeededLabel="Done!"
       failedLabel="Error"
     >
       Save
-    </cngx-action-button>
+    </button>
   `,
   imports: [CngxActionButton],
 })
@@ -64,12 +69,12 @@ class SimpleHost {
 
 @Component({
   template: `
-    <cngx-action-button [action]="action" #ab="cngxActionButton">
+    <button cngxActionButton [action]="action" #ab="cngxActionButton">
       Save
       <ng-template cngxPending>Loading...</ng-template>
       <ng-template cngxSucceeded>OK</ng-template>
       <ng-template cngxFailed let-err>Err: {{ err }}</ng-template>
-    </cngx-action-button>
+    </button>
   `,
   imports: [CngxActionButton, CngxPending, CngxSucceeded, CngxFailed],
 })
@@ -81,7 +86,7 @@ class TemplateHost {
 // ── Variant host ────────────────────────────────────────────────────────
 
 @Component({
-  template: `<cngx-action-button [action]="action" variant="ghost">Delete</cngx-action-button>`,
+  template: `<button cngxActionButton [action]="action" cngxActionButton="ghost">Delete</button>`,
   imports: [CngxActionButton],
 })
 class VariantHost {
@@ -92,7 +97,7 @@ class VariantHost {
 
 @Component({
   template: `
-    <cngx-action-button [action]="action" [enabled]="enabled">Click</cngx-action-button>
+    <button cngxActionButton [action]="action" [disabled]="!enabled">Click</button>
   `,
   imports: [CngxActionButton],
 })
@@ -109,7 +114,7 @@ class EnabledHost {
 
 @Component({
   template: `
-    <cngx-action-button
+    <button cngxActionButton
       [action]="action"
       [externalState]="mockState"
       pendingLabel="Ext pending"
@@ -118,7 +123,7 @@ class EnabledHost {
       #ab="cngxActionButton"
     >
       Idle
-    </cngx-action-button>
+    </button>
   `,
   imports: [CngxActionButton],
 })
@@ -136,7 +141,7 @@ class ExternalStateHost {
 
 @Component({
   template: `
-    <cngx-action-button [action]="action" [externalState]="mockState">Idle</cngx-action-button>
+    <button cngxActionButton [action]="action" [externalState]="mockState">Idle</button>
   `,
   imports: [CngxActionButton],
 })
@@ -150,9 +155,9 @@ class UnlabelledExternalHost {
 
 @Component({
   template: `
-    <cngx-action-button [action]="action" [enabled]="enabled" [disabledReason]="reason">
+    <button cngxActionButton [action]="action" [disabled]="!enabled" [disabledReason]="reason">
       Save
-    </cngx-action-button>
+    </button>
   `,
   imports: [CngxActionButton],
 })
@@ -166,10 +171,10 @@ class DisabledReasonHost {
 
 @Component({
   template: `
-    <cngx-action-button [action]="action" [externalState]="mockState">
+    <button cngxActionButton [action]="action" [externalState]="mockState">
       Idle
       <ng-template cngxFailed let-err>Err: {{ err }}</ng-template>
-    </cngx-action-button>
+    </button>
   `,
   imports: [CngxActionButton, CngxFailed],
 })
@@ -181,14 +186,14 @@ class ExternalFailedTemplateHost {
 
 @Component({
   template: `
-    <cngx-action-button
+    <button cngxActionButton
       [action]="action"
       #btn="cngxActionButton"
       [cngxToastOn]="btn.state"
       toastSuccess="Saved!"
     >
       Save
-    </cngx-action-button>
+    </button>
   `,
   imports: [CngxActionButton, CngxToastOn],
 })
@@ -198,9 +203,9 @@ class DoubleToastHost {
 
 @Component({
   template: `
-    <cngx-action-button [action]="action" #btn="cngxActionButton" [cngxToastOn]="btn.state">
+    <button cngxActionButton [action]="action" #btn="cngxActionButton" [cngxToastOn]="btn.state">
       Save
-    </cngx-action-button>
+    </button>
   `,
   imports: [CngxActionButton, CngxToastOn],
 })
@@ -212,14 +217,14 @@ class BridgeOnlyHost {
 
 @Component({
   template: `
-    <cngx-action-button
+    <button cngxActionButton
       [action]="action"
       toastSuccess="Saved!"
       toastError="Save failed"
       [toastErrorDetail]="true"
     >
       Save
-    </cngx-action-button>
+    </button>
   `,
   imports: [CngxActionButton],
 })
@@ -230,9 +235,9 @@ class ToastHost {
 
 @Component({
   template: `
-    <cngx-action-button [action]="action" [toastSuccess]="toastMsg()" #ab="cngxActionButton">
+    <button cngxActionButton [action]="action" [toastSuccess]="toastMsg()" #ab="cngxActionButton">
       Save
-    </cngx-action-button>
+    </button>
   `,
   imports: [CngxActionButton],
 })
@@ -246,7 +251,7 @@ class ToastRebindHost {
 
 @Component({
   template: `
-    <cngx-action-button [action]="action" #ab="cngxActionButton">Go</cngx-action-button>
+    <button cngxActionButton [action]="action" #ab="cngxActionButton">Go</button>
   `,
   imports: [CngxActionButton],
 })
@@ -266,7 +271,7 @@ describe('CngxActionButton', () => {
       const fixture = TestBed.createComponent(SimpleHost);
       fixture.detectChanges();
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
-      expect(btn.textContent).toContain('Save');
+      expect(activeText(btn)).toContain('Save');
     });
 
     it('should show pendingLabel while pending', async () => {
@@ -277,7 +282,7 @@ describe('CngxActionButton', () => {
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
       btn.click();
       flush(fixture);
-      expect(btn.textContent?.trim()).toBe('Saving...');
+      expect(activeText(btn)).toBe('Saving...');
       // Busy communicates via aria; the hard disabled attr would drop focus.
       expect(btn.disabled).toBe(false);
       expect(btn.getAttribute('aria-busy')).toBe('true');
@@ -293,7 +298,7 @@ describe('CngxActionButton', () => {
       btn.click();
       await vi.waitFor(() => {
         flush(fixture);
-        expect(btn.textContent).toContain('Done!');
+        expect(activeText(btn)).toContain('Done!');
       });
     });
 
@@ -305,7 +310,7 @@ describe('CngxActionButton', () => {
       btn.click();
       await vi.waitFor(() => {
         flush(fixture);
-        expect(btn.textContent).toContain('Error');
+        expect(activeText(btn)).toContain('Error');
       });
     });
   });
@@ -319,7 +324,7 @@ describe('CngxActionButton', () => {
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
       btn.click();
       flush(fixture);
-      expect(btn.textContent?.trim()).toBe('Loading...');
+      expect(activeText(btn)).toBe('Loading...');
       d.resolve();
       await d.promise;
     });
@@ -331,7 +336,7 @@ describe('CngxActionButton', () => {
       btn.click();
       await vi.waitFor(() => {
         flush(fixture);
-        expect(btn.textContent).toContain('OK');
+        expect(activeText(btn)).toContain('OK');
       });
     });
 
@@ -343,25 +348,30 @@ describe('CngxActionButton', () => {
       btn.click();
       await vi.waitFor(() => {
         flush(fixture);
-        expect(btn.textContent).toContain('Err: boom');
+        expect(activeText(btn)).toContain('Err: boom');
       });
     });
   });
 
   describe('variant', () => {
-    it('should apply variant CSS class on inner button', () => {
+    it('binds the variant through the selector onto the native button', () => {
       const fixture = TestBed.createComponent(VariantHost);
       fixture.detectChanges();
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+      expect(btn.classList.contains('cngx-button')).toBe(true);
       expect(btn.classList.contains('cngx-action-button')).toBe(true);
-      expect(btn.classList.contains('cngx-action-button--ghost')).toBe(true);
+      expect(btn.dataset['variant']).toBe('ghost');
     });
 
-    it('should default to primary variant', () => {
+    it('defaults to the button family axes and type="button"', () => {
       const fixture = TestBed.createComponent(SimpleHost);
       fixture.detectChanges();
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
-      expect(btn.classList.contains('cngx-action-button--primary')).toBe(true);
+      expect(btn.dataset['variant']).toBe('solid');
+      expect(btn.dataset['tone']).toBe('neutral');
+      expect(btn.dataset['size']).toBe('md');
+      expect(btn.getAttribute('type')).toBe('button');
+      expect(btn.querySelector('button')).toBeNull();
     });
   });
 
@@ -412,26 +422,40 @@ describe('CngxActionButton', () => {
       await d.promise;
     });
 
-    it('should use display: contents on host', () => {
+    it('renders the announcement region next to the button, outside its name', () => {
       const fixture = TestBed.createComponent(SimpleHost);
-      fixture.detectChanges();
-      const host = fixture.nativeElement.querySelector('cngx-action-button') as HTMLElement;
-      expect(host.style.display).toBe('contents');
+      flush(fixture);
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+      const live = fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement;
+      expect(live).toBeTruthy();
+      expect(btn.contains(live)).toBe(false);
     });
 
-    it('should render aria-live announcement container', () => {
+    it('keeps one width: every status label sits stacked in the label cell', async () => {
+      const d = deferred();
       const fixture = TestBed.createComponent(SimpleHost);
-      fixture.detectChanges();
-      const srOnly = fixture.nativeElement.querySelector(
-        '.cngx-action-button__sr-only',
-      ) as HTMLElement;
-      expect(srOnly).toBeTruthy();
-      expect(srOnly.getAttribute('aria-live')).toBe('polite');
+      fixture.componentInstance.actionImpl = () => d.promise;
+      flush(fixture);
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+      const cells = () =>
+        Array.from(btn.querySelectorAll<HTMLElement>('.cngx-action-button__label'));
+      const active = () => cells().filter((c) => c.hasAttribute('data-active'));
+      expect(cells().length).toBeGreaterThan(1);
+      expect(active().length).toBe(1);
+      expect(cells().filter((c) => c.getAttribute('aria-hidden') === 'true').length).toBe(
+        cells().length - 1,
+      );
+      btn.click();
+      flush(fixture);
+      expect(active().length).toBe(1);
+      expect(btn.hasAttribute('data-status-label')).toBe(true);
+      d.resolve();
+      await d.promise;
     });
   });
 
-  describe('enabled input', () => {
-    it('should ignore clicks when enabled is false', () => {
+  describe('disabled input', () => {
+    it('should ignore clicks while disabled', () => {
       const fixture = TestBed.createComponent(EnabledHost);
       fixture.componentInstance.enabled = false;
       fixture.detectChanges();
@@ -441,7 +465,7 @@ describe('CngxActionButton', () => {
       expect(fixture.componentInstance.callCount).toBe(0);
     });
 
-    it('should execute action when enabled is true', async () => {
+    it('should execute the action once enabled', async () => {
       const fixture = TestBed.createComponent(EnabledHost);
       fixture.detectChanges();
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
@@ -459,7 +483,7 @@ describe('CngxActionButton', () => {
       fixture.componentInstance.mock.status.set('pending');
       flush(fixture);
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
-      expect(btn.textContent?.trim()).toBe('Ext pending');
+      expect(activeText(btn)).toBe('Ext pending');
     });
 
     it('should show external success label when external state is success', () => {
@@ -467,7 +491,7 @@ describe('CngxActionButton', () => {
       fixture.componentInstance.mock.status.set('success');
       flush(fixture);
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
-      expect(btn.textContent?.trim()).toBe('Ext done');
+      expect(activeText(btn)).toBe('Ext done');
     });
 
     it('should show external error label when external state is error', () => {
@@ -475,7 +499,7 @@ describe('CngxActionButton', () => {
       fixture.componentInstance.mock.status.set('error');
       flush(fixture);
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
-      expect(btn.textContent?.trim()).toBe('Ext error');
+      expect(activeText(btn)).toBe('Ext error');
     });
 
     it('should show idle content when external state is idle', () => {
@@ -483,7 +507,7 @@ describe('CngxActionButton', () => {
       fixture.componentInstance.mock.status.set('idle');
       flush(fixture);
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
-      expect(btn.textContent?.trim()).toBe('Idle');
+      expect(activeText(btn)).toBe('Idle');
     });
 
     it('should render the failed template with the EXTERNAL error context', () => {
@@ -495,7 +519,7 @@ describe('CngxActionButton', () => {
       fixture.componentInstance.mock.status.set('error');
       flush(fixture);
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
-      expect(btn.textContent).toContain('Err: ext-boom');
+      expect(activeText(btn)).toContain('Err: ext-boom');
     });
 
     it('marks the button busy and disabled while the external state is pending', () => {
@@ -540,9 +564,7 @@ describe('CngxActionButton', () => {
       flush(fixture);
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
       expect(btn.getAttribute('aria-disabled')).toBe('true');
-      const reason = fixture.nativeElement.querySelector(
-        '.cngx-action-button__sr-only:not([aria-live])',
-      ) as HTMLElement;
+      const reason = fixture.nativeElement.querySelector('.cngx-button__reason') as HTMLElement;
       expect(reason.textContent?.trim()).toBe('Complete the form first');
       expect(btn.getAttribute('aria-describedby')).toBe(reason.id);
     });
@@ -679,7 +701,7 @@ describe('CngxActionButton', () => {
 
       const calls = warn.mock.calls.filter(([m]) => /^CNGX3008: /.test(String(m)));
       expect(calls).toHaveLength(1);
-      expect(calls[0][0]).toMatch(/^CNGX3008: \[cngx-action-button\] \[toastSuccess\]\/\[toastError\] inputs/);
+      expect(calls[0][0]).toMatch(/^CNGX3008: \[cngxActionButton\] \[toastSuccess\]\/\[toastError\] inputs/);
     });
 
     it('stays silent for [cngxToastOn] without the button toast inputs', () => {

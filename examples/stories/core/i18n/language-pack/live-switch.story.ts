@@ -71,7 +71,7 @@ export const STORY: DemoSpec = {
         <p cngxPopoverBody>Quarterly figures.</p>
       </cngx-popover-panel>
     </div>
-    <cngx-action-button [action]="save" [feedbackDuration]="30000">Save</cngx-action-button>
+    <button cngxActionButton [action]="save" [feedbackDuration]="30000">Save</button>
     <cngx-progress [progress]="42" />
   </div>`,
   setupChrome: `protected readonly lang = DEMO_LANG;`,

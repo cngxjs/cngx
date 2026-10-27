@@ -185,7 +185,6 @@ export { CngxSearch } from './keyboard/search.directive';
 export { CngxClickOutside } from './keyboard/click-outside.directive';
 export { CngxBeforeUnload } from './guard/before-unload.directive';
 export { canDeactivateWhenClean } from './guard/can-deactivate';
-export { CngxCloseButton, CNGX_CLOSE_ICON } from './close-button/close-button';
 export { CngxHoverable } from './hoverable/hoverable.directive';
 export { CngxSpeak } from './speak/speak.directive';
 export { CngxOption } from './listbox/option.directive';

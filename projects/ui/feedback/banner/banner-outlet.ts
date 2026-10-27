@@ -10,7 +10,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
-import { CngxCloseButton } from '@cngx/common/interactive';
+import { CngxCloseButton } from '@cngx/common/button';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 import { injectFeedbackI18n } from '../config/feedback-i18n';
@@ -99,11 +99,12 @@ import { CngxBanner, type BannerState } from './banner.service';
           </button>
         }
         @if (banner.config.dismissible && !banner.actionPending) {
-          <cngx-close-button
-            [label]="dismissLabel()"
+          <button
+            cngxCloseButton
+            [attr.aria-label]="dismissLabel()"
             class="cngx-banner__dismiss"
             (click)="service.dismiss(banner.id)"
-          />
+          ></button>
         }
       </div>
     }

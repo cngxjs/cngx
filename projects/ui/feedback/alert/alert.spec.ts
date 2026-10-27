@@ -130,21 +130,21 @@ describe('CngxAlert', () => {
 
   it('does not render close button by default', () => {
     const { alert } = setup();
-    expect(alert.querySelector('cngx-close-button')).toBeNull();
+    expect(alert.querySelector('button.cngx-close-button')).toBeNull();
   });
 
   it('renders close button when closable', () => {
     const { fixture, alert, host } = setup();
     host.closable.set(true);
     fixture.detectChanges();
-    expect(alert.querySelector('cngx-close-button')).toBeTruthy();
+    expect(alert.querySelector('button.cngx-close-button')).toBeTruthy();
   });
 
   it('renders close button when deprecated dismissible is set', () => {
     const { fixture, alert, host } = setup();
     host.dismissible.set(true);
     fixture.detectChanges();
-    expect(alert.querySelector('cngx-close-button')).toBeTruthy();
+    expect(alert.querySelector('button.cngx-close-button')).toBeTruthy();
   });
 
   // ── Default icon ────────────────────────────────────────────
@@ -299,7 +299,7 @@ describe('CngxAlert', () => {
     host.closable.set(true);
     flushAll(fixture);
 
-    const closeBtn = alert.querySelector('cngx-close-button') as HTMLElement;
+    const closeBtn = alert.querySelector('button.cngx-close-button') as HTMLElement;
     expect(closeBtn).toBeTruthy();
     closeBtn.click();
     fixture.detectChanges();
@@ -318,7 +318,7 @@ describe('CngxAlert', () => {
     flushAll(fixture);
 
     // Dismiss manually
-    (alert.querySelector('cngx-close-button') as HTMLElement).click();
+    (alert.querySelector('button.cngx-close-button') as HTMLElement).click();
     flushAll(fixture);
     expect(alert.hasAttribute('hidden')).toBe(true);
 
@@ -547,7 +547,7 @@ describe('CngxAlert', () => {
     host.closable.set(true);
     flushAll(fixture);
 
-    (alert.querySelector('cngx-close-button') as HTMLElement).click();
+    (alert.querySelector('button.cngx-close-button') as HTMLElement).click();
     fixture.detectChanges();
     vi.advanceTimersByTime(16);
 
@@ -575,7 +575,7 @@ describe('CngxAlert', () => {
     host.when.set(true);
     flushAll(fixture);
     const dismissLabel = (): string | null =>
-      alert.querySelector('.cngx-alert__dismiss button')!.getAttribute('aria-label');
+      alert.querySelector('button.cngx-alert__dismiss')!.getAttribute('aria-label');
     expect(dismissLabel()).toBe('Dismiss');
 
     copy.set({ dismissLabel: 'Schliessen', announcements: { alertDismissed: 'Verworfen' } });
@@ -588,7 +588,7 @@ describe('CngxAlert', () => {
     flushAll(fixture);
     expect(dismissLabel()).toBe('Schliessen');
 
-    (alert.querySelector('.cngx-alert__dismiss button') as HTMLButtonElement).click();
+    (alert.querySelector('button.cngx-alert__dismiss') as HTMLButtonElement).click();
     flushAll(fixture);
     vi.advanceTimersByTime(16);
     const live = announcerRegion()!;

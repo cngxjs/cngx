@@ -244,7 +244,7 @@ describe('CNGX_FEEDBACK_I18N', () => {
       const fixture = TestBed.createComponent(AlertPairHost);
       fixture.detectChanges();
       const labels = Array.from(
-        (fixture.nativeElement as HTMLElement).querySelectorAll('.cngx-alert__dismiss button'),
+        (fixture.nativeElement as HTMLElement).querySelectorAll('button.cngx-alert__dismiss'),
       ).map((b) => b.getAttribute('aria-label'));
       expect(labels).toEqual(['Schliessen', 'Schliessen']);
     });

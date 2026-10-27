@@ -71,6 +71,11 @@ const DURATION_DERIVED_FAMILIES: readonly DurationFamily[] = [
     kind: 'real',
   },
   {
+    file: 'projects/common/theming/components/cngx-async.css',
+    token: '--cngx-async-transition',
+    kind: 'real',
+  },
+  {
     file: 'projects/common/popover/popover-panel.component.css',
     token: '--cngx-popover-panel-transition-duration',
     kind: 'real',
@@ -83,11 +88,6 @@ const DURATION_DERIVED_FAMILIES: readonly DurationFamily[] = [
   {
     file: 'projects/common/interactive/toggle/toggle.component.css',
     token: '--cngx-toggle-transition',
-    kind: 'real',
-  },
-  {
-    file: 'projects/common/interactive/close-button/close-button.css',
-    token: '--cngx-close-button-transition',
     kind: 'real',
   },
   {
@@ -158,12 +158,7 @@ const DURATION_DERIVED_FAMILIES: readonly DurationFamily[] = [
     token: '--cngx-progress-transition-duration',
     kind: 'real',
   },
-  // @cngx/ui - action-button + paginator
-  {
-    file: 'projects/ui/action-button/action-button.css',
-    token: '--cngx-action-btn-transition',
-    kind: 'real',
-  },
+  // @cngx/ui - paginator
   {
     // Read on .cngx-paginator__page::after; reach via the already-registered
     // inherits:true (no flip was needed).
@@ -281,7 +276,7 @@ describe('duration-derivation coverage manifest', () => {
   );
 
   it('fixes the manifest size so a bulk edit dropping a family is caught', () => {
-    expect(DURATION_DERIVED_FAMILIES.length).toBe(27);
+    expect(DURATION_DERIVED_FAMILIES.length).toBe(26);
   });
 });
 

@@ -370,3 +370,85 @@ describe('CngxAsyncClick with a co-hosted CNGX_HOST_INTERACTION_STATE', () => {
     expect(button('outside').hasAttribute('aria-disabled')).toBe(false);
   });
 });
+
+@Directive({
+  selector: '[testHostBusy]',
+  providers: [{ provide: CNGX_HOST_INTERACTION_STATE, useExisting: TestHostBusy }],
+})
+class TestHostBusy {
+  readonly busy = input(false, { alias: 'testHostBusy' });
+  readonly announcementText = input('', { alias: 'testHostAnnouncement' });
+  readonly disabled = computed(() => false);
+  readonly announcement = computed(() => this.announcementText());
+}
+
+@Component({
+  template: `
+    <div>
+      <button
+        [testHostBusy]="busy()"
+        [testHostAnnouncement]="text()"
+        [cngxAsyncClick]="action"
+      >Go</button>
+    </div>
+  `,
+  imports: [CngxAsyncClick, TestHostBusy],
+})
+class HostBusyHost {
+  readonly busy = signal(false);
+  readonly text = signal('');
+  readonly action: AsyncAction = () => Promise.resolve();
+}
+
+describe('CngxAsyncClick with a host-reflected run and announcement', () => {
+  function setup() {
+    const fixture = TestBed.createComponent(HostBusyHost);
+    flush(fixture);
+    const el = fixture.nativeElement as HTMLElement;
+    return {
+      fixture,
+      host: fixture.componentInstance,
+      button: el.querySelector('button') as HTMLButtonElement,
+      region: () => el.querySelector('[aria-live="polite"]') as HTMLElement | null,
+    };
+  }
+
+  it('folds the host busy flag into aria-busy', () => {
+    const { fixture, host, button } = setup();
+    expect(button.hasAttribute('aria-busy')).toBe(false);
+    host.busy.set(true);
+    flush(fixture);
+    expect(button.getAttribute('aria-busy')).toBe('true');
+    host.busy.set(false);
+    flush(fixture);
+    expect(button.hasAttribute('aria-busy')).toBe(false);
+  });
+
+  it('speaks the host announcement in its sibling region instead of its own', async () => {
+    const { fixture, host, button, region } = setup();
+    expect(region()).not.toBeNull();
+    expect(region()!.textContent).toBe('');
+    host.text.set('Saved by the host');
+    flush(fixture);
+    expect(region()!.textContent).toBe('Saved by the host');
+    button.click();
+    await fixture.whenStable();
+    flush(fixture);
+    expect(fixture.debugElement.query((de) => de.nativeElement === button).injector.get(CngxAsyncClick).succeeded()).toBe(true);
+    expect(region()!.textContent).toBe('Saved by the host');
+    expect(button.contains(region())).toBe(false);
+  });
+
+  it('keeps the region empty when the host announcement is an empty string', async () => {
+    const { fixture, button, region } = setup();
+    button.click();
+    await fixture.whenStable();
+    flush(fixture);
+    const directive = fixture.debugElement
+      .query((de) => de.nativeElement === button)
+      .injector.get(CngxAsyncClick);
+    expect(directive.succeeded()).toBe(true);
+    expect(directive.announcement()).not.toBe('');
+    expect(region()!.textContent).toBe('');
+  });
+});

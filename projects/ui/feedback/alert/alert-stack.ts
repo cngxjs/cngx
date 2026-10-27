@@ -14,7 +14,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
-import { CngxCloseButton } from '@cngx/common/interactive';
+import { CngxCloseButton } from '@cngx/common/button';
 import { cngxDevWarn } from '@cngx/utils';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
@@ -136,11 +136,12 @@ function entriesEqual(a: readonly StackEntry[], b: readonly StackEntry[]): boole
           <span class="cngx-alert-stack__message">{{ entry.state.config.message }}</span>
         </div>
         @if (entry.state.config.dismissible) {
-          <cngx-close-button
-            [label]="dismissLabel()"
+          <button
+            cngxCloseButton
+            [attr.aria-label]="dismissLabel()"
             class="cngx-alert-stack__dismiss"
             (click)="entry.owner.dismiss(entry.state.id)"
-          />
+          ></button>
         }
       </div>
     }

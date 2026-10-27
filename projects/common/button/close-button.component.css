@@ -1,0 +1,125 @@
+/**
+ * @overview
+ * Close-button layer over the icon-button geometry. The host is the native
+ * `<button>` and carries `.cngx-button.cngx-icon-button.cngx-close-button`;
+ * paint (variant x tone, disabled, busy, contrast, forced colors) comes from
+ * the shared `.cngx-button` sheet and the square box plus the `::before` hit
+ * area from `.cngx-icon-button`. This sheet only adds what a dismiss
+ * affordance does differently.
+ *
+ * **State modifiers**
+ *
+ * - rest (ghost, neutral tone) - the muted hint colour, never opacity
+ * - `:hover` / `:focus-visible` - lifts to the tone text colour;
+ *   on a ghost button `--cngx-close-button-hover-bg` replaces the tone
+ *   wash when set
+ * - `[aria-disabled='true']` - the button sheet's disabled colour wins
+ *
+ * **Slots**
+ *
+ * - `.cngx-icon-button__glyph` - the projected glyph, `aria-hidden`
+ * - `.cngx-close-button__icon` - the default X glyph
+ *
+ * **Inheritance**
+ *
+ * - box -> `--cngx-icon-button-size` (the `sm` row), overridable through
+ *   `--cngx-close-button-size`
+ * - glyph -> `1.25em` of the button font, overridable through
+ *   `--cngx-close-button-icon-size`
+ * - radius -> `--cngx-radius-sm`
+ * - transition -> `--cngx-button-transition` (`--cngx-duration-fast`)
+ */
+
+@layer cngx.tokens {
+  /**
+   * Resting glyph colour of a neutral close button. Defaults to
+   * `--cngx-color-text-muted` (set below); hover and focus lift the glyph to
+   * the tone text colour.
+   * @group Surface
+   */
+  @property --cngx-close-button-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Edge length of the square box. Unset by default, so the box follows the
+   * icon-button row of the `size` input (density and text scale included).
+   * @group Layout
+   */
+  @property --cngx-close-button-size {
+    syntax: '*';
+    inherits: false;
+  }
+
+  /**
+   * Edge length of an `svg` or `img` glyph. Unset by default (`1.25em` of
+   * the button font). Inherits so a value set on the button reaches the
+   * glyph.
+   * @group Layout
+   */
+  @property --cngx-close-button-icon-size {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Corner radius. Defaults to `--cngx-radius-sm`.
+   * @group Layout
+   */
+  @property --cngx-close-button-radius {
+    syntax: '*';
+    inherits: false;
+  }
+
+  /**
+   * Hover background. Unset by default, so the ghost variant's tone wash
+   * paints.
+   * @group State / Hover
+   */
+  @property --cngx-close-button-hover-bg {
+    syntax: '*';
+    inherits: false;
+  }
+
+  :where(.cngx-close-button) {
+    /* Quiet at rest by colour, never opacity: the hint colour clears 4.5:1 on
+     * the page (half-opacity currentColor sat at 3.05:1 in light). */
+    --cngx-close-button-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-close-button) {
+    :scope.cngx-button {
+      --cngx-button-radius: var(--cngx-close-button-radius, var(--cngx-radius-sm, 0.25rem));
+      inline-size: var(--cngx-close-button-size, var(--cngx-icon-button-size));
+      block-size: var(--cngx-close-button-size, var(--cngx-icon-button-size));
+    }
+
+    :scope.cngx-button[data-variant='ghost'][data-tone='neutral']:not([aria-disabled='true']) {
+      color: var(--cngx-close-button-color, currentColor);
+    }
+
+    :scope.cngx-button[data-variant='ghost'][data-tone='neutral']:not([aria-disabled='true']):is(
+        :hover,
+        :focus-visible
+      ) {
+      color: var(--cngx-button-tone-text, currentColor);
+    }
+
+    :scope.cngx-button[data-variant='ghost']:not([aria-disabled='true']):hover {
+      background: var(
+        --cngx-close-button-hover-bg,
+        color-mix(in oklch, var(--cngx-button-tone, currentColor) 8%, transparent)
+      );
+    }
+
+    .cngx-icon-button__glyph > :is(svg, img) {
+      inline-size: var(--cngx-close-button-icon-size, 1.25em);
+      block-size: var(--cngx-close-button-icon-size, 1.25em);
+      flex-shrink: 0;
+    }
+  }
+}

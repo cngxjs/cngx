@@ -8,7 +8,7 @@ import {
   makeEnvironmentProviders,
 } from '@angular/core';
 
-import { CNGX_CLOSE_ICON } from '@cngx/common/interactive';
+import { CNGX_CLOSE_ICON } from '@cngx/common/button';
 import { CNGX_LOADING_CONFIG, CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
 import { cngxDevWarn } from '@cngx/utils';
 

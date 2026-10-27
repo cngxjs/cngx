@@ -99,6 +99,25 @@ test.describe('select mobile sheet on a phone', () => {
     });
   }
 
+  // The X and Done buttons sit inside the swipe-dismiss header bar. A real
+  // mouse click must reach them: a pointer captured on pointerdown would
+  // retarget the click to the bar and the sheet would stay open.
+  for (const { selector, name } of [
+    { selector: 'cngx-select', name: 'close' },
+    { selector: 'cngx-multi-select', name: 'done' },
+  ] as const) {
+    test(`${selector}: a real click on the header ${name} button closes the sheet`, async ({
+      page,
+    }) => {
+      await gotoDemo(page, ALL);
+      const host = await openVariant(page, selector);
+      const panel = panelOf(host);
+      await expect(panel).toHaveAttribute('data-cngx-presentation', 'sheet');
+      await panel.locator(`.cngx-select-sheet-header__${name}`).click();
+      await expect(panel).toBeHidden();
+    });
+  }
+
   test('a tap above the sheet closes it without reaching the page underneath', async ({ page }) => {
     await gotoDemo(page, ALL);
     await addProbe(page);

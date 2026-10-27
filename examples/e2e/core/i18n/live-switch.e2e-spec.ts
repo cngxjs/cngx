@@ -24,8 +24,9 @@ test.describe('live language switch', () => {
     const progress = page.locator('cngx-progress');
     const segmented = page.locator('cngx-segmented-progress');
     const avatarGroup = page.locator('cngx-avatar-group');
-    const liveRegion = page.locator('cngx-action-button .cngx-action-button__sr-only[aria-live]');
-    const actionButton = page.locator('cngx-action-button').getByRole('button');
+    // cngxAsyncClick mounts the region as the next sibling of the button.
+    const liveRegion = page.locator('button.cngx-action-button + [aria-live="polite"]');
+    const actionButton = page.locator('button.cngx-action-button');
 
     // (1) EN baseline.
     await expect(delta).toHaveAttribute('aria-label', /declined|improved/);

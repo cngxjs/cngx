@@ -744,13 +744,8 @@
 
     .cngx-alert__dismiss {
       flex-shrink: 0;
-      /* Floor the dismiss tap area to the pointer-derived target on a coarse
-         pointer; the glyph keeps its size and stays centred. */
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-inline-size: var(--cngx-target-min, 0px);
-      min-block-size: var(--cngx-target-min, 0px);
+      /* The close button grows its hit area through ::before on a coarse
+         pointer; the visual box keeps its size. */
     }
 
     :scope.cngx-alert--hidden {
