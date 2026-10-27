@@ -24,6 +24,20 @@
     "menuLayout": "feature",
     "featuresName": "Libraries",
     "collapsedAll": true,
+    "classificationAxes": {
+        "level": {
+            "label": "Level",
+            "values": [
+                "atom",
+                "molecule",
+                "organism"
+            ],
+            "kinds": [
+                "component",
+                "directive"
+            ]
+        }
+    },
     "showEffects": false,
     "apiTabSections": [
         "index",
