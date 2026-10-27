@@ -37,9 +37,21 @@ export interface ToastConfig {
 
   /** Visual severity - determines icon, color, and ARIA role. */
   severity?: AlertSeverity;
-  /** Auto-dismiss duration in ms, or `'persistent'` for manual dismiss only. */
+  /**
+   * Auto-dismiss duration in ms, or `'persistent'` for manual dismiss only.
+   * Defaults: `'persistent'` for errors, the action duration (10000 ms) for
+   * toasts with an `action`, the default duration (5000 ms) otherwise.
+   */
   duration?: number | 'persistent';
-  /** Optional action button inside the toast. */
+  /**
+   * Optional action button inside the toast. A toast with an action is never
+   * merged by dedup: each `show()` gets its own toast, so every handler stays
+   * reachable. Without an explicit `duration` it stays up for the action
+   * duration (10000 ms, `withToasts({ actionDuration })`) instead of the
+   * default, so users can reach the button. Name the affected object in the
+   * message ("Item 3 deleted", not "Item deleted") so the user knows what
+   * the action reverts.
+   */
   action?: { label: string; handler: () => void };
   /** Show dismiss button. */
   dismissible?: boolean;
@@ -130,6 +142,15 @@ export class CngxToaster {
   /** Default duration for non-error toasts - configure via `withToasts({ defaultDuration })`. */
   private readonly defaultDuration = this.config?.toastDefaultDuration ?? 5000;
 
+  /**
+   * Default duration for non-error toasts that carry an `action` - configure
+   * via `withToasts({ actionDuration })`. Longer than `defaultDuration`
+   * because keyboard and screen reader users need time to reach the action
+   * button before the toast leaves (WCAG 2.2.1); hover and focus pause the
+   * timer on top of that.
+   */
+  private readonly actionDuration = this.config?.toastActionDuration ?? 10000;
+
   /** Dedup window in ms - configure via `withToasts({ dedupWindow })`. */
   private readonly dedupWindow = this.config?.toastDedupWindow ?? 1000;
 
@@ -149,16 +170,19 @@ export class CngxToaster {
   /** Show a toast. Returns a ref for programmatic control. */
   show(config: ToastConfig): ToastRef {
     const severity = config.severity ?? 'info';
-    const duration =
-      config.duration ?? (severity === 'error' ? ('persistent' as const) : this.defaultDuration);
+    const duration = config.duration ?? this.resolveDefaultDuration(severity, config.action);
     const dismissible = config.dismissible ?? true;
 
     // Dedup key includes title but excludes description - same event with
     // different context detail is still the same event. Distinct content
     // templates never merge: the second template would be silently dropped.
+    // Toasts with an action never merge either, on either side: each one
+    // keeps its own handler (two "Item deleted" toasts need two Undo buttons).
     const now = Date.now();
     const existing = this.toasts().find(
       (t) =>
+        !config.action &&
+        !t.config.action &&
         t.config.message === config.message &&
         t.config.severity === severity &&
         (t.config.title ?? '') === (config.title ?? '') &&
@@ -236,6 +260,16 @@ export class CngxToaster {
       t.dismissed$.complete();
     }
     this.toasts.set([]);
+  }
+
+  private resolveDefaultDuration(
+    severity: AlertSeverity,
+    action: ToastConfig['action'],
+  ): number | 'persistent' {
+    if (severity === 'error') {
+      return 'persistent';
+    }
+    return action ? this.actionDuration : this.defaultDuration;
   }
 
   private startTimer(id: number, duration: number | 'persistent'): void {
