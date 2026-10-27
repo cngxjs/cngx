@@ -52,6 +52,7 @@ import { injectTabsConfig } from './tabs-config';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/router-sync.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTabGroupPresenter, CngxTab
+ * @axis level organism
  */
 @Directive({
   selector: '[cngxTabsFragmentSync]',

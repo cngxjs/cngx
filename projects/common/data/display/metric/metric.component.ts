@@ -52,6 +52,7 @@ function readsUnitFirst(message: string): boolean {
  *
  * <example-url>http://localhost:4200/#/common/data/metric/inside-a-card</example-url>
  * <example-url>http://localhost:4200/#/common/data/metric/standalone-metrics</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-metric',

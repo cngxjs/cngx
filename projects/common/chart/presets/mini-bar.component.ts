@@ -29,6 +29,7 @@ import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
  *
  * <example-url>http://localhost:4200/#/common/chart/mini-bar/async-state-machine</example-url>
  * <example-url>http://localhost:4200/#/common/chart/mini-bar/basic-readings</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-mini-bar',

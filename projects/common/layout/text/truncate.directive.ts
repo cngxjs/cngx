@@ -41,6 +41,7 @@ import { observeResize } from '../observers/resize-signal';
  * @relatedTo CngxExpandableText, CngxExpandableToggle, CngxHighlight
  * <example-url>http://localhost:4200/#/common/layout/truncate/short-text-no-toggle</example-url>
  * <example-url>http://localhost:4200/#/common/layout/truncate/truncated-text-with-toggle</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxTruncate]',

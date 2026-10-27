@@ -18,6 +18,7 @@ import { Directive, input } from '@angular/core';
  * @relatedTo CngxCard, CngxCardHeader, CngxCardBody
  * <example-url>http://localhost:4200/#/common/card/card-with-image</example-url>
 
+ * @axis level organism
  */
 @Directive({
   selector: '[cngxCardMedia]',

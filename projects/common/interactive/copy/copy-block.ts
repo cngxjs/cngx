@@ -38,6 +38,7 @@ import { CngxCopyText } from './copy-text.directive';
  * @relatedTo CngxCopyText
  * <example-url>http://localhost:4200/#/common/interactive/copy/block/api-key</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/copy/block/code-snippet</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-copy-block',

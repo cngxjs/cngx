@@ -50,6 +50,7 @@ import {
  * <example-url>http://localhost:4200/#/common/display/radio-indicator/disabled</example-url>
  * <example-url>http://localhost:4200/#/common/display/radio-indicator/sizes</example-url>
  * <example-url>http://localhost:4200/#/common/display/radio-indicator/theming-via-css-custom-properties</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-radio-indicator',

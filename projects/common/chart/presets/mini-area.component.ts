@@ -26,6 +26,7 @@ import { injectPresetState } from './preset-state';
  *
  * <example-url>http://localhost:4200/#/common/chart/mini-area/async-state-machine</example-url>
  * <example-url>http://localhost:4200/#/common/chart/mini-area/inline-area-trends</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-mini-area',

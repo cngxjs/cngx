@@ -37,6 +37,7 @@ function isDegenerateDomain(lo: number, hi: number): boolean {
  * @since 0.1.0
  * @relatedTo CngxAudio, injectCngxAudio
  * <example-url>http://localhost:4200/#/common/audio/pitch/slider</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxAudioPitch]',

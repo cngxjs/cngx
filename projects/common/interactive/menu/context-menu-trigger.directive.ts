@@ -71,6 +71,7 @@ import { CNGX_MENU_NAV_STRATEGY } from './menu-nav-strategy';
  * @since 0.1.0
  * @relatedTo CngxMenu, CngxMenuTrigger, CngxPopover
  * <example-url>http://localhost:4200/#/common/interactive/context-menu/right-click-target-zone</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxContextMenuTrigger]',

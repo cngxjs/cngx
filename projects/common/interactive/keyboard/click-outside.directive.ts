@@ -30,6 +30,7 @@ import { fromEvent, switchMap } from 'rxjs';
  * @relatedTo CngxKeyboardShortcut, CngxPopover
  * <example-url>http://localhost:4200/#/common/interactive/gestures/click-outside/dropdown</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/gestures/click-outside/enabled-toggle</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxClickOutside]',

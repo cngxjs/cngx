@@ -50,6 +50,7 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  * <example-url>http://localhost:4200/#/common/interactive/disclosure/basic-uncontrolled</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/disclosure/controlled-mode</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/disclosure/faq-accordion</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxDisclosure]',

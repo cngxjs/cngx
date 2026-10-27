@@ -110,6 +110,7 @@ export class CngxRovingItem {
  * @relatedTo CngxRovingItem, CngxActiveDescendant
  * <example-url>http://localhost:4200/#/common/a11y/roving-tabindex/horizontal-toolbar</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/roving-tabindex/vertical-menu</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxRovingTabindex]',

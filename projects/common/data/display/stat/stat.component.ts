@@ -37,6 +37,7 @@ import { CNGX_STAT } from './stat.token';
  * @relatedTo CngxMetric, CngxDelta, CngxTrend, CngxStatCoordinator
  *
  * <example-url>http://localhost:4200/#/common/data/stat/composed-kpi</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-stat',

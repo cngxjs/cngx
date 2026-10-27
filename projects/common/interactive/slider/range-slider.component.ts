@@ -40,6 +40,7 @@ const NUMBER_FORMAT: Intl.NumberFormatOptions = {};
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/range-slider.component.ts
  * @since 0.1.0
  * @relatedTo CngxRangeSliderTrack, CngxSlider, CngxSliderThumb
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-range-slider',

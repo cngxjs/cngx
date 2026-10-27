@@ -39,6 +39,7 @@ const warnedFocusHosts = new WeakSet<HTMLElement>();
  * <example-url>http://localhost:4200/#/common/interactive/menu/submenu/two-level-submenu</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/menu/trigger/dropdown-menu</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/menu/base/action-menu-with-separator</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxMenu]',

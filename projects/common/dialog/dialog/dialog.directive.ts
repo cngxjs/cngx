@@ -157,6 +157,7 @@ function warnNonModalA11y(id: string, titleText: string): void {
  * <example-url>http://localhost:4200/#/common/dialog/non-modal-panel</example-url>
  * <example-url>http://localhost:4200/#/common/dialog/programmatic-control</example-url>
  * <example-url>http://localhost:4200/#/common/dialog/template-directives</example-url>
+ * @axis level organism
  */
 @Directive({
   selector: 'dialog[cngxDialog]',

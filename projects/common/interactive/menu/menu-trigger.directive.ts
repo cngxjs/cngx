@@ -77,6 +77,7 @@ interface PopoverController extends CngxMenuDismissPopoverRef {
  * @relatedTo CngxMenu, CngxContextMenuTrigger, CngxMenuItemSubmenu, CngxPopoverTrigger
  * <example-url>http://localhost:4200/#/common/interactive/menu/submenu/two-level-submenu</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/menu/trigger/dropdown-menu</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxMenuTrigger]',

@@ -73,6 +73,7 @@ export const CNGX_HOVER_INTENT_DEFAULTS = new InjectionToken<CngxHoverIntentDefa
  * @relatedTo CngxHoverable, CngxLongPress, CngxExpandable
  * <example-url>http://localhost:4200/#/common/interactive/hover-intent/hover-to-reveal</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/hover-intent/hover-to-prefetch</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxHoverIntent]',

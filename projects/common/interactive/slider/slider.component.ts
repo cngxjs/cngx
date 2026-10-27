@@ -41,6 +41,7 @@ const NUMBER_FORMAT: Intl.NumberFormatOptions = {};
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider.component.ts
  * @since 0.1.0
  * @relatedTo CngxSliderTrack, CngxRangeSlider, CngxSliderFieldBridge
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-slider',

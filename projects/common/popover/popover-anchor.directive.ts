@@ -35,6 +35,7 @@ import { type CngxPopover } from './popover.directive';
  * @since 0.1.0
  * @relatedTo CngxPopover, CngxPopoverTrigger
  * <example-url>http://localhost:4200/#/common/popover/anchor/field-box-anchor</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxPopoverAnchor]',

@@ -19,6 +19,7 @@ import { Directive, input } from '@angular/core';
  * @since 0.1.0
  * @relatedTo CngxCard, CngxCardFooter, CngxCardBody
  * <example-url>http://localhost:4200/#/common/card/action-card-with-selection</example-url>
+ * @axis level organism
  */
 @Directive({
   selector: '[cngxCardActions]',

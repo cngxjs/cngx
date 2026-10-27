@@ -61,6 +61,7 @@ export interface AggregateFailure {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/async-state/async-boundary.directive.ts
  * @since 0.1.0
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxAsyncBoundary]',

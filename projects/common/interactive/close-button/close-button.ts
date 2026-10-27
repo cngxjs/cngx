@@ -49,6 +49,7 @@ export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon'
  * <example-url>http://localhost:4200/#/common/interactive/close-button/projected-icon</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/close-button/contextual-labels</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/close-button/inside-a-dismissible-card</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-close-button',

@@ -70,6 +70,7 @@ export interface CngxChartLegendItem<T = unknown> {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/legend/legend.component.ts
  * @since 0.1.0
  * @relatedTo CngxChart, CngxLine, CngxBar
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-chart-legend',

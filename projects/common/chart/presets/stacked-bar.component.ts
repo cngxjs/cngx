@@ -42,6 +42,7 @@ interface SegmentRendering {
  *
  * <example-url>http://localhost:4200/#/common/chart/stacked-bar/async-state-machine</example-url>
  * <example-url>http://localhost:4200/#/common/chart/stacked-bar/proportional-share-strips</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-stacked-bar',

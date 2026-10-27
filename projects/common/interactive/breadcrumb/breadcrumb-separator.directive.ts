@@ -11,6 +11,7 @@ import { Directive } from '@angular/core';
  * @since 0.1.0
  * @relatedTo CngxBreadcrumb, CngxBreadcrumbItem
  * <example-url>http://localhost:4200/#/common/interactive/breadcrumb/custom-separator</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxBreadcrumbSeparator]',

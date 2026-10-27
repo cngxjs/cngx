@@ -44,6 +44,7 @@ import { CNGX_CONTAINER_SIZE, type CngxContainerSize, createContainerSize } from
  * @since 0.1.0
  * @relatedTo injectContainerSize, CngxResizeObserver, CngxMediaQuery
  * <example-url>http://localhost:4200/#/common/layout/container/css-decides-js-reads</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxContainer]',

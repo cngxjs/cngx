@@ -41,6 +41,7 @@ const segmentsEqual = (a: readonly SegmentState[], b: readonly SegmentState[]): 
  * <example-url>http://localhost:4200/#/common/display/segmented-progress/value-total</example-url>
  * <example-url>http://localhost:4200/#/common/display/segmented-progress/lightbox-position</example-url>
  * <example-url>http://localhost:4200/#/common/display/segmented-progress/error-segment</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-segmented-progress',

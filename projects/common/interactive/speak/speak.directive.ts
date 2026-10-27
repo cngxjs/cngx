@@ -62,6 +62,7 @@ const IMPLICIT_LOCALE_ID = 'en-US';
  * <example-url>http://localhost:4200/#/ui/speak/speak-button/material-integration-theme-scss-mat-icon-button</example-url>
  * <example-url>http://localhost:4200/#/ui/speak/speak-button/styled-speaker-icon</example-url>
  * <example-url>http://localhost:4200/#/ui/speak/speak-button/theming-css-custom-properties</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxSpeak]',

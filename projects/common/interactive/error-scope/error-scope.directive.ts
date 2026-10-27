@@ -40,6 +40,7 @@ import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from './error-scope.tok
  * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/cngx-popover-panel-host</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/material-mat-tab-label-with-error-count-badge</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/native-form-scope-reveal-on-submit</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxErrorScope]',

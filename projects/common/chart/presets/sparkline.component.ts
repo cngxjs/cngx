@@ -36,6 +36,7 @@ import { injectPresetState } from './preset-state';
  * <example-url>http://localhost:4200/#/common/chart/sparkline/async-state-machine</example-url>
  * <example-url>http://localhost:4200/#/common/chart/sparkline/basic-sparklines</example-url>
  * <example-url>http://localhost:4200/#/common/chart/sparkline/with-area-fill</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-sparkline',

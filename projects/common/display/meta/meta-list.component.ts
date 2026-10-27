@@ -14,6 +14,7 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/
  * @since 0.1.0
  * @relatedTo CngxMeta
  * <example-url>http://localhost:4200/#/common/display/meta/metadata-line</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-meta-list',

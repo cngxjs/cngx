@@ -43,6 +43,7 @@ import { createMediaQuerySignal } from '@cngx/core/utils';
  * @relatedTo CngxPressable, CngxPressRipple, CngxHoverable
  * <example-url>http://localhost:4200/#/common/interactive/ripple/base/button-ripples</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/ripple/base/card-with-ripple</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxRipple]',

@@ -35,6 +35,7 @@ const filledEqual = (a: readonly boolean[], b: readonly boolean[]): boolean =>
  * @since 0.2.0
  * @relatedTo CngxSegmentedProgress, CngxBadge
  * <example-url>http://localhost:4200/#/common/display/password-strength-meter/strength-levels</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-password-strength-meter',

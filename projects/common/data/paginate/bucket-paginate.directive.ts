@@ -64,6 +64,7 @@ function setEquals(a: ReadonlySet<string>, b: ReadonlySet<string>): boolean {
  * @since 0.1.0
  * @relatedTo CngxPaginate, CngxFilter
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-modes/alphabetical</example-url>
+ * @axis level organism
  */
 @Directive({
   selector: '[cngxBucketPaginate]',

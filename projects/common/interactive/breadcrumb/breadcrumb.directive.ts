@@ -32,6 +32,7 @@ import { CNGX_BREADCRUMB, type CngxBreadcrumbHost } from './breadcrumb.token';
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbItem, CngxBreadcrumbSeparator, CngxBreadcrumbBar
  * <example-url>http://localhost:4200/#/common/interactive/breadcrumb/basic-trail</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxBreadcrumb]',

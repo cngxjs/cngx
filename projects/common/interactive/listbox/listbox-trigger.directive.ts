@@ -58,6 +58,7 @@ interface PopoverController {
  * @since 0.1.0
  * @relatedTo CngxListbox, CngxListboxSearch, CngxPopoverTrigger, CngxActiveDescendant
  * <example-url>http://localhost:4200/#/common/interactive/listbox/trigger/select-dropdown</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxListboxTrigger]',

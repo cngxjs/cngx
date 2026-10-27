@@ -51,6 +51,7 @@ import { injectKpiI18n } from '../shared/kpi-i18n';
  * @relatedTo CngxTrend, CngxMetric, CngxStat
  *
  * <example-url>http://localhost:4200/#/common/data/delta/sentiment-polarity</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-delta',

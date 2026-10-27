@@ -55,6 +55,7 @@ const RELATIVE_DIVISIONS: readonly { readonly amount: number; readonly unit: Int
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/time/time.component.ts
  * @since 0.1.0
  * @relatedTo CngxCardTimestamp
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-time',

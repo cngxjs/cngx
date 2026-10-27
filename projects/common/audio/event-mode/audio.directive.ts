@@ -52,6 +52,7 @@ import { type CngxAudioDomEvent, parseEventBindings } from './parse-bindings';
  * <example-url>http://localhost:4200/#/common/audio/event-mode/earcon-palette</example-url>
  * <example-url>http://localhost:4200/#/common/audio/event-mode/form-feedback</example-url>
  * <example-url>http://localhost:4200/#/common/audio/event-mode/hover-and-focus</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxAudio]',

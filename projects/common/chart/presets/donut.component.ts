@@ -28,6 +28,7 @@ const TWO_PI = Math.PI * 2;
  *
  * <example-url>http://localhost:4200/#/common/chart/donut/async-state-machine</example-url>
  * <example-url>http://localhost:4200/#/common/chart/donut/score-gauges</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-donut',

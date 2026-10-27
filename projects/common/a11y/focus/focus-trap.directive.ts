@@ -72,6 +72,7 @@ export const CNGX_FOCUS_TRAP_DRIVER = new InjectionToken<CngxFocusTrapDriver>(
  * @relatedTo CngxAutofocus, CngxFocusRestore, CngxDialog
  * <example-url>http://localhost:4200/#/common/a11y/focus-trap/modal-dialog</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/focus-trap/slide-out-drawer</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxFocusTrap]',

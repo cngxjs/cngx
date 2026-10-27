@@ -63,6 +63,7 @@ import { cngxDevWarn } from '@cngx/utils';
  * @since 0.1.0
  * @relatedTo CngxIntersectionObserver, CngxScrollSpy, CngxStickyHeader
  * <example-url>http://localhost:4200/#/common/layout/infinite-scroll/scrollable-list</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxInfiniteScroll]',

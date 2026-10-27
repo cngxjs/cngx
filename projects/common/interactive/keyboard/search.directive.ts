@@ -27,6 +27,7 @@ import { EMPTY, fromEvent, map, merge, Subject, switchMap, timer } from 'rxjs';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/search.directive.ts
  * @since 0.1.0
  * @relatedTo CngxKeyboardShortcut, CngxListboxSearch
+ * @axis level molecule
  */
 @Directive({
   selector: 'input[cngxSearch]',

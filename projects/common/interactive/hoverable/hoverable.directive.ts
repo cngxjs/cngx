@@ -32,6 +32,7 @@ import { Directive, signal } from '@angular/core';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/hoverable/hoverable.directive.ts
  * @since 0.1.0
  * @relatedTo CngxPressable, CngxRipple
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxHoverable]',

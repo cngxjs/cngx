@@ -57,6 +57,7 @@ import {
  * @since 0.1.0
  * @relatedTo CngxMenuItem, CngxMenu, CngxMenuTrigger
  * <example-url>http://localhost:4200/#/common/interactive/menu/submenu/two-level-submenu</example-url>
+ * @axis level organism
  */
 @Directive({
   selector: '[cngxMenuItemSubmenu]',

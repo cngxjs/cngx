@@ -252,6 +252,7 @@ function warnMissingFloatingMiddleware(doc: Document): void {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover.directive.ts
  * @since 0.1.0
  * @relatedTo CngxPopoverTrigger, CngxPopoverPanel, CngxTooltip
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxPopover]',

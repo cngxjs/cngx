@@ -32,6 +32,7 @@ import { cngxDevWarn } from '@cngx/utils';
  * @since 0.1.0
  * @relatedTo CngxIntersectionObserver, CngxStickyHeader, CngxInfiniteScroll
  * <example-url>http://localhost:4200/#/common/layout/scroll-spy/scroll-based-navigation</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxScrollSpy]',

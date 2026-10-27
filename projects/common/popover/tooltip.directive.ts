@@ -83,6 +83,7 @@ const FOCUS_DEBOUNCE_MS = 50;
  * <example-url>http://localhost:4200/#/common/popover/tooltip/keyboard-navigation</example-url>
  * <example-url>http://localhost:4200/#/common/popover/tooltip/placement</example-url>
  * <example-url>http://localhost:4200/#/common/popover/tooltip/programmatic-control</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxTooltip]',

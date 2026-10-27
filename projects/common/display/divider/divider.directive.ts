@@ -15,6 +15,7 @@ import { Directive, input } from '@angular/core';
  * @since 0.1.0
  * <example-url>http://localhost:4200/#/common/display/divider/horizontal-vs-vertical</example-url>
  * <example-url>http://localhost:4200/#/common/display/divider/inset</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: 'cngx-divider, [cngxDivider]',

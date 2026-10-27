@@ -54,6 +54,7 @@ export const CNGX_FOCUSABLE_SELECTOR =
  * @relatedTo CngxAutofocus, CngxFocusTrap, CngxFocusVisible
  * <example-url>http://localhost:4200/#/common/a11y/focus-restore/inline-details</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/focus-restore/panel-with-automatic-restore</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxFocusRestore]',

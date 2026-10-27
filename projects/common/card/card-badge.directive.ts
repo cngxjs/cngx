@@ -21,6 +21,7 @@ import { Directive, input } from '@angular/core';
  * @since 0.1.0
  * @relatedTo CngxCard, CngxCardAccent, CngxCardHeader
  * <example-url>http://localhost:4200/#/common/card/card-with-badge</example-url>
+ * @axis level organism
  */
 @Directive({
   selector: '[cngxCardBadge]',

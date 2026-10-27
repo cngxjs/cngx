@@ -32,6 +32,7 @@ import { createSwipeEngine } from './swipe-engine';
  * @since 0.1.0
  * @relatedTo CngxLongPress, CngxDrawer
  * <example-url>http://localhost:4200/#/common/interactive/gestures/swipe-dismiss/directional-swipe</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxSwipeDismiss]',

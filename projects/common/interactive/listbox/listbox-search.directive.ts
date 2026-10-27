@@ -54,6 +54,7 @@ export function createListboxLabelMatch(
  * @since 0.1.0
  * @relatedTo CngxListbox, CngxSearch, CngxListboxTrigger
  * <example-url>http://localhost:4200/#/common/interactive/listbox/search/command-palette</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: 'input[cngxListboxSearch]',

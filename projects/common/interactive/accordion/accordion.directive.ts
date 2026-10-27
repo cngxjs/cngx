@@ -36,6 +36,7 @@ import { CNGX_ACCORDION, type CngxAccordionHost } from './accordion.token';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/accordion/accordion.directive.ts
  * @since 0.1.0
  * @relatedTo CngxAccordionPanel, createAccordionKeyboardNav
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxAccordion]',

@@ -32,6 +32,7 @@ import { injectKpiI18n } from '../shared/kpi-i18n';
  * @relatedTo CngxSegmentedProgress, CngxMetric
  *
  * <example-url>http://localhost:4200/#/common/data/goal/quota-attainment</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-goal',

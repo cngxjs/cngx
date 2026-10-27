@@ -25,6 +25,7 @@ import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
  *
  * <example-url>http://localhost:4200/#/common/chart/deviation-bar/async-state-machine</example-url>
  * <example-url>http://localhost:4200/#/common/chart/deviation-bar/variance-readings</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-deviation-bar',

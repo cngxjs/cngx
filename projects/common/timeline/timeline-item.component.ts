@@ -163,6 +163,7 @@ const FOCUSABLE =
  * <example-url>http://localhost:4200/#/ui/timeline/layout/media-markers</example-url>
  * <example-url>http://localhost:4200/#/ui/timeline/layout/placement-end</example-url>
  * @since 0.1.0
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-timeline-item',

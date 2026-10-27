@@ -32,6 +32,7 @@ import { fromEvent, filter, switchMap, takeUntil, timer, tap, merge } from 'rxjs
  * @relatedTo CngxSwipeDismiss, CngxPressable
  * <example-url>http://localhost:4200/#/common/interactive/gestures/long-press/custom-threshold</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/gestures/long-press/long-press-with-visual-feedback</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxLongPress]',

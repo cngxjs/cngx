@@ -20,6 +20,7 @@ import { Directive, input } from '@angular/core';
  * @since 0.1.0
  * @relatedTo CngxCard, CngxCardBadge, CngxCardHeader
  * <example-url>http://localhost:4200/#/common/card/severity-accent</example-url>
+ * @axis level organism
  */
 @Directive({
   selector: '[cngxCardAccent]',

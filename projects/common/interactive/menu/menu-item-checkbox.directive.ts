@@ -14,6 +14,7 @@ import { injectMenuItemCore } from './menu-item-core';
  * @since 0.1.0
  * @relatedTo CngxMenuItem, CngxMenuItemRadio, CngxMenu
  * <example-url>http://localhost:4200/#/common/interactive/menu/checkable/text-formatting-menu</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxMenuItemCheckbox]',

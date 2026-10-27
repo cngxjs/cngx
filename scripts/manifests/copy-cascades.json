@@ -5,7 +5,7 @@
     {
       "class": "CngxDelta",
       "file": "projects/common/data/display/delta/delta.component.ts",
-      "line": 120,
+      "line": 121,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -16,7 +16,7 @@
     {
       "class": "CngxGoal",
       "file": "projects/common/data/display/goal/goal.component.ts",
-      "line": 96,
+      "line": 97,
       "member": "valueText",
       "enclosing": "computed",
       "tiers": [
@@ -27,7 +27,7 @@
     {
       "class": "CngxTrend",
       "file": "projects/common/data/display/trend/trend.component.ts",
-      "line": 88,
+      "line": 89,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -38,7 +38,7 @@
     {
       "class": "CngxAvatar",
       "file": "projects/common/display/avatar/avatar.component.ts",
-      "line": 104,
+      "line": 105,
       "member": "statusAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -54,7 +54,7 @@
     {
       "class": "CngxChip",
       "file": "projects/common/display/chip/chip.component.ts",
-      "line": 122,
+      "line": 123,
       "member": "resolvedRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -65,7 +65,7 @@
     {
       "class": "CngxSegmentedProgress",
       "file": "projects/common/display/segmented-progress/segmented-progress.component.ts",
-      "line": 124,
+      "line": 125,
       "member": "valueText",
       "enclosing": "computed",
       "tiers": [
@@ -81,7 +81,7 @@
     {
       "class": "CngxAsyncClick",
       "file": "projects/common/interactive/async-click/async-click.directive.ts",
-      "line": 256,
+      "line": 257,
       "member": "announcement",
       "enclosing": "untracked",
       "tiers": [
@@ -97,7 +97,7 @@
     {
       "class": "CngxAsyncClick",
       "file": "projects/common/interactive/async-click/async-click.directive.ts",
-      "line": 259,
+      "line": 260,
       "member": "announcement",
       "enclosing": "untracked",
       "tiers": [
@@ -113,7 +113,7 @@
     {
       "class": "CngxBreadcrumb",
       "file": "projects/common/interactive/breadcrumb/breadcrumb.directive.ts",
-      "line": 53,
+      "line": 54,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -129,7 +129,7 @@
     {
       "class": "CngxCopyBlock",
       "file": "projects/common/interactive/copy/copy-block.ts",
-      "line": 90,
+      "line": 91,
       "member": "resolvedButtonLabel",
       "enclosing": "computed",
       "tiers": [
@@ -140,7 +140,7 @@
     {
       "class": "CngxCopyBlock",
       "file": "projects/common/interactive/copy/copy-block.ts",
-      "line": 92,
+      "line": 93,
       "member": "resolvedCopiedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -151,7 +151,7 @@
     {
       "class": "CngxCopyBlock",
       "file": "projects/common/interactive/copy/copy-block.ts",
-      "line": 101,
+      "line": 102,
       "member": "liveAnnouncement",
       "enclosing": "untracked",
       "tiers": [
@@ -167,7 +167,7 @@
     {
       "class": "CngxRangeSlider",
       "file": "projects/common/interactive/slider/range-slider.component.ts",
-      "line": 124,
+      "line": 125,
       "member": "resolvedStartLabel",
       "enclosing": "computed",
       "tiers": [
@@ -183,7 +183,7 @@
     {
       "class": "CngxRangeSlider",
       "file": "projects/common/interactive/slider/range-slider.component.ts",
-      "line": 126,
+      "line": 127,
       "member": "resolvedEndLabel",
       "enclosing": "computed",
       "tiers": [
@@ -199,7 +199,7 @@
     {
       "class": "CngxExpandableText",
       "file": "projects/common/layout/text/expandable-text.ts",
-      "line": 150,
+      "line": 151,
       "member": "resolvedMoreLabel",
       "enclosing": "computed",
       "tiers": [
@@ -215,7 +215,7 @@
     {
       "class": "CngxExpandableText",
       "file": "projects/common/layout/text/expandable-text.ts",
-      "line": 153,
+      "line": 154,
       "member": "resolvedLessLabel",
       "enclosing": "computed",
       "tiers": [

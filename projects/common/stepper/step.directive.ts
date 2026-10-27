@@ -38,6 +38,7 @@ import {
  * @slot cngxStepLabel The step's own header label.
  * @slot cngxStepContent The step body, rendered lazily when the step activates.
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-step-content/typed-lazy-panels</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxStep]',

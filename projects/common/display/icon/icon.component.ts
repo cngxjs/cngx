@@ -27,6 +27,7 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@a
  * <example-url>http://localhost:4200/#/common/display/tag/slot-overrides-prefix-label-suffix</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/truncate-maxwidth</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/variant-matrix</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-icon, [cngxIcon]',

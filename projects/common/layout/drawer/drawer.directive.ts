@@ -42,6 +42,7 @@ export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
  * <example-url>http://localhost:4200/#/common/layout/drawer/events-openedchange-closed</example-url>
  * <example-url>http://localhost:4200/#/common/layout/drawer/mode-over-push-side</example-url>
  * <example-url>http://localhost:4200/#/common/layout/drawer/pattern-consumer-wiring</example-url>
+ * @axis level organism
  */
 @Directive({
   selector: '[cngxDrawer]',

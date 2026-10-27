@@ -65,6 +65,7 @@ import { firstValueFrom, isObservable, type Observable } from 'rxjs';
  * @relatedTo CngxMultiChipGroup, CngxChipInteraction, CngxChipInGroup
  * <example-url>http://localhost:4200/#/common/interactive/chip/input/async-validation-with-supersede-semantics</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/chip/input/synchronous-tokenization</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: 'input[cngxChipInput]',

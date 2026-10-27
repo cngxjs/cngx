@@ -36,6 +36,7 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/expandable/expandable.directive.ts
  * @since 0.1.0
  * @relatedTo CngxHierarchicalNav, CngxTreeController, CngxRovingTabindex
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxExpandable]',

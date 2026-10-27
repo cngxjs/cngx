@@ -28,6 +28,7 @@ import { computed, Directive, input } from '@angular/core';
  * @relatedTo CngxErrorAggregator, CngxErrorSource, CngxErrorScope
  * <example-url>http://localhost:4200/#/common/interactive/error/state/basic-boolean-flag-flips-aria-invalid-aria-errormessage</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/error/state/without-message-id-class-hook-aria-invalid-only</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxErrorState]',

@@ -34,6 +34,7 @@ import { injectDisplayI18n, isSectionAvatarGroupLabel } from '../i18n/display-i1
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/avatar-group/avatar-group.component.ts
  * @since 0.1.0
  * @relatedTo CngxAvatar
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-avatar-group',

@@ -35,6 +35,7 @@ export interface CngxAudioZoneBinding {
  * @since 0.1.0
  * @relatedTo CngxAudio, injectCngxAudio
  * <example-url>http://localhost:4200/#/common/audio/zone/enter-leave</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxAudioZone]',

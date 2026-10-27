@@ -49,6 +49,7 @@ import { injectDisplayI18n } from '../i18n/display-i18n';
  * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/disabled-state</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/removable-with-removerequest-on-backspace-delete</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/chip/multi-group/multi-select-chips-with-selection-count</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-chip',

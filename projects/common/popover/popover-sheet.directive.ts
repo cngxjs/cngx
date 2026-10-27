@@ -164,6 +164,7 @@ function warnSheetMisconfiguration(
  * @relatedTo CngxPopover, CngxSwipeDismiss, CngxFocusTrap, createPinnedScrollLock, injectScopedLiveRegion
  * <example-url>http://localhost:4200/#/common/popover/sheet/bottom-sheet</example-url>
  * <example-url>http://localhost:4200/#/common/popover/sheet/fullscreen-search</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxPopoverSheet]',

@@ -20,6 +20,7 @@ import { DestroyRef, Directive, inject, signal } from '@angular/core';
  * @relatedTo CngxAutofocus, CngxFocusRestore, CngxFocusTrap
  * <example-url>http://localhost:4200/#/common/a11y/focus-visible/form-fields-custom-focus-ring</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/focus-visible/keyboard-vs-pointer</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxFocusVisible]',

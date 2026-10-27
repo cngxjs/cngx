@@ -47,6 +47,7 @@ import { cngxDevWarn } from '@cngx/utils';
  * @since 0.1.0
  * @relatedTo CngxScrollSpy, CngxIntersectionObserver
  * <example-url>http://localhost:4200/#/common/layout/sticky-header/sticky-header-with-shadow</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxStickyHeader]',

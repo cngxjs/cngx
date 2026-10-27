@@ -59,6 +59,7 @@ const TONE_GLYPH: Record<StatusTone, string> = {
  *
  * <example-url>http://localhost:4200/#/common/display/status/tone-matrix</example-url>
  * <example-url>http://localhost:4200/#/common/display/status/dot-only</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-status',

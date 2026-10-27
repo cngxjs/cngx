@@ -29,6 +29,7 @@ import { CngxOption } from './option.directive';
  * @relatedTo CngxOption, CngxListbox
  * <example-url>http://localhost:4200/#/common/interactive/option/flat-options-with-ad</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/option/grouped-options</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxOptionGroup]',

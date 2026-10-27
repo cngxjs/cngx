@@ -95,6 +95,7 @@ export class CngxExpandableToggle {
  * <example-url>http://localhost:4200/#/common/layout/expandable-text/auto-toggle</example-url>
  * <example-url>http://localhost:4200/#/common/layout/expandable-text/custom-labels</example-url>
  * <example-url>http://localhost:4200/#/common/layout/expandable-text/custom-toggle-template</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-expandable-text',

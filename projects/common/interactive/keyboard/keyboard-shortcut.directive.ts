@@ -39,6 +39,7 @@ const INPUT_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
  * @relatedTo CngxClickOutside, CngxSearch
  * <example-url>http://localhost:4200/#/common/interactive/gestures/keyboard-shortcut/global-shortcut</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/gestures/keyboard-shortcut/self-scoped-shortcut</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxKeyboardShortcut]',

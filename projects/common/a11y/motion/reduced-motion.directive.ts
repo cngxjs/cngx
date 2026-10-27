@@ -32,6 +32,7 @@ import { createMediaQuerySignal } from '@cngx/core/utils';
  * @since 0.1.0
  * <example-url>http://localhost:4200/#/common/a11y/reduced-motion/animation-toggle</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/reduced-motion/toast-notifications-motion-aware</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxReducedMotion]',

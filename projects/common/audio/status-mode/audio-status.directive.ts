@@ -41,6 +41,7 @@ import { parseStatusBindings } from './parse-status-bindings';
  * @since 0.1.0
  * @relatedTo CngxAudio, injectCngxAudio, CngxAsyncClick
  * <example-url>http://localhost:4200/#/common/audio/status-bridge/async-click</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxAudioStatus]',

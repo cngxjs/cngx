@@ -33,6 +33,7 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  * <example-url>http://localhost:4200/#/common/data/paginate-list/paginated-list-cngxpaginate-cngxmatpaginator</example-url>
  * <example-url>http://localhost:4200/#/common/data/paginate-list/uncontrolled-mode-zero-class-boilerplate</example-url>
  * <example-url>http://localhost:4200/#/common/data/smart-data-source/smartdatasource-cngxpaginate-hostdirective</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxPaginate]',

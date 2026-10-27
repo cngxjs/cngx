@@ -57,6 +57,7 @@ export type CngxButtonGroupOrientation = 'horizontal' | 'vertical';
  * <example-url>http://localhost:4200/#/common/button/group/with-addon</example-url>
  * <example-url>http://localhost:4200/#/common/button/group/icon-toolbar</example-url>
  * <example-url>http://localhost:4200/#/common/button/composition/split-button</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxButtonGroup]',

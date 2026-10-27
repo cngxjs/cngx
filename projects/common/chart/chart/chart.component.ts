@@ -161,6 +161,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
  * @slot cngxChartConnectionError Rendered over the chart when the live connection drops.
  * @slot cngxChartReconnecting Rendered over the chart while the connection retries.
  * @slot cngxChartOverlay HTML layered over the marks in the content view; the chart insets it to the plot area, pointer-events off by default.
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-chart',

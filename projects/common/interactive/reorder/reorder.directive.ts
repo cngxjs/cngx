@@ -146,6 +146,7 @@ interface ActiveDrag {
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/optional-drag-handle-glyph</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/pre-seeded-values-reorder-log</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxReorder]',

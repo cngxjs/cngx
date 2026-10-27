@@ -77,6 +77,7 @@ import {
  * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/native-form-scope-reveal-on-submit</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-error-aggregation/per-step-error-badges</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-error-aggregation/per-tab-error-badges</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxErrorAggregator]',

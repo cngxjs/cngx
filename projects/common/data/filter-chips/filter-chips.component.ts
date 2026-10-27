@@ -149,6 +149,7 @@ export class CngxFilterChip<TItem = unknown, TValue = unknown> {
  *
  * <example-url>http://localhost:4200/#/common/data/filter-chips/custom-chip-decoration-via-cngxfilterchip</example-url>
  * <example-url>http://localhost:4200/#/common/data/filter-chips/multi-role-filter-wired-to-a-list</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-filter-chips',

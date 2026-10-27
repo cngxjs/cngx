@@ -43,6 +43,7 @@ import {
  * <example-url>http://localhost:4200/#/common/display/checkbox-indicator/variant-matrix</example-url>
  * <example-url>http://localhost:4200/#/common/display/checkbox-indicator/sizes</example-url>
  * <example-url>http://localhost:4200/#/common/display/checkbox-indicator/custom-glyph</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-checkbox-indicator',

@@ -74,6 +74,7 @@ export interface CngxAsyncContext<T> {
  * <example-url>http://localhost:4200/#/ui/feedback/async-container/composition-overlay-container-toast</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/async-container/createasyncstate-mutation</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/async-container/injectasyncstate-reactive-query</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxAsync]',
