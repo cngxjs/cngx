@@ -6,6 +6,8 @@
 // bridge only re-points the size scale to Material 3's icon-size
 // conventions where they differ from the cngx defaults.
 //
+// It also sizes a wrapped <mat-icon> to the rung (see `mat-icon()`).
+//
 //   @use '@cngx/themes/material/icon-theme' as icon;
 //   html { @include icon.theme($theme); }
 
@@ -23,8 +25,26 @@
   --cngx-icon-size-xl: 2em;
 }
 
+// A <mat-icon> (or a bare `.material-icons` span) wrapped in <cngx-icon>
+// takes the cngx-icon rung instead of Material's fixed 24px: the wrapper
+// already carries the rung as its font-size, so the glyph is a 1em box of
+// it. Unlayered on purpose (a deliberate non-adopter of `bridge.on()`):
+// Material styles `.mat-icon` (24px box) and `.material-icons` (24px font)
+// unlayered, and an unlayered rule beats every layered one. The selector
+// (0,2,1) also outranks `.mat-icon.mat-icon-inline` (0,2,0) whatever the
+// load order.
+@mixin mat-icon() {
+  cngx-icon.cngx-icon > :is(.mat-icon, .material-icons) {
+    font-size: 1em;
+    inline-size: 1em;
+    block-size: 1em;
+    line-height: 1;
+  }
+}
+
 @mixin theme($theme) {
   @include bridge.on(cngx-icon) {
     @include sizes();
   }
+  @include mat-icon();
 }

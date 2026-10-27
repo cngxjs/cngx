@@ -39,11 +39,9 @@
 // on-colours, the variant mappings and the shape are net-new there; the
 // duplicate keeps a selective per-bridge include consistent.
 //
-// `icons()` is the one unlayered part (a deliberate non-adopter of
-// `bridge.on()`): Material styles `.mat-icon` unlayered at 24px, which beats
-// any layered cngx rule, so a <mat-icon> in a button slot or in an icon
-// button would stay 24px at every button size. The rule sizes it like the
-// svg glyph it stands in for.
+// Icons: wrap a <mat-icon> in <cngx-icon> (the slot or the icon-button
+// glyph); icon-theme sizes the wrapped glyph to the cngx-icon rung, so this
+// bridge carries no `.mat-icon` rule.
 
 @mixin _tonal($container, $on-container) {
   --cngx-button-secondary-bg: var(--mat-sys-#{$container});
@@ -126,32 +124,7 @@
   }
 }
 
-// Unlayered (see the header). Two classes outrank Material's single-class
-// `.mat-icon` / `.material-icons` rules wherever those load. Font size first,
-// box in `em` of it, so a ligature glyph and an svgIcon both land on the
-// size the svg glyph has in the same place: --cngx-button-icon-size in a
-// start or end slot, the icon-button glyph rung (1.25em) in an icon button,
-// --cngx-close-button-icon-size in a close button.
-@mixin icons() {
-  .cngx-button .mat-icon:is(.cngx-button__slot, .cngx-button__slot > *) {
-    font-size: var(--cngx-button-icon-size, 1.25em);
-    inline-size: 1em;
-    block-size: 1em;
-    line-height: 1;
-  }
-  .cngx-icon-button__glyph > .mat-icon {
-    font-size: 1.25em;
-    inline-size: 1em;
-    block-size: 1em;
-    line-height: 1;
-  }
-  .cngx-close-button .cngx-icon-button__glyph > .mat-icon {
-    font-size: var(--cngx-close-button-icon-size, 1.25em);
-  }
-}
-
 @mixin theme($theme) {
   @include color($theme);
   @include shape($theme);
-  @include icons();
 }

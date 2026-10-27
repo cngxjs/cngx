@@ -1,7 +1,9 @@
 // Test-only entry for material-bridge.geometry.spec.ts: compiles the
-// working-tree button bridge the way a consumer stylesheet would. Not shipped.
+// working-tree button and icon bridges the way a consumer stylesheet would.
+// Not shipped.
 @use '@angular/material' as mat;
 @use '../../themes/material/button-theme' as button;
+@use '../../themes/material/icon-theme' as icon;
 
 $theme: mat.define-theme(
   (
@@ -15,4 +17,5 @@ $theme: mat.define-theme(
 
 html {
   @include button.theme($theme);
+  @include icon.theme($theme);
 }

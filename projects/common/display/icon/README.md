@@ -96,7 +96,7 @@ Anything that renders a glyph works. The cngx role is sizing plus ARIA, nothing 
 </cngx-icon>
 ```
 
-Note that `<mat-icon>` ships its own fixed `font-size: 24px`. To respect `CngxIcon`'s size scale, project it as content and override the Material icon size at the Material theme level (`--mat-icon-size: 1em`), or accept Material's 24px and stop using the `size` input on this instance.
+`<mat-icon>` ships a fixed 24px box and font size, styled outside any layer, so on its own it ignores `CngxIcon`'s size scale. The Material icon bridge (`@cngx/themes/material/icon-theme`, or the whole `@cngx/themes/material/theme`) sizes a wrapped `<mat-icon>` to a 1em box of the `cngx-icon` rung, so `size` applies. Without the bridge, use `<mat-icon inline>` to inherit the rung.
 
 ### Lucide / Heroicons / inline SVG
 

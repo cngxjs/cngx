@@ -10,8 +10,8 @@ import { compileThemeEntry, emittedTokenNames } from '@cngx/testing/sass';
  * (`projects/themes/material/button-theme.scss`). Pins the emitted
  * `--cngx-*` names, proves every button-owned name is read by a
  * button-family stylesheet (the bridges' historic defect is name drift),
- * and pins the placement: layered zero-specificity token blocks plus the one
- * unlayered `.mat-icon` sizing rule. Rendered sizes are the geometry spec's
+ * and pins the placement: every block layered, no `.mat-icon` rule (a
+ * wrapped mat-icon is the icon bridge's job). Rendered sizes are the geometry spec's
  * job (`material-bridge.geometry.spec.ts`).
  */
 
@@ -155,14 +155,10 @@ describe('button Material bridge', () => {
     expect(compileThemeEntry(M2_ENTRY)).toContain('--cngx-close-button-color: rgba(0, 0, 0, 0.54)');
   });
 
-  it('layers every token block and leaves only the mat-icon sizing unlayered', () => {
+  it('layers every block and carries no mat-icon rule (the icon bridge sizes wrapped glyphs)', () => {
     const css = compileThemeEntry(M3_ENTRY);
     const unlayered = css.replace(/@layer cngx\.components\s*\{(?:[^{}]*\{[^}]*\})*\s*\}/g, '');
-    expect(emittedTokenNames(unlayered)).toEqual([]);
-    expect(unlayered).toContain(
-      '.cngx-button .mat-icon:is(.cngx-button__slot, .cngx-button__slot > *)',
-    );
-    expect(unlayered).toContain('.cngx-icon-button__glyph > .mat-icon');
-    expect(unlayered).toContain('font-size: var(--cngx-button-icon-size, 1.25em)');
+    expect(unlayered.trim()).toBe('');
+    expect(css).not.toContain('mat-icon');
   });
 });
