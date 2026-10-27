@@ -1,7 +1,8 @@
 import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { buildAsyncStateView, type AsyncStatus } from '@cngx/core/utils';
-import { afterEach, describe, expect, it } from 'vitest';
+import { computedValue } from '@cngx/testing/geometry';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxActionButton } from './action-button';
 
@@ -51,6 +52,60 @@ class GeometryHost {
     error: signal<unknown>(undefined).asReadonly(),
   });
   readonly action = () => Promise.resolve();
+}
+
+// The button family owns the paint of its own states: cngx-async.css skips a
+// `.cngx-button` host, so a real run keeps the variant paint and shows the
+// button busy treatment while pending. A twin without a run is the reference.
+@Component({
+  selector: 'cngx-action-button-async-paint-host',
+  standalone: true,
+  imports: [CngxActionButton],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../core/theming/system-tokens.css',
+    '../../core/theming/reset.css',
+    '../../core/theming/base.css',
+    '../../common/theming/components/cngx-async.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <p class="solid">
+      <button cngxActionButton class="ref" [action]="hang">Save</button>
+      <button cngxActionButton class="ok" [action]="succeed" [feedbackDuration]="60000">
+        Save
+      </button>
+      <button cngxActionButton class="fail" [action]="fail" [feedbackDuration]="60000">Save</button>
+      <button cngxActionButton class="busy" [action]="hang">Save</button>
+    </p>
+    <p class="outline-danger">
+      <button cngxActionButton="outline" tone="danger" class="ref" [action]="hang">Save</button>
+      <button
+        cngxActionButton="outline"
+        tone="danger"
+        class="ok"
+        [action]="succeed"
+        [feedbackDuration]="60000"
+      >
+        Save
+      </button>
+      <button
+        cngxActionButton="outline"
+        tone="danger"
+        class="fail"
+        [action]="fail"
+        [feedbackDuration]="60000"
+      >
+        Save
+      </button>
+      <button cngxActionButton="outline" tone="danger" class="busy" [action]="hang">Save</button>
+    </p>
+  `,
+})
+class AsyncPaintHost {
+  readonly succeed = () => Promise.resolve();
+  readonly fail = () => Promise.reject(new Error('nope'));
+  readonly hang = () => new Promise<void>(() => undefined);
 }
 
 let mountedRoot: HTMLElement | null = null;
@@ -127,5 +182,56 @@ describe('CngxActionButton geometry', () => {
     expect(btn.querySelector('.cngx-button__busy')).not.toBeNull();
     expect(getComputedStyle(query(btn, '.cngx-action-button__labels')).visibility).toBe('hidden');
     expect(btn.getBoundingClientRect().width).toBe(idleWidth);
+  });
+});
+
+function mountAsyncPaint(): void {
+  const fixture = TestBed.createComponent(AsyncPaintHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+}
+
+const PAINT = ['background-color', 'color', 'border-top-color'] as const;
+
+function paintOf(el: HTMLElement): Record<string, string> {
+  return Object.fromEntries(PAINT.map((p) => [p, computedValue(el, p)]));
+}
+
+async function run(el: HTMLElement, stateClass: string): Promise<HTMLElement> {
+  el.click();
+  await vi.waitFor(() => {
+    TestBed.tick();
+    expect(el.classList.contains(stateClass)).toBe(true);
+  });
+  await Promise.all(el.getAnimations().map((a) => a.finished));
+  return el;
+}
+
+describe.each(['solid', 'outline-danger'])('CngxActionButton async paint, %s', (variant) => {
+  const at = (selector: string): HTMLElement => query(mountedRoot!, `.${variant} ${selector}`);
+
+  it('keeps the variant paint after a successful run', async () => {
+    mountAsyncPaint();
+    const el = await run(at('.ok'), 'cngx-async--success');
+    expect(el.getAttribute('data-status')).toBe('success');
+    expect(paintOf(el)).toEqual(paintOf(at('.ref')));
+  });
+
+  it('keeps the variant paint after a failed run', async () => {
+    mountAsyncPaint();
+    const el = await run(at('.fail'), 'cngx-async--error');
+    expect(el.getAttribute('data-status')).toBe('error');
+    expect(paintOf(el)).toEqual(paintOf(at('.ref')));
+  });
+
+  it('shows the button busy treatment while a run is pending', async () => {
+    mountAsyncPaint();
+    const el = await run(at('.busy'), 'cngx-async--pending');
+    expect(el.getAttribute('data-busy')).toBe('true');
+    expect(el.querySelector('.cngx-button__busy')).not.toBeNull();
+    expect(computedValue(el, 'opacity')).toBe('1');
+    expect(computedValue(el, 'cursor')).toBe('progress');
+    expect(paintOf(el)).toEqual(paintOf(at('.ref')));
   });
 });

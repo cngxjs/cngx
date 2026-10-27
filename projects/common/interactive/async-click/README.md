@@ -81,7 +81,7 @@ readonly [saveWithRetry, retryState] = withRetry(() => this.saveAction());
 
 ## Styling
 
-CngxAsyncClick applies three CSS classes for state feedback: `.cngx-async--pending` while the action runs, `.cngx-async--success` and `.cngx-async--error` for `feedbackDuration` ms after it settles. `@cngx/common/theming/components/cngx-async.css` (part of the `cngx.css` bundle) paints them through these tokens:
+CngxAsyncClick applies three CSS classes for state feedback: `.cngx-async--pending` while the action runs, `.cngx-async--success` and `.cngx-async--error` for `feedbackDuration` ms after it settles. `@cngx/common/theming/components/cngx-async.css` (part of the `cngx.css` bundle) paints them through these tokens on hosts without their own paint (a bare `<button>`, an anchor). Button-family hosts (`.cngx-button`: `cngxButton`, `cngxIconButton`, `cngxCloseButton`, `cngxActionButton`) are skipped; they keep their variant paint and show their own busy treatment.
 
 |Token|Unset default|
 |-|-|

@@ -1,5 +1,6 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { CngxButton } from '@cngx/common/button';
 import { CngxAsyncClick } from '@cngx/common/interactive';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -12,6 +13,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 // The colour tokens are registered without an initial value. A registered
 // literal would never let the `var(--cngx-async-*, ...)` fallback fire, so the
 // tint would stay light in the dark scheme; the per-scheme probes catch that.
+//
+// The button family owns the paint of its own states, so a `.cngx-button` host
+// keeps its variant paint through every phase and shows its own busy treatment
+// while pending. ButtonHost pins that against a twin without cngxAsyncClick.
 
 const SCHEMES = ['light', 'dark'] as const;
 
@@ -54,7 +59,10 @@ const SCHEMES = ['light', 'dark'] as const;
         <span class="probe-danger" style="color: var(--cngx-color-danger)"></span>
       </div>
     }
-    <div class="themed" style="--cngx-async-success-bg: rgb(1, 2, 3); --cngx-async-error-color: rgb(4, 5, 6)">
+    <div
+      class="themed"
+      style="--cngx-async-success-bg: rgb(1, 2, 3); --cngx-async-error-color: rgb(4, 5, 6)"
+    >
       <button type="button" class="ok" [cngxAsyncClick]="succeed" [feedbackDuration]="60000">
         Save
       </button>
@@ -71,10 +79,64 @@ class TintHost {
   readonly hang = () => new Promise<void>(() => undefined);
 }
 
+@Component({
+  selector: 'cngx-async-state-button-host',
+  standalone: true,
+  imports: [CngxAsyncClick, CngxButton],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    '../../../core/theming/reset.css',
+    '../../../core/theming/base.css',
+    '../../button/button.component.css',
+    './cngx-async.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <p class="solid">
+      <button cngxButton class="ref">Save</button>
+      <button cngxButton class="ok" [cngxAsyncClick]="succeed" [feedbackDuration]="60000">
+        Save
+      </button>
+      <button cngxButton class="fail" [cngxAsyncClick]="fail" [feedbackDuration]="60000">
+        Save
+      </button>
+      <button cngxButton class="busy" [cngxAsyncClick]="hang">Save</button>
+    </p>
+    <p class="outline-danger">
+      <button cngxButton="outline" tone="danger" class="ref">Save</button>
+      <button
+        cngxButton="outline"
+        tone="danger"
+        class="ok"
+        [cngxAsyncClick]="succeed"
+        [feedbackDuration]="60000"
+      >
+        Save
+      </button>
+      <button
+        cngxButton="outline"
+        tone="danger"
+        class="fail"
+        [cngxAsyncClick]="fail"
+        [feedbackDuration]="60000"
+      >
+        Save
+      </button>
+      <button cngxButton="outline" tone="danger" class="busy" [cngxAsyncClick]="hang">Save</button>
+    </p>
+  `,
+})
+class ButtonHost {
+  readonly succeed = () => Promise.resolve();
+  readonly fail = () => Promise.reject(new Error('nope'));
+  readonly hang = () => new Promise<void>(() => undefined);
+}
+
 let mountedRoot: HTMLElement | null = null;
 
-function mount(): HTMLElement {
-  const fixture = TestBed.createComponent(TintHost);
+function mount(host: typeof TintHost | typeof ButtonHost = TintHost): HTMLElement {
+  const fixture = TestBed.createComponent(host);
   mountedRoot = fixture.nativeElement as HTMLElement;
   document.body.appendChild(mountedRoot);
   fixture.detectChanges();
@@ -141,5 +203,37 @@ describe('cngx-async state tint, themed', () => {
     expect(computedValue(ok, 'background-color')).toBe('rgb(1, 2, 3)');
     const fail = await settle(one(root, '.themed .fail'), 'cngx-async--error');
     expect(computedValue(fail, 'color')).toBe('rgb(4, 5, 6)');
+  });
+});
+
+const PAINT = ['background-color', 'color', 'border-top-color'] as const;
+
+function paintOf(el: HTMLElement): Record<string, string> {
+  return Object.fromEntries(PAINT.map((p) => [p, computedValue(el, p)]));
+}
+
+describe.each(['solid', 'outline-danger'])('cngx-async on a cngxButton host, %s', (variant) => {
+  const at = (root: HTMLElement, selector: string): HTMLElement =>
+    one(root, `.${variant} ${selector}`);
+
+  it('keeps the variant paint after a successful run', async () => {
+    const root = mount(ButtonHost);
+    const el = await settle(at(root, '.ok'), 'cngx-async--success');
+    expect(paintOf(el)).toEqual(paintOf(at(root, '.ref')));
+  });
+
+  it('keeps the variant paint after a failed run', async () => {
+    const root = mount(ButtonHost);
+    const el = await settle(at(root, '.fail'), 'cngx-async--error');
+    expect(paintOf(el)).toEqual(paintOf(at(root, '.ref')));
+  });
+
+  it('shows the button busy treatment, not the pending dim', async () => {
+    const root = mount(ButtonHost);
+    const el = await settle(at(root, '.busy'), 'cngx-async--pending');
+    expect(el.getAttribute('data-busy')).toBe('true');
+    expect(computedValue(el, 'opacity')).toBe('1');
+    expect(computedValue(el, 'cursor')).toBe('progress');
+    expect(paintOf(el)).toEqual(paintOf(at(root, '.ref')));
   });
 });

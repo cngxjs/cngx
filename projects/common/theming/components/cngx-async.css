@@ -4,7 +4,18 @@
  * (`@cngx/common/interactive`). The directive toggles
  * `cngx-async--pending`, `cngx-async--success`, `cngx-async--error`
  * on its host as the async action progresses; this stylesheet
- * paints the three phases.
+ * paints the three phases on hosts without their own paint, such as a bare
+ * `<button cngxAsyncClick>` or an anchor.
+ *
+ * **Scope**
+ *
+ * The button family owns the paint of its own states. A `.cngx-button` host
+ * (`cngxButton`, `cngxIconButton`, `cngxCloseButton`, `cngxActionButton`)
+ * keeps its variant paint through every phase: pending shows the button's
+ * busy treatment (`[data-busy]`), and the action button reports the settle
+ * result through its label swap and live region. The exclusion is
+ * `:not(:where(.cngx-button))`, so the state rules keep the specificity of a
+ * single class.
  *
  * **State modifiers**
  *
@@ -60,7 +71,8 @@
 
   /**
    * Opacity applied while `cngxAsyncClick` reports `pending`. Combined
-   * with `cursor: wait` on the same state.
+   * with `cursor: wait` on the same state. Not applied to `.cngx-button`
+   * hosts, which show their own busy treatment.
    * @group State / Pending
    */
   @property --cngx-async-pending-opacity {
@@ -72,6 +84,7 @@
   /**
    * Background tint after a successful async commit. Unset by default:
    * 12% `--cngx-color-success`.
+   * Not read on `.cngx-button` hosts.
    * @group State / Success
    */
   @property --cngx-async-success-bg {
@@ -83,6 +96,7 @@
    * Text color after a successful async commit. Unset by default:
    * `--cngx-color-success` mixed 75% toward `--cngx-color-text`, so it
    * reads as text in both schemes.
+   * Not read on `.cngx-button` hosts.
    * @group State / Success
    */
   @property --cngx-async-success-color {
@@ -93,6 +107,7 @@
   /**
    * Border color after a successful async commit. Unset by default:
    * `--cngx-color-success`.
+   * Not read on `.cngx-button` hosts.
    * @group State / Success
    */
   @property --cngx-async-success-border {
@@ -103,6 +118,7 @@
   /**
    * Background tint after a failed async commit. Unset by default:
    * 12% `--cngx-color-danger`.
+   * Not read on `.cngx-button` hosts.
    * @group State / Error
    */
   @property --cngx-async-error-bg {
@@ -113,6 +129,7 @@
   /**
    * Text color after a failed async commit. Unset by default:
    * `--cngx-color-danger-text`.
+   * Not read on `.cngx-button` hosts.
    * @group State / Error
    */
   @property --cngx-async-error-color {
@@ -123,6 +140,7 @@
   /**
    * Border color after a failed async commit. Unset by default:
    * `--cngx-color-danger`.
+   * Not read on `.cngx-button` hosts.
    * @group State / Error
    */
   @property --cngx-async-error-border {
@@ -132,13 +150,13 @@
 }
 
 @layer cngx.components {
-  .cngx-async--pending {
+  .cngx-async--pending:not(:where(.cngx-button)) {
     opacity: var(--cngx-async-pending-opacity, 0.7);
     cursor: wait;
     transition: opacity var(--cngx-async-transition, 0.2s ease);
   }
 
-  .cngx-async--success {
+  .cngx-async--success:not(:where(.cngx-button)) {
     background-color: var(
       --cngx-async-success-bg,
       color-mix(in oklab, var(--cngx-color-success, oklch(0.6 0.15 145)) 12%, transparent)
@@ -158,7 +176,7 @@
       border-color var(--cngx-async-transition, 0.2s ease);
   }
 
-  .cngx-async--error {
+  .cngx-async--error:not(:where(.cngx-button)) {
     background-color: var(
       --cngx-async-error-bg,
       color-mix(in oklab, var(--cngx-color-danger, oklch(0.6 0.18 25)) 12%, transparent)

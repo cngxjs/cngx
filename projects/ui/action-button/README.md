@@ -61,7 +61,7 @@ The idle content and the status labels render stacked in one cell; only the acti
 
 ## Styling
 
-The box, paint, sizes, disabled and busy states come from the `CngxButton` sheet (`--cngx-button-*` tokens). This component only adds the label stack. The `cngxAsyncClick` state classes and their `--cngx-async-*` tokens live in `@cngx/common` (`theming/components/cngx-async.css`).
+The box, paint, sizes, disabled and busy states come from the `CngxButton` sheet (`--cngx-button-*` tokens). This component only adds the label stack. The `cngxAsyncClick` state classes are still set on the host, but `@cngx/common/theming/components/cngx-async.css` skips `.cngx-button` hosts: pending shows the button's busy ring, and the settle result is the label swap plus the live region (and the optional toast). The `--cngx-async-*` tokens do not tint this button.
 
 ## Migrating from `<cngx-action-button>`
 

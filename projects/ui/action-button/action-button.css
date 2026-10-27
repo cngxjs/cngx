@@ -18,11 +18,11 @@
  *
  * **State modifiers**
  *
- * Async-commit state classes are set by `cngxAsyncClick` on the button. The
- * `.cngx-async--*` rules and their `--cngx-async-*` tokens (pending opacity,
- * success and error tint, transition) live in
- * `@cngx/common/theming/components/cngx-async.css` so they apply to every
- * `cngxAsyncClick` host.
+ * Async-commit state classes are set by `cngxAsyncClick` on the button, but
+ * `@cngx/common/theming/components/cngx-async.css` does not paint them on a
+ * `.cngx-button` host: pending shows the button's busy treatment
+ * (`[data-busy]`), and the settle result is the label swap plus the live
+ * region, with no success or error tint.
  */
 
 @layer cngx.components {
