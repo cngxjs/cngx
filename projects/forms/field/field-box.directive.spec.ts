@@ -8,7 +8,7 @@ import {
 } from '@cngx/core/tokens';
 import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 import { CngxInput } from '@cngx/forms/input';
-import { CngxAffixRow, CngxFieldBox } from './field-box.directive';
+import { CngxFieldBox } from './field-box.directive';
 import { CNGX_FIELD_BOX } from './field-box.token';
 import { CngxPrefix } from './prefix.directive';
 import { CngxSuffix } from './suffix.directive';
@@ -53,16 +53,17 @@ describe('CngxFieldBox', () => {
     expect(box(fixture).classList.contains('cngx-field-affix-row')).toBe(true);
   });
 
-  it('still resolves through the deprecated cngxAffixRow selector and alias', () => {
+  it('no longer matches the removed cngxAffixRow selector', () => {
     @Component({
       template: `<span cngxAffixRow skin="fill"><input /></span>`,
-      imports: [CngxAffixRow],
+      imports: [CngxFieldBox],
     })
     class Host {}
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
-    expect(CngxAffixRow).toBe(CngxFieldBox);
-    expect(box(fixture).getAttribute('data-skin')).toBe('fill');
+    const span = (fixture.nativeElement as HTMLElement).querySelector('span') as HTMLElement;
+    expect(span.classList.contains('cngx-field-box')).toBe(false);
+    expect(span.hasAttribute('data-skin')).toBe(false);
   });
 
   it('provides CNGX_FIELD_BOX with the direct-child control elements', () => {

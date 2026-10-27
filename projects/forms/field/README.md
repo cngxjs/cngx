@@ -32,7 +32,7 @@ field from the next.
 | `CngxHint` | `[cngxHint]` | Hint element with `aria-describedby` linkage |
 | `CngxError` | `[cngxError]` | Manual error container with `aria-hidden`/`role="alert"` management |
 | `CngxFieldSkinHost` | `[cngxFieldSkin]` | Resolves the field skin and writes it to its host as `data-skin`. Composed by `CngxInput`, `CngxFieldBox` and the select-family triggers |
-| `CngxFieldBox` | `[cngxFieldBox]` | The painted box around a control and its `CngxPrefix` / `CngxSuffix` affixes, in every skin. Resets its direct-child controls, paints the main control's state, forwards a click on its padding to the main control. `CngxAffixRow` / `[cngxAffixRow]` is the deprecated alias |
+| `CngxFieldBox` | `[cngxFieldBox]` | The painted box around a control and its `CngxPrefix` / `CngxSuffix` affixes, in every skin. Resets its direct-child controls, paints the main control's state, forwards a click on its padding to the main control. |
 
 ### Utilities
 

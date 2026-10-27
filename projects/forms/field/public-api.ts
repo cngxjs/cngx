@@ -6,7 +6,7 @@ export { CngxHint } from './hint.directive';
 export { CngxError } from './error.directive';
 export { CngxPrefix } from './prefix.directive';
 export { CngxSuffix } from './suffix.directive';
-export { CngxFieldBox, CngxAffixRow } from './field-box.directive';
+export { CngxFieldBox } from './field-box.directive';
 export { CNGX_FIELD_BOX, type CngxFieldBoxContract } from './field-box.token';
 export { CngxFieldSkinHost } from './field-skin.directive';
 export { CngxRequired, type CngxRequiredContext } from './required.component';
