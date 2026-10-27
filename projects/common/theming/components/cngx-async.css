@@ -9,8 +9,8 @@
  * **State modifiers**
  *
  * - `--pending` - dimmed opacity + `cursor: wait`
- * - `--succeeded` - success-tinted surface, border, text
- * - `--failed` - danger-tinted surface, border, text
+ * - `--success` - success-tinted surface, border, text
+ * - `--error` - danger-tinted surface, border, text
  *
  * **Inheritance**
  *
@@ -28,9 +28,6 @@
  * - Lives under `theming/components` because `styleUrl` is
  *   `@Component`-only; the directive's state classes must remain
  *   globally available.
- * - Known class-name mismatch: the directive emits `--success` /
- *   `--error` but the rules below target `--succeeded` / `--failed`.
- *   Tracked as a separate fix.
  *
  * @themes CngxAsyncClick
  */
@@ -42,7 +39,7 @@
     transition: opacity var(--cngx-action-btn-transition, 0.2s ease);
   }
 
-  .cngx-async--succeeded {
+  .cngx-async--success {
     background-color: var(
       --cngx-action-btn-succeeded-bg,
       var(--cngx-color-success, oklch(0.95 0.04 145))
@@ -58,7 +55,7 @@
       border-color var(--cngx-action-btn-transition, 0.2s ease);
   }
 
-  .cngx-async--failed {
+  .cngx-async--error {
     background-color: var(
       --cngx-action-btn-failed-bg,
       var(--cngx-color-danger, oklch(0.95 0.025 25))
