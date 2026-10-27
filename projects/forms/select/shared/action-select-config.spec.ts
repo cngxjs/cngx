@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { injectActionSelectConfig } from './inject-helpers';
 import {
+  CNGX_ACTION_SELECT_DEFAULTS,
   provideActionSelectConfig,
   provideActionSelectConfigAt,
   resolveActionSelectConfig,
@@ -20,6 +21,10 @@ describe('provideActionSelectConfig', () => {
     );
     expect(resolved.focusTrapBehavior).toBe('dirty');
     expect(resolved.ariaLabel()).toBe('Inline action');
+  });
+
+  it('keeps no ariaLabel copy snapshot in the library defaults', () => {
+    expect('ariaLabel' in CNGX_ACTION_SELECT_DEFAULTS).toBe(false);
   });
 
   it('merges withFocusTrapBehavior + withActionAriaLabel app-wide', () => {
