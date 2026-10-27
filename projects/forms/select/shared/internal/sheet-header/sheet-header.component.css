@@ -6,8 +6,8 @@
  *
  * `--cngx-select-sheet-header-gap` is SET from the spacing scale, so the
  * header follows density. X (`cngxCloseButton`) and Done (`cngxButton`)
- * take their box, paint and touch floor from the button family; this sheet
- * keeps the family's disabled colour and focus ring on them.
+ * take their box, paint, disabled colour and touch floor from the button
+ * family; this sheet keeps the select focus ring on them.
  */
 
 @layer cngx.components {
@@ -57,19 +57,11 @@
   }
 
   /* X is a cngxCloseButton and Done a cngxButton: the button sheets own the
-     box, the paint and the touch floor (X through its ::before hit area). */
+     box, the paint, the disabled colour (GrayText under forced colors) and
+     the touch floor (X through its ::before hit area). */
   .cngx-select-sheet-header__done,
   .cngx-select-sheet-header__close {
     flex: none;
-  }
-
-  /* Disabled by colour, the field disabled recipe (38% text), never by
-     opacity: opacity would also fade the focus ring. Same recipe as the
-     button family's disabled state. */
-  .cngx-select-sheet-header__done[aria-disabled='true'],
-  .cngx-select-sheet-header__close[aria-disabled='true'] {
-    cursor: not-allowed;
-    color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
   }
 
   .cngx-select-sheet-header__done:focus-visible,
@@ -91,14 +83,5 @@
     box-sizing: border-box;
     min-block-size: var(--cngx-target-min, 0px);
     font: inherit;
-  }
-}
-
-/* The forced palette overrides the faded colour with ButtonText; GrayText is
-   the system colour for a disabled control. */
-@media (forced-colors: active) {
-  .cngx-select-sheet-header__done[aria-disabled='true'],
-  .cngx-select-sheet-header__close[aria-disabled='true'] {
-    color: GrayText;
   }
 }
