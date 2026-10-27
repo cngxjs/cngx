@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxToaster: programmatic',
   subtitle: 'Inject <code>CngxToaster</code> and call <code>.show()</code>. Four severity levels, dedup, action buttons.',
-  description: 'Service-driven path: <code>inject(CngxToaster).show({...})</code> from anywhere a service can reach. Covers four severities, an Undo action, the 5x dedup behaviour, and a global dismiss.',
+  description: 'Service-driven path: <code>inject(CngxToaster).show({...})</code> from anywhere a service can reach. Covers four severities, an Undo action, the 5x dedup behaviour, and a global dismiss. Each "With Undo Action" click deletes a numbered item and names it in the toast, so the user knows which item Undo restores. Toasts with an action never merge: two quick clicks show two toasts, each with its own Undo.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -28,11 +28,13 @@ export const STORY: DemoSpec = {
   protected showWarning(): void {
     this.toaster.show({ message: 'Disk space running low', severity: 'warning' });
   }
+  private deletedCount = 0;
   protected showWithAction(): void {
+    const item = ++this.deletedCount;
     this.toaster.show({
-      message: 'Item deleted',
+      message: \`Item \${item} deleted\`,
       severity: 'info',
-      action: { label: 'Undo', handler: () => this.toaster.show({ message: 'Undo successful', severity: 'success' }) },
+      action: { label: 'Undo', handler: () => this.toaster.show({ message: \`Item \${item} restored\`, severity: 'success' }) },
     });
   }
   protected showDuplicates(): void {
