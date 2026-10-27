@@ -184,8 +184,9 @@ describe('getConfig', () => {
 describe('getConfig over a schema-6 snapshot', () => {
   const V6 = fileURLToPath(new URL('../../../test/fixtures/documentation.v6.sample.json', import.meta.url));
 
-  // Schema 6 carries no factoryKind; the loader derives it from di.role, so the
-  // file-proximity join answers as it did over schema 2.
+  // Schema 6 carries no factoryKind; the loader derives it from di.role alone.
+  // Both co-located functions carry di, so the file-proximity join answers as it
+  // did over schema 2.
   it('lists the provider and feature co-located with CNGX_SELECT_CONFIG', () => {
     const result = getConfig(loadDocsFromFile(V6), 'CNGX_SELECT_CONFIG');
 

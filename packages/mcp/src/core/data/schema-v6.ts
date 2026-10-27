@@ -20,21 +20,14 @@ function categoryOf(entry: DocEntry): string | undefined {
   return entry.feature.key ? `${lib}/${entry.feature.key}` : lib;
 }
 
-// `di` is missing on a handful of config functions (`withFallback`,
-// `providePersistence`, ...), so the name prefix fills in. Without it those
-// drop out of the `get_config` join they were part of under schema 2.
+// `di.role` alone decides. Schema 2 classified by name prefix, which also caught
+// the five `provide*` / `with*` functions without `di`: `providePersistence` and
+// `withFallback` are not exported, `withAsyncLabel` / `withAsyncSkip` are
+// HttpContext helpers, `withCngxAsyncState` is a `signalStoreFeature`. None of
+// their files holds a config token, so no `get_config` answer loses an entry.
 function factoryKindOf(fn: DocFunction): DocFunction['factoryKind'] {
   const role = fn.di?.role;
-  if (role === 'provider' || role === 'feature') {
-    return role;
-  }
-  if (/^provide[A-Z]/.test(fn.name)) {
-    return 'provider';
-  }
-  if (/^with[A-Z]/.test(fn.name)) {
-    return 'feature';
-  }
-  return undefined;
+  return role === 'provider' || role === 'feature' ? role : undefined;
 }
 
 const withCategory = (entry: DocEntry): DocEntry => ({ ...entry, category: categoryOf(entry) });
