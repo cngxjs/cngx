@@ -14,8 +14,6 @@ import type {
  * Anything a cngx slot directive exposes: its own `TemplateRef`. Structural
  * rather than a base class, so a consumer's own slot directive satisfies it
  * by shape alone.
- *
- * @category ui/timeline
  */
 export interface CngxTimelineSlotSource<C> {
   readonly templateRef: TemplateRef<C>;
@@ -39,7 +37,6 @@ export interface CngxTimelineSlotSource<C> {
  * Exported because an ejected skin resolves the same three tiers and would
  * otherwise have to restate the rule.
  *
- * @category ui/timeline
  * @relatedTo createTimelineSlots
  * @since 0.1.0
  */
@@ -53,8 +50,6 @@ export function createTimelineSlotBinding<C>(
 /**
  * The eight `contentChild()` queries a timeline runs, handed over as one bag
  * because AOT requires them to be declared on the component itself.
- *
- * @category ui/timeline
  */
 export interface CngxTimelineSlotQueries<T> {
   readonly item: Signal<CngxTimelineSlotSource<CngxTimelineItemContext<T>> | undefined>;
@@ -70,8 +65,6 @@ export interface CngxTimelineSlotQueries<T> {
 /**
  * The same eight, resolved. Every member is already through the cascade, so
  * the template reads one signal per region and never restates the rule.
- *
- * @category ui/timeline
  */
 export interface CngxTimelineSlots<T> {
   readonly item: Signal<TemplateRef<CngxTimelineItemContext<T>> | null>;
@@ -94,7 +87,6 @@ export interface CngxTimelineSlots<T> {
  * slots are generic. `TemplateRef` is method-bivariant, so a consumer's
  * concrete template still assigns in.
  *
- * @category ui/timeline
  * @relatedTo createTimelineSlotBinding
  * @since 0.1.0
  */

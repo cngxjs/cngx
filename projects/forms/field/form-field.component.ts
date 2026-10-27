@@ -25,8 +25,6 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * </cngx-form-field>
  * ```
  *
- * @category forms/field
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field.component.ts
  * @since 0.1.0

@@ -22,8 +22,6 @@ import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
  * `role="meter"`. A bound `[aria-label]` always wins and overrides the
  * visible caption.
  *
- * @category common/chart/presets
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/presets/mini-bar.component.ts
  * @since 0.1.0

@@ -49,8 +49,6 @@ import { CngxToaster, type ToastRef } from './toast.service';
  * <cngx-toast severity="error" message="Save failed" [when]="saveState.status() === 'error'" />
  * ```
  *
- * @category ui/feedback/toast
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/toast/toast.component.ts
  * @since 0.1.0

@@ -35,7 +35,6 @@ export const CNGX_ACCORDION_DEFAULTS: CngxAccordionConfig = {
  * `provideAccordionConfigAt(...)` in a component's `viewProviders` (sub-tree
  * cascade).
  *
- * @category ui/accordion
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/accordion/config/accordion.config.defaults.ts
  * @since 0.1.0
  */

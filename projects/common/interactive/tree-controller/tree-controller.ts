@@ -23,7 +23,6 @@ import { CNGX_TREE_CONFIG } from './tree-config';
  * caller to think about identity at construction eliminates that whole
  * class of heisenbugs.
  *
- * @category common/interactive/tree
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-controller.ts
  * @since 0.1.0
  */
@@ -101,7 +100,6 @@ export interface CngxTreeControllerOptions<T> {
  * them from
  * inside an `effect()` never latches that effect onto the expansion set.
  *
- * @category common/interactive/tree
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-controller.ts
  * @since 0.1.0
  */
@@ -176,7 +174,6 @@ export interface CngxTreeController<T> {
 /**
  * Factory signature carried by the DI token.
  *
- * @category common/interactive/tree
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-controller.ts
  * @since 0.1.0
  */
@@ -193,7 +190,6 @@ export type CngxTreeControllerFactory = <T>(
  * Symmetrical to `CNGX_SELECTION_CONTROLLER_FACTORY` in `@cngx/core/utils` -
  * same override surface, one concern below: tree-aware derived views.
  *
- * @category common/interactive/tree
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-controller.ts
  * @since 0.1.0
  */
@@ -270,7 +266,6 @@ interface TreeIndexes<T> {
  * See {@link CngxTreeController} for the returned surface and
  * {@link CngxTreeControllerOptions} for the configuration cascade.
  *
- * @category common/interactive/tree
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-controller.ts
  * @since 0.1.0
  */

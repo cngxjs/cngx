@@ -33,8 +33,6 @@ const PERCENT_FORMAT: Intl.NumberFormatOptions = { style: 'percent' };
 
 /**
  * Logical position - flips in RTL.
- *
- * @category ui/sidenav
  */
 export type SidenavPosition = 'start' | 'end';
 /**
@@ -44,15 +42,11 @@ export type SidenavPosition = 'start' | 'end';
  * - `'push'` - pushes content aside when open
  * - `'side'` - always visible, content permanently offset
  * - `'mini'` - collapsed icon rail (miniWidth), expands to full width on hover
- *
- * @category ui/sidenav
  */
 export type SidenavMode = 'auto' | 'over' | 'push' | 'side' | 'mini';
 
 /**
  * A resolved mode - what `'auto'` settles on plus every pinnable value.
- *
- * @category ui/sidenav
  */
 export type ResolvedSidenavMode = Exclude<SidenavMode, 'auto'>;
 
@@ -93,8 +87,6 @@ export type ResolvedSidenavMode = Exclude<SidenavMode, 'auto'>;
  * </cngx-sidenav-layout>
  * ```
  *
- * @category ui/sidenav
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/sidenav.ts
  * @since 0.1.0

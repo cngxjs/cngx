@@ -144,8 +144,6 @@ import {
  * Change event emitted by `CngxReorderableMultiSelect.selectionChange`
  * and `.reordered`. The `'reorder'` branch carries `fromIndex` /
  * `toIndex`; other branches leave them `undefined`.
- *
- * @category forms/select/reorderable-multi-select
  */
 export interface CngxReorderableMultiSelectChange<T = unknown> {
   readonly source: CngxReorderableMultiSelect<T>;
@@ -189,8 +187,6 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
  * sheet. `[presentation]` forces `'anchored'`, `'sheet'` or `'fullscreen'`;
  * `withMobileSheet('off')` keeps every select in its scope anchored.
  *
- * @category forms/select/reorderable-multi-select
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.ts
  * @since 0.1.0

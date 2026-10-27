@@ -5,7 +5,6 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * `@cngx/common/display` atoms (avatar, avatar group, segmented progress,
  * chip, badge). It feeds `CNGX_DISPLAY_I18N`.
  *
- * @category common/display/i18n
  * @since 0.1.0
  * @relatedTo CNGX_DISPLAY_I18N
  */
@@ -37,7 +36,6 @@ export interface CngxDisplayLanguageSection {
  * The English display section: the single source of the display atoms'
  * English copy. `CNGX_DISPLAY_I18N` defaults to it.
  *
- * @category common/display/i18n
  * @since 0.1.0
  * @relatedTo CNGX_DISPLAY_I18N
  */

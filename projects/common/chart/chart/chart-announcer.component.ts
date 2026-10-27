@@ -23,8 +23,6 @@ import { type CngxChart } from './chart.component';
  * <cngx-chart-announcer [cngxChartAnnouncer]="c" />
  * ```
  *
- * @category common/chart
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/chart-announcer.component.ts
  * @since 0.1.0

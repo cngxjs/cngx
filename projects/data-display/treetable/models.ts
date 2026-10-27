@@ -4,8 +4,6 @@ import type { FlatTreeNode } from '@cngx/utils';
  * A node in the input tree structure.
  *
  * @typeParam T - The shape of the data value carried by each node.
- *
- * @category data-display/treetable
  */
 export interface CngxTreetableNode<T> {
   /** The data value associated with this node. */
@@ -17,8 +15,6 @@ export interface CngxTreetableNode<T> {
 /**
  * @deprecated Use {@link CngxTreetableNode}. The unprefixed name shadows the
  * DOM global `Node` on import; the alias is removed at v1.0.
- *
- * @category data-display/treetable
  */
 export type Node<T> = CngxTreetableNode<T>;
 
@@ -40,16 +36,12 @@ export type Node<T> = CngxTreetableNode<T>;
  * with `label` fixed to `''`.
  *
  * @typeParam T - The shape of the data value carried by the node.
- *
- * @category data-display/treetable
  */
 export type CngxTreetableFlatNode<T> = FlatTreeNode<T>;
 
 /**
  * @deprecated Use {@link CngxTreetableFlatNode}. The unprefixed alias is
  * removed at v1.0.
- *
- * @category data-display/treetable
  */
 export type FlatNode<T> = CngxTreetableFlatNode<T>;
 
@@ -58,8 +50,6 @@ export type FlatNode<T> = CngxTreetableFlatNode<T>;
  * These override the application-wide defaults provided via {@link provideTreetable}.
  *
  * @typeParam T - The shape of the data value; used to constrain `customColumnOrder`.
- *
- * @category data-display/treetable
  */
 export interface CngxTreetableOptions<T> {
   /**
@@ -93,8 +83,6 @@ export interface CngxTreetableOptions<T> {
 /**
  * @deprecated Use {@link CngxTreetableOptions}. The unprefixed alias is
  * removed at v1.0.
- *
- * @category data-display/treetable
  */
 export type TreetableOptions<T> = CngxTreetableOptions<T>;
 
@@ -108,8 +96,6 @@ export type TreetableOptions<T> = CngxTreetableOptions<T>;
  * ```
  *
  * @typeParam T - The shape of the data value carried by the node.
- *
- * @category data-display/treetable
  */
 export interface CngxCellTplContext<T> {
   /** The full {@link CngxTreetableFlatNode} for the current row - available as `let-node`. */
@@ -132,7 +118,6 @@ export interface CngxCellTplContext<T> {
  * a dev build). Derive a header from `column` when neither fits; the key is
  * never rendered unless the template renders it.
  *
- * @category data-display/treetable
  * @since 0.1.0
  */
 export interface CngxHeaderTplContext {
@@ -152,8 +137,6 @@ export interface CngxHeaderTplContext {
  *   <div class="my-shimmer-row">{{ index + 1 }} / {{ rowCount }}</div>
  * </ng-template>
  * ```
- *
- * @category data-display/treetable
  */
 export interface CngxSkeletonRowTplContext {
   /** Zero-based index of the placeholder row - available as the implicit `let` variable. */
@@ -170,8 +153,6 @@ export interface CngxSkeletonRowTplContext {
  *   <p>Load failed: {{ describeError(error) }}</p>
  * </ng-template>
  * ```
- *
- * @category data-display/treetable
  */
 export interface CngxErrorTplContext {
   /** The raw error from the bound async state - available as `let-error`. */

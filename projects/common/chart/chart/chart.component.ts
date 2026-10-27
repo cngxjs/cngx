@@ -142,8 +142,6 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
  * consumer restyling `--cngx-axis-font-size` gets labels at their own
  * size inside a gutter sized for the default.
  *
- * @category common/chart
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/chart.component.ts
  * @since 0.1.0

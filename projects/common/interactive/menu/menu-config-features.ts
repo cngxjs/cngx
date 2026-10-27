@@ -11,8 +11,6 @@ import {
  * Override one or more ARIA strings (English defaults). Unset keys keep
  * their default value, so consumers can supply only the locale strings
  * they care about.
- *
- * @category common/interactive/menu
  */
 export function withAriaLabels(
   partial: Partial<CngxMenuAriaLabels> | Signal<Partial<CngxMenuAriaLabels>>,
@@ -26,8 +24,6 @@ export function withAriaLabels(
 /**
  * Override the typeahead debounce window (milliseconds) for menu
  * navigation. Default: `300`.
- *
- * @category common/interactive/menu
  */
 export function withTypeaheadDebounce(ms: number): CngxMenuConfigFeature {
   return defineMenuConfigFeature((cfg) => ({ ...cfg, typeaheadDebounce: ms }));
@@ -39,8 +35,6 @@ export function withTypeaheadDebounce(ms: number): CngxMenuConfigFeature {
  * `CngxMenuItemSubmenu` composes - a pointer that merely sweeps across the
  * parent never opens. Default: `0` (open on the first settled hover tick).
  * Keyboard and click open paths are unaffected.
- *
- * @category common/interactive/menu
  */
 export function withSubmenuOpenDelay(ms: number): CngxMenuConfigFeature {
   return defineMenuConfigFeature((cfg) => ({ ...cfg, submenuOpenDelay: ms }));
@@ -52,8 +46,6 @@ export function withSubmenuOpenDelay(ms: number): CngxMenuConfigFeature {
  * popover. Feeds the leave delay of the hover intent `CngxMenuItemSubmenu`
  * composes - the grace window for crossing the gap between parent and
  * popover. Default: `150`.
- *
- * @category common/interactive/menu
  */
 export function withSubmenuCloseDelay(ms: number): CngxMenuConfigFeature {
   return defineMenuConfigFeature((cfg) => ({ ...cfg, submenuCloseDelay: ms }));
@@ -62,8 +54,6 @@ export function withSubmenuCloseDelay(ms: number): CngxMenuConfigFeature {
 /**
  * Whether activating a leaf item closes the menu. Default: `true`
  * (menu semantics - distinct from listbox/combobox which stay open).
- *
- * @category common/interactive/menu
  */
 export function withCloseOnSelect(close: boolean): CngxMenuConfigFeature {
   return defineMenuConfigFeature((cfg) => ({ ...cfg, closeOnSelect: close }));
@@ -74,8 +64,6 @@ export function withCloseOnSelect(close: boolean): CngxMenuConfigFeature {
  * dismisses the menu. Default: `true`. Pass `false` for ESC-only
  * semantics (e.g. a tutorial overlay that wants to keep the menu open
  * while the user clicks through other UI).
- *
- * @category common/interactive/menu
  */
 export function withDismissOnOutsideClick(dismiss: boolean): CngxMenuConfigFeature {
   return defineMenuConfigFeature((cfg) => ({ ...cfg, dismissOnOutsideClick: dismiss }));
@@ -87,8 +75,6 @@ export function withDismissOnOutsideClick(dismiss: boolean): CngxMenuConfigFeatu
  * behaviour and close as soon as the page scrolls. Scroll-dismiss
  * listens to `window` only - the nearest scrollable ancestor is not
  * traversed.
- *
- * @category common/interactive/menu
  */
 export function withDismissOnScroll(dismiss: boolean): CngxMenuConfigFeature {
   return defineMenuConfigFeature((cfg) => ({ ...cfg, dismissOnScroll: dismiss }));
@@ -107,8 +93,6 @@ export function withDismissOnScroll(dismiss: boolean): CngxMenuConfigFeature {
  * `'blur'` or `'pointer-cancel'`.
  *
  * Default: `true`.
- *
- * @category common/interactive/menu
  */
 export function withDismissOnBlur(dismiss: boolean): CngxMenuConfigFeature {
   return defineMenuConfigFeature((cfg) => ({ ...cfg, dismissOnBlur: dismiss }));

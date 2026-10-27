@@ -9,8 +9,6 @@ import type { CngxMenuSubmenuLike } from './menu-submenu.token';
  * host) exposes to composers. Triggers and submenu directives depend on
  * this interface rather than on the concrete `CngxMenu` class so the
  * coupling stays substitutable.
- *
- * @category common/interactive/menu
  */
 export interface CngxMenuHost {
   readonly ad: CngxActiveDescendant;
@@ -47,7 +45,6 @@ export interface CngxMenuHost {
  * an input typed against `CngxMenuHost` instead - DI across element
  * boundaries cannot reach the menu.
  *
- * @category common/interactive/menu
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-host.token.ts
  * @since 0.1.0

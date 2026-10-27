@@ -60,8 +60,6 @@ import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interact
  * <!-- form.value is now { notifications: boolean; tags: string[] } -->
  * ```
  *
- * @category forms/controls
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/controls/form-bridge.directive.ts
  * @selector [formControl], [formControlName]

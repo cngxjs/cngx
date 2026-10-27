@@ -48,7 +48,6 @@ import type {
  * </button>
  * ```
  *
- * @category common/button
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/icon-button.component.ts
  * @since 0.1.0

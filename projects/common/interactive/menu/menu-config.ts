@@ -17,8 +17,6 @@ import { CNGX_MENU_LANGUAGE_EN, type CngxMenuLanguageSection } from '../i18n/men
  * default; consumers override via {@link withAriaLabels}. The same shape as
  * the menu section of a language pack, declared once as
  * {@link CngxMenuLanguageSection}.
- *
- * @category common/interactive/menu
  */
 export type CngxMenuAriaLabels = CngxMenuLanguageSection;
 
@@ -27,8 +25,6 @@ export type CngxMenuAriaLabels = CngxMenuLanguageSection;
  * Default values live in {@link DEFAULT_MENU_CONFIG}; override at app
  * scope via {@link provideMenuConfig} or per-component via
  * {@link provideMenuConfigAt}.
- *
- * @category common/interactive/menu
  */
 export interface CngxMenuConfig {
   readonly ariaLabels: CngxMenuAriaLabels | Signal<CngxMenuAriaLabels>;
@@ -74,8 +70,6 @@ export interface CngxMenuConfig {
  * future config surfaces (e.g. submenu-only or announcer overrides) can
  * compose through the same `provideCngxMenu` aggregator without breaking
  * the public API of existing `with*` features.
- *
- * @category common/interactive/menu
  */
 export type CngxMenuConfigFeature = ((config: CngxMenuConfig) => CngxMenuConfig) & {
   readonly _target?: 'config';
@@ -97,8 +91,6 @@ export function defineMenuConfigFeature(
  * Library-default menu configuration with the English labels. The token's
  * default reads `ariaLabels` from the menu section of the active language
  * pack instead; `withAriaLabels` overrides single labels on top.
- *
- * @category common/interactive/menu
  */
 export const DEFAULT_MENU_CONFIG: CngxMenuConfig = {
   ariaLabels: CNGX_MENU_LANGUAGE_EN,
@@ -128,7 +120,6 @@ function menuConfigDefaultsFromPack(): CngxMenuConfig {
  * override via {@link provideMenuConfig} (app-wide) or
  * {@link provideMenuConfigAt} (component scope via `viewProviders`).
  *
- * @category common/interactive/menu
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-config.ts
  * @since 0.1.0
  */
@@ -159,8 +150,6 @@ function applyFeatures(
  *   ],
  * });
  * ```
- *
- * @category common/interactive/menu
  */
 export function provideMenuConfig(...features: CngxMenuConfigFeature[]): EnvironmentProviders {
   return makeEnvironmentProviders([
@@ -175,8 +164,6 @@ export function provideMenuConfig(...features: CngxMenuConfigFeature[]): Environ
  * Component-scoped menu configuration override. Pass into a directive or
  * component's `viewProviders`; features merge on top of the parent
  * config (root or an enclosing scope).
- *
- * @category common/interactive/menu
  */
 export function provideMenuConfigAt(...features: CngxMenuConfigFeature[]): Provider[] {
   return [
@@ -192,8 +179,6 @@ export function provideMenuConfigAt(...features: CngxMenuConfigFeature[]): Provi
 /**
  * Resolves the {@link CngxMenuConfig} from the current injection scope.
  * Must run inside an injection context.
- *
- * @category common/interactive/menu
  */
 export function injectMenuConfig(): CngxMenuConfig {
   return inject(CNGX_MENU_CONFIG);

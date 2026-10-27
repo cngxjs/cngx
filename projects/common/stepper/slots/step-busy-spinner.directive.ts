@@ -7,8 +7,6 @@ import type { CngxStepNode } from '../stepper-host.token';
  * pending-commit overlay on the in-flight target step. Renders only
  * when the step matches `presenter.intendedStepIndex()` with
  * `commitState.status() === 'pending'`.
- *
- * @category common/stepper/slots
  */
 export interface CngxStepBusySpinnerContext {
   /** The step node carrying id / label / state signals. */
@@ -29,7 +27,6 @@ export interface CngxStepBusySpinnerContext {
  * </cngx-stepper>
  * ```
  *
- * @category common/stepper/slots
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/slots/step-busy-spinner.directive.ts
  * @since 0.1.0

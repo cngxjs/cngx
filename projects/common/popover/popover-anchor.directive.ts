@@ -31,7 +31,6 @@ import { type CngxPopover } from './popover.directive';
  * releases the slot identity-guarded and the trigger becomes the anchor
  * again.
  *
- * @category common/popover
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-anchor.directive.ts
  * @since 0.1.0
  * @relatedTo CngxPopover, CngxPopoverTrigger

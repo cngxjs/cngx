@@ -16,8 +16,6 @@ import { createHeldTimerRegistry } from '../internal/pausable-timer';
 
 /**
  * Configuration for a single toast.
- *
- * @category ui/feedback/toast
  */
 export interface ToastConfig {
   /** Toast message text. Used as sole text when `title` is not set. */
@@ -70,8 +68,6 @@ export interface ToastConfig {
 
 /**
  * Handle to a displayed toast - allows programmatic dismiss.
- *
- * @category ui/feedback/toast
  */
 export interface ToastRef {
   /** Programmatically dismiss this toast. */
@@ -83,8 +79,6 @@ export interface ToastRef {
 /**
  * Tracked state for a single toast - the element type of the public
  * `CngxToaster.toasts` signal. Immutable per slot; treat as read-only.
- *
- * @category ui/feedback/toast
  */
 export interface ToastState {
   readonly id: number;
@@ -113,8 +107,6 @@ export interface ToastState {
  *
  * Manages the toast stack as a signal array. `CngxToastOutlet` reads it reactively.
  *
- * @category ui/feedback/toast
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/toast/toast.service.ts
  * @since 0.1.0
@@ -274,9 +266,6 @@ export class CngxToaster {
  *   providers: [provideToasts()],
  * });
  * ```
- *
- * @category ui/feedback/toast
- *
  */
 export function provideToasts(): EnvironmentProviders {
   return makeEnvironmentProviders([CngxToaster]);

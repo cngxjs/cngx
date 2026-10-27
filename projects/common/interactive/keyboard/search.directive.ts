@@ -15,8 +15,6 @@ import { EMPTY, fromEvent, map, merge, Subject, switchMap, timer } from 'rxjs';
 /**
  * Debounced search term tracker for `<input>` elements.
  *
- * @category common/interactive/keyboard
- *
  * Converts the DOM `input` event stream into a debounced Signal. The raw
  * Observable is never exposed - signal at the API boundary.
  *
@@ -26,7 +24,6 @@ import { EMPTY, fromEvent, map, merge, Subject, switchMap, timer } from 'rxjs';
  * <button (click)="search.clear()">Clear</button>
  * ```
  *
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/search.directive.ts
  * @since 0.1.0
  * @relatedTo CngxKeyboardShortcut, CngxListboxSearch

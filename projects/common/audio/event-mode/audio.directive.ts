@@ -43,8 +43,6 @@ import { type CngxAudioDomEvent, parseEventBindings } from './parse-bindings';
  * cost alone. Either way the engine's `lastPlayed` and `status` are signals, so
  * anything a template binds to them stays current.
  *
- * @category common/audio
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/event-mode/audio.directive.ts
  * @since 0.1.0

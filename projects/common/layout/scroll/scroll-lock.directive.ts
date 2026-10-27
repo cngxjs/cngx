@@ -25,8 +25,6 @@ import { createScrollLock } from './scroll-lock-core';
  * <div [cngxScrollLock]="isModalOpen()">…</div>
  * ```
  *
- * @category common/layout
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/scroll/scroll-lock.directive.ts
  * @since 0.1.0
  * @relatedTo CngxDrawer, CngxBackdrop

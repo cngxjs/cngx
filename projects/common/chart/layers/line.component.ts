@@ -37,8 +37,6 @@ import {
  * nothing. `[points]` controls this: `'auto'` (default) marks only the
  * one-datum case, `'always'` marks every datum, `'never'` suppresses it.
  *
- * @category common/chart/layers
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/layers/line.component.ts
  * @since 0.1.0
  * @relatedTo CngxArea, CngxScatter, CngxBar, CngxChart

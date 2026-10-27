@@ -11,8 +11,6 @@ import { injectPresetState } from './preset-state';
 
 /**
  * One segment in a stacked-bar series: a value, a label, optional colour.
- *
- * @category common/chart/presets
  */
 export interface CngxStackedSegment {
   readonly value: number;
@@ -37,8 +35,6 @@ interface SegmentRendering {
  * bounded reading; the SR description enumerates segments via the
  * auto-generated `aria-label` (or the `[ariaLabel]` override).
  *
- * @category common/chart/presets
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/presets/stacked-bar.component.ts
  * @since 0.1.0

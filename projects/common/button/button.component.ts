@@ -51,8 +51,6 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
  * </button>
  * ```
  *
- * @category common/button
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button.component.ts
  * @since 0.1.0

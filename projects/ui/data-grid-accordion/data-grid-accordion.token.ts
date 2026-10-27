@@ -18,7 +18,6 @@ import { CngxRuntimeError } from '@cngx/utils';
  * still carries state only - the consumer's `computed()` derives the visible + ordered
  * rows.
  *
- * @category ui/data-grid-accordion
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-accordion.token.ts
  * @since 0.1.0
  * @relatedTo CngxDataGridAccordion, CngxDataGridRow, CngxSort, CngxFilter
@@ -50,7 +49,6 @@ export interface CngxDataGridAccordionContext {
  * {@link CngxDataGridAccordion} provides it via `useExisting`; each
  * {@link CngxDataGridRow} injects it.
  *
- * @category ui/data-grid-accordion
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-accordion.token.ts
  * @since 0.1.0
  * @relatedTo CngxDataGridAccordion, CngxDataGridRow

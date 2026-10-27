@@ -13,7 +13,6 @@ import { createPreferenceAxis } from './preference-axis';
  * `reduced` collapses animation/transition durations app-wide; `full`
  * opts back into motion even under an OS reduce preference.
  *
- * @category core/theming
  * @since 0.1.0
  */
 export type CngxMotionPreference = 'full' | 'reduced' | 'auto';
@@ -24,7 +23,6 @@ export type CngxMotionPreference = 'full' | 'reduced' | 'auto';
  * root reflector with {@link provideMotion}. Defaults to `auto` when no
  * `provideMotion()` is present so an injected signal is always available.
  *
- * @category core/theming
  * @relatedTo provideMotion
  * @relatedTo injectMotion
  * @since 0.1.0
@@ -56,7 +54,6 @@ const motionAxis = createPreferenceAxis({
  * });
  * ```
  *
- * @category core/theming
  * @relatedTo CNGX_MOTION
  * @relatedTo injectMotion
  * @since 0.1.0
@@ -71,7 +68,6 @@ export function provideMotion(initial: CngxMotionPreference = 'auto'): Environme
  * across the whole document reactively; `set('auto')` hands control back
  * to the OS preference.
  *
- * @category core/theming
  * @relatedTo provideMotion
  * @since 0.1.0
  */

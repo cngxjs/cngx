@@ -2,20 +2,14 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 
 /**
  * Main-axis direction for {@link CngxStack}.
- *
- * @category ui/layout
  */
 export type StackDirection = 'row' | 'column';
 /**
  * Cross-axis alignment for {@link CngxStack}.
- *
- * @category ui/layout
  */
 export type StackAlign = 'start' | 'center' | 'end' | 'stretch';
 /**
  * Spacing scale for {@link CngxStack}. Maps to `--cngx-gap-*` tokens.
- *
- * @category ui/layout
  */
 export type StackGap = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
@@ -45,8 +39,6 @@ const GAP_DEFAULTS: Record<StackGap, string> = {
  *   <div>Item 2</div>
  * </cngx-stack>
  *
- * @category ui/layout
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/layout/stack.component.ts
  * @since 0.1.0
  * @relatedTo CngxGrid

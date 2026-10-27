@@ -27,8 +27,6 @@ import { CNGX_INPUT_CONFIG, injectInputAriaLabels } from './input-config';
  * <button [cngxCopyValue]="apiKey()">Copy API Key</button>
  * ```
  *
- * @category forms/input
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/copy-value.directive.ts
  * @since 0.1.0

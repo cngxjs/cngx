@@ -35,8 +35,6 @@ export interface CngxSliderDisabledReason {
  * Must run in an injection context (field initializer / constructor).
  * Not exported from `public-api.ts` - decompose glue, not a consumer
  * contract.
- *
- * @category common/interactive/slider
  */
 export function createSliderDisabledReason(opts: {
   /** Uid prefix for the span id (`cngx-slider-desc` / `cngx-range-slider-desc`). */

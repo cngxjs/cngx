@@ -32,8 +32,6 @@ import { CNGX_ACCORDION, type CngxAccordionHost } from './accordion.token';
  * </div>
  * ```
  *
- * @category common/interactive/accordion
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/accordion/accordion.directive.ts
  * @since 0.1.0

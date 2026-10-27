@@ -12,7 +12,6 @@ import type { EarconConfig } from '../earcons/default-earcons';
  * with `with*` features (see the provider section below). Consumers never
  * construct this object directly.
  *
- * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
  * @since 0.1.0
  */
@@ -31,7 +30,6 @@ export interface CngxAudioConfig {
 
 /**
  * Library defaults - English, browser-native.
- * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
  * @since 0.1.0
  */
@@ -48,7 +46,6 @@ export const CNGX_AUDIO_DEFAULTS: CngxAudioConfig = {
  * `provideCngxAudio(...)`. Read the resolved, defaults-merged config with
  * {@link injectAudioConfig}.
  *
- * @category common/audio
  * @relatedTo provideCngxAudio, injectAudioConfig
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
  * @since 0.1.0
@@ -62,7 +59,6 @@ export const CNGX_AUDIO_CONFIG = new InjectionToken<Partial<CngxAudioConfig>>('C
  * Resolve the effective audio config: library defaults merged with whatever
  * `provideCngxAudio(...)` contributed. Runs in an injection context.
  *
- * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
  * @since 0.1.0
  */
@@ -72,7 +68,6 @@ export function injectAudioConfig(): CngxAudioConfig {
 
 /**
  * A feature returned by a `with*` helper, folded into the config by {@link provideCngxAudio}.
- * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
  * @since 0.1.0
  */
@@ -116,7 +111,6 @@ export function foldAudioFeatures(features: readonly CngxAudioFeature[]): Partia
  * configure a subtree, use `provideCngxAudioAt(...)` in `viewProviders` - it
  * layers over this one and re-provides the engine so the scope actually applies.
  *
- * @category common/audio
  * @relatedTo provideCngxAudioAt, injectAudioConfig
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
  * @since 0.1.0
@@ -131,7 +125,6 @@ export function provideCngxAudio(...features: CngxAudioFeature[]): EnvironmentPr
  * Register or override earcons globally. Merged over the six built-ins and over
  * any earlier `withEarcons` in the same `provideCngxAudio` call.
  *
- * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
  * @since 0.1.0
  */
@@ -142,7 +135,6 @@ export function withEarcons(earcons: Record<string, EarconConfig>): CngxAudioFea
 /**
  * Set the master volume in `[0, 1]`.
  *
- * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
  * @since 0.1.0
  */
@@ -153,7 +145,6 @@ export function withVolume(volume: number): CngxAudioFeature {
 /**
  * Start muted (or explicitly unmuted with `withMuted(false)`).
  *
- * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
  * @since 0.1.0
  */
@@ -165,7 +156,6 @@ export function withMuted(muted = true): CngxAudioFeature {
  * Toggle the `prefers-reduced-motion` mute gate. `true` by default in the
  * library; pass `false` to keep audio playing under reduced-motion.
  *
- * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
  * @since 0.1.0
  */
@@ -176,7 +166,6 @@ export function withRespectReducedMotion(respect: boolean): CngxAudioFeature {
 /**
  * Set the same-name suppression window in milliseconds.
  *
- * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
  * @since 0.1.0
  */

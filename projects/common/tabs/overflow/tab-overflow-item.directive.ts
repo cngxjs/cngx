@@ -7,8 +7,6 @@ import type { CngxTabHandle } from '../tab-group-host.token';
  * default text (the tab label, or `unlabeledTab(position)`) inside the More popover; the
  * surrounding `<li role="menuitem">` shell (`aria-disabled`, click
  * handler, `data-tab-id`) stays library-owned.
- *
- * @category common/tabs/overflow
  */
 export interface CngxTabOverflowItemContext {
   /** Convenience alias for `tab` - usable as `let-tab` shorthand. */
@@ -42,7 +40,6 @@ export interface CngxTabOverflowItemContext {
  * </cngx-tab-overflow>
  * ```
  *
- * @category common/tabs/overflow
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/overflow/tab-overflow-item.directive.ts
  * @since 0.1.0

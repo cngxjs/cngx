@@ -18,8 +18,6 @@ import type { CngxMenuNavStrategy } from './menu-nav-strategy';
  * Popover surface the context-menu core drives at pointer coordinates.
  * Typed structurally to keep `@cngx/common/interactive` free of a
  * `@cngx/common/popover` import (menu-accepted-debt §7).
- *
- * @category common/interactive/menu
  */
 export interface CngxContextMenuTriggerPopoverRef extends CngxMenuDismissPopoverRef {
   show(): void;
@@ -36,8 +34,6 @@ export interface CngxContextMenuTriggerPopoverRef extends CngxMenuDismissPopover
  * Decision returned by the {@link CngxContextMenuTriggerCoreDeps.resolveOpen}
  * seam. `open: false` leaves the native context menu untouched; `open: true`
  * carries the per-open context handed to `commitContext`.
- *
- * @category common/interactive/menu
  */
 export type CngxContextMenuOpenDecision =
   | { readonly open: false }
@@ -47,8 +43,6 @@ export type CngxContextMenuOpenDecision =
  * Dependencies for {@link createContextMenuTriggerCore}. The caller injects
  * the DI-backed collaborators (dismiss factory, announcer, config) and
  * passes them in, keeping the core a pure factory.
- *
- * @category common/interactive/menu
  */
 export interface CngxContextMenuTriggerCoreDeps {
   /** Menu the popover wraps. */
@@ -103,8 +97,6 @@ export interface CngxContextMenuTriggerCoreDeps {
  * announcer calls, and focus save/restore. Consumed by both
  * `CngxContextMenuTrigger` (directive) and `CngxContextMenuFor` (organism
  * trigger) so the two share one implementation without inheritance.
- *
- * @category common/interactive/menu
  */
 export interface CngxContextMenuTriggerCore {
   /** The dismissal source that closed the menu most recently. */
@@ -166,7 +158,6 @@ const DEFAULT_RESOLVE_KEYBOARD_OPEN = DEFAULT_RESOLVE_OPEN;
  * factory - no Angular DI; the caller resolves collaborators and passes
  * them in.
  *
- * @category common/interactive/menu
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/context-menu-trigger-core.ts
  * @since 0.1.0
  */

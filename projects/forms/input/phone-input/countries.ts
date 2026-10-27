@@ -2,8 +2,6 @@ import { memoize } from '@cngx/core/utils';
 
 /**
  * A selectable country for {@link CngxPhoneInput}.
- *
- * @category forms/input
  */
 export interface Country {
   /** Region key passed to the phone mask as `phone:<region>` (matches the built-in `PHONE_PATTERNS` keys). */

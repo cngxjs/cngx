@@ -19,7 +19,6 @@ import { CNGX_TOC_CONFIG } from './toc.config.defaults';
  * }
  * ```
  *
- * @category ui/toc
  * @since 0.1.0
  */
 export function injectTocConfig(): CngxTocConfig {
@@ -33,7 +32,6 @@ export function injectTocConfig(): CngxTocConfig {
  * language switch. Runs in injection context; read it inside a `computed()`, a template
  * or a handler.
  *
- * @category ui/toc
  * @since 0.1.0
  */
 export function injectTocAriaLabels(): Signal<Required<CngxTocAriaLabels>> {

@@ -91,8 +91,6 @@ class CngxPhoneInputHostDetach {}
  * `CngxFormBridge` in the component's `imports`, Angular finds no value accessor
  * and throws NG01203.
  *
- * @category forms/input
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/phone-input/phone-input.component.ts
  * @since 0.1.0

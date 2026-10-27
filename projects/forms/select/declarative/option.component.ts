@@ -26,7 +26,6 @@ import { CngxOption } from '@cngx/common/interactive';
  * </div>
  * ```
  *
- * @category forms/select/declarative
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/declarative/option.component.ts
  * @since 0.1.0

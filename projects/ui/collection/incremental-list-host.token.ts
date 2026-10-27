@@ -9,7 +9,5 @@
  * without redefining the contract: one token, one shape, no new trigger context
  * type. The re-exported symbol is the same `InjectionToken` instance, so a
  * trigger imported from either entry resolves to the same provider.
- *
- * @category ui/collection
  */
 export { CNGX_PAGINATOR_HOST, type CngxPaginatorHost } from '@cngx/ui/paginator';

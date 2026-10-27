@@ -10,8 +10,6 @@ import { Directive } from '@angular/core';
  * - `half` - `true` only when `[allowHalf]` is on and the value sits exactly
  *   half a step below this star.
  * - `disabled` - the effective disabled state of the control.
- *
- * @category forms/input
  */
 export interface CngxRatingItemContext {
   readonly index: number;
@@ -37,8 +35,6 @@ export interface CngxRatingItemContext {
  * </cngx-rating>
  * ```
  *
- * @category forms/input
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/rating/rating-item.directive.ts
  * @since 0.1.0

@@ -10,8 +10,6 @@ import {
  * into it. The predicate keeps the model content-agnostic - the same directive
  * buckets by letter range, date band, price tier, or any other partition the
  * consumer expresses, without the brain knowing what it is bucketing.
- *
- * @category common/data/paginate
  */
 export interface CngxBucket<T> {
   /** Human-readable bucket label, e.g. `'A-C'`. Rendered as the chip text. */
@@ -61,8 +59,6 @@ function setEquals(a: ReadonlySet<string>, b: ReadonlySet<string>): boolean {
  * </div>
  * ```
  *
- * @category common/data/paginate
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/paginate/bucket-paginate.directive.ts
  * @since 0.1.0

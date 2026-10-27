@@ -43,7 +43,6 @@ import { injectPaginatorHost } from '../paginator-host.token';
  * rather than the viewport, and tune the pre-fetch distance. They are plain
  * passthrough config - the segment still owns no observer code and no state.
  *
- * @category ui/paginator
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-infinite.component.ts
  * @since 0.1.0

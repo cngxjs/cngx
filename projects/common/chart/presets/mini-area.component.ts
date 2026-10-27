@@ -19,8 +19,6 @@ import { injectPresetState } from './preset-state';
  * Default viewBox 80×24. Theming via `--cngx-mini-area-color`
  * (atom-local) → `--cngx-chart-primary` (chart-level) cascade.
  *
- * @category common/chart/presets
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/presets/mini-area.component.ts
  * @since 0.1.0

@@ -45,8 +45,6 @@ import type { CngxRecycler } from './recycler';
  *   }
  * }
  * ```
- *
- * @category common/data/recycler
  */
 export function connectRecyclerToActiveDescendant(
   recycler: CngxRecycler,

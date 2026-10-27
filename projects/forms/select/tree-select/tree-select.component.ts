@@ -148,8 +148,6 @@ const TRUNCATE: Signal<'wrap' | 'scroll-x' | 'truncate'> = signal<
  * parent-toggle that propagated to descendants. `node.id` and
  * `node.parentIds` carry the per-instance prefix
  * (`<instance prefix>-<nodeIdFn result>`).
- *
- * @category forms/select/tree-select
  */
 export interface CngxTreeSelectChange<T = unknown> {
   readonly source: CngxTreeSelect<T>;
@@ -199,8 +197,6 @@ export interface CngxTreeSelectChange<T = unknown> {
  * sheet. `[presentation]` forces `'anchored'`, `'sheet'` or `'fullscreen'`;
  * `withMobileSheet('off')` keeps every select in its scope anchored.
  *
- * @category forms/select/tree-select
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/tree-select/tree-select.component.ts
  * @since 0.1.0

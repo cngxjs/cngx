@@ -7,8 +7,6 @@ import { type ElementRef, InjectionToken, type Signal } from '@angular/core';
  * lists the host elements of the `CNGX_FORM_FIELD_CONTROL` providers that
  * sit directly inside the box. A control behind a wrapper element, or the
  * inner controls of a composite, is not in the list.
- *
- * @category forms/field
  */
 export interface CngxFieldBoxContract {
   /** Host elements of the box's direct-child form-field controls. */
@@ -22,7 +20,6 @@ export interface CngxFieldBoxContract {
  * element. Only direct children count: the box owns its direct children,
  * so a control two levels down follows the normal skin cascade.
  *
- * @category forms/field
  * @since 0.2.0
  * @relatedTo CngxFieldBox, CngxFieldBoxContract, CngxFieldSkinHost
  */
@@ -34,6 +31,5 @@ export const CNGX_FIELD_BOX = new InjectionToken<CngxFieldBoxContract>('CngxFiel
  *
  * @internal Not part of the public API: the affix directives and the box
  * import it from this file.
- * @category forms/field
  */
 export const CNGX_FIELD_AFFIX = new InjectionToken<true>('CngxFieldAffix');

@@ -2,7 +2,6 @@ import type { ToneStep } from '../tone-generator/tone-generator';
 
 /**
  * A named earcon - an ordered sequence of tone steps.
- * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/earcons/default-earcons.ts
  * @since 0.1.0
  */

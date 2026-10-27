@@ -59,7 +59,6 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * <input cngxNumericInput cngxFieldSkin="bare" />
  * ```
  *
- * @category forms/field
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/field-skin.directive.ts
  * @since 0.1.0

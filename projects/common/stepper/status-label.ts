@@ -14,8 +14,6 @@ import type { CngxStepNode } from './stepper-host.token';
  *  4. otherwise -> `statusLabels.upNext`
  *
  * Group nodes (non-step) return an empty string.
- *
- * @category common/stepper
  */
 export function resolveStepperStatusLabel(
   node: CngxStepNode,

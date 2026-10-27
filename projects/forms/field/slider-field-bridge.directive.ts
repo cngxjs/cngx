@@ -34,8 +34,6 @@ import type { CngxFormFieldControl } from './models';
  * For Reactive Forms, wrap the `FormControl` in `adaptFormControl(...)` and pass
  * the returned accessor to `[field]` - the bridge doesn't care about the source.
  *
- * @category forms/field
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/slider-field-bridge.directive.ts
  * @since 0.1.0

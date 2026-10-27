@@ -34,7 +34,6 @@ import {
  * it to the single-arg `provide<Axis>(initial)` rather than bucketing
  * same-kind features.
  *
- * @category core/theming
  * @relatedTo provideA11yPreferences
  * @since 0.1.0
  */
@@ -49,7 +48,6 @@ export type CngxA11yPrefFeature =
  * Set the initial density rung the aggregator installs. Omitting this
  * feature leaves density at its `comfortable` default.
  *
- * @category core/theming
  * @relatedTo provideA11yPreferences
  * @since 0.1.0
  */
@@ -61,7 +59,6 @@ export function withDensity(value: CngxDensityValue): CngxA11yPrefFeature {
  * Set the initial text-scale rung the aggregator installs. Omitting this
  * feature leaves text-scale at its `md` (identity) default.
  *
- * @category core/theming
  * @relatedTo provideA11yPreferences
  * @since 0.1.0
  */
@@ -74,7 +71,6 @@ export function withTextScale(value: CngxTextScaleValue): CngxA11yPrefFeature {
  * this feature leaves motion at its `auto` default, which follows the OS
  * `prefers-reduced-motion` query.
  *
- * @category core/theming
  * @relatedTo provideA11yPreferences
  * @since 0.1.0
  */
@@ -87,7 +83,6 @@ export function withMotion(value: CngxMotionPreference): CngxA11yPrefFeature {
  * this feature leaves contrast at its `auto` default, which follows the
  * OS `prefers-contrast` query.
  *
- * @category core/theming
  * @relatedTo provideA11yPreferences
  * @since 0.1.0
  */
@@ -109,7 +104,6 @@ export function withContrast(value: CngxContrastPreference): CngxA11yPrefFeature
  * ];
  * ```
  *
- * @category core/theming
  * @relatedTo withPersistence
  * @since 0.1.0
  */
@@ -137,7 +131,6 @@ export const CNGX_A11Y_STORAGE = new InjectionToken<Storage | null>('CNGX_A11Y_S
  * });
  * ```
  *
- * @category core/theming
  * @relatedTo provideA11yPreferences
  * @since 0.1.0
  */
@@ -165,7 +158,6 @@ export function withPersistence(storageKey = 'cngx-a11y'): CngxA11yPrefFeature {
  * });
  * ```
  *
- * @category core/theming
  * @relatedTo injectA11yPreferences
  * @relatedTo withDensity
  * @relatedTo withTextScale
@@ -224,7 +216,6 @@ export function provideA11yPreferences(
  * accessibility panel both reads current state and writes user choices
  * through it (`injectA11yPreferences().motion.set('reduced')`).
  *
- * @category core/theming
  * @relatedTo provideA11yPreferences
  * @since 0.1.0
  */

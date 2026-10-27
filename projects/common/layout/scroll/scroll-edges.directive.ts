@@ -63,8 +63,6 @@ import { createScrollEdges } from './scroll-edges-core';
  * `@container scroll-state(scrollable: block-start)` and its siblings, so the
  * CSS can swap to native scroll-state queries once they are Baseline.
  *
- * @category common/layout
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/scroll/scroll-edges.directive.ts
  * @since 0.1.0

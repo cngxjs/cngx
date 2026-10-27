@@ -31,7 +31,6 @@ export const CNGX_DATA_GRID_ACCORDION_DEFAULTS: CngxDataGridAccordionConfig = {}
  * provide the token explicitly - `inject(CNGX_DATA_GRID_ACCORDION_CONFIG)` always
  * resolves.
  *
- * @category ui/data-grid-accordion
  * @since 0.1.0
  */
 export const CNGX_DATA_GRID_ACCORDION_CONFIG = new InjectionToken<CngxDataGridAccordionConfig>(

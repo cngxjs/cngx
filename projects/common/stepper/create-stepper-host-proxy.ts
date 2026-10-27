@@ -25,7 +25,6 @@ const EMPTY_NODES: readonly CngxStepNode[] = Object.freeze([]);
  * only). Single consumer (the footer); the surface is load-bearing, not
  * speculative.
  *
- * @category common/stepper
  * @since 0.1.0
  * @relatedTo CngxStepperFooter, CngxStepperHost
  */

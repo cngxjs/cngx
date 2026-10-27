@@ -41,7 +41,6 @@ import type { FilterExpression, FilterFieldDef, FilterNode } from './filter-buil
  * component is the skin plus a `CNGX_FILTER_BUILDER_HOST` path-mutator
  * write sink.
  *
- * @category forms/filter-builder
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-expression-row.component.ts
  * @since 0.1.0

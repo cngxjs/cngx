@@ -4,8 +4,6 @@ import { type Observable, type Subscription, take } from 'rxjs';
 
 /**
  * State exposed by the optimistic action.
- *
- * @category common/interactive/optimistic
  */
 export interface OptimisticState {
   /** Whether a rollback occurred on the last invocation. */
@@ -52,8 +50,6 @@ export interface OptimisticState {
  * @param current - The writable signal to update optimistically.
  * @param action - Async action that confirms the value. Should return the confirmed value.
  * @returns Tuple of `[applyFn, state]`.
- *
- * @category common/interactive/optimistic
  */
 export function createOptimistic<T>(
   current: WritableSignal<T>,
@@ -117,6 +113,5 @@ export function createOptimistic<T>(
  *
  * @deprecated Use `createOptimistic` - this name is removed at the
  * v1.0 cut (exported factories carry the `create` prefix).
- * @category common/interactive/optimistic
  */
 export const optimistic = createOptimistic;

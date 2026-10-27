@@ -37,7 +37,6 @@ const NO_RESERVATION: Signal<number> = signal(0).asReadonly();
  * namespace. Nothing renders either way, but the host stays a legal SVG
  * child.
  *
- * @category common/chart/axis
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/axis/axis-domain.ts
  * @since 0.1.0
  * @relatedTo CngxAxis, CngxChart, CngxChartAxis

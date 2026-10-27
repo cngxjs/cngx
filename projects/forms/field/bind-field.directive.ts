@@ -46,8 +46,6 @@ import type { CngxFormFieldControl } from './models';
  *   <cngx-field-errors />
  * </cngx-form-field>
  * ```
- * @category forms/field
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/bind-field.directive.ts
  * @since 0.1.0

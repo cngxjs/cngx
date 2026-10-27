@@ -6,7 +6,6 @@ import { CNGX_LANGUAGE_PACK } from './provide-i18n';
 /**
  * Options of {@link createSectionBundle}.
  *
- * @category core/i18n
  * @since 0.1.0
  */
 export interface CngxSectionBundleOptions<S extends object, B extends object> {
@@ -23,7 +22,6 @@ export interface CngxSectionBundleOptions<S extends object, B extends object> {
  * The three places an area's i18n token is built and read, all derived from
  * one section and one mapper.
  *
- * @category core/i18n
  * @since 0.1.0
  */
 export interface CngxSectionBundle<B extends object> {
@@ -105,7 +103,6 @@ function overlay<B extends object>(own: B, root: object, site: B): B {
  * export const injectCardI18n = () => bundle.resolve(inject(CNGX_CARD_I18N));
  * ```
  *
- * @category core/i18n
  * @since 0.1.0
  * @relatedTo injectLanguageSection, formatMessage
  */

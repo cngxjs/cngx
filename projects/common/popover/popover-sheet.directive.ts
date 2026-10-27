@@ -43,8 +43,6 @@ import {
 /**
  * What a consumer asks for: a fixed presentation, or `'auto'` to let the
  * breakpoint in `cngx-popover-sheet.css` decide.
- *
- * @category common/popover
  */
 export type CngxPopoverPresentationRequest = 'auto' | CngxPopoverPresentation;
 
@@ -160,8 +158,6 @@ function warnSheetMisconfiguration(
  * </div>
  * ```
  *
- * @category common/popover
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-sheet.directive.ts
  * @since 0.1.0

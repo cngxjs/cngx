@@ -9,8 +9,6 @@ import { Directive, input } from '@angular/core';
  * `--cngx-divider-inset`). Consumers apply their own styles through
  * `.cngx-divider` or override the variables.
  *
- * @category common/display
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/divider/divider.directive.ts
  * @selector cngx-divider

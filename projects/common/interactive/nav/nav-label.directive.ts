@@ -17,7 +17,6 @@ import { Directive, input } from '@angular/core';
  * <span cngxNavLabel [heading]="true" [level]="3">Settings</span>
  * ```
  *
- * @category common/interactive
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-label.directive.ts
  * @since 0.1.0

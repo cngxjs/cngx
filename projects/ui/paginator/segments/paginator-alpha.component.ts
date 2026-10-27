@@ -31,7 +31,6 @@ import { injectPaginatorAriaLabels } from '../paginator-config';
  * skip disabled chips, the single tab stop tracks the active bucket, and
  * activation commits via `select()`.
  *
- * @category ui/paginator
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-alpha.component.ts
  * @since 0.1.0

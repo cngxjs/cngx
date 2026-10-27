@@ -23,7 +23,6 @@ import type { CngxButtonSize, CngxButtonTone, CngxButtonVariant } from './button
  * which is how the icon button keeps its own `ghost` default unless the app
  * picks a variant for the whole family.
  *
- * @category common/button
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
  * @relatedTo provideButtonConfig, provideButtonConfigAt, injectButtonConfig
@@ -41,7 +40,6 @@ export interface CngxButtonConfig {
  * DI token carrying the resolved {@link CngxButtonConfig}. Defaults to an
  * empty object, so every axis falls through to the button class default.
  *
- * @category common/button
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
  * @relatedTo provideButtonConfig, injectButtonConfig
@@ -55,7 +53,6 @@ export const CNGX_BUTTON_CONFIG = new InjectionToken<CngxButtonConfig>('CngxButt
  * Feature returned by a `withButton*` function; merged by
  * {@link provideButtonConfig} and {@link provideButtonConfigAt}.
  *
- * @category common/button
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
  */
@@ -66,7 +63,6 @@ export interface CngxButtonConfigFeature {
 /**
  * Default emphasis for every button in scope.
  *
- * @category common/button
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
  */
@@ -77,7 +73,6 @@ export function withButtonVariant(variant: CngxButtonVariant): CngxButtonConfigF
 /**
  * Default intent for every button in scope.
  *
- * @category common/button
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
  */
@@ -88,7 +83,6 @@ export function withButtonTone(tone: CngxButtonTone): CngxButtonConfigFeature {
 /**
  * Default size for every button in scope.
  *
- * @category common/button
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
  */
@@ -113,7 +107,6 @@ function mergeFeatures(
  * });
  * ```
  *
- * @category common/button
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
  * @relatedTo withButtonVariant, withButtonTone, withButtonSize, provideButtonConfigAt
@@ -141,7 +134,6 @@ export function provideButtonConfig(...features: CngxButtonConfigFeature[]): Env
  * class AppToolbar {}
  * ```
  *
- * @category common/button
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
  * @relatedTo provideButtonConfig
@@ -161,7 +153,6 @@ export function provideButtonConfigAt(...features: CngxButtonConfigFeature[]): P
 /**
  * Inject the button config resolved for the current injector.
  *
- * @category common/button
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
  */

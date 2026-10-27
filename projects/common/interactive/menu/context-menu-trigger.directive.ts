@@ -66,8 +66,6 @@ import { CNGX_MENU_NAV_STRATEGY } from './menu-nav-strategy';
  * `withDismissOnScroll`, `withDismissOnBlur`, or swap the whole handler via
  * {@link CNGX_MENU_DISMISS_HANDLER_FACTORY}.
  *
- * @category common/interactive/menu
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/context-menu-trigger.directive.ts
  * @since 0.1.0

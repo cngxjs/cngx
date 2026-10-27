@@ -12,8 +12,6 @@ import { injectMenuItemCore } from './menu-item-core';
  * Click activates (honouring the disabled state). `pointerenter` highlights
  * without activating, matching native menu behaviour.
  *
- * @category common/interactive/menu
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item.directive.ts
  * @since 0.1.0

@@ -40,8 +40,6 @@ export const EMPTY_ROOT: FilterGroup = Object.freeze({
 
 /**
  * Optional knobs for `createFilterGroup`.
- *
- * @category forms/filter-builder
  */
 export interface CreateFilterGroupOptions {
   readonly negated?: boolean;
@@ -49,8 +47,6 @@ export interface CreateFilterGroupOptions {
 
 /**
  * Build a fresh `FilterGroup` with a generated id. Defaults to `and` logic, no children, not negated.
- *
- * @category forms/filter-builder
  */
 export function createFilterGroup(
   logic: FilterLogic = 'and',
@@ -68,8 +64,6 @@ export function createFilterGroup(
 
 /**
  * Build a fresh `FilterExpression` with a generated id.
- *
- * @category forms/filter-builder
  */
 export function createFilterExpression<TValue = unknown>(
   field: string,
@@ -184,8 +178,6 @@ function normaliseExpressionId(expression: FilterExpression): FilterExpression {
  * Frozen empty root used as the presenter's `model<FilterGroup>` default and
  * by `CngxFilterBuilderState.clear()`. Always returns the same frozen
  * reference so consumers comparing tree identity short-circuit correctly.
- *
- * @category forms/filter-builder
  */
 export function createEmptyFilterRoot(): FilterGroup {
   return EMPTY_ROOT;
@@ -196,8 +188,6 @@ export function createEmptyFilterRoot(): FilterGroup {
  * Omitting the whole object (or any field) resolves to the pure builtin
  * defaults - the no-options path is bit-identical to the historical
  * closed-switch evaluation.
- *
- * @category forms/filter-builder
  */
 export interface CngxFilterEvaluationOptions {
   /**
@@ -227,8 +217,6 @@ export interface CngxFilterEvaluationOptions {
  * `true`, unknown operators warn once in dev mode and evaluate `false`.
  * Pass `options` to evaluate against a consumer-extended operator
  * registry or with case-insensitive substring matching.
- *
- * @category forms/filter-builder
  */
 export function toFilterPredicate<TItem>(
   tree: FilterGroup | null,
@@ -276,8 +264,6 @@ export function toFilterPredicate<TItem>(
  * - `gt` / `gte` / `lt` / `lte` order numbers, `Date` instances, and
  *   strings (lexicographic). Nullish operands and mixed/unsupported type
  *   pairs compare as `NaN`, so every ordering test on them is `false`.
- *
- * @category forms/filter-builder
  */
 export function evaluateExpression<TItem>(
   expr: FilterExpression,

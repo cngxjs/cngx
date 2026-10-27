@@ -6,8 +6,6 @@
  * IBAN lengths are FIXED and officially standardised, so these masks are
  * actually reliable, not approximations. IBAN is used in ~70 countries
  * (mostly Europe + parts of the Middle East), hence no US/JP/CN/KR entries.
- *
- * @category forms/input
  */
 export const IBAN_PATTERNS: Record<string, string> = {
   // DACH

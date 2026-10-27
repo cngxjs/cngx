@@ -53,8 +53,6 @@ interface PopoverController {
  * closed (ARIA 1.2 combobox). It is the only writer of the attribute on
  * the trigger host; the listbox keeps its own for focus-in-listbox setups.
  *
- * @category common/interactive/listbox
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/listbox-trigger.directive.ts
  * @since 0.1.0

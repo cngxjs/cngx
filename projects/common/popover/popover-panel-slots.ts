@@ -9,8 +9,6 @@ import type { ArrowEdge } from './popover.types';
  * `left` / `right`) and the inline-axis offset in CSS pixels that the
  * library would have placed the default diamond at. Either can be used to
  * rotate, translate, or theme the custom glyph so it tracks the trigger.
- *
- * @category common/popover
  */
 export interface CngxPopoverArrowContext {
   /** Primary edge of the panel facing the trigger. */
@@ -27,7 +25,6 @@ export interface CngxPopoverArrowContext {
 /**
  * Marks the header content inside `cngx-popover-panel`.
  *
- * @category common/popover
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel-slots.ts
  * @since 0.1.0
  * @relatedTo CngxPopoverPanel, CngxPopoverBody, CngxPopoverFooter
@@ -38,7 +35,6 @@ export class CngxPopoverHeader {}
 /**
  * Marks the body content inside `cngx-popover-panel`.
  *
- * @category common/popover
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel-slots.ts
  * @since 0.1.0
  * @relatedTo CngxPopoverPanel, CngxPopoverHeader, CngxPopoverFooter
@@ -49,7 +45,6 @@ export class CngxPopoverBody {}
 /**
  * Marks the footer content inside `cngx-popover-panel`.
  *
- * @category common/popover
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel-slots.ts
  * @since 0.1.0
  * @relatedTo CngxPopoverPanel, CngxPopoverHeader, CngxPopoverBody, CngxPopoverAction
@@ -68,7 +63,6 @@ export class CngxPopoverFooter {}
  * </ng-template>
  * ```
  *
- * @category common/popover
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel-slots.ts
  * @since 0.1.0
  * @relatedTo CngxPopoverPanel
@@ -81,7 +75,6 @@ export class CngxPopoverClose {
 /**
  * Template shown while panel content is loading.
  *
- * @category common/popover
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel-slots.ts
  * @since 0.1.0
  * @relatedTo CngxPopoverPanel, CngxPopoverEmpty, CngxPopoverError
@@ -94,7 +87,6 @@ export class CngxPopoverLoading {
 /**
  * Template shown when panel content is empty.
  *
- * @category common/popover
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel-slots.ts
  * @since 0.1.0
  * @relatedTo CngxPopoverPanel, CngxPopoverLoading, CngxPopoverError
@@ -107,7 +99,6 @@ export class CngxPopoverEmpty {
 /**
  * Template shown when panel content failed to load. Context: `$implicit` = error.
  *
- * @category common/popover
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel-slots.ts
  * @since 0.1.0
  * @relatedTo CngxPopoverPanel, CngxPopoverLoading, CngxPopoverEmpty
@@ -134,7 +125,6 @@ export class CngxPopoverError {
  * </cngx-popover-panel>
  * ```
  *
- * @category common/popover
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel-slots.ts
  * @since 0.1.0
  * @relatedTo CngxPopoverPanel, CngxPopover

@@ -2,8 +2,6 @@ import { afterNextRender, computed, Directive, input, output, signal } from '@an
 
 /**
  * A single sort entry: the active field key and its direction.
- *
- * @category common/data/sort
  */
 export interface SortEntry {
   active: string;
@@ -41,8 +39,6 @@ function entriesEqual(a: SortEntry[], b: SortEntry[]): boolean {
  * Consumer connects this to a table or list via a `computed()` - nothing is
  * injected automatically.
  *
- * @category common/data/sort
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/sort/sort.directive.ts
  * @since 0.1.0
  * @relatedTo CngxSortHeader, CngxFilter, CngxPaginate, CngxSmartDataSource

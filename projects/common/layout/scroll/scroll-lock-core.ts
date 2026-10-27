@@ -31,7 +31,6 @@ const lockCounts = new WeakMap<HTMLElement, number>();
  * @param html - The document root (`document.documentElement`) to lock.
  * @returns Release function for this acquisition. Idempotent.
  *
- * @category common/layout
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/scroll/scroll-lock-core.ts
  * @since 0.1.0
  * @relatedTo CngxScrollLock, CngxDialog
@@ -116,7 +115,6 @@ const pins = new WeakMap<HTMLElement, PinState>();
  * @param html - The document root (`document.documentElement`) to lock.
  * @returns Release function for this acquisition. Idempotent.
  *
- * @category common/layout
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/scroll/scroll-lock-core.ts
  * @since 0.1.0
  * @relatedTo createScrollLock, CngxPopoverSheet

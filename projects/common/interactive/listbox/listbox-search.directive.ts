@@ -7,8 +7,6 @@ import { CngxSearch } from '../keyboard/search.directive';
 
 /**
  * Matcher function used by CngxListboxSearch to filter options.
- *
- * @category common/interactive/listbox
  */
 export type ListboxMatchFn = (option: ActiveDescendantItem, term: string) => boolean;
 
@@ -32,7 +30,6 @@ export type ListboxMatchFn = (option: ActiveDescendantItem, term: string) => boo
  * protected readonly matchFn = computed(() => this.matchFnInput() ?? this.labelMatch);
  * ```
  *
- * @category common/interactive
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/listbox-search.directive.ts
  * @since 0.1.0
  * @relatedTo createLabelMatcher, CngxListboxSearch
@@ -52,8 +49,6 @@ export function createListboxLabelMatch(
  * to filter their options. A listbox that has a `CngxListboxSearch` injected
  * ancestor reads `term` and `matchFn` from it reactively.
  *
- * @category common/interactive/listbox
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/listbox-search.directive.ts
  * @since 0.1.0

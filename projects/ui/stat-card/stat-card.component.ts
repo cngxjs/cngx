@@ -60,8 +60,6 @@ const DEFAULT_SKELETON_SLOTS: readonly CngxStatSlotKind[] = ['label', 'value', '
  * </cngx-stat-card>
  * ```
  *
- * @category ui/stat-card
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stat-card/stat-card.component.ts
  * @since 0.1.0

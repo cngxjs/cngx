@@ -20,8 +20,6 @@ import { injectDisplayI18n, type CngxAvatarStatus } from '../i18n/display-i18n';
  * Optional status indicator dot via `status`. Size and shape driven by
  * CSS custom properties.
  *
- * @category common/display
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/avatar/avatar.component.ts
  * @since 0.1.0

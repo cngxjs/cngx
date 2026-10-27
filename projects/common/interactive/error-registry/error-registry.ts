@@ -18,7 +18,6 @@ import { mapKeySetEqual, shallowReadonlyArrayEqual } from './equal-fns';
  * the registry is absent, the directives skip registration and keep their
  * pure DOM behaviour.
  *
- * @category common/interactive/error
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/error-registry.ts
  * @since 0.1.0
  * @relatedTo CngxErrorScope, CngxErrorAggregator, CngxErrorSource

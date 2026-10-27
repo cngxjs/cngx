@@ -24,8 +24,6 @@ import { injectInputAriaLabels } from './input-config';
  * }
  * ```
  *
- * @category forms/input
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/caps-lock.directive.ts
  * @since 0.2.0

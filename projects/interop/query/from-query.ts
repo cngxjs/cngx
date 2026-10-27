@@ -9,8 +9,6 @@ import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cng
  * satisfies this shape (its `status` / `fetchStatus` / `data` / `error` are
  * all `Signal`s), so the adapter stays decoupled from TanStack's experimental
  * proxy typing while still accepting a real query result directly.
- *
- * @category interop/query
  */
 export interface CngxQueryLike<T> {
   /** TanStack query status. */
@@ -71,8 +69,6 @@ export interface CngxQueryLike<T> {
  * // users.status(), users.data(), users.isFirstLoad() - all work
  * // <cngx-async-container [state]="users"> - direct binding
  * ```
- *
- * @category interop/query
  */
 export function fromQuery<T>(query: CngxQueryLike<T>): CngxAsyncState<T> {
   const status = computed((): AsyncStatus => {

@@ -18,8 +18,6 @@ import { CngxFailed, CngxPending, CngxSucceeded } from '../async-click/async-sta
  * Display bucket a reflector collapses an {@link CngxAsyncState} into.
  * The `loading` / `refreshing` busy variants fold into `pending` for the
  * visible status, while `isBusy` carries the full busy set for ARIA.
- *
- * @category common/interactive
  */
 export type CngxAsyncDisplayStatus = 'idle' | 'pending' | 'success' | 'error';
 
@@ -28,8 +26,6 @@ export type CngxAsyncDisplayStatus = 'idle' | 'pending' | 'success' | 'error';
  * bucket. Owned by the {@link CngxAsyncStatus} reflector so every consumer
  * (the reflector directive, `CngxActionButton`'s `[externalState]` branch)
  * maps an externally-owned state the same way - one reflection code path.
- *
- * @category common/interactive
  */
 export function reflectAsyncDisplayStatus(
   state: CngxAsyncState<unknown> | null | undefined,
@@ -68,8 +64,6 @@ export function reflectAsyncDisplayStatus(
  * </button>
  * ```
  *
- * @category common/interactive
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-status/async-status.directive.ts
  * @since 0.1.0

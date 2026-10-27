@@ -13,8 +13,6 @@ import { CngxRuntimeError } from '@cngx/utils';
  * state, label, and `aria-current`; the methods are the only write paths,
  * each routing through the brain so the clamp-`computed()` and busy-gate
  * invariants hold.
- *
- * @category ui/paginator
  */
 export interface CngxPaginatorHost {
   /** Current page index (0-based), auto-clamped to `totalPages`. */
@@ -65,7 +63,6 @@ export interface CngxPaginatorHost {
  * parts (`cngx-pgn-prev`, `cngx-pgn-pages`, ...) inject this rather than the
  * concrete component class, keeping the organism decompose-ready.
  *
- * @category ui/paginator
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-host.token.ts
  * @since 0.1.0

@@ -39,8 +39,6 @@ import type { CngxFilterRowFieldChangePlan } from './filter-builder-row-controll
 
 /**
  * Discriminator for every state-level mutation the builder emits.
- *
- * @category forms/filter-builder/state
  */
 export type FilterMutationKind =
   | 'add-filter'
@@ -56,8 +54,6 @@ export type FilterMutationKind =
 
 /**
  * Per-kind payload - populated only for the fields a given `kind` carries.
- *
- * @category forms/filter-builder/state
  */
 export interface FilterMutationContext {
   readonly fieldKey?: string;
@@ -69,8 +65,6 @@ export interface FilterMutationContext {
 
 /**
  * Structural mutation event the announcer effect observes.
- *
- * @category forms/filter-builder/state
  */
 export interface FilterMutationEvent {
   readonly kind: FilterMutationKind;
@@ -80,8 +74,6 @@ export interface FilterMutationEvent {
 
 /**
  * Inputs accepted by `createFilterBuilderState`. Pass `source` for two-way binding, omit for an uncontrolled instance.
- *
- * @category forms/filter-builder/state
  */
 export interface CngxFilterBuilderStateOptions<TValue = unknown> {
   readonly source?: WritableSignal<FilterGroup>;
@@ -91,8 +83,6 @@ export interface CngxFilterBuilderStateOptions<TValue = unknown> {
 
 /**
  * Public shape of the state machine - read-only signals plus path-keyed mutators.
- *
- * @category forms/filter-builder/state
  */
 export interface CngxFilterBuilderState<TValue = unknown> {
   readonly tree: Signal<FilterGroup>;
@@ -159,7 +149,6 @@ function fieldMapEqual<TValue>(
  * Plain TS, no `inject()` - testable without `TestBed`. Override the token to
  * wrap this (logging, undo) rather than reimplementing the mutators.
  *
- * @category forms/filter-builder/state
  * @relatedTo CNGX_FILTER_BUILDER_STATE_FACTORY, CngxFilterBuilderState, CngxFilterBuilderStateOptions, CngxFilterBuilderPresenter
  */
 export function createFilterBuilderState<TValue = unknown>(
@@ -377,8 +366,6 @@ export function createFilterBuilderState<TValue = unknown>(
  * without forking `CngxFilterBuilderPresenter`. Mirrors the select-family
  * `Cngx*ControllerFactory` precedents (e.g. `createCommitController` +
  * `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY`).
- *
- * @category forms/filter-builder/state
  */
 export type CngxFilterBuilderStateFactory = <TValue = unknown>(
   opts: CngxFilterBuilderStateOptions<TValue>,
@@ -399,7 +386,6 @@ export type CngxFilterBuilderStateFactory = <TValue = unknown>(
  * ]
  * ```
  *
- * @category forms/filter-builder/state
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-state.ts
  * @since 0.1.0
  * @relatedTo CngxFilterBuilderPresenter, CngxFilterBuilder, CngxFilterBuilderState

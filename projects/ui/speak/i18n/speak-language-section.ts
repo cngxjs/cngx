@@ -3,7 +3,6 @@
  * `CngxSpeakButton`. It feeds `CNGX_SPEAK_I18N`; a key set through
  * `withSpeakI18nLabels` still wins.
  *
- * @category ui/speak/i18n
  * @since 0.1.0
  * @relatedTo CNGX_SPEAK_I18N, withSpeakI18nLabels
  */
@@ -18,7 +17,6 @@ export interface CngxSpeakLanguageSection {
  * The English speak section: the single source of the speak button's English
  * copy. `CNGX_SPEAK_I18N` defaults to it.
  *
- * @category ui/speak/i18n
  * @since 0.1.0
  * @relatedTo CNGX_SPEAK_I18N
  */

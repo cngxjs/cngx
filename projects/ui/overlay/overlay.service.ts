@@ -17,8 +17,6 @@ import { CngxOverlayRef } from './overlay-ref';
  * {@link OverlayConfig} - every field is optional and falls back to the CDK
  * overlay default - plus `disableClose`, a cngx addition that turns off the
  * Escape / backdrop dismiss affordances.
- *
- * @category ui/overlay
  */
 export type CngxOverlayConfig = Partial<OverlayConfig> & {
   /**
@@ -41,8 +39,6 @@ export type CngxOverlayConfig = Partial<OverlayConfig> & {
  * ref.afterClosed$.subscribe(result => console.log(result));
 * ```
  *
- * @category ui/overlay
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/overlay/overlay.service.ts
  * @since 0.1.0
@@ -109,8 +105,6 @@ export class CngxOverlay {
 
 /**
  * Provides `CngxOverlay` as an environment-scoped service.
- *
- * @category ui/overlay
  */
 export function provideOverlay(): EnvironmentProviders {
   return makeEnvironmentProviders([CngxOverlay]);

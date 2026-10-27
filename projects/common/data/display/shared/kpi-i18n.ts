@@ -16,7 +16,6 @@ import type { DeltaDirection, DeltaSentiment } from './delta-format';
  * (`CNGX_LOCALE`); the per-instance `label` / `valueTextFormat` inputs still
  * win over the bundle.
  *
- * @category common/data/i18n
  * @since 0.1.0
  */
 export interface CngxKpiI18n {
@@ -85,7 +84,6 @@ const kpiBundle = createSectionBundle<CngxKpiLanguageSection, CngxKpiI18n>({
  * app locale; the value is a `Signal`, shared by every reader under one
  * injector.
  *
- * @category common/data/i18n
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/display/shared/kpi-i18n.ts
  * @since 0.1.0
@@ -99,7 +97,6 @@ export const CNGX_KPI_I18N = new InjectionToken<Signal<CngxKpiI18n>>('CngxKpiI18
 /**
  * Branded feature-fn for {@link provideKpiI18n}.
  *
- * @category common/data/i18n
  * @since 0.1.0
  */
 export type CngxKpiI18nFeature = ((bundle: Signal<CngxKpiI18n>) => Signal<CngxKpiI18n>) & {
@@ -118,7 +115,6 @@ function defineKpiI18nFeature(
  * pack's copy, or the English default. Pass a `Signal` of a partial bundle to switch languages at
  * runtime.
  *
- * @category common/data/i18n
  * @since 0.1.0
  */
 export function withKpiI18nLabels(
@@ -144,7 +140,6 @@ export function withKpiI18nLabels(
  * });
  * ```
  *
- * @category common/data/i18n
  * @since 0.1.0
  */
 export function provideKpiI18n(...features: readonly CngxKpiI18nFeature[]): Provider {
@@ -158,7 +153,6 @@ export function provideKpiI18n(...features: readonly CngxKpiI18nFeature[]): Prov
  * Inject the resolved KPI i18n bundle signal. Read it inside a `computed()`
  * or template so a runtime override flip re-derives.
  *
- * @category common/data/i18n
  * @since 0.1.0
  */
 export function injectKpiI18n(): Signal<CngxKpiI18n> {

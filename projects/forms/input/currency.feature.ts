@@ -3,8 +3,6 @@ import type { InputConfigFeature } from './input-config';
 
 /**
  * Options for {@link withCurrency}.
- *
- * @category forms/input
  */
 export interface CurrencyOptions {
   /** ISO 4217 currency code, e.g. `'USD'`, `'CHF'`, `'JPY'`. */
@@ -36,7 +34,6 @@ export interface CurrencyOptions {
  * ```
  *
  * @see {@link provideInputConfig}
- * @category forms/input
  */
 export function withCurrency(options: CurrencyOptions): InputConfigFeature {
   return (config) => ({

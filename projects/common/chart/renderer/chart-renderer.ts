@@ -8,8 +8,6 @@ import { type LayerGeometry } from '../layers/chart-layer';
  * renderer reads scales / dimensions through the chart context and
  * schedules its own teardown through the `DestroyRef` - it never injects
  * the concrete `CngxChart` class.
- *
- * @category common/chart/renderer
  */
 export interface ChartRendererDeps {
   readonly ctx: CngxChartContext;
@@ -33,7 +31,6 @@ export interface ChartRendererDeps {
  * The SVG backend is a passthrough (layer atoms self-render); the Canvas
  * backend paints the geometries onto a `<canvas>` 2D context.
  *
- * @category common/chart/renderer
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/renderer/chart-renderer.ts
  * @since 0.1.0
  */
@@ -62,7 +59,6 @@ export interface CngxChartRenderer {
  * {@link CNGX_CHART_RENDERER_FACTORY} to add a third backend (WebGL, ...)
  * without touching layer atoms.
  *
- * @category common/chart/renderer
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/renderer/chart-renderer.ts
  * @since 0.1.0
  */

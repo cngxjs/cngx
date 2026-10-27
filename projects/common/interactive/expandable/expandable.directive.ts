@@ -32,8 +32,6 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  * </div>
  * ```
  *
- * @category common/interactive
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/expandable/expandable.directive.ts
  * @since 0.1.0

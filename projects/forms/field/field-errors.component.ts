@@ -40,8 +40,6 @@ import { injectFormFieldI18n, resolveErrorMessage } from './i18n/form-field-i18n
  * </cngx-field-errors>
  * ```
  *
- * @category forms/field
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/field-errors.component.ts
  * @since 0.1.0
@@ -132,8 +130,6 @@ export class CngxFieldErrors {
 
 /**
  * Template context type for CngxFieldErrors custom templates.
- *
- * @category forms/field
  */
 export interface CngxFieldErrorContext {
   /** Resolved error message (also available as implicit `let-msg`). */

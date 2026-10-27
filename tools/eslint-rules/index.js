@@ -6,8 +6,6 @@ const configFieldReaderGuard = require('./config-field-reader-guard');
 /**
  * Local ESLint plugin — registered in `eslint.config.js` as `local`.
  * Use rules via `local/<rule-name>` in flat-config rules blocks.
- *
- * @category eslint-rules
  */
 module.exports = {
   rules: {

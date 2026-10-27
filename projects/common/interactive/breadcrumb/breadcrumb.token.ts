@@ -26,7 +26,6 @@ export interface CngxBreadcrumbHost {
  * DI token for the {@link CngxBreadcrumbHost} contract. {@link CngxBreadcrumb}
  * provides it via `useExisting`; each {@link CngxBreadcrumbItem} injects it.
  *
- * @category common/interactive/breadcrumb
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/breadcrumb/breadcrumb.token.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumb, CngxBreadcrumbItem

@@ -18,7 +18,6 @@ import { Directive } from '@angular/core';
  * </div>
  * ```
  *
- * @category common/button
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-group-separator.directive.ts
  * @since 0.1.0
  * @relatedTo CngxButtonGroup, CngxButtonGroupAddon

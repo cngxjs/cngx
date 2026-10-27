@@ -20,8 +20,6 @@ import { CngxRipple } from './ripple.directive';
  * <button cngxPressRipple [rippleColor]="'rgba(0,0,0,0.2)'">Click</button>
  * ```
  *
- * @category common/interactive
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/ripple/press-ripple.directive.ts
  * @since 0.1.0
  * @relatedTo CngxPressable, CngxRipple

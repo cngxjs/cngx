@@ -46,8 +46,6 @@ import type { EmptyReason } from './card.types';
  * </cngx-card-grid>
  * ```
  *
- * @category common/card
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card-grid.component.ts
  * @since 0.1.0

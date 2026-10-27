@@ -9,8 +9,6 @@ import { CNGX_CHART_LANGUAGE_EN, type CngxChartLanguageSection } from './chart-l
  * Summary input describing the chart's current data shape. Consumed by
  * `CngxChartI18n.summary()` to produce the `aria-label` text the
  * `<cngx-chart>` host announces to screen readers.
- *
- * @category common/chart/i18n
  */
 export interface CngxChartSummary {
   readonly trend: 'up' | 'down' | 'flat';
@@ -24,8 +22,6 @@ export interface CngxChartSummary {
  * i18n surface for `@cngx/common/chart`. Mirrors the `CNGX_RECYCLER_I18N`
  * shape from `@cngx/common/data` - factory defaults supply English;
  * consumers override per-app via {@link provideChartI18n}.
- *
- * @category common/chart/i18n
  */
 export interface CngxChartI18n {
   readonly summary: (input: CngxChartSummary) => string;
@@ -167,7 +163,6 @@ const chartBundle = createSectionBundle<CngxChartLanguageSection, CngxChartI18n>
  * at its default still follows the app locale at the use site, including a
  * runtime `CNGX_LOCALE` flip.
  *
- * @category common/chart/i18n
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/i18n/chart-i18n.ts
  * @since 0.1.0
@@ -179,8 +174,6 @@ export const CNGX_CHART_I18N = new InjectionToken<Signal<CngxChartI18n>>('CngxCh
 
 /**
  * Branded feature-fn for {@link provideChartI18n}.
- *
- * @category common/chart/i18n
  */
 export type CngxChartI18nFeature = ((bundle: Signal<CngxChartI18n>) => Signal<CngxChartI18n>) & {
   readonly _target: 'i18n';
@@ -197,8 +190,6 @@ function defineChartI18nFeature(
  * Override chart copy via a partial bundle - unset keys keep the language
  * pack's copy, or the English default, and keep following the app locale.
  * Pass a `Signal` to switch the language at runtime.
- *
- * @category common/chart/i18n
  */
 export function withChartI18nLabels(
   overrides: Partial<CngxChartI18n> | Signal<Partial<CngxChartI18n>>,
@@ -220,8 +211,6 @@ export function withChartI18nLabels(
  *   ),
  * ]
  * ```
- *
- * @category common/chart/i18n
  */
 export function provideChartI18n(...features: readonly CngxChartI18nFeature[]): Provider {
   return {

@@ -31,7 +31,6 @@ import {
  * </div>
  * ```
  *
- * @category common/interactive/slider
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/range-slider.directive.ts
  * @since 0.1.0

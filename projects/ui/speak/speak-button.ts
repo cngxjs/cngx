@@ -23,8 +23,6 @@ import { injectSpeakI18n } from './speak-i18n';
  * @include speak.theme($theme);
  * ```
  *
- * @category ui/speak
- * @docsKind primary
  * @wcag AAA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/speak/speak-button.ts
  * @since 0.1.0

@@ -7,7 +7,6 @@ import { Directive } from '@angular/core';
  * navigation and typeahead - required for action-menu and dropdown-menu
  * patterns where separators visually group items but are not selectable.
  *
- * @category common/interactive/menu
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-separator.directive.ts
  * @since 0.1.0

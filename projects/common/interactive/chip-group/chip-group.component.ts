@@ -58,8 +58,6 @@ import { CNGX_CHIP_GROUP_HOST, type CngxChipGroupHost } from './chip-group-host.
  * </cngx-chip-group>
  * ```
  *
- * @category common/interactive
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/chip-group/chip-group.component.ts
  * @selector cngx-chip-group

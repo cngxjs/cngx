@@ -11,8 +11,6 @@ import { injectFeedbackI18n } from '../config/feedback-i18n';
 
 /**
  * Visual variant for the progress indicator.
- *
- * @category ui/feedback/loading
  */
 export type ProgressVariant = 'linear' | 'circular';
 
@@ -44,8 +42,6 @@ const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
  * <cngx-progress [progress]="percent()" label="Processing" />
  * ```
  *
- * @category ui/feedback/loading
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/loading/progress.ts
  * @since 0.1.0

@@ -21,7 +21,6 @@ import { injectPaginatorHost } from '../paginator-host.token';
  * segment it avoids native `<select>` and the forms family, keeping the entry
  * `@cngx/forms`-free.
  *
- * @category ui/paginator
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-page-of-pages.component.ts
  * @since 0.1.0

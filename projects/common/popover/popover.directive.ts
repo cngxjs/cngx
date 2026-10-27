@@ -248,8 +248,6 @@ function warnMissingFloatingMiddleware(doc: Document): void {
  * `position-try-fallbacks` style - the browser positions the popover at
  * the declared `placement` regardless of viewport clipping.
  *
- * @category common/popover
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover.directive.ts
  * @since 0.1.0

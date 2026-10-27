@@ -9,8 +9,6 @@ interface AsyncOperationEntry {
 
 /**
  * Read-only snapshot of one registered async operation.
- *
- * @category common/data/async-registry
  */
 export interface CngxAsyncOperation {
   /** Per-operation uid minted at registration (`register`'s return value). */
@@ -79,8 +77,6 @@ function operationsEqual(
  * status reactivity flows through each entry's `CngxAsyncState` signals; the
  * Map signal's `mapKeySetEqual` short-circuits register/unregister churn
  * without hiding status changes.
- *
- * @category common/data/async-registry
  */
 @Injectable()
 export class CngxAsyncRegistry {

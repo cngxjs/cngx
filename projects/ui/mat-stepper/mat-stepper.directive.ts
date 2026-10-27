@@ -85,8 +85,6 @@ import {
  * ```
  * @playground Bridge instrumentation ./examples/bridge/bridge-example.component.ts
  *
- * @category ui/mat-stepper
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-stepper/mat-stepper.directive.ts
  * @since 0.1.0

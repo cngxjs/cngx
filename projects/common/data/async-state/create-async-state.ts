@@ -7,8 +7,6 @@ import { injectAsyncRegistry } from '../async-registry/provide-async-registry';
 
 /**
  * Configuration options for `createAsyncState`.
- *
- * @category common/data/async-state
  */
 export interface CreateAsyncStateOptions {
   /**
@@ -31,8 +29,6 @@ export interface CreateAsyncStateOptions {
  *
  * Extends the read-only `CngxAsyncState` with an `execute()` method
  * that runs an async action and manages the full lifecycle.
- *
- * @category common/data/async-state
  */
 export interface MutableAsyncState<T> extends CngxAsyncState<T> {
   /**
@@ -66,8 +62,6 @@ export interface MutableAsyncState<T> extends CngxAsyncState<T> {
  *   );
  * }
  * ```
- *
- * @category common/data/async-state
  */
 export function createAsyncState<T>(options?: CreateAsyncStateOptions): MutableAsyncState<T> {
   const destroyRef = inject(DestroyRef);

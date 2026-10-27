@@ -18,8 +18,6 @@ import { DIALOG_REF } from './dialog-ref';
  * </dialog>
  * ```
  *
- * @category common/dialog
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/dialog/dialog-description.directive.ts
  * @since 0.1.0

@@ -103,8 +103,6 @@ function visibleLabelOf(doc: Document, name: string): string | undefined {
  * </cngx-form-errors>
  * ```
  *
- * @category forms/field
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-errors.component.ts
  * @since 0.1.0
@@ -228,8 +226,6 @@ export class CngxFormErrors {
 
 /**
  * A single error item in the form-level summary.
- *
- * @category forms/field
  */
 export interface FormErrorItem {
   /**
@@ -253,8 +249,6 @@ export interface FormErrorItem {
 
 /**
  * Template context for CngxFormErrors custom templates.
- *
- * @category forms/field
  */
 export interface CngxFormErrorsSummaryContext {
   /** Error items (also available as implicit). */

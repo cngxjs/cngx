@@ -44,8 +44,6 @@ import { injectFilterBuilderAnnouncerFactory } from './filter-builder-announcer'
  * `CngxFormFieldPresenter` when the opt-in
  * `CngxFilterBuilderFormFieldControl` directive is applied.
  *
- * @category forms/filter-builder
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-presenter.directive.ts
  * @since 0.1.0

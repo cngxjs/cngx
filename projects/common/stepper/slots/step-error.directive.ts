@@ -14,8 +14,6 @@ import type { CngxStepNode } from '../stepper-host.token';
  * that renders `{{ message }}` always shows a non-empty reason.
  * `errorLabels` / `announcement` expose the richer aggregator surface
  * for consumers that want a list or the full SR phrase.
- *
- * @category common/stepper/slots
  */
 export interface CngxStepErrorContext {
   /** The errored step node carrying id / label / state signals. */
@@ -50,7 +48,6 @@ export interface CngxStepErrorContext {
  * </cngx-stepper>
  * ```
  *
- * @category common/stepper/slots
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/slots/step-error.directive.ts
  * @since 0.1.0

@@ -17,8 +17,6 @@ import { CngxTruncate } from './truncate.directive';
 
 /**
  * Template context for the custom toggle template.
- *
- * @category common/layout
  */
 export interface CngxExpandableToggleContext {
   /** Whether the text is currently expanded. */
@@ -43,7 +41,6 @@ export interface CngxExpandableToggleContext {
  * </cngx-expandable-text>
  * ```
  *
- * @category common/layout
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/text/expandable-text.ts
  * @since 0.1.0
  * @relatedTo CngxExpandableText, CngxTruncate
@@ -90,8 +87,6 @@ export class CngxExpandableToggle {
  * </cngx-expandable-text>
  * ```
  *
- * @category common/layout
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/text/expandable-text.ts
  * @since 0.1.0

@@ -27,8 +27,6 @@ import { CNGX_BREADCRUMB, type CngxBreadcrumbHost } from './breadcrumb.token';
  * </nav>
  * ```
  *
- * @category common/interactive/breadcrumb
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/breadcrumb/breadcrumb.directive.ts
  * @since 0.1.0

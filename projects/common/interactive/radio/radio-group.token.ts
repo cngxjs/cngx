@@ -9,7 +9,6 @@ import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
  * have access to the leaf without injecting the concrete radio
  * class.
  *
- * @category common/interactive
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/radio/radio-group.token.ts
  * @since 0.1.0
  */
@@ -36,7 +35,6 @@ export interface CngxRadioRegistration<T = unknown> {
  * defaults to a `nextUid('cngx-radio-group')` value when the
  * consumer does not supply one.
  *
- * @category common/interactive
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/radio/radio-group.token.ts
  * @since 0.1.0
  */
@@ -65,7 +63,6 @@ export interface CngxRadioGroupContract<T = unknown> {
  * - never via concrete-class injection (per
  * `reference_atomic_decompose` §4).
  *
- * @category common/interactive
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/radio/radio-group.token.ts
  * @since 0.1.0

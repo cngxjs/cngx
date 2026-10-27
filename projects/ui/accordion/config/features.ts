@@ -20,7 +20,6 @@ import type { CngxAccordionConfigFeature } from './provide-accordion-config';
  * );
  * ```
  *
- * @category ui/accordion
  * @since 0.1.0
  */
 export function withAccordionLabels(payload: {
@@ -39,7 +38,6 @@ export function withAccordionLabels(payload: {
  * provideAccordionConfig(withDefaultHeadingLevel(2));
  * ```
  *
- * @category ui/accordion
  * @since 0.1.0
  */
 export function withDefaultHeadingLevel(headingLevel: number): CngxAccordionConfigFeature {
@@ -57,7 +55,6 @@ export function withDefaultHeadingLevel(headingLevel: number): CngxAccordionConf
  * provideAccordionConfig(withAccordionSkin('categorized'));
  * ```
  *
- * @category ui/accordion
  * @since 0.1.0
  */
 export function withAccordionSkin(skin: CngxAccordionSkin): CngxAccordionConfigFeature {
@@ -79,7 +76,6 @@ export function withAccordionSkin(skin: CngxAccordionSkin): CngxAccordionConfigF
  * );
  * ```
  *
- * @category ui/accordion
  * @since 0.1.0
  */
 export function withAccordionTemplates(

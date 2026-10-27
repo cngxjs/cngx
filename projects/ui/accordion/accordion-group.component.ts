@@ -31,8 +31,6 @@ import { injectAccordionConfig } from './config/inject-accordion-config';
  * </cngx-accordion-group>
  * ```
  *
- * @category ui/accordion
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/accordion/accordion-group.component.ts
  * @since 0.1.0

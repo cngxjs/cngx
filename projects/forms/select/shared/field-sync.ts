@@ -9,8 +9,6 @@ import { createFieldSync as createFieldSyncField, type FieldSyncOptions } from '
  * composite control (e.g. `cngx-filter-builder`) is the form-field's control
  * and its inner pickers must not write the composite's object value into
  * their own scalar `value` model.
- *
- * @category forms/select/state
  */
 export const CNGX_SELECT_DISABLE_FIELD_SYNC = new InjectionToken<boolean>(
   'CngxSelectDisableFieldSync',
@@ -28,8 +26,6 @@ export type { FieldSyncOptions };
  *
  * Kept as the select-local export so the 9 select composites and
  * `cngx-filter-builder` import the gate and the sync from one module.
- *
- * @category forms/select/state
  */
 export function createFieldSync<V>(options: FieldSyncOptions<V>): void {
   if (inject(CNGX_SELECT_DISABLE_FIELD_SYNC, { optional: true })) {

@@ -23,8 +23,6 @@ import type { CngxTabGroupHost, CngxTabHandle } from '../tab-group-host.token';
  * under the LOC guard. \
  *
  * Sibling shape to `createTabGroupAnnouncements`.
- *
- * @category common/tabs
  */
 export interface CngxTabDismissalsOptions {
   readonly host: CngxTabGroupHost;
@@ -40,8 +38,6 @@ export interface CngxTabDismissalsOptions {
 /**
  * Resolved dismissable/addable surface for `<cngx-tab-group>`. \
  * The organism holds this as one field and the template reads it.
- *
- * @category common/tabs
  */
 export interface CngxTabDismissals {
   /** Effective group-level close affordance (`input ?? config ?? false`). */
@@ -105,7 +101,6 @@ export interface CngxTabDismissals {
  * dismiss.handleAdd();                     // routes through presenter.requestAdd
  * ```
  *
- * @category common/tabs
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/dismissals/tab-dismissals.ts
  * @since 0.1.0
  * @relatedTo CngxTabGroup, CngxTabCloseIcon, CngxTabAddIcon

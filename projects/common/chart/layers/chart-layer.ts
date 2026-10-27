@@ -12,7 +12,6 @@ import { InjectionToken, type Signal } from '@angular/core';
  * reads the var directly, the Canvas renderer resolves it via
  * `getComputedStyle`).
  *
- * @category common/chart/layers
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/layers/chart-layer.ts
  * @since 0.1.0
  */
@@ -77,7 +76,6 @@ export type LayerGeometry =
  * via {@link CNGX_CHART_LAYER}. The chart shell and the Canvas renderer
  * read layer geometry through this token instead of scraping the DOM.
  *
- * @category common/chart/layers
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/layers/chart-layer.ts
  * @since 0.1.0
  */
@@ -92,7 +90,6 @@ export interface CngxChartLayer {
  * `contentChildren(CNGX_CHART_LAYER, { descendants: true })` query on the
  * chart shell collects every mounted layer's geometry through DI.
  *
- * @category common/chart/layers
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/layers/chart-layer.ts
  * @since 0.1.0
  * @relatedTo CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand

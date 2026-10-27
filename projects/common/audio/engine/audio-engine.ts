@@ -18,7 +18,6 @@ import { injectAudioConfig } from '../config/audio-config';
  * Lifecycle state of the shared `AudioContext`, surfaced for debug panels and
  * headless e2e. Mute is a separate `muted` signal - this tracks the context,
  * not the play gate.
- * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/engine/audio-engine.ts
  * @since 0.1.0
  */
@@ -26,7 +25,6 @@ export type AudioStatus = 'idle' | 'suspended' | 'running' | 'closed' | 'unsuppo
 
 /**
  * Advanced/testing seam for {@link createAudioEngine}.
- * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/engine/audio-engine.ts
  * @since 0.1.0
  */
@@ -42,7 +40,6 @@ export interface AudioEngineOptions {
 /**
  * The audio engine surface. A single write path for `muted` / `volume`
  * (no `mute()`/`unmute()` pair); every state change is a reactive `Signal`.
- * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/engine/audio-engine.ts
  * @since 0.1.0
  */
@@ -82,7 +79,6 @@ export interface CngxAudioEngine {
 
 /**
  * Signature of the engine factory - the shape a telemetry/audit override matches.
- * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/engine/audio-engine.ts
  * @since 0.1.0
  */
@@ -149,7 +145,6 @@ function scaleSteps(steps: readonly ToneStep[], scale: number | undefined): read
  * tone-generator factory, and the reduced-motion query). The engine instance is
  * resolved through {@link CNGX_AUDIO_ENGINE_FACTORY}; scope it to a subtree with
  * `provideCngxAudioAt(...)` rather than calling this directly.
- * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/engine/audio-engine.ts
  * @since 0.1.0
  */
@@ -352,7 +347,6 @@ export const createAudioEngine: CngxAudioEngineFactory = (options) => {
  * the library baseline. Both are exported from `@cngx/common/audio`.
  *
  * @relatedTo createAudioEngine, injectCngxAudio, injectAudioConfig
- * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/engine/audio-engine.ts
  * @since 0.1.0
  */

@@ -3,7 +3,6 @@
  *
  * @returns `true` if at least one `transition-duration` value is greater than 0.
  *
- * @category core/utils
  * @since 0.1.0
  */
 export function hasTransition(el: HTMLElement): boolean {
@@ -21,7 +20,6 @@ export function hasTransition(el: HTMLElement): boolean {
  * torn down mid-transition does not receive a late `onDone` from the fallback
  * timer.
  *
- * @category core/utils
  * @since 0.1.0
  */
 export interface TransitionDoneHandle {
@@ -42,7 +40,6 @@ export interface TransitionDoneHandle {
  * @returns A {@link TransitionDoneHandle} - `flush()` completes immediately,
  *   `cancel()` tears down without invoking `onDone`.
  *
- * @category core/utils
  * @since 0.1.0
  */
 export function onTransitionDone(el: HTMLElement, onDone: () => void): TransitionDoneHandle {

@@ -7,7 +7,6 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * several keys, so a pack owns their words, their order and their list
  * separator.
  *
- * @category common/chart/i18n
  * @since 0.1.0
  * @relatedTo CNGX_CHART_I18N
  */
@@ -52,7 +51,6 @@ export interface CngxChartLanguageSection {
  * The English chart section: the single source of the chart's English copy.
  * `CNGX_CHART_I18N` defaults to it.
  *
- * @category common/chart/i18n
  * @since 0.1.0
  * @relatedTo CNGX_CHART_I18N
  */

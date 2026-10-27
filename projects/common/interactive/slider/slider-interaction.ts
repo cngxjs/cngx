@@ -9,7 +9,6 @@ import type { CngxSliderCore } from './slider-core';
  * skin's bottom-anchored fill. Shared by the single slider and the range host so
  * the geometry math lives in exactly one place.
  *
- * @category common/interactive/slider
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider-interaction.ts
  * @since 0.1.0
  */
@@ -67,7 +66,6 @@ export interface CngxSliderInteraction {
  * `fractionFromPointer`. Keeping this in one factory means the track and the
  * thumb cannot drift apart.
  *
- * @category common/interactive/slider
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider-interaction.ts
  * @since 0.1.0
  * @relatedTo createSliderCore, CngxSlider, CngxSliderThumb

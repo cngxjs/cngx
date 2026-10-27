@@ -19,8 +19,6 @@ export { isNodeVisible } from '@cngx/utils';
  * @returns A flat array where every node contains its depth, parent ID chain,
  *   sibling position (`posinset` / `setsize`), and a flag indicating whether
  *   it has children.
- *
- * @category data-display/treetable
  */
 export function flattenTree<T>(
   input: CngxTreetableNode<T> | CngxTreetableNode<T>[],
@@ -90,8 +88,6 @@ export function capitalise(str: string): string {
  * Delegates to the `@cngx/utils` tree kernel. The kernel normalizes a
  * matched parent whose children all fail the predicate to
  * `children: undefined` (never an empty array) - both shapes mean "leaf".
- *
- * @category data-display/treetable
  */
 export function filterTree<T>(
   nodes: CngxTreetableNode<T>[],
@@ -124,8 +120,6 @@ function collatorFor(locale: string | undefined): Intl.Collator {
  * Without it the runtime default locale applies.
  *
  * @param locale - BCP 47 tag of the collation; the runtime default when omitted.
- *
- * @category data-display/treetable
  */
 export function sortTree<T>(
   nodes: CngxTreetableNode<T>[],
@@ -183,8 +177,6 @@ export function columnHeaderFor(
  * Simple full-text search across all primitive fields of a node value.
  * Consumer-side predicate: pair it with `filterTree` (or your own walk) to
  * build a searchable tree source. Nothing in the library calls it for you.
- *
- * @category data-display/treetable
  */
 export function nodeMatchesSearch<T>(value: T, term: string): boolean {
   const lower = term.toLowerCase();

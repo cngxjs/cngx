@@ -21,15 +21,11 @@ interface ComputePositionSignature {
 /**
  * Signature matching `@floating-ui/dom` `computePosition`.
  * The consumer provides the actual function - the library never imports it directly.
- *
- * @category common/popover
  */
 export type ComputePositionFn = ComputePositionSignature['computePosition'];
 
 /**
  * Configuration for the Floating UI positioning fallback.
- *
- * @category common/popover
  */
 export interface FloatingFallbackConfig {
   /** The `computePosition` function from `@floating-ui/dom`. */
@@ -45,7 +41,6 @@ export interface FloatingFallbackConfig {
  * Injection token for the Floating UI fallback.
  * `null` when not provided - CSS Anchor Positioning is used instead.
  *
- * @category common/popover
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/floating-fallback.ts
  * @since 0.1.0
  */
@@ -69,8 +64,6 @@ export const CNGX_FLOATING_FALLBACK = new InjectionToken<FloatingFallbackConfig 
  *   provideFloatingFallback(computePosition, [flip(), shift()]),
  * ]
  * ```
- *
- * @category common/popover
  */
 export function provideFloatingFallback(
   computePosition: ComputePositionFn,

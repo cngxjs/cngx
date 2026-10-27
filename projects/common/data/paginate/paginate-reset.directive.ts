@@ -14,7 +14,6 @@ import type { CngxPaginate } from './paginate.directive';
  * is byte-identical across all three. Call inside an injection context
  * (constructor or field initialiser).
  *
- * @category common/data/paginate
  * @since 0.1.0
  */
 export function connectPaginateResetOn(paginate: CngxPaginate, key: () => unknown): void {
@@ -49,8 +48,6 @@ export function connectPaginateResetOn(paginate: CngxPaginate, key: () => unknow
  * ```
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
  *
- * @category common/data/paginate
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/paginate/paginate-reset.directive.ts
  * @since 0.1.0

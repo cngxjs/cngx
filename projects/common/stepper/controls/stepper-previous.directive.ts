@@ -37,8 +37,6 @@ import { warnStepperControlUnhosted } from '../warn-stepper-unhosted';
  * <button cngxStepperPrevious>Back</button>
  * ```
  *
- * @category common/stepper
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/controls/stepper-previous.directive.ts
  * @since 0.1.0

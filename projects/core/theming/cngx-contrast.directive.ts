@@ -30,7 +30,6 @@ import type { CngxContrastPreference } from './contrast';
  * string, coerced to `undefined`), so it never asserts a required binding;
  * an unset value leaves `[data-contrast]` off the host.
  *
- * @category core/theming
  * @relatedTo provideContrast
  * @relatedTo CNGX_CONTRAST
  * @since 0.1.0

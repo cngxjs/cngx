@@ -89,8 +89,6 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
  * >{{ tag }}</cngx-chip>
  * ```
  *
- * @category common/interactive
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/chip-interaction/chip-interaction.directive.ts
  * @since 0.1.0

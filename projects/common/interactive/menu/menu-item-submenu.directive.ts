@@ -52,8 +52,6 @@ import {
  * remains valid (it additionally opts the submenu out of evicting
  * unrelated sibling popovers) but is no longer required for nesting.
  *
- * @category common/interactive/menu
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item-submenu.directive.ts
  * @since 0.1.0

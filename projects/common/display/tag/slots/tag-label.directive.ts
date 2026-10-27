@@ -23,7 +23,6 @@ import type { CngxTagLabelContext } from './tag-slot.context';
  * </span>
  * ```
  *
- * @category common/display
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/tag/slots/tag-label.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTag, CngxTagPrefix, CngxTagSuffix

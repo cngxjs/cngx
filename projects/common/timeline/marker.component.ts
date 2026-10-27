@@ -9,8 +9,6 @@ import { coerceBooleanProperty } from '@cngx/core/utils';
  * what the user may do about it. A timeline that needed `disabled`,
  * `editable` or `current` would be a stepper, and steppers live in
  * `@cngx/common/stepper` with their own flow logic.
- *
- * @category common/timeline
  */
 export type TimelineStatus = 'done' | 'active' | 'upcoming' | 'rejected';
 
@@ -42,7 +40,6 @@ export type TimelineStatus = 'done' | 'active' | 'upcoming' | 'rejected';
  * <cngx-timeline-marker status="active" busy />
  * ```
  *
- * @category common/timeline
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/marker.component.ts
  * @relatedTo CngxTimelineConnector

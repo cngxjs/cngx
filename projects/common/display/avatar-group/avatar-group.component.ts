@@ -30,8 +30,6 @@ import { injectDisplayI18n, isSectionAvatarGroupLabel } from '../i18n/display-i1
  * </cngx-avatar-group>
  * ```
  *
- * @category common/display
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/avatar-group/avatar-group.component.ts
  * @since 0.1.0

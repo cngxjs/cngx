@@ -32,7 +32,6 @@ const kindsEqual = (a: readonly CngxStatSlotKind[], b: readonly CngxStatSlotKind
  * Same shape as `CngxPaginate` behind `CNGX_PAGINATOR_HOST`, which
  * `CngxPaginator` and `CngxIncrementalList` share the same way.
  *
- * @category common/data/metric
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/display/stat/stat-coordinator.directive.ts
  * @since 0.1.0
  * @relatedTo CngxStat, CNGX_STAT

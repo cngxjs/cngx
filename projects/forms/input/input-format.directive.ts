@@ -17,15 +17,11 @@ import { injectDefaultAccessorWarning, injectFormDisabled } from './reactive-for
 
 /**
  * Function that formats a raw value for display.
- *
- * @category forms/input
  */
 export type FormatFn = (raw: string) => string;
 
 /**
  * Function that parses a display value back to raw.
- *
- * @category forms/input
  */
 export type ParseFn = (display: string) => string;
 
@@ -51,8 +47,6 @@ export type ParseFn = (display: string) => string;
  * <input [cngxInputFormat]="formatCurrency" [parse]="parseCurrency" [formControl]="amount" />
  * ```
  *
- * @category forms/input
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-format.directive.ts
  * @since 0.1.0

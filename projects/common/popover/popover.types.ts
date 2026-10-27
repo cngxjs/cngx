@@ -1,14 +1,10 @@
 /**
  * Lifecycle state of a popover element.
- *
- * @category common/popover
  */
 export type PopoverState = 'closed' | 'opening' | 'open' | 'closing';
 
 /**
  * Native popover attribute mode.
- *
- * @category common/popover
  */
 export type PopoverMode = 'manual' | 'auto';
 
@@ -18,15 +14,11 @@ export type PopoverMode = 'manual' | 'auto';
  * compatibility value. Composers (such as `CngxPopoverPanel`) write the
  * popover's `haspopup` signal to hint the trigger toward the right value
  * without forcing the consumer to repeat it.
- *
- * @category common/popover
  */
 export type PopoverHaspopup = 'dialog' | 'listbox' | 'menu' | 'tree' | 'true';
 
 /**
  * ARIA roles applicable to a `CngxPopoverPanel` host element.
- *
- * @category common/popover
  */
 export type PopoverPanelRole = 'dialog' | 'alertdialog' | 'tooltip' | 'menu' | 'group' | 'region';
 
@@ -35,8 +27,6 @@ export type PopoverPanelRole = 'dialog' | 'alertdialog' | 'tooltip' | 'menu' | '
  * driven shift / flip recovery. Driven by `CngxPopover.resolvedEdge`;
  * consumers projecting a `cngxPopoverArrow` template receive this value in
  * the slot context so they can rotate or position their glyph accordingly.
- *
- * @category common/popover
  */
 export type ArrowEdge = 'top' | 'bottom' | 'left' | 'right';
 
@@ -49,15 +39,11 @@ export type ArrowEdge = 'top' | 'bottom' | 'left' | 'right';
  * - `'manual'` - hover and focus are inert. Only `show()` / `hide()`
  *   open or close the tooltip. Escape still dismisses an open tooltip
  *   for keyboard accessibility.
- *
- * @category common/popover
  */
 export type TooltipTriggerMode = 'auto' | 'manual';
 
 /**
  * Anchor-relative placement of a popover.
- *
- * @category common/popover
  */
 export type PopoverPlacement =
   | 'top'
@@ -88,8 +74,6 @@ export type PopoverPlacement =
  * Mirrors the precedent in `projects/forms/select/shared/select-base.css`
  * which already ships `position-try-fallbacks: flip-block, flip-inline,
  * flip-block flip-inline;` on select panels.
- *
- * @category common/popover
  */
 export type PopoverPositionTryFallback =
   | 'flip-block'

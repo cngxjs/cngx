@@ -8,8 +8,6 @@ import type { CngxSelectCompareFn, CngxSelectCore } from './internal/select-core
 
 /**
  * Configuration for {@link createScalarCommitHandler}.
- *
- * @category forms/select/commit
  */
 export interface ScalarCommitHandlerOptions<T> {
   /** Primary scalar value signal. */
@@ -42,8 +40,6 @@ export interface ScalarCommitHandlerOptions<T> {
 
 /**
  * API returned from {@link createScalarCommitHandler}.
- *
- * @category forms/select/commit
  */
 export interface ScalarCommitHandler<T> {
   /**
@@ -78,8 +74,6 @@ export interface ScalarCommitHandler<T> {
  * emission, announcer severity (`onCommitError`), input-text mirroring
  * (`onValueWrite`), and popover-close timing - handler never closes the
  * panel.
- *
- * @category forms/select/commit
  */
 export function createScalarCommitHandler<T>(
   opts: ScalarCommitHandlerOptions<T>,
@@ -186,8 +180,6 @@ export function createScalarCommitHandler<T>(
 
 /**
  * Factory signature for {@link CNGX_SCALAR_COMMIT_HANDLER_FACTORY}.
- *
- * @category forms/select/commit
  */
 export type CngxScalarCommitHandlerFactory = <T>(
   opts: ScalarCommitHandlerOptions<T>,
@@ -200,7 +192,6 @@ export type CngxScalarCommitHandlerFactory = <T>(
  * Override to change how an optimistic selection reconciles against an async
  * commit result.
  *
- * @category forms/select/commit
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/scalar-commit-handler.ts
  * @since 0.1.0
  * @relatedTo CngxSelect, CNGX_SELECT_COMMIT_CONTROLLER_FACTORY, CNGX_ARRAY_COMMIT_HANDLER_FACTORY

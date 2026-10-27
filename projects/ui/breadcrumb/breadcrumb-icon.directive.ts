@@ -7,8 +7,6 @@ import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
  * inside the {@link CngxBreadcrumbBar} crumb link (`<a>`), leading its label.
  * The `crumb` carries the opaque {@link CngxBreadcrumbCrumb.icon} token so the
  * slot can render it with any icon system.
- *
- * @category ui/breadcrumb
  */
 export interface CngxBreadcrumbIconContext {
   /** Convenience alias for `crumb` - usable as the `let-crumb` shorthand. */
@@ -43,7 +41,6 @@ export interface CngxBreadcrumbIconContext {
  * through the trailing accessory slot. Those classes are the public markup
  * contract those skins paint against.
  *
- * @category ui/breadcrumb
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-icon.directive.ts
  * @since 0.1.0

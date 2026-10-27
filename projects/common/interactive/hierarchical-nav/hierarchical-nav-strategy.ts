@@ -8,8 +8,6 @@ import { type CngxTreeController } from '../tree-controller/tree-controller';
  * output, calls `event.preventDefault()` for anything non-`noop`, and
  * (for move actions) relies on the strategy having already called
  * `ad.highlightByValue` on the context.
- *
- * @category common/interactive/tree
  */
 export type CngxHierarchicalNavAction =
   | { readonly kind: 'expand'; readonly id: string }
@@ -22,8 +20,6 @@ export type CngxHierarchicalNavAction =
  * Context passed to every strategy step. `ad` is guaranteed non-null
  * (the directive checks before invoking the strategy); `activeId` is
  * the current `ad.activeId()` snapshot captured at key-press time.
- *
- * @category common/interactive/tree
  */
 export interface CngxHierarchicalNavContext<T> {
   readonly controller: CngxTreeController<T>;
@@ -43,8 +39,6 @@ export interface CngxHierarchicalNavContext<T> {
  * they may call `ctrl.expand()` / `ctrl.collapse()` / `ad.highlightByValue()`
  * before returning the corresponding action. The directive then emits
  * the informational output + prevents default key handling.
- *
- * @category common/interactive/tree
  */
 export interface CngxHierarchicalNavStrategy {
   onArrowRight<T>(ctx: CngxHierarchicalNavContext<T>): CngxHierarchicalNavAction;
@@ -75,8 +69,6 @@ const NOOP: CngxHierarchicalNavAction = { kind: 'noop' };
  * before calling the strategy, so under `rtl` physical ArrowLeft routes to
  * `onArrowRight`. Custom strategies stay direction-naive and inherit correct
  * RTL behaviour for free.
- *
- * @category common/interactive/tree
  */
 export function createW3CTreeStrategy(): CngxHierarchicalNavStrategy {
   const attemptMove = <T>(
@@ -150,7 +142,6 @@ export function createW3CTreeStrategy(): CngxHierarchicalNavStrategy {
  * });
  * ```
  *
- * @category common/interactive/tree
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/hierarchical-nav/hierarchical-nav-strategy.ts
  * @since 0.1.0

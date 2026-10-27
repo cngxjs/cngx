@@ -13,7 +13,6 @@ import { createPreferenceAxis } from './preference-axis';
  * `more` strengthens borders and demotes muted text toward the full text
  * colour app-wide; `normal` opts out even under an OS `more` preference.
  *
- * @category core/theming
  * @since 0.1.0
  */
 export type CngxContrastPreference = 'normal' | 'more' | 'auto';
@@ -24,7 +23,6 @@ export type CngxContrastPreference = 'normal' | 'more' | 'auto';
  * root reflector with {@link provideContrast}. Defaults to `auto` when no
  * `provideContrast()` is present so an injected signal is always available.
  *
- * @category core/theming
  * @relatedTo provideContrast
  * @relatedTo injectContrast
  * @since 0.1.0
@@ -59,7 +57,6 @@ const contrastAxis = createPreferenceAxis({
  * });
  * ```
  *
- * @category core/theming
  * @relatedTo CNGX_CONTRAST
  * @relatedTo injectContrast
  * @since 0.1.0
@@ -74,7 +71,6 @@ export function provideContrast(initial: CngxContrastPreference = 'auto'): Envir
  * borders and muted text across the whole document reactively;
  * `set('auto')` hands control back to the OS preference.
  *
- * @category core/theming
  * @relatedTo provideContrast
  * @since 0.1.0
  */

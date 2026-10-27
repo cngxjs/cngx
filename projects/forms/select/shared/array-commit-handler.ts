@@ -9,8 +9,6 @@ import type { CngxSelectCompareFn, CngxSelectCore } from './internal/select-core
 
 /**
  * Configuration for {@link createArrayCommitHandler}.
- *
- * @category forms/select/commit
  */
 export interface ArrayCommitHandlerOptions<T> {
   /** Component's primary value signal (multi-select / combobox). */
@@ -45,8 +43,6 @@ export interface ArrayCommitHandlerOptions<T> {
 
 /**
  * API returned from {@link createArrayCommitHandler}.
- *
- * @category forms/select/commit
  */
 export interface ArrayCommitHandler<T> {
   /**
@@ -82,8 +78,6 @@ export interface ArrayCommitHandler<T> {
  * Consumer owns change-event payloads via the finalize callbacks.
  *
  * No scalar twin: this handler is array-only by design.
- *
- * @category forms/select/commit
  */
 export function createArrayCommitHandler<T>(
   opts: ArrayCommitHandlerOptions<T>,
@@ -202,8 +196,6 @@ export function createArrayCommitHandler<T>(
 
 /**
  * Factory signature for {@link CNGX_ARRAY_COMMIT_HANDLER_FACTORY}.
- *
- * @category forms/select/commit
  */
 export type CngxArrayCommitHandlerFactory = <T>(
   opts: ArrayCommitHandlerOptions<T>,
@@ -216,7 +208,6 @@ export type CngxArrayCommitHandlerFactory = <T>(
  * `createArrayCommitHandler`. Override to change how optimistic adds / removes
  * reconcile against an async commit result.
  *
- * @category forms/select/commit
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/array-commit-handler.ts
  * @since 0.1.0
  * @relatedTo CngxMultiSelect, CNGX_SELECT_COMMIT_CONTROLLER_FACTORY, CNGX_CHIP_REMOVAL_HANDLER_FACTORY

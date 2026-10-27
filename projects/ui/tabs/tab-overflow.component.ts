@@ -100,8 +100,6 @@ function mapBoolEqual(a: ReadonlyMap<string, boolean>, b: ReadonlyMap<string, bo
  *
  * @playground Overflow showcase ./examples/overflow-showcase/overflow-showcase.component.ts
  *
- * @category ui/tabs
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/tabs/tab-overflow.component.ts
  * @since 0.1.0

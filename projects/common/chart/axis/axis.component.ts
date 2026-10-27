@@ -154,8 +154,6 @@ interface TickRendering {
  * semantic data view lives on the parent chart's auto-Summary and
  * Data Table.
  *
- * @category common/chart/axis
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/axis/axis.component.ts
  * @since 0.1.0
  * @relatedTo CngxChart, CngxLine, CngxBar, CngxArea

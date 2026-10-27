@@ -9,7 +9,6 @@ import {
 /**
  * Configuration for {@link createChipStripRoving}.
  *
- * @category common/interactive/reorder
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/chip-strip-roving.ts
  * @since 0.1.0
  */
@@ -50,7 +49,6 @@ export interface CngxChipStripRovingOptions {
  * `[attr.tabindex]="i === roving.activeIndex() ? 0 : -1"`, plus a
  * keyboard handler and imperative focus helpers.
  *
- * @category common/interactive/reorder
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/chip-strip-roving.ts
  * @since 0.1.0
  */
@@ -93,7 +91,6 @@ export interface CngxChipStripRovingController {
 /**
  * Signature of the factory behind {@link CNGX_CHIP_STRIP_ROVING_FACTORY}.
  *
- * @category common/interactive/reorder
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/chip-strip-roving.ts
  * @since 0.1.0
  */
@@ -119,7 +116,6 @@ export type CngxChipStripRovingFactory = (
  * **Injection context.** Must be called in an injection context
  * (component constructor / field init) because it installs an * `effect()` for the active-index clamp on count shrink.
  *
- * @category common/interactive/reorder
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/chip-strip-roving.ts
  * @since 0.1.0
  */
@@ -233,7 +229,6 @@ export function createChipStripRoving(
  * Symmetrical to {@link CNGX_TREE_CONTROLLER_FACTORY} /
  * `CNGX_SELECTION_CONTROLLER_FACTORY`.
  *
- * @category common/interactive/reorder
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/chip-strip-roving.ts
  * @since 0.1.0

@@ -71,8 +71,6 @@ import { createRejectionState } from './decorations/rejection-state';
  *
  * @playground Native router tabs with a CanDeactivate guard ./examples/router-nav/router-nav.component.ts
  *
- * @category ui/mat-tabs
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/mat-tab-nav.directive.ts
  * @since 0.1.0

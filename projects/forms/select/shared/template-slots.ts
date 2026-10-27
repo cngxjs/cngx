@@ -265,7 +265,6 @@ export interface CngxSelectChipOverflowContext<T = unknown> {
  * </cngx-select>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -291,7 +290,6 @@ export class CngxSelectCheck<T = unknown> {
  * </cngx-select>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -317,7 +315,6 @@ export class CngxSelectCaret {
  * </cngx-select>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -343,7 +340,6 @@ export class CngxSelectOptgroupTemplate<T = unknown> {
  * </cngx-select>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -369,7 +365,6 @@ export class CngxSelectPlaceholder {
  * </cngx-select>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -395,7 +390,6 @@ export class CngxSelectEmpty {
  * </cngx-select>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -421,7 +415,6 @@ export class CngxSelectLoading {
  * </cngx-select>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -447,7 +440,6 @@ export class CngxSelectTriggerLabel<T = unknown> {
  * </cngx-select>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -474,7 +466,6 @@ export class CngxSelectOptionLabel<T = unknown> {
  * </cngx-select>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -501,7 +492,6 @@ export class CngxSelectError {
  * </cngx-select>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -528,7 +518,6 @@ export class CngxSelectRetryButton {
  * </cngx-select>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -554,7 +543,6 @@ export class CngxSelectLoadingGlyph {
  * </cngx-select>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -582,7 +570,6 @@ export class CngxSelectRefreshing {
  * </cngx-select>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -610,7 +597,6 @@ export class CngxSelectCommitError<T = unknown> {
  * </cngx-multi-select>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -642,7 +628,6 @@ export class CngxMultiSelectChip<T = unknown> {
  * </cngx-reorderable-multi-select>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -680,7 +665,6 @@ export class CngxMultiSelectChipHandle {
  * Directive-only: like the other chip-strip slots it has no
  * `CNGX_SELECT_CONFIG.templates` default.
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -708,7 +692,6 @@ export class CngxSelectChipOverflow<T = unknown> {
  * </cngx-multi-select>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -741,7 +724,6 @@ export class CngxMultiSelectTriggerLabel<T = unknown> {
  * </cngx-multi-select>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -769,7 +751,6 @@ export class CngxSelectClearButton {
  * </cngx-select>
  * ```
  *
- * @category forms/select/templates
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
  * @relatedTo withMobileSheet, CngxPopoverSheetHandle
@@ -786,8 +767,6 @@ export class CngxSelectSheetHandle {
 
 /**
  * Context for `*cngxSelectSheetCount`.
- *
- * @category forms/select/templates
  */
 export interface CngxSelectSheetCountContext {
   /** The built-in count text (`selectedCount` copy, e.g. `'2 selected'`). */
@@ -810,7 +789,6 @@ export interface CngxSelectSheetCountContext {
  * </cngx-tree-select>
  * ```
  *
- * @category forms/select/templates
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
  * @relatedTo CngxTreeSelect, CngxSelectSheetHandle
@@ -843,7 +821,6 @@ export class CngxSelectSheetCount {
  * </cngx-multi-select>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -870,7 +847,6 @@ export class CngxSelectOptionPending<T = unknown> {
  * </cngx-select>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -897,7 +873,6 @@ export class CngxSelectOptionError<T = unknown> {
  * </cngx-combobox>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -925,7 +900,6 @@ export class CngxComboboxTriggerLabel<T = unknown> {
  * </cngx-combobox>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -983,7 +957,6 @@ export interface CngxSelectInputSlotContext {
  * </cngx-typeahead>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -1010,7 +983,6 @@ export class CngxSelectInputPrefix {
  * </cngx-typeahead>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
@@ -1041,7 +1013,6 @@ export class CngxSelectInputSuffix {
  * </cngx-action-select>
  * ```
  *
- * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0

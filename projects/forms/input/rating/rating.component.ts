@@ -54,8 +54,6 @@ const CNGX_RATING_GLYPHS = {
  * </cngx-form-field>
  * ```
  *
- * @category forms/input
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/rating/rating.component.ts
  * @since 0.1.0

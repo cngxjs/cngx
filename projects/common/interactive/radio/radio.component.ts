@@ -49,8 +49,6 @@ import { CNGX_RADIO_GROUP, type CngxRadioGroupContract } from './radio-group.tok
  * form submission, so the attribute carries no functional
  * weight.
  *
- * @category common/interactive
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/radio/radio.component.ts
  * @selector cngx-radio

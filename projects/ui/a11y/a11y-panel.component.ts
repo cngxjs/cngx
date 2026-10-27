@@ -74,8 +74,6 @@ function sameAxisViews(
  * <cngx-a11y-panel />
  * ```
  *
- * @category ui/a11y
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.component.ts
  * @selector cngx-a11y-panel

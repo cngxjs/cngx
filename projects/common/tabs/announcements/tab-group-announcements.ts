@@ -14,8 +14,6 @@ import type { CngxTabGroupHost, CngxTabHandle } from '../tab-group-host.token';
  * Passing presenter / i18n / config in (instead of re-injecting)
  * keeps the factory pure - one call returns the bundle, no
  * injection context required.
- *
- * @category common/tabs/announcements
  */
 export interface CngxTabGroupAnnouncementsOptions {
   readonly presenter: CngxTabGroupHost;
@@ -40,8 +38,6 @@ export interface CngxTabGroupAnnouncementsOptions {
  * Host bindings and template outlets read these directly. Owns one
  * internal `linkedSignal` slot (prior-active-index tracker driving
  * the success-arm direction prefix); consumers never touch it.
- *
- * @category common/tabs/announcements
  */
 export interface CngxTabGroupAnnouncements {
   /**
@@ -156,7 +152,6 @@ export interface CngxTabGroupAnnouncements {
  *   always in the DOM; `statusPhrase` only fills its content, keeping the
  *   `aria-describedby` reference stable.
  *
- * @category common/tabs/announcements
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/announcements/tab-group-announcements.ts
  * @since 0.1.0

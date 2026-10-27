@@ -12,7 +12,6 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * </div>
  * ```
  *
- * @category common/tabs
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/tab-label.directive.ts
  * @since 0.1.0

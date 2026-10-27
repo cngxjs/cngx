@@ -19,7 +19,6 @@ import { CNGX_SIDENAV_CONFIG, CNGX_SIDENAV_DEFAULTS } from './sidenav.config.def
  * `@cngx/ui/breadcrumb` (nested-sub-tree style; the stepper family uses flat
  * scalar keys instead).
  *
- * @category ui/sidenav
  * @since 0.1.0
  */
 export type CngxSidenavConfigFeature =
@@ -134,7 +133,6 @@ function mergeConfig(
  * });
  * ```
  *
- * @category ui/sidenav
  * @since 0.1.0
  */
 export function provideSidenavConfig(
@@ -178,7 +176,6 @@ export function provideSidenavConfig(
  * class Section {}
  * ```
  *
- * @category ui/sidenav
  * @since 0.1.0
  */
 export function provideSidenavConfigAt(...features: CngxSidenavConfigFeature[]): Provider[] {

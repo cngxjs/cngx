@@ -20,7 +20,6 @@ import { cngxDevWarn } from '@cngx/utils';
  * `:dir(rtl)` state); an absent `dir` reports `'ltr'`, and so does an
  * invalid value, with a dev-mode warning (CNGX0006).
  *
- * @category core/bidi
  * @since 0.1.0
  */
 export type CngxDirection = 'ltr' | 'rtl';
@@ -138,7 +137,6 @@ function readDocumentDirection(): Signal<CngxDirection> {
  * Defaults to a live DOM reader when no `provideDirection()` is present, so
  * an injected signal is always available.
  *
- * @category core/bidi
  * @relatedTo injectDirection
  * @relatedTo provideDirection
  * @since 0.1.0
@@ -156,7 +154,6 @@ export const CNGX_DIRECTION = new InjectionToken<Signal<CngxDirection>>('CNGX_DI
  * language - then the signal is the active language pack's direction and
  * flips in the same pass as the copy.
  *
- * @category core/bidi
  * @relatedTo CNGX_DIRECTION
  * @relatedTo provideDirection
  * @since 0.1.0
@@ -186,7 +183,6 @@ export function injectDirection(): Signal<CngxDirection> {
  * own `Signal<CngxDirection>`:
  * `{ provide: CNGX_DIRECTION, useFactory: () => myLocaleDirection }`.
  *
- * @category core/bidi
  * @relatedTo CNGX_DIRECTION
  * @relatedTo provideDirectionAt
  * @relatedTo injectDirection
@@ -216,7 +212,6 @@ export function provideDirection(value: CngxDirection): EnvironmentProviders {
  * export class RtlPanel {}
  * ```
  *
- * @category core/bidi
  * @relatedTo CNGX_DIRECTION
  * @relatedTo provideDirection
  * @relatedTo injectDirection

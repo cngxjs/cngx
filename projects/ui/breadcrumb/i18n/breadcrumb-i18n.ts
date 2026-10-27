@@ -13,7 +13,6 @@ import { CNGX_BREADCRUMB_LANGUAGE_EN } from './breadcrumb-language-section';
  * { path: 'orders', data: { breadcrumb: computed(() => t('nav.orders')) } }
  * ```
  *
- * @category ui/breadcrumb
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbRouterSync, CngxBreadcrumbSiblingsRouterSync
  */

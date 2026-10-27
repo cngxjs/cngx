@@ -38,8 +38,6 @@ import {
  * Receives origin and target indices; resolves `true` to commit, `false` to refuse.
  * `Observable | Promise | sync` union mirrors the rest of the CNGX
  * commit-action family.
- *
- * @category common/tabs
  */
 export type CngxTabsCommitAction = (
   fromIndex: number,
@@ -58,8 +56,6 @@ export type CngxTabsCommitAction = (
  * Directive-only - organisms compose via `hostDirectives`, consumers attach
  * `[cngxTabGroup]` directly.
  *
- * @category common/tabs
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/presenter.directive.ts
  * @since 0.1.0

@@ -8,8 +8,6 @@ import type { CngxDrawer, DrawerPosition } from './drawer.directive';
 
 /**
  * How the drawer panel interacts with the content area.
- *
- * @category common/layout
  */
 export type DrawerMode = 'over' | 'push' | 'side';
 
@@ -39,7 +37,6 @@ export type DrawerMode = 'over' | 'push' | 'side';
  * </nav>
  * ```
  *
- * @category common/layout
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/drawer/drawer-panel.directive.ts
  * @since 0.1.0

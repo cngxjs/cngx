@@ -24,8 +24,6 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  *   [length]="pg.total()" [pageIndex]="pg.pageIndex()" [pageSize]="pg.pageSize()"
  *   (page)="pg.setPageSize($event.pageSize, false); pg.setPage($event.pageIndex)" />
  * ```
- * @category common/data/paginate
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/paginate/paginate.directive.ts
  * @since 0.1.0

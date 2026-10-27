@@ -7,7 +7,6 @@ import type { CngxTransitionOutcome } from './transition-outcome';
  * Options for {@link createRefusedPhrase}. Every field is a plain
  * reactive read, so the factory stays independent of any host type.
  *
- * @category common/data/commit
  * @since 0.1.0
  */
 export interface CngxRefusedPhraseOptions {
@@ -56,7 +55,6 @@ export interface CngxRefusedPhraseOptions {
  * });
  * ```
  *
- * @category common/data/commit
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/commit/refused-phrase.ts
  * @since 0.1.0

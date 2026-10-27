@@ -53,8 +53,6 @@ import { CNGX_PALETTE_KEYBINDING_FACTORY } from './palette-keybinding';
  * <button [cngxCommandPaletteTrigger]="palette">Search commands</button>
  * ```
  *
- * @category ui/command-palette
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/command-palette/palette/command-palette.component.ts
  * @selector cngx-command-palette

@@ -17,7 +17,6 @@ import { Directive, input } from '@angular/core';
  * `card.component.css`; fallbacks chain through `--cngx-badge-*` then
  * the foundation palette.
  *
- * @category common/card
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card-badge.directive.ts
  * @since 0.1.0
  * @relatedTo CngxCard, CngxCardAccent, CngxCardHeader

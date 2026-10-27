@@ -4,7 +4,6 @@ import { InjectionToken, type Signal } from '@angular/core';
  * How an open popover is laid out: anchored to its trigger, as a bottom
  * sheet, or filling the viewport.
  *
- * @category common/popover
  * @since 0.1.0
  */
 export type CngxPopoverPresentation = 'anchored' | 'sheet' | 'fullscreen';

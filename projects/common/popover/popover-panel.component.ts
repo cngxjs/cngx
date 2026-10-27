@@ -78,8 +78,6 @@ const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER
  * </cngx-popover-panel>
  * ```
  *
- * @category common/popover
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel.component.ts
  * @since 0.1.0

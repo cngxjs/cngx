@@ -7,7 +7,6 @@ import { InjectionToken, type Signal } from '@angular/core';
  * from the headless `CNGX_ACCORDION` brain contract, which stays
  * skin-agnostic - heading semantics are a skin concern.
  *
- * @category ui/accordion
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/accordion/accordion-group.token.ts
  * @since 0.1.0
  * @relatedTo CngxAccordionGroup, CngxAccordionItem
@@ -21,7 +20,6 @@ export interface CngxAccordionGroupContext {
  * DI token for the {@link CngxAccordionGroupContext}. {@link CngxAccordionGroup}
  * provides it via `useExisting`; each `CngxAccordionItem` injects it.
  *
- * @category ui/accordion
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/accordion/accordion-group.token.ts
  * @since 0.1.0
  * @relatedTo CngxAccordionGroup, CngxAccordionItem

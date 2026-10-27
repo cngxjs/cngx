@@ -29,7 +29,6 @@ export function formatSliderValue(value: number, locale: string | undefined): st
  * `min` / `max`; a dual-thumb host narrows them to the sibling-thumb bound
  * so the cross-clamp math lives here rather than in an effect.
  *
- * @category common/interactive/slider
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider-core.ts
  * @since 0.1.0
  */
@@ -67,7 +66,6 @@ export interface CngxSliderCoreOptions {
  * writing. The directive binds `clampedValue` to `aria-valuenow`, `fraction`
  * to its thumb-position CSS var, and `ariaValueText` to `aria-valuetext`.
  *
- * @category common/interactive/slider
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider-core.ts
  * @since 0.1.0
  */
@@ -126,7 +124,6 @@ function clamp(value: number, lo: number, hi: number): number {
  * bound-clamping live in {@link CngxSliderCore.setValue}, so every write
  * path stays valid without an effect syncing state (Pillar 1).
  *
- * @category common/interactive/slider
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider-core.ts
  * @since 0.1.0
  * @relatedTo CngxSlider, CngxRangeSlider, CngxSliderThumb

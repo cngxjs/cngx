@@ -51,8 +51,6 @@ import type { CngxRecycler } from './recycler';
  *      [style.height.px]="recycler.offsetBefore()"></div>
  * ```
  *
- * @category common/data/recycler
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/recycler/recycler-placeholder.directive.ts
  * @since 0.1.0

@@ -38,8 +38,6 @@ function warnRouterAbsent(selector: string, enables: string): void {
  * otherwise outlive route changes. Without `@angular/router` the directive
  * dev-warns once and no-ops.
  *
- * @category ui/toc
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/toc/toc-router-sync.directive.ts
  * @since 0.1.0
  * @relatedTo CngxToc, CNGX_TOC

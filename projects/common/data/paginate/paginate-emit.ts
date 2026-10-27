@@ -6,7 +6,6 @@ import type { CngxPaginate } from './paginate.directive';
  * Handlers the two-way emit bridge forwards page changes to - typically a
  * host component's `pageIndexChange` / `pageSizeChange` output emitters.
  *
- * @category common/data/paginate
  * @since 0.1.0
  */
 export interface CngxPaginateEmitHandlers {
@@ -39,7 +38,6 @@ export interface CngxPaginateEmitHandlers {
  * injection context (constructor or field initialiser) - it reads `DestroyRef`
  * and creates effects.
  *
- * @category common/data/paginate
  * @since 0.1.0
  */
 export function connectPaginateEmit(

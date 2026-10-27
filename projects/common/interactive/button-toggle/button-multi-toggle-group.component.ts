@@ -57,8 +57,6 @@ import {
  * </cngx-button-multi-toggle-group>
  * ```
  *
- * @category common/interactive
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-multi-toggle-group.component.ts
  * @selector cngx-button-multi-toggle-group

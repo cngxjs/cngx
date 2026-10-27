@@ -19,7 +19,6 @@ import { CNGX_ACCORDION_CONFIG } from './accordion.config.defaults';
  * the resolved copy (overrides over the language pack) through
  * {@link injectAccordionLabels}.
  *
- * @category ui/accordion
  * @since 0.1.0
  */
 export function injectAccordionConfig(): CngxAccordionConfig {
@@ -71,7 +70,6 @@ function accordionConfigCopy(
  * }
  * ```
  *
- * @category ui/accordion
  * @since 0.1.0
  */
 export function injectAccordionLabels(): Signal<CngxAccordionLanguageSection> {

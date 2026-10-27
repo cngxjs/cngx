@@ -24,8 +24,6 @@
  *   area is computed against).
  * @returns a fresh array of at most `targetSize` rows, or the input by
  *   reference when no reduction is needed.
- *
- * @category common/chart/buffer
  */
 export function downsampleLTTB<T>(
   data: readonly T[],

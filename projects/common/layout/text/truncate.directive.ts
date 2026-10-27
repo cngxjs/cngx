@@ -35,8 +35,6 @@ import { observeResize } from '../observers/resize-signal';
  *   </button> * }
  * ```
  *
- * @category common/layout
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/text/truncate.directive.ts
  * @since 0.1.0

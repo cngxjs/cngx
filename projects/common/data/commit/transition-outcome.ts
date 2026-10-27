@@ -16,8 +16,6 @@
  * are still two events; a host that only moves the index (a closed tab
  * before the origin) copies the sequence instead of bumping it, so
  * nothing downstream treats the shift as a new outcome.
- *
- * @category common/data/commit
  */
 export interface CngxTransitionOutcome {
   readonly kind: 'refused' | 'failed';

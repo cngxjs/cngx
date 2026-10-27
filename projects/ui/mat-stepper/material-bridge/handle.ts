@@ -121,8 +121,6 @@ function readMatStepLabelTemplateText(template: TemplateRef<unknown>): string | 
  *   pattern.
  * - `errorAggregator` - points at the shared
  *   {@link NO_ERROR_AGGREGATOR} constant.
- *
- * @category ui/mat-stepper
  */
 export function createMatStepHandle(
   matStep: MatStep,
@@ -192,8 +190,6 @@ function resolveMaterialStepLabel(matStep: MatStep): string | null {
  * The third argument is the stepper i18n Signal the directive injected;
  * it carries the last-resort label (`stepFallbackLabel`). Forward it when
  * delegating to {@link createMatStepHandle}.
- *
- * @category ui/mat-stepper
  */
 export type CngxMatStepHandleFactory = typeof createMatStepHandle;
 
@@ -230,7 +226,6 @@ export type CngxMatStepHandleFactory = typeof createMatStepHandle;
  * ]
  * ```
  *
- * @category ui/mat-stepper
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-stepper/material-bridge/handle.ts
  * @since 0.1.0

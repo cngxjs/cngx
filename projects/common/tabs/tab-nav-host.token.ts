@@ -35,7 +35,6 @@ import { InjectionToken } from '@angular/core';
  * export class MySectionNav {}
  * ```
  *
- * @category common/tabs
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/tab-nav-host.token.ts
  * @since 0.1.0

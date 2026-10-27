@@ -6,7 +6,6 @@
  * the places off `String(n)` rather than a fixed epsilon so `0.125` reports 3,
  * not a guessed constant. Non-finite input returns `0`.
  *
- * @category utils
  * @since 0.1.0
  */
 export function decimalPlaces(n: number): number {

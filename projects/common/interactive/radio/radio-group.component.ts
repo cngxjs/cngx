@@ -60,8 +60,6 @@ import {
  * </cngx-radio-group>
  * ```
  *
- * @category common/interactive
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/radio/radio-group.component.ts
  * @selector cngx-radio-group

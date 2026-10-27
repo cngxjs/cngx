@@ -46,8 +46,6 @@ import { applySrOnly } from '../dialog/sr-only';
  * }
  * ```
  *
- * @category common/dialog
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/draggable/dialog-draggable.directive.ts
  * @since 0.1.0

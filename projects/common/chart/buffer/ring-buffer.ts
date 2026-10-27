@@ -8,8 +8,6 @@ import { CngxRuntimeError } from '@cngx/utils';
  *
  * @internal - the public realtime surface is {@link injectChartBuffer};
  * consumers never touch the raw ring.
- *
- * @category common/chart/buffer
  */
 export interface RingBuffer<T> {
   /** Append one value, evicting the oldest when at capacity. */
@@ -40,8 +38,6 @@ export interface RingBuffer<T> {
  * @param capacity positive integer maximum element count.
  * @throws `CngxRuntimeError` (`CNGX1050`) when `capacity` is not a positive
  *   integer.
- *
- * @category common/chart/buffer
  */
 export function createRingBuffer<T>(capacity: number): RingBuffer<T> {
   if (!Number.isInteger(capacity) || capacity <= 0) {

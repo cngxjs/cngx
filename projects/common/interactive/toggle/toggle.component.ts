@@ -63,8 +63,6 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
  * <cngx-toggle [(value)]="featured" [thumbGlyph]="icon">Featured</cngx-toggle>
  * ```
  *
- * @category common/interactive
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/toggle/toggle.component.ts
  * @selector cngx-toggle

@@ -26,7 +26,6 @@ import { injectMatTabErrorTarget } from './mat-tab-error-target';
  * the slot so an `*ngIf`-toggled binding returns to the
  * no-aggregator default.
  *
- * @category ui/mat-tabs
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/mat-tab-error.directive.ts
  * @since 0.1.0

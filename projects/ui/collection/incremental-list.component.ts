@@ -111,8 +111,6 @@ export type CngxIncrementalListSkin = 'plain' | 'divided' | 'card';
  * busy container) and the live region communicates every settle
  * (empty / error / end-reached).
  *
- * @category ui/collection
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list.component.ts
  * @since 0.1.0

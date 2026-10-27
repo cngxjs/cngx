@@ -28,8 +28,6 @@ import { CngxPopover } from './popover.directive';
 
 /**
  * Visual variant for the action button.
- *
- * @category common/popover
  */
 export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 
@@ -70,8 +68,6 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
  * </cngx-popover-action>
  * ```
  *
- * @category common/popover
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-action.component.ts
  * @since 0.1.0

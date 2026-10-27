@@ -148,8 +148,6 @@ import {
 
 /**
  * Change event emitted by {@link CngxCombobox.selectionChange}.
- *
- * @category forms/select/combobox
  */
 export interface CngxComboboxChange<T = unknown> {
   readonly source: CngxCombobox<T>;
@@ -196,8 +194,6 @@ export interface CngxComboboxChange<T = unknown> {
  * `'anchored'`, `'sheet'` or `'fullscreen'`; `withMobileSheet('off')` keeps
  * every select in its scope anchored.
  *
- * @category forms/select/combobox
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/combobox/combobox.component.ts
  * @since 0.1.0

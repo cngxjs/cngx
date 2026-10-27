@@ -31,8 +31,6 @@ import {
  * nothing. `[points]` mirrors {@link CngxLine}: `'auto'` (default) marks
  * only the one-datum case, `'always'` every datum, `'never'` none.
  *
- * @category common/chart/layers
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/layers/area.component.ts
  * @since 0.1.0
  * @relatedTo CngxLine, CngxBand, CngxThreshold, CngxChart

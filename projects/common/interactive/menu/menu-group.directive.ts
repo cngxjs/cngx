@@ -8,8 +8,6 @@ import { CNGX_MENU_RADIO_GROUP, type CngxMenuRadioGroup } from './menu-radio-con
  * to enclosed `CngxMenuItemRadio` children through the
  * `CNGX_MENU_RADIO_GROUP` contract.
  *
- * @category common/interactive/menu
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-group.directive.ts
  * @since 0.1.0

@@ -11,8 +11,6 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * `reason` tells the two commit outcomes apart: `'refused'` when the
  * commit action answered `false`, `'failed'` when it threw, rejected or
  * errored. Both render the slot; pick a glyph or copy per reason.
- *
- * @category common/tabs/slots
  */
 export interface CngxTabRejectionIconContext {
   /** Flat-index of the rejected tab (`presenter.lastFailedIndex()`). */
@@ -45,7 +43,6 @@ export interface CngxTabRejectionIconContext {
  * </cngx-tab-group>
  * ```
  *
- * @category common/tabs/slots
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/slots/tab-rejection-icon.directive.ts
  * @since 0.1.0

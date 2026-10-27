@@ -11,8 +11,6 @@ import type { CngxTabHandle } from './tab-group-host.token';
  *   a `role="tablist"` implies.
  * - `'prefix'` - the tab owns a subtree, the section semantics a
  *   `role="navigation"` of links implies.
- *
- * @category common/tabs
  */
 export type CngxTabMatchMode = 'suffix' | 'prefix';
 
@@ -20,8 +18,6 @@ export type CngxTabMatchMode = 'suffix' | 'prefix';
  * Everything {@link CngxTabUrlMatch} needs to resolve the active tab.
  * Passed in rather than injected, so the strategy stays a pure function
  * of its inputs and needs no injection context.
- *
- * @category common/tabs
  */
 export interface CngxTabUrlMatchContext {
   readonly router: Router;
@@ -41,15 +37,13 @@ export interface CngxTabUrlMatchContext {
 
 /**
  * Resolves which registered tab the current URL belongs to.
- *
- * @category common/tabs
  */
 export interface CngxTabUrlMatch {
   /** Active tab id, or `null` when the URL is outside this tab set. */
   resolve(ctx: CngxTabUrlMatchContext): string | null;
 }
 
-/** Factory shape overrides must match. @category common/tabs */
+/** Factory shape overrides must match. */
 export type CngxTabUrlMatchFactory = () => CngxTabUrlMatch;
 
 /**
@@ -162,8 +156,6 @@ function resolveByPrefix(ctx: CngxTabUrlMatchContext): string | null {
  *
  * Pure: no injection context, no signal reads. The directive resolves the
  * mode cascade and the tab registry, then hands both in.
- *
- * @category common/tabs
  */
 export function createTabUrlMatch(): CngxTabUrlMatch {
   return {
@@ -187,7 +179,6 @@ export function createTabUrlMatch(): CngxTabUrlMatch {
  * navigation a tab switch performs is already swappable, so the read that
  * mirrors navigation back onto `activeIndex` should be too.
  *
- * @category common/tabs
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/url-match.ts
  * @since 0.1.0

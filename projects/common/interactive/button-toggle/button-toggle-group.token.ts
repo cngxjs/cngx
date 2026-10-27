@@ -13,8 +13,6 @@ import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
  * pick. `disabled` is a read-only `Signal<boolean>` so the leaf can
  * combine it with its own per-toggle `disabled()` to compute
  * `toggleDisabled`.
- *
- * @category common/interactive
  */
 export interface CngxButtonToggleGroupContract<T = unknown> {
   readonly value: ModelSignal<T | undefined>;
@@ -44,7 +42,6 @@ export interface CngxButtonToggleGroupContract<T = unknown> {
  * `aria-pressed` for multi), chosen at injection time, NOT at
  * runtime - there is no `[selectionMode]` flag.
  *
- * @category common/interactive
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-toggle-group.token.ts
  * @since 0.1.0

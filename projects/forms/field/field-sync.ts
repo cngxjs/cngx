@@ -5,8 +5,6 @@ import type { CngxFieldRef } from './models';
 /**
  * Options for {@link createFieldSync}. Generic in `V` so the same factory
  * covers scalar and array value shapes.
- *
- * @category forms/field
  */
 export interface FieldSyncOptions<V> {
   /** Source of truth for the control's bound value (a `model()` signal). */
@@ -51,7 +49,6 @@ export interface FieldSyncOptions<V> {
  * });
  * ```
  *
- * @category forms/field
  * @since 0.1.0
  * @relatedTo CngxFormFieldPresenter, CNGX_FORM_FIELD_CONTROL
  */

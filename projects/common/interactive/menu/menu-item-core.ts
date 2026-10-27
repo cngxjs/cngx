@@ -9,8 +9,6 @@ import { injectMenuConfig } from './menu-config';
 
 /**
  * Options for {@link injectMenuItemCore}.
- *
- * @category common/interactive/menu
  */
 export interface CngxMenuItemCoreOptions<T = unknown> {
   /** The item's payload value, forwarded to `highlightByValue`. */
@@ -32,8 +30,6 @@ export interface CngxMenuItemCoreOptions<T = unknown> {
  * item variants re-export `id`/`isHighlighted`/`label` (their
  * `CngxAdItemHandle` surface) and delegate their host listeners to the
  * handler pair.
- *
- * @category common/interactive/menu
  */
 export interface CngxMenuItemCore {
   /** Stable unique item id used for `aria-activedescendant` targeting. */
@@ -64,7 +60,6 @@ export interface CngxMenuItemCore {
  * no-op (no `onActivate` either); on the AD path the order is
  * `highlightByValue` -> `onActivate` -> `activateCurrent`.
  *
- * @category common/interactive/menu
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item-core.ts
  * @since 0.1.0
  * @relatedTo CngxMenuItem, CngxMenuItemCheckbox, CngxMenuItemRadio, CngxMenu

@@ -15,8 +15,6 @@ import { CNGX_CARD_LANGUAGE_EN, type CngxCardLanguageSection } from './card-lang
  * card carries. `timestamp` orders a {@link CngxCardTimestamp} prefix and its
  * date. The same shape as the card section of a language pack, declared once
  * as {@link CngxCardLanguageSection}.
- *
- * @category common/card/i18n
  */
 export type CngxCardI18n = CngxCardLanguageSection;
 
@@ -28,7 +26,6 @@ const cardBundleFromPack = createLanguageSection('card', CNGX_CARD_LANGUAGE_EN);
  * runtime language switch. `providedIn: 'root'`: the card section of the
  * active language pack over the English defaults.
  *
- * @category common/card/i18n
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/i18n/card-i18n.ts
  * @since 0.1.0
@@ -41,8 +38,6 @@ export const CNGX_CARD_I18N = new InjectionToken<Signal<CngxCardI18n>>('CngxCard
 
 /**
  * Branded feature-fn for {@link provideCardI18n}.
- *
- * @category common/card/i18n
  */
 export type CngxCardI18nFeature = ((bundle: Signal<CngxCardI18n>) => Signal<CngxCardI18n>) & {
   readonly _target: 'i18n';
@@ -59,8 +54,6 @@ function defineCardI18nFeature(
  * Override i18n labels via a partial bundle - unset keys keep the language
  * pack's phrase, or the English default. Pass a `Signal` to switch the
  * language at runtime.
- *
- * @category common/card/i18n
  */
 export function withCardI18nLabels(
   overrides: Partial<CngxCardI18n> | Signal<Partial<CngxCardI18n>>,
@@ -79,8 +72,6 @@ export function withCardI18nLabels(
  *   ],
  * });
  * ```
- *
- * @category common/card/i18n
  */
 export function provideCardI18n(...features: readonly CngxCardI18nFeature[]): Provider {
   return {
@@ -92,8 +83,6 @@ export function provideCardI18n(...features: readonly CngxCardI18nFeature[]): Pr
 
 /**
  * Inject the resolved card i18n bundle.
- *
- * @category common/card/i18n
  */
 export function injectCardI18n(): Signal<CngxCardI18n> {
   return inject(CNGX_CARD_I18N);

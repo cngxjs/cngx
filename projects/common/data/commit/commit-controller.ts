@@ -9,8 +9,6 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  * when a newer commit supersedes it. Action runtimes (RxJS subscription
  * teardown, AbortController abort, plain flag) implement the handle
  * however they need.
- *
- * @category common/data/commit
  */
 export interface CngxCommitHandle {
   readonly cancel: () => void;
@@ -30,8 +28,6 @@ export interface CngxCommitHandle {
  * `onRefused` is for an action that declined on purpose (a `false`
  * answer): nothing changed, so the controller stores no error. A runner
  * whose action shape has no refusal (the select family) never calls it.
- *
- * @category common/data/commit
  */
 export type CngxCommitRunner<T> = (handlers: {
   readonly onSuccess: (committed: T | undefined) => void;
@@ -46,8 +42,6 @@ export type CngxCommitRunner<T> = (handlers: {
  * fires). `onRefused` is optional because only families whose action can
  * refuse (the stepper) route it; when it is omitted a refusal still
  * settles the state slot.
- *
- * @category common/data/commit
  */
 export interface CngxCommitBeginHandlers<T> {
   readonly onSuccess: (committed: T | undefined) => void;
@@ -79,8 +73,6 @@ export interface CngxCommitBeginHandlers<T> {
  * The controller is intentionally **not** an Angular service or
  * provider. It's a plain factory so it works in any injection context
  * (including outside Angular, for headless tests).
- *
- * @category common/data/commit
  */
 export interface CngxCommitController<T> {
   /** Read-only async-state view of the commit lifecycle. */
@@ -138,8 +130,6 @@ export interface CngxCommitController<T> {
  * Plain function, not a class - matches the rest of the repo
  * (`createManualState`, `createAsyncState`, `createTransitionTracker`).
  * See `reference_api_prefix_convention.md`.
- *
- * @category common/data/commit
  */
 export function createCommitController<T>(): CngxCommitController<T> {
   // read-only `state` view; consumers can't flip status directly

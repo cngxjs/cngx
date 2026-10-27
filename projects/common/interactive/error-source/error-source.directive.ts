@@ -8,8 +8,6 @@ import {
  * Registers a single error condition with the nearest
  * {@link CngxErrorAggregator} ancestor.
  *
- * @category common/interactive/error
- *
  * Pure DI propagation - no DOM output. The directive is a no-op when no
  * aggregator is present (the optional injection returns `null`).
  * Useful for surfacing errors that live outside the form-field
@@ -30,7 +28,6 @@ import {
  * </fieldset>
  * ```
  *
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-source/error-source.directive.ts
  * @since 0.1.0

@@ -48,8 +48,6 @@ import {
  * ></ul>
  * ```
  *
- * @category common/interactive/tree
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/hierarchical-nav/hierarchical-nav.directive.ts
  * @since 0.1.0

@@ -4,7 +4,6 @@ import { type AsyncStatus, buildAsyncStateView, type CngxAsyncState } from '@cng
 /**
  * Fields a spec can drive on {@link CngxAsyncStateMock}.
  *
- * @category core/testing
  * @since 0.1.0
  */
 export interface CngxAsyncStateMockPatch<T = unknown> {
@@ -30,7 +29,6 @@ export interface CngxAsyncStateMockPatch<T = unknown> {
 /**
  * A `CngxAsyncState` whose signals a spec drives directly.
  *
- * @category core/testing
  * @since 0.1.0
  */
 export interface CngxAsyncStateMock<T = unknown> extends CngxAsyncState<T> {
@@ -69,7 +67,6 @@ export interface CngxAsyncStateMock<T = unknown> extends CngxAsyncState<T> {
  * `T` defaults to `unknown`; pass the component's data type so the mock binds
  * to a `[state]` input typed `CngxAsyncState<T>` under strict templates.
  *
- * @category core/testing
  * @since 0.1.0
  * @relatedTo buildAsyncStateView
  */

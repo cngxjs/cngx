@@ -56,8 +56,6 @@ import { CNGX_TIMELINE_VIEW_FACTORY } from './timeline-view';
  * timestamp after the body on one line - a feed someone scans. Purely
  * visual: same DOM, same ARIA, same slots, only the `[data-mode]` host
  * attribute changes.
- *
- * @category ui/timeline
  */
 export type CngxTimelineMode = 'narrative' | 'activity';
 
@@ -68,8 +66,6 @@ export type CngxTimelineMode = 'narrative' | 'activity';
  * `line` (default) is the bare rail. `card` lifts each event body onto its
  * own surface. `bands` tints alternating groups so long timelines stay
  * scannable.
- *
- * @category ui/timeline
  */
 export type CngxTimelineSkin = 'line' | 'card' | 'bands';
 
@@ -87,8 +83,6 @@ export type CngxTimelineSkin = 'line' | 'card' | 'bands';
  *
  * `alternate` is not supported with `mode="activity"`: alternating a
  * scan-feed defeats the scan. Those rows render `start` and dev mode warns.
- *
- * @category ui/timeline
  */
 export type CngxTimelinePlacement = 'start' | 'end' | 'alternate';
 
@@ -103,8 +97,6 @@ export type CngxTimelinePlacement = 'start' | 'end' | 'alternate';
  * so a `rejected` stretch stays red and an `upcoming` tail stays dashed.
  * It applies within a band; the gap between groups stays open, because a
  * band is a semantic boundary rather than a rendering accident.
- *
- * @category ui/timeline
  */
 export type CngxTimelineRail = 'segmented' | 'continuous';
 
@@ -121,8 +113,6 @@ export type CngxTimelineRail = 'segmented' | 'continuous';
  *
  * Named `orientation` rather than `direction` because `[direction]` is
  * already the sort order on this component.
- *
- * @category ui/timeline
  */
 export type CngxTimelineOrientation = 'vertical' | 'horizontal';
 
@@ -161,8 +151,6 @@ export type CngxTimelineOrientation = 'vertical' | 'horizontal';
  * </cngx-timeline>
  * ```
  *
- * @category ui/timeline
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/timeline/timeline.component.ts
  * @relatedTo CngxTimelineItem, CngxTimelineItemTpl, CNGX_TIMELINE_GROUPING_FACTORY, CNGX_TIMELINE_CONFIG

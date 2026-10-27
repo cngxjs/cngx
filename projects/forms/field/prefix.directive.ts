@@ -23,8 +23,6 @@ import { CNGX_FIELD_AFFIX } from './field-box.token';
  * </span>
  * ```
  *
- * @category forms/field
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/prefix.directive.ts
  * @since 0.2.0

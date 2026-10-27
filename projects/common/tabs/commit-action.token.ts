@@ -12,8 +12,6 @@ import type { CngxTabsCommitAction } from './presenter.directive';
  * path can pin pessimistic - the active tab must follow the *resolved*
  * route, and a stray `[commitMode]="'optimistic'"` must not override
  * that invariant.
- *
- * @category common/tabs
  */
 export interface CngxTabsCommitActionSource {
   /**
@@ -38,7 +36,6 @@ export interface CngxTabsCommitActionSource {
  * exposes a non-null `action()`, its `mode()` wins over the
  * `[commitMode]` input.
  *
- * @category common/tabs
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/commit-action.token.ts
  * @since 0.1.0
  */

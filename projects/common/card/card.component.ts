@@ -40,8 +40,6 @@ import { injectCardI18n } from './i18n/card-i18n';
  * </cngx-card>
  * ```
  * 
- * @category common/card
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card.component.ts
  * @since 0.1.0

@@ -8,8 +8,6 @@ import type { CngxStepNode, CngxStepperHost } from './stepper-host.token';
  * consequence (no in-place disclosure). Keyboard users reach the same
  * steps via the arrow-key contract, which already steps into a collapsed
  * group, so this is a supplementary pointer affordance.
- *
- * @category common/stepper
  */
 export interface CngxStepperGroupNavigationView {
   /**
@@ -64,8 +62,6 @@ export interface CngxStepperGroupNavigationOptions {
  * the seeded `-1`. Each candidate is gated by `canNavigateTo` + `busy`
  * (mirroring the step-header reachability), so a linear-blocked leading
  * step is skipped to the first reachable one.
- *
- * @category common/stepper
  */
 export function createStepperGroupNavigation(
   options: CngxStepperGroupNavigationOptions,

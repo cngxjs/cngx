@@ -16,7 +16,6 @@ import type { CngxDirection } from './direction';
  * @param direction The document writing direction from {@link injectDirection}.
  * @returns `1` for inline-forward, `-1` for inline-back, `null` for any other key.
  *
- * @category core/bidi
  * @relatedTo resolveInlineArrowKey
  * @relatedTo injectDirection
  * @since 0.1.0
@@ -47,7 +46,6 @@ export function resolveInlineStep(key: string, direction: CngxDirection): 1 | -1
  * @param direction The document writing direction from {@link injectDirection}.
  * @returns The logical key: swapped horizontal arrow under `rtl`, else `key` unchanged.
  *
- * @category core/bidi
  * @relatedTo resolveInlineStep
  * @relatedTo injectDirection
  * @since 0.1.0

@@ -22,8 +22,6 @@ import { computed, Directive, input } from '@angular/core';
  * <span id="email-error" role="alert">Please enter a valid email.</span>
  * ```
  *
- * @category common/interactive/error
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-state/error-state.directive.ts
  * @since 0.1.0

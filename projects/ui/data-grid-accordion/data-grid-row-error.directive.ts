@@ -22,7 +22,6 @@ import type { CngxDgaRowStateContext } from './data-grid-row-state-context';
  * </cngx-dga-row>
  * ```
  *
- * @category ui/data-grid-accordion
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-row-error.directive.ts
  * @since 0.1.0

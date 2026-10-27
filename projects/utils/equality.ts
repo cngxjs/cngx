@@ -7,8 +7,6 @@
  * Intended as an `equal` arg for `computed()` / `linkedSignal` returning
  * `ReadonlySet<T>`, so consumers downstream do not re-render when the
  * computed re-runs but produces the same element set.
- *
- * @category utils
  */
 export function setEqual<T>(a: ReadonlySet<T>, b: ReadonlySet<T>): boolean {
   if (a === b) {
@@ -34,8 +32,6 @@ export function setEqual<T>(a: ReadonlySet<T>, b: ReadonlySet<T>): boolean {
  * `readonly T[]`, so consumers downstream do not re-render when the
  * computed re-runs but produces a positionally-identical array. Two arrays
  * with the same values in a different order compare unequal.
- *
- * @category utils
  */
 export function arrayEqual<T>(a: readonly T[], b: readonly T[]): boolean {
   if (a === b) {
@@ -62,7 +58,6 @@ export function arrayEqual<T>(a: readonly T[], b: readonly T[]): boolean {
  * bundle, so a re-run that merges the same values into a fresh object keeps
  * the previous reference and downstream readers do not re-render.
  *
- * @category utils
  * @since 0.1.0
  * @relatedTo setEqual, arrayEqual
  */

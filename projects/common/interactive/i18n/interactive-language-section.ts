@@ -5,7 +5,6 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * `@cngx/common/interactive` atoms (async click, copy block, range slider,
  * breadcrumb, the unsaved-changes guard). It feeds `CNGX_INTERACTIVE_I18N`.
  *
- * @category common/interactive/i18n
  * @since 0.1.0
  * @relatedTo CNGX_INTERACTIVE_I18N
  */
@@ -36,7 +35,6 @@ export interface CngxInteractiveLanguageSection {
  * The English interactive section: the single source of the interactive
  * atoms' English copy. `CNGX_INTERACTIVE_I18N` defaults to it.
  *
- * @category common/interactive/i18n
  * @since 0.1.0
  * @relatedTo CNGX_INTERACTIVE_I18N
  */

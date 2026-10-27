@@ -18,15 +18,11 @@ import { CNGX_SELECT_LANGUAGE_EN } from '../i18n/select-language-section';
  * - `'dirty'` (default) - trap on while `actionDirty()` is `true`.
  * - `'always'` - trap on whenever the panel is open.
  * - `'never'` - shell never engages the trap; consumer owns focus.
- *
- * @category forms/select/config
  */
 export type CngxActionFocusTrapBehavior = 'always' | 'dirty' | 'never';
 
 /**
  * Slot position inside the panel frame. Default `'bottom'`.
- *
- * @category forms/select/config
  */
 export type CngxActionPosition = 'top' | 'bottom' | 'both' | 'none';
 
@@ -34,8 +30,6 @@ export type CngxActionPosition = 'top' | 'bottom' | 'both' | 'none';
  * App-wide config for the action-select organisms. Cascade: per-instance
  * input > `provideActionSelectConfigAt` > `provideActionSelectConfig` >
  * library default.
- *
- * @category forms/select/config
  */
 export interface CngxActionSelectConfig {
   /** When the panel-shell's `CngxFocusTrap` activates. Default `'dirty'`. */
@@ -94,7 +88,6 @@ export const CNGX_ACTION_SELECT_DEFAULTS: Required<Omit<CngxActionSelectConfig, 
  * `withActionPopoverPlacement`). Resolution is nearest-wins: a nested provider
  * replaces an ancestor config for its subtree, it does not deep-merge.
  *
- * @category forms/select/config
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/action-select-config.ts
  * @since 0.1.0
@@ -107,8 +100,6 @@ export const CNGX_ACTION_SELECT_CONFIG = new InjectionToken<CngxActionSelectConf
 /**
  * Feature returned by the `with*` helpers. Merged by
  * {@link provideActionSelectConfig}.
- *
- * @category forms/select/config
  */
 export interface CngxActionSelectConfigFeature {
   readonly config: Partial<CngxActionSelectConfig>;
@@ -122,8 +113,6 @@ function feature(config: Partial<CngxActionSelectConfig>): CngxActionSelectConfi
 
 /**
  * Sets {@link CngxActionFocusTrapBehavior}.
- *
- * @category forms/select/config
  */
 export function withFocusTrapBehavior(
   behavior: CngxActionFocusTrapBehavior,
@@ -134,8 +123,6 @@ export function withFocusTrapBehavior(
 /**
  * Sets the action-slot ARIA label. Pass a `Signal` to follow a runtime
  * language switch.
- *
- * @category forms/select/config
  */
 export function withActionAriaLabel(label: string | Signal<string>): CngxActionSelectConfigFeature {
   return feature({ ariaLabel: label });
@@ -144,8 +131,6 @@ export function withActionAriaLabel(label: string | Signal<string>): CngxActionS
 /**
  * Forces `closeOnCreate` across both action organisms. Pass `null` to
  * restore the variant baselines.
- *
- * @category forms/select/config
  */
 export function withCloseOnCreate(closeOnCreate: boolean | null): CngxActionSelectConfigFeature {
   return feature({ closeOnCreate });
@@ -153,8 +138,6 @@ export function withCloseOnCreate(closeOnCreate: boolean | null): CngxActionSele
 
 /**
  * Sets the default `*cngxSelectAction` slot position.
- *
- * @category forms/select/config
  */
 export function withActionPosition(position: CngxActionPosition): CngxActionSelectConfigFeature {
   return feature({ actionPosition: position });
@@ -163,8 +146,6 @@ export function withActionPosition(position: CngxActionPosition): CngxActionSele
 /**
  * Sets the live-input fallback policy. Disable when consumer owns
  * debouncing.
- *
- * @category forms/select/config
  */
 export function withLiveInputFallback(enabled: boolean): CngxActionSelectConfigFeature {
   return feature({ liveInputFallback: enabled });
@@ -172,8 +153,6 @@ export function withLiveInputFallback(enabled: boolean): CngxActionSelectConfigF
 
 /**
  * Sets the popover placement for the action organisms.
- *
- * @category forms/select/config
  */
 export function withActionPopoverPlacement(
   placement: PopoverPlacement,
@@ -197,8 +176,6 @@ export function withActionPopoverPlacement(
  *   ],
  * });
  * ```
- *
- * @category forms/select/config
  */
 export function provideActionSelectConfig(
   ...features: CngxActionSelectConfigFeature[]
@@ -215,8 +192,6 @@ export function provideActionSelectConfig(
 /**
  * Component-scoped action-select config. Returns `Provider[]` because
  * `viewProviders` rejects `EnvironmentProviders`.
- *
- * @category forms/select/config
  */
 export function provideActionSelectConfigAt(
   ...features: CngxActionSelectConfigFeature[]

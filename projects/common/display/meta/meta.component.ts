@@ -10,7 +10,6 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation, input } from '@a
  * need real term/description semantics for a longer or more structured block,
  * reach for a definition list instead - `CngxMeta` deliberately stays flat.
  *
- * @category common/display
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/meta/meta.component.ts
  * @since 0.1.0

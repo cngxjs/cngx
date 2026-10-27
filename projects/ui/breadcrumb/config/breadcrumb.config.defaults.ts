@@ -35,7 +35,6 @@ export const CNGX_BREADCRUMB_DEFAULTS: CngxBreadcrumbConfig = {
  * `provideBreadcrumbConfigAt(...)` in a component's `viewProviders`
  * (sub-tree cascade).
  *
- * @category ui/breadcrumb
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/config/breadcrumb.config.defaults.ts
  * @since 0.1.0
  */

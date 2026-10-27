@@ -15,7 +15,6 @@ import { injectPaginatorHost } from '../paginator-host.token';
  * percentage derives purely from the host `pageIndex()`/`totalPages()` signals -
  * no local state, no writes.
  *
- * @category ui/paginator
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-rail.component.ts
  * @since 0.1.0

@@ -19,7 +19,6 @@ import type { CngxTagPrefixContext } from './tag-slot.context';
  * </span>
  * ```
  *
- * @category common/display
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/tag/slots/tag-prefix.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTag, CngxTagLabel, CngxTagSuffix

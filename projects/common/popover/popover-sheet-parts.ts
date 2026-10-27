@@ -24,7 +24,6 @@ function routeSwipeToSheet(part: string): void {
  * Header row of a `CngxPopoverSheet`. Stays put while the content below it
  * scrolls; add `cngxSwipeDismiss="down"` to close the sheet by swiping it.
  *
- * @category common/popover
  * @since 0.1.0
  * @relatedTo CngxPopoverSheet, CngxSwipeDismiss
  */
@@ -43,7 +42,6 @@ export class CngxPopoverSheetHeader {
  * The element that names a modal `CngxPopoverSheet`. The sheet points its
  * `aria-labelledby` here, never at the header that also holds buttons.
  *
- * @category common/popover
  * @since 0.1.0
  * @relatedTo CngxPopoverSheet
  */
@@ -68,7 +66,6 @@ export class CngxPopoverSheetTitle implements CngxPopoverSheetTitleHandle {
  * the sheet through its close control, since their swipe is consumed by
  * navigation.
  *
- * @category common/popover
  * @since 0.1.0
  * @relatedTo CngxPopoverSheet
  */
@@ -94,7 +91,6 @@ export class CngxPopoverSheetHandle {
  * the bare attribute as the default target. The condition is read when the
  * sheet opens.
  *
- * @category common/popover
  * @since 0.1.0
  * @relatedTo CngxPopoverSheet
  */

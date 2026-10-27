@@ -26,8 +26,6 @@ import { injectInputAriaLabels } from './input-config';
  * </button>
  * ```
  *
- * @category forms/input
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-clear.directive.ts
  * @since 0.1.0

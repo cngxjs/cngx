@@ -13,7 +13,6 @@
  * }
  * ```
  *
- * @category core/i18n
  * @since 0.1.0
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- augmentation point, filled by each lib entry
@@ -22,7 +21,6 @@ export interface CngxLanguagePack {}
 /**
  * Locale metadata every pack carries next to its sections.
  *
- * @category core/i18n
  * @since 0.1.0
  */
 export interface CngxLanguagePackMeta {
@@ -41,7 +39,6 @@ export interface CngxLanguagePackMeta {
  * { "one": "{count} error", "other": "{count} errors" }
  * ```
  *
- * @category core/i18n
  * @since 0.1.0
  */
 export interface CngxPluralMessage {
@@ -57,7 +54,6 @@ export interface CngxPluralMessage {
  * Makes every section and every key of a section optional while keeping a
  * present message whole: a plural object that is given still needs `other`.
  *
- * @category core/i18n
  * @since 0.1.0
  */
 export type CngxPartialSections<T> = {
@@ -67,7 +63,6 @@ export type CngxPartialSections<T> = {
 /**
  * A pack that may leave sections or keys out; missing keys read English.
  *
- * @category core/i18n
  * @since 0.1.0
  */
 export type CngxPartialLanguagePack = CngxPartialSections<CngxLanguagePack>;

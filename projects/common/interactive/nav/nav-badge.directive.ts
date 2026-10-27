@@ -2,8 +2,6 @@ import { computed, Directive, input } from '@angular/core';
 
 /**
  * Visual variant for the nav badge.
- *
- * @category common/interactive
  */
 export type NavBadgeVariant = 'count' | 'dot' | 'status';
 
@@ -38,7 +36,6 @@ export type NavBadgeVariant = 'count' | 'dot' | 'status';
  * <a cngxNavLink>Updates <span cngxNavBadge variant="dot" [value]="1"></span></a>
  * ```
  *
- * @category common/interactive
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-badge.directive.ts
  * @since 0.1.0

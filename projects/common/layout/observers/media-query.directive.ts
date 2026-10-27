@@ -26,8 +26,6 @@ import { observeMediaQuery } from '@cngx/core/utils';
  * </div>
  * ```
  *
- * @category common/layout
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/observers/media-query.directive.ts
  * @since 0.1.0
  * @relatedTo CngxResizeObserver, CngxIntersectionObserver

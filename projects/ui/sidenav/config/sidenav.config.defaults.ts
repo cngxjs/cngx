@@ -52,7 +52,6 @@ export const CNGX_SIDENAV_DEFAULTS: CngxSidenavConfig = {
  * `bootstrapApplication` providers (root cascade) or `provideSidenavConfigAt(...)`
  * in a component's `viewProviders` (sub-tree cascade).
  *
- * @category ui/sidenav
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/config/sidenav.config.defaults.ts
  * @since 0.1.0
  */

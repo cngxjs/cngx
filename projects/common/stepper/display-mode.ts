@@ -18,7 +18,6 @@ import type { CngxStepperMobileCollapse } from './stepper-config';
  * on the stepper component is one; a bare call from a lifecycle hook is not.
  *
  * @param host The `<cngx-stepper>` host element, which is its own container.
- * @category common/stepper
  * @relatedTo createStepperDisplayMode, injectContainerSize
  */
 export function injectStepperCollapse(host: Element): Signal<boolean> {
@@ -39,7 +38,6 @@ export function injectStepperCollapse(host: Element): Signal<boolean> {
  *
  * @param collapsed `true` while the container sits below the collapse rung.
  * @param mobileCollapse The configured collapse policy, read lazily.
- * @category common/stepper
  */
 export function createStepperDisplayMode(
   collapsed: Signal<boolean>,

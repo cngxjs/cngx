@@ -23,7 +23,6 @@ import { type CngxAxisPosition, type CngxAxisType } from './axis-position';
  * you draw yourself. Provide it with `useExisting` and the chart picks
  * the directive up through its content query.
  *
- * @category common/chart/axis
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/axis/chart-axis.ts
  * @since 0.1.0
  * @relatedTo CngxAxis, CngxAxisDomain, CngxChart
@@ -57,7 +56,6 @@ export interface CngxChartAxis {
  * so a consumer-authored axis participates in scale building and plot
  * insetting on equal terms with the ones the library ships.
  *
- * @category common/chart/axis
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/axis/chart-axis.ts
  * @since 0.1.0
  * @relatedTo CngxChartAxis, CngxAxis, CngxAxisDomain

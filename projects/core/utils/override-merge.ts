@@ -28,7 +28,6 @@ const MERGES = new WeakMap<object, WeakMap<object, Signal<object>>>();
  * present in the override wins even when its value is `undefined`, so build
  * override objects from the keys you mean to set, never from `{ key: maybe }`.
  *
- * @category core/utils
  * @since 0.1.0
  * @relatedTo coerceSignal, createControlledSource
  */
@@ -78,7 +77,6 @@ type IsUnion<K, All = K> = K extends unknown ? ([All] extends [K] ? false : true
  * The override shape {@link createNestedOverrideMerge} accepts: any subset of
  * the top-level keys, and any subset of the one nested record `K`.
  *
- * @category core/utils
  * @since 0.1.0
  * @relatedTo createNestedOverrideMerge
  */
@@ -117,7 +115,6 @@ function nestedEqual<T extends object>(key: keyof T): (a: T, b: T) => boolean {
  * One nesting level only, and the same spread rule as `createOverrideMerge`: a
  * key present in the override wins even when its value is `undefined`.
  *
- * @category core/utils
  * @since 0.1.0
  * @relatedTo createOverrideMerge, coerceSignal, CngxNestedOverrides
  */
@@ -215,7 +212,6 @@ function fillNullish<T extends object>(record: Partial<T>, base: T): T {
  * }
  * ```
  *
- * @category core/utils
  * @since 0.1.0
  * @relatedTo createOverrideMerge, createNestedOverrideMerge
  */
@@ -302,7 +298,6 @@ export function createDefaultsFill<T extends object>(
  * }
  * ```
  *
- * @category core/utils
  * @since 0.1.0
  * @relatedTo createOverrideMerge, createDefaultsFill
  */

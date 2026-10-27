@@ -15,7 +15,6 @@ const DEFAULT_CONFIG: CngxPopoverPanelConfig = {
 /**
  * Injection token for popover panel configuration.
  *
- * @category common/popover
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel.config.ts
  * @since 0.1.0
  */
@@ -35,8 +34,6 @@ export const CNGX_POPOVER_PANEL_CONFIG = new InjectionToken<CngxPopoverPanelConf
  *   ),
  * ]
  * ```
- *
- * @category common/popover
  */
 export function providePopoverPanel(...features: PopoverPanelFeature[]): Provider {
   const config = features.reduce((acc, f) => f(acc), { ...DEFAULT_CONFIG });
@@ -50,8 +47,6 @@ export function providePopoverPanel(...features: PopoverPanelFeature[]): Provide
  * ```typescript
  * withAutoDismiss({ info: 5000, success: 3000 })
  * ```
- *
- * @category common/popover
  */
 export function withAutoDismiss(timing: Record<string, number>): PopoverPanelFeature {
   return (config) => ({ ...config, autoDismiss: { ...config.autoDismiss, ...timing } });
@@ -61,8 +56,6 @@ export function withAutoDismiss(timing: Record<string, number>): PopoverPanelFea
  * Auto-close the panel after an async action in the footer succeeds.
  *
  * @param delay - Delay in ms before closing. Defaults to `300`.
- *
- * @category common/popover
  */
 export function withCloseOnSuccess(delay = 300): PopoverPanelFeature {
   return (config) => ({ ...config, closeOnSuccessDelay: delay });
@@ -70,8 +63,6 @@ export function withCloseOnSuccess(delay = 300): PopoverPanelFeature {
 
 /**
  * Set the default variant applied when no `variant` input is set.
- *
- * @category common/popover
  */
 export function withDefaultVariant(variant: string): PopoverPanelFeature {
   return (config) => ({ ...config, defaultVariant: variant });
@@ -79,8 +70,6 @@ export function withDefaultVariant(variant: string): PopoverPanelFeature {
 
 /**
  * Show the close button on all panels by default.
- *
- * @category common/popover
  */
 export function withCloseButton(show = true): PopoverPanelFeature {
   return (config) => ({ ...config, showClose: show });
@@ -88,8 +77,6 @@ export function withCloseButton(show = true): PopoverPanelFeature {
 
 /**
  * Show the arrow on all panels by default.
- *
- * @category common/popover
  */
 export function withArrow(show = true): PopoverPanelFeature {
   return (config) => ({ ...config, showArrow: show });
@@ -109,8 +96,6 @@ export function withArrow(show = true): PopoverPanelFeature {
  *   providePopoverPanel(withArrowTemplate(brandArrowTpl)),
  * ]
  * ```
- *
- * @category common/popover
  */
 export function withArrowTemplate(tpl: TemplateRef<CngxPopoverArrowContext>): PopoverPanelFeature {
   return (config) => ({ ...config, templates: { ...config.templates, arrow: tpl } });
@@ -128,7 +113,6 @@ export function withArrowTemplate(tpl: TemplateRef<CngxPopoverArrowContext>): Po
  * ]
  * ```
  *
- * @category common/popover
  * @since 0.1.0
  */
 export function withPopoverPanelLabels(

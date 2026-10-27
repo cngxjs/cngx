@@ -17,8 +17,6 @@ const IMPLICIT_LOCALE_ID = 'en-US';
 /**
  * Headless text-to-speech directive using the browser's SpeechSynthesis API.
  *
- * @category common/interactive
- *
  * A read-aloud feature for cognitive accessibility - dyslexia support, reading
  * assistance, or convenience. Not a screen reader replacement (use
  * `CngxLiveRegion` for ARIA live regions).
@@ -55,7 +53,6 @@ const IMPLICIT_LOCALE_ID = 'en-US';
  *   <button (click)="tts.speak(liveCounter().toString())">Read current value</button>
  * </div>
  * ```
- * @docsKind primary
  * @wcag AAA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/speak/speak.directive.ts
  * @since 0.1.0

@@ -51,8 +51,6 @@ const RELATIVE_DIVISIONS: readonly { readonly amount: number; readonly unit: Int
  * <cngx-time [date]="invoice.due" [format]="{ dateStyle: 'long' }" />
  * ```
  *
- * @category common/display
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/time/time.component.ts
  * @since 0.1.0

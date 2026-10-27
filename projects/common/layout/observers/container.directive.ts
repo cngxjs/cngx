@@ -40,8 +40,6 @@ import { CNGX_CONTAINER_SIZE, type CngxContainerSize, createContainerSize } from
  * content (an inline chip, a `width: max-content` bar) must not be a
  * container.
  *
- * @category common/layout
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/observers/container.directive.ts
  * @since 0.1.0
  * @relatedTo injectContainerSize, CngxResizeObserver, CngxMediaQuery

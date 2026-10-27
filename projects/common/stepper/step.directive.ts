@@ -31,8 +31,6 @@ import {
  * `state` is a pure `computed` over `[disabled]`, `[completed]`, and
  * the optional `[errorAggregator]`'s `hasError()`.
  *
- * @category common/stepper
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/step.directive.ts
  * @since 0.1.0

@@ -17,8 +17,6 @@ import { CNGX_SIDENAV, type CngxSidenavContract } from './sidenav-token';
  * `withSidenavRouterSync({ param })` on `CNGX_SIDENAV_CONFIG`, then the `'nav'`
  * literal. Without `@angular/router` the kernel dev-warns once and no-ops.
  *
- * @category ui/sidenav
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/sidenav-router-sync.directive.ts
  * @since 0.1.0
  * @relatedTo CngxSidenav, CNGX_SIDENAV, injectQueryParamSync

@@ -12,8 +12,6 @@ import type { CngxOption } from './option.directive';
  * filtering decides - substring, fuzzy, server-driven - and gives the
  * host a single point of control. Empty search term ALWAYS resolves to
  * "show everything"; the option short-circuits before calling `matches`.
- *
- * @category common/interactive/listbox
  */
 export interface CngxOptionFilterHost {
   /** Current search term. Empty string means "no filter active". */
@@ -38,7 +36,6 @@ export interface CngxOptionFilterHost {
  * use (no host provides the token) leaves every option visible at all
  * times with no DOM cost.
  *
- * @category common/interactive/listbox
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/option-filter-host.ts
  * @since 0.1.0
  */

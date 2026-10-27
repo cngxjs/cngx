@@ -22,7 +22,6 @@ import { injectPaginatorHost } from '../paginator-host.token';
  * page 0 (brain semantics). The selected size is derived from `host.pageSize()`,
  * so the panel selection and the trigger label never drift (Pillar 1).
  *
- * @category ui/paginator
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-page-size.component.ts
  * @since 0.1.0

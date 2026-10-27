@@ -36,7 +36,6 @@ import {
  * <input cngxAutofocus [autofocusDelay]="200" />
  * ```
  *
- * @category common/a11y
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/autofocus.directive.ts
  * @since 0.1.0

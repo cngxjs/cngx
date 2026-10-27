@@ -18,8 +18,6 @@ import type { CngxMatTabRejectionContentContext } from './decorations/mat-tab-re
  * the middle cascade tier between a per-instance structural slot and
  * the built-in fallback. Sibling of `CngxTabsTemplates` /
  * `CngxStepperTemplates` so consumer templates port across families.
- *
- * @category ui/mat-tabs
  */
 export interface CngxMatTabsTemplates {
   /**
@@ -42,8 +40,6 @@ export interface CngxMatTabsTemplates {
  * (component scope), which wins over `provideMatTabsConfig(...)`
  * (root), which wins over the library defaults captured by
  * {@link CNGX_MAT_TABS_CONFIG_DEFAULTS}.
- *
- * @category ui/mat-tabs
  */
 export interface CngxMatTabsConfig {
   /**
@@ -114,7 +110,6 @@ export const CNGX_MAT_TABS_CONFIG_DEFAULTS = {
  * {@link injectMatTabsConfig}, which merges with the library
  * defaults so callers never see `undefined`.
  *
- * @category ui/mat-tabs
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/mat-tabs-config.ts
  * @since 0.1.0
  */
@@ -127,8 +122,6 @@ export const CNGX_MAT_TABS_CONFIG = new InjectionToken<CngxMatTabsConfig>('CngxM
  * cross-family aggregator (`provideCngxMatTabs`) that dispatches
  * features to the right provider - analogous to `_target: 'select'`
  * in the select family.
- *
- * @category ui/mat-tabs
  */
 export interface CngxMatTabsConfigFeature {
   readonly config: Partial<CngxMatTabsConfig>;
@@ -143,8 +136,6 @@ function feature(config: Partial<CngxMatTabsConfig>): CngxMatTabsConfigFeature {
 /**
  * Cap on the `[cngxMatTabs]` overflow-anchor retry loop.
  * See {@link CngxMatTabsConfig.anchorMaxAttempts} for default + rationale.
- *
- * @category ui/mat-tabs
  */
 export function withAnchorRetryAttempts(n: number): CngxMatTabsConfigFeature {
   return feature({ anchorMaxAttempts: n });
@@ -153,8 +144,6 @@ export function withAnchorRetryAttempts(n: number): CngxMatTabsConfigFeature {
 /**
  * Override the half-wired-slot diagnostic sink.
  * See {@link CngxMatTabsConfig.halfWiredSlotSink}.
- *
- * @category ui/mat-tabs
  */
 export function withHalfWiredSlotSink(sink: CngxMatTabHalfWiredSlotSink): CngxMatTabsConfigFeature {
   return feature({ halfWiredSlotSink: sink });
@@ -165,8 +154,6 @@ export function withHalfWiredSlotSink(sink: CngxMatTabHalfWiredSlotSink): CngxMa
  * tier; per-instance `*cngxMatTabRejectionContent` still wins.
  * Sibling of {@link withTabRejectionIconTemplate} in the cngx-native
  * family.
- *
- * @category ui/mat-tabs
  */
 export function withMatTabRejectionTemplate(
   template: TemplateRef<CngxMatTabRejectionContentContext>,
@@ -205,8 +192,6 @@ function mergeFeatures(features: readonly CngxMatTabsConfigFeature[]): Partial<C
  *   ],
  * });
  * ```
- *
- * @category ui/mat-tabs
  */
 export function provideMatTabsConfig(
   ...features: CngxMatTabsConfigFeature[]
@@ -236,8 +221,6 @@ export function provideMatTabsConfig(
  *   ...
  * })
  * ```
- *
- * @category ui/mat-tabs
  */
 export function provideMatTabsConfigAt(...features: CngxMatTabsConfigFeature[]): Provider[] {
   return [
@@ -267,8 +250,6 @@ export function provideMatTabsConfigAt(...features: CngxMatTabsConfigFeature[]):
  * 1. `CNGX_MAT_TABS_CONFIG` value (set via
  *    {@link provideMatTabsConfig} / {@link provideMatTabsConfigAt}).
  * 2. {@link CNGX_MAT_TABS_CONFIG_DEFAULTS} (library default).
- *
- * @category ui/mat-tabs
  */
 export function injectMatTabsConfig(): Required<CngxMatTabsConfig> {
   const user = inject(CNGX_MAT_TABS_CONFIG, { optional: true }) ?? {};

@@ -13,7 +13,6 @@ import { injectPaginatorHost } from '../paginator-host.token';
  * survive until the user can retry). Accessible name from config (EN default,
  * Pillar 2).
  *
- * @category ui/paginator
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-goto.component.ts
  * @since 0.1.0

@@ -39,7 +39,6 @@ import type { FilterExpression, FilterFieldDef } from './filter-builder.types';
  * (`reflectComponentType` gate), so a minimal editor with only the
  * required `value` model mounts cleanly.
  *
- * @category forms/filter-builder/slots
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-value-editor-host.directive.ts
  * @since 0.1.0

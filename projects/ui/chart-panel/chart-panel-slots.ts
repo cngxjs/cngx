@@ -22,7 +22,6 @@ const CONTROL_SELECTOR = 'a[href], button, input, select, textarea, [role]';
  * Registration runs against {@link CNGX_CHART_PANEL}, which the panel provides -
  * the title resolves it from its declaration site in the consumer template.
  *
- * @category ui/chart-panel
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/chart-panel/chart-panel-slots.ts
  * @since 0.1.0
  * @relatedTo CngxChartPanel, CngxChartPanelSubtitle
@@ -49,7 +48,6 @@ export class CngxChartPanelTitle {
  * Marks the panel's secondary line under the title - a period, a unit, a
  * comparison basis. Descriptive only; it does not join the accessible name.
  *
- * @category ui/chart-panel
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/chart-panel/chart-panel-slots.ts
  * @since 0.1.0
  * @relatedTo CngxChartPanel, CngxChartPanelTitle
@@ -78,7 +76,6 @@ export class CngxChartPanelSubtitle {}
  * Activation stays blocked by the slot (pointer and Enter/Space), so the
  * control keeps its focusability instead of turning natively `disabled`.
  *
- * @category ui/chart-panel
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/chart-panel/chart-panel-slots.ts
  * @since 0.1.0
  * @relatedTo CngxChartPanel
@@ -123,7 +120,6 @@ export class CngxChartPanelActions {
  * Marks the panel's footer row - a source note, a last-updated timestamp, a
  * drill-down link. Sits below the chart body and the legend.
  *
- * @category ui/chart-panel
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/chart-panel/chart-panel-slots.ts
  * @since 0.1.0
  * @relatedTo CngxChartPanel

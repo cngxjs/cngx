@@ -67,7 +67,6 @@ import {
  * }
  * ```
  *
- * @category common/layout
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/drawer/backdrop.directive.ts
  * @since 0.1.0

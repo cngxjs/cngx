@@ -13,8 +13,6 @@ import {
 
 /**
  * Input for {@link createProjectedOptionModel}.
- *
- * @category forms/select/state
  */
 export interface ProjectedOptionModelInput<T> {
   readonly containers: Signal<readonly CngxOptionContainer[]>;
@@ -33,8 +31,6 @@ export interface ProjectedOptionModelInput<T> {
 /**
  * Output of {@link createProjectedOptionModel}. Each signal carries a
  * structural `equal` so unrelated CD passes don't cascade.
- *
- * @category forms/select/state
  */
 export interface ProjectedOptionModel<T> {
   readonly derivedOptions: Signal<CngxSelectOptionsInput<T>>;
@@ -54,8 +50,6 @@ export interface ProjectedOptionModel<T> {
  * Hierarchy-preserving option model derived from projected DOM. Leaves
  * stay leaves, groups stay groups; `createSelectCore` reflattens for AD
  * lookup. Labels are plain-text via `{{ }}` interpolation.
- *
- * @category forms/select/state
  */
 export function createProjectedOptionModel<T>(
   input: ProjectedOptionModelInput<T>,
@@ -231,8 +225,6 @@ export function createProjectedOptionModel<T>(
 
 /**
  * Factory signature for {@link CNGX_PROJECTED_OPTION_MODEL_FACTORY}.
- *
- * @category forms/select/state
  */
 export type CngxProjectedOptionModelFactory = <T>(
   input: ProjectedOptionModelInput<T>,
@@ -244,7 +236,6 @@ export type CngxProjectedOptionModelFactory = <T>(
  * Default `createProjectedOptionModel`. Override for custom value extraction,
  * async labels, or fold-in of custom group sub-types.
  *
- * @category forms/select/state
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/projected-option-model.ts
  * @since 0.1.0
  * @relatedTo CngxSelectShell, CngxSelectOption, CngxSelectOptgroup

@@ -10,7 +10,6 @@ type Trend = 'up' | 'down' | 'flat';
  * either the trend flipped, or the current value crossed a threshold.
  * A discriminated union - each variant carries exactly its own fields.
  *
- * @category common/chart
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/significant-change.ts
  * @since 0.1.0
  */
@@ -62,7 +61,6 @@ function significantChangeEqual(
  *
  * @param summary the chart's `CngxChartSummary` signal.
  *
- * @category common/chart
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/significant-change.ts
  * @since 0.1.0
  */

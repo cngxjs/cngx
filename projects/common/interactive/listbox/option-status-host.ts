@@ -9,8 +9,6 @@ import { InjectionToken, type Signal, type TemplateRef } from '@angular/core';
  * carries the actual glyph; the host MAY return `tpl: null` to reserve
  * layout space without rendering anything (rare - used for force-revealing
  * the slot during animation transitions).
- *
- * @category common/interactive/listbox
  */
 export interface CngxOptionStatus {
   readonly kind: 'pending' | 'error';
@@ -27,8 +25,6 @@ export interface CngxOptionStatus {
  * the option calls `host.statusFor(value)` once and consumes the returned
  * `Signal<CngxOptionStatus | null>` reactively; the host owns the policy
  * for resolving which value gets which status at any given commit-id.
- *
- * @category common/interactive/listbox
  */
 export interface CngxOptionStatusHost {
   /**
@@ -47,7 +43,6 @@ export interface CngxOptionStatusHost {
  * use (no host provides the token) results in a stable `null` status with
  * no DOM cost.
  *
- * @category common/interactive/listbox
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/option-status-host.ts
  * @since 0.1.0
  */
@@ -62,7 +57,6 @@ export const CNGX_OPTION_STATUS_HOST = new InjectionToken<CngxOptionStatusHost>(
  * its label from the projected text, so a status host that renders into the
  * option sets it on the wrapper element of that rendering.
  *
- * @category common/interactive/listbox
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/option-status-host.ts
  * @since 0.1.0
  * @relatedTo CNGX_OPTION_STATUS_HOST, CngxOption

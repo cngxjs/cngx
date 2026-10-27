@@ -13,8 +13,6 @@ import type { CngxButtonSize, CngxButtonVariant } from './button.types';
 
 /**
  * Main axis of a `cngxButtonGroup`.
- *
- * @category common/button
  */
 export type CngxButtonGroupOrientation = 'horizontal' | 'vertical';
 
@@ -50,7 +48,6 @@ export type CngxButtonGroupOrientation = 'horizontal' | 'vertical';
  * </div>
  * ```
  *
- * @category common/button
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-group.directive.ts
  * @since 0.1.0

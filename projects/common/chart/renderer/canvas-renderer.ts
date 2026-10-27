@@ -87,7 +87,6 @@ const SOLID_DASH: number[] = [];
  * `(prefers-color-scheme: dark)` and invalidates the colour cache before
  * repainting on a flip, so a contrast-theme switch repaints at once.
  *
- * @category common/chart/renderer
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/renderer/canvas-renderer.ts
  * @since 0.1.0
  */

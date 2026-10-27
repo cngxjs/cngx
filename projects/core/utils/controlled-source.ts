@@ -39,7 +39,6 @@ import { CNGX_DEV_DESCRIPTORS } from './dev-descriptors';
  * );
  * ```
  *
- * @category core/utils
  * @since 0.1.0
  * @relatedTo createSelectionController, createTransitionTracker
  */

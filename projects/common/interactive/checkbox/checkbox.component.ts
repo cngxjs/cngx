@@ -56,8 +56,6 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
  * >Select all</cngx-checkbox>
  * ```
  *
- * @category common/interactive
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/checkbox/checkbox.component.ts
  * @selector cngx-checkbox

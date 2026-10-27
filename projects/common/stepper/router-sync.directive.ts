@@ -29,8 +29,6 @@ import { injectStepperHost } from './stepper-host.token';
  * `Router` is optional - without `@angular/router` the directive
  * dev-warns once and becomes a no-op.
  *
- * @category common/stepper
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/router-sync.directive.ts
  * @since 0.1.0

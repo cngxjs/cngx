@@ -30,8 +30,6 @@ const filledEqual = (a: readonly boolean[], b: readonly boolean[]): boolean =>
  * <cngx-password-strength-meter [score]="pw.score()" />
  * ```
  *
- * @category common/display
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/password-strength-meter/password-strength-meter.component.ts
  * @since 0.2.0

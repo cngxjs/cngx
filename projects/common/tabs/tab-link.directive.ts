@@ -48,8 +48,6 @@ import { injectTabsConfig } from './tabs-config';
  * </cngx-tab-nav>
  * ```
  *
- * @category common/tabs
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/tab-link.directive.ts
  * @since 0.1.0

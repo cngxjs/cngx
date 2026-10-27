@@ -16,7 +16,6 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * </cngx-paginator>
  * ```
  *
- * @category ui/paginator
  * @wcag AA
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/loading/busy</example-url>
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-loading.directive.ts

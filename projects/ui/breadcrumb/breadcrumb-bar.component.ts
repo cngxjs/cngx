@@ -55,8 +55,6 @@ import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
  * by `@container` rules on `.cngx-breadcrumb::after`; consumer CSS re-aims
  * them. `[maxVisible]` pins the count and overrides the derivation entirely.
  *
- * @category ui/breadcrumb
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-bar.component.ts
  * @since 0.1.0

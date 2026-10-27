@@ -14,7 +14,6 @@ import { Directive } from '@angular/core';
  * </cngx-card>
  * ```
  *
- * @category common/card
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card-header.directive.ts
  * @since 0.1.0

@@ -3,8 +3,6 @@ import { InjectionToken } from '@angular/core';
 /**
  * Coarse password-strength label paired with the 0..4 score. The four labels
  * map onto the five scores so a score of 0 and 1 both read as `'weak'`.
- *
- * @category forms/input
  */
 export type PasswordStrengthLabel = 'weak' | 'fair' | 'good' | 'strong';
 
@@ -12,8 +10,6 @@ export type PasswordStrengthLabel = 'weak' | 'fair' | 'good' | 'strong';
  * Result of estimating a password's strength: a discrete `score` (0 = empty or
  * trivial, 4 = strong) and the matching coarse `label`. The directive announces
  * `label`; the meter renders `score` segments.
- *
- * @category forms/input
  */
 export interface PasswordStrengthResult {
   /** Discrete strength on a 0..4 scale. */
@@ -26,8 +22,6 @@ export interface PasswordStrengthResult {
  * Pure estimator signature: maps a raw password to a {@link PasswordStrengthResult}.
  * Swap the default app-wide through {@link CNGX_PASSWORD_STRENGTH_FACTORY} (e.g.
  * a zxcvbn-backed estimator) without touching `CngxPasswordStrength`.
- *
- * @category forms/input
  */
 export type CngxPasswordStrengthFactory = (password: string) => PasswordStrengthResult;
 
@@ -49,8 +43,6 @@ const SCORE_LABELS: Record<PasswordStrengthResult['score'], PasswordStrengthLabe
  * three or more identical characters, then clamps to 0..4. It ships no
  * dictionary - enterprises swap in zxcvbn or similar via
  * {@link CNGX_PASSWORD_STRENGTH_FACTORY}.
- *
- * @category forms/input
  */
 export function createPasswordStrength(): CngxPasswordStrengthFactory {
   return (password: string): PasswordStrengthResult => {
@@ -99,7 +91,6 @@ export function createPasswordStrength(): CngxPasswordStrengthFactory {
  * ]
  * ```
  *
- * @category forms/input
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/password-strength.factory.ts
  * @since 0.2.0
  * @relatedTo CngxPasswordStrength, createPasswordStrength

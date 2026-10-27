@@ -146,8 +146,6 @@ import { createHostFocusWithin } from '../shared/internal/host-focus-within';
 /**
  * Change event emitted by {@link CngxSelectShell.selectionChange} on
  * a user pick.
- *
- * @category forms/select/shell
  */
 export interface CngxSelectShellChange<T = unknown> {
   readonly source: CngxSelectShell<T>;
@@ -190,8 +188,6 @@ export interface CngxSelectShellChange<T = unknown> {
  * `'anchored'`, `'sheet'` or `'fullscreen'`; `withMobileSheet('off')` keeps
  * every select in its scope anchored.
  *
- * @category forms/select/shell
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/select-shell/select-shell.component.ts
  * @since 0.1.0

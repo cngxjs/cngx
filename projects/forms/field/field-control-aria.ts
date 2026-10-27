@@ -4,8 +4,6 @@ import type { CngxFormFieldPresenter } from './form-field-presenter';
 
 /**
  * Options for {@link createFieldControlAria}.
- *
- * @category forms/field
  */
 export interface FieldControlAriaOptions {
   /** Host id when no surrounding field supplies one. Default `''`. */
@@ -55,8 +53,6 @@ export interface FieldControlAriaOptions {
 
 /**
  * Signals and handlers returned from {@link createFieldControlAria}.
- *
- * @category forms/field
  */
 export interface FieldControlAria {
   /** `idOverride`, else presenter `inputId`, else the configured fallback. */
@@ -102,7 +98,6 @@ export interface FieldControlAria {
  * signals its host template declares, and control-specific surfaces
  * (`empty`, `aria-label` fallbacks) stay in the control.
  *
- * @category forms/field
  * @since 0.1.0
  * @relatedTo CngxFormFieldPresenter, CNGX_FORM_FIELD_CONTROL, createFieldSync
  */

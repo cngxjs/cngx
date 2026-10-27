@@ -15,7 +15,6 @@ import type { CngxDensityValue } from './density';
  * string, coerced to `undefined`), so it never asserts a required
  * binding; an unset value leaves `[data-density]` off the host.
  *
- * @category core/theming
  * @relatedTo provideDensity
  * @relatedTo CNGX_DENSITY
  * @since 0.1.0

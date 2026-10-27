@@ -41,8 +41,6 @@ import { injectFormFieldPresenter } from './inject-form-field-presenter';
  * </label>
  * ```
  *
- * @category forms/field
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/required.component.ts
  * @since 0.1.0
@@ -93,8 +91,6 @@ export class CngxRequired {
 
 /**
  * Template context type for CngxRequired custom templates.
- *
- * @category forms/field
  */
 export interface CngxRequiredContext {
   /** Always `true` when the template is rendered (also available as implicit). */

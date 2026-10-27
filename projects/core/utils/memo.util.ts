@@ -1,7 +1,6 @@
 /**
  * Options for {@link memoize}.
  *
- * @category core/utils
  * @since 0.1.0
  */
 export interface MemoizeOptions {
@@ -29,7 +28,6 @@ export interface MemoizeOptions {
  * entity ids, dates - must set {@link MemoizeOptions.cacheLimit}, otherwise
  * the cache is a leak by design.
  *
- * @category core/utils
  * @since 0.1.0
  */
 export function memoize<K, V>(fn: (key: K) => V, options?: MemoizeOptions): (key: K) => V {

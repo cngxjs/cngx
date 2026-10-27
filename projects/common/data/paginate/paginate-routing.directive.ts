@@ -32,8 +32,6 @@ import { injectPaginate } from './inject-paginate';
  * inert no-op (a dev-mode warning is logged). Framework-agnostic of any UI - it
  * needs only the brain and the router.
  *
- * @category common/data/paginate
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/paginate/paginate-routing.directive.ts
  * @since 0.1.0

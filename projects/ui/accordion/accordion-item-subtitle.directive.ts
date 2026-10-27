@@ -16,7 +16,6 @@ import { Directive } from '@angular/core';
  * </cngx-accordion-item>
  * ```
  *
- * @category ui/accordion
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/accordion/accordion-item-subtitle.directive.ts
  * @since 0.1.0

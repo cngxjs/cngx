@@ -11,8 +11,6 @@ import {
  * that gates its visibility through `createVisibilityGate`, **and** the
  * indicator-selection thresholds a consumer reads to choose one loading
  * treatment over another.
- *
- * @category core/utils
  */
 export interface CngxLoadingConfig {
   /** Delay in ms before a loading surface becomes visible. Operations faster than this never flash. */
@@ -34,8 +32,6 @@ export interface CngxLoadingConfig {
  * 120ms show delay suppresses sub-perceptual blips, a 400ms min-dwell keeps a
  * shown indicator on screen long enough to read, an 800ms cutoff splits a
  * spinner-worthy wait from a skeleton-worthy one.
- *
- * @category core/utils
  */
 export const CNGX_LOADING_DEFAULTS = {
   showDelay: 120,
@@ -50,7 +46,6 @@ export const CNGX_LOADING_DEFAULTS = {
  * Either override resolves its features against the library defaults, not the
  * ancestor scope - a subtree override replaces the whole config.
  *
- * @category core/utils
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/loading-config.ts
  * @since 0.1.0
  * @relatedTo provideLoadingConfig, provideLoadingConfigAt, injectLoadingConfig
@@ -63,8 +58,6 @@ export const CNGX_LOADING_CONFIG = new InjectionToken<CngxLoadingConfig>('CngxLo
 /**
  * A feature configuration function returned by `withXxx()` helpers for the
  * loading-config cascade.
- *
- * @category core/utils
  */
 export interface CngxLoadingConfigFeature {
   /** @internal */
@@ -73,8 +66,6 @@ export interface CngxLoadingConfigFeature {
 
 /**
  * Override the show delay for gated loading surfaces.
- *
- * @category core/utils
  */
 export function withShowDelay(ms: number): CngxLoadingConfigFeature {
   return { _apply: (c) => ({ ...c, showDelay: ms }) };
@@ -82,8 +73,6 @@ export function withShowDelay(ms: number): CngxLoadingConfigFeature {
 
 /**
  * Override the minimum dwell time for gated loading surfaces.
- *
- * @category core/utils
  */
 export function withMinDwell(ms: number): CngxLoadingConfigFeature {
   return { _apply: (c) => ({ ...c, minDwell: ms }) };
@@ -92,8 +81,6 @@ export function withMinDwell(ms: number): CngxLoadingConfigFeature {
 /**
  * Override the spinner-vs-skeleton cutoff (ms) an app-shell indicator reads to
  * pick a skeleton for waits longer than this and a spinner for shorter ones.
- *
- * @category core/utils
  */
 export function withSpinnerVsSkeletonCutoff(ms: number): CngxLoadingConfigFeature {
   return { _apply: (c) => ({ ...c, spinnerVsSkeletonCutoff: ms }) };
@@ -102,8 +89,6 @@ export function withSpinnerVsSkeletonCutoff(ms: number): CngxLoadingConfigFeatur
 /**
  * What a loading surface renders while it waits. `'auto'` defers to observed
  * latency; the other two pin the treatment regardless of measurement.
- *
- * @category core/utils
  */
 export type CngxLoadingTreatment = 'auto' | 'spinner' | 'skeleton';
 
@@ -124,7 +109,6 @@ export type CngxLoadingTreatment = 'auto' | 'spinner' | 'skeleton';
  * @param lastDuration `createLatencyProbe().lastDuration()` - ms of the last completed window.
  * @param cutoff `injectLoadingConfig().spinnerVsSkeletonCutoff`.
  *
- * @category core/utils
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/loading-config.ts
  * @since 0.1.0
  * @relatedTo createLatencyProbe, CNGX_LOADING_CONFIG, withSpinnerVsSkeletonCutoff
@@ -165,8 +149,6 @@ function resolveLoadingConfig(features: CngxLoadingConfigFeature[]): CngxLoading
  * library default. The same rule applies to {@link provideLoadingConfigAt},
  * so a nested scope does not inherit app-wide overrides - restate them if
  * the subtree should keep them.
- *
- * @category core/utils
  */
 export function provideLoadingConfig(
   ...features: CngxLoadingConfigFeature[]
@@ -188,8 +170,6 @@ export function provideLoadingConfig(
  * `provideLoadingConfig(withMinDwell(600))` yields the default `minDwell`
  * of 400, not 600. A scope override is a full restatement - repeat the
  * ancestor features the subtree should keep.
- *
- * @category core/utils
  */
 export function provideLoadingConfigAt(...features: CngxLoadingConfigFeature[]): Provider[] {
   return [{ provide: CNGX_LOADING_CONFIG, useValue: resolveLoadingConfig(features) }];
@@ -197,8 +177,6 @@ export function provideLoadingConfigAt(...features: CngxLoadingConfigFeature[]):
 
 /**
  * Read the resolved {@link CngxLoadingConfig}. Runs in an injection context.
- *
- * @category core/utils
  */
 export function injectLoadingConfig(): CngxLoadingConfig {
   return inject(CNGX_LOADING_CONFIG);

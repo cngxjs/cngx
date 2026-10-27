@@ -17,15 +17,11 @@ const NUMBER_FORMAT: Intl.NumberFormatOptions = {};
 
 /**
  * Color palette options for the badge.
- *
- * @category common/display
  */
 export type CngxBadgeColor = 'primary' | 'error' | 'warning' | 'neutral';
 
 /**
  * Positioning anchors relative to the host element.
- *
- * @category common/display
  */
 export type CngxBadgePosition =
   | 'inline'
@@ -44,8 +40,6 @@ export type CngxBadgePosition =
  * - String values (rendered verbatim)
  * - Boolean `true` (dot mode, no text)
  *
- * @category common/display
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/badge/badge.directive.ts
  * @since 0.1.0

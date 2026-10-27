@@ -8,8 +8,6 @@ import type { CngxContextMenuTriggerPopoverRef, CngxMenuHost } from '@cngx/commo
  * `CngxContextMenu` class so an ejected panel skin (decompose) or a future
  * second panel can satisfy the same seam - the `CngxMenuHost` precedent
  * (`CNGX_MENU_HOST`) applied to the panel surface.
- *
- * @category ui/context-menu
  */
 export interface CngxContextMenuPanel<T = unknown> {
   /** Popover surface the trigger drives at pointer coordinates. */

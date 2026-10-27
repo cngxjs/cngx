@@ -43,8 +43,6 @@ const DETACHED_FIELD_PROVIDERS = [
  * `<cngx-async-container [state]>`. The live-region announcer is bound
  * here so AT updates stay outside the body's recursive render path.
  *
- * @category forms/filter-builder
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder.component.ts
  * @since 0.1.0

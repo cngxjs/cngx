@@ -10,8 +10,6 @@ const ALERT_FALLBACK_DURATION = 5000;
 
 /**
  * Configuration for a programmatic alert.
- *
- * @category ui/feedback/alert
  */
 export interface AlertConfig {
   /** Alert message text (required). */
@@ -42,8 +40,6 @@ export interface AlertConfig {
 
 /**
  * Handle to a displayed alert - allows programmatic dismiss.
- *
- * @category ui/feedback/alert
  */
 export interface AlertRef {
   /** Programmatically dismiss this alert. */
@@ -55,8 +51,6 @@ export interface AlertRef {
 /**
  * Tracked state for a single alert - the element type of the public
  * `CngxAlerter.alerts` signal. Immutable per slot; treat as read-only.
- *
- * @category ui/feedback/alert
  */
 export interface AlertState {
   readonly id: number;
@@ -80,8 +74,6 @@ export interface AlertState {
  *
  * For root-level injection, use `provideFeedback(withAlerts())`.
  *
- * @category ui/feedback/alert
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/alert/alerter.service.ts
  * @since 0.1.0

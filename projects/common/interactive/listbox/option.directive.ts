@@ -67,8 +67,6 @@ function readOptionText(el: HTMLElement): string {
  * In V1 of the stack, `CngxListbox` reads `value()` via the AD item list and
  * exposes its own selection through `CngxOption.isSelected()`.
  *
- * @category common/interactive/listbox
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/option.directive.ts
  * @since 0.1.0

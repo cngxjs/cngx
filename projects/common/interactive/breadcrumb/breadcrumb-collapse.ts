@@ -18,7 +18,6 @@ const NO_COLLAPSE: ReadonlySet<number> = new Set();
  * set when `maxVisible` is unset/invalid (`< 1`) or the trail already fits
  * (`total <= maxVisible`), so a short trail never collapses.
  *
- * @category common/interactive/breadcrumb
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/breadcrumb/breadcrumb-collapse.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumb, CNGX_BREADCRUMB_COLLAPSE_STRATEGY

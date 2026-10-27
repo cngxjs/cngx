@@ -28,8 +28,6 @@ import { injectPresetState } from './preset-state';
  * from the chart's auto-Summary; consumers can override via
  * `[ariaLabel]`.
  *
- * @category common/chart/presets
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/presets/sparkline.component.ts
  * @since 0.1.0

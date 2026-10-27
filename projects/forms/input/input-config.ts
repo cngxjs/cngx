@@ -8,8 +8,6 @@ import type { PasswordStrengthLabel } from './password-strength.factory';
  * Global configuration for `@cngx/forms/input` directives.
  *
  * Provide via `provideInputConfig(...features)` at the application or component level.
- *
- * @category forms/input
  */
 export interface InputConfig {
   /** Extra phone patterns by region code (merged with built-in). */
@@ -69,8 +67,6 @@ export interface InputConfig {
  * (`CNGX_INPUT_LANGUAGE_EN` by default); supply a partial override via
  * {@link withInputAriaLabels} at the application or component level. Mirrors
  * the select family's `withAriaLabels` idiom.
- *
- * @category forms/input
  */
 export interface InputAriaLabels {
   /** `aria-label` for the `CngxInputClear` button. Default: `'Clear'` */
@@ -154,7 +150,6 @@ const NO_INPUT_ARIA_LABELS: Partial<InputAriaLabels> = {};
  *
  * @see {@link provideInputConfig}
  *
- * @category forms/input
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-config.ts
  * @since 0.1.0
  * @relatedTo provideInputConfig, provideInputConfigAt, injectInputConfig, withInputAriaLabels, withNumericDefaults, withMaskPlaceholder, withMaskGuide, withCustomTokens, withPhonePatterns, withIbanPatterns, withZipPatterns, withDateFormats, withDateShortFormats, withCopyResetDelay, withFileMaxSize, withFileMaxFiles, withCurrency, withPhoneDefaultRegion
@@ -166,8 +161,6 @@ export const CNGX_INPUT_CONFIG = new InjectionToken<InputConfig>('CNGX_INPUT_CON
 
 /**
  * A feature function that contributes to the input config.
- *
- * @category forms/input
  */
 export type InputConfigFeature = (config: InputConfig) => InputConfig;
 
@@ -208,8 +201,6 @@ export type InputConfigFeature = (config: InputConfig) => InputConfig;
  * @see {@link withFileMaxFiles}
  * @see {@link withInputAriaLabels}
  * @see {@link withCurrency}
- *
- * @category forms/input
  */
 export function provideInputConfig(...features: InputConfigFeature[]): Provider {
   let config: InputConfig = {};
@@ -223,8 +214,6 @@ export function provideInputConfig(...features: InputConfigFeature[]): Provider 
  * Component-scoped variant - use in `viewProviders` so the input config
  * only applies to descendants of this component. Same feature merge and
  * nearest-wins resolution as {@link provideInputConfig}.
- *
- * @category forms/input
  */
 export function provideInputConfigAt(...features: InputConfigFeature[]): Provider[] {
   return [provideInputConfig(...features)];
@@ -234,8 +223,6 @@ export function provideInputConfigAt(...features: InputConfigFeature[]): Provide
  * Inject the resolved input config in an injection context. Resolves
  * without a provider (the token carries a root default factory), so every
  * key left unset keeps its per-directive built-in default.
- *
- * @category forms/input
  */
 export function injectInputConfig(): InputConfig {
   return inject(CNGX_INPUT_CONFIG);
@@ -264,7 +251,6 @@ export function injectInputConfig(): InputConfig {
  * ```
  *
  * @see {@link provideInputConfig}
- * @category forms/input
  */
 export function withPhonePatterns(patterns: Record<string, string>): InputConfigFeature {
   return (config) => ({
@@ -292,7 +278,6 @@ export function withPhonePatterns(patterns: Record<string, string>): InputConfig
  * ```
  *
  * @see {@link provideInputConfig}
- * @category forms/input
  */
 export function withIbanPatterns(patterns: Record<string, string>): InputConfigFeature {
   return (config) => ({
@@ -320,7 +305,6 @@ export function withIbanPatterns(patterns: Record<string, string>): InputConfigF
  * ```
  *
  * @see {@link provideInputConfig}
- * @category forms/input
  */
 export function withZipPatterns(patterns: Record<string, string>): InputConfigFeature {
   return (config) => ({
@@ -352,7 +336,6 @@ export function withZipPatterns(patterns: Record<string, string>): InputConfigFe
  * ```
  *
  * @see {@link provideInputConfig}
- * @category forms/input
  */
 export function withDateFormats(formats: Record<string, string>): InputConfigFeature {
   return (config) => ({
@@ -383,7 +366,6 @@ export function withDateFormats(formats: Record<string, string>): InputConfigFea
  * ```
  *
  * @see {@link provideInputConfig}
- * @category forms/input
  */
 export function withDateShortFormats(formats: Record<string, string>): InputConfigFeature {
   return (config) => ({
@@ -407,7 +389,6 @@ export function withDateShortFormats(formats: Record<string, string>): InputConf
  * ```
  *
  * @see {@link provideInputConfig}
- * @category forms/input
  */
 export function withMaskPlaceholder(char: string): InputConfigFeature {
   return (config) => ({ ...config, maskPlaceholder: char });
@@ -426,7 +407,6 @@ export function withMaskPlaceholder(char: string): InputConfigFeature {
  * ```
  *
  * @see {@link provideInputConfig}
- * @category forms/input
  */
 export function withMaskGuide(guide: boolean): InputConfigFeature {
   return (config) => ({ ...config, maskGuide: guide });
@@ -450,7 +430,6 @@ export function withMaskGuide(guide: boolean): InputConfigFeature {
  * ```
  *
  * @see {@link provideInputConfig}
- * @category forms/input
  */
 export function withCustomTokens(tokens: MaskTokenMap): InputConfigFeature {
   return (config) => ({
@@ -475,7 +454,6 @@ export function withCustomTokens(tokens: MaskTokenMap): InputConfigFeature {
  * ```
  *
  * @see {@link provideInputConfig}
- * @category forms/input
  */
 export function withNumericDefaults(defaults: {
   locale?: string | Signal<string>;
@@ -503,7 +481,6 @@ export function withNumericDefaults(defaults: {
  * ```
  *
  * @see {@link provideInputConfig}
- * @category forms/input
  */
 export function withCopyResetDelay(ms: number): InputConfigFeature {
   return (config) => ({ ...config, copyResetDelay: ms });
@@ -522,7 +499,6 @@ export function withCopyResetDelay(ms: number): InputConfigFeature {
  * ```
  *
  * @see {@link provideInputConfig}
- * @category forms/input
  */
 export function withFileMaxSize(bytes: number): InputConfigFeature {
   return (config) => ({ ...config, fileMaxSize: bytes });
@@ -530,8 +506,6 @@ export function withFileMaxSize(bytes: number): InputConfigFeature {
 
 /**
  * Set the default `maxFiles` for `CngxFileDrop`.
- *
- * @category forms/input
  */
 export function withFileMaxFiles(count: number): InputConfigFeature {
   return (config) => ({ ...config, fileMaxFiles: count });
@@ -550,7 +524,6 @@ export function withFileMaxFiles(count: number): InputConfigFeature {
  * ```
  *
  * @see {@link provideInputConfig}
- * @category forms/input
  */
 export function withPhoneDefaultRegion(region: string): InputConfigFeature {
   return (config) => ({ ...config, phoneDefaultRegion: region });
@@ -588,7 +561,6 @@ export function withPhoneDefaultRegion(region: string): InputConfigFeature {
  * ```
  *
  * @see {@link provideInputConfig}
- * @category forms/input
  */
 export function withInputAriaLabels(
   labels: Partial<InputAriaLabels> | Signal<Partial<InputAriaLabels>>,
@@ -619,7 +591,6 @@ export function withInputAriaLabels(
  * }
  * ```
  *
- * @category forms/input
  * @since 0.1.0
  * @relatedTo withInputAriaLabels, provideInputConfig, provideInputConfigAt, InputAriaLabels
  */

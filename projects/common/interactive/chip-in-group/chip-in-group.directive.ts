@@ -67,8 +67,6 @@ import { injectChipGroupHost } from '../chip-group/chip-group-host.token';
  * </cngx-multi-chip-group>
  * ```
  *
- * @category common/interactive
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/chip-in-group/chip-in-group.directive.ts
  * @since 0.1.0

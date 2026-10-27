@@ -33,8 +33,6 @@ import {
  * The cost is one directive instance and one `computed()` per input; no
  * extra DOM, no effect, and the default resolves to no attribute at all.
  *
- * @category forms/input
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input.directive.ts
  * @selector [cngxInput]

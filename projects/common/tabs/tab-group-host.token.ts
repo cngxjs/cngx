@@ -12,8 +12,6 @@ import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
  * so subsequent input changes propagate without re-registration.
  * `errorAggregator` is a `Signal<...>` slot so consumer aggregators
  * resolved via `viewChild` after first registration still bind.
- *
- * @category common/tabs
  */
 export interface CngxTabHandle {
   readonly id: string;
@@ -58,8 +56,6 @@ export interface CngxTabHandle {
  * tab's id and its index at close time. The consumer removes the tab
  * from its own data in response; the presenter has already moved the
  * active index to the surviving neighbour.
- *
- * @category common/tabs
  */
 export interface CngxTabCloseEvent {
   readonly id: string;
@@ -70,8 +66,6 @@ export interface CngxTabCloseEvent {
  * Contract atoms see when they inject the presenter via
  * {@link CNGX_TAB_GROUP_HOST}. Atoms never reach into the concrete
  * class - keeps layering cycle-free and the decompose schematic clean.
- *
- * @category common/tabs
  */
 export interface CngxTabGroupHost {
   readonly tabs: Signal<readonly CngxTabHandle[]>;
@@ -178,7 +172,6 @@ export interface CngxTabGroupHost {
  * `select()`, roving stop derived from `activeId`) through
  * `createTabKeyboardNav`.
  *
- * @category common/tabs
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/tab-group-host.token.ts
  * @since 0.1.0

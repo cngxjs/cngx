@@ -8,8 +8,6 @@ import type { CngxTabGroupHost, CngxTabHandle } from '../tab-group-host.token';
  * handle and the presenter contract; the factory runs the APG tablist
  * keyboard model so the organism class stays under the LOC guard.
  * Sibling shape to `createTabDismissals`.
- *
- * @category common/tabs
  */
 export interface CngxTabKeyboardNavOptions {
   readonly host: CngxTabGroupHost;
@@ -34,8 +32,6 @@ export interface CngxTabKeyboardNavOptions {
  * organism holds this as one field; the template reads `tabTabindex`
  * for the roving stop and routes the tab buttons' `(keydown)` through
  * `handleKeydown`.
- *
- * @category common/tabs
  */
 export interface CngxTabKeyboardNav {
   /**
@@ -73,7 +69,6 @@ export interface CngxTabKeyboardNav {
  * activation the focused tab is always the active one, so the clamped
  * active index is the correct origin.
  *
- * @category common/tabs
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/keyboard/tab-keyboard-nav.ts
  * @since 0.1.0
  * @relatedTo CngxTabGroupPresenter, CngxTabGroup, createTabGroupAnnouncements

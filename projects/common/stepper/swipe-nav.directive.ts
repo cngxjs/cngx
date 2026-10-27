@@ -22,8 +22,6 @@ import { injectStepperHost } from './stepper-host.token';
  * window apply identically to a click); the back swipe ->
  * `selectPrevious()`, gated on `busy()` like the strip back-arrow.
  *
- * @category common/stepper
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/swipe-nav.directive.ts
  * @since 0.1.0

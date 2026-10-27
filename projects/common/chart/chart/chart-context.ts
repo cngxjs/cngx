@@ -10,8 +10,6 @@ import { type CngxChartLayer } from '../layers/chart-layer';
  * or arbitrary references via {@link createBandScale}'s generic. The
  * union narrows at the layer atom (`[cngxLine]`, `[cngxBar]`, ...);
  * the chart context surface stays scale-agnostic.
- *
- * @category common/chart
  */
 export type XScaleInput = number | Date | string;
 
@@ -19,8 +17,6 @@ export type XScaleInput = number | Date | string;
  * Generic scale function shape. Maps a domain value of type `TIn` to a
  * range value (typically a pixel coordinate). Mirrors the result type
  * of every `create*Scale` factory in `@cngx/common/chart`.
- *
- * @category common/chart
  */
 export type ScaleFn<TIn> = (v: TIn) => number;
 
@@ -56,8 +52,6 @@ export interface CngxChartInset {
  * A collapsed plot (a box narrower than the room its axes need) reports
  * `width` or `height` at or below `0`. Readers guard on the extent; the
  * chart hands out its NOOP scale in the same case.
- *
- * @category common/chart
  */
 export interface CngxChartPlotArea {
   readonly x0: number;
@@ -77,8 +71,6 @@ export interface CngxChartPlotArea {
  * boundary; layer atoms call `data<T>()` to narrow the array to their
  * own `<T>` - the single boundary cast lives inside `CngxChart`'s
  * `data<U>()` method, not at every consumer site.
- *
- * @category common/chart
  */
 export interface CngxChartContext<TX = XScaleInput, TY = number> {
   readonly xScale: Signal<ScaleFn<TX>>;
@@ -126,7 +118,6 @@ export interface CngxChartContext<TX = XScaleInput, TY = number> {
  * via `useExisting`; child queries narrow the generic on the consumer
  * side.
  *
- * @category common/chart
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/chart-context.ts
  * @since 0.1.0
  */
@@ -143,7 +134,6 @@ export const CNGX_CHART_CONTEXT = new InjectionToken<CngxChartContext>('CngxChar
  * read `plot`, the scales and `renderSvg` the same way the built-in
  * layer atoms do.
  *
- * @category common/chart
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/chart-context.ts
  * @since 0.1.0
  */

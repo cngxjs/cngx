@@ -134,8 +134,6 @@ import {
 
 /**
  * Change event emitted by {@link CngxTypeahead.selectionChange}.
- *
- * @category forms/select/typeahead
  */
 export interface CngxTypeaheadChange<T = unknown> {
   readonly source: CngxTypeahead<T>;
@@ -174,8 +172,6 @@ export interface CngxTypeaheadChange<T = unknown> {
  * `'anchored'`, `'sheet'` or `'fullscreen'`; `withMobileSheet('off')` keeps
  * every select in its scope anchored.
  *
- * @category forms/select/typeahead
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/typeahead/typeahead.component.ts
  * @since 0.1.0

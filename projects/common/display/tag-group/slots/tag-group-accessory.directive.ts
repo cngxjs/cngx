@@ -24,7 +24,6 @@ import type { CngxTagGroupAccessoryContext } from './tag-group-slot.context';
  * </cngx-tag-group>
  * ```
  *
- * @category common/display
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/tag-group/slots/tag-group-accessory.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTagGroup, CngxTagGroupHeader

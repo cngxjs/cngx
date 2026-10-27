@@ -31,8 +31,6 @@ import { CNGX_STAT } from './stat.token';
  * </cngx-stat>
  * ```
  *
- * @category common/data/metric
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/display/stat/stat.component.ts
  * @since 0.1.0

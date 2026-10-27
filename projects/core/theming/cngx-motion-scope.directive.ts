@@ -30,7 +30,6 @@ import type { CngxMotionPreference } from './motion';
  * `CngxMotionScope` (not `CngxMotion`) to stay clear of the OS-preference
  * reader `CngxReducedMotion` in `@cngx/common/a11y`.
  *
- * @category core/theming
  * @relatedTo provideMotion
  * @relatedTo CNGX_MOTION
  * @since 0.1.0

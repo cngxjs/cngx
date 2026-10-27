@@ -13,8 +13,6 @@ interface SwipeReading {
  * Detects directional swipe gestures via Pointer Events and reports the
  * resolved direction.
  *
- * @category common/interactive/gestures
- *
  * Generic navigation atom: unlike {@link CngxSwipeDismiss} (one fixed
  * direction, dismiss intent), this emits `swiped` with the dominant
  * direction so a single host can drive bidirectional flows - carousels,
@@ -36,7 +34,6 @@ interface SwipeReading {
  *   }
  * }
  * ```
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/gestures/swipe.directive.ts
  * @since 0.1.0

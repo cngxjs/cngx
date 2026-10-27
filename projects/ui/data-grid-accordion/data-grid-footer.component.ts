@@ -8,7 +8,6 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/
  * component ships no live producer - the region element and its content are the
  * consumer's, so any state it announces stays owned outside this structural shell.
  *
- * @category ui/data-grid-accordion
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-footer.component.ts
  * @since 0.1.0

@@ -17,7 +17,6 @@ import type { CngxCommandPalette } from './command-palette.component';
  * <cngx-command-palette #palette />
  * ```
  *
- * @category ui/command-palette
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/command-palette/palette/command-palette-trigger.directive.ts
  * @since 0.1.0

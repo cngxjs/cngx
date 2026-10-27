@@ -11,8 +11,6 @@ import type { CngxTabHandle } from '../tab-group-host.token';
  *
  * Richer than {@link CngxTabErrorBadgeContext} (which only needs `tab`) because an
  * icon commonly swaps glyph on the active tab.
- *
- * @category common/tabs/slots
  */
 export interface CngxTabIconContext {
   /** The tab handle carrying id / label / disabled / aggregator signals. */
@@ -35,7 +33,6 @@ export interface CngxTabIconContext {
  * </ng-template>
  * ```
  *
- * @category common/tabs/slots
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/slots/tab-icon.directive.ts
  * @since 0.1.0

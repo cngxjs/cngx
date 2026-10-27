@@ -16,8 +16,6 @@ import {
  * `CngxSpeakButton` reads both keys inside a `computed()` while its
  * `readAloudLabel` / `stopLabel` inputs are unbound, so the label follows a
  * language switch.
- *
- * @category ui/speak/i18n
  */
 export type CngxSpeakI18n = CngxSpeakLanguageSection;
 
@@ -29,7 +27,6 @@ const speakBundleFromPack = createLanguageSection('speak', CNGX_SPEAK_LANGUAGE_E
  * section of the active language pack over the English defaults. The value is
  * a `Signal`, shared by every reader under one injector.
  *
- * @category ui/speak/i18n
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/speak/speak-i18n.ts
  * @since 0.1.0
@@ -43,7 +40,6 @@ export const CNGX_SPEAK_I18N = new InjectionToken<Signal<CngxSpeakI18n>>('CngxSp
 /**
  * Branded feature-fn for {@link provideSpeakI18n}.
  *
- * @category ui/speak/i18n
  * @since 0.1.0
  */
 export type CngxSpeakI18nFeature = ((bundle: Signal<CngxSpeakI18n>) => Signal<CngxSpeakI18n>) & {
@@ -63,7 +59,6 @@ function defineSpeakI18nFeature(
  * default, so the button never loses its accessible name. Pass a `Signal` of a
  * partial bundle to switch languages at runtime.
  *
- * @category ui/speak/i18n
  * @since 0.1.0
  */
 export function withSpeakI18nLabels(
@@ -84,7 +79,6 @@ export function withSpeakI18nLabels(
  * });
  * ```
  *
- * @category ui/speak/i18n
  * @since 0.1.0
  */
 export function provideSpeakI18n(...features: readonly CngxSpeakI18nFeature[]): Provider {
@@ -98,7 +92,6 @@ export function provideSpeakI18n(...features: readonly CngxSpeakI18nFeature[]): 
 /**
  * Inject the resolved speak i18n bundle signal.
  *
- * @category ui/speak/i18n
  * @since 0.1.0
  */
 export function injectSpeakI18n(): Signal<CngxSpeakI18n> {

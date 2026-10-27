@@ -29,7 +29,6 @@ import { Directive, input } from '@angular/core';
  * </div>
  * ```
  *
- * @category common/a11y
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/aria/live-region.directive.ts
  * @since 0.1.0

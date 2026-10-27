@@ -73,8 +73,6 @@ const FOCUS_DEBOUNCE_MS = 50;
  * </button>
  * ```
  *
- * @category common/popover
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/tooltip.directive.ts
  * @since 0.1.0

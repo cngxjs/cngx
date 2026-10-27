@@ -27,7 +27,6 @@ import { CngxToaster } from '../toast/toast.service';
 /**
  * Marks the skeleton template inside `cngx-async-container`.
  *
- * @category ui/feedback/async
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/async-container/async-container.ts
  * @since 0.1.0
  */
@@ -40,7 +39,6 @@ export class CngxAsyncSkeletonTpl {
  * Marks the content template inside `cngx-async-container`.
  * Context: `{ $implicit: T }` - use `let-data` to access.
  *
- * @category ui/feedback/async
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/async-container/async-container.ts
  * @since 0.1.0
  */
@@ -59,7 +57,6 @@ export class CngxAsyncContentTpl<T> {
 /**
  * Marks the empty-state template inside `cngx-async-container`.
  *
- * @category ui/feedback/async
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/async-container/async-container.ts
  * @since 0.1.0
  */
@@ -72,7 +69,6 @@ export class CngxAsyncEmptyTpl {
  * Marks the error template inside `cngx-async-container`.
  * Context: `{ $implicit: unknown }` - use `let-err` to access.
  *
- * @category ui/feedback/async
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/async-container/async-container.ts
  * @since 0.1.0
  */
@@ -110,8 +106,6 @@ export class CngxAsyncErrorTpl {
  *
  * @playground Data flow ./examples/data-flow/data-flow-example.component.ts
  *
- * @category ui/feedback/async
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/async-container/async-container.ts
  * @since 0.1.0

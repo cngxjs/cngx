@@ -16,7 +16,6 @@ import { CNGX_LAYOUT_LANGUAGE_EN, type CngxLayoutLanguageSection } from './layou
  * section of a language pack, declared once as
  * {@link CngxLayoutLanguageSection}.
  *
- * @category common/layout/i18n
  * @since 0.1.0
  */
 export type CngxLayoutI18n = CngxLayoutLanguageSection;
@@ -29,7 +28,6 @@ const layoutBundleFromPack = createLanguageSection('layout', CNGX_LAYOUT_LANGUAG
  * section of the active language pack over the English defaults; the value
  * is a `Signal`, shared by every reader under one injector.
  *
- * @category common/layout/i18n
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/i18n/layout-i18n.ts
  * @since 0.1.0
@@ -43,7 +41,6 @@ export const CNGX_LAYOUT_I18N = new InjectionToken<Signal<CngxLayoutI18n>>('Cngx
 /**
  * Branded feature-fn for {@link provideLayoutI18n}.
  *
- * @category common/layout/i18n
  * @since 0.1.0
  */
 export type CngxLayoutI18nFeature = ((bundle: Signal<CngxLayoutI18n>) => Signal<CngxLayoutI18n>) & {
@@ -62,7 +59,6 @@ function defineLayoutI18nFeature(
  * language pack's copy, or the English default. Pass a `Signal` of a partial
  * bundle to switch languages at runtime.
  *
- * @category common/layout/i18n
  * @since 0.1.0
  */
 export function withLayoutI18nLabels(
@@ -86,7 +82,6 @@ export function withLayoutI18nLabels(
  * });
  * ```
  *
- * @category common/layout/i18n
  * @since 0.1.0
  */
 export function provideLayoutI18n(...features: readonly CngxLayoutI18nFeature[]): Provider {
@@ -104,7 +99,6 @@ export function provideLayoutI18n(...features: readonly CngxLayoutI18nFeature[])
  * Inject the resolved layout i18n bundle signal. Read it inside a
  * `computed()` or template so a runtime override flip re-derives.
  *
- * @category common/layout/i18n
  * @since 0.1.0
  */
 export function injectLayoutI18n(): Signal<CngxLayoutI18n> {

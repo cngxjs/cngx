@@ -16,8 +16,6 @@ import { InjectionToken, type Provider } from '@angular/core';
  * `formatAsYouType` / `isValid` are reserved for a later display-formatting
  * pass and are intentionally not declared yet, so the contract ships as a
  * single load-bearing method rather than an empty surface.
- *
- * @category forms/input
  */
 export interface CngxPhoneMetadata {
   /**
@@ -44,7 +42,6 @@ export interface CngxPhoneMetadata {
  * providers: [providePhoneMetadata(libphonenumberAdapter)]
  * ```
  *
- * @category forms/input
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/phone-metadata.ts
  * @since 0.2.0
  * @relatedTo CngxPhoneInput, providePhoneMetadata
@@ -67,8 +64,6 @@ export const CNGX_PHONE_METADATA = new InjectionToken<CngxPhoneMetadata>('CNGX_P
  * // app.config.ts
  * providers: [providePhoneMetadata(libphonenumberAdapter)]
  * ```
- *
- * @category forms/input
  */
 export function providePhoneMetadata(adapter: CngxPhoneMetadata): Provider {
   return { provide: CNGX_PHONE_METADATA, useValue: adapter };
@@ -79,8 +74,6 @@ export function providePhoneMetadata(adapter: CngxPhoneMetadata): Provider {
  * (`'0664'` minus the trunk `0` is `'664'`), or a `RegExp` matched against the
  * start of the national digits (`/^1[567]/`). Only start-anchored matches count
  * as a prefix; a `RegExp` that matches mid-number is ignored.
- *
- * @category forms/input
  */
 export type PhonePrefixMatcher = string | RegExp;
 
@@ -88,8 +81,6 @@ export type PhonePrefixMatcher = string | RegExp;
  * Per-region map of the national-number prefixes that identify each line type.
  * This carries the consumer's own numbering data only - cngx ships none, in line
  * with {@link CngxPhoneMetadata} keeping numbering metadata out of the library.
- *
- * @category forms/input
  */
 export type PhonePrefixMap = Readonly<
   Record<string, Readonly<Partial<Record<'mobile' | 'fixedLine', readonly PhonePrefixMatcher[]>>>>
@@ -119,7 +110,6 @@ export type PhonePrefixMap = Readonly<
  * );
  * ```
  *
- * @category forms/input
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/phone-metadata.ts
  * @since 0.2.0
  * @relatedTo CngxPhoneMetadata, providePhoneMetadata

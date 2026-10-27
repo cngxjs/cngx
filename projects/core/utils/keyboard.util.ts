@@ -1,7 +1,6 @@
 /**
  * Parsed keyboard combo.
  *
- * @category core/utils/keyboard
  * @since 0.1.0
  */
 export interface KeyCombo {
@@ -29,7 +28,6 @@ export interface KeyCombo {
  * // { key: 'b', ctrl: false, meta: false, mod: true, shift: false, alt: false }
  * ```
  *
- * @category core/utils/keyboard
  * @since 0.1.0
  */
 export function parseKeyCombo(combo: string): KeyCombo {
@@ -72,7 +70,6 @@ export function parseKeyCombo(combo: string): KeyCombo {
  * @param combo The parsed combo to match against.
  * @param isMac Whether the current platform is macOS (affects `mod` resolution).
  *
- * @category core/utils/keyboard
  * @since 0.1.0
  */
 export function matchesKeyCombo(event: KeyboardEvent, combo: KeyCombo, isMac: boolean): boolean {

@@ -47,8 +47,6 @@ import { CngxLoadingIndicator } from './loading-indicator';
  * </cngx-loading-overlay>
  * ```
  *
- * @category ui/feedback/loading
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/loading/loading-overlay.ts
  * @since 0.1.0

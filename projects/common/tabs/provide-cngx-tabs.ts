@@ -8,8 +8,6 @@ import { provideTabsConfig, provideTabsConfigAt, type CngxTabsConfigFeature } fr
  * Union of feature kinds the tabs aggregator accepts. \
  * Today: config and i18n; future surfaces widen the union and dispatch via the
  * hidden `_target` discriminator.
- *
- * @category common/tabs
  */
 export type CngxTabsFeature = CngxTabsConfigFeature | CngxTabsI18nFeature;
 
@@ -82,7 +80,6 @@ function partitionFeatures(
  * });
  * ```
  *
- * @category common/tabs
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/provide-cngx-tabs.ts
  * @since 0.1.0
  * @relatedTo CngxTabGroup, CngxTabsConfig, provideCngxTabsAt
@@ -111,7 +108,6 @@ export function provideCngxTabs(...features: readonly CngxTabsFeature[]): Enviro
  * })
  * ```
  *
- * @category common/tabs
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/provide-cngx-tabs.ts
  * @since 0.1.0
  * @relatedTo CngxTabGroup, CngxTabsConfig, provideCngxTabs

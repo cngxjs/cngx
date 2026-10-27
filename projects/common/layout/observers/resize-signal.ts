@@ -5,7 +5,6 @@ import { type DestroyRef, signal, type Signal } from '@angular/core';
  * or a test double. `ResizeObserver` is optional so SSR and jsdom hosts pass
  * the type and hit the runtime guard instead.
  *
- * @category common/layout/observers
  * @since 0.3.0
  */
 export interface ResizeObserverHost {
@@ -31,7 +30,6 @@ export interface ResizeObserverHost {
  * @param box Which box model to report.
  * @param apply Receives the first entry of every observation batch.
  * @returns Teardown that disconnects the observer.
- * @category common/layout/observers
  * @relatedTo createResizeSignal, observeMediaQuery
  * @since 0.1.0
  */
@@ -76,7 +74,6 @@ export function observeResize(
  * @param destroyRef Scope whose destruction disconnects the observer.
  * @param host The window-like object to read `ResizeObserver` from.
  * @returns A readonly signal carrying the latest entry.
- * @category common/layout/observers
  * @relatedTo observeResize, createMediaQuerySignal
  * @since 0.1.0
  */

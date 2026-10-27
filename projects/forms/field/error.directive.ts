@@ -32,8 +32,6 @@ import { injectFormFieldPresenter } from './inject-form-field-presenter';
  * </cngx-form-field>
  * ```
  *
- * @category forms/field
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/error.directive.ts
  * @since 0.1.0

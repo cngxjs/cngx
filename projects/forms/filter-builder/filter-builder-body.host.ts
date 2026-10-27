@@ -22,7 +22,6 @@ import { CngxFilterBuilderBody } from './filter-builder-body.component';
  * `CNGX_FILTER_BUILDER_HOST`. Mirrors `CNGX_SELECT_PANEL_VIEW_HOST` in
  * `@cngx/forms/select`.
  *
- * @category forms/filter-builder
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-body.host.ts
  * @since 0.1.0
  * @relatedTo CngxFilterBuilder, CngxFilterBuilderBody, CngxFilterBuilderTemplateRegistry

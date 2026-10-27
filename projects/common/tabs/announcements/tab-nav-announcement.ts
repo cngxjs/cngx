@@ -14,8 +14,6 @@ import type { CngxTabGroupHost } from '../tab-group-host.token';
  * Inputs the nav announcement bundle reads from its host organism.
  * Passing the presenter in (instead of re-injecting) keeps the factory a
  * plain function of its arguments.
- *
- * @category common/tabs/announcements
  */
 export interface CngxTabNavAnnouncementOptions {
   readonly presenter: CngxTabGroupHost;
@@ -29,8 +27,6 @@ export interface CngxTabNavAnnouncementOptions {
 
 /**
  * Resolved bundle returned by {@link createTabNavAnnouncement}.
- *
- * @category common/tabs/announcements
  */
 export interface CngxTabNavAnnouncement {
   /**
@@ -68,7 +64,6 @@ export interface CngxTabNavAnnouncement {
  * point instead of as the first announcement. Returning to a section
  * that was active at mount still announces.
  *
- * @category common/tabs/announcements
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/announcements/tab-nav-announcement.ts
  * @since 0.1.0

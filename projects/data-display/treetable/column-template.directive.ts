@@ -22,7 +22,6 @@ import type {
  *
  * @typeParam T - The data type of the tree nodes.
  *
- * @category data-display/treetable
  * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/column-template.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTreetable, CngxHeaderTpl, CngxEmptyTpl
@@ -55,7 +54,6 @@ export class CngxCellTpl<T = unknown> {
  * </cngx-treetable>
  * ```
  *
- * @category data-display/treetable
  * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/column-template.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTreetable, CngxCellTpl, CngxEmptyTpl
@@ -86,7 +84,6 @@ export class CngxHeaderTpl {
  * </cngx-treetable>
  * ```
  *
- * @category data-display/treetable
  * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/column-template.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTreetable, CngxCellTpl, CngxHeaderTpl
@@ -122,7 +119,6 @@ export class CngxEmptyTpl {
  * </cngx-treetable>
  * ```
  *
- * @category data-display/treetable
  * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/column-template.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTreetable, CngxRefreshTpl, CngxEmptyTpl, CngxErrorTpl
@@ -154,7 +150,6 @@ export class CngxSkeletonRowTpl {
  * </cngx-treetable>
  * ```
  *
- * @category data-display/treetable
  * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/column-template.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTreetable, CngxSkeletonRowTpl, CngxEmptyTpl, CngxErrorTpl
@@ -190,7 +185,6 @@ export class CngxRefreshTpl {
  * </cngx-treetable>
  * ```
  *
- * @category data-display/treetable
  * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/column-template.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTreetable, CngxCellTpl, CngxHeaderTpl, CngxEmptyTpl

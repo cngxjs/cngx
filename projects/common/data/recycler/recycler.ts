@@ -31,8 +31,6 @@ import { createSizeCache } from './size-cache';
 /**
  * I18n interface for recycler SR announcements.
  * All methods return the announcement text. No hardcoded strings.
- *
- * @category common/data/recycler
  */
 export interface RecyclerI18n {
   /** Announced when new items are loaded (infinite scroll). */
@@ -70,7 +68,6 @@ const recyclerBundle = createSectionBundle<CngxRecyclerLanguageSection, Recycler
  * of the active language pack over English, counts formatted for the app
  * locale. Override with `provideRecyclerI18n()`.
  *
- * @category common/data/recycler
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/recycler/recycler.ts
  * @since 0.1.0
@@ -81,8 +78,6 @@ export const CNGX_RECYCLER_I18N = new InjectionToken<Signal<RecyclerI18n>>('Cngx
 
 /**
  * Branded feature-fn for {@link provideRecyclerI18n}.
- *
- * @category common/data/recycler
  */
 export type CngxRecyclerI18nFeature = ((bundle: Signal<RecyclerI18n>) => Signal<RecyclerI18n>) & {
   readonly _target: 'i18n';
@@ -99,8 +94,6 @@ function defineRecyclerI18nFeature(
  * Override recycler announcements via a partial bundle - keys you leave out
  * keep the language pack's text, or the English default. Pass a `Signal` to
  * switch the language at runtime.
- *
- * @category common/data/recycler
  */
 export function withRecyclerI18nLabels(
   overrides: Partial<RecyclerI18n> | Signal<Partial<RecyclerI18n>>,
@@ -122,8 +115,6 @@ export function withRecyclerI18nLabels(
  *   ),
  * ]
  * ```
- *
- * @category common/data/recycler
  */
 export function provideRecyclerI18n(...features: readonly CngxRecyclerI18nFeature[]): Provider {
   return {
@@ -134,8 +125,6 @@ export function provideRecyclerI18n(...features: readonly CngxRecyclerI18nFeatur
 
 /**
  * Configuration for {@link injectRecycler}.
- *
- * @category common/data/recycler
  */
 export interface RecyclerConfig {
   /** Scroll container. CSS selector, native element, or `ElementRef`. */
@@ -196,8 +185,6 @@ export interface RecyclerConfig {
 /**
  * Signal-based virtualizer returned by {@link injectRecycler}.
  * All derived values are `computed()` - the system cannot become inconsistent.
- *
- * @category common/data/recycler
  */
 export interface CngxRecycler {
   /** Start index (inclusive) of the rendered range, including overscan. */
@@ -343,8 +330,6 @@ export interface CngxRecycler {
  *   state: this.state,
  * });
  * ```
- *
- * @category common/data/recycler
  */
 export function injectRecycler(config: RecyclerConfig): CngxRecycler {
   const destroyRef = inject(DestroyRef);

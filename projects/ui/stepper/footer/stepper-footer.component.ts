@@ -41,8 +41,6 @@ import {
  * </cngx-stepper-footer>
  * ```
  *
- * @category ui/stepper
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/footer/stepper-footer.component.ts
  * @since 0.1.0

@@ -9,7 +9,6 @@ import { Directive } from '@angular/core';
  * <button cngxButton><cngx-icon cngxButtonStart name="save" /> Save</button>
  * ```
  *
- * @category common/button
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/slots.ts
  * @since 0.1.0
  * @relatedTo CngxButton, CngxButtonEnd
@@ -31,7 +30,6 @@ export class CngxButtonStart {}
  * <button cngxButton>Export <kbd cngxButtonEnd>E</kbd></button>
  * ```
  *
- * @category common/button
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/slots.ts
  * @since 0.1.0
  * @relatedTo CngxButton, CngxButtonStart

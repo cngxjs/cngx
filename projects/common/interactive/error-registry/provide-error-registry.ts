@@ -25,7 +25,6 @@ export interface _ErrorRegistryConfig {
  * A feature configuration function accepted by {@link provideErrorRegistry},
  * returned by the `with*` helpers. Mirrors the `NavConfigFeature` shape.
  *
- * @category common/interactive/error
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/provide-error-registry.ts
  * @since 0.1.0
  */
@@ -53,7 +52,6 @@ export interface ErrorRegistryFeature {
  * });
  * ```
  *
- * @category common/interactive/error
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/provide-error-registry.ts
  * @since 0.1.0
  * @relatedTo CngxErrorScope, CngxErrorAggregator
@@ -122,7 +120,6 @@ export function provideErrorRegistry(
  * instead - the scope-name registration path stays available without
  * the global listener.
  *
- * @category common/interactive/error
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/provide-error-registry.ts
  * @since 0.1.0
  * <example-url>http://localhost:4200/#/common/interactive/error/registry/provider-and-reveal-features</example-url>
@@ -144,7 +141,6 @@ export function withGlobalRevealOnSubmit(): ErrorRegistryFeature {
  * the common pattern (reveal-all on attempted navigation) but surface
  * the implication when wiring a guard that cancels based on form errors.
  *
- * @category common/interactive/error
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/provide-error-registry.ts
  * @since 0.1.0
  * <example-url>http://localhost:4200/#/common/interactive/error/registry/provider-and-reveal-features</example-url>

@@ -18,8 +18,6 @@ import { CNGX_SELECT_LANGUAGE_EN } from '../i18n/select-language-section';
  * App-wide config for reorder-aware select variants. Cascade:
  * per-instance input > `provideReorderableSelectConfigAt` >
  * `provideReorderableSelectConfig` > library default.
- *
- * @category forms/select/reorderable-multi-select
  */
 export interface CngxReorderableSelectConfig {
   /** Forwarded to inner `CngxReorder`. Default `'alt'`. */
@@ -73,8 +71,6 @@ export interface CngxReorderableSelectConfig {
 
 /**
  * Accessible name of a sortable row's move button, built from the row label.
- *
- * @category forms/select/reorderable-multi-select
  */
 export type CngxReorderMoveLabel = (label: string) => string;
 
@@ -116,7 +112,6 @@ export const CNGX_REORDERABLE_SELECT_DEFAULTS: Required<
  * Resolution is nearest-wins: a nested provider replaces an ancestor config for
  * its subtree, it does not deep-merge.
  *
- * @category forms/select/reorderable-multi-select
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/reorderable-select-config.ts
  * @since 0.1.0
@@ -129,8 +124,6 @@ export const CNGX_REORDERABLE_SELECT_CONFIG = new InjectionToken<CngxReorderable
 /**
  * Feature returned by the `with*` helpers. Merged by
  * {@link provideReorderableSelectConfig}.
- *
- * @category forms/select/reorderable-multi-select
  */
 export interface CngxReorderableSelectConfigFeature {
   readonly config: Partial<CngxReorderableSelectConfig>;
@@ -144,8 +137,6 @@ function feature(config: Partial<CngxReorderableSelectConfig>): CngxReorderableS
 
 /**
  * Sets the keyboard modifier gating reorder moves.
- *
- * @category forms/select/reorderable-multi-select
  */
 export function withReorderKeyboardModifier(
   modifier: CngxReorderModifier,
@@ -156,8 +147,6 @@ export function withReorderKeyboardModifier(
 /**
  * Sets the chip-strip ARIA label. Pass a `Signal` to follow a runtime
  * language switch.
- *
- * @category forms/select/reorderable-multi-select
  */
 export function withReorderAriaLabel(
   label: string | Signal<string>,
@@ -171,8 +160,6 @@ export function withReorderAriaLabel(
  * the reasons the end buttons are unavailable. Each key takes a value or a
  * `Signal`, so a runtime language switch reaches it; unset keys keep the
  * `select` language section.
- *
- * @category forms/select/reorderable-multi-select
  */
 export function withReorderListLabels(
   labels: Pick<CngxReorderableSelectConfig, 'listLabel' | 'moveUp' | 'moveDown' | 'atStart' | 'atEnd'>,
@@ -182,8 +169,6 @@ export function withReorderListLabels(
 
 /**
  * Sets the default drag-handle glyph app-wide via `TemplateRef<void>`.
- *
- * @category forms/select/reorderable-multi-select
  */
 export function withDefaultDragHandle(
   template: TemplateRef<void> | null,
@@ -194,8 +179,6 @@ export function withDefaultDragHandle(
 /**
  * Sets strip-freeze-on-commit. `false` lets reorders supersede in-flight
  * commits via the commit-controller's supersede semantics.
- *
- * @category forms/select/reorderable-multi-select
  */
 export function withReorderStripFreeze(freeze: boolean): CngxReorderableSelectConfigFeature {
   return feature({ freezeStripOnCommit: freeze });
@@ -216,8 +199,6 @@ export function withReorderStripFreeze(freeze: boolean): CngxReorderableSelectCo
  *   ],
  * });
  * ```
- *
- * @category forms/select/reorderable-multi-select
  */
 export function provideReorderableSelectConfig(
   ...features: CngxReorderableSelectConfigFeature[]
@@ -234,8 +215,6 @@ export function provideReorderableSelectConfig(
 /**
  * Component-scoped reorderable-select config. Returns `Provider[]`
  * because `viewProviders` rejects `EnvironmentProviders`.
- *
- * @category forms/select/reorderable-multi-select
  */
 export function provideReorderableSelectConfigAt(
   ...features: CngxReorderableSelectConfigFeature[]

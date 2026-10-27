@@ -27,8 +27,6 @@ import { CngxInputMask } from './input-mask.directive';
  * <!-- component: stripSpaces = (s: string) => s.replace(/\s+/g, '') -->
  * ```
  *
- * @category forms/input
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/paste-transform.directive.ts
  * @since 0.2.0

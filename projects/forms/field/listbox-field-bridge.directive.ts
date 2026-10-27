@@ -38,8 +38,6 @@ import type { CngxFieldRef, CngxFormFieldControl } from './models';
  * pass the returned accessor to `[field]` - the bridge doesn't care about the
  * source.
  *
- * @category forms/field
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/listbox-field-bridge.directive.ts
  * @since 0.1.0

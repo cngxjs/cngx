@@ -17,7 +17,6 @@ import { CNGX_AUDIO_ENGINE_FACTORY, type CngxAudioEngine } from './engine/audio-
  * call sites (`const audio: CngxAudioHandle = injectCngxAudio()`), and because
  * the engine contract is the one an override implements.
  *
- * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/inject-audio.ts
  * @since 0.1.0
  */
@@ -52,7 +51,6 @@ export const CNGX_AUDIO_ENGINE = new InjectionToken<CngxAudioHandle>('CngxAudioE
  * }
  * ```
  *
- * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/inject-audio.ts
  * @since 0.1.0
  */
@@ -95,7 +93,6 @@ export function injectCngxAudio(): CngxAudioHandle {
  * independent audio scope - per-element `[audioVolume]` / `[audioDisabled]`
  * cover the common case without a second context.
  *
- * @category common/audio
  * @relatedTo provideCngxAudio, injectCngxAudio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/inject-audio.ts
  * @since 0.1.0

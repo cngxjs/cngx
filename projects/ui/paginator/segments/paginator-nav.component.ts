@@ -80,7 +80,6 @@ const NAV_TEMPLATE = `
 /**
  * First-page segment. Disabled on the first page; calls `host.first()`.
  *
- * @category ui/paginator
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-nav.component.ts
  * @since 0.1.0
@@ -109,7 +108,6 @@ export class CngxPaginatorFirst {
 /**
  * Previous-page segment. Disabled on the first page; calls `host.previous()`.
  *
- * @category ui/paginator
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-nav.component.ts
  * @since 0.1.0
@@ -138,7 +136,6 @@ export class CngxPaginatorPrev {
 /**
  * Next-page segment. Disabled on the last page; calls `host.next()`.
  *
- * @category ui/paginator
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-nav.component.ts
  * @since 0.1.0
@@ -167,7 +164,6 @@ export class CngxPaginatorNext {
 /**
  * Last-page segment. Disabled on the last page; calls `host.last()`.
  *
- * @category ui/paginator
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-nav.component.ts
  * @since 0.1.0

@@ -36,8 +36,6 @@ const NUMBER_FORMAT: Intl.NumberFormatOptions = {};
  * <cngx-range-slider aria-label="Price" [(value)]="price" [min]="0" [max]="1000" [step]="10" />
  * ```
  *
- * @category common/interactive/slider
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/range-slider.component.ts
  * @since 0.1.0

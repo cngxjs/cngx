@@ -48,7 +48,6 @@ export const CNGX_TAG_DEFAULTS: CngxTagConfig = {
  * (root cascade) or `provideTagConfigAt(...features)` in a component's
  * `viewProviders` (sub-tree cascade).
  *
- * @category common/display
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/tag/config/tag.config.defaults.ts
  * @since 0.1.0
  */

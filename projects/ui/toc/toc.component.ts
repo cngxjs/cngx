@@ -73,8 +73,6 @@ function itemsEqual(a: readonly CngxTocItem[], b: readonly CngxTocItem[]): boole
  * a required input. The spy resolves its targets through `getElementById`, so
  * its host placement is irrelevant to its function.
  *
- * @category ui/toc
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/toc/toc.component.ts
  * @since 0.1.0

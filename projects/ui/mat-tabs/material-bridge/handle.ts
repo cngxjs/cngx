@@ -55,8 +55,6 @@ export interface CngxMatTabHandleSetup {
  * - `directError` - writable seeded at `false`;
  *   `[cngxMatTabErrorFlag]` writes its `string | boolean` value in
  *   and resets on teardown. Folds into `hasError` / `errorMessage`.
- *
- * @category ui/mat-tabs
  */
 export function createMatTabHandle(
   matTab: MatTab,
@@ -137,8 +135,6 @@ export function createMatTabHandle(
  * Factory signature for {@link createMatTabHandle}. The DI token
  * {@link CNGX_MAT_TAB_HANDLE_FACTORY} resolves to a function with
  * this exact shape - overrides match it identically.
- *
- * @category ui/mat-tabs
  */
 export type CngxMatTabHandleFactory = typeof createMatTabHandle;
 
@@ -166,7 +162,6 @@ export type CngxMatTabHandleFactory = typeof createMatTabHandle;
  * ]
  * ```
  *
- * @category ui/mat-tabs
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/material-bridge/handle.ts
  * @since 0.1.0

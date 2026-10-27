@@ -6,8 +6,6 @@
  * against `NaN` is false, so that side never clamps) - pass-through, not
  * an error. When the bounds invert (`min > max` after coercion), `min`
  * wins and the returned value is `min`.
- *
- * @category utils
  */
 export function clamp(
   value: number,

@@ -15,7 +15,6 @@ import { Directive } from '@angular/core';
  * </cngx-card>
  * ```
  *
- * @category common/card
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card-title.directive.ts
  * @since 0.1.0
  * @relatedTo CngxCard, CngxCardHeader, CngxCardSubtitle

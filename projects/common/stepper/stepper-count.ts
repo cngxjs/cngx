@@ -18,8 +18,6 @@ import { warnStepperControlUnhosted } from './warn-stepper-unhosted';
  * {@link CngxStepperHost} satisfies it, but consumers can also supply
  * a narrower stub (useful in tests, custom layouts, or non-standard
  * step containers that surface just these two signals).
- *
- * @category common/stepper
  */
 export interface CngxStepperCountHost {
   readonly activeStepIndex: Signal<number>;
@@ -54,8 +52,6 @@ export interface CngxStepperCountHost {
  * the caption sits next to another live region (e.g. a stepper that
  * already mounts its own live announcer) to prevent double announces.
  *
- * @category common/stepper
- * @docsKind primary
  * @since 0.1.0
  * @relatedTo CngxStepperHost, CngxStepperI18n
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-count/multi-instance-format-overrides</example-url>

@@ -118,8 +118,6 @@ import type { CngxTabsCommitAction } from './presenter.directive';
  * <router-outlet></router-outlet>
  * ```
  *
- * @category common/tabs
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/route-sync.directive.ts
  * @since 0.1.0

@@ -9,16 +9,12 @@ import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 /**
  * Status enum for a single step. Driven by the presenter's commit-controller
  * lifecycle plus the optional `errorAggregator`.
- *
- * @category common/stepper
  */
 export type CngxStepStatus = 'idle' | 'pending' | 'success' | 'error' | 'disabled' | 'busy';
 
 /**
  * Step-tree node. Either a terminal `step` (has its own panel) or a
  * `group` carrying nested children. Discriminated by `kind`.
- *
- * @category common/stepper
  */
 export interface CngxStepNode {
   readonly id: string;
@@ -70,8 +66,6 @@ export interface CngxStepRegistration {
 /**
  * Contract atoms see via {@link CNGX_STEPPER_HOST}. Mirrors the
  * directive's surface 1:1 - atoms never reach the concrete class.
- *
- * @category common/stepper
  */
 export interface CngxStepperHost {
   readonly stepTree: Signal<readonly CngxStepNode[]>;
@@ -88,8 +82,6 @@ export interface CngxStepperHost {
    * invariant, and a local re-filter breaks the shape-stable
    * short-circuit that downstream consumers rely on. Add lookup
    * helpers as methods on this contract rather than re-deriving.
-   *
-   * @category common/stepper
    */
   readonly stepsOnly: Signal<readonly CngxStepNode[]>;
 
@@ -104,8 +96,6 @@ export interface CngxStepperHost {
    * projection, never re-derive it. Structural-equal via `flatStepsEqual`
    * (each retained node keeps its `flatSteps` `flatIndex`), so a
    * shape-stable re-emit short-circuits the strip render.
-   *
-   * @category common/stepper
    */
   readonly visibleStripNodes: Signal<readonly CngxStepNode[]>;
   readonly activeStepIndex: Signal<number>;
@@ -257,7 +247,6 @@ export interface CngxStepperHost {
  * Atoms inject `optional: true` and either register here or fall through
  * {@link CNGX_STEP_GROUP_HOST} when nested in a group.
  *
- * @category common/stepper
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/stepper-host.token.ts
  * @since 0.1.0

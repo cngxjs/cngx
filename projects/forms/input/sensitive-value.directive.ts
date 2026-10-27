@@ -5,8 +5,6 @@ import { injectInputAriaLabels } from './input-config';
 /**
  * Audit record emitted by {@link CngxSensitiveValue} on each reveal/hide, for
  * compliance logging (who unmasked a field and when).
- *
- * @category forms/input
  */
 export interface SensitiveRevealAudit {
   /** `true` when the value was revealed, `false` when re-hidden. */
@@ -37,8 +35,6 @@ export interface SensitiveRevealAudit {
  * </button>
  * ```
  *
- * @category forms/input
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/sensitive-value.directive.ts
  * @since 0.2.0

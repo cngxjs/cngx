@@ -44,8 +44,6 @@ import { CngxSidenav } from './sidenav';
  * </cngx-sidenav-layout>
  * ```
  *
- * @category ui/sidenav
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/sidenav-layout.ts
  * @since 0.1.0

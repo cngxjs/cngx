@@ -14,7 +14,6 @@ import type {
  * signal plus the header registry; panels call {@link toggle}, register their
  * header handle, and bind `tabindex`/`keydown` through {@link nav}.
  *
- * @category common/interactive/accordion
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/accordion/accordion.token.ts
  * @since 0.1.0
  * @relatedTo CngxAccordion, CngxAccordionPanel, createAccordionKeyboardNav
@@ -46,7 +45,6 @@ export interface CngxAccordionHost {
  * provides it via `useExisting`; each {@link CngxAccordionPanel} injects it up
  * the element-injector hierarchy.
  *
- * @category common/interactive/accordion
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/accordion/accordion.token.ts
  * @since 0.1.0
  * @relatedTo CngxAccordion, CngxAccordionPanel

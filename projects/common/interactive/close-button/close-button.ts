@@ -13,7 +13,6 @@ import {
  * Injection token for a custom close icon component.
  * Set via `provideFeedback(withCloseIcon(MyIcon))` which forwards to this token.
  *
- * @category common/interactive
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/close-button/close-button.ts
  * @since 0.1.0
  */
@@ -42,8 +41,6 @@ export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon'
  * <cngx-close-button label="Close" />
  * ```
  *
- * @category common/interactive
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/close-button/close-button.ts
  * @since 0.1.0

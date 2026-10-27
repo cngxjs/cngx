@@ -42,8 +42,6 @@ import { createMediaQuerySignal } from '@cngx/core/utils';
  * </div>
  * ```
  *
- * @category common/layout
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/text/skeleton.directive.ts
  * @since 0.1.0

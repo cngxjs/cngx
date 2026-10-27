@@ -12,7 +12,6 @@ import {
  * The `key` (and optional `label`) travel with the state so per-source
  * attribution never relies on a parallel index array (Pillar 1).
  *
- * @category common/data/async-state
  * @since 0.1.0
  */
 export interface AggregateSource<T = unknown> {
@@ -27,7 +26,6 @@ export interface AggregateSource<T = unknown> {
 /**
  * One errored source, surfaced by {@link CngxAsyncBoundary.failures}.
  *
- * @category common/data/async-state
  * @since 0.1.0
  */
 export interface AggregateFailure {
@@ -61,7 +59,6 @@ export interface AggregateFailure {
  * </div>
  * ```
  *
- * @category common/data/async-state
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/async-state/async-boundary.directive.ts
  * @since 0.1.0
  */

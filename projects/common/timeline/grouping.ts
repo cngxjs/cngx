@@ -11,8 +11,6 @@ import { cngxDevWarn } from '@cngx/utils';
  * `groupLabel` fallback), not to the presenter. `key` is stable and
  * collision-free across the built-in groupers, so it doubles as the
  * `@for` track expression and as the `aria-labelledby` id seed.
- *
- * @category common/timeline
  */
 export interface TimelineGroup<T> {
   /** Stable bucket identity, e.g. `2026-07-27` for `day`. */
@@ -30,8 +28,6 @@ export interface TimelineGroup<T> {
 /**
  * What a {@link TimelineGroupingFn} returns for a single item: the bucket
  * it belongs to, and the instant that bucket starts at.
- *
- * @category common/timeline
  */
 export interface TimelineGroupKey {
   readonly key: string;
@@ -45,8 +41,6 @@ export interface TimelineGroupKey {
  * (tenant, channel) as well as time.
  *
  * Called once per item per recomputation; keep it pure and cheap.
- *
- * @category common/timeline
  */
 export type TimelineGroupingFn<T> = (date: Date, item: T) => TimelineGroupKey;
 
@@ -58,8 +52,6 @@ export type TimelineGroupingFn<T> = (date: Date, item: T) => TimelineGroupKey;
  *
  * `'none'` collapses everything into one synthetic group, which is how the
  * organism renders an ungrouped `role="list"` without a second code path.
- *
- * @category common/timeline
  */
 export type TimelineGroupBy<T> = 'day' | 'week' | 'month' | 'none' | TimelineGroupingFn<T>;
 
@@ -67,8 +59,6 @@ export type TimelineGroupBy<T> = 'day' | 'week' | 'month' | 'none' | TimelineGro
  * Sort direction for the whole timeline. `'desc'` (default) is
  * newest-first, the activity-feed convention; `'asc'` is oldest-first,
  * which reads better for narrative histories.
- *
- * @category common/timeline
  */
 export type TimelineDirection = 'asc' | 'desc';
 
@@ -76,8 +66,6 @@ export type TimelineDirection = 'asc' | 'desc';
  * Pulls the timestamp out of a consumer item. Anything the `Date`
  * constructor accepts works, so ISO strings straight off an API response
  * need no pre-mapping.
- *
- * @category common/timeline
  */
 export type TimelineDateAccessor<T> = (item: T) => Date | string | number;
 
@@ -85,8 +73,6 @@ export type TimelineDateAccessor<T> = (item: T) => Date | string | number;
  * Inputs to {@link createTimelineGrouping}. Every reactive knob is a
  * zero-arg accessor, so a `Signal` (or an `input()`) can be passed
  * directly and a constant is just `() => 'day'`.
- *
- * @category common/timeline
  */
 export interface TimelineGroupingOptions<T> {
   /** Source list. Read inside the `groups` computation, so it is tracked. */
@@ -114,8 +100,6 @@ export interface TimelineGroupingOptions<T> {
  * What {@link createTimelineGrouping} hands back. An object rather than a
  * bare `Signal` because the v2 live cursor extends this surface - callers
  * written against v1 keep compiling.
- *
- * @category common/timeline
  */
 export interface TimelineGrouping<T> {
   readonly groups: Signal<readonly TimelineGroup<T>[]>;
@@ -251,7 +235,6 @@ function groupsEqual<T>(a: readonly TimelineGroup<T>[], b: readonly TimelineGrou
  * });
  * ```
  *
- * @category common/timeline
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/grouping.ts
  * @since 0.1.0
  */
@@ -340,8 +323,6 @@ export function createTimelineGrouping<T>(
 /**
  * Signature of {@link createTimelineGrouping}, carried as a named type so
  * a DI override matches it exactly.
- *
- * @category common/timeline
  */
 export type CngxTimelineGroupingFactory = <T>(
   options: TimelineGroupingOptions<T>,
@@ -362,7 +343,6 @@ export type CngxTimelineGroupingFactory = <T>(
  * Same shape as `CNGX_SELECTION_CONTROLLER_FACTORY`: the internals of a
  * component are swappable without forking the component.
  *
- * @category common/timeline
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/grouping.ts
  * @relatedTo createTimelineGrouping
  * @since 0.1.0

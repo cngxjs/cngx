@@ -83,8 +83,6 @@ import { installTabGroupDevChecks } from './tab-group-dev-checks';
  * @playground Routed tabs with a CanDeactivate guard ./examples/routed-outlet/routed-outlet.component.ts
  * @see {@link CngxMatTabs} for the Material `<mat-tab-group>` variant with `[cngxMatTabError]`.
  *
- * @category ui/tabs
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/tabs/tab-group.component.ts
  * @since 0.1.0

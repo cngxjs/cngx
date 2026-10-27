@@ -86,8 +86,6 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
  * </cngx-multi-chip-group>
  * ```
  *
- * @category common/interactive
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/multi-chip-group/multi-chip-group.component.ts
  * @selector cngx-multi-chip-group

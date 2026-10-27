@@ -18,8 +18,6 @@ import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
  * Use cases: budget variance ("$+45k over"), score deltas ("−12%
  * vs target"), KPI swing visualisations.
  *
- * @category common/chart/presets
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/presets/deviation-bar.component.ts
  * @since 0.1.0

@@ -148,8 +148,6 @@ import {
  * Change event emitted by {@link CngxActionSelect.selectionChange}.
  * `action`: `'select'` user pick, `'clear'` reset, `'create'`
  * successful inline quick-create via `*cngxSelectAction`.
- *
- * @category forms/select/action-select
  */
 export interface CngxActionSelectChange<T = unknown> {
   readonly source: CngxActionSelect<T>;
@@ -193,8 +191,6 @@ export interface CngxActionSelectChange<T = unknown> {
  * `'anchored'`, `'sheet'` or `'fullscreen'`; `withMobileSheet('off')` keeps
  * every select in its scope anchored.
  *
- * @category forms/select/action-select
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/action-select/action-select.component.ts
  * @since 0.1.0

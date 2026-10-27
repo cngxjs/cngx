@@ -54,8 +54,6 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
  * defaults cascade through `var(--cngx-step-active-fill, ...)`, so the
  * Phase A active-fill chain reaches the dot variant without duplication.
  *
- * @category ui/stepper
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/dot-stepper.component.ts
  * @since 0.1.0

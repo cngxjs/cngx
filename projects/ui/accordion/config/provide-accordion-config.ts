@@ -17,7 +17,6 @@ import { CNGX_ACCORDION_CONFIG, CNGX_ACCORDION_DEFAULTS } from './accordion.conf
  * `@cngx/ui/breadcrumb` so the consumer's mental model is one across feature
  * areas.
  *
- * @category ui/accordion
  * @since 0.1.0
  */
 export type CngxAccordionConfigFeature =
@@ -117,7 +116,6 @@ function mergeConfig(
  * });
  * ```
  *
- * @category ui/accordion
  * @since 0.1.0
  */
 export function provideAccordionConfig(
@@ -161,7 +159,6 @@ export function provideAccordionConfig(
  * class Section {}
  * ```
  *
- * @category ui/accordion
  * @since 0.1.0
  */
 export function provideAccordionConfigAt(

@@ -43,8 +43,6 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
  * cascades as `<cngx-stepper>`; a step-less flow renders the
  * `CNGX_STEPPER_CONFIG` empty-template cascade instead of the bar.
  *
- * @category ui/stepper
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/progress-bar-stepper.component.ts
  * @since 0.1.0

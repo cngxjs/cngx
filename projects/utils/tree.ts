@@ -12,8 +12,6 @@ import { cngxDevWarn } from './dev-message';
 /**
  * Input shape for a hierarchical tree. Consumers supply this; library never
  * mutates it. `children` may be omitted for leaves.
- *
- * @category utils/tree
  */
 export interface CngxTreeNode<T> {
   readonly value: T;
@@ -29,8 +27,6 @@ export interface CngxTreeNode<T> {
  *
  * `parentIds` is the chain from root to the immediate parent (exclusive of
  * self). Empty for root-level nodes.
- *
- * @category utils/tree
  */
 export interface FlatTreeNode<T> {
   readonly id: string;
@@ -74,8 +70,6 @@ const defaultLabelFn: LabelFn<unknown> = (value) => String(value);
  *   the `parentIds` chains (and with them visibility resolution), so dev
  *   mode warns on every repeat of an id already seen in the same pass.
  * @param labelFn Derives visible label. Defaults to `String(value)`.
- *
- * @category utils/tree
  */
 export function flattenTree<T>(
   nodes: readonly CngxTreeNode<T>[],
@@ -133,8 +127,6 @@ export function flattenTree<T>(
 /**
  * A flat node is visible iff every ancestor in its `parentIds` chain is
  * present in `expandedIds`. Root nodes (empty chain) are always visible.
- *
- * @category utils/tree
  */
 export function isNodeVisible<T>(
   node: FlatTreeNode<T>,
@@ -157,8 +149,6 @@ export function isNodeVisible<T>(
  * keep their behavior. The return type is `unknown` rather than
  * `boolean | void` on purpose: a concise arrow like `(n) => seen.push(n)`
  * must stay assignable.
- *
- * @category utils/tree
  */
 export function walkTree<T>(
   nodes: readonly CngxTreeNode<T>[],
@@ -182,8 +172,6 @@ export function walkTree<T>(
  * Collect all descendant values of a node (exclusive of the node itself),
  * in DFS order. For cascade-select: toggling a parent flips all entries in
  * this list atomically.
- *
- * @category utils/tree
  */
 export function collectDescendantValues<T>(node: CngxTreeNode<T>): T[] {
   const out: T[] = [];
@@ -205,8 +193,6 @@ export function collectDescendantValues<T>(node: CngxTreeNode<T>): T[] {
  * **or** have at least one matching descendant. Ancestors of any match are
  * preserved so the path is never broken; branches with zero matches are
  * dropped entirely.
- *
- * @category utils/tree
  */
 export function filterTree<T>(
   nodes: readonly CngxTreeNode<T>[],
@@ -236,8 +222,6 @@ export function filterTree<T>(
  * The treetable keeps its own numeric-aware `localeCompare` collation - this
  * comparator (`<` / `>` on the extractor output) is not a drop-in
  * replacement for it.
- *
- * @category utils/tree
  */
 export function sortTree<T>(
   nodes: readonly CngxTreeNode<T>[],

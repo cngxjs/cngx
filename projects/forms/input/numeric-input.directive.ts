@@ -139,8 +139,6 @@ function isAllowedChar(
  * A bound form holds `number | null`, the same value as the model, never the
  * display string.
  *
- * @category forms/input
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/numeric-input.directive.ts
  * @since 0.1.0

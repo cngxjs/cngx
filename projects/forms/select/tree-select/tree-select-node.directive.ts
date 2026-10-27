@@ -57,7 +57,6 @@ import { type CngxTreeSelectNodeContext } from './tree-select.model';
  * Zero-logic holder - typed wrapper around `TemplateRef`, discovered
  * via `contentChild`.
  *
- * @category forms/select/tree-select
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/tree-select/tree-select-node.directive.ts
  * @since 0.1.0

@@ -39,7 +39,6 @@ export const CNGX_TOC_DEFAULTS: CngxTocConfig = {
  * `bootstrapApplication` providers (root cascade) or `provideTocConfigAt(...)`
  * in a component's `viewProviders` (sub-tree cascade).
  *
- * @category ui/toc
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/toc/config/toc.config.defaults.ts
  * @since 0.1.0
  */

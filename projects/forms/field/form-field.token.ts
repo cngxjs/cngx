@@ -29,8 +29,6 @@ export {
  * `CngxErrorScope` (via `CngxErrorScopeFieldBridge`) is the default producer;
  * router-driven, interceptor-driven, or test-harness triggers may provide
  * their own. Decouples the presenter from the scope contract.
- *
- * @category forms/field
  */
 export interface CngxFormFieldRevealContract {
   /** Reactive flag - `true` when errors should be visible to the user. */
@@ -52,7 +50,6 @@ export interface CngxFormFieldRevealContract {
  * Optional. With no provider the presenter falls back to the
  * `touched OR strategy(...)` gate and the reveal channel is simply absent.
  *
- * @category forms/field
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field.token.ts
  * @since 0.1.0
@@ -87,7 +84,6 @@ const NO_ERROR_MESSAGES: ErrorMessageMap = {};
  * }))]
  * ```
  *
- * @category forms/field
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field.token.ts
  * @since 0.1.0
@@ -102,8 +98,6 @@ export const CNGX_ERROR_MESSAGES = new InjectionToken<Signal<ErrorMessageMap>>(
 
 /**
  * Application-wide configuration for cngx form fields.
- *
- * @category forms/field
  */
 export interface FormFieldConfig {
   /**
@@ -156,8 +150,6 @@ export interface FormFieldConfig {
 
 /**
  * Built-in error visibility strategies used by {@link withErrorStrategy}.
- *
- * @category forms/field
  */
 export type ErrorStrategyName =
   | 'onTouched'
@@ -171,8 +163,6 @@ export type ErrorStrategyName =
  *
  * `submitted` reflects the ambient `CngxErrorScope.showErrors` state - `true`
  * after the scope has been revealed (typically on form submit).
- *
- * @category forms/field
  */
 export interface ErrorStrategyContext {
   readonly touched: boolean;
@@ -184,8 +174,6 @@ export interface ErrorStrategyContext {
 /**
  * Custom error visibility strategy. Returns `true` when errors should be
  * visible to the user.
- *
- * @category forms/field
  */
 export type ErrorStrategyFn = (context: ErrorStrategyContext) => boolean;
 
@@ -200,8 +188,6 @@ const NAMED_ERROR_STRATEGIES: Readonly<Record<ErrorStrategyName, ErrorStrategyFn
 
 /**
  * A feature configuration function returned by `withXxx()` helpers.
- *
- * @category forms/field
  */
 export interface FormFieldFeature {
   /** @internal */
@@ -228,7 +214,6 @@ export interface FormFieldFeature {
  * `provideFormFieldAt` on a component's `providers` / `viewProviders`. Both
  * merge `with*` features the same way.
  *
- * @category forms/field
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field.token.ts
  * @since 0.1.0
  * @relatedTo provideFormField, FormFieldConfig, CngxFormFieldPresenter
@@ -260,7 +245,6 @@ export const CNGX_FORM_FIELD_CONFIG = new InjectionToken<FormFieldConfig>('CngxF
  * });
  * ```
  *
- * @category forms/field
  * @relatedTo provideFormFieldAt, injectFormFieldConfig, withErrorMessages, withErrorStrategy, withConstraintHints, withRequiredMarker, withAutocompleteMappings, withNoSpellcheck, provideErrorMessages, CNGX_FORM_FIELD_CONFIG
  */
 export function provideFormField(...features: FormFieldFeature[]): EnvironmentProviders {
@@ -312,7 +296,6 @@ function resolveFormFieldProviders(features: readonly FormFieldFeature[]): Provi
  * })
  * ```
  *
- * @category forms/field
  * @relatedTo provideFormField, injectFormFieldConfig, withFieldSkin, CNGX_FORM_FIELD_CONFIG
  */
 export function provideFormFieldAt(...features: FormFieldFeature[]): Provider[] {
@@ -326,7 +309,6 @@ export function provideFormFieldAt(...features: FormFieldFeature[]): Provider[] 
  * wins over the app-wide `provideFormField`, which wins over the library
  * default (an empty config).
  *
- * @category forms/field
  * @relatedTo provideFormField, provideFormFieldAt, CNGX_FORM_FIELD_CONFIG
  */
 export function injectFormFieldConfig(): FormFieldConfig {
@@ -348,7 +330,6 @@ export function injectFormFieldConfig(): FormFieldConfig {
  * providers: [provideErrorMessages({ required: () => 'Required.' })]
  * ```
  *
- * @category forms/field
  * @relatedTo provideFormField, withErrorMessages, CNGX_ERROR_MESSAGES
  */
 export function provideErrorMessages(
@@ -375,7 +356,6 @@ export function provideErrorMessages(
  * }))
  * ```
  *
- * @category forms/field
  * @relatedTo provideFormField, provideErrorMessages, CNGX_ERROR_MESSAGES
  */
 export function withErrorMessages(
@@ -409,7 +389,6 @@ export function withErrorMessages(
  * ))
  * ```
  *
- * @category forms/field
  * @relatedTo provideFormField, CngxFormFieldPresenter
  */
 export function withErrorStrategy(strategy: ErrorStrategyName | ErrorStrategyFn): FormFieldFeature {
@@ -459,7 +438,6 @@ const NO_HINT_FORMATTERS: Partial<ConstraintHintFormatters> = {};
  * Drop `<app-constraint-hints />` inside the `<cngx-form-field>` so the DI lookup
  * resolves; `cngxHint` wires the joined string into `aria-describedby`.
  *
- * @category forms/field
  * @relatedTo provideFormField, CngxFormFieldPresenter, CngxHint
  */
 export function withConstraintHints(
@@ -473,8 +451,6 @@ export function withConstraintHints(
  * Formatter functions for constraint hint text. `withConstraintHints()` takes
  * any subset; the field reads every formatter left out from the form-field
  * language section.
- *
- * @category forms/field
  */
 export interface ConstraintHintFormatters {
   /** Format "8–64 characters". */
@@ -508,8 +484,6 @@ export interface ConstraintHintFormatters {
 
 /**
  * Constraint metadata passed to the `extra` hint formatter.
- *
- * @category forms/field
  */
 export interface ConstraintMetadata {
   readonly minLength: number | undefined;
@@ -532,7 +506,6 @@ export interface ConstraintMetadata {
  * provideFormField(withRequiredMarker('(required)'))
  * ```
  *
- * @category forms/field
  * @relatedTo provideFormField, CngxLabel, CngxRequired
  */
 export function withRequiredMarker(marker = '*'): FormFieldFeature {
@@ -562,7 +535,6 @@ export function withRequiredMarker(marker = '*'): FormFieldFeature {
  *
  * @param skin The default appearance.
  *
- * @category forms/field
  * @relatedTo provideFormField, CngxFieldSkinHost, CngxFormField
  */
 export function withFieldSkin(skin: CngxFieldSkin): FormFieldFeature {
@@ -625,7 +597,6 @@ export const DEFAULT_NO_SPELLCHECK_FIELDS: ReadonlySet<string> = new Set([
  * }))
  * ```
  *
- * @category forms/field
  * @relatedTo provideFormField, withNoSpellcheck
  */
 export function withAutocompleteMappings(mappings: Record<string, string>): FormFieldFeature {
@@ -649,7 +620,6 @@ export function withAutocompleteMappings(mappings: Record<string, string>): Form
  * provideFormField(withNoSpellcheck(['iban', 'accountnumber', 'serialnumber']))
  * ```
  *
- * @category forms/field
  * @relatedTo provideFormField, withAutocompleteMappings
  */
 export function withNoSpellcheck(fields: string[]): FormFieldFeature {

@@ -131,8 +131,6 @@ import {
 
 /**
  * Change event emitted by {@link CngxMultiSelect.selectionChange}.
- *
- * @category forms/select/multi-select
  */
 export interface CngxMultiSelectChange<T = unknown> {
   readonly source: CngxMultiSelect<T>;
@@ -173,8 +171,6 @@ export interface CngxMultiSelectChange<T = unknown> {
  * sheet. `[presentation]` forces `'anchored'`, `'sheet'` or `'fullscreen'`;
  * `withMobileSheet('off')` keeps every select in its scope anchored.
  *
- * @category forms/select/multi-select
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/multi-select/multi-select.component.ts
  * @since 0.1.0

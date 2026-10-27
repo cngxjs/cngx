@@ -55,8 +55,6 @@ function firstGrapheme(text: string, locale: string): string {
  * <a cngxNavLink [depth]="2">Deep nested</a>
  * ```
  *
- * @category common/interactive
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-link.directive.ts
  * @selector [cngxNavLink]

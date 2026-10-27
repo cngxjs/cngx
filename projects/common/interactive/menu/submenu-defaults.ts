@@ -31,8 +31,6 @@
  * Consumers binding the const to `[positionTryFallbacks]` get
  * compile-time type checking from the input's typed signature on the
  * popover side.
- *
- * @category common/interactive/menu
  */
 export const CNGX_SUBMENU_TRY_FALLBACKS = Object.freeze([
   'flip-inline',

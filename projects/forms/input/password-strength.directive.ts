@@ -43,8 +43,6 @@ const ANNOUNCE_DEBOUNCE_MS = 400;
  * <cngx-password-strength-meter [score]="pw.score()" />
  * ```
  *
- * @category forms/input
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/password-strength.directive.ts
  * @since 0.2.0

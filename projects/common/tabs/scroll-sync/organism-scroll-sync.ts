@@ -9,8 +9,6 @@ import {
 
 /**
  * Options for {@link createOrganismScrollSync}.
- *
- * @category common/tabs/scroll-sync
  */
 export interface CngxOrganismScrollSyncOptions {
   /** Reactive source for the active item id; tracked by the effect. */
@@ -68,7 +66,6 @@ const DEFAULT_SCROLL_OPTIONS: ScrollIntoViewOptions = {
  * });
  * ```
  *
- * @category common/tabs/scroll-sync
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/scroll-sync/organism-scroll-sync.ts
  * @since 0.1.0
@@ -94,8 +91,6 @@ export function createOrganismScrollSync(opts: CngxOrganismScrollSyncOptions): v
 
 /**
  * Factory signature for {@link CNGX_ORGANISM_SCROLL_SYNC_FACTORY}.
- *
- * @category common/tabs/scroll-sync
  */
 export type CngxOrganismScrollSyncFactory = (opts: CngxOrganismScrollSyncOptions) => void;
 
@@ -126,7 +121,6 @@ export type CngxOrganismScrollSyncFactory = (opts: CngxOrganismScrollSyncOptions
  * // Or disable scroll-into-view entirely: useValue: () => {}
  * ```
  *
- * @category common/tabs/scroll-sync
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/scroll-sync/organism-scroll-sync.ts
  * @since 0.1.0

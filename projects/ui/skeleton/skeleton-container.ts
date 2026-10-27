@@ -52,8 +52,6 @@ import {
  * </cngx-skeleton>
  * ```
  *
- * @category ui/skeleton
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/skeleton/skeleton-container.ts
  * @since 0.1.0

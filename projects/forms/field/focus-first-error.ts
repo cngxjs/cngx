@@ -29,8 +29,6 @@ import type { CngxFieldValidationError } from './models';
  *   }
  * }
  * ```
- *
- * @category forms/field
  */
 export function focusFirstError<TModel>(tree: FieldTree<TModel>): boolean {
   const state = tree();

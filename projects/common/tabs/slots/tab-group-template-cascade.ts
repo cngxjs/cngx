@@ -19,8 +19,6 @@ import type {
  *
  * Sibling shape to
  * - `createStepperTemplateBindings`.
- *
- * @category common/tabs/slots
  */
 export interface CngxTabGroupTemplateBindingsOptions {
   readonly errorBadgeSlot: Signal<CngxTabErrorBadge | undefined>;
@@ -38,8 +36,6 @@ export interface CngxTabGroupTemplateBindingsOptions {
  * Output of {@link createTabGroupTemplateBindings}. One resolved
  * `Signal<TemplateRef | null>` per slot; `null` means the organism
  * renders its built-in default.
- *
- * @category common/tabs/slots
  */
 export interface CngxTabGroupTemplateBindings {
   readonly errorBadge: Signal<TemplateRef<CngxTabErrorBadgeContext> | null>;
@@ -79,7 +75,6 @@ export interface CngxTabGroupTemplateBindings {
  * - An unbound `icon` slot resolves to nothing, which is correct - the
  *   icon is decorative and the label carries the accessible name.
  *
- * @category common/tabs/slots
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/slots/tab-group-template-cascade.ts
  * @since 0.1.0

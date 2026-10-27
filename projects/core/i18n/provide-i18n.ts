@@ -28,7 +28,6 @@ import type {
 /**
  * A pack every key of every section of which is present, plus its locale.
  *
- * @category core/i18n
  * @since 0.1.0
  */
 export type CngxCompleteLanguagePack = CngxLanguagePack & CngxLanguagePackMeta;
@@ -36,7 +35,6 @@ export type CngxCompleteLanguagePack = CngxLanguagePack & CngxLanguagePackMeta;
 /**
  * The pack cngx reads: any section or key may be missing and then reads English.
  *
- * @category core/i18n
  * @since 0.1.0
  */
 export type CngxActiveLanguagePack = CngxPartialLanguagePack & CngxLanguagePackMeta;
@@ -49,7 +47,6 @@ const ENGLISH_PACK = signal(ENGLISH).asReadonly();
  * holds an English pack with no sections, so every section reads its English
  * defaults. Libs read their section through {@link injectLanguageSection}.
  *
- * @category core/i18n
  * @since 0.1.0
  * @relatedTo provideCngxI18n, injectLanguageSection
  */
@@ -61,7 +58,6 @@ export const CNGX_LANGUAGE_PACK = new InjectionToken<Signal<CngxActiveLanguagePa
 /**
  * A feature of {@link provideCngxI18n}.
  *
- * @category core/i18n
  * @since 0.1.0
  */
 export type CngxI18nFeature =
@@ -80,7 +76,6 @@ export type CngxI18nFeature =
  * pack.set((await import('./i18n/de')).default);
  * ```
  *
- * @category core/i18n
  * @since 0.1.0
  * @relatedTo provideCngxI18n, withPartialPack
  */
@@ -94,7 +89,6 @@ export function withPack(
  * Like {@link withPack}, but accepts a pack with missing sections or keys;
  * every missing key reads English.
  *
- * @category core/i18n
  * @since 0.1.0
  * @relatedTo provideCngxI18n, withPack
  */
@@ -109,7 +103,6 @@ export function withPartialPack(
  * the active pack. On by default. `'off'` leaves both attributes to the app;
  * `CNGX_DIRECTION` then keeps reading `dir` from the DOM.
  *
- * @category core/i18n
  * @since 0.1.0
  * @relatedTo provideCngxI18n
  */
@@ -199,7 +192,6 @@ function reflectDocumentLanguage(): void {
  * bootstrapApplication(App, { providers: [provideCngxI18n(withPack(de))] });
  * ```
  *
- * @category core/i18n
  * @since 0.1.0
  * @relatedTo withPack, withPartialPack, withDocumentLanguage, CNGX_LANGUAGE_PACK
  */
@@ -275,7 +267,6 @@ function withoutUndefinedKeys<T extends object>(section: T | undefined): T | und
  * English defaults. A key whose value is `undefined` is left out, so it reads
  * English too.
  *
- * @category core/i18n
  * @since 0.1.0
  * @relatedTo CNGX_LANGUAGE_PACK
  */

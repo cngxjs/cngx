@@ -26,8 +26,6 @@ import { type CngxAsyncState, nextUid } from '@cngx/core/utils';
  * </cngx-empty-state>
  * ```
  *
- * @category ui/empty-state
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/empty-state/empty-state.component.ts
  * @since 0.1.0

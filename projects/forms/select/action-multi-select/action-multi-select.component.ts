@@ -161,8 +161,6 @@ import {
  * `action` mirrors the flat multi family plus `'create'` - `added`
  * carries exactly the one new value and `removed` is empty, so delta-
  * aggregating consumers treat create identically to toggle-add.
- *
- * @category forms/select/action-multi-select
  */
 export interface CngxActionMultiSelectChange<T = unknown> {
   readonly source: CngxActionMultiSelect<T>;
@@ -211,8 +209,6 @@ export interface CngxActionMultiSelectChange<T = unknown> {
  * `'anchored'`, `'sheet'` or `'fullscreen'`; `withMobileSheet('off')` keeps
  * every select in its scope anchored.
  *
- * @category forms/select/action-multi-select
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/action-multi-select/action-multi-select.component.ts
  * @since 0.1.0

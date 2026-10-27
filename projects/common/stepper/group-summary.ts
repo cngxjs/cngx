@@ -9,8 +9,6 @@ import type { CngxStepNode } from './stepper-host.token';
  * the `groupCollapseSummary` mode and the per-group `progress` / `count`
  * text, the `status`-dot gate, and the SR phrase. Pure derivation over
  * the group's subtree step states; rendered only on collapsed groups.
- *
- * @category common/stepper
  */
 export interface CngxStepperGroupSummaryView {
   /** Resolved summary mode (config cascade, default `'progress'`). */
@@ -68,8 +66,6 @@ function subtreeStats(node: CngxStepNode): { total: number; completed: number } 
  * to the group's existing status-phrase span, so {@link srText} returns
  * `null` there. SR phrases resolve through the `CngxStepperI18n` bundle
  * when passed; English defaults otherwise.
- *
- * @category common/stepper
  */
 export function createStepperGroupSummary(
   options: CngxStepperGroupSummaryOptions,

@@ -120,8 +120,6 @@ import {
 
 /**
  * Change event emitted by {@link CngxSelect.selectionChange} on user picks.
- *
- * @category forms/select/single-select
  */
 export interface CngxSelectChange<T = unknown> {
   readonly source: CngxSelect<T>;
@@ -155,8 +153,6 @@ export interface CngxSelectChange<T = unknown> {
  * `[presentation]` forces `'anchored'`, `'sheet'` or `'fullscreen'`;
  * `withMobileSheet('off')` keeps every select in its scope anchored.
  *
- * @category forms/select/single-select
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/single-select/select.component.ts
  * @since 0.1.0

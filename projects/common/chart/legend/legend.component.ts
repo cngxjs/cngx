@@ -19,8 +19,6 @@ import { formatChartNumber } from '../chart/format-number';
  * intentionally unconstrained so the same field a consumer weights in the
  * row can still carry their domain key (id, layer name, accessor return
  * type, ...) for later interactions without a second lookup.
- *
- * @category common/chart/legend
  */
 export interface CngxChartLegendItem<T = unknown> {
   readonly label: string;
@@ -68,8 +66,6 @@ export interface CngxChartLegendItem<T = unknown> {
  * (areas, thresholds, bands and axes do not count), so list the entries
  * in the order of those layers.
  *
- * @category common/chart/legend
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/legend/legend.component.ts
  * @since 0.1.0

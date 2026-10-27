@@ -23,8 +23,6 @@ import { CngxOption } from './option.directive';
  * Nested option groups are unsupported - a dev-warning fires when one is
  * detected.
  *
- * @category common/interactive/listbox
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/option-group.directive.ts
  * @since 0.1.0

@@ -32,7 +32,6 @@ import {
  * </div>
  * ```
  *
- * @category common/a11y
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/roving/roving-tabindex.directive.ts
  * @since 0.1.0
@@ -105,8 +104,6 @@ export class CngxRovingItem {
  * </div>
  * ```
  *
- * @category common/a11y
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/roving/roving-tabindex.directive.ts
  * @since 0.1.0

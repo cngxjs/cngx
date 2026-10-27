@@ -29,8 +29,6 @@ import {
  * `success` if all are success, `pending` if any is pending or busy,
  * otherwise `idle`.
  *
- * @category common/stepper
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/step-group.directive.ts
  * @since 0.1.0

@@ -3,7 +3,6 @@
  * crumb. The terminal crumb needs no target - it is derived from position and
  * rendered as the current page.
  *
- * @category ui/breadcrumb
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb.types.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbBar
@@ -45,7 +44,6 @@ export interface CngxBreadcrumbCrumb {
  * level is marked `current`, which renders as `aria-current="page"` and drops
  * the link.
  *
- * @category ui/breadcrumb
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb.types.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbSiblings
