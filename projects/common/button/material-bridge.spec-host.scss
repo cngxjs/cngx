@@ -16,6 +16,8 @@ $theme: mat.define-theme(
 );
 
 html {
+  // The label-large / label-medium / title-medium type roles the bridge reads.
+  @include mat.theme((color: (primary: mat.$azure-palette), typography: Roboto, density: 0));
   @include button.theme($theme);
   @include icon.theme($theme);
 }

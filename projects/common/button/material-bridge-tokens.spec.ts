@@ -41,8 +41,12 @@ $theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)))
 // sheet SETs its own tone tokens in :scope, so a leaf assignment would lose)
 // plus the leaf tokens the sheets read without a :scope assignment.
 const CONSUMED = [
+  '--cngx-button-font-size',
+  '--cngx-button-font-weight',
   '--cngx-button-group-radius',
   '--cngx-button-hover-shade',
+  '--cngx-button-padding-block',
+  '--cngx-button-padding-inline',
   '--cngx-button-secondary-bg',
   '--cngx-button-secondary-bg-hover',
   '--cngx-button-secondary-color',
@@ -58,12 +62,14 @@ const CONSUMED = [
   '--cngx-color-primary-text',
   '--cngx-color-surface',
   '--cngx-color-text',
+  '--cngx-icon-button-size',
   '--cngx-radius-md',
 ];
 
 const READERS = [
   'projects/common/button/button.component.css',
   'projects/common/button/close-button.component.css',
+  'projects/common/button/icon-button.component.css',
   'projects/common/theming/components/cngx-button-group.css',
 ];
 
@@ -153,6 +159,43 @@ describe('button Material bridge', () => {
     );
     expect(m3).toContain('--cngx-close-button-color: var(--mat-sys-on-surface-variant)');
     expect(compileThemeEntry(M2_ENTRY)).toContain('--cngx-close-button-color: rgba(0, 0, 0, 0.54)');
+  });
+
+  it('derives every M3 metric from the --cngx-space-* scale, never a density map (M3)', () => {
+    const css = compileThemeEntry(M3_ENTRY);
+    const paddings = [
+      ...css.matchAll(/(--cngx-button-padding-(?:block|inline)|padding-inline-(?:start|end)):\s*([^;]+);/g),
+    ];
+    expect(paddings.length).toBeGreaterThan(0);
+    for (const [, prop, value] of paddings) {
+      expect(value, prop).toMatch(/^(?:calc\()?var\(--cngx-space-(?:xs|sm|md|lg|xl), \d+px\)/);
+    }
+    const md = (selector: string): string => {
+      const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const match = css.match(new RegExp(`${escaped}\\s*\\{[^}]*\\}`));
+      if (!match) {
+        throw new Error(`no ${selector} block emitted`);
+      }
+      return match[0];
+    };
+    const base = md('.cngx-button[data-size=md]:not([data-variant=link])');
+    expect(base).toContain('--cngx-button-padding-inline: var(--cngx-space-lg, 24px)');
+    expect(base).toContain(
+      '--cngx-button-padding-block: calc(var(--cngx-space-sm, 8px) * 1.25 - var(--cngx-button-border-width, 1px))',
+    );
+    expect(md('.cngx-button[data-size=md][data-variant=ghost]')).toContain(
+      '--cngx-button-padding-inline: calc(var(--cngx-space-sm, 8px) * 1.5)',
+    );
+    const type = md('.cngx-button[data-size=md]:not([data-variant=link], .cngx-icon-button)');
+    expect(type).toContain('--cngx-button-font-size: var(--mat-sys-label-large-size, 0.875rem)');
+    expect(type).toContain('line-height: var(--mat-sys-label-large-line-height, 1.25rem)');
+    expect(type).toContain('letter-spacing: var(--mat-sys-label-large-tracking, 0.006rem)');
+  });
+
+  it('keeps the M2 button on the cngx metrics', () => {
+    const css = compileThemeEntry(M2_ENTRY);
+    expect(css).not.toContain('--cngx-button-padding');
+    expect(css).not.toContain('--cngx-button-font-size');
   });
 
   it('layers every block and carries no mat-icon rule (the icon bridge sizes wrapped glyphs)', () => {

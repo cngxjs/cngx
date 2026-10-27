@@ -161,3 +161,152 @@ describe('Material bridge: wrapped mat-icon in the button family', () => {
     expect(box(root, '.icon-mat-xs .mat-icon').width).toBeLessThan(24);
   });
 });
+
+// Metrics and type. The M3 reference values were read off the real Material
+// 3 buttons in the examples app (/material-lab, density 0): mat-flat-button,
+// the tonal and the stroked button are 40px high with 24px inline padding and
+// a 14px / 500 label-large label on a 20px line; mat-button (text) pads 12px;
+// a leading icon sits 16px from the edge; matIconButton is 40x40. Material
+// itself is not loaded here, so the numbers are pinned.
+const M3 = { height: 40, inline: 24, text: 12, slot: 16, font: 14, weight: '500', line: 20 };
+
+@Component({
+  selector: 'cngx-material-bridge-metrics-host',
+  standalone: true,
+  imports: [CngxButton, CngxButtonStart, CngxIconButton, CngxIcon],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../core/theming/system-tokens.css',
+    '../../core/theming/reset.css',
+    '../../core/theming/base.css',
+    '../../core/theming/density-tokens.css',
+    './material-bridge.spec-host.scss',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    @for (density of densities; track density) {
+      <div [attr.data-density]="density">
+        <button cngxButton tone="primary" class="solid-{{ density }}">Save</button>
+        <button cngxButton="secondary" class="secondary-{{ density }}">Save draft</button>
+        <button cngxButton="outline" class="outline-{{ density }}">Export</button>
+        <button cngxButton="ghost" tone="primary" class="ghost-{{ density }}">Cancel</button>
+        <button cngxButton tone="primary" class="start-{{ density }}">
+          <cngx-icon cngxButtonStart><svg viewBox="0 0 24 24"><path d="M12 5v14" /></svg></cngx-icon>
+          New item
+        </button>
+        <button cngxButton="ghost" class="ghost-start-{{ density }}">
+          <cngx-icon cngxButtonStart><svg viewBox="0 0 24 24"><path d="M12 5v14" /></svg></cngx-icon>
+          Reply
+        </button>
+        <button cngxIconButton class="icon-{{ density }}" aria-label="Delete">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14" /></svg>
+        </button>
+      </div>
+    }
+    <p>
+      @for (size of sizes; track size) {
+        <button cngxButton tone="primary" class="size-{{ size }}" [size]="size">Save</button>
+        <button cngxIconButton class="icon-size-{{ size }}" [size]="size" aria-label="Delete">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14" /></svg>
+        </button>
+      }
+    </p>
+  `,
+})
+class MaterialBridgeMetricsHost {
+  readonly densities = ['comfortable', 'compact', 'spacious'] as const;
+  readonly sizes = SIZES;
+}
+
+function mountMetrics(): HTMLElement {
+  const fixture = TestBed.createComponent(MaterialBridgeMetricsHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  return mountedRoot;
+}
+
+interface Metrics {
+  height: number;
+  width: number;
+  start: number;
+  end: number;
+  font: number;
+  weight: string;
+  line: number;
+}
+
+function metrics(root: ParentNode, selector: string): Metrics {
+  const el = root.querySelector(selector);
+  if (!el) {
+    throw new Error(`${selector} did not render`);
+  }
+  const style = getComputedStyle(el);
+  const rect = el.getBoundingClientRect();
+  return {
+    height: rect.height,
+    width: rect.width,
+    start: parseFloat(style.paddingInlineStart),
+    end: parseFloat(style.paddingInlineEnd),
+    font: parseFloat(style.fontSize),
+    weight: style.fontWeight,
+    line: parseFloat(style.lineHeight),
+  };
+}
+
+describe('Material bridge: M3 metrics and label type', () => {
+  it('matches the M3 filled, tonal and outlined button at comfortable', () => {
+    const root = mountMetrics();
+    for (const variant of ['solid', 'secondary', 'outline']) {
+      const m = metrics(root, `.${variant}-comfortable`);
+      expect(m.height, variant).toBe(M3.height);
+      expect([m.start, m.end], variant).toEqual([M3.inline, M3.inline]);
+      expect([m.font, m.weight, m.line], variant).toEqual([M3.font, M3.weight, M3.line]);
+    }
+  });
+
+  it('matches the M3 text button at comfortable', () => {
+    const m = metrics(mountMetrics(), '.ghost-comfortable');
+    expect(m.height).toBe(M3.height);
+    expect([m.start, m.end]).toEqual([M3.text, M3.text]);
+  });
+
+  it('pads a leading icon like M3 (16 / 24 filled, 12 / 16 text)', () => {
+    const root = mountMetrics();
+    const filled = metrics(root, '.start-comfortable');
+    expect([filled.start, filled.end]).toEqual([M3.slot, M3.inline]);
+    expect(filled.height).toBe(M3.height);
+    const text = metrics(root, '.ghost-start-comfortable');
+    expect([text.start, text.end]).toEqual([M3.text, M3.slot]);
+  });
+
+  it('squares the icon button to the M3 40px box', () => {
+    const m = metrics(mountMetrics(), '.icon-comfortable');
+    expect([m.width, m.height]).toEqual([M3.height, M3.height]);
+  });
+
+  it('re-scales the bridged button in compact and spacious islands', () => {
+    const root = mountMetrics();
+    const compact = metrics(root, '.solid-compact');
+    const spacious = metrics(root, '.solid-spacious');
+    // lg rung: 12 / 24 / 28; box = 20 line + 2 * (sm * 1.25), border inside.
+    expect([compact.start, compact.height]).toEqual([12, 30]);
+    expect([spacious.start, spacious.height]).toEqual([28, 50]);
+    expect(metrics(root, '.ghost-compact').start).toBe(6);
+    expect(metrics(root, '.ghost-spacious').start).toBe(18);
+    expect(metrics(root, '.start-compact').start).toBe(8);
+    expect(metrics(root, '.start-spacious').start).toBe(20);
+    const icon = metrics(root, '.icon-compact');
+    expect([icon.width, icon.height]).toEqual([30, 30]);
+    // The label type does not follow density.
+    expect([compact.font, spacious.font]).toEqual([M3.font, M3.font]);
+  });
+
+  it('steps the sizes 28 / 32 / 40 / 48 around the M3 md box', () => {
+    const root = mountMetrics();
+    const heights = SIZES.map((size) => metrics(root, `.size-${size}`).height);
+    expect(heights).toEqual([28, 32, 40, 48]);
+    const icons = SIZES.map((size) => metrics(root, `.icon-size-${size}`).width);
+    expect(icons).toEqual([28, 32, 40, 48]);
+  });
+});

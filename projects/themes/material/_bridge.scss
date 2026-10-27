@@ -36,7 +36,9 @@
 // tabs-theme keeps one raw layer block whose `::before` must sit
 // outside `:where()`; icon-theme's `mat-icon()` sizes a wrapped `.mat-icon`
 // unlayered because Material's own `.mat-icon` rule is unlayered and beats
-// any layer.
+// any layer; select-theme's option row and button-theme's `metrics()` emit
+// raw `@layer cngx.components` rules with real specificity, because the
+// tokens they set are SET per element inside the component's `@scope`.
 
 /// Emits the content block for `$selectors` inside `@layer cngx.components`
 /// wrapped in a single zero-specificity `:where(...)`. Pass plain element

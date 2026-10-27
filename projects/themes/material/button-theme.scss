@@ -1,3 +1,5 @@
+@use 'sass:list';
+@use 'sass:map';
 @use '@angular/material' as mat;
 @use './bridge' as bridge;
 
@@ -38,6 +40,30 @@
 // aggregate the colour knobs overlap system-bridge on purpose: only the
 // on-colours, the variant mappings and the shape are net-new there; the
 // duplicate keeps a selective per-bridge include consistent.
+//
+// Metrics and type (M3 only, `metrics()`): the M3 common button is 40px
+// high with 24px inline padding (12px for the text button), 16px on the
+// side of a leading icon, and the label-large type role. The sheet SETs the
+// padding and font tokens per size inside `@scope (.cngx-button)`
+// (`:scope[data-size]` is 0,2,0 and a scoped rule wins a specificity tie),
+// so these rules carry real specificity (0,3,0 and up) inside
+// `@layer cngx.components`, select-theme's option-row precedent. Every
+// length is a rung or a calc() of --cngx-space-*, chosen so comfortable
+// (and Material density 0) equals M3: a [data-density] island and a
+// Material `density: -N` theme (density-bridge rescales the same scale)
+// both re-scale the bridged button. No density map lives here.
+//
+//   size  inline  slot side  ghost  block (+1px border)  type role      box
+//   xs    sm*1.5  sm         sm*.75 xs*1.5               label-medium   28
+//   sm    md      sm*1.5     sm     sm                   label-medium   32
+//   md    lg      md         sm*1.5 sm*1.25              label-large    40
+//   lg    xl      lg         md     sm*1.5               title-medium   48
+//
+// The block padding absorbs the 1px border every variant keeps, so the box
+// is line-height + 2 * rung. A ghost (text) button with a slot follows the
+// M3 text-with-icon button: the slot side keeps the ghost padding, the other
+// side takes the slot rung. The icon button squares to the same box; its
+// glyph keeps the cngx size (1.25em of the button font), not M3's 24px.
 //
 // Icons: wrap a <mat-icon> in <cngx-icon> (the slot or the icon-button
 // glyph); icon-theme sizes the wrapped glyph to the cngx-icon rung, so this
@@ -124,7 +150,119 @@
   }
 }
 
+// size -> metrics; see the header table. Every value falls back to the
+// comfortable rung so the bridge renders without the cngx scale loaded.
+$_bw: 'var(--cngx-button-border-width, 1px)';
+$_metrics: (
+  xs: (
+    block: 'calc(var(--cngx-space-xs, 4px) * 1.5 - #{$_bw})',
+    inline: 'calc(var(--cngx-space-sm, 8px) * 1.5)',
+    slot: 'var(--cngx-space-sm, 8px)',
+    ghost: 'calc(var(--cngx-space-sm, 8px) * 0.75)',
+    role: label-medium,
+  ),
+  sm: (
+    block: 'calc(var(--cngx-space-sm, 8px) - #{$_bw})',
+    inline: 'var(--cngx-space-md, 16px)',
+    slot: 'calc(var(--cngx-space-sm, 8px) * 1.5)',
+    ghost: 'var(--cngx-space-sm, 8px)',
+    role: label-medium,
+  ),
+  md: (
+    block: 'calc(var(--cngx-space-sm, 8px) * 1.25 - #{$_bw})',
+    inline: 'var(--cngx-space-lg, 24px)',
+    slot: 'var(--cngx-space-md, 16px)',
+    ghost: 'calc(var(--cngx-space-sm, 8px) * 1.5)',
+    role: label-large,
+  ),
+  lg: (
+    block: 'calc(var(--cngx-space-sm, 8px) * 1.5 - #{$_bw})',
+    inline: 'var(--cngx-space-xl, 32px)',
+    slot: 'var(--cngx-space-lg, 24px)',
+    ghost: 'var(--cngx-space-md, 16px)',
+    role: title-medium,
+  ),
+);
+
+// M3 type-scale fallbacks (size, line-height, tracking) for a theme whose
+// typography was not emitted.
+$_roles: (
+  label-medium: (
+    0.75rem,
+    1rem,
+    0.031rem,
+  ),
+  label-large: (
+    0.875rem,
+    1.25rem,
+    0.006rem,
+  ),
+  title-medium: (
+    1rem,
+    1.5rem,
+    0.009rem,
+  ),
+);
+
+@function _role($role, $prop, $fallback) {
+  @return var(--mat-sys-#{$role}-#{$prop}, #{$fallback});
+}
+
+@mixin metrics($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    @layer cngx.components {
+      @each $size, $m in $_metrics {
+        $s: "[data-size='#{$size}']";
+        $role: map.get($m, role);
+        $type: map.get($_roles, $role);
+        $lh: _role($role, line-height, list.nth($type, 2));
+
+        .cngx-button#{$s}:not([data-variant='link']) {
+          --cngx-button-padding-block: #{map.get($m, block)};
+          --cngx-button-padding-inline: #{map.get($m, inline)};
+        }
+        .cngx-button#{$s}[data-variant='ghost'] {
+          --cngx-button-padding-inline: #{map.get($m, ghost)};
+        }
+        .cngx-button#{$s}[data-variant='ghost']:is([data-start], [data-end]) {
+          --cngx-button-padding-inline: #{map.get($m, slot)};
+        }
+        // A filled slot replaces the sheet's 0.75 trim with the M3 rung.
+        .cngx-button#{$s}:not([data-variant='link'], [data-variant='ghost'])[data-start] {
+          padding-inline-start: #{map.get($m, slot)};
+        }
+        .cngx-button#{$s}:not([data-variant='link'], [data-variant='ghost'])[data-end] {
+          padding-inline-end: #{map.get($m, slot)};
+        }
+        .cngx-button#{$s}[data-variant='ghost'][data-start] {
+          padding-inline-start: #{map.get($m, ghost)};
+        }
+        .cngx-button#{$s}[data-variant='ghost'][data-end] {
+          padding-inline-end: #{map.get($m, ghost)};
+        }
+        // Label type. The icon button keeps the cngx font size, which sizes
+        // its glyph; link stays running text.
+        .cngx-button#{$s}:not([data-variant='link'], .cngx-icon-button) {
+          --cngx-button-font-size: #{_role($role, size, list.nth($type, 1))};
+          --cngx-button-font-weight: #{_role($role, weight, 500)};
+          font-family: #{_role($role, font, 'Roboto, sans-serif')};
+          line-height: #{$lh};
+          letter-spacing: #{_role($role, tracking, list.nth($type, 3))};
+        }
+        // The icon button squares to the box a labelled button of the same
+        // size has: line-height + 2 * block padding + 2 * border.
+        .cngx-icon-button.cngx-button#{$s} {
+          --cngx-icon-button-size: calc(
+            #{$lh} + 2 * var(--cngx-button-padding-block, 9px) + 2 * #{$_bw}
+          );
+        }
+      }
+    }
+  }
+}
+
 @mixin theme($theme) {
   @include color($theme);
   @include shape($theme);
+  @include metrics($theme);
 }
