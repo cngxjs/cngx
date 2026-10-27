@@ -1,5 +1,6 @@
 // Build-time snapshot: copy the compodocx `documentation.json` into the
-// @cngx/mcp package so `npx @cngx/mcp` runs standalone offline. Two transforms
+// @cngx/mcp and @cngx/cli packages so `npx @cngx/mcp` and `npx @cngx/cli` run
+// standalone offline. One snapshot step feeds both packages. Two transforms
 // bridge gaps in the raw data:
 //
 //   (a) stamp `cngxVersion` from the root package.json `version` - the raw
@@ -11,9 +12,11 @@
 //       scripts/backport-example-urls.mjs applies to the JSDoc tags, so
 //       get_story_example returns URLs a consumer can actually open.
 //
-// The snapshot is generated, never committed (packages/mcp/data/ is gitignored).
-// `build:mcp` loads the written snapshot through the compiled loader afterwards
+// The snapshot is generated, never committed (packages/mcp/data/ and
+// packages/cli/data/ are gitignored). `build:mcp` and `build:cli` load the
+// written snapshot through the compiled loader afterwards
 // (scripts/mcp-bundle-check.mjs), so an unreadable bundle fails the build.
+// The llm-md dump goes to @cngx/mcp only: no cli command reads it.
 //
 // Usage:
 //   node scripts/mcp-snapshot.mjs                                        # GH Pages default
@@ -28,6 +31,8 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SOURCE = join(ROOT, '.compodoc', 'documentation.json');
 const DEST_DIR = join(ROOT, 'packages', 'mcp', 'data');
 const DEST = join(DEST_DIR, 'documentation.json');
+const CLI_DEST_DIR = join(ROOT, 'packages', 'cli', 'data');
+const CLI_DEST = join(CLI_DEST_DIR, 'documentation.json');
 // The verbatim compodocx llm-md dump (npm run docs:llm). Optional to the build:
 // copied when present, warned-and-skipped when absent so a docs-less checkout
 // still builds; the cngx://llms-full resource degrades to an empty read.
@@ -78,11 +83,14 @@ function main() {
 
   const rebased = rebaseEntries(doc.components) + rebaseEntries(doc.directives);
 
+  const json = JSON.stringify(doc);
   mkdirSync(DEST_DIR, { recursive: true });
-  writeFileSync(DEST, JSON.stringify(doc));
+  writeFileSync(DEST, json);
+  mkdirSync(CLI_DEST_DIR, { recursive: true });
+  writeFileSync(CLI_DEST, json);
 
   console.log(
-    `mcp-snapshot: wrote packages/mcp/data/documentation.json ` +
+    `mcp-snapshot: wrote packages/mcp/data/documentation.json and packages/cli/data/documentation.json ` +
       `(cngxVersion ${cngxVersion}, schemaVersion ${doc.schemaVersion}, ${rebased} example URL(s) rebased to ${BASE_URL}).`,
   );
 

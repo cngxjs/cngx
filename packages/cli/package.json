@@ -1,0 +1,49 @@
+{
+  "name": "@cngx/cli",
+  "version": "0.1.0",
+  "description": "Command line for the cngx public API: the @cngx/mcp queries as cngx subcommands with markdown or JSON output, for coding agents and CI.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cngxjs/cngx.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://cngxjs.github.io/cngx",
+  "bugs": "https://github.com/cngxjs/cngx/issues",
+  "type": "module",
+  "bin": {
+    "cngx": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "data",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "node ../../scripts/mcp-bundle-check.mjs --data-dir=packages/cli/data",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@cngx/doctor": "^0.2.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "typescript": "~5.9.2",
+    "vitest": "^4.0.8"
+  },
+  "keywords": [
+    "cli",
+    "angular",
+    "cngx",
+    "llm"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

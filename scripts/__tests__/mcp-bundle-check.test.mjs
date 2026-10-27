@@ -10,7 +10,7 @@ import {
   SchemaVersionError,
   SUPPORTED_SCHEMA_VERSIONS,
 } from '../../packages/mcp/src/core/data/loader.ts';
-import { checkBundledSnapshot } from '../mcp-bundle-check.mjs';
+import { checkBundledSnapshot, parseBundleCheckArgs } from '../mcp-bundle-check.mjs';
 
 const FIXTURES = resolve(dirname(fileURLToPath(import.meta.url)), '../../packages/mcp/test/fixtures');
 const readFixture = (name) => JSON.parse(readFileSync(join(FIXTURES, name), 'utf8'));
@@ -75,5 +75,42 @@ describe('checkBundledSnapshot', () => {
 
     expect(result.ok).toBe(false);
     expect(result.message).toMatch(/ENOENT/);
+  });
+});
+
+describe('parseBundleCheckArgs', () => {
+  const root = resolve(tmpdir(), 'cngx-repo');
+
+  it('defaults to the mcp bundle when no argument is given', () => {
+    expect(parseBundleCheckArgs([], root)).toEqual({
+      ok: true,
+      dataDir: join(root, 'packages', 'mcp', 'data'),
+      label: 'packages/mcp/data',
+    });
+  });
+
+  it('resolves a relative --data-dir against the repo root, not the cwd', () => {
+    expect(parseBundleCheckArgs(['--data-dir=packages/cli/data'], root)).toEqual({
+      ok: true,
+      dataDir: join(root, 'packages', 'cli', 'data'),
+      label: 'packages/cli/data',
+    });
+  });
+
+  it('keeps an absolute --data-dir', () => {
+    const elsewhere = resolve(tmpdir(), 'elsewhere', 'data');
+
+    expect(parseBundleCheckArgs([`--data-dir=${elsewhere}`], root)).toMatchObject({ ok: true, dataDir: elsewhere });
+  });
+
+  it('rejects an empty --data-dir', () => {
+    expect(parseBundleCheckArgs(['--data-dir='], root)).toMatchObject({ ok: false });
+  });
+
+  it('rejects an unknown argument, naming it', () => {
+    const result = parseBundleCheckArgs(['--data=packages/cli/data'], root);
+
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain('--data=packages/cli/data');
   });
 });
