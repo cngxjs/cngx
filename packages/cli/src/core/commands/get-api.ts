@@ -10,6 +10,7 @@ import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
 import type { EntryKind } from '../query.js';
 import { resolveEntry } from '../query.js';
+import { blocks, bullets, cell, code, section, table } from './markdown.js';
 
 export interface ApiInput {
   name: string;
@@ -77,6 +78,25 @@ export function getApi(docs: DocsIndex, name: string): ApiResult | null {
   };
 }
 
+/** The API surface as a heading, a summary line and one section per member group. */
+export function apiMarkdown(api: ApiResult | null): string {
+  if (!api) {
+    return 'No component, directive, or service by that name.\n';
+  }
+  const summary = [`Kind: ${api.kind}`, `Selector: ${code(api.selector)}`, `Signal-based: ${api.signal ? 'yes' : 'no'}`];
+  const inputs = api.inputs.map((i) => [code(i.name), code(i.type), code(i.defaultValue), cell(i.description)]);
+  const outputs = api.outputs.map((o) => [code(o.name), code(o.type), cell(o.description)]);
+  return blocks(
+    `# ${api.name}`,
+    summary.join(' | '),
+    api.description && cell(api.description),
+    section('Inputs', inputs.length ? table(['Name', 'Type', 'Default', 'Description'], inputs) : '', 'None.'),
+    section('Outputs', outputs.length ? table(['Name', 'Type', 'Description'], outputs) : '', 'None.'),
+    section('Host bindings', bullets(api.hostBindings.map((b) => code(b))), 'None.'),
+    section('Methods', bullets(api.methods.map((m) => `${code(m.name)}: ${code(m.returnType)}`)), 'None.'),
+  );
+}
+
 /** A question this tool answers; the ng-add helper README lists it. */
 export const example = 'What inputs and outputs does CngxSelect take?';
 
@@ -87,11 +107,15 @@ export const getApiCommand = defineCommand({
     "Return a single component's, directive's, or injectable service's API surface - inputs, " +
     'outputs, signal flag, host bindings, public methods, and description - by class name or ' +
     'selector. Returns null when the name resolves to nothing.',
+  cliName: 'api',
   input: {
     name: z
       .string()
       .describe('A component/directive/service class name or selector, e.g. "CngxSelect" or "cngx-select".'),
     version: versionInput,
   },
+  positional: 'name',
+  cliFlags: { version: 'cngx-version' },
   run: (ctx, { name, version }) => answerVersioned(ctx.resolve, version, (resolved) => getApi(resolved, name)),
+  toMarkdown: (api: ApiResult | null) => apiMarkdown(api),
 });

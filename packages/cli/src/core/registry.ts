@@ -12,7 +12,17 @@ import { getConfigCommand } from './commands/get-config.js';
 import { getStoryExampleCommand } from './commands/get-story-example.js';
 import { migrateUsageCommand } from './commands/migrate-usage.js';
 
-export type { CngxCommand, CommandContext, CommandInput, CommandShape } from './command.js';
+export type {
+  Answer,
+  AnswerFailure,
+  CngxCommand,
+  CommandContext,
+  CommandInput,
+  CommandShape,
+  RenderOptions,
+  UnwrappedAnswer,
+} from './command.js';
+export { defaultFound, isFound, unwrapAnswer } from './command.js';
 
 export const COMMANDS: readonly CngxCommand[] = [
   findComponentCommand,

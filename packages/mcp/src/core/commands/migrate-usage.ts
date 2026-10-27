@@ -11,7 +11,8 @@ import { defineCommand } from '../command.js';
 import type { DocsIndex } from '../data/loader.js';
 import type { DocsResolver } from '../data/docs-resolver.js';
 import { diffSnapshots } from '../diff/snapshot-diff.js';
-import type { MigrateUsageResult, UsageDeltaError } from '../diff/types.js';
+import type { CategoryDelta, MigrateUsageResult, UsageDelta, UsageDeltaError } from '../diff/types.js';
+import { blocks, cell, code, section, table } from './markdown.js';
 
 export interface MigrateUsageArgs {
   from: string;
@@ -59,6 +60,42 @@ export async function migrateUsage(
   };
 }
 
+const DELTA_CATEGORIES: readonly (readonly [keyof Pick<UsageDelta, 'components' | 'inputs' | 'outputs' | 'slots' | 'diTokens'>, string])[] = [
+  ['components', 'Components, directives and services'],
+  ['inputs', 'Inputs'],
+  ['outputs', 'Outputs'],
+  ['slots', 'Slots'],
+  ['diTokens', 'DI tokens'],
+];
+
+const owned = (name: string, owner: string | undefined) => code(owner ? `${owner}.${name}` : name);
+
+function categoryRows(delta: CategoryDelta): string[][] {
+  return [
+    ...delta.removed.map((e) => ['removed', owned(e.name, e.owner), '-']),
+    ...delta.renamed.map((e) => ['renamed', owned(e.from, e.owner), code(e.to)]),
+    ...delta.signatureChanged.map((e) => ['signature', owned(e.name, e.owner), `${code(e.fromSignature)} -> ${code(e.toSignature)}`]),
+  ];
+}
+
+/** The delta as one table per category that has a breaking change. */
+export function migrateUsageMarkdown(delta: UsageDelta | null): string {
+  if (!delta) {
+    return 'No delta.\n';
+  }
+  const { meta } = delta;
+  const sections = DELTA_CATEGORIES.map(([key, title]) => {
+    const rows = categoryRows(delta[key]);
+    return rows.length ? section(title, table(['Change', 'Symbol', 'Detail'], rows), '') : '';
+  });
+  const changed = sections.some((s) => s !== '');
+  return blocks(
+    `# Migrating ${cell(meta.resolvedFrom ?? meta.from)} -> ${cell(meta.resolvedTo ?? meta.to)}`,
+    changed ? null : 'No removed, renamed or signature-changed API between these releases.',
+    ...sections,
+  );
+}
+
 /** A question this tool answers; the ng-add helper README lists it. */
 export const example = 'What breaks between cngx 0.1.0-rc.5 and 0.1.0?';
 
@@ -71,6 +108,7 @@ export const migrateUsageCommand = defineCommand({
     'A version other than the bundled one is fetched from the GitHub Release assets via `gh`, or over HTTPS ' +
     'when `gh` is missing or fails; no network or an absent asset returns a typed error result ' +
     '({ ok: false, reason }), never a throw.',
+  cliName: 'migrate',
   input: {
     from: z.string().describe('The cngx version to upgrade FROM, e.g. "0.1.0" (without the leading "v").'),
     to: z
@@ -78,6 +116,7 @@ export const migrateUsageCommand = defineCommand({
       .optional()
       .describe('The cngx version to upgrade TO. Defaults to the bundled snapshot version.'),
   },
+  positional: 'from',
   run: async (ctx, { from, to }) => {
     try {
       return await migrateUsage(ctx.bundled, { from, to }, ctx.resolve);
@@ -92,4 +131,5 @@ export const migrateUsageCommand = defineCommand({
       return failure;
     }
   },
+  toMarkdown: (delta: UsageDelta | null) => migrateUsageMarkdown(delta),
 });

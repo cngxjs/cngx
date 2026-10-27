@@ -1,11 +1,15 @@
 // The shape of one cngx query command, shared by every adapter. A definition
-// carries its identity, its zod input shape and a `run` over the context's
-// snapshots; it imports no adapter, so the MCP server and any other front end
-// generate their surface from the same object.
+// carries its identity, its zod input shape, a `run` over the context's
+// snapshots and its markdown rendering; it imports no adapter, so the MCP server
+// and the CLI generate their surface from the same object. The CLI fields
+// (`cliName`, `positional`, `cliFlags`, `found`, `toMarkdown`) never reach an MCP
+// tool registration; keeping them here instead of in a CLI-side table means a new
+// command cannot ship without its CLI rendering.
 
 import type { z } from 'zod';
-import type { DocsResolver } from './data/docs-resolver.js';
+import type { DocsResolver, VersionedAnswer } from './data/docs-resolver.js';
 import type { DocsIndex } from './data/loader.js';
+import type { SnapshotFetchFailureReason } from './diff/types.js';
 
 /** A zod field per input name; the adapter turns it into a tool schema or flags. */
 export type CommandShape = Record<string, z.ZodType>;
@@ -21,16 +25,78 @@ export interface CommandContext {
   readonly resolve: DocsResolver;
 }
 
-export interface CngxCommand<S extends CommandShape = CommandShape> {
+/** A resolve failure a command answers with instead of throwing. */
+export interface AnswerFailure {
+  readonly ok: false;
+  readonly reason: SnapshotFetchFailureReason;
+  readonly message: string;
+}
+
+/** What `run` may answer for payload `P`: the payload, a version envelope around it, or a failure. */
+export type Answer<P> = P | VersionedAnswer<P> | AnswerFailure;
+
+/** Rendering switches an adapter passes to `toMarkdown`. */
+export interface RenderOptions {
+  /** A shorter view: names and types without descriptions. */
+  readonly compact?: boolean;
+}
+
+export interface CngxCommand<S extends CommandShape = CommandShape, P = unknown> {
   /** Stable machine name, e.g. `get_api`. */
   readonly name: string;
   readonly title: string;
   readonly description: string;
   readonly input: S;
-  run(ctx: CommandContext, input: CommandInput<S>): unknown;
+  /** The CLI subcommand, e.g. `api`. */
+  readonly cliName: string;
+  /** The input field the CLI takes as its positional argument instead of a flag; must name a key of `input`. */
+  readonly positional?: string;
+  /** Input fields the CLI exposes under another flag name, e.g. `{ version: 'cngx-version' }`. MCP ignores it. */
+  readonly cliFlags?: Partial<Record<keyof S & string, string>>;
+  run(ctx: CommandContext, input: CommandInput<S>): Answer<P> | Promise<Answer<P>>;
+  /** Whether the payload answers the query; drives the CLI's exit 1. Defaults to {@link defaultFound}. */
+  found?(payload: P): boolean;
+  /** The payload as markdown, for the CLI's default output format. */
+  toMarkdown(payload: P, opts: RenderOptions): string;
 }
 
-/** Identity helper that infers `S` from the literal, so `run` sees typed input. */
-export function defineCommand<S extends CommandShape>(definition: CngxCommand<S>): CngxCommand<S> {
+/** Identity helper that infers `S` and `P` from the literal, so `run` and the renderers see typed values. */
+export function defineCommand<S extends CommandShape, P>(definition: CngxCommand<S, P>): CngxCommand<S, P> {
   return definition;
+}
+
+/** A payload counts as found unless it is `null`, `undefined` or an empty array. */
+export function defaultFound(payload: unknown): boolean {
+  if (payload === null || payload === undefined) {
+    return false;
+  }
+  return !(Array.isArray(payload) && payload.length === 0);
+}
+
+/** Whether `payload` answers `command`'s query, through its own `found` or the default. */
+export function isFound(command: CngxCommand, payload: unknown): boolean {
+  return command.found ? command.found(payload) : defaultFound(payload);
+}
+
+/** A `run` answer split into its payload (plus the grounded version, when enveloped) or its failure. */
+export type UnwrappedAnswer =
+  | { readonly ok: true; readonly payload: unknown; readonly groundedVersion?: string | null }
+  | AnswerFailure;
+
+const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
+
+/**
+ * Split an answer into payload or failure. `{ ok: false, reason, message }` is a
+ * failure; `{ ok: true, groundedVersion, result }` is a version envelope whose
+ * payload is `result`; anything else (a plain query result, a migration delta)
+ * is the payload itself.
+ */
+export function unwrapAnswer(answer: unknown): UnwrappedAnswer {
+  if (isRecord(answer) && answer.ok === false && typeof answer.message === 'string') {
+    return { ok: false, reason: answer.reason as SnapshotFetchFailureReason, message: answer.message };
+  }
+  if (isRecord(answer) && answer.ok === true && 'result' in answer && 'groundedVersion' in answer) {
+    return { ok: true, payload: answer.result, groundedVersion: answer.groundedVersion as string | null };
+  }
+  return { ok: true, payload: answer };
 }

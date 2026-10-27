@@ -11,6 +11,7 @@ import type { DocsIndex } from '../data/loader.js';
 import type { DocPlayground } from '../data/types.js';
 import type { EntryKind } from '../query.js';
 import { resolveEntry } from '../query.js';
+import { blocks, bullets, cell, section } from './markdown.js';
 
 export interface StoryExampleResult {
   name: string;
@@ -43,6 +44,20 @@ export function getStoryExample(docs: DocsIndex, name: string): StoryExampleResu
   };
 }
 
+/** The example links, the StackBlitz link and the source references under the component name. */
+export function storyExampleMarkdown(example: StoryExampleResult | null): string {
+  if (!example) {
+    return 'No component or directive by that name.\n';
+  }
+  const refs = example.sourceReferences.map((ref) => `${cell(ref.title)}: ${cell(ref.fileRef)}:${ref.line}`);
+  return blocks(
+    `# ${example.name} examples`,
+    section('Examples', bullets(example.exampleUrls), 'No example links.'),
+    example.stackblitzUrl && `StackBlitz: ${example.stackblitzUrl}`,
+    refs.length > 0 && section('Source references (repo-internal, not openable links)', bullets(refs), ''),
+  );
+}
+
 /** A question this tool answers; the ng-add helper README lists it. */
 export const example = 'Show me a working example of CngxTreeSelect.';
 
@@ -53,8 +68,11 @@ export const getStoryExampleCommand = defineCommand({
     "Return a component's runnable example URLs (public documentation links a consumer can open), plus a " +
     'StackBlitz URL when one exists. Playground entries are repo-internal source references, not openable ' +
     'links. Returns null when the name resolves to nothing.',
+  cliName: 'example',
   input: {
     name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect".'),
   },
+  positional: 'name',
   run: (ctx, { name }) => getStoryExample(ctx.bundled, name),
+  toMarkdown: (example: StoryExampleResult | null) => storyExampleMarkdown(example),
 });
