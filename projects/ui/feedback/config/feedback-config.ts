@@ -50,6 +50,9 @@ export interface FeedbackConfig {
   /** Default auto-dismiss duration for toasts in ms. */
   toastDefaultDuration?: number;
 
+  /** Default auto-dismiss duration for toasts that carry an action, in ms. */
+  toastActionDuration?: number;
+
   /** Dedup window for identical toasts in ms. */
   toastDedupWindow?: number;
 
@@ -249,6 +252,12 @@ export function withCloseIcon(component: Type<unknown>): FeedbackFeature {
 export function withToasts(opts?: {
   /** Default auto-dismiss duration in ms. */
   defaultDuration?: number;
+  /**
+   * Default auto-dismiss duration in ms for toasts that carry an `action`
+   * (default 10000). Longer than `defaultDuration` so keyboard and screen
+   * reader users can reach the action button (WCAG 2.2.1).
+   */
+  actionDuration?: number;
   /** Dedup window in ms. */
   dedupWindow?: number;
 }): FeedbackFeature {
@@ -256,6 +265,7 @@ export function withToasts(opts?: {
     _apply: (c) => ({
       ...c,
       toastDefaultDuration: opts?.defaultDuration ?? c.toastDefaultDuration,
+      toastActionDuration: opts?.actionDuration ?? c.toastActionDuration,
       toastDedupWindow: opts?.dedupWindow ?? c.toastDedupWindow,
     }),
     _providers: [CngxToaster],

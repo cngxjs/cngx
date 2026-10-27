@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { provideFeedback, withToasts } from '../config/feedback-config';
 import { CngxToaster } from './toast.service';
 
 describe('CngxToaster', () => {
@@ -285,6 +286,49 @@ describe('CngxToaster', () => {
   });
 
   // --- Action config ---
+
+  it('keeps a toast with an action up for 10000ms by default', () => {
+    toaster.show({ message: 'Item 1 deleted', action: { label: 'Undo', handler: vi.fn() } });
+    vi.advanceTimersByTime(9999);
+    expect(toaster.toasts().length).toBe(1);
+    vi.advanceTimersByTime(1);
+    expect(toaster.toasts().length).toBe(0);
+  });
+
+  it('lets an explicit duration win over the action duration', () => {
+    toaster.show({
+      message: 'Item 1 deleted',
+      duration: 2000,
+      action: { label: 'Undo', handler: vi.fn() },
+    });
+    vi.advanceTimersByTime(2000);
+    expect(toaster.toasts().length).toBe(0);
+  });
+
+  it('keeps an error toast with an action persistent', () => {
+    toaster.show({
+      message: 'Sync failed',
+      severity: 'error',
+      action: { label: 'Retry', handler: vi.fn() },
+    });
+    expect(toaster.toasts()[0].config.duration).toBe('persistent');
+    vi.advanceTimersByTime(60000);
+    expect(toaster.toasts().length).toBe(1);
+  });
+
+  it('reads the action duration from withToasts({ actionDuration })', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideFeedback(withToasts({ actionDuration: 7000 }))],
+    });
+    const configured = TestBed.inject(CngxToaster);
+    configured.show({ message: 'Item 1 deleted', action: { label: 'Undo', handler: vi.fn() } });
+    configured.show({ message: 'Plain' });
+    vi.advanceTimersByTime(5000);
+    expect(configured.toasts().map((t) => t.config.message)).toEqual(['Item 1 deleted']);
+    vi.advanceTimersByTime(2000);
+    expect(configured.toasts().length).toBe(0);
+  });
 
   it('stores action config when provided', () => {
     const handler = vi.fn();

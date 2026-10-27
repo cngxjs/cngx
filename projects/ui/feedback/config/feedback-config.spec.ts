@@ -18,10 +18,11 @@ function resolveConfig(...features: FeedbackFeature[]) {
 describe('provideFeedback merge rule', () => {
   it('withToasts() without options preserves values from earlier features', () => {
     const config = resolveConfig(
-      withToasts({ defaultDuration: 4000, dedupWindow: 500 }),
+      withToasts({ defaultDuration: 4000, actionDuration: 8000, dedupWindow: 500 }),
       withToasts(),
     );
     expect(config.toastDefaultDuration).toBe(4000);
+    expect(config.toastActionDuration).toBe(8000);
     expect(config.toastDedupWindow).toBe(500);
   });
 

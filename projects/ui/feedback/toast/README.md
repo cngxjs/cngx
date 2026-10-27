@@ -171,6 +171,7 @@ bootstrapApplication(AppComponent, {
     provideFeedback(
       withToasts({
         defaultDuration: 5000,   // Default auto-dismiss (ms)
+        actionDuration: 10000,   // Default auto-dismiss for toasts with an action (ms)
         dedupWindow: 1000        // Dedup window (ms)
       })
     )
@@ -198,9 +199,10 @@ Toasts that carry an `action` are never merged. Two "Item deleted" toasts with a
 
 ### Auto-Dismiss
 
-- Success toasts: default 3000ms (configurable)
 - Error toasts: default `'persistent'` (manual dismiss only)
-- Info/warning: configurable per toast
+- Toasts with an `action`: default 10000ms (`withToasts({ actionDuration })`), so keyboard and screen reader users can reach the button (WCAG 2.2.1). Name the object in the message ("Item 3 deleted") so the user knows what the action reverts.
+- Other toasts: default 5000ms (`withToasts({ defaultDuration })`)
+- An explicit `duration` on the toast always wins
 - Timer pauses on `pointerenter` / `focusin`, resumes on `pointerleave` / `focusout`
 
 ### Overflow

@@ -30,7 +30,8 @@ Enables the global toast system with optional configuration.
 
 ```typescript
 withToasts({
-  defaultDuration?: number;  // Default auto-dismiss (ms), default 3000
+  defaultDuration?: number;  // Default auto-dismiss (ms), default 5000
+  actionDuration?: number;   // Default auto-dismiss for toasts with an action (ms), default 10000
   dedupWindow?: number;      // Dedup window (ms), default 1000
 })
 ```
