@@ -432,7 +432,7 @@ Public exports:
 
 - **Features**: `withFocusTrapBehavior`, `withCloseOnCreate`, `withActionPopoverPlacement`, `withLiveInputFallback`, `withActionPosition`, `withActionAriaLabel`.
 - **Type aliases**: `CngxActionSelectConfig`, `CngxActionFocusTrapBehavior`, `CngxActionPosition`, `CngxActionSelectConfigFeature`.
-- **Resolver**: `resolveActionSelectConfig()` for variant injection.
+- **Resolver**: `resolveActionSelectConfig()` (internal); consumers read the resolved config through `injectActionSelectConfig()`.
 
 ### `reorderable-select-config.ts`
 
