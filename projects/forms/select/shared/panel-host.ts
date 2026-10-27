@@ -152,7 +152,6 @@ export interface CngxSelectPanelHost<T = unknown> extends CngxSelectPanelViewHos
   readonly panelRenderer?: PanelRendererForHost<T>;
   readonly effectiveOptions: Signal<CngxSelectOptionsInput<T>>;
   readonly flatOptions: Signal<CngxSelectOptionDef<T>[]>;
-  readonly loading: Signal<boolean>;
   readonly panelClassList: Signal<string | readonly string[] | null>;
   readonly panelWidthCss: Signal<string | null>;
   readonly resolvedListboxLabel: Signal<string>;
