@@ -18,6 +18,7 @@ import type { CngxDensityValue } from './density';
  * @relatedTo provideDensity
  * @relatedTo CNGX_DENSITY
  * @since 0.1.0
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxDensity]',

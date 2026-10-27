@@ -25,6 +25,7 @@ import type { CngxTouchTargetValue } from './touch-target';
  * @relatedTo provideTouchTargets
  * @relatedTo CNGX_TOUCH_TARGET
  * @since 0.1.0
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxTouchTarget]',

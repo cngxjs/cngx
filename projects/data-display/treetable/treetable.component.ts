@@ -198,6 +198,7 @@ function warnUnlabeledColumns(
  * <example-url>http://localhost:4200/#/data-display/treetable/data/sort-and-search</example-url>
  * <example-url>http://localhost:4200/#/data-display/treetable/data/header-click-sort</example-url>
  * <example-url>http://localhost:4200/#/data-display/treetable/data/multi-column-sort</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-treetable',
