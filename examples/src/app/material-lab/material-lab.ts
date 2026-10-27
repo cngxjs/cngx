@@ -8,7 +8,10 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatInputModule } from '@angular/material/input';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 
+import { CngxButton, CngxButtonStart, CngxIconButton } from '@cngx/common/button';
 import { CngxSlider, CngxRangeSlider } from '@cngx/common/interactive';
 import {
   CngxAccordionGroup,
@@ -90,6 +93,11 @@ interface FieldModel {
     MatInputModule,
     MatSliderModule,
     MatExpansionModule,
+    MatButtonModule,
+    MatIconModule,
+    CngxButton,
+    CngxButtonStart,
+    CngxIconButton,
     CngxSlider,
     CngxRangeSlider,
     CngxAccordionGroup,
@@ -120,6 +128,34 @@ interface FieldModel {
   styleUrl: './material-lab.scss',
   template: `
     <div class="lab mat-app-background mat-typography">
+      <section class="lab-wide">
+        <h3>buttons (Material left, cngx right)</h3>
+        <div class="lab-row">
+          <button mat-flat-button>Save</button>
+          <button cngxButton tone="primary">Save</button>
+          <button matButton="tonal">Save draft</button>
+          <button cngxButton="secondary">Save draft</button>
+        </div>
+        <div class="lab-row">
+          <button mat-stroked-button>Export</button>
+          <button cngxButton="outline">Export</button>
+          <button mat-button>Cancel</button>
+          <button cngxButton="ghost" tone="primary">Cancel</button>
+        </div>
+        <div class="lab-row">
+          <button mat-flat-button><mat-icon>add</mat-icon>New item</button>
+          <button cngxButton tone="primary"><mat-icon cngxButtonStart>add</mat-icon>New item</button>
+          <button matIconButton aria-label="Delete"><mat-icon>delete</mat-icon></button>
+          <button cngxIconButton aria-label="Delete"><mat-icon>delete</mat-icon></button>
+        </div>
+        <div class="lab-row">
+          <button mat-flat-button disabled>Disabled</button>
+          <button cngxButton tone="primary" disabled>Disabled</button>
+          <button cngxButton tone="danger">Delete</button>
+          <button cngxButton="secondary" tone="danger">Discard</button>
+        </div>
+      </section>
+
       <section>
         <h3>single-select (minimal)</h3>
         <cngx-select

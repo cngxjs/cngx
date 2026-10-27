@@ -10,6 +10,7 @@
 @use '../../../../projects/themes/material/field-theme.scss' as field;
 @use '../../../../projects/themes/material/slider-theme.scss' as slider;
 @use '../../../../projects/themes/material/accordion-theme.scss' as accordion;
+@use '../../../../projects/themes/material/button-theme.scss' as button;
 
 $palette: (
   theme-type: light,
@@ -69,6 +70,7 @@ html {
   @include field.theme($theme);
   @include slider.theme($theme);
   @include accordion.theme($theme);
+  @include button.theme($theme);
 }
 
 .lab {
@@ -84,6 +86,17 @@ html {
   gap: 12px;
   align-content: start;
   width: 280px;
+}
+
+.lab section.lab-wide {
+  width: auto;
+}
+
+.lab-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
 }
 
 .lab h3 {
