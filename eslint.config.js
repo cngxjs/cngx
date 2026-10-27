@@ -212,14 +212,6 @@ module.exports = tseslint.config(
                                 "isDevMode() does not fold in a production build; guard inline with typeof ngDevMode !== 'undefined' && ngDevMode.",
                         },
                     ],
-                    patterns: [
-                        {
-                            group: ['**/resolve-template', '**/resolve-template.js'],
-                            importNames: ['resolveTemplate'],
-                            message:
-                                'resolveTemplate is a deprecated alias; import injectResolvedTemplate so every select host uses one resolver.',
-                        },
-                    ],
                 },
             ],
         },

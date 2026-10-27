@@ -108,7 +108,6 @@ export {
   CNGX_ACTION_SELECT_CONFIG,
   provideActionSelectConfig,
   provideActionSelectConfigAt,
-  resolveActionSelectConfig,
   withActionAriaLabel,
   withActionPopoverPlacement,
   withActionPosition,

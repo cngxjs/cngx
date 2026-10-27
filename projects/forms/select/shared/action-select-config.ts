@@ -11,7 +11,6 @@ import type { PopoverPlacement } from '@cngx/common/popover';
 import { coerceSignal } from '@cngx/core/utils';
 
 import { injectSelectWord } from '../i18n/select-i18n';
-import { CNGX_SELECT_LANGUAGE_EN } from '../i18n/select-language-section';
 
 /**
  * Focus-trap policy for the action-slot workflow:
@@ -62,11 +61,8 @@ export interface CngxActionSelectConfig {
  *
  * @internal
  */
-export const CNGX_ACTION_SELECT_DEFAULTS: Required<Omit<CngxActionSelectConfig, 'ariaLabel'>> & {
-  readonly ariaLabel: string;
-} = {
+export const CNGX_ACTION_SELECT_DEFAULTS: Required<Omit<CngxActionSelectConfig, 'ariaLabel'>> = {
   focusTrapBehavior: 'dirty',
-  ariaLabel: CNGX_SELECT_LANGUAGE_EN.actionGroup,
   closeOnCreate: null,
   actionPosition: 'bottom',
   liveInputFallback: true,

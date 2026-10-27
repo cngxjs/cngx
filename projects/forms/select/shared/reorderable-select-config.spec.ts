@@ -2,6 +2,8 @@ import { Injector, runInInjectionContext, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
+import { CNGX_SELECT_LANGUAGE_EN } from '../i18n/select-language-section';
+
 import { injectReorderableSelectConfig } from './inject-helpers';
 import {
   CNGX_REORDERABLE_SELECT_DEFAULTS,
@@ -21,7 +23,7 @@ describe('resolveReorderableSelectConfig', () => {
       resolveReorderableSelectConfig(),
     );
     expect(cfg.keyboardModifier).toBe(CNGX_REORDERABLE_SELECT_DEFAULTS.keyboardModifier);
-    expect(cfg.ariaLabel()).toBe(CNGX_REORDERABLE_SELECT_DEFAULTS.ariaLabel);
+    expect(cfg.ariaLabel()).toBe(CNGX_SELECT_LANGUAGE_EN.reorderHint);
     expect(cfg.dragHandle).toBe(CNGX_REORDERABLE_SELECT_DEFAULTS.dragHandle);
     expect(cfg.freezeStripOnCommit).toBe(
       CNGX_REORDERABLE_SELECT_DEFAULTS.freezeStripOnCommit,
@@ -37,7 +39,7 @@ describe('resolveReorderableSelectConfig', () => {
     );
     expect(cfg.keyboardModifier).toBe('alt');
     // Non-overridden keys stay at the library default.
-    expect(cfg.ariaLabel()).toBe(CNGX_REORDERABLE_SELECT_DEFAULTS.ariaLabel);
+    expect(cfg.ariaLabel()).toBe(CNGX_SELECT_LANGUAGE_EN.reorderHint);
   });
 
   it('merges multiple features in feature-list order', () => {
@@ -120,11 +122,17 @@ describe('resolveReorderableSelectConfig - sortable list copy', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({});
     const cfg = TestBed.runInInjectionContext(() => resolveReorderableSelectConfig());
-    expect(cfg.listLabel()).toBe(CNGX_REORDERABLE_SELECT_DEFAULTS.listLabel);
-    expect(cfg.atStart()).toBe(CNGX_REORDERABLE_SELECT_DEFAULTS.atStart);
-    expect(cfg.atEnd()).toBe(CNGX_REORDERABLE_SELECT_DEFAULTS.atEnd);
+    expect(cfg.listLabel()).toBe(CNGX_SELECT_LANGUAGE_EN.reorderListLabel);
+    expect(cfg.atStart()).toBe(CNGX_SELECT_LANGUAGE_EN.reorderAtStart);
+    expect(cfg.atEnd()).toBe(CNGX_SELECT_LANGUAGE_EN.reorderAtEnd);
     expect(typeof cfg.moveUp()).toBe('function');
     expect(typeof cfg.moveDown()).toBe('function');
+  });
+
+  it('keeps no copy snapshot in the library defaults', () => {
+    for (const key of ['ariaLabel', 'listLabel', 'atStart', 'atEnd']) {
+      expect(key in CNGX_REORDERABLE_SELECT_DEFAULTS).toBe(false);
+    }
   });
 
   it('lets withReorderListLabels replace single keys and keeps the rest', () => {
@@ -139,7 +147,7 @@ describe('resolveReorderableSelectConfig - sortable list copy', () => {
     const cfg = TestBed.runInInjectionContext(() => resolveReorderableSelectConfig());
     expect(cfg.listLabel()).toBe('Order');
     expect(cfg.moveUp()('Red')).toBe('Up Red');
-    expect(cfg.atEnd()).toBe(CNGX_REORDERABLE_SELECT_DEFAULTS.atEnd);
+    expect(cfg.atEnd()).toBe(CNGX_SELECT_LANGUAGE_EN.reorderAtEnd);
   });
 
   it('follows Signal values of the list keys', () => {

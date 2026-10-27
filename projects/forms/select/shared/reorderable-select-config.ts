@@ -12,7 +12,6 @@ import type { CngxReorderModifier } from '@cngx/common/interactive';
 import { coerceSignal } from '@cngx/core/utils';
 
 import { injectSelectWord } from '../i18n/select-i18n';
-import { CNGX_SELECT_LANGUAGE_EN } from '../i18n/select-language-section';
 
 /**
  * App-wide config for reorder-aware select variants. Cascade:
@@ -82,16 +81,8 @@ export const CNGX_REORDERABLE_SELECT_DEFAULTS: Required<
   Omit<CngxReorderableSelectConfig, 'dragHandle' | CopyKey>
 > & {
   readonly dragHandle: TemplateRef<void> | null;
-  readonly ariaLabel: string;
-  readonly listLabel: string;
-  readonly atStart: string;
-  readonly atEnd: string;
 } = {
   keyboardModifier: 'alt',
-  ariaLabel: CNGX_SELECT_LANGUAGE_EN.reorderHint,
-  listLabel: CNGX_SELECT_LANGUAGE_EN.reorderListLabel,
-  atStart: CNGX_SELECT_LANGUAGE_EN.reorderAtStart,
-  atEnd: CNGX_SELECT_LANGUAGE_EN.reorderAtEnd,
   dragHandle: null,
   freezeStripOnCommit: true,
 };
