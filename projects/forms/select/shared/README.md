@@ -397,7 +397,6 @@ Used internally by the registry + by tree-select for tree-specific slots that ar
 | Symbol | Purpose |
 |-|-|
 | `injectResolvedTemplate(directive, configKey)` | Internal helper for ad-hoc slot resolution (not in `public-api.ts`) |
-| `resolveTemplate(...)`                         | Deprecated alias of `injectResolvedTemplate`, kept for back-compat; lint-banned as an import |
 
 ### `internal/glyphs.ts`
 

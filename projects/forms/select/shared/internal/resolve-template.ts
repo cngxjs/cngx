@@ -52,9 +52,3 @@ export function injectResolvedTemplate<Ctx>(
     return global ?? null;
   });
 }
-
-/**
- * @deprecated Use {@link injectResolvedTemplate}. Zero-cost re-export.
- * @internal
- */
-export const resolveTemplate = injectResolvedTemplate;
