@@ -694,3 +694,9 @@ code.cdx-shiki-inline {
 #sidebar li.link:has(> a[data-type="chapter-link"][href$="license.html"]) {
   display: none;
 }
+
+/* The sidebar lockup (`customLogo` / `customLogoDark`) carries a tagline;
+   at the default 40px cap it is too small to read. */
+:root {
+  --cdx-sidebar-logo-max-height: 56px;
+}
