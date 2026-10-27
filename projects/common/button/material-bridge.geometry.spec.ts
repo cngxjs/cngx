@@ -331,8 +331,9 @@ describe('Material bridge: M3 metrics and label type', () => {
     expect([spacious.start, spacious.height]).toEqual([28, 50]);
     expect(metrics(root, '.ghost-compact').start).toBe(6);
     expect(metrics(root, '.ghost-spacious').start).toBe(18);
+    // A filled slot side is 2/3 of the inline padding.
     expect(metrics(root, '.start-compact').start).toBe(8);
-    expect(metrics(root, '.start-spacious').start).toBe(20);
+    expect(metrics(root, '.start-spacious').start).toBeCloseTo(28 * (2 / 3), 1);
     const icon = metrics(root, '.icon-compact');
     expect([icon.width, icon.height]).toEqual([30, 30]);
     // The label type does not follow density.

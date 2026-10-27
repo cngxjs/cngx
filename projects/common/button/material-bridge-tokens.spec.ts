@@ -171,7 +171,10 @@ describe('button Material bridge', () => {
     ];
     expect(paddings.length).toBeGreaterThan(0);
     for (const [, prop, value] of paddings) {
-      expect(value, prop).toMatch(/^(?:calc\()?var\(--cngx-space-(?:xs|sm|md|lg|xl), \d+px\)/);
+      // A rung, or a ratio of the inline padding that is itself a rung.
+      expect(value, prop).toMatch(
+        /^(?:calc\()?var\(--cngx-(?:space-(?:xs|sm|md|lg|xl)|button-padding-inline), \d+px\)/,
+      );
     }
     const md = (selector: string): string => {
       const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
