@@ -17,6 +17,7 @@ import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
 import type { DocFunction, DocToken } from '../data/types.js';
 import { resolveEntry } from '../query.js';
+import { blocks, bullets, code, section, table } from './markdown.js';
 
 /** How the input mapped to the resolved config token. */
 export type ConfigResolvedVia = 'token' | 'stem' | 'component';
@@ -186,6 +187,21 @@ export function getConfig(docs: DocsIndex, name: string): ConfigResult | null {
   };
 }
 
+/** The cascade: token, providers, features and the resolution order. */
+export function configMarkdown(config: ConfigResult | null): string {
+  if (!config) {
+    return 'No config token for that name.\n';
+  }
+  const features = config.features.map((f) => [code(f.name), code(f.returnType)]);
+  return blocks(
+    `# ${config.token}`,
+    `Resolved via: ${config.resolvedVia}`,
+    section('Providers', bullets(config.providers.map((p) => code(p))), 'None.'),
+    section('Features', features.length ? table(['Function', 'Returns'], features) : '', 'None.'),
+    section('Resolution priority', config.resolutionPriority.map((step, i) => `${i + 1}. ${step}`).join('\n'), 'None.'),
+  );
+}
+
 /** A question this tool answers; the ng-add helper README lists it. */
 export const example = 'How do I set app-wide defaults for CngxSelect?';
 
@@ -197,11 +213,15 @@ export const getConfigCommand = defineCommand({
     'with* feature functions, and the resolution-priority ordering. Accepts a config token name ' +
     '(CNGX_SELECT_CONFIG), a config stem (select), or best-effort a component/directive name ' +
     '(CngxCombobox -> CNGX_SELECT_CONFIG). Returns null when the input maps to no config token.',
+  cliName: 'config',
   input: {
     name: z
       .string()
       .describe('A config token (CNGX_SELECT_CONFIG), a stem (select), or a component name (CngxSelect).'),
     version: versionInput,
   },
+  positional: 'name',
+  cliFlags: { version: 'cngx-version' },
   run: (ctx, { name, version }) => answerVersioned(ctx.resolve, version, (resolved) => getConfig(resolved, name)),
+  toMarkdown: (config: ConfigResult | null) => configMarkdown(config),
 });

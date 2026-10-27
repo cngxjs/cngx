@@ -9,6 +9,7 @@ import { versionInput } from './version-input.js';
 import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
 import { resolveEntry } from '../query.js';
+import { blocks, cell, code, docText, table, textCell } from './markdown.js';
 
 export interface ThemeTokenView {
   name: string;
@@ -43,6 +44,19 @@ export function getThemeTokens(docs: DocsIndex, name: string): ThemeTokensResult
   };
 }
 
+/** The theme overview and the tokens as one table under the component name. */
+export function themeTokensMarkdown(theme: ThemeTokensResult | null): string {
+  if (!theme) {
+    return 'No component or directive by that name.\n';
+  }
+  const rows = theme.themeTokens.map((t) => [code(t.name), cell(t.kind), code(t.type), code(t.defaultValue), textCell(t.description)]);
+  return blocks(
+    `# ${theme.name} theme tokens`,
+    docText(theme.themeOverview),
+    rows.length ? table(['Token', 'Kind', 'Type', 'Default', 'Description'], rows) : 'No theming tokens.',
+  );
+}
+
 /** A question this tool answers; the ng-add helper README lists it. */
 export const example = 'Which custom properties theme CngxChip?';
 
@@ -53,9 +67,13 @@ export const getThemeTokensCommand = defineCommand({
     "Return a component's theming tokens (the CSS custom properties it exposes) and its theme " +
     'overview, by class name or selector. An empty themeTokens array means the component exposes ' +
     'none. Returns null when the name resolves to nothing. For DI tokens, use get_di_tokens.',
+  cliName: 'theme',
   input: {
     name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect".'),
     version: versionInput,
   },
+  positional: 'name',
+  cliFlags: { version: 'cngx-version' },
   run: (ctx, { name, version }) => answerVersioned(ctx.resolve, version, (resolved) => getThemeTokens(resolved, name)),
+  toMarkdown: (theme: ThemeTokensResult | null) => themeTokensMarkdown(theme),
 });

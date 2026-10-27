@@ -1,6 +1,7 @@
 // Fixture: `test/fixtures/documentation.v6.sample.json`, trimmed from
-// `npm run docs:json` (compodocx 0.9.0, schemaVersion 6) at 34580694c. The
-// inline documents below copy its `feature` and `di` shapes.
+// `npm run docs:json` (compodocx 0.9.0, schemaVersion 6) at 34580694c; the
+// `CngxSelect` members carry `signalKind` / `alias` / `required` from the 0.10.0
+// export. The inline documents below copy its `feature` and `di` shapes.
 
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -63,11 +64,17 @@ describe('projectSchemaV6 factoryKind', () => {
     expect(feature.factoryKind).toBe('feature');
   });
 
-  it('falls back to the name prefix when di is absent', () => {
+  it('leaves a with* or provide* function without di undefined', () => {
     const [feature, provider] = projectFunctions({ name: 'withFallback' }, { name: 'providePersistence' });
 
-    expect(feature.factoryKind).toBe('feature');
-    expect(provider.factoryKind).toBe('provider');
+    expect(feature.factoryKind).toBeUndefined();
+    expect(provider.factoryKind).toBeUndefined();
+  });
+
+  it('ignores a di role other than provider or feature', () => {
+    const [inject] = projectFunctions({ name: 'injectSelectConfig', di: { role: 'inject' } });
+
+    expect(inject.factoryKind).toBeUndefined();
   });
 
   it('leaves an inject* function without di undefined', () => {
@@ -102,7 +109,7 @@ describe('projectSchemaV6 purity', () => {
     expect(kinds).toEqual({
       injectSelectConfig: undefined,
       provideSelectConfig: 'provider',
-      withFallback: 'feature',
+      withFallback: undefined,
       withPanelWidth: 'feature',
     });
   });

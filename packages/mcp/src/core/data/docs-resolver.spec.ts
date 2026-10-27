@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
-import { loadDocsFromFile, SchemaVersionError } from './loader.js';
+import { createDocsIndex, loadDocsFromFile, SchemaVersionError } from './loader.js';
 import type { DocsResolverDeps } from './docs-resolver.js';
 import { answerVersioned, createDocsResolver, DOCS_CACHE_LIMIT } from './docs-resolver.js';
 import { fetchSnapshot } from '../diff/snapshot-fetch.js';
@@ -156,6 +156,23 @@ describe('createDocsResolver', () => {
     // The oldest version was evicted: a re-query fetches it a second time.
     await resolve('9.0.0');
     expect(fetchCounts.get('9.0.0')).toBe(2);
+  });
+});
+
+describe('createDocsResolver example urls', () => {
+  it('answers a fetched release snapshot with public example urls', async () => {
+    const raw = createDocsIndex({
+      schemaVersion: 6,
+      cngxVersion: '0.2.0',
+      injectables: [{ name: 'CngxToaster', exampleUrls: ['http://localhost:4200/#/ui/feedback/toast/basic'] }],
+    });
+    const deps: DocsResolverDeps = { fetchSnapshot: async () => ({ ok: true, path: 'unused' }), loadDocs: () => raw };
+
+    const resolution = await createDocsResolver(bundled, deps)('0.2.0');
+
+    expect(resolution.ok && resolution.docs.injectables[0].exampleUrls).toEqual([
+      'https://cngxjs.github.io/cngx/examples/#/ui/feedback/toast/basic',
+    ]);
   });
 });
 

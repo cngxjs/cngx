@@ -7,6 +7,7 @@
 // `loadDocsFromFile`. Every path stays inside the tools' don't-crash
 // contract: a fetch or schema failure is returned as data, never thrown.
 
+import { rebaseExampleUrls } from './example-urls.js';
 import type { DocsIndex } from './loader.js';
 import { loadDocsFromFile } from './loader.js';
 import type { FetchSnapshot } from '../diff/snapshot-fetch.js';
@@ -94,7 +95,9 @@ async function fetchAndLoad(
     return { ok: false, reason: fetched.reason, message: fetched.message };
   }
   try {
-    const docs = deps.loadDocs(fetched.path);
+    // A release asset is the raw docs:json export; only the bundled snapshot is
+    // rebased at build time.
+    const docs = rebaseExampleUrls(deps.loadDocs(fetched.path));
     cacheDocs(cache, requested, docs);
     // A successful download of the `v<version>` asset means the asset IS that version,
     // so an unstamped raw export still resolves to the requested label.

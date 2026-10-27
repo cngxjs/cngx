@@ -6,6 +6,10 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import {
+  assertNoCliTarball,
+  cliAppSteps,
+  sdkInTree,
+  selectCliTarballs,
   missingRecordedLibs,
   newestListed,
   packument,
@@ -110,6 +114,103 @@ describe('variantPlan', () => {
 
   it('rejects an unknown variant', () => {
     expect(() => variantPlan('nope')).toThrow(/Unknown variant/);
+  });
+
+  it('runs the cli variant on the minimal plan, the only one that installs the cli', () => {
+    const { cli, variant, ...shape } = variantPlan('cli');
+    const { cli: minimalCli, variant: _minimal, ...minimalShape } = variantPlan('minimal');
+
+    expect(cli).toBe(true);
+    expect(minimalCli).toBe(false);
+    expect(shape).toEqual(minimalShape);
+    expect(VARIANTS.filter((name) => variantPlan(name).cli)).toEqual(['cli']);
+  });
+});
+
+describe('cli tarballs', () => {
+  const LIBS = ['/t/cngx-core-0.1.0-rc.9.tgz', '/t/cngx-ui-0.1.0-rc.9.tgz'];
+
+  it('lets a lib tarball directory without a cli tarball through', () => {
+    expect(() => assertNoCliTarball(LIBS)).not.toThrow();
+  });
+
+  it('mutation: fails a cngx-cli tarball among the lib tarballs, naming it and pack:cli', () => {
+    expect(() => assertNoCliTarball([...LIBS, '/t/cngx-cli-0.1.0.tgz'])).toThrow(/cngx-cli-0\.1\.0\.tgz.*pack:cli/);
+  });
+
+  it('mutation: catches a Windows path too', () => {
+    expect(() => assertNoCliTarball(['C:\\t\\cngx-cli-0.1.0.tgz'])).toThrow(/cngx-cli-0\.1\.0\.tgz/);
+  });
+
+  it('does not mistake another cngx package for the cli', () => {
+    expect(() => assertNoCliTarball(['/t/cngx-common-0.1.0.tgz', '/t/cngx-doctor-0.2.1.tgz'])).not.toThrow();
+  });
+
+  it('picks the cli and doctor tarballs', () => {
+    expect(selectCliTarballs(['/c/cngx-doctor-0.2.1.tgz', '/c/cngx-cli-0.1.0.tgz'])).toEqual({
+      cli: '/c/cngx-cli-0.1.0.tgz',
+      doctor: '/c/cngx-doctor-0.2.1.tgz',
+    });
+  });
+
+  it('names npm run pack:cli when a tarball is missing or ambiguous', () => {
+    expect(() => selectCliTarballs([])).toThrow(/npm run pack:cli/);
+    expect(() => selectCliTarballs(['/c/cngx-cli-0.1.0.tgz'])).toThrow(/@cngx\/doctor.*pack:cli/);
+    expect(() => selectCliTarballs(['/c/cngx-cli-0.1.0.tgz', '/c/cngx-cli-0.0.9.tgz', '/c/cngx-doctor-0.2.1.tgz'])).toThrow(/found 2/);
+  });
+});
+
+describe('cliAppSteps', () => {
+  const steps = cliAppSteps('0.1.0');
+  const step = (...args) => steps.find((candidate) => candidate.args.join(' ') === args.join(' '));
+
+  it('runs version, a known and an unknown symbol, a bad flag and JSON output with their exit codes', () => {
+    expect(steps.map(({ args, exit }) => [args.join(' '), exit])).toEqual([
+      ['--version', 0],
+      ['api CngxSelect', 0],
+      ['api NoSuchThing', 1],
+      ['api --bogus', 2],
+      ['list --format=json', 0],
+    ]);
+  });
+
+  it('checks the version against the packed cli', () => {
+    expect(step('--version').stdout('0.1.0\n')).toBe(true);
+    expect(step('--version').stdout('0.0.9\n')).toBe('expected 0.1.0');
+  });
+
+  it('requires the list result to be a non-empty JSON array', () => {
+    expect(step('list', '--format=json').stdout('{"cngxVersion":"0.1.0","result":[{"name":"CngxSelect"}]}')).toBe(true);
+    expect(step('list', '--format=json').stdout('{"cngxVersion":"0.1.0","result":[]}')).toBe('result is not a non-empty JSON array');
+    expect(step('list', '--format=json').stdout('[{"name":"CngxSelect"}]')).toBe('result is not a non-empty JSON array');
+    expect(step('list', '--format=json').stdout('# CngxSelect')).toMatch(/^not JSON/);
+  });
+});
+
+describe('sdkInTree', () => {
+  it('reads an empty npm ls tree as no SDK', () => {
+    expect(sdkInTree('{"version":"0.0.0","name":"fixture"}')).toEqual([]);
+    expect(sdkInTree('')).toEqual([]);
+  });
+
+  // Shape captured from an Angular 21.2.28 fixture app (npm ls, 2026-10-27): the CLI's own MCP server needs the SDK.
+  it('allows the SDK the Angular CLI brings', () => {
+    const tree = JSON.stringify({
+      dependencies: { '@angular/cli': { dependencies: { '@modelcontextprotocol/sdk': { version: '1.32.1' } } } },
+    });
+
+    expect(sdkInTree(tree)).toEqual([]);
+  });
+
+  it('mutation: reports the SDK reached through @cngx/cli', () => {
+    const tree = JSON.stringify({
+      dependencies: {
+        '@angular/cli': { dependencies: { '@modelcontextprotocol/sdk': { version: '1.32.1' } } },
+        '@cngx/cli': { dependencies: { '@modelcontextprotocol/sdk': { version: '1.30.0', deduped: true } } },
+      },
+    });
+
+    expect(sdkInTree(tree)).toEqual(['@cngx/cli']);
   });
 });
 

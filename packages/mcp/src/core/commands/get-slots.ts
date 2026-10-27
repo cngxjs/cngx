@@ -11,6 +11,7 @@ import type { DocsIndex } from '../data/loader.js';
 import type { DocSlot } from '../data/types.js';
 import type { EntryKind } from '../query.js';
 import { resolveEntry } from '../query.js';
+import { blocks, code, table, textCell } from './markdown.js';
 
 export interface SlotsResult {
   name: string;
@@ -31,6 +32,18 @@ export function getSlots(docs: DocsIndex, name: string): SlotsResult | null {
   };
 }
 
+/** The slots as one table under the component name. */
+export function slotsMarkdown(slots: SlotsResult | null): string {
+  if (!slots) {
+    return 'No component or directive by that name.\n';
+  }
+  const rows = slots.slots.map((slot) => [code(slot.name), textCell(slot.description)]);
+  return blocks(
+    `# ${slots.name} slots`,
+    rows.length ? table(['Slot', 'Description'], rows) : 'No overridable template slots.',
+  );
+}
+
 /** A question this tool answers; the ng-add helper README lists it. */
 export const example = 'Which template slots can I override on CngxSelect?';
 
@@ -41,9 +54,13 @@ export const getSlotsCommand = defineCommand({
     "Return a component's projected template slots - each the slot directive selector name plus " +
     'its one-line doc - by class name or selector. An empty slots array means the component projects ' +
     'no overridable slots. Returns null when the name resolves to nothing.',
+  cliName: 'slots',
   input: {
     name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect".'),
     version: versionInput,
   },
+  positional: 'name',
+  cliFlags: { version: 'cngx-version' },
   run: (ctx, { name, version }) => answerVersioned(ctx.resolve, version, (resolved) => getSlots(resolved, name)),
+  toMarkdown: (slots: SlotsResult | null) => slotsMarkdown(slots),
 });

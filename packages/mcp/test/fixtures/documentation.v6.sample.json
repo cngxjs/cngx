@@ -238,284 +238,383 @@
           "name": "announceChanges",
           "type": "boolean | null",
           "defaultValue": "null",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "announceTemplate",
           "type": "CngxSelectAnnouncerConfig['format'] | null",
           "defaultValue": "null",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "ariaLabel",
           "type": "string | null",
           "defaultValue": "null",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "alias": "aria-label",
+          "required": false
         },
         {
           "name": "ariaLabelledBy",
           "type": "string | null",
           "defaultValue": "null",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "alias": "aria-labelledby",
+          "required": false
         },
         {
           "name": "autofocus",
           "type": "boolean",
           "defaultValue": "false",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "caretGlyph",
           "type": "TemplateRef<void> | null",
           "defaultValue": "null",
           "description": "<p>Replaces the built-in caret glyph. Ignored when\n<code>*cngxSelectCaret</code> is projected.</p>\n",
-          "rawdescription": "\n\nReplaces the built-in caret glyph. Ignored when\n`*cngxSelectCaret` is projected.\n"
+          "rawdescription": "\n\nReplaces the built-in caret glyph. Ignored when\n`*cngxSelectCaret` is projected.\n",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "clearable",
           "type": "boolean",
           "defaultValue": "false",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "clearButtonAriaLabel",
           "type": "string | undefined",
           "defaultValue": "undefined",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "clearGlyph",
           "type": "TemplateRef<void> | null",
           "defaultValue": "null",
           "description": "<p>Replaces the built-in <code>✕</code> glyph inside the default clear button\nwhile keeping the button frame, ARIA, and click handler. Ignored\nwhen <code>*cngxSelectClearButton</code> is projected.</p>\n",
-          "rawdescription": "\n\nReplaces the built-in `✕` glyph inside the default clear button\nwhile keeping the button frame, ARIA, and click handler. Ignored\nwhen `*cngxSelectClearButton` is projected.\n"
+          "rawdescription": "\n\nReplaces the built-in `✕` glyph inside the default clear button\nwhile keeping the button frame, ARIA, and click handler. Ignored\nwhen `*cngxSelectClearButton` is projected.\n",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "commitAction",
           "type": "CngxSelectCommitAction<T> | null",
           "defaultValue": "null",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "commitErrorAnnouncePolicy",
           "type": "CngxCommitErrorAnnouncePolicy",
           "defaultValue": "this.config.commitErrorAnnouncePolicy ?? { kind: 'verbose', severity: 'assertive' }",
           "description": "<p>Scalar-commit error-announce policy. <code>&#39;verbose&#39;</code> reads the error\nmessage; <code>&#39;soft&#39;</code> reads &quot;selection removed&quot;. Per-instance input wins\nover <code>CngxSelectConfig.commitErrorAnnouncePolicy</code>; default\n<code>{ kind: &#39;verbose&#39;, severity: &#39;assertive&#39; }</code>.</p>\n",
-          "rawdescription": "\n\nScalar-commit error-announce policy. `'verbose'` reads the error\nmessage; `'soft'` reads \"selection removed\". Per-instance input wins\nover `CngxSelectConfig.commitErrorAnnouncePolicy`; default\n`{ kind: 'verbose', severity: 'assertive' }`.\n"
+          "rawdescription": "\n\nScalar-commit error-announce policy. `'verbose'` reads the error\nmessage; `'soft'` reads \"selection removed\". Per-instance input wins\nover `CngxSelectConfig.commitErrorAnnouncePolicy`; default\n`{ kind: 'verbose', severity: 'assertive' }`.\n",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "commitErrorDisplay",
           "type": "CngxSelectCommitErrorDisplay",
           "defaultValue": "this.config.commitErrorDisplay",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "commitMode",
           "type": "CngxSelectCommitMode",
           "defaultValue": "'optimistic'",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "compareWith",
           "type": "CngxSelectCompareFn<T>",
           "defaultValue": "cngxSelectDefaultCompare as CngxSelectCompareFn<T>",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "disabledInput",
           "type": "boolean",
           "defaultValue": "false",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "alias": "disabled",
+          "required": false
         },
         {
           "name": "hideCaret",
           "type": "boolean",
           "defaultValue": "!this.config.showCaret",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "hideSelectionIndicator",
           "type": "boolean",
           "defaultValue": "!this.config.showSelectionIndicator",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "idInput",
           "type": "string | null",
           "defaultValue": "null",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "alias": "id",
+          "required": false
         },
         {
           "name": "label",
           "type": "string",
           "defaultValue": "''",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "loading",
           "type": "boolean",
           "defaultValue": "false",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "loadingVariant",
           "type": "CngxSelectLoadingVariant",
           "defaultValue": "this.config.loadingVariant",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "options",
           "type": "CngxSelectOptionsInput<T>",
           "defaultValue": "[] as CngxSelectOptionsInput<T>",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "panelClass",
           "type": "string | readonly string[] | null",
           "defaultValue": "null",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "panelWidth",
           "type": "'trigger' | number | null",
           "defaultValue": "this.config.panelWidth",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "placeholder",
           "type": "string",
           "defaultValue": "''",
           "description": "<p>Trigger text while nothing is selected; falls back to <code>label</code> when unset.</p>\n",
-          "rawdescription": "\nTrigger text while nothing is selected; falls back to `label` when unset."
+          "rawdescription": "\nTrigger text while nothing is selected; falls back to `label` when unset.",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "popoverPlacement",
           "type": "PopoverPlacement",
           "defaultValue": "this.config.popoverPlacement",
           "description": "<p>Popover placement relative to the trigger. Per-instance input\nwins over <code>CngxSelectConfig.popoverPlacement</code>.</p>\n",
-          "rawdescription": "\n\nPopover placement relative to the trigger. Per-instance input\nwins over `CngxSelectConfig.popoverPlacement`.\n"
+          "rawdescription": "\n\nPopover placement relative to the trigger. Per-instance input\nwins over `CngxSelectConfig.popoverPlacement`.\n",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "presentation",
           "type": "CngxPopoverPresentationRequest | undefined",
           "defaultValue": "undefined",
           "description": "<p>Panel presentation. Unset follows <code>CNGX_SELECT_CONFIG.mobileSheet</code>:\n<code>&#39;auto&#39;</code> opens a modal bottom sheet on coarse, narrow viewports and\nstays anchored elsewhere. <code>&#39;anchored&#39;</code>, <code>&#39;sheet&#39;</code> and <code>&#39;fullscreen&#39;</code>\nforce one presentation.</p>\n",
-          "rawdescription": "\n\nPanel presentation. Unset follows `CNGX_SELECT_CONFIG.mobileSheet`:\n`'auto'` opens a modal bottom sheet on coarse, narrow viewports and\nstays anchored elsewhere. `'anchored'`, `'sheet'` and `'fullscreen'`\nforce one presentation.\n"
+          "rawdescription": "\n\nPanel presentation. Unset follows `CNGX_SELECT_CONFIG.mobileSheet`:\n`'auto'` opens a modal bottom sheet on coarse, narrow viewports and\nstays anchored elsewhere. `'anchored'`, `'sheet'` and `'fullscreen'`\nforce one presentation.\n",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "refreshingVariant",
           "type": "CngxSelectRefreshingVariant",
           "defaultValue": "this.config.refreshingVariant",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "requiredInput",
           "type": "boolean",
           "defaultValue": "false",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "alias": "required",
+          "required": false
         },
         {
           "name": "retryFn",
           "type": "(() => void) | null",
           "defaultValue": "null",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "selectionIndicatorPosition",
           "type": "'before' | 'after' | null",
           "defaultValue": "null",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "selectionIndicatorVariant",
           "type": "CngxSelectSelectionIndicatorVariant | null",
           "defaultValue": "null",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "sheetLabel",
           "type": "string | undefined",
           "defaultValue": "undefined",
           "description": "<p>Title of the mobile sheet. Unset reads the field label once per open,\nthen <code>[label]</code>, then <code>ariaLabels.fieldLabelFallback</code>.</p>\n",
-          "rawdescription": "\n\nTitle of the mobile sheet. Unset reads the field label once per open,\nthen `[label]`, then `ariaLabels.fieldLabelFallback`.\n"
+          "rawdescription": "\n\nTitle of the mobile sheet. Unset reads the field label once per open,\nthen `[label]`, then `ariaLabels.fieldLabelFallback`.\n",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "skeletonRowCount",
           "type": "number",
           "defaultValue": "this.config.skeletonRowCount",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "state",
           "type": "CngxAsyncState<CngxSelectOptionsInput<T>> | null",
           "defaultValue": "null",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "tabIndex",
           "type": "number",
           "defaultValue": "0",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "typeaheadDebounceInterval",
           "type": "number",
           "defaultValue": "this.config.typeaheadDebounceInterval",
-          "description": ""
+          "description": "",
+          "signalKind": "input-signal",
+          "required": false
         },
         {
           "name": "value",
           "type": "T | undefined",
           "defaultValue": "undefined",
-          "description": ""
+          "description": "",
+          "signalKind": "model",
+          "required": false
         }
       ],
       "outputsClass": [
         {
           "name": "closed",
           "type": "void",
-          "description": ""
+          "description": "",
+          "signalKind": "output-signal",
+          "required": false
         },
         {
           "name": "commitError",
           "type": "unknown",
-          "description": ""
+          "description": "",
+          "signalKind": "output-signal",
+          "required": false
         },
         {
           "name": "opened",
           "type": "void",
-          "description": ""
+          "description": "",
+          "signalKind": "output-signal",
+          "required": false
         },
         {
           "name": "openedChange",
           "type": "boolean",
-          "description": ""
+          "description": "",
+          "signalKind": "output-signal",
+          "required": false
         },
         {
           "name": "optionSelected",
           "type": "CngxSelectOptionDef<T> | null",
-          "description": ""
+          "description": "",
+          "signalKind": "output-signal",
+          "required": false
         },
         {
           "name": "retry",
           "type": "void",
-          "description": ""
+          "description": "",
+          "signalKind": "output-signal",
+          "required": false
         },
         {
           "name": "selectionChange",
           "type": "CngxSelectChange<T>",
-          "description": ""
+          "description": "",
+          "signalKind": "output-signal",
+          "required": false
         },
         {
           "name": "stateChange",
           "type": "AsyncStatus",
-          "description": ""
+          "description": "",
+          "signalKind": "output-signal",
+          "required": false
         },
         {
           "name": "value",
           "type": "T | undefined",
           "defaultValue": "undefined",
-          "description": ""
+          "description": "",
+          "signalKind": "model",
+          "required": false
         }
       ],
       "hostBindings": [

@@ -114,8 +114,51 @@ describe('consumer-compat inputs', () => {
   it('is what the changes job reads, in place of a pattern of its own', () => {
     const workflow = readFileSync(join(ROOT, '.github', 'workflows', 'consumer-compat.yml'), 'utf8');
 
-    expect(workflow).toContain('node scripts/schematics-consumer-inputs.mjs --base "$BASE_SHA" --workflow consumer-compat');
-    expect(workflow).toContain('relevant: ${{ steps.filter.outputs.changed }}');
+    expect(workflow).toContain('node scripts/schematics-consumer-inputs.mjs --base "$BASE_SHA" --workflow consumer-compat\n');
+    expect(workflow).toContain('relevant: ${{ steps.lib.outputs.changed }}');
     expect(workflow).not.toMatch(/grep -E/);
+  });
+});
+
+describe('consumer-compat cli inputs', () => {
+  // What builds and packs @cngx/cli and nothing a lib row or schematics-consumer reads.
+  const CLI_ONLY = [
+    'packages/cli/package.json',
+    'packages/cli/package-lock.json',
+    'packages/cli/src/cli-adapter.ts',
+    'packages/cli/src/core/registry.ts',
+    'packages/mcp/src/core/commands/get-api.ts',
+    'packages/mcp/package.json',
+    'packages/mcp/tsconfig.json',
+    'packages/doctor/cngx-doctor.mjs',
+    'scripts/mcp-snapshot.mjs',
+    'scripts/mcp-bundle-check.mjs',
+    'scripts/sync-cli-core.mjs',
+    'scripts/cli-core-copy-check.mjs',
+  ];
+
+  it.each(CLI_ONLY)('runs the cli row on a change to %s', (file) => {
+    expect(changedInputs([file], 'consumer-compat-cli')).toEqual([file]);
+  });
+
+  it.each(CLI_ONLY)('runs neither the lib rows nor schematics-consumer on a change to %s', (file) => {
+    expect(changedInputs([file], 'consumer-compat')).toEqual([]);
+    expect(changedInputs([file], 'schematics-consumer')).toEqual([]);
+  });
+
+  it('runs the cli row on its workflow file and on every lib input', () => {
+    expect(changedInputs(['.github/workflows/consumer-compat.yml'], 'consumer-compat-cli')).toHaveLength(1);
+    expect(changedInputs(['projects/common/a11y/live-region.ts', 'package.json'], 'consumer-compat-cli')).toHaveLength(2);
+  });
+
+  it('leaves mcp code outside the shared core out', () => {
+    expect(changedInputs(['packages/mcp/src/server.ts', 'packages/mcp/README.md'], 'consumer-compat-cli')).toEqual([]);
+  });
+
+  it('is what the changes job reads for its cli output', () => {
+    const workflow = readFileSync(join(ROOT, '.github', 'workflows', 'consumer-compat.yml'), 'utf8');
+
+    expect(workflow).toContain('node scripts/schematics-consumer-inputs.mjs --base "$BASE_SHA" --workflow consumer-compat-cli');
+    expect(workflow).toContain('cli: ${{ steps.cli.outputs.changed }}');
   });
 });

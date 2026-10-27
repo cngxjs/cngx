@@ -7,6 +7,7 @@ import { defineCommand } from '../command.js';
 import { versionInput } from './version-input.js';
 import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
+import { cell, code, table, textCell } from './markdown.js';
 
 export interface DiTokenView {
   name: string;
@@ -26,6 +27,15 @@ export function getDiTokens(docs: DocsIndex, query?: string): DiTokenView[] {
     }));
 }
 
+/** The DI tokens as one table, or a no-match line. */
+export function diTokensMarkdown(tokens: DiTokenView[] | null): string {
+  if (!tokens || tokens.length === 0) {
+    return 'No DI token matches.\n';
+  }
+  const rows = tokens.map((t) => [code(t.name), cell(t.file), textCell(t.description)]);
+  return `${table(['Token', 'File', 'Description'], rows)}\n`;
+}
+
 /** A question this tool answers; the ng-add helper README lists it. */
 export const example = 'Which DI tokens configure the select family?';
 
@@ -35,9 +45,13 @@ export const getDiTokensCommand = defineCommand({
   description:
     'Return the top-level DI injection tokens, optionally filtered by a name fragment. Omit the ' +
     "argument for the full list. For a component's theming tokens, use get_theme_tokens.",
+  cliName: 'di',
   input: {
     query: z.string().optional().describe('A DI-token name fragment, e.g. "SELECT". Omit for all DI tokens.'),
     version: versionInput,
   },
+  positional: 'query',
+  cliFlags: { version: 'cngx-version' },
   run: (ctx, { query, version }) => answerVersioned(ctx.resolve, version, (resolved) => getDiTokens(resolved, query)),
+  toMarkdown: (tokens: DiTokenView[] | null) => diTokensMarkdown(tokens),
 });

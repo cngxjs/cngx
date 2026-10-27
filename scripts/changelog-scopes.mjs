@@ -102,6 +102,7 @@ export const NON_LIBRARY_SCOPES = [
   'mcp',
   'plugin',
   'doctor',
+  'cli',
 ];
 
 export const ALL_SCOPES = [...LIBRARY_SCOPES, ...NON_LIBRARY_SCOPES];
