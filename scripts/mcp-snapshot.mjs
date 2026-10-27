@@ -12,6 +12,8 @@
 //       get_story_example returns URLs a consumer can actually open.
 //
 // The snapshot is generated, never committed (packages/mcp/data/ is gitignored).
+// `build:mcp` loads the written snapshot through the compiled loader afterwards
+// (scripts/mcp-bundle-check.mjs), so an unreadable bundle fails the build.
 //
 // Usage:
 //   node scripts/mcp-snapshot.mjs                                        # GH Pages default
