@@ -45,6 +45,7 @@ const CONSUMED = [
   '--cngx-button-font-weight',
   '--cngx-button-group-radius',
   '--cngx-button-hover-shade',
+  '--cngx-button-icon-size',
   '--cngx-button-padding-block',
   '--cngx-button-padding-inline',
   '--cngx-button-secondary-bg',
@@ -63,6 +64,7 @@ const CONSUMED = [
   '--cngx-color-surface',
   '--cngx-color-text',
   '--cngx-icon-button-size',
+  '--cngx-icon-size',
   '--cngx-radius-md',
 ];
 
@@ -70,6 +72,7 @@ const READERS = [
   'projects/common/button/button.component.css',
   'projects/common/button/close-button.component.css',
   'projects/common/button/icon-button.component.css',
+  'projects/common/display/icon/icon.component.css',
   'projects/common/theming/components/cngx-button-group.css',
 ];
 

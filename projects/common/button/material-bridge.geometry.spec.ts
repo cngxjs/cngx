@@ -168,12 +168,22 @@ describe('Material bridge: wrapped mat-icon in the button family', () => {
 // a 14px / 500 label-large label on a 20px line; mat-button (text) pads 12px;
 // a leading icon sits 16px from the edge; matIconButton is 40x40. Material
 // itself is not loaded here, so the numbers are pinned.
-const M3 = { height: 40, inline: 24, text: 12, slot: 16, font: 14, weight: '500', line: 20 };
+const M3 = {
+  height: 40,
+  inline: 24,
+  text: 12,
+  slot: 16,
+  font: 14,
+  weight: '500',
+  line: 20,
+  slotIcon: 18,
+  glyph: 24,
+};
 
 @Component({
   selector: 'cngx-material-bridge-metrics-host',
   standalone: true,
-  imports: [CngxButton, CngxButtonStart, CngxIconButton, CngxIcon],
+  imports: [CngxButton, CngxButtonStart, CngxIconButton, CngxCloseButton, CngxIcon],
   styleUrls: [
     '../../core/theming/layers.css',
     '../../core/theming/system-tokens.css',
@@ -201,6 +211,11 @@ const M3 = { height: 40, inline: 24, text: 12, slot: 16, font: 14, weight: '500'
         <button cngxIconButton class="icon-{{ density }}" aria-label="Delete">
           <svg viewBox="0 0 24 24"><path d="M12 5v14" /></svg>
         </button>
+        <button cngxIconButton class="icon-wrapped-{{ density }}" aria-label="Delete">
+          <cngx-icon><svg viewBox="0 0 24 24"><path d="M12 5v14" /></svg></cngx-icon>
+        </button>
+        <button cngxCloseButton class="close-{{ density }}" size="md" aria-label="Close"></button>
+        <button cngxCloseButton class="close-default-{{ density }}" aria-label="Close"></button>
       </div>
     }
     <p>
@@ -283,6 +298,28 @@ describe('Material bridge: M3 metrics and label type', () => {
   it('squares the icon button to the M3 40px box', () => {
     const m = metrics(mountMetrics(), '.icon-comfortable');
     expect([m.width, m.height]).toEqual([M3.height, M3.height]);
+  });
+
+  it('sizes a slot icon 18px and an icon-button glyph 24px, svg or cngx-icon', () => {
+    const root = mountMetrics();
+    const slot = box(root, '.start-comfortable cngx-icon');
+    expect(slot.width).toBeCloseTo(M3.slotIcon, 1);
+    expect(slot.height).toBeCloseTo(M3.slotIcon, 1);
+    expect(box(root, '.icon-comfortable svg')).toEqual({ width: M3.glyph, height: M3.glyph });
+    expect(box(root, '.icon-wrapped-comfortable cngx-icon svg')).toEqual({
+      width: M3.glyph,
+      height: M3.glyph,
+    });
+  });
+
+  it('gives a md close button the M3 icon-button box and glyph', () => {
+    const root = mountMetrics();
+    const close = metrics(root, '.close-comfortable');
+    expect([close.width, close.height]).toEqual([M3.height, M3.height]);
+    expect(box(root, '.close-comfortable svg')).toEqual({ width: M3.glyph, height: M3.glyph });
+    expect(metrics(root, '.close-compact').height).toBe(30);
+    // The close button defaults to sm, so it squares to the sm box.
+    expect(metrics(root, '.close-default-comfortable').height).toBe(32);
   });
 
   it('re-scales the bridged button in compact and spacious islands', () => {

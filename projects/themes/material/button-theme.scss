@@ -62,8 +62,16 @@
 // The block padding absorbs the 1px border every variant keeps, so the box
 // is line-height + 2 * rung. A ghost (text) button with a slot follows the
 // M3 text-with-icon button: the slot side keeps the ghost padding, the other
-// side takes the slot rung. The icon button squares to the same box; its
-// glyph keeps the cngx size (1.25em of the button font), not M3's 24px.
+// side takes the slot rung. The icon button (and the close button, which
+// reads the icon-button box) squares to the same box.
+//
+// Glyphs, M3 sizes: a slot icon is 18px on the 14px label, so the bridge
+// sets --cngx-button-icon-size to 9/7 of the button font (it follows the
+// label role per size); an icon-button glyph is 24px in the 40px box, 1.2x
+// the label-large line (20px), so it follows the role line per size. Both
+// reach an svg / img and an unsized <cngx-icon> (and the mat-icon it wraps);
+// a <cngx-icon> with an explicit `size` keeps its rung, and the close button
+// keeps honouring --cngx-close-button-icon-size.
 //
 // Icons: wrap a <mat-icon> in <cngx-icon> (the slot or the icon-button
 // glyph); icon-theme sizes the wrapped glyph to the cngx-icon rung, so this
@@ -184,6 +192,11 @@ $_metrics: (
   ),
 );
 
+// M3 slot icon on its label: 18px on 14px.
+$_slot-icon: 'calc(1em * 9 / 7)';
+// A <cngx-icon> with an explicit size keeps its own rung.
+$_sized-icon: '.cngx-icon--xs, .cngx-icon--sm, .cngx-icon--lg, .cngx-icon--xl';
+
 // M3 type-scale fallbacks (size, line-height, tracking) for a theme whose
 // typography was not emitted.
 $_roles: (
@@ -255,6 +268,34 @@ $_roles: (
           --cngx-icon-button-size: calc(
             #{$lh} + 2 * var(--cngx-button-padding-block, 9px) + 2 * #{$_bw}
           );
+        }
+        // Slot glyph: 18px on the 14px label at md (see the header).
+        .cngx-button#{$s}:not([data-variant='link'], .cngx-icon-button) {
+          --cngx-button-icon-size: #{$_slot-icon};
+        }
+        .cngx-button#{$s}
+          cngx-icon.cngx-icon:is(.cngx-button__slot, .cngx-button__slot > *):not(#{$_sized-icon}) {
+          --cngx-icon-size: var(--cngx-button-icon-size, #{$_slot-icon});
+        }
+        // Icon-button glyph: 24px in the 40px box at md.
+        $glyph: 'calc(#{$lh} * 1.2)';
+        .cngx-icon-button.cngx-button#{$s} .cngx-icon-button__glyph > :is(svg, img) {
+          inline-size: #{$glyph};
+          block-size: #{$glyph};
+        }
+        .cngx-icon-button.cngx-button#{$s}
+          .cngx-icon-button__glyph
+          > cngx-icon.cngx-icon:not(#{$_sized-icon}) {
+          --cngx-icon-size: #{$glyph};
+        }
+        .cngx-close-button.cngx-button#{$s} .cngx-icon-button__glyph > :is(svg, img) {
+          inline-size: var(--cngx-close-button-icon-size, #{$glyph});
+          block-size: var(--cngx-close-button-icon-size, #{$glyph});
+        }
+        .cngx-close-button.cngx-button#{$s}
+          .cngx-icon-button__glyph
+          > cngx-icon.cngx-icon:not(#{$_sized-icon}) {
+          --cngx-icon-size: var(--cngx-close-button-icon-size, #{$glyph});
         }
       }
     }
