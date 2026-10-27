@@ -9,16 +9,23 @@
 // sides; they run once, in packages/mcp.
 //
 // Exits non-zero on any missing, extra or differing file, naming
-// `npm run cli:sync` as the fix.
+// `npm run cli:sync` as the fix, and on a missing tree: "nothing to compare" is
+// the defect a wrong working directory produces, not a pass. Both trees resolve
+// from the repo root, never from cwd.
 //
 //   node scripts/cli-core-copy-check.mjs
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-export const CANONICAL_CORE_DIR = 'packages/mcp/src/core';
-export const COPY_CORE_DIR = 'packages/cli/src/core';
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
+
+export const CANONICAL_CORE_DIR = resolve(ROOT, 'packages/mcp/src/core');
+export const COPY_CORE_DIR = resolve(ROOT, 'packages/cli/src/core');
+
+/** A tree path as the repo-relative name the messages print. */
+export const displayPath = (dir) => relative(ROOT, dir).split(sep).join('/');
 
 /** True for a file that belongs to the core copy (everything except specs). */
 export const isCoreFile = (relPath) => !relPath.endsWith('.spec.ts');
@@ -78,21 +85,38 @@ export function compareTrees(listA, listB, readA, readB) {
 
 const readUnder = (base) => (file) => readFileSync(resolve(base, file));
 
+/**
+ * The trees of `[canonicalDir, copyDir]` that do not exist. A missing tree fails
+ * the check on its own: walking it would report an empty tree as "identical".
+ */
+export const missingTrees = (canonicalDir, copyDir) => [canonicalDir, copyDir].filter((dir) => !existsSync(dir));
+
 function main() {
+  const missing = missingTrees(CANONICAL_CORE_DIR, COPY_CORE_DIR);
+  if (missing.length > 0) {
+    for (const dir of missing) {
+      process.stdout.write(`cli:copy-check - ${displayPath(dir)} does not exist (${dir}).\n`);
+    }
+    process.exitCode = 1;
+    return;
+  }
+
   const canonical = listCoreFiles(CANONICAL_CORE_DIR);
   const copy = listCoreFiles(COPY_CORE_DIR);
   const mismatches = compareTrees(canonical, copy, readUnder(CANONICAL_CORE_DIR), readUnder(COPY_CORE_DIR));
 
   if (mismatches.length === 0) {
-    process.stdout.write(`cli:copy-check - ${COPY_CORE_DIR} is byte-identical (${canonical.length} files)\n`);
+    process.stdout.write(`cli:copy-check - ${displayPath(COPY_CORE_DIR)} is byte-identical (${canonical.length} files)\n`);
     return;
   }
 
-  process.stdout.write(`cli:copy-check - ${mismatches.length} file(s) diverged from ${CANONICAL_CORE_DIR}:\n`);
+  process.stdout.write(`cli:copy-check - ${mismatches.length} file(s) diverged from ${displayPath(CANONICAL_CORE_DIR)}:\n`);
   for (const entry of mismatches) {
     process.stdout.write(`  ${entry.file} (${entry.reason})\n`);
   }
-  process.stdout.write(`Fix: run \`npm run cli:sync\` to regenerate ${COPY_CORE_DIR} from ${CANONICAL_CORE_DIR}.\n`);
+  process.stdout.write(
+    `Fix: run \`npm run cli:sync\` to regenerate ${displayPath(COPY_CORE_DIR)} from ${displayPath(CANONICAL_CORE_DIR)}.\n`,
+  );
   process.exitCode = 1;
 }
 

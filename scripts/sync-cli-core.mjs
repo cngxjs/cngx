@@ -7,15 +7,16 @@
 // file is one that no longer exists in the canonical tree, so it is recoverable
 // from git. Nothing outside that directory is touched.
 //
-// The file walk is imported from cli-core-copy-check.mjs so the sync and the
-// guard can never disagree on which files make up the core.
+// The file walk and both tree paths (resolved from the repo root, not cwd) are
+// imported from cli-core-copy-check.mjs so the sync and the guard can never
+// disagree on which files make up the core.
 //
 //   node scripts/sync-cli-core.mjs
 
 import { copyFileSync, mkdirSync, rmSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { CANONICAL_CORE_DIR, COPY_CORE_DIR, listCoreFiles } from './cli-core-copy-check.mjs';
+import { CANONICAL_CORE_DIR, COPY_CORE_DIR, displayPath, listCoreFiles } from './cli-core-copy-check.mjs';
 
 export function syncCliCore() {
   const canonical = listCoreFiles(CANONICAL_CORE_DIR);
@@ -35,7 +36,9 @@ export function syncCliCore() {
 
 function main() {
   const { copied, removed } = syncCliCore();
-  process.stdout.write(`cli:sync - regenerated ${copied} file(s) in ${COPY_CORE_DIR} from ${CANONICAL_CORE_DIR}\n`);
+  process.stdout.write(
+    `cli:sync - regenerated ${copied} file(s) in ${displayPath(COPY_CORE_DIR)} from ${displayPath(CANONICAL_CORE_DIR)}\n`,
+  );
   for (const file of removed) {
     process.stdout.write(`  removed ${file} (no longer in the canonical tree)\n`);
   }

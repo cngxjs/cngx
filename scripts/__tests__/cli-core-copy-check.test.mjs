@@ -1,10 +1,22 @@
+import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { compareTrees, isCoreFile, listCoreFiles } from '../cli-core-copy-check.mjs';
+import {
+  CANONICAL_CORE_DIR,
+  COPY_CORE_DIR,
+  compareTrees,
+  isCoreFile,
+  listCoreFiles,
+  missingTrees,
+} from '../cli-core-copy-check.mjs';
+
+const SCRIPT = fileURLToPath(new URL('../cli-core-copy-check.mjs', import.meta.url));
+const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 
 // In-memory trees: { 'rel/path.ts': 'content' }.
 const reader = (tree) => (file) => Buffer.from(tree[file]);
@@ -63,5 +75,30 @@ describe('listCoreFiles', () => {
   it('counts every non-spec file as core', () => {
     expect(isCoreFile('data/loader.ts')).toBe(true);
     expect(isCoreFile('data/loader.spec.ts')).toBe(false);
+  });
+});
+
+describe('tree roots', () => {
+  const absent = join(tmpdir(), 'cngx-cli-core-does-not-exist');
+
+  it('fails a missing canonical tree', () => {
+    expect(missingTrees(absent, COPY_CORE_DIR)).toEqual([absent]);
+  });
+
+  it('fails a missing copy tree', () => {
+    expect(missingTrees(CANONICAL_CORE_DIR, absent)).toEqual([absent]);
+  });
+
+  it('compares the real trees when started from another directory', () => {
+    const run = (cwd) => spawnSync(process.execPath, [SCRIPT], { cwd, encoding: 'utf8' });
+    const fromRoot = run(ROOT);
+    const fromTmp = run(tmpdir());
+    const count = (stdout) => Number(/\((\d+) files\)/.exec(stdout)?.[1] ?? 0);
+
+    expect(fromRoot.status).toBe(0);
+    expect(count(fromRoot.stdout)).toBe(listCoreFiles(CANONICAL_CORE_DIR).length);
+    expect(count(fromRoot.stdout)).toBeGreaterThan(0);
+    expect(fromTmp.status).toBe(0);
+    expect(count(fromTmp.stdout)).toBe(count(fromRoot.stdout));
   });
 });
