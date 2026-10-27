@@ -19,7 +19,7 @@
     "build:themes": "node scripts/build-themes.mjs && node scripts/build-schematics.mjs themes",
     "build:eslint-plugin": "tsc -p packages/eslint-plugin",
     "mcp:snapshot": "node scripts/mcp-snapshot.mjs",
-    "build:mcp": "npm run mcp:snapshot && rm -rf packages/mcp/dist && tsc -p packages/mcp",
+    "build:mcp": "npm run mcp:snapshot && rm -rf packages/mcp/dist && tsc -p packages/mcp && node scripts/mcp-bundle-check.mjs",
     "prestart:examples": "npm run docs:json && npm run examples:generate",
     "start:examples": "ng serve examples --port 4200",
     "prestart:examples:lan": "npm run docs:json && npm run examples:generate",
