@@ -11,6 +11,7 @@ import { COMMANDS, defaultFound, isFound, unwrapAnswer } from '../registry.js';
 import { createDocsResolver } from '../data/docs-resolver.js';
 import { loadDocsFromFile } from '../data/loader.js';
 import { cell, table } from './markdown.js';
+import { apiMarkdown, getApi } from './get-api.js';
 
 const fixture = (name: string) => fileURLToPath(new URL(`../../../test/fixtures/${name}`, import.meta.url));
 const bundled = loadDocsFromFile(fixture('documentation.sample.json'));
@@ -200,6 +201,46 @@ describe('toMarkdown over the sample fixture', () => {
     const { markdown } = await render('migrate', { from: '0.1.0-rc.6' });
 
     expect(markdown).toContain('No removed, renamed or signature-changed API between these releases.');
+  });
+});
+
+describe('toMarkdown over compodoc HTML', () => {
+  const v6 = loadDocsFromFile(fixture('documentation.v6.sample.json'));
+  const v6ctx: CommandContext = { bundled: v6, resolve: createDocsResolver(v6) };
+  const COMPODOC_HTML = /<\/?(?:p|code|strong|em|a|example-url)[\s>]|&#?[a-z0-9]+;/i;
+
+  it.each([
+    ['api', { name: 'CngxSelect' }],
+    ['theme', { name: 'CngxSelect' }],
+    ['slots', { name: 'CngxSelect' }],
+    ['di', { query: 'SELECT' }],
+    ['config', { name: 'CNGX_SELECT_CONFIG' }],
+  ])('%s renders no compodoc tag and no entity', async (cliName, input) => {
+    const { markdown } = await render(cliName, input, v6ctx);
+
+    expect(markdown).not.toMatch(COMPODOC_HTML);
+  });
+
+  it('api: drops example-url anchors and keeps paragraph breaks', () => {
+    const description =
+      '<p>First paragraph.</p>\n<p>Second paragraph.</p>\n' +
+      '<p><example-url><a href="http://localhost:4200/#/forms/select">http://localhost:4200/#/forms/select</a></example-url></p>';
+
+    const markdown = apiMarkdown({ ...getApi(bundled, 'CngxSelect')!, description });
+
+    expect(markdown).not.toContain('localhost:4200');
+    expect(markdown).toContain('First paragraph.\n\nSecond paragraph.');
+  });
+
+  it('api: caps a 1000-character input description', () => {
+    const api = getApi(bundled, 'CngxSelect')!;
+    const long = `<p>${'x'.repeat(1000)}</p>`;
+
+    const markdown = apiMarkdown({ ...api, inputs: [{ ...api.inputs[0], description: long }] });
+    const row = markdown.split('\n').find((line) => line.startsWith('|`value`|'));
+
+    expect(row).toContain(`${'x'.repeat(200)}...|`);
+    expect(row).not.toContain('x'.repeat(201));
   });
 });
 

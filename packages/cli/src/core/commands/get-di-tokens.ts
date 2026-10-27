@@ -7,7 +7,7 @@ import { defineCommand } from '../command.js';
 import { versionInput } from './version-input.js';
 import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
-import { cell, code, table } from './markdown.js';
+import { cell, code, table, textCell } from './markdown.js';
 
 export interface DiTokenView {
   name: string;
@@ -32,7 +32,7 @@ export function diTokensMarkdown(tokens: DiTokenView[] | null): string {
   if (!tokens || tokens.length === 0) {
     return 'No DI token matches.\n';
   }
-  const rows = tokens.map((t) => [code(t.name), cell(t.file), cell(t.description)]);
+  const rows = tokens.map((t) => [code(t.name), cell(t.file), textCell(t.description)]);
   return `${table(['Token', 'File', 'Description'], rows)}\n`;
 }
 

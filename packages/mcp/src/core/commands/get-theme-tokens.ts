@@ -9,7 +9,7 @@ import { versionInput } from './version-input.js';
 import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
 import { resolveEntry } from '../query.js';
-import { blocks, cell, code, table } from './markdown.js';
+import { blocks, cell, code, docText, table, textCell } from './markdown.js';
 
 export interface ThemeTokenView {
   name: string;
@@ -49,10 +49,10 @@ export function themeTokensMarkdown(theme: ThemeTokensResult | null): string {
   if (!theme) {
     return 'No component or directive by that name.\n';
   }
-  const rows = theme.themeTokens.map((t) => [code(t.name), cell(t.kind), code(t.type), code(t.defaultValue), cell(t.description)]);
+  const rows = theme.themeTokens.map((t) => [code(t.name), cell(t.kind), code(t.type), code(t.defaultValue), textCell(t.description)]);
   return blocks(
     `# ${theme.name} theme tokens`,
-    theme.themeOverview && cell(theme.themeOverview),
+    docText(theme.themeOverview),
     rows.length ? table(['Token', 'Kind', 'Type', 'Default', 'Description'], rows) : 'No theming tokens.',
   );
 }

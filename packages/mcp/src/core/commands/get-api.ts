@@ -11,7 +11,7 @@ import type { DocsIndex } from '../data/loader.js';
 import type { DocEntry, DocInput } from '../data/types.js';
 import type { EntryKind } from '../query.js';
 import { resolveEntry } from '../query.js';
-import { blocks, bullets, cell, code, section, table } from './markdown.js';
+import { blocks, bullets, code, docText, section, table, textCell } from './markdown.js';
 
 /**
  * One input, named by its binding. `field` is the class field name, present only
@@ -114,12 +114,12 @@ export function apiMarkdown(api: ApiResult | null): string {
     return 'No component, directive, or service by that name.\n';
   }
   const summary = [`Kind: ${api.kind}`, `Selector: ${code(api.selector)}`, `Signal-based: ${api.signal ? 'yes' : 'no'}`];
-  const inputs = api.inputs.map((i) => [code(i.name), code(i.type), code(i.defaultValue), cell(i.description)]);
-  const outputs = api.outputs.map((o) => [code(o.name), code(o.type), cell(o.description)]);
+  const inputs = api.inputs.map((i) => [code(i.name), code(i.type), code(i.defaultValue), textCell(i.description)]);
+  const outputs = api.outputs.map((o) => [code(o.name), code(o.type), textCell(o.description)]);
   return blocks(
     `# ${api.name}`,
     summary.join(' | '),
-    api.description && cell(api.description),
+    docText(api.description),
     section('Inputs', inputs.length ? table(['Name', 'Type', 'Default', 'Description'], inputs) : '', 'None.'),
     section('Outputs', outputs.length ? table(['Name', 'Type', 'Description'], outputs) : '', 'None.'),
     section('Host bindings', bullets(api.hostBindings.map((b) => code(b))), 'None.'),

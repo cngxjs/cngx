@@ -11,7 +11,7 @@ import type { DocsIndex } from '../data/loader.js';
 import type { DocSlot } from '../data/types.js';
 import type { EntryKind } from '../query.js';
 import { resolveEntry } from '../query.js';
-import { blocks, cell, code, table } from './markdown.js';
+import { blocks, code, table, textCell } from './markdown.js';
 
 export interface SlotsResult {
   name: string;
@@ -37,7 +37,7 @@ export function slotsMarkdown(slots: SlotsResult | null): string {
   if (!slots) {
     return 'No component or directive by that name.\n';
   }
-  const rows = slots.slots.map((slot) => [code(slot.name), cell(slot.description)]);
+  const rows = slots.slots.map((slot) => [code(slot.name), textCell(slot.description)]);
   return blocks(
     `# ${slots.name} slots`,
     rows.length ? table(['Slot', 'Description'], rows) : 'No overridable template slots.',
