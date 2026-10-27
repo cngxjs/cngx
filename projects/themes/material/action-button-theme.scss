@@ -20,8 +20,6 @@
     --cngx-async-error-bg: color-mix(in srgb, var(--mat-sys-error) 12%, transparent);
     --cngx-async-error-color: var(--mat-sys-error);
     --cngx-async-error-border: var(--mat-sys-error);
-    --cngx-action-btn-border: var(--mat-sys-outline-variant);
-    --cngx-action-btn-ghost-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
   } @else {
     --cngx-async-success-bg: #{rgba(mat.get-theme-color($theme, primary), 0.08)};
     --cngx-async-success-color: #{mat.get-theme-color($theme, primary)};
