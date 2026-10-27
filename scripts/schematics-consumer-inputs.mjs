@@ -3,6 +3,7 @@
 // consumer-compat `changes` job):
 //   node scripts/schematics-consumer-inputs.mjs --base origin/main
 //   node scripts/schematics-consumer-inputs.mjs --base origin/main --workflow consumer-compat
+//   node scripts/schematics-consumer-inputs.mjs --base origin/main --workflow consumer-compat-cli
 //
 // Both workflows carry required checks, so they run on every pull request
 // and decide inside the job whether the fixture has to run. This file is the
@@ -37,10 +38,30 @@ export const INPUTS = [
   { include: 'projects/**', exclude: ['**/*.spec.ts', '**/*.md', 'projects/testing/**'] },
 ];
 
-/** What each workflow reads beyond `INPUTS`: its own file, and for consumer-compat the peer guard it always ran on. */
+/**
+ * What each workflow reads beyond `INPUTS`: its own file, for consumer-compat
+ * the peer guard it always ran on, and for the consumer-compat cli row
+ * (`consumer-compat-cli`, the pack-cli and fixture-cli jobs) everything that
+ * builds and packs @cngx/cli. The cli key is its own, so a cli-only change runs
+ * the cli row alone; a lib change still runs it through `INPUTS`. build:cli runs
+ * build:mcp first, so the mcp manifest and compiler config count as well.
+ */
 export const WORKFLOW_INPUTS = {
   'schematics-consumer': [{ include: '.github/workflows/schematics-consumer.yml' }],
   'consumer-compat': [{ include: '.github/workflows/consumer-compat.yml' }, { include: 'scripts/peer-deps-guard.mjs' }],
+  'consumer-compat-cli': [
+    { include: '.github/workflows/consumer-compat.yml' },
+    { include: 'packages/cli/**' },
+    { include: 'packages/mcp/src/core/**' },
+    { include: 'packages/mcp/package.json' },
+    { include: 'packages/mcp/package-lock.json' },
+    { include: 'packages/mcp/tsconfig.json' },
+    { include: 'packages/doctor/**' },
+    { include: 'scripts/mcp-snapshot.mjs' },
+    { include: 'scripts/mcp-bundle-check.mjs' },
+    { include: 'scripts/sync-cli-core.mjs' },
+    { include: 'scripts/cli-core-copy-check.mjs' },
+  ],
 };
 
 const DEFAULT_WORKFLOW = 'schematics-consumer';

@@ -18,12 +18,21 @@
 //   node scripts/consumer-fixture.mjs --angular 21 --variant schematics
 //   node scripts/consumer-fixture.mjs --angular 21 --variant schematics --stale-core previous
 //   node scripts/consumer-fixture.mjs --angular 21 --variant schematics --preset full
+//   npm run build:cli && npm run pack:cli
+//   node scripts/consumer-fixture.mjs --angular 21 --variant cli
 //
 // Variants:
 //   full        zoneless app with Material, floating-ui and ngrx installed
 //   zone        zone.js app, same installs
 //   ssr         zoneless app with SSR and hydration (the build prerenders)
 //   minimal     no optional peers installed: the build must not need them
+//   cli         minimal, plus the packed @cngx/cli and @cngx/doctor from
+//               --cli-tarballs (default .consumer-compat/cli-tarballs, written
+//               by `npm run pack:cli`): `npx cngx` inside the app (the bin
+//               symlink path), `npx --package=<tgz> cngx` in an empty dir with
+//               a fresh npm cache, and a global install under a temp prefix.
+//               The cli tarballs never go into --tarballs: every other variant
+//               installs each *.tgz there and fails fast on a cngx-cli one.
 //   onboarding  the documented path on a fresh app with nothing installed:
 //               one `ng add @cngx/core` through the local registry, then the
 //               CDK it installed must be on the app's Angular major (npm
@@ -75,7 +84,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-export const VARIANTS = ['full', 'zone', 'ssr', 'minimal', 'schematics', 'onboarding', 'ngmodule'];
+export const VARIANTS = ['full', 'zone', 'ssr', 'minimal', 'schematics', 'onboarding', 'ngmodule', 'cli'];
 const MARKER = 'cngx-consumer-ok';
 
 /** The ng add presets the schematics variant can run; `recommended` is what ng add picks without one. */
@@ -96,7 +105,7 @@ export function variantPlan(variant) {
   }
   const ngModule = variant === 'ngmodule';
   const onboarding = variant === 'onboarding' || ngModule;
-  const lean = variant === 'minimal' || variant === 'schematics' || onboarding;
+  const lean = variant === 'minimal' || variant === 'cli' || variant === 'schematics' || onboarding;
   return {
     variant,
     // `ng new --standalone=false` with routing, the NgModule spec that
@@ -114,7 +123,77 @@ export function variantPlan(variant) {
     // `ng test` with the cngx Vitest matchers, against the Vitest major the
     // app's own CLI installs (4 on Angular 21, 5 on Angular 22).
     matcherSpec: variant === 'full',
+    // Install and run the packed @cngx/cli next to the libs.
+    cli: variant === 'cli',
   };
+}
+
+/** A packed @cngx/cli tarball, by the file name `npm pack` gives it. */
+const CLI_TARBALL = /^cngx-cli-.+\.tgz$/;
+const DOCTOR_TARBALL = /^cngx-doctor-.+\.tgz$/;
+const basename = (file) => file.split(/[\\/]/).pop();
+
+/**
+ * Every variant but `cli` installs each *.tgz of --tarballs, so a cli tarball
+ * there would leak @cngx/cli into every lib row. Throws naming the file.
+ */
+export function assertNoCliTarball(files) {
+  const leaked = files.filter((file) => CLI_TARBALL.test(basename(file)));
+  if (leaked.length > 0) {
+    throw new Error(
+      `@cngx/cli tarball in the lib tarball directory: ${leaked.map(basename).join(', ')}. ` +
+        'It belongs in .consumer-compat/cli-tarballs (npm run pack:cli).',
+    );
+  }
+}
+
+/** The cli and doctor tarballs of --cli-tarballs; throws naming `npm run pack:cli` when one is missing or ambiguous. */
+export function selectCliTarballs(files) {
+  const pick = (pattern, name) => {
+    const found = files.filter((file) => pattern.test(basename(file)));
+    if (found.length !== 1) {
+      throw new Error(
+        `Expected one ${name} tarball in the cli tarball directory, found ${found.length}: ` +
+          'run "npm run build:cli && npm run pack:cli" (and remove stale tarballs).',
+      );
+    }
+    return found[0];
+  };
+  return { cli: pick(CLI_TARBALL, '@cngx/cli'), doctor: pick(DOCTOR_TARBALL, '@cngx/doctor') };
+}
+
+/** The `cngx` runs inside the fixture app: arguments, expected exit code, and what stdout must show. */
+export function cliAppSteps(cliVersion) {
+  return [
+    { args: ['--version'], exit: 0, stdout: (out) => out.trim() === cliVersion || `expected ${cliVersion}` },
+    { args: ['api', 'CngxSelect'], exit: 0, stdout: (out) => out.includes('# CngxSelect') || 'no "# CngxSelect" heading' },
+    { args: ['api', 'NoSuchThing'], exit: 1 },
+    { args: ['api', '--bogus'], exit: 2 },
+    {
+      args: ['list', '--format=json'],
+      exit: 0,
+      stdout: (out) => {
+        try {
+          const list = JSON.parse(out);
+          return (Array.isArray(list) && list.length > 0) || 'not a non-empty JSON array';
+        } catch (error) {
+          return `not JSON: ${error.message}`;
+        }
+      },
+    },
+  ];
+}
+
+/**
+ * The @cngx packages through which an `npm ls @modelcontextprotocol/sdk --json`
+ * output reaches the MCP SDK. npm ls keeps only the top-level dependencies that
+ * lead to a match, so a @cngx key there means a cngx package pulls the SDK in.
+ * Other keys are allowed: the Angular CLI 21+ ships its own MCP server and
+ * depends on the SDK in every fixture app.
+ */
+export function sdkInTree(npmLsJson) {
+  const parsed = JSON.parse(npmLsJson || '{}');
+  return Object.keys(parsed.dependencies ?? {}).filter((name) => name.startsWith('@cngx/'));
 }
 
 export function usageText() {
@@ -122,7 +201,7 @@ export function usageText() {
     'Usage: node scripts/consumer-fixture.mjs --angular <21 | 22 | 21.1.0> [--variant <variant>]',
     `       [--ignore-peers] [--stale-core <tgz | previous>] [--preset <${PRESETS.join(' | ')}>]`,
     `       [--add <${ONBOARDING_PACKAGES.join(' | ')}>] (onboarding only)`,
-    '       [--tarballs <dir>] [--work <dir>]',
+    '       [--tarballs <dir>] [--cli-tarballs <dir>] (cli only) [--work <dir>]',
     `Variants: ${VARIANTS.join(', ')}`,
   ].join('\n');
 }
@@ -511,6 +590,7 @@ function parseArgs(argv) {
     angular: null,
     variant: 'full',
     tarballs: join(ROOT, '.consumer-compat', 'tarballs'),
+    cliTarballs: join(ROOT, '.consumer-compat', 'cli-tarballs'),
     // Outside the repo: the Angular CLI refuses `ng new` inside a workspace.
     ignorePeers: false,
     staleCore: null,
@@ -523,6 +603,7 @@ function parseArgs(argv) {
       case '--angular': args.angular = argv[++i]; break;
       case '--variant': args.variant = argv[++i]; break;
       case '--tarballs': args.tarballs = resolve(argv[++i]); break;
+      case '--cli-tarballs': args.cliTarballs = resolve(argv[++i]); break;
       case '--ignore-peers': args.ignorePeers = true; break;
       case '--work': args.work = resolve(argv[++i]); break;
       case '--stale-core': args.staleCore = argv[++i]; break;
@@ -1099,8 +1180,60 @@ async function runStaleUpdateLeg({ cliSpec, work, version, registryUrl }) {
   console.log(`\nStale update leg: ng update moved ${STALE_UPDATE_LIBS.join(', ')} from ${stale} to ${version}`);
 }
 
+function runCaptured(cmd, args, options = {}) {
+  console.log(`  $ ${cmd} ${args.join(' ')}`);
+  const result = spawnSync(cmd, args, { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, ...options });
+  if (result.error) {
+    throw result.error;
+  }
+  return result;
+}
+
+function expectCliStep(label, result, step) {
+  if (result.status !== step.exit) {
+    throw new Error(`${label}: exited ${result.status}, expected ${step.exit}\n${result.stderr}`);
+  }
+  const verdict = step.stdout ? step.stdout(result.stdout) : true;
+  if (verdict !== true) {
+    throw new Error(`${label}: ${verdict}`);
+  }
+  console.log(`    exit ${result.status} as expected`);
+}
+
+/**
+ * Runs the packed cli the three ways a consumer reaches it: `npx cngx` in the
+ * app (the bin symlink, #638 class), `npx --package=<tgz>` in an empty dir with
+ * a fresh npm cache (no stale npx install can answer, no registry @cngx/cli),
+ * and a global install under a temp prefix.
+ */
+function runCliLeg({ appDir, cli, doctor }) {
+  const cliVersion = tarballManifest(cli).version;
+  console.log(`\nCli leg: @cngx/cli ${cliVersion}`);
+  for (const step of cliAppSteps(cliVersion)) {
+    expectCliStep(`npx cngx ${step.args.join(' ')}`, runCaptured('npx', ['cngx', ...step.args], { cwd: appDir }), step);
+  }
+
+  // npm ls exits 1 when nothing matches; only the parsed tree counts.
+  const sdk = sdkInTree(runCaptured('npm', ['ls', '@modelcontextprotocol/sdk', '--json'], { cwd: appDir }).stdout);
+  if (sdk.length > 0) {
+    throw new Error(`a cngx package pulled the MCP SDK into the app: ${sdk.join(', ')}`);
+  }
+  console.log('    no @modelcontextprotocol/sdk under any @cngx package');
+
+  const outside = mkdtempSync(join(tmpdir(), 'cngx-cli-outside-'));
+  const env = { ...process.env, npm_config_cache: mkdtempSync(join(tmpdir(), 'cngx-cli-npx-cache-')) };
+  const npxArgs = ['--yes', `--package=${resolve(cli)}`, `--package=${resolve(doctor)}`, 'cngx'];
+  const [version, api] = cliAppSteps(cliVersion);
+  expectCliStep('npx --package=<tgz> cngx --version', runCaptured('npx', [...npxArgs, ...version.args], { cwd: outside, env }), version);
+  expectCliStep('npx --package=<tgz> cngx api CngxSelect', runCaptured('npx', [...npxArgs, ...api.args], { cwd: outside, env }), api);
+
+  const prefix = mkdtempSync(join(tmpdir(), 'cngx-cli-global-'));
+  run('npm', ['install', '--global', '--prefix', prefix, resolve(cli), resolve(doctor)], { cwd: outside, env });
+  expectCliStep('<prefix>/bin/cngx --version', runCaptured(join(prefix, 'bin', 'cngx'), version.args, { cwd: outside }), version);
+}
+
 async function main() {
-  const { angular, variant, tarballs, work, ignorePeers, staleCore, preset, add } = parseArgs(process.argv.slice(2));
+  const { angular, variant, tarballs, cliTarballs, work, ignorePeers, staleCore, preset, add } = parseArgs(process.argv.slice(2));
   const { cliSpec, exact } = parseAngularSpec(angular);
   const plan = variantPlan(variant);
   const checks = presetPlan(preset, { standalone: plan.standalone });
@@ -1112,6 +1245,10 @@ async function main() {
     console.error(`No tarballs in ${tarballs}: run "npm run build:libs && npm run pack:libs" first.`);
     process.exit(1);
   }
+  assertNoCliTarball(tarballFiles);
+  const cliFiles = plan.cli
+    ? selectCliTarballs(existsSync(cliTarballs) ? readdirSync(cliTarballs).map((file) => join(cliTarballs, file)) : [])
+    : null;
 
   mkdirSync(work, { recursive: true });
   const sandbox = mkdtempSync(join(work, `angular-${angular}-${variant}-`));
@@ -1156,11 +1293,15 @@ async function main() {
     if (ignorePeers) {
       console.log('\nNOT a consumer-realistic row: --ignore-peers installs with --legacy-peer-deps to test code compatibility beyond the declared peer range.');
     }
-    run('npm', ['install', ...(ignorePeers ? ['--legacy-peer-deps'] : []), ...tarballFiles], { cwd: appDir });
+    const cliInstall = cliFiles ? [cliFiles.cli, cliFiles.doctor] : [];
+    run('npm', ['install', ...(ignorePeers ? ['--legacy-peer-deps'] : []), ...tarballFiles, ...cliInstall], { cwd: appDir });
 
     const versions = angularVersionsInTree(appDir);
     if (versions.length !== 1) {
       throw new Error(`Expected one @angular/core in the tree, found ${versions.join(', ')}`);
+    }
+    if (cliFiles) {
+      runCliLeg({ appDir, ...cliFiles });
     }
   }
 
