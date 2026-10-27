@@ -187,7 +187,6 @@
    * `initial-value: currentColor` defeated the fallback chain by
    * always returning `currentColor` from `var(--cngx-step-active-color,
    * fallback)`.
-   * @group State / Active
    */
 
   /**
@@ -211,7 +210,6 @@
    * `--cngx-step-active-fill`. Not registered as `@property` for the
    * same fallback-cascade reason; consumer overrides still work via
    * the standard custom-property cascade.
-   * @group State / Pending
    */
 
   /**

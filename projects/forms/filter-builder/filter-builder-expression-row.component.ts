@@ -44,7 +44,7 @@ import type { FilterExpression, FilterFieldDef, FilterNode } from './filter-buil
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-expression-row.component.ts
  * @since 0.1.0
- * @relatedTo CngxFilterBuilderBody, CngxFilterRow, CngxFilterBuilderPresenter
+ * @relatedTo CngxFilterRow, CngxFilterBuilderPresenter
  */
 @Component({
   selector: 'cngx-filter-expression-row',
