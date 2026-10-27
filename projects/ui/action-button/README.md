@@ -61,7 +61,7 @@ The idle content and the status labels render stacked in one cell; only the acti
 
 ## Styling
 
-The box, paint, sizes, disabled and busy states come from the `CngxButton` sheet (`--cngx-button-*` tokens). This component only adds the label stack. The async state tokens `--cngx-action-btn-pending-opacity`, `--cngx-action-btn-succeeded-*`, `--cngx-action-btn-failed-*` and `--cngx-action-btn-transition` stay for the `cngxAsyncClick` state classes.
+The box, paint, sizes, disabled and busy states come from the `CngxButton` sheet (`--cngx-button-*` tokens). This component only adds the label stack. The `cngxAsyncClick` state classes and their `--cngx-async-*` tokens live in `@cngx/common` (`theming/components/cngx-async.css`).
 
 ## Migrating from `<cngx-action-button>`
 
@@ -69,3 +69,4 @@ The box, paint, sizes, disabled and busy states come from the `CngxButton` sheet
 - `variant="primary" | "secondary" | "ghost"` and `ActionButtonVariant` are gone: use `tone="primary"` for the old filled default, `cngxActionButton="outline"` or `"ghost"` for the others.
 - `[enabled]="false"` becomes `[disabled]="true"`; `disabledReason` keeps working.
 - The `--cngx-action-btn-*` colour, radius and padding tokens are gone; theme the `--cngx-button-*` tokens instead.
+- The async state tokens moved to `@cngx/common` and were renamed: `--cngx-action-btn-pending-opacity` -> `--cngx-async-pending-opacity`, `--cngx-action-btn-transition` -> `--cngx-async-transition`, `--cngx-action-btn-succeeded-{bg,color,border}` -> `--cngx-async-success-{bg,color,border}`, `--cngx-action-btn-failed-{bg,color,border}` -> `--cngx-async-error-{bg,color,border}`. The colour tokens have no registered default any more: unset, they follow `--cngx-color-success` / `--cngx-color-danger` in both colour schemes.

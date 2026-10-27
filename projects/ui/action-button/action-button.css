@@ -18,112 +18,12 @@
  *
  * **State modifiers**
  *
- * Async-commit state classes are set by `cngxAsyncClick` on the button, and
- * the `.cngx-async--*` rules live in
- * `@cngx/common/theming/components/cngx-async.css` so they apply globally.
- * The token surface reserved here:
- *
- * - `--cngx-action-btn-pending-opacity` - opacity + `cursor: wait`
- * - `--cngx-action-btn-succeeded-bg / -color / -border` - success tint
- * - `--cngx-action-btn-failed-bg / -color / -border` - failure tint
- * - `--cngx-action-btn-transition` - timing of those state changes
+ * Async-commit state classes are set by `cngxAsyncClick` on the button. The
+ * `.cngx-async--*` rules and their `--cngx-async-*` tokens (pending opacity,
+ * success and error tint, transition) live in
+ * `@cngx/common/theming/components/cngx-async.css` so they apply to every
+ * `cngxAsyncClick` host.
  */
-
-@layer cngx.tokens {
-  /**
-   * Transition shorthand for background-color / color / border-color /
-   * opacity transitions across all variants and async states.
-   *
-   * Derives from the `--cngx-duration-base` rung of the motion scale; a
-   * `--cngx-duration-*` brand override re-times it library-wide.
-   * @group Motion
-   * @relatedTo provideMotion, CngxMotionScope, injectMotion
-   */
-  @property --cngx-action-btn-transition {
-    syntax: '*';
-    inherits: false;
-    initial-value: 0.2s ease;
-  }
-
-  /* Derive the duration segment from the motion scale; easing stays literal.
-   * Host SET (the transition is read on the .cngx-action-button element).
-   * Layer cngx.tokens keeps a Material bridge winning for the Material path.
-   * 0.2s -> base. */
-  :where(.cngx-action-button) {
-    --cngx-action-btn-transition: var(--cngx-duration-base) ease;
-  }
-
-  /**
-   * Opacity applied while `cngxAsyncClick` reports `pending`. Combined
-   * with `cursor: wait` on the same state.
-   * @group State / Pending
-   */
-  @property --cngx-action-btn-pending-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.7;
-  }
-
-  /**
-   * Background tint after a successful async commit.
-   * @group State / Succeeded
-   */
-  @property --cngx-action-btn-succeeded-bg {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: oklch(0.95 0.04 145);
-  }
-
-  /**
-   * Text color after a successful async commit.
-   * @group State / Succeeded
-   */
-  @property --cngx-action-btn-succeeded-color {
-    syntax: '<color>';
-    inherits: true;
-    initial-value: oklch(0.5 0.15 145);
-  }
-
-  /**
-   * Border color after a successful async commit.
-   * @group State / Succeeded
-   */
-  @property --cngx-action-btn-succeeded-border {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: oklch(0.5 0.15 145);
-  }
-
-  /**
-   * Background tint after a failed async commit.
-   * @group State / Failed
-   */
-  @property --cngx-action-btn-failed-bg {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: oklch(0.95 0.025 25);
-  }
-
-  /**
-   * Text color after a failed async commit.
-   * @group State / Failed
-   */
-  @property --cngx-action-btn-failed-color {
-    syntax: '<color>';
-    inherits: true;
-    initial-value: oklch(0.45 0.15 25);
-  }
-
-  /**
-   * Border color after a failed async commit.
-   * @group State / Failed
-   */
-  @property --cngx-action-btn-failed-border {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: oklch(0.45 0.15 25);
-  }
-}
 
 @layer cngx.components {
   @scope (.cngx-action-button) {

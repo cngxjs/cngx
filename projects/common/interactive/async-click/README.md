@@ -81,35 +81,25 @@ readonly [saveWithRetry, retryState] = withRetry(() => this.saveAction());
 
 ## Styling
 
-CngxAsyncClick applies three CSS classes for state feedback. All visual styling is your responsibility:
+CngxAsyncClick applies three CSS classes for state feedback: `.cngx-async--pending` while the action runs, `.cngx-async--success` and `.cngx-async--error` for `feedbackDuration` ms after it settles. `@cngx/common/theming/components/cngx-async.css` (part of the `cngx.css` bundle) paints them through these tokens:
 
-```scss
-.cngx-async--pending {
-  // Applied while action is executing
-}
-.cngx-async--success {
-  // Applied after successful action (for feedbackDuration ms)
-}
-.cngx-async--error {
-  // Applied after failed action (for feedbackDuration ms)
-}
-```
+|Token|Unset default|
+|-|-|
+|`--cngx-async-pending-opacity`|`0.7`|
+|`--cngx-async-transition`|`var(--cngx-duration-base) ease`|
+|`--cngx-async-success-bg`|12% `--cngx-color-success`|
+|`--cngx-async-success-color`|`--cngx-color-success` mixed toward `--cngx-color-text`|
+|`--cngx-async-success-border`|`--cngx-color-success`|
+|`--cngx-async-error-bg`|12% `--cngx-color-danger`|
+|`--cngx-async-error-color`|`--cngx-color-danger-text`|
+|`--cngx-async-error-border`|`--cngx-color-danger`|
 
-Override in your component CSS:
+The colour tokens inherit, so a theme can set them once on `:root`:
 
-```scss
-button {
-  transition: background-color 0.3s;
-}
-button.cngx-async--pending {
-  background-color: var(--color-pending);
-  opacity: 0.7;
-}
-button.cngx-async--success {
-  background-color: var(--color-success);
-}
-button.cngx-async--error {
-  background-color: var(--color-error);
+```css
+:root {
+  --cngx-async-success-bg: color-mix(in oklab, var(--brand-ok) 15%, transparent);
+  --cngx-async-error-border: var(--brand-alert);
 }
 ```
 

@@ -14,14 +14,17 @@
  *
  * **Inheritance**
  *
- * Tokens keep the action-button namespace (registered by
- * `button[cngxActionButton]`, which co-hosts `cngxAsyncClick`), so a
- * standalone `cngxAsyncClick` shares the same visual contract:
+ * The colour tokens are registered without an initial value, so until a
+ * theme sets them each one falls through to the semantic palette and
+ * follows the colour scheme:
  *
- * - `--cngx-action-btn-succeeded-bg` -> `--cngx-color-success`
- * - `--cngx-action-btn-succeeded-color` -> `--cngx-color-success`
- * - `--cngx-action-btn-failed-bg` -> `--cngx-color-danger`
- * - `--cngx-action-btn-failed-color` -> `--cngx-color-danger`
+ * - `--cngx-async-success-bg` -> 12% `--cngx-color-success`
+ * - `--cngx-async-success-color` -> `--cngx-color-success` mixed toward
+ *   `--cngx-color-text`
+ * - `--cngx-async-success-border` -> `--cngx-color-success`
+ * - `--cngx-async-error-bg` -> 12% `--cngx-color-danger`
+ * - `--cngx-async-error-color` -> `--cngx-color-danger-text`
+ * - `--cngx-async-error-border` -> `--cngx-color-danger`
  *
  * **Notes**
  *
@@ -32,42 +35,149 @@
  * @themes CngxAsyncClick
  */
 
+@layer cngx.tokens {
+  /**
+   * Transition shorthand for the background-color / color / border-color /
+   * opacity changes between async states.
+   *
+   * Derives from the `--cngx-duration-base` rung of the motion scale; a
+   * `--cngx-duration-*` brand override re-times it library-wide.
+   * @group Motion
+   * @relatedTo provideMotion, CngxMotionScope, injectMotion
+   */
+  @property --cngx-async-transition {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.2s ease;
+  }
+
+  /* Derive the duration segment from the motion scale; easing stays literal.
+   * SET on the state hosts, which read the transition. Layer cngx.tokens keeps
+   * a Material bridge winning for the Material path. 0.2s -> base. */
+  :where(.cngx-async--pending, .cngx-async--success, .cngx-async--error) {
+    --cngx-async-transition: var(--cngx-duration-base) ease;
+  }
+
+  /**
+   * Opacity applied while `cngxAsyncClick` reports `pending`. Combined
+   * with `cursor: wait` on the same state.
+   * @group State / Pending
+   */
+  @property --cngx-async-pending-opacity {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 0.7;
+  }
+
+  /**
+   * Background tint after a successful async commit. Unset by default:
+   * 12% `--cngx-color-success`.
+   * @group State / Success
+   */
+  @property --cngx-async-success-bg {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Text color after a successful async commit. Unset by default:
+   * `--cngx-color-success` mixed 75% toward `--cngx-color-text`, so it
+   * reads as text in both schemes.
+   * @group State / Success
+   */
+  @property --cngx-async-success-color {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Border color after a successful async commit. Unset by default:
+   * `--cngx-color-success`.
+   * @group State / Success
+   */
+  @property --cngx-async-success-border {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Background tint after a failed async commit. Unset by default:
+   * 12% `--cngx-color-danger`.
+   * @group State / Error
+   */
+  @property --cngx-async-error-bg {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Text color after a failed async commit. Unset by default:
+   * `--cngx-color-danger-text`.
+   * @group State / Error
+   */
+  @property --cngx-async-error-color {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Border color after a failed async commit. Unset by default:
+   * `--cngx-color-danger`.
+   * @group State / Error
+   */
+  @property --cngx-async-error-border {
+    syntax: '*';
+    inherits: true;
+  }
+}
+
 @layer cngx.components {
   .cngx-async--pending {
-    opacity: var(--cngx-action-btn-pending-opacity, 0.7);
+    opacity: var(--cngx-async-pending-opacity, 0.7);
     cursor: wait;
-    transition: opacity var(--cngx-action-btn-transition, 0.2s ease);
+    transition: opacity var(--cngx-async-transition, 0.2s ease);
   }
 
   .cngx-async--success {
     background-color: var(
-      --cngx-action-btn-succeeded-bg,
-      var(--cngx-color-success, oklch(0.95 0.04 145))
+      --cngx-async-success-bg,
+      color-mix(in oklab, var(--cngx-color-success, oklch(0.6 0.15 145)) 12%, transparent)
     );
-    color: var(--cngx-action-btn-succeeded-color, var(--cngx-color-success, oklch(0.5 0.15 145)));
-    border-color: var(
-      --cngx-action-btn-succeeded-border,
-      var(--cngx-color-success, oklch(0.5 0.15 145))
+    color: var(
+      --cngx-async-success-color,
+      color-mix(
+        in oklab,
+        var(--cngx-color-success, oklch(0.6 0.15 145)) 75%,
+        var(--cngx-color-text, oklch(0.2 0.01 250))
+      )
     );
+    border-color: var(--cngx-async-success-border, var(--cngx-color-success, oklch(0.6 0.15 145)));
     transition:
-      background-color var(--cngx-action-btn-transition, 0.2s ease),
-      color var(--cngx-action-btn-transition, 0.2s ease),
-      border-color var(--cngx-action-btn-transition, 0.2s ease);
+      background-color var(--cngx-async-transition, 0.2s ease),
+      color var(--cngx-async-transition, 0.2s ease),
+      border-color var(--cngx-async-transition, 0.2s ease);
   }
 
   .cngx-async--error {
     background-color: var(
-      --cngx-action-btn-failed-bg,
-      var(--cngx-color-danger, oklch(0.95 0.025 25))
+      --cngx-async-error-bg,
+      color-mix(in oklab, var(--cngx-color-danger, oklch(0.6 0.18 25)) 12%, transparent)
     );
-    color: var(--cngx-action-btn-failed-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
-    border-color: var(
-      --cngx-action-btn-failed-border,
-      var(--cngx-color-danger, oklch(0.45 0.15 25))
+    color: var(
+      --cngx-async-error-color,
+      var(
+        --cngx-color-danger-text,
+        color-mix(
+          in oklab,
+          var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
+          var(--cngx-color-text, oklch(0.2 0.01 250))
+        )
+      )
     );
+    border-color: var(--cngx-async-error-border, var(--cngx-color-danger, oklch(0.6 0.18 25)));
     transition:
-      background-color var(--cngx-action-btn-transition, 0.2s ease),
-      color var(--cngx-action-btn-transition, 0.2s ease),
-      border-color var(--cngx-action-btn-transition, 0.2s ease);
+      background-color var(--cngx-async-transition, 0.2s ease),
+      color var(--cngx-async-transition, 0.2s ease),
+      border-color var(--cngx-async-transition, 0.2s ease);
   }
 }

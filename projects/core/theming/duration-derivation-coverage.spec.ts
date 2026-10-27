@@ -71,6 +71,11 @@ const DURATION_DERIVED_FAMILIES: readonly DurationFamily[] = [
     kind: 'real',
   },
   {
+    file: 'projects/common/theming/components/cngx-async.css',
+    token: '--cngx-async-transition',
+    kind: 'real',
+  },
+  {
     file: 'projects/common/popover/popover-panel.component.css',
     token: '--cngx-popover-panel-transition-duration',
     kind: 'real',
@@ -153,12 +158,7 @@ const DURATION_DERIVED_FAMILIES: readonly DurationFamily[] = [
     token: '--cngx-progress-transition-duration',
     kind: 'real',
   },
-  // @cngx/ui - action-button + paginator
-  {
-    file: 'projects/ui/action-button/action-button.css',
-    token: '--cngx-action-btn-transition',
-    kind: 'real',
-  },
+  // @cngx/ui - paginator
   {
     // Read on .cngx-paginator__page::after; reach via the already-registered
     // inherits:true (no flip was needed).
