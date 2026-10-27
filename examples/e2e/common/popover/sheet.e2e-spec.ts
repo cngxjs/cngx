@@ -127,6 +127,27 @@ test.describe('common/popover/sheet on a desktop', () => {
     expect(await radiogroup.evaluate((el) => el.closest('[inert]') !== null)).toBe(false);
   });
 
+  // The close button sits inside the swipe-dismiss header. A real mouse click
+  // must reach it: a pointer captured on pointerdown would retarget the click
+  // to the header and the sheet would stay open.
+  test('a real click on the header close button closes the sheet', async ({ page }) => {
+    await gotoDemo(page, ROUTE);
+    await page.getByRole('radio', { name: 'sheet', exact: true }).check();
+    await opener(page).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    await page.getByRole('dialog').getByRole('button', { name: 'Close' }).click();
+    await expect(sheet(page)).toBeHidden();
+    await expect(
+      page
+        .locator('.event-row', { has: page.locator('.event-label', { hasText: /^state$/ }) })
+        .locator('.event-value'),
+    ).not.toHaveText('open');
+    await expect(
+      page.locator('.event-row', { hasText: 'last close request' }).locator('.event-value'),
+    ).toHaveText('close');
+  });
+
   // Chromium turns an Escape nobody cancelled into a CloseWatcher close
   // request. The sheet arms a watcher for the Android back gesture, so a
   // real keypress proves Escape stays with CngxPopover's closeOnEscape.
