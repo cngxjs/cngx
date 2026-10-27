@@ -50,6 +50,10 @@
         "hostBindings",
         "hostListeners"
     ],
+    "styleFiles": [
+        "projects/*/theming/**/*.css",
+        "projects/themes/*.css"
+    ],
     "themingTabSections": [
         "overview",
         "index",

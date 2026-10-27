@@ -20,6 +20,8 @@
  * **Pair with**
  *
  * - `@cngx/themes/material/backdrop-theme` - Material 3 scrim surface
+ *
+ * @themes CngxBackdrop
  */
 
 @layer cngx.tokens {

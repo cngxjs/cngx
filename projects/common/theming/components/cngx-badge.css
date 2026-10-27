@@ -45,6 +45,8 @@
  * cut-out ring via `--cngx-badge-border-dark` / `-light`. Default
  * border is `0` (no ring), so the dark-mode block is a no-op until
  * a consumer sets the ring tokens.
+ *
+ * @themes CngxBadge
  */
 
 @layer cngx.tokens {

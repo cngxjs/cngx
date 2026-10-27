@@ -28,6 +28,8 @@
  * - track / fill colour -> `--cngx-color-border` / `--cngx-color-primary`
  * - thumb fill -> `--cngx-color-surface`, border -> `--cngx-color-primary`
  * - focus ring -> `--cngx-color-primary` (contrast >= 3:1 against the surface)
+ *
+ * @themes CngxSliderTrack, CngxRangeSliderTrack
  */
 
 @layer cngx.tokens {

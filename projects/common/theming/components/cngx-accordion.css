@@ -25,6 +25,8 @@
  * - hover tint -> `--cngx-color-primary` (low alpha)
  * - dividers -> `--cngx-color-border`
  * - focus ring -> `--cngx-color-primary` (contrast >= 3:1)
+ *
+ * @themes CngxAccordion, CngxAccordionPanel
  */
 
 @layer cngx.tokens {

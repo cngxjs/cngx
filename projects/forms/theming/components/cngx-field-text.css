@@ -27,6 +27,8 @@
  * `--cngx-field-error-color`. The contrast of every recipe is asserted in
  * `cngx-field-skin.geometry.spec.ts`, the unregistration in
  * `cngx-field-text.css.spec.ts`.
+ *
+ * @themes CngxLabel, CngxHint, CngxError
  */
 
 @layer cngx.tokens {

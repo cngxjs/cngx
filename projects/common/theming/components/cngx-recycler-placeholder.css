@@ -34,6 +34,8 @@
  *
  * The fill and shimmer are white-alpha in dark mode so they read on a dark
  * surface. Unlayered, direct selectors so they beat the layered defaults.
+ *
+ * @themes CngxRecyclerPlaceholder
  */
 
 @layer cngx.tokens {

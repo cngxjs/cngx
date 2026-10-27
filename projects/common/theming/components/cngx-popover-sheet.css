@@ -55,6 +55,8 @@
  * **Pair with**
  *
  * - `@cngx/themes/material/popover-sheet-theme` - Material 3 surface
+ *
+ * @themes CngxPopoverSheet, CngxPopoverSheetHeader
  */
 
 @layer cngx.tokens {

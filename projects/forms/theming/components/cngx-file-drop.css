@@ -42,6 +42,8 @@
  *
  * - `@cngx/themes/material/file-drop-theme` - Material surface
  *   treatment
+ *
+ * @themes CngxFileDrop
  */
 
 @layer cngx.tokens {

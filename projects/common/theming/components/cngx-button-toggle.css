@@ -38,6 +38,8 @@
  * - checked fill -> `--cngx-color-primary` / `--cngx-color-on-primary`
  * - corner radius -> `--cngx-radius-md`
  * - font-size -> `--cngx-font-size-sm`
+ *
+ * @themes CngxButtonToggle
  */
 
 @layer cngx.tokens {

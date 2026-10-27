@@ -26,6 +26,8 @@
  * number of affixes on either side working. The touch floor of the controls
  * inside subtracts the label line, so a coarse pointer does not add height
  * to a box that is already past 44px.
+ *
+ * @themes CngxFieldBox, CngxPrefix, CngxSuffix
  */
 
 @layer cngx.tokens {

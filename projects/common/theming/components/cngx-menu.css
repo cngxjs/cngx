@@ -52,6 +52,8 @@
  * **Pair with**
  *
  * - `@cngx/themes/material/interactive-controls-theme` - Material 3 surface
+ *
+ * @themes CngxMenu, CngxMenuItem, CngxMenuItemCheckbox, CngxMenuItemRadio, CngxMenuItemSubmenu, CngxMenuSeparator
  */
 
 @layer cngx.tokens {

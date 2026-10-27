@@ -35,6 +35,8 @@
  * **Pair with**
  *
  * - `@cngx/themes/material/bottom-sheet-theme` - Material 3 surface
+ *
+ * @themes CngxBottomSheet
  */
 
 @layer cngx.tokens {
