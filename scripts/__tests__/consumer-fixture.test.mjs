@@ -179,9 +179,10 @@ describe('cliAppSteps', () => {
     expect(step('--version').stdout('0.0.9\n')).toBe('expected 0.1.0');
   });
 
-  it('requires the list to be a non-empty JSON array', () => {
-    expect(step('list', '--format=json').stdout('[{"name":"CngxSelect"}]')).toBe(true);
-    expect(step('list', '--format=json').stdout('[]')).toBe('not a non-empty JSON array');
+  it('requires the list result to be a non-empty JSON array', () => {
+    expect(step('list', '--format=json').stdout('{"cngxVersion":"0.1.0","result":[{"name":"CngxSelect"}]}')).toBe(true);
+    expect(step('list', '--format=json').stdout('{"cngxVersion":"0.1.0","result":[]}')).toBe('result is not a non-empty JSON array');
+    expect(step('list', '--format=json').stdout('[{"name":"CngxSelect"}]')).toBe('result is not a non-empty JSON array');
     expect(step('list', '--format=json').stdout('# CngxSelect')).toMatch(/^not JSON/);
   });
 });

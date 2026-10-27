@@ -174,8 +174,8 @@ export function cliAppSteps(cliVersion) {
       exit: 0,
       stdout: (out) => {
         try {
-          const list = JSON.parse(out);
-          return (Array.isArray(list) && list.length > 0) || 'not a non-empty JSON array';
+          const { result } = JSON.parse(out);
+          return (Array.isArray(result) && result.length > 0) || 'result is not a non-empty JSON array';
         } catch (error) {
           return `not JSON: ${error.message}`;
         }

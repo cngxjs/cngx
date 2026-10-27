@@ -53,10 +53,13 @@ Each command is generated from the same definition as its `@cngx/mcp` tool.
 
 |Flag|Meaning|
 |-|-|
-|`--format md\|json`|Output format. `md` (default) is markdown for people and agents; `json` is the query result as JSON.|
+|`--format md\|json`|Output format. `md` (default) is markdown for people and agents; `json` is `{ "cngxVersion": "<version>", "result": <answer> }`.|
 |`--cngx-version <version>`|Answer against another cngx release (`find`, `api`, `slots`, `theme`, `di`, `config`). The snapshot of that release is fetched through `gh`, or over HTTPS when `gh` is missing or fails. Other commands reject it.|
 |`--version`, `-v`|Print the `@cngx/cli` version.|
 |`--help`, `-h`|Print the command list, or a command's help after the command name.|
+
+Every answer names the cngx release it came from: the first markdown line is
+`> cngx <version>`, the JSON carries `cngxVersion`.
 
 Output is plain text, never coloured, identical on a terminal and in a pipe.
 stdout carries the answer only; diagnostics go to stderr.
@@ -67,7 +70,7 @@ stdout carries the answer only; diagnostics go to stderr.
 |-|-|
 |`0`|Answered.|
 |`1`|The query ran but found nothing, or the requested release snapshot could not be resolved.|
-|`2`|Usage error: unknown command or flag, invalid input, or `--cngx-version` on a command that has no version.|
+|`2`|Usage error: unknown command or flag, invalid input, an empty `--cngx-version`, or `--cngx-version` on a command that has no version.|
 
 ## License
 

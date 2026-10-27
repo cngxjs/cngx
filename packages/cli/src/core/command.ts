@@ -2,7 +2,7 @@
 // carries its identity, its zod input shape, a `run` over the context's
 // snapshots and its markdown rendering; it imports no adapter, so the MCP server
 // and the CLI generate their surface from the same object. The CLI fields
-// (`cliName`, `positional`, `cliFlags`, `found`, `toMarkdown`) never reach an MCP
+// (`cliName`, `positional`, `cliFlags`, `found`, `answeredVersion`, `toMarkdown`) never reach an MCP
 // tool registration; keeping them here instead of in a CLI-side table means a new
 // command cannot ship without its CLI rendering.
 
@@ -56,6 +56,12 @@ export interface CngxCommand<S extends CommandShape = CommandShape, P = unknown>
   run(ctx: CommandContext, input: CommandInput<S>): Answer<P> | Promise<Answer<P>>;
   /** Whether the payload answers the query; drives the CLI's exit 1. Defaults to {@link defaultFound}. */
   found?(payload: P): boolean;
+  /**
+   * The release a payload answers for, when it names it itself instead of coming
+   * in a version envelope (a migration delta answers for its target). The CLI
+   * prints it; absent, the CLI falls back to the bundled snapshot's version.
+   */
+  answeredVersion?(payload: P): string | null;
   /** The payload as markdown, for the CLI's default output format. */
   toMarkdown(payload: P, opts: RenderOptions): string;
 }

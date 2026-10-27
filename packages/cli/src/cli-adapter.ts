@@ -222,6 +222,10 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
     return usageError(io, `--format must be one of ${FORMATS.join(', ')}.`, hint);
   }
 
+  if (values['cngx-version'] === '') {
+    return usageError(io, '--cngx-version needs a version, e.g. --cngx-version=0.1.0.', hint);
+  }
+
   const maxPositionals = def.positional === undefined ? 0 : 1;
   if (positionals.length > maxPositionals) {
     return usageError(io, `unexpected argument "${positionals[maxPositionals]}".`, hint);
@@ -271,7 +275,14 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
     return EXIT_NOT_FOUND;
   }
 
-  const output = format === 'json' ? `${JSON.stringify(answer.payload ?? null, null, 2)}\n` : def.toMarkdown(answer.payload, {});
+  // Versioned commands report the release they grounded against, a migration its
+  // target; the others answer from the bundled snapshot.
+  const cngxVersion =
+    answer.groundedVersion ?? def.answeredVersion?.(answer.payload) ?? context.bundled.meta.cngxVersion;
+  const output =
+    format === 'json'
+      ? `${JSON.stringify({ cngxVersion, result: answer.payload ?? null }, null, 2)}\n`
+      : `> cngx ${cngxVersion ?? 'unknown'}\n\n${def.toMarkdown(answer.payload, {})}`;
   io.stdout(output);
   return isFound(def, answer.payload) ? EXIT_OK : EXIT_NOT_FOUND;
 }

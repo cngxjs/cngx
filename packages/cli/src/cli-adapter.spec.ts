@@ -76,9 +76,14 @@ describe('cngx subcommands', () => {
       const run = await cli(name, ...known, '--format=json');
 
       expect(run.code).toBe(EXIT_OK);
-      expect(() => JSON.parse(run.stdout)).not.toThrow();
-      expect(JSON.parse(run.stdout)).not.toBeNull();
+      expect(JSON.parse(run.stdout)).toMatchObject({ cngxVersion: '0.1.0-rc.6', result: expect.anything() });
       expect(run.stderr).toBe('');
+    });
+
+    it('names the answering cngx version on the first markdown line', async () => {
+      const run = await cli(name, ...known);
+
+      expect(run.stdout.split('\n')[0]).toBe('> cngx 0.1.0-rc.6');
     });
 
     it('exits 1 for an unknown query', async () => {
@@ -169,6 +174,57 @@ describe('version and snapshot resolution', () => {
 
     expect(run.code).toBe(EXIT_OK);
     expect(run.stdout).toContain('# CngxSelect');
+  });
+
+  it('names a fetched release, not the bundled one, as the answering version', async () => {
+    const NEW = fileURLToPath(new URL('../../mcp/test/fixtures/documentation.v-new.sample.json', import.meta.url));
+    const deps: DocsResolverDeps = { fetchSnapshot: async () => ({ ok: true, path: NEW }), loadDocs: loadDocsFromFile };
+    let stdout = '';
+    const io: CliIo = { stdout: (text) => (stdout += text), stderr: () => undefined };
+    const context: CommandContext = { bundled, resolve: createDocsResolver(bundled, deps) };
+
+    const code = await runCli(['api', 'CngxSelect', '--cngx-version=0.2.0', '--format=json'], {
+      commands: COMMANDS,
+      loadContext: () => context,
+      cliVersion: CLI_VERSION,
+      io,
+    });
+
+    expect(code).toBe(EXIT_OK);
+    expect(JSON.parse(stdout)).toMatchObject({ cngxVersion: '0.2.0', result: { name: 'CngxSelect' } });
+  });
+
+  it('names the migration target, not the bundled release, as the answering version', async () => {
+    const NEW = fileURLToPath(new URL('../../mcp/test/fixtures/documentation.v-new.sample.json', import.meta.url));
+    const deps: DocsResolverDeps = { fetchSnapshot: async () => ({ ok: true, path: NEW }), loadDocs: loadDocsFromFile };
+    let stdout = '';
+    const io: CliIo = { stdout: (text) => (stdout += text), stderr: () => undefined };
+    const context: CommandContext = { bundled, resolve: createDocsResolver(bundled, deps) };
+
+    const code = await runCli(['migrate', '0.1.0-rc.6', '--to=0.2.0'], {
+      commands: COMMANDS,
+      loadContext: () => context,
+      cliVersion: CLI_VERSION,
+      io,
+    });
+
+    expect(code).toBe(EXIT_OK);
+    expect(stdout.split('\n')[0]).toBe('> cngx 0.2.0');
+  });
+
+  it('exits 1 on a JSON answer whose result is not found', async () => {
+    const run = await cli('api', 'NoSuchThing', '--format=json');
+
+    expect(run.code).toBe(EXIT_NOT_FOUND);
+    expect(JSON.parse(run.stdout)).toEqual({ cngxVersion: '0.1.0-rc.6', result: null });
+  });
+
+  it('exits 2 on an empty --cngx-version, before any resolution', async () => {
+    const run = await cli('api', 'CngxSelect', '--cngx-version=');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toContain('--cngx-version');
   });
 
   it('exits 1 with the reason on stderr when a requested release cannot be resolved', async () => {

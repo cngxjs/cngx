@@ -131,5 +131,6 @@ export const migrateUsageCommand = defineCommand({
       return failure;
     }
   },
+  answeredVersion: (delta: UsageDelta | null) => delta?.meta.resolvedTo ?? delta?.meta.to ?? null,
   toMarkdown: (delta: UsageDelta | null) => migrateUsageMarkdown(delta),
 });
