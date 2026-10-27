@@ -16,12 +16,25 @@ export interface DocDi {
   role?: string;
 }
 
-/** A named API input on a component/directive. */
+/**
+ * How a member is declared: `'input-signal'`, `'model'` or `'output-signal'`.
+ * Absent on decorator-based members.
+ */
+export type DocSignalKind = string;
+
+/**
+ * A named API input on a component/directive. `name` is the class field;
+ * `alias` is the binding name when it differs (schema 6 emits it, the schema-2
+ * projection lifts it out of `defaultValue`).
+ */
 export interface DocInput {
   name: string;
+  alias?: string;
   type?: string;
   defaultValue?: string;
   description?: string;
+  signalKind?: DocSignalKind;
+  required?: boolean;
 }
 
 /** A named API output on a component/directive. */
@@ -29,6 +42,7 @@ export interface DocOutput {
   name: string;
   type?: string;
   description?: string;
+  signalKind?: DocSignalKind;
 }
 
 /** A public method on the class. */

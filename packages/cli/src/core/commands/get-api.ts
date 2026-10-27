@@ -8,12 +8,20 @@ import { defineCommand } from '../command.js';
 import { versionInput } from './version-input.js';
 import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
+import type { DocEntry, DocInput } from '../data/types.js';
 import type { EntryKind } from '../query.js';
 import { resolveEntry } from '../query.js';
 import { blocks, bullets, cell, code, section, table } from './markdown.js';
 
+/**
+ * One input, named by its binding. `field` is the class field name, present only
+ * when it differs (an aliased input). `kind` is `null` for a decorator input.
+ */
 export interface ApiInput {
   name: string;
+  field?: string;
+  kind: 'input' | 'model' | null;
+  required: boolean | null;
   type: string | null;
   defaultValue: string | null;
   description: string | null;
@@ -42,6 +50,33 @@ export interface ApiResult {
   methods: ApiMethod[];
 }
 
+function inputKind(input: DocInput): ApiInput['kind'] {
+  if (input.signalKind === 'model') {
+    return 'model';
+  }
+  return input.signalKind ? 'input' : null;
+}
+
+function toApiInput(input: DocInput): ApiInput {
+  const name = input.alias ?? input.name;
+  return {
+    name,
+    ...(name === input.name ? {} : { field: input.name }),
+    kind: inputKind(input),
+    required: input.required ?? null,
+    type: input.type ?? null,
+    defaultValue: input.defaultValue ?? null,
+    description: input.description ?? null,
+  };
+}
+
+// compodocx sets the entry-level `signal` flag to false on every component and
+// directive, so a member declared with `input()` / `model()` / `output()` decides.
+function isSignalBased(entry: DocEntry): boolean {
+  const members = [...(entry.inputsClass ?? []), ...(entry.outputsClass ?? [])];
+  return entry.signal === true || members.some((member) => member.signalKind !== undefined);
+}
+
 /** Pure query behind the tool - returns `null` when the name resolves to nothing. */
 export function getApi(docs: DocsIndex, name: string): ApiResult | null {
   const match = resolveEntry(docs, name);
@@ -54,15 +89,10 @@ export function getApi(docs: DocsIndex, name: string): ApiResult | null {
     kind,
     selector: entry.selector ?? null,
     description: entry.description ?? null,
-    signal: entry.signal ?? false,
+    signal: isSignalBased(entry),
     // Signal inputs/outputs live in inputsClass/outputsClass; the legacy
     // inputs/outputs arrays are empty across the cngx surface.
-    inputs: (entry.inputsClass ?? []).map((input) => ({
-      name: input.name,
-      type: input.type ?? null,
-      defaultValue: input.defaultValue ?? null,
-      description: input.description ?? null,
-    })),
+    inputs: (entry.inputsClass ?? []).map(toApiInput),
     outputs: (entry.outputsClass ?? []).map((output) => ({
       name: output.name,
       type: output.type ?? null,

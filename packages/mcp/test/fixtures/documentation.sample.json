@@ -23,6 +23,13 @@
           "type": "boolean",
           "defaultValue": "false",
           "description": "Disables the control."
+        },
+        {
+          "name": "idInput",
+          "type": "string | null",
+          "defaultValue": "null, { alias: 'id' }",
+          "signalKind": "input-signal",
+          "description": "Overrides the generated host id."
         }
       ],
       "outputsClass": [

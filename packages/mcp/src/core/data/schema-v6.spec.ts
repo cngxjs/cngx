@@ -1,6 +1,7 @@
 // Fixture: `test/fixtures/documentation.v6.sample.json`, trimmed from
-// `npm run docs:json` (compodocx 0.9.0, schemaVersion 6) at 34580694c. The
-// inline documents below copy its `feature` and `di` shapes.
+// `npm run docs:json` (compodocx 0.9.0, schemaVersion 6) at 34580694c; the
+// `CngxSelect` members carry `signalKind` / `alias` / `required` from the 0.10.0
+// export. The inline documents below copy its `feature` and `di` shapes.
 
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

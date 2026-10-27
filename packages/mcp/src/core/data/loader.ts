@@ -5,12 +5,14 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { projectSchemaV2 } from './schema-v2.js';
 import { projectSchemaV6 } from './schema-v6.js';
 import type { DocEntry, DocFunction, DocToken, DocumentationJson } from './types.js';
 
 /**
- * The `documentation.json` schema versions this server reads. Schema 6 is
- * projected onto the schema-2 shape at load time (`schema-v6.ts`).
+ * The `documentation.json` schema versions this server reads. Both are projected
+ * onto one shape at load time: schema 2 gains the input `alias` (`schema-v2.ts`),
+ * schema 6 the schema-2 `category` and `factoryKind` (`schema-v6.ts`).
  */
 export const SUPPORTED_SCHEMA_VERSIONS = [2, 6] as const;
 
@@ -63,7 +65,7 @@ export function createDocsIndex(raw: DocumentationJson): DocsIndex {
   if (!isSupportedSchemaVersion(raw.schemaVersion)) {
     throw new SchemaVersionError(raw.schemaVersion);
   }
-  const doc = raw.schemaVersion === 6 ? projectSchemaV6(raw) : raw;
+  const doc = raw.schemaVersion === 6 ? projectSchemaV6(raw) : projectSchemaV2(raw);
   return {
     meta: {
       schemaVersion: doc.schemaVersion,

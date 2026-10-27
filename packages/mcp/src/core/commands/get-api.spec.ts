@@ -16,10 +16,17 @@ describe('getApi', () => {
 
     expect(api).not.toBeNull();
     expect(api).toMatchObject({ name: 'CngxSelect', kind: 'component', selector: 'cngx-select', signal: true });
-    expect(api?.inputs.map((i) => i.name)).toEqual(['value', 'disabled']);
+    expect(api?.inputs.map((i) => i.name)).toEqual(['value', 'disabled', 'id']);
     expect(api?.outputs.map((o) => o.name)).toEqual(['valueChange']);
     expect(api?.hostBindings).toEqual(['id']);
     expect(api?.methods).toEqual([{ name: 'open', returnType: 'void' }]);
+  });
+
+  it('names an aliased schema-2 input by its binding and keeps the field', () => {
+    const id = getApi(docs, 'CngxSelect')?.inputs.find((i) => i.name === 'id');
+
+    expect(id).toMatchObject({ name: 'id', field: 'idInput', kind: 'input', defaultValue: 'null' });
+    expect(getApi(docs, 'CngxSelect')?.inputs.find((i) => i.name === 'disabled')).not.toHaveProperty('field');
   });
 
   it('resolves by selector as well as class name', () => {
@@ -48,6 +55,23 @@ describe('getApi over a schema-6 snapshot', () => {
     expect(api?.inputs.map((i) => i.name)).toContain('value');
     expect(api?.outputs.map((o) => o.name)).toContain('selectionChange');
     expect(api?.methods.map((m) => m.name)).toContain('open');
+  });
+
+  it('names aliased inputs by their binding, never by the class field', () => {
+    const inputs = getApi(loadDocsFromFile(V6), 'CngxSelect')?.inputs ?? [];
+
+    expect(inputs.find((i) => i.name === 'disabled')).toMatchObject({ field: 'disabledInput', kind: 'input', required: false });
+    expect(inputs.find((i) => i.name === 'value')).toMatchObject({ kind: 'model' });
+    expect(inputs.map((i) => i.name)).not.toContain('disabledInput');
+    expect(inputs.map((i) => i.name)).toEqual(expect.arrayContaining(['id', 'required']));
+  });
+
+  it('derives signal-based from the members, not the entry flag compodocx sets to false', () => {
+    const v6 = loadDocsFromFile(V6);
+    const select = v6.components.find((c) => c.name === 'CngxSelect');
+
+    expect(select?.signal).toBe(false);
+    expect(getApi(v6, 'CngxSelect')?.signal).toBe(true);
   });
 });
 
