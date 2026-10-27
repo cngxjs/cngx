@@ -1,0 +1,157 @@
+@use '@angular/material' as mat;
+@use './bridge' as bridge;
+
+// Material bridge for the button family (cngxButton, cngxIconButton,
+// cngxCloseButton, cngxActionButton - every host carries `.cngx-button` -
+// and cngxButtonGroup). Maps the variant x tone matrix onto Material 3 roles
+// so a cngx button reads next to a mat-flat-button, mat-stroked-button or a
+// tonal button without extra CSS.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/button-theme' as button;
+//   html { @include button.theme($theme); }
+//
+// Knob routing, not leaf tokens. The button sheet SETs its tone tokens
+// (--cngx-button-tone, -tone-text, -on-tone, -radius) inside
+// `@scope (.cngx-button) :scope`, which outranks this bridge's
+// zero-specificity `:where()` in the same layer. So the colours go through
+// the foundation knobs the sheet reads (button-toggle-theme precedent),
+// assigned on the button host:
+//
+// - tone `primary` -> primary / on-primary (solid = mat-flat-button)
+// - tone `danger` -> error / on-error
+// - variant `outline` -> the `outline` role for the neutral border
+//   (mat-stroked-button)
+// - variant `secondary` -> the `*-container` roles through the three
+//   --cngx-button-secondary-* hooks (neutral = secondary-container, the M3
+//   tonal button; primary = primary-container; danger = error-container)
+// - shape -> corner-full: --cngx-radius-md on the host (the rung the button
+//   radius reads), the group end radius, the close-button radius
+// - state layers -> a solid hover mixes the tone toward its on-colour
+//   (--cngx-button-hover-shade); a secondary hover lays the on-container
+//   colour over the container at --mat-sys-hover-state-layer-opacity
+//
+// A directly-set knob beats an inherited one regardless of layer, so a
+// consumer's :root-level --cngx-color-* override does not reach the buttons
+// while this bridge is included; re-skin on the button host instead, where
+// any consumer selector beats the `:where()` below. In the theme.scss
+// aggregate the colour knobs overlap system-bridge on purpose: only the
+// on-colours, the variant mappings and the shape are net-new there; the
+// duplicate keeps a selective per-bridge include consistent.
+//
+// `icons()` is the one unlayered part (a deliberate non-adopter of
+// `bridge.on()`): Material styles `.mat-icon` unlayered at 24px, which beats
+// any layered cngx rule, so a <mat-icon> in a button slot or in an icon
+// button would stay 24px at every button size. The rule sizes it like the
+// svg glyph it stands in for.
+
+@mixin _tonal($container, $on-container) {
+  --cngx-button-secondary-bg: var(--mat-sys-#{$container});
+  --cngx-button-secondary-bg-hover: color-mix(
+    in srgb,
+    var(--mat-sys-#{$on-container}) calc(var(--mat-sys-hover-state-layer-opacity, 0.08) * 100%),
+    var(--mat-sys-#{$container})
+  );
+  --cngx-button-secondary-color: var(--mat-sys-#{$on-container});
+}
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    @include bridge.on('.cngx-button') {
+      --cngx-color-text: var(--mat-sys-on-surface);
+      --cngx-color-surface: var(--mat-sys-surface);
+      --cngx-color-border: var(--mat-sys-outline-variant);
+      --cngx-color-primary: var(--mat-sys-primary);
+      --cngx-color-primary-text: var(--mat-sys-primary);
+      --cngx-color-on-primary: var(--mat-sys-on-primary);
+      --cngx-color-danger: var(--mat-sys-error);
+      --cngx-color-danger-text: var(--mat-sys-error);
+      --cngx-color-on-danger: var(--mat-sys-on-error);
+    }
+    @include bridge.on(".cngx-button[data-tone='primary']") {
+      --cngx-button-hover-shade: var(--mat-sys-on-primary);
+    }
+    @include bridge.on(".cngx-button[data-tone='danger']") {
+      --cngx-button-hover-shade: var(--mat-sys-on-error);
+    }
+    @include bridge.on(".cngx-button[data-variant='outline']") {
+      --cngx-color-border: var(--mat-sys-outline);
+    }
+    @include bridge.on(".cngx-button[data-variant='secondary'][data-tone='neutral']") {
+      @include _tonal(secondary-container, on-secondary-container);
+    }
+    @include bridge.on(".cngx-button[data-variant='secondary'][data-tone='primary']") {
+      @include _tonal(primary-container, on-primary-container);
+    }
+    @include bridge.on(".cngx-button[data-variant='secondary'][data-tone='danger']") {
+      @include _tonal(error-container, on-error-container);
+    }
+    @include bridge.on('.cngx-close-button') {
+      --cngx-close-button-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+      --cngx-close-button-color: var(--mat-sys-on-surface-variant);
+    }
+  } @else {
+    // M2 has no container roles and no state-layer tokens: the secondary
+    // hooks stay unset, so the tone mix paints, and the hover keeps the
+    // default shade.
+    @include bridge.on('.cngx-button') {
+      --cngx-color-text: #{mat.get-theme-color($theme, foreground, text)};
+      --cngx-color-surface: #{mat.get-theme-color($theme, background, card)};
+      --cngx-color-border: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
+      --cngx-color-primary: #{mat.get-theme-color($theme, primary)};
+      --cngx-color-primary-text: #{bridge.m2-primary-text($theme)};
+      --cngx-color-on-primary: #{mat.get-theme-color($theme, primary, default-contrast)};
+      --cngx-color-danger: #{mat.get-theme-color($theme, warn)};
+      --cngx-color-danger-text: #{bridge.m2-warn-text($theme)};
+      --cngx-color-on-danger: #{mat.get-theme-color($theme, warn, default-contrast)};
+    }
+    @include bridge.on('.cngx-close-button') {
+      --cngx-close-button-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
+    }
+  }
+}
+
+@mixin shape($theme) {
+  // M2 buttons keep the cngx radius rung (4px corners are what M2 paints).
+  @if mat.get-theme-version($theme) == 1 {
+    @include bridge.on('.cngx-button') {
+      --cngx-radius-md: var(--mat-sys-corner-full);
+    }
+    @include bridge.on('.cngx-button-group') {
+      --cngx-button-group-radius: var(--mat-sys-corner-full);
+    }
+    @include bridge.on('.cngx-close-button') {
+      --cngx-close-button-radius: var(--mat-sys-corner-full);
+    }
+  }
+}
+
+// Unlayered (see the header). Two classes outrank Material's single-class
+// `.mat-icon` / `.material-icons` rules wherever those load. Font size first,
+// box in `em` of it, so a ligature glyph and an svgIcon both land on the
+// size the svg glyph has in the same place: --cngx-button-icon-size in a
+// start or end slot, the icon-button glyph rung (1.25em) in an icon button,
+// --cngx-close-button-icon-size in a close button.
+@mixin icons() {
+  .cngx-button .mat-icon:is(.cngx-button__slot, .cngx-button__slot > *) {
+    font-size: var(--cngx-button-icon-size, 1.25em);
+    inline-size: 1em;
+    block-size: 1em;
+    line-height: 1;
+  }
+  .cngx-icon-button__glyph > .mat-icon {
+    font-size: 1.25em;
+    inline-size: 1em;
+    block-size: 1em;
+    line-height: 1;
+  }
+  .cngx-close-button .cngx-icon-button__glyph > .mat-icon {
+    font-size: var(--cngx-close-button-icon-size, 1.25em);
+  }
+}
+
+@mixin theme($theme) {
+  @include color($theme);
+  @include shape($theme);
+  @include icons();
+}

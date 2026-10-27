@@ -11,10 +11,11 @@
 
 @mixin sizes() {
   // Material 3 icon sizing: small 18px, medium 20px (default), large 24px,
-  // extra-large 40px. Cngx default is em-based - keep that flexibility
-  // but anchor the medium variant to Material's canonical 24px so an
-  // icon next to a Material control reads the same size.
-  --cngx-icon-size: 1.5em;
+  // extra-large 40px. Cngx default is em-based - keep that flexibility and
+  // re-point the rungs only. The active size itself (--cngx-icon-size) is
+  // SET from a rung by the icon's own size class, so assigning it here
+  // would never apply; md stays on the 1.25em rung the button slot glyph
+  // (--cngx-button-icon-size) also uses.
   --cngx-icon-size-xs: 1em;
   --cngx-icon-size-sm: 1.125em;
   --cngx-icon-size-md: 1.25em;

@@ -22,26 +22,26 @@
 // individually:
 //
 //   @use '@cngx/themes/material/system-bridge' as cngx-system;
-//   @use '@cngx/themes/material/action-button-theme' as action-btn;
+//   @use '@cngx/themes/material/button-theme' as button;
 //   @include cngx-system.theme($theme);
-//   @include action-btn.theme($theme);
+//   @include button.theme($theme);
 
 @use './system-bridge' as cngx-system;
 @use './density-bridge' as cngx-density;
 @use './accordion-theme' as accordion;
-@use './action-button-theme' as action-button;
+@use './async-click-theme' as async-click;
 @use './async-container-theme' as async-container;
 @use './avatar-theme' as avatar;
 @use './backdrop-theme' as backdrop;
 @use './badge-theme' as badge;
 @use './bottom-sheet-theme' as bottom-sheet;
 @use './breadcrumb-theme' as breadcrumb;
+@use './button-theme' as button;
 @use './button-toggle-theme' as button-toggle;
 @use './card-theme' as card;
 @use './chart-theme' as chart;
 @use './chart-panel-theme' as chart-panel;
 @use './chip-theme' as chip;
-@use './close-button-theme' as close-button;
 @use './command-palette-theme' as command-palette;
 @use './context-menu-theme' as context-menu;
 @use './copy-block-theme' as copy-block;
@@ -97,19 +97,19 @@
 
   @include accordion.theme($theme);
   @include accordion.skins($theme);
-  @include action-button.theme($theme);
+  @include async-click.theme($theme);
   @include async-container.theme($theme);
   @include avatar.theme($theme);
   @include backdrop.theme($theme);
   @include badge.theme($theme);
   @include bottom-sheet.theme($theme);
   @include breadcrumb.theme($theme);
+  @include button.theme($theme);
   @include button-toggle.theme($theme);
   @include card.theme($theme);
   @include chart.theme($theme);
   @include chart-panel.theme($theme);
   @include chip.theme($theme);
-  @include close-button.theme($theme);
   @include command-palette.theme($theme);
   @include context-menu.theme($theme);
   @include controls.theme($theme);

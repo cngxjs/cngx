@@ -34,7 +34,8 @@
 // included at an arbitrary call-site, not part of `theme($theme)` -
 // layering it would weaken it below unlayered consumer overrides;
 // tabs-theme keeps one raw layer block whose `::before` must sit
-// outside `:where()`.
+// outside `:where()`; button-theme's `icons()` sizes `.mat-icon` unlayered
+// because Material's own `.mat-icon` rule is unlayered and beats any layer.
 
 /// Emits the content block for `$selectors` inside `@layer cngx.components`
 /// wrapped in a single zero-specificity `:where(...)`. Pass plain element

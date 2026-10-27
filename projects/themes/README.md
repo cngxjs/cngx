@@ -102,11 +102,11 @@ Selective wiring stays available for apps that ship a subset: include `material/
 
 ```scss
 @use '@cngx/themes/material/system-bridge' as cngx-system;
-@use '@cngx/themes/material/action-button-theme' as action-btn;
+@use '@cngx/themes/material/button-theme' as button;
 
 html {
   @include cngx-system.theme($theme);
-  @include action-btn.theme($theme);
+  @include button.theme($theme);
 }
 ```
 

@@ -196,3 +196,43 @@ $theme: mat.define-theme((
     expect(css).not.toContain('--cngx-button-toggle-');
   });
 });
+
+describe('async-click Material bridge', () => {
+  // every name is consumed by theming/components/cngx-async.css on the
+  // cngxAsyncClick host (button-family hosts are excluded from that paint)
+  const CONSUMED = [
+    '--cngx-async-error-bg',
+    '--cngx-async-error-border',
+    '--cngx-async-error-color',
+    '--cngx-async-success-bg',
+    '--cngx-async-success-border',
+    '--cngx-async-success-color',
+  ];
+
+  it('emits only consumed token names (M3)', () => {
+    expect(bridgeTokenNames('async-click-theme', 'v1')).toEqual(CONSUMED);
+  });
+
+  it('emits the same names (M2)', () => {
+    expect(bridgeTokenNames('async-click-theme', 'v0')).toEqual(CONSUMED);
+  });
+
+  it('assigns on the cngxAsyncClick host, layered and zero-specificity', () => {
+    const entry = `
+@use '@angular/material' as mat;
+@use 'material/async-click-theme' as bridge;
+
+$theme: mat.define-theme((
+  color: (theme-type: light, primary: mat.$azure-palette, tertiary: mat.$blue-palette),
+));
+
+@include bridge.theme($theme);
+`;
+    const css = compileThemeEntry(entry);
+    expect(css).toMatch(/@layer cngx\.components\s*\{/);
+    const block = css.match(/:where\(\[cngxAsyncClick\]\)\s*\{[^}]*\}/);
+    expect(block).not.toBeNull();
+    expect(block![0]).toContain('--cngx-async-error-color: var(--mat-sys-error)');
+    expect(block![0]).toContain('--cngx-async-success-color: var(--mat-sys-primary)');
+  });
+});

@@ -217,6 +217,38 @@
     initial-value: 9%;
   }
 
+  /**
+   * Fill of a `secondary` button. Unset by default, so the fill is the tone
+   * mixed into transparency (the neutral tint for `neutral`, 12% otherwise).
+   * A theme sets it to paint a container colour instead (the Material bridge
+   * maps it to the `*-container` roles).
+   * @group Tone
+   */
+  @property --cngx-button-secondary-bg {
+    syntax: '*';
+    inherits: false;
+  }
+
+  /**
+   * Hover fill of a `secondary` button. Unset by default, so hover steps the
+   * tone mix up.
+   * @group Tone
+   */
+  @property --cngx-button-secondary-bg-hover {
+    syntax: '*';
+    inherits: false;
+  }
+
+  /**
+   * Text colour of a `secondary` button. Unset by default, so the tone text
+   * colour paints.
+   * @group Tone
+   */
+  @property --cngx-button-secondary-color {
+    syntax: '*';
+    inherits: false;
+  }
+
   :root {
     --cngx-button-neutral-tint: 5%;
     --cngx-button-neutral-tint-hover: 9%;
@@ -363,21 +395,36 @@
       background: color-mix(in oklch, var(--cngx-button-tone, currentColor) 15%, var(--cngx-color-surface, Canvas));
       border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
     }
+    /* The three --cngx-button-secondary-* hooks are unset by default; a theme
+       sets them to paint a container colour instead of the tone mix. */
     :scope[data-variant='secondary'] {
-      background: color-mix(in oklch, var(--cngx-button-tone, currentColor) 12%, transparent);
+      background: var(
+        --cngx-button-secondary-bg,
+        color-mix(in oklch, var(--cngx-button-tone, currentColor) 12%, transparent)
+      );
+      color: var(--cngx-button-secondary-color, var(--cngx-button-tone-text, currentColor));
     }
     :scope[data-variant='secondary']:hover {
-      background: color-mix(in oklch, var(--cngx-button-tone, currentColor) 18%, transparent);
+      background: var(
+        --cngx-button-secondary-bg-hover,
+        color-mix(in oklch, var(--cngx-button-tone, currentColor) 18%, transparent)
+      );
     }
     /* Neutral secondary steps below the neutral solid fill so the two stay apart. */
     :scope[data-variant='secondary'][data-tone='neutral'] {
-      background: color-mix(in oklch, var(--cngx-button-tone, currentColor) var(--cngx-button-neutral-tint, 5%), transparent);
+      background: var(
+        --cngx-button-secondary-bg,
+        color-mix(in oklch, var(--cngx-button-tone, currentColor) var(--cngx-button-neutral-tint, 5%), transparent)
+      );
     }
     :scope[data-variant='secondary'][data-tone='neutral']:hover {
-      background: color-mix(
-        in oklch,
-        var(--cngx-button-tone, currentColor) var(--cngx-button-neutral-tint-hover, 9%),
-        transparent
+      background: var(
+        --cngx-button-secondary-bg-hover,
+        color-mix(
+          in oklch,
+          var(--cngx-button-tone, currentColor) var(--cngx-button-neutral-tint-hover, 9%),
+          transparent
+        )
       );
     }
     :scope[data-variant='outline'] {
