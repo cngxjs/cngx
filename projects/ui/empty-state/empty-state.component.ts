@@ -35,6 +35,7 @@ import { type CngxAsyncState, nextUid } from '@cngx/core/utils';
  * <example-url>http://localhost:4200/#/ui/empty-state/inside-a-list</example-url>
  * <example-url>http://localhost:4200/#/ui/empty-state/inside-a-table</example-url>
  * <example-url>http://localhost:4200/#/ui/empty-state/with-custom-icon-actions</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-empty-state',

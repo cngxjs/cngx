@@ -41,6 +41,7 @@ export interface CngxBreadcrumbItemAccessoryContext {
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbBar, CngxBreadcrumbSiblings
  * <example-url>http://localhost:4200/#/ui/breadcrumb/siblings/accessory-slot</example-url>
+ * @axis level organism
  */
 @Directive({
   selector: 'ng-template[cngxBreadcrumbItemAccessory]',

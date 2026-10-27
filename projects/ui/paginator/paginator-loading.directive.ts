@@ -21,6 +21,7 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-loading.directive.ts
  * @since 0.1.0
  * @relatedTo CngxPaginator, CngxProgress
+ * @axis level atom
  */
 @Directive({ selector: '[cngxPaginatorLoading]', standalone: true, exportAs: 'cngxPaginatorLoading' })
 export class CngxPaginatorLoading {

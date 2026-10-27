@@ -49,6 +49,7 @@ import { injectAccordionConfig } from './config/inject-accordion-config';
  * <example-url>http://localhost:4200/#/ui/accordion/skins/section-bands</example-url>
  * <example-url>http://localhost:4200/#/ui/accordion/skins/severity-spine</example-url>
  * <example-url>http://localhost:4200/#/ui/accordion/skins/timeline</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-accordion-group',

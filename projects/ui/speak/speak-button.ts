@@ -28,6 +28,7 @@ import { injectSpeakI18n } from './speak-i18n';
  * @since 0.1.0
  * @relatedTo CngxSpeak
  * <example-url>http://localhost:4200/#/ui/speak/speak-button/styled-speaker-icon</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-speak-button',

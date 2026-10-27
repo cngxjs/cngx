@@ -58,6 +58,7 @@ import { CNGX_PALETTE_KEYBINDING_FACTORY } from './palette-keybinding';
  * @selector cngx-command-palette
  * @since 0.1.0
  * @relatedTo CngxCommandPaletteTrigger, provideCommands, CngxDialog
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-command-palette',

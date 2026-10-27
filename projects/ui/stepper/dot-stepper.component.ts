@@ -61,6 +61,7 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
  * @slot cngxDotStepperDot Replaces one dot; gets its index and active state.
  * @slot cngxStepperEmpty Renders when no step is projected at all.
  * <example-url>http://localhost:4200/#/ui/stepper/dot-stepper/mobile-carousel</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-dot-stepper',

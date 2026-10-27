@@ -59,6 +59,7 @@ import { CngxToaster, type ToastRef } from './toast.service';
  * <example-url>http://localhost:4200/#/ui/feedback/toast/programmatic-cngxtoaster</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/toast/state-bridge-cngxtoaston</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/toast/title-description</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-toast',

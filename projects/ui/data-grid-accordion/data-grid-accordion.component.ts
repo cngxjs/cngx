@@ -130,6 +130,7 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/ledger</example-url>
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/log-stream</example-url>
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/report</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-data-grid-accordion',

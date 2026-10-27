@@ -89,6 +89,7 @@ import {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-stepper/mat-stepper.directive.ts
  * @since 0.1.0
  * @relatedTo CngxStepper, CngxStepperPresenter, CngxMatTabs, CngxStepperFooter
+ * @axis level organism
  */
 @Directive({
   selector: '[cngxMatStepper]',

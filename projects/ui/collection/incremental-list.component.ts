@@ -130,6 +130,7 @@ export type CngxIncrementalListSkin = 'plain' | 'divided' | 'card';
  * <example-url>http://localhost:4200/#/ui/collection/incremental-list/skins/plain</example-url>
  * <example-url>http://localhost:4200/#/ui/collection/incremental-list/skins/divided</example-url>
  * <example-url>http://localhost:4200/#/ui/collection/incremental-list/skins/card</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-incremental-list',

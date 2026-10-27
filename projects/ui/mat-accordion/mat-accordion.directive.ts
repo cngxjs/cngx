@@ -68,6 +68,7 @@ import { createMatExpansionSetSync } from './material-bridge/set-sync';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-accordion/mat-accordion.directive.ts
  * @since 0.1.0
  * @relatedTo CngxAccordion, CngxAccordionItem, CngxMatStepper, CngxMatTabs
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxMatAccordion]',

@@ -50,6 +50,7 @@ const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
  * <example-url>http://localhost:4200/#/ui/feedback/progress/circular-variant</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/progress/linear-determinate</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/progress/linear-indeterminate</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-progress',

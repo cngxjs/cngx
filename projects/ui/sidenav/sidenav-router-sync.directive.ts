@@ -21,6 +21,7 @@ import { CNGX_SIDENAV, type CngxSidenavContract } from './sidenav-token';
  * @since 0.1.0
  * @relatedTo CngxSidenav, CNGX_SIDENAV, injectQueryParamSync
  * <example-url>http://localhost:4200/#/ui/sidenav/router-sync/deep-linkable-overlay</example-url>
+ * @axis level organism
  */
 @Directive({
   selector: '[cngxSidenavRouterSync]',

@@ -101,6 +101,7 @@ import { installTabGroupDevChecks } from './tab-group-dev-checks';
  * <example-url>http://localhost:4200/#/ui/tabs/tab-skins/pill</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-skins/pill-vs-toggle-group</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-skins/vertical-skins</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-tab-group',

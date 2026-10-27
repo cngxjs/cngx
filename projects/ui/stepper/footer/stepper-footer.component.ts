@@ -52,6 +52,7 @@ import {
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-footer/segmented-progress-center</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-footer/complete-finish-button</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-footer/async-commit-status</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-stepper-footer',

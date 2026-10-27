@@ -61,6 +61,7 @@ import {
  * <example-url>http://localhost:4200/#/common/layout/skeleton/skeleton-container</example-url>
  * <example-url>http://localhost:4200/#/ui/skeleton/card-skeleton</example-url>
  * <example-url>http://localhost:4200/#/ui/skeleton/template-context</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-skeleton',

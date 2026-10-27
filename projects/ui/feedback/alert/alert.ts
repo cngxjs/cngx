@@ -110,6 +110,7 @@ export class CngxAlertAction {}
  * <example-url>http://localhost:4200/#/ui/feedback/alert/closable</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert/severities</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert/state-driven-visibility</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-alert',

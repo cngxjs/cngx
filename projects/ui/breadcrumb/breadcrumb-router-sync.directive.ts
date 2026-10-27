@@ -87,6 +87,7 @@ function crumbsEqual(
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbBar, CngxBreadcrumbItemsSource
  * <example-url>http://localhost:4200/#/ui/breadcrumb/router/router-driven</example-url>
+ * @axis level organism
  */
 @Directive({
   selector: 'cngx-breadcrumb[cngxRouterSync]',

@@ -45,6 +45,7 @@ import { CngxToaster } from './toast.service';
  * <example-url>http://localhost:4200/#/ui/feedback/toast/state-bridge-cngxtoaston</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/toast/title-description</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
+ * @axis level organism
  */
 @Directive({
   selector: '[cngxToastOn]',

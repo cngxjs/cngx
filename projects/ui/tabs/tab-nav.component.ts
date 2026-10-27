@@ -57,6 +57,7 @@ import {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/tabs/tab-nav.component.ts
  * @since 0.1.0
  * @relatedTo CngxTabLink, CngxTabsRouteSync, CngxTabGroup, CngxMatTabNav
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-tab-nav',

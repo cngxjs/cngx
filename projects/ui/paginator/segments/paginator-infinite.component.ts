@@ -48,6 +48,7 @@ import { injectPaginatorHost } from '../paginator-host.token';
  * @since 0.1.0
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/infinite/sentinel</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-modes/infinite</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-pgn-infinite',

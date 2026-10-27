@@ -48,6 +48,7 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
  *
  * <example-url>http://localhost:4200/#/ui/feedback/loading-indicator/bar-variant</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/loading-indicator/spinner-variant</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-loading-indicator',

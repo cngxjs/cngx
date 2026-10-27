@@ -83,6 +83,7 @@ export interface CngxMatPaginatorAnnounceContext {
  * <example-url>http://localhost:4200/#/common/data/paginate-list/instrumentation-bridge-cngxmatpaginator</example-url>
  * <example-url>http://localhost:4200/#/common/data/paginate-list/paginated-list-cngxpaginate-cngxmatpaginator</example-url>
  * <example-url>http://localhost:4200/#/common/data/paginate-list/uncontrolled-mode-zero-class-boilerplate</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxMatPaginator]',

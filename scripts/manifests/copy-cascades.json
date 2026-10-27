@@ -644,7 +644,7 @@
     {
       "class": "CngxActionButton",
       "file": "projects/ui/action-button/action-button.ts",
-      "line": 292,
+      "line": 293,
       "member": "effectiveAnnouncement",
       "enclosing": "untracked",
       "tiers": [
@@ -661,7 +661,7 @@
     {
       "class": "CngxActionButton",
       "file": "projects/ui/action-button/action-button.ts",
-      "line": 298,
+      "line": 299,
       "member": "effectiveAnnouncement",
       "enclosing": "untracked",
       "tiers": [
@@ -678,7 +678,7 @@
     {
       "class": "CngxBreadcrumbBar",
       "file": "projects/ui/breadcrumb/breadcrumb-bar.component.ts",
-      "line": 165,
+      "line": 166,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -758,7 +758,7 @@
     {
       "class": "CngxCommandPalette",
       "file": "projects/ui/command-palette/palette/command-palette.component.ts",
-      "line": 131,
+      "line": 132,
       "member": "resolvedAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -902,7 +902,7 @@
     {
       "class": "CngxProgress",
       "file": "projects/ui/feedback/loading/progress.ts",
-      "line": 135,
+      "line": 136,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -918,7 +918,7 @@
     {
       "class": "CngxPaginator",
       "file": "projects/ui/paginator/paginator.component.ts",
-      "line": 171,
+      "line": 172,
       "member": "resolvedAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -934,7 +934,7 @@
     {
       "class": "CngxSidenav",
       "file": "projects/ui/sidenav/sidenav.ts",
-      "line": 224,
+      "line": 225,
       "member": "resolvedResizeLabel",
       "enclosing": "computed",
       "tiers": [
@@ -950,7 +950,7 @@
     {
       "class": "CngxSpeakButton",
       "file": "projects/ui/speak/speak-button.ts",
-      "line": 103,
+      "line": 104,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -961,7 +961,7 @@
     {
       "class": "CngxSpeakButton",
       "file": "projects/ui/speak/speak-button.ts",
-      "line": 104,
+      "line": 105,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -972,7 +972,7 @@
     {
       "class": "CngxStatCard",
       "file": "projects/ui/stat-card/stat-card.component.ts",
-      "line": 331,
+      "line": 332,
       "member": "resolvedBusyLabel",
       "enclosing": "computed",
       "tiers": [
@@ -988,7 +988,7 @@
     {
       "class": "CngxStatCard",
       "file": "projects/ui/stat-card/stat-card.component.ts",
-      "line": 335,
+      "line": 336,
       "member": "resolvedErrorText",
       "enclosing": "computed",
       "tiers": [
@@ -1004,7 +1004,7 @@
     {
       "class": "CngxStatCard",
       "file": "projects/ui/stat-card/stat-card.component.ts",
-      "line": 339,
+      "line": 340,
       "member": "resolvedErrorDescription",
       "enclosing": "computed",
       "tiers": [
@@ -1020,7 +1020,7 @@
     {
       "class": "CngxStatCard",
       "file": "projects/ui/stat-card/stat-card.component.ts",
-      "line": 343,
+      "line": 344,
       "member": "resolvedStaleText",
       "enclosing": "computed",
       "tiers": [
@@ -1036,7 +1036,7 @@
     {
       "class": "CngxStatCard",
       "file": "projects/ui/stat-card/stat-card.component.ts",
-      "line": 347,
+      "line": 348,
       "member": "resolvedEmptyText",
       "enclosing": "computed",
       "tiers": [
@@ -1052,7 +1052,7 @@
     {
       "class": "CngxTimeline",
       "file": "projects/ui/timeline/timeline.component.ts",
-      "line": 429,
+      "line": 430,
       "member": "listLabel",
       "enclosing": "computed",
       "tiers": [

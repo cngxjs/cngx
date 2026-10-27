@@ -109,6 +109,7 @@ function dotsEqual(a: DotModel, b: DotModel): boolean {
  * @since 0.1.0
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/dots/dots</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/dots</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-pgn-dots',

@@ -73,6 +73,7 @@ export type CngxChartPanelLegendPosition = 'top' | 'bottom' | 'none';
  * <example-url>http://localhost:4200/#/ui/chart-panel/basic/titled-panel-with-legend</example-url>
  * <example-url>http://localhost:4200/#/ui/chart-panel/async/panel-chrome-vs-chart-state</example-url>
  * <example-url>http://localhost:4200/#/ui/chart-panel/slots/actions-and-footer</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-chart-panel',

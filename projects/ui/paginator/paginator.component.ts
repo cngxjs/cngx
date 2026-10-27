@@ -96,6 +96,7 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/rail</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/dots</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-paginator',

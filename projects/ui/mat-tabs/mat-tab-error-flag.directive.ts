@@ -29,6 +29,7 @@ import { injectMatTabErrorTarget } from './mat-tab-error-target';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/mat-tab-error-flag.directive.ts
  * @since 0.1.0
  * @relatedTo CngxMatTabs, CngxMatTabError, CngxMatTabsRegistry
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxMatTabErrorFlag]',

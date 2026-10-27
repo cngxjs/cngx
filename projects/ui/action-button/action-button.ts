@@ -89,6 +89,7 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
  * <example-url>http://localhost:4200/#/ui/action-button/async-button/random-outcome</example-url>
  * <example-url>http://localhost:4200/#/ui/action-button/async-button/string-labels</example-url>
  * <example-url>http://localhost:4200/#/ui/action-button/async-button/template-slots</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-action-button',

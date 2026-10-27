@@ -17,6 +17,7 @@ import { injectPaginatorHost } from '../paginator-host.token';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-goto.component.ts
  * @since 0.1.0
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/goto/input</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-pgn-goto',

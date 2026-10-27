@@ -82,6 +82,7 @@ function entriesEqual(a: readonly StackEntry[], b: readonly StackEntry[]): boole
  * <example-url>http://localhost:4200/#/ui/feedback/alert-stack/basic-stack</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert-stack/dialog-use-case</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert-stack/overflow-collapse</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-alert-stack',

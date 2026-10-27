@@ -77,6 +77,7 @@ import { createRejectionState } from './decorations/rejection-state';
  * @relatedTo CngxMatTabLink, CngxMatTabs, CngxTabsRouteSync
  * @slot cngxMatTabAggregatorContent Replaces the aggregated error summary projected into a Material tab.
  * @slot cngxMatTabRejectionContent Replaces the rejection notice on a rolled-back Material tab.
+ * @axis level organism
  */
 @Directive({
   selector: '[cngxMatTabNav]',

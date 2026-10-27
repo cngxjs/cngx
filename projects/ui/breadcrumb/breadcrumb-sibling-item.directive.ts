@@ -36,6 +36,7 @@ export interface CngxBreadcrumbSiblingItemContext {
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbSiblings
  * <example-url>http://localhost:4200/#/ui/breadcrumb/siblings/custom-row</example-url>
+ * @axis level organism
  */
 @Directive({
   selector: 'ng-template[cngxBreadcrumbSiblingItem]',
