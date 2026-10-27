@@ -29,6 +29,7 @@ import { injectInputAriaLabels } from './input-config';
  * @since 0.2.0
  * @relatedTo CngxInput, CngxPasswordToggle, CngxPasswordStrength, withInputAriaLabels
  * <example-url>http://localhost:4200/#/forms/input/caps-lock-warning</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: 'input[cngxCapsLock]',

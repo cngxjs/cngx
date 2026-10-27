@@ -31,6 +31,7 @@ import { clamp } from '@cngx/utils';
  * @relatedTo CngxInput, CngxCharCount
  * <example-url>http://localhost:4200/#/forms/input/autosize/basic-autosize</example-url>
  * <example-url>http://localhost:4200/#/forms/input/autosize/min-max-rows</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: 'textarea[cngxAutosize]',

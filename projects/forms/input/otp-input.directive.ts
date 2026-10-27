@@ -158,6 +158,7 @@ export class CngxOtpSlot {
  * @relatedTo CngxOtpSlot, CngxInput, withInputAriaLabels
  * <example-url>http://localhost:4200/#/forms/input/otp/4-digit-pin</example-url>
  * <example-url>http://localhost:4200/#/forms/input/otp/6-digit-otp</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxOtpInput]',

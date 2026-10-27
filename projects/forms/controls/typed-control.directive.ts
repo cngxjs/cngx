@@ -31,6 +31,7 @@ import { CngxRuntimeError } from '@cngx/utils';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/controls/typed-control.directive.ts
  * @since 0.1.0
  * @relatedTo CngxFormBridge, CngxBindField
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxTypedControl]',

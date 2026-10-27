@@ -189,6 +189,7 @@ export interface CngxSelectChange<T = unknown> {
  * @slot cngxSelectOptionError Replaces the ! glyph on the selected row when a commit fails and commitErrorDisplay is 'inline'; gets $implicit/option, error.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
 
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-select',

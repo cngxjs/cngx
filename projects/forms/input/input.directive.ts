@@ -43,6 +43,7 @@ import {
  * <example-url>http://localhost:4200/#/forms/input/smart-autocomplete-and-spellcheck</example-url>
  * <example-url>http://localhost:4200/#/forms/field/skin/fill</example-url>
  * <example-url>http://localhost:4200/#/forms/field/skin/bare-cell-edit</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: 'input[cngxInput], textarea[cngxInput], select[cngxInput]',

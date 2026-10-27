@@ -39,6 +39,7 @@ import type { CngxFormFieldControl } from './models';
  * @since 0.1.0
  * @relatedTo CngxBindField, CngxFormField, CngxSlider, CngxListboxFieldBridge, adaptFormControl
  * <example-url>http://localhost:4200/#/forms/field/slider-forms/signal-forms-slider</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxSliderFieldBridge]',

@@ -71,6 +71,7 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * <example-url>http://localhost:4200/#/forms/field/skin/bare-cell-edit</example-url>
  * <example-url>http://localhost:4200/#/forms/input/numeric/basic-numeric-input</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxFieldSkin]',

@@ -197,6 +197,7 @@ export interface CngxTypeaheadChange<T = unknown> {
  * @slot cngxSelectInputPrefix Rendered before the <input> inside the trigger; gets disabled, focused, panelOpen.
  * @slot cngxSelectInputSuffix Rendered after the <input>, before the clear button and caret; gets disabled, focused, panelOpen.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-typeahead',

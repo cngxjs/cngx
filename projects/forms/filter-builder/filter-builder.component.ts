@@ -60,6 +60,7 @@ const DETACHED_FIELD_PROVIDERS = [
  * <example-url>http://localhost:4200/#/forms/filter-builder/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container</example-url>
  * <example-url>http://localhost:4200/#/forms/filter-builder/filter-builder-json/builder-json</example-url>
  * <example-url>http://localhost:4200/#/forms/filter-builder/seeded-tree-and-or-composition</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-filter-builder',

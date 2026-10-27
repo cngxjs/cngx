@@ -65,6 +65,7 @@ import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interact
  * @selector [formControl], [formControlName]
  * @since 0.1.0
  * @relatedTo CngxTypedControl, CngxBindField, CngxListboxFieldBridge
+ * @axis level organism
  */
 @Directive({
   selector:

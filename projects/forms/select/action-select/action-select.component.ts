@@ -217,6 +217,7 @@ export interface CngxActionSelectChange<T = unknown> {
  * @slot cngxSelectInputSuffix Rendered after the <input>, before the clear button and caret; gets disabled, focused, panelOpen.
  * @slot cngxSelectAction Inline quick-create area rendered in every panel state above, below or on both sides of the options per [actionPosition] (never with 'none'), no built-in default; gets $implicit/searchTerm, commit, close, isPending, setDirty, dirty, retry, error, hasError, value.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-action-select',

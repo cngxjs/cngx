@@ -48,6 +48,7 @@ const ANNOUNCE_DEBOUNCE_MS = 400;
  * @since 0.2.0
  * @relatedTo CngxInput, CngxPasswordToggle, CngxCapsLock, CngxPasswordStrengthMeter, CNGX_PASSWORD_STRENGTH_FACTORY, withInputAriaLabels
  * <example-url>http://localhost:4200/#/forms/input/password-strength</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: 'input[cngxPasswordStrength]',

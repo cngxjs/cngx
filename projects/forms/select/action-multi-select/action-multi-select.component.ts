@@ -237,6 +237,7 @@ export interface CngxActionMultiSelectChange<T = unknown> {
  * @slot cngxSelectInputSuffix Renders after the search input, before the clear button and caret; gets disabled, focused, panelOpen.
  * @slot cngxSelectAction Renders the inline create workflow in the panel at actionPosition ('top', 'bottom' or 'both', hidden on 'none'); gets searchTerm, commit, close, isPending, dirty, setDirty, error, hasError, retry, value.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-action-multi-select',

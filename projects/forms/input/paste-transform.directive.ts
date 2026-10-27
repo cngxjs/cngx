@@ -32,6 +32,7 @@ import { CngxInputMask } from './input-mask.directive';
  * @since 0.2.0
  * @relatedTo CngxInput, CngxTrim, CngxInputFilter
  * <example-url>http://localhost:4200/#/forms/input/paste-sanitize</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: 'input[cngxPasteTransform],textarea[cngxPasteTransform]',

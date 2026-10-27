@@ -227,6 +227,7 @@ export interface CngxTreeSelectChange<T = unknown> {
  * @slot cngxSelectChipOverflow Replaces the `+N` overflow chip after the first maxVisibleChips displayed chips, and the badge of the touch summary; gets count, label, hidden. The `+N` chip is fine pointer only. The host keeps the hidden values readable for AT.
  * @slot cngxSelectSheetCount Replaces the selected count after the mobile sheet title; gets text ($implicit). Global default via CNGX_SELECT_CONFIG.templates.sheetCount.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-tree-select',

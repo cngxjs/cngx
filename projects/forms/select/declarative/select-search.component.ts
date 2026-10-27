@@ -41,6 +41,7 @@ import { injectSelectShellSearchHost } from './select-search-host';
  * @since 0.1.0
  * @relatedTo CngxSelectShell, CngxSelectOption, CngxSelectOptgroup
  * <example-url>http://localhost:4200/#/forms/select/declarative/search</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-select-search',

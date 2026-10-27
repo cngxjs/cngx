@@ -46,6 +46,7 @@ import type { CngxFieldRef, CngxFormFieldControl } from './models';
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-single-select</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxListboxFieldBridge]',

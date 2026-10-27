@@ -216,6 +216,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
  * @slot cngxSelectOptionPending Replaces the spinner on an option row while its commit is in flight; gets option.
  * @slot cngxSelectOptionError Replaces the error mark on selected rows when a commit fails and commitErrorDisplay is 'inline'; gets option, error.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-reorderable-multi-select',

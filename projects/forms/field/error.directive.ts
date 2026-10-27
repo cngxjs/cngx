@@ -40,6 +40,7 @@ import { injectFormFieldPresenter } from './inject-form-field-presenter';
  * <example-url>http://localhost:4200/#/forms/field/error/icons-per-kind</example-url>
  * <example-url>http://localhost:4200/#/forms/field/error/server-injected-error</example-url>
  * <example-url>http://localhost:4200/#/forms/field/error/when-to-pick-manual-vs-auto</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxError]',

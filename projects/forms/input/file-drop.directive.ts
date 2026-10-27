@@ -58,6 +58,7 @@ function fileKey(file: File): string {
  * @since 0.1.0
  * @relatedTo CngxInput, CngxAsyncState, withFileMaxSize
  * <example-url>http://localhost:4200/#/forms/input/file-drop/image-upload</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxFileDrop]',

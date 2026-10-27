@@ -31,6 +31,7 @@ import { CngxOption } from '@cngx/common/interactive';
  * @since 0.1.0
  * @relatedTo CngxSelectShell, CngxSelectOptgroup, CngxSelectDivider, CngxSelectSearch
  * <example-url>http://localhost:4200/#/forms/select/declarative/option</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-option',

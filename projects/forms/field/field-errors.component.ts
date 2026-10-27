@@ -48,6 +48,7 @@ import { injectFormFieldI18n, resolveErrorMessage } from './i18n/form-field-i18n
  * <example-url>http://localhost:4200/#/forms/field/field-errors/multiple-validators</example-url>
  * <example-url>http://localhost:4200/#/forms/field/field-errors/custom-error-template</example-url>
  * <example-url>http://localhost:4200/#/forms/field/field-errors/with-registry-messages</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-field-errors',

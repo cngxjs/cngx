@@ -41,6 +41,7 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-single-select</example-url>
  * <example-url>http://localhost:4200/#/forms/field/skin/fill</example-url>
  * <example-url>http://localhost:4200/#/forms/field/skin/bare-cell-edit</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-form-field',

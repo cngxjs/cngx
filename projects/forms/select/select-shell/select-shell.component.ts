@@ -214,6 +214,7 @@ export interface CngxSelectShellChange<T = unknown> {
  * @slot cngxSelectOptionPending Rendered inside the projected <cngx-option> whose commit is in flight, with no built-in fallback; gets no context.
  * @slot cngxSelectOptionError Rendered inside the projected <cngx-option> whose commit failed, regardless of commitErrorDisplay, with no built-in fallback; gets no context.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-select-shell',

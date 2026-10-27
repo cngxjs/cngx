@@ -26,6 +26,7 @@ import { CNGX_FIELD_AFFIX } from './field-box.token';
  * <example-url>http://localhost:4200/#/forms/field/affix/currency-and-unit</example-url>
  * <example-url>http://localhost:4200/#/forms/field/affix/icon-and-icon-button</example-url>
  * <example-url>http://localhost:4200/#/forms/field/affix/text-button</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxSuffix]',

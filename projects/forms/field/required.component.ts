@@ -49,6 +49,7 @@ import { injectFormFieldPresenter } from './inject-form-field-presenter';
  * <example-url>http://localhost:4200/#/forms/field/required/custom-template</example-url>
  * <example-url>http://localhost:4200/#/forms/field/required/auto-hide-on-non-required</example-url>
  * <example-url>http://localhost:4200/#/forms/field/required/placement-conventions</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-required',

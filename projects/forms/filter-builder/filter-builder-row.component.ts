@@ -59,6 +59,7 @@ import type { FilterExpression, FilterFieldDef } from './filter-builder.types';
  * @since 0.1.0
  * @relatedTo CngxFilterBuilder, CngxFilterExpressionRow, CngxFilterBuilderValueEditor
  * <example-url>http://localhost:4200/#/forms/filter-builder/filter-row-standalone/single-row-with-value</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-filter-row',

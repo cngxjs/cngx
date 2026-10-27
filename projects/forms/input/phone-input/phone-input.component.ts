@@ -97,6 +97,7 @@ class CngxPhoneInputHostDetach {}
  * @relatedTo CngxSelect, CngxInputMask, CngxFormField, withPhonePatterns
  * @playground libphonenumber-js adapter ./examples/libphonenumber/libphonenumber-example.component.ts
  * <example-url>http://localhost:4200/#/forms/input/phone/intl</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-phone-input',

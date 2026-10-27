@@ -52,6 +52,7 @@ export type ParseFn = (display: string) => string;
  * @since 0.1.0
  * @relatedTo CngxInput, CngxInputMask, CngxNumericInput
  * <example-url>http://localhost:4200/#/forms/input/utilities/input-format</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: 'input[cngxInputFormat]',

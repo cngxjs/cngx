@@ -223,6 +223,7 @@ export interface CngxComboboxChange<T = unknown> {
  * @slot cngxSelectInputPrefix Renders before the search input; gets disabled, focused, panelOpen.
  * @slot cngxSelectInputSuffix Renders after the search input, before the clear button and caret; gets disabled, focused, panelOpen.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-combobox',

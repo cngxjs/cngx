@@ -146,6 +146,7 @@ function isAllowedChar(
  * <example-url>http://localhost:4200/#/forms/input/numeric/basic-numeric-input</example-url>
  * <example-url>http://localhost:4200/#/forms/input/numeric/locale-formatting</example-url>
  * <example-url>http://localhost:4200/#/forms/input/numeric/min-max-step-decimals</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: 'input[cngxNumericInput]',

@@ -31,6 +31,7 @@ import { injectInputAriaLabels } from './input-config';
  * @since 0.1.0
  * @relatedTo CngxInput, CngxCopyValue, CngxPasswordToggle, withInputAriaLabels
  * <example-url>http://localhost:4200/#/forms/input/utilities/input-clear</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxInputClear]',
