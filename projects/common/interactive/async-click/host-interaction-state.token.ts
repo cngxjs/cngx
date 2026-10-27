@@ -2,12 +2,22 @@ import { InjectionToken, type Signal } from '@angular/core';
 
 /**
  * Interaction state a host component publishes to the directives it
- * co-hosts. A button that renders its own `disabled` as `aria-disabled`
- * provides this so a co-hosted `CngxAsyncClick` folds the same flag into
- * its `aria-disabled` binding and its click guard. Without it both
- * directives bind `aria-disabled` on one element and the later binding
- * wins, so a disabled button with an idle async click would render no
- * `aria-disabled` at all.
+ * co-hosts. A co-hosted `CngxAsyncClick` reads three members:
+ *
+ * - `disabled` - folded into its `aria-disabled` binding and its click
+ *   guard. A button that renders its own `disabled` as `aria-disabled`
+ *   provides it because both directives bind `aria-disabled` on one
+ *   element and the later binding wins: without it a disabled button with
+ *   an idle async click would render no `aria-disabled` at all.
+ * - `busy` (optional) - folded into `aria-busy`, for a run the host
+ *   reflects but the directive did not start (an external async state).
+ *   It does not block clicks.
+ * - `announcement` (optional) - when provided, its value fully replaces
+ *   the text the directive's auto-rendered live region speaks, `''`
+ *   included: an empty string silences the region, it does not fall back
+ *   to the directive's own settle copy. The directive's public
+ *   `announcement` signal keeps reporting its own text, and with
+ *   `[autoAnnounce]="false"` no region renders at all.
  */
 export interface CngxHostInteractionState {
   /** `true` while the host is disabled; clicks are swallowed and `aria-disabled` is set. */

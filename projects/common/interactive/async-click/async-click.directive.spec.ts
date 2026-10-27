@@ -438,4 +438,17 @@ describe('CngxAsyncClick with a host-reflected run and announcement', () => {
     expect(region()!.textContent).toBe('Saved by the host');
     expect(button.contains(region())).toBe(false);
   });
+
+  it('keeps the region empty when the host announcement is an empty string', async () => {
+    const { fixture, button, region } = setup();
+    button.click();
+    await fixture.whenStable();
+    flush(fixture);
+    const directive = fixture.debugElement
+      .query((de) => de.nativeElement === button)
+      .injector.get(CngxAsyncClick);
+    expect(directive.succeeded()).toBe(true);
+    expect(directive.announcement()).not.toBe('');
+    expect(region()!.textContent).toBe('');
+  });
 });
