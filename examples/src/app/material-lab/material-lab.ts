@@ -12,6 +12,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 
 import { CngxButton, CngxButtonStart, CngxIconButton } from '@cngx/common/button';
+import { CngxIcon } from '@cngx/common/display';
 import { CngxSlider, CngxRangeSlider } from '@cngx/common/interactive';
 import {
   CngxAccordionGroup,
@@ -98,6 +99,7 @@ interface FieldModel {
     CngxButton,
     CngxButtonStart,
     CngxIconButton,
+    CngxIcon,
     CngxSlider,
     CngxRangeSlider,
     CngxAccordionGroup,
@@ -144,9 +146,13 @@ interface FieldModel {
         </div>
         <div class="lab-row">
           <button mat-flat-button><mat-icon>add</mat-icon>New item</button>
-          <button cngxButton tone="primary"><mat-icon cngxButtonStart>add</mat-icon>New item</button>
+          <button cngxButton tone="primary">
+            <cngx-icon cngxButtonStart><mat-icon>add</mat-icon></cngx-icon>New item
+          </button>
           <button matIconButton aria-label="Delete"><mat-icon>delete</mat-icon></button>
-          <button cngxIconButton aria-label="Delete"><mat-icon>delete</mat-icon></button>
+          <button cngxIconButton aria-label="Delete">
+            <cngx-icon><mat-icon>delete</mat-icon></cngx-icon>
+          </button>
         </div>
         <div class="lab-row">
           <button mat-flat-button disabled>Disabled</button>

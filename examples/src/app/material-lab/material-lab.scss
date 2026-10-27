@@ -11,6 +11,7 @@
 @use '../../../../projects/themes/material/slider-theme.scss' as slider;
 @use '../../../../projects/themes/material/accordion-theme.scss' as accordion;
 @use '../../../../projects/themes/material/button-theme.scss' as button;
+@use '../../../../projects/themes/material/icon-theme.scss' as icon;
 
 $palette: (
   theme-type: light,
@@ -71,6 +72,7 @@ html {
   @include slider.theme($theme);
   @include accordion.theme($theme);
   @include button.theme($theme);
+  @include icon.theme($theme);
 }
 
 .lab {

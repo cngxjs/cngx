@@ -9,9 +9,11 @@
 // Material system tokens for the Material demos (see the `html` block below).
 // @use must precede every other rule, the CSS @imports included.
 @use '@angular/material' as mat;
-// Working-tree button bridge for the button Material-bridge story (scoped to
-// `.demo-material-bridge` below), by relative path like the material-lab harness.
+// Working-tree button and icon bridges for the button Material-bridge story
+// (scoped to `.demo-material-bridge` below), by relative path like the
+// material-lab harness.
 @use '../../projects/themes/material/button-theme.scss' as cngx-button-bridge;
+@use '../../projects/themes/material/icon-theme.scss' as cngx-icon-bridge;
 
 // Foundation: layer-order + system tokens + reset + base + aggregated
 // directive default CSS (bottom-sheet, backdrop, badge, divider, ripple,
@@ -4039,17 +4041,18 @@ html {
 // that includes `button.theme($theme)` on `html`. In M3 the bridge reads the
 // `--mat-sys-*` values the `mat.theme` block above emits, so the define-theme
 // object only carries the version, and the dark scheme follows `light-dark()`.
+$demo-material-bridge-theme: mat.define-theme(
+  (
+    color: (
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+    ),
+  )
+);
+
 .demo-material-bridge {
-  @include cngx-button-bridge.theme(
-    mat.define-theme(
-      (
-        color: (
-          primary: mat.$azure-palette,
-          tertiary: mat.$blue-palette,
-        ),
-      )
-    )
-  );
+  @include cngx-button-bridge.theme($demo-material-bridge-theme);
+  @include cngx-icon-bridge.theme($demo-material-bridge-theme);
 }
 
 // Demo-only accent for the stepper `chips` skin stories (matches the
