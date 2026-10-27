@@ -84,5 +84,3 @@ export function setupVirtualization<T, TCommit>(opts: {
 
   return { panelRenderer, virtualItemCount, virtualWindowStart };
 }
-
-export { type CngxSelectCompareFn } from './select-core';

@@ -86,3 +86,12 @@ describe('setupVirtualization - virtualWindowStart', () => {
     expect(setup.virtualWindowStart()).toBe(0);
   });
 });
+
+describe('setupVirtualization module surface', () => {
+  it('no longer re-exports CngxSelectCompareFn', () => {
+    // @ts-expect-error - removed, import it from select-core
+    const compare: import('./setup-virtualization').CngxSelectCompareFn<number> | undefined =
+      undefined;
+    expect(compare).toBeUndefined();
+  });
+});

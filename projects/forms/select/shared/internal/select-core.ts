@@ -12,7 +12,6 @@ import {
   CNGX_DEV_DESCRIPTORS,
   CNGX_SELECTION_CONTROLLER_FACTORY,
   nextUid,
-  type AsyncStatus,
   type CngxAsyncState,
   type SelectionController,
 } from '@cngx/core/utils';
@@ -22,11 +21,7 @@ import type {
   CngxPopoverPresentationRequest,
 } from '@cngx/common/popover';
 
-import {
-  CngxFormFieldPresenter,
-  createFieldControlAria,
-  type CngxFormFieldControl,
-} from '@cngx/forms/field';
+import { CngxFormFieldPresenter, createFieldControlAria } from '@cngx/forms/field';
 
 import { CngxSelectAnnouncer } from '../announcer';
 import { sameArrayContents } from './compare';
@@ -877,17 +872,3 @@ export function createSelectCore<T, TCommit>(
   }
   return core;
 }
-
-/**
- * Form-field integration shape exposed by every select-family component.
- *
- * @internal
- */
-export type CngxSelectFormFieldControl = CngxFormFieldControl;
-
-/**
- * Lifecycle status union for select-family outputs.
- *
- * @internal
- */
-export type CngxSelectStatus = AsyncStatus;
