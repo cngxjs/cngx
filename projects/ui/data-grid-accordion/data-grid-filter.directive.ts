@@ -27,7 +27,6 @@ import { injectDataGridAccordion } from './data-grid-accordion.token';
  * </cngx-data-grid-accordion>
  * ```
  *
- * @category ui/data-grid-accordion
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-filter.directive.ts
  * @since 0.1.0

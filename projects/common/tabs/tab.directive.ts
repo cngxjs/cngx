@@ -35,8 +35,6 @@ import { CNGX_TAB_GROUP_HOST, type CngxTabHandle } from './tab-group-host.token'
  *   ... content templates here ...
  * </div>
  * ```
- * @category common/tabs
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/tab.directive.ts
  * @since 0.1.0

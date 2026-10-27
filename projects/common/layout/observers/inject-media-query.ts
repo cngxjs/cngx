@@ -32,7 +32,6 @@ import { createMediaQuerySignal } from '@cngx/core/utils';
  *
  * @param query A CSS media query string, e.g. `(max-width: 640px)`.
  * @returns A reactive `Signal<boolean>` tracking the query's match state.
- * @category common/layout
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/observers/inject-media-query.ts
  * @since 0.1.0
  * @relatedTo CngxMediaQuery, CngxResizeObserver

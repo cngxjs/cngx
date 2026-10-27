@@ -4,8 +4,6 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * Context handed to a `*cngxContextMenuContent` template. `$implicit` is the
  * per-open datum the trigger resolved for the target the menu opened over
  * (`null` while the menu is closed). Read it with `let-row`.
- *
- * @category ui/context-menu
  */
 export interface CngxContextMenuContentContext<T = unknown> {
   /** The per-open datum, or `null` while the menu is closed. Usable as `let-row`. */
@@ -28,7 +26,6 @@ export interface CngxContextMenuContentContext<T = unknown> {
  *
  * <example-url>http://localhost:4200/#/ui/context-menu/grid/delegated-resolver</example-url>
  * <example-url>http://localhost:4200/#/ui/context-menu/table/row-context-data</example-url>
- * @category ui/context-menu
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/context-menu/context-menu-content.directive.ts
  * @since 0.1.0

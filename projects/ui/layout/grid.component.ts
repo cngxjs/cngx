@@ -14,11 +14,10 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
  * Bare attribute syntax works for both forms: `columns="3"` and
  * `[columns]="3"` produce identical output.
  *
- * @category ui/layout
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/layout/grid.component.ts
  * @since 0.1.0
  * @relatedTo CngxStack
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-grid',

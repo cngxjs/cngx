@@ -28,8 +28,6 @@ import { injectPresetState } from './preset-state';
  * from the chart's auto-Summary; consumers can override via
  * `[ariaLabel]`.
  *
- * @category common/chart/presets
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/presets/sparkline.component.ts
  * @since 0.1.0
@@ -38,6 +36,7 @@ import { injectPresetState } from './preset-state';
  * <example-url>http://localhost:4200/#/common/chart/sparkline/async-state-machine</example-url>
  * <example-url>http://localhost:4200/#/common/chart/sparkline/basic-sparklines</example-url>
  * <example-url>http://localhost:4200/#/common/chart/sparkline/with-area-fill</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-sparkline',

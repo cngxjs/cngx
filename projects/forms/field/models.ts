@@ -14,7 +14,6 @@ export type { CngxFormFieldControl } from '@cngx/core/tokens';
  * What the field of a validation error resolves to, as far as cngx reads it:
  * the focus hook and, from Signal Forms 21.1 on, the `[formField]` bindings.
  *
- * @category forms/field
  * @since 0.1.0
  */
 export interface CngxErrorFieldState {
@@ -35,7 +34,6 @@ export interface CngxErrorFieldState {
  * `[field]` binding type-checks on every Angular version cngx supports without
  * naming a version-specific or deprecated type.
  *
- * @category forms/field
  * @since 0.1.0
  */
 export interface CngxFieldValidationError extends ValidationError {
@@ -49,8 +47,6 @@ export interface CngxFieldValidationError extends ValidationError {
  * Consumers pass `Field<T>` (a callable that returns `FieldState<T>`) to `CngxFormField`.
  * This interface documents the subset of `FieldState` that the form field system actually reads,
  * providing a stable contract even as Signal Forms evolves.
- *
- * @category forms/field
  */
 export interface CngxFieldRef<T = unknown> {
   readonly name: Signal<string>;
@@ -95,8 +91,6 @@ export interface CngxFieldRef<T = unknown> {
  * // Pass directly:
  * <cngx-form-field [field]="emailField">
  * ```
- *
- * @category forms/field
  */
 export type CngxFieldAccessor<T = unknown> = () => CngxFieldRef<T>;
 
@@ -105,8 +99,6 @@ export type CngxFieldAccessor<T = unknown> = () => CngxFieldRef<T>;
  *
  * @param error The validation error value (e.g. `{ kind: 'required' }` or `{ kind: 'minLength', minLength: 8 }`).
  * @returns A display-ready error message.
- *
- * @category forms/field
  */
 export type ErrorMessageFn = (error: CngxFieldValidationError) => string;
 
@@ -119,7 +111,5 @@ export type ErrorMessageFn = (error: CngxFieldValidationError) => string;
  *   minLength: (e) => `Minimum ${(e as unknown as { minLength: number }).minLength} characters.`,
  * };
  * ```
- *
- * @category forms/field
  */
 export type ErrorMessageMap = Record<string, ErrorMessageFn>;

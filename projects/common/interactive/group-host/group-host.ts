@@ -6,8 +6,6 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
 
 /**
  * Options for {@link injectInteractiveGroupHost}.
- *
- * @category common/interactive
  */
 export interface CngxInteractiveGroupHostOptions {
   /**
@@ -48,8 +46,6 @@ export interface CngxInteractiveGroupHostOptions {
  * re-export the fields they surface publicly (`id`, `focused`,
  * `errorState`) and delegate their `focusin`/`focusout` host listeners to
  * the handler pair.
- *
- * @category common/interactive
  */
 export interface CngxInteractiveGroupHost {
   /** Stable unique host id, prefixed per {@link CngxInteractiveGroupHostOptions.uidPrefix}. */
@@ -123,7 +119,6 @@ export interface CngxInteractiveGroupHost {
  * protected readonly ariaBusy = this.groupHost.ariaBusy;
  * ```
  *
- * @category common/interactive
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/group-host/group-host.ts
  * @since 0.1.0
  * @relatedTo CngxToggle, CngxCheckbox, CngxChipInteraction, CngxCheckboxGroup, CngxRadioGroup, CngxButtonToggleGroup, CngxButtonMultiToggleGroup, CngxChipGroup, CngxMultiChipGroup

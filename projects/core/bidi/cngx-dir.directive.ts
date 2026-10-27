@@ -23,13 +23,12 @@ import type { CngxDirection } from './direction';
  * coerced to `undefined`), so it never asserts a required binding; an unset
  * value leaves `[dir]` off the host.
  *
- * @category core/bidi
- * @docsKind primary
  * @relatedTo provideDirection
  * @relatedTo provideDirectionAt
  * @relatedTo CNGX_DIRECTION
  * @since 0.1.0
  * <example-url>http://localhost:4200/#/core/bidi/rtl/direction-sensitive-surfaces</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxDir]',

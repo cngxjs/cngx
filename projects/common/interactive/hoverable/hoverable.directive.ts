@@ -3,8 +3,6 @@ import { Directive, signal } from '@angular/core';
 /**
  * Tracks whether the host element is currently hovered via mouse pointer.
  *
- * @category common/interactive
- *
  * Designed as a `hostDirective` composition primitive - attach it to
  * components that need hover state without implementing their own
  * mouseenter/mouseleave logic. Host components read the read-only
@@ -31,10 +29,10 @@ import { Directive, signal } from '@angular/core';
  * </div>
  * ```
  *
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/hoverable/hoverable.directive.ts
  * @since 0.1.0
  * @relatedTo CngxPressable, CngxRipple
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxHoverable]',

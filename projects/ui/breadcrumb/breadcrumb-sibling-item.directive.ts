@@ -7,8 +7,6 @@ import type { CngxBreadcrumbSibling } from './breadcrumb.types';
  * sibling row inside the {@link CngxBreadcrumbSiblings} menu; the surrounding
  * `<li cngxMenuItem>` shell (role, highlight, activation, `aria-current`) stays
  * library-owned.
- *
- * @category ui/breadcrumb
  */
 export interface CngxBreadcrumbSiblingItemContext {
   /** Convenience alias for `sibling` - usable as the `let-sibling` shorthand. */
@@ -33,12 +31,12 @@ export interface CngxBreadcrumbSiblingItemContext {
  * </cngx-breadcrumb-siblings>
  * ```
  *
- * @category ui/breadcrumb
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-sibling-item.directive.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbSiblings
  * <example-url>http://localhost:4200/#/ui/breadcrumb/siblings/custom-row</example-url>
+ * @axis level organism
  */
 @Directive({
   selector: 'ng-template[cngxBreadcrumbSiblingItem]',

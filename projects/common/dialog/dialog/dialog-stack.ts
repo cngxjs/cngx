@@ -8,7 +8,6 @@ import { computed, Injectable, signal, type Provider } from '@angular/core';
  * its `::backdrop`. Each `CngxDialog` reads `isTopmost` from this service
  * to control `--cngx-dialog-backdrop-opacity`.
  *
- * @category common/dialog
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/dialog/dialog-stack.ts
  * @since 0.1.0
  * @relatedTo CngxDialog, CngxDialogOpener
@@ -57,8 +56,6 @@ export class CngxDialogStack {
  * })
  * export class NestedDialogHost { }
  * ```
- *
- * @category common/dialog
  */
 export function provideDialogStack(): Provider {
   return CngxDialogStack;

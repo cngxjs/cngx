@@ -27,8 +27,6 @@ export type { CngxFilterBuilderTemplates };
  * 5) renders the corresponding bare HTML input inline instead of mounting
  * a custom editor component - keeps the bundle lean for the three builtin
  * scalar types.
- *
- * @category forms/filter-builder/config
  */
 export type CngxFilterNativeEditor =
   | 'native:string'
@@ -41,15 +39,11 @@ export type CngxFilterNativeEditor =
  * a consumer-supplied component class implementing
  * {@link CngxFilterEditorComponent} (e.g. `CngxInput`, `CngxNumericInput`,
  * `CngxDatepickerInput`, or any structured custom editor).
- *
- * @category forms/filter-builder/config
  */
 export type CngxFilterEditor = Type<CngxFilterEditorComponent<unknown>> | CngxFilterNativeEditor;
 
 /**
  * Narrowing helper for `CngxFilterEditor`.
- *
- * @category forms/filter-builder/config
  */
 export function isNativeEditor(value: CngxFilterEditor): value is CngxFilterNativeEditor {
   return typeof value === 'string';
@@ -76,8 +70,6 @@ export interface CngxFilterBuilderExpressionLabelContext {
 
 /**
  * Per-mutation message factories the announcer feeds into the live-region `Signal<string>`.
- *
- * @category forms/filter-builder/config
  */
 export interface CngxFilterBuilderAnnouncementFormatters {
   readonly filterAdded: (args: { fieldLabel: string }) => string;
@@ -103,8 +95,6 @@ export interface CngxFilterBuilderAnnouncementFormatters {
  * factories, announcer formatters. Unset keys read the `filterBuilder`
  * section of the active language pack (`CNGX_FILTER_BUILDER_LANGUAGE_EN` by
  * default); set keys through {@link withFilterBuilderI18n}.
- *
- * @category forms/filter-builder/config
  */
 export interface CngxFilterBuilderI18n {
   readonly addFilter: string;
@@ -144,8 +134,6 @@ export interface CngxFilterBuilderI18n {
 
 /**
  * Resolved runtime config - produced by composing `withX(...)` features through `provideFilterBuilderConfig(...)`.
- *
- * @category forms/filter-builder/config
  */
 export interface CngxFilterBuilderConfig {
   readonly templates: CngxFilterBuilderTemplates;
@@ -202,7 +190,6 @@ export const CNGX_FILTER_BUILDER_DEFAULTS: CngxFilterBuilderConfig = Object.free
  * default factory returns `CNGX_FILTER_BUILDER_DEFAULTS`. Editors are separate -
  * swap them via `CNGX_FILTER_EDITORS`, not here.
  *
- * @category forms/filter-builder/config
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder.config.ts
  * @since 0.1.0
  * @relatedTo provideFilterBuilderConfig, provideFilterBuilderConfigAt, withTemplates, withFilterBuilderI18n, withMaxNestingDepth, withDefaultOperators, withOperators, withCaseInsensitiveStrings, withLogicOptions, withNegation, CNGX_FILTER_EDITORS
@@ -220,8 +207,6 @@ const FILTER_BUILDER_FEATURE_BRAND: unique symbol = Symbol('CngxFilterBuilderCon
 
 /**
  * Branded config feature produced by `withX(...)` helpers. Opaque to consumers; only `provideFilterBuilderConfig` reads `.apply`.
- *
- * @category forms/filter-builder/config
  */
 export interface CngxFilterBuilderConfigFeature {
   readonly [FILTER_BUILDER_FEATURE_BRAND]: true;
@@ -240,8 +225,6 @@ function feature(
  * section of the active language pack, and the overrides apply on top of it.
  * `operators` merges key by key; `announcement` is replaced as a whole. Pass a
  * `Signal` to switch the copy at runtime; the merge then follows it.
- *
- * @category forms/filter-builder/config
  */
 export function withFilterBuilderI18n(
   partial: Partial<CngxFilterBuilderI18n> | Signal<Partial<CngxFilterBuilderI18n>>,
@@ -258,8 +241,6 @@ export function withFilterBuilderI18n(
 
 /**
  * Cap the nesting depth of the builder tree. Default 8.
- *
- * @category forms/filter-builder/config
  */
 export function withMaxNestingDepth(depth: number): CngxFilterBuilderConfigFeature {
   return feature((config) => ({ ...config, maxNestingDepth: depth }));
@@ -267,8 +248,6 @@ export function withMaxNestingDepth(depth: number): CngxFilterBuilderConfigFeatu
 
 /**
  * Extend or override the default operator lists keyed by editor type.
- *
- * @category forms/filter-builder/config
  */
 export function withDefaultOperators(
   operators: Readonly<Record<string, readonly string[]>>,
@@ -290,8 +269,6 @@ export function withDefaultOperators(
  * Registration alone adds no picker entry: expose the key per field via
  * `FilterFieldDef.operators` or per editor type via
  * `withDefaultOperators` once an editor can serve it.
- *
- * @category forms/filter-builder/config
  */
 export function withOperators(
   defs: Readonly<Record<string, CngxFilterOperatorDef>>,
@@ -309,8 +286,6 @@ export function withOperators(
  * `neq` keep `Object.is` identity semantics regardless; custom operator
  * definitions receive the flag through their evaluation context and
  * decide themselves.
- *
- * @category forms/filter-builder/config
  */
 export function withCaseInsensitiveStrings(enabled: boolean): CngxFilterBuilderConfigFeature {
   return feature((config) => ({ ...config, caseInsensitive: enabled }));
@@ -318,8 +293,6 @@ export function withCaseInsensitiveStrings(enabled: boolean): CngxFilterBuilderC
 
 /**
  * Restrict which logic operators (`and` / `or` / `xor`) appear in the group toggle.
- *
- * @category forms/filter-builder/config
  */
 export function withLogicOptions(logics: readonly FilterLogic[]): CngxFilterBuilderConfigFeature {
   return feature((config) => ({ ...config, logicOptions: logics }));
@@ -327,8 +300,6 @@ export function withLogicOptions(logics: readonly FilterLogic[]): CngxFilterBuil
 
 /**
  * Reveal the per-group negation toggle. Off by default.
- *
- * @category forms/filter-builder/config
  */
 export function withNegation(enabled: boolean): CngxFilterBuilderConfigFeature {
   return feature((config) => ({ ...config, negationEnabled: enabled }));
@@ -336,8 +307,6 @@ export function withNegation(enabled: boolean): CngxFilterBuilderConfigFeature {
 
 /**
  * Register global template overrides - keyed fallback below per-instance content-child slots.
- *
- * @category forms/filter-builder/config
  */
 export function withTemplates(
   templates: CngxFilterBuilderTemplates,
@@ -359,8 +328,6 @@ function buildConfig(features: readonly CngxFilterBuilderConfigFeature[]): CngxF
 
 /**
  * Root / environment-level config. Compose with `withFilterBuilderI18n(...)`, `withNegation(true)`, etc.
- *
- * @category forms/filter-builder/config
  */
 export function provideFilterBuilderConfig(
   ...features: CngxFilterBuilderConfigFeature[]
@@ -375,8 +342,6 @@ export function provideFilterBuilderConfig(
 
 /**
  * Component/route-level config - same shape as `provideFilterBuilderConfig` but for non-environment injectors.
- *
- * @category forms/filter-builder/config
  */
 export function provideFilterBuilderConfigAt(
   ...features: CngxFilterBuilderConfigFeature[]
@@ -391,8 +356,6 @@ export function provideFilterBuilderConfigAt(
 
 /**
  * Inject-context helper that resolves `CNGX_FILTER_BUILDER_CONFIG`.
- *
- * @category forms/filter-builder/config
  */
 export function injectFilterBuilderConfig(): CngxFilterBuilderConfig {
   return inject(CNGX_FILTER_BUILDER_CONFIG);
@@ -406,7 +369,6 @@ export function injectFilterBuilderConfig(): CngxFilterBuilderConfig {
  * template or a handler so a runtime language switch reaches the copy.
  * Injection context required.
  *
- * @category forms/filter-builder/config
  * @since 0.1.0
  * @relatedTo withFilterBuilderI18n, CNGX_FILTER_BUILDER_LANGUAGE_EN
  */

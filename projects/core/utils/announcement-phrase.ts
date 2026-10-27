@@ -3,7 +3,6 @@ import { linkedSignal, type Signal } from '@angular/core';
 /**
  * Options for {@link createAnnouncementPhrase}.
  *
- * @category core/utils/async-state
  * @since 0.1.0
  */
 export interface AnnouncementPhraseOptions<TSource> {
@@ -55,7 +54,6 @@ export interface AnnouncementPhraseOptions<TSource> {
  * });
  * ```
  *
- * @category core/utils/async-state
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/announcement-phrase.ts
  * @since 0.1.0

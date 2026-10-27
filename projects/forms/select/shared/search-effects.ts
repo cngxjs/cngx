@@ -8,8 +8,6 @@ import {
 
 /**
  * Config for {@link createSearchEffects}.
- *
- * @category forms/select/controllers
  */
 export interface SearchEffectsOptions {
   /** Debounced search-term signal. */
@@ -45,8 +43,6 @@ export interface SearchEffectsOptions {
  * One or two `effect()`s for input-trigger variants: `skipInitial`-gated
  * `searchTermChange` forward (when `emit` is set) and auto-open-on-typing.
  * External calls wrapped in `untracked`. Injection context required.
- *
- * @category forms/select/controllers
  */
 export function createSearchEffects(opts: SearchEffectsOptions): void {
   if (opts.emit) {
@@ -84,8 +80,6 @@ export function createSearchEffects(opts: SearchEffectsOptions): void {
 
 /**
  * Factory signature for {@link CNGX_SEARCH_EFFECTS_FACTORY}.
- *
- * @category forms/select/controllers
  */
 export type CngxSearchEffectsFactory = (opts: SearchEffectsOptions) => void;
 
@@ -94,7 +88,6 @@ export type CngxSearchEffectsFactory = (opts: SearchEffectsOptions) => void;
  * auto-open and the `searchTermChange` forward. Default `createSearchEffects`.
  * Override to change the auto-open gating or term-forwarding for filter variants.
  *
- * @category forms/select/controllers
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/search-effects.ts
  * @since 0.1.0
  * @relatedTo CngxCombobox, CngxTypeahead, withTypeaheadDebounce

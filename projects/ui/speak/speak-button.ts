@@ -23,13 +23,12 @@ import { injectSpeakI18n } from './speak-i18n';
  * @include speak.theme($theme);
  * ```
  *
- * @category ui/speak
- * @docsKind primary
  * @wcag AAA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/speak/speak-button.ts
  * @since 0.1.0
  * @relatedTo CngxSpeak
  * <example-url>http://localhost:4200/#/ui/speak/speak-button/styled-speaker-icon</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-speak-button',

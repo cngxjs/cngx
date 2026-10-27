@@ -8,7 +8,6 @@ import { Directive } from '@angular/core';
  * <button cngxStepperFooterStart cngxStepperPrevious>Back</button>
  * ```
  *
- * @category ui/stepper
  * @since 0.1.0
  * @relatedTo CngxStepperFooter, CngxStepperFooterCenter, CngxStepperFooterEnd
  */
@@ -23,7 +22,6 @@ export class CngxStepperFooterStart {}
  * Marker for the footer's center region - a progress hint, a
  * `<cngx-stepper-count>`, or a "50% complete" caption.
  *
- * @category ui/stepper
  * @since 0.1.0
  * @relatedTo CngxStepperFooter, CngxStepperFooterStart, CngxStepperFooterEnd
  */
@@ -38,7 +36,6 @@ export class CngxStepperFooterCenter {}
  * Marker for the footer's trailing region (inline-end) - typically a
  * Continue / Finish control, optionally preceded by a "Save draft".
  *
- * @category ui/stepper
  * @since 0.1.0
  * @relatedTo CngxStepperFooter, CngxStepperFooterStart, CngxStepperFooterCenter
  */

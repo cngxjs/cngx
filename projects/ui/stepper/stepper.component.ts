@@ -81,8 +81,6 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
  * `commitMode` to the presenter. Material twin lives in
  * `@cngx/ui/mat-stepper`. ARIA attrs are in the `computed()` graph.
  *
- * @category ui/stepper
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/stepper.component.ts
  * @since 0.1.0
@@ -116,6 +114,7 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-density/flat-steps-auto-density</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-density/density-across-skins</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-density/distance-weighted-collapse</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-stepper',

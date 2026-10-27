@@ -23,7 +23,6 @@ import { CngxDgCell } from './data-grid-cell.directive';
  * (`grow` / `fit` / `sm` / `md` / `lg`), so the columns are defined where they are
  * labelled rather than in a separate template string.
  *
- * @category ui/data-grid-accordion
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-header.component.ts
  * @since 0.1.0

@@ -21,7 +21,6 @@ import type { CngxTocItemContext } from './toc.types';
  * rule; the selector stays `cngxTocItem`, which is what consumers write.
  * Resolves ahead of `CNGX_TOC_CONFIG.templates.item` and the built-in label.
  *
- * @category ui/toc
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/toc/toc-item-slot.ts
  * @since 0.1.0
  * @relatedTo CngxToc

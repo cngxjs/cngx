@@ -9,8 +9,6 @@ import { createCommitController, type CngxCommitController } from './commit-cont
  * inject retry-with-backoff, offline queues, telemetry, or any
  * other enterprise-specific commit lifecycle - without forking the
  * features that consume it (select family, stepper, future wizards).
- *
- * @category common/data/commit
  */
 export type CngxCommitControllerFactory = <T>() => CngxCommitController<T>;
 
@@ -36,7 +34,6 @@ export type CngxCommitControllerFactory = <T>() => CngxCommitController<T>;
  * });
  * ```
  *
- * @category common/data/commit
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/commit/commit-controller.token.ts
  * @since 0.1.0
  */

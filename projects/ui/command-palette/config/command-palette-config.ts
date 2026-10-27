@@ -32,7 +32,6 @@ import type { TemplateRef } from '@angular/core';
  * Global default template overrides, keyed by slot. Resolution order for any
  * fragment is instance `*cngxCommand*` slot > this map > the built-in default.
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 export interface CngxCommandPaletteTemplates {
@@ -49,7 +48,6 @@ export interface CngxCommandPaletteTemplates {
  * do. `keys` is shown, never spoken; screen readers hear `spokenKeys` (the key
  * names in words, e.g. `'Up and Down arrows'` for `'↑ ↓'`), else `keys`.
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 export interface CngxCommandPaletteLegendEntry {
@@ -65,7 +63,6 @@ export interface CngxCommandPaletteLegendEntry {
  * pack (English without one), so the palette follows a runtime language
  * switch.
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 export interface CngxCommandPaletteConfig {
@@ -106,7 +103,6 @@ export interface CngxCommandPaletteConfig {
  * `provideCngxCommandPalette` aggregator is introduced, add the discriminator
  * then (the menu family's `_target` pattern), not preemptively.
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 export type CngxCommandPaletteConfigFeature = (
@@ -117,7 +113,6 @@ export type CngxCommandPaletteConfigFeature = (
  * Library-default palette configuration. Carries no copy: the copy defaults
  * are the `commandPalette` section of the language pack.
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 export const DEFAULT_COMMAND_PALETTE_CONFIG: CngxCommandPaletteConfig = {
@@ -130,7 +125,6 @@ export const DEFAULT_COMMAND_PALETTE_CONFIG: CngxCommandPaletteConfig = {
  * {@link provideCommandPaletteConfig} or per-scope via
  * {@link provideCommandPaletteConfigAt}.
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 export const CNGX_COMMAND_PALETTE_CONFIG = new InjectionToken<CngxCommandPaletteConfig>(
@@ -156,7 +150,6 @@ function applyFeatures(
  * )
  * ```
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 export function provideCommandPaletteConfig(
@@ -174,7 +167,6 @@ export function provideCommandPaletteConfig(
  * Component-scoped palette configuration override. Features merge on top of the
  * enclosing scope (root or a parent `viewProviders`).
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 export function provideCommandPaletteConfigAt(
@@ -194,7 +186,6 @@ export function provideCommandPaletteConfigAt(
  * Resolves the {@link CngxCommandPaletteConfig} from the current injection
  * scope. Must run in an injection context.
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 export function injectCommandPaletteConfig(): CngxCommandPaletteConfig {
@@ -262,7 +253,6 @@ export function resolveCommandPaletteCopy(
 /**
  * The text-label keys {@link withCommandPaletteLabels} overrides.
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 export type CngxCommandPaletteLabelKey =
@@ -290,7 +280,6 @@ const LABEL_KEYS: readonly CngxCommandPaletteLabelKey[] = [
  * runtime; a key the Signal sets wins over the inherited value, an unset key
  * follows it.
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 export function withCommandPaletteLabels(
@@ -320,7 +309,6 @@ export function withCommandPaletteLabels(
  * or per-scope via `provideCommandPaletteConfigAt`. A per-instance
  * `[openShortcut]` input still wins over this.
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 export function withPaletteShortcut(combo: string): CngxCommandPaletteConfigFeature {
@@ -331,7 +319,6 @@ export function withPaletteShortcut(combo: string): CngxCommandPaletteConfigFeat
  * Replace the footer keyboard legend. Pass a `Signal` to switch the language at
  * runtime.
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 export function withKeyboardLegend(
@@ -347,7 +334,6 @@ export function withKeyboardLegend(
  * another locale). Pass a `Signal` of the formatter to switch the language at
  * runtime; the live count speaks the new formatter on its next change.
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 export function withResultCountFormatter(
@@ -360,7 +346,6 @@ export function withResultCountFormatter(
  * Register global default slot templates. Merged over any already set; a
  * per-instance `*cngxCommand*` slot still wins over these.
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 export function withCommandPaletteTemplates(

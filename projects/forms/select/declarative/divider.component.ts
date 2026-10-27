@@ -17,12 +17,12 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
  * </div>
  * ```
  *
- * @category forms/select/declarative
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/declarative/divider.component.ts
  * @since 0.1.0
  * @relatedTo CngxSelectShell, CngxSelectOption, CngxSelectOptgroup
  * <example-url>http://localhost:4200/#/forms/select/declarative/divider</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-select-divider',

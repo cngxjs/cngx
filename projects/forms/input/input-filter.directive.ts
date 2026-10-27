@@ -6,8 +6,6 @@ import { injectInputAriaLabels } from './input-config';
  * Allowed-character pattern for {@link CngxInputFilter}. The three string
  * presets cover the common cases; a `RegExp` must match a single allowed
  * character (it is tested per code point, not against the whole string).
- *
- * @category forms/input
  */
 export type InputFilterPattern = 'digits' | 'alpha' | 'alphanumeric' | RegExp;
 
@@ -48,8 +46,6 @@ function charMatcher(pattern: InputFilterPattern): (char: string) => boolean {
  * <input cngxInput [cngxInputFilter]="/[A-Za-z-]/" />
  * ```
  *
- * @category forms/input
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-filter.directive.ts
  * @since 0.2.0

@@ -46,8 +46,6 @@ import type { EmptyReason } from './card.types';
  * </cngx-card-grid>
  * ```
  *
- * @category common/card
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card-grid.component.ts
  * @since 0.1.0
@@ -55,6 +53,7 @@ import type { EmptyReason } from './card.types';
  * <example-url>http://localhost:4200/#/common/card/card-grid/basic-grid</example-url>
  * <example-url>http://localhost:4200/#/common/card/card-grid/density-variants</example-url>
  * <example-url>http://localhost:4200/#/common/card/card-grid/empty-state-with-reason</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-card-grid',

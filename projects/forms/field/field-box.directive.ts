@@ -70,8 +70,6 @@ import { CngxFieldSkinHost } from './field-skin.directive';
  * </span>
  * ```
  *
- * @category forms/field
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/field-box.directive.ts
  * @since 0.2.0

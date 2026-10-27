@@ -16,8 +16,6 @@ import type { Observable } from 'rxjs';
  * own event/property shape to a host-agnostic `Signal<number>` /
  * `Observable<number>` / getter / setter at the directive boundary. \
  * That keeps `@cngx/common/data` independent of `@angular/material`.
- *
- * @category common/data/material-bridge
  */
 export interface CngxMaterialBidirectionalSyncOptions {
   /**
@@ -67,8 +65,6 @@ export interface CngxMaterialBidirectionalSyncOptions {
 
 /**
  * Handle returned by {@link createMaterialBidirectionalSync}.
- *
- * @category common/data/material-bridge
  */
 export interface CngxMaterialBidirectionalSyncHandle {
   /**
@@ -134,8 +130,6 @@ export interface CngxMaterialBidirectionalSyncHandle {
  * and ping-pong against the in-flight navigation (the demo freezes).
  * Matching the echo by the value we wrote drops it regardless of where
  * the presenter has moved.
- *
- * @category common/data/material-bridge
  */
 export function createMaterialBidirectionalSync(
   opts: CngxMaterialBidirectionalSyncOptions,

@@ -13,11 +13,11 @@ import { injectPaginatorHost } from '../paginator-host.token';
  * the cascade; tabular figures keep the numerals from reflowing as the page
  * changes.
  *
- * @category ui/paginator
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-status.component.ts
  * @since 0.1.0
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/status/readout</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-pgn-status',

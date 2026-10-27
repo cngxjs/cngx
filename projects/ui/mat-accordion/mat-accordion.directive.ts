@@ -64,12 +64,11 @@ import { createMatExpansionSetSync } from './material-bridge/set-sync';
  * ```
  *
  * @playground Controlled open-set ./examples/bridge/bridge-example.component.ts
- * @category ui/mat-accordion
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-accordion/mat-accordion.directive.ts
  * @since 0.1.0
  * @relatedTo CngxAccordion, CngxAccordionItem, CngxMatStepper, CngxMatTabs
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxMatAccordion]',

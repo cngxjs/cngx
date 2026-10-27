@@ -6,8 +6,6 @@ import { InjectionToken, type Signal } from '@angular/core';
  * `key` uniquely identifies the source within its aggregator. `condition`
  * is the live signal the aggregator reads on every recompute. `label` is
  * an optional human-readable string included in announcements.
- *
- * @category common/interactive/error
  */
 export interface CngxErrorAggregatorSourceEntry {
   readonly key: string;
@@ -23,8 +21,6 @@ export interface CngxErrorAggregatorSourceEntry {
  * `announcement` from its registered sources and exposes them to the
  * surrounding host. Sources register via {@link addSource} on init and
  * deregister via {@link removeSource} on teardown.
- *
- * @category common/interactive/error
  */
 export interface CngxErrorAggregatorContract {
   /** `true` when at least one registered source's condition is `true`. */
@@ -53,7 +49,6 @@ export interface CngxErrorAggregatorContract {
  * `CngxErrorSource` directives inject with `{ optional: true }` so they
  * function as no-ops outside an aggregator.
  *
- * @category common/interactive/error
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-aggregator/error-aggregator.token.ts
  * @since 0.1.0

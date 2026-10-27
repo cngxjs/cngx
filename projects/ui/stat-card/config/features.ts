@@ -20,7 +20,6 @@ import type { CngxStatCardConfigFeature } from './provide-stat-card-config';
  * );
  * ```
  *
- * @category ui/stat-card
  * @since 0.1.0
  */
 export function withStatCardAriaLabels(
@@ -35,7 +34,6 @@ export function withStatCardAriaLabels(
  * observed; `'spinner'` and `'skeleton'` pin it app-wide. Per-instance
  * `[loadingTreatment]` still wins.
  *
- * @category ui/stat-card
  * @since 0.1.0
  */
 export function withStatCardLoadingTreatment(

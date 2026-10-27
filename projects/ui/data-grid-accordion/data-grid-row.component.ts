@@ -41,8 +41,6 @@ import { CngxDgaRowError } from './data-grid-row-error.directive';
  * a screen reader hears a list of expandable sections rather than a wall of cell
  * text.
  *
- * @category ui/data-grid-accordion
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-row.component.ts
  * @since 0.1.0

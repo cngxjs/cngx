@@ -8,7 +8,6 @@ import { CngxLiveAnnouncer } from '@cngx/common/a11y';
  * identity (consumed by `createCommitErrorAnnouncer` and `select-core`)
  * so its `announce(message, politeness)` signature stays stable.
  *
- * @category forms/select
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/announcer.ts
  * @since 0.1.0

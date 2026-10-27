@@ -27,7 +27,6 @@ const formatterForKey = memoize(
  * different property order occupy two (bounded) cache slots - they still
  * format identically.
  *
- * @category core/utils
  * @since 0.1.0
  * @relatedTo memoize
  */
@@ -56,7 +55,6 @@ const numberFormatterForKey = memoize(
  * locale flip re-formats:
  * `computed(() => numberFormatterFor(this.locale(), { style: 'percent' }).format(v))`.
  *
- * @category core/utils
  * @since 0.1.0
  * @relatedTo dateTimeFormatterFor, memoize
  */
@@ -85,7 +83,6 @@ const DISPLAY_FORMATTERS = new WeakMap<
  * locale. Resolve with {@link displayFormattersFor}, apply with
  * {@link formatDisplayValue}.
  *
- * @category core/utils
  * @since 0.1.0
  * @relatedTo displayFormattersFor, formatDisplayValue
  */
@@ -108,7 +105,6 @@ export interface CngxDisplayFormatters {
  * protected text(value: unknown) { return formatDisplayValue(value, this.formatters()); }
  * ```
  *
- * @category core/utils
  * @since 0.1.0
  * @relatedTo formatDisplayValue, numberFormatterFor, dateTimeFormatterFor
  */
@@ -137,7 +133,6 @@ export function displayFormattersFor(
  * `formatters`, an invalid date empty, every other value unchanged. The
  * fallback a component renders when the consumer supplied no template.
  *
- * @category core/utils
  * @since 0.1.0
  * @relatedTo displayFormattersFor
  */

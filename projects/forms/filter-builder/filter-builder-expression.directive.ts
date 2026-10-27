@@ -25,8 +25,6 @@ const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[
  * and missing-node fallbacks resolve to shared frozen singletons so no-op
  * reads never allocate.
  *
- * @category forms/filter-builder
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-expression.directive.ts
  * @since 0.1.0

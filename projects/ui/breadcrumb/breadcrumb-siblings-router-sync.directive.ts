@@ -90,8 +90,6 @@ function siblingsEqual(
  * ```
  *
  * @playground Router-driven siblings over a nested route tree ./examples/router-driven/router-driven.component.ts
- * @category ui/breadcrumb
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-siblings-router-sync.directive.ts
  * @since 0.1.0

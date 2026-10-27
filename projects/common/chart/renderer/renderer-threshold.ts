@@ -9,7 +9,6 @@ import { InjectionToken } from '@angular/core';
  * bare provider) to tune the SVG/Canvas crossover for a given app's
  * hardware profile.
  *
- * @category common/chart/renderer
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/renderer/renderer-threshold.ts
  * @since 0.1.0
  * @relatedTo provideChartRenderer, withChartRendererThreshold

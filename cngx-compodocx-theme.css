@@ -662,3 +662,35 @@ code.cdx-shiki-inline {
 .cdx-content-section h3:not(.cdx-section-heading):hover > a.cdx-member-permalink {
   opacity: 1;
 }
+
+/* The playground tab shows only the launch button: the source snippet is
+   redundant when the runnable StackBlitz project carries the same code. */
+.cdx-playground-snippet {
+  display: none;
+}
+.cdx-tab-panel#playground .cdx-playground-launch {
+  margin-top: 0;
+}
+
+/* AI-assisted note at the top of the core-concepts pages
+   (`<aside class="cdx-ai-generated-note">` in the Markdown sources). */
+.cdx-ai-generated-note {
+  display: flex;
+  align-items: center;
+  gap: var(--cdx-space-3, 12px);
+  margin: 0 0 var(--cdx-space-6, 24px) 0;
+  padding: var(--cdx-space-3, 12px) var(--cdx-space-4, 16px);
+  border-left: 3px solid var(--color-cdx-border-strong, #d1d5db);
+  background: var(--color-cdx-bg-alt, #f9fafb);
+  border-radius: 0 var(--cdx-radius-md, 8px) var(--cdx-radius-md, 8px) 0;
+  font-size: 0.8125rem;
+  color: var(--color-cdx-text-muted, #6b7280);
+}
+
+/* compodocx picks up CHANGELOG.md and LICENSE from the repo root and has no
+   option to leave them out; hide their sidebar entries (the pages still
+   build). */
+#sidebar li.link:has(> a[data-type="chapter-link"][href$="changelog.html"]),
+#sidebar li.link:has(> a[data-type="chapter-link"][href$="license.html"]) {
+  display: none;
+}

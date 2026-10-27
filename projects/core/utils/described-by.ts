@@ -4,8 +4,6 @@ import { createKeyedRegistry, type RegistryOptions } from './registry';
 
 /**
  * Configuration for {@link createDescribedByRegistry}.
- *
- * @category core/utils/registry
  */
 export interface CngxDescribedByRegistryOptions extends RegistryOptions {
   /**
@@ -22,8 +20,6 @@ export interface CngxDescribedByRegistryOptions extends RegistryOptions {
  * wants to describe it contributes an id signal, and every one of them binds
  * `[attr.aria-describedby]` to the same {@link CngxDescribedByRegistry.value},
  * so the bindings agree by construction and the last writer loses nothing.
- *
- * @category core/utils/registry
  */
 export interface CngxDescribedByRegistry {
   /**
@@ -72,7 +68,6 @@ const splitIds = (ids: string | null | undefined): readonly string[] =>
  * ]
  * ```
  *
- * @category core/utils/registry
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/described-by.ts
  * @since 0.1.0
  * @relatedTo CNGX_DESCRIBED_BY, injectDescribedByContribution, createKeyedRegistry
@@ -111,7 +106,6 @@ export function createDescribedByRegistry(
  * No `providedIn`, no default: an element without a providing host keeps
  * the directive's own binding.
  *
- * @category core/utils/registry
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/described-by.ts
  * @since 0.1.0
  * @relatedTo createDescribedByRegistry, injectDescribedByContribution
@@ -130,7 +124,6 @@ export const CNGX_DESCRIBED_BY = new InjectionToken<CngxDescribedByRegistry>('CN
  * protected readonly describedBy = this.registry?.value ?? this.ownIds;
  * ```
  *
- * @category core/utils/registry
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/described-by.ts
  * @since 0.1.0
  * @relatedTo CNGX_DESCRIBED_BY, createDescribedByRegistry

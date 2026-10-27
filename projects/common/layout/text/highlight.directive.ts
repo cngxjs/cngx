@@ -37,14 +37,13 @@ import {
  * </p>
  * ```
  *
- * @category common/layout
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/text/highlight.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTruncate, CngxExpandableText
  * <example-url>http://localhost:4200/#/common/layout/highlight/live-search-highlighting</example-url>
  * <example-url>http://localhost:4200/#/common/layout/highlight/multiple-paragraphs</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxHighlight]',

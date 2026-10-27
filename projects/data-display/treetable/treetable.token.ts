@@ -27,8 +27,6 @@ import type {
  * Register an instance of this via {@link provideTreetable}; reach it
  * by injecting {@link CNGX_TREETABLE_CONFIG} in custom code (rare -
  * `CngxTreetable` already does that internally).
- *
- * @category data-display/treetable
  */
 export interface TreetableConfig {
   /**
@@ -74,8 +72,6 @@ export interface TreetableConfig {
  * App-wide default templates for the treetable's async-state surfaces and
  * column headers ({@link withTreetableTemplates}). Each key mirrors the projected
  * slot of the same region and receives the same template context.
- *
- * @category data-display/treetable
  */
 export interface TreetableTemplates {
   /** Default for the empty surface (`*cngxEmpty`). */
@@ -99,8 +95,6 @@ export interface TreetableTemplates {
  * Every built-in string `CngxTreetable` renders or announces. Unset keys read
  * the `treetable` section of the active language pack, English by default;
  * override app-wide via {@link withTreetableLabels}.
- *
- * @category data-display/treetable
  */
 export interface TreetableLabels {
   /** Live-region announcement while the first load runs. */
@@ -152,8 +146,6 @@ export const NO_TREETABLE_LABELS: Partial<TreetableLabels> = {};
  * `provideTreetable(withA(), withB(), ...)`. The `_apply` field is
  * library-internal; consumers compose features via the public helpers
  * and never call `_apply` directly.
- *
- * @category data-display/treetable
  */
 export interface TreetableFeature {
   /** @internal */
@@ -175,7 +167,6 @@ export interface TreetableFeature {
  * const config = inject(CNGX_TREETABLE_CONFIG);
  * ```
  *
- * @category data-display/treetable
  * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/treetable.token.ts
  * @since 0.1.0
  */
@@ -215,8 +206,6 @@ export const CNGX_TREETABLE_CONFIG = new InjectionToken<TreetableConfig>('CNGX_T
  *   children: adminChildren,
  * }];
  * ```
- *
- * @category data-display/treetable
  */
 export function provideTreetable(...features: TreetableFeature[]): EnvironmentProviders {
   return makeEnvironmentProviders([
@@ -236,8 +225,6 @@ export function provideTreetable(...features: TreetableFeature[]): EnvironmentPr
  * scope: a nested `provideTreetableAt(...)` replaces the whole config, so
  * restate any app-wide features the subtree should keep. Per-instance
  * `[options]` input still wins over the scoped config.
- *
- * @category data-display/treetable
  */
 export function provideTreetableAt(...features: TreetableFeature[]): Provider[] {
   return [{ provide: CNGX_TREETABLE_CONFIG, useValue: resolveTreetableConfig(features) }];
@@ -261,8 +248,6 @@ function resolveTreetableConfig(features: TreetableFeature[]): TreetableConfig {
  * nested scope).
  *
  * @param enabled - Hover-highlight on/off. Default `true`.
- *
- * @category data-display/treetable
  */
 export function withHighlightOnHover(enabled = true): TreetableFeature {
   return { _apply: (c) => ({ ...c, highlightRowOnHover: enabled }) };
@@ -286,8 +271,6 @@ export function withHighlightOnHover(enabled = true): TreetableFeature {
  * ```
  *
  * @param labels - The keys to override.
- *
- * @category data-display/treetable
  */
 export function withTreetableLabels(
   labels: Partial<TreetableLabels> | Signal<Partial<TreetableLabels>>,
@@ -307,8 +290,6 @@ export function withTreetableLabels(
  * is in reach, not in `bootstrapApplication`.
  *
  * @param templates - The surface templates to register.
- *
- * @category data-display/treetable
  */
 export function withTreetableTemplates(templates: TreetableTemplates): TreetableFeature {
   return { _apply: (c) => ({ ...c, templates: { ...c.templates, ...templates } }) };
@@ -331,7 +312,6 @@ export function withTreetableTemplates(templates: TreetableTemplates): Treetable
  *
  * @param options - The `Intl.DateTimeFormat` options for date cells.
  *
- * @category data-display/treetable
  * @since 0.1.0
  * @relatedTo CngxTreetable, provideTreetable, provideTreetableAt, withTreetableNumberFormat
  */
@@ -356,7 +336,6 @@ export function withTreetableDateFormat(options: Intl.DateTimeFormatOptions): Tr
  *
  * @param options - The `Intl.NumberFormat` options for number cells.
  *
- * @category data-display/treetable
  * @since 0.1.0
  * @relatedTo CngxTreetable, provideTreetable, provideTreetableAt, withTreetableDateFormat
  */

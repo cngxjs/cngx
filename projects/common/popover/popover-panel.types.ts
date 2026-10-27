@@ -5,8 +5,6 @@ import type { CngxPopoverArrowContext } from './popover-panel-slots';
 
 /**
  * Configuration for `CngxPopoverPanel` provided via `providePopoverPanel()`.
- *
- * @category common/popover
  */
 export interface CngxPopoverPanelConfig {
   /**
@@ -59,14 +57,11 @@ export interface CngxPopoverPanelConfig {
  * same shape as the popover section of a language pack, declared once as
  * {@link CngxPopoverLanguageSection}.
  *
- * @category common/popover
  * @since 0.1.0
  */
 export type CngxPopoverPanelLabels = CngxPopoverLanguageSection;
 
 /**
  * Feature function signature for `providePopoverPanel()`.
- *
- * @category common/popover
  */
 export type PopoverPanelFeature = (config: CngxPopoverPanelConfig) => CngxPopoverPanelConfig;

@@ -6,8 +6,6 @@ import type { CngxTimelineFallbackCopy } from './timeline-labels';
 
 /**
  * Everything the template needs to decide what the body shows.
- *
- * @category ui/timeline
  */
 export interface CngxTimelineView {
   readonly activeView: Signal<AsyncView>;
@@ -42,7 +40,6 @@ export interface CngxTimelineView {
  * than forking the organism - treating `pending` as content, or holding the
  * skeleton through a refresh, is a per-app decision.
  *
- * @category ui/timeline
  * @relatedTo CNGX_TIMELINE_VIEW_FACTORY
  * @since 0.1.0
  */
@@ -104,8 +101,6 @@ export function createTimelineView(
 
 /**
  * The shape {@link CNGX_TIMELINE_VIEW_FACTORY} hands out.
- *
- * @category ui/timeline
  */
 export type CngxTimelineViewFactory = (
   state: () => CngxAsyncState<unknown> | undefined,
@@ -136,7 +131,6 @@ export type CngxTimelineViewFactory = (
  * ]
  * ```
  *
- * @category ui/timeline
  * @relatedTo createTimelineView
  * @since 0.1.0
  */

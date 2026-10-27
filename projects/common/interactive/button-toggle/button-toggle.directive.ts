@@ -85,8 +85,6 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
  * `<button>` - no template to inject siblings into).
  * Native `<button aria-describedby>` semantics apply.
  *
- * @category common/interactive
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-toggle.directive.ts
  * @selector button[cngxButtonToggle]

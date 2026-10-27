@@ -6,7 +6,6 @@
  * the document for headings in this release (see the deferred auto-discovery
  * phase).
  *
- * @category ui/toc
  * @since 0.1.0
  */
 export interface CngxTocItem {
@@ -25,7 +24,6 @@ export interface CngxTocItem {
  * `aria-current` state; `depth` is the zero-based nesting level for
  * indentation-aware custom markup.
  *
- * @category ui/toc
  * @since 0.1.0
  */
 export interface CngxTocItemContext {

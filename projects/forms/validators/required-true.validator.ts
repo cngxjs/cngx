@@ -8,8 +8,6 @@ import { type AbstractControl, type ValidationErrors, type ValidatorFn } from '@
  *
  * Near-duplicate of Angular's `Validators.requiredTrue` by design: the `requiredTrue`
  * error kind and `{ actual }` payload line up with the `withErrorMessages` registry keys.
- *
- * @category forms/validators
  */
 export function requiredTrue(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {

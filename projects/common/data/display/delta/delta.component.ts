@@ -45,14 +45,13 @@ import { injectKpiI18n } from '../shared/kpi-i18n';
  * <cngx-delta [value]="1240" mode="absolute" [format]="{ maximumFractionDigits: 0 }" />
  * ```
  *
- * @category common/data/metric
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/display/delta/delta.component.ts
  * @since 0.1.0
  * @relatedTo CngxTrend, CngxMetric, CngxStat
  *
  * <example-url>http://localhost:4200/#/common/data/delta/sentiment-polarity</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-delta',

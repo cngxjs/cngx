@@ -113,14 +113,13 @@ export class CngxMatTabsPanelHostAdapter implements CngxTabPanelHost {
  *
  * @playground Form error aggregation ./examples/form-errors/form-errors.component.ts
  *
- * @category ui/mat-tabs
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/mat-tabs.directive.ts
  * @since 0.1.0
  * @relatedTo CngxMatTabsRegistry, CngxMatTabError, CngxMatStepper
  * @slot cngxMatTabAggregatorContent Replaces the aggregated error summary projected into a Material tab.
  * @slot cngxMatTabRejectionContent Replaces the rejection notice on a rolled-back Material tab.
+ * @axis level organism
  */
 @Directive({
   selector: '[cngxMatTabs]',

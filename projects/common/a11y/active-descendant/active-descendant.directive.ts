@@ -57,14 +57,13 @@ import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from '
  * Same model as `cdk-listbox` and `mat-select`, without the visual shell and
  * driven by signals instead of `ListKeyManager`.
  *
- * @category common/a11y
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/active-descendant/active-descendant.directive.ts
  * @since 0.1.0
  * @relatedTo CngxRovingTabindex, CngxListbox, CngxMenu
  * <example-url>http://localhost:4200/#/common/a11y/active-descendant/listbox-with-items-input</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/active-descendant/typeahead</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxActiveDescendant]',

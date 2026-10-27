@@ -27,7 +27,6 @@ import type { CngxAccordionHeaderHandle } from './accordion-keyboard-nav';
  * not sibling syncing (Pillar 1). Use a native `<button>` so Enter / Space
  * activate it through the browser's own click synthesis.
  *
- * @category common/interactive/accordion
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/accordion/accordion-panel.directive.ts
  * @since 0.1.0

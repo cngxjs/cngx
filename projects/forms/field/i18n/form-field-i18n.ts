@@ -16,7 +16,6 @@ import {
  * hints; replace a hint through `withConstraintHints`, the one override for
  * hints (`withFormFieldI18nLabels` does not take them).
  *
- * @category forms/field/i18n
  * @since 0.1.0
  */
 export interface CngxFormFieldI18n {
@@ -61,7 +60,6 @@ type HintKey =
  * `errorMessages` merged kind by kind. Hints are replaced through
  * `withConstraintHints` on `provideFormField` / `provideFormFieldAt`.
  *
- * @category forms/field/i18n
  * @since 0.1.0
  */
 export type CngxFormFieldI18nOverrides = CngxNestedOverrides<
@@ -139,7 +137,6 @@ const formFieldBundle = createSectionBundle<CngxFormFieldLanguageSection, CngxFo
  * this bundle's `errorMessages` entry, then `invalid`. The raw kind is never
  * shown.
  *
- * @category forms/field/i18n
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/i18n/form-field-i18n.ts
  * @since 0.1.0
@@ -156,7 +153,6 @@ export const CNGX_FORM_FIELD_I18N = new InjectionToken<Signal<CngxFormFieldI18n>
 /**
  * Branded feature-fn for {@link provideFormFieldI18n}.
  *
- * @category forms/field/i18n
  * @since 0.1.0
  */
 export type CngxFormFieldI18nFeature = ((
@@ -175,7 +171,6 @@ export type CngxFormFieldI18nFeature = ((
  * on `provideFormField` / `provideFormFieldAt` is the one override for them,
  * and the language pack's `formField.hint*` keys stay their copy source.
  *
- * @category forms/field/i18n
  * @since 0.1.0
  * @relatedTo provideFormFieldI18n, withConstraintHints
  */
@@ -208,7 +203,6 @@ export function withFormFieldI18nLabels(
  * });
  * ```
  *
- * @category forms/field/i18n
  * @since 0.1.0
  */
 export function provideFormFieldI18n(...features: readonly CngxFormFieldI18nFeature[]): Provider {
@@ -222,7 +216,6 @@ export function provideFormFieldI18n(...features: readonly CngxFormFieldI18nFeat
  * Inject the resolved form-field i18n bundle. Read it inside a `computed()`,
  * template or handler so a language switch reaches the message.
  *
- * @category forms/field/i18n
  * @since 0.1.0
  */
 export function injectFormFieldI18n(): Signal<CngxFormFieldI18n> {

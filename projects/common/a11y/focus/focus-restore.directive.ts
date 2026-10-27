@@ -13,7 +13,6 @@ import { DestroyRef, Directive, ElementRef, inject, input, signal } from '@angul
  * contain a focusable child?") query against it. Keeping one selector
  * stops the two uses from drifting apart.
  *
- * @category common/a11y
  * @since 0.1.0
  */
 export const CNGX_FOCUSABLE_SELECTOR =
@@ -49,13 +48,13 @@ export const CNGX_FOCUSABLE_SELECTOR =
  * <button #fallbackBtn>Fallback target</button>
  * ```
  *
- * @category common/a11y
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/focus-restore.directive.ts
  * @since 0.1.0
  * @relatedTo CngxAutofocus, CngxFocusTrap, CngxFocusVisible
  * <example-url>http://localhost:4200/#/common/a11y/focus-restore/inline-details</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/focus-restore/panel-with-automatic-restore</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxFocusRestore]',

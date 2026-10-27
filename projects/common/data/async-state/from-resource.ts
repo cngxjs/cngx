@@ -24,8 +24,6 @@ import { buildResourceBridge } from './resource-bridge';
  * // items.status(), items.data(), items.isFirstLoad() - all work
  * // <cngx-async-container [state]="items"> - direct binding
  * ```
- *
- * @category common/data/async-state
  */
 export function fromResource<T>(ref: Resource<T>): CngxAsyncState<T> {
   return buildResourceBridge(ref);

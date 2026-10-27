@@ -30,8 +30,6 @@ import type { CngxStepRejectionContext } from './slots/step-rejection.directive'
  * Per-step navigation labels (`previousStep`, `nextStep`) live in
  * {@link CngxStepperI18n} - SR phrasing, not landmark naming.
  * Splitting the surfaces avoids a dual-override path for the same string.
- *
- * @category common/stepper
  */
 export interface CngxStepperAriaLabels {
   readonly stepperRegion?: string;
@@ -40,8 +38,6 @@ export interface CngxStepperAriaLabels {
 /**
  * Fallback labels for derived strings (group descriptors, badge SR
  * announcements). English defaults; consumer overrides per locale.
- *
- * @category common/stepper
  */
 export interface CngxStepperFallbackLabels {
   readonly groupRoleDescription?: string;
@@ -52,8 +48,6 @@ export interface CngxStepperFallbackLabels {
  * Per-slot template overrides for `<cngx-stepper>`. Middle tier of
  * the 3-stage cascade: per-instance directive > this field > built-in
  * markup. Apply via the `with*Template` feature builders below.
- *
- * @category common/stepper
  */
 export interface CngxStepperTemplates {
   readonly indicator?: TemplateRef<CngxStepIndicatorContext>;
@@ -72,8 +66,6 @@ export interface CngxStepperTemplates {
  * slots, same ARIA, same keyboard behaviour, and only redirects CSS via
  * the `[data-skin]` host attribute. The Material twin
  * (`<cngx-mat-stepper>`) ignores this setting.
- *
- * @category common/stepper
  */
 export type CngxStepperSkin =
   | 'classic'
@@ -93,8 +85,6 @@ export type CngxStepperSkin =
  * The width itself is not configurable - it is a `@container` rule in
  * `stepper-base.css`, overridable in consumer CSS. This setting picks
  * *what* the strip collapses into, not *where*.
- *
- * @category common/stepper
  */
 export type CngxStepperMobileCollapse = 'text' | 'dots' | 'off';
 
@@ -106,8 +96,6 @@ export type CngxStepperMobileCollapse = 'text' | 'dots' | 'off';
  * is free click-through, `linear=true` is backward-to-visited only,
  * with linear-unreachable headers marked `aria-disabled`). There is no
  * discrete `'free'` value - `'free'` is `'visited'` + `linear=false`.
- *
- * @category common/stepper
  */
 export type CngxStepperHeaderNavigation = 'none' | 'visited';
 
@@ -119,8 +107,6 @@ export type CngxStepperHeaderNavigation = 'none' | 'visited';
  * the browser-native baseline. Orthogonal to the `mobileCollapse` axis;
  * the two never edit each other. The Material twin (`[cngxMatStepper]`)
  * ignores this setting.
- *
- * @category common/stepper
  */
 export type CngxStepperGroupCollapse = 'expand-active' | 'off';
 
@@ -130,8 +116,6 @@ export type CngxStepperGroupCollapse = 'expand-active' | 'off';
  * completed/total steps; `'count'` shows the step count; `'status'`
  * shows a status dot coloured by the group's rolled-up state; `'off'`
  * shows the bare label. Only ever rendered on a collapsed group header.
- *
- * @category common/stepper
  */
 export type CngxStepperGroupSummary = 'progress' | 'count' | 'status' | 'off';
 
@@ -142,8 +126,6 @@ export type CngxStepperGroupSummary = 'progress' | 'count' | 'status' | 'off';
  * label kept); `'comfortable'` (default) keeps full labels at every
  * width. Orthogonal to `mobileCollapse` and `groupCollapse`; the
  * Material twin ignores this setting.
- *
- * @category common/stepper
  */
 export type CngxStepperDensity = 'comfortable' | 'auto';
 
@@ -154,8 +136,6 @@ export type CngxStepperDensity = 'comfortable' | 'auto';
  * `'bottom'` flips it below so the user reads content first and the
  * navigation cue sits at the thumb zone. Ignored when the classic
  * strip is on screen (`displayMode === 'classic'`).
- *
- * @category common/stepper
  */
 export type CngxStepperMobileIndicatorPosition = 'top' | 'bottom';
 
@@ -163,8 +143,6 @@ export type CngxStepperMobileIndicatorPosition = 'top' | 'bottom';
  * Stepper config surface. Resolution priority: per-instance Input
  * > `provideStepperConfigAt` (viewProviders) > `provideStepperConfig`
  * (root) > library default. Canonical cngx config shape.
- *
- * @category common/stepper
  */
 export interface CngxStepperConfig {
   readonly defaultOrientation?: 'horizontal' | 'vertical';
@@ -274,7 +252,6 @@ const NO_LABELS: object = {};
  * library defaults; override via {@link provideStepperConfig} (root)
  * or {@link provideStepperConfigAt} (component scope).
  *
- * @category common/stepper
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/stepper-config.ts
  * @since 0.1.0
@@ -288,8 +265,6 @@ export const CNGX_STEPPER_CONFIG = new InjectionToken<CngxStepperConfig>('CngxSt
  * Feature signature - each `with*` builder reduces over the config.
  * Hidden `_target: 'config'` discriminator routes through the family
  * aggregator {@link provideCngxStepper}.
- *
- * @category common/stepper
  */
 export type CngxStepperConfigFeature = ((config: CngxStepperConfig) => CngxStepperConfig) & {
   readonly _target: 'config';
@@ -310,8 +285,6 @@ function defineStepperConfigFeature(
 /**
  * Override the default orientation. Per-instance `[orientation]`
  * Input still wins; this only moves the cascade default.
- *
- * @category common/stepper
  */
 export function withStepperDefaultOrientation(
   orientation: 'horizontal' | 'vertical',
@@ -325,8 +298,6 @@ export function withStepperDefaultOrientation(
 /**
  * Override the default linear-progression setting. Per-instance
  * `[linear]` Input still wins.
- *
- * @category common/stepper
  */
 export function withStepperLinear(linear: boolean): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, defaultLinear: linear }));
@@ -337,8 +308,6 @@ export function withStepperLinear(linear: boolean): CngxStepperConfigFeature {
  * `'optimistic'` advances on action dispatch and rolls back on error;
  * `'pessimistic'` waits for success. Per-instance `[commitMode]`
  * Input still wins.
- *
- * @category common/stepper
  */
 export function withStepperCommitMode(
   mode: 'optimistic' | 'pessimistic',
@@ -353,8 +322,6 @@ export function withStepperCommitMode(
  * Configure router synchronisation for the active step. `mode` chooses
  * the URL surface (URL fragment or query parameter); `param` names the
  * key (default `'step'`).
- *
- * @category common/stepper
  */
 export function withStepperRouterSync(
   mode: 'fragment' | 'queryParam',
@@ -373,8 +340,6 @@ export function withStepperRouterSync(
  * moves the cascade default. Structure, slots, ARIA, and keyboard
  * behaviour are identical across skins - only the `[data-skin]` host
  * attribute changes the CSS layer that paints the strip.
- *
- * @category common/stepper
  */
 export function withStepperSkin(skin: CngxStepperSkin): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, skin }));
@@ -388,8 +353,6 @@ export function withStepperSkin(skin: CngxStepperSkin): CngxStepperConfigFeature
  * `[data-skin='classic']`; the four other skins each ship their own
  * inter-step decoration and ignore this flag. Per-instance
  * `[connectors]` Input still wins.
- *
- * @category common/stepper
  */
 export function withStepperConnectors(on: boolean): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, connectors: on }));
@@ -402,8 +365,6 @@ export function withStepperConnectors(on: boolean): CngxStepperConfigFeature {
  * `<cngx-text-stepper>`, `'dots'` renders `<cngx-dot-stepper>`, `'off'`
  * keeps the classic strip. The Material twin `<cngx-mat-stepper>` ignores
  * this setting.
- *
- * @category common/stepper
  */
 export function withStepperMobileCollapse(
   mode: CngxStepperMobileCollapse,
@@ -418,8 +379,6 @@ export function withStepperMobileCollapse(
  * reads first and the navigation cue sits at thumb height. Per-
  * instance `[mobileIndicatorPosition]` on `<cngx-stepper>` still
  * wins.
- *
- * @category common/stepper
  */
 export function withStepperMobileIndicatorPosition(
   position: CngxStepperMobileIndicatorPosition,
@@ -432,8 +391,6 @@ export function withStepperMobileIndicatorPosition(
  * in mobile-collapse mode. Default `true` - the `'dots'` and `'text'`
  * variants read as carousels, so users expect to swipe. Per-instance
  * `[mobileSwipe]` Input still wins; the classic strip is unaffected.
- *
- * @category common/stepper
  */
 export function withStepperMobileSwipe(enabled: boolean): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, mobileSwipe: enabled }));
@@ -445,8 +402,6 @@ export function withStepperMobileSwipe(enabled: boolean): CngxStepperConfigFeatu
  * navigation); `'visited'` (library default) keeps the headers as
  * focusable buttons whose reachability folds into the `linear` axis.
  * Per-instance `[headerNavigation]` Input still wins.
- *
- * @category common/stepper
  */
 export function withStepperHeaderNavigation(
   mode: CngxStepperHeaderNavigation,
@@ -461,8 +416,6 @@ export function withStepperHeaderNavigation(
  * holding the active step; `'off'` (library default) keeps the full
  * strip. Orthogonal to the `mobileCollapse` axis. The Material twin
  * ignores this setting.
- *
- * @category common/stepper
  */
 export function withStepperGroupCollapse(mode: CngxStepperGroupCollapse): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, groupCollapse: mode }));
@@ -474,8 +427,6 @@ export function withStepperGroupCollapse(mode: CngxStepperGroupCollapse): CngxSt
  * shows completed/total steps; `'count'` the step count; `'status'` a
  * status dot coloured by the group's rolled-up state; `'off'` the bare
  * label. No effect unless `groupCollapse` is `'expand-active'`.
- *
- * @category common/stepper
  */
 export function withStepperGroupCollapseSummary(
   mode: CngxStepperGroupSummary,
@@ -491,8 +442,6 @@ export function withStepperGroupCollapseSummary(
  * `'comfortable'` (library default) keeps full labels at every width.
  * Orthogonal to the `mobileCollapse` axis; the Material twin ignores this
  * setting.
- *
- * @category common/stepper
  */
 export function withStepperDensity(mode: CngxStepperDensity): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, density: mode }));
@@ -502,8 +451,6 @@ export function withStepperDensity(mode: CngxStepperDensity): CngxStepperConfigF
  * Merge ARIA labels into the cascade. Keys not provided keep their
  * library defaults; per-instance overrides on the stepper still win.
  * Pass a `Signal` to switch the language at runtime.
- *
- * @category common/stepper
  */
 export function withStepperAriaLabels(
   labels: CngxStepperAriaLabels | Signal<CngxStepperAriaLabels>,
@@ -519,8 +466,6 @@ export function withStepperAriaLabels(
  * `stepRoleDescription`) into the cascade. These feed the strip's
  * `aria-roledescription` attributes when the consumer supplies none.
  * Pass a `Signal` to switch the language at runtime.
- *
- * @category common/stepper
  */
 export function withStepperFallbackLabels(
   labels: CngxStepperFallbackLabels | Signal<CngxStepperFallbackLabels>,
@@ -538,8 +483,6 @@ export function withStepperFallbackLabels(
  * Override the default `*cngxStepIndicator` template app-wide.
  * Per-instance directive still wins; this only moves the cascade
  * middle tier.
- *
- * @category common/stepper
  */
 export function withStepIndicatorTemplate(
   template: TemplateRef<CngxStepIndicatorContext>,
@@ -552,8 +495,6 @@ export function withStepIndicatorTemplate(
 
 /**
  * Override the default `*cngxStepBadge` template app-wide.
- *
- * @category common/stepper
  */
 export function withStepBadgeTemplate(
   template: TemplateRef<CngxStepBadgeContext>,
@@ -566,8 +507,6 @@ export function withStepBadgeTemplate(
 
 /**
  * Override the default `*cngxStepBusySpinner` template app-wide.
- *
- * @category common/stepper
  */
 export function withStepBusySpinnerTemplate(
   template: TemplateRef<CngxStepBusySpinnerContext>,
@@ -581,8 +520,6 @@ export function withStepBusySpinnerTemplate(
 /**
  * Override the default `*cngxStepRejection` template app-wide.
  * Symmetric with the upcoming tabs `cngxTabRejectionIcon` (Phase 4).
- *
- * @category common/stepper
  */
 export function withStepRejectionTemplate(
   template: TemplateRef<CngxStepRejectionContext>,
@@ -598,8 +535,6 @@ export function withStepRejectionTemplate(
  * renders the per-step validation reason on the skins with a label area
  * (classic / stripe-status-rich). Per-instance directive still wins;
  * this moves the cascade middle tier.
- *
- * @category common/stepper
  */
 export function withStepErrorTemplate(
   template: TemplateRef<CngxStepErrorContext>,
@@ -612,8 +547,6 @@ export function withStepErrorTemplate(
 
 /**
  * Override the default `*cngxStepGroupHeader` template app-wide.
- *
- * @category common/stepper
  */
 export function withStepGroupHeaderTemplate(
   template: TemplateRef<CngxStepGroupHeaderContext>,
@@ -626,8 +559,6 @@ export function withStepGroupHeaderTemplate(
 
 /**
  * Override the default `*cngxStepperEmpty` template app-wide.
- *
- * @category common/stepper
  */
 export function withStepperEmptyTemplate(template: TemplateRef<void>): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({
@@ -642,8 +573,6 @@ export function withStepperEmptyTemplate(template: TemplateRef<void>): CngxStepp
  * mobile-collapse branch of `<cngx-stepper>`: per-instance directive >
  * this feature > built-in empty body (the dot fill is painted by the dot
  * element's CSS regardless).
- *
- * @category common/stepper
  */
 export function withDotStepperDotTemplate(
   template: TemplateRef<CngxDotStepperDotContext>,
@@ -687,8 +616,6 @@ function resolveFeatures(features: readonly CngxStepperConfigFeature[]): CngxSte
  * Root-level provider for the stepper config. Apply once in the
  * application providers array. Sibling of `provideTabsConfig` /
  * `provideSelectConfig`.
- *
- * @category common/stepper
  */
 export function provideStepperConfig(
   ...features: readonly CngxStepperConfigFeature[]
@@ -712,8 +639,6 @@ export function provideStepperConfig(
  *   viewProviders: [...provideStepperConfigAt(withStepperLinear(true))],
  * })
  * ```
- *
- * @category common/stepper
  */
 export function provideStepperConfigAt(
   ...features: readonly CngxStepperConfigFeature[]
@@ -723,8 +648,6 @@ export function provideStepperConfigAt(
 
 /**
  * Inject the resolved stepper config in an injection context.
- *
- * @category common/stepper
  */
 export function injectStepperConfig(): CngxStepperConfig {
   return inject(CNGX_STEPPER_CONFIG);

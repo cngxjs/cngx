@@ -60,8 +60,6 @@ import {
  * </cngx-radio-group>
  * ```
  *
- * @category common/interactive
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/radio/radio-group.component.ts
  * @selector cngx-radio-group
@@ -71,6 +69,7 @@ import {
  * <example-url>http://localhost:4200/#/common/interactive/radio/custom-dot-glyph</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/radio/disabled-group-cascades-per-radio-overrides</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/radio/orientation-horizontal</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-radio-group, [cngxRadioGroup]',

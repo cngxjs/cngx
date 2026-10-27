@@ -19,10 +19,10 @@ import type { EmptyReason } from './card.types';
  * </cngx-card-grid>
  * ```
  *
- * @category common/card
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card-grid-empty.directive.ts
  * @since 0.1.0
  * @relatedTo CngxCardGrid
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxCardGridEmpty]',

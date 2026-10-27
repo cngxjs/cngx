@@ -67,12 +67,12 @@ import {
  * }
  * ```
  *
- * @category common/layout
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/drawer/backdrop.directive.ts
  * @since 0.1.0
  * @relatedTo CngxDrawer, CngxDrawerPanel, CngxScrollLock
  * <example-url>http://localhost:4200/#/common/layout/backdrop/overlay-with-inert</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxBackdrop]',

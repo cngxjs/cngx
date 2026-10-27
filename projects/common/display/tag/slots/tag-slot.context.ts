@@ -17,8 +17,6 @@ import type {
  * The per-slot names below alias this interface. A slot that grows its
  * own field forks its alias back into an interface extending this one -
  * sibling consumers stay source-compatible either way.
- *
- * @category common/display
  */
 export interface CngxTagSlotContext {
   readonly $implicit: void;
@@ -30,21 +28,15 @@ export interface CngxTagSlotContext {
 
 /**
  * Context of the `*cngxTagLabel` slot. Alias of {@link CngxTagSlotContext}.
- *
- * @category common/display
  */
 export type CngxTagLabelContext = CngxTagSlotContext;
 
 /**
  * Context of the `*cngxTagPrefix` slot. Alias of {@link CngxTagSlotContext}.
- *
- * @category common/display
  */
 export type CngxTagPrefixContext = CngxTagSlotContext;
 
 /**
  * Context of the `*cngxTagSuffix` slot. Alias of {@link CngxTagSlotContext}.
- *
- * @category common/display
  */
 export type CngxTagSuffixContext = CngxTagSlotContext;

@@ -78,8 +78,6 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
  * `paginator.component.css` and nowhere else. Opt out with
  * `--cngx-paginator-collapse: none` on the paginator or any ancestor.
  *
- * @category ui/paginator
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator.component.ts
  * @since 0.1.0
@@ -98,6 +96,7 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/rail</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/dots</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-paginator',

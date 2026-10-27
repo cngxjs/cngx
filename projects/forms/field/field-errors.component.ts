@@ -40,8 +40,6 @@ import { injectFormFieldI18n, resolveErrorMessage } from './i18n/form-field-i18n
  * </cngx-field-errors>
  * ```
  *
- * @category forms/field
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/field-errors.component.ts
  * @since 0.1.0
@@ -50,6 +48,7 @@ import { injectFormFieldI18n, resolveErrorMessage } from './i18n/form-field-i18n
  * <example-url>http://localhost:4200/#/forms/field/field-errors/multiple-validators</example-url>
  * <example-url>http://localhost:4200/#/forms/field/field-errors/custom-error-template</example-url>
  * <example-url>http://localhost:4200/#/forms/field/field-errors/with-registry-messages</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-field-errors',
@@ -132,8 +131,6 @@ export class CngxFieldErrors {
 
 /**
  * Template context type for CngxFieldErrors custom templates.
- *
- * @category forms/field
  */
 export interface CngxFieldErrorContext {
   /** Resolved error message (also available as implicit `let-msg`). */

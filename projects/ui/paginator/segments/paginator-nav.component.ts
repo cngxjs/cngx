@@ -80,11 +80,11 @@ const NAV_TEMPLATE = `
 /**
  * First-page segment. Disabled on the first page; calls `host.first()`.
  *
- * @category ui/paginator
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-nav.component.ts
  * @since 0.1.0
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/first/chevron</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-pgn-first',
@@ -109,11 +109,11 @@ export class CngxPaginatorFirst {
 /**
  * Previous-page segment. Disabled on the first page; calls `host.previous()`.
  *
- * @category ui/paginator
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-nav.component.ts
  * @since 0.1.0
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/prev/chevron</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-pgn-prev',
@@ -138,11 +138,11 @@ export class CngxPaginatorPrev {
 /**
  * Next-page segment. Disabled on the last page; calls `host.next()`.
  *
- * @category ui/paginator
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-nav.component.ts
  * @since 0.1.0
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/next/chevron</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-pgn-next',
@@ -167,11 +167,11 @@ export class CngxPaginatorNext {
 /**
  * Last-page segment. Disabled on the last page; calls `host.last()`.
  *
- * @category ui/paginator
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-nav.component.ts
  * @since 0.1.0
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/last/chevron</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-pgn-last',

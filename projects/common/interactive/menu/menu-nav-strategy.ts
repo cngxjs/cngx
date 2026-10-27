@@ -5,8 +5,6 @@ import { InjectionToken } from '@angular/core';
  * menu trigger or a future menubar directive) interpret the action: fire
  * the matching side effect (open/close a popover, hand focus to a parent
  * menu) and `event.preventDefault()` for anything non-`noop`.
- *
- * @category common/interactive/menu
  */
 export type CngxMenuNavAction =
   | { readonly kind: 'open-submenu'; readonly id: string }
@@ -19,8 +17,6 @@ export type CngxMenuNavAction =
  * `CngxActiveDescendant.activeId()` snapshot at key-press time;
  * `hasSubmenu`/`submenuOpen` describe whatever submenu state the consumer
  * tracks for the active item.
- *
- * @category common/interactive/menu
  */
 export interface CngxMenuNavContext {
   readonly activeId: string | null;
@@ -38,8 +34,6 @@ export interface CngxMenuNavContext {
  * Strategy steps are pure decisions - they do not call popover.show() or
  * touch any signal directly. The directive that consults the strategy
  * acts on the returned action.
- *
- * @category common/interactive/menu
  */
 export interface CngxMenuNavStrategy {
   onArrowRight(ctx: CngxMenuNavContext): CngxMenuNavAction;
@@ -66,8 +60,6 @@ const NOOP: CngxMenuNavAction = { kind: 'noop' };
  * strategy (`resolveInlineArrowKey`), so under `rtl` physical ArrowLeft
  * routes to `onArrowRight`. Custom strategies therefore stay
  * direction-naive and inherit correct RTL behaviour for free.
- *
- * @category common/interactive/menu
  */
 export function createW3CMenuStrategy(): CngxMenuNavStrategy {
   return {
@@ -92,7 +84,6 @@ export function createW3CMenuStrategy(): CngxMenuNavStrategy {
  * {@link createW3CMenuStrategy}; override via `providers` /
  * `viewProviders` for alternative keyboard semantics.
  *
- * @category common/interactive/menu
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-nav-strategy.ts
  * @since 0.1.0

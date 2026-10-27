@@ -14,8 +14,6 @@ import { CngxAsyncRegistry } from './async-registry';
  *   providers: [provideAsyncRegistry()],
  * });
  * ```
- *
- * @category common/data/async-registry
  */
 export function provideAsyncRegistry(): EnvironmentProviders {
   return makeEnvironmentProviders([CngxAsyncRegistry]);
@@ -25,8 +23,6 @@ export function provideAsyncRegistry(): EnvironmentProviders {
  * Returns the ambient {@link CngxAsyncRegistry}, or `null` when the consumer
  * did not opt in via {@link provideAsyncRegistry}. Must run in an injection
  * context.
- *
- * @category common/data/async-registry
  */
 export function injectAsyncRegistry(): CngxAsyncRegistry | null {
   return inject(CngxAsyncRegistry, { optional: true });

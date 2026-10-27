@@ -9,8 +9,6 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  *   bindings and the `CngxToastOn` / `CngxAlertOn` / `CngxBannerOn` bridges.
  * - `<key>Sink` - the writable `ManualAsyncState<T>` that `tapAsyncState`
  *   drives.
- *
- * @category interop/signals
  */
 export type CngxAsyncStateProps<Key extends string, T> = {
   readonly [K in Key as `${K}State`]: CngxAsyncState<T>;
@@ -57,8 +55,6 @@ export type CngxAsyncStateProps<Key extends string, T> = {
  * );
  * // store.usersState.status(), store.usersState.data() - derived, no flags
  * ```
- *
- * @category interop/signals
  */
 export function withCngxAsyncState<T = unknown>() {
   return <Key extends string>(key: Key) =>

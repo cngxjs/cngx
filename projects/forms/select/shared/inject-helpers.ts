@@ -29,8 +29,6 @@ import { resolveReorderableSelectConfig } from './reorderable-select-config';
  *   );
  * }
  * ```
- *
- * @category forms/select
  */
 export function injectSelectConfig(): ReturnType<typeof resolveSelectConfig> {
   return resolveSelectConfig();
@@ -44,8 +42,6 @@ export function injectSelectConfig(): ReturnType<typeof resolveSelectConfig> {
  * const announcer = injectSelectAnnouncer();
  * announcer.announce('Filter applied: Red', 'polite');
  * ```
- *
- * @category forms/select
  */
 export function injectSelectAnnouncer(): CngxSelectAnnouncer {
   return inject(CngxSelectAnnouncer);
@@ -56,8 +52,6 @@ export function injectSelectAnnouncer(): CngxSelectAnnouncer {
  * library defaults. Always fully populated - never `null`. Injection
  * context required. Sibling of {@link injectSelectConfig} for the
  * `CngxActionSelect` / `CngxActionMultiSelect` composites.
- *
- * @category forms/select
  */
 export function injectActionSelectConfig(): ReturnType<typeof resolveActionSelectConfig> {
   return resolveActionSelectConfig();
@@ -68,8 +62,6 @@ export function injectActionSelectConfig(): ReturnType<typeof resolveActionSelec
  * with library defaults. Always fully populated - never `null`. Injection
  * context required. Sibling of {@link injectSelectConfig} for the
  * `CngxReorderableMultiSelect` composite.
- *
- * @category forms/select
  */
 export function injectReorderableSelectConfig(): ReturnType<
   typeof resolveReorderableSelectConfig

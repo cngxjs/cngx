@@ -19,7 +19,6 @@ import { CNGX_STAT_CARD_CONFIG } from './stat-card.config.defaults';
  * }
  * ```
  *
- * @category ui/stat-card
  * @since 0.1.0
  */
 export function injectStatCardConfig(): CngxStatCardConfig {
@@ -34,7 +33,6 @@ export function injectStatCardConfig(): CngxStatCardConfig {
  * in injection context; read it inside a `computed()`, a template or a
  * handler, and untracked where it builds live-region text.
  *
- * @category ui/stat-card
  * @since 0.1.0
  */
 export function injectStatCardAriaLabels(): Signal<CngxStatCardResolvedAriaLabels> {

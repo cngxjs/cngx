@@ -18,8 +18,6 @@ import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './cha
  *
  * Attribute-selector on `<svg:g>` - see {@link CngxLine} for why.
  *
- * @category common/chart/layers
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/layers/band.component.ts
  * @since 0.1.0
  * @relatedTo CngxThreshold, CngxArea, CngxChart

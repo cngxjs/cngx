@@ -205,8 +205,6 @@ function firstEmptySlot(tokens: MaskToken[], masked: string, placeholder: string
  * customTokens = { H: { pattern: /[0-9A-F]/i } };
  * // mask: '#HHHHHH'
  * ```
- *
- * @category forms/input
  */
 export interface MaskTokenDef {
   /** Regex pattern the character must match. */
@@ -219,8 +217,6 @@ export interface MaskTokenDef {
 
 /**
  * Map of single-char token names to their definitions.
- *
- * @category forms/input
  */
 export type MaskTokenMap = Record<string, MaskTokenDef>;
 
@@ -304,8 +300,6 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  * `CNGX_CONTROL_VALUE`. The control holds the raw value (`'1430'`), the same value Signal
  * Forms stores in the model, and `setValue` expects the raw value too.
  *
- * @category forms/input
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-mask.directive.ts
  * @since 0.1.0
@@ -315,6 +309,7 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  * <example-url>http://localhost:4200/#/forms/input/mask/custom-pattern</example-url>
  * <example-url>http://localhost:4200/#/forms/input/mask/custom-tokens-and-transform</example-url>
  * <example-url>http://localhost:4200/#/forms/input/mask/locale-presets</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: 'input[cngxInputMask]',

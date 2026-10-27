@@ -12,8 +12,6 @@ import type { FilterFieldDef } from './filter-builder.types';
  * factory formats `lastMutation` events through `CngxFilterBuilderI18n.announcement`
  * - consumers can swap the whole formatter (locale, telemetry, test
  * doubles) by providing `CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY`.
- *
- * @category forms/filter-builder/state
  */
 export interface CngxFilterBuilderAnnouncer {
   readonly announcement: Signal<string>;
@@ -21,8 +19,6 @@ export interface CngxFilterBuilderAnnouncer {
 
 /**
  * Reactive sources the announcer factory needs to format mutation messages.
- *
- * @category forms/filter-builder/state
  */
 export interface CngxFilterBuilderAnnouncerSources<TValue = unknown> {
   readonly lastMutation: Signal<FilterMutationEvent | null>;
@@ -42,8 +38,6 @@ export interface CngxFilterBuilderAnnouncerSources<TValue = unknown> {
 
 /**
  * Factory signature carried by `CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY`.
- *
- * @category forms/filter-builder/state
  */
 export type CngxFilterBuilderAnnouncerFactory = <TValue = unknown>(
   sources: CngxFilterBuilderAnnouncerSources<TValue>,
@@ -81,8 +75,6 @@ function renderValueForAnnouncement(
 
 /**
  * Default announcer - derives the live-region string from `lastMutation` through the i18n formatter bundle.
- *
- * @category forms/filter-builder/state
  */
 export function createFilterBuilderAnnouncer<TValue>(
   sources: CngxFilterBuilderAnnouncerSources<TValue>,
@@ -168,7 +160,6 @@ function formatMutation<TValue>(
  * For message text only, override `withFilterBuilderI18n({ announcement })` -
  * that keeps the default derivation and swaps just the strings.
  *
- * @category forms/filter-builder/state
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-announcer.ts
  * @since 0.1.0
@@ -182,8 +173,6 @@ export const CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY =
 
 /**
  * Inject-context helper that resolves `CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY`.
- *
- * @category forms/filter-builder/state
  */
 export function injectFilterBuilderAnnouncerFactory(): CngxFilterBuilderAnnouncerFactory {
   return inject(CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY);

@@ -7,8 +7,6 @@ import { type CngxSort, type SortEntry } from './sort.directive';
  *
  * Pure derivation over a single {@link CngxSort} source plus an imperative
  * `toggle`. No async state, no signal writes outside `toggle`.
- *
- * @category common/data/sort
  */
 export interface SortHeaderState {
   /** The active sort entry for this column, or `undefined` when the column is not sorted. */
@@ -44,7 +42,6 @@ export interface SortHeaderState {
  * @param field Getter for the column's field key.
  * @returns The derived `{ entry, isActive, isAsc, isDesc, priority, toggle }` bundle.
  *
- * @category common/data/sort
  * @since 0.1.0
  * @relatedTo CngxSort, CngxSortHeader
  */

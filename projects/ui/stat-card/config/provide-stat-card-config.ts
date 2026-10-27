@@ -20,7 +20,6 @@ const NO_ARIA_LABELS: CngxStatCardAriaLabels = {};
  * `CngxBreadcrumbConfigFeature` so the consumer's mental model is one across
  * feature areas.
  *
- * @category ui/stat-card
  * @since 0.1.0
  */
 export type CngxStatCardConfigFeature =
@@ -93,7 +92,6 @@ function mergeConfig(
  * });
  * ```
  *
- * @category ui/stat-card
  * @since 0.1.0
  */
 export function provideStatCardConfig(
@@ -132,7 +130,6 @@ export function provideStatCardConfig(
  * class LiveTiles {}
  * ```
  *
- * @category ui/stat-card
  * @since 0.1.0
  */
 export function provideStatCardConfigAt(...features: CngxStatCardConfigFeature[]): Provider[] {

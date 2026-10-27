@@ -47,7 +47,6 @@ import { injectBreadcrumbAriaLabels } from './config/inject-breadcrumb-config';
  * </nav>
  * ```
  *
- * @category ui/breadcrumb
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-overflow.component.ts
  * @since 0.1.0

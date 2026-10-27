@@ -13,8 +13,6 @@ import type { FeedbackFeature } from './feedback-config';
  * from the region names: these describe a transition rather than naming a
  * landmark, so they change on a different cadence and a consumer usually
  * translates them as one block.
- *
- * @category ui/feedback/i18n
  */
 export interface CngxFeedbackAnnouncements {
   /** Announced when a user dismisses an alert. */
@@ -57,8 +55,6 @@ export interface CngxFeedbackAnnouncements {
  * Two region names and one announcement sub-bundle. The banner outlet carries
  * no region `aria-label`, so it gets no key - a key with no Wirkungsort is
  * configuration for its own sake.
- *
- * @category ui/feedback/i18n
  */
 export interface CngxFeedbackI18n {
   /** Accessible name of the `role="region"` host on `CngxAlertStack`. */
@@ -98,8 +94,6 @@ export interface CngxFeedbackI18n {
 /**
  * Override shape: every top-level key optional, and `announcements` overridable
  * key by key rather than all-or-nothing.
- *
- * @category ui/feedback/i18n
  */
 export type CngxFeedbackI18nOverrides = Partial<Omit<CngxFeedbackI18n, 'announcements'>> & {
   readonly announcements?: Partial<CngxFeedbackAnnouncements>;
@@ -158,7 +152,6 @@ const feedbackBundle = createSectionBundle<CngxFeedbackLanguageSection, CngxFeed
  * defaults, formatted for the app locale, so a consumer who provides nothing
  * still gets named regions.
  *
- * @category ui/feedback/i18n
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/config/feedback-i18n.ts
  * @since 0.1.0
@@ -186,8 +179,6 @@ export const CNGX_FEEDBACK_I18N = new InjectionToken<Signal<CngxFeedbackI18n>>('
  * Contributes the token through the feature's `_providers`, so - like
  * {@link withCloseIcon} - a second call in the same `provideFeedback()` wins
  * over the first rather than merging with it. Pass every key in one call.
- *
- * @category ui/feedback/i18n
  */
 export function withFeedbackI18nLabels(
   overrides: CngxFeedbackI18nOverrides | Signal<CngxFeedbackI18nOverrides>,
@@ -227,7 +218,6 @@ export function withFeedbackI18nLabels(
  * bootstrapApplication(App, { providers: [...DE] });
  * ```
  *
- * @category ui/feedback/i18n
  * @since 0.1.0
  */
 export function provideFeedbackI18n(
@@ -254,8 +244,6 @@ export function provideFeedbackI18n(
  * a `computed()`, template or handler so a language switch reaches the label.
  * One Signal per injector, bundle and locale, so row-level readers (alerts,
  * toasts, banners) share it.
- *
- * @category ui/feedback/i18n
  */
 export function injectFeedbackI18n(): Signal<CngxFeedbackI18n> {
   return feedbackBundle.resolve(inject(CNGX_FEEDBACK_I18N));

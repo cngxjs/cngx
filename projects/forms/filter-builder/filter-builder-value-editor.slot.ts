@@ -12,8 +12,6 @@ import type { FilterExpression, FilterFieldDef } from './filter-builder.types';
  * the value - e.g. a range editor that toggles UI on the builtin
  * `'between'` operator (opt-in: expose it per field via
  * `FilterFieldDef.operators`, it evaluates against a `[min, max]` value).
- *
- * @category forms/filter-builder/slots
  */
 export interface CngxFilterBuilderValueEditorContext<TValue> {
   readonly value: TValue;
@@ -40,8 +38,6 @@ export interface CngxFilterBuilderValueEditorContext<TValue> {
  * present this template wins over `CONFIG.templates.valueEditor` and the default
  * editor branches.
  *
- * @category forms/filter-builder/slots
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-value-editor.slot.ts
  * @since 0.1.0
  * @relatedTo CngxFilterBuilder, CngxFilterBuilderExpressionTemplate, CngxFilterBuilderRemoveButton

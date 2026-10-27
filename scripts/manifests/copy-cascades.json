@@ -5,7 +5,7 @@
     {
       "class": "CngxDelta",
       "file": "projects/common/data/display/delta/delta.component.ts",
-      "line": 122,
+      "line": 121,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -16,7 +16,7 @@
     {
       "class": "CngxGoal",
       "file": "projects/common/data/display/goal/goal.component.ts",
-      "line": 98,
+      "line": 97,
       "member": "valueText",
       "enclosing": "computed",
       "tiers": [
@@ -27,7 +27,7 @@
     {
       "class": "CngxTrend",
       "file": "projects/common/data/display/trend/trend.component.ts",
-      "line": 90,
+      "line": 89,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -38,7 +38,7 @@
     {
       "class": "CngxAvatar",
       "file": "projects/common/display/avatar/avatar.component.ts",
-      "line": 106,
+      "line": 105,
       "member": "statusAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -54,7 +54,7 @@
     {
       "class": "CngxChip",
       "file": "projects/common/display/chip/chip.component.ts",
-      "line": 124,
+      "line": 123,
       "member": "resolvedRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -65,7 +65,7 @@
     {
       "class": "CngxSegmentedProgress",
       "file": "projects/common/display/segmented-progress/segmented-progress.component.ts",
-      "line": 128,
+      "line": 125,
       "member": "valueText",
       "enclosing": "computed",
       "tiers": [
@@ -81,7 +81,7 @@
     {
       "class": "CngxAsyncClick",
       "file": "projects/common/interactive/async-click/async-click.directive.ts",
-      "line": 260,
+      "line": 257,
       "member": "announcement",
       "enclosing": "untracked",
       "tiers": [
@@ -97,7 +97,7 @@
     {
       "class": "CngxAsyncClick",
       "file": "projects/common/interactive/async-click/async-click.directive.ts",
-      "line": 263,
+      "line": 260,
       "member": "announcement",
       "enclosing": "untracked",
       "tiers": [
@@ -113,7 +113,7 @@
     {
       "class": "CngxBreadcrumb",
       "file": "projects/common/interactive/breadcrumb/breadcrumb.directive.ts",
-      "line": 55,
+      "line": 54,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -129,7 +129,7 @@
     {
       "class": "CngxCopyBlock",
       "file": "projects/common/interactive/copy/copy-block.ts",
-      "line": 92,
+      "line": 91,
       "member": "resolvedButtonLabel",
       "enclosing": "computed",
       "tiers": [
@@ -140,7 +140,7 @@
     {
       "class": "CngxCopyBlock",
       "file": "projects/common/interactive/copy/copy-block.ts",
-      "line": 94,
+      "line": 93,
       "member": "resolvedCopiedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -151,7 +151,7 @@
     {
       "class": "CngxCopyBlock",
       "file": "projects/common/interactive/copy/copy-block.ts",
-      "line": 103,
+      "line": 102,
       "member": "liveAnnouncement",
       "enclosing": "untracked",
       "tiers": [
@@ -167,7 +167,7 @@
     {
       "class": "CngxRangeSlider",
       "file": "projects/common/interactive/slider/range-slider.component.ts",
-      "line": 126,
+      "line": 125,
       "member": "resolvedStartLabel",
       "enclosing": "computed",
       "tiers": [
@@ -183,7 +183,7 @@
     {
       "class": "CngxRangeSlider",
       "file": "projects/common/interactive/slider/range-slider.component.ts",
-      "line": 128,
+      "line": 127,
       "member": "resolvedEndLabel",
       "enclosing": "computed",
       "tiers": [
@@ -199,7 +199,7 @@
     {
       "class": "CngxExpandableText",
       "file": "projects/common/layout/text/expandable-text.ts",
-      "line": 155,
+      "line": 151,
       "member": "resolvedMoreLabel",
       "enclosing": "computed",
       "tiers": [
@@ -215,7 +215,7 @@
     {
       "class": "CngxExpandableText",
       "file": "projects/common/layout/text/expandable-text.ts",
-      "line": 158,
+      "line": 154,
       "member": "resolvedLessLabel",
       "enclosing": "computed",
       "tiers": [
@@ -231,7 +231,7 @@
     {
       "class": "CngxStepperCount",
       "file": "projects/common/stepper/stepper-count.ts",
-      "line": 154,
+      "line": 150,
       "member": "label",
       "enclosing": "computed",
       "tiers": [
@@ -247,7 +247,7 @@
     {
       "class": "CngxStepperCount",
       "file": "projects/common/stepper/stepper-count.ts",
-      "line": 168,
+      "line": 164,
       "member": "liveLabel",
       "enclosing": "untracked",
       "tiers": [
@@ -285,7 +285,7 @@
     {
       "class": null,
       "file": "projects/common/tabs/announcements/tab-group-announcements.ts",
-      "line": 190,
+      "line": 185,
       "member": "createTabGroupAnnouncements.resolvedAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -302,7 +302,7 @@
     {
       "class": "CngxFileDrop",
       "file": "projects/forms/input/file-drop.directive.ts",
-      "line": 118,
+      "line": 115,
       "member": "resolvedAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -318,7 +318,7 @@
     {
       "class": "CngxActionMultiSelect",
       "file": "projects/forms/select/action-multi-select/action-multi-select.component.ts",
-      "line": 342,
+      "line": 339,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -340,7 +340,7 @@
     {
       "class": "CngxActionMultiSelect",
       "file": "projects/forms/select/action-multi-select/action-multi-select.component.ts",
-      "line": 349,
+      "line": 346,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -356,7 +356,7 @@
     {
       "class": "CngxActionSelect",
       "file": "projects/forms/select/action-select/action-select.component.ts",
-      "line": 318,
+      "line": 315,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -378,7 +378,7 @@
     {
       "class": "CngxCombobox",
       "file": "projects/forms/select/combobox/combobox.component.ts",
-      "line": 413,
+      "line": 410,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -400,7 +400,7 @@
     {
       "class": "CngxCombobox",
       "file": "projects/forms/select/combobox/combobox.component.ts",
-      "line": 422,
+      "line": 419,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -448,7 +448,7 @@
     {
       "class": "CngxMultiSelect",
       "file": "projects/forms/select/multi-select/multi-select.component.ts",
-      "line": 311,
+      "line": 308,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -470,7 +470,7 @@
     {
       "class": "CngxMultiSelect",
       "file": "projects/forms/select/multi-select/multi-select.component.ts",
-      "line": 318,
+      "line": 315,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -486,7 +486,7 @@
     {
       "class": "CngxReorderableMultiSelect",
       "file": "projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.ts",
-      "line": 329,
+      "line": 326,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -508,7 +508,7 @@
     {
       "class": "CngxReorderableMultiSelect",
       "file": "projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.ts",
-      "line": 336,
+      "line": 333,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -524,7 +524,7 @@
     {
       "class": "CngxSelectShell",
       "file": "projects/forms/select/select-shell/select-shell.component.ts",
-      "line": 332,
+      "line": 329,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -546,7 +546,7 @@
     {
       "class": "CngxSelect",
       "file": "projects/forms/select/single-select/select.component.ts",
-      "line": 294,
+      "line": 291,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -568,7 +568,7 @@
     {
       "class": "CngxTreeSelect",
       "file": "projects/forms/select/tree-select/tree-select.component.ts",
-      "line": 430,
+      "line": 427,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -590,7 +590,7 @@
     {
       "class": "CngxTreeSelect",
       "file": "projects/forms/select/tree-select/tree-select.component.ts",
-      "line": 437,
+      "line": 434,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -606,7 +606,7 @@
     {
       "class": "CngxTypeahead",
       "file": "projects/forms/select/typeahead/typeahead.component.ts",
-      "line": 308,
+      "line": 305,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -628,7 +628,7 @@
     {
       "class": "CngxAccordionItem",
       "file": "projects/ui/accordion/accordion-item.component.ts",
-      "line": 133,
+      "line": 131,
       "member": "resolvedDisabledReason",
       "enclosing": "computed",
       "tiers": [
@@ -644,7 +644,7 @@
     {
       "class": "CngxActionButton",
       "file": "projects/ui/action-button/action-button.ts",
-      "line": 296,
+      "line": 293,
       "member": "effectiveAnnouncement",
       "enclosing": "untracked",
       "tiers": [
@@ -661,7 +661,7 @@
     {
       "class": "CngxActionButton",
       "file": "projects/ui/action-button/action-button.ts",
-      "line": 302,
+      "line": 299,
       "member": "effectiveAnnouncement",
       "enclosing": "untracked",
       "tiers": [
@@ -678,7 +678,7 @@
     {
       "class": "CngxBreadcrumbBar",
       "file": "projects/ui/breadcrumb/breadcrumb-bar.component.ts",
-      "line": 167,
+      "line": 166,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -694,7 +694,7 @@
     {
       "class": "CngxBreadcrumbOverflow",
       "file": "projects/ui/breadcrumb/breadcrumb-overflow.component.ts",
-      "line": 87,
+      "line": 86,
       "member": "resolvedTriggerLabel",
       "enclosing": "computed",
       "tiers": [
@@ -710,7 +710,7 @@
     {
       "class": "CngxBreadcrumbOverflow",
       "file": "projects/ui/breadcrumb/breadcrumb-overflow.component.ts",
-      "line": 90,
+      "line": 89,
       "member": "resolvedMenuLabel",
       "enclosing": "computed",
       "tiers": [
@@ -726,7 +726,7 @@
     {
       "class": "CngxBreadcrumbSiblings",
       "file": "projects/ui/breadcrumb/breadcrumb-siblings.component.ts",
-      "line": 79,
+      "line": 77,
       "member": "resolvedTriggerLabel",
       "enclosing": "computed",
       "tiers": [
@@ -742,7 +742,7 @@
     {
       "class": "CngxBreadcrumbSiblings",
       "file": "projects/ui/breadcrumb/breadcrumb-siblings.component.ts",
-      "line": 82,
+      "line": 80,
       "member": "resolvedMenuLabel",
       "enclosing": "computed",
       "tiers": [
@@ -758,7 +758,7 @@
     {
       "class": "CngxCommandPalette",
       "file": "projects/ui/command-palette/palette/command-palette.component.ts",
-      "line": 133,
+      "line": 132,
       "member": "resolvedAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -774,7 +774,7 @@
     {
       "class": "CngxDgaFilterField",
       "file": "projects/ui/data-grid-accordion/data-grid-filter-field.component.ts",
-      "line": 68,
+      "line": 67,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -790,7 +790,7 @@
     {
       "class": "CngxDgaFilter",
       "file": "projects/ui/data-grid-accordion/data-grid-filter.directive.ts",
-      "line": 61,
+      "line": 60,
       "member": "resolvedAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -806,7 +806,7 @@
     {
       "class": "CngxDgaSortHeader",
       "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
-      "line": 150,
+      "line": 149,
       "member": "statusText",
       "enclosing": "computed",
       "tiers": [
@@ -822,7 +822,7 @@
     {
       "class": "CngxDgaSortHeader",
       "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
-      "line": 153,
+      "line": 152,
       "member": "statusText",
       "enclosing": "computed",
       "tiers": [
@@ -838,7 +838,7 @@
     {
       "class": "CngxDgaSortHeader",
       "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
-      "line": 155,
+      "line": 154,
       "member": "statusText",
       "enclosing": "computed",
       "tiers": [
@@ -854,7 +854,7 @@
     {
       "class": "CngxDgaSortHeader",
       "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
-      "line": 200,
+      "line": 199,
       "member": "announcementTemplate",
       "enclosing": "method",
       "tiers": [
@@ -870,7 +870,7 @@
     {
       "class": "CngxDgaSortHeader",
       "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
-      "line": 203,
+      "line": 202,
       "member": "announcementTemplate",
       "enclosing": "method",
       "tiers": [
@@ -886,7 +886,7 @@
     {
       "class": "CngxDgaSortHeader",
       "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
-      "line": 205,
+      "line": 204,
       "member": "announcementTemplate",
       "enclosing": "method",
       "tiers": [
@@ -902,7 +902,7 @@
     {
       "class": "CngxProgress",
       "file": "projects/ui/feedback/loading/progress.ts",
-      "line": 139,
+      "line": 136,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -918,7 +918,7 @@
     {
       "class": "CngxPaginator",
       "file": "projects/ui/paginator/paginator.component.ts",
-      "line": 173,
+      "line": 172,
       "member": "resolvedAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -934,7 +934,7 @@
     {
       "class": "CngxSidenav",
       "file": "projects/ui/sidenav/sidenav.ts",
-      "line": 232,
+      "line": 225,
       "member": "resolvedResizeLabel",
       "enclosing": "computed",
       "tiers": [
@@ -950,7 +950,7 @@
     {
       "class": "CngxSpeakButton",
       "file": "projects/ui/speak/speak-button.ts",
-      "line": 105,
+      "line": 104,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -961,7 +961,7 @@
     {
       "class": "CngxSpeakButton",
       "file": "projects/ui/speak/speak-button.ts",
-      "line": 106,
+      "line": 105,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -972,7 +972,7 @@
     {
       "class": "CngxStatCard",
       "file": "projects/ui/stat-card/stat-card.component.ts",
-      "line": 333,
+      "line": 332,
       "member": "resolvedBusyLabel",
       "enclosing": "computed",
       "tiers": [
@@ -988,7 +988,7 @@
     {
       "class": "CngxStatCard",
       "file": "projects/ui/stat-card/stat-card.component.ts",
-      "line": 337,
+      "line": 336,
       "member": "resolvedErrorText",
       "enclosing": "computed",
       "tiers": [
@@ -1004,7 +1004,7 @@
     {
       "class": "CngxStatCard",
       "file": "projects/ui/stat-card/stat-card.component.ts",
-      "line": 341,
+      "line": 340,
       "member": "resolvedErrorDescription",
       "enclosing": "computed",
       "tiers": [
@@ -1020,7 +1020,7 @@
     {
       "class": "CngxStatCard",
       "file": "projects/ui/stat-card/stat-card.component.ts",
-      "line": 345,
+      "line": 344,
       "member": "resolvedStaleText",
       "enclosing": "computed",
       "tiers": [
@@ -1036,7 +1036,7 @@
     {
       "class": "CngxStatCard",
       "file": "projects/ui/stat-card/stat-card.component.ts",
-      "line": 349,
+      "line": 348,
       "member": "resolvedEmptyText",
       "enclosing": "computed",
       "tiers": [
@@ -1052,7 +1052,7 @@
     {
       "class": "CngxTimeline",
       "file": "projects/ui/timeline/timeline.component.ts",
-      "line": 441,
+      "line": 430,
       "member": "listLabel",
       "enclosing": "computed",
       "tiers": [

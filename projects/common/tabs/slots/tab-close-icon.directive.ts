@@ -7,8 +7,6 @@ import type { CngxTabHandle } from '../tab-group-host.token';
  * closable tab's close button (the button itself owns the
  * `aria-label`); the template paints only the glyph, so it carries the
  * tab handle in case the visual varies per tab.
- *
- * @category common/tabs/slots
  */
 export interface CngxTabCloseIconContext {
   /** The tab handle whose close button this icon paints. */
@@ -27,7 +25,6 @@ export interface CngxTabCloseIconContext {
  * </cngx-tab-group>
  * ```
  *
- * @category common/tabs/slots
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/slots/tab-close-icon.directive.ts
  * @since 0.1.0

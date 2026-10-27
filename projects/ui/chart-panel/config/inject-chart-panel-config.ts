@@ -12,7 +12,6 @@ import { CNGX_CHART_PANEL_CONFIG } from './chart-panel.config.defaults';
  * defaults). Equivalent to `inject(CNGX_CHART_PANEL_CONFIG)` - the helper
  * exists so consumers don't import the token directly.
  *
- * @category ui/chart-panel
  * @since 0.1.0
  */
 export function injectChartPanelConfig(): CngxChartPanelConfig {
@@ -26,7 +25,6 @@ export function injectChartPanelConfig(): CngxChartPanelConfig {
  * runtime language switch. Runs in injection context; read it inside a `computed()`, a
  * template or a handler, and untracked where it builds live-region text.
  *
- * @category ui/chart-panel
  * @since 0.1.0
  */
 export function injectChartPanelAriaLabels(): Signal<Required<CngxChartPanelAriaLabels>> {

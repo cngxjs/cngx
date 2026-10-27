@@ -15,8 +15,6 @@ import {
  * via {@link withStepperI18nLabels} - un-overridden keys keep their
  * English defaults. The same shape as the section's status words, declared
  * once as {@link CngxStepperStatusLanguage}.
- *
- * @category common/stepper/i18n
  */
 export type CngxStepperStatusLabels = CngxStepperStatusLanguage;
 
@@ -24,8 +22,6 @@ export type CngxStepperStatusLabels = CngxStepperStatusLanguage;
  * Stepper i18n surface. Library defaults are English; locales come from
  * consumer overrides via {@link provideStepperI18n}. Sibling of
  * `CNGX_TABS_I18N` / `CNGX_CHART_I18N`.
- *
- * @category common/stepper/i18n
  */
 export interface CngxStepperI18n {
   /**
@@ -41,8 +37,6 @@ export interface CngxStepperI18n {
    * Landmark `aria-roledescription` for compact step-indicator
    * surfaces such as the dot stepper and the mobile-dot collapse
    * fallback. Mirrors the W3C APG step-indicator pattern.
-   *
-   * @category common/stepper/i18n
    */
   readonly stepIndicatorRoleDescription: string;
   /** `aria-roledescription` of a step group header. English `step group`. */
@@ -114,8 +108,6 @@ export interface CngxStepperI18n {
    * step-count subtext and by `CngxTextStepper`. Receives the
    * 1-based current position and total step count; default
    * `(current, total) => 'Step ${current} of ${total}'`.
-   *
-   * @category common/stepper/i18n
    */
   readonly textStepperFormat: (current: number, total: number) => string;
   /** Collapsed-group SR phrase for `groupCollapseSummary: 'count'`. */
@@ -140,8 +132,6 @@ export interface CngxStepperI18n {
  * `Partial<CngxStepperI18n>` for top-level keys, plus a nested partial
  * for {@link CngxStepperStatusLabels} so consumers can override one
  * pill label without restating the full status-label bundle.
- *
- * @category common/stepper/i18n
  */
 export type CngxStepperI18nOverrides = Omit<Partial<CngxStepperI18n>, 'statusLabels'> & {
   readonly statusLabels?: Partial<CngxStepperStatusLabels>;
@@ -206,7 +196,6 @@ const stepperBundle = createSectionBundle<CngxStepperLanguageSection, CngxSteppe
  * {@link provideStepperI18n}; a `{ provide, useValue }` entry must supply a
  * `Signal<CngxStepperI18n>`.
  *
- * @category common/stepper/i18n
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/i18n/stepper-i18n.ts
  * @since 0.1.0
@@ -220,8 +209,6 @@ export const CNGX_STEPPER_I18N = new InjectionToken<Signal<CngxStepperI18n>>('Cn
  * Feature shape consumed by {@link provideStepperI18n} and {@link provideCngxStepper}.
  * Hidden `_target: 'i18n'` discriminator routes through the family aggregator.
  * Sibling of `CngxTabsI18nFeature`.
- *
- * @category common/stepper/i18n
  */
 export type CngxStepperI18nFeature = ((
   bundle: Signal<CngxStepperI18n>,
@@ -247,8 +234,6 @@ function defineStepperI18nFeature(
  * key-by-key so consumers can override one pill label without
  * restating the rest. Pass a `Signal` to switch the language at runtime.
  * Sibling of `withStepperAriaLabels` / `withStepperFallbackLabels`.
- *
- * @category common/stepper/i18n
  */
 export function withStepperI18nLabels(
   overrides: CngxStepperI18nOverrides | Signal<CngxStepperI18nOverrides>,
@@ -272,8 +257,6 @@ export function withStepperI18nLabels(
  *   ],
  * });
  * ```
- *
- * @category common/stepper/i18n
  */
 export function provideStepperI18n(...features: readonly CngxStepperI18nFeature[]): Provider {
   return {
@@ -286,8 +269,6 @@ export function provideStepperI18n(...features: readonly CngxStepperI18nFeature[
  * Inject the resolved stepper i18n bundle in an injection context. Read it
  * inside a `computed()`, template or handler so a language switch reaches
  * the label.
- *
- * @category common/stepper/i18n
  */
 export function injectStepperI18n(): Signal<CngxStepperI18n> {
   return stepperBundle.resolve(inject(CNGX_STEPPER_I18N));

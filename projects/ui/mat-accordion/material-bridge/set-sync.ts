@@ -10,7 +10,6 @@ import { type DestroyRef, effect, type Injector, runInInjectionContext, type Sig
  * (`expanded` getter/setter from `CdkAccordionItem`, `expandedChange`
  * is an `EventEmitter<boolean>` whose `.subscribe` matches).
  *
- * @category ui/mat-accordion/material-bridge
  * @internal
  */
 export interface CngxExpansionPanelLike {
@@ -32,7 +31,6 @@ export interface CngxExpansionPanelLike {
  * sync writes membership exclusively through `toggle`, never a raw
  * set-write, so it can never diverge from the brain's own DOM path.
  *
- * @category ui/mat-accordion/material-bridge
  * @internal
  */
 export interface CngxAccordionOpenSet {
@@ -45,7 +43,6 @@ export interface CngxAccordionOpenSet {
 /**
  * Options for {@link createMatExpansionSetSync}.
  *
- * @category ui/mat-accordion/material-bridge
  * @internal
  */
 export interface CngxMatExpansionSetSyncOptions<P extends CngxExpansionPanelLike> {
@@ -103,7 +100,6 @@ export interface CngxMatExpansionSetSyncOptions<P extends CngxExpansionPanelLike
  * membership check drops any Material emit that already agrees with the
  * brain.
  *
- * @category ui/mat-accordion/material-bridge
  * @internal
  */
 export function createMatExpansionSetSync<P extends CngxExpansionPanelLike>(

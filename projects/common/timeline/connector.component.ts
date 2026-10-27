@@ -8,8 +8,6 @@ import type { TimelineStatus } from './marker.component';
  *
  * `'only'` renders nothing at all - a single-item timeline has no rail to
  * draw.
- *
- * @category common/timeline
  */
 export type TimelineConnectorPosition = 'middle' | 'first' | 'last' | 'only';
 
@@ -37,7 +35,6 @@ export type TimelineConnectorPosition = 'middle' | 'first' | 'last' | 'only';
  * <cngx-timeline-connector position="last" />
  * ```
  *
- * @category common/timeline
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/connector.component.ts
  * @relatedTo CngxTimelineMarker

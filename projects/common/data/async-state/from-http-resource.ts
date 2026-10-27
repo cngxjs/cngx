@@ -45,8 +45,6 @@ interface HttpResourceLike<T> extends Resource<T> {
  * // items.progress() tracks download progress 0-100
  * // <cngx-progress [state]="items"> - auto-wired progress bar
  * ```
- *
- * @category common/data/async-state
  */
 export function fromHttpResource<T>(ref: HttpResourceLike<T>): CngxAsyncState<T> {
   // Map loaded/total bytes to a 0-100 integer, clamped; no total = indeterminate.

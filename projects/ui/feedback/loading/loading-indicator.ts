@@ -15,8 +15,6 @@ import { injectFeedbackI18n } from '../config/feedback-i18n';
 
 /**
  * Visual variant for the loading indicator.
- *
- * @category ui/feedback/loading
  */
 export type LoadingIndicatorVariant = 'spinner' | 'bar';
 
@@ -43,8 +41,6 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
  * <cngx-loading-indicator [loading]="isLoading()" label="Fetching data" />
  * ```
  *
- * @category ui/feedback/loading
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/loading/loading-indicator.ts
  * @since 0.1.0
@@ -52,6 +48,7 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
  *
  * <example-url>http://localhost:4200/#/ui/feedback/loading-indicator/bar-variant</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/loading-indicator/spinner-variant</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-loading-indicator',

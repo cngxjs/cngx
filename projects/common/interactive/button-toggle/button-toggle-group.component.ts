@@ -52,8 +52,6 @@ import {
  * </cngx-button-toggle-group>
  * ```
  *
- * @category common/interactive
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-toggle-group.component.ts
  * @selector cngx-button-toggle-group
@@ -62,6 +60,7 @@ import {
  * <example-url>http://localhost:4200/#/common/interactive/button-toggle/group/basic-view-switcher</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/button-toggle/group/disabled-group-cascade-vs-per-toggle</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/button-toggle/group/vertical-orientation</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-button-toggle-group, [cngxButtonToggleGroup]',

@@ -59,7 +59,6 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * <input cngxNumericInput cngxFieldSkin="bare" />
  * ```
  *
- * @category forms/field
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/field-skin.directive.ts
  * @since 0.1.0
@@ -72,6 +71,7 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * <example-url>http://localhost:4200/#/forms/field/skin/bare-cell-edit</example-url>
  * <example-url>http://localhost:4200/#/forms/input/numeric/basic-numeric-input</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxFieldSkin]',

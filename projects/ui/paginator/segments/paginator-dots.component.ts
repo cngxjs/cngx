@@ -104,12 +104,12 @@ function dotsEqual(a: DotModel, b: DotModel): boolean {
  * `--cngx-target-min` floor by padding (base CSS); the painted circle stays at
  * `--cngx-paginator-dot-size`.
  *
- * @category ui/paginator
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-dots.component.ts
  * @since 0.1.0
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/dots/dots</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/dots</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-pgn-dots',

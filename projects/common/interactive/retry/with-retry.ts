@@ -6,8 +6,6 @@ import type { AsyncAction } from '../async-click/async-click.directive';
 
 /**
  * Configuration for `createRetry()`.
- *
- * @category common/interactive/retry
  */
 export interface RetryConfig {
   /** Maximum number of attempts (including the first). Default: `3`. */
@@ -20,8 +18,6 @@ export interface RetryConfig {
 
 /**
  * State exposed by the retryable action - read-only signals for UI feedback.
- *
- * @category common/interactive/retry
  */
 export interface RetryState {
   /** Current attempt number (1-based). `0` before first invocation. */
@@ -66,8 +62,6 @@ export interface RetryState {
  * <ng-container [cngxToastOn]="retryState.state"
  *   toastSuccess="Saved" toastError="All retries failed" />
  * ```
- *
- * @category common/interactive/retry
  */
 export function createRetry(action: AsyncAction, config?: RetryConfig): [AsyncAction, RetryState] {
   const maxAttempts = config?.maxAttempts ?? 3;
@@ -178,6 +172,5 @@ export function createRetry(action: AsyncAction, config?: RetryConfig): [AsyncAc
  *
  * @deprecated Use `createRetry` - this name is removed at the v1.0 cut
  * (`with*` is reserved for provider feature functions).
- * @category common/interactive/retry
  */
 export const withRetry = createRetry;

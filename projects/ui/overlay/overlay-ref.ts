@@ -5,8 +5,6 @@ import { Subject, takeUntil } from 'rxjs';
 /**
  * Construction-time options for a {@link CngxOverlayRef}. Set by
  * {@link CngxOverlay.open}, not by consumers.
- *
- * @category ui/overlay
  */
 export interface CngxOverlayRefConfig {
   /**
@@ -28,8 +26,6 @@ export interface CngxOverlayRefConfig {
  * focus to the element that opened it, and surfaces its open state as a signal
  * beside the RxJS `afterClosed$`.
  *
- * @category ui/overlay
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/overlay/overlay-ref.ts
  * @since 0.1.0

@@ -9,8 +9,6 @@ import type { CngxMenuConfig } from './menu-config';
  * `@cngx/common/interactive` free of `@cngx/common/popover` imports - the
  * popover module already depends on this entry-point and the reverse
  * import would close a circular ng-packagr dependency.
- *
- * @category common/interactive/menu
  */
 export interface CngxMenuDismissPopoverRef {
   readonly isVisible: () => boolean;
@@ -43,8 +41,6 @@ export interface CngxMenuDismissPopoverRef {
  *   `popover.hide()` themselves and so always coincide with an actual
  *   close - `'escape'` is the one source where intent and effect can
  *   diverge.
- *
- * @category common/interactive/menu
  */
 export type CngxMenuDismissSource =
   | 'outside-click'
@@ -61,8 +57,6 @@ export type CngxMenuDismissSource =
  * `pointercancel` listeners install together - they represent the same
  * "context lost" semantic and consumers who want one rarely want the
  * other off.
- *
- * @category common/interactive/menu
  */
 export interface CngxMenuDismissHandlerOptions {
   /** Popover whose `.hide()` runs when any dismissal source fires. */
@@ -125,8 +119,6 @@ export interface CngxMenuDismissHandlerOptions {
  * no reactive state of its own so the trigger directive can store it as
  * a plain field rather than a signal (avoids a signal write inside the
  * `isOpen` effect).
- *
- * @category common/interactive/menu
  */
 export interface CngxMenuDismissHandler {
   /**
@@ -139,8 +131,6 @@ export interface CngxMenuDismissHandler {
 
 /**
  * Factory signature for {@link CNGX_MENU_DISMISS_HANDLER_FACTORY}.
- *
- * @category common/interactive/menu
  */
 export type CngxMenuDismissHandlerFactory = (
   opts: CngxMenuDismissHandlerOptions,
@@ -154,7 +144,6 @@ export type CngxMenuDismissHandlerFactory = (
  * Override via {@link CNGX_MENU_DISMISS_HANDLER_FACTORY} for
  * telemetry-wrapped or test-doubled dismissal.
  *
- * @category common/interactive/menu
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/dismiss-handler.ts
  * @since 0.1.0
  */
@@ -277,7 +266,6 @@ export function createMenuDismissHandler(
  * at app root for telemetry instrumentation, or in `viewProviders` for a
  * single feature scope.
  *
- * @category common/interactive/menu
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/dismiss-handler.ts
  * @since 0.1.0
  */
@@ -294,8 +282,6 @@ export const CNGX_MENU_DISMISS_HANDLER_FACTORY = new InjectionToken<CngxMenuDism
  * passed as a thunk because trigger directives resolve their popover
  * input lazily (after Angular binds inputs) - the binding cannot capture
  * the concrete reference at construction time.
- *
- * @category common/interactive/menu
  */
 export interface CngxMenuTriggerDismissBindingOptions {
   readonly popover: () => CngxMenuDismissPopoverRef;
@@ -317,8 +303,6 @@ export interface CngxMenuTriggerDismissBindingOptions {
  * and the attach/detach pair both trigger directives invoke from their
  * `isOpen` effect. Extracted so `CngxMenuTrigger` and
  * `CngxContextMenuTrigger` share the same wiring without forking it.
- *
- * @category common/interactive/menu
  */
 export interface CngxMenuTriggerDismissBinding {
   /**
@@ -343,7 +327,6 @@ export interface CngxMenuTriggerDismissBinding {
  * via its `onDismiss` callback, which runs from DOM event handlers
  * (never inside an Angular `effect()`).
  *
- * @category common/interactive/menu
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/dismiss-handler.ts
  * @since 0.1.0
  */

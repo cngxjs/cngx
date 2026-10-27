@@ -4,7 +4,6 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * The recycler section of a {@link CngxLanguagePack}: the screen-reader
  * announcements of a virtualised list.
  *
- * @category common/data/i18n
  * @since 0.1.0
  * @relatedTo CNGX_RECYCLER_I18N
  */
@@ -23,7 +22,6 @@ export interface CngxRecyclerLanguageSection {
  * The English recycler section: the single source of the recycler's English
  * copy. `CNGX_RECYCLER_I18N` defaults to it.
  *
- * @category common/data/i18n
  * @since 0.1.0
  * @relatedTo CNGX_RECYCLER_I18N
  */

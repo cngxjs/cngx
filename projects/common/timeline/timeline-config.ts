@@ -42,8 +42,6 @@ import type {
  * Each of these is a *fallback*: the matching template slot
  * (`*cngxTimelineError`, `*cngxTimelineEmpty`, ...) wins whenever it is
  * present.
- *
- * @category common/timeline
  */
 export interface CngxTimelineLabels {
   /**
@@ -120,8 +118,6 @@ export interface CngxTimelineLabels {
  * Set them with {@link withTimelineTemplates}. Keys are typed against
  * `unknown` items because the config is app-wide while the slots are
  * generic; a `TemplateRef` for a concrete item type assigns in fine.
- *
- * @category common/timeline
  */
 export interface CngxTimelineTemplates {
   /** Default row template (`*cngxTimelineItem`). */
@@ -151,8 +147,6 @@ export interface CngxTimelineTemplates {
  * configure, so this carries text and templates only. Bucketing is
  * swapped through {@link CNGX_TIMELINE_GROUPING_FACTORY} instead, and
  * everything visual through the slot directives.
- *
- * @category common/timeline
  */
 export interface CngxTimelineConfig {
   /**
@@ -231,7 +225,6 @@ function timelineConfigDefaultsFromPack(): CngxTimelineConfig {
  * {@link provideTimelineConfig} (root) or {@link provideTimelineConfigAt}
  * (component scope).
  *
- * @category common/timeline
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/timeline-config.ts
  * @relatedTo provideTimelineConfig
@@ -246,8 +239,6 @@ export const CNGX_TIMELINE_CONFIG = new InjectionToken<CngxTimelineConfig>('Cngx
 /**
  * Signature of every `with*` timeline config builder - a pure
  * config-to-config mutator, folded left over the library defaults.
- *
- * @category common/timeline
  */
 export type CngxTimelineConfigFeature = (config: CngxTimelineConfig) => CngxTimelineConfig;
 
@@ -271,8 +262,6 @@ export const TIMELINE_NO_LABELS: CngxTimelineLabels = {};
  *   }),
  * )
  * ```
- *
- * @category common/timeline
  */
 export function withTimelineLabels(
   labels: CngxTimelineLabels | Signal<CngxTimelineLabels>,
@@ -306,8 +295,6 @@ export function withTimelineLabels(
  *
  * providers: [provideTimelineConfig(withTimelineTemplates({ empty: this.emptyTpl() }))]
  * ```
- *
- * @category common/timeline
  */
 export function withTimelineTemplates(templates: CngxTimelineTemplates): CngxTimelineConfigFeature {
   return (config) => ({ ...config, templates: { ...config.templates, ...templates } });
@@ -323,8 +310,6 @@ function applyFeatures(
 /**
  * Root-level provider. Apply once in `bootstrapApplication` /
  * `appConfig.providers`.
- *
- * @category common/timeline
  */
 export function provideTimelineConfig(
   ...features: readonly CngxTimelineConfigFeature[]
@@ -351,8 +336,6 @@ export function provideTimelineConfig(
  *   viewProviders: [...provideTimelineConfigAt(withTimelineLabels({ retry: 'Again' }))],
  * })
  * ```
- *
- * @category common/timeline
  */
 export function provideTimelineConfigAt(
   ...features: readonly CngxTimelineConfigFeature[]
@@ -369,8 +352,6 @@ export function provideTimelineConfigAt(
 
 /**
  * Read the resolved timeline config. Runs in an injection context.
- *
- * @category common/timeline
  */
 export function injectTimelineConfig(): CngxTimelineConfig {
   return inject(CNGX_TIMELINE_CONFIG);

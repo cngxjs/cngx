@@ -38,8 +38,6 @@ import type { CngxFieldRef, CngxFormFieldControl } from './models';
  * pass the returned accessor to `[field]` - the bridge doesn't care about the
  * source.
  *
- * @category forms/field
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/listbox-field-bridge.directive.ts
  * @since 0.1.0
@@ -48,6 +46,7 @@ import type { CngxFieldRef, CngxFormFieldControl } from './models';
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-single-select</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxListboxFieldBridge]',

@@ -5,8 +5,6 @@ import type { CngxButtonSize, CngxButtonVariant } from './button.types';
 /**
  * Contract a button group exposes to the buttons inside it. A child's own
  * input still wins; an `undefined` group value falls through to the config.
- *
- * @category common/button
  */
 export interface CngxButtonGroupContext {
   /** Emphasis the group hands to its children. */
@@ -19,7 +17,6 @@ export interface CngxButtonGroupContext {
  * DI token a button group provides (`useExisting`) so its children read
  * variant and size without importing the group class.
  *
- * @category common/button
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-group.token.ts
  * @since 0.1.0
  * @relatedTo CngxButton

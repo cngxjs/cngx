@@ -6,8 +6,6 @@ import type { CngxBreadcrumbItem } from '@cngx/common/interactive';
  * Context for the `*cngxBreadcrumbOverflowItem` template. Replaces the default
  * `crumb.resolvedLabel()` text inside the overflow menu; the surrounding
  * `<li cngxMenuItem>` shell (role, highlight, activation) stays library-owned.
- *
- * @category ui/breadcrumb
  */
 export interface CngxBreadcrumbOverflowItemContext {
   /** Convenience alias for `crumb` - usable as the `let-crumb` shorthand. */
@@ -32,12 +30,12 @@ export interface CngxBreadcrumbOverflowItemContext {
  * </cngx-breadcrumb-overflow>
  * ```
  *
- * @category ui/breadcrumb
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-overflow-item.directive.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbOverflow, CngxBreadcrumbBar
  * <example-url>http://localhost:4200/#/ui/breadcrumb/overflow/custom-overflow-row</example-url>
+ * @axis level organism
  */
 @Directive({
   selector: 'ng-template[cngxBreadcrumbOverflowItem]',

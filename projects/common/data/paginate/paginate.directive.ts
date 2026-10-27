@@ -24,8 +24,6 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  *   [length]="pg.total()" [pageIndex]="pg.pageIndex()" [pageSize]="pg.pageSize()"
  *   (page)="pg.setPageSize($event.pageSize, false); pg.setPage($event.pageIndex)" />
  * ```
- * @category common/data/paginate
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/paginate/paginate.directive.ts
  * @since 0.1.0
@@ -35,6 +33,7 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  * <example-url>http://localhost:4200/#/common/data/paginate-list/paginated-list-cngxpaginate-cngxmatpaginator</example-url>
  * <example-url>http://localhost:4200/#/common/data/paginate-list/uncontrolled-mode-zero-class-boilerplate</example-url>
  * <example-url>http://localhost:4200/#/common/data/smart-data-source/smartdatasource-cngxpaginate-hostdirective</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxPaginate]',

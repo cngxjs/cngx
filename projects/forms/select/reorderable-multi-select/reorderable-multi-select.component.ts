@@ -144,8 +144,6 @@ import {
  * Change event emitted by `CngxReorderableMultiSelect.selectionChange`
  * and `.reordered`. The `'reorder'` branch carries `fromIndex` /
  * `toIndex`; other branches leave them `undefined`.
- *
- * @category forms/select/reorderable-multi-select
  */
 export interface CngxReorderableMultiSelectChange<T = unknown> {
   readonly source: CngxReorderableMultiSelect<T>;
@@ -189,8 +187,6 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
  * sheet. `[presentation]` forces `'anchored'`, `'sheet'` or `'fullscreen'`;
  * `withMobileSheet('off')` keeps every select in its scope anchored.
  *
- * @category forms/select/reorderable-multi-select
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.ts
  * @since 0.1.0
@@ -220,6 +216,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
  * @slot cngxSelectOptionPending Replaces the spinner on an option row while its commit is in flight; gets option.
  * @slot cngxSelectOptionError Replaces the error mark on selected rows when a commit fails and commitErrorDisplay is 'inline'; gets option, error.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-reorderable-multi-select',

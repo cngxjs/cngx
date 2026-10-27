@@ -53,12 +53,11 @@ import {
  * @playground Native router tabs with a CanDeactivate guard ./examples/routed-nav/routed-nav.component.ts
  * @see {@link CngxTabGroup} for the programmatic tablist organism.
  *
- * @category ui/tabs
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/tabs/tab-nav.component.ts
  * @since 0.1.0
  * @relatedTo CngxTabLink, CngxTabsRouteSync, CngxTabGroup, CngxMatTabNav
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-tab-nav',

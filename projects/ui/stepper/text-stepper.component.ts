@@ -36,14 +36,13 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
  * Material consumers inherit surrounding text styling via CSS
  * inheritance, no theme bridge required.
  *
- * @category ui/stepper
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/text-stepper.component.ts
  * @since 0.1.0
  * @relatedTo CngxStepperPresenter, CngxProgressBarStepper, CngxDotStepper
  * @slot cngxStepperEmpty Renders when no step is projected at all.
  * <example-url>http://localhost:4200/#/ui/stepper/text-stepper/inline-progress</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-text-stepper',

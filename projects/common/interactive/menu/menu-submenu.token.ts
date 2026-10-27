@@ -8,8 +8,6 @@ import type { CngxMenuHost } from './menu-host.token';
  * arrow-right / arrow-left keyboard semantics through a focus-stack
  * model. The trigger looks up a submenu by matching the active item's
  * `id` against this contract's `id`.
- *
- * @category common/interactive/menu
  */
 export interface CngxMenuSubmenuLike {
   /** Host element id - matches the surrounding `CngxMenuItem` id. */
@@ -48,7 +46,6 @@ export interface CngxMenuSubmenuLike {
  * boundaries a content query cannot), and the result is exposed on
  * `CngxMenuHost.submenuItems`.
  *
- * @category common/interactive/menu
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-submenu.token.ts
  * @since 0.1.0
@@ -61,8 +58,6 @@ export const CNGX_MENU_SUBMENU_ITEM = new InjectionToken<CngxMenuSubmenuLike>(
  * Structural popover surface the submenu brain drives. Typed structurally so
  * `@cngx/common/interactive` stays free of a `@cngx/common/popover` import
  * (menu-accepted-debt §7) - a concrete `CngxPopover` satisfies it.
- *
- * @category common/interactive/menu
  */
 export interface CngxMenuSubmenuPopoverRef {
   readonly isVisible: () => boolean;
@@ -82,8 +77,6 @@ export interface CngxMenuSubmenuPopoverRef {
  * `[submenuMenu]` inputs. Lets `@cngx/ui/context-menu` wire the submenu
  * brain internally (Bridge-Input-Regel) - the brain stays inert (no
  * `aria-haspopup` / `aria-expanded`) until one source is present.
- *
- * @category common/interactive/menu
  */
 export interface CngxMenuSubmenuWiring {
   /** The submenu popover surface, or `undefined` while no submenu is wired. */
@@ -97,7 +90,6 @@ export interface CngxMenuSubmenuWiring {
  * and inner menu without template inputs. Resolution order in the brain:
  * explicit input first, then this token, else inert.
  *
- * @category common/interactive/menu
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-submenu.token.ts
  * @since 0.1.0

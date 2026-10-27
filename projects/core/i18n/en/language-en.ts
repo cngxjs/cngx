@@ -6,7 +6,6 @@
  * Copy it as the template for a new language file, or pass it to
  * `withPack` to switch back to English explicitly.
  *
- * @category core/i18n
  * @since 0.1.0
  * @relatedTo provideCngxI18n, withPack
  */

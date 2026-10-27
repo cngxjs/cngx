@@ -15,8 +15,6 @@ export type { FlatTreeNode };
  *   - `'cascade-toggle'` - parent toggle propagated to all descendants
  *     atomically (requires `[cascadeChildren]="true"`).
  *   - `'clear'` - full selection cleared.
- *
- * @category forms/select/tree-select
  */
 export type CngxTreeSelectAction = 'toggle' | 'cascade-toggle' | 'clear';
 
@@ -30,8 +28,6 @@ export type CngxTreeSelectAction = 'toggle' | 'cascade-toggle' | 'clear';
  *   - `'all'` - one chip per selected value.
  *
  * Default: `'parents'` with `[cascadeChildren]="true"`, else `'all'`.
- *
- * @category forms/select/tree-select
  */
 export type CngxTreeSelectChipDisplay = 'parents' | 'leaves' | 'all';
 
@@ -39,8 +35,6 @@ export type CngxTreeSelectChipDisplay = 'parents' | 'leaves' | 'all';
  * Resolved selection entry surfaced to the chip strip and the chip /
  * trigger-label slots. Carries a display label alongside the raw value
  * so custom markup never has to call `labelFn`.
- *
- * @category forms/select/tree-select
  */
 export interface CngxTreeSelectedItem<T = unknown> {
   readonly value: T;
@@ -50,8 +44,6 @@ export interface CngxTreeSelectedItem<T = unknown> {
 /**
  * Context for `*cngxTreeSelectChip`. Mirrors `CngxMultiSelectChipContext`
  * shape so consumer snippets share across variants.
- *
- * @category forms/select/tree-select
  */
 export interface CngxTreeSelectChipContext<T = unknown> {
   readonly $implicit: CngxTreeSelectedItem<T>;
@@ -67,8 +59,6 @@ export interface CngxTreeSelectChipContext<T = unknown> {
 /**
  * Context for `*cngxTreeSelectTriggerLabel`. Mirrors the flat-family
  * trigger-label context so `"3 selected"` summaries share templates.
- *
- * @category forms/select/tree-select
  */
 export interface CngxTreeSelectTriggerLabelContext<T = unknown> {
   readonly $implicit: readonly CngxTreeSelectedItem<T>[];
@@ -86,8 +76,6 @@ export interface CngxTreeSelectTriggerLabelContext<T = unknown> {
  * `toggleExpand` / `handleSelect` are closed callbacks bound to the
  * surrounding component - wire into `(click)` on a custom twisty
  * button or row body.
- *
- * @category forms/select/tree-select
  */
 export interface CngxTreeSelectNodeContext<T = unknown> {
   readonly $implicit: FlatTreeNode<T>;
@@ -113,8 +101,6 @@ export interface CngxTreeSelectNodeContext<T = unknown> {
  * inline end of a parent row in the default row markup. The count renders
  * inside an `aria-hidden` wrapper the host owns: `aria-checked` (true /
  * mixed / false) already carries the state it summarizes.
- *
- * @category forms/select/tree-select
  */
 export interface CngxTreeSelectNodeCountContext<T = unknown> {
   /** The built-in count text (`treeNodeCount` copy, default `'{selected}/{total}'`). */
@@ -133,8 +119,6 @@ export interface CngxTreeSelectNodeCountContext<T = unknown> {
  * footer is the bottom bar. `clear` runs the same commit-aware clear path as
  * the trigger clear button (announcement, `cleared`, `selectionChange`
  * included) and is a no-op while nothing is selected.
- *
- * @category forms/select/tree-select
  */
 export interface CngxTreeSelectFooterContext {
   /** Number of selected values. */

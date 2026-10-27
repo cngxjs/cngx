@@ -18,7 +18,6 @@ import { injectAsyncRegistry } from './provide-async-registry';
  *
  * @returns A probe over `CngxAsyncRegistry.isAnythingLoading`.
  *
- * @category common/data/async-registry
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/async-registry/inject-latency-probe.ts
  * @since 0.1.0
  * @relatedTo provideAsyncRegistry, injectAsyncRegistry, createLatencyProbe

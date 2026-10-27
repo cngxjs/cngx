@@ -35,8 +35,6 @@ import {
  *   truth about "selected" is communicated by the row's own `aria-selected`
  *   / `role="option"` ARIA, not by this decoration.
  *
- * @category common/display
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/checkbox-indicator/checkbox-indicator.component.ts
  * @since 0.1.0
@@ -45,6 +43,7 @@ import {
  * <example-url>http://localhost:4200/#/common/display/checkbox-indicator/variant-matrix</example-url>
  * <example-url>http://localhost:4200/#/common/display/checkbox-indicator/sizes</example-url>
  * <example-url>http://localhost:4200/#/common/display/checkbox-indicator/custom-glyph</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-checkbox-indicator',

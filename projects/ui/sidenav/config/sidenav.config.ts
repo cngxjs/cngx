@@ -23,7 +23,6 @@ import type { Signal } from '@angular/core';
  * is deliberately not here: it lives in `sidenav-layout.css` as a
  * `@container` rule, so a consumer moves it by overriding that rule.
  *
- * @category ui/sidenav
  * @since 0.1.0
  */
 export interface CngxSidenavConfig {
@@ -86,7 +85,6 @@ export interface CngxSidenavConfig {
  * User-facing copy of the sidenav. The defaults come from the `sidenav` section
  * of the language pack (English without one).
  *
- * @category ui/sidenav
  * @since 0.1.0
  */
 export interface CngxSidenavLabels {

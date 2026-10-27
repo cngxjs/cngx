@@ -7,7 +7,6 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * `CNGX_TABS_CONFIG` (`ariaLabels`, `fallbackLabels`). Messages use `{name}`
  * placeholders; a plural message picks its form from `{count}`.
  *
- * @category common/tabs/i18n
  * @since 0.1.0
  * @relatedTo CNGX_TABS_I18N, CNGX_TABS_CONFIG
  */
@@ -74,7 +73,6 @@ export interface CngxTabsLanguageSection {
  * The English tabs section: the single source of the tabs' English copy.
  * `CNGX_TABS_I18N` and the `CNGX_TABS_CONFIG` labels default to it.
  *
- * @category common/tabs/i18n
  * @since 0.1.0
  * @relatedTo CNGX_TABS_I18N, CNGX_TABS_CONFIG
  */

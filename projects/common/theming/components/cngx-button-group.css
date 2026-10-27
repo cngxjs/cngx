@@ -45,6 +45,8 @@
  * - end radius -> `--cngx-radius-md`, the same rung as `--cngx-button-radius`
  * - addon and separator colour -> `--cngx-color-border` /
  *   `--cngx-color-surface` / `--cngx-color-text`
+ *
+ * @themes CngxButtonGroup
  */
 
 @layer cngx.tokens {

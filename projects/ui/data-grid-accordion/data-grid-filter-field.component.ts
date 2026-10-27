@@ -34,7 +34,6 @@ import { CngxDgaFilter } from './data-grid-filter.directive';
  * </cngx-data-grid-accordion>
  * ```
  *
- * @category ui/data-grid-accordion
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-filter-field.component.ts
  * @since 0.1.0

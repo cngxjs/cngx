@@ -33,8 +33,6 @@ import {
  * The cost is one directive instance and one `computed()` per input; no
  * extra DOM, no effect, and the default resolves to no attribute at all.
  *
- * @category forms/input
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input.directive.ts
  * @selector [cngxInput]
@@ -45,6 +43,7 @@ import {
  * <example-url>http://localhost:4200/#/forms/input/smart-autocomplete-and-spellcheck</example-url>
  * <example-url>http://localhost:4200/#/forms/field/skin/fill</example-url>
  * <example-url>http://localhost:4200/#/forms/field/skin/bare-cell-edit</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: 'input[cngxInput], textarea[cngxInput], select[cngxInput]',

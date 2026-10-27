@@ -33,8 +33,6 @@ import type { CngxFilter } from '../filter/filter.directive';
  * the consumer's component, NOT the bridge's inner
  * `<cngx-multi-chip-group>`, so a consumer-supplied
  * `cngxChipInGroup` would fail to resolve `CNGX_CHIP_GROUP_HOST`).
- *
- * @category common/data/filter
  */
 export interface CngxFilterChipContext<TItem = unknown, TValue = unknown> {
   readonly $implicit: TItem;
@@ -50,7 +48,6 @@ export interface CngxFilterChipContext<TItem = unknown, TValue = unknown> {
  * wraps that decoration in `cngxChipInGroup`-bound chip wrappers
  * automatically. Absence falls back to the default text-only label.
  *
- * @category common/data/filter
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/filter-chips/filter-chips.component.ts
  * @since 0.1.0
  * @relatedTo CngxFilterChips, CngxFilter
@@ -144,8 +141,6 @@ export class CngxFilterChip<TItem = unknown, TValue = unknown> {
  * </ng-container>
  * ```
  *
- * @category common/data/filter
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/filter-chips/filter-chips.component.ts
  * @since 0.1.0
@@ -154,6 +149,7 @@ export class CngxFilterChip<TItem = unknown, TValue = unknown> {
  *
  * <example-url>http://localhost:4200/#/common/data/filter-chips/custom-chip-decoration-via-cngxfilterchip</example-url>
  * <example-url>http://localhost:4200/#/common/data/filter-chips/multi-role-filter-wired-to-a-list</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-filter-chips',

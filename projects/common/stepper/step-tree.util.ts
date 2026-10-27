@@ -65,8 +65,6 @@ export function stepTreeEqual(a: readonly CngxStepNode[], b: readonly CngxStepNo
  * @internal Exported from `public-api.ts` so the cngx-stepper and
  * cngx-mat-stepper organisms share the comparator across the
  * secondary-entry boundary (Sheriff forbids deep-relative imports).
- *
- * @category common/stepper
  */
 export function flatStepsEqual(a: readonly CngxStepNode[], b: readonly CngxStepNode[]): boolean {
   if (a === b) {

@@ -20,7 +20,6 @@ export interface CngxSliderThumbBounds {
  * cross-clamp lives in {@link boundsFor}, so two thumbs can never pass each
  * other and no effect is needed to keep them ordered.
  *
- * @category common/interactive/slider
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/range-slider.token.ts
  * @since 0.1.0
  * @relatedTo CngxRangeSlider, CngxSliderThumb
@@ -59,7 +58,6 @@ export interface CngxSliderRangeHost {
  * provides it via `useExisting`; each {@link CngxSliderThumb} injects it up the
  * element-injector hierarchy.
  *
- * @category common/interactive/slider
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/range-slider.token.ts
  * @since 0.1.0
  * @relatedTo CngxRangeSlider, CngxSliderThumb

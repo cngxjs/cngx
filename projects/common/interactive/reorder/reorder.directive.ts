@@ -72,7 +72,6 @@ function wireDevModeCheck(hostEl: HTMLElement, itemSelector: Signal<string>): vo
  * keep their default meaning (focus navigation) - only the configured
  * modifier + arrow produces a move.
  *
- * @category common/interactive/reorder
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/reorder.directive.ts
  * @since 0.1.0
  */
@@ -87,7 +86,6 @@ export type CngxReorderModifier = 'ctrl' | 'alt' | 'meta';
  * Consumers own the write back to the source signal (directly, or via a
  * commit controller for optimistic / pessimistic policies).
  *
- * @category common/interactive/reorder
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/reorder.directive.ts
  * @since 0.1.0
  */
@@ -139,8 +137,6 @@ interface ActiveDrag {
  * </span>
  * ```
  *
- * @category common/interactive/reorder
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/reorder.directive.ts
  * @since 0.1.0
@@ -150,6 +146,7 @@ interface ActiveDrag {
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/optional-drag-handle-glyph</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/pre-seeded-values-reorder-log</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxReorder]',

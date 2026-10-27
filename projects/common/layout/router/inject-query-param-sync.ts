@@ -46,7 +46,6 @@ export interface QueryParamSyncOptions<T = boolean> {
  * the consumer must stay able to toggle, so hydrate cannot be a `computed`. It
  * is edge-guarded by serialized equality and wrapped in `untracked()`.
  *
- * @category common/layout
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/router/inject-query-param-sync.ts
  * @since 0.1.0
  * @relatedTo CngxStepperRouterSync

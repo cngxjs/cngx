@@ -11,7 +11,6 @@ import { createPreferenceAxis } from './preference-axis';
  * (`density-tokens.css`). `comfortable` is the library default;
  * `compact` and `spacious` re-scale `--cngx-space-*` for the subtree.
  *
- * @category core/theming
  * @since 0.1.0
  */
 export type CngxDensityValue = 'comfortable' | 'compact' | 'spacious';
@@ -23,7 +22,6 @@ export type CngxDensityValue = 'comfortable' | 'compact' | 'spacious';
  * `comfortable` when no `provideDensity()` is present so an injected
  * signal is always available.
  *
- * @category core/theming
  * @relatedTo provideDensity
  * @relatedTo injectDensity
  * @since 0.1.0
@@ -51,7 +49,6 @@ const densityAxis = createPreferenceAxis({
  * });
  * ```
  *
- * @category core/theming
  * @relatedTo CNGX_DENSITY
  * @relatedTo injectDensity
  * @since 0.1.0
@@ -65,7 +62,6 @@ export function provideDensity(initial: CngxDensityValue = 'comfortable'): Envir
  * returned signal is writable, so `injectDensity().set('spacious')`
  * re-densifies the whole document reactively.
  *
- * @category core/theming
  * @relatedTo provideDensity
  * @since 0.1.0
  */

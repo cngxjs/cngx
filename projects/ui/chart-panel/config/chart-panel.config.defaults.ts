@@ -22,7 +22,6 @@ export const CNGX_CHART_PANEL_DEFAULTS: CngxChartPanelConfig = {
  * with a default factory, so `inject(CNGX_CHART_PANEL_CONFIG)` always
  * resolves.
  *
- * @category ui/chart-panel
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/chart-panel/config/chart-panel.config.defaults.ts
  * @since 0.1.0
  * @relatedTo provideChartPanelConfig, provideChartPanelConfigAt, injectChartPanelConfig

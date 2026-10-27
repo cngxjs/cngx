@@ -31,8 +31,6 @@ import {
  * `state` is a pure `computed` over `[disabled]`, `[completed]`, and
  * the optional `[errorAggregator]`'s `hasError()`.
  *
- * @category common/stepper
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/step.directive.ts
  * @since 0.1.0
@@ -40,6 +38,7 @@ import {
  * @slot cngxStepLabel The step's own header label.
  * @slot cngxStepContent The step body, rendered lazily when the step activates.
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-step-content/typed-lazy-panels</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxStep]',

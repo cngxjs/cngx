@@ -21,8 +21,6 @@ import { CNGX_HOST_INTERACTION_STATE } from './host-interaction-state.token';
 
 /**
  * Action function that returns a Promise or Observable.
- *
- * @category common/interactive
  */
 export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
 
@@ -67,14 +65,13 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
  * <a role="button" [cngxAsyncClick]="navigate" #btn="cngxAsyncClick">Go</a>
  * ```
  *
- * @category common/interactive
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-click/async-click.directive.ts
  * @since 0.1.0
  * @relatedTo CngxPending, CngxSucceeded, CngxFailed, CngxActionButton
  * <example-url>http://localhost:4200/#/common/interactive/retry/optimistic-instant-like-toggle</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/retry/createretry-cngxasyncclick</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxAsyncClick]',

@@ -7,8 +7,6 @@ import type { CngxTabHandle } from '../tab-group-host.token';
  * the tab's folded `hasError()` is `true` - the direct `[error]` flag
  * OR the aggregator's `shouldShow()`; the visibility gate stays
  * library-owned. Sibling shape to `CngxStepBadgeContext`.
- *
- * @category common/tabs/slots
  */
 export interface CngxTabErrorBadgeContext {
   /** The tab handle carrying id / label / disabled / aggregator signals. */
@@ -31,7 +29,6 @@ export interface CngxTabErrorBadgeContext {
  * </cngx-tab-group>
  * ```
  *
- * @category common/tabs/slots
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/slots/tab-error-badge.directive.ts
  * @since 0.1.0

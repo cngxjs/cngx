@@ -10,7 +10,6 @@ import type { Signal } from '@angular/core';
  * parameter: a payload rides on `data` as `unknown` and the row slot narrows
  * it at the use-site.
  *
- * @category common/command
  * @since 0.1.0
  */
 export interface CngxCommand {
@@ -43,7 +42,6 @@ export interface CngxCommand {
  * an empty query, then categories) and the consumer's async result source is a
  * `CngxAsyncState<CngxCommandGroup[]>`.
  *
- * @category common/command
  * @since 0.1.0
  */
 export interface CngxCommandGroup {
@@ -59,7 +57,6 @@ export interface CngxCommandGroup {
  * @deprecated Use {@link CngxCommandGroup}. Published under the unprefixed
  * name by mistake; the alias remains for compatibility and will be removed in
  * a future major.
- * @category common/command
  * @since 0.1.0
  */
 export type CommandGroup = CngxCommandGroup;

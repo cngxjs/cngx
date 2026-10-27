@@ -11,7 +11,6 @@ type CngxDigit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
  * `scripts/__tests__/raw-throw-guard.test.mjs`; that every code has its page,
  * one severity and one lib is checked by `scripts/error-codes-manifest.mjs`.
  *
- * @category utils
  * @since 0.1.0
  * @relatedTo CngxRuntimeError
  */
@@ -22,7 +21,6 @@ export type CngxErrorCode = `CNGX${CngxDigit}${CngxDigit}${CngxDigit}${CngxDigit
  * `${CNGX_ERROR_DOCS_URL}cngx<nnnn>.html`.
  *
  * @internal
- * @category utils
  */
 export const CNGX_ERROR_DOCS_URL =
   'https://cngxjs.github.io/cngx/additional-documentation/error-codes/';
@@ -57,7 +55,6 @@ export function formatDiagnostic(code: CngxErrorCode, message: string): string {
  * manifest and the production-bundle check can derive it from source.
  *
  * @internal
- * @category utils
  */
 export function cngxDevWarn(code: CngxErrorCode, message: string, ...context: unknown[]): void {
   console.warn(formatDiagnostic(code, message), ...context);
@@ -68,7 +65,6 @@ export function cngxDevWarn(code: CngxErrorCode, message: string, ...context: un
  * a misconfiguration that leaves the feature non-functional.
  *
  * @internal
- * @category utils
  */
 export function cngxDevError(code: CngxErrorCode, message: string, ...context: unknown[]): void {
   console.error(formatDiagnostic(code, message), ...context);

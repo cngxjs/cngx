@@ -43,7 +43,6 @@ import { flatStepsEqual, flattenStepTree, stepTreeEqual } from './step-tree.util
  * The `Observable | Promise | sync` union matches every cngx
  * commit-action signature.
  *
- * @category common/stepper
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/presenter.directive.ts
  * @since 0.1.0
  */
@@ -63,8 +62,6 @@ export type CngxStepperCommitAction = (
  * Sheriff: common Level 2. Pure directive - zero template, zero CSS.
  * Level-4 organisms compose this via `hostDirectives`.
  *
- * @category common/stepper
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/presenter.directive.ts
  * @since 0.1.0

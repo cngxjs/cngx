@@ -43,8 +43,6 @@ import {
 /**
  * What a consumer asks for: a fixed presentation, or `'auto'` to let the
  * breakpoint in `cngx-popover-sheet.css` decide.
- *
- * @category common/popover
  */
 export type CngxPopoverPresentationRequest = 'auto' | CngxPopoverPresentation;
 
@@ -160,14 +158,13 @@ function warnSheetMisconfiguration(
  * </div>
  * ```
  *
- * @category common/popover
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-sheet.directive.ts
  * @since 0.1.0
  * @relatedTo CngxPopover, CngxSwipeDismiss, CngxFocusTrap, createPinnedScrollLock, injectScopedLiveRegion
  * <example-url>http://localhost:4200/#/common/popover/sheet/bottom-sheet</example-url>
  * <example-url>http://localhost:4200/#/common/popover/sheet/fullscreen-search</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxPopoverSheet]',

@@ -36,7 +36,6 @@ function adEq(a: ActiveDescendantItem[], b: ActiveDescendantItem[]): boolean {
  * signal straight into `[items]="adItems()"` without worrying about cascade
  * re-renders on irrelevant tree re-emissions.
  *
- * @category common/interactive/tree
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-ad-items.ts
  * @since 0.1.0
  */

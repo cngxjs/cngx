@@ -74,8 +74,6 @@ function entriesEqual(a: readonly StackEntry[], b: readonly StackEntry[]): boole
  * }
  * ```
  *
- * @category ui/feedback/alert
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/alert/alert-stack.ts
  * @since 0.1.0
@@ -84,6 +82,7 @@ function entriesEqual(a: readonly StackEntry[], b: readonly StackEntry[]): boole
  * <example-url>http://localhost:4200/#/ui/feedback/alert-stack/basic-stack</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert-stack/dialog-use-case</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert-stack/overflow-collapse</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-alert-stack',

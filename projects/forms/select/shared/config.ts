@@ -39,8 +39,6 @@ import type {
 
 /**
  * Override contexts mirroring the per-instance `*cngxSelect*` slots.
- *
- * @category forms/select/config
  */
 export interface CngxSelectTemplateContexts {
   readonly check?: CngxSelectCheckContext;
@@ -66,8 +64,6 @@ export interface CngxSelectTemplateContexts {
 
 /**
  * Live-region announcer config: politeness + formatter.
- *
- * @category forms/select/config
  */
 export interface CngxSelectAnnouncerConfig {
   readonly enabled?: boolean;
@@ -91,23 +87,17 @@ export interface CngxSelectAnnouncerConfig {
 
 /**
  * First-load async view variant. Per-instance `*cngxSelectLoading` wins.
- *
- * @category forms/select/config
  */
 export type CngxSelectLoadingVariant = 'skeleton' | 'spinner' | 'bar' | 'text';
 
 /**
  * Subsequent-load indicator overlaying visible options. Per-instance
  * `*cngxSelectRefreshing` wins. `'none'` suppresses.
- *
- * @category forms/select/config
  */
 export type CngxSelectRefreshingVariant = 'bar' | 'spinner' | 'dots' | 'none';
 
 /**
  * Selection-indicator position relative to the option label.
- *
- * @category forms/select/config
  */
 export type CngxSelectSelectionIndicatorPosition = 'before' | 'after';
 
@@ -119,8 +109,6 @@ export type CngxSelectSelectionIndicatorPosition = 'before' | 'after';
  * - `'checkmark'` - bare checkmark.
  * - `'radio'` - dot-in-circle. Single-select intent; multi panels render
  *   it but the exclusive-selection visual is misleading there.
- *
- * @category forms/select/config
  */
 export type CngxSelectSelectionIndicatorVariant = 'auto' | 'checkbox' | 'checkmark' | 'radio';
 
@@ -128,8 +116,6 @@ export type CngxSelectSelectionIndicatorVariant = 'auto' | 'checkbox' | 'checkma
  * ARIA-label overrides. Per-instance
  * `[clearButtonAriaLabel]`/`[chipRemoveAriaLabel]` wins. Unset keys read the
  * `select` section of the active language pack, English by default.
- *
- * @category forms/select/config
  */
 export interface CngxSelectAriaLabels {
   /** Single → `'Clear selection'`; multi/combobox/typeahead → `'Reset selection'`. */
@@ -201,8 +187,6 @@ export interface CngxSelectAriaLabels {
  * Built-in recycler virtualiser tuning. Provide
  * `CNGX_PANEL_RENDERER_FACTORY` directly for custom scrollElement,
  * per-index `estimateSize`, or grid layout.
- *
- * @category forms/select/config
  */
 export interface CngxSelectVirtualizationConfig {
   /** Item height in px. Default `32`. */
@@ -221,8 +205,6 @@ export interface CngxSelectVirtualizationConfig {
  * Fallback labels for `CngxSelectPanelShell`'s built-in views and the visible
  * chip-strip copy. Per-instance template projection wins. Unset keys read the
  * `select` section of the active language pack, English by default.
- *
- * @category forms/select/config
  */
 export interface CngxSelectFallbackLabels {
   /** `loadingVariant === 'text'` body. Default `'Loading…'`. */
@@ -271,7 +253,6 @@ export interface CngxSelectFallbackLabels {
  *   option.label.toLowerCase().startsWith(term.toLowerCase());
  * ```
  *
- * @category forms/select/config
  * @since 0.1.0
  * @relatedTo withSearchMatchFn, CngxSelectShell, ListboxMatchFn
  */
@@ -286,7 +267,6 @@ export type CngxSelectMatchFn<T = unknown> = (
  * object per option (the option definition, or the projected option's record
  * in `CngxSelectShell`), so a matcher can key a per-option cache on it.
  *
- * @category forms/select/config
  * @since 0.1.0
  * @relatedTo CngxSelectMatchFn
  */
@@ -301,8 +281,6 @@ export interface CngxSelectMatchOption<T = unknown> {
  * `provideSelectConfigAt`; consumed via the `CNGX_SELECT_CONFIG`
  * injection token. Every field is optional - unset keys fall back to
  * the library defaults.
- *
- * @category forms/select/config
  */
 export interface CngxSelectConfig {
   /**
@@ -530,7 +508,6 @@ export const CNGX_SELECT_DEFAULTS: Required<
  * composites layer their own `CNGX_ACTION_SELECT_CONFIG` /
  * `CNGX_REORDERABLE_SELECT_CONFIG` on top of this base.
  *
- * @category forms/select/config
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/config.ts
  * @since 0.1.0
@@ -540,8 +517,6 @@ export const CNGX_SELECT_CONFIG = new InjectionToken<CngxSelectConfig>('CngxSele
 
 /**
  * Feature returned by a `with*` helper. Merged by `provideSelectConfig`.
- *
- * @category forms/select/config
  */
 export interface CngxSelectConfigFeature {
   readonly config: Partial<CngxSelectConfig>;

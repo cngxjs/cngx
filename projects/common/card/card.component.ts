@@ -40,8 +40,6 @@ import { injectCardI18n } from './i18n/card-i18n';
  * </cngx-card>
  * ```
  * 
- * @category common/card
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card.component.ts
  * @since 0.1.0
@@ -52,6 +50,7 @@ import { injectCardI18n } from './i18n/card-i18n';
  * <example-url>http://localhost:4200/#/common/card/card-with-speak-badge</example-url>
  * <example-url>http://localhost:4200/#/common/card/disabled-with-reason</example-url>
 
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-card',

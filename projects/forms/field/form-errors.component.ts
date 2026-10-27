@@ -103,8 +103,6 @@ function visibleLabelOf(doc: Document, name: string): string | undefined {
  * </cngx-form-errors>
  * ```
  *
- * @category forms/field
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-errors.component.ts
  * @since 0.1.0
@@ -113,6 +111,7 @@ function visibleLabelOf(doc: Document, name: string): string | undefined {
  * <example-url>http://localhost:4200/#/forms/field/form-errors/show-on-submit</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-errors/custom-summary-template</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-errors/server-error-injection</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-form-errors',
@@ -228,8 +227,6 @@ export class CngxFormErrors {
 
 /**
  * A single error item in the form-level summary.
- *
- * @category forms/field
  */
 export interface FormErrorItem {
   /**
@@ -253,8 +250,6 @@ export interface FormErrorItem {
 
 /**
  * Template context for CngxFormErrors custom templates.
- *
- * @category forms/field
  */
 export interface CngxFormErrorsSummaryContext {
   /** Error items (also available as implicit). */

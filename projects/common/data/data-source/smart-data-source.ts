@@ -91,8 +91,6 @@ function defaultSortFnFor<T>(
 
 /**
  * Optional customization for {@link CngxSmartDataSource}.
- *
- * @category common/data/data-source
  */
 export interface CngxSmartDataSourceOptions<T> {
   /**
@@ -171,8 +169,6 @@ function isAsyncState<T>(source: Signal<T[]> | CngxAsyncState<T[]>): source is C
  *
  * @typeParam T - The row item type.
  *
- * @category common/data/data-source
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/data-source/smart-data-source.ts
  * @since 0.1.0
  * @relatedTo CngxDataSource, CngxSort, CngxFilter, CngxPaginate
@@ -323,8 +319,6 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
  * readonly residents = injectAsyncState(() => this.api.getAll());
  * readonly dataSource = injectSmartDataSource(this.residents);
  * ```
- *
- * @category common/data/data-source
  */
 export function injectSmartDataSource<T>(
   source: Signal<T[]> | CngxAsyncState<T[]>,

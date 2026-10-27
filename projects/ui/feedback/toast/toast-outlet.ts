@@ -17,8 +17,6 @@ import { CngxToaster, type ToastState } from './toast.service';
 
 /**
  * Position for the toast stack.
- *
- * @category ui/feedback/toast
  */
 export type ToastPosition =
   | 'top-start'
@@ -44,8 +42,6 @@ export type ToastPosition =
  *
  * @playground Async state bridges ./examples/bridges/bridges-example.component.ts
  *
- * @category ui/feedback/toast
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/toast/toast-outlet.ts
  * @since 0.1.0

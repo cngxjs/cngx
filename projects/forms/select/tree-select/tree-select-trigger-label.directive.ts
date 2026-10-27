@@ -19,7 +19,6 @@ import { type CngxTreeSelectTriggerLabelContext } from './tree-select.model';
  * </cngx-tree-select>
  * ```
  *
- * @category forms/select/tree-select
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/tree-select/tree-select-trigger-label.directive.ts
  * @since 0.1.0

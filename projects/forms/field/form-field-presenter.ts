@@ -67,7 +67,6 @@ function buildHint(
  * and constraint metadata as pure `computed()` signals. Applied as a `hostDirective`
  * on `CngxFormField` - not used directly in templates.
  *
- * @category forms/field
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field-presenter.ts
  * @since 0.1.0

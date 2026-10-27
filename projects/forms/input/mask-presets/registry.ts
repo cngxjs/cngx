@@ -3,16 +3,12 @@ import { type EnvironmentProviders, provideAppInitializer, signal } from '@angul
 /**
  * Built-in mask-preset table keys. `date` covers both the long and short date
  * tables (they ship in one module).
- *
- * @category forms/input
  */
 export type MaskPresetKey = 'phone' | 'date' | 'iban' | 'zip';
 
 /**
  * Lazily-loaded preset tables. Each field is populated on first use of a mask
  * that needs it; absent fields fall back to the directive's inline defaults.
- *
- * @category forms/input
  */
 export interface MaskPresetTables {
   readonly phone?: Record<string, string>;
@@ -129,7 +125,6 @@ export function loadAllMaskPresets(): Promise<void> {
  * // or: provideEagerMaskPresets('phone', 'date')      // only these
  * ```
  *
- * @category forms/input
  * @since 0.1.0
  * @relatedTo CngxInputMask, provideInputConfig
  */

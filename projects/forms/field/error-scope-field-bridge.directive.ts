@@ -15,7 +15,6 @@ import { CNGX_FORM_FIELD_REVEAL, type CngxFormFieldRevealContract } from './form
  * No-op when no ancestor scope is provided - the form-field falls back to
  * the default error gate (`touched OR errorStrategy(...)`).
  *
- * @category forms/field
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/error-scope-field-bridge.directive.ts
  * @since 0.1.0

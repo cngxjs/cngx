@@ -15,8 +15,6 @@ import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from './error-scope.tok
 /**
  * Marks a DOM subtree as an error visibility scope.
  *
- * @category common/interactive/error
- *
  * The scope starts hidden - descendant aggregators and error states do
  * not reveal until the consumer calls {@link reveal}, typically via a
  * `(submit)` handler, a route guard, or an HTTP interceptor reveal-on-422
@@ -34,7 +32,6 @@ import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from './error-scope.tok
  * </form>
  * ```
  *
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-scope/error-scope.directive.ts
  * @since 0.1.0
@@ -43,6 +40,7 @@ import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from './error-scope.tok
  * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/cngx-popover-panel-host</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/material-mat-tab-label-with-error-count-badge</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/native-form-scope-reveal-on-submit</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxErrorScope]',

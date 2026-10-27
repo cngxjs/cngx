@@ -42,13 +42,12 @@ import { cngxDevWarn } from '@cngx/utils';
  * .cngx-sticky--active { box-shadow: 0 2px 4px rgba(0,0,0,.1); }
  * ```
  *
- * @category common/layout
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/scroll/sticky-header.directive.ts
  * @since 0.1.0
  * @relatedTo CngxScrollSpy, CngxIntersectionObserver
  * <example-url>http://localhost:4200/#/common/layout/sticky-header/sticky-header-with-shadow</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxStickyHeader]',

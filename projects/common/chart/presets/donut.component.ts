@@ -21,8 +21,6 @@ const TWO_PI = Math.PI * 2;
  * same fallback `CngxMiniBar` uses. A bound `[aria-label]` always
  * wins.
  *
- * @category common/chart/presets
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/presets/donut.component.ts
  * @since 0.1.0
@@ -30,6 +28,7 @@ const TWO_PI = Math.PI * 2;
  *
  * <example-url>http://localhost:4200/#/common/chart/donut/async-state-machine</example-url>
  * <example-url>http://localhost:4200/#/common/chart/donut/score-gauges</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-donut',

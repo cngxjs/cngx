@@ -3,8 +3,6 @@ import { Directive, inject, TemplateRef } from '@angular/core';
 /**
  * Template context for {@link CngxAccordionItemIcon}: `$implicit` is the item's
  * current expanded state, so the override can render an open/closed glyph.
- *
- * @category ui/accordion
  */
 export interface CngxAccordionItemIconContext {
   readonly $implicit: boolean;
@@ -25,7 +23,6 @@ export interface CngxAccordionItemIconContext {
  * </cngx-accordion-item>
  * ```
  *
- * @category ui/accordion
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/accordion/accordion-item-icon.directive.ts
  * @since 0.1.0

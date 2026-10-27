@@ -32,8 +32,6 @@ import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
  * which matches each handle's `id` (set to the route segment) against
  * the URL.
  *
- * @category ui/mat-tabs
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/mat-tab-link.directive.ts
  * @since 0.1.0

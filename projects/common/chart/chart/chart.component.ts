@@ -142,8 +142,6 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
  * consumer restyling `--cngx-axis-font-size` gets labels at their own
  * size inside a gutter sized for the default.
  *
- * @category common/chart
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/chart.component.ts
  * @since 0.1.0
@@ -163,6 +161,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
  * @slot cngxChartConnectionError Rendered over the chart when the live connection drops.
  * @slot cngxChartReconnecting Rendered over the chart while the connection retries.
  * @slot cngxChartOverlay HTML layered over the marks in the content view; the chart insets it to the plot area, pointer-events off by default.
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-chart',

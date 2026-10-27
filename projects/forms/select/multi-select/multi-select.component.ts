@@ -131,8 +131,6 @@ import {
 
 /**
  * Change event emitted by {@link CngxMultiSelect.selectionChange}.
- *
- * @category forms/select/multi-select
  */
 export interface CngxMultiSelectChange<T = unknown> {
   readonly source: CngxMultiSelect<T>;
@@ -173,8 +171,6 @@ export interface CngxMultiSelectChange<T = unknown> {
  * sheet. `[presentation]` forces `'anchored'`, `'sheet'` or `'fullscreen'`;
  * `withMobileSheet('off')` keeps every select in its scope anchored.
  *
- * @category forms/select/multi-select
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/multi-select/multi-select.component.ts
  * @since 0.1.0
@@ -204,6 +200,7 @@ export interface CngxMultiSelectChange<T = unknown> {
  * @slot cngxSelectOptionPending Replaces the spinner on an option row while its commit is in flight; gets option.
  * @slot cngxSelectOptionError Replaces the error mark on selected rows when a commit fails and commitErrorDisplay is 'inline'; gets option, error.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-multi-select',

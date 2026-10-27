@@ -3,7 +3,6 @@ import type { CngxMessage } from '@cngx/core/i18n';
 /**
  * The status-pill words of the stepper section.
  *
- * @category common/stepper/i18n
  * @since 0.1.0
  */
 export interface CngxStepperStatusLanguage {
@@ -22,7 +21,6 @@ export interface CngxStepperStatusLanguage {
  * `CNGX_STEPPER_CONFIG` (`ariaLabels`, `fallbackLabels`). Messages use
  * `{name}` placeholders; a plural message picks its form from `{count}`.
  *
- * @category common/stepper/i18n
  * @since 0.1.0
  * @relatedTo CNGX_STEPPER_I18N, CNGX_STEPPER_CONFIG
  */
@@ -77,7 +75,6 @@ export interface CngxStepperLanguageSection {
  * The English stepper section: the single source of the stepper's English
  * copy. `CNGX_STEPPER_I18N` and the `CNGX_STEPPER_CONFIG` labels default to it.
  *
- * @category common/stepper/i18n
  * @since 0.1.0
  * @relatedTo CNGX_STEPPER_I18N
  */

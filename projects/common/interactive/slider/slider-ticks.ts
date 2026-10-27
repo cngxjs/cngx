@@ -3,7 +3,6 @@
  * labels. Returns `[]` when the step grid is invalid or denser than `maxCount`
  * (a guard against pathological DOM, e.g. step 1 over a 0..10000 range).
  *
- * @category common/interactive/slider
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider-ticks.ts
  * @since 0.1.0
  */
@@ -26,7 +25,6 @@ export interface CngxSliderTicksView {
  * gates the repeating-gradient interval; `labels` gates the numeric stops; both
  * are independent. The values signal is `arrayEqual`-guarded.
  *
- * @category common/interactive/slider
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider-ticks.ts
  * @since 0.1.0
  */

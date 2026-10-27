@@ -10,8 +10,6 @@ import type { TimelineStatus } from './marker.component';
  * `first` and `last` are positions **within the group**, not within the
  * whole timeline, because that is what a consumer needs to decide whether
  * to draw a trailing rail.
- *
- * @category common/timeline
  */
 export interface CngxTimelineItemContext<T> {
   readonly $implicit: T;
@@ -47,7 +45,6 @@ export interface CngxTimelineItemContext<T> {
  * `CngxTimelineItem` component; the selector stays `cngxTimelineItem`,
  * which is what consumers write.
  *
- * @category common/timeline
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/template-slots.ts
  * @relatedTo CngxTimelineItem, CngxTimelineDateHeader
  * @since 0.1.0
@@ -95,8 +92,6 @@ export class CngxTimelineItemTpl<T = unknown> {
 /**
  * Context for `*cngxTimelineDateHeader` - the whole group, so a header can
  * show its item count alongside the date.
- *
- * @category common/timeline
  */
 export interface CngxTimelineDateHeaderContext<T> {
   readonly $implicit: TimelineGroup<T>;
@@ -116,7 +111,6 @@ export interface CngxTimelineDateHeaderContext<T> {
  * </ng-template>
  * ```
  *
- * @category common/timeline
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/template-slots.ts
  * @relatedTo CngxTimelineItemTpl
@@ -151,8 +145,6 @@ export class CngxTimelineDateHeader<T = unknown> {
 /**
  * Context for `*cngxTimelineMarkerTpl` - the item and the status the
  * organism resolved for it.
- *
- * @category common/timeline
  */
 export interface CngxTimelineMarkerContext<T> {
   readonly $implicit: T;
@@ -173,7 +165,6 @@ export interface CngxTimelineMarkerContext<T> {
  * Keeps `Tpl` in class *and* selector to stay clear of
  * `CngxTimelineMarker`, the component it renders into.
  *
- * @category common/timeline
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/template-slots.ts
  * @relatedTo CngxTimelineMarker
@@ -212,8 +203,6 @@ export class CngxTimelineMarkerTpl<T = unknown> {
  * filter matched nothing" call for different copy and different actions.
  * Vocabulary shared with `CngxCardGrid` so an app writes one empty-state
  * component and reuses it.
- *
- * @category common/timeline
  */
 export interface CngxTimelineEmptyContext {
   readonly $implicit: EmptyReason;
@@ -230,7 +219,6 @@ export interface CngxTimelineEmptyContext {
  * </ng-template>
  * ```
  *
- * @category common/timeline
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/template-slots.ts
  * @relatedTo CngxTimelineError
  * @since 0.1.0
@@ -254,8 +242,6 @@ export class CngxTimelineEmpty {
 /**
  * Context for `*cngxTimelineError` - the raw error plus the retry the
  * organism owns.
- *
- * @category common/timeline
  */
 export interface CngxTimelineErrorContext {
   readonly $implicit: unknown;
@@ -269,7 +255,6 @@ export interface CngxTimelineErrorContext {
  * restyling. Falls back to
  * `CNGX_TIMELINE_CONFIG.labels.errorFallback` plus a plain retry button.
  *
- * @category common/timeline
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/template-slots.ts
  * @relatedTo CngxTimelineRetryButton, CngxTimelineEmpty
  * @since 0.1.0
@@ -292,8 +277,6 @@ export class CngxTimelineError {
 
 /**
  * Context for `*cngxTimelineRetryButton` - the retry callback.
- *
- * @category common/timeline
  */
 export interface CngxTimelineRetryButtonContext {
   readonly $implicit: () => void;
@@ -313,7 +296,6 @@ export interface CngxTimelineRetryButtonContext {
  * </ng-template>
  * ```
  *
- * @category common/timeline
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/template-slots.ts
  * @relatedTo CngxTimelineError
@@ -343,7 +325,6 @@ export class CngxTimelineRetryButton {
  * Contextless on purpose - a refresh has nothing to say beyond the fact
  * that it is happening.
  *
- * @category common/timeline
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/template-slots.ts
  * @relatedTo CngxTimelineError
  * @since 0.1.0
@@ -362,7 +343,6 @@ export class CngxTimelineLoadingTail {
  * no data, only a position: the same index, row count and side the built-in
  * placeholder uses, so a custom shape lands where the content row will.
  *
- * @category common/timeline
  * @since 0.1.0
  */
 export interface CngxTimelineSkeletonContext {
@@ -389,7 +369,6 @@ export interface CngxTimelineSkeletonContext {
  * Whatever renders here sits inside an `aria-hidden` wrapper - the load is
  * announced through the timeline's live region, not through the placeholder.
  *
- * @category common/timeline
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/template-slots.ts
  * @relatedTo CngxTimelineLoadingTail
  * @since 0.1.0

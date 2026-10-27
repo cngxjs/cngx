@@ -41,8 +41,6 @@ import { warnStepperControlUnhosted } from '../warn-stepper-unhosted';
  * <button cngxStepperNext>Continue</button>
  * ```
  *
- * @category common/stepper
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/controls/stepper-next.directive.ts
  * @since 0.1.0

@@ -30,8 +30,6 @@ import { CNGX_TAG_GROUP, type CngxTagGroupHost } from './tag-group.token';
  * - `xs` → 0.25rem (tight chip strips)
  * - `sm` → 0.5rem (default)
  * - `md` → 0.75rem (roomy taxonomy clusters)
- *
- * @category common/display
  */
 export type CngxTagGroupGap = 'xs' | 'sm' | 'md';
 
@@ -46,8 +44,6 @@ export type CngxTagGroupGap = 'xs' | 'sm' | 'md';
  *
  * Only meaningful when the group has more horizontal room than its
  * intrinsic content; otherwise the row hugs its tags.
- *
- * @category common/display
  */
 export type CngxTagGroupAlign = 'start' | 'center' | 'end' | 'between';
 
@@ -90,8 +86,6 @@ export type CngxTagGroupAlign = 'start' | 'center' | 'end' | 'between';
  * - Configuration cascade (`provideTagConfig`) - deferred (see
  *   `display-accepted-debt.md §1`).
  *
- * @category common/display
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/tag-group/tag-group.component.ts
  * @since 0.1.0
@@ -111,6 +105,7 @@ export type CngxTagGroupAlign = 'start' | 'center' | 'end' | 'between';
  * <example-url>http://localhost:4200/#/common/display/tag/slot-overrides-prefix-label-suffix</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/truncate-maxwidth</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/variant-matrix</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-tag-group',

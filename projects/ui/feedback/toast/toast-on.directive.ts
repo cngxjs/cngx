@@ -34,8 +34,6 @@ import { CngxToaster } from './toast.service';
  * </form>
  * ```
  *
- * @category ui/feedback/toast
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/toast/toast-on.directive.ts
  * @since 0.1.0
@@ -47,6 +45,7 @@ import { CngxToaster } from './toast.service';
  * <example-url>http://localhost:4200/#/ui/feedback/toast/state-bridge-cngxtoaston</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/toast/title-description</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
+ * @axis level organism
  */
 @Directive({
   selector: '[cngxToastOn]',

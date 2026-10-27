@@ -36,13 +36,12 @@ import { parseStatusBindings } from './parse-status-bindings';
  * keys (`click`, `focus`, …) belong to `[cngxAudio]` and are rejected with a
  * dev-error. `succeeded`/`failed` are accepted as aliases for `success`/`error`.
  *
- * @category common/audio
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/status-mode/audio-status.directive.ts
  * @since 0.1.0
  * @relatedTo CngxAudio, injectCngxAudio, CngxAsyncClick
  * <example-url>http://localhost:4200/#/common/audio/status-bridge/async-click</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxAudioStatus]',

@@ -25,14 +25,13 @@ import { clamp } from '@cngx/utils';
  * <span>Height: {{ auto.height() }}px</span>
  * ```
  *
- * @category forms/input
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/autosize.directive.ts
  * @since 0.1.0
  * @relatedTo CngxInput, CngxCharCount
  * <example-url>http://localhost:4200/#/forms/input/autosize/basic-autosize</example-url>
  * <example-url>http://localhost:4200/#/forms/input/autosize/min-max-rows</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: 'textarea[cngxAutosize]',

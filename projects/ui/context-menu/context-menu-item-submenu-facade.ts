@@ -15,7 +15,6 @@ import type { CngxContextMenu } from './context-menu.component';
  * `public-api.ts`. Extracting it keeps `CngxContextMenuItem`'s class body a
  * thin shell (reference_atomic_decompose rule 1).
  *
- * @category ui/context-menu
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/context-menu/context-menu-item-submenu-facade.ts
  * @since 0.1.0
  */

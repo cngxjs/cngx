@@ -41,7 +41,6 @@ function buildDefaultEditors(): ReadonlyMap<string, CngxFilterEditor> {
  * Orthogonal to the config cascade: `provideFilterBuilderConfig` does NOT
  * touch editor resolution - editors live on this token alone.
  *
- * @category forms/filter-builder/config
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder.tokens.ts
  * @since 0.1.0
  * @relatedTo injectFilterEditors, CngxFilterEditorComponent, CNGX_FILTER_BUILDER_CONFIG
@@ -65,8 +64,6 @@ export const CNGX_FILTER_EDITORS = new InjectionToken<ReadonlyMap<string, CngxFi
  * scopes are NOT observed by an already-injected consumer. If a
  * consumer needs reactive editor swap behaviour, re-`inject()` the
  * token at the swap-boundary's injector instead of cached references.
- *
- * @category forms/filter-builder/config
  */
 export function injectFilterEditors(): ReadonlyMap<string, CngxFilterEditor> {
   return inject(CNGX_FILTER_EDITORS);

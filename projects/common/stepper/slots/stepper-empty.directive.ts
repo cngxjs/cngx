@@ -18,7 +18,6 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * </cngx-stepper>
  * ```
  *
- * @category common/stepper/slots
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/slots/stepper-empty.directive.ts
  * @since 0.1.0

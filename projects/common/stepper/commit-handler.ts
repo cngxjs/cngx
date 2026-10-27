@@ -10,8 +10,6 @@ import type { CngxStepperCommitAction } from './presenter.directive';
  * How a commit-gated step change settled. `'refused'` is a `false` answer
  * from `commitAction` (the action declined on purpose, nothing failed);
  * `'failed'` is a throw, a rejected promise or an erroring observable.
- *
- * @category common/stepper
  */
 export type CngxStepperCommitResolution = 'accepted' | 'refused' | 'failed';
 
@@ -19,8 +17,6 @@ export type CngxStepperCommitResolution = 'accepted' | 'refused' | 'failed';
  * Adapter between the lifted commit-controller and the stepper's
  * action shape. The presenter delegates to `beginTransition` on
  * every step change driven by `commitAction`.
- *
- * @category common/stepper
  */
 export interface CngxStepperCommitHandler {
   /**
@@ -47,8 +43,6 @@ export interface CngxStepperCommitHandler {
 
 /**
  * Options for {@link createStepperCommitHandler}.
- *
- * @category common/stepper
  */
 export interface CngxStepperCommitHandlerOptions {
   readonly controller: CngxCommitController<number>;
@@ -59,8 +53,6 @@ export interface CngxStepperCommitHandlerOptions {
  * Resolves `Observable<boolean>` / `Promise<boolean>` / `boolean` returns into
  * one {@link CngxStepperCommitResolution}: `true` accepts, `false` refuses
  * (the controller settles to `'idle'` and stores no error), a throw fails.
- *
- * @category common/stepper
  */
 export function createStepperCommitHandler(
   opts: CngxStepperCommitHandlerOptions,
@@ -194,8 +186,6 @@ function runStepperAction(
  * Factory signature for {@link CngxStepperCommitHandler}. Override
  * {@link CNGX_STEPPER_COMMIT_HANDLER_FACTORY} for retry-with-backoff,
  * telemetry, or offline queues.
- *
- * @category common/stepper
  */
 export type CngxStepperCommitHandlerFactory = (
   opts: CngxStepperCommitHandlerOptions,
@@ -205,7 +195,6 @@ export type CngxStepperCommitHandlerFactory = (
  * DI token carrying the factory the presenter uses to allocate its commit
  * handler. Symmetric to the select family's `CNGX_ARRAY_COMMIT_HANDLER_FACTORY`.
  *
- * @category common/stepper
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/commit-handler.ts
  * @since 0.1.0
  */

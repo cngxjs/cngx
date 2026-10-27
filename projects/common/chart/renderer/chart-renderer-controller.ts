@@ -9,8 +9,6 @@ import { type CngxChartRenderer, type CngxChartRendererFactory } from './chart-r
 
 /**
  * Construction dependencies for {@link createChartRendererController}.
- *
- * @category common/chart/renderer
  */
 export interface ChartRendererControllerDeps {
   readonly host: HTMLElement;
@@ -29,8 +27,6 @@ export interface ChartRendererControllerDeps {
 
 /**
  * Handle returned by {@link createChartRendererController}.
- *
- * @category common/chart/renderer
  */
 export interface CngxChartRendererController {
   readonly currentMode: Signal<'svg' | 'canvas'>;
@@ -62,7 +58,6 @@ export interface CngxChartRendererController {
  * calls directly - no DI token, since the only second consumer today is a
  * test double, which injects a fake `factory` through the deps.
  *
- * @category common/chart/renderer
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/renderer/chart-renderer-controller.ts
  * @since 0.1.0
  */

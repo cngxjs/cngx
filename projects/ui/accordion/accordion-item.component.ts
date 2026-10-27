@@ -37,8 +37,6 @@ import { injectAccordionConfig, injectAccordionLabels } from './config/inject-ac
  * that `aria-describedby` always points at (IDREF never dangles); only the
  * element's `aria-hidden` and text toggle with `disabled()`.
  *
- * @category ui/accordion
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/accordion/accordion-item.component.ts
  * @since 0.1.0

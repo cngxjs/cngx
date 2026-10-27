@@ -9,12 +9,12 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/
  * Presentational by design (see {@link CngxMeta}): it is not a semantic list.
  * Tune the spacing / colour through the `--cngx-meta-list-*` custom properties.
  *
- * @category common/display
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/meta/meta-list.component.ts
  * @since 0.1.0
  * @relatedTo CngxMeta
  * <example-url>http://localhost:4200/#/common/display/meta/metadata-line</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-meta-list',

@@ -16,7 +16,6 @@ import type { CngxBreadcrumbConfigFeature } from './provide-breadcrumb-config';
  * );
  * ```
  *
- * @category ui/breadcrumb
  * @since 0.1.0
  */
 export function withBreadcrumbAriaLabels(
@@ -34,7 +33,6 @@ export function withBreadcrumbAriaLabels(
  * provideBreadcrumbConfig(withBreadcrumbDataKey('crumb'));
  * ```
  *
- * @category ui/breadcrumb
  * @since 0.1.0
  */
 export function withBreadcrumbDataKey(dataKey: string): CngxBreadcrumbConfigFeature {
@@ -50,7 +48,6 @@ export function withBreadcrumbDataKey(dataKey: string): CngxBreadcrumbConfigFeat
  * provideBreadcrumbConfig(withBreadcrumbIconKey('glyph'));
  * ```
  *
- * @category ui/breadcrumb
  * @since 0.1.0
  */
 export function withBreadcrumbIconKey(iconKey: string): CngxBreadcrumbConfigFeature {
@@ -67,7 +64,6 @@ export function withBreadcrumbIconKey(iconKey: string): CngxBreadcrumbConfigFeat
  * provideBreadcrumbConfig(withBreadcrumbSkin('pill'));
  * ```
  *
- * @category ui/breadcrumb
  * @since 0.1.0
  */
 export function withBreadcrumbSkin(skin: CngxBreadcrumbSkin): CngxBreadcrumbConfigFeature {

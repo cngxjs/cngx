@@ -6,8 +6,6 @@
  * versions. Use a real semver library when you need ordering or range
  * checks. Producer-owned: obtain instances via {@link makeVersion} rather
  * than constructing literals - new display segments may be added.
- *
- * @category utils/version
  */
 export interface Version {
   readonly full: string;
@@ -24,8 +22,6 @@ export interface Version {
  * The pre-release tag and build metadata are split off before the dot
  * parsing, so `'0.2.0-rc.2'` yields patch `'0'` and prerelease `'rc.2'`
  * instead of a mangled patch segment. Display-only - see {@link Version}.
- *
- * @category utils/version
  */
 export function makeVersion(full: string): Version {
   // Build metadata (+...) is dropped from the segments; the pre-release tag

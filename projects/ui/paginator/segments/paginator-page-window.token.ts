@@ -10,7 +10,6 @@ import { pageWindow, type PageWindow } from './page-model';
  * An override implements a different truncation algorithm while still honouring the
  * consumer's sibling / boundary intent.
  *
- * @category ui/paginator
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-page-window.token.ts
  * @since 0.1.0
  */
@@ -31,7 +30,6 @@ export type CngxPaginatorPageWindowFactory = () => CngxPaginatorPageWindowFn;
  * `inject(CNGX_PAGINATOR_PAGE_WINDOW_FACTORY)()` rather than calling this
  * directly, mirroring {@link createPaginatorAnnouncer}.
  *
- * @category ui/paginator
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-page-window.token.ts
  * @since 0.1.0
  */
@@ -45,7 +43,6 @@ export const createPaginatorPageWindow: CngxPaginatorPageWindowFactory = () => p
  * sibling / boundary counts use the `[siblingCount]` / `[boundaryCount]` inputs
  * on `cngx-pgn-pages` instead. Mirrors {@link CNGX_PAGINATOR_ANNOUNCER_FACTORY}.
  *
- * @category ui/paginator
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-page-window.token.ts
  * @since 0.1.0
  */

@@ -43,6 +43,8 @@
  * **Pair with**
  *
  * - `@cngx/themes/material/tooltip-theme` - Material 3 inverse-surface
+ *
+ * @themes CngxTooltip
  */
 
 @layer cngx.tokens {

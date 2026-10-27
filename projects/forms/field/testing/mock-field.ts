@@ -4,8 +4,6 @@ import type { CngxFieldAccessor, CngxFieldRef, CngxFieldValidationError } from '
 /**
  * A writable mock of `CngxFieldRef` for testing.
  * Every property is a `WritableSignal` so tests can mutate state directly.
- *
- * @category forms/field/testing
  */
 export interface MockFieldRef<T = unknown> extends CngxFieldRef<T> {
   readonly name: WritableSignal<string>;
@@ -32,8 +30,6 @@ export interface MockFieldRef<T = unknown> extends CngxFieldRef<T> {
 
 /**
  * Options for {@link createMockField}.
- *
- * @category forms/field/testing
  */
 export interface MockFieldOptions<T = unknown> {
   name?: string;
@@ -63,8 +59,6 @@ export interface MockFieldOptions<T = unknown> {
  * // Pass `accessor` to [field] input
  * // Mutate ref.touched.set(true) to simulate interaction
  * ```
- *
- * @category forms/field/testing
  */
 export function createMockField<T = string>(
   opts: MockFieldOptions<T> = {},
@@ -114,8 +108,6 @@ export function createMockField<T = string>(
  * Creates a mock `CngxFieldValidationError` for testing. Its field is inert:
  * `focusBoundControl` does nothing and no `[formField]` control is bound, so
  * `focusFirstError` over mocked errors runs without a real form.
- *
- * @category forms/field/testing
  */
 export function mockValidationError(
   kind: string,

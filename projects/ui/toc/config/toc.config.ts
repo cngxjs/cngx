@@ -8,7 +8,6 @@ import type { CngxTocLanguageSection } from '../i18n/toc-language-section';
  * declared once there; an unset key reads the section (English without a
  * pack).
  *
- * @category ui/toc
  * @since 0.1.0
  */
 export type CngxTocAriaLabels = Partial<CngxTocLanguageSection>;
@@ -29,7 +28,6 @@ export type CngxTocAriaLabels = Partial<CngxTocLanguageSection>;
  * Every key is optional - partial overrides deep-merge with the library
  * defaults, so consumers declare only the keys they want to override.
  *
- * @category ui/toc
  * @since 0.1.0
  */
 export interface CngxTocConfig {

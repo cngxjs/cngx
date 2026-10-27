@@ -3,7 +3,6 @@
  * `CngxChartPanel`. It feeds the `ariaLabels` of `CNGX_CHART_PANEL_CONFIG`; a
  * key set through `withChartPanelAriaLabels` still wins.
  *
- * @category ui/chart-panel/i18n
  * @since 0.1.0
  * @relatedTo CNGX_CHART_PANEL_CONFIG, withChartPanelAriaLabels
  */
@@ -16,7 +15,6 @@ export interface CngxChartPanelLanguageSection {
  * The English chart-panel section: the single source of the chart panel's
  * English copy. The `CNGX_CHART_PANEL_CONFIG` labels default to it.
  *
- * @category ui/chart-panel/i18n
  * @since 0.1.0
  * @relatedTo CNGX_CHART_PANEL_CONFIG
  */

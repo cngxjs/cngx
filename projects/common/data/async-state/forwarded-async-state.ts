@@ -30,7 +30,6 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  * { provide: CNGX_STATEFUL, useFactory: () => ({ state: inject(Host).asyncState }) }
  * ```
  *
- * @category common/data/async-state
  * @relatedTo createAsyncState, createManualState
  * @since 0.1.0
  */

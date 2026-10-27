@@ -10,11 +10,11 @@ import { injectPaginatorHost } from '../paginator-host.token';
  * config range formatter, so it localises with the rest of the cascade. Tabular
  * figures keep the numerals from reflowing as the page changes.
  *
- * @category ui/paginator
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-range.component.ts
  * @since 0.1.0
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/range/readout</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-pgn-range',

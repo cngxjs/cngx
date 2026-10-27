@@ -1,6 +1,7 @@
 {
     "$schema": "./node_modules/@cngxjs/compodocx/src/config/schema.json",
     "tsconfig": "./tsconfig.doc.json",
+    "name": "cngx",
     "output": "./docs",
     "theme": "./cngx-compodocx-theme.css",
     "customFavicon": "./brand/favicon.svg",
@@ -8,15 +9,13 @@
     "multiVersion": false,
     "includes": "core-concepts",
     "includesName": "Core Concepts",
-    "assetsFolder": "assets",
-    "groupBy": "folder",
-    "groupDepth": 2,
+    "assetsFolder": "brand",
     "disableSourceCode": true,
     "disableTemplateTab": true,
     "disableStyleTab": true,
     "disablePrivate": true,
     "disableInternal": true,
-    "disableRoutesGraph": true,
+    "disableRoutes": true,
     "disableDomTree": true,
     "disableGraph": false,
     "disableDependenciesTab": true,
@@ -25,6 +24,20 @@
     "menuLayout": "feature",
     "featuresName": "Libraries",
     "collapsedAll": true,
+    "classificationAxes": {
+        "level": {
+            "label": "Level",
+            "values": [
+                "atom",
+                "molecule",
+                "organism"
+            ],
+            "kinds": [
+                "component",
+                "directive"
+            ]
+        }
+    },
     "showEffects": false,
     "apiTabSections": [
         "index",
@@ -36,6 +49,10 @@
         "indexSignatures",
         "hostBindings",
         "hostListeners"
+    ],
+    "styleFiles": [
+        "projects/*/theming/**/*.css",
+        "projects/themes/*.css"
     ],
     "themingTabSections": [
         "overview",

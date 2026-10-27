@@ -5,7 +5,6 @@ import type {} from '@cngx/core/i18n';
  * The menu section of a {@link CngxLanguagePack}: what the menu family
  * announces. It feeds the `ariaLabels` of `CNGX_MENU_CONFIG`.
  *
- * @category common/interactive/i18n
  * @since 0.1.0
  * @relatedTo CNGX_MENU_CONFIG
  */
@@ -21,7 +20,6 @@ export interface CngxMenuLanguageSection {
  * The English menu section: the single source of the menu's English copy.
  * `CNGX_MENU_CONFIG` defaults its `ariaLabels` to it.
  *
- * @category common/interactive/i18n
  * @since 0.1.0
  * @relatedTo CNGX_MENU_CONFIG
  */

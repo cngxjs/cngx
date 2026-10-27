@@ -10,8 +10,6 @@ import type { CngxTabsCommitAction } from './presenter.directive';
  * How a commit-gated tab switch settled. `'refused'` is a `false` answer
  * from `commitAction` (the action declined on purpose, nothing failed);
  * `'failed'` is a throw, a rejected promise or an erroring observable.
- *
- * @category common/tabs
  */
 export type CngxTabsCommitResolution = 'accepted' | 'refused' | 'failed';
 
@@ -19,8 +17,6 @@ export type CngxTabsCommitResolution = 'accepted' | 'refused' | 'failed';
  * Adapts the shared commit-controller to the tabs action shape. \
  * The presenter delegates to {@link beginTransition} when `commitAction`
  * is bound.
- *
- * @category common/tabs
  */
 export interface CngxTabsCommitHandler {
   /**
@@ -47,8 +43,6 @@ export interface CngxTabsCommitHandler {
 
 /**
  * Options for {@link createTabsCommitHandler}.
- *
- * @category common/tabs
  */
 export interface CngxTabsCommitHandlerOptions {
   readonly controller: CngxCommitController<number>;
@@ -60,8 +54,6 @@ export interface CngxTabsCommitHandlerOptions {
  * returns into one {@link CngxTabsCommitResolution}: `true` accepts,
  * `false` refuses (the controller settles to `'idle'` and stores no
  * error), a throw fails.
- *
- * @category common/tabs
  */
 export function createTabsCommitHandler(opts: CngxTabsCommitHandlerOptions): CngxTabsCommitHandler {
   const { controller } = opts;
@@ -191,8 +183,6 @@ function runTabsAction(
  * Factory signature for {@link CNGX_TABS_COMMIT_HANDLER_FACTORY}.
  * Override to wrap the default with retry-with-backoff, telemetry,
  * or offline queues.
- *
- * @category common/tabs
  */
 export type CngxTabsCommitHandlerFactory = (
   opts: CngxTabsCommitHandlerOptions,
@@ -205,7 +195,6 @@ export type CngxTabsCommitHandlerFactory = (
  * - `CNGX_ARRAY_COMMIT_HANDLER_FACTORY` (select) and
  * - `CNGX_STEPPER_COMMIT_HANDLER_FACTORY`.
  *
- * @category common/tabs
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/commit-handler.ts
  * @since 0.1.0
  */

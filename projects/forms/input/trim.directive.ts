@@ -18,13 +18,12 @@ import { booleanAttribute, Directive, ElementRef, inject, input } from '@angular
  * <textarea cngxTrim cngxTrimCollapse [field]="f.bio"></textarea>
  * ```
  *
- * @category forms/input
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/trim.directive.ts
  * @since 0.2.0
  * @relatedTo CngxInput, CngxInputFilter, CngxInputFormat
  * <example-url>http://localhost:4200/#/forms/input/trim-on-blur</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: 'input[cngxTrim],textarea[cngxTrim]',

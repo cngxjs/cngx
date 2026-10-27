@@ -31,6 +31,8 @@
  * - Known class-name mismatch: the directive emits `--success` /
  *   `--error` but the rules below target `--succeeded` / `--failed`.
  *   Tracked as a separate fix.
+ *
+ * @themes CngxAsyncClick
  */
 
 @layer cngx.components {

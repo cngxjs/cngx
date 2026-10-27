@@ -21,7 +21,6 @@ const NO_ARIA_LABELS: CngxTocAriaLabels = {};
  * `CngxBreadcrumbConfigFeature` so the consumer's mental model is one across
  * feature areas.
  *
- * @category ui/toc
  * @since 0.1.0
  */
 export type CngxTocConfigFeature =
@@ -121,7 +120,6 @@ function mergeConfig(
  * });
  * ```
  *
- * @category ui/toc
  * @since 0.1.0
  */
 export function provideTocConfig(...features: CngxTocConfigFeature[]): EnvironmentProviders {
@@ -158,7 +156,6 @@ export function provideTocConfig(...features: CngxTocConfigFeature[]): Environme
  * class Guide {}
  * ```
  *
- * @category ui/toc
  * @since 0.1.0
  */
 export function provideTocConfigAt(...features: CngxTocConfigFeature[]): Provider[] {

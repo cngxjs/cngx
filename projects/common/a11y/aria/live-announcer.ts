@@ -35,8 +35,6 @@ function topmostOpenModal(doc: Document): HTMLElement | null {
 /**
  * Politeness channel for {@link CngxLiveAnnouncer.announce}: `'polite'` queues
  * after the current utterance, `'assertive'` interrupts it immediately.
- *
- * @category common/a11y
  */
 export type AriaLivePoliteness = 'polite' | 'assertive';
 
@@ -85,7 +83,6 @@ export type AriaLivePoliteness = 'polite' | 'assertive';
  * announcer.announce('Alert dismissed', 'polite', hostElement); // inside a modal
  * ```
  *
- * @category common/a11y
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/aria/live-announcer.ts
  * @since 0.1.0

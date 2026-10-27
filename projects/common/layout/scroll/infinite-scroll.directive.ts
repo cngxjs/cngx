@@ -58,13 +58,12 @@ import { cngxDevWarn } from '@cngx/utils';
  * </div>
  * ```
  *
- * @category common/layout
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/scroll/infinite-scroll.directive.ts
  * @since 0.1.0
  * @relatedTo CngxIntersectionObserver, CngxScrollSpy, CngxStickyHeader
  * <example-url>http://localhost:4200/#/common/layout/infinite-scroll/scrollable-list</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxInfiniteScroll]',

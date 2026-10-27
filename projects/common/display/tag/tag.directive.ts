@@ -19,8 +19,6 @@ import type { CngxTagSlotContext } from './slots/tag-slot.context';
 
 /**
  * Visual variant. `filled` is the default solid pill; `outline` swaps fill for border; `subtle` softens both.
- *
- * @category common/display
  */
 export type CngxTagVariant = 'filled' | 'outline' | 'subtle';
 
@@ -35,8 +33,6 @@ export type CngxTagVariant = 'filled' | 'outline' | 'subtle';
  * styles against their own design tokens, or register the key via
  * `withTagColors()` and let the directive emit the entry's
  * `--cngx-tag-bg/-color/-border` values directly.
- *
- * @category common/display
  */
 export type CngxTagColor = 'neutral' | 'success' | 'warning' | 'error' | 'info' | (string & {});
 
@@ -46,8 +42,6 @@ export type CngxTagColor = 'neutral' | 'success' | 'warning' | 'error' | 'info' 
  * custom properties (see `tag.css`). Sizing of nested atoms
  * (`cngx-icon`, `cngx-avatar`) is the consumer's call - Tag does not
  * cascade a sub-token contract.
- *
- * @category common/display
  */
 export type CngxTagSize = 'sm' | 'md' | 'lg' | 'xl';
 
@@ -95,8 +89,6 @@ const PREDEFINED_TAG_COLORS: ReadonlySet<string> = new Set([
  * - Configuration cascade - deferred (see
  *   `display-accepted-debt.md §1`).
  *
- * @category common/display
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/tag/tag.directive.ts
  * @selector cngx-tag
@@ -118,6 +110,7 @@ const PREDEFINED_TAG_COLORS: ReadonlySet<string> = new Set([
  * <example-url>http://localhost:4200/#/common/display/tag/slot-overrides-prefix-label-suffix</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/truncate-maxwidth</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/variant-matrix</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: '[cngxTag], cngx-tag',

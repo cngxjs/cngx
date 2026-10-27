@@ -36,8 +36,6 @@ import { injectDisplayI18n } from '../i18n/display-i18n';
  *   decides whether to write state directly or route through a commit
  *   flow. This keeps the chip usable from any level of the stack.
  *
- * @category common/display
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/chip/chip.component.ts
  * @since 0.1.0
@@ -51,6 +49,7 @@ import { injectDisplayI18n } from '../i18n/display-i18n';
  * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/disabled-state</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/removable-with-removerequest-on-backspace-delete</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/chip/multi-group/multi-select-chips-with-selection-count</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-chip',

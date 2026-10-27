@@ -11,8 +11,6 @@ import { InjectionToken } from '@angular/core';
  * focusable element"; this token declares "I translate this element's value
  * channel". The same directive may provide both - they are independent
  * contracts.
- *
- * @category forms/field
  */
 export interface CngxValueTransformer<T> {
   /** Produce the display string from the typed value. */
@@ -36,7 +34,6 @@ export interface CngxValueTransformer<T> {
  * "I am the focusable element", this one "I translate its value channel" - one
  * directive may provide both.
  *
- * @category forms/field
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/value-transformer.token.ts
  * @since 0.1.0
  * @relatedTo CngxValueTransformer, CNGX_FORM_FIELD_CONTROL, CngxInputMask, CngxInputFormat, CngxNumericInput

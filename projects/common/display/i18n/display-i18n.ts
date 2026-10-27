@@ -10,7 +10,6 @@ import {
 /**
  * Presence states `CngxAvatar` renders a status dot for.
  *
- * @category common/display/i18n
  * @since 0.1.0
  */
 export type CngxAvatarStatus = 'online' | 'offline' | 'busy' | 'away';
@@ -26,7 +25,6 @@ export type CngxAvatarStatus = 'online' | 'offline' | 'busy' | 'away';
  * reactively while its input is unbound, `avatarGroupNoun` and `chipRemove`
  * included, so a language switch reaches each atom without re-creating it.
  *
- * @category common/display/i18n
  * @since 0.1.0
  */
 export interface CngxDisplayI18n {
@@ -110,7 +108,6 @@ const displayBundle = createSectionBundle<CngxDisplayLanguageSection, CngxDispla
  * for the app locale; the value is a `Signal`, shared by every reader under
  * one injector.
  *
- * @category common/display/i18n
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/i18n/display-i18n.ts
  * @since 0.1.0
@@ -124,7 +121,6 @@ export const CNGX_DISPLAY_I18N = new InjectionToken<Signal<CngxDisplayI18n>>('Cn
 /**
  * Branded feature-fn for {@link provideDisplayI18n}.
  *
- * @category common/display/i18n
  * @since 0.1.0
  */
 export type CngxDisplayI18nFeature = ((
@@ -145,7 +141,6 @@ function defineDisplayI18nFeature(
  * language pack's copy, or the English default. Pass a `Signal` of a partial
  * bundle to switch languages at runtime.
  *
- * @category common/display/i18n
  * @since 0.1.0
  */
 export function withDisplayI18nLabels(
@@ -172,7 +167,6 @@ export function withDisplayI18nLabels(
  * });
  * ```
  *
- * @category common/display/i18n
  * @since 0.1.0
  */
 export function provideDisplayI18n(...features: readonly CngxDisplayI18nFeature[]): Provider {
@@ -186,7 +180,6 @@ export function provideDisplayI18n(...features: readonly CngxDisplayI18nFeature[
  * Inject the resolved display i18n bundle signal. Read it inside a
  * `computed()` or template so a runtime override flip re-derives.
  *
- * @category common/display/i18n
  * @since 0.1.0
  */
 export function injectDisplayI18n(): Signal<CngxDisplayI18n> {

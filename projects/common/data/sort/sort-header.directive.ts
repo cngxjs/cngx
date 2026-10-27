@@ -24,8 +24,6 @@ import { type CngxSort } from './sort.directive';
  * </div>
  * ```
  *
- * @category common/data/sort
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/sort/sort-header.directive.ts
  * @since 0.1.0

@@ -9,7 +9,6 @@ import type { CngxStatCardLanguageSection } from '../i18n/stat-card-language-sec
  * detail under the error headline, which has no default and is omitted when
  * unset.
  *
- * @category ui/stat-card
  * @since 0.1.0
  */
 export interface CngxStatCardAriaLabels extends Partial<CngxStatCardLanguageSection> {
@@ -20,7 +19,6 @@ export interface CngxStatCardAriaLabels extends Partial<CngxStatCardLanguageSect
 /**
  * The resolved stat-card strings: every key of the `statCard` section is set.
  *
- * @category ui/stat-card
  * @since 0.1.0
  */
 export type CngxStatCardResolvedAriaLabels = CngxStatCardAriaLabels & CngxStatCardLanguageSection;
@@ -39,7 +37,6 @@ export type CngxStatCardResolvedAriaLabels = CngxStatCardAriaLabels & CngxStatCa
  * Every key is optional - partial overrides deep-merge with the library
  * defaults, so consumers declare only the keys they want to override.
  *
- * @category ui/stat-card
  * @since 0.1.0
  */
 export interface CngxStatCardConfig {

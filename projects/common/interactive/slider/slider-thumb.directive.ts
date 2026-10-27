@@ -52,7 +52,6 @@ function createThumbValue(
  * Two focusable thumbs cannot be derived from a single host element, so each
  * thumb is its own directive - the headless contract the skin marks up.
  *
- * @category common/interactive/slider
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider-thumb.directive.ts
  * @since 0.1.0

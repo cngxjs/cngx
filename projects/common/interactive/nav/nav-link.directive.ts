@@ -55,8 +55,6 @@ function firstGrapheme(text: string, locale: string): string {
  * <a cngxNavLink [depth]="2">Deep nested</a>
  * ```
  *
- * @category common/interactive
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-link.directive.ts
  * @selector [cngxNavLink]
@@ -65,6 +63,7 @@ function firstGrapheme(text: string, locale: string): string {
  * <example-url>http://localhost:4200/#/common/interactive/nav/nav-badge-counts-and-dots</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/nav/nav-group-accordion-sections</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/nav/nav-links-active-state-depth</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: 'a[cngxNavLink], button[cngxNavLink]',

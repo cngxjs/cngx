@@ -10,7 +10,6 @@
  * `*cngxStep*` slots or `withStep*Template` features.
  *
  * @internal
- * @category common/stepper
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/glyphs.ts
  * @since 0.1.0
  */

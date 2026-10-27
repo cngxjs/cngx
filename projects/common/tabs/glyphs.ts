@@ -8,7 +8,6 @@
  * directives or `withTab*Template` config features.
  *
  * @internal
- * @category common/tabs
  */
 export const CNGX_TABS_GLYPHS = {
   /** Default visual for `*cngxTabErrorBadge` when no override is bound. */

@@ -2,8 +2,6 @@ import { computed, Directive, ElementRef, inject, input, output, signal } from '
 
 /**
  * Position from which the drawer panel slides in.
- *
- * @category common/layout
  */
 export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
 
@@ -34,8 +32,6 @@ export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
  * </div>
  * ```
  *
- * @category common/layout
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/drawer/drawer.directive.ts
  * @since 0.1.0
@@ -46,6 +42,7 @@ export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
  * <example-url>http://localhost:4200/#/common/layout/drawer/events-openedchange-closed</example-url>
  * <example-url>http://localhost:4200/#/common/layout/drawer/mode-over-push-side</example-url>
  * <example-url>http://localhost:4200/#/common/layout/drawer/pattern-consumer-wiring</example-url>
+ * @axis level organism
  */
 @Directive({
   selector: '[cngxDrawer]',

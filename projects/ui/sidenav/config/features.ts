@@ -14,7 +14,6 @@ import type { CngxSidenavConfigFeature } from './provide-sidenav-config';
  * provideSidenavConfig(withSidenavDimensions({ width: '320px', miniWidth: '64px' }));
  * ```
  *
- * @category ui/sidenav
  * @since 0.1.0
  */
 export function withSidenavDimensions(
@@ -32,7 +31,6 @@ export function withSidenavDimensions(
  * provideSidenavConfig(withSidenavShortcut('mod+b'));
  * ```
  *
- * @category ui/sidenav
  * @since 0.1.0
  */
 export function withSidenavShortcut(combo: string): CngxSidenavConfigFeature {
@@ -51,7 +49,6 @@ export function withSidenavShortcut(combo: string): CngxSidenavConfigFeature {
  * provideSidenavConfig(withSidenavHoverDwell({ enterDelay: 200, leaveDelay: 150 }));
  * ```
  *
- * @category ui/sidenav
  * @since 0.1.0
  */
 export function withSidenavHoverDwell(
@@ -69,7 +66,6 @@ export function withSidenavHoverDwell(
  * provideSidenavConfig(withSidenavRouterSync({ param: 'menu' }));
  * ```
  *
- * @category ui/sidenav
  * @since 0.1.0
  */
 export function withSidenavRouterSync(
@@ -88,7 +84,6 @@ export function withSidenavRouterSync(
  * provideSidenavConfig(withSidenavLabels({ resizeHandle: 'Navigation anpassen' }));
  * ```
  *
- * @category ui/sidenav
  * @since 0.1.0
  */
 export function withSidenavLabels(

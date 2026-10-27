@@ -9,8 +9,6 @@ import type { CngxSelectOptionDef } from './option.model';
 
 /**
  * Configuration for {@link createReorderCommitHandler}.
- *
- * @category forms/select/reorderable-multi-select
  */
 export interface ReorderCommitHandlerOptions<T> {
   /** Component's primary value signal. */
@@ -63,8 +61,6 @@ export interface ReorderCommitHandlerOptions<T> {
 
 /**
  * API returned from {@link createReorderCommitHandler}.
- *
- * @category forms/select/reorderable-multi-select
  */
 export interface ReorderCommitHandler<T> {
   /**
@@ -101,8 +97,6 @@ export interface ReorderCommitHandler<T> {
  *
  * `CngxTreeSelect.dispatchValueChange` follows the same pattern
  * inline; a future refactor could lift it here.
- *
- * @category forms/select/reorderable-multi-select
  */
 export function createReorderCommitHandler<T>(
   opts: ReorderCommitHandlerOptions<T>,
@@ -161,8 +155,6 @@ export function createReorderCommitHandler<T>(
 
 /**
  * Signature of the factory behind {@link CNGX_REORDER_COMMIT_HANDLER_FACTORY}.
- *
- * @category forms/select/reorderable-multi-select
  */
 export type CngxReorderCommitHandlerFactory = <T>(
   opts: ReorderCommitHandlerOptions<T>,
@@ -174,7 +166,6 @@ export type CngxReorderCommitHandlerFactory = <T>(
  * `providers` / `viewProviders` for retry-with-backoff, offline queues, audit
  * logging, or telemetry.
  *
- * @category forms/select/reorderable-multi-select
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/reorder-commit-handler.ts
  * @since 0.1.0
  * @relatedTo CngxReorderableMultiSelect, CNGX_SELECT_COMMIT_CONTROLLER_FACTORY

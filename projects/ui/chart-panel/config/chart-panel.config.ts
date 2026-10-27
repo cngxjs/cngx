@@ -8,7 +8,6 @@ import type { CngxChartPanelLanguageSection } from '../i18n/chart-panel-language
  * `chartPanel` language section, declared once there; an unset key reads the
  * section (English without a pack).
  *
- * @category ui/chart-panel
  * @since 0.1.0
  */
 export type CngxChartPanelAriaLabels = Partial<CngxChartPanelLanguageSection>;
@@ -24,7 +23,6 @@ export type CngxChartPanelAriaLabels = Partial<CngxChartPanelLanguageSection>;
  *   4. Library defaults (`CNGX_CHART_PANEL_DEFAULTS`; the strings come from
  *      the `chartPanel` section of the language pack).
  *
- * @category ui/chart-panel
  * @since 0.1.0
  */
 export interface CngxChartPanelConfig {

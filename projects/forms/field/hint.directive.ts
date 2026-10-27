@@ -13,8 +13,6 @@ import { injectFormFieldPresenter } from './inject-form-field-presenter';
  * <span cngxHint>Business email address</span>
  * ```
  *
- * @category forms/field
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/hint.directive.ts
  * @since 0.1.0

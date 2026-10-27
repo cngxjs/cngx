@@ -7,7 +7,6 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * `withIncrementalListAriaLabels` still wins. Messages use `{name}`
  * placeholders, numbers are formatted for the locale.
  *
- * @category ui/collection/i18n
  * @since 0.1.0
  * @relatedTo CNGX_INCREMENTAL_LIST_CONFIG, withIncrementalListAriaLabels
  */
@@ -32,7 +31,6 @@ export interface CngxCollectionLanguageSection {
  * The English collection section: the single source of the incremental
  * list's English copy. The `CNGX_INCREMENTAL_LIST_CONFIG` labels default to it.
  *
- * @category ui/collection/i18n
  * @since 0.1.0
  * @relatedTo CNGX_INCREMENTAL_LIST_CONFIG
  */

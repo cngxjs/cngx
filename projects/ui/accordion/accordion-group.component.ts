@@ -31,8 +31,6 @@ import { injectAccordionConfig } from './config/inject-accordion-config';
  * </cngx-accordion-group>
  * ```
  *
- * @category ui/accordion
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/accordion/accordion-group.component.ts
  * @since 0.1.0
@@ -51,6 +49,7 @@ import { injectAccordionConfig } from './config/inject-accordion-config';
  * <example-url>http://localhost:4200/#/ui/accordion/skins/section-bands</example-url>
  * <example-url>http://localhost:4200/#/ui/accordion/skins/severity-spine</example-url>
  * <example-url>http://localhost:4200/#/ui/accordion/skins/timeline</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-accordion-group',

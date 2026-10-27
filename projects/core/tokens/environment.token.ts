@@ -2,8 +2,6 @@ import { InjectionToken, type Provider } from '@angular/core';
 
 /**
  * Application environment descriptor.
- *
- * @category core/tokens
  */
 export interface Environment {
   /** Whether the application is running in production mode. */
@@ -27,7 +25,6 @@ export interface Environment {
  * work without one reads it as `inject(ENVIRONMENT, { optional: true })`
  * and handles the `null`.
  *
- * @category core/tokens
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/tokens/environment.token.ts
  * @since 0.1.0
  * @relatedTo provideEnvironment
@@ -45,7 +42,6 @@ export const ENVIRONMENT = new InjectionToken<Environment>('CNGX_ENVIRONMENT');
  * });
  * ```
  *
- * @category core/tokens
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/tokens/environment.token.ts
  * @since 0.1.0
  * @relatedTo ENVIRONMENT

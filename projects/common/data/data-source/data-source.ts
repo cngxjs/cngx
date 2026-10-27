@@ -21,8 +21,6 @@ import type { Observable } from 'rxjs';
  *
  * @typeParam T - The row item type.
  *
- * @category common/data/data-source
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/data-source/data-source.ts
  * @since 0.1.0
  * @relatedTo CngxSmartDataSource, CngxSort, CngxFilter, CngxPaginate
@@ -51,8 +49,6 @@ export class CngxDataSource<T> extends DataSource<T> {
  * ```typescript
  * readonly dataSource = injectDataSource(this.items);
  * ```
- *
- * @category common/data/data-source
  */
 export function injectDataSource<T>(data: Signal<T[]>): CngxDataSource<T> {
   return new CngxDataSource(data);

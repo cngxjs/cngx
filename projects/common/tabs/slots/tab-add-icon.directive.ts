@@ -13,7 +13,6 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * </cngx-tab-group>
  * ```
  *
- * @category common/tabs/slots
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/slots/tab-add-icon.directive.ts
  * @since 0.1.0

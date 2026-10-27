@@ -14,8 +14,6 @@ import { CNGX_INPUT_CONFIG, injectInputAriaLabels } from './input-config';
 
 /**
  * Describes a file that was rejected during drop/browse validation.
- *
- * @category forms/input
  */
 export interface FileRejection {
   /** The rejected file. */
@@ -55,13 +53,12 @@ function fileKey(file: File): string {
  * </div>
  * ```
  *
- * @category forms/input
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/file-drop.directive.ts
  * @since 0.1.0
  * @relatedTo CngxInput, CngxAsyncState, withFileMaxSize
  * <example-url>http://localhost:4200/#/forms/input/file-drop/image-upload</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxFileDrop]',

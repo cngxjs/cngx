@@ -3,8 +3,6 @@ import { cngxDevWarn } from '@cngx/utils';
 
 /**
  * Configuration for {@link createKeyedRegistry} / {@link createSlotRegistry}.
- *
- * @category core/utils/registry
  */
 export interface RegistryOptions {
   /**
@@ -16,8 +14,6 @@ export interface RegistryOptions {
 
 /**
  * Keyed registry handle returned by {@link createKeyedRegistry}.
- *
- * @category core/utils/registry
  */
 export interface KeyedRegistry<T> {
   /** Registered entries by key, in registration order. */
@@ -43,8 +39,6 @@ export interface KeyedRegistry<T> {
 
 /**
  * Single-slot registry handle returned by {@link createSlotRegistry}.
- *
- * @category core/utils/registry
  */
 export interface SlotRegistry<T> {
   /** The currently registered handle, or `null`. */
@@ -74,8 +68,6 @@ export interface SlotRegistry<T> {
  *
  * The registry is plain signals - create it as a field on the owning
  * directive / service, no injection context required.
- *
- * @category core/utils/registry
  */
 export function createKeyedRegistry<T>(options?: RegistryOptions): KeyedRegistry<T> {
   const name = options?.name ?? 'cngx registry';
@@ -128,8 +120,6 @@ export function createKeyedRegistry<T>(options?: RegistryOptions): KeyedRegistry
  * clears the slot when the releasing handle still holds it - the
  * teardown of a replaced predecessor cannot blank a successor's claim.
  * Mirrors the guarded pattern `CngxDialog` uses for its aria handles.
- *
- * @category core/utils/registry
  */
 export function createSlotRegistry<T>(): SlotRegistry<T> {
   const currentState = signal<T | null>(null);

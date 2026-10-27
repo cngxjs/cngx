@@ -8,8 +8,6 @@ import { InjectionToken, type Signal } from '@angular/core';
  * directives bind `aria-disabled` on one element and the later binding
  * wins, so a disabled button with an idle async click would render no
  * `aria-disabled` at all.
- *
- * @category common/interactive
  */
 export interface CngxHostInteractionState {
   /** `true` while the host is disabled; clicks are swallowed and `aria-disabled` is set. */
@@ -25,7 +23,6 @@ export interface CngxHostInteractionState {
  * No `providedIn`, no default: an element without a providing host has
  * no extra state to fold in.
  *
- * @category common/interactive
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-click/host-interaction-state.token.ts
  * @since 0.1.0
  * @relatedTo CngxAsyncClick

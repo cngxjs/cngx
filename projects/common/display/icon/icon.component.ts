@@ -7,8 +7,6 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@a
  * Decorative by default (`aria-hidden="true"`); set `label` to make it
  * informative (`role="img"`, `aria-label`).
  *
- * @category common/display
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/icon/icon.component.ts
  * @selector cngx-icon
@@ -29,6 +27,7 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@a
  * <example-url>http://localhost:4200/#/common/display/tag/slot-overrides-prefix-label-suffix</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/truncate-maxwidth</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/variant-matrix</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-icon, [cngxIcon]',

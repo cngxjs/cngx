@@ -10,8 +10,6 @@ import type { AsyncStatus } from '@cngx/core/utils';
  * the busy slot, `error` in the error slot). `message` carries the resolved
  * error string in the error state and is empty in the busy state, so an error
  * override can render the announced text (and a retry) without re-deriving it.
- *
- * @category ui/accordion
  */
 export interface CngxAccordionItemStateContext {
   readonly $implicit: AsyncStatus;

@@ -9,7 +9,6 @@ import { isHeardOnAppearance, type CngxRecordedAnnouncement } from './announceme
  * - `'unreliable-insertion'`: the region appeared already holding its text
  *   (`'insertion'` or `'became-live'`) and is not `role="alert"`.
  *
- * @category core/utils
  * @since 0.1.0
  * @relatedTo resolveUnheardReason, resolveHeardAnnouncements
  */
@@ -44,7 +43,6 @@ export type CngxUnheardReason = 'suppressed' | 'busy' | 'unreliable-insertion';
  *
  * @param entry An entry from {@link createAnnouncementRecorder}.
  *
- * @category core/utils
  * @since 0.1.0
  * @relatedTo resolveHeardAnnouncements, createAnnouncementRecorder
  */
@@ -78,7 +76,6 @@ export function resolveUnheardReason(entry: CngxRecordedAnnouncement): CngxUnhea
  * @param entries Entries from {@link createAnnouncementRecorder}.
  * @returns A new array; `[]` when nothing is heard.
  *
- * @category core/utils
  * @since 0.1.0
  * @relatedTo resolveUnheardReason, createAnnouncementRecorder, createAnnouncementCapture
  */

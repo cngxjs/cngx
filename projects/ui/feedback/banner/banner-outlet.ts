@@ -31,8 +31,6 @@ import { CngxBanner, type BannerState } from './banner.service';
  * <router-outlet />
  * ```
  *
- * @category ui/feedback/banner
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/banner/banner-outlet.ts
  * @since 0.1.0

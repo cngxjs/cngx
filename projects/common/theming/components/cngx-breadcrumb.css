@@ -24,6 +24,8 @@
  * - link colour -> `--cngx-color-primary`
  * - terminal crumb -> `--cngx-color-text`
  * - separator -> `--cngx-color-text-muted`
+ *
+ * @themes CngxBreadcrumb, CngxBreadcrumbItem, CngxBreadcrumbSeparator
  */
 
 @layer cngx.tokens {

@@ -148,8 +148,6 @@ const TRUNCATE: Signal<'wrap' | 'scroll-x' | 'truncate'> = signal<
  * parent-toggle that propagated to descendants. `node.id` and
  * `node.parentIds` carry the per-instance prefix
  * (`<instance prefix>-<nodeIdFn result>`).
- *
- * @category forms/select/tree-select
  */
 export interface CngxTreeSelectChange<T = unknown> {
   readonly source: CngxTreeSelect<T>;
@@ -199,8 +197,6 @@ export interface CngxTreeSelectChange<T = unknown> {
  * sheet. `[presentation]` forces `'anchored'`, `'sheet'` or `'fullscreen'`;
  * `withMobileSheet('off')` keeps every select in its scope anchored.
  *
- * @category forms/select/tree-select
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/tree-select/tree-select.component.ts
  * @since 0.1.0
@@ -231,6 +227,7 @@ export interface CngxTreeSelectChange<T = unknown> {
  * @slot cngxSelectChipOverflow Replaces the `+N` overflow chip after the first maxVisibleChips displayed chips, and the badge of the touch summary; gets count, label, hidden. The `+N` chip is fine pointer only. The host keeps the hidden values readable for AT.
  * @slot cngxSelectSheetCount Replaces the selected count after the mobile sheet title; gets text ($implicit). Global default via CNGX_SELECT_CONFIG.templates.sheetCount.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-tree-select',

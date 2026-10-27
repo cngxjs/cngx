@@ -39,6 +39,8 @@
  * **Pair with**
  *
  * - `@cngx/themes/material/ripple-theme` - Material state-layer surface
+ *
+ * @themes CngxRipple
  */
 
 @layer cngx.tokens {

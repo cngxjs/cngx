@@ -23,7 +23,6 @@ import { injectA11yPanelSiteCopy, type CngxA11yPanelOptionLabels } from './i18n/
  * The four accessibility axes the panel can render a control group for.
  * Each maps 1:1 onto a writable signal returned by `injectA11yPreferences()`.
  *
- * @category ui/a11y
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
  * @since 0.1.0
  */
@@ -36,7 +35,6 @@ export type CngxA11yPanelAxis = 'density' | 'textScale' | 'motion' | 'contrast';
  * than reaching the global preference signal. An option without a `label`
  * reads it from the `a11yPanel` section of the language pack, by value.
  *
- * @category ui/a11y
  * @relatedTo withA11yPanelAxes
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
  * @since 0.1.0
@@ -60,7 +58,6 @@ export interface CngxA11yPanelAxisOption<V extends string = string> {
  * not a garbage value written to `<html data-density>`. Reorder or drop axes
  * by supplying a subset via `withA11yPanelAxes`.
  *
- * @category ui/a11y
  * @relatedTo withA11yPanelAxes
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
  * @since 0.1.0
@@ -94,7 +91,6 @@ export type CngxA11yPanelAxisSpec =
  * `a11yPanel` section of the language pack (English without one); override
  * single keys via {@link withA11yPanelLabels}.
  *
- * @category ui/a11y
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
  * @since 0.1.0
  */
@@ -120,7 +116,6 @@ export interface CngxA11yPanelLabels {
  * `Signal`; its option labels are optional and default to the section. Read
  * both through {@link injectA11yPanelLabels} and {@link injectA11yPanelAxes}.
  *
- * @category ui/a11y
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
  * @since 0.1.0
  */
@@ -134,7 +129,6 @@ export interface CngxA11yPanelConfig {
  * record merges key-by-key, so a consumer can relabel one axis group without
  * restating the rest.
  *
- * @category ui/a11y
  * @relatedTo withA11yPanelLabels
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
  * @since 0.1.0
@@ -186,7 +180,6 @@ const NO_LABELS: CngxA11yPanelLabelsOverride = {};
  * `provideA11yPanelConfig(...)` at the application root, then the library
  * defaults.
  *
- * @category ui/a11y
  * @relatedTo provideA11yPanelConfig
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
  * @since 0.1.0
@@ -204,7 +197,6 @@ export const CNGX_A11Y_PANEL_CONFIG = new InjectionToken<CngxA11yPanelConfig>(
  * reducer in {@link provideA11yPanelConfig} matches on `kind`: `labels` deep-
  * merges the text bundle, `axes` replaces the axis list wholesale.
  *
- * @category ui/a11y
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
  * @since 0.1.0
  */
@@ -251,7 +243,6 @@ function applyFeatures(
  * );
  * ```
  *
- * @category ui/a11y
  * @relatedTo provideA11yPanelConfig
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
  * @since 0.1.0
@@ -280,7 +271,6 @@ export function withA11yPanelLabels(
  * );
  * ```
  *
- * @category ui/a11y
  * @relatedTo provideA11yPanelConfig
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
  * @since 0.1.0
@@ -297,7 +287,6 @@ export function withA11yPanelAxes(
  * supplied features merge with the library defaults, so consumers only declare
  * what they override.
  *
- * @category ui/a11y
  * @relatedTo withA11yPanelLabels
  * @relatedTo withA11yPanelAxes
  * @relatedTo injectA11yPanelConfig
@@ -342,7 +331,6 @@ export function provideA11yPanelConfig(
  * })
  * ```
  *
- * @category ui/a11y
  * @relatedTo provideA11yPanelConfig
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
  * @since 0.1.0
@@ -363,7 +351,6 @@ export function provideA11yPanelConfigAt(...features: CngxA11yPanelConfigFeature
  * injection context; resolves through the cascade. Equivalent to
  * `inject(CNGX_A11Y_PANEL_CONFIG)`.
  *
- * @category ui/a11y
  * @relatedTo provideA11yPanelConfig
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
  * @since 0.1.0
@@ -379,7 +366,6 @@ export function injectA11yPanelConfig(): CngxA11yPanelConfig {
  * config leaves unset, `null` or `undefined` reads the section. Runs in an
  * injection context; read it inside a `computed()`, a template or a handler.
  *
- * @category ui/a11y
  * @relatedTo withA11yPanelLabels
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
  * @since 0.1.0
@@ -463,7 +449,6 @@ function resolveAxes(
  * Every option without its own `label` carries the label for its value from
  * the `a11yPanel` section of the active pack. Runs in an injection context.
  *
- * @category ui/a11y
  * @relatedTo withA11yPanelAxes
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
  * @since 0.1.0

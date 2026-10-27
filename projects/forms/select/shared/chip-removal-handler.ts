@@ -9,8 +9,6 @@ import type { CngxSelectCompareFn } from './internal/select-core';
 /**
  * Minimum shape the chip-removal factory needs - just `.value`. Concrete
  * chip types layer label, disabled, etc. on top.
- *
- * @category forms/select/commit
  */
 export interface CngxChipRemovableItem<T> {
   readonly value: T;
@@ -23,8 +21,6 @@ export interface CngxChipRemovableItem<T> {
  * commit branch (optimistic write + `beginCommit`) or sync branch
  * (`values.set(next)` + `onSyncFinalize`). Closures cached per-item via
  * `WeakMap` for stable identity.
- *
- * @category forms/select/commit
  */
 export interface CngxChipRemovalHandlerOptions<
   T,
@@ -70,8 +66,6 @@ export interface CngxChipRemovalHandlerOptions<
 
 /**
  * API returned from {@link createChipRemovalHandler}.
- *
- * @category forms/select/commit
  */
 export interface CngxChipRemovalHandler<Item extends CngxChipRemovableItem<unknown>> {
   /** Apply the removal body. Bind directly to `(remove)` or Backspace. */
@@ -88,8 +82,6 @@ export interface CngxChipRemovalHandler<Item extends CngxChipRemovableItem<unkno
  * filter, branch dispatch, WeakMap closure stability. Consumer owns the
  * commit dispatch (`beginCommit`), rollback snapshotting
  * (`onBeforeCommit`), and change-event emission (`onSyncFinalize`).
- *
- * @category forms/select/commit
  */
 export function createChipRemovalHandler<
   T,
@@ -181,8 +173,6 @@ export function createChipRemovalHandler<
 
 /**
  * Factory signature for {@link CNGX_CHIP_REMOVAL_HANDLER_FACTORY}.
- *
- * @category forms/select/commit
  */
 export type CngxChipRemovalHandlerFactory = <
   T,
@@ -196,7 +186,6 @@ export type CngxChipRemovalHandlerFactory = <
  * multi-value selects. Default `createChipRemovalHandler`. Override to wrap with
  * telemetry, confirm-before-remove, or offline-queue semantics.
  *
- * @category forms/select/commit
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/chip-removal-handler.ts
  * @since 0.1.0
  * @relatedTo CngxMultiSelect, CngxMultiSelectChip, CNGX_ARRAY_COMMIT_HANDLER_FACTORY

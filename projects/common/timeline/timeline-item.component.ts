@@ -26,8 +26,6 @@ import { injectTimelineConfig, TIMELINE_NO_LABELS, type CngxTimelineLabels } fro
  *
  * Pair it with `<cngx-time>` from `@cngx/common/display` for relative
  * formatting; the timeline neither formats nor ticks.
- *
- * @category common/timeline
  */
 @Directive({
   selector: '[cngxTimelineTime]',
@@ -65,7 +63,6 @@ export class CngxTimelineTime {}
  * grid can fix that, because the paint follows `[data-row-side]` while the
  * DOM order does not.
  *
- * @category common/timeline
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/timeline-item.component.ts
  * @relatedTo CngxTimelineItem, CngxTimelineTime
  * @since 0.1.0
@@ -88,8 +85,6 @@ export class CngxTimelineOpposite {}
  * without the timeline's default being torn out for the rest.
  *
  * Whatever renders here is inside an `aria-hidden` element - decoration only.
- *
- * @category common/timeline
  */
 @Directive({
   selector: '[cngxTimelineMarkerContent]',
@@ -102,8 +97,6 @@ export class CngxTimelineMarkerContent {}
  * projected without a slot directive lands in the body too. Reach for it
  * when the item also projects a timestamp and the source order would
  * otherwise be ambiguous.
- *
- * @category common/timeline
  */
 @Directive({
   selector: '[cngxTimelineContent]',
@@ -161,8 +154,6 @@ const FOCUSABLE =
  * </cngx-timeline-item>
  * ```
  *
- * @category common/timeline
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/timeline-item.component.ts
  * @relatedTo CngxTimelineMarker, CngxTimelineConnector, CNGX_TIMELINE_CONFIG
@@ -172,6 +163,7 @@ const FOCUSABLE =
  * <example-url>http://localhost:4200/#/ui/timeline/layout/media-markers</example-url>
  * <example-url>http://localhost:4200/#/ui/timeline/layout/placement-end</example-url>
  * @since 0.1.0
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-timeline-item',

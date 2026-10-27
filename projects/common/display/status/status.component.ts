@@ -52,8 +52,6 @@ const TONE_GLYPH: Record<StatusTone, string> = {
  * visible `label`: without the glyph, colour is the dot's only signal, which a
  * sighted colour-blind reader cannot resolve (a dev-mode warning enforces this).
  *
- * @category common/display
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/status/status.component.ts
  * @since 0.1.0
@@ -61,6 +59,7 @@ const TONE_GLYPH: Record<StatusTone, string> = {
  *
  * <example-url>http://localhost:4200/#/common/display/status/tone-matrix</example-url>
  * <example-url>http://localhost:4200/#/common/display/status/dot-only</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-status',

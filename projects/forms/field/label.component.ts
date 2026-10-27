@@ -59,8 +59,6 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * <label cngxLabel>E-Mail <cngx-required /></label>
  * ```
  *
- * @category forms/field
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/label.component.ts
  * @since 0.1.0
@@ -70,6 +68,7 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * <example-url>http://localhost:4200/#/forms/field/label/error-and-disabled-classes</example-url>
  * <example-url>http://localhost:4200/#/forms/field/label/show-required-override</example-url>
  * <example-url>http://localhost:4200/#/forms/field/skin/fill-anatomy</example-url>
+ * @axis level atom
  */
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector -- attribute selector by design (label can be any element)

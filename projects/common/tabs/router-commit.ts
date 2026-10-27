@@ -11,8 +11,6 @@ import type { CngxTabHandle } from './tab-group-host.token';
  * target *index*, so it needs the registry to resolve the matching
  * {@link CngxTabHandle} before computing its route. `[cngxTabsRouteSync]`
  * passes the host's `tabs` signal straight through.
- *
- * @category common/tabs
  */
 export interface CngxTabRouterCommitOptions {
   readonly router: Router;
@@ -62,7 +60,6 @@ export const cngxDefaultTabRoute = (handle: CngxTabHandle): unknown[] => [handle
  * late promise resolution lands on the closed subscriber and is
  * dropped by RxJS itself.
  *
- * @category common/tabs
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/router-commit.ts
  * @since 0.1.0
  */

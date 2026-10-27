@@ -13,7 +13,6 @@ import { createPreferenceAxis } from './preference-axis';
  * derives the 44px floor. `on` / `off` pin the floor explicitly,
  * overriding the media query for the subtree.
  *
- * @category core/theming
  * @since 0.1.0
  */
 export type CngxTouchTargetValue = 'auto' | 'on' | 'off';
@@ -25,7 +24,6 @@ export type CngxTouchTargetValue = 'auto' | 'on' | 'off';
  * `auto` when no `provideTouchTargets()` is present so an injected
  * signal is always available and the media-derived floor stays primary.
  *
- * @category core/theming
  * @relatedTo provideTouchTargets
  * @relatedTo injectTouchTargets
  * @since 0.1.0
@@ -58,7 +56,6 @@ const touchTargetAxis = createPreferenceAxis({
  * });
  * ```
  *
- * @category core/theming
  * @relatedTo CNGX_TOUCH_TARGET
  * @relatedTo injectTouchTargets
  * @since 0.1.0
@@ -72,7 +69,6 @@ export function provideTouchTargets(initial: CngxTouchTargetValue = 'auto'): Env
  * returned signal is writable, so `injectTouchTargets().set('on')`
  * pins the 44px floor across the whole document reactively.
  *
- * @category core/theming
  * @relatedTo provideTouchTargets
  * @since 0.1.0
  */

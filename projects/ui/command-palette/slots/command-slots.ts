@@ -8,7 +8,6 @@ import type { CngxCommandGroup, CngxRankedCommand } from '@cngx/common/command';
  * inside its own template. `data` is the command's opaque payload, narrowed at
  * the use-site; `active` reflects the current `aria-activedescendant`.
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 export interface CngxCommandRowContext {
@@ -53,7 +52,6 @@ export type CngxCommandPaletteFooterContext = Record<string, never>;
  * </cngx-command-palette>
  * ```
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 @Directive({ selector: '[cngxCommandRow]', standalone: true })
@@ -67,7 +65,6 @@ export class CngxCommandRow {
 /**
  * Overrides the default group header.
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 @Directive({ selector: '[cngxCommandGroupHeader]', standalone: true })
@@ -84,7 +81,6 @@ export class CngxCommandGroupHeader {
 /**
  * Overrides the default empty state.
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 @Directive({ selector: '[cngxCommandPaletteEmpty]', standalone: true })
@@ -101,7 +97,6 @@ export class CngxCommandPaletteEmpty {
 /**
  * Overrides the default first-load skeleton.
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 @Directive({ selector: '[cngxCommandPaletteLoading]', standalone: true })
@@ -118,7 +113,6 @@ export class CngxCommandPaletteLoading {
 /**
  * Overrides the default error state. Wire `retry` to your reload path.
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 @Directive({ selector: '[cngxCommandPaletteError]', standalone: true })
@@ -135,7 +129,6 @@ export class CngxCommandPaletteError {
 /**
  * Overrides the default keyboard-legend footer.
  *
- * @category ui/command-palette
  * @since 0.1.0
  */
 @Directive({ selector: '[cngxCommandPaletteFooter]', standalone: true })

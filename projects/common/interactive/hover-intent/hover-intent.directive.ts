@@ -14,7 +14,6 @@ import {
  * atom with, without touching the per-instance input surface. Every key is
  * optional - an unset key keeps the atom's literal (120 / 0).
  *
- * @category common/interactive
  * @since 0.1.0
  */
 export interface CngxHoverIntentDefaults {
@@ -32,7 +31,6 @@ export interface CngxHoverIntentDefaults {
  * hover-to-reveal organism uses to set app-wide dwell defaults. `optional`, so
  * standalone `[cngxHoverIntent]` stays byte-identical when the token is absent.
  *
- * @category common/interactive
  * @relatedTo CngxHoverIntent
  * @since 0.1.0
  */
@@ -69,14 +67,13 @@ export const CNGX_HOVER_INTENT_DEFAULTS = new InjectionToken<CngxHoverIntentDefa
  * <a cngxHoverIntent (intentChange)="$event && prefetch()">Link</a>
  * ```
  *
- * @category common/interactive
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/hover-intent/hover-intent.directive.ts
  * @since 0.1.0
  * @relatedTo CngxHoverable, CngxLongPress, CngxExpandable
  * <example-url>http://localhost:4200/#/common/interactive/hover-intent/hover-to-reveal</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/hover-intent/hover-to-prefetch</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxHoverIntent]',

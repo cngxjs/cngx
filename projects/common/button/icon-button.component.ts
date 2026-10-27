@@ -48,13 +48,13 @@ import type {
  * </button>
  * ```
  *
- * @category common/button
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/icon-button.component.ts
  * @since 0.1.0
  * @relatedTo CngxButton, CngxAsyncClick, provideButtonConfig
  * <example-url>http://localhost:4200/#/common/button/icon-button/basic</example-url>
  * <example-url>http://localhost:4200/#/common/button/icon-button/with-badge</example-url>
+ * @axis level atom
  */
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector -- attribute selector by design (sits on the native button / anchor)

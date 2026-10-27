@@ -32,7 +32,6 @@ export const CNGX_STAT_CARD_DEFAULTS: CngxStatCardConfig = {
  * provide the token explicitly - `inject(CNGX_STAT_CARD_CONFIG)` always
  * resolves.
  *
- * @category ui/stat-card
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stat-card/config/stat-card.config.defaults.ts
  * @since 0.1.0
  * @relatedTo provideStatCardConfig, provideStatCardConfigAt, injectStatCardConfig

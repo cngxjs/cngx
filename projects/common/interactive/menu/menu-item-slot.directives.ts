@@ -7,7 +7,6 @@ import { Directive } from '@angular/core';
  * name comes from the projected label. Consumers needing a screen-reader
  * label on the icon override the default with `[attr.aria-hidden]="null"`.
  *
- * @category common/interactive/menu
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item-slot.directives.ts
  * @since 0.1.0
@@ -31,7 +30,6 @@ export class CngxMenuItemIcon {}
  * default - the label is the menu item's accessible name and must reach
  * assistive technology.
  *
- * @category common/interactive/menu
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item-slot.directives.ts
  * @since 0.1.0
@@ -55,7 +53,6 @@ export class CngxMenuItemLabel {}
  * `[attr.aria-hidden]="null"` when the suffix carries meaning AT needs
  * (status text, semantic badge).
  *
- * @category common/interactive/menu
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item-slot.directives.ts
  * @since 0.1.0
@@ -82,7 +79,6 @@ export class CngxMenuItemSuffix {}
  * Override with `[attr.aria-hidden]="null"` if the hint is a consumer's
  * primary affordance.
  *
- * @category common/interactive/menu
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item-slot.directives.ts
  * @since 0.1.0

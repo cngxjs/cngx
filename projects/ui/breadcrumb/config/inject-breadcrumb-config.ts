@@ -23,7 +23,6 @@ import { CNGX_BREADCRUMB_CONFIG } from './breadcrumb.config.defaults';
  * }
  * ```
  *
- * @category ui/breadcrumb
  * @since 0.1.0
  */
 export function injectBreadcrumbConfig(): CngxBreadcrumbConfig {
@@ -44,7 +43,6 @@ export function injectBreadcrumbConfig(): CngxBreadcrumbConfig {
  * }
  * ```
  *
- * @category ui/breadcrumb
  * @since 0.1.0
  */
 export function injectBreadcrumbAriaLabels(): Signal<Required<CngxBreadcrumbAriaLabels>> {

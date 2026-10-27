@@ -2,7 +2,6 @@
  * The German language pack: every cngx section in German, as plain data.
  * Load it with `import()` and pass it to `withPack`.
  *
- * @category core/i18n
  * @since 0.1.0
  * @relatedTo provideCngxI18n, withPack, CNGX_LANGUAGE_EN
  */

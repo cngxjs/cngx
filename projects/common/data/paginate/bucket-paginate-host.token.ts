@@ -6,7 +6,6 @@ import { InjectionToken, type Signal } from '@angular/core';
  * presentation segment never needs it, only the label to render and the
  * derived empty/active state to reflect.
  *
- * @category common/data/paginate
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/paginate/bucket-paginate-host.token.ts
  * @since 0.1.0
  */
@@ -27,7 +26,6 @@ export interface CngxBucketPaginateView {
  * through the directive's `active` model so the toggle invariant (re-selecting
  * the active bucket clears it) holds in one place.
  *
- * @category common/data/paginate
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/paginate/bucket-paginate-host.token.ts
  * @since 0.1.0
  */
@@ -57,7 +55,6 @@ export interface CngxBucketPaginateHost {
  * concrete directive class, keeping the strip decompose-ready and the model
  * swappable.
  *
- * @category common/data/paginate
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/paginate/bucket-paginate-host.token.ts
  * @since 0.1.0

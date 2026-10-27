@@ -44,6 +44,8 @@
  * **Pair with**
  *
  * - `@cngx/themes/material/interactive-controls-theme` - Material 3 surface
+ *
+ * @themes CngxListbox, CngxOption
  */
 
 @layer cngx.tokens {

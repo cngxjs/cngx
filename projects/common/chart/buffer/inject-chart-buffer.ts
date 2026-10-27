@@ -6,8 +6,6 @@ import { createRingBuffer } from './ring-buffer';
 
 /**
  * Construction options for {@link injectChartBuffer}.
- *
- * @category common/chart/buffer
  */
 export interface ChartBufferOptions<T> {
   /** Ring capacity - the maximum rows retained before eviction. */
@@ -27,8 +25,6 @@ export interface ChartBufferOptions<T> {
  * The realtime feed handle returned by {@link injectChartBuffer}. Bind
  * `points` to a chart data input; drive it from any high-frequency producer
  * via `push` / `pushBatch`.
- *
- * @category common/chart/buffer
  */
 export interface CngxChartBuffer<T> {
   /**
@@ -79,8 +75,6 @@ export interface CngxChartBuffer<T> {
  *   }
  * }
  * ```
- *
- * @category common/chart/buffer
  */
 export function injectChartBuffer<T>(opts: ChartBufferOptions<T>): CngxChartBuffer<T> {
   const destroyRef = inject(DestroyRef);

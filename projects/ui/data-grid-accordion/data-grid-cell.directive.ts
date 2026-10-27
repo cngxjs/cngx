@@ -32,7 +32,6 @@ export type CngxDgCellTrack = 'grow' | 'fit' | 'sm' | 'md' | 'lg';
  * per row should carry `primary`, so the row's accessible name is that cell's
  * text alone rather than every cell concatenated.
  *
- * @category ui/data-grid-accordion
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-cell.directive.ts
  * @since 0.1.0

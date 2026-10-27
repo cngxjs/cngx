@@ -30,13 +30,12 @@ export interface CngxAudioZoneBinding {
  * `[audioDisabled]`, muted, reduced-motion-gated, autoplay-not-armed, or still
  * within the debounce window. `[audioVolume]` scales just this element's plays.
  *
- * @category common/audio
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/zone-mode/audio-zone.directive.ts
  * @since 0.1.0
  * @relatedTo CngxAudio, injectCngxAudio
  * <example-url>http://localhost:4200/#/common/audio/zone/enter-leave</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxAudioZone]',

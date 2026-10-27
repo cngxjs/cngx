@@ -31,8 +31,6 @@ import { CngxAlerter } from './alerter.service';
  * </button>
  * ```
  *
- * @category ui/feedback/alert
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/alert/alert-on.directive.ts
  * @since 0.1.0

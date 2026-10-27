@@ -15,8 +15,6 @@
  * Default threshold: 150. Override via rule options:
  *
  *   'local/level-4-organism-loc-guard': ['error', { threshold: 150 }]
- *
- * @category eslint-rules
  */
 module.exports = {
   meta: {

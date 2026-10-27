@@ -15,8 +15,6 @@ import {
  * drag handle is labelled imperatively because the directive may promote any
  * element to a handle. The same shape as the dialog section of a language
  * pack, declared once as {@link CngxDialogLanguageSection}.
- *
- * @category common/dialog/config
  */
 export type CngxDialogLabels = CngxDialogLanguageSection;
 
@@ -38,7 +36,6 @@ export type CngxDialogLabels = CngxDialogLanguageSection;
  * defaults are deliberately absent - no consumer has asked for them, and a key
  * with no caller is configuration for its own sake.
  *
- * @category common/dialog/config
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/config/dialog-config.ts
  * @since 0.1.0
  */
@@ -55,7 +52,6 @@ const dialogLabelsFromPack = createLanguageSection('dialog', CNGX_DIALOG_LANGUAG
  * defaults, so a consumer who provides nothing keeps today's behaviour
  * exactly.
  *
- * @category common/dialog/config
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/config/dialog-config.ts
  * @since 0.1.0
@@ -69,8 +65,6 @@ export const CNGX_DIALOG_DEFAULTS = new InjectionToken<CngxDialogDefaults>('Cngx
 /**
  * Feature returned by a `with*` function - merged by
  * {@link provideDialogConfig}.
- *
- * @category common/dialog/config
  */
 export interface CngxDialogConfigFeature {
   /** @internal */
@@ -92,7 +86,6 @@ export interface CngxDialogConfigFeature {
  * });
  * ```
  *
- * @category common/dialog/config
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/config/dialog-config.ts
  * @since 0.1.0
  */
@@ -106,7 +99,6 @@ export function withDialogLabels(
  * Register app-wide dialog defaults composed from `with*` features, applied
  * on top of the active language pack.
  *
- * @category common/dialog/config
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/config/dialog-config.ts
  * @since 0.1.0
  */
@@ -128,7 +120,6 @@ export function provideDialogConfig(...features: CngxDialogConfigFeature[]): Pro
  * Sub-tree variant - use in `viewProviders` so the defaults only apply to
  * dialogs opened from descendants of this component.
  *
- * @category common/dialog/config
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/config/dialog-config.ts
  * @since 0.1.0
  */
@@ -140,7 +131,6 @@ export function provideDialogConfigAt(...features: CngxDialogConfigFeature[]): P
  * Inject the currently-resolved dialog defaults. Safe in any injection
  * context; falls back to the English bundle when nothing is provided.
  *
- * @category common/dialog/config
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/config/dialog-config.ts
  * @since 0.1.0
  */

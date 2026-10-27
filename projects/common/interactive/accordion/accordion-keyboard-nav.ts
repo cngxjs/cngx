@@ -8,8 +8,6 @@ import type { Signal } from '@angular/core';
  * header inside its own item view would rove over zero items; a registered
  * handle carries the header's live `element` and `disabled` state by reference
  * and is immune to that boundary.
- *
- * @category common/interactive/accordion
  */
 export interface CngxAccordionHeaderHandle {
   /** Stable id of the panel this header controls. */
@@ -25,8 +23,6 @@ export interface CngxAccordionHeaderHandle {
  * `tabindex` from {@link headerTabindex} and routes its `(keydown)` through
  * {@link handleKeydown}; a single header - the coordinator's `rovingActiveId` -
  * is the group's lone tab stop, so `Tab` always lands on it.
- *
- * @category common/interactive/accordion
  */
 export interface CngxAccordionKeyboardNav {
   /**
@@ -50,8 +46,6 @@ export interface CngxAccordionKeyboardNav {
  * `CngxAccordion` directive implements it; the factory stays a pure
  * `create*` (no `inject()`) so it works in any injection context and is
  * trivially unit-testable.
- *
- * @category common/interactive/accordion
  */
 export interface CngxAccordionKeyboardNavHost {
   /** Every registered header, in registration order (the factory re-sorts by DOM position). */
@@ -66,8 +60,6 @@ export interface CngxAccordionKeyboardNavHost {
  * Inputs to {@link createAccordionKeyboardNav}. The coordinator owns the
  * registry and the roving source; focus scoping needs no container reference
  * because each handle carries its own `element`.
- *
- * @category common/interactive/accordion
  */
 export interface CngxAccordionKeyboardNavOptions {
   readonly host: CngxAccordionKeyboardNavHost;
@@ -85,7 +77,6 @@ export interface CngxAccordionKeyboardNavOptions {
  * movement is a DOM concern the factory owns - the coordinator only records
  * which header should be the stop; it never touches the DOM.
  *
- * @category common/interactive/accordion
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/accordion/accordion-keyboard-nav.ts
  * @since 0.1.0
  * @relatedTo CngxAccordion, CngxAccordionPanel, createTabKeyboardNav

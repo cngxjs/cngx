@@ -10,7 +10,6 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * <ng-template cngxPending>Saving...</ng-template>
  * ```
  *
- * @category common/interactive
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-click/async-status-templates.ts
  * @since 0.1.0
@@ -31,7 +30,6 @@ export class CngxPending {
  * <ng-template cngxSucceeded>Saved!</ng-template>
  * ```
  *
- * @category common/interactive
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-click/async-status-templates.ts
  * @since 0.1.0
@@ -53,7 +51,6 @@ export class CngxSucceeded {
  * <ng-template cngxFailed let-err>Failed: {{ err }}</ng-template>
  * ```
  *
- * @category common/interactive
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-click/async-status-templates.ts
  * @since 0.1.0

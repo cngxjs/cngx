@@ -6,12 +6,12 @@ import { Directive } from '@angular/core';
  * `aria-hidden="true"` so assistive tech reads the trail as a clean list of
  * links without the decorative glyphs.
  *
- * @category common/interactive/breadcrumb
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/breadcrumb/breadcrumb-separator.directive.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumb, CngxBreadcrumbItem
  * <example-url>http://localhost:4200/#/common/interactive/breadcrumb/custom-separator</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxBreadcrumbSeparator]',

@@ -4,8 +4,6 @@ import type { CngxPopover, CngxPopoverSheetCloseReason } from '@cngx/common/popo
 
 /**
  * Config for {@link createDismissHandler}.
- *
- * @category forms/select/controllers
  */
 export interface DismissHandlerOptions {
   /** Variant's `viewChild(CngxPopover)`. `.hide()` only when visible. */
@@ -33,8 +31,6 @@ export interface DismissHandlerOptions {
 
 /**
  * API from {@link createDismissHandler}.
- *
- * @category forms/select/controllers
  */
 export interface DismissHandler {
   /**
@@ -57,8 +53,6 @@ export interface DismissHandler {
  * Click-outside handler. Pure closure over `opts` - no Angular DI.
  * Override via {@link CNGX_DISMISS_HANDLER_FACTORY} for telemetry or
  * conditional-dismiss prompts.
- *
- * @category forms/select/controllers
  */
 export function createDismissHandler(opts: DismissHandlerOptions): DismissHandler {
   const outsideAllowed = opts.dismissOn === 'outside' || opts.dismissOn === 'both';
@@ -94,8 +88,6 @@ export function createDismissHandler(opts: DismissHandlerOptions): DismissHandle
 
 /**
  * Factory signature for {@link CNGX_DISMISS_HANDLER_FACTORY}.
- *
- * @category forms/select/controllers
  */
 export type CngxDismissHandlerFactory = (opts: DismissHandlerOptions) => DismissHandler;
 
@@ -105,7 +97,6 @@ export type CngxDismissHandlerFactory = (opts: DismissHandlerOptions) => Dismiss
  * Override to customise the dismiss triggers beyond what `withDismissOn`
  * configures.
  *
- * @category forms/select/controllers
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/dismiss-handler.ts
  * @since 0.1.0
  * @relatedTo CngxSelect, withDismissOn

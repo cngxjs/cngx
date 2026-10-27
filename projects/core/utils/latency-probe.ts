@@ -8,8 +8,6 @@ import { computed, effect, type Signal, signal, untracked } from '@angular/core'
  * source. A consumer compares `lastDuration()` against a cutoff to pick, e.g., a
  * spinner (fast last operation) vs a skeleton (slow last operation) before the
  * next window even opens.
- *
- * @category core/utils
  */
 export interface CngxLatencyProbe {
   /** Duration in ms of the last completed busy window, `undefined` until one closes. */
@@ -52,7 +50,6 @@ export interface CngxLatencyProbe {
  *   specs for deterministic edge timestamps.
  * @returns `{ lastDuration, isBusy }`.
  *
- * @category core/utils
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/latency-probe.ts
  * @since 0.1.0
  */

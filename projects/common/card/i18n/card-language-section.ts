@@ -6,7 +6,6 @@ import type {} from '@cngx/core/i18n';
  * {@link CngxCardI18n}: the phrases a selectable card announces and the
  * order of a {@link CngxCardTimestamp} prefix and its date.
  *
- * @category common/card/i18n
  * @since 0.1.0
  * @relatedTo CngxCard, CngxCardTimestamp
  */
@@ -32,7 +31,6 @@ export interface CngxCardLanguageSection {
  * The English card section: the single source of the card's English copy.
  * `CNGX_CARD_I18N` defaults to it, and the shipped English pack is built from it.
  *
- * @category common/card/i18n
  * @since 0.1.0
  * @relatedTo CNGX_CARD_I18N
  */

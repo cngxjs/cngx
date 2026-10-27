@@ -89,8 +89,6 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
  * >{{ tag }}</cngx-chip>
  * ```
  *
- * @category common/interactive
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/chip-interaction/chip-interaction.directive.ts
  * @since 0.1.0
@@ -101,6 +99,7 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxChipInteraction]',

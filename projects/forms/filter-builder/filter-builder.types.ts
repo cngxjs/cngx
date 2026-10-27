@@ -23,8 +23,6 @@
 
 /**
  * Boolean combinator for a `FilterGroup`'s direct children. `nand`/`nor` are intentionally absent - use `negated` for inversion.
- *
- * @category forms/filter-builder/config
  */
 export type FilterLogic = 'and' | 'or' | 'xor';
 
@@ -33,15 +31,11 @@ export type FilterLogic = 'and' | 'or' | 'xor';
  * The library ships defaults for the four
  * builtin keys (`'string'`, `'number'`, `'date'`, `'boolean'`);
  * consumers add custom editor types freely.
- *
- * @category forms/filter-builder/config
  */
 export type FilterEditorType = string;
 
 /**
  * Consumer-supplied field descriptor - one entry per filterable column.
- *
- * @category forms/filter-builder/config
  */
 export interface FilterFieldDef<TValue = unknown> {
   readonly key: string;
@@ -53,8 +47,6 @@ export interface FilterFieldDef<TValue = unknown> {
 
 /**
  * Leaf node - binds one field to one operator and one value.
- *
- * @category forms/filter-builder/config
  */
 export interface FilterExpression<TValue = unknown> {
   readonly type: 'expression';
@@ -74,8 +66,6 @@ export interface FilterExpression<TValue = unknown> {
 
 /**
  * Branch node - combines child nodes under one `logic` operator with an optional `negated` flag.
- *
- * @category forms/filter-builder/config
  */
 export interface FilterGroup {
   readonly type: 'group';
@@ -91,15 +81,11 @@ export interface FilterGroup {
 
 /**
  * Discriminated union - every node in the tree is either a group or an expression.
- *
- * @category forms/filter-builder/config
  */
 export type FilterNode = FilterGroup | FilterExpression;
 
 /**
  * Default operator lists per builtin editor type. Consumers extend via `withDefaultOperators({...})`.
- *
- * @category forms/filter-builder/config
  */
 export const DEFAULT_OPERATORS = {
   string: ['contains', 'eq', 'neq', 'startsWith', 'endsWith', 'isEmpty', 'isNotEmpty'],

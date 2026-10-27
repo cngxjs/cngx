@@ -6,7 +6,6 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * `CNGX_INPUT_CONFIG`; a key set through `withInputAriaLabels` still wins.
  * Messages use `{name}` placeholders, numbers are formatted for the locale.
  *
- * @category forms/input/i18n
  * @since 0.1.0
  * @relatedTo CNGX_INPUT_CONFIG, withInputAriaLabels
  */
@@ -60,7 +59,6 @@ export interface CngxInputLanguageSection {
  * The English input section: the single source of the input entry's English
  * copy. The `CNGX_INPUT_CONFIG` labels default to it.
  *
- * @category forms/input/i18n
  * @since 0.1.0
  * @relatedTo CNGX_INPUT_CONFIG
  */

@@ -146,8 +146,6 @@ import { createHostFocusWithin } from '../shared/internal/host-focus-within';
 /**
  * Change event emitted by {@link CngxSelectShell.selectionChange} on
  * a user pick.
- *
- * @category forms/select/shell
  */
 export interface CngxSelectShellChange<T = unknown> {
   readonly source: CngxSelectShell<T>;
@@ -190,8 +188,6 @@ export interface CngxSelectShellChange<T = unknown> {
  * `'anchored'`, `'sheet'` or `'fullscreen'`; `withMobileSheet('off')` keeps
  * every select in its scope anchored.
  *
- * @category forms/select/shell
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/select-shell/select-shell.component.ts
  * @since 0.1.0
@@ -218,6 +214,7 @@ export interface CngxSelectShellChange<T = unknown> {
  * @slot cngxSelectOptionPending Rendered inside the projected <cngx-option> whose commit is in flight, with no built-in fallback; gets no context.
  * @slot cngxSelectOptionError Rendered inside the projected <cngx-option> whose commit failed, regardless of commitErrorDisplay, with no built-in fallback; gets no context.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-select-shell',

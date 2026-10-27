@@ -29,22 +29,17 @@ import { createStateBridge } from '../internal/state-bridge';
 
 /**
  * Severity level for the alert - determines visual style, icon, and ARIA role.
- *
- * @category ui/feedback/alert
  */
 export type AlertSeverity = 'info' | 'success' | 'warning' | 'error';
 
 /**
  * Visibility phase for enter/exit CSS animations.
- *
- * @category ui/feedback/alert
  */
 export type AlertVisibilityPhase = 'hidden' | 'entering' | 'visible' | 'exiting';
 
 /**
  * Content slot directive for custom alert icons.
  *
- * @category ui/feedback/alert
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/alert/alert.ts
  * @since 0.1.0
  * @relatedTo CngxAlert, CngxAlertAction
@@ -74,7 +69,6 @@ export class CngxAlertIcon {
  * </cngx-alert>
  * ```
  *
- * @category ui/feedback/alert
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/alert/alert.ts
  * @selector [cngxAlertAction]
  * @since 0.1.0
@@ -105,8 +99,6 @@ export class CngxAlertAction {}
  *
  * `[state]` takes precedence over `[when]`.
  *
- * @category ui/feedback/alert
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/alert/alert.ts
  * @since 0.1.0
@@ -118,6 +110,7 @@ export class CngxAlertAction {}
  * <example-url>http://localhost:4200/#/ui/feedback/alert/closable</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert/severities</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert/state-driven-visibility</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-alert',

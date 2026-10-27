@@ -43,12 +43,10 @@ const DETACHED_FIELD_PROVIDERS = [
  * `<cngx-async-container [state]>`. The live-region announcer is bound
  * here so AT updates stay outside the body's recursive render path.
  *
- * @category forms/filter-builder
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder.component.ts
  * @since 0.1.0
- * @relatedTo CngxFilterBuilderPresenter, CngxFilterBuilderBody, CngxFilterRow, CngxFilterBuilderFormFieldControl
+ * @relatedTo CngxFilterBuilderPresenter, CngxFilterRow, CngxFilterBuilderFormFieldControl
  * @slot cngxFilterBuilderGroupTemplate Replaces a whole condition group, including its nesting chrome.
  * @slot cngxFilterBuilderExpressionTemplate Replaces a single condition row.
  * @slot cngxFilterBuilderValueEditor Replaces the value input for a condition; gets the field and operator.
@@ -62,6 +60,7 @@ const DETACHED_FIELD_PROVIDERS = [
  * <example-url>http://localhost:4200/#/forms/filter-builder/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container</example-url>
  * <example-url>http://localhost:4200/#/forms/filter-builder/filter-builder-json/builder-json</example-url>
  * <example-url>http://localhost:4200/#/forms/filter-builder/seeded-tree-and-or-composition</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-filter-builder',

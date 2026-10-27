@@ -52,8 +52,6 @@ import {
  * </cngx-skeleton>
  * ```
  *
- * @category ui/skeleton
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/skeleton/skeleton-container.ts
  * @since 0.1.0
@@ -63,6 +61,7 @@ import {
  * <example-url>http://localhost:4200/#/common/layout/skeleton/skeleton-container</example-url>
  * <example-url>http://localhost:4200/#/ui/skeleton/card-skeleton</example-url>
  * <example-url>http://localhost:4200/#/ui/skeleton/template-context</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-skeleton',

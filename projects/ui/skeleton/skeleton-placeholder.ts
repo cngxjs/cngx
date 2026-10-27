@@ -47,8 +47,6 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * </ng-template>
  * ```
  *
- * @category ui/skeleton
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/skeleton/skeleton-placeholder.ts
  * @since 0.1.0
@@ -65,8 +63,6 @@ export class CngxSkeletonPlaceholder {
 
 /**
  * Template context for `cngxSkeletonPlaceholder`.
- *
- * @category ui/skeleton
  */
 export interface CngxSkeletonPlaceholderContext {
   /** Current index (0-based). */

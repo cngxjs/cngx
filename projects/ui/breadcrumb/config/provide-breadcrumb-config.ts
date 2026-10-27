@@ -25,7 +25,6 @@ const NO_ARIA_LABELS: CngxBreadcrumbAriaLabels = {};
  * `@cngx/common/display` so the consumer's mental model is one across feature
  * areas.
  *
- * @category ui/breadcrumb
  * @since 0.1.0
  */
 export type CngxBreadcrumbConfigFeature =
@@ -121,7 +120,6 @@ function mergeConfig(
  * });
  * ```
  *
- * @category ui/breadcrumb
  * @since 0.1.0
  */
 export function provideBreadcrumbConfig(
@@ -165,7 +163,6 @@ export function provideBreadcrumbConfig(
  * class Section {}
  * ```
  *
- * @category ui/breadcrumb
  * @since 0.1.0
  */
 export function provideBreadcrumbConfigAt(

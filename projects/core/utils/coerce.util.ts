@@ -8,7 +8,6 @@ import { memoize } from './memo.util';
  * Strings are truthy unless they equal `'false'`.
  * All other falsy values return `false`.
  *
- * @category core/utils
  * @since 0.1.0
  */
 export function coerceBooleanProperty(value: unknown): boolean {
@@ -33,7 +32,6 @@ export function coerceBooleanProperty(value: unknown): boolean {
  * `1.5`). A string with no leading number (`'px12'`, `'true'`) returns
  * `fallback`. Booleans and objects are never numeric and return `fallback`.
  *
- * @category core/utils
  * @since 0.1.0
  */
 export function coerceNumberProperty(value: unknown, fallback = 0): number {
@@ -81,7 +79,6 @@ const NULL_SIGNAL = signal(null).asReadonly();
  * `Signal`: `private readonly i18n = coerceSignal(inject(TOKEN))`, then read
  * `i18n().x` inside a `computed()` or the template.
  *
- * @category core/utils
  * @since 0.1.0
  * @relatedTo coerceBooleanProperty, coerceNumberProperty, createOverrideMerge
  */

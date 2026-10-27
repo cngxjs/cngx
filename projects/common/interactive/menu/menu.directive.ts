@@ -31,8 +31,6 @@ const warnedFocusHosts = new WeakSet<HTMLElement>();
  * `CngxMenuItem` (or its sub-roles) are tracked automatically. No selection
  * state - menus fire actions through the `itemActivated` output.
  *
- * @category common/interactive/menu
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu.directive.ts
  * @since 0.1.0
@@ -41,6 +39,7 @@ const warnedFocusHosts = new WeakSet<HTMLElement>();
  * <example-url>http://localhost:4200/#/common/interactive/menu/submenu/two-level-submenu</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/menu/trigger/dropdown-menu</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/menu/base/action-menu-with-separator</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxMenu]',

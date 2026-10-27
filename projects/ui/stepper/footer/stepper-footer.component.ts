@@ -41,8 +41,6 @@ import {
  * </cngx-stepper-footer>
  * ```
  *
- * @category ui/stepper
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/footer/stepper-footer.component.ts
  * @since 0.1.0
@@ -54,6 +52,7 @@ import {
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-footer/segmented-progress-center</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-footer/complete-finish-button</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-footer/async-commit-status</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-stepper-footer',

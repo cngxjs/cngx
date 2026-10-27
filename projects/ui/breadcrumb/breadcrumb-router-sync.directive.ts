@@ -82,13 +82,12 @@ function crumbsEqual(
  * ] }
  * ```
  *
- * @category ui/breadcrumb
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-router-sync.directive.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbBar, CngxBreadcrumbItemsSource
  * <example-url>http://localhost:4200/#/ui/breadcrumb/router/router-driven</example-url>
+ * @axis level organism
  */
 @Directive({
   selector: 'cngx-breadcrumb[cngxRouterSync]',

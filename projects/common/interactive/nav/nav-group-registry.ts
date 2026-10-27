@@ -21,7 +21,6 @@ export interface NavGroupRef {
  * })
  * ```
  *
- * @category common/interactive
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-group-registry.ts
  * @since 0.1.0

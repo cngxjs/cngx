@@ -30,8 +30,6 @@ import type { CngxTabRejectionIconContext } from './slots/tab-rejection-icon.dir
  * Per-tab nav phrasing (`previousTab`, `nextTab`) lives in
  * {@link CngxTabsI18n}, not here - landmark naming and SR phrasing
  * stay on separate override paths.
- *
- * @category common/tabs
  */
 export interface CngxTabsAriaLabels {
   /**
@@ -47,8 +45,6 @@ export interface CngxTabsAriaLabels {
  * Fallback labels for derived strings (role descriptions, badge SR
  * announcements). Library defaults are English; consumers override
  * per locale.
- *
- * @category common/tabs
  */
 export interface CngxTabsFallbackLabels {
   /**
@@ -71,8 +67,6 @@ export interface CngxTabsFallbackLabels {
  * Apply via the matching `with*Template` builders. Shape mirrors
  * `CngxStepperTemplates` so consumer templates port across
  * families.
- *
- * @category common/tabs
  */
 export interface CngxTabsTemplates {
   /** Default for the overflow "More" button label (`*cngxTabOverflowTrigger`). */
@@ -107,8 +101,6 @@ export interface CngxTabsTemplates {
  *
  * Sized to the tab use cases - not a 1:1 copy of the stepper's
  * seven skins. The Material twin (`[cngxMatTabs]`) ignores this setting.
- *
- * @category common/tabs
  */
 export type CngxTabsSkin = 'line' | 'contained' | 'segmented' | 'pill' | 'pill-outline';
 
@@ -123,8 +115,6 @@ export type CngxTabsSkin = 'line' | 'contained' | 'segmented' | 'pill' | 'pill-o
  *
  * Redirected purely via
  * the `[data-icon-layout]` host attribute.
- *
- * @category common/tabs
  */
 export type CngxTabIconLayout = 'start' | 'end' | 'top' | 'only';
 
@@ -143,8 +133,6 @@ export type CngxTabIconLayout = 'start' | 'end' | 'top' | 'only';
  * is never activated on the way. Without that ordering the first render
  * would count as tab 0's first activation and keep-alive would hold its
  * content for the rest of the session.
- *
- * @category common/tabs
  */
 export type CngxTabsPanelMode = 'eager' | 'lazy' | 'lazy-destroy';
 
@@ -154,8 +142,6 @@ export type CngxTabsPanelMode = 'eager' | 'lazy' | 'lazy-destroy';
  * (default), `'center'`, or `'end'`. Horizontal only - ignored under
  * `orientation="vertical"` (tabs fill the column) and when `[fitted]`
  * stretches them to the full width.
- *
- * @category common/tabs
  */
 export type CngxTabAlign = 'start' | 'center' | 'end';
 
@@ -163,8 +149,6 @@ export type CngxTabAlign = 'start' | 'center' | 'end';
  * Tab-group config surface. Resolution priority: \
  * per-instance Input → `provideTabsConfigAt` (viewProviders) → `provideTabsConfig`
  * (root) → library default.
- *
- * @category common/tabs
  */
 export interface CngxTabsConfig {
   /**
@@ -352,7 +336,6 @@ export const TABS_CONFIG_DEFAULTS: Required<
  * `providedIn: 'root'` with the library defaults; override via {@link provideTabsConfig}
  * (root) or {@link provideTabsConfigAt} (component scope).
  *
- * @category common/tabs
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/tabs-config.ts
  * @since 0.1.0
@@ -367,8 +350,6 @@ export const CNGX_TABS_CONFIG = new InjectionToken<CngxTabsConfig>('CngxTabsConf
  * The hidden `_target` discriminator lets {@link provideCngxTabs} dispatch
  * config features to {@link provideTabsConfig} while i18n features
  * route to {@link provideTabsI18n}.
- *
- * @category common/tabs
  */
 export type CngxTabsConfigFeature = ((config: CngxTabsConfig) => CngxTabsConfig) & {
   readonly _target: 'config';
@@ -391,8 +372,6 @@ function defineTabsConfigFeature(
 /**
  * Override the default orientation. Per-instance `[orientation]`
  * still wins; this changes the cascade default only.
- *
- * @category common/tabs
  */
 export function withTabsDefaultOrientation(
   orientation: 'horizontal' | 'vertical',
@@ -408,16 +387,12 @@ export function withTabsDefaultOrientation(
  * collides with the stepper family's identical symbol when both libs
  * are auto-imported. The alias stays for one minor release before
  * removal.
- *
- * @category common/tabs
  */
 export const withDefaultOrientation = withTabsDefaultOrientation;
 
 /**
  * Override whether roving-tabindex navigation loops from last back to
  * first (and vice versa). Per-instance `[loop]` Input still wins.
- *
- * @category common/tabs
  */
 export function withTabsRovingLoop(loop: boolean): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({ ...cfg, defaultLoop: loop }));
@@ -428,8 +403,6 @@ export function withTabsRovingLoop(loop: boolean): CngxTabsConfigFeature {
  * `'optimistic'` activates the tab on action dispatch and rolls back
  * on error; `'pessimistic'` waits for success. Per-instance
  * `[commitMode]` Input still wins.
- *
- * @category common/tabs
  */
 export function withTabsCommitMode(mode: 'optimistic' | 'pessimistic'): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({
@@ -446,8 +419,6 @@ export function withTabsCommitMode(mode: 'optimistic' | 'pessimistic'): CngxTabs
  *
  * Not to be confused with `[cngxTabsRouteSync]`, the router-outlet
  * integration - this feature configures fragment deep-linking only.
- *
- * @category common/tabs
  */
 export function withTabsFragmentSync(
   mode: 'fragment' | 'queryParam',
@@ -472,8 +443,6 @@ export function withTabsFragmentSync(
  *
  * Changes which policy runs, not the policies themselves - swap those via
  * {@link CNGX_TAB_URL_MATCH_STRATEGY}.
- *
- * @category common/tabs
  */
 export function withTabsRouteMatch(mode: 'suffix' | 'prefix'): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({ ...cfg, routeMatch: mode }));
@@ -489,8 +458,6 @@ export function withTabsRouteMatch(mode: 'suffix' | 'prefix'): CngxTabsConfigFea
  * `provideTabsConfigAt` in that component's `viewProviders` rather than
  * setting it app-wide, unless every nav in the app is section-shaped.
  * Per-link `[ariaCurrent]` still wins.
- *
- * @category common/tabs
  */
 export function withTabsLinkAriaCurrent(
   token: 'page' | 'true' | 'location' | 'step',
@@ -503,8 +470,6 @@ export function withTabsLinkAriaCurrent(
  * with the new `[cngxTabsRouteSync]` router-outlet directive; this
  * feature only ever configured fragment / query-param deep-linking. The
  * alias stays for one minor release before removal.
- *
- * @category common/tabs
  */
 export const withTabsRouterSync = withTabsFragmentSync;
 
@@ -514,8 +479,6 @@ export const withTabsRouterSync = withTabsFragmentSync;
  * the cascade default. Structure, slots, ARIA, and keyboard behaviour
  * are identical across skins - only the `[data-skin]` host attribute
  * changes the CSS layer. The Material twin (`[cngxMatTabs]`) ignores it.
- *
- * @category common/tabs
  */
 export function withTabsSkin(skin: CngxTabsSkin): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({ ...cfg, skin }));
@@ -526,8 +489,6 @@ export function withTabsSkin(skin: CngxTabsSkin): CngxTabsConfigFeature {
  * Default`'start'`. Per-instance `[iconLayout]` Input still wins. Orthogonal to
  * skin and orientation - only the `[data-icon-layout]` host attribute
  * changes.
- *
- * @category common/tabs
  */
 export function withTabsIconLayout(layout: CngxTabIconLayout): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({ ...cfg, iconLayout: layout }));
@@ -543,8 +504,6 @@ export function withTabsIconLayout(layout: CngxTabIconLayout): CngxTabsConfigFea
  *
  * Under `'lazy'`, a deep link mounts only the panel it names: both sync
  * directives seed the active tab before the first panel render.
- *
- * @category common/tabs
  */
 export function withTabsPanelMode(mode: CngxTabsPanelMode): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({ ...cfg, panelMode: mode }));
@@ -555,8 +514,6 @@ export function withTabsPanelMode(mode: CngxTabsPanelMode): CngxTabsConfigFeatur
  * (horizontal only). \
  * Default `false`. Per-instance `[fitted]` Input still
  * wins. No effect under `orientation="vertical"`.
- *
- * @category common/tabs
  */
 export function withTabsFitted(fitted: boolean): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({ ...cfg, fitted }));
@@ -566,8 +523,6 @@ export function withTabsFitted(fitted: boolean): CngxTabsConfigFeature {
  * Set the app-wide default tab-cluster alignment (horizontal only). \
  * Default `'start'`. Per-instance `[tabAlign]` Input still wins. Ignored
  * under `orientation="vertical"` and when the group is `fitted`.
- *
- * @category common/tabs
  */
 export function withTabsAlign(align: CngxTabAlign): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({ ...cfg, tabAlign: align }));
@@ -577,8 +532,6 @@ export function withTabsAlign(align: CngxTabAlign): CngxTabsConfigFeature {
  * Set the app-wide default for whether tabs render a close affordance. \
  * Default `false`. Per-instance `[closable]` Input wins; a per-`CngxTab`
  * `[closable]` override wins over both.
- *
- * @category common/tabs
  */
 export function withTabsClosable(closable: boolean): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({ ...cfg, closable }));
@@ -588,8 +541,6 @@ export function withTabsClosable(closable: boolean): CngxTabsConfigFeature {
  * Set the app-wide default for whether the group renders an add-tab
  * button. \
  * Default `false`. Per-instance `[addable]` Input wins.
- *
- * @category common/tabs
  */
 export function withTabsAddable(addable: boolean): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({ ...cfg, addable }));
@@ -602,8 +553,6 @@ const NO_LABELS: object = {};
  * Merge ARIA labels into the cascade. Keys not provided keep their
  * library defaults; per-instance overrides on the tab group still win.
  * Pass a `Signal` to switch the language at runtime.
- *
- * @category common/tabs
  */
 export function withTabsAriaLabels(
   labels: CngxTabsAriaLabels | Signal<CngxTabsAriaLabels>,
@@ -618,8 +567,6 @@ export function withTabsAriaLabels(
  * Merge the tablist / tab-panel `aria-roledescription` fallbacks into the
  * cascade. Keys not provided keep their library defaults. Pass a `Signal`
  * to switch the language at runtime.
- *
- * @category common/tabs
  */
 export function withTabsFallbackLabels(
   labels: CngxTabsFallbackLabels | Signal<CngxTabsFallbackLabels>,
@@ -636,8 +583,6 @@ export function withTabsFallbackLabels(
 /**
  * Override the IO-debounce window (ms). See
  * {@link CngxTabsConfig.overflowStabilizeMs}.
- *
- * @category common/tabs
  */
 export function withTabOverflowStabilizeMs(ms: number): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({
@@ -649,8 +594,6 @@ export function withTabOverflowStabilizeMs(ms: number): CngxTabsConfigFeature {
 /**
  * Override the worst-case staleness ceiling on the visibility-map
  * commit. See {@link CngxTabsConfig.overflowMaxDeferMs}.
- *
- * @category common/tabs
  */
 export function withTabOverflowMaxDeferMs(ms: number): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({
@@ -671,8 +614,6 @@ export function withTabOverflowMaxDeferMs(ms: number): CngxTabsConfigFeature {
  *
  * providers: [provideTabsConfig(withTabOverflowTriggerTemplate(this.moreTrigger()))]
  * ```
- *
- * @category common/tabs
  */
 export function withTabOverflowTriggerTemplate(
   template: TemplateRef<CngxTabOverflowTriggerContext>,
@@ -686,8 +627,6 @@ export function withTabOverflowTriggerTemplate(
 /**
  * App-wide override for each row inside the overflow popover. \
  * Middle tier; per-instance `*cngxTabOverflowItem` still wins.
- *
- * @category common/tabs
  */
 export function withTabOverflowItemTemplate(
   template: TemplateRef<CngxTabOverflowItemContext>,
@@ -702,8 +641,6 @@ export function withTabOverflowItemTemplate(
  * App-wide override for the error-badge decoration. Middle tier;
  * per-instance `*cngxTabErrorBadge` still wins. Sibling of the
  * stepper family's `withStepBadgeTemplate`.
- *
- * @category common/tabs
  */
 export function withTabErrorBadgeTemplate(
   template: TemplateRef<CngxTabErrorBadgeContext>,
@@ -719,8 +656,6 @@ export function withTabErrorBadgeTemplate(
  * tier; \
  * per-instance `*cngxTabRejectionIcon` still wins. Sibling
  * of {@link withStepRejectionTemplate}.
- *
- * @category common/tabs
  */
 export function withTabRejectionIconTemplate(
   template: TemplateRef<CngxTabRejectionIconContext>,
@@ -735,8 +670,6 @@ export function withTabRejectionIconTemplate(
  * App-wide override for the commit-pending busy-spinner overlay.
  * Middle tier; per-instance `*cngxTabBusySpinner` still wins.
  * Sibling of {@link withStepBusySpinnerTemplate}.
- *
- * @category common/tabs
  */
 export function withTabBusySpinnerTemplate(
   template: TemplateRef<CngxTabBusySpinnerContext>,
@@ -751,8 +684,6 @@ export function withTabBusySpinnerTemplate(
  * App-wide override for the tab-icon slot. Middle tier of the 3-stage
  * cascade; per-instance `*cngxTabIcon` still wins. Sibling of
  * {@link withStepIndicatorTemplate}.
- *
- * @category common/tabs
  */
 export function withTabIconTemplate(
   template: TemplateRef<CngxTabIconContext>,
@@ -766,8 +697,6 @@ export function withTabIconTemplate(
 /**
  * App-wide override for a tab's close-button glyph. Middle tier;
  * per-instance `*cngxTabCloseIcon` still wins.
- *
- * @category common/tabs
  */
 export function withTabCloseIconTemplate(
   template: TemplateRef<CngxTabCloseIconContext>,
@@ -781,8 +710,6 @@ export function withTabCloseIconTemplate(
 /**
  * App-wide override for the add-tab button glyph. Middle tier;
  * per-instance `*cngxTabAddIcon` still wins.
- *
- * @category common/tabs
  */
 export function withTabAddIconTemplate(template: TemplateRef<void>): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({
@@ -819,8 +746,6 @@ function resolveFeatures(features: readonly CngxTabsConfigFeature[]): CngxTabsCo
  * Root-level provider. Apply once in `bootstrapApplication` /
  * `appConfig.providers`. Returns {@link EnvironmentProviders} per
  * the canonical cngx config-cascade signature.
- *
- * @category common/tabs
  */
 export function provideTabsConfig(
   ...features: readonly CngxTabsConfigFeature[]
@@ -841,8 +766,6 @@ export function provideTabsConfig(
  *   viewProviders: [...provideTabsConfigAt(withTabsDefaultOrientation('vertical'))],
  * })
  * ```
- *
- * @category common/tabs
  */
 export function provideTabsConfigAt(...features: readonly CngxTabsConfigFeature[]): Provider[] {
   return [{ provide: CNGX_TABS_CONFIG, useFactory: () => resolveFeatures(features) }];
@@ -850,8 +773,6 @@ export function provideTabsConfigAt(...features: readonly CngxTabsConfigFeature[
 
 /**
  * Inject the resolved tabs config in an injection context.
- *
- * @category common/tabs
  */
 export function injectTabsConfig(): CngxTabsConfig {
   return inject(CNGX_TABS_CONFIG);

@@ -8,8 +8,6 @@ import type { CngxMenuSubmenuLike } from './menu-submenu.token';
  * Minimal popover surface the focus stack hides when the outermost menu
  * level closes. Typed structurally to keep `@cngx/common/interactive` free
  * of a `@cngx/common/popover` import (menu-accepted-debt §7).
- *
- * @category common/interactive/menu
  */
 export interface CngxMenuFocusStackPopoverRef {
   hide(): void;
@@ -19,8 +17,6 @@ export interface CngxMenuFocusStackPopoverRef {
  * Dependencies for {@link createMenuFocusStack}. The caller injects the
  * keyboard policy and `Document` and passes them in, so the factory itself
  * stays pure and swappable via {@link CNGX_MENU_FOCUS_STACK_FACTORY}.
- *
- * @category common/interactive/menu
  */
 export interface CngxMenuFocusStackDeps {
   /** Root menu host - the bottom of the submenu chain. */
@@ -38,8 +34,6 @@ export interface CngxMenuFocusStackDeps {
  * context-menu trigger core. Owns the active submenu chain, the
  * saved-focus slot restored after close, and the W3C APG
  * ArrowRight / ArrowLeft / Escape / activation routing.
- *
- * @category common/interactive/menu
  */
 export interface CngxMenuFocusStack {
   /** Active submenu chain - empty when only the root menu is open. */
@@ -128,8 +122,6 @@ export interface CngxMenuFocusStack {
  * Matches the token {@link CNGX_MENU_FOCUS_STACK_FACTORY} so consumers can
  * swap the focus-stack model (alternative keyboard pattern, telemetry
  * wrapping, test double) enterprise-wide.
- *
- * @category common/interactive/menu
  */
 export type CngxMenuFocusStackFactory = (deps: CngxMenuFocusStackDeps) => CngxMenuFocusStack;
 
@@ -137,7 +129,6 @@ export type CngxMenuFocusStackFactory = (deps: CngxMenuFocusStackDeps) => CngxMe
  * Default focus-stack implementation. Behaviour matches the W3C APG Menu
  * Button pattern that `CngxMenuTrigger` shipped inline before extraction.
  *
- * @category common/interactive/menu
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-focus-stack.ts
  * @since 0.1.0
  */
@@ -334,8 +325,6 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
 
 /**
  * Dependencies for {@link connectSubmenuHoverToFocusStack}.
- *
- * @category common/interactive/menu
  */
 export interface CngxSubmenuHoverRoutingDeps {
   /** The trigger's focus-stack model that owns the open submenu chain. */
@@ -380,7 +369,6 @@ export interface CngxSubmenuHoverRoutingDeps {
  * installs an `effect`. Every focus-stack owner wires it once:
  * `CngxMenuTrigger`, `CngxContextMenuTrigger`, and `CngxContextMenuFor`.
  *
- * @category common/interactive/menu
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-focus-stack.ts
  * @since 0.1.0
@@ -420,7 +408,6 @@ export function connectSubmenuHoverToFocusStack(deps: CngxSubmenuHoverRoutingDep
  * telemetry-wrapped traversal, test-doubled stack) without forking the
  * trigger.
  *
- * @category common/interactive/menu
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-focus-stack.ts
  * @since 0.1.0

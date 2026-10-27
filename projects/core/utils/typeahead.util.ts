@@ -17,7 +17,6 @@ const FOLDED_AWAY = /[\p{M}\p{Cf}]/gu;
  * foldForMatching('İzmir', 'tr');     // 'izmir'
  * ```
  *
- * @category core/utils/typeahead
  * @since 0.1.0
  * @relatedTo matchesTypeahead
  */
@@ -52,7 +51,6 @@ export function foldForMatching(value: string, locale?: string): string {
  * matchesTypeahead('İzmir', 'i', 'tr');    // true
  * ```
  *
- * @category core/utils/typeahead
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/typeahead.util.ts
  * @since 0.1.0
  * @relatedTo CngxActiveDescendant, CngxTreeSelect
@@ -94,7 +92,6 @@ function foldedLabelOf(label: string, locale: string | undefined, key: object | 
  * const hit = options.find((option) => matches(option.label, option));
  * ```
  *
- * @category core/utils/typeahead
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/typeahead.util.ts
  * @since 0.1.0
  * @relatedTo matchesTypeahead, foldForMatching
@@ -135,7 +132,6 @@ interface FoldedText {
  * );
  * ```
  *
- * @category core/utils
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/typeahead.util.ts
  * @since 0.1.0
  * @relatedTo createTypeaheadMatcher, foldForMatching

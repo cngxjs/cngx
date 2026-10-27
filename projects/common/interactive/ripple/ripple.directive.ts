@@ -38,13 +38,12 @@ import { createMediaQuerySignal } from '@cngx/core/utils';
  * <button cngxRipple [rippleDisabled]="isReducedMotion()">Click</button>
  * ```
  *
- * @category common/interactive
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/ripple/ripple.directive.ts
  * @since 0.1.0
  * @relatedTo CngxPressable, CngxPressRipple, CngxHoverable
  * <example-url>http://localhost:4200/#/common/interactive/ripple/base/button-ripples</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/ripple/base/card-with-ripple</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxRipple]',

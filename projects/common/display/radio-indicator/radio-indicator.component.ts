@@ -41,8 +41,6 @@ import {
  *   Selection is announced via the row's `role="radio"` /
  *   `aria-checked` ARIA, never by this decoration.
  *
- * @category common/display
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/radio-indicator/radio-indicator.component.ts
  * @since 0.1.0
@@ -52,6 +50,7 @@ import {
  * <example-url>http://localhost:4200/#/common/display/radio-indicator/disabled</example-url>
  * <example-url>http://localhost:4200/#/common/display/radio-indicator/sizes</example-url>
  * <example-url>http://localhost:4200/#/common/display/radio-indicator/theming-via-css-custom-properties</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-radio-indicator',

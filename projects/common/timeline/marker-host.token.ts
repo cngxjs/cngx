@@ -11,8 +11,6 @@ import type { CngxTimelineMarkerContext } from './template-slots';
  * organism has no handle on the marker inside it. Passing the resolved
  * template through DI is what closes that gap without the row having to
  * thread it down by hand.
- *
- * @category common/timeline
  */
 export interface CngxTimelineMarkerHost {
   /** Resolved `*cngxTimelineMarkerTpl`, already through the config cascade. */
@@ -28,7 +26,6 @@ export interface CngxTimelineMarkerHost {
  * standalone, and a concrete parent type would make the two mutually
  * dependent and block the decompose schematic.
  *
- * @category common/timeline
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/marker-host.token.ts
  * @relatedTo CngxTimelineMarkerTpl, CngxTimelineItem
  * @since 0.1.0

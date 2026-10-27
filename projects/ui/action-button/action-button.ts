@@ -33,8 +33,6 @@ import { cngxDevWarn } from '@cngx/utils';
 
 /**
  * Visual variant for the action button - maps to a CSS class.
- *
- * @category ui/action-button
  */
 export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
 
@@ -81,8 +79,6 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
  * </cngx-action-button>
  * ```
  *
- * @category ui/action-button
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/action-button/action-button.ts
  * @since 0.1.0
@@ -93,6 +89,7 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
  * <example-url>http://localhost:4200/#/ui/action-button/async-button/random-outcome</example-url>
  * <example-url>http://localhost:4200/#/ui/action-button/async-button/string-labels</example-url>
  * <example-url>http://localhost:4200/#/ui/action-button/async-button/template-slots</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-action-button',

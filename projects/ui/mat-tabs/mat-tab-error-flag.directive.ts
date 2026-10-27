@@ -25,11 +25,11 @@ import { injectMatTabErrorTarget } from './mat-tab-error-target';
  * `presenter.tabs()` to recover from the content-init race, and
  * clears the slot on destroy - exactly as {@link CngxMatTabError}.
  *
- * @category ui/mat-tabs
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/mat-tab-error-flag.directive.ts
  * @since 0.1.0
  * @relatedTo CngxMatTabs, CngxMatTabError, CngxMatTabsRegistry
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxMatTabErrorFlag]',

@@ -26,13 +26,12 @@ import { DestroyRef, Directive, inject, input, signal } from '@angular/core';
  * </div>
  * ```
  *
- * @category common/interactive
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/ripple/pressable.directive.ts
  * @since 0.1.0
  * @relatedTo CngxRipple, CngxPressRipple, CngxHoverable
  * <example-url>http://localhost:4200/#/common/interactive/gestures/pressable/press-feedback-on-buttons</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/gestures/pressable/tappable-card</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxPressable]',

@@ -29,8 +29,6 @@ import { CNGX_ASYNC_LABEL, CNGX_ASYNC_SKIP } from './http-context';
  * sharing a label never evict one another - completing one leaves the other
  * tracked. The interceptor does not swallow errors: `setError` records the
  * failure, then the error propagates to the caller unchanged.
- *
- * @category common/data/async-registry
  */
 export const cngxAsyncInterceptor: HttpInterceptorFn = (req, next) => {
   const registry = inject(CngxAsyncRegistry, { optional: true });
@@ -80,8 +78,6 @@ export const cngxAsyncInterceptor: HttpInterceptorFn = (req, next) => {
  * ```ts
  * provideHttpClient(withFetch(), withInterceptors([authInterceptor, cngxAsyncInterceptor]))
  * ```
- *
- * @category common/data/async-registry
  */
 export function provideAsyncHttpObservability(): EnvironmentProviders {
   return makeEnvironmentProviders([provideHttpClient(withInterceptors([cngxAsyncInterceptor]))]);

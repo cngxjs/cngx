@@ -5,8 +5,6 @@ import { CngxRuntimeError } from '@cngx/utils';
 /**
  * Why a sheet asked to close: a swipe on the header or handle, a tap outside
  * the panel, the Android back gesture, or a close control inside the sheet.
- *
- * @category common/popover
  */
 export type CngxPopoverSheetCloseReason = 'swipe' | 'backdrop' | 'back' | 'close';
 

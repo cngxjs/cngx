@@ -14,8 +14,6 @@ import type { CngxTagGroupAlign, CngxTagGroupGap } from '../tag-group.component'
  * own field (e.g. `position` on accessory) forks its alias back into an
  * interface extending this one - sibling consumers stay
  * source-compatible either way.
- *
- * @category common/display
  */
 export interface CngxTagGroupSlotContext {
   readonly $implicit: void;
@@ -29,15 +27,11 @@ export interface CngxTagGroupSlotContext {
 /**
  * Context of the `*cngxTagGroupHeader` slot. Alias of
  * {@link CngxTagGroupSlotContext}.
- *
- * @category common/display
  */
 export type CngxTagGroupHeaderContext = CngxTagGroupSlotContext;
 
 /**
  * Context of the `*cngxTagGroupAccessory` slot. Alias of
  * {@link CngxTagGroupSlotContext}.
- *
- * @category common/display
  */
 export type CngxTagGroupAccessoryContext = CngxTagGroupSlotContext;

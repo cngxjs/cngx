@@ -23,8 +23,6 @@ import type { CngxRecycler } from './recycler';
  *
  * The real-row branch (item defined) binds `$implicit` to the item value
  * instead; that context is internal and narrowed by `ngTemplateContextGuard`.
- *
- * @category common/data/recycler
  */
 export interface CngxRecyclerRowContext {
   /** The absolute dataset index of this slot. Alias of `index`. */
@@ -48,8 +46,6 @@ interface CngxRecyclerRowRealContext<T> {
  * the cascade: microsyntax `placeholder:` template wins over this, and this wins
  * over the built-in imperative `<li>` default. Defaults to `null` (imperative
  * default applies).
- *
- * @category common/data/recycler
  */
 export const CNGX_RECYCLER_PLACEHOLDER_ROW = new InjectionToken<
   TemplateRef<CngxRecyclerRowContext> | null
@@ -58,8 +54,6 @@ export const CNGX_RECYCLER_PLACEHOLDER_ROW = new InjectionToken<
 /**
  * Provides an app-wide default placeholder template for every `*cngxRecyclerRow`
  * that supplies no `placeholder:` template of its own.
- *
- * @category common/data/recycler
  */
 export function provideRecyclerPlaceholderRow(
   template: TemplateRef<CngxRecyclerRowContext>,
@@ -118,13 +112,12 @@ export function provideRecyclerPlaceholderRow(
  * </ul>
  * ```
  *
- * @category common/data/recycler
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/recycler/recycler-row.directive.ts
  * @since 0.1.0
  * @relatedTo injectRecycler, CngxRecyclerPlaceholder, CngxVirtualItem, CngxMeasure
  * <example-url>http://localhost:4200/#/common/data/recycler/windowed-data-availability</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxRecyclerRow]',

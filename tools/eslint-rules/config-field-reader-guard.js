@@ -40,8 +40,6 @@ const path = require('node:path');
  *     interfacePattern: '^Cngx.*(Config|I18n|Labels|Templates)$',
  *     ignore: ['CngxFooConfig.bar', 'CngxBazConfig.*'],      // documented exceptions
  *   }]
- *
- * @category eslint-rules
  */
 
 const DEFAULT_INTERFACE_PATTERN = '^Cngx.*(Config|I18n|Labels|Templates)$';

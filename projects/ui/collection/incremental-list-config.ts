@@ -20,7 +20,6 @@ import { injectCollectionSiteLabels } from './i18n/collection-i18n';
  * `collection` section of the language pack (English without one); override
  * single keys via {@link withIncrementalListAriaLabels}.
  *
- * @category ui/collection
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
  * @since 0.1.0
  */
@@ -57,7 +56,6 @@ export interface CngxIncrementalListAriaLabels {
  * wins over this tier; it supplies a shared override when no instance slot is
  * projected. Library default is unset (the built-in views render).
  *
- * @category ui/collection
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
  * @since 0.1.0
  */
@@ -86,7 +84,6 @@ export interface CngxIncrementalListTemplates {
  * {@link injectIncrementalListAriaLabels}, inside a `computed()`, a template or
  * a handler.
  *
- * @category ui/collection
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
  * @since 0.1.0
  */
@@ -112,7 +109,6 @@ const NO_ARIA_LABELS: Partial<CngxIncrementalListAriaLabels> = {};
  * component scope, then `provideIncrementalListConfig(...)` at the application
  * root, then the library defaults.
  *
- * @category ui/collection
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
  * @since 0.1.0
  */
@@ -129,7 +125,6 @@ export const CNGX_INCREMENTAL_LIST_CONFIG = new InjectionToken<CngxIncrementalLi
  * reducer in {@link provideIncrementalListConfig} matches on `kind` and
  * shallow-merges `payload` into the matching sub-tree.
  *
- * @category ui/collection
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
  * @since 0.1.0
  */
@@ -174,7 +169,6 @@ function applyFeatures(
  * );
  * ```
  *
- * @category ui/collection
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
  * @since 0.1.0
  */
@@ -194,7 +188,6 @@ export function withIncrementalListAriaLabels(
  * );
  * ```
  *
- * @category ui/collection
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
  * @since 0.1.0
  */
@@ -210,7 +203,6 @@ export function withIncrementalListTemplates(
  * Supplied features merge with the library defaults, so consumers only declare
  * the keys they override.
  *
- * @category ui/collection
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
  * @since 0.1.0
  */
@@ -236,7 +228,6 @@ export function provideIncrementalListConfig(
  * parent config (an enclosing scope or the application root), so a region can
  * re-phrase its labels without disturbing the rest of the app.
  *
- * @category ui/collection
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
  * @since 0.1.0
  */
@@ -258,7 +249,6 @@ export function provideIncrementalListConfigAt(
  * injection context; resolves through the cascade. Equivalent to
  * `inject(CNGX_INCREMENTAL_LIST_CONFIG)`.
  *
- * @category ui/collection
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
  * @since 0.1.0
  */
@@ -275,7 +265,6 @@ export function injectIncrementalListConfig(): CngxIncrementalListConfig {
  * live-region text, so a language switch does not re-speak the current
  * message. Runs in injection context.
  *
- * @category ui/collection
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
  * @since 0.1.0
  */

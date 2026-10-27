@@ -8,7 +8,6 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * feeds `CNGX_FORM_FIELD_I18N`. Messages use `{name}` placeholders; a plural
  * message picks its form from `{count}`.
  *
- * @category forms/field/i18n
  * @since 0.1.0
  * @relatedTo CNGX_FORM_FIELD_I18N, CngxFieldErrors, CngxFormErrors
  */
@@ -66,7 +65,6 @@ export interface CngxFormFieldLanguageSection {
  * The English form-field section: the single source of the form fields'
  * English error copy. `CNGX_FORM_FIELD_I18N` defaults to it.
  *
- * @category forms/field/i18n
  * @since 0.1.0
  * @relatedTo CNGX_FORM_FIELD_I18N
  */

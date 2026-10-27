@@ -22,10 +22,10 @@ import type { CngxTouchTargetValue } from './touch-target';
  * binding; an unset value leaves `[data-touch]` off the host and the
  * inherited floor keeps control.
  *
- * @category core/theming
  * @relatedTo provideTouchTargets
  * @relatedTo CNGX_TOUCH_TARGET
  * @since 0.1.0
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxTouchTarget]',

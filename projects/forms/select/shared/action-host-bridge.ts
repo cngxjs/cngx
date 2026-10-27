@@ -19,8 +19,6 @@ import type { CngxSelectActionCallbacks } from './panel-host';
  * `dirty` + `callbacks` feed the panel shell, `shouldTrapFocus` drives
  * the shell's `actionFocusTrapEnabled`, `shouldBlockDismiss` gates the
  * variant's click-outside and Escape handlers.
- *
- * @category forms/select/state
  */
 export interface ActionHostBridge {
   /** Dirty flag flipped by the slot's `setDirty` callback. */
@@ -44,8 +42,6 @@ export interface ActionHostBridge {
 
 /**
  * Options for {@link createActionHostBridge}.
- *
- * @category forms/select/state
  */
 export interface ActionHostBridgeOptions {
   /** Bound `close()` from the variant - dismisses the panel. */
@@ -68,8 +64,6 @@ export interface ActionHostBridgeOptions {
  * the only writable slot; everything else is `computed`. Installs a
  * capture-phase Escape listener on the host element via `DestroyRef`.
  * Injection context required.
- *
- * @category forms/select/state
  */
 export function createActionHostBridge(options: ActionHostBridgeOptions): ActionHostBridge {
   const dirty = signal(false);
@@ -160,8 +154,6 @@ export function createActionHostBridge(options: ActionHostBridgeOptions): Action
 
 /**
  * Factory signature for {@link CNGX_ACTION_HOST_BRIDGE_FACTORY}.
- *
- * @category forms/select/state
  */
 export type CngxActionHostBridgeFactory = (options: ActionHostBridgeOptions) => ActionHostBridge;
 
@@ -181,7 +173,6 @@ export type CngxActionHostBridgeFactory = (options: ActionHostBridgeOptions) => 
  * });
  * ```
  *
- * @category forms/select/state
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/action-host-bridge.ts
  * @since 0.1.0
  */

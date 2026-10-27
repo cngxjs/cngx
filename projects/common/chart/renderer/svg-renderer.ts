@@ -10,7 +10,6 @@ import { type ChartRendererDeps, type CngxChartRenderer } from './chart-renderer
  * @param _deps unused; kept for factory signature symmetry with
  *   {@link createCanvasRenderer}.
  *
- * @category common/chart/renderer
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/renderer/svg-renderer.ts
  * @since 0.1.0
  */

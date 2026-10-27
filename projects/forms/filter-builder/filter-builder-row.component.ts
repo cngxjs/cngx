@@ -54,13 +54,12 @@ import type { FilterExpression, FilterFieldDef } from './filter-builder.types';
  * `CNGX_FILTER_ROW_CONTROLLER_FACTORY`; this component is the skin plus
  * a local-`model()` write sink.
  *
- * @category forms/filter-builder
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-row.component.ts
  * @since 0.1.0
  * @relatedTo CngxFilterBuilder, CngxFilterExpressionRow, CngxFilterBuilderValueEditor
  * <example-url>http://localhost:4200/#/forms/filter-builder/filter-row-standalone/single-row-with-value</example-url>
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-filter-row',

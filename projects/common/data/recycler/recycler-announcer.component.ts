@@ -12,8 +12,6 @@ import type { CngxRecycler } from './recycler';
  * <cngx-recycler-announcer [cngxRecyclerAnnouncer]="recycler" />
  * ```
  *
- * @category common/data/recycler
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/recycler/recycler-announcer.component.ts
  * @since 0.1.0

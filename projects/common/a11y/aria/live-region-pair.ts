@@ -6,8 +6,6 @@ const CLEAR_DELAY_MS = 16;
 
 /**
  * A message whose write into its live region has not landed yet.
- *
- * @category common/a11y
  */
 export interface CngxPendingAnnouncement {
   readonly message: string;

@@ -148,8 +148,6 @@ import {
  * Change event emitted by {@link CngxActionSelect.selectionChange}.
  * `action`: `'select'` user pick, `'clear'` reset, `'create'`
  * successful inline quick-create via `*cngxSelectAction`.
- *
- * @category forms/select/action-select
  */
 export interface CngxActionSelectChange<T = unknown> {
   readonly source: CngxActionSelect<T>;
@@ -193,8 +191,6 @@ export interface CngxActionSelectChange<T = unknown> {
  * `'anchored'`, `'sheet'` or `'fullscreen'`; `withMobileSheet('off')` keeps
  * every select in its scope anchored.
  *
- * @category forms/select/action-select
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/action-select/action-select.component.ts
  * @since 0.1.0
@@ -221,6 +217,7 @@ export interface CngxActionSelectChange<T = unknown> {
  * @slot cngxSelectInputSuffix Rendered after the <input>, before the clear button and caret; gets disabled, focused, panelOpen.
  * @slot cngxSelectAction Inline quick-create area rendered in every panel state above, below or on both sides of the options per [actionPosition] (never with 'none'), no built-in default; gets $implicit/searchTerm, commit, close, isPending, setDirty, dirty, retry, error, hasError, value.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-action-select',

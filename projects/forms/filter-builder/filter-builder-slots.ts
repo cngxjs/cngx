@@ -23,8 +23,6 @@ import type {
 
 /**
  * Context passed to the `cngxFilterBuilderEmpty` slot when the root group is empty.
- *
- * @category forms/filter-builder/slots
  */
 export interface CngxFilterBuilderEmptyContext {
   readonly addFilter: () => void;
@@ -33,8 +31,6 @@ export interface CngxFilterBuilderEmptyContext {
 
 /**
  * Context passed to a consumer-supplied expression-row template (full row override).
- *
- * @category forms/filter-builder/slots
  */
 export interface CngxFilterBuilderExpressionTemplateContext {
   readonly expression: FilterExpression;
@@ -49,8 +45,6 @@ export interface CngxFilterBuilderExpressionTemplateContext {
 
 /**
  * Context passed to a consumer-supplied group template (full group override).
- *
- * @category forms/filter-builder/slots
  */
 export interface CngxFilterBuilderGroupTemplateContext {
   readonly group: FilterGroup;
@@ -65,8 +59,6 @@ export interface CngxFilterBuilderGroupTemplateContext {
 
 /**
  * Context passed to the `cngxFilterBuilderAddFilterButton` slot.
- *
- * @category forms/filter-builder/slots
  */
 export interface CngxFilterBuilderAddFilterButtonContext {
   readonly add: () => void;
@@ -76,8 +68,6 @@ export interface CngxFilterBuilderAddFilterButtonContext {
 
 /**
  * Context passed to the `cngxFilterBuilderAddGroupButton` slot.
- *
- * @category forms/filter-builder/slots
  */
 export interface CngxFilterBuilderAddGroupButtonContext {
   readonly add: () => void;
@@ -87,8 +77,6 @@ export interface CngxFilterBuilderAddGroupButtonContext {
 
 /**
  * Context passed to the `cngxFilterBuilderRemoveButton` slot - shared by expression rows and group headers.
- *
- * @category forms/filter-builder/slots
  */
 export interface CngxFilterBuilderRemoveButtonContext {
   readonly remove: () => void;
@@ -97,8 +85,6 @@ export interface CngxFilterBuilderRemoveButtonContext {
 
 /**
  * Context passed to the `cngxFilterBuilderLogicToggle` slot - drives the AND/OR/XOR picker.
- *
- * @category forms/filter-builder/slots
  */
 export interface CngxFilterBuilderLogicToggleContext {
   readonly logic: FilterLogic;
@@ -108,8 +94,6 @@ export interface CngxFilterBuilderLogicToggleContext {
 
 /**
  * Context passed to the `cngxFilterBuilderNegationToggle` slot - only rendered when `withNegation(true)`.
- *
- * @category forms/filter-builder/slots
  */
 export interface CngxFilterBuilderNegationToggleContext {
   readonly negated: boolean;
@@ -131,7 +115,6 @@ export interface CngxFilterBuilderNegationToggleContext {
  *
  * Wins over `CNGX_FILTER_BUILDER_CONFIG.templates.empty` and the built-in default.
  *
- * @category forms/filter-builder/slots
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
  * @since 0.1.0
  * @relatedTo CngxFilterBuilderAddFilterButton, CngxFilterBuilderAddGroupButton, CngxFilterBuilder
@@ -167,7 +150,6 @@ export class CngxFilterBuilderEmpty {
  * To override only the value cell, use `cngxFilterBuilderValueEditor`. Wins over
  * `CNGX_FILTER_BUILDER_CONFIG.templates.expressionTemplate` and the default row.
  *
- * @category forms/filter-builder/slots
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
  * @since 0.1.0
  * @relatedTo CngxFilterBuilderGroupTemplate, CngxFilterBuilderValueEditor, CngxFilterBuilder
@@ -203,7 +185,6 @@ export class CngxFilterBuilderExpressionTemplate {
  *
  * Wins over `CNGX_FILTER_BUILDER_CONFIG.templates.groupTemplate` and the default shell.
  *
- * @category forms/filter-builder/slots
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
  * @since 0.1.0
  * @relatedTo CngxFilterBuilderExpressionTemplate, CngxFilterBuilderLogicToggle, CngxFilterBuilder
@@ -236,7 +217,6 @@ export class CngxFilterBuilderGroupTemplate {
  *
  * Wins over `CNGX_FILTER_BUILDER_CONFIG.templates.addFilterButton` and the default button.
  *
- * @category forms/filter-builder/slots
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
  * @since 0.1.0
  * @relatedTo CngxFilterBuilderAddGroupButton, CngxFilterBuilderRemoveButton, CngxFilterBuilderEmpty
@@ -270,7 +250,6 @@ export class CngxFilterBuilderAddFilterButton {
  *
  * Wins over `CNGX_FILTER_BUILDER_CONFIG.templates.addGroupButton` and the default button.
  *
- * @category forms/filter-builder/slots
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
  * @since 0.1.0
  * @relatedTo CngxFilterBuilderAddFilterButton, CngxFilterBuilderRemoveButton, CngxFilterBuilderEmpty
@@ -303,7 +282,6 @@ export class CngxFilterBuilderAddGroupButton {
  *
  * Wins over `CNGX_FILTER_BUILDER_CONFIG.templates.removeButton` and the default button.
  *
- * @category forms/filter-builder/slots
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
  * @since 0.1.0
  * @relatedTo CngxFilterBuilderAddFilterButton, CngxFilterBuilderAddGroupButton, CngxFilterBuilder
@@ -338,7 +316,6 @@ export class CngxFilterBuilderRemoveButton {
  * Restrict the choices with `withLogicOptions(...)`. Wins over
  * `CNGX_FILTER_BUILDER_CONFIG.templates.logicToggle` and the default toggle.
  *
- * @category forms/filter-builder/slots
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
  * @since 0.1.0
  * @relatedTo CngxFilterBuilderNegationToggle, CngxFilterBuilderGroupTemplate, CngxFilterGroup
@@ -372,7 +349,6 @@ export class CngxFilterBuilderLogicToggle {
  *
  * Wins over `CNGX_FILTER_BUILDER_CONFIG.templates.negationToggle` and the default toggle.
  *
- * @category forms/filter-builder/slots
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
  * @since 0.1.0
  * @relatedTo CngxFilterBuilderLogicToggle, CngxFilterBuilderGroupTemplate, CngxFilterGroup
@@ -395,8 +371,6 @@ export class CngxFilterBuilderNegationToggle {
 
 /**
  * Lookup-style template registry - used by `CngxFilterBuilderConfig.templates`.
- *
- * @category forms/filter-builder/slots
  */
 export interface CngxFilterBuilderTemplates {
   readonly empty?: TemplateRef<CngxFilterBuilderEmptyContext> | null;

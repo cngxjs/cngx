@@ -139,8 +139,6 @@ function isAllowedChar(
  * A bound form holds `number | null`, the same value as the model, never the
  * display string.
  *
- * @category forms/input
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/numeric-input.directive.ts
  * @since 0.1.0
@@ -148,6 +146,7 @@ function isAllowedChar(
  * <example-url>http://localhost:4200/#/forms/input/numeric/basic-numeric-input</example-url>
  * <example-url>http://localhost:4200/#/forms/input/numeric/locale-formatting</example-url>
  * <example-url>http://localhost:4200/#/forms/input/numeric/min-max-step-decimals</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: 'input[cngxNumericInput]',

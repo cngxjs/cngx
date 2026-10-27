@@ -4,8 +4,6 @@ import type { CngxSelectOptionDef } from './option.model';
 
 /**
  * Input bundle for {@link CngxPanelRendererFactory}.
- *
- * @category forms/select/panel
  */
 export interface PanelRendererInput<T> {
   /** Full flattened option list. Identity renderer passes through. */
@@ -14,8 +12,6 @@ export interface PanelRendererInput<T> {
 
 /**
  * Renderer surface read by the panel.
- *
- * @category forms/select/panel
  */
 export interface PanelRenderer<T> {
   /** Subset rendered into the DOM. Identity → `flatOptions` verbatim. */
@@ -47,8 +43,6 @@ export interface PanelRenderer<T> {
  * Pass-through renderer: every option enters the DOM. Comfortable to
  * ~500 options; beyond that, wire a virtualising renderer via
  * {@link CNGX_PANEL_RENDERER_FACTORY}.
- *
- * @category forms/select/panel
  */
 export function createIdentityPanelRenderer<T>(input: PanelRendererInput<T>): PanelRenderer<T> {
   return {
@@ -58,8 +52,6 @@ export function createIdentityPanelRenderer<T>(input: PanelRendererInput<T>): Pa
 
 /**
  * Factory signature for {@link CNGX_PANEL_RENDERER_FACTORY}.
- *
- * @category forms/select/panel
  */
 export type CngxPanelRendererFactory = <T>(input: PanelRendererInput<T>) => PanelRenderer<T>;
 
@@ -73,7 +65,6 @@ export type CngxPanelRendererFactory = <T>(input: PanelRendererInput<T>) => Pane
  * 3. `totalCount` returns the full count, not the windowed count.
  * 4. Renderer is signal-reactive.
  *
- * @category forms/select/panel
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/panel-renderer.ts
  * @since 0.1.0

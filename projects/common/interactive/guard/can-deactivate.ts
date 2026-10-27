@@ -28,8 +28,6 @@ import { injectResolvedInteractiveI18n } from '../i18n/interactive-i18n';
  *   `CNGX_INTERACTIVE_I18N` (English `'You have unsaved changes. Leave anyway?'`)
  *   when the guard runs, so it follows the active language.
  * @returns A functional guard compatible with Angular's `canDeactivate`.
- *
- * @category common/interactive/guard
  */
 export function canDeactivateWhenClean(isDirty: () => boolean, message?: string): () => boolean {
   return () => {

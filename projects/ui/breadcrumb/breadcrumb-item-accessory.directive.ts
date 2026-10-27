@@ -8,8 +8,6 @@ import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
  * {@link CngxBreadcrumbSiblings} dropdown, static or router-driven). When the
  * slot is projected it owns the accessory area for every crumb - the crumb's
  * declarative `siblings` auto-render is suppressed.
- *
- * @category ui/breadcrumb
  */
 export interface CngxBreadcrumbItemAccessoryContext {
   /** Convenience alias for `crumb` - usable as the `let-crumb` shorthand. */
@@ -38,12 +36,12 @@ export interface CngxBreadcrumbItemAccessoryContext {
  * </cngx-breadcrumb>
  * ```
  *
- * @category ui/breadcrumb
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-item-accessory.directive.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbBar, CngxBreadcrumbSiblings
  * <example-url>http://localhost:4200/#/ui/breadcrumb/siblings/accessory-slot</example-url>
+ * @axis level organism
  */
 @Directive({
   selector: 'ng-template[cngxBreadcrumbItemAccessory]',

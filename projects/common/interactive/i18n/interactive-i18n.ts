@@ -21,8 +21,6 @@ import {
  * unbound one follows a language switch. They are optional so a bundle
  * built before they existed keeps compiling; the active language pack (or
  * its English section) fills them at the reading site.
- *
- * @category common/interactive/i18n
  */
 export interface CngxInteractiveI18n {
   /** Announced when an async click action resolves. */
@@ -83,7 +81,6 @@ const interactiveBundle = createSectionBundle<CngxInteractiveLanguageSection, Cn
  * interactive section of the active language pack over the English defaults;
  * the value is a `Signal`, shared by every reader under one injector.
  *
- * @category common/interactive/i18n
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/i18n/interactive-i18n.ts
  * @since 0.1.0
@@ -100,7 +97,6 @@ export const CNGX_INTERACTIVE_I18N = new InjectionToken<Signal<CngxInteractiveI1
 /**
  * Branded feature-fn for {@link provideInteractiveI18n}.
  *
- * @category common/interactive/i18n
  * @since 0.1.0
  */
 export type CngxInteractiveI18nFeature = ((
@@ -121,7 +117,6 @@ function defineInteractiveI18nFeature(
  * pack's copy, or the English default. Pass a `Signal` of a partial bundle to switch languages at
  * runtime.
  *
- * @category common/interactive/i18n
  * @since 0.1.0
  */
 export function withInteractiveI18nLabels(
@@ -145,7 +140,6 @@ export function withInteractiveI18nLabels(
  * });
  * ```
  *
- * @category common/interactive/i18n
  * @since 0.1.0
  */
 export function provideInteractiveI18n(
@@ -161,7 +155,6 @@ export function provideInteractiveI18n(
  * Inject the resolved interactive i18n bundle signal. Read it inside a
  * `computed()` or template so a runtime override flip re-derives.
  *
- * @category common/interactive/i18n
  * @since 0.1.0
  */
 export function injectInteractiveI18n(): Signal<CngxInteractiveI18n> {

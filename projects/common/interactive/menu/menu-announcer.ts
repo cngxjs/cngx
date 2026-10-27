@@ -7,8 +7,6 @@ import { CngxLiveAnnouncer } from '@cngx/common/a11y';
  * `CngxMenuAnnouncer` is the default implementation; consumers wire a
  * custom (telemetry-wrapping, locale-aware, test-doubled) one by
  * overriding `CNGX_MENU_ANNOUNCER_FACTORY`.
- *
- * @category common/interactive/menu
  */
 export interface CngxMenuAnnouncerLike {
   announce(message: string): void;
@@ -18,8 +16,6 @@ export interface CngxMenuAnnouncerLike {
  * Factory shape consumed by `CNGX_MENU_ANNOUNCER_FACTORY`. The default
  * factory is {@link createMenuAnnouncer}; override returns any object
  * that satisfies {@link CngxMenuAnnouncerLike}.
- *
- * @category common/interactive/menu
  */
 export type CngxMenuAnnouncerFactory = () => CngxMenuAnnouncerLike;
 
@@ -36,7 +32,6 @@ export type CngxMenuAnnouncerFactory = () => CngxMenuAnnouncerLike;
  * Consumers obtain the announcer via the factory token, never by
  * `inject(CngxMenuAnnouncer)` directly, so a swap is enterprise-wide.
  *
- * @category common/interactive/menu
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-announcer.ts
  * @since 0.1.0
@@ -65,8 +60,6 @@ export class CngxMenuAnnouncer implements CngxMenuAnnouncerLike {
  * {@link CNGX_MENU_ANNOUNCER_FACTORY}.
  *
  * Must run inside an injection context.
- *
- * @category common/interactive/menu
  */
 export function createMenuAnnouncer(): CngxMenuAnnouncerLike {
   return inject(CngxMenuAnnouncer);
@@ -91,7 +84,6 @@ export function createMenuAnnouncer(): CngxMenuAnnouncerLike {
  * });
  * ```
  *
- * @category common/interactive/menu
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-announcer.ts
  * @since 0.1.0
@@ -104,8 +96,6 @@ export const CNGX_MENU_ANNOUNCER_FACTORY = new InjectionToken<CngxMenuAnnouncerF
 /**
  * Resolve the {@link CngxMenuAnnouncerLike} from the current injection
  * scope via the factory token. Must run inside an injection context.
- *
- * @category common/interactive/menu
  */
 export function injectMenuAnnouncer(): CngxMenuAnnouncerLike {
   return inject(CNGX_MENU_ANNOUNCER_FACTORY)();

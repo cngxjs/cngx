@@ -29,11 +29,11 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
  * grid of the hidden pages (same select-and-jump model as `cngx-pgn-page-of-pages`,
  * so focus moves into the panel on open).
  *
- * @category ui/paginator
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-pages.component.ts
  * @since 0.1.0
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/pages/number-row</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-pgn-pages',

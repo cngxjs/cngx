@@ -9,7 +9,6 @@ import { arrayEqual } from '@cngx/utils';
 /**
  * Options for {@link createAnnouncementCapture}.
  *
- * @category core/testing
  * @since 0.1.0
  */
 export interface CngxAnnouncementCaptureOptions {
@@ -26,7 +25,6 @@ export interface CngxAnnouncementCaptureOptions {
 /**
  * The handle {@link createAnnouncementCapture} returns.
  *
- * @category core/testing
  * @since 0.1.0
  */
 export interface CngxAnnouncementCapture {
@@ -92,7 +90,6 @@ export interface CngxAnnouncementCapture {
  *
  * @param options The subtree to observe and how many entries to keep.
  *
- * @category core/testing
  * @since 0.1.0
  * @relatedTo resolveHeardAnnouncements, createAnnouncementRecorder
  */

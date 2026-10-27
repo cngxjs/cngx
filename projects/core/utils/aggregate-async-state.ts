@@ -33,7 +33,6 @@ import { buildAsyncStateView } from './build-async-state-view';
  * progress values have no comparable scale to aggregate over (a determinate
  * upload percentage and an indeterminate fetch cannot be averaged honestly).
  *
- * @category core/utils/async-state
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/aggregate-async-state.ts
  * @since 0.1.0
  */

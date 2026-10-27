@@ -49,8 +49,6 @@ import { CngxToaster, type ToastRef } from './toast.service';
  * <cngx-toast severity="error" message="Save failed" [when]="saveState.status() === 'error'" />
  * ```
  *
- * @category ui/feedback/toast
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/toast/toast.component.ts
  * @since 0.1.0
@@ -61,6 +59,7 @@ import { CngxToaster, type ToastRef } from './toast.service';
  * <example-url>http://localhost:4200/#/ui/feedback/toast/programmatic-cngxtoaster</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/toast/state-bridge-cngxtoaston</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/toast/title-description</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-toast',

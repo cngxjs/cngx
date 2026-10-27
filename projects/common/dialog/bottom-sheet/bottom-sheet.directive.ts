@@ -31,12 +31,11 @@ import { DIALOG_REF } from '../dialog/dialog-ref';
  * </dialog>
  * ```
  *
- * @category common/dialog
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/bottom-sheet/bottom-sheet.directive.ts
  * @since 0.1.0
  * @relatedTo CngxDialog, CngxSwipeDismiss, CngxDialogClose
+ * @axis level organism
  */
 @Directive({
   selector: 'dialog[cngxBottomSheet]',

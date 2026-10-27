@@ -18,7 +18,6 @@ import { CNGX_DATA_GRID_ACCORDION_CONFIG } from './data-grid-accordion.config.de
  * }
  * ```
  *
- * @category ui/data-grid-accordion
  * @since 0.1.0
  */
 export function injectDataGridAccordionConfig(): CngxDataGridAccordionConfig {

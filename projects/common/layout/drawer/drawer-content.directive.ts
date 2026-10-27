@@ -13,7 +13,6 @@ import type { CngxDrawer } from './drawer.directive';
  * </main>
  * ```
  *
- * @category common/layout
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/drawer/drawer-content.directive.ts
  * @since 0.1.0
  * @relatedTo CngxDrawer, CngxDrawerPanel

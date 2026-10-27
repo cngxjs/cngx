@@ -20,7 +20,6 @@ function useStatSlot(kind: CngxStatSlotKind): string {
  * Marks the label element of a {@link CngxStat}. Its generated id leads the
  * molecule's `aria-labelledby`.
  *
- * @category common/data/metric
  * @since 0.1.0
  * @relatedTo CngxStat
  */
@@ -38,7 +37,6 @@ export class CngxStatLabel {
  * Marks the primary value element of a {@link CngxStat} (typically a
  * `<cngx-metric>`).
  *
- * @category common/data/metric
  * @since 0.1.0
  * @relatedTo CngxStat
  */
@@ -56,7 +54,6 @@ export class CngxStatValue {
  * Marks the delta element of a {@link CngxStat} (typically a `<cngx-delta>`
  * or `<cngx-trend>`).
  *
- * @category common/data/metric
  * @since 0.1.0
  * @relatedTo CngxStat
  */
@@ -74,7 +71,6 @@ export class CngxStatDelta {
  * Marks the caption element of a {@link CngxStat} - the trailing context
  * line (e.g. "vs. last quarter").
  *
- * @category common/data/metric
  * @since 0.1.0
  * @relatedTo CngxStat
  */

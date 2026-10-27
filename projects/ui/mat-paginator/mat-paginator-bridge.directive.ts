@@ -19,8 +19,6 @@ import { injectPaginatorAnnouncements } from '@cngx/ui/paginator';
 /**
  * Context handed to {@link CngxMatPaginator.announceLabel} to build the
  * screen-reader announcement after each page / page-size change.
- *
- * @category ui/mat-paginator
  */
 export interface CngxMatPaginatorAnnounceContext {
   /** 1-based current page. */
@@ -76,8 +74,6 @@ export interface CngxMatPaginatorAnnounceContext {
  * </ul>
  * ```
  *
- * @category ui/mat-paginator
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-paginator/mat-paginator-bridge.directive.ts
  * @since 0.1.0
@@ -87,6 +83,7 @@ export interface CngxMatPaginatorAnnounceContext {
  * <example-url>http://localhost:4200/#/common/data/paginate-list/instrumentation-bridge-cngxmatpaginator</example-url>
  * <example-url>http://localhost:4200/#/common/data/paginate-list/paginated-list-cngxpaginate-cngxmatpaginator</example-url>
  * <example-url>http://localhost:4200/#/common/data/paginate-list/uncontrolled-mode-zero-class-boilerplate</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxMatPaginator]',

@@ -10,8 +10,6 @@ import { createTransitionTracker } from '@cngx/core/utils';
 
 /**
  * Config for {@link createPanelLifecycleEmitter}.
- *
- * @category forms/select/panel
  */
 export interface PanelLifecycleEmitterOptions {
   /**
@@ -44,8 +42,6 @@ export interface PanelLifecycleEmitterOptions {
  * closed emits nothing and never moves focus, a panel mounted open
  * emits no `opened`. Output emits + focus call wrapped in `untracked`.
  * Injection context required.
- *
- * @category forms/select/panel
  */
 export function createPanelLifecycleEmitter(
   opts: PanelLifecycleEmitterOptions,
@@ -88,8 +84,6 @@ export function createPanelLifecycleEmitter(
 
 /**
  * Factory signature for {@link CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY}.
- *
- * @category forms/select/panel
  */
 export type CngxPanelLifecycleEmitterFactory = (
   opts: PanelLifecycleEmitterOptions,
@@ -103,7 +97,6 @@ export type CngxPanelLifecycleEmitterFactory = (
  * `panelOpen` flips only, never for the value `panelOpen` holds at mount -
  * a mount-time restore steals page focus from wherever it was.
  *
- * @category forms/select/panel
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/panel-lifecycle-emitter.ts
  * @since 0.1.0

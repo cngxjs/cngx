@@ -37,12 +37,11 @@ const NUMBER_FORMAT: Intl.NumberFormatOptions = {};
  * <cngx-slider aria-labelledby="vol" [(value)]="volume" [min]="0" [max]="100" [step]="5" showValueBubble />
  * ```
  *
- * @category common/interactive/slider
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider.component.ts
  * @since 0.1.0
  * @relatedTo CngxSliderTrack, CngxRangeSlider, CngxSliderFieldBridge
+ * @axis level molecule
  */
 @Component({
   selector: 'cngx-slider',

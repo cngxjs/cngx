@@ -1,7 +1,5 @@
 /**
  * Scan description for {@link resolveStepFrom} and {@link resolveBoundaryStep}.
- *
- * @category core/nav
  */
 export interface CngxStepScan {
   /** Total number of indices in the range `[0, count)`. */
@@ -50,7 +48,6 @@ export interface CngxStepScan {
  * @param scan The range description.
  * @returns The next enabled index, or `null` when none is reachable.
  *
- * @category core/nav
  * @relatedTo resolveBoundaryStep
  * @relatedTo resolveInlineStep
  * @since 0.1.0
@@ -92,7 +89,6 @@ export function resolveStepFrom(
  * @param scan The range description (`loop` is irrelevant here).
  * @returns The boundary-nearest enabled index, or `null`.
  *
- * @category core/nav
  * @relatedTo resolveStepFrom
  * @relatedTo resolveInlineStep
  * @since 0.1.0

@@ -12,7 +12,6 @@ import type { Signal } from '@angular/core';
  * primary-tinted open row + sub-table detail; `'report'` frameless double rules;
  * `'density'` compact/standard/spacious token hooks.
  *
- * @category ui/data-grid-accordion
  * @since 0.1.0
  */
 export type CngxDataGridSkin =
@@ -35,7 +34,6 @@ export type CngxDataGridSkin =
  * entry. The duplication is a tracked decision, re-evaluated if a shared severity
  * union lands in `@cngx/core`.
  *
- * @category ui/data-grid-accordion
  * @since 0.1.0
  */
 export type CngxDataGridSeverity = 'error' | 'warning' | 'info';
@@ -55,7 +53,6 @@ export type CngxDataGridSeverity = 'error' | 'warning' | 'info';
  * has no app-wide default. Skin is the only surface with a plausible app-wide
  * default, mirroring {@link withAccordionSkin}.
  *
- * @category ui/data-grid-accordion
  * @since 0.1.0
  */
 export interface CngxDataGridAccordionConfig {
@@ -83,7 +80,6 @@ export interface CngxDataGridAccordionConfig {
  * count, a row's load error) read it untracked and speak the new language with
  * their next change.
  *
- * @category ui/data-grid-accordion
  * @since 0.1.0
  */
 export interface CngxDataGridAccordionLabels {

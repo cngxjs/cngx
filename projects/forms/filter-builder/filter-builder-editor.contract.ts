@@ -29,8 +29,6 @@ import type { FilterExpression, FilterFieldDef } from './filter-builder.types';
  * state. The shipped rows currently expose no row-level disabled state
  * and mount editors enabled; declare the input to stay forward-compatible
  * with disabled-aware hosts.
- *
- * @category forms/filter-builder/slots
  */
 export interface CngxFilterEditorComponent<TValue> {
   readonly value: ModelSignal<TValue | null>;

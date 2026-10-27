@@ -3,15 +3,11 @@ import { InjectionToken } from '@angular/core';
 /**
  * Outcome reported by an `attempt` callback. `true` halts the loop
  * (success); `false` or `null` schedules another tick.
- *
- * @category common/tabs/overflow
  */
 export type CngxDomAnchorRetryResult = true | false | null;
 
 /**
  * Configuration for {@link createDomAnchorRetry}.
- *
- * @category common/tabs/overflow
  */
 export interface CngxDomAnchorRetryOptions {
   /**
@@ -37,8 +33,6 @@ export interface CngxDomAnchorRetryOptions {
 
 /**
  * Imperative handle returned by {@link createDomAnchorRetry}.
- *
- * @category common/tabs/overflow
  */
 export interface CngxDomAnchorRetryHandle {
   /** Begin (or restart) the retry loop. Resets the attempt counter. */
@@ -75,8 +69,6 @@ export interface CngxDomAnchorRetryHandle {
  * afterNextRender(() => retry.start());
  * destroyRef.onDestroy(() => retry.cancel());
  * ```
- *
- * @category common/tabs/overflow
  */
 export function createDomAnchorRetry(options: CngxDomAnchorRetryOptions): CngxDomAnchorRetryHandle {
   let attempts = 0;
@@ -130,8 +122,6 @@ export function createDomAnchorRetry(options: CngxDomAnchorRetryOptions): CngxDo
 /**
  * Factory signature for {@link CNGX_DOM_ANCHOR_RETRY_FACTORY} -
  * matches {@link createDomAnchorRetry} for drop-in overrides.
- *
- * @category common/tabs/overflow
  */
 export type CngxDomAnchorRetryFactory = (
   options: CngxDomAnchorRetryOptions,
@@ -149,7 +139,6 @@ export type CngxDomAnchorRetryFactory = (
  * - `CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY`, and
  * - `CNGX_TABS_COMMIT_HANDLER_FACTORY`.
  *
- * @category common/tabs/overflow
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/overflow/dom-anchor-retry.ts
  * @since 0.1.0
  */

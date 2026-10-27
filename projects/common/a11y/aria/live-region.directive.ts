@@ -29,13 +29,13 @@ import { Directive, input } from '@angular/core';
  * </div>
  * ```
  *
- * @category common/a11y
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/aria/live-region.directive.ts
  * @since 0.1.0
  * @relatedTo CngxAriaExpanded
  * <example-url>http://localhost:4200/#/common/a11y/live-region/form-validation-assertive-error-announcements</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/live-region/polite-vs-assertive</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxLiveRegion]',

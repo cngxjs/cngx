@@ -14,7 +14,6 @@ import type { CngxStepLabelContext } from './step-panel-host.token';
  * </ng-template>
  * ```
  *
- * @category common/stepper
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/step-label.directive.ts
  * @since 0.1.0

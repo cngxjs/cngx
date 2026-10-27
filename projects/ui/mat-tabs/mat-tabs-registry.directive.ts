@@ -41,8 +41,6 @@ interface CngxMatTabsRegistryEntry {
  * Return type narrows to `Pick<..., 'errorAggregator'>` so the
  * access path exposes only the per-handle aggregator slot; the
  * rest of the setup stays internal bookkeeping.
- *
- * @category ui/mat-tabs
  */
 export interface CngxMatTabsRegistryHost {
   /**
@@ -64,7 +62,6 @@ export interface CngxMatTabsRegistryHost {
  * `{ host: true }` to reach per-handle slots without walking the
  * concrete registry class.
  *
- * @category ui/mat-tabs
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/mat-tabs-registry.directive.ts
  * @since 0.1.0
@@ -98,8 +95,6 @@ export const CNGX_MAT_TABS_REGISTRY_HOST = new InjectionToken<CngxMatTabsRegistr
  * both share the parent's `CngxTabGroupPresenter` and the same
  * `<mat-tab-group>` content-children scope.
  *
- * @category ui/mat-tabs
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/mat-tabs-registry.directive.ts
  * @since 0.1.0

@@ -12,7 +12,6 @@ import { createPreferenceAxis } from './preference-axis';
  * `1`, identity); `sm` and `lg` re-scale `--cngx-font-scale` so every
  * root-relative `font-size` shrinks or grows for the subtree.
  *
- * @category core/theming
  * @since 0.1.0
  */
 export type CngxTextScaleValue = 'sm' | 'md' | 'lg';
@@ -24,7 +23,6 @@ export type CngxTextScaleValue = 'sm' | 'md' | 'lg';
  * (the identity rung) when no `provideTextScale()` is present so an
  * injected signal is always available and unset markup is unchanged.
  *
- * @category core/theming
  * @relatedTo provideTextScale
  * @relatedTo injectTextScale
  * @since 0.1.0
@@ -59,7 +57,6 @@ const textScaleAxis = createPreferenceAxis({
  * });
  * ```
  *
- * @category core/theming
  * @relatedTo CNGX_TEXT_SCALE
  * @relatedTo injectTextScale
  * @since 0.1.0
@@ -73,7 +70,6 @@ export function provideTextScale(initial: CngxTextScaleValue = 'md'): Environmen
  * returned signal is writable, so `injectTextScale().set('lg')`
  * re-scales all root-relative text reactively.
  *
- * @category core/theming
  * @relatedTo provideTextScale
  * @since 0.1.0
  */

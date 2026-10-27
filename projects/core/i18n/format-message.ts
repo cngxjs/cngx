@@ -6,7 +6,6 @@ import type { CngxPluralMessage } from './language-pack';
 /**
  * Arguments a message is formatted with, keyed by placeholder name.
  *
- * @category core/i18n
  * @since 0.1.0
  */
 export type CngxMessageArgs = Readonly<Record<string, string | number>>;
@@ -14,7 +13,6 @@ export type CngxMessageArgs = Readonly<Record<string, string | number>>;
 /**
  * Escape hatch for a TS pack: a message the data format cannot express.
  *
- * @category core/i18n
  * @since 0.1.0
  */
 export type CngxMessageFn = (args: CngxMessageArgs, locale: string) => string;
@@ -23,7 +21,6 @@ export type CngxMessageFn = (args: CngxMessageArgs, locale: string) => string;
  * One message of a language section: a sentence with `{name}` placeholders,
  * a {@link CngxPluralMessage}, or a {@link CngxMessageFn}.
  *
- * @category core/i18n
  * @since 0.1.0
  */
 export type CngxMessage = string | CngxPluralMessage | CngxMessageFn;
@@ -112,7 +109,6 @@ function selectPluralForm(
  * visible in the output. A `locale` that is not a BCP 47 tag formats as
  * English, with one dev warning per tag.
  *
- * @category core/i18n
  * @since 0.1.0
  */
 export function formatMessage(

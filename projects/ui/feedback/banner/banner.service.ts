@@ -5,8 +5,6 @@ import type { AlertSeverity } from '../alert/alert';
 
 /**
  * Configuration for a system-level banner.
- *
- * @category ui/feedback/banner
  */
 export interface BannerConfig {
   /** Banner message text (required). */
@@ -30,8 +28,6 @@ export interface BannerConfig {
 
 /**
  * Handle to a displayed banner.
- *
- * @category ui/feedback/banner
  */
 export interface BannerRef {
   /** Programmatically dismiss this banner. */
@@ -42,8 +38,6 @@ export interface BannerRef {
 
 /**
  * @internal - tracked state for a single banner.
- *
- * @category ui/feedback/banner
  */
 export interface BannerState {
   readonly id: string;
@@ -78,8 +72,6 @@ export interface BannerState {
  * });
  * ```
  *
- * @category ui/feedback/banner
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/banner/banner.service.ts
  * @since 0.1.0

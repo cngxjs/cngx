@@ -15,7 +15,6 @@ import { CngxErrorRegistry } from './error-registry';
  * Must be called in an injection context (constructor, factory provider,
  * `runInInjectionContext`).
  *
- * @category common/interactive/error
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/inject-error-scope.ts
  * @since 0.1.0
  * @relatedTo CngxErrorScope

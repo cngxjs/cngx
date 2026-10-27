@@ -11,8 +11,6 @@ import { injectDisplayI18n } from '../i18n/display-i18n';
 
 /**
  * State of a single segment in a {@link CngxSegmentedProgress}.
- *
- * @category common/display
  */
 export type SegmentState = 'done' | 'active' | 'todo' | 'error';
 
@@ -36,8 +34,6 @@ const segmentsEqual = (a: readonly SegmentState[], b: readonly SegmentState[]): 
  * <cngx-segmented-progress [segments]="['done', 'error', 'active', 'todo']" />
  * ```
  *
- * @category common/display
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/segmented-progress/segmented-progress.component.ts
  * @since 0.1.0
@@ -45,6 +41,7 @@ const segmentsEqual = (a: readonly SegmentState[], b: readonly SegmentState[]): 
  * <example-url>http://localhost:4200/#/common/display/segmented-progress/value-total</example-url>
  * <example-url>http://localhost:4200/#/common/display/segmented-progress/lightbox-position</example-url>
  * <example-url>http://localhost:4200/#/common/display/segmented-progress/error-segment</example-url>
+ * @axis level atom
  */
 @Component({
   selector: 'cngx-segmented-progress',

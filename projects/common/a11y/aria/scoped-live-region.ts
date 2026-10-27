@@ -10,8 +10,6 @@ import {
 
 /**
  * Polite + assertive live regions inside one host element.
- *
- * @category common/a11y
  */
 export interface CngxScopedLiveRegion {
   /** Speak `message` from the region of `politeness` (default `'polite'`). */
@@ -48,7 +46,6 @@ export interface CngxScopedLiveRegion {
  *
  * @param host - Element that receives the two visually hidden regions.
  *
- * @category common/a11y
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/aria/scoped-live-region.ts
  * @since 0.1.0

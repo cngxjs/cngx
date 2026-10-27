@@ -9,8 +9,6 @@ import type { CngxStepRegistration } from './stepper-host.token';
  *
  * Surface is registration-only - `id` and `aggregatedStatus` are
  * concrete-class details, not part of the token contract.
- *
- * @category common/stepper
  */
 export interface CngxStepGroupHost {
   register(handle: CngxStepRegistration): void;
@@ -22,7 +20,6 @@ export interface CngxStepGroupHost {
  * DI token providing a `CngxStepGroup`'s contract to nested `CngxStep` atoms.
  * Steps inject this `optional: true` and fall back to {@link CNGX_STEPPER_HOST}.
  *
- * @category common/stepper
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/step-group-host.token.ts
  * @since 0.1.0
  */

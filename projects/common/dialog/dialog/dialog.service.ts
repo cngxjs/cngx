@@ -45,7 +45,6 @@ import { CngxDialogOutlet } from './dialog-outlet';
  * });
  * ```
  *
- * @category common/dialog
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/dialog/dialog.service.ts
  * @since 0.1.0
  * @relatedTo CngxDialogOpener, CngxDialog, CNGX_DIALOG_DATA
@@ -187,8 +186,6 @@ export class CngxDialogRef<T = unknown> {
  * }
  * ```
  *
- * @category common/dialog
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/dialog/dialog.service.ts
  * @since 0.1.0
  * @relatedTo CngxDialog, CngxDialogRef, CNGX_DIALOG_DATA, CngxDialogStack
@@ -388,8 +385,6 @@ export class CngxDialogOpener {
  *   providers: [provideDialog()],
  * });
  * ```
- *
- * @category common/dialog
  */
 export function provideDialog(): Provider[] {
   return [CngxDialogOpener];

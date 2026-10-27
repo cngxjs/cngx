@@ -51,8 +51,6 @@ interface AsyncStateSink<T> {
  *   ).subscribe();
  * }
  * ```
- *
- * @category common/data/async-state
  */
 export function tapAsyncState<T>(
   state: AsyncStateSink<T>,
@@ -129,8 +127,6 @@ const RESPONSE = 4;
  *   ).subscribe();
  * }
  * ```
- *
- * @category common/data/async-state
  */
 export function tapAsyncProgress<E>(
   state: Pick<AsyncStateSink<unknown>, 'setProgress'>,
@@ -176,8 +172,6 @@ export function tapAsyncProgress<E>(
  *   // upload.status(), upload.progress(), upload.data() - all wired
  * }
  * ```
- *
- * @category common/data/async-state
  */
 export function tapHttpAsyncState<T>(
   state: AsyncStateSink<T>,

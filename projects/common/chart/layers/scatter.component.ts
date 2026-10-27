@@ -10,14 +10,10 @@ import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './cha
 
 /**
  * Reads the data-space X value of a scatter row at index `i`.
- *
- * @category common/chart/layers
  */
 export type ScatterXAccessor<T> = (d: T, i: number) => XScaleInput;
 /**
  * Reads the data-space Y value of a scatter row at index `i`.
- *
- * @category common/chart/layers
  */
 export type ScatterYAccessor<T> = (d: T, i: number) => number;
 
@@ -35,8 +31,6 @@ interface ScatterCircle {
  *
  * Attribute-selector on `<svg:g>` - see {@link CngxLine} for why.
  *
- * @category common/chart/layers
- * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/layers/scatter.component.ts
  * @since 0.1.0
  * @relatedTo CngxLine, CngxBar, CngxArea, CngxChart

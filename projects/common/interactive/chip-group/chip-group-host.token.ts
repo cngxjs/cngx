@@ -22,7 +22,6 @@ import { CngxRuntimeError } from '@cngx/utils';
  * that needs mode discovery can extend the interface then; until
  * then the field stays out of the public surface.
  *
- * @category common/interactive
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/chip-group/chip-group-host.token.ts
  * @since 0.1.0
  */
@@ -45,7 +44,6 @@ export interface CngxChipGroupHost<T = unknown> {
  * instead, which provides `CNGX_CONTROL_VALUE` directly without ever
  * touching this token.
  *
- * @category common/interactive
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/chip-group/chip-group-host.token.ts
  * @since 0.1.0

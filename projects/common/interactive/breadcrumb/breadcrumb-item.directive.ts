@@ -9,7 +9,6 @@ import { injectBreadcrumbHost } from './breadcrumb.token';
  * position in the trail (no manual flag). The item hides itself with `[hidden]`
  * when the coordinator collapses it into the overflow menu.
  *
- * @category common/interactive/breadcrumb
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/breadcrumb/breadcrumb-item.directive.ts
  * @since 0.1.0

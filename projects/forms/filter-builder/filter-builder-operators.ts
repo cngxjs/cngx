@@ -18,8 +18,6 @@ declare const ngDevMode: boolean | undefined;
  * `withCaseInsensitiveStrings` - the builtin substring trio folds both
  * sides via `toLowerCase()` when set; custom definitions are free to
  * honour or ignore it.
- *
- * @category forms/filter-builder/config
  */
 export interface CngxFilterOperatorContext {
   readonly caseInsensitive: boolean;
@@ -37,7 +35,6 @@ export interface CngxFilterOperatorContext {
  * only appears in a row's operator picker when a `FilterFieldDef.operators`
  * list or a `withDefaultOperators` entry names it.
  *
- * @category forms/filter-builder/config
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-operators.ts
  * @since 0.1.0
  * @relatedTo withOperators, evaluateExpression, toFilterPredicate
@@ -102,7 +99,6 @@ function substringDef(
  * matching array shape - `[min, max]` for `between`, a value list for
  * `in` / `notIn`.
  *
- * @category forms/filter-builder/config
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-operators.ts
  * @since 0.1.0
  * @relatedTo CngxFilterOperatorDef, withOperators
@@ -195,8 +191,6 @@ export const CNGX_FILTER_BUILTIN_OPERATOR_DEFS: ReadonlyMap<string, CngxFilterOp
  * map when none is supplied. Returns `undefined` for unknown keys - the
  * evaluation path turns that into a one-shot dev warning plus a `false`
  * result.
- *
- * @category forms/filter-builder/config
  */
 export function resolveOperatorDef(
   operator: string,

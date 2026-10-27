@@ -10,8 +10,6 @@ import { type AbstractControl, type ValidationErrors, type ValidatorFn } from '@
  * Near-duplicate of Angular's `Validators.pattern` by design: the `patternMatch`
  * error kind and `{ pattern, actual }` payload line up with the `withErrorMessages`
  * registry keys, where the built-in emits `pattern: { requiredPattern, actualValue }`.
- *
- * @category forms/validators
  */
 export function patternMatch(pattern: RegExp): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {

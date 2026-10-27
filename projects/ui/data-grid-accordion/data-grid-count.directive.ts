@@ -33,7 +33,6 @@ import { injectDataGridAccordionLabels } from './i18n/data-grid-accordion-i18n';
  * Binding `cngxDgaCountSingular` / `cngxDgaCountPlural` per instance always composes
  * through `countWithNoun`.
  *
- * @category ui/data-grid-accordion
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-count.directive.ts
  * @since 0.1.0

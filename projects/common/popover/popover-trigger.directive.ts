@@ -38,8 +38,6 @@ import type { PopoverHaspopup } from './popover.types';
  * displace the restore target). Useful for menus, confirm panels, and
  * dialogs that steal focus from the trigger.
  *
- * @category common/popover
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-trigger.directive.ts
  * @since 0.1.0

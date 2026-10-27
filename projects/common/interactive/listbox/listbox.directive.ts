@@ -42,8 +42,6 @@ import { CngxOption } from './option.directive';
  *    callbacks.
  * 4. Forms integration is decoupled: the listbox never imports `@angular/forms`.
  *
- * @category common/interactive/listbox
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/listbox.directive.ts
  * @since 0.1.0
@@ -57,6 +55,7 @@ import { CngxOption } from './option.directive';
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-single-select</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxListbox]',

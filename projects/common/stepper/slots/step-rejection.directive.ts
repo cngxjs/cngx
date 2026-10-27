@@ -16,8 +16,6 @@ import type { CngxStepNode } from '../stepper-host.token';
  * `presenter.originIndexDuringCommit()`. May be `undefined` when the
  * origin index is out of range (synchronous-rejection edge case);
  * gate richer UI on its presence.
- *
- * @category common/stepper/slots
  */
 export interface CngxStepRejectionContext {
   /** Flat-index of the rejected step (`presenter.lastFailedIndex()`). */
@@ -50,7 +48,6 @@ export interface CngxStepRejectionContext {
  * </cngx-stepper>
  * ```
  *
- * @category common/stepper/slots
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/slots/step-rejection.directive.ts
  * @since 0.1.0

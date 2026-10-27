@@ -32,13 +32,12 @@ function isDegenerateDomain(lo: number, hi: number): boolean {
  * values, so the directive holds no hidden state. Value-to-frequency is a pure
  * derivation; rapid sweeps are throttled through the shared `createDebouncer`.
  *
- * @category common/audio
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/pitch-mode/audio-pitch.directive.ts
  * @since 0.1.0
  * @relatedTo CngxAudio, injectCngxAudio
  * <example-url>http://localhost:4200/#/common/audio/pitch/slider</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxAudioPitch]',

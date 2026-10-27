@@ -20,8 +20,6 @@ import {
  * Feature union for {@link provideCngxSelect} / {@link provideCngxSelectAt}.
  * The hidden `_target` discriminator routes each feature to its
  * underlying provider (`select`/`action`/`reorderable`).
- *
- * @category forms/select/config
  */
 export type CngxSelectAggregatorFeature =
   | CngxSelectConfigFeature
@@ -88,8 +86,6 @@ function bucket(
  *   ],
  * });
  * ```
- *
- * @category forms/select/config
  */
 export function provideCngxSelect(
   ...features: CngxSelectAggregatorFeature[]
@@ -125,8 +121,6 @@ export function provideCngxSelect(
  *   template: `<cngx-reorderable-multi-select … />`,
  * })
  * ```
- *
- * @category forms/select/config
  */
 export function provideCngxSelectAt(
   ...features: CngxSelectAggregatorFeature[]

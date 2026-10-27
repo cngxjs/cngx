@@ -23,12 +23,12 @@ import {
  * </cngx-card>
  * ```
  *
- * @category common/card
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card-skeleton.component.ts
  * @since 0.1.0
  * @relatedTo CngxCard, CngxCardBody, CngxCardMedia
  * <example-url>http://localhost:4200/#/common/card/loading-state</example-url>
+ * @axis level organism
  */
 @Component({
   selector: 'cngx-card-skeleton',

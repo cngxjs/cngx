@@ -3,7 +3,6 @@
  * `CngxStatCard`. It feeds the `ariaLabels` of `CNGX_STAT_CARD_CONFIG`; a key
  * set through `withStatCardAriaLabels` or a bound copy input still wins.
  *
- * @category ui/stat-card/i18n
  * @since 0.1.0
  * @relatedTo CNGX_STAT_CARD_CONFIG, withStatCardAriaLabels
  */
@@ -22,7 +21,6 @@ export interface CngxStatCardLanguageSection {
  * The English stat-card section: the single source of the stat card's English
  * copy. The `CNGX_STAT_CARD_CONFIG` labels default to it.
  *
- * @category ui/stat-card/i18n
  * @since 0.1.0
  * @relatedTo CNGX_STAT_CARD_CONFIG
  */

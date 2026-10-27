@@ -29,8 +29,6 @@ import type {
  * Stable across CD passes so `aria-activedescendant` resolves to
  * the same `<li>`. `-overflow-option` suffix avoids collision with
  * the strip-button (`-header`) and per-tab descriptor (`-desc`).
- *
- * @category common/tabs/overflow
  */
 export function tabOverflowOptionId(tab: CngxTabHandle): string {
   return `${tab.id}-overflow-option`;
@@ -41,8 +39,6 @@ export function tabOverflowOptionId(tab: CngxTabHandle): string {
  * The molecule runs the `contentChild()` queries (injection-context-only) and
  * supplies the reactive sources; the factory owns cascade
  * resolution and per-context builders.
- *
- * @category common/tabs/overflow
  */
 export interface CngxTabOverflowTemplateBindingsOptions {
   /** `contentChild(CngxTabOverflowTrigger)` from the molecule. */
@@ -67,8 +63,6 @@ export interface CngxTabOverflowTemplateBindingsOptions {
  * Output of {@link createTabOverflowTemplateBindings}. Carries the two
  * resolved templates plus a stable trigger-context signal and an
  * imperative item-context builder.
- *
- * @category common/tabs/overflow
  */
 export interface CngxTabOverflowTemplateBindings {
   readonly triggerTemplate: Signal<TemplateRef<CngxTabOverflowTriggerContext> | null>;
@@ -144,8 +138,6 @@ function adItemsEqual(a: ActiveDescendantItem[], b: ActiveDescendantItem[]): boo
  * Pure - no DI, no side effects, no destroy hooks. Safe to call
  * from a component's field-init block. Mirrors the select-family
  * `createTemplateRegistry` pattern.
- *
- * @category common/tabs/overflow
  */
 export function createTabOverflowTemplateBindings(
   opts: CngxTabOverflowTemplateBindingsOptions,
@@ -241,7 +233,6 @@ export function createTabOverflowTemplateBindings(
  *   `aria-activedescendant` while real focus stays on the trigger (APG
  *   menu-button); the rows are never tab stops.
  *
- * @category common/tabs/overflow
  * @wcag AA
  */
 export function createOverflowPopoverHighlightSync(
@@ -260,8 +251,6 @@ export function createOverflowPopoverHighlightSync(
 
 /**
  * Factory signature for {@link CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY}.
- *
- * @category common/tabs/overflow
  */
 export type CngxOverflowPopoverHighlightSyncFactory = (
   popover: Signal<CngxPopover>,
@@ -277,7 +266,6 @@ export type CngxOverflowPopoverHighlightSyncFactory = (
  * - `CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY` and
  * - `CNGX_TABS_COMMIT_HANDLER_FACTORY`.
  *
- * @category common/tabs/overflow
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/overflow/overflow-template-cascade.ts
  * @since 0.1.0
  */

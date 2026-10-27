@@ -71,14 +71,13 @@ interface PopoverController extends CngxMenuDismissPopoverRef {
  * {@link CNGX_MENU_DISMISS_HANDLER_FACTORY} for telemetry-wrapped or
  * test-doubled dismissal.
  *
- * @category common/interactive/menu
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-trigger.directive.ts
  * @since 0.1.0
  * @relatedTo CngxMenu, CngxContextMenuTrigger, CngxMenuItemSubmenu, CngxPopoverTrigger
  * <example-url>http://localhost:4200/#/common/interactive/menu/submenu/two-level-submenu</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/menu/trigger/dropdown-menu</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: '[cngxMenuTrigger]',

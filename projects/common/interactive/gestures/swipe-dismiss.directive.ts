@@ -7,8 +7,6 @@ import { createSwipeEngine } from './swipe-engine';
 /**
  * Detects directional swipe gestures via Pointer Events.
  *
- * @category common/interactive/gestures
- *
  * Generic atom usable for drawers (swipe-to-close), bottom sheets,
  * carousels, and dismissible cards. Emits `swiped` when the gesture
  * completes past the threshold. Exposes `swiping` and `swipeProgress`
@@ -29,12 +27,12 @@ import { createSwipeEngine } from './swipe-engine';
  *   …
  * </div>
  * ```
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/gestures/swipe-dismiss.directive.ts
  * @since 0.1.0
  * @relatedTo CngxLongPress, CngxDrawer
  * <example-url>http://localhost:4200/#/common/interactive/gestures/swipe-dismiss/directional-swipe</example-url>
+ * @axis level atom
  */
 @Directive({
   selector: '[cngxSwipeDismiss]',

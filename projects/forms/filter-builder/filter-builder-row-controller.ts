@@ -61,8 +61,6 @@ function equalFieldMap(
 
 /**
  * Option entry the row's field / operator `<cngx-select>` pickers consume.
- *
- * @category forms/filter-builder/config
  */
 export interface CngxFilterRowOption {
   readonly value: string;
@@ -77,8 +75,6 @@ export interface CngxFilterRowOption {
  * operator and value when the operator is still valid for the new field,
  * else fall back to the field's default operator and clear the value -
  * and each write sink applies the plan against its own storage.
- *
- * @category forms/filter-builder/config
  */
 export interface CngxFilterRowFieldChangePlan {
   readonly field: string;
@@ -92,8 +88,6 @@ export interface CngxFilterRowFieldChangePlan {
  * local `model()`; `CngxFilterExpressionRow` delegates to the
  * `CNGX_FILTER_BUILDER_HOST` path mutators. The controller never writes
  * state itself - every mutation funnels through exactly one sink call.
- *
- * @category forms/filter-builder/config
  */
 export interface CngxFilterRowWriteSink {
   /**
@@ -115,8 +109,6 @@ export interface CngxFilterRowWriteSink {
  * `config` and `editors` are injection-time objects. `i18n` is the resolved
  * copy (`injectFilterBuilderI18n()`), read live. `sink` is the component's
  * write seam.
- *
- * @category forms/filter-builder/config
  */
 export interface CngxFilterRowControllerDeps {
   readonly node: Signal<FilterExpression | null>;
@@ -137,8 +129,6 @@ export interface CngxFilterRowControllerDeps {
  * receive. Extends the slot contract with the row's tree path so slot
  * consumers inside the recursive body can correlate the button with its
  * node.
- *
- * @category forms/filter-builder/config
  */
 export interface CngxFilterRowRemoveButtonContext extends CngxFilterBuilderRemoveButtonContext {
   readonly path: readonly number[];
@@ -150,8 +140,6 @@ export interface CngxFilterRowRemoveButtonContext extends CngxFilterBuilderRemov
  * cascade, accessible labels, and the write handlers. Everything derived
  * is a `computed()` with an explicit `equal` so unchanged inputs keep
  * their references (no downstream cascades).
- *
- * @category forms/filter-builder/config
  */
 export interface CngxFilterRowController {
   readonly fieldOptions: Signal<readonly CngxFilterRowOption[]>;
@@ -186,8 +174,6 @@ export interface CngxFilterRowController {
 
 /**
  * Factory signature carried by {@link CNGX_FILTER_ROW_CONTROLLER_FACTORY}.
- *
- * @category forms/filter-builder/config
  */
 export type CngxFilterRowControllerFactory = (
   deps: CngxFilterRowControllerDeps,
@@ -201,7 +187,6 @@ export type CngxFilterRowControllerFactory = (
  * so a consumer can swap the row policy (e.g. a different field-change
  * carry-over) without forking either skin.
  *
- * @category forms/filter-builder/config
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-row-controller.ts
  * @since 0.1.0
  * @relatedTo CngxFilterRow, CngxFilterExpressionRow, CNGX_FILTER_ROW_CONTROLLER_FACTORY
@@ -407,7 +392,6 @@ export function createFilterRowController(
  * dispatch) for every row skin in scope without forking `CngxFilterRow`
  * or `CngxFilterExpressionRow`.
  *
- * @category forms/filter-builder/config
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-row-controller.ts
  * @since 0.1.0
  * @relatedTo createFilterRowController, CngxFilterRow, CngxFilterExpressionRow

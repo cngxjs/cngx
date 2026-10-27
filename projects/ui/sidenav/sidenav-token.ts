@@ -9,7 +9,6 @@ import { InjectionToken, type ModelSignal } from '@angular/core';
  * (with `close()` / `elementRef`) in the branch that migrates
  * `CngxSidenavLayout` onto the token.
  *
- * @category ui/sidenav
  * @since 0.1.0
  */
 export interface CngxSidenavContract {
@@ -22,7 +21,6 @@ export interface CngxSidenavContract {
  * `{ provide: CNGX_SIDENAV, useExisting: CngxSidenav }`, so a collaborator
  * injects the narrow {@link CngxSidenavContract} instead of the concrete class.
  *
- * @category ui/sidenav
  * @since 0.1.0
  * @relatedTo CngxSidenav, CngxSidenavRouterSync
  */

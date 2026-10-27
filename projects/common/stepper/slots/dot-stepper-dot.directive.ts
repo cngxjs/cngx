@@ -13,8 +13,6 @@ import type { CngxStepNode } from '../stepper-host.token';
  * Smaller than {@link CngxStepIndicatorContext} on purpose - the dot
  * stepper does not surface step status/busy state visually, so the
  * context strips to the four fields a consumer actually needs.
- *
- * @category common/stepper/slots
  */
 export interface CngxDotStepperDotContext {
   /** Convenience alias for `index` - usable as `let-index` shorthand. */
@@ -50,7 +48,6 @@ export interface CngxDotStepperDotContext {
  * </cngx-dot-stepper>
  * ```
  *
- * @category common/stepper/slots
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/slots/dot-stepper-dot.directive.ts
  * @since 0.1.0

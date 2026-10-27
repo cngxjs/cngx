@@ -21,8 +21,6 @@ import type { CngxChartPlotArea } from './chart-context';
  * the exported `CHART_SMALL_BREAKPOINT_PX` constant (400).
  * Container-size based, not viewport-based, so it works correctly
  * inside dashboard cells of any size.
- *
- * @category common/chart
  */
 export interface CngxChartSlotContext {
   readonly width: number;
@@ -50,8 +48,6 @@ export interface CngxChartSlotContext {
 /**
  * Threshold (px) below which `CngxChartSlotContext.small` is true.
  * Hardcoded for v1; later releases may make this a config token.
- *
- * @category common/chart
  */
 export const CHART_SMALL_BREAKPOINT_PX = 400;
 
@@ -71,7 +67,6 @@ export const CHART_SMALL_BREAKPOINT_PX = 400;
  * </cngx-chart>
  * ```
  *
- * @category common/chart
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
  * @since 0.1.0
  * @relatedTo CngxChartSlotContext, CngxChartEmpty, CngxChartError, CngxChart
@@ -99,7 +94,6 @@ export class CngxChartLoading {
  * </cngx-chart>
  * ```
  *
- * @category common/chart
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
  * @since 0.1.0
  * @relatedTo CngxChartSlotContext, CngxChartLoading, CngxChartError, CngxChart
@@ -117,8 +111,6 @@ export class CngxChartEmpty {
  * common slot context with the live error value via `$implicit` and
  * `error` keys, so consumers can render a typed message AND branch
  * on chart size.
- *
- * @category common/chart
  */
 export interface CngxChartErrorContext extends CngxChartSlotContext {
   readonly $implicit: unknown;
@@ -137,7 +129,6 @@ export interface CngxChartErrorContext extends CngxChartSlotContext {
  * </cngx-chart>
  * ```
  *
- * @category common/chart
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
  * @since 0.1.0
  * @relatedTo CngxChartErrorContext, CngxChartLoading, CngxChartEmpty, CngxChart
@@ -156,8 +147,6 @@ export class CngxChartError {
  * connection error value via `$implicit` / `error`, mirroring
  * {@link CngxChartErrorContext}. The connection channel is separate from
  * the data `[state]` channel, so this context reflects `[connectionState]`.
- *
- * @category common/chart
  */
 export interface CngxChartConnectionContext extends CngxChartSlotContext {
   readonly $implicit: unknown;
@@ -178,7 +167,6 @@ export interface CngxChartConnectionContext extends CngxChartSlotContext {
  * </cngx-chart>
  * ```
  *
- * @category common/chart
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
  * @since 0.1.0
  * @relatedTo CngxChartConnectionContext, CngxChartReconnecting, CngxChart
@@ -205,7 +193,6 @@ export class CngxChartConnectionError {
  * </cngx-chart>
  * ```
  *
- * @category common/chart
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
  * @since 0.1.0
  * @relatedTo CngxChartConnectionContext, CngxChartConnectionError, CngxChart
@@ -260,7 +247,6 @@ export class CngxChartReconnecting {
  * SR data-table (the `aria-describedby` channel the chart already owns),
  * not on an element projected here.
  *
- * @category common/chart
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
  * @since 0.1.0
  * @relatedTo CngxChartSlotContext, CngxChartLoading, CngxChartEmpty, CngxChartError, CngxChart

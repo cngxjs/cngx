@@ -23,6 +23,8 @@
  * registered initial-value defeats any `var()` fallback anyway
  * (reference_property_color_initial_defeats_fallback); the derivation is always a
  * SET at the host, never the registration.
+ *
+ * @themes CngxDataGridAccordion
  */
 
 @layer cngx.tokens {
