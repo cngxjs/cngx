@@ -58,6 +58,7 @@
     "docs:serve": "rm -rf docs && compodocx && http-server docs -p 8080 -o",
     "docs:watch": "compodocx -s -w",
     "docs:json": "compodocx -e json -d .compodoc",
+    "docs:coverage": "node scripts/api-doc-coverage.mjs --report",
     "docs:llm": "compodocx -e llm-md -d .compodoc-llm",
     "pretest:scripts": "node scripts/require-dist.mjs",
     "test:scripts": "vitest run --config scripts/vitest.config.mjs",
