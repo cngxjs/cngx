@@ -58,6 +58,8 @@ export const cngxSelectDefaultCompare: CngxSelectCompareFn<unknown> = (a, b) => 
 /**
  * ARIA projection for the trigger. Bundle is structural-equal to keep
  * `[attr.aria-*]` bindings stable.
+ *
+ * @internal
  */
 export interface CngxSelectTriggerAria {
   readonly label: string | null;
@@ -73,6 +75,8 @@ export interface CngxSelectTriggerAria {
 /**
  * Signal inputs for {@link createSelectCore}. Core reads signals only -
  * never component instance fields.
+ *
+ * @internal
  */
 export interface CngxSelectCoreDeps<T, TCommit> {
   readonly label: Signal<string>;
@@ -147,6 +151,8 @@ export interface CngxSelectCoreDeps<T, TCommit> {
 
 /**
  * Per-instance announcer inputs.
+ *
+ * @internal
  */
 export interface CngxSelectAnnouncerInputs {
   readonly announceChanges: Signal<boolean | null>;
@@ -156,6 +162,8 @@ export interface CngxSelectAnnouncerInputs {
 /**
  * Output of {@link createSelectCore} - pure-derivation signals shared by
  * every select-family component.
+ *
+ * @internal
  */
 export interface CngxSelectCore<T, TCommit> {
   readonly effectiveOptions: Signal<CngxSelectOptionsInput<T>>;
@@ -292,6 +300,8 @@ export interface CngxSelectCore<T, TCommit> {
 
 /**
  * Pre-bound bundle for {@link CngxSelectCore.panelHostAdapter}.
+ *
+ * @internal
  */
 export interface CngxSelectPanelHostAdapter<T> {
   readonly isGroup: (
