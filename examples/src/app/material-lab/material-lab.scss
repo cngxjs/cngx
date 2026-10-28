@@ -10,6 +10,11 @@
 @use '../../../../projects/themes/material/field-theme.scss' as field;
 @use '../../../../projects/themes/material/slider-theme.scss' as slider;
 @use '../../../../projects/themes/material/accordion-theme.scss' as accordion;
+@use '../../../../projects/themes/material/button-theme.scss' as button;
+@use '../../../../projects/themes/material/icon-theme.scss' as icon;
+@use '../../../../projects/themes/material/feedback-theme.scss' as feedback;
+@use '../../../../projects/themes/material/dialog-theme.scss' as dialog;
+@use '../../../../projects/themes/material/bottom-sheet-theme.scss' as bottom-sheet;
 
 $palette: (
   theme-type: light,
@@ -50,8 +55,8 @@ html {
   // Real Material widgets need their component themes; the cngx bridges theme
   // the cngx widget alongside. Include only the components the harness actually
   // renders (select / form-field / chips / autocomplete / input) instead of
-  // mat.all-component-themes, which emits ~71kB and blows the examples app
-  // anyComponentStyle budget.
+  // mat.all-component-themes, which emits ~71kB, past the 64kB warning of the
+  // material-lab-theme bundle budget (angular.json).
   @include mat.select-theme($theme);
   @include mat.form-field-theme($theme);
   @include mat.chips-theme($theme);
@@ -69,6 +74,11 @@ html {
   @include field.theme($theme);
   @include slider.theme($theme);
   @include accordion.theme($theme);
+  @include button.theme($theme);
+  @include icon.theme($theme);
+  @include feedback.theme($theme);
+  @include dialog.theme($theme);
+  @include bottom-sheet.theme($theme);
 }
 
 .lab {
@@ -84,6 +94,17 @@ html {
   gap: 12px;
   align-content: start;
   width: 280px;
+}
+
+.lab section.lab-wide {
+  width: auto;
+}
+
+.lab-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
 }
 
 .lab h3 {
@@ -128,4 +149,55 @@ html {
   border-radius: 4px;
   background: transparent;
   cursor: pointer;
+}
+
+// close-hosts section: each close button sits in its real host.
+.lab-pair {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.lab-pair > .lab-host {
+  inline-size: 360px;
+}
+
+.lab-pair-label {
+  font: var(--mat-sys-label-medium);
+  align-self: center;
+}
+
+.lab-host--mat-alert .mat-mdc-card-header {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lab-host-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lab-host-head h2 {
+  margin: 0;
+}
+
+/* matIconButton's 48px touch target overhangs its 40px box by 4px; flush
+   against the surface edge it made the dialog surface scroll sideways.
+   16px puts the 24px glyph 24px from the edge, in line with the title. */
+.lab-host--mat-dialog {
+  padding-inline-end: 16px;
+}
+
+.lab-host-list {
+  margin: 0;
+  padding-inline-start: 16px;
+}
+
+.lab-snack {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }

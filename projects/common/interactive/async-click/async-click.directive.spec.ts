@@ -81,6 +81,19 @@ function flush(fixture: ReturnType<typeof TestBed.createComponent>): void {
 // ── Tests ───────────────────────────────────────────────────────────────
 
 describe('CngxAsyncClick', () => {
+  // `[cngxAsyncClick]="fn"` leaves no attribute, so the class is the theme hook.
+  it('carries the stable cngx-async host class in every phase', async () => {
+    const { btn, fixture } = setupButton();
+    expect(btn.hasAttribute('cngxasyncclick')).toBe(false);
+    expect(btn.classList.contains('cngx-async')).toBe(true);
+    btn.click();
+    await vi.waitFor(() => {
+      flush(fixture);
+      expect(btn.classList.contains('cngx-async--success')).toBe(true);
+    });
+    expect(btn.classList.contains('cngx-async')).toBe(true);
+  });
+
   it('should call the action on click', async () => {
     const { btn, host } = setupButton();
     btn.click();

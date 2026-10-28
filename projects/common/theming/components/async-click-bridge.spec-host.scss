@@ -1,0 +1,20 @@
+// Test-only entry for async-click-bridge.geometry.spec.ts: compiles the
+// working-tree async-click bridge the way a consumer stylesheet would, under
+// the M3 system tokens it reads. Not shipped.
+@use '@angular/material' as mat;
+@use '../../../themes/material/async-click-theme' as async-click;
+
+$theme: mat.define-theme(
+  (
+    color: (
+      theme-type: light,
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+    ),
+  )
+);
+
+html {
+  @include mat.theme((color: (primary: mat.$azure-palette)));
+  @include async-click.theme($theme);
+}

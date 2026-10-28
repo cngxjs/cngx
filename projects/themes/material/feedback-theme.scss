@@ -271,45 +271,6 @@
   }
 }
 
-// Shared density presets for the cngxCloseButton that alert, toast,
-// and popover compose for their dismiss affordance. Three levels:
-//
-//   default (0)  - 32px box, 16px icon
-//   compact (-1) - 28px box, 14px icon
-//   dense (-2)   - 24px box, 12px icon
-//
-// The coarse-pointer hit area grows through the icon button's ::before,
-// so a dense box keeps the 44px touch floor.
-//
-// Usage:
-//   @include feedback.density(-1);
-
-@mixin density($level: 0) {
-  $sizes: (
-    0: (
-      target: 32px,
-      icon: 16px,
-    ),
-    -1: (
-        target: 28px,
-        icon: 14px,
-      ),
-    -2: (
-        target: 24px,
-        icon: 12px,
-      ),
-  );
-
-  $preset: map-get($sizes, $level);
-
-  // The box size is read on the button host (inherits:false), the icon size
-  // on its glyph, so the preset broadcasts to the host and its descendants.
-  :where(.cngx-close-button, .cngx-close-button *) {
-    --cngx-close-button-size: #{map-get($preset, target)};
-    --cngx-close-button-icon-size: #{map-get($preset, icon)};
-  }
-}
-
 @mixin theme($theme) {
   // Every family block broadcasts to host + descendants (select-theme
   // precedent): each surface carries tokens registered inherits:false

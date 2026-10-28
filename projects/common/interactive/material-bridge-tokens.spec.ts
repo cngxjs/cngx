@@ -1,6 +1,26 @@
+import { Component } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
+import { CngxButton } from '@cngx/common/button';
 import { compileThemeEntry, emittedTokenNames } from '@cngx/testing/sass';
+
+import { CngxAsyncClick } from './async-click/async-click.directive';
+
+@Component({
+  selector: 'cngx-async-click-bridge-hosts',
+  standalone: true,
+  imports: [CngxAsyncClick, CngxButton],
+  template: `
+    <button type="button" class="bare" [cngxAsyncClick]="run">Save</button>
+    <a role="button" class="anchor" [cngxAsyncClick]="run">Save</a>
+    <button cngxButton class="button" [cngxAsyncClick]="run">Save</button>
+    <button type="button" class="plain">Save</button>
+  `,
+})
+class AsyncClickHosts {
+  readonly run = (): Promise<void> => Promise.resolve();
+}
 
 /**
  * Token-name contract for the Material bridges whose consumers live in
@@ -194,5 +214,58 @@ $theme: mat.define-theme((
     expect(block![0]).toContain('--cngx-color-primary: var(--mat-sys-primary)');
     // no spacing fork - the padding tokens ride the SET-from-scale rule
     expect(css).not.toContain('--cngx-button-toggle-');
+  });
+});
+
+describe('async-click Material bridge', () => {
+  // every name is consumed by theming/components/cngx-async.css on the
+  // cngxAsyncClick host (button-family hosts are excluded from that paint)
+  const CONSUMED = [
+    '--cngx-async-error-bg',
+    '--cngx-async-error-border',
+    '--cngx-async-error-color',
+    '--cngx-async-success-bg',
+    '--cngx-async-success-border',
+    '--cngx-async-success-color',
+  ];
+
+  it('emits only consumed token names (M3)', () => {
+    expect(bridgeTokenNames('async-click-theme', 'v1')).toEqual(CONSUMED);
+  });
+
+  it('emits the same names (M2)', () => {
+    expect(bridgeTokenNames('async-click-theme', 'v0')).toEqual(CONSUMED);
+  });
+
+  // `[cngxAsyncClick]="fn"` is a property binding and leaves no attribute, so
+  // the bridge selector is matched against rendered hosts, not just read back.
+  it('assigns on a selector every rendered cngxAsyncClick host matches', () => {
+    const entry = `
+@use '@angular/material' as mat;
+@use 'material/async-click-theme' as bridge;
+
+$theme: mat.define-theme((
+  color: (theme-type: light, primary: mat.$azure-palette, tertiary: mat.$blue-palette),
+));
+
+@include bridge.theme($theme);
+`;
+    const css = compileThemeEntry(entry);
+    expect(css).toMatch(/@layer cngx\.components\s*\{/);
+    const block = css.match(/(:where\([^)]*\))\s*\{([^}]*)\}/);
+    expect(block).not.toBeNull();
+    const [, selector, body] = block!;
+    expect(body).toContain('--cngx-async-error-color: var(--mat-sys-error)');
+    expect(body).toContain('--cngx-async-success-color: var(--mat-sys-primary)');
+
+    const fixture = TestBed.createComponent(AsyncClickHosts);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    for (const name of ['bare', 'anchor', 'button']) {
+      const host = root.querySelector(`.${name}`);
+      expect(host, name).not.toBeNull();
+      expect(host!.matches(selector), `${name} matches ${selector}`).toBe(true);
+    }
+    expect(root.querySelector('.plain')!.matches(selector)).toBe(false);
   });
 });

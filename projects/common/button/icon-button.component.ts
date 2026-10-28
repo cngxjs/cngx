@@ -28,10 +28,11 @@ import type {
  * or `provideButtonConfig` picks one.
  *
  * Any icon works in the slot: an inline `svg`, an `img`, a `cngx-icon`
- * (recommended, it sizes itself) or a `mat-icon` through the Material
- * bridge. A bare `svg` or `img` is sized to `1.25em` of the button font. The
- * glyph is hidden from assistive technology, so nothing projected (alt text,
- * a ligature name, a font glyph) ever becomes the button's name; the name is
+ * (recommended, it sizes itself; wrap a `mat-icon` in one, the Material
+ * icon bridge sizes it to the rung). A bare `svg` or `img` is sized to
+ * `1.25em` of the button font. The glyph is hidden from assistive
+ * technology, so nothing projected (alt text, a ligature name, a font
+ * glyph) ever becomes the button's name; the name is
  * the consumer's job: set `aria-label` (or `aria-labelledby` / `title`) on
  * the host. A host without any of them warns `CNGX1071` in development mode. A tooltip is a separate,
  * per-icon decision; co-host `[cngxTooltip]` where the icon alone is

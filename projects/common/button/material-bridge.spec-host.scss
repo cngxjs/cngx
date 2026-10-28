@@ -1,0 +1,39 @@
+// Test-only entry for material-bridge.geometry.spec.ts: compiles the
+// working-tree button and icon bridges the way a consumer stylesheet would.
+// Not shipped.
+@use '@angular/material' as mat;
+@use '../../themes/material/button-theme' as button;
+@use '../../themes/material/icon-theme' as icon;
+@use '../../themes/material/density-bridge' as density;
+
+$theme: mat.define-theme(
+  (
+    color: (
+      theme-type: light,
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+    ),
+  )
+);
+
+html {
+  // The label-large / label-medium / title-medium type roles the bridge reads.
+  @include mat.theme((color: (primary: mat.$azure-palette), typography: Roboto, density: 0));
+  @include button.theme($theme);
+  @include icon.theme($theme);
+}
+
+// A Material `density: -2` theme, scoped to a wrapper so it cannot leak into
+// the density-0 probes: density-bridge rescales --cngx-space-* and the
+// bridged button follows.
+$dense-theme: mat.define-theme(
+  (
+    density: (
+      scale: -2,
+    ),
+  )
+);
+
+.material-density-minus-2 {
+  @include density.density($dense-theme);
+}

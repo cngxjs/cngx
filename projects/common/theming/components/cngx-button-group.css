@@ -34,14 +34,21 @@
  * **Parts**
  *
  * - `.cngx-button-group__addon` - a non-interactive segment box: the group's
- *   border, the row height of the group's `data-size`, content centred
+ *   border, the button row of its `data-size` (the button's padding and
+ *   type tokens), content centred. Media children (`img`, `svg`, `picture`,
+ *   `video`, `canvas`, `cngx-icon`, `cngx-avatar`) are capped to the addon's
+ *   label line, so a 24px avatar never stretches a 20px-line row
  * - `.cngx-button-group__separator` - a divider drawn as a border (survives
  *   forced colors); it never collapses into its neighbours
  *
  * **Inheritance**
  *
  * - toolbar gap -> `--cngx-space-sm` (SET, so `[data-density]` re-scales)
- * - addon inline padding -> `--cngx-space-md`
+ * - addon padding and type -> the button's `--cngx-button-padding-*` /
+ *   `--cngx-button-font-*` tokens (`--cngx-space-*` per size)
+ * - addon media cap -> `1lh` of the addon (its font size times its line
+ *   height), so size, `[data-density]` and a bridge that re-sets the label
+ *   type move it with the row
  * - end radius -> `--cngx-radius-md`, the same rung as `--cngx-button-radius`
  * - addon and separator colour -> `--cngx-color-border` /
  *   `--cngx-color-surface` / `--cngx-color-text`
@@ -72,6 +79,20 @@
   }
 
   /**
+   * Largest block size of a media child of an addon (`img`, `svg`,
+   * `cngx-icon`, `cngx-avatar`, ...). SET to `1lh` on the addon; registered
+   * as a length so `1lh` resolves against the addon's line box, not the
+   * child's, and the children inherit that pixel value. The initial value
+   * is the md label line and only shows where `lh` is unsupported.
+   * @group Layout
+   */
+  @property --cngx-button-group-addon-media-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 24px;
+  }
+
+  /**
    * Radius of the two outer ends. Inherits, so a value set on the group
    * reaches the segments that read it.
    * @group Layout
@@ -88,8 +109,11 @@
     --cngx-button-group-gap: var(--cngx-space-sm);
     --cngx-button-group-radius: var(--cngx-radius-md, 0.5rem);
   }
+  /* Derived from the button's inline padding (SET per size from the scale by
+   * the button sheet), so the addon pads like its sibling buttons. */
   :where(.cngx-button-group__addon) {
-    --cngx-button-group-addon-padding-inline: var(--cngx-space-md);
+    --cngx-button-group-addon-padding-inline: var(--cngx-button-padding-inline, var(--cngx-space-md));
+    --cngx-button-group-addon-media-size: 1lh;
   }
 }
 
@@ -191,14 +215,20 @@
       );
     }
 
-    /* Addon: a non-interactive segment box at the row height of the group size. */
+    /* Addon: a non-interactive segment box on the row of the buttons beside
+     * it. It carries the button `data-size` and reads the button's own metric
+     * and type tokens (SET per size by the button sheet's shared metrics
+     * block), so size, [data-density] and a theme that re-sets those tokens
+     * reach the addon and the buttons alike. Without the button sheet the
+     * fallbacks give the md row. Weight stays inherited unless a theme sets
+     * --cngx-button-font-weight. */
     .cngx-button-group__addon {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: var(--cngx-space-xs, 4px);
       box-sizing: border-box;
-      padding-block: var(--cngx-space-sm);
+      padding-block: var(--cngx-button-padding-block, var(--cngx-space-sm, 0.5rem));
       padding-inline: var(--cngx-button-group-addon-padding-inline, 1rem);
       border: var(--cngx-button-border-width, 1px) solid var(--cngx-color-border, oklch(0.88 0.005 250));
       background: color-mix(
@@ -207,24 +237,27 @@
         var(--cngx-color-surface, oklch(1 0 0))
       );
       color: var(--cngx-color-text, oklch(0.2 0.01 250));
-      font-size: var(--cngx-font-size-control, 1rem);
+      font-size: var(--cngx-button-font-size, var(--cngx-font-size-control, 1rem));
+      font-weight: var(--cngx-button-font-weight, inherit);
       line-height: var(--cngx-line-height-base, 1.5);
       white-space: nowrap;
     }
-    :scope[data-size='xs'] > .cngx-button-group__addon {
-      padding-block: calc(var(--cngx-space-xs) / 2);
-      --cngx-button-group-addon-padding-inline: var(--cngx-space-sm);
-      font-size: var(--cngx-font-size-sm, 0.8125rem);
+
+    /* Addon media stay inside the label line, like a slot icon in the
+     * button: taller media would grow the addon and the group would stretch
+     * every button to it. A replaced element caps its block size and keeps
+     * its ratio (auto inline size); an avatar is square, so both axes cap;
+     * an icon caps its font size, which sizes its svg or mat-icon glyph. */
+    .cngx-button-group__addon > :is(img, svg, picture, video, canvas) {
+      max-block-size: var(--cngx-button-group-addon-media-size);
+      inline-size: auto;
     }
-    :scope[data-size='sm'] > .cngx-button-group__addon {
-      padding-block: var(--cngx-space-xs);
-      --cngx-button-group-addon-padding-inline: var(--cngx-space-sm);
-      font-size: var(--cngx-font-size-sm, 0.8125rem);
+    .cngx-button-group__addon > cngx-avatar {
+      max-block-size: var(--cngx-button-group-addon-media-size);
+      max-inline-size: var(--cngx-button-group-addon-media-size);
     }
-    :scope[data-size='lg'] > .cngx-button-group__addon {
-      padding-block: calc(var(--cngx-space-sm) * 1.5);
-      --cngx-button-group-addon-padding-inline: var(--cngx-space-lg);
-      font-size: var(--cngx-font-size-lg, 1.0625rem);
+    .cngx-button-group__addon > cngx-icon {
+      font-size: min(var(--cngx-icon-size, 1.25em), var(--cngx-button-group-addon-media-size));
     }
 
     /* Separator: a border, so forced colors keep it. The `:nth-child(n of
