@@ -55,7 +55,7 @@
 //
 //   size  inline  ghost   block (+1px border)  type role      box
 //   xs    sm*1.5  sm*.75  xs*1.5               label-medium   28
-//   sm    md      sm      sm                   label-medium   32
+//   sm    md      sm      sm*.75               label-large    32
 //   md    lg      sm*1.5  sm*1.25              label-large    40
 //   lg    xl      md      sm*1.5               title-medium   48
 //
@@ -172,10 +172,10 @@ $_metrics: (
     role: label-medium,
   ),
   sm: (
-    block: 'calc(var(--cngx-space-sm, 8px) - #{$_bw})',
+    block: 'calc(var(--cngx-space-sm, 8px) * 0.75 - #{$_bw})',
     inline: 'var(--cngx-space-md, 16px)',
     ghost: 'var(--cngx-space-sm, 8px)',
-    role: label-medium,
+    role: label-large,
   ),
   md: (
     block: 'calc(var(--cngx-space-sm, 8px) * 1.25 - #{$_bw})',

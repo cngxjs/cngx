@@ -201,6 +201,18 @@ describe('button Material bridge', () => {
     expect(type).toContain('--cngx-button-font-size: var(--mat-sys-label-large-size, 0.875rem)');
     expect(type).toContain('line-height: var(--mat-sys-label-large-line-height, 1.25rem)');
     expect(type).toContain('letter-spacing: var(--mat-sys-label-large-tracking, 0.006rem)');
+    // M3 Expressive XS (32) and S (40) buttons use label-large: our sm and md
+    // take it; xs (28, no M3 twin) keeps label-medium, lg takes title-medium.
+    const roles = { xs: 'label-medium', sm: 'label-large', md: 'label-large', lg: 'title-medium' };
+    for (const [size, role] of Object.entries(roles)) {
+      expect(md(`.cngx-button[data-size=${size}]:not([data-variant=link], .cngx-icon-button)`), size).toContain(
+        `--cngx-button-font-size: var(--mat-sys-${role}-size,`,
+      );
+    }
+    // The sm row keeps its 32px box on the taller label-large line: 20 + 2 * 6.
+    expect(md('.cngx-button[data-size=sm]:not([data-variant=link])')).toContain(
+      '--cngx-button-padding-block: calc(var(--cngx-space-sm, 8px) * 0.75 - var(--cngx-button-border-width, 1px))',
+    );
   });
 
   it('gives the sm close button the md icon-button box through its own hooks (M3)', () => {

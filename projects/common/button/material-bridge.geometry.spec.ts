@@ -366,6 +366,17 @@ describe('Material bridge: M3 metrics and label type', () => {
     const root = mountMetrics();
     const heights = SIZES.map((size) => metrics(root, `.size-${size}`).height);
     expect(heights).toEqual([28, 32, 40, 48]);
+    // label-medium / label-large / label-large / title-medium.
+    const type = SIZES.map((size) => {
+      const m = metrics(root, `.size-${size}`);
+      return [m.font, m.line];
+    });
+    expect(type).toEqual([
+      [12, 16],
+      [14, 20],
+      [14, 20],
+      [16, 24],
+    ]);
     const icons = SIZES.map((size) => metrics(root, `.icon-size-${size}`).width);
     expect(icons).toEqual([28, 32, 40, 48]);
   });
