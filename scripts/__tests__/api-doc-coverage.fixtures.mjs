@@ -87,7 +87,7 @@ export const INTERNAL_BINDINGS = [
 /**
  * Lowered in every commit that closes rows, so growth is a visible constant edit.
  */
-export const CEILING = 408;
+export const CEILING = 370;
 
 /** @type {readonly ApiDocGap[]} */
 // prettier-ignore
@@ -426,44 +426,6 @@ export const RATCHET = [
   { entry: '@cngx/forms/select', owner: 'CngxSelect', kind: 'method', member: 'focus', phase: 2 },
   { entry: '@cngx/forms/select', owner: 'CngxSelect', kind: 'method', member: 'open', phase: 2 },
   { entry: '@cngx/forms/select', owner: 'CngxSelect', kind: 'method', member: 'toggle', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'announceChanges', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'announceTemplate', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'ariaLabel', binding: 'aria-label', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'ariaLabelledBy', binding: 'aria-labelledby', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'autofocus', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'caretGlyph', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'clearable', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'clearButtonAriaLabel', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'clearGlyph', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'commitAction', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'commitErrorDisplay', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'commitMode', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'compareWith', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'disabledInput', binding: 'disabled', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'hideCaret', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'hideSelectionIndicator', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'idInput', binding: 'id', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'label', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'loading', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'loadingVariant', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'panelClass', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'panelWidth', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'popoverPlacement', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'refreshingVariant', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'requiredInput', binding: 'required', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'retryFn', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'selectionIndicatorPosition', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'selectionIndicatorVariant', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'skeletonRowCount', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'state', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'input', member: 'tabIndex', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'output', member: 'closed', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'output', member: 'commitError', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'output', member: 'opened', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'output', member: 'openedChange', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'output', member: 'retry', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'output', member: 'selectionChange', phase: 2 },
-  { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'output', member: 'stateChange', phase: 2 },
   { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'method', member: 'close', phase: 2 },
   { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'method', member: 'focus', phase: 2 },
   { entry: '@cngx/forms/select', owner: 'CngxSelectShell', kind: 'method', member: 'open', phase: 2 },
