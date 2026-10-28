@@ -111,6 +111,21 @@ describe('CngxSelectChipFitStrip', () => {
     expect(host.strip().snapshot()?.widths).toEqual([40, 55, 60]);
   });
 
+  it('creates no observer until the strip turns active', () => {
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.active.set(false);
+    settle(fixture);
+    expect(instances).toBe(0);
+    fixture.componentInstance.active.set(true);
+    settle(fixture);
+    expect(instances).toBe(1);
+    fixture.componentInstance.active.set(false);
+    settle(fixture);
+    fixture.componentInstance.active.set(true);
+    settle(fixture);
+    expect(instances).toBe(1);
+  });
+
   it('keeps null and observes nothing while inactive', () => {
     const fixture = TestBed.createComponent(Host);
     fixture.componentInstance.active.set(false);

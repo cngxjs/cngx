@@ -55,18 +55,20 @@ export class CngxSelectChipFitStrip {
   private readonly snapshotState = signal<ChipFitSnapshot | null>(null, {
     equal: chipFitSnapshotEqual,
   });
-  private readonly observer: ResizeObserver | null =
-    this.win && typeof this.win.ResizeObserver === 'function'
-      ? new this.win.ResizeObserver(() => this.read())
-      : null;
+  // Created on the first activation: a strip that never runs in 'fit'
+  // allocates no observer.
+  private observer: ResizeObserver | null = null;
 
   /** The latest measurement; `null` while inactive or before the first read. */
   readonly snapshot = computed(() => (this.active() ? this.snapshotState() : null));
 
   constructor() {
     effect((onCleanup) => {
-      const observer = this.observer;
-      if (!observer || !this.active()) {
+      if (!this.active()) {
+        return;
+      }
+      const observer = this.ensureObserver();
+      if (!observer) {
         return;
       }
       observer.observe(this.host.nativeElement);
@@ -95,6 +97,13 @@ export class CngxSelectChipFitStrip {
     return this.slots()
       .slice(index)
       .some((slot) => slot.elementRef.nativeElement.contains(focused));
+  }
+
+  private ensureObserver(): ResizeObserver | null {
+    if (!this.observer && this.win && typeof this.win.ResizeObserver === 'function') {
+      this.observer = new this.win.ResizeObserver(() => this.read());
+    }
+    return this.observer;
   }
 
   private read(): void {
