@@ -249,15 +249,15 @@
      * its ratio (auto inline size); an avatar is square, so both axes cap;
      * an icon caps its font size, which sizes its svg or mat-icon glyph. */
     .cngx-button-group__addon > :is(img, svg, picture, video, canvas) {
-      max-block-size: var(--cngx-button-group-addon-media-size, 1lh);
+      max-block-size: var(--cngx-button-group-addon-media-size);
       inline-size: auto;
     }
     .cngx-button-group__addon > cngx-avatar {
-      max-block-size: var(--cngx-button-group-addon-media-size, 1lh);
-      max-inline-size: var(--cngx-button-group-addon-media-size, 1lh);
+      max-block-size: var(--cngx-button-group-addon-media-size);
+      max-inline-size: var(--cngx-button-group-addon-media-size);
     }
     .cngx-button-group__addon > cngx-icon {
-      font-size: min(var(--cngx-icon-size, 1.25em), var(--cngx-button-group-addon-media-size, 1lh));
+      font-size: min(var(--cngx-icon-size, 1.25em), var(--cngx-button-group-addon-media-size));
     }
 
     /* Separator: a border, so forced colors keep it. The `:nth-child(n of
