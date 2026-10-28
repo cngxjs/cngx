@@ -279,21 +279,55 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   protected readonly reorderableConfig = resolveReorderableSelectConfig();
   private readonly injector = inject(Injector);
 
+  /**
+   * Field label. Names the trigger when neither `aria-label` nor
+   * `aria-labelledby` is set, names the listbox, and stands in for an empty
+   * `placeholder`.
+   */
   readonly label = input<string>('');
+  /**
+   * Options in data-driven mode, flat or grouped. Ignored while `state` is
+   * bound; its data wins.
+   */
   readonly options = input<CngxSelectOptionsInput<T>>([] as CngxSelectOptionsInput<T>);
   /** Trigger text while nothing is selected; falls back to `label` when unset. */
   readonly placeholder = input<string>('');
+  /**
+   * Disables the trigger and the panel. Merges with the disabled state of an
+   * enclosing `cngx-form-field`.
+   */
   readonly disabledInput = input<boolean>(false, { alias: 'disabled' });
+  /**
+   * Marks the control as required and sets `aria-required`. Merges with the
+   * required state of an enclosing `cngx-form-field`.
+   */
   readonly requiredInput = input<boolean>(false, { alias: 'required' });
+  /** Equality function that matches values to options. Defaults to `Object.is`. */
   readonly compareWith = input<CngxSelectCompareFn<T>>(
     cngxSelectDefaultCompare as CngxSelectCompareFn<T>,
   );
+  /**
+   * Host id. Unset, it takes the input id of an enclosing `cngx-form-field`,
+   * else a generated id.
+   */
   readonly idInput = input<string | null>(null, { alias: 'id' });
+  /** Accessible name of the trigger. Wins over `label`. */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
+  /**
+   * Id of the element that names the trigger. Unset, it takes the label id of
+   * an enclosing `cngx-form-field`.
+   */
   readonly ariaLabelledBy = input<string | null>(null, { alias: 'aria-labelledby' });
+  /** Tab index of the trigger. Defaults to `0`; a disabled control always uses `-1`. */
   readonly tabIndex = input<number>(0);
+  /** Focuses the trigger once after the first render. */
   readonly autofocus = input<boolean>(false);
+  /** Classes on the panel root, merged with `CngxSelectConfig.panelClass`. */
   readonly panelClass = input<string | readonly string[] | null>(null);
+  /**
+   * Panel min-width: `'trigger'` matches the trigger width, a number sets
+   * pixels, `null` sizes to content. Defaults to `CngxSelectConfig.panelWidth`.
+   */
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   /**
    * Popover placement relative to the trigger. Per-instance input wins
@@ -309,16 +343,46 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   readonly chipOverflow = input<NonNullable<CngxSelectConfig['chipOverflow']>>(
     this.config.chipOverflow,
   );
+  /**
+   * Reset window in ms of the type-to-select buffer, so typed letters jump to
+   * the matching option. Defaults to
+   * `CngxSelectConfig.typeaheadDebounceInterval`.
+   */
   readonly typeaheadDebounceInterval = input<number>(this.config.typeaheadDebounceInterval);
+  /**
+   * Hides the per-option selection indicator. Defaults to the inverse of
+   * `CngxSelectConfig.showSelectionIndicator`.
+   */
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
+  /**
+   * Places the selection indicator before or after the option label. `null`
+   * inherits `CngxSelectConfig.selectionIndicatorPosition`.
+   */
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
+  /**
+   * Visual form of the selection indicator: checkmark, checkbox, radio or
+   * `'auto'`. `null` inherits `CngxSelectConfig.selectionIndicatorVariant`.
+   */
   readonly selectionIndicatorVariant = input<CngxSelectSelectionIndicatorVariant | null>(null);
+  /** Hides the trigger caret. Defaults to the inverse of `CngxSelectConfig.showCaret`. */
   readonly hideCaret = input<boolean>(!this.config.showCaret);
+  /**
+   * Replaces the built-in clear glyph inside the default clear button while
+   * keeping the button frame, ARIA and click handler. Ignored when
+   * `*cngxSelectClearButton` is projected.
+   */
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
+  /** Replaces the built-in caret glyph. Ignored when `*cngxSelectCaret` is projected. */
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
+  /** Renders a clear button while the selection is not empty and the control is enabled. */
   readonly clearable = input<boolean>(false);
   /** @internal The select section at this reading site; per-variant defaults. */
   private readonly selectCopy = injectSelectCopy();
+  /**
+   * Accessible name of the clear button. Unset, it reads
+   * `CngxSelectConfig.ariaLabels.clearButton`, then the select copy of the
+   * active language.
+   */
   readonly clearButtonAriaLabel = input<string | undefined>(undefined);
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedClearButtonAriaLabel = computed<string>(
@@ -327,6 +391,10 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       this.config.ariaLabels().clearButton ??
       this.selectCopy().resetSelection,
   );
+  /**
+   * Accessible name of the remove button on each chip, combined with the chip
+   * label. Unset, it reads `CngxSelectConfig.ariaLabels.chipRemove`.
+   */
   readonly chipRemoveAriaLabel = input<string | undefined>(undefined);
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedChipRemoveAriaLabel = computed<string>(
@@ -341,13 +409,43 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     const format = this.config.ariaLabels().chipRemoveFor;
     return (label) => format(action, label);
   });
+  /** Shows the first-load indicator in the panel while no `state` is bound. */
   readonly loading = input<boolean>(false);
+  /**
+   * First-load indicator: skeleton, spinner, bar or text. A projected
+   * `*cngxSelectLoading` wins; defaults to `CngxSelectConfig.loadingVariant`.
+   */
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
+  /**
+   * Number of skeleton rows while `loadingVariant` is `'skeleton'`. Defaults to
+   * `CngxSelectConfig.skeletonRowCount`.
+   */
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
+  /**
+   * Indicator over the visible options during a reload: bar, spinner, dots or
+   * none. A projected `*cngxSelectRefreshing` wins; defaults to
+   * `CngxSelectConfig.refreshingVariant`.
+   */
   readonly refreshingVariant = input<CngxSelectRefreshingVariant>(this.config.refreshingVariant);
+  /**
+   * Async-state source for the options. When bound, its data replaces `options`
+   * and its status drives the loading, empty, error and refreshing views.
+   */
   readonly state = input<CngxAsyncState<CngxSelectOptionsInput<T>> | null>(null);
+  /** Callback the built-in retry button runs after a failed load, before `retry` emits. */
   readonly retryFn = input<(() => void) | null>(null);
+  /**
+   * Async write handler run on every user change with the intended value.
+   * Unset, the change applies directly; `commitMode` sets the panel behaviour
+   * while it runs.
+   */
   readonly commitAction = input<CngxSelectCommitAction<T[]> | null>(null);
+  /**
+   * Value write while `commitAction` runs. `'optimistic'` (default) applies the
+   * change at once and rolls it back on error; `'pessimistic'` holds it behind
+   * a row spinner until the commit succeeds. The panel stays open in both
+   * modes.
+   */
   readonly commitMode = input<CngxSelectCommitMode>('optimistic');
   /**
    * Panel presentation. Unset follows `CNGX_SELECT_CONFIG.mobileSheet`:
@@ -361,8 +459,21 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * then `[label]`, then `ariaLabels.fieldLabelFallback`.
    */
   readonly sheetLabel = input<string | undefined>(undefined);
+  /**
+   * Built-in surface for a failed commit when no `*cngxSelectCommitError` is
+   * projected: banner, inline or none. Defaults to
+   * `CngxSelectConfig.commitErrorDisplay`.
+   */
   readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(this.config.commitErrorDisplay);
+  /**
+   * Turns live-region announcements of selection changes on or off. `null`
+   * inherits `CngxSelectConfig.announcer.enabled`, which defaults to on.
+   */
   readonly announceChanges = input<boolean | null>(null);
+  /**
+   * Formatter for the live-region announcement of a selection change. `null`
+   * inherits `CngxSelectConfig.announcer.format`.
+   */
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
   /**
    * Commit-error announce policy. `'verbose'` reads the error message into
@@ -374,6 +485,10 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   readonly commitErrorAnnouncePolicy = input<CngxCommitErrorAnnouncePolicy>(
     this.config.commitErrorAnnouncePolicy ?? { kind: 'verbose', severity: 'assertive' },
   );
+  /**
+   * Selected values, two-way bindable as `[(values)]`. Syncs with the bound
+   * field inside a `cngx-form-field`.
+   */
   readonly values = model<T[]>([]);
 
   /**
@@ -406,7 +521,14 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    */
   readonly chipDragHandle = input<TemplateRef<void> | null>(this.reorderableConfig.dragHandle);
 
+  /**
+   * Emits after a toggle, clear or reorder settles, with the new and previous
+   * values, the added and removed values, the toggled option and, for a
+   * reorder, the source and target index. With `commitAction` bound it fires on
+   * commit success.
+   */
   readonly selectionChange = output<CngxReorderableMultiSelectChange<T>>();
+  /** Emits the toggled option and whether it was added, together with `selectionChange`. */
   readonly optionToggled = output<{
     readonly option: CngxSelectOptionDef<T>;
     readonly added: boolean;
@@ -417,12 +539,26 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * about positional changes can bind `(reordered)` directly.
    */
   readonly reordered = output<CngxReorderableMultiSelectChange<T>>();
+  /** Emits `true` when the panel opens and `false` when it closes. */
   readonly openedChange = output<boolean>();
+  /** Emits when the panel opens. */
   readonly opened = output<void>();
+  /** Emits when the panel closes. */
   readonly closed = output<void>();
+  /** Emits when the clear button empties the selection, together with `selectionChange`. */
   readonly cleared = output<void>();
+  /**
+   * Emits when the built-in retry button is pressed after a failed load, after
+   * `retryFn` has run.
+   */
   readonly retry = output<void>();
+  /**
+   * Emits the error when `commitAction` fails; optimistic mode restores the
+   * previous values. The error is also announced assertively by default;
+   * `commitErrorAnnouncePolicy` changes that.
+   */
   readonly commitError = output<unknown>();
+  /** Emits each status of a `commitAction` run: `'pending'`, then `'success'` or `'error'`. */
   readonly stateChange = output<AsyncStatus>();
 
   private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
@@ -918,9 +1054,8 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * (pessimistic freeze, default) or when disabled. App-wide
    * `provideReorderableSelectConfig(withReorderStripFreeze(false))`
    * opts out so consecutive reorders supersede via the commit
-   * controller's race handling. Plan §2 locked freeze as default -
-   * reorders are sub-second and a freeze is clearer than mid-gesture
-   * visual noise.
+   * controller's race handling. Freeze is the default because reorders
+   * are sub-second and a freeze is clearer than mid-gesture visual noise.
    */
   protected readonly reorderDisabled = computed<boolean>(
     () => this.disabled() || this.reorderFrozenOnCommit(),
