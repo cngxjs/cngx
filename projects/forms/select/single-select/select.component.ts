@@ -168,6 +168,7 @@ export interface CngxSelectChange<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/single-select/reactive-forms-adaptformcontrol</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/rich-option-rendering</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio-check-skin</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/standalone</example-url>
  * <example-url>http://localhost:4200/#/forms/select/mobile-sheet/all-variants</example-url>

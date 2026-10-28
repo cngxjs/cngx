@@ -31,8 +31,21 @@
  *   stroke ends exactly on the box edge; wider strokes overflow visibly)
  * - `.cngx-radio-indicator__dot` - inner dot (`r=12`, scaled by
  *   `--cngx-radio-indicator-dot-scale`, a fraction of the diameter)
+ * - `.cngx-radio-indicator__mark` - check path of the `check` skin, drawn
+ *   in place of the dot and faded in when checked
  * - `.cngx-radio-indicator__glyph` - wrapper of a consumer `dotGlyph`,
- *   stacked over the SVG in the same grid cell
+ *   stacked over the SVG in the same grid cell; its `color` is the
+ *   checked colour (the mark colour under `check`)
+ *
+ * **Skins** (`[data-skin]`, one unlayered `@scope` block each; they read
+ * tokens and never assign one, so overrides and the Material bridge win)
+ *
+ * - `default` - hairline ring, primary ring and dot when checked
+ * - `check` - checked fills the disc with the checked colour and strokes
+ *   the shared check glyph in `--cngx-radio-indicator-mark-color`
+ * - `tinted` - checked fills the disc with a 16% tint of the checked
+ *   colour behind the primary ring and a smaller dot
+ *   (`--cngx-radio-indicator-tinted-dot-scale`)
  *
  * **Inheritance**
  *
@@ -119,7 +132,8 @@
   }
 
   /**
-   * Transition shorthand for the ring paint and the dot scale.
+   * Transition shorthand for the ring paint, the dot scale and the check
+   * mark fade.
    *
    * Derives from the `--cngx-duration-fast` rung of the motion scale; a
    * `--cngx-duration-*` brand override re-times it library-wide.
@@ -132,7 +146,8 @@
     initial-value:
       fill 120ms ease,
       stroke 120ms ease,
-      transform 120ms ease;
+      transform 120ms ease,
+      opacity 120ms ease;
   }
 
   /* Derive the duration segments from the motion scale; easing stays literal.
@@ -142,7 +157,8 @@
    * cngx.tokens keeps a Material bridge winning. 120ms -> fast. */
   :where(.cngx-radio-indicator, .cngx-radio-indicator *) {
     --cngx-radio-indicator-transition: fill var(--cngx-duration-fast) ease,
-      stroke var(--cngx-duration-fast) ease, transform var(--cngx-duration-fast) ease;
+      stroke var(--cngx-duration-fast) ease, transform var(--cngx-duration-fast) ease,
+      opacity var(--cngx-duration-fast) ease;
   }
 
   /* Not registered as @property: unitless and inherited, so an override on
@@ -155,6 +171,40 @@
      * @group State / Checked
      */
     --cngx-radio-indicator-dot-scale: 0.54;
+
+    /**
+     * Stroke colour of the `check` skin's mark, drawn on the filled
+     * checked disc. The Material bridge maps it to on-primary.
+     * @type <color>
+     * @group Skin / Check
+     */
+    --cngx-radio-indicator-mark-color: var(--cngx-color-surface, oklch(1 0 0));
+
+    /**
+     * Scale of the `check` skin's mark about the indicator centre. The
+     * check path spans 14 of the 24 grid units, so 0.75 matches the
+     * checkbox glyph.
+     * @type <number>
+     * @group Skin / Check
+     */
+    --cngx-radio-indicator-mark-scale: 0.75;
+
+    /**
+     * Stroke width of the `check` skin's mark in grid units, before
+     * `--cngx-radio-indicator-mark-scale`. Same as the checkbox glyph.
+     * @type <number>
+     * @group Skin / Check
+     */
+    --cngx-radio-indicator-mark-stroke-width: 3;
+
+    /**
+     * Diameter of the `tinted` skin's checked dot as a fraction of the
+     * indicator size. The skin reads this instead of
+     * `--cngx-radio-indicator-dot-scale`, so the default dot keeps its size.
+     * @type <number>
+     * @group Skin / Tinted
+     */
+    --cngx-radio-indicator-tinted-dot-scale: 0.42;
   }
 
   /**
@@ -267,11 +317,34 @@
       transform: scale(var(--cngx-radio-indicator-dot-scale, 0.54));
     }
 
+    .cngx-radio-indicator__mark {
+      fill: none;
+      stroke: var(--cngx-radio-indicator-mark-color, var(--cngx-color-surface, oklch(1 0 0)));
+      stroke-width: var(--cngx-radio-indicator-mark-stroke-width, 3);
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transform-box: view-box;
+      transform-origin: center;
+      transform: scale(var(--cngx-radio-indicator-mark-scale, 0.75));
+      opacity: 0;
+      transition: var(
+        --cngx-radio-indicator-transition,
+        fill 120ms ease,
+        stroke 120ms ease,
+        transform 120ms ease,
+        opacity 120ms ease
+      );
+    }
+
     .cngx-radio-indicator__glyph {
       grid-area: 1 / 1;
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      color: var(
+        --cngx-radio-indicator-checked-color,
+        var(--cngx-color-primary, oklch(0.66 0.19 50))
+      );
     }
 
     /* Disabled by colour, never opacity (the field recipe): the checked ring
@@ -283,10 +356,44 @@
 
     @media (prefers-reduced-motion: reduce) {
       .cngx-radio-indicator__circle,
-      .cngx-radio-indicator__dot {
+      .cngx-radio-indicator__dot,
+      .cngx-radio-indicator__mark {
         transition: none;
       }
     }
+  }
+}
+
+/* Skins. Unlayered so a skin beats the layered default look; each block only
+ * reads tokens, so consumer overrides and the Material bridge still win
+ * (display-accepted-debt §11). Disabled needs no rule here: the layered
+ * disabled rule re-points the checked colour at the 38% text recipe, which
+ * the disc, the tint and the glyph all read. */
+@scope (.cngx-radio-indicator[data-skin='check']) {
+  :scope.cngx-radio-indicator--checked .cngx-radio-indicator__circle {
+    fill: var(--cngx-radio-indicator-checked-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+  }
+
+  :scope.cngx-radio-indicator--checked .cngx-radio-indicator__mark {
+    opacity: 1;
+  }
+
+  .cngx-radio-indicator__glyph {
+    color: var(--cngx-radio-indicator-mark-color, var(--cngx-color-surface, oklch(1 0 0)));
+  }
+}
+
+@scope (.cngx-radio-indicator[data-skin='tinted']) {
+  :scope.cngx-radio-indicator--checked .cngx-radio-indicator__circle {
+    fill: color-mix(
+      in oklab,
+      var(--cngx-radio-indicator-checked-color, var(--cngx-color-primary, oklch(0.66 0.19 50))) 16%,
+      transparent
+    );
+  }
+
+  :scope.cngx-radio-indicator--checked .cngx-radio-indicator__dot {
+    transform: scale(var(--cngx-radio-indicator-tinted-dot-scale, 0.42));
   }
 }
 
@@ -305,6 +412,22 @@
   .cngx-radio-indicator .cngx-radio-indicator__dot {
     fill: var(--_cngx-forced-ink, CanvasText);
   }
+  .cngx-radio-indicator .cngx-radio-indicator__glyph {
+    color: var(--_cngx-forced-ink, CanvasText);
+  }
+  /* check: outline form. A filled disc would vanish into the Highlight row of a
+   * keyboard-highlighted option, so the disc stays clear and ring and mark both
+   * take the row ink. tinted: the tint is dropped, ring and dot carry the state.
+   * The extra classes outrank the skin scopes' checked selectors. */
+  .cngx-radio-indicator[data-skin].cngx-radio-indicator--checked .cngx-radio-indicator__circle {
+    fill: none;
+  }
+  .cngx-radio-indicator[data-skin='check'] .cngx-radio-indicator__mark {
+    stroke: var(--_cngx-forced-ink, CanvasText);
+  }
+  .cngx-radio-indicator[data-skin='check'] .cngx-radio-indicator__glyph {
+    color: var(--_cngx-forced-ink, CanvasText);
+  }
   /* Disabled is painted by colour, which the forced palette overrides; re-signal
    * it with GrayText on the ring and the dot. */
   .cngx-radio-indicator.cngx-radio-indicator--disabled {
@@ -315,5 +438,10 @@
   }
   .cngx-radio-indicator.cngx-radio-indicator--disabled .cngx-radio-indicator__dot {
     fill: GrayText;
+  }
+  .cngx-radio-indicator.cngx-radio-indicator--disabled .cngx-radio-indicator__mark,
+  .cngx-radio-indicator.cngx-radio-indicator--disabled .cngx-radio-indicator__glyph {
+    stroke: GrayText;
+    color: GrayText;
   }
 }

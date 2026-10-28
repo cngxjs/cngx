@@ -1,5 +1,6 @@
 import { Component, signal, viewChild, type TemplateRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { CNGX_ICON_CHECK } from '@cngx/utils';
 import { describe, expect, it } from 'vitest';
 
 import { withRadioSkin } from './config/features';
@@ -240,6 +241,26 @@ describe('CngxRadioIndicator', () => {
       fixture.componentInstance.skin.set(undefined);
       flush(fixture);
       expect(hostEl(fixture).getAttribute('data-skin')).toBe('tinted');
+    });
+
+    it('check renders the shared check path in place of the dot', () => {
+      const fixture = TestBed.createComponent(SkinHost);
+      fixture.componentInstance.skin.set('check');
+      flush(fixture);
+      const host = hostEl(fixture);
+      expect(host.querySelector('.cngx-radio-indicator__mark')?.getAttribute('d')).toBe(
+        CNGX_ICON_CHECK.d,
+      );
+      expect(host.querySelector('.cngx-radio-indicator__dot')).toBeNull();
+    });
+
+    it('tinted keeps the dot and renders no mark', () => {
+      const fixture = TestBed.createComponent(SkinHost);
+      fixture.componentInstance.skin.set('tinted');
+      flush(fixture);
+      const host = hostEl(fixture);
+      expect(host.querySelector('.cngx-radio-indicator__dot')).not.toBeNull();
+      expect(host.querySelector('.cngx-radio-indicator__mark')).toBeNull();
     });
   });
 });

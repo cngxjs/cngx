@@ -288,6 +288,60 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     expect(idle.stroke).toBe(idle.canvasText);
   });
 
+  test('check skin draws the outline form: clear disc, CanvasText ring and mark', async ({ page }) => {
+    await openForced(page, '/#/common/display/radio-indicator/skins');
+    const checked = page
+      .locator(
+        '.cngx-ex-artifact .cngx-radio-indicator[data-skin="check"].cngx-radio-indicator--checked:not(.cngx-radio-indicator--disabled)',
+      )
+      .first();
+    await expect(checked).toBeVisible();
+    const mark = await readAffordance(checked.locator('.cngx-radio-indicator__mark'));
+    expect(mark.stroke).toBe(mark.canvasText);
+    expect(isOpaque(mark.stroke)).toBe(true);
+    const ring = await readAffordance(checked.locator('.cngx-radio-indicator__circle'));
+    expect(ring.stroke).toBe(ring.canvasText);
+    expect(ring.fill).toBe('none');
+  });
+
+  test('check skin ring and mark take the row ink inside the keyboard-highlighted option', async ({ page }) => {
+    await openForced(page, '/#/forms/select/single-select/selection-indicator-variant-radio-check-skin');
+    const trigger = page.locator('.cngx-ex-artifact .cngx-select__trigger').first();
+    await expect(trigger).toBeVisible();
+    await trigger.click();
+    await page.keyboard.press('ArrowDown');
+    const highlightText = await page.evaluate(() => {
+      const probe = document.createElement('span');
+      probe.style.color = 'HighlightText';
+      document.body.appendChild(probe);
+      const value = getComputedStyle(probe).color;
+      probe.remove();
+      return value;
+    });
+    const highlighted = page.locator('.cngx-option--highlighted .cngx-radio-indicator');
+    await expect(highlighted).toBeVisible();
+
+    // Arrow until the highlight has visited an unchecked and the checked
+    // option; both must paint in the row ink. Paints transition, so poll.
+    const seen = new Set<'checked' | 'unchecked'>();
+    for (let step = 0; step < 4 && seen.size < 2; step++) {
+      const isChecked = await highlighted.evaluate((el) =>
+        el.classList.contains('cngx-radio-indicator--checked'),
+      );
+      await expect
+        .poll(async () => (await readAffordance(highlighted.locator('.cngx-radio-indicator__circle'))).stroke)
+        .toBe(highlightText);
+      if (isChecked) {
+        await expect
+          .poll(async () => (await readAffordance(highlighted.locator('.cngx-radio-indicator__mark'))).stroke)
+          .toBe(highlightText);
+      }
+      seen.add(isChecked ? 'checked' : 'unchecked');
+      await page.keyboard.press('ArrowDown');
+    }
+    expect([...seen].sort()).toEqual(['checked', 'unchecked']);
+  });
+
   test('keyboard-active tree node re-signals with Highlight (tint-only node would collapse to Canvas)', async ({ page }) => {
     await openForced(page, '/#/forms/select/tree-select/basic-single-level-toggle');
     const trigger = page.locator('.cngx-ex-artifact .cngx-tree-select__trigger').first();

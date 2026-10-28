@@ -32,6 +32,20 @@ const SCHEMES = ['light', 'dark'] as const;
       @for (size of sizes; track size) {
         <cngx-radio-indicator [class]="'size-' + size" [size]="size" [checked]="true" />
       }
+      <cngx-radio-indicator class="check-off" skin="check" />
+      <cngx-radio-indicator class="check-on" skin="check" [checked]="true" />
+      <cngx-radio-indicator class="check-disabled" skin="check" [checked]="true" [disabled]="true" />
+      <cngx-radio-indicator class="tinted-on" skin="tinted" [checked]="true" />
+      <span style="--cngx-radio-indicator-mark-color: rgb(1, 2, 3); --cngx-radio-indicator-tinted-dot-scale: 0.3">
+        <cngx-radio-indicator class="check-ancestor" skin="check" [checked]="true" />
+        <cngx-radio-indicator class="tinted-ancestor" skin="tinted" [checked]="true" />
+      </span>
+      <span class="probe-primary" style="color: var(--cngx-color-primary)"></span>
+      <span class="probe-surface-plain" style="color: var(--cngx-color-surface)"></span>
+      <span
+        class="probe-tint"
+        style="color: color-mix(in oklab, var(--cngx-color-primary) 16%, transparent)"
+      ></span>
     </div>
     @for (scheme of schemes; track scheme) {
       <div
@@ -152,5 +166,62 @@ describe('CngxRadioIndicator geometry', () => {
     const surface = computedValue(query(root, `.scheme-${scheme} .probe-surface`), 'color');
     const ring = computedValue(query(root, `.scheme-${scheme} .ring .cngx-radio-indicator__circle`), 'stroke');
     expect(contrast(composite(surface, ring), composite(surface, surface))).toBeGreaterThanOrEqual(3);
+  });
+
+  it('check skin: fills the checked disc with the checked colour and fades in a round-capped mark', () => {
+    const root = mount();
+    const primary = computedValue(query(root, '.probe-primary'), 'color');
+    const surface = computedValue(query(root, '.probe-surface-plain'), 'color');
+    expect(computedValue(query(root, '.check-on .cngx-radio-indicator__circle'), 'fill')).toBe(primary);
+    const mark = query(root, '.check-on .cngx-radio-indicator__mark');
+    expect(computedValue(mark, 'stroke')).toBe(surface);
+    expect(computedValue(mark, 'stroke-linecap')).toBe('round');
+    expect(computedValue(mark, 'stroke-linejoin')).toBe('round');
+    expect(computedValue(mark, 'opacity')).toBe('1');
+    expect(computedValue(query(root, '.check-off .cngx-radio-indicator__mark'), 'opacity')).toBe('0');
+    expect(computedValue(query(root, '.check-off .cngx-radio-indicator__circle'), 'fill')).toBe(
+      'rgba(0, 0, 0, 0)',
+    );
+  });
+
+  it('check skin: centres the mark on the ring', () => {
+    const root = mount();
+    const ring = centre(query(root, '.check-on .cngx-radio-indicator__circle').getBoundingClientRect());
+    const mark = centre(query(root, '.check-on .cngx-radio-indicator__mark').getBoundingClientRect());
+    expect(mark.x).toBeCloseTo(ring.x, 1);
+    expect(mark.y).toBeCloseTo(ring.y, 1);
+  });
+
+  it('check skin: a disabled disc takes the disabled colour while the mark stays surface', () => {
+    const root = mount();
+    const primary = computedValue(query(root, '.probe-primary'), 'color');
+    const surface = computedValue(query(root, '.probe-surface-plain'), 'color');
+    const disabled = query(root, '.check-disabled');
+    expect(computedValue(query(root, '.check-disabled .cngx-radio-indicator__circle'), 'fill')).toBe(
+      computedValue(disabled, 'color'),
+    );
+    expect(computedValue(query(root, '.check-disabled .cngx-radio-indicator__circle'), 'fill')).not.toBe(
+      primary,
+    );
+    expect(computedValue(query(root, '.check-disabled .cngx-radio-indicator__mark'), 'stroke')).toBe(surface);
+  });
+
+  it('tinted skin: fills the checked disc with the 16% tint and shrinks the dot', () => {
+    const root = mount();
+    const tint = computedValue(query(root, '.probe-tint'), 'color');
+    expect(computedValue(query(root, '.tinted-on .cngx-radio-indicator__circle'), 'fill')).toBe(tint);
+    expect(computedValue(query(root, '.tinted-on .cngx-radio-indicator__dot'), 'transform')).toBe(
+      'matrix(0.42, 0, 0, 0.42, 0, 0)',
+    );
+  });
+
+  it('lets ancestor overrides of the skin tokens reach the skinned indicator', () => {
+    const root = mount();
+    expect(computedValue(query(root, '.check-ancestor .cngx-radio-indicator__mark'), 'stroke')).toBe(
+      'rgb(1, 2, 3)',
+    );
+    expect(computedValue(query(root, '.tinted-ancestor .cngx-radio-indicator__dot'), 'transform')).toBe(
+      'matrix(0.3, 0, 0, 0.3, 0, 0)',
+    );
   });
 });
