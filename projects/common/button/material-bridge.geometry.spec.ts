@@ -220,6 +220,14 @@ const M3 = {
         <button cngxCloseButton class="close-default-{{ density }}" aria-label="Close"></button>
       </div>
     }
+    <div class="material-density-minus-2">
+      <button cngxButton tone="primary" class="dense-solid">Save</button>
+      <button cngxButton="ghost" tone="primary" class="dense-ghost">Cancel</button>
+      <button cngxIconButton class="dense-icon" aria-label="Delete">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14" /></svg>
+      </button>
+      <button cngxCloseButton class="dense-close" aria-label="Close"></button>
+    </div>
     <p>
       <button cngxButton tone="primary" class="layer-solid" style="transition: none">Save</button>
       <button cngxButton class="radius-host">
@@ -391,6 +399,20 @@ describe('Material bridge: M3 metrics and label type', () => {
     btn.classList.remove('cngx-pressed');
     // 12% of on-primary (--mat-sys-pressed-state-layer-opacity: 0.12).
     expect(pressed).toBe(getComputedStyle(root.querySelector('.probe-pressed')!).color);
+  });
+
+  it('re-scales the bridged button under a Material density -2 theme (density-bridge)', () => {
+    const root = mountMetrics();
+    // density -2: sm 6px, lg 18px. Box = 20 line + 2 * (6 * 1.25), border inside.
+    const solid = metrics(root, '.dense-solid');
+    expect([solid.start, solid.end, solid.height]).toEqual([18, 18, 35]);
+    expect(metrics(root, '.dense-ghost').start).toBe(9);
+    const icon = metrics(root, '.dense-icon');
+    expect([icon.width, icon.height]).toEqual([35, 35]);
+    const close = metrics(root, '.dense-close');
+    expect([close.width, close.height]).toEqual([35, 35]);
+    // The label type does not follow density.
+    expect([solid.font, solid.line]).toEqual([M3.font, M3.line]);
   });
 
   it('steps the sizes 28 / 32 / 40 / 48 around the M3 md box', () => {

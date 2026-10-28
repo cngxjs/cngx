@@ -4,6 +4,7 @@
 @use '@angular/material' as mat;
 @use '../../themes/material/button-theme' as button;
 @use '../../themes/material/icon-theme' as icon;
+@use '../../themes/material/density-bridge' as density;
 
 $theme: mat.define-theme(
   (
@@ -20,4 +21,19 @@ html {
   @include mat.theme((color: (primary: mat.$azure-palette), typography: Roboto, density: 0));
   @include button.theme($theme);
   @include icon.theme($theme);
+}
+
+// A Material `density: -2` theme, scoped to a wrapper so it cannot leak into
+// the density-0 probes: density-bridge rescales --cngx-space-* and the
+// bridged button follows.
+$dense-theme: mat.define-theme(
+  (
+    density: (
+      scale: -2,
+    ),
+  )
+);
+
+.material-density-minus-2 {
+  @include density.density($dense-theme);
 }
