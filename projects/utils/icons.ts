@@ -1,7 +1,10 @@
 /**
  * How a cngx icon path is painted. `fill` paints the path area in
  * `currentColor`; `stroke` paints only its outline and leaves the area
- * unfilled.
+ * unfilled, with round line caps and joins. The round caps are part of
+ * the shape, not a style choice: a zero-length segment such as the dot of
+ * `CNGX_ICON_ALERT` only renders as a dot with `stroke-linecap: round`,
+ * so every renderer of a stroke icon sets round caps and joins.
  *
  * @internal
  */
@@ -12,7 +15,8 @@ export type CngxIconPaint = 'fill' | 'stroke';
  * sits on a `0 0 24 24` grid and is a single path, so a renderer needs
  * one `<path>` and no per-icon markup. Rendered by `CngxIconSvg` in
  * `@cngx/common/display`; an imperative renderer builds the same
- * `<svg><path>` from it.
+ * `<svg><path>` from it and applies the paint contract of
+ * `CngxIconPaint` itself.
  *
  * Exported because Sheriff forbids deep-relative imports across library
  * boundaries; `@internal` because cngx ships the glyphs it draws, not an
