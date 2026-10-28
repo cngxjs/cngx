@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Default glyphs (internal)',
   subtitle: 'Every glyph cngx draws itself, rendered from <code>@cngx/utils</code> path data by <code>svg[cngxIconSvg]</code>. Internal sign-off surface, not a public icon set.',
-  description: 'Each row shows the glyph standalone at the running text size and projected into <code>&lt;cngx-icon size="lg"&gt;</code>, which then owns the box. Fill glyphs paint their area in <code>currentColor</code>; stroke glyphs paint only the outline with round caps. Check the shapes in light, dark and forced colors.',
+  description: 'Each row shows the glyph standalone at the running text size (1em) and projected into <code>&lt;cngx-icon&gt;</code> at every size preset (<code>xs</code> to <code>xl</code>), which then owns the box. Fill glyphs paint their area in <code>currentColor</code>; stroke glyphs paint only the outline with round caps. Check the shapes in light, dark and forced colors.',
   audience: ['design'],
   focus: ['visual-variants'],
   apiComponents: ['CngxIconSvg'],
@@ -13,6 +13,8 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxIcon', 'CngxIconSvg'],
   setup: `
+  protected readonly sizes = ['xs', 'sm', 'md', 'lg', 'xl'] as const;
+
   protected readonly icons = [
     { name: 'CNGX_ICON_X', icon: CNGX_ICON_X },
     { name: 'CNGX_ICON_PLUS', icon: CNGX_ICON_PLUS },
@@ -31,11 +33,19 @@ export const STORY: DemoSpec = {
     { name: 'CNGX_ICON_TRIANGLE_DOWN', icon: CNGX_ICON_TRIANGLE_DOWN },
   ] as const;`,
   template: `
-  <div style="display:grid; grid-template-columns:auto auto 1fr auto; align-items:center; gap:8px 24px">
+  <div style="display:grid; grid-template-columns:repeat(6, auto) 1fr auto; align-items:center; justify-items:center; gap:8px 24px">
+    <span>1em</span>
+    @for (size of sizes; track size) {
+      <span>{{ size }}</span>
+    }
+    <span style="justify-self:start">name</span>
+    <span>paint</span>
     @for (entry of icons; track entry.name) {
       <svg [cngxIconSvg]="entry.icon"></svg>
-      <cngx-icon size="lg"><svg [cngxIconSvg]="entry.icon"></svg></cngx-icon>
-      <code>{{ entry.name }}</code>
+      @for (size of sizes; track size) {
+        <cngx-icon [size]="size"><svg [cngxIconSvg]="entry.icon"></svg></cngx-icon>
+      }
+      <code style="justify-self:start">{{ entry.name }}</code>
       <span>{{ entry.icon.paint }}</span>
     }
   </div>`,
