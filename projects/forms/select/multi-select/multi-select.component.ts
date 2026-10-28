@@ -70,6 +70,11 @@ import {
 import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
 import { CngxSelectSummary } from '../shared/internal/summary/select-summary.component';
 import { createSelectSummary } from '../shared/internal/summary/select-summary';
+import {
+  CngxSelectChipFitSlot,
+  CngxSelectChipFitStrip,
+  handOffChipFitFocus,
+} from '../shared/internal/chip-fit-strip.directive';
 import { injectTouchFloorSignal } from '../shared/internal/touch-floor';
 import { sameArrayContents } from '../shared/internal/compare';
 import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
@@ -217,6 +222,8 @@ export interface CngxMultiSelectChange<T = unknown> {
     CngxListboxTrigger,
     CngxPopover,
     CngxPopoverTrigger,
+    CngxSelectChipFitSlot,
+    CngxSelectChipFitStrip,
     CngxSelectPanel,
     CngxSelectSummary,
     NgTemplateOutlet,
@@ -839,17 +846,17 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
    * @internal - one-line summary instead of chips under the touch floor. The
    * chip strip below is its truncated-at-one derivation while it is active.
    */
+  private readonly fitStrip = viewChild(CngxSelectChipFitStrip);
   protected readonly summary = createSelectSummary<T>({
     selectedOptions: this.selectedOptions,
     active: injectTouchFloorSignal(),
     chipOverflow: this.chipOverflow,
     maxVisibleChips: this.maxVisibleChips,
+    fitSnapshot: computed(() => this.fitStrip()?.snapshot() ?? null),
     ariaLabels: this.config.ariaLabels,
     fallbackLabels: this.config.fallbackLabels,
   });
   private readonly chipStrip = this.summary.strip;
-  /** @internal - chip subset + overflow badge count (see createChipOverflow). */
-  protected readonly visibleSelected = this.chipStrip.visibleSelected;
   /** @internal */
   protected readonly overflowBadgeCount = this.chipStrip.overflowBadgeCount;
   /** @internal Selected options the truncated strip hides, for the overflow slot. */
@@ -858,6 +865,14 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly overflowBadgeText = computed<string>(() =>
     this.config.fallbackLabels().chipOverflowBadge(this.overflowBadgeCount()),
   );
+  /** @internal Whether the `'fit'` strip folds the chip at `index` behind the badge. */
+  protected isFitHidden(index: number): boolean {
+    return (
+      this.chipOverflow() === 'fit' &&
+      !this.summary.active() &&
+      index >= this.chipStrip.visibleCount()
+    );
+  }
 
   private readonly togglingOption = this.core.togglingOption;
 
@@ -959,6 +974,12 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
 
   constructor() {
     this.lastCommittedValues = untracked(() => [...this.values()]);
+
+    handOffChipFitFocus({
+      strip: this.fitStrip,
+      visibleCount: this.chipStrip.visibleCount,
+      target: () => this.triggerBtn()?.nativeElement,
+    });
 
     afterNextRender(() => {
       if (this.autofocus()) {

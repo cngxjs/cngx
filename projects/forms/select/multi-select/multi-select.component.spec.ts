@@ -31,6 +31,8 @@ import {
 } from '../shared/template-slots';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
+import { describeChipFit, type ChipFitProjectedHost } from '../shared/__test-helpers/chip-fit';
+import { CngxSelectChipOverflow } from '../shared/template-slots';
 
 // jsdom has no Popover API - polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
@@ -1308,4 +1310,34 @@ describe('CngxMultiSelect - fractional maxVisibleChips', () => {
     flush(fixture);
     expectTwoChipsPlusThree(fixture.nativeElement as HTMLElement);
   });
+});
+
+@Component({
+  template: `
+    <cngx-multi-select
+      [label]="'Recipients'"
+      [options]="options"
+      [values]="values"
+      chipOverflow="fit"
+    >
+      <span *cngxMultiSelectChip="let opt" class="fit-projected-chip">{{ opt.label }}</span>
+      <span *cngxSelectChipOverflow="let count" class="fit-projected-badge">+{{ count }}</span>
+    </cngx-multi-select>
+  `,
+  imports: [CngxMultiSelect, CngxMultiSelectChip, CngxSelectChipOverflow],
+})
+class ChipFitProjectedHostCmp implements ChipFitProjectedHost {
+  readonly options = [
+    { value: 'a', label: 'Alpha' },
+    { value: 'b', label: 'Bravo' },
+    { value: 'c', label: 'Charlie' },
+    { value: 'd', label: 'Delta' },
+    { value: 'e', label: 'Echo' },
+  ];
+  readonly values = ['a', 'b', 'c', 'd', 'e'];
+}
+
+describeChipFit('CngxMultiSelect', CngxMultiSelect, {
+  projectedHost: ChipFitProjectedHostCmp,
+  summaryText: (root) => root.querySelector('.cngx-select__hidden-summary')?.textContent ?? '',
 });

@@ -1410,7 +1410,8 @@
     display: contents;
   }
 
-  .cngx-select__chip-list > .cngx-select__chip-slot > cngx-chip {
+  .cngx-select__chip-list[data-overflow='truncate'] > .cngx-select__chip-slot > cngx-chip,
+  .cngx-select__chip-list[data-overflow='scroll-x'] > .cngx-select__chip-slot > cngx-chip {
     flex: 0 0 auto;
   }
 

@@ -8,6 +8,8 @@ import {
   inject,
   input,
   signal,
+  untracked,
+  type Signal,
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 
@@ -85,6 +87,17 @@ export class CngxSelectChipFitStrip {
     });
   }
 
+  /** Whether a slot at `index` or later holds the focused element. */
+  hasFocusFrom(index: number): boolean {
+    const focused = this.host.nativeElement.ownerDocument.activeElement;
+    if (!focused) {
+      return false;
+    }
+    return this.slots()
+      .slice(index)
+      .some((slot) => slot.elementRef.nativeElement.contains(focused));
+  }
+
   private read(): void {
     if (!this.win || !this.active()) {
       return;
@@ -113,4 +126,31 @@ export class CngxSelectChipFitStrip {
 function px(value: string): number {
   const parsed = parseFloat(value);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+/**
+ * Moves focus to `target` when a narrowing hides the slot that holds it, so
+ * focus never falls to `body` once the slot turns `inert`. The effect runs
+ * before the view applies the hidden state, while the slot still has focus.
+ * Call in an injection context.
+ *
+ * @internal
+ */
+export function handOffChipFitFocus(opts: {
+  readonly strip: Signal<CngxSelectChipFitStrip | undefined>;
+  readonly visibleCount: Signal<number>;
+  readonly target: () => HTMLElement | null | undefined;
+}): void {
+  effect(() => {
+    const strip = opts.strip();
+    const from = opts.visibleCount();
+    if (!strip?.active()) {
+      return;
+    }
+    untracked(() => {
+      if (strip.hasFocusFrom(from)) {
+        opts.target()?.focus();
+      }
+    });
+  });
 }
