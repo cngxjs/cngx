@@ -61,7 +61,6 @@ function makeShellHost(): CngxSelectPanelHost {
       option: null,
       retry: () => {},
     }),
-    loading: signal(false),
     loadingVariant: signal('spinner'),
     refreshingVariant: signal('bar'),
     commitErrorDisplay: signal('banner'),

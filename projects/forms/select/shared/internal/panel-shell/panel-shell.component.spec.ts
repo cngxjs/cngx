@@ -111,7 +111,6 @@ function createMockHost(): {
       option: null,
       retry: vi.fn(),
     }),
-    loading: signal(false),
     loadingVariant,
     refreshingVariant,
     commitErrorDisplay,

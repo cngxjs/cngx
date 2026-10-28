@@ -80,7 +80,7 @@ import { CngxFieldSkinHost } from './field-skin.directive';
  * <example-url>http://localhost:4200/#/forms/field/skin/bare-anatomy</example-url>
  */
 @Directive({
-  selector: '[cngxFieldBox], [cngxAffixRow]',
+  selector: '[cngxFieldBox]',
   standalone: true,
   providers: [{ provide: CNGX_FIELD_BOX, useExisting: CngxFieldBox }],
   hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
@@ -161,13 +161,3 @@ export class CngxFieldBox implements CngxFieldBoxContract {
     this.mainControl()?.focus?.();
   }
 }
-
-/**
- * @deprecated Renamed to {@link CngxFieldBox}. The `[cngxAffixRow]` selector
- * and this alias keep working for one release.
- */
-export const CngxAffixRow = CngxFieldBox;
-/**
- * @deprecated Renamed to {@link CngxFieldBox}.
- */
-export type CngxAffixRow = CngxFieldBox;
