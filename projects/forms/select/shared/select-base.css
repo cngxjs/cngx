@@ -46,6 +46,16 @@
  * - `data-overflow='scroll-x'` - single row + horizontal scroll
  * - `data-overflow='truncate'` - single row + clipped overflow + the
  *   `.cngx-select__chip-overflow-badge` count pill
+ * - `data-overflow='fit'` - single row, as many chips as the strip holds,
+ *   the rest folded into the badge. Every chip sits in a
+ *   `.cngx-select__chip-slot` (`display: contents` in the other modes),
+ *   capped at the strip minus the badge reserve; `.cngx-select__chip-slot--hidden`
+ *   marks a slot past the fit count (kept in layout, invisible, behind the
+ *   badge). `--cngx-select-chip-fit-badge-reserve` (unregistered, never
+ *   assigned by the library, default `4ch`) sets the space kept for the
+ *   badge; assign it on the host, a container or `:root` for a wider
+ *   projected badge or a custom `chipOverflowBadge` formatter. A chip that
+ *   would just fit without a badge is shortened by the reserve.
  *
  * Error surfaces with two layouts:
  *
@@ -609,6 +619,18 @@
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0 0 0 / 0.6);
+  }
+
+  /**
+   * Private alias of `--cngx-select-chip-fit-badge-reserve`, assigned on the
+   * `'fit'` strip only. Registered as `<length>` so it computes to px there:
+   * the strip measurement reads it, and the slots inherit the same px.
+   * @group State / Overflow
+   */
+  @property --_cngx-chip-fit-reserve {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0px;
   }
 
   /**
@@ -1379,6 +1401,59 @@
   .cngx-select__chip-list[data-overflow='truncate'] > cngx-chip,
   .cngx-select__chip-list[data-overflow='scroll-x'] > cngx-chip {
     flex: 0 0 auto;
+  }
+
+  /* Chip and badge slots exist in every mode so one chip loop serves all of
+     them; outside 'fit' they generate no box. */
+  .cngx-select__chip-slot,
+  .cngx-select__chip-overflow-slot {
+    display: contents;
+  }
+
+  .cngx-select__chip-list > .cngx-select__chip-slot > cngx-chip {
+    flex: 0 0 auto;
+  }
+
+  /* Every measured size depends on the strip alone: each slot is capped at
+     the strip minus the gap and the badge reserve in every state, the reserve
+     is a token, and a slot past the fit count stays in layout. The fit count
+     never changes a size it is computed from. */
+  .cngx-select__chip-list[data-overflow='fit'] {
+    --_cngx-chip-fit-reserve: var(--cngx-select-chip-fit-badge-reserve, 4ch);
+    flex-wrap: nowrap;
+    overflow: hidden;
+    min-inline-size: 0;
+  }
+
+  /* flex, not block: an inline-flex chip in a block slot would sit on a
+     line box and add strut height to the row. */
+  .cngx-select__chip-list[data-overflow='fit'] > .cngx-select__chip-slot {
+    display: flex;
+    flex: none;
+    max-inline-size: calc(
+      100% - var(--_cngx-chip-fit-reserve) - var(--cngx-select-chip-gap, 0.25rem)
+    );
+    min-inline-size: 0;
+    overflow: hidden;
+  }
+
+  /* A chip capped by its slot shrinks; `.cngx-chip__label` carries the
+     ellipsis. */
+  .cngx-select__chip-list[data-overflow='fit'] > .cngx-select__chip-slot > * {
+    max-inline-size: 100%;
+    min-inline-size: 0;
+  }
+
+  .cngx-select__chip-list[data-overflow='fit'] > .cngx-select__chip-slot--hidden {
+    order: 2;
+    visibility: hidden;
+  }
+
+  .cngx-select__chip-list[data-overflow='fit'] > .cngx-select__chip-overflow-slot {
+    display: flex;
+    order: 1;
+    flex: none;
+    min-inline-size: var(--_cngx-chip-fit-reserve);
   }
 
   .cngx-select__chip-overflow-badge {
