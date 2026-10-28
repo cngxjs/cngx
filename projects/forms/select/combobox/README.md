@@ -127,6 +127,29 @@ Both slot directives accept the same context: `{ disabled, focused, panelOpen }`
 
 On a touch screen narrower than 48rem the panel opens as a modal fullscreen panel with the search input in its header, named by the field label, with a close button, Done and a decorative handle. Focus moves into the sheet and back to the trigger on close. Force a presentation with `[presentation]` (`'anchored'`, `'sheet'`, `'fullscreen'`), set the title with `[sheetLabel]`, or turn the sheet off with `withMobileSheet('off')`. Details: [Mobile sheet](../README.md#mobile-sheet).
 
+## Chip overflow
+
+`chipOverflow` (input, `withChipOverflow(...)` or `CNGX_SELECT_CONFIG.chipOverflow`) decides what the chip strip does when the selection outgrows the trigger:
+
+| Mode | Behaviour |
+|-|-|
+| `'wrap'` (default) | Chips wrap, the trigger grows by whole rows |
+| `'scroll-x'` | One row, the strip scrolls horizontally |
+| `'truncate'` | One row, the first `maxVisibleChips` chips plus a `+N` badge |
+| `'fit'` | One row, as many chips as the trigger holds, the rest in the `+N` badge |
+
+`'fit'` measures the strip, so there is no count to pick per width. The chips past the fit stay out of the tab order and are hidden from assistive technology; the whole selection is still read through the control (the input description). Before the first measurement the strip renders the `'truncate'` layout at `maxVisibleChips`.
+
+The space kept for the badge is `--cngx-select-chip-fit-badge-reserve` (default `4ch`, enough for `+99`). Set it on the select, a container or `:root` when a projected `*cngxSelectChipOverflow` or a custom `chipOverflowBadge` formatter is wider:
+
+```css
+.team-picker {
+  --cngx-select-chip-fit-badge-reserve: 8ch;
+}
+```
+
+The trade-off: a single chip that would just fit without a badge is shortened by the reserve. A label longer than the trigger ellipsizes inside its chip.
+
 ## Touch
 
 Under the touch floor the chips give way to the one-line summary in front of the search input: the label with one value, the label plus a `+N` badge with two or more, and the input's placeholder with no value. The search input keeps the search term. The whole selection reaches assistive technology through `aria-describedby` on the input; the reference is set only while there is a selection to describe. Full behaviour and opt-out: [Summary trigger under the touch floor](../README.md#summary-trigger-under-the-touch-floor).
