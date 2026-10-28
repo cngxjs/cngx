@@ -78,7 +78,7 @@ Ripple and Pressable are typically composed together via CngxPressRipple, but ca
 
 // Icon button with centered ripple
 <button cngxPressRipple [rippleCentered]="true">
-  <mat-icon>favorite</mat-icon>
+  <cngx-icon><mat-icon>favorite</mat-icon></cngx-icon>
 </button>
 ```
 
@@ -141,7 +141,7 @@ No configuration needed - the directives detect motion preference automatically.
 
 ```typescript
 <button cngxPressRipple [rippleCentered]="true" class="icon-button">
-  <mat-icon>favorite</mat-icon>
+  <cngx-icon><mat-icon>favorite</mat-icon></cngx-icon>
 </button>
 
 <style>
