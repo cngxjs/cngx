@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxButton } from './button.component';
 import type { CngxButtonSize } from './button.types';
+import { CngxCloseButton } from './close-button.component';
 import { CngxIconButton } from './icon-button.component';
 
 // Runs in a real Chromium (the `test-geometry` target): the square box, the
@@ -16,7 +17,7 @@ type Density = 'comfortable' | 'compact' | 'spacious';
 @Component({
   selector: 'cngx-icon-button-geometry-host',
   standalone: true,
-  imports: [CngxButton, CngxIconButton],
+  imports: [CngxButton, CngxIconButton, CngxCloseButton],
   styleUrls: [
     '../../core/theming/layers.css',
     '../../core/theming/system-tokens.css',
@@ -31,6 +32,7 @@ type Density = 'comfortable' | 'compact' | 'spacious';
         <p><button cngxIconButton class="i-{{ size }}" [size]="size" aria-label="Add">+</button></p>
       }
       <p><button cngxButton class="b-md">Save</button></p>
+      <p><button cngxCloseButton class="c-default" aria-label="Close"></button></p>
       <p class="row">
         <button cngxIconButton class="r-1" size="sm" aria-label="Bold">B</button
         ><button cngxIconButton class="r-2" size="sm" aria-label="Italic">I</button>
@@ -86,6 +88,13 @@ describe.each(['comfortable', 'compact', 'spacious'] as const)('CngxIconButton g
     }
   });
 
+  it('squares the default close button to the sm icon-button box', () => {
+    const root = mount(density);
+    const close = query(root, '.c-default').getBoundingClientRect();
+    const sm = query(root, '.i-sm').getBoundingClientRect();
+    expect([close.width, close.height]).toEqual([sm.width, sm.height]);
+  });
+
   it('matches the md button height at md', () => {
     const root = mount(density);
     expect(query(root, '.i-md').getBoundingClientRect().height).toBeCloseTo(
@@ -104,6 +113,12 @@ describe('CngxIconButton geometry: touch', () => {
     expect(coarse.height).toBeCloseTo(fine.height, 0);
     expect(coarse.width).toBeCloseTo(fine.width, 0);
     const hit = pseudoSize(btn);
+    expect(hit.width).toBeGreaterThanOrEqual(44 - 0.5);
+    expect(hit.height).toBeGreaterThanOrEqual(44 - 0.5);
+  });
+
+  it('grows the default close button hit area to 44px on a coarse pointer', () => {
+    const hit = pseudoSize(query(mount('comfortable', true), '.c-default'));
     expect(hit.width).toBeGreaterThanOrEqual(44 - 0.5);
     expect(hit.height).toBeGreaterThanOrEqual(44 - 0.5);
   });

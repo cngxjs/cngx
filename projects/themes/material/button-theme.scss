@@ -64,7 +64,9 @@
 //
 // The block padding absorbs the 1px border every variant keeps, so the box
 // is line-height + 2 * rung; the icon button (and the close button, which
-// reads the icon-button box) squares to it. Size-independent ratios cover
+// reads the icon-button box) squares to it. The close button defaults to sm,
+// so its sm box takes the md icon-button box through --cngx-close-button-size
+// (M3 has one 40px icon-button box for a dismiss). Size-independent ratios cover
 // the rest: a filled slot side is 2/3 of the inline padding (16 of 24); a
 // ghost (text) button with one slot follows the M3 text-with-icon button,
 // the slot side keeps the ghost padding and the other side takes 4/3 of it
@@ -288,6 +290,19 @@ $_unsized: 'cngx-icon.cngx-icon:not(.cngx-icon--xs, .cngx-icon--sm, .cngx-icon--
       .cngx-close-button.cngx-button .cngx-icon-button__glyph > #{$_unsized} {
         --cngx-icon-size: var(--cngx-close-button-icon-size, 1.5em);
       }
+    }
+
+    // Close button: it defaults to sm, M3 has one icon-button box (40, 24px
+    // glyph). The sm close takes the md icon-button box through its own size
+    // hooks, from the md row (comfortable 40, re-scaled in a density island),
+    // and the glyph of the md icon button. Other sizes keep their row.
+    $md: map.get($_metrics, md);
+    $md-type: map.get($_roles, map.get($md, role));
+    $md-line: _role(map.get($md, role), line-height, list.nth($md-type, 2));
+    $close-box: 'calc(#{$md-line} + 2 * #{map.get($md, block)} + 2 * #{$_bw})';
+    @include bridge.on(".cngx-close-button[data-size='sm']") {
+      --cngx-close-button-size: #{$close-box};
+      --cngx-close-button-icon-size: calc(var(--cngx-font-size-control, 1rem) * 1.5);
     }
   }
 }

@@ -320,8 +320,28 @@ describe('Material bridge: M3 metrics and label type', () => {
     expect([close.width, close.height]).toEqual([M3.height, M3.height]);
     expect(box(root, '.close-comfortable svg')).toEqual({ width: M3.glyph, height: M3.glyph });
     expect(metrics(root, '.close-compact').height).toBe(30);
-    // The close button defaults to sm, so it squares to the sm box.
-    expect(metrics(root, '.close-default-comfortable').height).toBe(32);
+  });
+
+  it('gives the default (sm) close button the M3 icon-button box and glyph', () => {
+    const root = mountMetrics();
+    const close = metrics(root, '.close-default-comfortable');
+    expect([close.width, close.height]).toEqual([M3.height, M3.height]);
+    expect(box(root, '.close-default-comfortable svg')).toEqual({
+      width: M3.glyph,
+      height: M3.glyph,
+    });
+    // Re-scaled with the md icon button in density islands; the glyph stays.
+    for (const density of ['compact', 'spacious']) {
+      const scaled = metrics(root, `.close-default-${density}`);
+      const icon = metrics(root, `.icon-${density}`);
+      expect([scaled.width, scaled.height], density).toEqual([icon.width, icon.height]);
+      expect(box(root, `.close-default-${density} svg`), density).toEqual({
+        width: M3.glyph,
+        height: M3.glyph,
+      });
+    }
+    expect(metrics(root, '.close-default-compact').height).toBe(30);
+    expect(metrics(root, '.close-default-spacious').height).toBe(50);
   });
 
   it('re-scales the bridged button in compact and spacious islands', () => {

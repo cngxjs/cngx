@@ -53,7 +53,9 @@ const CONSUMED = [
   '--cngx-button-secondary-color',
   '--cngx-close-button-color',
   '--cngx-close-button-hover-bg',
+  '--cngx-close-button-icon-size',
   '--cngx-close-button-radius',
+  '--cngx-close-button-size',
   '--cngx-color-border',
   '--cngx-color-danger',
   '--cngx-color-danger-text',
@@ -199,6 +201,15 @@ describe('button Material bridge', () => {
     expect(type).toContain('--cngx-button-font-size: var(--mat-sys-label-large-size, 0.875rem)');
     expect(type).toContain('line-height: var(--mat-sys-label-large-line-height, 1.25rem)');
     expect(type).toContain('letter-spacing: var(--mat-sys-label-large-tracking, 0.006rem)');
+  });
+
+  it('gives the sm close button the md icon-button box through its own hooks (M3)', () => {
+    const css = compileThemeEntry(M3_ENTRY);
+    const close = block(css, '.cngx-close-button[data-size=sm]');
+    expect(close).toContain('--cngx-close-button-size: calc(var(--mat-sys-label-large-line-height, 1.25rem)');
+    expect(close).toContain('var(--cngx-space-sm, 8px) * 1.25');
+    expect(close).toContain('--cngx-close-button-icon-size: calc(var(--cngx-font-size-control, 1rem) * 1.5)');
+    expect(compileThemeEntry(M2_ENTRY)).not.toContain('--cngx-close-button-size');
   });
 
   it('keeps the M2 button on the cngx metrics', () => {
