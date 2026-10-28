@@ -30,6 +30,7 @@
       "@cngx/common/popover": ["projects/common/popover/public-api.ts"],
       "@cngx/common/card": ["projects/common/card/public-api.ts"],
       "@cngx/common/button": ["projects/common/button/public-api.ts"],
+      "@cngx/common/menu-button": ["projects/common/menu-button/public-api.ts"],
       "@cngx/common/chart": ["projects/common/chart/public-api.ts"],
       "@cngx/common/tabs": ["projects/common/tabs/public-api.ts"],
       "@cngx/common/display": ["projects/common/display/public-api.ts"],
