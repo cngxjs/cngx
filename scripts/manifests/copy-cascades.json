@@ -546,7 +546,7 @@
     {
       "class": "CngxSelect",
       "file": "projects/forms/select/single-select/select.component.ts",
-      "line": 291,
+      "line": 292,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
