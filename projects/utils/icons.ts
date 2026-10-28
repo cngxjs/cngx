@@ -45,6 +45,13 @@ export const CNGX_ICON_PLUS = {
   paint: 'stroke',
 } as const satisfies CngxIconData;
 
+/** Horizontal bar (indeterminate checkbox). @internal */
+export const CNGX_ICON_MINUS = {
+  viewBox: '0 0 24 24',
+  d: 'M5 12h14',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
+
 /** Solid dropdown caret pointing down. @internal */
 export const CNGX_ICON_CARET_DOWN = {
   viewBox: '0 0 24 24',

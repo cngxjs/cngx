@@ -22,6 +22,7 @@ describe('cngx default icon set', () => {
         'CNGX_ICON_CHEVRON_RIGHT',
         'CNGX_ICON_DOT',
         'CNGX_ICON_GRIP_VERTICAL',
+        'CNGX_ICON_MINUS',
         'CNGX_ICON_MORE_HORIZONTAL',
         'CNGX_ICON_MORE_VERTICAL',
         'CNGX_ICON_PLUS',
