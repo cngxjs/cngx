@@ -44,6 +44,10 @@ describe('cngx default icon set', () => {
     expect(['fill', 'stroke']).toContain(icon.paint);
   });
 
+  it('draws the ban slash from top-left to bottom-right', () => {
+    expect(icons.CNGX_ICON_BAN.d).toContain('M5.6 5.6l12.8 12.8');
+  });
+
   it('keeps refused and failed visually distinct', () => {
     expect(icons.CNGX_ICON_BAN.d).not.toBe(icons.CNGX_ICON_ALERT.d);
   });

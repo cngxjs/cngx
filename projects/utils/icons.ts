@@ -116,7 +116,7 @@ export const CNGX_ICON_ALERT = {
  */
 export const CNGX_ICON_BAN = {
   viewBox: '0 0 24 24',
-  d: 'M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0zM5.6 18.4L18.4 5.6',
+  d: 'M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0zM5.6 5.6l12.8 12.8',
   paint: 'stroke',
 } as const satisfies CngxIconData;
 
