@@ -2,10 +2,14 @@
 @use './bridge' as bridge;
 
 // Material bridge for the cngxAsyncClick state paint (cngx-async.css). The
-// success and error phases of a bare `[cngxAsyncClick]` host (a plain
-// <button>, an anchor) tint toward the Material primary and error roles.
+// success and error phases of a bare cngxAsyncClick host (a plain <button>,
+// an anchor) tint toward the Material primary and error roles.
 // Button-family hosts (`.cngx-button`) keep their own paint through every
 // phase and do not read these tokens; their bridge is button-theme.
+//
+// The directive binds `[cngxAsyncClick]="fn"`, a property binding that leaves
+// no attribute in the DOM, so the bridge targets the `cngx-async` class the
+// directive always sets on its host.
 //
 //   @use '@angular/material' as mat;
 //   @use '@cngx/themes/material/async-click-theme' as async-click;
@@ -30,7 +34,7 @@
 }
 
 @mixin theme($theme) {
-  @include bridge.on('[cngxAsyncClick]') {
+  @include bridge.on('.cngx-async') {
     @include color($theme);
   }
 }

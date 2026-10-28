@@ -78,6 +78,7 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
   standalone: true,
   exportAs: 'cngxAsyncClick',
   host: {
+    class: 'cngx-async',
     '(click)': 'handleClick($event)',
     '[class.cngx-async--pending]': 'pending()',
     '[class.cngx-async--success]': 'succeeded()',
