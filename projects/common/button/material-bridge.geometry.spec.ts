@@ -221,6 +221,13 @@ const M3 = {
       </div>
     }
     <p>
+      <button cngxButton tone="primary" class="layer-solid" style="transition: none">Save</button>
+      <span
+        class="probe-pressed"
+        style="color: color-mix(in oklch, var(--mat-sys-primary) 88%, var(--mat-sys-on-primary))"
+      ></span>
+    </p>
+    <p>
       @for (size of sizes; track size) {
         <button cngxButton tone="primary" class="size-{{ size }}" [size]="size">Save</button>
         <button cngxIconButton class="icon-size-{{ size }}" [size]="size" aria-label="Delete">
@@ -360,6 +367,16 @@ describe('Material bridge: M3 metrics and label type', () => {
     expect([icon.width, icon.height]).toEqual([30, 30]);
     // The label type does not follow density.
     expect([compact.font, spacious.font]).toEqual([M3.font, M3.font]);
+  });
+
+  it('lays the pressed on-primary over a solid fill at the M3 pressed opacity', () => {
+    const root = mountMetrics();
+    const btn = root.querySelector<HTMLElement>('.layer-solid')!;
+    btn.classList.add('cngx-pressed');
+    const pressed = getComputedStyle(btn).backgroundColor;
+    btn.classList.remove('cngx-pressed');
+    // 12% of on-primary (--mat-sys-pressed-state-layer-opacity: 0.12).
+    expect(pressed).toBe(getComputedStyle(root.querySelector('.probe-pressed')!).color);
   });
 
   it('steps the sizes 28 / 32 / 40 / 48 around the M3 md box', () => {

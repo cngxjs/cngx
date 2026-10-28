@@ -44,10 +44,12 @@ const CONSUMED = [
   '--cngx-button-font-size',
   '--cngx-button-font-weight',
   '--cngx-button-group-radius',
+  '--cngx-button-hover-layer',
   '--cngx-button-hover-shade',
   '--cngx-button-icon-size',
   '--cngx-button-padding-block',
   '--cngx-button-padding-inline',
+  '--cngx-button-pressed-layer',
   '--cngx-button-pressed-wash',
   '--cngx-button-secondary-bg',
   '--cngx-button-secondary-bg-hover',
@@ -158,10 +160,20 @@ describe('button Material bridge', () => {
     }
   });
 
-  it('maps the pressed wash onto the M3 pressed state layer (M3), M2 keeps the default', () => {
+  it('maps the state layers onto the M3 hover and pressed opacities (M3), M2 keeps the default', () => {
     const css = compileThemeEntry(M3_ENTRY);
-    expect(block(css, '.cngx-button')).toContain(
+    const host = block(css, '.cngx-button');
+    expect(host).toContain(
+      '--cngx-button-hover-layer: calc(var(--mat-sys-hover-state-layer-opacity, 0.08) * 100%)',
+    );
+    expect(host).toContain(
+      '--cngx-button-pressed-layer: calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%)',
+    );
+    expect(host).toContain(
       '--cngx-button-pressed-wash: calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%)',
+    );
+    expect(flat(css)).toContain(
+      '--cngx-close-button-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) calc(var(--mat-sys-hover-state-layer-opacity, 0.08) * 100%), transparent)',
     );
     expect(flat(css)).toContain(
       '--cngx-close-button-pressed-bg: color-mix(in srgb, var(--mat-sys-on-surface) calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%), transparent)',
@@ -181,9 +193,8 @@ describe('button Material bridge', () => {
 
   it('keeps the close-button tokens the old close-button bridge set', () => {
     const m3 = compileThemeEntry(M3_ENTRY);
-    expect(m3).toContain(
-      '--cngx-close-button-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent)',
-    );
+    // The hover wash is the M3 hover state layer (8% at the default opacity).
+    expect(flat(m3)).toContain('--cngx-close-button-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface)');
     expect(m3).toContain('--cngx-close-button-color: var(--mat-sys-on-surface-variant)');
     expect(compileThemeEntry(M2_ENTRY)).toContain('--cngx-close-button-color: rgba(0, 0, 0, 0.54)');
   });

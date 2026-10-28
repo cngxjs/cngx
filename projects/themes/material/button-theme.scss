@@ -29,11 +29,14 @@
 //   tonal button; primary = primary-container; danger = error-container)
 // - shape -> corner-full: --cngx-radius-md on the host (the rung the button
 //   radius reads), the group end radius, the close-button radius
-// - state layers -> a solid hover mixes the tone toward its on-colour
-//   (--cngx-button-hover-shade, pressed one step stronger); a secondary
+// - state layers -> a solid hover / press lays the on-colour
+//   (--cngx-button-hover-shade) over the tone at
+//   --mat-sys-hover-state-layer-opacity / --mat-sys-pressed-state-layer-opacity
+//   (--cngx-button-hover-layer / --cngx-button-pressed-layer); a secondary
 //   hover / press lays the on-container colour over the container at
 //   --mat-sys-hover-state-layer-opacity / --mat-sys-pressed-state-layer-opacity;
-//   the outline / ghost and close-button press wash is the pressed opacity
+//   the outline / ghost and close-button press wash is the pressed opacity,
+//   the close-button hover the hover opacity
 //
 // A directly-set knob beats an inherited one regardless of layer, so a
 // consumer's :root-level --cngx-color-* override does not reach the buttons
@@ -109,7 +112,10 @@
       --cngx-color-danger: var(--mat-sys-error);
       --cngx-color-danger-text: var(--mat-sys-error);
       --cngx-color-on-danger: var(--mat-sys-on-error);
-      // Outline / ghost press wash = the M3 pressed state layer.
+      // Solid hover / press layers and the outline / ghost press wash = the
+      // M3 hover and pressed state layers.
+      --cngx-button-hover-layer: calc(var(--mat-sys-hover-state-layer-opacity, 0.08) * 100%);
+      --cngx-button-pressed-layer: calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%);
       --cngx-button-pressed-wash: calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%);
     }
     @include bridge.on(".cngx-button[data-tone='primary']") {
@@ -131,7 +137,11 @@
       @include _tonal(error-container, on-error-container);
     }
     @include bridge.on('.cngx-close-button') {
-      --cngx-close-button-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+      --cngx-close-button-hover-bg: color-mix(
+        in srgb,
+        var(--mat-sys-on-surface) calc(var(--mat-sys-hover-state-layer-opacity, 0.08) * 100%),
+        transparent
+      );
       --cngx-close-button-pressed-bg: color-mix(
         in srgb,
         var(--mat-sys-on-surface) calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%),
