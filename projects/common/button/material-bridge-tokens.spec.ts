@@ -48,12 +48,15 @@ const CONSUMED = [
   '--cngx-button-icon-size',
   '--cngx-button-padding-block',
   '--cngx-button-padding-inline',
+  '--cngx-button-pressed-wash',
   '--cngx-button-secondary-bg',
   '--cngx-button-secondary-bg-hover',
+  '--cngx-button-secondary-bg-pressed',
   '--cngx-button-secondary-color',
   '--cngx-close-button-color',
   '--cngx-close-button-hover-bg',
   '--cngx-close-button-icon-size',
+  '--cngx-close-button-pressed-bg',
   '--cngx-close-button-radius',
   '--cngx-close-button-size',
   '--cngx-color-border',
@@ -85,6 +88,11 @@ function block(css: string, selector: string): string {
     throw new Error(`no :where(${selector}) block emitted`);
   }
   return match[0];
+}
+
+// Sass breaks a long color-mix() over lines; compare on one line.
+function flat(css: string): string {
+  return css.replace(/\s+/g, ' ').replace(/\(\s/g, '(').replace(/\s\)/g, ')');
 }
 
 describe('button Material bridge', () => {
@@ -144,7 +152,21 @@ describe('button Material bridge', () => {
       expect(tonal).toContain(`--cngx-button-secondary-bg: var(--mat-sys-${container})`);
       expect(tonal).toContain(`--cngx-button-secondary-color: var(--mat-sys-${onContainer})`);
       expect(tonal).toContain('--mat-sys-hover-state-layer-opacity');
+      expect(flat(tonal)).toContain(
+        `--cngx-button-secondary-bg-pressed: color-mix(in srgb, var(--mat-sys-${onContainer}) calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%), var(--mat-sys-${container}))`,
+      );
     }
+  });
+
+  it('maps the pressed wash onto the M3 pressed state layer (M3), M2 keeps the default', () => {
+    const css = compileThemeEntry(M3_ENTRY);
+    expect(block(css, '.cngx-button')).toContain(
+      '--cngx-button-pressed-wash: calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%)',
+    );
+    expect(flat(css)).toContain(
+      '--cngx-close-button-pressed-bg: color-mix(in srgb, var(--mat-sys-on-surface) calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%), transparent)',
+    );
+    expect(compileThemeEntry(M2_ENTRY)).not.toContain('pressed');
   });
 
   it('rounds the family to corner-full in M3 only', () => {

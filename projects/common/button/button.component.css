@@ -17,7 +17,12 @@
  *
  * **State modifiers**
  *
- * - `:hover` / `:active` - the variant's surface mixed towards the tone
+ * - `:hover` - the variant's surface mixed towards the tone (solid: towards
+ *   `--cngx-button-hover-shade`)
+ * - `:active` / `.cngx-pressed` - pressed: the same mix one step stronger
+ *   (`--cngx-button-pressed-*`); `.cngx-pressed` is the class `cngxPressable`
+ *   sets on pointerdown, so a touch press shows without the `:active` lag.
+ *   Never on an `aria-disabled` (or busy) button
  * - `[aria-disabled='true']:not([data-busy])` - disabled by colour, never
  *   opacity; `cursor: not-allowed`; GrayText under forced colors
  * - `[data-busy]` - label kept but invisible (width stable), spinner ring
@@ -218,6 +223,59 @@
   }
 
   /**
+   * Share of the pressed mix: towards `--cngx-button-hover-shade` on a solid
+   * tone fill (hover takes 12%), of the tone on a neutral solid fill (hover
+   * 15%).
+   * @group State / Pressed
+   */
+  @property --cngx-button-pressed-shade {
+    syntax: '*';
+    inherits: true;
+    initial-value: 20%;
+  }
+
+  /**
+   * Tone share of a pressed `secondary` fill (hover takes 18%).
+   * @group State / Pressed
+   */
+  @property --cngx-button-pressed-tint {
+    syntax: '*';
+    inherits: true;
+    initial-value: 24%;
+  }
+
+  /**
+   * Tone wash of a pressed `outline` or `ghost` button (hover takes 8%).
+   * @group State / Pressed
+   */
+  @property --cngx-button-pressed-wash {
+    syntax: '*';
+    inherits: true;
+    initial-value: 12%;
+  }
+
+  /**
+   * Pressed tint strength of a neutral `secondary` fill, one step above
+   * `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.
+   * @group State / Pressed
+   */
+  @property --cngx-button-neutral-tint-pressed {
+    syntax: '*';
+    inherits: true;
+    initial-value: 13%;
+  }
+
+  /**
+   * Pressed fill of a `secondary` button. Unset by default, so the pressed
+   * tone mix paints; a theme sets it next to `--cngx-button-secondary-bg-hover`.
+   * @group State / Pressed
+   */
+  @property --cngx-button-secondary-bg-pressed {
+    syntax: '*';
+    inherits: false;
+  }
+
+  /**
    * Fill of a `secondary` button. Unset by default, so the fill is the tone
    * mixed into transparency (the neutral tint for `neutral`, 12% otherwise).
    * A theme sets it to paint a container colour instead (the Material bridge
@@ -252,12 +310,14 @@
   :root {
     --cngx-button-neutral-tint: 5%;
     --cngx-button-neutral-tint-hover: 9%;
+    --cngx-button-neutral-tint-pressed: 13%;
   }
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
       --cngx-button-neutral-tint: 10%;
       --cngx-button-neutral-tint-hover: 15%;
+      --cngx-button-neutral-tint-pressed: 20%;
     }
   }
 
@@ -265,12 +325,14 @@
   .dark {
     --cngx-button-neutral-tint: 10%;
     --cngx-button-neutral-tint-hover: 15%;
+    --cngx-button-neutral-tint-pressed: 20%;
   }
 
   [data-color-scheme='light'],
   .light {
     --cngx-button-neutral-tint: 5%;
     --cngx-button-neutral-tint-hover: 9%;
+    --cngx-button-neutral-tint-pressed: 13%;
   }
 
   /* Derive the colour transition from the motion scale; the registered
@@ -459,6 +521,55 @@
       --cngx-button-tone-text: var(--cngx-color-primary-text, oklch(0.5 0.15 50));
     }
     :scope[data-variant='link']:hover {
+      text-decoration-thickness: var(--cngx-button-link-hover-thickness, 2px);
+    }
+
+    /* Pressed: the hover mix one step stronger, on `:active` and on the
+       `.cngx-pressed` class cngxPressable sets on pointerdown (a touch press
+       paints without the :active lag). An aria-disabled (or busy) button
+       never shows it. A link keeps the hover underline while pressed. */
+    :scope[data-variant='solid']:is(:active, .cngx-pressed):not([aria-disabled='true']) {
+      background: color-mix(
+        in oklch,
+        var(--cngx-button-tone, currentColor) calc(100% - var(--cngx-button-pressed-shade, 20%)),
+        var(--cngx-button-hover-shade, oklch(0 0 0))
+      );
+      border-color: color-mix(
+        in oklch,
+        var(--cngx-button-tone, currentColor) calc(100% - var(--cngx-button-pressed-shade, 20%)),
+        var(--cngx-button-hover-shade, oklch(0 0 0))
+      );
+    }
+    :scope[data-variant='solid'][data-tone='neutral']:is(:active, .cngx-pressed):not([aria-disabled='true']) {
+      background: color-mix(
+        in oklch,
+        var(--cngx-button-tone, currentColor) var(--cngx-button-pressed-shade, 20%),
+        var(--cngx-color-surface, Canvas)
+      );
+      border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
+    }
+    :scope[data-variant='secondary']:is(:active, .cngx-pressed):not([aria-disabled='true']) {
+      background: var(
+        --cngx-button-secondary-bg-pressed,
+        color-mix(in oklch, var(--cngx-button-tone, currentColor) var(--cngx-button-pressed-tint, 24%), transparent)
+      );
+    }
+    :scope[data-variant='secondary'][data-tone='neutral']:is(:active, .cngx-pressed):not([aria-disabled='true']) {
+      background: var(
+        --cngx-button-secondary-bg-pressed,
+        color-mix(
+          in oklch,
+          var(--cngx-button-tone, currentColor) var(--cngx-button-neutral-tint-pressed, 13%),
+          transparent
+        )
+      );
+    }
+    :scope:is([data-variant='outline'], [data-variant='ghost']):is(:active, .cngx-pressed):not(
+        [aria-disabled='true']
+      ) {
+      background: color-mix(in oklch, var(--cngx-button-tone, currentColor) var(--cngx-button-pressed-wash, 12%), transparent);
+    }
+    :scope[data-variant='link']:is(:active, .cngx-pressed):not([aria-disabled='true']) {
       text-decoration-thickness: var(--cngx-button-link-hover-thickness, 2px);
     }
 

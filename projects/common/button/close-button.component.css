@@ -13,6 +13,8 @@
  * - `:hover` / `:focus-visible` - lifts to the tone text colour;
  *   on a ghost button `--cngx-close-button-hover-bg` replaces the tone
  *   wash when set
+ * - `:active` / `.cngx-pressed` - the pressed wash, or
+ *   `--cngx-close-button-pressed-bg` when set
  * - `[aria-disabled='true']` - the button sheet's disabled colour wins
  *
  * **Slots**
@@ -83,6 +85,16 @@
     inherits: false;
   }
 
+  /**
+   * Pressed background. Unset by default, so the ghost variant's pressed
+   * tone wash paints.
+   * @group State / Pressed
+   */
+  @property --cngx-close-button-pressed-bg {
+    syntax: '*';
+    inherits: false;
+  }
+
   :where(.cngx-close-button) {
     /* Quiet at rest by colour, never opacity: the hint colour clears 4.5:1 on
      * the page (half-opacity currentColor sat at 3.05:1 in light). */
@@ -113,6 +125,14 @@
       background: var(
         --cngx-close-button-hover-bg,
         color-mix(in oklch, var(--cngx-button-tone, currentColor) 8%, transparent)
+      );
+    }
+
+    /* Pressed beats the hover rule above; same hook pattern. */
+    :scope.cngx-button[data-variant='ghost']:not([aria-disabled='true']):is(:active, .cngx-pressed) {
+      background: var(
+        --cngx-close-button-pressed-bg,
+        color-mix(in oklch, var(--cngx-button-tone, currentColor) var(--cngx-button-pressed-wash, 12%), transparent)
       );
     }
 

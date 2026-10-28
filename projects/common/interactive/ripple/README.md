@@ -106,7 +106,7 @@ button {
 
 ### CngxPressable
 
-Applies the `cngx-pressed` class on pointerdown. Define the visual effect yourself:
+Applies the `cngx-pressed` class on pointerdown. `cngxButton`, `cngxIconButton` and `cngxCloseButton` style that class as their built-in pressed state; on any other host define the visual effect yourself:
 
 ```scss
 button {

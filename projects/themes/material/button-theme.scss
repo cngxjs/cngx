@@ -30,8 +30,10 @@
 // - shape -> corner-full: --cngx-radius-md on the host (the rung the button
 //   radius reads), the group end radius, the close-button radius
 // - state layers -> a solid hover mixes the tone toward its on-colour
-//   (--cngx-button-hover-shade); a secondary hover lays the on-container
-//   colour over the container at --mat-sys-hover-state-layer-opacity
+//   (--cngx-button-hover-shade, pressed one step stronger); a secondary
+//   hover / press lays the on-container colour over the container at
+//   --mat-sys-hover-state-layer-opacity / --mat-sys-pressed-state-layer-opacity;
+//   the outline / ghost and close-button press wash is the pressed opacity
 //
 // A directly-set knob beats an inherited one regardless of layer, so a
 // consumer's :root-level --cngx-color-* override does not reach the buttons
@@ -87,6 +89,11 @@
     var(--mat-sys-#{$on-container}) calc(var(--mat-sys-hover-state-layer-opacity, 0.08) * 100%),
     var(--mat-sys-#{$container})
   );
+  --cngx-button-secondary-bg-pressed: color-mix(
+    in srgb,
+    var(--mat-sys-#{$on-container}) calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%),
+    var(--mat-sys-#{$container})
+  );
   --cngx-button-secondary-color: var(--mat-sys-#{$on-container});
 }
 
@@ -102,6 +109,8 @@
       --cngx-color-danger: var(--mat-sys-error);
       --cngx-color-danger-text: var(--mat-sys-error);
       --cngx-color-on-danger: var(--mat-sys-on-error);
+      // Outline / ghost press wash = the M3 pressed state layer.
+      --cngx-button-pressed-wash: calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%);
     }
     @include bridge.on(".cngx-button[data-tone='primary']") {
       --cngx-button-hover-shade: var(--mat-sys-on-primary);
@@ -123,12 +132,17 @@
     }
     @include bridge.on('.cngx-close-button') {
       --cngx-close-button-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+      --cngx-close-button-pressed-bg: color-mix(
+        in srgb,
+        var(--mat-sys-on-surface) calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%),
+        transparent
+      );
       --cngx-close-button-color: var(--mat-sys-on-surface-variant);
     }
   } @else {
     // M2 has no container roles and no state-layer tokens: the secondary
-    // hooks stay unset, so the tone mix paints, and the hover keeps the
-    // default shade.
+    // hooks stay unset, so the tone mix paints, and hover and pressed keep
+    // the default shade and wash.
     @include bridge.on('.cngx-button') {
       --cngx-color-text: #{mat.get-theme-color($theme, foreground, text)};
       --cngx-color-surface: #{mat.get-theme-color($theme, background, card)};
