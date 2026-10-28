@@ -373,8 +373,9 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     this.config.chipOverflow,
   );
   /**
-   * Maximum number of chips in `'truncate'` mode before the `+N` badge.
-   * Defaults to `CngxSelectConfig.maxVisibleChips`.
+   * Maximum number of chips in `'truncate'` mode before the `+N` badge,
+   * and the `'fit'` cap before the first measurement. Defaults to
+   * `CngxSelectConfig.maxVisibleChips`.
    */
   readonly maxVisibleChips = input<number>(this.config.maxVisibleChips);
 

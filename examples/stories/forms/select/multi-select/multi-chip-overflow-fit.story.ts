@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     '<code>chipOverflow="fit"</code> keeps the trigger on one row and shows as many chips as the trigger holds; the rest fold into the <code>+N</code> badge. Drag the width slider to watch the count follow.',
   description:
-    'The select measures its own chip strip, so there is no <code>[maxVisibleChips]</code> to guess per width. Chips past the fit stay out of the tab order and are hidden from AT; the whole selection is read through the control. The space kept for the badge is <code>--cngx-select-chip-fit-badge-reserve</code> (default <code>4ch</code>): set it on the select, a container or <code>:root</code> for a wider projected badge. A label longer than the trigger ellipsizes inside its chip.',
+    'The select measures its own chip strip, so there is no <code>[maxVisibleChips]</code> to guess per width. Chips past the fit stay out of the tab order and are hidden from AT; the whole selection is read through the control. The space kept for the badge is <code>--cngx-select-chip-fit-badge-reserve</code> (default <code>5ch</code>): set it on the select, a container or <code>:root</code> for a wider projected badge. A label longer than the trigger ellipsizes inside its chip.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',

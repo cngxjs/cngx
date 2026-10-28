@@ -114,9 +114,9 @@ On a touch screen narrower than 48rem the panel opens as a modal bottom sheet, n
 | `'truncate'` | One row, the first `maxVisibleChips` chips plus a `+N` badge |
 | `'fit'` | One row, as many chips as the trigger holds, the rest in the `+N` badge |
 
-`'fit'` measures the strip, so there is no count to pick per width. The chips past the fit stay out of the tab order and are hidden from assistive technology; the whole selection is still read through the control. Before the first measurement the strip renders the `'truncate'` layout at `maxVisibleChips`.
+`'fit'` measures the strip, so there is no count to pick per width. The chips past the fit stay out of the tab order and are hidden from assistive technology; the whole selection is still read through the control. Before the first measurement the strip caps at `maxVisibleChips`, so the first paint already shows a badge and the full selection for assistive technology.
 
-The space kept for the badge is `--cngx-select-chip-fit-badge-reserve` (default `4ch`, enough for `+99`). Set it on the select, a container or `:root` when a projected `*cngxSelectChipOverflow` or a custom `chipOverflowBadge` formatter is wider:
+The space kept for the badge is `--cngx-select-chip-fit-badge-reserve` (default `5ch`, enough for `+99` at the default badge size). Set it on the select, a container or `:root` when a projected `*cngxSelectChipOverflow` or a custom `chipOverflowBadge` formatter is wider:
 
 ```css
 .team-picker {
