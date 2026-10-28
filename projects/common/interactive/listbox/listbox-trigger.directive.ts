@@ -1,5 +1,7 @@
 import { computed, Directive, ElementRef, inject, input, output } from '@angular/core';
 
+import { injectHostInteractionBlocked } from '../trigger-guard/host-interaction-blocked';
+
 import type { CngxListbox } from './listbox.directive';
 import { CngxListboxSearch } from './listbox-search.directive';
 
@@ -43,6 +45,17 @@ interface PopoverController {
  *
  * Keys from an interactive descendant of the host (a chip remove button)
  * are left to that element.
+ *
+ * ### Blocked host
+ *
+ * A blocked host opens on no key: native `disabled`, `aria-disabled="true"`,
+ * or a co-hosted cngx button reporting `disabled` (a disabled `cngxButton`
+ * stays focusable, so keydown still arrives). When a cngx button becomes
+ * disabled while the panel is open, the panel closes, and a blocked
+ * combobox input emits no `backspaceOnEmpty`. The trigger guards only the
+ * keys it handles: a `(click)="pop.toggle()"` on a plain button is the
+ * consumer's and must check the blocked state itself; a `cngxButton` host
+ * swallows that click on its own.
  *
  * Pair it with `CngxPopoverTrigger` on the same element: that directive is
  * the one writer of `aria-haspopup`, `aria-expanded` and `aria-controls`.
@@ -110,6 +123,12 @@ export class CngxListboxTrigger<T = unknown> {
   private readonly search = inject(CngxListboxSearch, { optional: true, self: true });
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
+  /** A disabled `cngxButton` stays focusable, so keydown still reaches the trigger. */
+  private readonly hostGuard = injectHostInteractionBlocked({
+    isOpen: () => this.isOpen(),
+    close: () => this.popover().hide(),
+  });
+
   protected handleKeydown(event: KeyboardEvent): void {
     // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
     // untouched - the same guard the nav strategies apply. Without it,
@@ -136,8 +155,9 @@ export class CngxListboxTrigger<T = unknown> {
     // to delete the trailing chip. Consolidated here so the trigger owns
     // the only keydown handler on the element. Non-input triggers skip
     // this path via the co-located-search guard.
-    // A held key repeats: only the first press may strip a chip.
-    if (key === 'Backspace' && this.search && !event.repeat) {
+    // A held key repeats: only the first press may strip a chip. A blocked
+    // host strips none.
+    if (key === 'Backspace' && this.search && !event.repeat && !this.hostGuard.isBlockedNow()) {
       if (host instanceof HTMLInputElement && host.value === '') {
         this.backspaceOnEmpty.emit();
         // No preventDefault - the consumer's chip-remove path owns DOM impact.
@@ -152,6 +172,9 @@ export class CngxListboxTrigger<T = unknown> {
     }
 
     if (!this.isOpen()) {
+      if (this.hostGuard.isBlockedNow()) {
+        return;
+      }
       if (key === 'ArrowDown' || key === 'Enter' || key === ' ') {
         event.preventDefault();
         this.popover().show();

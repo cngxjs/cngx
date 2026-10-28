@@ -13,6 +13,7 @@ import { outputToObservable } from '@angular/core/rxjs-interop';
 import { injectDirection, resolveInlineArrowKey } from '@cngx/core';
 import { coerceSignal } from '@cngx/core/utils';
 
+import { injectHostInteractionBlocked } from '../trigger-guard/host-interaction-blocked';
 import {
   CNGX_MENU_DISMISS_HANDLER_FACTORY,
   createMenuTriggerDismissBinding,
@@ -47,6 +48,16 @@ interface PopoverController extends CngxMenuDismissPopoverRef {
  * top submenu. The stack model is supplied by
  * {@link CNGX_MENU_FOCUS_STACK_FACTORY}, so it is shared verbatim with the
  * context-menu trigger core and swappable enterprise-wide.
+ *
+ * ### Blocked host
+ *
+ * A blocked host opens on no key: native `disabled`, `aria-disabled="true"`,
+ * or a co-hosted cngx button reporting `disabled` (a disabled `cngxButton`
+ * stays focusable, so keydown still arrives). When a cngx button becomes
+ * disabled while the panel is open, the panel closes. The trigger guards
+ * only the keys it handles: a `(click)="pop.toggle()"` on a plain button
+ * is the consumer's and must check the blocked state itself; a
+ * `cngxButton` host swallows that click on its own.
  *
  * ### Focus model
  *
@@ -133,6 +144,12 @@ export class CngxMenuTrigger {
    */
   readonly lastDismissSource = this.dismissBinding.lastSource;
 
+  /** A disabled `cngxButton` stays focusable, so keydown still reaches the trigger. */
+  private readonly hostGuard = injectHostInteractionBlocked({
+    isOpen: () => this.isOpen(),
+    close: () => this.popover().hide(),
+  });
+
   constructor() {
     inject(DestroyRef).onDestroy(() => this.dismissBinding.detach());
     effect(() => {
@@ -190,6 +207,9 @@ export class CngxMenuTrigger {
     const key = event.key;
 
     if (!this.isOpen()) {
+      if (this.hostGuard.isBlockedNow()) {
+        return;
+      }
       if (key === 'ArrowDown' || key === 'Enter' || key === ' ') {
         event.preventDefault();
         this.popover().show();
