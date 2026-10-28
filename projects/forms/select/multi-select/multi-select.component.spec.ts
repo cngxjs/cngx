@@ -89,6 +89,22 @@ class Host {
   readonly openedLog = signal<boolean | null>(null);
 }
 
+@Component({
+  template: `
+    <cngx-multi-select
+      [label]="'Farbe'"
+      [options]="options"
+      [hideSelectionIndicator]="true"
+      [(values)]="values"
+    />
+  `,
+  imports: [CngxMultiSelect],
+})
+class HiddenIndicatorHost {
+  readonly options = OPTIONS;
+  readonly values = signal<string[]>([]);
+}
+
 function flush(fixture: { detectChanges: () => void }): void {
   TestBed.flushEffects();
   fixture.detectChanges();
@@ -119,6 +135,36 @@ describe('CngxMultiSelect - skeleton', () => {
     flush(fixture);
     const listbox = fixture.debugElement.query(By.directive(CngxListbox));
     expect(listbox.nativeElement.getAttribute('aria-multiselectable')).toBe('true');
+  });
+
+  it('marks option rows as indicated while the selection indicator renders', () => {
+    const fixture = TestBed.createComponent(Host);
+    flush(fixture);
+    const trigger: HTMLElement = fixture.nativeElement.querySelector('.cngx-multi-select__trigger');
+    trigger.click();
+    flush(fixture);
+    const rows: HTMLElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('.cngx-select__option'),
+    );
+    expect(rows.length).toBe(OPTIONS.length);
+    expect(rows.every((row) => row.classList.contains('cngx-select__option--indicated'))).toBe(
+      true,
+    );
+  });
+
+  it('leaves option rows unmarked when the selection indicator is hidden', () => {
+    const fixture = TestBed.createComponent(HiddenIndicatorHost);
+    flush(fixture);
+    const trigger: HTMLElement = fixture.nativeElement.querySelector('.cngx-multi-select__trigger');
+    trigger.click();
+    flush(fixture);
+    const rows: HTMLElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('.cngx-select__option'),
+    );
+    expect(rows.length).toBe(OPTIONS.length);
+    expect(rows.some((row) => row.classList.contains('cngx-select__option--indicated'))).toBe(
+      false,
+    );
   });
 
   it('renders a chip per selected value with a remove button', () => {
