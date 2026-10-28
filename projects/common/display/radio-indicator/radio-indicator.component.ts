@@ -2,10 +2,14 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   input,
   ViewEncapsulation,
   type TemplateRef,
 } from '@angular/core';
+
+import { injectRadioConfig } from './config/inject-radio-config';
+import type { CngxRadioSkin } from './config/radio.config';
 
 /**
  * Presentational radio indicator - circle with a centred dot when checked.
@@ -72,6 +76,7 @@ import {
     '[class.cngx-radio-indicator--sm]': "size() === 'sm'",
     '[class.cngx-radio-indicator--md]': "size() === 'md'",
     '[class.cngx-radio-indicator--lg]': "size() === 'lg'",
+    '[attr.data-skin]': 'resolvedSkin()',
   },
   template: `
     <svg class="cngx-radio-indicator__svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -101,6 +106,20 @@ export class CngxRadioIndicator {
 
   /** Size preset. Maps to a `--cngx-radio-indicator-size` custom property. */
   readonly size = input<'sm' | 'md' | 'lg'>('md');
+
+  /**
+   * Visual skin. `undefined` (default) falls back to the `CNGX_RADIO_CONFIG`
+   * cascade (`provideRadioConfigAt` / `provideRadioConfig`), then to
+   * `'default'`. `cngx-radio` binds this from its own or its group's
+   * `[skin]`. Reflected as `[data-skin]` on the host.
+   */
+  readonly skin = input<CngxRadioSkin | undefined>(undefined);
+
+  private readonly config = injectRadioConfig();
+
+  protected readonly resolvedSkin = computed<CngxRadioSkin>(
+    () => this.skin() ?? this.config.skin ?? 'default',
+  );
 
   /**
    * Consumer-supplied template for the centred dot. When `null` (default),

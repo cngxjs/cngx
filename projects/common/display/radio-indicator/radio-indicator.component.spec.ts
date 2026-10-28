@@ -2,7 +2,18 @@ import { Component, signal, viewChild, type TemplateRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
+import { withRadioSkin } from './config/features';
+import { provideRadioConfig } from './config/provide-radio-config';
+import type { CngxRadioSkin } from './config/radio.config';
 import { CngxRadioIndicator } from './radio-indicator.component';
+
+@Component({
+  template: `<cngx-radio-indicator [skin]="skin()" />`,
+  imports: [CngxRadioIndicator],
+})
+class SkinHost {
+  readonly skin = signal<CngxRadioSkin | undefined>(undefined);
+}
 
 @Component({
   template: `
@@ -202,6 +213,33 @@ describe('CngxRadioIndicator', () => {
       host = hostEl(fixture);
       expect(host.querySelector('[data-custom="dot"]')).toBeNull();
       expect(host.querySelector('.cngx-radio-indicator__dot')).not.toBeNull();
+    });
+  });
+
+  describe('skin cascade', () => {
+    it('reflects "default" when neither input nor config sets a skin', () => {
+      const fixture = TestBed.createComponent(SkinHost);
+      flush(fixture);
+      expect(hostEl(fixture).getAttribute('data-skin')).toBe('default');
+    });
+
+    it('the config skin wins over the library default', () => {
+      TestBed.configureTestingModule({ providers: [provideRadioConfig(withRadioSkin('tinted'))] });
+      const fixture = TestBed.createComponent(SkinHost);
+      flush(fixture);
+      expect(hostEl(fixture).getAttribute('data-skin')).toBe('tinted');
+    });
+
+    it('the [skin] input wins over the config and falls back when cleared', () => {
+      TestBed.configureTestingModule({ providers: [provideRadioConfig(withRadioSkin('tinted'))] });
+      const fixture = TestBed.createComponent(SkinHost);
+      fixture.componentInstance.skin.set('check');
+      flush(fixture);
+      expect(hostEl(fixture).getAttribute('data-skin')).toBe('check');
+
+      fixture.componentInstance.skin.set(undefined);
+      flush(fixture);
+      expect(hostEl(fixture).getAttribute('data-skin')).toBe('tinted');
     });
   });
 });
