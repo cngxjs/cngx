@@ -101,10 +101,10 @@ export const CNGX_ICON_DOT = {
   paint: 'fill',
 } as const satisfies CngxIconData;
 
-/** Exclamation mark (error badge, failed commit). @internal */
+/** Exclamation mark in a warning triangle (error badge, failed commit). @internal */
 export const CNGX_ICON_ALERT = {
   viewBox: '0 0 24 24',
-  d: 'M12 4.5v10M12 19.5v.01',
+  d: 'M12 3L2 20.5h20zM12 9.5v5M12 17.5v.01',
   paint: 'stroke',
 } as const satisfies CngxIconData;
 
