@@ -242,10 +242,23 @@
 
     .cngx-checkbox-indicator__check,
     .cngx-checkbox-indicator__dash {
-      font-size: calc(var(--cngx-checkbox-size, 1em) * 0.75);
+      /* Functional - hardcoded */
+      display: inline-flex;
       line-height: 1;
-      font-weight: 700;
       user-select: none;
+
+      /* Themable - the glyph svg is 1em of this font size */
+      font-size: calc(var(--cngx-checkbox-size, 1em) * 0.75);
+
+      /**
+       * Stroke width of the check and dash glyphs, in grid units of their
+       * 24x24 viewBox. Heavier than the icon default so the glyph stays
+       * legible at checkbox size.
+       * @type <number>
+       * @default 3
+       * @group Glyph
+       */
+      --cngx-icon-svg-stroke-width: var(--cngx-checkbox-glyph-stroke-width, 3);
     }
 
     /* checkmark variant - bare glyph, no box. Honor the checked color directly. */

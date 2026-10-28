@@ -73,7 +73,7 @@ For one-off overrides set `--cngx-checkbox-size` inline.
 
 ## Custom glyphs
 
-`checkGlyph` and `dashGlyph` accept a `TemplateRef<void>` that replaces the built-in `&#10003;` / `&minus;` spans. The replacement template owns its own styling - the `__check` / `__dash` classes are not applied to consumer content.
+`checkGlyph` and `dashGlyph` accept a `TemplateRef<void>` that replaces the built-in check / minus svg spans. The replacement template owns its own styling - the `__check` / `__dash` classes are not applied to consumer content.
 
 ```html
 <ng-template #tick>
