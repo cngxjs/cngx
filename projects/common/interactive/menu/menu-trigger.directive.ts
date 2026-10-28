@@ -13,6 +13,7 @@ import { outputToObservable } from '@angular/core/rxjs-interop';
 import { injectDirection, resolveInlineArrowKey } from '@cngx/core';
 import { coerceSignal } from '@cngx/core/utils';
 
+import { injectHostInteractionBlocked } from '../async-click/host-interaction-blocked';
 import {
   CNGX_MENU_DISMISS_HANDLER_FACTORY,
   createMenuTriggerDismissBinding,
@@ -133,8 +134,16 @@ export class CngxMenuTrigger {
    */
   readonly lastDismissSource = this.dismissBinding.lastSource;
 
+  /** A disabled `cngxButton` stays focusable, so keydown still reaches the trigger. */
+  private readonly hostGuard = injectHostInteractionBlocked();
+
   constructor() {
     inject(DestroyRef).onDestroy(() => this.dismissBinding.detach());
+    effect(() => {
+      if (this.hostGuard.blocked() && this.isOpen()) {
+        untracked(() => this.popover().hide());
+      }
+    });
     effect(() => {
       const open = this.isOpen();
       untracked(() => {
@@ -190,6 +199,9 @@ export class CngxMenuTrigger {
     const key = event.key;
 
     if (!this.isOpen()) {
+      if (this.hostGuard.isBlockedNow()) {
+        return;
+      }
       if (key === 'ArrowDown' || key === 'Enter' || key === ' ') {
         event.preventDefault();
         this.popover().show();

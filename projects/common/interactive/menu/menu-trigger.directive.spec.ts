@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Directive, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -6,6 +6,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { provideDirection } from '@cngx/core';
 
 import { CngxPopover } from '@cngx/common/popover';
+
+import { CNGX_HOST_INTERACTION_STATE } from '../async-click/host-interaction-state.token';
 
 import {
   CNGX_MENU_DISMISS_HANDLER_FACTORY,
@@ -408,5 +410,107 @@ describe('CngxMenuTrigger submenu arrows under dir', () => {
     expect(stack.handleArrowLeft).not.toHaveBeenCalled();
     triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
     expect(stack.handleArrowLeft).toHaveBeenCalledOnce();
+  });
+});
+
+// Stands in for a co-hosted cngxButton: publishes its disabled state the way
+// the button family does, without pulling @cngx/common/button into this lib.
+const stateDisabled = signal(false);
+
+@Directive({
+  selector: '[probeHostState]',
+  providers: [{ provide: CNGX_HOST_INTERACTION_STATE, useValue: { disabled: stateDisabled } }],
+})
+class ProbeHostState {}
+
+@Component({
+  template: `
+    <button type="button" id="stated" probeHostState [cngxMenuTrigger]="menu" [popover]="pop">
+      A
+    </button>
+    <button type="button" id="native" disabled [cngxMenuTrigger]="menu" [popover]="pop">B</button>
+    <button type="button" id="aria" aria-disabled="true" [cngxMenuTrigger]="menu" [popover]="pop">
+      C
+    </button>
+    <div cngxPopover #pop="cngxPopover">
+      <ul cngxMenu [label]="'Actions'" tabindex="0" #menu="cngxMenu">
+        <li cngxMenuItem value="cut">Cut</li>
+        <li cngxMenuItem value="copy">Copy</li>
+      </ul>
+    </div>
+  `,
+  imports: [CngxMenu, CngxMenuItem, CngxMenuTrigger, CngxPopover, ProbeHostState],
+})
+class BlockedTriggerHost {}
+
+describe('CngxMenuTrigger on a blocked host', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    stateDisabled.set(false);
+    TestBed.configureTestingModule({ imports: [BlockedTriggerHost] });
+  });
+
+  afterEach(() => {
+    stateDisabled.set(false);
+    document.body.querySelectorAll('.cngx-menu-announcer').forEach((el) => el.remove());
+  });
+
+  function setup() {
+    const fixture = TestBed.createComponent(BlockedTriggerHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const el = (id: string) =>
+      fixture.debugElement.query(By.css(`#${id}`)).nativeElement as HTMLElement;
+    const popover = fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover);
+    return { el, popover };
+  }
+
+  const OPEN_KEYS = ['ArrowDown', 'ArrowUp', 'Enter', ' '];
+
+  for (const id of ['native', 'aria']) {
+    it(`${id}: no opening key opens the menu`, () => {
+      const { el, popover } = setup();
+      for (const key of OPEN_KEYS) {
+        el(id).dispatchEvent(
+          new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+        );
+        TestBed.flushEffects();
+        expect(popover.isVisible()).toBe(false);
+      }
+    });
+  }
+
+  it('interaction state disabled: no opening key opens the menu, enabled again opens', () => {
+    const { el, popover } = setup();
+    stateDisabled.set(true);
+    TestBed.flushEffects();
+    for (const key of OPEN_KEYS) {
+      el('stated').dispatchEvent(
+        new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+      );
+      TestBed.flushEffects();
+      expect(popover.isVisible()).toBe(false);
+    }
+    stateDisabled.set(false);
+    TestBed.flushEffects();
+    el('stated').dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    TestBed.flushEffects();
+    expect(popover.isVisible()).toBe(true);
+  });
+
+  it('closes an open menu when the host becomes disabled and keeps focus on the trigger', async () => {
+    const { el, popover } = setup();
+    const trigger = el('stated');
+    trigger.focus();
+    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    TestBed.flushEffects();
+    expect(popover.isVisible()).toBe(true);
+
+    stateDisabled.set(true);
+    TestBed.flushEffects();
+    await Promise.resolve();
+    expect(popover.isVisible()).toBe(false);
+    expect(document.activeElement).toBe(trigger);
   });
 });
