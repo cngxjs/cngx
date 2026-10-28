@@ -49,6 +49,16 @@ interface PopoverController extends CngxMenuDismissPopoverRef {
  * {@link CNGX_MENU_FOCUS_STACK_FACTORY}, so it is shared verbatim with the
  * context-menu trigger core and swappable enterprise-wide.
  *
+ * ### Blocked host
+ *
+ * A blocked host opens on no key: native `disabled`, `aria-disabled="true"`,
+ * or a co-hosted cngx button reporting `disabled` (a disabled `cngxButton`
+ * stays focusable, so keydown still arrives). When a cngx button becomes
+ * disabled while the panel is open, the panel closes. The trigger guards
+ * only the keys it handles: a `(click)="pop.toggle()"` on a plain button
+ * is the consumer's and must check the blocked state itself; a
+ * `cngxButton` host swallows that click on its own.
+ *
  * ### Focus model
  *
  * The dropdown trigger deliberately keeps DOM focus on the trigger

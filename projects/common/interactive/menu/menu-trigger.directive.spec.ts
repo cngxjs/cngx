@@ -514,3 +514,62 @@ describe('CngxMenuTrigger on a blocked host', () => {
     expect(document.activeElement).toBe(trigger);
   });
 });
+
+@Component({
+  template: `
+    <button
+      type="button"
+      [attr.aria-disabled]="disabled() ? 'true' : null"
+      [cngxMenuTrigger]="menu"
+      [popover]="pop"
+      (click)="disabled() || pop.toggle()"
+    >
+      A
+    </button>
+    <div cngxPopover #pop="cngxPopover">
+      <ul cngxMenu [label]="'Actions'" tabindex="0" #menu="cngxMenu">
+        <li cngxMenuItem value="cut">Cut</li>
+      </ul>
+    </div>
+  `,
+  imports: [CngxMenu, CngxMenuItem, CngxMenuTrigger, CngxPopover],
+})
+class GuardedClickHost {
+  readonly disabled = signal(true);
+}
+
+describe('CngxMenuTrigger on a plain aria-disabled button with a click toggle', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [GuardedClickHost] });
+  });
+
+  afterEach(() => {
+    document.body.querySelectorAll('.cngx-menu-announcer').forEach((el) => el.remove());
+  });
+
+  // Enter / Space on a <button> also fire a native click. The trigger leaves
+  // that activation alone (keyboard and mouse stay symmetric), so the
+  // consumer's click toggle carries the guard.
+  it('stays closed on Enter followed by the native click when the toggle checks the blocked state', () => {
+    const fixture = TestBed.createComponent(GuardedClickHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const button = fixture.debugElement.query(By.directive(CngxMenuTrigger))
+      .nativeElement as HTMLButtonElement;
+    const popover = fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover);
+
+    const keydown = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    button.dispatchEvent(keydown);
+    button.click();
+    TestBed.flushEffects();
+    expect(keydown.defaultPrevented).toBe(false);
+    expect(popover.isVisible()).toBe(false);
+
+    fixture.componentInstance.disabled.set(false);
+    fixture.detectChanges();
+    button.click();
+    TestBed.flushEffects();
+    expect(popover.isVisible()).toBe(true);
+  });
+});

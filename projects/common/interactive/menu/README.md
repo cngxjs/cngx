@@ -222,6 +222,7 @@ Closed trigger:
 
 - `ArrowDown` / `Enter` / `Space` opens the menu and highlights the first item.
 - `ArrowUp` opens the menu and highlights the last item.
+- On a blocked trigger (native `disabled`, `aria-disabled="true"`, or a co-hosted cngx button reporting `disabled`) no key opens the menu; a cngx button that becomes disabled while the menu is open closes it. A `(click)` toggle on a plain button is yours to guard; a `cngxButton` host swallows that click itself.
 
 Open menu:
 
