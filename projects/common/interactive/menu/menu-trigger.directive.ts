@@ -85,9 +85,10 @@ interface PopoverController extends CngxMenuDismissPopoverRef {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-trigger.directive.ts
  * @since 0.1.0
- * @relatedTo CngxMenu, CngxContextMenuTrigger, CngxMenuItemSubmenu, CngxPopoverTrigger
+ * @relatedTo CngxMenu, CngxContextMenuTrigger, CngxMenuItemSubmenu, CngxPopoverTrigger, CngxMenuButton
  * <example-url>http://localhost:4200/#/common/interactive/menu/submenu/two-level-submenu</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/menu/trigger/dropdown-menu</example-url>
+ * <example-url>http://localhost:4200/#/common/menu-button/menu-button/basic</example-url>
  * @axis level molecule
  */
 @Directive({

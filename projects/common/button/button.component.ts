@@ -54,7 +54,7 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button.component.ts
  * @since 0.1.0
- * @relatedTo CngxIconButton, CngxButtonStart, CngxButtonEnd, CngxAsyncClick, provideButtonConfig
+ * @relatedTo CngxIconButton, CngxButtonStart, CngxButtonEnd, CngxAsyncClick, provideButtonConfig, CngxMenuButton
  * <example-url>http://localhost:4200/#/common/button/button/variants</example-url>
  * <example-url>http://localhost:4200/#/common/button/button/tones</example-url>
  * <example-url>http://localhost:4200/#/common/button/button/sizes</example-url>

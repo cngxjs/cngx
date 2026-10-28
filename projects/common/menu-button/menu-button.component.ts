@@ -71,6 +71,9 @@ import { CNGX_BUTTON_CARET_ICON } from './caret-icon.token';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/menu-button.component.ts
  * @since 0.1.0
  * @relatedTo CngxButton, CngxMenuTrigger, CngxPopoverTrigger, CngxMenu, CNGX_BUTTON_CARET_ICON
+ * <example-url>http://localhost:4200/#/common/menu-button/menu-button/basic</example-url>
+ * <example-url>http://localhost:4200/#/common/menu-button/menu-button/disabled-with-reason</example-url>
+ * <example-url>http://localhost:4200/#/common/menu-button/menu-button/custom-caret</example-url>
  * @axis level molecule
  */
 @Component({
