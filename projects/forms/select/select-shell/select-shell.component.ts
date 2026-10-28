@@ -1263,7 +1263,7 @@ export class CngxSelectShell<T = unknown>
   // inject AD `{ optional: true }`; when missing they fall back to
   // this host via `CNGX_OPTION_INTERACTION_HOST` and call
   // `activate()` / `highlight()` from their click + pointerenter
-  // handlers. Pillar 1 derivation - no DOM walking, no event delegation.
+  // handlers. State is derived, so no DOM walking and no event delegation.
 
   /** @internal */
   activate(value: unknown): void {

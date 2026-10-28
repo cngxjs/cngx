@@ -914,10 +914,9 @@ export class CngxTreeSelect<T = unknown>
     loadingGlyph: this.tplRegistry.loadingGlyph,
     refreshing: this.tplRegistry.refreshing,
     commitError: this.tplRegistry.commitError,
-    // No inline action slot today (master-plan §9 -
-    // `CngxActionTreeSelect` is a follow-up). Shell falls back when
-    // null, so a stray `*cngxSelectAction` projection at this level is
-    // silently suppressed.
+    // No inline action slot today (an action tree-select would be its own
+    // composite). Shell falls back when null, so a stray
+    // `*cngxSelectAction` projection at this level is silently suppressed.
     action: signal<null>(null),
   };
 
