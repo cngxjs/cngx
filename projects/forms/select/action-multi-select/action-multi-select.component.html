@@ -85,8 +85,8 @@
               }
             </span>
           }
-          @if (overflowBadgeCount() > 0) {
-            <span class="cngx-select__chip-overflow-slot">
+          <span class="cngx-select__chip-overflow-slot">
+            @if (overflowBadgeCount() > 0) {
               @if (chipOverflowTpl(); as overflowT) {
                 <ng-container
                   *ngTemplateOutlet="
@@ -104,8 +104,8 @@
                   {{ overflowBadgeText() }}
                 </span>
               }
-            </span>
-          }
+            }
+          </span>
         }
       </span>
     }

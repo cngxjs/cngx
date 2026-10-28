@@ -110,8 +110,8 @@
             }
           </span>
         }
-        @if (overflowBadgeCount() > 0) {
-          <span class="cngx-select__chip-overflow-slot">
+        <span class="cngx-select__chip-overflow-slot">
+          @if (overflowBadgeCount() > 0) {
             @if (chipOverflowTpl(); as overflowT) {
               <ng-container
                 *ngTemplateOutlet="
@@ -129,7 +129,9 @@
                 {{ overflowBadgeText() }}
               </span>
             }
-          </span>
+          }
+        </span>
+        @if (overflowBadgeCount() > 0) {
           <!-- The badge is aria-hidden; the whole selection reaches AT here,
                whether the badge is built in or projected. -->
           @if (summary.hiddenSummaryText(); as text) {

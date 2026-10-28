@@ -29,7 +29,7 @@ type Kind = 'multi' | 'combo' | 'multi-projected' | 'combo-projected';
   imports: [CngxMultiSelect, CngxCombobox, CngxMultiSelectChip, CngxComboboxChip],
   template: `
     <button type="button" class="before">before</button>
-    <div class="fit-box" [style.width.px]="width()" [attr.dir]="dir()">
+    <div class="fit-box" [style.width.px]="width()" [attr.dir]="dir()" [style]="boxStyle()">
       @switch (kind()) {
         @case ('multi') {
           <cngx-multi-select
@@ -77,6 +77,7 @@ class Host {
   readonly width = signal(300);
   readonly dir = signal<'ltr' | 'rtl'>('ltr');
   readonly reserve = signal<string | null>(null);
+  readonly boxStyle = signal('');
   readonly values = signal<string[]>([...FOUR]);
   readonly reserveStyle = computed(() => {
     const reserve = this.reserve();
@@ -181,11 +182,11 @@ for (const kind of ['multi', 'combo'] as const) {
         host.width.set(800);
         await settle(fixture!);
         expect(hiddenSlots(root)).toEqual([]);
-        expect(root.querySelector('.cngx-select__chip-overflow-slot')).toBeNull();
+        expect(root.querySelector('.cngx-select__chip-overflow-badge')).toBeNull();
         host.width.set(300);
         await settle(fixture!);
         expect(hiddenSlots(root).length).toBeGreaterThan(0);
-        expect(root.querySelector('.cngx-select__chip-overflow-slot')).not.toBeNull();
+        expect(root.querySelector('.cngx-select__chip-overflow-badge')).not.toBeNull();
         expect(loopErrors).toEqual([]);
       });
 
@@ -257,4 +258,33 @@ describe('chipOverflow fit geometry - badge reserve', () => {
     expect(wideWidth).toBeGreaterThanOrEqual(probe - 0.5);
     expect(loopErrors).toEqual([]);
   });
+});
+
+describe('chipOverflow fit geometry - input min-width override', () => {
+  for (const kind of ['combo'] as const) {
+    it(`keeps one count per width when the input may shrink (${kind})`, async () => {
+      const { host, root } = await mount((h) => {
+        h.kind.set(kind);
+        h.boxStyle.set(
+          '--cngx-combobox-input-min-width: 0px; --cngx-action-multi-select-input-min-width: 0px',
+        );
+      });
+      const unstable: number[] = [];
+      for (let width = 220; width <= 900; width += 2) {
+        host.width.set(width);
+        await settle(fixture!);
+        const counts = new Set<number>();
+        for (let i = 0; i < 4; i++) {
+          await frame();
+          fixture!.detectChanges();
+          counts.add(hiddenSlots(root).length);
+        }
+        if (counts.size > 1) {
+          unstable.push(width);
+        }
+      }
+      expect(unstable).toEqual([]);
+      expect(loopErrors).toEqual([]);
+    }, 180_000);
+  }
 });

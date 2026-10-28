@@ -1417,8 +1417,11 @@
 
   /* Every measured size depends on the strip alone: each slot is capped at
      the strip minus the gap and the badge reserve in every state, the reserve
-     is a token, and a slot past the fit count stays in layout. The fit count
-     never changes a size it is computed from. */
+     is a token, a slot past the fit count stays in layout, and the badge slot
+     keeps its reserve while it is empty. The strip's own content size, which
+     sets its width next to a shrinkable input, is therefore the same with and
+     without the badge, so the fit count never changes a size it is computed
+     from. */
   .cngx-select__chip-list[data-overflow='fit'] {
     --_cngx-chip-fit-reserve: var(--cngx-select-chip-fit-badge-reserve, 4ch);
     flex-wrap: nowrap;
