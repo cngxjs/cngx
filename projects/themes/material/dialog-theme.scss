@@ -27,8 +27,9 @@
     --cngx-dialog-color: var(--mat-sys-on-surface);
 
     // Backdrop scrim - same token sidenav uses, keeps overlay surfaces
-    // aligned across the library.
-    --cngx-dialog-backdrop-bg: var(--mat-sys-scrim);
+    // aligned across the library. --mat-sys-scrim is opaque; Material
+    // applies it at 32%, like backdrop-theme does.
+    --cngx-dialog-backdrop-bg: color-mix(in srgb, var(--mat-sys-scrim) 32%, transparent);
 
     // Focus ring uses the primary tone so AT users see the same accent
     // Material uses on every other focused surface.
