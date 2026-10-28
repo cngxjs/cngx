@@ -60,6 +60,7 @@ import type { CngxRadioSkin } from './config/radio.config';
  * <example-url>http://localhost:4200/#/common/display/radio-indicator/sizes</example-url>
  * <example-url>http://localhost:4200/#/common/display/radio-indicator/skins</example-url>
  * <example-url>http://localhost:4200/#/common/display/radio-indicator/theming-via-css-custom-properties</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/radio/group-skin</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio-check-skin</example-url>
  * @axis level atom
  */

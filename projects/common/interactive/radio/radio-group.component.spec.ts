@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 import { CngxRovingItem } from '@cngx/common/a11y';
+import { provideRadioConfig, withRadioSkin, type CngxRadioSkin } from '@cngx/common/display';
 import { describe, expect, it } from 'vitest';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
 import { CNGX_STATEFUL } from '@cngx/core/utils';
@@ -428,5 +429,48 @@ describe('CngxRadioGroup stateful discovery', () => {
     const el = fixture.debugElement.query(By.directive(CngxRadioGroup)).nativeElement as HTMLElement;
     expect(el.getAttribute('aria-busy')).toBe('true');
     discoveredState.reset();
+  });
+});
+
+@Component({
+  imports: [CngxRadioGroup, CngxRadio],
+  template: `
+    <cngx-radio-group [skin]="groupSkin()">
+      <cngx-radio value="a">A</cngx-radio>
+      <cngx-radio value="b" [skin]="radioSkin()">B</cngx-radio>
+    </cngx-radio-group>
+  `,
+})
+class SkinGroupHost {
+  readonly groupSkin = signal<CngxRadioSkin | undefined>(undefined);
+  readonly radioSkin = signal<CngxRadioSkin | undefined>(undefined);
+}
+
+describe('CngxRadioGroup skin forwarding', () => {
+  function skins(fixture: { nativeElement: HTMLElement; detectChanges: () => void }): (string | null)[] {
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    return Array.from(fixture.nativeElement.querySelectorAll('cngx-radio-indicator'), (el) =>
+      el.getAttribute('data-skin'),
+    );
+  }
+
+  it('the group skin reaches every radio indicator', () => {
+    const fixture = TestBed.createComponent(SkinGroupHost);
+    fixture.componentInstance.groupSkin.set('tinted');
+    expect(skins(fixture)).toEqual(['tinted', 'tinted']);
+  });
+
+  it("a radio's own skin wins over the group skin", () => {
+    const fixture = TestBed.createComponent(SkinGroupHost);
+    fixture.componentInstance.groupSkin.set('tinted');
+    fixture.componentInstance.radioSkin.set('check');
+    expect(skins(fixture)).toEqual(['tinted', 'check']);
+  });
+
+  it('with neither binding, the config skin applies', () => {
+    TestBed.configureTestingModule({ providers: [provideRadioConfig(withRadioSkin('check'))] });
+    const fixture = TestBed.createComponent(SkinGroupHost);
+    expect(skins(fixture)).toEqual(['check', 'check']);
   });
 });

@@ -8,6 +8,7 @@ import {
   model,
 } from '@angular/core';
 import { CngxRovingTabindex } from '@cngx/common/a11y';
+import type { CngxRadioSkin } from '@cngx/common/display';
 import { CNGX_FORM_FIELD_CONTROL, type CngxFormFieldControl } from '@cngx/core/tokens';
 import { nextUid, type CngxAsyncState } from '@cngx/core/utils';
 
@@ -68,6 +69,7 @@ import {
  * <example-url>http://localhost:4200/#/common/interactive/radio/basic-vertical-group</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/radio/custom-dot-glyph</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/radio/disabled-group-cascades-per-radio-overrides</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/radio/group-skin</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/radio/orientation-horizontal</example-url>
  * @axis level molecule
  */
@@ -126,6 +128,12 @@ export class CngxRadioGroup<T = unknown>
   readonly errorMessageId = input<string | null>(null);
   readonly orientation = input<'horizontal' | 'vertical'>('vertical');
   readonly label = input<string | undefined>(undefined);
+  /**
+   * Indicator skin for every radio in the group. A radio's own `[skin]`
+   * wins; `undefined` (default) defers to `provideRadioConfigAt` /
+   * `provideRadioConfig`, then to `'default'`.
+   */
+  readonly skin = input<CngxRadioSkin | undefined>(undefined);
 
   /**
    * Explicit `aria-labelledby` target id. Wins over the automatic
