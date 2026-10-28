@@ -1,7 +1,7 @@
 import { computed, Directive, inject } from '@angular/core';
 
 import { injectButtonConfig } from './button-config';
-import { DEFAULT_SIZE } from './button-core';
+import { resolveButtonSize } from './button-core';
 import { CNGX_BUTTON_GROUP } from './button-group.token';
 import type { CngxButtonSize } from './button.types';
 
@@ -43,6 +43,6 @@ export class CngxButtonGroupAddon {
 
   /** Resolved row size: the group's, else the button config's, else `md`. */
   protected readonly size = computed<CngxButtonSize>(
-    () => this.group?.size() ?? this.config.size ?? DEFAULT_SIZE,
+    () => resolveButtonSize(undefined, this.group, this.config),
   );
 }
