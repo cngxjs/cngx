@@ -43,7 +43,7 @@
         [attr.data-empty]="isEmpty() ? '' : null"
         [attr.data-overflow]="summary.active() ? 'truncate' : chipOverflow()"
         cngxSelectChipFitStrip
-        [active]="chipOverflow() === 'fit' && !summary.active()"
+        [active]="summary.strip.fitActive()"
       >
         @if (summary.active()) {
           @if (!isEmpty()) {
@@ -61,12 +61,13 @@
           }
         } @else {
           @for (opt of summary.strip.renderedSelected(); track opt.value; let i = $index) {
+            @let fitHidden = i >= summary.strip.fitHiddenFrom();
             <span
               class="cngx-select__chip-slot"
               cngxSelectChipFitSlot
-              [class.cngx-select__chip-slot--hidden]="isFitHidden(i)"
-              [attr.inert]="isFitHidden(i) ? '' : null"
-              [attr.aria-hidden]="isFitHidden(i) ? 'true' : null"
+              [class.cngx-select__chip-slot--hidden]="fitHidden"
+              [attr.inert]="fitHidden ? '' : null"
+              [attr.aria-hidden]="fitHidden ? 'true' : null"
             >
               @if (chipTpl(); as chipT) {
                 <ng-container

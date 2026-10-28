@@ -86,7 +86,7 @@ import { createSelectSummary } from '../shared/internal/summary/select-summary';
 import {
   CngxSelectChipFitSlot,
   CngxSelectChipFitStrip,
-  handOffChipFitFocus,
+  injectChipFitFocusHandOff,
 } from '../shared/internal/chip-fit-strip.directive';
 import { injectTouchFloorSignal } from '../shared/internal/touch-floor';
 import { sameArrayContents } from '../shared/internal/compare';
@@ -1073,14 +1073,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   protected readonly overflowBadgeText = computed<string>(() =>
     this.config.fallbackLabels().chipOverflowBadge(this.overflowBadgeCount()),
   );
-  /** @internal Whether the `'fit'` strip folds the chip at `index` behind the badge. */
-  protected isFitHidden(index: number): boolean {
-    return (
-      this.chipOverflow() === 'fit' &&
-      !this.summary.active() &&
-      index >= this.chipStrip.visibleCount()
-    );
-  }
 
   private readonly togglingOption = this.core.togglingOption;
   private lastCommittedValues: T[] = [];
@@ -1235,7 +1227,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     inject(DestroyRef).onDestroy(() => this.createCommitController.cancel());
     this.lastCommittedValues = untracked(() => [...this.values()]);
 
-    handOffChipFitFocus({
+    injectChipFitFocusHandOff({
       strip: this.fitStrip,
       visibleCount: this.chipStrip.visibleCount,
       target: () => this.inputEl()?.nativeElement,

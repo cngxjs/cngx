@@ -18,11 +18,8 @@ export interface ChipOverflowOptions<T> {
   readonly chipOverflow: Signal<'wrap' | 'scroll-x' | 'truncate' | 'fit'>;
   /** Chip cap in `'truncate'`; coerced by `coerceMaxVisibleChips`. */
   readonly maxVisibleChips: Signal<number>;
-  /**
-   * Chip cap in `'fit'`: how many chips the measured strip holds. Without it
-   * `'fit'` caps at the coerced `maxVisibleChips`.
-   */
-  readonly fitCount?: Signal<number>;
+  /** Chip cap in `'fit'`: how many chips the measured strip holds. */
+  readonly fitCount: Signal<number>;
 }
 
 /**
@@ -48,6 +45,14 @@ export interface ChipOverflow<T> {
   readonly renderedSelected: Signal<CngxSelectOptionDef<T>[]>;
   /** Length of `visibleSelected`: rendered chips at this index or later are hidden. */
   readonly visibleCount: Signal<number>;
+  /** Whether the strip runs in `'fit'` and should be measured. */
+  readonly fitActive: Signal<boolean>;
+  /**
+   * First rendered index the `'fit'` strip folds behind the badge;
+   * `Infinity` outside `'fit'`, so `index >= fitHiddenFrom()` is the one
+   * hidden-slot check.
+   */
+  readonly fitHiddenFrom: Signal<number>;
   /**
    * Count of selected options hidden by `'truncate'` or `'fit'`. Zero in
    * `'wrap'` / `'scroll-x'` so the badge binding stays a single
@@ -72,10 +77,10 @@ export function createChipOverflow<T>(opts: ChipOverflowOptions<T>): ChipOverflo
   // `null` = no cap: every selected chip is visible.
   const cap = computed<number | null>(() => {
     const mode = opts.chipOverflow();
-    if (mode === 'fit' && opts.fitCount) {
+    if (mode === 'fit') {
       return opts.fitCount();
     }
-    if (mode === 'fit' || mode === 'truncate') {
+    if (mode === 'truncate') {
       return coerceMaxVisibleChips(opts.maxVisibleChips());
     }
     return null;
@@ -91,12 +96,15 @@ export function createChipOverflow<T>(opts: ChipOverflowOptions<T>): ChipOverflo
     { equal: (a, b) => sameArrayContents(a, b, Object.is) },
   );
 
+  const fitActive = computed(() => opts.chipOverflow() === 'fit');
+
   const renderedSelected = computed<CngxSelectOptionDef<T>[]>(
-    () => (opts.chipOverflow() === 'fit' ? opts.selectedOptions() : visibleSelected()),
+    () => (fitActive() ? opts.selectedOptions() : visibleSelected()),
     { equal: (a, b) => sameArrayContents(a, b, Object.is) },
   );
 
   const visibleCount = computed(() => visibleSelected().length);
+  const fitHiddenFrom = computed(() => (fitActive() ? visibleCount() : Infinity));
 
   const overflowBadgeCount = computed<number>(() => {
     const limit = cap();
@@ -113,5 +121,13 @@ export function createChipOverflow<T>(opts: ChipOverflowOptions<T>): ChipOverflo
     { equal: (a, b) => sameArrayContents(a, b, Object.is) },
   );
 
-  return { visibleSelected, renderedSelected, visibleCount, overflowBadgeCount, hiddenSelected };
+  return {
+    visibleSelected,
+    renderedSelected,
+    visibleCount,
+    fitActive,
+    fitHiddenFrom,
+    overflowBadgeCount,
+    hiddenSelected,
+  };
 }

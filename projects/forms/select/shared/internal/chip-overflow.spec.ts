@@ -14,7 +14,12 @@ function makeHarness(initial: T[], mode: 'wrap' | 'scroll-x' | 'truncate', cap =
   const selectedOptions = signal<CngxSelectOptionDef<T>[]>(initial.map(opt));
   const chipOverflow = signal<'wrap' | 'scroll-x' | 'truncate'>(mode);
   const maxVisibleChips = signal<number>(cap);
-  const strip = createChipOverflow<T>({ selectedOptions, chipOverflow, maxVisibleChips });
+  const strip = createChipOverflow<T>({
+    selectedOptions,
+    chipOverflow,
+    maxVisibleChips,
+    fitCount: signal(1),
+  });
   return { selectedOptions, chipOverflow, maxVisibleChips, strip };
 }
 
@@ -100,14 +105,19 @@ describe('createChipOverflow', () => {
     expect(strip.visibleCount()).toBe(5);
   });
 
-  it('falls back to the coerced maxVisibleChips in fit mode without a fitCount', () => {
+  it('marks the fit state and the first hidden index only in fit mode', () => {
+    const chipOverflow = signal<'wrap' | 'scroll-x' | 'truncate' | 'fit'>('fit');
     const strip = createChipOverflow<T>({
       selectedOptions: signal(['a', 'b', 'c'].map(opt)),
-      chipOverflow: signal<'wrap' | 'scroll-x' | 'truncate' | 'fit'>('fit'),
-      maxVisibleChips: signal(0),
+      chipOverflow,
+      maxVisibleChips: signal(1),
+      fitCount: signal(2),
     });
-    expect(strip.visibleCount()).toBe(1);
-    expect(strip.overflowBadgeCount()).toBe(2);
+    expect(strip.fitActive()).toBe(true);
+    expect(strip.fitHiddenFrom()).toBe(2);
+    chipOverflow.set('truncate');
+    expect(strip.fitActive()).toBe(false);
+    expect(strip.fitHiddenFrom()).toBe(Infinity);
   });
 
   it('renders only the visible chips outside fit mode', () => {

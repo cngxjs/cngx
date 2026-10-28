@@ -44,7 +44,6 @@ export class CngxSelectChipFitSlot {
 @Directive({
   selector: '[cngxSelectChipFitStrip]',
   standalone: true,
-  exportAs: 'cngxSelectChipFitStrip',
 })
 export class CngxSelectChipFitStrip {
   /** Whether the strip runs in `'fit'` and should be measured. */
@@ -136,7 +135,7 @@ function px(value: string): number {
  *
  * @internal
  */
-export function handOffChipFitFocus(opts: {
+export function injectChipFitFocusHandOff(opts: {
   readonly strip: Signal<CngxSelectChipFitStrip | undefined>;
   readonly visibleCount: Signal<number>;
   readonly target: () => HTMLElement | null | undefined;
