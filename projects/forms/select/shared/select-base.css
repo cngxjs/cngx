@@ -52,7 +52,7 @@
  *   capped at the strip minus the badge reserve; `.cngx-select__chip-slot--hidden`
  *   marks a slot past the fit count (kept in layout, invisible, behind the
  *   badge). `--cngx-select-chip-fit-badge-reserve` (unregistered, never
- *   assigned by the library, default `4ch`) sets the space kept for the
+ *   assigned by the library, default `5ch`, room for `+99`) sets the space kept for the
  *   badge; assign it on the host, a container or `:root` for a wider
  *   projected badge or a custom `chipOverflowBadge` formatter. A chip that
  *   would just fit without a badge is shortened by the reserve.
@@ -1423,7 +1423,7 @@
      without the badge, so the fit count never changes a size it is computed
      from. */
   .cngx-select__chip-list[data-overflow='fit'] {
-    --_cngx-chip-fit-reserve: var(--cngx-select-chip-fit-badge-reserve, 4ch);
+    --_cngx-chip-fit-reserve: var(--cngx-select-chip-fit-badge-reserve, 5ch);
     flex-wrap: nowrap;
     overflow: hidden;
     min-inline-size: 0;

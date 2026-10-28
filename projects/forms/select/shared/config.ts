@@ -321,7 +321,7 @@ export interface CngxSelectConfig {
    * - `'scroll-x'` - single row, horizontal scroll.
    * - `'truncate'` - first `maxVisibleChips` chips + `+N` badge.
    * - `'fit'` - one row, as many chips as fit, rest in the `+N` badge; set
-   *   `--cngx-select-chip-fit-badge-reserve` for a wider badge (default `4ch`).
+   *   `--cngx-select-chip-fit-badge-reserve` for a wider badge (default `5ch`).
    */
   readonly chipOverflow?: 'wrap' | 'scroll-x' | 'truncate' | 'fit';
   /**

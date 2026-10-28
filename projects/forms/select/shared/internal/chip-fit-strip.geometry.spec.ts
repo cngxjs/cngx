@@ -42,8 +42,9 @@ const LONG = ['Operations lead', 'Customer success', 'Finance controller', 'Plat
           </span>
         }
       </span>
-      <span class="probe" style="display: inline-block; inline-size: 4ch; flex: none"></span>
+      <span class="probe" style="display: inline-block; inline-size: 5ch; flex: none"></span>
     </div>
+    <span class="cngx-select__chip-overflow-badge badge-probe">+99</span>
     <div style="display: flex" [style.width.px]="width()">
       <span class="cngx-select__chip-list ref-strip" [attr.data-overflow]="mode()">
         @for (label of labels(); track $index) {
@@ -149,14 +150,20 @@ describe('CngxSelectChipFitStrip geometry', () => {
     );
   });
 
-  it('reads 4ch as the reserve when the public token is unset', async () => {
+  it('reads 5ch as the reserve when the public token is unset', async () => {
     const { host, root } = await mount();
     const probe = root.querySelector<HTMLElement>('.probe')!;
     expect(host.strip().snapshot()!.reserve).toBeCloseTo(probe.getBoundingClientRect().width, 0);
   });
 
+  it('keeps room for a two-digit badge in the default reserve', async () => {
+    const { host, root } = await mount();
+    const badge = root.querySelector<HTMLElement>('.badge-probe')!.getBoundingClientRect().width;
+    expect(host.strip().snapshot()!.reserve).toBeGreaterThanOrEqual(badge);
+  });
+
   it('reads a host value of the public reserve token', async () => {
-    const { host, root } = await mount((h) => h.reserve.set('8ch'));
+    const { host, root } = await mount((h) => h.reserve.set('10ch'));
     const probe = root.querySelector<HTMLElement>('.probe')!;
     expect(host.strip().snapshot()!.reserve).toBeCloseTo(probe.getBoundingClientRect().width * 2, 0);
   });
