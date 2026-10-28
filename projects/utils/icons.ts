@@ -87,6 +87,13 @@ export const CNGX_ICON_MORE_HORIZONTAL = {
   paint: 'fill',
 } as const satisfies CngxIconData;
 
+/** Vertical ellipsis, three dots (overflow menu). @internal */
+export const CNGX_ICON_MORE_VERTICAL = {
+  viewBox: '0 0 24 24',
+  d: 'M12 3a2 2 0 1 0 0 4a2 2 0 1 0 0-4zM12 10a2 2 0 1 0 0 4a2 2 0 1 0 0-4zM12 17a2 2 0 1 0 0 4a2 2 0 1 0 0-4z',
+  paint: 'fill',
+} as const satisfies CngxIconData;
+
 /** Checkmark. @internal */
 export const CNGX_ICON_CHECK = {
   viewBox: '0 0 24 24',
