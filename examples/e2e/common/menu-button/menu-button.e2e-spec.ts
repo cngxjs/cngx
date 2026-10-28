@@ -54,7 +54,9 @@ for (const dir of ['ltr', 'rtl'] as const) {
       await expect.poll(() => activeItem(page, menu)).toBe('PDF');
 
       // The panel is anchored to the button, not laid out at the page origin.
-      const anchorName = await button.evaluate((el) => getComputedStyle(el).anchorName);
+      const anchorName = await button.evaluate((el) =>
+        getComputedStyle(el).getPropertyValue('anchor-name'),
+      );
       expect(anchorName).not.toBe('none');
 
       await page.keyboard.press('End');
