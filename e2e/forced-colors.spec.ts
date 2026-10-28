@@ -72,6 +72,8 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
         borderBottomColor: cs.borderBottomColor,
         borderBottomWidth: cs.borderBottomWidth,
         borderBottomStyle: cs.borderBottomStyle,
+        fill: cs.fill,
+        stroke: cs.stroke,
         canvas,
         canvasText,
         highlight,
@@ -99,7 +101,7 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     expect(isOpaque(s.borderTopColor)).toBe(true);
   });
 
-  test('radio checked dot survives (background-drawn dot would vanish)', async ({ page }) => {
+  test('radio checked dot survives (the svg dot keeps its author fill unless re-drawn)', async ({ page }) => {
     await openForced(page, '/#/common/display/radio-indicator/default-unchecked-vs-checked');
     const dot = page
       .locator('.cngx-ex-artifact .cngx-radio-indicator--checked .cngx-radio-indicator__dot')
@@ -109,7 +111,7 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     // Exactly CanvasText, not merely "not Canvas": a coloured dot that was
     // never forced would also differ from Canvas, so the strict equality is
     // what proves the forced re-draw actually ran.
-    expect(s.backgroundColor).toBe(s.canvasText);
+    expect(s.fill).toBe(s.canvasText);
   });
 
   test('badge --dot survives (textless background-only indicator would vanish)', async ({ page }) => {

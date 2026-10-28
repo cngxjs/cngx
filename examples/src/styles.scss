@@ -1756,11 +1756,11 @@ button.chip:disabled {
 // demo.
 .demo-radio-brand-magenta {
   --cngx-radio-indicator-checked-color: var(--cngx-color-magenta, oklch(0.55 0.25 350));
-  --cngx-radio-indicator-border-width: 2px;
+  --cngx-radio-indicator-border-width: 2;
 }
 .demo-radio-brand-emerald {
   --cngx-radio-indicator-checked-color: var(--cngx-color-success, oklch(0.55 0.13 165));
-  --cngx-radio-indicator-dot-size: 0.6em;
+  --cngx-radio-indicator-dot-scale: 0.6;
 }
 
 // Button-toggle demo caption. Shared by stories under

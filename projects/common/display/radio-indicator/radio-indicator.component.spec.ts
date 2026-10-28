@@ -42,29 +42,38 @@ describe('CngxRadioIndicator', () => {
     expect(host.getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('renders the .__circle frame regardless of checked state', () => {
+  it('draws ring and dot as two circles in one 24x24 svg', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
-    const host = hostEl(fixture);
-    expect(host.querySelector('.cngx-radio-indicator__circle')).not.toBeNull();
+    const svg = hostEl(fixture).querySelector('svg.cngx-radio-indicator__svg');
+    expect(svg?.getAttribute('viewBox')).toBe('0 0 24 24');
+    expect(svg?.getAttribute('aria-hidden')).toBe('true');
+    expect(svg?.getAttribute('focusable')).toBe('false');
+    const ring = svg?.querySelector('circle.cngx-radio-indicator__circle');
+    const dot = svg?.querySelector('circle.cngx-radio-indicator__dot');
+    for (const circle of [ring, dot]) {
+      expect(circle?.getAttribute('cx')).toBe('12');
+      expect(circle?.getAttribute('cy')).toBe('12');
+    }
+    expect(ring?.getAttribute('r')).toBe('11.25');
+    expect(dot?.getAttribute('r')).toBe('12');
   });
 
-  it('checked=false → no dot glyph rendered', () => {
+  it('keeps the dot in the DOM while unchecked so the change transitions', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
     const host = hostEl(fixture);
     expect(host.classList.contains('cngx-radio-indicator--checked')).toBe(false);
-    expect(host.querySelector('.cngx-radio-indicator__dot')).toBeNull();
+    expect(host.querySelector('.cngx-radio-indicator__dot')).not.toBeNull();
   });
 
-  it('checked=true renders the dot inside the circle', () => {
+  it('checked=true sets the --checked host class with the dot still rendered', () => {
     const fixture = TestBed.createComponent(Host);
     fixture.componentInstance.checked.set(true);
     flush(fixture);
     const host = hostEl(fixture);
     expect(host.classList.contains('cngx-radio-indicator--checked')).toBe(true);
-    const circle = host.querySelector('.cngx-radio-indicator__circle');
-    expect(circle?.querySelector('.cngx-radio-indicator__dot')).not.toBeNull();
+    expect(host.querySelector('svg .cngx-radio-indicator__dot')).not.toBeNull();
   });
 
   it('checked state class toggles reactively as input changes', () => {
@@ -82,7 +91,6 @@ describe('CngxRadioIndicator', () => {
     flush(fixture);
     host = hostEl(fixture);
     expect(host.classList.contains('cngx-radio-indicator--checked')).toBe(false);
-    expect(host.querySelector('.cngx-radio-indicator__dot')).toBeNull();
   });
 
   it('disabled=true sets the --disabled host class', () => {
@@ -165,7 +173,8 @@ describe('CngxRadioIndicator', () => {
       flush(fixture);
       const host = hostEl(fixture);
       expect(host.querySelector('.cngx-radio-indicator__dot')).toBeNull();
-      const custom = host.querySelector('[data-custom="dot"]');
+      expect(host.querySelector('svg .cngx-radio-indicator__circle')).not.toBeNull();
+      const custom = host.querySelector('.cngx-radio-indicator__glyph [data-custom="dot"]');
       expect(custom).not.toBeNull();
       expect(custom?.textContent).toBe('o');
     });
@@ -176,6 +185,7 @@ describe('CngxRadioIndicator', () => {
       flush(fixture);
       const host = hostEl(fixture);
       expect(host.querySelector('.cngx-radio-indicator__dot')).toBeNull();
+      expect(host.querySelector('.cngx-radio-indicator__glyph')).toBeNull();
       expect(host.querySelector('[data-custom="dot"]')).toBeNull();
     });
 

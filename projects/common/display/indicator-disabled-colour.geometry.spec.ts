@@ -47,12 +47,15 @@ const SCHEMES = ['light', 'dark'] as const;
         <span
           class="cngx-radio-indicator cngx-radio-indicator--md cngx-radio-indicator--checked cngx-radio-indicator--disabled rbi-checked"
         >
-          <span class="cngx-radio-indicator__circle">
-            <span class="cngx-radio-indicator__dot"></span>
-          </span>
+          <svg class="cngx-radio-indicator__svg" viewBox="0 0 24 24">
+            <circle class="cngx-radio-indicator__circle" cx="12" cy="12" r="11.25" />
+            <circle class="cngx-radio-indicator__dot" cx="12" cy="12" r="12" />
+          </svg>
         </span>
         <span class="cngx-radio-indicator cngx-radio-indicator--md cngx-radio-indicator--disabled rbi-unchecked">
-          <span class="cngx-radio-indicator__circle"></span>
+          <svg class="cngx-radio-indicator__svg" viewBox="0 0 24 24">
+            <circle class="cngx-radio-indicator__circle" cx="12" cy="12" r="11.25" />
+          </svg>
         </span>
         <span
           class="probe-disabled"
@@ -66,7 +69,10 @@ const SCHEMES = ['light', 'dark'] as const;
     <span class="probe-highlighttext" style="color: HighlightText"></span>
     <!-- A non-system author colour on the plain row: the forced ink must not inherit it. -->
     <span class="cngx-radio-indicator cngx-radio-indicator--md cngx-radio-indicator--checked plain-radio" style="color: rgb(200, 0, 0)">
-      <span class="cngx-radio-indicator__circle"><span class="cngx-radio-indicator__dot"></span></span>
+      <svg class="cngx-radio-indicator__svg" viewBox="0 0 24 24">
+        <circle class="cngx-radio-indicator__circle" cx="12" cy="12" r="11.25" />
+        <circle class="cngx-radio-indicator__dot" cx="12" cy="12" r="12" />
+      </svg>
     </span>
     <div
       class="opted-out"
@@ -76,7 +82,10 @@ const SCHEMES = ['light', 'dark'] as const;
         <span class="cngx-checkbox-indicator__box"><span class="cngx-checkbox-indicator__check">✓</span></span>
       </span>
       <span class="cngx-radio-indicator cngx-radio-indicator--md cngx-radio-indicator--checked">
-        <span class="cngx-radio-indicator__circle"><span class="cngx-radio-indicator__dot"></span></span>
+        <svg class="cngx-radio-indicator__svg" viewBox="0 0 24 24">
+          <circle class="cngx-radio-indicator__circle" cx="12" cy="12" r="11.25" />
+          <circle class="cngx-radio-indicator__dot" cx="12" cy="12" r="12" />
+        </svg>
       </span>
     </div>
   `,
@@ -135,7 +144,7 @@ describe.each(SCHEMES)('disabled indicators, %s', (scheme) => {
   it('keeps every disabled indicator at full opacity', () => {
     const root = mount();
     for (const sel of ['.cbi-checked', '.cbi-unchecked', '.rbi-checked', '.rbi-unchecked']) {
-      expect(effectiveOpacity(at(root, `${sel} [class*='__']`)), sel).toBe(1);
+      expect(effectiveOpacity(at(root, `${sel} [class*='__']:last-child`)), sel).toBe(1);
     }
   });
 
@@ -157,9 +166,9 @@ describe.each(SCHEMES)('disabled indicators, %s', (scheme) => {
   it('paints the radio ring and dot with the disabled colour', () => {
     const root = mount();
     const colour = disabledColour(root);
-    expect(computedValue(at(root, '.rbi-checked .cngx-radio-indicator__circle'), 'border-top-color')).toBe(colour);
-    expect(computedValue(at(root, '.rbi-checked .cngx-radio-indicator__dot'), 'background-color')).toBe(colour);
-    expect(computedValue(at(root, '.rbi-unchecked .cngx-radio-indicator__circle'), 'border-top-color')).toBe(colour);
+    expect(computedValue(at(root, '.rbi-checked .cngx-radio-indicator__circle'), 'stroke')).toBe(colour);
+    expect(computedValue(at(root, '.rbi-checked .cngx-radio-indicator__dot'), 'fill')).toBe(colour);
+    expect(computedValue(at(root, '.rbi-unchecked .cngx-radio-indicator__circle'), 'stroke')).toBe(colour);
   });
 
   it('reads GrayText under forced colors, the enabled indicator does not', async () => {
@@ -169,8 +178,8 @@ describe.each(SCHEMES)('disabled indicators, %s', (scheme) => {
     expect(computedValue(at(root, '.cbi-unchecked .cngx-checkbox-indicator__box'), 'border-top-color')).toBe(gray);
     expect(computedValue(at(root, '.cbi-checked .cngx-checkbox-indicator__box'), 'background-color')).toBe(gray);
     expect(computedValue(at(root, '.cbi-checked .cngx-checkbox-indicator__box'), 'forced-color-adjust')).toBe('none');
-    expect(computedValue(at(root, '.rbi-checked .cngx-radio-indicator__circle'), 'border-top-color')).toBe(gray);
-    expect(computedValue(at(root, '.rbi-checked .cngx-radio-indicator__dot'), 'background-color')).toBe(gray);
+    expect(computedValue(at(root, '.rbi-checked .cngx-radio-indicator__circle'), 'stroke')).toBe(gray);
+    expect(computedValue(at(root, '.rbi-checked .cngx-radio-indicator__dot'), 'fill')).toBe(gray);
     expect(computedValue(at(root, '.cbi-enabled .cngx-checkbox-indicator__box'), 'border-top-color')).not.toBe(gray);
   });
 
@@ -182,12 +191,12 @@ describe.each(SCHEMES)('disabled indicators, %s', (scheme) => {
     expect(computedValue(box, 'background-color')).toBe('rgba(0, 0, 0, 0)');
     expect(computedValue(box, 'border-top-color')).toBe(ink);
     expect(computedValue(one(root, '.opted-out .cngx-checkbox-indicator__check'), 'color')).toBe(ink);
-    expect(computedValue(one(root, '.opted-out .cngx-radio-indicator__dot'), 'background-color')).toBe(ink);
-    expect(computedValue(one(root, '.opted-out .cngx-radio-indicator__circle'), 'border-top-color')).toBe(ink);
+    expect(computedValue(one(root, '.opted-out .cngx-radio-indicator__dot'), 'fill')).toBe(ink);
+    expect(computedValue(one(root, '.opted-out .cngx-radio-indicator__circle'), 'stroke')).toBe(ink);
     expect(computedValue(at(root, '.cbi-enabled .cngx-checkbox-indicator__box'), 'border-top-color')).toBe(
       computedValue(one(root, '.probe-canvastext'), 'color'),
     );
-    expect(computedValue(one(root, '.plain-radio .cngx-radio-indicator__dot'), 'background-color')).toBe(
+    expect(computedValue(one(root, '.plain-radio .cngx-radio-indicator__dot'), 'fill')).toBe(
       computedValue(one(root, '.probe-canvastext'), 'color'),
     );
   });

@@ -108,7 +108,7 @@ export const CNGX_ICON_CHECK = {
   paint: 'stroke',
 } as const satisfies CngxIconData;
 
-/** Solid dot (radio checked indicator). @internal */
+/** Solid dot. @internal */
 export const CNGX_ICON_DOT = {
   viewBox: '0 0 24 24',
   d: 'M8 12a4 4 0 1 0 8 0a4 4 0 1 0-8 0z',

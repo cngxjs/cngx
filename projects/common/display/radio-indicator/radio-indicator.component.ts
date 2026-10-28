@@ -9,6 +9,9 @@ import {
 
 /**
  * Presentational radio indicator - circle with a centred dot when checked.
+ * Ring and dot are two circles in one 24x24 SVG, so the dot shares the
+ * ring's coordinate system and stays centred at every size and device
+ * pixel ratio.
  *
  * **Why this exists.**
  * The library's `@cngx/forms/select` panel currently composes
@@ -24,7 +27,8 @@ import {
  * land in their own phase.
  *
  * **Responsibilities (intentionally narrow).**
- * - Render a circle frame and, when `checked` is true, a centred dot.
+ * - Render a circle frame and a centred dot that scales in when `checked`
+ *   is true (always in the DOM, so the change transitions both ways).
  * - Express checked / disabled visual state via host classes the
  *   consumer (or upstream CSS) can theme.
  * - Apply size presets (`sm` / `md` / `lg`) as CSS-custom-property
@@ -70,15 +74,19 @@ import {
     '[class.cngx-radio-indicator--lg]': "size() === 'lg'",
   },
   template: `
-    <ng-template #defaultDotGlyph>
-      <span aria-hidden="true" class="cngx-radio-indicator__dot"></span>
-    </ng-template>
-
-    <span class="cngx-radio-indicator__circle">
-      @if (checked()) {
-        <ng-container *ngTemplateOutlet="dotGlyph() ?? defaultDotGlyph" />
+    <svg class="cngx-radio-indicator__svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <circle class="cngx-radio-indicator__circle" cx="12" cy="12" r="11.25" />
+      @if (!dotGlyph()) {
+        <circle class="cngx-radio-indicator__dot" cx="12" cy="12" r="12" />
       }
-    </span>
+    </svg>
+    @if (checked()) {
+      @if (dotGlyph(); as glyph) {
+        <span class="cngx-radio-indicator__glyph">
+          <ng-container *ngTemplateOutlet="glyph" />
+        </span>
+      }
+    }
   `,
 })
 export class CngxRadioIndicator {
@@ -86,7 +94,7 @@ export class CngxRadioIndicator {
   readonly checked = input<boolean>(false);
 
   /**
-   * Disabled visual state. Purely cosmetic (opacity dim) - the indicator
+   * Disabled visual state. Purely cosmetic (disabled text colour) - the indicator
    * never intercepts events, so this is a hint, not a block.
    */
   readonly disabled = input<boolean>(false);
@@ -96,10 +104,12 @@ export class CngxRadioIndicator {
 
   /**
    * Consumer-supplied template for the centred dot. When `null` (default),
-   * the built-in `<span class="cngx-radio-indicator__dot"></span>` is
-   * rendered. When set, the consumer template replaces the dot span
-   * entirely - the `__dot` class is NOT applied to the custom content
-   * (consumers own the styling of their replacement).
+   * the built-in SVG `<circle class="cngx-radio-indicator__dot">` is
+   * rendered. When set, the SVG dot is not rendered at all; the consumer
+   * template renders only while `checked` is true, inside a
+   * `<span class="cngx-radio-indicator__glyph">` stacked over the SVG ring
+   * and centred in the same box. The `__dot` class is NOT applied to the
+   * custom content (consumers own the styling of their replacement).
    *
    * Convention-compatible with `CngxCheckboxIndicator.checkGlyph`: pass a
    * `TemplateRef<void>` obtained via `#myDotTpl`. Useful for

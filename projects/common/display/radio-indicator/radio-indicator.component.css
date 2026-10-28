@@ -1,22 +1,24 @@
 /**
  * @overview
  * Default visuals for `CngxRadioIndicator`. The host carries
- * `.cngx-radio-indicator` and renders a dot-in-circle radio glyph
- * built from a stroked circle plus an inner dot. The size scale
- * mirrors `CngxCheckboxIndicator` so both atoms read at identical
- * visual weight when placed side by side.
+ * `.cngx-radio-indicator` and renders a dot-in-circle radio glyph as
+ * one 24x24 SVG: a stroked ring plus an inner dot circle in the same
+ * coordinate system, so the dot stays centred at every size and device
+ * pixel ratio. The size scale mirrors `CngxCheckboxIndicator` so both
+ * atoms read at identical visual weight when placed side by side.
  *
  * **State modifiers**
  *
- * - `--checked` - circle border + dot paint in the checked-color
+ * - `--checked` - ring stroke + dot fill in the checked-color; the dot
+ *   scales in from `scale(0)` to `--cngx-radio-indicator-dot-scale`
  * - `--disabled` - paints by colour, never opacity: ring and dot take
  *   the 38% text recipe of a disabled field; GrayText under forced colors
  *
  * **Size variants**
  *
- * Each size pins `--cngx-radio-indicator-size` on the host; the
- * token carries `inherits: true` so the inner `__circle` and `__dot`
- * see the same active size:
+ * Each size pins `--cngx-radio-indicator-size` on the host, which
+ * sizes the one-cell grid the SVG fills. Ring width and dot scale are
+ * in viewBox units, so they scale with the size:
  *
  * - `--sm` - 0.875em
  * - `--md` - 1em (default)
@@ -24,12 +26,13 @@
  *
  * **Slots**
  *
- * - `.cngx-radio-indicator__circle` - bordered ring
- * - `.cngx-radio-indicator__dot` - inner dot; defaults to half the
- *   ring size via a `calc()` fallback on the unregistered
- *   `--cngx-radio-indicator-dot-size` so it scales with each size
- *   variant. Setting the variable to a length pins the dot and
- *   opts out of auto-scaling.
+ * - `.cngx-radio-indicator__svg` - the 24x24 SVG filling the host
+ * - `.cngx-radio-indicator__circle` - stroked ring (`r=11.25`, so a 1.5
+ *   stroke ends exactly on the box edge; wider strokes overflow visibly)
+ * - `.cngx-radio-indicator__dot` - inner dot (`r=12`, scaled by
+ *   `--cngx-radio-indicator-dot-scale`, a fraction of the diameter)
+ * - `.cngx-radio-indicator__glyph` - wrapper of a consumer `dotGlyph`,
+ *   stacked over the SVG in the same grid cell
  *
  * **Inheritance**
  *
@@ -39,10 +42,12 @@
  * - `--cngx-radio-indicator-color`, `--cngx-radio-indicator-bg`,
  *   `--cngx-radio-indicator-border-width` - leaf tokens, inherit so
  *   host-level overrides reach the `__circle` child
+ * - `--cngx-radio-indicator-dot-scale` - unregistered, declared on
+ *   `:root`, inherits to the `__dot` child
  *
  * **Reduced motion**
  *
- * Under `prefers-reduced-motion: reduce` the circle and dot
+ * Under `prefers-reduced-motion: reduce` the ring and dot
  * transitions are stripped to none so checking a radio is
  * instantaneous.
  */
@@ -85,14 +90,16 @@
   }
 
   /**
-   * Stroke width of the unchecked circle. Inherited so a host-level
-   * override reaches the `__circle` child that consumes it.
+   * Stroke width of the ring, a unitless number in grid units of the
+   * 24x24 viewBox, so the ring scales with the indicator size. A length
+   * (`2px`) is invalid for this syntax and falls back to the initial
+   * value. Inherited so a host-level override reaches the `__circle`.
    * @group Surface
    */
   @property --cngx-radio-indicator-border-width {
-    syntax: '<length>';
+    syntax: '<number>';
     inherits: true;
-    initial-value: 1.5px;
+    initial-value: 1.5;
   }
 
   /**
@@ -108,7 +115,7 @@
   }
 
   /**
-   * Transition shorthand for the circle border and dot fade.
+   * Transition shorthand for the ring paint and the dot scale.
    *
    * Derives from the `--cngx-duration-fast` rung of the motion scale; a
    * `--cngx-duration-*` brand override re-times it library-wide.
@@ -119,37 +126,32 @@
     syntax: '*';
     inherits: false;
     initial-value:
-      border-color 120ms ease,
-      background-color 120ms ease;
+      fill 120ms ease,
+      stroke 120ms ease,
+      transform 120ms ease;
   }
 
   /* Derive the duration segments from the motion scale; easing stays literal.
    * Multi-property shorthand, so the SET restates it with var() durations.
    * Broadcast :where(host, host *) because the token is read on the
-   * .cngx-radio-indicator__dot descendant and is inherits:false. Layer
+   * __circle and __dot descendants and is inherits:false. Layer
    * cngx.tokens keeps a Material bridge winning. 120ms -> fast. */
   :where(.cngx-radio-indicator, .cngx-radio-indicator *) {
-    --cngx-radio-indicator-transition: border-color var(--cngx-duration-fast) ease,
-      background-color var(--cngx-duration-fast) ease;
+    --cngx-radio-indicator-transition: fill var(--cngx-duration-fast) ease,
+      stroke var(--cngx-duration-fast) ease, transform var(--cngx-duration-fast) ease;
   }
 
-  /* `--cngx-radio-indicator-dot-size` is intentionally NOT registered
-   * via `@property`. The dot's width / height rule provides a calc
-   * fallback that derives from `--cngx-radio-indicator-size`, so the
-   * dot scales with the ring across the `sm` / `md` / `lg` variants
-   * by default. Consumers can still set
-   * `--cngx-radio-indicator-dot-size: 0.6em` to fix the dot at a
-   * specific length and break the scaling - that consumer-side
-   * override wins over the calc fallback because the variable is
-   * then defined. Registering it with an initial-value would shadow
-   * the fallback, freezing the dot at a constant size regardless of
-   * the active size variant.
-   *
-   * Documented for consumers as: "Diameter of the inner dot. Defaults
-   * to half the circle size so the dot reads as concentric without
-   * specific tuning. Set to a length to opt out of auto-scaling."
-   * @group State / Checked
-   */
+  /* Not registered as @property: unitless and inherited, so an override on
+   * the host or any ancestor reaches the __dot child. */
+  :root {
+    /**
+     * Diameter of the checked dot as a fraction of the indicator size.
+     * Unitless, so the dot scales with every size variant.
+     * @type <number>
+     * @group State / Checked
+     */
+    --cngx-radio-indicator-dot-scale: 0.5;
+  }
 
   /**
    * Size token for the `.cngx-radio-indicator--sm` variant.
@@ -195,12 +197,12 @@
 @layer cngx.components {
   @scope (.cngx-radio-indicator) {
     :scope {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+      display: inline-grid;
       vertical-align: middle;
       line-height: 1;
       flex: 0 0 auto;
+      inline-size: var(--cngx-radio-indicator-size, 1em);
+      block-size: var(--cngx-radio-indicator-size, 1em);
       color: var(--cngx-radio-indicator-color, currentColor);
     }
 
@@ -214,47 +216,58 @@
       --cngx-radio-indicator-size: var(--cngx-radio-indicator-size-lg, 1.25em);
     }
 
+    .cngx-radio-indicator__svg {
+      grid-area: 1 / 1;
+      display: block;
+      inline-size: 100%;
+      block-size: 100%;
+      overflow: visible;
+    }
+
     .cngx-radio-indicator__circle {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      color: inherit;
-      line-height: 1;
-      width: var(--cngx-radio-indicator-size, 1em);
-      height: var(--cngx-radio-indicator-size, 1em);
-      border: var(--cngx-radio-indicator-border-width, 1.5px) solid currentColor;
-      background: var(--cngx-radio-indicator-bg, transparent);
+      fill: var(--cngx-radio-indicator-bg, transparent);
+      stroke: currentColor;
+      stroke-width: var(--cngx-radio-indicator-border-width, 1.5);
       transition: var(
         --cngx-radio-indicator-transition,
-        border-color 120ms ease,
-        background-color 120ms ease
+        fill 120ms ease,
+        stroke 120ms ease,
+        transform 120ms ease
       );
     }
 
     :scope.cngx-radio-indicator--checked .cngx-radio-indicator__circle {
-      border-color: var(
+      stroke: var(
         --cngx-radio-indicator-checked-color,
         var(--cngx-color-primary, oklch(0.66 0.19 50))
       );
     }
 
     .cngx-radio-indicator__dot {
-      display: inline-block;
-      border-radius: 50%;
-      width: var(
-        --cngx-radio-indicator-dot-size,
-        calc(var(--cngx-radio-indicator-size, 1em) * 0.5)
-      );
-      height: var(
-        --cngx-radio-indicator-dot-size,
-        calc(var(--cngx-radio-indicator-size, 1em) * 0.5)
-      );
-      background: var(
+      fill: var(
         --cngx-radio-indicator-checked-color,
         var(--cngx-color-primary, oklch(0.66 0.19 50))
       );
-      transition: var(--cngx-radio-indicator-transition, transform 120ms ease);
+      transform-box: fill-box;
+      transform-origin: center;
+      transform: scale(0);
+      transition: var(
+        --cngx-radio-indicator-transition,
+        fill 120ms ease,
+        stroke 120ms ease,
+        transform 120ms ease
+      );
+    }
+
+    :scope.cngx-radio-indicator--checked .cngx-radio-indicator__dot {
+      transform: scale(var(--cngx-radio-indicator-dot-scale, 0.5));
+    }
+
+    .cngx-radio-indicator__glyph {
+      grid-area: 1 / 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     /* Disabled by colour, never opacity (the field recipe): the checked ring
@@ -273,24 +286,20 @@
   }
 }
 
-/* forced-colors (WHCM): the checked signal is the inner dot, painted with
- * background-color - which the forced palette flattens to Canvas, erasing the
- * dot so a checked radio reads as unchecked. Re-draw it in the system
- * foreground ink so "selected" survives; the ring's border-color self-heals.
- * Unlayered + direct selector (outside @scope) to beat the layered component
- * rule and sidestep the @scope/layer cascade trap. */
+/* forced-colors (WHCM): every indicator paint reads the row ink, so the
+ * checked dot and both ring states stay visible. Unlayered + direct selector
+ * (outside @scope) to beat the layered component rule and sidestep the
+ * @scope/layer cascade trap. */
 @media (forced-colors: active) {
-  /* The dot paints the row ink: CanvasText on a plain row, or the ink a row
-   * declares in --_cngx-forced-ink (a selected option opts out of forcing to
-   * paint its own Highlight pair and sets HighlightText; a disabled one sets
-   * GrayText). A background cannot follow currentColor here - a forced
-   * background turns it into Canvas - so the ink is declared, in system
-   * keywords only. The checked ring follows the row colour like any stroke. */
-  .cngx-radio-indicator__dot {
-    background: var(--_cngx-forced-ink, CanvasText);
+  /* The row ink is CanvasText on a plain row, or the ink a row declares in
+   * --_cngx-forced-ink: a keyboard-highlighted or selected option opts out of
+   * forcing to paint its own Highlight pair and sets HighlightText, which the
+   * opt-out does not force, so it is declared in system keywords only. */
+  .cngx-radio-indicator .cngx-radio-indicator__circle {
+    stroke: var(--_cngx-forced-ink, CanvasText);
   }
-  .cngx-radio-indicator.cngx-radio-indicator--checked .cngx-radio-indicator__circle {
-    border-color: currentColor;
+  .cngx-radio-indicator .cngx-radio-indicator__dot {
+    fill: var(--_cngx-forced-ink, CanvasText);
   }
   /* Disabled is painted by colour, which the forced palette overrides; re-signal
    * it with GrayText on the ring and the dot. */
@@ -298,9 +307,9 @@
     color: GrayText;
   }
   .cngx-radio-indicator.cngx-radio-indicator--disabled .cngx-radio-indicator__circle {
-    border-color: GrayText;
+    stroke: GrayText;
   }
   .cngx-radio-indicator.cngx-radio-indicator--disabled .cngx-radio-indicator__dot {
-    background: GrayText;
+    fill: GrayText;
   }
 }
