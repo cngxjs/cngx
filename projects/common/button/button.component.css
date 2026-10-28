@@ -665,7 +665,7 @@
  * opts out so the system pair paints: every variant is a ButtonText border on
  * ButtonFace (link stays LinkText), disabled is GrayText. A solid primary or
  * danger button fills with Highlight so the main action still stands out once
- * colour emphasis is gone. The reset's focus outline would keep its author
+ * colour emphasis is gone; a press inverts the pair. The reset's focus outline would keep its author
  * colour under the opt-out, so it is re-pointed at Highlight. Unlayered, outside
  * @scope, `!important` because the base uses `:scope[data-*]` compounds. */
 @media (forced-colors: active) {
@@ -688,6 +688,28 @@
     border-color: Highlight !important;
   }
   .cngx-button[data-variant='solid']:is([data-tone='primary'], [data-tone='danger']):hover {
+    border-color: ButtonText !important;
+  }
+  /* Pressed inverts the system pair, so a press still reads once the tone mix
+   * is gone: ButtonFace buttons fill with Highlight, a Highlight-filled solid
+   * tone drops back to ButtonFace with a Highlight edge, a link turns
+   * ActiveText. Never on an aria-disabled (or busy) button. */
+  .cngx-button:is(:active, .cngx-pressed):not([aria-disabled='true']) {
+    background: Highlight !important;
+    color: HighlightText !important;
+    border-color: Highlight !important;
+  }
+  .cngx-button[data-variant='solid']:is([data-tone='primary'], [data-tone='danger']):is(
+      :active,
+      .cngx-pressed
+    ):not([aria-disabled='true']) {
+    background: ButtonFace !important;
+    color: ButtonText !important;
+    border-color: Highlight !important;
+  }
+  .cngx-button[data-variant='link']:is(:active, .cngx-pressed):not([aria-disabled='true']) {
+    background: transparent !important;
+    color: ActiveText !important;
     border-color: ButtonText !important;
   }
   .cngx-button[aria-disabled='true']:not([data-busy]) {
