@@ -1070,7 +1070,10 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     });
   }
 
-  /** Opens the panel. Unlike a trigger click it is not gated by `disabled`. */
+  /**
+   * Opens the panel. On a disabled control the panel closes again at once, so
+   * the call has no effect.
+   */
   open(): void {
     this.popoverRef()?.show();
   }
@@ -1083,8 +1086,8 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     this.popoverRef()?.hide();
   }
   /**
-   * Opens the panel when it is closed and closes it when it is open. Like
-   * `open()`, it is not gated by `disabled`.
+   * Opens the panel when it is closed and closes it when it is open. On a
+   * disabled control an open is undone at once, as with `open()`.
    */
   toggle(): void {
     this.popoverRef()?.toggle();
