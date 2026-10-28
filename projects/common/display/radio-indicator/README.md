@@ -66,8 +66,8 @@ Ring width and dot size live in the SVG's 24-unit grid, so both scale with the s
 |Token|Default|Meaning|
 |-|-|-|
 |`--cngx-radio-indicator-border-width`|`1.5`|Ring stroke width, a unitless number in grid units. A length such as `2px` is invalid and falls back to the default.|
-|`--cngx-radio-indicator-dot-scale`|`0.5`|Dot diameter as a fraction of the indicator size. Replaces the former `--cngx-radio-indicator-dot-size` length.|
-|`--cngx-radio-indicator-color`|`currentColor`|Unchecked ring colour.|
+|`--cngx-radio-indicator-dot-scale`|`0.54`|Dot diameter as a fraction of the indicator size. Replaces the former `--cngx-radio-indicator-dot-size` length.|
+|`--cngx-radio-indicator-color`|55% mix of `currentColor`|Unchecked ring colour; a hairline that clears 3:1 against the surface.|
 |`--cngx-radio-indicator-checked-color`|`--cngx-color-primary`|Checked ring and dot colour.|
 |`--cngx-radio-indicator-bg`|`transparent`|Fill inside the ring.|
 

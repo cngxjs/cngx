@@ -86,6 +86,20 @@ $theme: mat.define-theme((
       expect(CONSUMED).toContain(name);
     }
   });
+
+  it('maps the idle radio ring to the secondary-text foreground (M2)', () => {
+    const css = compileThemeEntry(`
+@use '@angular/material' as mat;
+@use 'material/interactive-controls-theme' as bridge;
+
+$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
+$accent: mat.m2-define-palette(mat.$m2-pink-palette);
+$theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)));
+
+@include bridge.theme($theme);
+`);
+    expect(css).toContain('--cngx-radio-indicator-color: rgba(0, 0, 0, 0.54)');
+  });
 });
 
 describe('copy-block Material bridge', () => {

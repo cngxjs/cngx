@@ -31,6 +31,9 @@
   } @else {
     --cngx-checkbox-border: 1.5px solid #{mat.get-theme-color($theme, foreground, divider)};
     --cngx-checkbox-checked-bg: #{mat.get-theme-color($theme, primary)};
+    // Theme-derived idle ring, so M2 apps do not fall back to the
+    // component's 55% currentColor mix.
+    --cngx-radio-indicator-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
     --cngx-radio-indicator-checked-color: #{mat.get-theme-color($theme, primary)};
     --cngx-toggle-track-bg-on: #{mat.get-theme-color($theme, primary)};
   }

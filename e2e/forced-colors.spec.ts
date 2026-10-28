@@ -262,6 +262,32 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     expect(s.backgroundColor).toBe(s.highlight);
   });
 
+  test('radio indicator ring takes the row ink inside the keyboard-highlighted option, CanvasText elsewhere', async ({ page }) => {
+    await openForced(page, '/#/forms/select/single-select/selection-indicator-variant-radio');
+    const trigger = page.locator('.cngx-ex-artifact .cngx-select__trigger').first();
+    await expect(trigger).toBeVisible();
+    await trigger.click();
+    await page.keyboard.press('ArrowDown');
+    const active = page.locator('.cngx-option--highlighted').first();
+    await expect(active).toBeVisible();
+    const ring = active.locator('.cngx-radio-indicator:not(.cngx-radio-indicator--checked) .cngx-radio-indicator__circle');
+    const highlightText = await page.evaluate(() => {
+      const probe = document.createElement('span');
+      probe.style.color = 'HighlightText';
+      document.body.appendChild(probe);
+      const value = getComputedStyle(probe).color;
+      probe.remove();
+      return value;
+    });
+    // The ring stroke transitions into the row ink, so poll past the tween.
+    await expect.poll(async () => (await readAffordance(ring)).stroke).toBe(highlightText);
+    const idleRing = page
+      .locator('.cngx-select__option:not(.cngx-option--highlighted):not(.cngx-option--disabled) .cngx-radio-indicator__circle')
+      .first();
+    const idle = await readAffordance(idleRing);
+    expect(idle.stroke).toBe(idle.canvasText);
+  });
+
   test('keyboard-active tree node re-signals with Highlight (tint-only node would collapse to Canvas)', async ({ page }) => {
     await openForced(page, '/#/forms/select/tree-select/basic-single-level-toggle');
     const trigger = page.locator('.cngx-ex-artifact .cngx-tree-select__trigger').first();
