@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { form, schema, required, email, disabled, FormField } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -138,7 +139,6 @@ interface FieldModel {
     CngxInputClear,
     CngxAutosize,
   ],
-  styleUrl: './material-lab.scss',
   template: `
     <div class="lab mat-app-background mat-typography">
       <section class="lab-wide">
@@ -757,6 +757,18 @@ export class MaterialLab {
   protected matLocked = 'ACC-100425';
 
   constructor() {
+    // The lab sheet (full Material theme + every bridge) outgrows the
+    // examples-wide anyComponentStyle budget, so it ships as the non-injected
+    // `material-lab-theme` global bundle with its own budget (angular.json). It is
+    // linked while the lab is mounted, so the 16px root and the Material
+    // theme leave with it, as they did as a component style.
+    const doc = inject(DOCUMENT);
+    const sheet = doc.createElement('link');
+    sheet.rel = 'stylesheet';
+    sheet.href = 'material-lab-theme.css';
+    doc.head.appendChild(sheet);
+    inject(DestroyRef).onDestroy(() => sheet.remove());
+
     // Pre-touch the required/invalid fields so their error styling is visible on
     // load — this is a fidelity harness, not an interaction demo.
     this.fieldForm.reqName().markAsTouched();
