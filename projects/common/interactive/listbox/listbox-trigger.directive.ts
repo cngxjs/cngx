@@ -1,4 +1,15 @@
-import { computed, Directive, ElementRef, inject, input, output } from '@angular/core';
+import {
+  computed,
+  Directive,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  output,
+  untracked,
+} from '@angular/core';
+
+import { injectHostInteractionBlocked } from '../async-click/host-interaction-blocked';
 
 import type { CngxListbox } from './listbox.directive';
 import { CngxListboxSearch } from './listbox-search.directive';
@@ -110,6 +121,17 @@ export class CngxListboxTrigger<T = unknown> {
   private readonly search = inject(CngxListboxSearch, { optional: true, self: true });
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
+  /** A disabled `cngxButton` stays focusable, so keydown still reaches the trigger. */
+  private readonly hostGuard = injectHostInteractionBlocked();
+
+  constructor() {
+    effect(() => {
+      if (this.hostGuard.blocked() && this.isOpen()) {
+        untracked(() => this.popover().hide());
+      }
+    });
+  }
+
   protected handleKeydown(event: KeyboardEvent): void {
     // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
     // untouched - the same guard the nav strategies apply. Without it,
@@ -152,6 +174,9 @@ export class CngxListboxTrigger<T = unknown> {
     }
 
     if (!this.isOpen()) {
+      if (this.hostGuard.isBlockedNow()) {
+        return;
+      }
       if (key === 'ArrowDown' || key === 'Enter' || key === ' ') {
         event.preventDefault();
         this.popover().show();
