@@ -235,13 +235,15 @@ $_roles: (
   @return var(--mat-sys-#{$role}-#{$prop}, #{$fallback});
 }
 
-$_pad: 'var(--cngx-button-padding-inline, 24px)';
+$_pad: 'var(--cngx-button-padding-inline, var(--cngx-space-lg, 24px))';
 $_label: ":not([data-variant='link'], .cngx-icon-button)";
 // The group addon reads the button's metric and type tokens and carries the
 // same data-size, so it shares the rules; the group parent lifts it to the
 // button rules' (0,3,0).
 $_addon: '.cngx-button-group > .cngx-button-group__addon';
-// A <cngx-icon> with an explicit size keeps its own rung.
+// A <cngx-icon> sized xs / sm / lg / xl keeps its own rung. `md` is the
+// input default (icon.component.ts) and sets the same class as an unset size,
+// so an explicit size="md" cannot be told apart and follows the button.
 $_unsized: 'cngx-icon.cngx-icon:not(.cngx-icon--xs, .cngx-icon--sm, .cngx-icon--lg, .cngx-icon--xl)';
 
 @mixin metrics($theme) {
@@ -307,12 +309,13 @@ $_unsized: 'cngx-icon.cngx-icon:not(.cngx-icon--xs, .cngx-icon--sm, .cngx-icon--
         --cngx-icon-size: var(--cngx-button-icon-size, 1.25em);
       }
 
-      // Icon-button glyph: 24px on the 16px control font.
-      .cngx-icon-button.cngx-button .cngx-icon-button__glyph > :is(svg, img) {
+      // Icon-button glyph: 24px on the 16px control font. The close button
+      // is excluded, not out-ordered: its own rules below size its glyph.
+      .cngx-icon-button.cngx-button:not(.cngx-close-button) .cngx-icon-button__glyph > :is(svg, img) {
         inline-size: 1.5em;
         block-size: 1.5em;
       }
-      .cngx-icon-button.cngx-button .cngx-icon-button__glyph > #{$_unsized} {
+      .cngx-icon-button.cngx-button:not(.cngx-close-button) .cngx-icon-button__glyph > #{$_unsized} {
         --cngx-icon-size: 1.5em;
       }
       .cngx-close-button.cngx-button .cngx-icon-button__glyph > :is(svg, img) {
