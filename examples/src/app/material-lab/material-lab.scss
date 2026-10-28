@@ -52,8 +52,8 @@ html {
   // Real Material widgets need their component themes; the cngx bridges theme
   // the cngx widget alongside. Include only the components the harness actually
   // renders (select / form-field / chips / autocomplete / input) instead of
-  // mat.all-component-themes, which emits ~71kB and blows the material-lab-theme
-  // bundle budget (angular.json).
+  // mat.all-component-themes, which emits ~71kB, past the 64kB warning of the
+  // material-lab-theme bundle budget (angular.json).
   @include mat.select-theme($theme);
   @include mat.form-field-theme($theme);
   @include mat.chips-theme($theme);

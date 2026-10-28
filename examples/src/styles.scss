@@ -10,7 +10,7 @@
 // @use must precede every other rule, the CSS @imports included.
 @use '@angular/material' as mat;
 // Working-tree button and icon bridges for the button Material-bridge story
-// (scoped to `.demo-material-bridge` below), by relative path like the
+// (scoped to its generated host element below), by relative path like the
 // material-lab harness.
 @use '../../projects/themes/material/button-theme.scss' as cngx-button-bridge;
 @use '../../projects/themes/material/icon-theme.scss' as cngx-icon-bridge;
@@ -4038,7 +4038,9 @@ html {
 }
 
 // Demo-only scope for the button Material-bridge story: stands in for an app
-// that includes `button.theme($theme)` on `html`. In M3 the bridge reads the
+// that includes `button.theme($theme)` on `html`. The scope is the story's
+// generated host element (`app-<demo>-<example>`, examples-gen), so the
+// story template carries no demo class a consumer would not have. In M3 the bridge reads the
 // `--mat-sys-*` values the `mat.theme` block above emits, so the define-theme
 // object only carries the version, and the dark scheme follows `light-dark()`.
 $demo-material-bridge-theme: mat.define-theme(
@@ -4050,7 +4052,7 @@ $demo-material-bridge-theme: mat.define-theme(
   )
 );
 
-.demo-material-bridge {
+app-button-material-bridge {
   @include cngx-button-bridge.theme($demo-material-bridge-theme);
   @include cngx-icon-bridge.theme($demo-material-bridge-theme);
 }
