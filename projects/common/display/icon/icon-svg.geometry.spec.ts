@@ -22,6 +22,9 @@ import { CngxIconSvg } from './icon-svg.component';
       <svg class="fill" [cngxIconSvg]="caret"></svg>
       <svg class="stroke" [cngxIconSvg]="x"></svg>
       <svg class="sized" style="--cngx-icon-svg-size: 24px" [cngxIconSvg]="caret"></svg>
+      <span style="--cngx-icon-svg-size: 2em; --cngx-icon-svg-stroke-width: 1.5">
+        <svg class="ancestor" [cngxIconSvg]="x"></svg>
+      </span>
       <cngx-icon size="lg">
         <svg class="in-icon-stroke" [cngxIconSvg]="x"></svg>
       </cngx-icon>
@@ -83,6 +86,14 @@ describe('CngxIconSvg geometry', () => {
     expect(computedValue(el, 'stroke')).toBe('rgb(255, 0, 0)');
     expect(computedValue(el, 'stroke-width')).toBe('2px');
     expect(computedValue(el, 'stroke-linecap')).toBe('round');
+    expect(computedValue(el, 'stroke-linejoin')).toBe('round');
+  });
+
+  it('picks up size and stroke-width overrides set on an ancestor', () => {
+    const el = query(mount(), '.ancestor');
+    const box = el.getBoundingClientRect();
+    expect(box.width).toBeCloseTo(2 * 16, 0);
+    expect(computedValue(el, 'stroke-width')).toBe('1.5px');
   });
 
   it('keeps a stroke icon unfilled inside cngx-icon', () => {

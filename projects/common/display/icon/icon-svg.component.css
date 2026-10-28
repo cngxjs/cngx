@@ -14,9 +14,29 @@
  * **Inheritance**
  *
  * `--cngx-icon-svg-size` and `--cngx-icon-svg-stroke-width` are
- * unregistered, so an override on any ancestor reaches every glyph
- * below it.
+ * unregistered and declared on `:root`, so an override on any ancestor
+ * reaches every glyph below it; the em size resolves against the font
+ * size the glyph sits in.
  */
+
+@layer cngx.tokens {
+  /* Not registered as @property: an em value on a registered token would
+   * compute once where it is declared, not where the glyph reads it. */
+  :root {
+    /**
+     * Rendered size of the glyph box.
+     * @type <length>
+     * @group Layout
+     */
+    --cngx-icon-svg-size: 1em;
+    /**
+     * Stroke width of outline glyphs, in grid units of the 24x24 viewBox.
+     * @type <number>
+     * @group Stroke
+     */
+    --cngx-icon-svg-stroke-width: 2;
+  }
+}
 
 @layer cngx.components {
   @scope (.cngx-icon-svg) {
@@ -26,31 +46,23 @@
       flex: none;
       vertical-align: middle;
       overflow: visible;
+      fill: currentColor;
 
-      /**
-       * Rendered size of the glyph box.
-       * @type <length>
-       * @default 1em
-       * @group Layout
-       */
+      /* Themable */
       inline-size: var(--cngx-icon-svg-size, 1em);
       block-size: var(--cngx-icon-svg-size, 1em);
-      fill: currentColor;
     }
 
     :scope.cngx-icon-svg--stroke {
+      /* Functional - hardcoded: round caps are part of the shape (see
+       * `CngxIconPaint`). */
       fill: none;
       stroke: currentColor;
-      /**
-       * Stroke width of outline glyphs, in grid units of the 24x24
-       * viewBox.
-       * @type <number>
-       * @default 2
-       * @group Stroke
-       */
-      stroke-width: var(--cngx-icon-svg-stroke-width, 2);
       stroke-linecap: round;
       stroke-linejoin: round;
+
+      /* Themable */
+      stroke-width: var(--cngx-icon-svg-stroke-width, 2);
     }
   }
 }
