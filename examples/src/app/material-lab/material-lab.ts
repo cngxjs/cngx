@@ -1,5 +1,14 @@
 import { DOCUMENT } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  type TemplateRef,
+  ViewEncapsulation,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { form, schema, required, email, disabled, FormField } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -11,6 +20,10 @@ import { MatSliderModule } from '@angular/material/slider';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatBottomSheet, type MatBottomSheetRef } from '@angular/material/bottom-sheet';
+import { MatSnackBar, MatSnackBarModule, type MatSnackBarRef } from '@angular/material/snack-bar';
 
 import {
   CngxButton,
@@ -22,6 +35,14 @@ import {
 } from '@cngx/common/button';
 import { CngxAvatar, CngxIcon } from '@cngx/common/display';
 import { CngxSlider, CngxRangeSlider } from '@cngx/common/interactive';
+import { CngxBottomSheet, CngxDialog, CngxDialogTitle } from '@cngx/common/dialog';
+import {
+  CngxPopoverBody,
+  CngxPopoverHeader,
+  CngxPopoverPanel,
+  CngxPopoverTrigger,
+} from '@cngx/common/popover';
+import { CngxAlert, CngxBanner, CngxBannerOutlet, CngxToaster } from '@cngx/ui/feedback';
 import {
   CngxAccordionGroup,
   CngxAccordionItem,
@@ -92,6 +113,9 @@ interface FieldModel {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  // Component-scoped banner stack so the dismissible banner renders inside the
+  // lab section (its own outlet) instead of the app-level outlet at the top.
+  providers: [CngxBanner],
   imports: [
     FormsModule,
     FormField,
@@ -104,6 +128,18 @@ interface FieldModel {
     MatExpansionModule,
     MatButtonModule,
     MatIconModule,
+    MatCardModule,
+    MatDialogModule,
+    MatSnackBarModule,
+    CngxAlert,
+    CngxBannerOutlet,
+    CngxBottomSheet,
+    CngxDialog,
+    CngxDialogTitle,
+    CngxPopoverBody,
+    CngxPopoverHeader,
+    CngxPopoverPanel,
+    CngxPopoverTrigger,
     CngxButton,
     CngxButtonGroup,
     CngxButtonGroupAddon,
@@ -183,6 +219,103 @@ interface FieldModel {
             <button cngxButton>Show</button>
           </div>
         </div>
+      </section>
+
+      <section class="lab-wide" id="close-hosts">
+        <h3>close buttons in context (Material left where it exists, cngx right)</h3>
+
+        <div class="lab-pair">
+          <mat-card appearance="outlined" class="lab-host lab-host--mat-alert">
+            <mat-card-header>
+              <mat-card-title>Unsaved changes</mat-card-title>
+              <button matIconButton aria-label="Dismiss notice" class="lab-host-close">
+                <mat-icon>close</mat-icon>
+              </button>
+            </mat-card-header>
+            <mat-card-content>Your changes will be lost if you leave this page.</mat-card-content>
+          </mat-card>
+          <cngx-alert class="lab-host" severity="warning" title="Unsaved changes" [closable]="true">
+            Your changes will be lost if you leave this page.
+          </cngx-alert>
+        </div>
+
+        <div class="lab-pair">
+          <span class="lab-pair-label">banner (cngx only)</span>
+          <cngx-banner-outlet class="lab-host lab-host--banner" />
+          <button cngxButton="outline" (click)="showBanner()">Show banner</button>
+        </div>
+
+        <div class="lab-row">
+          <button cngxButton="outline" (click)="openMatSnack()">MatSnackBar</button>
+          <button cngxButton="outline" (click)="showToast()">CngxToaster toast</button>
+          <button cngxButton="outline" (click)="openMatSheet()">MatBottomSheet</button>
+          <button cngxButton="outline" (click)="cngxSheet.open()">CngxBottomSheet</button>
+          <button cngxButton="outline" (click)="openMatDialog()">MatDialog</button>
+          <button cngxButton="outline" (click)="cngxDlg.open()">CngxDialog</button>
+          <button
+            cngxButton="outline"
+            [cngxPopoverTrigger]="labPanel.popover"
+            (click)="labPanel.popover.toggle()"
+          >
+            Popover panel (cngx only)
+          </button>
+        </div>
+
+        <cngx-popover-panel #labPanel [showClose]="true" placement="bottom-start">
+          <span cngxPopoverHeader>Recent activity</span>
+          <ul cngxPopoverBody class="lab-host-list">
+            <li>Invoice 1042 was paid</li>
+            <li>Anna joined the workspace</li>
+          </ul>
+        </cngx-popover-panel>
+
+        <dialog cngxDialog cngxBottomSheet #cngxSheet="cngxDialog" class="lab-host--cngx-sheet">
+          <div class="lab-host-head">
+            <h2 cngxDialogTitle>Share options</h2>
+            <button cngxCloseButton aria-label="Close share options" (click)="cngxSheet.dismiss()"></button>
+          </div>
+          <p>Copy the link or send it by email.</p>
+        </dialog>
+
+        <dialog cngxDialog #cngxDlg="cngxDialog" class="lab-host--cngx-dialog">
+          <div class="lab-host-head">
+            <h2 cngxDialogTitle>Delete project</h2>
+            <button cngxCloseButton aria-label="Close delete project dialog" (click)="cngxDlg.dismiss()"></button>
+          </div>
+          <p>This removes the project and all of its files.</p>
+        </dialog>
+
+        <ng-template #matSnackTpl>
+          <div class="lab-snack">
+            <span matSnackBarLabel>Message archived. It moves to the archive folder and stays there for 30 days.</span>
+            <span matSnackBarActions>
+              <button matButton matSnackBarAction (click)="matSnackRef?.dismissWithAction()">Undo</button>
+              <button matIconButton aria-label="Dismiss" class="lab-host-close" (click)="matSnackRef?.dismiss()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </span>
+          </div>
+        </ng-template>
+
+        <ng-template #matSheetTpl>
+          <div class="lab-host-head lab-host--mat-sheet">
+            <h2 class="mat-title-medium">Share options</h2>
+            <button matIconButton aria-label="Close share options" class="lab-host-close" (click)="matSheetRef?.dismiss()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          <p>Copy the link or send it by email.</p>
+        </ng-template>
+
+        <ng-template #matDialogTpl>
+          <div class="lab-host-head lab-host--mat-dialog">
+            <h2 mat-dialog-title>Delete project</h2>
+            <button matIconButton mat-dialog-close aria-label="Close delete project dialog" class="lab-host-close">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          <mat-dialog-content>This removes the project and all of its files.</mat-dialog-content>
+        </ng-template>
       </section>
 
       <section>
@@ -773,6 +906,51 @@ export class MaterialLab {
     // load — this is a fidelity harness, not an interaction demo.
     this.fieldForm.reqName().markAsTouched();
     this.fieldForm.errEmail().markAsTouched();
+
+    this.showBanner();
+  }
+
+  private readonly toaster = inject(CngxToaster);
+  private readonly banner = inject(CngxBanner);
+  private readonly matDialog = inject(MatDialog);
+  private readonly matBottomSheet = inject(MatBottomSheet);
+  private readonly matSnackBar = inject(MatSnackBar);
+  private readonly matSnackTpl = viewChild.required<TemplateRef<unknown>>('matSnackTpl');
+  private readonly matSheetTpl = viewChild.required<TemplateRef<unknown>>('matSheetTpl');
+  private readonly matDialogTpl = viewChild.required<TemplateRef<unknown>>('matDialogTpl');
+  protected matSnackRef: MatSnackBarRef<unknown> | undefined;
+  protected matSheetRef: MatBottomSheetRef<unknown> | undefined;
+
+  protected showBanner(): void {
+    this.banner.show({
+      id: 'lab:maintenance',
+      severity: 'warning',
+      message: 'Scheduled maintenance tonight from 22:00 to 23:00 UTC.',
+      dismissible: true,
+    });
+  }
+
+  protected showToast(): void {
+    this.toaster.show({
+      message: 'Message archived',
+      title: 'Archived',
+      description: 'It moves to the archive folder and stays there for 30 days.',
+      severity: 'info',
+      duration: 'persistent',
+      action: { label: 'Undo', handler: () => undefined },
+    });
+  }
+
+  protected openMatSnack(): void {
+    this.matSnackRef = this.matSnackBar.openFromTemplate(this.matSnackTpl());
+  }
+
+  protected openMatSheet(): void {
+    this.matSheetRef = this.matBottomSheet.open(this.matSheetTpl());
+  }
+
+  protected openMatDialog(): void {
+    this.matDialog.open(this.matDialogTpl(), { width: '360px' });
   }
 
   protected labelOf(value: string): string {
