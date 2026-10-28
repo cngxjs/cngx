@@ -13,7 +13,7 @@ import { outputToObservable } from '@angular/core/rxjs-interop';
 import { injectDirection, resolveInlineArrowKey } from '@cngx/core';
 import { coerceSignal } from '@cngx/core/utils';
 
-import { injectHostInteractionBlocked } from '../async-click/host-interaction-blocked';
+import { injectHostInteractionBlocked } from '../trigger-guard/host-interaction-blocked';
 import {
   CNGX_MENU_DISMISS_HANDLER_FACTORY,
   createMenuTriggerDismissBinding,
@@ -135,15 +135,13 @@ export class CngxMenuTrigger {
   readonly lastDismissSource = this.dismissBinding.lastSource;
 
   /** A disabled `cngxButton` stays focusable, so keydown still reaches the trigger. */
-  private readonly hostGuard = injectHostInteractionBlocked();
+  private readonly hostGuard = injectHostInteractionBlocked({
+    isOpen: () => this.isOpen(),
+    close: () => this.popover().hide(),
+  });
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.dismissBinding.detach());
-    effect(() => {
-      if (this.hostGuard.blocked() && this.isOpen()) {
-        untracked(() => this.popover().hide());
-      }
-    });
     effect(() => {
       const open = this.isOpen();
       untracked(() => {

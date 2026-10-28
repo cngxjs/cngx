@@ -3,11 +3,12 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
 
+import { CNGX_HOST_INTERACTION_STATE } from '../async-click/host-interaction-state.token';
+
 import {
   injectHostInteractionBlocked,
   type CngxHostInteractionBlocked,
 } from './host-interaction-blocked';
-import { CNGX_HOST_INTERACTION_STATE } from './host-interaction-state.token';
 
 const hostDisabled = signal(false);
 
@@ -19,7 +20,15 @@ class ProbeState {}
 
 @Directive({ selector: '[probe]', exportAs: 'probe' })
 class Probe {
-  readonly guard: CngxHostInteractionBlocked = injectHostInteractionBlocked();
+  readonly open = signal(false);
+  closeCalls = 0;
+  readonly guard: CngxHostInteractionBlocked = injectHostInteractionBlocked({
+    isOpen: () => this.open(),
+    close: () => {
+      this.closeCalls++;
+      this.open.set(false);
+    },
+  });
 }
 
 @Component({
@@ -33,16 +42,16 @@ class Probe {
 })
 class Host {}
 
-function guardOf(id: string): CngxHostInteractionBlocked {
+function probeOf(id: string): Probe {
   const fixture = TestBed.createComponent(Host);
   fixture.detectChanges();
-  return fixture.debugElement.query(By.css(`#${id}`)).injector.get(Probe).guard;
+  return fixture.debugElement.query(By.css(`#${id}`)).injector.get(Probe);
 }
 
 describe('injectHostInteractionBlocked', () => {
   it('follows the co-hosted interaction state reactively', () => {
     hostDisabled.set(false);
-    const guard = guardOf('stated');
+    const { guard } = probeOf('stated');
     expect(guard.blocked()).toBe(false);
     expect(guard.isBlockedNow()).toBe(false);
     hostDisabled.set(true);
@@ -52,20 +61,47 @@ describe('injectHostInteractionBlocked', () => {
   });
 
   it('is open on a plain host without interaction state', () => {
-    const guard = guardOf('plain');
+    const { guard } = probeOf('plain');
     expect(guard.blocked()).toBe(false);
     expect(guard.isBlockedNow()).toBe(false);
   });
 
   it('falls back to a native disabled host at event time', () => {
-    const guard = guardOf('native');
+    const { guard } = probeOf('native');
     expect(guard.blocked()).toBe(false);
     expect(guard.isBlockedNow()).toBe(true);
   });
 
   it('falls back to aria-disabled="true" at event time', () => {
-    const guard = guardOf('aria');
+    const { guard } = probeOf('aria');
     expect(guard.blocked()).toBe(false);
     expect(guard.isBlockedNow()).toBe(true);
+  });
+
+  it('closes an open panel once when the host reports disabled', () => {
+    hostDisabled.set(false);
+    const probe = probeOf('stated');
+    probe.open.set(true);
+    TestBed.flushEffects();
+    expect(probe.closeCalls).toBe(0);
+
+    hostDisabled.set(true);
+    TestBed.flushEffects();
+    expect(probe.open()).toBe(false);
+    expect(probe.closeCalls).toBe(1);
+
+    hostDisabled.set(true);
+    TestBed.flushEffects();
+    expect(probe.closeCalls).toBe(1);
+    hostDisabled.set(false);
+  });
+
+  it('leaves a closed panel alone when the host reports disabled', () => {
+    hostDisabled.set(false);
+    const probe = probeOf('stated');
+    hostDisabled.set(true);
+    TestBed.flushEffects();
+    expect(probe.closeCalls).toBe(0);
+    hostDisabled.set(false);
   });
 });
