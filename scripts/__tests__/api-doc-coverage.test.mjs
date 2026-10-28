@@ -1,6 +1,18 @@
-import { describe, expect, it } from 'vitest';
+import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
-import { missingBindingRows, scanApiDocCoverage, scanBindingFields } from '../api-doc-coverage.mjs';
+import { beforeAll, describe, expect, it } from 'vitest';
+
+import {
+  DOC_PATH,
+  missingBindingRows,
+  REPO_ROOT,
+  rowKey,
+  scanApiDocCoverage,
+  scanBindingFields,
+} from '../api-doc-coverage.mjs';
+import { CEILING, INTERNAL_BINDINGS, RATCHET } from './api-doc-coverage.fixtures.mjs';
 
 /**
  * Guard for undocumented public API members, read from the compodocx JSON
@@ -16,7 +28,149 @@ import { missingBindingRows, scanApiDocCoverage, scanBindingFields } from '../ap
  * A second pass reads the binding fields in source: an `input()` / `model()` /
  * `output()` field is the binding, so `@internal` on it drops the binding from
  * the export and from this guard.
+ *
+ * Asserted against the repo:
+ *   - every found gap is a {@link RATCHET} row and every row is still a gap
+ *     (multiset on the key, so two overload rows stay two rows);
+ *   - `RATCHET.length === CEILING`;
+ *   - the binding fields tagged `@internal` are exactly {@link INTERNAL_BINDINGS};
+ *   - every other binding field of a public owner has a row in the export;
+ *   - the scans found more than 1500 bindings, 250 methods and 1500 binding
+ *     fields, so a scan that silently finds nothing fails.
+ *
+ * Needs a fresh `.compodoc/documentation.json` (`npm run docs:json`); CI
+ * builds it in the `build` job and restores it before `test:scripts`.
  */
+
+describe('api doc coverage (repo)', () => {
+  let result;
+
+  beforeAll(() => {
+    if (!existsSync(DOC_PATH)) throw new Error('run npm run docs:json first');
+    const exported = JSON.parse(readFileSync(DOC_PATH, 'utf8'));
+    if (exported.schemaVersion !== 6) throw new Error('schemaVersion 6 expected');
+    const installed = JSON.parse(
+      readFileSync(resolve(REPO_ROOT, 'node_modules/@cngxjs/compodocx/package.json'), 'utf8'),
+    ).version;
+    if (exported.compodocxVersion !== installed) {
+      throw new Error('stale docs JSON: regenerate with npm run docs:json');
+    }
+    result = scanApiDocCoverage(exported);
+  });
+
+  it('finds the bindings and methods', () => {
+    expect(result.totals.all.bindings).toBeGreaterThan(1500);
+    expect(result.totals.all.methods).toBeGreaterThan(250);
+  });
+
+  it('lists every undocumented member in the ratchet', () => {
+    expect(
+      subtract(result.gaps, RATCHET),
+      'add a JSDoc, or @internal when the member implements an unexported contract or only the own template / class calls it; never a row',
+    ).toEqual([]);
+  });
+
+  it('lists only members that are still undocumented', () => {
+    expect(
+      subtract(RATCHET, result.gaps),
+      'documented, tagged @internal or removed: delete the row and lower CEILING',
+    ).toEqual([]);
+  });
+
+  it('pins the ratchet length to CEILING', () => {
+    expect(RATCHET).toHaveLength(CEILING);
+  });
+
+  it('assigns every row a closing phase', () => {
+    expect(RATCHET.filter((row) => ![2, 3, 4].includes(row.phase)).map(rowKey)).toEqual([]);
+  });
+});
+
+describe('api doc coverage (binding fields)', () => {
+  let fields;
+  let exported;
+
+  beforeAll(() => {
+    if (!existsSync(DOC_PATH)) throw new Error('run npm run docs:json first');
+    exported = JSON.parse(readFileSync(DOC_PATH, 'utf8'));
+    const paths = execFileSync('git', ['ls-files', 'projects/**/*.ts'], {
+      cwd: REPO_ROOT,
+      encoding: 'utf8',
+    })
+      .split('\n')
+      .filter(Boolean)
+      .filter((path) => !isOutsideDocBuild(path));
+    fields = scanBindingFields(
+      paths.map((path) => ({ path, text: readFileSync(resolve(REPO_ROOT, path), 'utf8') })),
+    );
+  });
+
+  it('finds the binding fields', () => {
+    expect(fields.length).toBeGreaterThan(1500);
+  });
+
+  it('tags no binding field @internal outside INTERNAL_BINDINGS', () => {
+    const internal = fields.filter((field) => field.internal);
+    const internalKeys = internal.map(fieldKey);
+    const pinned = INTERNAL_BINDINGS.map(fieldKey);
+    expect(
+      internal.filter((field) => !pinned.includes(fieldKey(field))).map(describeField),
+      'an input / model / output field is the binding: drop @internal and document the binding',
+    ).toEqual([]);
+    expect(
+      INTERNAL_BINDINGS.filter((row) => !internalKeys.includes(fieldKey(row))).map(describeField),
+      'the field no longer carries @internal: delete its INTERNAL_BINDINGS row',
+    ).toEqual([]);
+  });
+
+  it('gives every other binding field of a public owner a row in the export', () => {
+    const pinned = INTERNAL_BINDINGS.map(fieldKey);
+    expect(
+      missingBindingRows(fields, exported)
+        .filter((field) => !pinned.includes(fieldKey(field)))
+        .map(describeField),
+      'the binding has no compodocx row: check for @internal or a private modifier on the field',
+    ).toEqual([]);
+  });
+
+  it('assigns every INTERNAL_BINDINGS row phase 3 or 4', () => {
+    expect(INTERNAL_BINDINGS.filter((row) => ![3, 4].includes(row.phase)).map(fieldKey)).toEqual(
+      [],
+    );
+  });
+});
+
+/** Rows of `from` left after removing one match per row of `remove`, by key. */
+function subtract(from, remove) {
+  const counts = new Map();
+  for (const row of remove) counts.set(rowKey(row), (counts.get(rowKey(row)) ?? 0) + 1);
+  const left = [];
+  for (const row of from) {
+    const key = rowKey(row);
+    const count = counts.get(key) ?? 0;
+    if (count > 0) counts.set(key, count - 1);
+    else left.push(key);
+  }
+  return left;
+}
+
+function fieldKey(field) {
+  return `${field.file} ${field.member}`;
+}
+
+function describeField(field) {
+  return `${field.owner}.${field.member} (${field.file})`;
+}
+
+/** The `tsconfig.doc.json` exclude set, plus specs. */
+function isOutsideDocBuild(path) {
+  return (
+    path.endsWith('.spec.ts') ||
+    path.includes('/__test-helpers/') ||
+    path.startsWith('projects/testing/') ||
+    path.includes('/schematics/')
+  );
+}
 
 const PROTECTED = 124;
 const PRIVATE = 123;
