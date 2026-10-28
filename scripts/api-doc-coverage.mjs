@@ -16,9 +16,9 @@ export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const DOC_PATH = resolve(REPO_ROOT, '.compodoc/documentation.json');
 
 /**
- * Methods whose contract belongs to Angular, not to the cngx API: lifecycle
- * hooks, the template context guard and the forms contracts. `ngAcceptInputType_*`
- * is matched by prefix in {@link isContractMethod}.
+ * Methods whose contract belongs to Angular on any owner: lifecycle hooks and
+ * the template context guard. `ngAcceptInputType_*` is matched by prefix in
+ * {@link isContractMethod}.
  */
 export const CONTRACT_METHODS = new Set([
   'ngOnInit',
@@ -30,22 +30,42 @@ export const CONTRACT_METHODS = new Set([
   'ngAfterViewChecked',
   'ngOnDestroy',
   'ngTemplateContextGuard',
-  'writeValue',
-  'registerOnChange',
-  'registerOnTouched',
-  'setDisabledState',
-  'validate',
-  'registerOnValidatorChange',
 ]);
 
+/**
+ * The forms contracts, exempt only on an owner whose `implements` names the
+ * interface: a `validate()` on any other class is cngx API like every method.
+ */
+const FORMS_CONTRACTS = [
+  {
+    interfaces: ['ControlValueAccessor'],
+    methods: ['writeValue', 'registerOnChange', 'registerOnTouched', 'setDisabledState'],
+  },
+  {
+    interfaces: ['Validator', 'AsyncValidator'],
+    methods: ['validate', 'registerOnValidatorChange'],
+  },
+];
+
 /** `ts.SyntaxKind` values on `modifierKind`, TypeScript 5.9. */
-const PRIVATE = 123;
-const PROTECTED = 124;
+export const PRIVATE = 123;
+export const PROTECTED = 124;
 
-const KIND_ORDER = ['entry', 'input', 'output', 'method', 'token', 'function'];
+const KIND_ORDER = ['entry', 'input', 'output', 'method', 'accessor', 'token', 'function'];
 
-export function isContractMethod(name) {
-  return CONTRACT_METHODS.has(name) || name.startsWith('ngAcceptInputType_');
+export function isContractMethod(name, owner) {
+  if (CONTRACT_METHODS.has(name) || name.startsWith('ngAcceptInputType_')) return true;
+  const implemented = owner?.implements ?? [];
+  return FORMS_CONTRACTS.some(
+    (contract) =>
+      contract.methods.includes(name) &&
+      contract.interfaces.some((iface) => implemented.includes(iface)),
+  );
+}
+
+function isHidden(row) {
+  const modifiers = row?.modifierKind ?? [];
+  return modifiers.includes(PROTECTED) || modifiers.includes(PRIVATE);
 }
 
 /** Empty `rawdescription` and a `description` that is empty once tags are stripped. */
@@ -74,6 +94,8 @@ function emptyTotals() {
     bindingsUndoc: 0,
     methods: 0,
     methodsUndoc: 0,
+    accessors: 0,
+    accessorsUndoc: 0,
     tokens: 0,
     tokensUndoc: 0,
     functions: 0,
@@ -86,7 +108,8 @@ function emptyTotals() {
  *
  * Public API is a row with a non-null `entryPoint`. Counted per owner: the
  * owner's own description, every `inputsClass` / `outputsClass` row, and every
- * method that is neither `protected` nor `private` nor an Angular contract.
+ * method that is neither `protected` nor `private` nor an Angular contract,
+ * and every public accessor (documented when its getter or setter is).
  * Exported tokens and functions count on their own. Properties never count
  * (`disableProperties: true`).
  *
@@ -143,13 +166,21 @@ export function scanApiDocCoverage(doc) {
     }
 
     for (const member of owner.methodsClass ?? owner.methods ?? []) {
-      const modifiers = member.modifierKind ?? [];
-      if (modifiers.includes(PROTECTED) || modifiers.includes(PRIVATE)) continue;
-      if (isContractMethod(member.name)) continue;
+      if (isHidden(member) || isContractMethod(member.name, owner)) continue;
       const undocumented = isUndocumented(member);
       count(owner, 'methods', undocumented);
       if (undocumented)
         gaps.push({ ...base, kind: 'method', member: member.name, line: member.line });
+    }
+
+    for (const [name, accessor] of Object.entries(owner.accessors ?? {})) {
+      const signatures = [accessor.getSignature, accessor.setSignature].filter(Boolean);
+      if (signatures.length === 0 || signatures.every(isHidden)) continue;
+      const undocumented = signatures.every(isUndocumented);
+      count(owner, 'accessors', undocumented);
+      if (undocumented) {
+        gaps.push({ ...base, kind: 'accessor', member: name, line: signatures[0].line });
+      }
     }
   }
 
@@ -294,7 +325,7 @@ export function missingBindingRows(fields, doc) {
 
 function renderReport({ gaps, totals }) {
   const head =
-    '| lib | entries | entry undoc | bindings | binding undoc | methods | method undoc | tokens | token undoc | functions | fn undoc |';
+    '| lib | entries | entry undoc | bindings | binding undoc | methods | method undoc | accessors | accessor undoc | tokens | token undoc | functions | fn undoc |';
   const cells = (t) =>
     [
       t.entries,
@@ -303,12 +334,14 @@ function renderReport({ gaps, totals }) {
       t.bindingsUndoc,
       t.methods,
       t.methodsUndoc,
+      t.accessors,
+      t.accessorsUndoc,
       t.tokens,
       t.tokensUndoc,
       t.functions,
       t.functionsUndoc,
     ].join(' | ');
-  const lines = ['# Public API doc coverage', '', head, '|-|-|-|-|-|-|-|-|-|-|-|'];
+  const lines = ['# Public API doc coverage', '', head, '|-|-|-|-|-|-|-|-|-|-|-|-|-|'];
   for (const lib of Object.keys(totals.byLib).sort())
     lines.push(`| ${lib} | ${cells(totals.byLib[lib])} |`);
   lines.push(`| total | ${cells(totals.all)} |`, '', `Undocumented: ${gaps.length}`);

@@ -21,7 +21,7 @@
  * @typedef {object} ApiDocGap
  * @property {string} entry Entry point that exports the owner, e.g. `@cngx/forms/select`.
  * @property {string} owner Class, token or function name.
- * @property {'entry' | 'input' | 'output' | 'method' | 'token' | 'function'} kind
+ * @property {'entry' | 'input' | 'output' | 'method' | 'accessor' | 'token' | 'function'} kind
  * @property {string} member Field or method name; the owner name for entry, token and function rows.
  * @property {string} [binding] Binding name when the input or output is aliased.
  * @property {2 | 3 | 4} phase Plan phase that closes the row.
@@ -87,7 +87,7 @@ export const INTERNAL_BINDINGS = [
 /**
  * Lowered in every commit that closes rows, so growth is a visible constant edit.
  */
-export const CEILING = 706;
+export const CEILING = 707;
 
 /** @type {readonly ApiDocGap[]} */
 // prettier-ignore
@@ -295,6 +295,7 @@ export const RATCHET = [
   { entry: '@cngx/common/interactive', owner: 'CngxMenuItemRadio', kind: 'input', member: 'value', phase: 3 },
   { entry: '@cngx/common/interactive', owner: 'CngxMenuItemSubmenu', kind: 'method', member: 'close', phase: 3 },
   { entry: '@cngx/common/interactive', owner: 'CngxMenuItemSubmenu', kind: 'method', member: 'open', phase: 3 },
+  { entry: '@cngx/common/interactive', owner: 'CngxMenuItemSubmenu', kind: 'accessor', member: 'inner', phase: 3 },
   { entry: '@cngx/common/interactive', owner: 'CngxMultiChipGroup', kind: 'input', member: 'disabled', phase: 3 },
   { entry: '@cngx/common/interactive', owner: 'CngxMultiChipGroup', kind: 'input', member: 'keyFn', phase: 3 },
   { entry: '@cngx/common/interactive', owner: 'CngxMultiChipGroup', kind: 'input', member: 'label', phase: 3 },

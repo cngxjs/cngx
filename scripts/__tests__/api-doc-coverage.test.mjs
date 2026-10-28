@@ -7,6 +7,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import {
   DOC_PATH,
   missingBindingRows,
+  PRIVATE,
+  PROTECTED,
   REPO_ROOT,
   rowKey,
   scanApiDocCoverage,
@@ -22,8 +24,9 @@ import { CEILING, INTERNAL_BINDINGS, RATCHET } from './api-doc-coverage.fixtures
  * Counted: owners with a non-null `entryPoint`, their `inputsClass` /
  * `outputsClass` rows, and their methods minus `protected` / `private` and the
  * Angular contracts (lifecycle hooks, `ngTemplateContextGuard`,
- * `ngAcceptInputType_*`, the `ControlValueAccessor` / `Validator` methods);
- * exported tokens and functions. A tags-only JSDoc is undocumented.
+ * `ngAcceptInputType_*`, and the `ControlValueAccessor` / `Validator` methods
+ * on owners that implement them); their public accessors; exported tokens and
+ * functions. A tags-only JSDoc is undocumented.
  *
  * A second pass reads the binding fields in source: an `input()` / `model()` /
  * `output()` field is the binding, so `@internal` on it drops the binding from
@@ -172,9 +175,6 @@ function isOutsideDocBuild(path) {
   );
 }
 
-const PROTECTED = 124;
-const PRIVATE = 123;
-
 const doc = (overrides = {}) => ({
   components: [],
   directives: [],
@@ -247,12 +247,52 @@ describe('api doc coverage (scanner fixtures)', () => {
               { name: 'ngTemplateContextGuard' },
               { name: 'ngAcceptInputType_x' },
               { name: 'writeValue' },
+              { name: 'validate' },
             ],
+            implements: ['ControlValueAccessor', 'Validator'],
           }),
         ],
       }),
     );
     expect(result.gaps).toEqual([]);
+  });
+
+  it('reports a forms contract name on an owner that does not implement the contract', () => {
+    const result = scanApiDocCoverage(
+      doc({
+        directives: [
+          owner({
+            methodsClass: [{ name: 'writeValue' }, { name: 'validate' }],
+            implements: ['CngxFormFieldControl'],
+          }),
+        ],
+      }),
+    );
+    expect(keys(result)).toEqual(['method CngxFoo.validate', 'method CngxFoo.writeValue']);
+  });
+
+  it('reports an undocumented public accessor and skips a documented or protected one', () => {
+    const result = scanApiDocCoverage(
+      doc({
+        directives: [
+          owner({
+            accessors: {
+              inner: { name: 'inner', getSignature: { name: 'inner', line: 7 } },
+              id: { name: 'id', getSignature: { name: 'id', rawdescription: 'Effective id.' } },
+              value: {
+                name: 'value',
+                getSignature: { name: 'value' },
+                setSignature: { name: 'value', rawdescription: 'Writes the value.' },
+              },
+              state: { name: 'state', getSignature: { name: 'state', modifierKind: [PROTECTED] } },
+            },
+          }),
+        ],
+      }),
+    );
+    expect(keys(result)).toEqual(['accessor CngxFoo.inner']);
+    expect(result.gaps[0]).toMatchObject({ line: 7 });
+    expect(result.totals.all).toMatchObject({ accessors: 3, accessorsUndoc: 1 });
   });
 
   it('reports a public method, an input, an output and an aliased input', () => {
