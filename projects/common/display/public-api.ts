@@ -7,6 +7,8 @@
  * nav badges) see `@cngx/common/interactive`.
  */
 export { CngxIcon } from './icon/icon.component';
+/** @internal */
+export { CngxIconSvg } from './icon/icon-svg.component';
 export {
   CngxSegmentedProgress,
   type SegmentState,

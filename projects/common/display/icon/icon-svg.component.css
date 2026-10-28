@@ -1,0 +1,56 @@
+/**
+ * @overview
+ * Default visuals for `CngxIconSvg`. The host `<svg>` carries
+ * `.cngx-icon-svg`, sizes itself in `em` and paints in `currentColor`,
+ * so a glyph follows the font size and text color it sits in. Inside
+ * `<cngx-icon>` the icon box sizes the svg instead.
+ *
+ * **Paint variants**
+ *
+ * - default - fill icon, the path area paints in `currentColor`
+ * - `--stroke` - outline icon, the path stroke paints in `currentColor`
+ *   with round caps and joins, the area stays unfilled
+ *
+ * **Inheritance**
+ *
+ * `--cngx-icon-svg-size` and `--cngx-icon-svg-stroke-width` are
+ * unregistered, so an override on any ancestor reaches every glyph
+ * below it.
+ */
+
+@layer cngx.components {
+  @scope (.cngx-icon-svg) {
+    :scope {
+      /* Functional - hardcoded */
+      display: inline-block;
+      flex: none;
+      vertical-align: middle;
+      overflow: visible;
+
+      /**
+       * Rendered size of the glyph box.
+       * @type <length>
+       * @default 1em
+       * @group Layout
+       */
+      inline-size: var(--cngx-icon-svg-size, 1em);
+      block-size: var(--cngx-icon-svg-size, 1em);
+      fill: currentColor;
+    }
+
+    :scope.cngx-icon-svg--stroke {
+      fill: none;
+      stroke: currentColor;
+      /**
+       * Stroke width of outline glyphs, in grid units of the 24x24
+       * viewBox.
+       * @type <number>
+       * @default 2
+       * @group Stroke
+       */
+      stroke-width: var(--cngx-icon-svg-stroke-width, 2);
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+  }
+}
