@@ -1,10 +1,11 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { matchesGlob, resolve } from 'node:path';
 
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import {
+  closingPhase,
   DOC_PATH,
   missingBindingRows,
   PRIVATE,
@@ -41,6 +42,9 @@ import { CEILING, INTERNAL_BINDINGS, RATCHET } from './api-doc-coverage.fixtures
  *   - the scans found more than 1500 bindings, 250 methods and 1500 binding
  *     fields, so a scan that silently finds nothing fails.
  *
+ * The source scan reads the `exclude` globs of `tsconfig.doc.json`, so it
+ * covers the files the doc build covers.
+ *
  * Needs a fresh `.compodoc/documentation.json` (`npm run docs:json`); CI
  * builds it in the `build` job and restores it before `test:scripts`.
  */
@@ -49,16 +53,7 @@ describe('api doc coverage (repo)', () => {
   let result;
 
   beforeAll(() => {
-    if (!existsSync(DOC_PATH)) throw new Error('run npm run docs:json first');
-    const exported = JSON.parse(readFileSync(DOC_PATH, 'utf8'));
-    if (exported.schemaVersion !== 6) throw new Error('schemaVersion 6 expected');
-    const installed = JSON.parse(
-      readFileSync(resolve(REPO_ROOT, 'node_modules/@cngxjs/compodocx/package.json'), 'utf8'),
-    ).version;
-    if (exported.compodocxVersion !== installed) {
-      throw new Error('stale docs JSON: regenerate with npm run docs:json');
-    }
-    result = scanApiDocCoverage(exported);
+    result = scanApiDocCoverage(loadExport());
   });
 
   it('finds the bindings and methods', () => {
@@ -68,15 +63,15 @@ describe('api doc coverage (repo)', () => {
 
   it('lists every undocumented member in the ratchet', () => {
     expect(
-      subtract(result.gaps, RATCHET),
+      subtract(result.gaps, RATCHET).map(describeGap),
       'add a JSDoc, or @internal when the member implements an unexported contract or only the own template / class calls it; never a row',
     ).toEqual([]);
   });
 
   it('lists only members that are still undocumented', () => {
     expect(
-      subtract(RATCHET, result.gaps),
-      'documented, tagged @internal or removed: delete the row and lower CEILING',
+      subtract(RATCHET, result.gaps).map(rowKey),
+      'regenerate with npm run docs:json first; still listed means documented, tagged @internal or removed: delete the row and lower CEILING',
     ).toEqual([]);
   });
 
@@ -84,8 +79,11 @@ describe('api doc coverage (repo)', () => {
     expect(RATCHET).toHaveLength(CEILING);
   });
 
-  it('assigns every row a closing phase', () => {
-    expect(RATCHET.filter((row) => ![2, 3, 4].includes(row.phase)).map(rowKey)).toEqual([]);
+  it('assigns every row the phase that closes its entry point', () => {
+    expect(
+      RATCHET.filter((row) => row.phase !== closingPhase(row.entry)).map(rowKey),
+      'forms/select closes in phase 2, common in phase 3, the rest in phase 4',
+    ).toEqual([]);
   });
 });
 
@@ -94,15 +92,15 @@ describe('api doc coverage (binding fields)', () => {
   let exported;
 
   beforeAll(() => {
-    if (!existsSync(DOC_PATH)) throw new Error('run npm run docs:json first');
-    exported = JSON.parse(readFileSync(DOC_PATH, 'utf8'));
+    exported = loadExport();
+    const excluded = docBuildExcludes();
     const paths = execFileSync('git', ['ls-files', 'projects/**/*.ts'], {
       cwd: REPO_ROOT,
       encoding: 'utf8',
     })
       .split('\n')
       .filter(Boolean)
-      .filter((path) => !isOutsideDocBuild(path));
+      .filter((path) => !excluded.some((glob) => matchesGlob(path, glob)));
     fields = scanBindingFields(
       paths.map((path) => ({ path, text: readFileSync(resolve(REPO_ROOT, path), 'utf8') })),
     );
@@ -143,6 +141,29 @@ describe('api doc coverage (binding fields)', () => {
   });
 });
 
+/**
+ * The compodocx export, refused when missing, on another schema, or written by
+ * another compodocx version than the installed one.
+ */
+function loadExport() {
+  if (!existsSync(DOC_PATH)) throw new Error('run npm run docs:json first');
+  const exported = JSON.parse(readFileSync(DOC_PATH, 'utf8'));
+  if (exported.schemaVersion !== 6) throw new Error('schemaVersion 6 expected');
+  const installed = JSON.parse(
+    readFileSync(resolve(REPO_ROOT, 'node_modules/@cngxjs/compodocx/package.json'), 'utf8'),
+  ).version;
+  if (exported.compodocxVersion !== installed) {
+    throw new Error('stale docs JSON: regenerate with npm run docs:json');
+  }
+  return exported;
+}
+
+/** The doc build's `exclude` globs, so the source scan sees what compodocx sees. */
+function docBuildExcludes() {
+  const config = JSON.parse(readFileSync(resolve(REPO_ROOT, 'tsconfig.doc.json'), 'utf8'));
+  return config.exclude ?? [];
+}
+
 /** Rows of `from` left after removing one match per row of `remove`, by key. */
 function subtract(from, remove) {
   const counts = new Map();
@@ -152,27 +173,23 @@ function subtract(from, remove) {
     const key = rowKey(row);
     const count = counts.get(key) ?? 0;
     if (count > 0) counts.set(key, count - 1);
-    else left.push(key);
+    else left.push(row);
   }
   return left;
 }
 
+function describeGap(gap) {
+  const location = gap.line ? `${gap.file}:${gap.line}` : gap.file;
+  return `${rowKey(gap)} (${location})`;
+}
+
+/** File, owner and member: two classes in one file may declare the same field. */
 function fieldKey(field) {
-  return `${field.file} ${field.member}`;
+  return `${field.file} ${field.owner} ${field.member}`;
 }
 
 function describeField(field) {
   return `${field.owner}.${field.member} (${field.file})`;
-}
-
-/** The `tsconfig.doc.json` exclude set, plus specs. */
-function isOutsideDocBuild(path) {
-  return (
-    path.endsWith('.spec.ts') ||
-    path.includes('/__test-helpers/') ||
-    path.startsWith('projects/testing/') ||
-    path.includes('/schematics/')
-  );
 }
 
 const doc = (overrides = {}) => ({

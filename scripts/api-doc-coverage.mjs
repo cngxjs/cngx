@@ -8,7 +8,7 @@
 //   node scripts/api-doc-coverage.mjs --rows            sorted ratchet rows for api-doc-coverage.fixtures.mjs
 //   node scripts/api-doc-coverage.mjs --doc=<path> ...  read another export than .compodoc/documentation.json
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -20,7 +20,7 @@ export const DOC_PATH = resolve(REPO_ROOT, '.compodoc/documentation.json');
  * the template context guard. `ngAcceptInputType_*` is matched by prefix in
  * {@link isContractMethod}.
  */
-export const CONTRACT_METHODS = new Set([
+const CONTRACT_METHODS = new Set([
   'ngOnInit',
   'ngOnChanges',
   'ngDoCheck',
@@ -53,7 +53,7 @@ export const PROTECTED = 124;
 
 const KIND_ORDER = ['entry', 'input', 'output', 'method', 'accessor', 'token', 'function'];
 
-export function isContractMethod(name, owner) {
+function isContractMethod(name, owner) {
   if (CONTRACT_METHODS.has(name) || name.startsWith('ngAcceptInputType_')) return true;
   const implemented = owner?.implements ?? [];
   return FORMS_CONTRACTS.some(
@@ -69,13 +69,13 @@ function isHidden(row) {
 }
 
 /** Empty `rawdescription` and a `description` that is empty once tags are stripped. */
-export function isUndocumented(row) {
+function isUndocumented(row) {
   const raw = (row.rawdescription ?? '').trim();
   const html = (row.description ?? '').replace(/<[^>]+>/g, '').trim();
   return !raw && !html;
 }
 
-export function libOf(file) {
+function libOf(file) {
   return /^projects\/([^/]+)\//.exec(file ?? '')?.[1] ?? '?';
 }
 
@@ -207,7 +207,7 @@ export function scanApiDocCoverage(doc) {
   return { gaps, totals: { all, byLib, byEntry } };
 }
 
-export function compareRows(a, b) {
+function compareRows(a, b) {
   return (
     a.entry.localeCompare(b.entry) ||
     a.owner.localeCompare(b.owner) ||
@@ -222,7 +222,7 @@ export function rowKey(row) {
 }
 
 /** A gap as a ratchet row: key fields, binding name when aliased, closing phase. */
-export function toRatchetRow(gap) {
+function toRatchetRow(gap) {
   return {
     entry: gap.entry,
     owner: gap.owner,
@@ -379,7 +379,12 @@ function renderRows(gaps) {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   const docArg = args.find((arg) => arg.startsWith('--doc='));
-  const doc = JSON.parse(readFileSync(docArg ? resolve(docArg.slice(6)) : DOC_PATH, 'utf8'));
+  const docPath = docArg ? resolve(docArg.slice(6)) : DOC_PATH;
+  if (!existsSync(docPath)) {
+    console.error(`${docPath} not found: run npm run docs:json first`);
+    process.exit(1);
+  }
+  const doc = JSON.parse(readFileSync(docPath, 'utf8'));
   const result = scanApiDocCoverage(doc);
   if (args.includes('--rows')) console.log(renderRows(result.gaps));
   else if (args.includes('--report')) console.log(renderReport(result));
