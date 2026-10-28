@@ -59,6 +59,9 @@
 //   md    lg      sm*1.5  sm*1.25              label-large    40
 //   lg    xl      md      sm*1.5               title-medium   48
 //
+// A cngxButtonGroupAddon shares the padding and type rows, so it sits on
+// the row of the buttons beside it.
+//
 // The block padding absorbs the 1px border every variant keeps, so the box
 // is line-height + 2 * rung; the icon button (and the close button, which
 // reads the icon-button box) squares to it. Size-independent ratios cover
@@ -200,6 +203,10 @@ $_roles: (
 
 $_pad: 'var(--cngx-button-padding-inline, 24px)';
 $_label: ":not([data-variant='link'], .cngx-icon-button)";
+// The group addon reads the button's metric and type tokens and carries the
+// same data-size, so it shares the rules; the group parent lifts it to the
+// button rules' (0,3,0).
+$_addon: '.cngx-button-group > .cngx-button-group__addon';
 // A <cngx-icon> with an explicit size keeps its own rung.
 $_unsized: 'cngx-icon.cngx-icon:not(.cngx-icon--xs, .cngx-icon--sm, .cngx-icon--lg, .cngx-icon--xl)';
 
@@ -212,7 +219,8 @@ $_unsized: 'cngx-icon.cngx-icon:not(.cngx-icon--xs, .cngx-icon--sm, .cngx-icon--
         $type: map.get($_roles, $role);
         $lh: _role($role, line-height, list.nth($type, 2));
 
-        .cngx-button#{$s}:not([data-variant='link']) {
+        .cngx-button#{$s}:not([data-variant='link']),
+        #{$_addon}#{$s} {
           --cngx-button-padding-block: #{map.get($m, block)};
           --cngx-button-padding-inline: #{map.get($m, inline)};
         }
@@ -221,7 +229,8 @@ $_unsized: 'cngx-icon.cngx-icon:not(.cngx-icon--xs, .cngx-icon--sm, .cngx-icon--
         }
         // Label type. The icon button keeps the cngx font size (its glyph is
         // sized from it); link stays running text.
-        .cngx-button#{$s}#{$_label} {
+        .cngx-button#{$s}#{$_label},
+        #{$_addon}#{$s} {
           --cngx-button-font-size: #{_role($role, size, list.nth($type, 1))};
           --cngx-button-font-weight: #{_role($role, weight, 500)};
           font-family: #{_role($role, font, 'Roboto, sans-serif')};

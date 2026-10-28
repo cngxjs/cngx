@@ -178,7 +178,8 @@ describe('button Material bridge', () => {
     }
     const md = (selector: string): string => {
       const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const match = css.match(new RegExp(`${escaped}\\s*\\{[^}]*\\}`));
+      // The selector may head a list (the group addon shares the rule).
+      const match = css.match(new RegExp(`${escaped}[^{]*\\{[^}]*\\}`));
       if (!match) {
         throw new Error(`no ${selector} block emitted`);
       }
@@ -192,7 +193,9 @@ describe('button Material bridge', () => {
     expect(md('.cngx-button[data-size=md][data-variant=ghost]')).toContain(
       '--cngx-button-padding-inline: calc(var(--cngx-space-sm, 8px) * 1.5)',
     );
+    expect(base).toContain('.cngx-button-group > .cngx-button-group__addon[data-size=md]');
     const type = md('.cngx-button[data-size=md]:not([data-variant=link], .cngx-icon-button)');
+    expect(type).toContain('.cngx-button-group > .cngx-button-group__addon[data-size=md]');
     expect(type).toContain('--cngx-button-font-size: var(--mat-sys-label-large-size, 0.875rem)');
     expect(type).toContain('line-height: var(--mat-sys-label-large-line-height, 1.25rem)');
     expect(type).toContain('letter-spacing: var(--mat-sys-label-large-tracking, 0.006rem)');

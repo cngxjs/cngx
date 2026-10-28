@@ -4,6 +4,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxIcon } from '@cngx/common/display';
 
+import { CngxButtonGroupAddon } from './button-group-addon.directive';
+import { CngxButtonGroup } from './button-group.directive';
 import { CngxButton } from './button.component';
 import type { CngxButtonSize } from './button.types';
 import { CngxCloseButton } from './close-button.component';
@@ -346,5 +348,70 @@ describe('Material bridge: M3 metrics and label type', () => {
     expect(heights).toEqual([28, 32, 40, 48]);
     const icons = SIZES.map((size) => metrics(root, `.icon-size-${size}`).width);
     expect(icons).toEqual([28, 32, 40, 48]);
+  });
+});
+
+// The group addon shares the bridged metric and type rows: height, label type
+// and inline padding equal the sibling button at every size and density. The
+// group start-aligns its segments so a stretched row cannot hide a mismatch.
+@Component({
+  selector: 'cngx-material-bridge-addon-host',
+  standalone: true,
+  imports: [CngxButtonGroup, CngxButtonGroupAddon, CngxButton],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../core/theming/system-tokens.css',
+    '../../core/theming/reset.css',
+    '../../core/theming/base.css',
+    '../../core/theming/density-tokens.css',
+    '../theming/components/cngx-button-group.css',
+    './material-bridge.spec-host.scss',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    @for (density of densities; track density) {
+      <div [attr.data-density]="density">
+        @for (size of sizes; track size) {
+          <p>
+            <span cngxButtonGroup variant="outline" [size]="size" style="align-items: flex-start" aria-label="Issues"
+              ><span cngxButtonGroupAddon class="addon-{{ density }}-{{ size }}">3 open</span
+              ><button cngxButton class="btn-{{ density }}-{{ size }}">Show</button></span
+            >
+          </p>
+        }
+      </div>
+    }
+  `,
+})
+class MaterialBridgeAddonHost {
+  readonly densities = ['comfortable', 'compact', 'spacious'] as const;
+  readonly sizes = SIZES;
+}
+
+describe('Material bridge: button-group addon', () => {
+  it.each(['comfortable', 'compact', 'spacious'] as const)(
+    'puts the addon on the bridged button row at every size (%s)',
+    (density) => {
+      const fixture = TestBed.createComponent(MaterialBridgeAddonHost);
+      mountedRoot = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(mountedRoot);
+      fixture.detectChanges();
+      for (const size of SIZES) {
+        const { width: _addonWidth, ...addon } = metrics(mountedRoot, `.addon-${density}-${size}`);
+        const { width: _btnWidth, ...btn } = metrics(mountedRoot, `.btn-${density}-${size}`);
+        expect(addon, size).toEqual(btn);
+      }
+    },
+  );
+
+  it('gives the md addon the M3 row and label type at comfortable', () => {
+    const fixture = TestBed.createComponent(MaterialBridgeAddonHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const m = metrics(mountedRoot, '.addon-comfortable-md');
+    expect(m.height).toBe(M3.height);
+    expect([m.start, m.end]).toEqual([M3.inline, M3.inline]);
+    expect([m.font, m.weight, m.line]).toEqual([M3.font, M3.weight, M3.line]);
   });
 });

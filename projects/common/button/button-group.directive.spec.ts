@@ -125,6 +125,16 @@ describe('CngxButtonGroup', () => {
     expect(q('#plain').dataset['variant']).toBe('secondary');
     expect(q('#plain').dataset['size']).toBe('xs');
     expect(q('#icon').dataset['variant']).toBe('secondary');
+    expect(q('#addon').dataset['size']).toBe('xs');
+  });
+
+  it('gives the addon the size its sibling buttons resolve', () => {
+    const { fixture, host, q } = render(GroupHost);
+    expect(q('#addon').dataset['size']).toBe('sm');
+    host.size.set(undefined);
+    fixture.detectChanges();
+    expect(q('#addon').dataset['size']).toBe('md');
+    expect(q('#addon').dataset['size']).toBe(q('#plain').dataset['size']);
   });
 
   it('re-resolves the children when the group inputs change', () => {

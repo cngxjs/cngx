@@ -281,14 +281,40 @@
 }
 
 @layer cngx.components {
-  @scope (.cngx-button) {
+  /* Row metrics per size, SET from the scale so a [data-density] swap
+   * re-scales them. Shared with the button-group addon (it carries the same
+   * `data-size`), so an addon sits on the row of the buttons beside it and a
+   * theme that re-sets these tokens reaches both. */
+  @scope (.cngx-button, .cngx-button-group__addon) {
     :scope {
-      /* md: the form-control row. Padding SET from the scale so a root
-         [data-density] swap re-scales it (8/16 -> sm/md). */
+      /* md: the form-control row (8/16 -> sm/md). */
       --cngx-button-padding-block: var(--cngx-space-sm);
       --cngx-button-padding-inline: var(--cngx-space-md);
-      --cngx-button-gap: var(--cngx-space-sm);
       --cngx-button-font-size: var(--cngx-font-size-control, 1rem);
+    }
+    :scope[data-size='xs'] {
+      /* Half the xs rung: tight, but still re-scaled by [data-density]. */
+      --cngx-button-padding-block: calc(var(--cngx-space-xs) / 2);
+      --cngx-button-padding-inline: var(--cngx-space-sm);
+      --cngx-button-font-size: var(--cngx-font-size-sm, 0.8125rem);
+    }
+    :scope[data-size='sm'] {
+      --cngx-button-padding-block: var(--cngx-space-xs);
+      --cngx-button-padding-inline: var(--cngx-space-sm);
+      --cngx-button-font-size: var(--cngx-font-size-sm, 0.8125rem);
+    }
+    :scope[data-size='lg'] {
+      /* One and a half sm rungs: a step above md about as large as sm to md,
+         not a full rung jump. */
+      --cngx-button-padding-block: calc(var(--cngx-space-sm) * 1.5);
+      --cngx-button-padding-inline: var(--cngx-space-lg);
+      --cngx-button-font-size: var(--cngx-font-size-lg, 1.0625rem);
+    }
+  }
+
+  @scope (.cngx-button) {
+    :scope {
+      --cngx-button-gap: var(--cngx-space-sm);
       --cngx-button-radius: var(--cngx-radius-md, 0.5rem);
       --cngx-button-tone: var(--cngx-color-text, oklch(0.2 0.01 250));
       --cngx-button-tone-text: var(--cngx-color-text, oklch(0.2 0.01 250));
@@ -323,26 +349,9 @@
         color var(--cngx-button-transition, 150ms) ease;
     }
 
-    /* Size steps, each SET from the scale. */
-    :scope[data-size='xs'] {
-      /* Half the xs rung: tight, but still re-scaled by [data-density]. */
-      --cngx-button-padding-block: calc(var(--cngx-space-xs) / 2);
-      --cngx-button-padding-inline: var(--cngx-space-sm);
+    /* Gap steps; the row metrics live in the shared block above. */
+    :scope:is([data-size='xs'], [data-size='sm']) {
       --cngx-button-gap: var(--cngx-space-xs);
-      --cngx-button-font-size: var(--cngx-font-size-sm, 0.8125rem);
-    }
-    :scope[data-size='sm'] {
-      --cngx-button-padding-block: var(--cngx-space-xs);
-      --cngx-button-padding-inline: var(--cngx-space-sm);
-      --cngx-button-gap: var(--cngx-space-xs);
-      --cngx-button-font-size: var(--cngx-font-size-sm, 0.8125rem);
-    }
-    :scope[data-size='lg'] {
-      /* One and a half sm rungs: a step above md about as large as sm to md,
-         not a full rung jump. */
-      --cngx-button-padding-block: calc(var(--cngx-space-sm) * 1.5);
-      --cngx-button-padding-inline: var(--cngx-space-lg);
-      --cngx-button-font-size: var(--cngx-font-size-lg, 1.0625rem);
     }
 
     /* A filled slot trims the padding on its side. */

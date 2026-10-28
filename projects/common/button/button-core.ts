@@ -76,7 +76,8 @@ export interface CngxButtonCore {
 }
 
 const DEFAULT_TONE: CngxButtonTone = 'neutral';
-const DEFAULT_SIZE: CngxButtonSize = 'md';
+/** Size a button takes when no input, group or config sets one. @internal */
+export const DEFAULT_SIZE: CngxButtonSize = 'md';
 
 /**
  * Element-level `aria-describedby` owner of a button host. Seeds the

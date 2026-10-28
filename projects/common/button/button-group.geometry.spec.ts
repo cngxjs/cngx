@@ -291,3 +291,76 @@ describe('CngxButtonGroup geometry: ends, seams and lift', () => {
     expect(computedValue(query(root, '.s-2'), 'z-index')).toBe('2');
   });
 });
+
+// The addon reads the button's metric and type tokens, so it matches the
+// sibling button at every size and in every [data-density] island. The groups
+// start-align their segments so a stretched row cannot hide a mismatch.
+@Component({
+  selector: 'cngx-button-group-addon-row-host',
+  standalone: true,
+  imports: [CngxButtonGroup, CngxButtonGroupAddon, CngxButton],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../core/theming/system-tokens.css',
+    '../../core/theming/reset.css',
+    '../../core/theming/base.css',
+    '../../core/theming/density-tokens.css',
+    '../theming/components/cngx-button-group.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    @for (density of densities; track density) {
+      <div [attr.data-density]="density">
+        @for (size of sizes; track size) {
+          <p>
+            <span cngxButtonGroup variant="outline" [size]="size" style="align-items: flex-start" aria-label="Issues"
+              ><span cngxButtonGroupAddon class="addon-{{ density }}-{{ size }}">3 open</span
+              ><button cngxButton class="btn-{{ density }}-{{ size }}">Show</button></span
+            >
+          </p>
+        }
+      </div>
+    }
+  `,
+})
+class AddonRowHost {
+  readonly densities = ['comfortable', 'compact', 'spacious'] as const;
+  readonly sizes = ['xs', 'sm', 'md', 'lg'] as const;
+}
+
+function row(el: HTMLElement): { height: number; font: string; line: string; start: string; end: string } {
+  const style = getComputedStyle(el);
+  return {
+    height: Math.round(el.getBoundingClientRect().height * 10) / 10,
+    font: style.fontSize,
+    line: style.lineHeight,
+    start: style.paddingInlineStart,
+    end: style.paddingInlineEnd,
+  };
+}
+
+describe('CngxButtonGroup geometry: addon on the button row', () => {
+  it.each(['comfortable', 'compact', 'spacious'] as const)(
+    'matches the sibling button height, font and inline padding at every size (%s)',
+    (density) => {
+      const fixture = TestBed.createComponent(AddonRowHost);
+      mountedRoot = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(mountedRoot);
+      fixture.detectChanges();
+      for (const size of ['xs', 'sm', 'md', 'lg']) {
+        const addon = query(mountedRoot, `.addon-${density}-${size}`);
+        expect(addon.getAttribute('data-size'), size).toBe(size);
+        expect(row(addon), size).toEqual(row(query(mountedRoot, `.btn-${density}-${size}`)));
+      }
+    },
+  );
+
+  it('keeps the inherited weight without a theme', () => {
+    const fixture = TestBed.createComponent(AddonRowHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const addon = query(mountedRoot, '.addon-comfortable-md');
+    expect(getComputedStyle(addon).fontWeight).toBe(getComputedStyle(addon.parentElement as HTMLElement).fontWeight);
+  });
+});

@@ -34,14 +34,16 @@
  * **Parts**
  *
  * - `.cngx-button-group__addon` - a non-interactive segment box: the group's
- *   border, the row height of the group's `data-size`, content centred
+ *   border, the button row of its `data-size` (the button's padding and
+ *   type tokens), content centred
  * - `.cngx-button-group__separator` - a divider drawn as a border (survives
  *   forced colors); it never collapses into its neighbours
  *
  * **Inheritance**
  *
  * - toolbar gap -> `--cngx-space-sm` (SET, so `[data-density]` re-scales)
- * - addon inline padding -> `--cngx-space-md`
+ * - addon padding and type -> the button's `--cngx-button-padding-*` /
+ *   `--cngx-button-font-*` tokens (`--cngx-space-*` per size)
  * - end radius -> `--cngx-radius-md`, the same rung as `--cngx-button-radius`
  * - addon and separator colour -> `--cngx-color-border` /
  *   `--cngx-color-surface` / `--cngx-color-text`
@@ -88,8 +90,10 @@
     --cngx-button-group-gap: var(--cngx-space-sm);
     --cngx-button-group-radius: var(--cngx-radius-md, 0.5rem);
   }
+  /* Derived from the button's inline padding (SET per size from the scale by
+   * the button sheet), so the addon pads like its sibling buttons. */
   :where(.cngx-button-group__addon) {
-    --cngx-button-group-addon-padding-inline: var(--cngx-space-md);
+    --cngx-button-group-addon-padding-inline: var(--cngx-button-padding-inline, var(--cngx-space-md));
   }
 }
 
@@ -191,14 +195,20 @@
       );
     }
 
-    /* Addon: a non-interactive segment box at the row height of the group size. */
+    /* Addon: a non-interactive segment box on the row of the buttons beside
+     * it. It carries the button `data-size` and reads the button's own metric
+     * and type tokens (SET per size by the button sheet's shared metrics
+     * block), so size, [data-density] and a theme that re-sets those tokens
+     * reach the addon and the buttons alike. Without the button sheet the
+     * fallbacks give the md row. Weight stays inherited unless a theme sets
+     * --cngx-button-font-weight. */
     .cngx-button-group__addon {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: var(--cngx-space-xs, 4px);
       box-sizing: border-box;
-      padding-block: var(--cngx-space-sm);
+      padding-block: var(--cngx-button-padding-block, var(--cngx-space-sm, 0.5rem));
       padding-inline: var(--cngx-button-group-addon-padding-inline, 1rem);
       border: var(--cngx-button-border-width, 1px) solid var(--cngx-color-border, oklch(0.88 0.005 250));
       background: color-mix(
@@ -207,24 +217,10 @@
         var(--cngx-color-surface, oklch(1 0 0))
       );
       color: var(--cngx-color-text, oklch(0.2 0.01 250));
-      font-size: var(--cngx-font-size-control, 1rem);
+      font-size: var(--cngx-button-font-size, var(--cngx-font-size-control, 1rem));
+      font-weight: var(--cngx-button-font-weight, inherit);
       line-height: var(--cngx-line-height-base, 1.5);
       white-space: nowrap;
-    }
-    :scope[data-size='xs'] > .cngx-button-group__addon {
-      padding-block: calc(var(--cngx-space-xs) / 2);
-      --cngx-button-group-addon-padding-inline: var(--cngx-space-sm);
-      font-size: var(--cngx-font-size-sm, 0.8125rem);
-    }
-    :scope[data-size='sm'] > .cngx-button-group__addon {
-      padding-block: var(--cngx-space-xs);
-      --cngx-button-group-addon-padding-inline: var(--cngx-space-sm);
-      font-size: var(--cngx-font-size-sm, 0.8125rem);
-    }
-    :scope[data-size='lg'] > .cngx-button-group__addon {
-      padding-block: calc(var(--cngx-space-sm) * 1.5);
-      --cngx-button-group-addon-padding-inline: var(--cngx-space-lg);
-      font-size: var(--cngx-font-size-lg, 1.0625rem);
     }
 
     /* Separator: a border, so forced colors keep it. The `:nth-child(n of
