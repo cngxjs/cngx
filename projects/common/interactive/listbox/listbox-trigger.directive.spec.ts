@@ -342,6 +342,19 @@ describe('CngxListboxTrigger - co-located search input', () => {
     expect(emitted).toBe(1);
   });
 
+  it('does not emit backspaceOnEmpty on an aria-disabled input', () => {
+    const fixture = TestBed.createComponent(SearchInputHost);
+    fixture.detectChanges();
+    const de = fixture.debugElement.query(By.directive(CngxListboxTrigger));
+    const trigger = de.injector.get(CngxListboxTrigger);
+    const input = de.nativeElement as HTMLInputElement;
+    input.setAttribute('aria-disabled', 'true');
+    let emitted = 0;
+    trigger.backspaceOnEmpty.subscribe(() => emitted++);
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true }));
+    expect(emitted).toBe(0);
+  });
+
   it('lets Space reach the closed input without opening the panel', () => {
     const { popover, press } = setup();
     const event = press(' ');
