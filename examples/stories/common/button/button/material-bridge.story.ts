@@ -3,20 +3,20 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxButton: Material bridge',
   subtitle: 'With <code>button-theme</code> included, cngx buttons read as Material 3 next to the real Material buttons.',
-  description: 'Each row pairs a Material button with its cngx counterpart under the same M3 theme, and a third copy with <code>cngxRipple</code> co-hosted: Material buttons ripple by default, a cngx button ripples only where you add the directive. The bridge maps tone <code>primary</code> to the primary role (the filled button), the <code>secondary</code> variant to the container roles (the tonal button), <code>outline</code> to the outline role, tone <code>danger</code> to error, and rounds the family to the full corner. It also gives the buttons the M3 metrics and label type: 40px high, 24px inline padding (12px for the text button, 16px on the side of a leading icon), the label-large role. Every length is a rung of the <code>--cngx-space-*</code> scale, so the last row re-scales in <code>[data-density]</code> islands (compact, comfortable, spacious) inside the Material app. A <code>mat-icon</code> goes inside <code>cngx-icon</code>, in the start slot (<code>&lt;cngx-icon cngxButtonStart&gt;</code>) and in an icon button; the icon bridge sizes the wrapped glyph to the <code>cngx-icon</code> rung. A bare <code>mat-icon</code> is not the pattern: it stays at Material\'s fixed 24px. The wrapper class stands in for <code>html &#123; @include button.theme($theme); @include icon.theme($theme); &#125;</code> in the app stylesheet, next to <code>mat.theme</code>; <code>@cngx/themes/material/theme</code> includes both bridges.',
+  description: 'Each row pairs a Material button with its cngx counterpart under the same M3 theme, and a third copy with <code>cngxRipple</code> co-hosted: Material buttons ripple by default, a cngx button ripples only where you add the directive. The bridge maps tone <code>primary</code> to the primary role (the filled button), the <code>secondary</code> variant to the container roles (the tonal button), <code>outline</code> to the outline role, tone <code>danger</code> to error, and rounds the family to the full corner. It also gives the buttons the M3 metrics and label type: 40px high, 24px inline padding (12px for the text button, 16px on the side of a leading icon), the label-large role. A <code>cngxButtonGroupAddon</code> reads the same metric and type tokens, so it sits on the row of the buttons beside it, and the default close button takes the 40px M3 icon-button box with a 24px glyph next to a <code>matIconButton</code> close. Every length is a rung of the <code>--cngx-space-*</code> scale, so the last row re-scales in <code>[data-density]</code> islands (compact, comfortable, spacious) inside the Material app. A <code>mat-icon</code> goes inside <code>cngx-icon</code>, in the start slot (<code>&lt;cngx-icon cngxButtonStart&gt;</code>) and in an icon button; the icon bridge sizes the wrapped glyph to the <code>cngx-icon</code> rung. A bare <code>mat-icon</code> is not the pattern: it stays at Material\'s fixed 24px. The wrapper class stands in for <code>html &#123; @include button.theme($theme); @include icon.theme($theme); &#125;</code> in the app stylesheet, next to <code>mat.theme</code>; <code>@cngx/themes/material/theme</code> includes both bridges.',
   level: 'atom',
   audience: ['dev', 'design'],
   artifact: 'standalone',
   focus: ['visual-variants', 'integration'],
-  apiComponents: ['CngxButton', 'CngxIconButton', 'CngxButtonStart', 'CngxIcon', 'CngxRipple'],
+  apiComponents: ['CngxButton', 'CngxIconButton', 'CngxCloseButton', 'CngxButtonGroup', 'CngxButtonGroupAddon', 'CngxButtonStart', 'CngxIcon', 'CngxAvatar', 'CngxRipple'],
   moduleImports: [
-    "import { CngxButton, CngxButtonStart, CngxIconButton } from '@cngx/common/button';",
-    "import { CngxIcon } from '@cngx/common/display';",
+    "import { CngxButton, CngxButtonGroup, CngxButtonGroupAddon, CngxButtonStart, CngxCloseButton, CngxIconButton } from '@cngx/common/button';",
+    "import { CngxAvatar, CngxIcon } from '@cngx/common/display';",
     "import { CngxRipple } from '@cngx/common/interactive';",
     "import { MatButtonModule } from '@angular/material/button';",
     "import { MatIconModule } from '@angular/material/icon';",
   ],
-  imports: ['CngxButton', 'CngxButtonStart', 'CngxIconButton', 'CngxIcon', 'CngxRipple', 'MatButtonModule', 'MatIconModule'],
+  imports: ['CngxButton', 'CngxButtonGroup', 'CngxButtonGroupAddon', 'CngxButtonStart', 'CngxCloseButton', 'CngxIconButton', 'CngxAvatar', 'CngxIcon', 'CngxRipple', 'MatButtonModule', 'MatIconModule'],
   css: `@use '@angular/material' as mat;
 @use '@cngx/themes/material/button-theme' as button;
 @use '@cngx/themes/material/icon-theme' as icon;
@@ -62,6 +62,22 @@ html {
       <button cngxButton tone="danger">Delete</button>
       <button cngxButton="secondary" tone="danger">Discard</button>
       <button cngxButton="secondary" tone="danger" cngxRipple>Discard</button>
+    </div>
+    <div class="demo-inline-actions">
+      <button matIconButton aria-label="Close panel"><mat-icon>close</mat-icon></button>
+      <button cngxCloseButton aria-label="Close panel"></button>
+      <button cngxCloseButton aria-label="Close panel"><cngx-icon><mat-icon>close</mat-icon></cngx-icon></button>
+    </div>
+    <div class="demo-inline-actions">
+      <div cngxButtonGroup variant="outline" aria-label="Assignee">
+        <span cngxButtonGroupAddon><cngx-avatar initials="AL" size="xs" />Ada Lovelace</span>
+        <button cngxButton>Reassign</button>
+      </div>
+      <div cngxButtonGroup variant="outline" aria-label="Issues">
+        <span cngxButtonGroupAddon>3 open</span>
+        <button cngxButton>Show</button>
+        <button cngxButton tone="primary">New issue</button>
+      </div>
     </div>
     <div class="demo-inline-actions">
       @for (density of densities; track density) {

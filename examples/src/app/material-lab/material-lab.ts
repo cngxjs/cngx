@@ -11,8 +11,15 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 
-import { CngxButton, CngxButtonStart, CngxIconButton } from '@cngx/common/button';
-import { CngxIcon } from '@cngx/common/display';
+import {
+  CngxButton,
+  CngxButtonGroup,
+  CngxButtonGroupAddon,
+  CngxButtonStart,
+  CngxCloseButton,
+  CngxIconButton,
+} from '@cngx/common/button';
+import { CngxAvatar, CngxIcon } from '@cngx/common/display';
 import { CngxSlider, CngxRangeSlider } from '@cngx/common/interactive';
 import {
   CngxAccordionGroup,
@@ -97,8 +104,12 @@ interface FieldModel {
     MatButtonModule,
     MatIconModule,
     CngxButton,
+    CngxButtonGroup,
+    CngxButtonGroupAddon,
     CngxButtonStart,
+    CngxCloseButton,
     CngxIconButton,
+    CngxAvatar,
     CngxIcon,
     CngxSlider,
     CngxRangeSlider,
@@ -159,6 +170,18 @@ interface FieldModel {
           <button cngxButton tone="primary" disabled>Disabled</button>
           <button cngxButton tone="danger">Delete</button>
           <button cngxButton="secondary" tone="danger">Discard</button>
+        </div>
+        <div class="lab-row">
+          <button matIconButton aria-label="Close panel"><mat-icon>close</mat-icon></button>
+          <button cngxCloseButton aria-label="Close panel"></button>
+          <div cngxButtonGroup variant="outline" aria-label="Assignee">
+            <span cngxButtonGroupAddon><cngx-avatar initials="AL" size="xs" />Ada Lovelace</span>
+            <button cngxButton>Reassign</button>
+          </div>
+          <div cngxButtonGroup variant="outline" aria-label="Issues">
+            <span cngxButtonGroupAddon>3 open</span>
+            <button cngxButton>Show</button>
+          </div>
         </div>
       </section>
 
