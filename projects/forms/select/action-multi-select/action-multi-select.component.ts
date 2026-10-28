@@ -853,10 +853,16 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   /** @internal Static height fact: a fullscreen panel led by the header input. */
   protected readonly sheetFill = 'fullscreen';
 
+  /**
+   * Appends a pre-built option to the local items buffer. The create-commit
+   * handler uses it internally; consumers call it to pre-seed recent items or
+   * history.
+   */
   patchData(item: CngxSelectOptionDef<T>): void {
     this.localItemsBuffer.patch(item);
   }
 
+  /** Empties the local items buffer. Calling it on an empty buffer does nothing. */
   clearLocalItems(): void {
     this.localItemsBuffer.clear();
   }
@@ -1282,16 +1288,26 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     });
   }
 
+  /** Opens the panel. Unlike a trigger click it is not gated by `disabled`. */
   open(): void {
     this.popoverRef()?.show();
   }
+  /**
+   * Closes the panel. With `CngxSelectConfig.restoreFocus` on, focus moves back
+   * to the trigger first.
+   */
   close(): void {
     this.hostFocus.refocusOwnerBeforeClose();
     this.popoverRef()?.hide();
   }
+  /**
+   * Opens the panel when it is closed and closes it when it is open. Like
+   * `open()`, it is not gated by `disabled`.
+   */
   toggle(): void {
     this.popoverRef()?.toggle();
   }
+  /** Moves focus to the trigger, passing the given `FocusOptions` through. */
   focus(options?: FocusOptions): void {
     this.inputEl()?.nativeElement.focus(options);
   }

@@ -1118,16 +1118,26 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     });
   }
 
+  /** Opens the panel. Unlike a trigger click it is not gated by `disabled`. */
   open(): void {
     this.popoverRef()?.show();
   }
+  /**
+   * Closes the panel. With `CngxSelectConfig.restoreFocus` on, focus moves back
+   * to the trigger first.
+   */
   close(): void {
     this.hostFocus.refocusOwnerBeforeClose();
     this.popoverRef()?.hide();
   }
+  /**
+   * Opens the panel when it is closed and closes it when it is open. Like
+   * `open()`, it is not gated by `disabled`.
+   */
   toggle(): void {
     this.popoverRef()?.toggle();
   }
+  /** Moves focus to the trigger, passing the given `FocusOptions` through. */
   focus(options?: FocusOptions): void {
     this.triggerBtn()?.nativeElement.focus(options);
   }
