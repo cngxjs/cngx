@@ -294,8 +294,8 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
    */
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   /**
-   * Popover placement relative to the trigger. Per-instance input
-   * wins over `CngxSelectConfig.popoverPlacement`.
+   * Popover placement relative to the trigger. Per-instance input wins over
+   * `CngxSelectConfig.popoverPlacement`.
    */
   readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
   /**
@@ -323,15 +323,12 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   readonly hideCaret = input<boolean>(!this.config.showCaret);
 
   /**
-   * Replaces the built-in `✕` glyph inside the default clear button
-   * while keeping the button frame, ARIA, and click handler. Ignored
-   * when `*cngxSelectClearButton` is projected.
+   * Replaces the built-in clear glyph inside the default clear button while
+   * keeping the button frame, ARIA and click handler. Ignored when
+   * `*cngxSelectClearButton` is projected.
    */
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
-  /**
-   * Replaces the built-in caret glyph. Ignored when
-   * `*cngxSelectCaret` is projected.
-   */
+  /** Replaces the built-in caret glyph. Ignored when `*cngxSelectCaret` is projected. */
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
   /** Renders a clear button while the selection is not empty and the control is enabled. */
   readonly clearable = input<boolean>(false);
@@ -404,10 +401,11 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
    */
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
   /**
-   * Scalar-commit error-announce policy. `'verbose'` reads the error
-   * message; `'soft'` reads "selection removed". Per-instance input wins
-   * over `CngxSelectConfig.commitErrorAnnouncePolicy`; default
-   * `{ kind: 'verbose', severity: 'assertive' }`.
+   * Commit-error announce policy. `'verbose'` reads the error message into the
+   * live region; `'soft'` announces a generic removal at the current selection
+   * count. Per-instance input wins over
+   * `CngxSelectConfig.commitErrorAnnouncePolicy`; default `{ kind: 'verbose',
+   * severity: 'assertive' }`.
    */
   readonly commitErrorAnnouncePolicy = input<CngxCommitErrorAnnouncePolicy>(
     this.config.commitErrorAnnouncePolicy ?? { kind: 'verbose', severity: 'assertive' },

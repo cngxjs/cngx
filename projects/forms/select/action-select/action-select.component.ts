@@ -335,11 +335,17 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
    * dropping unfinished search text. Defaults to `true`.
    */
   readonly clearOnBlur = input<boolean>(true);
-  /** Custom matcher for the inline search. Wins over `CngxSelectConfig.searchMatchFn`. */
+  /**
+   * Per-instance match policy. Receives the option's `{ value, label }` and the
+   * term and returns `true` when the option should stay visible. Wins over
+   * `CngxSelectConfig.searchMatchFn`; the default is the folded label match in
+   * the reading locale.
+   */
   readonly searchMatchFn = input<CngxSelectMatchFn<T> | null>(null);
   /**
-   * Debounce for the inline search (ms). Default `0` so the slot's
-   * `let-term` reflects every keystroke; raise for large option lists.
+   * Debounce in ms between a keystroke and the search filter update and
+   * `searchTermChange`. Defaults to
+   * `CngxSelectConfig.typeaheadDebounceInterval`.
    */
   readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
   /** Suppresses the first `searchTermChange` emission, the empty term written on hydration. */
@@ -442,10 +448,11 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
    */
   readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(this.config.commitErrorDisplay);
   /**
-   * Scalar-commit error-announce policy. Default `{ kind: 'soft' }`
-   * for action-select (matches typeahead's free-text flow). Override
-   * to `'verbose'` per-instance when destructive create warrants
-   * a louder read.
+   * Commit-error announce policy. `'verbose'` reads the error message into the
+   * live region; `'soft'` announces a generic removal at the current selection
+   * count. Per-instance input wins over
+   * `CngxSelectConfig.commitErrorAnnouncePolicy`; default `{ kind: 'soft' }`,
+   * so a failed commit does not interrupt typing.
    */
   readonly commitErrorAnnouncePolicy = input<CngxCommitErrorAnnouncePolicy>(
     this.config.commitErrorAnnouncePolicy ?? { kind: 'soft' },
@@ -462,10 +469,9 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
 
   /**
-   * Quick-create handler fired by the slot's `commit()` callback.
-   * Receives the live `searchTerm` and `{ label }`, resolves to a new
-   * `T`. `null` disables the create path - slot still renders, but
-   * `commit()` becomes a silent no-op.
+   * Quick-create handler run by the action slot's `commit()` with the live
+   * search term and the draft `{ label }`; it resolves to the new value. `null`
+   * disables creation and `commit()` becomes a no-op.
    */
   readonly quickCreateAction = input<CngxSelectCreateAction<T> | null>(null);
   /**
@@ -474,14 +480,13 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
    */
   readonly closeOnCreate = input<boolean>(this.actionConfig.closeOnCreate ?? true);
   /**
-   * Fall back to the raw `<input>` value when the debounced
-   * `searchTerm` hasn't caught up. Disable when the consumer owns
-   * its own search pipeline.
+   * Falls back to the raw `<input>` value when the debounced `searchTerm` has
+   * not caught up. Disable it when the consumer owns the search pipeline.
    */
   readonly liveInputFallback = input<boolean>(this.actionConfig.liveInputFallback);
   /**
-   * Position of the `*cngxSelectAction` slot in the panel.
-   * Default `'bottom'`.
+   * Position of the `*cngxSelectAction` slot in the panel: top, bottom, both or
+   * none. Defaults to `CngxActionSelectConfig.actionPosition`.
    */
   readonly actionPosition = input<'top' | 'bottom' | 'both' | 'none'>(
     this.actionConfig.actionPosition,
@@ -491,7 +496,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
    * over `CngxActionSelectConfig.popoverPlacement`.
    */
   readonly popoverPlacement = input<PopoverPlacement>(this.actionConfig.popoverPlacement);
-  /** Mobile `inputmode`. Defaults from `CngxSelectConfig.inputMode`. */
+  /** Mobile `inputmode` of the input. Defaults to `CngxSelectConfig.inputMode`. */
   readonly inputMode = input<NonNullable<CngxSelectConfig['inputMode']>>(this.config.inputMode);
   /**
    * Mobile `enterkeyhint`. Default `'go'` - Enter routes to
@@ -501,7 +506,10 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     this.config.enterKeyHint ?? 'go',
   );
 
-  /** Two-way single-value binding. */
+  /**
+   * Selected value, two-way bindable as `[(value)]`. Syncs with the bound field
+   * inside a `cngx-form-field`.
+   */
   readonly value = model<T | undefined>(undefined);
 
   /**
@@ -533,11 +541,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly stateChange = output<AsyncStatus>();
   /** Emits the search term as the user types into the input, after `searchDebounceMs`. */
   readonly searchTermChange = output<string>();
-  /**
-   * Dedicated channel for successful creates. Fires after
-   * `selectionChange` so consumers can bind `(created)` without
-   * branching on `action === 'create'`.
-   */
+  /** Emits the created option after a successful create, right after `selectionChange`. */
   readonly created = output<CngxSelectOptionDef<T>>();
 
   private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);

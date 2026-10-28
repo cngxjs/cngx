@@ -330,8 +330,8 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    */
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   /**
-   * Popover placement relative to the trigger. Per-instance input wins
-   * over `CngxSelectConfig.popoverPlacement`.
+   * Popover placement relative to the trigger. Per-instance input wins over
+   * `CngxSelectConfig.popoverPlacement`.
    */
   readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
   /**
@@ -476,11 +476,11 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    */
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
   /**
-   * Commit-error announce policy. `'verbose'` reads the error message into
-   * the live region; `'soft'` announces a generic removal at the current
-   * selection count. Per-instance input wins over
-   * `CngxSelectConfig.commitErrorAnnouncePolicy`; default
-   * `{ kind: 'verbose', severity: 'assertive' }`.
+   * Commit-error announce policy. `'verbose'` reads the error message into the
+   * live region; `'soft'` announces a generic removal at the current selection
+   * count. Per-instance input wins over
+   * `CngxSelectConfig.commitErrorAnnouncePolicy`; default `{ kind: 'verbose',
+   * severity: 'assertive' }`.
    */
   readonly commitErrorAnnouncePolicy = input<CngxCommitErrorAnnouncePolicy>(
     this.config.commitErrorAnnouncePolicy ?? { kind: 'verbose', severity: 'assertive' },

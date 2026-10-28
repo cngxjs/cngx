@@ -352,9 +352,18 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
    * pixels, `null` sizes to content. Defaults to `CngxSelectConfig.panelWidth`.
    */
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
-  /** Custom matcher for the inline search. Wins over `CngxSelectConfig.searchMatchFn`. */
+  /**
+   * Per-instance match policy. Receives the option's `{ value, label }` and the
+   * term and returns `true` when the option should stay visible. Wins over
+   * `CngxSelectConfig.searchMatchFn`; the default is the folded label match in
+   * the reading locale.
+   */
   readonly searchMatchFn = input<CngxSelectMatchFn<T> | null>(null);
-  /** Debounce for the inline search (ms). Default `0` for action-slot feedback. */
+  /**
+   * Debounce in ms between a keystroke and the search filter update and
+   * `searchTermChange`. Defaults to
+   * `CngxSelectConfig.typeaheadDebounceInterval`.
+   */
   readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
   /** Suppresses the first `searchTermChange` emission, the empty term written on hydration. */
   readonly skipInitial = input<boolean>(false);
@@ -485,19 +494,20 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
    */
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
   /**
-   * Commit-error announce policy. `'verbose'` reads the error message into
-   * the live region; `'soft'` announces a generic removal at the current
-   * selection count. Per-instance input wins over
-   * `CngxSelectConfig.commitErrorAnnouncePolicy`; default
-   * `{ kind: 'verbose', severity: 'assertive' }`.
+   * Commit-error announce policy. `'verbose'` reads the error message into the
+   * live region; `'soft'` announces a generic removal at the current selection
+   * count. Per-instance input wins over
+   * `CngxSelectConfig.commitErrorAnnouncePolicy`; default `{ kind: 'verbose',
+   * severity: 'assertive' }`.
    */
   readonly commitErrorAnnouncePolicy = input<CngxCommitErrorAnnouncePolicy>(
     this.config.commitErrorAnnouncePolicy ?? { kind: 'verbose', severity: 'assertive' },
   );
 
   /**
-   * Quick-create handler. `null` disables the create path - slot still
-   * renders, `commit()` becomes a silent no-op.
+   * Quick-create handler run by the action slot's `commit()` with the live
+   * search term and the draft `{ label }`; it resolves to the new value. `null`
+   * disables creation and `commit()` becomes a no-op.
    */
   readonly quickCreateAction = input<CngxSelectCreateAction<T> | null>(null);
   /**
@@ -507,11 +517,14 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
    */
   readonly closeOnCreate = input<boolean>(this.actionConfig.closeOnCreate ?? false);
   /**
-   * Fall back to raw `<input>.value` when debounced `searchTerm`
-   * hasn't caught up.
+   * Falls back to the raw `<input>` value when the debounced `searchTerm` has
+   * not caught up. Disable it when the consumer owns the search pipeline.
    */
   readonly liveInputFallback = input<boolean>(this.actionConfig.liveInputFallback);
-  /** Position of `*cngxSelectAction` in the panel. */
+  /**
+   * Position of the `*cngxSelectAction` slot in the panel: top, bottom, both or
+   * none. Defaults to `CngxActionSelectConfig.actionPosition`.
+   */
   readonly actionPosition = input<'top' | 'bottom' | 'both' | 'none'>(
     this.actionConfig.actionPosition,
   );
@@ -520,7 +533,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
    * over `CngxActionSelectConfig.popoverPlacement`.
    */
   readonly popoverPlacement = input<PopoverPlacement>(this.actionConfig.popoverPlacement);
-  /** Mobile `inputmode`. Defaults from `CngxSelectConfig.inputMode`. */
+  /** Mobile `inputmode` of the input. Defaults to `CngxSelectConfig.inputMode`. */
   readonly inputMode = input<NonNullable<CngxSelectConfig['inputMode']>>(this.config.inputMode);
   /**
    * Mobile `enterkeyhint`. Default `'enter'` - Enter appends a chip
@@ -529,14 +542,20 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly enterKeyHint = input<NonNullable<CngxSelectConfig['enterKeyHint']>>(
     this.config.enterKeyHint ?? 'enter',
   );
-  /** Chip-strip overflow strategy. */
+  /** Chip-strip overflow strategy. Defaults to `CngxSelectConfig.chipOverflow`. */
   readonly chipOverflow = input<NonNullable<CngxSelectConfig['chipOverflow']>>(
     this.config.chipOverflow,
   );
-  /** Max chips in `'truncate'` mode. */
+  /**
+   * Maximum number of chips in `'truncate'` mode before the `+N` badge.
+   * Defaults to `CngxSelectConfig.maxVisibleChips`.
+   */
   readonly maxVisibleChips = input<number>(this.config.maxVisibleChips);
 
-  /** Two-way multi-value binding. */
+  /**
+   * Selected values, two-way bindable as `[(values)]`. Syncs with the bound
+   * field inside a `cngx-form-field`.
+   */
   readonly values = model<T[]>([]);
 
   /**
@@ -573,7 +592,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly stateChange = output<AsyncStatus>();
   /** Emits the search term as the user types into the input, after `searchDebounceMs`. */
   readonly searchTermChange = output<string>();
-  /** Dedicated channel for successful creates. Fires after `selectionChange`. */
+  /** Emits the created option after a successful create, right after `selectionChange`. */
   readonly created = output<CngxSelectOptionDef<T>>();
 
   private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);

@@ -306,15 +306,18 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
    */
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   /**
-   * Popover placement relative to the trigger. Per-instance input wins
-   * over `CngxSelectConfig.popoverPlacement`.
+   * Popover placement relative to the trigger. Per-instance input wins over
+   * `CngxSelectConfig.popoverPlacement`.
    */
   readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
-  /** Chip-strip overflow strategy. See `CngxSelectConfig.chipOverflow`. */
+  /** Chip-strip overflow strategy. Defaults to `CngxSelectConfig.chipOverflow`. */
   readonly chipOverflow = input<NonNullable<CngxSelectConfig['chipOverflow']>>(
     this.config.chipOverflow,
   );
-  /** Max chips in `'truncate'` mode before the `+N` badge. */
+  /**
+   * Maximum number of chips in `'truncate'` mode before the `+N` badge.
+   * Defaults to `CngxSelectConfig.maxVisibleChips`.
+   */
   readonly maxVisibleChips = input<number>(this.config.maxVisibleChips);
   /**
    * Reset window in ms of the type-to-select buffer, so typed letters jump to
@@ -341,14 +344,12 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   readonly hideCaret = input<boolean>(!this.config.showCaret);
 
   /**
-   * Replaces the built-in `✕` glyph inside the default clear-all button.
-   * Ignored when `*cngxSelectClearButton` is projected.
+   * Replaces the built-in clear glyph inside the default clear button while
+   * keeping the button frame, ARIA and click handler. Ignored when
+   * `*cngxSelectClearButton` is projected.
    */
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
-  /**
-   * Replaces the built-in caret glyph. Ignored when
-   * `*cngxSelectCaret` is projected.
-   */
+  /** Replaces the built-in caret glyph. Ignored when `*cngxSelectCaret` is projected. */
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
   /** Renders a clear button while the selection is not empty and the control is enabled. */
   readonly clearable = input<boolean>(false);
@@ -452,11 +453,11 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
    */
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
   /**
-   * Commit-error announce policy. `'verbose'` reads the error message into
-   * the live region; `'soft'` announces a generic removal at the current
-   * selection count. Per-instance input wins over
-   * `CngxSelectConfig.commitErrorAnnouncePolicy`; default
-   * `{ kind: 'verbose', severity: 'assertive' }`.
+   * Commit-error announce policy. `'verbose'` reads the error message into the
+   * live region; `'soft'` announces a generic removal at the current selection
+   * count. Per-instance input wins over
+   * `CngxSelectConfig.commitErrorAnnouncePolicy`; default `{ kind: 'verbose',
+   * severity: 'assertive' }`.
    */
   readonly commitErrorAnnouncePolicy = input<CngxCommitErrorAnnouncePolicy>(
     this.config.commitErrorAnnouncePolicy ?? { kind: 'verbose', severity: 'assertive' },
