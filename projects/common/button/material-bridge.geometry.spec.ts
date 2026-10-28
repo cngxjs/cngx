@@ -222,6 +222,9 @@ const M3 = {
     }
     <p>
       <button cngxButton tone="primary" class="layer-solid" style="transition: none">Save</button>
+      <button cngxButton class="radius-host">
+        Save<span class="radius-child" style="display: inline-block; border-radius: var(--cngx-radius-md)"></span>
+      </button>
       <span
         class="probe-pressed"
         style="color: color-mix(in oklch, var(--mat-sys-primary) 88%, var(--mat-sys-on-primary))"
@@ -369,6 +372,17 @@ describe('Material bridge: M3 metrics and label type', () => {
     expect([compact.font, spacious.font]).toEqual([M3.font, M3.font]);
   });
 
+  it('rounds button, icon button and close button to corner-full, not their children', () => {
+    const root = mountMetrics();
+    const radius = (selector: string): number =>
+      parseFloat(getComputedStyle(root.querySelector(selector)!).borderTopLeftRadius);
+    for (const selector of ['.solid-comfortable', '.icon-comfortable', '.close-default-comfortable']) {
+      // corner-full is 9999px; the box clamps it at render, the value stays.
+      expect(radius(selector), selector).toBeGreaterThan(1000);
+    }
+    expect(radius('.radius-child')).toBeLessThan(1000);
+  });
+
   it('lays the pressed on-primary over a solid fill at the M3 pressed opacity', () => {
     const root = mountMetrics();
     const btn = root.querySelector<HTMLElement>('.layer-solid')!;
@@ -444,6 +458,19 @@ class MaterialBridgeAddonHost {
 }
 
 describe('Material bridge: button-group addon', () => {
+  it('rounds the outer group ends to corner-full, the inner joins stay square', () => {
+    const fixture = TestBed.createComponent(MaterialBridgeAddonHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const addon = getComputedStyle(mountedRoot.querySelector('.addon-comfortable-md')!);
+    const btn = getComputedStyle(mountedRoot.querySelector('.btn-comfortable-md')!);
+    expect(parseFloat(addon.borderStartStartRadius)).toBeGreaterThan(1000);
+    expect(parseFloat(addon.borderStartEndRadius)).toBe(0);
+    expect(parseFloat(btn.borderStartEndRadius)).toBeGreaterThan(1000);
+    expect(parseFloat(btn.borderStartStartRadius)).toBe(0);
+  });
+
   it.each(['comfortable', 'compact', 'spacious'] as const)(
     'puts the addon on the bridged button row at every size (%s)',
     (density) => {

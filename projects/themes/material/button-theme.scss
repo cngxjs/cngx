@@ -27,8 +27,10 @@
 // - variant `secondary` -> the `*-container` roles through the three
 //   --cngx-button-secondary-* hooks (neutral = secondary-container, the M3
 //   tonal button; primary = primary-container; danger = error-container)
-// - shape -> corner-full: --cngx-radius-md on the host (the rung the button
-//   radius reads), the group end radius, the close-button radius
+// - shape -> corner-full: --cngx-button-radius on the host (a real-specificity
+//   rule, see `shape()`; the radius rung --cngx-radius-md stays untouched so
+//   projected children keep theirs), the group end radius, the close-button
+//   radius
 // - state layers -> a solid hover / press lays the on-colour
 //   (--cngx-button-hover-shade) over the tone at
 //   --mat-sys-hover-state-layer-opacity / --mat-sys-pressed-state-layer-opacity
@@ -173,8 +175,14 @@
 @mixin shape($theme) {
   // M2 buttons keep the cngx radius rung (4px corners are what M2 paints).
   @if mat.get-theme-version($theme) == 1 {
-    @include bridge.on('.cngx-button') {
-      --cngx-radius-md: var(--mat-sys-corner-full);
+    // The sheet SETs --cngx-button-radius in `@scope (.cngx-button) :scope`,
+    // which beats a zero-specificity `:where()`, so this rule carries (0,2,0)
+    // inside the layer (metrics() precedent). The close button keeps its own
+    // radius hook below, which its sheet maps onto --cngx-button-radius.
+    @layer cngx.components {
+      .cngx-button:not(.cngx-close-button) {
+        --cngx-button-radius: var(--mat-sys-corner-full);
+      }
     }
     @include bridge.on('.cngx-button-group') {
       --cngx-button-group-radius: var(--mat-sys-corner-full);

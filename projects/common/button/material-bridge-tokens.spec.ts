@@ -51,6 +51,7 @@ const CONSUMED = [
   '--cngx-button-padding-inline',
   '--cngx-button-pressed-layer',
   '--cngx-button-pressed-wash',
+  '--cngx-button-radius',
   '--cngx-button-secondary-bg',
   '--cngx-button-secondary-bg-hover',
   '--cngx-button-secondary-bg-pressed',
@@ -72,7 +73,6 @@ const CONSUMED = [
   '--cngx-color-text',
   '--cngx-icon-button-size',
   '--cngx-icon-size',
-  '--cngx-radius-md',
 ];
 
 const READERS = [
@@ -115,7 +115,7 @@ describe('button Material bridge', () => {
       '\n',
     );
     const owned = CONSUMED.filter(
-      (name) => !name.startsWith('--cngx-color-') && name !== '--cngx-radius-md',
+      (name) => !name.startsWith('--cngx-color-'),
     );
     for (const name of owned) {
       expect(sheets, `${name} is not read by any button-family sheet`).toMatch(
@@ -183,7 +183,11 @@ describe('button Material bridge', () => {
 
   it('rounds the family to corner-full in M3 only', () => {
     const m3 = compileThemeEntry(M3_ENTRY);
-    expect(m3).toContain('--cngx-radius-md: var(--mat-sys-corner-full)');
+    expect(flat(m3)).toContain(
+      '.cngx-button:not(.cngx-close-button) { --cngx-button-radius: var(--mat-sys-corner-full); }',
+    );
+    // The radius rung stays untouched, so projected children keep theirs.
+    expect(m3).not.toContain('--cngx-radius-md');
     expect(block(m3, '.cngx-button-group')).toContain(
       '--cngx-button-group-radius: var(--mat-sys-corner-full)',
     );
