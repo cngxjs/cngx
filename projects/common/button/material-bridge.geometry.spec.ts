@@ -2,7 +2,7 @@ import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { CngxIcon } from '@cngx/common/display';
+import { CngxAvatar, CngxIcon } from '@cngx/common/display';
 
 import { CngxButtonGroupAddon } from './button-group-addon.directive';
 import { CngxButtonGroup } from './button-group.directive';
@@ -388,7 +388,7 @@ describe('Material bridge: M3 metrics and label type', () => {
 @Component({
   selector: 'cngx-material-bridge-addon-host',
   standalone: true,
-  imports: [CngxButtonGroup, CngxButtonGroupAddon, CngxButton],
+  imports: [CngxButtonGroup, CngxButtonGroupAddon, CngxButton, CngxAvatar],
   styleUrls: [
     '../../core/theming/layers.css',
     '../../core/theming/system-tokens.css',
@@ -407,6 +407,13 @@ describe('Material bridge: M3 metrics and label type', () => {
             <span cngxButtonGroup variant="outline" [size]="size" style="align-items: flex-start" aria-label="Issues"
               ><span cngxButtonGroupAddon class="addon-{{ density }}-{{ size }}">3 open</span
               ><button cngxButton class="btn-{{ density }}-{{ size }}">Show</button></span
+            >
+          </p>
+          <p>
+            <span cngxButtonGroup variant="outline" [size]="size" class="avatar-row-{{ density }}-{{ size }}" aria-label="Assignee"
+              ><span cngxButtonGroupAddon class="avatar-addon-{{ density }}-{{ size }}"
+                ><cngx-avatar initials="AL" size="xs" />Ada Lovelace</span
+              ><button cngxButton>Reassign</button></span
             >
           </p>
         }
@@ -431,6 +438,26 @@ describe('Material bridge: button-group addon', () => {
         const { width: _addonWidth, ...addon } = metrics(mountedRoot, `.addon-${density}-${size}`);
         const { width: _btnWidth, ...btn } = metrics(mountedRoot, `.btn-${density}-${size}`);
         expect(addon, size).toEqual(btn);
+      }
+    },
+  );
+
+  // M3 label-large is a 20px line; a 24px xs avatar in the addon would
+  // stretch the row to 44px. Capped to the line box it keeps the bridged row.
+  it.each(['comfortable', 'compact', 'spacious'] as const)(
+    'keeps an avatar addon row on the bridged button height at every size (%s)',
+    (density) => {
+      const fixture = TestBed.createComponent(MaterialBridgeAddonHost);
+      mountedRoot = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(mountedRoot);
+      fixture.detectChanges();
+      for (const size of SIZES) {
+        const button = metrics(mountedRoot, `.btn-${density}-${size}`);
+        const group = metrics(mountedRoot, `.avatar-row-${density}-${size}`);
+        expect(group.height, size).toBeCloseTo(button.height, 1);
+        const avatar = metrics(mountedRoot, `.avatar-addon-${density}-${size} > cngx-avatar`);
+        expect(avatar.width, size).toBe(avatar.height);
+        expect(avatar.height, size).toBeLessThanOrEqual(button.line);
       }
     },
   );

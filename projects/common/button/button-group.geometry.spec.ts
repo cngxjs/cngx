@@ -1,5 +1,6 @@
 import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { CngxAvatar } from '@cngx/common/display';
 import { CngxAsyncClick } from '@cngx/common/interactive';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -298,7 +299,7 @@ describe('CngxButtonGroup geometry: ends, seams and lift', () => {
 @Component({
   selector: 'cngx-button-group-addon-row-host',
   standalone: true,
-  imports: [CngxButtonGroup, CngxButtonGroupAddon, CngxButton],
+  imports: [CngxButtonGroup, CngxButtonGroupAddon, CngxButton, CngxAvatar],
   styleUrls: [
     '../../core/theming/layers.css',
     '../../core/theming/system-tokens.css',
@@ -316,6 +317,13 @@ describe('CngxButtonGroup geometry: ends, seams and lift', () => {
             <span cngxButtonGroup variant="outline" [size]="size" style="align-items: flex-start" aria-label="Issues"
               ><span cngxButtonGroupAddon class="addon-{{ density }}-{{ size }}">3 open</span
               ><button cngxButton class="btn-{{ density }}-{{ size }}">Show</button></span
+            >
+          </p>
+          <p>
+            <span cngxButtonGroup variant="outline" [size]="size" class="avatar-row-{{ density }}-{{ size }}" aria-label="Assignee"
+              ><span cngxButtonGroupAddon class="avatar-addon-{{ density }}-{{ size }}"
+                ><cngx-avatar initials="AL" size="xs" />Ada Lovelace</span
+              ><button cngxButton>Reassign</button></span
             >
           </p>
         }
@@ -351,6 +359,27 @@ describe('CngxButtonGroup geometry: addon on the button row', () => {
         const addon = query(mountedRoot, `.addon-${density}-${size}`);
         expect(addon.getAttribute('data-size'), size).toBe(size);
         expect(row(addon), size).toEqual(row(query(mountedRoot, `.btn-${density}-${size}`)));
+      }
+    },
+  );
+
+  // A 24px xs avatar is taller than the sm / xs label line; uncapped it
+  // stretches the whole row. Capped to the addon's line box it keeps the row
+  // on the button height and stays square.
+  it.each(['comfortable', 'compact', 'spacious'] as const)(
+    'keeps an avatar addon row on the button height at every size (%s)',
+    (density) => {
+      const fixture = TestBed.createComponent(AddonRowHost);
+      mountedRoot = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(mountedRoot);
+      fixture.detectChanges();
+      for (const size of ['xs', 'sm', 'md', 'lg']) {
+        const button = row(query(mountedRoot, `.btn-${density}-${size}`));
+        const group = query(mountedRoot, `.avatar-row-${density}-${size}`);
+        expect(row(group).height, size).toBe(button.height);
+        const avatar = query(mountedRoot, `.avatar-addon-${density}-${size} > cngx-avatar`).getBoundingClientRect();
+        expect(avatar.width, size).toBe(avatar.height);
+        expect(avatar.height, size).toBeLessThanOrEqual(parseFloat(button.line));
       }
     },
   );
