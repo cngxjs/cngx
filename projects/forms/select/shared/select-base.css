@@ -1425,7 +1425,12 @@
   .cngx-select__chip-list[data-overflow='fit'] {
     --_cngx-chip-fit-reserve: var(--cngx-select-chip-fit-badge-reserve, 5ch);
     flex-wrap: nowrap;
-    overflow: hidden;
+    /* clip, not hidden: the margin keeps a focused remove button's ring
+       (2px + 1px offset by default) visible above and below the row. Hidden
+       slots are invisible, so the margin shows nothing else. Without
+       overflow-clip-margin support the ring is clipped as with hidden. */
+    overflow: clip;
+    overflow-clip-margin: 4px;
     min-inline-size: 0;
   }
 
@@ -1438,7 +1443,8 @@
       100% - var(--_cngx-chip-fit-reserve) - var(--cngx-select-chip-gap, 0.25rem)
     );
     min-inline-size: 0;
-    overflow: hidden;
+    overflow: clip;
+    overflow-clip-margin: 4px;
   }
 
   /* A chip capped by its slot shrinks; `.cngx-chip__label` carries the

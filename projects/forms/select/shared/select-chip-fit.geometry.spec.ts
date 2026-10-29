@@ -301,3 +301,48 @@ describe('chipOverflow fit geometry - input min-width override', () => {
     }, 180_000);
   }
 });
+
+// The paint box of an outline is its border box grown by width + offset. An
+// ancestor with `overflow: clip` clips at its border box grown by
+// `overflow-clip-margin`, `hidden` clips at the border box itself.
+function ringClippedBy(el: HTMLElement): HTMLElement | null {
+  const cs = getComputedStyle(el);
+  const bleed = parseFloat(cs.outlineWidth) + parseFloat(cs.outlineOffset);
+  const box = el.getBoundingClientRect();
+  for (let node = el.parentElement; node && !node.classList.contains('cngx-field-trigger'); node = node.parentElement) {
+    const style = getComputedStyle(node);
+    if (style.overflowX === 'visible' && style.overflowY === 'visible') {
+      continue;
+    }
+    const margin = style.overflowX === 'clip' ? parseFloat(style.overflowClipMargin) || 0 : 0;
+    const clip = node.getBoundingClientRect();
+    const inside =
+      box.left - bleed >= clip.left - margin - 0.5 &&
+      box.right + bleed <= clip.right + margin + 0.5 &&
+      box.top - bleed >= clip.top - margin - 0.5 &&
+      box.bottom + bleed <= clip.bottom + margin + 0.5;
+    if (!inside) {
+      return node;
+    }
+  }
+  return null;
+}
+
+describe('chipOverflow fit geometry - focus ring', () => {
+  for (const kind of ['multi', 'combo'] as const) {
+    it(`keeps the remove button ring of a capped chip unclipped (${kind})`, async () => {
+      const { root } = await mount((h) => {
+        h.kind.set(kind);
+        h.values.set(['fin', 'ops']);
+        h.width.set(220);
+      });
+      const remove = q(root, '.cngx-select__chip-slot:not([inert]) .cngx-chip__remove');
+      q(root, '.before').focus();
+      for (let i = 0; i < 10 && document.activeElement !== remove; i++) {
+        await userEvent.tab();
+      }
+      expect(remove.matches(':focus-visible')).toBe(true);
+      expect(ringClippedBy(remove)?.className ?? null).toBeNull();
+    });
+  }
+});
