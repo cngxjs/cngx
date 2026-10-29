@@ -328,7 +328,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   /**
    * Formats a value into the input text. The input is rewritten through it
-   * after a commit, a clear and a blur. Defaults to `String`.
+   * after a commit, a rollback, a clear and a blur. Defaults to `String`.
    */
   readonly displayWith = input<(value: T) => string>(String);
   /**
@@ -515,8 +515,8 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
 
   /**
    * Emits after a pick, clear or create settles, with the new and previous
-   * value, the option and the action. With `commitAction` bound a pick fires on
-   * commit success.
+   * value, the option and the action; this variant has no `optionSelected`
+   * output. With `commitAction` bound a pick fires on commit success.
    */
   readonly selectionChange = output<CngxActionSelectChange<T>>();
   /** Emits `true` when the panel opens and `false` when it closes. */

@@ -319,8 +319,8 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     this.config.enterKeyHint ?? 'done',
   );
   /**
-   * Formatter from value to input text. The input text is rewritten through it
-   * from the committed value on commit success and on rollback.
+   * Formats a value into the input text. The input is rewritten through it
+   * after a commit, a rollback, a clear and a blur. Defaults to `String`.
    */
   readonly displayWith = input<(value: T) => string>((v) => String(v));
   /** When `true` (default), blur without a pick resets to `displayWith(value())`. */

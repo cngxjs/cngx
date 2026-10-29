@@ -856,15 +856,15 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   protected readonly sheetFill = 'fullscreen';
 
   /**
-   * Appends a pre-built option to the local items buffer. The create-commit
-   * handler uses it internally; consumers call it to pre-seed recent items or
-   * history.
+   * Append a pre-built option to the local buffer. Used internally by the
+   * create-commit handler; exposed for consumer pre-seed (recent-items, history
+   * workflows).
    */
   patchData(item: CngxSelectOptionDef<T>): void {
     this.localItemsBuffer.patch(item);
   }
 
-  /** Empties the local items buffer. Calling it on an empty buffer does nothing. */
+  /** Reset the local buffer. Idempotent. */
   clearLocalItems(): void {
     this.localItemsBuffer.clear();
   }
