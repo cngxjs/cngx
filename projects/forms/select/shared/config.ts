@@ -226,7 +226,7 @@ export interface CngxSelectFallbackLabels {
   /** Commit-error retry button. Default `'Retry'`. */
   readonly commitFailedRetry?: string;
   /**
-   * Visible badge for the chips `chipOverflow: 'truncate'` hides. Receives
+   * Visible badge for the chips `chipOverflow: 'truncate'` or `'fit'` hides. Receives
    * the hidden count. Default `'+{count}'`, the count in the locale's digits.
    */
   readonly chipOverflowBadge?: (count: number) => string;
@@ -320,8 +320,10 @@ export interface CngxSelectConfig {
    * - `'wrap'` (default) - chips wrap, trigger grows.
    * - `'scroll-x'` - single row, horizontal scroll.
    * - `'truncate'` - first `maxVisibleChips` chips + `+N` badge.
+   * - `'fit'` - one row, as many chips as fit, rest in the `+N` badge; set
+   *   `--cngx-select-chip-fit-badge-reserve` for a wider badge (default `5ch`).
    */
-  readonly chipOverflow?: 'wrap' | 'scroll-x' | 'truncate';
+  readonly chipOverflow?: 'wrap' | 'scroll-x' | 'truncate' | 'fit';
   /**
    * Opt-in recycler virtualisation. Custom virtualisation pipelines
    * provide `CNGX_PANEL_RENDERER_FACTORY` directly - that token wins.
@@ -444,7 +446,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
   inputMode: 'search',
   // null = each variant applies its own enterkeyhint baseline.
   enterKeyHint: null as 'enter' | 'done' | 'go' | 'next' | 'previous' | 'search' | 'send' | null,
-  chipOverflow: 'wrap' as 'wrap' | 'scroll-x' | 'truncate',
+  chipOverflow: 'wrap' as 'wrap' | 'scroll-x' | 'truncate' | 'fit',
   maxVisibleChips: 3,
   virtualization: null as CngxSelectVirtualizationConfig | null,
   panelClass: '',
@@ -605,7 +607,8 @@ export function withEnterKeyHint(
 }
 
 /**
- * Sets the chip-strip overflow mode. Default `'wrap'`.
+ * Sets the chip-strip overflow mode. Default `'wrap'`. `'fit'` keeps one row
+ * and folds the chips that do not fit the trigger into the `+N` badge.
  */
 export function withChipOverflow(
   mode: NonNullable<CngxSelectConfig['chipOverflow']>,

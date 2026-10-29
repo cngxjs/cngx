@@ -46,6 +46,17 @@
  * - `data-overflow='scroll-x'` - single row + horizontal scroll
  * - `data-overflow='truncate'` - single row + clipped overflow + the
  *   `.cngx-select__chip-overflow-badge` count pill
+ * - `data-overflow='fit'` - single row, as many chips as the strip holds,
+ *   the rest folded into the badge. Every chip sits in a
+ *   `.cngx-select__chip-slot` (`display: contents` in the other modes),
+ *   capped at the strip minus the badge reserve; `.cngx-select__chip-slot--hidden`
+ *   marks a slot past the fit count (kept in layout, invisible, behind the
+ *   badge). `--cngx-select-chip-fit-badge-reserve` (unregistered, never
+ *   assigned by the library, default `5ch`, room for `+99`) sets the space kept for the
+ *   badge; assign it on the host, a container or `:root` for a wider
+ *   projected badge or a custom `chipOverflowBadge` formatter. The badge
+ *   slot is exactly the reserve wide and clips a wider badge. A chip that
+ *   would just fit without a badge is shortened by the reserve.
  *
  * Error surfaces with two layouts:
  *
@@ -609,6 +620,18 @@
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0 0 0 / 0.6);
+  }
+
+  /**
+   * Private alias of `--cngx-select-chip-fit-badge-reserve`, assigned on the
+   * `'fit'` strip only. Registered as `<length>` so it computes to px there:
+   * the strip measurement reads it, and the slots inherit the same px.
+   * @group State / Overflow
+   */
+  @property --_cngx-chip-fit-reserve {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0px;
   }
 
   /**
@@ -1371,14 +1394,97 @@
     scrollbar-width: thin;
   }
 
+  /* Clip along the line only: a chip longer than the strip is cut at the
+     inline edge, while a focused remove button's ring may paint above and
+     below the row. `clip` allows the axis split, `hidden` does not. */
   .cngx-select__chip-list[data-overflow='truncate'] {
     flex-wrap: nowrap;
-    overflow: hidden;
+    overflow-x: clip;
+    overflow-y: visible;
   }
 
   .cngx-select__chip-list[data-overflow='truncate'] > cngx-chip,
   .cngx-select__chip-list[data-overflow='scroll-x'] > cngx-chip {
     flex: 0 0 auto;
+  }
+
+  /* Chip and badge slots exist in every mode so one chip loop serves all of
+     them; outside 'fit' they generate no box. */
+  .cngx-select__chip-slot,
+  .cngx-select__chip-overflow-slot {
+    display: contents;
+  }
+
+  .cngx-select__chip-list[data-overflow='truncate'] > .cngx-select__chip-slot > cngx-chip,
+  .cngx-select__chip-list[data-overflow='scroll-x'] > .cngx-select__chip-slot > cngx-chip {
+    flex: 0 0 auto;
+  }
+
+  /* Every measured size depends on the strip alone: each slot is capped at
+     the strip minus the gap and the badge reserve in every state, the reserve
+     is a token, a slot past the fit count stays in layout, and the badge slot
+     is exactly the reserve wide, empty or not. The strip's own content size, which
+     sets its width next to a shrinkable input, is therefore the same with and
+     without the badge, so the fit count never changes a size it is computed
+     from. */
+  .cngx-select__chip-list[data-overflow='fit'] {
+    /**
+     * Inline space a `chipOverflow: 'fit'` strip keeps free for the `+N`
+     * badge. The badge slot is exactly this wide and clips a wider badge;
+     * raise it for a projected `*cngxSelectChipOverflow` or a custom
+     * `chipOverflowBadge` formatter. Set it on the select, a container or
+     * `:root`. Never assigned by the library, so the `5ch` fallback (room
+     * for `+99`) resolves against the strip font.
+     * @cssprop {<length>} [--cngx-select-chip-fit-badge-reserve=5ch]
+     * @default 5ch
+     * @group State / Overflow
+     */
+    --_cngx-chip-fit-reserve: var(--cngx-select-chip-fit-badge-reserve, 5ch);
+    flex-wrap: nowrap;
+    /* clip, not hidden: the margin keeps a focused remove button's ring
+       (2px + 1px offset by default) visible above and below the row. Hidden
+       slots are invisible, so the margin shows nothing else. Without
+       overflow-clip-margin support the ring is clipped as with hidden. */
+    overflow: clip;
+    overflow-clip-margin: 4px;
+    min-inline-size: 0;
+  }
+
+  /* flex, not block: an inline-flex chip in a block slot would sit on a
+     line box and add strut height to the row. */
+  .cngx-select__chip-list[data-overflow='fit'] > .cngx-select__chip-slot {
+    display: flex;
+    flex: none;
+    max-inline-size: calc(
+      100% - var(--_cngx-chip-fit-reserve) - var(--cngx-select-chip-gap, 0.25rem)
+    );
+    min-inline-size: 0;
+    overflow: clip;
+    overflow-clip-margin: 4px;
+  }
+
+  /* A chip capped by its slot shrinks; `.cngx-chip__label` carries the
+     ellipsis. */
+  .cngx-select__chip-list[data-overflow='fit'] > .cngx-select__chip-slot > * {
+    max-inline-size: 100%;
+    min-inline-size: 0;
+  }
+
+  .cngx-select__chip-list[data-overflow='fit'] > .cngx-select__chip-slot--hidden {
+    order: 2;
+    visibility: hidden;
+  }
+
+  /* Exactly the reserve, never wider: a projected badge or a long formatter
+     result that outgrows it is clipped instead of widening the strip, so the
+     strip size stays independent of the badge. Raise
+     --cngx-select-chip-fit-badge-reserve for a wider badge. */
+  .cngx-select__chip-list[data-overflow='fit'] > .cngx-select__chip-overflow-slot {
+    display: flex;
+    order: 1;
+    flex: none;
+    inline-size: var(--_cngx-chip-fit-reserve);
+    overflow: hidden;
   }
 
   .cngx-select__chip-overflow-badge {

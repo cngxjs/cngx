@@ -21,6 +21,8 @@ import {
 } from './action-multi-select.component';
 import type { CngxSelectCreateAction } from '../shared/create-action.types';
 import type { CngxSelectOptionDef, CngxSelectOptionsInput } from '../shared/option.model';
+import { describeChipFit, type ChipFitProjectedHost } from '../shared/__test-helpers/chip-fit';
+import { CngxMultiSelectChip, CngxSelectChipOverflow } from '../shared/template-slots';
 
 type Tag = { readonly id: string; readonly name: string };
 
@@ -666,4 +668,40 @@ describe('CngxActionMultiSelect - truncated chips stay reachable for AT', () => 
     const el = fixture.nativeElement as HTMLElement;
     expect(describedTexts(el).some((t) => t.includes('selected:'))).toBe(false);
   });
+});
+
+@Component({
+  template: `
+    <cngx-action-multi-select
+      [label]="'Recipients'"
+      [options]="options"
+      [values]="values"
+      chipOverflow="fit"
+    >
+      <span *cngxMultiSelectChip="let opt" class="fit-projected-chip">{{ opt.label }}</span>
+      <span *cngxSelectChipOverflow="let count" class="fit-projected-badge">+{{ count }}</span>
+    </cngx-action-multi-select>
+  `,
+  imports: [CngxActionMultiSelect, CngxMultiSelectChip, CngxSelectChipOverflow],
+})
+class ChipFitProjectedHostCmp implements ChipFitProjectedHost {
+  readonly options = [
+    { value: 'a', label: 'Alpha' },
+    { value: 'b', label: 'Bravo' },
+    { value: 'c', label: 'Charlie' },
+    { value: 'd', label: 'Delta' },
+    { value: 'e', label: 'Echo' },
+  ];
+  readonly values = ['a', 'b', 'c', 'd', 'e'];
+}
+
+describeChipFit('CngxActionMultiSelect', CngxActionMultiSelect, {
+  projectedHost: ChipFitProjectedHostCmp,
+  summaryText: (root) => {
+    const id = root.querySelector('input')?.getAttribute('aria-describedby') ?? '';
+    return id
+      .split(' ')
+      .map((ref) => (ref ? (document.getElementById(ref)?.textContent ?? '') : ''))
+      .join(' ');
+  },
 });

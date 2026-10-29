@@ -2,12 +2,15 @@ import { computed, signal, type Signal } from '@angular/core';
 
 import type { CngxSelectAriaLabels, CngxSelectFallbackLabels } from '../../config';
 import type { CngxSelectOptionDef } from '../../option.model';
+import { fitChipCount, type ChipFitSnapshot } from '../chip-fit';
 import { createChipOverflow, type ChipOverflow } from '../chip-overflow';
+import { coerceMaxVisibleChips } from '../resolve-config';
 
-type ChipOverflowMode = 'wrap' | 'scroll-x' | 'truncate';
+type ChipOverflowMode = 'wrap' | 'scroll-x' | 'truncate' | 'fit';
 
 const WRAP: Signal<ChipOverflowMode> = signal<ChipOverflowMode>('wrap').asReadonly();
 const ONE: Signal<number> = signal(1).asReadonly();
+const UNMEASURED: Signal<ChipFitSnapshot | null> = signal(null).asReadonly();
 
 /**
  * Inputs for {@link createSelectSummary}.
@@ -23,6 +26,12 @@ export interface SelectSummaryOptions<T> {
   readonly chipOverflow?: Signal<ChipOverflowMode>;
   /** The variant's own chip cap, used while the summary is off. Default `1`. */
   readonly maxVisibleChips?: Signal<number>;
+  /**
+   * The measured `'fit'` strip. Its fit count caps the chips in `'fit'`;
+   * `null` (before the first measurement) falls back to the coerced
+   * `maxVisibleChips`.
+   */
+  readonly fitSnapshot?: Signal<ChipFitSnapshot | null>;
   /** Copy: the `selectionSummary` aria label. */
   readonly ariaLabels: Signal<Required<Pick<CngxSelectAriaLabels, 'selectionSummary'>>>;
   /** Copy: the `chipOverflowBadge` fallback label. */
@@ -57,7 +66,7 @@ export interface SelectSummary<T> {
   readonly fullText: Signal<string>;
   /**
    * The whole selection for AT while the summary is off and a `'truncate'`
-   * strip hides values behind its `aria-hidden` badge: the `selectionSummary`
+   * or `'fit'` strip hides values behind its `aria-hidden` badge: the `selectionSummary`
    * copy. Empty while nothing is hidden or the summary is on.
    */
   readonly hiddenSummaryText: Signal<string>;
@@ -81,10 +90,14 @@ export interface SelectSummary<T> {
 export function createSelectSummary<T>(opts: SelectSummaryOptions<T>): SelectSummary<T> {
   const ownMode = opts.chipOverflow ?? WRAP;
   const ownCap = opts.maxVisibleChips ?? ONE;
+  const fitSnapshot = opts.fitSnapshot ?? UNMEASURED;
   const strip = createChipOverflow<T>({
     selectedOptions: opts.selectedOptions,
     chipOverflow: computed(() => (opts.active() ? 'truncate' : ownMode())),
     maxVisibleChips: computed(() => (opts.active() ? 1 : ownCap())),
+    fitCount: computed(
+      () => fitChipCount(fitSnapshot()) ?? coerceMaxVisibleChips(ownCap()),
+    ),
   });
 
   const first = computed<CngxSelectOptionDef<T> | null>(() =>

@@ -9,6 +9,7 @@ import type { CngxSelectOptionDef } from '../../option.model';
 import { CngxSelectChipOverflow } from '../../template-slots';
 import { CngxSelectSummary } from './select-summary.component';
 import { createSelectSummary } from './select-summary';
+import type { ChipFitSnapshot } from '../chip-fit';
 
 function opt(value: string): CngxSelectOptionDef<string> {
   return { value, label: value.toUpperCase() };
@@ -155,6 +156,56 @@ class SummaryHost {
   readonly exposeValue = signal(true);
   readonly hidden = [opt('g'), opt('b')];
 }
+
+describe('createSelectSummary - fit', () => {
+  function fitHarness(values: string[], active = false) {
+    const copy = selectCopyFrom(CNGX_SELECT_LANGUAGE_EN, 'en');
+    const fitSnapshot = signal<ChipFitSnapshot | null>(null);
+    const isActive = signal(active);
+    const summary = createSelectSummary<string>({
+      selectedOptions: signal(values.map(opt)),
+      active: isActive,
+      chipOverflow: signal<'wrap' | 'scroll-x' | 'truncate' | 'fit'>('fit'),
+      maxVisibleChips: signal(2),
+      fitSnapshot,
+      ariaLabels: signal(copy.ariaLabels),
+      fallbackLabels: signal(copy.fallbackLabels),
+    });
+    return { summary, fitSnapshot, isActive };
+  }
+
+  it('caps at the coerced maxVisibleChips before the first measurement', () => {
+    const { summary } = fitHarness(['a', 'b', 'c', 'd']);
+    expect(summary.strip.visibleCount()).toBe(2);
+    expect(summary.strip.overflowBadgeCount()).toBe(2);
+  });
+
+  it('follows the measured snapshot', () => {
+    const { summary, fitSnapshot } = fitHarness(['a', 'b', 'c', 'd']);
+    // reserve 30 + 3 * (60 + 4) = 222 fits 230; a fourth slot does not.
+    fitSnapshot.set({ available: 230, gap: 4, reserve: 30, widths: [60, 60, 60, 60] });
+    expect(summary.strip.visibleCount()).toBe(3);
+    expect(summary.strip.renderedSelected().length).toBe(4);
+    expect(summary.hidden().map((o) => o.value)).toEqual(['d']);
+    fitSnapshot.set({ available: 400, gap: 4, reserve: 30, widths: [60, 60, 60, 60] });
+    expect(summary.strip.overflowBadgeCount()).toBe(0);
+    fitSnapshot.set(null);
+    expect(summary.strip.visibleCount()).toBe(2);
+  });
+
+  it('names every option, fitted-out ones included, in the hidden summary', () => {
+    const { summary, fitSnapshot } = fitHarness(['a', 'b', 'c']);
+    fitSnapshot.set({ available: 100, gap: 4, reserve: 30, widths: [60, 60, 60] });
+    expect(stripBidiIsolates(summary.hiddenSummaryText())).toBe('3 selected: A, B, and C');
+  });
+
+  it('keeps the touch floor at one value under fit', () => {
+    const { summary, fitSnapshot } = fitHarness(['a', 'b', 'c'], true);
+    fitSnapshot.set({ available: 400, gap: 4, reserve: 30, widths: [60, 60, 60] });
+    expect(summary.strip.visibleCount()).toBe(1);
+    expect(summary.badgeCount()).toBe(2);
+  });
+});
 
 describe('CngxSelectSummary', () => {
   beforeEach(() => {

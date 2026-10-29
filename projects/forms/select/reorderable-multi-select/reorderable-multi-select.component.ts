@@ -337,7 +337,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
   /**
    * Chip-strip overflow. All chips must stay in the DOM for drag-
-   * reorder, so `'truncate'` is silently downgraded to `'scroll-x'`
+   * reorder, so `'truncate'` and `'fit'` are silently downgraded to `'scroll-x'`
    * via `effectiveChipOverflow`. `'wrap'` and `'scroll-x'` pass
    * through.
    */
@@ -1026,16 +1026,16 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   protected readonly activeChipIndex = this.chipStripRoving.activeIndex;
 
   /**
-   * Effective overflow mode after safety downgrade. `'truncate'` is
-   * unsafe for drag-reorder (hidden chips break `cngxReorder`'s
-   * DOM-scan), so it becomes `'scroll-x'`. `'wrap'` and `'scroll-x'`
+   * Effective overflow mode after safety downgrade. `'truncate'` and
+   * `'fit'` are unsafe for drag-reorder (hidden chips break `cngxReorder`'s
+   * DOM-scan), so they become `'scroll-x'`. `'wrap'` and `'scroll-x'`
    * pass through unchanged.
    *
    * @internal
    */
   protected readonly effectiveChipOverflow = computed<'wrap' | 'scroll-x'>(() => {
     const mode = this.chipOverflow();
-    return mode === 'truncate' ? 'scroll-x' : mode;
+    return mode === 'truncate' || mode === 'fit' ? 'scroll-x' : mode;
   });
 
   /**

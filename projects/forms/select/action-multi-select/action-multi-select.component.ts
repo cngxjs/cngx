@@ -83,6 +83,11 @@ import {
 } from '../shared/chip-removal-handler';
 import { CngxSelectSummary } from '../shared/internal/summary/select-summary.component';
 import { createSelectSummary } from '../shared/internal/summary/select-summary';
+import {
+  CngxSelectChipFitSlot,
+  CngxSelectChipFitStrip,
+  injectChipFitFocusHandOff,
+} from '../shared/internal/chip-fit-strip.directive';
 import { injectTouchFloorSignal } from '../shared/internal/touch-floor';
 import { sameArrayContents } from '../shared/internal/compare';
 import type {
@@ -258,6 +263,8 @@ export interface CngxActionMultiSelectChange<T = unknown> {
     CngxPopoverAnchor,
     CngxPopoverTrigger,
     CngxSelectPanel,
+    CngxSelectChipFitSlot,
+    CngxSelectChipFitStrip,
     CngxSelectSummary,
     NgTemplateOutlet,
   ],
@@ -549,8 +556,9 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     this.config.chipOverflow,
   );
   /**
-   * Maximum number of chips in `'truncate'` mode before the `+N` badge.
-   * Defaults to `CngxSelectConfig.maxVisibleChips`.
+   * Maximum number of chips in `'truncate'` mode before the `+N` badge,
+   * and the `'fit'` cap before the first measurement. Defaults to
+   * `CngxSelectConfig.maxVisibleChips`.
    */
   readonly maxVisibleChips = input<number>(this.config.maxVisibleChips);
 
@@ -1033,11 +1041,13 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
    * the touch floor. The chip strip below is its truncated-at-one derivation
    * while it is active.
    */
+  private readonly fitStrip = viewChild(CngxSelectChipFitStrip);
   protected readonly summary = createSelectSummary<T>({
     selectedOptions: this.selectedOptions,
     active: injectTouchFloorSignal(),
     chipOverflow: this.chipOverflow,
     maxVisibleChips: this.maxVisibleChips,
+    fitSnapshot: computed(() => this.fitStrip()?.snapshot() ?? null),
     ariaLabels: this.config.ariaLabels,
     fallbackLabels: this.config.fallbackLabels,
   });
@@ -1056,8 +1066,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       : null,
   );
   private readonly chipStrip = this.summary.strip;
-  /** @internal - chip subset + overflow badge count (see createChipOverflow). */
-  protected readonly visibleSelected = this.chipStrip.visibleSelected;
   /** @internal */
   protected readonly overflowBadgeCount = this.chipStrip.overflowBadgeCount;
   /** @internal Selected options the truncated strip hides, for the overflow slot. */
@@ -1219,6 +1227,12 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     // after the host is destroyed is dropped.
     inject(DestroyRef).onDestroy(() => this.createCommitController.cancel());
     this.lastCommittedValues = untracked(() => [...this.values()]);
+
+    injectChipFitFocusHandOff({
+      strip: this.fitStrip,
+      visibleCount: this.chipStrip.visibleCount,
+      target: () => this.inputEl()?.nativeElement,
+    });
 
     afterNextRender(() => {
       if (this.autofocus()) {
