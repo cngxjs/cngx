@@ -950,7 +950,7 @@
     {
       "class": "CngxSpeakButton",
       "file": "projects/ui/speak/speak-button.ts",
-      "line": 104,
+      "line": 88,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -961,7 +961,7 @@
     {
       "class": "CngxSpeakButton",
       "file": "projects/ui/speak/speak-button.ts",
-      "line": 105,
+      "line": 89,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -972,7 +972,7 @@
     {
       "class": "CngxStatCard",
       "file": "projects/ui/stat-card/stat-card.component.ts",
-      "line": 332,
+      "line": 331,
       "member": "resolvedBusyLabel",
       "enclosing": "computed",
       "tiers": [
@@ -988,7 +988,7 @@
     {
       "class": "CngxStatCard",
       "file": "projects/ui/stat-card/stat-card.component.ts",
-      "line": 336,
+      "line": 335,
       "member": "resolvedErrorText",
       "enclosing": "computed",
       "tiers": [
@@ -1004,7 +1004,7 @@
     {
       "class": "CngxStatCard",
       "file": "projects/ui/stat-card/stat-card.component.ts",
-      "line": 340,
+      "line": 339,
       "member": "resolvedErrorDescription",
       "enclosing": "computed",
       "tiers": [
@@ -1020,7 +1020,7 @@
     {
       "class": "CngxStatCard",
       "file": "projects/ui/stat-card/stat-card.component.ts",
-      "line": 344,
+      "line": 343,
       "member": "resolvedStaleText",
       "enclosing": "computed",
       "tiers": [
@@ -1036,7 +1036,7 @@
     {
       "class": "CngxStatCard",
       "file": "projects/ui/stat-card/stat-card.component.ts",
-      "line": 348,
+      "line": 347,
       "member": "resolvedEmptyText",
       "enclosing": "computed",
       "tiers": [
