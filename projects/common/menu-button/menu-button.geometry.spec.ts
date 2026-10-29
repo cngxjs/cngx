@@ -6,6 +6,7 @@ import { CngxPopover } from '@cngx/common/popover';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { CNGX_BUTTON_CARET_ICON } from './caret-icon.token';
 import { CngxMenuButton } from './menu-button.component';
 
 // Runs in a real Chromium (the `test-geometry` target): the menu button must
@@ -49,6 +50,30 @@ class GeometryHost {
   readonly density = signal<Density>('comfortable');
   readonly motion = signal<'reduced' | null>(null);
 }
+
+@Component({
+  selector: 'cngx-geometry-custom-caret',
+  standalone: true,
+  template: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z" /></svg>`,
+})
+class CustomCaret {}
+
+@Component({
+  selector: 'cngx-menu-button-custom-caret-host',
+  standalone: true,
+  imports: [CngxMenuButton, CngxMenu, CngxMenuItem, CngxPopover],
+  viewProviders: [{ provide: CNGX_BUTTON_CARET_ICON, useValue: CustomCaret }],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <button cngxMenuButton class="m-custom" [menu]="menu" [popover]="pop">Sort</button>
+    <div cngxPopover #pop="cngxPopover">
+      <ul cngxMenu [label]="'Sort by'" tabindex="0" #menu="cngxMenu">
+        <li cngxMenuItem value="name">Name</li>
+      </ul>
+    </div>
+  `,
+})
+class CustomCaretHost {}
 
 let mountedRoot: HTMLElement | null = null;
 
@@ -101,6 +126,17 @@ describe('CngxMenuButton geometry', () => {
       expect(rect.width).toBeCloseTo(px(button, 'font-size'), 1);
       expect(rect.height).toBeCloseTo(px(button, 'font-size'), 1);
     }
+  });
+
+  it('sizes a CNGX_BUTTON_CARET_ICON glyph at 1em like the default caret', () => {
+    const fixture = TestBed.createComponent(CustomCaretHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const button = query(mountedRoot, '.m-custom');
+    const glyph = query(button, '.cngx-menu-button__caret svg').getBoundingClientRect();
+    expect(glyph.width).toBeCloseTo(px(button, 'font-size'), 1);
+    expect(glyph.height).toBeCloseTo(px(button, 'font-size'), 1);
   });
 
   it('trims the end padding like a filled end slot', () => {

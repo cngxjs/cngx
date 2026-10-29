@@ -35,6 +35,12 @@
       --cngx-icon-size: var(--cngx-menu-button-caret-size, 1em);
       transition: rotate var(--cngx-menu-button-caret-transition, 150ms) ease;
     }
+    /* A CNGX_BUTTON_CARET_ICON component wraps its glyph in its own host, out of
+     * reach of the icon's `:scope > svg` sizing; size it the same. */
+    :scope svg {
+      inline-size: 1em;
+      block-size: 1em;
+    }
   }
 
   .cngx-menu-button[data-expanded='true'] > .cngx-menu-button__caret {
