@@ -118,6 +118,25 @@ for (const dir of ['ltr', 'rtl'] as const) {
       await expect(menu).toBeHidden();
     });
 
+    test('clicking an item activates it and closes the menu', async ({ page }) => {
+      await gotoDemo(page, BASIC);
+      await setDirection(page, dir);
+
+      const button = page.getByRole('button', { name: 'Export' });
+      const menu = page.getByRole('menu', { name: 'Export format' });
+      await button.click();
+      await expect(menu).toBeVisible();
+      await menu.getByRole('menuitem', { name: 'CSV' }).click();
+      await expect(menu).toBeHidden();
+      await expect(button).toHaveAttribute('aria-expanded', 'false');
+
+      const lastFormat = page
+        .locator('.event-row')
+        .filter({ has: page.getByText('Last format', { exact: true }) })
+        .locator('.event-value');
+      await expect(lastFormat).toHaveText('csv');
+    });
+
     test('disabled: opens on nothing and closes an open menu', async ({ page }) => {
       await gotoDemo(page, DISABLED);
       await setDirection(page, dir);
