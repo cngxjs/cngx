@@ -1,4 +1,4 @@
-import { copyFileSync, mkdtempSync, readFileSync } from 'node:fs';
+import { copyFileSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,6 +9,7 @@ import {
   loadBundledLlmDump,
   loadDocsFromFile,
   loadLlmDumpFromFile,
+  MalformedSnapshotError,
   SchemaVersionError,
   SUPPORTED_SCHEMA_VERSIONS,
 } from './loader.js';
@@ -90,7 +91,8 @@ describe('createDocsIndex schema guard', () => {
     const mismatched: DocumentationJson = { ...readFixture(), schemaVersion: 3 };
 
     expect(() => createDocsIndex(mismatched)).toThrow(SchemaVersionError);
-    expect(() => createDocsIndex(mismatched)).toThrow(/schemaVersion 3; @cngx\/mcp supports 2 and 6/);
+    expect(() => createDocsIndex(mismatched)).toThrow(MalformedSnapshotError);
+    expect(() => createDocsIndex(mismatched)).toThrow(/schemaVersion 3; this package reads 2 and 6/);
   });
 
   it('normalises a missing cngxVersion to null', () => {
@@ -130,5 +132,48 @@ describe('createDocsIndex functions projection', () => {
     delete raw.miscellaneous;
 
     expect(createDocsIndex(raw).functions).toEqual([]);
+  });
+});
+
+describe('a malformed snapshot', () => {
+  const v6 = (patch: Record<string, unknown>) => ({ schemaVersion: 6, ...patch }) as unknown as DocumentationJson;
+  const v2 = (patch: Record<string, unknown>) => ({ schemaVersion: 2, ...patch }) as unknown as DocumentationJson;
+
+  it.each([
+    ['a null document', null as unknown as DocumentationJson],
+    ['a non-array component list', v6({ components: { name: 'CngxX' } })],
+    ['a non-array token list', v6({ tokens: 'CNGX_X' })],
+    ['a non-array function list', v6({ miscellaneous: { functions: 42 } })],
+    ['a schema-6 feature without an entry point', v6({ components: [{ name: 'CngxX', feature: {} }] })],
+    ['a schema-2 input default that is not text', v2({ components: [{ name: 'CngxX', inputsClass: [{ name: 'x', defaultValue: 7 }] }] })],
+  ])('throws MalformedSnapshotError for %s', (_, raw) => {
+    expect(() => createDocsIndex(raw)).toThrow(MalformedSnapshotError);
+  });
+
+  it('names neither the mcp package nor a regeneration step, and points at the install', () => {
+    const errors = [
+      () => createDocsIndex(v6({ components: { name: 'CngxX' } })),
+      () => createDocsIndex({ ...readFixture(), schemaVersion: 3 }),
+    ];
+    for (const load of errors) {
+      let message = '';
+      try {
+        load();
+      } catch (error) {
+        message = (error as Error).message;
+      }
+
+      expect(message).not.toContain('@cngx/mcp');
+      expect(message).not.toMatch(/regenerate/i);
+      expect(message).toContain('reinstall the package that bundles this snapshot');
+    }
+  });
+
+  it('throws MalformedSnapshotError for a file that is not JSON', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'cngx-loader-'));
+    const path = join(dir, 'documentation.json');
+    writeFileSync(path, '{ "schemaVersion": 6,');
+
+    expect(() => loadDocsFromFile(path)).toThrow(MalformedSnapshotError);
   });
 });
