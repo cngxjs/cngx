@@ -71,6 +71,7 @@
     "doctor:sync": "node scripts/sync-doctor.mjs",
     "cli:copy-check": "node scripts/cli-core-copy-check.mjs",
     "cli:sync": "node scripts/sync-cli-core.mjs",
+    "typecheck:tooling": "tsc -p packages/mcp/tsconfig.spec.json && tsc -p packages/cli/tsconfig.spec.json",
     "plugin:drift": "node scripts/plugin-pack-drift.mjs",
     "plugin:release": "node scripts/plugin-release.mjs",
     "changelog": "git-cliff -o CHANGELOG.md",

@@ -62,6 +62,7 @@ describe('migrateUsage', () => {
       directives: [],
       injectables: [],
       tokens: [],
+      functions: [],
     };
     const deps: DocsResolverDeps = {
       fetchSnapshot: async () => ({ ok: true, path: '/tmp/raw-unstamped.json' }),
@@ -111,7 +112,7 @@ describe('migrateUsage', () => {
       throw new Error('boom');
     };
 
-    const result = await migrateUsageCommand.run({ bundled: bundledNew, resolve }, { from: '0.1.0' });
+    const result = await migrateUsageCommand.run({ bundled: bundledNew, resolve }, { from: '0.1.0', to: undefined });
 
     expect(result).toMatchObject({ ok: false, reason: 'asset-missing', message: 'internal: boom' });
   });

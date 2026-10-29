@@ -1,7 +1,8 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { createDocsIndex, loadDocsFromFile } from '../data/loader.js';
-import type { DocEntry, DocumentationJson } from '../data/types.js';
+import type { DocsIndex } from '../data/loader.js';
+import type { DocEntry, DocToken, DocumentationJson } from '../data/types.js';
 import { diffSnapshots } from './snapshot-diff.js';
 import { classifyGhFailure, fetchSnapshot } from './snapshot-fetch.js';
 
@@ -50,12 +51,13 @@ describe('diffSnapshots', () => {
 });
 
 describe('diffSnapshots rename inference is fingerprint-gated', () => {
-  const index = (cngxVersion, components, tokens = []) => ({
+  const index = (cngxVersion: string, components: DocEntry[], tokens: DocToken[] = []): DocsIndex => ({
     meta: { schemaVersion: 2, cngxVersion, generatedAt: null, compodocxVersion: null },
     components,
     directives: [],
     injectables: [],
     tokens,
+    functions: [],
   });
 
   it('reports a removed input as removed even when a same-typed input is added', () => {

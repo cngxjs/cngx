@@ -2,7 +2,9 @@
 // check the committed copy before anything could regenerate it. Expected values
 // come from the plan's copy-guard contract: build:cli never runs cli:sync (also
 // not through a nested `npm run`), and in the ci.yml `mcp` job the
-// cli:copy-check step precedes build:cli with no sync step before it.
+// cli:copy-check step precedes build:cli with no sync step before it. The same
+// job must also run both spec suites, type-check the specs, and run the built
+// CLI once on Node 20, the engines floor of @cngx/cli.
 import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -27,16 +29,38 @@ function expandScript(scripts, name, seen = new Set()) {
 
 const buildSyncs = (scripts) => SYNC.test(expandScript(scripts, 'build:cli'));
 
-/** The `run:` commands of one workflow job, in step order. */
-function jobRuns(workflow, job) {
+/** The YAML block of one workflow job, or null. */
+function jobBlock(workflow, job) {
   const start = workflow.indexOf(`\n  ${job}:\n`);
   if (start === -1) {
     return null;
   }
   const rest = workflow.slice(start + 1);
   const next = rest.slice(1).search(/\n {2}[\w-]+:\n/);
-  const block = next === -1 ? rest : rest.slice(0, next + 1);
-  return [...block.matchAll(/^\s+run: (.+)$/gm)].map((match) => match[1].trim());
+  return next === -1 ? rest : rest.slice(0, next + 1);
+}
+
+/** The `run:` commands of one workflow job, in step order. */
+function jobRuns(workflow, job) {
+  const block = jobBlock(workflow, job);
+  return block === null ? null : [...block.matchAll(/^\s+run: (.+)$/gm)].map((match) => match[1].trim());
+}
+
+const REQUIRED_RUNS = ['npm run test:mcp', 'npm run test:cli', 'npm run typecheck:tooling'];
+
+/** Steps the mcp job must carry besides the copy check; empty when all are there. */
+function requiredSteps(block) {
+  const runs = [...block.matchAll(/^\s+run: (.+)$/gm)].map((match) => match[1].trim());
+  const errors = REQUIRED_RUNS.filter((required) => !runs.some((run) => run.includes(required))).map(
+    (required) => `no "${required}" step`,
+  );
+  // A Node 20 setup-node followed, before any other setup-node, by a run of the built CLI.
+  const floor = block.search(/node-version: ['"]?20['"]?\s*$/m);
+  const afterFloor = floor === -1 ? '' : block.slice(floor).split(/uses: actions\/setup-node/)[0];
+  if (!/run: .*node packages\/cli\/dist\/index\.js/.test(afterFloor)) {
+    errors.push('no run of the built cli on Node 20');
+  }
+  return errors;
 }
 
 /** Wiring defects of the copy check in a job's run list; empty when correct. */
@@ -77,7 +101,29 @@ describe('cli core copy guard wiring', () => {
     expect(copyCheckWiring(runs, scripts)).toEqual([]);
   });
 
+  it('the mcp job runs both spec suites, the spec type-check and the cli on Node 20', () => {
+    expect(requiredSteps(jobBlock(workflow, 'mcp'))).toEqual([]);
+  });
+
   describe('mutations', () => {
+    it('fails a job without the Test cli step', () => {
+      const mutated = jobBlock(workflow, 'mcp').replace(/\n\s+- name: Test cli\n\s+run: npm run test:cli\n/, '\n');
+
+      expect(requiredSteps(mutated)).toEqual(['no "npm run test:cli" step']);
+    });
+
+    it('fails a job without the spec type-check', () => {
+      const mutated = jobBlock(workflow, 'mcp').replace('run: npm run typecheck:tooling', 'run: echo skipped');
+
+      expect(requiredSteps(mutated)).toEqual(['no "npm run typecheck:tooling" step']);
+    });
+
+    it('fails a job without the Node 20 run', () => {
+      const mutated = jobBlock(workflow, 'mcp').replace(/node-version: 20/, 'node-version: 22');
+
+      expect(requiredSteps(mutated)).toEqual(['no run of the built cli on Node 20']);
+    });
+
     it('fails a build:cli that syncs', () => {
       expect(buildSyncs({ ...scripts, 'build:cli': `npm run cli:sync && ${scripts['build:cli']}` })).toBe(true);
     });
