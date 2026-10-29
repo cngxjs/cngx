@@ -2,6 +2,7 @@ import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
+  computed,
   contentChild,
   input,
   ViewEncapsulation,
@@ -158,4 +159,11 @@ export class CngxButton {
     },
     { variant: 'solid' },
   );
+
+  /**
+   * `true` while the button refuses activation: disabled, running a
+   * co-hosted `cngxAsyncClick`, or refused by its `[enabled]="false"`. Read
+   * it to derive the state of composed controls, e.g. a split-button caret.
+   */
+  readonly blocked = computed(() => this.core.ariaDisabled() === 'true');
 }
