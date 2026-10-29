@@ -6,9 +6,31 @@ import {
   fetchSnapshot,
   ghDownloadArgs,
   isReleaseVersion,
+  normalizeReleaseVersion,
   RELEASE_BASE_URL,
   releaseAssetUrl,
 } from './snapshot-fetch.js';
+
+describe('normalizeReleaseVersion', () => {
+  it.each([
+    ['0.1.0', '0.1.0'],
+    [' 0.1.0-rc.9 ', '0.1.0-rc.9'],
+    ['v0.1.0-rc.9', '0.1.0-rc.9'],
+    ['V1.0.0', '1.0.0'],
+  ])('accepts %j as %s', (input, version) => {
+    expect(normalizeReleaseVersion(input)).toEqual({ ok: true, version });
+  });
+
+  it.each(['', ' ', 'v', ' V '])('rejects %j as a blank version', (input) => {
+    expect(normalizeReleaseVersion(input)).toEqual({ ok: false, message: 'A blank version is not a release version.' });
+  });
+
+  it.each(['vv0.2.0', 'latest', '../x'])('rejects %j and echoes the input', (input) => {
+    const result = normalizeReleaseVersion(input);
+
+    expect(!result.ok && result.message).toMatch(new RegExp(`^"${input.replace(/[.]/g, '\\.')}" is not a release version`));
+  });
+});
 
 describe('ghDownloadArgs', () => {
   it('pins the download to the cngx repo, independent of the working directory', () => {

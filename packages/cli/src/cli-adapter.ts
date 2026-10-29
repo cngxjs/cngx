@@ -22,7 +22,7 @@ import { z } from 'zod';
 import type { CngxCommand, CommandContext } from './core/registry.js';
 import { COMMANDS, isFound, unwrapAnswer } from './core/registry.js';
 import { createDocsResolver } from './core/data/docs-resolver.js';
-import { isReleaseVersion } from './core/diff/snapshot-fetch.js';
+import { normalizeReleaseVersion } from './core/diff/snapshot-fetch.js';
 import { loadBundledDocs } from './core/data/loader.js';
 
 export const EXIT_OK = 0;
@@ -311,8 +311,9 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
   if (typeof pinned === 'string' && pinned.trim() === '') {
     return usageError(io, '--cngx-version needs a version, e.g. --cngx-version=0.1.0.', hint);
   }
-  if (typeof pinned === 'string' && !isReleaseVersion(pinned)) {
-    return usageError(io, `--cngx-version must be a release version like 0.1.0 or 0.2.0-rc.1, got "${pinned}".`, hint);
+  const normalized = typeof pinned === 'string' ? normalizeReleaseVersion(pinned) : undefined;
+  if (normalized !== undefined && !normalized.ok) {
+    return usageError(io, `--cngx-version must be a release version like 0.1.0 or 0.2.0-rc.1: ${normalized.message}`, hint);
   }
 
   const maxPositionals = def.positional === undefined ? 0 : 1;

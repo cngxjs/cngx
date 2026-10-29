@@ -73,6 +73,28 @@ export function isReleaseVersion(version: string): boolean {
   return RELEASE_VERSION.test(version) && !version.includes('..');
 }
 
+export type NormalizedVersion = { readonly ok: true; readonly version: string } | { readonly ok: false; readonly message: string };
+
+/**
+ * The one version contract the CLI and MCP share: trim, strip one leading `v` or
+ * `V` (a pasted release tag), then require a release version. A message echoes
+ * the caller's original input.
+ */
+export function normalizeReleaseVersion(input: string): NormalizedVersion {
+  const trimmed = input.trim();
+  const version = /^[vV]/.test(trimmed) ? trimmed.slice(1) : trimmed;
+  if (version === '') {
+    return { ok: false, message: 'A blank version is not a release version.' };
+  }
+  if (!isReleaseVersion(version)) {
+    return {
+      ok: false,
+      message: `"${input}" is not a release version; expected <major>.<minor>.<patch> with an optional -<prerelease>.`,
+    };
+  }
+  return { ok: true, version };
+}
+
 /**
  * The exact `gh` argv for one snapshot download. Exported so the spec pins the
  * `--repo` pin itself - the standalone `npx` contract lives in these args.

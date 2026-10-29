@@ -11,7 +11,7 @@ import { rebaseExampleUrls } from './example-urls.js';
 import type { DocsIndex } from './loader.js';
 import { loadDocsFromFile } from './loader.js';
 import type { FetchSnapshot } from '../diff/snapshot-fetch.js';
-import { fetchSnapshot, removeQuietly, removeTempDir } from '../diff/snapshot-fetch.js';
+import { fetchSnapshot, normalizeReleaseVersion, removeQuietly, removeTempDir } from '../diff/snapshot-fetch.js';
 import type { SnapshotFetchFailureReason } from '../diff/types.js';
 
 /** A resolved snapshot plus the version label it grounds against, or a typed failure. */
@@ -60,12 +60,12 @@ export function createDocsResolver(bundled: DocsIndex, deps: DocsResolverDeps = 
     if (version === undefined) {
       return { ok: true, docs: bundled, version: bundledVersion };
     }
-    const trimmed = version.trim();
-    if (trimmed === '') {
-      return { ok: false, reason: 'asset-missing', message: 'A blank version is not a release version.' };
-    }
     // Release tags are `v<version>`, so a pasted tag answers like the bare version.
-    const requested = trimmed.startsWith('v') ? trimmed.slice(1) : trimmed;
+    const normalized = normalizeReleaseVersion(version);
+    if (!normalized.ok) {
+      return { ok: false, reason: 'asset-missing', message: normalized.message };
+    }
+    const requested = normalized.version;
     if (bundledVersion !== null && requested === bundledVersion) {
       return { ok: true, docs: bundled, version: bundledVersion };
     }

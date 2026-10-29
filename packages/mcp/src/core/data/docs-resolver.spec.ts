@@ -46,11 +46,19 @@ describe('createDocsResolver', () => {
     expect(fetchSnapshot).toHaveBeenCalledWith('0.2.0');
   });
 
-  it('strips one leading v only', async () => {
+  it('strips one leading v only and rejects a second one before any fetch', async () => {
     const fetchSnapshot = vi.fn<DocsResolverDeps['fetchSnapshot']>(async () => ({ ok: false, reason: 'asset-missing', message: 'absent' }));
-    await createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile })('vv0.2.0');
+    const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile })('vv0.2.0');
 
-    expect(fetchSnapshot).toHaveBeenCalledWith('v0.2.0');
+    expect(resolution).toMatchObject({ ok: false, reason: 'asset-missing', message: expect.stringMatching(/^"vv0\.2\.0" is not a release version/) });
+    expect(fetchSnapshot).not.toHaveBeenCalled();
+  });
+
+  it('strips an upper-case V like a lower-case one', async () => {
+    const fetchSnapshot = vi.fn<DocsResolverDeps['fetchSnapshot']>(async () => ({ ok: false, reason: 'asset-missing', message: 'absent' }));
+    await createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile })('V0.2.0');
+
+    expect(fetchSnapshot).toHaveBeenCalledWith('0.2.0');
   });
 
   it('fetches a non-bundled version once and serves the second call from cache', async () => {

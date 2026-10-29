@@ -372,6 +372,66 @@ describe('argument scan', () => {
   });
 });
 
+// One version contract (trim, one leading v or V, then a release version) on every
+// surface: accepted means the run reached the bundled answer or a fetch of the
+// normalised version, rejected means no fetch and no answer.
+describe('version parity across cli api, cli migrate and the mcp resolver', () => {
+  const TABLE: readonly [string, string | null][] = [
+    ['', null],
+    [' ', null],
+    ['v', null],
+    ['V1.0.0', '1.0.0'],
+    ['v0.1.0-rc.6', '0.1.0-rc.6'],
+    [' 0.1.0-rc.6 ', '0.1.0-rc.6'],
+    ['vv0.2.0', null],
+  ];
+
+  function spied() {
+    const fetched: string[] = [];
+    const deps: DocsResolverDeps = {
+      fetchSnapshot: async (version) => {
+        fetched.push(version);
+        return { ok: false, reason: 'asset-missing', message: `no asset for v${version}` };
+      },
+      loadDocs: loadDocsFromFile,
+    };
+    return { fetched, resolve: createDocsResolver(bundled, deps) };
+  }
+
+  /** The version a surface went on to answer for, or null when it rejected the input. */
+  async function viaCli(argv: string[]): Promise<string | null> {
+    const { fetched, resolve } = spied();
+    const io: CliIo = { stdout: () => undefined, stderr: () => undefined };
+    const code = await runCli(argv, { commands: COMMANDS, loadContext: () => ({ bundled, resolve }), cliVersion: CLI_VERSION, io });
+    if (code === EXIT_OK) {
+      return '0.1.0-rc.6';
+    }
+    return fetched[0] ?? null;
+  }
+
+  it.each(TABLE)('cli api --cngx-version %j answers for %j', async (input, expected) => {
+    expect(await viaCli(['api', 'CngxSelect', '--cngx-version', input])).toBe(expected);
+  });
+
+  it.each(TABLE)('cli migrate %j answers for %j', async (input, expected) => {
+    expect(await viaCli(['migrate', input, '--to', '0.1.0-rc.6'])).toBe(expected);
+  });
+
+  it.each(TABLE)('mcp resolver %j answers for %j', async (input, expected) => {
+    const { fetched, resolve } = spied();
+    const resolution = await resolve(input);
+
+    expect(resolution.ok ? resolution.version : (fetched[0] ?? null)).toBe(expected);
+  });
+
+  it('echoes the original input when --cngx-version is not a release version', async () => {
+    const run = await cli('api', 'CngxSelect', '--cngx-version=vv0.2.0');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stderr).toContain('"vv0.2.0" is not a release version');
+  });
+});
+
 describe('--cngx-version checks', () => {
   it('points migrate at <from> and --to instead of the bundled snapshot', async () => {
     const run = await cli('migrate', '0.1.0-rc.6', '--cngx-version=0.2.0');
