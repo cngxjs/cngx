@@ -167,7 +167,15 @@
       display: none;
     }
 
+    /* The archive spans 21.4 grid units across with its 1.4-unit stroke;
+       scaling the box by 24/21.4 keeps the 47px width the 48px drawing
+       inked, and the stroke keeps that drawing's 3px line, lighter than the
+       set's 2-unit default at this size. The negative block margin keeps the
+       48px footprint, so the title does not move. */
     .cngx-empty-state__default-icon {
+      --cngx-icon-svg-size: calc(47px * 24 / 21.4);
+      --cngx-icon-svg-stroke-width: 1.4;
+      margin-block: calc((48px - var(--cngx-icon-svg-size)) / 2);
       color: var(--cngx-empty-icon-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
     }
 
