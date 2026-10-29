@@ -24,6 +24,8 @@ import {
 } from '@cngx/core/utils';
 
 import { CngxClickOutside, CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxIconSvg } from '@cngx/common/display';
+import { CNGX_ICON_CARET_DOWN, CNGX_ICON_X } from '@cngx/utils';
 import {
   CngxPopover,
   CngxPopoverSheet,
@@ -199,6 +201,7 @@ export interface CngxSelectChange<T = unknown> {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CngxClickOutside,
+    CngxIconSvg,
     CngxListbox,
     CngxListboxTrigger,
     CngxPopover,
@@ -286,6 +289,8 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal The select section at this reading site; per-variant defaults. */
   private readonly selectCopy = injectSelectCopy();
   readonly clearButtonAriaLabel = input<string | undefined>(undefined);
+  protected readonly caretIcon = CNGX_ICON_CARET_DOWN;
+  protected readonly clearIcon = CNGX_ICON_X;
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedClearButtonAriaLabel = computed<string>(
     () =>

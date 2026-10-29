@@ -6,7 +6,7 @@
 >
   <!--
   role="combobox" on a <div>, not <button>: the trigger hosts
-  interactive children (clear ✕, *cngxSelectClearButton) which
+  interactive children (clear button, *cngxSelectClearButton) which
   would be invalid nested buttons. WAI-ARIA 1.2 combobox pattern.
 -->
   @let aria = triggerAria();
@@ -94,7 +94,7 @@
           @if (clearGlyph(); as glyph) {
             <ng-container *ngTemplateOutlet="glyph" />
           } @else {
-            <span aria-hidden="true">✕</span>
+            <span aria-hidden="true"><svg [cngxIconSvg]="clearIcon"></svg></span>
           }
         </button>
       }
@@ -110,9 +110,7 @@
         </span>
       } @else {
         <span aria-hidden="true" class="cngx-select__caret">
-          <svg viewBox="0 0 10 10" width="0.27em" height="0.27em" focusable="false">
-            <path d="M0 0h10L5 10z" fill="currentColor" />
-          </svg>
+          <svg [cngxIconSvg]="caretIcon"></svg>
         </span>
       }
     }

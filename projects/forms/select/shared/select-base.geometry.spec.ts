@@ -283,6 +283,24 @@ class InvalidTriggersHost {
   );
 }
 
+// A filled, clearable single and multi trigger: the clear button only renders
+// with a value, and both variants share the clear-target glyph rule.
+@Component({
+  selector: 'cngx-select-clearable-triggers-host',
+  standalone: true,
+  imports: [CngxSelect, CngxMultiSelect],
+  template: `
+    <div style="display: grid; line-height: 1.5">
+      <cngx-select class="v-select" [label]="'Colour'" [options]="options" [value]="'red'" [clearable]="true" />
+      <cngx-multi-select class="v-multi" [label]="'Colour'" [options]="options" [values]="['red']" [clearable]="true" />
+    </div>
+  `,
+  styleUrls: ['../../theming/components/cngx-field-skin.css'],
+})
+class ClearableTriggersHost {
+  readonly options = OPTIONS;
+}
+
 const ALL_TRIGGERS = [
   '.v-select',
   '.v-multi',
@@ -343,8 +361,9 @@ describe('select-family field skins', () => {
     expect(el.getBoundingClientRect().height).toBeCloseTo(boxHeight(el), 0);
   });
 
-  // The caret glyph is an SVG whose box is its ink, and align-items centres
-  // that box, so it sits on the trigger's middle whatever the font. The text
+  // The caret glyph is an SVG whose ink sits centred in its box, and
+  // align-items centres that box, so it sits on the trigger's middle whatever
+  // the font. The text
   // glyph it replaced sat about 0.13 x the caret size low, visible next to the
   // value in a content-sized bare picker nested in a field box.
   it.each([
@@ -362,6 +381,35 @@ describe('select-family field skins', () => {
     const caret = glyph.getBoundingClientRect();
     expect(caret.height).toBeGreaterThan(0);
     expect(Math.abs(caret.top + caret.height / 2 - (box.top + box.height / 2))).toBeLessThanOrEqual(0.5);
+  });
+
+  // The shared icon grid pads the triangle inside its 24-unit box; the caret
+  // rule scales the box so the drawn triangle keeps the 0.27em width the
+  // 10-unit caret it replaced drew at the caret font-size.
+  // The clear glyph sits in an inline span; as an inline svg it would align
+  // to the text middle and land below the caret.
+  it.each(['.v-select', '.v-multi'])('centres the default %s clear glyph on the caret', (hostSelector) => {
+    const el = trigger(mount(ClearableTriggersHost), hostSelector);
+    const clear = el.querySelector('.cngx-select__clear-target svg.cngx-icon-svg path');
+    const caret = el.querySelector('[class*="__caret"] svg.cngx-icon-svg path');
+    if (!clear || !caret) {
+      throw new Error(`${hostSelector} renders no default clear or caret icon`);
+    }
+    const middle = (node: Element): number => {
+      const rect = node.getBoundingClientRect();
+      return rect.top + rect.height / 2;
+    };
+    expect(Math.abs(middle(clear) - middle(caret))).toBeLessThan(0.5);
+  });
+
+  it.each(ALL_TRIGGERS)('draws the default %s caret 0.27em wide', (hostSelector) => {
+    const el = trigger(mount(AllTriggersHost), hostSelector);
+    const span = el.querySelector<HTMLElement>('[class*="__caret"]');
+    const path = span?.querySelector('svg.cngx-icon-svg path');
+    if (!span || !path) {
+      throw new Error(`${hostSelector} renders no default caret icon`);
+    }
+    expect(path.getBoundingClientRect().width).toBeCloseTo(0.27 * px(span, 'font-size'), 1);
   });
 
   it('draws the fill trigger as an underline, not a box', () => {

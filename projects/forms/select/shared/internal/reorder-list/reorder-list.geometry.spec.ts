@@ -82,4 +82,22 @@ describe('CngxSelectReorderList under the touch floor', () => {
       Math.round(rows[0].getBoundingClientRect().height),
     );
   });
+
+  // The shared icons pad their ink inside the 24-unit grid; the list scales
+  // the boxes so the drawn grip and arrows keep the size they had before.
+  it('draws the grip 0.8125em tall and the arrows 0.5625em wide', async () => {
+    const fixture = TestBed.createComponent(Host);
+    root = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(root);
+    fixture.detectChanges();
+    await nextFrame();
+
+    const row = root.querySelector<HTMLElement>('li[data-reorder-index]')!;
+    const em = parseFloat(getComputedStyle(row).fontSize);
+    const grip = row.querySelector('[data-reorder-handle] svg path')!.getBoundingClientRect();
+    expect(grip.height).toBeCloseTo(0.8125 * em, 1);
+    for (const arrow of Array.from(row.querySelectorAll('[data-move] svg path'))) {
+      expect(arrow.getBoundingClientRect().width).toBeCloseTo(0.5625 * em, 1);
+    }
+  });
 });

@@ -31,6 +31,8 @@ import {
   CngxListboxTrigger,
   createListboxLabelMatch,
 } from '@cngx/common/interactive';
+import { CngxIconSvg } from '@cngx/common/display';
+import { CNGX_ICON_CARET_DOWN, CNGX_ICON_X } from '@cngx/utils';
 import {
   CngxPopover,
   CngxPopoverAnchor,
@@ -205,6 +207,7 @@ export interface CngxTypeaheadChange<T = unknown> {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    CngxIconSvg,
     CngxPopoverSheet,
     CngxPopoverSheetInitialFocus,
     CngxSelectSheetHeader,
@@ -299,6 +302,8 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** @internal The select section at this reading site; per-variant defaults. */
   private readonly selectCopy = injectSelectCopy();
   readonly clearButtonAriaLabel = input<string | undefined>(undefined);
+  protected readonly caretIcon = CNGX_ICON_CARET_DOWN;
+  protected readonly clearIcon = CNGX_ICON_X;
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedClearButtonAriaLabel = computed<string>(
     () =>

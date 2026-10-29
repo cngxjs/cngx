@@ -15,8 +15,8 @@ import { CngxActiveDescendant } from '@cngx/common/a11y';
 import { createTypeaheadMatcher, injectLocale } from '@cngx/core/utils';
 import { CngxHierarchicalNav, createTreeAdItems } from '@cngx/common/interactive';
 import { CngxPopoverSheetInitialFocus } from '@cngx/common/popover';
-import { CngxCheckboxIndicator } from '@cngx/common/display';
-import type { FlatTreeNode } from '@cngx/utils';
+import { CngxCheckboxIndicator, CngxIconSvg } from '@cngx/common/display';
+import { CNGX_ICON_CHEVRON_RIGHT, type FlatTreeNode } from '@cngx/utils';
 
 import { CngxSelectPanelShell } from '../shared/internal/panel-shell/panel-shell.component';
 import { CNGX_SELECT_PANEL_VIEW_HOST, type CngxSelectPanelViewHost } from '../shared/panel-host';
@@ -57,6 +57,7 @@ import type { CngxTreeSelectNodeContext } from './tree-select.model';
     CngxActiveDescendant,
     CngxCheckboxIndicator,
     CngxHierarchicalNav,
+    CngxIconSvg,
     CngxSelectPanelShell,
     CngxTreeSelectFooterBar,
     NgTemplateOutlet,
@@ -79,6 +80,8 @@ export class CngxTreeSelectPanel<T = unknown> {
    * @internal
    */
   protected readonly viewHost = inject(CNGX_SELECT_PANEL_VIEW_HOST) as CngxSelectPanelViewHost<T>;
+
+  protected readonly twistyIcon = CNGX_ICON_CHEVRON_RIGHT;
 
   private readonly treeContainer = viewChild<ElementRef<HTMLElement>>('treeContainer');
 

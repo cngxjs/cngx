@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxFormField } from '@cngx/forms/field';
+import { CNGX_ICON_X } from '@cngx/utils';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
@@ -646,15 +647,18 @@ describe('CngxTypeahead - glyph inputs + input prefix/suffix', () => {
     TestBed.configureTestingModule({ imports: [GlyphHost] });
   });
 
-  it('default clear button renders the built-in ✕ glyph', () => {
+  it('default clear button renders the built-in clear icon', () => {
     const fixture = TestBed.createComponent(GlyphHost);
     flush(fixture);
     const clearBtn = fixture.nativeElement.querySelector('button.cngx-typeahead__clear') as HTMLElement;
-    expect(clearBtn.textContent?.trim()).toBe('✕');
+    const icon = clearBtn.querySelector('svg.cngx-icon-svg');
+    expect(icon?.getAttribute('aria-hidden')).toBe('true');
+    expect(icon?.querySelector('path')?.getAttribute('d')).toBe(CNGX_ICON_X.d);
+    expect(clearBtn.textContent?.trim()).toBe('');
     expect(clearBtn.querySelector('[data-custom="clear"]')).toBeNull();
   });
 
-  it('[clearGlyph] replaces the built-in ✕ while keeping the button frame + aria-label', () => {
+  it('[clearGlyph] replaces the built-in clear icon while keeping the button frame + aria-label', () => {
     const fixture = TestBed.createComponent(GlyphHost);
     flush(fixture);
     fixture.componentInstance.activeClear.set(fixture.componentInstance.clearTpl());
@@ -683,7 +687,7 @@ describe('CngxTypeahead - glyph inputs + input prefix/suffix', () => {
     flush(fixture);
     const clearBtn = fixture.nativeElement.querySelector('button.cngx-typeahead__clear') as HTMLElement;
     expect(clearBtn.querySelector('[data-custom="clear"]')).toBeNull();
-    expect(clearBtn.textContent?.trim()).toBe('✕');
+    expect(clearBtn.querySelector('svg.cngx-icon-svg path')?.getAttribute('d')).toBe(CNGX_ICON_X.d);
   });
 
   @Component({

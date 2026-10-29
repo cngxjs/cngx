@@ -947,6 +947,31 @@
 }
 
 @layer cngx.components {
+  /* The default caret draws on the shared 24-unit icon grid, where the
+     triangle spans 14 units. Scaling the box by 24/14 keeps its width at the
+     0.27em of the variant's caret font-size the 10-unit caret drew before. */
+  :is(
+      .cngx-select__caret,
+      .cngx-multi-select__caret,
+      .cngx-combobox__caret,
+      .cngx-typeahead__caret,
+      .cngx-tree-select__caret,
+      .cngx-reorderable-multi-select__caret,
+      .cngx-action-select__caret,
+      .cngx-action-multi-select__caret,
+      .cngx-select-shell__caret
+    )
+    > .cngx-icon-svg {
+    --cngx-icon-svg-size: calc(0.27em * 24 / 14);
+  }
+
+  /* The default clear glyph sits in an inline span, where an inline svg aligns
+     to the text's middle and lands below the caret. As a block it leaves the
+     line box, so the button centres it like the caret. */
+  .cngx-select__clear-target > span > .cngx-icon-svg {
+    display: block;
+  }
+
   .cngx-select__panel {
     /* Derive spacing from the global scale so a root [data-density] compacts
        the select family (SET-from-scale rule; the registered pixel initial

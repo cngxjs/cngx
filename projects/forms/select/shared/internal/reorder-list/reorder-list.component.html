@@ -23,14 +23,7 @@
       "
     >
       <span class="cngx-select-reorder-list__handle" data-reorder-handle aria-hidden="true">
-        <svg viewBox="0 0 10 16" width="0.625em" height="1em" focusable="false">
-          <circle cx="2.5" cy="3" r="1.5" fill="currentColor" />
-          <circle cx="7.5" cy="3" r="1.5" fill="currentColor" />
-          <circle cx="2.5" cy="8" r="1.5" fill="currentColor" />
-          <circle cx="7.5" cy="8" r="1.5" fill="currentColor" />
-          <circle cx="2.5" cy="13" r="1.5" fill="currentColor" />
-          <circle cx="7.5" cy="13" r="1.5" fill="currentColor" />
-        </svg>
+        <svg [cngxIconSvg]="handleIcon"></svg>
       </span>
       <span class="cngx-select-reorder-list__label">{{ opt.label }}</span>
       <button
@@ -42,15 +35,7 @@
         [attr.aria-describedby]="describedBy(first ? atStartId : null)"
         (click)="handleMove(i, 'up')"
       >
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 12 12"
-          width="0.75em"
-          height="0.75em"
-          focusable="false"
-        >
-          <path d="M6 2 1.5 7h9z" fill="currentColor" />
-        </svg>
+        <svg [cngxIconSvg]="moveUpIcon"></svg>
       </button>
       <button
         type="button"
@@ -61,15 +46,7 @@
         [attr.aria-describedby]="describedBy(last ? atEndId : null)"
         (click)="handleMove(i, 'down')"
       >
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 12 12"
-          width="0.75em"
-          height="0.75em"
-          focusable="false"
-        >
-          <path d="M6 10 1.5 5h9z" fill="currentColor" />
-        </svg>
+        <svg [cngxIconSvg]="moveDownIcon"></svg>
       </button>
     </li>
   }

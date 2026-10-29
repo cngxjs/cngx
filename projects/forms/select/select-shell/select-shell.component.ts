@@ -41,6 +41,7 @@ import {
   type CngxOptionStatus,
   type CngxOptionStatusHost,
 } from '@cngx/common/interactive';
+import { CngxIconSvg } from '@cngx/common/display';
 import {
   CngxPopover,
   CngxPopoverSheet,
@@ -51,7 +52,7 @@ import {
   type PopoverPlacement,
 } from '@cngx/common/popover';
 
-import { cngxDevWarn } from '@cngx/utils';
+import { cngxDevWarn, CNGX_ICON_CARET_DOWN, CNGX_ICON_X } from '@cngx/utils';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -222,6 +223,7 @@ export interface CngxSelectShellChange<T = unknown> {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    CngxIconSvg,
     CngxPopoverSheet,
     CngxPopoverSheetInitialFocus,
     CngxSelectSheetTrigger,
@@ -323,6 +325,8 @@ export class CngxSelectShell<T = unknown>
   /** @internal The select section at this reading site; per-variant defaults. */
   private readonly selectCopy = injectSelectCopy();
   readonly clearButtonAriaLabel = input<string | undefined>(undefined);
+  protected readonly caretIcon = CNGX_ICON_CARET_DOWN;
+  protected readonly clearIcon = CNGX_ICON_X;
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedClearButtonAriaLabel = computed<string>(
     () =>
