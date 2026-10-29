@@ -154,3 +154,108 @@ export const CNGX_ICON_TRIANGLE_DOWN = {
   d: 'M5 7h14l-7 10z',
   paint: 'fill',
 } as const satisfies CngxIconData;
+
+/** Chevron pointing down (menu and split button affordance). @internal */
+export const CNGX_ICON_CHEVRON_DOWN = {
+  viewBox: '0 0 24 24',
+  d: 'M6 9l6 6 6-6',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
+
+/** Trash can (delete). @internal */
+export const CNGX_ICON_TRASH = {
+  viewBox: '0 0 24 24',
+  d: 'M4 7h16M10 7V4h4v3M6 7l1 13h10l1-13M10 11v6M14 11v6',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
+
+/** Arrow into a tray (download, export). @internal */
+export const CNGX_ICON_DOWNLOAD = {
+  viewBox: '0 0 24 24',
+  d: 'M12 4v11M7 10l5 5 5-5M5 20h14',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
+
+/** Cross in a circle (dismiss, clear with emphasis). @internal */
+export const CNGX_ICON_X_CIRCLE = {
+  viewBox: '0 0 24 24',
+  d: 'M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0zM9 9l6 6M15 9l-6 6',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
+
+/** Scissors (cut). @internal */
+export const CNGX_ICON_CUT = {
+  viewBox: '0 0 24 24',
+  d: 'M4 17a3 3 0 1 0 6 0a3 3 0 1 0-6 0zM14 17a3 3 0 1 0 6 0a3 3 0 1 0-6 0zM9.2 14.8L18 4M14.8 14.8L6 4',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
+
+/** Two stacked sheets (copy, duplicate). @internal */
+export const CNGX_ICON_COPY = {
+  viewBox: '0 0 24 24',
+  d: 'M11 9h7a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2zM5 15V6a2 2 0 0 1 2-2h9',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
+
+/** Clipboard with lines (paste). @internal */
+export const CNGX_ICON_CLIPBOARD = {
+  viewBox: '0 0 24 24',
+  d: 'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 3h6v4H9zM9 12h6M9 16h6',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
+
+/** Magnifier (search). @internal */
+export const CNGX_ICON_SEARCH = {
+  viewBox: '0 0 24 24',
+  d: 'M4 11a7 7 0 1 0 14 0a7 7 0 1 0-14 0zM16 16l4 4',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
+
+/** Magnifier with a plus (zoom in). @internal */
+export const CNGX_ICON_ZOOM_IN = {
+  viewBox: '0 0 24 24',
+  d: 'M4 11a7 7 0 1 0 14 0a7 7 0 1 0-14 0zM16 16l4 4M8 11h6M11 8v6',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
+
+/** Magnifier with a minus (zoom out). @internal */
+export const CNGX_ICON_ZOOM_OUT = {
+  viewBox: '0 0 24 24',
+  d: 'M4 11a7 7 0 1 0 14 0a7 7 0 1 0-14 0zM16 16l4 4M8 11h6',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
+
+/** Four outward corners (fit, full screen). @internal */
+export const CNGX_ICON_MAXIMIZE = {
+  viewBox: '0 0 24 24',
+  d: 'M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
+
+/** Arrow curving back to the left (undo). @internal */
+export const CNGX_ICON_UNDO = {
+  viewBox: '0 0 24 24',
+  d: 'M9 14L4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
+
+/** Arrow curving forward to the right (redo). @internal */
+export const CNGX_ICON_REDO = {
+  viewBox: '0 0 24 24',
+  d: 'M15 14l5-5-5-5M20 9H9.5a5.5 5.5 0 0 0 0 11H13',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
+
+/** Pencil (edit). @internal */
+export const CNGX_ICON_PENCIL = {
+  viewBox: '0 0 24 24',
+  d: 'M4 20h4L19 9l-4-4L4 16zM13 7l4 4',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
+
+/** Bell (notifications). @internal */
+export const CNGX_ICON_BELL = {
+  viewBox: '0 0 24 24',
+  d: 'M6 17v-6a6 6 0 0 1 12 0v6l1.5 1.5h-15zM10 21h4',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
