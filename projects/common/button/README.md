@@ -76,7 +76,7 @@ A button that opens a menu is its own button type: `button[cngxMenuButton]` in `
 <button cngxMenuButton="outline" [menu]="menu" [popover]="pop">Export</button>
 ```
 
-Do not hand-wire `cngxMenuTrigger` and `cngxPopoverTrigger` onto a `cngxButton`; the menu button sets the anchor, `aria-haspopup="menu"`, the click toggle and the keyboard guard for you. See the [`@cngx/common/menu-button` README](../menu-button/README.md).
+Do not hand-wire `cngxMenuTrigger` and `cngxPopoverTrigger` onto a `cngxButton`; the menu button sets the anchor, `aria-haspopup="menu"`, the click toggle and the keyboard guard for you. The same entry ships `button[cngxIconMenuButton]` for a kebab or "more" button and `[cngxSplitButton]` for a main action with a caret that opens the alternatives. See the [`@cngx/common/menu-button` README](../menu-button/README.md).
 
 ## Composition
 

@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Composition: Split button',
-  subtitle: 'A <code>cngxButtonGroup</code> of the main action and a caret <code>cngxIconButton</code> that opens the alternatives.',
-  description: 'A split button is a group of two buttons, not a new class. The main button runs the default action through <code>cngxAsyncClick</code>; the caret is an icon button with its own <code>aria-label</code> that opens a menu through <code>cngxMenuTrigger</code> and <code>cngxPopoverTrigger</code>. Both parts are separate Tab stops. The busy state is shared: a menu choice runs through the same action, and while it is pending the main button shows its busy layer and both parts refuse activation. Solid primary segments get a seam line so the two parts stay readable.',
+  title: 'CngxSplitButton: Basic',
+  subtitle: 'A main <code>cngxButton</code> and a <code>cngxIconMenuButton</code> caret in one <code>cngxSplitButton</code> group.',
+  description: 'The main button runs the default action through <code>cngxAsyncClick</code>; the caret opens the alternatives. The caret needs no <code>[disabled]</code> and no <code>aria-label</code>: inside a split button it renders the caret glyph, is named "More options" from the language pack, and follows the main button. While the action runs, the main button shows its busy layer and the caret reads <code>aria-disabled</code>, opens on nothing and closes an open menu. A menu choice runs through the main button, so <code>cngxAsyncClick</code> owns the busy state, <code>aria-busy</code> and the announcement for both entry points. Both parts are separate Tab stops; the group carries <code>role="group"</code> and its own name.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -14,24 +14,21 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/',
     },
   ],
-  apiComponents: ['CngxButtonGroup', 'CngxButton', 'CngxIconButton', 'CngxIcon', 'CngxAsyncClick', 'CngxMenuTrigger', 'CngxMenu', 'CngxMenuItem', 'CngxPopoverTrigger'],
+  apiComponents: ['CngxSplitButton', 'CngxIconMenuButton', 'CngxButton', 'CngxAsyncClick', 'CngxMenu', 'CngxMenuItem', 'CngxPopover'],
   moduleImports: [
-    "import { CngxButton, CngxButtonGroup, CngxIconButton } from '@cngx/common/button';",
-    "import { CngxIcon } from '@cngx/common/display';",
-    "import { CngxAsyncClick, CngxMenu, CngxMenuItem, CngxMenuTrigger } from '@cngx/common/interactive';",
-    "import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';",
+    "import { CngxButton } from '@cngx/common/button';",
+    "import { CngxAsyncClick, CngxMenu, CngxMenuItem } from '@cngx/common/interactive';",
+    "import { CngxIconMenuButton, CngxSplitButton } from '@cngx/common/menu-button';",
+    "import { CngxPopover } from '@cngx/common/popover';",
   ],
   imports: [
     'CngxButton',
-    'CngxButtonGroup',
-    'CngxIconButton',
-    'CngxIcon',
     'CngxAsyncClick',
     'CngxMenu',
     'CngxMenuItem',
-    'CngxMenuTrigger',
+    'CngxIconMenuButton',
+    'CngxSplitButton',
     'CngxPopover',
-    'CngxPopoverTrigger',
   ],
   setup: `
   protected readonly mode = signal('now');
@@ -55,23 +52,9 @@ export const STORY: DemoSpec = {
     (this.main().nativeElement as HTMLButtonElement).click();
   }`,
   template: `
-  <div cngxButtonGroup variant="solid" aria-label="Publish">
+  <div cngxSplitButton variant="solid" aria-label="Publish">
     <button cngxButton tone="primary" [cngxAsyncClick]="publish" #run="cngxAsyncClick" #main>Publish</button>
-    <button
-      cngxIconButton
-      tone="primary"
-      aria-label="More publish options"
-      [disabled]="run.pending()"
-      [cngxMenuTrigger]="menu"
-      [cngxPopoverTrigger]="pop"
-      [haspopup]="'menu'"
-      [popover]="pop"
-      (click)="pop.toggle()"
-    >
-      <cngx-icon>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
-      </cngx-icon>
-    </button>
+    <button cngxIconMenuButton tone="primary" [menu]="menu" [popover]="pop"></button>
   </div>
   <div cngxPopover placement="bottom-end" #pop="cngxPopover">
     <ul
