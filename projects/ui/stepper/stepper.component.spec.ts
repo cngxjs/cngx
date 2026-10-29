@@ -19,7 +19,6 @@ import {
   CngxDotStepperDot,
   type CngxDotStepperDotContext,
   type CngxStepperCommitAction,
-  CNGX_STEPPER_GLYPHS,
   provideStepperConfig,
   provideStepperI18n,
   withStepperAriaLabels,
@@ -36,6 +35,7 @@ import {
   withStepperSkin,
   type CngxStepperI18nOverrides,
 } from '@cngx/common/stepper';
+import { CNGX_ICON_ALERT, CNGX_ICON_BAN } from '@cngx/utils';
 
 import { CngxStepper } from './stepper.component';
 
@@ -780,8 +780,13 @@ describe('CngxStepper organism', () => {
     const badge = buttons[0].querySelector('.cngx-stepper__badge') as HTMLElement | null;
     expect(badge).not.toBeNull();
     expect(badge?.getAttribute('aria-hidden')).toBe('true');
-    // The default badge template renders CNGX_STEPPER_GLYPHS.errorBadge.
-    expect(badge?.textContent?.trim()).toBe(CNGX_STEPPER_GLYPHS.errorBadge);
+    // The badge left the indicator disc: it follows the label in the header.
+    expect(badge?.closest('.cngx-stepper__indicator')).toBeNull();
+    expect(badge?.previousElementSibling?.classList.contains('cngx-stepper__label')).toBe(true);
+    // The default badge template renders the shared alert icon.
+    expect(badge?.querySelector('svg.cngx-icon-svg path')?.getAttribute('d')).toBe(
+      CNGX_ICON_ALERT.d,
+    );
   });
 
   it('hover affordance on non-linear mode', async () => {
@@ -1028,6 +1033,14 @@ describe('CngxStepper organism', () => {
         'Step 2 of 3: B This step change was not allowed.',
       );
       expect(buttons[1].classList.contains('cngx-stepper__step--rejected')).toBe(true);
+    });
+
+    it('a refused step pill reads the refused word, not Up next', () => {
+      const { buttons } = refusedFixture();
+      const pill = buttons[1].querySelector('.cngx-stepper__status-pill') as HTMLElement;
+      expect(pill.textContent?.trim()).toBe('Not allowed');
+      const untouched = buttons[2].querySelector('.cngx-stepper__status-pill') as HTMLElement;
+      expect(untouched.textContent?.trim()).toBe('Up next');
     });
 
     it('a refused mobile dot keeps its marker and says the refused word, not errored', () => {
@@ -1327,7 +1340,7 @@ describe('CngxStepper organism', () => {
       expect(stripBidiIsolates(desc.textContent?.trim())).toBe('Zurückgesetzt - Step 2 of 3: B');
     });
 
-    it('default rejection-icon outlet renders CNGX_STEPPER_GLYPHS.rejectionIcon (single source of truth)', () => {
+    it('default rejection-icon outlet renders the shared refused icon (single source of truth)', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         providers: [provideZonelessChangeDetection()],
@@ -1344,14 +1357,14 @@ describe('CngxStepper organism', () => {
       const icon = buttons[1].querySelector('.cngx-stepper__rejection-icon') as HTMLElement | null;
       expect(icon).not.toBeNull();
       // `() => false` refuses: the refused glyph, hooked by data-reason.
-      expect(icon!.textContent?.trim()).toBe(CNGX_STEPPER_GLYPHS.refusedIcon);
+      expect(icon!.querySelector('svg.cngx-icon-svg path')?.getAttribute('d')).toBe(CNGX_ICON_BAN.d);
       expect(icon!.getAttribute('data-reason')).toBe('refused');
       expect(icon!.getAttribute('aria-hidden')).toBe('true');
       expect(buttons[1].getAttribute('data-reason')).toBe('refused');
       expect(buttons[0].hasAttribute('data-reason')).toBe(false);
     });
 
-    it('a failed commit renders CNGX_STEPPER_GLYPHS.rejectionIcon with data-reason="failed"', () => {
+    it('a failed commit renders the shared alert icon with data-reason="failed"', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         providers: [provideZonelessChangeDetection()],
@@ -1366,10 +1379,13 @@ describe('CngxStepper organism', () => {
       buttons[1].click();
       fixture.detectChanges();
       const icon = buttons[1].querySelector('.cngx-stepper__rejection-icon') as HTMLElement;
-      expect(icon.textContent?.trim()).toBe(CNGX_STEPPER_GLYPHS.rejectionIcon);
+      expect(icon.querySelector('svg.cngx-icon-svg path')?.getAttribute('d')).toBe(CNGX_ICON_ALERT.d);
       expect(icon.getAttribute('data-reason')).toBe('failed');
       expect(buttons[1].getAttribute('data-reason')).toBe('failed');
       expect(buttons[1].classList.contains('cngx-stepper__step--rejected')).toBe(true);
+      expect(buttons[1].querySelector('.cngx-stepper__status-pill')?.textContent?.trim()).toBe(
+        'Errored',
+      );
       // The meaning reaches the accessible description, not the hidden glyph.
       const desc = fixture.nativeElement.querySelector(
         `#${buttons[1].getAttribute('aria-describedby')}`,
@@ -1379,9 +1395,9 @@ describe('CngxStepper organism', () => {
       );
     });
 
-    it('the refused glyph is a distinct, non-empty glyph', () => {
-      expect(CNGX_STEPPER_GLYPHS.refusedIcon).toBe('\u2298');
-      expect(CNGX_STEPPER_GLYPHS.refusedIcon).not.toBe(CNGX_STEPPER_GLYPHS.rejectionIcon);
+    it('the refused icon is a distinct, non-empty icon', () => {
+      expect(CNGX_ICON_BAN.d).not.toBe('');
+      expect(CNGX_ICON_BAN.d).not.toBe(CNGX_ICON_ALERT.d);
     });
 
     it('binds cngx-stepper__step--rejected on the rejected step row when lastFailedIndex matches its flatIndex', () => {
@@ -2356,21 +2372,26 @@ describe('CngxStepper commit rejection tone (source CSS)', () => {
     return (await import('node:fs')).readFileSync(path, 'utf-8');
   }
 
-  it('paints a failed rejection with the errored red and keeps the amber for a refusal', async () => {
+  it('tints a failed rejection with the errored red and keeps the amber for a refusal', async () => {
     const base = await read('styles/stepper-base.css');
     expect(base).toMatch(
-      /\.cngx-stepper__step--rejected\[data-reason='failed'\]\s*\{\s*outline-color: var\(--cngx-step-errored-color/,
+      /\.cngx-stepper__step--rejected \{\s*--_cngx-step-rejection-color: var\(\s*--cngx-step-errored-color/,
     );
     expect(base).toMatch(
-      /\.cngx-stepper__rejection-icon\[data-reason='failed'\]\s*\{\s*background: var\(--cngx-step-errored-color/,
+      /\.cngx-stepper__step--rejected\[data-reason='refused'\]\s*\{\s*--_cngx-step-rejection-color: var\(--cngx-step-refused-color, oklch\(0\.62 0\.15 60\)\)/,
     );
-    expect(base).toContain('var(--cngx-step-rejection-icon-bg, oklch(0.62 0.15 60))');
+    expect(base).toContain('var(--cngx-step-rejection-tint, 18%)');
+    expect(base).toContain('border-radius: var(--cngx-step-rejection-radius, 0.5rem);');
+    expect(base).not.toMatch(/\.cngx-stepper__step--rejected[^{]*\{[^}]*outline/);
+    expect(base).toMatch(
+      /\.cngx-stepper__rejection-icon\[data-reason='refused'\]\s*\{\s*color: var\(--cngx-step-refused-color, oklch\(0\.62 0\.15 60\)\)/,
+    );
   });
 
   it('classic connectors and the mobile dots paint a refusal amber, a validation error stays red', async () => {
     const css = await read('stepper.component.css');
     expect(css).toMatch(
-      /\.cngx-stepper__rejection-icon\[data-reason='refused'\]\s*\{\s*background: var\(--cngx-step-rejection-icon-bg, oklch\(0\.62 0\.15 60\)\)/,
+      /\.cngx-stepper__rejection-icon\[data-reason='refused'\]\s*\{\s*color: var\(--cngx-step-refused-color, oklch\(0\.62 0\.15 60\)\)/,
     );
     expect(css).toMatch(
       /\.cngx-stepper__mobile-dot\[data-state='error'\]\[data-reason='refused'\]\s*\{\s*background: var\(--cngx-step-refused-color, oklch\(0\.62 0\.15 60\)\)/,
@@ -2381,10 +2402,13 @@ describe('CngxStepper commit rejection tone (source CSS)', () => {
     );
   });
 
-  it('keeps the rejection disc readable in forced colors', async () => {
+  it('keeps the icons and the rejected step readable in forced colors', async () => {
     const css = await read('stepper.component.css');
     expect(css).toMatch(
-      /@media \(forced-colors: active\)[\s\S]*\.cngx-stepper \.cngx-stepper__rejection-icon \{\s*forced-color-adjust: none;\s*background: CanvasText;\s*color: Canvas;/,
+      /@media \(forced-colors: active\)[\s\S]*\.cngx-stepper \.cngx-stepper__rejection-icon \{\s*color: CanvasText;/,
+    );
+    expect(css).toMatch(
+      /@media \(forced-colors: active\)[\s\S]*\.cngx-stepper \.cngx-stepper__step--rejected:not\(:focus-visible\) \{\s*outline: 2px solid CanvasText;/,
     );
   });
 });

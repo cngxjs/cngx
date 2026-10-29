@@ -7,8 +7,9 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { CngxStepper } from './stepper.component';
 
 // Runs in a real Chromium (the `test-geometry` target). The chevron, chips and
-// breadcrumb skins draw the done / errored status and the breadcrumb separator
-// as `::before` / `::after` content of the step header. Without CSS alt text
+// breadcrumb skins draw the done status and the breadcrumb separator as
+// `::before` / `::after` content of the step header; the errored status is the
+// aria-hidden alert badge icon. Without CSS alt text
 // Chromium folds those glyphs into the header's accessible name; the status
 // they carry is spoken by the header's status text instead.
 
@@ -59,7 +60,10 @@ describe('stepper status glyphs', () => {
   it('stay visible', () => {
     mount('chips');
     expect(getComputedStyle(label(0), '::before').content).toContain('✓');
-    expect(getComputedStyle(label(1), '::before').content).toContain('!');
+    expect(getComputedStyle(label(1), '::before').content).toBe('none');
+    const badge = header(1).querySelector('.cngx-stepper__badge')!;
+    expect(getComputedStyle(badge).display).not.toBe('none');
+    expect(badge.getAttribute('aria-hidden')).toBe('true');
   });
 
   for (const skin of ['path-chevron', 'chips', 'breadcrumb'] as const) {

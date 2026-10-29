@@ -22,6 +22,7 @@ import {
   CngxRovingItem,
   CngxRovingTabindex,
 } from '@cngx/common/a11y';
+import { CngxIconSvg } from '@cngx/common/display';
 import { CngxSwipe } from '@cngx/common/interactive';
 import {
   CNGX_STEP_PANEL_HOST,
@@ -45,7 +46,6 @@ import {
   type CngxStepperMobileIndicatorPosition,
   type CngxStepperSkin,
   CngxStepRejection,
-  CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
   CngxStepperCount,
   createStepperAccname,
@@ -71,6 +71,7 @@ import {
   CNGX_ORGANISM_SCROLL_SYNC_FACTORY,
 } from '@cngx/common/tabs';
 import { coerceBooleanProperty, coerceSignal } from '@cngx/core/utils';
+import { CNGX_ICON_ALERT, CNGX_ICON_BAN } from '@cngx/utils';
 
 import { CngxStepperErrorLine } from './stepper-error-line.component';
 
@@ -126,6 +127,7 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
     CngxLiveRegion,
     CngxRovingItem,
     CngxStepperCount,
+    CngxIconSvg,
     CngxStepperErrorLine,
     CngxSwipe,
   ],
@@ -219,8 +221,9 @@ export class CngxStepper implements CngxStepPanelHost {
   private readonly emptySlot = contentChild(CngxStepperEmpty);
   private readonly dotSlot = contentChild(CngxDotStepperDot);
 
-  /** Default-template glyph source - read by `#defaultBadge` / `#defaultRejection` outlets. */
-  protected readonly glyphs = CNGX_STEPPER_GLYPHS;
+  /** Default-template icons - read by the `#defaultBadge` / `#defaultRejection` outlets. */
+  protected readonly alertIcon = CNGX_ICON_ALERT;
+  protected readonly banIcon = CNGX_ICON_BAN;
 
   /**
    * Template cascade (indicator/badge/busySpinner/rejection/stepError/
@@ -324,7 +327,12 @@ export class CngxStepper implements CngxStepPanelHost {
   protected readonly swipeNav = inject(CngxStepperSwipeNav, { host: true });
 
   protected statusLabelFor = (node: CngxStepNode): string =>
-    resolveStepperStatusLabel(node, this.i18n(), this.slotContext.isActive(node));
+    resolveStepperStatusLabel(
+      node,
+      this.i18n(),
+      this.slotContext.isActive(node),
+      this.stateView.rejectionReason(node),
+    );
 
   /** Mobile-dot `data-state`: the error marker (rejection + aggregator) over the raw status. */
   protected mobileDotState(node: CngxStepNode): string {

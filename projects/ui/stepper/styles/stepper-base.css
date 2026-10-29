@@ -14,9 +14,11 @@
  * - `[aria-disabled="true"]` - cursor + the disabled field colour (38%
  *   of `--cngx-color-text`), never opacity; GrayText under forced colors
  * - `:focus-visible` - outline ring via `--cngx-step-focus-ring`
- * - `--rejected` - persistent commit-rejection outline + tinted background;
- *   `[data-reason="refused"]` wears the rejection amber, `[data-reason="failed"]`
- *   the errored red (a failed commit is an error)
+ * - `--rejected` - persistent commit-rejection surface, tinted with
+ *   `--cngx-step-rejection-tint` of the reason colour and rounded by
+ *   `--cngx-step-rejection-radius`; `[data-reason="refused"]` wears the
+ *   refused amber, `[data-reason="failed"]` the errored red (a failed commit
+ *   is an error). Skins reshape it (see `stepper.component.css`)
  *
  * **Orientation variants**
  *
@@ -37,10 +39,11 @@
  * - `.cngx-stepper__panels` - panel host
  * - `.cngx-stepper__panel` - panel; `[hidden]` collapses
  * - `.cngx-stepper__group-header` - group label row
- * - `.cngx-stepper__badge` - inline error-count disc
- *   (`--cngx-step-error-badge-color` + glyph)
- * - `.cngx-stepper__rejection-icon` - `\2298` disc on a refused step (amber),
- *   `!` disc on a failed one (errored red); `data-reason` names the kind
+ * - `.cngx-stepper__badge` - validation-error alert icon after the label,
+ *   no disc (`--cngx-step-error-badge-color`, `--cngx-step-badge-size`)
+ * - `.cngx-stepper__rejection-icon` - standalone slashed-circle icon on a
+ *   refused step (amber), alert triangle on a failed one (errored red);
+ *   `data-reason` names the kind
  *
  * All transitions short-circuit under `prefers-reduced-motion`.
  * <hr>
@@ -160,146 +163,65 @@
   }
 
   /**
-   * Hit-target diameter of the inline error badge.
+   * Rendered size of the validation-error icon after the step label, in
+   * `em` of the label font. The universal syntax keeps the `em` unresolved
+   * until the icon reads it, and it inherits so a host override reaches
+   * the glyph.
    * @group State / Error
    */
   @property --cngx-step-badge-size {
     syntax: '*';
-    inherits: false;
-    initial-value: 1.25rem;
+    inherits: true;
+    initial-value: 1.15em;
   }
 
   /**
-   * Background color of the inline error badge.
+   * Colour of the validation-error icon. Registered without an initial
+   * value, so the fallback to `--cngx-step-errored-color` (and on to
+   * `--cngx-color-danger`) applies until a theme sets it.
    * @group State / Error
+   * @see [[--cngx-step-errored-color]]
    */
   @property --cngx-step-error-badge-color {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: oklch(0.45 0.15 25);
-  }
-
-  /**
-   * Glyph color inside the error badge.
-   * @group State / Error
-   */
-  @property --cngx-step-error-badge-text-color {
-    syntax: '<color>';
-    inherits: true;
-    initial-value: oklch(1 0 0);
-  }
-
-  /**
-   * Font-size of the error-badge glyph.
-   * @group State / Error
-   */
-  @property --cngx-step-badge-font-size {
     syntax: '*';
-    inherits: false;
-    initial-value: 0.75em;
+    inherits: true;
   }
 
   /**
-   * Font-weight of the error-badge glyph.
-   * @group State / Error
-   */
-  @property --cngx-step-badge-font-weight {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 700;
-  }
-
-  /**
-   * Outline width of the persistent-rejection decoration.
-   * @group State / Rejected
-   */
-  @property --cngx-step-rejection-outline-width {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 1px;
-  }
-
-  /**
-   * Outline color of a refused step (the commit action answered `false`).
-   * A failed commit takes `--cngx-step-errored-color` instead.
-   * @group State / Rejected
-   */
-  @property --cngx-step-rejection-outline-color {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: oklch(0.62 0.15 60);
-  }
-
-  /**
-   * Outline offset of the persistent-rejection decoration.
-   * @group State / Rejected
-   */
-  @property --cngx-step-rejection-outline-offset {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 2px;
-  }
-
-  /**
-   * Background of the rejected step.
-   * @group State / Rejected
-   */
-  @property --cngx-step-rejection-bg {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: transparent;
-  }
-
-  /**
-   * Hit-target diameter of the persistent-rejection icon (`\2298` refused,
-   * `!` failed).
+   * Rendered size of the persistent-rejection icon (slashed circle
+   * refused, alert triangle failed), in `em` of the label font. A failed
+   * commit paints it in `--cngx-step-errored-color`, a refused one in
+   * `--cngx-step-refused-color`.
    * @group State / Rejected
    */
   @property --cngx-step-rejection-icon-size {
     syntax: '*';
-    inherits: false;
-    initial-value: 1.25rem;
-  }
-
-  /**
-   * Background of the rejection icon disc on a refused step. A failed
-   * commit takes `--cngx-step-errored-color` instead.
-   * @group State / Rejected
-   */
-  @property --cngx-step-rejection-icon-bg {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: oklch(0.62 0.15 60);
-  }
-
-  /**
-   * Glyph color inside the rejection icon disc.
-   * @group State / Rejected
-   */
-  @property --cngx-step-rejection-icon-color {
-    syntax: '<color>';
     inherits: true;
-    initial-value: oklch(1 0 0);
+    initial-value: 1.15em;
   }
 
   /**
-   * Font-size of the rejection icon glyph.
+   * Strength of the rejected-step surface: the share of the reason colour
+   * (errored red for a failed commit, refused amber for a refused one)
+   * mixed into transparent. Skins that draw no surface ignore it.
    * @group State / Rejected
    */
-  @property --cngx-step-rejection-icon-font-size {
+  @property --cngx-step-rejection-tint {
+    syntax: '<percentage>';
+    inherits: true;
+    initial-value: 18%;
+  }
+
+  /**
+   * Corner radius of the rejected-step surface in the classic and
+   * stripe-status-rich skins. The shaped skins (path-chevron, pill-segment,
+   * chips) keep their own step shape.
+   * @group State / Rejected
+   */
+  @property --cngx-step-rejection-radius {
     syntax: '*';
-    inherits: false;
-    initial-value: 0.75em;
-  }
-
-  /**
-   * Font-weight of the rejection icon glyph.
-   * @group State / Rejected
-   */
-  @property --cngx-step-rejection-icon-font-weight {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 700;
+    inherits: true;
+    initial-value: 0.5rem;
   }
 
   /**
@@ -701,33 +623,40 @@
     background: var(--cngx-stepper-group-summary-dot-color, currentColor);
   }
 
+  /* Validation-error icon after the label: a standalone stroke glyph in
+     the errored colour, no disc. The step gap spaces it from the label. */
   .cngx-stepper__badge {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: var(--cngx-step-badge-size, 1.25rem);
-    height: var(--cngx-step-badge-size, 1.25rem);
-    border-radius: 50%;
-    background: var(--cngx-step-error-badge-color, oklch(0.45 0.15 25));
-    color: var(--cngx-step-error-badge-text-color, oklch(1 0 0));
-    font-size: var(--cngx-step-badge-font-size, 0.75em);
-    font-weight: var(--cngx-step-badge-font-weight, 700);
     flex: 0 0 auto;
-    margin-inline-start: var(--cngx-step-gap, 0.5rem);
+    color: var(
+      --cngx-step-error-badge-color,
+      var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)))
+    );
   }
 
+  /* Rejected step: the reason colour (errored red for a failed commit, the
+     refused amber for a refused one) feeds a tinted surface. Skins that
+     shape their steps re-apply the tint in their own layer; linear-minimal
+     and breadcrumb swap it for a line or the label colour. */
   .cngx-stepper__step--rejected {
-    outline: var(--cngx-step-rejection-outline-width, 1px) solid
-      var(--cngx-step-rejection-outline-color, oklch(0.62 0.15 60));
-    outline-offset: var(--cngx-step-rejection-outline-offset, 2px);
-    background: var(--cngx-step-rejection-bg, transparent);
+    --_cngx-step-rejection-color: var(
+      --cngx-step-errored-color,
+      var(--cngx-color-danger, oklch(0.45 0.15 25))
+    );
+    background: color-mix(
+      in oklab,
+      var(--_cngx-step-rejection-color, oklch(0.45 0.15 25)) var(--cngx-step-rejection-tint, 18%),
+      transparent
+    );
+    border-radius: var(--cngx-step-rejection-radius, 0.5rem);
   }
 
-  /* A failed commit is a real error: its rejection decoration takes the
-     errored red, the amber stays with a refused one. The glyph (`!` versus
-     the refused circle) keeps the two apart without colour (WCAG 1.4.1). */
-  .cngx-stepper__step--rejected[data-reason='failed'] {
-    outline-color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+  /* A refusal is no error: amber surface and icon. The glyph (alert
+     triangle versus slashed circle) keeps the two apart without colour
+     (WCAG 1.4.1). */
+  .cngx-stepper__step--rejected[data-reason='refused'] {
+    --_cngx-step-rejection-color: var(--cngx-step-refused-color, oklch(0.62 0.15 60));
   }
 
   /* Status pill - hidden by default; opted in by the
@@ -740,20 +669,24 @@
   .cngx-stepper__rejection-icon {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: var(--cngx-step-rejection-icon-size, 1.25rem);
-    height: var(--cngx-step-rejection-icon-size, 1.25rem);
-    border-radius: 50%;
-    background: var(--cngx-step-rejection-icon-bg, oklch(0.62 0.15 60));
-    color: var(--cngx-step-rejection-icon-color, oklch(1 0 0));
-    font-size: var(--cngx-step-rejection-icon-font-size, 0.75em);
-    font-weight: var(--cngx-step-rejection-icon-font-weight, 700);
     flex: 0 0 auto;
-    margin-inline-start: var(--cngx-step-gap, 0.5rem);
+    color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
   }
 
-  .cngx-stepper__rejection-icon[data-reason='failed'] {
-    background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+  .cngx-stepper__rejection-icon[data-reason='refused'] {
+    color: var(--cngx-step-refused-color, oklch(0.62 0.15 60));
+  }
+
+  /* Both icons draw on the 24-unit grid at stroke width 2, sized in em of
+     the label font they sit next to. */
+  .cngx-stepper__badge > .cngx-icon-svg {
+    --cngx-icon-svg-size: var(--cngx-step-badge-size, 1.15em);
+    --cngx-icon-svg-stroke-width: 2;
+  }
+
+  .cngx-stepper__rejection-icon > .cngx-icon-svg {
+    --cngx-icon-svg-size: var(--cngx-step-rejection-icon-size, 1.15em);
+    --cngx-icon-svg-stroke-width: 2;
   }
 
   .cngx-sr-only {

@@ -16,6 +16,7 @@ import {
   withStepperI18nLabels,
   type CngxStepperI18nOverrides,
 } from '@cngx/common/stepper';
+import { CNGX_ICON_ALERT, CNGX_ICON_BAN } from '@cngx/utils';
 
 import { CngxDotStepper } from './dot-stepper.component';
 import { stripBidiIsolates } from '@cngx/testing';
@@ -583,7 +584,7 @@ describe('CngxDotStepper commit outcome', () => {
     expect(region.getAttribute('data-state')).toBe('error');
     expect(region.getAttribute('data-reason')).toBe('refused');
     const glyph = region.querySelector('.cngx-dot-stepper__error-glyph') as HTMLElement;
-    expect(glyph.textContent?.trim()).toBe('\u2298');
+    expect(glyph.querySelector('svg path')?.getAttribute('d')).toBe(CNGX_ICON_BAN.d);
     expect(glyph.getAttribute('aria-hidden')).toBe('true');
   });
 
@@ -596,7 +597,7 @@ describe('CngxDotStepper commit outcome', () => {
     const region = fixture.nativeElement.querySelector('.cngx-dot-stepper__error') as HTMLElement;
     expect(region.hasAttribute('data-reason')).toBe(false);
     const glyph = region.querySelector('.cngx-dot-stepper__error-glyph') as HTMLElement;
-    expect(glyph.textContent?.trim()).toBe('!');
+    expect(glyph.querySelector('svg path')?.getAttribute('d')).toBe(CNGX_ICON_ALERT.d);
   });
 });
 

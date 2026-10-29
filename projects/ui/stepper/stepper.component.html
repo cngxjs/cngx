@@ -261,7 +261,7 @@
 <!--
   Shared strip-header body. Rendered identically by the focusable
   <button> ('visited') and the inert <span> ('none') branches so the
-  indicator / badge / label / status / rejection / busy markup has a
+  indicator / label / badge / status / rejection / busy markup has a
   single source (Pillar 3). ngTemplateOutlet projects inline - no
   wrapper element is added, so the 'visited' DOM is unchanged.
 -->
@@ -273,16 +273,6 @@
         context: slotContext.indicatorContextFor(node)
       "
     ></ng-container>
-    @if (slotContext.showErrorBadge(node)) {
-      <span class="cngx-stepper__badge" aria-hidden="true">
-        <ng-container
-          *ngTemplateOutlet="
-            templates.badge() ?? defaultBadge;
-            context: slotContext.badgeContextFor(node)
-          "
-        ></ng-container>
-      </span>
-    }
   </span>
   <span class="cngx-stepper__label">
     @let labelTpl = labelTemplateFor(node.id);
@@ -294,6 +284,16 @@
       {{ node.label() }}
     }
   </span>
+  @if (slotContext.showErrorBadge(node)) {
+    <span class="cngx-stepper__badge" aria-hidden="true">
+      <ng-container
+        *ngTemplateOutlet="
+          templates.badge() ?? defaultBadge;
+          context: slotContext.badgeContextFor(node)
+        "
+      ></ng-container>
+    </span>
+  }
   <span class="cngx-stepper__status-pill" aria-hidden="true">{{ statusLabelFor(node) }}</span>
   @if (slotContext.showRejection(node)) {
     <span
@@ -325,11 +325,11 @@
 <ng-template #defaultIndicator let-position>
   <span class="cngx-stepper__indicator-glyph">{{ position }}</span>
 </ng-template>
-<ng-template #defaultBadge>{{ glyphs.errorBadge }}</ng-template>
+<ng-template #defaultBadge><svg [cngxIconSvg]="alertIcon"></svg></ng-template>
 <ng-template #defaultBusySpinner></ng-template>
-<ng-template #defaultRejection let-reason="reason">{{
-  reason === 'refused' ? glyphs.refusedIcon : glyphs.rejectionIcon
-}}</ng-template>
+<ng-template #defaultRejection let-reason="reason"
+  ><svg [cngxIconSvg]="reason === 'refused' ? banIcon : alertIcon"></svg
+></ng-template>
 <ng-template #defaultGroupHeader let-group="group">
   <span class="cngx-stepper__group-label">{{ group.label() }}</span>
 </ng-template>

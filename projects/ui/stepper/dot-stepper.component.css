@@ -226,24 +226,14 @@
 
 .cngx-dot-stepper__error-glyph {
   flex: none;
-  display: inline-grid;
-  place-items: center;
-  width: var(--cngx-dot-stepper-error-glyph-size, 1.1em);
-  height: var(--cngx-dot-stepper-error-glyph-size, 1.1em);
-  border-radius: 50%;
-  background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
-  color: var(--cngx-dot-stepper-error-glyph-color, var(--cngx-color-on-danger, white));
-  font-size: 0.75em;
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
 }
 
-/* Every marked step is a refused commit: resting text, amber glyph disc. */
+/* Every marked step is a refused commit: resting text; the slashed-circle
+   icon follows it. */
 .cngx-dot-stepper__error[data-reason='refused'] {
   color: var(--cngx-step-refused-text-color, currentColor);
-}
-
-.cngx-dot-stepper__error[data-reason='refused'] .cngx-dot-stepper__error-glyph {
-  background: var(--cngx-step-refused-color, oklch(0.62 0.15 60));
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -50,7 +50,7 @@ The organism is W3C step-pattern compliant:
 |-|-|-|
 | `classic` | Numbered circles with connectors. The Phase A re-tuned default. | Default wizards, A11y-first flows. |
 | `linear-minimal` | Label + 6px dot + dashed connector. | Long wizards on dense pages. |
-| `stripe-status-rich` | Label + state pill (Done / In progress / Up next / Errored). | Sales / checkout flows where status legibility wins. |
+| `stripe-status-rich` | Label + state pill (Done / In progress / Up next / Errored / Not allowed). | Sales / checkout flows where status legibility wins. |
 | `path-chevron` | Boarding-pass chevron tiles. | High-identity branded flows. |
 | `pill-segment` | iOS-style segmented control. | Compact toolbars. |
 
@@ -248,16 +248,16 @@ The default is `'visited'`. For non-linear steppers (`linear="false"`, the defau
 
 ## Error channels
 
-A step can be flagged as in error through two independent channels. Both render the same error **state** on every skin (the indicator / badge / tile turns errored); the error **message** surfaces separately.
+A step can be flagged as in error through two independent channels. Both render the same error **state** on every skin (the indicator / tile turns errored and an alert icon follows the label); the error **message** surfaces separately.
 
 |Channel|How you flag it|Where the message appears|
 |-|-|-|
 |Validation|`[error]="true \| 'message'"` on `cngxStep`, or `[errorAggregator]` for multi-source forms|a row **below the strip** (every classic-style skin) via `*cngxStepError`; folded into the aggregate line on the `text` / `dot` / `progress-bar` mini variants|
-|Commit / async|a `commitAction` that refuses (`false`) or fails (throw, rejection, error); only the most recent attempt is shown, the next one replaces it|`*cngxStepRejection` decoration (amber `⊘` refused, red `!` failed); `CngxToastOn` / `CngxBannerOn` transition bridges on a failure only|
+|Commit / async|a `commitAction` that refuses (`false`) or fails (throw, rejection, error); only the most recent attempt is shown, the next one replaces it|`*cngxStepRejection` icon (amber slashed circle refused, red alert triangle failed) on a tinted step; `CngxToastOn` / `CngxBannerOn` transition bridges on a failure only|
 
 The message lives on its own row **below** the step strip, not inside a step. That is deliberate: a free-text message inside a horizontal (or column) strip item widens the shrink-to-fit step and tears the row; below the strip it has full width and wraps. The strip itself only ever carries the short state cue.
 
-Only steps with a **real reason** show a message row - the bare `errored` state is already communicated by the indicator / badge, so a boolean `[error]="true"` adds no text-only noise. A reason is the direct `[error]` string or the first `errorAggregator` label.
+Only steps with a **real reason** show a message row - the bare `errored` state is already communicated by the indicator and the alert icon, so a boolean `[error]="true"` adds no text-only noise. A reason is the direct `[error]` string or the first `errorAggregator` label.
 
 The validation channel is the common case and needs no async machine. The simplest form is a single input:
 
@@ -282,3 +282,18 @@ Override the message presentation per instance with `*cngxStepError`, app-wide w
 ```
 
 The commit / async channel is separate: a rejected `commitAction` decorates the rolled-back step (`*cngxStepRejection`) and flows its message through the `CngxToastOn` / `CngxBannerOn` transition bridges. The two channels never collide - validation owns `*cngxStepError`, commit owns `*cngxStepRejection`.
+
+### How each skin draws the error
+
+The validation badge is a bare alert icon (no disc, `1.15em` of the label font, stroke 2) that follows the label in the errored colour. On `path-chevron` it leads the label and centres with it in the tile; on the red `path-chevron` tile and the red `chips` chip it paints in the tile text colour. `stripe-status-rich` hides it: the status pill says "Errored".
+
+A rejected step (the latest commit refused or failed) carries the rejection icon and a reason colour: red for a failed commit, amber for a refused one.
+
+|Skin|Rejected step|
+|-|-|
+|`classic`, `stripe-status-rich`|tinted rounded surface (`--cngx-step-rejection-tint`, `--cngx-step-rejection-radius`); stripe hides the icon and its pill reads "Errored" / "Not allowed"|
+|`path-chevron`, `pill-segment`, `chips`|the tint replaces the step background, shaped by the tile, segment or chip; the icon leads the label on `path-chevron`|
+|`linear-minimal`|no surface, a 2px line in the reason colour (bottom edge horizontally, inline-start edge vertically)|
+|`breadcrumb`|colour only: the label turns the reason colour next to the icon|
+
+Under forced colors the surfaces and lines vanish, so a rejected step draws a 2px `CanvasText` outline and both icons paint the system text colour.

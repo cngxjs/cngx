@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
-import { CNGX_STEPPER_GLYPHS } from '@cngx/common/stepper';
+import { CNGX_ICON_ALERT, CNGX_ICON_BAN } from '@cngx/utils';
 
 import { CngxStepperErrorLine } from './stepper-error-line.component';
 
@@ -46,7 +46,7 @@ describe('CngxStepperErrorLine', () => {
     fixture.detectChanges();
     expect(line.getAttribute('data-state')).toBe('error');
     expect(line.hasAttribute('data-reason')).toBe(false);
-    expect(glyph()?.textContent?.trim()).toBe(CNGX_STEPPER_GLYPHS.errorBadge);
+    expect(glyph()?.querySelector('svg path')?.getAttribute('d')).toBe(CNGX_ICON_ALERT.d);
     expect(glyph()?.getAttribute('aria-hidden')).toBe('true');
   });
 
@@ -57,7 +57,7 @@ describe('CngxStepperErrorLine', () => {
     fixture.detectChanges();
     expect(line.getAttribute('data-state')).toBe('error');
     expect(line.getAttribute('data-reason')).toBe('refused');
-    expect(glyph()?.textContent?.trim()).toBe(CNGX_STEPPER_GLYPHS.refusedIcon);
+    expect(glyph()?.querySelector('svg path')?.getAttribute('d')).toBe(CNGX_ICON_BAN.d);
     expect(glyph()?.getAttribute('aria-hidden')).toBe('true');
     expect(line.textContent).toContain('Payment: Not allowed');
   });
