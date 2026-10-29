@@ -9,43 +9,70 @@ import { checkNodeFloor } from './node-floor.js';
 
 const floorError = checkNodeFloor(process.versions.node);
 if (floorError === null) {
+  // Until the pipe guard loads, a write must not throw out of the catch below.
+  let stderr = (text: string): void => {
+    try {
+      process.stderr.write(text);
+    } catch {
+      // nothing left to report to
+    }
+  };
   try {
-    const { installPipeGuard } = await import('./pipe-guard.js');
-    let streamFailed = false;
-    const guardDeps = {
-      stderr: (text: string) => process.stderr.write(text),
+    const { installPipeGuard, installStderrGuard, writeQuietly } = await import('./pipe-guard.js');
+    stderr = writeQuietly((text) => process.stderr.write(text));
+    let stdoutFailed = false;
+    installPipeGuard(process.stdout, {
+      stderr,
       setExitCode: (code: number) => {
-        streamFailed = true;
+        stdoutFailed = true;
         process.exitCode = code;
       },
-    };
-    installPipeGuard(process.stdout, guardDeps);
-    installPipeGuard(process.stderr, guardDeps);
+    });
+    installStderrGuard(process.stderr);
     const { main } = await import('./cli-adapter.js');
     const code = await main(
       process.argv.slice(2),
       { dataDir: new URL('../data/', import.meta.url), packageJson: new URL('../package.json', import.meta.url) },
-      { stdout: (text) => process.stdout.write(text), stderr: (text) => process.stderr.write(text) },
+      { stdout: (text) => process.stdout.write(text), stderr },
     );
-    // A stream that already failed keeps its exit 3 over the answer's own code.
-    if (!streamFailed) {
+    // A failed stdout keeps its exit 3 over the answer's own code; a failed stderr never does.
+    if (!stdoutFailed) {
       process.exitCode = code;
     }
   } catch (error) {
     // A module that fails to load never reaches the adapter's own net; same line, same exit 3.
     // The adapter never parsed argv, so --format json is read raw here.
     const message = error instanceof Error ? error.message : String(error);
-    process.stderr.write(`cngx: internal error: ${message}\n`);
-    const argv = process.argv.slice(2);
-    const json = argv.includes('--format=json') || argv.some((arg, i) => arg === '--format' && argv[i + 1] === 'json');
-    if (json) {
-      process.stdout.write(await bootstrapFailureDocument(message));
+    stderr(`cngx: internal error: ${message}\n`);
+    if (rawFormat(process.argv.slice(2)) === 'json') {
+      try {
+        process.stdout.write(await bootstrapFailureDocument(message));
+      } catch {
+        // stdout is gone too; the exit code still says what happened
+      }
     }
     process.exitCode = 3;
   }
 } else {
   process.stderr.write(`${floorError}\n`);
   process.exitCode = 2;
+}
+
+/** The last `--format` value before `--`, read the way the adapter's parser reads it. */
+function rawFormat(argv: string[]): string | undefined {
+  let format: string | undefined;
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === '--') {
+      break;
+    }
+    if (arg.startsWith('--format=')) {
+      format = arg.slice('--format='.length);
+    } else if (arg === '--format') {
+      format = argv[++i];
+    }
+  }
+  return format;
 }
 
 /** The adapter's failure document when the adapter loads, else the same literal. */

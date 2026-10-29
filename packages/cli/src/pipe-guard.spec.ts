@@ -5,7 +5,7 @@ import { EventEmitter } from 'node:events';
 import { Writable } from 'node:stream';
 import { describe, expect, it } from 'vitest';
 import type { PipeGuardDeps } from './pipe-guard.js';
-import { installPipeGuard } from './pipe-guard.js';
+import { installPipeGuard, installStderrGuard, writeQuietly } from './pipe-guard.js';
 
 const streamError = (code: string): NodeJS.ErrnoException => Object.assign(new Error(`${code}: stream failed`), { code });
 
@@ -63,5 +63,25 @@ describe('installPipeGuard', () => {
 
     expect(deps.lines).toEqual(['cngx: internal error: ENOSPC: stream failed\n']);
     expect(deps.codes).toEqual([3]);
+  });
+});
+
+describe('installStderrGuard', () => {
+  it('swallows every stderr error without throwing', () => {
+    const stream = new EventEmitter();
+    installStderrGuard(stream);
+
+    expect(() => stream.emit('error', streamError('EBADF'))).not.toThrow();
+    expect(() => stream.emit('error', streamError('EPIPE'))).not.toThrow();
+  });
+});
+
+describe('writeQuietly', () => {
+  it('keeps a synchronous throw from the stream inside the write', () => {
+    const write = writeQuietly(() => {
+      throw streamError('EBADF');
+    });
+
+    expect(() => write('line\n')).not.toThrow();
   });
 });

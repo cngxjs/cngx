@@ -79,7 +79,7 @@ cngx <command>: <reason>: <message>
 |`asset-missing`|The release or its `documentation.json` asset does not exist. Also covers a version that is not a release, a snapshot that cannot be read or has a schema this CLI does not know, and a query that threw (its message starts with `internal:`).|
 |`network`|The download failed for a network reason.|
 
-Under `--format json` a failure also prints one document to stdout, so `jq`
+Under `--format json` a resolve or internal failure also prints one document to stdout, so `jq`
 reads every run the same way:
 
 ```json
@@ -116,8 +116,8 @@ authenticated `gh`.
 |-|-|
 |`0`|Answered.|
 |`1`|The query ran but found nothing (an empty `list` included), or the requested release snapshot could not be resolved.|
-|`2`|Usage error: no command (help goes to stderr), an unknown command or flag, invalid input, an empty or malformed `--cngx-version`, `--cngx-version` on a command that has no version, or a Node below 20.|
-|`3`|Internal error: the bundled snapshot could not be loaded, a command, its rendering or the start-up threw, or writing the output failed. One `internal error` line on stderr, no stack; stdout holds the failure document under `--format json` and nothing under `md`.|
+|`2`|Usage error: no command (help goes to stderr), an unknown command or flag, invalid input, an empty or malformed `--cngx-version`, `--cngx-version` on a command that has no version, or a Node below 20. Usage errors and the Node floor print no json document, even under `--format json`; stdout stays empty.|
+|`3`|Internal error: the bundled snapshot could not be loaded, a command, its rendering or the start-up threw, or writing stdout failed. One `internal error` line on stderr, no stack; stdout holds the failure document under `--format json` and nothing under `md`. A failed stderr never changes the exit code: the run exits with the code its answer earned.|
 
 ## License
 
