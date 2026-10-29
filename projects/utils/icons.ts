@@ -41,7 +41,7 @@ export const CNGX_ICON_X = {
 /** Add plus. @internal */
 export const CNGX_ICON_PLUS = {
   viewBox: '0 0 24 24',
-  d: 'M12 5v14M5 12h14',
+  d: 'M12 3.5v17M3.5 12h17',
   paint: 'stroke',
 } as const satisfies CngxIconData;
 
@@ -130,7 +130,7 @@ export const CNGX_ICON_ALERT = {
  */
 export const CNGX_ICON_BAN = {
   viewBox: '0 0 24 24',
-  d: 'M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0zM5.6 5.6l12.8 12.8',
+  d: 'M2.5 12a9.5 9.5 0 1 0 19 0a9.5 9.5 0 1 0-19 0zM5.3 5.3l13.4 13.4',
   paint: 'stroke',
 } as const satisfies CngxIconData;
 
@@ -165,7 +165,7 @@ export const CNGX_ICON_CHEVRON_DOWN = {
 /** Trash can (delete). @internal */
 export const CNGX_ICON_TRASH = {
   viewBox: '0 0 24 24',
-  d: 'M4 7h16M10 7V4h4v3M6 7l1 13h10l1-13M10 11v6M14 11v6',
+  d: 'M4 7h16M10 7V4h4v3M6 7l1 13h10l1-13',
   paint: 'stroke',
 } as const satisfies CngxIconData;
 
@@ -179,7 +179,7 @@ export const CNGX_ICON_DOWNLOAD = {
 /** Cross in a circle (dismiss, clear with emphasis). @internal */
 export const CNGX_ICON_X_CIRCLE = {
   viewBox: '0 0 24 24',
-  d: 'M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0zM9 9l6 6M15 9l-6 6',
+  d: 'M2.5 12a9.5 9.5 0 1 0 19 0a9.5 9.5 0 1 0-19 0zM9.5 9.5l5 5M14.5 9.5l-5 5',
   paint: 'stroke',
 } as const satisfies CngxIconData;
 
@@ -256,6 +256,6 @@ export const CNGX_ICON_PENCIL = {
 /** Bell (notifications). @internal */
 export const CNGX_ICON_BELL = {
   viewBox: '0 0 24 24',
-  d: 'M6 17v-6a6 6 0 0 1 12 0v6l1.5 1.5h-15zM10 21h4',
+  d: 'M5 16.5V11a7 7 0 0 1 14 0v5.5l2 2H3zM9.5 21.5h5',
   paint: 'stroke',
 } as const satisfies CngxIconData;

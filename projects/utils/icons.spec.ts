@@ -62,7 +62,7 @@ describe('cngx default icon set', () => {
   });
 
   it('draws the ban slash from top-left to bottom-right', () => {
-    expect(icons.CNGX_ICON_BAN.d).toContain('M5.6 5.6l12.8 12.8');
+    expect(icons.CNGX_ICON_BAN.d).toContain('M5.3 5.3l13.4 13.4');
   });
 
   it('keeps refused and failed visually distinct', () => {
