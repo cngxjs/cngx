@@ -301,6 +301,22 @@ describe('CngxMenuButton', () => {
   });
 
   describe('keyboard', () => {
+    it.each(['Enter', ' '])(
+      '%j opens a closed menu, highlights the first item and claims the key',
+      (k) => {
+        const { button, popover, menu, flush } = setup(BasicHost);
+        button.focus();
+        const event = new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true });
+        button.dispatchEvent(event);
+        flush();
+        expect(popover.isVisible()).toBe(true);
+        expect(menu?.ad.activeValue()).toBe('pdf');
+        // A claimed key suppresses the native activation click, which would
+        // toggle the menu shut again.
+        expect(event.defaultPrevented).toBe(true);
+      },
+    );
+
     it('ArrowDown opens and highlights the first item', () => {
       const { button, popover, menu, flush } = setup(BasicHost);
       button.focus();

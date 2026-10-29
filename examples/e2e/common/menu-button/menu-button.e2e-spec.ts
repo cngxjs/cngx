@@ -86,6 +86,26 @@ for (const dir of ['ltr', 'rtl'] as const) {
       await expect(lastFormat).toHaveText('xlsx');
     });
 
+    for (const key of ['Enter', 'Space'] as const) {
+      test(`${key} opens a closed menu and it stays open`, async ({ page }) => {
+        await gotoDemo(page, BASIC);
+        await setDirection(page, dir);
+
+        const button = page.getByRole('button', { name: 'Export' });
+        const menu = page.getByRole('menu', { name: 'Export format' });
+        await button.focus();
+        // keydown opens; the native click a button fires for the same key
+        // would toggle it shut, so the menu staying open proves it is suppressed.
+        await page.keyboard.press(key);
+        await expect(menu).toBeVisible();
+        await expect.poll(() => activeItem(page, menu)).toBe('PDF');
+        await page.waitForTimeout(100);
+        await expect(menu).toBeVisible();
+        await expect(button).toHaveAttribute('aria-expanded', 'true');
+        await expect(button).toBeFocused();
+      });
+    }
+
     test('click toggles the menu', async ({ page }) => {
       await gotoDemo(page, BASIC);
       await setDirection(page, dir);
