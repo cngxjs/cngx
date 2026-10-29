@@ -46,7 +46,7 @@ test.describe('ui/tabs/tab-nav-skins', () => {
         const hostCS = getComputedStyle(host);
         const activeCS = active ? getComputedStyle(active) : null;
         const afterCS = active ? getComputedStyle(active, '::after') : null;
-        const beforeCS = active ? getComputedStyle(active, '::before') : null;
+        const errorIcon = active?.querySelector('.cngx-tab-nav__error-icon') ?? null;
         const inactiveAfterCS = inactive ? getComputedStyle(inactive, '::after') : null;
         return {
           found: true as const,
@@ -59,7 +59,7 @@ test.describe('ui/tabs/tab-nav-skins', () => {
           afterWidth: afterCS?.width ?? null,
           afterLeft: afterCS?.left ?? null,
           afterRight: afterCS?.right ?? null,
-          beforeContent: beforeCS?.content ?? null,
+          errorIconVisible: errorIcon ? errorIcon.getBoundingClientRect().width > 0 : false,
           inactiveAfterTransform: inactiveAfterCS?.transform ?? null,
         };
       };
@@ -145,18 +145,16 @@ test.describe('ui/tabs/tab-nav-skins', () => {
       'contained active accent did not grow (still collapsed)',
     ).not.toBe(data.contained.inactiveAfterTransform);
 
-    // Collision cross-check: the active+error contained link keeps its error
-    // glyph on ::before (the accent moved to ::after; ::before is untouched),
-    // while the non-error contained active link generates no ::before glyph -
-    // proving the accent did not erase the error glyph.
+    // Collision cross-check: the active+error contained link keeps its leading
+    // alert icon next to the ::after accent, while the non-error contained
+    // active link renders none - the accent did not erase the error cue.
     expect(
-      data.containedError.beforeContent,
-      'active+error contained link lost its ::before glyph',
-    ).not.toBe(data.contained.beforeContent);
-    expect(
-      ['none', 'normal', '', null].includes(data.containedError.beforeContent),
-      'active+error contained ::before produced no glyph box',
-    ).toBe(false);
+      data.containedError.errorIconVisible,
+      'active+error contained link lost its alert icon',
+    ).toBe(true);
+    expect(data.contained.errorIconVisible, 'non-error contained link shows an alert icon').toBe(
+      false,
+    );
     // The accent bar still rides ::after on the active+error link too.
     expect(
       data.containedError.afterBg,

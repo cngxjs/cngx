@@ -137,8 +137,9 @@
       transform: scaleY(1);
     }
 
-    /* Error link: danger-tinted label plus a leading glyph gated on the
-       class - the aria-invalid visual partner. */
+    /* Error link: danger-tinted label plus the leading alert icon
+       `[cngxTabLink]` inserts while the link is invalid - the aria-invalid
+       visual partner. */
     .cngx-tab-nav__link--error {
       color: var(
         --cngx-tab-error-badge-color,
@@ -153,17 +154,35 @@
       );
     }
 
-    .cngx-tab-nav__link--error::before {
-      /* Glyph character from its own token: a colour token here would
-         resolve to a colour value, which is invalid for `content` and drops
-         the pseudo to `none`. `--cngx-tab-error-glyph` is intentionally
-         unregistered so the string fallback fires (a syntax-typed
-         @property would defeat it). The `/ ''`
-         alt keeps the decorative glyph out of the anchor's accessible name -
-         `aria-invalid` + the describedby message already carry the state to AT. */
-      content: var(--cngx-tab-error-glyph, '!') / '';
-      font-size: var(--cngx-tab-rejection-icon-font-size, 0.75em);
-      font-weight: 700;
+    .cngx-tab-nav__error-icon {
+      display: inline-flex;
+      flex: none;
+    }
+
+    /* The icon's `<svg><path>`, built by the link directive from the shared
+       icon data (no `CngxIconSvg` instance, so its stylesheet is not loaded
+       here). Sized like the tab-group error badge, in em of the link font. */
+    .cngx-tab-nav__icon-svg {
+      --cngx-icon-svg-size: var(--cngx-tab-badge-size, 1.15em);
+      --cngx-icon-svg-stroke-width: 2;
+
+      /* Functional - hardcoded */
+      display: block;
+      overflow: visible;
+      fill: currentColor;
+
+      /* Themable */
+      inline-size: var(--cngx-icon-svg-size, 1.15em);
+      block-size: var(--cngx-icon-svg-size, 1.15em);
+    }
+
+    /* Round caps are part of a stroke icon's shape (see `CngxIconPaint`). */
+    .cngx-tab-nav__icon-svg--stroke {
+      fill: none;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: var(--cngx-icon-svg-stroke-width, 2);
     }
   }
 
@@ -431,11 +450,8 @@
    * tab-group.component.css:536-545.
    *
    * The active accent bar rides the REPURPOSED line `::after` (repositioned
-   * to the top edge), NOT `::before`: `.cngx-tab-nav__link--error::before`
-   * already owns the error glyph, so a contained `::before` accent would
-   * erase the `!` on an active+error link (a Pillar-2 regression). Putting
-   * the accent on the freed `::after` leaves `::before` for the error glyph,
-   * so an active+error contained tab shows both.
+   * to the top edge), so the line skin's one pseudo-element serves both
+   * skins.
    */
   @scope (.cngx-tab-nav[data-skin='contained']) {
     :scope {
