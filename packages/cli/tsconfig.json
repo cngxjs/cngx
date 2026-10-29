@@ -6,8 +6,9 @@
     "lib": ["ES2022"],
     "types": ["node"],
     "declaration": true,
-    "declarationMap": true,
+    "declarationMap": false,
     "sourceMap": true,
+    "inlineSources": true,
     "outDir": "dist",
     "rootDir": "src",
     "strict": true,
@@ -18,5 +19,12 @@
     "skipLibCheck": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["dist", "node_modules", "src/**/*.spec.ts", "src/**/*.core-spec.ts"]
+  "exclude": [
+    "dist",
+    "node_modules",
+    "src/**/*.spec.ts",
+    "src/**/*.core-spec.ts",
+    "src/readme-guard.ts",
+    "src/output-guards.ts"
+  ]
 }
