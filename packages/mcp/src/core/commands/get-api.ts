@@ -137,6 +137,8 @@ export const getApiCommand = defineCommand({
     "Return a single component's, directive's, or injectable service's API surface - inputs, " +
     'outputs, signal flag, host bindings, public methods, and description - by class name or ' +
     'selector. Returns null when the name resolves to nothing.',
+  cliSummary:
+    'Print the inputs, outputs, host bindings, methods and description of one component, directive or service, by class name or selector. Exits 1 when the name matches nothing.',
   cliName: 'api',
   input: {
     name: z

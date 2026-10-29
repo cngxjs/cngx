@@ -411,6 +411,19 @@ describe('generated help', () => {
     }
   });
 
+  it.each(COMMANDS.map((def) => [def.cliName, def] as const))('%s help speaks CLI, not MCP', (_, def) => {
+    const help = commandHelp(def);
+
+    expect(help).not.toMatch(/Returns null|\{ ok: false|\b(?:get|find|list|migrate)_[a-z_]+\b/);
+  });
+
+  it('prints cliSummary in place of the MCP description when a definition sets it', () => {
+    const list = COMMANDS.find((def) => def.cliName === 'list')!;
+
+    expect(commandHelp({ ...list, cliSummary: 'CLI words.' })).toContain('\nCLI words.\n');
+    expect(commandHelp({ ...list, cliSummary: undefined })).toContain(`\n${list.description}\n`);
+  });
+
   it('shows a command positional and its renamed version flag', () => {
     const api = COMMANDS.find((def) => def.cliName === 'api');
 

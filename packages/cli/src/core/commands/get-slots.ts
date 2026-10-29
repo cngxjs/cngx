@@ -54,6 +54,8 @@ export const getSlotsCommand = defineCommand({
     "Return a component's projected template slots - each the slot directive selector name plus " +
     'its one-line doc - by class name or selector. An empty slots array means the component projects ' +
     'no overridable slots. Returns null when the name resolves to nothing.',
+  cliSummary:
+    'Print the template slots a component projects. Exits 1 when the name matches nothing.',
   cliName: 'slots',
   input: {
     name: z.string().min(1).describe('A component/directive class name or selector, e.g. "CngxSelect".'),

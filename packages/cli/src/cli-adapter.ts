@@ -145,7 +145,7 @@ export function commandHelp(def: CngxCommand): string {
   return [
     `Usage: ${commandUsage(def)}`,
     '',
-    def.description,
+    def.cliSummary ?? def.description,
     '',
     'Arguments and flags:',
     ...rows.map(([name, text]) => `  ${pad(name, width)}${text}`),

@@ -45,7 +45,13 @@ export interface CngxCommand<S extends CommandShape = CommandShape, P = unknown>
   /** Stable machine name, e.g. `get_api`. */
   readonly name: string;
   readonly title: string;
+  /** The MCP tool description: written for an agent calling the tool, in tool and field names. */
   readonly description: string;
+  /**
+   * The same text for `cngx <command> --help`, in subcommand and flag terms. The CLI
+   * prints it instead of `description`; MCP ignores it, so the tool surface does not move.
+   */
+  readonly cliSummary?: string;
   readonly input: S;
   /** The CLI subcommand, e.g. `api`. */
   readonly cliName: string;

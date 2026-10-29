@@ -213,6 +213,8 @@ export const getConfigCommand = defineCommand({
     'with* feature functions, and the resolution-priority ordering. Accepts a config token name ' +
     '(CNGX_SELECT_CONFIG), a config stem (select), or best-effort a component/directive name ' +
     '(CngxCombobox -> CNGX_SELECT_CONFIG). Returns null when the input maps to no config token.',
+  cliSummary:
+    'Print a config surface: the CNGX_<X>_CONFIG token, its provider functions, the with* features and the resolution order. Takes a token name (CNGX_SELECT_CONFIG), a stem (select) or a component name (CngxCombobox). Exits 1 when nothing maps to a config token.',
   cliName: 'config',
   input: {
     name: z

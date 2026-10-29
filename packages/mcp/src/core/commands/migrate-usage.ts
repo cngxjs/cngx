@@ -108,6 +108,8 @@ export const migrateUsageCommand = defineCommand({
     'A version other than the bundled one is fetched from the GitHub Release assets via `gh`, or over HTTPS ' +
     'when `gh` is missing or fails; no network or an absent asset returns a typed error result ' +
     '({ ok: false, reason }), never a throw.',
+  cliSummary:
+    'Print the removed, renamed and signature-changed API between two cngx releases: components, inputs, outputs, slots and DI tokens. --to defaults to the bundled release; any other release is fetched through `gh`, or over HTTPS when `gh` is missing or fails.',
   cliName: 'migrate',
   input: {
     from: z.string().describe('The cngx version to upgrade FROM, e.g. "0.1.0" (without the leading "v").'),

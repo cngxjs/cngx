@@ -67,6 +67,8 @@ export const getThemeTokensCommand = defineCommand({
     "Return a component's theming tokens (the CSS custom properties it exposes) and its theme " +
     'overview, by class name or selector. An empty themeTokens array means the component exposes ' +
     'none. Returns null when the name resolves to nothing. For DI tokens, use get_di_tokens.',
+  cliSummary:
+    'Print the CSS custom properties a component exposes, with its theme overview. Exits 1 when the name matches nothing. For DI tokens use `cngx di`.',
   cliName: 'theme',
   input: {
     name: z.string().min(1).describe('A component/directive class name or selector, e.g. "CngxSelect".'),

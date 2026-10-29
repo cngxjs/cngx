@@ -68,6 +68,8 @@ export const getStoryExampleCommand = defineCommand({
     "Return a component's runnable example URLs (public documentation links a consumer can open), plus a " +
     'StackBlitz URL when one exists. Playground entries are repo-internal source references, not openable ' +
     'links. Returns null when the name resolves to nothing.',
+  cliSummary:
+    'Print the runnable example links of a component, plus a StackBlitz link when one exists. Exits 1 when the name matches nothing.',
   cliName: 'example',
   input: {
     name: z.string().min(1).describe('A component/directive class name or selector, e.g. "CngxSelect".'),

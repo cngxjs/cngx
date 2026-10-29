@@ -64,6 +64,8 @@ export const listComponentsCommand = defineCommand({
     '`lib` (exact lib name, e.g. "common") and/or `kind` ("component" | "directive" | "injectable"); ' +
     'omit both for the full catalog. The deterministic browse complement to ' +
     "find_component's fuzzy search. An unmatched filter returns an empty list, not null.",
+  cliSummary:
+    'List every component, directive and service, sorted by name. Filter with --lib (an exact lib name, e.g. common) and --kind; an unmatched filter prints an empty list. For a fuzzy search use `cngx find`.',
   cliName: 'list',
   input: {
     lib: z.string().optional().describe('Exact owning lib name, e.g. "forms" or "common".'),
