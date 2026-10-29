@@ -115,6 +115,7 @@ describe('Material tabs-theme bridge baseline', () => {
       '--cngx-tab-rejection-icon-text',
       '--cngx-tab-rejected-bg',
       '--cngx-mat-tab-has-errors-glyph-color',
+      '--cngx-tab-rejection-icon-font-size',
     ]) {
       expect(declarations[token]).toBeUndefined();
     }
@@ -126,30 +127,5 @@ describe('Material tabs-theme bridge baseline', () => {
 
   it('v0 light: resolved --cngx-* declarations match the baseline', () => {
     expect(compileAndExtract({ themeVersion: 'v0', variant: 'light' })).toMatchSnapshot();
-  });
-
-  it('typography() stays a published forwarding surface for the rejection-icon font-size', () => {
-    // theme() places the token via _rejection-icon-typography; the public
-    // mixin trio (color/typography/density) must survive for consumers
-    // who include the mixins individually under their own selector.
-    const css = compileThemeEntry(
-      `
-@use '@angular/material' as mat;
-@use 'material/tabs-theme' as tabs;
-
-$theme: mat.define-theme((
-  color: (
-    theme-type: light,
-    primary: mat.$azure-palette,
-    tertiary: mat.$blue-palette,
-  ),
-));
-
-.probe {
-  @include tabs.typography($theme);
-}
-`,
-    );
-    expect(css).toContain('--cngx-tab-rejection-icon-font-size:');
   });
 });

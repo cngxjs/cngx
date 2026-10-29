@@ -57,7 +57,6 @@ exports[`Material tabs-theme bridge baseline > v1 dark: resolved --cngx-* declar
   "--cngx-tab-refused-color": "var(--mat-sys-tertiary)",
   "--cngx-tab-refused-text-color": "var(--mat-sys-tertiary)",
   "--cngx-tab-rejection-icon-color": "var(--mat-sys-error)",
-  "--cngx-tab-rejection-icon-font-size": "var(--mat-sys-label-small-size)",
 }
 `;
 
@@ -90,6 +89,5 @@ exports[`Material tabs-theme bridge baseline > v1 light: resolved --cngx-* decla
   "--cngx-tab-refused-color": "var(--mat-sys-tertiary)",
   "--cngx-tab-refused-text-color": "var(--mat-sys-tertiary)",
   "--cngx-tab-rejection-icon-color": "var(--mat-sys-error)",
-  "--cngx-tab-rejection-icon-font-size": "var(--mat-sys-label-small-size)",
 }
 `;
