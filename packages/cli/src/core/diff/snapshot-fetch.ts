@@ -183,6 +183,7 @@ async function download(version: string, dir: string, deps: SnapshotFetchDeps): 
   }
 
   const url = releaseAssetUrl(deps.releaseBaseUrl, version);
+  let body: string;
   try {
     const response = await deps.httpGet(url);
     if (response.status === 404) {
@@ -191,11 +192,20 @@ async function download(version: string, dir: string, deps: SnapshotFetchDeps): 
     if (response.status !== 200) {
       return { ok: false, reason: 'network', message: `gh: ${ghMessage} https: ${url} returned ${response.status}.` };
     }
-    deps.writeFile(path, response.body);
-    return { ok: true, path, dir };
+    if (typeof response.body !== 'string' || response.body === '') {
+      return { ok: false, reason: 'asset-missing', message: `gh: ${ghMessage} https: ${url} returned an empty body.` };
+    }
+    body = response.body;
   } catch (error) {
     return { ok: false, reason: 'network', message: `gh: ${ghMessage} https: ${extractMessage(error)}` };
   }
+  // A local disk failure, not a transport one: it gets its own message so `network` keeps meaning the network.
+  try {
+    deps.writeFile(path, body);
+  } catch (error) {
+    return { ok: false, reason: 'asset-missing', message: `https: ${url} was downloaded but could not be written: ${extractMessage(error)}` };
+  }
+  return { ok: true, path, dir };
 }
 
 /** Remove `dir`, never letting a failed removal replace the answer it cleans up after. */
@@ -222,8 +232,9 @@ function isTimedOut(error: unknown): boolean {
 function extractMessage(error: unknown): string {
   if (typeof error === 'object' && error !== null) {
     const stderr = (error as { stderr?: string | Buffer }).stderr;
-    if (stderr != null) {
-      return stderr.toString().trim();
+    const text = stderr?.toString().trim() ?? '';
+    if (text !== '') {
+      return text;
     }
     const message = (error as { message?: unknown }).message;
     if (typeof message === 'string' && message.length > 0) {

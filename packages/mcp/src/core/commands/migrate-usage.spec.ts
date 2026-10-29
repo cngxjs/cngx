@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { loadDocsFromFile } from '../data/loader.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
 import { createDocsResolver } from '../data/docs-resolver.js';
-import { migrateUsage } from './migrate-usage.js';
+import { migrateUsage, migrateUsageCommand } from './migrate-usage.js';
 import type { UsageDelta } from '../diff/types.js';
 
 const OLD = fileURLToPath(new URL('../../../test/fixtures/documentation.v-old.sample.json', import.meta.url));
@@ -104,5 +104,15 @@ describe('migrateUsage', () => {
     const result = await migrateUsage(bundledNew, { from: '0.1.0', to: '0.2.0' }, createDocsResolver(bundledNew, deps));
 
     expect(result).toMatchObject({ ok: false, reason: 'asset-missing' });
+  });
+
+  it('marks a throw inside the migration as internal, inside the typed reason set', async () => {
+    const resolve = async () => {
+      throw new Error('boom');
+    };
+
+    const result = await migrateUsageCommand.run({ bundled: bundledNew, resolve }, { from: '0.1.0' });
+
+    expect(result).toMatchObject({ ok: false, reason: 'asset-missing', message: 'internal: boom' });
   });
 });

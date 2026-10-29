@@ -271,3 +271,40 @@ describe('fetchSnapshot temp dir', () => {
     expect(await fetchSnapshot('9.9.9', deps)).toMatchObject({ ok: false, reason: 'asset-missing' });
   });
 });
+
+describe('fetchSnapshot failure messages', () => {
+  it('reports a write failure after a 200 as a write failure, not as network', async () => {
+    const deps = makeDeps({
+      runGh: ghThrows(new Error('release not found')),
+      writeFile: vi.fn(() => {
+        throw new Error('ENOSPC: no space left on device');
+      }),
+    });
+
+    const result = await fetchSnapshot('0.2.0', deps);
+
+    expect(result).toMatchObject({ ok: false, reason: 'asset-missing' });
+    expect((result as { message: string }).message).toContain('could not be written');
+    expect((result as { message: string }).message).toContain('ENOSPC');
+  });
+
+  it('reports a 200 without a body as an empty asset', async () => {
+    const deps = makeDeps({
+      runGh: ghThrows(new Error('release not found')),
+      httpGet: vi.fn(async () => ({ status: 200, body: null as unknown as string })),
+    });
+
+    const result = await fetchSnapshot('0.2.0', deps);
+
+    expect(result).toMatchObject({ ok: false, reason: 'asset-missing' });
+    expect((result as { message: string }).message).toContain('empty body');
+    expect((result as { message: string }).message).not.toContain('Cannot read properties');
+    expect(deps.writeFile).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the error message when gh stderr is empty', () => {
+    const error = Object.assign(new Error('Command failed: gh release download'), { stderr: '  ' });
+
+    expect(classifyGhFailure(error).message).toBe('Command failed: gh release download');
+  });
+});

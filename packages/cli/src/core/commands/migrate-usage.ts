@@ -126,7 +126,8 @@ export const migrateUsageCommand = defineCommand({
         ok: false,
         meta: { from, to: to ?? ctx.bundled.meta.cngxVersion ?? 'unknown' },
         reason: 'asset-missing',
-        message: error instanceof Error ? error.message : String(error),
+        // The reason union stays fixed; the prefix marks a defect, not a missing release.
+        message: `internal: ${error instanceof Error ? error.message : String(error)}`,
       };
       return failure;
     }

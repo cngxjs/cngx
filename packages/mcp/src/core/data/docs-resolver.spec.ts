@@ -256,7 +256,7 @@ describe('answerVersioned', () => {
       throw new Error('boom');
     });
 
-    expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'boom' });
+    expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'internal: boom' });
   });
 
   it('surfaces a throwing resolver as a typed failure', async () => {
@@ -269,7 +269,7 @@ describe('answerVersioned', () => {
       query,
     );
 
-    expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'EACCES: temp dir' });
+    expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'internal: EACCES: temp dir' });
     expect(query).not.toHaveBeenCalled();
   });
 });

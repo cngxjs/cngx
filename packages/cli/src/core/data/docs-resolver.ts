@@ -147,7 +147,8 @@ export async function answerVersioned<T>(
   } catch (error) {
     // Neither the resolver nor a query over a resolved snapshot is expected to throw,
     // but a version-scoped tool reaches the network and must answer as data, never throw
-    // across the stdio boundary. Map to the catch-all reason migrate_usage's outer net uses.
-    return { ok: false, reason: 'asset-missing', message: error instanceof Error ? error.message : String(error) };
+    // across the stdio boundary. Map to the catch-all reason migrate_usage's outer net uses;
+    // the `internal:` prefix tells a caller this is a defect, not a missing release.
+    return { ok: false, reason: 'asset-missing', message: `internal: ${error instanceof Error ? error.message : String(error)}` };
   }
 }
