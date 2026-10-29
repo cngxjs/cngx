@@ -236,6 +236,25 @@ describe('version and snapshot resolution', () => {
     expect(run.stderr).toContain('9.9.9');
   });
 
+  it('prints a json failure document when a requested release cannot be resolved', async () => {
+    const run = await cli('migrate', '0.0.1', '--format', 'json');
+
+    expect(run.code).toBe(EXIT_NOT_FOUND);
+    expect(JSON.parse(run.stdout)).toEqual({
+      cngxVersion: null,
+      result: null,
+      error: { reason: 'asset-missing', message: 'no asset for v0.0.1' },
+    });
+    expect(run.stderr).toContain('asset-missing');
+  });
+
+  it('keeps markdown failures off stdout', async () => {
+    const run = await cli('migrate', '0.0.1');
+
+    expect(run.code).toBe(EXIT_NOT_FOUND);
+    expect(run.stdout).toBe('');
+  });
+
   it('exits 1 when the bundled snapshot cannot be loaded, never for --version', async () => {
     let stderr = '';
     const io: CliIo = { stdout: () => undefined, stderr: (text) => (stderr += text) };
@@ -301,6 +320,18 @@ describe('internal errors', () => {
     expect(run.code).toBe(EXIT_INTERNAL);
     expect(run.stderr).toBe('cngx api: internal error: boom\n');
     expect(run.stdout).toBe('');
+  });
+
+  // toMarkdown never runs under --format json, so only run and found can throw there.
+  it.each([
+    ['run', { ...api, run: async () => boom() }],
+    ['found', { ...api, found: boom }],
+  ] as const)('a throwing %s under --format json prints one internal failure document', async (_, def) => {
+    const run = await cliWith(def as CngxCommand, 'api', 'CngxSelect', '--format=json');
+
+    expect(run.code).toBe(EXIT_INTERNAL);
+    expect(JSON.parse(run.stdout)).toEqual({ cngxVersion: null, result: null, error: { reason: 'internal', message: 'boom' } });
+    expect(run.stderr).toBe('cngx api: internal error: boom\n');
   });
 
   it('exits 3 when the package manifest cannot be read', async () => {

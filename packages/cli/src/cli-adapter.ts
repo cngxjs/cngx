@@ -9,7 +9,10 @@
 // internal error (a throw in a command, its rendering or the bootstrap).
 // stdout carries data only, stderr diagnostics only; neither is ever coloured.
 // The answer is rendered into one string before anything is written, so a run
-// that fails never leaves part of an answer on stdout.
+// that fails never leaves part of an answer on stdout. Under `--format json`
+// every run that gets past usage prints exactly one document: a failure carries
+// `error: { reason, message }` next to `result: null` (reason `internal` for
+// exit 3), a not-found answer has no `error`.
 
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -58,9 +61,19 @@ const usageError = (io: CliIo, message: string, hint: string): number => {
   return EXIT_USAGE;
 };
 
-/** One stderr line for a throw nobody expected; the message only, never the stack. */
-const internalError = (io: CliIo, prefix: string, error: unknown): number => {
+/** The json document of a run that failed; `cngxVersion` is null because nothing was answered. */
+const failureDocument = (reason: string, message: string): string =>
+  `${JSON.stringify({ cngxVersion: null, result: null, error: { reason, message } }, null, 2)}\n`;
+
+/**
+ * One stderr line for a throw nobody expected; the message only, never the stack.
+ * With a known json format the same failure also goes to stdout as a document.
+ */
+const internalError = (io: CliIo, prefix: string, error: unknown, format?: OutputFormat): number => {
   io.stderr(`${prefix}: internal error: ${errorMessage(error)}\n`);
+  if (format === 'json') {
+    io.stdout(failureDocument('internal', errorMessage(error)));
+  }
   return EXIT_INTERNAL;
 };
 
@@ -299,7 +312,7 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
   try {
     rendered = await answer(def, context, validated.data, format);
   } catch (error) {
-    return internalError(io, `cngx ${def.cliName}`, error);
+    return internalError(io, `cngx ${def.cliName}`, error, format);
   }
   if (rendered.stderr !== '') {
     io.stderr(rendered.stderr);
@@ -321,7 +334,11 @@ interface Rendered {
 async function answer(def: CngxCommand, context: CommandContext, input: unknown, format: OutputFormat): Promise<Rendered> {
   const result = unwrapAnswer(await def.run(context, input as never));
   if (!result.ok) {
-    return { stdout: '', stderr: `cngx ${def.cliName}: ${result.reason}: ${result.message}\n`, exitCode: EXIT_NOT_FOUND };
+    return {
+      stdout: format === 'json' ? failureDocument(result.reason, result.message) : '',
+      stderr: `cngx ${def.cliName}: ${result.reason}: ${result.message}\n`,
+      exitCode: EXIT_NOT_FOUND,
+    };
   }
 
   // Versioned commands report the release they grounded against, a migration its
