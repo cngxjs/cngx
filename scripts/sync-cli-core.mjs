@@ -5,7 +5,9 @@
 // RULE ZERO: every write and every removal here stays inside
 // packages/cli/src/core/, a generated directory git tracks in full. A removed
 // file is one that no longer exists in the canonical tree, so it is recoverable
-// from git. Nothing outside that directory is touched.
+// from git. Nothing outside that directory is touched. A canonical tree that is
+// missing or holds no core files is a broken checkout, not an empty core: the
+// sync refuses and deletes nothing, instead of removing the whole copy.
 //
 // The file walk and both tree paths (resolved from the repo root, not cwd) are
 // imported from cli-core-copy-check.mjs so the sync and the guard can never
@@ -16,26 +18,43 @@
 import { copyFileSync, mkdirSync, rmSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { CANONICAL_CORE_DIR, COPY_CORE_DIR, displayPath, listCoreFiles } from './cli-core-copy-check.mjs';
+import { CANONICAL_CORE_DIR, COPY_CORE_DIR, displayPath, listCoreFiles, missingTrees } from './cli-core-copy-check.mjs';
 
-export function syncCliCore() {
-  const canonical = listCoreFiles(CANONICAL_CORE_DIR);
+/**
+ * Regenerate `copyDir` from `canonicalDir`. Returns `{ copied, removed }`, or
+ * `{ refused }` with the reason when the canonical tree is missing or empty, in
+ * which case nothing was written or removed. The dirs are injectable for specs.
+ */
+export function syncCliCore({ canonicalDir = CANONICAL_CORE_DIR, copyDir = COPY_CORE_DIR } = {}) {
+  if (missingTrees(canonicalDir, copyDir).includes(canonicalDir)) {
+    return { refused: `${displayPath(canonicalDir)} does not exist (${canonicalDir}); nothing was synced or removed.` };
+  }
+  const canonical = listCoreFiles(canonicalDir);
+  if (canonical.length === 0) {
+    return { refused: `${displayPath(canonicalDir)} holds no core files; nothing was synced or removed.` };
+  }
   const keep = new Set(canonical);
-  const removed = listCoreFiles(COPY_CORE_DIR).filter((file) => !keep.has(file));
+  const removed = listCoreFiles(copyDir).filter((file) => !keep.has(file));
 
   for (const file of canonical) {
-    const dest = resolve(COPY_CORE_DIR, file);
+    const dest = resolve(copyDir, file);
     mkdirSync(dirname(dest), { recursive: true });
-    copyFileSync(resolve(CANONICAL_CORE_DIR, file), dest);
+    copyFileSync(resolve(canonicalDir, file), dest);
   }
   for (const file of removed) {
-    rmSync(resolve(COPY_CORE_DIR, file));
+    rmSync(resolve(copyDir, file));
   }
   return { copied: canonical.length, removed };
 }
 
 function main() {
-  const { copied, removed } = syncCliCore();
+  const result = syncCliCore();
+  if (result.refused !== undefined) {
+    process.stderr.write(`cli:sync - refused: ${result.refused}\n`);
+    process.exitCode = 1;
+    return;
+  }
+  const { copied, removed } = result;
   process.stdout.write(
     `cli:sync - regenerated ${copied} file(s) in ${displayPath(COPY_CORE_DIR)} from ${displayPath(CANONICAL_CORE_DIR)}\n`,
   );
