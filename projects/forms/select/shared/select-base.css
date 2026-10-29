@@ -13,6 +13,12 @@
  *
  * - `.cngx-option--highlighted` on an option row - primary-tinted
  *   background marking the keyboard-focused row
+ * - `.cngx-option--selected` on a multi-value row that renders its
+ *   indicator (`.cngx-select__option--indicated` inside an
+ *   `aria-multiselectable` listbox) - no fill, the checkbox carries the
+ *   selection; opt back in via `--cngx-select-option-multi-selected-bg`.
+ *   Single-value rows and rows with the indicator hidden keep the
+ *   listbox fill
  * - `[aria-disabled='true']` on an option - 38% text colour, the field
  *   disabled recipe, + `cursor: not-allowed` (GrayText under forced colors)
  * - `.cngx-select__option--pending` - `cursor: progress` while a row's
@@ -312,6 +318,21 @@
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.66 0.19 50 / 0.1);
+  }
+
+  /**
+   * Background of a selected row in a multi-value panel whose selection
+   * indicator renders. Transparent by default: the checkbox carries the
+   * selection, so a mostly-selected panel does not turn into a solid
+   * block. Assign a colour to opt the fill back in. Single-value panels
+   * and rows with the indicator hidden keep `--cngx-option-selected-bg`.
+   * @group State / Selected
+   * @see [[--cngx-option-selected-bg]]
+   */
+  @property --cngx-select-option-multi-selected-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: transparent;
   }
 
   /**
@@ -1144,6 +1165,11 @@
   }
   .cngx-select__option[aria-disabled='true'] .cngx-select__check {
     color: inherit;
+  }
+  /* The indicator carries multi-value selection; the highlighted rule below
+     has the same specificity and comes later, so the cursor still paints. */
+  :where([aria-multiselectable='true']) .cngx-select__option--indicated.cngx-option--selected {
+    background: var(--cngx-select-option-multi-selected-bg, transparent);
   }
   .cngx-select__option.cngx-option--highlighted {
     background: var(--cngx-select-option-highlight-bg, oklch(0.66 0.19 50 / 0.1));
