@@ -181,7 +181,7 @@ export {
   type CngxSelectCommitMode,
   type CngxSelectCommitErrorDisplay,
 } from './shared/commit-action.types';
-export { type CngxSelectCompareFn } from './shared/internal/select-core';
+export { type CngxSelectCompareFn } from './shared/compare-fn.types';
 
 export { CngxSelectAnnouncer } from './shared/announcer';
 

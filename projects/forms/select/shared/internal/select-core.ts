@@ -30,6 +30,7 @@ import {
   type CngxCommitController,
 } from '../commit-controller.token';
 import type { CngxSelectCommitAction, CngxSelectCommitErrorDisplay } from '../commit-action.types';
+import type { CngxSelectCompareFn } from '../compare-fn.types';
 import { type CngxSelectAnnouncerConfig, type CngxSelectFallbackLabels } from '../config';
 import {
   flattenSelectOptions,
@@ -43,10 +44,7 @@ import { resolveSelectConfig } from './resolve-config';
 import type { CngxResolvedSelectAriaLabels } from './resolve-labels';
 import type { CngxSelectCommitErrorContext, CngxSelectErrorContext } from '../template-slots';
 
-/**
- * Value-to-option equality. Default `Object.is`; override via `[compareWith]`.
- */
-export type CngxSelectCompareFn<T> = (a: T | undefined, b: T | undefined) => boolean;
+export type { CngxSelectCompareFn } from '../compare-fn.types';
 
 /**
  * Identity comparator - `Object.is`.
