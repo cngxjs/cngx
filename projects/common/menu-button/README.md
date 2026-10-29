@@ -69,11 +69,11 @@ The name is yours: name the menu after what it acts on, not after the glyph. A h
 </div>
 ```
 
-- The caret needs no glyph, no name and no `[disabled]`: inside a split it renders the caret (`CNGX_BUTTON_CARET_ICON` swaps it) and is named "More options" from the language pack (`menuButton.splitToggle`, override per app with `provideMenuButtonI18n(withMenuButtonI18nLabels({ splitToggle }))` or per button with `aria-label`).
+- The caret needs no glyph, no name and no `[disabled]`: inside a split it renders the caret instead of any projected content (`CNGX_BUTTON_CARET_ICON` swaps it) and is named "More options" from the language pack (`menuButton.splitToggle`, override per app with `provideMenuButtonI18n(withMenuButtonI18nLabels({ splitToggle }))` or per button with `aria-label`).
 - The caret follows the main button's `blocked` signal: while the main button is disabled, running its `cngxAsyncClick` or refused by `[enabled]="false"`, the caret reads `aria-disabled`, opens on neither click nor key, and an open menu closes. It carries no reason of its own in that state; the main button owns `aria-busy`, its reason and the announcement.
 - `[disabled]` on the caret blocks only the alternatives and reads the caret's `disabledReason`.
-- The main button is the first direct `cngxButton` child (an `ng-container` in between is fine). Without one the split warns `CNGX1073`. A `cngxActionButton` is not read as the main action.
-- To run a menu choice through the main action, click the main button from the menu's `(itemActivated)` handler; the busy state and the announcement stay in one place.
+- Both roles are direct children (an `ng-container` in between is fine): the caret is the `cngxIconMenuButton`, the main action the first other button, a `cngxButton` or a `cngxIconButton`. The split reads the main button through `CNGX_BUTTON_STATE`. Without a main button it warns `CNGX1073`; a `cngxActionButton` is not read as the main action yet. A button deeper inside the split, for example a kebab in a projected panel, takes neither role and keeps its own name and state.
+- The split has no programmatic run entry point yet. To run a menu choice through the main action today, click the main button from the menu's `(itemActivated)` handler, so the busy state and the announcement stay in one place, and bind `succeededAnnouncement` / `failedAnnouncement` on its `cngxAsyncClick` to name the chosen action.
 
 ## Not a menu
 

@@ -1,7 +1,7 @@
 import { Component, signal, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { CngxButton } from '@cngx/common/button';
+import { CNGX_BUTTON_STATE, CngxButton } from '@cngx/common/button';
 import {
   CNGX_HOST_INTERACTION_STATE,
   CngxAsyncClick,
@@ -204,15 +204,16 @@ describe('CngxIconMenuButton', () => {
       expect(button.getAttribute('type')).toBe('button');
     });
 
-    it('publishes its blocked state as the host interaction state', () => {
+    it('publishes one blocked state to the trigger guard and to CNGX_BUTTON_STATE', () => {
       const { fixture, host, flush } = setup(KebabHost);
       const de = fixture.debugElement.query(By.directive(CngxIconMenuButton));
-      const state = de.injector.get(CNGX_HOST_INTERACTION_STATE);
-      expect(state.disabled).toBe(de.injector.get(CngxIconMenuButton).blocked);
-      expect(state.disabled()).toBe(false);
+      const interaction = de.injector.get(CNGX_HOST_INTERACTION_STATE);
+      const state = de.injector.get(CNGX_BUTTON_STATE);
+      expect(state).toBe(de.injector.get(CngxIconMenuButton));
+      expect([interaction.disabled(), state.blocked()]).toEqual([false, false]);
       host.disabled.set(true);
       flush();
-      expect(state.disabled()).toBe(true);
+      expect([interaction.disabled(), state.blocked()]).toEqual([true, true]);
     });
 
     it.each([

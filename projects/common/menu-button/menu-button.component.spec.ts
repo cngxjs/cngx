@@ -2,6 +2,7 @@ import { Component, signal, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import {
+  CNGX_BUTTON_STATE,
   CngxButton,
   CngxButtonEnd,
   CngxButtonGroup,
@@ -246,6 +247,17 @@ describe('CngxMenuButton', () => {
       host.disabled.set(true);
       flush();
       expect(state.disabled()).toBe(true);
+    });
+
+    it('publishes its blocked state through CNGX_BUTTON_STATE', () => {
+      const { fixture, host, flush } = setup(BasicHost);
+      const de = fixture.debugElement.query(By.directive(CngxMenuButton));
+      const state = de.injector.get(CNGX_BUTTON_STATE);
+      expect(state).toBe(de.injector.get(CngxMenuButton));
+      expect(state.blocked()).toBe(false);
+      host.disabled.set(true);
+      flush();
+      expect(state.blocked()).toBe(true);
     });
 
     it.each([

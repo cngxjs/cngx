@@ -1,7 +1,7 @@
 import { Component, signal, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { CngxButton } from '@cngx/common/button';
+import { CngxButton, CngxIconButton } from '@cngx/common/button';
 import { CngxAsyncClick, CngxMenu, CngxMenuItem, type AsyncAction } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -132,6 +132,50 @@ class WrappedMainHost {}
 })
 class UnnamedGroupHost {}
 
+@Component({
+  template: `
+    <div cngxSplitButton aria-label="Publish">
+      <button id="main" cngxButton [disabled]="true">Publish</button>
+      <button id="caret" cngxIconMenuButton [menu]="menu" [popover]="pop"></button>
+      <div class="panel">
+        <button
+          id="nested"
+          cngxIconMenuButton
+          aria-label="Row actions"
+          [menu]="menu"
+          [popover]="pop"
+        >
+          <span class="kebab">&#8942;</span>
+        </button>
+      </div>
+    </div>
+    ${MENU}
+  `,
+  imports: [CngxSplitButton, CngxButton, CngxIconMenuButton, CngxMenu, CngxMenuItem, CngxPopover],
+})
+class NestedCaretHost {}
+
+@Component({
+  template: `
+    <div cngxSplitButton aria-label="Play">
+      <button id="main" cngxIconButton aria-label="Play" [disabled]="disabled()">&#9654;</button>
+      <button id="caret" cngxIconMenuButton [menu]="menu" [popover]="pop"></button>
+    </div>
+    ${MENU}
+  `,
+  imports: [
+    CngxSplitButton,
+    CngxIconButton,
+    CngxIconMenuButton,
+    CngxMenu,
+    CngxMenuItem,
+    CngxPopover,
+  ],
+})
+class IconMainHost {
+  readonly disabled = signal(false);
+}
+
 function setup<T>(type: Type<T>) {
   const fixture = TestBed.createComponent(type);
   fixture.detectChanges();
@@ -257,6 +301,36 @@ describe('CngxSplitButton', () => {
     expect(nested.blocked()).toBe(true);
     expect(split.mainBlocked()).toBe(false);
     expect(q('#caret').hasAttribute('aria-disabled')).toBe(false);
+  });
+
+  it('gives the caret role only to the direct child icon menu button', () => {
+    const { q, split } = setup(NestedCaretHost);
+    const nested = q('#nested');
+    expect(split.caret()).toBeDefined();
+    expect(q('#caret').getAttribute('aria-disabled')).toBe('true');
+    expect(q('#caret').getAttribute('aria-label')).toBe('More options');
+    expect(nested.hasAttribute('aria-disabled')).toBe(false);
+    expect(nested.getAttribute('aria-label')).toBe('Row actions');
+    expect(nested.querySelector('.kebab')).not.toBeNull();
+    expect(nested.querySelector('.cngx-menu-button__caret')).toBeNull();
+  });
+
+  it('accepts a cngxIconButton as the main action', () => {
+    const { host, q, split, flush } = setup(IconMainHost);
+    expect(split.mainBlocked()).toBe(false);
+    host.disabled.set(true);
+    flush();
+    expect(split.mainBlocked()).toBe(true);
+    expect(q('#caret').getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('never takes the caret for the main action', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { fixture, split } = setup(WrappedMainHost);
+    await fixture.whenStable();
+    expect(split.caret()).toBeDefined();
+    expect(split.mainBlocked()).toBe(false);
+    warn.mockRestore();
   });
 
   it('warns CNGX1073 when the main cngxButton is not a direct child', async () => {

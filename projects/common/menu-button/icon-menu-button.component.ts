@@ -13,10 +13,12 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {
+  CNGX_BUTTON_STATE,
   hasAccessibleName,
   injectButtonCore,
   provideButtonDescribedBy,
   type CngxButtonSize,
+  type CngxButtonState,
   type CngxButtonTone,
   type CngxButtonType,
   type CngxButtonVariant,
@@ -50,7 +52,7 @@ import { CNGX_SPLIT_BUTTON } from './split-button.token';
  * `aria-labelledby` / `title`); a host without one warns `CNGX1071` in
  * development mode.
  *
- * Inside a `cngxSplitButton` it renders the caret (`CNGX_BUTTON_CARET_ICON`
+ * As the direct child of a `cngxSplitButton` it renders the caret (`CNGX_BUTTON_CARET_ICON`
  * swaps it) instead of the projected content, is named "More options" from
  * the active language pack unless it has an `aria-label`, and is blocked
  * while the main action is: `aria-disabled`, no click, no key, an open menu
@@ -87,6 +89,7 @@ import { CNGX_SPLIT_BUTTON } from './split-button.token';
       provide: CNGX_HOST_INTERACTION_STATE,
       useFactory: () => inject(CngxIconMenuButton).hostInteraction,
     },
+    { provide: CNGX_BUTTON_STATE, useExisting: CngxIconMenuButton },
     provideButtonDescribedBy('CngxIconMenuButton'),
   ],
   host: {
@@ -105,7 +108,7 @@ import { CNGX_SPLIT_BUTTON } from './split-button.token';
   },
   template: `
     <span class="cngx-button__label cngx-icon-button__glyph" aria-hidden="true">
-      @if (split) {
+      @if (isSplitCaret()) {
         <cngx-icon class="cngx-menu-button__caret">
           @if (customCaret) {
             <ng-container *ngComponentOutlet="customCaret" />
@@ -139,14 +142,16 @@ import { CNGX_SPLIT_BUTTON } from './split-button.token';
     './menu-button.component.css',
   ],
 })
-export class CngxIconMenuButton {
+export class CngxIconMenuButton implements CngxButtonState {
   // Host directives are created before this component, and CngxMenuTrigger
   // injects the CNGX_HOST_INTERACTION_STATE this component provides.
   private readonly menuTrigger = injectLazyHostDirective(CngxMenuTrigger);
   private readonly popoverTrigger = injectLazyHostDirective(CngxPopoverTrigger);
 
-  /** @internal - the split button around this one, if any. */
-  protected readonly split = inject(CNGX_SPLIT_BUTTON, { optional: true });
+  private readonly split = inject(CNGX_SPLIT_BUTTON, { optional: true });
+
+  /** @internal - `true` when this button is the caret of a split (its direct child). */
+  protected readonly isSplitCaret = computed(() => this.split?.caret() === this);
   private readonly i18n = injectMenuButtonI18n();
 
   /**
@@ -166,8 +171,8 @@ export class CngxIconMenuButton {
 
   /**
    * Rendered as `aria-disabled`; the button stays focusable, opens the menu
-   * on neither click nor key and closes it when it is open. Inside a split
-   * button the main action's blocked state adds to it.
+   * on neither click nor key and closes it when it is open. As the caret of
+   * a split button the main action's blocked state adds to it.
    */
   readonly disabled = input(false, { transform: booleanAttribute });
 
@@ -189,7 +194,7 @@ export class CngxIconMenuButton {
   readonly type = input<CngxButtonType | undefined>(undefined);
 
   /**
-   * Accessible name. Inside a split button it defaults to the
+   * Accessible name. As the caret of a split button it defaults to the
    * `menuButton.splitToggle` copy of the active language pack.
    */
   readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
@@ -197,22 +202,21 @@ export class CngxIconMenuButton {
   /** `true` while the menu is open. Mirrors the popover's visibility. */
   readonly expanded = computed(() => this.menuTrigger().isOpen());
 
-  /**
-   * `true` while the button refuses activation: its own `disabled`, or the
-   * split's main action is blocked.
-   */
-  readonly blocked = computed(() => this.disabled() || (this.split?.mainBlocked() ?? false));
+  // Own `disabled`, or the main action of the split this is the caret of.
+  private readonly refusing = computed(
+    () => this.disabled() || (this.isSplitCaret() && (this.split?.mainBlocked() ?? false)),
+  );
 
   /** @internal - the reason applies to the own `disabled` only. */
   protected readonly reason = computed(() => (this.disabled() ? this.disabledReason() : undefined));
 
   /** @internal */
   protected readonly resolvedAriaLabel = computed(
-    () => this.ariaLabel() ?? (this.split ? this.i18n().splitToggle : null),
+    () => this.ariaLabel() ?? (this.isSplitCaret() ? this.i18n().splitToggle : null),
   );
 
   /** @internal - one disabled truth for the click guard, `aria-disabled` and the trigger guard. */
-  readonly hostInteraction: CngxHostInteractionState = { disabled: this.blocked };
+  readonly hostInteraction: CngxHostInteractionState = { disabled: this.refusing };
 
   /** @internal - app-wide glyph from `CNGX_BUTTON_CARET_ICON`. */
   protected readonly customCaret = inject(CNGX_BUTTON_CARET_ICON, { optional: true });
@@ -223,13 +227,20 @@ export class CngxIconMenuButton {
       variant: this.variant,
       tone: this.tone,
       size: this.size,
-      disabled: this.blocked,
+      disabled: this.refusing,
       disabledReason: this.reason,
       describedBy: this.describedBy,
       type: this.type,
     },
     { variant: 'ghost' },
   );
+
+  /**
+   * `true` while the button refuses activation: its own `disabled`, the
+   * split's blocked main action when it is the caret, or a co-hosted
+   * `cngxAsyncClick` that runs or refuses.
+   */
+  readonly blocked = this.core.blocked;
 
   constructor() {
     // The popover is told it holds a menu, so the trigger's aria-haspopup
@@ -243,7 +254,7 @@ export class CngxIconMenuButton {
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
       afterNextRender(() => {
-        if (this.split || hasAccessibleName(host)) {
+        if (this.isSplitCaret() || hasAccessibleName(host)) {
           return;
         }
         cngxDevWarn(

@@ -12,11 +12,13 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {
+  CNGX_BUTTON_STATE,
   CngxButtonEnd,
   CngxButtonStart,
   injectButtonCore,
   provideButtonDescribedBy,
   type CngxButtonSize,
+  type CngxButtonState,
   type CngxButtonTone,
   type CngxButtonType,
   type CngxButtonVariant,
@@ -86,6 +88,7 @@ import { injectLazyHostDirective } from './internal/inject-lazy-host-directive';
   ],
   providers: [
     { provide: CNGX_HOST_INTERACTION_STATE, useExisting: CngxMenuButton },
+    { provide: CNGX_BUTTON_STATE, useExisting: CngxMenuButton },
     provideButtonDescribedBy('CngxMenuButton'),
   ],
   host: {
@@ -135,7 +138,7 @@ import { injectLazyHostDirective } from './internal/inject-lazy-host-directive';
   `,
   styleUrls: ['../button/button.component.css', './menu-button.component.css'],
 })
-export class CngxMenuButton {
+export class CngxMenuButton implements CngxButtonState {
   // Host directives are created before this component, and CngxMenuTrigger
   // injects the CNGX_HOST_INTERACTION_STATE this component provides; an eager
   // inject of either trigger here would be a cycle, so both resolve on first read.
@@ -200,6 +203,12 @@ export class CngxMenuButton {
     },
     { variant: 'solid' },
   );
+
+  /**
+   * `true` while the button refuses activation: disabled, running a
+   * co-hosted `cngxAsyncClick`, or refused by its `[enabled]="false"`.
+   */
+  readonly blocked = this.core.blocked;
 
   constructor() {
     // The popover is told it holds a menu, so the trigger's aria-haspopup

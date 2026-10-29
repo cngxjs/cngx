@@ -2,13 +2,15 @@ import {
   afterNextRender,
   computed,
   contentChild,
+  contentChildren,
   Directive,
   ElementRef,
   inject,
 } from '@angular/core';
-import { CngxButton, CngxButtonGroup } from '@cngx/common/button';
+import { CNGX_BUTTON_STATE, CngxButtonGroup } from '@cngx/common/button';
 import { cngxDevWarn } from '@cngx/utils';
 
+import { CngxIconMenuButton } from './icon-menu-button.component';
 import { CNGX_SPLIT_BUTTON, type CngxSplitButtonContext } from './split-button.token';
 
 /**
@@ -27,8 +29,11 @@ import { CNGX_SPLIT_BUTTON, type CngxSplitButtonContext } from './split-button.t
  * named "More options" from the active language pack
  * (`CNGX_MENU_BUTTON_I18N`) unless it has an `aria-label`.
  *
- * The main button is the first direct `cngxButton` child (an `ng-container`
- * in between is fine); without one the directive warns `CNGX1073`.
+ * Both roles are direct children (an `ng-container` in between is fine): the
+ * caret is the `cngxIconMenuButton`, the main action the first other button
+ * (`cngxButton` or `cngxIconButton`). Without a main button the directive
+ * warns `CNGX1073`. Buttons deeper inside the split, for example in a
+ * projected panel, take neither role.
  *
  * ```html
  * <div cngxSplitButton variant="solid" aria-label="Publish">
@@ -46,7 +51,7 @@ import { CNGX_SPLIT_BUTTON, type CngxSplitButtonContext } from './split-button.t
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/split-button.directive.ts
  * @since 0.1.0
- * @relatedTo CngxIconMenuButton, CngxButton, CngxButtonGroup, CngxAsyncClick, CNGX_MENU_BUTTON_I18N
+ * @relatedTo CngxIconMenuButton, CngxButton, CngxButtonGroup, CNGX_BUTTON_STATE, CngxAsyncClick, CNGX_MENU_BUTTON_I18N
  * <example-url>http://localhost:4200/#/common/menu-button/split-button/basic</example-url>
  * <example-url>http://localhost:4200/#/common/menu-button/split-button/busy-and-disabled</example-url>
  * @axis level molecule
@@ -60,11 +65,16 @@ import { CNGX_SPLIT_BUTTON, type CngxSplitButtonContext } from './split-button.t
   host: { class: 'cngx-split-button' },
 })
 export class CngxSplitButton implements CngxSplitButtonContext {
-  // Direct children only: a cngxAsyncClick button inside a projected menu
-  // must never count as the main action.
-  private readonly main = contentChild(CngxButton, { descendants: false });
+  // Direct children only, for both roles: a button inside a projected panel
+  // is neither the main action nor the caret.
+  private readonly buttons = contentChildren(CNGX_BUTTON_STATE, { descendants: false });
 
-  /** `true` while the main `cngxButton` refuses activation; `false` without one. */
+  /** The caret: the direct child `cngxIconMenuButton`. */
+  readonly caret = contentChild(CngxIconMenuButton, { descendants: false });
+
+  private readonly main = computed(() => this.buttons().find((button) => button !== this.caret()));
+
+  /** `true` while the main button refuses activation; `false` without one. */
   readonly mainBlocked = computed(() => this.main()?.blocked() ?? false);
 
   constructor() {
