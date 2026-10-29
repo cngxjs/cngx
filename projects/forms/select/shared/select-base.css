@@ -1394,9 +1394,13 @@
     scrollbar-width: thin;
   }
 
+  /* Clip along the line only: a chip longer than the strip is cut at the
+     inline edge, while a focused remove button's ring may paint above and
+     below the row. `clip` allows the axis split, `hidden` does not. */
   .cngx-select__chip-list[data-overflow='truncate'] {
     flex-wrap: nowrap;
-    overflow: hidden;
+    overflow-x: clip;
+    overflow-y: visible;
   }
 
   .cngx-select__chip-list[data-overflow='truncate'] > cngx-chip,

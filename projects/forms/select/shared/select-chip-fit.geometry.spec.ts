@@ -21,7 +21,14 @@ const OPTIONS: CngxSelectOptionDef<string>[] = [
 ];
 const FOUR = ['ops', 'cs', 'fin', 'plat'];
 
-type Kind = 'multi' | 'combo' | 'multi-projected' | 'combo-projected' | 'combo-wide-badge';
+type Kind =
+  | 'multi'
+  | 'combo'
+  | 'multi-projected'
+  | 'combo-projected'
+  | 'combo-wide-badge'
+  | 'multi-truncate'
+  | 'combo-truncate';
 
 @Component({
   selector: 'cngx-select-chip-fit-geometry-host',
@@ -64,6 +71,24 @@ type Kind = 'multi' | 'combo' | 'multi-projected' | 'combo-projected' | 'combo-w
               <button type="button" class="pchip-x" (click)="remove()">x</button>
             </span>
           </cngx-combobox>
+        }
+        @case ('multi-truncate') {
+          <cngx-multi-select
+            [label]="'Team'"
+            [options]="options"
+            [(values)]="values"
+            chipOverflow="truncate"
+            [maxVisibleChips]="1"
+          />
+        }
+        @case ('combo-truncate') {
+          <cngx-combobox
+            [label]="'Team'"
+            [options]="options"
+            [(values)]="values"
+            chipOverflow="truncate"
+            [maxVisibleChips]="1"
+          />
         }
         @case ('combo-wide-badge') {
           <cngx-combobox [label]="'Team'" [options]="options" [(values)]="values" chipOverflow="fit">
@@ -303,25 +328,24 @@ describe('chipOverflow fit geometry - input min-width override', () => {
 });
 
 // The paint box of an outline is its border box grown by width + offset. An
-// ancestor with `overflow: clip` clips at its border box grown by
-// `overflow-clip-margin`, `hidden` clips at the border box itself.
+// ancestor clips per axis: `overflow: clip` at its border box grown by
+// `overflow-clip-margin`, `hidden` at the border box itself, `visible` not at
+// all (`clip` may pair with `visible` on the other axis).
 function ringClippedBy(el: HTMLElement): HTMLElement | null {
   const cs = getComputedStyle(el);
   const bleed = parseFloat(cs.outlineWidth) + parseFloat(cs.outlineOffset);
   const box = el.getBoundingClientRect();
   for (let node = el.parentElement; node && !node.classList.contains('cngx-field-trigger'); node = node.parentElement) {
     const style = getComputedStyle(node);
-    if (style.overflowX === 'visible' && style.overflowY === 'visible') {
-      continue;
-    }
-    const margin = style.overflowX === 'clip' ? parseFloat(style.overflowClipMargin) || 0 : 0;
     const clip = node.getBoundingClientRect();
-    const inside =
-      box.left - bleed >= clip.left - margin - 0.5 &&
-      box.right + bleed <= clip.right + margin + 0.5 &&
-      box.top - bleed >= clip.top - margin - 0.5 &&
-      box.bottom + bleed <= clip.bottom + margin + 0.5;
-    if (!inside) {
+    const margin = parseFloat(style.overflowClipMargin) || 0;
+    const reach = (overflow: string): number | null =>
+      overflow === 'visible' ? null : (overflow === 'clip' ? margin : 0) + 0.5;
+    const x = reach(style.overflowX);
+    const y = reach(style.overflowY);
+    const insideX = x === null || (box.left - bleed >= clip.left - x && box.right + bleed <= clip.right + x);
+    const insideY = y === null || (box.top - bleed >= clip.top - y && box.bottom + bleed <= clip.bottom + y);
+    if (!insideX || !insideY) {
       return node;
     }
   }
@@ -329,7 +353,7 @@ function ringClippedBy(el: HTMLElement): HTMLElement | null {
 }
 
 describe('chipOverflow fit geometry - focus ring', () => {
-  for (const kind of ['multi', 'combo'] as const) {
+  for (const kind of ['multi', 'combo', 'multi-truncate', 'combo-truncate'] as const) {
     it(`keeps the remove button ring of a capped chip unclipped (${kind})`, async () => {
       const { root } = await mount((h) => {
         h.kind.set(kind);
@@ -343,6 +367,22 @@ describe('chipOverflow fit geometry - focus ring', () => {
       }
       expect(remove.matches(':focus-visible')).toBe(true);
       expect(ringClippedBy(remove)?.className ?? null).toBeNull();
+    });
+  }
+});
+
+describe('chipOverflow truncate geometry - inline clip', () => {
+  for (const kind of ['multi-truncate', 'combo-truncate'] as const) {
+    it(`still clips a chip longer than the strip at the inline edge (${kind})`, async () => {
+      const { root } = await mount((h) => {
+        h.kind.set(kind);
+        h.values.set(['fin']);
+        h.width.set(120);
+      });
+      // The block axis may overflow for the focus ring; the inline axis may not.
+      const style = getComputedStyle(q(root, '.cngx-select__chip-list'));
+      expect(['hidden', 'clip']).toContain(style.overflowX);
+      expect(parseFloat(style.overflowClipMargin) || 0).toBe(0);
     });
   }
 });
