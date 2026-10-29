@@ -1,0 +1,59 @@
+/**
+ * @overview
+ * Caret for `CngxMenuButton`. Paint, metrics, states and the touch floor come
+ * from the shared `.cngx-button` sheet (linked through `styleUrls`); this
+ * sheet only sizes the caret and turns it while the menu is open.
+ *
+ * - The caret is a `<cngx-icon>` in the end slot, `1em` of the button font
+ *   by default, so it scales with `size` and the text-scale axis.
+ * - `[data-expanded='true']` turns it half a turn, timed from
+ *   `--cngx-button-transition` (the button's derived `--cngx-duration-fast`
+ *   rung), so a brand motion override re-times it with the colour change.
+ * - Under reduced motion the turn is instant.
+ */
+
+@layer cngx.components {
+  @scope (.cngx-menu-button) {
+    :scope {
+      /* `--cngx-button-transition` is registered with `inherits: false`, so the
+       * caret cannot read it; re-expose the derived value as a plain,
+       * inheriting token on the host. */
+      --cngx-menu-button-caret-transition: var(--cngx-button-transition, 150ms);
+    }
+  }
+
+  /* Scoped on the icon itself: `.cngx-icon` sets its own size in its own scope,
+   * and the nearer scope root wins before specificity is compared. */
+  @scope (.cngx-menu-button__caret) {
+    :scope.cngx-icon {
+      /**
+       * Caret size, relative to the button font.
+       * @type <length>
+       * @default 1em
+       * @group Layout
+       */
+      --cngx-icon-size: var(--cngx-menu-button-caret-size, 1em);
+      transition: rotate var(--cngx-menu-button-caret-transition, 150ms) ease;
+    }
+    /* A CNGX_BUTTON_CARET_ICON component wraps its glyph in its own host, out of
+     * reach of the icon's `:scope > svg` sizing; size it the same. */
+    :scope svg {
+      inline-size: 1em;
+      block-size: 1em;
+    }
+  }
+
+  .cngx-menu-button[data-expanded='true'] > .cngx-menu-button__caret {
+    rotate: 180deg;
+  }
+}
+
+/* Reduced motion: the caret flips without the turn. */
+[data-motion='reduced'] .cngx-menu-button__caret {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion='full']) .cngx-menu-button__caret {
+    transition: none;
+  }
+}

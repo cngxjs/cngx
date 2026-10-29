@@ -108,6 +108,32 @@ describe('CngxMenuItemSubmenu', () => {
     return { fixture, triggerEl, outerMenu, innerMenu, outerPop, innerPop, submenu, submenuEl };
   }
 
+  it('a click on the submenu parent opens the submenu and keeps the root open', () => {
+    const { triggerEl, submenuEl, outerPop, innerPop, fixture } = setup();
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    TestBed.tick();
+    submenuEl.click();
+    TestBed.tick();
+    fixture.detectChanges();
+    expect(outerPop.isVisible()).toBe(true);
+    expect(innerPop.isVisible()).toBe(true);
+  });
+
+  it('a click on a leaf inside the submenu activates it and closes the whole menu', () => {
+    const { triggerEl, submenuEl, outerPop, innerPop, fixture } = setup();
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    TestBed.tick();
+    submenuEl.click();
+    TestBed.tick();
+    const leaf = fixture.nativeElement.querySelector('[value="file2"]') as HTMLElement;
+    leaf.click();
+    TestBed.tick();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.innerActivated()).toBe('file2');
+    expect(innerPop.isVisible()).toBe(false);
+    expect(outerPop.isVisible()).toBe(false);
+  });
+
   it('aria-haspopup=menu on the submenu host', () => {
     const { submenuEl } = setup();
     expect(submenuEl.getAttribute('aria-haspopup')).toBe('menu');

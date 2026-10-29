@@ -135,6 +135,34 @@ describe('CngxMenuTrigger', () => {
     expect(popover.isVisible()).toBe(false);
   });
 
+  it('a click on a leaf item activates it and closes the menu', () => {
+    const { fixture, menu, popover } = setup();
+    const picked: unknown[] = [];
+    menu.itemActivated.subscribe((v) => picked.push(v));
+    popover.show();
+    TestBed.flushEffects();
+    const items = fixture.debugElement
+      .queryAll(By.directive(CngxMenuItem))
+      .map((d) => d.nativeElement as HTMLElement);
+    items[1].click();
+    TestBed.flushEffects();
+    expect(picked).toEqual(['copy']);
+    expect(popover.isVisible()).toBe(false);
+  });
+
+  it('Enter on a leaf closes the menu once and activates once', () => {
+    const { triggerEl, menu, popover } = setup();
+    const picked: unknown[] = [];
+    menu.itemActivated.subscribe((v) => picked.push(v));
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    TestBed.flushEffects();
+    expect(popover.isVisible()).toBe(true);
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    TestBed.flushEffects();
+    expect(picked).toEqual(['cut']);
+    expect(popover.isVisible()).toBe(false);
+  });
+
   it('Escape closes popover', () => {
     const { triggerEl, popover } = setup();
     popover.show();

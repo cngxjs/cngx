@@ -68,6 +68,16 @@ It rests in the muted hint colour and lifts to the text colour on hover. It stay
 
 Migrating from `<cngx-close-button label="...">` in `@cngx/common/interactive`: import `CngxCloseButton` from `@cngx/common/button`, write `<button cngxCloseButton aria-label="...">`, and drop the inner `.cngx-close-button__btn` from selectors; `--cngx-close-button-padding`, `-focus-outline`, `-focus-offset`, `-bg`, `-border` and `-transition` are gone (the button tokens and the global focus ring take over).
 
+## Opening a menu
+
+A button that opens a menu is its own button type: `button[cngxMenuButton]` in `@cngx/common/menu-button`. It renders on the same core as `cngxButton` (variant, tone, size, group, disabled, busy), adds the end caret, and wires the menu with two bindings:
+
+```html
+<button cngxMenuButton="outline" [menu]="menu" [popover]="pop">Export</button>
+```
+
+Do not hand-wire `cngxMenuTrigger` and `cngxPopoverTrigger` onto a `cngxButton`; the menu button sets the anchor, `aria-haspopup="menu"`, the click toggle and the keyboard guard for you. See the [`@cngx/common/menu-button` README](../menu-button/README.md).
+
 ## Composition
 
 - `CngxButtonStart` / `CngxButtonEnd` mark projected icons, badges or `<kbd>` hints; they are sized in `em` and trim the padding on their side.
