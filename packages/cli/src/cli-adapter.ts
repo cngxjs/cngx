@@ -175,6 +175,20 @@ export function generalHelp(commands: readonly CngxCommand[], cliVersion: string
   ].join('\n');
 }
 
+/** The flags every command accepts, long and short. */
+export function globalFlags(): string[] {
+  return Object.entries(GLOBAL_OPTIONS).flatMap(([name, option]) =>
+    option.short === undefined ? [`--${name}`] : [`--${name}`, `-${option.short}`],
+  );
+}
+
+/** The flags of one command's own inputs; its positional is not a flag. */
+export function commandFlags(def: CngxCommand): string[] {
+  return Object.keys(def.input)
+    .filter((field) => field !== def.positional)
+    .map((field) => `--${flagName(def, field)}`);
+}
+
 /** Every flag the CLI accepts, long and short, across the globals and all commands. */
 export function knownFlags(commands: readonly CngxCommand[]): ReadonlySet<string> {
   const flags = new Set<string>();

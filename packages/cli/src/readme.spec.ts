@@ -6,20 +6,60 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { knownFlags } from './cli-adapter.js';
+import { EXIT_INTERNAL, EXIT_NOT_FOUND, EXIT_OK, EXIT_USAGE, commandFlags, globalFlags, knownFlags } from './cli-adapter.js';
 import { COMMANDS } from './core/registry.js';
-import { documentedCommands, documentedFlags, unknownFlags } from './readme-guard.js';
+import {
+  commandRowFlags,
+  documentedCommands,
+  documentedExitCodes,
+  documentedFlags,
+  flagRowCommands,
+  unknownFlags,
+} from './readme-guard.js';
 
 const README = readFileSync(fileURLToPath(new URL('../README.md', import.meta.url)), 'utf8');
-const GLOBAL_FLAGS = ['--format', '--version', '-v', '--help', '-h', '--cngx-version'];
+// --cngx-version is a per-command flag, documented once in the Flags table with
+// the commands that take it.
+const VERSION_FLAG = '--cngx-version';
+const ownFlags = (cliName: string): string[] =>
+  commandFlags(COMMANDS.find((def) => def.cliName === cliName)!).filter((flag) => flag !== VERSION_FLAG);
 
 describe('README', () => {
   it.each(COMMANDS.map((def) => def.cliName))('documents cngx %s', (cliName) => {
     expect(README).toContain(`\`cngx ${cliName}`);
   });
 
-  it.each(GLOBAL_FLAGS)('documents %s', (flag) => {
+  it.each([...globalFlags(), VERSION_FLAG])('documents %s', (flag) => {
     expect(README).toContain(`\`${flag}`);
+  });
+
+  it.each(COMMANDS.map((def) => def.cliName))('shows exactly the own flags of cngx %s in its Commands row', (cliName) => {
+    expect(commandRowFlags(README, cliName)?.sort()).toEqual(ownFlags(cliName).sort());
+  });
+
+  it('names exactly the commands that take --cngx-version in its Flags row', () => {
+    const taking = COMMANDS.filter((def) => commandFlags(def).includes(VERSION_FLAG)).map((def) => def.cliName);
+
+    expect(flagRowCommands(README, VERSION_FLAG).sort()).toEqual(taking.sort());
+  });
+
+  it('mutation: a fake flag on one Commands row fails', () => {
+    const planted = README.replace('|`cngx api <name>`|', '|`cngx api <name> [--depth <n>]`|');
+
+    expect(planted).not.toBe(README);
+    expect(commandRowFlags(planted, 'api')).toEqual(['--depth']);
+    expect(commandRowFlags(planted, 'api')).not.toEqual(ownFlags('api'));
+  });
+
+  it('documents exactly the exit codes the adapter returns', () => {
+    expect(documentedExitCodes(README)).toEqual([EXIT_OK, EXIT_NOT_FOUND, EXIT_USAGE, EXIT_INTERNAL]);
+  });
+
+  it('mutation: a missing exit-3 row fails', () => {
+    const planted = README.replace(/^\|`3`\|.*\n/m, '');
+
+    expect(planted).not.toBe(README);
+    expect(documentedExitCodes(planted)).not.toEqual([EXIT_OK, EXIT_NOT_FOUND, EXIT_USAGE, EXIT_INTERNAL]);
   });
 
   it('names no command the registry lacks', () => {
