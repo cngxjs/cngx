@@ -185,6 +185,15 @@ describe('Material bridge: menu button', () => {
     expect(query(root, '.solid-comfortable').getBoundingClientRect().height).toBe(M3.height);
   });
 
+  it('centres the caret on the label line', () => {
+    const root = mount();
+    for (const selector of ['.solid-comfortable', '.ghost-comfortable']) {
+      const button = query(root, selector).getBoundingClientRect();
+      const caret = query(root, `${selector} .cngx-menu-button__caret`).getBoundingClientRect();
+      expect(caret.top + caret.height / 2, selector).toBeCloseTo(button.top + button.height / 2, 0);
+    }
+  });
+
   it('sizes the caret as the 18px M3 slot icon', () => {
     const caret = query(mount(), '.solid-comfortable .cngx-menu-button__caret').getBoundingClientRect();
     expect(caret.width).toBeCloseTo(M3.slotIcon, 1);
@@ -202,6 +211,11 @@ describe('Material bridge: menu button', () => {
     const glyph = query(mountedRoot, '.mat-caret .cngx-menu-button__caret .mat-icon').getBoundingClientRect();
     expect(glyph.width).toBeCloseTo(M3.slotIcon, 1);
     expect(glyph.height).toBeCloseTo(M3.slotIcon, 1);
+    // The caret component's host adds no baseline gap: glyph and caret share a centre.
+    const caret = query(mountedRoot, '.mat-caret .cngx-menu-button__caret').getBoundingClientRect();
+    expect(caret.height).toBeCloseTo(M3.slotIcon, 1);
+    const button = query(mountedRoot, '.mat-caret').getBoundingClientRect();
+    expect(glyph.top + glyph.height / 2).toBeCloseTo(button.top + button.height / 2, 0);
   });
 
   it('honours --cngx-menu-button-caret-size under the bridge', () => {
@@ -240,7 +254,7 @@ describe('Material bridge: split button', () => {
     expect(seam(root, 'spacious')).toBeCloseTo(3, 1);
   });
 
-  it('rounds the open caret to corner-full', () => {
+  it('keeps the inner corners while the caret is open', () => {
     const root = mount();
     const caret = query(root, '.caret-comfortable');
     caret.click();
@@ -248,7 +262,11 @@ describe('Material bridge: split button', () => {
     fixture?.detectChanges();
     expect(caret.getAttribute('data-expanded')).toBe('true');
     const open = radii(caret);
-    expect(open.startStart).toBeGreaterThan(1000);
-    expect(open.endStart).toBeGreaterThan(1000);
+    expect([open.startStart, open.endStart]).toEqual([M3.inner, M3.inner]);
+  });
+
+  it('draws no seam line between two solid parts (the gap divides)', () => {
+    const caret = getComputedStyle(query(mount(), '.caret-comfortable'));
+    expect(caret.borderInlineStartColor).toBe(caret.backgroundColor);
   });
 });

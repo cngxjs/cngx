@@ -100,9 +100,10 @@
 // Split button (`cngxSplitButton`, M3 split-button anatomy; Angular Material
 // ships none): the two parts sit a 2px gap apart (half the xs rung, so it
 // re-scales with density) instead of sharing a collapsed border, the outer
-// ends keep corner-full, the inner joins take corner-extra-small, and an open
-// caret rounds to corner-full. The group sheet squares inner joins in
-// `@scope (.cngx-button-group)` at (0,4,0); the split rules carry (0,5,0).
+// ends keep corner-full and the inner joins take corner-extra-small. The gap
+// is the divider, so the group's on-tone seam line between two solid parts is
+// dropped. The group sheet squares inner joins in `@scope (.cngx-button-group)`
+// at (0,4,0); the split rules carry (0,5,0) and up.
 
 @mixin _tonal($container, $on-container) {
   --cngx-button-secondary-bg: var(--mat-sys-#{$container});
@@ -219,10 +220,6 @@ $_inner-radius: 'var(--mat-sys-corner-extra-small, 4px)';
       #{$_split} > :nth-last-child(n + 2 of :not([aria-live])) {
         border-start-end-radius: #{$_inner-radius};
         border-end-end-radius: #{$_inner-radius};
-      }
-      // The open caret rounds fully (M3 selected trailing button).
-      #{$_split} > .cngx-icon-menu-button[data-expanded='true'] {
-        border-radius: var(--mat-sys-corner-full);
       }
     }
   }
@@ -373,6 +370,13 @@ $_unsized: 'cngx-icon.cngx-icon:not(.cngx-icon--xs, .cngx-icon--sm, .cngx-icon--
       }
       #{$_split} > :nth-child(n + 2 of :not([aria-live])) {
         margin-inline-start: 0;
+      }
+      // The gap divides; the group's solid seam line (0,6,0) would draw a
+      // second divider. (0,8,0); a disabled part keeps its own border.
+      #{$_split}
+        > [data-variant='solid']
+        ~ [data-variant='solid']:not([aria-disabled='true']):nth-child(n + 2 of :not([aria-live])) {
+        border-inline-start-color: var(--cngx-button-tone, currentColor);
       }
     }
 
