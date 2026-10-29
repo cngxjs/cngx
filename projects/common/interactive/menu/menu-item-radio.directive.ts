@@ -1,9 +1,10 @@
 import { computed, Directive, inject, input } from '@angular/core';
 
 import { CNGX_AD_ITEM, type CngxAdItemHandle } from '@cngx/common/a11y';
-import { CngxRuntimeError } from '@cngx/utils';
+import { CNGX_ICON_DOT, CngxRuntimeError } from '@cngx/utils';
 
 import { injectMenuItemCore } from './menu-item-core';
+import { injectMenuItemIndicator } from './menu-item-indicator';
 import { CNGX_MENU_RADIO_GROUP, type CngxMenuRadioGroup } from './menu-radio-controller';
 
 /**
@@ -57,6 +58,10 @@ export class CngxMenuItemRadio<T = unknown> implements CngxAdItemHandle {
   readonly checked = computed<boolean>(() => Object.is(this.group.selectedValue(), this.value()));
 
   readonly label = (): string => this.core.label();
+
+  constructor() {
+    injectMenuItemIndicator(this.checked, CNGX_ICON_DOT, 'cngxMenuItemRadio');
+  }
 
   protected handleClick(): void {
     this.core.handleClick();

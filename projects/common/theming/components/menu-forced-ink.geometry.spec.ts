@@ -8,7 +8,7 @@ import { cdp } from 'vitest/browser';
 
 // Runs in a real Chromium (the `test-geometry` target). Under forced colors the
 // highlighted menu item opts out of forcing to paint the Highlight pair, so its
-// children see the unforced author colours. The shortcut and the checked glyph
+// children see the unforced author colours. The shortcut and the checked indicator
 // carry their own colours (primary glyph, muted kbd); they must follow the
 // item's ink (HighlightText, GrayText on a disabled cursor) instead.
 
@@ -24,10 +24,12 @@ const SCHEMES = ['light', 'dark'] as const;
       <div [attr.data-color-scheme]="scheme" [class]="'scheme-' + scheme">
         <ul cngxMenu>
           <li cngxMenuItemCheckbox class="cngx-menu-item--highlighted cngx-menu-item--checked item-check">
+            <span class="cngx-menu-item__indicator" aria-hidden="true"><svg class="cngx-menu-item__indicator-svg cngx-menu-item__indicator-svg--stroke" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" /></svg></span>
             <span class="cngx-menu-item__label">Bold</span>
             <kbd class="cngx-menu-item__kbd">Ctrl+B</kbd>
           </li>
           <li cngxMenuItemRadio class="cngx-menu-item--highlighted cngx-menu-item--checked item-radio">
+            <span class="cngx-menu-item__indicator" aria-hidden="true"><svg class="cngx-menu-item__indicator-svg" viewBox="0 0 24 24"><path d="M8 12a4 4 0 1 0 8 0a4 4 0 1 0-8 0z" /></svg></span>
             <span class="cngx-menu-item__label">Left</span>
           </li>
           <li cngxMenuItem class="cngx-menu-item--highlighted item-kbd">
@@ -38,10 +40,12 @@ const SCHEMES = ['light', 'dark'] as const;
             cngxMenuItemCheckbox
             class="cngx-menu-item--highlighted cngx-menu-item--checked cngx-menu-item--disabled item-off"
           >
+            <span class="cngx-menu-item__indicator" aria-hidden="true"><svg class="cngx-menu-item__indicator-svg cngx-menu-item__indicator-svg--stroke" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" /></svg></span>
             <span class="cngx-menu-item__label">Pinned</span>
             <kbd class="cngx-menu-item__kbd">Ctrl+P</kbd>
           </li>
           <li cngxMenuItemCheckbox class="cngx-menu-item--checked item-rest">
+            <span class="cngx-menu-item__indicator" aria-hidden="true"><svg class="cngx-menu-item__indicator-svg cngx-menu-item__indicator-svg--stroke" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" /></svg></span>
             <span class="cngx-menu-item__label">Italic</span>
             <kbd class="cngx-menu-item__kbd">Ctrl+I</kbd>
           </li>
@@ -76,8 +80,15 @@ function one(root: ParentNode, selector: string): HTMLElement {
   return el;
 }
 
+// The indicator mirrors the DOM the checkbox / radio directive inserts; a
+// stroke icon paints its stroke, a fill icon its fill.
 function glyphColour(el: Element): string {
-  return getComputedStyle(el, '::before').color;
+  const svg = el.querySelector('.cngx-menu-item__indicator-svg');
+  if (!svg) {
+    throw new Error('menu item renders no indicator');
+  }
+  const paint = svg.classList.contains('cngx-menu-item__indicator-svg--stroke') ? 'stroke' : 'fill';
+  return getComputedStyle(svg)[paint];
 }
 
 async function forceColors(scheme: string): Promise<void> {

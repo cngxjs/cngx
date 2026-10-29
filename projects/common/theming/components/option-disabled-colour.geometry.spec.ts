@@ -8,7 +8,7 @@ import { cdp } from 'vitest/browser';
 
 // Runs in a real Chromium (the `test-geometry` target). A disabled listbox
 // option or menu item fades by colour, never opacity: 38% text (the disabled
-// field recipe), the menu shortcut and checked glyph included. Under forced
+// field recipe), the menu shortcut and checked indicator included. Under forced
 // colors both read GrayText, and a selected option opts out of forcing so its
 // HighlightText label is not painted over by the text backplate.
 
@@ -33,6 +33,7 @@ const SCHEMES = ['light', 'dark'] as const;
             <kbd class="cngx-menu-item__kbd">Del</kbd>
           </li>
           <li cngxMenuItemCheckbox class="cngx-menu-item--disabled cngx-menu-item--checked item-off-checked">
+            <span class="cngx-menu-item__indicator" aria-hidden="true"><svg class="cngx-menu-item__indicator-svg cngx-menu-item__indicator-svg--stroke" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" /></svg></span>
             <span class="cngx-menu-item__label">Pinned</span>
           </li>
           <li cngxMenuItem class="cngx-menu-item--disabled cngx-menu-item--highlighted item-off-cursor">
@@ -104,8 +105,8 @@ describe.each(SCHEMES)('disabled option and menu item, %s', (scheme) => {
     expect(effectiveOpacity(item)).toBe(1);
     expect(computedValue(item, 'color')).toBe(colour);
     expect(computedValue(at(root, '.item-off .cngx-menu-item__kbd'), 'color')).toBe(colour);
-    const checked = at(root, '.item-off-checked');
-    expect(getComputedStyle(checked, '::before').color).toBe(colour);
+    const glyph = at(root, '.item-off-checked .cngx-menu-item__indicator-svg');
+    expect(computedValue(glyph, 'stroke')).toBe(colour);
   });
 
   it('reads GrayText under forced colors and keeps the selected label visible', async () => {

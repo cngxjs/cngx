@@ -14,6 +14,9 @@
  * - `[cngxMenuItem]`, `[cngxMenuItemCheckbox]`, `[cngxMenuItemRadio]`,
  *   `[cngxMenuItemSubmenu]` - item hosts
  * - `.cngx-menu-item__icon`, `__label`, `__suffix`, `__kbd` - slots
+ * - `.cngx-menu-item__indicator` - checked indicator the checkbox / radio
+ *   item inserts; `__indicator-svg` is its icon, `--stroke` paints the
+ *   outline
  * - `.cngx-menu-item--highlighted`, `--disabled`, `--checked` - state
  * - `[cngxMenuSeparator]` - hairline divider
  *
@@ -24,11 +27,12 @@
  * - `--disabled` - 38% text (the disabled field recipe), never opacity,
  *   shortcut and checked glyph included; `cursor: not-allowed`; GrayText
  *   under forced colors
- * - `--checked` - bolder font-weight plus a leading glyph drawn by
- *   `::before` so the cue lands even without a projected icon:
- *   `[cngxMenuItemCheckbox]` -> `&check;`, `[cngxMenuItemRadio]` ->
- *   filled dot. `:has(.cngx-menu-item__icon)` suppresses the pseudo
- *   when a projected icon already occupies the slot.
+ * - `--checked` - bolder font-weight plus a leading
+ *   `.cngx-menu-item__indicator` the item directive inserts, so the cue
+ *   lands even without a projected icon: `[cngxMenuItemCheckbox]` -> a
+ *   check, `[cngxMenuItemRadio]` -> a filled dot, both from the shared
+ *   icon set. `:has(.cngx-menu-item__icon)` hides the indicator when a
+ *   projected icon already occupies the slot.
  *
  * **Inheritance**
  *
@@ -161,7 +165,7 @@
   }
 
   /**
-   * Color of the leading checkmark glyph painted on a checked item.
+   * Color of the leading check or dot indicator on a checked item.
    * Tracks the foundation primary so the cue matches the highlight
    * accent.
    * @group State / Checked
@@ -333,49 +337,72 @@
   }
 
   /* Disabled by colour, never opacity (the field recipe). The shortcut and
-   * the checked glyph carry their own colours, so they follow explicitly; the
-   * glyph selector repeats the class to outrank the checked ::before rules
-   * below (0,3,1). */
+   * the checked indicator carry their own colours, so they follow
+   * explicitly. */
   .cngx-menu-item--disabled {
     color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
     cursor: not-allowed;
   }
   .cngx-menu-item--disabled .cngx-menu-item__kbd,
-  :is([cngxMenuItemCheckbox], [cngxMenuItemRadio]).cngx-menu-item--disabled.cngx-menu-item--disabled.cngx-menu-item--checked::before {
+  .cngx-menu-item--disabled > .cngx-menu-item__indicator {
     color: inherit;
   }
 
   /*
-   * Checked menu item gets a bolder label PLUS a leading indicator
-   * glyph drawn via `::before` so the committed-state signal lands
-   * even when the consumer hasn't projected an explicit icon.
-   * Checkbox-flavoured items get a tick (`✓`), radio-flavoured items
-   * get a filled dot (`●`) to mirror the standard form-control
-   * vocabulary. The pseudo lives outside the slot grid so it doesn't
-   * conflict with `[cngxMenuItemIcon]` content - `:has()` suppresses
-   * the pseudo when a projected icon is present. The empty alt text keeps
-   * the glyph out of the accessible name; `aria-checked` carries the state.
+   * Checked menu item gets a bolder label PLUS a leading indicator the
+   * checkbox / radio item directive inserts while checked, so the
+   * committed-state signal lands even when the consumer hasn't projected an
+   * explicit icon: a check on checkbox items, a filled dot on radio items, to
+   * mirror the standard form-control vocabulary. The indicator lives outside
+   * the slot grid, so `:has()` hides it when a projected icon is present. It
+   * is aria-hidden; `aria-checked` carries the state.
    */
   .cngx-menu-item--checked {
     font-weight: var(--cngx-menu-item-checked-font-weight, 600);
   }
-  [cngxMenuItemCheckbox].cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before {
-    content: '✓' / '';
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: var(--cngx-menu-item-icon-min-width, 1.25rem);
+  .cngx-menu-item__indicator {
+    position: relative;
+    flex: none;
+    align-self: stretch;
+    min-inline-size: var(--cngx-menu-item-icon-min-width, 1.25rem);
     color: var(--cngx-menu-item-checked-color, oklch(0.66 0.19 50));
-    font-weight: 700;
   }
-  [cngxMenuItemRadio].cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before {
-    content: '●' / '';
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: var(--cngx-menu-item-icon-min-width, 1.25rem);
-    color: var(--cngx-menu-item-checked-color, oklch(0.66 0.19 50));
-    font-size: 0.875em;
+  :has(.cngx-menu-item__icon) > .cngx-menu-item__indicator {
+    display: none;
+  }
+
+  /* The svg is centred in the indicator out of flow, so its box never grows
+     the row. Physical left / top pair with the physical translate, so the
+     centring holds under RTL. Round caps are part of a stroke icon's shape (see
+     `CngxIconPaint`). */
+  .cngx-menu-item__indicator-svg {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+    overflow: visible;
+    fill: currentColor;
+    inline-size: var(--cngx-icon-svg-size, 1em);
+    block-size: var(--cngx-icon-svg-size, 1em);
+  }
+  .cngx-menu-item__indicator-svg--stroke {
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: var(--cngx-icon-svg-stroke-width, 2);
+  }
+
+  /* The check spans 16 grid units across with stroke; scaling the box by
+     24/16 keeps its width at the 0.72em the text tick drew. */
+  [cngxMenuItemCheckbox] > .cngx-menu-item__indicator > .cngx-menu-item__indicator-svg {
+    --cngx-icon-svg-size: calc(0.72em * 24 / 16);
+  }
+
+  /* The dot is a fill glyph 8 grid units across; scaling the box by 24/8
+     keeps its diameter at the 0.7em the text dot drew. */
+  [cngxMenuItemRadio] > .cngx-menu-item__indicator > .cngx-menu-item__indicator-svg {
+    --cngx-icon-svg-size: calc(0.7em * 24 / 8);
   }
 
   .cngx-menu-item__icon {
@@ -416,11 +443,11 @@
  * tint and the separator is a 1px background-color hairline - both flatten to
  * Canvas, erasing the cursor and the dividers. Re-signal the active item with
  * the Highlight pair and re-draw the separator with CanvasText ink. The checked
- * item self-heals (its ::before glyph + bolder weight survive). Unlayered +
+ * item self-heals (its indicator + bolder weight survive). Unlayered +
  * direct selectors (outside @layer) to beat the layered component rule.
  * The highlighted item opts out of forcing, so its children see the UNFORCED
  * author colours: it declares `--_cngx-forced-ink` and the shortcut and the
- * checked glyph (both carry their own colours) paint that ink. */
+ * checked indicator (both carry their own colours) paint that ink. */
 @media (forced-colors: active) {
   .cngx-menu-item--highlighted {
     /* Menu items are typically <button>s; the UA forces a form-control
@@ -434,7 +461,7 @@
     --_cngx-forced-ink: HighlightText;
   }
   .cngx-menu-item--highlighted .cngx-menu-item__kbd,
-  :is([cngxMenuItemCheckbox], [cngxMenuItemRadio]).cngx-menu-item--highlighted.cngx-menu-item--checked::before {
+  .cngx-menu-item--highlighted > .cngx-menu-item__indicator {
     color: var(--_cngx-forced-ink, currentColor);
   }
   [cngxMenuSeparator] {
