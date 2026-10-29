@@ -5,6 +5,7 @@ import { describe, expect, test } from 'vitest';
 
 import { CngxPaginate } from '@cngx/common/data';
 import { provideLocale } from '@cngx/core/utils';
+import { CNGX_ICON_MORE_HORIZONTAL } from '@cngx/utils';
 
 import { CngxPaginator } from '../paginator.component';
 import { CngxPaginatorPages } from './paginator-pages.component';
@@ -103,7 +104,9 @@ describe('CngxPaginatorPages', () => {
     const more = fixture.nativeElement.querySelectorAll('.cngx-paginator__more');
     expect(more).toHaveLength(1);
     expect(more[0].getAttribute('aria-label')).toBe('More pages');
-    expect(more[0].textContent?.trim()).toBe('…');
+    expect(more[0].querySelector('svg.cngx-icon-svg > path')?.getAttribute('d')).toBe(
+      CNGX_ICON_MORE_HORIZONTAL.d,
+    );
   });
 
   test('no ellipsis when every page fits', async () => {
