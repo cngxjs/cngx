@@ -11,6 +11,7 @@ import {
   loadLlmDumpFromFile,
   MalformedSnapshotError,
   SchemaVersionError,
+  SnapshotLoadError,
   SUPPORTED_SCHEMA_VERSIONS,
 } from './loader.js';
 import type { DocumentationJson } from './types.js';
@@ -167,6 +168,20 @@ describe('a malformed snapshot', () => {
       expect(message).not.toMatch(/regenerate/i);
       expect(message).toContain('reinstall the package that bundles this snapshot');
     }
+  });
+
+  it('gives a missing bundled snapshot the reinstall hint instead of a bare ENOENT', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'cngx-loader-'));
+
+    expect(() => loadBundledDocs(dir)).toThrow(SnapshotLoadError);
+    expect(() => loadBundledDocs(dir)).toThrow(
+      'documentation.json cannot be read (ENOENT); reinstall the package that bundles this snapshot.',
+    );
+  });
+
+  it('makes every snapshot error a SnapshotLoadError', () => {
+    expect(new SchemaVersionError(3)).toBeInstanceOf(SnapshotLoadError);
+    expect(new MalformedSnapshotError('x')).toBeInstanceOf(SnapshotLoadError);
   });
 
   it('throws MalformedSnapshotError for a file that is not JSON', () => {

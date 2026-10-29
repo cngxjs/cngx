@@ -4,7 +4,9 @@
 // packages/mcp/test/fixtures/documentation.sample.json (cngxVersion 0.1.0-rc.6),
 // read through the cli's own core copy. `--version` is read from
 // packages/cli/package.json.
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import type { CliIo } from './cli-adapter.js';
@@ -13,7 +15,7 @@ import type { CngxCommand, CommandContext } from './core/registry.js';
 import { COMMANDS } from './core/registry.js';
 import type { DocsResolverDeps } from './core/data/docs-resolver.js';
 import { createDocsResolver } from './core/data/docs-resolver.js';
-import { createDocsIndex, loadDocsFromFile } from './core/data/loader.js';
+import { createDocsIndex, loadBundledDocs, loadDocsFromFile } from './core/data/loader.js';
 import { assertNoAnsi } from './output-guards.js';
 
 const FIXTURE = fileURLToPath(new URL('../../mcp/test/fixtures/documentation.sample.json', import.meta.url));
@@ -344,6 +346,23 @@ describe('version and snapshot resolution', () => {
     stdout = '';
     expect(await runCli(['--version'], env)).toBe(EXIT_OK);
     expect(stdout).toBe(`${CLI_VERSION}\n`);
+  });
+});
+
+describe('a missing bundled snapshot', () => {
+  it('exits 3 with the reinstall hint instead of a bare ENOENT', async () => {
+    const empty = mkdtempSync(join(tmpdir(), 'cngx-cli-data-'));
+    let stderr = '';
+    const io: CliIo = { stdout: () => undefined, stderr: (text) => (stderr += text) };
+    const loadContext = (): CommandContext => {
+      const docs = loadBundledDocs(empty);
+      return { bundled: docs, resolve: createDocsResolver(docs, offlineDeps) };
+    };
+
+    expect(await runCli(['api', 'CngxSelect'], { commands: COMMANDS, loadContext, cliVersion: CLI_VERSION, io })).toBe(EXIT_INTERNAL);
+    expect(stderr).toBe(
+      'cngx: internal error: documentation.json cannot be read (ENOENT); reinstall the package that bundles this snapshot.\n',
+    );
   });
 });
 

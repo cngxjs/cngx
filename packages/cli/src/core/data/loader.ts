@@ -46,10 +46,18 @@ export interface DocsIndex {
 // their users, so the text names neither package and no build step.
 const REINSTALL_HINT = 'reinstall the package that bundles this snapshot';
 
+/** Base of every snapshot load failure; its message ends with the reinstall hint. */
+export class SnapshotLoadError extends Error {
+  constructor(problem: string) {
+    super(`${problem}; ${REINSTALL_HINT}.`);
+    this.name = 'SnapshotLoadError';
+  }
+}
+
 /** Thrown when a snapshot cannot be read as a cngx `documentation.json`. */
-export class MalformedSnapshotError extends Error {
+export class MalformedSnapshotError extends SnapshotLoadError {
   constructor(detail: string) {
-    super(`Malformed documentation.json: ${detail}; ${REINSTALL_HINT}.`);
+    super(`Malformed documentation.json: ${detail}`);
     this.name = 'MalformedSnapshotError';
   }
 }
@@ -125,7 +133,10 @@ export function createDocsIndex(raw: DocumentationJson): DocsIndex {
 
 /** Read and validate a snapshot from an explicit path (used by tests + loader). */
 export function loadDocsFromFile(path: string): DocsIndex {
-  const raw = readFileSync(path, 'utf8');
+  return parseDocs(readFileSync(path, 'utf8'));
+}
+
+function parseDocs(raw: string): DocsIndex {
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
@@ -139,9 +150,20 @@ export function loadDocsFromFile(path: string): DocsIndex {
 // passes that directory: only the entry module knows its own depth below the
 // package root, so no path here is relative to this file.
 
-/** Load the snapshot bundled into the published package from its `data/` directory. */
+/**
+ * Load the snapshot bundled into the published package from its `data/` directory.
+ * A file that cannot be read is a broken install like a malformed one, so it
+ * carries the same reinstall hint instead of a bare `ENOENT`.
+ */
 export function loadBundledDocs(dataDir: string): DocsIndex {
-  return loadDocsFromFile(join(dataDir, 'documentation.json'));
+  let raw: string;
+  try {
+    raw = readFileSync(join(dataDir, 'documentation.json'), 'utf8');
+  } catch (error) {
+    const code = (error as { code?: unknown }).code;
+    throw new SnapshotLoadError(`documentation.json cannot be read (${typeof code === 'string' ? code : 'unknown error'})`);
+  }
+  return parseDocs(raw);
 }
 
 // The verbatim compodocx llm-md dump - the full offline API text. Deliberately a
