@@ -40,6 +40,7 @@ import {
   type CngxTabErrorBadgeContext,
   type CngxTabsCommitAction,
 } from '@cngx/common/tabs';
+import { CNGX_ICON_ALERT, CNGX_ICON_BAN } from '@cngx/utils';
 
 import { CngxTabGroup } from './tab-group.component';
 import { stripBidiIsolates } from '@cngx/testing';
@@ -944,7 +945,9 @@ describe('CngxTabGroup organism', () => {
       expect(tabs[1].getAttribute('data-reason')).toBe('refused');
       expect(refusedIcon.getAttribute('data-reason')).toBe('refused');
       expect(refusedIcon.getAttribute('aria-hidden')).toBe('true');
-      expect(refusedIcon.textContent?.trim()).toBe('\u2298');
+      expect(refusedIcon.querySelector('svg.cngx-icon-svg path')?.getAttribute('d')).toBe(
+        CNGX_ICON_BAN.d,
+      );
       // Untouched tabs carry no hook.
       expect(tabs[0].getAttribute('data-reason')).toBeNull();
       expect(tabs[2].getAttribute('data-reason')).toBeNull();
@@ -957,7 +960,9 @@ describe('CngxTabGroup organism', () => {
       expect(tabs[2].classList.contains('cngx-tab--rejected')).toBe(true);
       expect(tabs[2].getAttribute('data-reason')).toBe('failed');
       expect(failedIcon.getAttribute('data-reason')).toBe('failed');
-      expect(failedIcon.textContent?.trim()).toBe('!');
+      expect(failedIcon.querySelector('svg.cngx-icon-svg path')?.getAttribute('d')).toBe(
+        CNGX_ICON_ALERT.d,
+      );
       expect(tabs[1].getAttribute('data-reason')).toBeNull();
 
       const host = fixture.debugElement.children[0].injector.get(CNGX_TAB_GROUP_HOST);
@@ -972,46 +977,64 @@ describe('CngxTabGroup organism', () => {
         `${process.cwd()}/projects/common/tabs/styles/tabs-base.css`,
         'utf8',
       );
-      // The failed default keeps the danger red on the disc, the accent and the wash.
+      const skins = readFileSync(
+        `${process.cwd()}/projects/ui/tabs/tab-group.component.css`,
+        'utf8',
+      );
+      // The badge and the failed icon paint the foundation danger, which
+      // carries its own dark-scheme value; no disc behind either.
       expect(base).toContain(
-        'background: var(--cngx-tab-rejection-icon-color, oklch(0.45 0.15 25));',
+        'color: var(--cngx-tab-error-badge-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));',
       );
       expect(base).toContain(
-        'background: var(--cngx-tab-rejected-bg, oklch(0.45 0.15 25 / 0.1));',
+        'color: var(--cngx-tab-rejection-icon-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));',
       );
-      expect(base).toMatch(/@property --cngx-tab-error-badge-color\s*\{[^}]*oklch\(0\.45 0\.15 25\)/);
-      // The refused twin reads the refused token with the amber fallback.
+      // Registered without an initial value, so the fallbacks fire.
+      for (const token of [
+        'error-badge-color',
+        'rejection-icon-color',
+        'failed-text-color',
+        'refused-color',
+        'refused-text-color',
+      ]) {
+        expect(base).toMatch(
+          new RegExp(`@property --cngx-tab-${token}\\s*\\{\\s*syntax: '\\*';\\s*inherits: true;\\s*\\}`),
+        );
+      }
+      // The refused icon and surface read the refused token with the amber
+      // derived from the foundation warning.
       expect(base).toMatch(
-        /\.cngx-tabs__rejection-icon\[data-reason='refused'\]\s*\{\s*background: var\(--cngx-tab-refused-color, oklch\(0\.62 0\.15 60\)\);/,
+        /\.cngx-tabs__rejection-icon\[data-reason='refused'\]\s*\{\s*color: var\(\s*--cngx-tab-refused-color,\s*color-mix\(\s*in oklab,\s*var\(--cngx-color-warning/,
       );
       expect(base).toMatch(
-        /\.cngx-tab--rejected\[data-reason='refused'\]\s*\{[^}]*--cngx-tab-rejected-bg: color-mix\([^;]*--cngx-tab-refused-color, oklch\(0\.62 0\.15 60\)/,
+        /\.cngx-tab--rejected\[data-reason='refused'\]\s*\{\s*--_cngx-tab-rejection-color: var\(\s*--cngx-tab-refused-color,/,
       );
-      // Amber text would miss 4.5:1, so the label keeps its resting colour.
-      expect(base).toMatch(
-        /\[data-reason='refused'\] \.cngx-tabs__label\s*\{\s*color: var\(--cngx-tab-refused-text-color, currentColor\);/,
+      // The tint is the reason colour mixed into transparent, no outline.
+      expect(base).toContain('var(--cngx-tab-rejection-tint, 18%)');
+      expect(base).not.toMatch(/--cngx-tab-rejected-(bg|outline|radius|accent-width|pulse-bg)/);
+      // The line skin marks the tab by label colour, a refused one amber.
+      expect(skins).toMatch(
+        /\.cngx-tab--rejected \.cngx-tabs__label\s*\{\s*color: var\(\s*--cngx-tab-failed-text-color,\s*var\(\s*--cngx-color-danger-text,/,
       );
-      // Registered without an initial value, so the amber fallback fires.
-      expect(base).toMatch(
-        /@property --cngx-tab-refused-color\s*\{\s*syntax: '\*';\s*inherits: true;\s*\}/,
-      );
-      expect(base).toMatch(
-        /@property --cngx-tab-refused-text-color\s*\{\s*syntax: '\*';\s*inherits: true;\s*\}/,
+      expect(skins).toMatch(
+        /\.cngx-tab--rejected\[data-reason='refused'\]\s*\.cngx-tabs__label\s*\{\s*color: var\(\s*--cngx-tab-refused-text-color,/,
       );
       // The keyframe keeps its shipped name.
       expect(base).toContain('@keyframes cngx-tab-pulse-error');
     });
 
-    it('keeps the rejection disc and a contour under forced colours', () => {
+    it('pins the icons to CanvasText and outlines a rejected tab under forced colours', () => {
       const base = readFileSync(
         `${process.cwd()}/projects/common/tabs/styles/tabs-base.css`,
         'utf8',
       );
       const forced = base.slice(base.indexOf('@media (forced-colors: active)'));
       expect(forced).toMatch(
-        /\.cngx-tabs__rejection-icon\s*\{\s*forced-color-adjust: none;\s*background: CanvasText;\s*color: Canvas;/,
+        /\.cngx-tabs__badge,\s*\.cngx-tabs__rejection-icon\s*\{\s*color: CanvasText;/,
       );
-      expect(forced).toMatch(/\.cngx-tab--rejected:not\(\[aria-selected='true'\]\)\s*\{[^}]*dashed CanvasText/);
+      expect(forced).toMatch(
+        /\.cngx-tab--rejected:not\(:focus-visible\)\s*\{\s*outline: 2px solid CanvasText;/,
+      );
     });
 
     it('liveAnnouncement falls back to commitFailedRetry when lastFailedIndex is unset', () => {
@@ -1536,7 +1559,7 @@ describe('CngxTabGroup organism', () => {
       ) as HTMLButtonElement;
       const span = tab.querySelector('.cngx-tabs__badge') as HTMLElement;
       expect(span).not.toBeNull();
-      expect(span.textContent?.trim()).toBe('!');
+      expect(span.querySelector('svg.cngx-icon-svg path')?.getAttribute('d')).toBe(CNGX_ICON_ALERT.d);
     });
 
     it('per-instance *cngxTabRejectionIcon receives failedIndex + originLabel context', () => {

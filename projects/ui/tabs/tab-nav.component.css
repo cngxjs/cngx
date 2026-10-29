@@ -140,22 +140,30 @@
     /* Error link: danger-tinted label plus a leading glyph gated on the
        class - the aria-invalid visual partner. */
     .cngx-tab-nav__link--error {
-      color: var(--cngx-tab-error-badge-color);
+      color: var(
+        --cngx-tab-error-badge-color,
+        var(
+          --cngx-color-danger-text,
+          color-mix(
+            in oklab,
+            var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
+            var(--cngx-color-text, oklch(0.2 0.01 250))
+          )
+        )
+      );
     }
 
     .cngx-tab-nav__link--error::before {
-      /* Glyph character - NOT `--cngx-tab-rejection-icon-text`: that token is
-         registered `<color>` in tabs-base.css, so `content: var(color, '!')`
-         resolves to the colour value, which is invalid for `content` and
-         drops the pseudo to `none` - the `!` never rendered. `--cngx-tab-error-glyph`
-         is intentionally unregistered so the string fallback fires (a
-         syntax-typed @property would defeat it the same way). The `/ ''`
+      /* Glyph character from its own token: a colour token here would
+         resolve to a colour value, which is invalid for `content` and drops
+         the pseudo to `none`. `--cngx-tab-error-glyph` is intentionally
+         unregistered so the string fallback fires (a syntax-typed
+         @property would defeat it). The `/ ''`
          alt keeps the decorative glyph out of the anchor's accessible name -
          `aria-invalid` + the describedby message already carry the state to AT. */
       content: var(--cngx-tab-error-glyph, '!') / '';
       font-size: var(--cngx-tab-rejection-icon-font-size, 0.75em);
       font-weight: 700;
-      color: var(--cngx-tab-error-badge-color);
     }
   }
 

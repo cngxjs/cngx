@@ -74,3 +74,49 @@ describe('CngxTabGroup add-tab affordance geometry', () => {
     expect(labelRect.right).toBeLessThanOrEqual(rect.right);
   });
 });
+
+@Component({
+  selector: 'cngx-tab-affordance-glyph-host',
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab, CngxTabContent],
+  template: `
+    <cngx-tab-group aria-label="Drafts" [addable]="true" [closable]="true">
+      <div cngxTab [label]="'A'">
+        <ng-template cngxTabContent>A content</ng-template>
+      </div>
+    </cngx-tab-group>
+  `,
+})
+class AffordanceGlyphHost {}
+
+// The cross and the plus replaced the text glyphs; drawn with their stroke
+// they keep the text glyphs' width and sit on the button centre (the inline
+// text glyphs sat about 1px low).
+describe('CngxTabGroup affordance glyphs', () => {
+  afterEach(() => {
+    mountedRoot?.remove();
+    mountedRoot = null;
+  });
+
+  for (const [name, selector, width] of [
+    ['close', '.cngx-tabs__close', 0.48],
+    ['add', '.cngx-tabs__add', 0.5],
+  ] as const) {
+    it(`draws the ${name} glyph ${width}em wide on the button centre`, () => {
+      const fixture = TestBed.createComponent(AffordanceGlyphHost);
+      mountedRoot = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(mountedRoot);
+      fixture.detectChanges();
+      const button = mountedRoot.querySelector<HTMLElement>(selector)!;
+      const box = button.getBoundingClientRect();
+      const svg = button.querySelector('svg')!;
+      const path = svg.querySelector('path')!.getBoundingClientRect();
+      const stroke =
+        (parseFloat(getComputedStyle(svg).strokeWidth) * svg.getBoundingClientRect().width) / 24;
+      const em = parseFloat(getComputedStyle(button).fontSize);
+      expect(path.width + stroke).toBeCloseTo(width * em, 0);
+      expect(path.left + path.width / 2).toBeCloseTo(box.left + box.width / 2, 0);
+      expect(path.top + path.height / 2).toBeCloseTo(box.top + box.height / 2, 0);
+    });
+  }
+});
