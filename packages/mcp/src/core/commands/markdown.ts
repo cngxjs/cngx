@@ -2,6 +2,8 @@
 // markdown, no ANSI: the output goes to agents and CI logs as often as to a
 // terminal. Every helper is pure.
 
+import type { AmbiguousMatch } from '../query.js';
+
 /** One line of cell text: newlines collapsed, pipes escaped, `-` for an empty value. */
 export function cell(value: string | number | boolean | null | undefined): string {
   if (value === null || value === undefined || value === '') {
@@ -100,4 +102,14 @@ export function textCell(value: string | null | undefined): string {
   const cut = text.slice(0, CELL_MAX);
   const space = cut.lastIndexOf(' ');
   return `${(space > 0 ? cut.slice(0, space) : cut).replace(/[\s,;:.\\-]+$/, '')}...`;
+}
+
+/** An ambiguous selector: every candidate with the selector that names it alone. */
+export function ambiguousMarkdown(match: AmbiguousMatch): string {
+  const rows = match.candidates.map((c) => [code(c.name), cell(c.kind), code(c.selector)]);
+  return blocks(
+    '# Several entries match',
+    'Ask again with a class name or with the full selector of one candidate.',
+    table(['Name', 'Kind', 'Selector'], rows),
+  );
 }

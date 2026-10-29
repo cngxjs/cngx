@@ -4,7 +4,18 @@ import { loadBundledDocs, loadDocsFromFile } from '../data/loader.js';
 import type { DocsIndex } from '../data/loader.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
 import { answerVersioned, createDocsResolver } from '../data/docs-resolver.js';
-import { getSlots, normalizeSlot, slotsMarkdown } from './get-slots.js';
+import type { SlotsResult } from './get-slots.js';
+import { getSlots as getSlotsAnswer, normalizeSlot, slotsMarkdown } from './get-slots.js';
+import { isAmbiguous } from '../query.js';
+
+/** The query answer for a name that must not be ambiguous. */
+function getSlots(...args: Parameters<typeof getSlotsAnswer>): SlotsResult | null {
+  const answer = getSlotsAnswer(...args);
+  if (isAmbiguous(answer)) {
+    throw new Error(`unexpected ambiguity for ${args[1]}`);
+  }
+  return answer;
+}
 
 const FIXTURE = fileURLToPath(new URL('../../../test/fixtures/documentation.sample.json', import.meta.url));
 const NEW = fileURLToPath(new URL('../../../test/fixtures/documentation.v-new.sample.json', import.meta.url));

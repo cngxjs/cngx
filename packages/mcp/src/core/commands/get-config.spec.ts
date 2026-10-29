@@ -4,7 +4,18 @@ import { createDocsIndex, loadDocsFromFile } from '../data/loader.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
 import { answerVersioned, createDocsResolver } from '../data/docs-resolver.js';
 import type { DocFunction, DocumentationJson } from '../data/types.js';
-import { getConfig } from './get-config.js';
+import type { ConfigResult } from './get-config.js';
+import { getConfig as getConfigAnswer } from './get-config.js';
+import { isAmbiguous } from '../query.js';
+
+/** The query answer for a name that must not be ambiguous. */
+function getConfig(...args: Parameters<typeof getConfigAnswer>): ConfigResult | null {
+  const answer = getConfigAnswer(...args);
+  if (isAmbiguous(answer)) {
+    throw new Error(`unexpected ambiguity for ${args[1]}`);
+  }
+  return answer;
+}
 
 // A controlled snapshot exercising every cascade layout the token-file anchor
 // must survive: the single-file select surface, the shared select/shared/

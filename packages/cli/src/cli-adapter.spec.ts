@@ -13,7 +13,7 @@ import type { CngxCommand, CommandContext } from './core/registry.js';
 import { COMMANDS } from './core/registry.js';
 import type { DocsResolverDeps } from './core/data/docs-resolver.js';
 import { createDocsResolver } from './core/data/docs-resolver.js';
-import { loadDocsFromFile } from './core/data/loader.js';
+import { createDocsIndex, loadDocsFromFile } from './core/data/loader.js';
 import { assertNoAnsi } from './output-guards.js';
 
 const FIXTURE = fileURLToPath(new URL('../../mcp/test/fixtures/documentation.sample.json', import.meta.url));
@@ -250,6 +250,36 @@ describe('version and snapshot resolution', () => {
 
     expect(run.code).toBe(EXIT_NOT_FOUND);
     expect(JSON.parse(run.stdout)).toEqual(NOT_FOUND_JSON[name]);
+  });
+
+  it('exits 1 with the candidates when a selector matches several entries', async () => {
+    const ambiguous = createDocsIndex({
+      schemaVersion: 6,
+      components: [],
+      directives: [
+        { name: 'CngxSyncB', selector: 'cngx-b[cngxSync]' },
+        { name: 'CngxSyncA', selector: 'cngx-a[cngxSync]' },
+      ],
+      injectables: [],
+    });
+    const context: CommandContext = { bundled: ambiguous, resolve: createDocsResolver(ambiguous, offlineDeps) };
+    let stdout = '';
+    const io: CliIo = { stdout: (text) => (stdout += text), stderr: () => undefined };
+
+    const code = await runCli(['api', 'cngxSync', '--format=json'], { commands: COMMANDS, loadContext: () => context, cliVersion: CLI_VERSION, io });
+
+    expect(code).toBe(EXIT_NOT_FOUND);
+    expect(JSON.parse(stdout).result).toEqual({
+      ambiguous: true,
+      candidates: [
+        { name: 'CngxSyncA', kind: 'directive', selector: 'cngx-a[cngxSync]' },
+        { name: 'CngxSyncB', kind: 'directive', selector: 'cngx-b[cngxSync]' },
+      ],
+    });
+  });
+
+  it('documents the ambiguity row in the not-found json table', () => {
+    expect(readFileSync(new URL('../README.md', import.meta.url), 'utf8')).toContain('`{ "ambiguous": true, "candidates": [{ "name", "kind", "selector" }] }`');
   });
 
   it('exits 2 on an empty --cngx-version, before any resolution', async () => {

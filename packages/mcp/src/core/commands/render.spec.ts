@@ -12,6 +12,7 @@ import { COMMANDS, defaultFound, isFound, unwrapAnswer } from '../registry.js';
 import { createDocsResolver } from '../data/docs-resolver.js';
 import { loadDocsFromFile } from '../data/loader.js';
 import { cell, table, toPlainText } from './markdown.js';
+import type { ApiResult } from './get-api.js';
 import { apiMarkdown, getApi } from './get-api.js';
 
 const fixture = (name: string) => fileURLToPath(new URL(`../../../test/fixtures/${name}`, import.meta.url));
@@ -94,6 +95,14 @@ describe('found', () => {
   it.each(COMMANDS.map((def) => [def.cliName, def] as const))('%s: false for null and for an empty array', (_, def) => {
     expect(isFound(def, null)).toBe(false);
     expect(isFound(def, [])).toBe(false);
+  });
+
+  const NAME_COMMANDS = ['api', 'slots', 'theme', 'config', 'example'];
+
+  it.each(NAME_COMMANDS)('%s: false for an ambiguous selector', (cliName) => {
+    const def = COMMANDS.find((command) => command.cliName === cliName)!;
+
+    expect(isFound(def, { ambiguous: true, candidates: [] })).toBe(false);
   });
 
   it('defaults to true for an object and a non-empty array', () => {
@@ -252,7 +261,7 @@ describe('toMarkdown over compodoc HTML', () => {
   });
 
   it('api: caps a 1000-character input description', () => {
-    const api = getApi(bundled, 'CngxSelect')!;
+    const api = getApi(bundled, 'CngxSelect') as ApiResult;
     const long = `<p>${'x'.repeat(1000)}</p>`;
 
     const markdown = apiMarkdown({ ...api, inputs: [{ ...api.inputs[0], description: long }] });

@@ -4,7 +4,9 @@
 // Fixture source: first captured from `createServer` at commit
 // "refactor(mcp): build the MCP server through a factory", recaptured at
 // "docs(mcp): describe the gh-or-https snapshot fetch everywhere it is named"
-// (version and migrate_usage descriptions, instructions), built over the fixed
+// (version and migrate_usage descriptions, instructions) and at "fix(mcp): rank
+// selector matches and answer an ambiguous selector with its candidates" (the
+// five name-tool descriptions), built over the fixed
 // fixtures `test/fixtures/documentation.sample.json` and
 // `test/fixtures/llm-context.sample.md` - never the bundled snapshot, whose
 // cngxVersion and generatedAt change on every `npm run mcp:snapshot`.

@@ -3,7 +3,18 @@ import { describe, expect, it } from 'vitest';
 import { loadDocsFromFile } from '../data/loader.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
 import { answerVersioned, createDocsResolver } from '../data/docs-resolver.js';
-import { getThemeTokens } from './get-theme-tokens.js';
+import type { ThemeTokensResult } from './get-theme-tokens.js';
+import { getThemeTokens as getThemeTokensAnswer } from './get-theme-tokens.js';
+import { isAmbiguous } from '../query.js';
+
+/** The query answer for a name that must not be ambiguous. */
+function getThemeTokens(...args: Parameters<typeof getThemeTokensAnswer>): ThemeTokensResult | null {
+  const answer = getThemeTokensAnswer(...args);
+  if (isAmbiguous(answer)) {
+    throw new Error(`unexpected ambiguity for ${args[1]}`);
+  }
+  return answer;
+}
 
 const FIXTURE = fileURLToPath(new URL('../../../test/fixtures/documentation.sample.json', import.meta.url));
 const NEW = fileURLToPath(new URL('../../../test/fixtures/documentation.v-new.sample.json', import.meta.url));

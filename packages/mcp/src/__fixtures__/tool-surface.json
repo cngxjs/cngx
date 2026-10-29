@@ -51,7 +51,7 @@
     {
       "name": "get_api",
       "title": "Get cngx component API",
-      "description": "Return a single component's, directive's, or injectable service's API surface - inputs, outputs, signal flag, host bindings, public methods, and description - by class name or selector. Returns null when the name resolves to nothing.",
+      "description": "Return a single component's, directive's, or injectable service's API surface - inputs, outputs, signal flag, host bindings, public methods, and description - by class name or selector. `result` is null when the name matches nothing, and `{ ambiguous: true, candidates }` when a selector matches several entries.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -74,7 +74,7 @@
     {
       "name": "get_slots",
       "title": "Get cngx component template slots",
-      "description": "Return a component's projected template slots - each the slot directive selector name plus its one-line doc - by class name or selector. An empty slots array means the component projects no overridable slots. Returns null when the name resolves to nothing.",
+      "description": "Return a component's projected template slots - each the slot directive selector name plus its one-line doc - by class name or selector. An empty slots array means the component projects no overridable slots. `result` is null when the name matches nothing, and `{ ambiguous: true, candidates }` when a selector matches several entries.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -97,7 +97,7 @@
     {
       "name": "get_theme_tokens",
       "title": "Get cngx component theming tokens",
-      "description": "Return a component's theming tokens (the CSS custom properties it exposes) and its theme overview, by class name or selector. An empty themeTokens array means the component exposes none. Returns null when the name resolves to nothing. For DI tokens, use get_di_tokens.",
+      "description": "Return a component's theming tokens (the CSS custom properties it exposes) and its theme overview, by class name or selector. An empty themeTokens array means the component exposes none. `result` is null when the name matches nothing, and `{ ambiguous: true, candidates }` when a selector matches several entries. For DI tokens, use get_di_tokens.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -139,7 +139,7 @@
     {
       "name": "get_config",
       "title": "Get a cngx configuration cascade",
-      "description": "Return a config surface: the CNGX_<X>_CONFIG token, its co-located provider functions, the with* feature functions, and the resolution-priority ordering. Accepts a config token name (CNGX_SELECT_CONFIG), a config stem (select), or best-effort a component/directive name (CngxCombobox -> CNGX_SELECT_CONFIG). Returns null when the input maps to no config token.",
+      "description": "Return a config surface: the CNGX_<X>_CONFIG token, its co-located provider functions, the with* feature functions, and the resolution-priority ordering. Accepts a config token name (CNGX_SELECT_CONFIG), a config stem (select), or best-effort a component/directive name (CngxCombobox -> CNGX_SELECT_CONFIG). `result` is null when the input maps to no config token, and `{ ambiguous: true, candidates }` when a component selector matches several entries.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -162,7 +162,7 @@
     {
       "name": "get_story_example",
       "title": "Get cngx example URLs",
-      "description": "Return a component's runnable example URLs (public documentation links a consumer can open), plus a StackBlitz URL when one exists. Playground entries are repo-internal source references, not openable links. Returns null when the name resolves to nothing.",
+      "description": "Return a component's runnable example URLs (public documentation links a consumer can open), plus a StackBlitz URL when one exists. Playground entries are repo-internal source references, not openable links. `result` is null when the name matches nothing, and `{ ambiguous: true, candidates }` when a selector matches several entries.",
       "inputSchema": {
         "type": "object",
         "properties": {
