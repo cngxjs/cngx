@@ -17,7 +17,7 @@
 @use '../../../../projects/themes/material/bottom-sheet-theme.scss' as bottom-sheet;
 
 $palette: (
-  theme-type: light,
+  theme-type: color-scheme,
   primary: mat.$azure-palette,
   tertiary: mat.$blue-palette,
 );
@@ -42,8 +42,6 @@ $theme: mat.define-theme(
 }
 
 html {
-  color-scheme: light;
-
   @include mat.theme(
     (
       color: $palette,
