@@ -20,9 +20,11 @@
  * - `[aria-disabled="true"]` - cursor: not-allowed, 38% text (the disabled field recipe), never opacity; GrayText under
  *   forced colors
  * - `[aria-busy="true"]` - cursor: progress while a commit is pending - `:focus-visible` - outline ring via `--cngx-tab-focus-ring`
- * - `.cngx-tab--rejected` - persistent failed-target signal: outline ring + one-shot background pulse;
- *   `[data-reason="refused"]` wears the rejection amber, `[data-reason="failed"]` keeps the danger red
- *   (a failed commit is an error)
+ * - `.cngx-tab--rejected` - persistent failed-target signal: a surface tinted with
+ *   `--cngx-tab-rejection-tint` of the reason colour, shaped by the skin, after a one-shot pulse;
+ *   `[data-reason="refused"]` wears the refused amber, `[data-reason="failed"]` the danger red
+ *   (a failed commit is an error). The `line` skin swaps the surface for the label colour (see
+ *   `tab-group.component.css`); under forced colors an outline marks it
  *
  * **Orientation**
  *
@@ -35,11 +37,11 @@
  *   the `<cngx-tab-overflow>` molecule is the user access path to tabs that do not fit)
  * - `.cngx-tabs__tab` - one tab button
  * - `.cngx-tabs__label` - shrinkable label inside the button
- * - `.cngx-tabs__badge` - inline error badge; ships its own real-error-tone background so it does not collapse to
- *   `currentColor` (mirrors the stepper precedent)
+ * - `.cngx-tabs__badge` - validation-error alert icon after the label, no disc
+ *   (`--cngx-tab-error-badge-color`); mirrors the stepper badge
  * - `.cngx-tabs__busy-spinner` - pending-commit spinner
- * - `.cngx-tabs__rejection-icon` - persistent glyph in a circle: `\2298` on a refused tab (amber),
- *   `!` on a failed one (danger red); `data-reason` names the kind
+ * - `.cngx-tabs__rejection-icon` - standalone slashed-circle icon on a refused tab (amber), alert
+ *   triangle on a failed one (danger red); `data-reason` names the kind
  * - `.cngx-tabs__panels` / `__panel` - panel container + body
  * - `.cngx-sr-only` - locally-duplicated screen-reader utility
  *
@@ -48,9 +50,11 @@
  * - `--cngx-tab-active-indicator-color` -> `--cngx-color-primary` (also pinned via `:root` delegation so the brand accent paints
  *   the underline in both light and dark modes without a 4-block)
  * - Strip / tab geometry tokens (`--cngx-tab-gap`, `--cngx-tab-padding`, `--cngx-tab-strip-padding`) - leaf
- * - State-tone tokens (`--cngx-tab-error-badge-color`, \
- *   `--cngx-tab-rejection-icon-color`, `--cngx-tab-rejected-outline`,
- *   `--cngx-tab-rejected-pulse-bg`) - leaf, all pinned at the foundation's danger tone so they read against either surface
+ * - `--cngx-tab-error-badge-color`, `--cngx-tab-rejection-icon-color` -> `--cngx-color-danger`; registered without an
+ *   initial value, so the foundation danger and its dark-scheme value apply until a theme sets them
+ * - `--cngx-tab-failed-text-color` -> `--cngx-color-danger-text`
+ * - `--cngx-tab-refused-color` / `--cngx-tab-refused-text-color` -> `--cngx-color-warning` mixed toward
+ *   `--cngx-color-text` (70% for the icon, 55% for the label), so the amber clears 3:1 and 4.5:1 in both schemes
  *
  * **Reduced motion**
  *
@@ -176,18 +180,19 @@
   }
 
   /**
-   * Background color of the inline error badge. `inherits: true` so a
-   * themed value set on the `cngx-tab-group` / `cngx-tab-nav` host (the
-   * Material bridge sets it there) reaches the descendant badge - with
-   * `inherits: false` the host value never cascades down and the badge
-   * keeps its initial tone. The default theme is unchanged: the initial
-   * value inherits identically when nothing sets the token above.
+   * Colour of the validation-error alert icon after the tab label.
+   * Registered without an initial value, so the fallback to
+   * `--cngx-color-danger` (and its dark-scheme value) applies until a theme
+   * sets it. `inherits: true` so a value set on the `cngx-tab-group` /
+   * `cngx-tab-nav` host (the Material bridge sets it there) reaches the
+   * descendant badge. The `<cngx-tab-nav>` error link reads it as its text
+   * colour.
    * @group State / Error
+   * @see [[--cngx-color-danger]]
    */
   @property --cngx-tab-error-badge-color {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.45 0.15 25);
   }
 
   /**
@@ -212,102 +217,67 @@
   }
 
   /**
-   * Diameter of the persistent rejection icon (`!` glyph in a circle).
+   * Rendered size of the persistent rejection icon (slashed circle refused,
+   * alert triangle failed), in `em` of the tab label font. The universal
+   * syntax keeps the `em` unresolved until the icon reads it, and it
+   * inherits so a host override reaches the glyph.
    * @group State / Rejected
    */
   @property --cngx-tab-rejection-icon-size {
     syntax: '*';
-    inherits: false;
-    initial-value: 1.25rem;
+    inherits: true;
+    initial-value: 1.15em;
   }
 
   /**
-   * Background color of the rejection icon disc. `inherits: true` so the
-   * themed disc tone set on the host (the Material bridge) reaches the
-   * descendant `.cngx-tabs__rejection-icon` - mirrors
-   * `--cngx-tab-error-badge-color`. Default theme unchanged.
+   * Colour of a failed tab (the commit action threw): its alert icon and
+   * the base of its tinted surface. Registered without an initial value,
+   * so the fallback to `--cngx-color-danger` (and its dark-scheme value)
+   * applies until a theme sets it.
    * @group State / Rejected
+   * @see [[--cngx-color-danger]]
    */
   @property --cngx-tab-rejection-icon-color {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.45 0.15 25);
   }
 
   /**
-   * Text color of the rejection icon glyph.
+   * Label colour of a failed tab under the colour-only `line` skin.
+   * Registered without an initial value, so the fallback to
+   * `--cngx-color-danger-text` (danger mixed toward the text colour, 4.5:1
+   * on the page in both schemes) applies until a theme sets it.
+   * @group State / Rejected
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-tab-failed-text-color {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Strength of the rejected-tab surface: the share of the reason colour
+   * (danger red for a failed switch, refused amber for a refused one)
+   * mixed into transparent. The `contained`, `segmented`, `pill` and
+   * `pill-outline` skins tint the tab in their own shape; the colour-only
+   * `line` skin ignores it. The pulse peaks at twice the share.
    * @group State / Rejected
    */
-  @property --cngx-tab-rejection-icon-text {
-    syntax: '<color>';
+  @property --cngx-tab-rejection-tint {
+    syntax: '<percentage>';
     inherits: true;
-    initial-value: oklch(1 0 0);
+    initial-value: 18%;
   }
 
   /**
-   * Font-size of the rejection icon glyph.
-   * @group State / Rejected
+   * Font-size of the `!` glyph a `<cngx-tab-nav>` error link draws on its
+   * `::before`.
+   * @group State / Error
    */
   @property --cngx-tab-rejection-icon-font-size {
     syntax: '*';
     inherits: false;
     initial-value: 0.875rem;
-  }
-
-  /**
-   * Background wash of a rejected tab - a soft danger tint that settles in
-   * after the pulse, so the failed target stays legible without a harsh box.
-   * Static by default so it reads against either surface; the Material bridge
-   * remaps it onto the error role.
-   * @group State / Rejected
-   */
-  @property --cngx-tab-rejected-bg {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: oklch(0.45 0.15 25 / 0.1);
-  }
-
-  /**
-   * Corner radius of the rejected-tab wash, so the tint reads as a soft
-   * highlight rather than a hard block.
-   * @group State / Rejected
-   */
-  @property --cngx-tab-rejected-radius {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 6px;
-  }
-
-  /**
-   * Thickness of the rejected tab's bottom accent bar - echoes the active
-   * indicator's language in the danger tone instead of a full outline ring.
-   * @group State / Rejected
-   */
-  @property --cngx-tab-rejected-accent-width {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 2px;
-  }
-
-  /**
-   * Outline shorthand of the rejected tab. `none` by default - the wash plus
-   * the bottom accent carry the signal; set this to restore a full ring.
-   * @group State / Rejected
-   */
-  @property --cngx-tab-rejected-outline {
-    syntax: '*';
-    inherits: false;
-    initial-value: none;
-  }
-
-  /**
-   * Outline offset of the rejected-tab outline.
-   * @group State / Rejected
-   */
-  @property --cngx-tab-rejected-outline-offset {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 1px;
   }
 
   /**
@@ -321,23 +291,15 @@
   }
 
   /**
-   * Background tint used at the peak of the pulse animation.
-   * @group State / Rejected
-   */
-  @property --cngx-tab-rejected-pulse-bg {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: oklch(0.45 0.15 25 / 0.18);
-  }
-
-  /**
-   * Tone of a refused tab (the commit action answered `false`): the
-   * rejection disc, the bottom accent, and mixed down the wash and the
-   * pulse peak. A refusal is no error, so it wears the rejection amber; a
-   * failed switch keeps `--cngx-tab-rejection-icon-color`. Registered
-   * without an initial value, so the amber fallback applies until a theme
-   * sets it.
+   * Colour of a refused tab (the commit action answered `false`): its
+   * slashed-circle icon and the base of its tinted surface. A refusal is no
+   * error, so it wears amber; a failed switch takes
+   * `--cngx-tab-rejection-icon-color`. Registered without an initial value,
+   * so the fallback applies until a theme sets it: `--cngx-color-warning`
+   * mixed 70% toward `--cngx-color-text`, which keeps the icon at 3:1 on the
+   * light page (the raw warning amber reads 2.5:1 there).
    * @group State / Refused
+   * @see [[--cngx-color-warning]]
    */
   @property --cngx-tab-refused-color {
     syntax: '*';
@@ -345,9 +307,12 @@
   }
 
   /**
-   * Label colour of a refused tab. Defaults to the resting tab text
-   * colour: amber text would fall under the 4.5:1 text contrast.
+   * Label colour of a refused tab under the colour-only `line` skin.
+   * Registered without an initial value, so the fallback applies until a
+   * theme sets it: `--cngx-color-warning` mixed 55% toward
+   * `--cngx-color-text`, 4.5:1 on the page in both schemes.
    * @group State / Refused
+   * @see [[--cngx-color-warning]]
    */
   @property --cngx-tab-refused-text-color {
     syntax: '*';
@@ -649,20 +614,13 @@
     margin-block-start: var(--cngx-tab-gap, 0.5rem);
   }
 
+  /* Validation-error alert icon after the label: a standalone stroke glyph
+     in the error colour, no disc. */
   .cngx-tabs__badge {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
     flex: 0 0 auto;
-    /*
-     * Real error-tone fallback - must NOT inherit `currentColor`. The
-     * thematic skin (tab-group.component.css) sets `color: white` on
-     * the same element so the `!` glyph stays legible; if this fallback
-     * resolved to `currentColor`, both background and text would
-     * collapse to white and the badge would render invisible. Mirrors
-     * the stepper precedent at stepper-base.css.
-     */
-    background: var(--cngx-tab-error-badge-color, oklch(0.45 0.15 25));
+    color: var(--cngx-tab-error-badge-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
     margin-inline-start: var(--cngx-tab-gap, 0.5rem);
   }
 
@@ -808,67 +766,61 @@
    * Persistent rejection decoration (Pillar 2). Bound by the organism
    * to `presenter.lastFailedIndex() === $index`; persists until the
    * user re-picks the failed target successfully or dismisses
-   * programmatically.
+   * programmatically. A standalone icon after the label: the alert
+   * triangle on a failed tab, the slashed circle on a refused one, so the
+   * two never differ by colour alone (WCAG 1.4.1).
    */
   .cngx-tabs__rejection-icon {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
     flex: 0 0 auto;
-    width: var(--cngx-tab-rejection-icon-size, 1.25rem);
-    height: var(--cngx-tab-rejection-icon-size, 1.25rem);
-    border-radius: 50%;
-    background: var(--cngx-tab-rejection-icon-color, oklch(0.45 0.15 25));
-    color: var(--cngx-tab-rejection-icon-text, oklch(1 0 0));
-    font-size: var(--cngx-tab-rejection-icon-font-size, 0.875rem);
-    font-weight: 700;
-    line-height: 1;
+    color: var(--cngx-tab-rejection-icon-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
     margin-inline-start: var(--cngx-tab-gap, 0.5rem);
   }
 
+  .cngx-tabs__rejection-icon[data-reason='refused'] {
+    color: var(
+      --cngx-tab-refused-color,
+      color-mix(
+        in oklab,
+        var(--cngx-color-warning, oklch(0.72 0.15 75)) 70%,
+        var(--cngx-color-text, oklch(0.2 0.01 250))
+      )
+    );
+  }
+
+  /* Rejected tab: the reason colour (danger red for a failed switch, the
+     refused amber for a refused one) feeds a tinted surface. It replaces
+     the tab background, so every skin's own radius shapes it; the `line`
+     skin swaps it for the label colour (tab-group.component.css). */
   .cngx-tabs__tab.cngx-tab--rejected {
-    background: var(--cngx-tab-rejected-bg, oklch(0.45 0.15 25 / 0.1));
-    border-radius: var(--cngx-tab-rejected-radius, 0.375rem)
-      var(--cngx-tab-rejected-radius, 0.375rem) 0 0;
-    box-shadow: inset 0 calc(-1 * var(--cngx-tab-rejected-accent-width, 2px)) 0 0
-      var(--cngx-tab-rejection-icon-color, oklch(0.45 0.15 25));
-    outline: var(--cngx-tab-rejected-outline, none);
-    outline-offset: var(--cngx-tab-rejected-outline-offset, 1px);
+    --_cngx-tab-rejection-color: var(
+      --cngx-tab-rejection-icon-color,
+      var(--cngx-color-danger, oklch(0.6 0.18 25))
+    );
+    background: color-mix(
+      in oklab,
+      var(--_cngx-tab-rejection-color, oklch(0.6 0.18 25)) var(--cngx-tab-rejection-tint, 18%),
+      transparent
+    );
+  }
+
+  /* A refusal is no error: amber surface and icon. */
+  .cngx-tabs__tab.cngx-tab--rejected[data-reason='refused'] {
+    --_cngx-tab-rejection-color: var(
+      --cngx-tab-refused-color,
+      color-mix(
+        in oklab,
+        var(--cngx-color-warning, oklch(0.72 0.15 75)) 70%,
+        var(--cngx-color-text, oklch(0.2 0.01 250))
+      )
+    );
   }
 
   @media (prefers-reduced-motion: no-preference) {
     .cngx-tabs__tab.cngx-tab--rejected {
       animation: cngx-tab-pulse-error var(--cngx-tab-rejected-pulse-duration, 600ms) ease-out;
     }
-  }
-
-  /* A refused switch is no error: amber disc with the refused glyph, amber
-     accent, and the wash and pulse mixed from the same amber (the shared
-     keyframe reads them, so it keeps its name). The label keeps its resting
-     colour: amber text would fall under the 4.5:1 text contrast. A failed
-     switch keeps the danger red above; the glyph (`!` versus the refused
-     circle) keeps the two apart without colour (WCAG 1.4.1). */
-  .cngx-tabs__tab.cngx-tab--rejected[data-reason='refused'] {
-    --cngx-tab-rejected-bg: color-mix(
-      in oklab,
-      var(--cngx-tab-refused-color, oklch(0.62 0.15 60)) 10%,
-      transparent
-    );
-    --cngx-tab-rejected-pulse-bg: color-mix(
-      in oklab,
-      var(--cngx-tab-refused-color, oklch(0.62 0.15 60)) 18%,
-      transparent
-    );
-    box-shadow: inset 0 calc(-1 * var(--cngx-tab-rejected-accent-width, 2px)) 0 0
-      var(--cngx-tab-refused-color, oklch(0.62 0.15 60));
-  }
-
-  .cngx-tabs__tab.cngx-tab--rejected[data-reason='refused'] .cngx-tabs__label {
-    color: var(--cngx-tab-refused-text-color, currentColor);
-  }
-
-  .cngx-tabs__rejection-icon[data-reason='refused'] {
-    background: var(--cngx-tab-refused-color, oklch(0.62 0.15 60));
   }
 }
 
@@ -881,15 +833,19 @@
   }
 }
 
+/* One-shot pulse up to twice the tint, then back to the tab's own
+   (tinted) background. The keyframe keeps its shipped name. */
 @keyframes cngx-tab-pulse-error {
   0% {
     background: var(--cngx-tab-bg, transparent);
   }
   50% {
-    background: var(--cngx-tab-rejected-pulse-bg, oklch(0.45 0.15 25 / 0.18));
-  }
-  100% {
-    background: var(--cngx-tab-rejected-bg, oklch(0.45 0.15 25 / 0.1));
+    background: color-mix(
+      in oklab,
+      var(--_cngx-tab-rejection-color, oklch(0.6 0.18 25))
+        calc(var(--cngx-tab-rejection-tint, 18%) * 2),
+      transparent
+    );
   }
 }
 
@@ -897,8 +853,8 @@
  * underline (its text colour matches resting tabs), and box-shadow is forced to
  * none, so the selected tab loses its sole signal. Re-draw the underline with a
  * Highlight bottom border; box-sizing:border-box keeps the bordered tab at the
- * same height so the row does not shift. The rejected tab's wash and accent also
- * drop; its glyph disc and a bottom contour are re-drawn below in system colours.
+ * same height so the row does not shift. The rejected tab's tint and label colour
+ * also drop; an outline re-marks it below in a system colour.
  * Unlayered + direct selector (outside @layer) to beat the layered component
  * rule. */
 @media (forced-colors: active) {
@@ -919,20 +875,20 @@
     color: GrayText;
   }
 
-  /* The rejection disc is a background fill too: paint it in system colours
-     so the refused and the failed glyph both keep their disc. */
+  /* The badge and the rejection icon are bare stroke glyphs painting in
+     currentColor, so they follow the forced text colour. Pin it to
+     CanvasText so they never leave the system palette. */
+  .cngx-tabs__badge,
   .cngx-tabs__rejection-icon {
-    forced-color-adjust: none;
-    background: CanvasText;
-    color: Canvas;
+    color: CanvasText;
   }
 
-  /* The rejected tab's accent is a box-shadow, forced to none: re-draw it as a
-     dashed bottom contour, so the marked tab keeps an edge next to its glyph.
-     Dashed and skipped on the selected tab, whose solid Highlight underline
-     above stays the selection signal. */
-  .cngx-tabs__tab.cngx-tab--rejected:not([aria-selected='true']) {
-    box-sizing: border-box;
-    border-bottom: var(--cngx-tab-rejected-accent-width, 2px) dashed CanvasText;
+  /* A rejected tab signals with a tinted surface or a coloured label, both of
+     which the system palette forces away. An inset outline (no layout shift)
+     keeps it distinguishable in every skin; the icon still names the reason.
+     The focus ring keeps its own outline. */
+  .cngx-tabs__tab.cngx-tab--rejected:not(:focus-visible) {
+    outline: 2px solid CanvasText;
+    outline-offset: -2px;
   }
 }
