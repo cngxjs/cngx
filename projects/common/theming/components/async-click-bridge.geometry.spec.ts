@@ -2,9 +2,8 @@ import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxButton } from '@cngx/common/button';
 import { CngxAsyncClick } from '@cngx/common/interactive';
-import { computedValue } from '@cngx/testing/geometry';
+import { computedValue, parkPointer } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { userEvent } from 'vitest/browser';
 
 // Runs in a real Chromium (the `test-geometry` target) against the compiled
 // async-click Material bridge (async-click-bridge.spec-host.scss). The hosts
@@ -79,11 +78,12 @@ async function settle(el: HTMLElement, stateClass: string): Promise<HTMLElement>
   return el;
 }
 
-// The geometry specs share one page, and earlier specs leave the real pointer
-// wherever they hovered last; a host mounted under it paints its hover state.
+// A host under the pointer paints its hover state, so the paint comparison
+// runs with the pointer parked and fails loudly if it still hovers.
 async function atRest(el: HTMLElement): Promise<HTMLElement> {
-  await userEvent.unhover(el);
+  await parkPointer();
   await Promise.all(el.getAnimations().map((a) => a.finished));
+  expect(el.matches(':hover')).toBe(false);
   return el;
 }
 
