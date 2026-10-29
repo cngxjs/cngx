@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -140,6 +140,48 @@ describe('runCopyCheck', () => {
     const canonical = { ...CANONICAL, 'command.spec.ts': 'it();\n', '.editorconfig': 'x' };
 
     expect(check(makeTrees(canonical, CANONICAL)).code).toBe(0);
+  });
+
+  it('fails a copy whose line endings turned CRLF', () => {
+    const run = check(makeTrees(CANONICAL, { ...CANONICAL, 'command.ts': 'export type A = 1;\r\n' }));
+
+    expect(run.code).toBe(1);
+    expect(run.out).toContain('command.ts (bytes differ)');
+  });
+
+  it('ignores a .spec.mts file and a testing/ helper in the canonical tree', () => {
+    const canonical = { ...CANONICAL, 'query.spec.mts': 'it();\n', 'testing/helper.ts': 'export const h = 1;\n' };
+
+    expect(check(makeTrees(canonical, CANONICAL)).code).toBe(0);
+  });
+
+  it('mutation: a .spec.mts file or a testing/ helper planted in the copy fails the check', () => {
+    const run = check(makeTrees(CANONICAL, { ...CANONICAL, 'query.spec.mts': 'it();\n', 'testing/helper.ts': 'export const h = 1;\n' }));
+
+    expect(run.code).toBe(1);
+    expect(run.out).toContain('query.spec.mts (test-only file or dotfile in the cli copy');
+    expect(run.out).toContain('testing/helper.ts (test-only file or dotfile in the cli copy');
+  });
+
+  it('treats an empty directory in either tree as no file and no divergence', () => {
+    const dirs = makeTrees(CANONICAL, CANONICAL);
+    mkdirSync(join(dirs.canonicalDir, 'empty'));
+    mkdirSync(join(dirs.copyDir, 'data', 'empty'));
+
+    expect(check(dirs).code).toBe(0);
+  });
+
+  it('compares a file symlink in the copy by the bytes it points at', () => {
+    const dirs = makeTrees(CANONICAL, CANONICAL);
+    const other = join(dirs.copyDir, '..', 'other.ts');
+    writeFileSync(other, 'export type A = 2;\n');
+    rmSync(join(dirs.copyDir, 'command.ts'));
+    symlinkSync(other, join(dirs.copyDir, 'command.ts'));
+
+    const run = check(dirs);
+
+    expect(run.code).toBe(1);
+    expect(run.out).toContain('command.ts (bytes differ)');
   });
 
   it('exits 1 on a missing tree', () => {

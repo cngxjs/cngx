@@ -5,7 +5,8 @@
 //
 // Unlike doctor-copy-check.mjs, which compares an explicit file list, this walks
 // both trees recursively: a new core file is part of the copy the moment it
-// exists, so it cannot be forgotten in a list. Spec files and dotfiles are not
+// exists, so it cannot be forgotten in a list. Spec files (`.spec.ts`,
+// `.spec.mts`, `.core-spec.ts`, `.test.ts`), `testing/` helpers and dotfiles are not
 // core: they are skipped in the canonical tree (specs run once, in packages/mcp)
 // and are a divergence in the copy, which must hold generated core files only.
 // `cli:sync` never deletes them, so the check is what makes them visible.
@@ -29,10 +30,12 @@ export const COPY_CORE_DIR = resolve(ROOT, 'packages/cli/src/core');
 /** A tree path as the repo-relative name the messages print. */
 export const displayPath = (dir) => relative(ROOT, dir).split(sep).join('/');
 
-const TEST_ONLY = /\.(?:spec|core-spec|test)\.ts$/;
-/** True for a file that belongs to the core copy: no spec, core-spec or test file, and no `__fixtures__` or dot segment. */
+const TEST_ONLY = /\.(?:spec|core-spec|test)\.m?ts$/;
+/** Directory segments that hold test material only: fixtures and testing helpers. */
+const TEST_ONLY_SEGMENTS = new Set(['__fixtures__', 'testing']);
+/** True for a file that belongs to the core copy: no spec, core-spec or test file, and no `__fixtures__`, `testing` or dot segment. */
 export const isCoreFile = (relPath) =>
-  !TEST_ONLY.test(relPath) && !relPath.split('/').some((part) => part.startsWith('.') || part === '__fixtures__');
+  !TEST_ONLY.test(relPath) && !relPath.split('/').some((part) => part.startsWith('.') || TEST_ONLY_SEGMENTS.has(part));
 
 /** Every file under `dir`, as sorted POSIX paths relative to `dir`; a missing directory is empty. */
 function listFiles(dir) {
