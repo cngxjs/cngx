@@ -169,15 +169,19 @@ export class CngxMenuTrigger {
         }
       });
     });
-    // Click on a submenu-parent item routes through the menu's `activated`
-    // output (CngxMenuItem funnels click into `activateCurrent`), so open the
-    // parent's submenu off that deterministic event rather than the keydown
-    // path. Enter/Space already open it via `handleActivation`; both funnel to
-    // the idempotent `openSubmenuFor`, so the parent never double-opens.
+    // A pointer click on an item routes through its menu's `activated` output
+    // (CngxMenuItem funnels click into `activateCurrent`), not the keydown
+    // path: a submenu parent opens its submenu, a leaf closes the menu, the
+    // pointer half of the hardcoded closeOnSelect. Every menu of the open
+    // chain is listened to, so a leaf inside a submenu closes the whole menu.
+    // Enter/Space reach the same idempotent `openSubmenuFor` / `closeAll`
+    // through `handleActivation`, so nothing opens or closes twice.
     effect((onCleanup) => {
-      const menu = this.menu();
-      const sub = outputToObservable(menu.ad.activated).subscribe(() => this.openActiveSubmenu());
-      onCleanup(() => sub.unsubscribe());
+      const menus = [this.menu(), ...this.focusStack.stack()];
+      const subs = menus.map((menu) =>
+        outputToObservable(menu.ad.activated).subscribe(() => this.handleActivated(menu)),
+      );
+      onCleanup(() => subs.forEach((sub) => sub.unsubscribe()));
     });
     // Hover routing: submenu companions only derive debounced hover intent;
     // this connector routes the edges through the same openSubmenuFor /
@@ -190,11 +194,14 @@ export class CngxMenuTrigger {
     });
   }
 
-  private openActiveSubmenu(): void {
-    const submenu = this.focusStack.activeSubmenu();
+  private handleActivated(menu: CngxMenuHost): void {
+    const activeId = menu.ad.activeId();
+    const submenu = menu.submenuItems().find((s) => s.id === activeId);
     if (submenu) {
       this.focusStack.openSubmenuFor(submenu);
+      return;
     }
+    this.focusStack.closeAll();
   }
 
   protected handleKeydown(event: KeyboardEvent): void {
