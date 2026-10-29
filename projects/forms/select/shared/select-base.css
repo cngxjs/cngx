@@ -54,7 +54,8 @@
  *   badge). `--cngx-select-chip-fit-badge-reserve` (unregistered, never
  *   assigned by the library, default `5ch`, room for `+99`) sets the space kept for the
  *   badge; assign it on the host, a container or `:root` for a wider
- *   projected badge or a custom `chipOverflowBadge` formatter. A chip that
+ *   projected badge or a custom `chipOverflowBadge` formatter. The badge
+ *   slot is exactly the reserve wide and clips a wider badge. A chip that
  *   would just fit without a badge is shortened by the reserve.
  *
  * Error surfaces with two layouts:
@@ -1423,6 +1424,17 @@
      without the badge, so the fit count never changes a size it is computed
      from. */
   .cngx-select__chip-list[data-overflow='fit'] {
+    /**
+     * Inline space a `chipOverflow: 'fit'` strip keeps free for the `+N`
+     * badge. The badge slot is exactly this wide and clips a wider badge;
+     * raise it for a projected `*cngxSelectChipOverflow` or a custom
+     * `chipOverflowBadge` formatter. Set it on the select, a container or
+     * `:root`. Never assigned by the library, so the `5ch` fallback (room
+     * for `+99`) resolves against the strip font.
+     * @cssprop {<length>} [--cngx-select-chip-fit-badge-reserve=5ch]
+     * @default 5ch
+     * @group State / Overflow
+     */
     --_cngx-chip-fit-reserve: var(--cngx-select-chip-fit-badge-reserve, 5ch);
     flex-wrap: nowrap;
     /* clip, not hidden: the margin keeps a focused remove button's ring
