@@ -10,8 +10,8 @@
 // (certain) member rename. Newly-added symbols never break existing usage.
 
 import type { DocsIndex } from '../data/loader.js';
+import { normalizeSlots } from '../data/slots.js';
 import type { DocEntry, DocInput, DocOutput } from '../data/types.js';
-import { normalizeSlot } from '../commands/get-slots.js';
 import { entryLib } from '../query.js';
 import type {
   CategoryDelta,
@@ -246,7 +246,7 @@ export function diffSnapshots(fromDocs: DocsIndex, toDocs: DocsIndex): UsageDelt
   // slots carry a full description, a strong enough fingerprint to rename-infer on.
   const slots = mergeCategoryDeltas(
     matchedPairs.map(([from, to]) =>
-      diffNamedList((from.slots ?? []).map(normalizeSlot), (to.slots ?? []).map(normalizeSlot), {
+      diffNamedList(normalizeSlots(from.slots), normalizeSlots(to.slots), {
         // An empty description fingerprints nothing; such a slot is never rename-inferred.
         renameKeyOf: (slot) => (slot.description.trim() === '' ? null : slot.description),
         signatureOf: (slot) => slot.description,

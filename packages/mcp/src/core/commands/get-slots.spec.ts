@@ -2,10 +2,12 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { loadBundledDocs, loadDocsFromFile } from '../data/loader.js';
 import type { DocsIndex } from '../data/loader.js';
+import type { DocSlot } from '../data/types.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
 import { answerVersioned, createDocsResolver } from '../data/docs-resolver.js';
 import type { SlotsResult } from './get-slots.js';
-import { getSlots as getSlotsAnswer, normalizeSlot, slotsMarkdown } from './get-slots.js';
+import { getSlots as getSlotsAnswer, slotsMarkdown } from './get-slots.js';
+import { normalizeSlot } from '../data/slots.js';
 import { isAmbiguous } from '../query.js';
 
 /** The query answer for a name that must not be ambiguous. */
@@ -86,6 +88,26 @@ describe('slot names that carry their description', () => {
     const slot = { name: 'cngxX', description: 'Fine.' };
 
     expect(normalizeSlot(slot)).toEqual(slot);
+  });
+
+  it.each([[null], [{ description: 'No name.' }], [{ name: '  ', description: 'Blank.' }], [{ name: 42, description: 'x' }]])(
+    'drops the unusable slot %j',
+    (slot) => {
+      expect(normalizeSlot(slot)).toBeNull();
+    },
+  );
+
+  it('answers only the valid slots of a list with a null slot and a nameless one', () => {
+    const slots = [null, { description: 'No name.' }, { name: 'cngxOk', description: 'Fine.' }] as unknown as DocSlot[];
+    const index: DocsIndex = { ...docs, components: [{ name: 'CngxX', slots }] };
+
+    expect(getSlots(index, 'CngxX')?.slots).toEqual([{ name: 'cngxOk', description: 'Fine.' }]);
+  });
+
+  it('answers no slots when slots is not a list', () => {
+    const index: DocsIndex = { ...docs, components: [{ name: 'CngxX', slots: {} as unknown as DocSlot[] }] };
+
+    expect(getSlots(index, 'CngxX')?.slots).toEqual([]);
   });
 
   it('answers the normalised slot', () => {

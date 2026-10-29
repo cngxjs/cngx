@@ -150,6 +150,35 @@ describe('diffSnapshots rename inference is fingerprint-gated', () => {
   });
 });
 
+describe('diffSnapshots over malformed slots', () => {
+  const index = (cngxVersion: string, components: DocEntry[]): DocsIndex => ({
+    meta: { schemaVersion: 6, cngxVersion, generatedAt: null, compodocxVersion: null },
+    components,
+    directives: [],
+    injectables: [],
+    tokens: [],
+    functions: [],
+  });
+  const broken = [null, { description: 'No name.' }, { name: 'cngxKept', description: 'Kept.' }] as unknown as DocEntry['slots'];
+
+  it('skips a null slot and a nameless one and keeps the other changes', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', slots: broken, inputsClass: [{ name: 'gone', type: 'string' }] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', slots: [], inputsClass: [] }]);
+    const delta = diffSnapshots(from, to);
+
+    expect(delta.ok).toBe(true);
+    expect(delta.slots.removed).toEqual([{ name: 'cngxKept', owner: 'CngxX' }]);
+    expect(delta.inputs.removed).toEqual([{ name: 'gone', owner: 'CngxX' }]);
+  });
+
+  it('treats slots that are not a list as no slots', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', slots: {} as unknown as DocEntry['slots'] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', slots: [{ name: 'cngxNew', description: 'New.' }] }]);
+
+    expect(diffSnapshots(from, to).slots).toEqual({ removed: [], renamed: [], signatureChanged: [] });
+  });
+});
+
 describe('diffSnapshots across a kind change', () => {
   const index = (cngxVersion: string, components: DocEntry[], directives: DocEntry[]): DocsIndex => ({
     meta: { schemaVersion: 6, cngxVersion, generatedAt: null, compodocxVersion: null },

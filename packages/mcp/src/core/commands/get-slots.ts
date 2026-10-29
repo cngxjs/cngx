@@ -8,6 +8,7 @@ import { defineCommand } from '../command.js';
 import { versionInput } from './version-input.js';
 import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
+import { normalizeSlots } from '../data/slots.js';
 import type { DocSlot } from '../data/types.js';
 import type { AmbiguousMatch, EntryKind } from '../query.js';
 import { foundUnlessAmbiguous, isAmbiguous, resolveEntry } from '../query.js';
@@ -19,25 +20,6 @@ export interface SlotsResult {
   slots: DocSlot[];
 }
 
-/**
- * compodocx records a multi-line `@slot` body as the slot `name` with an empty
- * `description`. Such a name is split: the first token is the name, the rest (minus
- * its `<example-url>` elements) the description, unless a description was recorded.
- * A no-op on a well-formed slot, so it stays harmless once compodocx is fixed.
- */
-export function normalizeSlot(slot: DocSlot): DocSlot {
-  const [name, ...rest] = slot.name.trim().split(/\s+/);
-  if (rest.length === 0) {
-    return { name: slot.name, description: slot.description };
-  }
-  const trailing = slot.name
-    .trim()
-    .slice(name.length)
-    .replace(/<example-url>[\s\S]*?<\/example-url>/g, '')
-    .trim();
-  return { name, description: slot.description.trim() === '' ? trailing : slot.description };
-}
-
 /** Pure query behind the tool - `null` when the name resolves to nothing, the ambiguity when a selector matches several entries. */
 export function getSlots(docs: DocsIndex, name: string): SlotsResult | AmbiguousMatch | null {
   const match = resolveEntry(docs, name);
@@ -47,7 +29,7 @@ export function getSlots(docs: DocsIndex, name: string): SlotsResult | Ambiguous
   return {
     name: match.entry.name,
     kind: match.kind,
-    slots: (match.entry.slots ?? []).map(normalizeSlot),
+    slots: normalizeSlots(match.entry.slots),
   };
 }
 
