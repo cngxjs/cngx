@@ -44,6 +44,15 @@ describe('cngx default icon set', () => {
         'CNGX_ICON_REDO',
         'CNGX_ICON_PENCIL',
         'CNGX_ICON_BELL',
+        'CNGX_ICON_INFO',
+        'CNGX_ICON_EXCLAMATION',
+        'CNGX_ICON_EXCLAMATION_SOLID',
+        'CNGX_ICON_QUESTION',
+        'CNGX_ICON_INFO_CIRCLE',
+        'CNGX_ICON_CHECK_CIRCLE',
+        'CNGX_ICON_ARCHIVE',
+        'CNGX_ICON_VOLUME',
+        'CNGX_ICON_STOP',
       ].sort(),
     );
   });
@@ -67,5 +76,18 @@ describe('cngx default icon set', () => {
 
   it('keeps refused and failed visually distinct', () => {
     expect(icons.CNGX_ICON_BAN.d).not.toBe(icons.CNGX_ICON_ALERT.d);
+  });
+
+  // The severity glyphs share one circle, so info, success and error read as
+  // one family and differ only by the mark inside (WCAG 1.4.1).
+  it('draws the circled severity glyphs on the same circle', () => {
+    const circle = 'M2.5 12a9.5 9.5 0 1 0 19 0a9.5 9.5 0 1 0-19 0z';
+    for (const icon of [
+      icons.CNGX_ICON_INFO_CIRCLE,
+      icons.CNGX_ICON_CHECK_CIRCLE,
+      icons.CNGX_ICON_X_CIRCLE,
+    ]) {
+      expect(icon.d.startsWith(circle)).toBe(true);
+    }
   });
 });

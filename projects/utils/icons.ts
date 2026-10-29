@@ -259,3 +259,73 @@ export const CNGX_ICON_BELL = {
   d: 'M5 16.5V11a7 7 0 0 1 14 0v5.5l2 2H3zM9.5 21.5h5',
   paint: 'stroke',
 } as const satisfies CngxIconData;
+
+/**
+ * Lowercase i with a round dot and a serifed stem, filled (info tone of a
+ * status dot). A solid shape carries more weight than a single stroke on a
+ * small coloured disc. @internal
+ */
+export const CNGX_ICON_INFO = {
+  viewBox: '0 0 24 24',
+  d: 'M10.1 5.4a1.9 1.9 0 1 0 3.8 0a1.9 1.9 0 1 0-3.8 0zM9.3 9.5H13.3V17.6H14.7V20H9.3V17.6H10.7V11.9H9.3Z',
+  paint: 'fill',
+} as const satisfies CngxIconData;
+
+/** Exclamation mark (error dot of a dot stepper, stale badge). @internal */
+export const CNGX_ICON_EXCLAMATION = {
+  viewBox: '0 0 24 24',
+  d: 'M12 4.5V14M12 19.5v.01',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
+
+/**
+ * Exclamation mark as a tapered wedge over a round dot, filled (warning tone
+ * of a status dot). @internal
+ */
+export const CNGX_ICON_EXCLAMATION_SOLID = {
+  viewBox: '0 0 24 24',
+  d: 'M10 5.6a2 2 0 0 1 4 0l-.75 8.6a1.25 1.25 0 0 1-2.5 0zM10.1 18.6a1.9 1.9 0 1 0 3.8 0a1.9 1.9 0 1 0-3.8 0z',
+  paint: 'fill',
+} as const satisfies CngxIconData;
+
+/** Question mark (neutral, unknown tone of a status dot). @internal */
+export const CNGX_ICON_QUESTION = {
+  viewBox: '0 0 24 24',
+  d: 'M9 8.5a3 3 0 1 1 4.5 2.6c-.9.5-1.5 1.2-1.5 2.2V14M12 18.5v.01',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
+
+/** Lowercase i in a circle (info severity). @internal */
+export const CNGX_ICON_INFO_CIRCLE = {
+  viewBox: '0 0 24 24',
+  d: 'M2.5 12a9.5 9.5 0 1 0 19 0a9.5 9.5 0 1 0-19 0zM12 7.5v.01M12 11v5.5',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
+
+/** Checkmark in a circle (success severity). @internal */
+export const CNGX_ICON_CHECK_CIRCLE = {
+  viewBox: '0 0 24 24',
+  d: 'M2.5 12a9.5 9.5 0 1 0 19 0a9.5 9.5 0 1 0-19 0zM8 12.5l2.5 2.5L16 9.5',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
+
+/** Archive box with a lid (empty state). @internal */
+export const CNGX_ICON_ARCHIVE = {
+  viewBox: '0 0 24 24',
+  d: 'M2 4h20v5H2zM4 9v11h16V9M10 13h4',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
+
+/** Speaker with two sound waves (read aloud). @internal */
+export const CNGX_ICON_VOLUME = {
+  viewBox: '0 0 24 24',
+  d: 'M11 5L6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14',
+  paint: 'stroke',
+} as const satisfies CngxIconData;
+
+/** Rounded square (stop playback). @internal */
+export const CNGX_ICON_STOP = {
+  viewBox: '0 0 24 24',
+  d: 'M8 6h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z',
+  paint: 'fill',
+} as const satisfies CngxIconData;
