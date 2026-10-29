@@ -253,28 +253,63 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = resolveSelectConfig();
 
+  /**
+   * Field label. Names the trigger when neither `aria-label` nor
+   * `aria-labelledby` is set, names the listbox, and stands in for an empty
+   * `placeholder`.
+   */
   readonly label = input<string>('');
+  /**
+   * Options in data-driven mode, flat or grouped. Ignored while `state` is
+   * bound; its data wins.
+   */
   readonly options = input<CngxSelectOptionsInput<T>>([] as CngxSelectOptionsInput<T>);
   /** Placeholder rendered inside the input while it is empty; falls back to `label` when unset. */
   readonly placeholder = input<string>('');
+  /**
+   * Disables the trigger and the panel. Merges with the disabled state of an
+   * enclosing `cngx-form-field`.
+   */
   readonly disabledInput = input<boolean>(false, { alias: 'disabled' });
+  /**
+   * Marks the control as required and sets `aria-required`. Merges with the
+   * required state of an enclosing `cngx-form-field`.
+   */
   readonly requiredInput = input<boolean>(false, { alias: 'required' });
+  /** Equality function that matches values to options. Defaults to `Object.is`. */
   readonly compareWith = input<CngxSelectCompareFn<T>>(
     cngxSelectDefaultCompare as CngxSelectCompareFn<T>,
   );
+  /** Host id. Unset, it takes the input id of an enclosing `cngx-form-field`. */
   readonly idInput = input<string | null>(null, { alias: 'id' });
+  /**
+   * Accessible name of the trigger. Wins over `label`; inside a
+   * `cngx-form-field` the field label referenced through `aria-labelledby`
+   * takes precedence.
+   */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
+  /**
+   * Id of the element that names the trigger. Unset, it takes the label id of
+   * an enclosing `cngx-form-field`.
+   */
   readonly ariaLabelledBy = input<string | null>(null, { alias: 'aria-labelledby' });
+  /** Tab index of the trigger. Defaults to `0`; a disabled control always uses `-1`. */
   readonly tabIndex = input<number>(0);
+  /** Focuses the trigger once after the first render. */
   readonly autofocus = input<boolean>(false);
+  /** Classes on the panel root, merged with `CngxSelectConfig.panelClass`. */
   readonly panelClass = input<string | readonly string[] | null>(null);
+  /**
+   * Panel min-width: `'trigger'` matches the trigger width, a number sets
+   * pixels, `null` sizes to content. Defaults to `CngxSelectConfig.panelWidth`.
+   */
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   /**
-   * Popover placement relative to the trigger. Per-instance input wins
-   * over `CngxSelectConfig.popoverPlacement`.
+   * Popover placement relative to the trigger. Per-instance input wins over
+   * `CngxSelectConfig.popoverPlacement`.
    */
   readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
-  /** Mobile `inputmode`. Defaults from `CngxSelectConfig.inputMode`. */
+  /** Mobile `inputmode` of the input. Defaults to `CngxSelectConfig.inputMode`. */
   readonly inputMode = input<NonNullable<CngxSelectConfig['inputMode']>>(this.config.inputMode);
   /**
    * Mobile `enterkeyhint`. Default `'done'` - Typeahead commits Enter
@@ -283,21 +318,54 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   readonly enterKeyHint = input<NonNullable<CngxSelectConfig['enterKeyHint']>>(
     this.config.enterKeyHint ?? 'done',
   );
-  /** Formatter from value to input text. */
+  /**
+   * Formats a value into the input text. The input is rewritten through it
+   * after a commit, a rollback, a clear and a blur. Defaults to `String`.
+   */
   readonly displayWith = input<(value: T) => string>((v) => String(v));
   /** When `true` (default), blur without a pick resets to `displayWith(value())`. */
   readonly clearOnBlur = input<boolean>(true);
-  /** Custom matcher for the inline search. Wins over `CngxSelectConfig.searchMatchFn`. */
+  /**
+   * Per-instance match policy. Receives the option's `{ value, label }` and the
+   * term and returns `true` when the option should stay visible. Wins over
+   * `CngxSelectConfig.searchMatchFn`; the default is the folded label match in
+   * the reading locale.
+   */
   readonly searchMatchFn = input<CngxSelectMatchFn<T> | null>(null);
+  /**
+   * Debounce in ms between a keystroke and the search filter update and
+   * `searchTermChange`. Defaults to
+   * `CngxSelectConfig.typeaheadDebounceInterval`.
+   */
   readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
+  /** Suppresses the first `searchTermChange` emission, the empty term written on hydration. */
   readonly skipInitial = input<boolean>(false);
+  /**
+   * Hides the per-option selection indicator. Defaults to the inverse of
+   * `CngxSelectConfig.showSelectionIndicator`.
+   */
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
+  /**
+   * Places the selection indicator before or after the option label. `null`
+   * inherits `CngxSelectConfig.selectionIndicatorPosition`.
+   */
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
+  /**
+   * Visual form of the selection indicator: checkmark, checkbox, radio or
+   * `'auto'`. `null` inherits `CngxSelectConfig.selectionIndicatorVariant`.
+   */
   readonly selectionIndicatorVariant = input<CngxSelectSelectionIndicatorVariant | null>(null);
+  /** Hides the trigger caret. Defaults to the inverse of `CngxSelectConfig.showCaret`. */
   readonly hideCaret = input<boolean>(!this.config.showCaret);
+  /** Renders a clear button while the selection is not empty and the control is enabled. */
   readonly clearable = input<boolean>(false);
   /** @internal The select section at this reading site; per-variant defaults. */
   private readonly selectCopy = injectSelectCopy();
+  /**
+   * Accessible name of the clear button. Unset, it reads
+   * `CngxSelectConfig.ariaLabels.clearButton`, then the select copy of the
+   * active language.
+   */
   readonly clearButtonAriaLabel = input<string | undefined>(undefined);
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedClearButtonAriaLabel = computed<string>(
@@ -307,22 +375,49 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       this.selectCopy().resetSelection,
   );
   /**
-   * Replaces the built-in `✕` glyph inside the default clear button.
-   * Ignored when `*cngxSelectClearButton` is projected.
+   * Replaces the built-in clear glyph inside the default clear button while
+   * keeping the button frame, ARIA and click handler. Ignored when
+   * `*cngxSelectClearButton` is projected.
    */
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
-  /**
-   * Replaces the built-in caret glyph. Ignored when
-   * `*cngxSelectCaret` is projected.
-   */
+  /** Replaces the built-in caret glyph. Ignored when `*cngxSelectCaret` is projected. */
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
+  /** Shows the first-load indicator in the panel while no `state` is bound. */
   readonly loading = input<boolean>(false);
+  /**
+   * First-load indicator: skeleton, spinner, bar or text. A projected
+   * `*cngxSelectLoading` wins; defaults to `CngxSelectConfig.loadingVariant`.
+   */
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
+  /**
+   * Number of skeleton rows while `loadingVariant` is `'skeleton'`. Defaults to
+   * `CngxSelectConfig.skeletonRowCount`.
+   */
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
+  /**
+   * Indicator over the visible options during a reload: bar, spinner, dots or
+   * none. A projected `*cngxSelectRefreshing` wins; defaults to
+   * `CngxSelectConfig.refreshingVariant`.
+   */
   readonly refreshingVariant = input<CngxSelectRefreshingVariant>(this.config.refreshingVariant);
+  /**
+   * Async-state source for the options. When bound, its data replaces `options`
+   * and its status drives the loading, empty, error and refreshing views.
+   */
   readonly state = input<CngxAsyncState<CngxSelectOptionsInput<T>> | null>(null);
+  /** Callback the built-in retry button runs after a failed load, before `retry` emits. */
   readonly retryFn = input<(() => void) | null>(null);
+  /**
+   * Async write handler run on every pick with the intended value; a clear
+   * writes the value directly, without a commit. Unset, the change applies
+   * directly; `commitMode` decides how it shows while the handler runs.
+   */
   readonly commitAction = input<CngxSelectCommitAction<T> | null>(null);
+  /**
+   * Value write while `commitAction` runs. `'optimistic'` (default) shows the
+   * picked value at once and rolls back on error; `'pessimistic'` waits for the
+   * commit to succeed. The panel closes on pick in both modes.
+   */
   readonly commitMode = input<CngxSelectCommitMode>('optimistic');
   /**
    * Panel presentation. Unset follows `CNGX_SELECT_CONFIG.mobileSheet`:
@@ -336,30 +431,66 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
    * then `[label]`, then `ariaLabels.fieldLabelFallback`.
    */
   readonly sheetLabel = input<string | undefined>(undefined);
+  /**
+   * Built-in surface for a failed commit when no `*cngxSelectCommitError` is
+   * projected: banner, inline or none. Defaults to
+   * `CngxSelectConfig.commitErrorDisplay`.
+   */
   readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(this.config.commitErrorDisplay);
+  /**
+   * Turns live-region announcements of selection changes on or off. `null`
+   * inherits `CngxSelectConfig.announcer.enabled`, which defaults to on.
+   */
   readonly announceChanges = input<boolean | null>(null);
+  /**
+   * Formatter for the live-region announcement of a selection change. `null`
+   * inherits `CngxSelectConfig.announcer.format`.
+   */
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
   /**
-   * Scalar-commit error-announce policy. Per-instance input wins over
-   * `CngxSelectConfig.commitErrorAnnouncePolicy`. Default
-   * `{ kind: 'soft' }` - typeahead UX shouldn't interrupt the
-   * free-text flow with assertive reads on commit rollback.
+   * Commit-error announce policy. `'verbose'` reads the error message into the
+   * live region; `'soft'` announces a generic removal without a count.
+   * Per-instance input wins over `CngxSelectConfig.commitErrorAnnouncePolicy`;
+   * default `{ kind: 'soft' }`, so a failed commit does not interrupt typing.
    */
   readonly commitErrorAnnouncePolicy = input<CngxCommitErrorAnnouncePolicy>(
     this.config.commitErrorAnnouncePolicy ?? { kind: 'soft' },
   );
 
-  /** Two-way single-value binding. */
+  /**
+   * Selected value, two-way bindable as `[(value)]`. Syncs with the bound field
+   * inside a `cngx-form-field`.
+   */
   readonly value = model<T | undefined>(undefined);
 
+  /**
+   * Emits after a pick or clear settles, with the new and previous value and
+   * the picked option; this variant has no `optionSelected` output. With
+   * `commitAction` bound a pick fires on commit success.
+   */
   readonly selectionChange = output<CngxTypeaheadChange<T>>();
+  /** Emits `true` when the panel opens and `false` when it closes. */
   readonly openedChange = output<boolean>();
+  /** Emits when the panel opens. */
   readonly opened = output<void>();
+  /** Emits when the panel closes. */
   readonly closed = output<void>();
+  /** Emits when the clear button empties the selection, together with `selectionChange`. */
   readonly cleared = output<void>();
+  /**
+   * Emits when the built-in retry button is pressed after a failed load, after
+   * `retryFn` has run.
+   */
   readonly retry = output<void>();
+  /**
+   * Emits the error when `commitAction` fails. The live region reads a soft
+   * removal by default; `commitErrorAnnouncePolicy` switches to the error
+   * message.
+   */
   readonly commitError = output<unknown>();
+  /** Emits each status of a `commitAction` run: `'pending'`, then `'success'` or `'error'`. */
   readonly stateChange = output<AsyncStatus>();
+  /** Emits the search term as the user types into the input, after `searchDebounceMs`. */
   readonly searchTermChange = output<string>();
 
   private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
@@ -816,16 +947,29 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     });
   }
 
+  /**
+   * Opens the panel. On a disabled control the panel closes again at once, so
+   * the call has no effect.
+   */
   open(): void {
     this.popoverRef()?.show();
   }
+  /**
+   * Closes the panel. With `CngxSelectConfig.restoreFocus` on, focus moves back
+   * to the trigger first.
+   */
   close(): void {
     this.hostFocus.refocusOwnerBeforeClose();
     this.popoverRef()?.hide();
   }
+  /**
+   * Opens the panel when it is closed and closes it when it is open. On a
+   * disabled control an open is undone at once, as with `open()`.
+   */
   toggle(): void {
     this.popoverRef()?.toggle();
   }
+  /** Moves focus to the trigger, passing the given `FocusOptions` through. */
   focus(options?: FocusOptions): void {
     this.inputEl()?.nativeElement.focus(options);
   }

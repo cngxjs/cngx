@@ -12,7 +12,11 @@ import { sameArrayContents } from '../../shared/internal/compare';
 import type { CngxSelectCompareFn, CngxSelectCore } from '../../shared/internal/select-core';
 import type { CngxTreeSelectChange } from '../tree-select.component';
 
-/** Change meta of one toggle or cascade-toggle dispatch. */
+/**
+ * Change meta of one toggle or cascade-toggle dispatch.
+ *
+ * @internal
+ */
 export interface TreeToggleMeta<T> {
   readonly added: readonly T[];
   readonly removed: readonly T[];
