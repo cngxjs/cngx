@@ -7,7 +7,14 @@
     [popover]="panel.popover"
     [aria-label]="resolvedTriggerLabel()"
   >
-    <ng-content select=":not([cngxBreadcrumbOverflowItem])">&hellip;</ng-content>
+    <ng-content select=":not([cngxBreadcrumbOverflowItem])">
+      <!-- An SVG, not &hellip;: a text ellipsis sits on the baseline, below the box centre. -->
+      <svg class="cngx-breadcrumb__overflow-glyph" viewBox="0 0 24 24" fill="currentColor">
+        <circle cx="5" cy="12" r="1.75" />
+        <circle cx="12" cy="12" r="1.75" />
+        <circle cx="19" cy="12" r="1.75" />
+      </svg>
+    </ng-content>
   </button>
 
   <cngx-popover-panel #panel role="group" placement="bottom-start">

@@ -238,7 +238,8 @@ describe('CngxBreadcrumbOverflow', () => {
     // The projected row template must not be swept into the trigger's
     // ng-content: the default ellipsis glyph survives the slot override.
     const trigger = root.querySelector('button.cngx-breadcrumb__overflow-trigger') as HTMLButtonElement;
-    expect(trigger.textContent?.trim()).toBe('…');
+    expect(trigger.querySelector('svg.cngx-breadcrumb__overflow-glyph')).toBeTruthy();
+    expect(trigger.textContent?.trim()).toBe('');
   });
 
   it('renders a forwarded [itemTemplate] input (the bar-tier pass-through)', () => {
