@@ -6,7 +6,7 @@ import { userEvent } from 'vitest/browser';
 import { CngxCombobox } from '../combobox/combobox.component';
 import { CngxMultiSelect } from '../multi-select/multi-select.component';
 import type { CngxSelectOptionDef } from './option.model';
-import { CngxComboboxChip, CngxMultiSelectChip } from './template-slots';
+import { CngxComboboxChip, CngxMultiSelectChip, CngxSelectChipOverflow } from './template-slots';
 
 // Runs in a real Chromium (the `test-geometry` target): one-row trigger, the
 // slot boxes, `inert` tab order and the focus hand-off are layout and focus
@@ -21,12 +21,12 @@ const OPTIONS: CngxSelectOptionDef<string>[] = [
 ];
 const FOUR = ['ops', 'cs', 'fin', 'plat'];
 
-type Kind = 'multi' | 'combo' | 'multi-projected' | 'combo-projected';
+type Kind = 'multi' | 'combo' | 'multi-projected' | 'combo-projected' | 'combo-wide-badge';
 
 @Component({
   selector: 'cngx-select-chip-fit-geometry-host',
   standalone: true,
-  imports: [CngxMultiSelect, CngxCombobox, CngxMultiSelectChip, CngxComboboxChip],
+  imports: [CngxMultiSelect, CngxCombobox, CngxMultiSelectChip, CngxComboboxChip, CngxSelectChipOverflow],
   template: `
     <button type="button" class="before">before</button>
     <div class="fit-box" [style.width.px]="width()" [attr.dir]="dir()" [style]="boxStyle()">
@@ -62,6 +62,13 @@ type Kind = 'multi' | 'combo' | 'multi-projected' | 'combo-projected';
             <span *cngxComboboxChip="let opt; let remove = remove" class="pchip">
               {{ opt.label }}
               <button type="button" class="pchip-x" (click)="remove()">x</button>
+            </span>
+          </cngx-combobox>
+        }
+        @case ('combo-wide-badge') {
+          <cngx-combobox [label]="'Team'" [options]="options" [(values)]="values" chipOverflow="fit">
+            <span *cngxSelectChipOverflow="let count" class="wide-badge" style="display: inline-block; inline-size: 14ch">
+              {{ count }} more
             </span>
           </cngx-combobox>
         }
@@ -261,7 +268,7 @@ describe('chipOverflow fit geometry - badge reserve', () => {
 });
 
 describe('chipOverflow fit geometry - input min-width override', () => {
-  for (const kind of ['combo'] as const) {
+  for (const kind of ['combo', 'combo-wide-badge'] as const) {
     it(`keeps one count per width when the input may shrink (${kind})`, async () => {
       const { host, root } = await mount((h) => {
         h.kind.set(kind);
@@ -285,6 +292,12 @@ describe('chipOverflow fit geometry - input min-width override', () => {
       }
       expect(unstable).toEqual([]);
       expect(loopErrors).toEqual([]);
+      host.width.set(300);
+      await settle(fixture!);
+      const reserve = q(root, '.cngx-select__chip-overflow-slot').getBoundingClientRect().width;
+      host.values.set(['ops']);
+      await settle(fixture!);
+      expect(q(root, '.cngx-select__chip-overflow-slot').getBoundingClientRect().width).toBe(reserve);
     }, 180_000);
   }
 });

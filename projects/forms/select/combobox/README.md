@@ -140,7 +140,7 @@ On a touch screen narrower than 48rem the panel opens as a modal fullscreen pane
 
 `'fit'` measures the strip, so there is no count to pick per width. The chips past the fit stay out of the tab order and are hidden from assistive technology; the whole selection is still read through the control (the input description). Before the first measurement the strip caps at `maxVisibleChips`, so the first paint already shows a badge and the full selection for assistive technology.
 
-The space kept for the badge is `--cngx-select-chip-fit-badge-reserve` (default `5ch`, enough for `+99` at the default badge size). Set it on the select, a container or `:root` when a projected `*cngxSelectChipOverflow` or a custom `chipOverflowBadge` formatter is wider:
+The space kept for the badge is `--cngx-select-chip-fit-badge-reserve` (default `5ch`, enough for `+99` at the default badge size). Set it on the select, a container or `:root` when a projected `*cngxSelectChipOverflow` or a custom `chipOverflowBadge` formatter is wider; the badge slot is exactly the reserve wide and clips a wider badge:
 
 ```css
 .team-picker {
