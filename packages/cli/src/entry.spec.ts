@@ -2,9 +2,9 @@
 // the plan's process matrix. Runs the built entry the way a shell does, so it
 // needs `npm run build:cli` first (dist/ and the bundled data/).
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { assertNoAnsi } from './output-guards.js';
@@ -84,6 +84,82 @@ describe('the built entry', () => {
 
       expect(result.status).toBe(3);
       expect(result.stderr).toBe('cngx: internal error: ENOSPC: no space left on device, write\n');
+    });
+  });
+
+  it.each(['--help', '-h'])('prints help on stdout and exits 0 for %s', (flag) => {
+    const result = run(flag);
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('Usage: cngx <command>');
+    expect(result.stderr).toBe('');
+  });
+
+  it('prints help on stderr and exits 2 when run bare', () => {
+    const result = run();
+
+    expect(result.status).toBe(2);
+    expect(result.stdout).toBe('');
+    expect(result.stderr).toContain('Usage: cngx <command>');
+  });
+
+  it('exits 2 with a usage line for an unknown global flag', () => {
+    const result = run('--bogus');
+
+    expect(result.status).toBe(2);
+    expect(result.stdout).toBe('');
+    expect(result.stderr).toMatch(/^cngx: Unknown option '--bogus'/);
+  });
+
+  // No test hook goes into dist: these cases copy the entry and its two early
+  // modules into a temp dir and replace one module there.
+  describe('the bootstrap branches of a copied entry', () => {
+    const roots: string[] = [];
+    afterAll(() => roots.forEach((root) => rmSync(root, { recursive: true, force: true })));
+
+    function copiedEntry(replace: Record<string, string>): string {
+      const root = mkdtempSync(join(tmpdir(), 'cngx-cli-entry-'));
+      roots.push(root);
+      const dist = join(root, 'dist');
+      mkdirSync(dist);
+      for (const file of ['index.js', 'pipe-guard.js', 'node-floor.js']) {
+        copyFileSync(join(dirname(ENTRY), file), join(dist, file));
+      }
+      for (const [file, source] of Object.entries(replace)) {
+        writeFileSync(join(dist, file), source);
+      }
+      return join(dist, 'index.js');
+    }
+
+    const throwingAdapter = { 'cli-adapter.js': "throw new Error('adapter failed to load');\n" };
+
+    it('exits 3 with one stderr line when the adapter fails to load', () => {
+      const result = spawnSync(process.execPath, [copiedEntry(throwingAdapter), 'api', 'CngxSelect'], { encoding: 'utf8' });
+
+      expect(result.status).toBe(3);
+      expect(result.stdout).toBe('');
+      expect(result.stderr).toBe('cngx: internal error: adapter failed to load\n');
+    });
+
+    it.each([['--format', 'json'], ['--format=json']])('prints one json failure document under %s', (...format) => {
+      const result = spawnSync(process.execPath, [copiedEntry(throwingAdapter), 'api', 'CngxSelect', ...format], { encoding: 'utf8' });
+
+      expect(result.status).toBe(3);
+      expect(result.stderr).toBe('cngx: internal error: adapter failed to load\n');
+      expect(JSON.parse(result.stdout)).toEqual({
+        cngxVersion: null,
+        result: null,
+        error: { reason: 'internal', message: 'adapter failed to load' },
+      });
+    });
+
+    it('exits 2 with the floor message when the node floor check fails', () => {
+      const floor = { 'node-floor.js': "export const checkNodeFloor = () => 'cngx: Node 99 or newer is required (running test).';\n" };
+      const result = spawnSync(process.execPath, [copiedEntry(floor), 'api', 'CngxSelect'], { encoding: 'utf8' });
+
+      expect(result.status).toBe(2);
+      expect(result.stdout).toBe('');
+      expect(result.stderr).toBe('cngx: Node 99 or newer is required (running test).\n');
     });
   });
 });
