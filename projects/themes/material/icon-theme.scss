@@ -32,9 +32,12 @@
 // Material styles `.mat-icon` (24px box) and `.material-icons` (24px font)
 // unlayered, and an unlayered rule beats every layered one. The selector
 // (0,2,1) also outranks `.mat-icon.mat-icon-inline` (0,2,0) whatever the
-// load order.
+// load order. The second selector reaches a glyph one host deeper: a glyph
+// component rendered into a <cngx-icon> (a `CNGX_BUTTON_CARET_ICON` caret)
+// puts its own host element between the wrapper and the <mat-icon>.
 @mixin mat-icon() {
-  cngx-icon.cngx-icon > :is(.mat-icon, .material-icons) {
+  cngx-icon.cngx-icon > :is(.mat-icon, .material-icons),
+  cngx-icon.cngx-icon > :not(.mat-icon, .material-icons) > :is(.mat-icon, .material-icons) {
     font-size: 1em;
     inline-size: 1em;
     block-size: 1em;

@@ -4047,7 +4047,7 @@ html {
   );
 }
 
-// Demo-only scope for the button Material-bridge story: stands in for an app
+// Demo-only scope for the button and menu-button Material-bridge stories: stands in for an app
 // that includes `button.theme($theme)` on `html`. The scope is the story's
 // generated host element (`app-<demo>-<example>`, examples-gen), so the
 // story template carries no demo class a consumer would not have. In M3 the bridge reads the
@@ -4062,7 +4062,8 @@ $demo-material-bridge-theme: mat.define-theme(
   )
 );
 
-app-button-material-bridge {
+app-button-material-bridge,
+app-menu-button-material-bridge {
   @include cngx-button-bridge.theme($demo-material-bridge-theme);
   @include cngx-icon-bridge.theme($demo-material-bridge-theme);
 }

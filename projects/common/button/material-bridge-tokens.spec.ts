@@ -195,6 +195,22 @@ describe('button Material bridge', () => {
     expect(compileThemeEntry(M2_ENTRY)).not.toContain('radius');
   });
 
+  it('bridges the menu-button caret and the split-button seam in M3 only', () => {
+    const m3 = flat(compileThemeEntry(M3_ENTRY));
+    expect(m3).toContain(
+      '--cngx-icon-size: var(--cngx-menu-button-caret-size, var(--cngx-button-icon-size, 1.25em))',
+    );
+    expect(m3).toContain('gap: calc(var(--cngx-space-xs, 4px) / 2)');
+    expect(m3).toContain('border-start-end-radius: var(--mat-sys-corner-extra-small, 4px)');
+    expect(m3).toContain('border-start-start-radius: var(--mat-sys-corner-extra-small, 4px)');
+    expect(m3).toMatch(
+      /\.cngx-split-button[^{]*> \.cngx-icon-menu-button\[data-expanded=['"]?true['"]?\] \{ border-radius: var\(--mat-sys-corner-full\); \}/,
+    );
+    const m2 = compileThemeEntry(M2_ENTRY);
+    expect(m2).not.toContain('cngx-split-button');
+    expect(m2).not.toContain('cngx-menu-button');
+  });
+
   it('keeps the close-button tokens the old close-button bridge set', () => {
     const m3 = compileThemeEntry(M3_ENTRY);
     // The hover wash is the M3 hover state layer (8% at the default opacity).
