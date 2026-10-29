@@ -8,7 +8,7 @@ import { defineCommand } from '../command.js';
 import { versionInput } from './version-input.js';
 import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
-import type { DocEntry, DocInput } from '../data/types.js';
+import type { DocEntry, DocInput, DocMethod } from '../data/types.js';
 import type { EntryKind } from '../query.js';
 import { resolveEntry } from '../query.js';
 import { blocks, bullets, code, docText, section, table, textCell } from './markdown.js';
@@ -77,6 +77,18 @@ function isSignalBased(entry: DocEntry): boolean {
   return entry.signal === true || members.some((member) => member.signalKind !== undefined);
 }
 
+/**
+ * TypeScript `SyntaxKind` numbers of the `private` and `protected` keywords as compodocx
+ * records them in `modifierKind`. The core carries no `typescript` dependency, so the
+ * numbers are pinned here; they hold for TypeScript 5.9, the version compodocx resolves
+ * from the root install. A renumbering fails the bundled-snapshot case in get-api.spec.
+ */
+const NON_PUBLIC_MODIFIER_KINDS: ReadonlySet<number> = new Set([123, 124]);
+
+/** cngx keeps template handlers protected; only a method without a private/protected modifier is API. */
+const isPublicMethod = (method: DocMethod): boolean =>
+  !(method.modifierKind ?? []).some((kind) => NON_PUBLIC_MODIFIER_KINDS.has(kind));
+
 /** Pure query behind the tool - returns `null` when the name resolves to nothing. */
 export function getApi(docs: DocsIndex, name: string): ApiResult | null {
   const match = resolveEntry(docs, name);
@@ -101,7 +113,7 @@ export function getApi(docs: DocsIndex, name: string): ApiResult | null {
     hostBindings: (entry.hostBindings ?? []).map((binding) => binding.name),
     // Components/directives record methods under methodsClass, injectables
     // under methods - read whichever the entry carries.
-    methods: (entry.methodsClass ?? entry.methods ?? []).map((method) => ({
+    methods: (entry.methodsClass ?? entry.methods ?? []).filter(isPublicMethod).map((method) => ({
       name: method.name,
       returnType: method.returnType ?? null,
     })),

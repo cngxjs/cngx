@@ -51,6 +51,8 @@ export interface DocMethod {
   name: string;
   args?: unknown[];
   returnType?: string;
+  /** TypeScript `SyntaxKind` numbers of the method's modifiers, as compodocx records them. */
+  modifierKind?: number[];
   description?: string;
   rawdescription?: string;
 }
