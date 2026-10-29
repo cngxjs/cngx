@@ -23,11 +23,7 @@ import {
   type CngxButtonVariant,
 } from '@cngx/common/button';
 import { CngxIcon } from '@cngx/common/display';
-import {
-  CNGX_HOST_INTERACTION_STATE,
-  CngxMenuTrigger,
-  type CngxHostInteractionState,
-} from '@cngx/common/interactive';
+import { CNGX_HOST_INTERACTION_STATE, CngxMenuTrigger } from '@cngx/common/interactive';
 import { CngxPopoverTrigger } from '@cngx/common/popover';
 
 import { CNGX_BUTTON_CARET_ICON } from './caret-icon.token';
@@ -89,10 +85,7 @@ import { CNGX_BUTTON_CARET_ICON } from './caret-icon.token';
     { directive: CngxPopoverTrigger, inputs: ['cngxPopoverTrigger: popover'] },
   ],
   providers: [
-    {
-      provide: CNGX_HOST_INTERACTION_STATE,
-      useFactory: (): CngxHostInteractionState => inject(CngxMenuButton).hostInteraction,
-    },
+    { provide: CNGX_HOST_INTERACTION_STATE, useExisting: CngxMenuButton },
     provideButtonDescribedBy('CngxMenuButton'),
   ],
   host: {
@@ -175,7 +168,9 @@ export class CngxMenuButton {
 
   /**
    * Rendered as `aria-disabled`; the button stays focusable, opens the menu
-   * on neither click nor key and closes it when it is open.
+   * on neither click nor key and closes it when it is open. Published to the
+   * co-hosted `CngxMenuTrigger` through `CNGX_HOST_INTERACTION_STATE`, so the
+   * click guard, `aria-disabled` and the keyboard guard read one signal.
    */
   readonly disabled = input(false, { transform: booleanAttribute });
 
@@ -200,13 +195,6 @@ export class CngxMenuButton {
 
   /** @internal - app-wide glyph from `CNGX_BUTTON_CARET_ICON`. */
   protected readonly customCaret = inject(CNGX_BUTTON_CARET_ICON, { optional: true });
-
-  /**
-   * @internal - read by the co-hosted `CngxMenuTrigger` (keyboard guard,
-   * close on block) and a co-hosted `CngxAsyncClick`: the same `disabled`
-   * the core renders as `aria-disabled` and guards clicks with.
-   */
-  readonly hostInteraction: CngxHostInteractionState = { disabled: this.disabled };
 
   /** @internal */
   protected readonly core = injectButtonCore(

@@ -10,7 +10,13 @@ import {
   withButtonTone,
   withButtonVariant,
 } from '@cngx/common/button';
-import { CngxAsyncClick, CngxMenu, CngxMenuItem, type AsyncAction } from '@cngx/common/interactive';
+import {
+  CNGX_HOST_INTERACTION_STATE,
+  CngxAsyncClick,
+  CngxMenu,
+  CngxMenuItem,
+  type AsyncAction,
+} from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverSheet } from '@cngx/common/popover';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -229,6 +235,17 @@ describe('CngxMenuButton', () => {
       const { button } = setup(BasicHost);
       expect(button.classList.contains('cngx-button')).toBe(true);
       expect(button.getAttribute('aria-haspopup')).toBe('menu');
+    });
+
+    it('publishes itself as the host interaction state, its disabled input as the one truth', () => {
+      const { fixture, host, flush } = setup(BasicHost);
+      const de = fixture.debugElement.query(By.directive(CngxMenuButton));
+      const state = de.injector.get(CNGX_HOST_INTERACTION_STATE);
+      expect(state).toBe(de.injector.get(CngxMenuButton));
+      expect(state.disabled()).toBe(false);
+      host.disabled.set(true);
+      flush();
+      expect(state.disabled()).toBe(true);
     });
 
     it.each([
