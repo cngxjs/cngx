@@ -37,7 +37,7 @@ export class AppExport {
 
 ## Axes and states
 
-Variant (through the selector value), `tone`, `size`, group membership and `provideButtonConfig` resolve exactly as on `cngxButton`. `[disabled]` renders `aria-disabled`: the button stays focusable, opens on neither click nor key, closes an open menu and reads `disabledReason` through `aria-describedby`. A co-hosted `cngxAsyncClick` shows the busy layer as on `cngxButton`.
+Variant (through the selector value), `tone`, `size`, group membership and `provideButtonConfig` resolve exactly as on `cngxButton`. `[disabled]` renders `aria-disabled`: the button stays focusable, opens on neither click nor key, closes an open menu and reads `disabledReason` through `aria-describedby`. The menu button has no action of its own: a click opens the menu, so put async actions on the menu items, not a co-hosted `cngxAsyncClick` on the button.
 
 ## Caret
 
