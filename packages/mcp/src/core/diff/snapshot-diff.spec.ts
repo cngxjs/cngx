@@ -123,6 +123,58 @@ describe('diffSnapshots rename inference is fingerprint-gated', () => {
   });
 });
 
+describe('diffSnapshots keys inputs and outputs on their public name', () => {
+  const index = (cngxVersion: string, components: DocEntry[]): DocsIndex => ({
+    meta: { schemaVersion: 6, cngxVersion, generatedAt: null, compodocxVersion: null },
+    components,
+    directives: [],
+    injectables: [],
+    tokens: [],
+    functions: [],
+  });
+
+  it('reports an alias rename on an unchanged field as a removal of the old alias', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', alias: 'selected', type: 'boolean' }] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', alias: 'checked', type: 'boolean' }] }]);
+    const delta = diffSnapshots(from, to);
+
+    expect(delta.inputs.removed).toEqual([{ name: 'selected', owner: 'CngxX' }]);
+    expect(delta.inputs.signatureChanged).toEqual([]);
+  });
+
+  it('reports no change for a field rename under an unchanged alias', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', alias: 'selected', type: 'boolean' }] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'checked', alias: 'selected', type: 'boolean' }] }]);
+
+    expect(diffSnapshots(from, to).inputs).toEqual({ removed: [], renamed: [], signatureChanged: [] });
+  });
+
+  it('reports required false to true as a signature change', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', type: 'string', required: false, signalKind: 'input' }] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', type: 'string', required: true, signalKind: 'input' }] }]);
+
+    expect(diffSnapshots(from, to).inputs.signatureChanged).toEqual([
+      { name: 'value', owner: 'CngxX', fromSignature: 'string (input)', toSignature: 'string (required, input)' },
+    ]);
+  });
+
+  it('reports a signal kind change as a signature change', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', type: 'string', signalKind: 'input' }] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', type: 'string', signalKind: 'model' }] }]);
+
+    expect(diffSnapshots(from, to).inputs.signatureChanged).toHaveLength(1);
+  });
+
+  it('matches outputs on their alias', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', outputsClass: [{ name: 'value', alias: 'selected', type: 'boolean' }] }]);
+    const renamedField = index('2.0.0', [{ name: 'CngxX', outputsClass: [{ name: 'checked', alias: 'selected', type: 'boolean' }] }]);
+    const renamedAlias = index('2.0.0', [{ name: 'CngxX', outputsClass: [{ name: 'value', alias: 'checked', type: 'boolean' }] }]);
+
+    expect(diffSnapshots(from, renamedField).outputs.removed).toEqual([]);
+    expect(diffSnapshots(from, renamedAlias).outputs.removed).toEqual([{ name: 'selected', owner: 'CngxX' }]);
+  });
+});
+
 describe('diffSnapshots across schema 2 and schema 6', () => {
   const shape: Pick<DocEntry, 'inputsClass' | 'outputsClass'> = {
     inputsClass: [{ name: 'value' }],

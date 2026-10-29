@@ -9,7 +9,7 @@
 // leaves the add unsurfaced. Newly-added symbols never break existing usage.
 
 import type { DocsIndex } from '../data/loader.js';
-import type { DocEntry } from '../data/types.js';
+import type { DocEntry, DocInput, DocOutput } from '../data/types.js';
 import { entryLib } from '../query.js';
 import type {
   CategoryDelta,
@@ -36,13 +36,15 @@ interface DiffOptions<T extends Named> {
   renameKeyOf?: (item: T) => string | null;
   /** The owning artifact for a member-level diff; absent for a top-level diff. */
   owner?: string;
+  /** The name a consumer writes, which entries are matched and reported by. Defaults to `name`. */
+  keyOf?: (item: T) => string;
 }
 
 /** Diff two lists of named entries into the removed/renamed/signatureChanged shape. */
 function diffNamedList<T extends Named>(from: T[], to: T[], options: DiffOptions<T>): CategoryDelta {
-  const { renameKeyOf, signatureOf, owner } = options;
-  const toByName = new Map(to.map((item) => [item.name, item]));
-  const fromNames = new Set(from.map((item) => item.name));
+  const { renameKeyOf, signatureOf, owner, keyOf = (item: T) => item.name } = options;
+  const toByName = new Map(to.map((item) => [keyOf(item), item]));
+  const fromNames = new Set(from.map(keyOf));
 
   const removed: RemovedEntry[] = [];
   const renamed: RenamedEntry[] = [];
@@ -50,7 +52,7 @@ function diffNamedList<T extends Named>(from: T[], to: T[], options: DiffOptions
 
   const unmatchedFrom: T[] = [];
   for (const item of from) {
-    const match = toByName.get(item.name);
+    const match = toByName.get(keyOf(item));
     if (!match) {
       unmatchedFrom.push(item);
       continue;
@@ -58,26 +60,26 @@ function diffNamedList<T extends Named>(from: T[], to: T[], options: DiffOptions
     const fromSignature = signatureOf(item);
     const toSignature = signatureOf(match);
     if (fromSignature !== toSignature) {
-      signatureChanged.push({ name: item.name, owner, fromSignature, toSignature });
+      signatureChanged.push({ name: keyOf(item), owner, fromSignature, toSignature });
     }
   }
 
   // Rename inference pool: entries new to `to` a removed entry can be paired with.
   // Only when this category carries a trustworthy rename key; otherwise every
   // unmatched removal is reported as removed, never guessed into a rename.
-  const addedItems = to.filter((item) => !fromNames.has(item.name));
+  const addedItems = to.filter((item) => !fromNames.has(keyOf(item)));
   for (const gone of unmatchedFrom) {
     const key = renameKeyOf?.(gone) ?? null;
     if (renameKeyOf && key !== null) {
       const candidates = addedItems.filter((item) => renameKeyOf(item) === key);
       if (candidates.length === 1) {
         const target = candidates[0];
-        renamed.push({ from: gone.name, to: target.name, owner });
+        renamed.push({ from: keyOf(gone), to: keyOf(target), owner });
         addedItems.splice(addedItems.indexOf(target), 1);
         continue;
       }
     }
-    removed.push({ name: gone.name, owner });
+    removed.push({ name: keyOf(gone), owner });
   }
 
   return { removed, renamed, signatureChanged };
@@ -101,6 +103,15 @@ function entryShapeKey(entry: DocEntry): string | null {
 }
 
 const selectorOf = (entry: DocEntry): string => entry.selector ?? '';
+
+/** A consumer binds the alias, so the alias is the API; the class field is an implementation detail. */
+const publicNameOf = (member: DocInput | DocOutput): string => member.alias ?? member.name;
+
+/** An input's binding contract: its type, whether a binding is required, and its signal kind. */
+function inputSignatureOf(input: DocInput): string {
+  const flags = [input.required === true ? 'required' : '', input.signalKind ?? ''].filter((flag) => flag !== '');
+  return flags.length === 0 ? (input.type ?? '') : `${input.type ?? ''} (${flags.join(', ')})`;
+}
 
 /** Pair entries present under the same name in both snapshots (skips renamed pairs). */
 function matchedByName(from: DocEntry[], to: DocEntry[]): [DocEntry, DocEntry][] {
@@ -144,10 +155,12 @@ export function diffSnapshots(fromDocs: DocsIndex, toDocs: DocsIndex): UsageDelt
 
   // inputs/outputs/tokens: keyed only by a bare type, so no rename inference -
   // a removed member is reported as removed, never paired into a false rename.
+  // Inputs and outputs are matched and reported by their public (alias) name.
   const inputs = mergeCategoryDeltas(
     matchedPairs.map(([from, to]) =>
       diffNamedList(from.inputsClass ?? [], to.inputsClass ?? [], {
-        signatureOf: (input) => input.type ?? '',
+        signatureOf: inputSignatureOf,
+        keyOf: publicNameOf,
         owner: from.name,
       }),
     ),
@@ -157,6 +170,7 @@ export function diffSnapshots(fromDocs: DocsIndex, toDocs: DocsIndex): UsageDelt
     matchedPairs.map(([from, to]) =>
       diffNamedList(from.outputsClass ?? [], to.outputsClass ?? [], {
         signatureOf: (output) => output.type ?? '',
+        keyOf: publicNameOf,
         owner: from.name,
       }),
     ),

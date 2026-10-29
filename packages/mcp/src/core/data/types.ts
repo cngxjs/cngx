@@ -40,6 +40,7 @@ export interface DocInput {
 /** A named API output on a component/directive. */
 export interface DocOutput {
   name: string;
+  alias?: string;
   type?: string;
   description?: string;
   signalKind?: DocSignalKind;
