@@ -2,9 +2,11 @@
 // the plan's process matrix. Runs the built entry the way a shell does, so it
 // needs `npm run build:cli` first (dist/ and the bundled data/).
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { assertNoAnsi } from './output-guards.js';
 
 const ENTRY = fileURLToPath(new URL('../dist/index.js', import.meta.url));
@@ -64,5 +66,24 @@ describe('the built entry', () => {
 
     expect(stderr).toBe('');
     expect(code).toBe(0);
+  });
+
+  describe('a stdout that fails with ENOSPC', () => {
+    // The failure is injected by a --import preload written here, so no test hook
+    // ever lives in src or dist.
+    const hookDir = mkdtempSync(join(tmpdir(), 'cngx-cli-enospc-'));
+    const hook = join(hookDir, 'enospc-stdout.mjs');
+    writeFileSync(
+      hook,
+      "process.stdout._write = (_chunk, _encoding, callback) => callback(Object.assign(new Error('ENOSPC: no space left on device, write'), { code: 'ENOSPC' }));\n",
+    );
+    afterAll(() => rmSync(hookDir, { recursive: true, force: true }));
+
+    it('exits 3 with one stderr line and no stack trace', () => {
+      const result = spawnSync(process.execPath, ['--import', hook, ENTRY, 'api', 'CngxSelect'], { encoding: 'utf8' });
+
+      expect(result.status).toBe(3);
+      expect(result.stderr).toBe('cngx: internal error: ENOSPC: no space left on device, write\n');
+    });
   });
 });

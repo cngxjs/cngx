@@ -11,14 +11,26 @@ const floorError = checkNodeFloor(process.versions.node);
 if (floorError === null) {
   try {
     const { installPipeGuard } = await import('./pipe-guard.js');
-    installPipeGuard(process.stdout);
-    installPipeGuard(process.stderr);
+    let streamFailed = false;
+    const guardDeps = {
+      stderr: (text: string) => process.stderr.write(text),
+      setExitCode: (code: number) => {
+        streamFailed = true;
+        process.exitCode = code;
+      },
+    };
+    installPipeGuard(process.stdout, guardDeps);
+    installPipeGuard(process.stderr, guardDeps);
     const { main } = await import('./cli-adapter.js');
-    process.exitCode = await main(
+    const code = await main(
       process.argv.slice(2),
       { dataDir: new URL('../data/', import.meta.url), packageJson: new URL('../package.json', import.meta.url) },
       { stdout: (text) => process.stdout.write(text), stderr: (text) => process.stderr.write(text) },
     );
+    // A stream that already failed keeps its exit 3 over the answer's own code.
+    if (!streamFailed) {
+      process.exitCode = code;
+    }
   } catch (error) {
     // A module that fails to load never reaches the adapter's own net; same line, same exit 3.
     // The adapter never parsed argv, so --format json is read raw here.
