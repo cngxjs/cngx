@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { loadBundledDocs, loadDocsFromFile } from '../data/loader.js';
@@ -122,10 +123,26 @@ describe('getApi lists public methods only', () => {
   });
 
   it('drops private and protected methods and keeps public, static and unmarked ones', () => {
-    // 123 PrivateKeyword, 124 ProtectedKeyword, 125 PublicKeyword, 126 StaticKeyword (TypeScript 5.9).
+    // 123 PrivateKeyword, 124 ProtectedKeyword, 125 PublicKeyword, 126 StaticKeyword (ts-morph's TypeScript 6.0).
     const api = getApi(withMethods([[123], [124], [125], [126], undefined, [126, 124]]), 'CngxM');
 
     expect(api?.methods.map((method) => method.name)).toEqual(['m2', 'm3', 'm4']);
+  });
+
+  // The TypeScript compodocx emits through, resolved from compodocx's own location.
+  it('pins the private and protected keyword kinds to the ts-morph compodocx runs', () => {
+    const local = createRequire(import.meta.url);
+    const fromCompodocx = createRequire(local.resolve('@cngxjs/compodocx'));
+    const { ts } = fromCompodocx('@ts-morph/common') as { ts: { SyntaxKind: Record<string, number> } };
+
+    expect(ts.SyntaxKind['PrivateKeyword']).toBe(123);
+    expect(ts.SyntaxKind['ProtectedKeyword']).toBe(124);
+  });
+
+  it('lists the full method list of CngxAsync, whose one method is static, from the bundled snapshot', () => {
+    const api = getApi(loadBundledDocs(BUNDLED_DIR), 'CngxAsync');
+
+    expect(api?.methods).toEqual([{ name: 'ngTemplateContextGuard', returnType: 'CngxAsyncContext<T>' }]);
   });
 
   // Pins the kind numbers against the snapshot compodocx actually wrote: a TypeScript

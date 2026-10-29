@@ -79,9 +79,10 @@ function isSignalBased(entry: DocEntry): boolean {
 
 /**
  * TypeScript `SyntaxKind` numbers of the `private` and `protected` keywords as compodocx
- * records them in `modifierKind`. The core carries no `typescript` dependency, so the
- * numbers are pinned here; they hold for TypeScript 5.9, the version compodocx resolves
- * from the root install. A renumbering fails the bundled-snapshot case in get-api.spec.
+ * records them in `modifierKind`. compodocx emits through ts-morph, so the producer is
+ * the TypeScript `@ts-morph/common` bundles (6.0.2 today), not the root `typescript`
+ * install. The core carries no `typescript` dependency, so the numbers are pinned here;
+ * get-api.spec checks them against compodocx's own ts-morph and the bundled snapshot.
  */
 const NON_PUBLIC_MODIFIER_KINDS: ReadonlySet<number> = new Set([123, 124]);
 
