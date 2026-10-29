@@ -187,11 +187,13 @@
         "properties": {
           "from": {
             "type": "string",
+            "minLength": 1,
             "description": "The cngx version to upgrade FROM, e.g. \"0.1.0\" (without the leading \"v\")."
           },
           "to": {
             "description": "The cngx version to upgrade TO. Defaults to the bundled snapshot version.",
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           }
         },
         "required": [

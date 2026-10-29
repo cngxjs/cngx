@@ -79,6 +79,15 @@ describe('command definitions carry their CLI surface', () => {
     expect(z.object(def.input).safeParse({ [def.positional!]: '' }).success).toBe(false);
     expect(z.object(def.input).safeParse({ [def.positional!]: 'x' }).success).toBe(true);
   });
+
+  it.each([[''], ['  ']])('migrate rejects a blank from and to %j through its schema', (blank) => {
+    const schema = z.object(COMMANDS.find((command) => command.cliName === 'migrate')!.input);
+
+    expect(schema.safeParse({ from: blank }).success).toBe(false);
+    expect(schema.safeParse({ from: '0.1.0', to: blank }).success).toBe(false);
+    expect(schema.safeParse({ from: '0.1.0' }).success).toBe(true);
+    expect(schema.safeParse({ from: '0.1.0', to: '0.2.0' }).success).toBe(true);
+  });
 });
 
 describe('found', () => {

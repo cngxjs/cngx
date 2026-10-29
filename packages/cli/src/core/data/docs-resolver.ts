@@ -43,7 +43,8 @@ export type DocsResolver = (version?: string) => Promise<DocsResolution>;
 /**
  * Build a resolver over `bundled` and `deps`. Each adapter builds one, so a command
  * never sees the fetch or cache wiring. Short-circuits to `bundled` (no fetch) when
- * the version is empty or equals the bundled `cngxVersion`. A fetched-but-unreadable
+ * the version is absent or equals the bundled `cngxVersion`; a blank version is a
+ * typed failure, never the bundled snapshot. A fetched-but-unreadable
  * snapshot - `loadDocsFromFile` throwing `SchemaVersionError` or a read error - maps
  * to `asset-missing`, so the three-reason failure union holds.
  */
@@ -55,8 +56,15 @@ export function createDocsResolver(bundled: DocsIndex, deps: DocsResolverDeps = 
   const bundledVersion = bundled.meta.cngxVersion;
 
   return async (version) => {
-    const requested = version?.trim() ?? '';
-    if (requested === '' || (bundledVersion !== null && requested === bundledVersion)) {
+    // Only an absent version means "bundled"; a blank string is a caller error, not a default.
+    if (version === undefined) {
+      return { ok: true, docs: bundled, version: bundledVersion };
+    }
+    const requested = version.trim();
+    if (requested === '') {
+      return { ok: false, reason: 'asset-missing', message: 'A blank version is not a release version.' };
+    }
+    if (bundledVersion !== null && requested === bundledVersion) {
       return { ok: true, docs: bundled, version: bundledVersion };
     }
 

@@ -341,6 +341,13 @@ describe('--cngx-version checks', () => {
     expect(run.stderr).toContain('needs a version');
   });
 
+  it.each([[['migrate', '']], [['migrate', '0.1.0-rc.6', '--to', '']]])('exits 2 on a blank migrate version: %j', async (argv) => {
+    const run = await cli(...argv);
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+  });
+
   it('does not read a token after -- as a flag', async () => {
     const run = await cli('example', '--', '--cngx-version');
 

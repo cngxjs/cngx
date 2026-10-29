@@ -28,6 +28,14 @@ describe('createDocsResolver', () => {
     expect(fetchSnapshot).not.toHaveBeenCalled();
   });
 
+  it.each([[''], ['  ']])('does not answer a blank version %j with the bundled snapshot', async (blank) => {
+    const fetchSnapshot = vi.fn<DocsResolverDeps['fetchSnapshot']>(async () => ({ ok: false, reason: 'asset-missing', message: 'absent' }));
+    const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile })(blank);
+
+    expect(resolution.ok).toBe(false);
+    expect(fetchSnapshot).not.toHaveBeenCalled();
+  });
+
   it('fetches a non-bundled version once and serves the second call from cache', async () => {
     const fetchSnapshot = vi.fn(async () => ({ ok: true as const, path: NEW }));
     const deps: DocsResolverDeps = { fetchSnapshot, loadDocs: loadDocsFromFile };
