@@ -340,6 +340,9 @@ export const CNGX_LANGUAGE_EN = {
     itemDisabled: 'Item disabled',
     menuDismissed: 'Menu dismissed',
   },
+  menuButton: {
+    splitToggle: 'More options',
+  },
   paginator: {
     label: 'Pagination',
     first: 'First page',

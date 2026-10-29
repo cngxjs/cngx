@@ -1415,7 +1415,8 @@
       "status": "active",
       "files": [
         "projects/common/button/close-button.component.ts",
-        "projects/common/button/icon-button.component.ts"
+        "projects/common/button/icon-button.component.ts",
+        "projects/common/menu-button/icon-menu-button.component.ts"
       ],
       "messages": [
         {
@@ -1425,6 +1426,10 @@
         {
           "file": "projects/common/button/icon-button.component.ts",
           "text": "[cngxIconButton] has no accessible name. Set aria-label, aria-labelledby or title on the host; the icon alone is silent to assistive technology."
+        },
+        {
+          "file": "projects/common/menu-button/icon-menu-button.component.ts",
+          "text": "[cngxIconMenuButton] has no accessible name. Set aria-label, aria-labelledby or title on the host; the icon alone is silent to assistive technology."
         }
       ]
     },
@@ -1442,6 +1447,23 @@
         {
           "file": "projects/common/button/button-group.directive.ts",
           "text": "[cngxButtonGroup] has no accessible name. Set aria-label or aria-labelledby on the host; a role=\"group\" without a name gives assistive technology no context for the buttons inside."
+        }
+      ]
+    },
+    {
+      "code": "CNGX1073",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Split button without a main cngxButton",
+      "page": "core-concepts/error-codes/cngx1073.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1073.html",
+      "status": "active",
+      "files": ["projects/common/menu-button/split-button.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/menu-button/split-button.directive.ts",
+          "text": "[cngxSplitButton] has no main cngxButton. Place a <button cngxButton> as a direct child; the caret derives its blocked state from it."
         }
       ]
     },

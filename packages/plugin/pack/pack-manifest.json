@@ -242,9 +242,9 @@
       "contentHash": "sha256:f525cb12a8b7ef1c9380e32160d953b5a120995b0ab2bc4e1969e026151f44bb"
     },
     {
-      "artifact": "pack/recipes/common-button-composition.md",
-      "source": "examples/stories/common/button/composition/split-button.story.ts",
-      "contentHash": "sha256:18bd5bb990b843f10ba52e67408b36e0c5e361f0e92b8443bc625b10f53c3e3f"
+      "artifact": "pack/recipes/common-menu-button-split-button.md",
+      "source": "examples/stories/common/menu-button/split-button/basic.story.ts",
+      "contentHash": "sha256:886541b8a62b96c11a9f630ff0082014a1055dd90db317e3238cd090ca98ea5f"
     }
   ],
   "theming": {

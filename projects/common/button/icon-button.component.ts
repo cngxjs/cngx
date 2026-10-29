@@ -13,6 +13,7 @@ import { cngxDevWarn } from '@cngx/utils';
 
 import { hasAccessibleName } from './accessible-name';
 import { injectButtonCore, provideButtonDescribedBy } from './button-core';
+import { CNGX_BUTTON_STATE, type CngxButtonState } from './button-state.token';
 import type {
   CngxButtonSize,
   CngxButtonTone,
@@ -53,7 +54,7 @@ import type {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/icon-button.component.ts
  * @since 0.1.0
- * @relatedTo CngxButton, CngxAsyncClick, provideButtonConfig
+ * @relatedTo CngxButton, CngxAsyncClick, provideButtonConfig, CngxSplitButton, CngxIconMenuButton
  * <example-url>http://localhost:4200/#/common/button/icon-button/basic</example-url>
  * <example-url>http://localhost:4200/#/common/button/icon-button/with-badge</example-url>
  * @axis level atom
@@ -67,6 +68,7 @@ import type {
   encapsulation: ViewEncapsulation.None,
   providers: [
     { provide: CNGX_HOST_INTERACTION_STATE, useExisting: CngxIconButton },
+    { provide: CNGX_BUTTON_STATE, useExisting: CngxIconButton },
     provideButtonDescribedBy('CngxIconButton'),
   ],
   host: {
@@ -91,7 +93,7 @@ import type {
   `,
   styleUrls: ['./button.component.css', './icon-button.component.css'],
 })
-export class CngxIconButton {
+export class CngxIconButton implements CngxButtonState {
   /**
    * Emphasis, bound through the selector: `cngxIconButton="solid"`. The bare
    * attribute falls through to the group, the config and `ghost`.
@@ -141,6 +143,12 @@ export class CngxIconButton {
     },
     { variant: 'ghost' },
   );
+
+  /**
+   * `true` while the button refuses activation: disabled, running a
+   * co-hosted `cngxAsyncClick`, or refused by its `[enabled]="false"`.
+   */
+  readonly blocked = this.core.blocked;
 
   constructor() {
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {

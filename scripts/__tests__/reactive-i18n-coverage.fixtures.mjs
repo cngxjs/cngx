@@ -129,6 +129,12 @@ export const COPY_TOKENS = [
     settingsKeys: [],
   },
   {
+    token: 'CNGX_MENU_BUTTON_I18N',
+    kind: 'dedicated',
+    copyKeys: '*',
+    settingsKeys: [],
+  },
+  {
     token: 'CNGX_CHART_I18N',
     kind: 'dedicated',
     copyKeys: '*',
@@ -448,6 +454,7 @@ export const SETTINGS_TOKENS = [
   'CNGX_BUTTON_CONFIG',
   'CNGX_BUTTON_GROUP',
   'CNGX_BUTTON_MULTI_TOGGLE_GROUP',
+  'CNGX_BUTTON_STATE',
   'CNGX_BUTTON_TOGGLE_GROUP',
   'CNGX_CHART_AXIS',
   'CNGX_CHART_CONTEXT',
@@ -549,6 +556,7 @@ export const SETTINGS_TOKENS = [
   'CNGX_SELECT_SHELL_SEARCH_HOST',
   'CNGX_SIDENAV',
   'CNGX_SLIDER_RANGE',
+  'CNGX_SPLIT_BUTTON',
   'CNGX_STAT',
   'CNGX_STATEFUL',
   'CNGX_STEPPER_COMMIT_HANDLER_FACTORY',

@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { TestBed, type ComponentFixture } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { provideRouter, Router, RouterLink } from '@angular/router';
 import { CngxAsyncClick, type AsyncAction } from '@cngx/common/interactive';
 import { vi } from 'vitest';
@@ -12,6 +13,7 @@ import {
   withButtonVariant,
 } from './button-config';
 import { CNGX_BUTTON_GROUP } from './button-group.token';
+import { CNGX_BUTTON_STATE } from './button-state.token';
 import { CngxButton } from './button.component';
 import type {
   CngxButtonSize,
@@ -474,6 +476,61 @@ describe('CngxButton', () => {
       fixture.detectChanges();
       expect(btn.hasAttribute('data-busy')).toBe(false);
       expect(btn.querySelector('.cngx-button__busy')).toBeNull();
+    });
+  });
+
+  describe('blocked', () => {
+    const buttonAt = (fixture: ComponentFixture<unknown>, id: string) =>
+      fixture.debugElement.query(By.css(id)).injector.get(CngxButton);
+
+    it('is true while disabled and false once enabled', () => {
+      const { fixture, host } = render(AsyncHost);
+      const button = buttonAt(fixture, '#button-first');
+      expect(button.blocked()).toBe(true);
+
+      host.disabled.set(false);
+      fixture.detectChanges();
+      expect(button.blocked()).toBe(false);
+    });
+
+    it('is true while a co-hosted cngxAsyncClick runs', async () => {
+      const { fixture, host, q } = render(AsyncHost);
+      host.disabled.set(false);
+      fixture.detectChanges();
+      const button = buttonAt(fixture, '#button-first');
+
+      q('#button-first').click();
+      fixture.detectChanges();
+      expect(button.blocked()).toBe(true);
+
+      host.release();
+      await fixture.whenStable();
+      expect(button.blocked()).toBe(false);
+    });
+
+    it('is true while [enabled]="false" refuses the run', () => {
+      const { fixture, host } = render(RefusingAsyncHost);
+      const button = buttonAt(fixture, '#refusing');
+      host.disabled.set(false);
+      fixture.detectChanges();
+      expect(button.blocked()).toBe(true);
+
+      host.enabled.set(true);
+      fixture.detectChanges();
+      expect(button.blocked()).toBe(false);
+    });
+
+    it('is published through CNGX_BUTTON_STATE', () => {
+      const { fixture } = render(AsyncHost);
+      const de = fixture.debugElement.query(By.css('#button-first'));
+      const state = de.injector.get(CNGX_BUTTON_STATE);
+      expect(state).toBe(de.injector.get(CngxButton));
+      expect(state.blocked()).toBe(true);
+    });
+
+    it('is false on a plain button', () => {
+      const { fixture } = render(SlotHost);
+      expect(buttonAt(fixture, '#plain').blocked()).toBe(false);
     });
   });
 
