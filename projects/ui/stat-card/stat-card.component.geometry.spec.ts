@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CngxStatValue } from '@cngx/common/data';
+import { CngxStatValue, createManualState } from '@cngx/common/data';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -80,5 +80,96 @@ describe('CngxStatCard geometry', () => {
     const row = query(host, '.cngx-stat-card__row');
     expect(computedValue(row, 'display')).toBe('flex');
     expect(computedValue(row, 'align-items')).toBe('baseline');
+  });
+});
+
+// ── Error and stale glyphs from the shared icon set (stat-card.component.css) ──
+
+@Component({
+  selector: 'cngx-stat-card-glyph-host',
+  standalone: true,
+  imports: [CngxStatCard, CngxStatValue],
+  template: `
+    <cngx-stat-card [state]="state" style="max-width: 260px">
+      <span cngxStatValue>1.2M</span>
+    </cngx-stat-card>
+  `,
+})
+class StatCardGlyphHost {
+  readonly state = createManualState<number>();
+}
+
+function mountGlyphs(view: 'error' | 'stale'): HTMLElement {
+  const fixture = TestBed.createComponent(StatCardGlyphHost);
+  const state = fixture.componentInstance.state;
+  if (view === 'stale') {
+    state.setSuccess(1.2);
+  } else {
+    state.set('loading');
+  }
+  state.setError(new Error('down'));
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  return query(mountedRoot, '.cngx-stat-card');
+}
+
+function strokePx(svg: SVGSVGElement): number {
+  return (parseFloat(computedValue(svg, 'stroke-width')) * svg.getBoundingClientRect().width) / 24;
+}
+
+function svgIn(root: HTMLElement, selector: string): { svg: SVGSVGElement; path: SVGPathElement } {
+  const svg = root.querySelector<SVGSVGElement>(selector);
+  const path = svg?.querySelector('path');
+  if (!svg || !path) {
+    throw new Error(`${selector} renders no icon`);
+  }
+  return { svg, path };
+}
+
+describe('CngxStatCard glyphs', () => {
+  // The drawing it replaced inked its triangle 22.4 of 24 units across at 22px
+  // with a 1.5-unit line; the shared triangle spans 21.5 with that line.
+  it('draws the error triangle in the 22px box with a 1.5-unit line', () => {
+    const { svg, path } = svgIn(mountGlyphs('error'), 'svg.cngx-stat-card__error-icon');
+    expect(svg.getBoundingClientRect().width).toBeCloseTo(22, 1);
+    expect(computedValue(svg, 'stroke-width')).toBe('1.5px');
+    expect(path.getBoundingClientRect().width + strokePx(svg)).toBeCloseTo((22 * 21.5) / 24, 1);
+    expect(computedValue(svg, 'stroke')).toBe(computedValue(svg, 'color'));
+  });
+
+  // The bold text exclamation inked 0.54 of the 16px badge tall.
+  it('draws the stale exclamation 0.54 of the badge tall, centred in it', () => {
+    const host = mountGlyphs('stale');
+    const badge = query(host, '.cngx-stat-card__stale-glyph');
+    const { svg, path } = svgIn(badge, 'svg.cngx-icon-svg');
+    const box = badge.getBoundingClientRect();
+    const ink = path.getBoundingClientRect();
+    expect(box.width).toBeCloseTo(16, 1);
+    expect(ink.height + strokePx(svg)).toBeCloseTo(0.54 * box.height, 1);
+    expect(Math.abs(ink.left + ink.width / 2 - (box.left + box.width / 2))).toBeLessThanOrEqual(
+      0.5,
+    );
+    expect(Math.abs(ink.top + ink.height / 2 - (box.top + box.height / 2))).toBeLessThanOrEqual(
+      0.5,
+    );
+  });
+
+  it('scales the stale exclamation with the badge size', () => {
+    const host = mountGlyphs('stale');
+    const badge = query(host, '.cngx-stat-card__stale-glyph');
+    const { svg } = svgIn(badge, 'svg.cngx-icon-svg');
+    const before = svg.getBoundingClientRect().height;
+    host.style.setProperty('--cngx-stat-card-stale-glyph-size', '2rem');
+    expect(svg.getBoundingClientRect().height).toBeCloseTo(before * 2, 1);
+  });
+
+  it('paints the exclamation in the glyph colour over the danger badge', () => {
+    const host = mountGlyphs('stale');
+    const badge = query(host, '.cngx-stat-card__stale-glyph');
+    const { svg } = svgIn(badge, 'svg.cngx-icon-svg');
+    expect(computedValue(svg, 'stroke')).toBe(computedValue(badge, 'color'));
+    expect(computedValue(badge, 'background-color')).not.toBe(computedValue(badge, 'color'));
+    expect(badge.getAttribute('aria-hidden')).toBe('true');
   });
 });

@@ -871,7 +871,7 @@ export const LIVE_REGIONS = [
   {
     file: 'projects/ui/stat-card/stat-card.component.ts',
     region:
-      'CngxStatCard.cngx-card(activeView,cardLabelledBy,live,resolvedBusyLabel,resolvedEmptyText,resolvedErrorDescription,resolvedErrorText,resolvedStaleText,resolvedTreatment,showRefreshIndicator,skeletonSlots)',
+      'CngxStatCard.cngx-card(activeView,cardLabelledBy,errorIcon,live,resolvedBusyLabel,resolvedEmptyText,resolvedErrorDescription,resolvedErrorText,resolvedStaleText,resolvedTreatment,showRefreshIndicator,skeletonSlots,staleIcon)',
     spec: 'projects/ui/stat-card/stat-card.component.spec.ts',
     testName: 'does not re-announce on a language flip',
   },
