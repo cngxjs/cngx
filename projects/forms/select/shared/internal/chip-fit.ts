@@ -20,9 +20,10 @@ export interface ChipFitSnapshot {
 /**
  * How many leading chip slots fit the strip. All of them when they fit
  * without a badge; otherwise the largest `k` whose slots, `k` gaps and the
- * badge reserve fit, floored at `1` (a slot is capped at `available - reserve`,
- * so the first one always fits next to the badge). `null` before the first
- * measurement, `0` for an empty strip.
+ * badge reserve fit, floored at `1` (a slot is capped at
+ * `available - reserve - gap`, so the first one always fits next to the
+ * badge). `0` when that cap is zero or less, leaving only the badge, and for
+ * an empty strip; `null` before the first measurement.
  *
  * @internal
  */
@@ -33,6 +34,12 @@ export function fitChipCount(snapshot: ChipFitSnapshot | null): number | null {
   const { available, gap, reserve, widths } = snapshot;
   const total = widths.length;
   if (total === 0) {
+    return 0;
+  }
+  // Slots are capped at `available - reserve - gap`; at zero or less every
+  // slot collapses, so the widths sum to nothing and would read as "all fit".
+  // Only the badge is left.
+  if (available - reserve - gap <= 0) {
     return 0;
   }
   let used = 0;

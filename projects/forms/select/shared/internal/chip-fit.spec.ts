@@ -33,6 +33,13 @@ describe('fitChipCount', () => {
     expect(fitChipCount(snap(100, [300, 300]))).toBe(1);
   });
 
+  it('gives 0 (badge only) when the strip leaves no room for a capped slot', () => {
+    // reserve 32 + gap 4 = 36: the slot cap is 0 or less, the slot collapses.
+    expect(fitChipCount(snap(36, [0, 0]))).toBe(0);
+    expect(fitChipCount(snap(20, [0, 0]))).toBe(0);
+    expect(fitChipCount(snap(37, [1, 40]))).toBe(1);
+  });
+
   it('returns 0 for a strip without slots', () => {
     expect(fitChipCount(snap(300, []))).toBe(0);
   });
