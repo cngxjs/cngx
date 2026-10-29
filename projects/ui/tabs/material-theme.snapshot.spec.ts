@@ -96,12 +96,28 @@ describe('Material tabs-theme bridge baseline', () => {
     expect(compileAndExtract({ themeVersion: 'v1', variant: 'light' })).toMatchSnapshot();
   });
 
-  it('badge font tokens use the registered names, not the dead error-badge pair', () => {
+  it('sets the icon and label colours, none of the removed disc and wash tokens', () => {
     const declarations = compileAndExtract({ themeVersion: 'v1', variant: 'light' });
-    expect(declarations['--cngx-tab-badge-font-size']).toBeDefined();
-    expect(declarations['--cngx-tab-badge-font-weight']).toBeDefined();
-    expect(declarations['--cngx-tab-error-badge-font-size']).toBeUndefined();
-    expect(declarations['--cngx-tab-error-badge-font-weight']).toBeUndefined();
+    for (const token of [
+      '--cngx-tab-error-badge-color',
+      '--cngx-tab-rejection-icon-color',
+      '--cngx-tab-failed-text-color',
+      '--cngx-tab-refused-color',
+      '--cngx-tab-refused-text-color',
+      '--cngx-mat-tab-refused-text-color',
+    ]) {
+      expect(declarations[token]).toBeDefined();
+    }
+    for (const token of [
+      '--cngx-tab-badge-font-size',
+      '--cngx-tab-badge-font-weight',
+      '--cngx-tab-error-badge-text-color',
+      '--cngx-tab-rejection-icon-text',
+      '--cngx-tab-rejected-bg',
+      '--cngx-mat-tab-has-errors-glyph-color',
+    ]) {
+      expect(declarations[token]).toBeUndefined();
+    }
   });
 
   it('v1 dark: resolved --cngx-* declarations match the baseline', () => {
