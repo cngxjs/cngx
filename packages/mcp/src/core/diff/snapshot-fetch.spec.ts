@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 import type { SnapshotFetchDeps } from './snapshot-fetch.js';
 import {
   CNGX_REPO,
-  classifyGhFailure,
   fetchSnapshot,
   ghDownloadArgs,
   isReleaseVersion,
@@ -51,37 +50,6 @@ describe('ghDownloadArgs', () => {
 
   it('targets the tagged release v<version>', () => {
     expect(ghDownloadArgs('1.0.0', '/x')).toContain('v1.0.0');
-  });
-});
-
-describe('classifyGhFailure', () => {
-  it('maps ENOENT to gh-missing', () => {
-    const error = Object.assign(new Error('spawn gh ENOENT'), { code: 'ENOENT' });
-
-    expect(classifyGhFailure(error).reason).toBe('gh-missing');
-  });
-
-  it('maps a network-flavoured stderr to network', () => {
-    const error = Object.assign(new Error('gh failed'), { stderr: 'dial tcp: lookup github.com: no such host' });
-
-    expect(classifyGhFailure(error)).toEqual({
-      reason: 'network',
-      message: 'dial tcp: lookup github.com: no such host',
-    });
-  });
-
-  it('maps a child killed by the timeout to network', () => {
-    const killed = Object.assign(new Error('Command failed'), { killed: true, signal: 'SIGTERM' });
-    const timedOut = Object.assign(new Error('spawn timed out'), { code: 'ETIMEDOUT' });
-
-    expect(classifyGhFailure(killed).reason).toBe('network');
-    expect(classifyGhFailure(timedOut).reason).toBe('network');
-  });
-
-  it('maps everything else to asset-missing', () => {
-    const error = Object.assign(new Error('gh failed'), { stderr: 'release not found' });
-
-    expect(classifyGhFailure(error).reason).toBe('asset-missing');
   });
 });
 
@@ -324,10 +292,13 @@ describe('fetchSnapshot failure messages', () => {
     expect(deps.writeFile).not.toHaveBeenCalled();
   });
 
-  it('falls back to the error message when gh stderr is empty', () => {
+  it('falls back to the error message when gh stderr is empty', async () => {
     const error = Object.assign(new Error('Command failed: gh release download'), { stderr: '  ' });
+    const deps = makeDeps({ runGh: ghThrows(error), httpGet: vi.fn(async () => ({ status: 404, body: '' })) });
 
-    expect(classifyGhFailure(error).message).toBe('Command failed: gh release download');
+    const result = await fetchSnapshot('0.2.0', deps);
+
+    expect(!result.ok && result.message).toMatch(/^gh: Command failed: gh release download https: /);
   });
 });
 

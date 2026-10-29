@@ -151,29 +151,6 @@ export function removeTempDir(dir: string): void {
 const defaultDeps = createDefaultDeps();
 
 /**
- * Map a caught `gh` failure to a typed reason. Exported so the classification is
- * pinned by the spec directly. A `gh` binary that is not on PATH throws `ENOENT`;
- * a child killed by the timeout is a `network` failure; everything else is read
- * off the process' stderr/message.
- */
-export function classifyGhFailure(error: unknown): { reason: SnapshotFetchFailureReason; message: string } {
-  const message = describeGhFailure(error);
-  if (isEnoent(error)) {
-    return { reason: 'gh-missing', message };
-  }
-  if (isTimedOut(error)) {
-    return { reason: 'network', message };
-  }
-  const lower = message.toLowerCase();
-  if (/network|timeout|timed out|dial tcp|connection|no such host|lookup|dns|unreachable|refused/.test(lower)) {
-    return { reason: 'network', message };
-  }
-  // An unknown non-network failure is almost always the version having no release
-  // or no asset; `asset-missing` is the safest consumer-facing reason.
-  return { reason: 'asset-missing', message };
-}
-
-/**
  * The text a `gh` failure contributes to the combined gh-then-HTTPS message. The
  * HTTPS attempt decides the reason, so only the text is needed here (`gh-missing`
  * stays unproduced, accepted debt).

@@ -7,7 +7,7 @@
 import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { classifyGhFailure, createDefaultDeps, fetchSnapshot, SNAPSHOT_FETCH_TIMEOUT_MS } from './snapshot-fetch.js';
+import { createDefaultDeps, fetchSnapshot, SNAPSHOT_FETCH_TIMEOUT_MS } from './snapshot-fetch.js';
 
 describe('snapshot fetch timeouts', () => {
   let silent: Server;
@@ -24,7 +24,7 @@ describe('snapshot fetch timeouts', () => {
     await new Promise<void>((resolve) => silent.close(() => resolve()));
   });
 
-  it('kills a hung gh child and classifies it as network', async () => {
+  it('kills a hung gh child and marks the rejection as killed', async () => {
     const { runGh } = createDefaultDeps({ timeoutMs: 200, ghBinary: process.execPath });
     const started = Date.now();
 
@@ -33,9 +33,17 @@ describe('snapshot fetch timeouts', () => {
       (rejection: unknown) => rejection,
     );
 
-    expect(error).not.toBeNull();
-    expect(classifyGhFailure(error).reason).toBe('network');
+    expect(error).toMatchObject({ killed: true });
     expect(Date.now() - started).toBeLessThan(2000);
+  });
+
+  it('names a gh child killed by the timeout in the fetch message', async () => {
+    const deps = createDefaultDeps({ timeoutMs: 200, ghBinary: process.execPath });
+    const hungGh = () => deps.runGh(['-e', 'setInterval(() => {}, 1e9)']);
+
+    const result = await fetchSnapshot('0.2.0', { ...deps, runGh: hungGh, httpGet: async () => ({ status: 404, body: '' }) });
+
+    expect(!result.ok && result.message).toMatch(/^gh: The `gh` download timed out\. https: /);
   });
 
   it('aborts a silent HTTPS endpoint and returns network', async () => {

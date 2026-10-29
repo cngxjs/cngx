@@ -6,7 +6,7 @@ import type { DocEntry, DocToken, DocumentationJson } from '../data/types.js';
 import { diffSnapshots } from './snapshot-diff.js';
 import { migrateUsageMarkdown } from '../commands/migrate-usage.js';
 import { shuffled } from '../../testing/shuffle.js';
-import { classifyGhFailure, fetchSnapshot } from './snapshot-fetch.js';
+import { fetchSnapshot } from './snapshot-fetch.js';
 
 const OLD = fileURLToPath(new URL('../../../test/fixtures/documentation.v-old.sample.json', import.meta.url));
 const NEW = fileURLToPath(new URL('../../../test/fixtures/documentation.v-new.sample.json', import.meta.url));
@@ -434,10 +434,6 @@ describe('fetchSnapshot failure classification', () => {
       runGh: async () => undefined,
     });
     expect(result).toEqual({ ok: true, path: '/tmp/cngx-mcp-ok/documentation.json', dir: '/tmp/cngx-mcp-ok' });
-  });
-
-  it('treats an unknown gh failure as asset-missing', () => {
-    expect(classifyGhFailure(new Error('something odd happened')).reason).toBe('asset-missing');
   });
 });
 
