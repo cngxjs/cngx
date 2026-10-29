@@ -12,8 +12,8 @@ export interface EarconConfig {
 
 /**
  * The six built-in earcons, synthesised entirely from `OscillatorNode` - zero
- * audio assets. Plain `as const` (mirrors `CNGX_SELECT_GLYPHS`): tree-shakeable,
- * compile-time exhaustive keys, and NOT exported from `public-api.ts`. The
+ * audio assets. Plain `as const`: tree-shakeable, compile-time exhaustive keys,
+ * and NOT exported from `public-api.ts`. The
  * consumer override surface is `withEarcons({...})` and the engine's runtime
  * `register()`, never this const.
  *

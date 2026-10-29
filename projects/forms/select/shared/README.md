@@ -398,20 +398,6 @@ Used internally by the registry + by tree-select for tree-specific slots that ar
 |-|-|
 | `injectResolvedTemplate(directive, configKey)` | Internal helper for ad-hoc slot resolution (not in `public-api.ts`) |
 
-### `internal/glyphs.ts`
-
-**Internal-only**, NOT exported from `public-api.ts`. The 4 glyph strings (`✕ ▾ ▸ !`) are declared here. Only `clear` is read (by the sheet header); the variant templates write their glyph literals inline.
-Plain `as const` object - `aria-hidden` stays at the call site.
-
-| Symbol | Purpose |
-|-|-|
-| `CNGX_SELECT_GLYPHS` | The const                         |
-| `CngxSelectGlyphKey` | `keyof typeof CNGX_SELECT_GLYPHS` |
-
-Cascade order at every glyph site: structural directive → input override → `CNGX_SELECT_GLYPHS.<key>`.
-
-
-
 ## 6. Configuration cascade
 
 ### `config.ts`

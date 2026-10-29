@@ -20,7 +20,7 @@ For day-to-day API reference (inputs, outputs, signals, CSS variables) see the c
 - [Template slot system](#template-slot-system)
   - [The 18 public slots](#the-18-public-slots)
   - [Three-stage cascade](#three-stage-cascade)
-  - [Internal `CNGX_SELECT_GLYPHS` const](#internal-cngx_select_glyphs-const)
+  - [Default glyphs](#default-glyphs)
 - [Configuration cascade](#configuration-cascade)
 - [Async state machine](#async-state-machine)
 - [Commit-action lifecycle](#commit-action-lifecycle)
@@ -291,14 +291,14 @@ sequenceDiagram
 The cascade is `Instance contentChild → CNGX_SELECT_CONFIG.templates.<key> → null`.
 Variant components declare their `contentChild` queries inline (Angular's AOT compiler requires the call as a direct field initialiser - NG8110 rejects it from helper functions) and pass them as a bundle to `createTemplateRegistry {...})`. The factory wires each query through `injectResolvedTemplate` to deliver the resolved `Signal<TemplateRef | null>` in one place.
 
-### Internal `CNGX_SELECT_GLYPHS` const
+### Default glyphs
 
-Default glyphs for the slots that fall back to a single character (`✕ ▾ ▸ !`) are declared in `shared/internal/glyphs.ts` as a plain `as const` object. **NOT exported** from `public-api.ts`. Only the sheet header reads `CNGX_SELECT_GLYPHS.clear`; the variant templates write their glyph literals inline, so the other keys (`caret`, `treeTwisty`, `commitError`) are not read by any template.
+The default clear, caret, tree twisty and reorder-list glyphs are SVGs drawn from the shared icon set in `@cngx/utils` (`CNGX_ICON_X`, `CNGX_ICON_CARET_DOWN`, `CNGX_ICON_CHEVRON_RIGHT`, `CNGX_ICON_GRIP_VERTICAL`, `CNGX_ICON_TRIANGLE_UP` / `_DOWN`) through `svg[cngxIconSvg]`. Each variant holds the icon in a `protected readonly` field; there is no select-local glyph table.
 Consumers override via:
 
 1. `*cngxSelectClearButton` / `*cngxSelectCaret` directives (highest precedence).
 2. `[clearGlyph]` / `[caretGlyph]` Inputs (mid).
-3. The inline glyph literal in the variant template (lowest).
+3. The default icon from the shared set (lowest).
 
 The reorderable chip drag handle has no glyph fallback: `*cngxMultiSelectChipHandle` wins over `[chipDragHandle]` (app-wide default via `withDefaultDragHandle`), and with neither no grip renders.
 
