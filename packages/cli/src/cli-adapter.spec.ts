@@ -227,6 +227,31 @@ describe('version and snapshot resolution', () => {
     expect(JSON.parse(run.stdout)).toEqual({ cngxVersion: '0.1.0-rc.6', result: null });
   });
 
+  // The README's json-shape table: list commands answer `[]`, object commands `null`,
+  // and an unresolvable migrate release is a failure document.
+  const NOT_FOUND_JSON: Record<string, unknown> = {
+    find: { cngxVersion: '0.1.0-rc.6', result: [] },
+    list: { cngxVersion: '0.1.0-rc.6', result: [] },
+    di: { cngxVersion: '0.1.0-rc.6', result: [] },
+    api: { cngxVersion: '0.1.0-rc.6', result: null },
+    slots: { cngxVersion: '0.1.0-rc.6', result: null },
+    theme: { cngxVersion: '0.1.0-rc.6', result: null },
+    config: { cngxVersion: '0.1.0-rc.6', result: null },
+    example: { cngxVersion: '0.1.0-rc.6', result: null },
+    migrate: { cngxVersion: null, result: null, error: { reason: 'asset-missing', message: 'no asset for v9.9.9' } },
+  };
+
+  it('covers every command in the not-found json table', () => {
+    expect(Object.keys(NOT_FOUND_JSON).sort()).toEqual(COMMANDS.map((def) => def.cliName).sort());
+  });
+
+  it.each(CASES)('$cli prints the documented not-found json shape and exits 1', async ({ cli: name, unknown }) => {
+    const run = await cli(name, ...unknown, '--format=json');
+
+    expect(run.code).toBe(EXIT_NOT_FOUND);
+    expect(JSON.parse(run.stdout)).toEqual(NOT_FOUND_JSON[name]);
+  });
+
   it('exits 2 on an empty --cngx-version, before any resolution', async () => {
     const run = await cli('api', 'CngxSelect', '--cngx-version=');
 

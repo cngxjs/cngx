@@ -47,7 +47,7 @@ Each command is generated from the same definition as its `@cngx/mcp` tool.
 |`cngx di [<query>]`|`get_di_tokens`|The DI tokens, optionally filtered by a name fragment.|
 |`cngx config <name>`|`get_config`|A configuration cascade: config token, providers, `with*` features and resolution order.|
 |`cngx example <name>`|`get_story_example`|Runnable example links for a component.|
-|`cngx migrate <from> [--to <version>]`|`migrate_usage`|Removed, renamed and signature-changed API between two releases.|
+|`cngx migrate <from> [--to <version>]`|`migrate_usage`|Removed, renamed and signature-changed API between two releases. `--to` defaults to the bundled release.|
 
 ## Flags
 
@@ -60,6 +60,8 @@ Each command is generated from the same definition as its `@cngx/mcp` tool.
 
 Every answer names the cngx release it came from: the first markdown line is
 `> cngx <version>`, the JSON carries `cngxVersion`.
+
+A repeated flag takes its last value: `--format md --format json` prints json.
 
 Output is plain text, never coloured, identical on a terminal and in a pipe.
 stdout carries the answer only; diagnostics go to stderr.
@@ -84,10 +86,21 @@ reads every run the same way:
 { "cngxVersion": null, "result": null, "error": { "reason": "asset-missing", "message": "..." } }
 ```
 
-A query that finds nothing is not a failure: it prints `"result": null` with no
-`error` and exits 1. An internal error (exit 3) prints
-`cngx <command>: internal error: <message>` and, under `--format json`, the same
-document with `"reason": "internal"`.
+A query that finds nothing is not a failure: it prints the empty answer with no
+`error` and exits 1. The empty answer depends on the command:
+
+|Commands|Empty `result`|
+|-|-|
+|`find`, `list`, `di`|`[]`|
+|`api`, `slots`, `theme`, `config`, `example`|`null`|
+
+`list` exits 1 on an empty result too, for example `--lib` naming no lib. Over
+MCP the same empty list is the answer.
+
+An internal error (exit 3) prints `cngx: internal error: <message>` (or
+`cngx <command>: internal error: <message>` once a command ran) and, under
+`--format json`, the same document with `"reason": "internal"`. A bundled
+snapshot that cannot be loaded is an internal error.
 
 Releases are fetched only for tagged versions such as `0.2.0` or `0.2.0-rc.1`,
 never for a branch or commit. `gh` is tried first, then a plain HTTPS download;
@@ -100,9 +113,9 @@ authenticated `gh`.
 |Code|Meaning|
 |-|-|
 |`0`|Answered.|
-|`1`|The query ran but found nothing, the requested release snapshot could not be resolved, or the bundled snapshot could not be loaded.|
-|`2`|Usage error: no command, an unknown command or flag, invalid input, an empty or malformed `--cngx-version`, or `--cngx-version` on a command that has no version.|
-|`3`|Internal error: a command, its rendering or the start-up threw. One `internal error` line on stderr, no stack, nothing on stdout.|
+|`1`|The query ran but found nothing (an empty `list` included), or the requested release snapshot could not be resolved.|
+|`2`|Usage error: no command (help goes to stderr), an unknown command or flag, invalid input, an empty or malformed `--cngx-version`, `--cngx-version` on a command that has no version, or a Node below 20.|
+|`3`|Internal error: the bundled snapshot could not be loaded, a command, its rendering or the start-up threw, or writing the output failed. One `internal error` line on stderr, no stack; stdout holds the failure document under `--format json` and nothing under `md`.|
 
 ## License
 
