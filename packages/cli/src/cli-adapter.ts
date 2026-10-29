@@ -175,6 +175,20 @@ export function generalHelp(commands: readonly CngxCommand[], cliVersion: string
   ].join('\n');
 }
 
+/** Every flag the CLI accepts, long and short, across the globals and all commands. */
+export function knownFlags(commands: readonly CngxCommand[]): ReadonlySet<string> {
+  const flags = new Set<string>();
+  for (const options of [GLOBAL_OPTIONS, ...commands.map(commandOptions)]) {
+    for (const [name, option] of Object.entries(options)) {
+      flags.add(`--${name}`);
+      if (option.short !== undefined) {
+        flags.add(`-${option.short}`);
+      }
+    }
+  }
+  return flags;
+}
+
 /**
  * Every flag that takes a separate value, across the globals and all commands. A
  * value flag given before the command name (`cngx --cngx-version 0.1.0 api X`)
