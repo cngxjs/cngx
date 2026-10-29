@@ -38,7 +38,10 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "tsConfig": "projects/common/tsconfig.spec.json",
-            "setupFiles": ["projects/testing/setup/vitest-setup.ts"],
+            "setupFiles": [
+              "projects/testing/setup/vitest-setup.ts",
+              "projects/testing/setup/geometry-setup.ts"
+            ],
             "browsers": ["chromiumHeadless"],
             "watch": false,
             "include": ["**/*.geometry.spec.ts"],
@@ -150,7 +153,10 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "tsConfig": "projects/forms/tsconfig.spec.json",
-            "setupFiles": ["projects/testing/setup/vitest-setup.ts"],
+            "setupFiles": [
+              "projects/testing/setup/vitest-setup.ts",
+              "projects/testing/setup/geometry-setup.ts"
+            ],
             "browsers": ["chromiumHeadless"],
             "watch": false,
             "include": ["**/*.geometry.spec.ts"],
@@ -195,7 +201,10 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "tsConfig": "projects/ui/tsconfig.spec.json",
-            "setupFiles": ["projects/testing/setup/vitest-setup.ts"],
+            "setupFiles": [
+              "projects/testing/setup/vitest-setup.ts",
+              "projects/testing/setup/geometry-setup.ts"
+            ],
             "browsers": ["chromiumHeadless"],
             "watch": false,
             "include": ["**/*.geometry.spec.ts"],
@@ -240,7 +249,10 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "tsConfig": "projects/data-display/tsconfig.spec.json",
-            "setupFiles": ["projects/testing/setup/vitest-setup.ts"],
+            "setupFiles": [
+              "projects/testing/setup/vitest-setup.ts",
+              "projects/testing/setup/geometry-setup.ts"
+            ],
             "browsers": ["chromiumHeadless"],
             "watch": false,
             "include": ["**/*.geometry.spec.ts"],
