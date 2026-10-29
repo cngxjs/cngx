@@ -139,6 +139,17 @@ describe('CngxMenuButton geometry', () => {
     expect(glyph.height).toBeCloseTo(px(button, 'font-size'), 1);
   });
 
+  it('centres a CNGX_BUTTON_CARET_ICON glyph on the button (no baseline gap from its host)', () => {
+    const fixture = TestBed.createComponent(CustomCaretHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const button = query(mountedRoot, '.m-custom').getBoundingClientRect();
+    const caret = query(mountedRoot, '.m-custom .cngx-menu-button__caret').getBoundingClientRect();
+    expect(caret.height).toBeCloseTo(caret.width, 1);
+    expect(caret.top + caret.height / 2).toBeCloseTo(button.top + button.height / 2, 0);
+  });
+
   it('trims the end padding like a filled end slot', () => {
     const { root } = mount();
     const button = query(root, '.m-md');
