@@ -648,9 +648,13 @@
       color: var(--cngx-alert-icon-color, currentColor);
     }
 
-    .cngx-alert__default-icon {
-      width: var(--cngx-alert-icon-size, 20px);
-      height: var(--cngx-alert-icon-size, 20px);
+    /* The severity circles span 21 grid units with stroke, the glyphs they
+       replaced 22; scaling the box by 22/21 keeps the circle the size it
+       drew at --cngx-alert-icon-size. As a block it leaves the line box
+       and sits at the top of the icon cell, where the inline drawing sat. */
+    .cngx-alert__icon .cngx-alert__default-icon {
+      --cngx-icon-svg-size: calc(var(--cngx-alert-icon-size, 20px) * 22 / 21);
+      display: block;
     }
 
     .cngx-alert__body {

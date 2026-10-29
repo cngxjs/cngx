@@ -83,3 +83,57 @@ describe('CngxAlert geometry', () => {
     expect(dismiss.getBoundingClientRect().width).toBeCloseTo(box.width, 0);
   });
 });
+
+// ── Severity glyphs from the shared icon set (config/severity-icon.ts) ────────
+
+describe('CngxAlert severity glyphs', () => {
+  function mountSeverity(severity: 'info' | 'success' | 'warning' | 'error'): HTMLElement {
+    const fixture = TestBed.createComponent(CngxAlert);
+    fixture.componentRef.setInput('severity', severity);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    return mountedRoot;
+  }
+
+  function glyph(host: HTMLElement): {
+    cell: HTMLElement;
+    svg: SVGSVGElement;
+    path: SVGPathElement;
+  } {
+    const cell = query(host, '.cngx-alert__icon');
+    const svg = cell.querySelector<SVGSVGElement>('svg.cngx-alert__default-icon');
+    const path = svg?.querySelector('path');
+    if (!svg || !path) {
+      throw new Error('cngx-alert renders no severity glyph');
+    }
+    return { cell, svg, path };
+  }
+
+  function stroke(svg: SVGSVGElement): number {
+    return (
+      (parseFloat(computedValue(svg, 'stroke-width')) * svg.getBoundingClientRect().width) / 24
+    );
+  }
+
+  // The 20px drawings they replaced inked their circles 22 of 24 units across.
+  it.each(['info', 'success', 'error'] as const)(
+    'draws the %s circle 22/24 of the icon size',
+    (severity) => {
+      const { svg, path } = glyph(mountSeverity(severity));
+      expect(path.getBoundingClientRect().width + stroke(svg)).toBeCloseTo((20 * 22) / 24, 1);
+    },
+  );
+
+  it('sits the glyph at the top of the icon cell as a block', () => {
+    const { cell, svg } = glyph(mountSeverity('warning'));
+    expect(computedValue(svg, 'display')).toBe('block');
+    expect(svg.getBoundingClientRect().top).toBeCloseTo(cell.getBoundingClientRect().top, 1);
+  });
+
+  it('paints the stroke in the severity icon colour', () => {
+    const { cell, svg } = glyph(mountSeverity('error'));
+    expect(computedValue(svg, 'stroke')).toBe(computedValue(cell, 'color'));
+    expect(computedValue(svg, 'fill')).toBe('none');
+  });
+});
