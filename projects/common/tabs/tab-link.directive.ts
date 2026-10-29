@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 
 import { nextUid } from '@cngx/core/utils';
-import { CngxRuntimeError } from '@cngx/utils';
+import { CNGX_ICON_ALERT, CngxRuntimeError } from '@cngx/utils';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
@@ -35,8 +35,9 @@ import { injectTabsConfig } from './tabs-config';
  * There is no `select()` call - invoking it would re-enter the commit path the
  * routed-nav model deliberately keeps dormant.
  *
- * **Error communication is reactive:** `aria-invalid` plus the
- * `--error` skin glyph signal the state, and an injected screen-reader
+ * **Error communication is reactive:** `aria-invalid` plus a leading
+ * `aria-hidden` alert icon (`.cngx-tab-nav__error-icon`, built from the
+ * shared icon data) signal the state, and an injected screen-reader
  * descriptor span (referenced by a permanent `aria-describedby`) carries the
  * direct `[error]` message string so assistive tech reads *why* the link is
  * invalid.
@@ -159,6 +160,9 @@ export class CngxTabLink implements OnInit {
   /** The injected descriptor `<span>`, created in {@link ngOnInit}. */
   private descriptorEl: HTMLElement | null = null;
 
+  /** The leading alert icon, present while {@link hasError} holds. */
+  private errorIconEl: HTMLElement | null = null;
+
   constructor() {
     if (!this.host) {
       throw new CngxRuntimeError(
@@ -177,6 +181,10 @@ export class CngxTabLink implements OnInit {
         this.syncDescriptor(el);
       }
     });
+    // The anchor is consumer DOM, so the alert icon is built here rather
+    // than templated: leading child, `aria-hidden`, so the link's name and
+    // its textContent stay the label alone.
+    effect(() => this.syncErrorIcon(this.hasError()));
   }
 
   ngOnInit(): void {
@@ -215,6 +223,41 @@ export class CngxTabLink implements OnInit {
         this.renderer.removeChild(parent, descriptor);
       }
     });
+  }
+
+  /**
+   * Insert or remove the leading `<span><svg><path>` alert icon. The span
+   * carries `aria-hidden`; tab-nav.component.css sizes and paints the svg
+   * by its classes (no `CngxIconSvg` instance on consumer DOM).
+   */
+  private syncErrorIcon(show: boolean): void {
+    if (!show) {
+      if (this.errorIconEl) {
+        this.renderer.removeChild(this.hostEl, this.errorIconEl);
+        this.errorIconEl = null;
+      }
+      return;
+    }
+    if (this.errorIconEl) {
+      return;
+    }
+    const icon = CNGX_ICON_ALERT;
+    const span = this.renderer.createElement('span') as HTMLElement;
+    this.renderer.addClass(span, 'cngx-tab-nav__error-icon');
+    this.renderer.setAttribute(span, 'aria-hidden', 'true');
+    const svg = this.renderer.createElement('svg', 'svg') as SVGElement;
+    this.renderer.addClass(svg, 'cngx-tab-nav__icon-svg');
+    if (icon.paint === 'stroke') {
+      this.renderer.addClass(svg, 'cngx-tab-nav__icon-svg--stroke');
+    }
+    this.renderer.setAttribute(svg, 'viewBox', icon.viewBox);
+    this.renderer.setAttribute(svg, 'focusable', 'false');
+    const path = this.renderer.createElement('path', 'svg') as SVGElement;
+    this.renderer.setAttribute(path, 'd', icon.d);
+    this.renderer.appendChild(svg, path);
+    this.renderer.appendChild(span, svg);
+    this.renderer.insertBefore(this.hostEl, span, this.hostEl.firstChild);
+    this.errorIconEl = span;
   }
 
   /**

@@ -270,17 +270,6 @@
   }
 
   /**
-   * Font-size of the `!` glyph a `<cngx-tab-nav>` error link draws on its
-   * `::before`.
-   * @group State / Error
-   */
-  @property --cngx-tab-rejection-icon-font-size {
-    syntax: '*';
-    inherits: false;
-    initial-value: 0.875rem;
-  }
-
-  /**
    * Duration of the rejected-tab pulse animation.
    * @group State / Rejected
    */
