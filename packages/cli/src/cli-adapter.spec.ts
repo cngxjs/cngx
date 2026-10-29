@@ -294,6 +294,38 @@ describe('argument scan', () => {
   });
 });
 
+describe('--cngx-version checks', () => {
+  it('points migrate at <from> and --to instead of the bundled snapshot', async () => {
+    const run = await cli('migrate', '0.1.0-rc.6', '--cngx-version=0.2.0');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stderr).toContain('<from> and --to');
+    expect(run.stderr).not.toContain('bundled snapshot');
+  });
+
+  it('keeps the bundled-snapshot hint for a command without any version input', async () => {
+    const run = await cli('list', '--cngx-version=0.2.0');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stderr).toContain('bundled snapshot');
+  });
+
+  it.each([[' '], ['\t']])('exits 2 on a blank --cngx-version %j', async (blank) => {
+    const run = await cli('api', 'CngxSelect', '--cngx-version', blank);
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toContain('needs a version');
+  });
+
+  it('does not read a token after -- as a flag', async () => {
+    const run = await cli('example', '--', '--cngx-version');
+
+    expect(run.code).toBe(EXIT_NOT_FOUND);
+    expect(run.stderr).not.toContain('does not take --cngx-version');
+  });
+});
+
 describe('internal errors', () => {
   const api = COMMANDS.find((def) => def.cliName === 'api')!;
 

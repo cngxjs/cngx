@@ -61,6 +61,19 @@ const usageError = (io: CliIo, message: string, hint: string): number => {
   return EXIT_USAGE;
 };
 
+/**
+ * Why a command rejects `--cngx-version`: one that names its own release (a
+ * migration) takes its versions through its own inputs, every other one answers
+ * from the bundled snapshot.
+ */
+function versionHint(def: CngxCommand): string {
+  if (def.answeredVersion === undefined) {
+    return 'it always answers from the bundled snapshot';
+  }
+  const inputs = Object.keys(def.input).map((field) => (field === def.positional ? `<${field}>` : `--${flagName(def, field)}`));
+  return `it takes its versions as ${inputs.join(' and ')}`;
+}
+
 /** The json document of a run that failed; `cngxVersion` is null because nothing was answered. */
 const failureDocument = (reason: string, message: string): string =>
   `${JSON.stringify({ cngxVersion: null, result: null, error: { reason, message } }, null, 2)}\n`;
@@ -237,8 +250,11 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
   const rest = [...argv.slice(0, at), ...argv.slice(at + 1)];
   const hint = `Run \`cngx ${def.cliName} --help\` for usage.`;
   if (def.cliFlags === undefined || !Object.values(def.cliFlags).includes('cngx-version')) {
-    if (rest.some((token) => token === '--cngx-version' || token.startsWith('--cngx-version='))) {
-      return usageError(io, `${def.cliName} does not take --cngx-version; it always answers from the bundled snapshot.`, hint);
+    // Everything after `--` is a positional, never a flag.
+    const end = rest.indexOf('--');
+    const flags = end === -1 ? rest : rest.slice(0, end);
+    if (flags.some((token) => token === '--cngx-version' || token.startsWith('--cngx-version='))) {
+      return usageError(io, `${def.cliName} does not take --cngx-version; ${versionHint(def)}.`, hint);
     }
   }
 
@@ -264,7 +280,7 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
   }
 
   const pinned = values['cngx-version'];
-  if (pinned === '') {
+  if (typeof pinned === 'string' && pinned.trim() === '') {
     return usageError(io, '--cngx-version needs a version, e.g. --cngx-version=0.1.0.', hint);
   }
   if (typeof pinned === 'string' && !isReleaseVersion(pinned)) {
