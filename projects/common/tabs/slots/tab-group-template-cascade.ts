@@ -55,7 +55,7 @@ export interface CngxTabGroupTemplateBindings {
  *   `null`.
  *
  * `null` means the organism renders its built-in default - a default
- * span for the state decorations, the `CNGX_TABS_GLYPHS` glyph for
+ * span for the state decorations, the default icon for
  * `closeIcon` / `addIcon`, and nothing for `icon`.
  *
  * Pure - no DI, no side effects. Safe in field-init. Sibling to
