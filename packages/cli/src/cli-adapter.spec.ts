@@ -263,17 +263,32 @@ describe('version and snapshot resolution', () => {
     expect(run.stdout).toBe('');
   });
 
-  it('exits 1 when the bundled snapshot cannot be loaded, never for --version', async () => {
+  it.each([
+    ['md', []],
+    ['json', ['--format', 'json']],
+  ] as const)('exits 3 under %s when the bundled snapshot cannot be loaded, never for --version', async (format, flags) => {
+    let stdout = '';
     let stderr = '';
-    const io: CliIo = { stdout: () => undefined, stderr: (text) => (stderr += text) };
+    const io: CliIo = { stdout: (text) => (stdout += text), stderr: (text) => (stderr += text) };
     const loadContext = () => {
       throw new Error('ENOENT documentation.json');
     };
     const env = { commands: COMMANDS, loadContext, cliVersion: CLI_VERSION, io };
 
-    expect(await runCli(['api', 'CngxSelect'], env)).toBe(EXIT_NOT_FOUND);
-    expect(stderr).toContain('ENOENT');
+    expect(await runCli(['api', 'CngxSelect', ...flags], env)).toBe(EXIT_INTERNAL);
+    expect(stderr).toBe('cngx: internal error: ENOENT documentation.json\n');
+    if (format === 'md') {
+      expect(stdout).toBe('');
+    } else {
+      expect(JSON.parse(stdout)).toEqual({
+        cngxVersion: null,
+        result: null,
+        error: { reason: 'internal', message: 'ENOENT documentation.json' },
+      });
+    }
+    stdout = '';
     expect(await runCli(['--version'], env)).toBe(EXIT_OK);
+    expect(stdout).toBe(`${CLI_VERSION}\n`);
   });
 });
 

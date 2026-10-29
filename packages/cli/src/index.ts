@@ -21,10 +21,27 @@ if (floorError === null) {
     );
   } catch (error) {
     // A module that fails to load never reaches the adapter's own net; same line, same exit 3.
-    process.stderr.write(`cngx: internal error: ${error instanceof Error ? error.message : String(error)}\n`);
+    // The adapter never parsed argv, so --format json is read raw here.
+    const message = error instanceof Error ? error.message : String(error);
+    process.stderr.write(`cngx: internal error: ${message}\n`);
+    const argv = process.argv.slice(2);
+    const json = argv.includes('--format=json') || argv.some((arg, i) => arg === '--format' && argv[i + 1] === 'json');
+    if (json) {
+      process.stdout.write(await bootstrapFailureDocument(message));
+    }
     process.exitCode = 3;
   }
 } else {
   process.stderr.write(`${floorError}\n`);
   process.exitCode = 2;
+}
+
+/** The adapter's failure document when the adapter loads, else the same literal. */
+async function bootstrapFailureDocument(message: string): Promise<string> {
+  try {
+    const { failureDocument } = await import('./cli-adapter.js');
+    return failureDocument('internal', message);
+  } catch {
+    return `${JSON.stringify({ cngxVersion: null, result: null, error: { reason: 'internal', message } }, null, 2)}\n`;
+  }
 }

@@ -75,7 +75,7 @@ function versionHint(def: CngxCommand): string {
 }
 
 /** The json document of a run that failed; `cngxVersion` is null because nothing was answered. */
-const failureDocument = (reason: string, message: string): string =>
+export const failureDocument = (reason: string, message: string): string =>
   `${JSON.stringify({ cngxVersion: null, result: null, error: { reason, message } }, null, 2)}\n`;
 
 /**
@@ -334,8 +334,8 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
   try {
     context = env.loadContext();
   } catch (error) {
-    io.stderr(`cngx: the bundled API snapshot could not be loaded: ${errorMessage(error)}\n`);
-    return EXIT_NOT_FOUND;
+    // A broken install is not a miss: exit 3, like any other throw nobody expected.
+    return internalError(io, 'cngx', error, format);
   }
 
   let rendered: Rendered;
