@@ -221,7 +221,7 @@ describe('toMarkdown over the sample fixture', () => {
 
     expect(found).toBe(true);
     expect(markdown).toContain('# Migrating 0.1.0 -> 0.2.0');
-    expect(markdown).toContain('|renamed|`CngxOldPanel`|`CngxNewPanel`|');
+    expect(markdown).toContain('|renamed (inferred)|`CngxOldPanel`|`CngxNewPanel`|');
     expect(markdown).toContain('|removed|`CngxSelect.legacyMode`|-|');
   });
 

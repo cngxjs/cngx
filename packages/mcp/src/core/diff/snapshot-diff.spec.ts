@@ -24,7 +24,7 @@ describe('diffSnapshots', () => {
   });
 
   it('infers a component rename from a stable lib and shape', () => {
-    expect(delta.components.renamed).toEqual([{ from: 'CngxOldPanel', to: 'CngxNewPanel' }]);
+    expect(delta.components.renamed).toEqual([{ from: 'CngxOldPanel', to: 'CngxNewPanel', inferred: true }]);
     expect(delta.components.signatureChanged).toEqual([]);
   });
 
@@ -101,13 +101,21 @@ describe('diffSnapshots rename inference is fingerprint-gated', () => {
     ]);
   });
 
-  it('still infers a top-level rename from the entry-shape fingerprint', () => {
+  it('still infers a top-level rename from the entry-shape fingerprint and marks it inferred', () => {
     const open = [{ name: 'open', type: 'boolean' }];
     const from = index('1.0.0', [{ name: 'CngxOld', file: 'projects/ui/overlay/old.ts', inputsClass: open }]);
     const to = index('2.0.0', [{ name: 'CngxNew', file: 'projects/ui/overlay/new.ts', inputsClass: open }]);
     const delta = diffSnapshots(from, to);
 
-    expect(delta.components.renamed).toEqual([{ from: 'CngxOld', to: 'CngxNew' }]);
+    expect(delta.components.renamed).toEqual([{ from: 'CngxOld', to: 'CngxNew', inferred: true }]);
+  });
+
+  it('marks a coincidental same-shape pair as inferred, never as a certain rename', () => {
+    const press = [{ name: 'disabled', type: 'boolean' }];
+    const from = index('1.0.0', [{ name: 'CngxCloseButton', file: 'projects/common/button/close.ts', inputsClass: press }]);
+    const to = index('2.0.0', [{ name: 'CngxBrandNewButton', file: 'projects/common/button/brand.ts', inputsClass: press }]);
+
+    expect(diffSnapshots(from, to).components.renamed).toEqual([{ from: 'CngxCloseButton', to: 'CngxBrandNewButton', inferred: true }]);
   });
 
   it('reports a removal when two added entries share the lib and shape, never a guess', () => {
@@ -138,7 +146,7 @@ describe('diffSnapshots rename inference is fingerprint-gated', () => {
     const to = index('2.0.0', [{ name: 'CngxNew', inputsClass: open }]);
     const delta = diffSnapshots(from, to);
 
-    expect(delta.components.renamed).toEqual([{ from: 'CngxOld', to: 'CngxNew' }]);
+    expect(delta.components.renamed).toEqual([{ from: 'CngxOld', to: 'CngxNew', inferred: true }]);
   });
 });
 
@@ -152,13 +160,29 @@ describe('diffSnapshots keys inputs and outputs on their public name', () => {
     functions: [],
   });
 
-  it('reports an alias rename on an unchanged field as a removal of the old alias', () => {
+  it('reports a changed alias on an unchanged field as a rename of the public name', () => {
     const from = index('1.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', alias: 'selected', type: 'boolean' }] }]);
     const to = index('2.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', alias: 'checked', type: 'boolean' }] }]);
     const delta = diffSnapshots(from, to);
 
-    expect(delta.inputs.removed).toEqual([{ name: 'selected', owner: 'CngxX' }]);
-    expect(delta.inputs.signatureChanged).toEqual([]);
+    expect(delta.inputs).toEqual({ removed: [], renamed: [{ from: 'selected', to: 'checked', owner: 'CngxX' }], signatureChanged: [] });
+  });
+
+  it('reports an added alias as a rename from the field name', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', outputsClass: [{ name: 'changed', type: 'string' }] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', outputsClass: [{ name: 'changed', alias: 'cngxChanged', type: 'string' }] }]);
+
+    expect(diffSnapshots(from, to).outputs.renamed).toEqual([{ from: 'changed', to: 'cngxChanged', owner: 'CngxX' }]);
+  });
+
+  it('reports a removed alias as a rename to the field name, with a type change under the new name', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', alias: 'cngxValue', type: 'string' }] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', type: 'number' }] }]);
+    const delta = diffSnapshots(from, to);
+
+    expect(delta.inputs.renamed).toEqual([{ from: 'cngxValue', to: 'value', owner: 'CngxX' }]);
+    expect(delta.inputs.signatureChanged).toEqual([{ name: 'value', owner: 'CngxX', fromSignature: 'string', toSignature: 'number' }]);
+    expect(delta.inputs.removed).toEqual([]);
   });
 
   it('reports no change for a field rename under an unchanged alias', () => {
@@ -190,7 +214,7 @@ describe('diffSnapshots keys inputs and outputs on their public name', () => {
     const renamedAlias = index('2.0.0', [{ name: 'CngxX', outputsClass: [{ name: 'value', alias: 'checked', type: 'boolean' }] }]);
 
     expect(diffSnapshots(from, renamedField).outputs.removed).toEqual([]);
-    expect(diffSnapshots(from, renamedAlias).outputs.removed).toEqual([{ name: 'selected', owner: 'CngxX' }]);
+    expect(diffSnapshots(from, renamedAlias).outputs).toEqual({ removed: [], renamed: [{ from: 'selected', to: 'checked', owner: 'CngxX' }], signatureChanged: [] });
   });
 });
 
@@ -282,7 +306,7 @@ describe('diffSnapshots across schema 2 and schema 6', () => {
 
     expect(toIndex.components[0].category).toBe('forms/select');
     expect(diffSnapshots(createDocsIndex(from), toIndex).components.renamed).toEqual([
-      { from: 'CngxOldSelect', to: 'CngxNewSelect' },
+      { from: 'CngxOldSelect', to: 'CngxNewSelect', inferred: true },
     ]);
   });
 });

@@ -73,7 +73,7 @@ const owned = (name: string, owner: string | undefined) => code(owner ? `${owner
 function categoryRows(delta: CategoryDelta): string[][] {
   return [
     ...delta.removed.map((e) => ['removed', owned(e.name, e.owner), '-']),
-    ...delta.renamed.map((e) => ['renamed', owned(e.from, e.owner), code(e.to)]),
+    ...delta.renamed.map((e) => [e.inferred ? 'renamed (inferred)' : 'renamed', owned(e.from, e.owner), code(e.to)]),
     ...delta.signatureChanged.map((e) => ['signature', owned(e.name, e.owner), `${code(e.fromSignature)} -> ${code(e.toSignature)}`]),
   ];
 }

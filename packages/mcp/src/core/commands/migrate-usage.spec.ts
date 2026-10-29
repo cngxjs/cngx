@@ -37,7 +37,7 @@ describe('migrateUsage', () => {
     const delta = result as UsageDelta;
     expect(delta.meta).toMatchObject({ from: '0.1.0', to: '0.2.0', resolvedFrom: '0.1.0', resolvedTo: '0.2.0' });
     expect(delta.inputs.removed).toEqual([{ name: 'legacyMode', owner: 'CngxSelect' }]);
-    expect(delta.components.renamed).toEqual([{ from: 'CngxOldPanel', to: 'CngxNewPanel' }]);
+    expect(delta.components.renamed).toEqual([{ from: 'CngxOldPanel', to: 'CngxNewPanel', inferred: true }]);
   });
 
   it('diffs a schema-2 `from` against a schema-6 bundled `to`', async () => {

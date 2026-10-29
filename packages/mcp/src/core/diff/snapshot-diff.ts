@@ -6,7 +6,8 @@
 // name-sets) or a slot (its full description). A leaf member keyed only by a bare
 // type (an input/output/token) is NOT rename-inferred - an unrelated same-typed
 // add/remove pair would masquerade as a rename - so it reports the removal and
-// leaves the add unsurfaced. Newly-added symbols never break existing usage.
+// leaves the add unsurfaced; only a changed alias on the same class field is a
+// (certain) member rename. Newly-added symbols never break existing usage.
 
 import type { DocsIndex } from '../data/loader.js';
 import type { DocEntry, DocInput, DocOutput } from '../data/types.js';
@@ -39,6 +40,14 @@ interface DiffOptions<T extends Named> {
   owner?: string;
   /** The name a consumer writes, which entries are matched and reported by. Defaults to `name`. */
   keyOf?: (item: T) => string;
+  /**
+   * The class field behind a public name. A removed and an added item with the
+   * same field are one member whose alias changed: a certain rename, paired before
+   * any rename-key inference.
+   */
+  fieldOf?: (item: T) => string;
+  /** Marks every rename-key pairing as inferred; set where the key is a shape, not an identity. */
+  inferred?: boolean;
 }
 
 /** How many items carry each non-null rename key. */
@@ -55,7 +64,7 @@ function countKeys<T>(items: T[], renameKeyOf: ((item: T) => string | null) | un
 
 /** Diff two lists of named entries into the removed/renamed/signatureChanged shape. */
 function diffNamedList<T extends Named>(from: T[], to: T[], options: DiffOptions<T>): CategoryDelta {
-  const { renameKeyOf, signatureOf, owner, keyOf = (item: T) => item.name } = options;
+  const { renameKeyOf, signatureOf, owner, keyOf = (item: T) => item.name, fieldOf, inferred } = options;
   const toByName = new Map(to.map((item) => [keyOf(item), item]));
   const fromNames = new Set(from.map(keyOf));
 
@@ -85,11 +94,24 @@ function diffNamedList<T extends Named>(from: T[], to: T[], options: DiffOptions
   const addedItems = to.filter((item) => !fromNames.has(keyOf(item)));
   const removedKeyCount = countKeys(unmatchedFrom, renameKeyOf);
   const addedKeyCount = countKeys(addedItems, renameKeyOf);
+  const removedFieldCount = countKeys(unmatchedFrom, fieldOf);
+  const addedFieldCount = countKeys(addedItems, fieldOf);
   for (const gone of unmatchedFrom) {
+    const field = fieldOf?.(gone) ?? null;
+    if (fieldOf && field !== null && removedFieldCount.get(field) === 1 && addedFieldCount.get(field) === 1) {
+      const target = addedItems.find((item) => fieldOf(item) === field)!;
+      renamed.push({ from: keyOf(gone), to: keyOf(target), owner });
+      const fromSignature = signatureOf(gone);
+      const toSignature = signatureOf(target);
+      if (fromSignature !== toSignature) {
+        signatureChanged.push({ name: keyOf(target), owner, fromSignature, toSignature });
+      }
+      continue;
+    }
     const key = renameKeyOf?.(gone) ?? null;
     if (renameKeyOf && key !== null && removedKeyCount.get(key) === 1 && addedKeyCount.get(key) === 1) {
       const target = addedItems.find((item) => renameKeyOf(item) === key)!;
-      renamed.push({ from: keyOf(gone), to: keyOf(target), owner });
+      renamed.push({ from: keyOf(gone), to: keyOf(target), owner, ...(inferred ? { inferred: true as const } : {}) });
       continue;
     }
     removed.push({ name: keyOf(gone), owner });
@@ -119,6 +141,9 @@ const selectorOf = (entry: DocEntry): string => entry.selector ?? '';
 
 /** A consumer binds the alias, so the alias is the API; the class field is an implementation detail. */
 const publicNameOf = (member: DocInput | DocOutput): string => member.alias ?? member.name;
+
+/** The class field, which stays put when only the alias is added, removed or changed. */
+const fieldNameOf = (member: DocInput | DocOutput): string => member.name;
 
 /** An input's binding contract: its type, whether a binding is required, and its signal kind. */
 function inputSignatureOf(input: DocInput): string {
@@ -153,8 +178,8 @@ export function diffSnapshots(fromDocs: DocsIndex, toDocs: DocsIndex): UsageDelt
   // Injectables carry no selector and no input/output sets, so no rename key is
   // strong enough: a removed service reports as removed, never as a rename.
   const components = mergeCategoryDeltas([
-    diffNamedList(fromDocs.components, toDocs.components, { renameKeyOf: entryShapeKey, signatureOf: selectorOf }),
-    diffNamedList(fromDocs.directives, toDocs.directives, { renameKeyOf: entryShapeKey, signatureOf: selectorOf }),
+    diffNamedList(fromDocs.components, toDocs.components, { renameKeyOf: entryShapeKey, signatureOf: selectorOf, inferred: true }),
+    diffNamedList(fromDocs.directives, toDocs.directives, { renameKeyOf: entryShapeKey, signatureOf: selectorOf, inferred: true }),
     diffNamedList(fromDocs.injectables, toDocs.injectables, { signatureOf: () => '' }),
   ]);
 
@@ -168,12 +193,14 @@ export function diffSnapshots(fromDocs: DocsIndex, toDocs: DocsIndex): UsageDelt
 
   // inputs/outputs/tokens: keyed only by a bare type, so no rename inference -
   // a removed member is reported as removed, never paired into a false rename.
-  // Inputs and outputs are matched and reported by their public (alias) name.
+  // Inputs and outputs are matched and reported by their public (alias) name; a
+  // changed alias on the same class field is a rename from the old public name.
   const inputs = mergeCategoryDeltas(
     matchedPairs.map(([from, to]) =>
       diffNamedList(from.inputsClass ?? [], to.inputsClass ?? [], {
         signatureOf: inputSignatureOf,
         keyOf: publicNameOf,
+        fieldOf: fieldNameOf,
         owner: from.name,
       }),
     ),
@@ -184,6 +211,7 @@ export function diffSnapshots(fromDocs: DocsIndex, toDocs: DocsIndex): UsageDelt
       diffNamedList(from.outputsClass ?? [], to.outputsClass ?? [], {
         signatureOf: (output) => output.type ?? '',
         keyOf: publicNameOf,
+        fieldOf: fieldNameOf,
         owner: from.name,
       }),
     ),

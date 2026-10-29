@@ -13,11 +13,16 @@ export interface RemovedEntry {
   owner?: string;
 }
 
-/** A symbol conservatively inferred to be the same API under a new name. */
+/**
+ * A symbol under a new name. A member whose class field stayed while its public
+ * name (alias) changed is a certain rename; a top-level entry paired only by its
+ * lib and binding shape is an inference and carries `inferred: true`.
+ */
 export interface RenamedEntry {
   from: string;
   to: string;
   owner?: string;
+  inferred?: true;
 }
 
 /** A symbol kept under the same name whose type/signature changed across the two snapshots. */
