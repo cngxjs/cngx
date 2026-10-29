@@ -1,0 +1,20 @@
+// Test-only entry for material-bridge.geometry.spec.ts: compiles the
+// working-tree menu bridge the way a consumer stylesheet would, next to the
+// button and icon bridges (../button/material-bridge.spec-host.scss). Not
+// shipped.
+@use '@angular/material' as mat;
+@use '../../themes/material/menu-theme' as menu;
+
+$theme: mat.define-theme(
+  (
+    color: (
+      theme-type: light,
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+    ),
+  )
+);
+
+html {
+  @include menu.theme($theme);
+}

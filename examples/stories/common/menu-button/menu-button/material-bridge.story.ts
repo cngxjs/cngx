@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxMenuButton: Material bridge',
   subtitle: 'With <code>button-theme</code> included, menu buttons and split buttons read as Material 3 next to <code>[matMenuTriggerFor]</code>.',
-  description: 'The menu buttons carry <code>.cngx-button</code>, so the button bridge gives them the M3 colour roles, the full corner, the 40px row and the label-large type unchanged. The caret is the end slot: 16px on its side and 24px on the other for a filled button, 12px and 16px for a text button, the 18px slot icon, the same box <code>mat-button</code> draws around a trailing <code>arrow_drop_down</code>. <code>CNGX_BUTTON_CARET_ICON</code> swaps the default chevron for that Material glyph; the menu button wraps it in its caret <code>&lt;cngx-icon&gt;</code> and the icon bridge sizes it. The split button follows the M3 split-button anatomy, which Angular Material does not ship: a 2px gap between the two parts instead of a divider line, corner-full outer ends and 4px inner corners. Every length is a rung of the <code>--cngx-space-*</code> scale, so the last row re-scales in <code>[data-density]</code> islands. An app includes the bridges with <code>html &#123; @include button.theme($theme); @include icon.theme($theme); &#125;</code> next to <code>mat.theme</code>; <code>@cngx/themes/material/theme</code> includes both.',
+  description: 'The menu buttons carry <code>.cngx-button</code>, so the button bridge gives them the M3 colour roles (a neutral outline or text label in primary ink, as on <code>mat-stroked-button</code>), the full corner, the 40px row and the label-large type unchanged. The caret is the end slot: 16px on its side and 24px on the other for a filled button, 12px and 16px for a text button, the 18px slot icon, the same box <code>mat-button</code> draws around a trailing <code>arrow_drop_down</code>. <code>CNGX_BUTTON_CARET_ICON</code> swaps the default chevron for that Material glyph; the menu button wraps it in its caret <code>&lt;cngx-icon&gt;</code> and the icon bridge sizes it. The split button follows the M3 split-button anatomy, which Angular Material does not ship: a 2px gap between the two parts instead of a divider line, corner-full outer ends and 4px inner corners. The menu bridge paints the dropdown like <code>mat-menu</code>: surface-container, no border, 4px corners, 48px label-large rows that highlight edge to edge. Every length is a rung of the <code>--cngx-space-*</code> scale, so the last row re-scales in <code>[data-density]</code> islands. An app includes the bridges with <code>html &#123; @include button.theme($theme); @include icon.theme($theme); @include menu.theme($theme); &#125;</code> next to <code>mat.theme</code>; <code>@cngx/themes/material/theme</code> includes all three.',
   level: 'molecule',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -25,6 +25,7 @@ export const STORY: DemoSpec = {
   css: `@use '@angular/material' as mat;
 @use '@cngx/themes/material/button-theme' as button;
 @use '@cngx/themes/material/icon-theme' as icon;
+@use '@cngx/themes/material/menu-theme' as menu;
 
 $theme: mat.define-theme((color: (primary: mat.$azure-palette)));
 
@@ -32,6 +33,7 @@ html {
   @include mat.theme((color: (primary: mat.$azure-palette)));
   @include button.theme($theme);
   @include icon.theme($theme);
+  @include menu.theme($theme);
 }`,
   template: `
   <div style="display:flex; flex-direction:column; gap:16px">

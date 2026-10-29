@@ -14,6 +14,7 @@
 // material-lab harness.
 @use '../../projects/themes/material/button-theme.scss' as cngx-button-bridge;
 @use '../../projects/themes/material/icon-theme.scss' as cngx-icon-bridge;
+@use '../../projects/themes/material/menu-theme.scss' as cngx-menu-bridge;
 
 // Foundation: layer-order + system tokens + reset + base + aggregated
 // directive default CSS (bottom-sheet, backdrop, badge, divider, ripple,
@@ -4066,6 +4067,7 @@ app-button-material-bridge,
 app-menu-button-material-bridge {
   @include cngx-button-bridge.theme($demo-material-bridge-theme);
   @include cngx-icon-bridge.theme($demo-material-bridge-theme);
+  @include cngx-menu-bridge.theme($demo-material-bridge-theme);
 }
 
 // Demo-only accent for the stepper `chips` skin stories (matches the

@@ -1,0 +1,100 @@
+@use '@angular/material' as mat;
+@use './bridge' as bridge;
+
+// Material bridge for CngxMenu (`@cngx/common/interactive`): the dropdown a
+// cngxMenuButton, cngxIconMenuButton or split-button caret opens reads like
+// mat-menu. Default visuals ship in `cngx-menu.css`.
+//
+//   @use '@cngx/themes/material/menu-theme' as menu;
+//   html { @include menu.theme($theme); }
+//
+// M3 mat-menu at comfortable, as the bridge maps it:
+//
+//   panel       surface-container, no border, corner-extra-small, level2
+//   width       112 min (sm * 14), 280 max (sm * 35)
+//   list        8 block (sm), 0 inline: the item state layer runs edge to edge
+//   item        48 high: 20 label line + 2 * 14 block (sm * 1.75), 12 inline
+//               (sm * 1.5), square corners, label-large, on-surface
+//   highlight   on-surface hover state layer (8%)
+//   separator   outline-variant, 8 block margin, full bleed
+//
+// Spacing derives from the --cngx-space-* scale, so a density island scales
+// the menu the way Material density scales mat-menu. The item tokens and the
+// list padding are SET per element in `cngx-menu.css` (0,1,0), so metrics()
+// emits layered rules with real specificity (button-theme `metrics()`
+// precedent). A menu inside a CngxPopoverPanel keeps the panel's surface:
+// `cngx-menu.css` strips the menu's own there.
+
+$_items: ':is([cngxMenuItem], [cngxMenuItemCheckbox], [cngxMenuItemRadio], [cngxMenuItemSubmenu])';
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    @include bridge.on('[cngxMenu]') {
+      --cngx-menu-bg: var(--mat-sys-surface-container);
+      --cngx-menu-color: var(--mat-sys-on-surface);
+      --cngx-menu-border: none;
+      --cngx-menu-radius: var(--mat-sys-corner-extra-small);
+      --cngx-menu-shadow: var(--mat-sys-level2);
+      --cngx-menu-separator-color: var(--mat-sys-outline-variant);
+      --cngx-menu-item-checked-color: var(--mat-sys-primary);
+      --cngx-menu-item-kbd-color: var(--mat-sys-on-surface-variant);
+      --cngx-menu-item-highlight-bg: color-mix(
+        in srgb,
+        var(--mat-sys-on-surface) calc(var(--mat-sys-hover-state-layer-opacity, 0.08) * 100%),
+        transparent
+      );
+    }
+  } @else {
+    @include bridge.on('[cngxMenu]') {
+      --cngx-menu-bg: #{mat.get-theme-color($theme, background, card)};
+      --cngx-menu-color: #{mat.get-theme-color($theme, foreground, text)};
+      --cngx-menu-border: none;
+      --cngx-menu-radius: 4px;
+      --cngx-menu-separator-color: #{mat.get-theme-color($theme, foreground, divider)};
+      --cngx-menu-item-checked-color: #{mat.get-theme-color($theme, primary, default)};
+      --cngx-menu-item-kbd-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
+      --cngx-menu-item-highlight-bg: #{mat.get-theme-color($theme, background, hover)};
+    }
+  }
+}
+
+@mixin metrics($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    @layer cngx.components {
+      [cngxMenu][role='menu'] {
+        --cngx-menu-padding: var(--cngx-space-sm, 8px);
+        padding-block: var(--cngx-menu-padding, 8px);
+        padding-inline: 0;
+        min-inline-size: calc(var(--cngx-space-sm, 8px) * 14);
+        max-inline-size: calc(var(--cngx-space-sm, 8px) * 35);
+      }
+      [cngxMenu] #{$_items} {
+        --cngx-menu-item-gap: calc(var(--cngx-space-sm, 8px) * 1.5);
+        --cngx-menu-item-padding: calc(var(--cngx-space-sm, 8px) * 1.75) calc(var(--cngx-space-sm, 8px) * 1.5);
+        --cngx-menu-item-radius: 0px;
+        font-family: var(--mat-sys-label-large-font, inherit);
+        font-size: var(--mat-sys-label-large-size, 0.875rem);
+        line-height: var(--mat-sys-label-large-line-height, 1.25rem);
+        font-weight: var(--mat-sys-label-large-weight, 500);
+        letter-spacing: var(--mat-sys-label-large-tracking, 0.006rem);
+        // mat-menu-item renders its label with grayscale smoothing; without it
+        // the same 500 weight reads bolder on macOS.
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      // The type role above outranks the checked weight; keep the cue.
+      [cngxMenu] #{$_items}.cngx-menu-item--checked {
+        font-weight: var(--cngx-menu-item-checked-font-weight, 600);
+      }
+      [cngxMenu] [cngxMenuSeparator] {
+        margin-block: var(--cngx-space-sm, 8px);
+        margin-inline: 0;
+      }
+    }
+  }
+}
+
+@mixin theme($theme) {
+  @include color($theme);
+  @include metrics($theme);
+}

@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
@@ -105,6 +108,70 @@ $theme: mat.define-theme((
     for (const name of names) {
       expect(CONSUMED).toContain(name);
     }
+  });
+});
+
+describe('menu Material bridge', () => {
+  // every name is read by cngx-menu.css on [cngxMenu] or its rows
+  const CONSUMED = [
+    '--cngx-menu-bg',
+    '--cngx-menu-border',
+    '--cngx-menu-color',
+    '--cngx-menu-item-checked-color',
+    '--cngx-menu-item-gap',
+    '--cngx-menu-item-highlight-bg',
+    '--cngx-menu-item-kbd-color',
+    '--cngx-menu-item-padding',
+    '--cngx-menu-item-radius',
+    '--cngx-menu-padding',
+    '--cngx-menu-radius',
+    '--cngx-menu-separator-color',
+    '--cngx-menu-shadow',
+  ];
+
+  it('emits only consumed token names (M3)', () => {
+    expect(bridgeTokenNames('menu-theme', 'v1')).toEqual(CONSUMED);
+  });
+
+  it('emits a consumed-name subset (M2)', () => {
+    const names = bridgeTokenNames('menu-theme', 'v0');
+    expect(names.length).toBeGreaterThan(0);
+    for (const name of names) {
+      expect(CONSUMED).toContain(name);
+    }
+  });
+
+  it('is read by cngx-menu.css', () => {
+    const sheet = readFileSync(
+      resolve(process.cwd(), 'projects/common/theming/components/cngx-menu.css'),
+      'utf-8',
+    );
+    for (const name of CONSUMED) {
+      expect(sheet, name).toMatch(new RegExp(`var\\(\\s*${name}[,)]`));
+    }
+  });
+
+  it('drops the border and derives the M3 row metrics from the space scale, M3 only', () => {
+    const entry = (version: 'v1' | 'v0') =>
+      version === 'v1'
+        ? `@use '@angular/material' as mat;
+@use 'material/menu-theme' as bridge;
+$theme: mat.define-theme((color: (theme-type: light, primary: mat.$azure-palette)));
+@include bridge.theme($theme);`
+        : `@use '@angular/material' as mat;
+@use 'material/menu-theme' as bridge;
+$p: mat.m2-define-palette(mat.$m2-indigo-palette);
+$theme: mat.m2-define-light-theme((color: (primary: $p, accent: $p)));
+@include bridge.theme($theme);`;
+    const m3 = compileThemeEntry(entry('v1'));
+    expect(m3).toContain('--cngx-menu-border: none');
+    expect(m3).toContain('--cngx-menu-bg: var(--mat-sys-surface-container)');
+    expect(m3).toContain('--cngx-menu-item-padding: calc(var(--cngx-space-sm, 8px) * 1.75) calc(var(--cngx-space-sm, 8px) * 1.5)');
+    expect(m3).toContain('font-size: var(--mat-sys-label-large-size, 0.875rem)');
+    expect(m3).toContain('-webkit-font-smoothing: antialiased');
+    expect(m3).not.toMatch(/@layer\s+(?!cngx\.components)/);
+    const m2 = compileThemeEntry(entry('v0'));
+    expect(m2).not.toContain('--cngx-menu-item-padding');
   });
 });
 

@@ -36,7 +36,9 @@ const M3 = {
     '../../core/theming/base.css',
     '../../core/theming/density-tokens.css',
     '../theming/components/cngx-button-group.css',
+    '../theming/components/cngx-menu.css',
     '../button/material-bridge.spec-host.scss',
+    './material-bridge.spec-host.scss',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -62,6 +64,26 @@ const M3 = {
             ></button>
           </span>
         </p>
+      </div>
+    }
+    <p>
+      <button cngxMenuButton="outline" class="outline-neutral" [menu]="menu" [popover]="pop">Export</button>
+      <span cngxSplitButton variant="outline" class="split-outline" aria-label="Publish">
+        <button cngxButton class="split-outline-main">Publish</button>
+        <button cngxIconMenuButton class="split-outline-caret" [menu]="menu" [popover]="pop"></button>
+      </span>
+      <button cngxIconMenuButton="ghost" class="kebab" aria-label="More" [menu]="menu" [popover]="pop"></button>
+      <span class="probe-primary" style="color: var(--mat-sys-primary)"></span>
+      <span class="probe-on-surface-variant" style="color: var(--mat-sys-on-surface-variant)"></span>
+      <span class="probe-surface-container" style="color: var(--mat-sys-surface-container)"></span>
+    </p>
+    @for (density of densities; track density) {
+      <div [attr.data-density]="density">
+        <ul cngxMenu [label]="'Bare ' + density" class="bare-{{ density }}">
+          <li cngxMenuItem value="pdf" class="item-{{ density }}">PDF</li>
+          <li cngxMenuSeparator class="separator-{{ density }}"></li>
+          <li cngxMenuItem value="csv">CSV</li>
+        </ul>
       </div>
     }
     <div cngxPopover #pop="cngxPopover">
@@ -224,6 +246,67 @@ describe('Material bridge: menu button', () => {
     button.style.setProperty('--cngx-menu-button-caret-size', '24px');
     const caret = query(button, '.cngx-menu-button__caret').getBoundingClientRect();
     expect(caret.width).toBeCloseTo(24, 1);
+  });
+});
+
+describe('Material bridge: label and glyph ink', () => {
+  it('paints a neutral outline label and its split caret in primary, as mat-stroked-button', () => {
+    const root = mount();
+    const primary = getComputedStyle(query(root, '.probe-primary')).color;
+    for (const selector of ['.outline-neutral', '.split-outline-main', '.split-outline-caret']) {
+      expect(getComputedStyle(query(root, selector)).color, selector).toBe(primary);
+    }
+  });
+
+  it('paints a standalone neutral icon button on-surface-variant, as the M3 standard icon button', () => {
+    const root = mount();
+    expect(getComputedStyle(query(root, '.kebab')).color).toBe(
+      getComputedStyle(query(root, '.probe-on-surface-variant')).color,
+    );
+  });
+});
+
+describe('Material bridge: menu', () => {
+  it('paints the mat-menu surface: surface-container, no border, corner-extra-small', () => {
+    const root = mount();
+    const menu = getComputedStyle(query(root, '.bare-comfortable'));
+    expect(menu.backgroundColor).toBe(getComputedStyle(query(root, '.probe-surface-container')).color);
+    expect(parseFloat(menu.borderTopWidth)).toBe(0);
+    expect(parseFloat(menu.borderTopLeftRadius)).toBe(4);
+    expect(menu.boxShadow).not.toBe('none');
+  });
+
+  it('lays the list out as mat-menu: 8px block, no inline padding, 112px floor', () => {
+    const root = mount();
+    const menu = getComputedStyle(query(root, '.bare-comfortable'));
+    expect([parseFloat(menu.paddingTop), parseFloat(menu.paddingInlineStart)]).toEqual([8, 0]);
+    expect(parseFloat(menu.minInlineSize)).toBe(112);
+    expect(parseFloat(menu.maxInlineSize)).toBe(280);
+  });
+
+  it('renders 48px label-large rows with 12px inline padding and square corners', () => {
+    const root = mount();
+    const item = query(root, '.item-comfortable');
+    const style = getComputedStyle(item);
+    expect(item.getBoundingClientRect().height).toBe(48);
+    expect(parseFloat(style.paddingInlineStart)).toBe(12);
+    expect([style.fontSize, style.lineHeight, style.fontWeight]).toEqual(['14px', '20px', '500']);
+    expect(parseFloat(style.borderTopLeftRadius)).toBe(0);
+  });
+
+  it('runs the separator edge to edge with an 8px block margin', () => {
+    const root = mount();
+    const menu = query(root, '.bare-comfortable').getBoundingClientRect();
+    const separator = query(root, '.separator-comfortable');
+    expect(separator.getBoundingClientRect().width).toBeCloseTo(menu.width, 1);
+    expect(parseFloat(getComputedStyle(separator).marginTop)).toBe(8);
+  });
+
+  it('re-scales the rows with the density islands', () => {
+    const root = mount();
+    const height = (density: string) => query(root, `.item-${density}`).getBoundingClientRect().height;
+    expect(height('compact')).toBeLessThan(height('comfortable'));
+    expect(height('spacious')).toBeGreaterThan(height('comfortable'));
   });
 });
 

@@ -58,6 +58,7 @@
 @use './icon-theme' as icon;
 @use './incremental-list-theme' as incremental-list;
 @use './interactive-controls-theme' as controls;
+@use './menu-theme' as menu;
 @use './metric-theme' as metric;
 @use './option-theme' as option;
 @use './paginator-theme' as paginator;
@@ -127,6 +128,7 @@
   @include goal.theme($theme);
   @include icon.theme($theme);
   @include incremental-list.theme($theme);
+  @include menu.theme($theme);
   @include metric.theme($theme);
   @include option.theme($theme);
   @include paginator.theme($theme);
