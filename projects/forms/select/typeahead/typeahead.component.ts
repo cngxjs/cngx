@@ -280,10 +280,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   readonly compareWith = input<CngxSelectCompareFn<T>>(
     cngxSelectDefaultCompare as CngxSelectCompareFn<T>,
   );
-  /**
-   * Host id. Unset, it takes the input id of an enclosing `cngx-form-field`,
-   * else a generated id.
-   */
+  /** Host id. Unset, it takes the input id of an enclosing `cngx-form-field`. */
   readonly idInput = input<string | null>(null, { alias: 'id' });
   /** Accessible name of the trigger. Wins over `label`. */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
@@ -407,9 +404,9 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** Callback the built-in retry button runs after a failed load, before `retry` emits. */
   readonly retryFn = input<(() => void) | null>(null);
   /**
-   * Async write handler run on every user change with the intended value.
-   * Unset, the change applies directly; `commitMode` sets the panel behaviour
-   * while it runs.
+   * Async write handler run on every pick with the intended value; a clear
+   * writes the value directly, without a commit. Unset, the change applies
+   * directly; `commitMode` decides how it shows while the handler runs.
    */
   readonly commitAction = input<CngxSelectCommitAction<T> | null>(null);
   /**
