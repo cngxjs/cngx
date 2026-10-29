@@ -40,6 +40,18 @@ interface DiffOptions<T extends Named> {
   keyOf?: (item: T) => string;
 }
 
+/** How many items carry each non-null rename key. */
+function countKeys<T>(items: T[], renameKeyOf: ((item: T) => string | null) | undefined): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const item of items) {
+    const key = renameKeyOf?.(item) ?? null;
+    if (key !== null) {
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+  }
+  return counts;
+}
+
 /** Diff two lists of named entries into the removed/renamed/signatureChanged shape. */
 function diffNamedList<T extends Named>(from: T[], to: T[], options: DiffOptions<T>): CategoryDelta {
   const { renameKeyOf, signatureOf, owner, keyOf = (item: T) => item.name } = options;
@@ -67,17 +79,17 @@ function diffNamedList<T extends Named>(from: T[], to: T[], options: DiffOptions
   // Rename inference pool: entries new to `to` a removed entry can be paired with.
   // Only when this category carries a trustworthy rename key; otherwise every
   // unmatched removal is reported as removed, never guessed into a rename.
+  // A rename is inferred only when exactly one removed and exactly one added item share
+  // the key; any ambiguity stays a removal, so the answer never depends on snapshot order.
   const addedItems = to.filter((item) => !fromNames.has(keyOf(item)));
+  const removedKeyCount = countKeys(unmatchedFrom, renameKeyOf);
+  const addedKeyCount = countKeys(addedItems, renameKeyOf);
   for (const gone of unmatchedFrom) {
     const key = renameKeyOf?.(gone) ?? null;
-    if (renameKeyOf && key !== null) {
-      const candidates = addedItems.filter((item) => renameKeyOf(item) === key);
-      if (candidates.length === 1) {
-        const target = candidates[0];
-        renamed.push({ from: keyOf(gone), to: keyOf(target), owner });
-        addedItems.splice(addedItems.indexOf(target), 1);
-        continue;
-      }
+    if (renameKeyOf && key !== null && removedKeyCount.get(key) === 1 && addedKeyCount.get(key) === 1) {
+      const target = addedItems.find((item) => renameKeyOf(item) === key)!;
+      renamed.push({ from: keyOf(gone), to: keyOf(target), owner });
+      continue;
     }
     removed.push({ name: keyOf(gone), owner });
   }
@@ -180,7 +192,8 @@ export function diffSnapshots(fromDocs: DocsIndex, toDocs: DocsIndex): UsageDelt
   const slots = mergeCategoryDeltas(
     matchedPairs.map(([from, to]) =>
       diffNamedList(from.slots ?? [], to.slots ?? [], {
-        renameKeyOf: (slot) => slot.description,
+        // An empty description fingerprints nothing; such a slot is never rename-inferred.
+        renameKeyOf: (slot) => (slot.description.trim() === '' ? null : slot.description),
         signatureOf: (slot) => slot.description,
         owner: from.name,
       }),

@@ -175,6 +175,44 @@ describe('diffSnapshots keys inputs and outputs on their public name', () => {
   });
 });
 
+describe('diffSnapshots infers a slot rename only from a unique, non-empty key', () => {
+  const index = (cngxVersion: string, slots: { name: string; description: string }[]): DocsIndex => ({
+    meta: { schemaVersion: 6, cngxVersion, generatedAt: null, compodocxVersion: null },
+    components: [{ name: 'CngxX', slots }],
+    directives: [],
+    injectables: [],
+    tokens: [],
+    functions: [],
+  });
+
+  const a = { name: 'cngxA', description: 'The caret.' };
+  const b = { name: 'cngxB', description: 'The caret.' };
+  const added = { name: 'cngxC', description: 'The caret.' };
+
+  it.each([
+    ['a, b', [a, b]],
+    ['b, a', [b, a]],
+  ])('reports two removed slots sharing a description against one added slot as two removals (%s)', (_, fromSlots) => {
+    const delta = diffSnapshots(index('1.0.0', fromSlots), index('2.0.0', [added]));
+
+    expect(delta.slots.renamed).toEqual([]);
+    expect(delta.slots.removed).toEqual(fromSlots.map((slot) => ({ name: slot.name, owner: 'CngxX' })));
+  });
+
+  it.each([[''], ['   ']])('never pairs slots whose description is %j', (description) => {
+    const delta = diffSnapshots(index('1.0.0', [{ name: 'cngxA', description }]), index('2.0.0', [{ name: 'cngxB', description }]));
+
+    expect(delta.slots.renamed).toEqual([]);
+    expect(delta.slots.removed).toEqual([{ name: 'cngxA', owner: 'CngxX' }]);
+  });
+
+  it('still pairs one removed and one added slot with the same description', () => {
+    const delta = diffSnapshots(index('1.0.0', [a]), index('2.0.0', [added]));
+
+    expect(delta.slots.renamed).toEqual([{ from: 'cngxA', to: 'cngxC', owner: 'CngxX' }]);
+  });
+});
+
 describe('diffSnapshots across schema 2 and schema 6', () => {
   const shape: Pick<DocEntry, 'inputsClass' | 'outputsClass'> = {
     inputsClass: [{ name: 'value' }],
