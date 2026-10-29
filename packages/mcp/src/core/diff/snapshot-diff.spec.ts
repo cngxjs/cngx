@@ -150,6 +150,41 @@ describe('diffSnapshots rename inference is fingerprint-gated', () => {
   });
 });
 
+describe('diffSnapshots across a kind change', () => {
+  const index = (cngxVersion: string, components: DocEntry[], directives: DocEntry[]): DocsIndex => ({
+    meta: { schemaVersion: 6, cngxVersion, generatedAt: null, compodocxVersion: null },
+    components,
+    directives,
+    injectables: [],
+    tokens: [],
+    functions: [],
+  });
+
+  it('reports a component that became a directive as a kind change and diffs its members', () => {
+    const inputs = [{ name: 'open', type: 'boolean' }, { name: 'legacy', type: 'string' }];
+    const from = index('1.0.0', [{ name: 'CngxX', selector: 'cngx-x', inputsClass: inputs }], []);
+    const to = index('2.0.0', [], [{ name: 'CngxX', selector: 'cngx-x', inputsClass: [inputs[0]] }]);
+    const delta = diffSnapshots(from, to);
+
+    expect(delta.components).toEqual({
+      removed: [],
+      renamed: [],
+      signatureChanged: [{ name: 'CngxX', fromSignature: 'component', toSignature: 'directive' }],
+    });
+    expect(delta.inputs.removed).toEqual([{ name: 'legacy', owner: 'CngxX' }]);
+  });
+
+  it('reports a moved selector next to the kind change', () => {
+    const from = index('1.0.0', [], [{ name: 'CngxX', selector: '[cngxX]' }]);
+    const to = index('2.0.0', [{ name: 'CngxX', selector: 'cngx-x' }], []);
+
+    expect(diffSnapshots(from, to).components.signatureChanged).toEqual([
+      { name: 'CngxX', fromSignature: 'directive', toSignature: 'component' },
+      { name: 'CngxX', fromSignature: '[cngxX]', toSignature: 'cngx-x' },
+    ]);
+  });
+});
+
 describe('diffSnapshots keys inputs and outputs on their public name', () => {
   const index = (cngxVersion: string, components: DocEntry[]): DocsIndex => ({
     meta: { schemaVersion: 6, cngxVersion, generatedAt: null, compodocxVersion: null },

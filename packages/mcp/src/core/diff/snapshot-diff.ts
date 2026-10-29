@@ -172,14 +172,39 @@ function mergeCategoryDeltas(deltas: CategoryDelta[]): CategoryDelta {
   };
 }
 
+/**
+ * Entries kept under the same name whose kind flipped between component and
+ * directive. Each is a kind change (plus a selector change when that moved too),
+ * never a removal, and its members are diffed like any matched entry.
+ */
+function kindChanges(fromDocs: DocsIndex, toDocs: DocsIndex): { pairs: [DocEntry, DocEntry][]; delta: CategoryDelta } {
+  const flips = [
+    ...matchedByName(fromDocs.components, toDocs.directives).map((pair) => ({ pair, kinds: ['component', 'directive'] })),
+    ...matchedByName(fromDocs.directives, toDocs.components).map((pair) => ({ pair, kinds: ['directive', 'component'] })),
+  ];
+  const signatureChanged = flips.flatMap(({ pair: [from, to], kinds: [fromKind, toKind] }) => [
+    { name: from.name, fromSignature: fromKind, toSignature: toKind },
+    ...(selectorOf(from) === selectorOf(to) ? [] : [{ name: from.name, fromSignature: selectorOf(from), toSignature: selectorOf(to) }]),
+  ]);
+  return { pairs: flips.map(({ pair }) => pair), delta: { removed: [], renamed: [], signatureChanged } };
+}
+
 export function diffSnapshots(fromDocs: DocsIndex, toDocs: DocsIndex): UsageDelta {
+  // A component that became a directive (or back) keeps its name: pulled out of
+  // the per-kind lists so it is neither removed nor paired into a rename.
+  const kindChanged = kindChanges(fromDocs, toDocs);
+  const flipped = new Set(kindChanged.pairs.map(([from]) => from.name));
+  const stay = (entries: DocEntry[]) => entries.filter((entry) => !flipped.has(entry.name));
+
   // Top-level artifacts diffed within kind so a component never pairs with a
   // directive of the same shape (the conservative "same kind" rename constraint).
   // Injectables carry no selector and no input/output sets, so no rename key is
   // strong enough: a removed service reports as removed, never as a rename.
+  const entryOptions = { renameKeyOf: entryShapeKey, signatureOf: selectorOf, inferred: true };
   const components = mergeCategoryDeltas([
-    diffNamedList(fromDocs.components, toDocs.components, { renameKeyOf: entryShapeKey, signatureOf: selectorOf, inferred: true }),
-    diffNamedList(fromDocs.directives, toDocs.directives, { renameKeyOf: entryShapeKey, signatureOf: selectorOf, inferred: true }),
+    diffNamedList(stay(fromDocs.components), stay(toDocs.components), entryOptions),
+    diffNamedList(stay(fromDocs.directives), stay(toDocs.directives), entryOptions),
+    kindChanged.delta,
     diffNamedList(fromDocs.injectables, toDocs.injectables, { signatureOf: () => '' }),
   ]);
 
@@ -189,6 +214,7 @@ export function diffSnapshots(fromDocs: DocsIndex, toDocs: DocsIndex): UsageDelt
   const matchedPairs = [
     ...matchedByName(fromDocs.components, toDocs.components),
     ...matchedByName(fromDocs.directives, toDocs.directives),
+    ...kindChanged.pairs,
   ];
 
   // inputs/outputs/tokens: keyed only by a bare type, so no rename inference -
