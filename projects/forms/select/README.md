@@ -61,6 +61,14 @@ The touch floor is on while `--cngx-target-min` resolves above `0px`: on a coars
 - A trigger-label slot (`*cngxMultiSelectTriggerLabel`, `*cngxComboboxTriggerLabel`, `*cngxTreeSelectTriggerLabel`) replaces the summary in the same place it replaces the chips. The per-variant READMEs state the precedence against the placeholder.
 - `CngxReorderableMultiSelect` moves its sorting into a list in the panel; see its README.
 
+## Selected rows in multi-value panels
+
+In a multi-value panel whose rows show their checkbox, a selected row has no fill: the checkbox carries the selection, so a mostly selected list does not turn into one solid block, and the keyboard cursor (`--cngx-select-option-highlight-bg`) stays visible on every row. Single-value panels and rows with the indicator hidden keep the listbox fill. `CngxTreeSelect` follows the same rule with its own token.
+
+| Change | Before | Way back |
+|-|-|-|
+| A selected row in a multi-value panel has no fill | Selected rows were filled | `--cngx-select-option-multi-selected-bg` sets a fill again |
+
 ## Localisation
 
 To translate the whole app, set a language pack with `provideCngxI18n(withPack(...))` from `@cngx/core/i18n` (see the localisation guide); the `select` section covers every string below.
