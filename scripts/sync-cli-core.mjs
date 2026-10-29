@@ -18,10 +18,18 @@
 import { copyFileSync, mkdirSync, rmSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { CANONICAL_CORE_DIR, COPY_CORE_DIR, displayPath, listCoreFiles, missingTrees } from './cli-core-copy-check.mjs';
+import {
+  CANONICAL_CORE_DIR,
+  COPY_CORE_DIR,
+  displayPath,
+  listCoreFiles,
+  listStrayFiles,
+  missingTrees,
+} from './cli-core-copy-check.mjs';
 
 /**
- * Regenerate `copyDir` from `canonicalDir`. Returns `{ copied, removed }`, or
+ * Regenerate `copyDir` from `canonicalDir`. Returns `{ copied, removed, stray }`
+ * (`stray`: spec files and dotfiles in the copy, reported and never deleted), or
  * `{ refused }` with the reason when the canonical tree is missing or empty, in
  * which case nothing was written or removed. The dirs are injectable for specs.
  */
@@ -44,7 +52,7 @@ export function syncCliCore({ canonicalDir = CANONICAL_CORE_DIR, copyDir = COPY_
   for (const file of removed) {
     rmSync(resolve(copyDir, file));
   }
-  return { copied: canonical.length, removed };
+  return { copied: canonical.length, removed, stray: listStrayFiles(copyDir) };
 }
 
 function main() {
@@ -54,12 +62,15 @@ function main() {
     process.exitCode = 1;
     return;
   }
-  const { copied, removed } = result;
+  const { copied, removed, stray } = result;
   process.stdout.write(
     `cli:sync - regenerated ${copied} file(s) in ${displayPath(COPY_CORE_DIR)} from ${displayPath(CANONICAL_CORE_DIR)}\n`,
   );
   for (const file of removed) {
     process.stdout.write(`  removed ${file} (no longer in the canonical tree)\n`);
+  }
+  for (const file of stray) {
+    process.stdout.write(`  kept ${file} (spec or dotfile; cli:sync never deletes it, cli:copy-check fails until it is removed)\n`);
   }
 }
 

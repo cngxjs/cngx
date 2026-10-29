@@ -5,8 +5,10 @@
 //
 // Unlike doctor-copy-check.mjs, which compares an explicit file list, this walks
 // both trees recursively: a new core file is part of the copy the moment it
-// exists, so it cannot be forgotten in a list. Spec files are excluded on both
-// sides; they run once, in packages/mcp.
+// exists, so it cannot be forgotten in a list. Spec files and dotfiles are not
+// core: they are skipped in the canonical tree (specs run once, in packages/mcp)
+// and are a divergence in the copy, which must hold generated core files only.
+// `cli:sync` never deletes them, so the check is what makes them visible.
 //
 // Exits non-zero on any missing, extra or differing file, naming
 // `npm run cli:sync` as the fix, and on a missing tree: "nothing to compare" is
@@ -27,15 +29,11 @@ export const COPY_CORE_DIR = resolve(ROOT, 'packages/cli/src/core');
 /** A tree path as the repo-relative name the messages print. */
 export const displayPath = (dir) => relative(ROOT, dir).split(sep).join('/');
 
-/** True for a file that belongs to the core copy (everything except specs). */
-export const isCoreFile = (relPath) => !relPath.endsWith('.spec.ts');
+/** True for a file that belongs to the core copy: not a spec, and no path segment starting with a dot. */
+export const isCoreFile = (relPath) => !relPath.endsWith('.spec.ts') && !relPath.split('/').some((part) => part.startsWith('.'));
 
-/**
- * Every core file under `dir`, as sorted POSIX paths relative to `dir`.
- * A missing directory is an empty tree, so the comparison reports every
- * canonical file as missing instead of throwing.
- */
-export function listCoreFiles(dir) {
+/** Every file under `dir`, as sorted POSIX paths relative to `dir`; a missing directory is empty. */
+function listFiles(dir) {
   if (!existsSync(dir)) {
     return [];
   }
@@ -47,15 +45,22 @@ export function listCoreFiles(dir) {
         walk(abs);
         continue;
       }
-      const rel = relative(dir, abs).split(sep).join('/');
-      if (isCoreFile(rel)) {
-        files.push(rel);
-      }
+      files.push(relative(dir, abs).split(sep).join('/'));
     }
   };
   walk(dir);
   return files.sort();
 }
+
+/**
+ * Every core file under `dir`, as sorted POSIX paths relative to `dir`.
+ * A missing directory is an empty tree, so the comparison reports every
+ * canonical file as missing instead of throwing.
+ */
+export const listCoreFiles = (dir) => listFiles(dir).filter(isCoreFile);
+
+/** Every spec file and dotfile under `dir`: never part of the copy, never deleted by the sync. */
+export const listStrayFiles = (dir) => listFiles(dir).filter((file) => !isCoreFile(file));
 
 /**
  * Compare the canonical tree (`listA`, read through `readA`) with the copy
@@ -91,35 +96,40 @@ const readUnder = (base) => (file) => readFileSync(resolve(base, file));
  */
 export const missingTrees = (canonicalDir, copyDir) => [canonicalDir, copyDir].filter((dir) => !existsSync(dir));
 
-function main() {
-  const missing = missingTrees(CANONICAL_CORE_DIR, COPY_CORE_DIR);
+/**
+ * Compare `copyDir` with `canonicalDir`, report through `write`, and return the
+ * exit code: 0 identical, 1 on a missing tree, a divergence, or a spec file or
+ * dotfile in the copy. The dirs are injectable for specs.
+ */
+export function runCopyCheck({ canonicalDir = CANONICAL_CORE_DIR, copyDir = COPY_CORE_DIR, write }) {
+  const missing = missingTrees(canonicalDir, copyDir);
   if (missing.length > 0) {
     for (const dir of missing) {
-      process.stdout.write(`cli:copy-check - ${displayPath(dir)} does not exist (${dir}).\n`);
+      write(`cli:copy-check - ${displayPath(dir)} does not exist (${dir}).\n`);
     }
-    process.exitCode = 1;
-    return;
+    return 1;
   }
 
-  const canonical = listCoreFiles(CANONICAL_CORE_DIR);
-  const copy = listCoreFiles(COPY_CORE_DIR);
-  const mismatches = compareTrees(canonical, copy, readUnder(CANONICAL_CORE_DIR), readUnder(COPY_CORE_DIR));
+  const canonical = listCoreFiles(canonicalDir);
+  const copy = listCoreFiles(copyDir);
+  const mismatches = [
+    ...compareTrees(canonical, copy, readUnder(canonicalDir), readUnder(copyDir)),
+    ...listStrayFiles(copyDir).map((file) => ({ file, reason: 'spec or dotfile in the cli copy; remove it by hand' })),
+  ];
 
   if (mismatches.length === 0) {
-    process.stdout.write(`cli:copy-check - ${displayPath(COPY_CORE_DIR)} is byte-identical (${canonical.length} files)\n`);
-    return;
+    write(`cli:copy-check - ${displayPath(copyDir)} is byte-identical (${canonical.length} files)\n`);
+    return 0;
   }
 
-  process.stdout.write(`cli:copy-check - ${mismatches.length} file(s) diverged from ${displayPath(CANONICAL_CORE_DIR)}:\n`);
+  write(`cli:copy-check - ${mismatches.length} file(s) diverged from ${displayPath(canonicalDir)}:\n`);
   for (const entry of mismatches) {
-    process.stdout.write(`  ${entry.file} (${entry.reason})\n`);
+    write(`  ${entry.file} (${entry.reason})\n`);
   }
-  process.stdout.write(
-    `Fix: run \`npm run cli:sync\` to regenerate ${displayPath(COPY_CORE_DIR)} from ${displayPath(CANONICAL_CORE_DIR)}.\n`,
-  );
-  process.exitCode = 1;
+  write(`Fix: run \`npm run cli:sync\` to regenerate ${displayPath(copyDir)} from ${displayPath(canonicalDir)}.\n`);
+  return 1;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main();
+  process.exitCode = runCopyCheck({ write: (text) => process.stdout.write(text) });
 }

@@ -40,7 +40,7 @@ describe('syncCliCore', () => {
 
     const result = syncCliCore(dirs);
 
-    expect(result).toEqual({ copied: 2, removed: ['gone.ts'] });
+    expect(result).toEqual({ copied: 2, removed: ['gone.ts'], stray: [] });
     expect(readFileSync(join(dirs.copyDir, 'command.ts'), 'utf8')).toBe('a\n');
     expect(readFileSync(join(dirs.copyDir, 'data/loader.ts'), 'utf8')).toBe('b\n');
     expect(existsSync(join(dirs.copyDir, 'gone.ts'))).toBe(false);
@@ -52,7 +52,19 @@ describe('syncCliCore', () => {
 
     syncCliCore(dirs);
 
-    expect(syncCliCore(dirs)).toEqual({ copied: 1, removed: [] });
+    expect(syncCliCore(dirs)).toEqual({ copied: 1, removed: [], stray: [] });
+  });
+
+  it('reports a hand-written spec and a dotfile in the copy and never deletes them', () => {
+    const dirs = makeRoot();
+    plant(dirs.canonicalDir, { 'command.ts': 'a\n' });
+    plant(dirs.copyDir, { 'command.spec.ts': 'hand\n', '.DS_Store': 'x' });
+
+    const result = syncCliCore(dirs);
+
+    expect(result.stray).toEqual(['.DS_Store', 'command.spec.ts']);
+    expect(readFileSync(join(dirs.copyDir, 'command.spec.ts'), 'utf8')).toBe('hand\n');
+    expect(existsSync(join(dirs.copyDir, '.DS_Store'))).toBe(true);
   });
 
   it('refuses and deletes nothing when the canonical tree is missing', () => {

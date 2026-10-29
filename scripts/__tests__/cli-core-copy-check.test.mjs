@@ -1,10 +1,10 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import {
   CANONICAL_CORE_DIR,
@@ -12,7 +12,9 @@ import {
   compareTrees,
   isCoreFile,
   listCoreFiles,
+  listStrayFiles,
   missingTrees,
+  runCopyCheck,
 } from '../cli-core-copy-check.mjs';
 
 const SCRIPT = fileURLToPath(new URL('../cli-core-copy-check.mjs', import.meta.url));
@@ -72,9 +74,91 @@ describe('listCoreFiles', () => {
     expect(listCoreFiles(join(tmpdir(), 'cngx-cli-core-does-not-exist'))).toEqual([]);
   });
 
-  it('counts every non-spec file as core', () => {
+  it('counts every non-spec, non-dotfile file as core', () => {
     expect(isCoreFile('data/loader.ts')).toBe(true);
     expect(isCoreFile('data/loader.spec.ts')).toBe(false);
+    expect(isCoreFile('.DS_Store')).toBe(false);
+    expect(isCoreFile('data/.cache/x.ts')).toBe(false);
+  });
+});
+
+describe('runCopyCheck', () => {
+  const trees = [];
+
+  function makeTrees(canonical, copy) {
+    const root = mkdtempSync(join(tmpdir(), 'cngx-cli-copy-check-'));
+    trees.push(root);
+    const canonicalDir = join(root, 'mcp-core');
+    const copyDir = join(root, 'cli-core');
+    for (const [dir, tree] of [[canonicalDir, canonical], [copyDir, copy]]) {
+      for (const [file, content] of Object.entries(tree)) {
+        mkdirSync(dirname(join(dir, file)), { recursive: true });
+        writeFileSync(join(dir, file), content);
+      }
+    }
+    return { canonicalDir, copyDir };
+  }
+
+  function check(dirs) {
+    let out = '';
+    const code = runCopyCheck({ ...dirs, write: (text) => (out += text) });
+    return { code, out };
+  }
+
+  afterEach(() => {
+    for (const root of trees.splice(0)) {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('exits 0 on identical trees', () => {
+    expect(check(makeTrees(CANONICAL, CANONICAL)).code).toBe(0);
+  });
+
+  it('exits 1 on a changed byte', () => {
+    const run = check(makeTrees(CANONICAL, { ...CANONICAL, 'command.ts': 'export type A = 2;\n' }));
+
+    expect(run.code).toBe(1);
+    expect(run.out).toContain('command.ts (bytes differ)');
+  });
+
+  it('mutation: a spec file planted in the copy fails the check', () => {
+    const run = check(makeTrees(CANONICAL, { ...CANONICAL, 'commands/get-api.spec.ts': 'it();\n' }));
+
+    expect(run.code).toBe(1);
+    expect(run.out).toContain('commands/get-api.spec.ts');
+  });
+
+  it('mutation: a dotfile planted in the copy fails the check', () => {
+    const run = check(makeTrees(CANONICAL, { ...CANONICAL, 'data/.DS_Store': 'x' }));
+
+    expect(run.code).toBe(1);
+    expect(run.out).toContain('data/.DS_Store');
+  });
+
+  it('ignores spec files and dotfiles in the canonical tree', () => {
+    const canonical = { ...CANONICAL, 'command.spec.ts': 'it();\n', '.editorconfig': 'x' };
+
+    expect(check(makeTrees(canonical, CANONICAL)).code).toBe(0);
+  });
+
+  it('exits 1 on a missing tree', () => {
+    const dirs = makeTrees(CANONICAL, CANONICAL);
+
+    expect(check({ ...dirs, copyDir: join(dirs.copyDir, 'nope') }).code).toBe(1);
+  });
+});
+
+describe('listStrayFiles', () => {
+  it('lists spec files and dotfiles at any depth', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'cngx-cli-core-stray-'));
+    mkdirSync(join(dir, 'data', '.hidden'), { recursive: true });
+    writeFileSync(join(dir, 'registry.ts'), '');
+    writeFileSync(join(dir, 'registry.spec.ts'), '');
+    writeFileSync(join(dir, 'data', '.hidden', 'x.ts'), '');
+
+    expect(listStrayFiles(dir)).toEqual(['data/.hidden/x.ts', 'registry.spec.ts']);
+    rmSync(dir, { recursive: true, force: true });
   });
 });
 
