@@ -24,6 +24,7 @@
       "@cngx/common/button": ["dist/common/types/cngx-common-button.d.ts"],
       "@cngx/common/display": ["dist/common/types/cngx-common-display.d.ts"],
       "@cngx/common/a11y": ["dist/common/types/cngx-common-a11y.d.ts"],
+      "@cngx/common/menu-button": ["dist/common/types/cngx-common-menu-button.d.ts"],
       "@cngx/common/popover": ["dist/common/types/cngx-common-popover.d.ts"],
       "@cngx/common/stepper": ["dist/common/types/cngx-common-stepper.d.ts"],
       "@cngx/common/tabs": ["dist/common/types/cngx-common-tabs.d.ts"],

@@ -72,7 +72,11 @@ const FILLED_SKINS = ['pill', 'ribbon', 'icononly'] as const;
             </ol>
           </div>
         </div>
-        <button type="button" class="cngx-breadcrumb__overflow-trigger" style="transition: none">
+        <button
+          type="button"
+          class="cngx-breadcrumb__overflow-trigger cngx-button cngx-icon-button cngx-icon-menu-button"
+          style="transition: none"
+        >
           ...
         </button>
         <button

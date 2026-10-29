@@ -146,6 +146,8 @@ const ATOMS: {
     route: '/#/ui/breadcrumb/overflow/collapsed-menu',
     selector: '.cngx-breadcrumb__overflow-trigger',
     axis: 'block',
+    // A cngxIconMenuButton: the icon-button skin floors the ::before hit area.
+    hitArea: '::before',
   },
   // Third-tier sweep. Only always-rendered surfaces appear here. Interaction-
   // gated hosts (tab-overflow popover, breadcrumb-siblings dropdown, tree-select

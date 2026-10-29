@@ -44,8 +44,9 @@ track key (NG0955).
 
 Set `[maxVisible]` and the trail collapses its middle, keeping the first crumb
 and the last `maxVisible - 1`. When anything is collapsed the bar auto-renders
-a `<cngx-breadcrumb-overflow>` after the first crumb: an ellipsis trigger plus
-a `CngxPopoverPanel` hosting a `CngxMenu` of the collapsed crumbs. It reads the
+a `<cngx-breadcrumb-overflow>` after the first crumb: an ellipsis
+`cngxIconMenuButton` trigger plus a `CngxPopoverPanel` hosting a `CngxMenu` of
+the collapsed crumbs. It reads the
 collapse set through the `CNGX_BREADCRUMB` DI contract and self-hides when
 nothing is collapsed.
 
@@ -224,8 +225,6 @@ config with `injectBreadcrumbConfig()` and the resolved labels with
 | `--cngx-breadcrumb-current-weight` | `600` | Terminal crumb font-weight |
 | `--cngx-breadcrumb-separator` | `'\203A'` (`'\2039'` under RTL) | Separator glyph in skin paint |
 | `--cngx-breadcrumb-separator-color` | `inherit` | Separator color |
-| `--cngx-breadcrumb-overflow-trigger-width` | `32px` | Ellipsis trigger width |
-| `--cngx-breadcrumb-overflow-trigger-height` | `26px` | Ellipsis trigger height |
 | `--cngx-breadcrumb-overflow-menu-min-width` | `11.875rem` | Collapsed-crumb menu min width |
 | `--cngx-breadcrumb-siblings-trigger-size` | `22px` | Chevron trigger box |
 | `--cngx-breadcrumb-siblings-menu-min-width` | `11.25rem` | Sibling list min width |

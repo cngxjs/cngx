@@ -1,48 +1,37 @@
 /* Structural reset for the collapsed-crumb overflow. Track A (@Component ->
    styleUrl). The popover surface chrome (background, elevation, radius) stays
-   owned by CngxPopoverPanel; this file only tames the trigger button and the
+   owned by CngxPopoverPanel; this file only paints the trigger and tames the
    menu list so the collapsed crumbs read as rows, not a raw bulleted <ul>.
    Thematic values flow through --cngx-* custom properties with fallbacks. */
 
-/* PoC `.disclosure__btn` (components.md 07): a boxed three-dot ellipsis with a
-   hover-accent border. The `&hellip;` glyph is the trigger content. */
-.cngx-breadcrumb__overflow-trigger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  width: var(--cngx-breadcrumb-overflow-trigger-width, 32px);
-  height: var(--cngx-breadcrumb-overflow-trigger-height, 26px);
-  /* Touch-target floor - the overflow trigger is a small square tap target;
-     floor its hit box to the pointer-derived minimum on both axes while the
-     ellipsis glyph stays centred. Inert at 0px on a fine pointer. */
-  min-inline-size: var(--cngx-target-min, 0px);
-  min-block-size: var(--cngx-target-min, 0px);
-  padding: 0;
-  border: 1px solid
-    var(--cngx-breadcrumb-overflow-trigger-border, var(--cngx-color-border, oklch(0.88 0.005 250)));
-  border-radius: var(--cngx-breadcrumb-overflow-trigger-radius, var(--cngx-radius-sm, 4px));
-  background: var(
-    --cngx-breadcrumb-overflow-trigger-bg,
-    color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 5%, var(--cngx-color-surface, oklch(1 0 0)))
-  );
-  font: inherit;
-  line-height: 1;
-  color: var(--cngx-breadcrumb-overflow-trigger-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
-  cursor: pointer;
-  transition: background var(--cngx-duration-base, 200ms) ease, color var(--cngx-duration-base, 200ms) ease, border-color var(--cngx-duration-base, 200ms) ease;
-}
+/* The trigger is a `cngxIconMenuButton`: box, square size, focus ring, touch
+   floor (`::before` hit area), pressed and forced-colors paint come from the
+   icon-button skin. This sheet keeps the boxed ellipsis look and routes the
+   public --cngx-breadcrumb-overflow-trigger-* tokens into it. Layered with the
+   button sheet: (0,3,0) at rest and (0,4,0) on hover outrank its scoped
+   variant rules, its pressed wash still wins. */
+@layer cngx.components {
+  .cngx-breadcrumb__overflow-trigger.cngx-icon-menu-button.cngx-button {
+    --cngx-button-radius: var(--cngx-breadcrumb-overflow-trigger-radius, var(--cngx-radius-sm, 4px));
+    border-color: var(--cngx-breadcrumb-overflow-trigger-border, var(--cngx-color-border, oklch(0.88 0.005 250)));
+    background: var(
+      --cngx-breadcrumb-overflow-trigger-bg,
+      color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 5%, var(--cngx-color-surface, oklch(1 0 0)))
+    );
+    color: var(--cngx-breadcrumb-overflow-trigger-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
+  }
 
-.cngx-breadcrumb__overflow-trigger:hover {
-  background: var(
-    --cngx-breadcrumb-overflow-trigger-hover-bg,
-    color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%, transparent)
-  );
-  color: var(--cngx-breadcrumb-overflow-trigger-hover-color, var(--cngx-color-primary-text, color-mix(in oklab, var(--cngx-color-primary, oklch(0.66 0.19 50)) 70%, var(--cngx-color-text, oklch(0.2 0.01 250)))));
-  border-color: var(
-    --cngx-breadcrumb-overflow-trigger-hover-border,
-    var(--cngx-color-primary, oklch(0.66 0.19 50))
-  );
+  .cngx-breadcrumb__overflow-trigger.cngx-icon-menu-button.cngx-button:hover {
+    background: var(
+      --cngx-breadcrumb-overflow-trigger-hover-bg,
+      color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%, transparent)
+    );
+    color: var(--cngx-breadcrumb-overflow-trigger-hover-color, var(--cngx-color-primary-text, color-mix(in oklab, var(--cngx-color-primary, oklch(0.66 0.19 50)) 70%, var(--cngx-color-text, oklch(0.2 0.01 250)))));
+    border-color: var(
+      --cngx-breadcrumb-overflow-trigger-hover-border,
+      var(--cngx-color-primary, oklch(0.66 0.19 50))
+    );
+  }
 }
 
 .cngx-breadcrumb__overflow-menu {
@@ -73,6 +62,9 @@
   gap: 0.5em;
   padding: var(--cngx-breadcrumb-overflow-item-padding, 0.5em 0.6em);
   border-radius: var(--cngx-breadcrumb-overflow-item-radius, var(--cngx-radius-sm, 4px));
+  /* Touch-target floor: a collapsed crumb is a tap target; inert at 0px on a
+     fine pointer. */
+  min-block-size: var(--cngx-target-min, 0px);
   white-space: nowrap;
   color: var(--cngx-breadcrumb-overflow-item-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
   cursor: pointer;

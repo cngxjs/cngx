@@ -15,9 +15,9 @@ import {
   type CngxBreadcrumbHost,
   CngxMenu,
   CngxMenuItem,
-  CngxMenuTrigger,
 } from '@cngx/common/interactive';
-import { CngxPopoverPanel, CngxPopoverTrigger } from '@cngx/common/popover';
+import { CngxIconMenuButton } from '@cngx/common/menu-button';
+import { CngxPopoverPanel } from '@cngx/common/popover';
 import { createControlledSource } from '@cngx/core/utils';
 import { CngxRuntimeError } from '@cngx/utils';
 
@@ -29,9 +29,9 @@ import { injectBreadcrumbAriaLabels } from './config/inject-breadcrumb-config';
 
 /**
  * Drop-in overflow menu for {@link CngxBreadcrumbBar}. Presents the crumbs the
- * headless trail collapsed as a real dropdown: an ellipsis trigger plus a
- * {@link CngxPopoverPanel} surface hosting a {@link CngxMenu} of the collapsed
- * crumbs. It reads the collapse set through the {@link CNGX_BREADCRUMB} DI
+ * headless trail collapsed as a real dropdown: an ellipsis
+ * {@link CngxIconMenuButton} trigger plus a {@link CngxPopoverPanel} surface
+ * hosting a {@link CngxMenu} of the collapsed crumbs. It reads the collapse set through the {@link CNGX_BREADCRUMB} DI
  * contract - never the concrete coordinator - so it stays decompose-clean, and
  * self-hides when nothing is collapsed, which makes it an unconditional drop-in.
  *
@@ -50,7 +50,7 @@ import { injectBreadcrumbAriaLabels } from './config/inject-breadcrumb-config';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-overflow.component.ts
  * @since 0.1.0
- * @relatedTo CngxBreadcrumbBar, CngxBreadcrumbOverflowItem, CngxPopoverPanel, CngxPopoverTrigger, CngxMenu, CngxMenuTrigger
+ * @relatedTo CngxBreadcrumbBar, CngxBreadcrumbOverflowItem, CngxIconMenuButton, CngxPopoverPanel, CngxMenu
  * @slot cngxBreadcrumbOverflowItem Replaces a row inside the collapsed-crumbs menu; gets the crumb.
  * <example-url>http://localhost:4200/#/ui/breadcrumb/overflow/collapsed-menu</example-url>
  */
@@ -64,9 +64,8 @@ import { injectBreadcrumbAriaLabels } from './config/inject-breadcrumb-config';
     NgTemplateOutlet,
     CngxMenu,
     CngxMenuItem,
-    CngxMenuTrigger,
+    CngxIconMenuButton,
     CngxPopoverPanel,
-    CngxPopoverTrigger,
   ],
   templateUrl: './breadcrumb-overflow.component.html',
   styleUrl: './breadcrumb-overflow.component.css',

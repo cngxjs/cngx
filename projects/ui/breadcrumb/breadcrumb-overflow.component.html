@@ -1,13 +1,11 @@
 @if (breadcrumb.hasCollapsed()) {
   <button
-    type="button"
+    cngxIconMenuButton
+    size="xs"
     class="cngx-breadcrumb__overflow-trigger"
-    [cngxMenuTrigger]="menu"
-    [cngxPopoverTrigger]="panel.popover"
-    [haspopup]="'menu'"
+    [menu]="menu"
     [popover]="panel.popover"
-    [attr.aria-label]="resolvedTriggerLabel()"
-    (click)="panel.popover.toggle()"
+    [aria-label]="resolvedTriggerLabel()"
   >
     <ng-content select=":not([cngxBreadcrumbOverflowItem])">&hellip;</ng-content>
   </button>

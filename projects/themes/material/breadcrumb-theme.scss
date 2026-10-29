@@ -53,8 +53,11 @@
 
 // Overflow trigger + collapsed-crumb rows. The menu lives inside a
 // CngxPopoverPanel (themed by popover-panel-theme.scss), so only the trigger
-// glyph colour and the row hover wash are set here; they inherit from the
-// `cngx-breadcrumb-overflow` host down to the trigger and every row.
+// paint and the row hover wash are set here; they inherit from the
+// `cngx-breadcrumb-overflow` host down to the trigger and every row. The
+// trigger is a cngxIconMenuButton: its box, touch floor and M3 metrics come
+// from button-theme.scss, and the overflow sheet routes these six trigger
+// tokens into its paint, so every one of them stays read.
 @mixin _overflow($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-breadcrumb-overflow-trigger-color: var(--mat-sys-on-surface-variant);
