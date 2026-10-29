@@ -308,3 +308,35 @@ describe('fetchSnapshot failure messages', () => {
     expect(classifyGhFailure(error).message).toBe('Command failed: gh release download');
   });
 });
+
+describe('fetchSnapshot failure messages', () => {
+  const stub = {
+    makeTempDir: () => '/tmp/cngx-mcp-snapshot-msg',
+    removeDir: () => undefined,
+    releaseBaseUrl: 'https://example.test/releases/download',
+    writeFile: () => undefined,
+  };
+  const ghMissing = async () => {
+    throw Object.assign(new Error('spawn gh ENOENT'), { code: 'ENOENT' });
+  };
+
+  it('names an invalid version precisely under asset-missing', async () => {
+    const result = await fetchSnapshot('latest', { ...stub, httpGet: async () => ({ status: 404, body: '' }), runGh: ghMissing });
+
+    expect(result).toMatchObject({ ok: false, reason: 'asset-missing' });
+    expect(!result.ok && result.message).toMatch(/^"latest" is not a release version/);
+  });
+
+  it('keeps the missing-gh explanation in the message of a network failure, never the gh-missing reason', async () => {
+    const result = await fetchSnapshot('9.9.9', {
+      ...stub,
+      httpGet: async () => {
+        throw new TypeError('fetch failed');
+      },
+      runGh: ghMissing,
+    });
+
+    expect(result).toMatchObject({ ok: false, reason: 'network' });
+    expect(!result.ok && result.message).toBe('gh: The `gh` CLI is not installed or not on PATH. https: fetch failed');
+  });
+});

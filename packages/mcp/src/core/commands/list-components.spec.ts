@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { loadDocsFromFile } from '../data/loader.js';
 import { entryLib } from '../query.js';
+import type { DocsIndex } from '../data/loader.js';
 import { listComponents } from './list-components.js';
 
 const FIXTURE = fileURLToPath(new URL('../../../test/fixtures/documentation.sample.json', import.meta.url));
@@ -72,5 +73,22 @@ describe('entryLib', () => {
   it('returns null when the file is absent or off-pattern', () => {
     expect(entryLib({ name: 'X' })).toBeNull();
     expect(entryLib({ name: 'X', file: 'packages/mcp/src/index.ts' })).toBeNull();
+  });
+});
+
+describe('listComponents filter and order', () => {
+  it('matches --lib case-insensitively', () => {
+    expect(listComponents(docs, { lib: 'FORMS' }).map((s) => s.name)).toEqual(['CngxSelect']);
+  });
+
+  it('sorts by code point, independent of the host locale', () => {
+    const index: DocsIndex = {
+      ...docs,
+      components: [{ name: 'cngxLower' }, { name: 'CngxUpper' }, { name: 'CngxA' }],
+      directives: [],
+      injectables: [],
+    };
+
+    expect(listComponents(index).map((s) => s.name)).toEqual(['CngxA', 'CngxUpper', 'cngxLower']);
   });
 });

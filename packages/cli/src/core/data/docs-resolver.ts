@@ -60,10 +60,12 @@ export function createDocsResolver(bundled: DocsIndex, deps: DocsResolverDeps = 
     if (version === undefined) {
       return { ok: true, docs: bundled, version: bundledVersion };
     }
-    const requested = version.trim();
-    if (requested === '') {
+    const trimmed = version.trim();
+    if (trimmed === '') {
       return { ok: false, reason: 'asset-missing', message: 'A blank version is not a release version.' };
     }
+    // Release tags are `v<version>`, so a pasted tag answers like the bare version.
+    const requested = trimmed.startsWith('v') ? trimmed.slice(1) : trimmed;
     if (bundledVersion !== null && requested === bundledVersion) {
       return { ok: true, docs: bundled, version: bundledVersion };
     }

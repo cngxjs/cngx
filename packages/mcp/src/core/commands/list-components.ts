@@ -23,11 +23,19 @@ export interface ListComponentsOptions {
   kind?: EntryKind;
 }
 
+/** Code-point order, so the listing does not depend on the host's ICU locale. */
+function byCodePoint(a: ComponentSummary, b: ComponentSummary): number {
+  if (a.name === b.name) {
+    return 0;
+  }
+  return a.name < b.name ? -1 : 1;
+}
+
 /**
- * Pure query behind the tool - the full catalog as sorted summaries, narrowed by
- * the optional `lib` / `kind` filters. An unmatched filter yields `[]`, never
- * `null`: an empty enumeration is a valid answer, distinct from the resolve-by-name
- * tools where `null` means "no such symbol".
+ * Pure query behind the tool - the full catalog as summaries in code-point order,
+ * narrowed by the optional `lib` (case-insensitive) / `kind` filters. An unmatched
+ * filter yields `[]`, never `null`: over MCP that is the answer, while the CLI exits
+ * 1 on it like on any other miss.
  */
 export function listComponents(docs: DocsIndex, opts: ListComponentsOptions = {}): ComponentSummary[] {
   return allEntries(docs)
@@ -39,8 +47,8 @@ export function listComponents(docs: DocsIndex, opts: ListComponentsOptions = {}
       category: entry.category ?? null,
       lib: entryLib(entry),
     }))
-    .filter((summary) => opts.lib === undefined || summary.lib === opts.lib)
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .filter((summary) => opts.lib === undefined || summary.lib?.toLowerCase() === opts.lib.toLowerCase())
+    .sort(byCodePoint);
 }
 
 /** The catalog as one table, or a no-match line for an unmatched filter. */

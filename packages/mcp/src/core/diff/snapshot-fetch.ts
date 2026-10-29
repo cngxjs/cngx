@@ -135,13 +135,13 @@ const defaultDeps = createDefaultDeps();
  * off the process' stderr/message.
  */
 export function classifyGhFailure(error: unknown): { reason: SnapshotFetchFailureReason; message: string } {
+  const message = describeGhFailure(error);
   if (isEnoent(error)) {
-    return { reason: 'gh-missing', message: 'The `gh` CLI is not installed or not on PATH.' };
+    return { reason: 'gh-missing', message };
   }
   if (isTimedOut(error)) {
-    return { reason: 'network', message: 'The `gh` download timed out.' };
+    return { reason: 'network', message };
   }
-  const message = extractMessage(error);
   const lower = message.toLowerCase();
   if (/network|timeout|timed out|dial tcp|connection|no such host|lookup|dns|unreachable|refused/.test(lower)) {
     return { reason: 'network', message };
@@ -149,6 +149,21 @@ export function classifyGhFailure(error: unknown): { reason: SnapshotFetchFailur
   // An unknown non-network failure is almost always the version having no release
   // or no asset; `asset-missing` is the safest consumer-facing reason.
   return { reason: 'asset-missing', message };
+}
+
+/**
+ * The text a `gh` failure contributes to the combined gh-then-HTTPS message. The
+ * HTTPS attempt decides the reason, so only the text is needed here (`gh-missing`
+ * stays unproduced, accepted debt).
+ */
+function describeGhFailure(error: unknown): string {
+  if (isEnoent(error)) {
+    return 'The `gh` CLI is not installed or not on PATH.';
+  }
+  if (isTimedOut(error)) {
+    return 'The `gh` download timed out.';
+  }
+  return extractMessage(error);
 }
 
 export async function fetchSnapshot(version: string, deps: SnapshotFetchDeps = defaultDeps): Promise<SnapshotFetchResult> {
@@ -179,7 +194,7 @@ async function download(version: string, dir: string, deps: SnapshotFetchDeps): 
     await deps.runGh(ghDownloadArgs(version, dir));
     return { ok: true, path, dir };
   } catch (error) {
-    ghMessage = classifyGhFailure(error).message;
+    ghMessage = describeGhFailure(error);
   }
 
   const url = releaseAssetUrl(deps.releaseBaseUrl, version);

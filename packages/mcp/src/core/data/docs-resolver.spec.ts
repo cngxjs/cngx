@@ -36,6 +36,23 @@ describe('createDocsResolver', () => {
     expect(fetchSnapshot).not.toHaveBeenCalled();
   });
 
+  it('answers a leading v like the bare version', async () => {
+    const fetchSnapshot = vi.fn<DocsResolverDeps['fetchSnapshot']>(async () => ({ ok: false, reason: 'asset-missing', message: 'absent' }));
+    const resolve = createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile });
+
+    expect(await resolve('v0.1.0-rc.6')).toEqual({ ok: true, docs: bundled, version: '0.1.0-rc.6' });
+    expect(fetchSnapshot).not.toHaveBeenCalled();
+    await resolve('v0.2.0');
+    expect(fetchSnapshot).toHaveBeenCalledWith('0.2.0');
+  });
+
+  it('strips one leading v only', async () => {
+    const fetchSnapshot = vi.fn<DocsResolverDeps['fetchSnapshot']>(async () => ({ ok: false, reason: 'asset-missing', message: 'absent' }));
+    await createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile })('vv0.2.0');
+
+    expect(fetchSnapshot).toHaveBeenCalledWith('v0.2.0');
+  });
+
   it('fetches a non-bundled version once and serves the second call from cache', async () => {
     const fetchSnapshot = vi.fn(async () => ({ ok: true as const, path: NEW }));
     const deps: DocsResolverDeps = { fetchSnapshot, loadDocs: loadDocsFromFile };
