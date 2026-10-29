@@ -31,8 +31,9 @@ interface DiffOptions<T extends Named> {
    * rename inference for a category whose only key would be a weak one (a bare
    * type): such a category reports the removal and leaves the add unsurfaced,
    * rather than pairing an unrelated same-typed add/remove into a false rename.
+   * Returns `null` for an item that has no trustworthy key of its own.
    */
-  renameKeyOf?: (item: T) => string;
+  renameKeyOf?: (item: T) => string | null;
   /** The owning artifact for a member-level diff; absent for a top-level diff. */
   owner?: string;
 }
@@ -66,8 +67,8 @@ function diffNamedList<T extends Named>(from: T[], to: T[], options: DiffOptions
   // unmatched removal is reported as removed, never guessed into a rename.
   const addedItems = to.filter((item) => !fromNames.has(item.name));
   for (const gone of unmatchedFrom) {
-    if (renameKeyOf) {
-      const key = renameKeyOf(gone);
+    const key = renameKeyOf?.(gone) ?? null;
+    if (renameKeyOf && key !== null) {
       const candidates = addedItems.filter((item) => renameKeyOf(item) === key);
       if (candidates.length === 1) {
         const target = candidates[0];
@@ -88,9 +89,14 @@ function diffNamedList<T extends Named>(from: T[], to: T[], options: DiffOptions
  * schema-6 `category` is derived at a different granularity, so a cross-schema
  * diff keyed on it would miss renames.
  */
-function entryShapeKey(entry: DocEntry): string {
+function entryShapeKey(entry: DocEntry): string | null {
   const inputs = (entry.inputsClass ?? []).map((input) => input.name).sort().join(',');
   const outputs = (entry.outputsClass ?? []).map((output) => output.name).sort().join(',');
+  // No inputs and no outputs is no shape at all: every host-only directive of a lib
+  // would share the key `lib||`, so a pairing would be a guess, not an inference.
+  if (inputs === '' && outputs === '') {
+    return null;
+  }
   return `${entryLib(entry) ?? ''}|${inputs}|${outputs}`;
 }
 

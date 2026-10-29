@@ -102,6 +102,15 @@ describe('diffSnapshots rename inference is fingerprint-gated', () => {
     expect(delta.components.removed).toEqual([{ name: 'CngxOld' }]);
   });
 
+  it('reports two host-only directives without inputs or outputs as removed and added, never a rename', () => {
+    const from = index('1.0.0', [{ name: 'CngxAutofocus', file: 'projects/common/a11y/autofocus.ts' }]);
+    const to = index('2.0.0', [{ name: 'CngxFocusRing', file: 'projects/common/a11y/focus-ring.ts' }]);
+    const delta = diffSnapshots(from, to);
+
+    expect(delta.components.renamed).toEqual([]);
+    expect(delta.components.removed).toEqual([{ name: 'CngxAutofocus' }]);
+  });
+
   it('pairs two file-less entries through the empty-lib key', () => {
     const open = [{ name: 'open', type: 'boolean' }];
     const from = index('1.0.0', [{ name: 'CngxOld', inputsClass: open }]);
