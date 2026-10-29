@@ -1,8 +1,9 @@
 /**
  * @overview
- * Caret for `CngxMenuButton`. Paint, metrics, states and the touch floor come
- * from the shared `.cngx-button` sheet (linked through `styleUrls`); this
- * sheet only sizes the caret and turns it while the menu is open.
+ * Caret for `CngxMenuButton` and `CngxIconMenuButton`. Paint, metrics,
+ * states and the touch floor come from the shared `.cngx-button` sheet
+ * (linked through `styleUrls`); this sheet only sizes the caret and turns
+ * it while the menu is open.
  *
  * - The caret is a `<cngx-icon>` in the end slot, `1em` of the button font
  *   by default, so it scales with `size` and the text-scale axis.
@@ -13,7 +14,7 @@
  */
 
 @layer cngx.components {
-  @scope (.cngx-menu-button) {
+  @scope (.cngx-menu-button, .cngx-icon-menu-button) {
     :scope {
       /* `--cngx-button-transition` is registered with `inherits: false`, so the
        * caret cannot read it; re-expose the derived value as a plain,
@@ -43,7 +44,10 @@
     }
   }
 
-  .cngx-menu-button[data-expanded='true'] > .cngx-menu-button__caret {
+  .cngx-menu-button[data-expanded='true'] > .cngx-menu-button__caret,
+  .cngx-icon-menu-button[data-expanded='true']
+    > .cngx-icon-button__glyph
+    > .cngx-menu-button__caret {
     rotate: 180deg;
   }
 }

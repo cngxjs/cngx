@@ -7,7 +7,6 @@ import {
   contentChild,
   effect,
   inject,
-  Injector,
   input,
   untracked,
   ViewEncapsulation,
@@ -27,6 +26,7 @@ import { CNGX_HOST_INTERACTION_STATE, CngxMenuTrigger } from '@cngx/common/inter
 import { CngxPopoverTrigger } from '@cngx/common/popover';
 
 import { CNGX_BUTTON_CARET_ICON } from './caret-icon.token';
+import { injectLazyHostDirective } from './internal/inject-lazy-host-directive';
 
 /**
  * A button that opens a menu: the WAI-ARIA APG Menu Button Pattern as its
@@ -139,17 +139,8 @@ export class CngxMenuButton {
   // Host directives are created before this component, and CngxMenuTrigger
   // injects the CNGX_HOST_INTERACTION_STATE this component provides; an eager
   // inject of either trigger here would be a cycle, so both resolve on first read.
-  private readonly injector = inject(Injector);
-  private menuTriggerRef: CngxMenuTrigger | undefined;
-  private popoverTriggerRef: CngxPopoverTrigger | undefined;
-  private get menuTrigger(): CngxMenuTrigger {
-    return (this.menuTriggerRef ??= this.injector.get(CngxMenuTrigger, undefined, { self: true }));
-  }
-  private get popoverTrigger(): CngxPopoverTrigger {
-    return (this.popoverTriggerRef ??= this.injector.get(CngxPopoverTrigger, undefined, {
-      self: true,
-    }));
-  }
+  private readonly menuTrigger = injectLazyHostDirective(CngxMenuTrigger);
+  private readonly popoverTrigger = injectLazyHostDirective(CngxPopoverTrigger);
 
   /**
    * Emphasis, bound through the selector: `cngxMenuButton="outline"`. The
@@ -188,7 +179,7 @@ export class CngxMenuButton {
   readonly type = input<CngxButtonType | undefined>(undefined);
 
   /** `true` while the menu is open. Mirrors the popover's visibility. */
-  readonly expanded = computed(() => this.menuTrigger.isOpen());
+  readonly expanded = computed(() => this.menuTrigger().isOpen());
 
   protected readonly startSlot = contentChild(CngxButtonStart);
   protected readonly endSlot = contentChild(CngxButtonEnd);
@@ -214,7 +205,7 @@ export class CngxMenuButton {
     // The popover is told it holds a menu, so the trigger's aria-haspopup
     // reads `menu` without a consumer [haspopup]; released on swap and destroy.
     effect((onCleanup) => {
-      const pop = this.popoverTrigger.popoverRef();
+      const pop = this.popoverTrigger().popoverRef();
       untracked(() => pop.setHaspopup('menu'));
       onCleanup(() => pop.setHaspopup(undefined));
     });
@@ -222,6 +213,6 @@ export class CngxMenuButton {
 
   /** The core's capture-phase guard swallows the click while the button is blocked. */
   protected handleClick(): void {
-    this.popoverTrigger.popoverRef().toggle();
+    this.popoverTrigger().popoverRef().toggle();
   }
 }
