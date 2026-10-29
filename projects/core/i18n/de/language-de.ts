@@ -336,6 +336,9 @@ export const CNGX_LANGUAGE_DE = {
     itemDisabled: 'Eintrag deaktiviert',
     menuDismissed: 'Menü geschlossen',
   },
+  menuButton: {
+    splitToggle: 'Weitere Optionen',
+  },
   paginator: {
     label: 'Seitennavigation',
     first: 'Erste Seite',

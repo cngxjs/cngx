@@ -129,6 +129,12 @@ export const COPY_TOKENS = [
     settingsKeys: [],
   },
   {
+    token: 'CNGX_MENU_BUTTON_I18N',
+    kind: 'dedicated',
+    copyKeys: '*',
+    settingsKeys: [],
+  },
+  {
     token: 'CNGX_CHART_I18N',
     kind: 'dedicated',
     copyKeys: '*',
