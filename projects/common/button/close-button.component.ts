@@ -11,8 +11,9 @@ import {
   type Type,
   ViewEncapsulation,
 } from '@angular/core';
+import { CngxIconSvg } from '@cngx/common/display';
 import { CNGX_HOST_INTERACTION_STATE } from '@cngx/common/interactive';
-import { cngxDevWarn } from '@cngx/utils';
+import { CNGX_ICON_X, cngxDevWarn } from '@cngx/utils';
 
 import { hasAccessibleName } from './accessible-name';
 import { injectButtonCore, provideButtonDescribedBy } from './button-core';
@@ -81,7 +82,7 @@ export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon'
   selector: 'button[cngxCloseButton]',
   standalone: true,
   exportAs: 'cngxCloseButton',
-  imports: [NgComponentOutlet],
+  imports: [NgComponentOutlet, CngxIconSvg],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   providers: [
@@ -105,18 +106,7 @@ export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon'
         @if (customIcon) {
           <ng-container *ngComponentOutlet="customIcon" />
         } @else {
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="cngx-close-button__icon"
-          >
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
+          <svg class="cngx-close-button__icon" [cngxIconSvg]="closeIcon"></svg>
         }
       </ng-content>
     </span>
@@ -169,6 +159,9 @@ export class CngxCloseButton {
 
   /** @internal - app-wide glyph from `CNGX_CLOSE_ICON`. */
   protected readonly customIcon = inject(CNGX_CLOSE_ICON, { optional: true });
+
+  /** @internal - default X glyph from the shared icon set. */
+  protected readonly closeIcon = CNGX_ICON_X;
 
   /** @internal */
   protected readonly core = injectButtonCore(
