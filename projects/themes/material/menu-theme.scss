@@ -22,9 +22,12 @@
 // the menu the way Material density scales mat-menu. The item tokens and the
 // list padding are SET per element in `cngx-menu.css` (0,1,0), so metrics()
 // emits layered rules with real specificity (button-theme `metrics()`
-// precedent). A menu inside a CngxPopoverPanel keeps the panel's surface:
-// `cngx-menu.css` strips the menu's own there.
+// precedent). A menu inside a CngxPopoverPanel keeps the panel's surface
+// (`cngx-menu.css` strips the menu's own there) and its owner's metrics: the
+// ui organisms that host a menu in a panel (the breadcrumb overflow) size and
+// set their own rows, so metrics() stops at the panel; colours still apply.
 
+$_menu: "[cngxMenu]:not(.cngx-popover-panel [cngxMenu])";
 $_items: ':is([cngxMenuItem], [cngxMenuItemCheckbox], [cngxMenuItemRadio], [cngxMenuItemSubmenu])';
 
 @mixin color($theme) {
@@ -61,14 +64,14 @@ $_items: ':is([cngxMenuItem], [cngxMenuItemCheckbox], [cngxMenuItemRadio], [cngx
 @mixin metrics($theme) {
   @if mat.get-theme-version($theme) == 1 {
     @layer cngx.components {
-      [cngxMenu][role='menu'] {
+      #{$_menu}[role='menu'] {
         --cngx-menu-padding: var(--cngx-space-sm, 8px);
         padding-block: var(--cngx-menu-padding, 8px);
         padding-inline: 0;
         min-inline-size: calc(var(--cngx-space-sm, 8px) * 14);
         max-inline-size: calc(var(--cngx-space-sm, 8px) * 35);
       }
-      [cngxMenu] #{$_items} {
+      #{$_menu} #{$_items} {
         --cngx-menu-item-gap: calc(var(--cngx-space-sm, 8px) * 1.5);
         --cngx-menu-item-padding: calc(var(--cngx-space-sm, 8px) * 1.75) calc(var(--cngx-space-sm, 8px) * 1.5);
         --cngx-menu-item-radius: 0px;
@@ -83,10 +86,10 @@ $_items: ':is([cngxMenuItem], [cngxMenuItemCheckbox], [cngxMenuItemRadio], [cngx
         -moz-osx-font-smoothing: grayscale;
       }
       // The type role above outranks the checked weight; keep the cue.
-      [cngxMenu] #{$_items}.cngx-menu-item--checked {
+      #{$_menu} #{$_items}.cngx-menu-item--checked {
         font-weight: var(--cngx-menu-item-checked-font-weight, 600);
       }
-      [cngxMenu] [cngxMenuSeparator] {
+      #{$_menu} [cngxMenuSeparator] {
         margin-block: var(--cngx-space-sm, 8px);
         margin-inline: 0;
       }
