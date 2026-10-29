@@ -1,6 +1,7 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { CngxButton } from '@cngx/common/button';
+import { CngxIcon } from '@cngx/common/display';
 import { CngxMenu, CngxMenuItem } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -124,7 +125,7 @@ class MatCaret {}
 @Component({
   selector: 'cngx-menu-button-material-caret-host',
   standalone: true,
-  imports: [CngxMenuButton, CngxMenu, CngxMenuItem, CngxPopover],
+  imports: [CngxMenuButton, CngxMenu, CngxMenuItem, CngxPopover, CngxIcon, MatCaret],
   viewProviders: [{ provide: CNGX_BUTTON_CARET_ICON, useValue: MatCaret }],
   styleUrls: [
     '../../core/theming/layers.css',
@@ -137,6 +138,7 @@ class MatCaret {}
   encapsulation: ViewEncapsulation.None,
   template: `
     <button cngxMenuButton tone="primary" class="mat-caret" [menu]="menu" [popover]="pop">Export</button>
+    <cngx-icon class="plain-wrap" style="--cngx-icon-size: 10px"><cngx-geometry-mat-caret /></cngx-icon>
     <div cngxPopover #pop="cngxPopover">
       <ul cngxMenu [label]="'Export format'" tabindex="0" #menu="cngxMenu">
         <li cngxMenuItem value="pdf">PDF</li>
@@ -238,6 +240,18 @@ describe('Material bridge: menu button', () => {
     expect(caret.height).toBeCloseTo(M3.slotIcon, 1);
     const button = query(mountedRoot, '.mat-caret').getBoundingClientRect();
     expect(glyph.top + glyph.height / 2).toBeCloseTo(button.top + button.height / 2, 0);
+  });
+
+  it('leaves a mat-icon one host deep in a plain <cngx-icon> to Material (caret-only reach)', () => {
+    const caretFixture = TestBed.createComponent(MaterialCaretHost);
+    mountedRoot = caretFixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    caretFixture.detectChanges();
+    materialRule = document.createElement('style');
+    materialRule.textContent = MATERIAL_ICON_RULE;
+    document.head.appendChild(materialRule);
+    const glyph = query(mountedRoot, '.plain-wrap .mat-icon').getBoundingClientRect();
+    expect(glyph.width).toBeCloseTo(24, 1);
   });
 
   it('honours --cngx-menu-button-caret-size under the bridge', () => {
