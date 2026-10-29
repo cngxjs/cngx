@@ -304,7 +304,11 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   );
   /** Host id. Unset, it takes the input id of an enclosing `cngx-form-field`. */
   readonly idInput = input<string | null>(null, { alias: 'id' });
-  /** Accessible name of the trigger. Wins over `label`. */
+  /**
+   * Accessible name of the trigger. Wins over `label`; inside a
+   * `cngx-form-field` the field label referenced through `aria-labelledby`
+   * takes precedence.
+   */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
   /**
    * Id of the element that names the trigger. Unset, it takes the label id of
@@ -447,10 +451,9 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(this.config.commitErrorDisplay);
   /**
    * Commit-error announce policy. `'verbose'` reads the error message into the
-   * live region; `'soft'` announces a generic removal at the current selection
-   * count. Per-instance input wins over
-   * `CngxSelectConfig.commitErrorAnnouncePolicy`; default `{ kind: 'soft' }`,
-   * so a failed commit does not interrupt typing.
+   * live region; `'soft'` announces a generic removal without a count.
+   * Per-instance input wins over `CngxSelectConfig.commitErrorAnnouncePolicy`;
+   * default `{ kind: 'soft' }`, so a failed commit does not interrupt typing.
    */
   readonly commitErrorAnnouncePolicy = input<CngxCommitErrorAnnouncePolicy>(
     this.config.commitErrorAnnouncePolicy ?? { kind: 'soft' },
