@@ -583,6 +583,16 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   gap: 0.5rem;
 }
 
+// Demo-only list row: a label with its row actions pushed to the end,
+// used by the kebab demo of the icon menu button.
+.demo-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-inline-size: 22.5rem;
+}
+
 // Demo-only label utilities. Shared by metric, trend, card-composition
 // demos so individual stories don't redeclare thematic colors inline.
 .demo-card-label,

@@ -24,7 +24,7 @@ export const STORY: DemoSpec = {
   imports: ['CngxIcon', 'CngxMenu', 'CngxMenuItem', 'CngxIconMenuButton', 'CngxPopover'],
   setup: `protected readonly lastAction = signal<string | null>(null);`,
   template: `
-  <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; max-inline-size:360px">
+  <div class="demo-list-row">
     <span>Q3 report</span>
     <button cngxIconMenuButton aria-label="Actions for Q3 report" [menu]="menu" [popover]="pop">
       <cngx-icon>
