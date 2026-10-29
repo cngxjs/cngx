@@ -77,12 +77,17 @@ describe('@cngx/cli sources', () => {
   });
 });
 
-// The test-only guards are imported by specs alone; the tarball ships neither, and
-// every sourcemap it ships either points at a shipped file or carries its source.
-const TEST_ONLY_MODULES = /^dist\/(?:readme-guard|output-guards)\./;
+// The tarball ships an allowlist: the manifest, the docs, the bundled snapshot and
+// compiled JavaScript with its maps, never a spec, a test or a test-only guard, and
+// no declarations (the package has no `types` or `exports`). Every sourcemap it
+// ships either points at a shipped file or carries its source.
+const FIXED_FILES: ReadonlySet<string> = new Set(['package.json', 'README.md', 'CHANGELOG.md', 'data/documentation.json']);
+const COMPILED = /^dist\/.+\.js(?:\.map)?$/;
+const TEST_ONLY = /(?:\.spec|\.core-spec|\.test)\.js(?:\.map)?$|^dist\/(?:readme-guard|output-guards)\./;
 
-/** Tarball paths of a test-only guard module. */
-const shippedGuards = (files: readonly string[]): string[] => files.filter((file) => TEST_ONLY_MODULES.test(file));
+/** Tarball paths outside the allowlist. */
+const offAllowlist = (files: readonly string[]): string[] =>
+  files.filter((file) => !FIXED_FILES.has(file) && !(COMPILED.test(file) && !TEST_ONLY.test(file)));
 
 interface SourceMap {
   sources: string[];
@@ -116,8 +121,9 @@ describe('@cngx/cli tarball', () => {
     expect(files).toContain('dist/cli-adapter.js');
   });
 
-  it('ships neither test-only guard module', () => {
-    expect(shippedGuards(files)).toEqual([]);
+  it('ships only allowlisted paths, every fixed file among them', () => {
+    expect(offAllowlist(files)).toEqual([]);
+    expect(files.filter((file) => FIXED_FILES.has(file)).sort()).toEqual([...FIXED_FILES].sort());
   });
 
   it('ships no sourcemap that points at an unshipped source', () => {
@@ -125,11 +131,10 @@ describe('@cngx/cli tarball', () => {
     expect(danglingSources(files, readMap)).toEqual([]);
   });
 
-  it('mutation: a build without the exclude ships the guards', () => {
-    expect(shippedGuards([...files, 'dist/readme-guard.js', 'dist/output-guards.d.ts'])).toEqual([
-      'dist/readme-guard.js',
-      'dist/output-guards.d.ts',
-    ]);
+  it('mutation: a test file, a guard, a spec and a declaration fall off the allowlist', () => {
+    const planted = ['dist/x.test.js', 'dist/readme-guard.js', 'dist/core/query.spec.js.map', 'dist/index.d.ts', 'src/index.ts'];
+
+    expect(offAllowlist([...files, ...planted])).toEqual(planted);
   });
 
   it('mutation: a map without inlined sources dangles', () => {

@@ -5,7 +5,7 @@
     "moduleResolution": "NodeNext",
     "lib": ["ES2022"],
     "types": ["node"],
-    "declaration": true,
+    "declaration": false,
     "declarationMap": false,
     "sourceMap": true,
     "inlineSources": true,
