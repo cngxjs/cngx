@@ -2,7 +2,7 @@ import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxButton } from '@cngx/common/button';
 import { CngxAsyncClick } from '@cngx/common/interactive';
-import { computedValue } from '@cngx/testing/geometry';
+import { computedValue, parkPointer } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // Runs in a real Chromium (the `test-geometry` target) against the compiled
@@ -78,6 +78,15 @@ async function settle(el: HTMLElement, stateClass: string): Promise<HTMLElement>
   return el;
 }
 
+// A host under the pointer paints its hover state, so the paint comparison
+// runs with the pointer parked and fails loudly if it still hovers.
+async function atRest(el: HTMLElement): Promise<HTMLElement> {
+  await parkPointer();
+  await Promise.all(el.getAnimations().map((a) => a.finished));
+  expect(el.matches(':hover')).toBe(false);
+  return el;
+}
+
 const PAINT = ['background-color', 'color', 'border-top-color'] as const;
 
 function paintOf(el: HTMLElement): Record<string, string> {
@@ -124,6 +133,7 @@ describe('async-click Material bridge, rendered', () => {
     const el = await settle(one(root, '.btn-ok'), 'cngx-async--success');
     expect(el.classList.contains('cngx-async')).toBe(true);
     expect(getComputedStyle(el).getPropertyValue('--cngx-async-success-color').trim()).not.toBe('');
-    expect(paintOf(el)).toEqual(paintOf(one(root, '.ref')));
+    const ref = await atRest(one(root, '.ref'));
+    expect(paintOf(await atRest(el))).toEqual(paintOf(ref));
   });
 });

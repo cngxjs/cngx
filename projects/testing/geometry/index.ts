@@ -12,3 +12,4 @@ export {
   type ContainerState,
   type GridAxis,
 } from './geometry';
+export { parkPointer } from './pointer';

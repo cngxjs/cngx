@@ -270,12 +270,15 @@ Cast at the call site: `mock as unknown as AudioContext`. Assert against `mock.o
 `@cngx/testing/geometry` is deliberately **not** re-exported from the root barrel: its helpers read the CSSOM (`getComputedStyle`, grid track resolution), which jsdom answers with empty strings. They are only meaningful in the `*.geometry.spec.ts` suites that run in a real Chromium.
 
 ```typescript
-import { computedValue, containerState, gridTracks } from '@cngx/testing/geometry';
+import { computedValue, containerState, gridTracks, parkPointer } from '@cngx/testing/geometry';
 
 computedValue(el, 'padding-inline-start'); // resolved CSSOM value
 gridTracks(el, 'columns');                 // ['200px', '1fr', ...]
 containerState(el);                        // { type, name } - resolved container-type/-name
+await parkPointer();                       // pointer to the viewport corner, off every mount
 ```
+
+Every `test-geometry` target also loads `projects/testing/setup/geometry-setup.ts`, which parks the pointer after each test. A spec that hovers cannot leave `:hover` on whatever the next spec mounts; call `parkPointer()` inside a test only when it hovers and then reads rest paint. `userEvent.unhover` is not a substitute: it hovers the centre of `<body>`, which sits on the mounted content.
 
 If a root-barrel import of these helpers ever passes in jsdom, it is asserting `'' === ''` - keep them on the subpath.
 
