@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxSplitButton: Busy and disabled',
   subtitle: 'The caret follows the main action; its own <code>disabledReason</code> speaks only for its own <code>disabled</code>.',
-  description: 'The caret derives its blocked state from the main <code>cngxButton</code>: while the main button is disabled or running its action, the caret reads <code>aria-disabled</code>, opens on neither click nor key and closes an open menu. In that state the caret carries no reason of its own; the main button owns <code>aria-busy</code>, its reason and the announcement, and a second voice would repeat it. A <code>[disabled]</code> on the caret itself blocks only the alternatives and reads the caret\'s <code>disabledReason</code> through <code>aria-describedby</code>. Open the menu, then start the slow export to see it close.',
+  description: 'The caret derives its blocked state from the main <code>cngxButton</code>: while the main button is disabled or running its action, the caret reads <code>aria-disabled</code>, opens on neither click nor key and closes an open menu. In that state the caret carries no reason of its own; the main button owns <code>aria-busy</code>, its reason and the announcement, and a second voice would repeat it. A <code>[disabled]</code> on the caret itself blocks only the alternatives and reads the caret\'s <code>disabledReason</code> through <code>aria-describedby</code>. A format from the menu runs through the main button, so the settle announcement names the format that was exported. Open the menu, then start the slow export to see it close.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -28,8 +28,28 @@ export const STORY: DemoSpec = {
   protected readonly canExport = signal(true);
   protected readonly formatsLocked = signal(false);
 
-  protected readonly exportReport = (): Promise<void> =>
-    new Promise((resolve) => setTimeout(resolve, 3000));`,
+  protected readonly copy: Record<string, { done: string; failed: string }> = {
+    pdf: { done: 'Exported PDF', failed: 'PDF export failed' },
+    csv: { done: 'Exported CSV', failed: 'CSV export failed' },
+    xlsx: { done: 'Exported Excel workbook', failed: 'Workbook export failed' },
+  };
+
+  private readonly nextFormat = signal('pdf');
+  protected readonly running = signal('pdf');
+
+  protected readonly exportReport = (): Promise<void> => {
+    this.running.set(this.nextFormat());
+    this.nextFormat.set('pdf');
+    return new Promise((resolve) => setTimeout(resolve, 3000));
+  };
+
+  private readonly main = viewChild.required('main', { read: ElementRef });
+
+  // The other formats run through the main button: one busy state, one voice.
+  protected handleFormat(format: string): void {
+    this.nextFormat.set(format);
+    (this.main().nativeElement as HTMLButtonElement).click();
+  }`,
   template: `
   <div cngxSplitButton variant="outline" aria-label="Export report">
     <button
@@ -37,7 +57,10 @@ export const STORY: DemoSpec = {
       [cngxAsyncClick]="exportReport"
       [disabled]="!canExport()"
       disabledReason="Exporting needs the analyst role."
+      [succeededAnnouncement]="copy[running()].done"
+      [failedAnnouncement]="copy[running()].failed"
       #run="cngxAsyncClick"
+      #main
     >
       Export PDF
     </button>
@@ -50,7 +73,13 @@ export const STORY: DemoSpec = {
     ></button>
   </div>
   <div cngxPopover placement="bottom-end" #pop="cngxPopover">
-    <ul cngxMenu [label]="'Export formats'" tabindex="0" #menu="cngxMenu">
+    <ul
+      cngxMenu
+      [label]="'Export formats'"
+      tabindex="0"
+      (itemActivated)="handleFormat($any($event))"
+      #menu="cngxMenu"
+    >
       <li cngxMenuItem value="csv">CSV</li>
       <li cngxMenuItem value="xlsx">Excel workbook</li>
     </ul>

@@ -107,7 +107,11 @@ for (const dir of ['ltr', 'rtl'] as const) {
       await page.keyboard.press('Enter');
       await expect(menu).toBeHidden();
       await expect(eventValue(page, 'Busy')).toHaveText('yes');
+      // The settle announcement names the chosen action, not a generic phrase.
       await expect(eventValue(page, 'Last run')).toHaveText('draft');
+      await expect(page.locator('[aria-live]').filter({ hasText: 'Saved as draft' })).toHaveCount(
+        1,
+      );
     });
 
     test('a disabled main button blocks the caret without lending it a reason', async ({
