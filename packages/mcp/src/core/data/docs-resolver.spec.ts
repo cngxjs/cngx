@@ -159,6 +159,53 @@ describe('createDocsResolver', () => {
   });
 });
 
+describe('createDocsResolver fetched temp dir', () => {
+  const DIR = '/tmp/cngx-snapshot-test';
+
+  it('removes the fetched dir once the snapshot is loaded', async () => {
+    const removeDir = vi.fn();
+    const fetchSnapshot = vi.fn(async () => ({ ok: true as const, path: NEW, dir: DIR }));
+
+    const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile, removeDir })('0.2.0');
+
+    expect(resolution).toMatchObject({ ok: true, version: '0.2.0' });
+    expect(removeDir).toHaveBeenCalledWith(DIR);
+  });
+
+  it('removes the fetched dir when the snapshot fails to load', async () => {
+    const removeDir = vi.fn();
+    const fetchSnapshot = vi.fn(async () => ({ ok: true as const, path: NEW, dir: DIR }));
+    const loadDocs = vi.fn(() => {
+      throw new SchemaVersionError(99);
+    });
+
+    const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs, removeDir })('0.2.0');
+
+    expect(resolution).toMatchObject({ ok: false, reason: 'asset-missing' });
+    expect(removeDir).toHaveBeenCalledWith(DIR);
+  });
+
+  it('answers ok when the removal itself throws', async () => {
+    const removeDir = vi.fn(() => {
+      throw new Error('EBUSY');
+    });
+    const fetchSnapshot = vi.fn(async () => ({ ok: true as const, path: NEW, dir: DIR }));
+
+    const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile, removeDir })('0.2.0');
+
+    expect(resolution).toMatchObject({ ok: true, version: '0.2.0' });
+  });
+
+  it('removes nothing when the fetch hands over no dir', async () => {
+    const removeDir = vi.fn();
+    const fetchSnapshot = vi.fn(async () => ({ ok: true as const, path: NEW }));
+
+    await createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile, removeDir })('0.2.0');
+
+    expect(removeDir).not.toHaveBeenCalled();
+  });
+});
+
 describe('createDocsResolver example urls', () => {
   it('answers a fetched release snapshot with public example urls', async () => {
     const raw = createDocsIndex({

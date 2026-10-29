@@ -11,7 +11,7 @@ import { rebaseExampleUrls } from './example-urls.js';
 import type { DocsIndex } from './loader.js';
 import { loadDocsFromFile } from './loader.js';
 import type { FetchSnapshot } from '../diff/snapshot-fetch.js';
-import { fetchSnapshot } from '../diff/snapshot-fetch.js';
+import { fetchSnapshot, removeQuietly, removeTempDir } from '../diff/snapshot-fetch.js';
 import type { SnapshotFetchFailureReason } from '../diff/types.js';
 
 /** A resolved snapshot plus the version label it grounds against, or a typed failure. */
@@ -23,9 +23,11 @@ export type DocsResolution =
 export interface DocsResolverDeps {
   fetchSnapshot: FetchSnapshot;
   loadDocs: typeof loadDocsFromFile;
+  /** Removes the temp dir a fetch hands over once its snapshot is read. Defaults to a recursive delete. */
+  removeDir?: (dir: string) => void;
 }
 
-const defaultDeps: DocsResolverDeps = { fetchSnapshot, loadDocs: loadDocsFromFile };
+const defaultDeps: DocsResolverDeps = { fetchSnapshot, loadDocs: loadDocsFromFile, removeDir: removeTempDir };
 
 /**
  * Upper bound on distinct release snapshots one resolver holds at once. A parsed
@@ -108,6 +110,11 @@ async function fetchAndLoad(
       reason: 'asset-missing',
       message: `Fetched snapshot for v${requested} could not be read: ${error instanceof Error ? error.message : String(error)}`,
     };
+  } finally {
+    // The parsed index lives in memory from here on; the file on disk is never read again.
+    if (fetched.dir !== undefined) {
+      removeQuietly(deps.removeDir ?? removeTempDir, fetched.dir);
+    }
   }
 }
 

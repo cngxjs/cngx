@@ -150,6 +150,7 @@ describe('diffSnapshots across schema 2 and schema 6', () => {
 describe('fetchSnapshot failure classification', () => {
   const stub = {
     makeTempDir: () => '/tmp/cngx-mcp-snapshot-test',
+    removeDir: () => undefined,
     releaseBaseUrl: 'https://example.test/releases/download',
     writeFile: () => undefined,
   };
@@ -199,7 +200,7 @@ describe('fetchSnapshot failure classification', () => {
       httpGet: notFound,
       runGh: async () => undefined,
     });
-    expect(result).toEqual({ ok: true, path: '/tmp/cngx-mcp-ok/documentation.json' });
+    expect(result).toEqual({ ok: true, path: '/tmp/cngx-mcp-ok/documentation.json', dir: '/tmp/cngx-mcp-ok' });
   });
 
   it('treats an unknown gh failure as asset-missing', () => {

@@ -95,6 +95,7 @@ function makeDeps(overrides: Partial<SnapshotFetchDeps> = {}): SnapshotFetchDeps
     releaseBaseUrl: BASE,
     writeFile: vi.fn(),
     makeTempDir: vi.fn(() => DIR),
+    removeDir: vi.fn(),
     ...overrides,
   };
 }
@@ -108,7 +109,7 @@ describe('fetchSnapshot', () => {
   it('returns the gh download and never calls HTTPS when gh succeeds', async () => {
     const deps = makeDeps();
 
-    expect(await fetchSnapshot('0.2.0', deps)).toEqual({ ok: true, path: `${DIR}/documentation.json` });
+    expect(await fetchSnapshot('0.2.0', deps)).toEqual({ ok: true, path: `${DIR}/documentation.json`, dir: DIR });
     expect(deps.runGh).toHaveBeenCalledWith(ghDownloadArgs('0.2.0', DIR));
     expect(deps.httpGet).not.toHaveBeenCalled();
   });
@@ -131,7 +132,7 @@ describe('fetchSnapshot', () => {
   it('falls back to HTTPS when gh is not installed', async () => {
     const deps = makeDeps({ runGh: ghThrows(Object.assign(new Error('spawn gh ENOENT'), { code: 'ENOENT' })) });
 
-    expect(await fetchSnapshot('0.2.0', deps)).toEqual({ ok: true, path: `${DIR}/documentation.json` });
+    expect(await fetchSnapshot('0.2.0', deps)).toEqual({ ok: true, path: `${DIR}/documentation.json`, dir: DIR });
     expect(deps.httpGet).toHaveBeenCalledWith(`${BASE}/v0.2.0/documentation.json`);
     expect(deps.writeFile).toHaveBeenCalledWith(`${DIR}/documentation.json`, '{"https":true}');
   });
@@ -142,7 +143,7 @@ describe('fetchSnapshot', () => {
     });
     const deps = makeDeps({ runGh: ghThrows(unauthenticated) });
 
-    expect(await fetchSnapshot('0.2.0', deps)).toEqual({ ok: true, path: `${DIR}/documentation.json` });
+    expect(await fetchSnapshot('0.2.0', deps)).toEqual({ ok: true, path: `${DIR}/documentation.json`, dir: DIR });
     expect(deps.httpGet).toHaveBeenCalledTimes(1);
   });
 
@@ -201,7 +202,72 @@ describe('fetchSnapshot', () => {
   it('accepts a hyphenated prerelease and fetches its tag', async () => {
     const deps = makeDeps({ runGh: ghThrows(new Error('release not found')) });
 
-    expect(await fetchSnapshot('0.2.0-rc-1', deps)).toEqual({ ok: true, path: `${DIR}/documentation.json` });
+    expect(await fetchSnapshot('0.2.0-rc-1', deps)).toEqual({ ok: true, path: `${DIR}/documentation.json`, dir: DIR });
     expect(deps.httpGet).toHaveBeenCalledWith(`${BASE}/v0.2.0-rc-1/documentation.json`);
+  });
+});
+
+describe('fetchSnapshot temp dir', () => {
+  it('hands the dir to the caller on success instead of removing it', async () => {
+    const deps = makeDeps();
+
+    expect(await fetchSnapshot('0.2.0', deps)).toMatchObject({ ok: true, dir: DIR });
+    expect(deps.removeDir).not.toHaveBeenCalled();
+  });
+
+  it('removes the dir after a 404', async () => {
+    const deps = makeDeps({
+      runGh: ghThrows(new Error('release not found')),
+      httpGet: vi.fn(async () => ({ status: 404, body: '' })),
+    });
+
+    expect(await fetchSnapshot('9.9.9', deps)).toMatchObject({ ok: false });
+    expect(deps.removeDir).toHaveBeenCalledWith(DIR);
+  });
+
+  it('removes the dir after a non-404 HTTP failure', async () => {
+    const deps = makeDeps({
+      runGh: ghThrows(new Error('release not found')),
+      httpGet: vi.fn(async () => ({ status: 503, body: '' })),
+    });
+
+    expect(await fetchSnapshot('0.2.0', deps)).toMatchObject({ ok: false });
+    expect(deps.removeDir).toHaveBeenCalledWith(DIR);
+  });
+
+  it('removes the dir after a transport error', async () => {
+    const deps = makeDeps({
+      runGh: ghThrows(new Error('release not found')),
+      httpGet: vi.fn(async () => {
+        throw new TypeError('fetch failed');
+      }),
+    });
+
+    expect(await fetchSnapshot('0.2.0', deps)).toMatchObject({ ok: false });
+    expect(deps.removeDir).toHaveBeenCalledWith(DIR);
+  });
+
+  it('removes the dir after a write failure', async () => {
+    const deps = makeDeps({
+      runGh: ghThrows(new Error('release not found')),
+      writeFile: vi.fn(() => {
+        throw new Error('ENOSPC: no space left on device');
+      }),
+    });
+
+    expect(await fetchSnapshot('0.2.0', deps)).toMatchObject({ ok: false });
+    expect(deps.removeDir).toHaveBeenCalledWith(DIR);
+  });
+
+  it('keeps the typed failure when the removal itself throws', async () => {
+    const deps = makeDeps({
+      runGh: ghThrows(new Error('release not found')),
+      httpGet: vi.fn(async () => ({ status: 404, body: '' })),
+      removeDir: vi.fn(() => {
+        throw new Error('EBUSY');
+      }),
+    });
+
+    expect(await fetchSnapshot('9.9.9', deps)).toMatchObject({ ok: false, reason: 'asset-missing' });
   });
 });

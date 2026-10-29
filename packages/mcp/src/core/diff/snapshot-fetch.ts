@@ -9,14 +9,19 @@
 // working directory - and `npx @cngx/mcp` runs inside the consumer's checkout.
 
 import { execFile } from 'node:child_process';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 import type { SnapshotFetchFailureReason } from './types.js';
 
+/**
+ * A fetch outcome. On success `dir` is the temp directory the fetch created for the
+ * snapshot; the caller owns it from then on and removes it once the snapshot is read.
+ * A failure has already removed it.
+ */
 export type SnapshotFetchResult =
-  | { ok: true; path: string }
+  | { ok: true; path: string; dir?: string }
   | { ok: false; reason: SnapshotFetchFailureReason; message: string };
 
 /** The fetch a resolver depends on: one release version in, a snapshot path or a typed failure out. */
@@ -43,6 +48,8 @@ export interface SnapshotFetchDeps {
   writeFile: (path: string, body: string) => void;
   /** Create a fresh temp directory and return its path. */
   makeTempDir: () => string;
+  /** Remove a temp directory made by `makeTempDir`, with everything in it. */
+  removeDir: (dir: string) => void;
 }
 
 /** The release source. Never derived from the working directory's git remote. */
@@ -109,8 +116,14 @@ export function createDefaultDeps({
     },
     releaseBaseUrl,
     writeFile: (path, body) => writeFileSync(path, body),
-    makeTempDir: () => mkdtempSync(join(tmpdir(), 'cngx-mcp-snapshot-')),
+    makeTempDir: () => mkdtempSync(join(tmpdir(), 'cngx-snapshot-')),
+    removeDir: removeTempDir,
   };
+}
+
+/** Production `removeDir`: a missing directory is not an error. */
+export function removeTempDir(dir: string): void {
+  rmSync(dir, { recursive: true, force: true });
 }
 
 const defaultDeps = createDefaultDeps();
@@ -152,11 +165,19 @@ export async function fetchSnapshot(version: string, deps: SnapshotFetchDeps = d
   } catch (error) {
     return { ok: false, reason: 'asset-missing', message: `No temp directory for the snapshot: ${extractMessage(error)}` };
   }
+  const result = await download(version, dir, deps);
+  if (!result.ok) {
+    removeQuietly(deps.removeDir, dir);
+  }
+  return result;
+}
+
+async function download(version: string, dir: string, deps: SnapshotFetchDeps): Promise<SnapshotFetchResult> {
   const path = join(dir, 'documentation.json');
   let ghMessage: string;
   try {
     await deps.runGh(ghDownloadArgs(version, dir));
-    return { ok: true, path };
+    return { ok: true, path, dir };
   } catch (error) {
     ghMessage = classifyGhFailure(error).message;
   }
@@ -171,9 +192,18 @@ export async function fetchSnapshot(version: string, deps: SnapshotFetchDeps = d
       return { ok: false, reason: 'network', message: `gh: ${ghMessage} https: ${url} returned ${response.status}.` };
     }
     deps.writeFile(path, response.body);
-    return { ok: true, path };
+    return { ok: true, path, dir };
   } catch (error) {
     return { ok: false, reason: 'network', message: `gh: ${ghMessage} https: ${extractMessage(error)}` };
+  }
+}
+
+/** Remove `dir`, never letting a failed removal replace the answer it cleans up after. */
+export function removeQuietly(removeDir: (dir: string) => void, dir: string): void {
+  try {
+    removeDir(dir);
+  } catch {
+    // A leftover temp dir is the OS's to reclaim; the fetch answer stands.
   }
 }
 
