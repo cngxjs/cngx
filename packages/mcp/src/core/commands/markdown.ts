@@ -47,7 +47,11 @@ function decodeEntities(text: string): string {
       return NAMED_ENTITIES[body.toLowerCase()] ?? entity;
     }
     const hex = body[1] === 'x' || body[1] === 'X';
-    return String.fromCodePoint(Number.parseInt(body.slice(hex ? 2 : 1), hex ? 16 : 10));
+    const codePoint = Number.parseInt(body.slice(hex ? 2 : 1), hex ? 16 : 10);
+    // Past U+10FFFF `fromCodePoint` throws, and a lone surrogate is not a character;
+    // both stay as the text the docs carried.
+    const isSurrogate = codePoint >= 0xd800 && codePoint <= 0xdfff;
+    return codePoint > 0x10ffff || isSurrogate ? entity : String.fromCodePoint(codePoint);
   });
 }
 

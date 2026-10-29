@@ -10,7 +10,7 @@ import type { CngxCommand, CommandContext } from '../registry.js';
 import { COMMANDS, defaultFound, isFound, unwrapAnswer } from '../registry.js';
 import { createDocsResolver } from '../data/docs-resolver.js';
 import { loadDocsFromFile } from '../data/loader.js';
-import { cell, table } from './markdown.js';
+import { cell, table, toPlainText } from './markdown.js';
 import { apiMarkdown, getApi } from './get-api.js';
 
 const fixture = (name: string) => fileURLToPath(new URL(`../../../test/fixtures/${name}`, import.meta.url));
@@ -281,5 +281,11 @@ describe('markdown helpers', () => {
 
   it('build a table with the minimal separator', () => {
     expect(table(['A', 'B'], [['1', '2']])).toBe('|A|B|\n|-|-|\n|1|2|');
+  });
+  it('keep a numeric entity outside the Unicode range as its literal text', () => {
+    expect(toPlainText('a &#99999999; b')).toBe('a &#99999999; b');
+    expect(toPlainText('a &#x110000; b')).toBe('a &#x110000; b');
+    expect(toPlainText('a &#xD800; b')).toBe('a &#xD800; b');
+    expect(toPlainText('a &#x41; &#66; b')).toBe('a A B b');
   });
 });
