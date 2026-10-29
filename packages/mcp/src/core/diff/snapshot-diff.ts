@@ -201,8 +201,9 @@ export function diffSnapshots(fromDocs: DocsIndex, toDocs: DocsIndex): UsageDelt
     ),
   );
 
+  // `type` is the constant "token" on real data; the value type lives in `tokenType`.
   const diTokens = diffNamedList(fromDocs.tokens, toDocs.tokens, {
-    signatureOf: (token) => token.type ?? '',
+    signatureOf: (token) => token.tokenType ?? token.type ?? '',
   });
 
   const resolvedFrom = fromDocs.meta.cngxVersion;

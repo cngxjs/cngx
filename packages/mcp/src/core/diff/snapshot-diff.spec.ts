@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { createDocsIndex, loadDocsFromFile } from '../data/loader.js';
+import { createDocsIndex, loadBundledDocs, loadDocsFromFile } from '../data/loader.js';
 import type { DocsIndex } from '../data/loader.js';
 import type { DocEntry, DocToken, DocumentationJson } from '../data/types.js';
 import { diffSnapshots } from './snapshot-diff.js';
@@ -8,6 +8,7 @@ import { classifyGhFailure, fetchSnapshot } from './snapshot-fetch.js';
 
 const OLD = fileURLToPath(new URL('../../../test/fixtures/documentation.v-old.sample.json', import.meta.url));
 const NEW = fileURLToPath(new URL('../../../test/fixtures/documentation.v-new.sample.json', import.meta.url));
+const BUNDLED_DIR = fileURLToPath(new URL('../../../data/', import.meta.url));
 
 describe('diffSnapshots', () => {
   const delta = diffSnapshots(loadDocsFromFile(OLD), loadDocsFromFile(NEW));
@@ -74,12 +75,30 @@ describe('diffSnapshots rename inference is fingerprint-gated', () => {
   });
 
   it('reports a removed DI token as removed, never a bare-type rename', () => {
-    const from = index('1.0.0', [], [{ name: 'CNGX_OLD', type: 'InjectionToken<Cfg>' }]);
-    const to = index('2.0.0', [], [{ name: 'CNGX_NEW', type: 'InjectionToken<Cfg>' }]);
+    const from = index('1.0.0', [], [{ name: 'CNGX_OLD', type: 'token', tokenType: 'Cfg' }]);
+    const to = index('2.0.0', [], [{ name: 'CNGX_NEW', type: 'token', tokenType: 'Cfg' }]);
     const delta = diffSnapshots(from, to);
 
     expect(delta.diTokens.removed).toEqual([{ name: 'CNGX_OLD' }]);
     expect(delta.diTokens.renamed).toEqual([]);
+  });
+
+  it('reports a changed token type as a signature change', () => {
+    const from = index('1.0.0', [], [{ name: 'CNGX_X', type: 'token', tokenType: 'CfgA' }]);
+    const to = index('2.0.0', [], [{ name: 'CNGX_X', type: 'token', tokenType: 'CfgB' }]);
+
+    expect(diffSnapshots(from, to).diTokens.signatureChanged).toEqual([{ name: 'CNGX_X', fromSignature: 'CfgA', toSignature: 'CfgB' }]);
+  });
+
+  it('reports a token type edited in a copy of the bundled snapshot', () => {
+    const bundled = loadBundledDocs(BUNDLED_DIR);
+    const [first, ...rest] = bundled.tokens;
+    const edited: DocsIndex = { ...bundled, tokens: [{ ...first, tokenType: `${first.tokenType}Changed` }, ...rest] };
+
+    expect(first.type).toBe('token');
+    expect(diffSnapshots(bundled, edited).diTokens.signatureChanged).toEqual([
+      { name: first.name, fromSignature: first.tokenType, toSignature: `${first.tokenType}Changed` },
+    ]);
   });
 
   it('still infers a top-level rename from the entry-shape fingerprint', () => {

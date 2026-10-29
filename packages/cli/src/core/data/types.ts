@@ -127,7 +127,10 @@ export interface DocEntry {
 export interface DocToken {
   name: string;
   file?: string;
+  /** The entry kind compodocx records; `"token"` on every token of a real snapshot. */
   type?: string;
+  /** The token's value type, e.g. `CngxSelectConfig` for `InjectionToken<CngxSelectConfig>`. */
+  tokenType?: string;
   description?: string;
 }
 
