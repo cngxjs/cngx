@@ -63,6 +63,9 @@ export interface CngxButtonCore {
   readonly size: Signal<CngxButtonSize>;
   /** `true` while a co-hosted `CngxAsyncClick` runs its action. */
   readonly busy: Signal<boolean>;
+  /** `true` while the button refuses activation: disabled, busy or refused by the co-hosted `CngxAsyncClick`. */
+  readonly blocked: Signal<boolean>;
+  /** `aria-disabled` rendered from `blocked`. */
   readonly ariaDisabled: Signal<'true' | null>;
   /**
    * The element's merged `aria-describedby`: the consumer's static ids, the
@@ -157,9 +160,8 @@ export function injectButtonCore(
   // `[enabled]="false"` in; otherwise a disabled -> enabled flip here writes
   // null while the directive still refuses clicks.
   const asyncClickRefuses = computed(() => coHostedAsyncClick()?.enabled() === false);
-  const ariaDisabled = computed<'true' | null>(() =>
-    inputs.disabled() || busy() || asyncClickRefuses() ? 'true' : null,
-  );
+  const blocked = computed(() => inputs.disabled() || busy() || asyncClickRefuses());
+  const ariaDisabled = computed<'true' | null>(() => (blocked() ? 'true' : null));
   const reasonIds = computed(() =>
     inputs.disabled() && inputs.disabledReason() ? reasonId : null,
   );
@@ -189,5 +191,5 @@ export function injectButtonCore(
     host.removeEventListener('auxclick', guard, { capture: true });
   });
 
-  return { variant, tone, size, busy, ariaDisabled, describedBy, reasonId, hostType };
+  return { variant, tone, size, busy, blocked, ariaDisabled, describedBy, reasonId, hostType };
 }

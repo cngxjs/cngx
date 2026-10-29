@@ -2,7 +2,6 @@ import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
-  computed,
   contentChild,
   input,
   ViewEncapsulation,
@@ -10,6 +9,7 @@ import {
 import { CNGX_HOST_INTERACTION_STATE } from '@cngx/common/interactive';
 
 import { injectButtonCore, provideButtonDescribedBy } from './button-core';
+import { CNGX_BUTTON_STATE, type CngxButtonState } from './button-state.token';
 import type {
   CngxButtonSize,
   CngxButtonTone,
@@ -75,6 +75,7 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
   encapsulation: ViewEncapsulation.None,
   providers: [
     { provide: CNGX_HOST_INTERACTION_STATE, useExisting: CngxButton },
+    { provide: CNGX_BUTTON_STATE, useExisting: CngxButton },
     provideButtonDescribedBy('CngxButton'),
   ],
   host: {
@@ -105,7 +106,7 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
   `,
   styleUrl: './button.component.css',
 })
-export class CngxButton {
+export class CngxButton implements CngxButtonState {
   /**
    * Emphasis. Bound through the selector itself: `cngxButton="outline"` and
    * `[cngxButton]="variant()"` both land here; the bare attribute falls
@@ -165,5 +166,5 @@ export class CngxButton {
    * co-hosted `cngxAsyncClick`, or refused by its `[enabled]="false"`. Read
    * it to derive the state of composed controls, e.g. a split-button caret.
    */
-  readonly blocked = computed(() => this.core.ariaDisabled() === 'true');
+  readonly blocked = this.core.blocked;
 }

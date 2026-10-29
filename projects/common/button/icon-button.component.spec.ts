@@ -1,8 +1,10 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { vi } from 'vitest';
 
 import { provideButtonConfig, withButtonVariant } from './button-config';
+import { CNGX_BUTTON_STATE } from './button-state.token';
 import { CngxIconButton } from './icon-button.component';
 
 @Component({
@@ -86,6 +88,18 @@ describe('CngxIconButton', () => {
     expect(btn.hasAttribute('aria-describedby')).toBe(false);
     btn.click();
     expect(host.clicks).toBe(1);
+  });
+
+  it('publishes its blocked state through CNGX_BUTTON_STATE', () => {
+    const { fixture, host } = render(NamedHost);
+    const de = fixture.debugElement.query(By.css('#disabled'));
+    const state = de.injector.get(CNGX_BUTTON_STATE);
+    expect(state).toBe(de.injector.get(CngxIconButton));
+    expect(state.blocked()).toBe(true);
+
+    host.disabled.set(false);
+    fixture.detectChanges();
+    expect(state.blocked()).toBe(false);
   });
 
   it('hides the glyph from assistive technology so projected content never names the button', () => {

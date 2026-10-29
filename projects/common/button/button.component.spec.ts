@@ -13,6 +13,7 @@ import {
   withButtonVariant,
 } from './button-config';
 import { CNGX_BUTTON_GROUP } from './button-group.token';
+import { CNGX_BUTTON_STATE } from './button-state.token';
 import { CngxButton } from './button.component';
 import type {
   CngxButtonSize,
@@ -517,6 +518,14 @@ describe('CngxButton', () => {
       host.enabled.set(true);
       fixture.detectChanges();
       expect(button.blocked()).toBe(false);
+    });
+
+    it('is published through CNGX_BUTTON_STATE', () => {
+      const { fixture } = render(AsyncHost);
+      const de = fixture.debugElement.query(By.css('#button-first'));
+      const state = de.injector.get(CNGX_BUTTON_STATE);
+      expect(state).toBe(de.injector.get(CngxButton));
+      expect(state.blocked()).toBe(true);
     });
 
     it('is false on a plain button', () => {
