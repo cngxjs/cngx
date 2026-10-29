@@ -50,16 +50,6 @@
   }
 
   /**
-   * Font-size of the tone glyph inside the dot, relative to the dot.
-   * @group Typography
-   */
-  @property --cngx-status-glyph-size {
-    syntax: '*';
-    inherits: true;
-    initial-value: 0.7em;
-  }
-
-  /**
    * Foreground colour of the tone glyph, over the coloured dot.
    * @group Typography
    */
@@ -193,7 +183,6 @@
       inline-size: var(--cngx-status-dot-size, 16px);
       block-size: var(--cngx-status-dot-size, 16px);
       border-radius: 50%;
-      font-size: var(--cngx-status-glyph-size, 0.7em);
       line-height: 1;
       color: var(--cngx-status-dot-fg, white);
       background: var(--cngx-status-neutral-color, oklch(0.6 0.02 290));
@@ -218,13 +207,43 @@
     :scope.cngx-status--neutral .cngx-status__dot {
       background: var(--cngx-status-neutral-color, oklch(0.6 0.02 290));
     }
+
+    /*
+     * Tone glyphs scale with the dot, not with the text: each glyph's outer
+     * edge, stroke included and measured from the centre, sits at 65% of the
+     * dot diameter, so round and diagonal marks keep the same rim to the
+     * circle. Line glyphs draw a 1.75px stroke at the 16px dot (0.109 of the
+     * diameter); warning and info are filled shapes, which carry more weight
+     * than a single stroke. Per glyph, r is its reach from the grid centre in
+     * the 24-unit viewBox: box = (0.325 - 0.0547) * 24 / r of the dot, stroke
+     * = 0.109 * 24 / box units (check r 8.6, cross 8.49, question 6.51, the
+     * filled marks 8.5 with box 0.325 * 24 / r).
+     */
+    :scope.cngx-status--success .cngx-status__dot > .cngx-icon-svg {
+      --cngx-icon-svg-size: calc(var(--cngx-status-dot-size, 16px) * 0.754);
+      --cngx-icon-svg-stroke-width: 3.48;
+    }
+
+    :scope.cngx-status--danger .cngx-status__dot > .cngx-icon-svg {
+      --cngx-icon-svg-size: calc(var(--cngx-status-dot-size, 16px) * 0.764);
+      --cngx-icon-svg-stroke-width: 3.43;
+    }
+
+    :scope.cngx-status--neutral .cngx-status__dot > .cngx-icon-svg {
+      --cngx-icon-svg-size: calc(var(--cngx-status-dot-size, 16px) * 0.996);
+      --cngx-icon-svg-stroke-width: 2.63;
+    }
+
+    :scope:is(.cngx-status--warning, .cngx-status--info) .cngx-status__dot > .cngx-icon-svg {
+      --cngx-icon-svg-size: calc(var(--cngx-status-dot-size, 16px) * 0.918);
+    }
   }
 }
 
 /* forced-colors (WHCM): a bare dot ([glyph]="false", so the dot is :empty) is
  * painted with background only and flattens into Canvas. Keep it present as a
  * CanvasText disc; the tone travels in the visible label, which a bare dot
- * requires. A dot with a glyph needs nothing: the glyph is forced to
+ * requires. A dot with a glyph needs nothing: the glyph paints the forced
  * CanvasText and carries the tone. Unlayered to beat the layered @scope rule. */
 @media (forced-colors: active) {
   .cngx-status .cngx-status__dot:empty {

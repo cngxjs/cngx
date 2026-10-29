@@ -9,18 +9,28 @@ import {
   input,
   ViewEncapsulation,
 } from '@angular/core';
-import { cngxDevWarn } from '@cngx/utils';
+import {
+  CNGX_ICON_CHECK,
+  CNGX_ICON_EXCLAMATION_SOLID,
+  CNGX_ICON_INFO,
+  CNGX_ICON_QUESTION,
+  CNGX_ICON_X,
+  cngxDevWarn,
+  type CngxIconData,
+} from '@cngx/utils';
+
+import { CngxIconSvg } from '../icon/icon-svg.component';
 
 /** Semantic health of a {@link CngxStatus}. */
 export type StatusTone = 'success' | 'warning' | 'danger' | 'info' | 'neutral';
 
 /** Tone glyph rendered inside the decorative dot - the non-colour signal. */
-const TONE_GLYPH: Record<StatusTone, string> = {
-  success: '✓',
-  warning: '!',
-  danger: '✕',
-  info: 'i',
-  neutral: '•',
+const TONE_ICON: Record<StatusTone, CngxIconData> = {
+  success: CNGX_ICON_CHECK,
+  warning: CNGX_ICON_EXCLAMATION_SOLID,
+  danger: CNGX_ICON_X,
+  info: CNGX_ICON_INFO,
+  neutral: CNGX_ICON_QUESTION,
 };
 
 /**
@@ -64,6 +74,7 @@ const TONE_GLYPH: Record<StatusTone, string> = {
 @Component({
   selector: 'cngx-status',
   standalone: true,
+  imports: [CngxIconSvg],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: {
@@ -76,7 +87,7 @@ const TONE_GLYPH: Record<StatusTone, string> = {
     '[attr.aria-live]': 'live()',
   },
   template: `
-    <span class="cngx-status__dot" aria-hidden="true">@if (glyph()) { {{ glyphChar() }} }</span>
+    <span class="cngx-status__dot" aria-hidden="true">@if (glyph()) {<svg [cngxIconSvg]="toneIcon()"></svg>}</span>
     @if (label()) {
       <span class="cngx-status__label">{{ label() }}</span>
     }
@@ -105,8 +116,8 @@ export class CngxStatus {
    */
   readonly glyph = input(true, { transform: booleanAttribute });
 
-  /** @internal Tone glyph char bound into the decorative dot. */
-  protected readonly glyphChar = computed(() => TONE_GLYPH[this.tone()]);
+  /** @internal Tone glyph drawn into the decorative dot. */
+  protected readonly toneIcon = computed(() => TONE_ICON[this.tone()]);
 
   constructor() {
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
