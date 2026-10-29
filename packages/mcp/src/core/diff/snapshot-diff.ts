@@ -148,7 +148,25 @@ const fieldNameOf = (member: DocInput | DocOutput): string => member.name;
 /** An input's binding contract: its type, whether a binding is required, and its signal kind. */
 function inputSignatureOf(input: DocInput): string {
   const flags = [input.required === true ? 'required' : '', input.signalKind ?? ''].filter((flag) => flag !== '');
-  return flags.length === 0 ? (input.type ?? '') : `${input.type ?? ''} (${flags.join(', ')})`;
+  return [input.type ?? '', flags.length === 0 ? '' : `(${flags.join(', ')})`].filter((part) => part !== '').join(' ');
+}
+
+/** A slot description with its whitespace collapsed, so a reflowed doc comment is no change. */
+const slotDescriptionOf = (slot: { description: string }): string => slot.description.replace(/\s+/g, ' ').trim();
+
+/** Code-point order, never locale order, so the delta is byte-stable on every machine. */
+const byCodePoint = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
+
+const ownedOrder = (a: { owner?: string }, aName: string, b: { owner?: string }, bName: string): number =>
+  byCodePoint(a.owner ?? '', b.owner ?? '') || byCodePoint(aName, bName);
+
+/** Every list sorted by (owner, name), so the answer never follows snapshot order. */
+function sortDelta(delta: CategoryDelta): CategoryDelta {
+  return {
+    removed: [...delta.removed].sort((a, b) => ownedOrder(a, a.name, b, b.name)),
+    renamed: [...delta.renamed].sort((a, b) => ownedOrder(a, a.from, b, b.from)),
+    signatureChanged: [...delta.signatureChanged].sort((a, b) => ownedOrder(a, a.name, b, b.name)),
+  };
 }
 
 /** Pair entries present under the same name in both snapshots (skips renamed pairs). */
@@ -248,8 +266,8 @@ export function diffSnapshots(fromDocs: DocsIndex, toDocs: DocsIndex): UsageDelt
     matchedPairs.map(([from, to]) =>
       diffNamedList(normalizeSlots(from.slots), normalizeSlots(to.slots), {
         // An empty description fingerprints nothing; such a slot is never rename-inferred.
-        renameKeyOf: (slot) => (slot.description.trim() === '' ? null : slot.description),
-        signatureOf: (slot) => slot.description,
+        renameKeyOf: (slot) => (slotDescriptionOf(slot) === '' ? null : slotDescriptionOf(slot)),
+        signatureOf: slotDescriptionOf,
         owner: from.name,
       }),
     ),
@@ -271,10 +289,10 @@ export function diffSnapshots(fromDocs: DocsIndex, toDocs: DocsIndex): UsageDelt
       resolvedFrom,
       resolvedTo,
     },
-    components,
-    inputs,
-    outputs,
-    slots,
-    diTokens,
+    components: sortDelta(components),
+    inputs: sortDelta(inputs),
+    outputs: sortDelta(outputs),
+    slots: sortDelta(slots),
+    diTokens: sortDelta(diTokens),
   };
 }

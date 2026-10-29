@@ -4,6 +4,8 @@ import { createDocsIndex, loadBundledDocs, loadDocsFromFile } from '../data/load
 import type { DocsIndex } from '../data/loader.js';
 import type { DocEntry, DocToken, DocumentationJson } from '../data/types.js';
 import { diffSnapshots } from './snapshot-diff.js';
+import { migrateUsageMarkdown } from '../commands/migrate-usage.js';
+import { shuffled } from '../../testing/shuffle.js';
 import { classifyGhFailure, fetchSnapshot } from './snapshot-fetch.js';
 
 const OLD = fileURLToPath(new URL('../../../test/fixtures/documentation.v-old.sample.json', import.meta.url));
@@ -303,7 +305,10 @@ describe('diffSnapshots infers a slot rename only from a unique, non-empty key',
     const delta = diffSnapshots(index('1.0.0', fromSlots), index('2.0.0', [added]));
 
     expect(delta.slots.renamed).toEqual([]);
-    expect(delta.slots.removed).toEqual(fromSlots.map((slot) => ({ name: slot.name, owner: 'CngxX' })));
+    expect(delta.slots.removed).toEqual([
+      { name: 'cngxA', owner: 'CngxX' },
+      { name: 'cngxB', owner: 'CngxX' },
+    ]);
   });
 
   it.each([[''], ['   ']])('never pairs slots whose description is %j', (description) => {
@@ -433,5 +438,85 @@ describe('fetchSnapshot failure classification', () => {
 
   it('treats an unknown gh failure as asset-missing', () => {
     expect(classifyGhFailure(new Error('something odd happened')).reason).toBe('asset-missing');
+  });
+});
+
+describe('diffSnapshots output order and labels', () => {
+  const index = (cngxVersion: string, components: DocEntry[]): DocsIndex => ({
+    meta: { schemaVersion: 6, cngxVersion, generatedAt: null, compodocxVersion: null },
+    components,
+    directives: [],
+    injectables: [],
+    tokens: [],
+    functions: [],
+  });
+
+  it('renders a typeless signal input without a leading space', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', signalKind: 'input-signal' }] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', type: 'string', signalKind: 'input-signal' }] }]);
+
+    expect(diffSnapshots(from, to).inputs.signatureChanged).toEqual([
+      { name: 'value', owner: 'CngxX', fromSignature: '(input-signal)', toSignature: 'string (input-signal)' },
+    ]);
+  });
+
+  it('reports no change for a whitespace-only slot description change', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', slots: [{ name: 'cngxA', description: 'The caret\n  glyph.' }] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', slots: [{ name: 'cngxA', description: ' The caret glyph. ' }] }]);
+
+    expect(diffSnapshots(from, to).slots).toEqual({ removed: [], renamed: [], signatureChanged: [] });
+  });
+
+  it('labels each changed part in the markdown', () => {
+    const from = { ...index('1.0.0', [{ name: 'CngxX', selector: 'cngx-x', inputsClass: [{ name: 'v', type: 'string' }] }]), tokens: [{ name: 'CNGX_T', type: 'token', tokenType: 'A' }] };
+    const to = {
+      ...index('2.0.0', [{ name: 'CngxX', selector: 'cngx-y', inputsClass: [{ name: 'v', type: 'number' }] }]),
+      tokens: [{ name: 'CNGX_T', type: 'token', tokenType: 'B' }],
+    };
+    const markdown = migrateUsageMarkdown(diffSnapshots(from, to));
+
+    expect(markdown).toContain('|selector|`CngxX`|`cngx-x` -> `cngx-y`|');
+    expect(markdown).toContain('|type|`CngxX.v`|`string` -> `number`|');
+    expect(markdown).toContain('|type|`CNGX_T`|`A` -> `B`|');
+    expect(markdown).not.toContain('|signature|');
+  });
+
+  // The bundled snapshot against a copy with changes in every category, both
+  // shuffled at every level the diff walks.
+  const bundled = loadBundledDocs(BUNDLED_DIR);
+  const edited: DocsIndex = {
+    ...bundled,
+    components: bundled.components.filter((_, i) => i % 5 !== 0),
+    directives: bundled.directives.map((entry, i) => (i % 3 === 0 ? { ...entry, inputsClass: (entry.inputsClass ?? []).slice(1) } : entry)),
+    tokens: bundled.tokens.map((token, i) => (i % 4 === 0 ? { ...token, tokenType: `${token.tokenType}X` } : token)),
+  };
+  const shuffleEntry = (entry: DocEntry, seed: number): DocEntry => ({
+    ...entry,
+    inputsClass: entry.inputsClass && shuffled(entry.inputsClass, seed),
+    outputsClass: entry.outputsClass && shuffled(entry.outputsClass, seed),
+    slots: entry.slots && shuffled(entry.slots, seed),
+  });
+  const shuffleIndex = (docs: DocsIndex, seed: number): DocsIndex => ({
+    ...docs,
+    components: shuffled(docs.components, seed).map((entry) => shuffleEntry(entry, seed)),
+    directives: shuffled(docs.directives, seed).map((entry) => shuffleEntry(entry, seed)),
+    injectables: shuffled(docs.injectables, seed),
+    tokens: shuffled(docs.tokens, seed),
+  });
+
+  it('answers byte-equal json and markdown across 20 shuffles of both snapshots', () => {
+    const delta = diffSnapshots(bundled, edited);
+    const json = JSON.stringify(delta);
+    const markdown = migrateUsageMarkdown(delta);
+
+    expect(delta.components.removed.length).toBeGreaterThan(1);
+    expect(delta.inputs.removed.length).toBeGreaterThan(1);
+    expect(delta.diTokens.signatureChanged.length).toBeGreaterThan(1);
+    for (let seed = 1; seed <= 20; seed++) {
+      const shuffledDelta = diffSnapshots(shuffleIndex(bundled, seed), shuffleIndex(edited, seed + 100));
+
+      expect(JSON.stringify(shuffledDelta), `seed ${seed}`).toBe(json);
+      expect(migrateUsageMarkdown(shuffledDelta), `seed ${seed}`).toBe(markdown);
+    }
   });
 });

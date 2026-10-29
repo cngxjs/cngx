@@ -11,8 +11,8 @@ import { defineCommand } from '../command.js';
 import type { DocsIndex } from '../data/loader.js';
 import type { DocsResolver } from '../data/docs-resolver.js';
 import { diffSnapshots } from '../diff/snapshot-diff.js';
-import type { CategoryDelta, MigrateUsageResult, UsageDelta, UsageDeltaError } from '../diff/types.js';
-import { blocks, cell, code, section, table } from './markdown.js';
+import type { CategoryDelta, MigrateUsageResult, SignatureChangedEntry, UsageDelta, UsageDeltaError } from '../diff/types.js';
+import { blocks, cell, code, section, table, textCell } from './markdown.js';
 
 export interface MigrateUsageArgs {
   from: string;
@@ -60,21 +60,30 @@ export async function migrateUsage(
   };
 }
 
-const DELTA_CATEGORIES: readonly (readonly [keyof Pick<UsageDelta, 'components' | 'inputs' | 'outputs' | 'slots' | 'diTokens'>, string])[] = [
-  ['components', 'Components, directives and services'],
-  ['inputs', 'Inputs'],
-  ['outputs', 'Outputs'],
-  ['slots', 'Slots'],
-  ['diTokens', 'DI tokens'],
+type DeltaCategory = keyof Pick<UsageDelta, 'components' | 'inputs' | 'outputs' | 'slots' | 'diTokens'>;
+
+/** Each category with its title and the part a same-name change in it changed. */
+const DELTA_CATEGORIES: readonly (readonly [DeltaCategory, string, string])[] = [
+  ['components', 'Components, directives and services', 'selector'],
+  ['inputs', 'Inputs', 'type'],
+  ['outputs', 'Outputs', 'type'],
+  ['slots', 'Slots', 'description'],
+  ['diTokens', 'DI tokens', 'type'],
 ];
+
+const KINDS: ReadonlySet<string> = new Set(['component', 'directive']);
 
 const owned = (name: string, owner: string | undefined) => code(owner ? `${owner}.${name}` : name);
 
-function categoryRows(delta: CategoryDelta): string[][] {
+function categoryRows(delta: CategoryDelta, category: DeltaCategory, part: string): string[][] {
+  // A slot description is prose: capped like every other description cell.
+  const detail = category === 'slots' ? textCell : code;
+  // The component category also carries a component <-> directive flip.
+  const changed = (e: SignatureChangedEntry) => (KINDS.has(e.fromSignature) && KINDS.has(e.toSignature) ? 'kind' : part);
   return [
     ...delta.removed.map((e) => ['removed', owned(e.name, e.owner), '-']),
     ...delta.renamed.map((e) => [e.inferred ? 'renamed (inferred)' : 'renamed', owned(e.from, e.owner), code(e.to)]),
-    ...delta.signatureChanged.map((e) => ['signature', owned(e.name, e.owner), `${code(e.fromSignature)} -> ${code(e.toSignature)}`]),
+    ...delta.signatureChanged.map((e) => [changed(e), owned(e.name, e.owner), `${detail(e.fromSignature)} -> ${detail(e.toSignature)}`]),
   ];
 }
 
@@ -84,8 +93,8 @@ export function migrateUsageMarkdown(delta: UsageDelta | null): string {
     return 'No delta.\n';
   }
   const { meta } = delta;
-  const sections = DELTA_CATEGORIES.map(([key, title]) => {
-    const rows = categoryRows(delta[key]);
+  const sections = DELTA_CATEGORIES.map(([key, title, part]) => {
+    const rows = categoryRows(delta[key], key, part);
     return rows.length ? section(title, table(['Change', 'Symbol', 'Detail'], rows), '') : '';
   });
   const changed = sections.some((s) => s !== '');

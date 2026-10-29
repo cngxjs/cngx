@@ -11,6 +11,7 @@ import { loadBundledDocs } from './data/loader.js';
 import type { DocEntry } from './data/types.js';
 import type { AmbiguousMatch, KindedEntry } from './query.js';
 import { isAmbiguous, resolveEntry } from './query.js';
+import { shuffled } from '../testing/shuffle.js';
 
 const BUNDLED_DIR = fileURLToPath(new URL('../../data/', import.meta.url));
 
@@ -128,23 +129,6 @@ describe('resolveEntry over the bundled snapshot', () => {
     }
     return [...owners].filter(([, names]) => names.size > 1).map(([key]) => key);
   };
-
-  /** A deterministic Fisher-Yates shuffle (mulberry32), so a failure reproduces. */
-  function shuffled<T>(items: readonly T[], seed: number): T[] {
-    let state = seed;
-    const random = () => {
-      state = (state + 0x6d2b79f5) | 0;
-      let t = Math.imul(state ^ (state >>> 15), 1 | state);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-    const out = [...items];
-    for (let i = out.length - 1; i > 0; i--) {
-      const j = Math.floor(random() * (i + 1));
-      [out[i], out[j]] = [out[j], out[i]];
-    }
-    return out;
-  }
 
   const reorder = (order: <T>(items: readonly T[]) => T[]): DocsIndex => ({
     ...bundled,
