@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { type CngxSpeak } from '@cngx/common';
+import { CNGX_ICON_STOP, CNGX_ICON_VOLUME } from '@cngx/utils';
 
 import { CngxSpeakButton } from './speak-button';
 
@@ -44,9 +45,10 @@ describe('CngxSpeakButton', () => {
     const { host, button } = setup(speak);
     expect(button.getAttribute('aria-label')).toBe('Read aloud');
     expect(host.classList.contains('cngx-speak-button--speaking')).toBe(false);
-    // Idle icon is the outlined speaker (path), not the stop square (rect).
-    expect(host.querySelector('svg rect')).toBeNull();
-    expect(host.querySelector('svg path')).toBeTruthy();
+    // Idle icon is the outlined speaker, not the stop square.
+    const svg = host.querySelector('svg.cngx-speak-button__icon');
+    expect(svg?.querySelector('path')?.getAttribute('d')).toBe(CNGX_ICON_VOLUME.d);
+    expect(svg?.getAttribute('aria-hidden')).toBe('true');
   });
 
   it('toggles label, host class and icon to the speaking state', () => {
@@ -56,7 +58,9 @@ describe('CngxSpeakButton', () => {
     fixture.detectChanges();
     expect(button.getAttribute('aria-label')).toBe('Stop speaking');
     expect(host.classList.contains('cngx-speak-button--speaking')).toBe(true);
-    expect(host.querySelector('svg rect')).toBeTruthy();
+    expect(host.querySelector('svg.cngx-speak-button__icon path')?.getAttribute('d')).toBe(
+      CNGX_ICON_STOP.d,
+    );
   });
 
   it('calls speakRef.toggle() on click', () => {
