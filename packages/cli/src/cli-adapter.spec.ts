@@ -1,5 +1,5 @@
 // Source of expected values: the exit-code and output contract locked in the
-// cli-core plan (0 answered, 1 not found or unresolved, 2 usage error; stdout
+// cli-core plan (0 answered, 1 not found or unresolved, 2 usage error, 3 internal error; stdout
 // data only, stderr diagnostics only, never ANSI) and the sample fixture
 // packages/mcp/test/fixtures/documentation.sample.json (cngxVersion 0.1.0-rc.6),
 // read through the cli's own core copy. `--version` is read from
@@ -8,8 +8,8 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import type { CliIo } from './cli-adapter.js';
-import { EXIT_NOT_FOUND, EXIT_OK, EXIT_USAGE, commandHelp, generalHelp, main, runCli } from './cli-adapter.js';
-import type { CommandContext } from './core/registry.js';
+import { EXIT_INTERNAL, EXIT_NOT_FOUND, EXIT_OK, EXIT_USAGE, commandHelp, generalHelp, main, runCli } from './cli-adapter.js';
+import type { CngxCommand, CommandContext } from './core/registry.js';
 import { COMMANDS } from './core/registry.js';
 import type { DocsResolverDeps } from './core/data/docs-resolver.js';
 import { createDocsResolver } from './core/data/docs-resolver.js';
@@ -247,6 +247,72 @@ describe('version and snapshot resolution', () => {
     expect(await runCli(['api', 'CngxSelect'], env)).toBe(EXIT_NOT_FOUND);
     expect(stderr).toContain('ENOENT');
     expect(await runCli(['--version'], env)).toBe(EXIT_OK);
+  });
+});
+
+describe('argument scan', () => {
+  it('skips the value of a value flag given before the command', async () => {
+    const run = await cli('--cngx-version', '0.1.0-rc.6', 'api', 'CngxSelect');
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(run.stdout).toContain('# CngxSelect');
+  });
+
+  it('skips --format and its value before the command', async () => {
+    const run = await cli('--format', 'json', 'api', 'CngxSelect');
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(JSON.parse(run.stdout)).toMatchObject({ result: { name: 'CngxSelect' } });
+  });
+
+  it('exits 2 on a --cngx-version that is not a release version, before any resolution', async () => {
+    const run = await cli('api', 'CngxSelect', '--cngx-version=../x');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toContain('--cngx-version');
+    expect(run.stderr).not.toContain('asset-missing');
+  });
+});
+
+describe('internal errors', () => {
+  const api = COMMANDS.find((def) => def.cliName === 'api')!;
+
+  async function cliWith(def: CngxCommand, ...argv: string[]): Promise<Run> {
+    let stdout = '';
+    let stderr = '';
+    const io: CliIo = { stdout: (text) => (stdout += text), stderr: (text) => (stderr += text) };
+    const context: CommandContext = { bundled, resolve: createDocsResolver(bundled, offlineDeps) };
+    const code = await runCli(argv, { commands: [def], loadContext: () => context, cliVersion: CLI_VERSION, io });
+    return { code, stdout, stderr };
+  }
+
+  const boom = () => {
+    throw new Error('boom');
+  };
+
+  it.each([
+    ['run', { ...api, run: async () => boom() }],
+    ['toMarkdown', { ...api, toMarkdown: boom }],
+    ['found', { ...api, found: boom }],
+  ] as const)('a throwing %s gives one stderr line, no stack, exit 3 and no stdout', async (_, def) => {
+    const run = await cliWith(def as CngxCommand, 'api', 'CngxSelect');
+
+    expect(run.code).toBe(EXIT_INTERNAL);
+    expect(run.stderr).toBe('cngx api: internal error: boom\n');
+    expect(run.stdout).toBe('');
+  });
+
+  it('exits 3 when the package manifest cannot be read', async () => {
+    let stderr = '';
+    const io: CliIo = { stdout: () => undefined, stderr: (text) => (stderr += text) };
+    const missing = new URL('./no-such-dir/package.json', import.meta.url);
+
+    const code = await main(['api', 'CngxSelect'], { dataDir: new URL('../data/', import.meta.url), packageJson: missing }, io);
+
+    expect(code).toBe(EXIT_INTERNAL);
+    expect(stderr).toMatch(/^cngx: internal error: ENOENT/);
+    expect(stderr.trim().split('\n')).toHaveLength(1);
   });
 });
 

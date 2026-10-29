@@ -70,7 +70,8 @@ stdout carries the answer only; diagnostics go to stderr.
 |-|-|
 |`0`|Answered.|
 |`1`|The query ran but found nothing, or the requested release snapshot could not be resolved.|
-|`2`|Usage error: unknown command or flag, invalid input, an empty `--cngx-version`, or `--cngx-version` on a command that has no version.|
+|`2`|Usage error: unknown command or flag, invalid input, an empty or malformed `--cngx-version`, or `--cngx-version` on a command that has no version.|
+|`3`|Internal error: a command, its rendering or the start-up threw. One `internal error` line on stderr, no stack, nothing on stdout.|
 
 ## License
 

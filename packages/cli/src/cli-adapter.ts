@@ -5,8 +5,11 @@
 // renders the payload. There is no per-command code here.
 //
 // Exit codes: 0 answered; 1 the query ran and found nothing, or a snapshot could
-// not be resolved; 2 usage error (unknown command or flag, invalid input).
+// not be resolved; 2 usage error (unknown command or flag, invalid input); 3
+// internal error (a throw in a command, its rendering or the bootstrap).
 // stdout carries data only, stderr diagnostics only; neither is ever coloured.
+// The answer is rendered into one string before anything is written, so a run
+// that fails never leaves part of an answer on stdout.
 
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -16,11 +19,13 @@ import { z } from 'zod';
 import type { CngxCommand, CommandContext } from './core/registry.js';
 import { COMMANDS, isFound, unwrapAnswer } from './core/registry.js';
 import { createDocsResolver } from './core/data/docs-resolver.js';
+import { isReleaseVersion } from './core/diff/snapshot-fetch.js';
 import { loadBundledDocs } from './core/data/loader.js';
 
 export const EXIT_OK = 0;
 export const EXIT_NOT_FOUND = 1;
 export const EXIT_USAGE = 2;
+export const EXIT_INTERNAL = 3;
 
 export const FORMATS = ['md', 'json'] as const;
 export type OutputFormat = (typeof FORMATS)[number];
@@ -51,6 +56,12 @@ const GLOBAL_OPTIONS: Options = {
 const usageError = (io: CliIo, message: string, hint: string): number => {
   io.stderr(`cngx: ${message}\n${hint}\n`);
   return EXIT_USAGE;
+};
+
+/** One stderr line for a throw nobody expected; the message only, never the stack. */
+const internalError = (io: CliIo, prefix: string, error: unknown): number => {
+  io.stderr(`${prefix}: internal error: ${errorMessage(error)}\n`);
+  return EXIT_INTERNAL;
 };
 
 /** The flag name of an input field: its `cliFlags` rename, else the field name in kebab case. */
@@ -132,17 +143,34 @@ export function generalHelp(commands: readonly CngxCommand[], cliVersion: string
     '  --version, -v     Print the @cngx/cli version.',
     '  --help, -h        Show this help; after a command, that command\'s help.',
     '',
-    'Exit codes: 0 answered, 1 nothing found or the snapshot could not be resolved, 2 usage error.',
+    'Exit codes: 0 answered, 1 nothing found or the snapshot could not be resolved, 2 usage error, 3 internal error.',
     'Run `cngx <command> --help` for a command\'s arguments.',
     '',
   ].join('\n');
 }
 
+/**
+ * Every flag that takes a separate value, across the globals and all commands. A
+ * value flag given before the command name (`cngx --cngx-version 0.1.0 api X`)
+ * has its value skipped through this set, so a new value flag needs no scan edit.
+ */
+function valueFlags(commands: readonly CngxCommand[]): ReadonlySet<string> {
+  const flags = new Set<string>();
+  for (const options of [GLOBAL_OPTIONS, ...commands.map(commandOptions)]) {
+    for (const [name, option] of Object.entries(options)) {
+      if (option.type === 'string') {
+        flags.add(`--${name}`);
+      }
+    }
+  }
+  return flags;
+}
+
 /** The index of the command token: the first argument that is neither a flag nor a flag's separate value. */
-function commandIndex(argv: readonly string[]): number {
+function commandIndex(argv: readonly string[], takesValue: ReadonlySet<string>): number {
   for (let i = 0; i < argv.length; i++) {
     const token = argv[i];
-    if (token === '--format') {
+    if (takesValue.has(token)) {
       i++;
       continue;
     }
@@ -165,7 +193,7 @@ function parseFormat(value: unknown): OutputFormat | null {
 /** Run one invocation and return its exit code. Never throws for user input. */
 export async function runCli(argv: readonly string[], env: CliEnv): Promise<number> {
   const { commands, io } = env;
-  const at = commandIndex(argv);
+  const at = commandIndex(argv, valueFlags(commands));
 
   if (at === -1) {
     let parsed;
@@ -222,8 +250,12 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
     return usageError(io, `--format must be one of ${FORMATS.join(', ')}.`, hint);
   }
 
-  if (values['cngx-version'] === '') {
+  const pinned = values['cngx-version'];
+  if (pinned === '') {
     return usageError(io, '--cngx-version needs a version, e.g. --cngx-version=0.1.0.', hint);
+  }
+  if (typeof pinned === 'string' && !isReleaseVersion(pinned)) {
+    return usageError(io, `--cngx-version must be a release version like 0.1.0 or 0.2.0-rc.1, got "${pinned}".`, hint);
   }
 
   const maxPositionals = def.positional === undefined ? 0 : 1;
@@ -263,28 +295,44 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
     return EXIT_NOT_FOUND;
   }
 
-  let answer;
+  let rendered: Rendered;
   try {
-    answer = unwrapAnswer(await def.run(context, validated.data as never));
+    rendered = await answer(def, context, validated.data, format);
   } catch (error) {
-    io.stderr(`cngx ${def.cliName}: ${errorMessage(error)}\n`);
-    return EXIT_NOT_FOUND;
+    return internalError(io, `cngx ${def.cliName}`, error);
   }
-  if (!answer.ok) {
-    io.stderr(`cngx ${def.cliName}: ${answer.reason}: ${answer.message}\n`);
-    return EXIT_NOT_FOUND;
+  if (rendered.stderr !== '') {
+    io.stderr(rendered.stderr);
+  }
+  if (rendered.stdout !== '') {
+    io.stdout(rendered.stdout);
+  }
+  return rendered.exitCode;
+}
+
+/** A finished run, rendered but not yet written. */
+interface Rendered {
+  readonly stdout: string;
+  readonly stderr: string;
+  readonly exitCode: number;
+}
+
+/** Run `def` and render its answer; any throw here is an internal error of the caller's. */
+async function answer(def: CngxCommand, context: CommandContext, input: unknown, format: OutputFormat): Promise<Rendered> {
+  const result = unwrapAnswer(await def.run(context, input as never));
+  if (!result.ok) {
+    return { stdout: '', stderr: `cngx ${def.cliName}: ${result.reason}: ${result.message}\n`, exitCode: EXIT_NOT_FOUND };
   }
 
   // Versioned commands report the release they grounded against, a migration its
   // target; the others answer from the bundled snapshot.
   const cngxVersion =
-    answer.groundedVersion ?? def.answeredVersion?.(answer.payload) ?? context.bundled.meta.cngxVersion;
-  const output =
+    result.groundedVersion ?? def.answeredVersion?.(result.payload) ?? context.bundled.meta.cngxVersion;
+  const stdout =
     format === 'json'
-      ? `${JSON.stringify({ cngxVersion, result: answer.payload ?? null }, null, 2)}\n`
-      : `> cngx ${cngxVersion ?? 'unknown'}\n\n${def.toMarkdown(answer.payload, {})}`;
-  io.stdout(output);
-  return isFound(def, answer.payload) ? EXIT_OK : EXIT_NOT_FOUND;
+      ? `${JSON.stringify({ cngxVersion, result: result.payload ?? null }, null, 2)}\n`
+      : `> cngx ${cngxVersion ?? 'unknown'}\n\n${def.toMarkdown(result.payload, {})}`;
+  return { stdout, stderr: '', exitCode: isFound(def, result.payload) ? EXIT_OK : EXIT_NOT_FOUND };
 }
 
 /** Package-relative locations the entry module resolves against its own URL. */
@@ -297,7 +345,12 @@ export interface EntryPaths {
 
 /** Load the bundled snapshot and run `argv` against the full registry. */
 export async function main(argv: readonly string[], paths: EntryPaths, io: CliIo): Promise<number> {
-  const cliVersion = (JSON.parse(readFileSync(paths.packageJson, 'utf8')) as { version: string }).version;
+  let cliVersion: string;
+  try {
+    cliVersion = (JSON.parse(readFileSync(paths.packageJson, 'utf8')) as { version: string }).version;
+  } catch (error) {
+    return internalError(io, 'cngx', error);
+  }
   const loadContext = (): CommandContext => {
     const bundled = loadBundledDocs(fileURLToPath(paths.dataDir));
     return { bundled, resolve: createDocsResolver(bundled) };
