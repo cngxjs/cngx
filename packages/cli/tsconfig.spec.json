@@ -4,7 +4,8 @@
     "noEmit": true,
     "declaration": false,
     "declarationMap": false,
-    "sourceMap": false
+    "sourceMap": false,
+    "rootDir": "../.."
   },
   "include": ["src/**/*.ts"],
   "exclude": ["dist", "node_modules"]

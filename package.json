@@ -64,7 +64,7 @@
     "test:scripts": "vitest run --config scripts/vitest.config.mjs",
     "test:eslint-plugin": "vitest run --config packages/eslint-plugin/vitest.config.mjs",
     "test:mcp": "vitest run --config packages/mcp/vitest.config.mjs",
-    "test:cli": "vitest run --config packages/cli/vitest.config.mjs",
+    "test:cli": "vitest run --config packages/cli/vitest.config.mjs && vitest run --config packages/cli/vitest.core.config.mjs",
     "test:plugin": "vitest run --config packages/plugin/vitest.config.mjs",
     "test:doctor": "vitest run --config packages/doctor/vitest.config.mjs",
     "doctor:copy-check": "node scripts/doctor-copy-check.mjs",
