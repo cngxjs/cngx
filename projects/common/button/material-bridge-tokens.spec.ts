@@ -56,6 +56,8 @@ const CONSUMED = [
   '--cngx-button-secondary-bg-hover',
   '--cngx-button-secondary-bg-pressed',
   '--cngx-button-secondary-color',
+  '--cngx-button-tone',
+  '--cngx-button-tone-text',
   '--cngx-close-button-color',
   '--cngx-close-button-hover-bg',
   '--cngx-close-button-icon-size',
@@ -208,6 +210,13 @@ describe('button Material bridge', () => {
     const m2 = compileThemeEntry(M2_ENTRY);
     expect(m2).not.toContain('cngx-split-button');
     expect(m2).not.toContain('cngx-menu-button');
+  });
+
+  it('inks neutral outline and ghost labels primary and neutral icon buttons on-surface-variant in M3 only', () => {
+    const m3 = flat(compileThemeEntry(M3_ENTRY));
+    expect(m3).toContain('--cngx-button-tone-text: var(--mat-sys-primary)');
+    expect(m3).toContain('--cngx-button-tone-text: var(--mat-sys-on-surface-variant)');
+    expect(compileThemeEntry(M2_ENTRY)).not.toContain('--cngx-button-tone');
   });
 
   it('keeps the close-button tokens the old close-button bridge set', () => {

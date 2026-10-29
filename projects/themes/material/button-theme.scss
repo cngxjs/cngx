@@ -160,6 +160,30 @@ $_inner-radius: 'var(--mat-sys-corner-extra-small, 4px)';
     @include bridge.on(".cngx-button[data-variant='secondary'][data-tone='danger']") {
       @include _tonal(error-container, on-error-container);
     }
+    // Neutral outline and ghost labels are primary ink, as on
+    // mat-stroked-button and mat-button; the hover and press wash follows the
+    // tone. The sheet SETs both tone tokens in `@scope (.cngx-button) :scope`,
+    // so these rules carry real specificity inside the layer (shape()
+    // precedent). A segment of a split button reads as one button, so its
+    // icon caret takes the label ink too.
+    @layer cngx.components {
+      .cngx-button:is([data-variant='outline'], [data-variant='ghost'])[data-tone='neutral']:not(
+          .cngx-icon-button,
+          .cngx-close-button
+        ),
+      #{$_split} > .cngx-icon-button:is([data-variant='outline'], [data-variant='ghost'])[data-tone='neutral'] {
+        --cngx-button-tone: var(--mat-sys-primary);
+        --cngx-button-tone-text: var(--mat-sys-primary);
+      }
+      // A standalone neutral icon button is the M3 standard / outlined icon
+      // button: on-surface-variant glyph.
+      .cngx-icon-button.cngx-button:is([data-variant='outline'], [data-variant='ghost'])[data-tone='neutral']:not(
+          #{$_split} > *
+        ) {
+        --cngx-button-tone: var(--mat-sys-on-surface-variant);
+        --cngx-button-tone-text: var(--mat-sys-on-surface-variant);
+      }
+    }
     @include bridge.on('.cngx-close-button') {
       --cngx-close-button-hover-bg: color-mix(
         in srgb,
