@@ -141,6 +141,7 @@ export const getApiCommand = defineCommand({
   input: {
     name: z
       .string()
+      .min(1)
       .describe('A component/directive/service class name or selector, e.g. "CngxSelect" or "cngx-select".'),
     version: versionInput,
   },

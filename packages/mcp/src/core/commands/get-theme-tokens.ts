@@ -69,7 +69,7 @@ export const getThemeTokensCommand = defineCommand({
     'none. Returns null when the name resolves to nothing. For DI tokens, use get_di_tokens.',
   cliName: 'theme',
   input: {
-    name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect".'),
+    name: z.string().min(1).describe('A component/directive class name or selector, e.g. "CngxSelect".'),
     version: versionInput,
   },
   positional: 'name',

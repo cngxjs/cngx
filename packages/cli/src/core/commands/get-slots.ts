@@ -56,7 +56,7 @@ export const getSlotsCommand = defineCommand({
     'no overridable slots. Returns null when the name resolves to nothing.',
   cliName: 'slots',
   input: {
-    name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect".'),
+    name: z.string().min(1).describe('A component/directive class name or selector, e.g. "CngxSelect".'),
     version: versionInput,
   },
   positional: 'name',

@@ -6,6 +6,7 @@
 // `--cngx-version` flag come from the plan's locked command list.
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import type { CngxCommand, CommandContext } from '../registry.js';
 import { COMMANDS, defaultFound, isFound, unwrapAnswer } from '../registry.js';
 import { createDocsResolver } from '../data/docs-resolver.js';
@@ -68,6 +69,15 @@ describe('command definitions carry their CLI surface', () => {
     for (const def of COMMANDS) {
       expect('version' in def.input).toBe(VERSIONED.includes(def.cliName));
     }
+  });
+
+  const NAMED = ['find', 'api', 'slots', 'theme', 'config', 'example'];
+
+  it.each(NAMED)('%s rejects an empty name through its schema', (cliName) => {
+    const def = COMMANDS.find((command) => command.cliName === cliName)!;
+
+    expect(z.object(def.input).safeParse({ [def.positional!]: '' }).success).toBe(false);
+    expect(z.object(def.input).safeParse({ [def.positional!]: 'x' }).success).toBe(true);
   });
 });
 

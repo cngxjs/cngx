@@ -124,6 +124,14 @@ describe('usage errors', () => {
     expect(run.stderr).toContain('--kind');
   });
 
+  it('rejects an empty name', async () => {
+    const run = await cli('api', '');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toContain('<name>');
+  });
+
   it('rejects a missing required positional', async () => {
     const run = await cli('api');
 

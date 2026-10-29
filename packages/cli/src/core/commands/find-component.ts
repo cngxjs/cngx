@@ -53,7 +53,7 @@ export const findComponentCommand = defineCommand({
     'point for get_api, get_slots, get_theme_tokens, get_di_tokens, and get_story_example.',
   cliName: 'find',
   input: {
-    query: z.string().describe('A name, selector, or category fragment, e.g. "select" or "cngx-chip".'),
+    query: z.string().min(1).describe('A name, selector, or category fragment, e.g. "select" or "cngx-chip".'),
     version: versionInput,
   },
   positional: 'query',

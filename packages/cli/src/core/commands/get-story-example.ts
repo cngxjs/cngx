@@ -70,7 +70,7 @@ export const getStoryExampleCommand = defineCommand({
     'links. Returns null when the name resolves to nothing.',
   cliName: 'example',
   input: {
-    name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect".'),
+    name: z.string().min(1).describe('A component/directive class name or selector, e.g. "CngxSelect".'),
   },
   positional: 'name',
   run: (ctx, { name }) => getStoryExample(ctx.bundled, name),
