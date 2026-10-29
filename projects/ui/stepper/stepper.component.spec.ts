@@ -16,6 +16,7 @@ import { createResizeObserverMock, stripBidiIsolates } from '@cngx/testing';
 import {
   CngxStep,
   CngxStepGroup,
+  CngxStepIndicator,
   CngxDotStepperDot,
   type CngxDotStepperDotContext,
   type CngxStepperCommitAction,
@@ -35,7 +36,12 @@ import {
   withStepperSkin,
   type CngxStepperI18nOverrides,
 } from '@cngx/common/stepper';
-import { CNGX_ICON_ALERT, CNGX_ICON_BAN } from '@cngx/utils';
+import {
+  CNGX_ICON_ALERT,
+  CNGX_ICON_BAN,
+  CNGX_ICON_CHECK,
+  CNGX_ICON_EXCLAMATION,
+} from '@cngx/utils';
 
 import { CngxStepper } from './stepper.component';
 
@@ -70,7 +76,9 @@ class DotSlotHost {}
 
 @Component({
   standalone: true,
-  template: `<ng-template #dot let-index><i class="config-dot">{{ index }}</i></ng-template>`,
+  template: `<ng-template #dot let-index
+    ><i class="config-dot">{{ index }}</i></ng-template
+  >`,
 })
 class DotTemplateFactory {
   @ViewChild('dot', { static: true }) dot!: TemplateRef<CngxDotStepperDotContext>;
@@ -1357,7 +1365,9 @@ describe('CngxStepper organism', () => {
       const icon = buttons[1].querySelector('.cngx-stepper__rejection-icon') as HTMLElement | null;
       expect(icon).not.toBeNull();
       // `() => false` refuses: the refused glyph, hooked by data-reason.
-      expect(icon!.querySelector('svg.cngx-icon-svg path')?.getAttribute('d')).toBe(CNGX_ICON_BAN.d);
+      expect(icon!.querySelector('svg.cngx-icon-svg path')?.getAttribute('d')).toBe(
+        CNGX_ICON_BAN.d,
+      );
       expect(icon!.getAttribute('data-reason')).toBe('refused');
       expect(icon!.getAttribute('aria-hidden')).toBe('true');
       expect(buttons[1].getAttribute('data-reason')).toBe('refused');
@@ -1379,7 +1389,9 @@ describe('CngxStepper organism', () => {
       buttons[1].click();
       fixture.detectChanges();
       const icon = buttons[1].querySelector('.cngx-stepper__rejection-icon') as HTMLElement;
-      expect(icon.querySelector('svg.cngx-icon-svg path')?.getAttribute('d')).toBe(CNGX_ICON_ALERT.d);
+      expect(icon.querySelector('svg.cngx-icon-svg path')?.getAttribute('d')).toBe(
+        CNGX_ICON_ALERT.d,
+      );
       expect(icon.getAttribute('data-reason')).toBe('failed');
       expect(buttons[1].getAttribute('data-reason')).toBe('failed');
       expect(buttons[1].classList.contains('cngx-stepper__step--rejected')).toBe(true);
@@ -2315,6 +2327,152 @@ describe('CngxStepper glyph status text', () => {
   });
 });
 
+describe('CngxStepper check and dot icons', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxStepper, CngxStep],
+    template: `
+      <cngx-stepper aria-label="Wizard" [activeStepIndex]="1">
+        <div cngxStep label="Account" [completed]="true"></div>
+        <div cngxStep label="Payment" [completed]="true"></div>
+        <div cngxStep label="Review" [error]="true"></div>
+      </cngx-stepper>
+    `,
+  })
+  class CheckHost {}
+
+  @Component({
+    standalone: true,
+    imports: [CngxStepper, CngxStep, CngxStepIndicator],
+    template: `
+      <cngx-stepper aria-label="Wizard">
+        <ng-template cngxStepIndicator let-position
+          ><b class="own-indicator">{{ position }}</b></ng-template
+        >
+        <div cngxStep label="Account" [completed]="true"></div>
+        <div cngxStep label="Payment"></div>
+      </cngx-stepper>
+    `,
+  })
+  class SlotHost {}
+
+  @Component({
+    standalone: true,
+    imports: [CngxStepper, CngxStep],
+    template: `
+      <cngx-stepper aria-label="Wizard" [commitAction]="refuse" commitMode="optimistic">
+        <div cngxStep label="Account"></div>
+        <div cngxStep label="Payment"></div>
+      </cngx-stepper>
+    `,
+  })
+  class RefuseHost {
+    readonly refuse: CngxStepperCommitAction = () => false;
+  }
+
+  function mount<T>(host: new () => T, providers: unknown[] = []) {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), ...(providers as never[])],
+    });
+    const fixture = TestBed.createComponent(host);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  const steps = (root: HTMLElement): HTMLButtonElement[] =>
+    Array.from(root.querySelectorAll('button.cngx-stepper__step'));
+
+  it('draws the check icon in the default indicator of a completed step only', () => {
+    const [account, payment, review] = steps(mount(CheckHost).nativeElement);
+    const check = account.querySelector(
+      '.cngx-stepper__indicator > svg.cngx-stepper__indicator-check',
+    );
+    expect(check?.querySelector('path')?.getAttribute('d')).toBe(CNGX_ICON_CHECK.d);
+    expect(check?.getAttribute('aria-hidden')).toBe('true');
+    // The active step is completed too, and keeps the number hidden by CSS.
+    expect(payment.querySelector('.cngx-stepper__indicator-check')).not.toBeNull();
+    expect(review.querySelector('.cngx-stepper__indicator-check')).toBeNull();
+    // Icons add no text: the header text stays number plus label.
+    expect(account.querySelector('.cngx-stepper__indicator')?.textContent?.trim()).toBe('1');
+  });
+
+  it('follows the label of a completed step with an aria-hidden check for the label-only skins', () => {
+    const [account, , review] = steps(mount(CheckHost).nativeElement);
+    const done = account.querySelector(':scope > .cngx-stepper__done-icon');
+    expect(done?.getAttribute('aria-hidden')).toBe('true');
+    expect(done?.previousElementSibling?.classList.contains('cngx-stepper__label')).toBe(true);
+    expect(done?.querySelector('svg path')?.getAttribute('d')).toBe(CNGX_ICON_CHECK.d);
+    expect(review.querySelector('.cngx-stepper__done-icon')).toBeNull();
+  });
+
+  it('a consumer *cngxStepIndicator slot replaces the default check', () => {
+    const [account] = steps(mount(SlotHost).nativeElement);
+    expect(account.querySelector('.own-indicator')?.textContent).toBe('1');
+    expect(account.querySelector('.cngx-stepper__indicator-check')).toBeNull();
+  });
+
+  describe('mobile dots', () => {
+    // Same collapse seams as 'mobile-collapse a11y ids': a sized observer
+    // entry and the --cngx-stepper-collapse read happy-dom cannot resolve.
+    beforeEach(() => {
+      vi.stubGlobal(
+        'ResizeObserver',
+        class {
+          constructor(private readonly cb: ResizeObserverCallback) {}
+          observe(target: Element) {
+            this.cb(
+              [
+                {
+                  target,
+                  contentRect: { width: 320 } as DOMRectReadOnly,
+                  borderBoxSize: [{ inlineSize: 320, blockSize: 40 }],
+                } as unknown as ResizeObserverEntry,
+              ],
+              null!,
+            );
+          }
+          unobserve() {}
+          disconnect() {}
+        } as unknown as typeof ResizeObserver,
+      );
+      vi.spyOn(window, 'getComputedStyle').mockImplementation(
+        (_el: Element, pseudo?: string | null) =>
+          ({
+            getPropertyValue: (name: string) =>
+              pseudo === '::after' && name === '--cngx-stepper-collapse' ? '1' : '',
+          }) as unknown as CSSStyleDeclaration,
+      );
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+      vi.unstubAllGlobals();
+    });
+
+    it('marks an errored mobile dot with the exclamation icon', () => {
+      const fixture = mount(CheckHost, [provideStepperConfig(withStepperMobileCollapse('dots'))]);
+      const dots = Array.from(
+        fixture.nativeElement.querySelectorAll('button.cngx-stepper__mobile-dot'),
+      ) as HTMLButtonElement[];
+      expect(dots[0].querySelector('.cngx-stepper__mobile-dot-glyph')).toBeNull();
+      const glyph = dots[2].querySelector('svg.cngx-stepper__mobile-dot-glyph');
+      expect(glyph?.getAttribute('aria-hidden')).toBe('true');
+      expect(glyph?.querySelector('path')?.getAttribute('d')).toBe(CNGX_ICON_EXCLAMATION.d);
+    });
+
+    it('marks a refused mobile dot with the ban icon', () => {
+      const fixture = mount(RefuseHost, [provideStepperConfig(withStepperMobileCollapse('dots'))]);
+      const dots = (): HTMLButtonElement[] =>
+        Array.from(fixture.nativeElement.querySelectorAll('button.cngx-stepper__mobile-dot'));
+      dots()[1].click();
+      fixture.detectChanges();
+      expect(dots()[1].getAttribute('data-reason')).toBe('refused');
+      const glyph = dots()[1].querySelector('svg.cngx-stepper__mobile-dot-glyph');
+      expect(glyph?.querySelector('path')?.getAttribute('d')).toBe(CNGX_ICON_BAN.d);
+    });
+  });
+});
+
 describe('CngxStepper config copy switch', () => {
   @Component({
     standalone: true,
@@ -2396,7 +2554,9 @@ describe('CngxStepper commit rejection tone (source CSS)', () => {
     expect(css).toMatch(
       /\.cngx-stepper__mobile-dot\[data-state='error'\]\[data-reason='refused'\]\s*\{\s*background: var\(--cngx-step-refused-color, oklch\(0\.62 0\.15 60\)\)/,
     );
-    expect(css).toContain("content: var(--cngx-dot-step-refused-glyph, '\\2298') / '';");
+    // The dot marks are icons now, no text glyph tokens.
+    expect(css).not.toContain('--cngx-dot-step-refused-glyph');
+    expect(css).not.toContain('--cngx-dot-step-error-glyph,');
     expect(css).toMatch(
       /\.cngx-stepper__indicator\[data-state='error'\] \{\s*[^}]*var\(--cngx-step-errored-color/,
     );

@@ -57,15 +57,7 @@ export const EXCLUDED = [];
  *
  * @type {readonly { file: string; selector: string; element: string; note: string }[]}
  */
-export const ARIA_HIDDEN_GLYPHS = [
-  {
-    file: 'projects/ui/stepper/stepper.component.css',
-    selector:
-      ".cngx-stepper__indicator[data-state='success']:has(.cngx-stepper__indicator-glyph)::before",
-    element: 'span.cngx-stepper__indicator[aria-hidden="true"] (stepper.component.html)',
-    note: 'completed-step check mark; the step state is spoken by the step status text',
-  },
-];
+export const ARIA_HIDDEN_GLYPHS = [];
 
 /**
  * The only `localeCompare` call sites the locale-source guard accepts. Empty:

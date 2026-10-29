@@ -43,6 +43,17 @@
   }
 
   /**
+   * Diameter of a dot that carries an error or refused mark. Larger than
+   * `--cngx-dot-step-size`, so the mark inside stays legible.
+   * @group Layout
+   */
+  @property --cngx-dot-step-marked-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1rem;
+  }
+
+  /**
    * Gap between adjacent dots in the row.
    * @group Layout
    */
@@ -160,6 +171,11 @@
   transform: scale(1.25);
 }
 
+.cngx-dot-stepper__dot--error {
+  width: var(--cngx-dot-step-marked-size, 1rem);
+  height: var(--cngx-dot-step-marked-size, 1rem);
+}
+
 .cngx-dot-stepper__dot[data-state='error'] {
   background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
 }
@@ -171,26 +187,44 @@
   background: var(--cngx-step-refused-color, oklch(0.62 0.15 60));
 }
 
-/* Non-color error cue (WCAG 1.4.1): a glyph centred over the errored dot,
-   so the error never relies on the red fill alone. A pseudo-element keeps
-   the dot `:empty`, so the consumer-slot chrome-strip rule below and the
-   default circle are both untouched. Sits above consumer slot art too. */
-.cngx-dot-stepper__dot--error::after {
-  content: var(--cngx-dot-step-error-glyph, '!') / '';
-  position: absolute;
-  inset: 0;
-  display: grid;
+/* Non-color error cue (WCAG 1.4.1): an icon centred over the errored dot,
+   so the error never relies on the red fill alone; a refused dot takes the
+   ban icon, so it never differs from an error by colour alone. The icon is
+   the dot's sibling in a one-cell grid, which keeps the dot `:empty` for the
+   consumer-slot chrome-strip rule below. Sits above consumer slot art too. */
+.cngx-dot-stepper__cell {
+  display: inline-grid;
   place-items: center;
-  font-size: var(--cngx-dot-step-error-glyph-size, 0.5rem);
-  font-weight: 700;
-  line-height: 1;
-  color: var(--cngx-dot-step-error-glyph-color, var(--cngx-color-on-danger, white));
 }
 
-/* The refused dot carries its own glyph, so it never differs from an error
-   by colour alone (WCAG 1.4.1). */
-.cngx-dot-stepper__dot--error[data-reason='refused']::after {
-  content: var(--cngx-dot-step-refused-glyph, '\2298') / '';
+.cngx-dot-stepper__cell > * {
+  grid-area: 1 / 1;
+}
+
+.cngx-dot-stepper__dot-glyph {
+  /* Sized in em of the glyph font (0.75rem): the exclamation mark spans 18 grid
+     units with its stroke, so the 1em box draws it 0.75em tall; the ban ring
+     (22.5 units) draws 0.8em wide. Both keep a rim of the dot fill around them,
+     and stroke width 3 keeps about a pixel at this size. A triangle or a ring
+     inside the round dot would crowd its edge. */
+  --cngx-icon-svg-size: 1em;
+  --cngx-icon-svg-stroke-width: 3;
+  /* Positioned like the dot, so the later icon paints over it. */
+  position: relative;
+  display: block;
+  pointer-events: none;
+  font-size: var(--cngx-dot-step-error-glyph-size, 0.75rem);
+  color: var(--cngx-dot-step-error-glyph-color, var(--cngx-color-on-danger, white));
+  transition: transform var(--cngx-duration-fast, 150ms) ease-out;
+}
+
+.cngx-dot-stepper__dot[data-reason='refused'] + .cngx-dot-stepper__dot-glyph {
+  --cngx-icon-svg-size: calc(0.8em * 24 / 22.5);
+}
+
+/* The active dot grows; its icon grows with it. */
+.cngx-dot-stepper__dot--active + .cngx-dot-stepper__dot-glyph {
+  transform: scale(1.25);
 }
 
 /* Consumer-owned dot body via `*cngxDotStepperDot` slot - the span shell
@@ -237,7 +271,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cngx-dot-stepper__dot {
+  .cngx-dot-stepper__dot,
+  .cngx-dot-stepper__dot-glyph {
     transition: none;
   }
 }
@@ -245,30 +280,39 @@
 /* forced-colors (WHCM): every default dot is a background-only circle and
  * flattens into Canvas, the current and completed ones with it. Mirror the
  * stepper mobile dots: each dot opts out and draws an inset CanvasText ring,
- * a completed dot fills CanvasText, the active dot fills Highlight. Each dot
- * declares the ink its error glyph (::after) follows, so the glyph stays
- * readable on all three fills. :empty skips consumer-slot dots, which keep
- * their own art. */
+ * a completed dot fills CanvasText, the active dot fills Highlight. The error
+ * icon next to each dot opts out too and takes the ink of that fill, so it
+ * stays readable on all three. :empty skips consumer-slot dots, which keep
+ * their own art; their icon follows the forced text colour. */
 @media (forced-colors: active) {
   .cngx-dot-stepper .cngx-dot-stepper__dot:empty {
-    --_cngx-forced-ink: CanvasText;
     forced-color-adjust: none;
     background: Canvas;
     box-shadow: inset 0 0 0 1px CanvasText;
   }
 
   .cngx-dot-stepper .cngx-dot-stepper__dot--completed:empty {
-    --_cngx-forced-ink: Canvas;
     background: CanvasText;
   }
 
   .cngx-dot-stepper .cngx-dot-stepper__dot--active:empty {
-    --_cngx-forced-ink: HighlightText;
     background: Highlight;
     box-shadow: none;
   }
 
-  .cngx-dot-stepper__dot--error::after {
-    color: var(--_cngx-forced-ink, CanvasText);
+  .cngx-dot-stepper__dot-glyph {
+    color: CanvasText;
+  }
+
+  .cngx-dot-stepper__dot:empty + .cngx-dot-stepper__dot-glyph {
+    forced-color-adjust: none;
+  }
+
+  .cngx-dot-stepper__dot--completed:empty + .cngx-dot-stepper__dot-glyph {
+    color: Canvas;
+  }
+
+  .cngx-dot-stepper__dot--active:empty + .cngx-dot-stepper__dot-glyph {
+    color: HighlightText;
   }
 }

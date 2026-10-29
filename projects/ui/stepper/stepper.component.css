@@ -336,22 +336,37 @@
       color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
     }
 
-    /* Replace the default number glyph with a check on completed steps so
-       active and completed stay distinct even when both states happen to
-       share a hue under a custom theme. The :has(.indicator-glyph) guard
-       scopes the ::before checkmark to the *default* indicator template
-       only - a consumer-provided `*cngxStepIndicator` slot renders its
-       own glyph (no `.indicator-glyph` span), so :has() returns false
-       and the library checkmark stays suppressed. Otherwise the consumer
-       SVG and the library checkmark stack on top of each other on
-       completed steps. */
-    .cngx-stepper__indicator[data-state='success']:has(.cngx-stepper__indicator-glyph)::before {
-      content: '\2713';
-      font-weight: 700;
+    /* Completed steps swap the number for a check so active and completed
+       stay distinct even when both states happen to share a hue under a
+       custom theme. The check is part of the *default* indicator template
+       only - a consumer-provided `*cngxStepIndicator` slot replaces it with
+       its own art, so the two never stack. Sized to the ink width of the
+       old bold text check (0.72em), drawn 17 grid units wide with its
+       heavier stroke. */
+    .cngx-stepper__indicator-check {
+      --cngx-icon-svg-size: calc(0.72em * 24 / 17);
+      --cngx-icon-svg-stroke-width: 3;
+      display: block;
     }
 
     .cngx-stepper__indicator[data-state='success'] .cngx-stepper__indicator-glyph {
       display: none;
+    }
+
+    /* Check after the label of a completed step. Only the label-only skins
+       show it (chips leads with it, breadcrumb trails it); every other skin
+       keeps the check in the indicator disc. */
+    .cngx-stepper__done-icon {
+      display: none;
+      flex: none;
+    }
+
+    .cngx-stepper__done-icon > .cngx-icon-svg {
+      /* The ink width of the old text check, 0.7em, drawn 16.5 grid units
+         wide with its stroke. */
+      --cngx-icon-svg-size: calc(0.7em * 24 / 16.5);
+      --cngx-icon-svg-stroke-width: 2.5;
+      display: block;
     }
 
     .cngx-stepper__indicator[data-state='error'] {
@@ -927,8 +942,8 @@
       );
     }
 
-    .cngx-stepper__indicator[data-state='success']::before {
-      content: none;
+    .cngx-stepper__indicator-check {
+      display: none;
     }
 
     /* Errored step: filled danger dot. The alert icon after the label is
@@ -1713,7 +1728,7 @@
     }
 
     /* Completed steps lift to a green label on a soft green tint, with a
-       leading check glyph. The :not(aria-current) guard keeps the active
+       leading check icon. The :not(aria-current) guard keeps the active
        fill winning when a completed step is navigated back to. */
     .cngx-stepper__step:not([aria-current='step']):has(
         .cngx-stepper__indicator[data-state='success']
@@ -1725,13 +1740,9 @@
       color: var(--cngx-step-chips-color-completed, var(--cngx-color-success, oklch(0.5 0.15 145)));
     }
 
-    .cngx-stepper__step:not([aria-current='step']):has(
-        .cngx-stepper__indicator[data-state='success']
-      )
-      .cngx-stepper__label::before {
-      content: '\2713' / '';
-      margin-inline-end: 0.3rem;
-      font-weight: 600;
+    .cngx-stepper__step:not([aria-current='step']) .cngx-stepper__done-icon {
+      display: inline-flex;
+      order: -1;
     }
 
     /* Errored step: solid danger fill + the alert badge after the label.
@@ -1765,7 +1776,7 @@
 
     /* Label-only chips: the disc indicator and the status pill are
        hidden so each step reads as a clean pill (the completed check is
-       a label glyph above, not the disc). */
+       the done icon above, not the disc). */
     .cngx-stepper__indicator,
     .cngx-stepper__status-pill {
       display: none;
@@ -1853,17 +1864,12 @@
       cursor: pointer;
     }
 
-    .cngx-stepper__step:not([aria-current='step']):has(
-        .cngx-stepper__indicator[data-state='success']
-      )
-      .cngx-stepper__label::after {
-      content: '\2713' / '';
-      margin-inline-start: 0.3rem;
+    .cngx-stepper__step:not([aria-current='step']) .cngx-stepper__done-icon {
+      display: inline-flex;
       color: var(
         --cngx-step-breadcrumb-check-color,
         var(--cngx-color-success, oklch(0.5 0.15 145))
       );
-      font-weight: 600;
     }
 
     /* Active item: a soft pill behind the label (tight, not the whole
@@ -2083,6 +2089,12 @@
   transform: scale(1.25);
 }
 
+/* A marked dot grows so the mark inside stays legible. */
+.cngx-stepper__mobile-dot--error {
+  width: var(--cngx-dot-step-marked-size, 1rem);
+  height: var(--cngx-dot-step-marked-size, 1rem);
+}
+
 .cngx-stepper__mobile-dot[data-state='error'] {
   background: var(--cngx-step-errored-color, currentColor);
 }
@@ -2092,25 +2104,25 @@
   background: var(--cngx-step-refused-color, oklch(0.62 0.15 60));
 }
 
-/* Non-color error cue (WCAG 1.4.1) for the mobile dot - a glyph centred
-   over the red fill so error never relies on colour alone. Mirrors the
-   standalone `<cngx-dot-stepper>` treatment. */
-.cngx-stepper__mobile-dot--error::after {
-  content: var(--cngx-dot-step-error-glyph, '!') / '';
+/* Non-color error cue (WCAG 1.4.1) for the mobile dot - an icon centred
+   over the red fill so error never relies on colour alone; a refused dot
+   takes the ban icon, so it never differs from an error by colour alone.
+   Mirrors the standalone `<cngx-dot-stepper>` treatment. */
+.cngx-stepper__mobile-dot-glyph {
+  /* Sized like the `<cngx-dot-stepper>` icon, in em of the glyph font. */
+  --cngx-icon-svg-size: 1em;
+  --cngx-icon-svg-stroke-width: 3;
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
-  font-size: var(--cngx-dot-step-error-glyph-size, 0.5rem);
-  font-weight: 700;
-  line-height: 1;
+  display: block;
+  margin: auto;
+  pointer-events: none;
+  font-size: var(--cngx-dot-step-error-glyph-size, 0.75rem);
   color: var(--cngx-dot-step-error-glyph-color, var(--cngx-color-on-danger, white));
 }
 
-/* The refused dot carries the refused glyph, so it never differs from an
-   error by colour alone. */
-.cngx-stepper__mobile-dot--error[data-reason='refused']::after {
-  content: var(--cngx-dot-step-refused-glyph, '\2298') / '';
+.cngx-stepper__mobile-dot[data-reason='refused'] .cngx-stepper__mobile-dot-glyph {
+  --cngx-icon-svg-size: calc(0.8em * 24 / 22.5);
 }
 
 /* Error sub-line for the mobile-collapse `text` branch - the count alone
@@ -2498,7 +2510,7 @@
     outline-color: Highlight;
   }
 
-  .cngx-stepper__mobile-dot--active::after {
+  .cngx-stepper__mobile-dot--active .cngx-stepper__mobile-dot-glyph {
     color: var(--_cngx-forced-ink, CanvasText);
   }
 

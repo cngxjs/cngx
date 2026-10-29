@@ -71,9 +71,22 @@ import {
   CNGX_ORGANISM_SCROLL_SYNC_FACTORY,
 } from '@cngx/common/tabs';
 import { coerceBooleanProperty, coerceSignal } from '@cngx/core/utils';
-import { CNGX_ICON_ALERT, CNGX_ICON_BAN } from '@cngx/utils';
+import {
+  CNGX_ICON_ALERT,
+  CNGX_ICON_BAN,
+  CNGX_ICON_CHECK,
+  CNGX_ICON_EXCLAMATION,
+} from '@cngx/utils';
 
 import { CngxStepperErrorLine } from './stepper-error-line.component';
+
+/** Icon data the stepper's default templates draw. */
+const STEPPER_ICONS = {
+  alert: CNGX_ICON_ALERT,
+  ban: CNGX_ICON_BAN,
+  check: CNGX_ICON_CHECK,
+  exclamation: CNGX_ICON_EXCLAMATION,
+} as const;
 
 /**
  * Stepper organism. Composes `CngxStepperPresenter` with
@@ -221,9 +234,8 @@ export class CngxStepper implements CngxStepPanelHost {
   private readonly emptySlot = contentChild(CngxStepperEmpty);
   private readonly dotSlot = contentChild(CngxDotStepperDot);
 
-  /** Default-template icons - read by the `#defaultBadge` / `#defaultRejection` outlets. */
-  protected readonly alertIcon = CNGX_ICON_ALERT;
-  protected readonly banIcon = CNGX_ICON_BAN;
+  /** Default-template icons: badge, rejection, done checks and mobile-dot marks. */
+  protected readonly icons = STEPPER_ICONS;
 
   /**
    * Template cascade (indicator/badge/busySpinner/rejection/stepError/

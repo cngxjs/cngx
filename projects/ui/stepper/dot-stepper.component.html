@@ -13,19 +13,31 @@
   >
     @for (node of stepNodes(); track node.id; let i = $index) {
       @let dotTpl = resolvedDotTemplate();
-      <span
-        class="cngx-dot-stepper__dot"
-        role="img"
-        [class.cngx-dot-stepper__dot--active]="isActive(node, i)"
-        [class.cngx-dot-stepper__dot--completed]="i < activeIndex()"
-        [class.cngx-dot-stepper__dot--error]="stateView.hasErrorMarker(node)"
-        [attr.aria-current]="isActive(node, i) ? 'step' : null"
-        [attr.aria-label]="ariaLabelFor(node, i)"
-        [attr.data-state]="dotState(node)"
-        [attr.data-reason]="stateView.rejectionReason(node)"
-      >
-        @if (dotTpl) {
-          <ng-container *ngTemplateOutlet="dotTpl; context: dotContextFor(node, i)" />
+      <!--
+        The cell stacks the error mark over the dot. The dot itself stays
+        :empty without a consumer slot, which the chrome-strip rule keys off.
+      -->
+      <span class="cngx-dot-stepper__cell">
+        <span
+          class="cngx-dot-stepper__dot"
+          role="img"
+          [class.cngx-dot-stepper__dot--active]="isActive(node, i)"
+          [class.cngx-dot-stepper__dot--completed]="i < activeIndex()"
+          [class.cngx-dot-stepper__dot--error]="stateView.hasErrorMarker(node)"
+          [attr.aria-current]="isActive(node, i) ? 'step' : null"
+          [attr.aria-label]="ariaLabelFor(node, i)"
+          [attr.data-state]="dotState(node)"
+          [attr.data-reason]="stateView.rejectionReason(node)"
+        >
+          @if (dotTpl) {
+            <ng-container *ngTemplateOutlet="dotTpl; context: dotContextFor(node, i)" />
+          }
+        </span>
+        @if (stateView.hasErrorMarker(node)) {
+          <svg
+            class="cngx-dot-stepper__dot-glyph"
+            [cngxIconSvg]="stateView.rejectionReason(node) === 'refused' ? banIcon : exclamationIcon"
+          ></svg>
         }
       </span>
     }

@@ -13,7 +13,7 @@ import { CngxDotStepper } from './dot-stepper.component';
 // CngxDotStepper. Under forced colors its dots are background-only circles and
 // all vanished, the current one included. Each dot now carries an inset
 // CanvasText ring, a completed dot fills CanvasText, the active dot fills
-// Highlight, and the error glyph follows the ink each fill declares.
+// Highlight, and the error icon beside each dot takes the ink of that fill.
 
 const SCHEMES = ['light', 'dark'] as const;
 
@@ -66,8 +66,14 @@ function one(root: ParentNode, selector: string): HTMLElement {
   return el;
 }
 
-const glyph = (el: Element): string =>
-  getComputedStyle(el, '::after').getPropertyValue('color').trim();
+/** Colour of the error icon drawn over the dot (its next sibling). */
+const glyph = (dot: Element): string => {
+  const icon = dot.nextElementSibling;
+  if (!icon?.classList.contains('cngx-dot-stepper__dot-glyph')) {
+    throw new Error('the error icon did not render');
+  }
+  return getComputedStyle(icon).getPropertyValue('color').trim();
+};
 
 afterEach(async () => {
   mountedRoot?.remove();
@@ -115,6 +121,9 @@ describe.each(SCHEMES)('dot stepper under forced colors, %s', (scheme) => {
       );
     }
     expect(glyph(errored)).toBe(probe(root, 'canvastext'));
+    expect(computedValue(errored.nextElementSibling as HTMLElement, 'forced-color-adjust')).toBe(
+      'none',
+    );
   });
 
   it('fills a completed dot with CanvasText', async () => {
@@ -122,7 +131,7 @@ describe.each(SCHEMES)('dot stepper under forced colors, %s', (scheme) => {
     expect(computedValue(dots(root)[0], 'background-color')).toBe(probe(root, 'canvastext'));
   });
 
-  it('fills the active dot with Highlight and draws its error glyph in HighlightText', async () => {
+  it('fills the active dot with Highlight and draws its error icon in HighlightText', async () => {
     const root = await mountForced();
     const active = dots(root)[1];
     expect(computedValue(active, 'background-color')).toBe(probe(root, 'highlight'));

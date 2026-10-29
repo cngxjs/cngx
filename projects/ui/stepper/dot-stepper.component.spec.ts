@@ -16,7 +16,7 @@ import {
   withStepperI18nLabels,
   type CngxStepperI18nOverrides,
 } from '@cngx/common/stepper';
-import { CNGX_ICON_ALERT, CNGX_ICON_BAN } from '@cngx/utils';
+import { CNGX_ICON_ALERT, CNGX_ICON_BAN, CNGX_ICON_EXCLAMATION } from '@cngx/utils';
 
 import { CngxDotStepper } from './dot-stepper.component';
 import { stripBidiIsolates } from '@cngx/testing';
@@ -640,5 +640,37 @@ describe('CngxDotStepper refused dot', () => {
       'Step 2 of 2: Two: Errored',
     );
     expect(dots[1].getAttribute('data-reason')).toBe('failed');
+  });
+
+  it('marks the refused and the failed dot with the ban and exclamation icon beside the empty dot', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    TestBed.overrideComponent(CngxDotStepper, { add: { providers: [STEPPER_OUTCOME_SEAM] } });
+    const fixture = TestBed.createComponent(DotHost);
+    fixture.detectChanges();
+    const cells = (): HTMLElement[] =>
+      Array.from(fixture.nativeElement.querySelectorAll('.cngx-dot-stepper__cell'));
+    const glyphPath = (cell: HTMLElement): string | null | undefined =>
+      cell.querySelector('svg.cngx-dot-stepper__dot-glyph path')?.getAttribute('d');
+    expect(cells().map((c) => c.querySelector('.cngx-dot-stepper__dot-glyph'))).toEqual([
+      null,
+      null,
+    ]);
+
+    stepperOutcome.set({ kind: 'refused', index: 1, sequence: 1 });
+    fixture.detectChanges();
+    expect(glyphPath(cells()[1])).toBe(CNGX_ICON_BAN.d);
+    const glyph = cells()[1].querySelector('.cngx-dot-stepper__dot-glyph') as Element;
+    expect(glyph.getAttribute('aria-hidden')).toBe('true');
+    // The icon is the dot's sibling: the dot keeps no element child, so the
+    // :empty chrome rule still sees a default dot.
+    const dot = cells()[1].querySelector('.cngx-dot-stepper__dot') as HTMLElement;
+    expect(glyph.previousElementSibling).toBe(dot);
+    expect(dot.children.length).toBe(0);
+    expect(dot.textContent).toBe('');
+
+    stepperOutcome.set({ kind: 'failed', index: 1, sequence: 2 });
+    fixture.detectChanges();
+    expect(glyphPath(cells()[1])).toBe(CNGX_ICON_EXCLAMATION.d);
   });
 });
