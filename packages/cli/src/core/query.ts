@@ -40,9 +40,32 @@ export function entryLib(entry: DocEntry): string | null {
 }
 
 /**
+ * The lower-cased keys one selector answers to: each comma-separated part, and for
+ * every attribute in a part both `[attr]` and the bare `attr`. So
+ * `cngx-checkbox, [cngxCheckbox]` answers to `cngx-checkbox`, `[cngxcheckbox]` and
+ * `cngxcheckbox`, and `button[cngxButton]` also to `cngxbutton`.
+ */
+function selectorKeys(selector: string): Set<string> {
+  const keys = new Set<string>();
+  for (const part of selector.toLowerCase().split(',')) {
+    const trimmed = part.trim();
+    if (trimmed === '') {
+      continue;
+    }
+    keys.add(trimmed);
+    for (const [, attr] of trimmed.matchAll(/\[\s*([^\]=\s]+)[^\]]*\]/g)) {
+      keys.add(`[${attr}]`);
+      keys.add(attr);
+    }
+  }
+  return keys;
+}
+
+/**
  * Resolve a single component/directive by exact name (case-insensitive), falling
- * back to an exact selector match so `cngx-select` resolves as readily as
- * `CngxSelect`. Returns `undefined` when nothing matches.
+ * back to any part of its selector so `cngx-select`, `[cngxCheckbox]` or the bare
+ * attribute `cngxButton` resolve as readily as the class name. A name match wins
+ * over a selector match. Returns `undefined` when nothing matches.
  */
 export function resolveEntry(docs: DocsIndex, name: string): KindedEntry | undefined {
   const needle = name.trim().toLowerCase();
@@ -52,7 +75,7 @@ export function resolveEntry(docs: DocsIndex, name: string): KindedEntry | undef
   const entries = allEntries(docs);
   return (
     entries.find(({ entry }) => entry.name.toLowerCase() === needle) ??
-    entries.find(({ entry }) => entry.selector?.toLowerCase() === needle)
+    entries.find(({ entry }) => entry.selector !== undefined && selectorKeys(entry.selector).has(needle))
   );
 }
 
