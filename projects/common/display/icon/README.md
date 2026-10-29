@@ -66,11 +66,11 @@ If a third-party glyph component sets its own ARIA (e.g. Material's `<mat-icon>`
 
 ## Sizing
 
-`size` ∈ `xs | sm | md | lg | xl` (default `md`). Each variant pins `--cngx-icon-size` to its scale token. All values are in `em`, so an icon next to running text matches the surrounding font scale automatically.
+`size` ∈ `xs | sm | md | lg | xl` (default `md`). Each variant pins `--cngx-icon-size` to its scale token. All values are in `em`, so an icon next to running text matches the surrounding font scale automatically. `xs` floors at 12px and draws outline glyphs with stroke width 2.5 (`--cngx-icon-stroke-width-xs`): below that, a 24-unit glyph's strokes drop under one pixel and smear on standard-density screens.
 
 | Variant | Default | Token |
 |-|-|-|
-| `xs` | `0.75em` | `--cngx-icon-size-xs` |
+| `xs` | `max(0.75em, 12px)` | `--cngx-icon-size-xs` |
 | `sm` | `1em` | `--cngx-icon-size-sm` |
 | `md` | `1.25em` | `--cngx-icon-size-md` |
 | `lg` | `1.5em` | `--cngx-icon-size-lg` |

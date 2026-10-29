@@ -36,6 +36,9 @@ const PRESETS = [
       </span>
       <cngx-icon class="o-inline" size="lg" style="--cngx-icon-size: 24px">★</cngx-icon>
       <cngx-icon class="o-inline-em" size="xs" style="--cngx-icon-size: 2.5em">★</cngx-icon>
+      <span style="font-size: 12px">
+        <cngx-icon class="xs-floor" size="xs">★</cngx-icon>
+      </span>
       <cngx-icon class="svg-host" style="color: rgb(255, 0, 0)">
         <svg class="stroke" viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <path d="M4 12h16" />
@@ -102,6 +105,16 @@ describe('CngxIcon geometry', () => {
     const root = mount();
     expect(fontPx(query(root, '.o-inline'))).toBeCloseTo(24, 0);
     expect(fontPx(query(root, '.o-inline-em'))).toBeCloseTo(2.5 * CONTEXT_PX, 0);
+  });
+
+  it('floors the xs preset at 12px when 0.75em would be smaller', () => {
+    expect(fontPx(query(mount(), '.xs-floor'))).toBeCloseTo(12, 0);
+  });
+
+  it('thickens the outline glyph stroke in the xs preset only', () => {
+    const root = mount();
+    expect(computedValue(query(root, '.p-xs'), '--cngx-icon-svg-stroke-width')).toBe('2.5');
+    expect(computedValue(query(root, '.p-sm'), '--cngx-icon-svg-stroke-width')).not.toBe('2.5');
   });
 
   it('keeps an explicit fill="none" on a stroke svg', () => {

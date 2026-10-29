@@ -63,7 +63,15 @@
      * @type <length>
      * @group Variant / Size
      */
-    --cngx-icon-size-xs: 0.75em;
+    --cngx-icon-size-xs: max(0.75em, 12px);
+    /**
+     * Stroke width of outline glyphs in the `.cngx-icon--xs` variant, in
+     * grid units of the 24x24 viewBox. Thicker than the default 2 so the
+     * strokes keep about a pixel at the 12px floor.
+     * @type <number>
+     * @group Variant / Size
+     */
+    --cngx-icon-stroke-width-xs: 2.5;
     /**
      * Size token for the `.cngx-icon--sm` variant.
      * @type <length>
@@ -122,7 +130,8 @@
      * field affix) wins without a specificity contest. `md` is the
      * `:scope` default above. */
     :scope:where(.cngx-icon--xs) {
-      --cngx-icon-size: var(--cngx-icon-size-xs, 0.75em);
+      --cngx-icon-size: var(--cngx-icon-size-xs, max(0.75em, 12px));
+      --cngx-icon-svg-stroke-width: var(--cngx-icon-stroke-width-xs, 2.5);
     }
     :scope:where(.cngx-icon--sm) {
       --cngx-icon-size: var(--cngx-icon-size-sm, 1em);
