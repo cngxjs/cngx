@@ -213,6 +213,26 @@ describe('diffSnapshots infers a slot rename only from a unique, non-empty key',
   });
 });
 
+describe('diffSnapshots normalises slot names that carry their description', () => {
+  const index = (cngxVersion: string, slot: { name: string; description: string }): DocsIndex => ({
+    meta: { schemaVersion: 6, cngxVersion, generatedAt: null, compodocxVersion: null },
+    components: [{ name: 'CngxX', slots: [slot] }],
+    directives: [],
+    injectables: [],
+    tokens: [],
+    functions: [],
+  });
+
+  it('reports a description edit as a signature change, not a removed slot', () => {
+    const from = index('1.0.0', { name: 'cngxX Old text.\n<example-url>http://localhost:4200/#/a</example-url>', description: '' });
+    const to = index('2.0.0', { name: 'cngxX New text.', description: '' });
+    const delta = diffSnapshots(from, to);
+
+    expect(delta.slots.removed).toEqual([]);
+    expect(delta.slots.signatureChanged).toEqual([{ name: 'cngxX', owner: 'CngxX', fromSignature: 'Old text.', toSignature: 'New text.' }]);
+  });
+});
+
 describe('diffSnapshots across schema 2 and schema 6', () => {
   const shape: Pick<DocEntry, 'inputsClass' | 'outputsClass'> = {
     inputsClass: [{ name: 'value' }],

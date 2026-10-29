@@ -1,9 +1,10 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { loadDocsFromFile } from '../data/loader.js';
+import { loadBundledDocs, loadDocsFromFile } from '../data/loader.js';
+import type { DocsIndex } from '../data/loader.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
 import { answerVersioned, createDocsResolver } from '../data/docs-resolver.js';
-import { getSlots } from './get-slots.js';
+import { getSlots, normalizeSlot, slotsMarkdown } from './get-slots.js';
 
 const FIXTURE = fileURLToPath(new URL('../../../test/fixtures/documentation.sample.json', import.meta.url));
 const NEW = fileURLToPath(new URL('../../../test/fixtures/documentation.v-new.sample.json', import.meta.url));
@@ -51,5 +52,42 @@ describe('get_slots version wiring', () => {
     const answer = await answerVersioned(createDocsResolver(docs, deps), '999.0.0', (resolved) => getSlots(resolved, 'CngxSelect'));
 
     expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'no release' });
+  });
+});
+
+// compodocx records a multi-line `@slot` body as the name with an empty description;
+// 24 slots in the 0.1.0-rc.9 bundled snapshot have this shape.
+describe('slot names that carry their description', () => {
+  const malformed = {
+    name: "cngxX Rendered when the item's content failed.\n\n<example-url>http://localhost:4200/#/a</example-url>\n<example-url>http://localhost:4200/#/b</example-url>",
+    description: '',
+  };
+
+  it('splits the name at the first whitespace and strips example urls from the rest', () => {
+    expect(normalizeSlot(malformed)).toEqual({ name: 'cngxX', description: "Rendered when the item's content failed." });
+  });
+
+  it('keeps a recorded description over the rest of the name', () => {
+    expect(normalizeSlot({ name: 'cngxX trailing text', description: 'Recorded.' })).toEqual({ name: 'cngxX', description: 'Recorded.' });
+  });
+
+  it('leaves a well-formed slot untouched', () => {
+    const slot = { name: 'cngxX', description: 'Fine.' };
+
+    expect(normalizeSlot(slot)).toEqual(slot);
+  });
+
+  it('answers the normalised slot', () => {
+    const index: DocsIndex = { ...docs, components: [{ name: 'CngxX', slots: [malformed] }] };
+
+    expect(getSlots(index, 'CngxX')?.slots).toEqual([{ name: 'cngxX', description: "Rendered when the item's content failed." }]);
+  });
+
+  it('prints no localhost url for CngxAccordionItem from the bundled snapshot', () => {
+    const bundled = loadBundledDocs(fileURLToPath(new URL('../../../data/', import.meta.url)));
+    const markdown = slotsMarkdown(getSlots(bundled, 'CngxAccordionItem'));
+
+    expect(markdown).toContain('`cngxAccordionItemError`');
+    expect(markdown).not.toContain('localhost');
   });
 });
