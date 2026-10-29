@@ -103,7 +103,16 @@ seconds. No network or an absent asset returns a typed error result instead:
 |-|-|
 |`gh-missing`|No longer produced: a missing `gh` falls back to HTTPS. Kept in the type for compatibility.|
 |`network`|The download failed for a network reason.|
-|`asset-missing`|The release or its `documentation.json` asset does not exist.|
+|`asset-missing`|The release or its `documentation.json` asset does not exist. Also covers a version that is not a release, a snapshot with an unreadable or unknown schema, and a query that threw (its message starts with `internal:`).|
+
+### The CLI
+
+`@cngx/cli` exposes the same queries as `cngx` subcommands (`cngx api CngxSelect`,
+`cngx migrate 0.1.0 --to 0.2.0`) for agents and CI jobs that do not speak MCP. It
+does not depend on the MCP SDK: both packages run one query core, kept in
+`packages/mcp/src/core` and copied byte for byte into `packages/cli/src/core` by
+`npm run cli:sync`. CI runs `npm run cli:copy-check`, so the copy cannot drift
+from the tools the server registers.
 
 ### Resources and prompts
 
