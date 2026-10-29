@@ -10,6 +10,7 @@ import {
 import { outputToObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { CngxActiveDescendant } from '@cngx/common/a11y';
+import { CngxIconSvg } from '@cngx/common/display';
 import {
   CngxMenuItem,
   CngxMenuItemIcon,
@@ -22,11 +23,11 @@ import {
   type CngxMenuSubmenuPopoverRef,
   type CngxMenuSubmenuWiring,
 } from '@cngx/common/interactive';
+import { CNGX_ICON_CHEVRON_RIGHT } from '@cngx/utils';
 
 import type { CngxContextMenu } from './context-menu.component';
 import { createContextMenuItemSubmenuFacade } from './context-menu-item-submenu-facade';
 import { CNGX_CONTEXT_MENU_PANEL } from './context-menu-panel';
-import { CNGX_MENU_GLYPHS } from './menu-glyphs';
 
 /**
  * A single actionable context-menu item. Thin shell over `CngxMenuItem`: the
@@ -69,7 +70,7 @@ import { CNGX_MENU_GLYPHS } from './menu-glyphs';
 @Component({
   selector: 'cngx-context-menu-item, button[cngxContextMenuItem]',
   standalone: true,
-  imports: [CngxMenuItemIcon, CngxMenuItemLabel, CngxMenuItemKbd, CngxMenuItemSuffix],
+  imports: [CngxIconSvg, CngxMenuItemIcon, CngxMenuItemLabel, CngxMenuItemKbd, CngxMenuItemSuffix],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxContextMenuItem',
@@ -88,7 +89,7 @@ import { CNGX_MENU_GLYPHS } from './menu-glyphs';
       <span cngxMenuItemKbd>{{ shortcut }}</span>
     }
     @if (submenu()) {
-      <span cngxMenuItemSuffix>{{ caret }}</span>
+      <span cngxMenuItemSuffix><svg [cngxIconSvg]="caret"></svg></span>
     }
   `,
   styleUrl: './context-menu-item.component.css',
@@ -120,9 +121,9 @@ export class CngxContextMenuItem implements CngxMenuSubmenuWiring {
   readonly select = output<void>();
 
   /** @internal Decorative caret rendered while `submenu` is set. RTL flip is
-   * a CSS concern (`.cngx-menu-item__suffix` under `[dir='rtl']`), not a
+   * a CSS concern (`.cngx-menu-item__suffix` under `:dir(rtl)`), not a
    * swapped glyph. */
-  protected readonly caret = CNGX_MENU_GLYPHS.submenuCaret;
+  protected readonly caret = CNGX_ICON_CHEVRON_RIGHT;
 
   private readonly parentPanel = inject(CNGX_CONTEXT_MENU_PANEL, { optional: true });
 

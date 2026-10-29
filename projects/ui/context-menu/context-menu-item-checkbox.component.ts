@@ -2,18 +2,19 @@ import {
   ChangeDetectionStrategy,
   Component,
   contentChild,
+  inject,
   input,
   ViewEncapsulation,
 } from '@angular/core';
 
+import { CngxIconSvg } from '@cngx/common/display';
 import {
   CngxMenuItemCheckbox,
   CngxMenuItemIcon,
   CngxMenuItemKbd,
   CngxMenuItemLabel,
 } from '@cngx/common/interactive';
-
-import { CNGX_MENU_GLYPHS } from './menu-glyphs';
+import { CNGX_ICON_CHECK } from '@cngx/utils';
 
 /**
  * A checkable context-menu item (`role="menuitemcheckbox"`). Thin shell over
@@ -35,11 +36,10 @@ import { CNGX_MENU_GLYPHS } from './menu-glyphs';
 @Component({
   selector: 'cngx-context-menu-item-checkbox, button[cngxContextMenuItemCheckbox]',
   standalone: true,
-  imports: [CngxMenuItemIcon, CngxMenuItemLabel, CngxMenuItemKbd],
+  imports: [CngxIconSvg, CngxMenuItemIcon, CngxMenuItemLabel, CngxMenuItemKbd],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxContextMenuItemCheckbox',
-  host: { '[style.--cngx-context-menu-item-check-glyph]': 'checkGlyph' },
   hostDirectives: [
     {
       directive: CngxMenuItemCheckbox,
@@ -48,6 +48,11 @@ import { CNGX_MENU_GLYPHS } from './menu-glyphs';
     },
   ],
   template: `
+    <span class="cngx-menu-item__check" aria-hidden="true">
+      @if (brain.checked()) {
+        <svg [cngxIconSvg]="checkIcon"></svg>
+      }
+    </span>
     <ng-content select="[cngxMenuItemIcon]" />
     @if (!projectedIcon() && icon(); as glyph) {
       <span cngxMenuItemIcon>{{ glyph }}</span>
@@ -77,7 +82,10 @@ export class CngxContextMenuItemCheckbox {
    */
   protected readonly projectedIcon = contentChild(CngxMenuItemIcon);
 
-  /** @internal Seeds the CSS `content` of the default checked indicator from
-   * the shared glyph const (CSS-string quoted for `content:`). */
-  protected readonly checkGlyph = `'${CNGX_MENU_GLYPHS.checkboxChecked}'`;
+  /** @internal The brain host directive; its `checked()` gates the indicator. */
+  protected readonly brain = inject(CngxMenuItemCheckbox);
+
+  /** @internal Leading checked indicator, drawn in an always-present gutter so
+   * the label does not shift when the item is checked or unchecked. */
+  protected readonly checkIcon = CNGX_ICON_CHECK;
 }

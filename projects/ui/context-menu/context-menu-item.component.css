@@ -6,9 +6,22 @@
  * hosts - the row geometry (padding, gap, radius, cursor, tap-target floor)
  * is painted here, while the slot layout (`.cngx-menu-item__label`, `__icon`,
  * `__kbd`) and the highlighted / disabled state painting is adopted from the
- * base skin via the classes the brains stamp. The checked-indicator glyph is
- * likewise attribute-keyed in the base skin, so the organism re-draws it
- * keyed on the `role` the brain sets.
+ * base skin via the classes the brains stamp. The base skin's checked glyph
+ * is an attribute-keyed `::before` that never reaches these hosts, so the
+ * checkbox / radio shells render their own indicator.
+ *
+ * **Slots**
+ *
+ * - `.cngx-menu-item__check` - leading checked-indicator gutter on the
+ *   checkbox / radio shells, always present so the label never shifts; holds
+ *   the shared check (checkbox) or dot (radio) icon while checked
+ * - `.cngx-menu-item__suffix` - trailing submenu chevron, mirrored under RTL
+ *
+ * **Forced colors**
+ *
+ * The highlighted item opts out of forcing in the base skin, so the check and
+ * the caret, which carry their own colours, paint the base skin's
+ * `--_cngx-forced-ink` there.
  *
  * **Inheritance**
  *
@@ -67,7 +80,7 @@
   }
 
   /**
-   * Color of the leading checkbox / radio indicator glyph on a checked item.
+   * Color of the leading checkbox / radio indicator icon on a checked item.
    * Falls back through `--cngx-color-primary`.
    * @group State / Checked
    * @see [[--cngx-color-primary]]
@@ -115,8 +128,18 @@
     color: var(--cngx-context-menu-item-caret-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
   }
 
+  /* The caret chevron draws on the shared 24-unit icon grid, where its stroke
+     spans 6 + 2 = 8 units across. Scaling the box by 24/8 keeps its width at
+     the 0.3em the text caret drew before. As a block it leaves the line box, so
+     the flex row centres it on the label instead of the text middle. */
+  cngx-context-menu-item .cngx-menu-item__suffix > .cngx-icon-svg,
+  button[cngxContextMenuItem] .cngx-menu-item__suffix > .cngx-icon-svg {
+    display: block;
+    --cngx-icon-svg-size: calc(0.3em * 24 / 8);
+  }
+
   /* The caret is a directional glyph; flip it inline under RTL rather than
-     swapping to a mirrored character. `:dir(rtl)` is resolved-direction, so it
+     swapping to a mirrored icon. `:dir(rtl)` is resolved-direction, so it
      stays island-safe (mirrors the paginator nav-icon flip). */
   cngx-context-menu-item:dir(rtl) .cngx-menu-item__suffix,
   button[cngxContextMenuItem]:dir(rtl) .cngx-menu-item__suffix {
@@ -125,31 +148,71 @@
 
   /* Checked indicator - the base skin draws this via a [cngxMenuItemCheckbox]
      / [cngxMenuItemRadio] attribute ::before that never reaches the shell, so
-     re-draw it keyed on the role the brain sets. Rendered as a leading gutter
-     even when the consumer projects an icon, so a checked item always keeps a
-     visible checked affordance beside its icon (Pillar 2), not only
-     aria-checked. The glyph is the single source in CNGX_MENU_GLYPHS, seeded
-     onto the host as --cngx-context-menu-item-check-glyph by the component
-     (checkbox -> tick, radio -> filled dot); no literal here so the const
-     cannot silently drift. */
-  cngx-context-menu-item-checkbox.cngx-menu-item--checked::before,
-  button[cngxContextMenuItemCheckbox].cngx-menu-item--checked::before {
-    content: var(--cngx-context-menu-item-check-glyph) / '';
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.25rem;
+     the shell renders a leading gutter that holds the icon while checked. The
+     gutter is always present, so checking or unchecking never moves the label,
+     and it renders even when the consumer projects an icon, so a checked item
+     always keeps a visible checked affordance beside its icon (Pillar 2), not
+     only aria-checked. The icon is centred in the gutter out of flow, so its
+     box never grows the row. */
+  :is(
+      cngx-context-menu-item-checkbox,
+      button[cngxContextMenuItemCheckbox],
+      cngx-context-menu-item-radio,
+      button[cngxContextMenuItemRadio]
+    )
+    > .cngx-menu-item__check {
+    position: relative;
+    flex: none;
+    align-self: stretch;
+    inline-size: 1.25rem;
     color: var(--cngx-context-menu-item-check-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
-    font-weight: 700;
   }
-  cngx-context-menu-item-radio.cngx-menu-item--checked::before,
-  button[cngxContextMenuItemRadio].cngx-menu-item--checked::before {
-    content: var(--cngx-context-menu-item-check-glyph) / '';
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.25rem;
-    color: var(--cngx-context-menu-item-check-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
-    font-size: 0.875em;
+
+  :is(
+      cngx-context-menu-item-checkbox,
+      button[cngxContextMenuItemCheckbox],
+      cngx-context-menu-item-radio,
+      button[cngxContextMenuItemRadio]
+    )
+    > .cngx-menu-item__check
+    > .cngx-icon-svg {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+  }
+
+  /* The check stroke spans 14 + 2 = 16 grid units across; scaling the box by
+     24/16 keeps its width at the 0.73em the text tick drew before. */
+  :is(cngx-context-menu-item-checkbox, button[cngxContextMenuItemCheckbox])
+    > .cngx-menu-item__check
+    > .cngx-icon-svg {
+    --cngx-icon-svg-size: calc(0.73em * 24 / 16);
+  }
+
+  /* The dot is a fill glyph 8 grid units across (no stroke); scaling the box
+     by 24/8 keeps its diameter at the 0.73em the text dot drew before. */
+  :is(cngx-context-menu-item-radio, button[cngxContextMenuItemRadio])
+    > .cngx-menu-item__check
+    > .cngx-icon-svg {
+    --cngx-icon-svg-size: calc(0.73em * 24 / 8);
+  }
+}
+
+/* forced-colors (WHCM): the base skin opts the highlighted item out of
+   forcing and declares --_cngx-forced-ink for children that carry their own
+   colour. The check and the caret carry theirs, so they paint that ink.
+   Unlayered to beat the layered component rules. */
+@media (forced-colors: active) {
+  :is(
+      cngx-context-menu-item-checkbox,
+      button[cngxContextMenuItemCheckbox],
+      cngx-context-menu-item-radio,
+      button[cngxContextMenuItemRadio]
+    ).cngx-menu-item--highlighted
+    > .cngx-menu-item__check,
+  :is(cngx-context-menu-item, button[cngxContextMenuItem]).cngx-menu-item--highlighted
+    .cngx-menu-item__suffix {
+    color: var(--_cngx-forced-ink, currentColor);
   }
 }
