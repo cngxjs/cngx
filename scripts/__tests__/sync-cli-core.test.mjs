@@ -9,7 +9,8 @@ import { dirname, join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { syncCliCore } from '../sync-cli-core.mjs';
+import { runCopyCheck } from '../cli-core-copy-check.mjs';
+import { main, syncCliCore } from '../sync-cli-core.mjs';
 
 const roots = [];
 
@@ -86,5 +87,47 @@ describe('syncCliCore', () => {
 
     expect(result.refused).toContain('no core files');
     expect(readFileSync(join(dirs.copyDir, 'command.ts'), 'utf8')).toBe('keep\n');
+  });
+});
+
+describe('sync and copy check together', () => {
+  it('a synced copy passes the copy check', () => {
+    const dirs = makeRoot();
+    plant(dirs.canonicalDir, { 'command.ts': 'a\n', 'data/loader.ts': 'b\n' });
+    plant(dirs.copyDir, { 'command.ts': 'stale\n' });
+
+    syncCliCore(dirs);
+
+    expect(runCopyCheck({ ...dirs, write: () => undefined })).toBe(0);
+  });
+
+  it.each(['zod-source.core-spec.ts', 'query.test.ts', '__fixtures__/surface.json'])(
+    'never copies %s and reports it as a stray when it sits in the copy',
+    (file) => {
+      const dirs = makeRoot();
+      plant(dirs.canonicalDir, { 'command.ts': 'a\n', [file]: 'test only\n' });
+      plant(dirs.copyDir, { [file]: 'planted\n' });
+
+      const result = syncCliCore(dirs);
+
+      expect(result).toEqual({ copied: 1, removed: [], stray: [file] });
+      expect(readFileSync(join(dirs.copyDir, file), 'utf8')).toBe('planted\n');
+      expect(runCopyCheck({ ...dirs, write: () => undefined })).toBe(1);
+    },
+  );
+});
+
+describe('main', () => {
+  it('exits 1 on a refused sync and 0 on a sync', () => {
+    const dirs = makeRoot();
+    const lines = [];
+    const io = { stdout: (text) => lines.push(text), stderr: (text) => lines.push(text) };
+
+    expect(main({ ...dirs, ...io })).toBe(1);
+    expect(lines.join('')).toContain('cli:sync - refused');
+
+    plant(dirs.canonicalDir, { 'command.ts': 'a\n' });
+
+    expect(main({ ...dirs, ...io })).toBe(0);
   });
 });

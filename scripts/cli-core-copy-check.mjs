@@ -29,8 +29,10 @@ export const COPY_CORE_DIR = resolve(ROOT, 'packages/cli/src/core');
 /** A tree path as the repo-relative name the messages print. */
 export const displayPath = (dir) => relative(ROOT, dir).split(sep).join('/');
 
-/** True for a file that belongs to the core copy: not a spec, and no path segment starting with a dot. */
-export const isCoreFile = (relPath) => !relPath.endsWith('.spec.ts') && !relPath.split('/').some((part) => part.startsWith('.'));
+const TEST_ONLY = /\.(?:spec|core-spec|test)\.ts$/;
+/** True for a file that belongs to the core copy: no spec, core-spec or test file, and no `__fixtures__` or dot segment. */
+export const isCoreFile = (relPath) =>
+  !TEST_ONLY.test(relPath) && !relPath.split('/').some((part) => part.startsWith('.') || part === '__fixtures__');
 
 /** Every file under `dir`, as sorted POSIX paths relative to `dir`; a missing directory is empty. */
 function listFiles(dir) {
@@ -114,7 +116,7 @@ export function runCopyCheck({ canonicalDir = CANONICAL_CORE_DIR, copyDir = COPY
   const copy = listCoreFiles(copyDir);
   const mismatches = [
     ...compareTrees(canonical, copy, readUnder(canonicalDir), readUnder(copyDir)),
-    ...listStrayFiles(copyDir).map((file) => ({ file, reason: 'spec or dotfile in the cli copy; remove it by hand' })),
+    ...listStrayFiles(copyDir).map((file) => ({ file, reason: 'test-only file or dotfile in the cli copy; remove it by hand' })),
   ];
 
   if (mismatches.length === 0) {

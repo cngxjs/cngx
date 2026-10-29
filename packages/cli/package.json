@@ -25,7 +25,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "prepublishOnly": "node ../../scripts/mcp-bundle-check.mjs --data-dir=packages/cli/data",
+    "prepublishOnly": "node ../../scripts/cli-core-copy-check.mjs && node ../../scripts/mcp-bundle-check.mjs --data-dir=packages/cli/data",
     "test": "vitest run"
   },
   "dependencies": {

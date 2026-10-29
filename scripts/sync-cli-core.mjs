@@ -29,7 +29,8 @@ import {
 
 /**
  * Regenerate `copyDir` from `canonicalDir`. Returns `{ copied, removed, stray }`
- * (`stray`: spec files and dotfiles in the copy, reported and never deleted), or
+ * (`stray`: specs, `*.core-spec.ts`, `*.test.ts`, `__fixtures__/` and dotfiles in
+ * the copy, reported and never deleted), or
  * `{ refused }` with the reason when the canonical tree is missing or empty, in
  * which case nothing was written or removed. The dirs are injectable for specs.
  */
@@ -55,25 +56,29 @@ export function syncCliCore({ canonicalDir = CANONICAL_CORE_DIR, copyDir = COPY_
   return { copied: canonical.length, removed, stray: listStrayFiles(copyDir) };
 }
 
-function main() {
-  const result = syncCliCore();
+/** Run the sync and report it; returns the exit code. The dirs and streams are injectable for specs. */
+export function main({
+  canonicalDir = CANONICAL_CORE_DIR,
+  copyDir = COPY_CORE_DIR,
+  stdout = (text) => process.stdout.write(text),
+  stderr = (text) => process.stderr.write(text),
+} = {}) {
+  const result = syncCliCore({ canonicalDir, copyDir });
   if (result.refused !== undefined) {
-    process.stderr.write(`cli:sync - refused: ${result.refused}\n`);
-    process.exitCode = 1;
-    return;
+    stderr(`cli:sync - refused: ${result.refused}\n`);
+    return 1;
   }
   const { copied, removed, stray } = result;
-  process.stdout.write(
-    `cli:sync - regenerated ${copied} file(s) in ${displayPath(COPY_CORE_DIR)} from ${displayPath(CANONICAL_CORE_DIR)}\n`,
-  );
+  stdout(`cli:sync - regenerated ${copied} file(s) in ${displayPath(copyDir)} from ${displayPath(canonicalDir)}\n`);
   for (const file of removed) {
-    process.stdout.write(`  removed ${file} (no longer in the canonical tree)\n`);
+    stdout(`  removed ${file} (no longer in the canonical tree)\n`);
   }
   for (const file of stray) {
-    process.stdout.write(`  kept ${file} (spec or dotfile; cli:sync never deletes it, cli:copy-check fails until it is removed)\n`);
+    stdout(`  kept ${file} (test-only file or dotfile; cli:sync never deletes it, cli:copy-check fails until it is removed)\n`);
   }
+  return 0;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main();
+  process.exitCode = main();
 }

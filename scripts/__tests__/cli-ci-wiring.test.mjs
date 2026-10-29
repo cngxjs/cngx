@@ -120,6 +120,13 @@ describe('cli core copy guard wiring', () => {
     expect(buildSyncs(scripts)).toBe(false);
   });
 
+  it('build:cli and the cli prepublishOnly run the copy check first', () => {
+    const cliScripts = JSON.parse(read('packages', 'cli', 'package.json')).scripts;
+
+    expect(scripts['build:cli']).toMatch(/^npm run cli:copy-check && /);
+    expect(cliScripts.prepublishOnly).toMatch(/^node \.\.\/\.\.\/scripts\/cli-core-copy-check\.mjs && /);
+  });
+
   it('the mcp job checks the committed copy before it builds the cli', () => {
     const runs = jobRuns(workflow, 'mcp');
 
