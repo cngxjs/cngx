@@ -6,36 +6,36 @@
  * `<a>.mat-mdc-tab-link` elements (nav bar) and the trailing-edge
  * molecule wrapper; this stylesheet paints them. Tokens stay under the
  * Material-bridge namespace (`--cngx-mat-tab-*` / `--cngx-mat-tabs-
- * more-*`) - no `--cngx-color-*` fallbacks because the Material
- * design system owns the canonical theme. Shipped as a standalone
- * stylesheet asset (consumer imports once in their global
- * stylesheet) because Angular only allows `styleUrl` on
- * `@Component`, not on `@Directive`.
+ * more-*`). Shipped as a standalone stylesheet asset (consumer imports
+ * once in their global stylesheet) because Angular only allows
+ * `styleUrl` on `@Component`, not on `@Directive`.
  *
  * **State modifiers**
  *
- * - `.cngx-mat-tab--error` - rejected commit; tinted color, outline
- *   ring, font-weight bump. Specificity bump `.mat-mdc-tab.cngx-
- *   mat-tab--error` is load-bearing - Material 21's `.mdc-tab` sets
- *   `outline: none` at (0,1,0). `[data-reason="failed"]` stays in the
- *   error red; `[data-reason="refused"]` (the commit action answered
- *   `false`) takes the rejection amber and keeps the resting label colour
- * - `.cngx-mat-tab__rejection-icon` - `aria-hidden` glyph disc the
- *   decoration appends to the rejected tab: `!` on a failed commit,
- *   `\2298` on a refused one, so the two never differ by colour alone.
- *   On its own it sits at the tab's trailing top corner, the spot and size
- *   of the has-errors badge; when the tab also carries that badge it drops
- *   back inline after the label, so the two discs never overlap
+ * - `.cngx-mat-tab--error` - rejected commit, marked by colour only: the
+ *   label takes the reason colour plus a font-weight bump, no outline and
+ *   no surface. Specificity bump `.mat-mdc-tab.cngx-mat-tab--error` is
+ *   load-bearing against Material's unlayered (0,1,0) tab rules.
+ *   `[data-reason="failed"]` takes the error red; `[data-reason="refused"]`
+ *   (the commit action answered `false`) the refused amber, label included
+ * - `.cngx-mat-tab__rejection-icon` - `aria-hidden` standalone icon the
+ *   decoration appends to the rejected tab, after the label: an alert
+ *   triangle on a failed commit, a slashed circle on a refused one, so the
+ *   two never differ by colour alone
  * - `.cngx-mat-tab--error` + `.mat-mdc-tab-disabled` - no extra rule:
- *   Material paints the disabled label colour and the error outline
+ *   Material paints the disabled label colour and the rejection icon
  *   stays, so it does not pass for a healthy disabled tab
- * - `.cngx-mat-tab--has-errors` - form-validation errors present;
- *   renders an `::after` red disc with an `!` glyph at the trailing
- *   corner. Distinct semantic from `--error` and the two coexist
- * - `.cngx-mat-tab--error.cngx-mat-tab--has-errors` - co-occurrence;
- *   shifts the has-errors glyph inward via
- *   `--cngx-mat-tab-has-errors-glyph-offset-stacked` so the two
- *   signals do not merge
+ * - `.cngx-mat-tab--has-errors` - form-validation errors present; the
+ *   decoration appends an `aria-hidden` alert icon
+ *   (`.cngx-mat-tab__error-badge`) after the label. Distinct semantic from
+ *   `--error` and the two coexist: the badge comes first, the rejection
+ *   icon after it
+ * - `.cngx-mat-tab__icon-svg` - the `<svg>` inside both icons, built from
+ *   the shared `@cngx/utils` icon data; `--stroke` paints the outline
+ *
+ * Under forced colors the icons paint CanvasText and a rejected tab gets
+ * an inset CanvasText outline, the one cue that survives the system
+ * palette.
  *
  * **Trailing-edge overflow**
  *
@@ -51,31 +51,29 @@
  *
  * **Material wiring**
  *
- * Every `--cngx-mat-tab-*` token except the has-errors glyph size is
- * `@property`-registered, the colour tokens with a literal oklch initial value,
- * so a registered value always wins over an inline `var()` fallback - this
- * stylesheet therefore carries no `--mat-sys-*` fallbacks of its own. The two
- * refused tokens register without an initial value, so their amber and
- * resting-text fallbacks apply until a theme sets them. The size exception,
- * `--cngx-mat-tab-has-errors-glyph-size`, is deliberately left unregistered so
- * its `rem` fallback scales with text-only zoom (see its note below). The
- * Material alignment is delivered by the
- * `@cngx/themes/material/tabs-theme` bridge (`@include tabs.theme($theme)`),
- * which sets the colour tokens on `.mat-mdc-tab-group`:
+ * The colour tokens are `@property`-registered without an initial value
+ * and set per colour scheme below, so the bridge's value on the
+ * tab group wins by inheritance. The `@cngx/themes/material/tabs-theme`
+ * bridge (`@include tabs.theme($theme)`) sets them on `.mat-mdc-tab-group`:
  *
  * - `--cngx-mat-tab-error-color` <- `--mat-sys-error`
  * - `--cngx-mat-tab-refused-color` <- `--mat-sys-tertiary`
+ * - `--cngx-mat-tab-refused-text-color` <- `--mat-sys-tertiary`
  * - `--cngx-mat-tab-has-errors-color` <- `--mat-sys-error`
- * - `--cngx-mat-tab-has-errors-glyph-color` <- `--mat-sys-on-error`
  * - `--cngx-mat-tabs-more-bg` <- `--mat-sys-surface`
  *
- * Imported standalone (no bridge), the tokens keep the literal defaults
- * declared below.
+ * Imported standalone (no bridge), the colours derive from the cngx
+ * foundation danger / warning / text tokens when they are present and
+ * from the same literal values otherwise, with a light and a dark set:
+ * the failed colour is danger mixed 75% toward the text colour (4.5:1 as
+ * label text), the refused amber is warning mixed 70% (icon) and 55%
+ * (label) toward it.
  *
  * **Dark mode**
  *
- * Three hooks deepen the trailing-edge wrapper background and its
- * gradient-fade shadow so the molecule blends into a dark page
+ * Three hooks switch the error, refused and has-errors colours to their
+ * dark-scheme values, and deepen the trailing-edge wrapper background and
+ * its gradient-fade shadow so the molecule blends into a dark page
  * surface rather than into a white-on-dark seam:
  *
  * - `prefers-color-scheme: dark`
@@ -85,24 +83,23 @@
 
 @layer cngx.tokens {
   /**
-   * Text + outline color of a rejected tab. Wired to `--mat-sys-error`
-   * by the `@cngx/themes/material/tabs-theme` bridge; standalone it keeps
-   * the literal default below.
+   * Label and icon colour of a failed tab (the commit action threw).
+   * Registered without an initial value and set per colour scheme
+   * below. Wired to `--mat-sys-error` by the
+   * `@cngx/themes/material/tabs-theme` bridge.
    * @group State / Error
    */
   @property --cngx-mat-tab-error-color {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.45 0.15 25);
   }
 
   /**
-   * Outline and glyph-disc colour of a refused tab (the commit action
-   * answered `false`). A refusal is no error, so it wears the rejection
-   * amber; a failed commit keeps `--cngx-mat-tab-error-color`. Registered
-   * without an initial value, so the amber fallback applies until a theme
-   * sets it. Wired to `--mat-sys-tertiary` by the
-   * `@cngx/themes/material/tabs-theme` bridge.
+   * Icon colour of a refused tab (the commit action answered `false`). A
+   * refusal is no error, so it wears amber; a failed commit keeps
+   * `--cngx-mat-tab-error-color`. Registered without an initial value and
+   * set per colour scheme below. Wired to `--mat-sys-tertiary`
+   * by the `@cngx/themes/material/tabs-theme` bridge.
    * @group State / Refused
    */
   @property --cngx-mat-tab-refused-color {
@@ -111,8 +108,9 @@
   }
 
   /**
-   * Text color of a refused tab. Defaults to the resting tab text colour:
-   * amber text would fall under the 4.5:1 text contrast.
+   * Label colour of a refused tab: a darker amber than the icon, so the
+   * text clears 4.5:1. Registered without an initial value and set per
+   * colour scheme below.
    * @group State / Refused
    */
   @property --cngx-mat-tab-refused-text-color {
@@ -121,10 +119,21 @@
   }
 
   /**
-   * Gap between a rejected tab's label and its rejection glyph disc when
-   * the disc sits inline (the tab also carries the has-errors badge, which
-   * keeps the corner), derived from the spacing scale (`--cngx-space-xs`)
-   * below. The disc itself shares `--cngx-mat-tab-has-errors-glyph-size`.
+   * Rendered size of the rejection icon after the label, in `em` of the
+   * tab label font. The universal syntax keeps the `em` unresolved until
+   * the icon reads it.
+   * @group State / Error
+   */
+  @property --cngx-mat-tab-rejection-icon-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1.15em;
+  }
+
+  /**
+   * Gap between a tab's label and the icons after it (the has-errors
+   * badge and the rejection icon), derived from the spacing scale
+   * (`--cngx-space-xs`) below.
    * @group State / Error
    */
   @property --cngx-mat-tab-rejection-icon-gap {
@@ -133,31 +142,10 @@
     initial-value: 0.25rem;
   }
 
-  /* Read on the glyph itself (inherits: false), so the scale SET lands there. */
-  .cngx-mat-tab__rejection-icon {
+  /* Read on the icons themselves (inherits: false), so the scale SET lands there. */
+  .cngx-mat-tab__rejection-icon,
+  .cngx-mat-tab__error-badge {
     --cngx-mat-tab-rejection-icon-gap: var(--cngx-space-xs, 0.25rem);
-  }
-
-  /**
-   * Outline shorthand of a rejected tab.
-   * @group State / Error
-   */
-  @property --cngx-mat-tab-error-outline {
-    syntax: '*';
-    inherits: false;
-    initial-value: 2px solid currentColor;
-  }
-
-  /**
-   * Outline offset of the rejected-tab outline. Negative by default: the
-   * Material label container clips its overflow, so an outline outside the
-   * tab box would lose its top, bottom and trailing edges.
-   * @group State / Error
-   */
-  @property --cngx-mat-tab-error-outline-offset {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: -2px;
   }
 
   /**
@@ -171,71 +159,26 @@
   }
 
   /**
-   * Inset of the `has-errors` glyph from the tab edges.
-   * @group State / HasErrors
-   */
-  @property --cngx-mat-tab-has-errors-glyph-offset {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 4px;
-  }
-
-  /**
-   * Larger inset when the tab is BOTH rejected and carries form
-   * errors - keeps the two signals visually distinct.
-   * @group State / HasErrors
-   */
-  @property --cngx-mat-tab-has-errors-glyph-offset-stacked {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 6px;
-  }
-
-  /*
-   * Diameter of the `has-errors` glyph disc. Intentionally NOT
-   * @property-registered - the one exception to the all-tokens-registered
-   * note above. A registered `<length>` computes a `rem` value to an absolute
-   * px once, pinning the badge to a fixed size and defeating text-only zoom.
-   * Left unregistered so the `var(--..., 1rem)` fallbacks at the glyph rule
-   * scale the disc and glyph together with the root font-size. Still
-   * consumer-overridable - set `--cngx-mat-tab-has-errors-glyph-size` on any
-   * ancestor and the `var()` use-sites pick it up; it just no longer appears on
-   * the compodoc Theming tab (unregistered tokens carry no typed metadata).
-   */
-
-  /**
-   * Background of the `has-errors` glyph disc. Wired to `--mat-sys-error`
-   * by the `@cngx/themes/material/tabs-theme` bridge; standalone it keeps
-   * the literal default below. Inherits so a host-level override reaches
-   * the `::after` glyph.
+   * Colour of the `has-errors` alert icon after the label. Registered
+   * without an initial value and set per colour scheme below.
+   * Wired to `--mat-sys-error` by the `@cngx/themes/material/tabs-theme`
+   * bridge.
    * @group State / HasErrors
    */
   @property --cngx-mat-tab-has-errors-color {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.45 0.15 25);
   }
 
   /**
-   * Glyph color inside the `has-errors` disc. Wired to `--mat-sys-on-error`
-   * by the `@cngx/themes/material/tabs-theme` bridge; standalone it keeps
-   * the literal default below.
+   * Rendered size of the `has-errors` alert icon, in `em` of the tab
+   * label font.
    * @group State / HasErrors
    */
-  @property --cngx-mat-tab-has-errors-glyph-color {
-    syntax: '<color>';
+  @property --cngx-mat-tab-has-errors-icon-size {
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(1 0 0);
-  }
-
-  /**
-   * Font-weight of the `has-errors` glyph (`!`).
-   * @group State / HasErrors
-   */
-  @property --cngx-mat-tab-has-errors-font-weight {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 700;
+    initial-value: 1.15em;
   }
 
   /**
@@ -278,8 +221,6 @@
    * its own; the `@cngx/themes/material/tabs-theme` bridge supersedes them
    * by setting `--cngx-mat-tabs-more-bg` to `--mat-sys-surface` on the tab
    * group, a nearer ancestor of the wrapper, so it wins by inheritance.
-   * Stays under the Material-bridge namespace (no `--cngx-color-*`
-   * delegation) per the file-header contract.
    */
   :root {
     --cngx-mat-tabs-more-bg: oklch(1 0 0);
@@ -304,118 +245,164 @@
     --cngx-mat-tabs-more-bg: oklch(1 0 0);
     --cngx-mat-tabs-more-shadow: -8px 0 8px -4px oklch(0 0 0 / 0.1);
   }
+
+  /*
+   * Error, refused and has-errors colours per scheme. The selectors mirror
+   * the foundation scheme blocks in `@cngx/core/theming/system-tokens.css`
+   * (OS auto-follow on `:root`, explicit dark / light on any element), so a
+   * `[data-color-scheme]` / `.dark` island switches them too.
+   */
+  :root {
+    --cngx-mat-tab-error-color: color-mix(
+      in oklab,
+      var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
+      var(--cngx-color-text, oklch(0.2 0.01 250))
+    );
+    --cngx-mat-tab-has-errors-color: var(--cngx-color-danger, oklch(0.6 0.18 25));
+    --cngx-mat-tab-refused-color: color-mix(
+      in oklab,
+      var(--cngx-color-warning, oklch(0.72 0.15 75)) 70%,
+      var(--cngx-color-text, oklch(0.2 0.01 250))
+    );
+    --cngx-mat-tab-refused-text-color: color-mix(
+      in oklab,
+      var(--cngx-color-warning, oklch(0.72 0.15 75)) 55%,
+      var(--cngx-color-text, oklch(0.2 0.01 250))
+    );
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-mat-tab-error-color: color-mix(
+        in oklab,
+        var(--cngx-color-danger, oklch(0.68 0.17 25)) 75%,
+        var(--cngx-color-text, oklch(0.95 0.01 250))
+      );
+      --cngx-mat-tab-has-errors-color: var(--cngx-color-danger, oklch(0.68 0.17 25));
+      --cngx-mat-tab-refused-color: color-mix(
+        in oklab,
+        var(--cngx-color-warning, oklch(0.78 0.14 75)) 70%,
+        var(--cngx-color-text, oklch(0.95 0.01 250))
+      );
+      --cngx-mat-tab-refused-text-color: color-mix(
+        in oklab,
+        var(--cngx-color-warning, oklch(0.78 0.14 75)) 55%,
+        var(--cngx-color-text, oklch(0.95 0.01 250))
+      );
+    }
+  }
+
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-mat-tab-error-color: color-mix(
+      in oklab,
+      var(--cngx-color-danger, oklch(0.68 0.17 25)) 75%,
+      var(--cngx-color-text, oklch(0.95 0.01 250))
+    );
+    --cngx-mat-tab-has-errors-color: var(--cngx-color-danger, oklch(0.68 0.17 25));
+    --cngx-mat-tab-refused-color: color-mix(
+      in oklab,
+      var(--cngx-color-warning, oklch(0.78 0.14 75)) 70%,
+      var(--cngx-color-text, oklch(0.95 0.01 250))
+    );
+    --cngx-mat-tab-refused-text-color: color-mix(
+      in oklab,
+      var(--cngx-color-warning, oklch(0.78 0.14 75)) 55%,
+      var(--cngx-color-text, oklch(0.95 0.01 250))
+    );
+  }
+
+  [data-color-scheme='light'],
+  .light {
+    --cngx-mat-tab-error-color: color-mix(
+      in oklab,
+      var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
+      var(--cngx-color-text, oklch(0.2 0.01 250))
+    );
+    --cngx-mat-tab-has-errors-color: var(--cngx-color-danger, oklch(0.6 0.18 25));
+    --cngx-mat-tab-refused-color: color-mix(
+      in oklab,
+      var(--cngx-color-warning, oklch(0.72 0.15 75)) 70%,
+      var(--cngx-color-text, oklch(0.2 0.01 250))
+    );
+    --cngx-mat-tab-refused-text-color: color-mix(
+      in oklab,
+      var(--cngx-color-warning, oklch(0.72 0.15 75)) 55%,
+      var(--cngx-color-text, oklch(0.2 0.01 250))
+    );
+  }
 }
 
 @layer cngx.components {
   /*
-   * Rejection glyph. `::before` (Material's focus indicator) and `::after`
-   * (the has-errors badge) are taken, so the decoration appends this
-   * `aria-hidden` span to the tab element itself, next to its
-   * screen-reader descriptor. Laid out inline after the label row by
-   * default; the corner rule below lifts it out when the corner is free.
+   * The has-errors badge and the rejection icon. `::before` is Material's
+   * focus indicator, so the decorations append these `aria-hidden` spans
+   * to the tab element itself, next to their screen-reader descriptors.
+   * Material's `.mdc-tab` is a centred flex row, so both follow
+   * `.mdc-tab__content` (the label) and centre with it; `order` keeps the
+   * badge before the rejection icon whichever decoration mounts first.
+   * Standalone stroke glyphs, no disc.
    */
+  .cngx-mat-tab__error-badge,
   .cngx-mat-tab__rejection-icon {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
     flex: 0 0 auto;
     align-self: center;
-    width: var(--cngx-mat-tab-has-errors-glyph-size, 1rem);
-    height: var(--cngx-mat-tab-has-errors-glyph-size, 1rem);
     margin-inline-start: var(--cngx-mat-tab-rejection-icon-gap, 0.25rem);
-    border-radius: 50%;
-    background: var(--cngx-mat-tab-error-color, oklch(0.45 0.15 25));
-    color: var(--cngx-mat-tab-has-errors-glyph-color, oklch(1 0 0));
-    font-size: calc(var(--cngx-mat-tab-has-errors-glyph-size, 1rem) * 0.75);
-    font-weight: var(--cngx-mat-tab-has-errors-font-weight, 700);
-    line-height: 1;
     pointer-events: none;
+  }
+
+  .cngx-mat-tab__error-badge {
+    order: 1;
+    color: var(--cngx-mat-tab-has-errors-color, oklch(0.6 0.18 25));
+  }
+
+  .cngx-mat-tab__rejection-icon {
+    order: 2;
+    color: var(--cngx-mat-tab-error-color, oklch(0.5 0.14 25));
   }
 
   .cngx-mat-tab__rejection-icon[data-reason='refused'] {
-    background: var(--cngx-mat-tab-refused-color, oklch(0.62 0.15 60));
+    color: var(--cngx-mat-tab-refused-color, oklch(0.56 0.11 74));
   }
 
   /*
-   * No has-errors badge on the tab: the disc takes the badge's corner.
-   * It resolves against the tab (Material's `.mdc-tab` is
-   * `position: relative`; set here too for a bare tab link), which is why
-   * the decoration never mounts it inside `.mdc-tab__content`, itself a
-   * positioning context.
+   * The icons' `<svg><path>`, built by the decorations from the shared
+   * icon data (no `CngxIconSvg` instance, so its stylesheet is not loaded
+   * here). Both draw on the 24-unit grid at stroke width 2, sized in em of
+   * the tab label font.
    */
-  .mat-mdc-tab.cngx-mat-tab--error:not(.cngx-mat-tab--has-errors),
-  .mat-mdc-tab-link.cngx-mat-tab--error:not(.cngx-mat-tab--has-errors) {
-    position: relative;
+  .cngx-mat-tab__icon-svg {
+    --cngx-icon-svg-size: 1.15em;
+    --cngx-icon-svg-stroke-width: 2;
+
+    /* Functional - hardcoded */
+    display: block;
+    flex: none;
+    overflow: visible;
+    fill: currentColor;
+
+    /* Themable */
+    inline-size: var(--cngx-icon-svg-size, 1.15em);
+    block-size: var(--cngx-icon-svg-size, 1.15em);
   }
 
-  .cngx-mat-tab--error:not(.cngx-mat-tab--has-errors) > .cngx-mat-tab__rejection-icon {
-    position: absolute;
-    top: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);
-    inset-inline-end: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);
-    margin: 0;
-    z-index: 1;
+  .cngx-mat-tab__error-badge > .cngx-mat-tab__icon-svg {
+    --cngx-icon-svg-size: var(--cngx-mat-tab-has-errors-icon-size, 1.15em);
   }
 
-  /*
-   * A disabled-and-rejected tab takes no fade: Material paints the
-   * disabled label colour, and the error outline above keeps it apart
-   * from a healthy disabled tab. Disabled is colour, never opacity.
-   */
-
-  /*
-   * Per-tab form-error aggregation badge. Distinct semantic from
-   * `--error` - `--error` means "your last commit was refused";
-   * `--has-errors` means "this tab contains form-validation errors
-   * right now". The two coexist and a tab can carry both
-   * simultaneously.
-   */
-  .cngx-mat-tab--has-errors {
-    position: relative;
+  .cngx-mat-tab__rejection-icon > .cngx-mat-tab__icon-svg {
+    --cngx-icon-svg-size: var(--cngx-mat-tab-rejection-icon-size, 1.15em);
   }
 
-  /*
-   * The badge lives on `::after` because Material owns `::before` on every
-   * `.mat-focus-indicator` tab: with `mat.strong-focus-indicators()` its
-   * unlayered rule (`display`, `inset`, `border`, and `content: ''` on
-   * focus) beats any rule in this layer regardless of specificity, which
-   * hid the badge entirely and stole the focus ring's pseudo-element.
-   */
-  .mat-mdc-tab.cngx-mat-tab--has-errors::after,
-  .mat-mdc-tab-link.cngx-mat-tab--has-errors::after {
-    content: '!' / '';
-    position: absolute;
-    top: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);
-    inset-inline-end: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);
-    inset-inline-start: auto;
-    bottom: auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--cngx-mat-tab-has-errors-glyph-size, 1rem);
-    height: var(--cngx-mat-tab-has-errors-glyph-size, 1rem);
-    margin: 0;
-    border: 0;
-    border-radius: 50%;
-    background: var(--cngx-mat-tab-has-errors-color, oklch(0.45 0.15 25));
-    color: var(--cngx-mat-tab-has-errors-glyph-color, oklch(1 0 0));
-    font-size: calc(var(--cngx-mat-tab-has-errors-glyph-size, 1rem) * 0.75);
-    font-weight: var(--cngx-mat-tab-has-errors-font-weight, 700);
-    line-height: 1;
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  /*
-   * Co-occurrence: when a tab is BOTH rejected and carries form
-   * errors, the rejection outline already draws focus to the edges;
-   * shift the has-errors badge slightly inward so the two signals
-   * read as distinct rather than visually merging. The rejection disc
-   * leaves the corner to the badge and sits inline after the label.
-   */
-  .mat-mdc-tab.cngx-mat-tab--error.cngx-mat-tab--has-errors::after,
-  .mat-mdc-tab-link.cngx-mat-tab--error.cngx-mat-tab--has-errors::after {
-    top: var(--cngx-mat-tab-has-errors-glyph-offset-stacked, 6px);
-    inset-inline-end: var(--cngx-mat-tab-has-errors-glyph-offset-stacked, 6px);
+  /* Round caps are part of a stroke icon's shape (see `CngxIconPaint`). */
+  .cngx-mat-tab__icon-svg--stroke {
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: var(--cngx-icon-svg-stroke-width, 2);
   }
 
   /*
@@ -465,13 +452,14 @@
 }
 
 /*
- * Rejected-tab paint. Unlayered on purpose: Material ships its tab styles
- * unlayered through the component decorator (`.mdc-tab { outline: none }`,
- * the font-weight on `.mat-mdc-tab`), and an unlayered rule beats every
- * layered one whatever its specificity, so inside `@layer cngx.components`
- * the outline and the weight never painted. Out here the specificity bump to
- * `.mat-mdc-tab.cngx-mat-tab--error` (0,2,0) decides against Material's
- * (0,1,0) rules, which are injected after the global styles.
+ * Rejected-tab paint: colour only, no outline and no surface. Unlayered on
+ * purpose: Material ships its tab styles unlayered through the component
+ * decorator (the font-weight on `.mat-mdc-tab`), and an unlayered rule beats
+ * every layered one whatever its specificity, so inside
+ * `@layer cngx.components` the weight never painted. Out here the
+ * specificity bump to `.mat-mdc-tab.cngx-mat-tab--error` (0,2,0) decides
+ * against Material's (0,1,0) rules, which are injected after the global
+ * styles.
  *
  * `.mat-mdc-tab-link` carries the same decoration for the native
  * `[cngxMatTabNav]` bridge - the link element is also (0,1,0), so the
@@ -479,48 +467,55 @@
  *
  * The label text is painted by Material on `.mdc-tab__text-label` from its
  * own `--mat-tab-*-label-text-color` tokens, up to (0,4,0) for the active
- * hovered tab, so a colour on the tab never reached it. A failed tab sets
- * those tokens instead; the label inherits them past every Material state
- * selector, and the disabled colour stays Material's.
+ * hovered tab, so a colour on the tab never reached it. A rejected tab sets
+ * those tokens instead, from the reason colour; the label inherits them
+ * past every Material state selector, and the disabled colour stays
+ * Material's.
  */
 .mat-mdc-tab.cngx-mat-tab--error,
 .mat-mdc-tab-link.cngx-mat-tab--error {
-  color: var(--cngx-mat-tab-error-color, oklch(0.45 0.15 25));
-  outline: var(--cngx-mat-tab-error-outline, 2px solid currentColor);
-  outline-offset: var(--cngx-mat-tab-error-outline-offset, -2px);
+  --_cngx-mat-tab-rejection-text: var(--cngx-mat-tab-error-color, oklch(0.5 0.14 25));
+  --mat-tab-inactive-label-text-color: var(--_cngx-mat-tab-rejection-text, oklch(0.5 0.14 25));
+  --mat-tab-inactive-focus-label-text-color: var(
+    --_cngx-mat-tab-rejection-text,
+    oklch(0.5 0.14 25)
+  );
+  --mat-tab-inactive-hover-label-text-color: var(
+    --_cngx-mat-tab-rejection-text,
+    oklch(0.5 0.14 25)
+  );
+  --mat-tab-active-label-text-color: var(--_cngx-mat-tab-rejection-text, oklch(0.5 0.14 25));
+  --mat-tab-active-focus-label-text-color: var(--_cngx-mat-tab-rejection-text, oklch(0.5 0.14 25));
+  --mat-tab-active-hover-label-text-color: var(--_cngx-mat-tab-rejection-text, oklch(0.5 0.14 25));
+  color: var(--_cngx-mat-tab-rejection-text, oklch(0.5 0.14 25));
   font-weight: var(--cngx-mat-tab-error-font-weight, 600);
 }
 
-.mat-mdc-tab.cngx-mat-tab--error:not([data-reason='refused']),
-.mat-mdc-tab-link.cngx-mat-tab--error:not([data-reason='refused']) {
-  --mat-tab-inactive-label-text-color: var(--cngx-mat-tab-error-color, oklch(0.45 0.15 25));
-  --mat-tab-inactive-focus-label-text-color: var(--cngx-mat-tab-error-color, oklch(0.45 0.15 25));
-  --mat-tab-inactive-hover-label-text-color: var(--cngx-mat-tab-error-color, oklch(0.45 0.15 25));
-  --mat-tab-active-label-text-color: var(--cngx-mat-tab-error-color, oklch(0.45 0.15 25));
-  --mat-tab-active-focus-label-text-color: var(--cngx-mat-tab-error-color, oklch(0.45 0.15 25));
-  --mat-tab-active-hover-label-text-color: var(--cngx-mat-tab-error-color, oklch(0.45 0.15 25));
-}
-
 /*
- * A refused commit is no error: the outline and the glyph disc take the
- * rejection amber, the text keeps its resting colour (amber text would
- * fall under the 4.5:1 text contrast), so its label keeps Material's
- * tokens. A failed one stays red above.
+ * A refused commit is no error: the label takes the refused amber (the
+ * darker text step, 4.5:1), the icon the brighter one. A failed one stays
+ * red above.
  */
 .mat-mdc-tab.cngx-mat-tab--error[data-reason='refused'],
 .mat-mdc-tab-link.cngx-mat-tab--error[data-reason='refused'] {
-  color: var(--cngx-mat-tab-refused-text-color, currentColor);
-  outline-color: var(--cngx-mat-tab-refused-color, oklch(0.62 0.15 60));
+  --_cngx-mat-tab-rejection-text: var(--cngx-mat-tab-refused-text-color, oklch(0.49 0.07 75));
 }
 
-/* forced-colors (WHCM): the glyph disc is a background fill, which the forced
- * palette drops. Paint it in system colours so the refused and the failed
- * glyph both keep their disc; the outline contour survives on its own.
- * Unlayered to beat the layered component rule. */
+/* forced-colors (WHCM): the icons are bare stroke glyphs painting in
+ * currentColor; pin them to CanvasText so they never leave the system
+ * palette. The label colour is forced away, so an inset CanvasText outline
+ * (no layout shift) keeps a rejected tab distinguishable; the focus ring
+ * keeps its own indicator. Unlayered to beat the layered component rule and
+ * Material's unlayered `.mdc-tab { outline: none }`. */
 @media (forced-colors: active) {
+  .cngx-mat-tab__error-badge,
   .cngx-mat-tab__rejection-icon {
-    forced-color-adjust: none;
-    background: CanvasText;
-    color: Canvas;
+    color: CanvasText;
+  }
+
+  .mat-mdc-tab.cngx-mat-tab--error:not(:focus-visible),
+  .mat-mdc-tab-link.cngx-mat-tab--error:not(:focus-visible) {
+    outline: 2px solid CanvasText;
+    outline-offset: -2px;
   }
 }
