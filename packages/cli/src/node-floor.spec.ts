@@ -31,7 +31,24 @@ describe('the floor literal', () => {
     expect(pkg.engines.node).toBe(`>=${NODE_FLOOR_MAJOR}`);
   });
 
-  it('lives in a module that imports nothing', () => {
-    expect(read('./node-floor.ts')).not.toMatch(/^\s*import\b/m);
+  // The built module is what an old Node evaluates first, so its own text decides.
+  it('lives in a built module that loads nothing', () => {
+    expect(moduleLoads(read('../dist/node-floor.js'))).toEqual([]);
+  });
+
+  it.each([
+    "import { x } from './x.js';",
+    "import './x.js';",
+    "export { x } from './x.js';",
+    "export * from './x.js';",
+    "const x = await import('./x.js');",
+    "const x = require('./x.js');",
+  ])('mutation: %s is a load', (statement) => {
+    expect(moduleLoads(`export const a = 1;\n${statement}\n`)).not.toEqual([]);
   });
 });
+
+/** Every static import, re-export, dynamic import or require in a module's text. */
+function moduleLoads(source: string): string[] {
+  return source.match(/^\s*import\b.*$|\bexport\b[^;\n]*\bfrom\s*['"]|\bimport\s*\(|\brequire\s*\(/gm) ?? [];
+}
