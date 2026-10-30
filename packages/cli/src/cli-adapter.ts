@@ -526,11 +526,18 @@ function pinDetected(
     io.stderr(`cngx: answering for the installed cngx ${version}; the bundled snapshot is ${bundledVersion ?? 'unstamped'}.\n`);
   }
   const base = context.resolve;
+  // The resolver memoises successes only; several names would otherwise refetch
+  // and re-announce the failed release once per name.
+  let failed = false;
   const resolve: DocsResolver = async (requested) => {
+    if (failed && requested === version) {
+      return base(undefined);
+    }
     const resolution = await base(requested);
     if (resolution.ok || requested !== version) {
       return resolution;
     }
+    failed = true;
     const skip = offline ? '' : ' Pass --offline to skip the fetch.';
     io.stderr(
       `cngx: cngx ${version} could not be resolved (${resolution.reason}: ${resolution.message}); ` +

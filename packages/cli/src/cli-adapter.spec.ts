@@ -828,6 +828,14 @@ describe('installed-version pinning', () => {
     );
   });
 
+  it('detected but unavailable with several names: one fetch and one fallback line per run', async () => {
+    const run = await pinned(['api', 'CngxSelect', 'CngxRipple'], installed('0.2.0'), { ok: false, reason: 'network', message: 'offline' });
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(run.fetchSnapshot).toHaveBeenCalledTimes(1);
+    expect(run.stderr.match(/could not be resolved/g)).toHaveLength(1);
+  });
+
   it('detected with an unknown schema: falls back to bundled with exit 0 and names the mismatch', async () => {
     const path = join(mkdtempSync(join(tmpdir(), 'cngx-schema-')), 'documentation.json');
     writeFileSync(path, JSON.stringify({ schemaVersion: 99 }));
