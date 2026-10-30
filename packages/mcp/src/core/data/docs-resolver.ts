@@ -13,6 +13,7 @@ import { loadDocsFromFile, SnapshotLoadError } from './loader.js';
 import type { FetchSnapshot } from '../diff/snapshot-fetch.js';
 import { fetchSnapshot, normalizeReleaseVersion, removeQuietly, removeTempDir } from '../diff/snapshot-fetch.js';
 import type { SnapshotFetchFailureReason } from '../diff/types.js';
+import type { SnapshotCache } from './snapshot-cache.js';
 
 /** A resolved snapshot plus the version label it grounds against, or a typed failure. */
 export type DocsResolution =
@@ -25,6 +26,10 @@ export interface DocsResolverDeps {
   loadDocs: typeof loadDocsFromFile;
   /** Removes the temp dir a fetch hands over once its snapshot is read. Defaults to a recursive delete. */
   removeDir?: (dir: string) => void;
+  /** Disk cache read before a fetch and written after a successful load. The MCP server leaves it unset. */
+  cache?: SnapshotCache;
+  /** Answer from the cache only; `fetchSnapshot` is never called. */
+  offline?: boolean;
 }
 
 const defaultDeps: DocsResolverDeps = { fetchSnapshot, loadDocs: loadDocsFromFile, removeDir: removeTempDir };
@@ -103,6 +108,14 @@ async function fetchAndLoad(
   deps: DocsResolverDeps,
   cache: Map<string, DocsIndex>,
 ): Promise<DocsResolution> {
+  const cached = readCached(requested, deps);
+  if (cached) {
+    cacheDocs(cache, requested, cached);
+    return { ok: true, docs: cached, version: cached.meta.cngxVersion ?? requested };
+  }
+  if (deps.offline) {
+    return { ok: false, reason: 'asset-missing', message: `v${requested} is not cached and --offline forbids a fetch.` };
+  }
   const fetched = await deps.fetchSnapshot(requested);
   if (!fetched.ok) {
     return { ok: false, reason: fetched.reason, message: fetched.message };
@@ -111,6 +124,8 @@ async function fetchAndLoad(
     // A release asset is the raw docs:json export; only the bundled snapshot is
     // rebased at build time.
     const docs = rebaseExampleUrls(deps.loadDocs(fetched.path));
+    // Written only after the load succeeded, so a schema mismatch is never cached.
+    deps.cache?.write(requested, fetched.path);
     cacheDocs(cache, requested, docs);
     // A successful download of the `v<version>` asset means the asset IS that version,
     // so an unstamped raw export still resolves to the requested label.
@@ -126,6 +141,20 @@ async function fetchAndLoad(
     if (fetched.dir !== undefined) {
       removeQuietly(deps.removeDir ?? removeTempDir, fetched.dir);
     }
+  }
+}
+
+/** The disk-cached snapshot of `requested`, or null. An entry that fails to load is discarded, so the caller refetches once. */
+function readCached(requested: string, deps: DocsResolverDeps): DocsIndex | null {
+  const path = deps.cache?.read(requested);
+  if (!deps.cache || !path) {
+    return null;
+  }
+  try {
+    return rebaseExampleUrls(deps.loadDocs(path));
+  } catch (error) {
+    deps.cache.discard(requested, fetchedLoadProblem(error));
+    return null;
   }
 }
 
