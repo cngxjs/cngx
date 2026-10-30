@@ -32,6 +32,7 @@ import { createSnapshotCache, resolveCacheDir } from './core/data/snapshot-cache
 import type { InstalledVersion } from './core/installed-version.js';
 import { resolveInstalledCngxVersion } from './core/installed-version.js';
 import { readCngxNames } from './from-file.js';
+import type * as DoctorExports from '@cngx/doctor/cngx-doctor.mjs';
 
 export const EXIT_OK = 0;
 export const EXIT_NOT_FOUND = 1;
@@ -67,7 +68,7 @@ export interface CliEnv {
    */
   detectVersion?(): InstalledVersion;
   /** Loads `@cngx/doctor` for `cngx doctor`; without it, `doctor` is an unknown command. */
-  loadDoctor?(): Promise<DoctorModule>;
+  readonly loadDoctor?: () => Promise<DoctorModule>;
   readonly cliVersion: string;
   readonly io: CliIo;
 }
@@ -75,7 +76,7 @@ export interface CliEnv {
 const VERSION_FLAG = 'cngx-version';
 
 /** What `cngx doctor` needs from `@cngx/doctor`. */
-export type DoctorModule = Pick<typeof import('@cngx/doctor/cngx-doctor.mjs'), 'parseArgs' | 'runDoctor'>;
+export type DoctorModule = Pick<typeof DoctorExports, 'parseArgs' | 'runDoctor'>;
 
 /** Commands the adapter runs itself, outside the registry: they answer no snapshot query. */
 export const ADAPTER_COMMANDS = ['doctor'] as const;
