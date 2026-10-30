@@ -360,16 +360,27 @@ describe('createScalarCommitHandler', () => {
   });
 
   describe('retryLast', () => {
-    it('replays the last commit using the controller intended value', () => {
+    it('replays the last failed commit using the controller intended value', () => {
       const action: CngxSelectCommitAction<T> = (next) => next;
       h.commitAction.set(action);
-      h.handler.beginCommit('a', undefined, action);
+      h.handler.beginCommit('a', undefined, () => {
+        throw new Error('first fail');
+      });
       h.stateLog.length = 0;
       h.finalizeLog.length = 0;
 
       h.handler.retryLast();
       expect(h.stateLog).toEqual(['pending', 'success']);
       expect(h.value()).toBe('a');
+    });
+
+    it('is a no-op once the last commit succeeded', () => {
+      const action: CngxSelectCommitAction<T> = (next) => next;
+      h.commitAction.set(action);
+      h.handler.beginCommit('a', undefined, action);
+      h.stateLog.length = 0;
+      h.handler.retryLast();
+      expect(h.stateLog).toEqual([]);
     });
 
     it('is a no-op when no commit action is bound', () => {

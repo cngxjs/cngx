@@ -109,7 +109,10 @@ export interface CommitLedger<TCommit, TOption = unknown> {
   beginScalar<V extends TCommit | undefined>(
     request: CommitLedgerScalarRequest<TCommit, V, TOption>,
   ): void;
-  /** Replays the last commit through its own request. No-op without one or without an action. */
+  /**
+   * Replays the last failed commit through its own request. No-op without
+   * one, once it succeeded, or without a bound action.
+   */
   retry(): void;
   /** Forgets the last commit and the confirmed value. */
   reset(): void;
@@ -190,15 +193,20 @@ export function createCommitLedger<TCommit, TOption = unknown>(
       option: req.option ?? null,
       meta: req.meta,
     });
-    replayLast = () => {
+    const replayCommit = (): void => {
       const current = untracked(req.commitAction);
       if (current) {
         run({ ...req, previous }, current, true);
       }
     };
+    replayLast = replayCommit;
     req.onStateChange?.('pending');
     controller.begin(action, next, previous, {
       onSuccess: (committed) => {
+        // A confirmed commit has nothing to retry; a later begin owns the slot.
+        if (replayLast === replayCommit) {
+          replayLast = null;
+        }
         req.onStateChange?.('success');
         // `null` is a legitimate server result (a `??` would drop it); only a
         // missing one falls back to the intended value.

@@ -256,7 +256,7 @@ describe('createArrayCommitHandler', () => {
       const clearCalls: T[][] = [];
       const action: CngxSelectCommitAction<T[]> = (next) => {
         clearCalls.push([...(next ?? [])]);
-        return next;
+        throw new Error('down');
       };
       h.commitAction.set(action);
       h.values.set([]);

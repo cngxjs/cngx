@@ -241,6 +241,28 @@ describe('createCommitLedger', () => {
     expect(h.calls).toHaveLength(1);
   });
 
+  it('drops the replay once the commit succeeds, so a retry never re-sends it', () => {
+    const h = harness(['a']);
+    h.values.set(['b']);
+    h.ledger.beginMembers(h.request('toggle', ['b'], ['a']));
+    h.pendings[0].next(['b']);
+    h.pendings[0].complete();
+    h.ledger.retry();
+    expect(h.calls).toEqual([['b']]);
+  });
+
+  it('drops the replay when a retried commit succeeds', () => {
+    const h = harness(['a']);
+    h.values.set(['b']);
+    h.ledger.beginMembers(h.request('toggle', ['b'], ['a']));
+    h.pendings[0].error(new Error('down'));
+    h.ledger.retry();
+    h.pendings[1].next(['b']);
+    h.pendings[1].complete();
+    h.ledger.retry();
+    expect(h.calls).toHaveLength(2);
+  });
+
   it('keeps the last record reference across a retry of the same commit', () => {
     const h = harness(['a']);
     h.ledger.beginMembers(h.request('toggle', ['b'], ['a'], opt('b')));
