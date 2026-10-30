@@ -43,7 +43,7 @@ describe('getStoryExample', () => {
   });
 });
 
-describe('get_story_example over MCP', () => {
+describe('get_story_example run', () => {
   const bundled = loadBundledDocs(fileURLToPath(new URL('../../../data/', import.meta.url)));
   const run = (name: string) => getStoryExampleCommand.run({ bundled, resolve: createDocsResolver(bundled) }, { name });
 
