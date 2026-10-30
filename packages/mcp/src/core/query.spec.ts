@@ -112,6 +112,16 @@ describe('resolveEntry over the bundled snapshot', () => {
     expect(answerOf(resolveEntry(bundled, needle))).toBe(name);
   });
 
+  // A name match wins over another entry's bare attribute; the bracketed attribute names its own directive.
+  it.each([
+    ['cngxStepper', 'CngxStepper'],
+    ['[cngxStepper]', 'CngxStepperPresenter'],
+    ['cngxTabGroup', 'CngxTabGroup'],
+    ['[cngxTabGroup]', 'CngxTabGroupPresenter'],
+  ])('resolves the name/attribute split %j to %s', (needle, name) => {
+    expect(answerOf(resolveEntry(bundled, needle))).toBe(name);
+  });
+
   it.each(['cngxRouterSync', '[cngxRouterSync]'])('answers %j as ambiguous between the breadcrumb sync directives', (needle) => {
     expect(answerOf(resolveEntry(bundled, needle))).toEqual(['CngxBreadcrumbRouterSync', 'CngxBreadcrumbSiblingsRouterSync']);
   });

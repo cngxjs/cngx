@@ -102,12 +102,16 @@ const byName = (a: EntryCandidate, b: EntryCandidate): number =>
 
 /**
  * Resolve a single component/directive by exact name (case-insensitive), falling
- * back to its selector so `cngx-select`, `[cngxCheckbox]` or the bare attribute
- * `cngxButton` resolve as readily as the class name. A name match wins over a
- * selector match; among selector matches the best-ranked key wins (see
- * `selectorKeys`). Two or more entries sharing the best rank answer as
- * {@link AmbiguousMatch}, candidates sorted by name, so the answer never depends
- * on snapshot order. Returns `undefined` when nothing matches.
+ * back to its selector, so `cngx-select`, `[cngxCheckbox]` or the bare attribute
+ * `cngxButton` resolve too. A name match wins over every selector key, also when
+ * the needle is another entry's bare attribute: `cngxStepper` is `CngxStepper`,
+ * while `[cngxStepper]` is `CngxStepperPresenter`. The bundled snapshot has four
+ * such splits (`cngxStepper`, `cngxTabGroup`, `cngxTimelineItem`,
+ * `cngxSelectOptgroup`); the bracketed attribute names the directive that carries
+ * it. Among selector matches the best-ranked key wins (see `selectorKeys`). Two or
+ * more entries sharing the best rank answer as {@link AmbiguousMatch}, candidates
+ * sorted by name, so the answer never depends on snapshot order. Returns
+ * `undefined` when nothing matches.
  */
 export function resolveEntry(docs: DocsIndex, name: string): KindedEntry | AmbiguousMatch | undefined {
   const needle = name.trim().toLowerCase();
