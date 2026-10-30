@@ -1237,8 +1237,7 @@ export class CngxSelectShell<T = unknown>
         const eq = this.compareWith();
         const flat = this.flatOptions();
         const v = this.value();
-        const currentFlatIndex =
-          isEmptyScalar(v) ? -1 : flat.findIndex((o) => eq(o.value, v));
+        const currentFlatIndex = isEmptyScalar(v) ? -1 : flat.findIndex((o) => eq(o.value, v));
         const action = this.flatNavStrategy.onTypeaheadWhileClosed(
           {
             options: flat,
