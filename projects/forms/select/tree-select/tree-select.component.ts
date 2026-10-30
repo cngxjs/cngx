@@ -73,10 +73,7 @@ import {
   cngxDevWarn,
 } from '@cngx/utils';
 
-import {
-  CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
-  type ArrayCommitHandler,
-} from '../shared/array-commit-handler';
+import { CNGX_ARRAY_COMMIT_HANDLER_FACTORY } from '../shared/array-commit-handler';
 import { type CngxCommitErrorAnnouncePolicy } from '../shared/commit-error-announcer';
 import {
   CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
@@ -130,7 +127,7 @@ import { createTreeSelectionCounts } from './internal/tree-selection-counts';
 import { CngxTreeSelectNodeCount } from './tree-select-node-count.directive';
 import { CngxTreeSelectFooter } from './tree-select-footer.directive';
 import { injectResolvedTemplate } from '../shared/internal/resolve-template';
-import { createTreeToggleDispatch, type TreeToggleDispatch } from './internal/tree-toggle-dispatch';
+import { createTreeCommitWiring, isReferenceCompare } from './internal/tree-commit-wiring';
 import type {
   CngxTreeSelectAction,
   CngxTreeSelectChipContext,
@@ -141,11 +138,6 @@ import type {
   CngxTreeSelectTriggerLabelContext,
   CngxTreeSelectedItem,
 } from './tree-select.model';
-
-/** Whether `fn` is a reference comparison, i.e. what the keyed selection already does. */
-function isReferenceCompare(fn: unknown): boolean {
-  return fn === cngxSelectDefaultCompare || fn === Object.is;
-}
 
 const TRUNCATE: Signal<'wrap' | 'scroll-x' | 'truncate'> = signal<'wrap' | 'scroll-x' | 'truncate'>(
   'truncate',
@@ -787,71 +779,30 @@ export class CngxTreeSelect<T = unknown>
     },
   );
 
-  private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
-    policy: this.commitErrorAnnouncePolicy,
-  });
-
-  private readonly commitHandler: ArrayCommitHandler<T> = this.core.routeRetryThrough(
-    inject(CNGX_ARRAY_COMMIT_HANDLER_FACTORY)<T>({
-      values: this.values,
-      compareWith: this.compareWith,
-      commitMode: this.commitMode,
-      core: this.core,
-      commitAction: this.commitAction,
-      onToggleFinalize: () => {
-        // Tree commit success uses cascade-aware
-        // `dispatchValueChange` directly. The handler's per-option
-        // finalize is bypassed because the clear path passes
-        // `null` option (treated as clear by ArrayCommitHandler).
-      },
-      onClearFinalize: (previous, finalValues) => {
-        this.cleared.emit();
-        this.emitChange({
-          values: finalValues,
-          previousValues: previous,
-          added: [],
-          removed: previous,
-          node: null,
-          action: 'clear',
-        });
-      },
-      onStateChange: (status) => this.stateChange.emit(status),
-      onError: (err) => this.commitError.emit(err),
-      announceError: this.announceCommitError,
-    }),
-    ['beginToggle', 'beginClear'],
-  );
-
-  /** Set key of the member identity; `null` when only a custom `compareWith` can tell. */
-  private readonly memberKey = computed<((value: T) => unknown) | null>(() => {
-    const keyFn = this.keyFn();
-    if (keyFn) {
-      return keyFn;
-    }
-    return isReferenceCompare(this.compareWith()) ? (v: T) => v : null;
-  });
-
   /**
-   * Toggle / cascade / remove / clear mutations with their commit paths. A
-   * toggle Retry replays through it (cascade meta included); a clear Retry
-   * goes to the array handler, which started that commit.
+   * Member identity, commit-error announcer, the array handler that owns the
+   * clear commit, the toggle dispatch that owns the tree commits, and the
+   * Retry routed to whichever started the last commit.
    */
-  private readonly dispatch: TreeToggleDispatch<T> = createTreeToggleDispatch<T>({
+  private readonly commits = createTreeCommitWiring<T>({
     values: this.values,
-    membersEqual: (a, b) => this.membersEqual(a, b),
-    memberKey: this.memberKey,
-    treeController: this.treeController,
+    keyFn: this.keyFn,
+    compareWith: this.compareWith,
     cascade: this.cascadeChildren,
     commitAction: this.commitAction,
     commitMode: this.commitMode,
+    commitErrorAnnouncePolicy: this.commitErrorAnnouncePolicy,
     core: this.core,
-    commitHandler: () => this.commitHandler,
+    treeController: this.treeController,
+    arrayHandlerFactory: inject(CNGX_ARRAY_COMMIT_HANDLER_FACTORY),
     emitChange: (change) => this.emitChange(change),
     emitCleared: () => this.cleared.emit(),
     emitState: (status) => this.stateChange.emit(status),
     emitCommitError: (err) => this.commitError.emit(err),
-    announceCommitError: this.announceCommitError,
+    // Closure: `hostFocus` is declared further down in field order.
+    beforeRetry: () => this.hostFocus.refocusOwnerBeforeRemoval(),
   });
+  private readonly dispatch = this.commits.dispatch;
 
   /** @internal */ readonly activeView = this.core.activeView;
   /** @internal */ readonly showRefreshIndicator = this.core.showRefreshIndicator;
@@ -862,16 +813,8 @@ export class CngxTreeSelect<T = unknown>
   readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
   /** @internal */
   protected readonly resolvedPlaceholder = this.core.resolvedPlaceholder;
-  /**
-   * Member identity: `keyFn` when set, else `compareWith`. Field sync,
-   * commit reconcile, the selected-items equal and the active descendant
-   * all read it, so no boundary can disagree with the keyed selection.
-   */
-  private readonly memberEquality = computed<(a: T, b: T) => boolean>(() => {
-    const keyFn = this.keyFn();
-    const eq = this.compareWith();
-    return keyFn ? (a: T, b: T) => keyFn(a) === keyFn(b) : (a: T, b: T) => eq(a, b);
-  });
+  /** Member identity: `keyFn` when set, else `compareWith`. */
+  private readonly memberEquality = this.commits.memberEquality;
   /** @internal The tree's active descendant matches values by the member identity. */
   readonly adCompareWith: Signal<(a: T, b: T) => boolean> = this.memberEquality;
   /** @internal - own template only; outer popover panel class binding. */
@@ -924,15 +867,8 @@ export class CngxTreeSelect<T = unknown>
   /** @internal */
   readonly errorContext = this.core.makeErrorContext(this.errorRetryBound);
 
-  // Stable retry closure - recreating per CD cycle churns
-  // `*ngTemplateOutlet` consumers of the commit-error context.
-  private readonly commitRetryBound: () => void = () => {
-    this.hostFocus.refocusOwnerBeforeRemoval();
-    this.core.retryLastCommit();
-  };
-
   /** @internal */
-  readonly commitErrorContext = this.core.bindCommitRetry(this.commitRetryBound);
+  readonly commitErrorContext = this.commits.commitErrorContext;
 
   /**
    * 5-slot bundle the shell reads. Tree-select has no flat option-
@@ -1206,15 +1142,6 @@ export class CngxTreeSelect<T = unknown>
     }
     this.dispatch.singleToggle(node);
   }
-
-  /**
-   * Semantic equality. Uses `keyFn` when provided so object-valued
-   * trees match by domain id (two `{ id: 'a' }` instances compare
-   * equal); falls back to `compareWith`. Every selection-boundary
-   * check routes through here to stay consistent with the
-   * `SelectionController`'s keyFn membership.
-   */
-  private readonly membersEqual = (a: T, b: T): boolean => this.memberEquality()(a, b);
 
   /** @internal */
   protected handleTriggerClick(): void {
