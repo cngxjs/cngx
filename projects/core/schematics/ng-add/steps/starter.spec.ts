@@ -17,6 +17,7 @@ import {
   renderStarter,
   renderStarterBodies,
     STARTER_ID,
+    STARTER_INITIAL_BUDGET,
   STARTER_LEFT_OUT_REASONS,
   type StarterBlocks,
   starterFingerprints,
@@ -274,7 +275,7 @@ describe('withStarterGlobalStyles', () => {
 });
 
 describe('planStarter', () => {
-  it('writes the three files, the body rule, the favicon and the icon link over the untouched scaffold', () => {
+  it('writes the three files, the body rule, the budget, the favicon and the icon link over the untouched scaffold', () => {
     const result = planStarter(untouchedFacts(), FULL, VERSIONS, [], STARTER_TEMPLATES);
 
     expect(result.changes.map((change) => [change.kind, change.id, 'path' in change ? change.path : ''])).toEqual([
@@ -282,10 +283,17 @@ describe('planStarter', () => {
       ['edit-file', STARTER_ID, 'src/app/app.html'],
       ['edit-file', STARTER_ID, 'src/app/app.css'],
       ['edit-file', STARTER_ID, 'src/styles.css'],
+      ['raise-budget', 'app-shell:starter-budget', ''],
       ['create-file', STARTER_ID, 'public/favicon.svg'],
       ['edit-file', STARTER_ID, 'src/index.html'],
     ]);
     expect(result.changes.find((change) => change.kind === 'create-file')).toMatchObject({ content: STARTER_TEMPLATES.favicon });
+    expect(result.changes.find((change) => change.kind === 'raise-budget')).toMatchObject({
+      project: 'fixture-app',
+      configuration: 'production',
+      type: 'initial',
+      maximumWarning: STARTER_INITIAL_BUDGET,
+    });
     expect(writesStarter(untouchedFacts(), FULL)).toBe(true);
   });
 
@@ -366,7 +374,7 @@ describe('planStarter', () => {
   it('leaves the icon alone without a word when there is no index.html', () => {
     const result = planStarter(untouchedFacts({ indexHtml: { path: 'src/index.html', state: 'absent' } }), FULL, VERSIONS, [], STARTER_TEMPLATES);
 
-    expect(result.changes.filter((change) => change.kind !== 'edit-file')).toEqual([]);
+    expect(result.changes.filter((change) => change.kind !== 'edit-file' && change.kind !== 'raise-budget')).toEqual([]);
   });
 
   it('skips a starter cngx wrote for these answers, once per change the writing run planned', () => {
@@ -385,7 +393,8 @@ describe('planStarter', () => {
 
     expect(again.changes).toEqual([]);
     expect(again.skipped.map((step) => step.label)).toEqual(first.changes.map((change) => change.label));
-    expect(again.skipped.every((step) => step.id === STARTER_ID && step.reason === 'already generated')).toBe(true);
+    expect(again.skipped.map((step) => step.id)).toEqual(first.changes.map((change) => change.id));
+    expect(again.skipped.every((step) => step.reason === 'already generated')).toBe(true);
   });
 
   it('recognises a starter written without routing as current too', () => {

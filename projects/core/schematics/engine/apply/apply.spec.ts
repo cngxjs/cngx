@@ -524,6 +524,49 @@ export const appConfig: ApplicationConfig = {
     });
   });
 
+  describe('raise-budget', () => {
+    type Budget = { type: string; maximumWarning?: string };
+
+    function budgets(tree: Tree): Budget[] {
+      const workspace = JSON.parse(tree.readText('angular.json')) as {
+        projects: Record<string, { architect: { build: { configurations: { production: { budgets: Budget[] } } } } }>;
+      };
+      return workspace.projects['app'].architect.build.configurations.production.budgets;
+    }
+
+    function raise(maximumWarning: string, type = 'initial'): Change {
+      return { ...BASE, kind: 'raise-budget', id: 'b', project: 'app', configuration: 'production', type, maximumWarning };
+    }
+
+    async function applyReporting(change: Change, tree: Tree): Promise<{ tree: Tree; unchanged: string[] }> {
+      const unchanged: string[] = [];
+      const plan = createChangePlan([{ changes: [change], skipped: [] }]);
+      const next = await lastValueFrom(runner.callRule(applyChangePlan(plan, (id) => unchanged.push(id)), tree));
+      return { tree: next, unchanged };
+    }
+
+    it('raises the warning of the named budget and keeps its error', async () => {
+      const tree = await apply([raise('550kB')], await createApp());
+      const initial = budgets(tree).find((budget) => budget.type === 'initial');
+
+      expect(initial).toEqual({ type: 'initial', maximumWarning: '550kB', maximumError: '1MB' });
+    });
+
+    it('keeps a warning that is already as high or higher', async () => {
+      const { tree, unchanged } = await applyReporting(raise('0.4MB'), await createApp());
+
+      expect(budgets(tree).find((budget) => budget.type === 'initial')?.maximumWarning).toBe('500kB');
+      expect(unchanged).toEqual(['b']);
+    });
+
+    it('adds no budget the configuration does not declare', async () => {
+      const { tree, unchanged } = await applyReporting(raise('550kB', 'bundle'), await createApp());
+
+      expect(budgets(tree).some((budget) => budget.type === 'bundle')).toBe(false);
+      expect(unchanged).toEqual(['b']);
+    });
+  });
+
   it('writes json entries and creates the file when missing', async () => {
     const tree = await apply(
       [

@@ -29,6 +29,13 @@ import { switchesLanguageAtRuntime } from './providers';
 
 export const STARTER_ID = 'app-shell:starter';
 
+// Its own id: apply reports a budget already high enough as unchanged, which
+// must not mark the starter files as in place.
+const STARTER_BUDGET_ID = 'app-shell:starter-budget';
+
+/** The initial bundle warning budget the starter sets; `ng new` sets 500kB. */
+export const STARTER_INITIAL_BUDGET = '550kB';
+
 interface StarterAt {
   /** The file the reason names. */
   readonly file: string;
@@ -313,6 +320,26 @@ function globalStylesWrite(path: string, block: string, provenance: Provenance):
   };
 }
 
+function budgetLabel(): string {
+  return `Raise the initial bundle warning budget in angular.json to ${STARTER_INITIAL_BUDGET}`;
+}
+
+// The starter puts the feedback outlets, the cards and the buttons on the
+// first screen, which takes the initial bundle past the 500kB `ng new` warns at.
+function budgetRaise(project: string, provenance: Provenance): Change {
+  return {
+    kind: 'raise-budget',
+    id: STARTER_BUDGET_ID,
+    label: budgetLabel(),
+    reason: 'the starter page loads the cngx components it shows with the first screen',
+    provenance,
+    project,
+    configuration: 'production',
+    type: 'initial',
+    maximumWarning: STARTER_INITIAL_BUDGET,
+  };
+}
+
 function iconLabel(index: IndexHtmlFacts): string {
   return `Point the icon link in ${index.path} at the cngx favicon`;
 }
@@ -424,12 +451,16 @@ function planWrittenStarter(
   // One skip per change the writing run planned, so the record holds the
   // same entries and a re-run writes no install manifest either.
   const icon = facts.favicon;
-  const labels = [
-    ...FILE_KEYS.map((key) => fileLabel(scaffold.files[key])),
-    ...(facts.globalStyles?.state === 'starter' ? [globalStylesLabel(facts.globalStyles.path)] : []),
-    ...(facts.indexHtml.state === 'starter' && icon !== undefined ? [faviconLabel(icon.path), iconLabel(facts.indexHtml)] : []),
+  const generated = (text: string, id = STARTER_ID): SkippedStep => ({ id, label: text, reason: 'already generated' });
+  const skipped: readonly SkippedStep[] = [
+    ...FILE_KEYS.map((key) => generated(fileLabel(scaffold.files[key]))),
+    ...(facts.globalStyles?.state === 'starter'
+      ? [generated(globalStylesLabel(facts.globalStyles.path)), generated(budgetLabel(), STARTER_BUDGET_ID)]
+      : []),
+    ...(facts.indexHtml.state === 'starter' && icon !== undefined
+      ? [generated(faviconLabel(icon.path)), generated(iconLabel(facts.indexHtml))]
+      : []),
   ];
-  const skipped: readonly SkippedStep[] = labels.map((text) => ({ id: STARTER_ID, label: text, reason: 'already generated' }));
   return { changes: [], skipped };
 }
 
@@ -437,7 +468,8 @@ function planWrittenStarter(
  * Replaces the App component of an untouched `ng new` standalone app with
  * the cngx starter when the `starter` answer is on (`--preset=full`): three
  * whole files, each re-checked against the scaffold at apply time, the page
- * styles appended to the untouched global stylesheet, and, when `index.html` is untouched too and the
+ * styles appended to the untouched global stylesheet, the initial bundle
+ * warning budget raised to `STARTER_INITIAL_BUDGET`, and, when `index.html` is untouched too and the
  * public folder holds no `favicon.svg`, the cngx favicon and the icon link.
  * A starter cngx wrote is skipped; one rendered for other answers, and a
  * component that is not the untouched scaffold or sits next to a custom
@@ -490,7 +522,12 @@ export function planStarter(
   const block = stampedGlobalStyles(renderStarterGlobalStyles(templates, scaffold.names.selector));
   const icon = favicon(facts, scaffold, templates.favicon, provenance);
   return {
-    changes: [...fileWrites(scaffold, written, provenance), globalStylesWrite(styles.path, block, provenance), ...icon.changes],
+    changes: [
+      ...fileWrites(scaffold, written, provenance),
+      globalStylesWrite(styles.path, block, provenance),
+      budgetRaise(facts.project, provenance),
+      ...icon.changes,
+    ],
     skipped: icon.skipped,
   };
 }

@@ -253,8 +253,10 @@ rewrites every literal of it in the bundles.
   stock, provided or missing spec it replaces `app.ts`, `app.html` and the
   stylesheet as whole files, each an `edit-file` whose `edit` re-checks the
   catalog entry at apply time, appends `body { margin: 0 }` to the global
-  styles and, over an untouched `index.html`, writes `public/favicon.svg`
-  and points the icon link at it. Each starter file records a
+  styles, raises the `initial` warning budget of the `production`
+  configuration to `STARTER_INITIAL_BUDGET` (a `raise-budget` change, which
+  only ever raises it) and, over an untouched `index.html`, writes
+  `public/favicon.svg` and points the icon link at it. Each starter file records a
   `cngx:fingerprint` of its render; a re-run whose render matches skips it,
   one with other answers names it in a note. The outlets step then skips
   the outlets the starter carries and still provides the stock spec.

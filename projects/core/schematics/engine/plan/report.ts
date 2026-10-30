@@ -38,6 +38,7 @@ function touchedFile(change: Change): string | undefined {
     case 'add-dependency':
       return 'package.json';
     case 'add-style-entry':
+    case 'raise-budget':
       return 'angular.json';
     case 'add-provider':
       return change.path;

@@ -1,3 +1,4 @@
+import { isJsonObject } from '@angular-devkit/core';
 import { chain, noop, type Rule, SchematicsException, type Tree } from '@angular-devkit/schematics';
 import * as ts from 'typescript';
 import {
@@ -29,6 +30,7 @@ import {
   type Change,
   type CreateFile,
   type EditFile,
+  type RaiseBudget,
   renderProviderCall,
   type WriteJson,
 } from '../plan/change';
@@ -168,6 +170,38 @@ function addStyleEntry(change: AddStyleEntry, onUnchanged: OnUnchanged): Rule {
   });
 }
 
+const BUDGET_UNITS: Readonly<Record<string, number>> = { b: 1, kb: 1000, mb: 1000 ** 2, gb: 1000 ** 3 };
+
+// The bytes of an Angular budget size (`500kB`, `1MB`, a bare number for
+// bytes); undefined for anything else, such as a baseline percentage.
+function budgetBytes(size: unknown): number | undefined {
+  const match = typeof size === 'string' ? /^\s*(\d+(?:\.\d+)?)\s*([kmg]?b)?\s*$/i.exec(size) : null;
+  if (match === null) {
+    return undefined;
+  }
+  return Number(match[1]) * BUDGET_UNITS[(match[2] ?? 'b').toLowerCase()];
+}
+
+function raiseBudget(change: RaiseBudget, onUnchanged: OnUnchanged): Rule {
+  return updateWorkspace((workspace) => {
+    const configuration = workspace.projects.get(change.project)?.targets.get('build')?.configurations?.[change.configuration];
+    const budgets = Array.isArray(configuration?.['budgets']) ? configuration['budgets'] : [];
+    // By index: the workspace proxies hand out a new object on every read.
+    const at = budgets.findIndex((entry) => isJsonObject(entry) && entry['type'] === change.type);
+    const budget = budgets[at];
+    const current = isJsonObject(budget) ? budgetBytes(budget['maximumWarning']) : undefined;
+    const next = budgetBytes(change.maximumWarning);
+    if (configuration === undefined || !isJsonObject(budget) || current === undefined || next === undefined || current >= next) {
+      onUnchanged(change.id);
+      return;
+    }
+    // A new array: the workspace writer tracks assignments, not edits inside an entry.
+    configuration['budgets'] = budgets.map((entry, index) =>
+      index === at ? { ...budget, maximumWarning: change.maximumWarning } : entry,
+    );
+  });
+}
+
 function writeJson(change: WriteJson): Rule {
   return (tree: Tree) => {
     if (!tree.exists(change.path)) {
@@ -201,6 +235,8 @@ function toRule(change: Change, onUnchanged: OnUnchanged): Rule {
       return addStyleImport(change, onUnchanged);
     case 'add-style-entry':
       return addStyleEntry(change, onUnchanged);
+    case 'raise-budget':
+      return raiseBudget(change, onUnchanged);
     case 'write-json':
       return writeJson(change);
     case 'note':
