@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createArrayCommitHandler } from './array-commit-handler';
 import { createCommitController } from './commit-controller.token';
+import { commitLedgerFor } from './internal/commit-ledger';
 import type { CngxCommitController } from './commit-controller.token';
 import type {
   CngxSelectCommitAction,
@@ -270,7 +271,7 @@ describe('createArrayCommitHandler', () => {
   });
 
   describe('retryLast', () => {
-    it('routes to beginToggle when togglingOption is non-null', () => {
+    it('replays a failed toggle as a toggle', () => {
       const action: CngxSelectCommitAction<T[]> = (next) => next;
       h.commitAction.set(action);
       h.lastCommitted = ['a'];
@@ -289,12 +290,10 @@ describe('createArrayCommitHandler', () => {
       expect(h.toggleFinalizeLog.length).toBe(1);
     });
 
-    it('routes to beginClear when togglingOption is null', () => {
+    it('replays a failed clear as a clear', () => {
       const action: CngxSelectCommitAction<T[]> = (next) => next;
       h.commitAction.set(action);
       h.lastCommitted = ['a', 'b'];
-      // Null togglingOption = clear semantics.
-      h.coreMock.togglingOption.set(null);
       h.handler.beginClear(['a', 'b'], () => {
         throw new Error('first fail');
       });
@@ -357,7 +356,7 @@ describe('createArrayCommitHandler', () => {
       expect(h.values()).toEqual(['a']);
     });
 
-    it('never turns a toggle retry into a clear when togglingOption was reset', () => {
+    it('replays the recorded toggle with its option even after togglingOption was reset', () => {
       const calls: T[][] = [];
       h.coreMock.togglingOption.set(opt('b'));
       h.handler.beginToggle(['a', 'b'], ['a'], opt('b'), () => {
@@ -372,9 +371,64 @@ describe('createArrayCommitHandler', () => {
 
       h.handler.retryLast();
 
-      expect(calls).toEqual([]);
-      expect(h.stateLog).toEqual([]);
+      expect(calls).toEqual([['a', 'b']]);
+      expect(h.toggleFinalizeLog).toEqual([[opt('b'), true]]);
       expect(h.clearFinalizeLog).toEqual([]);
+    });
+
+    it('replays the failed toggle, not an earlier successful clear', () => {
+      const calls: T[][] = [];
+      h.commitAction.set((next) => {
+        calls.push([...(next ?? [])]);
+        return next;
+      });
+      h.values.set([]);
+      h.handler.beginClear(['a'], (next) => next);
+      expect(h.clearFinalizeLog).toHaveLength(1);
+      h.values.set(['b']);
+      h.handler.beginToggle(['b'], [], opt('b'), () => {
+        throw new Error('first fail');
+      });
+      expect(h.values()).toEqual([]);
+
+      h.handler.retryLast();
+
+      expect(calls).toEqual([['b']]);
+      expect(h.values()).toEqual(['b']);
+      expect(h.clearFinalizeLog).toHaveLength(1);
+    });
+
+    it('replays a failed commit of another kind on the same controller', () => {
+      const reorderCalls: T[][] = [];
+      const ledger = commitLedgerFor<T[], T>(h.coreMock.commitController);
+      h.values.set(['a', 'b']);
+      h.handler.beginToggle(['a', 'b'], ['a'], opt('b'), (next) => next);
+      h.values.set(['b', 'a']);
+      ledger.beginMembers<T[]>({
+        kind: 'reorder',
+        next: ['b', 'a'],
+        previous: ['a', 'b'],
+        action: () => {
+          throw new Error('reorder fail');
+        },
+        commitAction: h.commitAction,
+        value: h.values,
+        same: (x, y) => x.length === y.length && x.every((v, i) => v === y[i]),
+        commitMode: h.commitMode,
+        onSuccess: () => undefined,
+      });
+      expect(h.values()).toEqual(['a', 'b']);
+      h.commitAction.set((next) => {
+        reorderCalls.push([...(next ?? [])]);
+        return next;
+      });
+      h.toggleFinalizeLog.length = 0;
+
+      h.handler.retryLast();
+
+      expect(reorderCalls).toEqual([['b', 'a']]);
+      expect(h.values()).toEqual(['b', 'a']);
+      expect(h.toggleFinalizeLog).toEqual([]);
     });
 
     it('is a no-op when no previous commit was begun', () => {
