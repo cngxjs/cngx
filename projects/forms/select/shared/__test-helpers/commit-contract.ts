@@ -111,6 +111,11 @@ export interface CommitContractCases {
    * fails and the slot reports that toggle's option, not the reordered one.
    */
   readonly commitErrorOptionIsTheFailedCommit: () => void;
+  /**
+   * Removing a selected value that is no longer in the tree commits through
+   * `commitAction`, rolls back on failure and Retry replays it.
+   */
+  readonly staleTreeValueRemovalCommits: () => void;
   /** An option with value `''` is never shown as selected while the select is empty. */
   readonly emptyStringOptionNeverSelected: () => void;
 }
@@ -654,6 +659,22 @@ export function describeCommitContract(
         expect(m.h.calls).toHaveLength(2);
         m.rejectLast();
         expect(m.h.model()).toEqual(kind === 'select' ? undefined : []);
+      },
+
+      staleTreeValueRemovalCommits: () => {
+        requireKind('tree');
+        const m = mount({ initial: ['gone'] });
+        const remove = m.el.querySelector<HTMLElement>('.cngx-chip__remove');
+        expect(remove, `${host.selector} renders no chip remove button`).not.toBeNull();
+        remove!.click();
+        m.settle();
+        expect(m.h.calls).toEqual([[]]);
+        m.rejectLast();
+        expect(m.h.model()).toEqual(['gone']);
+        m.retry();
+        expect(m.h.calls).toEqual([[], []]);
+        m.resolveLast();
+        expect(m.h.model()).toEqual([]);
       },
 
       emptyStringOptionNeverSelected: () => {

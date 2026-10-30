@@ -180,8 +180,49 @@ describe('createTreeToggleDispatch', () => {
     t.dispatch.removeValue('gone', 'Gone');
     expect(t.values()).toEqual(['q']);
     expect(t.changes[0]).toMatchObject({ node: null, removed: ['gone'] });
+    expect(t.announce).toHaveBeenLastCalledWith(
+      { value: 'gone', label: 'Gone' },
+      'removed',
+      1,
+      true,
+    );
     t.dispatch.removeValue('q', 'q');
     expect(t.values()).toEqual([]);
+  });
+
+  it('commits a stale value removal through the commit action and rolls it back on error', () => {
+    const t = setup({ commit: true, initial: ['gone', 'q'] });
+    t.dispatch.removeValue('gone', 'Gone');
+    expect(t.begins[0]).toMatchObject({ next: ['q'], previous: ['gone', 'q'] });
+    expect(t.values()).toEqual(['q']);
+    expect(t.claimCommitRetry).toHaveBeenCalledTimes(1);
+    expect(t.changes).toHaveLength(0);
+    expect(t.announce).not.toHaveBeenCalled();
+    t.begins[0].onError(new Error('x'), ['gone', 'q']);
+    expect(t.values()).toEqual(['gone', 'q']);
+    expect(t.errors).toHaveLength(1);
+    t.dispatch.retryLast();
+    expect(t.begins[1]).toMatchObject({ next: ['q'] });
+    t.begins[1].onSuccess(undefined);
+    expect(t.values()).toEqual(['q']);
+    expect(t.changes).toEqual([
+      expect.objectContaining({ node: null, removed: ['gone'], action: 'toggle' }),
+    ]);
+    expect(t.announce).toHaveBeenLastCalledWith(
+      { value: 'gone', label: 'Gone' },
+      'removed',
+      1,
+      true,
+    );
+  });
+
+  it('a pessimistic stale value removal writes only on success', () => {
+    const t = setup({ commit: true, mode: 'pessimistic', initial: ['gone'] });
+    t.dispatch.removeValue('gone', 'Gone');
+    expect(t.values()).toEqual(['gone']);
+    t.begins[0].onSuccess(undefined);
+    expect(t.values()).toEqual([]);
+    expect(t.changes).toHaveLength(1);
   });
 
   it('clears without a commit action and emits cleared', () => {

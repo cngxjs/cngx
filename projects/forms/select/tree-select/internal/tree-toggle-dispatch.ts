@@ -11,6 +11,7 @@ import type {
 import { commitLedgerFor } from '../../shared/internal/commit-ledger';
 import { sameArrayContents } from '../../shared/internal/compare';
 import type { CngxSelectCore } from '../../shared/internal/select-core';
+import type { CngxSelectOptionDef } from '../../shared/option.model';
 import type { CngxTreeSelectChange } from '../tree-select.component';
 
 /**
@@ -21,8 +22,11 @@ import type { CngxTreeSelectChange } from '../tree-select.component';
 export interface TreeToggleMeta<T> {
   readonly added: readonly T[];
   readonly removed: readonly T[];
-  readonly node: FlatTreeNode<T>;
+  /** `null` for a stale value that is no longer in the tree. */
+  readonly node: FlatTreeNode<T> | null;
   readonly action: 'toggle' | 'cascade-toggle';
+  /** Option the announcement names; `null` speaks the count only. */
+  readonly spoken: CngxSelectOptionDef<T> | null;
 }
 
 /**
@@ -104,14 +108,7 @@ export function createTreeToggleDispatch<T>(
   const snapshot = (): T[] => untracked(() => [...values()]);
 
   const announceToggle = (meta: TreeToggleMeta<T>, count: number): void => {
-    // Single toggle names the node; a cascade speaks the count only.
-    const label = meta.action === 'toggle' ? meta.node.label : null;
-    opts.core.announce(
-      label ? { value: meta.node.value, label } : null,
-      meta.added.length > 0 ? 'added' : 'removed',
-      count,
-      true,
-    );
+    opts.core.announce(meta.spoken, meta.added.length > 0 ? 'added' : 'removed', count, true);
   };
 
   const emitToggle = (next: T[], previous: T[], meta: TreeToggleMeta<T>): void => {
@@ -235,11 +232,14 @@ export function createTreeToggleDispatch<T>(
   ): void => {
     const before = indexOf(previous);
     const after = indexOf(next);
+    // Single toggle names the node; a cascade speaks the count only.
+    const named = action === 'toggle' && node.label;
     dispatch(next, previous, {
       added: next.filter((v) => !before.has(v)),
       removed: previous.filter((v) => !after.has(v)),
       node,
       action,
+      spoken: named ? { value: node.value, label: node.label } : null,
     });
   };
 
@@ -273,19 +273,17 @@ export function createTreeToggleDispatch<T>(
       singleToggle(node);
       return;
     }
-    // Stale selection (value not in tree): strip it without the tree.
+    // Stale selection (value not in tree): strip it without the tree, but
+    // through the same commit path as every other tree mutation.
     const previous = snapshot();
     const next = previous.filter((v) => !membersEqual(v, value));
-    values.set(next);
-    opts.emitChange({
-      values: next,
-      previousValues: previous,
+    dispatch(next, previous, {
       added: [],
       removed: [value],
       node: null,
       action: 'toggle',
+      spoken: { value, label },
     });
-    opts.core.announce({ value, label }, 'removed', next.length, true);
   };
 
   const clearAll = (): void => {

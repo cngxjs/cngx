@@ -268,6 +268,10 @@ describeCommitContract(REORDERABLE, (c) => {
 
 describeCommitContract(TREE_SELECT, (c) => {
   it('A1/A11: Retry after a failed tree toggle replays the tree toggle', c.retryTree);
+  it(
+    'removing a value no longer in the tree commits, rolls back and retries',
+    c.staleTreeValueRemovalCommits,
+  );
   it('A1/A11: Retry after a failed clear replays the clear', c.retryClear);
   it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
   it('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
