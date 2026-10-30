@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, ViewEncapsulation } from '@angular/core';
 import { type CngxSpeak } from '@cngx/common';
+import { CngxIconSvg } from '@cngx/common/display';
+import { CNGX_ICON_STOP, CNGX_ICON_VOLUME } from '@cngx/utils';
 
 import { injectSpeakI18n } from './speak-i18n';
 
@@ -33,6 +35,7 @@ import { injectSpeakI18n } from './speak-i18n';
 @Component({
   selector: 'cngx-speak-button',
   standalone: true,
+  imports: [CngxIconSvg],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: {
@@ -52,31 +55,7 @@ import { injectSpeakI18n } from './speak-i18n';
       [attr.aria-label]="resolvedLabel()"
       (click)="speakRef().toggle()"
     >
-      @if (speakRef().speaking()) {
-        <svg
-          class="cngx-speak-button__icon"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          aria-hidden="true"
-        >
-          <rect x="6" y="6" width="12" height="12" rx="2" />
-        </svg>
-      } @else {
-        <svg
-          class="cngx-speak-button__icon"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M11 5L6 9H2v6h4l5 4V5z" />
-          <path d="M15.54 8.46a5 5 0 010 7.07" />
-          <path d="M19.07 4.93a10 10 0 010 14.14" />
-        </svg>
-      }
+      <svg class="cngx-speak-button__icon" [cngxIconSvg]="icon()"></svg>
     </button>
   `,
 })
@@ -97,6 +76,11 @@ export class CngxSpeakButton {
    * interrupt playback. Unbound, `CNGX_SPEAK_I18N.stopSpeaking` applies.
    */
   readonly stopLabel = input<string | undefined>(undefined);
+
+  /** @internal - speaker while idle, stop square while speaking. */
+  protected readonly icon = computed(() =>
+    this.speakRef().speaking() ? CNGX_ICON_STOP : CNGX_ICON_VOLUME,
+  );
 
   /** @internal - the label for the current playback state. */
   protected readonly resolvedLabel = computed(() =>

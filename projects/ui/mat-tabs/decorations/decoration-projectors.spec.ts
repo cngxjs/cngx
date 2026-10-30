@@ -14,6 +14,7 @@ import {
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
+import { CNGX_ICON_ALERT, CNGX_ICON_BAN } from '@cngx/utils';
 
 import {
   createMatTabAggregatorDecoration,
@@ -133,6 +134,46 @@ describe('createMatTabAggregatorDecoration - half-wired slot warning', () => {
     });
 
     expect(onHalfWired).not.toHaveBeenCalled();
+  });
+});
+
+describe('createMatTabAggregatorDecoration - alert icon', () => {
+  it('appends an aria-hidden alert icon after the label and removes it with the flag', () => {
+    const { host } = setupHost();
+    const hostEl = document.createElement('div');
+    for (let i = 0; i < 2; i++) {
+      const btn = document.createElement('button');
+      btn.classList.add('mat-mdc-tab');
+      hostEl.appendChild(btn);
+    }
+    const errorTabs = signal<readonly CngxMatTabAggregatorErrorEntry[]>([]);
+    createMatTabAggregatorDecoration({
+      hostEl,
+      errorTabs,
+      renderer: host.renderer,
+      injector: host.injector,
+      destroyRef: host.destroyRef,
+    });
+
+    errorTabs.set([{ idx: 1, id: 'tab-b', announcement: '2 errors', count: 2, label: 'B' }]);
+    TestBed.flushEffects();
+
+    const target = hostEl.querySelectorAll<HTMLElement>('.mat-mdc-tab')[1];
+    expect(target.classList.contains('cngx-mat-tab--has-errors')).toBe(true);
+    const badge = target.querySelector<HTMLElement>('.cngx-mat-tab__error-badge');
+    expect(badge?.getAttribute('aria-hidden')).toBe('true');
+    expect(badge?.textContent).toBe('');
+    const svg = badge?.querySelector('svg.cngx-mat-tab__icon-svg');
+    expect(svg?.getAttribute('viewBox')).toBe(CNGX_ICON_ALERT.viewBox);
+    expect(svg?.classList.contains('cngx-mat-tab__icon-svg--stroke')).toBe(true);
+    expect(svg?.querySelector('path')?.getAttribute('d')).toBe(CNGX_ICON_ALERT.d);
+    // The icon never joins the description: only the descriptor span does.
+    expect(target.getAttribute('aria-describedby')).toBe('tab-b-errors');
+
+    errorTabs.set([]);
+    TestBed.flushEffects();
+    expect(target.querySelector('.cngx-mat-tab__error-badge')).toBeNull();
+    expect(target.classList.contains('cngx-mat-tab--has-errors')).toBe(false);
   });
 });
 
@@ -714,7 +755,12 @@ describe('createMatTabRejectionDecoration - aria-describedby contract (5.2)', ()
     expect(target.getAttribute('data-reason')).toBe('refused');
     expect(glyph?.getAttribute('data-reason')).toBe('refused');
     expect(glyph?.getAttribute('aria-hidden')).toBe('true');
-    expect(glyph?.textContent).toBe('\u2298');
+    const svg = glyph?.querySelector('svg.cngx-mat-tab__icon-svg');
+    const path = svg?.querySelector('path[d]');
+    expect(path?.getAttribute('d')).toBe(CNGX_ICON_BAN.d);
+    expect(svg?.getAttribute('viewBox')).toBe(CNGX_ICON_BAN.viewBox);
+    expect(svg?.classList.contains('cngx-mat-tab__icon-svg--stroke')).toBe(true);
+    expect(glyph?.textContent).toBe('');
     // The shipped class stays for both kinds.
     expect(target.classList.contains('cngx-mat-tab--error')).toBe(true);
     // The glyph never joins the description: the descriptor span is separate.
@@ -728,7 +774,9 @@ describe('createMatTabRejectionDecoration - aria-describedby contract (5.2)', ()
     expect(target.querySelector('.cngx-mat-tab__rejection-icon')).toBe(glyph);
     expect(target.getAttribute('data-reason')).toBe('failed');
     expect(glyph?.getAttribute('data-reason')).toBe('failed');
-    expect(glyph?.textContent).toBe('!');
+    // Same svg and path, new path data.
+    expect(glyph?.querySelector('svg path[d]')).toBe(path);
+    expect(path?.getAttribute('d')).toBe(CNGX_ICON_ALERT.d);
 
     failedHandleId.set(null);
     failedIndex.set(undefined);
@@ -787,7 +835,9 @@ describe('createMatTabRejectionDecoration - aria-describedby contract (5.2)', ()
 
     const target = hostEl.querySelectorAll<HTMLElement>('.mat-mdc-tab')[0];
     expect(target.getAttribute('data-reason')).toBe('failed');
-    expect(target.querySelector('.cngx-mat-tab__rejection-icon')?.textContent).toBe('!');
+    expect(
+      target.querySelector('.cngx-mat-tab__rejection-icon svg path[d]')?.getAttribute('d'),
+    ).toBe(CNGX_ICON_ALERT.d);
   });
 });
 

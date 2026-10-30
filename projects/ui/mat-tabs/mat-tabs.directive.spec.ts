@@ -23,6 +23,7 @@ import type {
   CngxErrorAggregatorContract,
   CngxErrorAggregatorSourceEntry,
 } from '@cngx/common/interactive';
+import { CNGX_ICON_ALERT, CNGX_ICON_BAN } from '@cngx/utils';
 import { CngxTabOverflow } from '@cngx/ui/tabs';
 
 import {
@@ -590,12 +591,12 @@ describe('CngxMatTabs instrumentation directive', () => {
     const glyph = matTabEls[2].querySelector<HTMLElement>('.cngx-mat-tab__rejection-icon');
     expect(glyph?.getAttribute('aria-hidden')).toBe('true');
     expect(glyph?.getAttribute('data-reason')).toBe('refused');
-    expect(glyph?.textContent).toBe('\u2298');
+    expect(glyph?.querySelector('svg path[d]')?.getAttribute('d')).toBe(CNGX_ICON_BAN.d);
     expect(matTabEls[0].querySelector('.cngx-mat-tab__rejection-icon')).toBeNull();
     expect(matTabEls[0].getAttribute('data-reason')).toBeNull();
   });
 
-  test('axis 11b: a failed switch keeps cngx-mat-tab--error and carries data-reason="failed" with the `!` glyph', async () => {
+  test('axis 11b: a failed switch keeps cngx-mat-tab--error and carries data-reason="failed" with the alert glyph', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -624,24 +625,34 @@ describe('CngxMatTabs instrumentation directive', () => {
     const glyph = matTabEls[2].querySelector<HTMLElement>('.cngx-mat-tab__rejection-icon');
     expect(glyph?.getAttribute('aria-hidden')).toBe('true');
     expect(glyph?.getAttribute('data-reason')).toBe('failed');
-    expect(glyph?.textContent).toBe('!');
+    expect(glyph?.querySelector('svg path[d]')?.getAttribute('d')).toBe(CNGX_ICON_ALERT.d);
   });
 
   test('axis 11c: the skin paints a failed tab and a validation flag red and a refused tab amber', () => {
     // happy-dom cannot compute the external CSS; assert the rules in source.
     const css = readFileSync(`${process.cwd()}/projects/ui/mat-tabs/styles/mat-tabs.css`, 'utf8');
-    expect(css).toContain('color: var(--cngx-mat-tab-error-color, oklch(0.45 0.15 25));');
-    expect(css).toContain(
-      'background: var(--cngx-mat-tab-has-errors-color, oklch(0.45 0.15 25));',
+    // Colour only: the label and the icon take the reason colour, no outline.
+    expect(css).toMatch(
+      /\.mat-mdc-tab\.cngx-mat-tab--error,\s*\.mat-mdc-tab-link\.cngx-mat-tab--error\s*\{\s*--_cngx-mat-tab-rejection-text: var\(--cngx-mat-tab-error-color,/,
     );
     expect(css).toMatch(
-      /\.cngx-mat-tab--error\[data-reason='refused'\]\s*\{\s*color: var\(--cngx-mat-tab-refused-text-color, currentColor\);\s*outline-color: var\(--cngx-mat-tab-refused-color, oklch\(0\.62 0\.15 60\)\);/,
+      /\.cngx-mat-tab--error\[data-reason='refused'\]\s*\{\s*--_cngx-mat-tab-rejection-text: var\(--cngx-mat-tab-refused-text-color,/,
+    );
+    expect(css).toContain('color: var(--cngx-mat-tab-has-errors-color,');
+    expect(css).toMatch(
+      /\.cngx-mat-tab__rejection-icon\[data-reason='refused'\]\s*\{\s*color: var\(--cngx-mat-tab-refused-color,/,
+    );
+    expect(css).not.toContain('--cngx-mat-tab-error-outline');
+    // Every colour has a light and a dark value off the foundation tokens.
+    expect(css).toMatch(
+      /\[data-color-scheme='dark'\],\s*\.dark\s*\{\s*--cngx-mat-tab-error-color: color-mix\(\s*in oklab,\s*var\(--cngx-color-danger, oklch\(0\.68 0\.17 25\)\)/,
+    );
+    // Forced colours: CanvasText icons and an outline on the rejected tab.
+    expect(css).toMatch(
+      /@media \(forced-colors: active\)\s*\{\s*\.cngx-mat-tab__error-badge,\s*\.cngx-mat-tab__rejection-icon\s*\{\s*color: CanvasText;/,
     );
     expect(css).toMatch(
-      /\.cngx-mat-tab__rejection-icon\[data-reason='refused'\]\s*\{\s*background: var\(--cngx-mat-tab-refused-color, oklch\(0\.62 0\.15 60\)\);/,
-    );
-    expect(css).toMatch(
-      /@media \(forced-colors: active\)\s*\{\s*\.cngx-mat-tab__rejection-icon\s*\{\s*forced-color-adjust: none;/,
+      /\.mat-mdc-tab\.cngx-mat-tab--error:not\(:focus-visible\),[^{]*\{\s*outline: 2px solid CanvasText;/,
     );
   });
 

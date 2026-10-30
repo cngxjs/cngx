@@ -69,9 +69,9 @@
             "
           ></ng-container>
         } @else {
-          <span class="cngx-tabs__badge" aria-hidden="true">{{
-            glyphs.errorBadge
-          }}</span>
+          <span class="cngx-tabs__badge" aria-hidden="true"
+            ><svg [cngxIconSvg]="alertIcon"></svg
+          ></span>
         }
       }
       @if (failedIdx === i) {
@@ -88,7 +88,7 @@
             class="cngx-tabs__rejection-icon"
             aria-hidden="true"
             [attr.data-reason]="rejectionKind"
-          >{{ rejectionKind === 'refused' ? glyphs.refusedIcon : glyphs.rejectionIcon }}</span>
+          ><svg [cngxIconSvg]="rejectionKind === 'refused' ? banIcon : alertIcon"></svg></span>
         }
       }
       @if (isTabBusy(tab)) {
@@ -122,7 +122,7 @@
             *ngTemplateOutlet="closeIconTpl; context: dismiss.closeIconContextFor(tab)"
           ></ng-container>
         } @else {
-          <span aria-hidden="true">{{ glyphs.closeIcon }}</span>
+          <span aria-hidden="true"><svg [cngxIconSvg]="closeIcon"></svg></span>
         }
       </button>
     }
@@ -141,7 +141,7 @@
     @if (addIconTpl) {
       <ng-container *ngTemplateOutlet="addIconTpl"></ng-container>
     } @else {
-      <span aria-hidden="true">{{ glyphs.addIcon }}</span>
+      <span aria-hidden="true"><svg [cngxIconSvg]="addIcon"></svg></span>
     }
   </button>
 }

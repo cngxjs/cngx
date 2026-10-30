@@ -10,11 +10,9 @@ import { cdp } from 'vitest/browser';
 import { CngxStepper } from './stepper.component';
 
 // Runs in a real Chromium (the `test-geometry` target) with the real stepper.
-// The error badge sits inside the indicator. On the current step the indicator
-// opts out of forcing (for its Highlight fill), the opt-out is inherited, and
-// the badge painted its unforced author red under forced colors. The badge now
-// opts out itself and paints CanvasText with a Canvas glyph, which stands out
-// on the Highlight disc and on a Canvas one alike.
+// The error badge is a standalone alert icon after the step label (no disc).
+// Under forced colors it must paint a system colour via currentColor, also on
+// the current step whose indicator opts out of forcing for its Highlight fill.
 
 const SCHEMES = ['light', 'dark'] as const;
 
@@ -86,25 +84,51 @@ describe.each(SCHEMES)('stepper error badge under forced colors, %s', (scheme) =
     expect(computedValue(one(root, '.plain'), 'color')).toBe(probe(root, 'canvastext'));
   });
 
-  it('paints every badge CanvasText with a Canvas glyph, on the current step too', async () => {
+  it('paints every badge glyph CanvasText with no disc, on the current step too', async () => {
     const root = await mountForced();
     const all = badges(root);
     expect(all.length).toBeGreaterThan(0);
     expect(all.some((badge) => badge.closest('[aria-current="step"]'))).toBe(true);
     for (const badge of all) {
-      expect(computedValue(badge, 'background-color')).toBe(probe(root, 'canvastext'));
-      expect(computedValue(badge, 'color')).toBe(probe(root, 'canvas'));
+      expect(badge.closest('.cngx-stepper__indicator')).toBeNull();
+      // Fully transparent (forced colors may rewrite the channels, never alpha).
+      expect(computedValue(badge, 'background-color')).toMatch(/, 0\)$/);
+      expect(computedValue(badge, 'color')).toBe(probe(root, 'canvastext'));
+      const glyph = badge.querySelector('svg path');
+      expect(glyph).not.toBeNull();
+      expect(computedValue(glyph!, 'stroke')).toBe(probe(root, 'canvastext'));
     }
   });
 });
 
 describe('stepper error badge without forced colors', () => {
-  it('keeps the author danger paint', async () => {
+  it('keeps the author danger paint on the bare glyph', async () => {
     const root = await mount();
     const [badge] = badges(root);
-    expect(computedValue(badge, 'forced-color-adjust')).toBe('auto');
-    expect(computedValue(badge, 'background-color')).not.toBe(
+    expect(computedValue(badge, 'background-color')).toBe('rgba(0, 0, 0, 0)');
+    expect(computedValue(badge, 'border-radius')).toBe('0px');
+    expect(computedValue(badge, 'color')).not.toBe(
       computedValue(one(root, '.probe-canvastext'), 'color'),
     );
+    const glyph = badge.querySelector('svg path')!;
+    expect(computedValue(glyph, 'stroke')).toBe(computedValue(badge, 'color'));
+  });
+
+  // Standalone icon: 1.15em of the label font, stroke width 2, after the
+  // label and vertically centred on it.
+  it('draws the alert icon 1.15em wide at stroke 2 after the label', async () => {
+    const root = await mount();
+    const [badge] = badges(root);
+    const step = badge.closest('.cngx-stepper__step') as HTMLElement;
+    const label = step.querySelector('.cngx-stepper__label') as HTMLElement;
+    const svg = badge.querySelector('svg')!;
+    const box = svg.getBoundingClientRect();
+    const em = parseFloat(getComputedStyle(label).fontSize);
+    expect(box.width).toBeCloseTo(1.15 * em, 0);
+    expect(box.height).toBeCloseTo(1.15 * em, 0);
+    expect(getComputedStyle(svg).strokeWidth).toBe('2px');
+    const text = label.getBoundingClientRect();
+    expect(box.left).toBeGreaterThanOrEqual(text.right);
+    expect(box.top + box.height / 2).toBeCloseTo(text.top + text.height / 2, 0);
   });
 });

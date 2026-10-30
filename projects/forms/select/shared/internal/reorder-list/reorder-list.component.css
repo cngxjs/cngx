@@ -49,6 +49,18 @@
     touch-action: none;
   }
 
+  /* The grip draws its dots over 15 of the 24 grid units; scaling the box by
+     24/15 keeps them the 0.8125em tall column the 10x16 handle drew. */
+  .cngx-select-reorder-list__handle > .cngx-icon-svg {
+    --cngx-icon-svg-size: calc(0.8125em * 24 / 15);
+  }
+
+  /* The triangles span 14 of the 24 grid units; scaling the box by 24/14
+     keeps them the 0.5625em width the 12-unit arrows drew. */
+  .cngx-select-reorder-list__move > .cngx-icon-svg {
+    --cngx-icon-svg-size: calc(0.5625em * 24 / 14);
+  }
+
   .cngx-select-reorder-list__label {
     flex: 1 1 auto;
     min-inline-size: 0;

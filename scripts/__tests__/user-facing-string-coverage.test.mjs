@@ -130,6 +130,9 @@ const DIGIT_PHRASE = /^\d+\s+[a-z]{2,}/;
 /** Backtick spans that are CSS, selectors, ids, paths or units - code, not copy. */
 const BACKTICK_NOISE = /[-#.:[/()=]|px|var|calc/;
 
+/** SVG path data: a moveto followed only by path commands and numbers. */
+const SVG_PATH_DATA = /^M[\d.,\s-][MmLlHhVvCcSsQqTtAaZz\d.,\s-]*$/;
+
 /** Stands in for a `${...}` substitution while testing word boundaries. */
 const SUBSTITUTION = '\u0000';
 
@@ -149,7 +152,7 @@ export function isUserFacingPhrase(value) {
   if (value.length < 3 || value.length > 120) {
     return false;
   }
-  if (KEY_NAMES.has(value) || CAMEL_WORD.test(value)) {
+  if (KEY_NAMES.has(value) || CAMEL_WORD.test(value) || SVG_PATH_DATA.test(value)) {
     return false;
   }
   if (!/^[A-Z]/.test(value) || !/[a-z]/.test(value)) {
@@ -1221,6 +1224,18 @@ describe('user-facing string scanner', () => {
   it('ignores SVG path data', () => {
     const source = "const d = 'M12 2 L22 22 H2 Z'; const e = `M${x} ${y} L${x2} ${y2}`;";
     expect(scanSource(source, 'icon.ts')).toEqual([]);
+  });
+
+  it('ignores relative SVG path commands', () => {
+    const source = "const d = 'M6 6l12 12M18 6L6 18'; const e = 'M3 12a9 9 0 1 0 18 0zM12 4.5v10h.01';";
+    expect(scanSource(source, 'icons.ts')).toEqual([]);
+  });
+
+  it('still reports copy that starts with an M', () => {
+    const source = "const label = 'Move up';";
+    expect(scanSource(source, 'reorder.ts')).toEqual([
+      { line: 1, value: 'Move up', coverage: 'uncovered' },
+    ]);
   });
 
   it('classifies a literal with a {placeholder} as a phrase', () => {

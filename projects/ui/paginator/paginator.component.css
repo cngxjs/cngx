@@ -1012,7 +1012,8 @@
   }
 
   /*
-   * RTL: mirror the directional nav chevrons. `:dir(rtl)` matches the element's
+   * RTL: mirror the directional nav chevrons, which draw LTR-pointing as svg
+   * (no bidi glyph mirroring applies). `:dir(rtl)` matches the element's
    * RESOLVED direction, so the flip stays correct inside a CngxDir directional
    * island (an ancestor `[dir]` selector would leak the outer direction in). A
    * static flip, not motion - so it is intentionally NOT gated by reduced-motion.
@@ -1021,6 +1022,35 @@
    */
   .cngx-paginator__nav:dir(rtl) .cngx-icon {
     transform: scaleX(-1);
+  }
+
+  /*
+   * Default glyph sizes. Each icon draws on the shared 24-unit grid with its
+   * shape padded inside the box, so each rule scales the box by 24 / extent to
+   * ink the shape at the size named below.
+   *
+   * Chevrons: 12 units tall plus the 2-unit stroke = 14, inked 0.41em tall,
+   * about the x-height of the page numbers beside them. The icon keeps its
+   * 1.25em box for layout; only the svg inside it shrinks, and the icon's flex
+   * box centres it.
+   */
+  .cngx-paginator__nav .cngx-icon > .cngx-icon-svg {
+    --cngx-icon-svg-size: calc(0.41em * 24 / 14);
+    width: var(--cngx-icon-svg-size, 0.7em);
+    height: var(--cngx-icon-svg-size, 0.7em);
+  }
+
+  /* Ellipsis: the three dots span 18 units, inked 0.63em wide, a text
+     ellipsis at the page-number size. */
+  .cngx-paginator__more > .cngx-icon-svg {
+    --cngx-icon-svg-size: calc(0.63em * 24 / 18);
+  }
+
+  /* Caret: the triangle spans 14 units, drawn 0.4em wide, the width of the
+     select caret. As a block it leaves the line box, so the trigger centres it. */
+  .cngx-paginator__select-caret > .cngx-icon-svg {
+    --cngx-icon-svg-size: calc(0.4em * 24 / 14);
+    display: block;
   }
 }
 

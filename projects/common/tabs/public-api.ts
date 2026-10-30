@@ -85,8 +85,7 @@ export {
 // through `public-api.ts` so the sibling `@cngx/ui/tabs` organism can
 // consume them across the secondary-entry boundary (ng-packagr has no
 // cross-entry private surface). `disableInternal: true` hides them from
-// generated docs; the LLM-md export honours the same tag. Precedent:
-// `CNGX_TABS_GLYPHS`.
+// generated docs; the LLM-md export honours the same tag.
 export {
   createTabsHostAttrs,
   type CngxTabsHostAttrs,
@@ -185,7 +184,6 @@ export {
   type CngxTabNavAnnouncement,
   type CngxTabNavAnnouncementOptions,
 } from './announcements/tab-nav-announcement';
-export { CNGX_TABS_GLYPHS } from './glyphs';
 export {
   CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY,
   createOverflowPopoverHighlightSync,

@@ -16,7 +16,7 @@ export interface CngxTabCloseIconContext {
 /**
  * Structural slot for a tab's close-button glyph. 3-stage cascade:
  * per-instance directive > `CNGX_TABS_CONFIG.templates.closeIcon` >
- * `CNGX_TABS_GLYPHS.closeIcon`.
+ * the default close icon.
  *
  * ```html
  * <cngx-tab-group closable (tabClose)="remove($event.id)">

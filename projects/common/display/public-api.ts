@@ -7,6 +7,10 @@
  * nav badges) see `@cngx/common/interactive`.
  */
 export { CngxIcon } from './icon/icon.component';
+/** @internal */
+export { CngxIconSvg } from './icon/icon-svg.component';
+/** @internal */
+export { createIconSvgElement, type CngxIconSvgElement } from './icon/icon-svg-element';
 export {
   CngxSegmentedProgress,
   type SegmentState,
@@ -25,6 +29,18 @@ export { CngxMetaList } from './meta/meta-list.component';
 export { CngxMeta } from './meta/meta.component';
 export { CngxCheckboxIndicator } from './checkbox-indicator/checkbox-indicator.component';
 export { CngxRadioIndicator } from './radio-indicator/radio-indicator.component';
+export {
+  type CngxRadioConfig,
+  type CngxRadioSkin,
+} from './radio-indicator/config/radio.config';
+export { CNGX_RADIO_CONFIG } from './radio-indicator/config/radio.config.defaults';
+export {
+  provideRadioConfig,
+  provideRadioConfigAt,
+  type CngxRadioConfigFeature,
+} from './radio-indicator/config/provide-radio-config';
+export { injectRadioConfig } from './radio-indicator/config/inject-radio-config';
+export { withRadioSkin } from './radio-indicator/config/features';
 export { CngxTime } from './time/time.component';
 export { CngxPasswordStrengthMeter } from './password-strength-meter/password-strength-meter.component';
 export {

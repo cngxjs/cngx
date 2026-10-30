@@ -6,7 +6,8 @@ import {
   input,
 } from '@angular/core';
 
-import { CNGX_STEPPER_GLYPHS } from '@cngx/common/stepper';
+import { CngxIconSvg } from '@cngx/common/display';
+import { CNGX_ICON_ALERT, CNGX_ICON_BAN } from '@cngx/utils';
 
 /**
  * Shared aggregate error line for the stepper variants and the parent
@@ -32,9 +33,12 @@ import { CNGX_STEPPER_GLYPHS } from '@cngx/common/stepper';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  imports: [CngxIconSvg],
   template: `
     @if (text()) {
-      <span [class]="block() + '-glyph'" aria-hidden="true">{{ glyph() }}</span>
+      <span [class]="block() + '-glyph'" aria-hidden="true"
+        ><svg [cngxIconSvg]="icon()"></svg
+      ></span>
       <span [class]="block() + '-text'">{{ text() }}</span>
     }
   `,
@@ -49,6 +53,13 @@ import { CNGX_STEPPER_GLYPHS } from '@cngx/common/stepper';
       clip: rect(0, 0, 0, 0);
       white-space: nowrap;
       border: 0;
+    }
+
+    /* Standalone icon, no disc: 1.15em of the line font at stroke width 2,
+       painted in the line's text colour. */
+    [cngxStepperErrorLine] .cngx-icon-svg {
+      --cngx-icon-svg-size: 1.15em;
+      --cngx-icon-svg-stroke-width: 2;
     }
   `,
   host: {
@@ -72,7 +83,7 @@ export class CngxStepperErrorLine {
    */
   readonly reason = input<'refused' | null>(null);
 
-  protected readonly glyph = computed(() =>
-    this.reason() === 'refused' ? CNGX_STEPPER_GLYPHS.refusedIcon : CNGX_STEPPER_GLYPHS.errorBadge,
+  protected readonly icon = computed(() =>
+    this.reason() === 'refused' ? CNGX_ICON_BAN : CNGX_ICON_ALERT,
   );
 }

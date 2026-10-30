@@ -18,10 +18,10 @@ import {
 import { injectDirection } from '@cngx/core';
 
 import { CNGX_FOCUSABLE_SELECTOR, CngxFocusRestore, CngxLiveRegion } from '@cngx/common/a11y';
+import { CngxIconSvg } from '@cngx/common/display';
 import {
   CNGX_DIRECTIVE_BY_ID_MAP_FACTORY,
   CNGX_ORGANISM_SCROLL_SYNC_FACTORY,
-  CNGX_TABS_GLYPHS,
   CNGX_TAB_GROUP_HOST,
   CNGX_TAB_PANEL_HOST,
   CngxTab,
@@ -55,6 +55,7 @@ import {
   type CngxTabsPanelMode,
   type CngxTabsSkin,
 } from '@cngx/common/tabs';
+import { CNGX_ICON_ALERT, CNGX_ICON_BAN, CNGX_ICON_PLUS, CNGX_ICON_X } from '@cngx/utils';
 
 import { installTabGroupDevChecks } from './tab-group-dev-checks';
 
@@ -108,7 +109,7 @@ import { installTabGroupDevChecks } from './tab-group-dev-checks';
   exportAs: 'cngxTabGroup',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, CngxLiveRegion],
+  imports: [NgTemplateOutlet, CngxIconSvg, CngxLiveRegion],
   styleUrls: ['../../common/tabs/styles/tabs-base.css', './tab-group.component.css'],
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
@@ -187,8 +188,11 @@ export class CngxTabGroup implements CngxTabPanelHost {
   protected readonly presenter = inject(CNGX_TAB_GROUP_HOST);
   protected readonly i18n = injectTabsI18n();
   protected readonly config = injectTabsConfig();
-  /** Default-glyph table for the template's fallback spans. */
-  protected readonly glyphs = CNGX_TABS_GLYPHS;
+  /** Default icons for the template's fallback spans. */
+  protected readonly alertIcon = CNGX_ICON_ALERT;
+  protected readonly banIcon = CNGX_ICON_BAN;
+  protected readonly closeIcon = CNGX_ICON_X;
+  protected readonly addIcon = CNGX_ICON_PLUS;
   private readonly hostElement: HTMLElement =
     inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly injector = inject(Injector);

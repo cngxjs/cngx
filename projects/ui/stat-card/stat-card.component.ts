@@ -14,6 +14,7 @@ import {
   resolveAsyncView,
   type CngxStatSlotKind,
 } from '@cngx/common/data';
+import { CngxIconSvg } from '@cngx/common/display';
 import { CngxSkeleton } from '@cngx/common/layout';
 import {
   createLatencyProbe,
@@ -24,6 +25,7 @@ import {
 } from '@cngx/core/utils';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 import { CngxLoadingIndicator } from '@cngx/ui/feedback';
+import { CNGX_ICON_ALERT, CNGX_ICON_EXCLAMATION } from '@cngx/utils';
 
 import { injectStatCardAriaLabels, injectStatCardConfig } from './config/inject-stat-card-config';
 
@@ -75,7 +77,7 @@ const DEFAULT_SKELETON_SLOTS: readonly CngxStatSlotKind[] = ['label', 'value', '
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxCard, CngxSkeleton, CngxLoadingIndicator, CngxEmptyState],
+  imports: [CngxCard, CngxIconSvg, CngxSkeleton, CngxLoadingIndicator, CngxEmptyState],
   hostDirectives: [CngxStatCoordinator],
   providers: [{ provide: CNGX_STAT, useExisting: CngxStatCoordinator }],
   host: {
@@ -148,21 +150,7 @@ const DEFAULT_SKELETON_SLOTS: readonly CngxStatSlotKind[] = ['label', 'value', '
             <!-- The stock empty-state glyph is an archive box, which reads
                  "nothing here" rather than "this failed". Projecting into the
                  icon slot hides it. Decorative: the title carries the message. -->
-            <svg
-              cngxEmptyStateIcon
-              class="cngx-stat-card__error-icon"
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-              <path d="M12 9v4" />
-              <path d="M12 17h.01" />
-            </svg>
+            <svg cngxEmptyStateIcon class="cngx-stat-card__error-icon" [cngxIconSvg]="errorIcon"></svg>
           </cngx-empty-state>
         }
         @case ('empty') {
@@ -188,7 +176,12 @@ const DEFAULT_SKELETON_SLOTS: readonly CngxStatSlotKind[] = ['label', 'value', '
           <ng-content select="[cngxStatCardViz]" />
 
           @if (activeView() === 'content+error') {
-            <p class="cngx-stat-card__stale">{{ resolvedStaleText() }}</p>
+            <p class="cngx-stat-card__stale">
+              <span class="cngx-stat-card__stale-glyph" aria-hidden="true">
+                <svg [cngxIconSvg]="staleIcon"></svg>
+              </span>
+              {{ resolvedStaleText() }}
+            </p>
           }
         }
       }
@@ -201,6 +194,12 @@ const DEFAULT_SKELETON_SLOTS: readonly CngxStatSlotKind[] = ['label', 'value', '
 export class CngxStatCard {
   /** @internal The shared slot-id brain, applied as a host directive. */
   protected readonly coordinator = inject(CngxStatCoordinator, { host: true });
+
+  /** @internal - projected over the empty-state's stock archive glyph. */
+  protected readonly errorIcon = CNGX_ICON_ALERT;
+
+  /** @internal - mark inside the stale badge. */
+  protected readonly staleIcon = CNGX_ICON_EXCLAMATION;
 
   private readonly config = injectStatCardConfig();
   private readonly ariaLabels = injectStatCardAriaLabels();

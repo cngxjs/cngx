@@ -32,7 +32,8 @@ export interface CngxStepRejectionContext {
  * Slot directive for the rejection-decoration template on
  * `<cngx-stepper>`. Discovered via `contentChild`; cascades through
  * `CNGX_STEPPER_CONFIG.templates.rejection` before falling back to
- * `CNGX_STEPPER_GLYPHS.rejectionIcon`.
+ * the default icon (`CNGX_ICON_ALERT` on a failed commit, `CNGX_ICON_BAN` on
+ * a refused one, from `@cngx/utils`).
  *
  * Symmetric context shape with the upcoming tabs `cngxTabRejectionIcon`
  * slot so consumer templates port directly between the two families.

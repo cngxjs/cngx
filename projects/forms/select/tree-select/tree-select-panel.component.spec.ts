@@ -9,7 +9,7 @@ import { type AsyncView } from '@cngx/common/data';
 import { CngxPopover, CngxPopoverSheet } from '@cngx/common/popover';
 import { createTreeController, type CngxTreeController } from '@cngx/common/interactive';
 import { provideLocale } from '@cngx/core/utils';
-import type { CngxTreeNode, FlatTreeNode } from '@cngx/utils';
+import { CNGX_ICON_CHEVRON_RIGHT, type CngxTreeNode, type FlatTreeNode } from '@cngx/utils';
 import { describe, expect, it, vi } from 'vitest';
 import {
   CNGX_SELECT_PANEL_HOST,
@@ -378,7 +378,8 @@ describe('CngxTreeSelectPanel', () => {
     expect(closed).toBeTruthy();
     expect(closed!.getAttribute('focusable')).toBe('false');
     expect(closed!.getAttribute('fill')).toBe('none');
-    expect(closed!.getAttribute('stroke')).toBe('currentColor');
+    expect(closed!.classList.contains('cngx-icon-svg--stroke')).toBe(true);
+    expect(closed!.querySelector('path')?.getAttribute('d')).toBe(CNGX_ICON_CHEVRON_RIGHT.d);
     expect(twisty().textContent?.trim()).toBe('');
     expect(twisty().getAttribute('aria-hidden')).toBe('true');
     expect(twisty().classList.contains('cngx-tree-select__twisty--open')).toBe(false);

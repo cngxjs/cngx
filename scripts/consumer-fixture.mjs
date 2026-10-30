@@ -237,7 +237,8 @@ export function presetPlan(preset = DEFAULT_PRESET, { standalone = true } = {}) 
     ngTest: full,
     outlets: full ? ['cngx-banner-outlet', 'cngx-toast-outlet'] : [],
     starter: full && standalone ? STARTER_SMOKE : undefined,
-    // The starter keeps its component stylesheet inside the `ng new` budgets.
+    // The starter keeps its component stylesheet inside the `ng new` budgets
+    // and its initial bundle inside the warning budget it sets.
     noBudgetWarnings: full,
   };
 }

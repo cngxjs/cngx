@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxMenuGroup } from '@cngx/common/interactive';
+import { CNGX_ICON_CHECK, CNGX_ICON_DOT } from '@cngx/utils';
 
 import { CngxContextMenu } from './context-menu.component';
 import { CngxContextMenuItemCheckbox } from './context-menu-item-checkbox.component';
@@ -82,5 +83,38 @@ describe('CngxContextMenuItemCheckbox / CngxContextMenuItemRadio', () => {
     expect(cozy.getAttribute('aria-checked')).toBe('false');
     expect(compact.getAttribute('aria-checked')).toBe('true');
     expect(host.density()).toBe('compact');
+  });
+
+  function indicatorPath(item: HTMLElement): string | null | undefined {
+    return item.querySelector('.cngx-menu-item__check > svg.cngx-icon-svg path')?.getAttribute('d');
+  }
+
+  it('renders the checkbox tick from the shared icon only while checked', () => {
+    expect(checkbox().querySelector('.cngx-menu-item__check')).not.toBeNull();
+    expect(indicatorPath(checkbox())).toBeUndefined();
+
+    checkbox().click();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(indicatorPath(checkbox())).toBe(CNGX_ICON_CHECK.d);
+  });
+
+  it('renders the radio dot from the shared icon on the checked row only', () => {
+    const [cozy, compact] = radios();
+    cozy.click();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(indicatorPath(cozy)).toBe(CNGX_ICON_DOT.d);
+    expect(indicatorPath(compact)).toBeUndefined();
+    expect(compact.querySelector('.cngx-menu-item__check')).not.toBeNull();
+  });
+
+  it('keeps the indicator gutter out of the accessibility tree', () => {
+    checkbox().click();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const gutter = checkbox().querySelector('.cngx-menu-item__check');
+    expect(gutter?.getAttribute('aria-hidden')).toBe('true');
+    expect(checkbox().textContent?.trim()).toBe('Word wrap');
   });
 });

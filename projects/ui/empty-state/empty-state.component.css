@@ -47,6 +47,18 @@
   }
 
   /**
+   * Footprint of the default illustration: the archive inks at about this
+   * width, and the block it reserves keeps this height. Inherits, so a
+   * value set on the host reaches the icon.
+   * @group Icon
+   */
+  @property --cngx-empty-icon-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 48px;
+  }
+
+  /**
    * Block padding around the entire empty state. Falls back to
    * `--cngx-space-xl`.
    * @group Layout
@@ -167,7 +179,15 @@
       display: none;
     }
 
+    /* The archive spans 21.4 grid units across with its 1.4-unit stroke, so
+       scaling the box by 24/21.4 inks it just inside the footprint. The thin
+       stroke reads as a 3px line at the default size, lighter than the set's
+       2-unit default, as an illustration should. The negative block margin
+       hands the oversized box back, so the block keeps the footprint. */
     .cngx-empty-state__default-icon {
+      --cngx-icon-svg-size: calc(var(--cngx-empty-icon-size, 48px) * 47 / 48 * 24 / 21.4);
+      --cngx-icon-svg-stroke-width: 1.4;
+      margin-block: calc((var(--cngx-empty-icon-size, 48px) - var(--cngx-icon-svg-size)) / 2);
       color: var(--cngx-empty-icon-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
     }
 

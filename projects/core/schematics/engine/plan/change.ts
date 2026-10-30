@@ -124,6 +124,21 @@ export interface AddStyleEntry extends ChangeBase {
   readonly after?: string;
 }
 
+/**
+ * The warning threshold of one budget of a build configuration. Apply only
+ * raises it: a budget already at or above the value, or one the project does
+ * not declare, stays as it is.
+ */
+export interface RaiseBudget extends ChangeBase {
+  readonly kind: 'raise-budget';
+  readonly project: string;
+  readonly configuration: string;
+  /** The budget `type`, such as `initial`. */
+  readonly type: string;
+  /** An Angular budget size, such as `550kB`. */
+  readonly maximumWarning: string;
+}
+
 export type JsonPath = readonly (string | number)[];
 export type JsonEntry = readonly [path: JsonPath, value: JsonValue];
 
@@ -149,6 +164,7 @@ export type Change =
   | AddProvider
   | AddStyleImport
   | AddStyleEntry
+  | RaiseBudget
   | WriteJson
   | Note;
 

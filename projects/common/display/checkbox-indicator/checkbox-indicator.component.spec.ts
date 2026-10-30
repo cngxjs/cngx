@@ -1,5 +1,6 @@
 import { Component, signal, viewChild, type TemplateRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { CNGX_ICON_CHECK, CNGX_ICON_MINUS } from '@cngx/utils';
 import { describe, expect, it } from 'vitest';
 
 import { CngxCheckboxIndicator } from './checkbox-indicator.component';
@@ -94,6 +95,20 @@ describe('CngxCheckboxIndicator', () => {
     expect(host.classList.contains('cngx-checkbox-indicator--checked')).toBe(true);
     expect(host.querySelector('.cngx-checkbox-indicator__check')).not.toBeNull();
     expect(host.querySelector('.cngx-checkbox-indicator__dash')).toBeNull();
+  });
+
+  it('draws the check and dash glyphs from the shared icon set', () => {
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.checked.set(true);
+    flush(fixture);
+    const host = hostEl(fixture);
+    const check = host.querySelector('.cngx-checkbox-indicator__check svg.cngx-icon-svg path');
+    expect(check?.getAttribute('d')).toBe(CNGX_ICON_CHECK.d);
+    expect(host.querySelector('.cngx-checkbox-indicator__check')?.textContent?.trim()).toBe('');
+    fixture.componentInstance.indeterminate.set(true);
+    flush(fixture);
+    const dash = host.querySelector('.cngx-checkbox-indicator__dash svg.cngx-icon-svg path');
+    expect(dash?.getAttribute('d')).toBe(CNGX_ICON_MINUS.d);
   });
 
   it('indeterminate=true renders the dash glyph', () => {

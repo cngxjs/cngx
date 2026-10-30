@@ -8,8 +8,8 @@ import { cdp } from 'vitest/browser';
 
 // Runs in a real Chromium (the `test-geometry` target). A disabled tab that
 // carries a rejected commit takes no opacity fade: Material paints the disabled
-// label colour, and the error outline keeps it apart from a healthy disabled
-// tab, in both schemes and under forced colors. Static markup with Material's
+// label colour and the rejection icon keeps it apart from a healthy disabled
+// tab, in both schemes; under forced colors an outline marks it. Static markup with Material's
 // own classes; Material's stylesheet is not loaded here.
 
 const SCHEMES = ['light', 'dark'] as const;
@@ -84,11 +84,11 @@ describe.each(SCHEMES)('disabled rejected mat tab, %s', (scheme) => {
   const at = (root: HTMLElement, selector: string): HTMLElement =>
     one(root, `.scheme-${scheme} ${selector}`);
 
-  it('keeps full opacity and the error outline of an enabled rejected tab', () => {
+  it('keeps full opacity and, like an enabled rejected tab, no outline', () => {
     const root = mount();
     const tab = at(root, '.tab-error-off');
     expect(effectiveOpacity(tab)).toBe(1);
-    expect(outline(tab)).toBe('solid 2px -2px');
+    expect(computedValue(tab, 'outline-style')).toBe('none');
     expect(outline(tab)).toBe(outline(at(root, '.tab-error')));
   });
 

@@ -540,9 +540,13 @@
       color: var(--cngx-toast-error-accent, oklch(0.56 0.16 25));
     }
 
-    .cngx-toast__default-icon {
-      width: var(--cngx-toast-icon-size, 20px);
-      height: var(--cngx-toast-icon-size, 20px);
+    /* The severity circles span 21 grid units with stroke; scaling the box
+       by 22/21 inks the circle at 22/24 of --cngx-toast-icon-size. As a
+       block it leaves the line box and sits at the top of the icon cell,
+       level with the first line of the message. */
+    .cngx-toast__icon .cngx-toast__default-icon {
+      --cngx-icon-svg-size: calc(var(--cngx-toast-icon-size, 20px) * 22 / 21);
+      display: block;
     }
 
     .cngx-toast__body {

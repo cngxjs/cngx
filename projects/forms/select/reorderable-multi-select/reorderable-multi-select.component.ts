@@ -25,7 +25,8 @@ import {
   type CngxAsyncState,
 } from '@cngx/core/utils';
 
-import { CngxChip } from '@cngx/common/display';
+import { CngxChip, CngxIconSvg } from '@cngx/common/display';
+import { CNGX_ICON_CARET_DOWN, CNGX_ICON_X } from '@cngx/utils';
 import {
   CNGX_CHIP_STRIP_ROVING_FACTORY,
   CngxClickOutside,
@@ -224,6 +225,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    CngxIconSvg,
     CngxPopoverSheet,
     CngxPopoverSheetInitialFocus,
     CngxSelectSheetHeader,
@@ -385,6 +387,8 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * active language.
    */
   readonly clearButtonAriaLabel = input<string | undefined>(undefined);
+  protected readonly caretIcon = CNGX_ICON_CARET_DOWN;
+  protected readonly clearIcon = CNGX_ICON_X;
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedClearButtonAriaLabel = computed<string>(
     () =>
@@ -1288,7 +1292,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * Chip-strip keydown delegate. Two jobs:
    *
    *   1. `stopPropagation()` for Enter/Space inside a chip wrap. Without
-   *      it, Enter/Space on the focused ✕ bubbles to
+   *      it, Enter/Space on the focused remove button bubbles to
    *      `CngxListboxTrigger.handleKeyDown`, which opens the popover
    *      AND swallows the native Enter→click - chip stays, popover
    *      opens. Scoped to the two activation keys so everything else

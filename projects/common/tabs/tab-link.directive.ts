@@ -1,4 +1,5 @@
 import {
+  afterRenderEffect,
   computed,
   DestroyRef,
   Directive,
@@ -13,8 +14,9 @@ import {
 } from '@angular/core';
 
 import { nextUid } from '@cngx/core/utils';
-import { CngxRuntimeError } from '@cngx/utils';
+import { CNGX_ICON_ALERT, CngxRuntimeError } from '@cngx/utils';
 
+import { createIconSvgElement } from '@cngx/common/display';
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
 import { CNGX_TAB_GROUP_HOST, type CngxTabHandle } from './tab-group-host.token';
@@ -35,8 +37,9 @@ import { injectTabsConfig } from './tabs-config';
  * There is no `select()` call - invoking it would re-enter the commit path the
  * routed-nav model deliberately keeps dormant.
  *
- * **Error communication is reactive:** `aria-invalid` plus the
- * `--error` skin glyph signal the state, and an injected screen-reader
+ * **Error communication is reactive:** `aria-invalid` plus a leading
+ * `aria-hidden` alert icon (`.cngx-tab-link__error-icon`, built from the
+ * shared icon data) signal the state, and an injected screen-reader
  * descriptor span (referenced by a permanent `aria-describedby`) carries the
  * direct `[error]` message string so assistive tech reads *why* the link is
  * invalid.
@@ -159,6 +162,9 @@ export class CngxTabLink implements OnInit {
   /** The injected descriptor `<span>`, created in {@link ngOnInit}. */
   private descriptorEl: HTMLElement | null = null;
 
+  /** The leading alert icon, present while {@link hasError} holds. */
+  private errorIconEl: HTMLElement | null = null;
+
   constructor() {
     if (!this.host) {
       throw new CngxRuntimeError(
@@ -177,6 +183,11 @@ export class CngxTabLink implements OnInit {
         this.syncDescriptor(el);
       }
     });
+    // The anchor is consumer DOM, so the alert icon is built here rather
+    // than templated: leading child, `aria-hidden`, so the link's name and
+    // its textContent stay the label alone. An after-render effect never
+    // runs on the server, so hydration meets the template's own DOM.
+    afterRenderEffect({ write: () => this.syncErrorIcon(this.hasError()) });
   }
 
   ngOnInit(): void {
@@ -215,6 +226,31 @@ export class CngxTabLink implements OnInit {
         this.renderer.removeChild(parent, descriptor);
       }
     });
+  }
+
+  /**
+   * Insert or remove the leading `aria-hidden` alert icon. The svg is
+   * legible bare (see `createIconSvgElement`); a styled tab organism sizes
+   * it through the `.cngx-tab-link__error-icon` hook.
+   */
+  private syncErrorIcon(show: boolean): void {
+    if (!show) {
+      if (this.errorIconEl) {
+        this.renderer.removeChild(this.hostEl, this.errorIconEl);
+        this.errorIconEl = null;
+      }
+      return;
+    }
+    if (this.errorIconEl) {
+      return;
+    }
+    const span = this.renderer.createElement('span') as HTMLElement;
+    this.renderer.addClass(span, 'cngx-tab-link__error-icon');
+    this.renderer.setAttribute(span, 'aria-hidden', 'true');
+    const svg = createIconSvgElement(this.renderer, CNGX_ICON_ALERT, 'cngx-tab-link__icon-svg');
+    this.renderer.appendChild(span, svg.element);
+    this.renderer.insertBefore(this.hostEl, span, this.hostEl.firstChild);
+    this.errorIconEl = span;
   }
 
   /**

@@ -56,25 +56,29 @@ test.describe('ui/tabs/tab-router-nav', () => {
     await expect(profile).not.toHaveAttribute('aria-current', 'page');
   });
 
-  test('an invalid link renders the ::before error glyph (visual partner of aria-invalid)', async ({
+  test('an invalid link renders the leading alert icon (visual partner of aria-invalid)', async ({
     page,
   }) => {
     await gotoDemo(page, 'ui/tabs/tab-router-nav/native-routerlink-nav');
 
     const profile = page.getByRole('link', { name: 'Profile' });
-    const glyph = (): Promise<string> =>
-      profile.evaluate((el) => getComputedStyle(el, '::before').content);
+    const icon = profile.locator('.cngx-tab-link__error-icon');
 
-    // No error yet: the ::before pseudo generates no glyph box.
+    // No error yet: no icon.
     await expect(profile).not.toHaveAttribute('aria-invalid', 'true');
-    expect(await glyph()).toBe('none');
+    await expect(icon).toHaveCount(0);
 
-    // Mark the link invalid: aria-invalid AND the visual glyph both light up.
-    // The glyph is `content: var(--cngx-tab-error-glyph, '!')` - it must NOT
-    // read the `<color>`-typed --cngx-tab-rejection-icon-text token, which
-    // would resolve to an invalid `content` value and drop the pseudo to none.
+    // Mark the link invalid: aria-invalid AND the alert icon both light up.
+    // The icon is aria-hidden, so the link's name stays "Profile".
     await page.getByLabel(/unsaved changes/i).check();
     await expect(profile).toHaveAttribute('aria-invalid', 'true');
-    expect(await glyph()).toContain('!');
+    await expect(icon).toHaveCount(1);
+    await expect(icon).toHaveAttribute('aria-hidden', 'true');
+    await expect(icon.locator('svg path')).toHaveAttribute('d', /^M12 3L2 20\.5h20z/);
+    await expect(icon).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Profile', exact: true })).toHaveCount(1);
+
+    await page.getByLabel(/unsaved changes/i).uncheck();
+    await expect(icon).toHaveCount(0);
   });
 });

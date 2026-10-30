@@ -93,25 +93,14 @@
 
 .cngx-progress-bar-stepper__error-glyph {
   flex: none;
-  display: inline-grid;
-  place-items: center;
-  width: var(--cngx-progress-bar-stepper-error-glyph-size, 1.1em);
-  height: var(--cngx-progress-bar-stepper-error-glyph-size, 1.1em);
-  border-radius: 50%;
-  background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
-  color: var(--cngx-progress-bar-stepper-error-glyph-color, var(--cngx-color-on-danger, white));
-  font-size: 0.75em;
-  font-weight: 700;
-  line-height: 1;
+  display: inline-flex;
+  align-items: center;
 }
 
-/* Every marked step is a refused commit: resting text, amber glyph disc. */
+/* Every marked step is a refused commit: resting text; the slashed-circle
+   icon follows it. */
 .cngx-progress-bar-stepper__error[data-reason='refused'] {
   color: var(--cngx-step-refused-text-color, currentColor);
-}
-
-.cngx-progress-bar-stepper__error[data-reason='refused'] .cngx-progress-bar-stepper__error-glyph {
-  background: var(--cngx-step-refused-color, oklch(0.62 0.15 60));
 }
 
 /* Only refused commits marked: the bar takes the refused amber, not the

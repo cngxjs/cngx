@@ -75,6 +75,7 @@ describe('interactive-controls Material bridge', () => {
     '--cngx-checkbox-checked-color',
     '--cngx-radio-indicator-checked-color',
     '--cngx-radio-indicator-color',
+    '--cngx-radio-indicator-mark-color',
     '--cngx-toggle-thumb-bg',
     '--cngx-toggle-track-bg-off',
     '--cngx-toggle-track-bg-on',
@@ -108,6 +109,48 @@ $theme: mat.define-theme((
     for (const name of names) {
       expect(CONSUMED).toContain(name);
     }
+  });
+
+  it('maps the idle radio ring to the secondary-text foreground (M2)', () => {
+    const css = compileThemeEntry(`
+@use '@angular/material' as mat;
+@use 'material/interactive-controls-theme' as bridge;
+
+$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
+$accent: mat.m2-define-palette(mat.$m2-pink-palette);
+$theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)));
+
+@include bridge.theme($theme);
+`);
+    expect(css).toContain('--cngx-radio-indicator-color: rgba(0, 0, 0, 0.54)');
+  });
+
+  it('maps the check skin mark onto on-primary (M3)', () => {
+    const css = compileThemeEntry(`
+@use '@angular/material' as mat;
+@use 'material/interactive-controls-theme' as bridge;
+
+$theme: mat.define-theme((
+  color: (theme-type: light, primary: mat.$azure-palette, tertiary: mat.$blue-palette),
+));
+
+@include bridge.theme($theme);
+`);
+    expect(css).toContain('--cngx-radio-indicator-mark-color: var(--mat-sys-on-primary)');
+  });
+
+  it('maps the check skin mark onto the primary contrast colour (M2)', () => {
+    const css = compileThemeEntry(`
+@use '@angular/material' as mat;
+@use 'material/interactive-controls-theme' as bridge;
+
+$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
+$accent: mat.m2-define-palette(mat.$m2-pink-palette);
+$theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)));
+
+@include bridge.theme($theme);
+`);
+    expect(css).toContain('--cngx-radio-indicator-mark-color: white');
   });
 });
 

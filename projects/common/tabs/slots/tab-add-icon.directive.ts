@@ -3,7 +3,7 @@ import { Directive, inject, TemplateRef } from '@angular/core';
 /**
  * Structural slot for the add-tab button glyph. 3-stage cascade:
  * per-instance directive > `CNGX_TABS_CONFIG.templates.addIcon` >
- * `CNGX_TABS_GLYPHS.addIcon`. The button owns its `aria-label`; the
+ * the default plus icon. The button owns its `aria-label`; the
  * template paints only the glyph, so its context is `void`.
  *
  * ```html

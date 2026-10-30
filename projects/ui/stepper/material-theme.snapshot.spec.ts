@@ -207,8 +207,8 @@ describe('Material stepper-theme mixin baseline', () => {
   });
 
   describe('placement', () => {
-    // The typography / badge / rejection tokens are registered
-    // inherits:false and read on inner elements; theme() must broadcast
+    // The indicator typography tokens are registered inherits:false and
+    // read on inner elements; theme() must broadcast
     // to host + descendants (select-theme precedent) or the bridge
     // values resolve to the initial-value at the read sites.
     it('theme() broadcasts the stepper block to host + descendants', () => {
@@ -232,7 +232,7 @@ $theme: mat.define-theme((
       expect(broadcast).not.toBeNull();
       expect(broadcast![0]).toContain('--cngx-step-indicator-font-size:');
       expect(broadcast![0]).toContain('--cngx-step-error-badge-color:');
-      expect(broadcast![0]).toContain('--cngx-step-rejection-icon-bg:');
+      expect(broadcast![0]).toContain('--cngx-step-refused-color:');
     });
   });
 });

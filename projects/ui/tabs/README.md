@@ -40,6 +40,19 @@ Two pieces give the tab strip its character:
 
 Set an app-wide default with `withTabsSkin()` (via `provideCngxTabs`). Colours and sizes are CSS custom properties (`--cngx-tab-*`) that chain to `--mat-sys-*` when a Material theme is present.
 
+### How each skin draws the error
+
+The validation badge is a bare alert icon (no disc, `1.15em` of the label font, stroke 2) right after the label, in the danger colour (`--cngx-tab-error-badge-color`, `--cngx-tab-badge-size`).
+
+A rejected tab (the latest commit refused or failed) carries the rejection icon after the label and a reason colour: red alert triangle for a failed commit, amber slashed circle for a refused one (`--cngx-tab-rejection-icon-color`, `--cngx-tab-refused-color`, `--cngx-tab-rejection-icon-size`). The two kinds never differ by colour alone.
+
+|Skin|Rejected tab, horizontal and vertical|
+|-|-|
+|`line`|colour only: no surface, no line; the label turns the reason colour (`--cngx-tab-failed-text-color`, `--cngx-tab-refused-text-color`)|
+|`contained`, `segmented`, `pill`, `pill-outline`|the reason colour tints the tab background (`--cngx-tab-rejection-tint`, 18%) in the skin's own shape; the label keeps its colour|
+
+The colours chain to `--cngx-color-danger` / `--cngx-color-danger-text` and to `--cngx-color-warning` mixed toward `--cngx-color-text`, so they follow the light and dark scheme. Under forced colors the tint and the label colour vanish, so a rejected tab draws a 2px `CanvasText` outline and both icons paint the system text colour.
+
 ## Companion entries
 
 - **`@cngx/common/tabs`** - the headless brain, configuration cascade, slot directives.

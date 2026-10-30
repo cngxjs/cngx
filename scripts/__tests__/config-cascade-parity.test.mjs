@@ -117,7 +117,6 @@ describe('config-cascade + twin-family parity guard', () => {
     'CNGX_{F}_I18N',
     'provide{F}I18n',
     'inject{F}I18n',
-    'CNGX_{F}_GLYPHS',
     'CNGX_{F}_COMMIT_HANDLER_FACTORY',
     'provideCngx{F}',
     'provideCngx{F}At',

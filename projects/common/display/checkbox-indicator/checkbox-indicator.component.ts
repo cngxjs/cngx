@@ -6,14 +6,16 @@ import {
   ViewEncapsulation,
   type TemplateRef,
 } from '@angular/core';
+import { CNGX_ICON_CHECK, CNGX_ICON_MINUS } from '@cngx/utils';
+
+import { CngxIconSvg } from '../icon/icon-svg.component';
 
 /**
  * Presentational checkbox / checkmark indicator.
  *
  * **Why this exists.**
- * Across the library, "is this row selected?" shows up as a bare
- * `<span class="cngx-select__check">&#10003;</span>` in the forms/select panel,
- * a future grid/tree cell will want a checkbox with indeterminate state, and
+ * Across the library, "is this row selected?" shows up as a check mark
+ * in the forms/select panel, a future grid/tree cell will want a checkbox with indeterminate state, and
  * `ng decompose cngx-*` schematics should emit a consistent indicator shape
  * regardless of which list-like component they originated from. This atom
  * unifies all three surfaces behind a single presentational molecule -
@@ -52,7 +54,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./checkbox-indicator.component.css'],
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, CngxIconSvg],
   host: {
     class: 'cngx-checkbox-indicator',
     'aria-hidden': 'true',
@@ -67,10 +69,14 @@ import {
   },
   template: `
     <ng-template #defaultDashGlyph>
-      <span aria-hidden="true" class="cngx-checkbox-indicator__dash">&minus;</span>
+      <span aria-hidden="true" class="cngx-checkbox-indicator__dash">
+        <svg [cngxIconSvg]="dashIcon"></svg>
+      </span>
     </ng-template>
     <ng-template #defaultCheckGlyph>
-      <span aria-hidden="true" class="cngx-checkbox-indicator__check">&#10003;</span>
+      <span aria-hidden="true" class="cngx-checkbox-indicator__check">
+        <svg [cngxIconSvg]="checkIcon"></svg>
+      </span>
     </ng-template>
 
     @if (variant() === 'checkbox') {
@@ -120,8 +126,8 @@ export class CngxCheckboxIndicator {
 
   /**
    * Consumer-supplied template for the check glyph. When `null` (default),
-   * the built-in `<span class="cngx-checkbox-indicator__check">&#10003;</span>`
-   * is rendered. When set, the consumer template replaces the glyph span
+   * the built-in `<span class="cngx-checkbox-indicator__check">` with the
+   * default check svg is rendered. When set, the consumer template replaces the glyph span
    * entirely - the `__check` class is NOT applied to the custom content
    * (consumers own the styling of their replacement).
    *
@@ -135,7 +141,10 @@ export class CngxCheckboxIndicator {
   /**
    * Consumer-supplied template for the indeterminate dash glyph. Mirrors
    * {@link checkGlyph} - defaults to the built-in
-   * `<span class="cngx-checkbox-indicator__dash">&minus;</span>`.
+   * `<span class="cngx-checkbox-indicator__dash">` with the default minus svg.
    */
   readonly dashGlyph = input<TemplateRef<void> | null>(null);
+
+  protected readonly checkIcon = CNGX_ICON_CHECK;
+  protected readonly dashIcon = CNGX_ICON_MINUS;
 }

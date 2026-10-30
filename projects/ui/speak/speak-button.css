@@ -214,8 +214,7 @@
     }
 
     .cngx-speak-button__icon {
-      width: var(--cngx-speak-btn-icon-size, 18px);
-      height: var(--cngx-speak-btn-icon-size, 18px);
+      --cngx-icon-svg-size: var(--cngx-speak-btn-icon-size, 18px);
       transform: translateX(1px);
     }
   }

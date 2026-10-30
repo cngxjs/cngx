@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxAsyncClick } from '@cngx/common/interactive';
+import { CNGX_ICON_X } from '@cngx/utils';
 import { vi } from 'vitest';
 
 import { CngxButtonGroup } from './button-group.directive';
@@ -125,7 +126,8 @@ describe('CngxCloseButton', () => {
     expect(glyph.getAttribute('aria-hidden')).toBe('true');
     const svg = glyph.querySelector('svg.cngx-close-button__icon');
     expect(svg).not.toBeNull();
-    expect(svg!.querySelectorAll('line').length).toBe(2);
+    expect(svg!.querySelector('path')!.getAttribute('d')).toBe(CNGX_ICON_X.d);
+    expect(svg!.classList.contains('cngx-icon-svg--stroke')).toBe(true);
   });
 
   it('replaces the default glyph with projected content', () => {

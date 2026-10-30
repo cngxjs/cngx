@@ -12,12 +12,13 @@ import {
 } from '@angular/core';
 
 import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
+import { CngxIconSvg } from '@cngx/common/display';
 import { CngxListbox, CngxListboxTrigger, CngxOption } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import { injectLocale, numberFormatterFor } from '@cngx/core/utils';
+import { CNGX_ICON_MORE_HORIZONTAL } from '@cngx/utils';
 
 import { injectPaginatorAriaLabels } from '../paginator-config';
-import { CNGX_PAGINATOR_GLYPHS } from '../paginator-glyphs';
 import { injectPaginatorHost } from '../paginator-host.token';
 import { pageWindowEqual, type PageWindow } from './page-model';
 import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.token';
@@ -42,6 +43,7 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [
+    CngxIconSvg,
     CngxRovingTabindex,
     CngxRovingItem,
     CngxListbox,
@@ -79,7 +81,7 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
             [attr.aria-label]="ariaLabels().morePages"
             (click)="openOverflow(morePopover, moreUl)"
           >
-            {{ glyphs.more }}
+            <svg [cngxIconSvg]="moreIcon"></svg>
           </button>
           <div
             cngxPopover
@@ -114,7 +116,7 @@ export class CngxPaginatorPages {
   private readonly locale = injectLocale();
   /** Visible page numbers and sizes, formatted for the locale (`1.000` in German). */
   protected readonly numbers = computed(() => numberFormatterFor(this.locale(), {}));
-  protected readonly glyphs = CNGX_PAGINATOR_GLYPHS;
+  protected readonly moreIcon = CNGX_ICON_MORE_HORIZONTAL;
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
 

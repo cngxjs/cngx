@@ -5,6 +5,12 @@ import { describe, expect, test } from 'vitest';
 
 import { CngxPaginate, createManualState } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
+import {
+  CNGX_ICON_CHEVRON_LEFT,
+  CNGX_ICON_CHEVRON_RIGHT,
+  CNGX_ICON_CHEVRONS_LEFT,
+  CNGX_ICON_CHEVRONS_RIGHT,
+} from '@cngx/utils';
 
 import { CngxPaginator } from '../paginator.component';
 import {
@@ -78,10 +84,10 @@ function navLabel(fixture: Plumbing['fixture'], selector: string): string | unde
     ?.nativeElement.textContent?.trim();
 }
 
-function glyph(fixture: Plumbing['fixture'], selector: string): string | undefined {
+function iconPath(fixture: Plumbing['fixture'], selector: string): string | null | undefined {
   return fixture.debugElement
-    .query(By.css(`${selector} cngx-icon`))
-    ?.nativeElement.textContent?.trim();
+    .query(By.css(`${selector} cngx-icon > svg.cngx-icon-svg > path`))
+    ?.nativeElement.getAttribute('d');
 }
 
 describe('paginator nav segments', () => {
@@ -97,12 +103,12 @@ describe('paginator nav segments', () => {
     expect(button(fixture, 'cngx-pgn-first').getAttribute('aria-label')).toBeNull();
   });
 
-  test('each button renders its chevron glyph from the central glyph const', async () => {
+  test('each button renders its chevron from the shared icon set inside cngx-icon', async () => {
     const { fixture } = await setup();
-    expect(glyph(fixture, 'cngx-pgn-first')).toBe('«');
-    expect(glyph(fixture, 'cngx-pgn-prev')).toBe('‹');
-    expect(glyph(fixture, 'cngx-pgn-next')).toBe('›');
-    expect(glyph(fixture, 'cngx-pgn-last')).toBe('»');
+    expect(iconPath(fixture, 'cngx-pgn-first')).toBe(CNGX_ICON_CHEVRONS_LEFT.d);
+    expect(iconPath(fixture, 'cngx-pgn-prev')).toBe(CNGX_ICON_CHEVRON_LEFT.d);
+    expect(iconPath(fixture, 'cngx-pgn-next')).toBe(CNGX_ICON_CHEVRON_RIGHT.d);
+    expect(iconPath(fixture, 'cngx-pgn-last')).toBe(CNGX_ICON_CHEVRONS_RIGHT.d);
   });
 
   test('first/prev are disabled on the first page, next/last are not', async () => {

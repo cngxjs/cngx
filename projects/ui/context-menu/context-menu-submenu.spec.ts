@@ -4,12 +4,12 @@ import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { CNGX_SUBMENU_TRY_FALLBACKS } from '@cngx/common/interactive';
+import { CNGX_ICON_CHEVRON_RIGHT } from '@cngx/utils';
 
 import { CngxContextMenu } from './context-menu.component';
 import { CngxContextMenuContent } from './context-menu-content.directive';
 import { CngxContextMenuFor } from './context-menu-for.directive';
 import { CngxContextMenuItem } from './context-menu-item.component';
-import { CNGX_MENU_GLYPHS } from './menu-glyphs';
 
 function polyfillPopover(): void {
   const proto = HTMLElement.prototype as unknown as {
@@ -101,7 +101,9 @@ describe('CngxContextMenuItem submenu wiring', () => {
   it('marks the submenu item with aria-haspopup and a caret', () => {
     const item = fixture.nativeElement.querySelector('[role="menuitem"]') as HTMLElement;
     expect(item.getAttribute('aria-haspopup')).toBe('menu');
-    expect(item.textContent).toContain(CNGX_MENU_GLYPHS.submenuCaret);
+    const caret = item.querySelector('.cngx-menu-item__suffix > svg.cngx-icon-svg');
+    expect(caret?.getAttribute('aria-hidden')).toBe('true');
+    expect(caret?.querySelector('path')?.getAttribute('d')).toBe(CNGX_ICON_CHEVRON_RIGHT.d);
   });
 
   it('ArrowRight opens the nested panel non-exclusively and mirrors the parent row context', () => {

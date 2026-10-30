@@ -49,21 +49,19 @@
     --cngx-tab-color: var(--mat-sys-on-surface-variant);
     --cngx-tab-busy-spinner-color: var(--mat-sys-primary);
 
-    // Error badge + rejection disc paint the error role; the glyph paints
-    // on-error. These four knobs are `inherits: true` (tabs-base /
-    // tab-group) so a host-set value reaches the descendant badge / disc.
-    // `--cngx-tab-rejected-bg` is NOT among them - it is registered
-    // inherits:false and read on the rejected tab element, so it lives in
-    // `_rejected()` below.
+    // The error badge, the failed-switch icon and its tint paint the error
+    // role; the line skin's failed label too. These knobs are
+    // `inherits: true` (tabs-base / tab-group), so a host-set value reaches
+    // the descendant icons and labels.
     --cngx-tab-error-badge-color: var(--mat-sys-error);
-    --cngx-tab-error-badge-text-color: var(--mat-sys-on-error);
     --cngx-tab-rejection-icon-color: var(--mat-sys-error);
-    --cngx-tab-rejection-icon-text: var(--mat-sys-on-error);
+    --cngx-tab-failed-text-color: var(--mat-sys-error);
 
-    // Commit rejections: a refused switch wears tertiary (its disc, accent,
-    // and the wash mixed from it), a failed one is an error and keeps the
-    // error role above.
+    // Commit rejections: a refused switch wears tertiary (its icon, the
+    // tint mixed from it and the line skin's label), a failed one is an
+    // error and keeps the error role above.
     --cngx-tab-refused-color: var(--mat-sys-tertiary);
+    --cngx-tab-refused-text-color: var(--mat-sys-tertiary);
   } @else {
     --cngx-color-primary: #{mat.get-theme-color($theme, primary)};
     --cngx-color-surface: #{mat.get-theme-color($theme, background, card)};
@@ -73,53 +71,10 @@
     --cngx-tab-busy-spinner-color: #{mat.get-theme-color($theme, primary)};
 
     --cngx-tab-error-badge-color: #{mat.get-theme-color($theme, warn)};
-    --cngx-tab-error-badge-text-color: oklch(1 0 0);
     --cngx-tab-rejection-icon-color: #{mat.get-theme-color($theme, warn)};
-    --cngx-tab-rejection-icon-text: oklch(1 0 0);
+    --cngx-tab-failed-text-color: #{mat.get-theme-color($theme, warn)};
     --cngx-tab-refused-color: #{mat.get-theme-color($theme, accent)};
-  }
-}
-
-// Soft error-tinted wash behind the rejected tab, on the error role.
-// Registered inherits:false (tabs-base) and read on the rejected tab
-// element itself (plus its pulse keyframes, which resolve against the
-// same element) - set here, not on the group host, or the initial-value
-// wins.
-@mixin _rejected($theme) {
-  @if mat.get-theme-version($theme) == 1 {
-    --cngx-tab-rejected-bg: color-mix(in oklab, var(--mat-sys-error) 12%, transparent);
-  } @else {
-    --cngx-tab-rejected-bg: #{rgba(mat.get-theme-color($theme, warn), 0.12)};
-  }
-}
-
-// Registered inherits:false and read on the rejection disc and on the
-// tab-nav error glyph pseudo-element - a group-host set never reaches
-// either. The ::before needs its own declaration: pseudo-elements do
-// not inherit non-inheriting custom properties from their originating
-// element.
-@mixin _rejection-icon-typography($theme) {
-  @if mat.get-theme-version($theme) == 1 {
-    --cngx-tab-rejection-icon-font-size: var(--mat-sys-label-small-size);
-  }
-}
-
-// Deprecated: theme() now places the rejection-icon font-size on the
-// consuming elements (see _rejection-icon-typography) - the token is
-// inherits:false, so including this under a group host never lands.
-// Kept as a forwarding surface so the published color/typography/
-// density mixin trio survives for consumers who include the mixins
-// individually under their own (element-level) selector.
-@mixin typography($theme) {
-  @include _rejection-icon-typography($theme);
-}
-
-@mixin _badge-typography($theme) {
-  @if mat.get-theme-version($theme) == 1 {
-    // Registered inherits:false and read on the badge element itself -
-    // set here, not on the group host, or the initial-value wins.
-    --cngx-tab-badge-font-size: var(--mat-sys-label-small-size);
-    --cngx-tab-badge-font-weight: var(--mat-sys-label-small-weight);
+    --cngx-tab-refused-text-color: #{mat.get-theme-color($theme, accent)};
   }
 }
 
@@ -204,24 +159,25 @@
 
 // Bridge for the [cngxMatTabs] skin (projects/ui/mat-tabs/styles/mat-tabs.css).
 // The skin paints real Material `.mat-mdc-tab` DOM via `--cngx-mat-tab-*`
-// tokens; those tokens are `@property`-registered with literal oklch initial
-// values, so a registered value always supersedes any inline `var()` fallback
-// inside the skin - the only way to feed them off `$theme` is to set them
-// explicitly here. All three colour tokens inherit, so setting them on the
-// `.mat-mdc-tab-group` host cascades to every tab button and its `::after`
-// glyph, and to the appended `.cngx-mat-tabs-more` overflow wrapper. The
+// tokens; the skin sets its colour tokens per colour scheme on `:root` (and
+// on scheme islands), so the way to feed them off `$theme` is to set them
+// explicitly here, on a nearer ancestor. The colour tokens inherit, so
+// setting them on the `.mat-mdc-tab-group` host cascades to every tab button,
+// its label and its appended icons, and to the `.cngx-mat-tabs-more` overflow
+// wrapper. The
 // native `[cngxMatTabNav]` bridge hosts on `.mat-mdc-tab-nav-bar` instead,
 // so the same tokens are also set there to cascade to every `.mat-mdc-tab-link`.
 @mixin _mat-color($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-mat-tab-error-color: var(--mat-sys-error);
     --cngx-mat-tab-refused-color: var(--mat-sys-tertiary);
+    --cngx-mat-tab-refused-text-color: var(--mat-sys-tertiary);
     --cngx-mat-tab-has-errors-color: var(--mat-sys-error);
-    --cngx-mat-tab-has-errors-glyph-color: var(--mat-sys-on-error);
     --cngx-mat-tabs-more-bg: var(--mat-sys-surface);
   } @else {
     --cngx-mat-tab-error-color: #{mat.get-theme-color($theme, warn)};
     --cngx-mat-tab-refused-color: #{mat.get-theme-color($theme, accent)};
+    --cngx-mat-tab-refused-text-color: #{mat.get-theme-color($theme, accent)};
     --cngx-mat-tab-has-errors-color: #{mat.get-theme-color($theme, warn)};
   }
 }
@@ -238,21 +194,6 @@
   }
   @include bridge.on('.cngx-tab-overflow__panel') {
     @include _overflow-panel($theme);
-  }
-  @include bridge.on('.cngx-tab-badge') {
-    @include _badge-typography($theme);
-  }
-  @include bridge.on('.cngx-tab--rejected') {
-    @include _rejected($theme);
-  }
-  // Raw layer block: `::before` must sit OUTSIDE `:where()` - its forgiving
-  // selector list silently drops a pseudo-element argument, so the ::before
-  // branch would stop matching. Cannot ride `bridge.on()`.
-  @layer cngx.components {
-    :where(.cngx-tabs__rejection-icon),
-    :where(.cngx-tab-nav__link--error)::before {
-      @include _rejection-icon-typography($theme);
-    }
   }
   @include bridge.on('.cngx-tab-overflow__item') {
     @include _overflow-item($theme);

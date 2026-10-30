@@ -11,8 +11,13 @@ import {
   untracked,
   type ViewContainerRef,
 } from '@angular/core';
-import { CNGX_TABS_GLYPHS } from '@cngx/common/tabs';
-import { cngxDevWarn } from '@cngx/utils';
+import { createIconSvgElement, type CngxIconSvgElement } from '@cngx/common/display';
+import {
+  CNGX_ICON_ALERT,
+  CNGX_ICON_BAN,
+  type CngxIconData,
+  cngxDevWarn,
+} from '@cngx/utils';
 
 import { CNGX_DEFAULT_HALF_WIRED_SLOT_SINK } from './half-wired-slot-sink';
 import type { CngxMatTabAggregatorContentContext } from './mat-tab-aggregator-content.directive';
@@ -29,8 +34,9 @@ import { MaterialPrivateSurfaces } from '../material-bridge/private-surfaces';
  *   `aria-describedby`. `aria-invalid` is intentionally absent: ARIA
  *   1.2 scopes it to form-field vocabulary, not `role="tab"`.
  * - {@link createMatTabAggregatorDecoration} - projects each handle's
- *   `shouldShow()` flag onto the matching button as a class +
- *   descriptor span pair, same `aria-describedby` token-append pattern.
+ *   `shouldShow()` flag onto the matching button as a class, an
+ *   `aria-hidden` alert icon and a descriptor span, same
+ *   `aria-describedby` token-append pattern.
  *
  * Distinct descriptor-id suffixes (`-rejected` vs `-errors`) let both
  * projectors stack on the same target without collision; the shared
@@ -72,6 +78,35 @@ function restoreAriaDescribedbyExceptToken(
     return;
   }
   renderer.setAttribute(el, 'aria-describedby', remaining.join(' '));
+}
+
+/** Class of the `<svg>` the projectors build from the shared icon data. */
+const ICON_SVG_CLASS = 'cngx-mat-tab__icon-svg';
+
+/**
+ * An `aria-hidden` span holding one shared-icon `<svg>`. The projectors
+ * append it to the tab itself: `::before` is Material's focus indicator,
+ * so a pseudo-element cannot carry it.
+ *
+ * @internal
+ */
+interface MatTabIconGlyph {
+  readonly span: HTMLElement;
+  readonly icon: CngxIconSvgElement;
+}
+
+/** @internal */
+function createIconGlyph(
+  renderer: Renderer2,
+  className: string,
+  icon: CngxIconData,
+): MatTabIconGlyph {
+  const span = renderer.createElement('span') as HTMLElement;
+  renderer.addClass(span, className);
+  renderer.setAttribute(span, 'aria-hidden', 'true');
+  const svg = createIconSvgElement(renderer, icon, ICON_SVG_CLASS);
+  renderer.appendChild(span, svg.element);
+  return { span, icon: svg };
 }
 
 /**
@@ -153,7 +188,7 @@ export interface CngxMatTabRejectionDecorationOptions {
    * fire time like {@link originLabel}; a kind change also changes
    * `descriptorText`, so the view remounts with the new value. Also
    * drives `data-reason` on the decorated tab and its glyph span, and
-   * the glyph itself (`refusedIcon` or `rejectionIcon`), updated in place
+   * the glyph itself (`CNGX_ICON_BAN` or `CNGX_ICON_ALERT`), updated in place
    * when the kind changes on the same tab. Omitted, every consumer reads
    * `'failed'`.
    */
@@ -201,9 +236,9 @@ export function createMatTabRejectionDecoration(
   // Cached across the projector's lifetime - reusing the same node
   // keeps AT-reader / observer references live across A→B→A flips.
   let cachedSpan: HTMLElement | null = null;
-  // The visible glyph rides its own `aria-hidden` span: `::before` is
-  // Material's focus indicator, `::after` the has-errors badge.
-  let cachedGlyph: HTMLElement | null = null;
+  // The visible glyph rides its own `aria-hidden` span, built once; a
+  // kind change rewrites its path in place.
+  let cachedGlyph: MatTabIconGlyph | null = null;
   let priorAriaDescribedby: string | null = null;
   // Pillar 1 - short-circuits structurally-identical re-emissions of
   // `failedHandleId` so a `tabs()` re-eval doesn't clobber the AT
@@ -263,15 +298,11 @@ export function createMatTabRejectionDecoration(
 
   const currentReason = (): 'refused' | 'failed' => opts.reason?.() ?? 'failed';
 
-  const writeReason = (target: HTMLElement, glyph: HTMLElement): void => {
+  const writeReason = (target: HTMLElement, glyph: MatTabIconGlyph): void => {
     const reason = currentReason();
     opts.renderer.setAttribute(target, 'data-reason', reason);
-    opts.renderer.setAttribute(glyph, 'data-reason', reason);
-    opts.renderer.setProperty(
-      glyph,
-      'textContent',
-      reason === 'refused' ? CNGX_TABS_GLYPHS.refusedIcon : CNGX_TABS_GLYPHS.rejectionIcon,
-    );
+    opts.renderer.setAttribute(glyph.span, 'data-reason', reason);
+    glyph.icon.setIcon(reason === 'refused' ? CNGX_ICON_BAN : CNGX_ICON_ALERT);
   };
 
   const clearDecoration = (): void => {
@@ -282,8 +313,8 @@ export function createMatTabRejectionDecoration(
     destroyEmbeddedView();
     opts.renderer.removeClass(decoratedEl, className);
     opts.renderer.removeAttribute(decoratedEl, 'data-reason');
-    if (cachedGlyph?.parentNode) {
-      opts.renderer.removeChild(cachedGlyph.parentNode, cachedGlyph);
+    if (cachedGlyph?.span.parentNode) {
+      opts.renderer.removeChild(cachedGlyph.span.parentNode, cachedGlyph.span);
     }
     opts.renderer.removeChild(decoratedEl, cachedSpan);
     // `cachedSpan` deliberately retained - reused on the next apply.
@@ -306,17 +337,12 @@ export function createMatTabRejectionDecoration(
     }
     opts.renderer.addClass(targetEl, className);
 
-    let glyph = cachedGlyph;
-    if (!glyph) {
-      glyph = opts.renderer.createElement('span') as HTMLElement;
-      opts.renderer.addClass(glyph, glyphClassName);
-      opts.renderer.setAttribute(glyph, 'aria-hidden', 'true');
-      cachedGlyph = glyph;
-    }
+    const glyph = cachedGlyph ?? createIconGlyph(opts.renderer, glyphClassName, CNGX_ICON_ALERT);
+    cachedGlyph = glyph;
     writeReason(targetEl, glyph);
-    // On the tab itself: the disc is absolutely positioned at the tab's
-    // corner, and `.mdc-tab__content` is a positioning context of its own.
-    opts.renderer.appendChild(targetEl, glyph);
+    // On the tab itself, a flex item after `.mdc-tab__content`, so the
+    // icon follows the label.
+    opts.renderer.appendChild(targetEl, glyph.span);
 
     const spanId = `${handleId}-${descriptorIdSuffix}`;
     let span = cachedSpan;
@@ -484,6 +510,8 @@ export interface CngxMatTabAggregatorDecorationOptions {
   readonly className?: string;
   /** Default: `cngx-sr-only`. */
   readonly srOnlyClassName?: string;
+  /** Default: `cngx-mat-tab__error-badge`. */
+  readonly badgeClassName?: string;
   /** Default: `5`. Cap on `afterNextRender` retry recursion. */
   readonly maxRetryAttempts?: number;
   /**
@@ -519,7 +547,7 @@ export interface CngxMatTabAggregatorDecorationOptions {
 }
 
 /**
- * Mounts the per-tab aggregator decoration projector. Class +
+ * Mounts the per-tab aggregator decoration projector. Class, alert icon,
  * descriptor span + `aria-describedby` token follow `errorTabs`
  * reactively; pruned on entry drop and on directive destroy.
  *
@@ -536,6 +564,7 @@ export function createMatTabAggregatorDecoration(
     opts.buttonSelector ?? MaterialPrivateSurfaces.MAT_MDC_TAB_SELECTOR;
   const className = opts.className ?? 'cngx-mat-tab--has-errors';
   const srOnlyClassName = opts.srOnlyClassName ?? 'cngx-sr-only';
+  const badgeClassName = opts.badgeClassName ?? 'cngx-mat-tab__error-badge';
   const maxRetryAttempts = opts.maxRetryAttempts ?? 5;
   // Slot path needs both halves; either alone degrades to imperative
   // textContent. Re-evaluated per fire so a lazy-mounted template
@@ -560,6 +589,8 @@ export function createMatTabAggregatorDecoration(
     {
       el: HTMLElement;
       descriptorSpan: HTMLElement;
+      /** `aria-hidden` alert icon after the label. */
+      badge: HTMLElement;
       priorAriaDescribedby: string | null;
       /**
        * Embedded view rendered from `contentTemplate` when bound.
@@ -639,6 +670,7 @@ export function createMatTabAggregatorDecoration(
     const ownTokenId = entry.descriptorSpan.id;
     destroyEmbeddedView(entry);
     opts.renderer.removeClass(entry.el, className);
+    opts.renderer.removeChild(entry.el, entry.badge);
     opts.renderer.removeChild(entry.el, entry.descriptorSpan);
     restoreAriaDescribedbyExceptToken(
       entry.el,
@@ -654,6 +686,10 @@ export function createMatTabAggregatorDecoration(
     entry: CngxMatTabAggregatorErrorEntry,
   ): void => {
     opts.renderer.addClass(targetEl, className);
+
+    // A flex item after `.mdc-tab__content`, so the icon follows the label.
+    const badge = createIconGlyph(opts.renderer, badgeClassName, CNGX_ICON_ALERT);
+    opts.renderer.appendChild(targetEl, badge.span);
 
     const spanId = `${entry.id}-errors`;
     const descriptorSpan = opts.renderer.createElement('span') as HTMLElement;
@@ -676,9 +712,10 @@ export function createMatTabAggregatorDecoration(
     const decoratedEntry: {
       el: HTMLElement;
       descriptorSpan: HTMLElement;
+      badge: HTMLElement;
       priorAriaDescribedby: string | null;
       embeddedView?: EmbeddedViewRef<CngxMatTabAggregatorContentContext>;
-    } = { el: targetEl, descriptorSpan, priorAriaDescribedby };
+    } = { el: targetEl, descriptorSpan, badge: badge.span, priorAriaDescribedby };
     writeDescriptorContent(decoratedEntry, entry.announcement, {
       count: entry.count,
       label: entry.label,

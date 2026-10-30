@@ -26,8 +26,10 @@ import {
   resolveStepperErrorSummary,
   type CngxStepNode,
 } from '@cngx/common/stepper';
+import { CngxIconSvg } from '@cngx/common/display';
 import { CngxSwipe } from '@cngx/common/interactive';
 import { injectDirection, resolveInlineStep } from '@cngx/core';
+import { CNGX_ICON_BAN, CNGX_ICON_EXCLAMATION } from '@cngx/utils';
 
 import { CngxStepperErrorLine } from './stepper-error-line.component';
 
@@ -69,7 +71,7 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [NgTemplateOutlet, CngxStepperErrorLine, CngxSwipe],
+  imports: [NgTemplateOutlet, CngxIconSvg, CngxStepperErrorLine, CngxSwipe],
   hostDirectives: [
     {
       directive: CngxStepperPresenter,
@@ -116,6 +118,10 @@ export class CngxDotStepper {
 
   /** Document writing direction - flips the inline next/previous arrows under `rtl` (APG). */
   private readonly direction = injectDirection();
+
+  /** Error marks drawn over an errored (alert) or refused (ban) dot. */
+  protected readonly exclamationIcon = CNGX_ICON_EXCLAMATION;
+  protected readonly banIcon = CNGX_ICON_BAN;
 
   protected readonly stepNodes: Signal<readonly CngxStepNode[]> = this.presenter.stepsOnly;
   protected readonly activeIndex = computed<number>(() => this.presenter.activeStepIndex());

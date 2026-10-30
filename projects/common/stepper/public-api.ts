@@ -65,8 +65,6 @@ export {
   type CngxStepperTemplateBindingsOptions,
 } from './slots/stepper-template-cascade';
 
-export { CNGX_STEPPER_GLYPHS } from './glyphs';
-
 export { CngxStepperRouterSync } from './router-sync.directive';
 
 export {
@@ -147,7 +145,7 @@ export {
 // organism can consume them across the secondary-entry boundary
 // (ng-packagr has no cross-entry private surface). `disableInternal: true`
 // in `.compodocrc.json` hides them from generated docs; the LLM-md export
-// honours the same tag. Precedent: `CNGX_STEPPER_GLYPHS`, `flatStepsEqual`.
+// honours the same tag. Precedent: `flatStepsEqual`.
 export {
   createStepperAccname,
   createStepperHostAttrs,

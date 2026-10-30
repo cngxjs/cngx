@@ -10,7 +10,7 @@ import {
   type TemplateRef,
 } from '@angular/core';
 import { CngxRovingItem } from '@cngx/common/a11y';
-import { CngxRadioIndicator } from '@cngx/common/display';
+import { CngxRadioIndicator, type CngxRadioSkin } from '@cngx/common/display';
 import { nextUid } from '@cngx/core/utils';
 
 import { CNGX_RADIO_GROUP, type CngxRadioGroupContract } from './radio-group.token';
@@ -57,6 +57,7 @@ import { CNGX_RADIO_GROUP, type CngxRadioGroupContract } from './radio-group.tok
  * <example-url>http://localhost:4200/#/common/interactive/radio/basic-vertical-group</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/radio/custom-dot-glyph</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/radio/disabled-group-cascades-per-radio-overrides</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/radio/group-skin</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/radio/orientation-horizontal</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
@@ -94,6 +95,7 @@ import { CNGX_RADIO_GROUP, type CngxRadioGroupContract } from './radio-group.tok
       [checked]="radioChecked()"
       [disabled]="radioDisabled()"
       [dotGlyph]="dotGlyph()"
+      [skin]="indicatorSkin()"
     />
     <span class="cngx-radio__label">
       <ng-content />
@@ -115,6 +117,12 @@ export class CngxRadio<T = unknown> {
   readonly disabled = model<boolean>(false);
   readonly disabledReason = input<string>('');
   readonly dotGlyph = input<TemplateRef<void> | null>(null);
+  /**
+   * Indicator skin for this radio. Wins over the group's `[skin]`;
+   * `undefined` (default) falls back to it, then to the
+   * `CNGX_RADIO_CONFIG` cascade.
+   */
+  readonly skin = input<CngxRadioSkin | undefined>(undefined);
 
   private readonly id = nextUid('cngx-radio');
   protected readonly describedId = nextUid('cngx-radio-desc');
@@ -122,6 +130,8 @@ export class CngxRadio<T = unknown> {
   protected readonly radioChecked = computed(() => this.group.value() === this.value());
 
   protected readonly radioDisabled = computed(() => this.group.disabled() || this.disabled());
+
+  protected readonly indicatorSkin = computed(() => this.skin() ?? this.group.skin());
 
   /**
    * `aria-describedby` reference to the reason span, gated on

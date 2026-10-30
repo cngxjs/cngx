@@ -2,13 +2,21 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   input,
   ViewEncapsulation,
   type TemplateRef,
 } from '@angular/core';
+import { CNGX_ICON_CHECK } from '@cngx/utils';
+
+import { injectRadioConfig } from './config/inject-radio-config';
+import type { CngxRadioSkin } from './config/radio.config';
 
 /**
  * Presentational radio indicator - circle with a centred dot when checked.
+ * Ring and dot are two circles in one 24x24 SVG, so the dot shares the
+ * ring's coordinate system and stays centred at every size and device
+ * pixel ratio.
  *
  * **Why this exists.**
  * The library's `@cngx/forms/select` panel currently composes
@@ -24,7 +32,8 @@ import {
  * land in their own phase.
  *
  * **Responsibilities (intentionally narrow).**
- * - Render a circle frame and, when `checked` is true, a centred dot.
+ * - Render a circle frame and a centred dot that scales in when `checked`
+ *   is true (always in the DOM, so the change transitions both ways).
  * - Express checked / disabled visual state via host classes the
  *   consumer (or upstream CSS) can theme.
  * - Apply size presets (`sm` / `md` / `lg`) as CSS-custom-property
@@ -49,7 +58,10 @@ import {
  * <example-url>http://localhost:4200/#/common/display/radio-indicator/default-unchecked-vs-checked</example-url>
  * <example-url>http://localhost:4200/#/common/display/radio-indicator/disabled</example-url>
  * <example-url>http://localhost:4200/#/common/display/radio-indicator/sizes</example-url>
+ * <example-url>http://localhost:4200/#/common/display/radio-indicator/skins</example-url>
  * <example-url>http://localhost:4200/#/common/display/radio-indicator/theming-via-css-custom-properties</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/radio/group-skin</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio-check-skin</example-url>
  * @axis level atom
  */
 @Component({
@@ -68,17 +80,26 @@ import {
     '[class.cngx-radio-indicator--sm]': "size() === 'sm'",
     '[class.cngx-radio-indicator--md]': "size() === 'md'",
     '[class.cngx-radio-indicator--lg]': "size() === 'lg'",
+    '[attr.data-skin]': 'resolvedSkin()',
   },
   template: `
-    <ng-template #defaultDotGlyph>
-      <span aria-hidden="true" class="cngx-radio-indicator__dot"></span>
-    </ng-template>
-
-    <span class="cngx-radio-indicator__circle">
-      @if (checked()) {
-        <ng-container *ngTemplateOutlet="dotGlyph() ?? defaultDotGlyph" />
+    <svg class="cngx-radio-indicator__svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <circle class="cngx-radio-indicator__circle" cx="12" cy="12" r="11.25" />
+      @if (!dotGlyph()) {
+        @if (resolvedSkin() === 'check') {
+          <path class="cngx-radio-indicator__mark" [attr.d]="checkIcon.d" />
+        } @else {
+          <circle class="cngx-radio-indicator__dot" cx="12" cy="12" r="12" />
+        }
       }
-    </span>
+    </svg>
+    @if (checked()) {
+      @if (dotGlyph(); as glyph) {
+        <span class="cngx-radio-indicator__glyph">
+          <ng-container *ngTemplateOutlet="glyph" />
+        </span>
+      }
+    }
   `,
 })
 export class CngxRadioIndicator {
@@ -86,7 +107,7 @@ export class CngxRadioIndicator {
   readonly checked = input<boolean>(false);
 
   /**
-   * Disabled visual state. Purely cosmetic (opacity dim) - the indicator
+   * Disabled visual state. Purely cosmetic (disabled text colour) - the indicator
    * never intercepts events, so this is a hint, not a block.
    */
   readonly disabled = input<boolean>(false);
@@ -95,11 +116,32 @@ export class CngxRadioIndicator {
   readonly size = input<'sm' | 'md' | 'lg'>('md');
 
   /**
+   * Visual skin. `undefined` (default) falls back to the `CNGX_RADIO_CONFIG`
+   * cascade (`provideRadioConfigAt` / `provideRadioConfig`), then to
+   * `'default'`. `cngx-radio` binds this from its own or its group's
+   * `[skin]`. Reflected as `[data-skin]` on the host.
+   */
+  readonly skin = input<CngxRadioSkin | undefined>(undefined);
+
+  private readonly config = injectRadioConfig();
+
+  protected readonly resolvedSkin = computed<CngxRadioSkin>(
+    () => this.skin() ?? this.config.skin ?? 'default',
+  );
+
+  protected readonly checkIcon = CNGX_ICON_CHECK;
+
+  /**
    * Consumer-supplied template for the centred dot. When `null` (default),
-   * the built-in `<span class="cngx-radio-indicator__dot"></span>` is
-   * rendered. When set, the consumer template replaces the dot span
-   * entirely - the `__dot` class is NOT applied to the custom content
-   * (consumers own the styling of their replacement).
+   * the built-in SVG `<circle class="cngx-radio-indicator__dot">` is
+   * rendered (the `__mark` check path under the `check` skin). When set,
+   * neither is rendered; the consumer
+   * template renders only while `checked` is true, inside a
+   * `<span class="cngx-radio-indicator__glyph">` stacked over the SVG ring
+   * and centred in the same box. The `__dot` class is NOT applied to the
+   * custom content (consumers own the styling of their replacement). The
+   * wrapper's `color` is the checked colour (the mark colour under the
+   * `check` skin), so a `currentColor` glyph paints like the built-in dot.
    *
    * Convention-compatible with `CngxCheckboxIndicator.checkGlyph`: pass a
    * `TemplateRef<void>` obtained via `#myDotTpl`. Useful for

@@ -6,11 +6,16 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
-import { CngxIcon } from '@cngx/common/display';
+import { CngxIcon, CngxIconSvg } from '@cngx/common/display';
 import { CngxRipple } from '@cngx/common/interactive';
+import {
+  CNGX_ICON_CHEVRON_LEFT,
+  CNGX_ICON_CHEVRON_RIGHT,
+  CNGX_ICON_CHEVRONS_LEFT,
+  CNGX_ICON_CHEVRONS_RIGHT,
+} from '@cngx/utils';
 
 import { injectPaginatorAriaLabels, type CngxPaginatorAriaLabels } from '../paginator-config';
-import { CNGX_PAGINATOR_GLYPHS } from '../paginator-glyphs';
 import { injectPaginatorHost, type CngxPaginatorHost } from '../paginator-host.token';
 
 /** Config keys the four nav segments label their button with. */
@@ -36,7 +41,7 @@ interface NavCore {
 /**
  * Shared nav-button glue. Composition, not an abstract base class: each of the
  * four segments calls this factory as a field initialiser and binds the same
- * template, differing only in selector, glyph, and the three options here.
+ * template, differing only in selector, icon, and the three options here.
  */
 function createPaginatorNavCore(options: NavCoreOptions): NavCore {
   const host = injectPaginatorHost(options.selector);
@@ -55,7 +60,8 @@ function createPaginatorNavCore(options: NavCoreOptions): NavCore {
   };
 }
 
-// Shared template - identical across the four segments; only the glyph differs.
+// Shared template - identical across the four segments; only the icon differs.
+// The icons draw LTR-pointing; the stylesheet mirrors them under :dir(rtl).
 // `aria-disabled` (not native `disabled`) keeps the button focusable so AT users
 // hear the bound state; `activate()` guards the click. The attribute is emitted
 // only while actually disabled ('true' : null) - family parity with pages/dots,
@@ -68,7 +74,7 @@ const NAV_TEMPLATE = `
     [attr.aria-disabled]="core.disabled() ? 'true' : null"
     (click)="core.activate()"
   >
-    <cngx-icon aria-hidden="true">{{ glyph }}</cngx-icon>
+    <cngx-icon aria-hidden="true"><svg [cngxIconSvg]="icon"></svg></cngx-icon>
     <span class="cngx-paginator__nav-label">{{ core.ariaLabel() }}</span>
   </button>
 `;
@@ -92,12 +98,12 @@ const NAV_TEMPLATE = `
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxIcon, CngxRipple],
+  imports: [CngxIcon, CngxIconSvg, CngxRipple],
   template: NAV_TEMPLATE,
   host: { class: 'cngx-paginator__segment' },
 })
 export class CngxPaginatorFirst {
-  protected readonly glyph = CNGX_PAGINATOR_GLYPHS.first;
+  protected readonly icon = CNGX_ICON_CHEVRONS_LEFT;
   protected readonly core = createPaginatorNavCore({
     selector: 'cngx-pgn-first',
     atBound: (host) => host.isFirst(),
@@ -121,12 +127,12 @@ export class CngxPaginatorFirst {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxIcon, CngxRipple],
+  imports: [CngxIcon, CngxIconSvg, CngxRipple],
   template: NAV_TEMPLATE,
   host: { class: 'cngx-paginator__segment' },
 })
 export class CngxPaginatorPrev {
-  protected readonly glyph = CNGX_PAGINATOR_GLYPHS.previous;
+  protected readonly icon = CNGX_ICON_CHEVRON_LEFT;
   protected readonly core = createPaginatorNavCore({
     selector: 'cngx-pgn-prev',
     atBound: (host) => host.isFirst(),
@@ -150,12 +156,12 @@ export class CngxPaginatorPrev {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxIcon, CngxRipple],
+  imports: [CngxIcon, CngxIconSvg, CngxRipple],
   template: NAV_TEMPLATE,
   host: { class: 'cngx-paginator__segment' },
 })
 export class CngxPaginatorNext {
-  protected readonly glyph = CNGX_PAGINATOR_GLYPHS.next;
+  protected readonly icon = CNGX_ICON_CHEVRON_RIGHT;
   protected readonly core = createPaginatorNavCore({
     selector: 'cngx-pgn-next',
     atBound: (host) => host.isLast(),
@@ -179,12 +185,12 @@ export class CngxPaginatorNext {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxIcon, CngxRipple],
+  imports: [CngxIcon, CngxIconSvg, CngxRipple],
   template: NAV_TEMPLATE,
   host: { class: 'cngx-paginator__segment' },
 })
 export class CngxPaginatorLast {
-  protected readonly glyph = CNGX_PAGINATOR_GLYPHS.last;
+  protected readonly icon = CNGX_ICON_CHEVRONS_RIGHT;
   protected readonly core = createPaginatorNavCore({
     selector: 'cngx-pgn-last',
     atBound: (host) => host.isLast(),

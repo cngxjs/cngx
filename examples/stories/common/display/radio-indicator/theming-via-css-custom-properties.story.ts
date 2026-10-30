@@ -2,8 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxRadioIndicator: Theming via CSS custom properties',
-  subtitle: 'Override <code>--cngx-radio-indicator-checked-color</code>, <code>--cngx-radio-indicator-border-width</code>, <code>--cngx-radio-indicator-dot-size</code>, and friends per consumer.',
-  description: 'Three checked <code>lg</code> indicators sit next to each other. The first inherits the default skin from the cngx theme layer. The second is a brand-magenta variant that re-points <code>--cngx-radio-indicator-checked-color</code> and bumps <code>--cngx-radio-indicator-border-width</code> via a consumer-supplied class. The third is a brand-emerald variant that overrides the checked color and the dot size. No directive output, no DI wiring: every override is a pure CSS custom property the consumer drops on a class or inline.',
+  subtitle: 'Override <code>--cngx-radio-indicator-checked-color</code>, <code>--cngx-radio-indicator-border-width</code> (unitless, in 24-unit grid space), <code>--cngx-radio-indicator-dot-scale</code> (fraction of the diameter), and friends per consumer.',
+  description: 'Three checked <code>lg</code> indicators sit next to each other. The first inherits the default skin from the cngx theme layer. The second is a brand-magenta variant that re-points <code>--cngx-radio-indicator-checked-color</code> and bumps <code>--cngx-radio-indicator-border-width</code> to <code>2</code> grid units via a consumer-supplied class. The third is a brand-emerald variant that overrides the checked color and sets <code>--cngx-radio-indicator-dot-scale</code> to <code>0.6</code> of the diameter. No directive output, no DI wiring: every override is a pure CSS custom property the consumer drops on a class or inline.',
   level: 'atom',
   audience: ['dev', 'design'],
   artifact: 'standalone',

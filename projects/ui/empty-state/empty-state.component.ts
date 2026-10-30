@@ -5,7 +5,9 @@ import {
   input,
   ViewEncapsulation,
 } from '@angular/core';
+import { CngxIconSvg } from '@cngx/common/display';
 import { type CngxAsyncState, nextUid } from '@cngx/core/utils';
+import { CNGX_ICON_ARCHIVE } from '@cngx/utils';
 
 /**
  * Empty-state display organism for grids, tables, lists, and dashboards.
@@ -40,6 +42,7 @@ import { type CngxAsyncState, nextUid } from '@cngx/core/utils';
 @Component({
   selector: 'cngx-empty-state',
   standalone: true,
+  imports: [CngxIconSvg],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: {
@@ -54,22 +57,7 @@ import { type CngxAsyncState, nextUid } from '@cngx/core/utils';
     <div class="cngx-empty-state__icon-slot">
       <ng-content select="[cngxEmptyStateIcon]" />
     </div>
-    <svg
-      class="cngx-empty-state__default-icon"
-      aria-hidden="true"
-      width="48"
-      height="48"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
-      <path d="M21 8V21H3V8" />
-      <path d="M1 3h22v5H1z" />
-      <path d="M10 12h4" />
-    </svg>
+    <svg class="cngx-empty-state__default-icon" [cngxIconSvg]="defaultIcon"></svg>
     <ng-content select="[cngxEmptyStateIllustration]" />
     <h3 [id]="titleId" class="cngx-empty-state__title">{{ title() }}</h3>
     @if (description()) {
@@ -115,6 +103,9 @@ export class CngxEmptyState {
     }
     return !s.isEmpty();
   });
+
+  /** @internal - fallback glyph while no icon is projected. */
+  protected readonly defaultIcon = CNGX_ICON_ARCHIVE;
 
   /** @internal */
   protected readonly titleId = `${this.uid}-title`;

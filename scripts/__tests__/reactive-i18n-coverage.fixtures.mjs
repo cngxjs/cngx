@@ -516,6 +516,7 @@ export const SETTINGS_TOKENS = [
   'CNGX_MENU_DISMISS_HANDLER_FACTORY',
   'CNGX_MENU_FOCUS_STACK_FACTORY',
   'CNGX_MENU_HOST',
+  'CNGX_MENU_ITEM_OWN_INDICATOR',
   'CNGX_MENU_NAV_STRATEGY',
   'CNGX_MENU_RADIO_GROUP',
   'CNGX_MENU_SUBMENU_ITEM',
@@ -541,6 +542,7 @@ export const SETTINGS_TOKENS = [
   'CNGX_POPOVER_SHEET_BREAKPOINT',
   'CNGX_POPOVER_SHEET_HOST',
   'CNGX_PROJECTED_OPTION_MODEL_FACTORY',
+  'CNGX_RADIO_CONFIG',
   'CNGX_RADIO_GROUP',
   'CNGX_RECYCLER_PLACEHOLDER_ROW',
   'CNGX_REORDER_COMMIT_HANDLER_FACTORY',
@@ -879,7 +881,7 @@ export const LIVE_REGIONS = [
   {
     file: 'projects/ui/stat-card/stat-card.component.ts',
     region:
-      'CngxStatCard.cngx-card(activeView,cardLabelledBy,live,resolvedBusyLabel,resolvedEmptyText,resolvedErrorDescription,resolvedErrorText,resolvedStaleText,resolvedTreatment,showRefreshIndicator,skeletonSlots)',
+      'CngxStatCard.cngx-card(activeView,cardLabelledBy,errorIcon,live,resolvedBusyLabel,resolvedEmptyText,resolvedErrorDescription,resolvedErrorText,resolvedStaleText,resolvedTreatment,showRefreshIndicator,skeletonSlots,staleIcon)',
     spec: 'projects/ui/stat-card/stat-card.component.spec.ts',
     testName: 'does not re-announce on a language flip',
   },

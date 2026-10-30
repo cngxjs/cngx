@@ -17,7 +17,7 @@ export interface CngxTabErrorBadgeContext {
  * Structural slot for the error-badge template. 3-stage cascade:
  * per-instance directive >
  * `CNGX_TABS_CONFIG.templates.errorBadge` >
- * `CNGX_TABS_GLYPHS.errorBadge`.
+ * the default alert icon.
  *
  * ```html
  * <cngx-tab-group>

@@ -3,10 +3,10 @@
  * Thematic skins for `<cngx-tab-group>`. Pairs with the structural
  * `tabs-base.css` in `@cngx/common/tabs` (which owns layout, scroll-
  * snap, sizes, base color / background, sr-only) - this file owns the
- * per-skin treatment, hover affordance, strip border, and the per-tab
- * error badge. Tokens defined in `tabs-base.css` read with bare
- * `var(--cngx-tab-*)` (no second fallback) because the structural
- * cascade provides the default.
+ * per-skin treatment, hover affordance, strip border, the per-tab
+ * error badge and the rejected-tab treatment. Tokens defined in
+ * `tabs-base.css` read with bare `var(--cngx-tab-*)` (no second
+ * fallback) because the structural cascade provides the default.
  *
  * **Skins**
  *
@@ -41,7 +41,18 @@
  * - `.cngx-tabs__strip` - tab strip with border on the trailing edge
  * - `.cngx-tabs__tab` - per-tab `<button>` with transparent
  *   indicator border and color/border-color transition
- * - `.cngx-tabs__badge` - inline error-count disc next to a tab
+ * - `.cngx-tabs__badge` - validation-error alert icon after the label,
+ *   no disc (`--cngx-tab-badge-size`)
+ * - `.cngx-tabs__rejection-icon` - standalone rejection icon after the
+ *   label (`--cngx-tab-rejection-icon-size`)
+ *
+ * **Rejected tab**
+ *
+ * `line` marks a rejected tab by colour only: the label takes the reason
+ * colour (`--cngx-tab-failed-text-color` / `--cngx-tab-refused-text-color`).
+ * `contained`, `segmented`, `pill` and `pill-outline` keep the tinted
+ * surface from `tabs-base.css` (`--cngx-tab-rejection-tint`), shaped by
+ * their own radius. Forced colors add an outline in every skin.
  *
  * All transitions short-circuit under `prefers-reduced-motion`.
  */
@@ -120,43 +131,16 @@
   }
 
   /**
-   * Hit-target diameter of the per-tab error badge.
+   * Rendered size of the validation-error alert icon after the tab label,
+   * in `em` of the label font. The universal syntax keeps the `em`
+   * unresolved until the icon reads it, and it inherits so a host override
+   * reaches the glyph.
    * @group State / Error
    */
   @property --cngx-tab-badge-size {
     syntax: '*';
-    inherits: false;
-    initial-value: 1.25rem;
-  }
-
-  /**
-   * Text color of the error-badge glyph.
-   * @group State / Error
-   */
-  @property --cngx-tab-error-badge-text-color {
-    syntax: '<color>';
     inherits: true;
-    initial-value: oklch(1 0 0);
-  }
-
-  /**
-   * Font-size of the error-badge glyph.
-   * @group State / Error
-   */
-  @property --cngx-tab-badge-font-size {
-    syntax: '*';
-    inherits: false;
-    initial-value: 0.75em;
-  }
-
-  /**
-   * Font-weight of the error-badge glyph.
-   * @group State / Error
-   */
-  @property --cngx-tab-badge-font-weight {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 700;
+    initial-value: 1.15em;
   }
 
   /**
@@ -454,17 +438,76 @@
     }
 
     .cngx-tabs__badge {
-      width: var(--cngx-tab-badge-size, 1.25rem);
-      height: var(--cngx-tab-badge-size, 1.25rem);
-      border-radius: 50%;
-      color: var(--cngx-tab-error-badge-text-color, oklch(1 0 0));
-      font-size: var(--cngx-tab-badge-font-size, 0.75em);
-      font-weight: var(--cngx-tab-badge-font-weight, 700);
-      line-height: 1;
-      /* The disc holds a single self-contained error count; isolate fences its
-         bidi boundary against surrounding RTL tab text without forcing a
-         direction (metric bucket-A). Consumer opt-out: --cngx-tab-badge-bidi. */
+      /* Fences the badge's bidi boundary against surrounding RTL tab text
+         without forcing a direction (metric bucket-A). Consumer opt-out:
+         --cngx-tab-badge-bidi. */
       unicode-bidi: var(--cngx-tab-badge-bidi, isolate);
+    }
+
+    /* Both default icons draw on the 24-unit grid at stroke width 2, sized
+       in em of the label font they follow. */
+    .cngx-tabs__badge > .cngx-icon-svg {
+      --cngx-icon-svg-size: var(--cngx-tab-badge-size, 1.15em);
+      --cngx-icon-svg-stroke-width: 2;
+    }
+
+    .cngx-tabs__rejection-icon > .cngx-icon-svg {
+      --cngx-icon-svg-size: var(--cngx-tab-rejection-icon-size, 1.15em);
+      --cngx-icon-svg-stroke-width: 2;
+    }
+
+    /*
+     * Rejected tab under the `line` skin: colour only. No surface, no line,
+     * no pulse - the label turns the reason colour (a text-safe red for a
+     * failed switch, a text-safe amber for a refused one) and the icon
+     * follows it. Every other skin keeps the tinted surface from
+     * tabs-base.css in its own shape.
+     */
+    :scope:is([data-skin='line'], :not([data-skin])) .cngx-tabs__tab.cngx-tab--rejected {
+      background: transparent;
+      animation: none;
+    }
+
+    :scope:is([data-skin='line'], :not([data-skin])) .cngx-tab--rejected .cngx-tabs__label {
+      color: var(
+        --cngx-tab-failed-text-color,
+        var(
+          --cngx-color-danger-text,
+          color-mix(
+            in oklab,
+            var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
+            var(--cngx-color-text, oklch(0.2 0.01 250))
+          )
+        )
+      );
+    }
+
+    :scope:is([data-skin='line'], :not([data-skin]))
+      .cngx-tab--rejected[data-reason='refused']
+      .cngx-tabs__label {
+      color: var(
+        --cngx-tab-refused-text-color,
+        color-mix(
+          in oklab,
+          var(--cngx-color-warning, oklch(0.72 0.15 75)) 55%,
+          var(--cngx-color-text, oklch(0.2 0.01 250))
+        )
+      );
+    }
+
+    /* The close and add glyphs sit in an inline span, where an inline svg
+       aligns to the text's middle and lands off the button centre. As a
+       block it leaves the line box, so the button centres it. */
+    :is(.cngx-tabs__close, .cngx-tabs__add) > span > .cngx-icon-svg {
+      display: block;
+    }
+
+    .cngx-tabs__close > span > .cngx-icon-svg {
+      --cngx-icon-svg-size: calc(0.48em * 24 / 14);
+    }
+
+    .cngx-tabs__add > span > .cngx-icon-svg {
+      --cngx-icon-svg-size: calc(0.5em * 24 / 19);
     }
 
     /*

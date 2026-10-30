@@ -18,6 +18,12 @@ import {
   type CngxReorderModifier,
 } from '@cngx/common/interactive';
 import { nextUid } from '@cngx/core/utils';
+import { CngxIconSvg } from '@cngx/common/display';
+import {
+  CNGX_ICON_GRIP_VERTICAL,
+  CNGX_ICON_TRIANGLE_DOWN,
+  CNGX_ICON_TRIANGLE_UP,
+} from '@cngx/utils';
 
 import type { CngxSelectOptionDef } from '../../option.model';
 
@@ -45,7 +51,7 @@ const LABEL_ONLY = (label: string): string => label;
 @Component({
   selector: 'cngx-select-reorder-list',
   standalone: true,
-  imports: [CngxReorder],
+  imports: [CngxIconSvg, CngxReorder],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: { class: 'cngx-select-reorder-list' },
@@ -90,6 +96,10 @@ export class CngxSelectReorderList<T = unknown> {
   /** @internal */ protected readonly atStartId = nextUid('cngx-select-reorder-start');
   /** @internal */ protected readonly atEndId = nextUid('cngx-select-reorder-end');
   /** @internal */ protected readonly pendingId = nextUid('cngx-select-reorder-pending');
+
+  protected readonly handleIcon = CNGX_ICON_GRIP_VERTICAL;
+  protected readonly moveUpIcon = CNGX_ICON_TRIANGLE_UP;
+  protected readonly moveDownIcon = CNGX_ICON_TRIANGLE_DOWN;
 
   /** @internal The busy reason, appended to a row button's own boundary reason. */
   protected describedBy(boundaryId: string | null): string | null {

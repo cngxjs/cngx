@@ -48,19 +48,32 @@ themes (`@angular/material/prebuilt-themes/*.css`).
 
 ### CSS custom properties
 
-Theme via `--mat-sys-*` (Material design tokens) by default; override
-per-instance or globally via `--cngx-mat-tab-error-*`:
+A rejected tab is colour only: the label takes the reason colour (no
+outline, no surface) and a bare stroke icon follows the label, a red
+alert triangle for a failed commit and an amber slashed circle for a
+refused one. A tab whose `[cngxMatTabError]` aggregator holds errors
+gets an alert icon after the label as well (`1.15em`, stroke 2, before
+the rejection icon when both show). Override per instance or globally
+via `--cngx-mat-tab-*`:
 
-| Variable | Default | Purpose |
+|Variable|Default|Purpose|
 |-|-|-|
-| `--cngx-mat-tab-error-color`          | `var(--mat-sys-error, #c62828)` | Foreground / outline colour      |
-| `--cngx-mat-tab-error-outline`        | `2px solid currentColor`        | Full `outline` shorthand         |
-| `--cngx-mat-tab-error-outline-offset` | `-2px`                          | Outline inset; negative so the clipped label container keeps every edge |
-| `--cngx-mat-tab-error-font-weight`    | `600`                           | Label-glyph weight bump          |
+|`--cngx-mat-tab-error-color`|danger mixed 75% toward text|Failed label and icon colour|
+|`--cngx-mat-tab-refused-color`|warning mixed 70% toward text|Refused icon colour|
+|`--cngx-mat-tab-refused-text-color`|warning mixed 55% toward text|Refused label colour|
+|`--cngx-mat-tab-has-errors-color`|`--cngx-color-danger`|Has-errors icon colour|
+|`--cngx-mat-tab-rejection-icon-size`|`1.15em`|Rejection icon size|
+|`--cngx-mat-tab-has-errors-icon-size`|`1.15em`|Has-errors icon size|
+|`--cngx-mat-tab-icon-gap`|`0.25rem`|Gap between label and icons|
+|`--cngx-mat-tab-error-font-weight`|`600`|Label weight bump on a rejected tab|
 
-Three-tier fallback: consumer override → Material design token →
-hard-coded `#c62828`. Consumers theming the rest of their Material
-surface inherit the rejection skin automatically.
+The colours derive from `--cngx-color-danger`, `--cngx-color-warning`
+and `--cngx-color-text` per colour scheme (light, dark,
+`[data-color-scheme]` islands), so labels hold 4.5:1 and icons 3:1 in
+both. `@cngx/themes` maps them to `--mat-sys-error` and
+`--mat-sys-tertiary`. Under forced colors the label colour is lost, so
+a rejected tab draws a 2px `CanvasText` outline and the icons paint the
+system text colour.
 
 ### Decoration lifecycle
 
@@ -93,8 +106,9 @@ aggregator instance directly - no outer Signal wrapper required.
 When the bound aggregator's `shouldShow()` flips `true` the
 matching Material tab button gains:
 
-- A `cngx-mat-tab--has-errors` class - visual badge (`!` glyph at
-  the trailing-top corner of the button).
+- A `cngx-mat-tab--has-errors` class and an `aria-hidden`
+  `<span class="cngx-mat-tab__error-badge">` with the alert icon,
+  right after the label.
 - A child `<span class="cngx-sr-only" id="<handle-id>-errors">`
   carrying the aggregator's `announcement()` phrase.
 - An `aria-describedby` token referencing that span - the directive

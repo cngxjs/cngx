@@ -2,6 +2,7 @@ import { Component, provideZonelessChangeDetection, signal } from '@angular/core
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { CNGX_ICON_ALERT } from '@cngx/utils';
 
 import { CngxTabGroupPresenter } from './presenter.directive';
 import type { CngxTabHandle } from './tab-group-host.token';
@@ -156,6 +157,36 @@ describe('CngxTabLink', () => {
     expect(anchor(1).getAttribute('aria-invalid')).toBe('true');
     expect(anchor(1).classList.contains('cngx-tab-nav__link--error')).toBe(true);
     expect(handle('profile')?.hasError()).toBe(true);
+  });
+
+  it('leads an errored link with an aria-hidden alert icon and removes it with the error', () => {
+    const { fixture, anchor } = setup();
+    expect(anchor(1).querySelector('.cngx-tab-link__error-icon')).toBeNull();
+
+    fixture.componentInstance.profileError.set('Required fields missing');
+    fixture.detectChanges();
+    const icon = anchor(1).firstElementChild as HTMLElement;
+    expect(icon.classList.contains('cngx-tab-link__error-icon')).toBe(true);
+    expect(icon.getAttribute('aria-hidden')).toBe('true');
+    const svg = icon.querySelector('svg.cngx-tab-link__icon-svg');
+    expect(svg?.getAttribute('viewBox')).toBe(CNGX_ICON_ALERT.viewBox);
+    expect(svg?.classList.contains('cngx-tab-link__icon-svg--stroke')).toBe(true);
+    // Painted by presentation attributes, so a bare link needs no stylesheet.
+    expect(svg?.getAttribute('fill')).toBe('none');
+    expect(svg?.getAttribute('stroke')).toBe('currentColor');
+    expect(svg?.querySelector('path')?.getAttribute('d')).toBe(CNGX_ICON_ALERT.d);
+    // The icon adds no text: the label stays the link's only text.
+    expect(anchor(1).textContent?.trim()).toBe('Profile');
+
+    // A message change keeps the one icon.
+    fixture.componentInstance.profileError.set(true);
+    fixture.detectChanges();
+    expect(anchor(1).querySelectorAll('.cngx-tab-link__error-icon').length).toBe(1);
+
+    fixture.componentInstance.profileError.set(false);
+    fixture.detectChanges();
+    expect(anchor(1).querySelector('.cngx-tab-link__error-icon')).toBeNull();
+    expect(anchor(1).textContent?.trim()).toBe('Profile');
   });
 
   it("[error]=\"'msg'\" exposes the string through the handle errorMessage", () => {

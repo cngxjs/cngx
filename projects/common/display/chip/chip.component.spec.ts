@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { CNGX_ICON_X } from '@cngx/utils';
 import { describe, expect, it } from 'vitest';
 
 import { CngxChip } from './chip.component';
@@ -82,7 +83,16 @@ describe('CngxChip', () => {
     expect(host.getAttribute('id')).toBe('my-tag-1');
   });
 
-  it('renders projected [cngxChipClose] content instead of the default ✕ glyph', () => {
+  it('draws the default close glyph from the shared X icon, hidden from AT', () => {
+    const fixture = TestBed.createComponent(Host);
+    flush(fixture);
+    const svg = fixture.nativeElement.querySelector('.cngx-chip__remove > svg') as SVGElement;
+    expect(svg.classList.contains('cngx-chip__remove-icon')).toBe(true);
+    expect(svg.getAttribute('aria-hidden')).toBe('true');
+    expect(svg.querySelector('path')?.getAttribute('d')).toBe(CNGX_ICON_X.d);
+  });
+
+  it('renders projected [cngxChipClose] content instead of the default X glyph', () => {
     @Component({
       template: `
         <cngx-chip [removable]="true">
@@ -99,8 +109,8 @@ describe('CngxChip', () => {
     const button: HTMLElement = fixture.nativeElement.querySelector('.cngx-chip__remove');
     expect(button).not.toBeNull();
     expect(button.querySelector('.my-close')).not.toBeNull();
-    // Default × fallback is not rendered when the slot is filled.
+    // The default X fallback is not rendered when the slot is filled.
     expect(button.textContent).toContain('dismiss');
-    expect(button.textContent).not.toContain('\u2715');
+    expect(button.querySelector('.cngx-chip__remove-icon')).toBeNull();
   });
 });

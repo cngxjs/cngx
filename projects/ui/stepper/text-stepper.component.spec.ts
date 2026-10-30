@@ -10,6 +10,7 @@ import {
   withStepperI18nLabels,
   type CngxStepperI18nOverrides,
 } from '@cngx/common/stepper';
+import { CNGX_ICON_ALERT, CNGX_ICON_BAN } from '@cngx/utils';
 
 import { CngxTextStepper } from './text-stepper.component';
 import { stripBidiIsolates } from '@cngx/testing';
@@ -218,7 +219,7 @@ describe('CngxTextStepper', () => {
     expect(line.getAttribute('data-state')).toBe('error');
     const glyph = line.querySelector('.cngx-text-stepper__error-glyph') as HTMLElement;
     expect(glyph.getAttribute('aria-hidden')).toBe('true');
-    expect(glyph.textContent?.trim()).not.toBe('');
+    expect(glyph.querySelector('svg path')?.getAttribute('d')).toBe(CNGX_ICON_ALERT.d);
   });
 });
 
@@ -362,7 +363,7 @@ describe('CngxTextStepper commit outcome', () => {
     expect(region.getAttribute('data-state')).toBe('error');
     expect(region.getAttribute('data-reason')).toBe('refused');
     const glyph = region.querySelector('.cngx-text-stepper__error-glyph') as HTMLElement;
-    expect(glyph.textContent?.trim()).toBe('\u2298');
+    expect(glyph.querySelector('svg path')?.getAttribute('d')).toBe(CNGX_ICON_BAN.d);
     expect(glyph.getAttribute('aria-hidden')).toBe('true');
   });
 
@@ -375,6 +376,6 @@ describe('CngxTextStepper commit outcome', () => {
     const region = fixture.nativeElement.querySelector('.cngx-text-stepper__error') as HTMLElement;
     expect(region.hasAttribute('data-reason')).toBe(false);
     const glyph = region.querySelector('.cngx-text-stepper__error-glyph') as HTMLElement;
-    expect(glyph.textContent?.trim()).toBe('!');
+    expect(glyph.querySelector('svg path')?.getAttribute('d')).toBe(CNGX_ICON_ALERT.d);
   });
 });

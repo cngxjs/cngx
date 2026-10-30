@@ -51,7 +51,11 @@ const SCHEMES = ['light', 'dark'] as const;
               class="cngx-stepper__mobile-dot cngx-stepper__mobile-dot--active cngx-stepper__mobile-dot--error dot-active"
               aria-current="step"
               data-state="error"
-            ></button>
+            >
+              <svg class="cngx-stepper__mobile-dot-glyph" viewBox="0 0 24 24">
+                <path d="M12 3L2 20.5h20z" />
+              </svg>
+            </button>
             <button type="button" class="cngx-stepper__mobile-dot dot-up"></button>
             <button
               type="button"
@@ -240,8 +244,8 @@ describe.each(SCHEMES)('disabled stepper, %s', (scheme) => {
     expect(computedValue(active, 'forced-color-adjust')).toBe('none');
     expect(computedValue(active, 'background-color')).toBe(highlight);
     expect(computedValue(active, '--_cngx-forced-ink')).toBe('HighlightText');
-    // The error glyph follows the declared ink instead of its unforced white.
-    expect(getComputedStyle(active, '::after').color).toBe(
+    // The error icon follows the declared ink instead of its unforced white.
+    expect(getComputedStyle(active.querySelector('.cngx-stepper__mobile-dot-glyph')!).color).toBe(
       computedValue(one(root, '.probe-highlight-text'), 'color'),
     );
     // The outline is inset, so no dot grows or shifts.

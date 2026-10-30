@@ -1,7 +1,19 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import {
+  CNGX_ICON_CHECK,
+  CNGX_ICON_EXCLAMATION_SOLID,
+  CNGX_ICON_INFO,
+  CNGX_ICON_QUESTION,
+  CNGX_ICON_X,
+  type CngxIconData,
+} from '@cngx/utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxStatus, type StatusTone } from './status.component';
+
+function glyphPath(dot: Element): string | null | undefined {
+  return dot.querySelector('svg.cngx-icon-svg > path')?.getAttribute('d');
+}
 
 @Component({
   template: `<cngx-status [tone]="tone()" [label]="label()" [live]="live()" [glyph]="glyph()" />`,
@@ -48,18 +60,20 @@ describe('CngxStatus', () => {
 
   it('renders a distinct tone class and glyph per tone', () => {
     const { fixture, el, host } = setup();
-    const cases: ReadonlyArray<[StatusTone, string]> = [
-      ['success', '✓'],
-      ['warning', '!'],
-      ['danger', '✕'],
-      ['info', 'i'],
-      ['neutral', '•'],
+    const cases: ReadonlyArray<[StatusTone, CngxIconData]> = [
+      ['success', CNGX_ICON_CHECK],
+      ['warning', CNGX_ICON_EXCLAMATION_SOLID],
+      ['danger', CNGX_ICON_X],
+      ['info', CNGX_ICON_INFO],
+      ['neutral', CNGX_ICON_QUESTION],
     ];
-    for (const [tone, glyph] of cases) {
+    for (const [tone, icon] of cases) {
       host.tone.set(tone);
       fixture.detectChanges();
+      const dot = el.querySelector('.cngx-status__dot')!;
       expect(el.classList.contains(`cngx-status--${tone}`)).toBe(true);
-      expect(el.querySelector('.cngx-status__dot')!.textContent!.trim()).toBe(glyph);
+      expect(glyphPath(dot)).toBe(icon.d);
+      expect(dot.textContent!.trim()).toBe('');
     }
   });
 
@@ -69,13 +83,15 @@ describe('CngxStatus', () => {
     expect(el.querySelector('.cngx-status__dot')!.getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('hides the glyph char when [glyph]="false" but keeps the coloured dot', () => {
+  it('hides the glyph when [glyph]="false" but keeps the coloured dot', () => {
     const { fixture, el, host } = setup();
     host.tone.set('success');
     host.glyph.set(false);
     fixture.detectChanges();
     const dot = el.querySelector('.cngx-status__dot')!;
-    expect(dot.textContent!.trim()).toBe('');
+    expect(dot.querySelector('svg')).toBeNull();
+    // No whitespace either, so the forced-colors `:empty` disc still matches.
+    expect(dot.matches(':empty')).toBe(true);
     expect(el.classList.contains('cngx-status--success')).toBe(true);
     expect(dot.getAttribute('aria-hidden')).toBe('true');
   });
@@ -84,8 +100,8 @@ describe('CngxStatus', () => {
     const fixture = TestBed.createComponent(AttrHost);
     fixture.detectChanges();
     const dots = fixture.nativeElement.querySelectorAll('.cngx-status__dot');
-    expect(dots[0].textContent!.trim()).toBe('✓');
-    expect(dots[1].textContent!.trim()).toBe('');
+    expect(glyphPath(dots[0])).toBe(CNGX_ICON_CHECK.d);
+    expect(dots[1].querySelector('svg')).toBeNull();
   });
 
   it('warns in dev mode when the glyph is hidden and no visible label is set', async () => {

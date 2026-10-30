@@ -75,3 +75,90 @@ describe('CngxStatus geometry', () => {
     expect(dark).not.toBe(light);
   });
 });
+
+// ── Tone glyphs from the shared icon set (status.component.css) ───────────────
+
+function px(el: Element, property: string): number {
+  return parseFloat(computedValue(el, property));
+}
+
+interface GlyphInk {
+  readonly width: number;
+  readonly height: number;
+  readonly dx: number;
+  readonly dy: number;
+}
+
+// The drawn extent of a stroke glyph includes half the stroke on each side;
+// the path box alone is the geometric centre line.
+function glyphInk(dot: HTMLElement): GlyphInk {
+  const svg = dot.querySelector<SVGSVGElement>('svg.cngx-icon-svg');
+  const path = svg?.querySelector('path');
+  if (!svg || !path) {
+    throw new Error('cngx-status dot renders no glyph');
+  }
+  const stroke = svg.classList.contains('cngx-icon-svg--stroke')
+    ? (px(svg, 'stroke-width') * svg.getBoundingClientRect().width) / 24
+    : 0;
+  const ink = path.getBoundingClientRect();
+  const box = dot.getBoundingClientRect();
+  return {
+    width: ink.width + stroke,
+    height: ink.height + stroke,
+    dx: ink.left + ink.width / 2 - (box.left + box.width / 2),
+    dy: ink.top + ink.height / 2 - (box.top + box.height / 2),
+  };
+}
+
+// Box of each tone icon as a fraction of the dot: scaled so the glyph's outer
+// edge, stroke included, sits at 65% of the dot diameter from the centre.
+const TONE_BOX: ReadonlyArray<[StatusTone, number]> = [
+  ['success', 0.754],
+  ['warning', 0.918],
+  ['danger', 0.764],
+  ['info', 0.918],
+  ['neutral', 0.996],
+];
+
+describe('CngxStatus tone glyphs', () => {
+  it.each(TONE_BOX)('sizes the %s icon box to %s of the dot', (tone, fraction) => {
+    const { dot } = mount(tone);
+    const svg = dot.querySelector('svg.cngx-icon-svg') as SVGSVGElement;
+    expect(svg.getBoundingClientRect().width).toBeCloseTo(
+      fraction * dot.getBoundingClientRect().width,
+      1,
+    );
+  });
+
+  it.each(TONE_BOX)('centres the %s glyph in the dot', (tone) => {
+    const { dot } = mount(tone);
+    const ink = glyphInk(dot);
+    expect(Math.abs(ink.dx)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(ink.dy)).toBeLessThanOrEqual(0.5);
+  });
+
+  it.each(['success', 'danger', 'neutral'] as const)(
+    'draws the %s line glyph with a 1.75px stroke',
+    (tone) => {
+      const { dot } = mount(tone);
+      const svg = dot.querySelector('svg.cngx-icon-svg') as SVGSVGElement;
+      const strokePx = (px(svg, 'stroke-width') * svg.getBoundingClientRect().width) / 24;
+      expect(strokePx).toBeCloseTo(1.75, 1);
+      expect(computedValue(svg, 'stroke')).toBe(computedValue(dot, 'color'));
+    },
+  );
+
+  it.each(['warning', 'info'] as const)('fills the %s glyph in the dot foreground', (tone) => {
+    const { dot } = mount(tone);
+    const svg = dot.querySelector('svg.cngx-icon-svg') as SVGSVGElement;
+    expect(svg.classList.contains('cngx-icon-svg--stroke')).toBe(false);
+    expect(computedValue(svg, 'fill')).toBe(computedValue(dot, 'color'));
+  });
+
+  it('scales the glyph with --cngx-status-dot-size', () => {
+    const { host, dot } = mount('danger');
+    const before = glyphInk(dot).width;
+    host.style.setProperty('--cngx-status-dot-size', '24px');
+    expect(glyphInk(dot).width).toBeCloseTo(before * 1.5, 1);
+  });
+});

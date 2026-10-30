@@ -43,6 +43,14 @@
               <ng-container *ngTemplateOutlet="dotTpl; context: slotContext.dotContextFor(node)" />
             </span>
           }
+          @if (stateView.hasErrorMarker(node)) {
+            <svg
+              class="cngx-stepper__mobile-dot-glyph"
+              [cngxIconSvg]="
+                stateView.rejectionReason(node) === 'refused' ? icons.ban : icons.exclamation
+              "
+            ></svg>
+          }
         </span>
       } @else {
         <button
@@ -66,6 +74,14 @@
             <span aria-hidden="true">
               <ng-container *ngTemplateOutlet="dotTpl; context: slotContext.dotContextFor(node)" />
             </span>
+          }
+          @if (stateView.hasErrorMarker(node)) {
+            <svg
+              class="cngx-stepper__mobile-dot-glyph"
+              [cngxIconSvg]="
+                stateView.rejectionReason(node) === 'refused' ? icons.ban : icons.exclamation
+              "
+            ></svg>
           }
         </button>
       }
@@ -261,7 +277,7 @@
 <!--
   Shared strip-header body. Rendered identically by the focusable
   <button> ('visited') and the inert <span> ('none') branches so the
-  indicator / badge / label / status / rejection / busy markup has a
+  indicator / label / badge / status / rejection / busy markup has a
   single source (Pillar 3). ngTemplateOutlet projects inline - no
   wrapper element is added, so the 'visited' DOM is unchanged.
 -->
@@ -273,16 +289,6 @@
         context: slotContext.indicatorContextFor(node)
       "
     ></ng-container>
-    @if (slotContext.showErrorBadge(node)) {
-      <span class="cngx-stepper__badge" aria-hidden="true">
-        <ng-container
-          *ngTemplateOutlet="
-            templates.badge() ?? defaultBadge;
-            context: slotContext.badgeContextFor(node)
-          "
-        ></ng-container>
-      </span>
-    }
   </span>
   <span class="cngx-stepper__label">
     @let labelTpl = labelTemplateFor(node.id);
@@ -294,6 +300,21 @@
       {{ node.label() }}
     }
   </span>
+  @if (node.state() === 'success') {
+    <span class="cngx-stepper__done-icon" aria-hidden="true"
+      ><svg [cngxIconSvg]="icons.check"></svg
+    ></span>
+  }
+  @if (slotContext.showErrorBadge(node)) {
+    <span class="cngx-stepper__badge" aria-hidden="true">
+      <ng-container
+        *ngTemplateOutlet="
+          templates.badge() ?? defaultBadge;
+          context: slotContext.badgeContextFor(node)
+        "
+      ></ng-container>
+    </span>
+  }
   <span class="cngx-stepper__status-pill" aria-hidden="true">{{ statusLabelFor(node) }}</span>
   @if (slotContext.showRejection(node)) {
     <span
@@ -322,14 +343,17 @@
   <span class="cngx-sr-only" [id]="announcement.descriptorId(node)">{{ announcement.headerStatusPhrase(node) }}</span>
 </ng-template>
 
-<ng-template #defaultIndicator let-position>
+<ng-template #defaultIndicator let-position let-status="status">
+  @if (status === 'success') {
+    <svg class="cngx-stepper__indicator-check" [cngxIconSvg]="icons.check"></svg>
+  }
   <span class="cngx-stepper__indicator-glyph">{{ position }}</span>
 </ng-template>
-<ng-template #defaultBadge>{{ glyphs.errorBadge }}</ng-template>
+<ng-template #defaultBadge><svg [cngxIconSvg]="icons.alert"></svg></ng-template>
 <ng-template #defaultBusySpinner></ng-template>
-<ng-template #defaultRejection let-reason="reason">{{
-  reason === 'refused' ? glyphs.refusedIcon : glyphs.rejectionIcon
-}}</ng-template>
+<ng-template #defaultRejection let-reason="reason"
+  ><svg [cngxIconSvg]="reason === 'refused' ? icons.ban : icons.alert"></svg
+></ng-template>
 <ng-template #defaultGroupHeader let-group="group">
   <span class="cngx-stepper__group-label">{{ group.label() }}</span>
 </ng-template>

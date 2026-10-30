@@ -179,7 +179,7 @@ describe('CngxTabNav', () => {
     // happy-dom cannot compute the external CSS; assert the rule in source.
     const css = readFileSync(`${process.cwd()}/projects/ui/tabs/tab-nav.component.css`, 'utf8');
     expect(css).toMatch(
-      /\.cngx-tab-nav__link--error\s*\{\s*color: var\(--cngx-tab-error-badge-color\);/,
+      /\.cngx-tab-nav__link--error\s*\{\s*color: var\(\s*--cngx-tab-error-badge-color,\s*var\(\s*--cngx-color-danger-text,/,
     );
     expect(css).not.toContain('--cngx-tab-refused-color');
   });

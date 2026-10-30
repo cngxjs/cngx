@@ -25,10 +25,6 @@ import { afterEach, describe, expect, it } from 'vitest';
 })
 class MatTabErrorPaintHost {}
 
-// oklch(0.45 0.15 25) and oklch(0.62 0.15 60) as Chromium serialises them.
-const RED = 'oklch(0.45 0.15 25)';
-const AMBER = 'oklch(0.62 0.15 60)';
-
 let mountedRoot: HTMLElement | null = null;
 
 async function mount(): Promise<HTMLElement[]> {
@@ -44,6 +40,14 @@ async function mount(): Promise<HTMLElement[]> {
   tabs[0].dataset['reason'] = 'failed';
   tabs[2].classList.add('cngx-mat-tab--error');
   tabs[2].dataset['reason'] = 'refused';
+  // The rejection icon, appended to the tab as the projector does.
+  const icon = document.createElement('span');
+  icon.className = 'cngx-mat-tab__rejection-icon';
+  icon.dataset['reason'] = 'failed';
+  icon.setAttribute('aria-hidden', 'true');
+  icon.innerHTML =
+    '<svg class="cngx-mat-tab__icon-svg cngx-mat-tab__icon-svg--stroke" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" overflow="visible" style="inline-size: var(--cngx-icon-svg-size, 1em); block-size: var(--cngx-icon-svg-size, 1em); stroke-width: var(--cngx-icon-svg-stroke-width, 2)"><path d="M12 9v4"/></svg>';
+  tabs[0].appendChild(icon);
   return tabs;
 }
 
@@ -63,31 +67,31 @@ describe('rejected mat tab paint over the Material tab styles', () => {
     expect(getComputedStyle(resting).outlineStyle).toBe('none');
   });
 
-  it('paints a failed tab with a red outline and red label text', async () => {
-    const [failed] = await mount();
+  it('paints a failed tab by colour only: error label, no outline', async () => {
+    const [failed, resting] = await mount();
     expect(failed.classList.contains('mdc-tab--active')).toBe(true);
     const style = getComputedStyle(failed);
-    expect(style.outlineStyle).toBe('solid');
-    expect(style.outlineWidth).toBe('2px');
-    expect(style.outlineColor).toBe(RED);
+    expect(style.outlineStyle).toBe('none');
     expect(style.fontWeight).toBe('600');
     // Material transitions the label colour; poll past it.
-    await expect.poll(() => label(failed)).toBe(RED);
+    await expect.poll(() => label(failed)).toBe(style.color);
+    expect(label(failed)).not.toBe(label(resting));
   });
 
-  it('paints a refused tab with an amber outline and the resting label colour', async () => {
-    const [, resting, refused] = await mount();
-    const style = getComputedStyle(refused);
-    expect(style.outlineStyle).toBe('solid');
-    expect(style.outlineColor).toBe(AMBER);
-    // Settle Material's label colour transition before comparing.
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    expect(label(refused)).toBe(label(resting));
-    expect(label(refused)).not.toBe(RED);
+  it('paints a refused tab label amber, apart from the failed and the resting one', async () => {
+    const [failed, resting, refused] = await mount();
+    expect(getComputedStyle(refused).outlineStyle).toBe('none');
+    await expect.poll(() => label(refused)).toBe(getComputedStyle(refused).color);
+    expect(label(refused)).not.toBe(label(resting));
+    expect(label(refused)).not.toBe(getComputedStyle(failed).color);
   });
 
-  it('insets the outline so the clipped label container keeps every edge', async () => {
+  it('lays the rejection icon after the label in the real Material tab', async () => {
     const [failed] = await mount();
-    expect(getComputedStyle(failed).outlineOffset).toBe('-2px');
+    const text = failed.querySelector('.mdc-tab__text-label')!.getBoundingClientRect();
+    const icon = failed.querySelector('.cngx-mat-tab__rejection-icon')!.getBoundingClientRect();
+    expect(icon.width).toBeGreaterThan(0);
+    expect(icon.left).toBeGreaterThanOrEqual(text.right);
+    expect(icon.top + icon.height / 2).toBeCloseTo(text.top + text.height / 2, 0);
   });
 });

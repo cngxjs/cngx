@@ -22,6 +22,8 @@
     // currentColor chain; checked circle + dot read -checked-color.
     --cngx-radio-indicator-color: var(--mat-sys-outline);
     --cngx-radio-indicator-checked-color: var(--mat-sys-primary);
+    // check skin: the mark sits on the primary-filled disc.
+    --cngx-radio-indicator-mark-color: var(--mat-sys-on-primary);
 
     // Toggle (switch). Resting thumb stays outline for contrast on the
     // surface-variant track; the checked state flips it below.
@@ -31,7 +33,11 @@
   } @else {
     --cngx-checkbox-border: 1.5px solid #{mat.get-theme-color($theme, foreground, divider)};
     --cngx-checkbox-checked-bg: #{mat.get-theme-color($theme, primary)};
+    // Theme-derived idle ring, so M2 apps do not fall back to the
+    // component's 55% currentColor mix.
+    --cngx-radio-indicator-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
     --cngx-radio-indicator-checked-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-radio-indicator-mark-color: #{mat.get-theme-color($theme, primary, default-contrast)};
     --cngx-toggle-track-bg-on: #{mat.get-theme-color($theme, primary)};
   }
 }

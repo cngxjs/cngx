@@ -151,26 +151,28 @@ describe('CngxTabGroup geometry', () => {
     expect(computedValue(badge, 'unicode-bidi')).toBe('isolate');
   });
 
-  it('paints a refused tab amber at its resting label colour and a failed tab red', () => {
+  it('paints a refused tab amber and a failed tab red, icon and label alike', () => {
     const fixture = TestBed.createComponent(TabRejectionHost);
     mountedRoot = fixture.nativeElement as HTMLElement;
     document.body.appendChild(mountedRoot);
     fixture.detectChanges();
     const tabs = Array.from(mountedRoot.querySelectorAll<HTMLElement>('.cngx-tabs__tab'));
+    const restingLabel = computedValue(query(tabs[2], '.cngx-tabs__label'), 'color');
 
     tabs[1].click();
     fixture.detectChanges();
     const refusedIcon = query(tabs[1], '.cngx-tabs__rejection-icon');
-    // oklch(0.62 0.15 60) as Chromium serialises it.
-    expect(computedValue(refusedIcon, 'background-color')).toBe('oklch(0.62 0.15 60)');
-    expect(computedValue(query(tabs[1], '.cngx-tabs__label'), 'color')).toBe(
-      computedValue(query(tabs[2], '.cngx-tabs__label'), 'color'),
-    );
+    // A standalone icon: no disc behind it.
+    expect(computedValue(refusedIcon, 'background-color')).toBe('rgba(0, 0, 0, 0)');
+    const refusedColour = computedValue(refusedIcon, 'color');
+    // The line skin colours the refused label too, away from the resting one.
+    expect(computedValue(query(tabs[1], '.cngx-tabs__label'), 'color')).not.toBe(restingLabel);
 
     fixture.componentInstance.fail = true;
     tabs[2].click();
     fixture.detectChanges();
     const failedIcon = query(tabs[2], '.cngx-tabs__rejection-icon');
-    expect(computedValue(failedIcon, 'background-color')).toBe('oklch(0.45 0.15 25)');
+    expect(computedValue(failedIcon, 'color')).not.toBe(refusedColour);
+    expect(computedValue(query(tabs[2], '.cngx-tabs__label'), 'color')).not.toBe(restingLabel);
   });
 });

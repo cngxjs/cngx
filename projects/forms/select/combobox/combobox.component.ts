@@ -26,7 +26,8 @@ import {
   type AsyncStatus,
 } from '@cngx/core/utils';
 
-import { CngxChip } from '@cngx/common/display';
+import { CngxChip, CngxIconSvg } from '@cngx/common/display';
+import { CNGX_ICON_CARET_DOWN, CNGX_ICON_X } from '@cngx/utils';
 import {
   CngxClickOutside,
   CngxListbox,
@@ -236,6 +237,7 @@ export interface CngxComboboxChange<T = unknown> {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    CngxIconSvg,
     CngxPopoverSheet,
     CngxPopoverSheetInitialFocus,
     CngxSelectSheetHeader,
@@ -455,6 +457,8 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
    * active language.
    */
   readonly clearButtonAriaLabel = input<string | undefined>(undefined);
+  protected readonly caretIcon = CNGX_ICON_CARET_DOWN;
+  protected readonly clearIcon = CNGX_ICON_X;
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedClearButtonAriaLabel = computed<string>(
     () =>
@@ -1270,7 +1274,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   /**
    * @internal - invoked by `CngxListboxTrigger`'s `(backspaceOnEmpty)`.
-   * Routes through the same commit-aware path as chip ✕.
+   * Routes through the same commit-aware path as the chip remove button.
    */
   protected removeLastChip(): void {
     const selected = this.selectedOptions();

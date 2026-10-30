@@ -50,6 +50,7 @@ Selector: `cngx-radio-group, [cngxRadioGroup]`. `exportAs: 'cngxRadioGroup'`. Ge
 | `label` | `string \| undefined` | `undefined` | Forwarded to `aria-label`. |
 | `state` | `CngxAsyncState<unknown> \| undefined` | `undefined` | Drives `aria-busy` when status is `'loading'`. |
 | `name` (`nameInput`) | `string \| undefined` | auto `nextUid('cngx-radio-group')` | HTML-style `name` applied per radio. |
+| `skin` | `CngxRadioSkin \| undefined` | `undefined` | Indicator skin for every leaf (`default`, `check`, `tinted`). A leaf's own `skin` wins. |
 
 Read-only signals: `name`, `id`, `focused`, `empty`, `errorState`.
 
@@ -65,8 +66,26 @@ Selector: `cngx-radio, [cngxRadio]`. `exportAs: 'cngxRadio'`. Generic over `T`. 
 | `disabled` | `boolean` | `false` | `model()`. ORed with the group's `disabled()`. |
 | `disabledReason` | `string` | `''` | Rendered into an SR-only span and wired through `aria-describedby` when non-empty. |
 | `dotGlyph` | `TemplateRef<void> \| null` | `null` | Forwarded to `<cngx-radio-indicator>` to replace the default dot. |
+| `skin` | `CngxRadioSkin \| undefined` | `undefined` | Indicator skin; falls back to the group's `skin`. |
 
 The radio is not a self-owned input. It writes through the group on click, Space, Enter, or auto-select-on-arrow; checked state is recomputed, never stored.
+
+## Skins
+
+The indicator skin resolves per leaf: the radio's `skin`, then the group's `skin`, then `CNGX_RADIO_CONFIG` from `@cngx/common/display`, then `default`. Set it app-wide or per sub-tree without touching the template:
+
+```ts
+bootstrapApplication(App, { providers: [provideRadioConfig(withRadioSkin('check'))] });
+```
+
+```html
+<cngx-radio-group [(value)]="plan" skin="tinted">
+  <cngx-radio value="team">Team</cngx-radio>
+  <cngx-radio value="business" skin="check">Business</cngx-radio>
+</cngx-radio-group>
+```
+
+The skins themselves are documented on `CngxRadioIndicator`.
 
 ## `CNGX_RADIO_GROUP` DI contract
 
@@ -77,6 +96,7 @@ export interface CngxRadioGroupContract<T = unknown> {
   readonly value: ModelSignal<T | undefined>;
   readonly disabled: Signal<boolean>;
   readonly name: Signal<string>;
+  readonly skin: Signal<CngxRadioSkin | undefined>;
   register(radio: CngxRadioRegistration<T>): void;
   unregister(id: string): void;
   consumePendingArrowSelect(value: T): boolean;

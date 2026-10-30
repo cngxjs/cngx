@@ -83,3 +83,48 @@ describe('CngxEmptyState geometry', () => {
     expect(computedValue(host, 'display')).toBe('none');
   });
 });
+
+// ── Default glyph from the shared icon set (empty-state.component.css) ────────
+
+describe('CngxEmptyState default glyph', () => {
+  function glyph(host: HTMLElement): { svg: SVGSVGElement; path: SVGPathElement } {
+    const svg = host.querySelector<SVGSVGElement>('svg.cngx-empty-state__default-icon');
+    const path = svg?.querySelector('path');
+    if (!svg || !path) {
+      throw new Error('cngx-empty-state renders no default glyph');
+    }
+    return { svg, path };
+  }
+
+  // The 48px drawing it replaced inked 47px across with a 3px line.
+  it('draws the archive 47px wide with a 3px line', () => {
+    const { svg, path } = glyph(mount());
+    const stroke =
+      (parseFloat(computedValue(svg, 'stroke-width')) * svg.getBoundingClientRect().width) / 24;
+    expect(stroke).toBeCloseTo(3, 0);
+    expect(path.getBoundingClientRect().width + stroke).toBeCloseTo(47, 0);
+  });
+
+  it('keeps the 48px footprint of the drawing it replaced', () => {
+    const host = mount();
+    const { svg } = glyph(host);
+    const footprint =
+      svg.getBoundingClientRect().height +
+      parseFloat(computedValue(svg, 'margin-top')) +
+      parseFloat(computedValue(svg, 'margin-bottom'));
+    expect(footprint).toBeCloseTo(48, 1);
+    const title = query(host, '.cngx-empty-state__title').getBoundingClientRect();
+    const gap = parseFloat(computedValue(host, 'row-gap'));
+    expect(title.top - svg.getBoundingClientRect().bottom).toBeCloseTo(
+      gap + parseFloat(computedValue(svg, 'margin-bottom')),
+      1,
+    );
+  });
+
+  it('paints the glyph stroke in the muted icon colour', () => {
+    const { svg } = glyph(mount());
+    expect(computedValue(svg, 'stroke')).toBe(computedValue(svg, 'color'));
+    expect(computedValue(svg, 'fill')).toBe('none');
+    expect(svg.getAttribute('aria-hidden')).toBe('true');
+  });
+});

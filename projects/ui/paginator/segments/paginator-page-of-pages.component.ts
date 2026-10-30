@@ -5,12 +5,13 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
+import { CngxIconSvg } from '@cngx/common/display';
 import { CngxListbox, CngxListboxTrigger, CngxOption } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import { injectLocale, numberFormatterFor } from '@cngx/core/utils';
+import { CNGX_ICON_CARET_DOWN } from '@cngx/utils';
 
 import { injectPaginatorAriaLabels, injectPaginatorFormats } from '../paginator-config';
-import { CNGX_PAGINATOR_GLYPHS } from '../paginator-glyphs';
 import { injectPaginatorHost } from '../paginator-host.token';
 
 /**
@@ -33,7 +34,14 @@ import { injectPaginatorHost } from '../paginator-host.token';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxListbox, CngxListboxTrigger, CngxOption, CngxPopover, CngxPopoverTrigger],
+  imports: [
+    CngxIconSvg,
+    CngxListbox,
+    CngxListboxTrigger,
+    CngxOption,
+    CngxPopover,
+    CngxPopoverTrigger,
+  ],
   template: `
     <button
       #trigger
@@ -48,7 +56,9 @@ import { injectPaginatorHost } from '../paginator-host.token';
       (click)="pop.toggle()"
     >
       <span class="cngx-paginator__select-label" [innerHTML]="readout()"></span>
-      <span class="cngx-paginator__select-caret" aria-hidden="true">{{ glyphs.caret }}</span>
+      <span class="cngx-paginator__select-caret" aria-hidden="true">
+        <svg [cngxIconSvg]="caretIcon"></svg>
+      </span>
     </button>
     <div cngxPopover #pop="cngxPopover" [closeOnOutsideClick]="true">
       <ul
@@ -75,7 +85,7 @@ export class CngxPaginatorPageOfPages {
   /** Visible page numbers and sizes, formatted for the locale (`1.000` in German). */
   protected readonly numbers = computed(() => numberFormatterFor(this.locale(), {}));
   private readonly formats = injectPaginatorFormats();
-  protected readonly glyphs = CNGX_PAGINATOR_GLYPHS;
+  protected readonly caretIcon = CNGX_ICON_CARET_DOWN;
 
   /**
    * Trigger readout from the config formatter (EN default `<b>page</b> / total`),

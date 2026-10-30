@@ -1,4 +1,5 @@
 import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
+import type { CngxRadioSkin } from '@cngx/common/display';
 
 /**
  * Structural surface a `CngxRadio` leaf exposes when it registers
@@ -33,7 +34,9 @@ export interface CngxRadioRegistration<T = unknown> {
  * `disabled()` to compute `radioDisabled`. `name` is the HTML
  * `name` attribute applied to all radio inputs in this group -
  * defaults to a `nextUid('cngx-radio-group')` value when the
- * consumer does not supply one.
+ * consumer does not supply one. `skin` is the group-level indicator
+ * skin each leaf falls back to; `undefined` defers to the
+ * `CNGX_RADIO_CONFIG` cascade.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/radio/radio-group.token.ts
  * @since 0.1.0
@@ -42,6 +45,7 @@ export interface CngxRadioGroupContract<T = unknown> {
   readonly value: ModelSignal<T | undefined>;
   readonly disabled: Signal<boolean>;
   readonly name: Signal<string>;
+  readonly skin: Signal<CngxRadioSkin | undefined>;
   register(radio: CngxRadioRegistration<T>): void;
   unregister(id: string): void;
   /**

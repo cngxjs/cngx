@@ -140,9 +140,14 @@
     /* Sizes the projected glyph; the stock icon is already hidden by the
        empty-state's own :not(:empty) rule once the slot is filled. The icon
        keeps the danger colour at full strength. */
-    .cngx-stat-card__error-icon {
-      inline-size: var(--cngx-stat-card-error-icon-size, 22px);
-      block-size: var(--cngx-stat-card-error-icon-size, 22px);
+    .cngx-stat-card__error .cngx-stat-card__error-icon {
+      /* The alert triangle spans 22 grid units with stroke, so it inks at
+         22/24 of the box. The 1.5-unit stroke keeps the line light at this
+         size. On the baseline, the slot keeps its line box and the title
+         stays put. */
+      --cngx-icon-svg-size: var(--cngx-stat-card-error-icon-size, 22px);
+      --cngx-icon-svg-stroke-width: 1.5;
+      vertical-align: baseline;
     }
 
     /* Out of flow entirely: a refresh must not move the figure the user is
@@ -176,24 +181,30 @@
       color: var(--cngx-stat-card-stale-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
     }
 
-    /* Empty alt text keeps the glyph out of the accessible name - the sentence
-       beside it already carries the meaning. */
-    .cngx-stat-card__stale::before {
-      content: '!' / '';
+    /* The badge is aria-hidden - the sentence beside it already carries the
+       meaning. */
+    .cngx-stat-card__stale-glyph {
       flex: none;
       display: grid;
       place-items: center;
       inline-size: var(--cngx-stat-card-stale-glyph-size, 1rem);
       block-size: var(--cngx-stat-card-stale-glyph-size, 1rem);
       border-radius: 50%;
-      font-size: var(--cngx-stat-card-stale-glyph-font-size, 0.75rem);
-      font-weight: 700;
-      line-height: 1;
       color: var(--cngx-stat-card-stale-glyph-color, var(--cngx-color-surface, oklch(1 0 0)));
-      /* Not currentcolor: `color` is set on this same pseudo-element just above,
-         so currentcolor would resolve to the glyph's own colour and paint the
+      /* Not currentcolor: `color` is set on this same element just above, so
+         currentcolor would resolve to the glyph's own colour and paint the
          badge dark-on-dark. Name the tone explicitly. */
       background: var(--cngx-stat-card-stale-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
+    }
+
+    /* The exclamation draws at the 2.5-unit stroke of the xs icon floor, so
+       at about 12px it keeps a pixel of weight, and spans 17.5 grid units
+       tall with it; scaling the box by 24/17.5 inks it at 0.54 of the badge,
+       and it follows a resized badge. */
+    .cngx-stat-card__stale-glyph > .cngx-icon-svg {
+      --cngx-icon-svg-size: calc(var(--cngx-stat-card-stale-glyph-size, 1rem) * 0.54 * 24 / 17.5);
+      --cngx-icon-svg-stroke-width: 2.5;
+      display: block;
     }
 
     /* The spinner treatment stands in for the same block the skeleton fills, so

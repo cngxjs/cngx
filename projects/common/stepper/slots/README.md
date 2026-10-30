@@ -20,9 +20,9 @@ import {
 | Selector | Context | Replaces |
 |-|-|-|
 | `ng-template[cngxStepIndicator]` | `CngxStepIndicatorContext` | The numbered / checkmark / error glyph inside each step button. Context exposes `position`, `node`, `active`, `status`, `busy`. |
-| `ng-template[cngxStepBadge]` | `CngxStepBadgeContext` | The error badge that appears when `errorAggregator?.shouldShow()` is truthy. Context exposes `count`, `node`. Falls back to `CNGX_STEPPER_GLYPHS.errorBadge`. |
+| `ng-template[cngxStepBadge]` | `CngxStepBadgeContext` | The error badge that appears when `errorAggregator?.shouldShow()` is truthy. Context exposes `count`, `node`. Falls back to the default alert icon. |
 | `ng-template[cngxStepBusySpinner]` | `CngxStepBusySpinnerContext` | The pending-commit overlay on the in-flight target step. Renders only while `presenter.intendedStepIndex()` matches this step with `commitState.status() === 'pending'`. Context exposes `node`. |
-| `ng-template[cngxStepRejection]` | `CngxStepRejectionContext` | The decoration on the step a rolled-back commit was rejected FROM. Renders only when `presenter.lastFailedIndex()` matches. Context exposes `failedIndex`, `originLabel`, `node`. Symmetric with the tabs `cngxTabRejectionIcon` slot. Falls back to `CNGX_STEPPER_GLYPHS.rejectionIcon`. |
+| `ng-template[cngxStepRejection]` | `CngxStepRejectionContext` | The decoration on the step a rolled-back commit was rejected FROM. Renders only when `presenter.lastFailedIndex()` matches. Context exposes `failedIndex`, `originLabel`, `node`. Symmetric with the tabs `cngxTabRejectionIcon` slot. Falls back to the default alert icon (failed) or ban icon (refused). |
 | `ng-template[cngxStepGroupHeader]` | `CngxStepGroupHeaderContext` | The label markup inside a `kind === 'group'` row. The `role="group"` + `aria-roledescription` shell stays library-owned. Context exposes `group`, `expanded` (reserved), `status`. |
 | `ng-template[cngxStepperEmpty]` | `void` | The placeholder rendered when `flatSteps()` is empty. Honest-Absence default: no markup. |
 

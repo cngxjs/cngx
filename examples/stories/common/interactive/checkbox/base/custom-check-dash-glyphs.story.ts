@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxCheckbox: custom check + dash glyphs',
   subtitle:
-    '<code>[checkGlyph]</code> and <code>[dashGlyph]</code> forward a <code>TemplateRef&lt;void&gt;</code> through to <code>cngx-checkbox-indicator</code>, so design-system icon sets replace the default <code>&check;</code>/<code>&minus;</code> without forking the atom.',
+    '<code>[checkGlyph]</code> and <code>[dashGlyph]</code> forward a <code>TemplateRef&lt;void&gt;</code> through to <code>cngx-checkbox-indicator</code>, so design-system icon sets replace the default check and minus glyphs without forking the atom.',
   description:
     'Shows the glyph-projection escape hatch. The custom templates sit inside the same <code>aria-hidden="true"</code> indicator subtree, so they remain decorative; the source of truth for "checked" is still <code>aria-checked</code> on the host. Spacing between siblings comes from the library token <code>--cngx-checkbox-sibling-gap</code>, not the demo.',
   level: 'molecule',

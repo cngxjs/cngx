@@ -19,7 +19,7 @@ export interface CngxStepBadgeContext {
  * Slot directive for the error-badge template on `<cngx-stepper>`.
  * Discovered via `contentChild`; cascades through
  * `CNGX_STEPPER_CONFIG.templates.badge` before falling back to
- * `CNGX_STEPPER_GLYPHS.errorBadge`.
+ * the default alert icon (`CNGX_ICON_ALERT` from `@cngx/utils`).
  *
  * ```html
  * <cngx-stepper>

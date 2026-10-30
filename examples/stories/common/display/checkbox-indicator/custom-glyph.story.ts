@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxCheckboxIndicator: Custom glyph',
   subtitle: '<code>[checkGlyph]</code> and <code>[dashGlyph]</code> accept a <code>TemplateRef&lt;void&gt;</code> that replaces the default check / dash glyph without forking the atom.',
-  description: 'Two indicators in the same checked / indeterminate state, but with consumer-supplied SVG glyphs in place of the built-in ✓ and − characters. The slot inputs are convention-compatible with the other cngx slot directives: pass a local <code>#ref</code> from an <code>ng-template</code>. The replacement template renders inside the same <code>.cngx-checkbox-indicator__box</code> in checkbox mode (or bare in checkmark mode), so size, border, color, and disabled-dim continue to come from the atom.',
+  description: 'Two indicators in the same checked / indeterminate state, but with consumer-supplied SVG glyphs in place of the built-in check and minus glyphs. The slot inputs are convention-compatible with the other cngx slot directives: pass a local <code>#ref</code> from an <code>ng-template</code>. The replacement template renders inside the same <code>.cngx-checkbox-indicator__box</code> in checkbox mode (or bare in checkmark mode), so size, border, color, and disabled-dim continue to come from the atom.',
   level: 'atom',
   audience: ['dev', 'design'],
   artifact: 'standalone',
