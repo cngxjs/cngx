@@ -8,7 +8,8 @@
 // required step only counts with its exact `run`, no `continue-on-error` and no
 // `if:` - an `|| true` or a skipped step cannot pass as wired. The job needs the
 // build job and downloads its artifact before build:mcp, and the scripts those
-// steps call must run both cli vitest configs and type-check both spec projects.
+// steps call must be exact `&&` chains that run both cli vitest configs and
+// type-check both spec projects.
 import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -104,20 +105,39 @@ function requiredSteps(workflow) {
   return errors;
 }
 
-const TEST_CLI_CONFIGS = ['--config packages/cli/vitest.config.mjs', '--config packages/cli/vitest.core.config.mjs'];
-const TYPECHECK_PROJECTS = ['tsc -p packages/mcp/tsconfig.spec.json', 'tsc -p packages/cli/tsconfig.spec.json'];
+// Each script the mcp job calls must be an exact `&&` chain of these commands, in any
+// order: a substring match would pass `... || true` or an `echo` of the command.
+const SCRIPT_CHAINS = [
+  {
+    name: 'test:cli',
+    prefix: 'vitest run --config ',
+    commands: ['vitest run --config packages/cli/vitest.config.mjs', 'vitest run --config packages/cli/vitest.core.config.mjs'],
+  },
+  {
+    name: 'typecheck:tooling',
+    prefix: 'tsc -p ',
+    commands: ['tsc -p packages/mcp/tsconfig.spec.json', 'tsc -p packages/cli/tsconfig.spec.json'],
+  },
+];
 
-/** Defects of the script bodies the mcp job calls; empty when both cover what their names promise. */
+/** Defects of the script bodies the mcp job calls; empty when both are exactly the chains their names promise. */
 function scriptBodies(scripts) {
   const errors = [];
-  for (const config of TEST_CLI_CONFIGS) {
-    if (!(scripts['test:cli'] ?? '').includes(config)) {
-      errors.push(`test:cli does not run ${config}`);
+  for (const { name, prefix, commands } of SCRIPT_CHAINS) {
+    const body = scripts[name] ?? '';
+    if (/\|\||;|\becho\b/.test(body)) {
+      errors.push(`${name} is not a plain && chain`);
+      continue;
     }
-  }
-  for (const project of TYPECHECK_PROJECTS) {
-    if (!(scripts['typecheck:tooling'] ?? '').includes(project)) {
-      errors.push(`typecheck:tooling does not run ${project}`);
+    const segments = body.split('&&').map((segment) => segment.trim());
+    for (const segment of segments.filter((segment) => !segment.startsWith(prefix))) {
+      errors.push(`${name} runs "${segment}", not a ${prefix.trim()} command`);
+    }
+    for (const segment of segments.filter((segment) => segment.startsWith(prefix) && !commands.includes(segment))) {
+      errors.push(`${name} runs an unexpected ${segment}`);
+    }
+    for (const command of commands.filter((command) => !segments.includes(command))) {
+      errors.push(`${name} does not run ${command}`);
     }
   }
   return errors;
@@ -180,7 +200,38 @@ describe('cli core copy guard wiring', () => {
     it('fails a test:cli without the core config', () => {
       const mutated = { ...scripts, 'test:cli': 'vitest run --config packages/cli/vitest.config.mjs' };
 
-      expect(scriptBodies(mutated)).toEqual(['test:cli does not run --config packages/cli/vitest.core.config.mjs']);
+      expect(scriptBodies(mutated)).toEqual(['test:cli does not run vitest run --config packages/cli/vitest.core.config.mjs']);
+    });
+
+    it('fails a test:cli whose failure is swallowed by || true', () => {
+      const mutated = { ...scripts, 'test:cli': `${scripts['test:cli']} || true` };
+
+      expect(scriptBodies(mutated)).toEqual(['test:cli is not a plain && chain']);
+    });
+
+    it('fails a test:cli that only echoes the core config', () => {
+      const mutated = {
+        ...scripts,
+        'test:cli': 'vitest run --config packages/cli/vitest.config.mjs; echo vitest run --config packages/cli/vitest.core.config.mjs',
+      };
+
+      expect(scriptBodies(mutated)).toEqual(['test:cli is not a plain && chain']);
+    });
+
+    it('fails a test:cli with a segment that is not a vitest run', () => {
+      const mutated = { ...scripts, 'test:cli': `${scripts['test:cli']} && node -e 0` };
+
+      expect(scriptBodies(mutated)).toEqual(['test:cli runs "node -e 0", not a vitest run --config command']);
+    });
+
+    it('passes a reordered but complete chain', () => {
+      const mutated = {
+        ...scripts,
+        'test:cli': 'vitest run --config packages/cli/vitest.core.config.mjs && vitest run --config packages/cli/vitest.config.mjs',
+        'typecheck:tooling': 'tsc -p packages/cli/tsconfig.spec.json && tsc -p packages/mcp/tsconfig.spec.json',
+      };
+
+      expect(scriptBodies(mutated)).toEqual([]);
     });
 
     it('fails a typecheck:tooling without the cli spec project', () => {
