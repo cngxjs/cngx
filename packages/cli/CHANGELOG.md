@@ -32,8 +32,8 @@ grounds against is a property of the bundled snapshot, not this version.
   declaration did not pin. A detected release that cannot be resolved falls
   back to the bundled snapshot with exit 0 and one stderr line.
 - Fetched release snapshots are cached on disk (`CNGX_CACHE_DIR`, else
-  `XDG_CACHE_HOME/cngx`, else the platform cache directory), 16 releases at
-  most; a second run for the same release does not fetch.
+  `XDG_CACHE_HOME/cngx`, else the platform cache directory; a relative
+  variable is ignored), 16 releases at most; a second run for the same release does not fetch.
 - `--offline` on the same commands: answer from the disk cache or the bundled
   snapshot, never fetch; an uncached explicit `--cngx-version` exits 1.
 - `api`, `slots`, `theme`, `config` and `example` take several names (md: one

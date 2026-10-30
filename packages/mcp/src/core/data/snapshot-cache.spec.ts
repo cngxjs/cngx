@@ -56,6 +56,18 @@ describe('resolveCacheDir', () => {
     expect(resolveCacheDir({}, 'win32', 'C:\\Users\\u')).toBe('C:\\Users\\u\\AppData\\Local\\cngx\\Cache');
   });
 
+  it.each([
+    [{ CNGX_CACHE_DIR: 'cache' }, '/home/u/.cache/cngx'],
+    [{ CNGX_CACHE_DIR: './cache', XDG_CACHE_HOME: '/x' }, '/x/cngx'],
+    [{ XDG_CACHE_HOME: '.cache' }, '/home/u/.cache/cngx'],
+  ])('ignores a relative cache variable %j', (env, expected) => {
+    expect(resolveCacheDir(env, 'linux', '/home/u')).toBe(expected);
+  });
+
+  it('ignores a relative LOCALAPPDATA on win32', () => {
+    expect(resolveCacheDir({ LOCALAPPDATA: 'AppData\\Local' }, 'win32', 'C:\\Users\\u')).toBe('C:\\Users\\u\\AppData\\Local\\cngx\\Cache');
+  });
+
   it('ignores an empty CNGX_CACHE_DIR', () => {
     expect(resolveCacheDir({ CNGX_CACHE_DIR: '' }, 'linux', '/home/u')).toBe('/home/u/.cache/cngx');
   });

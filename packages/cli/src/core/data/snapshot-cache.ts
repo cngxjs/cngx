@@ -142,7 +142,8 @@ export function createSnapshotCache({
 /**
  * The cache root: `CNGX_CACHE_DIR`, else `$XDG_CACHE_HOME/cngx`, else the
  * platform cache directory (`~/Library/Caches/cngx` on darwin,
- * `%LOCALAPPDATA%\cngx\Cache` on win32, `~/.cache/cngx` elsewhere).
+ * `%LOCALAPPDATA%\cngx\Cache` on win32, `~/.cache/cngx` elsewhere). An empty or
+ * relative variable is ignored: it would put a cache into every working directory.
  */
 export function resolveCacheDir(
   env: Readonly<Record<string, string | undefined>>,
@@ -150,17 +151,21 @@ export function resolveCacheDir(
   home: string,
   path: PlatformPath = platform === 'win32' ? nodePath.win32 : nodePath.posix,
 ): string {
-  if (env.CNGX_CACHE_DIR) {
-    return env.CNGX_CACHE_DIR;
+  const absolute = (value: string | undefined) => (value && path.isAbsolute(value) ? value : undefined);
+  const cngxCacheDir = absolute(env.CNGX_CACHE_DIR);
+  if (cngxCacheDir) {
+    return cngxCacheDir;
   }
-  if (env.XDG_CACHE_HOME) {
-    return path.join(env.XDG_CACHE_HOME, 'cngx');
+  const xdgCacheHome = absolute(env.XDG_CACHE_HOME);
+  if (xdgCacheHome) {
+    return path.join(xdgCacheHome, 'cngx');
   }
   if (platform === 'darwin') {
     return path.join(home, 'Library', 'Caches', 'cngx');
   }
-  if (platform === 'win32' && env.LOCALAPPDATA) {
-    return path.join(env.LOCALAPPDATA, 'cngx', 'Cache');
+  const localAppData = absolute(env.LOCALAPPDATA);
+  if (platform === 'win32' && localAppData) {
+    return path.join(localAppData, 'cngx', 'Cache');
   }
   if (platform === 'win32') {
     return path.join(home, 'AppData', 'Local', 'cngx', 'Cache');
