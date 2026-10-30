@@ -962,6 +962,15 @@ describe('several names, --from and --compact', () => {
     expect(JSON.parse(json.stdout)).toEqual({ cngxVersion: null, result: [] });
   });
 
+  it('exits 1 for a --from file without @cngx imports even beside a positional name', async () => {
+    const file = sourceFile("import { Component } from '@angular/core';\n");
+    const run = await cli('api', 'CngxSelect', '--from', file);
+
+    expect(run.code).toBe(EXIT_NOT_FOUND);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toBe(`cngx api: no named @cngx imports in ${file}.\n`);
+  });
+
   it('passes --compact to the renderer and leaves json unchanged', async () => {
     const full = await cli('api', 'CngxSelect');
     const compact = await cli('api', 'CngxSelect', '--compact');

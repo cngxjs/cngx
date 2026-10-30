@@ -428,12 +428,15 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
   const named = [...positionals];
   const fromFile = values[FROM_FLAG];
   if (takesNames && typeof fromFile === 'string') {
+    let fromNames: string[];
     try {
-      named.push(...readCngxNames(fromFile));
+      fromNames = readCngxNames(fromFile);
     } catch (error) {
       return usageError(io, `--${FROM_FLAG}: cannot read ${fromFile}: ${errorMessage(error)}`, hint);
     }
-    if (named.length === 0) {
+    named.push(...fromNames);
+    // Checked on the file alone: positionals beside it do not excuse a file that names nothing.
+    if (fromNames.length === 0) {
       io.stderr(`cngx ${def.cliName}: no named @cngx imports in ${fromFile}.\n`);
       if (format === 'json') {
         io.stdout(`${JSON.stringify({ cngxVersion: null, result: [] }, null, 2)}\n`);
