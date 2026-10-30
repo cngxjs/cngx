@@ -22,6 +22,8 @@ interface Fruit {
       [multiple]="multiple()"
       [value]="valueIn()"
       [selectedValues]="selectedIn()"
+      [disabled]="disabledIn()"
+      [readonly]="readonlyIn()"
       (valueChange)="lastValue.set($any($event))"
       (selectedValuesChange)="lastSelected.set($any($event))"
       (activated)="activations.set(activations() + 1)"
@@ -42,6 +44,8 @@ class ListboxHost {
   readonly multiple = signal(false);
   readonly valueIn = signal<string | undefined>(undefined);
   readonly selectedIn = signal<string[]>([]);
+  readonly disabledIn = signal(false);
+  readonly readonlyIn = signal(false);
   readonly fruits = signal<Fruit[]>([
     { value: 'a', label: 'Apple' },
     { value: 'b', label: 'Banana' },
@@ -231,6 +235,58 @@ describe('CngxListbox', () => {
     fixture.detectChanges();
     expect(listbox.selected()).toEqual(['a']);
   });
+
+  it('reflects disabled and readonly as aria-disabled / aria-readonly on the host', () => {
+    const { fixture, hostEl } = setup();
+    expect(hostEl.getAttribute('aria-disabled')).toBeNull();
+    expect(hostEl.getAttribute('aria-readonly')).toBeNull();
+
+    fixture.componentInstance.disabledIn.set(true);
+    fixture.componentInstance.readonlyIn.set(true);
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(hostEl.getAttribute('aria-disabled')).toBe('true');
+    expect(hostEl.getAttribute('aria-readonly')).toBe('true');
+  });
+
+  for (const flag of ['disabledIn', 'readonlyIn'] as const) {
+    it(`refuses every selection write while ${flag === 'disabledIn' ? 'disabled' : 'readonly'}`, () => {
+      const { fixture, listbox } = setup();
+      fixture.componentInstance.multiple.set(true);
+      fixture.componentInstance.selectedIn.set(['a']);
+      fixture.componentInstance[flag].set(true);
+      TestBed.flushEffects();
+      fixture.detectChanges();
+
+      listbox.select('b');
+      listbox.deselect('a');
+      listbox.toggle('c');
+      listbox.selectAll();
+      listbox.clear();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      expect(listbox.selected()).toEqual(['a']);
+      expect(fixture.componentInstance.lastSelected()).toBeNull();
+    });
+
+    it(`ignores keyboard activation but keeps navigation while ${flag === 'disabledIn' ? 'disabled' : 'readonly'}`, () => {
+      const { fixture, listbox, hostEl } = setup();
+      fixture.componentInstance[flag].set(true);
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      hostEl.focus();
+      hostEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      expect(hostEl.getAttribute('aria-activedescendant')).not.toBeNull();
+
+      hostEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      expect(listbox.selected()).toEqual([]);
+      expect(fixture.componentInstance.lastValue()).toBeNull();
+    });
+  }
 
   it('is option reflected via host class + aria-selected after select()', () => {
     const { fixture, listbox } = setup();
