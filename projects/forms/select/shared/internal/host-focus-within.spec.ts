@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, inject } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -121,5 +121,66 @@ describe('createHostFocusWithin', () => {
 
     focusOut(search, null);
     expect(onLeave).toHaveBeenCalledTimes(1);
+  });
+});
+
+@Component({
+  selector: 'cngx-test-modal-host',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <button type="button" class="owner">Trigger</button>
+    <div class="sheet" role="dialog" aria-modal="true">
+      <input class="sheet-search" />
+    </div>
+  `,
+})
+class NoRestoreHost {
+  private readonly el = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  readonly focus: HostFocusWithin = createHostFocusWithin({
+    onLeave,
+    owner: () => this.el.querySelector<HTMLElement>('.owner') ?? undefined,
+    restoreFocus: false,
+  });
+}
+
+describe('createHostFocusWithin - modal sheet close contract', () => {
+  function mount(): { host: HTMLElement; focus: HostFocusWithin } {
+    const fixture = TestBed.createComponent(NoRestoreHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement as HTMLElement;
+    return { host, focus: fixture.componentInstance.focus };
+  }
+
+  it('refocuses the trigger before a modal sheet is removed even under restoreFocus: false', () => {
+    const { host, focus } = mount();
+    const search = host.querySelector<HTMLElement>('.sheet-search')!;
+    search.focus();
+    expect(document.activeElement).toBe(search);
+
+    focus.refocusOwnerBeforeRemoval();
+    expect(document.activeElement).toBe(host.querySelector('.owner'));
+  });
+
+  it('leaves focus in the panel on a non-modal close under restoreFocus: false', () => {
+    const { host, focus } = mount();
+    const search = host.querySelector<HTMLElement>('.sheet-search')!;
+    search.focus();
+
+    focus.refocusOwnerBeforeClose();
+    expect(document.activeElement).toBe(search);
+  });
+
+  it('never pulls focus in from outside the control', () => {
+    const { host, focus } = mount();
+    const outside = document.createElement('button');
+    document.body.appendChild(outside);
+    try {
+      outside.focus();
+      focus.refocusOwnerBeforeRemoval();
+      expect(document.activeElement).toBe(outside);
+      expect(host.contains(document.activeElement)).toBe(false);
+    } finally {
+      outside.remove();
+    }
   });
 });

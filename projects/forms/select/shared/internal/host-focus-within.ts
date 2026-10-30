@@ -42,6 +42,11 @@ export interface HostFocusWithin {
    * focus to `body` and read as leaving the field. No-op unless the active
    * element is inside the host and is not the owner, so a call from outside
    * the control never steals focus.
+   *
+   * Modal contract: the mobile sheet's `(closing)` calls this, not
+   * {@link refocusOwnerBeforeClose}, so a modal sheet close always returns
+   * focus to the trigger - focus must not stay on a dialog that is being
+   * removed. `restoreFocus: false` governs the non-modal popover only.
    */
   refocusOwnerBeforeRemoval(): void;
   /**
