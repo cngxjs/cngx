@@ -137,11 +137,23 @@ function findDeclared(cwd: string, deps: InstalledVersionDeps, notes: string[]):
     if (deps.exists(file)) {
       const packages = declaredIn(file, deps, notes);
       if (packages !== null) {
-        return { declared: { file, packages }, pnp };
+        // A workspace package declares @cngx below the root that holds .pnp.cjs.
+        return { declared: { file, packages }, pnp: pnp || pnpAbove(dir, deps) };
       }
     }
     if (dirname(dir) === dir) {
       return { declared: null, pnp };
+    }
+  }
+}
+
+function pnpAbove(dir: string, deps: InstalledVersionDeps): boolean {
+  for (let at = dirname(dir); ; at = dirname(at)) {
+    if (deps.exists(join(at, '.pnp.cjs'))) {
+      return true;
+    }
+    if (dirname(at) === at) {
+      return false;
     }
   }
 }

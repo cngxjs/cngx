@@ -186,6 +186,18 @@ describe('resolveInstalledCngxVersion - declared', () => {
     expect(result.notes).not.toContain('no @cngx package found; answering from the bundled snapshot.');
   });
 
+  it('Yarn PnP in a workspace: a package declaring @cngx below the root still gets the PnP note', () => {
+    const app = join(root, 'packages', 'app');
+    manifest(root, { private: true, workspaces: ['packages/*'] });
+    manifest(app, { dependencies: { '@cngx/core': '^0.2.0' } });
+    write(join(root, '.pnp.cjs'), '');
+
+    const result = resolveInstalledCngxVersion(app);
+
+    expect(result).toMatchObject({ version: null, source: 'declared' });
+    expect(result.notes).toContain('Yarn PnP detected, run `yarn cngx` for the installed version.');
+  });
+
   it('no @cngx anywhere up to the filesystem root: bundled, stderr says so', () => {
     manifest(root, { dependencies: { rxjs: '^7.8.0' } });
 
