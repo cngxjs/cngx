@@ -1,9 +1,10 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import { loadDocsFromFile } from '../data/loader.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
 import { answerVersioned, createDocsResolver } from '../data/docs-resolver.js';
-import { findComponents } from './find-component.js';
+import { findComponents, findComponentCommand } from './find-component.js';
 
 const FIXTURE = fileURLToPath(new URL('../../../test/fixtures/documentation.sample.json', import.meta.url));
 const NEW = fileURLToPath(new URL('../../../test/fixtures/documentation.v-new.sample.json', import.meta.url));
@@ -84,5 +85,18 @@ describe('find_component version wiring', () => {
     const answer = await answerVersioned(createDocsResolver(docs, deps), '999.0.0', (resolved) => findComponents(resolved, 'Panel'));
 
     expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'no release' });
+  });
+});
+
+describe('find_component input schema', () => {
+  const schema = z.object(findComponentCommand.input);
+
+  it('rejects a blank query as invalid input', () => {
+    expect(schema.safeParse({ query: ' ' }).success).toBe(false);
+    expect(schema.safeParse({ query: '\t' }).success).toBe(false);
+  });
+
+  it('trims a padded query before the query sees it', () => {
+    expect(schema.parse({ query: ' CngxSelect ' }).query).toBe('CngxSelect');
   });
 });

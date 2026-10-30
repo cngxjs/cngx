@@ -1,9 +1,24 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { loadDocsFromFile } from '../data/loader.js';
+import { z } from 'zod';
+import { loadBundledDocs, loadDocsFromFile } from '../data/loader.js';
+import type { DocsIndex } from '../data/loader.js';
+import type { DocSlot } from '../data/types.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
 import { answerVersioned, createDocsResolver } from '../data/docs-resolver.js';
-import { getSlots } from './get-slots.js';
+import type { SlotsResult } from './get-slots.js';
+import { getSlots as getSlotsAnswer, slotsMarkdown, getSlotsCommand } from './get-slots.js';
+import { normalizeSlot } from '../data/slots.js';
+import { isAmbiguous } from '../query.js';
+
+/** The query answer for a name that must not be ambiguous. */
+function getSlots(...args: Parameters<typeof getSlotsAnswer>): SlotsResult | null {
+  const answer = getSlotsAnswer(...args);
+  if (isAmbiguous(answer)) {
+    throw new Error(`unexpected ambiguity for ${args[1]}`);
+  }
+  return answer;
+}
 
 const FIXTURE = fileURLToPath(new URL('../../../test/fixtures/documentation.sample.json', import.meta.url));
 const NEW = fileURLToPath(new URL('../../../test/fixtures/documentation.v-new.sample.json', import.meta.url));
@@ -51,5 +66,75 @@ describe('get_slots version wiring', () => {
     const answer = await answerVersioned(createDocsResolver(docs, deps), '999.0.0', (resolved) => getSlots(resolved, 'CngxSelect'));
 
     expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'no release' });
+  });
+});
+
+// compodocx records a multi-line `@slot` body as the name with an empty description;
+// 24 slots in the 0.1.0-rc.9 bundled snapshot have this shape.
+describe('slot names that carry their description', () => {
+  const malformed = {
+    name: "cngxX Rendered when the item's content failed.\n\n<example-url>http://localhost:4200/#/a</example-url>\n<example-url>http://localhost:4200/#/b</example-url>",
+    description: '',
+  };
+
+  it('splits the name at the first whitespace and strips example urls from the rest', () => {
+    expect(normalizeSlot(malformed)).toEqual({ name: 'cngxX', description: "Rendered when the item's content failed." });
+  });
+
+  it('keeps a recorded description over the rest of the name', () => {
+    expect(normalizeSlot({ name: 'cngxX trailing text', description: 'Recorded.' })).toEqual({ name: 'cngxX', description: 'Recorded.' });
+  });
+
+  it('leaves a well-formed slot untouched', () => {
+    const slot = { name: 'cngxX', description: 'Fine.' };
+
+    expect(normalizeSlot(slot)).toEqual(slot);
+  });
+
+  it.each([[null], [{ description: 'No name.' }], [{ name: '  ', description: 'Blank.' }], [{ name: 42, description: 'x' }]])(
+    'drops the unusable slot %j',
+    (slot) => {
+      expect(normalizeSlot(slot)).toBeNull();
+    },
+  );
+
+  it('answers only the valid slots of a list with a null slot and a nameless one', () => {
+    const slots = [null, { description: 'No name.' }, { name: 'cngxOk', description: 'Fine.' }] as unknown as DocSlot[];
+    const index: DocsIndex = { ...docs, components: [{ name: 'CngxX', slots }] };
+
+    expect(getSlots(index, 'CngxX')?.slots).toEqual([{ name: 'cngxOk', description: 'Fine.' }]);
+  });
+
+  it('answers no slots when slots is not a list', () => {
+    const index: DocsIndex = { ...docs, components: [{ name: 'CngxX', slots: {} as unknown as DocSlot[] }] };
+
+    expect(getSlots(index, 'CngxX')?.slots).toEqual([]);
+  });
+
+  it('answers the normalised slot', () => {
+    const index: DocsIndex = { ...docs, components: [{ name: 'CngxX', slots: [malformed] }] };
+
+    expect(getSlots(index, 'CngxX')?.slots).toEqual([{ name: 'cngxX', description: "Rendered when the item's content failed." }]);
+  });
+
+  it('prints no localhost url for CngxAccordionItem from the bundled snapshot', () => {
+    const bundled = loadBundledDocs(fileURLToPath(new URL('../../../data/', import.meta.url)));
+    const markdown = slotsMarkdown(getSlots(bundled, 'CngxAccordionItem'));
+
+    expect(markdown).toContain('`cngxAccordionItemError`');
+    expect(markdown).not.toContain('localhost');
+  });
+});
+
+describe('get_slots input schema', () => {
+  const schema = z.object(getSlotsCommand.input);
+
+  it('rejects a blank name as invalid input', () => {
+    expect(schema.safeParse({ name: ' ' }).success).toBe(false);
+    expect(schema.safeParse({ name: '\t' }).success).toBe(false);
+  });
+
+  it('trims a padded name before the query sees it', () => {
+    expect(schema.parse({ name: ' CngxSelect ' }).name).toBe('CngxSelect');
   });
 });

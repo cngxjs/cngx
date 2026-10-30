@@ -10,6 +10,7 @@ import type { z } from 'zod';
 import type { DocsResolver, VersionedAnswer } from './data/docs-resolver.js';
 import type { DocsIndex } from './data/loader.js';
 import type { SnapshotFetchFailureReason } from './diff/types.js';
+import { defaultFound } from './found.js';
 
 /** A zod field per input name; the adapter turns it into a tool schema or flags. */
 export type CommandShape = Record<string, z.ZodType>;
@@ -45,7 +46,13 @@ export interface CngxCommand<S extends CommandShape = CommandShape, P = unknown>
   /** Stable machine name, e.g. `get_api`. */
   readonly name: string;
   readonly title: string;
+  /** The MCP tool description: written for an agent calling the tool, in tool and field names. */
   readonly description: string;
+  /**
+   * The same text for `cngx <command> --help`, in subcommand and flag terms. The CLI
+   * prints it instead of `description`; MCP ignores it, so the tool surface does not move.
+   */
+  readonly cliSummary?: string;
   readonly input: S;
   /** The CLI subcommand, e.g. `api`. */
   readonly cliName: string;
@@ -69,14 +76,6 @@ export interface CngxCommand<S extends CommandShape = CommandShape, P = unknown>
 /** Identity helper that infers `S` and `P` from the literal, so `run` and the renderers see typed values. */
 export function defineCommand<S extends CommandShape, P>(definition: CngxCommand<S, P>): CngxCommand<S, P> {
   return definition;
-}
-
-/** A payload counts as found unless it is `null`, `undefined` or an empty array. */
-export function defaultFound(payload: unknown): boolean {
-  if (payload === null || payload === undefined) {
-    return false;
-  }
-  return !(Array.isArray(payload) && payload.length === 0);
 }
 
 /** Whether `payload` answers `command`'s query, through its own `found` or the default. */

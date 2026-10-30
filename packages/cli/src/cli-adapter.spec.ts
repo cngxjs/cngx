@@ -1,19 +1,22 @@
 // Source of expected values: the exit-code and output contract locked in the
-// cli-core plan (0 answered, 1 not found or unresolved, 2 usage error; stdout
+// cli-core plan (0 answered, 1 not found or unresolved, 2 usage error, 3 internal error; stdout
 // data only, stderr diagnostics only, never ANSI) and the sample fixture
 // packages/mcp/test/fixtures/documentation.sample.json (cngxVersion 0.1.0-rc.6),
 // read through the cli's own core copy. `--version` is read from
 // packages/cli/package.json.
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import type { CliIo } from './cli-adapter.js';
-import { EXIT_NOT_FOUND, EXIT_OK, EXIT_USAGE, commandHelp, generalHelp, main, runCli } from './cli-adapter.js';
-import type { CommandContext } from './core/registry.js';
+import { EXIT_INTERNAL, EXIT_NOT_FOUND, EXIT_OK, EXIT_USAGE, commandHelp, generalHelp, main, runCli } from './cli-adapter.js';
+import type { CngxCommand, CommandContext } from './core/registry.js';
 import { COMMANDS } from './core/registry.js';
 import type { DocsResolverDeps } from './core/data/docs-resolver.js';
 import { createDocsResolver } from './core/data/docs-resolver.js';
-import { loadDocsFromFile } from './core/data/loader.js';
+import { createDocsIndex, loadBundledDocs, loadDocsFromFile } from './core/data/loader.js';
+import { getStoryExample } from './core/commands/get-story-example.js';
 import { assertNoAnsi } from './output-guards.js';
 
 const FIXTURE = fileURLToPath(new URL('../../mcp/test/fixtures/documentation.sample.json', import.meta.url));
@@ -21,6 +24,19 @@ const PACKAGE_JSON = new URL('../package.json', import.meta.url);
 const CLI_VERSION = (JSON.parse(readFileSync(PACKAGE_JSON, 'utf8')) as { version: string }).version;
 
 const bundled = loadDocsFromFile(FIXTURE);
+
+const DATA_DIR = new URL('../data/', import.meta.url);
+
+/**
+ * `cngx example CngxTreeSelect --format json` over the bundled snapshot `main`
+ * loads, built through the same core query: the pin guards the CLI output shape,
+ * not the stories or the release stamp.
+ */
+function expectedTreeSelectExample(): string {
+  const docs = loadBundledDocs(fileURLToPath(DATA_DIR));
+  const result = getStoryExample(docs, 'CngxTreeSelect');
+  return `${JSON.stringify({ cngxVersion: docs.meta.cngxVersion, result }, null, 2)}\n`;
+}
 
 /** A fetch that never reaches the network: every non-bundled version is an absent asset. */
 const offlineDeps: DocsResolverDeps = {
@@ -117,11 +133,31 @@ describe('usage errors', () => {
     expect(run.stderr).toContain('list does not take --cngx-version');
   });
 
+  it.each([
+    ['api', 'CngxSelect'],
+    ['list'],
+  ])('rejects a short format flag on cngx %s', async (...args) => {
+    const run = await cli(...args, '-f', 'json');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toContain("'-f'");
+    expect(run.stderr).toContain(`Run \`cngx ${args[0]} --help\` for usage.`);
+  });
+
   it('rejects a schema violation', async () => {
     const run = await cli('list', '--kind=widget');
 
     expect(run.code).toBe(EXIT_USAGE);
     expect(run.stderr).toContain('--kind');
+  });
+
+  it('rejects an empty name', async () => {
+    const run = await cli('api', '');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toContain('<name>');
   });
 
   it('rejects a missing required positional', async () => {
@@ -219,6 +255,61 @@ describe('version and snapshot resolution', () => {
     expect(JSON.parse(run.stdout)).toEqual({ cngxVersion: '0.1.0-rc.6', result: null });
   });
 
+  // The README's json-shape table: list commands answer `[]`, object commands `null`,
+  // and an unresolvable migrate release is a failure document.
+  const NOT_FOUND_JSON: Record<string, unknown> = {
+    find: { cngxVersion: '0.1.0-rc.6', result: [] },
+    list: { cngxVersion: '0.1.0-rc.6', result: [] },
+    di: { cngxVersion: '0.1.0-rc.6', result: [] },
+    api: { cngxVersion: '0.1.0-rc.6', result: null },
+    slots: { cngxVersion: '0.1.0-rc.6', result: null },
+    theme: { cngxVersion: '0.1.0-rc.6', result: null },
+    config: { cngxVersion: '0.1.0-rc.6', result: null },
+    example: { cngxVersion: '0.1.0-rc.6', result: null },
+    migrate: { cngxVersion: null, result: null, error: { reason: 'asset-missing', message: 'no asset for v9.9.9' } },
+  };
+
+  it('covers every command in the not-found json table', () => {
+    expect(Object.keys(NOT_FOUND_JSON).sort()).toEqual(COMMANDS.map((def) => def.cliName).sort());
+  });
+
+  it.each(CASES)('$cli prints the documented not-found json shape and exits 1', async ({ cli: name, unknown }) => {
+    const run = await cli(name, ...unknown, '--format=json');
+
+    expect(run.code).toBe(EXIT_NOT_FOUND);
+    expect(JSON.parse(run.stdout)).toEqual(NOT_FOUND_JSON[name]);
+  });
+
+  it('exits 1 with the candidates when a selector matches several entries', async () => {
+    const ambiguous = createDocsIndex({
+      schemaVersion: 6,
+      components: [],
+      directives: [
+        { name: 'CngxSyncB', selector: 'cngx-b[cngxSync]' },
+        { name: 'CngxSyncA', selector: 'cngx-a[cngxSync]' },
+      ],
+      injectables: [],
+    });
+    const context: CommandContext = { bundled: ambiguous, resolve: createDocsResolver(ambiguous, offlineDeps) };
+    let stdout = '';
+    const io: CliIo = { stdout: (text) => (stdout += text), stderr: () => undefined };
+
+    const code = await runCli(['api', 'cngxSync', '--format=json'], { commands: COMMANDS, loadContext: () => context, cliVersion: CLI_VERSION, io });
+
+    expect(code).toBe(EXIT_NOT_FOUND);
+    expect(JSON.parse(stdout).result).toEqual({
+      ambiguous: true,
+      candidates: [
+        { name: 'CngxSyncA', kind: 'directive', selector: 'cngx-a[cngxSync]' },
+        { name: 'CngxSyncB', kind: 'directive', selector: 'cngx-b[cngxSync]' },
+      ],
+    });
+  });
+
+  it('documents the ambiguity row in the not-found json table', () => {
+    expect(readFileSync(new URL('../README.md', import.meta.url), 'utf8')).toContain('`{ "ambiguous": true, "candidates": [{ "name", "kind", "selector" }] }`');
+  });
+
   it('exits 2 on an empty --cngx-version, before any resolution', async () => {
     const run = await cli('api', 'CngxSelect', '--cngx-version=');
 
@@ -236,17 +327,330 @@ describe('version and snapshot resolution', () => {
     expect(run.stderr).toContain('9.9.9');
   });
 
-  it('exits 1 when the bundled snapshot cannot be loaded, never for --version', async () => {
+  it('prints a json failure document when a requested release cannot be resolved', async () => {
+    const run = await cli('migrate', '0.0.1', '--format', 'json');
+
+    expect(run.code).toBe(EXIT_NOT_FOUND);
+    expect(JSON.parse(run.stdout)).toEqual({
+      cngxVersion: null,
+      result: null,
+      error: { reason: 'asset-missing', message: 'no asset for v0.0.1' },
+    });
+    expect(run.stderr).toContain('asset-missing');
+  });
+
+  it('keeps markdown failures off stdout', async () => {
+    const run = await cli('migrate', '0.0.1');
+
+    expect(run.code).toBe(EXIT_NOT_FOUND);
+    expect(run.stdout).toBe('');
+  });
+
+  it.each([
+    ['md', []],
+    ['json', ['--format', 'json']],
+  ] as const)('exits 3 under %s when the bundled snapshot cannot be loaded, never for --version', async (format, flags) => {
+    let stdout = '';
     let stderr = '';
-    const io: CliIo = { stdout: () => undefined, stderr: (text) => (stderr += text) };
+    const io: CliIo = { stdout: (text) => (stdout += text), stderr: (text) => (stderr += text) };
     const loadContext = () => {
       throw new Error('ENOENT documentation.json');
     };
     const env = { commands: COMMANDS, loadContext, cliVersion: CLI_VERSION, io };
 
-    expect(await runCli(['api', 'CngxSelect'], env)).toBe(EXIT_NOT_FOUND);
-    expect(stderr).toContain('ENOENT');
+    expect(await runCli(['api', 'CngxSelect', ...flags], env)).toBe(EXIT_INTERNAL);
+    expect(stderr).toBe('cngx: internal error: ENOENT documentation.json\n');
+    if (format === 'md') {
+      expect(stdout).toBe('');
+    } else {
+      expect(JSON.parse(stdout)).toEqual({
+        cngxVersion: null,
+        result: null,
+        error: { reason: 'internal', message: 'ENOENT documentation.json' },
+      });
+    }
+    stdout = '';
     expect(await runCli(['--version'], env)).toBe(EXIT_OK);
+    expect(stdout).toBe(`${CLI_VERSION}\n`);
+  });
+});
+
+describe('a missing bundled snapshot', () => {
+  it('exits 3 with the reinstall hint instead of a bare ENOENT', async () => {
+    const empty = mkdtempSync(join(tmpdir(), 'cngx-cli-data-'));
+    let stderr = '';
+    const io: CliIo = { stdout: () => undefined, stderr: (text) => (stderr += text) };
+    const loadContext = (): CommandContext => {
+      const docs = loadBundledDocs(empty);
+      return { bundled: docs, resolve: createDocsResolver(docs, offlineDeps) };
+    };
+
+    expect(await runCli(['api', 'CngxSelect'], { commands: COMMANDS, loadContext, cliVersion: CLI_VERSION, io })).toBe(EXIT_INTERNAL);
+    expect(stderr).toBe(
+      'cngx: internal error: documentation.json cannot be read (ENOENT); reinstall the package that bundles this snapshot.\n',
+    );
+  });
+});
+
+describe('argument scan', () => {
+  it('skips the value of a value flag given before the command', async () => {
+    const run = await cli('--cngx-version', '0.1.0-rc.6', 'api', 'CngxSelect');
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(run.stdout).toContain('# CngxSelect');
+  });
+
+  it('skips --format and its value before the command', async () => {
+    const run = await cli('--format', 'json', 'api', 'CngxSelect');
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(JSON.parse(run.stdout)).toMatchObject({ result: { name: 'CngxSelect' } });
+  });
+
+  it('exits 2 on a --cngx-version that is not a release version, before any resolution', async () => {
+    const run = await cli('api', 'CngxSelect', '--cngx-version=../x');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toContain('--cngx-version');
+    expect(run.stderr).not.toContain('asset-missing');
+  });
+
+  it('exits 2 on a --cngx-version with a leading zero', async () => {
+    const run = await cli('api', 'CngxSelect', '--cngx-version', '01.2.3');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toContain('"01.2.3" is not a release version');
+  });
+
+  it('exits 2 on a leading-zero numeric prerelease id in --cngx-version', async () => {
+    const run = await cli('api', 'CngxSelect', '--cngx-version', '1.2.3-rc.01');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toContain('"1.2.3-rc.01" is not a release version');
+  });
+});
+
+describe('a malformed migrate version', () => {
+  /** A cli run whose resolver counts every fetch, so a spec proves none ran. */
+  async function counted(...argv: string[]): Promise<Run & { fetches: number }> {
+    let stdout = '';
+    let stderr = '';
+    let fetches = 0;
+    const io: CliIo = { stdout: (text) => (stdout += text), stderr: (text) => (stderr += text) };
+    const deps: DocsResolverDeps = {
+      ...offlineDeps,
+      fetchSnapshot: async (version) => {
+        fetches += 1;
+        return offlineDeps.fetchSnapshot(version);
+      },
+    };
+    const context: CommandContext = { bundled, resolve: createDocsResolver(bundled, deps) };
+    const code = await runCli(argv, { commands: COMMANDS, loadContext: () => context, cliVersion: CLI_VERSION, io });
+    return { code, stdout, stderr, fetches };
+  }
+
+  it('exits 2 on a positional that is not a release version, with the message and the hint', async () => {
+    const run = await counted('migrate', '1.2');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toMatch(/^cngx: from "1\.2" is not a release version.*\nRun `cngx migrate --help` for usage\.\n$/);
+    expect(run.fetches).toBe(0);
+  });
+
+  it('exits 2 on a leading-zero numeric prerelease id as the positional', async () => {
+    const run = await counted('migrate', '1.2.3-rc.01');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stderr).toMatch(/^cngx: from "1\.2\.3-rc\.01" is not a release version/);
+    expect(run.fetches).toBe(0);
+  });
+
+  it('exits 2 on a malformed --to without any fetch of the valid from', async () => {
+    const run = await counted('migrate', '0.1.0', '--to', ' bad');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stderr).toMatch(/^cngx: to "bad" is not a release version/);
+    expect(run.fetches).toBe(0);
+  });
+
+  it.each(['01.2.3', '1.2.3-.', '1.2.3-rc.'])('exits 2 on the positional %j', async (version) => {
+    expect((await counted('migrate', version)).code).toBe(EXIT_USAGE);
+  });
+
+  it('leaves stdout empty under --format json', async () => {
+    const run = await counted('migrate', '1.2', '--format', 'json');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+  });
+});
+
+// One version contract (trim, one leading v or V, then a release version) on every
+// surface: accepted means the run reached the bundled answer or a fetch of the
+// normalised version, rejected means no fetch and no answer.
+describe('version parity across cli api, cli migrate and the mcp resolver', () => {
+  const TABLE: readonly [string, string | null][] = [
+    ['', null],
+    [' ', null],
+    ['v', null],
+    ['V1.0.0', '1.0.0'],
+    ['v0.1.0-rc.6', '0.1.0-rc.6'],
+    [' 0.1.0-rc.6 ', '0.1.0-rc.6'],
+    ['vv0.2.0', null],
+  ];
+
+  function spied() {
+    const fetched: string[] = [];
+    const deps: DocsResolverDeps = {
+      fetchSnapshot: async (version) => {
+        fetched.push(version);
+        return { ok: false, reason: 'asset-missing', message: `no asset for v${version}` };
+      },
+      loadDocs: loadDocsFromFile,
+    };
+    return { fetched, resolve: createDocsResolver(bundled, deps) };
+  }
+
+  /** The version a surface went on to answer for, or null when it rejected the input. */
+  async function viaCli(argv: string[]): Promise<string | null> {
+    const { fetched, resolve } = spied();
+    const io: CliIo = { stdout: () => undefined, stderr: () => undefined };
+    const code = await runCli(argv, { commands: COMMANDS, loadContext: () => ({ bundled, resolve }), cliVersion: CLI_VERSION, io });
+    if (code === EXIT_OK) {
+      return '0.1.0-rc.6';
+    }
+    return fetched[0] ?? null;
+  }
+
+  it.each(TABLE)('cli api --cngx-version %j answers for %j', async (input, expected) => {
+    expect(await viaCli(['api', 'CngxSelect', '--cngx-version', input])).toBe(expected);
+  });
+
+  it.each(TABLE)('cli migrate %j answers for %j', async (input, expected) => {
+    expect(await viaCli(['migrate', input, '--to', '0.1.0-rc.6'])).toBe(expected);
+  });
+
+  it.each(TABLE)('mcp resolver %j answers for %j', async (input, expected) => {
+    const { fetched, resolve } = spied();
+    const resolution = await resolve(input);
+
+    expect(resolution.ok ? resolution.version : (fetched[0] ?? null)).toBe(expected);
+  });
+
+  it('echoes the original input when --cngx-version is not a release version', async () => {
+    const run = await cli('api', 'CngxSelect', '--cngx-version=vv0.2.0');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stderr).toContain('"vv0.2.0" is not a release version');
+  });
+});
+
+describe('--cngx-version checks', () => {
+  it('points migrate at <from> and --to instead of the bundled snapshot', async () => {
+    const run = await cli('migrate', '0.1.0-rc.6', '--cngx-version=0.2.0');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stderr).toContain('<from> and --to');
+    expect(run.stderr).not.toContain('bundled snapshot');
+  });
+
+  it('keeps the bundled-snapshot hint for a command without any version input', async () => {
+    const run = await cli('list', '--cngx-version=0.2.0');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stderr).toContain('bundled snapshot');
+  });
+
+  it.each([[' '], ['\t']])('exits 2 on a blank --cngx-version %j', async (blank) => {
+    const run = await cli('api', 'CngxSelect', '--cngx-version', blank);
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toContain('needs a version');
+  });
+
+  it.each([
+    ['api', 'md'],
+    ['api', 'json'],
+    ['find', 'md'],
+    ['find', 'json'],
+  ])('exits 2 on a blank %s name under --format %s', async (command, format) => {
+    const run = await cli(command, ' ', '--format', format);
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toMatch(new RegExp(`^cngx: .*\\nRun \`cngx ${command} --help\` for usage\\.\\n$`));
+  });
+
+  it.each([[['migrate', '']], [['migrate', '0.1.0-rc.6', '--to', '']]])('exits 2 on a blank migrate version: %j', async (argv) => {
+    const run = await cli(...argv);
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+  });
+
+  it('does not read a token after -- as a flag', async () => {
+    const run = await cli('example', '--', '--cngx-version');
+
+    expect(run.code).toBe(EXIT_NOT_FOUND);
+    expect(run.stderr).not.toContain('does not take --cngx-version');
+  });
+});
+
+describe('internal errors', () => {
+  const api = COMMANDS.find((def) => def.cliName === 'api')!;
+
+  async function cliWith(def: CngxCommand, ...argv: string[]): Promise<Run> {
+    let stdout = '';
+    let stderr = '';
+    const io: CliIo = { stdout: (text) => (stdout += text), stderr: (text) => (stderr += text) };
+    const context: CommandContext = { bundled, resolve: createDocsResolver(bundled, offlineDeps) };
+    const code = await runCli(argv, { commands: [def], loadContext: () => context, cliVersion: CLI_VERSION, io });
+    return { code, stdout, stderr };
+  }
+
+  const boom = () => {
+    throw new Error('boom');
+  };
+
+  it.each([
+    ['run', { ...api, run: async () => boom() }],
+    ['toMarkdown', { ...api, toMarkdown: boom }],
+    ['found', { ...api, found: boom }],
+  ] as const)('a throwing %s gives one stderr line, no stack, exit 3 and no stdout', async (_, def) => {
+    const run = await cliWith(def as CngxCommand, 'api', 'CngxSelect');
+
+    expect(run.code).toBe(EXIT_INTERNAL);
+    expect(run.stderr).toBe('cngx api: internal error: boom\n');
+    expect(run.stdout).toBe('');
+  });
+
+  // toMarkdown never runs under --format json, so only run and found can throw there.
+  it.each([
+    ['run', { ...api, run: async () => boom() }],
+    ['found', { ...api, found: boom }],
+  ] as const)('a throwing %s under --format json prints one internal failure document', async (_, def) => {
+    const run = await cliWith(def as CngxCommand, 'api', 'CngxSelect', '--format=json');
+
+    expect(run.code).toBe(EXIT_INTERNAL);
+    expect(JSON.parse(run.stdout)).toEqual({ cngxVersion: null, result: null, error: { reason: 'internal', message: 'boom' } });
+    expect(run.stderr).toBe('cngx api: internal error: boom\n');
+  });
+
+  it('exits 3 when the package manifest cannot be read', async () => {
+    let stderr = '';
+    const io: CliIo = { stdout: () => undefined, stderr: (text) => (stderr += text) };
+    const missing = new URL('./no-such-dir/package.json', import.meta.url);
+
+    const code = await main(['api', 'CngxSelect'], { dataDir: new URL('../data/', import.meta.url), packageJson: missing }, io);
+
+    expect(code).toBe(EXIT_INTERNAL);
+    expect(stderr).toMatch(/^cngx: internal error: ENOENT/);
+    expect(stderr.trim().split('\n')).toHaveLength(1);
   });
 });
 
@@ -260,6 +664,31 @@ describe('main over the real package paths', () => {
     expect(code).toBe(EXIT_OK);
     expect(stdout).toBe(`${CLI_VERSION}\n`);
   });
+
+  // The versioned envelope is an MCP wire change only: the cli document keeps
+  // `{ cngxVersion, result }` with no `ok` or `groundedVersion` key.
+  it('prints the CngxTreeSelect example document without the MCP envelope', async () => {
+    let stdout = '';
+    const io: CliIo = { stdout: (text) => (stdout += text), stderr: () => undefined };
+
+    const code = await main(['example', 'CngxTreeSelect', '--format', 'json'], { dataDir: DATA_DIR, packageJson: PACKAGE_JSON }, io);
+
+    expect(code).toBe(EXIT_OK);
+    expect(stdout).toBe(expectedTreeSelectExample());
+    const document = JSON.parse(stdout) as Record<string, unknown>;
+    expect(Object.keys(document)).toEqual(['cngxVersion', 'result']);
+    expect(document).not.toHaveProperty('ok');
+    expect(document).not.toHaveProperty('groundedVersion');
+    expect(document['result']).toMatchObject({ name: 'CngxTreeSelect', kind: 'component' });
+    // The expected document goes through getStoryExample too, so only a key pin catches a result-shape change.
+    expect(Object.keys(document['result'] as Record<string, unknown>)).toEqual([
+      'name',
+      'kind',
+      'exampleUrls',
+      'stackblitzUrl',
+      'sourceReferences',
+    ]);
+  });
 });
 
 describe('generated help', () => {
@@ -272,6 +701,19 @@ describe('generated help', () => {
     for (const flag of ['--format', '--version', '-v', '--help', '-h']) {
       expect(help).toContain(flag);
     }
+  });
+
+  it.each(COMMANDS.map((def) => [def.cliName, def] as const))('%s help speaks CLI, not MCP', (_, def) => {
+    const help = commandHelp(def);
+
+    expect(help).not.toMatch(/Returns null|\{ ok: false|\b(?:get|find|list|migrate)_[a-z_]+\b/);
+  });
+
+  it('prints cliSummary in place of the MCP description when a definition sets it', () => {
+    const list = COMMANDS.find((def) => def.cliName === 'list')!;
+
+    expect(commandHelp({ ...list, cliSummary: 'CLI words.' })).toContain('\nCLI words.\n');
+    expect(commandHelp({ ...list, cliSummary: undefined })).toContain(`\n${list.description}\n`);
   });
 
   it('shows a command positional and its renamed version flag', () => {

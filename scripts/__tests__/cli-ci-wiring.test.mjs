@@ -2,11 +2,19 @@
 // check the committed copy before anything could regenerate it. Expected values
 // come from the plan's copy-guard contract: build:cli never runs cli:sync (also
 // not through a nested `npm run`), and in the ci.yml `mcp` job the
-// cli:copy-check step precedes build:cli with no sync step before it.
+// cli:copy-check step precedes build:cli with no sync step before it. The same
+// job must also run both spec suites, type-check the specs, and run the built
+// CLI once on Node 20, the engines floor of @cngx/cli. ci.yml is parsed, so a
+// required step only counts with its exact `run`, no `continue-on-error` and no
+// `if:` - an `|| true` or a skipped step cannot pass as wired. The job needs the
+// build job and downloads its artifact before build:mcp, and the scripts those
+// steps call must be exact `&&` chains that run both cli vitest configs and
+// type-check both spec projects.
 import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import yaml from 'js-yaml';
 import { describe, expect, it } from 'vitest';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -27,16 +35,112 @@ function expandScript(scripts, name, seen = new Set()) {
 
 const buildSyncs = (scripts) => SYNC.test(expandScript(scripts, 'build:cli'));
 
+/** The parsed `steps` of one workflow job, or null. */
+function jobSteps(workflow, job) {
+  return yaml.load(workflow)?.jobs?.[job]?.steps ?? null;
+}
+
 /** The `run:` commands of one workflow job, in step order. */
 function jobRuns(workflow, job) {
-  const start = workflow.indexOf(`\n  ${job}:\n`);
-  if (start === -1) {
-    return null;
+  const steps = jobSteps(workflow, job);
+  return steps === null ? null : steps.filter((step) => typeof step.run === 'string').map((step) => step.run.trim());
+}
+
+const NODE_FLOOR_RUN = 'node packages/cli/dist/index.js --version && node packages/cli/dist/index.js api CngxSelect';
+const REQUIRED_RUNS = [
+  'npm run build:mcp',
+  'npm run test:mcp',
+  'npm run cli:copy-check',
+  'npm run build:cli',
+  'npm run test:cli',
+  'npm run typecheck:tooling',
+  NODE_FLOOR_RUN,
+];
+
+const isSetupNode = (step) => typeof step.uses === 'string' && step.uses.startsWith('actions/setup-node');
+
+/** Defects of the mcp job's required steps in its parsed workflow; empty when all are wired. */
+function requiredSteps(workflow) {
+  const job = yaml.load(workflow)?.jobs?.mcp;
+  if (!job) {
+    return ['no mcp job'];
   }
-  const rest = workflow.slice(start + 1);
-  const next = rest.slice(1).search(/\n {2}[\w-]+:\n/);
-  const block = next === -1 ? rest : rest.slice(0, next + 1);
-  return [...block.matchAll(/^\s+run: (.+)$/gm)].map((match) => match[1].trim());
+  const errors = [];
+  if (job.if !== undefined || job['continue-on-error'] !== undefined) {
+    errors.push('the mcp job is conditional or may fail');
+  }
+  if (![job.needs].flat().includes('build')) {
+    errors.push('the mcp job does not need build');
+  }
+  const steps = job.steps ?? [];
+  const download = steps.findIndex(
+    (step) => typeof step.uses === 'string' && step.uses.startsWith('actions/download-artifact') && step.with?.name === 'build-output',
+  );
+  const buildMcp = steps.findIndex((step) => step.run?.trim() === 'npm run build:mcp');
+  if (download === -1 || (buildMcp !== -1 && download > buildMcp)) {
+    errors.push('no build-output download before build:mcp');
+  }
+  for (const required of REQUIRED_RUNS) {
+    const step = steps.find((candidate) => typeof candidate.run === 'string' && candidate.run.trim() === required);
+    if (!step) {
+      errors.push(`no "${required}" step`);
+      continue;
+    }
+    if (step['continue-on-error'] !== undefined) {
+      errors.push(`"${required}" has continue-on-error`);
+    }
+    if (step.if !== undefined) {
+      errors.push(`"${required}" has an if:`);
+    }
+  }
+  // The floor run follows a Node 20 setup-node with no other setup-node in between.
+  const floorIndex = steps.findIndex((step) => step.run?.trim() === NODE_FLOOR_RUN);
+  const lastSetup = steps.slice(0, Math.max(floorIndex, 0)).findLast(isSetupNode);
+  if (floorIndex !== -1 && String(lastSetup?.with?.['node-version']) !== '20') {
+    errors.push('no run of the built cli on Node 20');
+  }
+  if (lastSetup !== undefined && (lastSetup.if !== undefined || lastSetup['continue-on-error'] !== undefined)) {
+    errors.push('the Node 20 setup step is conditional or may fail');
+  }
+  return errors;
+}
+
+// Each script the mcp job calls must be an exact `&&` chain of these commands, in any
+// order: a substring match would pass `... || true` or an `echo` of the command.
+const SCRIPT_CHAINS = [
+  {
+    name: 'test:cli',
+    prefix: 'vitest run --config ',
+    commands: ['vitest run --config packages/cli/vitest.config.mjs', 'vitest run --config packages/cli/vitest.core.config.mjs'],
+  },
+  {
+    name: 'typecheck:tooling',
+    prefix: 'tsc -p ',
+    commands: ['tsc -p packages/mcp/tsconfig.spec.json', 'tsc -p packages/cli/tsconfig.spec.json'],
+  },
+];
+
+/** Defects of the script bodies the mcp job calls; empty when both are exactly the chains their names promise. */
+function scriptBodies(scripts) {
+  const errors = [];
+  for (const { name, prefix, commands } of SCRIPT_CHAINS) {
+    const body = scripts[name] ?? '';
+    if (/\|\||;|\becho\b/.test(body)) {
+      errors.push(`${name} is not a plain && chain`);
+      continue;
+    }
+    const segments = body.split('&&').map((segment) => segment.trim());
+    for (const segment of segments.filter((segment) => !segment.startsWith(prefix))) {
+      errors.push(`${name} runs "${segment}", not a ${prefix.trim()} command`);
+    }
+    for (const segment of segments.filter((segment) => segment.startsWith(prefix) && !commands.includes(segment))) {
+      errors.push(`${name} runs an unexpected ${segment}`);
+    }
+    for (const command of commands.filter((command) => !segments.includes(command))) {
+      errors.push(`${name} does not run ${command}`);
+    }
+  }
+  return errors;
 }
 
 /** Wiring defects of the copy check in a job's run list; empty when correct. */
@@ -70,6 +174,13 @@ describe('cli core copy guard wiring', () => {
     expect(buildSyncs(scripts)).toBe(false);
   });
 
+  it('build:cli and the cli prepublishOnly run the copy check first', () => {
+    const cliScripts = JSON.parse(read('packages', 'cli', 'package.json')).scripts;
+
+    expect(scripts['build:cli']).toMatch(/^npm run cli:copy-check && /);
+    expect(cliScripts.prepublishOnly).toMatch(/^node \.\.\/\.\.\/scripts\/cli-core-copy-check\.mjs && /);
+  });
+
   it('the mcp job checks the committed copy before it builds the cli', () => {
     const runs = jobRuns(workflow, 'mcp');
 
@@ -77,7 +188,109 @@ describe('cli core copy guard wiring', () => {
     expect(copyCheckWiring(runs, scripts)).toEqual([]);
   });
 
+  it('the mcp job runs both spec suites, the spec type-check and the cli on Node 20', () => {
+    expect(requiredSteps(workflow)).toEqual([]);
+  });
+
+  it('test:cli runs both vitest configs and typecheck:tooling covers both spec projects', () => {
+    expect(scriptBodies(scripts)).toEqual([]);
+  });
+
   describe('mutations', () => {
+    describe.each(SCRIPT_CHAINS)('$name chain', ({ name, prefix, commands }) => {
+      const mutate = (body) => ({ ...scripts, [name]: body });
+
+      it('fails a chain without its last command', () => {
+        expect(scriptBodies(mutate(commands[0]))).toEqual([`${name} does not run ${commands[1]}`]);
+      });
+
+      it('fails a chain whose failure is swallowed by || true', () => {
+        expect(scriptBodies(mutate(`${scripts[name]} || true`))).toEqual([`${name} is not a plain && chain`]);
+      });
+
+      it('fails a chain that only echoes its last command', () => {
+        expect(scriptBodies(mutate(`${commands[0]}; echo ${commands[1]}`))).toEqual([`${name} is not a plain && chain`]);
+      });
+
+      it('fails a chain with an extra segment of another command', () => {
+        expect(scriptBodies(mutate(`${scripts[name]} && node -e 0`))).toEqual([
+          `${name} runs "node -e 0", not a ${prefix.trim()} command`,
+        ]);
+      });
+
+      it('passes a reordered but complete chain', () => {
+        expect(scriptBodies(mutate([...commands].reverse().join(' && ')))).toEqual([]);
+      });
+    });
+
+    it('fails an mcp job that does not need build', () => {
+      const mutated = workflow.replace(/(\n  mcp:\n)    needs: build\n/, '$1');
+
+      expect(mutated).not.toBe(workflow);
+      expect(requiredSteps(mutated)).toEqual(['the mcp job does not need build']);
+    });
+
+    it('fails an mcp job without the artifact download', () => {
+      const mutated = workflow.replace(/( +)- name: Download build output\n\1  uses: actions\/download-artifact@v4\n\1  with:\n\1    name: build-output\n(?=\1- name: Build mcp)/, '');
+
+      expect(mutated).not.toBe(workflow);
+      expect(requiredSteps(mutated)).toEqual(['no build-output download before build:mcp']);
+    });
+
+    it('fails a conditional Node 20 setup step', () => {
+      const mutated = workflow.replace(/( +)- uses: actions\/setup-node@v4\n\1  with:\n\1    node-version: 20\n/, '$1- uses: actions/setup-node@v4\n$1  if: false\n$1  with:\n$1    node-version: 20\n');
+
+      expect(mutated).not.toBe(workflow);
+      expect(requiredSteps(mutated)).toEqual(['the Node 20 setup step is conditional or may fail']);
+    });
+
+    it('fails a Node 20 setup step with continue-on-error', () => {
+      const mutated = workflow.replace(/( +)- uses: actions\/setup-node@v4\n\1  with:\n\1    node-version: 20\n/, '$1- uses: actions/setup-node@v4\n$1  continue-on-error: true\n$1  with:\n$1    node-version: 20\n');
+
+      expect(mutated).not.toBe(workflow);
+      expect(requiredSteps(mutated)).toEqual(['the Node 20 setup step is conditional or may fail']);
+    });
+
+    it('fails a job without the Test cli step', () => {
+      const mutated = workflow.replace(/\n\s+- name: Test cli\n\s+run: npm run test:cli\n/, '\n');
+
+      expect(mutated).not.toBe(workflow);
+      expect(requiredSteps(mutated)).toEqual(['no "npm run test:cli" step']);
+    });
+
+    it('fails a job without the spec type-check', () => {
+      const mutated = workflow.replace('run: npm run typecheck:tooling', 'run: echo skipped');
+
+      expect(requiredSteps(mutated)).toEqual(['no "npm run typecheck:tooling" step']);
+    });
+
+    it('fails a job without the Node 20 run', () => {
+      const mutated = workflow.replace(/node-version: 20\b/, 'node-version: 22');
+
+      expect(mutated).not.toBe(workflow);
+      expect(requiredSteps(mutated)).toEqual(['no run of the built cli on Node 20']);
+    });
+
+    it('fails a Test cli step whose failure is swallowed by || true', () => {
+      const mutated = workflow.replace('run: npm run test:cli', 'run: npm run test:cli || true');
+
+      expect(requiredSteps(mutated)).toEqual(['no "npm run test:cli" step']);
+    });
+
+    it('fails a Test cli step with continue-on-error', () => {
+      const mutated = workflow.replace(/( +)run: npm run test:cli\n/, '$1run: npm run test:cli\n$1continue-on-error: true\n');
+
+      expect(mutated).not.toBe(workflow);
+      expect(requiredSteps(mutated)).toEqual(['"npm run test:cli" has continue-on-error']);
+    });
+
+    it('fails a Test cli step with if: false', () => {
+      const mutated = workflow.replace(/( +)run: npm run test:cli\n/, '$1run: npm run test:cli\n$1if: false\n');
+
+      expect(mutated).not.toBe(workflow);
+      expect(requiredSteps(mutated)).toEqual(['"npm run test:cli" has an if:']);
+    });
+
     it('fails a build:cli that syncs', () => {
       expect(buildSyncs({ ...scripts, 'build:cli': `npm run cli:sync && ${scripts['build:cli']}` })).toBe(true);
     });

@@ -1,14 +1,29 @@
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { loadDocsFromFile } from '../data/loader.js';
+import { z } from 'zod';
+import { loadBundledDocs, loadDocsFromFile } from '../data/loader.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
 import { answerVersioned, createDocsResolver } from '../data/docs-resolver.js';
-import { getApi } from './get-api.js';
+import type { DocsIndex } from '../data/loader.js';
+import type { ApiResult } from './get-api.js';
+import { getApi as getApiAnswer, getApiCommand } from './get-api.js';
+import { isAmbiguous } from '../query.js';
+
+/** The query answer for a name that must not be ambiguous. */
+function getApi(...args: Parameters<typeof getApiAnswer>): ApiResult | null {
+  const answer = getApiAnswer(...args);
+  if (isAmbiguous(answer)) {
+    throw new Error(`unexpected ambiguity for ${args[1]}`);
+  }
+  return answer;
+}
 
 const FIXTURE = fileURLToPath(new URL('../../../test/fixtures/documentation.sample.json', import.meta.url));
 const NEW = fileURLToPath(new URL('../../../test/fixtures/documentation.v-new.sample.json', import.meta.url));
 const V6 = fileURLToPath(new URL('../../../test/fixtures/documentation.v6.sample.json', import.meta.url));
 const docs = loadDocsFromFile(FIXTURE);
+const BUNDLED_DIR = fileURLToPath(new URL('../../../data/', import.meta.url));
 
 describe('getApi', () => {
   it('returns the resolved API surface by class name', () => {
@@ -97,5 +112,60 @@ describe('get_api version wiring', () => {
     const answer = await answerVersioned(createDocsResolver(docs, deps), '999.0.0', (resolved) => getApi(resolved, 'CngxSelect'));
 
     expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'no release' });
+  });
+});
+
+describe('getApi lists public methods only', () => {
+  const withMethods = (modifierKinds: (number[] | undefined)[]): DocsIndex => ({
+    ...docs,
+    components: [
+      { name: 'CngxM', methodsClass: modifierKinds.map((modifierKind, i) => ({ name: `m${i}`, returnType: 'void', modifierKind })) },
+    ],
+  });
+
+  it('drops private and protected methods and keeps public, static and unmarked ones', () => {
+    // 123 PrivateKeyword, 124 ProtectedKeyword, 125 PublicKeyword, 126 StaticKeyword (ts-morph's TypeScript 6.0).
+    const api = getApi(withMethods([[123], [124], [125], [126], undefined, [126, 124]]), 'CngxM');
+
+    expect(api?.methods.map((method) => method.name)).toEqual(['m2', 'm3', 'm4']);
+  });
+
+  // The TypeScript compodocx emits through, resolved from compodocx's own location.
+  it('pins the private and protected keyword kinds to the ts-morph compodocx runs', () => {
+    const local = createRequire(import.meta.url);
+    const fromCompodocx = createRequire(local.resolve('@cngxjs/compodocx'));
+    const { ts } = fromCompodocx('@ts-morph/common') as { ts: { SyntaxKind: Record<string, number> } };
+
+    expect(ts.SyntaxKind['PrivateKeyword']).toBe(123);
+    expect(ts.SyntaxKind['ProtectedKeyword']).toBe(124);
+  });
+
+  it('lists the full method list of CngxAsync, whose one method is static, from the bundled snapshot', () => {
+    const api = getApi(loadBundledDocs(BUNDLED_DIR), 'CngxAsync');
+
+    expect(api?.methods).toEqual([{ name: 'ngTemplateContextGuard', returnType: 'CngxAsyncContext<T>' }]);
+  });
+
+  // Pins the kind numbers against the snapshot compodocx actually wrote: a TypeScript
+  // bump that renumbers SyntaxKind fails here instead of leaking template handlers.
+  it('lists no protected template handler of CngxAvatar in the bundled snapshot', () => {
+    const api = getApi(loadBundledDocs(BUNDLED_DIR), 'CngxAvatar');
+
+    expect(api).not.toBeNull();
+    expect(api?.methods.map((method) => method.name)).not.toContain('handleError');
+    expect(api?.methods.map((method) => method.name)).not.toContain('handleLoad');
+  });
+});
+
+describe('get_api input schema', () => {
+  const schema = z.object(getApiCommand.input);
+
+  it('rejects a blank name as invalid input', () => {
+    expect(schema.safeParse({ name: ' ' }).success).toBe(false);
+    expect(schema.safeParse({ name: '\t' }).success).toBe(false);
+  });
+
+  it('trims a padded name before the query sees it', () => {
+    expect(schema.parse({ name: ' CngxSelect ' }).name).toBe('CngxSelect');
   });
 });

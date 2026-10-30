@@ -2,6 +2,8 @@
 // markdown, no ANSI: the output goes to agents and CI logs as often as to a
 // terminal. Every helper is pure.
 
+import type { AmbiguousMatch } from '../query.js';
+
 /** One line of cell text: newlines collapsed, pipes escaped, `-` for an empty value. */
 export function cell(value: string | number | boolean | null | undefined): string {
   if (value === null || value === undefined || value === '') {
@@ -47,7 +49,11 @@ function decodeEntities(text: string): string {
       return NAMED_ENTITIES[body.toLowerCase()] ?? entity;
     }
     const hex = body[1] === 'x' || body[1] === 'X';
-    return String.fromCodePoint(Number.parseInt(body.slice(hex ? 2 : 1), hex ? 16 : 10));
+    const codePoint = Number.parseInt(body.slice(hex ? 2 : 1), hex ? 16 : 10);
+    // Past U+10FFFF `fromCodePoint` throws, and a lone surrogate is not a character;
+    // both stay as the text the docs carried.
+    const isSurrogate = codePoint >= 0xd800 && codePoint <= 0xdfff;
+    return codePoint > 0x10ffff || isSurrogate ? entity : String.fromCodePoint(codePoint);
   });
 }
 
@@ -96,4 +102,14 @@ export function textCell(value: string | null | undefined): string {
   const cut = text.slice(0, CELL_MAX);
   const space = cut.lastIndexOf(' ');
   return `${(space > 0 ? cut.slice(0, space) : cut).replace(/[\s,;:.\\-]+$/, '')}...`;
+}
+
+/** An ambiguous selector: every candidate, each asked for again by its class name, which always resolves to it alone. */
+export function ambiguousMarkdown(match: AmbiguousMatch): string {
+  const rows = match.candidates.map((c) => [code(c.name), cell(c.kind), code(c.selector)]);
+  return blocks(
+    '# Several entries match',
+    'Ask again with the class name of one candidate.',
+    table(['Name', 'Kind', 'Selector'], rows),
+  );
 }

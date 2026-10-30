@@ -28,6 +28,39 @@ describe('createDocsResolver', () => {
     expect(fetchSnapshot).not.toHaveBeenCalled();
   });
 
+  it.each([[''], ['  ']])('does not answer a blank version %j with the bundled snapshot', async (blank) => {
+    const fetchSnapshot = vi.fn<DocsResolverDeps['fetchSnapshot']>(async () => ({ ok: false, reason: 'asset-missing', message: 'absent' }));
+    const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile })(blank);
+
+    expect(resolution).toMatchObject({ ok: false, reason: 'invalid-version' });
+    expect(fetchSnapshot).not.toHaveBeenCalled();
+  });
+
+  it('answers a leading v like the bare version', async () => {
+    const fetchSnapshot = vi.fn<DocsResolverDeps['fetchSnapshot']>(async () => ({ ok: false, reason: 'asset-missing', message: 'absent' }));
+    const resolve = createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile });
+
+    expect(await resolve('v0.1.0-rc.6')).toEqual({ ok: true, docs: bundled, version: '0.1.0-rc.6' });
+    expect(fetchSnapshot).not.toHaveBeenCalled();
+    await resolve('v0.2.0');
+    expect(fetchSnapshot).toHaveBeenCalledWith('0.2.0');
+  });
+
+  it('strips one leading v only and rejects a second one before any fetch', async () => {
+    const fetchSnapshot = vi.fn<DocsResolverDeps['fetchSnapshot']>(async () => ({ ok: false, reason: 'asset-missing', message: 'absent' }));
+    const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile })('vv0.2.0');
+
+    expect(resolution).toMatchObject({ ok: false, reason: 'invalid-version', message: expect.stringMatching(/^"vv0\.2\.0" is not a release version/) });
+    expect(fetchSnapshot).not.toHaveBeenCalled();
+  });
+
+  it('strips an upper-case V like a lower-case one', async () => {
+    const fetchSnapshot = vi.fn<DocsResolverDeps['fetchSnapshot']>(async () => ({ ok: false, reason: 'asset-missing', message: 'absent' }));
+    await createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile })('V0.2.0');
+
+    expect(fetchSnapshot).toHaveBeenCalledWith('0.2.0');
+  });
+
   it('fetches a non-bundled version once and serves the second call from cache', async () => {
     const fetchSnapshot = vi.fn(async () => ({ ok: true as const, path: NEW }));
     const deps: DocsResolverDeps = { fetchSnapshot, loadDocs: loadDocsFromFile };
@@ -100,7 +133,11 @@ describe('createDocsResolver', () => {
 
     const resolution = await createDocsResolver(bundled, deps)('0.2.0');
 
-    expect(resolution).toMatchObject({ ok: false, reason: 'asset-missing' });
+    expect(resolution).toEqual({
+      ok: false,
+      reason: 'asset-missing',
+      message: 'Fetched snapshot for v0.2.0 could not be read: Malformed documentation.json: schemaVersion 3; this package reads 2 and 6',
+    });
   });
 
   it.each<SnapshotFetchFailureReason>(['gh-missing', 'network', 'asset-missing'])(
@@ -117,15 +154,15 @@ describe('createDocsResolver', () => {
     },
   );
 
-  it.each(['../x', '1.0/../..', 'latest'])(
-    'rejects the non-release version %s as asset-missing before any fetch',
+  it.each(['../x', '1.0/../..', 'latest', '01.2.3', '1.2.3-.', '1.2.3-rc.'])(
+    'rejects the non-release version %s as invalid-version before any fetch',
     async (version) => {
       const loadDocs = vi.fn(loadDocsFromFile);
       const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs })(version);
 
       expect(resolution).toMatchObject({
         ok: false,
-        reason: 'asset-missing',
+        reason: 'invalid-version',
         message: expect.stringContaining('not a release version'),
       });
       expect(loadDocs).not.toHaveBeenCalled();
@@ -156,6 +193,53 @@ describe('createDocsResolver', () => {
     // The oldest version was evicted: a re-query fetches it a second time.
     await resolve('9.0.0');
     expect(fetchCounts.get('9.0.0')).toBe(2);
+  });
+});
+
+describe('createDocsResolver fetched temp dir', () => {
+  const DIR = '/tmp/cngx-snapshot-test';
+
+  it('removes the fetched dir once the snapshot is loaded', async () => {
+    const removeDir = vi.fn();
+    const fetchSnapshot = vi.fn(async () => ({ ok: true as const, path: NEW, dir: DIR }));
+
+    const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile, removeDir })('0.2.0');
+
+    expect(resolution).toMatchObject({ ok: true, version: '0.2.0' });
+    expect(removeDir).toHaveBeenCalledWith(DIR);
+  });
+
+  it('removes the fetched dir when the snapshot fails to load', async () => {
+    const removeDir = vi.fn();
+    const fetchSnapshot = vi.fn(async () => ({ ok: true as const, path: NEW, dir: DIR }));
+    const loadDocs = vi.fn(() => {
+      throw new SchemaVersionError(99);
+    });
+
+    const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs, removeDir })('0.2.0');
+
+    expect(resolution).toMatchObject({ ok: false, reason: 'asset-missing' });
+    expect(removeDir).toHaveBeenCalledWith(DIR);
+  });
+
+  it('answers ok when the removal itself throws', async () => {
+    const removeDir = vi.fn(() => {
+      throw new Error('EBUSY');
+    });
+    const fetchSnapshot = vi.fn(async () => ({ ok: true as const, path: NEW, dir: DIR }));
+
+    const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile, removeDir })('0.2.0');
+
+    expect(resolution).toMatchObject({ ok: true, version: '0.2.0' });
+  });
+
+  it('removes nothing when the fetch hands over no dir', async () => {
+    const removeDir = vi.fn();
+    const fetchSnapshot = vi.fn(async () => ({ ok: true as const, path: NEW }));
+
+    await createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile, removeDir })('0.2.0');
+
+    expect(removeDir).not.toHaveBeenCalled();
   });
 });
 
@@ -209,7 +293,7 @@ describe('answerVersioned', () => {
       throw new Error('boom');
     });
 
-    expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'boom' });
+    expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'internal: boom' });
   });
 
   it('surfaces a throwing resolver as a typed failure', async () => {
@@ -222,7 +306,7 @@ describe('answerVersioned', () => {
       query,
     );
 
-    expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'EACCES: temp dir' });
+    expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'internal: EACCES: temp dir' });
     expect(query).not.toHaveBeenCalled();
   });
 });

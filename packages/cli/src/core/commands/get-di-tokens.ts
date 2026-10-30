@@ -45,6 +45,8 @@ export const getDiTokensCommand = defineCommand({
   description:
     'Return the top-level DI injection tokens, optionally filtered by a name fragment. Omit the ' +
     "argument for the full list. For a component's theming tokens, use get_theme_tokens.",
+  cliSummary:
+    "List the top-level DI tokens, optionally filtered by a name fragment; omit it for all of them. For a component's CSS custom properties use `cngx theme`.",
   cliName: 'di',
   input: {
     query: z.string().optional().describe('A DI-token name fragment, e.g. "SELECT". Omit for all DI tokens.'),

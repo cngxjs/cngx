@@ -2,8 +2,9 @@
 // as planned for the scaffold: bin `cngx` -> dist/index.js, the published file
 // set, Node 20 floor, and no MCP SDK anywhere in the dependency fields or in any
 // source file under src/ (core copy included).
+import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import type { SourceFile } from './output-guards.js';
@@ -73,5 +74,70 @@ describe('@cngx/cli sources', () => {
 
   it('import no MCP SDK module', () => {
     expect(findSdkImports(sources(SRC))).toEqual([]);
+  });
+});
+
+// The tarball ships an allowlist: the manifest, the docs, the bundled snapshot and
+// compiled JavaScript with its maps, never a spec, a test or a test-only guard, and
+// no declarations (the package has no `types` or `exports`). Every sourcemap it
+// ships either points at a shipped file or carries its source.
+const FIXED_FILES: ReadonlySet<string> = new Set(['package.json', 'README.md', 'CHANGELOG.md', 'data/documentation.json']);
+const COMPILED = /^dist\/.+\.js(?:\.map)?$/;
+const TEST_ONLY = /(?:\.spec|\.core-spec|\.test)\.js(?:\.map)?$|^dist\/(?:readme-guard|output-guards)\./;
+
+/** Tarball paths outside the allowlist. */
+const offAllowlist = (files: readonly string[]): string[] =>
+  files.filter((file) => !FIXED_FILES.has(file) && !(COMPILED.test(file) && !TEST_ONLY.test(file)));
+
+interface SourceMap {
+  sources: string[];
+  sourcesContent?: (string | null)[];
+}
+
+/** `<map> -> <source>` for every map source that is neither shipped nor inlined. */
+function danglingSources(files: readonly string[], readMap: (file: string) => SourceMap): string[] {
+  const shipped = new Set(files);
+  return files
+    .filter((file) => file.endsWith('.map'))
+    .flatMap((file) => {
+      const map = readMap(file);
+      return map.sources
+        .filter((source, i) => typeof map.sourcesContent?.[i] !== 'string' && !shipped.has(normalize(join(dirname(file), source))))
+        .map((source) => `${file} -> ${source}`);
+    });
+}
+
+describe('@cngx/cli tarball', () => {
+  const PKG_DIR = fileURLToPath(new URL('..', import.meta.url));
+  // Needs `npm run build:cli` first, like entry.spec.ts.
+  const packed = JSON.parse(
+    execFileSync('npm', ['pack', '--dry-run', '--json', '--ignore-scripts'], { cwd: PKG_DIR, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }),
+  ) as { files: { path: string }[] }[];
+  const files = packed[0].files.map((file) => file.path);
+  const readMap = (file: string) => JSON.parse(readFileSync(join(PKG_DIR, file), 'utf8')) as SourceMap;
+
+  it('ships the entry and the adapter', () => {
+    expect(files).toContain('dist/index.js');
+    expect(files).toContain('dist/cli-adapter.js');
+  });
+
+  it('ships only allowlisted paths, every fixed file among them', () => {
+    expect(offAllowlist(files)).toEqual([]);
+    expect(files.filter((file) => FIXED_FILES.has(file)).sort()).toEqual([...FIXED_FILES].sort());
+  });
+
+  it('ships no sourcemap that points at an unshipped source', () => {
+    expect(files.some((file) => file.endsWith('.map'))).toBe(true);
+    expect(danglingSources(files, readMap)).toEqual([]);
+  });
+
+  it('mutation: a test file, a guard, a spec and a declaration fall off the allowlist', () => {
+    const planted = ['dist/x.test.js', 'dist/readme-guard.js', 'dist/core/query.spec.js.map', 'dist/index.d.ts', 'src/index.ts'];
+
+    expect(offAllowlist([...files, ...planted])).toEqual(planted);
+  });
+
+  it('mutation: a map without inlined sources dangles', () => {
+    expect(danglingSources(['dist/x.js.map'], () => ({ sources: ['../src/x.ts'] }))).toEqual(['dist/x.js.map -> ../src/x.ts']);
   });
 });

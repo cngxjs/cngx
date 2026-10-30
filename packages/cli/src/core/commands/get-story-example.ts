@@ -7,11 +7,12 @@
 
 import { z } from 'zod';
 import { defineCommand } from '../command.js';
+import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
 import type { DocPlayground } from '../data/types.js';
-import type { EntryKind } from '../query.js';
-import { resolveEntry } from '../query.js';
-import { blocks, bullets, cell, section } from './markdown.js';
+import type { AmbiguousMatch, EntryKind } from '../query.js';
+import { foundUnlessAmbiguous, isAmbiguous, resolveEntry } from '../query.js';
+import { ambiguousMarkdown, blocks, bullets, cell, section } from './markdown.js';
 
 export interface StoryExampleResult {
   name: string;
@@ -21,11 +22,11 @@ export interface StoryExampleResult {
   sourceReferences: DocPlayground[];
 }
 
-/** Pure query behind the tool - returns `null` when the name resolves to nothing. */
-export function getStoryExample(docs: DocsIndex, name: string): StoryExampleResult | null {
+/** Pure query behind the tool - `null` when the name resolves to nothing, the ambiguity when a selector matches several entries. */
+export function getStoryExample(docs: DocsIndex, name: string): StoryExampleResult | AmbiguousMatch | null {
   const match = resolveEntry(docs, name);
-  if (!match) {
-    return null;
+  if (!match || isAmbiguous(match)) {
+    return match ?? null;
   }
   const { entry, kind } = match;
   const stackblitzUrl = entry.stackblitzUrl?.trim();
@@ -45,9 +46,12 @@ export function getStoryExample(docs: DocsIndex, name: string): StoryExampleResu
 }
 
 /** The example links, the StackBlitz link and the source references under the component name. */
-export function storyExampleMarkdown(example: StoryExampleResult | null): string {
+export function storyExampleMarkdown(example: StoryExampleResult | AmbiguousMatch | null): string {
   if (!example) {
     return 'No component or directive by that name.\n';
+  }
+  if (isAmbiguous(example)) {
+    return ambiguousMarkdown(example);
   }
   const refs = example.sourceReferences.map((ref) => `${cell(ref.title)}: ${cell(ref.fileRef)}:${ref.line}`);
   return blocks(
@@ -67,12 +71,16 @@ export const getStoryExampleCommand = defineCommand({
   description:
     "Return a component's runnable example URLs (public documentation links a consumer can open), plus a " +
     'StackBlitz URL when one exists. Playground entries are repo-internal source references, not openable ' +
-    'links. Returns null when the name resolves to nothing.',
+    'links. `result` is null when the name matches nothing, and `{ ambiguous: true, candidates }` when a selector matches several entries.',
+  cliSummary:
+    'Print the runnable example links of a component, plus a StackBlitz link when one exists. Exits 1 when the name matches nothing or a selector matches several entries.',
   cliName: 'example',
   input: {
-    name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect".'),
+    name: z.string().trim().min(1).describe('A component/directive class name or selector, e.g. "CngxSelect".'),
   },
   positional: 'name',
-  run: (ctx, { name }) => getStoryExample(ctx.bundled, name),
-  toMarkdown: (example: StoryExampleResult | null) => storyExampleMarkdown(example),
+  // No `version` input: example URLs track the live docs site, so the answer always grounds on the bundled release.
+  run: (ctx, { name }) => answerVersioned(ctx.resolve, undefined, (docs) => getStoryExample(docs, name)),
+  found: foundUnlessAmbiguous,
+  toMarkdown: (example: StoryExampleResult | AmbiguousMatch | null) => storyExampleMarkdown(example),
 });

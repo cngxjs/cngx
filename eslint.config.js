@@ -311,7 +311,10 @@ module.exports = tseslint.config(
 
     // Ignored paths
     {
-        ignores: ['dist/', 'packages/**/dist/', 'packages/**/testing/**', 'node_modules/', '.angular/', '.starter-compile/', 'out-tsc/', 'docs/', '.internal/', '.claude/', '**/*.spec.ts', 'playwright.config.ts', 'e2e/', 'sheriff.config.ts', 'projects/**/examples/**',
+        ignores: ['dist/', 'packages/**/dist/', 'packages/**/testing/**', 'node_modules/', '.angular/', '.starter-compile/', 'out-tsc/', 'docs/', '.internal/', '.claude/', '**/*.spec.ts', '**/*.core-spec.ts',
+            // Test-only cli guards: imported by specs alone, so outside the build tsconfig.
+            'packages/cli/src/readme-guard.ts', 'packages/cli/src/output-guards.ts',
+            'playwright.config.ts', 'e2e/', 'sheriff.config.ts', 'projects/**/examples/**',
             // examples/** stays out (generated features, stories, app source),
             // but examples/e2e is gated in CI now, so it is linted.
             'examples/src/**', 'examples/stories/**', 'examples/fixtures/**',

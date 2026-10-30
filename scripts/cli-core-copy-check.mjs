@@ -5,17 +5,26 @@
 //
 // Unlike doctor-copy-check.mjs, which compares an explicit file list, this walks
 // both trees recursively: a new core file is part of the copy the moment it
-// exists, so it cannot be forgotten in a list. Spec files are excluded on both
-// sides; they run once, in packages/mcp.
+// exists, so it cannot be forgotten in a list. A file is test-only exactly when it
+// matches a test pattern the builds exclude and a vitest config includes:
+// `.spec.ts` and `.core-spec.ts`. Those and dotfiles are not core: they are
+// skipped in the canonical tree (specs run once, in packages/mcp) and are a
+// divergence in the copy, which must hold generated core files only. `cli:sync`
+// never deletes test-only files and dotfiles, so the check is what makes them
+// visible. Everything else - a `.spec.mts`, a `testing/` or `__fixtures__/` file,
+// a `.json` - is core and copied byte for byte, so the copy never drops a file tsc
+// would compile or a runtime would load. A symlink in either tree is never
+// followed or read: it is listed as a divergence.
 //
 // Exits non-zero on any missing, extra or differing file, naming
-// `npm run cli:sync` as the fix, and on a missing tree: "nothing to compare" is
-// the defect a wrong working directory produces, not a pass. Both trees resolve
+// `npm run cli:sync` as the fix, and on a missing tree, a tree root that is not a
+// directory, or a canonical tree with no core file: "nothing to compare" is the
+// defect a wrong working directory produces, not a pass. Both trees resolve
 // from the repo root, never from cwd.
 //
 //   node scripts/cli-core-copy-check.mjs
 
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -27,35 +36,54 @@ export const COPY_CORE_DIR = resolve(ROOT, 'packages/cli/src/core');
 /** A tree path as the repo-relative name the messages print. */
 export const displayPath = (dir) => relative(ROOT, dir).split(sep).join('/');
 
-/** True for a file that belongs to the core copy (everything except specs). */
-export const isCoreFile = (relPath) => !relPath.endsWith('.spec.ts');
+/** The test files the package builds exclude and a vitest config runs; the spec pins this against the configs. */
+const TEST_ONLY = /\.(?:spec|core-spec)\.ts$/;
+/** True for a file that belongs to the core copy: no `.spec.ts` or `.core-spec.ts` file and no dot segment. */
+export const isCoreFile = (relPath) => !TEST_ONLY.test(relPath) && !relPath.split('/').some((part) => part.startsWith('.'));
+
+/**
+ * Every file and every symlink under `dir`, as sorted POSIX paths relative to
+ * `dir`. A symlink is listed, never followed; a missing directory is empty.
+ */
+function walkTree(dir) {
+  const files = [];
+  const symlinks = [];
+  if (!existsSync(dir)) {
+    return { files, symlinks };
+  }
+  const walk = (current) => {
+    for (const entry of readdirSync(current, { withFileTypes: true })) {
+      const abs = join(current, entry.name);
+      const rel = relative(dir, abs).split(sep).join('/');
+      if (entry.isSymbolicLink()) {
+        symlinks.push(rel);
+        continue;
+      }
+      if (entry.isDirectory()) {
+        walk(abs);
+        continue;
+      }
+      files.push(rel);
+    }
+  };
+  walk(dir);
+  return { files: files.sort(), symlinks: symlinks.sort() };
+}
+
+const listFiles = (dir) => walkTree(dir).files;
+
+/** Every symlink under `dir`, at any depth: never followed, read, copied or deleted. */
+export const listSymlinks = (dir) => walkTree(dir).symlinks;
 
 /**
  * Every core file under `dir`, as sorted POSIX paths relative to `dir`.
  * A missing directory is an empty tree, so the comparison reports every
  * canonical file as missing instead of throwing.
  */
-export function listCoreFiles(dir) {
-  if (!existsSync(dir)) {
-    return [];
-  }
-  const files = [];
-  const walk = (current) => {
-    for (const entry of readdirSync(current, { withFileTypes: true })) {
-      const abs = join(current, entry.name);
-      if (entry.isDirectory()) {
-        walk(abs);
-        continue;
-      }
-      const rel = relative(dir, abs).split(sep).join('/');
-      if (isCoreFile(rel)) {
-        files.push(rel);
-      }
-    }
-  };
-  walk(dir);
-  return files.sort();
-}
+export const listCoreFiles = (dir) => listFiles(dir).filter(isCoreFile);
+
+/** Every spec file and dotfile under `dir`: never part of the copy, never deleted by the sync. */
+export const listStrayFiles = (dir) => listFiles(dir).filter((file) => !isCoreFile(file));
 
 /**
  * Compare the canonical tree (`listA`, read through `readA`) with the copy
@@ -91,35 +119,61 @@ const readUnder = (base) => (file) => readFileSync(resolve(base, file));
  */
 export const missingTrees = (canonicalDir, copyDir) => [canonicalDir, copyDir].filter((dir) => !existsSync(dir));
 
-function main() {
-  const missing = missingTrees(CANONICAL_CORE_DIR, COPY_CORE_DIR);
+/** The trees of `[canonicalDir, copyDir]` that exist but are not directories; walking one would throw. */
+export const nonDirectoryTrees = (canonicalDir, copyDir) =>
+  [canonicalDir, copyDir].filter((dir) => existsSync(dir) && !statSync(dir).isDirectory());
+
+/**
+ * Compare `copyDir` with `canonicalDir`, report through `write`, and return the
+ * exit code: 0 identical, 1 on a missing or non-directory tree, an empty canonical
+ * core, a divergence, a spec file or dotfile in the copy, or a symlink in either
+ * tree. The dirs are injectable for specs.
+ */
+export function runCopyCheck({ canonicalDir = CANONICAL_CORE_DIR, copyDir = COPY_CORE_DIR, write }) {
+  const missing = missingTrees(canonicalDir, copyDir);
   if (missing.length > 0) {
     for (const dir of missing) {
-      process.stdout.write(`cli:copy-check - ${displayPath(dir)} does not exist (${dir}).\n`);
+      write(`cli:copy-check - ${displayPath(dir)} does not exist (${dir}).\n`);
     }
-    process.exitCode = 1;
-    return;
+    return 1;
+  }
+  const notDirectories = nonDirectoryTrees(canonicalDir, copyDir);
+  if (notDirectories.length > 0) {
+    for (const dir of notDirectories) {
+      write(`cli:copy-check - ${displayPath(dir)} is not a directory (${dir}).\n`);
+    }
+    return 1;
   }
 
-  const canonical = listCoreFiles(CANONICAL_CORE_DIR);
-  const copy = listCoreFiles(COPY_CORE_DIR);
-  const mismatches = compareTrees(canonical, copy, readUnder(CANONICAL_CORE_DIR), readUnder(COPY_CORE_DIR));
+  const canonical = listCoreFiles(canonicalDir);
+  // An empty canonical core compared with an empty copy is "identical", the same
+  // false pass a missing tree gives; sync-cli-core.mjs refuses that tree too.
+  if (canonical.length === 0) {
+    write(`cli:copy-check - ${displayPath(canonicalDir)} holds no core files\n`);
+    return 1;
+  }
+  const copy = listCoreFiles(copyDir);
+  const mismatches = [
+    ...compareTrees(canonical, copy, readUnder(canonicalDir), readUnder(copyDir)),
+    ...listStrayFiles(copyDir).map((file) => ({ file, reason: 'test-only file or dotfile in the cli copy; remove it by hand' })),
+    ...[canonicalDir, copyDir].flatMap((dir) =>
+      listSymlinks(dir).map((file) => ({ file: `${displayPath(dir)}/${file}`, reason: 'is a symlink; replace it with a file by hand' })),
+    ),
+  ];
 
   if (mismatches.length === 0) {
-    process.stdout.write(`cli:copy-check - ${displayPath(COPY_CORE_DIR)} is byte-identical (${canonical.length} files)\n`);
-    return;
+    write(`cli:copy-check - ${displayPath(copyDir)} is byte-identical (${canonical.length} files)\n`);
+    return 0;
   }
 
-  process.stdout.write(`cli:copy-check - ${mismatches.length} file(s) diverged from ${displayPath(CANONICAL_CORE_DIR)}:\n`);
+  write(`cli:copy-check - ${mismatches.length} file(s) diverged from ${displayPath(canonicalDir)}:\n`);
   for (const entry of mismatches) {
-    process.stdout.write(`  ${entry.file} (${entry.reason})\n`);
+    write(`  ${entry.file} (${entry.reason})\n`);
   }
-  process.stdout.write(
-    `Fix: run \`npm run cli:sync\` to regenerate ${displayPath(COPY_CORE_DIR)} from ${displayPath(CANONICAL_CORE_DIR)}.\n`,
-  );
-  process.exitCode = 1;
+  write(`Fix: run \`npm run cli:sync\` to regenerate ${displayPath(copyDir)} from ${displayPath(canonicalDir)}.\n`);
+  return 1;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main();
+  process.exitCode = runCopyCheck({ write: (text) => process.stdout.write(text) });
 }

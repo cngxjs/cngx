@@ -8,6 +8,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ReadResourceResult } from '@modelcontextprotocol/sdk/types.js';
 import type { Variables } from '@modelcontextprotocol/sdk/shared/uriTemplate.js';
 import type { DocsIndex } from '../core/data/loader.js';
+import { byCodePoint } from '../core/data/order.js';
 import { allEntries } from '../core/query.js';
 import { listComponents } from '../core/commands/list-components.js';
 import { getDiTokens } from '../core/commands/get-di-tokens.js';
@@ -125,7 +126,7 @@ export function readApi(docs: DocsIndex, name: string, uri: URL | string): ReadR
 /**
  * Autocomplete candidates for the `{name}` variable of `cngx://api/{name}` -
  * component/directive class names matching the partial the client has typed
- * (case-insensitive substring), sorted. An empty partial offers the whole
+ * (case-insensitive substring), in code-point order. An empty partial offers the whole
  * surface. Capped at the MCP 100-item completion ceiling.
  */
 export function completeApiName(docs: DocsIndex, value: string): string[] {
@@ -133,7 +134,7 @@ export function completeApiName(docs: DocsIndex, value: string): string[] {
   return allEntries(docs)
     .map(({ entry }) => entry.name)
     .filter((name) => needle === '' || name.toLowerCase().includes(needle))
-    .sort((a, b) => a.localeCompare(b))
+    .sort(byCodePoint)
     .slice(0, 100);
 }
 

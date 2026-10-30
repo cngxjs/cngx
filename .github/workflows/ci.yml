@@ -514,6 +514,17 @@ jobs:
         run: npm run build:cli
       - name: Test cli
         run: npm run test:cli
+      # vitest strips types, so a spec can drift from the code it tests; this
+      # compiles every cli and mcp spec without emitting.
+      - name: Type-check cli and mcp specs
+        run: npm run typecheck:tooling
+      # The engines floor of @cngx/cli is Node 20; the job above runs on .nvmrc,
+      # so the built CLI also runs once on the floor itself.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run cli on Node 20
+        run: node packages/cli/dist/index.js --version && node packages/cli/dist/index.js api CngxSelect
 
   # The cngx consumer plugin is static configuration (marketplace + plugin
   # manifests, a bundled .mcp.json) checked by a plain vitest spec. It has no

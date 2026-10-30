@@ -6,11 +6,13 @@
 // `--cngx-version` flag come from the plan's locked command list.
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import type { CngxCommand, CommandContext } from '../registry.js';
 import { COMMANDS, defaultFound, isFound, unwrapAnswer } from '../registry.js';
 import { createDocsResolver } from '../data/docs-resolver.js';
 import { loadDocsFromFile } from '../data/loader.js';
-import { cell, table } from './markdown.js';
+import { cell, table, toPlainText } from './markdown.js';
+import type { ApiResult } from './get-api.js';
 import { apiMarkdown, getApi } from './get-api.js';
 
 const fixture = (name: string) => fileURLToPath(new URL(`../../../test/fixtures/${name}`, import.meta.url));
@@ -69,12 +71,38 @@ describe('command definitions carry their CLI surface', () => {
       expect('version' in def.input).toBe(VERSIONED.includes(def.cliName));
     }
   });
+
+  const NAMED = ['find', 'api', 'slots', 'theme', 'config', 'example'];
+
+  it.each(NAMED)('%s rejects an empty name through its schema', (cliName) => {
+    const def = COMMANDS.find((command) => command.cliName === cliName)!;
+
+    expect(z.object(def.input).safeParse({ [def.positional!]: '' }).success).toBe(false);
+    expect(z.object(def.input).safeParse({ [def.positional!]: 'x' }).success).toBe(true);
+  });
+
+  it.each([[''], ['  ']])('migrate rejects a blank from and to %j through its schema', (blank) => {
+    const schema = z.object(COMMANDS.find((command) => command.cliName === 'migrate')!.input);
+
+    expect(schema.safeParse({ from: blank }).success).toBe(false);
+    expect(schema.safeParse({ from: '0.1.0', to: blank }).success).toBe(false);
+    expect(schema.safeParse({ from: '0.1.0' }).success).toBe(true);
+    expect(schema.safeParse({ from: '0.1.0', to: '0.2.0' }).success).toBe(true);
+  });
 });
 
 describe('found', () => {
   it.each(COMMANDS.map((def) => [def.cliName, def] as const))('%s: false for null and for an empty array', (_, def) => {
     expect(isFound(def, null)).toBe(false);
     expect(isFound(def, [])).toBe(false);
+  });
+
+  const NAME_COMMANDS = ['api', 'slots', 'theme', 'config', 'example'];
+
+  it.each(NAME_COMMANDS)('%s: false for an ambiguous selector', (cliName) => {
+    const def = COMMANDS.find((command) => command.cliName === cliName)!;
+
+    expect(isFound(def, { ambiguous: true, candidates: [] })).toBe(false);
   });
 
   it('defaults to true for an object and a non-empty array', () => {
@@ -193,7 +221,7 @@ describe('toMarkdown over the sample fixture', () => {
 
     expect(found).toBe(true);
     expect(markdown).toContain('# Migrating 0.1.0 -> 0.2.0');
-    expect(markdown).toContain('|renamed|`CngxOldPanel`|`CngxNewPanel`|');
+    expect(markdown).toContain('|renamed (inferred)|`CngxOldPanel`|`CngxNewPanel`|');
     expect(markdown).toContain('|removed|`CngxSelect.legacyMode`|-|');
   });
 
@@ -233,7 +261,7 @@ describe('toMarkdown over compodoc HTML', () => {
   });
 
   it('api: caps a 1000-character input description', () => {
-    const api = getApi(bundled, 'CngxSelect')!;
+    const api = getApi(bundled, 'CngxSelect') as ApiResult;
     const long = `<p>${'x'.repeat(1000)}</p>`;
 
     const markdown = apiMarkdown({ ...api, inputs: [{ ...api.inputs[0], description: long }] });
@@ -281,5 +309,11 @@ describe('markdown helpers', () => {
 
   it('build a table with the minimal separator', () => {
     expect(table(['A', 'B'], [['1', '2']])).toBe('|A|B|\n|-|-|\n|1|2|');
+  });
+  it('keep a numeric entity outside the Unicode range as its literal text', () => {
+    expect(toPlainText('a &#99999999; b')).toBe('a &#99999999; b');
+    expect(toPlainText('a &#x110000; b')).toBe('a &#x110000; b');
+    expect(toPlainText('a &#xD800; b')).toBe('a &#xD800; b');
+    expect(toPlainText('a &#x41; &#66; b')).toBe('a A B b');
   });
 });

@@ -15,9 +15,11 @@ import { defineCommand } from '../command.js';
 import { versionInput } from './version-input.js';
 import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
+import { byCodePoint } from '../data/order.js';
 import type { DocFunction, DocToken } from '../data/types.js';
-import { resolveEntry } from '../query.js';
-import { blocks, bullets, code, section, table } from './markdown.js';
+import type { AmbiguousMatch } from '../query.js';
+import { allEntries, foundUnlessAmbiguous, isAmbiguous, resolveEntry } from '../query.js';
+import { ambiguousMarkdown, blocks, bullets, code, section, table } from './markdown.js';
 
 /** How the input mapped to the resolved config token. */
 export type ConfigResolvedVia = 'token' | 'stem' | 'component';
@@ -90,7 +92,10 @@ function configTokens(docs: DocsIndex): DocToken[] {
 }
 
 /** Resolve the input to a config token, priority: exact name -> stem -> component. */
-function resolveConfigToken(docs: DocsIndex, name: string): { token: DocToken; via: ConfigResolvedVia } | null {
+function resolveConfigToken(
+  docs: DocsIndex,
+  name: string,
+): { token: DocToken; via: ConfigResolvedVia } | AmbiguousMatch | null {
   const needle = name.trim().toLowerCase();
   if (needle === '') {
     return null;
@@ -109,6 +114,9 @@ function resolveConfigToken(docs: DocsIndex, name: string): { token: DocToken; v
   }
 
   const byComponent = resolveComponentToken(docs, tokens, name);
+  if (isAmbiguous(byComponent)) {
+    return byComponent;
+  }
   if (byComponent) {
     return { token: byComponent, via: 'component' };
   }
@@ -120,20 +128,44 @@ function resolveConfigToken(docs: DocsIndex, name: string): { token: DocToken; v
 // feature directory is the nearest ancestor of the component's file. Deepest
 // match wins; the shortest token name breaks a tie so the select family's shared
 // directory (three tokens, one feature root) resolves to the generic
-// CNGX_SELECT_CONFIG rather than its action/reorderable neighbours. Absence of
-// any ancestor config token returns null - this never forces a wrong cascade.
-function resolveComponentToken(docs: DocsIndex, tokens: DocToken[], name: string): DocToken | null {
-  const match = resolveEntry(docs, name);
-  if (!match?.entry.file) {
-    return null;
-  }
-  const componentDir = dirOf(match.entry.file);
+// CNGX_SELECT_CONFIG rather than its action/reorderable neighbours, and code-point
+// order breaks a tie of equal-length names so token order never decides. Absence
+// of any ancestor config token returns null - this never forces a wrong cascade.
+function nearestConfigToken(tokens: DocToken[], file: string): DocToken | null {
+  const componentDir = dirOf(file);
   const candidates = tokens
     .filter((token): token is DocToken & { file: string } => token.file !== undefined)
     .map((token) => ({ token, root: featureDir(token.file) }))
     .filter(({ root }) => root !== '' && isAncestorOrEqual(root, componentDir))
-    .sort((a, b) => b.root.length - a.root.length || a.token.name.length - b.token.name.length);
+    .sort(
+      (a, b) =>
+        b.root.length - a.root.length || a.token.name.length - b.token.name.length || byCodePoint(a.token.name, b.token.name),
+    );
   return candidates[0]?.token ?? null;
+}
+
+// An ambiguous selector still has one answer when every candidate maps to the
+// same config token (both breadcrumb sync directives sit under the breadcrumb
+// config); only candidates that disagree, or one without a token, keep the ambiguity
+// so the caller can list them.
+function resolveComponentToken(docs: DocsIndex, tokens: DocToken[], name: string): DocToken | AmbiguousMatch | null {
+  const match = resolveEntry(docs, name);
+  if (isAmbiguous(match)) {
+    const entries = allEntries(docs);
+    const mapped = match.candidates.map((candidate) => {
+      const file = entries.find(({ entry, kind }) => entry.name === candidate.name && kind === candidate.kind)?.entry.file;
+      return file ? nearestConfigToken(tokens, file) : null;
+    });
+    const [first] = mapped;
+    if (first && mapped.every((token) => token?.name === first.name)) {
+      return first;
+    }
+    return match;
+  }
+  if (!match?.entry.file) {
+    return null;
+  }
+  return nearestConfigToken(tokens, match.entry.file);
 }
 
 /** Providers/features co-located with the token's file, falling back to its directory. */
@@ -151,16 +183,19 @@ function collectByKind(docs: DocsIndex, tokenFile: string, kind: DocFunction['fa
   return docs.functions.filter((fn) => fn.factoryKind === kind && fn.file !== undefined && dirOf(fn.file) === tokenDir);
 }
 
-/** Pure query behind the tool - returns `null` when no config token resolves. */
-export function getConfig(docs: DocsIndex, name: string): ConfigResult | null {
+/** Pure query behind the tool - `null` when no config token resolves, the ambiguity when a component selector matches several entries. */
+export function getConfig(docs: DocsIndex, name: string): ConfigResult | AmbiguousMatch | null {
   const resolved = resolveConfigToken(docs, name);
-  if (!resolved) {
-    return null;
+  if (!resolved || isAmbiguous(resolved)) {
+    return resolved;
   }
   const { token, via } = resolved;
   const tokenFile = token.file ?? '';
 
-  const providers = collectByKind(docs, tokenFile, 'provider').map((fn) => fn.name);
+  // Code-point order, so the answer never follows the snapshot's `functions` order.
+  const providers = collectByKind(docs, tokenFile, 'provider')
+    .map((fn) => fn.name)
+    .sort(byCodePoint);
 
   // The convenience aggregator (provideCngxSelect) lives in its own file, so the
   // file anchor never reaches it. Append it by exact-name lookup when present -
@@ -176,7 +211,8 @@ export function getConfig(docs: DocsIndex, name: string): ConfigResult | null {
   // throwing (a few non-config functions carry none).
   const features: ConfigFeature[] = collectByKind(docs, tokenFile, 'feature')
     .filter((fn): fn is DocFunction & { returnType: string } => fn.returnType !== undefined)
-    .map((fn) => ({ name: fn.name, returnType: fn.returnType }));
+    .map((fn) => ({ name: fn.name, returnType: fn.returnType }))
+    .sort((a, b) => byCodePoint(a.name, b.name));
 
   return {
     token: token.name,
@@ -188,9 +224,12 @@ export function getConfig(docs: DocsIndex, name: string): ConfigResult | null {
 }
 
 /** The cascade: token, providers, features and the resolution order. */
-export function configMarkdown(config: ConfigResult | null): string {
+export function configMarkdown(config: ConfigResult | AmbiguousMatch | null): string {
   if (!config) {
     return 'No config token for that name.\n';
+  }
+  if (isAmbiguous(config)) {
+    return ambiguousMarkdown(config);
   }
   const features = config.features.map((f) => [code(f.name), code(f.returnType)]);
   return blocks(
@@ -212,16 +251,22 @@ export const getConfigCommand = defineCommand({
     'Return a config surface: the CNGX_<X>_CONFIG token, its co-located provider functions, the ' +
     'with* feature functions, and the resolution-priority ordering. Accepts a config token name ' +
     '(CNGX_SELECT_CONFIG), a config stem (select), or best-effort a component/directive name ' +
-    '(CngxCombobox -> CNGX_SELECT_CONFIG). Returns null when the input maps to no config token.',
+    '(CngxCombobox -> CNGX_SELECT_CONFIG). `result` is null when the input maps to no config token, and ' +
+    '`{ ambiguous: true, candidates }` when a component selector matches several entries.',
+  cliSummary:
+    'Print a config surface: the CNGX_<X>_CONFIG token, its provider functions, the with* features and the resolution order. Takes a token name (CNGX_SELECT_CONFIG), a stem (select) or a component name (CngxCombobox). Exits 1 when nothing maps to a config token or a selector matches several entries.',
   cliName: 'config',
   input: {
     name: z
       .string()
+      .trim()
+      .min(1)
       .describe('A config token (CNGX_SELECT_CONFIG), a stem (select), or a component name (CngxSelect).'),
     version: versionInput,
   },
   positional: 'name',
   cliFlags: { version: 'cngx-version' },
   run: (ctx, { name, version }) => answerVersioned(ctx.resolve, version, (resolved) => getConfig(resolved, name)),
-  toMarkdown: (config: ConfigResult | null) => configMarkdown(config),
+  found: foundUnlessAmbiguous,
+  toMarkdown: (config: ConfigResult | AmbiguousMatch | null) => configMarkdown(config),
 });

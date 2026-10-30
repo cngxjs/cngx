@@ -13,11 +13,16 @@ export interface RemovedEntry {
   owner?: string;
 }
 
-/** A symbol conservatively inferred to be the same API under a new name. */
+/**
+ * A symbol under a new name. A member whose class field stayed while its public
+ * name (alias) changed is a certain rename; a top-level entry paired only by its
+ * lib and binding shape is an inference and carries `inferred: true`.
+ */
 export interface RenamedEntry {
   from: string;
   to: string;
   owner?: string;
+  inferred?: true;
 }
 
 /** A symbol kept under the same name whose type/signature changed across the two snapshots. */
@@ -26,7 +31,12 @@ export interface SignatureChangedEntry {
   owner?: string;
   fromSignature: string;
   toSignature: string;
+  /** For an input, which parts of its binding contract changed, in this order; absent in every other category. */
+  changed?: readonly InputChangedPart[];
 }
+
+/** A part of an input's binding contract, as an input change names it. */
+export type InputChangedPart = 'type' | 'required' | 'binding kind';
 
 /** The three ways a symbol in one category can break a consumer on upgrade. */
 export interface CategoryDelta {
@@ -36,15 +46,17 @@ export interface CategoryDelta {
 }
 
 /**
- * Which two releases the delta spans. `from`/`to` are the requested versions;
- * `resolvedFrom`/`resolvedTo` are the `cngxVersion` each loaded snapshot actually
- * carried (`null` for an un-stamped raw export).
+ * Which two releases the delta spans. `from`/`to` are the requested versions
+ * (`to` defaults to the bundled release). `resolvedFrom`/`resolvedTo` name the
+ * release each side answered as: the `cngxVersion` of the resolved snapshot,
+ * else the normalised requested version, since a fetched asset is the version
+ * it was requested as.
  */
 export interface UsageDeltaMeta {
   from: string;
   to: string;
-  resolvedFrom: string | null;
-  resolvedTo: string | null;
+  resolvedFrom: string;
+  resolvedTo: string;
 }
 
 /** The successful, structured cross-version delta. */
@@ -58,8 +70,26 @@ export interface UsageDelta {
   diTokens: CategoryDelta;
 }
 
-/** Why a non-bundled snapshot could not be obtained. */
-export type SnapshotFetchFailureReason = 'gh-missing' | 'network' | 'asset-missing';
+/** The per-category part of a {@link UsageDelta}: what the pure diff returns. */
+export type UsageDeltaCategories = Omit<UsageDelta, 'ok' | 'meta'>;
+
+/**
+ * Why a versioned answer failed. The name predates its wider use: besides a fetch,
+ * `asset-missing` also carries a query that threw.
+ */
+export type SnapshotFetchFailureReason =
+  /** Kept in the union for compatibility and not produced: a missing `gh` falls back to HTTPS. */
+  | 'gh-missing'
+  /** The download failed for a network reason. */
+  | 'network'
+  /**
+   * The release or its asset is absent, the snapshot is unreadable or has an unknown
+   * schema, a local temp directory or write failed, or a query threw (message starts
+   * with `internal:`). The message names which.
+   */
+  | 'asset-missing'
+  /** A malformed version (`1.2`, `01.2.3`, `1.2.3-rc.`), answered before any fetch. */
+  | 'invalid-version';
 
 /**
  * A fetch/resolve failure surfaced as data, never thrown across the tool boundary -

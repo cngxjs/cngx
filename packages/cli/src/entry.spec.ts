@@ -2,9 +2,11 @@
 // the plan's process matrix. Runs the built entry the way a shell does, so it
 // needs `npm run build:cli` first (dist/ and the bundled data/).
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { closeSync, copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, openSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { assertNoAnsi } from './output-guards.js';
 
 const ENTRY = fileURLToPath(new URL('../dist/index.js', import.meta.url));
@@ -64,5 +66,168 @@ describe('the built entry', () => {
 
     expect(stderr).toBe('');
     expect(code).toBe(0);
+  });
+
+  describe('a stdout that fails with ENOSPC', () => {
+    // The failure is injected by a --import preload written here, so no test hook
+    // ever lives in src or dist.
+    const hookDir = mkdtempSync(join(tmpdir(), 'cngx-cli-enospc-'));
+    const hook = join(hookDir, 'enospc-stdout.mjs');
+    writeFileSync(
+      hook,
+      "process.stdout._write = (_chunk, _encoding, callback) => callback(Object.assign(new Error('ENOSPC: no space left on device, write'), { code: 'ENOSPC' }));\n",
+    );
+    afterAll(() => rmSync(hookDir, { recursive: true, force: true }));
+
+    it('exits 3 with one stderr line and no stack trace', () => {
+      const result = spawnSync(process.execPath, ['--import', hook, ENTRY, 'api', 'CngxSelect'], { encoding: 'utf8' });
+
+      expect(result.status).toBe(3);
+      expect(result.stderr).toBe('cngx: internal error: ENOSPC: no space left on device, write\n');
+    });
+  });
+
+  it.each(['--help', '-h'])('prints help on stdout and exits 0 for %s', (flag) => {
+    const result = run(flag);
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('Usage: cngx <command>');
+    expect(result.stderr).toBe('');
+  });
+
+  it('prints help on stderr and exits 2 when run bare', () => {
+    const result = run();
+
+    expect(result.status).toBe(2);
+    expect(result.stdout).toBe('');
+    expect(result.stderr).toContain('Usage: cngx <command>');
+  });
+
+  it('exits 2 on a malformed migrate version without touching the network', () => {
+    const result = run('migrate', '1.2', '--format', 'json');
+
+    expect(result.status).toBe(2);
+    expect(result.stdout).toBe('');
+    expect(result.stderr).toMatch(/^cngx: from "1\.2" is not a release version/);
+  });
+
+  it('exits 2 on a --cngx-version with a leading zero', () => {
+    const result = run('api', 'CngxSelect', '--cngx-version', '01.2.3');
+
+    expect(result.status).toBe(2);
+    expect(result.stdout).toBe('');
+  });
+
+  it('exits 2 with an empty stdout for a usage error under --format json', () => {
+    const result = run('api', '--bogus', '--format', 'json');
+
+    expect(result.status).toBe(2);
+    expect(result.stdout).toBe('');
+    expect(result.stderr).toMatch(/^cngx: Unknown option '--bogus'/);
+  });
+
+  it('keeps exit 2 when stderr is a read-only file and the usage line cannot be written', () => {
+    const fd = openSync('/etc/hosts', 'r');
+    try {
+      const result = spawnSync(process.execPath, [ENTRY, 'bogus'], { encoding: 'utf8', stdio: ['ignore', 'pipe', fd] });
+
+      expect(result.status).toBe(2);
+      expect(result.stdout).toBe('');
+    } finally {
+      closeSync(fd);
+    }
+  });
+
+  describe('a corrupt bundled snapshot', () => {
+    const root = mkdtempSync(join(tmpdir(), 'cngx-cli-corrupt-'));
+    cpSync(dirname(ENTRY), join(root, 'dist'), { recursive: true });
+    copyFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), join(root, 'package.json'));
+    mkdirSync(join(root, 'data'));
+    writeFileSync(join(root, 'data', 'documentation.json'), '{ "schemaVersion": 6,');
+    // The copied adapter resolves zod from the package's own install.
+    symlinkSync(fileURLToPath(new URL('../node_modules', import.meta.url)), join(root, 'node_modules'), 'dir');
+    afterAll(() => rmSync(root, { recursive: true, force: true }));
+
+    it('exits 3 with one json failure document', () => {
+      const result = spawnSync(process.execPath, [join(root, 'dist', 'index.js'), 'api', 'CngxSelect', '--format', 'json'], {
+        encoding: 'utf8',
+      });
+
+      expect(result.status).toBe(3);
+      expect(result.stderr).toMatch(/^cngx: internal error: Malformed documentation\.json: .*reinstall the package that bundles this snapshot\.\n$/);
+      expect(JSON.parse(result.stdout)).toMatchObject({ cngxVersion: null, result: null, error: { reason: 'internal' } });
+    });
+  });
+
+  it('exits 2 with a usage line for an unknown global flag', () => {
+    const result = run('--bogus');
+
+    expect(result.status).toBe(2);
+    expect(result.stdout).toBe('');
+    expect(result.stderr).toMatch(/^cngx: Unknown option '--bogus'/);
+  });
+
+  // No test hook goes into dist: these cases copy the entry and its two early
+  // modules into a temp dir and replace one module there.
+  describe('the bootstrap branches of a copied entry', () => {
+    const roots: string[] = [];
+    afterAll(() => roots.forEach((root) => rmSync(root, { recursive: true, force: true })));
+
+    function copiedEntry(replace: Record<string, string>): string {
+      const root = mkdtempSync(join(tmpdir(), 'cngx-cli-entry-'));
+      roots.push(root);
+      const dist = join(root, 'dist');
+      mkdirSync(dist);
+      for (const file of ['index.js', 'pipe-guard.js', 'node-floor.js']) {
+        copyFileSync(join(dirname(ENTRY), file), join(dist, file));
+      }
+      for (const [file, source] of Object.entries(replace)) {
+        writeFileSync(join(dist, file), source);
+      }
+      return join(dist, 'index.js');
+    }
+
+    const throwingAdapter = { 'cli-adapter.js': "throw new Error('adapter failed to load');\n" };
+
+    it('exits 3 with one stderr line when the adapter fails to load', () => {
+      const result = spawnSync(process.execPath, [copiedEntry(throwingAdapter), 'api', 'CngxSelect'], { encoding: 'utf8' });
+
+      expect(result.status).toBe(3);
+      expect(result.stdout).toBe('');
+      expect(result.stderr).toBe('cngx: internal error: adapter failed to load\n');
+    });
+
+    it.each([['--format', 'json'], ['--format=json']])('prints one json failure document under %s', (...format) => {
+      const result = spawnSync(process.execPath, [copiedEntry(throwingAdapter), 'api', 'CngxSelect', ...format], { encoding: 'utf8' });
+
+      expect(result.status).toBe(3);
+      expect(result.stderr).toBe('cngx: internal error: adapter failed to load\n');
+      expect(JSON.parse(result.stdout)).toEqual({
+        cngxVersion: null,
+        result: null,
+        error: { reason: 'internal', message: 'adapter failed to load' },
+      });
+    });
+
+    it.each([
+      [['--format', 'json', '--format', 'md']],
+      [['--format=json', '--format=md']],
+      [['--', '--format=json']],
+    ])('prints no document when the last --format before -- is not json: %j', (args) => {
+      const result = spawnSync(process.execPath, [copiedEntry(throwingAdapter), 'api', 'CngxSelect', ...args], { encoding: 'utf8' });
+
+      expect(result.status).toBe(3);
+      expect(result.stdout).toBe('');
+      expect(result.stderr).toBe('cngx: internal error: adapter failed to load\n');
+    });
+
+    it('exits 2 with the floor message when the node floor check fails', () => {
+      const floor = { 'node-floor.js': "export const checkNodeFloor = () => 'cngx: Node 99 or newer is required (running test).';\n" };
+      const result = spawnSync(process.execPath, [copiedEntry(floor), 'api', 'CngxSelect'], { encoding: 'utf8' });
+
+      expect(result.status).toBe(2);
+      expect(result.stdout).toBe('');
+      expect(result.stderr).toBe('cngx: Node 99 or newer is required (running test).\n');
+    });
   });
 });

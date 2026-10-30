@@ -8,10 +8,10 @@ import { defineCommand } from '../command.js';
 import { versionInput } from './version-input.js';
 import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
-import type { DocEntry, DocInput } from '../data/types.js';
-import type { EntryKind } from '../query.js';
-import { resolveEntry } from '../query.js';
-import { blocks, bullets, code, docText, section, table, textCell } from './markdown.js';
+import type { DocEntry, DocInput, DocMethod } from '../data/types.js';
+import type { AmbiguousMatch, EntryKind } from '../query.js';
+import { foundUnlessAmbiguous, isAmbiguous, resolveEntry } from '../query.js';
+import { ambiguousMarkdown, blocks, bullets, code, docText, section, table, textCell } from './markdown.js';
 
 /**
  * One input, named by its binding. `field` is the class field name, present only
@@ -77,11 +77,24 @@ function isSignalBased(entry: DocEntry): boolean {
   return entry.signal === true || members.some((member) => member.signalKind !== undefined);
 }
 
-/** Pure query behind the tool - returns `null` when the name resolves to nothing. */
-export function getApi(docs: DocsIndex, name: string): ApiResult | null {
+/**
+ * TypeScript `SyntaxKind` numbers of the `private` and `protected` keywords as compodocx
+ * records them in `modifierKind`. compodocx emits through ts-morph, so the producer is
+ * the TypeScript `@ts-morph/common` bundles, not the root `typescript`
+ * install. The core carries no `typescript` dependency, so the numbers are pinned here;
+ * get-api.spec checks them against compodocx's own ts-morph and the bundled snapshot.
+ */
+const NON_PUBLIC_MODIFIER_KINDS: ReadonlySet<number> = new Set([123, 124]);
+
+/** cngx keeps template handlers protected; only a method without a private/protected modifier is API. */
+const isPublicMethod = (method: DocMethod): boolean =>
+  !(method.modifierKind ?? []).some((kind) => NON_PUBLIC_MODIFIER_KINDS.has(kind));
+
+/** Pure query behind the tool - `null` when the name resolves to nothing, the ambiguity when a selector matches several entries. */
+export function getApi(docs: DocsIndex, name: string): ApiResult | AmbiguousMatch | null {
   const match = resolveEntry(docs, name);
-  if (!match) {
-    return null;
+  if (!match || isAmbiguous(match)) {
+    return match ?? null;
   }
   const { entry, kind } = match;
   return {
@@ -101,7 +114,7 @@ export function getApi(docs: DocsIndex, name: string): ApiResult | null {
     hostBindings: (entry.hostBindings ?? []).map((binding) => binding.name),
     // Components/directives record methods under methodsClass, injectables
     // under methods - read whichever the entry carries.
-    methods: (entry.methodsClass ?? entry.methods ?? []).map((method) => ({
+    methods: (entry.methodsClass ?? entry.methods ?? []).filter(isPublicMethod).map((method) => ({
       name: method.name,
       returnType: method.returnType ?? null,
     })),
@@ -109,9 +122,12 @@ export function getApi(docs: DocsIndex, name: string): ApiResult | null {
 }
 
 /** The API surface as a heading, a summary line and one section per member group. */
-export function apiMarkdown(api: ApiResult | null): string {
+export function apiMarkdown(api: ApiResult | AmbiguousMatch | null): string {
   if (!api) {
     return 'No component, directive, or service by that name.\n';
+  }
+  if (isAmbiguous(api)) {
+    return ambiguousMarkdown(api);
   }
   const summary = [`Kind: ${api.kind}`, `Selector: ${code(api.selector)}`, `Signal-based: ${api.signal ? 'yes' : 'no'}`];
   const inputs = api.inputs.map((i) => [code(i.name), code(i.type), code(i.defaultValue), textCell(i.description)]);
@@ -136,16 +152,21 @@ export const getApiCommand = defineCommand({
   description:
     "Return a single component's, directive's, or injectable service's API surface - inputs, " +
     'outputs, signal flag, host bindings, public methods, and description - by class name or ' +
-    'selector. Returns null when the name resolves to nothing.',
+    'selector. `result` is null when the name matches nothing, and `{ ambiguous: true, candidates }` when a selector matches several entries.',
+  cliSummary:
+    'Print the inputs, outputs, host bindings, methods and description of one component, directive or service, by class name or selector. Exits 1 when the name matches nothing or a selector matches several entries.',
   cliName: 'api',
   input: {
     name: z
       .string()
+      .trim()
+      .min(1)
       .describe('A component/directive/service class name or selector, e.g. "CngxSelect" or "cngx-select".'),
     version: versionInput,
   },
   positional: 'name',
   cliFlags: { version: 'cngx-version' },
   run: (ctx, { name, version }) => answerVersioned(ctx.resolve, version, (resolved) => getApi(resolved, name)),
-  toMarkdown: (api: ApiResult | null) => apiMarkdown(api),
+  found: foundUnlessAmbiguous,
+  toMarkdown: (api: ApiResult | AmbiguousMatch | null) => apiMarkdown(api),
 });

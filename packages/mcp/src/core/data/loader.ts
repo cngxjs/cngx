@@ -42,30 +42,84 @@ export interface DocsIndex {
   functions: DocFunction[];
 }
 
+// Both the mcp server and the cli read this snapshot and show these messages to
+// their users, so the text names neither package and no build step.
+const REINSTALL_HINT = 'reinstall the package that bundles this snapshot';
+
+/** Base of every snapshot load failure; its message ends with the reinstall hint. */
+export class SnapshotLoadError extends Error {
+  /** The failure without the hint, for a snapshot no reinstall can repair (a fetched release asset). */
+  readonly problem: string;
+
+  constructor(problem: string) {
+    super(`${problem}; ${REINSTALL_HINT}.`);
+    this.problem = problem;
+    this.name = 'SnapshotLoadError';
+  }
+}
+
+/** Thrown when a snapshot cannot be read as a cngx `documentation.json`. */
+export class MalformedSnapshotError extends SnapshotLoadError {
+  constructor(detail: string) {
+    super(`Malformed documentation.json: ${detail}`);
+    this.name = 'MalformedSnapshotError';
+  }
+}
+
 /** Thrown when a snapshot's `schemaVersion` is one the server cannot read. */
-export class SchemaVersionError extends Error {
+export class SchemaVersionError extends MalformedSnapshotError {
   constructor(
     readonly found: number,
     readonly supported: readonly number[] = SUPPORTED_SCHEMA_VERSIONS,
   ) {
-    super(
-      `Unsupported documentation.json schemaVersion ${found}; @cngx/mcp supports ${supported.join(' and ')}. ` +
-        `Regenerate the snapshot with a matching compodocx.`,
-    );
+    super(`schemaVersion ${found}; this package reads ${supported.join(' and ')}`);
     this.name = 'SchemaVersionError';
   }
+}
+
+const LIST_FIELDS = ['components', 'directives', 'injectables', 'tokens'] as const;
+
+/** The first top-level field whose shape the query core cannot walk, or `null`. */
+function shapeDefect(raw: unknown): string | null {
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
+    return 'the document is not an object';
+  }
+  const doc = raw as Record<string, unknown>;
+  for (const field of LIST_FIELDS) {
+    if (doc[field] !== undefined && !Array.isArray(doc[field])) {
+      return `${field} is not a list`;
+    }
+  }
+  const misc = doc.miscellaneous as Record<string, unknown> | undefined;
+  if (misc !== undefined && (misc === null || typeof misc !== 'object')) {
+    return 'miscellaneous is not an object';
+  }
+  if (misc?.functions !== undefined && !Array.isArray(misc.functions)) {
+    return 'miscellaneous.functions is not a list';
+  }
+  return null;
 }
 
 /**
  * Validate a parsed snapshot and project it to the tool-facing `DocsIndex`.
  * Throws {@link SchemaVersionError} on a schema mismatch - the guard the loader
- * spec pins in both directions.
+ * spec pins in both directions - and {@link MalformedSnapshotError} on any other
+ * shape the projection cannot read, never a raw `TypeError`.
  */
 export function createDocsIndex(raw: DocumentationJson): DocsIndex {
+  const defect = shapeDefect(raw);
+  if (defect !== null) {
+    throw new MalformedSnapshotError(defect);
+  }
   if (!isSupportedSchemaVersion(raw.schemaVersion)) {
     throw new SchemaVersionError(raw.schemaVersion);
   }
-  const doc = raw.schemaVersion === 6 ? projectSchemaV6(raw) : projectSchemaV2(raw);
+  let doc: DocumentationJson;
+  try {
+    doc = raw.schemaVersion === 6 ? projectSchemaV6(raw) : projectSchemaV2(raw);
+  } catch (error) {
+    throw new MalformedSnapshotError(error instanceof Error ? error.message : String(error));
+  }
   return {
     meta: {
       schemaVersion: doc.schemaVersion,
@@ -83,17 +137,37 @@ export function createDocsIndex(raw: DocumentationJson): DocsIndex {
 
 /** Read and validate a snapshot from an explicit path (used by tests + loader). */
 export function loadDocsFromFile(path: string): DocsIndex {
-  const raw = readFileSync(path, 'utf8');
-  return createDocsIndex(JSON.parse(raw) as DocumentationJson);
+  return parseDocs(readFileSync(path, 'utf8'));
+}
+
+function parseDocs(raw: string): DocsIndex {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (error) {
+    throw new MalformedSnapshotError(error instanceof Error ? error.message : String(error));
+  }
+  return createDocsIndex(parsed as DocumentationJson);
 }
 
 // The bundled snapshot ships at `<package>/data/documentation.json`. The caller
 // passes that directory: only the entry module knows its own depth below the
 // package root, so no path here is relative to this file.
 
-/** Load the snapshot bundled into the published package from its `data/` directory. */
+/**
+ * Load the snapshot bundled into the published package from its `data/` directory.
+ * A file that cannot be read is a broken install like a malformed one, so it
+ * carries the same reinstall hint instead of a bare `ENOENT`.
+ */
 export function loadBundledDocs(dataDir: string): DocsIndex {
-  return loadDocsFromFile(join(dataDir, 'documentation.json'));
+  let raw: string;
+  try {
+    raw = readFileSync(join(dataDir, 'documentation.json'), 'utf8');
+  } catch (error) {
+    const code = (error as { code?: unknown }).code;
+    throw new SnapshotLoadError(`documentation.json cannot be read (${typeof code === 'string' ? code : 'unknown error'})`);
+  }
+  return parseDocs(raw);
 }
 
 // The verbatim compodocx llm-md dump - the full offline API text. Deliberately a

@@ -10,6 +10,7 @@
         "properties": {
           "query": {
             "type": "string",
+            "minLength": 1,
             "description": "A name, selector, or category fragment, e.g. \"select\" or \"cngx-chip\"."
           },
           "version": {
@@ -26,12 +27,12 @@
     {
       "name": "list_components",
       "title": "List cngx components, directives, and services",
-      "description": "Enumerate every cngx component, directive, and injectable service as a compact summary ({ name, kind, selector, category, lib }), sorted by name. Optionally filter by `lib` (exact lib name, e.g. \"common\") and/or `kind` (\"component\" | \"directive\" | \"injectable\"); omit both for the full catalog. The deterministic browse complement to find_component's fuzzy search. An unmatched filter returns an empty list, not null.",
+      "description": "Enumerate every cngx component, directive, and injectable service as a compact summary ({ name, kind, selector, category, lib }), sorted by name. Optionally filter by `lib` (a lib name, matched case-insensitively, e.g. \"common\") and/or `kind` (\"component\" | \"directive\" | \"injectable\"); omit both for the full catalog. The deterministic browse complement to find_component's fuzzy search. An unmatched filter returns an empty list, not null.",
       "inputSchema": {
         "type": "object",
         "properties": {
           "lib": {
-            "description": "Exact owning lib name, e.g. \"forms\" or \"common\".",
+            "description": "Owning lib name, matched case-insensitively, e.g. \"forms\" or \"common\".",
             "type": "string"
           },
           "kind": {
@@ -50,12 +51,13 @@
     {
       "name": "get_api",
       "title": "Get cngx component API",
-      "description": "Return a single component's, directive's, or injectable service's API surface - inputs, outputs, signal flag, host bindings, public methods, and description - by class name or selector. Returns null when the name resolves to nothing.",
+      "description": "Return a single component's, directive's, or injectable service's API surface - inputs, outputs, signal flag, host bindings, public methods, and description - by class name or selector. `result` is null when the name matches nothing, and `{ ambiguous: true, candidates }` when a selector matches several entries.",
       "inputSchema": {
         "type": "object",
         "properties": {
           "name": {
             "type": "string",
+            "minLength": 1,
             "description": "A component/directive/service class name or selector, e.g. \"CngxSelect\" or \"cngx-select\"."
           },
           "version": {
@@ -72,12 +74,13 @@
     {
       "name": "get_slots",
       "title": "Get cngx component template slots",
-      "description": "Return a component's projected template slots - each the slot directive selector name plus its one-line doc - by class name or selector. An empty slots array means the component projects no overridable slots. Returns null when the name resolves to nothing.",
+      "description": "Return a component's projected template slots - each the slot directive selector name plus its one-line doc - by class name or selector. An empty slots array means the component projects no overridable slots. `result` is null when the name matches nothing, and `{ ambiguous: true, candidates }` when a selector matches several entries.",
       "inputSchema": {
         "type": "object",
         "properties": {
           "name": {
             "type": "string",
+            "minLength": 1,
             "description": "A component/directive class name or selector, e.g. \"CngxSelect\"."
           },
           "version": {
@@ -94,12 +97,13 @@
     {
       "name": "get_theme_tokens",
       "title": "Get cngx component theming tokens",
-      "description": "Return a component's theming tokens (the CSS custom properties it exposes) and its theme overview, by class name or selector. An empty themeTokens array means the component exposes none. Returns null when the name resolves to nothing. For DI tokens, use get_di_tokens.",
+      "description": "Return a component's theming tokens (the CSS custom properties it exposes) and its theme overview, by class name or selector. An empty themeTokens array means the component exposes none. `result` is null when the name matches nothing, and `{ ambiguous: true, candidates }` when a selector matches several entries. For DI tokens, use get_di_tokens.",
       "inputSchema": {
         "type": "object",
         "properties": {
           "name": {
             "type": "string",
+            "minLength": 1,
             "description": "A component/directive class name or selector, e.g. \"CngxSelect\"."
           },
           "version": {
@@ -135,12 +139,13 @@
     {
       "name": "get_config",
       "title": "Get a cngx configuration cascade",
-      "description": "Return a config surface: the CNGX_<X>_CONFIG token, its co-located provider functions, the with* feature functions, and the resolution-priority ordering. Accepts a config token name (CNGX_SELECT_CONFIG), a config stem (select), or best-effort a component/directive name (CngxCombobox -> CNGX_SELECT_CONFIG). Returns null when the input maps to no config token.",
+      "description": "Return a config surface: the CNGX_<X>_CONFIG token, its co-located provider functions, the with* feature functions, and the resolution-priority ordering. Accepts a config token name (CNGX_SELECT_CONFIG), a config stem (select), or best-effort a component/directive name (CngxCombobox -> CNGX_SELECT_CONFIG). `result` is null when the input maps to no config token, and `{ ambiguous: true, candidates }` when a component selector matches several entries.",
       "inputSchema": {
         "type": "object",
         "properties": {
           "name": {
             "type": "string",
+            "minLength": 1,
             "description": "A config token (CNGX_SELECT_CONFIG), a stem (select), or a component name (CngxSelect)."
           },
           "version": {
@@ -157,12 +162,13 @@
     {
       "name": "get_story_example",
       "title": "Get cngx example URLs",
-      "description": "Return a component's runnable example URLs (public documentation links a consumer can open), plus a StackBlitz URL when one exists. Playground entries are repo-internal source references, not openable links. Returns null when the name resolves to nothing.",
+      "description": "Return a component's runnable example URLs (public documentation links a consumer can open), plus a StackBlitz URL when one exists. Playground entries are repo-internal source references, not openable links. `result` is null when the name matches nothing, and `{ ambiguous: true, candidates }` when a selector matches several entries.",
       "inputSchema": {
         "type": "object",
         "properties": {
           "name": {
             "type": "string",
+            "minLength": 1,
             "description": "A component/directive class name or selector, e.g. \"CngxSelect\"."
           }
         },
@@ -175,17 +181,19 @@
     {
       "name": "migrate_usage",
       "title": "Diff two cngx releases",
-      "description": "Return a structured API delta between two cngx releases: removed / renamed / signature-changed components, inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version. A version other than the bundled one is fetched from the GitHub Release assets via `gh`, or over HTTPS when `gh` is missing or fails; no network or an absent asset returns a typed error result ({ ok: false, reason }), never a throw.",
+      "description": "Return a structured API delta between two cngx releases: removed / renamed / signature-changed components, inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version. A version other than the bundled one is fetched from the GitHub Release assets via `gh`, or over HTTPS when `gh` is missing or fails; no network or an absent asset returns a typed error result ({ ok: false, reason }), never a throw. A malformed version returns reason `invalid-version` before any fetch.",
       "inputSchema": {
         "type": "object",
         "properties": {
           "from": {
             "type": "string",
-            "description": "The cngx version to upgrade FROM, e.g. \"0.1.0\" (without the leading \"v\")."
+            "minLength": 1,
+            "description": "The cngx version to upgrade FROM, e.g. \"0.1.0\"; a leading \"v\" is accepted."
           },
           "to": {
             "description": "The cngx version to upgrade TO. Defaults to the bundled snapshot version.",
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           }
         },
         "required": [

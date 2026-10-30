@@ -1,9 +1,21 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import { loadDocsFromFile } from '../data/loader.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
 import { answerVersioned, createDocsResolver } from '../data/docs-resolver.js';
-import { getThemeTokens } from './get-theme-tokens.js';
+import type { ThemeTokensResult } from './get-theme-tokens.js';
+import { getThemeTokens as getThemeTokensAnswer, getThemeTokensCommand } from './get-theme-tokens.js';
+import { isAmbiguous } from '../query.js';
+
+/** The query answer for a name that must not be ambiguous. */
+function getThemeTokens(...args: Parameters<typeof getThemeTokensAnswer>): ThemeTokensResult | null {
+  const answer = getThemeTokensAnswer(...args);
+  if (isAmbiguous(answer)) {
+    throw new Error(`unexpected ambiguity for ${args[1]}`);
+  }
+  return answer;
+}
 
 const FIXTURE = fileURLToPath(new URL('../../../test/fixtures/documentation.sample.json', import.meta.url));
 const NEW = fileURLToPath(new URL('../../../test/fixtures/documentation.v-new.sample.json', import.meta.url));
@@ -57,5 +69,18 @@ describe('get_theme_tokens version wiring', () => {
     const answer = await answerVersioned(createDocsResolver(docs, deps), '999.0.0', (resolved) => getThemeTokens(resolved, 'CngxSelect'));
 
     expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'no release' });
+  });
+});
+
+describe('get_theme_tokens input schema', () => {
+  const schema = z.object(getThemeTokensCommand.input);
+
+  it('rejects a blank name as invalid input', () => {
+    expect(schema.safeParse({ name: ' ' }).success).toBe(false);
+    expect(schema.safeParse({ name: '\t' }).success).toBe(false);
+  });
+
+  it('trims a padded name before the query sees it', () => {
+    expect(schema.parse({ name: ' CngxSelect ' }).name).toBe('CngxSelect');
   });
 });

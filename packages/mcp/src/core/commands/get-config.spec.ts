@@ -1,10 +1,23 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { createDocsIndex, loadDocsFromFile } from '../data/loader.js';
+import { z } from 'zod';
+import { createDocsIndex, loadBundledDocs, loadDocsFromFile } from '../data/loader.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
 import { answerVersioned, createDocsResolver } from '../data/docs-resolver.js';
 import type { DocFunction, DocumentationJson } from '../data/types.js';
-import { getConfig } from './get-config.js';
+import type { ConfigResult } from './get-config.js';
+import { getConfig as getConfigAnswer, getConfigCommand } from './get-config.js';
+import { isAmbiguous } from '../query.js';
+import { shuffled } from '../../testing/shuffle.js';
+
+/** The query answer for a name that must not be ambiguous. */
+function getConfig(...args: Parameters<typeof getConfigAnswer>): ConfigResult | null {
+  const answer = getConfigAnswer(...args);
+  if (isAmbiguous(answer)) {
+    throw new Error(`unexpected ambiguity for ${args[1]}`);
+  }
+  return answer;
+}
 
 // A controlled snapshot exercising every cascade layout the token-file anchor
 // must survive: the single-file select surface, the shared select/shared/
@@ -133,7 +146,7 @@ describe('getConfig', () => {
   it('returns every provider co-located in a multi-provider token file (form-field)', () => {
     const result = getConfig(docs, 'form-field');
 
-    expect(result?.providers).toEqual(['provideFormField', 'provideErrorMessages']);
+    expect(result?.providers).toEqual(['provideErrorMessages', 'provideFormField']);
     expect(result?.features).toEqual([{ name: 'withErrorMessages', returnType: 'FormFieldFeature' }]);
   });
 
@@ -234,5 +247,93 @@ describe('get_config version wiring', () => {
     const answer = await answerVersioned(createDocsResolver(bundled, deps), '999.0.0', (resolved) => getConfig(resolved, 'CNGX_FOO_CONFIG'));
 
     expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'no release' });
+  });
+});
+
+describe('get_config over an ambiguous component selector', () => {
+  it('resolves cngxRouterSync in the bundled snapshot to the one token both candidates map to', () => {
+    const bundled = loadBundledDocs(fileURLToPath(new URL('../../../data/', import.meta.url)));
+
+    expect(getConfig(bundled, 'cngxRouterSync')).toMatchObject({ token: 'CNGX_BREADCRUMB_CONFIG', resolvedVia: 'component' });
+  });
+
+  const syncPair = (tokens: DocumentationJson['tokens'], second = 'projects/ui/b/b-sync.directive.ts'): DocumentationJson => ({
+    schemaVersion: 2,
+    components: [],
+    directives: [
+      { name: 'CngxSyncA', selector: 'cngx-a[cngxSync]', file: 'projects/ui/a/a-sync.directive.ts' },
+      { name: 'CngxSyncB', selector: 'cngx-b[cngxSync]', file: second },
+    ],
+    tokens,
+    miscellaneous: { functions: [] },
+  });
+
+  it('keeps the ambiguity when the candidates map to different tokens', () => {
+    const answer = getConfigAnswer(
+      createDocsIndex(
+        syncPair([
+          { name: 'CNGX_A_CONFIG', file: 'projects/ui/a/a-config.ts' },
+          { name: 'CNGX_B_CONFIG', file: 'projects/ui/b/b-config.ts' },
+        ]),
+      ),
+      'cngxSync',
+    );
+
+    expect(isAmbiguous(answer)).toBe(true);
+  });
+
+  it('keeps the ambiguity when one candidate maps to no token', () => {
+    const answer = getConfigAnswer(createDocsIndex(syncPair([{ name: 'CNGX_A_CONFIG', file: 'projects/ui/a/a-config.ts' }])), 'cngxSync');
+
+    expect(isAmbiguous(answer)).toBe(true);
+  });
+
+  it('breaks a tie of equal-length tokens on one root by code point, whatever the token order', () => {
+    const tokens = [
+      { name: 'CNGX_YB_CONFIG', file: 'projects/ui/a/yb-config.ts' },
+      { name: 'CNGX_XA_CONFIG', file: 'projects/ui/a/xa-config.ts' },
+    ];
+    const answers = [tokens, [...tokens].reverse(), shuffled(tokens, 1), shuffled(tokens, 2)].map((order) =>
+      getConfig(createDocsIndex(syncPair(order, 'projects/ui/a/b-sync.directive.ts')), 'cngxSync'),
+    );
+
+    expect(answers.map((answer) => answer?.token)).toEqual(Array(4).fill('CNGX_XA_CONFIG'));
+  });
+});
+
+describe('get_config over every ordering of the snapshot functions', () => {
+  const bundled = loadBundledDocs(fileURLToPath(new URL('../../../data/', import.meta.url)));
+  const tokens = bundled.tokens.filter((token) => /^CNGX_.*_CONFIG$/.test(token.name)).map((token) => token.name);
+  const orders = [
+    bundled.functions,
+    [...bundled.functions].reverse(),
+    shuffled(bundled.functions, 1),
+    shuffled(bundled.functions, 2),
+    shuffled(bundled.functions, 3),
+  ];
+
+  it('finds config tokens to check', () => {
+    expect(tokens.length).toBeGreaterThan(0);
+  });
+
+  it.each(tokens)('answers %s byte-identically for every order', (token) => {
+    const [first, ...rest] = orders.map((functions) => JSON.stringify(getConfigAnswer({ ...bundled, functions }, token)));
+
+    for (const answer of rest) {
+      expect(answer).toBe(first);
+    }
+  });
+});
+
+describe('get_config input schema', () => {
+  const schema = z.object(getConfigCommand.input);
+
+  it('rejects a blank name as invalid input', () => {
+    expect(schema.safeParse({ name: ' ' }).success).toBe(false);
+    expect(schema.safeParse({ name: '\t' }).success).toBe(false);
+  });
+
+  it('trims a padded name before the query sees it', () => {
+    expect(schema.parse({ name: ' CngxSelect ' }).name).toBe('CngxSelect');
   });
 });

@@ -9,9 +9,9 @@
 
 import { rebaseExampleUrls } from './example-urls.js';
 import type { DocsIndex } from './loader.js';
-import { loadDocsFromFile } from './loader.js';
+import { loadDocsFromFile, SnapshotLoadError } from './loader.js';
 import type { FetchSnapshot } from '../diff/snapshot-fetch.js';
-import { fetchSnapshot } from '../diff/snapshot-fetch.js';
+import { fetchSnapshot, normalizeReleaseVersion, removeQuietly, removeTempDir } from '../diff/snapshot-fetch.js';
 import type { SnapshotFetchFailureReason } from '../diff/types.js';
 
 /** A resolved snapshot plus the version label it grounds against, or a typed failure. */
@@ -23,9 +23,11 @@ export type DocsResolution =
 export interface DocsResolverDeps {
   fetchSnapshot: FetchSnapshot;
   loadDocs: typeof loadDocsFromFile;
+  /** Removes the temp dir a fetch hands over once its snapshot is read. Defaults to a recursive delete. */
+  removeDir?: (dir: string) => void;
 }
 
-const defaultDeps: DocsResolverDeps = { fetchSnapshot, loadDocs: loadDocsFromFile };
+const defaultDeps: DocsResolverDeps = { fetchSnapshot, loadDocs: loadDocsFromFile, removeDir: removeTempDir };
 
 /**
  * Upper bound on distinct release snapshots one resolver holds at once. A parsed
@@ -41,9 +43,11 @@ export type DocsResolver = (version?: string) => Promise<DocsResolution>;
 /**
  * Build a resolver over `bundled` and `deps`. Each adapter builds one, so a command
  * never sees the fetch or cache wiring. Short-circuits to `bundled` (no fetch) when
- * the version is empty or equals the bundled `cngxVersion`. A fetched-but-unreadable
- * snapshot - `loadDocsFromFile` throwing `SchemaVersionError` or a read error - maps
- * to `asset-missing`, so the three-reason failure union holds.
+ * the version is absent or equals the bundled `cngxVersion`; a blank version is a
+ * typed failure, never the bundled snapshot. A malformed or blank version answers
+ * `invalid-version` before any fetch. A fetched-but-unreadable snapshot -
+ * `loadDocsFromFile` throwing `SchemaVersionError` or a read error - maps to
+ * `asset-missing`.
  */
 export function createDocsResolver(bundled: DocsIndex, deps: DocsResolverDeps = defaultDeps): DocsResolver {
   // Fetched snapshots and fetches still in flight, keyed by requested version. Owned by
@@ -53,8 +57,17 @@ export function createDocsResolver(bundled: DocsIndex, deps: DocsResolverDeps = 
   const bundledVersion = bundled.meta.cngxVersion;
 
   return async (version) => {
-    const requested = version?.trim() ?? '';
-    if (requested === '' || (bundledVersion !== null && requested === bundledVersion)) {
+    // Only an absent version means "bundled"; a blank string is a caller error, not a default.
+    if (version === undefined) {
+      return { ok: true, docs: bundled, version: bundledVersion };
+    }
+    // Release tags are `v<version>`, so a pasted tag answers like the bare version.
+    const normalized = normalizeReleaseVersion(version);
+    if (!normalized.ok) {
+      return { ok: false, reason: 'invalid-version', message: normalized.message };
+    }
+    const requested = normalized.version;
+    if (bundledVersion !== null && requested === bundledVersion) {
       return { ok: true, docs: bundled, version: bundledVersion };
     }
 
@@ -106,8 +119,13 @@ async function fetchAndLoad(
     return {
       ok: false,
       reason: 'asset-missing',
-      message: `Fetched snapshot for v${requested} could not be read: ${error instanceof Error ? error.message : String(error)}`,
+      message: `Fetched snapshot for v${requested} could not be read: ${fetchedLoadProblem(error)}`,
     };
+  } finally {
+    // The parsed index lives in memory from here on; the file on disk is never read again.
+    if (fetched.dir !== undefined) {
+      removeQuietly(deps.removeDir ?? removeTempDir, fetched.dir);
+    }
   }
 }
 
@@ -140,7 +158,16 @@ export async function answerVersioned<T>(
   } catch (error) {
     // Neither the resolver nor a query over a resolved snapshot is expected to throw,
     // but a version-scoped tool reaches the network and must answer as data, never throw
-    // across the stdio boundary. Map to the catch-all reason migrate_usage's outer net uses.
-    return { ok: false, reason: 'asset-missing', message: error instanceof Error ? error.message : String(error) };
+    // across the stdio boundary. Map to the catch-all reason migrate_usage's outer net uses;
+    // the `internal:` prefix tells a caller this is a defect, not a missing release.
+    return { ok: false, reason: 'asset-missing', message: `internal: ${error instanceof Error ? error.message : String(error)}` };
   }
+}
+
+/** Why a fetched asset failed to load. The reinstall hint is dropped: it repairs the bundled snapshot, not a release asset. */
+function fetchedLoadProblem(error: unknown): string {
+  if (error instanceof SnapshotLoadError) {
+    return error.problem;
+  }
+  return error instanceof Error ? error.message : String(error);
 }

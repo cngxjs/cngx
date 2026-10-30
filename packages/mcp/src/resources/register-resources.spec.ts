@@ -26,8 +26,14 @@ const docs = loadDocsFromFile(FIXTURE);
 // Repo root is four levels up from this spec (src/resources -> src -> mcp -> packages -> root).
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..');
 
-function bodyOf<T>(result: { contents: { text?: string }[] }): T {
-  return JSON.parse(result.contents[0].text ?? 'null') as T;
+/** The text of the first resource content; a blob content has none. */
+function textOf(result: { contents: object[] }): string | undefined {
+  const first = result.contents[0] as { text?: string } | undefined;
+  return first?.text;
+}
+
+function bodyOf<T>(result: { contents: object[] }): T {
+  return JSON.parse(textOf(result) ?? 'null') as T;
 }
 
 describe('readCatalog (cngx://catalog)', () => {
@@ -118,6 +124,21 @@ describe('completeApiName (cngx://api/{name} autocomplete)', () => {
   it('returns an empty list when nothing matches', () => {
     expect(completeApiName(docs, 'zzz')).toEqual([]);
   });
+
+  it('orders by code point, not by locale', () => {
+    const mixedCase: DocsIndex = {
+      ...docs,
+      components: [
+        { name: 'Cngxa', selector: 'cngx-a', category: 'common/display' },
+        { name: 'CngxB', selector: 'cngx-b', category: 'common/display' },
+      ],
+      directives: [],
+      injectables: [],
+    };
+
+    // `B` (0x42) sorts before `a` (0x61); localeCompare would put `Cngxa` first.
+    expect(completeApiName(mixedCase, 'cngx')).toEqual(['CngxB', 'Cngxa']);
+  });
 });
 
 describe('readLlms (cngx://llms)', () => {
@@ -129,7 +150,7 @@ describe('readLlms (cngx://llms)', () => {
   });
 
   it('breaks the documented-exports count down per kind from the DocsIndex array lengths', () => {
-    const body = readLlms(docs).contents[0].text ?? '';
+    const body = textOf(readLlms(docs)) ?? '';
     const total =
       docs.components.length + docs.directives.length + docs.tokens.length + docs.functions.length;
 
@@ -140,14 +161,14 @@ describe('readLlms (cngx://llms)', () => {
   });
 
   it("carries the API-reference pointer links against the build script's base URL", () => {
-    const body = readLlms(docs).contents[0].text ?? '';
+    const body = textOf(readLlms(docs)) ?? '';
 
     expect(body).toContain(`${DEFAULT_BASE_URL}/llms-full.txt`);
     expect(body).toContain(`${DEFAULT_BASE_URL}/examples/`);
   });
 
   it('mirrors the published package list llms-publish.mjs derives from projects/*', async () => {
-    const body = readLlms(docs).contents[0].text ?? '';
+    const body = textOf(readLlms(docs)) ?? '';
     const published = await readPackages(resolve(REPO_ROOT, 'projects'));
 
     // The static CNGX_PACKAGES mirror must match the build-time derivation exactly -
@@ -176,7 +197,7 @@ describe('readLlmsFull (cngx://llms-full)', () => {
   });
 
   it('returns the dump verbatim - byte-identical, no second projection', () => {
-    const body = readLlmsFull(dump).contents[0].text ?? '';
+    const body = textOf(readLlmsFull(dump)) ?? '';
 
     expect(body).toBe(dump);
     // The llm-md structural markers survive untouched.

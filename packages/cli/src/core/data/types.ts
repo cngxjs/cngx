@@ -40,6 +40,7 @@ export interface DocInput {
 /** A named API output on a component/directive. */
 export interface DocOutput {
   name: string;
+  alias?: string;
   type?: string;
   description?: string;
   signalKind?: DocSignalKind;
@@ -50,6 +51,8 @@ export interface DocMethod {
   name: string;
   args?: unknown[];
   returnType?: string;
+  /** TypeScript `SyntaxKind` numbers of the method's modifiers, as compodocx records them. */
+  modifierKind?: number[];
   description?: string;
   rawdescription?: string;
 }
@@ -124,7 +127,10 @@ export interface DocEntry {
 export interface DocToken {
   name: string;
   file?: string;
+  /** The entry kind compodocx records; `"token"` on every token of a real snapshot. */
   type?: string;
+  /** The token's value type, e.g. `CngxSelectConfig` for `InjectionToken<CngxSelectConfig>`. */
+  tokenType?: string;
   description?: string;
 }
 

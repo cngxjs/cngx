@@ -1,18 +1,22 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { createDocsIndex, loadDocsFromFile } from '../data/loader.js';
-import type { DocEntry, DocumentationJson } from '../data/types.js';
+import { createDocsIndex, loadBundledDocs, loadDocsFromFile } from '../data/loader.js';
+import type { DocsIndex } from '../data/loader.js';
+import type { DocEntry, DocToken, DocumentationJson } from '../data/types.js';
 import { diffSnapshots } from './snapshot-diff.js';
-import { classifyGhFailure, fetchSnapshot } from './snapshot-fetch.js';
+import { migrateUsageMarkdown } from '../commands/migrate-usage.js';
+import { shuffled } from '../../testing/shuffle.js';
+import { fetchSnapshot } from './snapshot-fetch.js';
 
 const OLD = fileURLToPath(new URL('../../../test/fixtures/documentation.v-old.sample.json', import.meta.url));
 const NEW = fileURLToPath(new URL('../../../test/fixtures/documentation.v-new.sample.json', import.meta.url));
+const BUNDLED_DIR = fileURLToPath(new URL('../../../data/', import.meta.url));
 
 describe('diffSnapshots', () => {
   const delta = diffSnapshots(loadDocsFromFile(OLD), loadDocsFromFile(NEW));
 
-  it('records the resolved snapshot versions in meta', () => {
-    expect(delta.meta).toMatchObject({ resolvedFrom: '0.1.0', resolvedTo: '0.2.0', from: '0.1.0', to: '0.2.0' });
+  it('returns the categories only; migrateUsage owns ok and meta', () => {
+    expect(Object.keys(delta).sort()).toEqual(['components', 'diTokens', 'inputs', 'outputs', 'slots']);
   });
 
   it('reports a removed input under its owning component', () => {
@@ -22,8 +26,10 @@ describe('diffSnapshots', () => {
   });
 
   it('infers a component rename from a stable lib and shape', () => {
-    expect(delta.components.renamed).toEqual([{ from: 'CngxOldPanel', to: 'CngxNewPanel' }]);
-    expect(delta.components.signatureChanged).toEqual([]);
+    expect(delta.components.renamed).toEqual([{ from: 'CngxOldPanel', to: 'CngxNewPanel', inferred: true }]);
+    expect(delta.components.signatureChanged).toEqual([
+      { name: 'CngxNewPanel', fromSignature: 'cngx-old-panel', toSignature: 'cngx-new-panel' },
+    ]);
   });
 
   it('reports a removed injectable service as removed, never rename-inferred', () => {
@@ -50,12 +56,13 @@ describe('diffSnapshots', () => {
 });
 
 describe('diffSnapshots rename inference is fingerprint-gated', () => {
-  const index = (cngxVersion, components, tokens = []) => ({
+  const index = (cngxVersion: string, components: DocEntry[], tokens: DocToken[] = []): DocsIndex => ({
     meta: { schemaVersion: 2, cngxVersion, generatedAt: null, compodocxVersion: null },
     components,
     directives: [],
     injectables: [],
     tokens,
+    functions: [],
   });
 
   it('reports a removed input as removed even when a same-typed input is added', () => {
@@ -72,21 +79,67 @@ describe('diffSnapshots rename inference is fingerprint-gated', () => {
   });
 
   it('reports a removed DI token as removed, never a bare-type rename', () => {
-    const from = index('1.0.0', [], [{ name: 'CNGX_OLD', type: 'InjectionToken<Cfg>' }]);
-    const to = index('2.0.0', [], [{ name: 'CNGX_NEW', type: 'InjectionToken<Cfg>' }]);
+    const from = index('1.0.0', [], [{ name: 'CNGX_OLD', type: 'token', tokenType: 'Cfg' }]);
+    const to = index('2.0.0', [], [{ name: 'CNGX_NEW', type: 'token', tokenType: 'Cfg' }]);
     const delta = diffSnapshots(from, to);
 
     expect(delta.diTokens.removed).toEqual([{ name: 'CNGX_OLD' }]);
     expect(delta.diTokens.renamed).toEqual([]);
   });
 
-  it('still infers a top-level rename from the entry-shape fingerprint', () => {
+  it('reports a changed token type as a signature change', () => {
+    const from = index('1.0.0', [], [{ name: 'CNGX_X', type: 'token', tokenType: 'CfgA' }]);
+    const to = index('2.0.0', [], [{ name: 'CNGX_X', type: 'token', tokenType: 'CfgB' }]);
+
+    expect(diffSnapshots(from, to).diTokens.signatureChanged).toEqual([{ name: 'CNGX_X', fromSignature: 'CfgA', toSignature: 'CfgB' }]);
+  });
+
+  it('reports a token type edited in a copy of the bundled snapshot', () => {
+    const bundled = loadBundledDocs(BUNDLED_DIR);
+    const [first, ...rest] = bundled.tokens;
+    const edited: DocsIndex = { ...bundled, tokens: [{ ...first, tokenType: `${first.tokenType}Changed` }, ...rest] };
+
+    expect(first.type).toBe('token');
+    expect(diffSnapshots(bundled, edited).diTokens.signatureChanged).toEqual([
+      { name: first.name, fromSignature: first.tokenType, toSignature: `${first.tokenType}Changed` },
+    ]);
+  });
+
+  it('still infers a top-level rename from the entry-shape fingerprint and marks it inferred', () => {
     const open = [{ name: 'open', type: 'boolean' }];
     const from = index('1.0.0', [{ name: 'CngxOld', file: 'projects/ui/overlay/old.ts', inputsClass: open }]);
     const to = index('2.0.0', [{ name: 'CngxNew', file: 'projects/ui/overlay/new.ts', inputsClass: open }]);
     const delta = diffSnapshots(from, to);
 
-    expect(delta.components.renamed).toEqual([{ from: 'CngxOld', to: 'CngxNew' }]);
+    expect(delta.components.renamed).toEqual([{ from: 'CngxOld', to: 'CngxNew', inferred: true }]);
+  });
+
+  it('reports the selector change of an inferred rename under the new name', () => {
+    const open = [{ name: 'open', type: 'boolean' }];
+    const from = index('1.0.0', [{ name: 'A', selector: 'a-x', file: 'projects/ui/overlay/a.ts', inputsClass: open }]);
+    const to = index('2.0.0', [{ name: 'B', selector: 'b-x', file: 'projects/ui/overlay/b.ts', inputsClass: open }]);
+    const delta = diffSnapshots(from, to);
+
+    expect(delta.components.renamed).toEqual([{ from: 'A', to: 'B', inferred: true }]);
+    expect(delta.components.signatureChanged).toEqual([{ name: 'B', fromSignature: 'a-x', toSignature: 'b-x' }]);
+  });
+
+  it('adds no selector row to an inferred rename that keeps its selector', () => {
+    const open = [{ name: 'open', type: 'boolean' }];
+    const from = index('1.0.0', [{ name: 'A', selector: 'cngx-x', file: 'projects/ui/overlay/a.ts', inputsClass: open }]);
+    const to = index('2.0.0', [{ name: 'B', selector: 'cngx-x', file: 'projects/ui/overlay/b.ts', inputsClass: open }]);
+    const delta = diffSnapshots(from, to);
+
+    expect(delta.components.renamed).toEqual([{ from: 'A', to: 'B', inferred: true }]);
+    expect(delta.components.signatureChanged).toEqual([]);
+  });
+
+  it('marks a coincidental same-shape pair as inferred, never as a certain rename', () => {
+    const press = [{ name: 'disabled', type: 'boolean' }];
+    const from = index('1.0.0', [{ name: 'CngxCloseButton', file: 'projects/common/button/close.ts', inputsClass: press }]);
+    const to = index('2.0.0', [{ name: 'CngxBrandNewButton', file: 'projects/common/button/brand.ts', inputsClass: press }]);
+
+    expect(diffSnapshots(from, to).components.renamed).toEqual([{ from: 'CngxCloseButton', to: 'CngxBrandNewButton', inferred: true }]);
   });
 
   it('reports a removal when two added entries share the lib and shape, never a guess', () => {
@@ -102,13 +155,214 @@ describe('diffSnapshots rename inference is fingerprint-gated', () => {
     expect(delta.components.removed).toEqual([{ name: 'CngxOld' }]);
   });
 
+  it('reports two host-only directives without inputs or outputs as removed and added, never a rename', () => {
+    const from = index('1.0.0', [{ name: 'CngxAutofocus', file: 'projects/common/a11y/autofocus.ts' }]);
+    const to = index('2.0.0', [{ name: 'CngxFocusRing', file: 'projects/common/a11y/focus-ring.ts' }]);
+    const delta = diffSnapshots(from, to);
+
+    expect(delta.components.renamed).toEqual([]);
+    expect(delta.components.removed).toEqual([{ name: 'CngxAutofocus' }]);
+  });
+
   it('pairs two file-less entries through the empty-lib key', () => {
     const open = [{ name: 'open', type: 'boolean' }];
     const from = index('1.0.0', [{ name: 'CngxOld', inputsClass: open }]);
     const to = index('2.0.0', [{ name: 'CngxNew', inputsClass: open }]);
     const delta = diffSnapshots(from, to);
 
-    expect(delta.components.renamed).toEqual([{ from: 'CngxOld', to: 'CngxNew' }]);
+    expect(delta.components.renamed).toEqual([{ from: 'CngxOld', to: 'CngxNew', inferred: true }]);
+  });
+});
+
+describe('diffSnapshots over malformed slots', () => {
+  const index = (cngxVersion: string, components: DocEntry[]): DocsIndex => ({
+    meta: { schemaVersion: 6, cngxVersion, generatedAt: null, compodocxVersion: null },
+    components,
+    directives: [],
+    injectables: [],
+    tokens: [],
+    functions: [],
+  });
+  const broken = [null, { description: 'No name.' }, { name: 'cngxKept', description: 'Kept.' }] as unknown as DocEntry['slots'];
+
+  it('skips a null slot and a nameless one and keeps the other changes', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', slots: broken, inputsClass: [{ name: 'gone', type: 'string' }] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', slots: [], inputsClass: [] }]);
+    const delta = diffSnapshots(from, to);
+
+    expect(delta.slots.removed).toEqual([{ name: 'cngxKept', owner: 'CngxX' }]);
+    expect(delta.inputs.removed).toEqual([{ name: 'gone', owner: 'CngxX' }]);
+  });
+
+  it('treats slots that are not a list as no slots', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', slots: {} as unknown as DocEntry['slots'] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', slots: [{ name: 'cngxNew', description: 'New.' }] }]);
+
+    expect(diffSnapshots(from, to).slots).toEqual({ removed: [], renamed: [], signatureChanged: [] });
+  });
+});
+
+describe('diffSnapshots across a kind change', () => {
+  const index = (cngxVersion: string, components: DocEntry[], directives: DocEntry[]): DocsIndex => ({
+    meta: { schemaVersion: 6, cngxVersion, generatedAt: null, compodocxVersion: null },
+    components,
+    directives,
+    injectables: [],
+    tokens: [],
+    functions: [],
+  });
+
+  it('reports a component that became a directive as a kind change and diffs its members', () => {
+    const inputs = [{ name: 'open', type: 'boolean' }, { name: 'legacy', type: 'string' }];
+    const from = index('1.0.0', [{ name: 'CngxX', selector: 'cngx-x', inputsClass: inputs }], []);
+    const to = index('2.0.0', [], [{ name: 'CngxX', selector: 'cngx-x', inputsClass: [inputs[0]] }]);
+    const delta = diffSnapshots(from, to);
+
+    expect(delta.components).toEqual({
+      removed: [],
+      renamed: [],
+      signatureChanged: [{ name: 'CngxX', fromSignature: 'component', toSignature: 'directive' }],
+    });
+    expect(delta.inputs.removed).toEqual([{ name: 'legacy', owner: 'CngxX' }]);
+  });
+
+  it('reports a moved selector next to the kind change', () => {
+    const from = index('1.0.0', [], [{ name: 'CngxX', selector: '[cngxX]' }]);
+    const to = index('2.0.0', [{ name: 'CngxX', selector: 'cngx-x' }], []);
+
+    expect(diffSnapshots(from, to).components.signatureChanged).toEqual([
+      { name: 'CngxX', fromSignature: 'directive', toSignature: 'component' },
+      { name: 'CngxX', fromSignature: '[cngxX]', toSignature: 'cngx-x' },
+    ]);
+  });
+});
+
+describe('diffSnapshots keys inputs and outputs on their public name', () => {
+  const index = (cngxVersion: string, components: DocEntry[]): DocsIndex => ({
+    meta: { schemaVersion: 6, cngxVersion, generatedAt: null, compodocxVersion: null },
+    components,
+    directives: [],
+    injectables: [],
+    tokens: [],
+    functions: [],
+  });
+
+  it('reports a changed alias on an unchanged field as a rename of the public name', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', alias: 'selected', type: 'boolean' }] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', alias: 'checked', type: 'boolean' }] }]);
+    const delta = diffSnapshots(from, to);
+
+    expect(delta.inputs).toEqual({ removed: [], renamed: [{ from: 'selected', to: 'checked', owner: 'CngxX' }], signatureChanged: [] });
+  });
+
+  it('reports an added alias as a rename from the field name', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', outputsClass: [{ name: 'changed', type: 'string' }] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', outputsClass: [{ name: 'changed', alias: 'cngxChanged', type: 'string' }] }]);
+
+    expect(diffSnapshots(from, to).outputs.renamed).toEqual([{ from: 'changed', to: 'cngxChanged', owner: 'CngxX' }]);
+  });
+
+  it('reports a removed alias as a rename to the field name, with a type change under the new name', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', alias: 'cngxValue', type: 'string' }] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', type: 'number' }] }]);
+    const delta = diffSnapshots(from, to);
+
+    expect(delta.inputs.renamed).toEqual([{ from: 'cngxValue', to: 'value', owner: 'CngxX' }]);
+    expect(delta.inputs.signatureChanged).toEqual([{ name: 'value', owner: 'CngxX', fromSignature: 'string', toSignature: 'number', changed: ['type'] }]);
+    expect(delta.inputs.removed).toEqual([]);
+  });
+
+  it('reports no change for a field rename under an unchanged alias', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', alias: 'selected', type: 'boolean' }] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'checked', alias: 'selected', type: 'boolean' }] }]);
+
+    expect(diffSnapshots(from, to).inputs).toEqual({ removed: [], renamed: [], signatureChanged: [] });
+  });
+
+  it('reports required false to true as a signature change', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', type: 'string', required: false, signalKind: 'input' }] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', type: 'string', required: true, signalKind: 'input' }] }]);
+
+    expect(diffSnapshots(from, to).inputs.signatureChanged).toEqual([
+      { name: 'value', owner: 'CngxX', fromSignature: 'string (input)', toSignature: 'string (required, input)', changed: ['required'] },
+    ]);
+  });
+
+  it('reports a signal kind change as a signature change', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', type: 'string', signalKind: 'input' }] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', type: 'string', signalKind: 'model' }] }]);
+
+    expect(diffSnapshots(from, to).inputs.signatureChanged).toHaveLength(1);
+  });
+
+  it('matches outputs on their alias', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', outputsClass: [{ name: 'value', alias: 'selected', type: 'boolean' }] }]);
+    const renamedField = index('2.0.0', [{ name: 'CngxX', outputsClass: [{ name: 'checked', alias: 'selected', type: 'boolean' }] }]);
+    const renamedAlias = index('2.0.0', [{ name: 'CngxX', outputsClass: [{ name: 'value', alias: 'checked', type: 'boolean' }] }]);
+
+    expect(diffSnapshots(from, renamedField).outputs.removed).toEqual([]);
+    expect(diffSnapshots(from, renamedAlias).outputs).toEqual({ removed: [], renamed: [{ from: 'selected', to: 'checked', owner: 'CngxX' }], signatureChanged: [] });
+  });
+});
+
+describe('diffSnapshots infers a slot rename only from a unique, non-empty key', () => {
+  const index = (cngxVersion: string, slots: { name: string; description: string }[]): DocsIndex => ({
+    meta: { schemaVersion: 6, cngxVersion, generatedAt: null, compodocxVersion: null },
+    components: [{ name: 'CngxX', slots }],
+    directives: [],
+    injectables: [],
+    tokens: [],
+    functions: [],
+  });
+
+  const a = { name: 'cngxA', description: 'The caret.' };
+  const b = { name: 'cngxB', description: 'The caret.' };
+  const added = { name: 'cngxC', description: 'The caret.' };
+
+  it.each([
+    ['a, b', [a, b]],
+    ['b, a', [b, a]],
+  ])('reports two removed slots sharing a description against one added slot as two removals (%s)', (_, fromSlots) => {
+    const delta = diffSnapshots(index('1.0.0', fromSlots), index('2.0.0', [added]));
+
+    expect(delta.slots.renamed).toEqual([]);
+    expect(delta.slots.removed).toEqual([
+      { name: 'cngxA', owner: 'CngxX' },
+      { name: 'cngxB', owner: 'CngxX' },
+    ]);
+  });
+
+  it.each([[''], ['   ']])('never pairs slots whose description is %j', (description) => {
+    const delta = diffSnapshots(index('1.0.0', [{ name: 'cngxA', description }]), index('2.0.0', [{ name: 'cngxB', description }]));
+
+    expect(delta.slots.renamed).toEqual([]);
+    expect(delta.slots.removed).toEqual([{ name: 'cngxA', owner: 'CngxX' }]);
+  });
+
+  it('still pairs one removed and one added slot with the same description', () => {
+    const delta = diffSnapshots(index('1.0.0', [a]), index('2.0.0', [added]));
+
+    expect(delta.slots.renamed).toEqual([{ from: 'cngxA', to: 'cngxC', owner: 'CngxX' }]);
+  });
+});
+
+describe('diffSnapshots normalises slot names that carry their description', () => {
+  const index = (cngxVersion: string, slot: { name: string; description: string }): DocsIndex => ({
+    meta: { schemaVersion: 6, cngxVersion, generatedAt: null, compodocxVersion: null },
+    components: [{ name: 'CngxX', slots: [slot] }],
+    directives: [],
+    injectables: [],
+    tokens: [],
+    functions: [],
+  });
+
+  it('reports a description edit as a signature change, not a removed slot', () => {
+    const from = index('1.0.0', { name: 'cngxX Old text.\n<example-url>http://localhost:4200/#/a</example-url>', description: '' });
+    const to = index('2.0.0', { name: 'cngxX New text.', description: '' });
+    const delta = diffSnapshots(from, to);
+
+    expect(delta.slots.removed).toEqual([]);
+    expect(delta.slots.signatureChanged).toEqual([{ name: 'cngxX', owner: 'CngxX', fromSignature: 'Old text.', toSignature: 'New text.' }]);
   });
 });
 
@@ -142,7 +396,7 @@ describe('diffSnapshots across schema 2 and schema 6', () => {
 
     expect(toIndex.components[0].category).toBe('forms/select');
     expect(diffSnapshots(createDocsIndex(from), toIndex).components.renamed).toEqual([
-      { from: 'CngxOldSelect', to: 'CngxNewSelect' },
+      { from: 'CngxOldSelect', to: 'CngxNewSelect', inferred: true },
     ]);
   });
 });
@@ -150,6 +404,7 @@ describe('diffSnapshots across schema 2 and schema 6', () => {
 describe('fetchSnapshot failure classification', () => {
   const stub = {
     makeTempDir: () => '/tmp/cngx-mcp-snapshot-test',
+    removeDir: () => undefined,
     releaseBaseUrl: 'https://example.test/releases/download',
     writeFile: () => undefined,
   };
@@ -199,10 +454,100 @@ describe('fetchSnapshot failure classification', () => {
       httpGet: notFound,
       runGh: async () => undefined,
     });
-    expect(result).toEqual({ ok: true, path: '/tmp/cngx-mcp-ok/documentation.json' });
+    expect(result).toEqual({ ok: true, path: '/tmp/cngx-mcp-ok/documentation.json', dir: '/tmp/cngx-mcp-ok' });
+  });
+});
+
+describe('diffSnapshots output order and labels', () => {
+  const index = (cngxVersion: string, components: DocEntry[]): DocsIndex => ({
+    meta: { schemaVersion: 6, cngxVersion, generatedAt: null, compodocxVersion: null },
+    components,
+    directives: [],
+    injectables: [],
+    tokens: [],
+    functions: [],
   });
 
-  it('treats an unknown gh failure as asset-missing', () => {
-    expect(classifyGhFailure(new Error('something odd happened')).reason).toBe('asset-missing');
+  it('renders a typeless signal input without a leading space', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', signalKind: 'input-signal' }] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', type: 'string', signalKind: 'input-signal' }] }]);
+
+    expect(diffSnapshots(from, to).inputs.signatureChanged).toEqual([
+      { name: 'value', owner: 'CngxX', fromSignature: '(input-signal)', toSignature: 'string (input-signal)', changed: ['type'] },
+    ]);
+  });
+
+  it.each([
+    ['required to optional', { type: 'string', required: true }, { type: 'string' }, ['required']],
+    ['model to input-signal', { type: 'string', signalKind: 'model' }, { type: 'string', signalKind: 'input-signal' }, ['binding kind']],
+    ['type and required', { type: 'string' }, { type: 'number', required: true }, ['type', 'required']],
+    ['every part', { type: 'string', signalKind: 'model' }, { type: 'number', required: true, signalKind: 'input-signal' }, ['type', 'required', 'binding kind']],
+  ] as const)('names the changed parts of an input: %s', (_, before, after, changed) => {
+    const from = index('1.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', ...before }] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', ...after }] }]);
+
+    expect(diffSnapshots(from, to).inputs.signatureChanged).toEqual([expect.objectContaining({ name: 'value', changed })]);
+  });
+
+  it('reports no change for a whitespace-only slot description change', () => {
+    const from = index('1.0.0', [{ name: 'CngxX', slots: [{ name: 'cngxA', description: 'The caret\n  glyph.' }] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', slots: [{ name: 'cngxA', description: ' The caret glyph. ' }] }]);
+
+    expect(diffSnapshots(from, to).slots).toEqual({ removed: [], renamed: [], signatureChanged: [] });
+  });
+
+  it('labels each changed part in the markdown', () => {
+    const from = { ...index('1.0.0', [{ name: 'CngxX', selector: 'cngx-x', inputsClass: [{ name: 'v', type: 'string' }] }]), tokens: [{ name: 'CNGX_T', type: 'token', tokenType: 'A' }] };
+    const to = {
+      ...index('2.0.0', [{ name: 'CngxX', selector: 'cngx-y', inputsClass: [{ name: 'v', type: 'number' }] }]),
+      tokens: [{ name: 'CNGX_T', type: 'token', tokenType: 'B' }],
+    };
+    const meta = { from: '1.0.0', to: '2.0.0', resolvedFrom: '1.0.0', resolvedTo: '2.0.0' };
+    const markdown = migrateUsageMarkdown({ ok: true, meta, ...diffSnapshots(from, to) });
+
+    expect(markdown).toContain('|selector|`CngxX`|`cngx-x` -> `cngx-y`|');
+    expect(markdown).toContain('|type|`CngxX.v`|`string` -> `number`|');
+    expect(markdown).toContain('|type|`CNGX_T`|`A` -> `B`|');
+    expect(markdown).not.toContain('|signature|');
+  });
+
+  // The bundled snapshot against a copy with changes in every category, both
+  // shuffled at every level the diff walks.
+  const bundled = loadBundledDocs(BUNDLED_DIR);
+  const edited: DocsIndex = {
+    ...bundled,
+    components: bundled.components.filter((_, i) => i % 5 !== 0),
+    directives: bundled.directives.map((entry, i) => (i % 3 === 0 ? { ...entry, inputsClass: (entry.inputsClass ?? []).slice(1) } : entry)),
+    tokens: bundled.tokens.map((token, i) => (i % 4 === 0 ? { ...token, tokenType: `${token.tokenType}X` } : token)),
+  };
+  const shuffleEntry = (entry: DocEntry, seed: number): DocEntry => ({
+    ...entry,
+    inputsClass: entry.inputsClass && shuffled(entry.inputsClass, seed),
+    outputsClass: entry.outputsClass && shuffled(entry.outputsClass, seed),
+    slots: entry.slots && shuffled(entry.slots, seed),
+  });
+  const shuffleIndex = (docs: DocsIndex, seed: number): DocsIndex => ({
+    ...docs,
+    components: shuffled(docs.components, seed).map((entry) => shuffleEntry(entry, seed)),
+    directives: shuffled(docs.directives, seed).map((entry) => shuffleEntry(entry, seed)),
+    injectables: shuffled(docs.injectables, seed),
+    tokens: shuffled(docs.tokens, seed),
+  });
+
+  it('answers byte-equal json and markdown across 20 shuffles of both snapshots', () => {
+    const meta = { from: '1.0.0', to: '2.0.0', resolvedFrom: '1.0.0', resolvedTo: '2.0.0' };
+    const delta = diffSnapshots(bundled, edited);
+    const json = JSON.stringify(delta);
+    const markdown = migrateUsageMarkdown({ ok: true, meta, ...delta });
+
+    expect(delta.components.removed.length).toBeGreaterThan(1);
+    expect(delta.inputs.removed.length).toBeGreaterThan(1);
+    expect(delta.diTokens.signatureChanged.length).toBeGreaterThan(1);
+    for (let seed = 1; seed <= 20; seed++) {
+      const shuffledDelta = diffSnapshots(shuffleIndex(bundled, seed), shuffleIndex(edited, seed + 100));
+
+      expect(JSON.stringify(shuffledDelta), `seed ${seed}`).toBe(json);
+      expect(migrateUsageMarkdown({ ok: true, meta, ...shuffledDelta }), `seed ${seed}`).toBe(markdown);
+    }
   });
 });

@@ -11,8 +11,16 @@ import { defineCommand } from '../command.js';
 import type { DocsIndex } from '../data/loader.js';
 import type { DocsResolver } from '../data/docs-resolver.js';
 import { diffSnapshots } from '../diff/snapshot-diff.js';
-import type { CategoryDelta, MigrateUsageResult, UsageDelta, UsageDeltaError } from '../diff/types.js';
-import { blocks, cell, code, section, table } from './markdown.js';
+import { normalizeReleaseVersion } from '../diff/snapshot-fetch.js';
+import type {
+  CategoryDelta,
+  MigrateUsageResult,
+  SignatureChangedEntry,
+  UsageDelta,
+  UsageDeltaError,
+  UsageDeltaMeta,
+} from '../diff/types.js';
+import { blocks, cell, code, section, table, textCell } from './markdown.js';
 
 export interface MigrateUsageArgs {
   from: string;
@@ -33,7 +41,34 @@ export async function migrateUsage(
   resolve: DocsResolver,
 ): Promise<MigrateUsageResult> {
   const from = args.from;
-  const to = args.to ?? bundled.meta.cngxVersion ?? 'unknown';
+  const to = args.to ?? bundled.meta.cngxVersion;
+  const invalid = (argument: 'from' | 'to', message: string): UsageDeltaError => ({
+    ok: false,
+    meta: { from, to: to ?? 'unknown' },
+    reason: 'invalid-version',
+    message: `${argument} ${message}`,
+  });
+
+  // Only the versions the caller passed are validated, both before the first
+  // resolve, so a malformed `to` never waits behind a fetch of `from`. The
+  // message names the argument; the version contract itself stays argument-neutral.
+  const fromVersion = normalizeReleaseVersion(from);
+  if (!fromVersion.ok) {
+    return invalid('from', fromVersion.message);
+  }
+  const toVersion = args.to === undefined ? null : normalizeReleaseVersion(args.to);
+  if (toVersion && !toVersion.ok) {
+    return invalid('to', toVersion.message);
+  }
+  // `unknown` is a display label only: it is never validated or resolved.
+  if (to === null) {
+    return {
+      ok: false,
+      meta: { from, to: 'unknown' },
+      reason: 'asset-missing',
+      message: 'The bundled snapshot carries no cngxVersion; pass a to version.',
+    };
+  }
 
   const fromResolved = await resolve(from);
   if (!fromResolved.ok) {
@@ -44,37 +79,43 @@ export async function migrateUsage(
     return { ok: false, meta: { from, to }, reason: toResolved.reason, message: toResolved.message };
   }
 
-  const delta = diffSnapshots(fromResolved.docs, toResolved.docs);
-  // The resolver already labels an unstamped fetched asset with its requested version
-  // (a successful download of the `v<version>` asset means the asset IS that version),
-  // so `.version` is the truthful resolved label; fall back to the request only for the
-  // theoretical null case an unstamped bundled short-circuit would produce.
-  return {
-    ...delta,
-    meta: {
-      from,
-      to,
-      resolvedFrom: fromResolved.version ?? from,
-      resolvedTo: toResolved.version ?? to,
-    },
+  // Type narrowing only: the resolver never answers a null label for an explicit version.
+  const meta: UsageDeltaMeta = {
+    from,
+    to,
+    resolvedFrom: fromResolved.version ?? fromVersion.version,
+    resolvedTo: toResolved.version ?? toVersion?.version ?? to,
   };
+  return { ok: true, meta, ...diffSnapshots(fromResolved.docs, toResolved.docs) };
 }
 
-const DELTA_CATEGORIES: readonly (readonly [keyof Pick<UsageDelta, 'components' | 'inputs' | 'outputs' | 'slots' | 'diTokens'>, string])[] = [
-  ['components', 'Components, directives and services'],
-  ['inputs', 'Inputs'],
-  ['outputs', 'Outputs'],
-  ['slots', 'Slots'],
-  ['diTokens', 'DI tokens'],
+type DeltaCategory = keyof Pick<UsageDelta, 'components' | 'inputs' | 'outputs' | 'slots' | 'diTokens'>;
+
+/** Each category with its title and the part a same-name change in it changed. */
+const DELTA_CATEGORIES: readonly (readonly [DeltaCategory, string, string])[] = [
+  ['components', 'Components, directives and services', 'selector'],
+  ['inputs', 'Inputs', 'type'],
+  ['outputs', 'Outputs', 'type'],
+  ['slots', 'Slots', 'description'],
+  ['diTokens', 'DI tokens', 'type'],
 ];
+
+const KINDS: ReadonlySet<string> = new Set(['component', 'directive']);
 
 const owned = (name: string, owner: string | undefined) => code(owner ? `${owner}.${name}` : name);
 
-function categoryRows(delta: CategoryDelta): string[][] {
+function categoryRows(delta: CategoryDelta, category: DeltaCategory, part: string): string[][] {
+  // A slot description is prose: capped like every other description cell.
+  const detail = category === 'slots' ? textCell : code;
+  // An input names the parts of its contract that changed; only the component
+  // category carries a component <-> directive flip.
+  const isKindFlip = (e: SignatureChangedEntry) =>
+    category === 'components' && KINDS.has(e.fromSignature) && KINDS.has(e.toSignature);
+  const changed = (e: SignatureChangedEntry) => e.changed?.join(', ') ?? (isKindFlip(e) ? 'kind' : part);
   return [
     ...delta.removed.map((e) => ['removed', owned(e.name, e.owner), '-']),
-    ...delta.renamed.map((e) => ['renamed', owned(e.from, e.owner), code(e.to)]),
-    ...delta.signatureChanged.map((e) => ['signature', owned(e.name, e.owner), `${code(e.fromSignature)} -> ${code(e.toSignature)}`]),
+    ...delta.renamed.map((e) => [e.inferred ? 'renamed (inferred)' : 'renamed', owned(e.from, e.owner), code(e.to)]),
+    ...delta.signatureChanged.map((e) => [changed(e), owned(e.name, e.owner), `${detail(e.fromSignature)} -> ${detail(e.toSignature)}`]),
   ];
 }
 
@@ -84,13 +125,13 @@ export function migrateUsageMarkdown(delta: UsageDelta | null): string {
     return 'No delta.\n';
   }
   const { meta } = delta;
-  const sections = DELTA_CATEGORIES.map(([key, title]) => {
-    const rows = categoryRows(delta[key]);
+  const sections = DELTA_CATEGORIES.map(([key, title, part]) => {
+    const rows = categoryRows(delta[key], key, part);
     return rows.length ? section(title, table(['Change', 'Symbol', 'Detail'], rows), '') : '';
   });
   const changed = sections.some((s) => s !== '');
   return blocks(
-    `# Migrating ${cell(meta.resolvedFrom ?? meta.from)} -> ${cell(meta.resolvedTo ?? meta.to)}`,
+    `# Migrating ${cell(meta.resolvedFrom)} -> ${cell(meta.resolvedTo)}`,
     changed ? null : 'No removed, renamed or signature-changed API between these releases.',
     ...sections,
   );
@@ -107,12 +148,16 @@ export const migrateUsageCommand = defineCommand({
     'components, inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version. ' +
     'A version other than the bundled one is fetched from the GitHub Release assets via `gh`, or over HTTPS ' +
     'when `gh` is missing or fails; no network or an absent asset returns a typed error result ' +
-    '({ ok: false, reason }), never a throw.',
+    '({ ok: false, reason }), never a throw. A malformed version returns reason `invalid-version` before any fetch.',
+  cliSummary:
+    'Print the removed, renamed and signature-changed API between two cngx releases: components, inputs, outputs, slots and DI tokens. --to defaults to the bundled release; any other release is fetched through `gh`, or over HTTPS when `gh` is missing or fails.',
   cliName: 'migrate',
   input: {
-    from: z.string().describe('The cngx version to upgrade FROM, e.g. "0.1.0" (without the leading "v").'),
+    from: z.string().trim().min(1).describe('The cngx version to upgrade FROM, e.g. "0.1.0"; a leading "v" is accepted.'),
     to: z
       .string()
+      .trim()
+      .min(1)
       .optional()
       .describe('The cngx version to upgrade TO. Defaults to the bundled snapshot version.'),
   },
@@ -126,11 +171,12 @@ export const migrateUsageCommand = defineCommand({
         ok: false,
         meta: { from, to: to ?? ctx.bundled.meta.cngxVersion ?? 'unknown' },
         reason: 'asset-missing',
-        message: error instanceof Error ? error.message : String(error),
+        // The catch-all keeps `asset-missing`; the prefix marks a defect, not a missing release.
+        message: `internal: ${error instanceof Error ? error.message : String(error)}`,
       };
       return failure;
     }
   },
-  answeredVersion: (delta: UsageDelta | null) => delta?.meta.resolvedTo ?? delta?.meta.to ?? null,
+  answeredVersion: (delta: UsageDelta | null) => delta?.meta.resolvedTo ?? null,
   toMarkdown: (delta: UsageDelta | null) => migrateUsageMarkdown(delta),
 });
