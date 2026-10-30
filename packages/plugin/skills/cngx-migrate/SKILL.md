@@ -33,9 +33,9 @@ snapshot version when omitted.
 
 This is the WHAT. Do not diff the releases by hand or from memory - the tool is the
 only trustworthy source of what actually moved. If it returns a typed failure
-(`{ ok: false, reason }`: `network` / `asset-missing`), the non-bundled
-snapshot could not be fetched; surface the reason and stop rather than guessing a
-delta.
+(`{ ok: false, reason }`: `network` / `asset-missing` / `invalid-version`), the
+non-bundled snapshot could not be fetched, or a version is not a release version;
+surface the reason and stop rather than guessing a delta.
 
 ## 3. Cross-reference the release's MIGRATION.md
 

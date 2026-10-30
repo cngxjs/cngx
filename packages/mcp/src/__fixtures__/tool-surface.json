@@ -181,7 +181,7 @@
     {
       "name": "migrate_usage",
       "title": "Diff two cngx releases",
-      "description": "Return a structured API delta between two cngx releases: removed / renamed / signature-changed components, inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version. A version other than the bundled one is fetched from the GitHub Release assets via `gh`, or over HTTPS when `gh` is missing or fails; no network or an absent asset returns a typed error result ({ ok: false, reason }), never a throw.",
+      "description": "Return a structured API delta between two cngx releases: removed / renamed / signature-changed components, inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version. A version other than the bundled one is fetched from the GitHub Release assets via `gh`, or over HTTPS when `gh` is missing or fails; no network or an absent asset returns a typed error result ({ ok: false, reason }), never a throw. A malformed version returns reason `invalid-version` before any fetch.",
       "inputSchema": {
         "type": "object",
         "properties": {

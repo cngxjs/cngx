@@ -11,6 +11,7 @@ import { defineCommand } from '../command.js';
 import type { DocsIndex } from '../data/loader.js';
 import type { DocsResolver } from '../data/docs-resolver.js';
 import { diffSnapshots } from '../diff/snapshot-diff.js';
+import { normalizeReleaseVersion } from '../diff/snapshot-fetch.js';
 import type { CategoryDelta, MigrateUsageResult, SignatureChangedEntry, UsageDelta, UsageDeltaError } from '../diff/types.js';
 import { blocks, cell, code, section, table, textCell } from './markdown.js';
 
@@ -34,6 +35,15 @@ export async function migrateUsage(
 ): Promise<MigrateUsageResult> {
   const from = args.from;
   const to = args.to ?? bundled.meta.cngxVersion ?? 'unknown';
+
+  // Both versions are checked before the first resolve, so a malformed `to` never
+  // waits behind a fetch of `from`.
+  for (const version of [from, to]) {
+    const normalized = normalizeReleaseVersion(version);
+    if (!normalized.ok) {
+      return { ok: false, meta: { from, to }, reason: 'invalid-version', message: normalized.message };
+    }
+  }
 
   const fromResolved = await resolve(from);
   if (!fromResolved.ok) {
@@ -119,7 +129,7 @@ export const migrateUsageCommand = defineCommand({
     'components, inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version. ' +
     'A version other than the bundled one is fetched from the GitHub Release assets via `gh`, or over HTTPS ' +
     'when `gh` is missing or fails; no network or an absent asset returns a typed error result ' +
-    '({ ok: false, reason }), never a throw.',
+    '({ ok: false, reason }), never a throw. A malformed version returns reason `invalid-version` before any fetch.',
   cliSummary:
     'Print the removed, renamed and signature-changed API between two cngx releases: components, inputs, outputs, slots and DI tokens. --to defaults to the bundled release; any other release is fetched through `gh`, or over HTTPS when `gh` is missing or fails.',
   cliName: 'migrate',
@@ -142,7 +152,7 @@ export const migrateUsageCommand = defineCommand({
         ok: false,
         meta: { from, to: to ?? ctx.bundled.meta.cngxVersion ?? 'unknown' },
         reason: 'asset-missing',
-        // The reason union stays fixed; the prefix marks a defect, not a missing release.
+        // The catch-all keeps `asset-missing`; the prefix marks a defect, not a missing release.
         message: `internal: ${error instanceof Error ? error.message : String(error)}`,
       };
       return failure;

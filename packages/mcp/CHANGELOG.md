@@ -13,6 +13,12 @@ answer grounds against is a runtime property (`cngx://provenance`,
   other name tools instead of the bare result. Narrow on `ok === true`;
   `groundedVersion` is the bundled release, since the tool has no `version`
   input.
+- A malformed version answers the new failure reason `invalid-version` before
+  any fetch, on every version-scoped tool and on `migrate_usage` (both `from`
+  and `to` are checked before either is resolved). `asset-missing` no longer
+  covers it. A client that switches exhaustively on `reason` sees a new value.
+  Leading zeros (`01.2.3`) and empty prerelease ids (`1.2.3-rc.`) are now
+  rejected.
 
 ## 0.2.0 - 2026-08-27
 

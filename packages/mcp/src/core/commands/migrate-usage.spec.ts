@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { loadDocsFromFile } from '../data/loader.js';
-import type { DocsResolverDeps } from '../data/docs-resolver.js';
+import type { DocsResolver, DocsResolverDeps } from '../data/docs-resolver.js';
 import { createDocsResolver } from '../data/docs-resolver.js';
 import { migrateUsage, migrateUsageCommand, migrateUsageMarkdown } from './migrate-usage.js';
 import type { CategoryDelta, SignatureChangedEntry, UsageDelta } from '../diff/types.js';
@@ -38,6 +38,24 @@ describe('migrateUsage', () => {
     expect(delta.meta).toMatchObject({ from: '0.1.0', to: '0.2.0', resolvedFrom: '0.1.0', resolvedTo: '0.2.0' });
     expect(delta.inputs.removed).toEqual([{ name: 'legacyMode', owner: 'CngxSelect' }]);
     expect(delta.components.renamed).toEqual([{ from: 'CngxOldPanel', to: 'CngxNewPanel', inferred: true }]);
+  });
+
+  it.each([
+    ['0.1.0', ' bad', '" bad" is not a release version'],
+    ['01.2.3', undefined, '"01.2.3" is not a release version'],
+    ['0.1.0', '1.2.3-rc.', '"1.2.3-rc." is not a release version'],
+  ])('rejects from %j to %j as invalid-version without calling the resolver', async (from, to, message) => {
+    const resolve = vi.fn<DocsResolver>();
+
+    const result = await migrateUsage(bundledNew, { from, to }, resolve);
+
+    expect(result).toEqual({
+      ok: false,
+      meta: { from, to: to ?? '0.2.0' },
+      reason: 'invalid-version',
+      message: expect.stringMatching(new RegExp(`^${message.replace(/[.]/g, '\\.')}`)),
+    });
+    expect(resolve).not.toHaveBeenCalled();
   });
 
   it('renders an inferred rename and its selector change as two component rows', async () => {

@@ -20,14 +20,21 @@ describe('normalizeReleaseVersion', () => {
     expect(normalizeReleaseVersion(input)).toEqual({ ok: true, version });
   });
 
-  it.each(['', ' ', 'v', ' V '])('rejects %j as a blank version', (input) => {
-    expect(normalizeReleaseVersion(input)).toEqual({ ok: false, message: 'A blank version is not a release version.' });
+  it.each(['', ' ', 'v', ' V '])('rejects %j as a blank version and echoes the input', (input) => {
+    expect(normalizeReleaseVersion(input)).toEqual({ ok: false, message: `"${input}" is not a release version; the version is blank.` });
   });
 
-  it.each(['vv0.2.0', 'latest', '../x'])('rejects %j and echoes the input', (input) => {
-    const result = normalizeReleaseVersion(input);
+  it.each(['vv0.2.0', 'latest', '../x', '01.2.3', '1.02.3', '1.2.03', '1.2.3-.', '1.2.3-rc.', '1.2.3-rc..1', '1.2.3-.rc'])(
+    'rejects %j and echoes the input',
+    (input) => {
+      const result = normalizeReleaseVersion(input);
 
-    expect(!result.ok && result.message).toMatch(new RegExp(`^"${input.replace(/[.]/g, '\\.')}" is not a release version`));
+      expect(!result.ok && result.message).toMatch(new RegExp(`^"${input.replace(/[.]/g, '\\.')}" is not a release version`));
+    },
+  );
+
+  it.each(['0.0.0', '10.20.30', '1.2.3-rc.1', '1.2.3-0', '1.2.3-x-y.z', '1.2.3-alpha-.1'])('accepts the release version %j', (input) => {
+    expect(normalizeReleaseVersion(input)).toEqual({ ok: true, version: input });
   });
 });
 
@@ -181,7 +188,7 @@ describe('fetchSnapshot', () => {
 
     expect(await fetchSnapshot('../x', deps)).toMatchObject({
       ok: false,
-      reason: 'asset-missing',
+      reason: 'invalid-version',
       message: expect.stringContaining('not a release version'),
     });
     expect(deps.makeTempDir).not.toHaveBeenCalled();
@@ -313,10 +320,10 @@ describe('fetchSnapshot failure messages', () => {
     throw Object.assign(new Error('spawn gh ENOENT'), { code: 'ENOENT' });
   };
 
-  it('names an invalid version precisely under asset-missing', async () => {
+  it('names an invalid version precisely under invalid-version', async () => {
     const result = await fetchSnapshot('latest', { ...stub, httpGet: async () => ({ status: 404, body: '' }), runGh: ghMissing });
 
-    expect(result).toMatchObject({ ok: false, reason: 'asset-missing' });
+    expect(result).toMatchObject({ ok: false, reason: 'invalid-version' });
     expect(!result.ok && result.message).toMatch(/^"latest" is not a release version/);
   });
 

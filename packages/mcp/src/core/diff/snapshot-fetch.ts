@@ -61,16 +61,17 @@ export const SNAPSHOT_FETCH_TIMEOUT_MS = 15_000;
 /** Public download root of the cngx release assets. */
 export const RELEASE_BASE_URL = `https://github.com/${CNGX_REPO}/releases/download`;
 
-// A release tag: major.minor.patch plus an optional prerelease whose ids may
-// contain hyphens, as semver permits. No `/`, `\` or `..` can pass it.
-const RELEASE_VERSION = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
+// A release tag: major.minor.patch without leading zeros, plus an optional
+// prerelease of non-empty dot-separated ids that may contain hyphens, as semver
+// permits. No `/`, `\` or `..` can pass it.
+const RELEASE_VERSION = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 
 /**
  * Whether `version` is a release version. Checked before a version reaches a
  * temp path, a `gh` argument or a URL.
  */
 export function isReleaseVersion(version: string): boolean {
-  return RELEASE_VERSION.test(version) && !version.includes('..');
+  return RELEASE_VERSION.test(version);
 }
 
 export type NormalizedVersion = { readonly ok: true; readonly version: string } | { readonly ok: false; readonly message: string };
@@ -84,7 +85,7 @@ export function normalizeReleaseVersion(input: string): NormalizedVersion {
   const trimmed = input.trim();
   const version = /^[vV]/.test(trimmed) ? trimmed.slice(1) : trimmed;
   if (version === '') {
-    return { ok: false, message: 'A blank version is not a release version.' };
+    return { ok: false, message: `"${input}" is not a release version; the version is blank.` };
   }
   if (!isReleaseVersion(version)) {
     return {
@@ -169,7 +170,7 @@ export async function fetchSnapshot(version: string, deps: SnapshotFetchDeps = d
   if (!isReleaseVersion(version)) {
     return {
       ok: false,
-      reason: 'asset-missing',
+      reason: 'invalid-version',
       message: `"${version}" is not a release version; expected <major>.<minor>.<patch> with an optional -<prerelease>.`,
     };
   }

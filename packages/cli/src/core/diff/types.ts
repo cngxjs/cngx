@@ -69,7 +69,7 @@ export interface UsageDelta {
 }
 
 /** Why a non-bundled snapshot could not be obtained. */
-export type SnapshotFetchFailureReason = 'gh-missing' | 'network' | 'asset-missing';
+export type SnapshotFetchFailureReason = 'gh-missing' | 'network' | 'asset-missing' | 'invalid-version';
 
 /**
  * A fetch/resolve failure surfaced as data, never thrown across the tool boundary -

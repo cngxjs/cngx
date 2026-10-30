@@ -32,7 +32,7 @@ describe('createDocsResolver', () => {
     const fetchSnapshot = vi.fn<DocsResolverDeps['fetchSnapshot']>(async () => ({ ok: false, reason: 'asset-missing', message: 'absent' }));
     const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile })(blank);
 
-    expect(resolution.ok).toBe(false);
+    expect(resolution).toMatchObject({ ok: false, reason: 'invalid-version' });
     expect(fetchSnapshot).not.toHaveBeenCalled();
   });
 
@@ -50,7 +50,7 @@ describe('createDocsResolver', () => {
     const fetchSnapshot = vi.fn<DocsResolverDeps['fetchSnapshot']>(async () => ({ ok: false, reason: 'asset-missing', message: 'absent' }));
     const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile })('vv0.2.0');
 
-    expect(resolution).toMatchObject({ ok: false, reason: 'asset-missing', message: expect.stringMatching(/^"vv0\.2\.0" is not a release version/) });
+    expect(resolution).toMatchObject({ ok: false, reason: 'invalid-version', message: expect.stringMatching(/^"vv0\.2\.0" is not a release version/) });
     expect(fetchSnapshot).not.toHaveBeenCalled();
   });
 
@@ -150,15 +150,15 @@ describe('createDocsResolver', () => {
     },
   );
 
-  it.each(['../x', '1.0/../..', 'latest'])(
-    'rejects the non-release version %s as asset-missing before any fetch',
+  it.each(['../x', '1.0/../..', 'latest', '01.2.3', '1.2.3-.', '1.2.3-rc.'])(
+    'rejects the non-release version %s as invalid-version before any fetch',
     async (version) => {
       const loadDocs = vi.fn(loadDocsFromFile);
       const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs })(version);
 
       expect(resolution).toMatchObject({
         ok: false,
-        reason: 'asset-missing',
+        reason: 'invalid-version',
         message: expect.stringContaining('not a release version'),
       });
       expect(loadDocs).not.toHaveBeenCalled();
