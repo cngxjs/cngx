@@ -31,7 +31,9 @@ import {
   CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
   type CngxCommitErrorAnnouncePolicy,
 } from '../commit-error-announcer';
-import { commitLedgerFor, type CommitLedger } from './commit-ledger';
+import type { CngxCommitHandlerCore } from '../commit-handler-core';
+import { commitLedgerFor } from './commit-ledger';
+import { commitRetryFor } from './commit-retry';
 import type { CngxSelectCompareFn } from '../compare-fn.types';
 import { type CngxSelectAnnouncerConfig, type CngxSelectFallbackLabels } from '../config';
 import {
@@ -165,7 +167,7 @@ export interface CngxSelectAnnouncerInputs {
  *
  * @internal
  */
-export interface CngxSelectCore<T, TCommit> {
+export interface CngxSelectCore<T, TCommit> extends CngxCommitHandlerCore<T, TCommit> {
   readonly effectiveOptions: Signal<CngxSelectOptionsInput<T>>;
   readonly flatOptions: Signal<CngxSelectOptionDef<T>[]>;
   readonly valueToOptionMap: Signal<Map<unknown, CngxSelectOptionDef<T>> | null>;
@@ -251,39 +253,21 @@ export interface CngxSelectCore<T, TCommit> {
    */
   readonly selection: Signal<SelectionController<T> | null>;
 
-  readonly commitController: CngxCommitController<TCommit>;
-  /** @internal Last-commit record and retry routing over `commitController`. */
-  readonly commitLedger: CommitLedger<TCommit, T>;
   readonly commitState: CngxAsyncState<TCommit | undefined>;
   readonly isCommitting: Signal<boolean>;
-  readonly togglingOption: WritableSignal<CngxSelectOptionDef<T> | null>;
   readonly externalActivation: Signal<boolean>;
   readonly showCommitError: Signal<boolean>;
   readonly commitErrorValue: Signal<unknown>;
 
   /**
    * Builds a `commitErrorContext` signal bound to the caller's retry
-   * (default: {@link retryLastCommit}). Its `option` belongs to the commit
+   * (default: the controller's `commitRetryFor(...).retry`, which replays
+   * through the commit source that claimed the last commit). Its `option` belongs to the commit
    * that failed: the ledger record while the ledger ran that commit, else the
    * toggling option, so a custom handler that bypasses the ledger reports its
    * own. Cache the result per variant-specific retry signature.
    */
   bindCommitRetry(retry?: () => void): Signal<CngxSelectCommitErrorContext<T>>;
-
-  /**
-   * @internal Returns a view of `handler` whose `begins` methods first mark
-   * `handler` as the owner of the last commit. A composite with more than one
-   * commit handler (or a handler plus its own dispatch) wraps each one, so
-   * Retry reaches the handler that started the failed commit, also when a
-   * consumer swapped it through its factory token.
-   */
-  routeRetryThrough<H extends CngxCommitRetryOwner>(handler: H, begins: readonly (keyof H)[]): H;
-
-  /** @internal Marks `owner` as the starter of the commit about to begin. */
-  claimCommitRetry(owner: CngxCommitRetryOwner): void;
-
-  /** @internal Replays the last commit through the handler that owns it. No-op before any. */
-  retryLastCommit(): void;
 
   /** Panel-level `[state]` errors. Cache like `bindCommitRetry`. */
   makeErrorContext(retry: () => void): Signal<CngxSelectErrorContext>;
@@ -292,7 +276,6 @@ export interface CngxSelectCore<T, TCommit> {
     item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>,
   ): item is CngxSelectOptionGroupDef<T>;
   isCommittingOption(opt: CngxSelectOptionDef<T>): boolean;
-  findOption(value: T): CngxSelectOptionDef<T> | null;
   commitErrorMessage(err: unknown): string;
   /** Polite `soft`-policy sentence for a failed commit (`commitFailedSoft`). */
   softCommitFailureMessage(): string;
@@ -313,30 +296,6 @@ export interface CngxSelectCore<T, TCommit> {
    * identities for the core's lifetime.
    */
   readonly panelHostAdapter: CngxSelectPanelHostAdapter<T>;
-
-  /**
-   * Announce a selection change via the live-region. Cascade:
-   * per-instance > config > default. `'reordered'` accepts
-   * `fromIndex`/`toIndex`; `'created'` is fired by action organisms.
-   */
-  announce(
-    option: CngxSelectOptionDef<T> | null,
-    action: 'added' | 'removed' | 'reordered' | 'created',
-    count: number,
-    multi: boolean,
-    fromIndex?: number,
-    toIndex?: number,
-  ): void;
-}
-
-/**
- * Anything that can replay the commit it started: the commit handlers and
- * the tree toggle dispatch.
- *
- * @internal
- */
-export interface CngxCommitRetryOwner {
-  retryLast(): void;
 }
 
 /**
@@ -741,43 +700,10 @@ export function createSelectCore<T, TCommit>(
 
   const commitErrorValue = computed<unknown>(() => commitState.error());
 
-  let commitOwner: CngxCommitRetryOwner | null = null;
-
-  function routeRetryThrough<H extends CngxCommitRetryOwner>(
-    handler: H,
-    begins: readonly (keyof H)[],
-  ): H {
-    // Prototype view: untouched members (and `this`-bound class handlers)
-    // keep working; defineProperty also shadows a frozen handler's method.
-    const routed = Object.create(handler) as H;
-    for (const key of begins) {
-      const begin = handler[key];
-      if (typeof begin !== 'function') {
-        continue;
-      }
-      Object.defineProperty(routed, key, {
-        value: (...args: unknown[]): unknown => {
-          claimCommitRetry(handler);
-          return (begin as (...a: unknown[]) => unknown).apply(handler, args);
-        },
-      });
-    }
-    return routed;
-  }
-
-  function claimCommitRetry(owner: CngxCommitRetryOwner): void {
-    commitOwner = owner;
-    // The record names an earlier commit until this owner's begin (if it runs
-    // through the ledger) writes a new one.
-    commitLedger.release();
-  }
-
-  function retryLastCommit(): void {
-    commitOwner?.retryLast();
-  }
+  const commitRetry = commitRetryFor(commitController);
 
   function bindCommitRetry(
-    retry: () => void = retryLastCommit,
+    retry: () => void = () => commitRetry.retry(),
   ): Signal<CngxSelectCommitErrorContext<T>> {
     return computed(
       () => ({
@@ -965,7 +891,6 @@ export function createSelectCore<T, TCommit>(
     isIndeterminate,
     selection,
     commitController,
-    commitLedger,
     commitState,
     isCommitting,
     togglingOption,
@@ -973,9 +898,6 @@ export function createSelectCore<T, TCommit>(
     showCommitError,
     commitErrorValue,
     bindCommitRetry,
-    routeRetryThrough,
-    claimCommitRetry,
-    retryLastCommit,
     makeErrorContext,
     isGroup,
     isCommittingOption,

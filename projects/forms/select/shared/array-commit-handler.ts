@@ -5,8 +5,9 @@ import type { AsyncStatus } from '@cngx/core/utils';
 import { commitLedgerFor } from './internal/commit-ledger';
 import { sameArrayContents } from './internal/compare';
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-action.types';
+import type { CngxCommitHandlerCore } from './commit-handler-core';
 import type { CngxSelectOptionDef } from './option.model';
-import type { CngxSelectCompareFn, CngxSelectCore } from './internal/select-core';
+import type { CngxSelectCompareFn } from './internal/select-core';
 
 /**
  * Configuration for {@link createArrayCommitHandler}.
@@ -18,7 +19,7 @@ export interface ArrayCommitHandlerOptions<T> {
   readonly compareWith: Signal<CngxSelectCompareFn<T>>;
   readonly commitMode: Signal<CngxSelectCommitMode>;
   /** Source of `commitController`, `togglingOption`, `announce`. */
-  readonly core: CngxSelectCore<T, T[]>;
+  readonly core: CngxCommitHandlerCore<T, T[]>;
   readonly commitAction: Signal<CngxSelectCommitAction<T[]> | null>;
   /** Consumer emits `selectionChange`/`optionToggled` and announces. */
   readonly onToggleFinalize: (option: CngxSelectOptionDef<T>, isNowSelected: boolean) => void;

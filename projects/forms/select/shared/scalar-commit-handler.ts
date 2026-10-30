@@ -3,6 +3,7 @@ import { InjectionToken, untracked, type Signal, type WritableSignal } from '@an
 import type { AsyncStatus } from '@cngx/core/utils';
 
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-action.types';
+import type { CngxCommitHandlerCore } from './commit-handler-core';
 import type { CngxSelectOptionDef } from './option.model';
 import { commitLedgerFor } from './internal/commit-ledger';
 import type { CngxSelectCompareFn, CngxSelectCore } from './internal/select-core';
@@ -16,7 +17,7 @@ export interface ScalarCommitHandlerOptions<T> {
   readonly compareWith: Signal<CngxSelectCompareFn<T>>;
   readonly commitMode: Signal<CngxSelectCommitMode>;
   /** Source of `commitController`, `togglingOption`, `findOption`. */
-  readonly core: CngxSelectCore<T, T>;
+  readonly core: CngxCommitHandlerCore<T, T>;
   readonly commitAction: Signal<CngxSelectCommitAction<T> | null>;
   /**
    * Fires after success and after `finalizeSelection`. Consumer emits

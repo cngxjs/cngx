@@ -9,6 +9,7 @@ import type {
   CngxSelectCommitMode,
 } from '../../shared/commit-action.types';
 import { commitLedgerFor } from '../../shared/internal/commit-ledger';
+import { commitRetryFor } from '../../shared/internal/commit-retry';
 import { sameArrayContents } from '../../shared/internal/compare';
 import type { CngxSelectCore } from '../../shared/internal/select-core';
 import type { CngxSelectOptionDef } from '../../shared/option.model';
@@ -59,10 +60,10 @@ export interface TreeToggleDispatchOptions<T> {
   readonly cascade: Signal<boolean>;
   readonly commitAction: Signal<CngxSelectCommitAction<T[]> | null>;
   readonly commitMode: Signal<CngxSelectCommitMode>;
-  readonly core: Pick<CngxSelectCore<T, T[]>, 'announce' | 'commitController' | 'claimCommitRetry'>;
+  readonly core: Pick<CngxSelectCore<T, T[]>, 'announce' | 'commitController'>;
   /**
    * The clear path stays on the shared array handler. Wrap it with
-   * `core.routeRetryThrough` so a clear Retry reaches that handler.
+   * `commitRetryFor(controller).route` so a clear Retry reaches that handler.
    */
   readonly commitHandler: () => Pick<ArrayCommitHandler<T>, 'beginClear'>;
   readonly emitChange: (change: Omit<CngxTreeSelectChange<T>, 'source'>) => void;
@@ -138,7 +139,7 @@ export function createTreeToggleDispatch<T>(
     if (opts.commitMode() === 'optimistic') {
       values.set(next);
     }
-    opts.core.claimCommitRetry(owner);
+    commitRetryFor(opts.core.commitController).claim(owner);
     ledger.beginMembers<T[]>({
       kind: 'tree',
       next,

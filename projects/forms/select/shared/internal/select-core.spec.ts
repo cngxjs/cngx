@@ -23,6 +23,8 @@ import {
   type CngxCommitErrorAnnouncePolicy,
   type CngxCommitErrorAnnouncerFactory,
 } from '../commit-error-announcer';
+import { commitLedgerFor } from './commit-ledger';
+import { commitRetryFor } from './commit-retry';
 import { createSelectCore, type CngxSelectCoreDeps } from './select-core';
 
 const RED: CngxSelectOptionDef<string> = { value: 'red', label: 'Red' };
@@ -174,30 +176,36 @@ describe('createSelectCore - mobile sheet presentation', () => {
 });
 
 describe('createSelectCore - commit ledger retry', () => {
-  it('routes Retry to the handler that started the last commit', () => {
+  it('routes the default Retry through the commit source that claimed the last commit', () => {
     const core = TestBed.runInInjectionContext(() =>
       createSelectCore(deps(), { announceChanges: signal(null), announceTemplate: signal(null) }),
     );
     const log: string[] = [];
-    const handler = (name: string) => ({
-      begin: () => log.push(`begin:${name}`),
-      retryLast: () => log.push(`retry:${name}`),
-    });
-    const a = core.routeRetryThrough(handler('a'), ['begin']);
-    const b = core.routeRetryThrough(handler('b'), ['begin']);
+    const router = commitRetryFor(core.commitController);
+    const a = router.route(
+      { begin: () => log.push('begin:a'), retryLast: () => log.push('retry:a') },
+      ['begin'],
+    );
     const context = core.bindCommitRetry();
     context().retry();
     expect(log).toEqual([]);
     a.begin();
     context().retry();
-    b.begin();
-    context().retry();
-    a.retryLast();
-    expect(log).toEqual(['begin:a', 'retry:a', 'begin:b', 'retry:b', 'retry:a']);
-    const owner = { retryLast: () => log.push('retry:claimed') };
-    core.claimCommitRetry(owner);
-    core.retryLastCommit();
-    expect(log.at(-1)).toBe('retry:claimed');
+    expect(log).toEqual(['begin:a', 'retry:a']);
+  });
+
+  it('keeps the ledger and the retry plumbing off the core', () => {
+    const core = TestBed.runInInjectionContext(() =>
+      createSelectCore(deps(), { announceChanges: signal(null), announceTemplate: signal(null) }),
+    );
+    for (const key of [
+      'commitLedger',
+      'routeRetryThrough',
+      'claimCommitRetry',
+      'retryLastCommit',
+    ]) {
+      expect(key in core).toBe(false);
+    }
   });
 
   it('reads the option from the ledger record, else from the toggling option', () => {
@@ -220,7 +228,7 @@ describe('createSelectCore - commit ledger retry', () => {
       calls.push(next);
       throw new Error('down');
     });
-    core.commitLedger.beginScalar<string | undefined>({
+    commitLedgerFor<string, string>(core.commitController).beginScalar<string | undefined>({
       kind: 'select',
       next: 'red',
       previous: undefined,
@@ -233,7 +241,7 @@ describe('createSelectCore - commit ledger retry', () => {
       onSuccess: () => undefined,
     });
     core.togglingOption.set(null);
-    const context = core.bindCommitRetry(() => core.commitLedger.retry());
+    const context = core.bindCommitRetry(() => commitLedgerFor(core.commitController).retry());
     expect(context().option).toBe(RED);
     context().retry();
     expect(calls).toEqual(['red', 'red']);
@@ -249,7 +257,7 @@ describe('createSelectCore - commit-error option', () => {
     const commitAction = signal<((next: string | undefined) => never) | null>(() => {
       throw new Error('down');
     });
-    core.commitLedger.beginScalar<string | undefined>({
+    commitLedgerFor<string, string>(core.commitController).beginScalar<string | undefined>({
       kind: 'select',
       next: 'red',
       previous: undefined,
@@ -264,7 +272,7 @@ describe('createSelectCore - commit-error option', () => {
     const context = core.bindCommitRetry(() => undefined);
     expect(context().option).toBe(RED);
     // A custom handler that bypasses the ledger starts the next commit.
-    core.claimCommitRetry({ retryLast: () => undefined });
+    commitRetryFor(core.commitController).claim({ retryLast: () => undefined });
     core.togglingOption.set(GREEN);
     expect(context().option).toBe(GREEN);
   });

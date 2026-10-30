@@ -11,7 +11,6 @@ import type { CngxSelectCommitAction } from '../../shared/commit-action.types';
 import { createCommitController } from '../../shared/commit-controller.token';
 import {
   cngxSelectDefaultCompare,
-  type CngxCommitRetryOwner,
   type CngxSelectCompareFn,
   type CngxSelectCore,
 } from '../../shared/internal/select-core';
@@ -25,7 +24,6 @@ function setup(
   opts: { keyFn?: (v: Item) => unknown; compareWith?: CngxSelectCompareFn<Item> } = {},
 ) {
   const log: string[] = [];
-  let owner: CngxCommitRetryOwner | null = null;
   const clearHandler: ArrayCommitHandler<Item> = {
     beginToggle: () => log.push('array:toggle'),
     beginClear: () => log.push('array:clear'),
@@ -36,23 +34,6 @@ function setup(
     commitController: createCommitController<Item[]>(),
     announce: vi.fn(),
     createCommitErrorAnnouncer: () => vi.fn(),
-    routeRetryThrough: <H extends CngxCommitRetryOwner>(h: H, begins: readonly (keyof H)[]) => {
-      const routed = Object.create(h) as H;
-      for (const key of begins) {
-        const begin = h[key] as (...a: unknown[]) => unknown;
-        Object.defineProperty(routed, key, {
-          value: (...args: unknown[]) => {
-            owner = h;
-            return begin(...args);
-          },
-        });
-      }
-      return routed;
-    },
-    claimCommitRetry: (o: CngxCommitRetryOwner) => {
-      owner = o;
-    },
-    retryLastCommit: () => owner?.retryLast(),
     bindCommitRetry: (retry: () => void) => signal({ retry }),
   } as unknown as CngxSelectCore<Item, Item[]>;
   const values = signal<Item[]>([{ id: 'a' }]);
@@ -82,7 +63,8 @@ function setup(
     emitCommitError: vi.fn(),
     beforeRetry: () => log.push('refocus'),
   });
-  return { wiring, factory, log, values };
+  const node = (id: string) => treeController.findByValue({ id })!;
+  return { wiring, factory, log, values, node };
 }
 
 describe('createTreeCommitWiring', () => {
@@ -105,6 +87,10 @@ describe('createTreeCommitWiring', () => {
     t.wiring.dispatch.clearAll();
     t.wiring.commitErrorContext().retry();
     expect(t.log).toEqual(['array:clear', 'refocus', 'array:retry']);
+    t.values.set([]);
+    t.wiring.dispatch.singleToggle(t.node('b'));
+    t.wiring.commitErrorContext().retry();
+    expect(t.log).toEqual(['array:clear', 'refocus', 'array:retry', 'refocus']);
   });
 
   it('treats only the default compare and Object.is as reference compares', () => {

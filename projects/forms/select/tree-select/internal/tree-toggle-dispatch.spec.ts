@@ -8,6 +8,7 @@ import type {
   CngxSelectCommitAction,
   CngxSelectCommitMode,
 } from '../../shared/commit-action.types';
+import { commitRetryFor } from '../../shared/internal/commit-retry';
 import type { CngxTreeSelectChange } from '../tree-select.component';
 import { createTreeToggleDispatch } from './tree-toggle-dispatch';
 
@@ -50,7 +51,16 @@ function setup(
   const changes: Omit<CngxTreeSelectChange<string>, 'source'>[] = [];
   const announce = vi.fn();
   const beginClear = vi.fn();
-  const claimCommitRetry = vi.fn();
+  const commitController = {
+    isCommitting: signal(false),
+    begin: (
+      _runner: unknown,
+      next: string[] | undefined,
+      previous: string[] | undefined,
+      handlers: Pick<BeginCall, 'onSuccess' | 'onError'>,
+    ) => begins.push({ next, previous, onSuccess: handlers.onSuccess, onError: handlers.onError }),
+  } as never;
+  const claimCommitRetry = vi.spyOn(commitRetryFor(commitController), 'claim');
   const states: string[] = [];
   const errors: unknown[] = [];
   const cleared = vi.fn();
@@ -62,20 +72,7 @@ function setup(
     cascade: signal(opts.cascade ?? false),
     commitAction: signal(opts.commit ? action : null),
     commitMode: signal(opts.mode ?? 'optimistic'),
-    core: {
-      announce,
-      claimCommitRetry,
-      commitController: {
-        isCommitting: signal(false),
-        begin: (
-          _runner: unknown,
-          next: string[] | undefined,
-          previous: string[] | undefined,
-          handlers: Pick<BeginCall, 'onSuccess' | 'onError'>,
-        ) =>
-          begins.push({ next, previous, onSuccess: handlers.onSuccess, onError: handlers.onError }),
-      } as never,
-    },
+    core: { announce, commitController },
     commitHandler: () => ({ beginClear }),
     emitChange: (c) => changes.push(c),
     emitCleared: cleared,

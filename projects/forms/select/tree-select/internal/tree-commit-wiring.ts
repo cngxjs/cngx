@@ -7,6 +7,7 @@ import type {
   CngxSelectCommitMode,
 } from '../../shared/commit-action.types';
 import type { CngxCommitErrorAnnouncePolicy } from '../../shared/commit-error-announcer';
+import { commitRetryFor } from '../../shared/internal/commit-retry';
 import {
   cngxSelectDefaultCompare,
   type CngxSelectCompareFn,
@@ -105,7 +106,8 @@ export function createTreeCommitWiring<T>(opts: TreeCommitWiringOptions<T>): Tre
     policy: opts.commitErrorAnnouncePolicy,
   });
 
-  const commitHandler = core.routeRetryThrough(
+  const commitRetry = commitRetryFor(core.commitController);
+  const commitHandler = commitRetry.route(
     opts.arrayHandlerFactory<T>({
       values,
       compareWith: opts.compareWith,
@@ -151,7 +153,7 @@ export function createTreeCommitWiring<T>(opts: TreeCommitWiringOptions<T>): Tre
 
   const commitErrorContext = core.bindCommitRetry(() => {
     opts.beforeRetry();
-    core.retryLastCommit();
+    commitRetry.retry();
   });
 
   return { memberEquality, dispatch, commitErrorContext };

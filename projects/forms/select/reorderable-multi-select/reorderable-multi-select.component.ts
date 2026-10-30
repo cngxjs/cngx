@@ -110,6 +110,7 @@ import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
+import { commitRetryFor } from '../shared/internal/commit-retry';
 import { createHostFocusWithin } from '../shared/internal/host-focus-within';
 import {
   cngxSelectDefaultCompare,
@@ -733,6 +734,9 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     },
   );
 
+  // Two handlers start commits here: Retry goes to whichever started the last.
+  private readonly commitRetry = commitRetryFor(this.core.commitController);
+
   /** @internal Mobile sheet presentation; also the scoped announcer's scope. */
   readonly sheetWiring: CngxSelectSheetWiring = createSelectSheetWiring({
     popupRole: 'listbox',
@@ -845,8 +849,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /** @internal */
   protected readonly commitErrorContext = this.core.bindCommitRetry(() => {
     this.hostFocus.refocusOwnerBeforeRemoval();
-    // Two handlers start commits here: Retry goes to whichever started the last.
-    this.core.retryLastCommit();
+    this.commitRetry.retry();
   });
 
   /** @internal - full virtualisation wire-up (see setupVirtualization). */
@@ -950,7 +953,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     policy: this.commitErrorAnnouncePolicy,
   });
 
-  private readonly commitHandler: ArrayCommitHandler<T> = this.core.routeRetryThrough(
+  private readonly commitHandler: ArrayCommitHandler<T> = this.commitRetry.route(
     inject(CNGX_ARRAY_COMMIT_HANDLER_FACTORY)<T>({
       values: this.values,
       compareWith: this.compareWith,
@@ -1346,7 +1349,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * `CNGX_REORDER_COMMIT_HANDLER_FACTORY` so consumers can swap in
    * retry-with-backoff, offline queues, audit logging.
    */
-  private readonly reorderCommit = this.core.routeRetryThrough(
+  private readonly reorderCommit = this.commitRetry.route(
     inject(CNGX_REORDER_COMMIT_HANDLER_FACTORY)<T>({
       values: this.values,
       commitMode: this.commitMode,
