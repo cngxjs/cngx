@@ -1,8 +1,9 @@
 import {
+  ElementRef,
   InjectionToken,
   effect,
+  inject,
   untracked,
-  type ElementRef,
   type OutputEmitterRef,
   type Signal,
 } from '@angular/core';
@@ -41,11 +42,16 @@ export interface PanelLifecycleEmitterOptions {
  * open -> closed flip. The mount value is not a flip: a panel mounted
  * closed emits nothing and never moves focus, a panel mounted open
  * emits no `opened`. Output emits + focus call wrapped in `untracked`.
- * Injection context required.
+ * The restore is skipped when focus already sits on an element outside
+ * the host (Tab out of an open panel, a click into another input): the
+ * user moved it there, and pulling it back would cost them a second
+ * Tab. Focus on `body` or inside the host is restored as before.
+ * Injection context required (the host is the injecting component).
  */
 export function createPanelLifecycleEmitter(
   opts: PanelLifecycleEmitterOptions,
 ): void {
+  const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   const flip = createTransitionTracker(() => opts.panelOpen());
   effect(() => {
     const open = flip.current();
@@ -66,7 +72,7 @@ export function createPanelLifecycleEmitter(
       // otherwise focus lands on a detaching element and falls to body.
       queueMicrotask(() => {
         const target = opts.restoreFocusTarget()?.nativeElement;
-        if (!target) {
+        if (!target || focusMovedOutside(host)) {
           return;
         }
         // Focus handlers run synchronously inside .focus(), so the
@@ -80,6 +86,13 @@ export function createPanelLifecycleEmitter(
       });
     });
   });
+}
+
+/** Focus sits on an element outside `host` that is not `body`. */
+function focusMovedOutside(host: HTMLElement): boolean {
+  const doc = host.ownerDocument;
+  const active = doc.activeElement;
+  return active !== null && active !== doc.body && !host.contains(active);
 }
 
 /**
