@@ -12,7 +12,9 @@
  * Neutralise the chrome on hosts that carry no surface of their own; the
  * styled surfaces are excluded by class so they keep their own paint. Only the
  * chrome is reset - positioning (`inset`, `position-anchor`, the host's inline
- * `margin`) is owned by `CngxPopover` and left untouched. A `cngxPopoverSheet`
+ * `margin`) is owned by `CngxPopover` and left untouched. The UA `overflow:
+ * auto` goes too: the host is exactly as large as its content, so it would
+ * clip the shadow of the surface inside it (a `cngxMenu`'s elevation). A `cngxPopoverSheet`
  * in its sheet or fullscreen presentation paints its own surface
  * (`cngx-popover-sheet.css`), so it is excluded too.
  *
@@ -26,5 +28,6 @@
     padding: 0;
     background: transparent;
     color: inherit;
+    overflow: visible;
   }
 }
