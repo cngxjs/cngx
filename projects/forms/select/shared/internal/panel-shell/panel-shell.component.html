@@ -124,7 +124,7 @@
                   $implicit: host.commitErrorContext().retry,
                   retry: host.commitErrorContext().retry,
                   error: host.commitErrorContext().error,
-                  disabled: false,
+                  disabled: commitRetryDisabled(),
                   label: commitErrorCopy().retry
                 }
               "

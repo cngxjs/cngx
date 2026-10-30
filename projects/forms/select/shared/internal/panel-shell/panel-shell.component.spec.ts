@@ -811,6 +811,43 @@ describe('CngxSelectPanelShell - *cngxSelectRetryButton override', () => {
     expect(controls.handleRetry).toHaveBeenCalledTimes(1);
   });
 
+  it('passes the pending retried commit as disabled to the commit-error override', () => {
+    const { host, controls } = createMockHost();
+    const retrySlot = signal<TemplateRef<unknown> | null>(null);
+    const isCommitting = signal(false);
+    const hostWithRetry: CngxSelectPanelHost = {
+      ...host,
+      isCommitting,
+      tpl: { ...host.tpl, retryButton: retrySlot } as typeof host.tpl,
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: CNGX_SELECT_PANEL_HOST, useValue: hostWithRetry },
+        { provide: CNGX_SELECT_PANEL_VIEW_HOST, useValue: hostWithRetry },
+      ],
+    });
+    const fixture = TestBed.createComponent(RetryHost);
+    fixture.detectChanges();
+    retrySlot.set(fixture.componentInstance.retryTpl() ?? null);
+    controls.showCommitError.set(true);
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    const custom = () => root.querySelector<HTMLButtonElement>('.cngx-select__commit-error button.my-retry');
+    expect(custom()?.getAttribute('data-disabled')).toBe('false');
+
+    isCommitting.set(true);
+    fixture.detectChanges();
+    expect(custom()?.getAttribute('data-disabled')).toBe('true');
+
+    controls.activeView.set('error');
+    fixture.detectChanges();
+    expect(
+      root.querySelector('.cngx-select__error:not(.cngx-select__error--inline) button.my-retry')
+        ?.getAttribute('data-disabled'),
+    ).toBe('false');
+  });
+
   it('keeps the default <button> when no override is supplied (back-compat)', () => {
     const { fixture, controls } = setup();
     controls.activeView.set('error');

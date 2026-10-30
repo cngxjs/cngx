@@ -230,6 +230,11 @@ export class CngxSelectPanelShell<T = unknown> {
     return untracked(() => this.host.ariaLabels().statusRefreshing);
   });
 
+  /** @internal Commit-error retry context `disabled`: the retried commit is pending. */
+  protected readonly commitRetryDisabled = computed<boolean>(
+    () => this.host.isCommitting?.() ?? false,
+  );
+
   /**
    * @internal Text of the one permanent `role="status"` region. A region
    * inserted together with its first content is often not spoken, so the
