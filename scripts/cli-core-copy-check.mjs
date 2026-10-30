@@ -12,8 +12,9 @@
 // `cli:sync` never deletes them, so the check is what makes them visible.
 //
 // Exits non-zero on any missing, extra or differing file, naming
-// `npm run cli:sync` as the fix, and on a missing tree: "nothing to compare" is
-// the defect a wrong working directory produces, not a pass. Both trees resolve
+// `npm run cli:sync` as the fix, and on a missing tree or a canonical tree with no
+// core file: "nothing to compare" is the defect a wrong working directory
+// produces, not a pass. Both trees resolve
 // from the repo root, never from cwd.
 //
 //   node scripts/cli-core-copy-check.mjs
@@ -103,8 +104,8 @@ export const missingTrees = (canonicalDir, copyDir) => [canonicalDir, copyDir].f
 
 /**
  * Compare `copyDir` with `canonicalDir`, report through `write`, and return the
- * exit code: 0 identical, 1 on a missing tree, a divergence, or a spec file or
- * dotfile in the copy. The dirs are injectable for specs.
+ * exit code: 0 identical, 1 on a missing tree, an empty canonical core, a
+ * divergence, or a spec file or dotfile in the copy. The dirs are injectable for specs.
  */
 export function runCopyCheck({ canonicalDir = CANONICAL_CORE_DIR, copyDir = COPY_CORE_DIR, write }) {
   const missing = missingTrees(canonicalDir, copyDir);
@@ -116,6 +117,12 @@ export function runCopyCheck({ canonicalDir = CANONICAL_CORE_DIR, copyDir = COPY
   }
 
   const canonical = listCoreFiles(canonicalDir);
+  // An empty canonical core compared with an empty copy is "identical", the same
+  // false pass a missing tree gives; sync-cli-core.mjs refuses that tree too.
+  if (canonical.length === 0) {
+    write(`cli:copy-check - ${displayPath(canonicalDir)} holds no core files\n`);
+    return 1;
+  }
   const copy = listCoreFiles(copyDir);
   const mismatches = [
     ...compareTrees(canonical, copy, readUnder(canonicalDir), readUnder(copyDir)),

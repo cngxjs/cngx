@@ -189,6 +189,27 @@ describe('runCopyCheck', () => {
 
     expect(check({ ...dirs, copyDir: join(dirs.copyDir, 'nope') }).code).toBe(1);
   });
+
+  it('mutation: an empty canonical tree fails the check', () => {
+    const dirs = makeTrees({}, {});
+    mkdirSync(dirs.canonicalDir);
+    mkdirSync(dirs.copyDir);
+
+    const run = check(dirs);
+
+    expect(run.code).toBe(1);
+    expect(run.out).toContain('holds no core files');
+  });
+
+  it('mutation: a canonical tree of spec files only fails the check', () => {
+    const dirs = makeTrees({ 'command.spec.ts': 'it();\n' }, {});
+    mkdirSync(dirs.copyDir);
+
+    const run = check(dirs);
+
+    expect(run.code).toBe(1);
+    expect(run.out).toContain('holds no core files');
+  });
 });
 
 describe('listStrayFiles', () => {
