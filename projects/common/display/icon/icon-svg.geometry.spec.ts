@@ -74,6 +74,8 @@ const BAND_SIZES = [9, 10, 12, 14, 15, 24] as const;
       <cngx-icon size="xs">
         <svg class="in-icon-xs" [cngxIconSvg]="icon"></svg>
       </cngx-icon>
+      <svg class="one-axis" style="inline-size: auto; block-size: 12px" [cngxIconSvg]="icon"></svg>
+      <svg class="one-axis-cap" style="inline-size: auto; max-block-size: 12px" [cngxIconSvg]="icon"></svg>
     </div>
   `,
 })
@@ -239,6 +241,17 @@ describe('CngxIconSvg micro tier', () => {
   it('shows the micro path in a cngx-icon xs box at 16px text', () => {
     const svg = query(mountHost(IconSvgMicroGeometryHost), '.in-icon-xs');
     expect(svg.getBoundingClientRect().width).toBeCloseTo(12, 1);
+    expect(visiblePath(svg)).toBe('micro');
+  });
+
+  // Size containment drops the svg's natural ratio, so a rule that sizes one
+  // axis (the button-group addon caps the block size, inline size auto) would
+  // otherwise collapse or stretch the other one.
+  it.each(['.one-axis', '.one-axis-cap'])('keeps the %s glyph square when one axis is sized', (selector) => {
+    const svg = query(mountHost(IconSvgMicroGeometryHost), selector);
+    const rect = svg.getBoundingClientRect();
+    expect(rect.height).toBeCloseTo(12, 1);
+    expect(rect.width).toBeCloseTo(12, 1);
     expect(visiblePath(svg)).toBe('micro');
   });
 

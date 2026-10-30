@@ -26,6 +26,9 @@
   .cngx-icon-glyph {
     /* Functional - hardcoded */
     container: cngx-icon-glyph / size;
+    /* Size containment drops the svg's natural ratio; every glyph draws on a
+       square viewBox, so a rule that sizes one axis keeps the other. */
+    aspect-ratio: 1;
   }
 
   .cngx-icon-svg__micro {
