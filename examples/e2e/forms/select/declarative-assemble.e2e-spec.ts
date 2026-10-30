@@ -16,10 +16,11 @@ test.describe('declarative options in an assembled listbox', () => {
     await gotoDemo(page, ROUTE);
   });
 
-  test('the intro names the listbox atoms, not the CngxSelect organism', async ({ page }) => {
-    const intro = page.locator('header.cngx-ex-intro');
-    await expect(intro).toContainText('CngxListbox');
-    await expect(intro).not.toContainText('CngxSelect - native-feeling single-select');
+  test('mounts the assembled listbox atoms, not the CngxSelect organism', async ({ page }) => {
+    const artifact = page.locator('.cngx-ex-artifact');
+    await expect(artifact.locator('button[aria-haspopup="listbox"]')).toHaveCount(1);
+    await expect(artifact.locator('[role="listbox"]')).toHaveCount(1);
+    await expect(artifact.locator('cngx-select')).toHaveCount(0);
   });
 
   test('renders the divider between the two groups', async ({ page }) => {

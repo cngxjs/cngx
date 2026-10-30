@@ -76,6 +76,7 @@ export const STORY: DemoSpec = {
     <label style="margin-left:1rem">
       <input
         type="checkbox"
+        data-cngx-ex-fail
         [checked]="commitShouldFail()"
         (change)="commitShouldFail.set($any($event.target).checked)"
       />

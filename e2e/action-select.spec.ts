@@ -1,4 +1,6 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
+
+import { expect, test } from '../examples/e2e/_test';
 
 // One story = one example page. Each behaviour lives on its own leaf route;
 // tests navigate per-example. The real artifact renders inside
@@ -17,6 +19,11 @@ function artifact(page: Page): Locator {
 
 function chrome(page: Page): Locator {
   return page.locator('.cngx-ex-chrome');
+}
+
+/** The demo chrome's state readout, exposed as a `data-cngx-ex-*` hook. */
+function readout(page: Page, hook: string): Locator {
+  return chrome(page).locator(`[data-cngx-ex-${hook}]`);
 }
 
 function inputOf(page: Page): Locator {
@@ -59,8 +66,7 @@ test.describe('CngxActionSelect demo', () => {
     // Panel closes (default closeOnCreate = true).
     await expect(input).toHaveAttribute('aria-expanded', 'false');
 
-    const selectedRow = chrome(page).locator('.event-row').filter({ hasText: 'Selected' }).first();
-    await expect(selectedRow).toContainText('Violet');
+    await expect(readout(page, 'selected')).toHaveAttribute('data-cngx-ex-selected', 'Violet');
   });
 
   test('(created) output fires on pre-seeded demo and logs a line', async ({ page }) => {
@@ -75,15 +81,12 @@ test.describe('CngxActionSelect demo', () => {
     await expect(actionBtn).toBeEnabled({ timeout: 2000 });
     await clickInPopover(actionBtn);
 
-    const createdRow = chrome(page).locator('.event-row').filter({ hasText: 'created' }).last();
-    await expect(createdRow).toContainText('Logistics');
+    await expect(readout(page, 'created')).toHaveAttribute('data-cngx-ex-created', /Logistics/);
   });
 
   test('async error surfaces commitError without touching the value', async ({ page }) => {
     await page.goto(ROUTES.async);
-    const failCheckbox = chrome(page)
-      .locator('label', { hasText: 'Server fails' })
-      .locator('input[type="checkbox"]');
+    const failCheckbox = chrome(page).locator('[data-cngx-ex-fail]');
     await failCheckbox.check();
 
     const input = inputOf(page);
@@ -96,11 +99,10 @@ test.describe('CngxActionSelect demo', () => {
     await expect(actionBtn).toBeEnabled({ timeout: 2000 });
     await clickInPopover(actionBtn);
 
-    const errorRow = chrome(page).locator('.event-row').filter({ hasText: 'error' }).last();
-    await expect(errorRow).toContainText(/rejected "Purple"/, { timeout: 3000 });
-
-    const selectedRow = chrome(page).locator('.event-row').filter({ hasText: 'Selected' }).first();
-    await expect(selectedRow).toContainText('—');
+    await expect(readout(page, 'error')).toHaveAttribute('data-cngx-ex-error', /rejected "Purple"/, {
+      timeout: 3000,
+    });
+    await expect(readout(page, 'selected')).toHaveAttribute('data-cngx-ex-selected', '');
   });
 
   test('dirty guard blocks click-outside dismissal while setDirty(true) is active', async ({ page }) => {
@@ -138,8 +140,10 @@ test.describe('CngxActionSelect demo', () => {
     await input.press('Enter');
 
     await expect(input).toHaveAttribute('aria-expanded', 'false');
-    const selectedRow = chrome(page).locator('.event-row').filter({ hasText: 'Selected' }).first();
-    await expect(selectedRow).toContainText('KeyboardCreate');
+    await expect(readout(page, 'selected')).toHaveAttribute(
+      'data-cngx-ex-selected',
+      'KeyboardCreate',
+    );
   });
 
   test('Escape cancels the workflow when dirty instead of closing the panel', async ({ page }) => {

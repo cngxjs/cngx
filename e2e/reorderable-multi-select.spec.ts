@@ -1,4 +1,6 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
+
+import { expect, test } from '../examples/e2e/_test';
 
 // One story = one example page. Each behaviour lives on its own leaf route.
 const BASE = '/#/forms/select/reorderable-multi-select';
@@ -12,6 +14,11 @@ const ROUTES = {
 
 function chrome(page: Page): Locator {
   return page.locator('.cngx-ex-chrome');
+}
+
+/** The demo chrome's state readout, exposed as a `data-cngx-ex-*` hook. */
+function readout(page: Page, hook: string): Locator {
+  return chrome(page).locator(`[data-cngx-ex-${hook}]`);
 }
 
 function stripOf(page: Page): Locator {
@@ -95,17 +102,15 @@ test.describe('CngxReorderableMultiSelect demo', () => {
     await page.goto(ROUTES.basic);
 
     // Initial order from the demo fixture: ops → eng → legal.
-    const orderRow = chrome(page)
-      .locator('.event-row', { hasText: 'Current order' })
-      .locator('.event-value');
-    await expect(orderRow).toHaveText('ops → eng → legal');
+    const order = readout(page, 'order');
+    await expect(order).toHaveAttribute('data-cngx-ex-order', 'ops,eng,legal');
 
     const chip0 = chipAt(page, 0);
     const chip2 = chipAt(page, 2);
     await dragChip(page, chip0, chip2);
 
     // "ops" moved from index 0 to index 2 → final order: eng → legal → ops.
-    await expect(orderRow).toHaveText('eng → legal → ops');
+    await expect(order).toHaveAttribute('data-cngx-ex-order', 'eng,legal,ops');
   });
 
   test('Alt+ArrowRight moves the focused chip one position forward', async ({
@@ -114,17 +119,15 @@ test.describe('CngxReorderableMultiSelect demo', () => {
     await page.goto(ROUTES.keyboard);
 
     // Initial order from fixture: eng, legal, finance, ops.
-    const orderRow = chrome(page)
-      .locator('.event-row', { hasText: 'Current order' })
-      .locator('.event-value');
-    await expect(orderRow).toHaveText('eng → legal → finance → ops');
+    const order = readout(page, 'order');
+    await expect(order).toHaveAttribute('data-cngx-ex-order', 'eng,legal,finance,ops');
 
     const firstChip = chipAt(page, 0);
     await firstChip.focus();
     // Library default reorder modifier is Alt (not Ctrl).
     await page.keyboard.press('Alt+ArrowRight');
 
-    await expect(orderRow).toHaveText('legal → eng → finance → ops');
+    await expect(order).toHaveAttribute('data-cngx-ex-order', 'legal,eng,finance,ops');
   });
 
   test('pessimistic commit flips aria-disabled on the chip strip', async ({

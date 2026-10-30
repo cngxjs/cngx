@@ -1,4 +1,6 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
+
+import { expect, test } from '../examples/e2e/_test';
 
 // One story = one example page. Each behaviour lives on its own leaf route.
 const BASE = '/#/forms/select/select-shell';
@@ -16,6 +18,11 @@ function chrome(page: Page): Locator {
   return page.locator('.cngx-ex-chrome');
 }
 
+/** The demo chrome's state readout, exposed as a `data-cngx-ex-*` hook. */
+function readout(page: Page, hook: string): Locator {
+  return chrome(page).locator(`[data-cngx-ex-${hook}]`);
+}
+
 function triggerOf(page: Page): Locator {
   return page.locator('cngx-select-shell .cngx-select-shell__trigger').first();
 }
@@ -30,9 +37,7 @@ test.describe('CngxSelectShell demo', () => {
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
 
     await artifact(page).locator('cngx-option').nth(1).click();
-    await expect(
-      chrome(page).locator('.event-row', { hasText: 'value' }).first().locator('.event-value'),
-    ).toHaveText('green');
+    await expect(readout(page, 'value')).toHaveAttribute('data-cngx-ex-value', 'green');
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 
@@ -46,9 +51,7 @@ test.describe('CngxSelectShell demo', () => {
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('Enter');
 
-    await expect(
-      chrome(page).locator('.event-row', { hasText: 'value' }).first().locator('.event-value'),
-    ).toHaveText('green');
+    await expect(readout(page, 'value')).toHaveAttribute('data-cngx-ex-value', 'green');
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 
@@ -120,7 +123,7 @@ test.describe('CngxSelectShell demo', () => {
     await page.goto(ROUTES.async);
 
     // Toggle "Server fails" for this example.
-    const failToggle = chrome(page).locator('input[type=checkbox]').first();
+    const failToggle = chrome(page).locator('[data-cngx-ex-fail]');
     await failToggle.check();
 
     const trigger = triggerOf(page);
@@ -139,9 +142,9 @@ test.describe('CngxSelectShell demo', () => {
     // Trigger reverted to the pre-pick value 'red' (label "Red").
     await expect(trigger).toContainText('Red');
 
-    // commitError event-row populated.
-    await expect(
-      chrome(page).locator('.event-row', { hasText: 'commitError' }).first(),
-    ).toContainText('Server rejected');
+    await expect(readout(page, 'commit-error')).toHaveAttribute(
+      'data-cngx-ex-commit-error',
+      /Server rejected/,
+    );
   });
 });

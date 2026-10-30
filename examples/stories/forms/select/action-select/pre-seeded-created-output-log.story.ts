@@ -71,7 +71,11 @@ export const STORY: DemoSpec = {
       </button>
     </ng-template>
   </cngx-action-select>`,
-  templateChrome: `<div class="event-grid" style="margin-top:12px">
+  templateChrome: `<div
+    class="event-grid"
+    style="margin-top:12px"
+    [attr.data-cngx-ex-created]="seededLog().at(-1) ?? ''"
+  >
     <div class="event-row">
       <span class="event-label">Current</span>
       <span class="event-value">{{ seededValue()?.name ?? '—' }}</span>
