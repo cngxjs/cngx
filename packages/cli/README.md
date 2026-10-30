@@ -76,7 +76,7 @@ cngx <command>: <reason>: <message>
 
 |Reason|Meaning|
 |-|-|
-|`asset-missing`|The release or its `documentation.json` asset does not exist. Also covers a snapshot that cannot be read or has a schema this CLI does not know, and a query that threw (its message starts with `internal:`).|
+|`asset-missing`|The release or its `documentation.json` asset does not exist. Also covers a snapshot that cannot be read or has a schema this CLI does not know, a local temp-directory or write failure (the message names it), and a query that threw (its message starts with `internal:`).|
 |`network`|The download failed for a network reason.|
 |`invalid-version`|A `migrate` version is not a release version (`1.2`, `01.2.3`, `1.2.3-rc.`). Checked before any fetch and reported as a usage error: exit 2, `cngx: <message>` plus the usage hint on stderr, no json document.|
 

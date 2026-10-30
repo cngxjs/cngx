@@ -103,7 +103,7 @@ seconds. No network or an absent asset returns a typed error result instead:
 |-|-|
 |`gh-missing`|No longer produced: a missing `gh` falls back to HTTPS. Kept in the type for compatibility.|
 |`network`|The download failed for a network reason.|
-|`asset-missing`|The release or its `documentation.json` asset does not exist. Also covers a snapshot with an unreadable or unknown schema, and a query that threw (its message starts with `internal:`).|
+|`asset-missing`|The release or its `documentation.json` asset does not exist. Also covers a snapshot with an unreadable or unknown schema, a local temp-directory or write failure (the message names it), and a query that threw (its message starts with `internal:`).|
 |`invalid-version`|A version that is not a release version (`1.2`, `01.2.3`, `1.2.3-rc.`), answered before any fetch.|
 
 ### The CLI

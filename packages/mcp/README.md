@@ -51,8 +51,8 @@ The fetch is fail-safe - no network or an absent asset returns a typed error res
 (`{ ok: false, reason }`, `network`, `asset-missing` or `invalid-version`), never a crash.
 `invalid-version` is a version that is not a release version (`1.2`, `01.2.3`,
 `1.2.3-rc.`), answered before any fetch. `asset-missing` also covers a snapshot with
-an unreadable or unknown schema, and a query that threw (its message starts with
-`internal:`). The HTTPS fallback does not read `HTTPS_PROXY`; behind a proxy, use an
+an unreadable or unknown schema, a local temp-directory or write failure (the message
+names it), and a query that threw (its message starts with `internal:`). The HTTPS fallback does not read `HTTPS_PROXY`; behind a proxy, use an
 authenticated `gh`.
 
 ### Version-scoped queries

@@ -73,8 +73,23 @@ export interface UsageDelta {
 /** The per-category part of a {@link UsageDelta}: what the pure diff returns. */
 export type UsageDeltaCategories = Omit<UsageDelta, 'ok' | 'meta'>;
 
-/** Why a non-bundled snapshot could not be obtained. */
-export type SnapshotFetchFailureReason = 'gh-missing' | 'network' | 'asset-missing' | 'invalid-version';
+/**
+ * Why a versioned answer failed. The name predates its wider use: besides a fetch,
+ * `asset-missing` also carries a query that threw.
+ */
+export type SnapshotFetchFailureReason =
+  /** Kept in the union for compatibility and not produced: a missing `gh` falls back to HTTPS. */
+  | 'gh-missing'
+  /** The download failed for a network reason. */
+  | 'network'
+  /**
+   * The release or its asset is absent, the snapshot is unreadable or has an unknown
+   * schema, a local temp directory or write failed, or a query threw (message starts
+   * with `internal:`). The message names which.
+   */
+  | 'asset-missing'
+  /** A malformed version (`1.2`, `01.2.3`, `1.2.3-rc.`), answered before any fetch. */
+  | 'invalid-version';
 
 /**
  * A fetch/resolve failure surfaced as data, never thrown across the tool boundary -
