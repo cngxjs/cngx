@@ -171,11 +171,15 @@ export function cliAppSteps(cliVersion) {
   return [
     { args: ['--version'], exit: 0, stdout: (out) => out.trim() === cliVersion || `expected ${cliVersion}` },
     { args: ['api', 'CngxSelect'], exit: 0, stdout: (out) => out.includes('# CngxSelect') || 'no "# CngxSelect" heading' },
-    // The app installs the stamped lib tarballs, so the detector pins to the bundled release: no version note.
+    // The app installs the stamped lib tarballs, so the detector pins to the bundled release: no
+    // `cngx:` note. npx may add its own warnings to stderr; only a cngx line counts.
     {
       args: ['api', 'CngxSelect', '--format=json'],
       exit: 0,
-      stderr: (err) => err === '' || `expected no version note, got: ${err.trim()}`,
+      stderr: (err) => {
+        const notes = err.split('\n').filter((line) => line.startsWith('cngx'));
+        return notes.length === 0 || `expected no version note, got: ${notes.join(' | ')}`;
+      },
     },
     { args: ['api', 'NoSuchThing'], exit: 1 },
     { args: ['api', '--bogus'], exit: 2 },

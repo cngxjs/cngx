@@ -177,6 +177,7 @@ describe('cliAppSteps', () => {
 
   it('requires an in-app api run to print no version note', () => {
     expect(step('api', 'CngxSelect', '--format=json').stderr('')).toBe(true);
+    expect(step('api', 'CngxSelect', '--format=json').stderr('npm warn Unknown user config "always-auth"\n')).toBe(true);
     expect(step('api', 'CngxSelect', '--format=json').stderr('cngx: answering for the installed cngx 0.2.0\n')).toMatch(/^expected no version note/);
     expect(step('api', 'CngxSelect').stderr).toBeUndefined();
   });
