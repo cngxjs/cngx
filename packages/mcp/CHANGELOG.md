@@ -47,7 +47,10 @@ answer grounds against is a runtime property (`cngx://provenance`,
 - `list_components` matches the `lib` filter case-insensitively (it was exact)
   and sorts by code point, not by locale; its description and `lib` input say so.
 - `get_api` lists only public methods; private and protected ones are dropped.
-- A version may carry a leading `v` (`v0.2.0`); it answers like `0.2.0`.
+- A version may carry a leading `v` or `V` (`v0.2.0`); it answers like `0.2.0`.
+  The `version` input of `find_component`, `get_api`, `get_slots`,
+  `get_theme_tokens`, `get_di_tokens` and `get_config`, and `migrate_usage`
+  `from` and `to`, say so in their descriptions (eight input descriptions).
 - `get_slots` splits a slot name that carries its description into the name and
   the description, and drops slots without a usable name.
 - `migrate_usage` diffs inputs and outputs on their public name (the alias when
