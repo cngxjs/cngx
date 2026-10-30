@@ -78,6 +78,8 @@ A button that opens a menu is its own button type: `button[cngxMenuButton]` in `
 
 Do not hand-wire `cngxMenuTrigger` and `cngxPopoverTrigger` onto a `cngxButton`; the menu button sets the anchor, `aria-haspopup="menu"`, the click toggle and the keyboard guard for you. The same entry ships `button[cngxIconMenuButton]` for a kebab or "more" button and `[cngxSplitButton]` for a main action with a caret that opens the alternatives. See the [`@cngx/common/menu-button` README](../menu-button/README.md).
 
+Which trigger? Action button, menu button, split button, select, disclosure or toggle group: see [Choosing a Trigger](https://cngxjs.github.io/cngx/additional-documentation/choosing-a-trigger.html).
+
 ## Composition
 
 - `CngxButtonStart` / `CngxButtonEnd` mark projected icons, badges or `<kbd>` hints; they are sized in `em` and trim the padding on their side.

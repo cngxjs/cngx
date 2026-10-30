@@ -78,3 +78,5 @@ The name is yours: name the menu after what it acts on, not after the glyph. A h
 ## Not a menu
 
 A menu holds actions. Navigation links behind a button are a popover disclosure (`cngxButton` + `cngxPopoverTrigger` with `haspopup="none"`), content that opens in place is `cngxDisclosure`, and a control whose label shows the chosen value is `cngxSelect`.
+
+Which trigger? The full decision table is in [Choosing a Trigger](https://cngxjs.github.io/cngx/additional-documentation/choosing-a-trigger.html).
