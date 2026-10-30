@@ -328,7 +328,7 @@ describe('fetchSnapshot failure messages', () => {
   });
 
   it.each(['latest', '1.2.3-rc.01'])('echoes %j with the same message normalizeReleaseVersion gives', async (input) => {
-    const result = await fetchSnapshot(input, { ...stub, runGh: ghMissing });
+    const result = await fetchSnapshot(input, { ...stub, httpGet: async () => ({ status: 404, body: '' }), runGh: ghMissing });
     const normalized = normalizeReleaseVersion(input);
 
     expect(result).toMatchObject({ ok: false, reason: 'invalid-version' });
