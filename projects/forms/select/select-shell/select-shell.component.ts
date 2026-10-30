@@ -472,7 +472,8 @@ export class CngxSelectShell<T = unknown>
 
   /**
    * Selected value, two-way bindable as `[(value)]`. Syncs with the bound field
-   * inside a `cngx-form-field`.
+   * inside a `cngx-form-field`. `null` and `''` count as no selection, like
+   * `undefined`, so an option whose value is `''` reads as empty.
    */
   readonly value = model<T | undefined>(undefined);
 
