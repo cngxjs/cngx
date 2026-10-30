@@ -53,7 +53,7 @@ Each command is generated from the same definition as its `@cngx/mcp` tool.
 
 |Flag|Meaning|
 |-|-|
-|`--format md\|json`|Output format. `md` (default) is markdown for people and agents; `json` is `{ "cngxVersion": "<version>", "result": <answer> }`, and a failure prints a failure document (see Failures).|
+|`--format md\|json`|Output format. `md` (default) is markdown for people and agents; `json` is `{ "cngxVersion": "<version>", "result": <answer> }`, and a failure prints a failure document (see Failures). It has no short form.|
 |`--cngx-version <version>`|Answer against another cngx release (`find`, `api`, `slots`, `theme`, `di`, `config`). The snapshot of that release is fetched through `gh`, or over HTTPS when `gh` is missing or fails. Other commands reject it.|
 |`--version`, `-v`|Print the `@cngx/cli` version.|
 |`--help`, `-h`|Print the command list, or a command's help after the command name.|
@@ -119,7 +119,7 @@ authenticated `gh`.
 |`0`|Answered.|
 |`1`|The query ran but found nothing (an empty `list` included), or the requested release snapshot could not be resolved.|
 |`2`|Usage error: no command (help goes to stderr), an unknown command or flag, invalid input, an empty or malformed `--cngx-version`, a malformed `migrate` version (`<from>` or `--to`), `--cngx-version` on a command that has no version, or a Node below 20. Usage errors and the Node floor print no json document, even under `--format json`; stdout stays empty.|
-|`3`|Internal error: the bundled snapshot could not be loaded, a command, its rendering or the start-up threw, or writing stdout failed. One `internal error` line on stderr, no stack; stdout holds the failure document under `--format json` and nothing under `md`. A failed stderr never changes the exit code: the run exits with the code its answer earned.|
+|`3`|Internal error: the bundled snapshot could not be loaded, a command, its rendering or the start-up threw, or writing stdout failed. One `internal error` line on stderr, no stack; stdout holds the failure document under `--format json` and nothing under `md`. A failed stderr never changes the exit code: the run exits with the code its answer earned. A closed stdout pipe (EPIPE, as in `cngx list \| head -1`) is not a failure either: the run ends quietly with the code its answer earned.|
 
 ## License
 

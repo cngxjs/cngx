@@ -33,6 +33,12 @@ describe('README', () => {
     expect(README).toContain(`\`${flag}`);
   });
 
+  it('gives --format no short form, in the adapter and in the README', () => {
+    expect(globalFlags()).not.toContain('-f');
+    expect(README).not.toMatch(/(?<![\w-])-f\b/);
+    expect(README).toContain('It has no short form.');
+  });
+
   it.each(COMMANDS.map((def) => def.cliName))('shows exactly the own flags of cngx %s in its Commands row', (cliName) => {
     expect(commandRowFlags(README, cliName)?.sort()).toEqual(ownFlags(cliName).sort());
   });
