@@ -1,9 +1,9 @@
 import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxAsyncClick, type AsyncAction } from '@cngx/common/interactive';
-import { computedValue } from '@cngx/testing/geometry';
+import { accessibleName, computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { cdp, userEvent } from 'vitest/browser';
 
 import { CngxButton } from './button.component';
 import type { CngxButtonSize } from './button.types';
@@ -242,18 +242,38 @@ describe('CngxButton paint: neutral secondary', () => {
 });
 
 describe('CngxButton geometry: busy', () => {
-  it('keeps the width while the busy layer covers the label', () => {
+  it('keeps the width and the accessible name while the busy layer covers the label', async () => {
     const { fixture, root } = mount();
     const btn = query(root, '.b-busy');
     const width = btn.getBoundingClientRect().width;
+    expect(await accessibleName('.b-busy')).toBe('Save changes');
     btn.click();
     fixture.detectChanges();
     expect(btn.dataset['busy']).toBe('true');
+    expect(await accessibleName('.b-busy')).toBe('Save changes');
     expect(btn.getBoundingClientRect().width).toBeCloseTo(width, 0);
-    expect(computedValue(query(btn, '.cngx-button__label'), 'visibility')).toBe('hidden');
+    expect(computedValue(query(btn, '.cngx-button__label'), 'opacity')).toBe('0');
     const busy = query(btn, '.cngx-button__busy');
     // inset: 0 spans the padding box, so it misses only the two border pixels.
     expect(busy.getBoundingClientRect().width).toBeGreaterThanOrEqual(width - 2.5);
+  });
+});
+
+describe('CngxButton geometry: busy under forced colors', () => {
+  afterEach(async () => {
+    await cdp().send('Emulation.setEmulatedMedia', { features: [] });
+  });
+
+  it('keeps the accessible name while busy', async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'forced-colors', value: 'active' }],
+    });
+    const { fixture, root } = mount();
+    const btn = query(root, '.b-busy');
+    btn.click();
+    fixture.detectChanges();
+    expect(btn.dataset['busy']).toBe('true');
+    expect(await accessibleName('.b-busy')).toBe('Save changes');
   });
 });
 

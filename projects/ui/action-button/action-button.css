@@ -14,7 +14,7 @@
  * - `.cngx-action-button__label[data-active]` - the visible, named label;
  *   the others are `visibility: hidden` and `aria-hidden`
  * - `[data-busy][data-status-label]` - a pending label shows instead of the
- *   spinner, so the stack stays visible while busy
+ *   spinner, so the stack is lifted back to `opacity: 1` while busy
  *
  * **State modifiers**
  *
@@ -43,10 +43,10 @@
       visibility: hidden;
     }
 
-    /* A pending label replaces the spinner: the button sheet hides the label
-       stack while busy, so it is lifted back for that case. */
+    /* A pending label replaces the spinner: the button sheet fades the label
+       stack out while busy, so it is lifted back for that case. */
     :scope.cngx-button[data-busy][data-status-label] > .cngx-action-button__labels {
-      visibility: visible;
+      opacity: 1;
     }
   }
 }
