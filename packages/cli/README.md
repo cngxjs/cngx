@@ -101,7 +101,8 @@ block per name under one `> cngx <version>` line; JSON prints
 `{ "cngxVersion": "<version>", "result": [<answer per name>] }`, with `null` for a
 name that matched nothing. When a name is not found the others still print,
 stderr lists the missing ones and the run exits 1. A single name keeps the
-single-answer shapes.
+single-answer shapes; under `--from` the json `result` is always an array,
+whatever the name count.
 
 Every answer names the cngx release it came from: the first markdown line is
 `> cngx <version>`, the JSON carries `cngxVersion`.

@@ -508,7 +508,9 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
 
   let rendered: Rendered;
   try {
-    rendered = await answer(def, context, inputs, format, hint, { compact: values.compact === true });
+    // A --from caller cannot know the name count, so its json shape must not depend on it.
+    const shape: AnswerShape = { list: typeof fromFile === 'string' };
+    rendered = await answer(def, context, inputs, format, hint, { compact: values.compact === true }, shape);
   } catch (error) {
     return internalError(io, `cngx ${def.cliName}`, error, format);
   }
@@ -664,6 +666,12 @@ async function runDoctorCommand(
   }
 }
 
+/** How `answer` shapes several inputs. */
+interface AnswerShape {
+  /** Render the several-names shapes even for one input (`--from`). */
+  readonly list: boolean;
+}
+
 /** A finished run, rendered but not yet written. */
 interface Rendered {
   readonly stdout: string;
@@ -673,7 +681,8 @@ interface Rendered {
 
 /**
  * Run `def` once per input and render the answers; any throw here is an internal
- * error of the caller's. One input keeps the single-answer shapes. Several inputs
+ * error of the caller's. One input keeps the single-answer shapes, unless it came
+ * through `--from` (`shape.list`), whose callers cannot know the count. Several inputs
  * (several names) render one block per name in md and a `result` array in json;
  * a name that is not found still leaves the found ones printed and exits 1. A
  * resolve failure is per release, not per name, so the first one ends the run.
@@ -685,6 +694,7 @@ async function answer(
   format: OutputFormat,
   hint: string,
   opts: RenderOptions,
+  shape: AnswerShape,
 ): Promise<Rendered> {
   const payloads: unknown[] = [];
   let groundedVersion: string | null | undefined;
@@ -712,7 +722,7 @@ async function answer(
   const missing = inputs.filter((_, i) => !isFound(def, payloads[i]));
   const exitCode = missing.length === 0 ? EXIT_OK : EXIT_NOT_FOUND;
   const header = `> cngx ${cngxVersion ?? 'unknown'}\n\n`;
-  if (inputs.length === 1) {
+  if (inputs.length === 1 && !shape.list) {
     const stdout =
       format === 'json'
         ? `${JSON.stringify({ cngxVersion, result: payloads[0] ?? null }, null, 2)}\n`

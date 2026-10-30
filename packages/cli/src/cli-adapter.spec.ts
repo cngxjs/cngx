@@ -943,6 +943,14 @@ describe('several names, --from and --compact', () => {
     expect(JSON.parse(run.stdout).result.map((entry: { name: string }) => entry.name)).toEqual(['CngxSelect', 'CngxRipple']);
   });
 
+  it('prints a json result array under --from even for a single name', async () => {
+    const file = sourceFile("import { CngxSelect } from '@cngx/forms/select';\n");
+    const run = await cli('api', '--from', file, '--format=json');
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(JSON.parse(run.stdout).result.map((entry: { name: string }) => entry.name)).toEqual(['CngxSelect']);
+  });
+
   it('exits 2 on an unreadable --from file', async () => {
     const run = await cli('api', '--from', join(tmpdir(), 'cngx-no-such-file.ts'));
 
