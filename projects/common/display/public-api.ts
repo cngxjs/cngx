@@ -9,6 +9,8 @@
 export { CngxIcon } from './icon/icon.component';
 /** @internal */
 export { CngxIconSvg } from './icon/icon-svg.component';
+/** @internal */
+export { createIconSvgElement, type CngxIconSvgElement } from './icon/icon-svg-element';
 export {
   CngxSegmentedProgress,
   type SegmentState,
