@@ -85,6 +85,7 @@ import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
+  dispatchScalarClear,
   type ScalarCommitHandler,
 } from '../shared/scalar-commit-handler';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
@@ -876,6 +877,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       });
       this.core.announce(option, 'added', 1, false);
     },
+    onClearFinalize: (previousValue) => this.finalizeClear(previousValue),
     onCommitError: (err) => this.announceCommitError(err),
     onStateChange: (status) => this.stateChange.emit(status),
     onError: (err) => this.commitError.emit(err),
@@ -1013,17 +1015,29 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     if (current === undefined) {
       return;
     }
-    this.value.set(undefined);
-    this.display.writeFromValue(undefined);
+    dispatchScalarClear({
+      core: this.core,
+      handler: this.scalarHandler,
+      commitAction: this.commitAction,
+      previous: current,
+      clearLocally: () => {
+        this.value.set(undefined);
+        this.display.writeFromValue(undefined);
+        this.finalizeClear(current);
+      },
+    });
+  };
+
+  private finalizeClear(previousValue: T | undefined): void {
     this.cleared.emit();
     this.selectionChange.emit({
       source: this,
       value: undefined,
-      previousValue: current,
+      previousValue,
       option: null,
     });
     this.core.announce(null, 'removed', 0, false);
-  };
+  }
 
   // True only inside the lifecycle emitter's post-close focus restore -
   // the programmatic refocus must not re-open under openOn: 'focus'.

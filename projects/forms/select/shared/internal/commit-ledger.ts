@@ -200,7 +200,10 @@ export function createCommitLedger<TCommit, TOption = unknown>(
     controller.begin(action, next, previous, {
       onSuccess: (committed) => {
         req.onStateChange?.('success');
-        const final = (committed ?? next) as V;
+        // `null` is a legitimate server result (a `??` would drop it); only a
+        // missing one falls back to the intended value.
+        const hasResult = committed !== undefined;
+        const final = (hasResult ? committed : next) as V;
         reconcile(final);
         settle(final);
         req.onSuccess(final, previous);

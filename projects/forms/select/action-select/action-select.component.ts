@@ -112,6 +112,7 @@ import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
+  dispatchScalarClear,
   type ScalarCommitHandler,
 } from '../shared/scalar-commit-handler';
 import {
@@ -1162,18 +1163,30 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     if (current === undefined) {
       return;
     }
-    this.value.set(undefined);
-    this.display.writeFromValue(undefined);
+    dispatchScalarClear({
+      core: this.core,
+      handler: this.scalarHandler,
+      commitAction: this.commitAction,
+      previous: current,
+      clearLocally: () => {
+        this.value.set(undefined);
+        this.display.writeFromValue(undefined);
+        this.finalizeClear(current);
+      },
+    });
+  };
+
+  private finalizeClear(previousValue: T | undefined): void {
     this.cleared.emit();
     this.selectionChange.emit({
       source: this,
       value: undefined,
-      previousValue: current,
+      previousValue,
       option: null,
       action: 'clear',
     });
     this.core.announce(null, 'removed', 0, false);
-  };
+  }
 
   protected handleFocus(): void {
     this.focusState.markFocused();
@@ -1241,6 +1254,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       });
       this.core.announce(option, 'added', option ? 1 : 0, false);
     },
+    onClearFinalize: (previousValue) => this.finalizeClear(previousValue),
     onCommitError: (err) => this.announceCommitError(err),
     onStateChange: (status) => this.stateChange.emit(status),
     onError: (err) => this.commitError.emit(err),

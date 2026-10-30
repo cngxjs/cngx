@@ -1,6 +1,7 @@
 import { Component, signal, viewChild, type TemplateRef, type WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { Subject } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxFormField } from '@cngx/forms/field';
@@ -261,6 +262,84 @@ describe('CngxTypeahead - standalone', () => {
     flush(fixture);
     expect(events.at(-1)?.value).toBeUndefined();
     expect(events.at(-1)?.previousValue?.name).toBe('Bob');
+  });
+});
+
+// ── Clear through the commit action ─────────────────────────────────────
+
+describe('CngxTypeahead - clear with a commit action', () => {
+  @Component({
+    template: `
+      <cngx-typeahead
+        [label]="'Colour'"
+        [options]="options"
+        [clearable]="true"
+        [commitAction]="commitAction"
+        [(value)]="value"
+        (cleared)="clearedCount = clearedCount + 1"
+      />
+    `,
+    imports: [CngxTypeahead],
+  })
+  class ClearCommitHost {
+    readonly options: CngxSelectOptionsInput<string> = [
+      { value: 'red', label: 'Red' },
+      { value: 'green', label: 'Green' },
+    ];
+    readonly value = signal<string | undefined>('red');
+    readonly intents: (string | undefined)[] = [];
+    readonly pendings: Subject<string | undefined>[] = [];
+    clearedCount = 0;
+    readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+      this.intents.push(intended);
+      const subject = new Subject<string | undefined>();
+      this.pendings.push(subject);
+      return subject.asObservable();
+    };
+  }
+
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [ClearCommitHost] });
+  });
+
+  function setup() {
+    const fixture = TestBed.createComponent(ClearCommitHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const clear = () => {
+      (fixture.nativeElement.querySelector('.cngx-select__clear-target') as HTMLElement).click();
+      flush(fixture);
+    };
+    return { fixture, host: fixture.componentInstance, clear };
+  }
+
+  it('sends undefined to the action and emits cleared only on success', () => {
+    const { fixture, host, clear } = setup();
+    clear();
+    expect(host.intents).toEqual([undefined]);
+    expect(host.value()).toBeUndefined();
+    expect(host.clearedCount).toBe(0);
+
+    host.pendings[0].next(undefined);
+    host.pendings[0].complete();
+    flush(fixture);
+
+    expect(host.clearedCount).toBe(1);
+    const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+    expect(input.value).toBe('');
+  });
+
+  it('a failed clear restores the value and the input text', () => {
+    const { fixture, host, clear } = setup();
+    clear();
+    host.pendings[0].error(new Error('server down'));
+    flush(fixture);
+
+    expect(host.value()).toBe('red');
+    expect(host.clearedCount).toBe(0);
+    const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+    expect(input.value).toBe('red');
   });
 });
 

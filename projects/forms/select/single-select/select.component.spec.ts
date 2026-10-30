@@ -898,6 +898,7 @@ describe('CngxSelect - async state consumer', () => {
       [options]="options"
       [commitAction]="commitAction"
       [commitMode]="mode()"
+      [clearable]="clearable()"
       [(value)]="value"
       (commitError)="errors.push($event)"
       (stateChange)="statuses.push($event)"
@@ -909,16 +910,18 @@ class CommitHost {
   readonly options = OPTIONS;
   readonly value = signal<string | undefined>('red');
   readonly mode = signal<CngxSelectCommitMode>('optimistic');
+  readonly clearable = signal(false);
   readonly errors: unknown[] = [];
   readonly statuses: string[] = [];
+  readonly intents: (string | undefined)[] = [];
   pending: Subject<string | undefined> | null = null;
   commitCallCount = 0;
   readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
     this.commitCallCount += 1;
+    this.intents.push(intended);
     const subject = new Subject<string | undefined>();
     this.pending = subject;
     return subject.asObservable() as Observable<string | undefined>;
-    void intended;
   };
 }
 
@@ -1072,6 +1075,65 @@ describe('CngxSelect - commit action producer', () => {
     firstPending.complete();
     flush(fixture);
     expect(host.statuses).toEqual(statusesBefore);
+  });
+
+  it('clear calls the commit action with undefined and emits the clear on success', () => {
+    const { fixture, host, select } = setup();
+    host.clearable.set(true);
+    flush(fixture);
+    const changes: CngxSelectChange<string>[] = [];
+    select.selectionChange.subscribe((c: CngxSelectChange<string>) => changes.push(c));
+
+    (fixture.nativeElement.querySelector('.cngx-select__clear-target') as HTMLElement).click();
+    flush(fixture);
+
+    expect(host.intents).toEqual([undefined]);
+    expect(host.value()).toBeUndefined();
+    expect(changes).toEqual([]);
+
+    host.pending!.next(undefined);
+    host.pending!.complete();
+    flush(fixture);
+
+    expect(changes).toHaveLength(1);
+    expect(changes[0].value).toBeUndefined();
+    expect(changes[0].previousValue).toBe('red');
+    expect(changes[0].option).toBeNull();
+  });
+
+  it('a failed clear rolls back to the previous value', () => {
+    const { fixture, host } = setup();
+    host.clearable.set(true);
+    flush(fixture);
+    (fixture.nativeElement.querySelector('.cngx-select__clear-target') as HTMLElement).click();
+    flush(fixture);
+
+    host.pending!.error(new Error('server down'));
+    flush(fixture);
+
+    expect(host.value()).toBe('red');
+  });
+
+  it('clear while a pick is pending wins over the late pick result', () => {
+    const { fixture, host, triggerBtn, secondOption } = setup();
+    host.clearable.set(true);
+    flush(fixture);
+    triggerBtn.click();
+    flush(fixture);
+    secondOption().click();
+    flush(fixture);
+    const pickPending = host.pending!;
+
+    (fixture.nativeElement.querySelector('.cngx-select__clear-target') as HTMLElement).click();
+    flush(fixture);
+    pickPending.next('green');
+    pickPending.complete();
+    host.pending!.next(undefined);
+    host.pending!.complete();
+    flush(fixture);
+
+    expect(host.intents).toEqual(['green', undefined]);
+    expect(host.value()).toBeUndefined();
   });
 
   it('provides CNGX_STATEFUL that resolves to commitState', () => {

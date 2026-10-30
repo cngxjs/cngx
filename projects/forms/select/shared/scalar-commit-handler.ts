@@ -28,6 +28,14 @@ export interface ScalarCommitHandlerOptions<T> {
     finalValue: T | undefined,
     previousValue: T | undefined,
   ) => void;
+  /**
+   * Fires after a clear commit succeeds with an empty result. Consumer
+   * emits its clear events and announces the removal. When omitted, a
+   * successful clear reaches `onCommitFinalize` with a `null` option.
+   * A server that answers a clear with a value always reaches
+   * `onCommitFinalize`.
+   */
+  readonly onClearFinalize?: (previousValue: T | undefined) => void;
   /** Consumer routes through its commit-error announcer. */
   readonly onCommitError: (err: unknown) => void;
   readonly onStateChange: (status: AsyncStatus) => void;
@@ -54,6 +62,14 @@ export interface ScalarCommitHandler<T> {
    * case.
    */
   dispatchFromActivation(intended: T, option: CngxSelectOptionDef<T>): void;
+  /**
+   * Start a clear commit: the bound action receives `undefined`. In
+   * optimistic mode the handler empties `value` first; a pending commit is
+   * superseded and rolls back to the confirmed value on failure. Retry
+   * replays the clear. Optional so custom factories written before it keep
+   * compiling; the composites clear locally when it is missing.
+   */
+  beginClear?(previous: T | undefined, action: CngxSelectCommitAction<T>): void;
   /** Non-commit finalization. */
   finalizeSelection(
     intended: T,
@@ -138,6 +154,46 @@ export function createScalarCommitHandler<T>(
     });
   };
 
+  const beginClear = (previous: T | undefined, action: CngxSelectCommitAction<T>): void => {
+    // A clear is option-less; a stale marker would spin the wrong row.
+    togglingOption.set(null);
+    if (opts.commitMode() === 'optimistic') {
+      opts.value.set(undefined);
+      mirrorWrite(undefined);
+    }
+    ledger.beginScalar<T | undefined>({
+      kind: 'clear',
+      next: undefined,
+      previous,
+      option: null,
+      action,
+      commitAction: opts.commitAction,
+      value: opts.value,
+      same,
+      commitMode: opts.commitMode,
+      onStateChange: opts.onStateChange,
+      onReplay: () => {
+        togglingOption.set(null);
+        if (opts.commitMode() === 'optimistic') {
+          mirrorWrite(undefined);
+        }
+      },
+      onSuccess: (finalValue, confirmedPrevious) => {
+        togglingOption.set(null);
+        mirrorWrite(finalValue);
+        if (finalValue === undefined && opts.onClearFinalize) {
+          opts.onClearFinalize(confirmedPrevious);
+          return;
+        }
+        const opt = finalValue === undefined ? null : opts.core.findOption(finalValue);
+        opts.onCommitFinalize(opt, finalValue, confirmedPrevious);
+      },
+      onError: opts.onError,
+      onRollback: mirrorWrite,
+      announceError: opts.onCommitError,
+    });
+  };
+
   const dispatchFromActivation = (intended: T, option: CngxSelectOptionDef<T>): void => {
     const previous = opts.value();
     togglingOption.set(option);
@@ -155,7 +211,33 @@ export function createScalarCommitHandler<T>(
 
   const retryLast = (): void => ledger.retry();
 
-  return { beginCommit, dispatchFromActivation, finalizeSelection, retryLast };
+  return { beginCommit, beginClear, dispatchFromActivation, finalizeSelection, retryLast };
+}
+
+/**
+ * Clear path shared by the scalar composites. With a bound `commitAction`
+ * the clear goes through `handler.beginClear`, so the server sees it and a
+ * pending commit cannot undo it. Without one, any pending commit is
+ * cancelled and its state settled (a stale error and Retry must not
+ * survive the clear) before `clearLocally` writes the empty value.
+ *
+ * @internal
+ */
+export function dispatchScalarClear<T>(opts: {
+  readonly core: CngxSelectCore<T, T>;
+  readonly handler: ScalarCommitHandler<T>;
+  readonly commitAction: Signal<CngxSelectCommitAction<T> | null>;
+  readonly previous: T | undefined;
+  readonly clearLocally: () => void;
+}): void {
+  const action = untracked(opts.commitAction);
+  if (action && opts.handler.beginClear) {
+    opts.handler.beginClear(opts.previous, action);
+    return;
+  }
+  opts.core.commitController.cancel({ settle: true });
+  opts.core.togglingOption.set(null);
+  opts.clearLocally();
 }
 
 /**

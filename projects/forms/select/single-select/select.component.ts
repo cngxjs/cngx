@@ -82,6 +82,7 @@ import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
+  dispatchScalarClear,
   type ScalarCommitHandler,
 } from '../shared/scalar-commit-handler';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
@@ -856,6 +857,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
         }
       }
     },
+    onClearFinalize: (previousValue) => this.finalizeClear(previousValue),
     onCommitError: (err) => this.announceCommitError(err),
     onStateChange: (status) => {
       this.stateChange.emit(status);
@@ -994,16 +996,28 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     if (current === undefined || current === null) {
       return;
     }
-    this.value.set(undefined);
+    dispatchScalarClear({
+      core: this.core,
+      handler: this.scalarHandler,
+      commitAction: this.commitAction,
+      previous: current,
+      clearLocally: () => {
+        this.value.set(undefined);
+        this.finalizeClear(current);
+      },
+    });
+  };
+
+  private finalizeClear(previousValue: T | undefined): void {
     this.selectionChange.emit({
       source: this,
       value: undefined,
-      previousValue: current,
+      previousValue,
       option: null,
     });
     this.optionSelected.emit(null);
     this.core.announce(null, 'removed', 0, false);
-  };
+  }
 
   /** @internal */
   // True only inside the lifecycle emitter's post-close focus restore -

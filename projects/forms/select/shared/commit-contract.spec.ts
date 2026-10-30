@@ -110,15 +110,15 @@ describeCommitContract(SELECT, (c) => {
   it('A3/B2: field null reads as empty and never reaches displayWith', c.fieldNullIsEmpty);
   it("A3/B2: field '' reads as empty and never reaches displayWith", c.fieldEmptyStringIsEmpty);
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
-  it.fails('A15: Retry after a failed clear replays the clear', c.retryClear);
+  it('A15: Retry after a failed clear replays the clear', c.retryClear);
   it.fails(
     'A18: an action returning EMPTY settles as error and unblocks closing',
     c.emptyActionSettles,
   );
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it.fails('A6: a letter key on the closed trigger calls commitAction', c.closedTypeaheadCommits);
-  it.fails('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
-  it.fails('A15: clear after a failed commit clears the commit error', c.clearClearsCommitError);
+  it('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
+  it('A15: clear after a failed commit clears the commit error', c.clearClearsCommitError);
   it(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
@@ -132,14 +132,14 @@ describeCommitContract(TYPEAHEAD, (c) => {
     c.fieldEmptyStringIsEmpty,
   );
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
-  it.fails('A15: Retry after a failed clear replays the clear', c.retryClear);
+  it('A15: Retry after a failed clear replays the clear', c.retryClear);
   it.fails(
     'A18: an action returning EMPTY settles as error and unblocks closing',
     c.emptyActionSettles,
   );
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
-  it.fails('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
-  it.fails('A15: clear after a failed commit clears the commit error', c.clearClearsCommitError);
+  it('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
+  it('A15: clear after a failed commit clears the commit error', c.clearClearsCommitError);
   it(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
@@ -153,14 +153,14 @@ describeCommitContract(ACTION_SELECT, (c) => {
     c.fieldEmptyStringIsEmpty,
   );
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
-  it.fails('A15: Retry after a failed clear replays the clear', c.retryClear);
+  it('A15: Retry after a failed clear replays the clear', c.retryClear);
   it.fails(
     'A18: an action returning EMPTY settles as error and unblocks closing',
     c.emptyActionSettles,
   );
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
-  it.fails('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
-  it.fails('A15: clear after a failed commit clears the commit error', c.clearClearsCommitError);
+  it('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
+  it('A15: clear after a failed commit clears the commit error', c.clearClearsCommitError);
   it(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
@@ -174,15 +174,15 @@ describeCommitContract(SELECT_SHELL, (c) => {
     c.fieldEmptyStringIsEmpty,
   );
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
-  it.fails('A15: Retry after a failed clear replays the clear', c.retryClear);
+  it('A15: Retry after a failed clear replays the clear', c.retryClear);
   it.fails(
     'A18: an action returning EMPTY settles as error and unblocks closing',
     c.emptyActionSettles,
   );
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it.fails('A6: a letter key on the closed trigger calls commitAction', c.closedTypeaheadCommits);
-  it.fails('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
-  it.fails('A15: clear after a failed commit clears the commit error', c.clearClearsCommitError);
+  it('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
+  it('A15: clear after a failed commit clears the commit error', c.clearClearsCommitError);
   it(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,

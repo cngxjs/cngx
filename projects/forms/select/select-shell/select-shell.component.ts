@@ -109,6 +109,7 @@ import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import { resolvePageJumpSpace } from '../shared/internal/page-jump-handler';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
+  dispatchScalarClear,
   type ScalarCommitHandler,
 } from '../shared/scalar-commit-handler';
 import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
@@ -681,15 +682,27 @@ export class CngxSelectShell<T = unknown>
     if (current === undefined || current === null) {
       return;
     }
-    this.value.set(undefined);
+    dispatchScalarClear({
+      core: this.core,
+      handler: this.scalarHandler,
+      commitAction: this.commitAction,
+      previous: current,
+      clearLocally: () => {
+        this.value.set(undefined);
+        this.finalizeClear(current);
+      },
+    });
+  };
+
+  private finalizeClear(previousValue: T | undefined): void {
     this.selectionChange.emit({
       source: this,
       value: undefined,
-      previousValue: current,
+      previousValue,
       option: null,
     });
     this.core.announce(null, 'removed', 0, false);
-  };
+  }
 
   private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');
   /** @internal - exposed to satisfy `CngxSelectShellSearchHost` so the
@@ -904,6 +917,7 @@ export class CngxSelectShell<T = unknown>
         }
       }
     },
+    onClearFinalize: (previousValue) => this.finalizeClear(previousValue),
     onCommitError: (err) => this.announceCommitError(err),
     onStateChange: (status) => {
       this.stateChange.emit(status);
@@ -1326,19 +1340,7 @@ export class CngxSelectShell<T = unknown>
   /** @internal */
   protected handleClearClick(event: Event): void {
     event.stopPropagation();
-    this.hostFocus.refocusOwnerBeforeRemoval();
-    const current = this.value();
-    if (current === undefined || current === null) {
-      return;
-    }
-    this.value.set(undefined);
-    this.selectionChange.emit({
-      source: this,
-      value: undefined,
-      previousValue: current,
-      option: null,
-    });
-    this.core.announce(null, 'removed', 0, false);
+    this.handleClearAction();
   }
 
   /** @internal */
