@@ -27,7 +27,9 @@ describe('diffSnapshots', () => {
 
   it('infers a component rename from a stable lib and shape', () => {
     expect(delta.components.renamed).toEqual([{ from: 'CngxOldPanel', to: 'CngxNewPanel', inferred: true }]);
-    expect(delta.components.signatureChanged).toEqual([]);
+    expect(delta.components.signatureChanged).toEqual([
+      { name: 'CngxNewPanel', fromSignature: 'cngx-old-panel', toSignature: 'cngx-new-panel' },
+    ]);
   });
 
   it('reports a removed injectable service as removed, never rename-inferred', () => {
@@ -110,6 +112,26 @@ describe('diffSnapshots rename inference is fingerprint-gated', () => {
     const delta = diffSnapshots(from, to);
 
     expect(delta.components.renamed).toEqual([{ from: 'CngxOld', to: 'CngxNew', inferred: true }]);
+  });
+
+  it('reports the selector change of an inferred rename under the new name', () => {
+    const open = [{ name: 'open', type: 'boolean' }];
+    const from = index('1.0.0', [{ name: 'A', selector: 'a-x', file: 'projects/ui/overlay/a.ts', inputsClass: open }]);
+    const to = index('2.0.0', [{ name: 'B', selector: 'b-x', file: 'projects/ui/overlay/b.ts', inputsClass: open }]);
+    const delta = diffSnapshots(from, to);
+
+    expect(delta.components.renamed).toEqual([{ from: 'A', to: 'B', inferred: true }]);
+    expect(delta.components.signatureChanged).toEqual([{ name: 'B', fromSignature: 'a-x', toSignature: 'b-x' }]);
+  });
+
+  it('adds no selector row to an inferred rename that keeps its selector', () => {
+    const open = [{ name: 'open', type: 'boolean' }];
+    const from = index('1.0.0', [{ name: 'A', selector: 'cngx-x', file: 'projects/ui/overlay/a.ts', inputsClass: open }]);
+    const to = index('2.0.0', [{ name: 'B', selector: 'cngx-x', file: 'projects/ui/overlay/b.ts', inputsClass: open }]);
+    const delta = diffSnapshots(from, to);
+
+    expect(delta.components.renamed).toEqual([{ from: 'A', to: 'B', inferred: true }]);
+    expect(delta.components.signatureChanged).toEqual([]);
   });
 
   it('marks a coincidental same-shape pair as inferred, never as a certain rename', () => {

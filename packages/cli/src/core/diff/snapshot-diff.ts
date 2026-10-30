@@ -72,6 +72,14 @@ function diffNamedList<T extends Named>(from: T[], to: T[], options: DiffOptions
   const removed: RemovedEntry[] = [];
   const renamed: RenamedEntry[] = [];
   const signatureChanged: SignatureChangedEntry[] = [];
+  // A matched or paired item reports its signature change under the name it has in `to`.
+  const compareSignatures = (before: T, after: T): void => {
+    const fromSignature = signatureOf(before);
+    const toSignature = signatureOf(after);
+    if (fromSignature !== toSignature) {
+      signatureChanged.push({ name: keyOf(after), owner, fromSignature, toSignature });
+    }
+  };
 
   const unmatchedFrom: T[] = [];
   for (const item of from) {
@@ -80,11 +88,7 @@ function diffNamedList<T extends Named>(from: T[], to: T[], options: DiffOptions
       unmatchedFrom.push(item);
       continue;
     }
-    const fromSignature = signatureOf(item);
-    const toSignature = signatureOf(match);
-    if (fromSignature !== toSignature) {
-      signatureChanged.push({ name: keyOf(item), owner, fromSignature, toSignature });
-    }
+    compareSignatures(item, match);
   }
 
   // Rename inference pool: entries new to `to` a removed entry can be paired with.
@@ -102,17 +106,15 @@ function diffNamedList<T extends Named>(from: T[], to: T[], options: DiffOptions
     if (fieldOf && field !== null && removedFieldCount.get(field) === 1 && addedFieldCount.get(field) === 1) {
       const target = addedItems.find((item) => fieldOf(item) === field)!;
       renamed.push({ from: keyOf(gone), to: keyOf(target), owner });
-      const fromSignature = signatureOf(gone);
-      const toSignature = signatureOf(target);
-      if (fromSignature !== toSignature) {
-        signatureChanged.push({ name: keyOf(target), owner, fromSignature, toSignature });
-      }
+      compareSignatures(gone, target);
       continue;
     }
     const key = renameKeyOf?.(gone) ?? null;
     if (renameKeyOf && key !== null && removedKeyCount.get(key) === 1 && addedKeyCount.get(key) === 1) {
       const target = addedItems.find((item) => renameKeyOf(item) === key)!;
       renamed.push({ from: keyOf(gone), to: keyOf(target), owner, ...(inferred ? { inferred: true as const } : {}) });
+      // For an entry the signature is its selector: a rename that also moves the selector reports both.
+      compareSignatures(gone, target);
       continue;
     }
     removed.push({ name: keyOf(gone), owner });

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { loadDocsFromFile } from '../data/loader.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
 import { createDocsResolver } from '../data/docs-resolver.js';
-import { migrateUsage, migrateUsageCommand } from './migrate-usage.js';
+import { migrateUsage, migrateUsageCommand, migrateUsageMarkdown } from './migrate-usage.js';
 import type { UsageDelta } from '../diff/types.js';
 
 const OLD = fileURLToPath(new URL('../../../test/fixtures/documentation.v-old.sample.json', import.meta.url));
@@ -38,6 +38,16 @@ describe('migrateUsage', () => {
     expect(delta.meta).toMatchObject({ from: '0.1.0', to: '0.2.0', resolvedFrom: '0.1.0', resolvedTo: '0.2.0' });
     expect(delta.inputs.removed).toEqual([{ name: 'legacyMode', owner: 'CngxSelect' }]);
     expect(delta.components.renamed).toEqual([{ from: 'CngxOldPanel', to: 'CngxNewPanel', inferred: true }]);
+  });
+
+  it('renders an inferred rename and its selector change as two component rows', async () => {
+    const deps: DocsResolverDeps = { fetchSnapshot: async () => ({ ok: true, path: OLD }), loadDocs: loadDocsFromFile };
+
+    const result = await migrateUsage(bundledNew, { from: '0.1.0', to: '0.2.0' }, createDocsResolver(bundledNew, deps));
+    const markdown = migrateUsageMarkdown(result as UsageDelta);
+
+    expect(markdown).toContain('|renamed (inferred)|`CngxOldPanel`|`CngxNewPanel`|');
+    expect(markdown).toContain('|selector|`CngxNewPanel`|`cngx-old-panel` -> `cngx-new-panel`|');
   });
 
   it('diffs a schema-2 `from` against a schema-6 bundled `to`', async () => {
