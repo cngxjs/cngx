@@ -301,7 +301,8 @@ export function createSelectSheetWiring(opts: CngxSelectSheetWiringOptions): Cng
       input.dispatchEvent(new Event('input'));
     },
     listboxRef: opts.listboxRef,
-    panelId: computed(() => opts.popoverRef()?.id() ?? null),
+    listboxId: signal(opts.core.listboxId).asReadonly(),
+    popupRole: signal(opts.popupRole).asReadonly(),
     close: () => handleSheetClose('close'),
     escapeClose,
   };

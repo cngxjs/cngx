@@ -71,7 +71,8 @@ function createHarness(): Harness {
     searchTerm: signal(''),
     setSearchTerm: vi.fn(),
     listboxRef: signal<CngxListbox | undefined>(undefined),
-    panelId: signal('panel-1'),
+    listboxId: signal('listbox-1'),
+    popupRole: signal<'listbox' | 'tree'>('listbox'),
     close,
     escapeClose: vi.fn(),
   };
@@ -295,7 +296,7 @@ describe('CngxSelectSheetHeader', () => {
     expect(el.querySelector('[cngxpopoversheethandle]')).toBeNull();
   });
 
-  it('renders the header input as a combobox that controls the panel', () => {
+  it('renders the header input as a combobox that controls the listbox', () => {
     const { harness, fixture, el, title } = setup();
     harness.showInput.set(true);
     fixture.detectChanges();
@@ -305,7 +306,8 @@ describe('CngxSelectSheetHeader', () => {
     harness.panelVisible.set(true);
     fixture.detectChanges();
     expect(input.getAttribute('aria-expanded')).toBe('true');
-    expect(input.getAttribute('aria-controls')).toBe('panel-1');
+    expect(input.getAttribute('aria-controls')).toBe('listbox-1');
+    expect(input.getAttribute('aria-haspopup')).toBe('listbox');
     expect(input.getAttribute('aria-labelledby')).toBe(title().id);
 
     input.value = 're';
