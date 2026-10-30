@@ -141,6 +141,24 @@ describe('resolveEntry over the bundled snapshot', () => {
     expect(shared().length).toBeGreaterThan(10);
   });
 
+  it('resolves every candidate of every bundled ambiguity by its class name to exactly that candidate', () => {
+    const ambiguities = shared()
+      .map((key) => resolveEntry(bundled, key))
+      .filter((match): match is AmbiguousMatch => isAmbiguous(match));
+
+    expect(ambiguities.length).toBeGreaterThan(0);
+    for (const { candidates } of ambiguities) {
+      for (const candidate of candidates) {
+        const match = resolveEntry(bundled, candidate.name);
+
+        expect(isAmbiguous(match) ? undefined : { name: match?.entry.name, kind: match?.kind }, candidate.name).toEqual({
+          name: candidate.name,
+          kind: candidate.kind,
+        });
+      }
+    }
+  });
+
   it('answers every shared key the same for the original, reversed and shuffled entry lists', () => {
     const orders = [
       reorder((items) => [...items].reverse()),

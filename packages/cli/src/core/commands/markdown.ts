@@ -104,12 +104,12 @@ export function textCell(value: string | null | undefined): string {
   return `${(space > 0 ? cut.slice(0, space) : cut).replace(/[\s,;:.\\-]+$/, '')}...`;
 }
 
-/** An ambiguous selector: every candidate with the selector that names it alone. */
+/** An ambiguous selector: every candidate, each asked for again by its class name, which always resolves to it alone. */
 export function ambiguousMarkdown(match: AmbiguousMatch): string {
   const rows = match.candidates.map((c) => [code(c.name), cell(c.kind), code(c.selector)]);
   return blocks(
     '# Several entries match',
-    'Ask again with a class name or with the full selector of one candidate.',
+    'Ask again with the class name of one candidate.',
     table(['Name', 'Kind', 'Selector'], rows),
   );
 }

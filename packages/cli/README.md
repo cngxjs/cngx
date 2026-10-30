@@ -96,9 +96,10 @@ A query that finds nothing is not a failure: it prints the empty answer with no
 |`api`, `slots`, `theme`, `config`, `example`|`null`|
 |`api`, `slots`, `theme`, `config`, `example`, when a selector matches several entries|`{ "ambiguous": true, "candidates": [{ "name", "kind", "selector" }] }`|
 
-An ambiguous selector names every candidate, sorted by name; ask again with a
-class name or a candidate's full selector. `list` exits 1 on an empty result too, for example `--lib` naming no lib. Over
-MCP the same empty list is the answer.
+An ambiguous selector names every candidate, sorted by name. Ask again with a
+candidate's class name, which always resolves to that entry; a full selector does
+not always. `list` exits 1 on an empty result too, for example `--lib` naming no
+lib. Over MCP the same empty list is the answer.
 
 An internal error (exit 3) prints `cngx: internal error: <message>` (or
 `cngx <command>: internal error: <message>` once a command ran) and, under

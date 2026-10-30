@@ -47,7 +47,7 @@ export interface EntryCandidate {
   selector: string | null;
 }
 
-/** Several entries share the best selector match; the caller must ask again by name or full selector. */
+/** Several entries share the best selector match; the caller must ask again by a candidate's class name. */
 export interface AmbiguousMatch {
   ambiguous: true;
   candidates: EntryCandidate[];

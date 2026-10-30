@@ -4,7 +4,7 @@
 // anchors carrying the build-time base.
 
 import { describe, expect, it } from 'vitest';
-import { docText, textCell, toPlainText } from './markdown.js';
+import { ambiguousMarkdown, docText, textCell, toPlainText } from './markdown.js';
 
 describe('toPlainText', () => {
   it('strips nested tags and keeps code as backticks', () => {
@@ -61,5 +61,20 @@ describe('textCell', () => {
 
     expect(capped.length).toBeLessThanOrEqual(203);
     expect(capped).toMatch(/word\.\.\.$/);
+  });
+});
+
+describe('ambiguousMarkdown', () => {
+  it('asks again for the class name of one candidate, never for a selector', () => {
+    const markdown = ambiguousMarkdown({
+      ambiguous: true,
+      candidates: [
+        { name: 'CngxSyncA', kind: 'directive', selector: 'cngx-a[cngxSync]' },
+        { name: 'CngxSyncB', kind: 'directive', selector: 'cngx-b[cngxSync]' },
+      ],
+    });
+
+    expect(markdown).toContain('Ask again with the class name of one candidate.');
+    expect(markdown).not.toContain('full selector');
   });
 });
