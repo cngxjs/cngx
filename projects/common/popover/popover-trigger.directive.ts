@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import {
   computed,
   DestroyRef,
@@ -64,6 +65,7 @@ import type { PopoverHaspopup } from './popover.types';
 export class CngxPopoverTrigger {
   private readonly elRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly doc = inject(DOCUMENT);
 
   /** Explicit reference to the popover this trigger controls. */
   readonly popoverRef = input.required<CngxPopover>({
@@ -101,9 +103,14 @@ export class CngxPopoverTrigger {
    * When `true`, remembers the popover's pre-open focus target (the
    * popover snapshots `document.activeElement` synchronously inside
    * `show()`, before content autofocus can land in the panel) and
-   * restores focus to it when the popover closes. Defaults to `false`
-   * so the trigger stays a passive ARIA atom; opt in for menus,
-   * confirm panels, and dialogs that move focus away from the trigger.
+   * restores focus to it when the popover closes. A snapshot of `body`
+   * (a browser that does not focus a clicked button, such as Safari)
+   * falls back to this trigger. The restore runs only when focus is
+   * lost at close time - on `body` or inside the panel - so a close
+   * caused by a click or Escape in another control leaves focus there.
+   * Defaults to `false` so the trigger stays a passive ARIA atom; opt in
+   * for menus, confirm panels, and dialogs that move focus away from
+   * the trigger.
    */
   readonly restoreFocus = input(false);
 
@@ -158,17 +165,32 @@ export class CngxPopoverTrigger {
       const visible = this.popoverRef().isVisible();
       if (visible) {
         untracked(() => {
-          this.savedFocus = this.popoverRef().focusOrigin() ?? this.elRef.nativeElement;
+          const origin = this.popoverRef().focusOrigin();
+          this.savedFocus = origin && origin !== this.doc.body ? origin : this.elRef.nativeElement;
         });
       } else if (this.savedFocus) {
         const target = this.savedFocus;
         this.savedFocus = null;
         untracked(() => {
+          if (!this.isFocusLost()) {
+            return;
+          }
           if (typeof target.focus === 'function' && target.isConnected) {
             target.focus();
           }
         });
       }
     });
+  }
+
+  // Same rule as CngxPopoverSheet: `body` counts as lost because the
+  // popover blurs a focused descendant on hide.
+  private isFocusLost(): boolean {
+    const active = this.doc.activeElement;
+    return (
+      !active ||
+      active === this.doc.body ||
+      this.popoverRef().elementRef.nativeElement.contains(active)
+    );
   }
 }

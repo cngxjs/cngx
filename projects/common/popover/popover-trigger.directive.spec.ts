@@ -248,9 +248,78 @@ describe('CngxPopoverTrigger', () => {
       const host = fixture.componentInstance as RestoreFocusHost;
       host.popover().show();
       fixture.detectChanges();
-      const sneaky = document.createElement('button');
-      testRoot.appendChild(sneaky);
-      sneaky.focus();
+      const panelItem = document.createElement('button');
+      popoverEl.appendChild(panelItem);
+      panelItem.focus();
+      host.popover().hide();
+      fixture.detectChanges();
+      expect(document.activeElement).toBe(triggerEl);
+      fixture.destroy();
+    });
+
+    it('should leave focus on a control outside the panel when the popover closes', () => {
+      const fixture = TestBed.createComponent(RestoreFocusHost);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      stubPopoverElement(popoverEl);
+
+      triggerEl.focus();
+      const host = fixture.componentInstance as RestoreFocusHost;
+      host.popover().show();
+      fixture.detectChanges();
+      // An outside click or an Escape typed in another field closes the
+      // popover while focus already sits on that control.
+      const elsewhere = document.createElement('input');
+      testRoot.appendChild(elsewhere);
+      elsewhere.focus();
+      host.popover().hide();
+      fixture.detectChanges();
+      expect(document.activeElement).toBe(elsewhere);
+      fixture.destroy();
+    });
+
+    it('should restore to the trigger when focus fell to body before the close', () => {
+      const fixture = TestBed.createComponent(RestoreFocusHost);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      stubPopoverElement(popoverEl);
+
+      triggerEl.focus();
+      const host = fixture.componentInstance as RestoreFocusHost;
+      host.popover().show();
+      fixture.detectChanges();
+      (document.activeElement as HTMLElement).blur();
+      host.popover().hide();
+      fixture.detectChanges();
+      expect(document.activeElement).toBe(triggerEl);
+      fixture.destroy();
+    });
+
+    it('should fall back to the trigger when the pre-open focus target is body', () => {
+      const fixture = TestBed.createComponent(RestoreFocusHost);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      stubPopoverElement(popoverEl);
+
+      // Safari does not focus a clicked button: the pre-open snapshot is body.
+      (document.activeElement as HTMLElement | null)?.blur();
+      expect(document.activeElement).toBe(document.body);
+      const host = fixture.componentInstance as RestoreFocusHost;
+      host.popover().show();
+      fixture.detectChanges();
+      const panelLink = document.createElement('a');
+      panelLink.href = '#';
+      popoverEl.appendChild(panelLink);
+      panelLink.focus();
       host.popover().hide();
       fixture.detectChanges();
       expect(document.activeElement).toBe(triggerEl);
@@ -273,7 +342,7 @@ describe('CngxPopoverTrigger', () => {
       // trigger's post-CD capture effect - the effect must adopt the
       // popover's pre-show snapshot, not document.activeElement.
       const autofocused = document.createElement('button');
-      testRoot.appendChild(autofocused);
+      popoverEl.appendChild(autofocused);
       autofocused.focus();
       fixture.detectChanges();
       host.popover().hide();
