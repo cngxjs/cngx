@@ -21,7 +21,7 @@ export interface CngxSelectLanguageSection {
   readonly chipRemove: string;
   /** `{action}`, `{label}`: the accessible name of a chip's remove button. */
   readonly chipRemoveFor: CngxMessage;
-  /** `{count}`: the visible badge for the chips hidden by `chipOverflow: 'truncate'`. */
+  /** `{count}`: the visible badge for the chips hidden by `chipOverflow: 'truncate'` or `'fit'`. */
   readonly chipOverflowBadge: CngxMessage;
   /**
    * `{count}`, `{list}`: the spoken value of a summary trigger holding two or
