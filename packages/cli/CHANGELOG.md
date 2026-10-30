@@ -17,6 +17,13 @@ grounds against is a property of the bundled snapshot, not this version.
   3 (internal error: a snapshot that cannot load, a throw, a failed write).
 - Node 20 floor checked before anything else loads; a closed stdout pipe
   (`cngx list | head -1`) no longer crashes.
+- Under `--format json` every run except a usage error prints exactly one
+  document: a resolve or internal failure prints
+  `{ "cngxVersion": null, "result": null, "error": { "reason", "message" } }`
+  (reason `internal` for exit 3) next to its stderr line; a not-found answer
+  keeps `result` empty with no `error`.
+- Markdown output keeps a numeric character entity past U+10FFFF or naming a
+  lone surrogate as written instead of failing the render.
 - `find`, `api`, `slots`, `theme`, `di` and `config` answer for the cngx
   release installed in the project when `--cngx-version` is absent: the
   installed `@cngx/core` (npm, pnpm, hoisted workspaces), else an exact
