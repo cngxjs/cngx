@@ -31,8 +31,8 @@ export function resolvePageJumpSpace(
 /**
  * PageUp/PageDown handler for flat-panel select variants. Opens the
  * popover when closed, jumps ±10 from the AD-highlighted index via
- * {@link resolvePageJumpTarget}, returns `true` when handled. Other keys
- * return `false`.
+ * {@link resolvePageJumpTarget}, returns `true` when handled. Other keys,
+ * and every key while `disabled()` reports `true`, return `false`.
  *
  * @internal
  */
@@ -46,6 +46,12 @@ export function handlePageJumpKey(
      * virtual, where it is the absolute index space of the AD.
      */
     readonly flatOptions?: () => readonly CngxFlatNavListboxItem[];
+    /**
+     * The control is disabled: the key is left alone and the panel stays
+     * shut. The input variants disable their `<input>` natively, so they
+     * never see the key; a focusable `aria-disabled` host passes this.
+     */
+    readonly disabled?: () => boolean;
   },
 ): boolean {
   if (event.key !== 'PageDown' && event.key !== 'PageUp') {
@@ -58,7 +64,7 @@ export function handlePageJumpKey(
     return false;
   }
   const { listbox, popover } = opts;
-  if (!listbox || !popover) {
+  if (!listbox || !popover || opts.disabled?.()) {
     return false;
   }
   event.preventDefault();
@@ -98,7 +104,9 @@ export interface FlatNavPageJumpDeps<T> {
  * {@link CngxFlatNavStrategy}, so a consumer `CNGX_FLAT_NAV_STRATEGY`
  * override keeps steering page jumps. Opens the popover when closed,
  * returns `true` when the key was a handled page-jump key. Guards
- * modifier combos itself, mirroring {@link handlePageJumpKey}.
+ * modifier combos itself, mirroring {@link handlePageJumpKey}. A disabled
+ * control (focusable through `aria-disabled`) leaves the key alone and
+ * never opens the panel.
  *
  * @internal
  */
@@ -110,6 +118,9 @@ export function handleFlatNavPageJumpKey<T>(
     return false;
   }
   if (event.ctrlKey || event.metaKey || event.altKey) {
+    return false;
+  }
+  if (deps.disabled()) {
     return false;
   }
   event.preventDefault();
