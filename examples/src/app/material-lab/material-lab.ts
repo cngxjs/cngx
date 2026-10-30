@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  type TemplateRef,
+  ViewEncapsulation,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { form, schema, required, email, disabled, FormField } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -8,8 +18,39 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatInputModule } from '@angular/material/input';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatCardModule } from '@angular/material/card';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatBottomSheet, type MatBottomSheetRef } from '@angular/material/bottom-sheet';
+import { MatSnackBar, MatSnackBarModule, type MatSnackBarRef } from '@angular/material/snack-bar';
 
-import { CngxSlider, CngxRangeSlider } from '@cngx/common/interactive';
+import {
+  CngxButton,
+  CngxButtonGroup,
+  CngxButtonGroupAddon,
+  CngxButtonStart,
+  CngxCloseButton,
+  CngxIconButton,
+} from '@cngx/common/button';
+import { CngxAvatar, CngxIcon } from '@cngx/common/display';
+import { CngxMenu, CngxMenuItem, CngxSlider, CngxRangeSlider } from '@cngx/common/interactive';
+import {
+  CNGX_BUTTON_CARET_ICON,
+  CngxIconMenuButton,
+  CngxMenuButton,
+  CngxSplitButton,
+} from '@cngx/common/menu-button';
+import { CngxBottomSheet, CngxDialog, CngxDialogTitle } from '@cngx/common/dialog';
+import {
+  CngxPopover,
+  CngxPopoverBody,
+  CngxPopoverHeader,
+  CngxPopoverPanel,
+  CngxPopoverTrigger,
+} from '@cngx/common/popover';
+import { CngxAlert, CngxBanner, CngxBannerOutlet, CngxToaster } from '@cngx/ui/feedback';
 import {
   CngxAccordionGroup,
   CngxAccordionItem,
@@ -46,6 +87,20 @@ import {
 } from '@cngx/forms/input';
 import type { CngxTreeNode } from '@cngx/utils';
 
+/**
+ * `CNGX_BUTTON_CARET_ICON` for the lab: Material's `arrow_drop_down`, the glyph
+ * `mat-button` uses with `[matMenuTriggerFor]`. The menu button wraps it in
+ * its caret `<cngx-icon>`, so the icon bridge sizes it.
+ */
+@Component({
+  selector: 'app-material-lab-caret',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [MatIconModule],
+  template: `<mat-icon>arrow_drop_down</mat-icon>`,
+})
+class MaterialLabCaret {}
+
 interface FieldModel {
   name: string;
   password: string;
@@ -80,6 +135,10 @@ interface FieldModel {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  // Component-scoped banner stack so the dismissible banner renders inside the
+  // lab section (its own outlet) instead of the app-level outlet at the top.
+  providers: [CngxBanner],
+  viewProviders: [{ provide: CNGX_BUTTON_CARET_ICON, useValue: MaterialLabCaret }],
   imports: [
     FormsModule,
     FormField,
@@ -90,6 +149,35 @@ interface FieldModel {
     MatInputModule,
     MatSliderModule,
     MatExpansionModule,
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule,
+    MatCardModule,
+    MatDialogModule,
+    MatSnackBarModule,
+    CngxAlert,
+    CngxBannerOutlet,
+    CngxBottomSheet,
+    CngxDialog,
+    CngxDialogTitle,
+    CngxPopoverBody,
+    CngxPopoverHeader,
+    CngxPopoverPanel,
+    CngxPopoverTrigger,
+    CngxButton,
+    CngxButtonGroup,
+    CngxButtonGroupAddon,
+    CngxButtonStart,
+    CngxCloseButton,
+    CngxIconButton,
+    CngxMenu,
+    CngxMenuItem,
+    CngxMenuButton,
+    CngxIconMenuButton,
+    CngxSplitButton,
+    CngxPopover,
+    CngxAvatar,
+    CngxIcon,
     CngxSlider,
     CngxRangeSlider,
     CngxAccordionGroup,
@@ -117,9 +205,246 @@ interface FieldModel {
     CngxInputClear,
     CngxAutosize,
   ],
-  styleUrl: './material-lab.scss',
   template: `
     <div class="lab mat-app-background mat-typography">
+      <section class="lab-wide">
+        <h3>buttons (Material left, cngx right)</h3>
+        <div class="lab-row">
+          <button mat-flat-button>Save</button>
+          <button cngxButton tone="primary">Save</button>
+          <button matButton="tonal">Save draft</button>
+          <button cngxButton="secondary">Save draft</button>
+        </div>
+        <div class="lab-row">
+          <button mat-stroked-button>Export</button>
+          <button cngxButton="outline">Export</button>
+          <button mat-button>Cancel</button>
+          <button cngxButton="ghost" tone="primary">Cancel</button>
+        </div>
+        <div class="lab-row">
+          <button mat-flat-button><mat-icon>add</mat-icon>New item</button>
+          <button cngxButton tone="primary">
+            <cngx-icon cngxButtonStart><mat-icon>add</mat-icon></cngx-icon>New item
+          </button>
+          <button matIconButton aria-label="Delete"><mat-icon>delete</mat-icon></button>
+          <button cngxIconButton aria-label="Delete">
+            <cngx-icon><mat-icon>delete</mat-icon></cngx-icon>
+          </button>
+        </div>
+        <div class="lab-row">
+          <button mat-flat-button disabled>Disabled</button>
+          <button cngxButton tone="primary" disabled>Disabled</button>
+          <button cngxButton tone="danger">Delete</button>
+          <button cngxButton="secondary" tone="danger">Discard</button>
+        </div>
+        <div class="lab-row">
+          <button matIconButton aria-label="Close panel"><mat-icon>close</mat-icon></button>
+          <button cngxCloseButton aria-label="Close panel"></button>
+          <div cngxButtonGroup variant="outline" aria-label="Assignee">
+            <span cngxButtonGroupAddon><cngx-avatar initials="AL" size="xs" />Ada Lovelace</span>
+            <button cngxButton>Reassign</button>
+          </div>
+          <div cngxButtonGroup variant="outline" aria-label="Issues">
+            <span cngxButtonGroupAddon>3 open</span>
+            <button cngxButton>Show</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="lab-wide" id="menu-buttons">
+        <h3>menu buttons (Material left, cngx right)</h3>
+        <div class="lab-row">
+          <button mat-flat-button [matMenuTriggerFor]="matExport">
+            Export<mat-icon iconPositionEnd>arrow_drop_down</mat-icon>
+          </button>
+          <button cngxMenuButton tone="primary" [menu]="exportSolid" [popover]="exportSolidPop">
+            Export
+          </button>
+          <button mat-stroked-button [matMenuTriggerFor]="matExport">
+            Export<mat-icon iconPositionEnd>arrow_drop_down</mat-icon>
+          </button>
+          <button cngxMenuButton="outline" [menu]="exportOutline" [popover]="exportOutlinePop">
+            Export
+          </button>
+          <button mat-button [matMenuTriggerFor]="matExport">
+            Export<mat-icon iconPositionEnd>arrow_drop_down</mat-icon>
+          </button>
+          <button cngxMenuButton="ghost" tone="primary" [menu]="exportGhost" [popover]="exportGhostPop">
+            Export
+          </button>
+          <button matIconButton aria-label="More actions" [matMenuTriggerFor]="matExport">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <button cngxIconMenuButton aria-label="More actions" [menu]="moreMenu" [popover]="morePop">
+            <cngx-icon><mat-icon>more_vert</mat-icon></cngx-icon>
+          </button>
+        </div>
+        <!-- Split button against the M3 split-button spec (Angular Material ships none). -->
+        <div class="lab-row">
+          @for (split of splits; track split.variant) {
+            <div cngxSplitButton [variant]="split.variant" aria-label="Publish">
+              <button cngxButton [tone]="split.tone">Publish</button>
+              <button cngxIconMenuButton [tone]="split.tone" [menu]="splitMenu" [popover]="splitPop"></button>
+            </div>
+            <div cngxPopover placement="bottom-end" #splitPop="cngxPopover">
+              <ul cngxMenu [label]="'Publish options'" tabindex="0" #splitMenu="cngxMenu">
+                <li cngxMenuItem value="draft">Save as draft</li>
+                <li cngxMenuItem value="scheduled">Schedule for tomorrow</li>
+              </ul>
+            </div>
+          }
+        </div>
+        <div class="lab-row">
+          @for (density of densities; track density) {
+            <div class="lab-row" [attr.data-density]="density">
+              <button cngxMenuButton tone="primary" [menu]="densityMenu" [popover]="densityPop">
+                {{ density }}
+              </button>
+              <div cngxSplitButton variant="solid" [attr.aria-label]="'Publish, ' + density">
+                <button cngxButton tone="primary">Publish</button>
+                <button cngxIconMenuButton tone="primary" [menu]="densitySplitMenu" [popover]="densitySplitPop"></button>
+              </div>
+            </div>
+            <div cngxPopover placement="bottom-start" #densityPop="cngxPopover">
+              <ul cngxMenu [label]="'Export format'" tabindex="0" #densityMenu="cngxMenu">
+                <li cngxMenuItem value="pdf">PDF</li>
+                <li cngxMenuItem value="csv">CSV</li>
+              </ul>
+            </div>
+            <div cngxPopover placement="bottom-end" #densitySplitPop="cngxPopover">
+              <ul cngxMenu [label]="'Publish options'" tabindex="0" #densitySplitMenu="cngxMenu">
+                <li cngxMenuItem value="draft">Save as draft</li>
+              </ul>
+            </div>
+          }
+        </div>
+        <mat-menu #matExport="matMenu">
+          <button mat-menu-item>PDF</button>
+          <button mat-menu-item>CSV</button>
+        </mat-menu>
+        <div cngxPopover placement="bottom-start" #exportSolidPop="cngxPopover">
+          <ul cngxMenu [label]="'Export format'" tabindex="0" #exportSolid="cngxMenu">
+            <li cngxMenuItem value="pdf">PDF</li>
+            <li cngxMenuItem value="csv">CSV</li>
+          </ul>
+        </div>
+        <div cngxPopover placement="bottom-start" #exportOutlinePop="cngxPopover">
+          <ul cngxMenu [label]="'Export format'" tabindex="0" #exportOutline="cngxMenu">
+            <li cngxMenuItem value="pdf">PDF</li>
+            <li cngxMenuItem value="csv">CSV</li>
+          </ul>
+        </div>
+        <div cngxPopover placement="bottom-start" #exportGhostPop="cngxPopover">
+          <ul cngxMenu [label]="'Export format'" tabindex="0" #exportGhost="cngxMenu">
+            <li cngxMenuItem value="pdf">PDF</li>
+            <li cngxMenuItem value="csv">CSV</li>
+          </ul>
+        </div>
+        <div cngxPopover placement="bottom-end" #morePop="cngxPopover">
+          <ul cngxMenu [label]="'More actions'" tabindex="0" #moreMenu="cngxMenu">
+            <li cngxMenuItem value="rename">Rename</li>
+            <li cngxMenuItem value="archive">Archive</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="lab-wide" id="close-hosts">
+        <h3>close buttons in context (Material left where it exists, cngx right)</h3>
+
+        <div class="lab-pair">
+          <mat-card appearance="outlined" class="lab-host lab-host--mat-alert">
+            <mat-card-header>
+              <mat-card-title>Unsaved changes</mat-card-title>
+              <button matIconButton aria-label="Dismiss notice" class="lab-host-close">
+                <mat-icon>close</mat-icon>
+              </button>
+            </mat-card-header>
+            <mat-card-content>Your changes will be lost if you leave this page.</mat-card-content>
+          </mat-card>
+          <cngx-alert class="lab-host" severity="warning" title="Unsaved changes" [closable]="true">
+            Your changes will be lost if you leave this page.
+          </cngx-alert>
+        </div>
+
+        <div class="lab-pair">
+          <span class="lab-pair-label">banner (cngx only)</span>
+          <cngx-banner-outlet class="lab-host lab-host--banner" />
+          <button cngxButton="outline" (click)="showBanner()">Show banner</button>
+        </div>
+
+        <div class="lab-row">
+          <button cngxButton="outline" (click)="openMatSnack()">MatSnackBar</button>
+          <button cngxButton="outline" (click)="showToast()">CngxToaster toast</button>
+          <button cngxButton="outline" (click)="openMatSheet()">MatBottomSheet</button>
+          <button cngxButton="outline" (click)="cngxSheet.open()">CngxBottomSheet</button>
+          <button cngxButton="outline" (click)="openMatDialog()">MatDialog</button>
+          <button cngxButton="outline" (click)="cngxDlg.open()">CngxDialog</button>
+          <button
+            cngxButton="outline"
+            [cngxPopoverTrigger]="labPanel.popover"
+            (click)="labPanel.popover.toggle()"
+          >
+            Popover panel (cngx only)
+          </button>
+        </div>
+
+        <cngx-popover-panel #labPanel [showClose]="true" placement="bottom-start">
+          <span cngxPopoverHeader>Recent activity</span>
+          <ul cngxPopoverBody class="lab-host-list">
+            <li>Invoice 1042 was paid</li>
+            <li>Anna joined the workspace</li>
+          </ul>
+        </cngx-popover-panel>
+
+        <dialog cngxDialog cngxBottomSheet #cngxSheet="cngxDialog" class="lab-host--cngx-sheet">
+          <div class="lab-host-head">
+            <h2 cngxDialogTitle>Share options</h2>
+            <button cngxCloseButton aria-label="Close share options" (click)="cngxSheet.dismiss()"></button>
+          </div>
+          <p>Copy the link or send it by email.</p>
+        </dialog>
+
+        <dialog cngxDialog #cngxDlg="cngxDialog" class="lab-host--cngx-dialog">
+          <div class="lab-host-head">
+            <h2 cngxDialogTitle>Delete project</h2>
+            <button cngxCloseButton aria-label="Close delete project dialog" (click)="cngxDlg.dismiss()"></button>
+          </div>
+          <p>This removes the project and all of its files.</p>
+        </dialog>
+
+        <ng-template #matSnackTpl>
+          <div class="lab-snack">
+            <span matSnackBarLabel>Message archived. It moves to the archive folder and stays there for 30 days.</span>
+            <span matSnackBarActions>
+              <button matButton matSnackBarAction (click)="matSnackRef?.dismissWithAction()">Undo</button>
+              <button matIconButton aria-label="Dismiss" class="lab-host-close" (click)="matSnackRef?.dismiss()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </span>
+          </div>
+        </ng-template>
+
+        <ng-template #matSheetTpl>
+          <div class="lab-host-head lab-host--mat-sheet">
+            <h2 class="mat-title-medium">Share options</h2>
+            <button matIconButton aria-label="Close share options" class="lab-host-close" (click)="matSheetRef?.dismiss()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          <p>Copy the link or send it by email.</p>
+        </ng-template>
+
+        <ng-template #matDialogTpl>
+          <div class="lab-host-head lab-host--mat-dialog">
+            <h2 mat-dialog-title>Delete project</h2>
+            <button matIconButton mat-dialog-close aria-label="Close delete project dialog" class="lab-host-close">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          <mat-dialog-content>This removes the project and all of its files.</mat-dialog-content>
+        </ng-template>
+      </section>
+
       <section>
         <h3>single-select (minimal)</h3>
         <cngx-select
@@ -592,6 +917,13 @@ interface FieldModel {
   `,
 })
 export class MaterialLab {
+  protected readonly splits = [
+    { variant: 'solid', tone: 'primary' },
+    { variant: 'secondary', tone: 'neutral' },
+    { variant: 'outline', tone: 'neutral' },
+  ] as const;
+  protected readonly densities = ['compact', 'comfortable', 'spacious'] as const;
+
   protected readonly colors: CngxSelectOptionDef<string>[] = [
     { value: 'red', label: 'Red' },
     { value: 'green', label: 'Green' },
@@ -692,10 +1024,67 @@ export class MaterialLab {
   protected matLocked = 'ACC-100425';
 
   constructor() {
+    // The lab sheet (full Material theme + every bridge) outgrows the
+    // examples-wide anyComponentStyle budget, so it ships as the non-injected
+    // `material-lab-theme` global bundle with its own budget (angular.json). It is
+    // linked while the lab is mounted, so the 16px root and the Material
+    // theme leave with it, as they did as a component style.
+    const doc = inject(DOCUMENT);
+    const sheet = doc.createElement('link');
+    sheet.rel = 'stylesheet';
+    sheet.href = 'material-lab-theme.css';
+    doc.head.appendChild(sheet);
+    inject(DestroyRef).onDestroy(() => sheet.remove());
+
     // Pre-touch the required/invalid fields so their error styling is visible on
     // load — this is a fidelity harness, not an interaction demo.
     this.fieldForm.reqName().markAsTouched();
     this.fieldForm.errEmail().markAsTouched();
+
+    this.showBanner();
+  }
+
+  private readonly toaster = inject(CngxToaster);
+  private readonly banner = inject(CngxBanner);
+  private readonly matDialog = inject(MatDialog);
+  private readonly matBottomSheet = inject(MatBottomSheet);
+  private readonly matSnackBar = inject(MatSnackBar);
+  private readonly matSnackTpl = viewChild.required<TemplateRef<unknown>>('matSnackTpl');
+  private readonly matSheetTpl = viewChild.required<TemplateRef<unknown>>('matSheetTpl');
+  private readonly matDialogTpl = viewChild.required<TemplateRef<unknown>>('matDialogTpl');
+  protected matSnackRef: MatSnackBarRef<unknown> | undefined;
+  protected matSheetRef: MatBottomSheetRef<unknown> | undefined;
+
+  protected showBanner(): void {
+    this.banner.show({
+      id: 'lab:maintenance',
+      severity: 'warning',
+      message: 'Scheduled maintenance tonight from 22:00 to 23:00 UTC.',
+      dismissible: true,
+    });
+  }
+
+  protected showToast(): void {
+    this.toaster.show({
+      message: 'Message archived',
+      title: 'Archived',
+      description: 'It moves to the archive folder and stays there for 30 days.',
+      severity: 'info',
+      duration: 'persistent',
+      action: { label: 'Undo', handler: () => undefined },
+    });
+  }
+
+  protected openMatSnack(): void {
+    this.matSnackRef = this.matSnackBar.openFromTemplate(this.matSnackTpl());
+  }
+
+  protected openMatSheet(): void {
+    this.matSheetRef = this.matBottomSheet.open(this.matSheetTpl());
+  }
+
+  protected openMatDialog(): void {
+    this.matDialog.open(this.matDialogTpl(), { width: '360px' });
   }
 
   protected labelOf(value: string): string {

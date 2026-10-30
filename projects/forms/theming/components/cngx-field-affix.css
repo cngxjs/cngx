@@ -1,8 +1,8 @@
 /**
  * @overview
  * Track B CSS for the field box. The host carries `.cngx-field-box` (the
- * `CngxFieldBox` directive, alias `CngxAffixRow`) and lays its `CngxPrefix` /
- * control / `CngxSuffix` children on one baseline-aligned line: the control
+ * `CngxFieldBox` directive) and lays its `CngxPrefix` / control /
+ * `CngxSuffix` children on one baseline-aligned line: the control
  * grows to fill, the affixes hug their content. The inter-item gap is the
  * `--cngx-field-affix-gap` custom property.
  *

@@ -12,7 +12,6 @@ import {
   CNGX_DEV_DESCRIPTORS,
   CNGX_SELECTION_CONTROLLER_FACTORY,
   nextUid,
-  type AsyncStatus,
   type CngxAsyncState,
   type SelectionController,
 } from '@cngx/core/utils';
@@ -22,11 +21,7 @@ import type {
   CngxPopoverPresentationRequest,
 } from '@cngx/common/popover';
 
-import {
-  CngxFormFieldPresenter,
-  createFieldControlAria,
-  type CngxFormFieldControl,
-} from '@cngx/forms/field';
+import { CngxFormFieldPresenter, createFieldControlAria } from '@cngx/forms/field';
 
 import { CngxSelectAnnouncer } from '../announcer';
 import { sameArrayContents } from './compare';
@@ -35,6 +30,7 @@ import {
   type CngxCommitController,
 } from '../commit-controller.token';
 import type { CngxSelectCommitAction, CngxSelectCommitErrorDisplay } from '../commit-action.types';
+import type { CngxSelectCompareFn } from '../compare-fn.types';
 import { type CngxSelectAnnouncerConfig, type CngxSelectFallbackLabels } from '../config';
 import {
   flattenSelectOptions,
@@ -48,10 +44,7 @@ import { resolveSelectConfig } from './resolve-config';
 import type { CngxResolvedSelectAriaLabels } from './resolve-labels';
 import type { CngxSelectCommitErrorContext, CngxSelectErrorContext } from '../template-slots';
 
-/**
- * Value-to-option equality. Default `Object.is`; override via `[compareWith]`.
- */
-export type CngxSelectCompareFn<T> = (a: T | undefined, b: T | undefined) => boolean;
+export type { CngxSelectCompareFn } from '../compare-fn.types';
 
 /**
  * Identity comparator - `Object.is`.
@@ -63,6 +56,8 @@ export const cngxSelectDefaultCompare: CngxSelectCompareFn<unknown> = (a, b) => 
 /**
  * ARIA projection for the trigger. Bundle is structural-equal to keep
  * `[attr.aria-*]` bindings stable.
+ *
+ * @internal
  */
 export interface CngxSelectTriggerAria {
   readonly label: string | null;
@@ -78,6 +73,8 @@ export interface CngxSelectTriggerAria {
 /**
  * Signal inputs for {@link createSelectCore}. Core reads signals only -
  * never component instance fields.
+ *
+ * @internal
  */
 export interface CngxSelectCoreDeps<T, TCommit> {
   readonly label: Signal<string>;
@@ -152,6 +149,8 @@ export interface CngxSelectCoreDeps<T, TCommit> {
 
 /**
  * Per-instance announcer inputs.
+ *
+ * @internal
  */
 export interface CngxSelectAnnouncerInputs {
   readonly announceChanges: Signal<boolean | null>;
@@ -161,6 +160,8 @@ export interface CngxSelectAnnouncerInputs {
 /**
  * Output of {@link createSelectCore} - pure-derivation signals shared by
  * every select-family component.
+ *
+ * @internal
  */
 export interface CngxSelectCore<T, TCommit> {
   readonly effectiveOptions: Signal<CngxSelectOptionsInput<T>>;
@@ -297,6 +298,8 @@ export interface CngxSelectCore<T, TCommit> {
 
 /**
  * Pre-bound bundle for {@link CngxSelectCore.panelHostAdapter}.
+ *
+ * @internal
  */
 export interface CngxSelectPanelHostAdapter<T> {
   readonly isGroup: (
@@ -877,17 +880,3 @@ export function createSelectCore<T, TCommit>(
   }
   return core;
 }
-
-/**
- * Form-field integration shape exposed by every select-family component.
- *
- * @internal
- */
-export type CngxSelectFormFieldControl = CngxFormFieldControl;
-
-/**
- * Lifecycle status union for select-family outputs.
- *
- * @internal
- */
-export type CngxSelectStatus = AsyncStatus;

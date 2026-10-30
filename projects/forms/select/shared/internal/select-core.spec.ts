@@ -270,3 +270,14 @@ describe('createSelectCore - trigger ARIA control hooks', () => {
     expect(core.triggerAria()).toBe(before);
   });
 });
+
+describe('select-core removed aliases', () => {
+  it('no longer exports CngxSelectFormFieldControl or CngxSelectStatus', () => {
+    // @ts-expect-error - removed, use CngxFormFieldControl
+    const control: import('./select-core').CngxSelectFormFieldControl | undefined = undefined;
+    // @ts-expect-error - removed, use AsyncStatus
+    const status: import('./select-core').CngxSelectStatus | undefined = undefined;
+    expect(control).toBeUndefined();
+    expect(status).toBeUndefined();
+  });
+});

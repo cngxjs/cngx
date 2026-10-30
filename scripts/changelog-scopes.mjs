@@ -28,6 +28,7 @@ export const LIBRARY_SCOPES = [
   'common/tabs',
   'common/card',
   'common/button',
+  'common/menu-button',
   'common/dialog',
   'common/data',
   'common/layout',

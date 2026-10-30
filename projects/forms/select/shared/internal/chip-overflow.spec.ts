@@ -14,7 +14,12 @@ function makeHarness(initial: T[], mode: 'wrap' | 'scroll-x' | 'truncate', cap =
   const selectedOptions = signal<CngxSelectOptionDef<T>[]>(initial.map(opt));
   const chipOverflow = signal<'wrap' | 'scroll-x' | 'truncate'>(mode);
   const maxVisibleChips = signal<number>(cap);
-  const strip = createChipOverflow<T>({ selectedOptions, chipOverflow, maxVisibleChips });
+  const strip = createChipOverflow<T>({
+    selectedOptions,
+    chipOverflow,
+    maxVisibleChips,
+    fitCount: signal(1),
+  });
   return { selectedOptions, chipOverflow, maxVisibleChips, strip };
 }
 
@@ -78,5 +83,47 @@ describe('createChipOverflow', () => {
     h.selectedOptions.set([a, b, c]);
     expect(h.strip.hiddenSelected()).not.toBe(first);
     expect(h.strip.hiddenSelected().map((o) => o.value)).toEqual(['c']);
+  });
+
+  it('caps at fitCount in fit mode and keeps every chip rendered', () => {
+    const selectedOptions = signal<CngxSelectOptionDef<T>[]>(['a', 'b', 'c', 'd', 'e'].map(opt));
+    const fitCount = signal(2);
+    const strip = createChipOverflow<T>({
+      selectedOptions,
+      chipOverflow: signal<'wrap' | 'scroll-x' | 'truncate' | 'fit'>('fit'),
+      maxVisibleChips: signal(4),
+      fitCount,
+    });
+    expect(strip.visibleSelected().map((o) => o.value)).toEqual(['a', 'b']);
+    expect(strip.visibleCount()).toBe(2);
+    expect(strip.renderedSelected().map((o) => o.value)).toEqual(['a', 'b', 'c', 'd', 'e']);
+    expect(strip.hiddenSelected().map((o) => o.value)).toEqual(['c', 'd', 'e']);
+    expect(strip.overflowBadgeCount()).toBe(3);
+    fitCount.set(5);
+    expect(strip.overflowBadgeCount()).toBe(0);
+    expect(strip.hiddenSelected()).toEqual([]);
+    expect(strip.visibleCount()).toBe(5);
+  });
+
+  it('marks the fit state and the first hidden index only in fit mode', () => {
+    const chipOverflow = signal<'wrap' | 'scroll-x' | 'truncate' | 'fit'>('fit');
+    const strip = createChipOverflow<T>({
+      selectedOptions: signal(['a', 'b', 'c'].map(opt)),
+      chipOverflow,
+      maxVisibleChips: signal(1),
+      fitCount: signal(2),
+    });
+    expect(strip.fitActive()).toBe(true);
+    expect(strip.fitHiddenFrom()).toBe(2);
+    chipOverflow.set('truncate');
+    expect(strip.fitActive()).toBe(false);
+    expect(strip.fitHiddenFrom()).toBe(Infinity);
+  });
+
+  it('renders only the visible chips outside fit mode', () => {
+    const h = makeHarness(['a', 'b', 'c', 'd'], 'truncate', 2);
+    expect(h.strip.renderedSelected()).toBe(h.strip.visibleSelected());
+    h.chipOverflow.set('wrap');
+    expect(h.strip.renderedSelected().length).toBe(4);
   });
 });

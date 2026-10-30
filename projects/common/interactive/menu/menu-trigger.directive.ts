@@ -13,6 +13,7 @@ import { outputToObservable } from '@angular/core/rxjs-interop';
 import { injectDirection, resolveInlineArrowKey } from '@cngx/core';
 import { coerceSignal } from '@cngx/core/utils';
 
+import { injectHostInteractionBlocked } from '../trigger-guard/host-interaction-blocked';
 import {
   CNGX_MENU_DISMISS_HANDLER_FACTORY,
   createMenuTriggerDismissBinding,
@@ -48,6 +49,16 @@ interface PopoverController extends CngxMenuDismissPopoverRef {
  * {@link CNGX_MENU_FOCUS_STACK_FACTORY}, so it is shared verbatim with the
  * context-menu trigger core and swappable enterprise-wide.
  *
+ * ### Blocked host
+ *
+ * A blocked host opens on no key: native `disabled`, `aria-disabled="true"`,
+ * or a co-hosted cngx button reporting `disabled` (a disabled `cngxButton`
+ * stays focusable, so keydown still arrives). When a cngx button becomes
+ * disabled while the panel is open, the panel closes. The trigger guards
+ * only the keys it handles: a `(click)="pop.toggle()"` on a plain button
+ * is the consumer's and must check the blocked state itself; a
+ * `cngxButton` host swallows that click on its own.
+ *
  * ### Focus model
  *
  * The dropdown trigger deliberately keeps DOM focus on the trigger
@@ -74,9 +85,10 @@ interface PopoverController extends CngxMenuDismissPopoverRef {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-trigger.directive.ts
  * @since 0.1.0
- * @relatedTo CngxMenu, CngxContextMenuTrigger, CngxMenuItemSubmenu, CngxPopoverTrigger
+ * @relatedTo CngxMenu, CngxContextMenuTrigger, CngxMenuItemSubmenu, CngxPopoverTrigger, CngxMenuButton
  * <example-url>http://localhost:4200/#/common/interactive/menu/submenu/two-level-submenu</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/menu/trigger/dropdown-menu</example-url>
+ * <example-url>http://localhost:4200/#/common/menu-button/menu-button/basic</example-url>
  * @axis level molecule
  */
 @Directive({
@@ -133,6 +145,12 @@ export class CngxMenuTrigger {
    */
   readonly lastDismissSource = this.dismissBinding.lastSource;
 
+  /** A disabled `cngxButton` stays focusable, so keydown still reaches the trigger. */
+  private readonly hostGuard = injectHostInteractionBlocked({
+    isOpen: () => this.isOpen(),
+    close: () => this.popover().hide(),
+  });
+
   constructor() {
     inject(DestroyRef).onDestroy(() => this.dismissBinding.detach());
     effect(() => {
@@ -151,15 +169,19 @@ export class CngxMenuTrigger {
         }
       });
     });
-    // Click on a submenu-parent item routes through the menu's `activated`
-    // output (CngxMenuItem funnels click into `activateCurrent`), so open the
-    // parent's submenu off that deterministic event rather than the keydown
-    // path. Enter/Space already open it via `handleActivation`; both funnel to
-    // the idempotent `openSubmenuFor`, so the parent never double-opens.
+    // A pointer click on an item routes through its menu's `activated` output
+    // (CngxMenuItem funnels click into `activateCurrent`), not the keydown
+    // path: a submenu parent opens its submenu, a leaf closes the menu, the
+    // pointer half of the hardcoded closeOnSelect. Every menu of the open
+    // chain is listened to, so a leaf inside a submenu closes the whole menu.
+    // Enter/Space reach the same idempotent `openSubmenuFor` / `closeAll`
+    // through `handleActivation`, so nothing opens or closes twice.
     effect((onCleanup) => {
-      const menu = this.menu();
-      const sub = outputToObservable(menu.ad.activated).subscribe(() => this.openActiveSubmenu());
-      onCleanup(() => sub.unsubscribe());
+      const menus = [this.menu(), ...this.focusStack.stack()];
+      const subs = menus.map((menu) =>
+        outputToObservable(menu.ad.activated).subscribe(() => this.handleActivated(menu)),
+      );
+      onCleanup(() => subs.forEach((sub) => sub.unsubscribe()));
     });
     // Hover routing: submenu companions only derive debounced hover intent;
     // this connector routes the edges through the same openSubmenuFor /
@@ -172,11 +194,14 @@ export class CngxMenuTrigger {
     });
   }
 
-  private openActiveSubmenu(): void {
-    const submenu = this.focusStack.activeSubmenu();
+  private handleActivated(menu: CngxMenuHost): void {
+    const activeId = menu.ad.activeId();
+    const submenu = menu.submenuItems().find((s) => s.id === activeId);
     if (submenu) {
       this.focusStack.openSubmenuFor(submenu);
+      return;
     }
+    this.focusStack.closeAll();
   }
 
   protected handleKeydown(event: KeyboardEvent): void {
@@ -190,6 +215,9 @@ export class CngxMenuTrigger {
     const key = event.key;
 
     if (!this.isOpen()) {
+      if (this.hostGuard.isBlockedNow()) {
+        return;
+      }
       if (key === 'ArrowDown' || key === 'Enter' || key === ' ') {
         event.preventDefault();
         this.popover().show();

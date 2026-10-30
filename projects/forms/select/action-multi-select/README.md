@@ -125,6 +125,10 @@ Same shape as `CngxMultiSelect` / `CngxCombobox`:
 
 On a touch screen narrower than 48rem the panel opens as a modal fullscreen panel with the search input in its header, named by the field label, with a close button, Done and a decorative handle. Focus moves into the sheet and back to the trigger on close. Force a presentation with `[presentation]` (`'anchored'`, `'sheet'`, `'fullscreen'`), set the title with `[sheetLabel]`, or turn the sheet off with `withMobileSheet('off')`. Details: [Mobile sheet](../README.md#mobile-sheet).
 
+## Chip overflow
+
+`chipOverflow` takes the same four modes as `CngxMultiSelect`: `'wrap'` (default), `'scroll-x'`, `'truncate'` and `'fit'`. Under `'fit'` the trigger stays one row, the chips that fit next to the input show and the rest fold into the `+N` badge; the hidden chips are out of the tab order and the whole selection reaches assistive technology as the input description. The badge reserve and its trade-off: [Chip overflow](../multi-select/README.md#chip-overflow).
+
 ## Touch
 
 Under the touch floor the chips give way to the one-line summary in front of the search input: the label with one value, the label plus a `+N` badge with two or more, and the input's placeholder with no value. The search input keeps the search term. The whole selection reaches assistive technology through `aria-describedby` on the input; the reference is set only while there is a selection to describe. Full behaviour and opt-out: [Summary trigger under the touch floor](../README.md#summary-trigger-under-the-touch-floor).

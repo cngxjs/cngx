@@ -38,7 +38,10 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "tsConfig": "projects/common/tsconfig.spec.json",
-            "setupFiles": ["projects/testing/setup/vitest-setup.ts"],
+            "setupFiles": [
+              "projects/testing/setup/vitest-setup.ts",
+              "projects/testing/setup/geometry-setup.ts"
+            ],
             "browsers": ["chromiumHeadless"],
             "watch": false,
             "include": ["**/*.geometry.spec.ts"],
@@ -150,7 +153,10 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "tsConfig": "projects/forms/tsconfig.spec.json",
-            "setupFiles": ["projects/testing/setup/vitest-setup.ts"],
+            "setupFiles": [
+              "projects/testing/setup/vitest-setup.ts",
+              "projects/testing/setup/geometry-setup.ts"
+            ],
             "browsers": ["chromiumHeadless"],
             "watch": false,
             "include": ["**/*.geometry.spec.ts"],
@@ -195,7 +201,10 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "tsConfig": "projects/ui/tsconfig.spec.json",
-            "setupFiles": ["projects/testing/setup/vitest-setup.ts"],
+            "setupFiles": [
+              "projects/testing/setup/vitest-setup.ts",
+              "projects/testing/setup/geometry-setup.ts"
+            ],
             "browsers": ["chromiumHeadless"],
             "watch": false,
             "include": ["**/*.geometry.spec.ts"],
@@ -240,7 +249,10 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "tsConfig": "projects/data-display/tsconfig.spec.json",
-            "setupFiles": ["projects/testing/setup/vitest-setup.ts"],
+            "setupFiles": [
+              "projects/testing/setup/vitest-setup.ts",
+              "projects/testing/setup/geometry-setup.ts"
+            ],
             "browsers": ["chromiumHeadless"],
             "watch": false,
             "include": ["**/*.geometry.spec.ts"],
@@ -312,7 +324,12 @@
               }
             ],
             "styles": [
-              "examples/src/styles.scss"
+              "examples/src/styles.scss",
+              {
+                "input": "examples/src/app/material-lab/material-lab.scss",
+                "bundleName": "material-lab-theme",
+                "inject": false
+              }
             ]
           },
           "configurations": {
@@ -327,6 +344,12 @@
                   "type": "anyComponentStyle",
                   "maximumWarning": "36kB",
                   "maximumError": "42kB"
+                },
+                {
+                  "type": "bundle",
+                  "name": "material-lab-theme",
+                  "maximumWarning": "64kB",
+                  "maximumError": "80kB"
                 }
               ],
               "outputHashing": "all"

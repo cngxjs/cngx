@@ -47,6 +47,7 @@ const TOKEN_SECTIONS = {
   CNGX_DISPLAY_I18N: 'display',
   CNGX_INTERACTIVE_I18N: 'interactive',
   CNGX_MENU_CONFIG: 'menu',
+  CNGX_MENU_BUTTON_I18N: 'menuButton',
   CNGX_LAYOUT_I18N: 'layout',
   CNGX_POPOVER_PANEL_CONFIG: 'popover',
   CNGX_TIMELINE_CONFIG: 'timeline',

@@ -37,6 +37,8 @@
     <span
       class="cngx-select__chip-list"
       [attr.data-overflow]="summary.active() ? 'truncate' : chipOverflow()"
+      cngxSelectChipFitStrip
+      [active]="summary.strip.fitActive()"
     >
       @if (isEmpty()) {
         @if (tpl.placeholder(); as phTpl) {
@@ -78,46 +80,59 @@
           [fullText]="summary.fullText()"
         />
       } @else {
-        @for (opt of visibleSelected(); track opt.value) {
-          @if (chipTpl(); as chipT) {
-            <ng-container
-              *ngTemplateOutlet="
-                chipT;
-                context: {
-                  $implicit: opt,
-                  option: opt,
-                  remove: chipRemoveFor(opt),
-                }
-              "
-            />
-          } @else {
-            <cngx-chip
-              [removable]="!disabled()"
-              [removeAriaLabel]="chipRemoveLabelFor()(opt.label)"
-              (remove)="handleChipRemoveClick($event, opt)"
-            >
-              {{ opt.label }}
-            </cngx-chip>
-          }
+        @for (opt of summary.strip.renderedSelected(); track opt.value; let i = $index) {
+          @let fitHidden = i >= summary.strip.fitHiddenFrom();
+          <span
+            class="cngx-select__chip-slot"
+            cngxSelectChipFitSlot
+            [class.cngx-select__chip-slot--hidden]="fitHidden"
+            [attr.inert]="fitHidden ? '' : null"
+            [attr.aria-hidden]="fitHidden ? 'true' : null"
+          >
+            @if (chipTpl(); as chipT) {
+              <ng-container
+                *ngTemplateOutlet="
+                  chipT;
+                  context: {
+                    $implicit: opt,
+                    option: opt,
+                    remove: chipRemoveFor(opt),
+                  }
+                "
+              />
+            } @else {
+              <cngx-chip
+                [removable]="!disabled()"
+                [removeAriaLabel]="chipRemoveLabelFor()(opt.label)"
+                (remove)="handleChipRemoveClick($event, opt)"
+              >
+                {{ opt.label }}
+              </cngx-chip>
+            }
+          </span>
         }
-        @if (overflowBadgeCount() > 0) {
-          @if (chipOverflowTpl(); as overflowT) {
-            <ng-container
-              *ngTemplateOutlet="
-                overflowT;
-                context: {
-                  $implicit: overflowBadgeCount(),
-                  count: overflowBadgeCount(),
-                  label: overflowBadgeText(),
-                  hidden: hiddenSelected(),
-                }
-              "
-            />
-          } @else {
-            <span class="cngx-select__chip-overflow-badge" aria-hidden="true">
-              {{ overflowBadgeText() }}
-            </span>
+        <span class="cngx-select__chip-overflow-slot">
+          @if (overflowBadgeCount() > 0) {
+            @if (chipOverflowTpl(); as overflowT) {
+              <ng-container
+                *ngTemplateOutlet="
+                  overflowT;
+                  context: {
+                    $implicit: overflowBadgeCount(),
+                    count: overflowBadgeCount(),
+                    label: overflowBadgeText(),
+                    hidden: hiddenSelected(),
+                  }
+                "
+              />
+            } @else {
+              <span class="cngx-select__chip-overflow-badge" aria-hidden="true">
+                {{ overflowBadgeText() }}
+              </span>
+            }
           }
+        </span>
+        @if (overflowBadgeCount() > 0) {
           <!-- The badge is aria-hidden; the whole selection reaches AT here,
                whether the badge is built in or projected. -->
           @if (summary.hiddenSummaryText(); as text) {

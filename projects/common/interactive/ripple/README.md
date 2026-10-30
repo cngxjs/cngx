@@ -78,7 +78,7 @@ Ripple and Pressable are typically composed together via CngxPressRipple, but ca
 
 // Icon button with centered ripple
 <button cngxPressRipple [rippleCentered]="true">
-  <mat-icon>favorite</mat-icon>
+  <cngx-icon><mat-icon>favorite</mat-icon></cngx-icon>
 </button>
 ```
 
@@ -106,7 +106,7 @@ button {
 
 ### CngxPressable
 
-Applies the `cngx-pressed` class on pointerdown. Define the visual effect yourself:
+Applies the `cngx-pressed` class on pointerdown. `cngxButton`, `cngxIconButton` and `cngxCloseButton` style that class as their built-in pressed state; on any other host define the visual effect yourself:
 
 ```scss
 button {
@@ -141,7 +141,7 @@ No configuration needed - the directives detect motion preference automatically.
 
 ```typescript
 <button cngxPressRipple [rippleCentered]="true" class="icon-button">
-  <mat-icon>favorite</mat-icon>
+  <cngx-icon><mat-icon>favorite</mat-icon></cngx-icon>
 </button>
 
 <style>

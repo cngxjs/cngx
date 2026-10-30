@@ -6,15 +6,18 @@
 // bridge only re-points the size scale to Material 3's icon-size
 // conventions where they differ from the cngx defaults.
 //
+// It also sizes a wrapped <mat-icon> to the rung (see `mat-icon()`).
+//
 //   @use '@cngx/themes/material/icon-theme' as icon;
 //   html { @include icon.theme($theme); }
 
 @mixin sizes() {
   // Material 3 icon sizing: small 18px, medium 20px (default), large 24px,
-  // extra-large 40px. Cngx default is em-based - keep that flexibility
-  // but anchor the medium variant to Material's canonical 24px so an
-  // icon next to a Material control reads the same size.
-  --cngx-icon-size: 1.5em;
+  // extra-large 40px. Cngx default is em-based - keep that flexibility and
+  // re-point the rungs only. The active size itself (--cngx-icon-size) is
+  // SET from a rung by the icon's own size class, so assigning it here
+  // would never apply; md stays on the 1.25em rung the button slot glyph
+  // (--cngx-button-icon-size) also uses.
   --cngx-icon-size-xs: 1em;
   --cngx-icon-size-sm: 1.125em;
   --cngx-icon-size-md: 1.25em;
@@ -22,8 +25,29 @@
   --cngx-icon-size-xl: 2em;
 }
 
+// A <mat-icon> (or a bare `.material-icons` span) wrapped in <cngx-icon>
+// takes the cngx-icon rung instead of Material's fixed 24px: the wrapper
+// already carries the rung as its font-size, so the glyph is a 1em box of
+// it. Unlayered on purpose (a deliberate non-adopter of `bridge.on()`):
+// Material styles `.mat-icon` (24px box) and `.material-icons` (24px font)
+// unlayered, and an unlayered rule beats every layered one. The selector
+// (0,2,1) also outranks `.mat-icon.mat-icon-inline` (0,2,0) whatever the
+// load order. The second selector reaches a glyph one host deeper, only in
+// the menu-button caret: a `CNGX_BUTTON_CARET_ICON` component puts its own
+// host element between the caret <cngx-icon> and the <mat-icon>.
+@mixin mat-icon() {
+  cngx-icon.cngx-icon > :is(.mat-icon, .material-icons),
+  cngx-icon.cngx-icon.cngx-menu-button__caret > :not(.mat-icon, .material-icons) > :is(.mat-icon, .material-icons) {
+    font-size: 1em;
+    inline-size: 1em;
+    block-size: 1em;
+    line-height: 1;
+  }
+}
+
 @mixin theme($theme) {
   @include bridge.on(cngx-icon) {
     @include sizes();
   }
+  @include mat-icon();
 }

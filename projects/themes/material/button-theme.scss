@@ -1,0 +1,426 @@
+@use 'sass:list';
+@use 'sass:map';
+@use '@angular/material' as mat;
+@use './bridge' as bridge;
+
+// Material bridge for the button family (cngxButton, cngxIconButton,
+// cngxCloseButton, cngxActionButton - every host carries `.cngx-button` -
+// and cngxButtonGroup). Maps the variant x tone matrix onto Material 3 roles
+// so a cngx button reads next to a mat-flat-button, mat-stroked-button or a
+// tonal button without extra CSS.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/button-theme' as button;
+//   html { @include button.theme($theme); }
+//
+// Knob routing, not leaf tokens. The button sheet SETs its tone tokens
+// (--cngx-button-tone, -tone-text, -on-tone, -radius) inside
+// `@scope (.cngx-button) :scope`, which outranks this bridge's
+// zero-specificity `:where()` in the same layer. So the colours go through
+// the foundation knobs the sheet reads (button-toggle-theme precedent),
+// assigned on the button host:
+//
+// - tone `primary` -> primary / on-primary (solid = mat-flat-button)
+// - tone `danger` -> error / on-error
+// - variant `outline` -> the `outline` role for the neutral border
+//   (mat-stroked-button)
+// - variant `secondary` -> the `*-container` roles through the three
+//   --cngx-button-secondary-* hooks (neutral = secondary-container, the M3
+//   tonal button; primary = primary-container; danger = error-container)
+// - shape -> corner-full: --cngx-button-radius on the host (a real-specificity
+//   rule, see `shape()`; the radius rung --cngx-radius-md stays untouched so
+//   projected children keep theirs), the group end radius, the close-button
+//   radius
+// - state layers -> a solid hover / press lays the on-colour
+//   (--cngx-button-hover-shade) over the tone at
+//   --mat-sys-hover-state-layer-opacity / --mat-sys-pressed-state-layer-opacity
+//   (--cngx-button-hover-layer / --cngx-button-pressed-layer); a secondary
+//   hover / press lays the on-container colour over the container at
+//   --mat-sys-hover-state-layer-opacity / --mat-sys-pressed-state-layer-opacity;
+//   the outline / ghost and close-button press wash is the pressed opacity,
+//   the close-button hover the hover opacity
+//
+// A directly-set knob beats an inherited one regardless of layer, so a
+// consumer's :root-level --cngx-color-* override does not reach the buttons
+// while this bridge is included; re-skin on the button host instead, where
+// any consumer selector beats the `:where()` below. In the theme.scss
+// aggregate the colour knobs overlap system-bridge on purpose: only the
+// on-colours, the variant mappings and the shape are net-new there; the
+// duplicate keeps a selective per-bridge include consistent.
+//
+// Metrics and type (M3 only, `metrics()`): the M3 common button is 40px
+// high with 24px inline padding (12px for the text button), 16px on the
+// side of a leading icon, 18px slot icons, a 24px icon-button glyph and the
+// label-large type role. The sheet SETs the padding and font tokens per size
+// inside `@scope (.cngx-button)` (`:scope[data-size]` is 0,2,0 and a scoped
+// rule wins a specificity tie), so these rules carry real specificity (0,3,0
+// and up) inside `@layer cngx.components`, select-theme's option-row
+// precedent. Every length is a rung or a calc() of --cngx-space-*, chosen so
+// comfortable (and Material density 0) equals M3: a [data-density] island
+// and a Material `density: -N` theme (density-bridge rescales the same
+// scale) both re-scale the bridged button. No density map lives here.
+//
+//   size  inline  ghost   block (+1px border)  type role      box
+//   xs    sm*1.5  sm*.75  xs*1.5               label-medium   28
+//   sm    md      sm      sm*.75               label-large    32
+//   md    lg      sm*1.5  sm*1.25              label-large    40
+//   lg    xl      md      sm*1.5               title-medium   48
+//
+// A cngxButtonGroupAddon shares the padding and type rows, so it sits on
+// the row of the buttons beside it.
+//
+// The block padding absorbs the 1px border every variant keeps, so the box
+// is line-height + 2 * rung; the icon button (and the close button, which
+// reads the icon-button box) squares to it. The close button defaults to sm,
+// so its sm box takes the md icon-button box through --cngx-close-button-size
+// (M3 has one 40px icon-button box for a dismiss). Size-independent ratios cover
+// the rest: a filled slot side is 2/3 of the inline padding (16 of 24); a
+// ghost (text) button with one slot follows the M3 text-with-icon button,
+// the slot side keeps the ghost padding and the other side takes 4/3 of it
+// (12 / 16); a slot icon is 9/7 of the label (18px on 14px); an icon-button
+// glyph is 1.5em of the icon-button font (24px on the 16px control font).
+// The glyph sizes reach an svg / img and an unsized <cngx-icon> (and the
+// mat-icon it wraps); a <cngx-icon> with an explicit `size` keeps its rung,
+// and the close button keeps honouring --cngx-close-button-icon-size.
+//
+// Icons: wrap a <mat-icon> in <cngx-icon> (the slot or the icon-button
+// glyph); icon-theme sizes the wrapped glyph to the cngx-icon rung, so this
+// bridge carries no `.mat-icon` rule.
+//
+// Menu buttons (`@cngx/common/menu-button`). cngxMenuButton and
+// cngxIconMenuButton carry `.cngx-button` (and `.cngx-icon-button`), so colour,
+// shape, label type and box come from the rules above unchanged. The caret is
+// the end slot of a menu button, which always carries `data-end`, so the slot
+// sides above already give the M3 trailing-icon padding (16 / 24 filled,
+// 12 / 16 text, as `mat-button` with a trailing `arrow_drop_down`) and the
+// caret takes the 18px slot icon; `--cngx-menu-button-caret-size` still wins
+// when a consumer sets it. No new type role: the caret is a glyph, the label
+// keeps label-large.
+//
+// Split button (`cngxSplitButton`, M3 split-button anatomy; Angular Material
+// ships none): the two parts sit a 2px gap apart (half the xs rung, so it
+// re-scales with density) instead of sharing a collapsed border, the outer
+// ends keep corner-full and the inner joins take corner-extra-small. The gap
+// is the divider, so the group's on-tone seam line between two solid parts is
+// dropped. The group sheet squares inner joins in `@scope (.cngx-button-group)`
+// at (0,4,0); the split rules carry (0,5,0) and up.
+
+@mixin _tonal($container, $on-container) {
+  --cngx-button-secondary-bg: var(--mat-sys-#{$container});
+  --cngx-button-secondary-bg-hover: color-mix(
+    in srgb,
+    var(--mat-sys-#{$on-container}) calc(var(--mat-sys-hover-state-layer-opacity, 0.08) * 100%),
+    var(--mat-sys-#{$container})
+  );
+  --cngx-button-secondary-bg-pressed: color-mix(
+    in srgb,
+    var(--mat-sys-#{$on-container}) calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%),
+    var(--mat-sys-#{$container})
+  );
+  --cngx-button-secondary-color: var(--mat-sys-#{$on-container});
+}
+
+// A split button is a group of segments, never a group of groups.
+$_split: '.cngx-split-button.cngx-button-group:not(:has(> .cngx-button-group))';
+$_inner-radius: 'var(--mat-sys-corner-extra-small, 4px)';
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    @include bridge.on('.cngx-button') {
+      --cngx-color-text: var(--mat-sys-on-surface);
+      --cngx-color-surface: var(--mat-sys-surface);
+      --cngx-color-border: var(--mat-sys-outline-variant);
+      --cngx-color-primary: var(--mat-sys-primary);
+      --cngx-color-primary-text: var(--mat-sys-primary);
+      --cngx-color-on-primary: var(--mat-sys-on-primary);
+      --cngx-color-danger: var(--mat-sys-error);
+      --cngx-color-danger-text: var(--mat-sys-error);
+      --cngx-color-on-danger: var(--mat-sys-on-error);
+      // Solid hover / press layers and the outline / ghost press wash = the
+      // M3 hover and pressed state layers.
+      --cngx-button-hover-layer: calc(var(--mat-sys-hover-state-layer-opacity, 0.08) * 100%);
+      --cngx-button-pressed-layer: calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%);
+      --cngx-button-pressed-wash: calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%);
+    }
+    @include bridge.on(".cngx-button[data-tone='primary']") {
+      --cngx-button-hover-shade: var(--mat-sys-on-primary);
+    }
+    @include bridge.on(".cngx-button[data-tone='danger']") {
+      --cngx-button-hover-shade: var(--mat-sys-on-error);
+    }
+    @include bridge.on(".cngx-button[data-variant='outline']") {
+      --cngx-color-border: var(--mat-sys-outline);
+    }
+    @include bridge.on(".cngx-button[data-variant='secondary'][data-tone='neutral']") {
+      @include _tonal(secondary-container, on-secondary-container);
+    }
+    @include bridge.on(".cngx-button[data-variant='secondary'][data-tone='primary']") {
+      @include _tonal(primary-container, on-primary-container);
+    }
+    @include bridge.on(".cngx-button[data-variant='secondary'][data-tone='danger']") {
+      @include _tonal(error-container, on-error-container);
+    }
+    // Neutral outline and ghost labels are primary ink, as on
+    // mat-stroked-button and mat-button; the hover and press wash follows the
+    // tone. The sheet SETs both tone tokens in `@scope (.cngx-button) :scope`,
+    // so these rules carry real specificity inside the layer (shape()
+    // precedent). A segment of a split button reads as one button, so its
+    // icon caret takes the label ink too.
+    @layer cngx.components {
+      .cngx-button:is([data-variant='outline'], [data-variant='ghost'])[data-tone='neutral']:not(
+          .cngx-icon-button,
+          .cngx-close-button
+        ),
+      #{$_split} > .cngx-icon-button:is([data-variant='outline'], [data-variant='ghost'])[data-tone='neutral'] {
+        --cngx-button-tone: var(--mat-sys-primary);
+        --cngx-button-tone-text: var(--mat-sys-primary);
+      }
+      // A standalone neutral icon button is the M3 standard / outlined icon
+      // button: on-surface-variant glyph.
+      .cngx-icon-button.cngx-button:is([data-variant='outline'], [data-variant='ghost'])[data-tone='neutral']:not(
+          #{$_split} > *
+        ) {
+        --cngx-button-tone: var(--mat-sys-on-surface-variant);
+        --cngx-button-tone-text: var(--mat-sys-on-surface-variant);
+      }
+    }
+    @include bridge.on('.cngx-close-button') {
+      --cngx-close-button-hover-bg: color-mix(
+        in srgb,
+        var(--mat-sys-on-surface) calc(var(--mat-sys-hover-state-layer-opacity, 0.08) * 100%),
+        transparent
+      );
+      --cngx-close-button-pressed-bg: color-mix(
+        in srgb,
+        var(--mat-sys-on-surface) calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%),
+        transparent
+      );
+      --cngx-close-button-color: var(--mat-sys-on-surface-variant);
+    }
+  } @else {
+    // M2 has no container roles and no state-layer tokens: the secondary
+    // hooks stay unset, so the tone mix paints, and hover and pressed keep
+    // the default shade and wash.
+    @include bridge.on('.cngx-button') {
+      --cngx-color-text: #{mat.get-theme-color($theme, foreground, text)};
+      --cngx-color-surface: #{mat.get-theme-color($theme, background, card)};
+      --cngx-color-border: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
+      --cngx-color-primary: #{mat.get-theme-color($theme, primary)};
+      --cngx-color-primary-text: #{bridge.m2-primary-text($theme)};
+      --cngx-color-on-primary: #{mat.get-theme-color($theme, primary, default-contrast)};
+      --cngx-color-danger: #{mat.get-theme-color($theme, warn)};
+      --cngx-color-danger-text: #{bridge.m2-warn-text($theme)};
+      --cngx-color-on-danger: #{mat.get-theme-color($theme, warn, default-contrast)};
+    }
+    @include bridge.on('.cngx-close-button') {
+      --cngx-close-button-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
+    }
+  }
+}
+
+@mixin shape($theme) {
+  // M2 buttons keep the cngx radius rung (4px corners are what M2 paints).
+  @if mat.get-theme-version($theme) == 1 {
+    // The sheet SETs --cngx-button-radius in `@scope (.cngx-button) :scope`,
+    // which beats a zero-specificity `:where()`, so this rule carries (0,2,0)
+    // inside the layer (metrics() precedent). The close button keeps its own
+    // radius hook below, which its sheet maps onto --cngx-button-radius.
+    @layer cngx.components {
+      .cngx-button:not(.cngx-close-button) {
+        --cngx-button-radius: var(--mat-sys-corner-full);
+      }
+    }
+    @include bridge.on('.cngx-button-group') {
+      --cngx-button-group-radius: var(--mat-sys-corner-full);
+    }
+    @include bridge.on('.cngx-close-button') {
+      --cngx-close-button-radius: var(--mat-sys-corner-full);
+    }
+    @layer cngx.components {
+      #{$_split} > :nth-child(n + 2 of :not([aria-live])) {
+        border-start-start-radius: #{$_inner-radius};
+        border-end-start-radius: #{$_inner-radius};
+      }
+      #{$_split} > :nth-last-child(n + 2 of :not([aria-live])) {
+        border-start-end-radius: #{$_inner-radius};
+        border-end-end-radius: #{$_inner-radius};
+      }
+    }
+  }
+}
+
+// size -> metrics; see the header table. Every value falls back to the
+// comfortable rung so the bridge renders without the cngx scale loaded.
+$_bw: 'var(--cngx-button-border-width, 1px)';
+$_metrics: (
+  xs: (
+    block: 'calc(var(--cngx-space-xs, 4px) * 1.5 - #{$_bw})',
+    inline: 'calc(var(--cngx-space-sm, 8px) * 1.5)',
+    ghost: 'calc(var(--cngx-space-sm, 8px) * 0.75)',
+    role: label-medium,
+  ),
+  sm: (
+    block: 'calc(var(--cngx-space-sm, 8px) * 0.75 - #{$_bw})',
+    inline: 'var(--cngx-space-md, 16px)',
+    ghost: 'var(--cngx-space-sm, 8px)',
+    role: label-large,
+  ),
+  md: (
+    block: 'calc(var(--cngx-space-sm, 8px) * 1.25 - #{$_bw})',
+    inline: 'var(--cngx-space-lg, 24px)',
+    ghost: 'calc(var(--cngx-space-sm, 8px) * 1.5)',
+    role: label-large,
+  ),
+  lg: (
+    block: 'calc(var(--cngx-space-sm, 8px) * 1.5 - #{$_bw})',
+    inline: 'var(--cngx-space-xl, 32px)',
+    ghost: 'var(--cngx-space-md, 16px)',
+    role: title-medium,
+  ),
+);
+
+// M3 type-scale fallbacks (size, line-height, tracking) for a theme whose
+// typography was not emitted.
+$_roles: (
+  label-medium: 0.75rem 1rem 0.031rem,
+  label-large: 0.875rem 1.25rem 0.006rem,
+  title-medium: 1rem 1.5rem 0.009rem,
+);
+
+@function _role($role, $prop, $fallback) {
+  @return var(--mat-sys-#{$role}-#{$prop}, #{$fallback});
+}
+
+$_pad: 'var(--cngx-button-padding-inline, var(--cngx-space-lg, 24px))';
+$_label: ":not([data-variant='link'], .cngx-icon-button)";
+// The group addon reads the button's metric and type tokens and carries the
+// same data-size, so it shares the rules; the group parent lifts it to the
+// button rules' (0,3,0).
+$_addon: '.cngx-button-group > .cngx-button-group__addon';
+// A <cngx-icon> sized xs / sm / lg / xl keeps its own rung. `md` is the
+// input default (icon.component.ts) and sets the same class as an unset size,
+// so an explicit size="md" cannot be told apart and follows the button.
+$_unsized: 'cngx-icon.cngx-icon:not(.cngx-icon--xs, .cngx-icon--sm, .cngx-icon--lg, .cngx-icon--xl)';
+
+@mixin metrics($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    @layer cngx.components {
+      @each $size, $m in $_metrics {
+        $s: "[data-size='#{$size}']";
+        $role: map.get($m, role);
+        $type: map.get($_roles, $role);
+        $lh: _role($role, line-height, list.nth($type, 2));
+
+        .cngx-button#{$s}:not([data-variant='link']),
+        #{$_addon}#{$s} {
+          --cngx-button-padding-block: #{map.get($m, block)};
+          --cngx-button-padding-inline: #{map.get($m, inline)};
+        }
+        .cngx-button#{$s}[data-variant='ghost'] {
+          --cngx-button-padding-inline: #{map.get($m, ghost)};
+        }
+        // Label type. The icon button keeps the cngx font size (its glyph is
+        // sized from it); link stays running text.
+        .cngx-button#{$s}#{$_label},
+        #{$_addon}#{$s} {
+          --cngx-button-font-size: #{_role($role, size, list.nth($type, 1))};
+          --cngx-button-font-weight: #{_role($role, weight, 500)};
+          font-family: #{_role($role, font, 'Roboto, sans-serif')};
+          line-height: #{$lh};
+          letter-spacing: #{_role($role, tracking, list.nth($type, 3))};
+        }
+        // line-height + 2 * block padding + 2 * border.
+        .cngx-icon-button.cngx-button#{$s} {
+          --cngx-icon-button-size: calc(
+            #{$lh} + 2 * var(--cngx-button-padding-block, 9px) + 2 * #{$_bw}
+          );
+        }
+      }
+
+      // Slot sides (replace the sheet's 0.75 trim).
+      .cngx-button:not([data-variant='link'], [data-variant='ghost'])[data-start] {
+        padding-inline-start: calc(#{$_pad} * 2 / 3);
+      }
+      .cngx-button:not([data-variant='link'], [data-variant='ghost'])[data-end] {
+        padding-inline-end: calc(#{$_pad} * 2 / 3);
+      }
+      .cngx-button[data-variant='ghost'][data-start] {
+        padding-inline-start: #{$_pad};
+      }
+      .cngx-button[data-variant='ghost'][data-end] {
+        padding-inline-end: #{$_pad};
+      }
+      .cngx-button[data-variant='ghost'][data-start]:not([data-end]) {
+        padding-inline-end: calc(#{$_pad} * 4 / 3);
+      }
+      .cngx-button[data-variant='ghost'][data-end]:not([data-start]) {
+        padding-inline-start: calc(#{$_pad} * 4 / 3);
+      }
+
+      // Slot icon: 18px on the 14px label.
+      .cngx-button#{$_label} {
+        --cngx-button-icon-size: calc(1em * 9 / 7);
+      }
+      .cngx-button #{$_unsized}:is(.cngx-button__slot, .cngx-button__slot > *) {
+        --cngx-icon-size: var(--cngx-button-icon-size, 1.25em);
+      }
+
+      // Icon-button glyph: 24px on the 16px control font. The close button
+      // is excluded, not out-ordered: its own rules below size its glyph.
+      .cngx-icon-button.cngx-button:not(.cngx-close-button) .cngx-icon-button__glyph > :is(svg, img) {
+        inline-size: 1.5em;
+        block-size: 1.5em;
+      }
+      .cngx-icon-button.cngx-button:not(.cngx-close-button) .cngx-icon-button__glyph > #{$_unsized} {
+        --cngx-icon-size: 1.5em;
+      }
+      .cngx-close-button.cngx-button .cngx-icon-button__glyph > :is(svg, img) {
+        inline-size: var(--cngx-close-button-icon-size, 1.5em);
+        block-size: var(--cngx-close-button-icon-size, 1.5em);
+      }
+      .cngx-close-button.cngx-button .cngx-icon-button__glyph > #{$_unsized} {
+        --cngx-icon-size: var(--cngx-close-button-icon-size, 1.5em);
+      }
+
+      // Menu-button caret: the slot icon, unless the consumer sizes the caret.
+      // (0,5,1) beats the slot-icon rule above.
+      .cngx-menu-button.cngx-button > cngx-icon.cngx-icon.cngx-menu-button__caret:is(.cngx-button__slot) {
+        --cngx-icon-size: var(--cngx-menu-button-caret-size, var(--cngx-button-icon-size, 1.25em));
+      }
+
+      // Split seam: a gap replaces the collapsed border.
+      #{$_split} {
+        gap: calc(var(--cngx-space-xs, 4px) / 2);
+      }
+      #{$_split} > :nth-child(n + 2 of :not([aria-live])) {
+        margin-inline-start: 0;
+      }
+      // The gap divides; the group's solid seam line (0,6,0) would draw a
+      // second divider. (0,8,0); a disabled part keeps its own border.
+      #{$_split}
+        > [data-variant='solid']
+        ~ [data-variant='solid']:not([aria-disabled='true']):nth-child(n + 2 of :not([aria-live])) {
+        border-inline-start-color: var(--cngx-button-tone, currentColor);
+      }
+    }
+
+    // Close button: it defaults to sm, M3 has one icon-button box (40, 24px
+    // glyph). The sm close takes the md icon-button box through its own size
+    // hooks, from the md row (comfortable 40, re-scaled in a density island),
+    // and the glyph of the md icon button. Other sizes keep their row.
+    $md: map.get($_metrics, md);
+    $md-type: map.get($_roles, map.get($md, role));
+    $md-line: _role(map.get($md, role), line-height, list.nth($md-type, 2));
+    $close-box: 'calc(#{$md-line} + 2 * #{map.get($md, block)} + 2 * #{$_bw})';
+    @include bridge.on(".cngx-close-button[data-size='sm']") {
+      --cngx-close-button-size: #{$close-box};
+      --cngx-close-button-icon-size: calc(var(--cngx-font-size-control, 1rem) * 1.5);
+    }
+  }
+}
+
+@mixin theme($theme) {
+  @include color($theme);
+  @include shape($theme);
+  @include metrics($theme);
+}

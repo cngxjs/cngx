@@ -179,6 +179,30 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     expect(isOpaque(plain.borderTopColor)).toBe(true);
   });
 
+  test('a pressed button inverts the system pair, a disabled one never does', async ({ page }) => {
+    await openForced(page, '/#/common/button/button/variants');
+    const solidPrimary = page.locator('.cngx-ex-artifact .cngx-button[data-variant="solid"][data-tone="primary"]').first();
+    const outline = page.locator('.cngx-ex-artifact .cngx-button[data-variant="outline"]').first();
+    await expect(outline).toBeVisible();
+    await page.waitForTimeout(300);
+    const press = async (button: Locator) => {
+      await button.evaluate((el) => el.classList.add('cngx-pressed'));
+      await page.waitForTimeout(300);
+      const s = await readAffordance(button);
+      await button.evaluate((el) => el.classList.remove('cngx-pressed'));
+      return s;
+    };
+    const plain = await press(outline);
+    expect(plain.backgroundColor).toBe(plain.highlight);
+    const solid = await press(solidPrimary);
+    expect(solid.backgroundColor).not.toBe(solid.highlight);
+    expect(solid.borderTopColor).toBe(solid.highlight);
+    await outline.evaluate((el) => el.setAttribute('aria-disabled', 'true'));
+    const disabled = await press(outline);
+    await outline.evaluate((el) => el.removeAttribute('aria-disabled'));
+    expect(disabled.backgroundColor).not.toBe(disabled.highlight);
+  });
+
   test('keyboard-focused button draws its focus outline in Highlight (author colour opted out)', async ({ page }) => {
     await openForced(page, '/#/common/button/button/variants');
     const buttons = page.locator('.cngx-ex-artifact .cngx-button');

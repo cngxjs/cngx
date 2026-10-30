@@ -7,8 +7,10 @@ import { DestroyRef, Directive, inject, input, signal } from '@angular/core';
  * The class is removed on `pointerup` with an optional delay to prevent
  * a visual flash on quick taps.
  *
- * The directive only toggles the `cngx-pressed` class. All visual treatment
- * (scale, opacity, color) is the consumer's CSS responsibility.
+ * The directive only toggles the `cngx-pressed` class. The button family
+ * (`cngxButton`, `cngxIconButton`, `cngxCloseButton`) styles it as its
+ * pressed state; on any other host the visual treatment (scale, opacity,
+ * color) is the consumer's CSS responsibility.
  *
  * ```css
  * .cngx-pressed { transform: scale(0.97); }

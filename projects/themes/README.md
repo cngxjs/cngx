@@ -102,15 +102,41 @@ Selective wiring stays available for apps that ship a subset: include `material/
 
 ```scss
 @use '@cngx/themes/material/system-bridge' as cngx-system;
-@use '@cngx/themes/material/action-button-theme' as action-btn;
+@use '@cngx/themes/material/button-theme' as button;
 
 html {
   @include cngx-system.theme($theme);
-  @include action-btn.theme($theme);
+  @include button.theme($theme);
 }
 ```
 
 `system-bridge` maps the cngx foundation tokens (`--cngx-color-*`, `--cngx-space-*`, `--cngx-radius-*`, `--cngx-shadow-*`, ...) onto Material's `--mat-sys-*` values; the per-component bridges refine on top. `@angular/material` and `@angular/cdk` are optional peer dependencies - without the bridge, nothing in this package needs them.
+
+### Breaking changes: button-family bridges
+
+The button family is bridged by one entry now. Three Sass entry points are gone:
+
+|Removed|Use instead|
+|-|-|
+|`@cngx/themes/material/action-button-theme`|`button-theme` for the button paint, metrics and shape (every `.cngx-button` host, `cngxActionButton` included); `async-click-theme` for the `--cngx-async-*` state tint of a bare `cngxAsyncClick` host|
+|`@cngx/themes/material/close-button-theme`|`button-theme` (it maps the close-button colour, radius, box and glyph)|
+|`density($level)` in `@cngx/themes/material/feedback-theme`|nothing to include: `button-theme` sizes the close button of alert, toast and popover; re-scale it with `[data-density]` or a Material `density` scale, or set `--cngx-close-button-size` / `--cngx-close-button-icon-size` on a host|
+
+The `theme` aggregate includes `button-theme` and `async-click-theme`, so an app on `cngx-material.theme($theme)` or `theme-system($density)` needs no change. A selective include swaps the old `@use` for the new one:
+
+```scss
+// before
+@use '@cngx/themes/material/action-button-theme' as action-btn;
+@use '@cngx/themes/material/close-button-theme' as close-btn;
+@include action-btn.theme($theme);
+@include close-btn.theme($theme);
+
+// after
+@use '@cngx/themes/material/button-theme' as button;
+@use '@cngx/themes/material/async-click-theme' as async-click;
+@include button.theme($theme);
+@include async-click.theme($theme);
+```
 
 ## When not to use it
 

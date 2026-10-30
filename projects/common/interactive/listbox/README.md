@@ -105,6 +105,8 @@ Keyboard model on a focused `cngxListboxTrigger`:
 | open | `Enter` / `Space` | Activate; close if `closeOnSelect()` (default `true`). |
 | any | `Escape` | Close and restore focus to trigger. |
 
+On a blocked trigger (native `disabled`, `aria-disabled="true"`, or a co-hosted cngx button reporting `disabled`) no key opens the panel and `backspaceOnEmpty` does not fire; a cngx button that becomes disabled while the panel is open closes it. A `(click)` toggle on a plain button is yours to guard; a `cngxButton` host swallows that click itself.
+
 When the trigger element is itself an `<input cngxListboxSearch cngxListboxTrigger>`, printable-character typeahead is suppressed so keystrokes reach the native input value and the debounced search term updates.
 
 `Backspace` on an empty input fires `(backspaceOnEmpty)` on the trigger - the tag-input "delete trailing chip" path lives at the trigger so consumers wire a single subscription.

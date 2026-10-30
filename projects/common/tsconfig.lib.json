@@ -23,6 +23,7 @@
       "@cngx/common/popover": ["projects/common/popover/public-api.ts"],
       "@cngx/common/card": ["projects/common/card/public-api.ts"],
       "@cngx/common/button": ["projects/common/button/public-api.ts"],
+      "@cngx/common/menu-button": ["projects/common/menu-button/public-api.ts"],
       "@cngx/common/chart": ["projects/common/chart/public-api.ts"],
       "@cngx/common/display": ["projects/common/display/public-api.ts"],
       "@cngx/common/stepper": ["projects/common/stepper/public-api.ts"],
@@ -30,6 +31,6 @@
       "@cngx/common/timeline": ["projects/common/timeline/public-api.ts"]
     }
   },
-  "include": ["*.ts", "a11y/**/*.ts", "audio/**/*.ts", "command/**/*.ts", "interactive/**/*.ts", "layout/**/*.ts", "data/**/*.ts", "dialog/**/*.ts", "popover/**/*.ts", "card/**/*.ts", "button/**/*.ts", "chart/**/*.ts", "display/**/*.ts", "stepper/**/*.ts", "tabs/**/*.ts", "timeline/**/*.ts"],
+  "include": ["*.ts", "a11y/**/*.ts", "audio/**/*.ts", "command/**/*.ts", "interactive/**/*.ts", "layout/**/*.ts", "data/**/*.ts", "dialog/**/*.ts", "popover/**/*.ts", "card/**/*.ts", "button/**/*.ts", "menu-button/**/*.ts", "chart/**/*.ts", "display/**/*.ts", "stepper/**/*.ts", "tabs/**/*.ts", "timeline/**/*.ts"],
   "exclude": ["**/*.spec.ts", "**/examples/**"]
 }

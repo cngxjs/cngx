@@ -1,6 +1,29 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+import { Component } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
+import { CngxButton } from '@cngx/common/button';
 import { compileThemeEntry, emittedTokenNames } from '@cngx/testing/sass';
+
+import { CngxAsyncClick } from './async-click/async-click.directive';
+
+@Component({
+  selector: 'cngx-async-click-bridge-hosts',
+  standalone: true,
+  imports: [CngxAsyncClick, CngxButton],
+  template: `
+    <button type="button" class="bare" [cngxAsyncClick]="run">Save</button>
+    <a role="button" class="anchor" [cngxAsyncClick]="run">Save</a>
+    <button cngxButton class="button" [cngxAsyncClick]="run">Save</button>
+    <button type="button" class="plain">Save</button>
+  `,
+})
+class AsyncClickHosts {
+  readonly run = (): Promise<void> => Promise.resolve();
+}
 
 /**
  * Token-name contract for the Material bridges whose consumers live in
@@ -131,6 +154,70 @@ $theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)))
   });
 });
 
+describe('menu Material bridge', () => {
+  // every name is read by cngx-menu.css on [cngxMenu] or its rows
+  const CONSUMED = [
+    '--cngx-menu-bg',
+    '--cngx-menu-border',
+    '--cngx-menu-color',
+    '--cngx-menu-item-checked-color',
+    '--cngx-menu-item-gap',
+    '--cngx-menu-item-highlight-bg',
+    '--cngx-menu-item-kbd-color',
+    '--cngx-menu-item-padding',
+    '--cngx-menu-item-radius',
+    '--cngx-menu-padding',
+    '--cngx-menu-radius',
+    '--cngx-menu-separator-color',
+    '--cngx-menu-shadow',
+  ];
+
+  it('emits only consumed token names (M3)', () => {
+    expect(bridgeTokenNames('menu-theme', 'v1')).toEqual(CONSUMED);
+  });
+
+  it('emits a consumed-name subset (M2)', () => {
+    const names = bridgeTokenNames('menu-theme', 'v0');
+    expect(names.length).toBeGreaterThan(0);
+    for (const name of names) {
+      expect(CONSUMED).toContain(name);
+    }
+  });
+
+  it('is read by cngx-menu.css', () => {
+    const sheet = readFileSync(
+      resolve(process.cwd(), 'projects/common/theming/components/cngx-menu.css'),
+      'utf-8',
+    );
+    for (const name of CONSUMED) {
+      expect(sheet, name).toMatch(new RegExp(`var\\(\\s*${name}[,)]`));
+    }
+  });
+
+  it('drops the border and derives the M3 row metrics from the space scale, M3 only', () => {
+    const entry = (version: 'v1' | 'v0') =>
+      version === 'v1'
+        ? `@use '@angular/material' as mat;
+@use 'material/menu-theme' as bridge;
+$theme: mat.define-theme((color: (theme-type: light, primary: mat.$azure-palette)));
+@include bridge.theme($theme);`
+        : `@use '@angular/material' as mat;
+@use 'material/menu-theme' as bridge;
+$p: mat.m2-define-palette(mat.$m2-indigo-palette);
+$theme: mat.m2-define-light-theme((color: (primary: $p, accent: $p)));
+@include bridge.theme($theme);`;
+    const m3 = compileThemeEntry(entry('v1'));
+    expect(m3).toContain('--cngx-menu-border: none');
+    expect(m3).toContain('--cngx-menu-bg: var(--mat-sys-surface-container)');
+    expect(m3).toContain('--cngx-menu-item-padding: calc(var(--cngx-space-sm, 8px) * 1.75) calc(var(--cngx-space-sm, 8px) * 1.5)');
+    expect(m3).toContain('font-size: var(--mat-sys-label-large-size, 0.875rem)');
+    expect(m3).toContain('-webkit-font-smoothing: antialiased');
+    expect(m3).not.toMatch(/@layer\s+(?!cngx\.components)/);
+    const m2 = compileThemeEntry(entry('v0'));
+    expect(m2).not.toContain('--cngx-menu-item-padding');
+  });
+});
+
 describe('copy-block Material bridge', () => {
   // every name is consumed by copy-block.css on the __button element
   const CONSUMED = [
@@ -237,5 +324,58 @@ $theme: mat.define-theme((
     expect(block![0]).toContain('--cngx-color-primary: var(--mat-sys-primary)');
     // no spacing fork - the padding tokens ride the SET-from-scale rule
     expect(css).not.toContain('--cngx-button-toggle-');
+  });
+});
+
+describe('async-click Material bridge', () => {
+  // every name is consumed by theming/components/cngx-async.css on the
+  // cngxAsyncClick host (button-family hosts are excluded from that paint)
+  const CONSUMED = [
+    '--cngx-async-error-bg',
+    '--cngx-async-error-border',
+    '--cngx-async-error-color',
+    '--cngx-async-success-bg',
+    '--cngx-async-success-border',
+    '--cngx-async-success-color',
+  ];
+
+  it('emits only consumed token names (M3)', () => {
+    expect(bridgeTokenNames('async-click-theme', 'v1')).toEqual(CONSUMED);
+  });
+
+  it('emits the same names (M2)', () => {
+    expect(bridgeTokenNames('async-click-theme', 'v0')).toEqual(CONSUMED);
+  });
+
+  // `[cngxAsyncClick]="fn"` is a property binding and leaves no attribute, so
+  // the bridge selector is matched against rendered hosts, not just read back.
+  it('assigns on a selector every rendered cngxAsyncClick host matches', () => {
+    const entry = `
+@use '@angular/material' as mat;
+@use 'material/async-click-theme' as bridge;
+
+$theme: mat.define-theme((
+  color: (theme-type: light, primary: mat.$azure-palette, tertiary: mat.$blue-palette),
+));
+
+@include bridge.theme($theme);
+`;
+    const css = compileThemeEntry(entry);
+    expect(css).toMatch(/@layer cngx\.components\s*\{/);
+    const block = css.match(/(:where\([^)]*\))\s*\{([^}]*)\}/);
+    expect(block).not.toBeNull();
+    const [, selector, body] = block!;
+    expect(body).toContain('--cngx-async-error-color: var(--mat-sys-error)');
+    expect(body).toContain('--cngx-async-success-color: var(--mat-sys-primary)');
+
+    const fixture = TestBed.createComponent(AsyncClickHosts);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    for (const name of ['bare', 'anchor', 'button']) {
+      const host = root.querySelector(`.${name}`);
+      expect(host, name).not.toBeNull();
+      expect(host!.matches(selector), `${name} matches ${selector}`).toBe(true);
+    }
+    expect(root.querySelector('.plain')!.matches(selector)).toBe(false);
   });
 });

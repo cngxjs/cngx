@@ -433,6 +433,36 @@ describe('CngxReorderableMultiSelect - a11y + surface', () => {
   });
 });
 
+@Component({
+  template: `
+    <cngx-reorderable-multi-select
+      [label]="'Recipients'"
+      [options]="options"
+      [chipOverflow]="mode()"
+      [(values)]="values"
+    />
+  `,
+  imports: [CngxReorderableMultiSelect],
+})
+class OverflowHost {
+  readonly options = OPTIONS;
+  readonly mode = signal<'wrap' | 'scroll-x' | 'truncate' | 'fit'>('fit');
+  readonly values = signal<string[]>(['a', 'b', 'c', 'd']);
+}
+
+describe('CngxReorderableMultiSelect - chip overflow downgrade', () => {
+  it('renders fit and truncate as scroll-x so every chip stays draggable', () => {
+    const fixture = TestBed.createComponent(OverflowHost);
+    flush(fixture);
+    const root = fixture.nativeElement as HTMLElement;
+    expect(chipStrip(root).getAttribute('data-overflow')).toBe('scroll-x');
+    expect(root.querySelectorAll('[data-reorder-index]').length).toBe(4);
+    fixture.componentInstance.mode.set('truncate');
+    flush(fixture);
+    expect(chipStrip(root).getAttribute('data-overflow')).toBe('scroll-x');
+  });
+});
+
 describe('CngxReorderableMultiSelect - selection preservation', () => {
   it('reorder preserves membership exactly - only position changes', () => {
     const fixture = TestBed.createComponent(Host);

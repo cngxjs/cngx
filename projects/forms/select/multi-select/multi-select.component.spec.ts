@@ -31,6 +31,8 @@ import {
 } from '../shared/template-slots';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
+import { describeChipFit, type ChipFitProjectedHost } from '../shared/__test-helpers/chip-fit';
+import { CngxSelectChipOverflow } from '../shared/template-slots';
 
 // jsdom has no Popover API - polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
@@ -89,6 +91,22 @@ class Host {
   readonly openedLog = signal<boolean | null>(null);
 }
 
+@Component({
+  template: `
+    <cngx-multi-select
+      [label]="'Farbe'"
+      [options]="options"
+      [hideSelectionIndicator]="true"
+      [(values)]="values"
+    />
+  `,
+  imports: [CngxMultiSelect],
+})
+class HiddenIndicatorHost {
+  readonly options = OPTIONS;
+  readonly values = signal<string[]>([]);
+}
+
 function flush(fixture: { detectChanges: () => void }): void {
   TestBed.flushEffects();
   fixture.detectChanges();
@@ -119,6 +137,36 @@ describe('CngxMultiSelect - skeleton', () => {
     flush(fixture);
     const listbox = fixture.debugElement.query(By.directive(CngxListbox));
     expect(listbox.nativeElement.getAttribute('aria-multiselectable')).toBe('true');
+  });
+
+  it('marks option rows as indicated while the selection indicator renders', () => {
+    const fixture = TestBed.createComponent(Host);
+    flush(fixture);
+    const trigger: HTMLElement = fixture.nativeElement.querySelector('.cngx-multi-select__trigger');
+    trigger.click();
+    flush(fixture);
+    const rows: HTMLElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('.cngx-select__option'),
+    );
+    expect(rows.length).toBe(OPTIONS.length);
+    expect(rows.every((row) => row.classList.contains('cngx-select__option--indicated'))).toBe(
+      true,
+    );
+  });
+
+  it('leaves option rows unmarked when the selection indicator is hidden', () => {
+    const fixture = TestBed.createComponent(HiddenIndicatorHost);
+    flush(fixture);
+    const trigger: HTMLElement = fixture.nativeElement.querySelector('.cngx-multi-select__trigger');
+    trigger.click();
+    flush(fixture);
+    const rows: HTMLElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('.cngx-select__option'),
+    );
+    expect(rows.length).toBe(OPTIONS.length);
+    expect(rows.some((row) => row.classList.contains('cngx-select__option--indicated'))).toBe(
+      false,
+    );
   });
 
   it('renders a chip per selected value with a remove button', () => {
@@ -1308,4 +1356,34 @@ describe('CngxMultiSelect - fractional maxVisibleChips', () => {
     flush(fixture);
     expectTwoChipsPlusThree(fixture.nativeElement as HTMLElement);
   });
+});
+
+@Component({
+  template: `
+    <cngx-multi-select
+      [label]="'Recipients'"
+      [options]="options"
+      [values]="values"
+      chipOverflow="fit"
+    >
+      <span *cngxMultiSelectChip="let opt" class="fit-projected-chip">{{ opt.label }}</span>
+      <span *cngxSelectChipOverflow="let count" class="fit-projected-badge">+{{ count }}</span>
+    </cngx-multi-select>
+  `,
+  imports: [CngxMultiSelect, CngxMultiSelectChip, CngxSelectChipOverflow],
+})
+class ChipFitProjectedHostCmp implements ChipFitProjectedHost {
+  readonly options = [
+    { value: 'a', label: 'Alpha' },
+    { value: 'b', label: 'Bravo' },
+    { value: 'c', label: 'Charlie' },
+    { value: 'd', label: 'Delta' },
+    { value: 'e', label: 'Echo' },
+  ];
+  readonly values = ['a', 'b', 'c', 'd', 'e'];
+}
+
+describeChipFit('CngxMultiSelect', CngxMultiSelect, {
+  projectedHost: ChipFitProjectedHostCmp,
+  summaryText: (root) => root.querySelector('.cngx-select__hidden-summary')?.textContent ?? '',
 });

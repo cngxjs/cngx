@@ -16,8 +16,8 @@ import {
   nextUid,
 } from '@cngx/core/utils';
 
-import { injectButtonConfig } from './button-config';
-import { CNGX_BUTTON_GROUP } from './button-group.token';
+import { injectButtonConfig, type CngxButtonConfig } from './button-config';
+import { CNGX_BUTTON_GROUP, type CngxButtonGroupContext } from './button-group.token';
 import type {
   CngxButtonSize,
   CngxButtonTone,
@@ -63,6 +63,9 @@ export interface CngxButtonCore {
   readonly size: Signal<CngxButtonSize>;
   /** `true` while a co-hosted `CngxAsyncClick` runs its action. */
   readonly busy: Signal<boolean>;
+  /** `true` while the button refuses activation: disabled, busy or refused by the co-hosted `CngxAsyncClick`. */
+  readonly blocked: Signal<boolean>;
+  /** `aria-disabled` rendered from `blocked`. */
   readonly ariaDisabled: Signal<'true' | null>;
   /**
    * The element's merged `aria-describedby`: the consumer's static ids, the
@@ -77,6 +80,21 @@ export interface CngxButtonCore {
 
 const DEFAULT_TONE: CngxButtonTone = 'neutral';
 const DEFAULT_SIZE: CngxButtonSize = 'md';
+
+/**
+ * The size chain every member of a button group resolves:
+ * `input ?? group ?? config ?? md`. Shared by the button core and the group
+ * addon, so an addon always sits on the row of the buttons beside it.
+ *
+ * @internal
+ */
+export function resolveButtonSize(
+  input: CngxButtonSize | undefined,
+  group: CngxButtonGroupContext | null,
+  config: CngxButtonConfig,
+): CngxButtonSize {
+  return input ?? group?.size() ?? config.size ?? DEFAULT_SIZE;
+}
 
 /**
  * Element-level `aria-describedby` owner of a button host. Seeds the
@@ -134,7 +152,7 @@ export function injectButtonCore(
   );
   const tone = computed<CngxButtonTone>(() => inputs.tone() ?? config.tone ?? DEFAULT_TONE);
   const size = computed<CngxButtonSize>(
-    () => inputs.size() ?? group?.size() ?? config.size ?? DEFAULT_SIZE,
+    () => resolveButtonSize(inputs.size(), group, config),
   );
   const busy = computed(() => coHostedAsyncClick()?.pending() ?? false);
   // CngxAsyncClick binds aria-disabled on the same host and only rewrites it
@@ -142,9 +160,8 @@ export function injectButtonCore(
   // `[enabled]="false"` in; otherwise a disabled -> enabled flip here writes
   // null while the directive still refuses clicks.
   const asyncClickRefuses = computed(() => coHostedAsyncClick()?.enabled() === false);
-  const ariaDisabled = computed<'true' | null>(() =>
-    inputs.disabled() || busy() || asyncClickRefuses() ? 'true' : null,
-  );
+  const blocked = computed(() => inputs.disabled() || busy() || asyncClickRefuses());
+  const ariaDisabled = computed<'true' | null>(() => (blocked() ? 'true' : null));
   const reasonIds = computed(() =>
     inputs.disabled() && inputs.disabledReason() ? reasonId : null,
   );
@@ -174,5 +191,5 @@ export function injectButtonCore(
     host.removeEventListener('auxclick', guard, { capture: true });
   });
 
-  return { variant, tone, size, busy, ariaDisabled, describedBy, reasonId, hostType };
+  return { variant, tone, size, busy, blocked, ariaDisabled, describedBy, reasonId, hostType };
 }

@@ -103,6 +103,29 @@ provideCngxSelect(withTypeaheadWhileClosed(true));
 
 On a touch screen narrower than 48rem the panel opens as a modal bottom sheet, named by the field label, with a close button, Done and a decorative handle. Focus moves into the sheet and back to the trigger on close. Force a presentation with `[presentation]` (`'anchored'`, `'sheet'`, `'fullscreen'`), set the title with `[sheetLabel]`, or turn the sheet off with `withMobileSheet('off')`. Details: [Mobile sheet](../README.md#mobile-sheet).
 
+## Chip overflow
+
+`chipOverflow` (input, `withChipOverflow(...)` or `CNGX_SELECT_CONFIG.chipOverflow`) decides what the chip strip does when the selection outgrows the trigger:
+
+| Mode | Behaviour |
+|-|-|
+| `'wrap'` (default) | Chips wrap, the trigger grows by whole rows |
+| `'scroll-x'` | One row, the strip scrolls horizontally |
+| `'truncate'` | One row, the first `maxVisibleChips` chips plus a `+N` badge |
+| `'fit'` | One row, as many chips as the trigger holds, the rest in the `+N` badge |
+
+`'fit'` measures the strip, so there is no count to pick per width. The chips past the fit stay out of the tab order and are hidden from assistive technology; the whole selection is still read through the control. Before the first measurement the strip caps at `maxVisibleChips`, so the first paint already shows a badge and the full selection for assistive technology.
+
+The space kept for the badge is `--cngx-select-chip-fit-badge-reserve` (default `5ch`, enough for `+99` at the default badge size). Set it on the select, a container or `:root` when a projected `*cngxSelectChipOverflow` or a custom `chipOverflowBadge` formatter is wider; the badge slot is exactly the reserve wide and clips a wider badge:
+
+```css
+.team-picker {
+  --cngx-select-chip-fit-badge-reserve: 8ch;
+}
+```
+
+The trade-off: a single chip that would just fit without a badge is shortened by the reserve. A label longer than the trigger ellipsizes inside its chip.
+
 ## Touch
 
 Under the touch floor the chip strip becomes a one-line summary: the placeholder with no value, the label with one value, and the first label plus a `+N` badge with two or more. The row keeps its 44px height. Full behaviour and opt-out: [Summary trigger under the touch floor](../README.md#summary-trigger-under-the-touch-floor).
@@ -119,7 +142,7 @@ All [`CngxSelect` slots](../single-select/README.md#template-slots) except `*cng
 |-|-|
 | `*cngxMultiSelectChip`         | Per-chip rendering                       |
 | `*cngxMultiSelectTriggerLabel` | Whole chip strip with text/badge summary |
-| `*cngxSelectChipOverflow` | `+N` badge after the visible chips under `chipOverflow: 'truncate'`; gets `count`, `label`, `hidden` (the hidden selected options) |
+| `*cngxSelectChipOverflow` | `+N` badge after the visible chips under `chipOverflow: 'truncate'` or `'fit'`; gets `count`, `label`, `hidden` (the hidden selected options) |
 
 The selected-option label inside the default `<cngx-chip>` is also overridable via `*cngxSelectOptionLabel` - that template renders both in the panel rows AND in the default chip body.
 

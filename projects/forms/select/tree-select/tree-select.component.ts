@@ -303,7 +303,10 @@ export class CngxTreeSelect<T = unknown>
 
   /** Source tree. Flatten/visibility derive automatically. */
   readonly nodes = input<readonly CngxTreeNode<T>[]>([]);
-  /** Multi-value model - the selected subset of T. */
+  /**
+   * Selected values, two-way bindable as `[(values)]`. Syncs with the bound
+   * field inside a `cngx-form-field`.
+   */
   readonly values = model<T[]>([]);
   /**
    * Stable id per node. See `CngxTreeControllerOptions.nodeIdFn`. The tree
@@ -365,20 +368,51 @@ export class CngxTreeSelect<T = unknown>
    */
   readonly expandToReveal = input<boolean>(false);
 
+  /**
+   * Field label. Names the trigger when neither `aria-label` nor
+   * `aria-labelledby` is set, names the listbox, and stands in for an empty
+   * `placeholder`.
+   */
   readonly label = input<string>('');
   /** Trigger text while nothing is selected; falls back to `label` when unset. */
   readonly placeholder = input<string>('');
+  /**
+   * Disables the trigger and the panel. Merges with the disabled state of an
+   * enclosing `cngx-form-field`.
+   */
   readonly disabledInput = input<boolean>(false, { alias: 'disabled' });
+  /**
+   * Marks the control as required and sets `aria-required`. Merges with the
+   * required state of an enclosing `cngx-form-field`.
+   */
   readonly requiredInput = input<boolean>(false, { alias: 'required' });
+  /** Equality function that matches values to options. Defaults to `Object.is`. */
   readonly compareWith = input<CngxSelectCompareFn<T>>(
     cngxSelectDefaultCompare as CngxSelectCompareFn<T>,
   );
+  /** Host id. Unset, it takes the input id of an enclosing `cngx-form-field`. */
   readonly idInput = input<string | null>(null, { alias: 'id' });
+  /**
+   * Accessible name of the trigger. Wins over `label`; inside a
+   * `cngx-form-field` the field label referenced through `aria-labelledby`
+   * takes precedence.
+   */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
+  /**
+   * Id of the element that names the trigger. Unset, it takes the label id of
+   * an enclosing `cngx-form-field`.
+   */
   readonly ariaLabelledBy = input<string | null>(null, { alias: 'aria-labelledby' });
+  /** Tab index of the trigger. Defaults to `0`; a disabled control always uses `-1`. */
   readonly tabIndex = input<number>(0);
+  /** Focuses the trigger once after the first render. */
   readonly autofocus = input<boolean>(false);
+  /** Classes on the panel root, merged with `CngxSelectConfig.panelClass`. */
   readonly panelClass = input<string | readonly string[] | null>(null);
+  /**
+   * Panel min-width: `'trigger'` matches the trigger width, a number sets
+   * pixels, `null` sizes to content. Defaults to `CngxSelectConfig.panelWidth`.
+   */
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   /**
    * Popover placement relative to the trigger. Per-instance input wins
@@ -400,8 +434,15 @@ export class CngxTreeSelect<T = unknown>
     }
     return placement === 'top' ? 'top-start' : placement;
   });
+  /** Hides the trigger caret. Defaults to the inverse of `CngxSelectConfig.showCaret`. */
   readonly hideCaret = input<boolean>(!this.config.showCaret);
+  /**
+   * Replaces the built-in clear glyph inside the default clear button while
+   * keeping the button frame, ARIA and click handler. Ignored when
+   * `*cngxSelectClearButton` is projected.
+   */
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
+  /** Replaces the built-in caret glyph. Ignored when `*cngxSelectCaret` is projected. */
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
   /**
    * Replaces the default chevron twisty in the default node row.
@@ -423,9 +464,15 @@ export class CngxTreeSelect<T = unknown>
   readonly checkGlyph = input<TemplateRef<void> | null>(null);
   /** Forwarded to `<cngx-checkbox-indicator [dashGlyph]>`. */
   readonly dashGlyph = input<TemplateRef<void> | null>(null);
+  /** Renders a clear button while the selection is not empty and the control is enabled. */
   readonly clearable = input<boolean>(false);
   /** @internal The select section at this reading site; per-variant defaults. */
   private readonly selectCopy = injectSelectCopy();
+  /**
+   * Accessible name of the clear button. Unset, it reads
+   * `CngxSelectConfig.ariaLabels.clearButton`, then the select copy of the
+   * active language.
+   */
   readonly clearButtonAriaLabel = input<string | undefined>(undefined);
   protected readonly caretIcon = CNGX_ICON_CARET_DOWN;
   protected readonly clearIcon = CNGX_ICON_X;
@@ -436,6 +483,10 @@ export class CngxTreeSelect<T = unknown>
       this.config.ariaLabels().clearButton ??
       this.selectCopy().resetSelection,
   );
+  /**
+   * Accessible name of the remove button on each chip, combined with the chip
+   * label. Unset, it reads `CngxSelectConfig.ariaLabels.chipRemove`.
+   */
   readonly chipRemoveAriaLabel = input<string | undefined>(undefined);
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedChipRemoveAriaLabel = computed<string>(
@@ -450,13 +501,44 @@ export class CngxTreeSelect<T = unknown>
     const format = this.config.ariaLabels().chipRemoveFor;
     return (label) => format(action, label);
   });
+  /** Shows the first-load indicator in the panel while no `state` is bound. */
   readonly loading = input<boolean>(false);
+  /**
+   * First-load indicator: skeleton, spinner, bar or text. A projected
+   * `*cngxSelectLoading` wins; defaults to `CngxSelectConfig.loadingVariant`.
+   */
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
+  /**
+   * Number of skeleton rows while `loadingVariant` is `'skeleton'`. Defaults to
+   * `CngxSelectConfig.skeletonRowCount`.
+   */
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
+  /**
+   * Indicator over the visible options during a reload: bar, spinner, dots or
+   * none. A projected `*cngxSelectRefreshing` wins; defaults to
+   * `CngxSelectConfig.refreshingVariant`.
+   */
   readonly refreshingVariant = input<CngxSelectRefreshingVariant>(this.config.refreshingVariant);
+  /**
+   * Async-state source for the tree nodes. When bound, its data replaces
+   * `nodes` and its status drives the loading, empty, error and refreshing
+   * views.
+   */
   readonly state = input<CngxAsyncState<readonly CngxTreeNode<T>[]> | null>(null);
+  /** Callback the built-in retry button runs after a failed load, before `retry` emits. */
   readonly retryFn = input<(() => void) | null>(null);
+  /**
+   * Async write handler run on every toggle, clear and chip removal with the
+   * intended values. Unset, the change applies directly; `commitMode` decides
+   * how it shows while the handler runs.
+   */
   readonly commitAction = input<CngxSelectCommitAction<T[]> | null>(null);
+  /**
+   * Value write while `commitAction` runs. `'optimistic'` (default) applies the
+   * change at once and rolls it back on error; `'pessimistic'` holds it behind
+   * a row spinner until the commit succeeds. The panel stays open in both
+   * modes.
+   */
   readonly commitMode = input<CngxSelectCommitMode>('optimistic');
   /**
    * Panel presentation. Unset follows `CNGX_SELECT_CONFIG.mobileSheet`:
@@ -470,8 +552,21 @@ export class CngxTreeSelect<T = unknown>
    * then `[label]`, then `ariaLabels.fieldLabelFallback`.
    */
   readonly sheetLabel = input<string | undefined>(undefined);
+  /**
+   * Built-in surface for a failed commit when no `*cngxSelectCommitError` is
+   * projected: banner, inline or none. Defaults to
+   * `CngxSelectConfig.commitErrorDisplay`.
+   */
   readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(this.config.commitErrorDisplay);
+  /**
+   * Turns live-region announcements of selection changes on or off. `null`
+   * inherits `CngxSelectConfig.announcer.enabled`, which defaults to on.
+   */
   readonly announceChanges = input<boolean | null>(null);
+  /**
+   * Formatter for the live-region announcement of a selection change. `null`
+   * inherits `CngxSelectConfig.announcer.format`.
+   */
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
   /**
    * Commit-error announce policy for the clear-all commit. `'verbose'`
@@ -484,13 +579,32 @@ export class CngxTreeSelect<T = unknown>
     this.config.commitErrorAnnouncePolicy ?? { kind: 'verbose', severity: 'assertive' },
   );
 
+  /**
+   * Emits after a toggle, cascade toggle or clear settles, with the new and
+   * previous values, the added and removed values and the toggled node. With
+   * `commitAction` bound it fires on commit success.
+   */
   readonly selectionChange = output<CngxTreeSelectChange<T>>();
+  /** Emits `true` when the panel opens and `false` when it closes. */
   readonly openedChange = output<boolean>();
+  /** Emits when the panel opens. */
   readonly opened = output<void>();
+  /** Emits when the panel closes. */
   readonly closed = output<void>();
+  /** Emits when the clear button empties the selection, together with `selectionChange`. */
   readonly cleared = output<void>();
+  /**
+   * Emits when the built-in retry button is pressed after a failed load, after
+   * `retryFn` has run.
+   */
   readonly retry = output<void>();
+  /**
+   * Emits the error when `commitAction` fails; optimistic mode restores the
+   * previous values. The error is also announced assertively by default;
+   * `commitErrorAnnouncePolicy` changes that.
+   */
   readonly commitError = output<unknown>();
+  /** Emits each status of a `commitAction` run: `'pending'`, then `'success'` or `'error'`. */
   readonly stateChange = output<AsyncStatus>();
 
   private readonly placeholderDir = contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
@@ -809,22 +923,24 @@ export class CngxTreeSelect<T = unknown>
     loadingGlyph: this.tplRegistry.loadingGlyph,
     refreshing: this.tplRegistry.refreshing,
     commitError: this.tplRegistry.commitError,
-    // No inline action slot today (master-plan §9 -
-    // `CngxActionTreeSelect` is a follow-up). Shell falls back when
-    // null, so a stray `*cngxSelectAction` projection at this level is
-    // silently suppressed.
+    // No inline action slot today (an action tree-select would be its own
+    // composite). Shell falls back when null, so a stray
+    // `*cngxSelectAction` projection at this level is silently suppressed.
     action: signal<null>(null),
   };
 
   /** @internal */
   readonly showCommitError = this.core.showCommitError;
 
+  /** @internal */
   isSelected(value: T): boolean {
     return this.selection.isSelected(value)();
   }
+  /** @internal */
   isIndeterminate(value: T): boolean {
     return this.selection.isIndeterminate(value)();
   }
+  /** @internal */
   handleRetry(): void {
     this.hostFocus.refocusOwnerBeforeRemoval();
     const fn = this.retryFn();
@@ -972,16 +1088,29 @@ export class CngxTreeSelect<T = unknown>
     this.config.fallbackLabels().chipOverflowBadge(this.overflowBadgeCount()),
   );
 
+  /**
+   * Opens the panel. On a disabled control the panel closes again at once, so
+   * the call has no effect.
+   */
   open(): void {
     this.popoverRef()?.show();
   }
+  /**
+   * Closes the panel. With `CngxSelectConfig.restoreFocus` on, focus moves back
+   * to the trigger first.
+   */
   close(): void {
     this.hostFocus.refocusOwnerBeforeClose();
     this.popoverRef()?.hide();
   }
+  /**
+   * Opens the panel when it is closed and closes it when it is open. On a
+   * disabled control an open is undone at once, as with `open()`.
+   */
   toggle(): void {
     this.popoverRef()?.toggle();
   }
+  /** Moves focus to the trigger, passing the given `FocusOptions` through. */
   focus(options?: FocusOptions): void {
     this.triggerBtn()?.nativeElement.focus(options);
   }

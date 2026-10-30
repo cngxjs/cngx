@@ -43,8 +43,6 @@ Internal symbols. None of these is in `public-api.ts`; the variants use them and
 | `cngxSelectDefaultCompare`       | `Object.is`-based default                           |
 | `CngxSelectTriggerAria`          | Bundled ARIA projection for the trigger             |
 | `CngxSelectAnnouncerInputs`      | Per-instance announcer config                       |
-| `CngxSelectFormFieldControl`     | Full forms control contract                         |
-| `CngxSelectStatus`               | Resolved field status type                          |
 
 See [`ARCHITECTURE.md` § Core factory](../../../ARCHITECTURE.md#core-factory-createselectcore) for the input/output diagram.
 

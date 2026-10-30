@@ -31,6 +31,8 @@ import type {
   CngxSelectCommitAction,
   CngxSelectCommitMode,
 } from '../shared/commit-action.types';
+import { describeChipFit, type ChipFitProjectedHost } from '../shared/__test-helpers/chip-fit';
+import { CngxSelectChipOverflow } from '../shared/template-slots';
 
 // jsdom has no Popover API - polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
@@ -1347,4 +1349,40 @@ describe('CngxCombobox - truncated chips stay reachable for AT', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(describedTexts(el).some((t) => t.includes('selected:'))).toBe(false);
   });
+});
+
+@Component({
+  template: `
+    <cngx-combobox
+      [label]="'Recipients'"
+      [options]="options"
+      [values]="values"
+      chipOverflow="fit"
+    >
+      <span *cngxComboboxChip="let opt" class="fit-projected-chip">{{ opt.label }}</span>
+      <span *cngxSelectChipOverflow="let count" class="fit-projected-badge">+{{ count }}</span>
+    </cngx-combobox>
+  `,
+  imports: [CngxCombobox, CngxComboboxChip, CngxSelectChipOverflow],
+})
+class ChipFitProjectedHostCmp implements ChipFitProjectedHost {
+  readonly options = [
+    { value: 'a', label: 'Alpha' },
+    { value: 'b', label: 'Bravo' },
+    { value: 'c', label: 'Charlie' },
+    { value: 'd', label: 'Delta' },
+    { value: 'e', label: 'Echo' },
+  ];
+  readonly values = ['a', 'b', 'c', 'd', 'e'];
+}
+
+describeChipFit('CngxCombobox', CngxCombobox, {
+  projectedHost: ChipFitProjectedHostCmp,
+  summaryText: (root) => {
+    const id = root.querySelector('input')?.getAttribute('aria-describedby') ?? '';
+    return id
+      .split(' ')
+      .map((ref) => (ref ? (document.getElementById(ref)?.textContent ?? '') : ''))
+      .join(' ');
+  },
 });

@@ -6,6 +6,7 @@
     "examples/**/*",
     "projects/**/examples/**/*",
     "projects/**/schematics/**/*",
-    "projects/testing/**/*"
+    "projects/testing/**/*",
+    "projects/**/__test-helpers/**/*"
   ]
 }

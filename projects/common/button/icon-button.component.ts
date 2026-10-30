@@ -13,6 +13,7 @@ import { cngxDevWarn } from '@cngx/utils';
 
 import { hasAccessibleName } from './accessible-name';
 import { injectButtonCore, provideButtonDescribedBy } from './button-core';
+import { CNGX_BUTTON_STATE, type CngxButtonState } from './button-state.token';
 import type {
   CngxButtonSize,
   CngxButtonTone,
@@ -28,10 +29,11 @@ import type {
  * or `provideButtonConfig` picks one.
  *
  * Any icon works in the slot: an inline `svg`, an `img`, a `cngx-icon`
- * (recommended, it sizes itself) or a `mat-icon` through the Material
- * bridge. A bare `svg` or `img` is sized to `1.25em` of the button font. The
- * glyph is hidden from assistive technology, so nothing projected (alt text,
- * a ligature name, a font glyph) ever becomes the button's name; the name is
+ * (recommended, it sizes itself; wrap a `mat-icon` in one, the Material
+ * icon bridge sizes it to the rung). A bare `svg` or `img` is sized to
+ * `1.25em` of the button font. The glyph is hidden from assistive
+ * technology, so nothing projected (alt text, a ligature name, a font
+ * glyph) ever becomes the button's name; the name is
  * the consumer's job: set `aria-label` (or `aria-labelledby` / `title`) on
  * the host. A host without any of them warns `CNGX1071` in development mode. A tooltip is a separate,
  * per-icon decision; co-host `[cngxTooltip]` where the icon alone is
@@ -52,7 +54,7 @@ import type {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/icon-button.component.ts
  * @since 0.1.0
- * @relatedTo CngxButton, CngxAsyncClick, provideButtonConfig
+ * @relatedTo CngxButton, CngxAsyncClick, provideButtonConfig, CngxSplitButton, CngxIconMenuButton
  * <example-url>http://localhost:4200/#/common/button/icon-button/basic</example-url>
  * <example-url>http://localhost:4200/#/common/button/icon-button/with-badge</example-url>
  * @axis level atom
@@ -66,6 +68,7 @@ import type {
   encapsulation: ViewEncapsulation.None,
   providers: [
     { provide: CNGX_HOST_INTERACTION_STATE, useExisting: CngxIconButton },
+    { provide: CNGX_BUTTON_STATE, useExisting: CngxIconButton },
     provideButtonDescribedBy('CngxIconButton'),
   ],
   host: {
@@ -90,7 +93,7 @@ import type {
   `,
   styleUrls: ['./button.component.css', './icon-button.component.css'],
 })
-export class CngxIconButton {
+export class CngxIconButton implements CngxButtonState {
   /**
    * Emphasis, bound through the selector: `cngxIconButton="solid"`. The bare
    * attribute falls through to the group, the config and `ghost`.
@@ -140,6 +143,12 @@ export class CngxIconButton {
     },
     { variant: 'ghost' },
   );
+
+  /**
+   * `true` while the button refuses activation: disabled, running a
+   * co-hosted `cngxAsyncClick`, or refused by its `[enabled]="false"`.
+   */
+  readonly blocked = this.core.blocked;
 
   constructor() {
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {

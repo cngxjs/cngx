@@ -7,6 +7,11 @@
  * paints the three phases on hosts without their own paint, such as a bare
  * `<button cngxAsyncClick>` or an anchor.
  *
+ * Every host also carries the stable `cngx-async` class, whatever its
+ * phase. A theme that sets the `--cngx-async-*` tokens per host targets it
+ * (the Material bridge does): `[cngxAsyncClick]` is a property binding and
+ * leaves no attribute to select on.
+ *
  * **Scope**
  *
  * The button family owns the paint of its own states. A `.cngx-button` host

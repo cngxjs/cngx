@@ -28,11 +28,13 @@
 //
 // Deliberate non-adopters (each documents why in place): system-bridge
 // and density-bridge emit bare declarations on the theme host, unlayered
-// by design (system-bridge still reads `m2-warn-text()` from here); nav-link-theme emits bare declarations consumed inside
-// sidenav's `on()` block; feedback-theme's `density($level)` emits its
-// own unlayered `:where` block because it is a consumer-level opt-in
-// included at an arbitrary call-site, not part of `theme($theme)` -
-// layering it would weaken it below unlayered consumer overrides.
+// by design (system-bridge still reads `m2-warn-text()` from here);
+// nav-link-theme emits bare declarations consumed inside sidenav's `on()`
+// block; icon-theme's `mat-icon()` sizes a wrapped `.mat-icon`
+// unlayered because Material's own `.mat-icon` rule is unlayered and beats
+// any layer; select-theme's option row and button-theme's `metrics()` and `shape()` emit
+// raw `@layer cngx.components` rules with real specificity, because the
+// tokens they set are SET per element inside the component's `@scope`.
 
 /// Emits the content block for `$selectors` inside `@layer cngx.components`
 /// wrapped in a single zero-specificity `:where(...)`. Pass plain element

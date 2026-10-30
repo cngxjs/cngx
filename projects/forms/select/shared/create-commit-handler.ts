@@ -89,11 +89,10 @@ export interface CreateCommitHandler<T, Prev = unknown> {
    * close conditionally. On error: commit-error surface fires; value
    * slot is untouched.
    *
-   * **Accepted deviation from plan** (master §3 Commit 5): the plan
-   * described an "optimistic add to localItems before commit" path.
-   * True optimistic UX requires a `tempValueFactory(draft)` since `T`
-   * is opaque to the handler; pessimistic + `isPending` delivers the
-   * same perceived immediacy for now.
+   * Creates are always pessimistic: an optimistic add to `localItems`
+   * before the commit would need a `tempValueFactory(draft)`, since `T`
+   * is opaque to the handler. Pessimistic + `isPending` delivers the
+   * same perceived immediacy.
    *
    * @param draft             Drafted item carrying at least a `label`.
    * @param searchTerm        Live search term at dispatch time.

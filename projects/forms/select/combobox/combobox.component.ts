@@ -82,6 +82,11 @@ import {
 import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
 import { CngxSelectSummary } from '../shared/internal/summary/select-summary.component';
 import { createSelectSummary } from '../shared/internal/summary/select-summary';
+import {
+  CngxSelectChipFitSlot,
+  CngxSelectChipFitStrip,
+  injectChipFitFocusHandOff,
+} from '../shared/internal/chip-fit-strip.directive';
 import { injectTouchFloorSignal } from '../shared/internal/touch-floor';
 import { sameArrayContents } from '../shared/internal/compare';
 import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
@@ -246,6 +251,8 @@ export interface CngxComboboxChange<T = unknown> {
     CngxPopoverAnchor,
     CngxPopoverTrigger,
     CngxSelectPanel,
+    CngxSelectChipFitSlot,
+    CngxSelectChipFitStrip,
     CngxSelectSummary,
     NgTemplateOutlet,
   ],
@@ -283,10 +290,17 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = resolveSelectConfig();
 
-  /** Accessible label for the listbox region and fallback trigger name. */
+  /**
+   * Field label. Names the trigger when neither `aria-label` nor
+   * `aria-labelledby` is set, names the listbox, and stands in for an empty
+   * `placeholder`.
+   */
   readonly label = input<string>('');
 
-  /** Options in data-driven mode (flat or grouped). */
+  /**
+   * Options in data-driven mode, flat or grouped. Ignored while `state` is
+   * bound; its data wins.
+   */
   readonly options = input<CngxSelectOptionsInput<T>>([] as CngxSelectOptionsInput<T>);
 
   /**
@@ -295,43 +309,59 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
    */
   readonly placeholder = input<string>('');
 
-  /** Disabled state. Merges with `presenter.disabled()`. */
+  /**
+   * Disables the trigger and the panel. Merges with the disabled state of an
+   * enclosing `cngx-form-field`.
+   */
   readonly disabledInput = input<boolean>(false, { alias: 'disabled' });
 
-  /** Required state. Merges with `presenter.required()`. */
+  /**
+   * Marks the control as required and sets `aria-required`. Merges with the
+   * required state of an enclosing `cngx-form-field`.
+   */
   readonly requiredInput = input<boolean>(false, { alias: 'required' });
 
-  /** Equality function used to match values to options. Defaults to `Object.is`. */
+  /** Equality function that matches values to options. Defaults to `Object.is`. */
   readonly compareWith = input<CngxSelectCompareFn<T>>(
     cngxSelectDefaultCompare as CngxSelectCompareFn<T>,
   );
 
-  /** Custom id. Defaults to the presenter-generated ID inside form-field. */
+  /** Host id. Unset, it takes the input id of an enclosing `cngx-form-field`. */
   readonly idInput = input<string | null>(null, { alias: 'id' });
 
-  /** Explicit `aria-label` on the trigger. */
+  /**
+   * Accessible name of the trigger. Wins over `label`; inside a
+   * `cngx-form-field` the field label referenced through `aria-labelledby`
+   * takes precedence.
+   */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
 
-  /** Explicit `aria-labelledby` on the trigger. */
+  /**
+   * Id of the element that names the trigger. Unset, it takes the label id of
+   * an enclosing `cngx-form-field`.
+   */
   readonly ariaLabelledBy = input<string | null>(null, { alias: 'aria-labelledby' });
 
-  /** Tab index on the inner `<input>`. Defaults to `0`. */
+  /** Tab index of the trigger. Defaults to `0`; a disabled control always uses `-1`. */
   readonly tabIndex = input<number>(0);
 
-  /** One-shot autofocus on first render. */
+  /** Focuses the trigger once after the first render. */
   readonly autofocus = input<boolean>(false);
 
-  /** Classes applied to the panel root. Merged with the library default. */
+  /** Classes on the panel root, merged with `CngxSelectConfig.panelClass`. */
   readonly panelClass = input<string | readonly string[] | null>(null);
 
-  /** Panel width strategy. */
+  /**
+   * Panel min-width: `'trigger'` matches the trigger width, a number sets
+   * pixels, `null` sizes to content. Defaults to `CngxSelectConfig.panelWidth`.
+   */
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   /**
-   * Popover placement relative to the trigger. Per-instance input wins
-   * over `CngxSelectConfig.popoverPlacement`.
+   * Popover placement relative to the trigger. Per-instance input wins over
+   * `CngxSelectConfig.popoverPlacement`.
    */
   readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
-  /** Mobile `inputmode` attribute. Defaults from `CngxSelectConfig.inputMode`. */
+  /** Mobile `inputmode` of the input. Defaults to `CngxSelectConfig.inputMode`. */
   readonly inputMode = input<NonNullable<CngxSelectConfig['inputMode']>>(this.config.inputMode);
   /**
    * Mobile `enterkeyhint`. Default `'enter'` - Combobox commits Enter
@@ -340,11 +370,15 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   readonly enterKeyHint = input<NonNullable<CngxSelectConfig['enterKeyHint']>>(
     this.config.enterKeyHint ?? 'enter',
   );
-  /** Chip-strip overflow strategy. See `CngxSelectConfig.chipOverflow`. */
+  /** Chip-strip overflow strategy. Defaults to `CngxSelectConfig.chipOverflow`. */
   readonly chipOverflow = input<NonNullable<CngxSelectConfig['chipOverflow']>>(
     this.config.chipOverflow,
   );
-  /** Max chips in `'truncate'` mode. */
+  /**
+   * Maximum number of chips in `'truncate'` mode before the `+N` badge,
+   * and the `'fit'` cap before the first measurement. Defaults to
+   * `CngxSelectConfig.maxVisibleChips`.
+   */
   readonly maxVisibleChips = input<number>(this.config.maxVisibleChips);
 
   /**
@@ -365,46 +399,63 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   readonly closeOnSelect = input<boolean>(false);
 
   /**
-   * Custom matcher for the inline `CngxListboxSearch`. Wins over
-   * `CngxSelectConfig.searchMatchFn`.
+   * Per-instance match policy. Receives the option's `{ value, label }` and the
+   * term and returns `true` when the option should stay visible. Wins over
+   * `CngxSelectConfig.searchMatchFn`; the default is the folded label match in
+   * the reading locale.
    */
   readonly searchMatchFn = input<CngxSelectMatchFn<T> | null>(null);
 
-  /** Debounce for search term updates (ms). */
+  /**
+   * Debounce in ms between a keystroke and the search filter update and
+   * `searchTermChange`. Defaults to
+   * `CngxSelectConfig.typeaheadDebounceInterval`.
+   */
   readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
 
-  /** Suppress the first `searchTermChange` emission (hydrate-time `''`). */
+  /** Suppresses the first `searchTermChange` emission, the empty term written on hydration. */
   readonly skipInitial = input<boolean>(false);
 
-  /** Hide the default in-panel checkmark. */
+  /**
+   * Hides the per-option selection indicator. Defaults to the inverse of
+   * `CngxSelectConfig.showSelectionIndicator`.
+   */
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
 
-  /** Indicator position. `null` → inherit config. */
+  /**
+   * Places the selection indicator before or after the option label. `null`
+   * inherits `CngxSelectConfig.selectionIndicatorPosition`.
+   */
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
 
-  /** Indicator variant. `null` → inherit config. */
+  /**
+   * Visual form of the selection indicator: checkmark, checkbox, radio or
+   * `'auto'`. `null` inherits `CngxSelectConfig.selectionIndicatorVariant`.
+   */
   readonly selectionIndicatorVariant = input<CngxSelectSelectionIndicatorVariant | null>(null);
 
-  /** Hide the default dropdown caret. */
+  /** Hides the trigger caret. Defaults to the inverse of `CngxSelectConfig.showCaret`. */
   readonly hideCaret = input<boolean>(!this.config.showCaret);
 
   /**
-   * Replaces the built-in X icon inside the default clear-all button.
-   * Ignored when `*cngxSelectClearButton` is projected.
+   * Replaces the built-in clear glyph inside the default clear button while
+   * keeping the button frame, ARIA and click handler. Ignored when
+   * `*cngxSelectClearButton` is projected.
    */
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
-  /**
-   * Replaces the built-in caret glyph. Ignored when
-   * `*cngxSelectCaret` is projected.
-   */
+  /** Replaces the built-in caret glyph. Ignored when `*cngxSelectCaret` is projected. */
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
 
-  /** Render a clear-all button when at least one value is selected. */
+  /** Renders a clear button while the selection is not empty and the control is enabled. */
   readonly clearable = input<boolean>(false);
 
-  /** A11y label for the clear-all button. */
   /** @internal The select section at this reading site; per-variant defaults. */
   private readonly selectCopy = injectSelectCopy();
+  /**
+   * Accessible name of the clear button. Unset, it reads
+   * `CngxSelectConfig.ariaLabels.clearButton`, then the select copy of the
+   * active language.
+   */
   readonly clearButtonAriaLabel = input<string | undefined>(undefined);
   protected readonly caretIcon = CNGX_ICON_CARET_DOWN;
   protected readonly clearIcon = CNGX_ICON_X;
@@ -416,7 +467,10 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       this.selectCopy().resetSelection,
   );
 
-  /** A11y label prefix for the per-chip remove button. */
+  /**
+   * Accessible name of the remove button on each chip, combined with the chip
+   * label. Unset, it reads `CngxSelectConfig.ariaLabels.chipRemove`.
+   */
   readonly chipRemoveAriaLabel = input<string | undefined>(undefined);
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedChipRemoveAriaLabel = computed<string>(
@@ -432,28 +486,50 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     return (label) => format(action, label);
   });
 
-  /** Loading state inside the panel. */
+  /** Shows the first-load indicator in the panel while no `state` is bound. */
   readonly loading = input<boolean>(false);
 
-  /** First-load indicator variant. */
+  /**
+   * First-load indicator: skeleton, spinner, bar or text. A projected
+   * `*cngxSelectLoading` wins; defaults to `CngxSelectConfig.loadingVariant`.
+   */
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
 
-  /** Skeleton-row count when `loadingVariant === 'skeleton'`. */
+  /**
+   * Number of skeleton rows while `loadingVariant` is `'skeleton'`. Defaults to
+   * `CngxSelectConfig.skeletonRowCount`.
+   */
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
 
-  /** Subsequent-load ("refreshing") indicator variant. */
+  /**
+   * Indicator over the visible options during a reload: bar, spinner, dots or
+   * none. A projected `*cngxSelectRefreshing` wins; defaults to
+   * `CngxSelectConfig.refreshingVariant`.
+   */
   readonly refreshingVariant = input<CngxSelectRefreshingVariant>(this.config.refreshingVariant);
 
-  /** Async-state source for options. */
+  /**
+   * Async-state source for the options. When bound, its data replaces `options`
+   * and its status drives the loading, empty, error and refreshing views.
+   */
   readonly state = input<CngxAsyncState<CngxSelectOptionsInput<T>> | null>(null);
 
-  /** Callback invoked when the user clicks the default retry button. */
+  /** Callback the built-in retry button runs after a failed load, before `retry` emits. */
   readonly retryFn = input<(() => void) | null>(null);
 
-  /** Async write handler invoked per toggle. */
+  /**
+   * Async write handler run on every toggle, clear and chip removal with the
+   * intended values. Unset, the change applies directly; `commitMode` decides
+   * how it shows while the handler runs.
+   */
   readonly commitAction = input<CngxSelectCommitAction<T[]> | null>(null);
 
-  /** Commit UX mode. */
+  /**
+   * Value write while `commitAction` runs. `'optimistic'` (default) applies the
+   * change at once and rolls it back on error; `'pessimistic'` holds it behind
+   * a row spinner until the commit succeeds. `closeOnSelect` decides whether a
+   * pick closes the panel.
+   */
   readonly commitMode = input<CngxSelectCommitMode>('optimistic');
   /**
    * Panel presentation. Unset follows `CNGX_SELECT_CONFIG.mobileSheet`:
@@ -468,40 +544,74 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
    */
   readonly sheetLabel = input<string | undefined>(undefined);
 
-  /** Where `commitAction` errors render without a `*cngxSelectCommitError` template. */
+  /**
+   * Built-in surface for a failed commit when no `*cngxSelectCommitError` is
+   * projected: banner, inline or none. Defaults to
+   * `CngxSelectConfig.commitErrorDisplay`.
+   */
   readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(this.config.commitErrorDisplay);
 
-  /** Per-instance announcer override. */
+  /**
+   * Turns live-region announcements of selection changes on or off. `null`
+   * inherits `CngxSelectConfig.announcer.enabled`, which defaults to on.
+   */
   readonly announceChanges = input<boolean | null>(null);
 
-  /** Per-instance formatter override. */
+  /**
+   * Formatter for the live-region announcement of a selection change. `null`
+   * inherits `CngxSelectConfig.announcer.format`.
+   */
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
   /**
-   * Commit-error announce policy. `'verbose'` reads the error message into
-   * the live region; `'soft'` announces a generic removal at the current
-   * selection count. Per-instance input wins over
-   * `CngxSelectConfig.commitErrorAnnouncePolicy`; default
-   * `{ kind: 'verbose', severity: 'assertive' }`.
+   * Commit-error announce policy. `'verbose'` reads the error message into the
+   * live region; `'soft'` announces a generic removal at the current selection
+   * count. Per-instance input wins over
+   * `CngxSelectConfig.commitErrorAnnouncePolicy`; default `{ kind: 'verbose',
+   * severity: 'assertive' }`.
    */
   readonly commitErrorAnnouncePolicy = input<CngxCommitErrorAnnouncePolicy>(
     this.config.commitErrorAnnouncePolicy ?? { kind: 'verbose', severity: 'assertive' },
   );
 
-  /** Two-way multi-value binding. */
+  /**
+   * Selected values, two-way bindable as `[(values)]`. Syncs with the bound
+   * field inside a `cngx-form-field`.
+   */
   readonly values = model<T[]>([]);
 
+  /**
+   * Emits after a toggle or clear settles, with the new and previous values,
+   * the added and removed values and the toggled option. With `commitAction`
+   * bound it fires on commit success.
+   */
   readonly selectionChange = output<CngxComboboxChange<T>>();
+  /** Emits the toggled option and whether it was added, together with `selectionChange`. */
   readonly optionToggled = output<{
     readonly option: CngxSelectOptionDef<T>;
     readonly added: boolean;
   }>();
+  /** Emits `true` when the panel opens and `false` when it closes. */
   readonly openedChange = output<boolean>();
+  /** Emits when the panel opens. */
   readonly opened = output<void>();
+  /** Emits when the panel closes. */
   readonly closed = output<void>();
+  /** Emits when the clear button empties the selection, together with `selectionChange`. */
   readonly cleared = output<void>();
+  /**
+   * Emits when the built-in retry button is pressed after a failed load, after
+   * `retryFn` has run.
+   */
   readonly retry = output<void>();
+  /**
+   * Emits the error when `commitAction` fails; optimistic mode restores the
+   * previous values. The error is also announced assertively by default;
+   * `commitErrorAnnouncePolicy` changes that.
+   */
   readonly commitError = output<unknown>();
+  /** Emits each status of a `commitAction` run: `'pending'`, then `'success'` or `'error'`. */
   readonly stateChange = output<AsyncStatus>();
+  /** Emits the search term as the user types into the input, after `searchDebounceMs`. */
   readonly searchTermChange = output<string>();
 
   private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
@@ -899,11 +1009,13 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
    * the touch floor. The chip strip below is its truncated-at-one derivation
    * while it is active.
    */
+  private readonly fitStrip = viewChild(CngxSelectChipFitStrip);
   protected readonly summary = createSelectSummary<T>({
     selectedOptions: this.selectedOptions,
     active: injectTouchFloorSignal(),
     chipOverflow: this.chipOverflow,
     maxVisibleChips: this.maxVisibleChips,
+    fitSnapshot: computed(() => this.fitStrip()?.snapshot() ?? null),
     ariaLabels: this.config.ariaLabels,
     fallbackLabels: this.config.fallbackLabels,
   });
@@ -922,8 +1034,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       : null,
   );
   private readonly chipStrip = this.summary.strip;
-  /** @internal - chip subset + overflow badge count (see createChipOverflow). */
-  protected readonly visibleSelected = this.chipStrip.visibleSelected;
   /** @internal */
   protected readonly overflowBadgeCount = this.chipStrip.overflowBadgeCount;
   /** @internal Selected options the truncated strip hides, for the overflow slot. */
@@ -1042,6 +1152,12 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   constructor() {
     this.lastCommittedValues = untracked(() => [...this.values()]);
 
+    injectChipFitFocusHandOff({
+      strip: this.fitStrip,
+      visibleCount: this.chipStrip.visibleCount,
+      target: () => this.inputEl()?.nativeElement,
+    });
+
     afterNextRender(() => {
       if (this.autofocus()) {
         this.focus();
@@ -1094,16 +1210,29 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     });
   }
 
+  /**
+   * Opens the panel. On a disabled control the panel closes again at once, so
+   * the call has no effect.
+   */
   open(): void {
     this.popoverRef()?.show();
   }
+  /**
+   * Closes the panel. With `CngxSelectConfig.restoreFocus` on, focus moves back
+   * to the trigger first.
+   */
   close(): void {
     this.hostFocus.refocusOwnerBeforeClose();
     this.popoverRef()?.hide();
   }
+  /**
+   * Opens the panel when it is closed and closes it when it is open. On a
+   * disabled control an open is undone at once, as with `open()`.
+   */
   toggle(): void {
     this.popoverRef()?.toggle();
   }
+  /** Moves focus to the trigger, passing the given `FocusOptions` through. */
   focus(options?: FocusOptions): void {
     this.inputEl()?.nativeElement.focus(options);
   }

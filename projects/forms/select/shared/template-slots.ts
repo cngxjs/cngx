@@ -240,8 +240,8 @@ export interface CngxComboboxChipContext<T = unknown> {
 /**
  * Overflow-badge context for the chip strips of `CngxMultiSelect`,
  * `CngxCombobox` and `CngxActionMultiSelect` under
- * `chipOverflow: 'truncate'`. `count` is the number of selected options the
- * strip hides, `label` the badge text the host would render (the
+ * `chipOverflow: 'truncate'` or `'fit'`. `count` is the number of selected
+ * options the strip hides, `label` the badge text the host would render (the
  * `chipOverflowBadge` copy of the active language pack, `+N` in English,
  * the number in the reading locale's digits), `hidden` the hidden selected
  * options themselves in selection order, e.g. for a tooltip listing them.
@@ -644,8 +644,10 @@ export class CngxMultiSelectChipHandle {
 
 /**
  * `*cngxSelectChipOverflow` slot - replaces the `+N` badge that follows the
- * visible chips when `chipOverflow` is `'truncate'` and selected options are
- * hidden. Rendered by `CngxMultiSelect`, `CngxCombobox`,
+ * visible chips when `chipOverflow` is `'truncate'` or `'fit'` and selected
+ * options are hidden. Under `'fit'` the badge sits in a slot exactly
+ * `--cngx-select-chip-fit-badge-reserve` wide and is clipped past it; raise
+ * the token for a wider projected badge. Rendered by `CngxMultiSelect`, `CngxCombobox`,
  * `CngxActionMultiSelect` and `CngxTreeSelect`; `CngxReorderableMultiSelect`
  * does not render it (its touch summary keeps the built-in badge). The
  * chip-strip badge is fine pointer only. Under the touch floor the same slot

@@ -9,6 +9,12 @@
 // Material system tokens for the Material demos (see the `html` block below).
 // @use must precede every other rule, the CSS @imports included.
 @use '@angular/material' as mat;
+// Working-tree button and icon bridges for the button Material-bridge story
+// (scoped to its generated host element below), by relative path like the
+// material-lab harness.
+@use '../../projects/themes/material/button-theme.scss' as cngx-button-bridge;
+@use '../../projects/themes/material/icon-theme.scss' as cngx-icon-bridge;
+@use '../../projects/themes/material/menu-theme.scss' as cngx-menu-bridge;
 
 // Foundation: layer-order + system tokens + reset + base + aggregated
 // directive default CSS (bottom-sheet, backdrop, badge, divider, ripple,
@@ -576,6 +582,16 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
+}
+
+// Demo-only list row: a label with its row actions pushed to the end,
+// used by the kebab demo of the icon menu button.
+.demo-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-inline-size: 22.5rem;
 }
 
 // Demo-only label utilities. Shared by metric, trend, card-composition
@@ -4030,6 +4046,28 @@ html {
       density: 0,
     )
   );
+}
+
+// Demo-only scope for the button and menu-button Material-bridge stories: stands in for an app
+// that includes `button.theme($theme)` on `html`. The scope is the story's
+// generated host element (`app-<demo>-<example>`, examples-gen), so the
+// story template carries no demo class a consumer would not have. In M3 the bridge reads the
+// `--mat-sys-*` values the `mat.theme` block above emits, so the define-theme
+// object only carries the version, and the dark scheme follows `light-dark()`.
+$demo-material-bridge-theme: mat.define-theme(
+  (
+    color: (
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+    ),
+  )
+);
+
+app-button-material-bridge,
+app-menu-button-material-bridge {
+  @include cngx-button-bridge.theme($demo-material-bridge-theme);
+  @include cngx-icon-bridge.theme($demo-material-bridge-theme);
+  @include cngx-menu-bridge.theme($demo-material-bridge-theme);
 }
 
 // Demo-only accent for the stepper `chips` skin stories (matches the
