@@ -39,14 +39,20 @@
     --cngx-select-clear-color: var(--mat-sys-on-surface-variant);
     --cngx-tree-select-node-color: var(--mat-sys-on-surface);
 
-    // Keyboard-active / hover row uses Material's neutral state layer
-    // (on-surface 8%), matching mat-select's grey active row - the selected
-    // fill stays cngx-distinct.
+    // Option state layers as mat-option paints them. The keyboard-active row
+    // (and the active tree node, which reads the same token) takes the
+    // on-surface layer at the focus opacity (12%), mat-mdc-option-active; the
+    // pointer layer at the hover opacity (8%) is emitted in `theme` because a
+    // hovered row that is not the active one has no token of its own. A
+    // single-value selected row fills with secondary-container (option-theme
+    // carries the same value for a selective include); an active or hovered
+    // row shows its layer instead, as mat-select does.
     --cngx-select-option-highlight-bg: color-mix(
       in srgb,
-      var(--mat-sys-on-surface) 8%,
+      var(--mat-sys-on-surface) calc(var(--mat-sys-focus-state-layer-opacity, 0.12) * 100%),
       transparent
     );
+    --cngx-option-selected-bg: var(--mat-sys-secondary-container);
     --cngx-select-check-color: var(--mat-sys-primary);
     --cngx-select-placeholder-color: var(--mat-sys-on-surface-variant);
     --cngx-select-error-color: var(--mat-sys-error);
@@ -85,8 +91,13 @@
     --cngx-select-focus-offset: 0px;
 
     // Tree-select node states. A checked row takes no fill (an M3 checkbox
-    // list does not fill a checked row); the checkbox carries selection.
-    --cngx-tree-select-node-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 6%, transparent);
+    // list does not fill a checked row); the checkbox carries selection. The
+    // pointer layer is the M3 hover state layer, like a hovered mat-option.
+    --cngx-tree-select-node-hover-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) calc(var(--mat-sys-hover-state-layer-opacity, 0.08) * 100%),
+      transparent
+    );
   } @else {
     --cngx-select-panel-bg: #{mat.get-theme-color($theme, background, card)};
     --cngx-select-panel-color: #{mat.get-theme-color($theme, foreground, text)};
@@ -183,6 +194,44 @@
   --cngx-select-option-padding: #{map.get($opt-paddings, $scale)};
 }
 
+// Option rows of the flat panels: the data-mode row and the declarative
+// <cngx-option>. A row inside a multi-value listbox keeps no selected fill
+// (mat-mdc-option-multiple), so the selected rules skip it.
+$-rows: ':is(.cngx-select__option, cngx-option)';
+$-single: ':not(:is([aria-multiselectable="true"] *))';
+
+// The rest of the mat-option state matrix (see `color`): a hovered row that
+// is not the active one takes the hover layer over any selected fill, and a
+// selected single-value row paints its label in on-secondary-container while
+// it shows the fill, its check glyph always. The row rules carry real
+// specificity: select-base.css and cngx-listbox.css paint the row states at
+// (0,1,0) to (0,2,0) in the same layer.
+@mixin -option-states($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    $scope: ':is(.cngx-select__panel, #{$-hosts})';
+    @layer cngx.components {
+      #{$scope} #{$-rows}:hover:not(.cngx-option--highlighted, [aria-disabled='true']) {
+        background: color-mix(
+          in srgb,
+          var(--mat-sys-on-surface) calc(var(--mat-sys-hover-state-layer-opacity, 0.08) * 100%),
+          transparent
+        );
+      }
+      #{$scope} #{$-rows}.cngx-option--selected#{$-single} {
+        --cngx-checkbox-color: var(--mat-sys-on-secondary-container);
+      }
+      #{$scope}
+        #{$-rows}.cngx-option--selected#{$-single}:not(
+          .cngx-option--highlighted,
+          :hover,
+          [aria-disabled='true']
+        ) {
+        color: var(--mat-sys-on-secondary-container);
+      }
+    }
+  }
+}
+
 $-hosts:
   cngx-select, cngx-multi-select, cngx-combobox, cngx-typeahead, cngx-tree-select,
   cngx-reorderable-multi-select, cngx-action-select, cngx-action-multi-select, cngx-select-shell;
@@ -273,4 +322,6 @@ $-hosts:
       --cngx-tree-select-node-padding-end: 16px;
     }
   }
+
+  @include -option-states($theme);
 }

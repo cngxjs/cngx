@@ -1,9 +1,4 @@
-import {
-  CUSTOM_ELEMENTS_SCHEMA,
-  Component,
-  signal,
-  ViewEncapsulation,
-} from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, Component, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { computedValue } from '@cngx/testing/geometry';
