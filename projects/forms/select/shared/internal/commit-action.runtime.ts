@@ -1,5 +1,7 @@
 import { isObservable, type Observable, type Subscription } from 'rxjs';
 
+import { CngxRuntimeError } from '@cngx/utils';
+
 import type { CngxSelectCommitAction } from '../commit-action.types';
 
 /**
@@ -73,6 +75,24 @@ export function runCommitAction<T>(
         }
         settled = true;
         safeError(err);
+      },
+      // A source that completes without a value (`EMPTY`, a `filter` that
+      // drops everything) would otherwise leave the commit pending forever,
+      // and a pessimistic panel could never close. One code carries one
+      // severity, so the dev text rides on the settled error, not a warning.
+      complete: () => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        safeError(
+          new CngxRuntimeError(
+            'CNGX2025',
+            typeof ngDevMode !== 'undefined' &&
+              ngDevMode &&
+              'commitAction() completed without emitting a value; emit the committed value (or undefined) before completing',
+          ),
+        );
       },
     });
     if (settled) {

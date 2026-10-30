@@ -1927,6 +1927,23 @@
       ]
     },
     {
+      "code": "CNGX2025",
+      "lib": "forms",
+      "severity": "stored",
+      "production": "code-only",
+      "title": "commitAction completed without emitting a value",
+      "page": "core-concepts/error-codes/cngx2025.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2025.html",
+      "status": "active",
+      "files": ["projects/forms/select/shared/internal/commit-action.runtime.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/select/shared/internal/commit-action.runtime.ts",
+          "text": "commitAction() completed without emitting a value; emit the committed value (or undefined) before completing"
+        }
+      ]
+    },
+    {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",

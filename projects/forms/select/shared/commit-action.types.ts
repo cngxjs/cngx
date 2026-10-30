@@ -5,6 +5,14 @@ import type { Observable } from 'rxjs';
  * Receives the intended value (`undefined` on clear). Resolves to the
  * committed value - typically the intended value, or a server-normalised
  * variant.
+ *
+ * An Observable settles on its first emission; later emissions are ignored.
+ * An Observable that completes without emitting (`EMPTY`, a `filter` that
+ * drops every value) settles the commit as a `CngxRuntimeError` with code
+ * `CNGX2025`, so the panel never stays blocked on a commit
+ * that cannot finish. Emit `undefined` before completing when the server
+ * has nothing to return. A source that neither emits nor completes stays
+ * pending until a newer commit supersedes it.
  */
 export type CngxSelectCommitAction<T> = (intended: T | undefined) =>
   | Observable<T | undefined>

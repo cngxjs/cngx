@@ -111,10 +111,7 @@ describeCommitContract(SELECT, (c) => {
   it("A3/B2: field '' reads as empty and never reaches displayWith", c.fieldEmptyStringIsEmpty);
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
   it('A15: Retry after a failed clear replays the clear', c.retryClear);
-  it.fails(
-    'A18: an action returning EMPTY settles as error and unblocks closing',
-    c.emptyActionSettles,
-  );
+  it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('A6: a letter key on the closed trigger calls commitAction', c.closedTypeaheadCommits);
   it('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
@@ -130,10 +127,7 @@ describeCommitContract(TYPEAHEAD, (c) => {
   it("A3/B2: field '' reads as empty and never reaches displayWith", c.fieldEmptyStringIsEmpty);
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
   it('A15: Retry after a failed clear replays the clear', c.retryClear);
-  it.fails(
-    'A18: an action returning EMPTY settles as error and unblocks closing',
-    c.emptyActionSettles,
-  );
+  it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
   it('A15: clear after a failed commit clears the commit error', c.clearClearsCommitError);
@@ -148,10 +142,7 @@ describeCommitContract(ACTION_SELECT, (c) => {
   it("A3/B2: field '' reads as empty and never reaches displayWith", c.fieldEmptyStringIsEmpty);
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
   it('A15: Retry after a failed clear replays the clear', c.retryClear);
-  it.fails(
-    'A18: an action returning EMPTY settles as error and unblocks closing',
-    c.emptyActionSettles,
-  );
+  it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
   it('A15: clear after a failed commit clears the commit error', c.clearClearsCommitError);
@@ -166,10 +157,7 @@ describeCommitContract(SELECT_SHELL, (c) => {
   it("A3/B2: field '' reads as empty and never reaches displayWith", c.fieldEmptyStringIsEmpty);
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
   it('A15: Retry after a failed clear replays the clear', c.retryClear);
-  it.fails(
-    'A18: an action returning EMPTY settles as error and unblocks closing',
-    c.emptyActionSettles,
-  );
+  it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('A6: a letter key on the closed trigger calls commitAction', c.closedTypeaheadCommits);
   it('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
@@ -183,10 +171,7 @@ describeCommitContract(SELECT_SHELL, (c) => {
 describeCommitContract(MULTI_SELECT, (c) => {
   it('A1/A11: Retry after a failed toggle replays the toggle', c.retryToggle);
   it('A1/A11: Retry after a failed clear replays the clear', c.retryClear);
-  it.fails(
-    'A18: an action returning EMPTY settles as error and unblocks closing',
-    c.emptyActionSettles,
-  );
+  it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
   it(
@@ -198,10 +183,7 @@ describeCommitContract(MULTI_SELECT, (c) => {
 describeCommitContract(COMBOBOX, (c) => {
   it('A1/A11: Retry after a failed toggle replays the toggle', c.retryToggle);
   it('A1/A11: Retry after a failed clear replays the clear', c.retryClear);
-  it.fails(
-    'A18: an action returning EMPTY settles as error and unblocks closing',
-    c.emptyActionSettles,
-  );
+  it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
   it(
@@ -213,10 +195,7 @@ describeCommitContract(COMBOBOX, (c) => {
 describeCommitContract(ACTION_MULTI_SELECT, (c) => {
   it('A1/A11: Retry after a failed toggle replays the toggle', c.retryToggle);
   it('A1/A11: Retry after a failed clear replays the clear', c.retryClear);
-  it.fails(
-    'A18: an action returning EMPTY settles as error and unblocks closing',
-    c.emptyActionSettles,
-  );
+  it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
   it(
@@ -237,10 +216,7 @@ describeCommitContract(REORDERABLE, (c) => {
     'B3/A12: a failed reorder is announced assertively after the rollback',
     c.reorderFailureAnnounced,
   );
-  it.fails(
-    'A18: an action returning EMPTY settles as error and unblocks closing',
-    c.emptyActionSettles,
-  );
+  it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
   it(
@@ -252,10 +228,7 @@ describeCommitContract(REORDERABLE, (c) => {
 describeCommitContract(TREE_SELECT, (c) => {
   it('A1/A11: Retry after a failed tree toggle replays the tree toggle', c.retryTree);
   it('A1/A11: Retry after a failed clear replays the clear', c.retryClear);
-  it.fails(
-    'A18: an action returning EMPTY settles as error and unblocks closing',
-    c.emptyActionSettles,
-  );
+  it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
   it(
