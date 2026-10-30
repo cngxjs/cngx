@@ -86,6 +86,24 @@
 // Icons: wrap a <mat-icon> in <cngx-icon> (the slot or the icon-button
 // glyph); icon-theme sizes the wrapped glyph to the cngx-icon rung, so this
 // bridge carries no `.mat-icon` rule.
+//
+// Menu buttons (`@cngx/common/menu-button`). cngxMenuButton and
+// cngxIconMenuButton carry `.cngx-button` (and `.cngx-icon-button`), so colour,
+// shape, label type and box come from the rules above unchanged. The caret is
+// the end slot of a menu button, which always carries `data-end`, so the slot
+// sides above already give the M3 trailing-icon padding (16 / 24 filled,
+// 12 / 16 text, as `mat-button` with a trailing `arrow_drop_down`) and the
+// caret takes the 18px slot icon; `--cngx-menu-button-caret-size` still wins
+// when a consumer sets it. No new type role: the caret is a glyph, the label
+// keeps label-large.
+//
+// Split button (`cngxSplitButton`, M3 split-button anatomy; Angular Material
+// ships none): the two parts sit a 2px gap apart (half the xs rung, so it
+// re-scales with density) instead of sharing a collapsed border, the outer
+// ends keep corner-full and the inner joins take corner-extra-small. The gap
+// is the divider, so the group's on-tone seam line between two solid parts is
+// dropped. The group sheet squares inner joins in `@scope (.cngx-button-group)`
+// at (0,4,0); the split rules carry (0,5,0) and up.
 
 @mixin _tonal($container, $on-container) {
   --cngx-button-secondary-bg: var(--mat-sys-#{$container});
@@ -101,6 +119,10 @@
   );
   --cngx-button-secondary-color: var(--mat-sys-#{$on-container});
 }
+
+// A split button is a group of segments, never a group of groups.
+$_split: '.cngx-split-button.cngx-button-group:not(:has(> .cngx-button-group))';
+$_inner-radius: 'var(--mat-sys-corner-extra-small, 4px)';
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
@@ -137,6 +159,30 @@
     }
     @include bridge.on(".cngx-button[data-variant='secondary'][data-tone='danger']") {
       @include _tonal(error-container, on-error-container);
+    }
+    // Neutral outline and ghost labels are primary ink, as on
+    // mat-stroked-button and mat-button; the hover and press wash follows the
+    // tone. The sheet SETs both tone tokens in `@scope (.cngx-button) :scope`,
+    // so these rules carry real specificity inside the layer (shape()
+    // precedent). A segment of a split button reads as one button, so its
+    // icon caret takes the label ink too.
+    @layer cngx.components {
+      .cngx-button:is([data-variant='outline'], [data-variant='ghost'])[data-tone='neutral']:not(
+          .cngx-icon-button,
+          .cngx-close-button
+        ),
+      #{$_split} > .cngx-icon-button:is([data-variant='outline'], [data-variant='ghost'])[data-tone='neutral'] {
+        --cngx-button-tone: var(--mat-sys-primary);
+        --cngx-button-tone-text: var(--mat-sys-primary);
+      }
+      // A standalone neutral icon button is the M3 standard / outlined icon
+      // button: on-surface-variant glyph.
+      .cngx-icon-button.cngx-button:is([data-variant='outline'], [data-variant='ghost'])[data-tone='neutral']:not(
+          #{$_split} > *
+        ) {
+        --cngx-button-tone: var(--mat-sys-on-surface-variant);
+        --cngx-button-tone-text: var(--mat-sys-on-surface-variant);
+      }
     }
     @include bridge.on('.cngx-close-button') {
       --cngx-close-button-hover-bg: color-mix(
@@ -189,6 +235,16 @@
     }
     @include bridge.on('.cngx-close-button') {
       --cngx-close-button-radius: var(--mat-sys-corner-full);
+    }
+    @layer cngx.components {
+      #{$_split} > :nth-child(n + 2 of :not([aria-live])) {
+        border-start-start-radius: #{$_inner-radius};
+        border-end-start-radius: #{$_inner-radius};
+      }
+      #{$_split} > :nth-last-child(n + 2 of :not([aria-live])) {
+        border-start-end-radius: #{$_inner-radius};
+        border-end-end-radius: #{$_inner-radius};
+      }
     }
   }
 }
@@ -324,6 +380,27 @@ $_unsized: 'cngx-icon.cngx-icon:not(.cngx-icon--xs, .cngx-icon--sm, .cngx-icon--
       }
       .cngx-close-button.cngx-button .cngx-icon-button__glyph > #{$_unsized} {
         --cngx-icon-size: var(--cngx-close-button-icon-size, 1.5em);
+      }
+
+      // Menu-button caret: the slot icon, unless the consumer sizes the caret.
+      // (0,5,1) beats the slot-icon rule above.
+      .cngx-menu-button.cngx-button > cngx-icon.cngx-icon.cngx-menu-button__caret:is(.cngx-button__slot) {
+        --cngx-icon-size: var(--cngx-menu-button-caret-size, var(--cngx-button-icon-size, 1.25em));
+      }
+
+      // Split seam: a gap replaces the collapsed border.
+      #{$_split} {
+        gap: calc(var(--cngx-space-xs, 4px) / 2);
+      }
+      #{$_split} > :nth-child(n + 2 of :not([aria-live])) {
+        margin-inline-start: 0;
+      }
+      // The gap divides; the group's solid seam line (0,6,0) would draw a
+      // second divider. (0,8,0); a disabled part keeps its own border.
+      #{$_split}
+        > [data-variant='solid']
+        ~ [data-variant='solid']:not([aria-disabled='true']):nth-child(n + 2 of :not([aria-live])) {
+        border-inline-start-color: var(--cngx-button-tone, currentColor);
       }
     }
 

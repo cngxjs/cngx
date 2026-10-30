@@ -20,6 +20,7 @@ import { MatSliderModule } from '@angular/material/slider';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatBottomSheet, type MatBottomSheetRef } from '@angular/material/bottom-sheet';
@@ -34,9 +35,16 @@ import {
   CngxIconButton,
 } from '@cngx/common/button';
 import { CngxAvatar, CngxIcon } from '@cngx/common/display';
-import { CngxSlider, CngxRangeSlider } from '@cngx/common/interactive';
+import { CngxMenu, CngxMenuItem, CngxSlider, CngxRangeSlider } from '@cngx/common/interactive';
+import {
+  CNGX_BUTTON_CARET_ICON,
+  CngxIconMenuButton,
+  CngxMenuButton,
+  CngxSplitButton,
+} from '@cngx/common/menu-button';
 import { CngxBottomSheet, CngxDialog, CngxDialogTitle } from '@cngx/common/dialog';
 import {
+  CngxPopover,
   CngxPopoverBody,
   CngxPopoverHeader,
   CngxPopoverPanel,
@@ -79,6 +87,20 @@ import {
 } from '@cngx/forms/input';
 import type { CngxTreeNode } from '@cngx/utils';
 
+/**
+ * `CNGX_BUTTON_CARET_ICON` for the lab: Material's `arrow_drop_down`, the glyph
+ * `mat-button` uses with `[matMenuTriggerFor]`. The menu button wraps it in
+ * its caret `<cngx-icon>`, so the icon bridge sizes it.
+ */
+@Component({
+  selector: 'app-material-lab-caret',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [MatIconModule],
+  template: `<mat-icon>arrow_drop_down</mat-icon>`,
+})
+class MaterialLabCaret {}
+
 interface FieldModel {
   name: string;
   password: string;
@@ -116,6 +138,7 @@ interface FieldModel {
   // Component-scoped banner stack so the dismissible banner renders inside the
   // lab section (its own outlet) instead of the app-level outlet at the top.
   providers: [CngxBanner],
+  viewProviders: [{ provide: CNGX_BUTTON_CARET_ICON, useValue: MaterialLabCaret }],
   imports: [
     FormsModule,
     FormField,
@@ -128,6 +151,7 @@ interface FieldModel {
     MatExpansionModule,
     MatButtonModule,
     MatIconModule,
+    MatMenuModule,
     MatCardModule,
     MatDialogModule,
     MatSnackBarModule,
@@ -146,6 +170,12 @@ interface FieldModel {
     CngxButtonStart,
     CngxCloseButton,
     CngxIconButton,
+    CngxMenu,
+    CngxMenuItem,
+    CngxMenuButton,
+    CngxIconMenuButton,
+    CngxSplitButton,
+    CngxPopover,
     CngxAvatar,
     CngxIcon,
     CngxSlider,
@@ -218,6 +248,103 @@ interface FieldModel {
             <span cngxButtonGroupAddon>3 open</span>
             <button cngxButton>Show</button>
           </div>
+        </div>
+      </section>
+
+      <section class="lab-wide" id="menu-buttons">
+        <h3>menu buttons (Material left, cngx right)</h3>
+        <div class="lab-row">
+          <button mat-flat-button [matMenuTriggerFor]="matExport">
+            Export<mat-icon iconPositionEnd>arrow_drop_down</mat-icon>
+          </button>
+          <button cngxMenuButton tone="primary" [menu]="exportSolid" [popover]="exportSolidPop">
+            Export
+          </button>
+          <button mat-stroked-button [matMenuTriggerFor]="matExport">
+            Export<mat-icon iconPositionEnd>arrow_drop_down</mat-icon>
+          </button>
+          <button cngxMenuButton="outline" [menu]="exportOutline" [popover]="exportOutlinePop">
+            Export
+          </button>
+          <button mat-button [matMenuTriggerFor]="matExport">
+            Export<mat-icon iconPositionEnd>arrow_drop_down</mat-icon>
+          </button>
+          <button cngxMenuButton="ghost" tone="primary" [menu]="exportGhost" [popover]="exportGhostPop">
+            Export
+          </button>
+          <button matIconButton aria-label="More actions" [matMenuTriggerFor]="matExport">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <button cngxIconMenuButton aria-label="More actions" [menu]="moreMenu" [popover]="morePop">
+            <cngx-icon><mat-icon>more_vert</mat-icon></cngx-icon>
+          </button>
+        </div>
+        <!-- Split button against the M3 split-button spec (Angular Material ships none). -->
+        <div class="lab-row">
+          @for (split of splits; track split.variant) {
+            <div cngxSplitButton [variant]="split.variant" aria-label="Publish">
+              <button cngxButton [tone]="split.tone">Publish</button>
+              <button cngxIconMenuButton [tone]="split.tone" [menu]="splitMenu" [popover]="splitPop"></button>
+            </div>
+            <div cngxPopover placement="bottom-end" #splitPop="cngxPopover">
+              <ul cngxMenu [label]="'Publish options'" tabindex="0" #splitMenu="cngxMenu">
+                <li cngxMenuItem value="draft">Save as draft</li>
+                <li cngxMenuItem value="scheduled">Schedule for tomorrow</li>
+              </ul>
+            </div>
+          }
+        </div>
+        <div class="lab-row">
+          @for (density of densities; track density) {
+            <div class="lab-row" [attr.data-density]="density">
+              <button cngxMenuButton tone="primary" [menu]="densityMenu" [popover]="densityPop">
+                {{ density }}
+              </button>
+              <div cngxSplitButton variant="solid" [attr.aria-label]="'Publish, ' + density">
+                <button cngxButton tone="primary">Publish</button>
+                <button cngxIconMenuButton tone="primary" [menu]="densitySplitMenu" [popover]="densitySplitPop"></button>
+              </div>
+            </div>
+            <div cngxPopover placement="bottom-start" #densityPop="cngxPopover">
+              <ul cngxMenu [label]="'Export format'" tabindex="0" #densityMenu="cngxMenu">
+                <li cngxMenuItem value="pdf">PDF</li>
+                <li cngxMenuItem value="csv">CSV</li>
+              </ul>
+            </div>
+            <div cngxPopover placement="bottom-end" #densitySplitPop="cngxPopover">
+              <ul cngxMenu [label]="'Publish options'" tabindex="0" #densitySplitMenu="cngxMenu">
+                <li cngxMenuItem value="draft">Save as draft</li>
+              </ul>
+            </div>
+          }
+        </div>
+        <mat-menu #matExport="matMenu">
+          <button mat-menu-item>PDF</button>
+          <button mat-menu-item>CSV</button>
+        </mat-menu>
+        <div cngxPopover placement="bottom-start" #exportSolidPop="cngxPopover">
+          <ul cngxMenu [label]="'Export format'" tabindex="0" #exportSolid="cngxMenu">
+            <li cngxMenuItem value="pdf">PDF</li>
+            <li cngxMenuItem value="csv">CSV</li>
+          </ul>
+        </div>
+        <div cngxPopover placement="bottom-start" #exportOutlinePop="cngxPopover">
+          <ul cngxMenu [label]="'Export format'" tabindex="0" #exportOutline="cngxMenu">
+            <li cngxMenuItem value="pdf">PDF</li>
+            <li cngxMenuItem value="csv">CSV</li>
+          </ul>
+        </div>
+        <div cngxPopover placement="bottom-start" #exportGhostPop="cngxPopover">
+          <ul cngxMenu [label]="'Export format'" tabindex="0" #exportGhost="cngxMenu">
+            <li cngxMenuItem value="pdf">PDF</li>
+            <li cngxMenuItem value="csv">CSV</li>
+          </ul>
+        </div>
+        <div cngxPopover placement="bottom-end" #morePop="cngxPopover">
+          <ul cngxMenu [label]="'More actions'" tabindex="0" #moreMenu="cngxMenu">
+            <li cngxMenuItem value="rename">Rename</li>
+            <li cngxMenuItem value="archive">Archive</li>
+          </ul>
         </div>
       </section>
 
@@ -790,6 +917,13 @@ interface FieldModel {
   `,
 })
 export class MaterialLab {
+  protected readonly splits = [
+    { variant: 'solid', tone: 'primary' },
+    { variant: 'secondary', tone: 'neutral' },
+    { variant: 'outline', tone: 'neutral' },
+  ] as const;
+  protected readonly densities = ['compact', 'comfortable', 'spacious'] as const;
+
   protected readonly colors: CngxSelectOptionDef<string>[] = [
     { value: 'red', label: 'Red' },
     { value: 'green', label: 'Green' },

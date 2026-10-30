@@ -1,15 +1,20 @@
 @if (breadcrumb.hasCollapsed()) {
   <button
-    type="button"
+    cngxIconMenuButton
+    size="xs"
     class="cngx-breadcrumb__overflow-trigger"
-    [cngxMenuTrigger]="menu"
-    [cngxPopoverTrigger]="panel.popover"
-    [haspopup]="'menu'"
+    [menu]="menu"
     [popover]="panel.popover"
-    [attr.aria-label]="resolvedTriggerLabel()"
-    (click)="panel.popover.toggle()"
+    [aria-label]="resolvedTriggerLabel()"
   >
-    <ng-content select=":not([cngxBreadcrumbOverflowItem])">&hellip;</ng-content>
+    <ng-content select=":not([cngxBreadcrumbOverflowItem])">
+      <!-- An SVG, not &hellip;: a text ellipsis sits on the baseline, below the box centre. -->
+      <svg class="cngx-breadcrumb__overflow-glyph" viewBox="0 0 24 24" fill="currentColor">
+        <circle cx="5" cy="12" r="1.75" />
+        <circle cx="12" cy="12" r="1.75" />
+        <circle cx="19" cy="12" r="1.75" />
+      </svg>
+    </ng-content>
   </button>
 
   <cngx-popover-panel #panel role="group" placement="bottom-start">

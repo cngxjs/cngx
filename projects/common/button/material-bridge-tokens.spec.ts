@@ -56,6 +56,8 @@ const CONSUMED = [
   '--cngx-button-secondary-bg-hover',
   '--cngx-button-secondary-bg-pressed',
   '--cngx-button-secondary-color',
+  '--cngx-button-tone',
+  '--cngx-button-tone-text',
   '--cngx-close-button-color',
   '--cngx-close-button-hover-bg',
   '--cngx-close-button-icon-size',
@@ -193,6 +195,28 @@ describe('button Material bridge', () => {
     );
     expect(m3).toContain('--cngx-close-button-radius: var(--mat-sys-corner-full)');
     expect(compileThemeEntry(M2_ENTRY)).not.toContain('radius');
+  });
+
+  it('bridges the menu-button caret and the split-button seam in M3 only', () => {
+    const m3 = flat(compileThemeEntry(M3_ENTRY));
+    expect(m3).toContain(
+      '--cngx-icon-size: var(--cngx-menu-button-caret-size, var(--cngx-button-icon-size, 1.25em))',
+    );
+    expect(m3).toContain('gap: calc(var(--cngx-space-xs, 4px) / 2)');
+    expect(m3).toContain('border-start-end-radius: var(--mat-sys-corner-extra-small, 4px)');
+    expect(m3).toContain('border-start-start-radius: var(--mat-sys-corner-extra-small, 4px)');
+    expect(m3).toContain('border-inline-start-color: var(--cngx-button-tone, currentColor)');
+    expect(m3).not.toContain('data-expanded');
+    const m2 = compileThemeEntry(M2_ENTRY);
+    expect(m2).not.toContain('cngx-split-button');
+    expect(m2).not.toContain('cngx-menu-button');
+  });
+
+  it('inks neutral outline and ghost labels primary and neutral icon buttons on-surface-variant in M3 only', () => {
+    const m3 = flat(compileThemeEntry(M3_ENTRY));
+    expect(m3).toContain('--cngx-button-tone-text: var(--mat-sys-primary)');
+    expect(m3).toContain('--cngx-button-tone-text: var(--mat-sys-on-surface-variant)');
+    expect(compileThemeEntry(M2_ENTRY)).not.toContain('--cngx-button-tone');
   });
 
   it('keeps the close-button tokens the old close-button bridge set', () => {

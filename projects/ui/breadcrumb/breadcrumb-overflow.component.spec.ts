@@ -141,6 +141,42 @@ describe('CngxBreadcrumbOverflow', () => {
     expect(labels(root)).toEqual(['Catalog', 'Books']);
   });
 
+  it('runs the trigger on cngxIconMenuButton (icon-button skin, xs row, button type)', () => {
+    const { host } = makeHost(['Catalog', 'Books']);
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), { provide: CNGX_BREADCRUMB, useValue: host }],
+    });
+    const fixture = TestBed.createComponent(OvHost);
+    fixture.detectChanges();
+
+    const trigger = (fixture.nativeElement as HTMLElement).querySelector(
+      'button.cngx-breadcrumb__overflow-trigger',
+    ) as HTMLButtonElement;
+    expect(trigger.classList).toContain('cngx-icon-menu-button');
+    expect(trigger.classList).toContain('cngx-icon-button');
+    expect(trigger.getAttribute('type')).toBe('button');
+    expect(trigger.getAttribute('data-size')).toBe('xs');
+  });
+
+  it('opens on no key while the trigger host is blocked', () => {
+    const { host } = makeHost(['Catalog', 'Books']);
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), { provide: CNGX_BREADCRUMB, useValue: host }],
+    });
+    const fixture = TestBed.createComponent(OvHost);
+    fixture.detectChanges();
+
+    const trigger = (fixture.nativeElement as HTMLElement).querySelector(
+      'button.cngx-breadcrumb__overflow-trigger',
+    ) as HTMLButtonElement;
+    trigger.setAttribute('aria-disabled', 'true');
+    for (const key of ['ArrowDown', 'ArrowUp', 'Enter', ' ']) {
+      trigger.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+      fixture.detectChanges();
+      expect(trigger.getAttribute('aria-expanded'), key).toBe('false');
+    }
+  });
+
   it('opens the panel on click and restores focus to the trigger on close', async () => {
     const { host } = makeHost(['Catalog', 'Books']);
     TestBed.configureTestingModule({
@@ -202,7 +238,8 @@ describe('CngxBreadcrumbOverflow', () => {
     // The projected row template must not be swept into the trigger's
     // ng-content: the default ellipsis glyph survives the slot override.
     const trigger = root.querySelector('button.cngx-breadcrumb__overflow-trigger') as HTMLButtonElement;
-    expect(trigger.textContent?.trim()).toBe('…');
+    expect(trigger.querySelector('svg.cngx-breadcrumb__overflow-glyph')).toBeTruthy();
+    expect(trigger.textContent?.trim()).toBe('');
   });
 
   it('renders a forwarded [itemTemplate] input (the bar-tier pass-through)', () => {

@@ -12,12 +12,13 @@
 @use '../../../../projects/themes/material/accordion-theme.scss' as accordion;
 @use '../../../../projects/themes/material/button-theme.scss' as button;
 @use '../../../../projects/themes/material/icon-theme.scss' as icon;
+@use '../../../../projects/themes/material/menu-theme.scss' as menu;
 @use '../../../../projects/themes/material/feedback-theme.scss' as feedback;
 @use '../../../../projects/themes/material/dialog-theme.scss' as dialog;
 @use '../../../../projects/themes/material/bottom-sheet-theme.scss' as bottom-sheet;
 
 $palette: (
-  theme-type: light,
+  theme-type: color-scheme,
   primary: mat.$azure-palette,
   tertiary: mat.$blue-palette,
 );
@@ -42,8 +43,6 @@ $theme: mat.define-theme(
 }
 
 html {
-  color-scheme: light;
-
   @include mat.theme(
     (
       color: $palette,
@@ -76,6 +75,7 @@ html {
   @include accordion.theme($theme);
   @include button.theme($theme);
   @include icon.theme($theme);
+  @include menu.theme($theme);
   @include feedback.theme($theme);
   @include dialog.theme($theme);
   @include bottom-sheet.theme($theme);

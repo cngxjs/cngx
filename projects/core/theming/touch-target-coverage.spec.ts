@@ -112,7 +112,7 @@ const SIZE_FLOOR_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
   { file: 'projects/ui/accordion/accordion-item.component.css', note: 'accordion-item header' },
   { file: 'projects/ui/speak/speak-button.css', note: 'speak button' },
   // @cngx/ui - breadcrumb
-  { file: 'projects/ui/breadcrumb/breadcrumb-overflow.component.css', note: 'breadcrumb overflow trigger' },
+  { file: 'projects/ui/breadcrumb/breadcrumb-overflow.component.css', note: 'breadcrumb overflow menu rows (the trigger is a cngxIconMenuButton, floored by the icon-button skin)' },
   {
     file: 'projects/ui/breadcrumb/breadcrumb-siblings.component.css',
     note: 'breadcrumb siblings trigger + items',

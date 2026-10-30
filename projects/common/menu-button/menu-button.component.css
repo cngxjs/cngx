@@ -42,6 +42,12 @@
       inline-size: 1em;
       block-size: 1em;
     }
+    /* That host would sit in a line box and leave a baseline gap under the
+     * glyph, so the caret rides above the label centre; it takes no box of its
+     * own and the glyph becomes the flex item. */
+    :scope > :not(svg) {
+      display: contents;
+    }
   }
 
   .cngx-menu-button[data-expanded='true'] > .cngx-menu-button__caret,
