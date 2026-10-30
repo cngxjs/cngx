@@ -291,7 +291,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   readonly hideCaret = input<boolean>(!this.config.showCaret);
 
   /**
-   * Replaces the built-in `✕` glyph inside the default clear-all button.
+   * Replaces the built-in X icon inside the default clear-all button.
    * Ignored when `*cngxSelectClearButton` is projected.
    */
   readonly clearGlyph = input<TemplateRef<void> | null>(null);

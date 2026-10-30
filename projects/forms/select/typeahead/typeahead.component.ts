@@ -312,7 +312,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       this.selectCopy().resetSelection,
   );
   /**
-   * Replaces the built-in `✕` glyph inside the default clear button.
+   * Replaces the built-in X icon inside the default clear button.
    * Ignored when `*cngxSelectClearButton` is projected.
    */
   readonly clearGlyph = input<TemplateRef<void> | null>(null);

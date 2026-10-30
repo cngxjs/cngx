@@ -1468,7 +1468,7 @@
 
   /*
    * Interactive children keep their own cursor - prevents the grab
-   * cursor bleeding into e.g. the chip's ✕ remove button.
+   * cursor bleeding into e.g. the chip's remove button.
    */
   .cngx-select__chip-wrap button,
   .cngx-select__chip-wrap a,
@@ -1477,7 +1477,7 @@
   }
 
   /*
-   * Strong ✕ hover affordance scoped to the reorderable wrap so vanilla
+   * Strong remove-button hover affordance scoped to the reorderable wrap so vanilla
    * <cngx-chip> (in CngxMultiSelect etc.) keeps its lighter opacity-only
    * hover.
    */

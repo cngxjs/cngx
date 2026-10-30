@@ -707,7 +707,7 @@ export class CngxMultiSelectTriggerLabel<T = unknown> {
 }
 
 /**
- * `*cngxSelectClearButton` slot - replaces the `✕` button. Consumer owns
+ * `*cngxSelectClearButton` slot - replaces the X clear button. Consumer owns
  * the element and invokes `clear()`. Keep the slot content within the
  * trigger's line height, or the row grows as soon as the slot appears.
  * The consumer also owns the tap target: the default button floors its hit

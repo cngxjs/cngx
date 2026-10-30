@@ -389,7 +389,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   readonly hideCaret = input<boolean>(!this.config.showCaret);
 
   /**
-   * Replaces the built-in `✕` glyph inside the default clear-all button.
+   * Replaces the built-in X icon inside the default clear-all button.
    * Ignored when `*cngxSelectClearButton` is projected.
    */
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
@@ -1145,7 +1145,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   /**
    * @internal - invoked by `CngxListboxTrigger`'s `(backspaceOnEmpty)`.
-   * Routes through the same commit-aware path as chip ✕.
+   * Routes through the same commit-aware path as the chip remove button.
    */
   protected removeLastChip(): void {
     const selected = this.selectedOptions();

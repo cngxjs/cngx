@@ -275,7 +275,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   readonly hideCaret = input<boolean>(!this.config.showCaret);
 
   /**
-   * Replaces the built-in `✕` glyph inside the default clear button
+   * Replaces the built-in X icon inside the default clear button
    * while keeping the button frame, ARIA, and click handler. Ignored
    * when `*cngxSelectClearButton` is projected.
    */

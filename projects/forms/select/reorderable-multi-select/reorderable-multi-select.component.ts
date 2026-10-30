@@ -1143,7 +1143,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * Chip-strip keydown delegate. Two jobs:
    *
    *   1. `stopPropagation()` for Enter/Space inside a chip wrap. Without
-   *      it, Enter/Space on the focused ✕ bubbles to
+   *      it, Enter/Space on the focused remove button bubbles to
    *      `CngxListboxTrigger.handleKeyDown`, which opens the popover
    *      AND swallows the native Enter→click - chip stays, popover
    *      opens. Scoped to the two activation keys so everything else
