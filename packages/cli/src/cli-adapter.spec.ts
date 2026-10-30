@@ -668,6 +668,14 @@ describe('main over the real package paths', () => {
     expect(document).not.toHaveProperty('ok');
     expect(document).not.toHaveProperty('groundedVersion');
     expect(document['result']).toMatchObject({ name: 'CngxTreeSelect', kind: 'component' });
+    // The expected document goes through getStoryExample too, so only a key pin catches a result-shape change.
+    expect(Object.keys(document['result'] as Record<string, unknown>)).toEqual([
+      'name',
+      'kind',
+      'exampleUrls',
+      'stackblitzUrl',
+      'sourceReferences',
+    ]);
   });
 });
 
