@@ -192,7 +192,10 @@ export function getConfig(docs: DocsIndex, name: string): ConfigResult | Ambiguo
   const { token, via } = resolved;
   const tokenFile = token.file ?? '';
 
-  const providers = collectByKind(docs, tokenFile, 'provider').map((fn) => fn.name);
+  // Code-point order, so the answer never follows the snapshot's `functions` order.
+  const providers = collectByKind(docs, tokenFile, 'provider')
+    .map((fn) => fn.name)
+    .sort(byCodePoint);
 
   // The convenience aggregator (provideCngxSelect) lives in its own file, so the
   // file anchor never reaches it. Append it by exact-name lookup when present -
@@ -208,7 +211,8 @@ export function getConfig(docs: DocsIndex, name: string): ConfigResult | Ambiguo
   // throwing (a few non-config functions carry none).
   const features: ConfigFeature[] = collectByKind(docs, tokenFile, 'feature')
     .filter((fn): fn is DocFunction & { returnType: string } => fn.returnType !== undefined)
-    .map((fn) => ({ name: fn.name, returnType: fn.returnType }));
+    .map((fn) => ({ name: fn.name, returnType: fn.returnType }))
+    .sort((a, b) => byCodePoint(a.name, b.name));
 
   return {
     token: token.name,

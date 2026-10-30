@@ -145,7 +145,7 @@ describe('getConfig', () => {
   it('returns every provider co-located in a multi-provider token file (form-field)', () => {
     const result = getConfig(docs, 'form-field');
 
-    expect(result?.providers).toEqual(['provideFormField', 'provideErrorMessages']);
+    expect(result?.providers).toEqual(['provideErrorMessages', 'provideFormField']);
     expect(result?.features).toEqual([{ name: 'withErrorMessages', returnType: 'FormFieldFeature' }]);
   });
 
@@ -297,5 +297,29 @@ describe('get_config over an ambiguous component selector', () => {
     );
 
     expect(answers.map((answer) => answer?.token)).toEqual(Array(4).fill('CNGX_XA_CONFIG'));
+  });
+});
+
+describe('get_config over every ordering of the snapshot functions', () => {
+  const bundled = loadBundledDocs(fileURLToPath(new URL('../../../data/', import.meta.url)));
+  const tokens = bundled.tokens.filter((token) => /^CNGX_.*_CONFIG$/.test(token.name)).map((token) => token.name);
+  const orders = [
+    bundled.functions,
+    [...bundled.functions].reverse(),
+    shuffled(bundled.functions, 1),
+    shuffled(bundled.functions, 2),
+    shuffled(bundled.functions, 3),
+  ];
+
+  it('finds config tokens to check', () => {
+    expect(tokens.length).toBeGreaterThan(0);
+  });
+
+  it.each(tokens)('answers %s byte-identically for every order', (token) => {
+    const [first, ...rest] = orders.map((functions) => JSON.stringify(getConfigAnswer({ ...bundled, functions }, token)));
+
+    for (const answer of rest) {
+      expect(answer).toBe(first);
+    }
   });
 });
