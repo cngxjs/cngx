@@ -16,9 +16,9 @@ import { computed, Directive, ElementRef, inject, signal } from '@angular/core';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/password-toggle.directive.ts
  * @since 0.1.0
  * @relatedTo CngxInput, CngxInputClear, CngxCopyValue
- * <example-url>http://localhost:4200/#/forms/input/character-counter</example-url>
- * <example-url>http://localhost:4200/#/forms/input/password-visibility-toggle</example-url>
- * <example-url>http://localhost:4200/#/forms/input/smart-autocomplete-and-spellcheck</example-url>
+ * <example-url>/#/forms/input/character-counter</example-url>
+ * <example-url>/#/forms/input/password-visibility-toggle</example-url>
+ * <example-url>/#/forms/input/smart-autocomplete-and-spellcheck</example-url>
  */
 @Directive({
   selector: 'input[cngxPasswordToggle]',

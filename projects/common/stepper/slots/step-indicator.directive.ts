@@ -51,8 +51,8 @@ export interface CngxStepIndicatorContext {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/slots/step-indicator.directive.ts
  * @since 0.1.0
  * @relatedTo CngxStepBadge, CngxStepBusySpinner, CngxStepRejection, CngxStepGroupHeader
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-indicator-glyph-via-code-cngxstepindicator-code</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/cross-skin-indicator-override</example-url>
+ * <example-url>/#/ui/stepper/stepper-slot-overrides/custom-indicator-glyph-via-code-cngxstepindicator-code</example-url>
+ * <example-url>/#/ui/stepper/stepper-slot-overrides/cross-skin-indicator-override</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxStepIndicator]',

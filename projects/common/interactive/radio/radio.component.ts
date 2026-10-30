@@ -54,14 +54,14 @@ import { CNGX_RADIO_GROUP, type CngxRadioGroupContract } from './radio-group.tok
  * @selector cngx-radio
  * @since 0.1.0
  * @relatedTo CngxRadioGroup, CngxButtonToggle, CngxChipInGroup
- * <example-url>http://localhost:4200/#/common/interactive/radio/basic-vertical-group</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/radio/custom-dot-glyph</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/radio/disabled-group-cascades-per-radio-overrides</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/radio/group-skin</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/radio/orientation-horizontal</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
+ * <example-url>/#/common/interactive/radio/basic-vertical-group</example-url>
+ * <example-url>/#/common/interactive/radio/custom-dot-glyph</example-url>
+ * <example-url>/#/common/interactive/radio/disabled-group-cascades-per-radio-overrides</example-url>
+ * <example-url>/#/common/interactive/radio/group-skin</example-url>
+ * <example-url>/#/common/interactive/radio/orientation-horizontal</example-url>
+ * <example-url>/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
+ * <example-url>/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
+ * <example-url>/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  * @axis level molecule
  */
 @Component({

@@ -46,8 +46,8 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
  * @since 0.1.0
  * @relatedTo CngxLoadingOverlay, CngxProgress, CngxAsyncContainer
  *
- * <example-url>http://localhost:4200/#/ui/feedback/loading-indicator/bar-variant</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/loading-indicator/spinner-variant</example-url>
+ * <example-url>/#/ui/feedback/loading-indicator/bar-variant</example-url>
+ * <example-url>/#/ui/feedback/loading-indicator/spinner-variant</example-url>
  * @axis level atom
  */
 @Component({

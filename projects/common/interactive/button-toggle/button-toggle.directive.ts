@@ -90,11 +90,11 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
  * @selector button[cngxButtonToggle]
  * @since 0.1.0
  * @relatedTo CngxButtonToggleGroup, CngxButtonMultiToggleGroup, CngxRadio
- * <example-url>http://localhost:4200/#/common/interactive/button-toggle/multi-group/basic-multi-filter-toolbar</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/button-toggle/multi-group/disabled-group-cascade-vs-per-toggle</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/button-toggle/group/basic-view-switcher</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/button-toggle/group/disabled-group-cascade-vs-per-toggle</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/button-toggle/group/vertical-orientation</example-url>
+ * <example-url>/#/common/interactive/button-toggle/multi-group/basic-multi-filter-toolbar</example-url>
+ * <example-url>/#/common/interactive/button-toggle/multi-group/disabled-group-cascade-vs-per-toggle</example-url>
+ * <example-url>/#/common/interactive/button-toggle/group/basic-view-switcher</example-url>
+ * <example-url>/#/common/interactive/button-toggle/group/disabled-group-cascade-vs-per-toggle</example-url>
+ * <example-url>/#/common/interactive/button-toggle/group/vertical-orientation</example-url>
  */
 @Directive({
   selector: 'button[cngxButtonToggle]',

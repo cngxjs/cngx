@@ -119,17 +119,17 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
  * @since 0.1.0
  * @relatedTo CngxDataGridRow, CngxDgCell, CngxDataGridHeader, CngxDataGridFooter, CngxAccordion, CngxSort, CngxFilter, CngxDgaSortHeader, CngxDgaFilter, CngxDgaCount, CngxScrollEdges
  *
- * <example-url>http://localhost:4200/#/ui/data-grid-accordion/sortable-ledger</example-url>
- * <example-url>http://localhost:4200/#/ui/data-grid-accordion/sticky-head</example-url>
- * <example-url>http://localhost:4200/#/ui/data-grid-accordion/scroll-edges-bounded</example-url>
- * <example-url>http://localhost:4200/#/ui/data-grid-accordion/scroll-edges-narrow</example-url>
- * <example-url>http://localhost:4200/#/ui/data-grid-accordion/bound-sort-filter</example-url>
- * <example-url>http://localhost:4200/#/ui/data-grid-accordion/master-detail</example-url>
- * <example-url>http://localhost:4200/#/ui/data-grid-accordion/spreadsheet</example-url>
- * <example-url>http://localhost:4200/#/ui/data-grid-accordion/density</example-url>
- * <example-url>http://localhost:4200/#/ui/data-grid-accordion/ledger</example-url>
- * <example-url>http://localhost:4200/#/ui/data-grid-accordion/log-stream</example-url>
- * <example-url>http://localhost:4200/#/ui/data-grid-accordion/report</example-url>
+ * <example-url>/#/ui/data-grid-accordion/sortable-ledger</example-url>
+ * <example-url>/#/ui/data-grid-accordion/sticky-head</example-url>
+ * <example-url>/#/ui/data-grid-accordion/scroll-edges-bounded</example-url>
+ * <example-url>/#/ui/data-grid-accordion/scroll-edges-narrow</example-url>
+ * <example-url>/#/ui/data-grid-accordion/bound-sort-filter</example-url>
+ * <example-url>/#/ui/data-grid-accordion/master-detail</example-url>
+ * <example-url>/#/ui/data-grid-accordion/spreadsheet</example-url>
+ * <example-url>/#/ui/data-grid-accordion/density</example-url>
+ * <example-url>/#/ui/data-grid-accordion/ledger</example-url>
+ * <example-url>/#/ui/data-grid-accordion/log-stream</example-url>
+ * <example-url>/#/ui/data-grid-accordion/report</example-url>
  * @axis level organism
  */
 @Component({

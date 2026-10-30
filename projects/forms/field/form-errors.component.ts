@@ -107,10 +107,10 @@ function visibleLabelOf(doc: Document, name: string): string | undefined {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-errors.component.ts
  * @since 0.1.0
  * @relatedTo CngxFieldErrors, CngxError, focusFirstError, CNGX_ERROR_MESSAGES, withErrorMessages
- * <example-url>http://localhost:4200/#/forms/field/form-errors/basic</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-errors/show-on-submit</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-errors/custom-summary-template</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-errors/server-error-injection</example-url>
+ * <example-url>/#/forms/field/form-errors/basic</example-url>
+ * <example-url>/#/forms/field/form-errors/show-on-submit</example-url>
+ * <example-url>/#/forms/field/form-errors/custom-summary-template</example-url>
+ * <example-url>/#/forms/field/form-errors/server-error-injection</example-url>
  * @axis level organism
  */
 @Component({

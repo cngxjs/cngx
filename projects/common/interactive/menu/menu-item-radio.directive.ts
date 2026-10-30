@@ -16,7 +16,7 @@ import { CNGX_MENU_RADIO_GROUP, type CngxMenuRadioGroup } from './menu-radio-con
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item-radio.directive.ts
  * @since 0.1.0
  * @relatedTo CngxMenuItem, CngxMenuItemCheckbox, CngxMenuGroup
- * <example-url>http://localhost:4200/#/common/interactive/menu/checkable/text-formatting-menu</example-url>
+ * <example-url>/#/common/interactive/menu/checkable/text-formatting-menu</example-url>
  */
 @Directive({
   selector: '[cngxMenuItemRadio]',

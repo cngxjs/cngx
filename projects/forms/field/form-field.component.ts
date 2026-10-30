@@ -34,13 +34,13 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * @playground Form-error summary ./examples/form-error-summary/form-error-summary.component.ts
  * @playground Input add-ons ./examples/input-addons/input-addons.component.ts
  * @playground Skins ./examples/skins/skins.component.ts
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
- * <example-url>http://localhost:4200/#/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>
- * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-single-select</example-url>
- * <example-url>http://localhost:4200/#/forms/field/skin/fill</example-url>
- * <example-url>http://localhost:4200/#/forms/field/skin/bare-cell-edit</example-url>
+ * <example-url>/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
+ * <example-url>/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
+ * <example-url>/#/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
+ * <example-url>/#/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>
+ * <example-url>/#/forms/field/listbox-forms/signal-forms-single-select</example-url>
+ * <example-url>/#/forms/field/skin/fill</example-url>
+ * <example-url>/#/forms/field/skin/bare-cell-edit</example-url>
  * @axis level molecule
  */
 @Component({

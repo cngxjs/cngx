@@ -38,7 +38,7 @@ import { errorSourceMapEqual } from './equal-fns';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/inject-error-aggregator.ts
  * @since 0.1.0
  * @relatedTo CngxErrorAggregator
- * <example-url>http://localhost:4200/#/common/interactive/error/registry/inject-error-aggregator-programmatic</example-url>
+ * <example-url>/#/common/interactive/error/registry/inject-error-aggregator-programmatic</example-url>
  */
 export function injectErrorAggregator(
   name?: string,

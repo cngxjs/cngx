@@ -50,7 +50,7 @@ function charMatcher(pattern: InputFilterPattern): (char: string) => boolean {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-filter.directive.ts
  * @since 0.2.0
  * @relatedTo CngxInput, CngxInputMask, CngxTrim, withInputAriaLabels
- * <example-url>http://localhost:4200/#/forms/input/charset-filter</example-url>
+ * <example-url>/#/forms/input/charset-filter</example-url>
  */
 @Directive({
   selector: 'input[cngxInputFilter],textarea[cngxInputFilter]',

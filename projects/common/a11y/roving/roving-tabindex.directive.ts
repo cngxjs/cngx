@@ -36,8 +36,8 @@ import {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/roving/roving-tabindex.directive.ts
  * @since 0.1.0
  * @relatedTo CngxRovingTabindex, CngxButtonToggle
- * <example-url>http://localhost:4200/#/common/a11y/roving-tabindex/horizontal-toolbar</example-url>
- * <example-url>http://localhost:4200/#/common/a11y/roving-tabindex/vertical-menu</example-url>
+ * <example-url>/#/common/a11y/roving-tabindex/horizontal-toolbar</example-url>
+ * <example-url>/#/common/a11y/roving-tabindex/vertical-menu</example-url>
  */
 @Directive({
   selector: '[cngxRovingItem]',
@@ -108,8 +108,8 @@ export class CngxRovingItem {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/roving/roving-tabindex.directive.ts
  * @since 0.1.0
  * @relatedTo CngxRovingItem, CngxActiveDescendant
- * <example-url>http://localhost:4200/#/common/a11y/roving-tabindex/horizontal-toolbar</example-url>
- * <example-url>http://localhost:4200/#/common/a11y/roving-tabindex/vertical-menu</example-url>
+ * <example-url>/#/common/a11y/roving-tabindex/horizontal-toolbar</example-url>
+ * <example-url>/#/common/a11y/roving-tabindex/vertical-menu</example-url>
  * @axis level atom
  */
 @Directive({

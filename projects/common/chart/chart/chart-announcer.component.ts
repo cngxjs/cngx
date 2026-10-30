@@ -28,7 +28,7 @@ import { type CngxChart } from './chart.component';
  * @since 0.1.0
  * @relatedTo CngxChart, createSignificantChangeTracker
  *
- * <example-url>http://localhost:4200/#/common/chart/realtime/streaming-telemetry</example-url>
+ * <example-url>/#/common/chart/realtime/streaming-telemetry</example-url>
  */
 @Component({
   selector: 'cngx-chart-announcer',

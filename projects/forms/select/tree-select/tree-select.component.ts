@@ -207,13 +207,13 @@ export interface CngxTreeSelectChange<T = unknown> {
  * @since 0.1.0
  * @relatedTo CngxMultiSelect, CngxSelect, CngxReorderableMultiSelect, CngxTreeSelectNode, CngxTreeSelectChip
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
- * <example-url>http://localhost:4200/#/forms/select/tree-select/basic-single-level-toggle</example-url>
- * <example-url>http://localhost:4200/#/forms/select/tree-select/cascade-children-parent-toggle-selects-the-whole-subtree</example-url>
- * <example-url>http://localhost:4200/#/forms/select/tree-select/custom-cngxtreeselectnode-template</example-url>
- * <example-url>http://localhost:4200/#/forms/select/tree-select/chip-display-parents-leaves-all</example-url>
- * <example-url>http://localhost:4200/#/forms/select/tree-select/custom-count-footer-and-overflow-slots</example-url>
- * <example-url>http://localhost:4200/#/forms/select/tree-select/touch-row-tap-expands-checkbox-selects</example-url>
- * <example-url>http://localhost:4200/#/forms/select/mobile-sheet/all-variants</example-url>
+ * <example-url>/#/forms/select/tree-select/basic-single-level-toggle</example-url>
+ * <example-url>/#/forms/select/tree-select/cascade-children-parent-toggle-selects-the-whole-subtree</example-url>
+ * <example-url>/#/forms/select/tree-select/custom-cngxtreeselectnode-template</example-url>
+ * <example-url>/#/forms/select/tree-select/chip-display-parents-leaves-all</example-url>
+ * <example-url>/#/forms/select/tree-select/custom-count-footer-and-overflow-slots</example-url>
+ * <example-url>/#/forms/select/tree-select/touch-row-tap-expands-checkbox-selects</example-url>
+ * <example-url>/#/forms/select/mobile-sheet/all-variants</example-url>
  * @slot cngxSelectCaret Replaces the trigger caret unless hideCaret is set; gets open.
  * @slot cngxSelectPlaceholder Renders in the trigger while nothing is selected; gets placeholder.
  * @slot cngxSelectEmpty Replaces the panel's empty message when the tree has no nodes; searchTerm is always '' on this host.

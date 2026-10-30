@@ -13,7 +13,7 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/meta/meta-list.component.ts
  * @since 0.1.0
  * @relatedTo CngxMeta
- * <example-url>http://localhost:4200/#/common/display/meta/metadata-line</example-url>
+ * <example-url>/#/common/display/meta/metadata-line</example-url>
  * @axis level atom
  */
 @Component({

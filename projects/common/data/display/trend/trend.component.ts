@@ -42,8 +42,8 @@ import { injectKpiI18n } from '../shared/kpi-i18n';
  * @since 0.1.0
  * @relatedTo CngxMetric, CngxCard
  *
- * <example-url>http://localhost:4200/#/common/data/trend/composed-with-metric-in-a-card</example-url>
- * <example-url>http://localhost:4200/#/common/data/trend/trend-directions</example-url>
+ * <example-url>/#/common/data/trend/composed-with-metric-in-a-card</example-url>
+ * <example-url>/#/common/data/trend/trend-directions</example-url>
  * @axis level atom
  */
 @Component({

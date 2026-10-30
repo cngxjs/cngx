@@ -54,14 +54,14 @@ import type { CngxRadioSkin } from './config/radio.config';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/radio-indicator/radio-indicator.component.ts
  * @since 0.1.0
  * @relatedTo CngxCheckboxIndicator, CngxIcon
- * <example-url>http://localhost:4200/#/common/display/radio-indicator/custom-dotglyph</example-url>
- * <example-url>http://localhost:4200/#/common/display/radio-indicator/default-unchecked-vs-checked</example-url>
- * <example-url>http://localhost:4200/#/common/display/radio-indicator/disabled</example-url>
- * <example-url>http://localhost:4200/#/common/display/radio-indicator/sizes</example-url>
- * <example-url>http://localhost:4200/#/common/display/radio-indicator/skins</example-url>
- * <example-url>http://localhost:4200/#/common/display/radio-indicator/theming-via-css-custom-properties</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/radio/group-skin</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio-check-skin</example-url>
+ * <example-url>/#/common/display/radio-indicator/custom-dotglyph</example-url>
+ * <example-url>/#/common/display/radio-indicator/default-unchecked-vs-checked</example-url>
+ * <example-url>/#/common/display/radio-indicator/disabled</example-url>
+ * <example-url>/#/common/display/radio-indicator/sizes</example-url>
+ * <example-url>/#/common/display/radio-indicator/skins</example-url>
+ * <example-url>/#/common/display/radio-indicator/theming-via-css-custom-properties</example-url>
+ * <example-url>/#/common/interactive/radio/group-skin</example-url>
+ * <example-url>/#/forms/select/single-select/selection-indicator-variant-radio-check-skin</example-url>
  * @axis level atom
  */
 @Component({

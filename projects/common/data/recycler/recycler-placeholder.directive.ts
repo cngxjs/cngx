@@ -55,7 +55,7 @@ import type { CngxRecycler } from './recycler';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/recycler/recycler-placeholder.directive.ts
  * @since 0.1.0
  * @relatedTo injectRecycler, CngxRecyclerRow, CngxVirtualItem, CngxMeasure
- * <example-url>http://localhost:4200/#/common/data/recycler/fast-fling-placeholders</example-url>
+ * <example-url>/#/common/data/recycler/fast-fling-placeholders</example-url>
  * @axis level molecule
  */
 @Directive({

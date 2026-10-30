@@ -77,9 +77,9 @@ export interface BannerState {
  * @since 0.1.0
  * @relatedTo CngxBannerOutlet, CngxBannerTrigger, CngxBannerOn, CngxAlerter, CngxToaster
  *
- * <example-url>http://localhost:4200/#/ui/feedback/banner/async-action</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/banner/dedup-update</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/banner/system-banners</example-url>
+ * <example-url>/#/ui/feedback/banner/async-action</example-url>
+ * <example-url>/#/ui/feedback/banner/dedup-update</example-url>
+ * <example-url>/#/ui/feedback/banner/system-banners</example-url>
  */
 @Injectable()
 export class CngxBanner {

@@ -38,7 +38,7 @@ interface SwipeReading {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/gestures/swipe.directive.ts
  * @since 0.1.0
  * @relatedTo CngxSwipeDismiss, CngxLongPress
- * <example-url>http://localhost:4200/#/ui/stepper/dot-stepper/mobile-carousel</example-url>
+ * <example-url>/#/ui/stepper/dot-stepper/mobile-carousel</example-url>
  */
 @Directive({
   selector: '[cngxSwipe]',

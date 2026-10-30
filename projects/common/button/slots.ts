@@ -12,7 +12,7 @@ import { Directive } from '@angular/core';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/slots.ts
  * @since 0.1.0
  * @relatedTo CngxButton, CngxButtonEnd
- * <example-url>http://localhost:4200/#/common/button/button/start-and-end-slots</example-url>
+ * <example-url>/#/common/button/button/start-and-end-slots</example-url>
  */
 @Directive({
   selector: '[cngxButtonStart]',
@@ -33,7 +33,7 @@ export class CngxButtonStart {}
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/slots.ts
  * @since 0.1.0
  * @relatedTo CngxButton, CngxButtonStart
- * <example-url>http://localhost:4200/#/common/button/button/start-and-end-slots</example-url>
+ * <example-url>/#/common/button/button/start-and-end-slots</example-url>
  */
 @Directive({
   selector: '[cngxButtonEnd]',

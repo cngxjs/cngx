@@ -161,19 +161,19 @@ export interface CngxSelectChange<T = unknown> {
  * @relatedTo CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxSelectShell
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * @playground Commit action ./examples/commit-action/commit-action-example.component.ts
- * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/clearable</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/fixed-width-panel-number</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/keyboard-pageup-pagedown-on-a-long-list</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-empty-templates</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/optgroups</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/reactive-forms-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/rich-option-rendering</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio-check-skin</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/standalone</example-url>
- * <example-url>http://localhost:4200/#/forms/select/mobile-sheet/all-variants</example-url>
+ * <example-url>/#/forms/select/single-select/autofocus-on-mount</example-url>
+ * <example-url>/#/forms/select/single-select/clearable</example-url>
+ * <example-url>/#/forms/select/single-select/fixed-width-panel-number</example-url>
+ * <example-url>/#/forms/select/single-select/keyboard-pageup-pagedown-on-a-long-list</example-url>
+ * <example-url>/#/forms/select/single-select/loading-empty-templates</example-url>
+ * <example-url>/#/forms/select/single-select/optgroups</example-url>
+ * <example-url>/#/forms/select/single-select/reactive-forms-adaptformcontrol</example-url>
+ * <example-url>/#/forms/select/single-select/rich-option-rendering</example-url>
+ * <example-url>/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
+ * <example-url>/#/forms/select/single-select/selection-indicator-variant-radio-check-skin</example-url>
+ * <example-url>/#/forms/select/single-select/signal-forms-required</example-url>
+ * <example-url>/#/forms/select/single-select/standalone</example-url>
+ * <example-url>/#/forms/select/mobile-sheet/all-variants</example-url>
  * @slot cngxSelectCheck Replaces the selection indicator on each option row unless [hideSelectionIndicator] is set; gets $implicit/option, selected, variant (radio, checkbox or checkmark), position, and indeterminate (always false here, absent on radio).
  * @slot cngxSelectCaret Replaces the trigger caret unless [hideCaret] is set; gets $implicit/open.
  * @slot cngxSelectOptgroup Replaces the header of each option group; gets $implicit/group.

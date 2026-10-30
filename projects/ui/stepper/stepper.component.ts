@@ -108,26 +108,26 @@ const STEPPER_ICONS = {
  * @slot cngxStepperEmpty Renders when no step is projected at all.
  * @slot cngxDotStepperDot Replaces the body of each dot in the dots mobile-collapse branch.
  * @playground Material theme coverage across all skins ./examples/material-theme-coverage/skins-coverage.component.ts
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-horizontal/three-step-wizard</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-vertical/vertical-sidebar-layout</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-linear/linear-gating-with-completion-checkboxes</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-mobile-collapse/dots-collapse</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/linear-minimal</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/stripe-status-rich</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/path-chevron</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/pill-segment</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/chips</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/breadcrumb</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/all-skins-side-by-side</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/material-theme-coverage</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/linear-minimal-vertical</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/stripe-status-rich-vertical</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/path-chevron-vertical</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/pill-segment-vertical</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/chips-vertical</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-density/flat-steps-auto-density</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-density/density-across-skins</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-density/distance-weighted-collapse</example-url>
+ * <example-url>/#/ui/stepper/stepper-horizontal/three-step-wizard</example-url>
+ * <example-url>/#/ui/stepper/stepper-vertical/vertical-sidebar-layout</example-url>
+ * <example-url>/#/ui/stepper/stepper-linear/linear-gating-with-completion-checkboxes</example-url>
+ * <example-url>/#/ui/stepper/stepper-mobile-collapse/dots-collapse</example-url>
+ * <example-url>/#/ui/stepper/stepper-skins/linear-minimal</example-url>
+ * <example-url>/#/ui/stepper/stepper-skins/stripe-status-rich</example-url>
+ * <example-url>/#/ui/stepper/stepper-skins/path-chevron</example-url>
+ * <example-url>/#/ui/stepper/stepper-skins/pill-segment</example-url>
+ * <example-url>/#/ui/stepper/stepper-skins/chips</example-url>
+ * <example-url>/#/ui/stepper/stepper-skins/breadcrumb</example-url>
+ * <example-url>/#/ui/stepper/stepper-skins/all-skins-side-by-side</example-url>
+ * <example-url>/#/ui/stepper/stepper-skins/material-theme-coverage</example-url>
+ * <example-url>/#/ui/stepper/stepper-skins/linear-minimal-vertical</example-url>
+ * <example-url>/#/ui/stepper/stepper-skins/stripe-status-rich-vertical</example-url>
+ * <example-url>/#/ui/stepper/stepper-skins/path-chevron-vertical</example-url>
+ * <example-url>/#/ui/stepper/stepper-skins/pill-segment-vertical</example-url>
+ * <example-url>/#/ui/stepper/stepper-skins/chips-vertical</example-url>
+ * <example-url>/#/ui/stepper/stepper-density/flat-steps-auto-density</example-url>
+ * <example-url>/#/ui/stepper/stepper-density/density-across-skins</example-url>
+ * <example-url>/#/ui/stepper/stepper-density/distance-weighted-collapse</example-url>
  * @axis level organism
  */
 @Component({

@@ -46,7 +46,7 @@ import { cngxDevWarn } from '@cngx/utils';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/scroll/sticky-header.directive.ts
  * @since 0.1.0
  * @relatedTo CngxScrollSpy, CngxIntersectionObserver
- * <example-url>http://localhost:4200/#/common/layout/sticky-header/sticky-header-with-shadow</example-url>
+ * <example-url>/#/common/layout/sticky-header/sticky-header-with-shadow</example-url>
  * @axis level atom
  */
 @Directive({

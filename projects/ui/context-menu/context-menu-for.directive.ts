@@ -55,8 +55,8 @@ import type { CngxContextMenuPanel } from './context-menu-panel';
  * <cngx-context-menu #menu ariaLabel="Row actions">…</cngx-context-menu>
  * ```
  *
- * <example-url>http://localhost:4200/#/ui/context-menu/grid/delegated-resolver</example-url>
- * <example-url>http://localhost:4200/#/ui/context-menu/basic/static-items</example-url>
+ * <example-url>/#/ui/context-menu/grid/delegated-resolver</example-url>
+ * <example-url>/#/ui/context-menu/basic/static-items</example-url>
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/context-menu/context-menu-for.directive.ts
  * @since 0.1.0

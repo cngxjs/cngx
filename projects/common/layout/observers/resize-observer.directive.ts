@@ -39,7 +39,7 @@ import { observeResize } from './resize-signal';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/observers/resize-observer.directive.ts
  * @since 0.1.0
  * @relatedTo CngxIntersectionObserver, CngxMediaQuery
- * <example-url>http://localhost:4200/#/common/layout/resize-observer/live-size</example-url>
+ * <example-url>/#/common/layout/resize-observer/live-size</example-url>
  * @axis level atom
  */
 @Directive({

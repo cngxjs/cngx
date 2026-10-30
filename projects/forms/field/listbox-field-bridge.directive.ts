@@ -43,9 +43,9 @@ import type { CngxFieldRef, CngxFormFieldControl } from './models';
  * @since 0.1.0
  * @relatedTo CngxBindField, CngxFormField, CngxListbox, adaptFormControl
  * @playground Single and multi via cngxListboxFieldBridge ./examples/listbox-bridge/listbox-bridge.component.ts
- * <example-url>http://localhost:4200/#/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>
- * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-single-select</example-url>
+ * <example-url>/#/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
+ * <example-url>/#/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>
+ * <example-url>/#/forms/field/listbox-forms/signal-forms-single-select</example-url>
  * @axis level molecule
  */
 @Directive({

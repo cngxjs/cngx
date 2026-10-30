@@ -31,7 +31,7 @@ import { cngxDevWarn } from '@cngx/utils';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/scroll/scroll-spy.directive.ts
  * @since 0.1.0
  * @relatedTo CngxIntersectionObserver, CngxStickyHeader, CngxInfiniteScroll
- * <example-url>http://localhost:4200/#/common/layout/scroll-spy/scroll-based-navigation</example-url>
+ * <example-url>/#/common/layout/scroll-spy/scroll-based-navigation</example-url>
  * @axis level atom
  */
 @Directive({

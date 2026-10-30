@@ -20,7 +20,7 @@ import { Directive, input } from '@angular/core';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card-badge.directive.ts
  * @since 0.1.0
  * @relatedTo CngxCard, CngxCardAccent, CngxCardHeader
- * <example-url>http://localhost:4200/#/common/card/card-with-badge</example-url>
+ * <example-url>/#/common/card/card-with-badge</example-url>
  * @axis level organism
  */
 @Directive({

@@ -71,12 +71,12 @@ import {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-aggregator/error-aggregator.directive.ts
  * @since 0.1.0
  * @relatedTo CngxErrorSource, CngxErrorScope, CngxErrorState, CngxErrorRegistry
- * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/cngx-card-host-no-scope-errors-visible-immediately</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/cngx-popover-panel-host</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/material-mat-tab-label-with-error-count-badge</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/native-form-scope-reveal-on-submit</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-error-aggregation/per-step-error-badges</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-error-aggregation/per-tab-error-badges</example-url>
+ * <example-url>/#/common/interactive/error/aggregator/cngx-card-host-no-scope-errors-visible-immediately</example-url>
+ * <example-url>/#/common/interactive/error/aggregator/cngx-popover-panel-host</example-url>
+ * <example-url>/#/common/interactive/error/aggregator/material-mat-tab-label-with-error-count-badge</example-url>
+ * <example-url>/#/common/interactive/error/aggregator/native-form-scope-reveal-on-submit</example-url>
+ * <example-url>/#/ui/stepper/stepper-error-aggregation/per-step-error-badges</example-url>
+ * <example-url>/#/ui/tabs/tab-error-aggregation/per-tab-error-badges</example-url>
  * @axis level molecule
  */
 @Directive({

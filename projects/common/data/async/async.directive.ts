@@ -68,12 +68,12 @@ export interface CngxAsyncContext<T> {
  * @since 0.1.0
  * @relatedTo injectAsyncState, createAsyncState, createManualState
  *
- * <example-url>http://localhost:4200/#/ui/feedback/async-container/cngx-async-container-full-control-toast</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/async-container/cngxasync-one-line</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/async-container/cngxasync-with-custom-templates</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/async-container/composition-overlay-container-toast</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/async-container/createasyncstate-mutation</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/async-container/injectasyncstate-reactive-query</example-url>
+ * <example-url>/#/ui/feedback/async-container/cngx-async-container-full-control-toast</example-url>
+ * <example-url>/#/ui/feedback/async-container/cngxasync-one-line</example-url>
+ * <example-url>/#/ui/feedback/async-container/cngxasync-with-custom-templates</example-url>
+ * <example-url>/#/ui/feedback/async-container/composition-overlay-container-toast</example-url>
+ * <example-url>/#/ui/feedback/async-container/createasyncstate-mutation</example-url>
+ * <example-url>/#/ui/feedback/async-container/injectasyncstate-reactive-query</example-url>
  * @axis level molecule
  */
 @Directive({

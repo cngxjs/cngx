@@ -55,8 +55,8 @@ import type {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/icon-button.component.ts
  * @since 0.1.0
  * @relatedTo CngxButton, CngxAsyncClick, provideButtonConfig, CngxSplitButton, CngxIconMenuButton
- * <example-url>http://localhost:4200/#/common/button/icon-button/basic</example-url>
- * <example-url>http://localhost:4200/#/common/button/icon-button/with-badge</example-url>
+ * <example-url>/#/common/button/icon-button/basic</example-url>
+ * <example-url>/#/common/button/icon-button/with-badge</example-url>
  * @axis level atom
  */
 @Component({

@@ -26,8 +26,8 @@ const TWO_PI = Math.PI * 2;
  * @since 0.1.0
  * @relatedTo CngxBullet, CngxMiniBar, CngxDeviationBar
  *
- * <example-url>http://localhost:4200/#/common/chart/donut/async-state-machine</example-url>
- * <example-url>http://localhost:4200/#/common/chart/donut/score-gauges</example-url>
+ * <example-url>/#/common/chart/donut/async-state-machine</example-url>
+ * <example-url>/#/common/chart/donut/score-gauges</example-url>
  * @axis level atom
  */
 @Component({

@@ -29,10 +29,10 @@ import { type CngxSort } from './sort.directive';
  * @since 0.1.0
  * @relatedTo CngxSort, CngxFilter, CngxPaginate
  *
- * <example-url>http://localhost:4200/#/common/data/sort/basic</example-url>
- * <example-url>http://localhost:4200/#/common/data/sort/multi-sort</example-url>
- * <example-url>http://localhost:4200/#/common/data/sort/controlled</example-url>
- * <example-url>http://localhost:4200/#/common/data/sort/aria-and-keyboard</example-url>
+ * <example-url>/#/common/data/sort/basic</example-url>
+ * <example-url>/#/common/data/sort/multi-sort</example-url>
+ * <example-url>/#/common/data/sort/controlled</example-url>
+ * <example-url>/#/common/data/sort/aria-and-keyboard</example-url>
  */
 @Directive({
   selector: '[cngxSortHeader]',

@@ -15,7 +15,7 @@ import { injectMenuItemIndicator } from './menu-item-indicator';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item-checkbox.directive.ts
  * @since 0.1.0
  * @relatedTo CngxMenuItem, CngxMenuItemRadio, CngxMenu
- * <example-url>http://localhost:4200/#/common/interactive/menu/checkable/text-formatting-menu</example-url>
+ * <example-url>/#/common/interactive/menu/checkable/text-formatting-menu</example-url>
  * @axis level molecule
  */
 @Directive({

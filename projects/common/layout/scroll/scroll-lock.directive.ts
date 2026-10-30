@@ -28,7 +28,7 @@ import { createScrollLock } from './scroll-lock-core';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/scroll/scroll-lock.directive.ts
  * @since 0.1.0
  * @relatedTo CngxDrawer, CngxBackdrop
- * <example-url>http://localhost:4200/#/common/layout/scroll-lock/toggle</example-url>
+ * <example-url>/#/common/layout/scroll-lock/toggle</example-url>
  * @axis level atom
  */
 @Directive({

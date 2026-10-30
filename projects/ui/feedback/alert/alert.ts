@@ -44,12 +44,12 @@ export type AlertVisibilityPhase = 'hidden' | 'entering' | 'visible' | 'exiting'
  * @since 0.1.0
  * @relatedTo CngxAlert, CngxAlertAction
  *
- * <example-url>http://localhost:4200/#/ui/feedback/alert/action-buttons</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/alert/auto-collapse</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/alert/boolean-trigger-when</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/alert/closable</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/alert/severities</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/alert/state-driven-visibility</example-url>
+ * <example-url>/#/ui/feedback/alert/action-buttons</example-url>
+ * <example-url>/#/ui/feedback/alert/auto-collapse</example-url>
+ * <example-url>/#/ui/feedback/alert/boolean-trigger-when</example-url>
+ * <example-url>/#/ui/feedback/alert/closable</example-url>
+ * <example-url>/#/ui/feedback/alert/severities</example-url>
+ * <example-url>/#/ui/feedback/alert/state-driven-visibility</example-url>
  */
 @Directive({ selector: '[cngxAlertIcon]', standalone: true })
 export class CngxAlertIcon {
@@ -74,12 +74,12 @@ export class CngxAlertIcon {
  * @since 0.1.0
  * @relatedTo CngxAlert, CngxAlertIcon
  *
- * <example-url>http://localhost:4200/#/ui/feedback/alert/action-buttons</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/alert/auto-collapse</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/alert/boolean-trigger-when</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/alert/closable</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/alert/severities</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/alert/state-driven-visibility</example-url>
+ * <example-url>/#/ui/feedback/alert/action-buttons</example-url>
+ * <example-url>/#/ui/feedback/alert/auto-collapse</example-url>
+ * <example-url>/#/ui/feedback/alert/boolean-trigger-when</example-url>
+ * <example-url>/#/ui/feedback/alert/closable</example-url>
+ * <example-url>/#/ui/feedback/alert/severities</example-url>
+ * <example-url>/#/ui/feedback/alert/state-driven-visibility</example-url>
  */
 @Directive({
   selector: 'button[cngxAlertAction], a[cngxAlertAction]',
@@ -104,12 +104,12 @@ export class CngxAlertAction {}
  * @since 0.1.0
  * @relatedTo CngxAlertStack, CngxAlerter, CngxAlertOn, CngxAlertIcon, CngxAlertAction
  *
- * <example-url>http://localhost:4200/#/ui/feedback/alert/action-buttons</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/alert/auto-collapse</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/alert/boolean-trigger-when</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/alert/closable</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/alert/severities</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/alert/state-driven-visibility</example-url>
+ * <example-url>/#/ui/feedback/alert/action-buttons</example-url>
+ * <example-url>/#/ui/feedback/alert/auto-collapse</example-url>
+ * <example-url>/#/ui/feedback/alert/boolean-trigger-when</example-url>
+ * <example-url>/#/ui/feedback/alert/closable</example-url>
+ * <example-url>/#/ui/feedback/alert/severities</example-url>
+ * <example-url>/#/ui/feedback/alert/state-driven-visibility</example-url>
  * @axis level molecule
  */
 @Component({

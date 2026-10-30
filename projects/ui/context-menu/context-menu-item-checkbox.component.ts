@@ -28,7 +28,7 @@ import { CNGX_ICON_CHECK } from '@cngx/utils';
  * <cngx-context-menu-item-checkbox [(checked)]="wrap">Word wrap</cngx-context-menu-item-checkbox>
  * ```
  *
- * <example-url>http://localhost:4200/#/ui/context-menu/selection/checkbox-radio-items</example-url>
+ * <example-url>/#/ui/context-menu/selection/checkbox-radio-items</example-url>
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/context-menu/context-menu-item-checkbox.component.ts
  * @since 0.1.0

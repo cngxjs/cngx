@@ -36,12 +36,12 @@ export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/drawer/drawer.directive.ts
  * @since 0.1.0
  * @relatedTo CngxDrawerPanel, CngxDrawerContent, CngxBackdrop, CngxScrollLock
- * <example-url>http://localhost:4200/#/common/layout/drawer/basic-scroll-lock-backdrop</example-url>
- * <example-url>http://localhost:4200/#/common/layout/drawer/controlled-mode</example-url>
- * <example-url>http://localhost:4200/#/common/layout/drawer/direction-all-four-sides</example-url>
- * <example-url>http://localhost:4200/#/common/layout/drawer/events-openedchange-closed</example-url>
- * <example-url>http://localhost:4200/#/common/layout/drawer/mode-over-push-side</example-url>
- * <example-url>http://localhost:4200/#/common/layout/drawer/pattern-consumer-wiring</example-url>
+ * <example-url>/#/common/layout/drawer/basic-scroll-lock-backdrop</example-url>
+ * <example-url>/#/common/layout/drawer/controlled-mode</example-url>
+ * <example-url>/#/common/layout/drawer/direction-all-four-sides</example-url>
+ * <example-url>/#/common/layout/drawer/events-openedchange-closed</example-url>
+ * <example-url>/#/common/layout/drawer/mode-over-push-side</example-url>
+ * <example-url>/#/common/layout/drawer/pattern-consumer-wiring</example-url>
  * @axis level organism
  */
 @Directive({

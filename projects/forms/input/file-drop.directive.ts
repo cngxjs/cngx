@@ -57,7 +57,7 @@ function fileKey(file: File): string {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/file-drop.directive.ts
  * @since 0.1.0
  * @relatedTo CngxInput, CngxAsyncState, withFileMaxSize
- * <example-url>http://localhost:4200/#/forms/input/file-drop/image-upload</example-url>
+ * <example-url>/#/forms/input/file-drop/image-upload</example-url>
  * @axis level atom
  */
 @Directive({

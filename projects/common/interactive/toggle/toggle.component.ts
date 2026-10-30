@@ -68,13 +68,13 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
  * @selector cngx-toggle
  * @since 0.1.0
  * @relatedTo CngxCheckbox, CngxButtonToggle, CngxRadio
- * <example-url>http://localhost:4200/#/common/interactive/toggle/basic-two-way-binding</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/toggle/custom-thumb-glyph</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/toggle/disabled-with-reason</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/toggle/label-position</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
+ * <example-url>/#/common/interactive/toggle/basic-two-way-binding</example-url>
+ * <example-url>/#/common/interactive/toggle/custom-thumb-glyph</example-url>
+ * <example-url>/#/common/interactive/toggle/disabled-with-reason</example-url>
+ * <example-url>/#/common/interactive/toggle/label-position</example-url>
+ * <example-url>/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
+ * <example-url>/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
+ * <example-url>/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  * @axis level atom
  */
 @Component({

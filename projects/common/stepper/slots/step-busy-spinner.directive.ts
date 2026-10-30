@@ -31,7 +31,7 @@ export interface CngxStepBusySpinnerContext {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/slots/step-busy-spinner.directive.ts
  * @since 0.1.0
  * @relatedTo CngxStepIndicator, CngxStepBadge, CngxStepRejection
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-busy-spinner-via-code-cngxstepbusyspinner-code</example-url>
+ * <example-url>/#/ui/stepper/stepper-slot-overrides/custom-busy-spinner-via-code-cngxstepbusyspinner-code</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxStepBusySpinner]',
