@@ -162,11 +162,21 @@ export function selectCliTarballs(files) {
   return { cli: pick(CLI_TARBALL, '@cngx/cli'), doctor: pick(DOCTOR_TARBALL, '@cngx/doctor') };
 }
 
-/** The `cngx` runs inside the fixture app: arguments, expected exit code, and what stdout must show. */
+/**
+ * The `cngx` runs inside the fixture app: arguments, expected exit code, and what
+ * stdout (and, where it matters, stderr) must show. The first two steps also run
+ * outside the app, so they assert nothing about stderr.
+ */
 export function cliAppSteps(cliVersion) {
   return [
     { args: ['--version'], exit: 0, stdout: (out) => out.trim() === cliVersion || `expected ${cliVersion}` },
     { args: ['api', 'CngxSelect'], exit: 0, stdout: (out) => out.includes('# CngxSelect') || 'no "# CngxSelect" heading' },
+    // The app installs the stamped lib tarballs, so the detector pins to the bundled release: no version note.
+    {
+      args: ['api', 'CngxSelect', '--format=json'],
+      exit: 0,
+      stderr: (err) => err === '' || `expected no version note, got: ${err.trim()}`,
+    },
     { args: ['api', 'NoSuchThing'], exit: 1 },
     { args: ['api', '--bogus'], exit: 2 },
     {
@@ -1194,9 +1204,11 @@ function expectCliStep(label, result, step) {
   if (result.status !== step.exit) {
     throw new Error(`${label}: exited ${result.status}, expected ${step.exit}\n${result.stderr}`);
   }
-  const verdict = step.stdout ? step.stdout(result.stdout) : true;
-  if (verdict !== true) {
-    throw new Error(`${label}: ${verdict}`);
+  for (const [stream, check] of [['stdout', step.stdout], ['stderr', step.stderr]]) {
+    const verdict = check ? check(result[stream]) : true;
+    if (verdict !== true) {
+      throw new Error(`${label}: ${verdict}`);
+    }
   }
   console.log(`    exit ${result.status} as expected`);
 }
@@ -1213,6 +1225,13 @@ function runCliLeg({ appDir, cli, doctor }) {
   for (const step of cliAppSteps(cliVersion)) {
     expectCliStep(`npx cngx ${step.args.join(' ')}`, runCaptured('npx', ['cngx', ...step.args], { cwd: appDir }), step);
   }
+
+  const direct = runCaptured('npx', ['cngx-doctor'], { cwd: appDir });
+  const viaCli = runCaptured('npx', ['cngx', 'doctor'], { cwd: appDir });
+  if (viaCli.status !== direct.status) {
+    throw new Error(`npx cngx doctor exited ${viaCli.status}, npx cngx-doctor exited ${direct.status}\n${viaCli.stderr}`);
+  }
+  console.log(`    cngx doctor exit ${viaCli.status} equals cngx-doctor`);
 
   // npm ls exits 1 when nothing matches; only the parsed tree counts.
   const sdk = sdkInTree(runCaptured('npm', ['ls', '@modelcontextprotocol/sdk', '--json'], { cwd: appDir }).stdout);

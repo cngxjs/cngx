@@ -9,7 +9,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
-import type { CliIo, ContextOptions } from './cli-adapter.js';
+import type { CliIo, ContextOptions, DoctorModule } from './cli-adapter.js';
 import { EXIT_INTERNAL, EXIT_NOT_FOUND, EXIT_OK, EXIT_USAGE, commandHelp, generalHelp, main, runCli } from './cli-adapter.js';
 import type { CngxCommand, CommandContext } from './core/registry.js';
 import { COMMANDS } from './core/registry.js';
@@ -968,5 +968,103 @@ describe('several names, --from and --compact', () => {
     const run = await cli(...argv);
 
     expect(run.code).toBe(EXIT_USAGE);
+  });
+});
+
+// Source of expected values: the `cngx doctor` decision row of
+// cngx-cli-core-phase-4-plan.md and the runDoctor / parseArgs JSDoc of
+// packages/doctor/cngx-doctor.mjs (declared in src/doctor-module.d.ts).
+describe('cngx doctor', () => {
+  const IN_TREE_DOCTOR = new URL('../../doctor/cngx-doctor.mjs', import.meta.url).href;
+
+  async function doctor(argv: string[], module: Partial<DoctorModule> = {}) {
+    let stdout = '';
+    let stderr = '';
+    const io: CliIo = { stdout: (text) => (stdout += text), stderr: (text) => (stderr += text) };
+    const runDoctor = vi.fn<DoctorModule['runDoctor']>(() => ({ findings: [], output: 'clean\n', warnings: [], exitCode: 0 }));
+    const parseArgs = vi.fn<DoctorModule['parseArgs']>((args) => ({
+      projectDir: '.',
+      json: args.includes('--json'),
+      help: false,
+      version: false,
+      unknownFlags: args.filter((arg) => arg.startsWith('-') && arg !== '--json'),
+    }));
+    const loaded: DoctorModule = { runDoctor, parseArgs, ...module };
+    const context = { bundled, resolve: createDocsResolver(bundled, offlineDeps) };
+    const code = await runCli(argv, { commands: COMMANDS, loadContext: () => context, loadDoctor: async () => loaded, cliVersion: CLI_VERSION, io });
+    return { code, stdout, stderr, runDoctor: loaded.runDoctor as typeof runDoctor };
+  }
+
+  it('passes the remaining argv through and prints output and warnings', async () => {
+    const run = await doctor(['doctor', 'apps/web'], {
+      runDoctor: vi.fn(() => ({ findings: [], output: 'report\n', warnings: ['a warning'], exitCode: 0 })),
+    });
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(run.runDoctor).toHaveBeenCalledWith(['apps/web']);
+    expect(run.stdout).toBe('report\n');
+    expect(run.stderr).toBe('a warning\n');
+  });
+
+  it("passes doctor's exit 1 (an error finding) through", async () => {
+    const run = await doctor(['doctor'], { runDoctor: vi.fn(() => ({ findings: [{}], output: 'x\n', warnings: [], exitCode: 1 })) });
+
+    expect(run.code).toBe(EXIT_NOT_FOUND);
+  });
+
+  it('exits 2 on an unknown flag before any scan', async () => {
+    const run = await doctor(['doctor', '--bogus']);
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.runDoctor).not.toHaveBeenCalled();
+    expect(run.stderr).toBe("cngx: unknown option '--bogus' for doctor.\nRun `cngx doctor --help` for usage.\n");
+  });
+
+  it.each([[['--format', 'json']], [['--format=json']], [['--format', 'json', 'apps/web']]])('maps %j to --json', async (args) => {
+    const run = await doctor(['doctor', ...args]);
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(run.runDoctor.mock.calls[0][0]).toContain('--json');
+    expect(run.runDoctor.mock.calls[0][0]).not.toContain('--format');
+  });
+
+  it('passes nothing extra for --format md and rejects another format', async () => {
+    expect((await doctor(['doctor', '--format=md'])).runDoctor).toHaveBeenCalledWith([]);
+    expect((await doctor(['doctor', '--format=xml'])).code).toBe(EXIT_USAGE);
+  });
+
+  it.each([['--cngx-version=0.1.0'], ['--offline']])('exits 2 on %s', async (flag) => {
+    const run = await doctor(['doctor', flag]);
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stderr).toContain('doctor does not take');
+    expect(run.runDoctor).not.toHaveBeenCalled();
+  });
+
+  it('exits 3 with one internal-error line when the scan throws, and a failure document under json', async () => {
+    const throwing = { runDoctor: vi.fn<DoctorModule['runDoctor']>(() => { throw new Error('EACCES: scan failed'); }) };
+    const md = await doctor(['doctor'], throwing);
+    const json = await doctor(['doctor', '--format=json'], throwing);
+
+    expect(md.code).toBe(EXIT_INTERNAL);
+    expect(md.stderr).toBe('cngx doctor: internal error: EACCES: scan failed\n');
+    expect(md.stdout).toBe('');
+    expect(json.code).toBe(EXIT_INTERNAL);
+    expect(JSON.parse(json.stdout)).toEqual({ cngxVersion: null, result: null, error: { reason: 'internal', message: 'EACCES: scan failed' } });
+  });
+
+  it('lists doctor in the general help and the unknown-command hint', async () => {
+    const run = await doctor(['nope']);
+
+    expect(run.stderr).toContain('doctor');
+    expect(generalHelp(COMMANDS, CLI_VERSION)).toMatch(/\n {2}doctor +Scan the project wiring/);
+  });
+
+  it('matches the declared shape of the in-tree @cngx/doctor', async () => {
+    const real = (await import(IN_TREE_DOCTOR)) as DoctorModule;
+
+    expect(Object.keys(real.runDoctor(['--version'])).sort()).toEqual(['exitCode', 'findings', 'output', 'warnings']);
+    expect(Object.keys(real.parseArgs(['--x'])).sort()).toEqual(['help', 'json', 'projectDir', 'unknownFlags', 'version']);
+    expect(real.parseArgs(['--x']).unknownFlags).toEqual(['--x']);
   });
 });

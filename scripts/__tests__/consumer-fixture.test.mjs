@@ -168,10 +168,17 @@ describe('cliAppSteps', () => {
     expect(steps.map(({ args, exit }) => [args.join(' '), exit])).toEqual([
       ['--version', 0],
       ['api CngxSelect', 0],
+      ['api CngxSelect --format=json', 0],
       ['api NoSuchThing', 1],
       ['api --bogus', 2],
       ['list --format=json', 0],
     ]);
+  });
+
+  it('requires an in-app api run to print no version note', () => {
+    expect(step('api', 'CngxSelect', '--format=json').stderr('')).toBe(true);
+    expect(step('api', 'CngxSelect', '--format=json').stderr('cngx: answering for the installed cngx 0.2.0\n')).toMatch(/^expected no version note/);
+    expect(step('api', 'CngxSelect').stderr).toBeUndefined();
   });
 
   it('checks the version against the packed cli', () => {

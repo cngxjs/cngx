@@ -6,7 +6,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { EXIT_INTERNAL, EXIT_NOT_FOUND, EXIT_OK, EXIT_USAGE, adapterFlags, commandFlags, globalFlags, isNameTaking, knownFlags } from './cli-adapter.js';
+import { EXIT_INTERNAL, EXIT_NOT_FOUND, EXIT_OK, EXIT_USAGE, ADAPTER_COMMANDS, adapterFlags, commandFlags, globalFlags, isNameTaking, knownFlags } from './cli-adapter.js';
 import { COMMANDS } from './core/registry.js';
 import {
   commandRowFlags,
@@ -27,7 +27,7 @@ const ownFlags = (cliName: string): string[] =>
   commandFlags(COMMANDS.find((def) => def.cliName === cliName)!).filter((flag) => flag !== VERSION_FLAG);
 
 describe('README', () => {
-  it.each(COMMANDS.map((def) => def.cliName))('documents cngx %s', (cliName) => {
+  it.each([...COMMANDS.map((def) => def.cliName), ...ADAPTER_COMMANDS])('documents cngx %s', (cliName) => {
     expect(README).toContain(`\`cngx ${cliName}`);
   });
 
@@ -84,8 +84,8 @@ describe('README', () => {
     expect(documentedExitCodes(planted)).not.toEqual([EXIT_OK, EXIT_NOT_FOUND, EXIT_USAGE, EXIT_INTERNAL]);
   });
 
-  it('names no command the registry lacks', () => {
-    const known = new Set(COMMANDS.map((def) => def.cliName));
+  it('names no command the registry or the adapter lacks', () => {
+    const known = new Set<string>([...COMMANDS.map((def) => def.cliName), ...ADAPTER_COMMANDS]);
 
     expect(documentedCommands(README).filter((word) => !known.has(word))).toEqual([]);
   });

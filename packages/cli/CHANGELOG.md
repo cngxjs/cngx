@@ -33,3 +33,6 @@ grounds against is a property of the bundled snapshot, not this version.
   block per name; json: a `result` array, `null` per missing name; exit 1 when
   any name is missing), `--from <file>` (the names a file imports from
   `@cngx/*`) and `--compact` (markdown without descriptions).
+- `cngx doctor` runs the `@cngx/doctor` wiring scan with the CLI exit
+  contract: `--format json` prints doctor's findings array, exit 1 means an
+  error finding, an unknown flag exits 2, a throw exits 3.

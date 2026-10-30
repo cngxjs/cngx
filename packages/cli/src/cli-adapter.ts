@@ -66,11 +66,19 @@ export interface CliEnv {
    * from the bundled snapshot.
    */
   detectVersion?(): InstalledVersion;
+  /** Loads `@cngx/doctor` for `cngx doctor`; without it, `doctor` is an unknown command. */
+  loadDoctor?(): Promise<DoctorModule>;
   readonly cliVersion: string;
   readonly io: CliIo;
 }
 
 const VERSION_FLAG = 'cngx-version';
+
+/** What `cngx doctor` needs from `@cngx/doctor`. */
+export type DoctorModule = Pick<typeof import('@cngx/doctor/cngx-doctor.mjs'), 'parseArgs' | 'runDoctor'>;
+
+/** Commands the adapter runs itself, outside the registry: they answer no snapshot query. */
+export const ADAPTER_COMMANDS = ['doctor'] as const;
 
 type Options = NonNullable<ParseArgsConfig['options']>;
 
@@ -231,7 +239,7 @@ export function commandHelp(def: CngxCommand): string {
 
 /** The command list and the global flags. */
 export function generalHelp(commands: readonly CngxCommand[], cliVersion: string): string {
-  const width = Math.max(...commands.map((def) => def.cliName.length)) + 2;
+  const width = Math.max(...[...commands.map((def) => def.cliName), ...ADAPTER_COMMANDS].map((name) => name.length)) + 2;
   return [
     `cngx ${cliVersion} - the cngx public API on the command line`,
     '',
@@ -239,13 +247,14 @@ export function generalHelp(commands: readonly CngxCommand[], cliVersion: string
     '',
     'Commands:',
     ...commands.map((def) => `  ${pad(def.cliName, width)}${def.title}`),
+    `  ${pad('doctor', width)}Scan the project wiring (runs @cngx/doctor)`,
     '',
     'Global flags:',
     '  --format md|json  Output format, default md.',
     '  --version, -v     Print the @cngx/cli version.',
     '  --help, -h        Show this help; after a command, that command\'s help.',
     '',
-    'Exit codes: 0 answered, 1 nothing found or the snapshot could not be resolved, 2 usage error, 3 internal error.',
+    'Exit codes: 0 answered, 1 nothing found or the snapshot could not be resolved (doctor: an error finding), 2 usage error, 3 internal error.',
     'Run `cngx <command> --help` for a command\'s arguments.',
     '',
   ].join('\n');
@@ -350,9 +359,12 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
   }
 
   const name = argv[at];
+  if (name === 'doctor' && env.loadDoctor) {
+    return runDoctorCommand([...argv.slice(0, at), ...argv.slice(at + 1)], env.loadDoctor, io);
+  }
   const def = commands.find((command) => command.cliName === name);
   if (!def) {
-    const known = commands.map((command) => command.cliName).join(', ');
+    const known = [...commands.map((command) => command.cliName), ...(env.loadDoctor ? ADAPTER_COMMANDS : [])].join(', ');
     return usageError(io, `unknown command "${name}".`, `Commands: ${known}. Run \`cngx --help\` for usage.`);
   }
 
@@ -528,6 +540,55 @@ function pinDetected(
   return { version, context: { ...context, resolve } };
 }
 
+/**
+ * `cngx doctor`: the `@cngx/doctor` wiring scan with the CLI's flag and exit
+ * contract. `--format json` becomes doctor's `--json` (its findings array is the
+ * document); an unknown flag, `--cngx-version` or `--offline` is a usage error
+ * before any scan; 0 and 1 pass through (1: an error-severity finding); a throw
+ * is exit 3.
+ */
+async function runDoctorCommand(rest: readonly string[], loadDoctor: () => Promise<DoctorModule>, io: CliIo): Promise<number> {
+  const hint = 'Run `cngx doctor --help` for usage.';
+  const args: string[] = [];
+  let format: OutputFormat = 'md';
+  for (let i = 0; i < rest.length; i++) {
+    const token = rest[i];
+    const inline = token.startsWith('--format=') ? token.slice('--format='.length) : undefined;
+    if (token === '--format' || inline !== undefined) {
+      const value = inline ?? rest[++i];
+      const parsed = parseFormat(value);
+      if (parsed === null) {
+        return usageError(io, `--format must be one of ${FORMATS.join(', ')}.`, hint);
+      }
+      format = parsed;
+      continue;
+    }
+    if ([`--${VERSION_FLAG}`, '--offline'].some((flag) => token === flag || token.startsWith(`${flag}=`))) {
+      return usageError(io, `doctor does not take ${token.split('=')[0]}; it scans the project, not a snapshot.`, hint);
+    }
+    args.push(token);
+  }
+  if (format === 'json') {
+    args.push('--json');
+  }
+
+  try {
+    const doctor = await loadDoctor();
+    const { unknownFlags } = doctor.parseArgs(args);
+    if (unknownFlags.length > 0) {
+      return usageError(io, `unknown option '${unknownFlags[0]}' for doctor.`, hint);
+    }
+    const { output, warnings, exitCode } = doctor.runDoctor(args);
+    for (const warning of warnings) {
+      io.stderr(`${warning}\n`);
+    }
+    io.stdout(output);
+    return exitCode;
+  } catch (error) {
+    return internalError(io, 'cngx doctor', error, format);
+  }
+}
+
 /** A finished run, rendered but not yet written. */
 interface Rendered {
   readonly stdout: string;
@@ -615,5 +676,6 @@ export async function main(argv: readonly string[], paths: EntryPaths, io: CliIo
     return { bundled, resolve };
   };
   const detectVersion = () => resolveInstalledCngxVersion(process.cwd());
-  return runCli(argv, { commands: COMMANDS, loadContext, detectVersion, cliVersion, io });
+  const loadDoctor = () => import('@cngx/doctor/cngx-doctor.mjs');
+  return runCli(argv, { commands: COMMANDS, loadContext, detectVersion, loadDoctor, cliVersion, io });
 }
