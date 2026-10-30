@@ -232,6 +232,10 @@ describeCommitContract(REORDERABLE, (c) => {
     'B3/A12: a failed reorder is announced assertively after the rollback',
     c.reorderFailureAnnounced,
   );
+  it(
+    'the commit-error slot names the option of the commit that failed',
+    c.commitErrorOptionIsTheFailedCommit,
+  );
   it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
   it('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);

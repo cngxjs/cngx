@@ -96,7 +96,10 @@ export type CommitLedgerScalarRequest<
  * @internal
  */
 export interface CommitLedger<TCommit, TOption = unknown> {
-  /** Last commit begun; a superseded commit's record is replaced. */
+  /**
+   * Last commit begun while it has not succeeded; a superseded commit's
+   * record is replaced, a successful one's dropped.
+   */
   readonly last: Signal<CommitRecord<TCommit, TOption> | null>;
   /**
    * `current` while nothing is in flight, else the confirmed value: the last
@@ -117,6 +120,11 @@ export interface CommitLedger<TCommit, TOption = unknown> {
    * one, once it succeeded, or without a bound action.
    */
   retry(): void;
+  /**
+   * Drops the record without touching the replay. Called when another commit
+   * source claims the next commit, which may not run through the ledger.
+   */
+  release(): void;
 }
 
 function sameRecord<TCommit, TOption>(
@@ -195,6 +203,7 @@ export function createCommitLedger<TCommit, TOption = unknown>(
       option: req.option ?? null,
       meta: req.meta,
     });
+    const record = untracked(last);
     const replayCommit = (): void => {
       const current = untracked(req.commitAction);
       if (current) {
@@ -208,6 +217,9 @@ export function createCommitLedger<TCommit, TOption = unknown>(
         // A confirmed commit has nothing to retry; a later begin owns the slot.
         if (replayLast === replayCommit) {
           replayLast = null;
+        }
+        if (untracked(last) === record) {
+          last.set(null);
         }
         req.onStateChange?.('success');
         // `null` is a legitimate server result (a `??` would drop it); only a
@@ -241,6 +253,7 @@ export function createCommitLedger<TCommit, TOption = unknown>(
     beginMembers: (request) => run(request, request.action, false),
     beginScalar: (request) => run(request, request.action, false),
     retry: () => replayLast?.(),
+    release: () => last.set(null),
   };
 }
 

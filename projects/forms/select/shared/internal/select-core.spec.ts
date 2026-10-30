@@ -26,6 +26,7 @@ import {
 import { createSelectCore, type CngxSelectCoreDeps } from './select-core';
 
 const RED: CngxSelectOptionDef<string> = { value: 'red', label: 'Red' };
+const GREEN: CngxSelectOptionDef<string> = { value: 'green', label: 'Green' };
 
 function deps(): CngxSelectCoreDeps<string, string> {
   return {
@@ -236,6 +237,36 @@ describe('createSelectCore - commit ledger retry', () => {
     expect(context().option).toBe(RED);
     context().retry();
     expect(calls).toEqual(['red', 'red']);
+  });
+});
+
+describe('createSelectCore - commit-error option', () => {
+  it('drops a failed ledger record once another commit source claims the next commit', () => {
+    const core = TestBed.runInInjectionContext(() =>
+      createSelectCore(deps(), { announceChanges: signal(null), announceTemplate: signal(null) }),
+    );
+    const value = signal<string | undefined>(undefined);
+    const commitAction = signal<((next: string | undefined) => never) | null>(() => {
+      throw new Error('down');
+    });
+    core.commitLedger.beginScalar<string | undefined>({
+      kind: 'select',
+      next: 'red',
+      previous: undefined,
+      option: RED,
+      action: commitAction()!,
+      commitAction,
+      value,
+      same: Object.is,
+      commitMode: signal('pessimistic'),
+      onSuccess: () => undefined,
+    });
+    const context = core.bindCommitRetry(() => undefined);
+    expect(context().option).toBe(RED);
+    // A custom handler that bypasses the ledger starts the next commit.
+    core.claimCommitRetry({ retryLast: () => undefined });
+    core.togglingOption.set(GREEN);
+    expect(context().option).toBe(GREEN);
   });
 });
 

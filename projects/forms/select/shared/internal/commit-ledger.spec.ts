@@ -102,6 +102,18 @@ describe('createCommitLedger', () => {
       h.pendings[0].next(['b', 'server']);
       expect(h.values()).toEqual(['b', 'server']);
       expect(h.log).toEqual(['state:pending', 'state:success', 'success:b,server']);
+      expect(h.ledger.last()).toBeNull();
+    });
+
+    it('keeps a failed record until release drops it, without dropping the replay', () => {
+      const h = harness(['a']);
+      h.ledger.beginMembers(h.request(kind, ['b'], ['a'], opt('b')));
+      h.pendings[0].error(new Error('down'));
+      expect(h.ledger.last()?.option).toEqual(opt('b'));
+      h.ledger.release();
+      expect(h.ledger.last()).toBeNull();
+      h.ledger.retry();
+      expect(h.calls).toEqual([['b'], ['b']]);
     });
 
     it('rolls back before it announces the failure', () => {

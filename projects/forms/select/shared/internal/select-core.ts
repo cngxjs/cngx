@@ -263,10 +263,10 @@ export interface CngxSelectCore<T, TCommit> {
 
   /**
    * Builds a `commitErrorContext` signal bound to the caller's retry
-   * (default: {@link retryLastCommit}). Its `option` is the option of the
-   * last commit the ledger recorded, else the toggling option, so a custom
-   * handler that bypasses the ledger still reports one. Cache the result per
-   * variant-specific retry signature.
+   * (default: {@link retryLastCommit}). Its `option` belongs to the commit
+   * that failed: the ledger record while the ledger ran that commit, else the
+   * toggling option, so a custom handler that bypasses the ledger reports its
+   * own. Cache the result per variant-specific retry signature.
    */
   bindCommitRetry(retry?: () => void): Signal<CngxSelectCommitErrorContext<T>>;
 
@@ -767,6 +767,9 @@ export function createSelectCore<T, TCommit>(
 
   function claimCommitRetry(owner: CngxCommitRetryOwner): void {
     commitOwner = owner;
+    // The record names an earlier commit until this owner's begin (if it runs
+    // through the ledger) writes a new one.
+    commitLedger.release();
   }
 
   function retryLastCommit(): void {

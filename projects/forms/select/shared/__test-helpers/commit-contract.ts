@@ -15,6 +15,7 @@ import {
   type CngxArrayCommitHandlerFactory,
 } from '../array-commit-handler';
 import type { CngxSelectCommitMode } from '../commit-action.types';
+import { CngxSelectCommitError } from '../template-slots';
 import {
   CNGX_REORDER_COMMIT_HANDLER_FACTORY,
   createReorderCommitHandler,
@@ -103,6 +104,13 @@ export interface CommitContractCases {
   readonly clearClearsCommitError: () => void;
   /** A14: a second commit while one is pending rolls back to the confirmed value. */
   readonly secondCommitRollsBackToConfirmed: () => void;
+  /**
+   * The commit-error slot names the option of the commit that failed: after
+   * a successful reorder, a toggle started by a custom
+   * `CNGX_ARRAY_COMMIT_HANDLER_FACTORY` handler that bypasses the ledger
+   * fails and the slot reports that toggle's option, not the reordered one.
+   */
+  readonly commitErrorOptionIsTheFailedCommit: () => void;
 }
 
 const OPTIONS = [
@@ -162,6 +170,8 @@ interface MountOptions {
   readonly softPolicy?: boolean;
   readonly respondEmpty?: boolean;
   readonly providers?: readonly Provider[];
+  /** Extra projected content (slot templates). */
+  readonly content?: string;
 }
 
 let fieldSeed: string | null = null;
@@ -263,8 +273,8 @@ export function describeCommitContract(
               [commitErrorDisplay]="'banner'"
               ${policy}
               (stateChange)="states.push($event)"
-            >${host.content ?? ''}</${host.selector}>`,
-          imports: [host.component, ...(host.contentImports ?? [])],
+            >${host.content ?? ''}${mountOpts.content ?? ''}</${host.selector}>`,
+          imports: [host.component, CngxSelectCommitError, ...(host.contentImports ?? [])],
         },
       });
       const fixture = TestBed.createComponent(ContractHost);
@@ -639,6 +649,32 @@ export function describeCommitContract(
         expect(m.h.calls).toHaveLength(2);
         m.rejectLast();
         expect(m.h.model()).toEqual(kind === 'select' ? undefined : []);
+      },
+
+      commitErrorOptionIsTheFailedCommit: () => {
+        requireKind('reorder');
+        // Bypasses the ledger: the controller alone runs the toggle.
+        const factory: CngxArrayCommitHandlerFactory = (opts) => ({
+          ...createArrayCommitHandler(opts),
+          beginToggle: (next, previous, _option, action) =>
+            opts.core.commitController.begin(action, next, previous, {
+              onSuccess: () => opts.core.togglingOption.set(null),
+              onError: () => undefined,
+            }),
+        });
+        const m = mount({
+          initial: ['red', 'green', 'blue'],
+          providers: [{ provide: CNGX_ARRAY_COMMIT_HANDLER_FACTORY, useValue: factory }],
+          content: `<ng-template cngxSelectCommitError let-option="option"><span class="contract-error-option">{{ option?.label ?? 'none' }}</span></ng-template>`,
+        });
+        m.reorderFirstRight();
+        m.resolveLast();
+        m.pickAt(2);
+        m.rejectLast();
+        m.open();
+        const shown = m.el.querySelector('.contract-error-option');
+        expect(shown, `${host.selector} renders no commit-error slot`).not.toBeNull();
+        expect(shown!.textContent).toBe('Blue');
       },
     };
 
