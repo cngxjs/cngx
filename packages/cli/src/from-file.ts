@@ -6,7 +6,7 @@
 import { readFileSync } from 'node:fs';
 
 // `import [type] [Default,] { a, b as c, type d } from '@cngx/<entry>'`, across lines.
-const NAMED_IMPORT = /\bimport\s+(?:type\s+)?(?:[A-Za-z_$][\w$]*\s*,\s*)?\{([^}]*)\}\s*from\s*['"]@cngx\/[^'"]+['"]/g;
+const NAMED_IMPORT = /\bimport\s+(type\s+)?(?:[A-Za-z_$][\w$]*\s*,\s*)?\{([^}]*)\}\s*from\s*['"]@cngx\/[^'"]+['"]/g;
 
 // A `/` after one of these (or a keyword below) starts a regex literal, not a division.
 const REGEX_AFTER_CHAR = new Set([...'(,=:[!&|?{};+-*%<>~^']);
@@ -83,25 +83,43 @@ function stripComments(source: string): string {
   return out;
 }
 
-/** The imported names, in source order, deduplicated; an `as` alias resolves to the imported name. */
-export function extractCngxNames(source: string): string[] {
+/** The named `@cngx/*` imports of one source file. */
+export interface CngxImports {
+  /** In source order, deduplicated; an `as` alias resolves to the imported name. */
+  readonly names: readonly string[];
+  /** The names imported only as types (`import type { X }`, `{ type X }`): never an api entry. */
+  readonly typeOnly: ReadonlySet<string>;
+}
+
+export function extractCngxImports(source: string): CngxImports {
   const names = new Set<string>();
+  const valueImported = new Set<string>();
   for (const match of stripComments(source).matchAll(NAMED_IMPORT)) {
-    for (const specifier of match[1].split(',')) {
-      const name = specifier
-        .trim()
+    const statementTypeOnly = match[1] !== undefined;
+    for (const specifier of match[2].split(',')) {
+      const trimmed = specifier.trim();
+      const name = trimmed
         .replace(/^type\s+/, '')
         .split(/\s+as\s+/)[0]
         .trim();
-      if (/^[A-Za-z_$][\w$]*$/.test(name)) {
-        names.add(name);
+      if (!/^[A-Za-z_$][\w$]*$/.test(name)) {
+        continue;
+      }
+      names.add(name);
+      if (!statementTypeOnly && !/^type\s/.test(trimmed)) {
+        valueImported.add(name);
       }
     }
   }
-  return [...names];
+  return { names: [...names], typeOnly: new Set([...names].filter((name) => !valueImported.has(name))) };
 }
 
-/** Read `path` and extract its `@cngx/*` names; throws when the file cannot be read. */
-export function readCngxNames(path: string, readFile: (path: string) => string = (file) => readFileSync(file, 'utf8')): string[] {
-  return extractCngxNames(readFile(path));
+/** The imported names only; see {@link extractCngxImports}. */
+export function extractCngxNames(source: string): string[] {
+  return [...extractCngxImports(source).names];
+}
+
+/** Read `path` and extract its `@cngx/*` imports; throws when the file cannot be read. */
+export function readCngxImports(path: string, readFile: (path: string) => string = (file) => readFileSync(file, 'utf8')): CngxImports {
+  return extractCngxImports(readFile(path));
 }

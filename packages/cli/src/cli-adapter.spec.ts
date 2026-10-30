@@ -953,35 +953,45 @@ describe('several names, --from and --compact', () => {
     expect(JSON.parse(run.stdout).result.map((entry: { name: string }) => entry.name)).toEqual(['CngxSelect']);
   });
 
-  it('skips --from names with no entry: one stderr line, exit 0 for the rest', async () => {
-    const file = sourceFile("import { CngxSelect, provideSelectConfig, CNGX_SELECT_CONFIG } from '@cngx/forms/select';\n");
+  it('skips --from tokens, functions and type-only imports: one stderr line, exit 0 for the rest', async () => {
+    const file = sourceFile(
+      "import { CngxSelect, CNGX_SELECT_CONFIG } from '@cngx/forms/select';\nimport type { CngxAsyncState } from '@cngx/core/utils';\n",
+    );
     const md = await cli('api', '--from', file);
     const json = await cli('api', '--from', file, '--format=json');
 
     expect(md.code).toBe(EXIT_OK);
-    expect(md.stderr).toBe('cngx api: skipped --from names with no api entry: provideSelectConfig, CNGX_SELECT_CONFIG\n');
+    expect(md.stderr).toBe('cngx api: skipped --from names with no api entry: CNGX_SELECT_CONFIG, CngxAsyncState\n');
     expect(md.stdout).toContain('CngxSelect');
     expect(JSON.parse(json.stdout).result.map((entry: { name: string }) => entry.name)).toEqual(['CngxSelect']);
   });
 
+  it('counts a --from name the release does not have as not found, not skipped', async () => {
+    const file = sourceFile("import { CngxSelect, CngxSelectX } from '@cngx/forms/select';\n");
+    const run = await cli('api', '--from', file);
+
+    expect(run.code).toBe(EXIT_NOT_FOUND);
+    expect(run.stderr).toBe('cngx api: not found: CngxSelectX\n');
+  });
+
   it('exits 1 with an empty result when every --from name is skipped', async () => {
-    const file = sourceFile("import { provideSelectConfig } from '@cngx/forms/select';\n");
+    const file = sourceFile("import { CNGX_SELECT_CONFIG } from '@cngx/forms/select';\n");
     const md = await cli('api', '--from', file);
     const json = await cli('api', '--from', file, '--format=json');
 
     expect(md.code).toBe(EXIT_NOT_FOUND);
     expect(md.stdout).toBe('');
-    expect(md.stderr).toBe('cngx api: skipped --from names with no api entry: provideSelectConfig\n');
+    expect(md.stderr).toBe('cngx api: skipped --from names with no api entry: CNGX_SELECT_CONFIG\n');
     expect(JSON.parse(json.stdout)).toMatchObject({ result: [] });
   });
 
   it('still counts a missing positional name beside --from as not found', async () => {
-    const file = sourceFile("import { CngxSelect, provideSelectConfig } from '@cngx/forms/select';\n");
+    const file = sourceFile("import { CngxSelect, CNGX_SELECT_CONFIG } from '@cngx/forms/select';\n");
     const run = await cli('api', 'CngxNoSuchThing', '--from', file);
 
     expect(run.code).toBe(EXIT_NOT_FOUND);
     expect(run.stderr).toBe(
-      'cngx api: skipped --from names with no api entry: provideSelectConfig\ncngx api: not found: CngxNoSuchThing\n',
+      'cngx api: skipped --from names with no api entry: CNGX_SELECT_CONFIG\ncngx api: not found: CngxNoSuchThing\n',
     );
   });
 

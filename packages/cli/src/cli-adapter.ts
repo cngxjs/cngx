@@ -31,7 +31,8 @@ import { loadBundledDocs, loadDocsFromFile } from './core/data/loader.js';
 import { createSnapshotCache, resolveCacheDir } from './core/data/snapshot-cache.js';
 import type { InstalledVersion } from './core/installed-version.js';
 import { resolveInstalledCngxVersion } from './core/installed-version.js';
-import { readCngxNames } from './from-file.js';
+import type { CngxImports } from './from-file.js';
+import { readCngxImports } from './from-file.js';
 import type * as DoctorExports from '@cngx/doctor/cngx-doctor.mjs';
 
 export const EXIT_OK = 0;
@@ -445,16 +446,16 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
   }
   const named = [...positionals];
   const fromFile = values[FROM_FLAG];
-  let fromNames: string[] = [];
+  let fromImports: CngxImports = { names: [], typeOnly: new Set() };
   if (takesNames && typeof fromFile === 'string') {
     try {
-      fromNames = readCngxNames(fromFile);
+      fromImports = readCngxImports(fromFile);
     } catch (error) {
       return usageError(io, `--${FROM_FLAG}: cannot read ${fromFile}: ${errorMessage(error)}`, hint);
     }
-    named.push(...fromNames);
+    named.push(...fromImports.names);
     // Checked on the file alone: positionals beside it do not excuse a file that names nothing.
-    if (fromNames.length === 0) {
+    if (fromImports.names.length === 0) {
       io.stderr(`cngx ${def.cliName}: no named @cngx imports in ${fromFile}.\n`);
       if (format === 'json') {
         io.stdout(`${JSON.stringify({ cngxVersion: null, result: [] }, null, 2)}\n`);
@@ -511,7 +512,11 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
   let rendered: Rendered;
   try {
     // A --from caller cannot know the name count, so its json shape must not depend on it.
-    const shape: AnswerShape = { list: typeof fromFile === 'string', skippable: new Set(fromNames.filter((name) => !positionals.includes(name))) };
+    const shape: AnswerShape = {
+      list: typeof fromFile === 'string',
+      fromOnly: new Set(fromImports.names.filter((name) => !positionals.includes(name))),
+      typeOnly: fromImports.typeOnly,
+    };
     rendered = await answer(def, context, inputs, format, hint, { compact: values.compact === true }, shape);
   } catch (error) {
     return internalError(io, `cngx ${def.cliName}`, error, format);
@@ -672,8 +677,10 @@ async function runDoctorCommand(
 interface AnswerShape {
   /** Render the several-names shapes even for one input (`--from`). */
   readonly list: boolean;
-  /** Names that came only from `--from`: skipped, not missing, when nothing answers for them. */
-  readonly skippable: ReadonlySet<string>;
+  /** Names that came only from `--from`, not from a positional. */
+  readonly fromOnly: ReadonlySet<string>;
+  /** `--from` names the file imports only as types. */
+  readonly typeOnly: ReadonlySet<string>;
 }
 
 /** A finished run, rendered but not yet written. */
@@ -724,11 +731,14 @@ async function answer(
   // target; the others answer from the bundled snapshot.
   const cngxVersion = groundedVersion ?? def.answeredVersion?.(payloads[0]) ?? context.bundled.meta.cngxVersion;
   const label = (input: Record<string, unknown>) => String(input[def.positional!]);
-  // A --from name this command has no entry for (a provide* function, a token, a
-  // type) is skipped, not missing: a source file imports more than components.
-  const skipped = new Set(
-    inputs.filter((input, i) => shape.skippable.size > 0 && !isFound(def, payloads[i]) && shape.skippable.has(label(input))),
-  );
+  // A --from name that is an export of another kind (a provide* function, a token,
+  // a type-only import) is skipped, not missing: a source file imports more than
+  // components. A name the release does not have, or an ambiguous one, stays missing.
+  const unresolved = inputs.filter((input, i) => shape.fromOnly.size > 0 && shape.fromOnly.has(label(input)) && !isFound(def, payloads[i]));
+  const otherKinds = unresolved.some((input) => !shape.typeOnly.has(label(input)))
+    ? await otherExportNames(def, context, inputs[0])
+    : new Set<string>();
+  const skipped = new Set(unresolved.filter((input) => shape.typeOnly.has(label(input)) || otherKinds.has(label(input))));
   const kept = inputs.flatMap((input, i) => (skipped.has(input) ? [] : [{ input, payload: payloads[i] }]));
   const skipLine = skipped.size === 0 ? '' : `cngx ${def.cliName}: skipped --from names with no ${def.cliName} entry: ${[...skipped].map(label).join(', ')}\n`;
   if (skipped.size > 0 && kept.length === 0) {
@@ -755,6 +765,17 @@ async function answer(
   const notFound = missing.length === 0 ? '' : `cngx ${def.cliName}: not found: ${missing.map(label).join(', ')}\n`;
   const stderr = `${skipLine}${notFound}`;
   return { stdout, stderr, exitCode };
+}
+
+/**
+ * The token and function names of the release the run answered from: exports a
+ * source file imports that no name-taking command answers for. Types are not in
+ * the snapshot; `--from` knows them only from type-only imports.
+ */
+async function otherExportNames(def: CngxCommand, context: CommandContext, input: Record<string, unknown>): Promise<ReadonlySet<string>> {
+  const field = versionField(def);
+  const resolution = await context.resolve(field === undefined ? undefined : (input[field] as string | undefined));
+  return resolution.ok ? new Set([...resolution.docs.tokens, ...resolution.docs.functions].map((entry) => entry.name)) : new Set();
 }
 
 /** Package-relative locations the entry module resolves against its own URL. */

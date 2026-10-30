@@ -4,7 +4,7 @@
 
 import { win32 } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
-import { extractCngxNames, readCngxNames } from './from-file.js';
+import { extractCngxImports, extractCngxNames, readCngxImports } from './from-file.js';
 
 const SOURCE = [
   "import { Component } from '@angular/core';",
@@ -69,17 +69,28 @@ describe('extractCngxNames', () => {
     expect(extractCngxNames("import Def, { CngxSelect } from '@cngx/forms/select';")).toEqual(['CngxSelect']);
   });
 
+  it('marks a name type-only when every import of it is a type import', () => {
+    const source = [
+      "import type { CngxAsyncState } from '@cngx/core/utils';",
+      "import { type CngxStatus, CngxSelect } from '@cngx/forms/select';",
+      "import type { CngxChip } from '@cngx/ui';",
+      "import { CngxChip as Chip } from '@cngx/ui';",
+    ].join('\n');
+
+    expect([...extractCngxImports(source).typeOnly]).toEqual(['CngxAsyncState', 'CngxStatus']);
+  });
+
   it('tolerates a trailing comma', () => {
     expect(extractCngxNames("import { CngxSelect, } from '@cngx/forms/select';")).toEqual(['CngxSelect']);
   });
 });
 
-describe('readCngxNames', () => {
+describe('readCngxImports', () => {
   it('reads a C:\\ path as given, built with path.win32', () => {
     const path = win32.join('C:\\', 'work', 'app', 'app.component.ts');
     const readFile = vi.fn(() => SOURCE);
 
-    expect(readCngxNames(path, readFile)).toEqual(EXPECTED);
+    expect(readCngxImports(path, readFile).names).toEqual(EXPECTED);
     expect(readFile).toHaveBeenCalledWith('C:\\work\\app\\app.component.ts');
   });
 
@@ -88,6 +99,6 @@ describe('readCngxNames', () => {
       throw new Error('ENOENT: no such file');
     };
 
-    expect(() => readCngxNames('missing.ts', readFile)).toThrow('ENOENT');
+    expect(() => readCngxImports('missing.ts', readFile)).toThrow('ENOENT');
   });
 });
