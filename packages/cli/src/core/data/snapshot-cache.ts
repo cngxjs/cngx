@@ -153,8 +153,11 @@ export function resolveCacheDir(
   if (platform === 'darwin') {
     return path.join(home, 'Library', 'Caches', 'cngx');
   }
+  if (platform === 'win32' && env.LOCALAPPDATA) {
+    return path.join(env.LOCALAPPDATA, 'cngx', 'Cache');
+  }
   if (platform === 'win32') {
-    return path.join(env.LOCALAPPDATA ?? path.join(home, 'AppData', 'Local'), 'cngx', 'Cache');
+    return path.join(home, 'AppData', 'Local', 'cngx', 'Cache');
   }
   return path.join(home, '.cache', 'cngx');
 }

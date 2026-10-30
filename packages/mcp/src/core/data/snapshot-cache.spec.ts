@@ -59,6 +59,10 @@ describe('resolveCacheDir', () => {
   it('ignores an empty CNGX_CACHE_DIR', () => {
     expect(resolveCacheDir({ CNGX_CACHE_DIR: '' }, 'linux', '/home/u')).toBe('/home/u/.cache/cngx');
   });
+
+  it('ignores an empty LOCALAPPDATA on win32 instead of resolving under cwd', () => {
+    expect(resolveCacheDir({ LOCALAPPDATA: '' }, 'win32', 'C:\\Users\\u')).toBe('C:\\Users\\u\\AppData\\Local\\cngx\\Cache');
+  });
 });
 
 describe('createSnapshotCache', () => {
