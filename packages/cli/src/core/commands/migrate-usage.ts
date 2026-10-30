@@ -12,7 +12,14 @@ import type { DocsIndex } from '../data/loader.js';
 import type { DocsResolver } from '../data/docs-resolver.js';
 import { diffSnapshots } from '../diff/snapshot-diff.js';
 import { normalizeReleaseVersion } from '../diff/snapshot-fetch.js';
-import type { CategoryDelta, MigrateUsageResult, SignatureChangedEntry, UsageDelta, UsageDeltaError } from '../diff/types.js';
+import type {
+  CategoryDelta,
+  MigrateUsageResult,
+  SignatureChangedEntry,
+  UsageDelta,
+  UsageDeltaError,
+  UsageDeltaMeta,
+} from '../diff/types.js';
 import { blocks, cell, code, section, table, textCell } from './markdown.js';
 
 export interface MigrateUsageArgs {
@@ -35,16 +42,23 @@ export async function migrateUsage(
 ): Promise<MigrateUsageResult> {
   const from = args.from;
   const to = args.to ?? bundled.meta.cngxVersion;
+  const invalid = (argument: 'from' | 'to', message: string): UsageDeltaError => ({
+    ok: false,
+    meta: { from, to: to ?? 'unknown' },
+    reason: 'invalid-version',
+    message: `${argument} ${message}`,
+  });
 
   // Only the versions the caller passed are validated, both before the first
   // resolve, so a malformed `to` never waits behind a fetch of `from`. The
   // message names the argument; the version contract itself stays argument-neutral.
-  const supplied: readonly (readonly ['from' | 'to', string])[] = args.to === undefined ? [['from', from]] : [['from', from], ['to', args.to]];
-  for (const [argument, version] of supplied) {
-    const normalized = normalizeReleaseVersion(version);
-    if (!normalized.ok) {
-      return { ok: false, meta: { from, to: to ?? 'unknown' }, reason: 'invalid-version', message: `${argument} ${normalized.message}` };
-    }
+  const fromVersion = normalizeReleaseVersion(from);
+  if (!fromVersion.ok) {
+    return invalid('from', fromVersion.message);
+  }
+  const toVersion = args.to === undefined ? null : normalizeReleaseVersion(args.to);
+  if (toVersion && !toVersion.ok) {
+    return invalid('to', toVersion.message);
   }
   // `unknown` is a display label only: it is never validated or resolved.
   if (to === null) {
@@ -65,20 +79,14 @@ export async function migrateUsage(
     return { ok: false, meta: { from, to }, reason: toResolved.reason, message: toResolved.message };
   }
 
-  const delta = diffSnapshots(fromResolved.docs, toResolved.docs);
-  // The resolver already labels an unstamped fetched asset with its requested version
-  // (a successful download of the `v<version>` asset means the asset IS that version),
-  // so `.version` is the truthful resolved label; fall back to the request only for the
-  // theoretical null case an unstamped bundled short-circuit would produce.
-  return {
-    ...delta,
-    meta: {
-      from,
-      to,
-      resolvedFrom: fromResolved.version ?? from,
-      resolvedTo: toResolved.version ?? to,
-    },
+  // The fallback only narrows the resolver's nullable label (a bundled short-circuit of an unstamped snapshot).
+  const meta: UsageDeltaMeta = {
+    from,
+    to,
+    resolvedFrom: fromResolved.version ?? fromVersion.version,
+    resolvedTo: toResolved.version ?? toVersion?.version ?? to,
   };
+  return { ok: true, meta, ...diffSnapshots(fromResolved.docs, toResolved.docs) };
 }
 
 type DeltaCategory = keyof Pick<UsageDelta, 'components' | 'inputs' | 'outputs' | 'slots' | 'diTokens'>;
@@ -123,7 +131,7 @@ export function migrateUsageMarkdown(delta: UsageDelta | null): string {
   });
   const changed = sections.some((s) => s !== '');
   return blocks(
-    `# Migrating ${cell(meta.resolvedFrom ?? meta.from)} -> ${cell(meta.resolvedTo ?? meta.to)}`,
+    `# Migrating ${cell(meta.resolvedFrom)} -> ${cell(meta.resolvedTo)}`,
     changed ? null : 'No removed, renamed or signature-changed API between these releases.',
     ...sections,
   );
@@ -169,6 +177,6 @@ export const migrateUsageCommand = defineCommand({
       return failure;
     }
   },
-  answeredVersion: (delta: UsageDelta | null) => delta?.meta.resolvedTo ?? delta?.meta.to ?? null,
+  answeredVersion: (delta: UsageDelta | null) => delta?.meta.resolvedTo ?? null,
   toMarkdown: (delta: UsageDelta | null) => migrateUsageMarkdown(delta),
 });

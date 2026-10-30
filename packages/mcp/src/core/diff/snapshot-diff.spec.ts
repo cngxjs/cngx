@@ -15,8 +15,8 @@ const BUNDLED_DIR = fileURLToPath(new URL('../../../data/', import.meta.url));
 describe('diffSnapshots', () => {
   const delta = diffSnapshots(loadDocsFromFile(OLD), loadDocsFromFile(NEW));
 
-  it('records the resolved snapshot versions in meta', () => {
-    expect(delta.meta).toMatchObject({ resolvedFrom: '0.1.0', resolvedTo: '0.2.0', from: '0.1.0', to: '0.2.0' });
+  it('returns the categories only; migrateUsage owns ok and meta', () => {
+    expect(Object.keys(delta).sort()).toEqual(['components', 'diTokens', 'inputs', 'outputs', 'slots']);
   });
 
   it('reports a removed input under its owning component', () => {
@@ -190,7 +190,6 @@ describe('diffSnapshots over malformed slots', () => {
     const to = index('2.0.0', [{ name: 'CngxX', slots: [], inputsClass: [] }]);
     const delta = diffSnapshots(from, to);
 
-    expect(delta.ok).toBe(true);
     expect(delta.slots.removed).toEqual([{ name: 'cngxKept', owner: 'CngxX' }]);
     expect(delta.inputs.removed).toEqual([{ name: 'gone', owner: 'CngxX' }]);
   });
@@ -503,7 +502,8 @@ describe('diffSnapshots output order and labels', () => {
       ...index('2.0.0', [{ name: 'CngxX', selector: 'cngx-y', inputsClass: [{ name: 'v', type: 'number' }] }]),
       tokens: [{ name: 'CNGX_T', type: 'token', tokenType: 'B' }],
     };
-    const markdown = migrateUsageMarkdown(diffSnapshots(from, to));
+    const meta = { from: '1.0.0', to: '2.0.0', resolvedFrom: '1.0.0', resolvedTo: '2.0.0' };
+    const markdown = migrateUsageMarkdown({ ok: true, meta, ...diffSnapshots(from, to) });
 
     expect(markdown).toContain('|selector|`CngxX`|`cngx-x` -> `cngx-y`|');
     expect(markdown).toContain('|type|`CngxX.v`|`string` -> `number`|');
@@ -535,9 +535,10 @@ describe('diffSnapshots output order and labels', () => {
   });
 
   it('answers byte-equal json and markdown across 20 shuffles of both snapshots', () => {
+    const meta = { from: '1.0.0', to: '2.0.0', resolvedFrom: '1.0.0', resolvedTo: '2.0.0' };
     const delta = diffSnapshots(bundled, edited);
     const json = JSON.stringify(delta);
-    const markdown = migrateUsageMarkdown(delta);
+    const markdown = migrateUsageMarkdown({ ok: true, meta, ...delta });
 
     expect(delta.components.removed.length).toBeGreaterThan(1);
     expect(delta.inputs.removed.length).toBeGreaterThan(1);
@@ -546,7 +547,7 @@ describe('diffSnapshots output order and labels', () => {
       const shuffledDelta = diffSnapshots(shuffleIndex(bundled, seed), shuffleIndex(edited, seed + 100));
 
       expect(JSON.stringify(shuffledDelta), `seed ${seed}`).toBe(json);
-      expect(migrateUsageMarkdown(shuffledDelta), `seed ${seed}`).toBe(markdown);
+      expect(migrateUsageMarkdown({ ok: true, meta, ...shuffledDelta }), `seed ${seed}`).toBe(markdown);
     }
   });
 });

@@ -1,7 +1,7 @@
 // The pure, in-process diff over two loaded `DocsIndex` snapshots. No loader change:
 // each snapshot is loaded through the existing `loadDocsFromFile` (loader.ts:71) by
 // the caller, and this module walks the parsed entries and emits the categorized
-// `UsageDelta`. Renames are inferred only where a category has a structural
+// `UsageDeltaCategories`. Renames are inferred only where a category has a structural
 // fingerprint strong enough to trust: a top-level entry (lib + input/output
 // name-sets) or a slot (its full description). A leaf member keyed only by a bare
 // type (an input/output/token) is NOT rename-inferred - an unrelated same-typed
@@ -20,7 +20,7 @@ import type {
   RemovedEntry,
   RenamedEntry,
   SignatureChangedEntry,
-  UsageDelta,
+  UsageDeltaCategories,
 } from './types.js';
 
 interface Named {
@@ -221,7 +221,7 @@ function kindChanges(fromDocs: DocsIndex, toDocs: DocsIndex): { pairs: [DocEntry
   return { pairs: flips.map(({ pair }) => pair), delta: { removed: [], renamed: [], signatureChanged } };
 }
 
-export function diffSnapshots(fromDocs: DocsIndex, toDocs: DocsIndex): UsageDelta {
+export function diffSnapshots(fromDocs: DocsIndex, toDocs: DocsIndex): UsageDeltaCategories {
   // A component that became a directive (or back) keeps its name: pulled out of
   // the per-kind lists so it is neither removed nor paired into a rename.
   const kindChanged = kindChanges(fromDocs, toDocs);
@@ -293,17 +293,7 @@ export function diffSnapshots(fromDocs: DocsIndex, toDocs: DocsIndex): UsageDelt
     signatureOf: (token) => token.tokenType ?? token.type ?? '',
   });
 
-  const resolvedFrom = fromDocs.meta.cngxVersion;
-  const resolvedTo = toDocs.meta.cngxVersion;
-
   return {
-    ok: true,
-    meta: {
-      from: resolvedFrom ?? 'unknown',
-      to: resolvedTo ?? 'unknown',
-      resolvedFrom,
-      resolvedTo,
-    },
     components: sortDelta(components),
     inputs: sortDelta(inputs),
     outputs: sortDelta(outputs),

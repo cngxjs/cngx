@@ -46,15 +46,17 @@ export interface CategoryDelta {
 }
 
 /**
- * Which two releases the delta spans. `from`/`to` are the requested versions;
- * `resolvedFrom`/`resolvedTo` are the `cngxVersion` each loaded snapshot actually
- * carried (`null` for an un-stamped raw export).
+ * Which two releases the delta spans. `from`/`to` are the requested versions
+ * (`to` defaults to the bundled release). `resolvedFrom`/`resolvedTo` name the
+ * release each side answered as: the `cngxVersion` of the resolved snapshot,
+ * else the normalised requested version, since a fetched asset is the version
+ * it was requested as.
  */
 export interface UsageDeltaMeta {
   from: string;
   to: string;
-  resolvedFrom: string | null;
-  resolvedTo: string | null;
+  resolvedFrom: string;
+  resolvedTo: string;
 }
 
 /** The successful, structured cross-version delta. */
@@ -67,6 +69,9 @@ export interface UsageDelta {
   slots: CategoryDelta;
   diTokens: CategoryDelta;
 }
+
+/** The per-category part of a {@link UsageDelta}: what the pure diff returns. */
+export type UsageDeltaCategories = Omit<UsageDelta, 'ok' | 'meta'>;
 
 /** Why a non-bundled snapshot could not be obtained. */
 export type SnapshotFetchFailureReason = 'gh-missing' | 'network' | 'asset-missing' | 'invalid-version';
