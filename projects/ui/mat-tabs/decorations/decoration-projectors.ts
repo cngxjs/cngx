@@ -11,6 +11,7 @@ import {
   untracked,
   type ViewContainerRef,
 } from '@angular/core';
+import { createIconSvgElement, type CngxIconSvgElement } from '@cngx/common/display';
 import {
   CNGX_ICON_ALERT,
   CNGX_ICON_BAN,
@@ -83,7 +84,7 @@ function restoreAriaDescribedbyExceptToken(
 const ICON_SVG_CLASS = 'cngx-mat-tab__icon-svg';
 
 /**
- * An `aria-hidden` span holding one `<svg><path>` icon. The projectors
+ * An `aria-hidden` span holding one shared-icon `<svg>`. The projectors
  * append it to the tab itself: `::before` is Material's focus indicator,
  * so a pseudo-element cannot carry it.
  *
@@ -91,39 +92,21 @@ const ICON_SVG_CLASS = 'cngx-mat-tab__icon-svg';
  */
 interface MatTabIconGlyph {
   readonly span: HTMLElement;
-  readonly svg: SVGElement;
-  readonly path: SVGElement;
+  readonly icon: CngxIconSvgElement;
 }
 
 /** @internal */
-function createIconGlyph(renderer: Renderer2, className: string): MatTabIconGlyph {
+function createIconGlyph(
+  renderer: Renderer2,
+  className: string,
+  icon: CngxIconData,
+): MatTabIconGlyph {
   const span = renderer.createElement('span') as HTMLElement;
   renderer.addClass(span, className);
   renderer.setAttribute(span, 'aria-hidden', 'true');
-  const svg = renderer.createElement('svg', 'svg') as SVGElement;
-  renderer.addClass(svg, ICON_SVG_CLASS);
-  renderer.setAttribute(svg, 'focusable', 'false');
-  const path = renderer.createElement('path', 'svg') as SVGElement;
-  renderer.appendChild(svg, path);
-  renderer.appendChild(span, svg);
-  return { span, svg, path };
-}
-
-/**
- * `CngxIconSvg` needs a component instance, so the imperative glyph
- * applies the icon data itself; mat-tabs.css paints by the paint class.
- *
- * @internal
- */
-function writeIconGlyph(renderer: Renderer2, glyph: MatTabIconGlyph, icon: CngxIconData): void {
-  renderer.setAttribute(glyph.svg, 'viewBox', icon.viewBox);
-  renderer.setAttribute(glyph.path, 'd', icon.d);
-  const strokeClassName = `${ICON_SVG_CLASS}--stroke`;
-  if (icon.paint === 'stroke') {
-    renderer.addClass(glyph.svg, strokeClassName);
-  } else {
-    renderer.removeClass(glyph.svg, strokeClassName);
-  }
+  const svg = createIconSvgElement(renderer, icon, ICON_SVG_CLASS);
+  renderer.appendChild(span, svg.element);
+  return { span, icon: svg };
 }
 
 /**
@@ -319,11 +302,7 @@ export function createMatTabRejectionDecoration(
     const reason = currentReason();
     opts.renderer.setAttribute(target, 'data-reason', reason);
     opts.renderer.setAttribute(glyph.span, 'data-reason', reason);
-    writeIconGlyph(
-      opts.renderer,
-      glyph,
-      reason === 'refused' ? CNGX_ICON_BAN : CNGX_ICON_ALERT,
-    );
+    glyph.icon.setIcon(reason === 'refused' ? CNGX_ICON_BAN : CNGX_ICON_ALERT);
   };
 
   const clearDecoration = (): void => {
@@ -358,7 +337,7 @@ export function createMatTabRejectionDecoration(
     }
     opts.renderer.addClass(targetEl, className);
 
-    const glyph = cachedGlyph ?? createIconGlyph(opts.renderer, glyphClassName);
+    const glyph = cachedGlyph ?? createIconGlyph(opts.renderer, glyphClassName, CNGX_ICON_ALERT);
     cachedGlyph = glyph;
     writeReason(targetEl, glyph);
     // On the tab itself, a flex item after `.mdc-tab__content`, so the
@@ -709,8 +688,7 @@ export function createMatTabAggregatorDecoration(
     opts.renderer.addClass(targetEl, className);
 
     // A flex item after `.mdc-tab__content`, so the icon follows the label.
-    const badge = createIconGlyph(opts.renderer, badgeClassName);
-    writeIconGlyph(opts.renderer, badge, CNGX_ICON_ALERT);
+    const badge = createIconGlyph(opts.renderer, badgeClassName, CNGX_ICON_ALERT);
     opts.renderer.appendChild(targetEl, badge.span);
 
     const spanId = `${entry.id}-errors`;

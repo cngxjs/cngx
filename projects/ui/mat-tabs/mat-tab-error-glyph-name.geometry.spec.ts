@@ -70,7 +70,7 @@ const MAT_TAB_STYLES = `
         >
           <span class="mdc-tab__content">Billing</span
           ><span class="cngx-mat-tab__error-badge" aria-hidden="true"
-            ><svg [attr.class]="iconClass" viewBox="0 0 24 24" focusable="false">
+            ><svg [attr.class]="iconClass" viewBox="0 0 24 24" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" overflow="visible" style="inline-size: var(--cngx-icon-svg-size, 1em); block-size: var(--cngx-icon-svg-size, 1em); stroke-width: var(--cngx-icon-svg-stroke-width, 2)">
               <path [attr.d]="alert.d" /></svg
           ></span>
         </button>
@@ -82,7 +82,7 @@ const MAT_TAB_STYLES = `
         >
           <span class="mdc-tab__content">Profile</span
           ><span class="cngx-mat-tab__rejection-icon" aria-hidden="true" data-reason="failed"
-            ><svg [attr.class]="iconClass" viewBox="0 0 24 24" focusable="false">
+            ><svg [attr.class]="iconClass" viewBox="0 0 24 24" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" overflow="visible" style="inline-size: var(--cngx-icon-svg-size, 1em); block-size: var(--cngx-icon-svg-size, 1em); stroke-width: var(--cngx-icon-svg-stroke-width, 2)">
               <path [attr.d]="alert.d" /></svg
           ></span>
         </button>
@@ -94,7 +94,7 @@ const MAT_TAB_STYLES = `
         >
           <span class="mdc-tab__content">Plan</span
           ><span class="cngx-mat-tab__rejection-icon" aria-hidden="true" data-reason="refused"
-            ><svg [attr.class]="iconClass" viewBox="0 0 24 24" focusable="false">
+            ><svg [attr.class]="iconClass" viewBox="0 0 24 24" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" overflow="visible" style="inline-size: var(--cngx-icon-svg-size, 1em); block-size: var(--cngx-icon-svg-size, 1em); stroke-width: var(--cngx-icon-svg-stroke-width, 2)">
               <path [attr.d]="ban.d" /></svg
           ></span>
         </button>
@@ -107,10 +107,10 @@ const MAT_TAB_STYLES = `
         >
           <span class="mdc-tab__content">Account</span
           ><span class="cngx-mat-tab__rejection-icon" aria-hidden="true" data-reason="failed"
-            ><svg [attr.class]="iconClass" viewBox="0 0 24 24" focusable="false">
+            ><svg [attr.class]="iconClass" viewBox="0 0 24 24" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" overflow="visible" style="inline-size: var(--cngx-icon-svg-size, 1em); block-size: var(--cngx-icon-svg-size, 1em); stroke-width: var(--cngx-icon-svg-stroke-width, 2)">
               <path [attr.d]="alert.d" /></svg></span
           ><span class="cngx-mat-tab__error-badge" aria-hidden="true"
-            ><svg [attr.class]="iconClass" viewBox="0 0 24 24" focusable="false">
+            ><svg [attr.class]="iconClass" viewBox="0 0 24 24" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" overflow="visible" style="inline-size: var(--cngx-icon-svg-size, 1em); block-size: var(--cngx-icon-svg-size, 1em); stroke-width: var(--cngx-icon-svg-stroke-width, 2)">
               <path [attr.d]="alert.d" /></svg
           ></span>
         </button>

@@ -64,7 +64,7 @@ via `--cngx-mat-tab-*`:
 |`--cngx-mat-tab-has-errors-color`|`--cngx-color-danger`|Has-errors icon colour|
 |`--cngx-mat-tab-rejection-icon-size`|`1.15em`|Rejection icon size|
 |`--cngx-mat-tab-has-errors-icon-size`|`1.15em`|Has-errors icon size|
-|`--cngx-mat-tab-rejection-icon-gap`|`0.25rem`|Gap between label and icons|
+|`--cngx-mat-tab-icon-gap`|`0.25rem`|Gap between label and icons|
 |`--cngx-mat-tab-error-font-weight`|`600`|Label weight bump on a rejected tab|
 
 The colours derive from `--cngx-color-danger`, `--cngx-color-warning`

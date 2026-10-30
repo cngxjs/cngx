@@ -31,7 +31,7 @@
  *   `--error` and the two coexist: the badge comes first, the rejection
  *   icon after it
  * - `.cngx-mat-tab__icon-svg` - the `<svg>` inside both icons, built from
- *   the shared `@cngx/utils` icon data; `--stroke` paints the outline
+ *   the shared `@cngx/utils` icon data; `--stroke` marks an outline icon
  *
  * Under forced colors the icons paint CanvasText and a rejected tab gets
  * an inset CanvasText outline, the one cue that survives the system
@@ -136,7 +136,7 @@
    * (`--cngx-space-xs`) below.
    * @group State / Error
    */
-  @property --cngx-mat-tab-rejection-icon-gap {
+  @property --cngx-mat-tab-icon-gap {
     syntax: '*';
     inherits: false;
     initial-value: 0.25rem;
@@ -145,7 +145,7 @@
   /* Read on the icons themselves (inherits: false), so the scale SET lands there. */
   .cngx-mat-tab__rejection-icon,
   .cngx-mat-tab__error-badge {
-    --cngx-mat-tab-rejection-icon-gap: var(--cngx-space-xs, 0.25rem);
+    --cngx-mat-tab-icon-gap: var(--cngx-space-xs, 0.25rem);
   }
 
   /**
@@ -349,7 +349,7 @@
     align-items: center;
     flex: 0 0 auto;
     align-self: center;
-    margin-inline-start: var(--cngx-mat-tab-rejection-icon-gap, 0.25rem);
+    margin-inline-start: var(--cngx-mat-tab-icon-gap, 0.25rem);
     pointer-events: none;
   }
 
@@ -368,10 +368,9 @@
   }
 
   /*
-   * The icons' `<svg><path>`, built by the decorations from the shared
-   * icon data (no `CngxIconSvg` instance, so its stylesheet is not loaded
-   * here). Both draw on the 24-unit grid at stroke width 2, sized in em of
-   * the tab label font.
+   * The icons' `<svg>`, built and painted by the decorations from the shared
+   * icon data. Both draw on the 24-unit grid at stroke width 2, sized in em
+   * of the tab label font.
    */
   .cngx-mat-tab__icon-svg {
     --cngx-icon-svg-size: 1.15em;
@@ -380,12 +379,6 @@
     /* Functional - hardcoded */
     display: block;
     flex: none;
-    overflow: visible;
-    fill: currentColor;
-
-    /* Themable */
-    inline-size: var(--cngx-icon-svg-size, 1.15em);
-    block-size: var(--cngx-icon-svg-size, 1.15em);
   }
 
   .cngx-mat-tab__error-badge > .cngx-mat-tab__icon-svg {
@@ -394,15 +387,6 @@
 
   .cngx-mat-tab__rejection-icon > .cngx-mat-tab__icon-svg {
     --cngx-icon-svg-size: var(--cngx-mat-tab-rejection-icon-size, 1.15em);
-  }
-
-  /* Round caps are part of a stroke icon's shape (see `CngxIconPaint`). */
-  .cngx-mat-tab__icon-svg--stroke {
-    fill: none;
-    stroke: currentColor;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-width: var(--cngx-icon-svg-stroke-width, 2);
   }
 
   /*
