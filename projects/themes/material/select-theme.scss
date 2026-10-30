@@ -119,20 +119,15 @@
 
   --cngx-select-option-min-height: #{map.get($opt-min-heights, $scale)};
   --cngx-select-option-radius: 0;
-  // Options sit edge-to-edge with no outer panel inset (the highlight reaches
-  // the panel border on all sides). The listbox container inside the panel
-  // also drops its default 4px inset so nothing offsets the option rows.
-  --cngx-select-panel-padding: 0;
+  // The listbox container inside the panel drops its default 4px inset so
+  // nothing offsets the option rows. The panel and tree insets are emitted on
+  // their own elements, see `theme`.
   --cngx-listbox-padding: 0;
-  // Tree-select panel owns its own body padding token; zero it too so the tree
-  // rows sit flush like the flat option list.
-  --cngx-tree-select-tree-padding: 0;
   // Tree node rows track the flat option-row metrics so the tree body reads
   // like the rest of the family: same density-scaled row height and the same
   // 16px horizontal rhythm as --cngx-select-option-padding.
   --cngx-tree-select-node-height: #{map.get($opt-min-heights, $scale)};
   --cngx-tree-select-base-indent: 16px;
-  --cngx-tree-select-node-padding-end: 16px;
   // Material option rows sit edge-to-edge (option-radius 0, panel padding 0);
   // match the tree node rows so the body reads identically under the bridge.
   --cngx-tree-select-node-radius: 0;
@@ -188,6 +183,10 @@
   --cngx-select-option-padding: #{map.get($opt-paddings, $scale)};
 }
 
+$-hosts:
+  cngx-select, cngx-multi-select, cngx-combobox, cngx-typeahead, cngx-tree-select,
+  cngx-reorderable-multi-select, cngx-action-select, cngx-action-multi-select, cngx-select-shell;
+
 @mixin theme($theme) {
   // Token map covers two surfaces simultaneously:
   //   - the popover panel (.cngx-select__panel) plus the tree-select host
@@ -239,6 +238,22 @@
       )
       .cngx-select__option {
       @include -option-padding($theme);
+    }
+
+    // Material 3 menus sit their rows edge-to-edge: no panel or tree inset,
+    // so the highlight reaches the panel border and the tree rows sit flush
+    // like the flat list, and a tree row ends on the 16px of an option row.
+    // select-base.css and tree-select-panel.component.css SET these tokens
+    // from the scale on the same elements (0,1,0, same layer); the host
+    // ancestor lifts each bridge rule to 0,1,1 so it lands.
+    :is(#{$-hosts}) .cngx-select__panel {
+      --cngx-select-panel-padding: 0;
+    }
+    :is(#{$-hosts}) .cngx-tree-select__tree {
+      --cngx-tree-select-tree-padding: 0;
+    }
+    :is(#{$-hosts}) .cngx-tree-select__node {
+      --cngx-tree-select-node-padding-end: 16px;
     }
   }
 }
