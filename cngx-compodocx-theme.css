@@ -672,14 +672,6 @@ code.cdx-shiki-inline {
   margin-top: 0;
 }
 
-/* compodocx picks up CHANGELOG.md and LICENSE from the repo root and has no
-   option to leave them out; hide their sidebar entries (the pages still
-   build). */
-#sidebar li.link:has(> a[data-type="chapter-link"][href$="changelog.html"]),
-#sidebar li.link:has(> a[data-type="chapter-link"][href$="license.html"]) {
-  display: none;
-}
-
 /* The sidebar lockup (`customLogo` / `customLogoDark`) carries a tagline;
    at the default 40px cap it is too small to read. */
 :root {

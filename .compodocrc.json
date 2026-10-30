@@ -12,6 +12,7 @@
     "includes": "core-concepts",
     "includesName": "Core Concepts",
     "aiGeneratedNote": "Drafted with AI assistance ({value}) and reviewed by a maintainer.",
+    "disableMarkdownPages": ["changelog", "license"],
     "assetsFolder": "brand",
     "disableSourceCode": true,
     "disableTemplateTab": true,
