@@ -241,3 +241,51 @@ describe('the built entry', () => {
     });
   });
 });
+
+// Source: the "Detected version" and "--offline" decision rows of the phase-4
+// plan. These run main() unstubbed: the disk cache, the installed-version
+// detector and the offline pass-through, which cli-adapter.spec injects as fakes.
+// --offline keeps every case off the network.
+describe('the built entry wires the cache, the detector and --offline', () => {
+  const cacheDir = () => mkdtempSync(join(tmpdir(), 'cngx-entry-cache-'));
+  const runIn = (cwd: string, env: Record<string, string>, ...args: string[]) =>
+    spawnSync(process.execPath, [ENTRY, ...args], { cwd, encoding: 'utf8', env: { ...process.env, ...env } });
+
+  it('pins to the installed release and, under --offline, falls back without a fetch', () => {
+    const project = mkdtempSync(join(tmpdir(), 'cngx-entry-pinned-'));
+    mkdirSync(join(project, 'node_modules', '@cngx', 'core'), { recursive: true });
+    writeFileSync(join(project, 'node_modules', '@cngx', 'core', 'package.json'), JSON.stringify({ name: '@cngx/core', version: '9.9.9' }));
+
+    const result = runIn(project, { CNGX_CACHE_DIR: cacheDir() }, 'api', 'CngxSelect', '--offline');
+
+    expect(result.status).toBe(0);
+    expect(result.stdout.split('\n')[0]).toBe(`> cngx ${BUNDLED_VERSION}`);
+    expect(result.stderr).toContain(`cngx: answering for the installed cngx 9.9.9; the bundled snapshot is ${BUNDLED_VERSION}.`);
+    expect(result.stderr).toContain('v9.9.9 is not cached and --offline forbids a fetch.');
+    rmSync(project, { recursive: true, force: true });
+  });
+
+  it('answers an explicit release from a seeded disk cache under --offline', () => {
+    const cache = cacheDir();
+    const entry = join(cache, 'snapshots', '0.0.9');
+    mkdirSync(entry, { recursive: true });
+    const doc = JSON.parse(readFileSync(DATA, 'utf8')) as Record<string, unknown>;
+    writeFileSync(join(entry, 'documentation.json'), JSON.stringify({ ...doc, cngxVersion: '0.0.9' }));
+
+    const result = runIn(PROJECT, { CNGX_CACHE_DIR: cache }, 'api', 'CngxSelect', '--cngx-version=0.0.9', '--offline');
+
+    expect(result.status).toBe(0);
+    expect(result.stdout.split('\n')[0]).toBe('> cngx 0.0.9');
+    expect(result.stderr).toBe('');
+    rmSync(cache, { recursive: true, force: true });
+  });
+
+  it('exits 1 for an explicit release missing from an empty cache under --offline', () => {
+    const cache = cacheDir();
+    const result = runIn(PROJECT, { CNGX_CACHE_DIR: cache }, 'api', 'CngxSelect', '--cngx-version=0.0.9', '--offline');
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toBe('cngx api: asset-missing: v0.0.9 is not cached and --offline forbids a fetch.\n');
+    rmSync(cache, { recursive: true, force: true });
+  });
+});
