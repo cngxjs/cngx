@@ -243,6 +243,82 @@ describe('createDocsResolver fetched temp dir', () => {
   });
 });
 
+describe('createDocsResolver cache and offline', () => {
+  const cacheOf = (path: string | null): NonNullable<DocsResolverDeps['cache']> => ({
+    read: vi.fn(() => path),
+    write: vi.fn(),
+    discard: vi.fn(),
+  });
+
+  it('answers a disk-cache hit without fetching', async () => {
+    const fetchSnapshot = vi.fn<DocsResolverDeps['fetchSnapshot']>();
+    const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile, cache: cacheOf(NEW) })('0.2.0');
+
+    expect(resolution).toMatchObject({ ok: true, version: '0.2.0' });
+    expect(fetchSnapshot).not.toHaveBeenCalled();
+  });
+
+  it('writes a fetched snapshot to the disk cache after it loaded', async () => {
+    const cache = cacheOf(null);
+    const fetchSnapshot = vi.fn<DocsResolverDeps['fetchSnapshot']>(async () => ({ ok: true, path: NEW }));
+
+    await createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile, cache })('0.2.0');
+
+    expect(cache.write).toHaveBeenCalledWith('0.2.0', NEW);
+  });
+
+  it('does not write a fetched snapshot with an unknown schema', async () => {
+    const cache = cacheOf(null);
+    const fetchSnapshot = vi.fn<DocsResolverDeps['fetchSnapshot']>(async () => ({ ok: true, path: NEW }));
+    const loadDocs = vi.fn(() => {
+      throw new SchemaVersionError(99);
+    });
+
+    const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs, cache })('0.2.0');
+
+    expect(resolution).toMatchObject({ ok: false, reason: 'asset-missing' });
+    expect(cache.write).not.toHaveBeenCalled();
+  });
+
+  it('offline: answers a cache hit and never fetches', async () => {
+    const fetchSnapshot = vi.fn<DocsResolverDeps['fetchSnapshot']>();
+    const resolve = createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile, cache: cacheOf(NEW), offline: true });
+
+    expect(await resolve('0.2.0')).toMatchObject({ ok: true, version: '0.2.0' });
+    expect(fetchSnapshot).not.toHaveBeenCalled();
+  });
+
+  it('offline: answers an uncached version as a failure naming --offline, never another release', async () => {
+    const fetchSnapshot = vi.fn<DocsResolverDeps['fetchSnapshot']>();
+    const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile, cache: cacheOf(null), offline: true })('0.2.0');
+
+    expect(resolution).toEqual({ ok: false, reason: 'asset-missing', message: 'v0.2.0 is not cached and --offline forbids a fetch.' });
+    expect(fetchSnapshot).not.toHaveBeenCalled();
+  });
+
+  it('offline: discards a corrupt entry and does not refetch', async () => {
+    const cache = cacheOf(NEW);
+    const fetchSnapshot = vi.fn<DocsResolverDeps['fetchSnapshot']>();
+    const loadDocs = vi.fn(() => {
+      throw new SchemaVersionError(99);
+    });
+
+    const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs, cache, offline: true })('0.2.0');
+
+    expect(cache.discard).toHaveBeenCalledWith('0.2.0', expect.any(String));
+    expect(resolution).toMatchObject({ ok: false, reason: 'asset-missing' });
+    expect(fetchSnapshot).not.toHaveBeenCalled();
+  });
+
+  it('offline: still answers the bundled version with no cache read', async () => {
+    const cache = cacheOf(null);
+    const resolution = await createDocsResolver(bundled, { fetchSnapshot: vi.fn(), loadDocs: loadDocsFromFile, cache, offline: true })('0.1.0-rc.6');
+
+    expect(resolution).toMatchObject({ ok: true, version: '0.1.0-rc.6' });
+    expect(cache.read).not.toHaveBeenCalled();
+  });
+});
+
 describe('createDocsResolver example urls', () => {
   it('answers a fetched release snapshot with public example urls', async () => {
     const raw = createDocsIndex({

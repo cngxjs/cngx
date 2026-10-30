@@ -16,16 +16,24 @@
 // failure carries `error: { reason, message }` next to `result: null` (reason
 // `internal` for exit 3), a not-found answer has no `error`.
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import type { ParseArgsConfig } from 'node:util';
 import { z } from 'zod';
-import type { CngxCommand, CommandContext } from './core/registry.js';
+import type { CngxCommand, CommandContext, RenderOptions } from './core/registry.js';
 import { COMMANDS, isFound, unwrapAnswer } from './core/registry.js';
+import type { DocsResolver } from './core/data/docs-resolver.js';
 import { createDocsResolver } from './core/data/docs-resolver.js';
-import { normalizeReleaseVersion } from './core/diff/snapshot-fetch.js';
-import { loadBundledDocs } from './core/data/loader.js';
+import { fetchSnapshot, normalizeReleaseVersion, removeTempDir } from './core/diff/snapshot-fetch.js';
+import { loadBundledDocs, loadDocsFromFile } from './core/data/loader.js';
+import { createSnapshotCache, resolveCacheDir } from './core/data/snapshot-cache.js';
+import type { InstalledVersion } from './core/installed-version.js';
+import { resolveInstalledCngxVersion } from './core/installed-version.js';
+import type { CngxImports } from './from-file.js';
+import { readCngxImports } from './from-file.js';
+import type * as DoctorExports from '@cngx/doctor/cngx-doctor.mjs';
 
 export const EXIT_OK = 0;
 export const EXIT_NOT_FOUND = 1;
@@ -41,14 +49,38 @@ export interface CliIo {
   stderr(text: string): void;
 }
 
+/** How the context of one run resolves releases. */
+export interface ContextOptions {
+  /** Answer from the disk cache or the bundled snapshot only; never fetch. */
+  readonly offline: boolean;
+  /** One diagnostic line, e.g. a cache that cannot write. */
+  readonly warn: (line: string) => void;
+}
+
 /** Everything one invocation needs besides argv. */
 export interface CliEnv {
   readonly commands: readonly CngxCommand[];
   /** Builds the command context; called only when a command runs, so help and --version never parse the snapshot. */
-  loadContext(): CommandContext;
+  loadContext(options: ContextOptions): CommandContext;
+  /**
+   * The cngx release the current project uses; run only for a command that takes
+   * `--cngx-version` when the flag is absent. Without it, such a command answers
+   * from the bundled snapshot.
+   */
+  detectVersion?(): InstalledVersion;
+  /** Loads `@cngx/doctor` for `cngx doctor`; without it, `doctor` is an unknown command. */
+  readonly loadDoctor?: () => Promise<DoctorModule>;
   readonly cliVersion: string;
   readonly io: CliIo;
 }
+
+const VERSION_FLAG = 'cngx-version';
+
+/** What `cngx doctor` needs from `@cngx/doctor`. */
+export type DoctorModule = Pick<typeof DoctorExports, 'parseArgs' | 'runDoctor'>;
+
+/** Commands the adapter runs itself, outside the registry: they answer no snapshot query. */
+export const ADAPTER_COMMANDS = ['doctor'] as const;
 
 type Options = NonNullable<ParseArgsConfig['options']>;
 
@@ -100,6 +132,34 @@ export function flagName(def: CngxCommand, field: string): string {
   return def.cliFlags?.[field] ?? field.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
 }
 
+/**
+ * The input field a command takes as `--cngx-version`, if any. It decides which
+ * commands accept `--cngx-version` and `--offline` and which get the detected
+ * default version.
+ */
+export function versionField(def: CngxCommand): string | undefined {
+  return Object.keys(def.input).find((field) => flagName(def, field) === VERSION_FLAG);
+}
+
+/** Help text of the version flag: the CLI's default differs from the MCP tool's, so the adapter owns it. */
+const VERSION_FLAG_HELP =
+  'The cngx release to answer for, e.g. 0.2.0; a leading v or V is accepted. Default: the @cngx version ' +
+  'installed in the current project, else the bundled snapshot. A non-bundled release is fetched once ' +
+  '(through gh, or over HTTPS) and cached on disk.';
+
+const OFFLINE_HELP =
+  'Never fetch: answer from the disk cache, else the bundled snapshot. An explicit --cngx-version that is not cached exits 1.';
+
+const FROM_FLAG = 'from';
+
+/**
+ * Whether a command looks up names (`api`, `slots`, `theme`, `config`,
+ * `example`): it then takes several names, `--from <file>` and `--compact`.
+ */
+export function isNameTaking(def: CngxCommand): boolean {
+  return def.positional === 'name';
+}
+
 const unwrapOptional = (schema: z.ZodType): z.ZodType => (schema instanceof z.ZodOptional ? unwrapOptional(schema.unwrap() as z.ZodType) : schema);
 
 const isOptional = (schema: z.ZodType): boolean => schema.safeParse(undefined).success;
@@ -111,6 +171,13 @@ function commandOptions(def: CngxCommand): Options {
   const options: Options = { ...GLOBAL_OPTIONS };
   for (const [field, schema] of Object.entries(def.input)) {
     options[flagName(def, field)] = { type: isBoolean(schema) ? 'boolean' : 'string' };
+  }
+  if (versionField(def) !== undefined) {
+    options.offline = { type: 'boolean' };
+  }
+  if (isNameTaking(def)) {
+    options[FROM_FLAG] = { type: 'string' };
+    options.compact = { type: 'boolean' };
   }
   return options;
 }
@@ -129,8 +196,15 @@ function commandUsage(def: CngxCommand): string {
   const parts = [`cngx ${def.cliName}`];
   for (const [field, schema] of Object.entries(def.input)) {
     const optional = isOptional(schema);
-    const token = field === def.positional ? `<${field}>` : `--${flagName(def, field)}${valueHint(schema) ? ` ${valueHint(schema)}` : ''}`;
+    const name = isNameTaking(def) && field === def.positional ? `<${field}>...` : `<${field}>`;
+    const token = field === def.positional ? name : `--${flagName(def, field)}${valueHint(schema) ? ` ${valueHint(schema)}` : ''}`;
     parts.push(optional ? `[${token}]` : token);
+  }
+  if (isNameTaking(def)) {
+    parts.push(`[--${FROM_FLAG} <file>]`, '[--compact]');
+  }
+  if (versionField(def) !== undefined) {
+    parts.push('[--offline]');
   }
   parts.push('[--format md|json]');
   return parts.join(' ');
@@ -143,8 +217,17 @@ export function commandHelp(def: CngxCommand): string {
   const rows = Object.entries(def.input).map(([field, schema]) => {
     const hint = valueHint(schema);
     const name = field === def.positional ? `<${field}>` : `--${flagName(def, field)}${hint ? ` ${hint}` : ''}`;
-    return [name, `${describe(schema)}${isOptional(schema) ? '' : ' Required.'}`] as const;
+    const text = field === versionField(def) ? VERSION_FLAG_HELP : describe(schema);
+    const required = isNameTaking(def) && field === def.positional ? ' Required unless --from gives names.' : ' Required.';
+    return [name, `${text}${isOptional(schema) ? '' : required}`] as const;
   });
+  if (isNameTaking(def)) {
+    rows.push([`--${FROM_FLAG} <file>`, 'Also answer for every name the file imports from @cngx/*.']);
+    rows.push(['--compact', 'Shorter markdown: names and types without descriptions.']);
+  }
+  if (versionField(def) !== undefined) {
+    rows.push(['--offline', OFFLINE_HELP]);
+  }
   rows.push(['--format md|json', 'Output format, default md.']);
   const width = Math.max(...rows.map(([name]) => name.length)) + 2;
   return [
@@ -158,9 +241,25 @@ export function commandHelp(def: CngxCommand): string {
   ].join('\n');
 }
 
+/** Help for `cngx doctor`, which is not a registry command. */
+export function doctorHelp(): string {
+  return [
+    'Usage: cngx doctor [<projectDir>] [--format md|json]',
+    '',
+    'Scan the project wiring with @cngx/doctor, the same scan as `npx cngx-doctor`.',
+    '',
+    'Arguments and flags:',
+    '  <projectDir>      Project root to scan, default the current directory; must be a directory.',
+    "  --format md|json  Output format, default md; json prints doctor's findings array.",
+    '',
+    'Exit codes: 0 clean or warnings only, 1 an error-severity finding, 2 usage error, 3 internal error.',
+    '',
+  ].join('\n');
+}
+
 /** The command list and the global flags. */
 export function generalHelp(commands: readonly CngxCommand[], cliVersion: string): string {
-  const width = Math.max(...commands.map((def) => def.cliName.length)) + 2;
+  const width = Math.max(...[...commands.map((def) => def.cliName), ...ADAPTER_COMMANDS].map((name) => name.length)) + 2;
   return [
     `cngx ${cliVersion} - the cngx public API on the command line`,
     '',
@@ -168,13 +267,14 @@ export function generalHelp(commands: readonly CngxCommand[], cliVersion: string
     '',
     'Commands:',
     ...commands.map((def) => `  ${pad(def.cliName, width)}${def.title}`),
+    `  ${pad('doctor', width)}Scan the project wiring (runs @cngx/doctor)`,
     '',
     'Global flags:',
     '  --format md|json  Output format, default md.',
     '  --version, -v     Print the @cngx/cli version.',
     '  --help, -h        Show this help; after a command, that command\'s help.',
     '',
-    'Exit codes: 0 answered, 1 nothing found or the snapshot could not be resolved, 2 usage error, 3 internal error.',
+    'Exit codes: 0 answered, 1 nothing found or the snapshot could not be resolved (doctor: an error finding), 2 usage error, 3 internal error.',
     'Run `cngx <command> --help` for a command\'s arguments.',
     '',
   ].join('\n');
@@ -192,6 +292,11 @@ export function commandFlags(def: CngxCommand): string[] {
   return Object.keys(def.input)
     .filter((field) => field !== def.positional)
     .map((field) => `--${flagName(def, field)}`);
+}
+
+/** The flags the adapter adds to a command beyond its inputs. */
+export function adapterFlags(def: CngxCommand): string[] {
+  return [...(versionField(def) === undefined ? [] : ['--offline']), ...(isNameTaking(def) ? [`--${FROM_FLAG}`, '--compact'] : [])];
 }
 
 /** Every flag the CLI accepts, long and short, across the globals and all commands. */
@@ -274,20 +379,25 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
   }
 
   const name = argv[at];
+  if (name === 'doctor' && env.loadDoctor) {
+    return runDoctorCommand([...argv.slice(0, at), ...argv.slice(at + 1)], env.loadDoctor, env.cliVersion, io);
+  }
   const def = commands.find((command) => command.cliName === name);
   if (!def) {
-    const known = commands.map((command) => command.cliName).join(', ');
+    const known = [...commands.map((command) => command.cliName), ...(env.loadDoctor ? ADAPTER_COMMANDS : [])].join(', ');
     return usageError(io, `unknown command "${name}".`, `Commands: ${known}. Run \`cngx --help\` for usage.`);
   }
 
   const rest = [...argv.slice(0, at), ...argv.slice(at + 1)];
   const hint = `Run \`cngx ${def.cliName} --help\` for usage.`;
-  if (def.cliFlags === undefined || !Object.values(def.cliFlags).includes('cngx-version')) {
+  if (versionField(def) === undefined) {
     // Everything after `--` is a positional, never a flag.
     const end = rest.indexOf('--');
     const flags = end === -1 ? rest : rest.slice(0, end);
-    if (flags.some((token) => token === '--cngx-version' || token.startsWith('--cngx-version='))) {
-      return usageError(io, `${def.cliName} does not take --cngx-version; ${versionHint(def)}.`, hint);
+    for (const flag of [`--${VERSION_FLAG}`, '--offline']) {
+      if (flags.some((token) => token === flag || token.startsWith(`${flag}=`))) {
+        return usageError(io, `${def.cliName} does not take ${flag}; ${versionHint(def)}.`, hint);
+      }
     }
   }
 
@@ -312,7 +422,7 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
     return usageError(io, `--format must be one of ${FORMATS.join(', ')}.`, hint);
   }
 
-  const pinned = values['cngx-version'];
+  const pinned = values[VERSION_FLAG];
   if (typeof pinned === 'string' && pinned.trim() === '') {
     return usageError(io, '--cngx-version needs a version, e.g. --cngx-version=0.1.0.', hint);
   }
@@ -321,46 +431,94 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
     return usageError(io, `--cngx-version must be a release version like 0.1.0 or 0.2.0-rc.1: ${normalized.message}`, hint);
   }
 
-  const maxPositionals = def.positional === undefined ? 0 : 1;
+  const takesNames = isNameTaking(def);
+  const maxPositionals = def.positional === undefined ? 0 : takesNames ? Infinity : 1;
   if (positionals.length > maxPositionals) {
     return usageError(io, `unexpected argument "${positionals[maxPositionals]}".`, hint);
   }
 
-  const input: Record<string, unknown> = {};
+  const base: Record<string, unknown> = {};
   for (const field of Object.keys(def.input)) {
     const value = values[flagName(def, field)];
     if (value !== undefined) {
-      input[field] = value;
+      base[field] = value;
     }
   }
-  if (def.positional !== undefined && positionals.length === 1) {
-    if (input[def.positional] !== undefined) {
-      return usageError(io, `<${def.positional}> given twice.`, hint);
+  const named = [...positionals];
+  const fromFile = values[FROM_FLAG];
+  let fromImports: CngxImports = { names: [], typeOnly: new Set() };
+  if (takesNames && typeof fromFile === 'string') {
+    try {
+      fromImports = readCngxImports(fromFile);
+    } catch (error) {
+      return usageError(io, `--${FROM_FLAG}: cannot read ${fromFile}: ${errorMessage(error)}`, hint);
     }
-    input[def.positional] = positionals[0];
+    named.push(...fromImports.names);
+    // Checked on the file alone: positionals beside it do not excuse a file that names nothing.
+    if (fromImports.names.length === 0) {
+      io.stderr(`cngx ${def.cliName}: no named @cngx imports in ${fromFile}.\n`);
+      if (format === 'json') {
+        io.stdout(`${JSON.stringify({ cngxVersion: null, result: [] }, null, 2)}\n`);
+      }
+      return EXIT_NOT_FOUND;
+    }
+  }
+  const names = [...new Set(named)];
+  if (def.positional !== undefined && names.length > 0 && base[def.positional] !== undefined) {
+    return usageError(io, `<${def.positional}> given twice.`, hint);
+  }
+  const rawInputs = def.positional === undefined || names.length === 0 ? [base] : names.map((name) => ({ ...base, [def.positional!]: name }));
+
+  const inputs: Record<string, unknown>[] = [];
+  for (const input of rawInputs) {
+    const validated = z.object(def.input).strict().safeParse(input);
+    if (!validated.success) {
+      const issues = validated.error.issues.map((issue) => {
+        const field = String(issue.path[0] ?? '');
+        const label = field === def.positional ? `<${field}>` : `--${flagName(def, field)}`;
+        return issue.code === 'invalid_type' && input[field] === undefined ? `${label} is required` : `${label}: ${issue.message}`;
+      });
+      return usageError(io, issues.join('; '), hint);
+    }
+    const data: Record<string, unknown> = validated.data;
+    inputs.push(data);
   }
 
-  const validated = z.object(def.input).strict().safeParse(input);
-  if (!validated.success) {
-    const issues = validated.error.issues.map((issue) => {
-      const field = String(issue.path[0] ?? '');
-      const label = field === def.positional ? `<${field}>` : `--${flagName(def, field)}`;
-      return issue.code === 'invalid_type' && input[field] === undefined ? `${label} is required` : `${label}: ${issue.message}`;
-    });
-    return usageError(io, issues.join('; '), hint);
-  }
-
+  const offline = values.offline === true;
   let context: CommandContext;
   try {
-    context = env.loadContext();
+    context = env.loadContext({ offline, warn: (line) => io.stderr(`${line}\n`) });
   } catch (error) {
     // A broken install is not a miss: exit 3, like any other throw nobody expected.
     return internalError(io, 'cngx', error, format);
   }
 
+  const field = versionField(def);
+  if (field !== undefined && inputs[0][field] === undefined && env.detectVersion) {
+    let detected: InstalledVersion;
+    try {
+      detected = env.detectVersion();
+    } catch (error) {
+      return internalError(io, 'cngx', error, format);
+    }
+    const pinnedTo = pinDetected(detected, context, offline, io);
+    if (pinnedTo !== null) {
+      for (const input of inputs) {
+        input[field] = pinnedTo.version;
+      }
+      context = pinnedTo.context;
+    }
+  }
+
   let rendered: Rendered;
   try {
-    rendered = await answer(def, context, validated.data, format, hint);
+    // A --from caller cannot know the name count, so its json shape must not depend on it.
+    const shape: AnswerShape = {
+      list: typeof fromFile === 'string',
+      fromOnly: new Set(fromImports.names.filter((name) => !positionals.includes(name))),
+      typeOnly: fromImports.typeOnly,
+    };
+    rendered = await answer(def, context, inputs, format, hint, { compact: values.compact === true }, shape);
   } catch (error) {
     return internalError(io, `cngx ${def.cliName}`, error, format);
   }
@@ -373,6 +531,159 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
   return rendered.exitCode;
 }
 
+/**
+ * Print the detector's notes and, for a detected release other than the bundled
+ * one, a context whose resolver falls back to the bundled snapshot when that
+ * release cannot be resolved. An explicit `--cngx-version` never comes here, so
+ * it never falls back.
+ */
+function pinDetected(
+  detected: InstalledVersion,
+  context: CommandContext,
+  offline: boolean,
+  io: CliIo,
+): { version: string; context: CommandContext } | null {
+  for (const note of detected.notes) {
+    io.stderr(`cngx: ${note}\n`);
+  }
+  const bundledVersion = context.bundled.meta.cngxVersion;
+  if (detected.version === null || detected.version === bundledVersion) {
+    return null;
+  }
+  const version = detected.version;
+  if (detected.source === 'installed') {
+    io.stderr(`cngx: answering for the installed cngx ${version}; the bundled snapshot is ${bundledVersion ?? 'unstamped'}.\n`);
+  }
+  const base = context.resolve;
+  // The resolver memoises successes only; several names would otherwise refetch
+  // and re-announce the failed release once per name.
+  let failed = false;
+  const resolve: DocsResolver = async (requested) => {
+    if (failed && requested === version) {
+      return base(undefined);
+    }
+    const resolution = await base(requested);
+    if (resolution.ok || requested !== version) {
+      return resolution;
+    }
+    failed = true;
+    const skip = offline ? '' : ' Pass --offline to skip the fetch.';
+    io.stderr(
+      `cngx: cngx ${version} could not be resolved (${resolution.reason}: ${resolution.message}); ` +
+        `answering from the bundled snapshot ${bundledVersion ?? 'unstamped'}.${skip}\n`,
+    );
+    return base(undefined);
+  };
+  return { version, context: { ...context, resolve } };
+}
+
+/**
+ * `cngx doctor`: the `@cngx/doctor` wiring scan with the CLI's flag and exit
+ * contract. `--version` / `--help` are the CLI's, never doctor's; `--format json`
+ * becomes doctor's `--json` (its findings array is the document); an unknown flag,
+ * `--cngx-version` or `--offline` is a usage error before any scan; 0 and 1 pass
+ * through (1: an error-severity finding); a throw is exit 3.
+ */
+async function runDoctorCommand(
+  rest: readonly string[],
+  loadDoctor: () => Promise<DoctorModule>,
+  cliVersion: string,
+  io: CliIo,
+): Promise<number> {
+  const hint = 'Run `cngx doctor --help` for usage.';
+  const args: string[] = [];
+  const dirs: string[] = [];
+  let format: OutputFormat = 'md';
+  let version = false;
+  let help = false;
+  let afterDashes = false;
+  for (let i = 0; i < rest.length; i++) {
+    const token = rest[i];
+    if (afterDashes || !token.startsWith('-')) {
+      dirs.push(token);
+      continue;
+    }
+    if (token === '--') {
+      afterDashes = true;
+      continue;
+    }
+    if (token === '--json') {
+      return usageError(io, 'doctor takes --format json, not --json.', hint);
+    }
+    if (token === '--version' || token === '-v') {
+      version = true;
+      continue;
+    }
+    if (token === '--help' || token === '-h') {
+      help = true;
+      continue;
+    }
+    const inline = token.startsWith('--format=') ? token.slice('--format='.length) : undefined;
+    if (token === '--format' || inline !== undefined) {
+      const value = inline ?? rest[++i];
+      // A bare trailing --format is a missing value, not the md default.
+      const parsed = value === undefined ? null : parseFormat(value);
+      if (parsed === null) {
+        return usageError(io, `--format must be one of ${FORMATS.join(', ')}.`, hint);
+      }
+      format = parsed;
+      continue;
+    }
+    if ([`--${VERSION_FLAG}`, '--offline'].some((flag) => token === flag || token.startsWith(`${flag}=`))) {
+      return usageError(io, `doctor does not take ${token.split('=')[0]}; it scans the project, not a snapshot.`, hint);
+    }
+    args.push(token);
+  }
+  if (version) {
+    io.stdout(`${cliVersion}\n`);
+    return EXIT_OK;
+  }
+  if (help) {
+    io.stdout(doctorHelp());
+    return EXIT_OK;
+  }
+  if (dirs.length > 1) {
+    return usageError(io, `doctor takes one <projectDir>, got ${dirs.length}.`, hint);
+  }
+  // The scan reads what it finds and reports nothing for a missing directory, so a
+  // mistyped path would pass as a clean project.
+  if (dirs.length === 1) {
+    if (statSync(dirs[0], { throwIfNoEntry: false })?.isDirectory() !== true) {
+      return usageError(io, `doctor: ${dirs[0]} is not a directory.`, hint);
+    }
+    args.push(dirs[0].startsWith('-') ? `./${dirs[0]}` : dirs[0]);
+  }
+  if (format === 'json') {
+    args.push('--json');
+  }
+
+  try {
+    const doctor = await loadDoctor();
+    const { unknownFlags } = doctor.parseArgs(args);
+    if (unknownFlags.length > 0) {
+      return usageError(io, `unknown option '${unknownFlags[0]}' for doctor.`, hint);
+    }
+    const { output, warnings, exitCode } = doctor.runDoctor(args);
+    for (const warning of warnings) {
+      io.stderr(`${warning}\n`);
+    }
+    io.stdout(output);
+    return exitCode;
+  } catch (error) {
+    return internalError(io, 'cngx doctor', error, format);
+  }
+}
+
+/** How `answer` shapes several inputs. */
+interface AnswerShape {
+  /** Render the several-names shapes even for one input (`--from`). */
+  readonly list: boolean;
+  /** Names that came only from `--from`, not from a positional. */
+  readonly fromOnly: ReadonlySet<string>;
+  /** `--from` names the file imports only as types. */
+  readonly typeOnly: ReadonlySet<string>;
+}
+
 /** A finished run, rendered but not yet written. */
 interface Rendered {
   readonly stdout: string;
@@ -380,37 +691,92 @@ interface Rendered {
   readonly exitCode: number;
 }
 
-/** Run `def` and render its answer; any throw here is an internal error of the caller's. */
+/**
+ * Run `def` once per input and render the answers; any throw here is an internal
+ * error of the caller's. One input keeps the single-answer shapes, unless it came
+ * through `--from` (`shape.list`), whose callers cannot know the count. Several inputs
+ * (several names) render one block per name in md and a `result` array in json;
+ * a name that is not found still leaves the found ones printed and exits 1. A
+ * resolve failure is per release, not per name, so the first one ends the run.
+ */
 async function answer(
   def: CngxCommand,
   context: CommandContext,
-  input: unknown,
+  inputs: readonly Record<string, unknown>[],
   format: OutputFormat,
   hint: string,
+  opts: RenderOptions,
+  shape: AnswerShape,
 ): Promise<Rendered> {
-  const result = unwrapAnswer(await def.run(context, input as never));
-  // A malformed version is the caller's input, rejected before any fetch: a usage
-  // error like a malformed --cngx-version, with no json document under either format.
-  if (!result.ok && result.reason === 'invalid-version') {
-    return { stdout: '', stderr: usageText(result.message, hint), exitCode: EXIT_USAGE };
-  }
-  if (!result.ok) {
-    return {
-      stdout: format === 'json' ? failureDocument(result.reason, result.message) : '',
-      stderr: `cngx ${def.cliName}: ${result.reason}: ${result.message}\n`,
-      exitCode: EXIT_NOT_FOUND,
-    };
+  const payloads: unknown[] = [];
+  let groundedVersion: string | null | undefined;
+  for (const input of inputs) {
+    const result = unwrapAnswer(await def.run(context, input as never));
+    // A malformed version is the caller's input, rejected before any fetch: a usage
+    // error like a malformed --cngx-version, with no json document under either format.
+    if (!result.ok && result.reason === 'invalid-version') {
+      return { stdout: '', stderr: usageText(result.message, hint), exitCode: EXIT_USAGE };
+    }
+    if (!result.ok) {
+      return {
+        stdout: format === 'json' ? failureDocument(result.reason, result.message) : '',
+        stderr: `cngx ${def.cliName}: ${result.reason}: ${result.message}\n`,
+        exitCode: EXIT_NOT_FOUND,
+      };
+    }
+    payloads.push(result.payload);
+    groundedVersion ??= result.groundedVersion;
   }
 
   // Versioned commands report the release they grounded against, a migration its
   // target; the others answer from the bundled snapshot.
-  const cngxVersion =
-    result.groundedVersion ?? def.answeredVersion?.(result.payload) ?? context.bundled.meta.cngxVersion;
+  const cngxVersion = groundedVersion ?? def.answeredVersion?.(payloads[0]) ?? context.bundled.meta.cngxVersion;
+  const label = (input: Record<string, unknown>) => String(input[def.positional!]);
+  // A --from name that is an export of another kind (a provide* function, a token,
+  // a type-only import) is skipped, not missing: a source file imports more than
+  // components. A name the release does not have, or an ambiguous one, stays missing.
+  const unresolved = inputs.filter((input, i) => shape.fromOnly.size > 0 && shape.fromOnly.has(label(input)) && !isFound(def, payloads[i]));
+  const otherKinds = unresolved.some((input) => !shape.typeOnly.has(label(input)))
+    ? await otherExportNames(def, context, inputs[0])
+    : new Set<string>();
+  const skipped = new Set(unresolved.filter((input) => shape.typeOnly.has(label(input)) || otherKinds.has(label(input))));
+  const kept = inputs.flatMap((input, i) => (skipped.has(input) ? [] : [{ input, payload: payloads[i] }]));
+  const skipLine = skipped.size === 0 ? '' : `cngx ${def.cliName}: skipped --from names with no ${def.cliName} entry: ${[...skipped].map(label).join(', ')}\n`;
+  if (skipped.size > 0 && kept.length === 0) {
+    return {
+      stdout: format === 'json' ? `${JSON.stringify({ cngxVersion, result: [] }, null, 2)}\n` : '',
+      stderr: skipLine,
+      exitCode: EXIT_NOT_FOUND,
+    };
+  }
+  const missing = kept.filter(({ payload }) => !isFound(def, payload)).map(({ input }) => input);
+  const exitCode = missing.length === 0 ? EXIT_OK : EXIT_NOT_FOUND;
+  const header = `> cngx ${cngxVersion ?? 'unknown'}\n\n`;
+  if (inputs.length === 1 && !shape.list) {
+    const stdout =
+      format === 'json'
+        ? `${JSON.stringify({ cngxVersion, result: payloads[0] ?? null }, null, 2)}\n`
+        : `${header}${def.toMarkdown(payloads[0], opts)}`;
+    return { stdout, stderr: '', exitCode };
+  }
   const stdout =
     format === 'json'
-      ? `${JSON.stringify({ cngxVersion, result: result.payload ?? null }, null, 2)}\n`
-      : `> cngx ${cngxVersion ?? 'unknown'}\n\n${def.toMarkdown(result.payload, {})}`;
-  return { stdout, stderr: '', exitCode: isFound(def, result.payload) ? EXIT_OK : EXIT_NOT_FOUND };
+      ? `${JSON.stringify({ cngxVersion, result: kept.map(({ payload }) => payload ?? null) }, null, 2)}\n`
+      : `${header}${kept.map(({ payload }) => def.toMarkdown(payload, opts)).join('\n')}`;
+  const notFound = missing.length === 0 ? '' : `cngx ${def.cliName}: not found: ${missing.map(label).join(', ')}\n`;
+  const stderr = `${skipLine}${notFound}`;
+  return { stdout, stderr, exitCode };
+}
+
+/**
+ * The token and function names of the release the run answered from: exports a
+ * source file imports that no name-taking command answers for. Types are not in
+ * the snapshot; `--from` knows them only from type-only imports.
+ */
+async function otherExportNames(def: CngxCommand, context: CommandContext, input: Record<string, unknown>): Promise<ReadonlySet<string>> {
+  const field = versionField(def);
+  const resolution = await context.resolve(field === undefined ? undefined : (input[field] as string | undefined));
+  return resolution.ok ? new Set([...resolution.docs.tokens, ...resolution.docs.functions].map((entry) => entry.name)) : new Set();
 }
 
 /** Package-relative locations the entry module resolves against its own URL. */
@@ -421,6 +787,15 @@ export interface EntryPaths {
   readonly packageJson: URL;
 }
 
+/** The user's home directory, or null where `os.homedir()` throws (no HOME and no passwd entry). */
+function homeDir(): string | null {
+  try {
+    return homedir();
+  } catch {
+    return null;
+  }
+}
+
 /** Load the bundled snapshot and run `argv` against the full registry. */
 export async function main(argv: readonly string[], paths: EntryPaths, io: CliIo): Promise<number> {
   let cliVersion: string;
@@ -429,9 +804,14 @@ export async function main(argv: readonly string[], paths: EntryPaths, io: CliIo
   } catch (error) {
     return internalError(io, 'cngx', error);
   }
-  const loadContext = (): CommandContext => {
+  const loadContext = ({ offline, warn }: ContextOptions): CommandContext => {
     const bundled = loadBundledDocs(fileURLToPath(paths.dataDir));
-    return { bundled, resolve: createDocsResolver(bundled) };
+    const dir = resolveCacheDir(process.env, process.platform, homeDir);
+    const cache = dir === null ? undefined : createSnapshotCache({ dir, warn });
+    const resolve = createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile, removeDir: removeTempDir, cache, offline });
+    return { bundled, resolve };
   };
-  return runCli(argv, { commands: COMMANDS, loadContext, cliVersion, io });
+  const detectVersion = () => resolveInstalledCngxVersion(process.cwd());
+  const loadDoctor = () => import('@cngx/doctor/cngx-doctor.mjs');
+  return runCli(argv, { commands: COMMANDS, loadContext, detectVersion, loadDoctor, cliVersion, io });
 }

@@ -14,7 +14,7 @@
             "description": "A name, selector, or category fragment, e.g. \"select\" or \"cngx-chip\"."
           },
           "version": {
-            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\". Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh, or over HTTPS when gh is missing or fails (fail-safe).",
+            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\"; a leading \"v\" or \"V\" is accepted. Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh, or over HTTPS when gh is missing or fails (fail-safe).",
             "type": "string"
           }
         },
@@ -61,7 +61,7 @@
             "description": "A component/directive/service class name or selector, e.g. \"CngxSelect\" or \"cngx-select\"."
           },
           "version": {
-            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\". Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh, or over HTTPS when gh is missing or fails (fail-safe).",
+            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\"; a leading \"v\" or \"V\" is accepted. Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh, or over HTTPS when gh is missing or fails (fail-safe).",
             "type": "string"
           }
         },
@@ -84,7 +84,7 @@
             "description": "A component/directive class name or selector, e.g. \"CngxSelect\"."
           },
           "version": {
-            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\". Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh, or over HTTPS when gh is missing or fails (fail-safe).",
+            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\"; a leading \"v\" or \"V\" is accepted. Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh, or over HTTPS when gh is missing or fails (fail-safe).",
             "type": "string"
           }
         },
@@ -107,7 +107,7 @@
             "description": "A component/directive class name or selector, e.g. \"CngxSelect\"."
           },
           "version": {
-            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\". Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh, or over HTTPS when gh is missing or fails (fail-safe).",
+            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\"; a leading \"v\" or \"V\" is accepted. Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh, or over HTTPS when gh is missing or fails (fail-safe).",
             "type": "string"
           }
         },
@@ -129,7 +129,7 @@
             "type": "string"
           },
           "version": {
-            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\". Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh, or over HTTPS when gh is missing or fails (fail-safe).",
+            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\"; a leading \"v\" or \"V\" is accepted. Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh, or over HTTPS when gh is missing or fails (fail-safe).",
             "type": "string"
           }
         },
@@ -149,7 +149,7 @@
             "description": "A config token (CNGX_SELECT_CONFIG), a stem (select), or a component name (CngxSelect)."
           },
           "version": {
-            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\". Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh, or over HTTPS when gh is missing or fails (fail-safe).",
+            "description": "Optional cngx version to ground the answer against, e.g. \"0.2.0\"; a leading \"v\" or \"V\" is accepted. Omit to answer from the bundled snapshot offline; a non-bundled version fetches that release snapshot via gh, or over HTTPS when gh is missing or fails (fail-safe).",
             "type": "string"
           }
         },
@@ -188,10 +188,10 @@
           "from": {
             "type": "string",
             "minLength": 1,
-            "description": "The cngx version to upgrade FROM, e.g. \"0.1.0\"; a leading \"v\" is accepted."
+            "description": "The cngx version to upgrade FROM, e.g. \"0.1.0\"; a leading \"v\" or \"V\" is accepted."
           },
           "to": {
-            "description": "The cngx version to upgrade TO. Defaults to the bundled snapshot version.",
+            "description": "The cngx version to upgrade TO; a leading \"v\" or \"V\" is accepted. Defaults to the bundled snapshot version.",
             "type": "string",
             "minLength": 1
           }

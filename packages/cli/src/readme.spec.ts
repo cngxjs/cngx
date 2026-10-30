@@ -6,7 +6,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { EXIT_INTERNAL, EXIT_NOT_FOUND, EXIT_OK, EXIT_USAGE, commandFlags, globalFlags, knownFlags } from './cli-adapter.js';
+import { EXIT_INTERNAL, EXIT_NOT_FOUND, EXIT_OK, EXIT_USAGE, ADAPTER_COMMANDS, adapterFlags, commandFlags, globalFlags, isNameTaking, knownFlags } from './cli-adapter.js';
 import { COMMANDS } from './core/registry.js';
 import {
   commandRowFlags,
@@ -21,15 +21,17 @@ const README = readFileSync(fileURLToPath(new URL('../README.md', import.meta.ur
 // --cngx-version is a per-command flag, documented once in the Flags table with
 // the commands that take it.
 const VERSION_FLAG = '--cngx-version';
+// --offline is an adapter flag of the same commands, documented the same way.
+const OFFLINE_FLAG = '--offline';
 const ownFlags = (cliName: string): string[] =>
   commandFlags(COMMANDS.find((def) => def.cliName === cliName)!).filter((flag) => flag !== VERSION_FLAG);
 
 describe('README', () => {
-  it.each(COMMANDS.map((def) => def.cliName))('documents cngx %s', (cliName) => {
+  it.each([...COMMANDS.map((def) => def.cliName), ...ADAPTER_COMMANDS])('documents cngx %s', (cliName) => {
     expect(README).toContain(`\`cngx ${cliName}`);
   });
 
-  it.each([...globalFlags(), VERSION_FLAG])('documents %s', (flag) => {
+  it.each([...globalFlags(), VERSION_FLAG, OFFLINE_FLAG, '--from', '--compact'])('documents %s', (flag) => {
     expect(README).toContain(`\`${flag}`);
   });
 
@@ -47,6 +49,20 @@ describe('README', () => {
     const taking = COMMANDS.filter((def) => commandFlags(def).includes(VERSION_FLAG)).map((def) => def.cliName);
 
     expect(flagRowCommands(README, VERSION_FLAG).sort()).toEqual(taking.sort());
+  });
+
+  it.each(['--from', '--compact'])('names exactly the name-taking commands in the %s Flags row', (flag) => {
+    const taking = COMMANDS.filter((def) => adapterFlags(def).includes(flag)).map((def) => def.cliName);
+
+    expect(taking).toEqual(COMMANDS.filter(isNameTaking).map((def) => def.cliName));
+    expect(flagRowCommands(README, flag).sort()).toEqual(taking.sort());
+  });
+
+  it('names exactly the commands that take --offline in its Flags row, the same as --cngx-version', () => {
+    const taking = COMMANDS.filter((def) => adapterFlags(def).includes(OFFLINE_FLAG)).map((def) => def.cliName);
+
+    expect(flagRowCommands(README, OFFLINE_FLAG).sort()).toEqual(taking.sort());
+    expect(flagRowCommands(README, OFFLINE_FLAG).sort()).toEqual(flagRowCommands(README, VERSION_FLAG).sort());
   });
 
   it('mutation: a fake flag on one Commands row fails', () => {
@@ -68,8 +84,8 @@ describe('README', () => {
     expect(documentedExitCodes(planted)).not.toEqual([EXIT_OK, EXIT_NOT_FOUND, EXIT_USAGE, EXIT_INTERNAL]);
   });
 
-  it('names no command the registry lacks', () => {
-    const known = new Set(COMMANDS.map((def) => def.cliName));
+  it('names no command the registry or the adapter lacks', () => {
+    const known = new Set<string>([...COMMANDS.map((def) => def.cliName), ...ADAPTER_COMMANDS]);
 
     expect(documentedCommands(README).filter((word) => !known.has(word))).toEqual([]);
   });
@@ -86,9 +102,9 @@ describe('README', () => {
   });
 
   it('mutation: a README row for a nonexistent flag fails (GP15)', () => {
-    const planted = `${README}\n|\`--offline\`|Never fetch.|\n`;
+    const planted = `${README}\n|\`--stale\`|Answer from a stale cache.|\n`;
 
-    expect(unknownFlags(planted, knownFlags(COMMANDS))).toEqual(['--offline']);
+    expect(unknownFlags(planted, knownFlags(COMMANDS))).toEqual(['--stale']);
   });
 
   it('never reads a version or a hyphenated name as a flag', () => {
