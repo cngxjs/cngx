@@ -125,6 +125,19 @@ describe('CngxEmptyState default glyph', () => {
     );
   });
 
+  // An unset size token falls back to 1em on the svg; the margin reads the
+  // same fallback, so the footprint holds.
+  it('keeps the 48px footprint when the glyph size token is unset', () => {
+    const host = mount();
+    const { svg } = glyph(host);
+    svg.style.setProperty('--cngx-icon-svg-size', 'initial');
+    const footprint =
+      svg.getBoundingClientRect().height +
+      parseFloat(computedValue(svg, 'margin-top')) +
+      parseFloat(computedValue(svg, 'margin-bottom'));
+    expect(footprint).toBeCloseTo(48, 1);
+  });
+
   it('paints the glyph stroke in the muted icon colour', () => {
     const { svg } = glyph(mount());
     expect(computedValue(svg, 'stroke')).toBe(computedValue(svg, 'color'));

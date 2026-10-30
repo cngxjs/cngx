@@ -190,7 +190,7 @@
       --cngx-icon-svg-size: calc(var(--cngx-empty-icon-size, 48px) * 47 / 48 * 24 / 21.4);
       --cngx-icon-svg-stroke-width: 1.4;
       margin-block: calc(
-        (var(--cngx-empty-icon-size, 48px) - round(nearest, var(--cngx-icon-svg-size), 1px)) / 2
+        (var(--cngx-empty-icon-size, 48px) - round(nearest, var(--cngx-icon-svg-size, 1em), 1px)) / 2
       );
       color: var(--cngx-empty-icon-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
     }
