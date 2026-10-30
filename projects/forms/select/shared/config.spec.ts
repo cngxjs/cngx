@@ -1,8 +1,25 @@
-import { Injector, isSignal, runInInjectionContext, signal, type TemplateRef } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import {
+  Component,
+  Injector,
+  isSignal,
+  runInInjectionContext,
+  signal,
+  type EnvironmentProviders,
+  type Provider,
+  type TemplateRef,
+  type Type,
+} from '@angular/core';
+import { TestBed, type ComponentFixture } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { createManualState } from '@cngx/common/data';
+import { CngxPopover } from '@cngx/common/popover';
 import { coerceSignal } from '@cngx/core/utils';
 import { stripBidiIsolates } from '@cngx/testing';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+
+import { CngxCombobox } from '../combobox/combobox.component';
+import { CngxMultiSelect } from '../multi-select/multi-select.component';
+import { CngxSelect } from '../single-select/select.component';
 
 import {
   CNGX_SELECT_CONFIG,
@@ -11,12 +28,30 @@ import {
   provideSelectConfigAt,
   withAnnouncer,
   withAriaLabels,
+  withCaret,
+  withChipOverflow,
+  withCommitErrorAnnouncePolicy,
+  withCommitErrorDisplay,
+  withDismissOn,
+  withEnterKeyHint,
   withFallbackLabels,
+  withInputMode,
+  withLoadingVariant,
   withMaxVisibleChips,
   withMobileSheet,
   withPanelWidth,
+  withPopoverPlacement,
+  withRefreshingVariant,
+  withRestoreFocus,
+  withSelectionIndicator,
+  withSelectionIndicatorPosition,
+  withSelectionIndicatorVariant,
+  withSkeletonRowCount,
   withTemplates,
+  withTypeaheadWhileClosed,
   type CngxSelectAnnouncerConfig,
+  type CngxSelectConfig,
+  type CngxSelectConfigFeature,
   type CngxSelectAriaLabels,
   type CngxSelectFallbackLabels,
 } from './config';
@@ -479,5 +514,345 @@ describe('maxVisibleChips coercion', () => {
   ])('withMaxVisibleChips(%s) resolves to %s', (count, expected) => {
     const config = resolveIn([provideSelectConfig(withMaxVisibleChips(count))]);
     expect(config.maxVisibleChips).toBe(expected);
+  });
+});
+
+// jsdom has no Popover API.
+function polyfillPopover(): void {
+  const proto = HTMLElement.prototype as unknown as {
+    showPopover?: () => void;
+    hidePopover?: () => void;
+    togglePopover?: () => boolean;
+  };
+  if (typeof proto.showPopover === 'function') {
+    return;
+  }
+  proto.showPopover = function (this: HTMLElement) {
+    this.setAttribute('data-popover-open', 'true');
+  };
+  proto.hidePopover = function (this: HTMLElement) {
+    this.removeAttribute('data-popover-open');
+  };
+  proto.togglePopover = function (this: HTMLElement) {
+    const open = !this.hasAttribute('data-popover-open');
+    if (open) {
+      this.setAttribute('data-popover-open', 'true');
+    } else {
+      this.removeAttribute('data-popover-open');
+    }
+    return open;
+  };
+}
+
+@Component({ selector: 'config-feature-host', template: '' })
+class ConfigFeatureHost {
+  readonly options: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Red' },
+    { value: 'green', label: 'Green' },
+  ];
+  readonly state = createManualState<CngxSelectOptionDef<string>[]>();
+  readonly value = signal<string | undefined>(undefined);
+  readonly values = signal<string[]>(['red']);
+}
+
+interface MountedFeatureHost {
+  readonly fixture: ComponentFixture<ConfigFeatureHost>;
+  readonly host: ConfigFeatureHost;
+  readonly el: HTMLElement;
+  readonly cmp: unknown;
+  readonly flush: () => void;
+  readonly open: () => void;
+  readonly panel: () => HTMLElement;
+}
+
+type CompositeName = 'select' | 'multi' | 'combobox';
+
+const COMPOSITES: Record<CompositeName, { readonly type: Type<unknown>; readonly tag: string }> = {
+  select: {
+    type: CngxSelect,
+    tag: `<cngx-select [label]="'Colour'" [options]="options" [(value)]="value" />`,
+  },
+  multi: {
+    type: CngxMultiSelect,
+    tag: `<cngx-multi-select [label]="'Colour'" [options]="options" [(values)]="values" />`,
+  },
+  combobox: {
+    type: CngxCombobox,
+    tag: `<cngx-combobox [label]="'Colour'" [options]="options" [(values)]="values" />`,
+  },
+};
+
+const mountedFeatureRoots: HTMLElement[] = [];
+
+function mountComposite(
+  composite: CompositeName,
+  providers: readonly (Provider | EnvironmentProviders)[],
+  tag = COMPOSITES[composite].tag,
+): MountedFeatureHost {
+  TestBed.resetTestingModule();
+  polyfillPopover();
+  TestBed.configureTestingModule({ providers: [...providers] });
+  TestBed.overrideComponent(ConfigFeatureHost, {
+    set: { template: tag, imports: [COMPOSITES[composite].type] },
+  });
+  const fixture = TestBed.createComponent(ConfigFeatureHost);
+  const root = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(root);
+  mountedFeatureRoots.push(root);
+  const flush = (): void => {
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+  };
+  flush();
+  const de = fixture.debugElement.query(By.directive(COMPOSITES[composite].type));
+  const cmp = de.componentInstance as { open(): void };
+  return {
+    fixture,
+    host: fixture.componentInstance,
+    el: de.nativeElement as HTMLElement,
+    cmp,
+    flush,
+    open: () => {
+      cmp.open();
+      flush();
+    },
+    panel: () => (de.nativeElement as HTMLElement).querySelector<HTMLElement>('.cngx-select__panel')!,
+  };
+}
+
+interface ConfigFeatureRow {
+  readonly name: string;
+  readonly feature: CngxSelectConfigFeature;
+  /** The resolved `CngxSelectConfig` key and the value the feature writes. */
+  readonly key: keyof CngxSelectConfig;
+  readonly value: unknown;
+  readonly composite: CompositeName;
+  readonly tag?: string;
+  /** Features the row needs in both runs to make its effect observable. */
+  readonly base?: readonly CngxSelectConfigFeature[];
+  /** Observes the mounted composite; the result must differ between the runs. */
+  readonly observe: (m: MountedFeatureHost) => unknown;
+  readonly withFeature: unknown;
+  readonly withoutFeature: unknown;
+}
+
+function firstOption(m: MountedFeatureHost): HTMLElement {
+  m.open();
+  return m.panel().querySelector<HTMLElement>('.cngx-select__option')!;
+}
+
+const CONFIG_FEATURE_ROWS: readonly ConfigFeatureRow[] = [
+  {
+    name: 'withSkeletonRowCount',
+    feature: withSkeletonRowCount(5),
+    key: 'skeletonRowCount',
+    value: 5,
+    composite: 'select',
+    tag: `<cngx-select [label]="'Colour'" [state]="state" [(value)]="value" />`,
+    base: [withLoadingVariant('skeleton')],
+    observe: (m) => {
+      m.host.state.set('loading');
+      m.open();
+      return m.panel().querySelectorAll('.cngx-select__skeleton-row').length;
+    },
+    withFeature: 5,
+    withoutFeature: 3,
+  },
+  {
+    name: 'withRefreshingVariant',
+    feature: withRefreshingVariant('spinner'),
+    key: 'refreshingVariant',
+    value: 'spinner',
+    composite: 'select',
+    tag: `<cngx-select [label]="'Colour'" [state]="state" [(value)]="value" />`,
+    observe: (m) => {
+      m.host.state.setSuccess(m.host.options);
+      m.host.state.set('refreshing');
+      m.open();
+      return m.panel().querySelector('.cngx-select__refreshing-spinner') !== null;
+    },
+    withFeature: true,
+    withoutFeature: false,
+  },
+  {
+    name: 'withCommitErrorDisplay',
+    feature: withCommitErrorDisplay('inline'),
+    key: 'commitErrorDisplay',
+    value: 'inline',
+    composite: 'select',
+    observe: (m) => (m.cmp as { commitErrorDisplay(): unknown }).commitErrorDisplay(),
+    withFeature: 'inline',
+    withoutFeature: 'banner',
+  },
+  {
+    name: 'withCommitErrorAnnouncePolicy',
+    feature: withCommitErrorAnnouncePolicy({ kind: 'soft' }),
+    key: 'commitErrorAnnouncePolicy',
+    value: { kind: 'soft' },
+    composite: 'select',
+    observe: (m) =>
+      (m.cmp as { commitErrorAnnouncePolicy(): { kind: string } }).commitErrorAnnouncePolicy().kind,
+    withFeature: 'soft',
+    withoutFeature: 'verbose',
+  },
+  {
+    name: 'withPopoverPlacement',
+    feature: withPopoverPlacement('top'),
+    key: 'popoverPlacement',
+    value: 'top',
+    composite: 'select',
+    observe: (m) =>
+      m.fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover).placement(),
+    withFeature: 'top',
+    withoutFeature: 'bottom',
+  },
+  {
+    name: 'withInputMode',
+    feature: withInputMode('text'),
+    key: 'inputMode',
+    value: 'text',
+    composite: 'combobox',
+    observe: (m) => m.el.querySelector('input.cngx-combobox__input')!.getAttribute('inputmode'),
+    withFeature: 'text',
+    withoutFeature: 'search',
+  },
+  {
+    name: 'withEnterKeyHint',
+    feature: withEnterKeyHint('search'),
+    key: 'enterKeyHint',
+    value: 'search',
+    composite: 'combobox',
+    observe: (m) => m.el.querySelector('input.cngx-combobox__input')!.getAttribute('enterkeyhint'),
+    withFeature: 'search',
+    withoutFeature: 'enter',
+  },
+  {
+    name: 'withChipOverflow',
+    feature: withChipOverflow('scroll-x'),
+    key: 'chipOverflow',
+    value: 'scroll-x',
+    composite: 'multi',
+    observe: (m) => m.el.querySelector('.cngx-select__chip-list')!.getAttribute('data-overflow'),
+    withFeature: 'scroll-x',
+    withoutFeature: 'wrap',
+  },
+  {
+    name: 'withTypeaheadWhileClosed',
+    feature: withTypeaheadWhileClosed(false),
+    key: 'typeaheadWhileClosed',
+    value: false,
+    composite: 'select',
+    observe: (m) => {
+      const trigger = m.el.querySelector<HTMLElement>('.cngx-select__trigger')!;
+      trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'g', bubbles: true }));
+      m.flush();
+      return m.host.value();
+    },
+    withFeature: undefined,
+    withoutFeature: 'green',
+  },
+  {
+    name: 'withSelectionIndicator',
+    feature: withSelectionIndicator(false),
+    key: 'showSelectionIndicator',
+    value: false,
+    composite: 'select',
+    observe: (m) => firstOption(m).querySelector('.cngx-select__check') !== null,
+    withFeature: false,
+    withoutFeature: true,
+  },
+  {
+    name: 'withSelectionIndicatorPosition',
+    feature: withSelectionIndicatorPosition('before'),
+    key: 'selectionIndicatorPosition',
+    value: 'before',
+    composite: 'select',
+    observe: (m) => firstOption(m).classList.contains('cngx-select__option--indicator-after'),
+    withFeature: false,
+    withoutFeature: true,
+  },
+  {
+    name: 'withSelectionIndicatorVariant',
+    feature: withSelectionIndicatorVariant('radio'),
+    key: 'selectionIndicatorVariant',
+    value: 'radio',
+    composite: 'select',
+    observe: (m) => firstOption(m).querySelector('cngx-radio-indicator') !== null,
+    withFeature: true,
+    withoutFeature: false,
+  },
+  {
+    name: 'withCaret',
+    feature: withCaret(false),
+    key: 'showCaret',
+    value: false,
+    composite: 'select',
+    observe: (m) => m.el.querySelector('.cngx-select__caret') !== null,
+    withFeature: false,
+    withoutFeature: true,
+  },
+  {
+    name: 'withRestoreFocus',
+    feature: withRestoreFocus(false),
+    key: 'restoreFocus',
+    value: false,
+    composite: 'select',
+    observe: (m) => {
+      const trigger = m.el.querySelector<HTMLElement>('.cngx-select__trigger')!;
+      trigger.focus();
+      m.open();
+      const panel = m.panel();
+      panel.tabIndex = -1;
+      panel.focus();
+      (m.cmp as { close(): void }).close();
+      m.flush();
+      return document.activeElement === trigger;
+    },
+    withFeature: false,
+    withoutFeature: true,
+  },
+  {
+    name: 'withDismissOn',
+    feature: withDismissOn('outside'),
+    key: 'dismissOn',
+    value: 'outside',
+    composite: 'select',
+    observe: (m) => {
+      m.open();
+      const trigger = m.el.querySelector<HTMLElement>('[role="combobox"]')!;
+      trigger.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+      );
+      m.flush();
+      return (m.cmp as { panelOpen(): boolean }).panelOpen();
+    },
+    withFeature: true,
+    withoutFeature: false,
+  },
+];
+
+describe('every select config feature reaches a mounted composite', () => {
+  afterEach(() => {
+    mountedFeatureRoots.splice(0).forEach((el) => el.remove());
+  });
+
+  it.each(CONFIG_FEATURE_ROWS)('$name writes its key', (row) => {
+    expect(makeSelectConfig(row.feature)[row.key]).toEqual(row.value);
+  });
+
+  it.each(CONFIG_FEATURE_ROWS)('$name changes what the composite renders', (row) => {
+    expect(row.withFeature).not.toEqual(row.withoutFeature);
+    const base = row.base ?? [];
+    const without = mountComposite(row.composite, [provideSelectConfig(...base)], row.tag);
+    expect(row.observe(without)).toEqual(row.withoutFeature);
+
+    const withIt = mountComposite(
+      row.composite,
+      [provideSelectConfig(...base, row.feature)],
+      row.tag,
+    );
+    expect(row.observe(withIt)).toEqual(row.withFeature);
   });
 });
