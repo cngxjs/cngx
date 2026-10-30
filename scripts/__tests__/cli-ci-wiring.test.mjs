@@ -197,47 +197,30 @@ describe('cli core copy guard wiring', () => {
   });
 
   describe('mutations', () => {
-    it('fails a test:cli without the core config', () => {
-      const mutated = { ...scripts, 'test:cli': 'vitest run --config packages/cli/vitest.config.mjs' };
+    describe.each(SCRIPT_CHAINS)('$name chain', ({ name, prefix, commands }) => {
+      const mutate = (body) => ({ ...scripts, [name]: body });
 
-      expect(scriptBodies(mutated)).toEqual(['test:cli does not run vitest run --config packages/cli/vitest.core.config.mjs']);
-    });
+      it('fails a chain without its last command', () => {
+        expect(scriptBodies(mutate(commands[0]))).toEqual([`${name} does not run ${commands[1]}`]);
+      });
 
-    it('fails a test:cli whose failure is swallowed by || true', () => {
-      const mutated = { ...scripts, 'test:cli': `${scripts['test:cli']} || true` };
+      it('fails a chain whose failure is swallowed by || true', () => {
+        expect(scriptBodies(mutate(`${scripts[name]} || true`))).toEqual([`${name} is not a plain && chain`]);
+      });
 
-      expect(scriptBodies(mutated)).toEqual(['test:cli is not a plain && chain']);
-    });
+      it('fails a chain that only echoes its last command', () => {
+        expect(scriptBodies(mutate(`${commands[0]}; echo ${commands[1]}`))).toEqual([`${name} is not a plain && chain`]);
+      });
 
-    it('fails a test:cli that only echoes the core config', () => {
-      const mutated = {
-        ...scripts,
-        'test:cli': 'vitest run --config packages/cli/vitest.config.mjs; echo vitest run --config packages/cli/vitest.core.config.mjs',
-      };
+      it('fails a chain with an extra segment of another command', () => {
+        expect(scriptBodies(mutate(`${scripts[name]} && node -e 0`))).toEqual([
+          `${name} runs "node -e 0", not a ${prefix.trim()} command`,
+        ]);
+      });
 
-      expect(scriptBodies(mutated)).toEqual(['test:cli is not a plain && chain']);
-    });
-
-    it('fails a test:cli with a segment that is not a vitest run', () => {
-      const mutated = { ...scripts, 'test:cli': `${scripts['test:cli']} && node -e 0` };
-
-      expect(scriptBodies(mutated)).toEqual(['test:cli runs "node -e 0", not a vitest run --config command']);
-    });
-
-    it('passes a reordered but complete chain', () => {
-      const mutated = {
-        ...scripts,
-        'test:cli': 'vitest run --config packages/cli/vitest.core.config.mjs && vitest run --config packages/cli/vitest.config.mjs',
-        'typecheck:tooling': 'tsc -p packages/cli/tsconfig.spec.json && tsc -p packages/mcp/tsconfig.spec.json',
-      };
-
-      expect(scriptBodies(mutated)).toEqual([]);
-    });
-
-    it('fails a typecheck:tooling without the cli spec project', () => {
-      const mutated = { ...scripts, 'typecheck:tooling': 'tsc -p packages/mcp/tsconfig.spec.json' };
-
-      expect(scriptBodies(mutated)).toEqual(['typecheck:tooling does not run tsc -p packages/cli/tsconfig.spec.json']);
+      it('passes a reordered but complete chain', () => {
+        expect(scriptBodies(mutate([...commands].reverse().join(' && ')))).toEqual([]);
+      });
     });
 
     it('fails an mcp job that does not need build', () => {
