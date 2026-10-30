@@ -14,6 +14,7 @@ export { focusFirstError } from './focus-first-error';
 export { adaptFormControl } from './form-control-adapter';
 export {
   createFieldControlAria,
+  isFocusLeavingHost,
   type FieldControlAria,
   type FieldControlAriaOptions,
 } from './field-control-aria';

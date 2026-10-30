@@ -86,6 +86,20 @@ export interface FieldControlAria {
 }
 
 /**
+ * Whether a `focusout` on `host` leaves it: the element receiving focus is
+ * outside the host subtree. A `null` `relatedTarget` (focus going to `body`,
+ * a window switch) counts as leaving. The one touched-on-leave check shared
+ * by {@link createFieldControlAria}'s `handleFocusOutWithin` and the
+ * select-family host focus.
+ *
+ * @internal
+ */
+export function isFocusLeavingHost(event: FocusEvent, host: Node): boolean {
+  const next = event.relatedTarget;
+  return !(next instanceof Node && host.contains(next));
+}
+
+/**
  * Field-control ARIA scaffolding shared by every control that provides
  * `CNGX_FORM_FIELD_CONTROL` against a surrounding `cngx-form-field`:
  * id/disabled/errorState/focused plus the ARIA projection
@@ -150,8 +164,7 @@ export function createFieldControlAria(
       presenter?.fieldState().markAsTouched();
     },
     handleFocusOutWithin: (event, host) => {
-      const next = event.relatedTarget as Node | null;
-      if (!host.contains(next)) {
+      if (isFocusLeavingHost(event, host)) {
         focusedState.set(false);
         presenter?.fieldState().markAsTouched();
       }

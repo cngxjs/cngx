@@ -1,0 +1,125 @@
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { createHostFocusWithin, type HostFocusWithin } from './host-focus-within';
+
+const onLeave = vi.fn();
+const close = vi.fn();
+
+@Component({
+  selector: 'cngx-test-focus-host',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <button type="button" class="owner">Trigger</button>
+    <div class="panel cngx-popover--open">
+      <input class="search" />
+      <span class="header">Header</span>
+    </div>
+  `,
+  host: {
+    '(focusin)': 'focus.handleFocusIn()',
+    '(focusout)': 'focus.handleFocusOut($event)',
+  },
+})
+class FocusHost {
+  readonly focus: HostFocusWithin = createHostFocusWithin({
+    onLeave,
+    close,
+    owner: () => undefined,
+    restoreFocus: true,
+  });
+}
+
+@Component({
+  imports: [FocusHost],
+  template: `
+    <cngx-test-focus-host />
+    <button type="button" class="outside">Next</button>
+  `,
+})
+class Page {}
+
+function setup(): { root: HTMLElement; host: HTMLElement; focus: HostFocusWithin } {
+  const fixture = TestBed.createComponent(Page);
+  fixture.detectChanges();
+  const root = fixture.nativeElement as HTMLElement;
+  const host = root.querySelector<HTMLElement>('cngx-test-focus-host')!;
+  const focus = fixture.debugElement.children[0].componentInstance as FocusHost;
+  return { root, host, focus: focus.focus };
+}
+
+function focusOut(from: HTMLElement, to: EventTarget | null): void {
+  from.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: to }));
+}
+
+describe('createHostFocusWithin', () => {
+  beforeEach(() => {
+    onLeave.mockClear();
+    close.mockClear();
+  });
+
+  it('runs onLeave and close when focus moves to a control outside the host', () => {
+    const { root, host, focus } = setup();
+    const owner = host.querySelector<HTMLElement>('.owner')!;
+    owner.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    expect(focus.focusedWithin()).toBe(true);
+
+    focusOut(owner, root.querySelector('.outside'));
+    expect(focus.focusedWithin()).toBe(false);
+    expect(onLeave).toHaveBeenCalledTimes(1);
+    expect(close).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps focus within when focus moves from the trigger into the panel', () => {
+    const { host, focus } = setup();
+    const owner = host.querySelector<HTMLElement>('.owner')!;
+    owner.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+
+    focusOut(owner, host.querySelector('.search'));
+    expect(focus.focusedWithin()).toBe(true);
+    expect(onLeave).not.toHaveBeenCalled();
+  });
+
+  it('does not treat a click on a non-focusable part of the open panel as a leave', () => {
+    const { host, focus } = setup();
+    const search = host.querySelector<HTMLElement>('.search')!;
+    search.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+
+    focusOut(search, null);
+    expect(focus.focusedWithin()).toBe(true);
+    expect(onLeave).not.toHaveBeenCalled();
+    expect(close).not.toHaveBeenCalled();
+  });
+
+  it('treats focus dropping to nothing from the trigger as a leave without closing', () => {
+    const { host, focus } = setup();
+    const owner = host.querySelector<HTMLElement>('.owner')!;
+    owner.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+
+    focusOut(owner, null);
+    expect(focus.focusedWithin()).toBe(false);
+    expect(onLeave).toHaveBeenCalledTimes(1);
+    expect(close).not.toHaveBeenCalled();
+  });
+
+  it('treats Tab out of the panel search to the next control as a leave', () => {
+    const { root, host } = setup();
+    const search = host.querySelector<HTMLElement>('.search')!;
+    search.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+
+    focusOut(search, root.querySelector('.outside'));
+    expect(onLeave).toHaveBeenCalledTimes(1);
+    expect(close).toHaveBeenCalledTimes(1);
+  });
+
+  it('treats a null-target blur from a closed panel as a leave', () => {
+    const { host } = setup();
+    const panel = host.querySelector<HTMLElement>('.panel')!;
+    panel.classList.remove('cngx-popover--open');
+    const search = host.querySelector<HTMLElement>('.search')!;
+
+    focusOut(search, null);
+    expect(onLeave).toHaveBeenCalledTimes(1);
+  });
+});
