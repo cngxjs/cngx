@@ -33,7 +33,14 @@ export function createSelectSheetScope(
   };
 }
 
-/** @internal */
+/**
+ * Optional, no default: the token has no factory, so read it with
+ * `inject(CNGX_SELECT_SHEET_SCOPE, { optional: true })` (the announcer uses
+ * the lazy `injector.get(CNGX_SELECT_SHEET_SCOPE, null)`); an absent provider
+ * means no modal sheet scopes the announcer.
+ *
+ * @internal
+ */
 export const CNGX_SELECT_SHEET_SCOPE = new InjectionToken<CngxSelectSheetScope>(
   'CngxSelectSheetScope',
 );
