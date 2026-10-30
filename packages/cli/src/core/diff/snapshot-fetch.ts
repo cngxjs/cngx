@@ -62,9 +62,20 @@ export const SNAPSHOT_FETCH_TIMEOUT_MS = 15_000;
 export const RELEASE_BASE_URL = `https://github.com/${CNGX_REPO}/releases/download`;
 
 // A release tag: major.minor.patch without leading zeros, plus an optional
-// prerelease of non-empty dot-separated ids that may contain hyphens, as semver
-// permits. No `/`, `\` or `..` can pass it.
-const RELEASE_VERSION = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
+// prerelease of non-empty dot-separated ids, as semver defines them: a numeric id
+// has no leading zero (`0` or `[1-9]\d*`), an alphanumeric id contains a letter
+// or a hyphen. No `/`, `\` or `..` can pass it.
+const PRERELEASE_ID = '(?:0|[1-9]\\d*|\\d*[A-Za-z-][0-9A-Za-z-]*)';
+const RELEASE_VERSION = new RegExp(
+  `^(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)(?:-${PRERELEASE_ID}(?:\\.${PRERELEASE_ID})*)?$`,
+);
+
+const EXPECTED_SHAPE = 'expected <major>.<minor>.<patch> with an optional -<prerelease>.';
+
+/** The one "not a release version" message; it echoes the caller's original input. */
+function notReleaseVersion(input: string, reason: string = EXPECTED_SHAPE): string {
+  return `"${input}" is not a release version; ${reason}`;
+}
 
 /**
  * Whether `version` is a release version. Checked before a version reaches a
@@ -85,13 +96,10 @@ export function normalizeReleaseVersion(input: string): NormalizedVersion {
   const trimmed = input.trim();
   const version = /^[vV]/.test(trimmed) ? trimmed.slice(1) : trimmed;
   if (version === '') {
-    return { ok: false, message: `"${input}" is not a release version; the version is blank.` };
+    return { ok: false, message: notReleaseVersion(input, 'the version is blank.') };
   }
   if (!isReleaseVersion(version)) {
-    return {
-      ok: false,
-      message: `"${input}" is not a release version; expected <major>.<minor>.<patch> with an optional -<prerelease>.`,
-    };
+    return { ok: false, message: notReleaseVersion(input) };
   }
   return { ok: true, version };
 }
@@ -168,11 +176,7 @@ function describeGhFailure(error: unknown): string {
 
 export async function fetchSnapshot(version: string, deps: SnapshotFetchDeps = defaultDeps): Promise<SnapshotFetchResult> {
   if (!isReleaseVersion(version)) {
-    return {
-      ok: false,
-      reason: 'invalid-version',
-      message: `"${version}" is not a release version; expected <major>.<minor>.<patch> with an optional -<prerelease>.`,
-    };
+    return { ok: false, reason: 'invalid-version', message: notReleaseVersion(version) };
   }
   let dir: string;
   try {

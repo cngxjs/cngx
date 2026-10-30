@@ -24,7 +24,7 @@ describe('normalizeReleaseVersion', () => {
     expect(normalizeReleaseVersion(input)).toEqual({ ok: false, message: `"${input}" is not a release version; the version is blank.` });
   });
 
-  it.each(['vv0.2.0', 'latest', '../x', '01.2.3', '1.02.3', '1.2.03', '1.2.3-.', '1.2.3-rc.', '1.2.3-rc..1', '1.2.3-.rc'])(
+  it.each(['vv0.2.0', 'latest', '../x', '01.2.3', '1.02.3', '1.2.03', '1.2.3-.', '1.2.3-rc.', '1.2.3-rc..1', '1.2.3-.rc', '1.2.3-rc.01', '1.2.3-01'])(
     'rejects %j and echoes the input',
     (input) => {
       const result = normalizeReleaseVersion(input);
@@ -33,7 +33,7 @@ describe('normalizeReleaseVersion', () => {
     },
   );
 
-  it.each(['0.0.0', '10.20.30', '1.2.3-rc.1', '1.2.3-0', '1.2.3-x-y.z', '1.2.3-alpha-.1'])('accepts the release version %j', (input) => {
+  it.each(['0.0.0', '10.20.30', '1.2.3-rc.1', '1.2.3-0', '1.2.3-rc.0', '1.2.3-alpha-1', '1.2.3-0a', '1.2.3-x-y.z', '1.2.3-alpha-.1'])('accepts the release version %j', (input) => {
     expect(normalizeReleaseVersion(input)).toEqual({ ok: true, version: input });
   });
 });
@@ -325,6 +325,14 @@ describe('fetchSnapshot failure messages', () => {
 
     expect(result).toMatchObject({ ok: false, reason: 'invalid-version' });
     expect(!result.ok && result.message).toMatch(/^"latest" is not a release version/);
+  });
+
+  it.each(['latest', '1.2.3-rc.01'])('echoes %j with the same message normalizeReleaseVersion gives', async (input) => {
+    const result = await fetchSnapshot(input, { ...stub, runGh: ghMissing });
+    const normalized = normalizeReleaseVersion(input);
+
+    expect(result).toMatchObject({ ok: false, reason: 'invalid-version' });
+    expect(!result.ok && result.message).toBe(!normalized.ok && normalized.message);
   });
 
   it('keeps the missing-gh explanation in the message of a network failure, never the gh-missing reason', async () => {

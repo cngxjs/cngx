@@ -411,6 +411,14 @@ describe('argument scan', () => {
     expect(run.stdout).toBe('');
     expect(run.stderr).toContain('"01.2.3" is not a release version');
   });
+
+  it('exits 2 on a leading-zero numeric prerelease id in --cngx-version', async () => {
+    const run = await cli('api', 'CngxSelect', '--cngx-version', '1.2.3-rc.01');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toContain('"1.2.3-rc.01" is not a release version');
+  });
 });
 
 describe('a malformed migrate version', () => {
@@ -438,6 +446,14 @@ describe('a malformed migrate version', () => {
     expect(run.code).toBe(EXIT_USAGE);
     expect(run.stdout).toBe('');
     expect(run.stderr).toMatch(/^cngx: from "1\.2" is not a release version.*\nRun `cngx migrate --help` for usage\.\n$/);
+    expect(run.fetches).toBe(0);
+  });
+
+  it('exits 2 on a leading-zero numeric prerelease id as the positional', async () => {
+    const run = await counted('migrate', '1.2.3-rc.01');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stderr).toMatch(/^cngx: from "1\.2\.3-rc\.01" is not a release version/);
     expect(run.fetches).toBe(0);
   });
 
