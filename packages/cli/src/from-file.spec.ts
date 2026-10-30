@@ -35,6 +35,27 @@ describe('extractCngxNames', () => {
     expect(extractCngxNames("import '@cngx/themes';\nimport * as x from '@cngx/ui';\nimport { A } from '@angular/core';\n")).toEqual([]);
   });
 
+  it('keeps the names after a comment inside a multi-line import', () => {
+    const source = "import {\n  CngxSelect, // the select\n  CngxChip,\n  /* b */ CngxBadge,\n} from '@cngx/ui';\r\n";
+
+    expect(extractCngxNames(source)).toEqual(['CngxSelect', 'CngxChip', 'CngxBadge']);
+  });
+
+  it('ignores a commented-out import and keeps a URL string intact', () => {
+    const source = [
+      "// import { CngxOld } from '@cngx/core';",
+      "/* import { CngxGone } from '@cngx/ui'; */",
+      "const docs = 'https://example.com/a//b';",
+      "import { CngxSelect } from '@cngx/forms/select';",
+    ].join('\n');
+
+    expect(extractCngxNames(source)).toEqual(['CngxSelect']);
+  });
+
+  it('reads the named part of a default-plus-named import', () => {
+    expect(extractCngxNames("import Def, { CngxSelect } from '@cngx/forms/select';")).toEqual(['CngxSelect']);
+  });
+
   it('tolerates a trailing comma', () => {
     expect(extractCngxNames("import { CngxSelect, } from '@cngx/forms/select';")).toEqual(['CngxSelect']);
   });
