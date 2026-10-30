@@ -437,7 +437,7 @@ describe('a malformed migrate version', () => {
 
     expect(run.code).toBe(EXIT_USAGE);
     expect(run.stdout).toBe('');
-    expect(run.stderr).toMatch(/^cngx: "1\.2" is not a release version.*\nRun `cngx migrate --help` for usage\.\n$/);
+    expect(run.stderr).toMatch(/^cngx: from "1\.2" is not a release version.*\nRun `cngx migrate --help` for usage\.\n$/);
     expect(run.fetches).toBe(0);
   });
 
@@ -445,7 +445,7 @@ describe('a malformed migrate version', () => {
     const run = await counted('migrate', '0.1.0', '--to', ' bad');
 
     expect(run.code).toBe(EXIT_USAGE);
-    expect(run.stderr).toMatch(/^cngx: "bad" is not a release version/);
+    expect(run.stderr).toMatch(/^cngx: to "bad" is not a release version/);
     expect(run.fetches).toBe(0);
   });
 

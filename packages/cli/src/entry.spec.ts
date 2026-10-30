@@ -108,7 +108,7 @@ describe('the built entry', () => {
 
     expect(result.status).toBe(2);
     expect(result.stdout).toBe('');
-    expect(result.stderr).toMatch(/^cngx: "1\.2" is not a release version/);
+    expect(result.stderr).toMatch(/^cngx: from "1\.2" is not a release version/);
   });
 
   it('exits 2 on a --cngx-version with a leading zero', () => {

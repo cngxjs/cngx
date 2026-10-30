@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
 import { loadDocsFromFile } from '../data/loader.js';
+import type { DocsIndex } from '../data/loader.js';
 import type { DocsResolver, DocsResolverDeps } from '../data/docs-resolver.js';
 import { createDocsResolver } from '../data/docs-resolver.js';
 import { migrateUsage, migrateUsageCommand, migrateUsageMarkdown } from './migrate-usage.js';
@@ -41,9 +42,9 @@ describe('migrateUsage', () => {
   });
 
   it.each([
-    ['0.1.0', ' bad', '" bad" is not a release version'],
-    ['01.2.3', undefined, '"01.2.3" is not a release version'],
-    ['0.1.0', '1.2.3-rc.', '"1.2.3-rc." is not a release version'],
+    ['0.1.0', ' bad', 'to " bad" is not a release version'],
+    ['01.2.3', undefined, 'from "01.2.3" is not a release version'],
+    ['0.1.0', '1.2.3-rc.', 'to "1.2.3-rc." is not a release version'],
   ])('rejects from %j to %j as invalid-version without calling the resolver', async (from, to, message) => {
     const resolve = vi.fn<DocsResolver>();
 
@@ -56,6 +57,42 @@ describe('migrateUsage', () => {
       message: expect.stringMatching(new RegExp(`^${message.replace(/[.]/g, '\\.')}`)),
     });
     expect(resolve).not.toHaveBeenCalled();
+  });
+
+  describe('over an unstamped bundled snapshot', () => {
+    const unstamped: DocsIndex = { ...bundledNew, meta: { ...bundledNew.meta, cngxVersion: null } };
+
+    it('answers asset-missing without a to version and never calls the resolver', async () => {
+      const resolve = vi.fn<DocsResolver>();
+
+      const result = await migrateUsage(unstamped, { from: '0.1.0' }, resolve);
+
+      expect(result).toEqual({
+        ok: false,
+        meta: { from: '0.1.0', to: 'unknown' },
+        reason: 'asset-missing',
+        message: 'The bundled snapshot carries no cngxVersion; pass a to version.',
+      });
+      expect(resolve).not.toHaveBeenCalled();
+    });
+
+    it('still validates a malformed from before naming the missing stamp', async () => {
+      const resolve = vi.fn<DocsResolver>();
+
+      const result = await migrateUsage(unstamped, { from: '1.2' }, resolve);
+
+      expect(result).toMatchObject({ ok: false, reason: 'invalid-version', message: expect.stringMatching(/^from "1\.2" is not/) });
+      expect(resolve).not.toHaveBeenCalled();
+    });
+
+    it('resolves an explicit valid to version', async () => {
+      const deps: DocsResolverDeps = { fetchSnapshot: async () => ({ ok: true, path: OLD }), loadDocs: loadDocsFromFile };
+
+      const result = await migrateUsage(unstamped, { from: '0.1.0', to: '0.2.0' }, createDocsResolver(unstamped, deps));
+
+      expect(result.ok).toBe(true);
+      expect((result as UsageDelta).meta).toMatchObject({ from: '0.1.0', to: '0.2.0' });
+    });
   });
 
   it('renders an inferred rename and its selector change as two component rows', async () => {

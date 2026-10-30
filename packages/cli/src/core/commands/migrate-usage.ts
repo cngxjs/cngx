@@ -34,15 +34,26 @@ export async function migrateUsage(
   resolve: DocsResolver,
 ): Promise<MigrateUsageResult> {
   const from = args.from;
-  const to = args.to ?? bundled.meta.cngxVersion ?? 'unknown';
+  const to = args.to ?? bundled.meta.cngxVersion;
 
-  // Both versions are checked before the first resolve, so a malformed `to` never
-  // waits behind a fetch of `from`.
-  for (const version of [from, to]) {
+  // Only the versions the caller passed are validated, both before the first
+  // resolve, so a malformed `to` never waits behind a fetch of `from`. The
+  // message names the argument; the version contract itself stays argument-neutral.
+  const supplied: readonly (readonly ['from' | 'to', string])[] = args.to === undefined ? [['from', from]] : [['from', from], ['to', args.to]];
+  for (const [argument, version] of supplied) {
     const normalized = normalizeReleaseVersion(version);
     if (!normalized.ok) {
-      return { ok: false, meta: { from, to }, reason: 'invalid-version', message: normalized.message };
+      return { ok: false, meta: { from, to: to ?? 'unknown' }, reason: 'invalid-version', message: `${argument} ${normalized.message}` };
     }
+  }
+  // `unknown` is a display label only: it is never validated or resolved.
+  if (to === null) {
+    return {
+      ok: false,
+      meta: { from, to: 'unknown' },
+      reason: 'asset-missing',
+      message: 'The bundled snapshot carries no cngxVersion; pass a to version.',
+    };
   }
 
   const fromResolved = await resolve(from);
