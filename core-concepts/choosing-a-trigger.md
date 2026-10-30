@@ -86,5 +86,5 @@ An icon button, an icon menu button and a close button have no visible text, so 
 - [WAI-ARIA APG: Menu Button Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/)
 - [WAI-ARIA APG: Disclosure Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/)
 - [WAI-ARIA APG: Combobox Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/)
-- [Forms & Inputs](forms-%26-inputs.html) - where a select sits inside a form field.
+- [Forms & Inputs](forms-&-inputs.html) - where a select sits inside a form field.
 - [The Three Pillars](the-three-pillars.html) - why every state change in these triggers is announced.
