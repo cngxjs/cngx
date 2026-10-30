@@ -133,6 +133,18 @@ describe('usage errors', () => {
     expect(run.stderr).toContain('list does not take --cngx-version');
   });
 
+  it.each([
+    ['api', 'CngxSelect'],
+    ['list'],
+  ])('rejects a short format flag on cngx %s', async (...args) => {
+    const run = await cli(...args, '-f', 'json');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toContain("'-f'");
+    expect(run.stderr).toContain(`Run \`cngx ${args[0]} --help\` for usage.`);
+  });
+
   it('rejects a schema violation', async () => {
     const run = await cli('list', '--kind=widget');
 

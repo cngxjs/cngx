@@ -34,7 +34,7 @@ describe('README', () => {
   });
 
   it('gives --format no short form, in the adapter and in the README', () => {
-    expect(globalFlags()).not.toContain('-f');
+    expect(knownFlags(COMMANDS)).not.toContain('-f');
     expect(README).not.toMatch(/(?<![\w-])-f\b/);
     expect(README).toContain('It has no short form.');
   });
