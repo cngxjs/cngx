@@ -15,7 +15,8 @@ answer grounds against is a runtime property (`cngx://provenance`,
   input.
 - A malformed version answers the new failure reason `invalid-version` before
   any fetch, on every version-scoped tool and on `migrate_usage` (both `from`
-  and `to` are checked before either is resolved). `asset-missing` no longer
+  and `to` are checked before either is resolved; a blank one fails input
+  validation instead, see below). `asset-missing` no longer
   covers it. A client that switches exhaustively on `reason` sees a new value.
   Leading zeros (`01.2.3`) and empty prerelease ids (`1.2.3-rc.`) are now
   rejected.
@@ -28,6 +29,9 @@ answer grounds against is a runtime property (`cngx://provenance`,
 - A blank `version` (`""` or `" "`) answers `invalid-version` on every
   version-scoped tool instead of the bundled snapshot. Omit `version` for the
   bundled release.
+- A blank `migrate_usage` `from` or `to` and a blank `find_component` `query`
+  (`""` or `" "`) fail input validation (`minLength: 1` after trimming, exit 2
+  in the CLI) instead of being resolved or searched.
 
 ### Added
 
