@@ -55,7 +55,7 @@ export const findComponentCommand = defineCommand({
     'Search components, directives and services by name, selector or category fragment. Prints each match with its kind, selector, category and source file; follow up with `cngx api`, `cngx slots`, `cngx theme`, `cngx di` or `cngx example`.',
   cliName: 'find',
   input: {
-    query: z.string().min(1).describe('A name, selector, or category fragment, e.g. "select" or "cngx-chip".'),
+    query: z.string().trim().min(1).describe('A name, selector, or category fragment, e.g. "select" or "cngx-chip".'),
     version: versionInput,
   },
   positional: 'query',

@@ -76,7 +76,7 @@ export const getStoryExampleCommand = defineCommand({
     'Print the runnable example links of a component, plus a StackBlitz link when one exists. Exits 1 when the name matches nothing or a selector matches several entries.',
   cliName: 'example',
   input: {
-    name: z.string().min(1).describe('A component/directive class name or selector, e.g. "CngxSelect".'),
+    name: z.string().trim().min(1).describe('A component/directive class name or selector, e.g. "CngxSelect".'),
   },
   positional: 'name',
   // No `version` input: example URLs track the live docs site, so the answer always grounds on the bundled release.

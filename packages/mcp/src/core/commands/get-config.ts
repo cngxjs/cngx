@@ -259,6 +259,7 @@ export const getConfigCommand = defineCommand({
   input: {
     name: z
       .string()
+      .trim()
       .min(1)
       .describe('A config token (CNGX_SELECT_CONFIG), a stem (select), or a component name (CngxSelect).'),
     version: versionInput,

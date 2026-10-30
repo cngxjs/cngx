@@ -1,11 +1,12 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import { createDocsIndex, loadBundledDocs, loadDocsFromFile } from '../data/loader.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
 import { answerVersioned, createDocsResolver } from '../data/docs-resolver.js';
 import type { DocFunction, DocumentationJson } from '../data/types.js';
 import type { ConfigResult } from './get-config.js';
-import { getConfig as getConfigAnswer } from './get-config.js';
+import { getConfig as getConfigAnswer, getConfigCommand } from './get-config.js';
 import { isAmbiguous } from '../query.js';
 import { shuffled } from '../../testing/shuffle.js';
 
@@ -321,5 +322,18 @@ describe('get_config over every ordering of the snapshot functions', () => {
     for (const answer of rest) {
       expect(answer).toBe(first);
     }
+  });
+});
+
+describe('get_config input schema', () => {
+  const schema = z.object(getConfigCommand.input);
+
+  it('rejects a blank name as invalid input', () => {
+    expect(schema.safeParse({ name: ' ' }).success).toBe(false);
+    expect(schema.safeParse({ name: '\t' }).success).toBe(false);
+  });
+
+  it('trims a padded name before the query sees it', () => {
+    expect(schema.parse({ name: ' CngxSelect ' }).name).toBe('CngxSelect');
   });
 });

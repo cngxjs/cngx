@@ -62,7 +62,7 @@ export const getSlotsCommand = defineCommand({
     'Print the template slots a component projects. Exits 1 when the name matches nothing or a selector matches several entries.',
   cliName: 'slots',
   input: {
-    name: z.string().min(1).describe('A component/directive class name or selector, e.g. "CngxSelect".'),
+    name: z.string().trim().min(1).describe('A component/directive class name or selector, e.g. "CngxSelect".'),
     version: versionInput,
   },
   positional: 'name',

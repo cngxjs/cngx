@@ -79,7 +79,7 @@ export const getThemeTokensCommand = defineCommand({
     'Print the CSS custom properties a component exposes, with its theme overview. Exits 1 when the name matches nothing or a selector matches several entries. For DI tokens use `cngx di`.',
   cliName: 'theme',
   input: {
-    name: z.string().min(1).describe('A component/directive class name or selector, e.g. "CngxSelect".'),
+    name: z.string().trim().min(1).describe('A component/directive class name or selector, e.g. "CngxSelect".'),
     version: versionInput,
   },
   positional: 'name',

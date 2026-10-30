@@ -1,12 +1,13 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import { loadBundledDocs, loadDocsFromFile } from '../data/loader.js';
 import type { DocsIndex } from '../data/loader.js';
 import type { DocSlot } from '../data/types.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
 import { answerVersioned, createDocsResolver } from '../data/docs-resolver.js';
 import type { SlotsResult } from './get-slots.js';
-import { getSlots as getSlotsAnswer, slotsMarkdown } from './get-slots.js';
+import { getSlots as getSlotsAnswer, slotsMarkdown, getSlotsCommand } from './get-slots.js';
 import { normalizeSlot } from '../data/slots.js';
 import { isAmbiguous } from '../query.js';
 
@@ -122,5 +123,18 @@ describe('slot names that carry their description', () => {
 
     expect(markdown).toContain('`cngxAccordionItemError`');
     expect(markdown).not.toContain('localhost');
+  });
+});
+
+describe('get_slots input schema', () => {
+  const schema = z.object(getSlotsCommand.input);
+
+  it('rejects a blank name as invalid input', () => {
+    expect(schema.safeParse({ name: ' ' }).success).toBe(false);
+    expect(schema.safeParse({ name: '\t' }).success).toBe(false);
+  });
+
+  it('trims a padded name before the query sees it', () => {
+    expect(schema.parse({ name: ' CngxSelect ' }).name).toBe('CngxSelect');
   });
 });

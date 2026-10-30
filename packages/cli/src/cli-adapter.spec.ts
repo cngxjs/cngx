@@ -545,6 +545,19 @@ describe('--cngx-version checks', () => {
     expect(run.stderr).toContain('needs a version');
   });
 
+  it.each([
+    ['api', 'md'],
+    ['api', 'json'],
+    ['find', 'md'],
+    ['find', 'json'],
+  ])('exits 2 on a blank %s name under --format %s', async (command, format) => {
+    const run = await cli(command, ' ', '--format', format);
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toMatch(new RegExp(`^cngx: .*\\nRun \`cngx ${command} --help\` for usage\\.\\n$`));
+  });
+
   it.each([[['migrate', '']], [['migrate', '0.1.0-rc.6', '--to', '']]])('exits 2 on a blank migrate version: %j', async (argv) => {
     const run = await cli(...argv);
 

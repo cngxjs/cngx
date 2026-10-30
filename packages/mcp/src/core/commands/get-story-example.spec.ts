@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import type { VersionedAnswer } from '../data/docs-resolver.js';
 import { createDocsResolver } from '../data/docs-resolver.js';
 import { loadBundledDocs, loadDocsFromFile } from '../data/loader.js';
@@ -69,5 +70,18 @@ describe('get_story_example over MCP', () => {
 
     expect(answer).toMatchObject({ ok: true, groundedVersion: bundled.meta.cngxVersion, result: { name: 'CngxTreeSelect', kind: 'component' } });
     expect(answer.ok && answer.result.exampleUrls.length).toBeGreaterThan(0);
+  });
+});
+
+describe('get_story_example input schema', () => {
+  const schema = z.object(getStoryExampleCommand.input);
+
+  it('rejects a blank name as invalid input', () => {
+    expect(schema.safeParse({ name: ' ' }).success).toBe(false);
+    expect(schema.safeParse({ name: '\t' }).success).toBe(false);
+  });
+
+  it('trims a padded name before the query sees it', () => {
+    expect(schema.parse({ name: ' CngxSelect ' }).name).toBe('CngxSelect');
   });
 });

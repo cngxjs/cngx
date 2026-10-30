@@ -1,12 +1,13 @@
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import { loadBundledDocs, loadDocsFromFile } from '../data/loader.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
 import { answerVersioned, createDocsResolver } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
 import type { ApiResult } from './get-api.js';
-import { getApi as getApiAnswer } from './get-api.js';
+import { getApi as getApiAnswer, getApiCommand } from './get-api.js';
 import { isAmbiguous } from '../query.js';
 
 /** The query answer for a name that must not be ambiguous. */
@@ -153,5 +154,18 @@ describe('getApi lists public methods only', () => {
     expect(api).not.toBeNull();
     expect(api?.methods.map((method) => method.name)).not.toContain('handleError');
     expect(api?.methods.map((method) => method.name)).not.toContain('handleLoad');
+  });
+});
+
+describe('get_api input schema', () => {
+  const schema = z.object(getApiCommand.input);
+
+  it('rejects a blank name as invalid input', () => {
+    expect(schema.safeParse({ name: ' ' }).success).toBe(false);
+    expect(schema.safeParse({ name: '\t' }).success).toBe(false);
+  });
+
+  it('trims a padded name before the query sees it', () => {
+    expect(schema.parse({ name: ' CngxSelect ' }).name).toBe('CngxSelect');
   });
 });
