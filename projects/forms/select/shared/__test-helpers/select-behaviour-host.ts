@@ -13,6 +13,13 @@ import { Subject, type Observable } from 'rxjs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { CngxPopoverPresentationRequest } from '@cngx/common/popover';
+import { provideDirection } from '@cngx/core';
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+} from '@cngx/core/i18n';
 import { CngxFormField, CngxFormFieldPresenter } from '@cngx/forms/field';
 
 import { CngxSelectAnnouncer } from '../announcer';
@@ -40,6 +47,11 @@ export interface SelectBehaviourHostOptions {
    * to opening the panel and clicking the second row.
    */
   readonly commitPick?: (cmp: unknown, fixture: ComponentFixture<unknown>) => void;
+  /**
+   * The variant's roving chip strip, when it has one: seeds two selected
+   * values so the strip renders two chips addressed by `[data-reorder-index]`.
+   */
+  readonly chipRoving?: { readonly seed: (cmp: unknown) => void };
 }
 
 interface VariantApi {
@@ -100,7 +112,8 @@ function flush(fixture: ComponentFixture<unknown>): void {
  * stays reachable from the trigger while the panel is closed; a select that
  * turns disabled closes and ignores activations; focus leaving the host
  * closes the anchored panel; Escape follows `dismissOn`; `aria-controls`
- * names the element with the popup role.
+ * names the element with the popup role; a language-pack flip re-renders the
+ * commit-failure copy; a roving chip strip mirrors its arrow keys under RTL.
  *
  * @internal
  */
@@ -385,6 +398,55 @@ export function describeSelectBehaviourHost(
       expect(variant.panelOpen()).toBe(true);
       expect(escape.defaultPrevented).toBe(false);
     });
+
+    it('re-renders the commit-failure copy when the language pack flips', () => {
+      const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+      const { fixture, host, pick, trigger, closePanel } = mount({
+        providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
+      });
+      pick();
+      host.pending!.error(new Error('server down'));
+      flush(fixture);
+      closePanel();
+      const message = () =>
+        document.getElementById(trigger().getAttribute('aria-errormessage') ?? '')?.textContent ??
+        '';
+      expect(message()).toContain('Save failed');
+
+      pack.set({
+        locale: 'de',
+        select: {
+          commitFailed: 'Speichern fehlgeschlagen',
+          commitFailedAnnouncement: '{label}: Speichern fehlgeschlagen',
+          commitFailedAnnouncementDetail: '{label}: Speichern fehlgeschlagen - {detail}',
+        },
+      });
+      flush(fixture);
+      expect(message()).toContain('Speichern fehlgeschlagen');
+      expect(message()).not.toContain('Save failed');
+    });
+
+    if (opts.chipRoving) {
+      const chipRoving = opts.chipRoving;
+      it.each([
+        ['ltr', 'ArrowRight'],
+        ['rtl', 'ArrowLeft'],
+      ] as const)('roves to the next chip on %s with %s', (dir, nextKey) => {
+        const { fixture, el, cmp } = mount({ providers: [provideDirection(dir)] });
+        chipRoving.seed(cmp);
+        flush(fixture);
+        const chip = (index: number) =>
+          el.querySelector<HTMLElement>(`[data-reorder-index="${index}"]`)!;
+        chip(0).focus();
+        flush(fixture);
+        chip(0).dispatchEvent(
+          new KeyboardEvent('keydown', { key: nextKey, bubbles: true, cancelable: true }),
+        );
+        flush(fixture);
+        expect(document.activeElement).toBe(chip(1));
+        expect(chip(1).getAttribute('tabindex')).toBe('0');
+      });
+    }
 
     it('points aria-controls at the listbox or tree while anchored', () => {
       const { fixture, variant, trigger } = mount();
