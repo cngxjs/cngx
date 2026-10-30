@@ -77,10 +77,7 @@ import {
 import { CngxSelectSheetHeader } from '../shared/internal/sheet-header/sheet-header.component';
 import { CngxSelectSheetTrigger } from '../shared/internal/sheet-trigger.directive';
 import { CNGX_SELECT_SHEET_HEADER_HOST } from '../shared/sheet-header-host';
-import {
-  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
-  type CngxCommitErrorAnnouncePolicy,
-} from '../shared/commit-error-announcer';
+import { type CngxCommitErrorAnnouncePolicy } from '../shared/commit-error-announcer';
 import {
   CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   type CngxChipRemovalHandler,
@@ -937,7 +934,11 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
 
   /** @internal */
   protected readonly inputSlotContext = computed<CngxSelectInputSlotContext>(
-    () => ({ disabled: this.disabled(), focused: this.focusState.focused(), panelOpen: this.panelOpen() }),
+    () => ({
+      disabled: this.disabled(),
+      focused: this.focusState.focused(),
+      panelOpen: this.panelOpen(),
+    }),
     {
       equal: (a, b) =>
         a.disabled === b.disabled && a.focused === b.focused && a.panelOpen === b.panelOpen,
@@ -1086,37 +1087,14 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   private lastCommittedValues: T[] = [];
   private readonly hasEmittedInitial = signal(false);
 
-  private readonly commitErrorAnnouncer = inject(CngxSelectAnnouncer);
   /** A rejected quick-create is spoken assertively, whatever the select's own policy. */
-  private readonly announceCreateError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
-    deps: {
-      announcer: this.commitErrorAnnouncer,
-      commitErrorMessage: (err) => this.core.createFailedMessage(this.lastCreateLabel(), err),
-      softAnnounce: (opt, action) =>
-        this.core.announce(
-          opt as CngxSelectOptionDef<T> | null,
-          action,
-          this.values().length,
-          true,
-        ),
-    },
+  private readonly announceCreateError = this.core.createCommitErrorAnnouncer({
+    shape: 'array',
     policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'verbose', severity: 'assertive' }),
+    message: (err) => this.core.createFailedMessage(this.lastCreateLabel(), err),
   });
-  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
-    deps: {
-      announcer: this.commitErrorAnnouncer,
-      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
-      softFailureMessage: () => this.core.softCommitFailureMessage(),
-      // Soft policy: generic removal at the CURRENT selection count - the
-      // announcer's scalar-shaped count/multi args are replaced here.
-      softAnnounce: (opt, action) =>
-        this.core.announce(
-          opt as CngxSelectOptionDef<T> | null,
-          action,
-          this.values().length,
-          true,
-        ),
-    },
+  private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
+    shape: 'array',
     policy: this.commitErrorAnnouncePolicy,
   });
 

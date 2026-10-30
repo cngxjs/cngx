@@ -76,10 +76,7 @@ import {
   CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
   type ArrayCommitHandler,
 } from '../shared/array-commit-handler';
-import {
-  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
-  type CngxCommitErrorAnnouncePolicy,
-} from '../shared/commit-error-announcer';
+import { type CngxCommitErrorAnnouncePolicy } from '../shared/commit-error-announcer';
 import {
   CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   type CngxChipRemovalHandler,
@@ -144,9 +141,9 @@ import type {
   CngxTreeSelectedItem,
 } from './tree-select.model';
 
-const TRUNCATE: Signal<'wrap' | 'scroll-x' | 'truncate'> = signal<
-  'wrap' | 'scroll-x' | 'truncate'
->('truncate').asReadonly();
+const TRUNCATE: Signal<'wrap' | 'scroll-x' | 'truncate'> = signal<'wrap' | 'scroll-x' | 'truncate'>(
+  'truncate',
+).asReadonly();
 
 /**
  * Change event emitted by `CngxTreeSelect.selectionChange`. Shape
@@ -615,8 +612,7 @@ export class CngxTreeSelect<T = unknown>
   private readonly clearButtonDir = contentChild<CngxSelectClearButton>(CngxSelectClearButton);
   private readonly emptyDir = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
   private readonly loadingDir = contentChild<CngxSelectLoading>(CngxSelectLoading);
-  private readonly loadingGlyphDir =
-    contentChild<CngxSelectLoadingGlyph>(CngxSelectLoadingGlyph);
+  private readonly loadingGlyphDir = contentChild<CngxSelectLoadingGlyph>(CngxSelectLoadingGlyph);
   private readonly errorDir = contentChild<CngxSelectError>(CngxSelectError);
   private readonly retryButtonDir = contentChild<CngxSelectRetryButton>(CngxSelectRetryButton);
   private readonly refreshingDir = contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
@@ -638,7 +634,8 @@ export class CngxTreeSelect<T = unknown>
     this.footerDir,
     'treeFooter',
   );
-  private readonly chipOverflowDir = contentChild<CngxSelectChipOverflow<T>>(CngxSelectChipOverflow);
+  private readonly chipOverflowDir =
+    contentChild<CngxSelectChipOverflow<T>>(CngxSelectChipOverflow);
   /** @internal - directive-only like the family's other chip-strip slots. */
   protected readonly chipOverflowTpl = computed<TemplateRef<
     CngxSelectChipOverflowContext<T>
@@ -775,16 +772,8 @@ export class CngxTreeSelect<T = unknown>
     },
   );
 
-  /** Shared live-region announcer. */
-  private readonly announcer = inject(CngxSelectAnnouncer);
-
-  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
-    deps: {
-      announcer: this.announcer,
-      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
-      softFailureMessage: () => this.core.softCommitFailureMessage(),
-      softAnnounce: (_opt, action) => this.core.announce(null, action, this.values().length, true),
-    },
+  private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
+    shape: 'tree',
     policy: this.commitErrorAnnouncePolicy,
   });
 
@@ -1314,8 +1303,7 @@ export class CngxTreeSelect<T = unknown>
 
   protected handleFocus(): void {
     this.focusState.markFocused();
-    const openOnFocus =
-      this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
+    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
     if (openOnFocus && !this.suppressOpenOnFocus) {
       this.open();
     }

@@ -76,10 +76,7 @@ import { CngxSelectSheetHeader } from '../shared/internal/sheet-header/sheet-hea
 import { CngxSelectSheetTrigger } from '../shared/internal/sheet-trigger.directive';
 import { CNGX_SELECT_SHEET_HEADER_HOST } from '../shared/sheet-header-host';
 import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
-import {
-  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
-  type CngxCommitErrorAnnouncePolicy,
-} from '../shared/commit-error-announcer';
+import { type CngxCommitErrorAnnouncePolicy } from '../shared/commit-error-announcer';
 import {
   type CngxSelectAnnouncerConfig,
   type CngxSelectLoadingVariant,
@@ -300,7 +297,6 @@ export class CngxSelectShell<T = unknown>
     CngxSelectShellSearchHost
 {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
-  private readonly announcer = inject(CngxSelectAnnouncer);
   private readonly config = resolveSelectConfig();
 
   /**
@@ -870,14 +866,8 @@ export class CngxSelectShell<T = unknown>
    *
    * @internal
    */
-  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
-    deps: {
-      announcer: this.announcer,
-      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
-      softFailureMessage: () => this.core.softCommitFailureMessage(),
-      softAnnounce: (opt, action, count, multi) =>
-        this.core.announce(opt as CngxSelectOptionDef<T> | null, action, count, multi),
-    },
+  private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
+    shape: 'scalar',
     policy: this.commitErrorAnnouncePolicy,
   });
 

@@ -72,10 +72,7 @@ import {
 import { CngxSelectSheetHeader } from '../shared/internal/sheet-header/sheet-header.component';
 import { CngxSelectSheetTrigger } from '../shared/internal/sheet-trigger.directive';
 import { CNGX_SELECT_SHEET_HEADER_HOST } from '../shared/sheet-header-host';
-import {
-  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
-  type CngxCommitErrorAnnouncePolicy,
-} from '../shared/commit-error-announcer';
+import { type CngxCommitErrorAnnouncePolicy } from '../shared/commit-error-announcer';
 import type {
   CngxSelectCommitAction,
   CngxSelectCommitErrorDisplay,
@@ -843,7 +840,11 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected readonly inputSlotContext = computed<CngxSelectInputSlotContext>(
-    () => ({ disabled: this.disabled(), focused: this.focusState.focused(), panelOpen: this.panelOpen() }),
+    () => ({
+      disabled: this.disabled(),
+      focused: this.focusState.focused(),
+      panelOpen: this.panelOpen(),
+    }),
     {
       equal: (a, b) =>
         a.disabled === b.disabled && a.focused === b.focused && a.panelOpen === b.panelOpen,
@@ -949,25 +950,14 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
-  private readonly announcer = inject(CngxSelectAnnouncer);
   /** A rejected quick-create is spoken assertively, whatever the select's own policy. */
-  private readonly announceCreateError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
-    deps: {
-      announcer: this.announcer,
-      commitErrorMessage: (err) => this.core.createFailedMessage(this.lastCreateLabel(), err),
-      softAnnounce: (opt, action, count, multi) =>
-        this.core.announce(opt as CngxSelectOptionDef<T> | null, action, count, multi),
-    },
+  private readonly announceCreateError = this.core.createCommitErrorAnnouncer({
+    shape: 'scalar',
     policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'verbose', severity: 'assertive' }),
+    message: (err) => this.core.createFailedMessage(this.lastCreateLabel(), err),
   });
-  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
-    deps: {
-      announcer: this.announcer,
-      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
-      softFailureMessage: () => this.core.softCommitFailureMessage(),
-      softAnnounce: (opt, action, count, multi) =>
-        this.core.announce(opt as CngxSelectOptionDef<T> | null, action, count, multi),
-    },
+  private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
+    shape: 'scalar',
     policy: this.commitErrorAnnouncePolicy,
   });
   private readonly display: DisplayBinding<T> = inject(CNGX_DISPLAY_BINDING_FACTORY)<T>({

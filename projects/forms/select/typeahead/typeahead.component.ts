@@ -102,10 +102,7 @@ import {
 import { CngxSelectSheetHeader } from '../shared/internal/sheet-header/sheet-header.component';
 import { CngxSelectSheetTrigger } from '../shared/internal/sheet-trigger.directive';
 import { CNGX_SELECT_SHEET_HEADER_HOST } from '../shared/sheet-header-host';
-import {
-  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
-  type CngxCommitErrorAnnouncePolicy,
-} from '../shared/commit-error-announcer';
+import { type CngxCommitErrorAnnouncePolicy } from '../shared/commit-error-announcer';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import { createHostFocusWithin } from '../shared/internal/host-focus-within';
@@ -752,7 +749,11 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   /** @internal - reactive context for the input prefix/suffix template outlets. */
   protected readonly inputSlotContext = computed<CngxSelectInputSlotContext>(
-    () => ({ disabled: this.disabled(), focused: this.focusState.focused(), panelOpen: this.panelOpen() }),
+    () => ({
+      disabled: this.disabled(),
+      focused: this.focusState.focused(),
+      panelOpen: this.panelOpen(),
+    }),
     {
       equal: (a, b) =>
         a.disabled === b.disabled && a.focused === b.focused && a.panelOpen === b.panelOpen,
@@ -821,15 +822,8 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
-  private readonly announcer = inject(CngxSelectAnnouncer);
-  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
-    deps: {
-      announcer: this.announcer,
-      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
-      softFailureMessage: () => this.core.softCommitFailureMessage(),
-      softAnnounce: (opt, action, count, multi) =>
-        this.core.announce(opt as CngxSelectOptionDef<T> | null, action, count, multi),
-    },
+  private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
+    shape: 'scalar',
     policy: this.commitErrorAnnouncePolicy,
   });
   /**
@@ -1047,8 +1041,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   protected handleFocus(): void {
     this.focusState.markFocused();
-    const openOnFocus =
-      this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
+    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
     if (openOnFocus && !this.suppressOpenOnFocus) {
       this.open();
     }

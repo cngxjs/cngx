@@ -63,10 +63,7 @@ import {
 } from '../shared/internal/select-sheet-wiring';
 import { CngxSelectSheetHeader } from '../shared/internal/sheet-header/sheet-header.component';
 import { CNGX_SELECT_SHEET_HEADER_HOST } from '../shared/sheet-header-host';
-import {
-  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
-  type CngxCommitErrorAnnouncePolicy,
-} from '../shared/commit-error-announcer';
+import { type CngxCommitErrorAnnouncePolicy } from '../shared/commit-error-announcer';
 import {
   CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   type CngxChipRemovalHandler,
@@ -901,31 +898,17 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     emitCleared: () => this.cleared.emit(),
   });
 
+  private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
+    shape: 'array',
+    policy: this.commitErrorAnnouncePolicy,
+  });
+
   /**
    * Commit-flow handler. Owns commit-controller lifecycle, value
    * reconciliation, rollback-on-error, live-region announce. Shared
    * with `CngxCombobox`. Consumer emits change payloads via the
    * finalize callbacks.
    */
-  private readonly commitErrorAnnouncer = inject(CngxSelectAnnouncer);
-  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
-    deps: {
-      announcer: this.commitErrorAnnouncer,
-      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
-      softFailureMessage: () => this.core.softCommitFailureMessage(),
-      // Soft policy: generic removal at the CURRENT selection count - the
-      // announcer's scalar-shaped count/multi args are replaced here.
-      softAnnounce: (opt, action) =>
-        this.core.announce(
-          opt as CngxSelectOptionDef<T> | null,
-          action,
-          this.values().length,
-          true,
-        ),
-    },
-    policy: this.commitErrorAnnouncePolicy,
-  });
-
   private readonly commitHandler: ArrayCommitHandler<T> = inject(
     CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
   )<T>({

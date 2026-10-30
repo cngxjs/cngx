@@ -17,6 +17,11 @@ import {
   type CngxSelectAriaLabels,
 } from '../config';
 import type { CngxSelectOptionDef } from '../option.model';
+import {
+  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
+  type CngxCommitErrorAnnouncePolicy,
+  type CngxCommitErrorAnnouncerFactory,
+} from '../commit-error-announcer';
 import { createSelectCore, type CngxSelectCoreDeps } from './select-core';
 
 const RED: CngxSelectOptionDef<string> = { value: 'red', label: 'Red' };
@@ -120,10 +125,7 @@ describe('createSelectCore - dev descriptor', () => {
 });
 
 describe('createSelectCore - mobile sheet presentation', () => {
-  function coreWith(
-    extra: Partial<CngxSelectCoreDeps<string, string>>,
-    providers: unknown[] = [],
-  ) {
+  function coreWith(extra: Partial<CngxSelectCoreDeps<string, string>>, providers: unknown[] = []) {
     TestBed.configureTestingModule({ providers: providers as never[] });
     return TestBed.runInInjectionContext(() =>
       createSelectCore(
@@ -196,6 +198,94 @@ describe('createSelectCore - commit ledger retry', () => {
     expect(context().option).toBe(RED);
     context().retry();
     expect(calls).toEqual(['red', 'red']);
+  });
+});
+
+describe('createSelectCore - commit-error announcer', () => {
+  function coreWith(
+    providers: unknown[],
+    coreDeps: CngxSelectCoreDeps<string, string> = deps(),
+  ): ReturnType<typeof createSelectCore<string, string>> {
+    TestBed.configureTestingModule({ providers: providers as never[] });
+    return TestBed.runInInjectionContext(() =>
+      createSelectCore(coreDeps, { announceChanges: signal(null), announceTemplate: signal(null) }),
+    );
+  }
+
+  it('builds the callback through a provided CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY', () => {
+    const announced: unknown[] = [];
+    const factory = vi.fn<CngxCommitErrorAnnouncerFactory>(() => (err) => announced.push(err));
+    const core = coreWith([{ provide: CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY, useValue: factory }]);
+    const policy = signal<CngxCommitErrorAnnouncePolicy>({ kind: 'soft' });
+
+    const callback = core.createCommitErrorAnnouncer({ shape: 'scalar', policy });
+    const failure = new Error('down');
+    callback(failure);
+
+    expect(factory).toHaveBeenCalledTimes(1);
+    const options = factory.mock.calls[0][0];
+    expect(options.policy).toBe(policy);
+    expect(options.deps.softFailureMessage?.()).toContain('Save failed, previous value restored');
+    expect(options.deps.commitErrorMessage(failure)).toBe(core.commitErrorMessage(failure));
+    expect(announced).toEqual([failure]);
+  });
+
+  it('uses the message override for the verbose sentence', () => {
+    const factory = vi.fn<CngxCommitErrorAnnouncerFactory>(() => () => undefined);
+    const core = coreWith([{ provide: CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY, useValue: factory }]);
+
+    core.createCommitErrorAnnouncer({
+      shape: 'array',
+      policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'verbose', severity: 'assertive' }),
+      message: () => 'Colour: Could not create Teal',
+    });
+
+    expect(factory.mock.calls[0][0].deps.commitErrorMessage(new Error('x'))).toBe(
+      'Colour: Could not create Teal',
+    );
+  });
+
+  it('hands custom factories a softAnnounce hook of the requested shape', () => {
+    const factory = vi.fn<CngxCommitErrorAnnouncerFactory>(() => () => undefined);
+    const coreDeps = { ...deps(), multi: signal(true), currentSelection: signal(['red', 'blue']) };
+    const core = coreWith(
+      [{ provide: CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY, useValue: factory }],
+      coreDeps,
+    );
+    const policy = signal<CngxCommitErrorAnnouncePolicy>({ kind: 'soft' });
+    core.createCommitErrorAnnouncer({ shape: 'scalar', policy });
+    core.createCommitErrorAnnouncer({ shape: 'array', policy });
+    core.createCommitErrorAnnouncer({ shape: 'tree', policy });
+    const [scalar, array, tree] = factory.mock.calls.map(([o]) => o.deps.softAnnounce);
+
+    const live = vi
+      .spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce')
+      .mockImplementation(() => {});
+    scalar(RED as CngxSelectOptionDef<unknown>, 'added', 1, false);
+    array(RED as CngxSelectOptionDef<unknown>, 'removed', 0, false);
+    tree(RED as CngxSelectOptionDef<unknown>, 'removed', 0, false);
+
+    const spoken = live.mock.calls.map(([m]) => String(m));
+    expect(spoken).toHaveLength(3);
+    expect(spoken[0]).toContain('Red');
+    expect(spoken[1]).toContain('Red');
+    expect(spoken[1]).toContain('2');
+    expect(spoken[2]).not.toContain('Red');
+  });
+
+  it('defaults to createCommitErrorAnnouncer and speaks the soft copy politely', () => {
+    const core = coreWith([]);
+    const live = vi
+      .spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce')
+      .mockImplementation(() => {});
+    const callback = core.createCommitErrorAnnouncer({
+      shape: 'scalar',
+      policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'soft' }),
+    });
+    callback(new Error('down'));
+    expect(live).toHaveBeenCalledTimes(1);
+    expect(String(live.mock.calls[0][0])).toContain('Save failed, previous value restored');
+    expect(live.mock.calls[0][1]).toBe('polite');
   });
 });
 

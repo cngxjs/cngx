@@ -88,10 +88,7 @@ import {
 } from '../shared/scalar-commit-handler';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { injectResolvedTemplate } from '../shared/internal/resolve-template';
-import {
-  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
-  type CngxCommitErrorAnnouncePolicy,
-} from '../shared/commit-error-announcer';
+import { type CngxCommitErrorAnnouncePolicy } from '../shared/commit-error-announcer';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import { createHostFocusWithin } from '../shared/internal/host-focus-within';
@@ -246,7 +243,6 @@ export interface CngxSelectChange<T = unknown> {
 })
 export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
-  private readonly announcer = inject(CngxSelectAnnouncer);
   private readonly config = resolveSelectConfig();
 
   /**
@@ -810,14 +806,8 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     return this.selectedOption()?.label ?? this.core.resolvedPlaceholder();
   });
 
-  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
-    deps: {
-      announcer: this.announcer,
-      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
-      softFailureMessage: () => this.core.softCommitFailureMessage(),
-      softAnnounce: (opt, action, count, multi) =>
-        this.core.announce(opt as CngxSelectOptionDef<T> | null, action, count, multi),
-    },
+  private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
+    shape: 'scalar',
     policy: this.commitErrorAnnouncePolicy,
   });
 
