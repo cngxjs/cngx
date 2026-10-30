@@ -1,3 +1,4 @@
+<span class="cngx-select__status cngx-sr-only" role="status" aria-live="polite" aria-atomic="true" [attr.aria-label]="statusText() || null">{{ statusText() }}</span>
 @if (showActionTop()) {
   @if (host.tpl.action(); as tpl) {
     <div class="cngx-select__action cngx-select__action--top" role="group" [attr.aria-label]="actionLabel()">
@@ -12,7 +13,7 @@
     } @else {
       @switch (host.loadingVariant()) {
         @case ('spinner') {
-          <div class="cngx-select__spinner-wrap" role="status" aria-live="polite" [attr.aria-label]="viewCopy().statusLoading">
+          <div class="cngx-select__spinner-wrap" aria-hidden="true">
             @if (host.tpl.loadingGlyph(); as glyph) {
               <ng-container *ngTemplateOutlet="glyph" />
             } @else {
@@ -21,17 +22,17 @@
           </div>
         }
         @case ('bar') {
-          <div class="cngx-select__loading-bar" role="status" aria-live="polite" [attr.aria-label]="viewCopy().statusLoading">
+          <div class="cngx-select__loading-bar" aria-hidden="true">
             @if (host.tpl.loadingGlyph(); as glyph) {
               <ng-container *ngTemplateOutlet="glyph" />
             }
           </div>
         }
         @case ('text') {
-          <div class="cngx-select__loading" role="status" aria-live="polite">{{ viewCopy().loading }}</div>
+          <div class="cngx-select__loading" aria-hidden="true">{{ viewCopy().loading }}</div>
         }
         @default {
-          <div class="cngx-select__skeleton" role="status" aria-live="polite" [attr.aria-label]="viewCopy().statusLoading">
+          <div class="cngx-select__skeleton" aria-hidden="true">
             @for (i of host.skeletonIndices(); track i) {
               <div aria-hidden="true" class="cngx-select__skeleton-row"></div>
             }
@@ -143,7 +144,7 @@
         @switch (host.refreshingVariant()) {
           @case ('none') { <!-- suppressed --> }
           @case ('spinner') {
-            <div class="cngx-select__refreshing-spinner" role="status" aria-live="polite" [attr.aria-label]="refreshingLabel()">
+            <div class="cngx-select__refreshing-spinner" aria-hidden="true">
               @if (host.tpl.loadingGlyph(); as glyph) {
                 <ng-container *ngTemplateOutlet="glyph" />
               } @else {
@@ -152,7 +153,7 @@
             </div>
           }
           @case ('dots') {
-            <div class="cngx-select__refreshing-dots" role="status" aria-live="polite" [attr.aria-label]="refreshingLabel()">
+            <div class="cngx-select__refreshing-dots" aria-hidden="true">
               @if (host.tpl.loadingGlyph(); as glyph) {
                 <ng-container *ngTemplateOutlet="glyph" />
               } @else {
@@ -163,7 +164,7 @@
             </div>
           }
           @default {
-            <div class="cngx-select__refreshing" role="status" aria-live="polite" [attr.aria-label]="refreshingLabel()">
+            <div class="cngx-select__refreshing" aria-hidden="true">
               @if (host.tpl.loadingGlyph(); as glyph) {
                 <ng-container *ngTemplateOutlet="glyph" />
               }
