@@ -2248,4 +2248,19 @@
   * > * > .cngx-field-trigger:is([aria-disabled='true'], :has(> [role='combobox']:disabled)) {
     color: GrayText;
   }
+
+  /* The danger border colour is forced to the same system colour as a valid
+     border, so an invalid trigger would read as valid. It takes a 2px border
+     in Mark on every skin; the rule sits after the skin rules above, which
+     share its specificity. A trigger nested in a field box draws no border. */
+  :not(.cngx-field-box > *)
+    > *
+    > .cngx-field-trigger:is(
+      [aria-invalid='true'],
+      :has(> [role='combobox'][aria-invalid='true'])
+    ) {
+    border-width: var(--cngx-select-forced-invalid-border-width, 2px);
+    border-style: solid;
+    border-color: Mark;
+  }
 }

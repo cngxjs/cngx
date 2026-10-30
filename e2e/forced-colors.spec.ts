@@ -274,6 +274,27 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     expect(isOpaque(s.borderTopColor)).toBe(true);
   });
 
+  test('invalid select trigger re-signals with a thicker Mark border (danger colour is forced away)', async ({ page }) => {
+    await openForced(page, '/#/forms/select/single-select/signal-forms-required');
+    const trigger = page.locator('.cngx-ex-artifact .cngx-select__trigger').first();
+    await expect(trigger).toBeVisible();
+    await expect(trigger).not.toHaveAttribute('aria-invalid', 'true');
+    const valid = await readAffordance(trigger);
+    await page.getByRole('button', { name: 'Submit' }).click();
+    await expect(trigger).toHaveAttribute('aria-invalid', 'true');
+    const invalid = await readAffordance(trigger);
+    const mark = await trigger.evaluate(() => {
+      const probe = document.createElement('span');
+      probe.style.color = 'Mark';
+      document.body.appendChild(probe);
+      const color = getComputedStyle(probe).color;
+      probe.remove();
+      return color;
+    });
+    expect(parseFloat(invalid.borderTopWidth)).toBeGreaterThan(parseFloat(valid.borderTopWidth));
+    expect(invalid.borderTopColor).toBe(mark);
+  });
+
   test('keyboard-active option row re-signals with Highlight (tint-only row would collapse to Canvas)', async ({ page }) => {
     await openForced(page, '/#/forms/select/single-select/clearable');
     const trigger = page.locator('.cngx-ex-artifact .cngx-select__trigger').first();
