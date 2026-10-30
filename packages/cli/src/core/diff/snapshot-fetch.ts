@@ -161,8 +161,8 @@ const defaultDeps = createDefaultDeps();
 
 /**
  * The text a `gh` failure contributes to the combined gh-then-HTTPS message. The
- * HTTPS attempt decides the reason, so only the text is needed here (`gh-missing`
- * stays unproduced, accepted debt).
+ * HTTPS attempt decides the reason, so only the text is needed here. `gh-missing`
+ * stays in the union for compatibility and is not produced.
  */
 function describeGhFailure(error: unknown): string {
   if (isEnoent(error)) {

@@ -1,5 +1,5 @@
 // The pure, in-process diff over two loaded `DocsIndex` snapshots. No loader change:
-// each snapshot is loaded through the existing `loadDocsFromFile` (loader.ts:71) by
+// each snapshot is loaded through the existing `loadDocsFromFile` by
 // the caller, and this module walks the parsed entries and emits the categorized
 // `UsageDeltaCategories`. Renames are inferred only where a category has a structural
 // fingerprint strong enough to trust: a top-level entry (lib + input/output
