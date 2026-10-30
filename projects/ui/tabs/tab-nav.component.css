@@ -154,35 +154,20 @@
       );
     }
 
-    .cngx-tab-nav__error-icon {
+    .cngx-tab-link__error-icon {
       display: inline-flex;
       flex: none;
     }
 
-    /* The icon's `<svg><path>`, built by the link directive from the shared
-       icon data (no `CngxIconSvg` instance, so its stylesheet is not loaded
-       here). Sized like the tab-group error badge, in em of the link font. */
-    .cngx-tab-nav__icon-svg {
+    /* The link directive draws the svg from the shared icon data and paints
+       it itself; the nav only sizes it like the tab-group error badge, in em
+       of the link font. */
+    .cngx-tab-link__icon-svg {
       --cngx-icon-svg-size: var(--cngx-tab-badge-size, 1.15em);
       --cngx-icon-svg-stroke-width: 2;
 
       /* Functional - hardcoded */
       display: block;
-      overflow: visible;
-      fill: currentColor;
-
-      /* Themable */
-      inline-size: var(--cngx-icon-svg-size, 1.15em);
-      block-size: var(--cngx-icon-svg-size, 1.15em);
-    }
-
-    /* Round caps are part of a stroke icon's shape (see `CngxIconPaint`). */
-    .cngx-tab-nav__icon-svg--stroke {
-      fill: none;
-      stroke: currentColor;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      stroke-width: var(--cngx-icon-svg-stroke-width, 2);
     }
   }
 

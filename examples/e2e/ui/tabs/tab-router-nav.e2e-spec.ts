@@ -62,7 +62,7 @@ test.describe('ui/tabs/tab-router-nav', () => {
     await gotoDemo(page, 'ui/tabs/tab-router-nav/native-routerlink-nav');
 
     const profile = page.getByRole('link', { name: 'Profile' });
-    const icon = profile.locator('.cngx-tab-nav__error-icon');
+    const icon = profile.locator('.cngx-tab-link__error-icon');
 
     // No error yet: no icon.
     await expect(profile).not.toHaveAttribute('aria-invalid', 'true');

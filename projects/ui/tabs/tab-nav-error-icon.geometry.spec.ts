@@ -57,7 +57,7 @@ afterEach(() => {
 describe('tab-nav error icon', () => {
   it('draws a 1.15em box, the triangle centred on the label line', () => {
     const link = mount();
-    const svg = link.querySelector<SVGSVGElement>('.cngx-tab-nav__error-icon > svg')!;
+    const svg = link.querySelector<SVGSVGElement>('.cngx-tab-link__error-icon > svg')!;
     const em = parseFloat(getComputedStyle(link).fontSize);
     const box = svg.getBoundingClientRect();
     expect(box.width).toBeCloseTo(1.15 * em, 0);
@@ -75,7 +75,7 @@ describe('tab-nav error icon', () => {
   for (const dir of ['ltr', 'rtl'] as const) {
     it(`sits at the inline start of the label (${dir})`, () => {
       const link = mount(dir);
-      const icon = link.querySelector('.cngx-tab-nav__error-icon')!.getBoundingClientRect();
+      const icon = link.querySelector('.cngx-tab-link__error-icon')!.getBoundingClientRect();
       const text = labelRect(link);
       expect(dir === 'ltr' ? icon.right <= text.left : icon.left >= text.right).toBe(true);
     });

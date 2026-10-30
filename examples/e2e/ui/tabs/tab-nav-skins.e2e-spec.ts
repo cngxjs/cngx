@@ -46,7 +46,7 @@ test.describe('ui/tabs/tab-nav-skins', () => {
         const hostCS = getComputedStyle(host);
         const activeCS = active ? getComputedStyle(active) : null;
         const afterCS = active ? getComputedStyle(active, '::after') : null;
-        const errorIcon = active?.querySelector('.cngx-tab-nav__error-icon') ?? null;
+        const errorIcon = active?.querySelector('.cngx-tab-link__error-icon') ?? null;
         const inactiveAfterCS = inactive ? getComputedStyle(inactive, '::after') : null;
         return {
           found: true as const,
