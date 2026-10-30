@@ -11,6 +11,7 @@
     "multiVersion": false,
     "includes": "core-concepts",
     "includesName": "Core Concepts",
+    "aiGeneratedNote": "Drafted with AI assistance ({value}) and reviewed by a maintainer.",
     "assetsFolder": "brand",
     "disableSourceCode": true,
     "disableTemplateTab": true,
