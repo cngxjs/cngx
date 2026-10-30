@@ -59,7 +59,24 @@ export const STORY: DemoSpec = {
     { name: 'CNGX_ICON_STOP', icon: CNGX_ICON_STOP },
   ] as const;
 
-  protected readonly dpr = typeof devicePixelRatio === 'number' ? devicePixelRatio : 1;
+  // A resolution query matches only the current ratio, so it fires once when
+  // the window moves to a screen with another devicePixelRatio; re-arm it there.
+  protected readonly dpr = signal(devicePixelRatio);
+
+  constructor() {
+    let query: MediaQueryList | null = null;
+    const onChange = () => {
+      this.dpr.set(devicePixelRatio);
+      arm();
+    };
+    const arm = () => {
+      query?.removeEventListener('change', onChange);
+      query = matchMedia('(resolution: ' + devicePixelRatio + 'dppx)');
+      query.addEventListener('change', onChange);
+    };
+    arm();
+    inject(DestroyRef).onDestroy(() => query?.removeEventListener('change', onChange));
+  }
 
   protected readonly sheetSizes = [10, 11, 12, 13, 14, 16] as const;
 
@@ -149,7 +166,7 @@ export const STORY: DemoSpec = {
   </div>
 
   <h3>Small-size sheet</h3>
-  <p>devicePixelRatio: <output>{{ dpr }}</output> (reload after moving the window to another screen). Per size: 24-grid path, draft A, draft B.</p>
+  <p>devicePixelRatio: <output>{{ dpr() }}</output> (follows the screen the window is on). Per size: 24-grid path, draft A, draft B.</p>
   <div style="display:grid; grid-template-columns:auto repeat(18, auto); align-items:center; justify-items:center; gap:8px 6px">
     <span></span>
     @for (size of sheetSizes; track size) {
