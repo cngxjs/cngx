@@ -115,6 +115,10 @@ describeCommitContract(SELECT, (c) => {
     c.emptyStringOptionNeverSelected,
   );
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
+  it(
+    'Retry after a failed pick calls the custom scalar handler retryLast',
+    c.customScalarHandlerOwnsRetry,
+  );
   it('A15: Retry after a failed clear replays the clear', c.retryClear);
   it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
   it('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
@@ -135,6 +139,10 @@ describeCommitContract(TYPEAHEAD, (c) => {
     c.emptyStringOptionNeverSelected,
   );
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
+  it(
+    'Retry after a failed pick calls the custom scalar handler retryLast',
+    c.customScalarHandlerOwnsRetry,
+  );
   it('A15: Retry after a failed clear replays the clear', c.retryClear);
   it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
   it('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
@@ -154,6 +162,10 @@ describeCommitContract(ACTION_SELECT, (c) => {
     c.emptyStringOptionNeverSelected,
   );
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
+  it(
+    'Retry after a failed pick calls the custom scalar handler retryLast',
+    c.customScalarHandlerOwnsRetry,
+  );
   it('A15: Retry after a failed clear replays the clear', c.retryClear);
   it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
   it('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
@@ -173,6 +185,10 @@ describeCommitContract(SELECT_SHELL, (c) => {
     c.emptyStringOptionNeverSelected,
   );
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
+  it(
+    'Retry after a failed pick calls the custom scalar handler retryLast',
+    c.customScalarHandlerOwnsRetry,
+  );
   it('A15: Retry after a failed clear replays the clear', c.retryClear);
   it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
   it('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);

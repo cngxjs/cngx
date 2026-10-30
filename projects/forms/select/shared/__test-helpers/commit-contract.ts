@@ -17,6 +17,11 @@ import {
 import type { CngxSelectCommitMode } from '../commit-action.types';
 import { CngxSelectCommitError } from '../template-slots';
 import {
+  CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
+  createScalarCommitHandler,
+  type CngxScalarCommitHandlerFactory,
+} from '../scalar-commit-handler';
+import {
   CNGX_REORDER_COMMIT_HANDLER_FACTORY,
   createReorderCommitHandler,
   type CngxReorderCommitHandlerFactory,
@@ -89,6 +94,12 @@ export interface CommitContractCases {
    * `retryLast`, never the internal ledger.
    */
   readonly customArrayHandlerOwnsRetry: () => void;
+  /**
+   * Retry after a failed pick started by a custom
+   * `CNGX_SCALAR_COMMIT_HANDLER_FACTORY` handler calls that handler's
+   * `retryLast`, never the internal ledger.
+   */
+  readonly customScalarHandlerOwnsRetry: () => void;
   /**
    * Retry routes by the handler that started the last commit: a failed
    * toggle replays through the array handler, a failed reorder started by a
@@ -576,6 +587,24 @@ export function describeCommitContract(
         m.retry();
         expect(retryLast).toHaveBeenCalledTimes(1);
         expect(m.h.calls).toHaveLength(1);
+      },
+
+      customScalarHandlerOwnsRetry: () => {
+        requireKind('select');
+        const retryLast = vi.fn();
+        const factory: CngxScalarCommitHandlerFactory = (opts) => ({
+          ...createScalarCommitHandler(opts),
+          retryLast,
+        });
+        const m = mount({
+          initial: 'red',
+          providers: [{ provide: CNGX_SCALAR_COMMIT_HANDLER_FACTORY, useValue: factory }],
+        });
+        m.pickAt(1);
+        m.rejectLast();
+        m.retry();
+        expect(retryLast).toHaveBeenCalledTimes(1);
+        expect(m.h.calls).toEqual(['green']);
       },
 
       customReorderHandlerOwnsRetry: () => {
