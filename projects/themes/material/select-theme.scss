@@ -218,10 +218,11 @@ $-hosts:
   }
 
   // `--cngx-select-option-padding` is registered `inherits: false` and SET on
-  // the row by select-base.css (`.cngx-select__option`, 0,1,0, same layer), so
-  // a zero-specificity bridge value never lands. The row rule carries real
-  // specificity (0,2,0) and reaches rows in a host, a detached panel and the
-  // tree panel alike.
+  // the row by select-base.css (`.cngx-select__option`, 0,1,0, same layer) and
+  // on the declarative `<cngx-option>` host (option.component.css, 0,1,0, same
+  // layer), so a zero-specificity bridge value never lands. The row rule
+  // carries real specificity (0,2,0) and reaches rows in a host, a detached
+  // panel and the tree panel alike.
   @layer cngx.components {
     :is(
         .cngx-select__panel,
@@ -236,7 +237,7 @@ $-hosts:
         cngx-action-multi-select,
         cngx-select-shell
       )
-      .cngx-select__option {
+      :is(.cngx-select__option, cngx-option) {
       @include -option-padding($theme);
     }
 

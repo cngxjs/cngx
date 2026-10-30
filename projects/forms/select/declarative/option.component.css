@@ -34,61 +34,66 @@
  *   10% alpha
  */
 
-:host {
-  /* Derive the option-row padding from the scale so a global [data-density]
-     compacts it; SET identically to the data-mode .cngx-select__option
-     (select-base.css:939) so declarative and data rows stay locked. The bare
-     cngx-option host carries no .cngx-select__option class, so the base's
-     element-scoped SET does not reach it - this is the host's own SET, not a
-     duplicate. 0.375rem 0.5rem -> xs sm (block 6px tie -> xs). */
-  /**
-   * Padding of the option row.
-   * @type <length> <length>
-   * @group Layout
-   */
-  --cngx-select-option-padding: var(--cngx-space-xs) var(--cngx-space-sm);
-  /* option-row gap 0.5rem -> sm; SET identically to the data-mode
-     .cngx-select__option (select-base.css) so declarative and data rows stay
-     locked at every density. */
-  /**
-   * Gap between the parts of the option row, such as the check indicator and the label.
-   * @type <length>
-   * @group Layout
-   */
-  --cngx-option-gap: var(--cngx-space-sm);
-  display: flex;
-  align-items: center;
-  gap: var(--cngx-option-gap, 0.5rem);
-  justify-content: var(--cngx-option-status-justify, flex-start);
-  padding: var(--cngx-select-option-padding, 0.375rem 0.5rem);
-  /* Floor the row height to the pointer-derived target on a coarse pointer;
-     inert (0px) on a fine pointer. The bare <cngx-option> host carries no
-     .cngx-select__option class, so the base option-row floor never reaches it. */
-  min-block-size: var(--cngx-target-min, 0px);
-  cursor: pointer;
-  border-radius: var(--cngx-select-option-radius, 0.125rem);
-}
+/* Layered like select-base.css, so a consumer rule in a later layer and the
+   Material bridge reach the declarative parts as they reach the data rows. */
+@layer cngx.components {
+  :host {
+    /* Derive the option-row padding from the scale so a global [data-density]
+       compacts it; SET identically to the data-mode .cngx-select__option
+       (select-base.css:939) so declarative and data rows stay locked. The bare
+       cngx-option host carries no .cngx-select__option class, so the base's
+       element-scoped SET does not reach it - this is the host's own SET, not a
+       duplicate. 0.375rem 0.5rem -> xs sm (block 6px tie -> xs). */
+    /**
+     * Padding of the option row.
+     * @type <length> <length>
+     * @group Layout
+     */
+    --cngx-select-option-padding: var(--cngx-space-xs) var(--cngx-space-sm);
+    /* option-row gap 0.5rem -> sm; SET identically to the data-mode
+       .cngx-select__option (select-base.css) so declarative and data rows stay
+       locked at every density. */
+    /**
+     * Gap between the parts of the option row, such as the check indicator and the label.
+     * @type <length>
+     * @group Layout
+     */
+    --cngx-option-gap: var(--cngx-space-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--cngx-option-gap, 0.5rem);
+    justify-content: var(--cngx-option-status-justify, flex-start);
+    padding: var(--cngx-select-option-padding, 0.375rem 0.5rem);
+    /* The data-mode row height (a Material bridge sets it) floored to the
+       pointer-derived target on a coarse pointer, inert (0px) on a fine one.
+       The bare <cngx-option> host carries no .cngx-select__option class, so
+       the base option-row rule never reaches it. */
+    min-block-size: max(var(--cngx-select-option-min-height, 0px), var(--cngx-target-min, 0px));
+    cursor: pointer;
+    border-radius: var(--cngx-select-option-radius, 0.125rem);
+  }
 
-/* Disabled fades by colour, never opacity: 38% text, the recipe of a
-   disabled field, locked to the data-mode row (select-base.css). */
-:host([aria-disabled='true']) {
-  color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
-  cursor: not-allowed;
-}
+  /* Disabled fades by colour, never opacity: 38% text, the recipe of a
+     disabled field, locked to the data-mode row (select-base.css). */
+  :host([aria-disabled='true']) {
+    color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+    cursor: not-allowed;
+  }
 
-:host(.cngx-option--highlighted) {
-  background: var(--cngx-select-option-highlight-bg, oklch(0.66 0.19 50 / 0.1));
-}
+  :host(.cngx-option--highlighted) {
+    background: var(--cngx-select-option-highlight-bg, oklch(0.66 0.19 50 / 0.1));
+  }
 
-.cngx-option__status {
-  margin-inline-start: auto;
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-}
+  .cngx-option__status {
+    margin-inline-start: auto;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+  }
 
-:host([hidden]) {
-  display: none;
+  :host([hidden]) {
+    display: none;
+  }
 }
 
 /* Forced colors overwrite the faded colour with CanvasText; GrayText keeps a

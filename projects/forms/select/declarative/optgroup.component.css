@@ -21,24 +21,28 @@
  * `[data-density]`. Font-size / weight / tracking stay pinned to the base.
  */
 
-:host {
-  display: block;
-}
+/* Layered like select-base.css, so a consumer rule in a later layer and the
+   Material bridge reach the declarative parts as they reach the data rows. */
+@layer cngx.components {
+  :host {
+    display: block;
+  }
 
-.cngx-select__group-header {
-  /* Derive the header padding from the scale so a global [data-density]
-     compacts it; SET identically on the data-mode base header so the two stay
-     locked. 0.25rem 0.5rem -> xs sm. */
-  /**
-   * Padding of the group header label.
-   * @type <length> <length>
-   * @group Layout
-   */
-  --cngx-select-optgroup-padding: var(--cngx-space-xs) var(--cngx-space-sm);
-  padding: var(--cngx-select-optgroup-padding, 0.25rem 0.5rem);
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  .cngx-select__group-header {
+    /* Derive the header padding from the scale so a global [data-density]
+       compacts it; SET identically on the data-mode base header so the two stay
+       locked. 0.25rem 0.5rem -> xs sm. */
+    /**
+     * Padding of the group header label.
+     * @type <length> <length>
+     * @group Layout
+     */
+    --cngx-select-optgroup-padding: var(--cngx-space-xs) var(--cngx-space-sm);
+    padding: var(--cngx-select-optgroup-padding, 0.25rem 0.5rem);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
 }
