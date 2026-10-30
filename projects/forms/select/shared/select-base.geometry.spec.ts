@@ -827,6 +827,13 @@ const DENSITIES = ['compact', 'comfortable'] as const;
           "
         ></span>
         <cngx-select class="fill" skin="fill" [label]="'Colour'" [options]="options" />
+        <cngx-select
+          class="loading-text"
+          [label]="'Loading'"
+          [options]="[]"
+          [loading]="true"
+          loadingVariant="text"
+        />
         <cngx-select-shell>
           <div class="cngx-select__panel" style="position: static">
             <div class="cngx-select__action--top">Top</div>
@@ -849,6 +856,40 @@ const DENSITIES = ['compact', 'comfortable'] as const;
 class DensityHost {
   readonly densities = DENSITIES;
   readonly options = OPTIONS;
+}
+
+// Loads only the foundation and density tokens, never select-base.css, so the
+// optgroup header can only take its padding from optgroup.component.css.
+@Component({
+  selector: 'cngx-select-optgroup-density-host',
+  standalone: true,
+  imports: [CngxSelectOptgroup, CngxSelectOption],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    '../../../core/theming/density-tokens.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    @for (density of densities; track density) {
+      <div [class]="'d-' + density" [attr.data-density]="density">
+        <span
+          class="scale-probe"
+          style="
+            padding-block-start: var(--cngx-space-xs);
+            padding-inline-start: var(--cngx-space-sm);
+            padding-inline-end: var(--cngx-space-md);
+          "
+        ></span>
+        <cngx-optgroup label="Warm">
+          <cngx-option [value]="'amber'">Amber</cngx-option>
+        </cngx-optgroup>
+      </div>
+    }
+  `,
+})
+class OptgroupDensityHost {
+  readonly densities = DENSITIES;
 }
 
 describe('select-family density derivation', () => {
@@ -881,6 +922,7 @@ describe('select-family density derivation', () => {
     ['.cngx-select__option', 'padding', 'xs', 'sm'],
     ['cngx-option.decl-option', 'padding', 'xs', 'sm'],
     ['.cngx-select__empty', 'padding', 'sm', 'sm'],
+    ['.loading-text .cngx-select__loading', 'padding', 'sm', 'sm'],
     ['cngx-select-divider.decl-divider', 'margin', 'xs', '0'],
     ['cngx-select-search', 'padding', 'sm', 'sm'],
     ['.cngx-select-search__input', 'padding', 'xs', 'sm'],
@@ -903,6 +945,27 @@ describe('select-family density derivation', () => {
         expect(computedValue(target, `${box}-${side}`), `${density} ${side}`).toBe(steps[step]);
       }
       seen.add(computedValue(target, `${box}-top`));
+    }
+    expect(seen.size).toBe(DENSITIES.length);
+  });
+
+  it('sets the declarative optgroup header padding from its own stylesheet', () => {
+    const root = mount(OptgroupDensityHost);
+    expect(
+      Array.from(document.styleSheets).some((sheet) =>
+        Array.from(sheet.cssRules).some((rule) => rule.cssText.includes('.cngx-select__panel')),
+      ),
+      'select-base.css must not be loaded',
+    ).toBe(false);
+    const seen = new Set<string>();
+    for (const density of DENSITIES) {
+      const block = el(root, `.d-${density}`);
+      const { xs, sm } = scale(block);
+      const header = el(block, 'cngx-optgroup .cngx-select__group-header');
+      expect(computedValue(header, 'padding-top'), `${density} top`).toBe(xs);
+      expect(computedValue(header, 'padding-bottom'), `${density} bottom`).toBe(xs);
+      expect(computedValue(header, 'padding-left'), `${density} left`).toBe(sm);
+      seen.add(computedValue(header, 'padding-top'));
     }
     expect(seen.size).toBe(DENSITIES.length);
   });
