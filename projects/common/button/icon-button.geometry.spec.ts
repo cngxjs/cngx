@@ -7,6 +7,7 @@ import { CngxButton } from './button.component';
 import type { CngxButtonSize } from './button.types';
 import { CngxCloseButton } from './close-button.component';
 import { CngxIconButton } from './icon-button.component';
+import { CngxButtonStart } from './slots';
 
 // Runs in a real Chromium (the `test-geometry` target): the square box, the
 // pseudo-element hit area and the md parity with CngxButton only exist after
@@ -206,5 +207,50 @@ describe('CngxIconButton geometry: accessible name', () => {
   it('takes the name from the host, never from the alt text of a projected img', async () => {
     mountGlyphs();
     expect(await accessibleName('.img-md')).toBe('Delete row');
+  });
+});
+
+// 13.3px makes every 1.25em glyph box land on 16.625px before rounding.
+@Component({
+  selector: 'cngx-icon-button-snap-host',
+  standalone: true,
+  imports: [CngxButton, CngxButtonStart, CngxIconButton, CngxCloseButton],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../core/theming/system-tokens.css',
+    '../../core/theming/reset.css',
+    '../../core/theming/base.css',
+    '../../core/theming/density-tokens.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <p>
+      <button cngxIconButton class="snap-icon" style="--cngx-button-font-size: 13.3px" aria-label="Delete row">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" /></svg>
+      </button>
+      <button cngxCloseButton class="snap-close" style="--cngx-button-font-size: 13.3px" aria-label="Close"></button>
+      <button cngxButton class="snap-slot" style="--cngx-button-font-size: 13.3px">
+        <svg cngxButtonStart viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" /></svg>
+        Save
+      </button>
+    </p>
+  `,
+})
+class SnapHost {}
+
+describe('CngxIconButton geometry: glyph box snapping', () => {
+  it.each([
+    ['bare icon-button svg', '.snap-icon svg'],
+    ['default close X', '.snap-close svg'],
+    ['button start slot svg', '.snap-slot svg'],
+  ])('sizes the %s to whole pixels at a fractional font size', (_name, selector) => {
+    const fixture = TestBed.createComponent(SnapHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const rect = query(mountedRoot, selector).getBoundingClientRect();
+    expect(rect.width).toBeGreaterThan(0);
+    expect(Number.isInteger(rect.width)).toBe(true);
+    expect(Number.isInteger(rect.height)).toBe(true);
   });
 });

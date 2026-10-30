@@ -369,15 +369,15 @@ $_unsized: 'cngx-icon.cngx-icon:not(.cngx-icon--xs, .cngx-icon--sm, .cngx-icon--
       // Icon-button glyph: 24px on the 16px control font. The close button
       // is excluded, not out-ordered: its own rules below size its glyph.
       .cngx-icon-button.cngx-button:not(.cngx-close-button) .cngx-icon-button__glyph > :is(svg, img) {
-        inline-size: 1.5em;
-        block-size: 1.5em;
+        inline-size: round(nearest, 1.5em, 1px);
+        block-size: round(nearest, 1.5em, 1px);
       }
       .cngx-icon-button.cngx-button:not(.cngx-close-button) .cngx-icon-button__glyph > #{$_unsized} {
         --cngx-icon-size: 1.5em;
       }
       .cngx-close-button.cngx-button .cngx-icon-button__glyph > :is(svg, img) {
-        inline-size: var(--cngx-close-button-icon-size, 1.5em);
-        block-size: var(--cngx-close-button-icon-size, 1.5em);
+        inline-size: round(nearest, var(--cngx-close-button-icon-size, 1.5em), 1px);
+        block-size: round(nearest, var(--cngx-close-button-icon-size, 1.5em), 1px);
       }
       .cngx-close-button.cngx-button .cngx-icon-button__glyph > #{$_unsized} {
         --cngx-icon-size: var(--cngx-close-button-icon-size, 1.5em);
