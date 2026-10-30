@@ -28,7 +28,8 @@
  *   opacity; `cursor: not-allowed`; GrayText under forced colors
  * - `[data-busy]` - label kept in the box and in the accessible name but
  *   painted at opacity 0 (width stable), spinner ring centred over it; the
- *   ring stops rotating under reduced motion
+ *   ring stops rotating under reduced motion. The fade sits on every direct
+ *   child, so projected content cannot opt back in with its own rule
  * - `[data-start]` / `[data-end]` - a filled slot trims the padding on its
  *   side
  *
