@@ -460,6 +460,21 @@ describe('CngxSelect - standalone a11y', () => {
     expect(fixture.componentInstance.value()).toBeUndefined();
   });
 
+  it('a letter on the clear button changes nothing', () => {
+    const fixture = TestBed.createComponent(StandaloneA11yHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const clear = fixture.debugElement.nativeElement.querySelector(
+      '.cngx-select__clear',
+    ) as HTMLElement;
+    const ev = new KeyboardEvent('keydown', { key: 'g', bubbles: true, cancelable: true });
+    clear.dispatchEvent(ev);
+    flush(fixture);
+    expect(fixture.componentInstance.value()).toBe('red');
+    expect(fixture.componentInstance.lastChange()).toBeNull();
+    expect(ev.defaultPrevented).toBe(false);
+  });
+
   it('clear emits selectionChange with previousValue = prior value', () => {
     const fixture = TestBed.createComponent(StandaloneA11yHost);
     fixture.detectChanges();

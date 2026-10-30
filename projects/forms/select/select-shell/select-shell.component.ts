@@ -1220,6 +1220,14 @@ export class CngxSelectShell<T = unknown>
     if (event.ctrlKey || event.metaKey || event.altKey) {
       return;
     }
+    // Keys from the clear button or a chip belong to that control: no
+    // typeahead, no preventDefault, so Enter / Space run its activation.
+    const host = event.currentTarget as Element | null;
+    const target = event.target as Element | null;
+    const interactive = target?.closest('button, a[href], input, [role="button"]');
+    if (interactive && interactive !== host) {
+      return;
+    }
     const lb = this.listboxRef();
     const pop = this.popoverRef();
 

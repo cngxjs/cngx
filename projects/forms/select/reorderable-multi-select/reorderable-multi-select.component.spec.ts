@@ -264,6 +264,33 @@ describe('CngxReorderableMultiSelect - keyboard reorder', () => {
   });
 });
 
+describe('CngxReorderableMultiSelect - trigger keys from interactive descendants', () => {
+  it('a letter on the clear button changes nothing', () => {
+    const fixture = TestBed.createComponent(Host);
+    flush(fixture);
+    const root = fixture.nativeElement as HTMLElement;
+    const clear = root.querySelector<HTMLElement>('.cngx-select__clear-target')!;
+    const ev = new KeyboardEvent('keydown', { key: 'b', bubbles: true, cancelable: true });
+    clear.dispatchEvent(ev);
+    flush(fixture);
+    expect(fixture.componentInstance.values()).toEqual(['a', 'b', 'c', 'd']);
+    expect(ev.defaultPrevented).toBe(false);
+  });
+
+  it('a letter on a chip remove button changes nothing', () => {
+    const fixture = TestBed.createComponent(Host);
+    flush(fixture);
+    const root = fixture.nativeElement as HTMLElement;
+    const remove = chipAt(root, 2).querySelector<HTMLElement>('button')!;
+    expect(remove).not.toBeNull();
+    const ev = new KeyboardEvent('keydown', { key: 'c', bubbles: true, cancelable: true });
+    remove.dispatchEvent(ev);
+    flush(fixture);
+    expect(fixture.componentInstance.values()).toEqual(['a', 'b', 'c', 'd']);
+    expect(ev.defaultPrevented).toBe(false);
+  });
+});
+
 describe('CngxReorderableMultiSelect - commit action', () => {
   it('optimistic: applies immediately, rolls back on error', async () => {
     const fixture = TestBed.createComponent(Host);
