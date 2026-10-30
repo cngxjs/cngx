@@ -72,7 +72,10 @@ import {
   CNGX_ICON_X,
 } from '@cngx/utils';
 
-import { createArrayCommitHandler, type ArrayCommitHandler } from '../shared/array-commit-handler';
+import {
+  CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
+  type ArrayCommitHandler,
+} from '../shared/array-commit-handler';
 import {
   CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
   type CngxCommitErrorAnnouncePolicy,
@@ -784,7 +787,9 @@ export class CngxTreeSelect<T = unknown>
     policy: this.commitErrorAnnouncePolicy,
   });
 
-  private readonly commitHandler: ArrayCommitHandler<T> = createArrayCommitHandler<T>({
+  private readonly commitHandler: ArrayCommitHandler<T> = inject(
+    CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
+  )<T>({
     values: this.values,
     compareWith: this.compareWith,
     commitMode: this.commitMode,

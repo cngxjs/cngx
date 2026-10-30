@@ -57,7 +57,10 @@ import {
 } from '@cngx/forms/field';
 
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
-import { createArrayCommitHandler, type ArrayCommitHandler } from '../shared/array-commit-handler';
+import {
+  CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
+  type ArrayCommitHandler,
+} from '../shared/array-commit-handler';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import {
   CNGX_SELECT_SHEET_SCOPE,
@@ -964,7 +967,9 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     policy: this.commitErrorAnnouncePolicy,
   });
 
-  private readonly commitHandler: ArrayCommitHandler<T> = createArrayCommitHandler<T>({
+  private readonly commitHandler: ArrayCommitHandler<T> = inject(
+    CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
+  )<T>({
     values: this.values,
     compareWith: this.compareWith,
     commitMode: this.commitMode,

@@ -197,7 +197,7 @@ describeCommitContract(MULTI_SELECT, (c) => {
     c.emptyActionSettles,
   );
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
-  it.fails('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
+  it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
   it.fails(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
@@ -212,7 +212,7 @@ describeCommitContract(COMBOBOX, (c) => {
     c.emptyActionSettles,
   );
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
-  it.fails('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
+  it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
   it.fails(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
@@ -227,7 +227,7 @@ describeCommitContract(ACTION_MULTI_SELECT, (c) => {
     c.emptyActionSettles,
   );
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
-  it.fails('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
+  it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
   it.fails(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
@@ -251,7 +251,7 @@ describeCommitContract(REORDERABLE, (c) => {
     c.emptyActionSettles,
   );
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
-  it.fails('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
+  it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
   it.fails(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
@@ -266,7 +266,7 @@ describeCommitContract(TREE_SELECT, (c) => {
     c.emptyActionSettles,
   );
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
-  it.fails('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
+  it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
   it.fails(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,

@@ -62,7 +62,10 @@ import {
   CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   type CngxChipRemovalHandler,
 } from '../shared/chip-removal-handler';
-import { createArrayCommitHandler, type ArrayCommitHandler } from '../shared/array-commit-handler';
+import {
+  CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
+  type ArrayCommitHandler,
+} from '../shared/array-commit-handler';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import {
   CNGX_SELECT_SHEET_SCOPE,
@@ -1096,7 +1099,9 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     policy: this.commitErrorAnnouncePolicy,
   });
 
-  private readonly commitHandler: ArrayCommitHandler<T> = createArrayCommitHandler<T>({
+  private readonly commitHandler: ArrayCommitHandler<T> = inject(
+    CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
+  )<T>({
     values: this.values,
     compareWith: this.compareWith,
     commitMode: this.commitMode,
