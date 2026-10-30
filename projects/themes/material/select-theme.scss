@@ -1,5 +1,3 @@
-@use 'sass:map';
-@use 'sass:math';
 @use '@angular/material' as mat;
 @use './bridge' as bridge;
 
@@ -114,31 +112,46 @@
   }
 }
 
-@mixin density($theme) {
-  $scale: mat.get-theme-density($theme);
-  $scale: math.max(-4, math.min(0, $scale));
+// Metrics. Every length is a rung or a calc() of --cngx-space-* chosen so
+// comfortable (and Material density 0) equals M3, button-theme's approach: a
+// [data-density] island and a Material `density: -N` theme (density-bridge
+// rescales the same scale) both re-scale the bridged select. No density map
+// lives here. A box height is the field type role's line box plus twice a
+// block rung, so only the spacing scales, never the text:
+//
+//   metric                  expression              comfortable  compact  spacious
+//   trigger min-height      body-large lh + 2 * md  56           40       64
+//   trigger inline padding  md                      16           8        20
+//   option row min-height   body-large lh + 3 * sm  48           36       60
+//   option block padding    sm * 1.5                12           6        18
+//   option inline padding   md                      16           8        20
+//   tree indent / row end   md                      16           8        20
+//   panel list inset        sm (see `theme`)        8            4        12
+//
+// Material density -1 .. -4 lands the trigger exactly on the M3 outlined
+// field (52 / 48 / 44 / 40); the option row follows the scale (45 / 42 / 39
+// / 36 against M3 44 / 40 / 36 / 32). The --cngx-target-min floors stay at
+// the use sites (`max()` on every row and trigger), so a coarse pointer still
+// gets its 44px.
+$-line: 'var(--mat-sys-body-large-line-height, 1.5rem)';
+$-trigger-height: 'calc(#{$-line} + 2 * var(--cngx-space-md, 16px))';
+$-row-height: 'calc(#{$-line} + 3 * var(--cngx-space-sm, 8px))';
+$-row-padding: 'calc(var(--cngx-space-sm, 8px) * 1.5) var(--cngx-space-md, 16px)';
 
+@mixin density($theme) {
   // Option metrics - Material 3 menu/select options. The option padding is
   // emitted by `-option-padding` on the row itself, see `theme`.
-  $opt-min-heights: (
-    0: 48px,
-    -1: 44px,
-    -2: 40px,
-    -3: 36px,
-    -4: 32px,
-  );
-
-  --cngx-select-option-min-height: #{map.get($opt-min-heights, $scale)};
+  --cngx-select-option-min-height: #{$-row-height};
   --cngx-select-option-radius: 0;
   // The listbox container inside the panel drops its default 4px inset so
   // nothing offsets the option rows. The panel and tree insets are emitted on
   // their own elements, see `theme`.
   --cngx-listbox-padding: 0;
   // Tree node rows track the flat option-row metrics so the tree body reads
-  // like the rest of the family: same density-scaled row height and the same
-  // 16px horizontal rhythm as --cngx-select-option-padding.
-  --cngx-tree-select-node-height: #{map.get($opt-min-heights, $scale)};
-  --cngx-tree-select-base-indent: 16px;
+  // like the rest of the family: same row height and the same inline rhythm
+  // as --cngx-select-option-padding.
+  --cngx-tree-select-node-height: #{$-row-height};
+  --cngx-tree-select-base-indent: var(--cngx-space-md, 16px);
   // Material option rows sit edge-to-edge (option-radius 0, panel padding 0);
   // match the tree node rows so the body reads identically under the bridge.
   --cngx-tree-select-node-radius: 0;
@@ -151,47 +164,22 @@
   // chunkier indicator; bump it so the dropdown chevron reads at full weight.
   --cngx-select-caret-size: 1.5rem;
 
-  // Trigger metrics - Material 3 outlined-input scale (56 / 52 / 48 / 44 / 40).
-  // Every Select-family variant's min-height / padding / radius token falls
-  // back to its family token, so the bridge sets only the --cngx-select-*
-  // ones and the trigger surface reads like an <mat-form-field
-  // appearance='outline'> input across all nine. A variant assignment would
-  // sit on the trigger (the bridge broadcasts onto every descendant), cut the
-  // chain, and a consumer family token would no longer reach that variant.
-  $trig-min-heights: (
-    0: 56px,
-    -1: 52px,
-    -2: 48px,
-    -3: 44px,
-    -4: 40px,
-  );
-  $trig-paddings: (
-    0: 0 16px,
-    -1: 0 14px,
-    -2: 0 12px,
-    -3: 0 10px,
-    -4: 0 8px,
-  );
-  $trig-radius: 4px; // var(--mat-sys-corner-extra-small)
-
-  --cngx-select-min-height: #{map.get($trig-min-heights, $scale)};
-  --cngx-select-padding: #{map.get($trig-paddings, $scale)};
-  --cngx-select-radius: #{$trig-radius};
+  // Trigger metrics - Material 3 outlined input. Every Select-family
+  // variant's min-height / padding / radius token falls back to its family
+  // token, so the bridge sets only the --cngx-select-* ones and the trigger
+  // surface reads like an <mat-form-field appearance='outline'> input across
+  // all nine. A variant assignment would sit on the trigger (the bridge
+  // broadcasts onto every descendant), cut the chain, and a consumer family
+  // token would no longer reach that variant.
+  --cngx-select-min-height: #{$-trigger-height};
+  --cngx-select-padding: 0 var(--cngx-space-md, 16px);
+  --cngx-select-radius: 4px; // var(--mat-sys-corner-extra-small)
 }
 
 // Option padding - Material 3 menu/select options. Emitted on the option row,
 // not through `density`: see the row rule in `theme`.
 @mixin -option-padding($theme) {
-  $scale: mat.get-theme-density($theme);
-  $scale: math.max(-4, math.min(0, $scale));
-  $opt-paddings: (
-    0: 12px 16px,
-    -1: 10px 14px,
-    -2: 8px 12px,
-    -3: 6px 10px,
-    -4: 4px 8px,
-  );
-  --cngx-select-option-padding: #{map.get($opt-paddings, $scale)};
+  --cngx-select-option-padding: #{$-row-padding};
 }
 
 // Option rows of the flat panels: the data-mode row and the declarative
@@ -319,7 +307,7 @@ $-hosts:
       --cngx-tree-select-tree-padding: var(--cngx-space-sm, 8px) 0;
     }
     :is(#{$-hosts}) .cngx-tree-select__node {
-      --cngx-tree-select-node-padding-end: 16px;
+      --cngx-tree-select-node-padding-end: var(--cngx-space-md, 16px);
     }
   }
 
