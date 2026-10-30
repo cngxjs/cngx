@@ -43,5 +43,6 @@ grounds against is a property of the bundled snapshot, not this version.
   without descriptions).
 - `cngx doctor` runs the `@cngx/doctor` wiring scan with the CLI exit
   contract: `--format json` prints doctor's findings array, exit 1 means an
-  error finding, an unknown flag exits 2, a throw exits 3; `--version` and
-  `--help` print the CLI's version and the `cngx doctor` help.
+  error finding, an unknown flag, a `<projectDir>` that is not a directory, a
+  second `<projectDir>` or `--json` exits 2 before any scan, a throw exits 3;
+  `--version` and `--help` print the CLI's version and the `cngx doctor` help.

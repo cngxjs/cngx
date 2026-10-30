@@ -1012,13 +1012,16 @@ describe('cngx doctor', () => {
     return { code, stdout, stderr, runDoctor: loaded.runDoctor as typeof runDoctor };
   }
 
+  const projectDir = () => mkdtempSync(join(tmpdir(), 'cngx-doctor-project-'));
+
   it('passes the remaining argv through and prints output and warnings', async () => {
-    const run = await doctor(['doctor', 'apps/web'], {
+    const dir = projectDir();
+    const run = await doctor(['doctor', dir], {
       runDoctor: vi.fn(() => ({ findings: [], output: 'report\n', warnings: ['a warning'], exitCode: 0 })),
     });
 
     expect(run.code).toBe(EXIT_OK);
-    expect(run.runDoctor).toHaveBeenCalledWith(['apps/web']);
+    expect(run.runDoctor).toHaveBeenCalledWith([dir]);
     expect(run.stdout).toBe('report\n');
     expect(run.stderr).toBe('a warning\n');
   });
@@ -1029,6 +1032,27 @@ describe('cngx doctor', () => {
     expect(run.code).toBe(EXIT_NOT_FOUND);
   });
 
+  it.each([
+    [['./no-such-project'], 'doctor: ./no-such-project is not a directory.'],
+    [['package.json'], 'doctor: package.json is not a directory.'],
+    [['.', '.'], 'doctor takes one <projectDir>, got 2.'],
+    [['--json'], 'doctor takes --format json, not --json.'],
+  ])('exits 2 before any scan for %j', async (args, message) => {
+    const run = await doctor(['doctor', ...args]);
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.runDoctor).not.toHaveBeenCalled();
+    expect(run.stderr).toBe(`cngx: ${message}\nRun \`cngx doctor --help\` for usage.\n`);
+  });
+
+  it('takes a directory after --', async () => {
+    const dir = projectDir();
+    const run = await doctor(['doctor', '--', dir]);
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(run.runDoctor).toHaveBeenCalledWith([dir]);
+  });
+
   it('exits 2 on an unknown flag before any scan', async () => {
     const run = await doctor(['doctor', '--bogus']);
 
@@ -1037,7 +1061,7 @@ describe('cngx doctor', () => {
     expect(run.stderr).toBe("cngx: unknown option '--bogus' for doctor.\nRun `cngx doctor --help` for usage.\n");
   });
 
-  it.each([[['--format', 'json']], [['--format=json']], [['--format', 'json', 'apps/web']]])('maps %j to --json', async (args) => {
+  it.each([[['--format', 'json']], [['--format=json']], [['--format', 'json', '.']]])('maps %j to --json', async (args) => {
     const run = await doctor(['doctor', ...args]);
 
     expect(run.code).toBe(EXIT_OK);

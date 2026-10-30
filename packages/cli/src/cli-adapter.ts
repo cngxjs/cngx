@@ -16,7 +16,7 @@
 // failure carries `error: { reason, message }` next to `result: null` (reason
 // `internal` for exit 3), a not-found answer has no `error`.
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -246,7 +246,7 @@ export function doctorHelp(): string {
     'Scan the project wiring with @cngx/doctor, the same scan as `npx cngx-doctor`.',
     '',
     'Arguments and flags:',
-    '  <projectDir>      Project root to scan, default the current directory.',
+    '  <projectDir>      Project root to scan, default the current directory; must be a directory.',
     "  --format md|json  Output format, default md; json prints doctor's findings array.",
     '',
     'Exit codes: 0 clean or warnings only, 1 an error-severity finding, 2 usage error, 3 internal error.',
@@ -582,11 +582,24 @@ async function runDoctorCommand(
 ): Promise<number> {
   const hint = 'Run `cngx doctor --help` for usage.';
   const args: string[] = [];
+  const dirs: string[] = [];
   let format: OutputFormat = 'md';
   let version = false;
   let help = false;
+  let afterDashes = false;
   for (let i = 0; i < rest.length; i++) {
     const token = rest[i];
+    if (afterDashes || !token.startsWith('-')) {
+      dirs.push(token);
+      continue;
+    }
+    if (token === '--') {
+      afterDashes = true;
+      continue;
+    }
+    if (token === '--json') {
+      return usageError(io, 'doctor takes --format json, not --json.', hint);
+    }
     if (token === '--version' || token === '-v') {
       version = true;
       continue;
@@ -618,6 +631,17 @@ async function runDoctorCommand(
   if (help) {
     io.stdout(doctorHelp());
     return EXIT_OK;
+  }
+  if (dirs.length > 1) {
+    return usageError(io, `doctor takes one <projectDir>, got ${dirs.length}.`, hint);
+  }
+  // The scan reads what it finds and reports nothing for a missing directory, so a
+  // mistyped path would pass as a clean project.
+  if (dirs.length === 1) {
+    if (statSync(dirs[0], { throwIfNoEntry: false })?.isDirectory() !== true) {
+      return usageError(io, `doctor: ${dirs[0]} is not a directory.`, hint);
+    }
+    args.push(dirs[0].startsWith('-') ? `./${dirs[0]}` : dirs[0]);
   }
   if (format === 'json') {
     args.push('--json');
