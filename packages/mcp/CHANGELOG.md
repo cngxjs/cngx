@@ -82,6 +82,11 @@ answer grounds against is a runtime property (`cngx://provenance`,
   entry share the key, never for an entry without inputs and outputs and never
   for a slot with a blank description; such entries report as removed.
 - `migrate_usage` skips a malformed slot instead of failing the whole diff.
+- A fetched release snapshot with an unknown schema or a malformed shape
+  answers `asset-missing` with
+  `Fetched snapshot for v<version> could not be read: Malformed documentation.json: <detail>`.
+  It used to advise regenerating the snapshot; neither that nor a reinstall
+  repairs a release asset.
 
 ## 0.2.0 - 2026-08-27
 

@@ -9,7 +9,7 @@
 
 import { rebaseExampleUrls } from './example-urls.js';
 import type { DocsIndex } from './loader.js';
-import { loadDocsFromFile } from './loader.js';
+import { loadDocsFromFile, SnapshotLoadError } from './loader.js';
 import type { FetchSnapshot } from '../diff/snapshot-fetch.js';
 import { fetchSnapshot, normalizeReleaseVersion, removeQuietly, removeTempDir } from '../diff/snapshot-fetch.js';
 import type { SnapshotFetchFailureReason } from '../diff/types.js';
@@ -119,7 +119,7 @@ async function fetchAndLoad(
     return {
       ok: false,
       reason: 'asset-missing',
-      message: `Fetched snapshot for v${requested} could not be read: ${error instanceof Error ? error.message : String(error)}`,
+      message: `Fetched snapshot for v${requested} could not be read: ${fetchedLoadProblem(error)}`,
     };
   } finally {
     // The parsed index lives in memory from here on; the file on disk is never read again.
@@ -162,4 +162,12 @@ export async function answerVersioned<T>(
     // the `internal:` prefix tells a caller this is a defect, not a missing release.
     return { ok: false, reason: 'asset-missing', message: `internal: ${error instanceof Error ? error.message : String(error)}` };
   }
+}
+
+/** Why a fetched asset failed to load. The reinstall hint is dropped: it repairs the bundled snapshot, not a release asset. */
+function fetchedLoadProblem(error: unknown): string {
+  if (error instanceof SnapshotLoadError) {
+    return error.problem;
+  }
+  return error instanceof Error ? error.message : String(error);
 }

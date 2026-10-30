@@ -133,7 +133,11 @@ describe('createDocsResolver', () => {
 
     const resolution = await createDocsResolver(bundled, deps)('0.2.0');
 
-    expect(resolution).toMatchObject({ ok: false, reason: 'asset-missing' });
+    expect(resolution).toEqual({
+      ok: false,
+      reason: 'asset-missing',
+      message: 'Fetched snapshot for v0.2.0 could not be read: Malformed documentation.json: schemaVersion 3; this package reads 2 and 6',
+    });
   });
 
   it.each<SnapshotFetchFailureReason>(['gh-missing', 'network', 'asset-missing'])(

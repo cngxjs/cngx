@@ -48,8 +48,12 @@ const REINSTALL_HINT = 'reinstall the package that bundles this snapshot';
 
 /** Base of every snapshot load failure; its message ends with the reinstall hint. */
 export class SnapshotLoadError extends Error {
+  /** The failure without the hint, for a snapshot no reinstall can repair (a fetched release asset). */
+  readonly problem: string;
+
   constructor(problem: string) {
     super(`${problem}; ${REINSTALL_HINT}.`);
+    this.problem = problem;
     this.name = 'SnapshotLoadError';
   }
 }
