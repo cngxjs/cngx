@@ -496,6 +496,35 @@ describe('CngxSelect - grouped options', () => {
   });
 });
 
+describe('CngxSelect - closed typeahead and disabled groups', () => {
+  @Component({
+    template: `<cngx-select [label]="'Colour'" [options]="options" [(value)]="value" />`,
+    imports: [CngxSelect],
+  })
+  class DisabledGroupHost {
+    readonly options: CngxSelectOptionsInput<string> = [
+      { label: 'Retired', disabled: true, children: [{ value: 'grey', label: 'Grey' }] },
+      { label: 'Active', children: [{ value: 'green', label: 'Green' }] },
+    ];
+    readonly value = signal<string | undefined>(undefined);
+  }
+
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [DisabledGroupHost] });
+  });
+
+  it('skips a child of a disabled group', () => {
+    const fixture = TestBed.createComponent(DisabledGroupHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const trigger = fixture.nativeElement.querySelector('.cngx-select__trigger') as HTMLElement;
+    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'g', bubbles: true, cancelable: true }));
+    flush(fixture);
+    expect(fixture.componentInstance.value()).toBe('green');
+  });
+});
+
 describe('inject helpers', () => {
   it('injectSelectConfig returns a fully populated resolved config', () => {
     TestBed.configureTestingModule({});
@@ -1134,6 +1163,28 @@ describe('CngxSelect - commit action producer', () => {
 
     expect(host.intents).toEqual(['green', undefined]);
     expect(host.value()).toBeUndefined();
+  });
+
+  it('a letter on the closed trigger commits through the action and rolls back on failure', () => {
+    const { fixture, host, select, triggerBtn } = setup();
+    const changes: CngxSelectChange<string>[] = [];
+    select.selectionChange.subscribe((c: CngxSelectChange<string>) => changes.push(c));
+
+    triggerBtn.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'g', bubbles: true, cancelable: true }),
+    );
+    flush(fixture);
+
+    expect(select.panelOpen()).toBe(false);
+    expect(host.intents).toEqual(['green']);
+    expect(host.value()).toBe('green');
+    expect(changes).toEqual([]);
+
+    host.pending!.error(new Error('server down'));
+    flush(fixture);
+
+    expect(host.value()).toBe('red');
+    expect(changes).toEqual([]);
   });
 
   it('provides CNGX_STATEFUL that resolves to commitState', () => {

@@ -1037,6 +1037,16 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.focusState.markBlurred();
   }
 
+  // A closed-trigger pick is a pick: with a bound action it must reach the
+  // server like a panel pick, or the trigger diverges from the backend.
+  private commitClosedPick(option: CngxSelectOptionDef<T>, previous: T | undefined): void {
+    if (this.commitAction()) {
+      this.scalarHandler.dispatchFromActivation(option.value, option);
+      return;
+    }
+    this.scalarHandler.finalizeSelection(option.value, option, previous);
+  }
+
   /** @internal */
   protected handleTriggerKeydown(event: KeyboardEvent): void {
     // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
@@ -1072,16 +1082,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
         );
         if (action.kind === 'select') {
           event.preventDefault();
-          const previous = v;
-          this.value.set(action.option.value);
-          this.selectionChange.emit({
-            source: this,
-            value: action.option.value,
-            previousValue: previous,
-            option: action.option,
-          });
-          this.optionSelected.emit(action.option);
-          this.core.announce(action.option, 'added', 1, false);
+          this.commitClosedPick(action.option, v);
           return;
         }
       }

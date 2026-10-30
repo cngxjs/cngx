@@ -1196,6 +1196,16 @@ export class CngxSelectShell<T = unknown>
     this.toggle();
   }
 
+  // A closed-trigger pick is a pick: with a bound action it must reach the
+  // server like a panel pick, or the trigger diverges from the backend.
+  private commitClosedPick(option: CngxSelectOptionDef<T>, previous: T | undefined): void {
+    if (this.commitAction()) {
+      this.scalarHandler.dispatchFromActivation(option.value, option);
+      return;
+    }
+    this.scalarHandler.finalizeSelection(option.value, option, previous);
+  }
+
   /**
    * Trigger keyboard. Typeahead-while-closed (native `<select>` parity)
    * and PageUp/PageDown jump-N - both delegate to
@@ -1235,15 +1245,7 @@ export class CngxSelectShell<T = unknown>
         );
         if (action.kind === 'select') {
           event.preventDefault();
-          const previous = v;
-          this.value.set(action.option.value);
-          this.selectionChange.emit({
-            source: this,
-            value: action.option.value,
-            previousValue: previous,
-            option: action.option,
-          });
-          this.core.announce(action.option, 'added', 1, false);
+          this.commitClosedPick(action.option, v);
           return;
         }
       }

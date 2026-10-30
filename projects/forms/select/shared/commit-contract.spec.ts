@@ -116,7 +116,7 @@ describeCommitContract(SELECT, (c) => {
     c.emptyActionSettles,
   );
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
-  it.fails('A6: a letter key on the closed trigger calls commitAction', c.closedTypeaheadCommits);
+  it('A6: a letter key on the closed trigger calls commitAction', c.closedTypeaheadCommits);
   it('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
   it('A15: clear after a failed commit clears the commit error', c.clearClearsCommitError);
   it(
@@ -180,7 +180,7 @@ describeCommitContract(SELECT_SHELL, (c) => {
     c.emptyActionSettles,
   );
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
-  it.fails('A6: a letter key on the closed trigger calls commitAction', c.closedTypeaheadCommits);
+  it('A6: a letter key on the closed trigger calls commitAction', c.closedTypeaheadCommits);
   it('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
   it('A15: clear after a failed commit clears the commit error', c.clearClearsCommitError);
   it(

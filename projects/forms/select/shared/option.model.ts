@@ -45,6 +45,9 @@ export function isCngxSelectOptionGroupDef<T>(
 
 /**
  * Flattens grouped + flat input. Used by keyboard nav and compare lookups.
+ * Children of a disabled group come out `disabled`, so typeahead and
+ * page-jump skip them like the panel does. Children that are already
+ * disabled, or sit in an enabled group, keep their reference.
  */
 export function flattenSelectOptions<T>(
   input: CngxSelectOptionsInput<T>,
@@ -53,7 +56,8 @@ export function flattenSelectOptions<T>(
   for (const item of input) {
     if (isCngxSelectOptionGroupDef(item)) {
       for (const child of item.children) {
-        flat.push(child);
+        const inheritsDisabled = item.disabled === true && child.disabled !== true;
+        flat.push(inheritsDisabled ? { ...child, disabled: true } : child);
       }
     } else {
       flat.push(item);
