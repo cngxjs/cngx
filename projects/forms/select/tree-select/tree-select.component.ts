@@ -818,6 +818,7 @@ export class CngxTreeSelect<T = unknown>
     membersEqual: (a, b) => this.membersEqual(a, b),
     compareWith: this.compareWith,
     treeController: this.treeController,
+    cascade: this.cascadeChildren,
     commitAction: this.commitAction,
     commitMode: this.commitMode,
     core: this.core,

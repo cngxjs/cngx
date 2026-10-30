@@ -37,7 +37,15 @@ export interface TreeToggleDispatchOptions<T> {
   readonly membersEqual: (a: T, b: T) => boolean;
   /** Reconciliation equality of the committed array. */
   readonly compareWith: Signal<CngxSelectCompareFn<T>>;
-  readonly treeController: Pick<CngxTreeController<T>, 'descendantsOfValue' | 'findByValue'>;
+  readonly treeController: Pick<
+    CngxTreeController<T>,
+    'descendantsOfValue' | 'findByValue' | 'findById'
+  >;
+  /**
+   * `[cascadeChildren]`. When on, a parent's membership is derived from its
+   * descendants after every toggle, so ancestors follow a child toggle.
+   */
+  readonly cascade: Signal<boolean>;
   readonly commitAction: Signal<CngxSelectCommitAction<T[]> | null>;
   readonly commitMode: Signal<CngxSelectCommitMode>;
   readonly core: Pick<CngxSelectCore<T, T[]>, 'announce' | 'commitController'>;
@@ -58,9 +66,13 @@ export interface TreeToggleDispatchOptions<T> {
  * @internal
  */
 export interface TreeToggleDispatch<T> {
-  /** Flip one node. */
+  /** Flip one node; in cascade mode its ancestors are re-derived. */
   singleToggle(node: FlatTreeNode<T>): void;
-  /** Flip a node and every non-disabled descendant in one change. */
+  /**
+   * Select a node and every non-disabled descendant, or deselect them all
+   * when every one of them is already selected. A mixed subtree selects all
+   * (APG tri-state). Ancestors are re-derived afterwards.
+   */
   cascadeToggle(node: FlatTreeNode<T>): void;
   /** Remove one value: a tree value toggles off, a stale value is stripped. */
   removeValue(value: T, label: string): void;
@@ -143,42 +155,68 @@ export function createTreeToggleDispatch<T>(
     });
   };
 
+  const isIn = (set: readonly T[], value: T): boolean => set.some((v) => membersEqual(v, value));
+
+  const enabledDescendants = (value: T): T[] => {
+    const tc = opts.treeController;
+    return tc.descendantsOfValue(value).filter((v) => tc.findByValue(v)?.disabled !== true);
+  };
+
+  // Parent membership is derived, not stored: walking nearest-first, an
+  // enabled ancestor is selected iff every enabled descendant is. A disabled
+  // ancestor keeps its state, like a disabled descendant in a cascade.
+  const deriveAncestors = (set: T[], node: FlatTreeNode<T>): T[] => {
+    let out = set;
+    for (const id of [...node.parentIds].reverse()) {
+      const ancestor = opts.treeController.findById(id);
+      if (!ancestor || ancestor.disabled) {
+        continue;
+      }
+      const full = enabledDescendants(ancestor.value).every((v) => isIn(out, v));
+      const selected = isIn(out, ancestor.value);
+      if (full && !selected) {
+        out = [...out, ancestor.value];
+      } else if (!full && selected) {
+        out = out.filter((v) => !membersEqual(v, ancestor.value));
+      }
+    }
+    return out;
+  };
+
+  const dispatchDiff = (
+    next: T[],
+    previous: T[],
+    node: FlatTreeNode<T>,
+    action: TreeToggleMeta<T>['action'],
+  ): void => {
+    dispatch(next, previous, {
+      added: next.filter((v) => !isIn(previous, v)),
+      removed: previous.filter((v) => !isIn(next, v)),
+      node,
+      action,
+    });
+  };
+
   const singleToggle = (node: FlatTreeNode<T>): void => {
     const value = node.value;
     const previous = snapshot();
-    const wasSelected = previous.some((v) => membersEqual(v, value));
-    const next = wasSelected
+    const toggled = isIn(previous, value)
       ? previous.filter((v) => !membersEqual(v, value))
       : [...previous, value];
-    dispatch(next, previous, {
-      added: wasSelected ? [] : [value],
-      removed: wasSelected ? [value] : [],
-      node,
-      action: 'toggle',
-    });
+    const next = opts.cascade() ? deriveAncestors(toggled, node) : toggled;
+    dispatchDiff(next, previous, node, 'toggle');
   };
 
   const cascadeToggle = (node: FlatTreeNode<T>): void => {
     // A disabled descendant keeps whatever state it had: the user cannot
     // reverse a change on a row they cannot activate.
-    const tc = opts.treeController;
-    const descendants = tc
-      .descendantsOfValue(node.value)
-      .filter((v) => tc.findByValue(v)?.disabled !== true);
-    const allValues = [node.value, ...descendants];
+    const allValues = [node.value, ...enabledDescendants(node.value)];
     const previous = snapshot();
-    const parentSelected = previous.some((v) => membersEqual(v, node.value));
-    const isPrevious = (a: T): boolean => previous.some((v) => membersEqual(v, a));
-
-    const next = parentSelected
-      ? previous.filter((v) => !allValues.some((a) => membersEqual(v, a)))
+    const fullySelected = allValues.every((a) => isIn(previous, a));
+    const toggled = fullySelected
+      ? previous.filter((v) => !isIn(allValues, v))
       : dedup([...previous, ...allValues], membersEqual);
-    dispatch(next, previous, {
-      added: parentSelected ? [] : allValues.filter((a) => !isPrevious(a)),
-      removed: parentSelected ? allValues.filter(isPrevious) : [],
-      node,
-      action: 'cascade-toggle',
-    });
+    dispatchDiff(deriveAncestors(toggled, node), previous, node, 'cascade-toggle');
   };
 
   const removeValue = (value: T, label: string): void => {

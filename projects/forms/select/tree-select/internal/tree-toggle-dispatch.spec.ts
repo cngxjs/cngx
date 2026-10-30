@@ -25,10 +25,21 @@ function nodes(): CngxTreeNode<string>[] {
       children: [{ value: 'c1' }, { value: 'c2', disabled: true }, { value: 'c3' }],
     },
     { value: 'q' },
+    {
+      value: 'g',
+      children: [{ value: 'm', children: [{ value: 'm1' }, { value: 'm2' }] }, { value: 'n' }],
+    },
   ];
 }
 
-function setup(opts: { commit?: boolean; mode?: CngxSelectCommitMode; initial?: string[] } = {}) {
+function setup(
+  opts: {
+    commit?: boolean;
+    mode?: CngxSelectCommitMode;
+    initial?: string[];
+    cascade?: boolean;
+  } = {},
+) {
   const values = signal<string[]>(opts.initial ?? []);
   const treeController = TestBed.runInInjectionContext(() =>
     createTreeController<string>({ nodes: signal(nodes()), nodeIdFn: (v) => v }),
@@ -46,6 +57,7 @@ function setup(opts: { commit?: boolean; mode?: CngxSelectCommitMode; initial?: 
     membersEqual: Object.is,
     compareWith: signal(Object.is),
     treeController,
+    cascade: signal(opts.cascade ?? false),
     commitAction: signal(opts.commit ? action : null),
     commitMode: signal(opts.mode ?? 'optimistic'),
     core: {
@@ -103,6 +115,47 @@ describe('createTreeToggleDispatch', () => {
     expect(t.announce).toHaveBeenLastCalledWith(null, 'added', 4, true);
     t.dispatch.cascadeToggle(t.node('p'));
     expect(t.values()).toEqual(['c2']);
+  });
+
+  it('a click on a mixed parent selects every enabled descendant (A10)', () => {
+    const t = setup({ cascade: true, initial: ['p', 'c1', 'c3'] });
+    t.dispatch.singleToggle(t.node('c1'));
+    expect([...t.values()].sort()).toEqual(['c3']);
+    expect(t.changes[0]).toMatchObject({ action: 'toggle', removed: ['p', 'c1'], added: [] });
+    t.dispatch.cascadeToggle(t.node('p'));
+    expect([...t.values()].sort()).toEqual(['c1', 'c3', 'p']);
+    expect(t.changes[1]).toMatchObject({ action: 'cascade-toggle', added: ['p', 'c1'] });
+  });
+
+  it('a parent in the set with an unselected child counts as mixed, not selected', () => {
+    const t = setup({ cascade: true, initial: ['p', 'c3'] });
+    t.dispatch.cascadeToggle(t.node('p'));
+    expect([...t.values()].sort()).toEqual(['c1', 'c3', 'p']);
+  });
+
+  it('selecting every child one by one derives the ancestors in cascade mode', () => {
+    const t = setup({ cascade: true, initial: ['n'] });
+    t.dispatch.singleToggle(t.node('m1'));
+    expect([...t.values()].sort()).toEqual(['m1', 'n']);
+    t.dispatch.singleToggle(t.node('m2'));
+    expect([...t.values()].sort()).toEqual(['g', 'm', 'm1', 'm2', 'n']);
+    expect(t.changes[1]).toMatchObject({ added: ['m2', 'm', 'g'], removed: [] });
+    t.dispatch.singleToggle(t.node('n'));
+    expect([...t.values()].sort()).toEqual(['m', 'm1', 'm2']);
+  });
+
+  it('a cascade on a nested parent re-derives the ancestors above it', () => {
+    const t = setup({ cascade: true, initial: ['n'] });
+    t.dispatch.cascadeToggle(t.node('m'));
+    expect([...t.values()].sort()).toEqual(['g', 'm', 'm1', 'm2', 'n']);
+    t.dispatch.cascadeToggle(t.node('m'));
+    expect(t.values()).toEqual(['n']);
+  });
+
+  it('a child toggle leaves ancestors alone without cascade', () => {
+    const t = setup({ initial: ['p', 'c1', 'c3'] });
+    t.dispatch.singleToggle(t.node('c1'));
+    expect([...t.values()].sort()).toEqual(['c3', 'p']);
   });
 
   it('strips a stale value and toggles an in-tree one on removal', () => {
