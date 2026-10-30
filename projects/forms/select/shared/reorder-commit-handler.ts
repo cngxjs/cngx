@@ -21,8 +21,8 @@ export interface ReorderCommitHandlerOptions<T> {
   /**
    * Shared low-level commit controller. Reorder commits bypass
    * `createArrayCommitHandler` (whose `sameArrayContents` would skip
-   * same-membership writes) but record on the same controller, so the
-   * component's Retry replays a failed reorder as a reorder.
+   * same-membership writes) but run on the same controller, so a reorder
+   * supersedes a pending toggle and vice versa.
    */
   readonly commitController: CngxCommitController<T[]>;
   /**
@@ -96,11 +96,12 @@ export interface ReorderCommitHandler<T> {
     option: CngxSelectOptionDef<T> | null,
   ): void;
   /**
-   * Replay the last commit begun on `commitController`, by its recorded
-   * kind. Optional so custom handlers keep compiling; the default handler
-   * provides it.
+   * Replay the last failed reorder this handler started (the commit-error
+   * Retry). The composite routes Retry here whenever this handler started
+   * the last commit, so a custom handler owns its own replay. No-op once
+   * the reorder succeeded or without a bound `commitAction`.
    */
-  retryLast?(): void;
+  retryLast(): void;
 }
 
 /**

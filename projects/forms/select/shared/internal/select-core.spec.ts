@@ -173,7 +173,43 @@ describe('createSelectCore - mobile sheet presentation', () => {
 });
 
 describe('createSelectCore - commit ledger retry', () => {
-  it('binds Retry to the ledger by default and reads the option from its record', () => {
+  it('routes Retry to the handler that started the last commit', () => {
+    const core = TestBed.runInInjectionContext(() =>
+      createSelectCore(deps(), { announceChanges: signal(null), announceTemplate: signal(null) }),
+    );
+    const log: string[] = [];
+    const handler = (name: string) => ({
+      begin: () => log.push(`begin:${name}`),
+      retryLast: () => log.push(`retry:${name}`),
+    });
+    const a = core.routeRetryThrough(handler('a'), ['begin']);
+    const b = core.routeRetryThrough(handler('b'), ['begin']);
+    const context = core.bindCommitRetry();
+    context().retry();
+    expect(log).toEqual([]);
+    a.begin();
+    context().retry();
+    b.begin();
+    context().retry();
+    a.retryLast();
+    expect(log).toEqual(['begin:a', 'retry:a', 'begin:b', 'retry:b', 'retry:a']);
+    const owner = { retryLast: () => log.push('retry:claimed') };
+    core.claimCommitRetry(owner);
+    core.retryLastCommit();
+    expect(log.at(-1)).toBe('retry:claimed');
+  });
+
+  it('reads the option from the ledger record, else from the toggling option', () => {
+    const core = TestBed.runInInjectionContext(() =>
+      createSelectCore(deps(), { announceChanges: signal(null), announceTemplate: signal(null) }),
+    );
+    const context = core.bindCommitRetry(() => undefined);
+    expect(context().option).toBeNull();
+    core.togglingOption.set(RED);
+    expect(context().option).toBe(RED);
+  });
+
+  it('reads the option from the ledger record and replays it through a ledger-backed retry', () => {
     const core = TestBed.runInInjectionContext(() =>
       createSelectCore(deps(), { announceChanges: signal(null), announceTemplate: signal(null) }),
     );
@@ -195,7 +231,8 @@ describe('createSelectCore - commit ledger retry', () => {
       commitMode: signal('pessimistic'),
       onSuccess: () => undefined,
     });
-    const context = core.bindCommitRetry();
+    core.togglingOption.set(null);
+    const context = core.bindCommitRetry(() => core.commitLedger.retry());
     expect(context().option).toBe(RED);
     context().retry();
     expect(calls).toEqual(['red', 'red']);

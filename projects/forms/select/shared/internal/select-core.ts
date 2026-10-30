@@ -264,10 +264,27 @@ export interface CngxSelectCore<T, TCommit> {
 
   /**
    * Builds a `commitErrorContext` signal bound to the caller's retry
-   * (default: the ledger's retry, which replays the recorded commit kind).
-   * Cache the result per variant-specific retry signature.
+   * (default: {@link retryLastCommit}). Its `option` is the option of the
+   * last commit the ledger recorded, else the toggling option, so a custom
+   * handler that bypasses the ledger still reports one. Cache the result per
+   * variant-specific retry signature.
    */
   bindCommitRetry(retry?: () => void): Signal<CngxSelectCommitErrorContext<T>>;
+
+  /**
+   * @internal Returns a view of `handler` whose `begins` methods first mark
+   * `handler` as the owner of the last commit. A composite with more than one
+   * commit handler (or a handler plus its own dispatch) wraps each one, so
+   * Retry reaches the handler that started the failed commit, also when a
+   * consumer swapped it through its factory token.
+   */
+  routeRetryThrough<H extends CngxCommitRetryOwner>(handler: H, begins: readonly (keyof H)[]): H;
+
+  /** @internal Marks `owner` as the starter of the commit about to begin. */
+  claimCommitRetry(owner: CngxCommitRetryOwner): void;
+
+  /** @internal Replays the last commit through the handler that owns it. No-op before any. */
+  retryLastCommit(): void;
 
   /** Panel-level `[state]` errors. Cache like `bindCommitRetry`. */
   makeErrorContext(retry: () => void): Signal<CngxSelectErrorContext>;
@@ -311,6 +328,16 @@ export interface CngxSelectCore<T, TCommit> {
     fromIndex?: number,
     toIndex?: number,
   ): void;
+}
+
+/**
+ * Anything that can replay the commit it started: the commit handlers and
+ * the tree toggle dispatch.
+ *
+ * @internal
+ */
+export interface CngxCommitRetryOwner {
+  retryLast(): void;
 }
 
 /**
@@ -722,14 +749,46 @@ export function createSelectCore<T, TCommit>(
 
   const commitErrorValue = computed<unknown>(() => commitState.error());
 
+  let commitOwner: CngxCommitRetryOwner | null = null;
+
+  function routeRetryThrough<H extends CngxCommitRetryOwner>(
+    handler: H,
+    begins: readonly (keyof H)[],
+  ): H {
+    // Prototype view: untouched members (and `this`-bound class handlers)
+    // keep working; defineProperty also shadows a frozen handler's method.
+    const routed = Object.create(handler) as H;
+    for (const key of begins) {
+      const begin = handler[key];
+      if (typeof begin !== 'function') {
+        continue;
+      }
+      Object.defineProperty(routed, key, {
+        value: (...args: unknown[]): unknown => {
+          claimCommitRetry(handler);
+          return (begin as (...a: unknown[]) => unknown).apply(handler, args);
+        },
+      });
+    }
+    return routed;
+  }
+
+  function claimCommitRetry(owner: CngxCommitRetryOwner): void {
+    commitOwner = owner;
+  }
+
+  function retryLastCommit(): void {
+    commitOwner?.retryLast();
+  }
+
   function bindCommitRetry(
-    retry: () => void = () => commitLedger.retry(),
+    retry: () => void = retryLastCommit,
   ): Signal<CngxSelectCommitErrorContext<T>> {
     return computed(
       () => ({
         $implicit: commitState.error(),
         error: commitState.error(),
-        option: commitLedger.last()?.option ?? null,
+        option: commitLedger.last()?.option ?? togglingOption(),
         retry,
       }),
       {
@@ -936,6 +995,9 @@ export function createSelectCore<T, TCommit>(
     showCommitError,
     commitErrorValue,
     bindCommitRetry,
+    routeRetryThrough,
+    claimCommitRetry,
+    retryLastCommit,
     makeErrorContext,
     isGroup,
     isCommittingOption,

@@ -15,6 +15,11 @@ import {
   type CngxArrayCommitHandlerFactory,
 } from '../array-commit-handler';
 import type { CngxSelectCommitMode } from '../commit-action.types';
+import {
+  CNGX_REORDER_COMMIT_HANDLER_FACTORY,
+  createReorderCommitHandler,
+  type CngxReorderCommitHandlerFactory,
+} from '../reorder-commit-handler';
 
 /**
  * Commit kinds a composite can start. `select` is the scalar pick, `toggle`
@@ -77,6 +82,19 @@ export interface CommitContractCases {
   readonly softPolicyNeverSpeaksCleared: () => void;
   /** B11: a provided `CNGX_ARRAY_COMMIT_HANDLER_FACTORY` is used. */
   readonly arrayHandlerFactoryUsed: () => void;
+  /**
+   * Retry after a failed toggle (or clear, on the tree) started by a custom
+   * `CNGX_ARRAY_COMMIT_HANDLER_FACTORY` handler calls that handler's
+   * `retryLast`, never the internal ledger.
+   */
+  readonly customArrayHandlerOwnsRetry: () => void;
+  /**
+   * Retry routes by the handler that started the last commit: a failed
+   * toggle replays through the array handler, a failed reorder started by a
+   * custom `CNGX_REORDER_COMMIT_HANDLER_FACTORY` handler calls its
+   * `retryLast`.
+   */
+  readonly customReorderHandlerOwnsRetry: () => void;
   /** A6: a letter key on the closed trigger commits through `commitAction`. */
   readonly closedTypeaheadCommits: () => void;
   /** A15: clear while a commit is pending wins over that commit. */
@@ -504,7 +522,9 @@ export function describeCommitContract(
         m.rejectLast();
         restore();
         expect(spoken.map((s) => s.message).filter((s) => CLEARED_PHRASE.test(s))).toEqual([]);
-        const soft = spoken.filter((s) => s.message.includes('Save failed, previous value restored'));
+        const soft = spoken.filter((s) =>
+          s.message.includes('Save failed, previous value restored'),
+        );
         expect(soft.map((s) => s.politeness)).toEqual(['polite']);
       },
 
@@ -513,6 +533,52 @@ export function describeCommitContract(
         const factory = vi.fn(createArrayCommitHandler) as unknown as CngxArrayCommitHandlerFactory;
         mount({ providers: [{ provide: CNGX_ARRAY_COMMIT_HANDLER_FACTORY, useValue: factory }] });
         expect(factory).toHaveBeenCalled();
+      },
+
+      customArrayHandlerOwnsRetry: () => {
+        expect(host.model).toBe('values');
+        const retryLast = vi.fn();
+        const factory: CngxArrayCommitHandlerFactory = (opts) => ({
+          ...createArrayCommitHandler(opts),
+          retryLast,
+        });
+        const viaToggle = has('toggle');
+        const m = mount({
+          initial: viaToggle ? [] : ['red'],
+          providers: [{ provide: CNGX_ARRAY_COMMIT_HANDLER_FACTORY, useValue: factory }],
+        });
+        if (viaToggle) {
+          m.pickAt(1);
+        } else {
+          m.clear();
+        }
+        m.rejectLast();
+        m.retry();
+        expect(retryLast).toHaveBeenCalledTimes(1);
+        expect(m.h.calls).toHaveLength(1);
+      },
+
+      customReorderHandlerOwnsRetry: () => {
+        requireKind('reorder');
+        const retryLast = vi.fn();
+        const factory: CngxReorderCommitHandlerFactory = (opts) => ({
+          ...createReorderCommitHandler(opts),
+          retryLast,
+        });
+        const m = mount({
+          initial: ['red', 'green', 'blue'],
+          providers: [{ provide: CNGX_REORDER_COMMIT_HANDLER_FACTORY, useValue: factory }],
+        });
+        m.reorderFirstRight();
+        m.rejectLast();
+        m.retry();
+        expect(retryLast).toHaveBeenCalledTimes(1);
+        expect(m.h.calls).toHaveLength(1);
+        m.clear();
+        m.rejectLast();
+        m.retry();
+        expect(retryLast).toHaveBeenCalledTimes(1);
+        expect(m.h.calls).toEqual([['green', 'red', 'blue'], [], []]);
       },
 
       closedTypeaheadCommits: () => {

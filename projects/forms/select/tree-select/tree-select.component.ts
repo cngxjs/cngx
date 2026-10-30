@@ -792,41 +792,42 @@ export class CngxTreeSelect<T = unknown>
     policy: this.commitErrorAnnouncePolicy,
   });
 
-  private readonly commitHandler: ArrayCommitHandler<T> = inject(
-    CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
-  )<T>({
-    values: this.values,
-    compareWith: this.compareWith,
-    commitMode: this.commitMode,
-    core: this.core,
-    commitAction: this.commitAction,
-    getLastCommitted: () => this.dispatch.lastCommitted(),
-    onToggleFinalize: () => {
-      // Tree commit success uses cascade-aware
-      // `dispatchValueChange` directly. The handler's per-option
-      // finalize is bypassed because the clear path passes
-      // `null` option (treated as clear by ArrayCommitHandler).
-    },
-    onClearFinalize: (previous, finalValues) => {
-      this.cleared.emit();
-      this.emitChange({
-        values: finalValues,
-        previousValues: previous,
-        added: [],
-        removed: previous,
-        node: null,
-        action: 'clear',
-      });
-    },
-    onStateChange: (status) => this.stateChange.emit(status),
-    onError: (err) => this.commitError.emit(err),
-    announceError: this.announceCommitError,
-  });
+  private readonly commitHandler: ArrayCommitHandler<T> = this.core.routeRetryThrough(
+    inject(CNGX_ARRAY_COMMIT_HANDLER_FACTORY)<T>({
+      values: this.values,
+      compareWith: this.compareWith,
+      commitMode: this.commitMode,
+      core: this.core,
+      commitAction: this.commitAction,
+      getLastCommitted: () => this.dispatch.lastCommitted(),
+      onToggleFinalize: () => {
+        // Tree commit success uses cascade-aware
+        // `dispatchValueChange` directly. The handler's per-option
+        // finalize is bypassed because the clear path passes
+        // `null` option (treated as clear by ArrayCommitHandler).
+      },
+      onClearFinalize: (previous, finalValues) => {
+        this.cleared.emit();
+        this.emitChange({
+          values: finalValues,
+          previousValues: previous,
+          added: [],
+          removed: previous,
+          node: null,
+          action: 'clear',
+        });
+      },
+      onStateChange: (status) => this.stateChange.emit(status),
+      onError: (err) => this.commitError.emit(err),
+      announceError: this.announceCommitError,
+    }),
+    ['beginToggle', 'beginClear'],
+  );
 
   /**
    * Toggle / cascade / remove / clear mutations with their commit paths. A
-   * toggle Retry replays through it (cascade meta included); a clear goes
-   * back to the array handler, which owns that path.
+   * toggle Retry replays through it (cascade meta included); a clear Retry
+   * goes to the array handler, which started that commit.
    */
   private readonly dispatch: TreeToggleDispatch<T> = createTreeToggleDispatch<T>({
     values: this.values,
@@ -919,7 +920,7 @@ export class CngxTreeSelect<T = unknown>
   // `*ngTemplateOutlet` consumers of the commit-error context.
   private readonly commitRetryBound: () => void = () => {
     this.hostFocus.refocusOwnerBeforeRemoval();
-    this.dispatch.retryLast();
+    this.core.retryLastCommit();
   };
 
   /** @internal */

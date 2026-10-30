@@ -61,11 +61,12 @@ export interface ArrayCommitHandler<T> {
   /** Same split as {@link beginToggle} - consumer pre-writes `values`. */
   beginClear(previous: T[], action: CngxSelectCommitAction<T[]>): void;
   /**
-   * Replay the last commit begun on the component's commit controller, by
-   * the kind recorded at begin: a clear replays the clear, a toggle the
-   * toggle with its own option, a reorder the reorder. In optimistic mode
-   * the intended array is written back before the replay, so the trigger
-   * shows it while pending. No-op without a recorded commit or a bound
+   * Replay the last failed commit this handler started (the commit-error
+   * Retry): a clear replays the clear, a toggle the toggle with its own
+   * option. In optimistic mode the intended array is written back before the
+   * replay, so the trigger shows it while pending. A composite with a second
+   * commit source routes Retry here only when this handler started the last
+   * commit. No-op once that commit succeeded or without a bound
    * `commitAction`.
    */
   retryLast(): void;

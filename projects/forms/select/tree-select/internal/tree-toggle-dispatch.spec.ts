@@ -49,6 +49,7 @@ function setup(
   const changes: Omit<CngxTreeSelectChange<string>, 'source'>[] = [];
   const announce = vi.fn();
   const beginClear = vi.fn();
+  const claimCommitRetry = vi.fn();
   const states: string[] = [];
   const errors: unknown[] = [];
   const cleared = vi.fn();
@@ -61,6 +62,7 @@ function setup(
     commitMode: signal(opts.mode ?? 'optimistic'),
     core: {
       announce,
+      claimCommitRetry,
       commitController: {
         isCommitting: signal(false),
         begin: (
@@ -88,6 +90,7 @@ function setup(
     changes,
     announce,
     beginClear,
+    claimCommitRetry,
     states,
     errors,
     cleared,
@@ -180,6 +183,18 @@ describe('createTreeToggleDispatch', () => {
     expect(t.values()).toEqual([]);
     expect(t.beginClear).toHaveBeenCalledTimes(1);
     expect(t.dispatch.lastCommitted()).toEqual(['q']);
+  });
+
+  it('claims the Retry before a tree commit, never for a clear or a sync toggle', () => {
+    const sync = setup();
+    sync.dispatch.singleToggle(sync.node('q'));
+    expect(sync.claimCommitRetry).not.toHaveBeenCalled();
+    const t = setup({ commit: true, initial: ['q'] });
+    t.dispatch.clearAll();
+    expect(t.claimCommitRetry).not.toHaveBeenCalled();
+    t.dispatch.singleToggle(t.node('q'));
+    expect(t.claimCommitRetry).toHaveBeenCalledTimes(1);
+    expect(t.claimCommitRetry.mock.calls[0][0].retryLast).toBe(t.dispatch.retryLast);
   });
 
   it('optimistic commit emits and announces only once the commit succeeds', () => {

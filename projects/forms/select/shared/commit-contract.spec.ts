@@ -175,6 +175,10 @@ describeCommitContract(MULTI_SELECT, (c) => {
   it('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
   it(
+    'Retry after a failed commit calls the custom array handler retryLast',
+    c.customArrayHandlerOwnsRetry,
+  );
+  it(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
   );
@@ -186,6 +190,10 @@ describeCommitContract(COMBOBOX, (c) => {
   it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
   it('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
+  it(
+    'Retry after a failed commit calls the custom array handler retryLast',
+    c.customArrayHandlerOwnsRetry,
+  );
   it(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
@@ -199,6 +207,10 @@ describeCommitContract(ACTION_MULTI_SELECT, (c) => {
   it('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
   it(
+    'Retry after a failed commit calls the custom array handler retryLast',
+    c.customArrayHandlerOwnsRetry,
+  );
+  it(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
   );
@@ -208,6 +220,10 @@ describeCommitContract(REORDERABLE, (c) => {
   it('A1/A11: Retry after a failed toggle replays the toggle', c.retryToggle);
   it('A1/A11: Retry after a failed clear replays the clear', c.retryClear);
   it('A1/A11: Retry after a failed reorder replays the reorder', c.retryReorder);
+  it(
+    'Retry routes a reorder to the custom reorder handler and a clear to the array handler',
+    c.customReorderHandlerOwnsRetry,
+  );
   it(
     'A1/A11: Retry after a failed reorder never replays an earlier clear',
     c.retryReorderNotStaleClear,
@@ -220,6 +236,10 @@ describeCommitContract(REORDERABLE, (c) => {
   it('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
   it(
+    'Retry after a failed commit calls the custom array handler retryLast',
+    c.customArrayHandlerOwnsRetry,
+  );
+  it(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
   );
@@ -231,6 +251,10 @@ describeCommitContract(TREE_SELECT, (c) => {
   it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
   it('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
+  it(
+    'Retry after a failed commit calls the custom array handler retryLast',
+    c.customArrayHandlerOwnsRetry,
+  );
   it(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,

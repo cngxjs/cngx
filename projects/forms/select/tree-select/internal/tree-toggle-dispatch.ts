@@ -49,8 +49,11 @@ export interface TreeToggleDispatchOptions<T> {
   readonly cascade: Signal<boolean>;
   readonly commitAction: Signal<CngxSelectCommitAction<T[]> | null>;
   readonly commitMode: Signal<CngxSelectCommitMode>;
-  readonly core: Pick<CngxSelectCore<T, T[]>, 'announce' | 'commitController'>;
-  /** The clear path stays on the shared array handler (ledger kind `clear`). */
+  readonly core: Pick<CngxSelectCore<T, T[]>, 'announce' | 'commitController' | 'claimCommitRetry'>;
+  /**
+   * The clear path stays on the shared array handler. Wrap it with
+   * `core.routeRetryThrough` so a clear Retry reaches that handler.
+   */
   readonly commitHandler: () => Pick<ArrayCommitHandler<T>, 'beginClear'>;
   readonly emitChange: (change: Omit<CngxTreeSelectChange<T>, 'source'>) => void;
   readonly emitCleared: () => void;
@@ -79,7 +82,7 @@ export interface TreeToggleDispatch<T> {
   removeValue(value: T, label: string): void;
   /** Clear the whole selection. */
   clearAll(): void;
-  /** Replay the last commit (commit-error Retry). */
+  /** Replay the last failed tree commit this dispatch started. */
   retryLast(): void;
   /** Rollback target of the shared array handler. */
   lastCommitted(): T[];
@@ -91,6 +94,8 @@ export function createTreeToggleDispatch<T>(
 ): TreeToggleDispatch<T> {
   const { values, membersEqual } = opts;
   const ledger = commitLedgerFor<T[], T>(opts.core.commitController);
+  const retryLast = (): void => ledger.retry();
+  const owner = { retryLast };
   let lastCommittedValues: T[] = untracked(() => [...values()]);
 
   const snapshot = (): T[] => untracked(() => [...values()]);
@@ -134,6 +139,7 @@ export function createTreeToggleDispatch<T>(
     if (opts.commitMode() === 'optimistic') {
       values.set(next);
     }
+    opts.core.claimCommitRetry(owner);
     ledger.beginMembers<T[]>({
       kind: 'tree',
       next,
@@ -273,7 +279,7 @@ export function createTreeToggleDispatch<T>(
     cascadeToggle,
     removeValue,
     clearAll,
-    retryLast: () => ledger.retry(),
+    retryLast,
     lastCommitted: () => lastCommittedValues,
   };
 }

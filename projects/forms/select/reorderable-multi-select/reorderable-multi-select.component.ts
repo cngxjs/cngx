@@ -845,8 +845,8 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /** @internal */
   protected readonly commitErrorContext = this.core.bindCommitRetry(() => {
     this.hostFocus.refocusOwnerBeforeRemoval();
-    // Toggle, clear and reorder share one ledger: Retry replays whichever failed.
-    this.core.commitLedger.retry();
+    // Two handlers start commits here: Retry goes to whichever started the last.
+    this.core.retryLastCommit();
   });
 
   /** @internal - full virtualisation wire-up (see setupVirtualization). */
@@ -951,23 +951,24 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     policy: this.commitErrorAnnouncePolicy,
   });
 
-  private readonly commitHandler: ArrayCommitHandler<T> = inject(
-    CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
-  )<T>({
-    values: this.values,
-    compareWith: this.compareWith,
-    commitMode: this.commitMode,
-    core: this.core,
-    commitAction: this.commitAction,
-    getLastCommitted: () => this.lastCommittedValues,
-    onToggleFinalize: (option, isNowSelected) =>
-      this.toggleDispatch.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
-    onClearFinalize: (previous, finalValues) =>
-      this.toggleDispatch.clearFinalize(previous, finalValues),
-    onStateChange: (status) => this.stateChange.emit(status),
-    onError: (err) => this.commitError.emit(err),
-    announceError: this.announceCommitError,
-  });
+  private readonly commitHandler: ArrayCommitHandler<T> = this.core.routeRetryThrough(
+    inject(CNGX_ARRAY_COMMIT_HANDLER_FACTORY)<T>({
+      values: this.values,
+      compareWith: this.compareWith,
+      commitMode: this.commitMode,
+      core: this.core,
+      commitAction: this.commitAction,
+      getLastCommitted: () => this.lastCommittedValues,
+      onToggleFinalize: (option, isNowSelected) =>
+        this.toggleDispatch.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
+      onClearFinalize: (previous, finalValues) =>
+        this.toggleDispatch.clearFinalize(previous, finalValues),
+      onStateChange: (status) => this.stateChange.emit(status),
+      onError: (err) => this.commitError.emit(err),
+      announceError: this.announceCommitError,
+    }),
+    ['beginToggle', 'beginClear'],
+  );
 
   /**
    * Chip-removal handler. Reorder semantics independent - chip-remove
@@ -1347,35 +1348,38 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * `CNGX_REORDER_COMMIT_HANDLER_FACTORY` so consumers can swap in
    * retry-with-backoff, offline queues, audit logging.
    */
-  private readonly reorderCommit = inject(CNGX_REORDER_COMMIT_HANDLER_FACTORY)<T>({
-    values: this.values,
-    commitMode: this.commitMode,
-    commitAction: this.commitAction,
-    commitController: this.core.commitController,
-    getLastCommitted: () => this.lastCommittedValues,
-    setLastCommitted: (v) => {
-      this.lastCommittedValues = [...v];
-    },
-    onReorder: (values, previous, option, fromIndex, toIndex) => {
-      const change: CngxReorderableMultiSelectChange<T> = {
-        source: this,
-        values,
-        previousValues: previous,
-        added: [],
-        removed: [],
-        option,
-        action: 'reorder',
-        fromIndex,
-        toIndex,
-      };
-      this.selectionChange.emit(change);
-      this.reordered.emit(change);
-    },
-    onAnnounce: (option, fromIndex, toIndex, count) => {
-      this.core.announce(option, 'reordered', count, true, fromIndex, toIndex);
-    },
-    onStateChange: (status) => this.stateChange.emit(status),
-    onError: (err) => this.commitError.emit(err),
-    announceError: this.announceCommitError,
-  });
+  private readonly reorderCommit = this.core.routeRetryThrough(
+    inject(CNGX_REORDER_COMMIT_HANDLER_FACTORY)<T>({
+      values: this.values,
+      commitMode: this.commitMode,
+      commitAction: this.commitAction,
+      commitController: this.core.commitController,
+      getLastCommitted: () => this.lastCommittedValues,
+      setLastCommitted: (v) => {
+        this.lastCommittedValues = [...v];
+      },
+      onReorder: (values, previous, option, fromIndex, toIndex) => {
+        const change: CngxReorderableMultiSelectChange<T> = {
+          source: this,
+          values,
+          previousValues: previous,
+          added: [],
+          removed: [],
+          option,
+          action: 'reorder',
+          fromIndex,
+          toIndex,
+        };
+        this.selectionChange.emit(change);
+        this.reordered.emit(change);
+      },
+      onAnnounce: (option, fromIndex, toIndex, count) => {
+        this.core.announce(option, 'reordered', count, true, fromIndex, toIndex);
+      },
+      onStateChange: (status) => this.stateChange.emit(status),
+      onError: (err) => this.commitError.emit(err),
+      announceError: this.announceCommitError,
+    }),
+    ['dispatch'],
+  );
 }
