@@ -56,8 +56,11 @@ const GLOBAL_OPTIONS: Options = {
   format: { type: 'string' },
 };
 
+/** The stderr of a usage error: the message, then where to read the usage. */
+const usageText = (message: string, hint: string): string => `cngx: ${message}\n${hint}\n`;
+
 const usageError = (io: CliIo, message: string, hint: string): number => {
-  io.stderr(`cngx: ${message}\n${hint}\n`);
+  io.stderr(usageText(message, hint));
   return EXIT_USAGE;
 };
 
@@ -355,7 +358,7 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
 
   let rendered: Rendered;
   try {
-    rendered = await answer(def, context, validated.data, format);
+    rendered = await answer(def, context, validated.data, format, hint);
   } catch (error) {
     return internalError(io, `cngx ${def.cliName}`, error, format);
   }
@@ -376,8 +379,19 @@ interface Rendered {
 }
 
 /** Run `def` and render its answer; any throw here is an internal error of the caller's. */
-async function answer(def: CngxCommand, context: CommandContext, input: unknown, format: OutputFormat): Promise<Rendered> {
+async function answer(
+  def: CngxCommand,
+  context: CommandContext,
+  input: unknown,
+  format: OutputFormat,
+  hint: string,
+): Promise<Rendered> {
   const result = unwrapAnswer(await def.run(context, input as never));
+  // A malformed version is the caller's input, rejected before any fetch: a usage
+  // error like a malformed --cngx-version, with no json document under either format.
+  if (!result.ok && result.reason === 'invalid-version') {
+    return { stdout: '', stderr: usageText(result.message, hint), exitCode: EXIT_USAGE };
+  }
   if (!result.ok) {
     return {
       stdout: format === 'json' ? failureDocument(result.reason, result.message) : '',

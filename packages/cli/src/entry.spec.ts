@@ -103,6 +103,21 @@ describe('the built entry', () => {
     expect(result.stderr).toContain('Usage: cngx <command>');
   });
 
+  it('exits 2 on a malformed migrate version without touching the network', () => {
+    const result = run('migrate', '1.2', '--format', 'json');
+
+    expect(result.status).toBe(2);
+    expect(result.stdout).toBe('');
+    expect(result.stderr).toMatch(/^cngx: "1\.2" is not a release version/);
+  });
+
+  it('exits 2 on a --cngx-version with a leading zero', () => {
+    const result = run('api', 'CngxSelect', '--cngx-version', '01.2.3');
+
+    expect(result.status).toBe(2);
+    expect(result.stdout).toBe('');
+  });
+
   it('exits 2 with an empty stdout for a usage error under --format json', () => {
     const result = run('api', '--bogus', '--format', 'json');
 

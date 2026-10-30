@@ -416,6 +416,62 @@ describe('argument scan', () => {
     expect(run.stderr).toContain('--cngx-version');
     expect(run.stderr).not.toContain('asset-missing');
   });
+
+  it('exits 2 on a --cngx-version with a leading zero', async () => {
+    const run = await cli('api', 'CngxSelect', '--cngx-version', '01.2.3');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toContain('"01.2.3" is not a release version');
+  });
+});
+
+describe('a malformed migrate version', () => {
+  /** A cli run whose resolver counts every fetch, so a spec proves none ran. */
+  async function counted(...argv: string[]): Promise<Run & { fetches: number }> {
+    let stdout = '';
+    let stderr = '';
+    let fetches = 0;
+    const io: CliIo = { stdout: (text) => (stdout += text), stderr: (text) => (stderr += text) };
+    const deps: DocsResolverDeps = {
+      ...offlineDeps,
+      fetchSnapshot: async (version) => {
+        fetches += 1;
+        return offlineDeps.fetchSnapshot(version);
+      },
+    };
+    const context: CommandContext = { bundled, resolve: createDocsResolver(bundled, deps) };
+    const code = await runCli(argv, { commands: COMMANDS, loadContext: () => context, cliVersion: CLI_VERSION, io });
+    return { code, stdout, stderr, fetches };
+  }
+
+  it('exits 2 on a positional that is not a release version, with the message and the hint', async () => {
+    const run = await counted('migrate', '1.2');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toMatch(/^cngx: "1\.2" is not a release version.*\nRun `cngx migrate --help` for usage\.\n$/);
+    expect(run.fetches).toBe(0);
+  });
+
+  it('exits 2 on a malformed --to without any fetch of the valid from', async () => {
+    const run = await counted('migrate', '0.1.0', '--to', ' bad');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stderr).toMatch(/^cngx: "bad" is not a release version/);
+    expect(run.fetches).toBe(0);
+  });
+
+  it.each(['01.2.3', '1.2.3-.', '1.2.3-rc.'])('exits 2 on the positional %j', async (version) => {
+    expect((await counted('migrate', version)).code).toBe(EXIT_USAGE);
+  });
+
+  it('leaves stdout empty under --format json', async () => {
+    const run = await counted('migrate', '1.2', '--format', 'json');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+  });
 });
 
 // One version contract (trim, one leading v or V, then a release version) on every
