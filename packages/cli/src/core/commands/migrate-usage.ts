@@ -79,7 +79,7 @@ export async function migrateUsage(
     return { ok: false, meta: { from, to }, reason: toResolved.reason, message: toResolved.message };
   }
 
-  // The fallback only narrows the resolver's nullable label (a bundled short-circuit of an unstamped snapshot).
+  // Type narrowing only: the resolver never answers a null label for an explicit version.
   const meta: UsageDeltaMeta = {
     from,
     to,
