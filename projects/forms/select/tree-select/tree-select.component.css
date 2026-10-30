@@ -135,7 +135,7 @@
    * Corner radius of the trigger. Falls back to `--cngx-select-radius`; see
    * {@link --cngx-select-radius} for why no `initial-value` is declared.
    * @group Layout
-   * @default var(--cngx-select-radius, 0.25rem)
+   * @default var(--cngx-select-radius, var(--cngx-radius-md, 8px))
    */
   @property --cngx-tree-select-trigger-radius {
     syntax: '*';
@@ -284,7 +284,10 @@
         --cngx-tree-select-trigger-border,
         var(--cngx-select-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)))
       );
-      border-radius: var(--cngx-tree-select-trigger-radius, var(--cngx-select-radius, 0.25rem));
+      border-radius: var(
+        --cngx-tree-select-trigger-radius,
+        var(--cngx-select-radius, var(--cngx-radius-md, 8px))
+      );
       background: var(--cngx-tree-select-trigger-bg, var(--cngx-select-bg, transparent));
       color: var(--cngx-select-color, inherit);
       cursor: pointer;

@@ -156,7 +156,7 @@
    * {@link --cngx-select-bg}: the use-site fallback survives, and a value set
    * on the host or an ancestor reaches the trigger.
    * @group Layout
-   * @default 0.25rem
+   * @default var(--cngx-radius-md, 8px)
    */
   @property --cngx-select-radius {
     syntax: '*';
@@ -271,7 +271,7 @@
         var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 0.75rem)
       );
       border: var(--cngx-select-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)));
-      border-radius: var(--cngx-select-radius, 0.25rem);
+      border-radius: var(--cngx-select-radius, var(--cngx-radius-md, 8px));
       background: var(--cngx-select-bg, transparent);
       color: var(--cngx-select-color, inherit);
       font: inherit;

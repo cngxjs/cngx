@@ -119,7 +119,7 @@
    * Corner radius of the trigger. Falls back to `--cngx-select-radius`; see
    * {@link --cngx-select-radius} for why no `initial-value` is declared.
    * @group Layout
-   * @default var(--cngx-select-radius, 0.25rem)
+   * @default var(--cngx-select-radius, var(--cngx-radius-md, 8px))
    */
   @property --cngx-multi-select-radius {
     syntax: '*';
@@ -227,7 +227,10 @@
         --cngx-multi-select-border,
         var(--cngx-select-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)))
       );
-      border-radius: var(--cngx-multi-select-radius, var(--cngx-select-radius, 0.25rem));
+      border-radius: var(
+        --cngx-multi-select-radius,
+        var(--cngx-select-radius, var(--cngx-radius-md, 8px))
+      );
       background: var(--cngx-multi-select-bg, var(--cngx-select-bg, transparent));
       color: var(--cngx-multi-select-color, var(--cngx-select-color, inherit));
       font: inherit;

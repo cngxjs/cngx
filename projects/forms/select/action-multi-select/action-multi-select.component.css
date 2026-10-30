@@ -128,7 +128,7 @@
    * `--cngx-select-radius`; see {@link --cngx-select-radius} for why no
    * `initial-value` is declared.
    * @group Layout
-   * @default var(--cngx-combobox-radius, var(--cngx-select-radius, 0.25rem))
+   * @default var(--cngx-combobox-radius, var(--cngx-select-radius, var(--cngx-radius-md, 8px)))
    */
   @property --cngx-action-multi-select-radius {
     syntax: '*';
@@ -282,7 +282,7 @@
       );
       border-radius: var(
         --cngx-action-multi-select-radius,
-        var(--cngx-combobox-radius, var(--cngx-select-radius, 0.25rem))
+        var(--cngx-combobox-radius, var(--cngx-select-radius, var(--cngx-radius-md, 8px)))
       );
       background: var(
         --cngx-action-multi-select-bg,
