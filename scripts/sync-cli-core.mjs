@@ -7,7 +7,10 @@
 // file is one that no longer exists in the canonical tree, so it is recoverable
 // from git. Nothing outside that directory is touched. A canonical tree that is
 // missing or holds no core files is a broken checkout, not an empty core: the
-// sync refuses and deletes nothing, instead of removing the whole copy.
+// sync refuses and deletes nothing, instead of removing the whole copy. A tree
+// root that is not a directory, or a symlink anywhere in either tree, is refused
+// the same way before the first write, so a link is never followed, copied or
+// deleted.
 //
 // The file walk and both tree paths (resolved from the repo root, not cwd) are
 // imported from cli-core-copy-check.mjs so the sync and the guard can never
@@ -24,19 +27,31 @@ import {
   displayPath,
   listCoreFiles,
   listStrayFiles,
+  listSymlinks,
   missingTrees,
+  nonDirectoryTrees,
 } from './cli-core-copy-check.mjs';
 
 /**
  * Regenerate `copyDir` from `canonicalDir`. Returns `{ copied, removed, stray }`
  * (`stray`: `*.spec.ts`, `*.core-spec.ts` and dotfiles in the copy, reported and
- * never deleted), or
- * `{ refused }` with the reason when the canonical tree is missing or empty, in
- * which case nothing was written or removed. The dirs are injectable for specs.
+ * never deleted), or `{ refused }` with the reason when the canonical tree is
+ * missing or empty, a tree root is not a directory, or either tree holds a
+ * symlink, in which case nothing was written or removed. The dirs are injectable
+ * for specs.
  */
 export function syncCliCore({ canonicalDir = CANONICAL_CORE_DIR, copyDir = COPY_CORE_DIR } = {}) {
   if (missingTrees(canonicalDir, copyDir).includes(canonicalDir)) {
     return { refused: `${displayPath(canonicalDir)} does not exist (${canonicalDir}); nothing was synced or removed.` };
+  }
+  const notDirectories = nonDirectoryTrees(canonicalDir, copyDir);
+  if (notDirectories.length > 0) {
+    const named = notDirectories.map((dir) => `${displayPath(dir)} is not a directory (${dir})`);
+    return { refused: `${named.join('; ')}; nothing was synced or removed.` };
+  }
+  const symlinks = [canonicalDir, copyDir].flatMap((dir) => listSymlinks(dir).map((file) => `${displayPath(dir)}/${file} is a symlink`));
+  if (symlinks.length > 0) {
+    return { refused: `${symlinks.join('; ')}; nothing was synced or removed.` };
   }
   const canonical = listCoreFiles(canonicalDir);
   if (canonical.length === 0) {

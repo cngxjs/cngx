@@ -173,17 +173,39 @@ describe('runCopyCheck', () => {
     expect(check(dirs).code).toBe(0);
   });
 
-  it('compares a file symlink in the copy by the bytes it points at', () => {
+  it('lists a file symlink in the copy as a divergence without reading it', () => {
     const dirs = makeTrees(CANONICAL, CANONICAL);
     const other = join(dirs.copyDir, '..', 'other.ts');
-    writeFileSync(other, 'export type A = 2;\n');
+    writeFileSync(other, CANONICAL['command.ts']);
     rmSync(join(dirs.copyDir, 'command.ts'));
     symlinkSync(other, join(dirs.copyDir, 'command.ts'));
 
     const run = check(dirs);
 
     expect(run.code).toBe(1);
-    expect(run.out).toContain('command.ts (bytes differ)');
+    expect(run.out).toContain('command.ts (missing in the cli copy)');
+    expect(run.out).toMatch(/cli-core\/command\.ts \(is a symlink; /);
+  });
+
+  it('lists a symlinked directory in the canonical tree without walking it', () => {
+    const dirs = makeTrees(CANONICAL, CANONICAL);
+    symlinkSync(join(dirs.canonicalDir, 'commands'), join(dirs.canonicalDir, 'linked'));
+
+    const run = check(dirs);
+
+    expect(run.code).toBe(1);
+    expect(run.out).toMatch(/mcp-core\/linked \(is a symlink; /);
+    expect(run.out).not.toContain('linked/get-api.ts');
+  });
+
+  it('exits 1 with a message, not a stack, when a tree root is a file', () => {
+    const dirs = makeTrees(CANONICAL, CANONICAL);
+    const fileRoot = join(dirs.canonicalDir, 'command.ts');
+
+    const run = check({ ...dirs, canonicalDir: fileRoot });
+
+    expect(run.code).toBe(1);
+    expect(run.out).toContain('command.ts is not a directory');
   });
 
   it('exits 1 on a missing tree', () => {
@@ -252,7 +274,62 @@ describe('tree roots', () => {
   });
 });
 
-// D5: a core path is test-only exactly when a package build excludes its test-file
+describe('the script on a broken tree', () => {
+  const roots = [];
+  const tempRoot = () => {
+    const root = mkdtempSync(join(tmpdir(), 'cngx-cli-copy-check-cli-'));
+    roots.push(root);
+    return root;
+  };
+  const runScript = (canonicalDir, copyDir) =>
+    spawnSync(
+      process.execPath,
+      [
+        '--input-type=module',
+        '-e',
+        `import { runCopyCheck } from ${JSON.stringify(SCRIPT)};
+         process.exitCode = runCopyCheck({ canonicalDir: process.argv[1], copyDir: process.argv[2], write: (t) => process.stderr.write(t) });`,
+        canonicalDir,
+        copyDir,
+      ],
+      { encoding: 'utf8' },
+    );
+
+  afterEach(() => {
+    for (const root of roots.splice(0)) {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('answers a file as canonical root with one line and no stack', () => {
+    const root = tempRoot();
+    writeFileSync(join(root, 'core'), 'not a directory\n');
+    mkdirSync(join(root, 'copy'));
+
+    const run = runScript(join(root, 'core'), join(root, 'copy'));
+
+    expect(run.status).toBe(1);
+    expect(run.stderr).toContain('is not a directory');
+    expect(run.stderr).not.toMatch(/^\s+at /m);
+  });
+
+  it('answers a symlinked file inside the tree as a divergence with no stack', () => {
+    const root = tempRoot();
+    for (const dir of ['core', 'copy']) {
+      mkdirSync(join(root, dir));
+      writeFileSync(join(root, dir, 'command.ts'), 'export type A = 1;\n');
+    }
+    symlinkSync(join(root, 'core', 'command.ts'), join(root, 'copy', 'linked.ts'));
+
+    const run = runScript(join(root, 'core'), join(root, 'copy'));
+
+    expect(run.status).toBe(1);
+    expect(run.stderr).toMatch(/linked\.ts \(is a symlink; /);
+    expect(run.stderr).not.toMatch(/^\s+at /m);
+  });
+});
+
+// A core path is test-only exactly when a package build excludes its test-file
 // pattern and a vitest config includes it. The cli build compiles the copy, so its
 // tsconfig must exclude the pattern too; anything else is a core file, copied byte
 // for byte, so the copy never drops a file tsc would compile.

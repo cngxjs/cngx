@@ -3,7 +3,7 @@
 // tree that is missing or empty is a broken checkout, never "the core has no
 // files", so it must refuse instead of deleting the whole copy. Every case runs
 // on throwaway trees under the OS temp dir, never on the real packages.
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
@@ -87,6 +87,81 @@ describe('syncCliCore', () => {
 
     expect(result.refused).toContain('no core files');
     expect(readFileSync(join(dirs.copyDir, 'command.ts'), 'utf8')).toBe('keep\n');
+  });
+});
+
+describe('syncCliCore on a tree it must not touch', () => {
+  /** Every entry under `dir` without following links: file bytes, link targets, directories. */
+  function snapshot(dir) {
+    if (!existsSync(dir)) {
+      return null;
+    }
+    if (!lstatSync(dir).isDirectory()) {
+      return { '': readFileSync(dir, 'utf8') };
+    }
+    const entries = {};
+    const walk = (current, prefix) => {
+      for (const entry of readdirSync(current, { withFileTypes: true })) {
+        const abs = join(current, entry.name);
+        const rel = `${prefix}${entry.name}`;
+        if (entry.isSymbolicLink()) {
+          entries[rel] = `-> ${readlinkSync(abs)}`;
+        } else if (entry.isDirectory()) {
+          entries[`${rel}/`] = 'dir';
+          walk(abs, `${rel}/`);
+        } else {
+          entries[rel] = readFileSync(abs, 'utf8');
+        }
+      }
+    };
+    walk(dir, '');
+    return entries;
+  }
+
+  function expectRefusedUntouched(dirs, message) {
+    const before = [snapshot(dirs.canonicalDir), snapshot(dirs.copyDir)];
+    const lines = [];
+
+    const code = main({ ...dirs, stdout: (text) => lines.push(text), stderr: (text) => lines.push(text) });
+
+    expect(code).toBe(1);
+    expect(lines.join('')).toContain(message);
+    expect(lines.join('')).not.toMatch(/^\s+at /m);
+    expect([snapshot(dirs.canonicalDir), snapshot(dirs.copyDir)]).toEqual(before);
+  }
+
+  it('refuses a file as canonical root', () => {
+    const dirs = makeRoot();
+    plant(dirs.copyDir, { 'command.ts': 'keep\n', 'gone.ts': 'old\n' });
+    writeFileSync(dirs.canonicalDir, 'not a directory\n');
+
+    expectRefusedUntouched(dirs, 'mcp-core is not a directory');
+  });
+
+  it('refuses a file as copy root', () => {
+    const dirs = makeRoot();
+    plant(dirs.canonicalDir, { 'command.ts': 'a\n' });
+    writeFileSync(dirs.copyDir, 'not a directory\n');
+
+    expectRefusedUntouched(dirs, 'cli-core is not a directory');
+  });
+
+  it('refuses a symlinked file in the canonical tree', () => {
+    const dirs = makeRoot();
+    plant(dirs.canonicalDir, { 'command.ts': 'a\n' });
+    plant(dirs.copyDir, { 'command.ts': 'stale\n', 'gone.ts': 'old\n' });
+    symlinkSync(join(dirs.canonicalDir, 'command.ts'), join(dirs.canonicalDir, 'linked.ts'));
+
+    expectRefusedUntouched(dirs, 'mcp-core/linked.ts is a symlink');
+  });
+
+  it('refuses a symlinked file in the copy tree', () => {
+    const dirs = makeRoot();
+    plant(dirs.canonicalDir, { 'command.ts': 'a\n' });
+    plant(dirs.copyDir, { 'command.ts': 'stale\n' });
+    symlinkSync(join(dirs.canonicalDir, 'command.ts'), join(dirs.copyDir, 'gone.ts'));
+
+    expectRefusedUntouched(dirs, 'cli-core/gone.ts is a symlink');
   });
 });
 
