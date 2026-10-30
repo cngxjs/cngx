@@ -27,12 +27,12 @@
     {
       "name": "list_components",
       "title": "List cngx components, directives, and services",
-      "description": "Enumerate every cngx component, directive, and injectable service as a compact summary ({ name, kind, selector, category, lib }), sorted by name. Optionally filter by `lib` (exact lib name, e.g. \"common\") and/or `kind` (\"component\" | \"directive\" | \"injectable\"); omit both for the full catalog. The deterministic browse complement to find_component's fuzzy search. An unmatched filter returns an empty list, not null.",
+      "description": "Enumerate every cngx component, directive, and injectable service as a compact summary ({ name, kind, selector, category, lib }), sorted by name. Optionally filter by `lib` (a lib name, matched case-insensitively, e.g. \"common\") and/or `kind` (\"component\" | \"directive\" | \"injectable\"); omit both for the full catalog. The deterministic browse complement to find_component's fuzzy search. An unmatched filter returns an empty list, not null.",
       "inputSchema": {
         "type": "object",
         "properties": {
           "lib": {
-            "description": "Exact owning lib name, e.g. \"forms\" or \"common\".",
+            "description": "Owning lib name, matched case-insensitively, e.g. \"forms\" or \"common\".",
             "type": "string"
           },
           "kind": {
