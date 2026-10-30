@@ -74,7 +74,8 @@ Each command is generated from the same definition as its `@cngx/mcp` tool.
    root, the nearest `node_modules` first). Without `@cngx/core`, the first of
    `common`, `forms`, `ui`, `data-display`, `interop`, `utils`, `themes` wins;
 3. with nothing installed, an exact version declared in the nearest
-   `package.json` (`0.2.0`, `=0.2.0`, `v0.2.0`, `npm:@cngx/core@0.2.0`). A range
+   `package.json` that lists an `@cngx` package under `dependencies`,
+   `devDependencies` or `peerDependencies` (`0.2.0`, `=0.2.0`, `v0.2.0`, `npm:@cngx/core@0.2.0`). A range
    or another specifier (`^0.2.0`, `workspace:*`, `catalog:`, a git or file URL)
    does not pin;
 4. the bundled snapshot.
@@ -84,8 +85,10 @@ did not pin, installed packages at mixed versions, or no `@cngx` package at all.
 Under Yarn PnP run `yarn cngx`; plain `npx` cannot see a PnP install. When a
 detected release cannot be fetched or read, the answer comes from the bundled
 snapshot with exit 0 and one stderr line naming both releases; an explicit
-`--cngx-version` never falls back. `list`, `example` and `migrate` always answer
-from the bundled snapshot (`migrate` takes its releases as arguments).
+`--cngx-version` never falls back. `list` and `example` always answer from the
+bundled snapshot. `migrate` resolves `<from>` and `--to` like `--cngx-version`:
+a non-bundled release is fetched and cached, and `migrate` takes no
+`--offline`.
 
 A fetched release snapshot is cached on disk and never fetched again: in
 `$CNGX_CACHE_DIR`, else `$XDG_CACHE_HOME/cngx`, else `~/Library/Caches/cngx`
@@ -105,7 +108,9 @@ single-answer shapes; under `--from` the json `result` is always an array,
 whatever the name count.
 
 Every answer names the cngx release it came from: the first markdown line is
-`> cngx <version>`, the JSON carries `cngxVersion`.
+`> cngx <version>`, the JSON carries `cngxVersion`. `cngx doctor` is the
+exception: it scans the project, not a snapshot, and prints doctor's own report
+or findings array.
 
 A repeated flag takes its last value: `--format md --format json` prints json.
 

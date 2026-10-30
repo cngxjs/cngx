@@ -730,6 +730,8 @@ describe('generated help', () => {
     expect(help).toContain('Default: the @cngx version installed in the current project');
     expect(help).not.toContain('Omit to answer from the bundled snapshot offline');
     expect(help).toMatch(/\n {2}--offline +Never fetch/);
+    expect(help).toContain('An explicit --cngx-version that is not cached exits 1.');
+    expect(help).toMatch(/\n {2}<name> +.* Required unless --from gives names\./);
   });
 });
 

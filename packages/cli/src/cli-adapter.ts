@@ -146,7 +146,8 @@ const VERSION_FLAG_HELP =
   'installed in the current project, else the bundled snapshot. A non-bundled release is fetched once ' +
   '(through gh, or over HTTPS) and cached on disk.';
 
-const OFFLINE_HELP = 'Never fetch: answer from the disk cache, else the bundled snapshot.';
+const OFFLINE_HELP =
+  'Never fetch: answer from the disk cache, else the bundled snapshot. An explicit --cngx-version that is not cached exits 1.';
 
 const FROM_FLAG = 'from';
 
@@ -216,7 +217,8 @@ export function commandHelp(def: CngxCommand): string {
     const hint = valueHint(schema);
     const name = field === def.positional ? `<${field}>` : `--${flagName(def, field)}${hint ? ` ${hint}` : ''}`;
     const text = field === versionField(def) ? VERSION_FLAG_HELP : describe(schema);
-    return [name, `${text}${isOptional(schema) ? '' : ' Required.'}`] as const;
+    const required = isNameTaking(def) && field === def.positional ? ' Required unless --from gives names.' : ' Required.';
+    return [name, `${text}${isOptional(schema) ? '' : required}`] as const;
   });
   if (isNameTaking(def)) {
     rows.push([`--${FROM_FLAG} <file>`, 'Also answer for every name the file imports from @cngx/*.']);
