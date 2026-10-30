@@ -19,7 +19,7 @@ import {
   resolveInlineStep,
   resolveStepFrom,
 } from '@cngx/core';
-import { createTypeaheadMatcher, injectLocale } from '@cngx/core/utils';
+import { createTypeaheadWalker, injectLocale } from '@cngx/core/utils';
 
 import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from './ad-item.token';
 
@@ -238,8 +238,10 @@ export class CngxActiveDescendant {
   readonly activeId = computed<string | null>(() => this.activeItem()?.id ?? null);
   readonly activeValue = computed<unknown>(() => this.activeItem()?.value ?? null);
 
-  private readonly typeaheadBuffer = signal<string>('');
-  private typeaheadTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly typeaheadWalker = createTypeaheadWalker({
+    debounceMs: this.typeaheadDebounce,
+    locale: this.locale,
+  });
 
   constructor() {
     afterNextRender(() => this.initialized.set(true));
@@ -280,11 +282,7 @@ export class CngxActiveDescendant {
       queueMicrotask(() => this.scrollActiveIntoView());
     });
 
-    inject(DestroyRef).onDestroy(() => {
-      if (this.typeaheadTimer !== null) {
-        clearTimeout(this.typeaheadTimer);
-      }
-    });
+    inject(DestroyRef).onDestroy(() => this.typeaheadWalker.clear());
   }
 
   /**
@@ -494,50 +492,22 @@ export class CngxActiveDescendant {
   }
 
   private handleTypeahead(ch: string): void {
-    const locale = this.locale();
-    const next = this.typeaheadBuffer() + ch.toLocaleLowerCase(locale);
-    this.typeaheadBuffer.set(next);
-
-    if (this.typeaheadTimer !== null) {
-      clearTimeout(this.typeaheadTimer);
-    }
-    this.typeaheadTimer = setTimeout(() => {
-      this.typeaheadBuffer.set('');
-      this.typeaheadTimer = null;
-    }, this.typeaheadDebounce());
-
+    const term = this.typeaheadWalker.type(ch);
     // Labels exist only for rendered items, so the search space is the
     // rendered window; matches map back to absolute indices in virtual mode.
     const items = this.resolvedItems();
-    const skip = this.skipDisabled();
-    const count = items.length;
-    // APG cycle: a single-character query (including a repeated letter, whose
-    // buffer collapses back to that letter) searches AFTER the active item so
-    // each press advances through the matches. A genuine multi-character query
-    // keeps matching the current item first.
-    const sameChar = next.length > 1 && [...next].every((c) => c === next[0]);
-    const term = sameChar ? next[0] : next;
-    if (count === 0) {
+    if (items.length === 0) {
       this.typeaheadMissed.emit(term);
       return;
     }
     const windowOffset = this.windowOffset();
     const activeRel = this.activeIndexState() < 0 ? -1 : this.activeIndexState() - windowOffset;
-    const cycles = term.length === 1;
-    const startRel = cycles ? activeRel + 1 : Math.max(0, activeRel);
-    const matches = createTypeaheadMatcher(term, locale);
-    for (let step = 0; step < count; step++) {
-      const rel = (((startRel + step) % count) + count) % count;
-      const candidate = items[rel];
-      if (skip && candidate.disabled) {
-        continue;
-      }
-      if (matches(candidate.label, candidate)) {
-        this.activeIndexState.set(rel + windowOffset);
-        return;
-      }
+    const rel = this.typeaheadWalker.find(items, term, activeRel, this.skipDisabled());
+    if (rel < 0) {
+      this.typeaheadMissed.emit(term);
+      return;
     }
-    this.typeaheadMissed.emit(term);
+    this.activeIndexState.set(rel + windowOffset);
   }
 
   private findFrom(current: number, direction: 1 | -1): number | null {

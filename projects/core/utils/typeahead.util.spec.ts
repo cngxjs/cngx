@@ -1,8 +1,9 @@
 import { signal } from '@angular/core';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createLabelMatcher,
   createTypeaheadMatcher,
+  createTypeaheadWalker,
   foldForMatching,
   matchesTypeahead,
 } from './typeahead.util';
@@ -114,5 +115,98 @@ describe('createLabelMatcher', () => {
     expect(match(city.label, 'izmir', city)).toBe(true);
     locale.set('tr');
     expect(match(city.label, 'izmir', city)).toBe(false);
+  });
+});
+
+describe('createTypeaheadWalker', () => {
+  const items = [
+    { label: 'Bravo' },
+    { label: 'Banana', disabled: true },
+    { label: 'Blueberry' },
+    { label: 'Cherry' },
+    { label: 'Über' },
+  ];
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('buffers keystrokes in the locale and resets after the debounce window', () => {
+    const debounce = signal(300);
+    const walker = createTypeaheadWalker({ debounceMs: debounce });
+    expect(walker.type('B')).toBe('b');
+    expect(walker.type('l')).toBe('bl');
+    expect(walker.buffer()).toBe('bl');
+    vi.advanceTimersByTime(299);
+    expect(walker.buffer()).toBe('bl');
+    vi.advanceTimersByTime(1);
+    expect(walker.buffer()).toBe('');
+  });
+
+  it('reads the debounce window on every keystroke', () => {
+    const debounce = signal(300);
+    const walker = createTypeaheadWalker({ debounceMs: debounce });
+    debounce.set(50);
+    walker.type('a');
+    vi.advanceTimersByTime(50);
+    expect(walker.buffer()).toBe('');
+  });
+
+  it('collapses a buffer of one repeated letter to that letter', () => {
+    const walker = createTypeaheadWalker({ debounceMs: () => 300 });
+    walker.type('b');
+    expect(walker.type('b')).toBe('b');
+    expect(walker.type('b')).toBe('b');
+    expect(walker.buffer()).toBe('bbb');
+  });
+
+  it('lowercases the buffer with the locale it reads', () => {
+    const locale = signal('tr');
+    const walker = createTypeaheadWalker({ debounceMs: () => 300, locale });
+    expect(walker.type('I')).toBe('ı');
+    walker.clear();
+    locale.set('en');
+    expect(walker.type('I')).toBe('i');
+  });
+
+  it('starts a one-character walk after the current item and wraps, skipping disabled items', () => {
+    const walker = createTypeaheadWalker({ debounceMs: () => 300 });
+    expect(walker.find(items, 'b', -1)).toBe(0);
+    expect(walker.find(items, 'b', 0)).toBe(2);
+    expect(walker.find(items, 'b', 2)).toBe(0);
+    expect(walker.find(items, 'b', 0, false)).toBe(1);
+  });
+
+  it('starts a longer term at the current item', () => {
+    const walker = createTypeaheadWalker({ debounceMs: () => 300 });
+    expect(walker.find(items, 'bl', 2)).toBe(2);
+    expect(walker.find(items, 'br', 2)).toBe(0);
+  });
+
+  it('wraps a start outside the items, as a scrolled virtual window passes it', () => {
+    const walker = createTypeaheadWalker({ debounceMs: () => 300 });
+    expect(walker.find(items, 'c', -3)).toBe(3);
+    expect(walker.find(items, 'b', 7)).toBe(0);
+  });
+
+  it('matches accent- and case-tolerant and returns -1 on a miss or an empty list', () => {
+    const walker = createTypeaheadWalker({ debounceMs: () => 300 });
+    expect(walker.find(items, 'u', -1)).toBe(4);
+    expect(walker.find(items, 'z', -1)).toBe(-1);
+    expect(walker.find([], 'b', -1)).toBe(-1);
+  });
+
+  it('clear() empties the buffer and cancels the pending reset', () => {
+    const walker = createTypeaheadWalker({ debounceMs: () => 300 });
+    walker.type('a');
+    walker.clear();
+    expect(walker.buffer()).toBe('');
+    expect(vi.getTimerCount()).toBe(0);
+    walker.clear();
+    expect(walker.buffer()).toBe('');
   });
 });

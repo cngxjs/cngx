@@ -22,8 +22,11 @@ export { parseKeyCombo, matchesKeyCombo, type KeyCombo } from './keyboard.util';
 export {
   createLabelMatcher,
   createTypeaheadMatcher,
+  createTypeaheadWalker,
   foldForMatching,
   matchesTypeahead,
+  type CngxTypeaheadWalker,
+  type CngxTypeaheadWalkerOptions,
 } from './typeahead.util';
 export { hasTransition, onTransitionDone, type TransitionDoneHandle } from './transition.util';
 export { nextUid } from './uid.util';
