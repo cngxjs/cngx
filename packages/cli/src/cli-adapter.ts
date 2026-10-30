@@ -443,8 +443,8 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
   }
   const named = [...positionals];
   const fromFile = values[FROM_FLAG];
+  let fromNames: string[] = [];
   if (takesNames && typeof fromFile === 'string') {
-    let fromNames: string[];
     try {
       fromNames = readCngxNames(fromFile);
     } catch (error) {
@@ -509,7 +509,7 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
   let rendered: Rendered;
   try {
     // A --from caller cannot know the name count, so its json shape must not depend on it.
-    const shape: AnswerShape = { list: typeof fromFile === 'string' };
+    const shape: AnswerShape = { list: typeof fromFile === 'string', skippable: new Set(fromNames.filter((name) => !positionals.includes(name))) };
     rendered = await answer(def, context, inputs, format, hint, { compact: values.compact === true }, shape);
   } catch (error) {
     return internalError(io, `cngx ${def.cliName}`, error, format);
@@ -670,6 +670,8 @@ async function runDoctorCommand(
 interface AnswerShape {
   /** Render the several-names shapes even for one input (`--from`). */
   readonly list: boolean;
+  /** Names that came only from `--from`: skipped, not missing, when nothing answers for them. */
+  readonly skippable: ReadonlySet<string>;
 }
 
 /** A finished run, rendered but not yet written. */
@@ -719,7 +721,22 @@ async function answer(
   // Versioned commands report the release they grounded against, a migration its
   // target; the others answer from the bundled snapshot.
   const cngxVersion = groundedVersion ?? def.answeredVersion?.(payloads[0]) ?? context.bundled.meta.cngxVersion;
-  const missing = inputs.filter((_, i) => !isFound(def, payloads[i]));
+  const label = (input: Record<string, unknown>) => String(input[def.positional!]);
+  // A --from name this command has no entry for (a provide* function, a token, a
+  // type) is skipped, not missing: a source file imports more than components.
+  const skipped = new Set(
+    inputs.filter((input, i) => shape.skippable.size > 0 && !isFound(def, payloads[i]) && shape.skippable.has(label(input))),
+  );
+  const kept = inputs.flatMap((input, i) => (skipped.has(input) ? [] : [{ input, payload: payloads[i] }]));
+  const skipLine = skipped.size === 0 ? '' : `cngx ${def.cliName}: skipped --from names with no ${def.cliName} entry: ${[...skipped].map(label).join(', ')}\n`;
+  if (skipped.size > 0 && kept.length === 0) {
+    return {
+      stdout: format === 'json' ? `${JSON.stringify({ cngxVersion, result: [] }, null, 2)}\n` : '',
+      stderr: skipLine,
+      exitCode: EXIT_NOT_FOUND,
+    };
+  }
+  const missing = kept.filter(({ payload }) => !isFound(def, payload)).map(({ input }) => input);
   const exitCode = missing.length === 0 ? EXIT_OK : EXIT_NOT_FOUND;
   const header = `> cngx ${cngxVersion ?? 'unknown'}\n\n`;
   if (inputs.length === 1 && !shape.list) {
@@ -731,10 +748,10 @@ async function answer(
   }
   const stdout =
     format === 'json'
-      ? `${JSON.stringify({ cngxVersion, result: payloads.map((payload) => payload ?? null) }, null, 2)}\n`
-      : `${header}${payloads.map((payload) => def.toMarkdown(payload, opts)).join('\n')}`;
-  const label = (input: Record<string, unknown>) => String(input[def.positional!]);
-  const stderr = missing.length === 0 ? '' : `cngx ${def.cliName}: not found: ${missing.map(label).join(', ')}\n`;
+      ? `${JSON.stringify({ cngxVersion, result: kept.map(({ payload }) => payload ?? null) }, null, 2)}\n`
+      : `${header}${kept.map(({ payload }) => def.toMarkdown(payload, opts)).join('\n')}`;
+  const notFound = missing.length === 0 ? '' : `cngx ${def.cliName}: not found: ${missing.map(label).join(', ')}\n`;
+  const stderr = `${skipLine}${notFound}`;
   return { stdout, stderr, exitCode };
 }
 

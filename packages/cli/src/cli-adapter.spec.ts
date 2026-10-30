@@ -951,6 +951,38 @@ describe('several names, --from and --compact', () => {
     expect(JSON.parse(run.stdout).result.map((entry: { name: string }) => entry.name)).toEqual(['CngxSelect']);
   });
 
+  it('skips --from names with no entry: one stderr line, exit 0 for the rest', async () => {
+    const file = sourceFile("import { CngxSelect, provideSelectConfig, CNGX_SELECT_CONFIG } from '@cngx/forms/select';\n");
+    const md = await cli('api', '--from', file);
+    const json = await cli('api', '--from', file, '--format=json');
+
+    expect(md.code).toBe(EXIT_OK);
+    expect(md.stderr).toBe('cngx api: skipped --from names with no api entry: provideSelectConfig, CNGX_SELECT_CONFIG\n');
+    expect(md.stdout).toContain('CngxSelect');
+    expect(JSON.parse(json.stdout).result.map((entry: { name: string }) => entry.name)).toEqual(['CngxSelect']);
+  });
+
+  it('exits 1 with an empty result when every --from name is skipped', async () => {
+    const file = sourceFile("import { provideSelectConfig } from '@cngx/forms/select';\n");
+    const md = await cli('api', '--from', file);
+    const json = await cli('api', '--from', file, '--format=json');
+
+    expect(md.code).toBe(EXIT_NOT_FOUND);
+    expect(md.stdout).toBe('');
+    expect(md.stderr).toBe('cngx api: skipped --from names with no api entry: provideSelectConfig\n');
+    expect(JSON.parse(json.stdout)).toMatchObject({ result: [] });
+  });
+
+  it('still counts a missing positional name beside --from as not found', async () => {
+    const file = sourceFile("import { CngxSelect, provideSelectConfig } from '@cngx/forms/select';\n");
+    const run = await cli('api', 'CngxNoSuchThing', '--from', file);
+
+    expect(run.code).toBe(EXIT_NOT_FOUND);
+    expect(run.stderr).toBe(
+      'cngx api: skipped --from names with no api entry: provideSelectConfig\ncngx api: not found: CngxNoSuchThing\n',
+    );
+  });
+
   it('exits 2 on an unreadable --from file', async () => {
     const run = await cli('api', '--from', join(tmpdir(), 'cngx-no-such-file.ts'));
 
