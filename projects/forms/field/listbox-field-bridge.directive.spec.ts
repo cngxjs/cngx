@@ -135,6 +135,54 @@ describe('CngxListboxFieldBridge - single select', () => {
     expect(bridge.disabled()).toBe(true);
   });
 
+  it('forwards a disabled field into the listbox and blocks a pick', () => {
+    const { fixture, listbox, ref } = setup();
+    ref.disabled.set(true);
+    flush(fixture);
+    const hostEl = fixture.debugElement.query(By.directive(CngxListbox))
+      .nativeElement as HTMLElement;
+    expect(listbox.disabled()).toBe(true);
+    expect(hostEl.getAttribute('aria-disabled')).toBe('true');
+
+    listbox.select('b');
+    flush(fixture);
+    expect(ref.value()).toBe('a');
+
+    ref.disabled.set(false);
+    flush(fixture);
+    expect(listbox.disabled()).toBe(false);
+    expect(hostEl.getAttribute('aria-disabled')).toBeNull();
+  });
+
+  it('forwards a read-only field into the listbox and blocks a pick', () => {
+    const { fixture, listbox, ref } = setup();
+    ref.readonly.set(true);
+    flush(fixture);
+    const hostEl = fixture.debugElement.query(By.directive(CngxListbox))
+      .nativeElement as HTMLElement;
+    expect(listbox.readonly()).toBe(true);
+    expect(hostEl.getAttribute('aria-readonly')).toBe('true');
+
+    listbox.select('c');
+    flush(fixture);
+    expect(ref.value()).toBe('a');
+  });
+
+  it('marks the field touched only when focus leaves the listbox subtree', () => {
+    const { fixture, ref } = setup();
+    const hostEl = fixture.debugElement.query(By.directive(CngxListbox))
+      .nativeElement as HTMLElement;
+    const option = hostEl.querySelector<HTMLElement>('[role="option"]')!;
+
+    hostEl.dispatchEvent(new FocusEvent('focusout', { relatedTarget: option }));
+    flush(fixture);
+    expect(ref.touched()).toBe(false);
+
+    hostEl.dispatchEvent(new FocusEvent('focusout', { relatedTarget: document.body }));
+    flush(fixture);
+    expect(ref.touched()).toBe(true);
+  });
+
   it('errorState reflects presenter.showError (touched && invalid)', () => {
     const { fixture, bridge, ref } = setup();
     expect(bridge.errorState()).toBe(false);
