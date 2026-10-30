@@ -47,7 +47,7 @@
  * - `--cngx-chip-radius` -> `--cngx-radius-pill`
  * - `--cngx-chip-font-size` -> `--cngx-font-size-sm`
  * - `--cngx-chip-focus-outline` color -> `--cngx-color-primary`
- * - `--cngx-chip-remove-radius` -> `--cngx-radius-sm`
+ * - `--cngx-chip-remove-radius` -> `--cngx-radius-pill`
  * - `--cngx-chip-remove-focus-color` -> `--cngx-color-primary`
  * - Variant surfaces use alpha-tints that mix correctly on either
  *   light or dark backgrounds; only the text colors swap in dark
@@ -330,13 +330,14 @@
   }
 
   /**
-   * Corner radius of the inline remove button.
+   * Corner radius of the inline remove button. Fully round by default, so
+   * the hover tint and focus ring circle the X inside the pill.
    * @group State / Remove
    */
   @property --cngx-chip-remove-radius {
     syntax: '<length>';
     inherits: false;
-    initial-value: 2px;
+    initial-value: 999px;
   }
 
   /**
@@ -361,13 +362,15 @@
   }
 
   /**
-   * Focus-ring offset of the inline remove button.
+   * Focus-ring offset of the inline remove button. Negative by default:
+   * the button keeps its 24px hit area, and the ring circles the X inside
+   * it instead of tracing the whole target.
    * @group State / Remove
    */
   @property --cngx-chip-remove-focus-offset {
     syntax: '<length>';
     inherits: false;
-    initial-value: 1px;
+    initial-value: -3px;
   }
 
   /* Dark-mode swap - only the variant text colors flip. The variant
@@ -523,7 +526,7 @@
       /* Quieter than the label at rest, keeping the chip's hue (a variant
        * chip keeps its colour family). */
       color: color-mix(in oklab, currentColor 70%, transparent);
-      border-radius: var(--cngx-chip-remove-radius, var(--cngx-radius-sm, 2px));
+      border-radius: var(--cngx-chip-remove-radius, var(--cngx-radius-pill, 999px));
 
       /* Touch-target floor - the remove button is its own tap target,
          nested inside the chip (and, in a multi select, inside the combobox
@@ -548,13 +551,19 @@
           )
       );
     }
+    /* The X spans 12 grid units plus its 2-unit stroke; scaling the box by
+       24/14 inks it 0.7em across, a remove mark at label size. */
+    .cngx-chip__remove-icon {
+      --cngx-icon-svg-size: calc(0.7em * 24 / 14);
+      display: block;
+    }
     .cngx-chip__remove:hover {
       color: inherit;
     }
     .cngx-chip__remove:focus-visible {
       outline: var(--cngx-chip-remove-focus-width, 2px) solid
         var(--cngx-chip-remove-focus-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
-      outline-offset: var(--cngx-chip-remove-focus-offset, 1px);
+      outline-offset: var(--cngx-chip-remove-focus-offset, -3px);
     }
   }
 }

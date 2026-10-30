@@ -8,8 +8,10 @@ import {
 } from '@angular/core';
 
 import { nextUid } from '@cngx/core/utils';
+import { CNGX_ICON_X } from '@cngx/utils';
 
 import { injectDisplayI18n } from '../i18n/display-i18n';
+import { CngxIconSvg } from '../icon/icon-svg.component';
 
 /**
  * Chip / tag molecule - a small, self-contained pill rendering projected
@@ -55,6 +57,7 @@ import { injectDisplayI18n } from '../i18n/display-i18n';
   selector: 'cngx-chip',
   exportAs: 'cngxChip',
   standalone: true,
+  imports: [CngxIconSvg],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./chip.component.css'],
@@ -75,7 +78,7 @@ import { injectDisplayI18n } from '../i18n/display-i18n';
       >
         <!--
           Named content slot for the close glyph. Default renders the
-          library's × - consumers project any icon component by tagging
+          shared X icon - consumers project any icon component by tagging
           it with the attribute:
 
             <cngx-chip [removable]="true">
@@ -88,7 +91,7 @@ import { injectDisplayI18n } from '../i18n/display-i18n';
           the TemplateRef/outlet dance.
         -->
         <ng-content select="[cngxChipClose]">
-          <span aria-hidden="true">&#10005;</span>
+          <svg class="cngx-chip__remove-icon" [cngxIconSvg]="removeIcon"></svg>
         </ng-content>
       </button>
     }
@@ -122,6 +125,9 @@ export class CngxChip {
   protected readonly resolvedRemoveAriaLabel = computed(
     () => this.removeAriaLabel() ?? this.i18n().chipRemove,
   );
+
+  /** @internal - default X glyph of the close button, from the shared icon set. */
+  protected readonly removeIcon = CNGX_ICON_X;
 
   /** Fires when the user clicks the close button. */
   readonly remove = output<MouseEvent>();
