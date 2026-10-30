@@ -216,6 +216,23 @@ describe('CngxListboxTrigger', () => {
     expect(popover.isVisible()).toBe(false);
   });
 
+  it('prevents the page scroll of Space while open with no active option', () => {
+    const { popover, triggerEl, listbox, ad } = setup();
+    popover.show();
+    TestBed.flushEffects();
+    expect(ad.activeItem()).toBeFalsy();
+    const space = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+    triggerEl.dispatchEvent(space);
+    TestBed.flushEffects();
+    expect(space.defaultPrevented).toBe(true);
+    expect(listbox.selected()).toEqual([]);
+    expect(popover.isVisible()).toBe(true);
+
+    const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    triggerEl.dispatchEvent(enter);
+    expect(enter.defaultPrevented).toBe(false);
+  });
+
   it('Arrow keys while open navigate without closing', () => {
     const { popover, triggerEl, ad } = setup();
     popover.show();

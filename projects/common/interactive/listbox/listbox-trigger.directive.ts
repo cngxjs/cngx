@@ -225,6 +225,12 @@ export class CngxListboxTrigger<T = unknown> {
       case 'Enter':
       case ' ':
         if (!ad.activeItem()) {
+          // Space on a button trigger scrolls the page by default; with the
+          // panel open it belongs to the listbox even when nothing is active.
+          // Enter stays untouched so a consumer's own Enter handler still runs.
+          if (key === ' ') {
+            event.preventDefault();
+          }
           return;
         }
         event.preventDefault();
