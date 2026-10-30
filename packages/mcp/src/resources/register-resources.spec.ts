@@ -124,6 +124,21 @@ describe('completeApiName (cngx://api/{name} autocomplete)', () => {
   it('returns an empty list when nothing matches', () => {
     expect(completeApiName(docs, 'zzz')).toEqual([]);
   });
+
+  it('orders by code point, not by locale', () => {
+    const mixedCase: DocsIndex = {
+      ...docs,
+      components: [
+        { name: 'Cngxa', selector: 'cngx-a', category: 'common/display' },
+        { name: 'CngxB', selector: 'cngx-b', category: 'common/display' },
+      ],
+      directives: [],
+      injectables: [],
+    };
+
+    // `B` (0x42) sorts before `a` (0x61); localeCompare would put `Cngxa` first.
+    expect(completeApiName(mixedCase, 'cngx')).toEqual(['CngxB', 'Cngxa']);
+  });
 });
 
 describe('readLlms (cngx://llms)', () => {
