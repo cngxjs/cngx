@@ -38,7 +38,6 @@ function setup(opts: { commit?: boolean; mode?: CngxSelectCommitMode; initial?: 
   const changes: Omit<CngxTreeSelectChange<string>, 'source'>[] = [];
   const announce = vi.fn();
   const beginClear = vi.fn();
-  const retryLast = vi.fn();
   const states: string[] = [];
   const errors: unknown[] = [];
   const cleared = vi.fn();
@@ -61,7 +60,7 @@ function setup(opts: { commit?: boolean; mode?: CngxSelectCommitMode; initial?: 
           begins.push({ next, previous, onSuccess: handlers.onSuccess, onError: handlers.onError }),
       } as never,
     },
-    commitHandler: () => ({ beginClear, retryLast }),
+    commitHandler: () => ({ beginClear }),
     emitChange: (c) => changes.push(c),
     emitCleared: cleared,
     emitState: (s) => states.push(s),
@@ -77,7 +76,6 @@ function setup(opts: { commit?: boolean; mode?: CngxSelectCommitMode; initial?: 
     changes,
     announce,
     beginClear,
-    retryLast,
     states,
     errors,
     cleared,
@@ -123,14 +121,34 @@ describe('createTreeToggleDispatch', () => {
     expect(t.changes[0]).toMatchObject({ action: 'clear', removed: ['q', 'p'] });
   });
 
-  it('hands a committed clear to the array handler and replays it on retry', () => {
+  it('hands a committed clear to the array handler', () => {
     const t = setup({ commit: true, initial: ['q'] });
     t.dispatch.clearAll();
     expect(t.values()).toEqual([]);
     expect(t.beginClear).toHaveBeenCalledTimes(1);
     expect(t.dispatch.lastCommitted()).toEqual(['q']);
-    t.dispatch.retryLast();
-    expect(t.retryLast).toHaveBeenCalledTimes(1);
+  });
+
+  it('optimistic commit emits and announces only once the commit succeeds', () => {
+    const t = setup({ commit: true });
+    t.dispatch.singleToggle(t.node('q'));
+    expect(t.values()).toEqual(['q']);
+    expect(t.changes).toHaveLength(0);
+    expect(t.announce).not.toHaveBeenCalled();
+    t.begins[0].onSuccess(undefined);
+    expect(t.changes).toEqual([
+      expect.objectContaining({ values: ['q'], previousValues: [], added: ['q'] }),
+    ]);
+    expect(t.announce).toHaveBeenLastCalledWith({ value: 'q', label: 'q' }, 'added', 1, true);
+  });
+
+  it('optimistic commit that fails emits no selection change', () => {
+    const t = setup({ commit: true });
+    t.dispatch.singleToggle(t.node('q'));
+    t.begins[0].onError(new Error('x'), []);
+    expect(t.values()).toEqual([]);
+    expect(t.changes).toHaveLength(0);
+    expect(t.announce).not.toHaveBeenCalled();
   });
 
   it('optimistic commit writes first and rolls back on error, retry replays', () => {

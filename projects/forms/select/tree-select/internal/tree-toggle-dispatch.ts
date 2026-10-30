@@ -8,6 +8,7 @@ import type {
   CngxSelectCommitAction,
   CngxSelectCommitMode,
 } from '../../shared/commit-action.types';
+import { commitLedgerFor } from '../../shared/internal/commit-ledger';
 import { sameArrayContents } from '../../shared/internal/compare';
 import type { CngxSelectCompareFn, CngxSelectCore } from '../../shared/internal/select-core';
 import type { CngxTreeSelectChange } from '../tree-select.component';
@@ -23,16 +24,6 @@ export interface TreeToggleMeta<T> {
   readonly node: FlatTreeNode<T>;
   readonly action: 'toggle' | 'cascade-toggle';
 }
-
-/** The commit a tree-select Retry replays. */
-type TreeLastCommit<T> =
-  | {
-      readonly kind: 'toggle';
-      readonly next: T[];
-      readonly previous: T[];
-      readonly meta: TreeToggleMeta<T>;
-    }
-  | { readonly kind: 'clear' };
 
 /**
  * Inputs of {@link createTreeToggleDispatch}. Signals and callbacks only, so
@@ -50,8 +41,8 @@ export interface TreeToggleDispatchOptions<T> {
   readonly commitAction: Signal<CngxSelectCommitAction<T[]> | null>;
   readonly commitMode: Signal<CngxSelectCommitMode>;
   readonly core: Pick<CngxSelectCore<T, T[]>, 'announce' | 'commitController'>;
-  /** The clear path and its retry stay on the shared array handler. */
-  readonly commitHandler: () => Pick<ArrayCommitHandler<T>, 'beginClear' | 'retryLast'>;
+  /** The clear path stays on the shared array handler (ledger kind `clear`). */
+  readonly commitHandler: () => Pick<ArrayCommitHandler<T>, 'beginClear'>;
   readonly emitChange: (change: Omit<CngxTreeSelectChange<T>, 'source'>) => void;
   readonly emitCleared: () => void;
   readonly emitState: (status: AsyncStatus) => void;
@@ -86,8 +77,8 @@ export function createTreeToggleDispatch<T>(
   opts: TreeToggleDispatchOptions<T>,
 ): TreeToggleDispatch<T> {
   const { values, membersEqual } = opts;
+  const ledger = commitLedgerFor<T[], T>(opts.core.commitController);
   let lastCommittedValues: T[] = untracked(() => [...values()]);
-  let lastCommit: TreeLastCommit<T> | null = null;
 
   const snapshot = (): T[] => untracked(() => [...values()]);
 
@@ -114,8 +105,9 @@ export function createTreeToggleDispatch<T>(
   };
 
   // Bypasses `ArrayCommitHandler.beginToggle` (its option-def shape does not
-  // fit the tree) and drives the commit controller directly; reconciliation
-  // and rollback match the array handler.
+  // fit the tree) and records kind `tree` on the shared commit ledger. The
+  // change event and the announcement wait for success in both modes, so a
+  // rejected commit never reports a selection it rolls back.
   const dispatch = (next: T[], previous: T[], meta: TreeToggleMeta<T>): void => {
     const action = opts.commitAction();
     if (!action) {
@@ -126,38 +118,28 @@ export function createTreeToggleDispatch<T>(
     }
 
     lastCommittedValues = previous;
-    lastCommit = { kind: 'toggle', next, previous, meta };
     if (opts.commitMode() === 'optimistic') {
       values.set(next);
-      emitToggle(next, previous, meta);
-      announceToggle(meta, next.length);
     }
-    opts.emitState('pending');
-    opts.core.commitController.begin(action, next, previous, {
-      onSuccess: (committed) => {
-        opts.emitState('success');
-        const finalValues = committed ?? next;
-        if (!sameArrayContents(values(), finalValues, opts.compareWith())) {
-          values.set([...finalValues]);
-        }
+    ledger.beginMembers<T[]>({
+      kind: 'tree',
+      next,
+      previous,
+      meta,
+      action,
+      commitAction: opts.commitAction,
+      value: values,
+      same: (a, b) => sameArrayContents(a, b, opts.compareWith()),
+      copy: (v) => [...v],
+      commitMode: opts.commitMode,
+      onStateChange: opts.emitState,
+      onSuccess: (finalValues) => {
         lastCommittedValues = [...finalValues];
-        if (opts.commitMode() === 'pessimistic') {
-          emitToggle(finalValues, previous, meta);
-          announceToggle(meta, finalValues.length);
-        }
+        emitToggle(finalValues, previous, meta);
+        announceToggle(meta, finalValues.length);
       },
-      onError: (err, rollbackTo) => {
-        opts.emitState('error');
-        opts.emitCommitError(err);
-        // An external write during the pending window wins over the stale
-        // rollback snapshot (same rule as the array commit handler).
-        const stillOptimistic = sameArrayContents(values(), next, opts.compareWith());
-        if (opts.commitMode() === 'optimistic' && stillOptimistic) {
-          values.set([...(rollbackTo ?? previous)]);
-        }
-        // Same order as the array commit handler: rollback, then speak.
-        opts.announceCommitError(err);
-      },
+      onError: opts.emitCommitError,
+      announceError: opts.announceCommitError,
     });
   };
 
@@ -228,7 +210,6 @@ export function createTreeToggleDispatch<T>(
     const action = opts.commitAction();
     if (action) {
       lastCommittedValues = previous;
-      lastCommit = { kind: 'clear' };
       if (opts.commitMode() === 'optimistic') {
         values.set([]);
       }
@@ -248,24 +229,12 @@ export function createTreeToggleDispatch<T>(
     opts.core.announce(null, 'removed', 0, true);
   };
 
-  const retryLast = (): void => {
-    const last = lastCommit;
-    if (!last) {
-      return;
-    }
-    if (last.kind === 'clear') {
-      opts.commitHandler().retryLast();
-      return;
-    }
-    dispatch(last.next, last.previous, last.meta);
-  };
-
   return {
     singleToggle,
     cascadeToggle,
     removeValue,
     clearAll,
-    retryLast,
+    retryLast: () => ledger.retry(),
     lastCommitted: () => lastCommittedValues,
   };
 }

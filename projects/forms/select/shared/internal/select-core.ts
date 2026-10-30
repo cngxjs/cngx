@@ -694,16 +694,12 @@ export function createSelectCore<T, TCommit>(
     retry: () => void = () => commitLedger.retry(),
   ): Signal<CngxSelectCommitErrorContext<T>> {
     return computed(
-      () => {
-        const record = commitLedger.last();
-        return {
-          $implicit: commitState.error(),
-          error: commitState.error(),
-          // Commits that bypass the ledger still mark their row in togglingOption.
-          option: record ? record.option : togglingOption(),
-          retry,
-        };
-      },
+      () => ({
+        $implicit: commitState.error(),
+        error: commitState.error(),
+        option: commitLedger.last()?.option ?? null,
+        retry,
+      }),
       {
         equal: (a, b) => Object.is(a.error, b.error) && Object.is(a.option, b.option),
         ...(typeof ngDevMode !== 'undefined' && ngDevMode
