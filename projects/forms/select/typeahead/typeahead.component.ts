@@ -795,7 +795,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   readonly selected = computed<CngxSelectOptionDef<T> | null>(
     () => {
       const v = this.value();
-      if (v === undefined || v === null) {
+      if (isEmptyScalar(v)) {
         return null;
       }
       const map = this.core.valueToOptionMap();

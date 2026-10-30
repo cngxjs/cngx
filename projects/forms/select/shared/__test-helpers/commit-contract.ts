@@ -39,7 +39,7 @@ export interface CommitContractHost {
   readonly name: string;
   readonly component: Type<unknown>;
   readonly selector: string;
-  /** Inputs that make the composite render the three rows red, green, blue. */
+  /** Inputs that make the composite render the rows red, green, blue and none (`''`). */
   readonly inputs: string;
   readonly content?: string;
   readonly contentImports?: readonly Type<unknown>[];
@@ -111,12 +111,16 @@ export interface CommitContractCases {
    * fails and the slot reports that toggle's option, not the reordered one.
    */
   readonly commitErrorOptionIsTheFailedCommit: () => void;
+  /** An option with value `''` is never shown as selected while the select is empty. */
+  readonly emptyStringOptionNeverSelected: () => void;
 }
 
+// The '' row sits last so the index-based picks never reach it.
 const OPTIONS = [
   { value: 'red', label: 'Red' },
   { value: 'green', label: 'Green' },
   { value: 'blue', label: 'Blue' },
+  { value: '', label: 'None' },
 ];
 
 const NODES = [{ value: 'red' }, { value: 'green' }, { value: 'blue' }];
@@ -350,6 +354,7 @@ export function describeCommitContract(
         variant,
         settle,
         open,
+        rows,
         pickAt,
         trigger,
         clear,
@@ -649,6 +654,20 @@ export function describeCommitContract(
         expect(m.h.calls).toHaveLength(2);
         m.rejectLast();
         expect(m.h.model()).toEqual(kind === 'select' ? undefined : []);
+      },
+
+      emptyStringOptionNeverSelected: () => {
+        expect(host.model).toBe('value');
+        const m = mount({ initial: '' });
+        expect(m.variant.empty()).toBe(true);
+        const input = m.el.querySelector<HTMLInputElement>('input');
+        expect(input?.value ?? '').toBe('');
+        expect(m.trigger().textContent ?? '').not.toContain('None');
+        m.open();
+        const none = m.rows().at(-1);
+        expect(none?.textContent ?? '').toContain('None');
+        expect(none!.getAttribute('aria-selected')).not.toBe('true');
+        expect(none!.classList.contains('cngx-select__option--selected')).toBe(false);
       },
 
       commitErrorOptionIsTheFailedCommit: () => {

@@ -53,6 +53,7 @@ const SELECT_SHELL: CommitContractHost = {
     <cngx-option [value]="'red'">Red</cngx-option>
     <cngx-option [value]="'green'">Green</cngx-option>
     <cngx-option [value]="'blue'">Blue</cngx-option>
+    <cngx-option [value]="''">None</cngx-option>
   `,
   contentImports: [CngxSelectOption],
   optionSelector: 'cngx-option',
@@ -109,6 +110,10 @@ const TREE_SELECT: CommitContractHost = {
 describeCommitContract(SELECT, (c) => {
   it('A3/B2: field null reads as empty and never reaches displayWith', c.fieldNullIsEmpty);
   it("A3/B2: field '' reads as empty and never reaches displayWith", c.fieldEmptyStringIsEmpty);
+  it(
+    "an option with value '' is never shown as selected while empty",
+    c.emptyStringOptionNeverSelected,
+  );
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
   it('A15: Retry after a failed clear replays the clear', c.retryClear);
   it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
@@ -125,6 +130,10 @@ describeCommitContract(SELECT, (c) => {
 describeCommitContract(TYPEAHEAD, (c) => {
   it('A3/B2: field null reads as empty and never reaches displayWith', c.fieldNullIsEmpty);
   it("A3/B2: field '' reads as empty and never reaches displayWith", c.fieldEmptyStringIsEmpty);
+  it(
+    "an option with value '' is never shown as selected while empty",
+    c.emptyStringOptionNeverSelected,
+  );
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
   it('A15: Retry after a failed clear replays the clear', c.retryClear);
   it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
@@ -140,6 +149,10 @@ describeCommitContract(TYPEAHEAD, (c) => {
 describeCommitContract(ACTION_SELECT, (c) => {
   it('A3/B2: field null reads as empty and never reaches displayWith', c.fieldNullIsEmpty);
   it("A3/B2: field '' reads as empty and never reaches displayWith", c.fieldEmptyStringIsEmpty);
+  it(
+    "an option with value '' is never shown as selected while empty",
+    c.emptyStringOptionNeverSelected,
+  );
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
   it('A15: Retry after a failed clear replays the clear', c.retryClear);
   it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
@@ -155,6 +168,10 @@ describeCommitContract(ACTION_SELECT, (c) => {
 describeCommitContract(SELECT_SHELL, (c) => {
   it('A3/B2: field null reads as empty and never reaches displayWith', c.fieldNullIsEmpty);
   it("A3/B2: field '' reads as empty and never reaches displayWith", c.fieldEmptyStringIsEmpty);
+  it(
+    "an option with value '' is never shown as selected while empty",
+    c.emptyStringOptionNeverSelected,
+  );
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
   it('A15: Retry after a failed clear replays the clear', c.retryClear);
   it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);

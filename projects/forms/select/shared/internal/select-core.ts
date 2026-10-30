@@ -21,7 +21,7 @@ import type { CngxPopoverPresentation, CngxPopoverPresentationRequest } from '@c
 import { CngxFormFieldPresenter, createFieldControlAria } from '@cngx/forms/field';
 
 import { CngxSelectAnnouncer } from '../announcer';
-import { sameArrayContents } from './compare';
+import { isEmptyScalar, sameArrayContents } from './compare';
 import {
   CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
   type CngxCommitController,
@@ -675,7 +675,7 @@ export function createSelectCore<T, TCommit>(
       return values.some((v) => eq(v, value));
     }
     const current = deps.currentSelection() as T | undefined;
-    if (current === undefined || current === null) {
+    if (isEmptyScalar(current)) {
       return false;
     }
     return eq(current, value);

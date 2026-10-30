@@ -121,7 +121,8 @@
       [items]="adItems()"
       [virtualCount]="virtualItemCount()"
       [windowStart]="virtualWindowStart()"
-      [(value)]="value"
+      [value]="listboxValue()"
+      (valueChange)="value.set($event)"
     >
       <cngx-select-panel-shell>
         <ng-content />

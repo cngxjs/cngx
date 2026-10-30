@@ -735,6 +735,17 @@ export class CngxSelectShell<T = unknown>
 
   readonly empty = computed<boolean>(() => isEmptyScalar(this.value()));
 
+  /**
+   * Value the listbox marks as selected; `''` and `null` read as empty, so an
+   * option whose value is `''` never shows as selected.
+   *
+   * @internal
+   */
+  protected readonly listboxValue = computed<T | undefined>(() => {
+    const v = this.value();
+    return isEmptyScalar(v) ? undefined : v;
+  });
+
   protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
@@ -967,7 +978,7 @@ export class CngxSelectShell<T = unknown>
   /** @internal */
   protected readonly selectedOption = computed<CngxSelectOptionDef<T> | null>(() => {
     const v = this.value();
-    if (v === undefined || v === null) {
+    if (isEmptyScalar(v)) {
       return null;
     }
     const map = this.core.valueToOptionMap();
@@ -1227,7 +1238,7 @@ export class CngxSelectShell<T = unknown>
         const flat = this.flatOptions();
         const v = this.value();
         const currentFlatIndex =
-          v === undefined || v === null ? -1 : flat.findIndex((o) => eq(o.value, v));
+          isEmptyScalar(v) ? -1 : flat.findIndex((o) => eq(o.value, v));
         const action = this.flatNavStrategy.onTypeaheadWhileClosed(
           {
             options: flat,
