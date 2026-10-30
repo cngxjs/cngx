@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'A list of links behind a button: <code>cngxButton</code> plus <code>[cngxPopoverTrigger]</code> with <code>haspopup="none"</code>.',
   description:
-    'A popover disclosure shows and hides content that floats over the page. It is not a menu: <code>role="menu"</code> promises arrow-key navigation between commands, and the WAI-ARIA APG reserves it for actions, not for navigation. Links stay plain links in a list, reached with Tab. <code>haspopup="none"</code> keeps <code>aria-haspopup</code> off the button, so a screen reader announces "button, collapsed" and <code>aria-expanded</code> carries the state. <code>[restoreFocus]="true"</code> returns focus to the button after Escape or a click outside. The caret sits in the <code>cngxButtonEnd</code> slot and is decorative. When the content should push the layout instead of floating, use the inline <code>cngxDisclosure</code>; when the entries are commands, use <code>cngxMenuButton</code>.',
+    'A popover disclosure shows and hides content that floats over the page. It is not a menu: <code>role="menu"</code> promises arrow-key navigation between commands, and the WAI-ARIA APG reserves it for actions, not for navigation. Links stay plain links in a list, reached with Tab. <code>haspopup="none"</code> keeps <code>aria-haspopup</code> off the button, so a screen reader announces "button, collapsed" and <code>aria-expanded</code> carries the state. Escape closes the panel, and <code>[closeOnOutsideClick]="true"</code> closes it on a click elsewhere; <code>[restoreFocus]="true"</code> returns focus to the button. The caret sits in the <code>cngxButtonEnd</code> slot and is decorative. When the content should push the layout instead of floating, use the inline <code>cngxDisclosure</code>; when the entries are commands, use <code>cngxMenuButton</code>.',
   level: 'molecule',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'building-block',
@@ -41,7 +41,13 @@ export const STORY: DemoSpec = {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
       </cngx-icon>
     </button>
-    <div cngxPopover #pop="cngxPopover" placement="bottom-start" class="demo-popover-surface">
+    <div
+      cngxPopover
+      #pop="cngxPopover"
+      placement="bottom-start"
+      [closeOnOutsideClick]="true"
+      class="demo-popover-surface"
+    >
       <ul class="demo-popover-menu">
         <li><a class="demo-popover-menu-item" href="https://angular.dev/overview" target="_blank" rel="noopener">Angular overview</a></li>
         <li><a class="demo-popover-menu-item" href="https://angular.dev/guide/signals" target="_blank" rel="noopener">Signals guide</a></li>
