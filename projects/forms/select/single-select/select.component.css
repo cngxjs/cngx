@@ -310,7 +310,7 @@
       white-space: nowrap;
       display: inline-flex;
       align-items: center;
-      gap: 0.375rem;
+      gap: var(--cngx-select-label-gap, var(--cngx-space-xs, 0.375rem));
     }
 
     .cngx-select__label--placeholder {

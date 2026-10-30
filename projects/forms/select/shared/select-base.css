@@ -1722,29 +1722,41 @@
     color: var(--cngx-select-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
   }
   .cngx-select__error--inline {
-    /* error-inline-padding 0.375/0.5 -> xs/sm. */
+    /* error-inline-padding 0.375/0.5 -> xs/sm; error-inline-gap 0.5 -> sm;
+       error-inline-margin 0.25 -> xs. */
     --cngx-select-error-inline-padding: var(--cngx-space-xs) var(--cngx-space-sm);
+    --cngx-select-error-inline-gap: var(--cngx-space-sm);
+    --cngx-select-error-inline-margin: var(--cngx-space-xs);
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    gap: 0.5rem;
+    gap: var(--cngx-select-error-inline-gap, 0.5rem);
     padding: var(--cngx-select-error-inline-padding, 0.375rem 0.5rem);
-    margin-bottom: 0.25rem;
+    margin-block-end: var(--cngx-select-error-inline-margin, 0.25rem);
     border: 1px solid currentColor;
     border-radius: var(--cngx-select-error-inline-radius, 0.125rem);
-    font-size: 0.875rem;
+    font-size: var(--cngx-font-size-sm, 0.875rem);
   }
   .cngx-select__error-message {
     font-weight: 500;
   }
   .cngx-select__error-retry {
+    /* error-retry-padding 0.25/0.5 -> xs/sm. */
+    --cngx-select-error-retry-padding: var(--cngx-space-xs) var(--cngx-space-sm);
     appearance: none;
+    /* Touch-target floor on both axes, the label centred in the lifted box;
+       inert at 0px on a fine pointer. */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: var(--cngx-target-min, 0px);
+    min-inline-size: var(--cngx-target-min, 0px);
     border: var(--cngx-select-error-retry-border, 1px solid currentColor);
     background: transparent;
     color: inherit;
     font: inherit;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.125rem;
+    padding: var(--cngx-select-error-retry-padding, 0.25rem 0.5rem);
+    border-radius: var(--cngx-select-error-retry-radius, 0.125rem);
     cursor: pointer;
   }
   .cngx-select__error-retry:focus-visible {
@@ -1755,18 +1767,21 @@
     outline-offset: var(--cngx-select-focus-offset, 2px);
   }
   .cngx-select__commit-error {
-    /* commit-error-padding 0.375/0.5 -> xs/sm. */
+    /* commit-error-padding 0.375/0.5 -> xs/sm; commit-error-gap 0.5 -> sm;
+       commit-error-margin 0.25 -> xs. */
     --cngx-select-commit-error-padding: var(--cngx-space-xs) var(--cngx-space-sm);
+    --cngx-select-commit-error-gap: var(--cngx-space-sm);
+    --cngx-select-commit-error-margin: var(--cngx-space-xs);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.5rem;
-    margin-bottom: 0.25rem;
+    gap: var(--cngx-select-commit-error-gap, 0.5rem);
+    margin-block-end: var(--cngx-select-commit-error-margin, 0.25rem);
     padding: var(--cngx-select-commit-error-padding, 0.375rem 0.5rem);
     border: 1px solid currentColor;
     border-radius: var(--cngx-select-commit-error-radius, 0.125rem);
     color: var(--cngx-select-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
-    font-size: 0.875rem;
+    font-size: var(--cngx-font-size-sm, 0.875rem);
   }
 
   /* Dark-mode swap for the hardcoded alpha-on-black surfaces that

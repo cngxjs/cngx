@@ -561,6 +561,38 @@ const CHAINS: readonly TokenChain[] = [
   },
 ];
 
+// The panel error states as static markup under the shipped stylesheets: the
+// load-error block, the inline refresh-error banner and the commit-error
+// banner each carry a retry button.
+@Component({
+  selector: 'cngx-select-retry-floor-host',
+  standalone: true,
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    '../../../core/theming/reset.css',
+    './select-base.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div class="floor" style="display: block; width: 20rem; margin: 1rem">
+      <div class="cngx-select__error" role="alert">
+        <span class="cngx-select__error-message">Failed</span>
+        <button type="button" class="cngx-select__error-retry retry-block">Retry</button>
+      </div>
+      <div class="cngx-select__error cngx-select__error--inline" role="alert">
+        <span class="cngx-select__error-message">Failed</span>
+        <button type="button" class="cngx-select__error-retry retry-inline">Retry</button>
+      </div>
+      <div class="cngx-select__commit-error" role="alert">
+        <span>Not saved</span>
+        <button type="button" class="cngx-select__error-retry retry-commit">Retry</button>
+      </div>
+    </div>
+  `,
+})
+class RetryFloorHost {}
+
 let mountedRoot: HTMLElement | null = null;
 
 function hostOf(row: HTMLElement): HTMLElement | null {
@@ -780,5 +812,34 @@ describe('select clear button touch hit area', () => {
     expect(rowHeights(root.querySelector<HTMLElement>('.with-clear')!)).toEqual(
       rowHeights(root.querySelector<HTMLElement>('.without-clear')!),
     );
+  });
+});
+
+describe('select retry button touch floor', () => {
+  const RETRIES = ['.retry-block', '.retry-inline', '.retry-commit'];
+
+  function retries(touch: boolean): HTMLElement[] {
+    const fixture = TestBed.createComponent(RetryFloorHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    if (touch) {
+      mountedRoot.querySelector<HTMLElement>('.floor')!.setAttribute('data-touch', 'on');
+    }
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    return RETRIES.map((selector) => mountedRoot!.querySelector<HTMLElement>(selector)!);
+  }
+
+  it('keeps the retry buttons at their padded size on a fine pointer', () => {
+    for (const button of retries(false)) {
+      expect(Math.round(button.getBoundingClientRect().height)).toBeLessThan(44);
+    }
+  });
+
+  it('lifts every retry button to a >= 44x44 hit area under the touch floor', () => {
+    for (const button of retries(true)) {
+      const rect = button.getBoundingClientRect();
+      expect(Math.round(rect.width), button.className).toBeGreaterThanOrEqual(44);
+      expect(Math.round(rect.height), button.className).toBeGreaterThanOrEqual(44);
+    }
   });
 });

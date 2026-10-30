@@ -53,7 +53,7 @@
     --cngx-select-search-input-padding: var(--cngx-space-xs) var(--cngx-space-sm);
     display: block;
     padding: var(--cngx-select-search-padding, 0.5rem);
-    border-bottom: var(
+    border-block-end: var(
       --cngx-select-search-divider,
       1px solid var(--cngx-color-border, oklch(0.92 0.005 250))
     );
