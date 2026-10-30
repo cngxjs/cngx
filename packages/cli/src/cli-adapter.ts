@@ -5,14 +5,16 @@
 // renders the payload. There is no per-command code here.
 //
 // Exit codes: 0 answered; 1 the query ran and found nothing, or a snapshot could
-// not be resolved; 2 usage error (unknown command or flag, invalid input); 3
-// internal error (a throw in a command, its rendering or the bootstrap).
-// stdout carries data only, stderr diagnostics only; neither is ever coloured.
-// The answer is rendered into one string before anything is written, so a run
-// that fails never leaves part of an answer on stdout. Under `--format json`
-// every run that gets past usage prints exactly one document: a failure carries
-// `error: { reason, message }` next to `result: null` (reason `internal` for
-// exit 3), a not-found answer has no `error`.
+// not be resolved; 2 usage error (unknown command or flag, invalid input,
+// including a `migrate` version answered `invalid-version`); 3 a throw outside
+// the versioned-query and `migrate` nets (snapshot load, rendering, bootstrap).
+// A throw inside those nets answers `asset-missing` with an `internal:` message
+// and exits 1. stdout carries data only, stderr diagnostics only; neither is ever
+// coloured. The answer is rendered into one string before anything is written, so
+// a run that fails never leaves part of an answer on stdout. A usage error prints
+// no json document; under `--format json` every other run prints exactly one: a
+// failure carries `error: { reason, message }` next to `result: null` (reason
+// `internal` for exit 3), a not-found answer has no `error`.
 
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

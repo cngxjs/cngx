@@ -1,5 +1,5 @@
-// Source: the OD5 decision of the cli-core plan: the shared core specs also run
-// against the zod @cngx/cli installs. Run by vitest.core.config.mjs only; the
+// The shared core specs must run on the zod that @cngx/cli installs, not on the
+// mcp package's copy. Run by vitest.core.config.mjs only; the
 // default config's `src/**/*.spec.ts` glob does not match this file. A core
 // schema built under packages/mcp has its constructor exported by the zod module
 // loaded from the cli install's own entry file, so the check holds by resolved

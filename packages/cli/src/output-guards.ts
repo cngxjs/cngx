@@ -1,6 +1,7 @@
 // Two invariants of the CLI surface, as pure checks the specs run: output is
-// never ANSI-coloured (agents and CI read it; cli-accepted-debt §3 keeps colour
-// out), and no CLI source imports the MCP SDK (the CLI ships without it).
+// never ANSI-coloured (agents and CI parse it, and a colour code would corrupt
+// a json document or a grep), and no CLI source imports the MCP SDK (the CLI
+// ships without it).
 
 // Every ECMA-48 sequence starts with ESC (7-bit: CSI `ESC [`, OSC `ESC ]`, DCS
 // `ESC P`, two-byte `ESC <char>`) or with a C1 control (8-bit: CSI U+009B, OSC

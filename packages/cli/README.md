@@ -68,11 +68,13 @@ stdout carries the answer only; diagnostics go to stderr.
 
 ## Failures
 
-Every failure writes one line to stderr, never a stack trace:
+Every failure except a usage error writes one line to stderr, never a stack trace:
 
 ```text
 cngx <command>: <reason>: <message>
 ```
+
+A usage error (exit 2) writes `cngx: <message>` plus the command hint instead.
 
 |Reason|Meaning|
 |-|-|
