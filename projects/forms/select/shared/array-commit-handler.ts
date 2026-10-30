@@ -37,9 +37,10 @@ export interface ArrayCommitHandlerOptions<T> {
    * carries real error content. When omitted the handler announces
    * nothing on error - the visual error surface and `onError` still
    * fire; it never falls back to the misleading "selection cleared"
-   * phrase.
+   * phrase. `rolledBack` is `true` when the previous selection was restored
+   * before the call.
    */
-  readonly announceError?: (err: unknown) => void;
+  readonly announceError?: (err: unknown, rolledBack?: boolean) => void;
 }
 
 /**

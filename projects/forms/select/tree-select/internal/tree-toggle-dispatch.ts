@@ -56,7 +56,7 @@ export interface TreeToggleDispatchOptions<T> {
   readonly emitCleared: () => void;
   readonly emitState: (status: AsyncStatus) => void;
   readonly emitCommitError: (err: unknown) => void;
-  readonly announceCommitError: (err: unknown) => void;
+  readonly announceCommitError: (err: unknown, rolledBack?: boolean) => void;
 }
 
 /**

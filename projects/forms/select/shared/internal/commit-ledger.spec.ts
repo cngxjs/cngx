@@ -73,7 +73,8 @@ function harness(initial: T[] = []): Harness {
       onSuccess: (final) => log.push(`success:${final.join(',')}`),
       onError: () => log.push(`error:${values().join(',')}`),
       onRollback: (restored) => log.push(`rollback:${restored.join(',')}`),
-      announceError: () => log.push(`announce:${values().join(',')}`),
+      announceError: (_err, rolledBack) =>
+        log.push(`announce:${values().join(',')}:${rolledBack ? 'restored' : 'kept'}`),
     }),
   };
 }
@@ -116,7 +117,7 @@ describe('createCommitLedger', () => {
         'state:error',
         'error:b',
         'rollback:a',
-        'announce:a',
+        'announce:a:restored',
       ]);
     });
 
@@ -128,6 +129,17 @@ describe('createCommitLedger', () => {
       h.pendings[0].error(new Error('down'));
       expect(h.values()).toEqual(['x']);
       expect(h.log).not.toContain('rollback:a');
+      expect(h.log.at(-1)).toBe('announce:x:kept');
+    });
+
+    it('announces a pessimistic failure as not rolled back', () => {
+      const h = harness(['a']);
+      h.mode.set('pessimistic');
+      h.ledger.beginMembers(h.request(kind, ['b'], ['a']));
+      h.pendings[0].error(new Error('down'));
+      expect(h.values()).toEqual(['a']);
+      expect(h.log).not.toContain('rollback:a');
+      expect(h.log.at(-1)).toBe('announce:a:kept');
     });
 
     it('replays the recorded commit on retry, re-applying it in optimistic mode', () => {

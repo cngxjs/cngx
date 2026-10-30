@@ -62,8 +62,12 @@ export interface CommitLedgerRequest<TCommit, V extends TCommit | undefined, TOp
   readonly onError?: (err: unknown) => void;
   /** Fires after the ledger restored the rollback target. */
   readonly onRollback?: (restored: V) => void;
-  /** Speaks the failure; fires after the rollback. */
-  readonly announceError?: (err: unknown) => void;
+  /**
+   * Speaks the failure; fires after the rollback. `rolledBack` is `true` only
+   * when the ledger restored the rollback target (optimistic mode, no
+   * external write during the pending window).
+   */
+  readonly announceError?: (err: unknown, rolledBack: boolean) => void;
 }
 
 /** @internal */
@@ -222,12 +226,13 @@ export function createCommitLedger<TCommit, TOption = unknown>(
         // An external write during the pending window wins over the stale
         // rollback snapshot: roll back only while the model still holds the
         // optimistic value this commit wrote.
-        if (mode === 'optimistic' && req.same(req.value(), next)) {
+        const rollBack = mode === 'optimistic' && req.same(req.value(), next);
+        if (rollBack) {
           const restored = (rollbackTo ?? previous) as V;
           reconcile(restored);
           req.onRollback?.(restored);
         }
-        req.announceError?.(err);
+        req.announceError?.(err, rollBack);
       },
     });
   };

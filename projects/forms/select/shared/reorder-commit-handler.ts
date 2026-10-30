@@ -67,9 +67,10 @@ export interface ReorderCommitHandlerOptions<T> {
    * Announce a failed reorder to AT, after the order was rolled back. Wire
    * it to the commit-error announcer (`CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY`).
    * When omitted a failed reorder is announced nothing; `onError` still
-   * fires.
+   * fires. `rolledBack` is `true` when the previous order was restored
+   * before the call.
    */
-  readonly announceError?: (err: unknown) => void;
+  readonly announceError?: (err: unknown, rolledBack?: boolean) => void;
 }
 
 /**

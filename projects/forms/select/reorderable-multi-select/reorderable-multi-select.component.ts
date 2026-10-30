@@ -966,7 +966,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       this.toggleDispatch.clearFinalize(previous, finalValues),
     onStateChange: (status) => this.stateChange.emit(status),
     onError: (err) => this.commitError.emit(err),
-    announceError: (err) => this.announceCommitError(err),
+    announceError: this.announceCommitError,
   });
 
   /**
@@ -1376,6 +1376,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     },
     onStateChange: (status) => this.stateChange.emit(status),
     onError: (err) => this.commitError.emit(err),
-    announceError: (err) => this.announceCommitError(err),
+    announceError: this.announceCommitError,
   });
 }

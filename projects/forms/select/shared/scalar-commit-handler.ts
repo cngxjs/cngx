@@ -36,8 +36,11 @@ export interface ScalarCommitHandlerOptions<T> {
    * `onCommitFinalize`.
    */
   readonly onClearFinalize?: (previousValue: T | undefined) => void;
-  /** Consumer routes through its commit-error announcer. */
-  readonly onCommitError: (err: unknown) => void;
+  /**
+   * Consumer routes through its commit-error announcer. `rolledBack` is
+   * `true` when the previous value was restored before the call.
+   */
+  readonly onCommitError: (err: unknown, rolledBack?: boolean) => void;
   readonly onStateChange: (status: AsyncStatus) => void;
   readonly onError: (err: unknown) => void;
   /**

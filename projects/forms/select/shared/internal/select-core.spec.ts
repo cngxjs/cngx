@@ -274,7 +274,7 @@ describe('createSelectCore - commit-error announcer', () => {
     expect(spoken[2]).not.toContain('Red');
   });
 
-  it('defaults to createCommitErrorAnnouncer and speaks the soft copy politely', () => {
+  it('defaults to createCommitErrorAnnouncer and speaks the soft copy politely after a rollback', () => {
     const core = coreWith([]);
     const live = vi
       .spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce')
@@ -283,7 +283,7 @@ describe('createSelectCore - commit-error announcer', () => {
       shape: 'scalar',
       policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'soft' }),
     });
-    callback(new Error('down'));
+    callback(new Error('down'), true);
     expect(live).toHaveBeenCalledTimes(1);
     expect(String(live.mock.calls[0][0])).toContain('Save failed, previous value restored');
     expect(live.mock.calls[0][1]).toBe('polite');

@@ -8,8 +8,10 @@ import type { CngxSelectOptionDef } from './option.model';
  *
  * - `verbose` - error text verbatim into the live-region at the supplied
  *   severity. `CngxSelect` uses `assertive`.
- * - `soft` - the `commitFailedSoft` copy ("Save failed, previous value
- *   restored"), polite. `CngxTypeahead` uses this so the free-text flow
+ * - `soft` - polite. After a real rollback it speaks the `commitFailedSoft`
+ *   copy ("Save failed, previous value restored"); when nothing was restored
+ *   (pessimistic mode, an external write won) it speaks the regular
+ *   commit-failed sentence. `CngxTypeahead` uses this so the free-text flow
  *   isn't interrupted.
  */
 export type CngxCommitErrorAnnouncePolicy =
@@ -24,9 +26,10 @@ export interface CngxCommitErrorAnnounceDeps {
   readonly announcer: CngxSelectAnnouncer;
   readonly commitErrorMessage: (err: unknown) => string;
   /**
-   * The polite sentence the `soft` policy speaks for a failed commit. Read
-   * untracked. Without it the default factory announces nothing on the soft
-   * path; it never speaks the "selection cleared" phrase for a failure.
+   * The polite sentence the `soft` policy speaks for a failed commit whose
+   * previous value was restored. Read untracked. Without it the soft path
+   * speaks `commitErrorMessage` politely; it never speaks the "selection
+   * cleared" phrase for a failure.
    */
   readonly softFailureMessage?: () => string;
   /**
@@ -70,28 +73,30 @@ export interface CngxCommitErrorAnnouncerOptions {
  * Default factory for the scalar commit-error announcer. Dispatches
  * via `policy.kind`: `'verbose'` announces the formatted error message
  * at the configured severity; `'soft'` announces `softFailureMessage`
- * politely (nothing when the dep is absent).
+ * politely after a real rollback, else the formatted error message politely.
+ * The returned callback takes `rolledBack`, `true` when the commit handler
+ * restored the previous value before the call; callers that cannot tell
+ * omit it.
  *
  * Override the {@link CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY} token to
  * swap in telemetry or locale-aware variants.
  */
 export function createCommitErrorAnnouncer(
   opts: CngxCommitErrorAnnouncerOptions,
-): (err: unknown) => void {
-  return (err: unknown): void => {
+): (err: unknown, rolledBack?: boolean) => void {
+  // Copy is read untracked so a language flip never re-runs an effect that
+  // announced it.
+  const regular = (err: unknown): string => untracked(() => opts.deps.commitErrorMessage(err));
+  return (err: unknown, rolledBack?: boolean): void => {
     const p = opts.policy();
     if (p.kind === 'verbose') {
-      // The message reads copy; untracked so a language flip never re-runs
-      // an effect that announced it.
-      const message = untracked(() => opts.deps.commitErrorMessage(err));
-      opts.deps.announcer.announce(message, p.severity);
+      opts.deps.announcer.announce(regular(err), p.severity);
       return;
     }
     const soft = opts.deps.softFailureMessage;
-    if (!soft) {
-      return;
-    }
-    opts.deps.announcer.announce(untracked(soft), 'polite');
+    // "Previous value restored" is only true after a real rollback.
+    const message = rolledBack === true && soft ? untracked(soft) : regular(err);
+    opts.deps.announcer.announce(message, 'polite');
   };
 }
 
@@ -100,7 +105,7 @@ export function createCommitErrorAnnouncer(
  */
 export type CngxCommitErrorAnnouncerFactory = (
   options: CngxCommitErrorAnnouncerOptions,
-) => (err: unknown) => void;
+) => (err: unknown, rolledBack?: boolean) => void;
 
 /**
  * Factory for the scalar-commit error-announce path - turns a failed commit

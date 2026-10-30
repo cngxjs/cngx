@@ -290,7 +290,7 @@ export interface CngxSelectCore<T, TCommit> {
    */
   createCommitErrorAnnouncer(
     options: CngxSelectCommitErrorAnnouncerOptions,
-  ): (err: unknown) => void;
+  ): (err: unknown, rolledBack?: boolean) => void;
   /**
    * Bound `isGroup`/`isSelected`/`isIndeterminate`/`isCommittingOption`
    * for spreading into a variant's `CngxSelectPanelHost`. Stable
@@ -796,7 +796,7 @@ export function createSelectCore<T, TCommit>(
 
   function createCommitErrorAnnouncer(
     options: CngxSelectCommitErrorAnnouncerOptions,
-  ): (err: unknown) => void {
+  ): (err: unknown, rolledBack?: boolean) => void {
     return commitErrorAnnouncerFactory({
       deps: {
         announcer,

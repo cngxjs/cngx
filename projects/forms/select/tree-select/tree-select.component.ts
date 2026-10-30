@@ -820,7 +820,7 @@ export class CngxTreeSelect<T = unknown>
     },
     onStateChange: (status) => this.stateChange.emit(status),
     onError: (err) => this.commitError.emit(err),
-    announceError: (err) => this.announceCommitError(err),
+    announceError: this.announceCommitError,
   });
 
   /**
@@ -841,7 +841,7 @@ export class CngxTreeSelect<T = unknown>
     emitCleared: () => this.cleared.emit(),
     emitState: (status) => this.stateChange.emit(status),
     emitCommitError: (err) => this.commitError.emit(err),
-    announceCommitError: (err) => this.announceCommitError(err),
+    announceCommitError: this.announceCommitError,
   });
 
   /** @internal */ readonly activeView = this.core.activeView;

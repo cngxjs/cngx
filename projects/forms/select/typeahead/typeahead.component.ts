@@ -874,7 +874,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       this.core.announce(option, 'added', 1, false);
     },
     onClearFinalize: (previousValue) => this.finalizeClear(previousValue),
-    onCommitError: (err) => this.announceCommitError(err),
+    onCommitError: this.announceCommitError,
     onStateChange: (status) => this.stateChange.emit(status),
     onError: (err) => this.commitError.emit(err),
     onValueWrite: (v) => this.display.writeFromValue(v),

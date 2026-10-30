@@ -907,7 +907,7 @@ export class CngxSelectShell<T = unknown>
       }
     },
     onClearFinalize: (previousValue) => this.finalizeClear(previousValue),
-    onCommitError: (err) => this.announceCommitError(err),
+    onCommitError: this.announceCommitError,
     onStateChange: (status) => {
       this.stateChange.emit(status);
       if (status === 'pending' && this.commitMode() === 'optimistic') {

@@ -68,7 +68,7 @@ describe('createCommitErrorAnnouncer', () => {
     expect(live).toHaveBeenCalledWith('x', 'polite');
   });
 
-  it('soft policy speaks the soft failure message politely, never the cleared phrase', () => {
+  it('soft policy speaks the soft failure message politely after a rollback, never the cleared phrase', () => {
     const softAnnounce = makeMockSoftAnnounce();
     const callback = createCommitErrorAnnouncer({
       deps: {
@@ -79,7 +79,7 @@ describe('createCommitErrorAnnouncer', () => {
       },
       policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'soft' }),
     });
-    callback(new Error('boom'));
+    callback(new Error('boom'), true);
     expect(live).toHaveBeenCalledExactlyOnceWith(
       'Colour: Save failed, previous value restored',
       'polite',
@@ -87,15 +87,32 @@ describe('createCommitErrorAnnouncer', () => {
     expect(softAnnounce).not.toHaveBeenCalled();
   });
 
-  it('soft policy without a soft failure message announces nothing', () => {
-    const softAnnounce = makeMockSoftAnnounce();
+  it.each([
+    ['nothing was rolled back', false],
+    ['the caller cannot tell', undefined],
+  ])('soft policy speaks the regular failure politely when %s', (_case, rolledBack) => {
     const callback = createCommitErrorAnnouncer({
-      deps: { announcer, commitErrorMessage: () => 'should-not-appear', softAnnounce },
+      deps: {
+        announcer,
+        commitErrorMessage: () => 'Colour: Save failed',
+        softFailureMessage: () => 'Colour: Save failed, previous value restored',
+        softAnnounce: makeMockSoftAnnounce(),
+      },
       policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'soft' }),
     });
-    callback(new Error('boom'));
+    callback(new Error('boom'), rolledBack);
+    expect(live).toHaveBeenCalledExactlyOnceWith('Colour: Save failed', 'polite');
+  });
+
+  it('soft policy without a soft failure message speaks the regular failure politely', () => {
+    const softAnnounce = makeMockSoftAnnounce();
+    const callback = createCommitErrorAnnouncer({
+      deps: { announcer, commitErrorMessage: () => 'Colour: Save failed', softAnnounce },
+      policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'soft' }),
+    });
+    callback(new Error('boom'), true);
     expect(softAnnounce).not.toHaveBeenCalled();
-    expect(live).not.toHaveBeenCalled();
+    expect(live).toHaveBeenCalledExactlyOnceWith('Colour: Save failed', 'polite');
   });
 
   it('soft policy does not re-announce on a language flip when called from an effect', () => {
@@ -114,7 +131,7 @@ describe('createCommitErrorAnnouncer', () => {
       effect(() => {
         const err = failure();
         if (err) {
-          callback(err);
+          callback(err, true);
         }
       }),
     );
@@ -143,7 +160,8 @@ describe('createCommitErrorAnnouncer', () => {
 
     policy.set({ kind: 'soft' });
     callback(new Error('second'));
-    expect(live).toHaveBeenCalledTimes(1);
+    expect(live).toHaveBeenCalledTimes(2);
+    expect(live).toHaveBeenLastCalledWith('err-msg', 'polite');
     expect(softAnnounce).toHaveBeenCalledTimes(0);
   });
 

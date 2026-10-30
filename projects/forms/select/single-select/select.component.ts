@@ -850,7 +850,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       }
     },
     onClearFinalize: (previousValue) => this.finalizeClear(previousValue),
-    onCommitError: (err) => this.announceCommitError(err),
+    onCommitError: this.announceCommitError,
     onStateChange: (status) => {
       this.stateChange.emit(status);
       // Optimistic: close popover eagerly so user sees instant close,
