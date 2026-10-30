@@ -38,9 +38,10 @@ Ask them in this order. The first "yes" is your pattern.
 1. **Does the control's label show the choice afterwards?** "Sort: Newest", "Country: Austria". Then the user is choosing a value, not running a command: use a **select**. A menu forgets what was picked the moment it closes.
 2. **Are there two to five options, and should all of them stay visible?** List, grid, board. Use a **toggle group**: the current option is visible without opening anything, and one click switches.
 3. **Does something happen at once when the user picks an entry?** Export as PDF, duplicate, archive. Use a **menu button**. If one of those commands is what the user wants most of the time, use a **split button** (see below).
-4. **Are the entries links, or mixed content such as a short form, a help text or a list of recent files?** Use a **disclosure**. Links stay plain links in a list, reached with Tab; a menu would announce them as commands and change how the arrow keys work.
-5. **Must the revealed content push the layout down?** FAQ answers, a "show details" block, a navigation group in a side bar. Use the **inline disclosure** (`cngxDisclosure`). If the content should float over the page and leave the layout alone, use the **popover disclosure**.
-6. **Only one command?** An **action button**, or an **icon button** when space is tight and the glyph is well known.
+4. **Are the entries links, or mixed content such as a short form, a help text or a list of recent files?** Use a **disclosure**. Links stay plain links in a list, reached with Tab; a menu would announce them as commands and change how the arrow keys work. Then pick where the content goes:
+   - It should push the layout down (FAQ answers, a "show details" block, a navigation group in a side bar): the **inline disclosure** (`cngxDisclosure`).
+   - It should float over the page and leave the layout alone: the **popover disclosure**.
+5. **Only one command?** An **action button**, or an **icon button** when space is tight and the glyph is well known.
 
 ---
 
