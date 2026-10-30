@@ -16,6 +16,7 @@ import { COMMANDS } from './core/registry.js';
 import type { DocsResolverDeps } from './core/data/docs-resolver.js';
 import { createDocsResolver } from './core/data/docs-resolver.js';
 import { createDocsIndex, loadBundledDocs, loadDocsFromFile } from './core/data/loader.js';
+import { getStoryExample } from './core/commands/get-story-example.js';
 import { assertNoAnsi } from './output-guards.js';
 
 const FIXTURE = fileURLToPath(new URL('../../mcp/test/fixtures/documentation.sample.json', import.meta.url));
@@ -24,32 +25,18 @@ const CLI_VERSION = (JSON.parse(readFileSync(PACKAGE_JSON, 'utf8')) as { version
 
 const bundled = loadDocsFromFile(FIXTURE);
 
-/** `cngx example CngxTreeSelect --format json` over the bundled snapshot. */
-const EXAMPLE_TREE_SELECT_JSON = `{
-  "cngxVersion": "0.1.0-rc.9",
-  "result": {
-    "name": "CngxTreeSelect",
-    "kind": "component",
-    "exampleUrls": [
-      "https://cngxjs.github.io/cngx/examples/#/forms/select/tree-select/basic-single-level-toggle",
-      "https://cngxjs.github.io/cngx/examples/#/forms/select/tree-select/cascade-children-parent-toggle-selects-the-whole-subtree",
-      "https://cngxjs.github.io/cngx/examples/#/forms/select/tree-select/custom-cngxtreeselectnode-template",
-      "https://cngxjs.github.io/cngx/examples/#/forms/select/tree-select/chip-display-parents-leaves-all",
-      "https://cngxjs.github.io/cngx/examples/#/forms/select/tree-select/custom-count-footer-and-overflow-slots",
-      "https://cngxjs.github.io/cngx/examples/#/forms/select/tree-select/touch-row-tap-expands-checkbox-selects",
-      "https://cngxjs.github.io/cngx/examples/#/forms/select/mobile-sheet/all-variants"
-    ],
-    "stackblitzUrl": null,
-    "sourceReferences": [
-      {
-        "title": "Material theme",
-        "fileRef": "./examples/material-theme/material-theme.component.ts",
-        "line": 0
-      }
-    ]
-  }
+const DATA_DIR = new URL('../data/', import.meta.url);
+
+/**
+ * `cngx example CngxTreeSelect --format json` over the bundled snapshot `main`
+ * loads, built through the same core query: the pin guards the CLI output shape,
+ * not the stories or the release stamp.
+ */
+function expectedTreeSelectExample(): string {
+  const docs = loadBundledDocs(fileURLToPath(DATA_DIR));
+  const result = getStoryExample(docs, 'CngxTreeSelect');
+  return `${JSON.stringify({ cngxVersion: docs.meta.cngxVersion, result }, null, 2)}\n`;
 }
-`;
 
 /** A fetch that never reaches the network: every non-bundled version is an absent asset. */
 const offlineDeps: DocsResolverDeps = {
@@ -637,16 +624,21 @@ describe('main over the real package paths', () => {
     expect(stdout).toBe(`${CLI_VERSION}\n`);
   });
 
-  // Pinned from the output before get_story_example moved into the versioned envelope:
-  // the envelope is an MCP wire change, the cli document must not move.
-  it('prints the CngxTreeSelect example document unchanged', async () => {
+  // The versioned envelope is an MCP wire change only: the cli document keeps
+  // `{ cngxVersion, result }` with no `ok` or `groundedVersion` key.
+  it('prints the CngxTreeSelect example document without the MCP envelope', async () => {
     let stdout = '';
     const io: CliIo = { stdout: (text) => (stdout += text), stderr: () => undefined };
 
-    const code = await main(['example', 'CngxTreeSelect', '--format', 'json'], { dataDir: new URL('../data/', import.meta.url), packageJson: PACKAGE_JSON }, io);
+    const code = await main(['example', 'CngxTreeSelect', '--format', 'json'], { dataDir: DATA_DIR, packageJson: PACKAGE_JSON }, io);
 
     expect(code).toBe(EXIT_OK);
-    expect(stdout).toBe(EXAMPLE_TREE_SELECT_JSON);
+    expect(stdout).toBe(expectedTreeSelectExample());
+    const document = JSON.parse(stdout) as Record<string, unknown>;
+    expect(Object.keys(document)).toEqual(['cngxVersion', 'result']);
+    expect(document).not.toHaveProperty('ok');
+    expect(document).not.toHaveProperty('groundedVersion');
+    expect(document['result']).toMatchObject({ name: 'CngxTreeSelect', kind: 'component' });
   });
 });
 
