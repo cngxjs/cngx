@@ -45,6 +45,7 @@ interface Harness {
   readonly beginClearLog: T[][];
   readonly toggledLog: Array<[CngxSelectOptionDef<T>, boolean]>;
   readonly changeLog: ArrayToggleChange<T>[];
+  readonly onToggledLog: Array<[CngxSelectOptionDef<T>, boolean, number]>;
   clearedCount: number;
   dispatch: ReturnType<typeof createArrayToggleDispatch<T>>;
 }
@@ -74,6 +75,7 @@ function makeHarness(initial: T[] = []): Harness {
     beginClearLog: [],
     toggledLog: [],
     changeLog: [],
+    onToggledLog: [],
     clearedCount: 0,
     dispatch: null as unknown as ReturnType<typeof createArrayToggleDispatch<T>>,
   };
@@ -91,6 +93,8 @@ function makeHarness(initial: T[] = []): Harness {
     emitCleared: () => {
       h.clearedCount += 1;
     },
+    onToggled: (option, isNowSelected) =>
+      h.onToggledLog.push([option, isNowSelected, h.toggledLog.length]),
   });
   return h;
 }
@@ -276,6 +280,64 @@ describe('createArrayToggleDispatch', () => {
         added: [],
         removed: ['b'],
       });
+    });
+  });
+
+  describe('onToggled', () => {
+    it('runs before the toggle events with the toggled option and direction', () => {
+      h = makeHarness(['a', 'b']);
+      h.dispatch.finalizeToggle(opt('b'), true, ['a']);
+      h.dispatch.finalizeToggle(opt('a'), false, ['a', 'b']);
+      expect(h.onToggledLog).toEqual([
+        [opt('b'), true, 0],
+        [opt('a'), false, 1],
+      ]);
+    });
+
+    it('does not run for a clear', () => {
+      h = makeHarness(['a']);
+      h.dispatch.clearAll();
+      expect(h.onToggledLog).toEqual([]);
+    });
+  });
+
+  describe('toggleByUser', () => {
+    it('without a commit action writes the toggle and finalizes it', () => {
+      h = makeHarness(['a']);
+      h.dispatch.toggleByUser(opt('b'));
+      expect(h.values()).toEqual(['a', 'b']);
+      expect(h.beginToggleLog).toEqual([]);
+      expect(h.changeLog[0]).toMatchObject({
+        values: ['a', 'b'],
+        previousValues: ['a'],
+        added: ['b'],
+        action: 'toggle',
+      });
+
+      h.dispatch.toggleByUser(opt('a'));
+      expect(h.values()).toEqual(['b']);
+      expect(h.changeLog[1]).toMatchObject({ previousValues: ['a', 'b'], removed: ['a'] });
+      expect(h.coreMock.announceCalls.map((c) => c.action)).toEqual(['added', 'removed']);
+    });
+
+    it('with a commit action routes through the AD commit path', () => {
+      h = makeHarness(['a']);
+      h.commitAction.set((next) => next);
+      h.dispatch.toggleByUser(opt('b'));
+      expect(h.lastCommittedLog).toEqual([['a']]);
+      expect(h.coreMock.togglingOption()).toEqual(opt('b'));
+      expect(h.values()).toEqual(['a', 'b']);
+      expect(h.beginToggleLog).toEqual([[['a', 'b'], ['a'], opt('b')]]);
+      expect(h.changeLog).toEqual([]);
+    });
+
+    it('with a commit action in pessimistic mode leaves values to the commit', () => {
+      h = makeHarness(['a']);
+      h.commitAction.set((next) => next);
+      h.commitMode.set('pessimistic');
+      h.dispatch.toggleByUser(opt('a'));
+      expect(h.values()).toEqual(['a']);
+      expect(h.beginToggleLog).toEqual([[[], ['a'], opt('a')]]);
     });
   });
 });

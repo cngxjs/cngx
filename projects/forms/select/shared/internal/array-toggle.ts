@@ -51,6 +51,11 @@ export interface ArrayToggleDispatchOptions<T> {
   readonly emitOptionToggled: (option: CngxSelectOptionDef<T>, added: boolean) => void;
   readonly emitSelectionChange: (change: ArrayToggleChange<T>) => void;
   readonly emitCleared: () => void;
+  /**
+   * Variant side effect of a finalized toggle, run before the events.
+   * `CngxActionMultiSelect` clears a stale quick-create error on a pick.
+   */
+  readonly onToggled?: (option: CngxSelectOptionDef<T>, isNowSelected: boolean) => void;
 }
 
 /**
@@ -85,11 +90,18 @@ export interface ArrayToggleDispatch<T> {
    * → previous = current ∪ {opt}.
    */
   readonly handleADActivate: (value: T, opt: CngxSelectOptionDef<T>) => void;
+  /**
+   * Toggle that bypasses the listbox (closed-trigger typeahead): commits
+   * through `handleADCommit` when a `commitAction` is bound, else writes and
+   * finalizes directly.
+   */
+  readonly toggleByUser: (opt: CngxSelectOptionDef<T>) => void;
 }
 
 /**
  * Array-shape toggle/clear dispatch shared by the multi-value composites
- * (`CngxMultiSelect`, `CngxCombobox`, `CngxReorderableMultiSelect`).
+ * (`CngxMultiSelect`, `CngxCombobox`, `CngxReorderableMultiSelect`,
+ * `CngxActionMultiSelect`).
  * Owns the finalize events, the imperative clear-all, and the two
  * AD-activation closures; the variant owns outputs (`source: this`),
  * the `lastCommittedValues` snapshot field, and the commit handler.
@@ -106,6 +118,7 @@ export function createArrayToggleDispatch<T>(
     isNowSelected: boolean,
     previousValues: readonly T[] = [],
   ): void => {
+    opts.onToggled?.(opt, isNowSelected);
     opts.emitOptionToggled(opt, isNowSelected);
     opts.emitSelectionChange({
       values: opts.values(),
@@ -178,5 +191,26 @@ export function createArrayToggleDispatch<T>(
     finalizeToggle(opt, currentSelected, previousValues);
   };
 
-  return { finalizeToggle, clearFinalize, clearAll, handleADCommit, handleADActivate };
+  const toggleByUser = (opt: CngxSelectOptionDef<T>): void => {
+    if (opts.commitAction()) {
+      handleADCommit(opt.value, opt);
+      return;
+    }
+    const previous = [...opts.values()];
+    const eq = opts.compareWith();
+    const wasSelected = previous.some((v) => eq(v, opt.value));
+    opts.values.set(
+      wasSelected ? previous.filter((v) => !eq(v, opt.value)) : [...previous, opt.value],
+    );
+    finalizeToggle(opt, !wasSelected, previous);
+  };
+
+  return {
+    finalizeToggle,
+    clearFinalize,
+    clearAll,
+    handleADCommit,
+    handleADActivate,
+    toggleByUser,
+  };
 }

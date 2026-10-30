@@ -1238,7 +1238,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
         );
         if (action.kind === 'select') {
           event.preventDefault();
-          this.toggleOptionByUser(action.option);
+          this.toggleDispatch.toggleByUser(action.option);
           this.typeaheadController.clearBuffer();
           return;
         }
@@ -1338,25 +1338,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     // before focus moves.
     this.chipStripRoving.setActive(toIndex);
     afterNextRender(() => this.chipStripRoving.focusAt(toIndex), { injector: this.injector });
-  }
-
-  private toggleOptionByUser(opt: CngxSelectOptionDef<T>): void {
-    const action = this.commitAction();
-    const previous = [...this.values()];
-    const eq = this.compareWith();
-    const wasSelected = previous.some((v) => eq(v, opt.value));
-    const next = wasSelected ? previous.filter((v) => !eq(v, opt.value)) : [...previous, opt.value];
-    if (action) {
-      this.lastCommittedValues = previous;
-      this.togglingOption.set(opt);
-      if (this.commitMode() === 'optimistic') {
-        this.values.set(next);
-      }
-      this.commitHandler.beginToggle(next, previous, opt, action);
-      return;
-    }
-    this.values.set(next);
-    this.toggleDispatch.finalizeToggle(opt, !wasSelected, previous);
   }
 
   /**

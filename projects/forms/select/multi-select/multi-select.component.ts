@@ -1130,7 +1130,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
         );
         if (action.kind === 'select') {
           event.preventDefault();
-          this.toggleOptionByUser(action.option);
+          this.toggleDispatch.toggleByUser(action.option);
           // Multi-toggle semantics: each keystroke is an independent
           // toggle. Reset the buffer so a repeat-key toggles the same
           // option off instead of accumulating ('rr' would match
@@ -1150,24 +1150,5 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       disabled: this.disabled,
       typeaheadController: this.typeaheadController,
     });
-  }
-
-  private toggleOptionByUser(opt: CngxSelectOptionDef<T>): void {
-    const action = this.commitAction();
-    const previous = [...this.values()];
-    const eq = this.compareWith();
-    const wasSelected = previous.some((v) => eq(v, opt.value));
-    const next = wasSelected ? previous.filter((v) => !eq(v, opt.value)) : [...previous, opt.value];
-    if (action) {
-      this.lastCommittedValues = previous;
-      this.togglingOption.set(opt);
-      if (this.commitMode() === 'optimistic') {
-        this.values.set(next);
-      }
-      this.commitHandler.beginToggle(next, previous, opt, action);
-      return;
-    }
-    this.values.set(next);
-    this.toggleDispatch.finalizeToggle(opt, !wasSelected, previous);
   }
 }
