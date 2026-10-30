@@ -3,9 +3,9 @@
 // agent that knows the class name (`CngxSelect`) and one that knows the selector
 // (`cngx-select`) reach the same entry.
 
-import { defaultFound } from './command.js';
 import type { DocsIndex } from './data/loader.js';
 import type { DocEntry } from './data/types.js';
+import { defaultFound } from './found.js';
 
 export type EntryKind = 'component' | 'directive' | 'injectable';
 

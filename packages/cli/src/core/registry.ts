@@ -22,7 +22,8 @@ export type {
   RenderOptions,
   UnwrappedAnswer,
 } from './command.js';
-export { defaultFound, isFound, unwrapAnswer } from './command.js';
+export { isFound, unwrapAnswer } from './command.js';
+export { defaultFound } from './found.js';
 
 export const COMMANDS: readonly CngxCommand[] = [
   findComponentCommand,
