@@ -87,21 +87,30 @@ function px(el: Element, property: string): number {
   return parseFloat(computedValue(el, property));
 }
 
+// The icon svg box rounds to whole pixels: the ink a rule names in em lands
+// on the rounded box, `extent` grid units of 24.
+function inkOnRoundedBox(inkPx: number, extent: number): number {
+  return (Math.round((inkPx * 24) / extent) * extent) / 24;
+}
+
 describe('base menu checked indicator', () => {
   // The bold text tick drew 0.72em wide; the check spans 14 units plus the
-  // 2-unit stroke.
-  it('draws the check 0.72em of the item font wide', () => {
+  // 2-unit stroke, on the rounded box.
+  it('draws the check 0.72em of the item font wide, on the rounded box', () => {
     const { svg, path, item } = parts(mount().root, '.item-check');
     const stroke = (px(svg, 'stroke-width') * svg.getBoundingClientRect().width) / 24;
     expect(path.getBoundingClientRect().width + stroke).toBeCloseTo(
-      0.72 * px(item, 'font-size'),
+      inkOnRoundedBox(0.72 * px(item, 'font-size'), 16),
       1,
     );
   });
 
-  it('draws the radio dot 0.7em of the item font across', () => {
+  it('draws the radio dot 0.7em of the item font across, on the rounded box', () => {
     const { path, item } = parts(mount().root, '.item-radio');
-    expect(path.getBoundingClientRect().width).toBeCloseTo(0.7 * px(item, 'font-size'), 1);
+    expect(path.getBoundingClientRect().width).toBeCloseTo(
+      inkOnRoundedBox(0.7 * px(item, 'font-size'), 8),
+      1,
+    );
   });
 
   it.each(['.item-check', '.item-radio'])('centres the %s icon in its gutter', (selector) => {

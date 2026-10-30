@@ -283,6 +283,12 @@ function strokePx(svg: SVGSVGElement): number {
     : 0;
 }
 
+// The icon svg box rounds to whole pixels: the ink a rule names in em lands
+// on the rounded box, `extent` grid units of 24.
+function inkOnRoundedBox(inkPx: number, extent: number): number {
+  return (Math.round((inkPx * 24) / extent) * extent) / 24;
+}
+
 function centreOffset(parts: GlyphParts): { readonly x: number; readonly y: number } {
   const ink = parts.path.getBoundingClientRect();
   const box = parts.button.getBoundingClientRect();
@@ -297,15 +303,16 @@ const CARET_SEGMENTS = ['cngx-pgn-page-size', 'cngx-pgn-page-of-pages'];
 
 describe('CngxPaginator default glyphs', () => {
   // The text chevrons drew 0.41em tall in the cngx-icon font; the chevron
-  // icons span 14 of 24 units with stroke, scaled by 24/14 to match.
-  it.each(NAV_SEGMENTS)('draws the %s chevron 0.41em of the icon font tall', (selector) => {
+  // icons span 14 of 24 units with stroke, scaled by 24/14 to match, on the
+  // rounded box.
+  it.each(NAV_SEGMENTS)('draws the %s chevron 0.41em of the icon font tall, on the rounded box', (selector) => {
     const parts = glyph(mountGlyphs(), selector);
     const icon = parts.svg.closest('.cngx-icon');
     if (!icon) {
       throw new Error(`${selector} renders its svg outside cngx-icon`);
     }
     const drawn = parts.path.getBoundingClientRect().height + strokePx(parts.svg);
-    expect(drawn).toBeCloseTo(0.41 * px(icon, 'font-size'), 1);
+    expect(drawn).toBeCloseTo(inkOnRoundedBox(0.41 * px(icon, 'font-size'), 14), 1);
   });
 
   it.each(NAV_SEGMENTS)('sizes the %s chevron box to whole pixels', (selector) => {
@@ -315,21 +322,24 @@ describe('CngxPaginator default glyphs', () => {
     expect(Number.isInteger(box.height)).toBe(true);
   });
 
-  it('draws the ellipsis 0.63em of the button font wide', () => {
+  it('draws the ellipsis 0.63em of the button font wide, on the rounded box', () => {
     const parts = glyph(mountGlyphs(), '.cngx-paginator__more');
     expect(parts.path.getBoundingClientRect().width).toBeCloseTo(
-      0.63 * px(parts.button, 'font-size'),
+      inkOnRoundedBox(0.63 * px(parts.button, 'font-size'), 18),
       1,
     );
   });
 
-  it.each(CARET_SEGMENTS)('draws the %s caret 0.4em of the caret font wide', (selector) => {
+  it.each(CARET_SEGMENTS)('draws the %s caret 0.4em of the caret font wide, on the rounded box', (selector) => {
     const parts = glyph(mountGlyphs(), `${selector} .cngx-paginator__select-caret`);
     const caret = parts.svg.parentElement;
     if (!caret) {
       throw new Error(`${selector} caret svg has no parent`);
     }
-    expect(parts.path.getBoundingClientRect().width).toBeCloseTo(0.4 * px(caret, 'font-size'), 1);
+    expect(parts.path.getBoundingClientRect().width).toBeCloseTo(
+      inkOnRoundedBox(0.4 * px(caret, 'font-size'), 14),
+      1,
+    );
   });
 
   it.each([...NAV_SEGMENTS, '.cngx-paginator__more'])(

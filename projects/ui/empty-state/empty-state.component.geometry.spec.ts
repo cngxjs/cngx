@@ -105,14 +105,19 @@ describe('CngxEmptyState default glyph', () => {
     expect(path.getBoundingClientRect().width + stroke).toBeCloseTo(47, 0);
   });
 
-  it('keeps the 48px footprint of the drawing it replaced', () => {
+  // The margin hands back the unrounded box, the svg paints the rounded one,
+  // so the footprint is 48px plus the rounding of the box.
+  it('keeps the 48px footprint of the drawing it replaced, on the rounded box', () => {
     const host = mount();
     const { svg } = glyph(host);
+    const box = svg.getBoundingClientRect().height;
     const footprint =
-      svg.getBoundingClientRect().height +
+      box +
       parseFloat(computedValue(svg, 'margin-top')) +
       parseFloat(computedValue(svg, 'margin-bottom'));
-    expect(footprint).toBeCloseTo(48, 1);
+    const unrounded = (48 * 47 * 24) / 48 / 21.4;
+    expect(box).toBe(Math.round(unrounded));
+    expect(footprint).toBeCloseTo(48 + box - unrounded, 1);
     const title = query(host, '.cngx-empty-state__title').getBoundingClientRect();
     const gap = parseFloat(computedValue(host, 'row-gap'));
     expect(title.top - svg.getBoundingClientRect().bottom).toBeCloseTo(

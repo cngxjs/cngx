@@ -19,7 +19,8 @@ import { CngxContextMenuItemRadio } from './context-menu-item-radio.component';
 // submenu caret are shared-icon svgs sized to the ink of the text glyphs they
 // replace: tick and dot 0.73em across, caret 0.3em across. The indicators sit
 // in an always-present gutter, so the label never moves with the checked
-// state, and both glyphs centre on the label line.
+// state, and both glyphs centre on the label line. Every icon svg box rounds
+// to whole pixels, so the box assertions round the em product too.
 
 const SCHEMES = ['light', 'dark'] as const;
 
@@ -101,26 +102,26 @@ afterEach(async () => {
 });
 
 describe('context-menu glyph geometry', () => {
-  it('sizes the tick to 0.73em of ink across (box 0.73em * 24 / 16)', async () => {
+  it('sizes the tick to 0.73em of ink across (box 0.73em * 24 / 16, rounded)', async () => {
     const root = await mount();
     const fs = fontSize(one(root, '.item-check'));
     const box = rect(root, '.item-check .cngx-menu-item__check > svg');
-    expect(box.width).toBeCloseTo((0.73 * 24 * fs) / 16, 1);
-    expect(box.height).toBeCloseTo((0.73 * 24 * fs) / 16, 1);
+    expect(box.width).toBeCloseTo(Math.round((0.73 * 24 * fs) / 16), 1);
+    expect(box.height).toBeCloseTo(Math.round((0.73 * 24 * fs) / 16), 1);
   });
 
-  it('sizes the dot to 0.73em across (box 0.73em * 24 / 8)', async () => {
+  it('sizes the dot to 0.73em across (box 0.73em * 24 / 8, rounded)', async () => {
     const root = await mount();
     const fs = fontSize(one(root, '.item-cozy'));
     const box = rect(root, '.item-cozy .cngx-menu-item__check > svg');
-    expect(box.width).toBeCloseTo((0.73 * 24 * fs) / 8, 1);
+    expect(box.width).toBeCloseTo(Math.round((0.73 * 24 * fs) / 8), 1);
   });
 
-  it('sizes the caret to 0.3em of ink across (box 0.3em * 24 / 8)', async () => {
+  it('sizes the caret to 0.3em of ink across (box 0.3em * 24 / 8, rounded)', async () => {
     const root = await mount();
     const fs = fontSize(one(root, '.item-sub'));
     const box = rect(root, '.item-sub .cngx-menu-item__suffix > svg');
-    expect(box.width).toBeCloseTo((0.3 * 24 * fs) / 8, 1);
+    expect(box.width).toBeCloseTo(Math.round((0.3 * 24 * fs) / 8), 1);
   });
 
   it('keeps the oversized dot box from growing the row', async () => {

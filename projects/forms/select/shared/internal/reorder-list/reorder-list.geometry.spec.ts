@@ -84,8 +84,9 @@ describe('CngxSelectReorderList under the touch floor', () => {
   });
 
   // The shared icons pad their ink inside the 24-unit grid; the list scales
-  // the boxes so the drawn grip and arrows keep the size they had before.
-  it('draws the grip 0.8125em tall and the arrows 0.5625em wide', async () => {
+  // the boxes so the drawn grip and arrows keep the size they had before. The
+  // icon svg box rounds to whole pixels, so the ink lands on the rounded box.
+  it('draws the grip 0.8125em tall and the arrows 0.5625em wide, on the rounded box', async () => {
     const fixture = TestBed.createComponent(Host);
     root = fixture.nativeElement as HTMLElement;
     document.body.appendChild(root);
@@ -94,10 +95,12 @@ describe('CngxSelectReorderList under the touch floor', () => {
 
     const row = root.querySelector<HTMLElement>('li[data-reorder-index]')!;
     const em = parseFloat(getComputedStyle(row).fontSize);
+    const inkOnRoundedBox = (inkPx: number, extent: number): number =>
+      (Math.round((inkPx * 24) / extent) * extent) / 24;
     const grip = row.querySelector('[data-reorder-handle] svg path')!.getBoundingClientRect();
-    expect(grip.height).toBeCloseTo(0.8125 * em, 1);
+    expect(grip.height).toBeCloseTo(inkOnRoundedBox(0.8125 * em, 15), 1);
     for (const arrow of Array.from(row.querySelectorAll('[data-move] svg path'))) {
-      expect(arrow.getBoundingClientRect().width).toBeCloseTo(0.5625 * em, 1);
+      expect(arrow.getBoundingClientRect().width).toBeCloseTo(inkOnRoundedBox(0.5625 * em, 14), 1);
     }
   });
 });
