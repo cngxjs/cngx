@@ -8,10 +8,36 @@ import { readFileSync } from 'node:fs';
 // `import [type] [Default,] { a, b as c, type d } from '@cngx/<entry>'`, across lines.
 const NAMED_IMPORT = /\bimport\s+(?:type\s+)?(?:[A-Za-z_$][\w$]*\s*,\s*)?\{([^}]*)\}\s*from\s*['"]@cngx\/[^'"]+['"]/g;
 
+// A `/` after one of these (or a keyword below) starts a regex literal, not a division.
+const REGEX_AFTER_CHAR = new Set([...'(,=:[!&|?{};+-*%<>~^']);
+const REGEX_AFTER_WORD = /\b(?:return|typeof|instanceof|in|of|new|delete|void|throw|case|do|else|yield|await)$/;
+
+/** The end (exclusive) of the regex literal starting at `start`, or -1 when it is not one. */
+function regexLiteralEnd(source: string, start: number): number {
+  let inClass = false;
+  for (let j = start + 1; j < source.length; j++) {
+    const char = source[j];
+    if (char === '\n') {
+      return -1;
+    }
+    if (char === '\\') {
+      j++;
+    } else if (char === '[') {
+      inClass = true;
+    } else if (char === ']') {
+      inClass = false;
+    } else if (char === '/' && !inClass) {
+      return j + 1;
+    }
+  }
+  return -1;
+}
+
 /**
- * `source` with every comment replaced by a space, string and template literals
- * kept: a comment inside an import list would otherwise swallow the name after it,
- * and a commented-out import would count.
+ * `source` with every comment replaced by a space, string, template and regex
+ * literals kept: a comment inside an import list would otherwise swallow the name
+ * after it, a commented-out import would count, and a `/*` inside a regex literal
+ * would read as a comment that swallows the rest of the file.
  */
 function stripComments(source: string): string {
   let out = '';
@@ -31,6 +57,16 @@ function stripComments(source: string): string {
       i = end === -1 ? source.length : end + 2;
       out += ' ';
       continue;
+    }
+    if (char === '/') {
+      const before = out.trimEnd();
+      const startsRegex = before === '' || REGEX_AFTER_CHAR.has(before[before.length - 1]) || REGEX_AFTER_WORD.test(before);
+      const end = startsRegex ? regexLiteralEnd(source, i) : -1;
+      if (end !== -1) {
+        out += source.slice(i, end);
+        i = end;
+        continue;
+      }
     }
     if (char === "'" || char === '"' || char === '`') {
       let j = i + 1;

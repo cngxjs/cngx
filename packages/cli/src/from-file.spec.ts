@@ -52,6 +52,19 @@ describe('extractCngxNames', () => {
     expect(extractCngxNames(source)).toEqual(['CngxSelect']);
   });
 
+  it('keeps a regex literal that contains comment markers', () => {
+    const source = [
+      'const glob = /[/*]/;',
+      'const url = /https?:\\/\\/x/g;',
+      'const half = total / 2; // a division, then a comment',
+      "import { CngxSelect } from '@cngx/forms/select';",
+      'export const re = (s: string) => /\\/*/.test(s);',
+      "import { CngxChip } from '@cngx/ui';",
+    ].join('\n');
+
+    expect(extractCngxNames(source)).toEqual(['CngxSelect', 'CngxChip']);
+  });
+
   it('reads the named part of a default-plus-named import', () => {
     expect(extractCngxNames("import Def, { CngxSelect } from '@cngx/forms/select';")).toEqual(['CngxSelect']);
   });
