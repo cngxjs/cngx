@@ -504,6 +504,8 @@ export function describeCommitContract(
         m.rejectLast();
         restore();
         expect(spoken.map((s) => s.message).filter((s) => CLEARED_PHRASE.test(s))).toEqual([]);
+        const soft = spoken.filter((s) => s.message.includes('Save failed, previous value restored'));
+        expect(soft.map((s) => s.politeness)).toEqual(['polite']);
       },
 
       arrayHandlerFactoryUsed: () => {

@@ -276,6 +276,8 @@ export interface CngxSelectCore<T, TCommit> {
   isCommittingOption(opt: CngxSelectOptionDef<T>): boolean;
   findOption(value: T): CngxSelectOptionDef<T> | null;
   commitErrorMessage(err: unknown): string;
+  /** Polite `soft`-policy sentence for a failed commit (`commitFailedSoft`). */
+  softCommitFailureMessage(): string;
   /** Failed quick-create sentence for the draft label `option`. */
   createFailedMessage(option: string, err: unknown): string;
   /**
@@ -758,6 +760,10 @@ export function createSelectCore<T, TCommit>(
     return config.ariaLabels().commitFailedMessage(failureLabelText(), detail);
   }
 
+  function softCommitFailureMessage(): string {
+    return config.ariaLabels().commitFailedSoft(failureLabelText());
+  }
+
   function createFailedMessage(option: string, err: unknown): string {
     const detail = err instanceof Error ? err.message : undefined;
     return config.ariaLabels().createFailedMessage(failureLabelText(), option, detail);
@@ -875,6 +881,7 @@ export function createSelectCore<T, TCommit>(
     isCommittingOption,
     findOption,
     commitErrorMessage,
+    softCommitFailureMessage,
     createFailedMessage,
     announce,
     panelHostAdapter,

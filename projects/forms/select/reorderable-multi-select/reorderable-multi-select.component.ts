@@ -954,6 +954,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     deps: {
       announcer: this.commitErrorAnnouncer,
       commitErrorMessage: (err) => this.core.commitErrorMessage(err),
+      softFailureMessage: () => this.core.softCommitFailureMessage(),
       // Soft policy: generic removal at the CURRENT selection count - the
       // announcer's scalar-shaped count/multi args are replaced here.
       softAnnounce: (opt, action) =>

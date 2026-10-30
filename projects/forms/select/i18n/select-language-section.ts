@@ -42,6 +42,11 @@ export interface CngxSelectLanguageSection {
   readonly commitFailedAnnouncement: CngxMessage;
   /** `{label}`, `{detail}`: announced when a `[commitAction]` rejects with an `Error`. */
   readonly commitFailedAnnouncementDetail: CngxMessage;
+  /**
+   * `{label}`: announced politely when a `[commitAction]` rejects under the
+   * `soft` announce policy, after the previous value is restored.
+   */
+  readonly commitFailedSoft: CngxMessage;
   /** `{label}`, `{option}`: announced when a quick-create rejects without an error message. */
   readonly createFailedAnnouncement: CngxMessage;
   /** `{label}`, `{option}`, `{detail}`: announced when a quick-create rejects with an `Error`. */
@@ -134,6 +139,7 @@ export const CNGX_SELECT_LANGUAGE_EN: CngxSelectLanguageSection = {
   fieldLabelFallback: 'Selection',
   commitFailedAnnouncement: '{label}: Save failed',
   commitFailedAnnouncementDetail: '{label}: Save failed - {detail}',
+  commitFailedSoft: '{label}: Save failed, previous value restored',
   createFailedAnnouncement: '{label}: Could not create {option}',
   createFailedAnnouncementDetail: '{label}: Could not create {option} - {detail}',
   searchInput: 'Search options',

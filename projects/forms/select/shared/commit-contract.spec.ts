@@ -112,7 +112,7 @@ describeCommitContract(SELECT, (c) => {
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
   it('A15: Retry after a failed clear replays the clear', c.retryClear);
   it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
-  it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
+  it('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('A6: a letter key on the closed trigger calls commitAction', c.closedTypeaheadCommits);
   it('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
   it('A15: clear after a failed commit clears the commit error', c.clearClearsCommitError);
@@ -128,7 +128,7 @@ describeCommitContract(TYPEAHEAD, (c) => {
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
   it('A15: Retry after a failed clear replays the clear', c.retryClear);
   it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
-  it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
+  it('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
   it('A15: clear after a failed commit clears the commit error', c.clearClearsCommitError);
   it(
@@ -143,7 +143,7 @@ describeCommitContract(ACTION_SELECT, (c) => {
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
   it('A15: Retry after a failed clear replays the clear', c.retryClear);
   it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
-  it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
+  it('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
   it('A15: clear after a failed commit clears the commit error', c.clearClearsCommitError);
   it(
@@ -158,7 +158,7 @@ describeCommitContract(SELECT_SHELL, (c) => {
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
   it('A15: Retry after a failed clear replays the clear', c.retryClear);
   it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
-  it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
+  it('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('A6: a letter key on the closed trigger calls commitAction', c.closedTypeaheadCommits);
   it('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
   it('A15: clear after a failed commit clears the commit error', c.clearClearsCommitError);
@@ -172,7 +172,7 @@ describeCommitContract(MULTI_SELECT, (c) => {
   it('A1/A11: Retry after a failed toggle replays the toggle', c.retryToggle);
   it('A1/A11: Retry after a failed clear replays the clear', c.retryClear);
   it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
-  it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
+  it('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
   it(
     'A14: a second commit while pending rolls back to the confirmed value',
@@ -184,7 +184,7 @@ describeCommitContract(COMBOBOX, (c) => {
   it('A1/A11: Retry after a failed toggle replays the toggle', c.retryToggle);
   it('A1/A11: Retry after a failed clear replays the clear', c.retryClear);
   it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
-  it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
+  it('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
   it(
     'A14: a second commit while pending rolls back to the confirmed value',
@@ -196,7 +196,7 @@ describeCommitContract(ACTION_MULTI_SELECT, (c) => {
   it('A1/A11: Retry after a failed toggle replays the toggle', c.retryToggle);
   it('A1/A11: Retry after a failed clear replays the clear', c.retryClear);
   it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
-  it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
+  it('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
   it(
     'A14: a second commit while pending rolls back to the confirmed value',
@@ -217,7 +217,7 @@ describeCommitContract(REORDERABLE, (c) => {
     c.reorderFailureAnnounced,
   );
   it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
-  it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
+  it('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
   it(
     'A14: a second commit while pending rolls back to the confirmed value',
@@ -229,7 +229,7 @@ describeCommitContract(TREE_SELECT, (c) => {
   it('A1/A11: Retry after a failed tree toggle replays the tree toggle', c.retryTree);
   it('A1/A11: Retry after a failed clear replays the clear', c.retryClear);
   it('A18: an action returning EMPTY settles as error and unblocks closing', c.emptyActionSettles);
-  it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
+  it('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
   it(
     'A14: a second commit while pending rolls back to the confirmed value',

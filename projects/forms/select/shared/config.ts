@@ -151,6 +151,13 @@ export interface CngxSelectAriaLabels {
    */
   readonly commitFailedMessage?: (label: string, detail: string | undefined) => string;
   /**
+   * Polite announcement when a `[commitAction]` rejects under the `soft`
+   * announce policy (the default of `CngxTypeahead` and `CngxActionSelect`).
+   * Receives the field label (or `fieldLabelFallback`) and returns the whole
+   * sentence. Default `'{label}: Save failed, previous value restored'`.
+   */
+  readonly commitFailedSoft?: (label: string) => string;
+  /**
    * Assertive announcement and trigger description when a quick-create
    * (`[quickCreateAction]`) rejects. Receives the field label (or
    * `fieldLabelFallback`), the draft label of the option and the rejection's

@@ -397,6 +397,7 @@ export const CNGX_LANGUAGE_EN = {
     fieldLabelFallback: 'Selection',
     commitFailedAnnouncement: '{label}: Save failed',
     commitFailedAnnouncementDetail: '{label}: Save failed - {detail}',
+    commitFailedSoft: '{label}: Save failed, previous value restored',
     createFailedAnnouncement: '{label}: Could not create {option}',
     createFailedAnnouncementDetail: '{label}: Could not create {option} - {detail}',
     searchInput: 'Search options',

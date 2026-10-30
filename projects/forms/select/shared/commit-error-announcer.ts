@@ -8,9 +8,9 @@ import type { CngxSelectOptionDef } from './option.model';
  *
  * - `verbose` - error text verbatim into the live-region at the supplied
  *   severity. `CngxSelect` uses `assertive`.
- * - `soft` - generic "removed" via the configured announcer format,
- *   polite. `CngxTypeahead` uses this so the free-text flow isn't
- *   interrupted.
+ * - `soft` - the `commitFailedSoft` copy ("Save failed, previous value
+ *   restored"), polite. `CngxTypeahead` uses this so the free-text flow
+ *   isn't interrupted.
  */
 export type CngxCommitErrorAnnouncePolicy =
   | { readonly kind: 'verbose'; readonly severity: 'assertive' | 'polite' }
@@ -23,6 +23,17 @@ export type CngxCommitErrorAnnouncePolicy =
 export interface CngxCommitErrorAnnounceDeps {
   readonly announcer: CngxSelectAnnouncer;
   readonly commitErrorMessage: (err: unknown) => string;
+  /**
+   * The polite sentence the `soft` policy speaks for a failed commit. Read
+   * untracked. Without it the default factory announces nothing on the soft
+   * path; it never speaks the "selection cleared" phrase for a failure.
+   */
+  readonly softFailureMessage?: () => string;
+  /**
+   * Selection announce hook. The default factory no longer calls it on a
+   * failed commit; kept for custom factories that announce through the
+   * selection format.
+   */
   readonly softAnnounce: (
     option: CngxSelectOptionDef<unknown> | null,
     action: 'added' | 'removed',
@@ -45,7 +56,7 @@ export interface CngxCommitErrorAnnounceDeps {
  *
  * // CngxTypeahead (soft, polite)
  * private readonly announceCommitError = createCommitErrorAnnouncer({
- *   deps: { announcer, commitErrorMessage, softAnnounce },
+ *   deps: { announcer, commitErrorMessage, softAnnounce, softFailureMessage },
  *   policy: signal({ kind: 'soft' } as const),
  * });
  * ```
@@ -58,8 +69,8 @@ export interface CngxCommitErrorAnnouncerOptions {
 /**
  * Default factory for the scalar commit-error announcer. Dispatches
  * via `policy.kind`: `'verbose'` announces the formatted error message
- * at the configured severity; `'soft'` calls the soft-announce hook
- * (`CngxTypeahead` removal pattern).
+ * at the configured severity; `'soft'` announces `softFailureMessage`
+ * politely (nothing when the dep is absent).
  *
  * Override the {@link CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY} token to
  * swap in telemetry or locale-aware variants.
@@ -76,7 +87,11 @@ export function createCommitErrorAnnouncer(
       opts.deps.announcer.announce(message, p.severity);
       return;
     }
-    opts.deps.softAnnounce(null, 'removed', 0, false);
+    const soft = opts.deps.softFailureMessage;
+    if (!soft) {
+      return;
+    }
+    opts.deps.announcer.announce(untracked(soft), 'polite');
   };
 }
 

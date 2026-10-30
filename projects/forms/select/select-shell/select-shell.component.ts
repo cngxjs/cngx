@@ -874,6 +874,7 @@ export class CngxSelectShell<T = unknown>
     deps: {
       announcer: this.announcer,
       commitErrorMessage: (err) => this.core.commitErrorMessage(err),
+      softFailureMessage: () => this.core.softCommitFailureMessage(),
       softAnnounce: (opt, action, count, multi) =>
         this.core.announce(opt as CngxSelectOptionDef<T> | null, action, count, multi),
     },

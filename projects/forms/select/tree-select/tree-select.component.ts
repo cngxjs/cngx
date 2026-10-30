@@ -782,6 +782,7 @@ export class CngxTreeSelect<T = unknown>
     deps: {
       announcer: this.announcer,
       commitErrorMessage: (err) => this.core.commitErrorMessage(err),
+      softFailureMessage: () => this.core.softCommitFailureMessage(),
       softAnnounce: (_opt, action) => this.core.announce(null, action, this.values().length, true),
     },
     policy: this.commitErrorAnnouncePolicy,

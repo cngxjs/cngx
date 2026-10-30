@@ -393,6 +393,7 @@ export const CNGX_LANGUAGE_DE = {
     fieldLabelFallback: 'Auswahl',
     commitFailedAnnouncement: '{label}: Speichern fehlgeschlagen',
     commitFailedAnnouncementDetail: '{label}: Speichern fehlgeschlagen - {detail}',
+    commitFailedSoft: '{label}: Speichern fehlgeschlagen, vorheriger Wert wiederhergestellt',
     createFailedAnnouncement: '{label}: {option} konnte nicht erstellt werden',
     createFailedAnnouncementDetail: '{label}: {option} konnte nicht erstellt werden - {detail}',
     searchInput: 'Optionen durchsuchen',

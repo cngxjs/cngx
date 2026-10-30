@@ -68,15 +68,63 @@ describe('createCommitErrorAnnouncer', () => {
     expect(live).toHaveBeenCalledWith('x', 'polite');
   });
 
-  it("soft policy delegates via softAnnounce and never touches the live region", () => {
+  it('soft policy speaks the soft failure message politely, never the cleared phrase', () => {
+    const softAnnounce = makeMockSoftAnnounce();
+    const callback = createCommitErrorAnnouncer({
+      deps: {
+        announcer,
+        commitErrorMessage: () => 'should-not-appear',
+        softFailureMessage: () => 'Colour: Save failed, previous value restored',
+        softAnnounce,
+      },
+      policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'soft' }),
+    });
+    callback(new Error('boom'));
+    expect(live).toHaveBeenCalledExactlyOnceWith(
+      'Colour: Save failed, previous value restored',
+      'polite',
+    );
+    expect(softAnnounce).not.toHaveBeenCalled();
+  });
+
+  it('soft policy without a soft failure message announces nothing', () => {
     const softAnnounce = makeMockSoftAnnounce();
     const callback = createCommitErrorAnnouncer({
       deps: { announcer, commitErrorMessage: () => 'should-not-appear', softAnnounce },
       policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'soft' }),
     });
     callback(new Error('boom'));
-    expect(softAnnounce).toHaveBeenCalledExactlyOnceWith(null, 'removed', 0, false);
+    expect(softAnnounce).not.toHaveBeenCalled();
     expect(live).not.toHaveBeenCalled();
+  });
+
+  it('soft policy does not re-announce on a language flip when called from an effect', () => {
+    const copy = signal('Colour: Save failed, previous value restored');
+    const failure = signal<unknown>(null);
+    const callback = createCommitErrorAnnouncer({
+      deps: {
+        announcer,
+        commitErrorMessage: () => 'unused',
+        softFailureMessage: () => copy(),
+        softAnnounce: makeMockSoftAnnounce(),
+      },
+      policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'soft' }),
+    });
+    TestBed.runInInjectionContext(() =>
+      effect(() => {
+        const err = failure();
+        if (err) {
+          callback(err);
+        }
+      }),
+    );
+    failure.set(new Error('boom'));
+    TestBed.flushEffects();
+    expect(live).toHaveBeenCalledTimes(1);
+
+    copy.set('Farbe: Speichern fehlgeschlagen, vorheriger Wert wiederhergestellt');
+    TestBed.flushEffects();
+    expect(live).toHaveBeenCalledTimes(1);
   });
 
   it('policy signal change flips strategy between calls without rebuilding the callback', () => {
@@ -96,7 +144,7 @@ describe('createCommitErrorAnnouncer', () => {
     policy.set({ kind: 'soft' });
     callback(new Error('second'));
     expect(live).toHaveBeenCalledTimes(1);
-    expect(softAnnounce).toHaveBeenCalledTimes(1);
+    expect(softAnnounce).toHaveBeenCalledTimes(0);
   });
 
   it('does not re-announce on a language flip when called from an effect', () => {
