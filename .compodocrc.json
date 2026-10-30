@@ -56,12 +56,14 @@
     ],
     "styleFiles": [
         "projects/*/theming/**/*.css",
-        "projects/themes/*.css"
+        "projects/themes/*.css",
+        "projects/themes/material/{*theme,*-bridge}.scss"
     ],
     "themingTabSections": [
         "overview",
         "index",
-        "tokens"
+        "tokens",
+        "mixins"
     ],
     "navTabConfig": [
         {
