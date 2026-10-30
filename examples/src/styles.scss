@@ -506,6 +506,44 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   font-variant-numeric: tabular-nums;
 }
 
+// Chrome box for output that only a screen reader gets (live-region text,
+// aria-busy). The dashed frame and the caption mark it as a mirror of the
+// accessibility layer, not as UI the artifact renders.
+.cngx-ex-sr-output {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border: 1px dashed var(--cngx-ex-border, #d1d5db);
+  border-radius: 6px;
+  font-size: 0.8125rem;
+}
+.cngx-ex-sr-output__title {
+  margin: 0 0 8px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cngx-ex-muted);
+}
+.cngx-ex-sr-output__list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 16px;
+  row-gap: 4px;
+  margin: 0;
+}
+.cngx-ex-sr-output__list dt {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--cngx-ex-muted);
+}
+.cngx-ex-sr-output__list dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.cngx-ex-sr-output__note {
+  margin: 8px 0 0;
+  color: var(--cngx-ex-muted);
+}
+
 // Touch-target demo aid: tints the otherwise-transparent hit box of an
 // interactive atom so the --cngx-target-min floor is visible. Only the
 // box grows (dense height -> 44px); the glyph keeps its design size,

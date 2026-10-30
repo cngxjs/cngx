@@ -1,9 +1,9 @@
 import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxButton, type CngxButtonSize } from '@cngx/common/button';
-import { CngxMenu, CngxMenuItem } from '@cngx/common/interactive';
+import { CngxAsyncClick, CngxMenu, CngxMenuItem, type AsyncAction } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
-import { computedValue } from '@cngx/testing/geometry';
+import { accessibleName, computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CNGX_BUTTON_CARET_ICON } from './caret-icon.token';
@@ -18,7 +18,7 @@ type Density = 'comfortable' | 'compact' | 'spacious';
 @Component({
   selector: 'cngx-menu-button-geometry-host',
   standalone: true,
-  imports: [CngxButton, CngxMenuButton, CngxMenu, CngxMenuItem, CngxPopover],
+  imports: [CngxButton, CngxMenuButton, CngxAsyncClick, CngxMenu, CngxMenuItem, CngxPopover],
   styleUrls: [
     '../../core/theming/layers.css',
     '../../core/theming/system-tokens.css',
@@ -37,6 +37,11 @@ type Density = 'comfortable' | 'compact' | 'spacious';
           </button>
         </p>
       }
+      <p>
+        <button cngxMenuButton class="m-busy" [cngxAsyncClick]="action" [menu]="menu" [popover]="pop">
+          Export
+        </button>
+      </p>
       <div cngxPopover #pop="cngxPopover">
         <ul cngxMenu [label]="'Export format'" tabindex="0" #menu="cngxMenu">
           <li cngxMenuItem value="pdf">PDF</li>
@@ -49,6 +54,7 @@ class GeometryHost {
   readonly sizes: readonly CngxButtonSize[] = ['xs', 'sm', 'md', 'lg'];
   readonly density = signal<Density>('comfortable');
   readonly motion = signal<'reduced' | null>(null);
+  readonly action: AsyncAction = () => new Promise<void>(() => undefined);
 }
 
 @Component({
@@ -177,6 +183,19 @@ describe('CngxMenuButton geometry', () => {
 
     button.click();
     fixture.detectChanges();
+  });
+
+  it('keeps the accessible name while a co-hosted cngxAsyncClick run is pending', async () => {
+    const { fixture, root } = mount();
+    const button = query(root, '.m-busy');
+    expect(await accessibleName('.m-busy')).toBe('Export');
+    button.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(button.dataset['busy']).toBe('true');
+    expect(await accessibleName('.m-busy')).toBe('Export');
+    expect(computedValue(query(button, '.cngx-button__label'), 'opacity')).toBe('0');
   });
 
   it('drops the turn transition under reduced motion', () => {

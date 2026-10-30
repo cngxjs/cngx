@@ -1,7 +1,7 @@
 import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { buildAsyncStateView, type AsyncStatus } from '@cngx/core/utils';
-import { computedValue } from '@cngx/testing/geometry';
+import { accessibleName, computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxActionButton } from './action-button';
@@ -169,18 +169,22 @@ describe('CngxActionButton geometry', () => {
       btn.querySelectorAll<HTMLElement>('.cngx-action-button__label'),
     ).filter((c) => getComputedStyle(c).visibility === 'visible');
     expect(visible.map((c) => c.textContent?.trim())).toEqual(['Saving the draft...']);
+    expect(getComputedStyle(query(btn, '.cngx-action-button__labels')).opacity).toBe('1');
     expect(btn.querySelector('.cngx-button__busy')).toBeNull();
   });
 
-  it('keeps the idle label under the spinner without a pending label', () => {
+  it('keeps the idle label under the spinner without a pending label', async () => {
     const fixture = mount();
     const btn = query(mountedRoot!, '.bare');
     const idleWidth = btn.getBoundingClientRect().width;
+    const idleName = await accessibleName('.bare');
+    expect(idleName).toBe('Save draft');
     fixture.componentInstance.status.set('pending');
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(btn.querySelector('.cngx-button__busy')).not.toBeNull();
-    expect(getComputedStyle(query(btn, '.cngx-action-button__labels')).visibility).toBe('hidden');
+    expect(await accessibleName('.bare')).toBe(idleName);
+    expect(getComputedStyle(query(btn, '.cngx-action-button__labels')).opacity).toBe('0');
     expect(btn.getBoundingClientRect().width).toBe(idleWidth);
   });
 });

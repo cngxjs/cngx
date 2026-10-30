@@ -98,6 +98,7 @@ Chrome conventions in templates:
 <div class="event-grid">…</div>      <!-- state readouts -->
 <div class="event-row">…</div>       <!-- single readout row -->
 <div class="status-row">…</div>      <!-- status badges -->
+<div class="cngx-ex-sr-output">…</div> <!-- what a screen reader gets: live-region text, aria-busy -->
 <div class="cngx-ex-chrome">…</div>  <!-- explicit opt-in marker -->
 ```
 

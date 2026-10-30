@@ -26,8 +26,10 @@
  *   Never on an `aria-disabled` (or busy) button
  * - `[aria-disabled='true']:not([data-busy])` - disabled by colour, never
  *   opacity; `cursor: not-allowed`; GrayText under forced colors
- * - `[data-busy]` - label kept but invisible (width stable), spinner ring
- *   centred over it; the ring stops rotating under reduced motion
+ * - `[data-busy]` - label kept in the box and in the accessible name but
+ *   painted at opacity 0 (width stable), spinner ring centred over it; the
+ *   ring stops rotating under reduced motion. The fade sits on every direct
+ *   child, so projected content cannot opt back in with its own rule
  * - `[data-start]` / `[data-end]` - a filled slot trims the padding on its
  *   side
  *
@@ -593,12 +595,14 @@
       background: transparent;
     }
 
-    /* Busy: the label keeps its box (width stable) under the ring. */
+    /* Busy: the label keeps its box (width stable) and its place in the
+       accessible name under the ring; opacity, not visibility, which would
+       drop it from the name. */
     :scope[data-busy] {
       cursor: progress;
     }
     :scope[data-busy] > :not(.cngx-button__busy) {
-      visibility: hidden;
+      opacity: 0;
     }
     .cngx-button__busy {
       position: absolute;
