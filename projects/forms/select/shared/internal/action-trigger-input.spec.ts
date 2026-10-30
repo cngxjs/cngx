@@ -126,5 +126,27 @@ describe('createActionTriggerInput', () => {
       expect(e.defaultPrevented).toBe(false);
       expect(h.dispatchLog).toEqual([]);
     });
+
+    it('does not create on the Enter that confirms an IME composition', () => {
+      h.searchTerm.set('にほん');
+      const composing = new KeyboardEvent('keydown', {
+        key: 'Enter',
+        isComposing: true,
+        cancelable: true,
+      });
+      h.trigger.handleTriggerEnter(composing);
+      expect(composing.defaultPrevented).toBe(false);
+      expect(h.dispatchLog).toEqual([]);
+    });
+
+    it('does not create on a keyCode 229 Enter (Safari composition end)', () => {
+      h.searchTerm.set('にほん');
+      const safari = new KeyboardEvent('keydown', { key: 'Enter', keyCode: 229, cancelable: true });
+      h.trigger.handleTriggerEnter(safari);
+      expect(h.dispatchLog).toEqual([]);
+
+      h.trigger.handleTriggerEnter(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true }));
+      expect(h.dispatchLog).toEqual([[{ label: 'にほん' }, 'にほん', undefined]]);
+    });
   });
 });

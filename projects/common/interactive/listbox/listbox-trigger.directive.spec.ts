@@ -183,6 +183,39 @@ describe('CngxListboxTrigger', () => {
     expect(popover.isVisible()).toBe(false);
   });
 
+  for (const [label, init] of [
+    ['isComposing', { isComposing: true }],
+    ['keyCode 229', { keyCode: 229 }],
+  ] as const) {
+    it(`ignores an Enter that confirms an IME composition (${label})`, () => {
+      const { popover, triggerEl, listbox, ad } = setup();
+      popover.show();
+      TestBed.flushEffects();
+      ad.highlightByValue('green');
+      TestBed.flushEffects();
+      const event = new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true,
+        cancelable: true,
+        ...init,
+      });
+      triggerEl.dispatchEvent(event);
+      TestBed.flushEffects();
+      expect(event.defaultPrevented).toBe(false);
+      expect(listbox.selected()).toEqual([]);
+      expect(popover.isVisible()).toBe(true);
+    });
+  }
+
+  it('does not open the panel on an ArrowDown inside an IME composition', () => {
+    const { popover, triggerEl } = setup();
+    triggerEl.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, isComposing: true }),
+    );
+    TestBed.flushEffects();
+    expect(popover.isVisible()).toBe(false);
+  });
+
   it('Arrow keys while open navigate without closing', () => {
     const { popover, triggerEl, ad } = setup();
     popover.show();
