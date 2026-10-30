@@ -1,4 +1,12 @@
-import { Component, signal, ViewEncapsulation, type Type } from '@angular/core';
+import {
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  Directive,
+  model,
+  signal,
+  ViewEncapsulation,
+  type Type,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxFormField, CngxPrefix, type CngxFieldAccessor } from '@cngx/forms/field';
 import { CngxInput } from '@cngx/forms/input';
@@ -11,7 +19,11 @@ import { CngxFieldBox } from '../../field/field-box.directive';
 import { CngxActionMultiSelect } from '../action-multi-select/action-multi-select.component';
 import { CngxActionSelect } from '../action-select/action-select.component';
 import { CngxCombobox } from '../combobox/combobox.component';
+import { CngxSelectDivider } from '../declarative/divider.component';
+import { CngxSelectOptgroup } from '../declarative/optgroup.component';
 import { CngxSelectOption } from '../declarative/option.component';
+import { CngxSelectSearch } from '../declarative/select-search.component';
+import { CNGX_SELECT_SHELL_SEARCH_HOST } from '../declarative/select-search-host';
 import { CngxMultiSelect } from '../multi-select/multi-select.component';
 import { CngxReorderableMultiSelect } from '../reorderable-multi-select/reorderable-multi-select.component';
 import { CngxSelectShell } from '../select-shell/select-shell.component';
@@ -355,6 +367,7 @@ class CaretOverrideHost {
       <cngx-select class="v-fill" skin="fill" [label]="'Colour'" [options]="options" />
       <div class="cngx-select__panel contrast-panel" style="position: static">Panel</div>
       <span class="cngx-select__chip cngx-select__chip--dragging contrast-chip">Red</span>
+      <span class="muted-probe" style="color: var(--cngx-color-text-muted)">Muted</span>
     </div>
   `,
 })
@@ -617,12 +630,14 @@ describe('select-family field skins', () => {
     expect(root.querySelector('.readonly')?.getAttribute('aria-readonly')).toBe('true');
     const editableRest = computedValue(editable, 'background-color');
     const readonlyRest = computedValue(readonly, 'background-color');
+    const readonlyUnderline = computedValue(readonly, 'border-bottom-color');
 
     await userEvent.hover(editable);
     expect(computedValue(editable, 'background-color')).not.toBe(editableRest);
 
     await userEvent.hover(readonly);
     expect(computedValue(readonly, 'background-color')).toBe(readonlyRest);
+    expect(computedValue(readonly, 'border-bottom-color')).toBe(readonlyUnderline);
   });
 
   // The single select stands in for the `display: contents` roots, the tree
@@ -748,5 +763,171 @@ describe('select-family field skins', () => {
         4.5,
       );
     });
+
+    it('paints the placeholder in the muted text colour', async () => {
+      const root = await mountContrast();
+      const placeholder = one(root, '.v-outline .cngx-select__label--placeholder');
+      expect(computedValue(placeholder, 'color')).toBe(
+        computedValue(one(root, '.muted-probe'), 'color'),
+      );
+    });
+  });
+});
+
+// Every compactness token of the panel parts and the declarative building
+// blocks is SET from the --cngx-space-* scale at its default host, so a
+// [data-density] ancestor compacts it. Each density block carries a probe
+// that resolves the scale steps in that density.
+@Directive({
+  selector: '[fakeSearchHost]',
+  standalone: true,
+  providers: [{ provide: CNGX_SELECT_SHELL_SEARCH_HOST, useExisting: FakeSearchHost }],
+})
+class FakeSearchHost {
+  readonly searchTerm = model<string>('');
+  readonly listboxRef = signal(undefined);
+  close(): void {
+    /* no-op */
+  }
+  focus(): void {
+    /* no-op */
+  }
+}
+
+const DENSITIES = ['compact', 'comfortable'] as const;
+
+@Component({
+  selector: 'cngx-select-density-host',
+  standalone: true,
+  imports: [
+    CngxSelect,
+    CngxSelectOption,
+    CngxSelectOptgroup,
+    CngxSelectDivider,
+    CngxSelectSearch,
+    FakeSearchHost,
+  ],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    '../../../core/theming/density-tokens.css',
+    '../../theming/components/cngx-field-skin.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: `
+    @for (density of densities; track density) {
+      <div [class]="'d-' + density" [attr.data-density]="density">
+        <span
+          class="scale-probe"
+          style="
+            padding-block-start: var(--cngx-space-xs);
+            padding-inline-start: var(--cngx-space-sm);
+            padding-inline-end: var(--cngx-space-md);
+          "
+        ></span>
+        <cngx-select class="fill" skin="fill" [label]="'Colour'" [options]="options" />
+        <cngx-select-shell>
+          <div class="cngx-select__panel" style="position: static">
+            <div class="cngx-select__action--top">Top</div>
+            <div class="cngx-select__group-header">Group</div>
+            <div class="cngx-select__option">Row</div>
+            <div class="cngx-select__empty">Empty</div>
+            <div class="cngx-select__action--bottom">Bottom</div>
+          </div>
+        </cngx-select-shell>
+        <cngx-option class="decl-option" [value]="'red'">Red</cngx-option>
+        <cngx-optgroup label="Warm">
+          <cngx-option [value]="'amber'">Amber</cngx-option>
+        </cngx-optgroup>
+        <cngx-select-divider class="decl-divider" />
+        <div fakeSearchHost><cngx-select-search /></div>
+      </div>
+    }
+  `,
+})
+class DensityHost {
+  readonly densities = DENSITIES;
+  readonly options = OPTIONS;
+}
+
+describe('select-family density derivation', () => {
+  type Box = 'padding' | 'margin';
+  type Side = 'top' | 'right' | 'bottom' | 'left';
+  type Step = 'xs' | 'sm' | 'md' | '0';
+
+  function scale(block: HTMLElement): Record<Step, string> {
+    const probe = block.querySelector<HTMLElement>('.scale-probe')!;
+    return {
+      xs: computedValue(probe, 'padding-top'),
+      sm: computedValue(probe, 'padding-left'),
+      md: computedValue(probe, 'padding-right'),
+      '0': '0px',
+    };
+  }
+
+  function el(block: HTMLElement, selector: string): HTMLElement {
+    const found = block.querySelector<HTMLElement>(selector);
+    if (!found) {
+      throw new Error(`${selector} did not render`);
+    }
+    return found;
+  }
+
+  // [selector, box, block step, inline step]
+  const CASES: [string, Box, Step, Step][] = [
+    ['.cngx-select__group-header', 'padding', 'xs', 'sm'],
+    ['cngx-optgroup .cngx-select__group-header', 'padding', 'xs', 'sm'],
+    ['.cngx-select__option', 'padding', 'xs', 'sm'],
+    ['cngx-option.decl-option', 'padding', 'xs', 'sm'],
+    ['.cngx-select__empty', 'padding', 'sm', 'sm'],
+    ['cngx-select-divider.decl-divider', 'margin', 'xs', '0'],
+    ['cngx-select-search', 'padding', 'sm', 'sm'],
+    ['.cngx-select-search__input', 'padding', 'xs', 'sm'],
+    ['.fill .cngx-field-trigger', 'padding', 'sm', 'md'],
+  ];
+
+  it.each(CASES)('sets the %s %s from the scale in every density', (selector, box, blockStep, inlineStep) => {
+    const root = mount(DensityHost);
+    const seen = new Set<string>();
+    for (const density of DENSITIES) {
+      const block = el(root, `.d-${density}`);
+      const steps = scale(block);
+      const target = el(block, selector);
+      const sides: [Side, Step][] = [
+        ['top', blockStep],
+        ['bottom', blockStep],
+        ['left', inlineStep],
+      ];
+      for (const [side, step] of sides) {
+        expect(computedValue(target, `${box}-${side}`), `${density} ${side}`).toBe(steps[step]);
+      }
+      seen.add(computedValue(target, `${box}-top`));
+    }
+    expect(seen.size).toBe(DENSITIES.length);
+  });
+
+  it('sets the option-row gap from the scale on the data-mode and declarative rows', () => {
+    const root = mount(DensityHost);
+    for (const density of DENSITIES) {
+      const block = el(root, `.d-${density}`);
+      const { sm } = scale(block);
+      expect(computedValue(el(block, '.cngx-select__option'), 'column-gap')).toBe(sm);
+      expect(computedValue(el(block, 'cngx-option.decl-option'), 'column-gap')).toBe(sm);
+    }
+  });
+
+  it('sets the action separator padding and margin from the scale', () => {
+    const root = mount(DensityHost);
+    for (const density of DENSITIES) {
+      const block = el(root, `.d-${density}`);
+      const { xs } = scale(block);
+      const top = el(block, '.cngx-select__action--top');
+      const bottom = el(block, '.cngx-select__action--bottom');
+      expect(computedValue(top, 'padding-bottom')).toBe(xs);
+      expect(computedValue(top, 'margin-bottom')).toBe(xs);
+      expect(computedValue(bottom, 'padding-top')).toBe(xs);
+      expect(computedValue(bottom, 'margin-top')).toBe(xs);
+    }
   });
 });
