@@ -1,4 +1,10 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  inject,
+  Renderer2,
+  RendererStyleFlags2,
+  ViewEncapsulation,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import { CNGX_ICON_CARET_DOWN, CNGX_ICON_X, type CngxIconData } from '@cngx/utils';
@@ -7,6 +13,7 @@ import { cdp } from 'vitest/browser';
 
 import { CngxIcon } from './icon.component';
 import { CngxIconSvg } from './icon-svg.component';
+import { createIconSvgElement } from './icon-svg-element';
 
 // Runs in a real Chromium (the `test-geometry` target): paint and size come
 // from the layered stylesheets, which jsdom does not compute. The context
@@ -92,7 +99,40 @@ class IconSvgBareGeometryHost {
   protected readonly icon = WITH_MICRO;
 }
 
+// Builds the glyph through the helper, as the tab link and menu indicator do.
+@Component({
+  selector: 'cngx-icon-svg-helper-geometry-host',
+  standalone: true,
+  template: '<div class="helper-root" style="font-size: 16px; color: rgb(255, 0, 0)"></div>',
+})
+class IconSvgHelperHost {
+  readonly renderer = inject(Renderer2);
+}
+
+@Component({
+  selector: 'cngx-icon-svg-helper-sheet-geometry-host',
+  standalone: true,
+  styleUrls: ['../../../core/theming/layers.css', '../../theming/components/cngx-icon-glyph.css'],
+  encapsulation: ViewEncapsulation.None,
+  template: '<div class="helper-root" style="font-size: 16px; color: rgb(255, 0, 0)"></div>',
+})
+class IconSvgHelperSheetHost {
+  readonly renderer = inject(Renderer2);
+}
+
 let mountedRoot: HTMLElement | null = null;
+
+function mountHelper(type: new () => { renderer: Renderer2 }, size: number): SVGSVGElement {
+  const fixture = TestBed.createComponent(type);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  const { renderer } = fixture.componentInstance;
+  const { element } = createIconSvgElement(renderer, WITH_MICRO, 'helper-glyph');
+  renderer.setStyle(element, '--cngx-icon-svg-size', `${size}px`, RendererStyleFlags2.DashCase);
+  renderer.appendChild(query(mountedRoot, '.helper-root'), element);
+  return element;
+}
 
 function mountHost(type: new () => unknown): HTMLElement {
   const fixture = TestBed.createComponent(type);
@@ -221,6 +261,20 @@ describe('CngxIconSvg micro tier', () => {
 
   it('paints only the 24-grid path without the global sheet', () => {
     const svg = query(mountHost(IconSvgBareGeometryHost), '.bare');
+    expect(visiblePath(svg)).toBe('path');
+  });
+
+  it('shows the micro path of a helper-built svg in the band with the global sheet', () => {
+    expect(visiblePath(mountHelper(IconSvgHelperSheetHost, 12))).toBe('micro');
+  });
+
+  it('keeps a helper-built svg on the 24-grid path outside the band', () => {
+    expect(visiblePath(mountHelper(IconSvgHelperSheetHost, 24))).toBe('path');
+  });
+
+  it('paints only the 24-grid path of a helper-built svg without the global sheet', () => {
+    const svg = mountHelper(IconSvgHelperHost, 12);
+    expect(svg.getBoundingClientRect().width).toBeCloseTo(12, 1);
     expect(visiblePath(svg)).toBe('path');
   });
 });

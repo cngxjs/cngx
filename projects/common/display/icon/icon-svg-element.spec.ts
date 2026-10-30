@@ -1,6 +1,6 @@
 import { Component, inject, Renderer2 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CNGX_ICON_ALERT, CNGX_ICON_DOT } from '@cngx/utils';
+import { CNGX_ICON_ALERT, CNGX_ICON_DOT, type CngxIconData } from '@cngx/utils';
 import { describe, expect, it } from 'vitest';
 
 import { createIconSvgElement } from './icon-svg-element';
@@ -9,6 +9,11 @@ import { createIconSvgElement } from './icon-svg-element';
 class RendererHost {
   readonly renderer = inject(Renderer2);
 }
+
+const WITH_MICRO: CngxIconData = {
+  ...CNGX_ICON_ALERT,
+  micro: { viewBox: '0 0 12 12', d: 'M5 1H7V9H5Z' },
+};
 
 function renderer(): Renderer2 {
   return TestBed.createComponent(RendererHost).componentInstance.renderer;
@@ -53,5 +58,35 @@ describe('createIconSvgElement', () => {
     expect(element.hasAttribute('stroke')).toBe(false);
     expect(element.style.getPropertyValue('stroke-width')).toBe('');
     expect(element.querySelectorAll('path').length).toBe(1);
+  });
+
+  it('carries the shared glyph class and marks the 24-grid path', () => {
+    const { element } = createIconSvgElement(renderer(), CNGX_ICON_ALERT, 'my-icon');
+    expect(element.classList.contains('cngx-icon-glyph')).toBe(true);
+    expect(element.querySelector('path')?.classList.contains('cngx-icon-svg__path')).toBe(true);
+  });
+
+  it('builds the micro path second, hidden and filled by presentation attributes', () => {
+    const { element } = createIconSvgElement(renderer(), WITH_MICRO, 'my-icon');
+    const paths = element.querySelectorAll('path');
+    expect(paths.length).toBe(2);
+    expect(paths[0].getAttribute('d')).toBe(CNGX_ICON_ALERT.d);
+    const micro = paths[1];
+    expect(micro.classList.contains('cngx-icon-svg__micro')).toBe(true);
+    expect(micro.getAttribute('d')).toBe(WITH_MICRO.micro?.d);
+    expect(micro.getAttribute('transform')).toBe('scale(2)');
+    expect(micro.getAttribute('fill')).toBe('currentColor');
+    expect(micro.getAttribute('stroke')).toBe('none');
+    expect(micro.getAttribute('display')).toBe('none');
+  });
+
+  it('drops the micro path when the next icon has none, and rebuilds it once', () => {
+    const icon = createIconSvgElement(renderer(), WITH_MICRO, 'my-icon');
+    icon.setIcon(CNGX_ICON_DOT);
+    expect(icon.element.querySelectorAll('path').length).toBe(1);
+    expect(icon.element.querySelector('.cngx-icon-svg__micro')).toBeNull();
+    icon.setIcon(WITH_MICRO);
+    icon.setIcon(WITH_MICRO);
+    expect(icon.element.querySelectorAll('.cngx-icon-svg__micro').length).toBe(1);
   });
 });
