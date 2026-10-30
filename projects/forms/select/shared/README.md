@@ -44,7 +44,7 @@ Internal symbols. None of these is in `public-api.ts`; the variants use them and
 | `CngxSelectTriggerAria`          | Bundled ARIA projection for the trigger             |
 | `CngxSelectAnnouncerInputs`      | Per-instance announcer config                       |
 
-See [`ARCHITECTURE.md` § Core factory](../../../ARCHITECTURE.md#core-factory-createselectcore) for the input/output diagram.
+See [`ARCHITECTURE.md` § Core factory](../ARCHITECTURE.md#core-factory-createselectcore) for the input/output diagram.
 
 
 
@@ -437,7 +437,7 @@ Unified aggregator across all three config surfaces.
 | `CngxSelectAggregatorFeature`                            | `CngxSelectConfigFeature \| CngxActionSelectConfigFeature \| CngxReorderableSelectConfigFeature` |
 
 The three individual `provide*` providers stay exported for back-compat - the aggregator is purely additive.
-See [`ARCHITECTURE.md` § Configuration cascade](../../../ARCHITECTURE.md#configuration-cascade).
+See [`ARCHITECTURE.md` § Configuration cascade](../ARCHITECTURE.md#configuration-cascade).
 
 ### `internal/resolve-config.ts`
 
@@ -515,4 +515,4 @@ The schematic can eject the trigger skin into the consumer's project while keepi
 
 ## How to extend
 
-See [`ARCHITECTURE.md` § How to extend](../../../ARCHITECTURE.md#how-to-extend) - four walkthroughs covering new slots, new ariaLabels keys, factory overrides, and adding a ninth variant.
+See [`ARCHITECTURE.md` § How to extend](../ARCHITECTURE.md#how-to-extend) - four walkthroughs covering new slots, new ariaLabels keys, factory overrides, and adding a ninth variant.

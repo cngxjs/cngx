@@ -131,7 +131,7 @@ if (id) {
 ### Custom chip / trigger summary
 
 `*cngxTreeSelectChip` overrides individual chips; `*cngxTreeSelectTriggerLabel` replaces the entire chip strip.
-Same context shape as the multi-select equivalents - see [`ARCHITECTURE.md`](../../../ARCHITECTURE.md#template-slot-system).
+Same context shape as the multi-select equivalents - see [`ARCHITECTURE.md`](../ARCHITECTURE.md#template-slot-system).
 
 ## Mobile sheet
 
