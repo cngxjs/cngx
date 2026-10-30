@@ -308,6 +308,13 @@ describe('CngxPaginator default glyphs', () => {
     expect(drawn).toBeCloseTo(0.41 * px(icon, 'font-size'), 1);
   });
 
+  it.each(NAV_SEGMENTS)('sizes the %s chevron box to whole pixels', (selector) => {
+    const box = glyph(mountGlyphs(), selector).svg.getBoundingClientRect();
+    expect(box.width).toBeGreaterThan(0);
+    expect(Number.isInteger(box.width)).toBe(true);
+    expect(Number.isInteger(box.height)).toBe(true);
+  });
+
   it('draws the ellipsis 0.63em of the button font wide', () => {
     const parts = glyph(mountGlyphs(), '.cngx-paginator__more');
     expect(parts.path.getBoundingClientRect().width).toBeCloseTo(
