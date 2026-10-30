@@ -388,7 +388,13 @@ html { @include cngx-system.theme($theme); }
     }
   });
 
-  test('both parts read GrayText under forced colors', async ({ page }) => {
+  test('both parts read GrayText under forced colors', async ({ page, browserName }) => {
+    // The disabled number input has no author GrayText rule; Chromium's
+    // forced-colors repaint supplies it, emulated WebKit repaints nothing.
+    test.skip(
+      browserName !== 'chromium',
+      'forced-colors system-colour resolution is asserted in Chromium only',
+    );
     await page.emulateMedia({ forcedColors: 'active' });
     const gray = await probeColour(page, 'GrayText');
     expect(gray).not.toBe(await probeColour(page, 'CanvasText'));
