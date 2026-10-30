@@ -54,7 +54,7 @@
     {
       "class": "CngxChip",
       "file": "projects/common/display/chip/chip.component.ts",
-      "line": 123,
+      "line": 126,
       "member": "resolvedRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
