@@ -29,8 +29,8 @@ import {
 
 /**
  * Regenerate `copyDir` from `canonicalDir`. Returns `{ copied, removed, stray }`
- * (`stray`: specs, `*.core-spec.ts`, `*.test.ts`, `__fixtures__/` and dotfiles in
- * the copy, reported and never deleted), or
+ * (`stray`: `*.spec.ts`, `*.core-spec.ts` and dotfiles in the copy, reported and
+ * never deleted), or
  * `{ refused }` with the reason when the canonical tree is missing or empty, in
  * which case nothing was written or removed. The dirs are injectable for specs.
  */

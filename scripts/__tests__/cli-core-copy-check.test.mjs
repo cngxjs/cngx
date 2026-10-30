@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -19,6 +19,7 @@ import {
 
 const SCRIPT = fileURLToPath(new URL('../cli-core-copy-check.mjs', import.meta.url));
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
+const read = (...path) => readFileSync(join(ROOT, ...path), 'utf8');
 
 // In-memory trees: { 'rel/path.ts': 'content' }.
 const reader = (tree) => (file) => Buffer.from(tree[file]);
@@ -149,18 +150,19 @@ describe('runCopyCheck', () => {
     expect(run.out).toContain('command.ts (bytes differ)');
   });
 
-  it('ignores a .spec.mts file and a testing/ helper in the canonical tree', () => {
+  it('copies a .spec.mts file and a testing/ helper like any core file', () => {
     const canonical = { ...CANONICAL, 'query.spec.mts': 'it();\n', 'testing/helper.ts': 'export const h = 1;\n' };
 
-    expect(check(makeTrees(canonical, CANONICAL)).code).toBe(0);
+    expect(check(makeTrees(canonical, canonical)).code).toBe(0);
   });
 
-  it('mutation: a .spec.mts file or a testing/ helper planted in the copy fails the check', () => {
-    const run = check(makeTrees(CANONICAL, { ...CANONICAL, 'query.spec.mts': 'it();\n', 'testing/helper.ts': 'export const h = 1;\n' }));
+  it('mutation: a .spec.mts file or a testing/ helper missing from the copy fails the check', () => {
+    const canonical = { ...CANONICAL, 'query.spec.mts': 'it();\n', 'testing/helper.ts': 'export const h = 1;\n' };
+    const run = check(makeTrees(canonical, CANONICAL));
 
     expect(run.code).toBe(1);
-    expect(run.out).toContain('query.spec.mts (test-only file or dotfile in the cli copy');
-    expect(run.out).toContain('testing/helper.ts (test-only file or dotfile in the cli copy');
+    expect(run.out).toContain('query.spec.mts (missing in the cli copy)');
+    expect(run.out).toContain('testing/helper.ts (missing in the cli copy)');
   });
 
   it('treats an empty directory in either tree as no file and no divergence', () => {
@@ -247,5 +249,44 @@ describe('tree roots', () => {
     expect(count(fromRoot.stdout)).toBeGreaterThan(0);
     expect(fromTmp.status).toBe(0);
     expect(count(fromTmp.stdout)).toBe(count(fromRoot.stdout));
+  });
+});
+
+// D5: a core path is test-only exactly when a package build excludes its test-file
+// pattern and a vitest config includes it. The cli build compiles the copy, so its
+// tsconfig must exclude the pattern too; anything else is a core file, copied byte
+// for byte, so the copy never drops a file tsc would compile.
+describe('the test-only rule agrees with the build and vitest configs', () => {
+  const tsconfigExclude = (pkg) => JSON.parse(read('packages', pkg, 'tsconfig.json')).exclude;
+  /** The file suffix of every `**\/*<suffix>` glob, e.g. `.spec.ts`. */
+  const suffixes = (globs) => globs.map((glob) => /\*\*\/\*(\.[\w.-]+)$/.exec(glob)?.[1]).filter((suffix) => suffix !== undefined);
+
+  async function testOnlySuffixes() {
+    const mcpVitest = (await import('../../packages/mcp/vitest.config.mjs')).default;
+    const cliCoreVitest = (await import('../../packages/cli/vitest.core.config.mjs')).default;
+    const cliExcluded = suffixes(tsconfigExclude('cli'));
+    const excluded = new Set([...suffixes(tsconfigExclude('mcp')), ...cliExcluded]);
+    const included = new Set(suffixes([...mcpVitest.test.include, ...cliCoreVitest.test.include]));
+    return [...excluded].filter((suffix) => cliExcluded.includes(suffix) && included.has(suffix)).sort();
+  }
+
+  it('derives .core-spec.ts and .spec.ts as the only test-only suffixes', async () => {
+    expect(await testOnlySuffixes()).toEqual(['.core-spec.ts', '.spec.ts']);
+  });
+
+  it.each([
+    ['a.spec.ts', false],
+    ['a.core-spec.ts', false],
+    ['a.spec.mts', true],
+    ['a.test.ts', true],
+    ['testing/x.ts', true],
+    ['__fixtures__/x.json', true],
+    ['x.json', true],
+    ['x.ts', true],
+  ])('isCoreFile(%j) is %s, as the configs derive it', async (probe, core) => {
+    const testOnly = (await testOnlySuffixes()).some((suffix) => probe.endsWith(suffix));
+
+    expect(isCoreFile(probe)).toBe(core);
+    expect(isCoreFile(probe)).toBe(!testOnly);
   });
 });

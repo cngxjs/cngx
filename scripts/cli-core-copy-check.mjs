@@ -5,10 +5,14 @@
 //
 // Unlike doctor-copy-check.mjs, which compares an explicit file list, this walks
 // both trees recursively: a new core file is part of the copy the moment it
-// exists, so it cannot be forgotten in a list. Spec files (`.spec.ts`,
-// `.spec.mts`, `.core-spec.ts`, `.test.ts`), `testing/` helpers and dotfiles are not
-// core: they are skipped in the canonical tree (specs run once, in packages/mcp)
-// and are a divergence in the copy, which must hold generated core files only.
+// exists, so it cannot be forgotten in a list. A file is test-only exactly when it
+// matches a test pattern the builds exclude and a vitest config includes:
+// `.spec.ts` and `.core-spec.ts`. Those and dotfiles are not core: they are
+// skipped in the canonical tree (specs run once, in packages/mcp) and are a
+// divergence in the copy, which must hold generated core files only. Everything
+// else - a `.spec.mts`, a `testing/` or `__fixtures__/` file, a `.json` - is core
+// and copied byte for byte, so the copy never drops a file tsc would compile or a
+// runtime would load.
 // `cli:sync` never deletes them, so the check is what makes them visible.
 //
 // Exits non-zero on any missing, extra or differing file, naming
@@ -31,12 +35,10 @@ export const COPY_CORE_DIR = resolve(ROOT, 'packages/cli/src/core');
 /** A tree path as the repo-relative name the messages print. */
 export const displayPath = (dir) => relative(ROOT, dir).split(sep).join('/');
 
-const TEST_ONLY = /\.(?:spec|core-spec|test)\.m?ts$/;
-/** Directory segments that hold test material only: fixtures and testing helpers. */
-const TEST_ONLY_SEGMENTS = new Set(['__fixtures__', 'testing']);
-/** True for a file that belongs to the core copy: no spec, core-spec or test file, and no `__fixtures__`, `testing` or dot segment. */
-export const isCoreFile = (relPath) =>
-  !TEST_ONLY.test(relPath) && !relPath.split('/').some((part) => part.startsWith('.') || TEST_ONLY_SEGMENTS.has(part));
+/** The test files the package builds exclude and a vitest config runs; the spec pins this against the configs. */
+const TEST_ONLY = /\.(?:spec|core-spec)\.ts$/;
+/** True for a file that belongs to the core copy: no `.spec.ts` or `.core-spec.ts` file and no dot segment. */
+export const isCoreFile = (relPath) => !TEST_ONLY.test(relPath) && !relPath.split('/').some((part) => part.startsWith('.'));
 
 /** Every file under `dir`, as sorted POSIX paths relative to `dir`; a missing directory is empty. */
 function listFiles(dir) {
