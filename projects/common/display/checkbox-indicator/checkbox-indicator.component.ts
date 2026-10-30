@@ -14,9 +14,8 @@ import { CngxIconSvg } from '../icon/icon-svg.component';
  * Presentational checkbox / checkmark indicator.
  *
  * **Why this exists.**
- * Across the library, "is this row selected?" shows up as a bare
- * `<span class="cngx-select__check">&#10003;</span>` in the forms/select panel,
- * a future grid/tree cell will want a checkbox with indeterminate state, and
+ * Across the library, "is this row selected?" shows up as a check mark
+ * in the forms/select panel, a future grid/tree cell will want a checkbox with indeterminate state, and
  * `ng decompose cngx-*` schematics should emit a consistent indicator shape
  * regardless of which list-like component they originated from. This atom
  * unifies all three surfaces behind a single presentational molecule -
