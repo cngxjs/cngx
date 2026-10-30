@@ -10,7 +10,7 @@ import type {
 } from '../../shared/commit-action.types';
 import { commitLedgerFor } from '../../shared/internal/commit-ledger';
 import { sameArrayContents } from '../../shared/internal/compare';
-import type { CngxSelectCompareFn, CngxSelectCore } from '../../shared/internal/select-core';
+import type { CngxSelectCore } from '../../shared/internal/select-core';
 import type { CngxTreeSelectChange } from '../tree-select.component';
 
 /**
@@ -33,10 +33,11 @@ export interface TreeToggleMeta<T> {
  */
 export interface TreeToggleDispatchOptions<T> {
   readonly values: WritableSignal<T[]>;
-  /** Selection-boundary equality (`keyFn` first, else `compareWith`). */
+  /**
+   * Selection-boundary equality (`keyFn` first, else `compareWith`); also
+   * reconciles the committed array.
+   */
   readonly membersEqual: (a: T, b: T) => boolean;
-  /** Reconciliation equality of the committed array. */
-  readonly compareWith: Signal<CngxSelectCompareFn<T>>;
   readonly treeController: Pick<
     CngxTreeController<T>,
     'descendantsOfValue' | 'findByValue' | 'findById'
@@ -141,7 +142,7 @@ export function createTreeToggleDispatch<T>(
       action,
       commitAction: opts.commitAction,
       value: values,
-      same: (a, b) => sameArrayContents(a, b, opts.compareWith()),
+      same: (a, b) => sameArrayContents(a, b, membersEqual),
       copy: (v) => [...v],
       commitMode: opts.commitMode,
       onStateChange: opts.emitState,

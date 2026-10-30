@@ -70,6 +70,7 @@ import {
   type FlatTreeNode,
   CNGX_ICON_CARET_DOWN,
   CNGX_ICON_X,
+  cngxDevWarn,
 } from '@cngx/utils';
 
 import {
@@ -140,6 +141,11 @@ import type {
   CngxTreeSelectTriggerLabelContext,
   CngxTreeSelectedItem,
 } from './tree-select.model';
+
+/** Whether `fn` is a reference comparison, i.e. what the keyed selection already does. */
+function isReferenceCompare(fn: unknown): boolean {
+  return fn === cngxSelectDefaultCompare || fn === Object.is;
+}
 
 const TRUNCATE: Signal<'wrap' | 'scroll-x' | 'truncate'> = signal<'wrap' | 'scroll-x' | 'truncate'>(
   'truncate',
@@ -319,7 +325,11 @@ export class CngxTreeSelect<T = unknown>
   readonly nodeIdFn = input.required<(value: T, path: readonly number[]) => string>();
   /** Display label per node. Falls back to `node.label ?? String(value)`. */
   readonly labelFn = input<((value: T) => string) | undefined>(undefined);
-  /** Membership key for selection. Default identity. */
+  /**
+   * Membership key for selection: the tree's single identity. Default
+   * identity. Object values that arrive as fresh instances (a server
+   * payload) need it; `compareWith` alone cannot key the selection.
+   */
   readonly keyFn = input<((value: T) => unknown) | undefined>(undefined);
   /** Initial expansion seed (one-shot at construction). */
   readonly initiallyExpanded = input<'all' | 'none' | readonly string[] | undefined>(undefined);
@@ -386,7 +396,12 @@ export class CngxTreeSelect<T = unknown>
    * required state of an enclosing `cngx-form-field`.
    */
   readonly requiredInput = input<boolean>(false, { alias: 'required' });
-  /** Equality function that matches values to options. Defaults to `Object.is`. */
+  /**
+   * Equality function that matches values to options. Defaults to
+   * `Object.is`. Used only when `keyFn` is unset; the selection controller
+   * and the tree index always key by `keyFn`, so a custom `compareWith`
+   * without `keyFn` dev-warns `CNGX2026`.
+   */
   readonly compareWith = input<CngxSelectCompareFn<T>>(
     cngxSelectDefaultCompare as CngxSelectCompareFn<T>,
   );
@@ -816,7 +831,6 @@ export class CngxTreeSelect<T = unknown>
   private readonly dispatch: TreeToggleDispatch<T> = createTreeToggleDispatch<T>({
     values: this.values,
     membersEqual: (a, b) => this.membersEqual(a, b),
-    compareWith: this.compareWith,
     treeController: this.treeController,
     cascade: this.cascadeChildren,
     commitAction: this.commitAction,
@@ -839,12 +853,18 @@ export class CngxTreeSelect<T = unknown>
   readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
   /** @internal */
   protected readonly resolvedPlaceholder = this.core.resolvedPlaceholder;
-  /** @internal The tree's active descendant matches values like the selection does. */
-  readonly adCompareWith = computed<(a: T, b: T) => boolean>(() => {
+  /**
+   * Member identity: `keyFn` when set, else `compareWith`. Field sync,
+   * commit reconcile, the selected-items equal and the active descendant
+   * all read it, so no boundary can disagree with the keyed selection.
+   */
+  private readonly memberEquality = computed<(a: T, b: T) => boolean>(() => {
     const keyFn = this.keyFn();
     const eq = this.compareWith();
     return keyFn ? (a: T, b: T) => keyFn(a) === keyFn(b) : (a: T, b: T) => eq(a, b);
   });
+  /** @internal The tree's active descendant matches values by the member identity. */
+  readonly adCompareWith: Signal<(a: T, b: T) => boolean> = this.memberEquality;
   /** @internal - own template only; outer popover panel class binding. */
   protected readonly panelClassList = this.core.panelClassList;
   /** @internal - own template only; outer popover panel width binding. */
@@ -1004,7 +1024,7 @@ export class CngxTreeSelect<T = unknown>
         if (a.length !== b.length) {
           return false;
         }
-        const eq = this.compareWith();
+        const eq = this.memberEquality();
         for (let i = 0; i < a.length; i++) {
           if (!eq(a[i].value, b[i].value) || a[i].label !== b[i].label) {
             return false;
@@ -1116,6 +1136,17 @@ export class CngxTreeSelect<T = unknown>
       if (this.autofocus()) {
         this.focus();
       }
+      if (
+        typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        this.keyFn() === undefined &&
+        !isReferenceCompare(this.compareWith())
+      ) {
+        cngxDevWarn(
+          'CNGX2026',
+          '[cngx-tree-select] [compareWith] is set without [keyFn]; the selection and the tree index key values by reference, so fresh object instances render unchecked. Pass a [keyFn] that returns the domain id.',
+        );
+      }
       // Apply `initiallyExpanded` after inputs resolve. The controller
       // sees `undefined` at field-init because signal inputs aren't
       // bound yet; applying here keeps one-shot semantics.
@@ -1144,7 +1175,7 @@ export class CngxTreeSelect<T = unknown>
 
     createFieldSync<T[]>({
       componentValue: this.values,
-      valueEquals: (a, b) => sameArrayContents(a, b, this.compareWith()),
+      valueEquals: (a, b) => sameArrayContents(a, b, this.memberEquality()),
       coerceFromField: (x) => (Array.isArray(x) ? [...(x as T[])] : []),
       toFieldValue: (v) => [...v],
     });
@@ -1174,13 +1205,7 @@ export class CngxTreeSelect<T = unknown>
    * check routes through here to stay consistent with the
    * `SelectionController`'s keyFn membership.
    */
-  private readonly membersEqual = (a: T, b: T): boolean => {
-    const keyFn = this.keyFn();
-    if (keyFn) {
-      return keyFn(a) === keyFn(b);
-    }
-    return this.compareWith()(a, b);
-  };
+  private readonly membersEqual = (a: T, b: T): boolean => this.memberEquality()(a, b);
 
   /** @internal */
   protected handleTriggerClick(): void {

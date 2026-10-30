@@ -55,7 +55,6 @@ function setup(
   const dispatch = createTreeToggleDispatch<string>({
     values,
     membersEqual: Object.is,
-    compareWith: signal(Object.is),
     treeController,
     cascade: signal(opts.cascade ?? false),
     commitAction: signal(opts.commit ? action : null),

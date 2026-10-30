@@ -1,4 +1,3 @@
-import type { CngxSelectCompareFn } from './select-core';
 
 /**
  * Element-wise array equality under a caller comparator. Short-circuits on
@@ -9,7 +8,7 @@ import type { CngxSelectCompareFn } from './select-core';
 export function sameArrayContents<T>(
   a: readonly T[],
   b: readonly T[],
-  eq: CngxSelectCompareFn<T>,
+  eq: (x: T, y: T) => boolean,
 ): boolean {
   if (a === b) {
     return true;

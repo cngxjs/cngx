@@ -1944,6 +1944,23 @@
       ]
     },
     {
+      "code": "CNGX2026",
+      "lib": "forms",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Tree select compareWith set without keyFn",
+      "page": "core-concepts/error-codes/cngx2026.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2026.html",
+      "status": "active",
+      "files": ["projects/forms/select/tree-select/tree-select.component.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/select/tree-select/tree-select.component.ts",
+          "text": "[cngx-tree-select] [compareWith] is set without [keyFn]; the selection and the tree index key values by reference, so fresh object instances render unchecked. Pass a [keyFn] that returns the domain id."
+        }
+      ]
+    },
+    {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",

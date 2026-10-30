@@ -5,7 +5,8 @@ import { By } from '@angular/platform-browser';
 import type { CngxTreeNode } from '@cngx/utils';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
-import { createMockField } from '@cngx/forms/field/testing';
+import { CngxFormField } from '@cngx/forms/field';
+import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
 import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
 import { describeSelectBehaviourHost } from '../shared/__test-helpers/select-behaviour-host';
@@ -26,6 +27,7 @@ import {
 } from '../shared/config';
 import { createManualState } from '@cngx/common/data';
 import { CngxSelectChipOverflow } from '../shared/template-slots';
+import type { CngxSelectCompareFn } from '../shared/internal/select-core';
 import { CngxTreeSelect } from './tree-select.component';
 import { CngxTreeSelectChip } from './tree-select-chip.directive';
 import { CngxTreeSelectTriggerLabel } from './tree-select-trigger-label.directive';
@@ -542,6 +544,112 @@ describe('CngxTreeSelect', () => {
     fx.detectChanges();
     expect(fx.componentInstance.values()).toEqual([]);
     expect(root.querySelector<HTMLElement>('[role="combobox"]')?.getAttribute('aria-disabled')).toBe('true');
+  });
+});
+
+describe('CngxTreeSelect - member identity follows keyFn', () => {
+  @Component({
+    imports: [CngxFormField, CngxTreeSelect],
+    template: `
+      <cngx-form-field [field]="field">
+        <cngx-tree-select
+          [nodes]="nodes"
+          [nodeIdFn]="idFn"
+          [labelFn]="labelFn"
+          [keyFn]="keyFn"
+        />
+      </cngx-form-field>
+    `,
+  })
+  class KeyedFieldHost {
+    readonly nodes = tree();
+    readonly idFn = (v: Row): string => v.id;
+    readonly labelFn = (v: Row): string => v.name;
+    readonly keyFn = (v: Row): unknown => v.id;
+    readonly mock = createMockField<Row[]>({
+      name: 'rows',
+      value: [{ id: 'a1', name: 'Alpha-1' }],
+    });
+    readonly field = this.mock.accessor;
+    readonly ref: MockFieldRef<Row[]> = this.mock.ref;
+  }
+
+  @Component({
+    imports: [CngxTreeSelect],
+    template: `
+      <cngx-tree-select
+        [nodes]="nodes"
+        [nodeIdFn]="idFn"
+        [labelFn]="labelFn"
+        [keyFn]="keyFn()"
+        [compareWith]="compareWith()"
+      />
+    `,
+  })
+  class IdentityHost {
+    readonly nodes = tree();
+    readonly idFn = (v: Row): string => v.id;
+    readonly labelFn = (v: Row): string => v.name;
+    readonly keyFn = signal<((v: Row) => unknown) | undefined>(undefined);
+    readonly compareWith = signal<CngxSelectCompareFn<Row>>(Object.is);
+  }
+
+  beforeEach(() => polyfillPopover());
+
+  const flush = (fixture: { detectChanges: () => void }): void => {
+    TestBed.flushEffects();
+    fixture.detectChanges();
+  };
+
+  it('field sync matches fresh instances by keyFn and keeps the selected ones', () => {
+    const fixture = TestBed.createComponent(KeyedFieldHost);
+    flush(fixture);
+    const select = fixture.debugElement.query(By.directive(CngxTreeSelect))
+      .componentInstance as CngxTreeSelect<Row>;
+    const seeded = select.values()[0];
+    expect(seeded.id).toBe('a1');
+    fixture.componentInstance.ref.value.set([{ id: 'a1', name: 'Alpha-1' }]);
+    flush(fixture);
+    expect(select.values()[0]).toBe(seeded);
+  });
+
+  it('the active descendant compares by keyFn even with a reference compareWith', () => {
+    const fixture = TestBed.createComponent(IdentityHost);
+    fixture.componentInstance.keyFn.set((v) => v.id);
+    flush(fixture);
+    const select = fixture.debugElement.query(By.directive(CngxTreeSelect))
+      .componentInstance as CngxTreeSelect<Row>;
+    const eq = select.adCompareWith();
+    expect(eq({ id: 'a', name: 'Alpha' }, { id: 'a', name: 'Alpha' })).toBe(true);
+    expect(eq({ id: 'a', name: 'Alpha' }, { id: 'b', name: 'Alpha' })).toBe(false);
+  });
+
+  function warnCount(configure: (host: IdentityHost) => void): number {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      const fixture = TestBed.createComponent(IdentityHost);
+      configure(fixture.componentInstance);
+      flush(fixture);
+      TestBed.tick();
+      return warn.mock.calls.filter(([msg]) => /^CNGX2026: \[cngx-tree-select\]/.test(String(msg)))
+        .length;
+    } finally {
+      warn.mockRestore();
+    }
+  }
+
+  it('dev-warns CNGX2026 once when compareWith is set without keyFn', () => {
+    expect(warnCount((h) => h.compareWith.set((a, b) => a?.id === b?.id))).toBe(1);
+  });
+
+  it('stays silent with keyFn set or with the default compareWith', () => {
+    expect(
+      warnCount((h) => {
+        h.compareWith.set((a, b) => a?.id === b?.id);
+        h.keyFn.set((v) => v.id);
+      }),
+    ).toBe(0);
+    expect(warnCount(() => undefined)).toBe(0);
   });
 });
 

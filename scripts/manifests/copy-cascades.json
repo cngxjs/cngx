@@ -568,7 +568,7 @@
     {
       "class": "CngxTreeSelect",
       "file": "projects/forms/select/tree-select/tree-select.component.ts",
-      "line": 482,
+      "line": 497,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -590,7 +590,7 @@
     {
       "class": "CngxTreeSelect",
       "file": "projects/forms/select/tree-select/tree-select.component.ts",
-      "line": 493,
+      "line": 508,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
