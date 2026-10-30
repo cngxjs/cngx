@@ -50,7 +50,7 @@ Each command is generated from the same definition as its `@cngx/mcp` tool.
 |`cngx config <name>`|`get_config`|A configuration cascade: config token, providers, `with*` features and resolution order.|
 |`cngx example <name>`|`get_story_example`|Runnable example links for a component.|
 |`cngx migrate <from> [--to <version>]`|`migrate_usage`|Removed, renamed and signature-changed API between two releases. `--to` defaults to the bundled release.|
-|`cngx doctor [<projectDir>]`|-|The project-wiring scan of `@cngx/doctor`, the same as `npx cngx-doctor`. `--format json` prints doctor's findings array. Exit 1 means at least one error-severity finding; an unknown flag, `--cngx-version` or `--offline` is a usage error.|
+|`cngx doctor [<projectDir>]`|-|The project-wiring scan of `@cngx/doctor`, the same as `npx cngx-doctor`. `--format json` prints doctor's findings array. Exit 1 means at least one error-severity finding; an unknown flag, `--cngx-version` or `--offline` is a usage error. `--version` and `--help` are the CLI's, as for every other command.|
 
 ## Flags
 

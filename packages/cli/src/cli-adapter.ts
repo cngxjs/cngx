@@ -238,6 +238,22 @@ export function commandHelp(def: CngxCommand): string {
   ].join('\n');
 }
 
+/** Help for `cngx doctor`, which is not a registry command. */
+export function doctorHelp(): string {
+  return [
+    'Usage: cngx doctor [<projectDir>] [--format md|json]',
+    '',
+    'Scan the project wiring with @cngx/doctor, the same scan as `npx cngx-doctor`.',
+    '',
+    'Arguments and flags:',
+    '  <projectDir>      Project root to scan, default the current directory.',
+    "  --format md|json  Output format, default md; json prints doctor's findings array.",
+    '',
+    'Exit codes: 0 clean or warnings only, 1 an error-severity finding, 2 usage error, 3 internal error.',
+    '',
+  ].join('\n');
+}
+
 /** The command list and the global flags. */
 export function generalHelp(commands: readonly CngxCommand[], cliVersion: string): string {
   const width = Math.max(...[...commands.map((def) => def.cliName), ...ADAPTER_COMMANDS].map((name) => name.length)) + 2;
@@ -361,7 +377,7 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
 
   const name = argv[at];
   if (name === 'doctor' && env.loadDoctor) {
-    return runDoctorCommand([...argv.slice(0, at), ...argv.slice(at + 1)], env.loadDoctor, io);
+    return runDoctorCommand([...argv.slice(0, at), ...argv.slice(at + 1)], env.loadDoctor, env.cliVersion, io);
   }
   const def = commands.find((command) => command.cliName === name);
   if (!def) {
@@ -553,21 +569,37 @@ function pinDetected(
 
 /**
  * `cngx doctor`: the `@cngx/doctor` wiring scan with the CLI's flag and exit
- * contract. `--format json` becomes doctor's `--json` (its findings array is the
- * document); an unknown flag, `--cngx-version` or `--offline` is a usage error
- * before any scan; 0 and 1 pass through (1: an error-severity finding); a throw
- * is exit 3.
+ * contract. `--version` / `--help` are the CLI's, never doctor's; `--format json`
+ * becomes doctor's `--json` (its findings array is the document); an unknown flag,
+ * `--cngx-version` or `--offline` is a usage error before any scan; 0 and 1 pass
+ * through (1: an error-severity finding); a throw is exit 3.
  */
-async function runDoctorCommand(rest: readonly string[], loadDoctor: () => Promise<DoctorModule>, io: CliIo): Promise<number> {
+async function runDoctorCommand(
+  rest: readonly string[],
+  loadDoctor: () => Promise<DoctorModule>,
+  cliVersion: string,
+  io: CliIo,
+): Promise<number> {
   const hint = 'Run `cngx doctor --help` for usage.';
   const args: string[] = [];
   let format: OutputFormat = 'md';
+  let version = false;
+  let help = false;
   for (let i = 0; i < rest.length; i++) {
     const token = rest[i];
+    if (token === '--version' || token === '-v') {
+      version = true;
+      continue;
+    }
+    if (token === '--help' || token === '-h') {
+      help = true;
+      continue;
+    }
     const inline = token.startsWith('--format=') ? token.slice('--format='.length) : undefined;
     if (token === '--format' || inline !== undefined) {
       const value = inline ?? rest[++i];
-      const parsed = parseFormat(value);
+      // A bare trailing --format is a missing value, not the md default.
+      const parsed = value === undefined ? null : parseFormat(value);
       if (parsed === null) {
         return usageError(io, `--format must be one of ${FORMATS.join(', ')}.`, hint);
       }
@@ -578,6 +610,14 @@ async function runDoctorCommand(rest: readonly string[], loadDoctor: () => Promi
       return usageError(io, `doctor does not take ${token.split('=')[0]}; it scans the project, not a snapshot.`, hint);
     }
     args.push(token);
+  }
+  if (version) {
+    io.stdout(`${cliVersion}\n`);
+    return EXIT_OK;
+  }
+  if (help) {
+    io.stdout(doctorHelp());
+    return EXIT_OK;
   }
   if (format === 'json') {
     args.push('--json');

@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
 import type { CliIo, ContextOptions, DoctorModule } from './cli-adapter.js';
-import { EXIT_INTERNAL, EXIT_NOT_FOUND, EXIT_OK, EXIT_USAGE, commandHelp, generalHelp, main, runCli } from './cli-adapter.js';
+import { EXIT_INTERNAL, EXIT_NOT_FOUND, EXIT_OK, EXIT_USAGE, commandHelp, doctorHelp, generalHelp, main, runCli } from './cli-adapter.js';
 import type { CngxCommand, CommandContext } from './core/registry.js';
 import { COMMANDS } from './core/registry.js';
 import type { DocsResolverDeps } from './core/data/docs-resolver.js';
@@ -1048,6 +1048,30 @@ describe('cngx doctor', () => {
   it('passes nothing extra for --format md and rejects another format', async () => {
     expect((await doctor(['doctor', '--format=md'])).runDoctor).toHaveBeenCalledWith([]);
     expect((await doctor(['doctor', '--format=xml'])).code).toBe(EXIT_USAGE);
+  });
+
+  it('exits 2 on a --format without a value', async () => {
+    const run = await doctor(['doctor', '--format']);
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.runDoctor).not.toHaveBeenCalled();
+  });
+
+  it.each([['-v'], ['--version']])('%s prints the @cngx/cli version, not the doctor version', async (flag) => {
+    const run = await doctor(['doctor', flag]);
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(run.stdout).toBe(`${CLI_VERSION}\n`);
+    expect(run.runDoctor).not.toHaveBeenCalled();
+  });
+
+  it.each([['-h'], ['--help']])('%s prints the cngx doctor help', async (flag) => {
+    const run = await doctor(['doctor', flag]);
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(run.stdout).toBe(doctorHelp());
+    expect(run.stdout).toContain('Usage: cngx doctor');
+    expect(run.runDoctor).not.toHaveBeenCalled();
   });
 
   it.each([['--cngx-version=0.1.0'], ['--offline']])('exits 2 on %s', async (flag) => {
