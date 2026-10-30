@@ -221,6 +221,7 @@ describe('language-pack coverage', () => {
     expect(unread).toEqual([]);
   });
 
+  // Walks every entry's sources once per token; past 5 s on a loaded runner.
   it("builds each token's section with the language-section factory in the token's entry", () => {
     const mismatches = [];
     for (const [token, area] of Object.entries(TOKEN_SECTIONS)) {
@@ -239,7 +240,7 @@ describe('language-pack coverage', () => {
       }
     }
     expect(mismatches).toEqual([]);
-  });
+  }, 20_000);
 
   it('keeps the structural keys plain strings in English', () => {
     for (const path of STRUCTURAL_KEYS) {
