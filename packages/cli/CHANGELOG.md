@@ -17,3 +17,15 @@ grounds against is a property of the bundled snapshot, not this version.
   3 (internal error: a snapshot that cannot load, a throw, a failed write).
 - Node 20 floor checked before anything else loads; a closed stdout pipe
   (`cngx list | head -1`) no longer crashes.
+- `find`, `api`, `slots`, `theme`, `di` and `config` answer for the cngx
+  release installed in the project when `--cngx-version` is absent: the
+  installed `@cngx/core` (npm, pnpm, hoisted workspaces), else an exact
+  version declared in the nearest `package.json`, else the bundled snapshot.
+  stderr names a detected release other than the bundled one and why a
+  declaration did not pin. A detected release that cannot be resolved falls
+  back to the bundled snapshot with exit 0 and one stderr line.
+- Fetched release snapshots are cached on disk (`CNGX_CACHE_DIR`, else
+  `XDG_CACHE_HOME/cngx`, else the platform cache directory), 16 releases at
+  most; a second run for the same release does not fetch.
+- `--offline` on the same commands: answer from the disk cache or the bundled
+  snapshot, never fetch; an uncached explicit `--cngx-version` exits 1.

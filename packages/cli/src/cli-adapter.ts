@@ -17,15 +17,20 @@
 // `internal` for exit 3), a not-found answer has no `error`.
 
 import { readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import type { ParseArgsConfig } from 'node:util';
 import { z } from 'zod';
 import type { CngxCommand, CommandContext } from './core/registry.js';
 import { COMMANDS, isFound, unwrapAnswer } from './core/registry.js';
+import type { DocsResolver } from './core/data/docs-resolver.js';
 import { createDocsResolver } from './core/data/docs-resolver.js';
-import { normalizeReleaseVersion } from './core/diff/snapshot-fetch.js';
-import { loadBundledDocs } from './core/data/loader.js';
+import { fetchSnapshot, normalizeReleaseVersion, removeTempDir } from './core/diff/snapshot-fetch.js';
+import { loadBundledDocs, loadDocsFromFile } from './core/data/loader.js';
+import { createSnapshotCache, resolveCacheDir } from './core/data/snapshot-cache.js';
+import type { InstalledVersion } from './core/installed-version.js';
+import { resolveInstalledCngxVersion } from './core/installed-version.js';
 
 export const EXIT_OK = 0;
 export const EXIT_NOT_FOUND = 1;
@@ -41,14 +46,30 @@ export interface CliIo {
   stderr(text: string): void;
 }
 
+/** How the context of one run resolves releases. */
+export interface ContextOptions {
+  /** Answer from the disk cache or the bundled snapshot only; never fetch. */
+  readonly offline: boolean;
+  /** One diagnostic line, e.g. a cache that cannot write. */
+  readonly warn: (line: string) => void;
+}
+
 /** Everything one invocation needs besides argv. */
 export interface CliEnv {
   readonly commands: readonly CngxCommand[];
   /** Builds the command context; called only when a command runs, so help and --version never parse the snapshot. */
-  loadContext(): CommandContext;
+  loadContext(options: ContextOptions): CommandContext;
+  /**
+   * The cngx release the current project uses; run only for a command that takes
+   * `--cngx-version` when the flag is absent. Without it, such a command answers
+   * from the bundled snapshot.
+   */
+  detectVersion?(): InstalledVersion;
   readonly cliVersion: string;
   readonly io: CliIo;
 }
+
+const VERSION_FLAG = 'cngx-version';
 
 type Options = NonNullable<ParseArgsConfig['options']>;
 
@@ -100,6 +121,23 @@ export function flagName(def: CngxCommand, field: string): string {
   return def.cliFlags?.[field] ?? field.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
 }
 
+/**
+ * The input field a command takes as `--cngx-version`, if any. It decides which
+ * commands accept `--cngx-version` and `--offline` and which get the detected
+ * default version.
+ */
+export function versionField(def: CngxCommand): string | undefined {
+  return Object.keys(def.input).find((field) => flagName(def, field) === VERSION_FLAG);
+}
+
+/** Help text of the version flag: the CLI's default differs from the MCP tool's, so the adapter owns it. */
+const VERSION_FLAG_HELP =
+  'The cngx release to answer for, e.g. 0.2.0; a leading v or V is accepted. Default: the @cngx version ' +
+  'installed in the current project, else the bundled snapshot. A non-bundled release is fetched once ' +
+  '(through gh, or over HTTPS) and cached on disk.';
+
+const OFFLINE_HELP = 'Never fetch: answer from the disk cache, else the bundled snapshot.';
+
 const unwrapOptional = (schema: z.ZodType): z.ZodType => (schema instanceof z.ZodOptional ? unwrapOptional(schema.unwrap() as z.ZodType) : schema);
 
 const isOptional = (schema: z.ZodType): boolean => schema.safeParse(undefined).success;
@@ -111,6 +149,9 @@ function commandOptions(def: CngxCommand): Options {
   const options: Options = { ...GLOBAL_OPTIONS };
   for (const [field, schema] of Object.entries(def.input)) {
     options[flagName(def, field)] = { type: isBoolean(schema) ? 'boolean' : 'string' };
+  }
+  if (versionField(def) !== undefined) {
+    options.offline = { type: 'boolean' };
   }
   return options;
 }
@@ -132,6 +173,9 @@ function commandUsage(def: CngxCommand): string {
     const token = field === def.positional ? `<${field}>` : `--${flagName(def, field)}${valueHint(schema) ? ` ${valueHint(schema)}` : ''}`;
     parts.push(optional ? `[${token}]` : token);
   }
+  if (versionField(def) !== undefined) {
+    parts.push('[--offline]');
+  }
   parts.push('[--format md|json]');
   return parts.join(' ');
 }
@@ -143,8 +187,12 @@ export function commandHelp(def: CngxCommand): string {
   const rows = Object.entries(def.input).map(([field, schema]) => {
     const hint = valueHint(schema);
     const name = field === def.positional ? `<${field}>` : `--${flagName(def, field)}${hint ? ` ${hint}` : ''}`;
-    return [name, `${describe(schema)}${isOptional(schema) ? '' : ' Required.'}`] as const;
+    const text = field === versionField(def) ? VERSION_FLAG_HELP : describe(schema);
+    return [name, `${text}${isOptional(schema) ? '' : ' Required.'}`] as const;
   });
+  if (versionField(def) !== undefined) {
+    rows.push(['--offline', OFFLINE_HELP]);
+  }
   rows.push(['--format md|json', 'Output format, default md.']);
   const width = Math.max(...rows.map(([name]) => name.length)) + 2;
   return [
@@ -192,6 +240,11 @@ export function commandFlags(def: CngxCommand): string[] {
   return Object.keys(def.input)
     .filter((field) => field !== def.positional)
     .map((field) => `--${flagName(def, field)}`);
+}
+
+/** The flags the adapter adds to a command beyond its inputs. */
+export function adapterFlags(def: CngxCommand): string[] {
+  return versionField(def) === undefined ? [] : ['--offline'];
 }
 
 /** Every flag the CLI accepts, long and short, across the globals and all commands. */
@@ -282,12 +335,14 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
 
   const rest = [...argv.slice(0, at), ...argv.slice(at + 1)];
   const hint = `Run \`cngx ${def.cliName} --help\` for usage.`;
-  if (def.cliFlags === undefined || !Object.values(def.cliFlags).includes('cngx-version')) {
+  if (versionField(def) === undefined) {
     // Everything after `--` is a positional, never a flag.
     const end = rest.indexOf('--');
     const flags = end === -1 ? rest : rest.slice(0, end);
-    if (flags.some((token) => token === '--cngx-version' || token.startsWith('--cngx-version='))) {
-      return usageError(io, `${def.cliName} does not take --cngx-version; ${versionHint(def)}.`, hint);
+    for (const flag of [`--${VERSION_FLAG}`, '--offline']) {
+      if (flags.some((token) => token === flag || token.startsWith(`${flag}=`))) {
+        return usageError(io, `${def.cliName} does not take ${flag}; ${versionHint(def)}.`, hint);
+      }
     }
   }
 
@@ -312,7 +367,7 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
     return usageError(io, `--format must be one of ${FORMATS.join(', ')}.`, hint);
   }
 
-  const pinned = values['cngx-version'];
+  const pinned = values[VERSION_FLAG];
   if (typeof pinned === 'string' && pinned.trim() === '') {
     return usageError(io, '--cngx-version needs a version, e.g. --cngx-version=0.1.0.', hint);
   }
@@ -350,12 +405,28 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
     return usageError(io, issues.join('; '), hint);
   }
 
+  const offline = values.offline === true;
   let context: CommandContext;
   try {
-    context = env.loadContext();
+    context = env.loadContext({ offline, warn: (line) => io.stderr(`${line}\n`) });
   } catch (error) {
     // A broken install is not a miss: exit 3, like any other throw nobody expected.
     return internalError(io, 'cngx', error, format);
+  }
+
+  const field = versionField(def);
+  if (field !== undefined && validated.data[field] === undefined && env.detectVersion) {
+    let detected: InstalledVersion;
+    try {
+      detected = env.detectVersion();
+    } catch (error) {
+      return internalError(io, 'cngx', error, format);
+    }
+    const pinnedTo = pinDetected(detected, context, offline, io);
+    if (pinnedTo !== null) {
+      validated.data[field] = pinnedTo.version;
+      context = pinnedTo.context;
+    }
   }
 
   let rendered: Rendered;
@@ -371,6 +442,45 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
     io.stdout(rendered.stdout);
   }
   return rendered.exitCode;
+}
+
+/**
+ * Print the detector's notes and, for a detected release other than the bundled
+ * one, a context whose resolver falls back to the bundled snapshot when that
+ * release cannot be resolved. An explicit `--cngx-version` never comes here, so
+ * it never falls back.
+ */
+function pinDetected(
+  detected: InstalledVersion,
+  context: CommandContext,
+  offline: boolean,
+  io: CliIo,
+): { version: string; context: CommandContext } | null {
+  for (const note of detected.notes) {
+    io.stderr(`cngx: ${note}\n`);
+  }
+  const bundledVersion = context.bundled.meta.cngxVersion;
+  if (detected.version === null || detected.version === bundledVersion) {
+    return null;
+  }
+  const version = detected.version;
+  if (detected.source === 'installed') {
+    io.stderr(`cngx: answering for the installed cngx ${version}; the bundled snapshot is ${bundledVersion ?? 'unstamped'}.\n`);
+  }
+  const base = context.resolve;
+  const resolve: DocsResolver = async (requested) => {
+    const resolution = await base(requested);
+    if (resolution.ok || requested !== version) {
+      return resolution;
+    }
+    const skip = offline ? '' : ' Pass --offline to skip the fetch.';
+    io.stderr(
+      `cngx: cngx ${version} could not be resolved (${resolution.reason}: ${resolution.message}); ` +
+        `answering from the bundled snapshot ${bundledVersion ?? 'unstamped'}.${skip}\n`,
+    );
+    return base(undefined);
+  };
+  return { version, context: { ...context, resolve } };
 }
 
 /** A finished run, rendered but not yet written. */
@@ -429,9 +539,12 @@ export async function main(argv: readonly string[], paths: EntryPaths, io: CliIo
   } catch (error) {
     return internalError(io, 'cngx', error);
   }
-  const loadContext = (): CommandContext => {
+  const loadContext = ({ offline, warn }: ContextOptions): CommandContext => {
     const bundled = loadBundledDocs(fileURLToPath(paths.dataDir));
-    return { bundled, resolve: createDocsResolver(bundled) };
+    const cache = createSnapshotCache({ dir: resolveCacheDir(process.env, process.platform, homedir()), warn });
+    const resolve = createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile, removeDir: removeTempDir, cache, offline });
+    return { bundled, resolve };
   };
-  return runCli(argv, { commands: COMMANDS, loadContext, cliVersion, io });
+  const detectVersion = () => resolveInstalledCngxVersion(process.cwd());
+  return runCli(argv, { commands: COMMANDS, loadContext, detectVersion, cliVersion, io });
 }

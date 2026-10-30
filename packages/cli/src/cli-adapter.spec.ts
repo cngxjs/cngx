@@ -4,12 +4,12 @@
 // packages/mcp/test/fixtures/documentation.sample.json (cngxVersion 0.1.0-rc.6),
 // read through the cli's own core copy. `--version` is read from
 // packages/cli/package.json.
-import { mkdtempSync, readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
-import type { CliIo } from './cli-adapter.js';
+import { describe, expect, it, vi } from 'vitest';
+import type { CliIo, ContextOptions } from './cli-adapter.js';
 import { EXIT_INTERNAL, EXIT_NOT_FOUND, EXIT_OK, EXIT_USAGE, commandHelp, generalHelp, main, runCli } from './cli-adapter.js';
 import type { CngxCommand, CommandContext } from './core/registry.js';
 import { COMMANDS } from './core/registry.js';
@@ -18,6 +18,7 @@ import { createDocsResolver } from './core/data/docs-resolver.js';
 import { createDocsIndex, loadBundledDocs, loadDocsFromFile } from './core/data/loader.js';
 import { getStoryExample } from './core/commands/get-story-example.js';
 import { assertNoAnsi } from './output-guards.js';
+import type { InstalledVersion } from './core/installed-version.js';
 
 const FIXTURE = fileURLToPath(new URL('../../mcp/test/fixtures/documentation.sample.json', import.meta.url));
 const PACKAGE_JSON = new URL('../package.json', import.meta.url);
@@ -720,6 +721,157 @@ describe('generated help', () => {
     const api = COMMANDS.find((def) => def.cliName === 'api');
 
     expect(api).toBeDefined();
-    expect(commandHelp(api!)).toContain('Usage: cngx api <name> [--cngx-version <value>] [--format md|json]');
+    expect(commandHelp(api!)).toContain('Usage: cngx api <name> [--cngx-version <value>] [--offline] [--format md|json]');
+  });
+
+  it('describes the version flag with the CLI default, not the MCP one', () => {
+    const help = commandHelp(COMMANDS.find((def) => def.cliName === 'api')!);
+
+    expect(help).toContain('Default: the @cngx version installed in the current project');
+    expect(help).not.toContain('Omit to answer from the bundled snapshot offline');
+    expect(help).toMatch(/\n {2}--offline +Never fetch/);
+  });
+});
+
+// Source of expected values: the detector rows of the "Project layout" matrix and
+// the --offline / detected-fallback rows of the "Snapshot source" matrix in
+// cngx-cli-core-phase-4-plan.md. The fixture bundles 0.1.0-rc.6; v-new answers 0.2.0.
+describe('installed-version pinning', () => {
+  const NEW = fileURLToPath(new URL('../../mcp/test/fixtures/documentation.v-new.sample.json', import.meta.url));
+
+  const installed = (version: string | null, notes: string[] = [], source: InstalledVersion['source'] = 'installed'): InstalledVersion => ({
+    version,
+    source,
+    notes,
+    packages: version === null ? {} : { '@cngx/core': version },
+  });
+
+  interface PinRun extends Run {
+    fetchSnapshot: ReturnType<typeof vi.fn<DocsResolverDeps['fetchSnapshot']>>;
+    detectVersion: ReturnType<typeof vi.fn<() => InstalledVersion>>;
+    offline: boolean[];
+  }
+
+  async function pinned(
+    argv: string[],
+    detected: InstalledVersion,
+    fetched: Awaited<ReturnType<DocsResolverDeps['fetchSnapshot']>> = { ok: true, path: NEW },
+  ): Promise<PinRun> {
+    let stdout = '';
+    let stderr = '';
+    const io: CliIo = { stdout: (text) => (stdout += text), stderr: (text) => (stderr += text) };
+    const fetchSnapshot = vi.fn<DocsResolverDeps['fetchSnapshot']>(async () => fetched);
+    const detectVersion = vi.fn(() => detected);
+    const offline: boolean[] = [];
+    const loadContext = (options: ContextOptions): CommandContext => {
+      offline.push(options.offline);
+      return { bundled, resolve: createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile, offline: options.offline }) };
+    };
+    const code = await runCli(argv, { commands: COMMANDS, loadContext, detectVersion, cliVersion: CLI_VERSION, io });
+    return { code, stdout, stderr, fetchSnapshot, detectVersion, offline };
+  }
+
+  it('installed equals bundled: no fetch, no stderr', async () => {
+    const run = await pinned(['api', 'CngxSelect'], installed('0.1.0-rc.6'));
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(run.stderr).toBe('');
+    expect(run.fetchSnapshot).not.toHaveBeenCalled();
+    expect(run.stdout.split('\n')[0]).toBe('> cngx 0.1.0-rc.6');
+  });
+
+  it('installed differs: answers for the installed release and names it on stderr', async () => {
+    const run = await pinned(['api', 'CngxSelect', '--format=json'], installed('0.2.0'));
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(run.fetchSnapshot).toHaveBeenCalledWith('0.2.0');
+    expect(JSON.parse(run.stdout)).toMatchObject({ cngxVersion: '0.2.0' });
+    expect(run.stderr).toBe('cngx: answering for the installed cngx 0.2.0; the bundled snapshot is 0.1.0-rc.6.\n');
+  });
+
+  it('prints every detector note as one stderr line', async () => {
+    const run = await pinned(['api', 'CngxSelect'], installed(null, ['no @cngx package found; answering from the bundled snapshot.'], 'none'));
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(run.stderr).toBe('cngx: no @cngx package found; answering from the bundled snapshot.\n');
+  });
+
+  it('--cngx-version wins and no detection runs', async () => {
+    const run = await pinned(['api', 'CngxSelect', '--cngx-version=0.1.0-rc.6'], installed('0.2.0'));
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(run.detectVersion).not.toHaveBeenCalled();
+    expect(run.fetchSnapshot).not.toHaveBeenCalled();
+  });
+
+  it('runs no detection for a command without a version', async () => {
+    const run = await pinned(['list'], installed('0.2.0'));
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(run.detectVersion).not.toHaveBeenCalled();
+  });
+
+  it('exits 2 on an invalid --cngx-version before detection', async () => {
+    const run = await pinned(['api', 'CngxSelect', '--cngx-version=../x'], installed('0.2.0'));
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.detectVersion).not.toHaveBeenCalled();
+  });
+
+  it('detected but unavailable: falls back to bundled with exit 0 and names both versions', async () => {
+    const run = await pinned(['api', 'CngxSelect'], installed('0.2.0'), { ok: false, reason: 'network', message: 'offline' });
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(run.stdout.split('\n')[0]).toBe('> cngx 0.1.0-rc.6');
+    expect(run.stderr).toContain(
+      'cngx: cngx 0.2.0 could not be resolved (network: offline); answering from the bundled snapshot 0.1.0-rc.6. Pass --offline to skip the fetch.\n',
+    );
+  });
+
+  it('detected with an unknown schema: falls back to bundled with exit 0 and names the mismatch', async () => {
+    const path = join(mkdtempSync(join(tmpdir(), 'cngx-schema-')), 'documentation.json');
+    writeFileSync(path, JSON.stringify({ schemaVersion: 99 }));
+    const run = await pinned(['api', 'CngxSelect'], installed('0.2.0'), { ok: true, path });
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(run.stdout.split('\n')[0]).toBe('> cngx 0.1.0-rc.6');
+    expect(run.stderr).toMatch(/cngx 0\.2\.0 could not be resolved \(asset-missing: Fetched snapshot for v0\.2\.0 could not be read: .*schema/i);
+  });
+
+  it('requested and missing: exits 1, never falls back', async () => {
+    const run = await pinned(['api', 'CngxSelect', '--cngx-version=0.2.0'], installed('0.1.0-rc.6'), {
+      ok: false,
+      reason: 'asset-missing',
+      message: 'no asset',
+    });
+
+    expect(run.code).toBe(EXIT_NOT_FOUND);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).not.toContain('answering from the bundled snapshot');
+  });
+
+  it('--offline with a detected version: zero fetches, bundled with exit 0', async () => {
+    const run = await pinned(['api', 'CngxSelect', '--offline'], installed('0.2.0'));
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(run.offline).toEqual([true]);
+    expect(run.fetchSnapshot).not.toHaveBeenCalled();
+    expect(run.stderr).toContain('v0.2.0 is not cached and --offline forbids a fetch.');
+    expect(run.stderr).not.toContain('Pass --offline');
+  });
+
+  it('--offline with an uncached explicit version: exit 1, zero fetches', async () => {
+    const run = await pinned(['api', 'CngxSelect', '--offline', '--cngx-version=0.2.0'], installed(null));
+
+    expect(run.code).toBe(EXIT_NOT_FOUND);
+    expect(run.fetchSnapshot).not.toHaveBeenCalled();
+    expect(run.stderr).toBe('cngx api: asset-missing: v0.2.0 is not cached and --offline forbids a fetch.\n');
+  });
+
+  it.each([['list', '--offline'], ['migrate', '0.1.0-rc.6', '--offline']])('%s rejects --offline with exit 2', async (...argv) => {
+    const run = await pinned(argv, installed(null));
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stderr).toContain('does not take --offline');
   });
 });

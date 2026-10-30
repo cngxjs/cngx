@@ -10,8 +10,10 @@ Both packages share one query core: the command definitions live in
 CLI does not depend on the MCP SDK.
 
 Answers come from a `documentation.json` snapshot bundled into the package at
-build time, so the CLI runs offline with no cngx repository present. It is
-read-only: it never mutates any source.
+build time, so the CLI runs with no cngx repository present. Inside a project
+that uses another cngx release, the commands that take `--cngx-version` answer
+for that release instead (see Which release answers). It is read-only: it never
+mutates any source.
 
 ## Usage
 
@@ -54,9 +56,41 @@ Each command is generated from the same definition as its `@cngx/mcp` tool.
 |Flag|Meaning|
 |-|-|
 |`--format md\|json`|Output format. `md` (default) is markdown for people and agents; `json` is `{ "cngxVersion": "<version>", "result": <answer> }`, and a failure prints a failure document (see Failures). It has no short form.|
-|`--cngx-version <version>`|Answer against another cngx release (`find`, `api`, `slots`, `theme`, `di`, `config`). The snapshot of that release is fetched through `gh`, or over HTTPS when `gh` is missing or fails. Other commands reject it.|
+|`--cngx-version <version>`|Answer against this cngx release (`find`, `api`, `slots`, `theme`, `di`, `config`); a leading `v` or `V` is accepted. Without it these commands answer for the release installed in the project (see Which release answers). The snapshot of a non-bundled release is fetched through `gh`, or over HTTPS when `gh` is missing or fails, and cached on disk. Other commands reject it.|
+|`--offline`|Never fetch (`find`, `api`, `slots`, `theme`, `di`, `config`): answer from the disk cache, else the bundled snapshot. An explicit `--cngx-version` that is not cached fails with exit 1 instead of answering for another release. Other commands reject it.|
 |`--version`, `-v`|Print the `@cngx/cli` version.|
 |`--help`, `-h`|Print the command list, or a command's help after the command name.|
+
+## Which release answers
+
+`find`, `api`, `slots`, `theme`, `di` and `config` answer for, in this order:
+
+1. the release given with `--cngx-version`;
+2. the `@cngx/core` version installed in the current project, resolved the way
+   Node resolves it from the working directory (npm, pnpm, a hoisted workspace
+   root, the nearest `node_modules` first). Without `@cngx/core`, the first of
+   `common`, `forms`, `ui`, `data-display`, `interop`, `utils`, `themes` wins;
+3. with nothing installed, an exact version declared in the nearest
+   `package.json` (`0.2.0`, `=0.2.0`, `v0.2.0`, `npm:@cngx/core@0.2.0`). A range
+   or another specifier (`^0.2.0`, `workspace:*`, `catalog:`, a git or file URL)
+   does not pin;
+4. the bundled snapshot.
+
+stderr says which: a detected release other than the bundled one, a range that
+did not pin, installed packages at mixed versions, or no `@cngx` package at all.
+Under Yarn PnP run `yarn cngx`; plain `npx` cannot see a PnP install. When a
+detected release cannot be fetched or read, the answer comes from the bundled
+snapshot with exit 0 and one stderr line naming both releases; an explicit
+`--cngx-version` never falls back. `list`, `example` and `migrate` always answer
+from the bundled snapshot (`migrate` takes its releases as arguments).
+
+A fetched release snapshot is cached on disk and never fetched again: in
+`$CNGX_CACHE_DIR`, else `$XDG_CACHE_HOME/cngx`, else `~/Library/Caches/cngx`
+(macOS), `%LOCALAPPDATA%\cngx\Cache` (Windows) or `~/.cache/cngx`. The cache
+keeps the 16 most recently read releases. An unreadable entry is removed and
+fetched again; a cache directory that cannot be written answers without caching
+and says so on stderr. Without a network, a detected release costs one fetch
+timeout per run before the fallback; pass `--offline` to skip it.
 
 Every answer names the cngx release it came from: the first markdown line is
 `> cngx <version>`, the JSON carries `cngxVersion`.
@@ -118,9 +152,9 @@ authenticated `gh`.
 
 |Code|Meaning|
 |-|-|
-|`0`|Answered.|
-|`1`|The query ran but found nothing (an empty `list` included), the requested release snapshot could not be resolved, or a query threw while answering (`asset-missing`, message `internal: ...`).|
-|`2`|Usage error: no command (help goes to stderr), an unknown command or flag, invalid input, an empty or malformed `--cngx-version`, a malformed `migrate` version (`<from>` or `--to`), `--cngx-version` on a command that has no version, or a Node below 20. Usage errors and the Node floor print no json document, even under `--format json`; stdout stays empty.|
+|`0`|Answered, including the fallback to the bundled snapshot when a detected release cannot be resolved.|
+|`1`|The query ran but found nothing (an empty `list` included), the requested release snapshot could not be resolved (under `--offline`: is not cached), or a query threw while answering (`asset-missing`, message `internal: ...`).|
+|`2`|Usage error: no command (help goes to stderr), an unknown command or flag, invalid input, an empty or malformed `--cngx-version`, a malformed `migrate` version (`<from>` or `--to`), `--cngx-version` or `--offline` on a command that has no version, or a Node below 20. Usage errors and the Node floor print no json document, even under `--format json`; stdout stays empty.|
 |`3`|Internal error: the bundled snapshot could not be loaded, a command, its rendering or the start-up threw, or writing stdout failed. A query that throws while answering a snapshot (every command but `list`) is not one of them: it answers `asset-missing` with an `internal:` message and exits 1 (see Failures). One `internal error` line on stderr, no stack; stdout holds the failure document under `--format json` and nothing under `md`. A failed stderr never changes the exit code: the run exits with the code its answer earned. A closed stdout pipe (EPIPE, as in `cngx list \| head -1`) is not a failure either: the run ends quietly with the code its answer earned.|
 
 ## License
