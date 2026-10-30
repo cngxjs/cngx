@@ -183,7 +183,7 @@
   }
 
   /* The check stroke spans 14 + 2 = 16 grid units across; scaling the box by
-     24/16 keeps its width at the 0.73em the text tick drew before. */
+     24/16 inks it 0.73em wide, a check at label weight. */
   :is(cngx-context-menu-item-checkbox, button[cngxContextMenuItemCheckbox])
     > .cngx-menu-item__check
     > .cngx-icon-svg {
@@ -191,7 +191,7 @@
   }
 
   /* The dot is a fill glyph 8 grid units across (no stroke); scaling the box
-     by 24/8 keeps its diameter at the 0.73em the text dot drew before. */
+     by 24/8 inks it 0.73em across, level with the check. */
   :is(cngx-context-menu-item-radio, button[cngxContextMenuItemRadio])
     > .cngx-menu-item__check
     > .cngx-icon-svg {

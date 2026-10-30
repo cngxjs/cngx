@@ -1027,10 +1027,10 @@
   /*
    * Default glyph sizes. Each icon draws on the shared 24-unit grid with its
    * shape padded inside the box, so each rule scales the box by 24 / extent to
-   * keep the drawn shape the size the text glyph it replaced drew.
+   * ink the shape at the size named below.
    *
-   * Chevrons: 12 units tall plus the 2-unit stroke = 14, kept at the 0.41em
-   * ink height of the text chevrons in the cngx-icon font. The icon keeps its
+   * Chevrons: 12 units tall plus the 2-unit stroke = 14, inked 0.41em tall,
+   * about the x-height of the page numbers beside them. The icon keeps its
    * 1.25em box for layout; only the svg inside it shrinks, and the icon's flex
    * box centres it.
    */
@@ -1040,8 +1040,8 @@
     height: var(--cngx-icon-svg-size, 0.7em);
   }
 
-  /* Ellipsis: the three dots span 18 units, kept at the 0.63em ink width of
-     the text ellipsis. */
+  /* Ellipsis: the three dots span 18 units, inked 0.63em wide, a text
+     ellipsis at the page-number size. */
   .cngx-paginator__more > .cngx-icon-svg {
     --cngx-icon-svg-size: calc(0.63em * 24 / 18);
   }

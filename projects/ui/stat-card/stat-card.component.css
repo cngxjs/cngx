@@ -141,10 +141,10 @@
        empty-state's own :not(:empty) rule once the slot is filled. The icon
        keeps the danger colour at full strength. */
     .cngx-stat-card__error .cngx-stat-card__error-icon {
-      /* The alert triangle spans 22 grid units with stroke, as the drawing it
-         replaced did, so the box keeps its size. The 1.5-unit stroke keeps
-         that drawing's line. On the baseline, as the inline drawing sat, the
-         slot keeps its line box and the title stays put. */
+      /* The alert triangle spans 22 grid units with stroke, so it inks at
+         22/24 of the box. The 1.5-unit stroke keeps the line light at this
+         size. On the baseline, the slot keeps its line box and the title
+         stays put. */
       --cngx-icon-svg-size: var(--cngx-stat-card-error-icon-size, 22px);
       --cngx-icon-svg-stroke-width: 1.5;
       vertical-align: baseline;
@@ -198,10 +198,9 @@
     }
 
     /* The exclamation draws at the 2.5-unit stroke of the xs icon floor, so
-       at about 12px it keeps a pixel of weight beside the bold text glyph it
-       replaced, and spans 17.5 grid units tall with it; scaling the box by
-       24/17.5 keeps it at the 0.54 of the badge the text glyph inked, and it
-       follows a resized badge. */
+       at about 12px it keeps a pixel of weight, and spans 17.5 grid units
+       tall with it; scaling the box by 24/17.5 inks it at 0.54 of the badge,
+       and it follows a resized badge. */
     .cngx-stat-card__stale-glyph > .cngx-icon-svg {
       --cngx-icon-svg-size: calc(var(--cngx-stat-card-stale-glyph-size, 1rem) * 0.54 * 24 / 17.5);
       --cngx-icon-svg-stroke-width: 2.5;

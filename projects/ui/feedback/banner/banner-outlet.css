@@ -631,10 +631,10 @@
       color: var(--cngx-banner-icon-color, currentColor);
     }
 
-    /* The severity circles span 21 grid units with stroke, the glyphs they
-       replaced 22; scaling the box by 22/21 keeps the circle the size it
-       drew at --cngx-banner-icon-size. As a block it leaves the line box
-       and sits at the top of the icon cell, where the inline drawing sat. */
+    /* The severity circles span 21 grid units with stroke; scaling the box
+       by 22/21 inks the circle at 22/24 of --cngx-banner-icon-size. As a
+       block it leaves the line box and sits at the top of the icon cell,
+       level with the first line of the message. */
     .cngx-banner__icon .cngx-banner__default-icon {
       --cngx-icon-svg-size: calc(var(--cngx-banner-icon-size, 20px) * 22 / 21);
       display: block;

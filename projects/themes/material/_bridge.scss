@@ -32,9 +32,7 @@
 // sidenav's `on()` block; feedback-theme's `density($level)` emits its
 // own unlayered `:where` block because it is a consumer-level opt-in
 // included at an arbitrary call-site, not part of `theme($theme)` -
-// layering it would weaken it below unlayered consumer overrides;
-// tabs-theme keeps one raw layer block whose `::before` must sit
-// outside `:where()`.
+// layering it would weaken it below unlayered consumer overrides.
 
 /// Emits the content block for `$selectors` inside `@layer cngx.components`
 /// wrapped in a single zero-specificity `:where(...)`. Pass plain element

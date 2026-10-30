@@ -89,7 +89,7 @@ import { CNGX_CONTEXT_MENU_PANEL } from './context-menu-panel';
       <span cngxMenuItemKbd>{{ shortcut }}</span>
     }
     @if (submenu()) {
-      <span cngxMenuItemSuffix><svg [cngxIconSvg]="caret"></svg></span>
+      <span cngxMenuItemSuffix><svg [cngxIconSvg]="caretIcon"></svg></span>
     }
   `,
   styleUrl: './context-menu-item.component.css',
@@ -123,7 +123,7 @@ export class CngxContextMenuItem implements CngxMenuSubmenuWiring {
   /** @internal Decorative caret rendered while `submenu` is set. RTL flip is
    * a CSS concern (`.cngx-menu-item__suffix` under `:dir(rtl)`), not a
    * swapped glyph. */
-  protected readonly caret = CNGX_ICON_CHEVRON_RIGHT;
+  protected readonly caretIcon = CNGX_ICON_CHEVRON_RIGHT;
 
   private readonly parentPanel = inject(CNGX_CONTEXT_MENU_PANEL, { optional: true });
 

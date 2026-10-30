@@ -340,9 +340,8 @@
        stay distinct even when both states happen to share a hue under a
        custom theme. The check is part of the *default* indicator template
        only - a consumer-provided `*cngxStepIndicator` slot replaces it with
-       its own art, so the two never stack. Sized to the ink width of the
-       old bold text check (0.72em), drawn 17 grid units wide with its
-       heavier stroke. */
+       its own art, so the two never stack. Inked 0.72em wide, drawn 17 grid
+       units wide with its heavier stroke. */
     .cngx-stepper__indicator-check {
       --cngx-icon-svg-size: calc(0.72em * 24 / 17);
       --cngx-icon-svg-stroke-width: 3;
@@ -362,8 +361,7 @@
     }
 
     .cngx-stepper__done-icon > .cngx-icon-svg {
-      /* The ink width of the old text check, 0.7em, drawn 16.5 grid units
-         wide with its stroke. */
+      /* Inked 0.7em wide, drawn 16.5 grid units wide with its stroke. */
       --cngx-icon-svg-size: calc(0.7em * 24 / 16.5);
       --cngx-icon-svg-stroke-width: 2.5;
       display: block;
