@@ -480,7 +480,8 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
       });
       return usageError(io, issues.join('; '), hint);
     }
-    inputs.push(validated.data as Record<string, unknown>);
+    const data: Record<string, unknown> = validated.data;
+    inputs.push(data);
   }
 
   const offline = values.offline === true;
