@@ -1,4 +1,5 @@
 import { signal, type WritableSignal } from '@angular/core';
+import { of } from 'rxjs';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createCreateCommitHandler } from './create-commit-handler';
@@ -119,12 +120,52 @@ describe('createCreateCommitHandler', () => {
     });
   });
 
-  it('short-circuits an undefined committed value: no patch, no onCreated', () => {
-    h.quickCreateAction.set(() => undefined as unknown as T);
-    h.handler.dispatch({ label: 'New' }, 'new', []);
-    expect(h.stateLog).toEqual(['pending', 'success']);
-    expect(h.localItemsBuffer.items()).toEqual([]);
-    expect(h.createdLog).toEqual([]);
+  describe('dispatch - resolves without an item (CNGX2027)', () => {
+    const missingItem = expect.objectContaining({
+      name: 'CngxRuntimeError',
+      code: 'CNGX2027',
+      message: expect.stringMatching(
+        /^CNGX2027: quickCreateAction\(\) settled without the created item/,
+      ),
+    });
+
+    const expectCreateFailure = (): void => {
+      expect(h.stateLog).toEqual(['pending', 'error']);
+      expect(h.errorLog).toEqual([missingItem]);
+      expect(h.localItemsBuffer.items()).toEqual([]);
+      expect(h.createdLog).toEqual([]);
+      expect(h.announceLog).toEqual([]);
+      expect(h.closeLog).toEqual([]);
+    };
+
+    it('fails a sync undefined result instead of a silent success', () => {
+      h.quickCreateAction.set(() => undefined as unknown as T);
+      h.handler.dispatch({ label: 'New' }, 'new', []);
+      expectCreateFailure();
+    });
+
+    it('fails a Promise that resolves undefined', async () => {
+      h.quickCreateAction.set(() => Promise.resolve(undefined as unknown as T));
+      h.handler.dispatch({ label: 'New' }, 'new', []);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expectCreateFailure();
+    });
+
+    it('fails an Observable that emits undefined', () => {
+      h.quickCreateAction.set(() => of(undefined as unknown as T));
+      h.handler.dispatch({ label: 'New' }, 'new', []);
+      expectCreateFailure();
+    });
+
+    it('retry after the failure replays the create', () => {
+      let result: T | undefined = undefined;
+      h.quickCreateAction.set(() => result as T);
+      h.handler.dispatch({ label: 'New' }, 'new', []);
+      result = 'id:New';
+      h.handler.retryLast();
+      expect(h.stateLog).toEqual(['pending', 'error', 'pending', 'success']);
+      expect(h.createdLog).toHaveLength(1);
+    });
   });
 
   it('is a no-op when no create action is bound', () => {

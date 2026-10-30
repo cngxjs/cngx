@@ -7,6 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { CNGX_DEV_DESCRIPTORS } from '@cngx/core/utils';
 import { createManualState } from '@cngx/common/data';
+import { stripBidiIsolates } from '@cngx/testing';
 
 import {
   provideSelectConfig,
@@ -399,5 +400,35 @@ describe('select-core removed aliases', () => {
     const status: import('./select-core').CngxSelectStatus | undefined = undefined;
     expect(control).toBeUndefined();
     expect(status).toBeUndefined();
+  });
+});
+
+describe('createSelectCore - non-Error failure detail', () => {
+  function labelledCore(): ReturnType<typeof createSelectCore<string, string>> {
+    return TestBed.runInInjectionContext(() =>
+      createSelectCore(
+        { ...deps(), label: signal('Colour') },
+        { announceChanges: signal(null), announceTemplate: signal(null) },
+      ),
+    );
+  }
+
+  it('speaks the bare commit sentence for a non-Error rejection, never its value', () => {
+    const core = labelledCore();
+    expect(stripBidiIsolates(core.commitErrorMessage('server down'))).toBe('Colour: Save failed');
+    expect(stripBidiIsolates(core.commitErrorMessage({ status: 500 }))).toBe('Colour: Save failed');
+    expect(stripBidiIsolates(core.commitErrorMessage(new Error('server down')))).toBe(
+      'Colour: Save failed - server down',
+    );
+  });
+
+  it('speaks the bare create sentence for a non-Error rejection', () => {
+    const core = labelledCore();
+    expect(stripBidiIsolates(core.createFailedMessage('Teal', 'server down'))).toBe(
+      'Colour: Could not create Teal',
+    );
+    expect(stripBidiIsolates(core.createFailedMessage('Teal', new Error('server down')))).toBe(
+      'Colour: Could not create Teal - server down',
+    );
   });
 });

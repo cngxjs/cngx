@@ -1961,6 +1961,23 @@
       ]
     },
     {
+      "code": "CNGX2027",
+      "lib": "forms",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "quickCreateAction settled without the created item",
+      "page": "core-concepts/error-codes/cngx2027.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2027.html",
+      "status": "active",
+      "files": ["projects/forms/select/shared/create-commit-handler.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/select/shared/create-commit-handler.ts",
+          "text": "quickCreateAction() settled without the created item; resolve to the new value"
+        }
+      ]
+    },
+    {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",
