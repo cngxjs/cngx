@@ -169,6 +169,36 @@ describe('createSelectCore - mobile sheet presentation', () => {
   });
 });
 
+describe('createSelectCore - commit ledger retry', () => {
+  it('binds Retry to the ledger by default and reads the option from its record', () => {
+    const core = TestBed.runInInjectionContext(() =>
+      createSelectCore(deps(), { announceChanges: signal(null), announceTemplate: signal(null) }),
+    );
+    const value = signal<string | undefined>(undefined);
+    const calls: (string | undefined)[] = [];
+    const commitAction = signal<((next: string | undefined) => never) | null>((next) => {
+      calls.push(next);
+      throw new Error('down');
+    });
+    core.commitLedger.beginScalar<string | undefined>({
+      kind: 'select',
+      next: 'red',
+      previous: undefined,
+      option: RED,
+      action: commitAction()!,
+      commitAction,
+      value,
+      same: Object.is,
+      commitMode: signal('pessimistic'),
+      onSuccess: () => undefined,
+    });
+    const context = core.bindCommitRetry();
+    expect(context().option).toBe(RED);
+    context().retry();
+    expect(calls).toEqual(['red', 'red']);
+  });
+});
+
 describe('createSelectCore - trigger ARIA control hooks', () => {
   function coreWith(extra: Partial<CngxSelectCoreDeps<string, string>>) {
     return TestBed.runInInjectionContext(() =>

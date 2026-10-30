@@ -62,7 +62,7 @@ function wrapAsSelectController<T>(
     state: generic.state,
     isCommitting: generic.isCommitting,
     intendedValue: generic.intendedValue,
-    cancel: () => generic.cancel(),
+    cancel: (options) => generic.cancel(options),
     begin(action, intended, previous, handlers) {
       generic.begin(
         (runnerHandlers) =>

@@ -4,6 +4,7 @@ import type { AsyncStatus } from '@cngx/core/utils';
 
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-action.types';
 import type { CngxSelectOptionDef } from './option.model';
+import { commitLedgerFor } from './internal/commit-ledger';
 import type { CngxSelectCompareFn, CngxSelectCore } from './internal/select-core';
 
 /**
@@ -78,19 +79,11 @@ export interface ScalarCommitHandler<T> {
 export function createScalarCommitHandler<T>(
   opts: ScalarCommitHandlerOptions<T>,
 ): ScalarCommitHandler<T> {
-  const commitController = opts.core.commitController;
+  const ledger = commitLedgerFor<T, T>(opts.core.commitController);
   const togglingOption = opts.core.togglingOption;
 
-  // Rollback target. Seeded under `untracked` so the initial read isn't
-  // a reactive dep; refreshed on every commit dispatch.
-  let lastCommitted: T | undefined = untracked(() => opts.value());
-
-  const reconcileValue = (target: T | undefined): void => {
-    const eq = opts.compareWith() as CngxSelectCompareFn<unknown>;
-    if (!eq(opts.value(), target)) {
-      opts.value.set(target);
-    }
-  };
+  const same = (a: T | undefined, b: T | undefined): boolean =>
+    (opts.compareWith() as CngxSelectCompareFn<unknown>)(a, b);
 
   const mirrorWrite = (value: T | undefined): void => {
     opts.onValueWrite?.(value);
@@ -111,14 +104,26 @@ export function createScalarCommitHandler<T>(
     previous: T | undefined,
     action: CngxSelectCommitAction<T>,
   ): void => {
-    lastCommitted = previous;
-    opts.onStateChange('pending');
-    const mode = opts.commitMode();
-    commitController.begin(action, intended, previous, {
-      onSuccess: (committed) => {
-        opts.onStateChange('success');
-        const finalValue = committed ?? intended;
-        reconcileValue(finalValue);
+    const option = untracked(togglingOption);
+    ledger.beginScalar<T | undefined>({
+      kind: 'select',
+      next: intended,
+      previous,
+      option,
+      action,
+      commitAction: opts.commitAction,
+      value: opts.value,
+      same,
+      commitMode: opts.commitMode,
+      onStateChange: opts.onStateChange,
+      onReplay: () => {
+        togglingOption.set(option);
+        if (opts.commitMode() === 'optimistic') {
+          // Show the intended value again while the replay is pending.
+          mirrorWrite(intended);
+        }
+      },
+      onSuccess: (finalValue) => {
         togglingOption.set(null);
         mirrorWrite(finalValue);
         // finalValue may be undefined - controller return type allows it.
@@ -127,20 +132,9 @@ export function createScalarCommitHandler<T>(
         const opt = finalValue === undefined ? null : opts.core.findOption(finalValue);
         opts.onCommitFinalize(opt, finalValue, previous);
       },
-      onError: (err, rollbackTo) => {
-        opts.onStateChange('error');
-        opts.onError(err);
-        // An external write during the pending window wins over the stale
-        // rollback snapshot: roll back only while the model still holds the
-        // optimistic value this commit wrote.
-        const eq = opts.compareWith() as CngxSelectCompareFn<unknown>;
-        if (mode === 'optimistic' && eq(opts.value(), intended)) {
-          const rollback = (rollbackTo ?? undefined) as T | undefined;
-          reconcileValue(rollback);
-          mirrorWrite(rollback);
-        }
-        opts.onCommitError(err);
-      },
+      onError: opts.onError,
+      onRollback: mirrorWrite,
+      announceError: opts.onCommitError,
     });
   };
 
@@ -153,27 +147,13 @@ export function createScalarCommitHandler<T>(
     const action = opts.commitAction();
     if (!action) {
       // No action bound - AD dispatcher fires `onActivate` and the
-      // consumer's `finalizeSelection` handles the write. Track
-      // lastCommitted anyway so a later retry can replay.
-      lastCommitted = previous;
+      // consumer's `finalizeSelection` handles the write.
       return;
     }
     beginCommit(intended, previous, action);
   };
 
-  const retryLast = (): void => {
-    const intendedNext = commitController.intendedValue();
-    const action = opts.commitAction();
-    if (!action || intendedNext === undefined) {
-      return;
-    }
-    if (opts.commitMode() === 'optimistic') {
-      // Show the intended value again while the replay is pending.
-      reconcileValue(intendedNext as T);
-      mirrorWrite(intendedNext as T);
-    }
-    beginCommit(intendedNext as T, lastCommitted, action);
-  };
+  const retryLast = (): void => ledger.retry();
 
   return { beginCommit, dispatchFromActivation, finalizeSelection, retryLast };
 }

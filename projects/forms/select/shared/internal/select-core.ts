@@ -30,6 +30,7 @@ import {
   type CngxCommitController,
 } from '../commit-controller.token';
 import type { CngxSelectCommitAction, CngxSelectCommitErrorDisplay } from '../commit-action.types';
+import { commitLedgerFor, type CommitLedger } from './commit-ledger';
 import type { CngxSelectCompareFn } from '../compare-fn.types';
 import { type CngxSelectAnnouncerConfig, type CngxSelectFallbackLabels } from '../config';
 import {
@@ -250,6 +251,8 @@ export interface CngxSelectCore<T, TCommit> {
   readonly selection: Signal<SelectionController<T> | null>;
 
   readonly commitController: CngxCommitController<TCommit>;
+  /** @internal Last-commit record and retry routing over `commitController`. */
+  readonly commitLedger: CommitLedger<TCommit, T>;
   readonly commitState: CngxAsyncState<TCommit | undefined>;
   readonly isCommitting: Signal<boolean>;
   readonly togglingOption: WritableSignal<CngxSelectOptionDef<T> | null>;
@@ -258,10 +261,11 @@ export interface CngxSelectCore<T, TCommit> {
   readonly commitErrorValue: Signal<unknown>;
 
   /**
-   * Builds a `commitErrorContext` signal bound to the caller's retry.
+   * Builds a `commitErrorContext` signal bound to the caller's retry
+   * (default: the ledger's retry, which replays the recorded commit kind).
    * Cache the result per variant-specific retry signature.
    */
-  bindCommitRetry(retry: () => void): Signal<CngxSelectCommitErrorContext<T>>;
+  bindCommitRetry(retry?: () => void): Signal<CngxSelectCommitErrorContext<T>>;
 
   /** Panel-level `[state]` errors. Cache like `bindCommitRetry`. */
   makeErrorContext(retry: () => void): Signal<CngxSelectErrorContext>;
@@ -346,6 +350,7 @@ export function createSelectCore<T, TCommit>(
   // A commit that settles after the host is gone must neither write, emit
   // nor announce: cancel supersedes it and keeps the last status.
   inject(DestroyRef).onDestroy(() => commitController.cancel());
+  const commitLedger = commitLedgerFor<TCommit, T>(commitController);
   const commitState = commitController.state;
   const isCommitting = commitController.isCommitting;
   // `aria-invalid` projects both form-field validation and a
@@ -685,14 +690,20 @@ export function createSelectCore<T, TCommit>(
 
   const commitErrorValue = computed<unknown>(() => commitState.error());
 
-  function bindCommitRetry(retry: () => void): Signal<CngxSelectCommitErrorContext<T>> {
+  function bindCommitRetry(
+    retry: () => void = () => commitLedger.retry(),
+  ): Signal<CngxSelectCommitErrorContext<T>> {
     return computed(
-      () => ({
-        $implicit: commitState.error(),
-        error: commitState.error(),
-        option: togglingOption(),
-        retry,
-      }),
+      () => {
+        const record = commitLedger.last();
+        return {
+          $implicit: commitState.error(),
+          error: commitState.error(),
+          // Commits that bypass the ledger still mark their row in togglingOption.
+          option: record ? record.option : togglingOption(),
+          retry,
+        };
+      },
       {
         equal: (a, b) => Object.is(a.error, b.error) && Object.is(a.option, b.option),
         ...(typeof ngDevMode !== 'undefined' && ngDevMode
@@ -855,6 +866,7 @@ export function createSelectCore<T, TCommit>(
     isIndeterminate,
     selection,
     commitController,
+    commitLedger,
     commitState,
     isCommitting,
     togglingOption,
