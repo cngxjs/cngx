@@ -845,7 +845,8 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /** @internal */
   protected readonly commitErrorContext = this.core.bindCommitRetry(() => {
     this.hostFocus.refocusOwnerBeforeRemoval();
-    this.commitHandler.retryLast();
+    // Toggle, clear and reorder share one ledger: Retry replays whichever failed.
+    this.core.commitLedger.retry();
   });
 
   /** @internal - full virtualisation wire-up (see setupVirtualization). */
@@ -1364,7 +1365,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /**
    * Reorder-commit handler. Bypasses `ArrayCommitHandler.beginToggle`
    * (its `sameArrayContents` guard would skip same-membership reorders)
-   * and drives the commit controller directly. Resolved via
+   * and records on the core's commit ledger. Resolved via
    * `CNGX_REORDER_COMMIT_HANDLER_FACTORY` so consumers can swap in
    * retry-with-backoff, offline queues, audit logging.
    */
@@ -1397,5 +1398,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     },
     onStateChange: (status) => this.stateChange.emit(status),
     onError: (err) => this.commitError.emit(err),
+    announceError: (err) => this.announceCommitError(err),
   });
 }

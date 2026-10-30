@@ -237,12 +237,12 @@ describeCommitContract(ACTION_MULTI_SELECT, (c) => {
 describeCommitContract(REORDERABLE, (c) => {
   it('A1/A11: Retry after a failed toggle replays the toggle', c.retryToggle);
   it('A1/A11: Retry after a failed clear replays the clear', c.retryClear);
-  it.fails('A1/A11: Retry after a failed reorder replays the reorder', c.retryReorder);
-  it.fails(
+  it('A1/A11: Retry after a failed reorder replays the reorder', c.retryReorder);
+  it(
     'A1/A11: Retry after a failed reorder never replays an earlier clear',
     c.retryReorderNotStaleClear,
   );
-  it.fails(
+  it(
     'B3/A12: a failed reorder is announced assertively after the rollback',
     c.reorderFailureAnnounced,
   );
