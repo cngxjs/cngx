@@ -67,7 +67,9 @@
     /**
      * Stroke width of outline glyphs in the `.cngx-icon--xs` variant, in
      * grid units of the 24x24 viewBox. Thicker than the default 2 so the
-     * strokes keep about a pixel at the 12px floor.
+     * strokes keep about a pixel at the 12px floor. An icon with a 12-grid
+     * micro drawing shows that instead at 10 to 14px, and this token does
+     * not reach it.
      * @type <number>
      * @group Variant / Size
      */
