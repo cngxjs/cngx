@@ -728,7 +728,7 @@ export const LIVE_REGIONS = [
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(commitErrorCopy,host.commitErrorContext,host.tpl)',
+    region: 'CngxSelectPanelShell.div(commitErrorCopy,commitRetryDisabled,host.commitErrorContext,host.tpl)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'keeps the commit-error banner and its retry label on a language flip',
   },
@@ -746,45 +746,9 @@ export const LIVE_REGIONS = [
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.skeletonIndices,viewCopy)',
+    region: 'CngxSelectPanelShell.span(statusText)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'keeps the skeleton loading label on a language flip',
-  },
-  {
-    file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.tpl,refreshingLabel)',
-    spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
-    testName: 'keeps the spinner refreshing label on a language flip',
-  },
-  {
-    file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.tpl,refreshingLabel)#2',
-    spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
-    testName: 'keeps the dots refreshing label on a language flip',
-  },
-  {
-    file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.tpl,refreshingLabel)#3',
-    spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
-    testName: 'keeps the bar refreshing label on a language flip',
-  },
-  {
-    file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.tpl,viewCopy)',
-    spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
-    testName: 'keeps the spinner loading label on a language flip',
-  },
-  {
-    file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.tpl,viewCopy)#2',
-    spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
-    testName: 'keeps the bar loading label on a language flip',
-  },
-  {
-    file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(viewCopy)',
-    spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
-    testName: 'keeps the text loading message on a language flip',
   },
   {
     file: 'projects/ui/accordion/accordion-item.component.ts',
