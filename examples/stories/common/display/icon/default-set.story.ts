@@ -3,19 +3,19 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Default glyphs (internal)',
   subtitle: 'Every glyph cngx draws itself, rendered from <code>@cngx/utils</code> path data by <code>svg[cngxIconSvg]</code>. Internal sign-off surface, not a public icon set.',
-  description: 'Each row shows the glyph standalone at the running text size (1em) and projected into <code>&lt;cngx-icon&gt;</code> at every size preset (<code>xs</code> to <code>xl</code>), which then owns the box. Fill glyphs paint their area in <code>currentColor</code>; stroke glyphs paint only the outline with round caps. Check the shapes in light, dark and forced colors. The small-size sheet below is the 1x sign-off surface for the 12-grid micro tier: every glyph at 10 to 16px as its 24-grid path and as two story-local draft fills, A with 1-unit lines and B with one dominant element at 2 units (for the caret, A is a pixel staircase and B a smooth triangle). Open it at browser zoom 100% on a devicePixelRatio 1 screen.',
+  description: 'Each row shows the glyph standalone at the running text size (1em) and projected into <code>&lt;cngx-icon&gt;</code> at every size preset (<code>xs</code> to <code>xl</code>), which then owns the box. Fill glyphs paint their area in <code>currentColor</code>; stroke glyphs paint only the outline with round caps. The micro column shows the 12-grid drawing in a 12px box once an icon carries one, and stays empty until then. Check the shapes in light, dark and forced colors. The small-size sheet below is the 1x sign-off surface for the 12-grid micro tier: every glyph at 10 to 16px as its 24-grid path and as two story-local draft fills, A with 1-unit lines and B with one dominant element at 2 units (for the caret, A is a pixel staircase and B a smooth triangle). Open it at browser zoom 100% on a devicePixelRatio 1 screen.',
   audience: ['design'],
   focus: ['visual-variants'],
   apiComponents: ['CngxIconSvg'],
   moduleImports: [
     'import { CngxCheckboxIndicator, CngxIcon, CngxIconSvg, CngxRadioIndicator, CngxStatus } from \'@cngx/common/display\';',
-    'import { CNGX_ICON_ALERT, CNGX_ICON_BAN, CNGX_ICON_CARET_DOWN, CNGX_ICON_CHECK, CNGX_ICON_CHEVRONS_LEFT, CNGX_ICON_CHEVRONS_RIGHT, CNGX_ICON_CHEVRON_LEFT, CNGX_ICON_CHEVRON_RIGHT, CNGX_ICON_DOT, CNGX_ICON_GRIP_VERTICAL, CNGX_ICON_MINUS, CNGX_ICON_MORE_HORIZONTAL, CNGX_ICON_MORE_VERTICAL, CNGX_ICON_PLUS, CNGX_ICON_TRIANGLE_DOWN, CNGX_ICON_TRIANGLE_UP, CNGX_ICON_X, CNGX_ICON_CHEVRON_DOWN, CNGX_ICON_TRASH, CNGX_ICON_DOWNLOAD, CNGX_ICON_X_CIRCLE, CNGX_ICON_CUT, CNGX_ICON_COPY, CNGX_ICON_CLIPBOARD, CNGX_ICON_SEARCH, CNGX_ICON_ZOOM_IN, CNGX_ICON_ZOOM_OUT, CNGX_ICON_MAXIMIZE, CNGX_ICON_UNDO, CNGX_ICON_REDO, CNGX_ICON_PENCIL, CNGX_ICON_BELL, CNGX_ICON_INFO, CNGX_ICON_EXCLAMATION, CNGX_ICON_EXCLAMATION_SOLID, CNGX_ICON_QUESTION, CNGX_ICON_INFO_CIRCLE, CNGX_ICON_CHECK_CIRCLE, CNGX_ICON_ARCHIVE, CNGX_ICON_VOLUME, CNGX_ICON_STOP } from \'@cngx/utils\';',
+    'import { CNGX_ICON_ALERT, CNGX_ICON_BAN, CNGX_ICON_CARET_DOWN, CNGX_ICON_CHECK, CNGX_ICON_CHEVRONS_LEFT, CNGX_ICON_CHEVRONS_RIGHT, CNGX_ICON_CHEVRON_LEFT, CNGX_ICON_CHEVRON_RIGHT, CNGX_ICON_DOT, CNGX_ICON_GRIP_VERTICAL, CNGX_ICON_MINUS, CNGX_ICON_MORE_HORIZONTAL, CNGX_ICON_MORE_VERTICAL, CNGX_ICON_PLUS, CNGX_ICON_TRIANGLE_DOWN, CNGX_ICON_TRIANGLE_UP, CNGX_ICON_X, CNGX_ICON_CHEVRON_DOWN, CNGX_ICON_TRASH, CNGX_ICON_DOWNLOAD, CNGX_ICON_X_CIRCLE, CNGX_ICON_CUT, CNGX_ICON_COPY, CNGX_ICON_CLIPBOARD, CNGX_ICON_SEARCH, CNGX_ICON_ZOOM_IN, CNGX_ICON_ZOOM_OUT, CNGX_ICON_MAXIMIZE, CNGX_ICON_UNDO, CNGX_ICON_REDO, CNGX_ICON_PENCIL, CNGX_ICON_BELL, CNGX_ICON_INFO, CNGX_ICON_EXCLAMATION, CNGX_ICON_EXCLAMATION_SOLID, CNGX_ICON_QUESTION, CNGX_ICON_INFO_CIRCLE, CNGX_ICON_CHECK_CIRCLE, CNGX_ICON_ARCHIVE, CNGX_ICON_VOLUME, CNGX_ICON_STOP, type CngxIconData } from \'@cngx/utils\';',
   ],
   imports: ['CngxCheckboxIndicator', 'CngxIcon', 'CngxIconSvg', 'CngxRadioIndicator', 'CngxStatus'],
   setup: `
   protected readonly sizes = ['xs', 'sm', 'md', 'lg', 'xl'] as const;
 
-  protected readonly icons = [
+  protected readonly icons: readonly { name: string; icon: CngxIconData }[] = [
     { name: 'CNGX_ICON_X', icon: CNGX_ICON_X },
     { name: 'CNGX_ICON_PLUS', icon: CNGX_ICON_PLUS },
     { name: 'CNGX_ICON_MINUS', icon: CNGX_ICON_MINUS },
@@ -148,17 +148,23 @@ export const STORY: DemoSpec = {
     { tone: 'neutral', color: 'var(--cngx-status-neutral-color, oklch(0.6 0.02 290))', d: 'M4 1H8V2H4ZM3 2H4V4H3ZM8 2H9V5H8ZM6 5H8V6H6ZM5 6H7V8H5ZM5 9H7V11H5Z' },
   ] as const;`,
   template: `
-  <div style="display:grid; grid-template-columns:repeat(6, auto) 1fr auto; align-items:center; justify-items:center; gap:8px 24px">
+  <div style="display:grid; grid-template-columns:repeat(7, auto) 1fr auto; align-items:center; justify-items:center; gap:8px 24px">
     <span>1em</span>
     @for (size of sizes; track size) {
       <span>{{ size }}</span>
     }
+    <span>micro</span>
     <span style="justify-self:start">name</span>
     <span>paint</span>
     @for (entry of icons; track entry.name) {
       <svg [cngxIconSvg]="entry.icon"></svg>
       @for (size of sizes; track size) {
         <cngx-icon [size]="size"><svg [cngxIconSvg]="entry.icon"></svg></cngx-icon>
+      }
+      @if (entry.icon.micro) {
+        <svg style="--cngx-icon-svg-size: 12px" [cngxIconSvg]="entry.icon"></svg>
+      } @else {
+        <span></span>
       }
       <code style="justify-self:start">{{ entry.name }}</code>
       <span>{{ entry.icon.paint }}</span>
