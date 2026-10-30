@@ -19,7 +19,7 @@ The artifacts cluster into seven concerns:
 6. [Configuration cascade](#6-configuration-cascade) - three config surfaces + aggregator.
 7. [Family primitives](#7-family-primitives) - option model, navigation helpers, glyphs, CSS.
 
-Every public token follows the `provide` / `with` / `inject` / `create` prefix convention (see global memory `reference_api_prefix_convention.md`).
+Every public token follows the `provide` / `with` / `inject` / `create` prefix convention: `provide*` returns providers, `with*` builds one config feature, `inject*` reads a value inside an injection context, `create*` builds a plain factory result.
 Every factory has a corresponding DI token (`Cngx<Name>Factory` type + `CNGX_<NAME>_FACTORY` constant) for swap-without-fork extensibility.
 
 
@@ -147,8 +147,8 @@ Declarative scalar commit-error announce policy. Two policies:
 | `CngxCommitErrorAnnouncerFactory`     | DI factory type      |
 | `CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY` | DI token             |
 
-The two-policy split is documented as accepted debt - see
-`select-family-accepted-debt.md` entry #1.
+The two-policy split is deliberate: `CngxSelect` and `CngxTypeahead` keep their own close timing and
+announce channel, see [`ARCHITECTURE.md` § Commit-action lifecycle](../ARCHITECTURE.md#commit-action-lifecycle).
 
 ### `chip-removal-handler.ts`
 
@@ -333,6 +333,8 @@ Four thin convenience helpers for the most-injected tokens. All four are exporte
 |-|-|
 | `injectSelectConfig()`    | Resolved `CngxSelectConfig` for the current injector (`resolveSelectConfig()`) |
 | `injectSelectAnnouncer()` | `inject(CngxSelectAnnouncer)`                                                  |
+| `injectActionSelectConfig()` | Resolved `CngxActionSelectConfig` for the current injector (`resolveActionSelectConfig()`) |
+| `injectReorderableSelectConfig()` | Resolved `CngxReorderableSelectConfig` for the current injector (`resolveReorderableSelectConfig()`) |
 
 
 
@@ -364,6 +366,8 @@ Slot list (with the cascade tier each slot belongs to - every slot flows through
 | `CngxSelectOptionError<T>`                        | `CngxSelectOptionErrorContext<T>`   |
 | `CngxSelectAction`                                | `CngxSelectActionContext`           |
 | `CngxSelectInputPrefix` / `CngxSelectInputSuffix` | `CngxSelectInputSlotContext`        |
+| `CngxSelectSheetHandle`                           | `CngxSelectSheetHandleContext`      |
+| `CngxSelectSheetCount`                            | `CngxSelectSheetCountContext`       |
 
 Plus the variant-specific slots (also defined here):
 
@@ -373,6 +377,7 @@ Plus the variant-specific slots (also defined here):
 | `CngxMultiSelectChip<T>` / `CngxMultiSelectTriggerLabel<T>` | multi + reorderable |
 | `CngxMultiSelectChipHandle`                                 | reorderable only    |
 | `CngxComboboxChip<T>` / `CngxComboboxTriggerLabel<T>`       | combobox            |
+| `CngxSelectChipOverflow<T>`                                 | multi, combobox, action-multi, reorderable, tree |
 
 ### `template-registry.ts`
 
