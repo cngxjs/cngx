@@ -93,10 +93,12 @@ a non-bundled release is fetched and cached, and `migrate` takes no
 A fetched release snapshot is cached on disk and never fetched again: in
 `$CNGX_CACHE_DIR`, else `$XDG_CACHE_HOME/cngx`, else `~/Library/Caches/cngx`
 (macOS), `%LOCALAPPDATA%\cngx\Cache` (Windows) or `~/.cache/cngx`; an empty or
-relative variable is ignored. The cache keeps the 16 most recently read releases. An unreadable entry is removed and
-fetched again; a cache directory that cannot be written answers without caching
-and says so on stderr. Without a network, a detected release costs one fetch
-timeout per run before the fallback; pass `--offline` to skip it.
+relative variable is ignored, and without a home directory and without these
+variables there is no disk cache. The cache keeps the 16 most recently read
+releases. An unreadable entry is removed and fetched again; a cache directory
+that cannot be written answers without caching and says so on stderr. Without a
+network, a detected release costs one fetch timeout per run before the
+fallback; pass `--offline` to skip it.
 
 `api`, `slots`, `theme`, `config` and `example` take several names:
 `cngx api CngxSelect CngxChip`. Repeated names answer once. Markdown prints one

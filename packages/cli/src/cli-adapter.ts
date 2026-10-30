@@ -765,6 +765,15 @@ export interface EntryPaths {
   readonly packageJson: URL;
 }
 
+/** The user's home directory, or null where `os.homedir()` throws (no HOME and no passwd entry). */
+function homeDir(): string | null {
+  try {
+    return homedir();
+  } catch {
+    return null;
+  }
+}
+
 /** Load the bundled snapshot and run `argv` against the full registry. */
 export async function main(argv: readonly string[], paths: EntryPaths, io: CliIo): Promise<number> {
   let cliVersion: string;
@@ -775,7 +784,8 @@ export async function main(argv: readonly string[], paths: EntryPaths, io: CliIo
   }
   const loadContext = ({ offline, warn }: ContextOptions): CommandContext => {
     const bundled = loadBundledDocs(fileURLToPath(paths.dataDir));
-    const cache = createSnapshotCache({ dir: resolveCacheDir(process.env, process.platform, homedir()), warn });
+    const dir = resolveCacheDir(process.env, process.platform, homeDir);
+    const cache = dir === null ? undefined : createSnapshotCache({ dir, warn });
     const resolve = createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile, removeDir: removeTempDir, cache, offline });
     return { bundled, resolve };
   };

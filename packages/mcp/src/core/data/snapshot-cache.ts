@@ -144,13 +144,15 @@ export function createSnapshotCache({
  * platform cache directory (`~/Library/Caches/cngx` on darwin,
  * `%LOCALAPPDATA%\cngx\Cache` on win32, `~/.cache/cngx` elsewhere). An empty or
  * relative variable is ignored: it would put a cache into every working directory.
+ * `home` is called only when a variable does not decide; null (no home directory,
+ * as for an arbitrary uid in a container) means no disk cache at all.
  */
 export function resolveCacheDir(
   env: Readonly<Record<string, string | undefined>>,
   platform: NodeJS.Platform,
-  home: string,
+  home: () => string | null,
   path: PlatformPath = platform === 'win32' ? nodePath.win32 : nodePath.posix,
-): string {
+): string | null {
   const absolute = (value: string | undefined) => (value && path.isAbsolute(value) ? value : undefined);
   const cngxCacheDir = absolute(env.CNGX_CACHE_DIR);
   if (cngxCacheDir) {
@@ -160,15 +162,19 @@ export function resolveCacheDir(
   if (xdgCacheHome) {
     return path.join(xdgCacheHome, 'cngx');
   }
-  if (platform === 'darwin') {
-    return path.join(home, 'Library', 'Caches', 'cngx');
-  }
   const localAppData = absolute(env.LOCALAPPDATA);
   if (platform === 'win32' && localAppData) {
     return path.join(localAppData, 'cngx', 'Cache');
   }
-  if (platform === 'win32') {
-    return path.join(home, 'AppData', 'Local', 'cngx', 'Cache');
+  const homeDir = home();
+  if (homeDir === null) {
+    return null;
   }
-  return path.join(home, '.cache', 'cngx');
+  if (platform === 'darwin') {
+    return path.join(homeDir, 'Library', 'Caches', 'cngx');
+  }
+  if (platform === 'win32') {
+    return path.join(homeDir, 'AppData', 'Local', 'cngx', 'Cache');
+  }
+  return path.join(homeDir, '.cache', 'cngx');
 }

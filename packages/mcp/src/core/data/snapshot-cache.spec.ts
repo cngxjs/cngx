@@ -34,11 +34,11 @@ const versions = (n: number) => Array.from({ length: n }, (_, i) => `0.${i + 1}.
 
 describe('resolveCacheDir', () => {
   it('prefers CNGX_CACHE_DIR over everything', () => {
-    expect(resolveCacheDir({ CNGX_CACHE_DIR: '/c', XDG_CACHE_HOME: '/x' }, 'darwin', '/home/u')).toBe('/c');
+    expect(resolveCacheDir({ CNGX_CACHE_DIR: '/c', XDG_CACHE_HOME: '/x' }, 'darwin', () => '/home/u')).toBe('/c');
   });
 
   it('uses $XDG_CACHE_HOME/cngx next', () => {
-    expect(resolveCacheDir({ XDG_CACHE_HOME: '/x' }, 'darwin', '/home/u')).toBe('/x/cngx');
+    expect(resolveCacheDir({ XDG_CACHE_HOME: '/x' }, 'darwin', () => '/home/u')).toBe('/x/cngx');
   });
 
   it.each<[NodeJS.Platform, string]>([
@@ -46,14 +46,14 @@ describe('resolveCacheDir', () => {
     ['linux', '/home/u/.cache/cngx'],
     ['freebsd', '/home/u/.cache/cngx'],
   ])('falls back to the %s cache directory', (platform, expected) => {
-    expect(resolveCacheDir({}, platform, '/home/u')).toBe(expected);
+    expect(resolveCacheDir({}, platform, () => '/home/u')).toBe(expected);
   });
 
   it('uses %LOCALAPPDATA%\\cngx\\Cache on win32, joined with path.win32', () => {
-    expect(resolveCacheDir({ LOCALAPPDATA: 'C:\\Users\\u\\AppData\\Local' }, 'win32', 'C:\\Users\\u')).toBe(
+    expect(resolveCacheDir({ LOCALAPPDATA: 'C:\\Users\\u\\AppData\\Local' }, 'win32', () => 'C:\\Users\\u')).toBe(
       'C:\\Users\\u\\AppData\\Local\\cngx\\Cache',
     );
-    expect(resolveCacheDir({}, 'win32', 'C:\\Users\\u')).toBe('C:\\Users\\u\\AppData\\Local\\cngx\\Cache');
+    expect(resolveCacheDir({}, 'win32', () => 'C:\\Users\\u')).toBe('C:\\Users\\u\\AppData\\Local\\cngx\\Cache');
   });
 
   it.each([
@@ -61,19 +61,28 @@ describe('resolveCacheDir', () => {
     [{ CNGX_CACHE_DIR: './cache', XDG_CACHE_HOME: '/x' }, '/x/cngx'],
     [{ XDG_CACHE_HOME: '.cache' }, '/home/u/.cache/cngx'],
   ])('ignores a relative cache variable %j', (env, expected) => {
-    expect(resolveCacheDir(env, 'linux', '/home/u')).toBe(expected);
+    expect(resolveCacheDir(env, 'linux', () => '/home/u')).toBe(expected);
   });
 
   it('ignores a relative LOCALAPPDATA on win32', () => {
-    expect(resolveCacheDir({ LOCALAPPDATA: 'AppData\\Local' }, 'win32', 'C:\\Users\\u')).toBe('C:\\Users\\u\\AppData\\Local\\cngx\\Cache');
+    expect(resolveCacheDir({ LOCALAPPDATA: 'AppData\\Local' }, 'win32', () => 'C:\\Users\\u')).toBe('C:\\Users\\u\\AppData\\Local\\cngx\\Cache');
+  });
+
+  it('reads the home directory only when no variable decides, and gives no cache without one', () => {
+    const home = vi.fn(() => null);
+
+    expect(resolveCacheDir({ CNGX_CACHE_DIR: '/c' }, 'linux', home)).toBe('/c');
+    expect(resolveCacheDir({ XDG_CACHE_HOME: '/x' }, 'linux', home)).toBe('/x/cngx');
+    expect(home).not.toHaveBeenCalled();
+    expect(resolveCacheDir({}, 'linux', home)).toBeNull();
   });
 
   it('ignores an empty CNGX_CACHE_DIR', () => {
-    expect(resolveCacheDir({ CNGX_CACHE_DIR: '' }, 'linux', '/home/u')).toBe('/home/u/.cache/cngx');
+    expect(resolveCacheDir({ CNGX_CACHE_DIR: '' }, 'linux', () => '/home/u')).toBe('/home/u/.cache/cngx');
   });
 
   it('ignores an empty LOCALAPPDATA on win32 instead of resolving under cwd', () => {
-    expect(resolveCacheDir({ LOCALAPPDATA: '' }, 'win32', 'C:\\Users\\u')).toBe('C:\\Users\\u\\AppData\\Local\\cngx\\Cache');
+    expect(resolveCacheDir({ LOCALAPPDATA: '' }, 'win32', () => 'C:\\Users\\u')).toBe('C:\\Users\\u\\AppData\\Local\\cngx\\Cache');
   });
 });
 
