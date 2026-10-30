@@ -16,7 +16,7 @@ import { DOCS_CACHE_LIMIT } from './docs-resolver.js';
 /** The `node:fs` calls the cache makes; injected so specs can plant failures. */
 export type SnapshotCacheFs = Pick<
   typeof nodeFs,
-  'existsSync' | 'mkdirSync' | 'copyFileSync' | 'renameSync' | 'rmSync' | 'readdirSync' | 'statSync' | 'utimesSync'
+  'existsSync' | 'mkdirSync' | 'copyFileSync' | 'renameSync' | 'rmSync' | 'rmdirSync' | 'readdirSync' | 'statSync' | 'utimesSync'
 >;
 
 export interface SnapshotCacheOptions {
@@ -63,6 +63,8 @@ export function createSnapshotCache({
   /**
    * Remove the temp files a crashed writer left in `version`'s directory, and the
    * directory itself when that leaves it empty. A fresh temp file is a live writer's.
+   * Best effort: a failure leaves the leftovers for the next write and never stops
+   * the eviction of the other versions.
    */
   function sweepStaleTemps(version: string): void {
     const versionDir = path.join(snapshots, version);
@@ -77,13 +79,11 @@ export function createSnapshotCache({
         }
       }
       if (removed > 0 && removed === names.length) {
-        removeEntry(version);
+        // Not recursive: a writer that renamed its entry in since the listing keeps it.
+        fs.rmdirSync(versionDir);
       }
-    } catch (error) {
-      // Another process swept or evicted it first.
-      if (!isEnoent(error)) {
-        throw error;
-      }
+    } catch {
+      // Swept or evicted by another process, a live writer's directory, or unreadable.
     }
   }
 

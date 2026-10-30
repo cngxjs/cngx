@@ -224,6 +224,48 @@ describe('createSnapshotCache concurrency', () => {
     expect(cache.read('0.2.0')).not.toBeNull();
   });
 
+  it('keeps a directory a writer renamed its entry into after the sweep listed it', () => {
+    const versionDir = join(root, 'snapshots', '0.1.0');
+    fs.mkdirSync(versionDir, { recursive: true });
+    const stale = join(versionDir, 'documentation.json.1-a.tmp');
+    writeFileSync(stale, '{');
+    const old = new Date(Date.now() - 60 * 60 * 1000);
+    utimesSync(stale, old, old);
+    const racing: SnapshotCacheFs = {
+      ...fs,
+      rmSync: ((file: fs.PathLike, options?: fs.RmOptions) => {
+        fs.rmSync(file, options);
+        if (String(file) === stale) {
+          copyFileSync(NEW, join(versionDir, 'documentation.json'));
+        }
+      }) as typeof fs.rmSync,
+    };
+
+    createSnapshotCache({ dir: root, fs: racing }).write('0.2.0', NEW);
+
+    expect(existsSync(join(versionDir, 'documentation.json'))).toBe(true);
+  });
+
+  it('keeps evicting the other versions when one version directory cannot be swept', () => {
+    const cache = createSnapshotCache({ dir: root, limit: 1 });
+    cache.write('0.1.0', NEW);
+    const failing: SnapshotCacheFs = {
+      ...fs,
+      readdirSync: ((dir: fs.PathLike, ...rest: unknown[]) => {
+        if (String(dir).endsWith(`${path.sep}0.1.0`)) {
+          throw Object.assign(new Error('EACCES: denied'), { code: 'EACCES' });
+        }
+        return (fs.readdirSync as (d: fs.PathLike, ...r: unknown[]) => unknown)(dir, ...rest);
+      }) as typeof fs.readdirSync,
+    };
+    const warn = vi.fn();
+
+    createSnapshotCache({ dir: root, fs: failing, warn, limit: 1 }).write('0.2.0', NEW);
+
+    expect(warn).not.toHaveBeenCalled();
+    expect(readdirSync(join(root, 'snapshots'))).toEqual(['0.2.0']);
+  });
+
   it('sweeps a stale temp file beside a cached entry and keeps the entry', () => {
     const cache = createSnapshotCache({ dir: root });
     cache.write('0.1.0', NEW);
