@@ -50,8 +50,8 @@ function readsUnitFirst(message: string): boolean {
  * @since 0.1.0
  * @relatedTo CngxTrend, CngxCard
  *
- * <example-url>http://localhost:4200/#/common/data/metric/inside-a-card</example-url>
- * <example-url>http://localhost:4200/#/common/data/metric/standalone-metrics</example-url>
+ * <example-url>/#/common/data/metric/inside-a-card</example-url>
+ * <example-url>/#/common/data/metric/standalone-metrics</example-url>
  * @axis level atom
  */
 @Component({

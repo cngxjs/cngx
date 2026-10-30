@@ -44,10 +44,10 @@ import { injectFormFieldI18n, resolveErrorMessage } from './i18n/form-field-i18n
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/field-errors.component.ts
  * @since 0.1.0
  * @relatedTo CngxError, CngxFormErrors, CngxFormField, CNGX_ERROR_MESSAGES, withErrorMessages
- * <example-url>http://localhost:4200/#/forms/field/field-errors/basic</example-url>
- * <example-url>http://localhost:4200/#/forms/field/field-errors/multiple-validators</example-url>
- * <example-url>http://localhost:4200/#/forms/field/field-errors/custom-error-template</example-url>
- * <example-url>http://localhost:4200/#/forms/field/field-errors/with-registry-messages</example-url>
+ * <example-url>/#/forms/field/field-errors/basic</example-url>
+ * <example-url>/#/forms/field/field-errors/multiple-validators</example-url>
+ * <example-url>/#/forms/field/field-errors/custom-error-template</example-url>
+ * <example-url>/#/forms/field/field-errors/with-registry-messages</example-url>
  * @axis level molecule
  */
 @Component({

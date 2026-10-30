@@ -48,7 +48,7 @@ export interface CngxHostInteractionState {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-click/host-interaction-state.token.ts
  * @since 0.1.0
  * @relatedTo CngxAsyncClick
- * <example-url>http://localhost:4200/#/common/button/button/async-click-busy</example-url>
+ * <example-url>/#/common/button/button/async-click-busy</example-url>
  */
 export const CNGX_HOST_INTERACTION_STATE = new InjectionToken<CngxHostInteractionState>(
   'CngxHostInteractionState',

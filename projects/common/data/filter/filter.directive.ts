@@ -35,11 +35,11 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  * @since 0.1.0
  * @relatedTo CngxFilterChips, CngxSort, CngxPaginate, CngxSmartDataSource
  *
- * <example-url>http://localhost:4200/#/common/data/filter-chips/custom-chip-decoration-via-cngxfilterchip</example-url>
- * <example-url>http://localhost:4200/#/common/data/filter-chips/multi-role-filter-wired-to-a-list</example-url>
- * <example-url>http://localhost:4200/#/common/data/smart-data-source/auto-wired</example-url>
- * <example-url>http://localhost:4200/#/common/data/smart-data-source/how-it-works-hostdirectives-inject</example-url>
- * <example-url>http://localhost:4200/#/common/data/smart-data-source/smartdatasource-cngxpaginate-hostdirective</example-url>
+ * <example-url>/#/common/data/filter-chips/custom-chip-decoration-via-cngxfilterchip</example-url>
+ * <example-url>/#/common/data/filter-chips/multi-role-filter-wired-to-a-list</example-url>
+ * <example-url>/#/common/data/smart-data-source/auto-wired</example-url>
+ * <example-url>/#/common/data/smart-data-source/how-it-works-hostdirectives-inject</example-url>
+ * <example-url>/#/common/data/smart-data-source/smartdatasource-cngxpaginate-hostdirective</example-url>
  */
 @Directive({
   selector: '[cngxFilter]',

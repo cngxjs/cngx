@@ -22,7 +22,7 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/slots/stepper-empty.directive.ts
  * @since 0.1.0
  * @relatedTo CngxStepIndicator, CngxStepGroupHeader
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/empty-state-placeholder-via-code-cngxstepperempty-code</example-url>
+ * <example-url>/#/ui/stepper/stepper-slot-overrides/empty-state-placeholder-via-code-cngxstepperempty-code</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxStepperEmpty]',

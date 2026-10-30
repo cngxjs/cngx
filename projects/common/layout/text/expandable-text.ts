@@ -92,9 +92,9 @@ export class CngxExpandableToggle {
  * @since 0.1.0
  * @relatedTo CngxTruncate, CngxExpandableToggle, CngxHighlight
  * @slot cngxExpandableToggle Replaces the show-more control; gets the current expanded state.
- * <example-url>http://localhost:4200/#/common/layout/expandable-text/auto-toggle</example-url>
- * <example-url>http://localhost:4200/#/common/layout/expandable-text/custom-labels</example-url>
- * <example-url>http://localhost:4200/#/common/layout/expandable-text/custom-toggle-template</example-url>
+ * <example-url>/#/common/layout/expandable-text/auto-toggle</example-url>
+ * <example-url>/#/common/layout/expandable-text/custom-labels</example-url>
+ * <example-url>/#/common/layout/expandable-text/custom-toggle-template</example-url>
  * @axis level molecule
  */
 @Component({

@@ -52,7 +52,7 @@ export interface CngxDotStepperDotContext {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/slots/dot-stepper-dot.directive.ts
  * @since 0.1.0
  * @relatedTo CngxStepIndicator, CngxStepBadge, CngxStepBusySpinner, CngxStepRejection
- * <example-url>http://localhost:4200/#/ui/stepper/dot-stepper/icon-dots-via-code-cngxdotstepperdot-code</example-url>
+ * <example-url>/#/ui/stepper/dot-stepper/icon-dots-via-code-cngxdotstepperdot-code</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxDotStepperDot]',

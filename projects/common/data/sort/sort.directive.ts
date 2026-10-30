@@ -43,10 +43,10 @@ function entriesEqual(a: SortEntry[], b: SortEntry[]): boolean {
  * @since 0.1.0
  * @relatedTo CngxSortHeader, CngxFilter, CngxPaginate, CngxSmartDataSource
  *
- * <example-url>http://localhost:4200/#/common/data/sort/basic</example-url>
- * <example-url>http://localhost:4200/#/common/data/sort/multi-sort</example-url>
- * <example-url>http://localhost:4200/#/common/data/sort/controlled</example-url>
- * <example-url>http://localhost:4200/#/common/data/sort/aria-and-keyboard</example-url>
+ * <example-url>/#/common/data/sort/basic</example-url>
+ * <example-url>/#/common/data/sort/multi-sort</example-url>
+ * <example-url>/#/common/data/sort/controlled</example-url>
+ * <example-url>/#/common/data/sort/aria-and-keyboard</example-url>
  * @axis level atom
  */
 @Directive({

@@ -45,10 +45,10 @@ import { injectFormFieldPresenter } from './inject-form-field-presenter';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/required.component.ts
  * @since 0.1.0
  * @relatedTo CngxLabel, CngxFormField, withRequiredMarker
- * <example-url>http://localhost:4200/#/forms/field/required/basic</example-url>
- * <example-url>http://localhost:4200/#/forms/field/required/custom-template</example-url>
- * <example-url>http://localhost:4200/#/forms/field/required/auto-hide-on-non-required</example-url>
- * <example-url>http://localhost:4200/#/forms/field/required/placement-conventions</example-url>
+ * <example-url>/#/forms/field/required/basic</example-url>
+ * <example-url>/#/forms/field/required/custom-template</example-url>
+ * <example-url>/#/forms/field/required/auto-hide-on-non-required</example-url>
+ * <example-url>/#/forms/field/required/placement-conventions</example-url>
  * @axis level atom
  */
 @Component({

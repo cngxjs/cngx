@@ -11,6 +11,9 @@
     "multiVersion": false,
     "includes": "core-concepts",
     "includesName": "Core Concepts",
+    "aiGeneratedNote": "Drafted with AI assistance ({value}) and reviewed by a maintainer.",
+    "disableMarkdownPages": ["changelog", "license"],
+    "exampleUrlBase": "https://cngxjs.github.io/cngx/examples",
     "assetsFolder": "brand",
     "disableSourceCode": true,
     "disableTemplateTab": true,
@@ -54,12 +57,14 @@
     ],
     "styleFiles": [
         "projects/*/theming/**/*.css",
-        "projects/themes/*.css"
+        "projects/themes/*.css",
+        "projects/themes/material/{*theme,*-bridge}.scss"
     ],
     "themingTabSections": [
         "overview",
         "index",
-        "tokens"
+        "tokens",
+        "mixins"
     ],
     "navTabConfig": [
         {

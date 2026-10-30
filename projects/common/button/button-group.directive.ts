@@ -52,11 +52,11 @@ export type CngxButtonGroupOrientation = 'horizontal' | 'vertical';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-group.directive.ts
  * @since 0.1.0
  * @relatedTo CngxButton, CngxIconButton, CngxButtonGroupAddon, CngxButtonGroupSeparator, CNGX_BUTTON_GROUP, CngxSplitButton, CngxIconMenuButton
- * <example-url>http://localhost:4200/#/common/button/group/basic</example-url>
- * <example-url>http://localhost:4200/#/common/button/group/vertical</example-url>
- * <example-url>http://localhost:4200/#/common/button/group/with-addon</example-url>
- * <example-url>http://localhost:4200/#/common/button/group/icon-toolbar</example-url>
- * <example-url>http://localhost:4200/#/common/menu-button/split-button/basic</example-url>
+ * <example-url>/#/common/button/group/basic</example-url>
+ * <example-url>/#/common/button/group/vertical</example-url>
+ * <example-url>/#/common/button/group/with-addon</example-url>
+ * <example-url>/#/common/button/group/icon-toolbar</example-url>
+ * <example-url>/#/common/menu-button/split-button/basic</example-url>
  * @axis level molecule
  */
 @Directive({

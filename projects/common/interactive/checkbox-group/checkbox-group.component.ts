@@ -82,11 +82,11 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
  * @selector cngx-checkbox-group
  * @since 0.1.0
  * @relatedTo CngxCheckbox, CngxRovingTabindex, CngxRadioGroup
- * <example-url>http://localhost:4200/#/common/interactive/checkbox/group/basic-select-all-master-projected-leaves</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/checkbox/group/disabled-cascade</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
+ * <example-url>/#/common/interactive/checkbox/group/basic-select-all-master-projected-leaves</example-url>
+ * <example-url>/#/common/interactive/checkbox/group/disabled-cascade</example-url>
+ * <example-url>/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
+ * <example-url>/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
+ * <example-url>/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  * @axis level molecule
  */
 @Component({

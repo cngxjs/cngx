@@ -33,9 +33,9 @@ import {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/step-group.directive.ts
  * @since 0.1.0
  * @relatedTo CngxStep, CngxStepperPresenter, CngxStepGroupHeader
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-hierarchical/group-nested-steps-trailing-root-step</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-hierarchical/expand-active-group-collapse</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-hierarchical/group-collapse-summary-count</example-url>
+ * <example-url>/#/ui/stepper/stepper-hierarchical/group-nested-steps-trailing-root-step</example-url>
+ * <example-url>/#/ui/stepper/stepper-hierarchical/expand-active-group-collapse</example-url>
+ * <example-url>/#/ui/stepper/stepper-hierarchical/group-collapse-summary-count</example-url>
  */
 @Directive({
   selector: '[cngxStepGroup]',

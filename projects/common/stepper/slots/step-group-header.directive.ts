@@ -39,7 +39,7 @@ export interface CngxStepGroupHeaderContext {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/slots/step-group-header.directive.ts
  * @since 0.1.0
  * @relatedTo CngxStepGroup, CngxStepIndicator, CngxStepLabel
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-group-header-via-code-cngxstepgroupheader-code</example-url>
+ * <example-url>/#/ui/stepper/stepper-slot-overrides/custom-group-header-via-code-cngxstepgroupheader-code</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxStepGroupHeader]',

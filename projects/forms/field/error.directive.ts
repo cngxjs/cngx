@@ -36,10 +36,10 @@ import { injectFormFieldPresenter } from './inject-form-field-presenter';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/error.directive.ts
  * @since 0.1.0
  * @relatedTo CngxFieldErrors, CngxFormField, CngxFormErrors
- * <example-url>http://localhost:4200/#/forms/field/error/basic</example-url>
- * <example-url>http://localhost:4200/#/forms/field/error/icons-per-kind</example-url>
- * <example-url>http://localhost:4200/#/forms/field/error/server-injected-error</example-url>
- * <example-url>http://localhost:4200/#/forms/field/error/when-to-pick-manual-vs-auto</example-url>
+ * <example-url>/#/forms/field/error/basic</example-url>
+ * <example-url>/#/forms/field/error/icons-per-kind</example-url>
+ * <example-url>/#/forms/field/error/server-injected-error</example-url>
+ * <example-url>/#/forms/field/error/when-to-pick-manual-vs-auto</example-url>
  * @axis level atom
  */
 @Directive({

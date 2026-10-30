@@ -32,11 +32,11 @@ import { CNGX_ICON_ARCHIVE } from '@cngx/utils';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/empty-state/empty-state.component.ts
  * @since 0.1.0
  * @relatedTo CngxAsyncState, CngxSkeletonContainer
- * <example-url>http://localhost:4200/#/ui/empty-state/default-no-icon-projected</example-url>
- * <example-url>http://localhost:4200/#/ui/empty-state/inside-a-card-grid</example-url>
- * <example-url>http://localhost:4200/#/ui/empty-state/inside-a-list</example-url>
- * <example-url>http://localhost:4200/#/ui/empty-state/inside-a-table</example-url>
- * <example-url>http://localhost:4200/#/ui/empty-state/with-custom-icon-actions</example-url>
+ * <example-url>/#/ui/empty-state/default-no-icon-projected</example-url>
+ * <example-url>/#/ui/empty-state/inside-a-card-grid</example-url>
+ * <example-url>/#/ui/empty-state/inside-a-list</example-url>
+ * <example-url>/#/ui/empty-state/inside-a-table</example-url>
+ * <example-url>/#/ui/empty-state/with-custom-icon-actions</example-url>
  * @axis level organism
  */
 @Component({

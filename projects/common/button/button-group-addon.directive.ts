@@ -27,7 +27,7 @@ import type { CngxButtonSize } from './button.types';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-group-addon.directive.ts
  * @since 0.1.0
  * @relatedTo CngxButtonGroup, CngxButtonGroupSeparator
- * <example-url>http://localhost:4200/#/common/button/group/with-addon</example-url>
+ * <example-url>/#/common/button/group/with-addon</example-url>
  */
 @Directive({
   selector: '[cngxButtonGroupAddon]',

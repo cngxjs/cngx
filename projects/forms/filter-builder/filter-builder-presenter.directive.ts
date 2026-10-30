@@ -48,8 +48,8 @@ import { injectFilterBuilderAnnouncerFactory } from './filter-builder-announcer'
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-presenter.directive.ts
  * @since 0.1.0
  * @relatedTo CngxFilterBuilder, CngxFilterBuilderFormFieldControl, CngxFilterGroup, CngxFilterExpression
- * <example-url>http://localhost:4200/#/forms/filter-builder/basic-two-way-binding-json-inspection</example-url>
- * <example-url>http://localhost:4200/#/forms/filter-builder/seeded-tree-and-or-composition</example-url>
+ * <example-url>/#/forms/filter-builder/basic-two-way-binding-json-inspection</example-url>
+ * <example-url>/#/forms/filter-builder/seeded-tree-and-or-composition</example-url>
  */
 @Directive({
   selector: '[cngxFilterBuilderPresenter]',

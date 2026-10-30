@@ -41,8 +41,8 @@ import { createMediaQuerySignal } from '@cngx/core/utils';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/ripple/ripple.directive.ts
  * @since 0.1.0
  * @relatedTo CngxPressable, CngxPressRipple, CngxHoverable
- * <example-url>http://localhost:4200/#/common/interactive/ripple/base/button-ripples</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/ripple/base/card-with-ripple</example-url>
+ * <example-url>/#/common/interactive/ripple/base/button-ripples</example-url>
+ * <example-url>/#/common/interactive/ripple/base/card-with-ripple</example-url>
  * @axis level atom
  */
 @Directive({

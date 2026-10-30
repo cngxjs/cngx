@@ -87,9 +87,9 @@ const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER
  * @slot cngxPopoverLoading Rendered while the panel's content is loading.
  * @slot cngxPopoverEmpty Rendered when the panel has nothing to show.
  * @slot cngxPopoverError Rendered when the panel's content failed to load.
- * <example-url>http://localhost:4200/#/common/popover/popover-panel/content-states</example-url>
- * <example-url>http://localhost:4200/#/common/popover/popover-panel/variants</example-url>
- * <example-url>http://localhost:4200/#/common/popover/popover-panel/with-footer-actions</example-url>
+ * <example-url>/#/common/popover/popover-panel/content-states</example-url>
+ * <example-url>/#/common/popover/popover-panel/variants</example-url>
+ * <example-url>/#/common/popover/popover-panel/with-footer-actions</example-url>
  * @axis level organism
  */
 @Component({

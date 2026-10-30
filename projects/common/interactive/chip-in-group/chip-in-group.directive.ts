@@ -71,11 +71,11 @@ import { injectChipGroupHost } from '../chip-group/chip-group-host.token';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/chip-in-group/chip-in-group.directive.ts
  * @since 0.1.0
  * @relatedTo CngxChipGroup, CngxMultiChipGroup, CngxChipInteraction
- * <example-url>http://localhost:4200/#/common/interactive/chip/group/basic-pick-exactly-one-size</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/chip/multi-group/multi-select-chips-with-selection-count</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
+ * <example-url>/#/common/interactive/chip/group/basic-pick-exactly-one-size</example-url>
+ * <example-url>/#/common/interactive/chip/multi-group/multi-select-chips-with-selection-count</example-url>
+ * <example-url>/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
+ * <example-url>/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
+ * <example-url>/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  * @axis level atom
  */
 @Directive({

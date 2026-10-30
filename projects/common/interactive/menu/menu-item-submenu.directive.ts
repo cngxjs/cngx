@@ -56,7 +56,7 @@ import {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item-submenu.directive.ts
  * @since 0.1.0
  * @relatedTo CngxMenuItem, CngxMenu, CngxMenuTrigger
- * <example-url>http://localhost:4200/#/common/interactive/menu/submenu/two-level-submenu</example-url>
+ * <example-url>/#/common/interactive/menu/submenu/two-level-submenu</example-url>
  * @axis level organism
  */
 @Directive({

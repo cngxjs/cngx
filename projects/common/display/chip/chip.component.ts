@@ -42,15 +42,15 @@ import { CngxIconSvg } from '../icon/icon-svg.component';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/chip/chip.component.ts
  * @since 0.1.0
  * @relatedTo CngxTag, CngxTagGroup, CngxBadge
- * <example-url>http://localhost:4200/#/common/display/chip/basic</example-url>
- * <example-url>http://localhost:4200/#/common/display/chip/removable</example-url>
- * <example-url>http://localhost:4200/#/common/display/chip/color-palette</example-url>
- * <example-url>http://localhost:4200/#/common/display/chip/custom-close-icon</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/chip/group/basic-pick-exactly-one-size</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/basic-toggle-on-click-space-or-enter</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/disabled-state</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/removable-with-removerequest-on-backspace-delete</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/chip/multi-group/multi-select-chips-with-selection-count</example-url>
+ * <example-url>/#/common/display/chip/basic</example-url>
+ * <example-url>/#/common/display/chip/removable</example-url>
+ * <example-url>/#/common/display/chip/color-palette</example-url>
+ * <example-url>/#/common/display/chip/custom-close-icon</example-url>
+ * <example-url>/#/common/interactive/chip/group/basic-pick-exactly-one-size</example-url>
+ * <example-url>/#/common/interactive/chip/interaction/basic-toggle-on-click-space-or-enter</example-url>
+ * <example-url>/#/common/interactive/chip/interaction/disabled-state</example-url>
+ * <example-url>/#/common/interactive/chip/interaction/removable-with-removerequest-on-backspace-delete</example-url>
+ * <example-url>/#/common/interactive/chip/multi-group/multi-select-chips-with-selection-count</example-url>
  * @axis level atom
  */
 @Component({

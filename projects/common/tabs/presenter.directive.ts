@@ -60,7 +60,7 @@ export type CngxTabsCommitAction = (
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/presenter.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTab, CngxTabContent, CngxTabLabel, CngxTabsFragmentSync
- * <example-url>http://localhost:4200/#/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
+ * <example-url>/#/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
  */
 @Directive({
   selector: '[cngxTabGroup]',

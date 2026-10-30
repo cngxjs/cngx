@@ -49,7 +49,7 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
  * @relatedTo CngxStepperPresenter, CngxProgress, CngxDotStepper, CngxTextStepper
  * @slot cngxStepperEmpty Renders when no step is projected at all.
  * @playground Material theme coverage across variants ./examples/material-theme-coverage/variants-coverage.component.ts
- * <example-url>http://localhost:4200/#/ui/stepper/progress-bar/onboarding-flow</example-url>
+ * <example-url>/#/ui/stepper/progress-bar/onboarding-flow</example-url>
  * @axis level organism
  */
 @Component({

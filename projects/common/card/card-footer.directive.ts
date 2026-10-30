@@ -16,7 +16,7 @@ import { Directive } from '@angular/core';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card-footer.directive.ts
  * @since 0.1.0
  * @relatedTo CngxCard, CngxCardHeader, CngxCardActions, CngxCardTimestamp
- * <example-url>http://localhost:4200/#/common/card/title-subtitle-footer</example-url>
+ * <example-url>/#/common/card/title-subtitle-footer</example-url>
  */
 @Directive({
   selector: 'footer[cngxCardFooter]',

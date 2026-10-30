@@ -67,9 +67,9 @@ const DEFAULT_SKELETON_SLOTS: readonly CngxStatSlotKind[] = ['label', 'value', '
  * @since 0.1.0
  * @relatedTo CngxStat, CngxStatCoordinator, CngxStatCardViz, CngxStatCardFooter, CngxCard
  *
- * <example-url>http://localhost:4200/#/ui/stat-card/basic/composed-kpi-tile</example-url>
- * <example-url>http://localhost:4200/#/ui/stat-card/async/latency-aware-loading</example-url>
- * <example-url>http://localhost:4200/#/ui/stat-card/async/error-and-refresh</example-url>
+ * <example-url>/#/ui/stat-card/basic/composed-kpi-tile</example-url>
+ * <example-url>/#/ui/stat-card/async/latency-aware-loading</example-url>
+ * <example-url>/#/ui/stat-card/async/error-and-refresh</example-url>
  * @axis level organism
  */
 @Component({

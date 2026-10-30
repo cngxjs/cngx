@@ -106,9 +106,9 @@ function mapBoolEqual(a: ReadonlyMap<string, boolean>, b: ReadonlyMap<string, bo
  * @relatedTo CngxTabGroup, CngxPopover, CngxActiveDescendant
  * @slot cngxTabOverflowTrigger Replaces the control that opens the overflow menu.
  * @slot cngxTabOverflowItem Replaces a row in the overflow menu; gets the tab.
- * <example-url>http://localhost:4200/#/ui/tabs/tab-overflow/8-tabs-in-a-narrow-container</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-overflow/all-skins-horizontal</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-overflow/all-skins-vertical</example-url>
+ * <example-url>/#/ui/tabs/tab-overflow/8-tabs-in-a-narrow-container</example-url>
+ * <example-url>/#/ui/tabs/tab-overflow/all-skins-horizontal</example-url>
+ * <example-url>/#/ui/tabs/tab-overflow/all-skins-vertical</example-url>
  * @axis level organism
  */
 @Component({

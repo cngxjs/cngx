@@ -56,10 +56,10 @@ const DETACHED_FIELD_PROVIDERS = [
  * @slot cngxFilterBuilderAddGroupButton Replaces the add-group control.
  * @slot cngxFilterBuilderRemoveButton Replaces the remove control on a row or group.
  * @slot cngxFilterBuilderEmpty Rendered when no condition has been added yet.
- * <example-url>http://localhost:4200/#/forms/filter-builder/basic-two-way-binding-json-inspection</example-url>
- * <example-url>http://localhost:4200/#/forms/filter-builder/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container</example-url>
- * <example-url>http://localhost:4200/#/forms/filter-builder/filter-builder-json/builder-json</example-url>
- * <example-url>http://localhost:4200/#/forms/filter-builder/seeded-tree-and-or-composition</example-url>
+ * <example-url>/#/forms/filter-builder/basic-two-way-binding-json-inspection</example-url>
+ * <example-url>/#/forms/filter-builder/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container</example-url>
+ * <example-url>/#/forms/filter-builder/filter-builder-json/builder-json</example-url>
+ * <example-url>/#/forms/filter-builder/seeded-tree-and-or-composition</example-url>
  * @axis level organism
  */
 @Component({

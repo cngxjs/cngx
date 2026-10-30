@@ -91,10 +91,10 @@ export type ResolvedSidenavMode = Exclude<SidenavMode, 'auto'>;
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/sidenav.ts
  * @since 0.1.0
  * @relatedTo CngxSidenavLayout, CngxSidenavContent, CngxSidenavHeader, CngxSidenavFooter
- * <example-url>http://localhost:4200/#/ui/sidenav/auto-mode</example-url>
- * <example-url>http://localhost:4200/#/ui/sidenav/dual-sidebar-master-detail</example-url>
- * <example-url>http://localhost:4200/#/ui/sidenav/full-navigation-sidebar</example-url>
- * <example-url>http://localhost:4200/#/ui/sidenav/material-theming-light-vs-dark</example-url>
+ * <example-url>/#/ui/sidenav/auto-mode</example-url>
+ * <example-url>/#/ui/sidenav/dual-sidebar-master-detail</example-url>
+ * <example-url>/#/ui/sidenav/full-navigation-sidebar</example-url>
+ * <example-url>/#/ui/sidenav/material-theming-light-vs-dark</example-url>
  * @axis level organism
  */
 @Component({

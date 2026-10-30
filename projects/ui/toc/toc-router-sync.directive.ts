@@ -41,7 +41,7 @@ function warnRouterAbsent(selector: string, enables: string): void {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/toc/toc-router-sync.directive.ts
  * @since 0.1.0
  * @relatedTo CngxToc, CNGX_TOC
- * <example-url>http://localhost:4200/#/ui/toc/router/fragment-deep-link</example-url>
+ * <example-url>/#/ui/toc/router/fragment-deep-link</example-url>
  * @axis level organism
  */
 @Directive({

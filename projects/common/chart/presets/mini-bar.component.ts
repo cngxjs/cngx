@@ -27,8 +27,8 @@ import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
  * @since 0.1.0
  * @relatedTo CngxMiniArea, CngxSparkline, CngxDonut, CngxBullet
  *
- * <example-url>http://localhost:4200/#/common/chart/mini-bar/async-state-machine</example-url>
- * <example-url>http://localhost:4200/#/common/chart/mini-bar/basic-readings</example-url>
+ * <example-url>/#/common/chart/mini-bar/async-state-machine</example-url>
+ * <example-url>/#/common/chart/mini-bar/basic-readings</example-url>
  * @axis level atom
  */
 @Component({

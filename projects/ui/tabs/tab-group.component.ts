@@ -94,14 +94,14 @@ import { installTabGroupDevChecks } from './tab-group-dev-checks';
  * @slot cngxTabErrorBadge Marks a tab whose panel holds validation errors.
  * @slot cngxTabBusySpinner Rendered on a tab while its switch commits.
  * @slot cngxTabRejectionIcon Marks a tab whose switch was refused.
- * <example-url>http://localhost:4200/#/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-error-aggregation/per-tab-error-badges</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-skins/all-skins-side-by-side</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-skins/contained</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-skins/line</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-skins/pill</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-skins/pill-vs-toggle-group</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-skins/vertical-skins</example-url>
+ * <example-url>/#/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
+ * <example-url>/#/ui/tabs/tab-error-aggregation/per-tab-error-badges</example-url>
+ * <example-url>/#/ui/tabs/tab-skins/all-skins-side-by-side</example-url>
+ * <example-url>/#/ui/tabs/tab-skins/contained</example-url>
+ * <example-url>/#/ui/tabs/tab-skins/line</example-url>
+ * <example-url>/#/ui/tabs/tab-skins/pill</example-url>
+ * <example-url>/#/ui/tabs/tab-skins/pill-vs-toggle-group</example-url>
+ * <example-url>/#/ui/tabs/tab-skins/vertical-skins</example-url>
  * @axis level organism
  */
 @Component({

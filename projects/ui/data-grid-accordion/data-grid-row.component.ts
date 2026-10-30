@@ -48,9 +48,9 @@ import { CngxDgaRowError } from './data-grid-row-error.directive';
  * @slot cngxDgaRowBusy Rendered over the row while its detail loads.
  * @slot cngxDgaRowError Rendered when the row's detail failed to load.
  *
- * <example-url>http://localhost:4200/#/ui/data-grid-accordion/master-detail</example-url>
- * <example-url>http://localhost:4200/#/ui/data-grid-accordion/report</example-url>
- * <example-url>http://localhost:4200/#/ui/data-grid-accordion/lazy-row</example-url>
+ * <example-url>/#/ui/data-grid-accordion/master-detail</example-url>
+ * <example-url>/#/ui/data-grid-accordion/report</example-url>
+ * <example-url>/#/ui/data-grid-accordion/lazy-row</example-url>
  */
 @Component({
   selector: 'cngx-dga-row',

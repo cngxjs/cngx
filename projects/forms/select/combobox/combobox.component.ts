@@ -205,10 +205,10 @@ export interface CngxComboboxChange<T = unknown> {
  * @since 0.1.0
  * @relatedTo CngxMultiSelect, CngxTypeahead, CngxSelect, CngxTreeSelect, CngxComboboxChip
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
- * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-basic-tag-picker-with-typeahead-filter</example-url>
- * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-clearable-custom-cngxselectclearbutton</example-url>
- * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-text-summary-via-cngxcomboboxtriggerlabel</example-url>
- * <example-url>http://localhost:4200/#/forms/select/mobile-sheet/all-variants</example-url>
+ * <example-url>/#/forms/select/combobox/combobox-basic-tag-picker-with-typeahead-filter</example-url>
+ * <example-url>/#/forms/select/combobox/combobox-clearable-custom-cngxselectclearbutton</example-url>
+ * <example-url>/#/forms/select/combobox/combobox-text-summary-via-cngxcomboboxtriggerlabel</example-url>
+ * <example-url>/#/forms/select/mobile-sheet/all-variants</example-url>
  * @slot cngxSelectCheck Replaces the checkbox indicator on each option row unless hideSelectionIndicator is set; gets option, selected, variant, position, and indeterminate (always false here, absent under the radio variant).
  * @slot cngxSelectCaret Replaces the trigger caret unless hideCaret is set; gets open.
  * @slot cngxSelectOptgroup Replaces the header of each option group in the panel; gets group.

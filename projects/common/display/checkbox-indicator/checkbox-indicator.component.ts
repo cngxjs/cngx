@@ -41,10 +41,10 @@ import { CngxIconSvg } from '../icon/icon-svg.component';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/checkbox-indicator/checkbox-indicator.component.ts
  * @since 0.1.0
  * @relatedTo CngxRadioIndicator, CngxIcon
- * <example-url>http://localhost:4200/#/common/display/checkbox-indicator/states</example-url>
- * <example-url>http://localhost:4200/#/common/display/checkbox-indicator/variant-matrix</example-url>
- * <example-url>http://localhost:4200/#/common/display/checkbox-indicator/sizes</example-url>
- * <example-url>http://localhost:4200/#/common/display/checkbox-indicator/custom-glyph</example-url>
+ * <example-url>/#/common/display/checkbox-indicator/states</example-url>
+ * <example-url>/#/common/display/checkbox-indicator/variant-matrix</example-url>
+ * <example-url>/#/common/display/checkbox-indicator/sizes</example-url>
+ * <example-url>/#/common/display/checkbox-indicator/custom-glyph</example-url>
  * @axis level atom
  */
 @Component({

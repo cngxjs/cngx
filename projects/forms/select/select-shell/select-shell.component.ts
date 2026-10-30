@@ -194,13 +194,13 @@ export interface CngxSelectShellChange<T = unknown> {
  * @since 0.1.0
  * @relatedTo CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectSearch
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
- * <example-url>http://localhost:4200/#/forms/select/select-shell/basic-flat-declarative-options</example-url>
- * <example-url>http://localhost:4200/#/forms/select/select-shell/custom-glyphs-clearglyph-caretglyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/select-shell/grouped-divider-projected-hierarchy</example-url>
- * <example-url>http://localhost:4200/#/forms/select/select-shell/inside-cngx-form-field-reactive-forms</example-url>
- * <example-url>http://localhost:4200/#/forms/select/select-shell/rich-content-option-plain-text-trigger</example-url>
- * <example-url>http://localhost:4200/#/forms/select/select-shell/search-declarative-cngx-select-search</example-url>
- * <example-url>http://localhost:4200/#/forms/select/mobile-sheet/all-variants</example-url>
+ * <example-url>/#/forms/select/select-shell/basic-flat-declarative-options</example-url>
+ * <example-url>/#/forms/select/select-shell/custom-glyphs-clearglyph-caretglyph</example-url>
+ * <example-url>/#/forms/select/select-shell/grouped-divider-projected-hierarchy</example-url>
+ * <example-url>/#/forms/select/select-shell/inside-cngx-form-field-reactive-forms</example-url>
+ * <example-url>/#/forms/select/select-shell/rich-content-option-plain-text-trigger</example-url>
+ * <example-url>/#/forms/select/select-shell/search-declarative-cngx-select-search</example-url>
+ * <example-url>/#/forms/select/mobile-sheet/all-variants</example-url>
  * @slot cngxSelectCaret Replaces the trigger caret (inside an aria-hidden span) unless [hideCaret] is set; gets $implicit/open.
  * @slot cngxSelectPlaceholder Replaces the trigger text while nothing is selected and wins over cngxSelectTriggerLabel there; gets $implicit/placeholder.
  * @slot cngxSelectEmpty Replaces the panel's empty message when no option is projected or [state] resolves empty (a search only hides projected options, it never shows this); gets searchTerm, filtered, totalCount.

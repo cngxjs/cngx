@@ -93,12 +93,12 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/chip-interaction/chip-interaction.directive.ts
  * @since 0.1.0
  * @relatedTo CngxChipInGroup, CngxChipGroup, CngxMultiChipGroup, CngxChipInput
- * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/basic-toggle-on-click-space-or-enter</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/disabled-state</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/removable-with-removerequest-on-backspace-delete</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
+ * <example-url>/#/common/interactive/chip/interaction/basic-toggle-on-click-space-or-enter</example-url>
+ * <example-url>/#/common/interactive/chip/interaction/disabled-state</example-url>
+ * <example-url>/#/common/interactive/chip/interaction/removable-with-removerequest-on-backspace-delete</example-url>
+ * <example-url>/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
+ * <example-url>/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
+ * <example-url>/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  * @axis level molecule
  */
 @Directive({

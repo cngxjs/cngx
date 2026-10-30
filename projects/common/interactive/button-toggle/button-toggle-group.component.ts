@@ -57,9 +57,9 @@ import {
  * @selector cngx-button-toggle-group
  * @since 0.1.0
  * @relatedTo CngxButtonToggle, CngxRadioGroup
- * <example-url>http://localhost:4200/#/common/interactive/button-toggle/group/basic-view-switcher</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/button-toggle/group/disabled-group-cascade-vs-per-toggle</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/button-toggle/group/vertical-orientation</example-url>
+ * <example-url>/#/common/interactive/button-toggle/group/basic-view-switcher</example-url>
+ * <example-url>/#/common/interactive/button-toggle/group/disabled-group-cascade-vs-per-toggle</example-url>
+ * <example-url>/#/common/interactive/button-toggle/group/vertical-orientation</example-url>
  * @axis level molecule
  */
 @Component({

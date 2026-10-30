@@ -7,10 +7,11 @@
 //       compodocx output carries only schemaVersion / generatedAt /
 //       compodocxVersion, none of which is the library version the answers
 //       ground against;
-//   (b) rebase every `http://localhost:4200` example URL (components,
-//       directives and injectables) onto EXAMPLES_BASE_URL
-//       (default the published GH Pages base), the same swap
-//       scripts/backport-example-urls.mjs applies to the JSDoc tags, so
+//   (b) rebase every example URL (components, directives and injectables)
+//       onto EXAMPLES_BASE_URL (default the published GH Pages base). The
+//       export already resolves the relative <example-url> tags against
+//       `exampleUrlBase`; the rebase keeps a JSON built with another base
+//       (e.g. `--exampleUrlBase http://localhost:4200`) from leaking it, so
 //       get_story_example returns URLs a consumer can actually open.
 //
 // The snapshot is generated, never committed (packages/mcp/data/ and

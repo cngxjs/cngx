@@ -35,7 +35,7 @@ import { createMediaQuerySignal } from '@cngx/core/utils';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/observers/inject-media-query.ts
  * @since 0.1.0
  * @relatedTo CngxMediaQuery, CngxResizeObserver
- * <example-url>http://localhost:4200/#/common/layout/media-query/inject-breakpoint-signal</example-url>
+ * <example-url>/#/common/layout/media-query/inject-breakpoint-signal</example-url>
  */
 export function injectMediaQuery(query: string): Signal<boolean> {
   return createMediaQuerySignal(query, inject(DestroyRef), inject(DOCUMENT).defaultView);

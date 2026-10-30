@@ -13,8 +13,8 @@ import { Directive, input } from '@angular/core';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/divider/divider.directive.ts
  * @selector cngx-divider
  * @since 0.1.0
- * <example-url>http://localhost:4200/#/common/display/divider/horizontal-vs-vertical</example-url>
- * <example-url>http://localhost:4200/#/common/display/divider/inset</example-url>
+ * <example-url>/#/common/display/divider/horizontal-vs-vertical</example-url>
+ * <example-url>/#/common/display/divider/inset</example-url>
  * @axis level atom
  */
 @Directive({

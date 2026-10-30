@@ -41,7 +41,7 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
  * @since 0.1.0
  * @relatedTo CngxStepperPresenter, CngxProgressBarStepper, CngxDotStepper
  * @slot cngxStepperEmpty Renders when no step is projected at all.
- * <example-url>http://localhost:4200/#/ui/stepper/text-stepper/inline-progress</example-url>
+ * <example-url>/#/ui/stepper/text-stepper/inline-progress</example-url>
  * @axis level organism
  */
 @Component({

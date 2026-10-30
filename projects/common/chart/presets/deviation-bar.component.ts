@@ -23,8 +23,8 @@ import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
  * @since 0.1.0
  * @relatedTo CngxMiniBar, CngxBullet, CngxStackedBar
  *
- * <example-url>http://localhost:4200/#/common/chart/deviation-bar/async-state-machine</example-url>
- * <example-url>http://localhost:4200/#/common/chart/deviation-bar/variance-readings</example-url>
+ * <example-url>/#/common/chart/deviation-bar/async-state-machine</example-url>
+ * <example-url>/#/common/chart/deviation-bar/variance-readings</example-url>
  * @axis level atom
  */
 @Component({

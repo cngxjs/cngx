@@ -59,7 +59,7 @@ const CNGX_RATING_GLYPHS = {
  * @since 0.1.0
  * @relatedTo CngxRatingItem, CngxRovingTabindex, withInputAriaLabels, CngxFormField
  * @slot cngxRatingItem Replaces one rating symbol; gets its index and filled state.
- * <example-url>http://localhost:4200/#/forms/input/rating/basic</example-url>
+ * <example-url>/#/forms/input/rating/basic</example-url>
  * @axis level organism
  */
 @Component({

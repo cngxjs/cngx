@@ -20,7 +20,7 @@ import { CNGX_SIDENAV, type CngxSidenavContract } from './sidenav-token';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/sidenav-router-sync.directive.ts
  * @since 0.1.0
  * @relatedTo CngxSidenav, CNGX_SIDENAV, injectQueryParamSync
- * <example-url>http://localhost:4200/#/ui/sidenav/router-sync/deep-linkable-overlay</example-url>
+ * <example-url>/#/ui/sidenav/router-sync/deep-linkable-overlay</example-url>
  * @axis level organism
  */
 @Directive({

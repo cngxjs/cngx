@@ -33,9 +33,9 @@ import { injectPresetState } from './preset-state';
  * @since 0.1.0
  * @relatedTo CngxMiniArea, CngxMiniBar, CngxChart
  *
- * <example-url>http://localhost:4200/#/common/chart/sparkline/async-state-machine</example-url>
- * <example-url>http://localhost:4200/#/common/chart/sparkline/basic-sparklines</example-url>
- * <example-url>http://localhost:4200/#/common/chart/sparkline/with-area-fill</example-url>
+ * <example-url>/#/common/chart/sparkline/async-state-machine</example-url>
+ * <example-url>/#/common/chart/sparkline/basic-sparklines</example-url>
+ * <example-url>/#/common/chart/sparkline/with-area-fill</example-url>
  * @axis level atom
  */
 @Component({

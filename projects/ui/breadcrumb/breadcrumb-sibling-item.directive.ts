@@ -35,7 +35,7 @@ export interface CngxBreadcrumbSiblingItemContext {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-sibling-item.directive.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbSiblings
- * <example-url>http://localhost:4200/#/ui/breadcrumb/siblings/custom-row</example-url>
+ * <example-url>/#/ui/breadcrumb/siblings/custom-row</example-url>
  * @axis level organism
  */
 @Directive({

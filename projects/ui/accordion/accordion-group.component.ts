@@ -36,19 +36,19 @@ import { injectAccordionConfig } from './config/inject-accordion-config';
  * @since 0.1.0
  * @relatedTo CngxAccordionItem, CngxAccordion, createAccordionKeyboardNav
  *
- * <example-url>http://localhost:4200/#/ui/accordion/single-open/basic</example-url>
- * <example-url>http://localhost:4200/#/ui/accordion/multi-open/independent</example-url>
- * <example-url>http://localhost:4200/#/ui/accordion/controlled-open/initial-open</example-url>
- * <example-url>http://localhost:4200/#/ui/accordion/config/app-wide-labels</example-url>
- * <example-url>http://localhost:4200/#/ui/accordion/skins/bento</example-url>
- * <example-url>http://localhost:4200/#/ui/accordion/skins/categorized</example-url>
- * <example-url>http://localhost:4200/#/ui/accordion/skins/editorial</example-url>
- * <example-url>http://localhost:4200/#/ui/accordion/skins/lux</example-url>
- * <example-url>http://localhost:4200/#/ui/accordion/skins/plus-minus</example-url>
- * <example-url>http://localhost:4200/#/ui/accordion/skins/primary-frame</example-url>
- * <example-url>http://localhost:4200/#/ui/accordion/skins/section-bands</example-url>
- * <example-url>http://localhost:4200/#/ui/accordion/skins/severity-spine</example-url>
- * <example-url>http://localhost:4200/#/ui/accordion/skins/timeline</example-url>
+ * <example-url>/#/ui/accordion/single-open/basic</example-url>
+ * <example-url>/#/ui/accordion/multi-open/independent</example-url>
+ * <example-url>/#/ui/accordion/controlled-open/initial-open</example-url>
+ * <example-url>/#/ui/accordion/config/app-wide-labels</example-url>
+ * <example-url>/#/ui/accordion/skins/bento</example-url>
+ * <example-url>/#/ui/accordion/skins/categorized</example-url>
+ * <example-url>/#/ui/accordion/skins/editorial</example-url>
+ * <example-url>/#/ui/accordion/skins/lux</example-url>
+ * <example-url>/#/ui/accordion/skins/plus-minus</example-url>
+ * <example-url>/#/ui/accordion/skins/primary-frame</example-url>
+ * <example-url>/#/ui/accordion/skins/section-bands</example-url>
+ * <example-url>/#/ui/accordion/skins/severity-spine</example-url>
+ * <example-url>/#/ui/accordion/skins/timeline</example-url>
  * @axis level organism
  */
 @Component({

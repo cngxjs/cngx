@@ -55,7 +55,7 @@ export interface ErrorRegistryFeature {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/provide-error-registry.ts
  * @since 0.1.0
  * @relatedTo CngxErrorScope, CngxErrorAggregator
- * <example-url>http://localhost:4200/#/common/interactive/error/registry/provider-and-reveal-features</example-url>
+ * <example-url>/#/common/interactive/error/registry/provider-and-reveal-features</example-url>
  */
 export function provideErrorRegistry(
   ...features: ErrorRegistryFeature[]
@@ -122,7 +122,7 @@ export function provideErrorRegistry(
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/provide-error-registry.ts
  * @since 0.1.0
- * <example-url>http://localhost:4200/#/common/interactive/error/registry/provider-and-reveal-features</example-url>
+ * <example-url>/#/common/interactive/error/registry/provider-and-reveal-features</example-url>
  */
 export function withGlobalRevealOnSubmit(): ErrorRegistryFeature {
   return { _apply: (c) => ({ ...c, revealOnSubmit: true }) };
@@ -143,7 +143,7 @@ export function withGlobalRevealOnSubmit(): ErrorRegistryFeature {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/provide-error-registry.ts
  * @since 0.1.0
- * <example-url>http://localhost:4200/#/common/interactive/error/registry/provider-and-reveal-features</example-url>
+ * <example-url>/#/common/interactive/error/registry/provider-and-reveal-features</example-url>
  */
 export function withRevealOnNavigate(): ErrorRegistryFeature {
   return { _apply: (c) => ({ ...c, revealOnNavigate: true }) };

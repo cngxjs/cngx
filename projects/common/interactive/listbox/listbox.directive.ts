@@ -46,15 +46,15 @@ import { CngxOption } from './option.directive';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/listbox.directive.ts
  * @since 0.1.0
  * @relatedTo CngxListboxSearch, CngxListboxTrigger, CngxOption, CngxOptionGroup, CngxActiveDescendant
- * <example-url>http://localhost:4200/#/common/interactive/listbox/base/synced-listboxes</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/listbox/search/command-palette</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/listbox/trigger/select-dropdown</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/listbox/base/multi-select</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/listbox/base/single-select</example-url>
- * <example-url>http://localhost:4200/#/forms/field/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
- * <example-url>http://localhost:4200/#/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>
- * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-single-select</example-url>
+ * <example-url>/#/common/interactive/listbox/base/synced-listboxes</example-url>
+ * <example-url>/#/common/interactive/listbox/search/command-palette</example-url>
+ * <example-url>/#/common/interactive/listbox/trigger/select-dropdown</example-url>
+ * <example-url>/#/common/interactive/listbox/base/multi-select</example-url>
+ * <example-url>/#/common/interactive/listbox/base/single-select</example-url>
+ * <example-url>/#/forms/field/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
+ * <example-url>/#/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
+ * <example-url>/#/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>
+ * <example-url>/#/forms/field/listbox-forms/signal-forms-single-select</example-url>
  * @axis level molecule
  */
 @Directive({

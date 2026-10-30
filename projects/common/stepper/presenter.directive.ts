@@ -66,7 +66,7 @@ export type CngxStepperCommitAction = (
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/presenter.directive.ts
  * @since 0.1.0
  * @relatedTo CngxStep, CngxStepGroup, CngxStepperRouterSync, CNGX_STEPPER_HOST, CNGX_STEPPER_CONFIG
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-commit-action/pessimistic-optimistic-commits-with-bridge-directives</example-url>
+ * <example-url>/#/ui/stepper/stepper-commit-action/pessimistic-optimistic-commits-with-bridge-directives</example-url>
  */
 @Directive({
   selector: '[cngxStepper]',

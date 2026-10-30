@@ -30,7 +30,7 @@ import { injectInputAriaLabels } from './input-config';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-clear.directive.ts
  * @since 0.1.0
  * @relatedTo CngxInput, CngxCopyValue, CngxPasswordToggle, withInputAriaLabels
- * <example-url>http://localhost:4200/#/forms/input/utilities/input-clear</example-url>
+ * <example-url>/#/forms/input/utilities/input-clear</example-url>
  * @axis level atom
  */
 @Directive({

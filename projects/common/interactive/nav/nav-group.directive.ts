@@ -45,9 +45,9 @@ import { CngxNavGroupRegistry } from './nav-group-registry';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-group.directive.ts
  * @since 0.1.0
  * @relatedTo CngxNavLink, CngxDisclosure, CngxNavGroupRegistry, CngxNavLabel
- * <example-url>http://localhost:4200/#/common/interactive/nav/nav-badge-counts-and-dots</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/nav/nav-group-accordion-sections</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/nav/nav-links-active-state-depth</example-url>
+ * <example-url>/#/common/interactive/nav/nav-badge-counts-and-dots</example-url>
+ * <example-url>/#/common/interactive/nav/nav-group-accordion-sections</example-url>
+ * <example-url>/#/common/interactive/nav/nav-links-active-state-depth</example-url>
  * @axis level molecule
  */
 @Directive({

@@ -79,9 +79,9 @@ export interface AlertState {
  * @since 0.1.0
  * @relatedTo CngxAlertStack, CngxAlertOn, CngxToaster, CngxBanner
  *
- * <example-url>http://localhost:4200/#/ui/feedback/alert-stack/basic-stack</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/alert-stack/dialog-use-case</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/alert-stack/overflow-collapse</example-url>
+ * <example-url>/#/ui/feedback/alert-stack/basic-stack</example-url>
+ * <example-url>/#/ui/feedback/alert-stack/dialog-use-case</example-url>
+ * <example-url>/#/ui/feedback/alert-stack/overflow-collapse</example-url>
  */
 @Injectable()
 export class CngxAlerter {

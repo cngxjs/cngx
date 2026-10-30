@@ -71,10 +71,10 @@ export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon'
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/close-button.component.ts
  * @since 0.1.0
  * @relatedTo CNGX_CLOSE_ICON, CngxIconButton, CngxAlert, CngxToastOutlet, CngxPopoverPanel
- * <example-url>http://localhost:4200/#/common/button/close-button/basic</example-url>
- * <example-url>http://localhost:4200/#/common/button/close-button/projected-icon</example-url>
- * <example-url>http://localhost:4200/#/common/button/close-button/contextual-labels</example-url>
- * <example-url>http://localhost:4200/#/common/button/close-button/inside-a-dismissible-card</example-url>
+ * <example-url>/#/common/button/close-button/basic</example-url>
+ * <example-url>/#/common/button/close-button/projected-icon</example-url>
+ * <example-url>/#/common/button/close-button/contextual-labels</example-url>
+ * <example-url>/#/common/button/close-button/inside-a-dismissible-card</example-url>
  * @axis level molecule
  */
 @Component({
