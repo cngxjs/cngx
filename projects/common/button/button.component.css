@@ -522,9 +522,6 @@
       text-underline-offset: 0.15em;
       vertical-align: baseline;
     }
-    :scope[data-variant='link'][data-tone='neutral'] {
-      --cngx-button-tone-text: var(--cngx-color-primary-text, oklch(0.5 0.15 50));
-    }
     :scope[data-variant='link']:hover {
       text-decoration-thickness: var(--cngx-button-link-hover-thickness, 2px);
     }

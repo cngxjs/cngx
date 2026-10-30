@@ -160,14 +160,15 @@ $_inner-radius: 'var(--mat-sys-corner-extra-small, 4px)';
     @include bridge.on(".cngx-button[data-variant='secondary'][data-tone='danger']") {
       @include _tonal(error-container, on-error-container);
     }
-    // Neutral outline and ghost labels are primary ink, as on
-    // mat-stroked-button and mat-button; the hover and press wash follows the
-    // tone. The sheet SETs both tone tokens in `@scope (.cngx-button) :scope`,
+    // Neutral outline, ghost and link labels are primary ink, as on
+    // mat-stroked-button and mat-button (a link has no Material twin; it
+    // takes the text-button ink so it never stands alone in on-surface next
+    // to its neutral siblings); the hover and press wash follows the tone. The sheet SETs both tone tokens in `@scope (.cngx-button) :scope`,
     // so these rules carry real specificity inside the layer (shape()
     // precedent). A segment of a split button reads as one button, so its
     // icon caret takes the label ink too.
     @layer cngx.components {
-      .cngx-button:is([data-variant='outline'], [data-variant='ghost'])[data-tone='neutral']:not(
+      .cngx-button:is([data-variant='outline'], [data-variant='ghost'], [data-variant='link'])[data-tone='neutral']:not(
           .cngx-icon-button,
           .cngx-close-button
         ),

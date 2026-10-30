@@ -212,10 +212,15 @@ describe('button Material bridge', () => {
     expect(m2).not.toContain('cngx-menu-button');
   });
 
-  it('inks neutral outline and ghost labels primary and neutral icon buttons on-surface-variant in M3 only', () => {
+  it('inks neutral outline, ghost and link labels primary and neutral icon buttons on-surface-variant in M3 only', () => {
     const m3 = flat(compileThemeEntry(M3_ENTRY));
     expect(m3).toContain('--cngx-button-tone-text: var(--mat-sys-primary)');
     expect(m3).toContain('--cngx-button-tone-text: var(--mat-sys-on-surface-variant)');
+    // A neutral link takes the text-button ink, never on-surface next to its
+    // neutral outline / ghost siblings.
+    expect(m3).toContain(
+      '.cngx-button:is([data-variant=outline], [data-variant=ghost], [data-variant=link])[data-tone=neutral]:not(.cngx-icon-button, .cngx-close-button)',
+    );
     expect(compileThemeEntry(M2_ENTRY)).not.toContain('--cngx-button-tone');
   });
 

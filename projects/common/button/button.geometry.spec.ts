@@ -46,6 +46,10 @@ type Density = 'comfortable' | 'compact' | 'spacious';
         </button>
       </p>
       <p>Read the <a cngxButton="link" class="b-link" href="#docs">docs</a> first.</p>
+      <p>
+        <button cngxButton="ghost" class="b-ghost-neutral">Ghost</button>
+        <a cngxButton="link" tone="primary" class="b-link-primary" href="#docs">docs</a>
+      </p>
       <p data-color-scheme="light"><button cngxButton="secondary" class="b-secondary-light">Save</button></p>
       <p data-color-scheme="dark"><button cngxButton="secondary" class="b-secondary-dark">Save</button></p>
       <p>
@@ -179,6 +183,13 @@ describe('CngxButton geometry: link', () => {
     expect(px(link, 'padding-top')).toBe(0);
     expect(computedValue(link, 'min-height')).toBe('0px');
     expect(height(link)).toBeLessThan(44);
+  });
+
+  it('keeps the neutral tone on a link: text colour, not the primary accent', () => {
+    const { root } = mount();
+    const neutral = computedValue(query(root, '.b-link'), 'color');
+    expect(neutral).toBe(computedValue(query(root, '.b-ghost-neutral'), 'color'));
+    expect(neutral).not.toBe(computedValue(query(root, '.b-link-primary'), 'color'));
   });
 });
 
