@@ -329,23 +329,36 @@ describe('the script on a broken tree', () => {
   });
 });
 
-// A core path is test-only exactly when a package build excludes its test-file
-// pattern and a vitest config includes it. The cli build compiles the copy, so its
-// tsconfig must exclude the pattern too; anything else is a core file, copied byte
-// for byte, so the copy never drops a file tsc would compile.
+// A core path is test-only exactly when both package builds exclude its test-file
+// pattern and a vitest config includes it. The cli build compiles the copy and the
+// mcp build the canonical tree, so a pattern excluded by only one of them is a
+// defect; anything else is a core file, copied byte for byte, so the copy never
+// drops a file tsc would compile.
 describe('the test-only rule agrees with the build and vitest configs', () => {
   const tsconfigExclude = (pkg) => JSON.parse(read('packages', pkg, 'tsconfig.json')).exclude;
   /** The file suffix of every `**\/*<suffix>` glob, e.g. `.spec.ts`. */
   const suffixes = (globs) => globs.map((glob) => /\*\*\/\*(\.[\w.-]+)$/.exec(glob)?.[1]).filter((suffix) => suffix !== undefined);
 
-  async function testOnlySuffixes() {
+  async function suffixSets() {
     const mcpVitest = (await import('../../packages/mcp/vitest.config.mjs')).default;
     const cliCoreVitest = (await import('../../packages/cli/vitest.core.config.mjs')).default;
-    const cliExcluded = suffixes(tsconfigExclude('cli'));
-    const excluded = new Set([...suffixes(tsconfigExclude('mcp')), ...cliExcluded]);
-    const included = new Set(suffixes([...mcpVitest.test.include, ...cliCoreVitest.test.include]));
-    return [...excluded].filter((suffix) => cliExcluded.includes(suffix) && included.has(suffix)).sort();
+    return {
+      mcpExcluded: suffixes(tsconfigExclude('mcp')),
+      cliExcluded: suffixes(tsconfigExclude('cli')),
+      included: new Set(suffixes([...mcpVitest.test.include, ...cliCoreVitest.test.include])),
+    };
   }
+
+  async function testOnlySuffixes() {
+    const { mcpExcluded, cliExcluded, included } = await suffixSets();
+    return mcpExcluded.filter((suffix) => cliExcluded.includes(suffix) && included.has(suffix)).sort();
+  }
+
+  it('excludes every suffix a vitest config runs from both package builds, not one', async () => {
+    const { mcpExcluded, cliExcluded, included } = await suffixSets();
+
+    expect([...included].filter((suffix) => !mcpExcluded.includes(suffix) || !cliExcluded.includes(suffix))).toEqual([]);
+  });
 
   it('derives .core-spec.ts and .spec.ts as the only test-only suffixes', async () => {
     expect(await testOnlySuffixes()).toEqual(['.core-spec.ts', '.spec.ts']);
