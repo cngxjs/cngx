@@ -56,8 +56,10 @@
       fill: currentColor;
 
       /* Themable */
-      inline-size: var(--cngx-icon-svg-size, 1em);
-      block-size: var(--cngx-icon-svg-size, 1em);
+      /* Rounded to whole pixels so the 12-grid micro drawing lands on
+       * device pixels; a fractional box would smear every edge. */
+      inline-size: round(nearest, var(--cngx-icon-svg-size, 1em), 1px);
+      block-size: round(nearest, var(--cngx-icon-svg-size, 1em), 1px);
     }
 
     :scope.cngx-icon-svg--stroke {

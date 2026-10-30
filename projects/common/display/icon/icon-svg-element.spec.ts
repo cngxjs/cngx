@@ -32,7 +32,12 @@ describe('createIconSvgElement', () => {
     expect(element.getAttribute('stroke')).toBe('currentColor');
     expect(element.getAttribute('stroke-linecap')).toBe('round');
     expect(element.getAttribute('stroke-linejoin')).toBe('round');
-    expect(element.style.getPropertyValue('inline-size')).toBe('var(--cngx-icon-svg-size, 1em)');
+    expect(element.style.getPropertyValue('inline-size')).toBe(
+      'round(nearest, var(--cngx-icon-svg-size, 1em), 1px)',
+    );
+    expect(element.style.getPropertyValue('block-size')).toBe(
+      'round(nearest, var(--cngx-icon-svg-size, 1em), 1px)',
+    );
     expect(element.style.getPropertyValue('stroke-width')).toBe(
       'var(--cngx-icon-svg-stroke-width, 2)',
     );

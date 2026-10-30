@@ -122,8 +122,10 @@
        */
       --cngx-icon-size: var(--cngx-icon-size-md, 1.25em);
 
-      /* Themable */
-      font-size: var(--cngx-icon-size, 1.25em);
+      /* Themable. Rounded to whole pixels so the 1em svg box is an
+       * integer; the em token stays unregistered (see the note on the size
+       * tokens above). */
+      font-size: round(nearest, var(--cngx-icon-size, 1.25em), 1px);
       color: var(--cngx-icon-color, currentColor);
     }
 
