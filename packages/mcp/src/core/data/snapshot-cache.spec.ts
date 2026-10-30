@@ -168,6 +168,23 @@ describe('createSnapshotCache concurrency', () => {
     }
   });
 
+  it('keeps the entry and says only eviction failed when the eviction throws', () => {
+    const warn = vi.fn();
+    const failing: SnapshotCacheFs = {
+      ...fs,
+      readdirSync: (() => {
+        throw new Error('EACCES: listing denied');
+      }) as unknown as typeof fs.readdirSync,
+    };
+    const cache = createSnapshotCache({ dir: root, fs: failing, warn });
+
+    cache.write('0.2.0', NEW);
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toMatch(/^cngx: cached the v0\.2\.0 snapshot but could not evict old entries in .*EACCES: listing denied$/);
+    expect(cache.read('0.2.0')).not.toBeNull();
+  });
+
   it('ignores an entry another process evicted between listing and stat', () => {
     const warn = vi.fn();
     const seed = createSnapshotCache({ dir: root });

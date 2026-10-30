@@ -108,7 +108,6 @@ export function createSnapshotCache({
         fs.mkdirSync(versionDir, { recursive: true });
         fs.copyFileSync(sourcePath, temp);
         fs.renameSync(temp, fileOf(version));
-        evict();
       } catch (error) {
         try {
           fs.rmSync(temp, { force: true });
@@ -116,6 +115,13 @@ export function createSnapshotCache({
           // Nothing left to report beyond the warning below.
         }
         warn(`cngx: could not cache the v${version} snapshot in ${dir}: ${errorMessage(error)}`);
+        return;
+      }
+      // The entry is in place; a failed eviction only lets the cache grow past its bound.
+      try {
+        evict();
+      } catch (error) {
+        warn(`cngx: cached the v${version} snapshot but could not evict old entries in ${dir}: ${errorMessage(error)}`);
       }
     },
 
