@@ -807,7 +807,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   });
 
   private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
-    shape: 'scalar',
     policy: this.commitErrorAnnouncePolicy,
   });
 

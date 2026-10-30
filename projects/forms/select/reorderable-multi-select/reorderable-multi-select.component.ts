@@ -947,7 +947,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   });
 
   private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
-    shape: 'array',
     policy: this.commitErrorAnnouncePolicy,
   });
 
@@ -958,7 +957,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       commitMode: this.commitMode,
       core: this.core,
       commitAction: this.commitAction,
-      getLastCommitted: () => this.lastCommittedValues,
       onToggleFinalize: (option, isNowSelected) =>
         this.toggleDispatch.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
       onClearFinalize: (previous, finalValues) =>
@@ -1354,7 +1352,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       commitMode: this.commitMode,
       commitAction: this.commitAction,
       commitController: this.core.commitController,
-      getLastCommitted: () => this.lastCommittedValues,
       setLastCommitted: (v) => {
         this.lastCommittedValues = [...v];
       },

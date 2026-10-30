@@ -256,7 +256,7 @@ describe('createSelectCore - commit-error announcer', () => {
     const core = coreWith([{ provide: CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY, useValue: factory }]);
     const policy = signal<CngxCommitErrorAnnouncePolicy>({ kind: 'soft' });
 
-    const callback = core.createCommitErrorAnnouncer({ shape: 'scalar', policy });
+    const callback = core.createCommitErrorAnnouncer({ policy });
     const failure = new Error('down');
     callback(failure);
 
@@ -273,7 +273,6 @@ describe('createSelectCore - commit-error announcer', () => {
     const core = coreWith([{ provide: CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY, useValue: factory }]);
 
     core.createCommitErrorAnnouncer({
-      shape: 'array',
       policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'verbose', severity: 'assertive' }),
       message: () => 'Colour: Could not create Teal',
     });
@@ -283,41 +282,12 @@ describe('createSelectCore - commit-error announcer', () => {
     );
   });
 
-  it('hands custom factories a softAnnounce hook of the requested shape', () => {
-    const factory = vi.fn<CngxCommitErrorAnnouncerFactory>(() => () => undefined);
-    const coreDeps = { ...deps(), multi: signal(true), currentSelection: signal(['red', 'blue']) };
-    const core = coreWith(
-      [{ provide: CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY, useValue: factory }],
-      coreDeps,
-    );
-    const policy = signal<CngxCommitErrorAnnouncePolicy>({ kind: 'soft' });
-    core.createCommitErrorAnnouncer({ shape: 'scalar', policy });
-    core.createCommitErrorAnnouncer({ shape: 'array', policy });
-    core.createCommitErrorAnnouncer({ shape: 'tree', policy });
-    const [scalar, array, tree] = factory.mock.calls.map(([o]) => o.deps.softAnnounce);
-
-    const live = vi
-      .spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce')
-      .mockImplementation(() => {});
-    scalar(RED as CngxSelectOptionDef<unknown>, 'added', 1, false);
-    array(RED as CngxSelectOptionDef<unknown>, 'removed', 0, false);
-    tree(RED as CngxSelectOptionDef<unknown>, 'removed', 0, false);
-
-    const spoken = live.mock.calls.map(([m]) => String(m));
-    expect(spoken).toHaveLength(3);
-    expect(spoken[0]).toContain('Red');
-    expect(spoken[1]).toContain('Red');
-    expect(spoken[1]).toContain('2');
-    expect(spoken[2]).not.toContain('Red');
-  });
-
   it('defaults to createCommitErrorAnnouncer and speaks the soft copy politely after a rollback', () => {
     const core = coreWith([]);
     const live = vi
       .spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce')
       .mockImplementation(() => {});
     const callback = core.createCommitErrorAnnouncer({
-      shape: 'scalar',
       policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'soft' }),
     });
     callback(new Error('down'), true);

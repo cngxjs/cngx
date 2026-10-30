@@ -182,7 +182,6 @@ describe('createTreeToggleDispatch', () => {
     t.dispatch.clearAll();
     expect(t.values()).toEqual([]);
     expect(t.beginClear).toHaveBeenCalledTimes(1);
-    expect(t.dispatch.lastCommitted()).toEqual(['q']);
   });
 
   it('claims the Retry before a tree commit, never for a clear or a sync toggle', () => {
@@ -231,7 +230,6 @@ describe('createTreeToggleDispatch', () => {
     expect(t.begins).toHaveLength(2);
     t.begins[1].onSuccess(undefined);
     expect(t.values()).toEqual(['q']);
-    expect(t.dispatch.lastCommitted()).toEqual(['q']);
   });
 
   it('pessimistic commit writes and emits only on success', () => {

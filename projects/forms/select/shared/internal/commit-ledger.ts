@@ -99,13 +99,12 @@ export interface CommitLedger<TCommit, TOption = unknown> {
   /** Last commit begun; a superseded commit's record is replaced. */
   readonly last: Signal<CommitRecord<TCommit, TOption> | null>;
   /**
-   * Last model value no pending commit wrote: a success's final value, or
-   * the `previous` of a begin with nothing in flight. Never an unconfirmed
+   * `current` while nothing is in flight, else the confirmed value: the last
+   * model value no pending commit wrote (a success's final value, or the
+   * `previous` of a begin with nothing in flight). Never an unconfirmed
    * optimistic value, so a commit that supersedes a pending one rolls back
    * to it.
    */
-  readonly confirmed: Signal<TCommit | undefined>;
-  /** `current` while nothing is in flight, else the confirmed value. */
   baseline<V extends TCommit | undefined>(current: V): V;
   beginMembers<V extends TCommit | undefined>(
     request: CommitLedgerMembersRequest<TCommit, V, TOption>,
@@ -118,8 +117,6 @@ export interface CommitLedger<TCommit, TOption = unknown> {
    * one, once it succeeded, or without a bound action.
    */
   retry(): void;
-  /** Forgets the last commit and the confirmed value. */
-  reset(): void;
 }
 
 function sameRecord<TCommit, TOption>(
@@ -153,18 +150,19 @@ export function createCommitLedger<TCommit, TOption = unknown>(
     equal: sameRecord,
     ...(typeof ngDevMode !== 'undefined' && ngDevMode ? { debugName: 'commitLedger.last' } : {}),
   });
-  const confirmed = signal<TCommit | undefined>(undefined);
+  // Plain state: only `baseline` reads it, imperatively.
+  let confirmed: TCommit | undefined;
   // `confirmed` alone cannot tell "confirmed undefined" from "never settled".
   let settled = false;
   let replayLast: (() => void) | null = null;
 
   const settle = (value: TCommit | undefined): void => {
     settled = true;
-    confirmed.set(value);
+    confirmed = value;
   };
 
   const baseline = <V extends TCommit | undefined>(current: V): V =>
-    settled && untracked(controller.isCommitting) ? (untracked(confirmed) as V) : current;
+    settled && untracked(controller.isCommitting) ? (confirmed as V) : current;
 
   const run = <V extends TCommit | undefined>(
     req: CommitLedgerRequest<TCommit, V, TOption>,
@@ -239,17 +237,10 @@ export function createCommitLedger<TCommit, TOption = unknown>(
 
   return {
     last: last.asReadonly(),
-    confirmed: confirmed.asReadonly(),
     baseline,
     beginMembers: (request) => run(request, request.action, false),
     beginScalar: (request) => run(request, request.action, false),
     retry: () => replayLast?.(),
-    reset: () => {
-      replayLast = null;
-      settled = false;
-      last.set(null);
-      confirmed.set(undefined);
-    },
   };
 }
 

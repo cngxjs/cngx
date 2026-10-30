@@ -867,7 +867,6 @@ export class CngxSelectShell<T = unknown>
    * @internal
    */
   private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
-    shape: 'scalar',
     policy: this.commitErrorAnnouncePolicy,
   });
 

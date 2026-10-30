@@ -952,12 +952,10 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
 
   /** A rejected quick-create is spoken assertively, whatever the select's own policy. */
   private readonly announceCreateError = this.core.createCommitErrorAnnouncer({
-    shape: 'scalar',
     policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'verbose', severity: 'assertive' }),
     message: (err) => this.core.createFailedMessage(this.lastCreateLabel(), err),
   });
   private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
-    shape: 'scalar',
     policy: this.commitErrorAnnouncePolicy,
   });
   private readonly display: DisplayBinding<T> = inject(CNGX_DISPLAY_BINDING_FACTORY)<T>({

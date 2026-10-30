@@ -1,7 +1,6 @@
 import { InjectionToken, untracked, type Signal } from '@angular/core';
 
 import type { CngxSelectAnnouncer } from './announcer';
-import type { CngxSelectOptionDef } from './option.model';
 
 /**
  * Scalar-commit failure announce policy.
@@ -19,8 +18,8 @@ export type CngxCommitErrorAnnouncePolicy =
   | { readonly kind: 'soft' };
 
 /**
- * Announcer surface for {@link createCommitErrorAnnouncer} - verbose path
- * through `announcer.announce`, soft path through `softAnnounce`.
+ * Announcer surface for {@link createCommitErrorAnnouncer}. Both policies
+ * speak through `announcer.announce`.
  */
 export interface CngxCommitErrorAnnounceDeps {
   readonly announcer: CngxSelectAnnouncer;
@@ -32,17 +31,6 @@ export interface CngxCommitErrorAnnounceDeps {
    * cleared" phrase for a failure.
    */
   readonly softFailureMessage?: () => string;
-  /**
-   * Selection announce hook. The default factory no longer calls it on a
-   * failed commit; kept for custom factories that announce through the
-   * selection format.
-   */
-  readonly softAnnounce: (
-    option: CngxSelectOptionDef<unknown> | null,
-    action: 'added' | 'removed',
-    count: number,
-    multi: boolean,
-  ) => void;
 }
 
 /**
@@ -53,13 +41,13 @@ export interface CngxCommitErrorAnnounceDeps {
  * ```ts
  * // CngxSelect (verbose, assertive)
  * private readonly announceCommitError = createCommitErrorAnnouncer({
- *   deps: { announcer, commitErrorMessage, softAnnounce },
+ *   deps: { announcer, commitErrorMessage },
  *   policy: signal({ kind: 'verbose', severity: 'assertive' } as const),
  * });
  *
  * // CngxTypeahead (soft, polite)
  * private readonly announceCommitError = createCommitErrorAnnouncer({
- *   deps: { announcer, commitErrorMessage, softAnnounce, softFailureMessage },
+ *   deps: { announcer, commitErrorMessage, softFailureMessage },
  *   policy: signal({ kind: 'soft' } as const),
  * });
  * ```

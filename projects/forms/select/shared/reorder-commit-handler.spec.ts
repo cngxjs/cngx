@@ -5,10 +5,7 @@ import { createManualState } from '@cngx/common/data';
 
 import { createReorderCommitHandler } from './reorder-commit-handler';
 import type { CngxCommitController } from './commit-controller.token';
-import type {
-  CngxSelectCommitAction,
-  CngxSelectCommitMode,
-} from './commit-action.types';
+import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-action.types';
 import type { CngxSelectOptionDef } from './option.model';
 
 function makeController<T>(): {
@@ -84,7 +81,6 @@ describe('createReorderCommitHandler', () => {
       commitMode,
       commitAction,
       commitController: controller,
-      getLastCommitted: () => lastCommitted,
       setLastCommitted: (v) => {
         lastCommitted = [...v];
       },
@@ -183,7 +179,6 @@ describe('createReorderCommitHandler', () => {
       commitMode,
       commitAction,
       commitController: controller,
-      getLastCommitted: () => lastCommitted,
       setLastCommitted: (v) => {
         lastCommitted = [...v];
       },

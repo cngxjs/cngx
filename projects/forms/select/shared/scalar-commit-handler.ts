@@ -69,10 +69,10 @@ export interface ScalarCommitHandler<T> {
    * Start a clear commit: the bound action receives `undefined`. In
    * optimistic mode the handler empties `value` first; a pending commit is
    * superseded and rolls back to the confirmed value on failure. Retry
-   * replays the clear. Optional so custom factories written before it keep
-   * compiling; the composites clear locally when it is missing.
+   * replays the clear. The composites route every clear with a bound
+   * `commitAction` here.
    */
-  beginClear?(previous: T | undefined, action: CngxSelectCommitAction<T>): void;
+  beginClear(previous: T | undefined, action: CngxSelectCommitAction<T>): void;
   /** Non-commit finalization. */
   finalizeSelection(
     intended: T,
@@ -234,7 +234,7 @@ export function dispatchScalarClear<T>(opts: {
   readonly clearLocally: () => void;
 }): void {
   const action = untracked(opts.commitAction);
-  if (action && opts.handler.beginClear) {
+  if (action) {
     opts.handler.beginClear(opts.previous, action);
     return;
   }

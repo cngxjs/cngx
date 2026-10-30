@@ -9,16 +9,6 @@ import {
   type CngxCommitErrorAnnouncePolicy,
 } from './commit-error-announcer';
 import { CngxSelectAnnouncer } from './announcer';
-import type { CngxSelectOptionDef } from './option.model';
-
-function makeMockSoftAnnounce(): (
-  opt: CngxSelectOptionDef<unknown> | null,
-  action: 'added' | 'removed',
-  count: number,
-  multi: boolean,
-) => void {
-  return vi.fn();
-}
 
 // Non-generic vi.spyOn call so the spy type is inferred; the explicit
 // vi.spyOn<T, K> generic form trips vitest's overload constraint here.
@@ -37,13 +27,11 @@ describe('createCommitErrorAnnouncer', () => {
     live = makeLiveSpy();
   });
 
-  it("verbose policy forwards the formatted error assertively to the live region", () => {
-    const softAnnounce = makeMockSoftAnnounce();
+  it('verbose policy forwards the formatted error assertively to the live region', () => {
     const callback = createCommitErrorAnnouncer({
       deps: {
         announcer,
         commitErrorMessage: (err) => `Commit failed: ${String(err)}`,
-        softAnnounce,
       },
       policy: signal<CngxCommitErrorAnnouncePolicy>({
         kind: 'verbose',
@@ -52,13 +40,11 @@ describe('createCommitErrorAnnouncer', () => {
     });
     callback(new Error('boom'));
     expect(live).toHaveBeenCalledExactlyOnceWith('Commit failed: Error: boom', 'assertive');
-    expect(softAnnounce).not.toHaveBeenCalled();
   });
 
   it('verbose with polite severity forwards the polite flag', () => {
-    const softAnnounce = makeMockSoftAnnounce();
     const callback = createCommitErrorAnnouncer({
-      deps: { announcer, commitErrorMessage: () => 'x', softAnnounce },
+      deps: { announcer, commitErrorMessage: () => 'x' },
       policy: signal<CngxCommitErrorAnnouncePolicy>({
         kind: 'verbose',
         severity: 'polite',
@@ -69,13 +55,11 @@ describe('createCommitErrorAnnouncer', () => {
   });
 
   it('soft policy speaks the soft failure message politely after a rollback, never the cleared phrase', () => {
-    const softAnnounce = makeMockSoftAnnounce();
     const callback = createCommitErrorAnnouncer({
       deps: {
         announcer,
         commitErrorMessage: () => 'should-not-appear',
         softFailureMessage: () => 'Colour: Save failed, previous value restored',
-        softAnnounce,
       },
       policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'soft' }),
     });
@@ -84,7 +68,6 @@ describe('createCommitErrorAnnouncer', () => {
       'Colour: Save failed, previous value restored',
       'polite',
     );
-    expect(softAnnounce).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -96,7 +79,6 @@ describe('createCommitErrorAnnouncer', () => {
         announcer,
         commitErrorMessage: () => 'Colour: Save failed',
         softFailureMessage: () => 'Colour: Save failed, previous value restored',
-        softAnnounce: makeMockSoftAnnounce(),
       },
       policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'soft' }),
     });
@@ -105,13 +87,11 @@ describe('createCommitErrorAnnouncer', () => {
   });
 
   it('soft policy without a soft failure message speaks the regular failure politely', () => {
-    const softAnnounce = makeMockSoftAnnounce();
     const callback = createCommitErrorAnnouncer({
-      deps: { announcer, commitErrorMessage: () => 'Colour: Save failed', softAnnounce },
+      deps: { announcer, commitErrorMessage: () => 'Colour: Save failed' },
       policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'soft' }),
     });
     callback(new Error('boom'), true);
-    expect(softAnnounce).not.toHaveBeenCalled();
     expect(live).toHaveBeenCalledExactlyOnceWith('Colour: Save failed', 'polite');
   });
 
@@ -123,7 +103,6 @@ describe('createCommitErrorAnnouncer', () => {
         announcer,
         commitErrorMessage: () => 'unused',
         softFailureMessage: () => copy(),
-        softAnnounce: makeMockSoftAnnounce(),
       },
       policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'soft' }),
     });
@@ -145,24 +124,21 @@ describe('createCommitErrorAnnouncer', () => {
   });
 
   it('policy signal change flips strategy between calls without rebuilding the callback', () => {
-    const softAnnounce = makeMockSoftAnnounce();
     const policy = signal<CngxCommitErrorAnnouncePolicy>({
       kind: 'verbose',
       severity: 'assertive',
     });
     const callback = createCommitErrorAnnouncer({
-      deps: { announcer, commitErrorMessage: () => 'err-msg', softAnnounce },
+      deps: { announcer, commitErrorMessage: () => 'err-msg' },
       policy,
     });
     callback(new Error('first'));
     expect(live).toHaveBeenCalledTimes(1);
-    expect(softAnnounce).toHaveBeenCalledTimes(0);
 
     policy.set({ kind: 'soft' });
     callback(new Error('second'));
     expect(live).toHaveBeenCalledTimes(2);
     expect(live).toHaveBeenLastCalledWith('err-msg', 'polite');
-    expect(softAnnounce).toHaveBeenCalledTimes(0);
   });
 
   it('does not re-announce on a language flip when called from an effect', () => {
@@ -172,7 +148,6 @@ describe('createCommitErrorAnnouncer', () => {
       deps: {
         announcer,
         commitErrorMessage: () => copy(),
-        softAnnounce: makeMockSoftAnnounce(),
       },
       policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'verbose', severity: 'polite' }),
     });

@@ -6,10 +6,7 @@ import { createArrayCommitHandler } from './array-commit-handler';
 import { createCommitController } from './commit-controller.token';
 import { commitLedgerFor } from './internal/commit-ledger';
 import type { CngxCommitController } from './commit-controller.token';
-import type {
-  CngxSelectCommitAction,
-  CngxSelectCommitMode,
-} from './commit-action.types';
+import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-action.types';
 import type { CngxSelectOptionDef } from './option.model';
 import type { CngxSelectCompareFn, CngxSelectCore } from './internal/select-core';
 
@@ -61,7 +58,6 @@ interface Harness {
   readonly toggleFinalizeLog: Array<[CngxSelectOptionDef<T>, boolean]>;
   readonly clearFinalizeLog: Array<[T[], T[]]>;
   handler: ReturnType<typeof createArrayCommitHandler<T>>;
-  lastCommitted: T[];
 }
 
 function makeHarness(initial: T[] = [], withAnnounceError = true): Harness {
@@ -87,7 +83,6 @@ function makeHarness(initial: T[] = [], withAnnounceError = true): Harness {
     toggleFinalizeLog,
     clearFinalizeLog,
     handler: null as unknown as ReturnType<typeof createArrayCommitHandler<T>>,
-    lastCommitted: [...initial],
   };
   harness.handler = createArrayCommitHandler<T>({
     values,
@@ -95,11 +90,8 @@ function makeHarness(initial: T[] = [], withAnnounceError = true): Harness {
     commitMode,
     core: coreMock as unknown as CngxSelectCore<T, T[]>,
     commitAction,
-    getLastCommitted: () => harness.lastCommitted,
-    onToggleFinalize: (option, isNowSelected) =>
-      toggleFinalizeLog.push([option, isNowSelected]),
-    onClearFinalize: (previous, finalValues) =>
-      clearFinalizeLog.push([previous, finalValues]),
+    onToggleFinalize: (option, isNowSelected) => toggleFinalizeLog.push([option, isNowSelected]),
+    onClearFinalize: (previous, finalValues) => clearFinalizeLog.push([previous, finalValues]),
     onStateChange: (s) => stateLog.push(s),
     onError: (err) => errorLog.push(err),
     announceError: withAnnounceError ? (err) => announceErrorLog.push(err) : undefined,
@@ -262,8 +254,6 @@ describe('createArrayCommitHandler', () => {
       h.values.set([]);
       h.handler.beginClear(['a'], action);
       expect(h.coreMock.togglingOption()).toBeNull();
-
-      h.lastCommitted = [];
       h.handler.retryLast();
       // Both the original clear and the retry dispatched as clears ([]).
       expect(clearCalls).toEqual([[], []]);
@@ -274,7 +264,6 @@ describe('createArrayCommitHandler', () => {
     it('replays a failed toggle as a toggle', () => {
       const action: CngxSelectCommitAction<T[]> = (next) => next;
       h.commitAction.set(action);
-      h.lastCommitted = ['a'];
       h.coreMock.togglingOption.set(opt('b'));
       // Simulate a prior failed begin so intendedValue is set.
       h.handler.beginToggle(['a', 'b'], ['a'], opt('b'), () => {
@@ -293,7 +282,6 @@ describe('createArrayCommitHandler', () => {
     it('replays a failed clear as a clear', () => {
       const action: CngxSelectCommitAction<T[]> = (next) => next;
       h.commitAction.set(action);
-      h.lastCommitted = ['a', 'b'];
       h.handler.beginClear(['a', 'b'], () => {
         throw new Error('first fail');
       });
@@ -335,7 +323,6 @@ describe('createArrayCommitHandler', () => {
         throw new Error('first fail');
       });
       expect(h.values()).toEqual(['a']);
-      h.lastCommitted = ['a'];
       h.commitAction.set(() => new Subject<T[]>().asObservable());
 
       h.handler.retryLast();
@@ -459,7 +446,6 @@ describe('createArrayCommitHandler', () => {
         commitMode: signal<CngxSelectCommitMode>('optimistic'),
         core: coreMock as unknown as CngxSelectCore<Keyed, Keyed[]>,
         commitAction: signal<CngxSelectCommitAction<Keyed[]> | null>(null),
-        getLastCommitted: () => [],
         onToggleFinalize: () => undefined,
         onClearFinalize: () => undefined,
         onStateChange: () => undefined,
@@ -467,9 +453,7 @@ describe('createArrayCommitHandler', () => {
       });
       const initialRef = values();
       // Server returns same id but different name (fresh object reference).
-      const action: CngxSelectCommitAction<Keyed[]> = () => [
-        { id: 1, name: 'refetched' },
-      ];
+      const action: CngxSelectCommitAction<Keyed[]> = () => [{ id: 1, name: 'refetched' }];
       handler.beginToggle(
         [{ id: 1, name: 'A' }],
         [],

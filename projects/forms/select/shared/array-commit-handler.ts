@@ -20,11 +20,6 @@ export interface ArrayCommitHandlerOptions<T> {
   /** Source of `commitController`, `togglingOption`, `announce`. */
   readonly core: CngxSelectCore<T, T[]>;
   readonly commitAction: Signal<CngxSelectCommitAction<T[]> | null>;
-  /**
-   * Last committed snapshot. Kept for type compatibility: `retryLast`
-   * replays against the `previous` recorded at begin and no longer reads it.
-   */
-  readonly getLastCommitted: () => T[];
   /** Consumer emits `selectionChange`/`optionToggled` and announces. */
   readonly onToggleFinalize: (option: CngxSelectOptionDef<T>, isNowSelected: boolean) => void;
   /** Consumer emits `cleared` + `selectionChange(action:'clear')`. */

@@ -84,8 +84,6 @@ export interface TreeToggleDispatch<T> {
   clearAll(): void;
   /** Replay the last failed tree commit this dispatch started. */
   retryLast(): void;
-  /** Rollback target of the shared array handler. */
-  lastCommitted(): T[];
 }
 
 /** @internal */
@@ -96,7 +94,6 @@ export function createTreeToggleDispatch<T>(
   const ledger = commitLedgerFor<T[], T>(opts.core.commitController);
   const retryLast = (): void => ledger.retry();
   const owner = { retryLast };
-  let lastCommittedValues: T[] = untracked(() => [...values()]);
 
   const snapshot = (): T[] => untracked(() => [...values()]);
 
@@ -135,7 +132,6 @@ export function createTreeToggleDispatch<T>(
       return;
     }
 
-    lastCommittedValues = previous;
     if (opts.commitMode() === 'optimistic') {
       values.set(next);
     }
@@ -153,7 +149,6 @@ export function createTreeToggleDispatch<T>(
       commitMode: opts.commitMode,
       onStateChange: opts.emitState,
       onSuccess: (finalValues, confirmedPrevious) => {
-        lastCommittedValues = [...finalValues];
         emitToggle(finalValues, confirmedPrevious, meta);
         announceToggle(meta, finalValues.length);
       },
@@ -254,7 +249,6 @@ export function createTreeToggleDispatch<T>(
     }
     const action = opts.commitAction();
     if (action) {
-      lastCommittedValues = previous;
       if (opts.commitMode() === 'optimistic') {
         values.set([]);
       }
@@ -280,7 +274,6 @@ export function createTreeToggleDispatch<T>(
     removeValue,
     clearAll,
     retryLast,
-    lastCommitted: () => lastCommittedValues,
   };
 }
 

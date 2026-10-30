@@ -26,12 +26,6 @@ export interface ReorderCommitHandlerOptions<T> {
    */
   readonly commitController: CngxCommitController<T[]>;
   /**
-   * Read the last successfully committed snapshot. Unused by the default
-   * handler (the rollback target is the `previous` of each dispatch); kept
-   * for type compatibility with custom handlers.
-   */
-  readonly getLastCommitted: () => T[];
-  /**
    * Update the rollback snapshot. Called on optimistic-mode begin
    * (stash pre-reorder state) and on success (store canonicalised
    * server value).

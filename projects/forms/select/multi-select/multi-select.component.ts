@@ -899,7 +899,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   });
 
   private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
-    shape: 'array',
     policy: this.commitErrorAnnouncePolicy,
   });
 
@@ -917,7 +916,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     commitMode: this.commitMode,
     core: this.core,
     commitAction: this.commitAction,
-    getLastCommitted: () => this.lastCommittedValues,
     onToggleFinalize: (option, isNowSelected) =>
       this.toggleDispatch.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
     onClearFinalize: (previous, finalValues) =>

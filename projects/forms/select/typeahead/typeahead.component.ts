@@ -823,7 +823,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   );
 
   private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
-    shape: 'scalar',
     policy: this.commitErrorAnnouncePolicy,
   });
   /**

@@ -29,7 +29,6 @@ import {
 import type { CngxSelectCommitAction, CngxSelectCommitErrorDisplay } from '../commit-action.types';
 import {
   CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
-  type CngxCommitErrorAnnounceDeps,
   type CngxCommitErrorAnnouncePolicy,
 } from '../commit-error-announcer';
 import { commitLedgerFor, type CommitLedger } from './commit-ledger';
@@ -302,8 +301,8 @@ export interface CngxSelectCore<T, TCommit> {
   /**
    * Builds a commit-error announce callback through
    * `CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY` (resolved in the core's injection
-   * context), wired with the core's announcer, `commitErrorMessage`,
-   * `softCommitFailureMessage` and a `softAnnounce` hook of the given shape.
+   * context), wired with the core's announcer, `commitErrorMessage` and
+   * `softCommitFailureMessage`.
    */
   createCommitErrorAnnouncer(
     options: CngxSelectCommitErrorAnnouncerOptions,
@@ -346,13 +345,6 @@ export interface CngxCommitRetryOwner {
  * @internal
  */
 export interface CngxSelectCommitErrorAnnouncerOptions {
-  /**
-   * What the `softAnnounce` hook handed to a custom factory reports:
-   * `'scalar'` forwards its arguments, `'array'` reports the current
-   * selection count as a multi change, `'tree'` does the same without an
-   * option.
-   */
-  readonly shape: 'scalar' | 'array' | 'tree';
   readonly policy: Signal<CngxCommitErrorAnnouncePolicy>;
   /** Verbose-path sentence. Default {@link CngxSelectCore.commitErrorMessage}. */
   readonly message?: (err: unknown) => string;
@@ -861,26 +853,9 @@ export function createSelectCore<T, TCommit>(
         announcer,
         commitErrorMessage: options.message ?? commitErrorMessage,
         softFailureMessage: softCommitFailureMessage,
-        softAnnounce: softAnnounceFor(options.shape),
       },
       policy: options.policy,
     });
-  }
-
-  function softAnnounceFor(
-    shape: CngxSelectCommitErrorAnnouncerOptions['shape'],
-  ): CngxCommitErrorAnnounceDeps['softAnnounce'] {
-    const selectionCount = (): number =>
-      ((deps.currentSelection() as readonly T[] | undefined) ?? []).length;
-    if (shape === 'scalar') {
-      return (opt, action, count, multi) =>
-        announce(opt as CngxSelectOptionDef<T> | null, action, count, multi);
-    }
-    if (shape === 'array') {
-      return (opt, action) =>
-        announce(opt as CngxSelectOptionDef<T> | null, action, selectionCount(), true);
-    }
-    return (_opt, action) => announce(null, action, selectionCount(), true);
   }
 
   function createFailedMessage(option: string, err: unknown): string {

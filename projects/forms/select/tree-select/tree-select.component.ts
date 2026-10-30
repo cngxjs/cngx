@@ -788,7 +788,6 @@ export class CngxTreeSelect<T = unknown>
   );
 
   private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
-    shape: 'tree',
     policy: this.commitErrorAnnouncePolicy,
   });
 
@@ -799,7 +798,6 @@ export class CngxTreeSelect<T = unknown>
       commitMode: this.commitMode,
       core: this.core,
       commitAction: this.commitAction,
-      getLastCommitted: () => this.dispatch.lastCommitted(),
       onToggleFinalize: () => {
         // Tree commit success uses cascade-aware
         // `dispatchValueChange` directly. The handler's per-option

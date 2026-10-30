@@ -1118,12 +1118,10 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
 
   /** A rejected quick-create is spoken assertively, whatever the select's own policy. */
   private readonly announceCreateError = this.core.createCommitErrorAnnouncer({
-    shape: 'array',
     policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'verbose', severity: 'assertive' }),
     message: (err) => this.core.createFailedMessage(this.lastCreateLabel(), err),
   });
   private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
-    shape: 'array',
     policy: this.commitErrorAnnouncePolicy,
   });
 
@@ -1135,7 +1133,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     commitMode: this.commitMode,
     core: this.core,
     commitAction: this.commitAction,
-    getLastCommitted: () => this.lastCommittedValues,
     onToggleFinalize: (option, isNowSelected) =>
       this.toggleDispatch.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
     onClearFinalize: (previous, finalValues) =>

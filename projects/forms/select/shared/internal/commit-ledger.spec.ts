@@ -101,7 +101,6 @@ describe('createCommitLedger', () => {
       });
       h.pendings[0].next(['b', 'server']);
       expect(h.values()).toEqual(['b', 'server']);
-      expect(h.ledger.confirmed()).toEqual(['b', 'server']);
       expect(h.log).toEqual(['state:pending', 'state:success', 'success:b,server']);
     });
 
@@ -111,7 +110,6 @@ describe('createCommitLedger', () => {
       h.ledger.beginMembers(h.request(kind, ['b'], ['a']));
       h.pendings[0].error(new Error('down'));
       expect(h.values()).toEqual(['a']);
-      expect(h.ledger.confirmed()).toEqual(['a']);
       expect(h.log).toEqual([
         'state:pending',
         'state:error',
@@ -194,12 +192,11 @@ describe('createCommitLedger', () => {
   it('never confirms an in-flight value', () => {
     const h = harness(['a']);
     h.ledger.beginMembers(h.request('toggle', ['b'], ['a']));
-    expect(h.ledger.confirmed()).toEqual(['a']);
+    expect(h.ledger.baseline(['b'])).toEqual(['a']);
     h.ledger.beginMembers(h.request('toggle', ['c'], ['b']));
-    expect(h.ledger.confirmed()).toEqual(['a']);
+    expect(h.ledger.baseline(['c'])).toEqual(['a']);
     h.pendings[1].next(undefined);
     h.pendings[1].complete();
-    expect(h.ledger.confirmed()).toEqual(['c']);
     expect(h.ledger.baseline(['x'])).toEqual(['x']);
   });
 
@@ -282,19 +279,6 @@ describe('createCommitLedger', () => {
     h.pendings[0].error(new Error('down'));
     h.ledger.retry();
     expect(Object.is(h.ledger.last(), before)).toBe(true);
-  });
-
-  it('forgets the record and the confirmed value on reset', () => {
-    const h = harness(['a']);
-    h.ledger.beginMembers(h.request('toggle', ['b'], ['a']));
-    h.pendings[0].next(undefined);
-    h.pendings[0].complete();
-    expect(h.ledger.confirmed()).toEqual(['b']);
-    h.ledger.reset();
-    expect(h.ledger.last()).toBeNull();
-    expect(h.ledger.confirmed()).toBeUndefined();
-    h.ledger.retry();
-    expect(h.calls).toHaveLength(1);
   });
 });
 

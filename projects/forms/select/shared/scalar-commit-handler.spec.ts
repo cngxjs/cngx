@@ -2,7 +2,11 @@ import { signal, type WritableSignal } from '@angular/core';
 import { Subject } from 'rxjs';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { createScalarCommitHandler, dispatchScalarClear } from './scalar-commit-handler';
+import {
+  createScalarCommitHandler,
+  dispatchScalarClear,
+  type ScalarCommitHandler,
+} from './scalar-commit-handler';
 import { createCommitController } from './commit-controller.token';
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-action.types';
 import type { CngxSelectOptionDef } from './option.model';
@@ -69,8 +73,7 @@ function makeHarness(opts?: {
     onCommitError: (err) => commitErrorLog.push(err),
     onStateChange: (s) => stateLog.push(s),
     onError: (err) => errorLog.push(err),
-    onValueWrite:
-      opts?.withValueWrite === false ? undefined : (v) => valueWriteLog.push(v),
+    onValueWrite: opts?.withValueWrite === false ? undefined : (v) => valueWriteLog.push(v),
   });
 
   return {
@@ -137,7 +140,7 @@ describe('createScalarCommitHandler', () => {
       h.togglingOption.set(opt('b'));
       const calls: (T | undefined)[] = [];
       const pending = new Subject<T | undefined>();
-      h.handler.beginClear!('a', (next) => {
+      h.handler.beginClear('a', (next) => {
         calls.push(next);
         return pending.asObservable();
       });
@@ -158,7 +161,7 @@ describe('createScalarCommitHandler', () => {
         throw new Error('server down');
       };
       h.commitAction.set(action);
-      h.handler.beginClear!('a', action);
+      h.handler.beginClear('a', action);
       expect(h.value()).toBe('a');
       expect(h.commitErrorLog).toHaveLength(1);
 
@@ -172,7 +175,7 @@ describe('createScalarCommitHandler', () => {
       h.value.set('b');
       const first = new Subject<T | undefined>();
       h.handler.beginCommit('b', 'a', () => first.asObservable());
-      h.handler.beginClear!('b', () => undefined);
+      h.handler.beginClear('b', () => undefined);
       first.next('b');
       first.complete();
       expect(h.value()).toBeUndefined();
@@ -199,9 +202,21 @@ describe('createScalarCommitHandler', () => {
         onStateChange: () => undefined,
         onError: () => undefined,
       });
-      handler.beginClear!('a', () => undefined);
+      handler.beginClear('a', () => undefined);
       expect(cleared).toEqual(['a']);
     });
+  });
+
+  it('requires beginClear on a custom handler, so a clear never degrades silently', () => {
+    const partial = {
+      beginCommit: () => undefined,
+      dispatchFromActivation: () => undefined,
+      finalizeSelection: () => undefined,
+      retryLast: () => undefined,
+    };
+    // @ts-expect-error beginClear is a required member
+    const handler: ScalarCommitHandler<T> = partial;
+    expect(handler).toBe(partial);
   });
 
   describe('dispatchScalarClear', () => {
@@ -334,9 +349,7 @@ describe('createScalarCommitHandler', () => {
       h.handler.finalizeSelection('a', opt('a'), 'b');
       expect(h.value()).toBe('a');
       expect(h.valueWriteLog).toEqual(['a']);
-      expect(h.finalizeLog).toEqual([
-        { option: opt('a'), finalValue: 'a', previousValue: 'b' },
-      ]);
+      expect(h.finalizeLog).toEqual([{ option: opt('a'), finalValue: 'a', previousValue: 'b' }]);
       expect(h.stateLog).toEqual([]);
     });
   });
