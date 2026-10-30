@@ -354,7 +354,7 @@ class CaretOverrideHost {
 @Component({
   selector: 'cngx-select-contrast-host',
   standalone: true,
-  imports: [CngxSelect],
+  imports: [CngxSelect, CngxReorderableMultiSelect],
   styleUrls: [
     '../../../core/theming/layers.css',
     '../../../core/theming/system-tokens.css',
@@ -366,13 +366,19 @@ class CaretOverrideHost {
       <cngx-select class="v-outline" [label]="'Colour'" [options]="options" />
       <cngx-select class="v-fill" skin="fill" [label]="'Colour'" [options]="options" />
       <div class="cngx-select__panel contrast-panel" style="position: static">Panel</div>
-      <span class="cngx-select__chip cngx-select__chip--dragging contrast-chip">Red</span>
+      <cngx-reorderable-multi-select
+        class="contrast-reorder"
+        [label]="'Colours'"
+        [options]="options"
+        [values]="dragged"
+      />
       <span class="muted-probe" style="color: var(--cngx-color-text-muted)">Muted</span>
     </div>
   `,
 })
 class ContrastHost {
   readonly options = OPTIONS;
+  readonly dragged = ['red'];
 }
 
 const ALL_TRIGGERS = [
@@ -755,11 +761,19 @@ describe('select-family field skins', () => {
       expect(contrast(border, panel)).toBeGreaterThanOrEqual(3);
     });
 
+    // The lift paints the chip wrap; the text is the <cngx-chip> label inside
+    // it, which reads its own colour token, so the label is what is measured.
+    // The chip eases its colour over 150ms: the read waits for the end state.
     it('keeps the dragged chip label at 4.5:1 on its background', async () => {
       const root = await mountContrast();
-      const chip = one(root, '.contrast-chip');
-      const background = luminance(computedValue(chip, 'background-color'));
-      expect(contrast(luminance(computedValue(chip, 'color')), background)).toBeGreaterThanOrEqual(
+      const wrap = one(root, '.contrast-reorder .cngx-select__chip-wrap');
+      wrap.classList.add('cngx-select__chip--dragging');
+      for (const animation of wrap.getAnimations({ subtree: true })) {
+        animation.finish();
+      }
+      const label = one(wrap, '.cngx-chip .cngx-chip__label');
+      const background = luminance(computedValue(wrap, 'background-color'));
+      expect(contrast(luminance(computedValue(label, 'color')), background)).toBeGreaterThanOrEqual(
         4.5,
       );
     });
