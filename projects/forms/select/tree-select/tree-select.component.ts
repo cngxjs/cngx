@@ -537,7 +537,9 @@ export class CngxTreeSelect<T = unknown>
   /**
    * Async write handler run on every toggle, clear and chip removal with the
    * intended values. Unset, the change applies directly; `commitMode` decides
-   * how it shows while the handler runs.
+   * how it shows while the handler runs. Toggles and cascade toggles reach it
+   * through `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` only; the clear also runs
+   * through `CNGX_ARRAY_COMMIT_HANDLER_FACTORY`.
    */
   readonly commitAction = input<CngxSelectCommitAction<T[]> | null>(null);
   /**

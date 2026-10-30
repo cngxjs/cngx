@@ -160,6 +160,11 @@ export type CngxArrayCommitHandlerFactory = <T>(
  * `createArrayCommitHandler`. Override to change how optimistic adds / removes
  * reconcile against an async commit result.
  *
+ * `CngxTreeSelect` hands this handler its clear only. Tree toggles and cascade
+ * toggles commit tree nodes, not option defs, and run through
+ * `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` directly; swap that factory to
+ * change how a tree toggle commits.
+ *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/array-commit-handler.ts
  * @since 0.1.0
  * @relatedTo CngxMultiSelect, CNGX_SELECT_COMMIT_CONTROLLER_FACTORY, CNGX_CHIP_REMOVAL_HANDLER_FACTORY
