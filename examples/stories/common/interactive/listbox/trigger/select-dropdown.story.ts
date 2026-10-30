@@ -59,6 +59,7 @@ export const STORY: DemoSpec = {
       cngxListbox
       [label]="'Color'"
       tabindex="0"
+      class="demo-listbox-surface"
       (valueChange)="selectedColor.set($any($event))"
       #lb="cngxListbox"
     >
