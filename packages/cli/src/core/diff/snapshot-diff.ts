@@ -16,6 +16,7 @@ import type { DocEntry, DocInput, DocOutput } from '../data/types.js';
 import { entryLib } from '../query.js';
 import type {
   CategoryDelta,
+  InputChangedPart,
   RemovedEntry,
   RenamedEntry,
   SignatureChangedEntry,
@@ -49,6 +50,8 @@ interface DiffOptions<T extends Named> {
   fieldOf?: (item: T) => string;
   /** Marks every rename-key pairing as inferred; set where the key is a shape, not an identity. */
   inferred?: boolean;
+  /** The parts that differ between two items whose signatures differ; recorded as `changed`. */
+  changedOf?: (before: T, after: T) => readonly InputChangedPart[];
 }
 
 /** How many items carry each non-null rename key. */
@@ -65,7 +68,7 @@ function countKeys<T>(items: T[], renameKeyOf: ((item: T) => string | null) | un
 
 /** Diff two lists of named entries into the removed/renamed/signatureChanged shape. */
 function diffNamedList<T extends Named>(from: T[], to: T[], options: DiffOptions<T>): CategoryDelta {
-  const { renameKeyOf, signatureOf, owner, keyOf = (item: T) => item.name, fieldOf, inferred } = options;
+  const { renameKeyOf, signatureOf, owner, keyOf = (item: T) => item.name, fieldOf, inferred, changedOf } = options;
   const toByName = new Map(to.map((item) => [keyOf(item), item]));
   const fromNames = new Set(from.map(keyOf));
 
@@ -77,7 +80,8 @@ function diffNamedList<T extends Named>(from: T[], to: T[], options: DiffOptions
     const fromSignature = signatureOf(before);
     const toSignature = signatureOf(after);
     if (fromSignature !== toSignature) {
-      signatureChanged.push({ name: keyOf(after), owner, fromSignature, toSignature });
+      const changed = changedOf?.(before, after);
+      signatureChanged.push({ name: keyOf(after), owner, fromSignature, toSignature, ...(changed?.length ? { changed } : {}) });
     }
   };
 
@@ -152,6 +156,16 @@ const fieldNameOf = (member: DocInput | DocOutput): string => member.name;
 function inputSignatureOf(input: DocInput): string {
   const flags = [input.required === true ? 'required' : '', input.signalKind ?? ''].filter((flag) => flag !== '');
   return [input.type ?? '', flags.length === 0 ? '' : `(${flags.join(', ')})`].filter((part) => part !== '').join(' ');
+}
+
+/** Which parts of an input's binding contract differ, read from the fields rather than the rendered signature. */
+function inputChangesOf(before: DocInput, after: DocInput): InputChangedPart[] {
+  const parts: [InputChangedPart, boolean][] = [
+    ['type', (before.type ?? '') !== (after.type ?? '')],
+    ['required', (before.required === true) !== (after.required === true)],
+    ['binding kind', (before.signalKind ?? '') !== (after.signalKind ?? '')],
+  ];
+  return parts.filter(([, differs]) => differs).map(([part]) => part);
 }
 
 /** A slot description with its whitespace collapsed, so a reflowed doc comment is no change. */
@@ -243,6 +257,7 @@ export function diffSnapshots(fromDocs: DocsIndex, toDocs: DocsIndex): UsageDelt
     matchedPairs.map(([from, to]) =>
       diffNamedList(from.inputsClass ?? [], to.inputsClass ?? [], {
         signatureOf: inputSignatureOf,
+        changedOf: inputChangesOf,
         keyOf: publicNameOf,
         fieldOf: fieldNameOf,
         owner: from.name,

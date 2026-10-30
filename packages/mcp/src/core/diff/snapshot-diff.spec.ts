@@ -269,7 +269,7 @@ describe('diffSnapshots keys inputs and outputs on their public name', () => {
     const delta = diffSnapshots(from, to);
 
     expect(delta.inputs.renamed).toEqual([{ from: 'cngxValue', to: 'value', owner: 'CngxX' }]);
-    expect(delta.inputs.signatureChanged).toEqual([{ name: 'value', owner: 'CngxX', fromSignature: 'string', toSignature: 'number' }]);
+    expect(delta.inputs.signatureChanged).toEqual([{ name: 'value', owner: 'CngxX', fromSignature: 'string', toSignature: 'number', changed: ['type'] }]);
     expect(delta.inputs.removed).toEqual([]);
   });
 
@@ -285,7 +285,7 @@ describe('diffSnapshots keys inputs and outputs on their public name', () => {
     const to = index('2.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', type: 'string', required: true, signalKind: 'input' }] }]);
 
     expect(diffSnapshots(from, to).inputs.signatureChanged).toEqual([
-      { name: 'value', owner: 'CngxX', fromSignature: 'string (input)', toSignature: 'string (required, input)' },
+      { name: 'value', owner: 'CngxX', fromSignature: 'string (input)', toSignature: 'string (required, input)', changed: ['required'] },
     ]);
   });
 
@@ -474,8 +474,20 @@ describe('diffSnapshots output order and labels', () => {
     const to = index('2.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', type: 'string', signalKind: 'input-signal' }] }]);
 
     expect(diffSnapshots(from, to).inputs.signatureChanged).toEqual([
-      { name: 'value', owner: 'CngxX', fromSignature: '(input-signal)', toSignature: 'string (input-signal)' },
+      { name: 'value', owner: 'CngxX', fromSignature: '(input-signal)', toSignature: 'string (input-signal)', changed: ['type'] },
     ]);
+  });
+
+  it.each([
+    ['required to optional', { type: 'string', required: true }, { type: 'string' }, ['required']],
+    ['model to input-signal', { type: 'string', signalKind: 'model' }, { type: 'string', signalKind: 'input-signal' }, ['binding kind']],
+    ['type and required', { type: 'string' }, { type: 'number', required: true }, ['type', 'required']],
+    ['every part', { type: 'string', signalKind: 'model' }, { type: 'number', required: true, signalKind: 'input-signal' }, ['type', 'required', 'binding kind']],
+  ] as const)('names the changed parts of an input: %s', (_, before, after, changed) => {
+    const from = index('1.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', ...before }] }]);
+    const to = index('2.0.0', [{ name: 'CngxX', inputsClass: [{ name: 'value', ...after }] }]);
+
+    expect(diffSnapshots(from, to).inputs.signatureChanged).toEqual([expect.objectContaining({ name: 'value', changed })]);
   });
 
   it('reports no change for a whitespace-only slot description change', () => {

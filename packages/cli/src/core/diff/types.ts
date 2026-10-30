@@ -31,7 +31,12 @@ export interface SignatureChangedEntry {
   owner?: string;
   fromSignature: string;
   toSignature: string;
+  /** For an input, which parts of its binding contract changed, in this order; absent in every other category. */
+  changed?: readonly InputChangedPart[];
 }
+
+/** A part of an input's binding contract, as an input change names it. */
+export type InputChangedPart = 'type' | 'required' | 'binding kind';
 
 /** The three ways a symbol in one category can break a consumer on upgrade. */
 export interface CategoryDelta {

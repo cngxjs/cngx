@@ -78,8 +78,11 @@ const owned = (name: string, owner: string | undefined) => code(owner ? `${owner
 function categoryRows(delta: CategoryDelta, category: DeltaCategory, part: string): string[][] {
   // A slot description is prose: capped like every other description cell.
   const detail = category === 'slots' ? textCell : code;
-  // The component category also carries a component <-> directive flip.
-  const changed = (e: SignatureChangedEntry) => (KINDS.has(e.fromSignature) && KINDS.has(e.toSignature) ? 'kind' : part);
+  // An input names the parts of its contract that changed; only the component
+  // category carries a component <-> directive flip.
+  const isKindFlip = (e: SignatureChangedEntry) =>
+    category === 'components' && KINDS.has(e.fromSignature) && KINDS.has(e.toSignature);
+  const changed = (e: SignatureChangedEntry) => e.changed?.join(', ') ?? (isKindFlip(e) ? 'kind' : part);
   return [
     ...delta.removed.map((e) => ['removed', owned(e.name, e.owner), '-']),
     ...delta.renamed.map((e) => [e.inferred ? 'renamed (inferred)' : 'renamed', owned(e.from, e.owner), code(e.to)]),

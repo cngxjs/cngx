@@ -4,7 +4,7 @@ import { loadDocsFromFile } from '../data/loader.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
 import { createDocsResolver } from '../data/docs-resolver.js';
 import { migrateUsage, migrateUsageCommand, migrateUsageMarkdown } from './migrate-usage.js';
-import type { UsageDelta } from '../diff/types.js';
+import type { CategoryDelta, SignatureChangedEntry, UsageDelta } from '../diff/types.js';
 
 const OLD = fileURLToPath(new URL('../../../test/fixtures/documentation.v-old.sample.json', import.meta.url));
 const NEW = fileURLToPath(new URL('../../../test/fixtures/documentation.v-new.sample.json', import.meta.url));
@@ -125,5 +125,50 @@ describe('migrateUsage', () => {
     const result = await migrateUsageCommand.run({ bundled: bundledNew, resolve }, { from: '0.1.0', to: undefined });
 
     expect(result).toMatchObject({ ok: false, reason: 'asset-missing', message: 'internal: boom' });
+  });
+});
+
+describe('migrateUsageMarkdown labels', () => {
+  const none: CategoryDelta = { removed: [], renamed: [], signatureChanged: [] };
+  const delta = (category: 'inputs' | 'slots' | 'components', change: SignatureChangedEntry): UsageDelta => ({
+    ok: true,
+    meta: { from: '1.0.0', to: '2.0.0', resolvedFrom: '1.0.0', resolvedTo: '2.0.0' },
+    components: none,
+    inputs: none,
+    outputs: none,
+    slots: none,
+    diTokens: none,
+    [category]: { ...none, signatureChanged: [change] },
+  });
+  const input = (fromSignature: string, toSignature: string, changed: SignatureChangedEntry['changed']) =>
+    migrateUsageMarkdown(delta('inputs', { name: 'value', owner: 'CngxX', fromSignature, toSignature, changed }));
+
+  it('labels a required to optional input as required', () => {
+    expect(input('string (required)', 'string', ['required'])).toContain('|required|`CngxX.value`|');
+  });
+
+  it('labels a model to input-signal input as binding kind', () => {
+    expect(input('string (model)', 'string (input-signal)', ['binding kind'])).toContain('|binding kind|`CngxX.value`|');
+  });
+
+  it('lists every changed part in order', () => {
+    expect(input('string', 'number (required)', ['type', 'required'])).toContain('|type, required|`CngxX.value`|');
+  });
+
+  it('labels a function-typed input by its flag, not by its type', () => {
+    expect(input('() => void', '() => void (required)', ['required'])).toContain('|required|`CngxX.value`|');
+  });
+
+  it('labels a slot description that reads like a kind flip as description', () => {
+    const markdown = migrateUsageMarkdown(delta('slots', { name: 'cngxA', owner: 'CngxX', fromSignature: 'component', toSignature: 'directive' }));
+
+    expect(markdown).toContain('|description|`CngxX.cngxA`|');
+    expect(markdown).not.toContain('|kind|');
+  });
+
+  it('still labels a component to directive flip as kind', () => {
+    expect(migrateUsageMarkdown(delta('components', { name: 'CngxX', fromSignature: 'component', toSignature: 'directive' }))).toContain(
+      '|kind|`CngxX`|',
+    );
   });
 });
