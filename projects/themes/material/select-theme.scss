@@ -241,17 +241,33 @@ $-hosts:
       @include -option-padding($theme);
     }
 
-    // Material 3 menus sit their rows edge-to-edge: no panel or tree inset,
-    // so the highlight reaches the panel border and the tree rows sit flush
-    // like the flat list, and a tree row ends on the 16px of an option row.
-    // select-base.css and tree-select-panel.component.css SET these tokens
+    // Material 3 menus sit their rows edge-to-edge inside an 8px block inset
+    // (mat-select panel `padding: 8px 0`), so the highlight reaches the panel
+    // edges and the tree rows sit flush like the flat list, and a tree row
+    // ends on the 16px of an option row. select-base.css,
+    // tree-select-panel.component.css and cngx-listbox.css SET these tokens
     // from the scale on the same elements (0,1,0, same layer); the host
-    // ancestor lifts each bridge rule to 0,1,1 so it lands.
+    // ancestor lifts each bridge rule above it so it lands.
+    //
+    // The panel itself keeps no padding, so the loading and refreshing bars
+    // still bleed to its edge; the 8px block inset (the sm rung, so density
+    // re-scales it) sits on the list inside: the listbox of the flat panels
+    // and the tree container.
+    //
+    // mat-select opens flush on its field (no gap). CngxPopover writes its
+    // `offset` input as an inline margin, which only an important
+    // declaration outranks, so the bridge zeroes it on the select panels
+    // alone. The sheet and fullscreen presentations carry margin 0 already.
     :is(#{$-hosts}) .cngx-select__panel {
       --cngx-select-panel-padding: 0;
+      margin: 0 !important;
+    }
+    :is(#{$-hosts}) .cngx-select__panel [cngxListbox] {
+      --cngx-listbox-padding: 0;
+      padding-block: var(--cngx-space-sm, 8px);
     }
     :is(#{$-hosts}) .cngx-tree-select__tree {
-      --cngx-tree-select-tree-padding: 0;
+      --cngx-tree-select-tree-padding: var(--cngx-space-sm, 8px) 0;
     }
     :is(#{$-hosts}) .cngx-tree-select__node {
       --cngx-tree-select-node-padding-end: 16px;
