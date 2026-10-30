@@ -56,7 +56,7 @@ export class CngxMenuItemCheckbox<T = unknown> implements CngxAdItemHandle {
   readonly label = (): string => this.core.label();
 
   constructor() {
-    injectMenuItemIndicator(this.checked, CNGX_ICON_CHECK, 'cngxMenuItemCheckbox');
+    injectMenuItemIndicator(this.checked, CNGX_ICON_CHECK);
   }
 
   protected handleClick(): void {

@@ -235,6 +235,7 @@ export {
 export { CngxMenuItemSubmenu } from './menu/menu-item-submenu.directive';
 export { CNGX_SUBMENU_TRY_FALLBACKS } from './menu/submenu-defaults';
 export { CngxMenuItemCheckbox } from './menu/menu-item-checkbox.directive';
+export { CNGX_MENU_ITEM_OWN_INDICATOR } from './menu/menu-item-indicator';
 export { CngxMenuItemRadio } from './menu/menu-item-radio.directive';
 export { CngxMenuGroup } from './menu/menu-group.directive';
 export { CngxMenuSeparator } from './menu/menu-separator.directive';

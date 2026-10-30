@@ -60,7 +60,7 @@ export class CngxMenuItemRadio<T = unknown> implements CngxAdItemHandle {
   readonly label = (): string => this.core.label();
 
   constructor() {
-    injectMenuItemIndicator(this.checked, CNGX_ICON_DOT, 'cngxMenuItemRadio');
+    injectMenuItemIndicator(this.checked, CNGX_ICON_DOT);
   }
 
   protected handleClick(): void {

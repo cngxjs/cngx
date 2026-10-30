@@ -24,12 +24,12 @@ const SCHEMES = ['light', 'dark'] as const;
       <div [attr.data-color-scheme]="scheme" [class]="'scheme-' + scheme">
         <ul cngxMenu>
           <li cngxMenuItemCheckbox class="cngx-menu-item--highlighted cngx-menu-item--checked item-check">
-            <span class="cngx-menu-item__indicator" aria-hidden="true"><svg class="cngx-menu-item__indicator-svg cngx-menu-item__indicator-svg--stroke" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" /></svg></span>
+            <span class="cngx-menu-item__indicator" aria-hidden="true"><svg class="cngx-menu-item__indicator-svg cngx-menu-item__indicator-svg--stroke" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7" /></svg></span>
             <span class="cngx-menu-item__label">Bold</span>
             <kbd class="cngx-menu-item__kbd">Ctrl+B</kbd>
           </li>
           <li cngxMenuItemRadio class="cngx-menu-item--highlighted cngx-menu-item--checked item-radio">
-            <span class="cngx-menu-item__indicator" aria-hidden="true"><svg class="cngx-menu-item__indicator-svg" viewBox="0 0 24 24"><path d="M8 12a4 4 0 1 0 8 0a4 4 0 1 0-8 0z" /></svg></span>
+            <span class="cngx-menu-item__indicator" aria-hidden="true"><svg class="cngx-menu-item__indicator-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M8 12a4 4 0 1 0 8 0a4 4 0 1 0-8 0z" /></svg></span>
             <span class="cngx-menu-item__label">Left</span>
           </li>
           <li cngxMenuItem class="cngx-menu-item--highlighted item-kbd">
@@ -40,12 +40,12 @@ const SCHEMES = ['light', 'dark'] as const;
             cngxMenuItemCheckbox
             class="cngx-menu-item--highlighted cngx-menu-item--checked cngx-menu-item--disabled item-off"
           >
-            <span class="cngx-menu-item__indicator" aria-hidden="true"><svg class="cngx-menu-item__indicator-svg cngx-menu-item__indicator-svg--stroke" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" /></svg></span>
+            <span class="cngx-menu-item__indicator" aria-hidden="true"><svg class="cngx-menu-item__indicator-svg cngx-menu-item__indicator-svg--stroke" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7" /></svg></span>
             <span class="cngx-menu-item__label">Pinned</span>
             <kbd class="cngx-menu-item__kbd">Ctrl+P</kbd>
           </li>
           <li cngxMenuItemCheckbox class="cngx-menu-item--checked item-rest">
-            <span class="cngx-menu-item__indicator" aria-hidden="true"><svg class="cngx-menu-item__indicator-svg cngx-menu-item__indicator-svg--stroke" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" /></svg></span>
+            <span class="cngx-menu-item__indicator" aria-hidden="true"><svg class="cngx-menu-item__indicator-svg cngx-menu-item__indicator-svg--stroke" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7" /></svg></span>
             <span class="cngx-menu-item__label">Italic</span>
             <kbd class="cngx-menu-item__kbd">Ctrl+I</kbd>
           </li>

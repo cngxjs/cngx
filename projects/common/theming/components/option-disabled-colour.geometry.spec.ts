@@ -33,7 +33,7 @@ const SCHEMES = ['light', 'dark'] as const;
             <kbd class="cngx-menu-item__kbd">Del</kbd>
           </li>
           <li cngxMenuItemCheckbox class="cngx-menu-item--disabled cngx-menu-item--checked item-off-checked">
-            <span class="cngx-menu-item__indicator" aria-hidden="true"><svg class="cngx-menu-item__indicator-svg cngx-menu-item__indicator-svg--stroke" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" /></svg></span>
+            <span class="cngx-menu-item__indicator" aria-hidden="true"><svg class="cngx-menu-item__indicator-svg cngx-menu-item__indicator-svg--stroke" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7" /></svg></span>
             <span class="cngx-menu-item__label">Pinned</span>
           </li>
           <li cngxMenuItem class="cngx-menu-item--disabled cngx-menu-item--highlighted item-off-cursor">

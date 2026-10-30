@@ -9,6 +9,7 @@ import {
 
 import { CngxIconSvg } from '@cngx/common/display';
 import {
+  CNGX_MENU_ITEM_OWN_INDICATOR,
   CngxMenuItemIcon,
   CngxMenuItemKbd,
   CngxMenuItemLabel,
@@ -43,6 +44,7 @@ import { CNGX_ICON_DOT } from '@cngx/utils';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxContextMenuItemRadio',
+  providers: [{ provide: CNGX_MENU_ITEM_OWN_INDICATOR, useValue: true }],
   hostDirectives: [{ directive: CngxMenuItemRadio, inputs: ['disabled', 'value', 'label'] }],
   template: `
     <span class="cngx-menu-item__check" aria-hidden="true">
@@ -80,7 +82,7 @@ export class CngxContextMenuItemRadio {
   protected readonly projectedIcon = contentChild(CngxMenuItemIcon);
 
   /** @internal The brain host directive; its `checked()` gates the indicator. */
-  protected readonly brain = inject(CngxMenuItemRadio);
+  protected readonly brain = inject(CngxMenuItemRadio, { host: true });
 
   /** @internal Leading checked indicator, drawn in an always-present gutter so
    * the label does not shift when the item is checked or unchecked. */

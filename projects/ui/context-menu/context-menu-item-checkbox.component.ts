@@ -9,6 +9,7 @@ import {
 
 import { CngxIconSvg } from '@cngx/common/display';
 import {
+  CNGX_MENU_ITEM_OWN_INDICATOR,
   CngxMenuItemCheckbox,
   CngxMenuItemIcon,
   CngxMenuItemKbd,
@@ -40,6 +41,7 @@ import { CNGX_ICON_CHECK } from '@cngx/utils';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxContextMenuItemCheckbox',
+  providers: [{ provide: CNGX_MENU_ITEM_OWN_INDICATOR, useValue: true }],
   hostDirectives: [
     {
       directive: CngxMenuItemCheckbox,
@@ -83,7 +85,7 @@ export class CngxContextMenuItemCheckbox {
   protected readonly projectedIcon = contentChild(CngxMenuItemIcon);
 
   /** @internal The brain host directive; its `checked()` gates the indicator. */
-  protected readonly brain = inject(CngxMenuItemCheckbox);
+  protected readonly brain = inject(CngxMenuItemCheckbox, { host: true });
 
   /** @internal Leading checked indicator, drawn in an always-present gutter so
    * the label does not shift when the item is checked or unchecked. */

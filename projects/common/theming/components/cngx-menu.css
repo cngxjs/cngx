@@ -15,7 +15,7 @@
  *   `[cngxMenuItemSubmenu]` - item hosts
  * - `.cngx-menu-item__icon`, `__label`, `__suffix`, `__kbd` - slots
  * - `.cngx-menu-item__indicator` - checked indicator the checkbox / radio
- *   item inserts; `__indicator-svg` is its icon, `--stroke` paints the
+ *   item inserts; `__indicator-svg` is its icon, `--stroke` marks an
  *   outline
  * - `.cngx-menu-item--highlighted`, `--disabled`, `--checked` - state
  * - `[cngxMenuSeparator]` - hairline divider
@@ -373,34 +373,23 @@
 
   /* The svg is centred in the indicator out of flow, so its box never grows
      the row. Physical left / top pair with the physical translate, so the
-     centring holds under RTL. Round caps are part of a stroke icon's shape (see
-     `CngxIconPaint`). */
+     centring holds under RTL. The item directive paints it and sizes it from
+     `--cngx-icon-svg-size`. */
   .cngx-menu-item__indicator-svg {
     position: absolute;
     left: 50%;
     top: 50%;
     translate: -50% -50%;
-    overflow: visible;
-    fill: currentColor;
-    inline-size: var(--cngx-icon-svg-size, 1em);
-    block-size: var(--cngx-icon-svg-size, 1em);
-  }
-  .cngx-menu-item__indicator-svg--stroke {
-    fill: none;
-    stroke: currentColor;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-width: var(--cngx-icon-svg-stroke-width, 2);
   }
 
   /* The check spans 16 grid units across with stroke; scaling the box by
-     24/16 keeps its width at the 0.72em the text tick drew. */
+     24/16 inks it 0.72em wide, a check at label weight. */
   [cngxMenuItemCheckbox] > .cngx-menu-item__indicator > .cngx-menu-item__indicator-svg {
     --cngx-icon-svg-size: calc(0.72em * 24 / 16);
   }
 
   /* The dot is a fill glyph 8 grid units across; scaling the box by 24/8
-     keeps its diameter at the 0.7em the text dot drew. */
+     inks it 0.7em across, level with the check. */
   [cngxMenuItemRadio] > .cngx-menu-item__indicator > .cngx-menu-item__indicator-svg {
     --cngx-icon-svg-size: calc(0.7em * 24 / 8);
   }

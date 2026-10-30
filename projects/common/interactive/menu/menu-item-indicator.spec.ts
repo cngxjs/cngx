@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import { CngxMenuGroup } from './menu-group.directive';
 import { CngxMenuItemCheckbox } from './menu-item-checkbox.directive';
+import { CNGX_MENU_ITEM_OWN_INDICATOR } from './menu-item-indicator';
 import { CngxMenuItemRadio } from './menu-item-radio.directive';
 import { CngxMenu } from './menu.directive';
 
@@ -26,8 +27,9 @@ class IndicatorHost {
   readonly align = signal<string>('left');
 }
 
-// An organism shell that applies the brain through hostDirectives renders its
-// own indicator (ui/context-menu does), so the base one must stay out.
+// A shell that applies the brain through hostDirectives keeps the base
+// indicator; one that renders its own cue opts out through the token
+// (ui/context-menu does).
 @Component({
   selector: 'cngx-test-shell-item',
   template: `<ng-content />`,
@@ -36,12 +38,21 @@ class IndicatorHost {
 class ShellItem {}
 
 @Component({
+  selector: 'cngx-test-own-indicator-item',
+  template: `<ng-content />`,
+  hostDirectives: [{ directive: CngxMenuItemCheckbox, inputs: ['checked'] }],
+  providers: [{ provide: CNGX_MENU_ITEM_OWN_INDICATOR, useValue: true }],
+})
+class OwnIndicatorItem {}
+
+@Component({
   template: `
     <ul cngxMenu [label]="'Shell'" tabindex="0">
       <cngx-test-shell-item [checked]="true">Pinned</cngx-test-shell-item>
+      <cngx-test-own-indicator-item [checked]="true">Starred</cngx-test-own-indicator-item>
     </ul>
   `,
-  imports: [CngxMenu, ShellItem],
+  imports: [CngxMenu, ShellItem, OwnIndicatorItem],
 })
 class ShellHost {}
 
@@ -111,10 +122,23 @@ describe('menu item checked indicator (base skin)', () => {
     expect(indicator(right)).not.toBeNull();
   });
 
-  it('leaves a hostDirectives shell to render its own indicator', () => {
+  it('keeps the indicator on a hostDirectives shell unless it opts out', () => {
     const fixture = render(ShellHost);
-    const item = fixture.nativeElement.querySelector('cngx-test-shell-item') as HTMLElement;
-    expect(item.getAttribute('aria-checked')).toBe('true');
-    expect(item.querySelector('.cngx-menu-item__indicator')).toBeNull();
+    const shell = fixture.nativeElement.querySelector('cngx-test-shell-item') as HTMLElement;
+    const own = fixture.nativeElement.querySelector('cngx-test-own-indicator-item') as HTMLElement;
+    expect(shell.getAttribute('aria-checked')).toBe('true');
+    expect(indicator(shell)).not.toBeNull();
+    expect(own.getAttribute('aria-checked')).toBe('true');
+    expect(own.querySelector('.cngx-menu-item__indicator')).toBeNull();
+  });
+
+  it('paints the glyph by presentation attributes, so it needs no stylesheet', () => {
+    const fixture = render(IndicatorHost);
+    const item = fixture.debugElement.query(By.directive(CngxMenuItemRadio))
+      .nativeElement as HTMLElement;
+    const svg = indicator(item)?.querySelector('svg');
+    expect(svg?.getAttribute('fill')).toBe('currentColor');
+    expect(svg?.getAttribute('aria-hidden')).toBe('true');
+    expect(svg?.getAttribute('focusable')).toBe('false');
   });
 });
