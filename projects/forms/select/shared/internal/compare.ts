@@ -1,4 +1,3 @@
-
 /**
  * Element-wise array equality under a caller comparator. Short-circuits on
  * reference equality and length mismatch.
