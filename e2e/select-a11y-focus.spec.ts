@@ -3,6 +3,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 const R = {
   signalForms: '/#/forms/select/single-select/signal-forms-required',
   actionQuickCreate: '/#/forms/select/action-select/basic-sync-quick-create',
+  allVariants: '/#/forms/select/mobile-sheet/all-variants',
 };
 
 // The Enter that confirms an IME candidate: Chromium reports isComposing,
@@ -54,6 +55,25 @@ test.describe('select family focus on leave', () => {
     await page.keyboard.press('Tab');
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
     expect(await settledActiveText(page)).toBe('Submit');
+  });
+
+  test('Tab out of an open select with a scrolling list skips the panel', async ({ page }) => {
+    // Desktop width keeps the panels anchored. Twenty cities overflow the
+    // panel, so it is a scroller, which Chromium would make a Tab stop.
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto(R.allVariants);
+    const section = ex(page);
+    const trigger = section.locator('cngx-select .cngx-select__trigger').first();
+    await trigger.click();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    const panel = section.locator('cngx-select .cngx-select__panel').first();
+    expect(await panel.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
+
+    await page.keyboard.press('Tab');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(
+      section.locator('cngx-multi-select .cngx-multi-select__trigger').first(),
+    ).toBeFocused();
   });
 
   test('a click into another control keeps focus there', async ({ page }) => {
