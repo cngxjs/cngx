@@ -955,7 +955,12 @@
    * primary-tinted highlight uses an explicit alpha on the dark
    * primary hue so the option row reads as accented without
    * competing with the selection check. The chip-handle muted gray
-   * inverts so it keeps its secondary-information weight. */
+   * inverts so it keeps its secondary-information weight, and the
+   * alpha-on-black caret and clear glyphs flip to alpha-on-white. The
+   * scheme islands restate the placeholder so it re-reads the island's
+   * muted text rung (the :root value above resolves against the page). In
+   * the tokens layer, so a consumer override in a later layer wins in
+   * either scheme. */
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
       --cngx-select-panel-shadow: 0 4px 12px oklch(0 0 0 / 0.5);
@@ -966,6 +971,8 @@
       --cngx-select-chip-remove-hover-bg: oklch(1 0 0 / 0.12);
       --cngx-select-chip-handle-color: oklch(0.65 0.01 250);
       --cngx-select-chip-drag-shadow: 0 8px 20px oklch(0 0 0 / 0.6);
+      --cngx-select-caret-color: oklch(1 0 0 / 0.5);
+      --cngx-select-clear-color: oklch(1 0 0 / 0.5);
     }
   }
   [data-color-scheme='dark'],
@@ -978,6 +985,9 @@
     --cngx-select-chip-remove-hover-bg: oklch(1 0 0 / 0.12);
     --cngx-select-chip-handle-color: oklch(0.65 0.01 250);
     --cngx-select-chip-drag-shadow: 0 8px 20px oklch(0 0 0 / 0.6);
+    --cngx-select-placeholder-color: var(--cngx-color-text-muted);
+    --cngx-select-caret-color: oklch(1 0 0 / 0.5);
+    --cngx-select-clear-color: oklch(1 0 0 / 0.5);
   }
   [data-color-scheme='light'],
   .light {
@@ -989,6 +999,9 @@
     --cngx-select-chip-remove-hover-bg: oklch(0 0 0 / 0.12);
     --cngx-select-chip-handle-color: oklch(0.5 0.01 250);
     --cngx-select-chip-drag-shadow: 0 8px 20px oklch(0 0 0 / 0.28);
+    --cngx-select-placeholder-color: var(--cngx-color-text-muted);
+    --cngx-select-caret-color: oklch(0 0 0 / 0.5);
+    --cngx-select-clear-color: oklch(0 0 0 / 0.5);
   }
 }
 
@@ -2142,31 +2155,6 @@
     transform: scale(1);
     opacity: 1;
   }
-}
-
-/* Dark-mode swap for the shared placeholder, caret, and clear colors -
- * the alpha-on-black defaults dissolve on a dark page, so flip them to
- * alpha-on-white. The placeholder follows the muted text colour instead,
- * restated per block so a scheme island re-reads its own rung. Kept at the top level (not nested in @scope or @layer)
- * so the @media cascade survives. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-color-scheme='light']):not(.light) {
-    --cngx-select-placeholder-color: var(--cngx-color-text-muted);
-    --cngx-select-caret-color: oklch(1 0 0 / 0.5);
-    --cngx-select-clear-color: oklch(1 0 0 / 0.5);
-  }
-}
-[data-color-scheme='dark'],
-.dark {
-  --cngx-select-placeholder-color: var(--cngx-color-text-muted);
-  --cngx-select-caret-color: oklch(1 0 0 / 0.5);
-  --cngx-select-clear-color: oklch(1 0 0 / 0.5);
-}
-[data-color-scheme='light'],
-.light {
-  --cngx-select-placeholder-color: var(--cngx-color-text-muted);
-  --cngx-select-caret-color: oklch(0 0 0 / 0.5);
-  --cngx-select-clear-color: oklch(0 0 0 / 0.5);
 }
 
 /* Forced-colors (Windows High Contrast Mode) survival. The trigger and panel

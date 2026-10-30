@@ -190,8 +190,9 @@ describe('select-family field-skin rule set', () => {
     const assignments = [...SHARED.matchAll(/--cngx-select-placeholder-color: ([^;]+);/g)].map(
       (m) => m[1],
     );
-    // :root delegation plus the OS-dark, explicit-dark and explicit-light blocks
-    expect(assignments).toEqual(Array(4).fill('var(--cngx-color-text-muted)'));
+    // :root delegation (covers the OS-dark scheme) plus the explicit-dark and
+    // explicit-light island blocks
+    expect(assignments).toEqual(Array(3).fill('var(--cngx-color-text-muted)'));
   });
 
   it('derives the shared box padding from the density scale', () => {

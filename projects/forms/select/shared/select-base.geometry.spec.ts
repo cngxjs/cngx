@@ -5,7 +5,7 @@ import { CngxInput } from '@cngx/forms/input';
 import { createMockField } from '@cngx/forms/field/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { cdp, userEvent } from 'vitest/browser';
 
 import { CngxFieldBox } from '../../field/field-box.directive';
 import { CngxActionMultiSelect } from '../action-multi-select/action-multi-select.component';
@@ -301,6 +301,41 @@ class ClearableTriggersHost {
   readonly options = OPTIONS;
 }
 
+// A consumer override of the caret colour in a later layer, set on the root
+// and on a scheme island. The select scheme swaps live in the tokens layer, so
+// the override wins in the light and the dark scheme alike.
+@Component({
+  selector: 'cngx-select-caret-override-host',
+  standalone: true,
+  imports: [CngxSelect],
+  styleUrls: ['../../../core/theming/layers.css'],
+  styles: [
+    `
+      @layer app {
+        :root.cngx-caret-override-probe {
+          --cngx-select-caret-color: rgb(1, 2, 3);
+        }
+        .caret-island {
+          --cngx-select-caret-color: rgb(4, 5, 6);
+        }
+      }
+    `,
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <cngx-select class="v-root" [label]="'Colour'" [options]="options" />
+    <div class="caret-island" data-color-scheme="dark">
+      <cngx-select class="v-dark-island" [label]="'Colour'" [options]="options" />
+    </div>
+    <div class="caret-island" data-color-scheme="light">
+      <cngx-select class="v-light-island" [label]="'Colour'" [options]="options" />
+    </div>
+  `,
+})
+class CaretOverrideHost {
+  readonly options = OPTIONS;
+}
+
 const ALL_TRIGGERS = [
   '.v-select',
   '.v-multi',
@@ -353,9 +388,11 @@ function boxHeight(el: HTMLElement): number {
   return Math.max(formula, px(el, 'min-height'));
 }
 
-afterEach(() => {
+afterEach(async () => {
   mountedRoot?.remove();
   mountedRoot = null;
+  document.documentElement.classList.remove('cngx-caret-override-probe');
+  await cdp().send('Emulation.setEmulatedMedia', { features: [] });
 });
 
 describe('select-family field skins', () => {
@@ -585,4 +622,37 @@ describe('select-family field skins', () => {
       expect(computedValue(input!, 'color')).toBe(computedValue(el, 'color'));
     },
   );
+
+  describe.each(['light', 'dark'] as const)('%s scheme', (scheme) => {
+    async function mountOverride(): Promise<HTMLElement> {
+      await cdp().send('Emulation.setEmulatedMedia', {
+        features: [{ name: 'prefers-color-scheme', value: scheme }],
+      });
+      document.documentElement.classList.add('cngx-caret-override-probe');
+      const root = mount(CaretOverrideHost);
+      expect(matchMedia(`(prefers-color-scheme: ${scheme})`).matches).toBe(true);
+      return root;
+    }
+
+    function caret(root: HTMLElement, hostSelector: string): HTMLElement {
+      const el = trigger(root, hostSelector).querySelector<HTMLElement>('.cngx-select__caret');
+      if (!el) {
+        throw new Error(`${hostSelector} caret did not render`);
+      }
+      return el;
+    }
+
+    it('lets a layered root override of the caret colour win', async () => {
+      const root = await mountOverride();
+      expect(computedValue(caret(root, '.v-root'), 'color')).toBe('rgb(1, 2, 3)');
+    });
+
+    it.each(['.v-dark-island', '.v-light-island'])(
+      'lets a layered override on a scheme island win for %s',
+      async (hostSelector) => {
+        const root = await mountOverride();
+        expect(computedValue(caret(root, hostSelector), 'color')).toBe('rgb(4, 5, 6)');
+      },
+    );
+  });
 });
