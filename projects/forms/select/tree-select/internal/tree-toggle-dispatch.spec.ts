@@ -38,6 +38,7 @@ function setup(
     mode?: CngxSelectCommitMode;
     initial?: string[];
     cascade?: boolean;
+    keyed?: boolean;
   } = {},
 ) {
   const values = signal<string[]>(opts.initial ?? []);
@@ -56,6 +57,7 @@ function setup(
   const dispatch = createTreeToggleDispatch<string>({
     values,
     membersEqual: Object.is,
+    memberKey: signal(opts.keyed === false ? null : (v: string) => v),
     treeController,
     cascade: signal(opts.cascade ?? false),
     commitAction: signal(opts.commit ? action : null),
@@ -152,6 +154,19 @@ describe('createTreeToggleDispatch', () => {
     expect([...t.values()].sort()).toEqual(['g', 'm', 'm1', 'm2', 'n']);
     t.dispatch.cascadeToggle(t.node('m'));
     expect(t.values()).toEqual(['n']);
+  });
+
+  it.each([
+    ['a keyed', true],
+    ['a compareWith-only', false],
+  ])('a click on a mixed grandparent selects the whole subtree with %s identity', (_k, keyed) => {
+    const t = setup({ cascade: true, initial: ['m1'], keyed });
+    t.dispatch.cascadeToggle(t.node('g'));
+    expect([...t.values()].sort()).toEqual(['g', 'm', 'm1', 'm2', 'n']);
+    expect(t.changes[0]).toMatchObject({ added: ['g', 'm', 'm2', 'n'], removed: [] });
+    t.dispatch.singleToggle(t.node('m2'));
+    expect([...t.values()].sort()).toEqual(['m1', 'n']);
+    expect(t.changes[1]).toMatchObject({ added: [], removed: ['g', 'm', 'm2'] });
   });
 
   it('a child toggle leaves ancestors alone without cascade', () => {

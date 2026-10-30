@@ -822,6 +822,15 @@ export class CngxTreeSelect<T = unknown>
     ['beginToggle', 'beginClear'],
   );
 
+  /** Set key of the member identity; `null` when only a custom `compareWith` can tell. */
+  private readonly memberKey = computed<((value: T) => unknown) | null>(() => {
+    const keyFn = this.keyFn();
+    if (keyFn) {
+      return keyFn;
+    }
+    return isReferenceCompare(this.compareWith()) ? (v: T) => v : null;
+  });
+
   /**
    * Toggle / cascade / remove / clear mutations with their commit paths. A
    * toggle Retry replays through it (cascade meta included); a clear Retry
@@ -830,6 +839,7 @@ export class CngxTreeSelect<T = unknown>
   private readonly dispatch: TreeToggleDispatch<T> = createTreeToggleDispatch<T>({
     values: this.values,
     membersEqual: (a, b) => this.membersEqual(a, b),
+    memberKey: this.memberKey,
     treeController: this.treeController,
     cascade: this.cascadeChildren,
     commitAction: this.commitAction,

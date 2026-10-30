@@ -38,6 +38,12 @@ export interface TreeToggleDispatchOptions<T> {
    * reconciles the committed array.
    */
   readonly membersEqual: (a: T, b: T) => boolean;
+  /**
+   * Set key of the member identity (`keyFn`, or the value itself under a
+   * reference `compareWith`); `null` when only a custom `compareWith` tells
+   * members apart. Keyed membership is O(1) per lookup in the cascade walks.
+   */
+  readonly memberKey: Signal<((value: T) => unknown) | null>;
   readonly treeController: Pick<
     CngxTreeController<T>,
     'descendantsOfValue' | 'findByValue' | 'findById'
@@ -159,6 +165,39 @@ export function createTreeToggleDispatch<T>(
 
   const isIn = (set: readonly T[], value: T): boolean => set.some((v) => membersEqual(v, value));
 
+  // Built once per dispatch, so a deep cascade does not rescan the selection
+  // per descendant and per ancestor.
+  const indexOf = (members: readonly T[]): MemberIndex<T> => {
+    const key = untracked(opts.memberKey);
+    if (key) {
+      const keys = new Set(members.map(key));
+      return {
+        has: (v) => keys.has(key(v)),
+        add: (v) => keys.add(key(v)),
+        delete: (v) => keys.delete(key(v)),
+      };
+    }
+    let list = [...members];
+    return {
+      has: (v) => isIn(list, v),
+      add: (v) => list.push(v),
+      delete: (v) => {
+        list = list.filter((m) => !membersEqual(m, v));
+      },
+    };
+  };
+
+  const dedup = (arr: readonly T[]): T[] => {
+    const seen = indexOf([]);
+    return arr.filter((v) => {
+      if (seen.has(v)) {
+        return false;
+      }
+      seen.add(v);
+      return true;
+    });
+  };
+
   const enabledDescendants = (value: T): T[] => {
     const tc = opts.treeController;
     return tc.descendantsOfValue(value).filter((v) => tc.findByValue(v)?.disabled !== true);
@@ -169,17 +208,20 @@ export function createTreeToggleDispatch<T>(
   // ancestor keeps its state, like a disabled descendant in a cascade.
   const deriveAncestors = (set: T[], node: FlatTreeNode<T>): T[] => {
     let out = set;
+    const index = indexOf(out);
     for (const id of [...node.parentIds].reverse()) {
       const ancestor = opts.treeController.findById(id);
       if (!ancestor || ancestor.disabled) {
         continue;
       }
-      const full = enabledDescendants(ancestor.value).every((v) => isIn(out, v));
-      const selected = isIn(out, ancestor.value);
+      const full = enabledDescendants(ancestor.value).every((v) => index.has(v));
+      const selected = index.has(ancestor.value);
       if (full && !selected) {
         out = [...out, ancestor.value];
+        index.add(ancestor.value);
       } else if (!full && selected) {
         out = out.filter((v) => !membersEqual(v, ancestor.value));
+        index.delete(ancestor.value);
       }
     }
     return out;
@@ -191,9 +233,11 @@ export function createTreeToggleDispatch<T>(
     node: FlatTreeNode<T>,
     action: TreeToggleMeta<T>['action'],
   ): void => {
+    const before = indexOf(previous);
+    const after = indexOf(next);
     dispatch(next, previous, {
-      added: next.filter((v) => !isIn(previous, v)),
-      removed: previous.filter((v) => !isIn(next, v)),
+      added: next.filter((v) => !before.has(v)),
+      removed: previous.filter((v) => !after.has(v)),
       node,
       action,
     });
@@ -214,10 +258,12 @@ export function createTreeToggleDispatch<T>(
     // reverse a change on a row they cannot activate.
     const allValues = [node.value, ...enabledDescendants(node.value)];
     const previous = snapshot();
-    const fullySelected = allValues.every((a) => isIn(previous, a));
+    const selected = indexOf(previous);
+    const subtree = indexOf(allValues);
+    const fullySelected = allValues.every((a) => selected.has(a));
     const toggled = fullySelected
-      ? previous.filter((v) => !isIn(allValues, v))
-      : dedup([...previous, ...allValues], membersEqual);
+      ? previous.filter((v) => !subtree.has(v))
+      : dedup([...previous, ...allValues]);
     dispatchDiff(deriveAncestors(toggled, node), previous, node, 'cascade-toggle');
   };
 
@@ -277,12 +323,8 @@ export function createTreeToggleDispatch<T>(
   };
 }
 
-function dedup<T>(arr: readonly T[], eq: (a: T, b: T) => boolean): T[] {
-  const out: T[] = [];
-  for (const v of arr) {
-    if (!out.some((o) => eq(o, v))) {
-      out.push(v);
-    }
-  }
-  return out;
+interface MemberIndex<T> {
+  has(value: T): boolean;
+  add(value: T): void;
+  delete(value: T): void;
 }
