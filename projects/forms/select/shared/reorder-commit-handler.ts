@@ -155,10 +155,10 @@ export function createReorderCommitHandler<T>(
       copy: (v) => [...v],
       commitMode: opts.commitMode,
       onStateChange: opts.onStateChange,
-      onSuccess: (final) => {
+      onSuccess: (final, confirmedPrevious) => {
         opts.setLastCommitted([...final]);
         if (opts.commitMode() === 'pessimistic') {
-          opts.onReorder(final, previous, option, fromIndex, toIndex);
+          opts.onReorder(final, confirmedPrevious, option, fromIndex, toIndex);
           opts.onAnnounce(option, fromIndex, toIndex, final.length);
         }
       },

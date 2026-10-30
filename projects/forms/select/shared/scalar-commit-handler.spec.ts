@@ -171,6 +171,29 @@ describe('createScalarCommitHandler', () => {
     });
   });
 
+  describe('beginCommit - superseded', () => {
+    it('rolls a superseding commit back to the confirmed value, not the pending one', () => {
+      const first = new Subject<T>();
+      const second = new Subject<T>();
+      h.value.set('b');
+      h.handler.beginCommit('b', 'a', () => first);
+      h.value.set('c');
+      h.handler.beginCommit('c', 'b', () => second);
+      second.error(new Error('boom'));
+      expect(h.value()).toBe('a');
+      expect(h.valueWriteLog.at(-1)).toBe('a');
+    });
+
+    it('reports the confirmed value as previous when the superseding commit succeeds', () => {
+      const first = new Subject<T>();
+      h.value.set('b');
+      h.handler.beginCommit('b', 'a', () => first);
+      h.value.set('c');
+      h.handler.beginCommit('c', 'b', (next) => next);
+      expect(h.finalizeLog.at(-1)).toMatchObject({ finalValue: 'c', previousValue: 'a' });
+    });
+  });
+
   describe('finalizeSelection', () => {
     it('writes the value and finalizes without touching the commit state machine', () => {
       h.handler.finalizeSelection('a', opt('a'), 'b');

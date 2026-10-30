@@ -133,9 +133,9 @@ export function createTreeToggleDispatch<T>(
       copy: (v) => [...v],
       commitMode: opts.commitMode,
       onStateChange: opts.emitState,
-      onSuccess: (finalValues) => {
+      onSuccess: (finalValues, confirmedPrevious) => {
         lastCommittedValues = [...finalValues];
-        emitToggle(finalValues, previous, meta);
+        emitToggle(finalValues, confirmedPrevious, meta);
         announceToggle(meta, finalValues.length);
       },
       onError: opts.emitCommitError,

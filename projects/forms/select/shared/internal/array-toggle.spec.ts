@@ -1,7 +1,10 @@
 import { signal, type WritableSignal } from '@angular/core';
+import { Subject } from 'rxjs';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { createCommitController, type CngxCommitController } from '../commit-controller.token';
 import { createArrayToggleDispatch, type ArrayToggleChange } from './array-toggle';
+import { commitLedgerFor } from './commit-ledger';
 import type { CngxSelectCompareFn, CngxSelectCore } from './select-core';
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from '../commit-action.types';
 import type { CngxSelectOptionDef } from '../option.model';
@@ -13,6 +16,7 @@ function opt(value: T): CngxSelectOptionDef<T> {
 }
 
 interface CoreMock {
+  readonly commitController: CngxCommitController<T[]>;
   readonly togglingOption: WritableSignal<CngxSelectOptionDef<T> | null>;
   readonly announceCalls: Array<{
     option: CngxSelectOptionDef<T> | null;
@@ -48,6 +52,7 @@ interface Harness {
 function makeHarness(initial: T[] = []): Harness {
   const values = signal<T[]>(initial);
   const coreMock: CoreMock = {
+    commitController: createCommitController<T[]>(),
     togglingOption: signal<CngxSelectOptionDef<T> | null>(null),
     announceCalls: [],
     selected: [...initial],
@@ -221,6 +226,24 @@ describe('createArrayToggleDispatch', () => {
       h.dispatch.handleADCommit('b', opt('b'));
       expect(h.values()).toEqual(['a']);
       expect(h.beginToggleLog).toEqual([[['a', 'b'], ['a'], opt('b')]]);
+    });
+
+    it('snapshots the confirmed selection while another commit is in flight', () => {
+      commitLedgerFor<T[], T>(h.coreMock.commitController).beginMembers<T[]>({
+        kind: 'toggle',
+        next: ['a', 'x'],
+        previous: ['a'],
+        action: () => new Subject<T[]>(),
+        commitAction: h.commitAction,
+        value: h.values,
+        same: (x, y) => x.length === y.length && x.every((v, i) => v === y[i]),
+        commitMode: h.commitMode,
+        onSuccess: () => undefined,
+      });
+      h.values.set(['a', 'x']);
+      h.dispatch.handleADCommit('b', opt('b'));
+      expect(h.lastCommittedLog).toEqual([['a']]);
+      expect(h.beginToggleLog).toEqual([[['a', 'x', 'b'], ['a', 'x'], opt('b')]]);
     });
 
     it('performs the optimistic write even without a commit action but routes nothing', () => {

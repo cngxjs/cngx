@@ -78,7 +78,12 @@ function harness(initial: T[] = []): Harness {
   };
 }
 
-const MEMBER_KINDS: readonly Exclude<CommitKind, 'select'>[] = ['toggle', 'clear', 'reorder', 'tree'];
+const MEMBER_KINDS: readonly Exclude<CommitKind, 'select'>[] = [
+  'toggle',
+  'clear',
+  'reorder',
+  'tree',
+];
 
 describe('createCommitLedger', () => {
   describe.each(MEMBER_KINDS)('kind %s', (kind) => {
@@ -105,7 +110,7 @@ describe('createCommitLedger', () => {
       h.ledger.beginMembers(h.request(kind, ['b'], ['a']));
       h.pendings[0].error(new Error('down'));
       expect(h.values()).toEqual(['a']);
-      expect(h.ledger.confirmed()).toBeUndefined();
+      expect(h.ledger.confirmed()).toEqual(['a']);
       expect(h.log).toEqual([
         'state:pending',
         'state:error',
@@ -158,6 +163,34 @@ describe('createCommitLedger', () => {
     });
   });
 
+  it('rolls a superseding commit back to the confirmed value and replays it against that', () => {
+    const h = harness(['a']);
+    h.values.set(['a', 'b']);
+    h.ledger.beginMembers(h.request('toggle', ['a', 'b'], ['a']));
+    h.values.set(['a', 'b', 'c']);
+    h.ledger.beginMembers(h.request('toggle', ['a', 'b', 'c'], ['a', 'b']));
+    expect(h.ledger.last()?.previous).toEqual(['a']);
+    expect(h.ledger.baseline(['a', 'b', 'c'])).toEqual(['a']);
+    h.pendings[1].error(new Error('down'));
+    expect(h.values()).toEqual(['a']);
+    h.ledger.retry();
+    expect(h.ledger.last()?.previous).toEqual(['a']);
+    h.pendings[2].error(new Error('down again'));
+    expect(h.values()).toEqual(['a']);
+  });
+
+  it('never confirms an in-flight value', () => {
+    const h = harness(['a']);
+    h.ledger.beginMembers(h.request('toggle', ['b'], ['a']));
+    expect(h.ledger.confirmed()).toEqual(['a']);
+    h.ledger.beginMembers(h.request('toggle', ['c'], ['b']));
+    expect(h.ledger.confirmed()).toEqual(['a']);
+    h.pendings[1].next(undefined);
+    h.pendings[1].complete();
+    expect(h.ledger.confirmed()).toEqual(['c']);
+    expect(h.ledger.baseline(['x'])).toEqual(['x']);
+  });
+
   it('routes retry by the kind recorded last, not by an earlier commit', () => {
     const h = harness(['a', 'b']);
     h.values.set([]);
@@ -190,7 +223,11 @@ describe('createCommitLedger', () => {
       commitMode: signal<CngxSelectCommitMode>('optimistic'),
       onSuccess: () => undefined,
     });
-    expect(ledger.last()).toMatchObject({ kind: 'select', intended: 'green', option: opt('green') });
+    expect(ledger.last()).toMatchObject({
+      kind: 'select',
+      intended: 'green',
+      option: opt('green'),
+    });
   });
 
   it('is a no-op on retry without a record or without a bound action', () => {

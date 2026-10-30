@@ -119,7 +119,7 @@ describeCommitContract(SELECT, (c) => {
   it.fails('A6: a letter key on the closed trigger calls commitAction', c.closedTypeaheadCommits);
   it.fails('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
   it.fails('A15: clear after a failed commit clears the commit error', c.clearClearsCommitError);
-  it.fails(
+  it(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
   );
@@ -140,7 +140,7 @@ describeCommitContract(TYPEAHEAD, (c) => {
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it.fails('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
   it.fails('A15: clear after a failed commit clears the commit error', c.clearClearsCommitError);
-  it.fails(
+  it(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
   );
@@ -161,7 +161,7 @@ describeCommitContract(ACTION_SELECT, (c) => {
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it.fails('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
   it.fails('A15: clear after a failed commit clears the commit error', c.clearClearsCommitError);
-  it.fails(
+  it(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
   );
@@ -183,7 +183,7 @@ describeCommitContract(SELECT_SHELL, (c) => {
   it.fails('A6: a letter key on the closed trigger calls commitAction', c.closedTypeaheadCommits);
   it.fails('A15: clear while a commit is pending wins over that commit', c.clearWhilePendingWins);
   it.fails('A15: clear after a failed commit clears the commit error', c.clearClearsCommitError);
-  it.fails(
+  it(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
   );
@@ -198,7 +198,7 @@ describeCommitContract(MULTI_SELECT, (c) => {
   );
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
-  it.fails(
+  it(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
   );
@@ -213,7 +213,7 @@ describeCommitContract(COMBOBOX, (c) => {
   );
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
-  it.fails(
+  it(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
   );
@@ -228,7 +228,7 @@ describeCommitContract(ACTION_MULTI_SELECT, (c) => {
   );
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
-  it.fails(
+  it(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
   );
@@ -252,7 +252,7 @@ describeCommitContract(REORDERABLE, (c) => {
   );
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
-  it.fails(
+  it(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
   );
@@ -267,7 +267,7 @@ describeCommitContract(TREE_SELECT, (c) => {
   );
   it.fails('A13: the soft policy never speaks the cleared phrase', c.softPolicyNeverSpeaksCleared);
   it('B11: a provided CNGX_ARRAY_COMMIT_HANDLER_FACTORY is used', c.arrayHandlerFactoryUsed);
-  it.fails(
+  it(
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
   );

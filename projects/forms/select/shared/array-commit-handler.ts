@@ -138,9 +138,9 @@ export function createArrayCommitHandler<T>(
       previous,
       action,
       onReplay: () => togglingOption.set(null),
-      onSuccess: (finalValues) => {
+      onSuccess: (finalValues, confirmedPrevious) => {
         togglingOption.set(null);
-        opts.onClearFinalize(previous, finalValues);
+        opts.onClearFinalize(confirmedPrevious, finalValues);
         opts.core.announce(null, 'removed', finalValues.length, true);
       },
     });

@@ -51,6 +51,7 @@ function setup(opts: { commit?: boolean; mode?: CngxSelectCommitMode; initial?: 
     core: {
       announce,
       commitController: {
+        isCommitting: signal(false),
         begin: (
           _runner: unknown,
           next: string[] | undefined,

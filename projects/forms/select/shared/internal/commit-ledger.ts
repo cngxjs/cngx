@@ -56,7 +56,8 @@ export interface CommitLedgerRequest<TCommit, V extends TCommit | undefined, TOp
   readonly onStateChange?: (status: AsyncStatus) => void;
   /** Runs when a retry replays this commit, after the optimistic re-write. */
   readonly onReplay?: () => void;
-  readonly onSuccess: (final: V) => void;
+  /** `previous` is the rollback target the ledger used, the confirmed value for a superseding commit. */
+  readonly onSuccess: (final: V, previous: V) => void;
   /** Fires before the rollback. */
   readonly onError?: (err: unknown) => void;
   /** Fires after the ledger restored the rollback target. */
@@ -93,8 +94,15 @@ export type CommitLedgerScalarRequest<
 export interface CommitLedger<TCommit, TOption = unknown> {
   /** Last commit begun; a superseded commit's record is replaced. */
   readonly last: Signal<CommitRecord<TCommit, TOption> | null>;
-  /** Model value of the last successful commit. */
+  /**
+   * Last model value no pending commit wrote: a success's final value, or
+   * the `previous` of a begin with nothing in flight. Never an unconfirmed
+   * optimistic value, so a commit that supersedes a pending one rolls back
+   * to it.
+   */
   readonly confirmed: Signal<TCommit | undefined>;
+  /** `current` while nothing is in flight, else the confirmed value. */
+  baseline<V extends TCommit | undefined>(current: V): V;
   beginMembers<V extends TCommit | undefined>(
     request: CommitLedgerMembersRequest<TCommit, V, TOption>,
   ): void;
@@ -139,7 +147,17 @@ export function createCommitLedger<TCommit, TOption = unknown>(
     ...(typeof ngDevMode !== 'undefined' && ngDevMode ? { debugName: 'commitLedger.last' } : {}),
   });
   const confirmed = signal<TCommit | undefined>(undefined);
+  // `confirmed` alone cannot tell "confirmed undefined" from "never settled".
+  let settled = false;
   let replayLast: (() => void) | null = null;
+
+  const settle = (value: TCommit | undefined): void => {
+    settled = true;
+    confirmed.set(value);
+  };
+
+  const baseline = <V extends TCommit | undefined>(current: V): V =>
+    settled && untracked(controller.isCommitting) ? (untracked(confirmed) as V) : current;
 
   const run = <V extends TCommit | undefined>(
     req: CommitLedgerRequest<TCommit, V, TOption>,
@@ -152,7 +170,12 @@ export function createCommitLedger<TCommit, TOption = unknown>(
         req.value.set(copy(target));
       }
     };
-    const { next, previous } = req;
+    const { next } = req;
+    // A superseded commit never confirmed its value: roll back past it.
+    const previous = baseline(req.previous);
+    if (!untracked(controller.isCommitting)) {
+      settle(previous);
+    }
     const mode = req.commitMode();
     if (replay) {
       if (mode === 'optimistic') {
@@ -170,7 +193,7 @@ export function createCommitLedger<TCommit, TOption = unknown>(
     replayLast = () => {
       const current = untracked(req.commitAction);
       if (current) {
-        run(req, current, true);
+        run({ ...req, previous }, current, true);
       }
     };
     req.onStateChange?.('pending');
@@ -179,8 +202,8 @@ export function createCommitLedger<TCommit, TOption = unknown>(
         req.onStateChange?.('success');
         const final = (committed ?? next) as V;
         reconcile(final);
-        confirmed.set(final);
-        req.onSuccess(final);
+        settle(final);
+        req.onSuccess(final, previous);
       },
       onError: (err, rollbackTo) => {
         req.onStateChange?.('error');
@@ -201,11 +224,13 @@ export function createCommitLedger<TCommit, TOption = unknown>(
   return {
     last: last.asReadonly(),
     confirmed: confirmed.asReadonly(),
+    baseline,
     beginMembers: (request) => run(request, request.action, false),
     beginScalar: (request) => run(request, request.action, false),
     retry: () => replayLast?.(),
     reset: () => {
       replayLast = null;
+      settled = false;
       last.set(null);
       confirmed.set(undefined);
     },

@@ -123,14 +123,14 @@ export function createScalarCommitHandler<T>(
           mirrorWrite(intended);
         }
       },
-      onSuccess: (finalValue) => {
+      onSuccess: (finalValue, confirmedPrevious) => {
         togglingOption.set(null);
         mirrorWrite(finalValue);
         // finalValue may be undefined - controller return type allows it.
         // Action-select treats null as skip via discriminant; scalar
         // select gets "cleared" semantics for free.
         const opt = finalValue === undefined ? null : opts.core.findOption(finalValue);
-        opts.onCommitFinalize(opt, finalValue, previous);
+        opts.onCommitFinalize(opt, finalValue, confirmedPrevious);
       },
       onError: opts.onError,
       onRollback: mirrorWrite,
