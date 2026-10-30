@@ -115,7 +115,7 @@
    * then `--cngx-select-border`; see {@link --cngx-select-bg} for why no
    * `initial-value` is declared.
    * @group Surface
-   * @default var(--cngx-combobox-border, var(--cngx-select-border, 1px solid var(--cngx-color-border)))
+   * @default var(--cngx-combobox-border, var(--cngx-select-border, 1px solid var(--cngx-color-border-strong)))
    * @see [[--cngx-color-border]]
    */
   @property --cngx-action-multi-select-border {
@@ -277,7 +277,10 @@
         --cngx-action-multi-select-border,
         var(
           --cngx-combobox-border,
-          var(--cngx-select-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)))
+          var(
+            --cngx-select-border,
+            1px solid var(--cngx-color-border-strong, oklch(0.62 0.005 250))
+          )
         )
       );
       border-radius: var(

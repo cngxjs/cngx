@@ -347,6 +347,21 @@
   }
 
   /**
+   * Strong neutral border - the edge of an interactive control (a select
+   * trigger), which WCAG 1.4.11 needs at 3:1 against its surface. Same hue
+   * and chroma as `--cngx-color-border`, darker on light and lighter on dark.
+   * Light: 3.6:1 on the surface, 3.2:1 on the fill-field tint. Dark: 4.1:1
+   * on the surface, 3.2:1 on the lighter fill-field tint, which sets the
+   * floor. Contrast mode raises it to the same text mix as the border.
+   * @group Surface
+   */
+  @property --cngx-color-border-strong {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.62 0.005 250);
+  }
+
+  /**
    * Brand primary color - Ember. Drives focus rings, selected
    * surfaces, accent stripes across every cngx-prefixed component.
    * @group Surface
@@ -368,6 +383,19 @@
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.58 0.19 50);
+  }
+
+  /**
+   * Ink on a strong-primary fill - text and glyphs drawn on
+   * `--cngx-color-primary-strong` (a dragged chip). Near-white on light
+   * (4.6:1), the dark neutral on dark, where the strong primary is light
+   * (6.9:1).
+   * @group Surface
+   */
+  @property --cngx-color-on-primary-strong {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
   }
 
   /* --cngx-color-primary-text - primary as TEXT: 70% primary mixed in oklab
@@ -549,8 +577,10 @@
     --cngx-color-text: oklch(0.2 0.01 250);
     --cngx-color-text-muted: oklch(0.5 0.01 250);
     --cngx-color-border: oklch(0.88 0.005 250);
+    --cngx-color-border-strong: oklch(0.62 0.005 250);
     --cngx-color-primary: oklch(0.66 0.19 50);
     --cngx-color-primary-strong: oklch(0.58 0.19 50);
+    --cngx-color-on-primary-strong: oklch(1 0 0);
     --cngx-color-primary-text: color-mix(in oklab, var(--cngx-color-primary) 70%, var(--cngx-color-text));
     /**
      * Brand accent - the primary at the same lightness and chroma with the hue
@@ -590,8 +620,10 @@
       --cngx-color-text: oklch(0.95 0.01 250);
       --cngx-color-text-muted: oklch(0.7 0.01 250);
       --cngx-color-border: oklch(0.32 0.005 250);
+      --cngx-color-border-strong: oklch(0.57 0.005 250);
       --cngx-color-primary: oklch(0.72 0.18 50);
       --cngx-color-primary-strong: oklch(0.72 0.18 50);
+      --cngx-color-on-primary-strong: oklch(0.2 0.01 250);
       --cngx-color-primary-text: color-mix(in oklab, var(--cngx-color-primary) 70%, var(--cngx-color-text));
       --cngx-color-accent: oklch(from var(--cngx-color-primary) l c calc(h - 70));
       --cngx-gradient-brand: linear-gradient(100deg, var(--cngx-color-primary), var(--cngx-color-accent));
@@ -618,8 +650,10 @@
     --cngx-color-text: oklch(0.95 0.01 250);
     --cngx-color-text-muted: oklch(0.7 0.01 250);
     --cngx-color-border: oklch(0.32 0.005 250);
+    --cngx-color-border-strong: oklch(0.57 0.005 250);
     --cngx-color-primary: oklch(0.72 0.18 50);
     --cngx-color-primary-strong: oklch(0.72 0.18 50);
+    --cngx-color-on-primary-strong: oklch(0.2 0.01 250);
     --cngx-color-primary-text: color-mix(in oklab, var(--cngx-color-primary) 70%, var(--cngx-color-text));
     --cngx-color-accent: oklch(from var(--cngx-color-primary) l c calc(h - 70));
     --cngx-gradient-brand: linear-gradient(100deg, var(--cngx-color-primary), var(--cngx-color-accent));
@@ -643,8 +677,10 @@
     --cngx-color-text: oklch(0.2 0.01 250);
     --cngx-color-text-muted: oklch(0.5 0.01 250);
     --cngx-color-border: oklch(0.88 0.005 250);
+    --cngx-color-border-strong: oklch(0.62 0.005 250);
     --cngx-color-primary: oklch(0.66 0.19 50);
     --cngx-color-primary-strong: oklch(0.58 0.19 50);
+    --cngx-color-on-primary-strong: oklch(1 0 0);
     --cngx-color-primary-text: color-mix(in oklab, var(--cngx-color-primary) 70%, var(--cngx-color-text));
     --cngx-color-accent: oklch(from var(--cngx-color-primary) l c calc(h - 70));
     --cngx-gradient-brand: linear-gradient(100deg, var(--cngx-color-primary), var(--cngx-color-accent));

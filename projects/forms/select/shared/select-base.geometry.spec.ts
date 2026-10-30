@@ -336,6 +336,32 @@ class CaretOverrideHost {
   readonly options = OPTIONS;
 }
 
+// An outline and a fill trigger, a panel surface and a dragged chip under
+// the full token stack, for the WCAG contrast reads below. The scheme is
+// emulated at the root so every :root delegation resolves in it.
+@Component({
+  selector: 'cngx-select-contrast-host',
+  standalone: true,
+  imports: [CngxSelect],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    '../../theming/components/cngx-field-skin.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div class="contrast-page" style="background: var(--cngx-color-surface); padding: 1rem">
+      <cngx-select class="v-outline" [label]="'Colour'" [options]="options" />
+      <cngx-select class="v-fill" skin="fill" [label]="'Colour'" [options]="options" />
+      <div class="cngx-select__panel contrast-panel" style="position: static">Panel</div>
+      <span class="cngx-select__chip cngx-select__chip--dragging contrast-chip">Red</span>
+    </div>
+  `,
+})
+class ContrastHost {
+  readonly options = OPTIONS;
+}
+
 const ALL_TRIGGERS = [
   '.v-select',
   '.v-multi',
@@ -386,6 +412,29 @@ function inkOnRoundedBox(inkPx: number, extent: number): number {
 function boxHeight(el: HTMLElement): number {
   const formula = px(el, 'line-height') + px(el, 'padding-top') + px(el, 'padding-bottom') + 2;
   return Math.max(formula, px(el, 'min-height'));
+}
+
+// Paints `layers` in order onto a 1px sRGB canvas and returns the WCAG
+// relative luminance of the result, so translucent layers composite the way
+// the page draws them.
+function luminance(...layers: string[]): number {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1;
+  canvas.height = 1;
+  const context = canvas.getContext('2d')!;
+  for (const layer of layers) {
+    context.fillStyle = layer;
+    context.fillRect(0, 0, 1, 1);
+  }
+  const [r, g, b] = Array.from(context.getImageData(0, 0, 1, 1).data.slice(0, 3)).map((v) => {
+    const c = v / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function contrast(a: number, b: number): number {
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 }
 
 afterEach(async () => {
@@ -654,5 +703,50 @@ describe('select-family field skins', () => {
         expect(computedValue(caret(root, hostSelector), 'color')).toBe('rgb(4, 5, 6)');
       },
     );
+  });
+
+  describe.each(['light', 'dark'] as const)('%s scheme contrast', (scheme) => {
+    async function mountContrast(): Promise<HTMLElement> {
+      await cdp().send('Emulation.setEmulatedMedia', {
+        features: [{ name: 'prefers-color-scheme', value: scheme }],
+      });
+      const root = mount(ContrastHost);
+      expect(matchMedia(`(prefers-color-scheme: ${scheme})`).matches).toBe(true);
+      return root;
+    }
+
+    function one(root: HTMLElement, selector: string): HTMLElement {
+      const el = root.querySelector<HTMLElement>(selector);
+      if (!el) {
+        throw new Error(`${selector} did not render`);
+      }
+      return el;
+    }
+
+    it('keeps the outline trigger border at 3:1 on the page, the fill tint and the panel', async () => {
+      const root = await mountContrast();
+      const surface = computedValue(one(root, '.contrast-page'), 'background-color');
+      const border = luminance(
+        surface,
+        computedValue(trigger(root, '.v-outline'), 'border-top-color'),
+      );
+      const fill = luminance(surface, computedValue(trigger(root, '.v-fill'), 'background-color'));
+      const panel = luminance(
+        surface,
+        computedValue(one(root, '.contrast-panel'), 'background-color'),
+      );
+      expect(contrast(border, luminance(surface))).toBeGreaterThanOrEqual(3.5);
+      expect(contrast(border, fill)).toBeGreaterThanOrEqual(3);
+      expect(contrast(border, panel)).toBeGreaterThanOrEqual(3);
+    });
+
+    it('keeps the dragged chip label at 4.5:1 on its background', async () => {
+      const root = await mountContrast();
+      const chip = one(root, '.contrast-chip');
+      const background = luminance(computedValue(chip, 'background-color'));
+      expect(contrast(luminance(computedValue(chip, 'color')), background)).toBeGreaterThanOrEqual(
+        4.5,
+      );
+    });
   });
 });

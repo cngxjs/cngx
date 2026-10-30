@@ -119,7 +119,8 @@
  * - `--cngx-select-option-error-color` -> `--cngx-color-danger`
  * - `--cngx-select-error-color` -> `--cngx-color-danger`
  * - `--cngx-select-chip-remove-hover-color` -> `--cngx-color-danger`
- * - `--cngx-select-chip-drag-bg` -> `--cngx-color-primary`
+ * - `--cngx-select-chip-drag-bg` -> `--cngx-color-primary-strong`
+ * - `--cngx-select-chip-drag-color` -> `--cngx-color-on-primary-strong`
  * - `--cngx-select-chip-drop-bar-color` -> `--cngx-color-primary`
  * - `--cngx-select-trigger-invalid-border-color` ->
  *   `--cngx-color-danger`
@@ -730,20 +731,23 @@
   }
 
   /**
-   * Background of the chip lifted into the dragging state. Falls back
-   * to `--cngx-color-primary`.
+   * Background of the chip lifted into the dragging state. Defaults track
+   * `--cngx-color-primary-strong` via the delegating entries below.
    * @group State / Dragging
-   * @see [[--cngx-color-primary]]
+   * @see [[--cngx-color-primary-strong]]
    */
   @property --cngx-select-chip-drag-bg {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.66 0.19 50);
+    initial-value: oklch(0.58 0.19 50);
   }
 
   /**
-   * Text color of the chip lifted into the dragging state.
+   * Text color of the chip lifted into the dragging state. Defaults track
+   * `--cngx-color-on-primary-strong`, which holds 4.5:1 on the drag
+   * background in both schemes.
    * @group State / Dragging
+   * @see [[--cngx-color-on-primary-strong]]
    */
   @property --cngx-select-chip-drag-color {
     syntax: '<color>';
@@ -940,7 +944,8 @@
     --cngx-select-option-error-color: var(--cngx-color-danger);
     --cngx-select-error-color: var(--cngx-color-danger);
     --cngx-select-chip-remove-hover-color: var(--cngx-color-danger);
-    --cngx-select-chip-drag-bg: var(--cngx-color-primary);
+    --cngx-select-chip-drag-bg: var(--cngx-color-primary-strong);
+    --cngx-select-chip-drag-color: var(--cngx-color-on-primary-strong);
     --cngx-select-chip-drop-bar-color: var(--cngx-color-primary);
     --cngx-select-trigger-invalid-border-color: var(--cngx-color-danger);
     --cngx-select-trigger-invalid-outline-color: var(--cngx-color-danger);
@@ -957,8 +962,8 @@
    * competing with the selection check. The chip-handle muted gray
    * inverts so it keeps its secondary-information weight, and the
    * alpha-on-black caret and clear glyphs flip to alpha-on-white. The
-   * scheme islands restate the placeholder so it re-reads the island's
-   * muted text rung (the :root value above resolves against the page). In
+   * scheme islands restate the placeholder and the drag chip pair so they
+   * re-read the island's rungs (the :root value above resolves against the page). In
    * the tokens layer, so a consumer override in a later layer wins in
    * either scheme. */
   @media (prefers-color-scheme: dark) {
@@ -986,6 +991,8 @@
     --cngx-select-chip-handle-color: oklch(0.65 0.01 250);
     --cngx-select-chip-drag-shadow: 0 8px 20px oklch(0 0 0 / 0.6);
     --cngx-select-placeholder-color: var(--cngx-color-text-muted);
+    --cngx-select-chip-drag-bg: var(--cngx-color-primary-strong);
+    --cngx-select-chip-drag-color: var(--cngx-color-on-primary-strong);
     --cngx-select-caret-color: oklch(1 0 0 / 0.5);
     --cngx-select-clear-color: oklch(1 0 0 / 0.5);
   }
@@ -1000,6 +1007,8 @@
     --cngx-select-chip-handle-color: oklch(0.5 0.01 250);
     --cngx-select-chip-drag-shadow: 0 8px 20px oklch(0 0 0 / 0.28);
     --cngx-select-placeholder-color: var(--cngx-color-text-muted);
+    --cngx-select-chip-drag-bg: var(--cngx-color-primary-strong);
+    --cngx-select-chip-drag-color: var(--cngx-color-on-primary-strong);
     --cngx-select-caret-color: oklch(0 0 0 / 0.5);
     --cngx-select-clear-color: oklch(0 0 0 / 0.5);
   }
@@ -1673,8 +1682,11 @@
    */
   .cngx-select__chip--dragging {
     box-shadow: var(--cngx-select-chip-drag-shadow, 0 8px 20px oklch(0 0 0 / 0.28));
-    background: var(--cngx-select-chip-drag-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
-    color: var(--cngx-select-chip-drag-color, oklch(1 0 0));
+    background: var(
+      --cngx-select-chip-drag-bg,
+      var(--cngx-color-primary-strong, oklch(0.58 0.19 50))
+    );
+    color: var(--cngx-select-chip-drag-color, var(--cngx-color-on-primary-strong, oklch(1 0 0)));
     transform: scale(var(--cngx-select-chip-drag-scale, 1.06))
       rotate(var(--cngx-select-chip-drag-tilt, -1.5deg));
     z-index: 5;

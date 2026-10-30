@@ -120,7 +120,7 @@
    * `--cngx-multi-select-border`, then `--cngx-select-border`; see
    * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
-   * @default var(--cngx-multi-select-border, var(--cngx-select-border, 1px solid var(--cngx-color-border)))
+   * @default var(--cngx-multi-select-border, var(--cngx-select-border, 1px solid var(--cngx-color-border-strong)))
    * @see [[--cngx-color-border]]
    */
   @property --cngx-reorderable-multi-select-border {
@@ -256,7 +256,10 @@
         --cngx-reorderable-multi-select-border,
         var(
           --cngx-multi-select-border,
-          var(--cngx-select-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)))
+          var(
+            --cngx-select-border,
+            1px solid var(--cngx-color-border-strong, oklch(0.62 0.005 250))
+          )
         )
       );
       border-radius: var(
