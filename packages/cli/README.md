@@ -117,9 +117,9 @@ authenticated `gh`.
 |Code|Meaning|
 |-|-|
 |`0`|Answered.|
-|`1`|The query ran but found nothing (an empty `list` included), or the requested release snapshot could not be resolved.|
+|`1`|The query ran but found nothing (an empty `list` included), the requested release snapshot could not be resolved, or a query threw while answering (`asset-missing`, message `internal: ...`).|
 |`2`|Usage error: no command (help goes to stderr), an unknown command or flag, invalid input, an empty or malformed `--cngx-version`, a malformed `migrate` version (`<from>` or `--to`), `--cngx-version` on a command that has no version, or a Node below 20. Usage errors and the Node floor print no json document, even under `--format json`; stdout stays empty.|
-|`3`|Internal error: the bundled snapshot could not be loaded, a command, its rendering or the start-up threw, or writing stdout failed. One `internal error` line on stderr, no stack; stdout holds the failure document under `--format json` and nothing under `md`. A failed stderr never changes the exit code: the run exits with the code its answer earned. A closed stdout pipe (EPIPE, as in `cngx list \| head -1`) is not a failure either: the run ends quietly with the code its answer earned.|
+|`3`|Internal error: the bundled snapshot could not be loaded, a command, its rendering or the start-up threw, or writing stdout failed. A query that throws while answering a snapshot (every command but `list`) is not one of them: it answers `asset-missing` with an `internal:` message and exits 1 (see Failures). One `internal error` line on stderr, no stack; stdout holds the failure document under `--format json` and nothing under `md`. A failed stderr never changes the exit code: the run exits with the code its answer earned. A closed stdout pipe (EPIPE, as in `cngx list \| head -1`) is not a failure either: the run ends quietly with the code its answer earned.|
 
 ## License
 
