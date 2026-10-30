@@ -31,11 +31,14 @@ Client setup below), then call the tools.
 |`get_theme_tokens`|`{ name: string, version?: string }`|A component's theming tokens (the CSS custom properties it exposes) and theme overview, by class name or selector.|
 |`get_di_tokens`|`{ query?: string, version?: string }`|The top-level DI injection tokens, optionally filtered by a name fragment. Omit the argument for the full list.|
 |`get_config`|`{ name: string, version?: string }`|A configuration cascade by config token name (`CNGX_SELECT_CONFIG`), stem (`select`), or best-effort component name (`CngxCombobox`): the config token, its co-located provider functions, the `with*` feature functions, and the resolution-priority ordering. Returns null when the name maps to no config token.|
-|`get_story_example`|`{ name: string }`|The component's runnable example URLs (public documentation links) and a StackBlitz URL when one exists. Playground entries are labelled source references, not openable links.|
+|`get_story_example`|`{ name: string }`|`{ ok: true, groundedVersion, result }`, `groundedVersion` always the bundled release: the component's runnable example URLs (public documentation links) and a StackBlitz URL when one exists. Playground entries are labelled source references, not openable links.|
 |`migrate_usage`|`{ from: string, to?: string }`|A structured API delta between two cngx releases: removed / renamed / signature-changed components (injectable services included), inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version.|
 
-Every read-only tool returns `null` (or an empty list) when a name resolves to
-nothing, so an agent can tell "no such symbol" from "symbol with no data".
+Every read-only tool answers `null` (or an empty list) when a name resolves to
+nothing - inside the envelope, `result` is null - so an agent can tell "no such
+symbol" from "symbol with no data". When a selector matches several entries, the
+five name tools (`get_api`, `get_slots`, `get_theme_tokens`, `get_config`,
+`get_story_example`) answer `{ ambiguous: true, candidates }` instead of picking one.
 
 Every tool is read-only, and read-only tools answer offline against the bundled
 snapshot by default. The network is reached only when a caller asks for another

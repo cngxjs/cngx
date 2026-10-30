@@ -5,6 +5,15 @@ library releases; this file tracks the MCP server package. The cngx release an
 answer grounds against is a runtime property (`cngx://provenance`,
 `groundedVersion`), not this version.
 
+## Unreleased
+
+### Breaking
+
+- `get_story_example` answers `{ ok: true, groundedVersion, result }` like the
+  other name tools instead of the bare result. Narrow on `ok === true`;
+  `groundedVersion` is the bundled release, since the tool has no `version`
+  input.
+
 ## 0.2.0 - 2026-08-27
 
 ### Breaking

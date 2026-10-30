@@ -24,6 +24,33 @@ const CLI_VERSION = (JSON.parse(readFileSync(PACKAGE_JSON, 'utf8')) as { version
 
 const bundled = loadDocsFromFile(FIXTURE);
 
+/** `cngx example CngxTreeSelect --format json` over the bundled snapshot. */
+const EXAMPLE_TREE_SELECT_JSON = `{
+  "cngxVersion": "0.1.0-rc.9",
+  "result": {
+    "name": "CngxTreeSelect",
+    "kind": "component",
+    "exampleUrls": [
+      "https://cngxjs.github.io/cngx/examples/#/forms/select/tree-select/basic-single-level-toggle",
+      "https://cngxjs.github.io/cngx/examples/#/forms/select/tree-select/cascade-children-parent-toggle-selects-the-whole-subtree",
+      "https://cngxjs.github.io/cngx/examples/#/forms/select/tree-select/custom-cngxtreeselectnode-template",
+      "https://cngxjs.github.io/cngx/examples/#/forms/select/tree-select/chip-display-parents-leaves-all",
+      "https://cngxjs.github.io/cngx/examples/#/forms/select/tree-select/custom-count-footer-and-overflow-slots",
+      "https://cngxjs.github.io/cngx/examples/#/forms/select/tree-select/touch-row-tap-expands-checkbox-selects",
+      "https://cngxjs.github.io/cngx/examples/#/forms/select/mobile-sheet/all-variants"
+    ],
+    "stackblitzUrl": null,
+    "sourceReferences": [
+      {
+        "title": "Material theme",
+        "fileRef": "./examples/material-theme/material-theme.component.ts",
+        "line": 0
+      }
+    ]
+  }
+}
+`;
+
 /** A fetch that never reaches the network: every non-bundled version is an absent asset. */
 const offlineDeps: DocsResolverDeps = {
   fetchSnapshot: async (version) => ({ ok: false, reason: 'asset-missing', message: `no asset for v${version}` }),
@@ -552,6 +579,18 @@ describe('main over the real package paths', () => {
 
     expect(code).toBe(EXIT_OK);
     expect(stdout).toBe(`${CLI_VERSION}\n`);
+  });
+
+  // Pinned from the output before get_story_example moved into the versioned envelope:
+  // the envelope is an MCP wire change, the cli document must not move.
+  it('prints the CngxTreeSelect example document unchanged', async () => {
+    let stdout = '';
+    const io: CliIo = { stdout: (text) => (stdout += text), stderr: () => undefined };
+
+    const code = await main(['example', 'CngxTreeSelect', '--format', 'json'], { dataDir: new URL('../data/', import.meta.url), packageJson: PACKAGE_JSON }, io);
+
+    expect(code).toBe(EXIT_OK);
+    expect(stdout).toBe(EXAMPLE_TREE_SELECT_JSON);
   });
 });
 

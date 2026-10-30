@@ -7,6 +7,7 @@
 
 import { z } from 'zod';
 import { defineCommand } from '../command.js';
+import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
 import type { DocPlayground } from '../data/types.js';
 import type { AmbiguousMatch, EntryKind } from '../query.js';
@@ -78,7 +79,8 @@ export const getStoryExampleCommand = defineCommand({
     name: z.string().min(1).describe('A component/directive class name or selector, e.g. "CngxSelect".'),
   },
   positional: 'name',
-  run: (ctx, { name }) => getStoryExample(ctx.bundled, name),
+  // No `version` input: example URLs track the live docs site, so the answer always grounds on the bundled release.
+  run: (ctx, { name }) => answerVersioned(ctx.resolve, undefined, (docs) => getStoryExample(docs, name)),
   found: foundUnlessAmbiguous,
   toMarkdown: (example: StoryExampleResult | AmbiguousMatch | null) => storyExampleMarkdown(example),
 });
