@@ -188,7 +188,7 @@
           "from": {
             "type": "string",
             "minLength": 1,
-            "description": "The cngx version to upgrade FROM, e.g. \"0.1.0\" (without the leading \"v\")."
+            "description": "The cngx version to upgrade FROM, e.g. \"0.1.0\"; a leading \"v\" is accepted."
           },
           "to": {
             "description": "The cngx version to upgrade TO. Defaults to the bundled snapshot version.",

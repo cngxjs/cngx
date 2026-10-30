@@ -41,6 +41,18 @@ describe('migrateUsage', () => {
     expect(delta.components.renamed).toEqual([{ from: 'CngxOldPanel', to: 'CngxNewPanel', inferred: true }]);
   });
 
+  it('accepts a leading v on `from`, as its describe says', async () => {
+    const fetchSnapshot = vi.fn<DocsResolverDeps['fetchSnapshot']>(async () => ({ ok: true, path: OLD }));
+    const deps: DocsResolverDeps = { fetchSnapshot, loadDocs: loadDocsFromFile };
+
+    const result = await migrateUsage(bundledNew, { from: 'v0.1.0', to: '0.2.0' }, createDocsResolver(bundledNew, deps));
+
+    expect(result.ok).toBe(true);
+    expect((result as UsageDelta).meta.resolvedFrom).toBe('0.1.0');
+    expect(fetchSnapshot).toHaveBeenCalledWith('0.1.0');
+    expect(migrateUsageCommand.input.from.description).toContain('a leading "v" is accepted');
+  });
+
   it.each([
     ['0.1.0', ' bad', 'to " bad" is not a release version'],
     ['01.2.3', undefined, 'from "01.2.3" is not a release version'],

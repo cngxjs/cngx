@@ -153,7 +153,7 @@ export const migrateUsageCommand = defineCommand({
     'Print the removed, renamed and signature-changed API between two cngx releases: components, inputs, outputs, slots and DI tokens. --to defaults to the bundled release; any other release is fetched through `gh`, or over HTTPS when `gh` is missing or fails.',
   cliName: 'migrate',
   input: {
-    from: z.string().trim().min(1).describe('The cngx version to upgrade FROM, e.g. "0.1.0" (without the leading "v").'),
+    from: z.string().trim().min(1).describe('The cngx version to upgrade FROM, e.g. "0.1.0"; a leading "v" is accepted.'),
     to: z
       .string()
       .trim()
