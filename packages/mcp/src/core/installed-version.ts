@@ -58,12 +58,12 @@ function anchorOf(packages: Readonly<Record<string, string>>): string | undefine
 }
 
 export function resolveInstalledCngxVersion(cwd: string, deps: InstalledVersionDeps = defaultDeps): InstalledVersion {
-  const installed = readInstalled(cwd, deps);
+  const notes: string[] = [];
+  const installed = readInstalled(cwd, deps, notes);
   if (installed) {
     return installed;
   }
 
-  const notes: string[] = [];
   const walk = findDeclared(cwd, deps, notes);
   if (walk.pnp) {
     notes.push('Yarn PnP detected, run `yarn cngx` for the installed version.');
@@ -84,9 +84,9 @@ export function resolveInstalledCngxVersion(cwd: string, deps: InstalledVersionD
   return { version: exact, source: 'declared', notes, packages: walk.declared.packages };
 }
 
-function readInstalled(cwd: string, deps: InstalledVersionDeps): InstalledVersion | null {
+/** The installed versions; a manifest it cannot read is noted in `notes`, which the declared fallback keeps. */
+function readInstalled(cwd: string, deps: InstalledVersionDeps, notes: string[]): InstalledVersion | null {
   const packages: Record<string, string> = {};
-  const notes: string[] = [];
   for (const name of CNGX_PACKAGES) {
     const manifest = deps.resolvePackageJson(cwd, name);
     if (manifest === null) {

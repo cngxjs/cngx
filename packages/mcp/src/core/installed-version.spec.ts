@@ -93,6 +93,18 @@ describe('resolveInstalledCngxVersion - installed', () => {
   });
 });
 
+describe('resolveInstalledCngxVersion - unreadable install', () => {
+  it('keeps the note for an installed manifest without a release version when it falls back', () => {
+    manifest(root, { dependencies: { '@cngx/core': '0.2.0' } });
+    manifest(join(root, 'node_modules', '@cngx', 'core'), { name: '@cngx/core' });
+
+    const result = resolveInstalledCngxVersion(root);
+
+    expect(result).toMatchObject({ version: '0.2.0', source: 'declared' });
+    expect(result.notes[0]).toBe(`skipped ${join(root, 'node_modules', '@cngx', 'core', 'package.json')}: no release version.`);
+  });
+});
+
 describe('resolveInstalledCngxVersion - declared', () => {
   it.each([
     ['0.1.0-rc.9', '0.1.0-rc.9'],
