@@ -40,6 +40,9 @@ export interface SnapshotCache {
   discard(version: string, problem: string): void;
 }
 
+/** A temp file this old belongs to a writer that crashed: no live copy takes this long. */
+const STALE_TEMP_MS = 10 * 60 * 1000;
+
 const errorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
 const isEnoent = (error: unknown) => (error as NodeJS.ErrnoException | null)?.code === 'ENOENT';
@@ -57,12 +60,40 @@ export function createSnapshotCache({
 
   const removeEntry = (version: string) => fs.rmSync(path.join(snapshots, version), { recursive: true, force: true });
 
+  /**
+   * Remove the temp files a crashed writer left in `version`'s directory, and the
+   * directory itself when that leaves it empty. A fresh temp file is a live writer's.
+   */
+  function sweepStaleTemps(version: string): void {
+    const versionDir = path.join(snapshots, version);
+    try {
+      let removed = 0;
+      const names = fs.readdirSync(versionDir);
+      for (const name of names) {
+        const file = path.join(versionDir, name);
+        if (name.endsWith('.tmp') && now().getTime() - fs.statSync(file).mtimeMs > STALE_TEMP_MS) {
+          fs.rmSync(file, { force: true });
+          removed++;
+        }
+      }
+      if (removed > 0 && removed === names.length) {
+        removeEntry(version);
+      }
+    } catch (error) {
+      // Another process swept or evicted it first.
+      if (!isEnoent(error)) {
+        throw error;
+      }
+    }
+  }
+
   function evict(): void {
     const entries: { version: string; mtimeMs: number }[] = [];
     for (const version of fs.readdirSync(snapshots)) {
       if (!isReleaseVersion(version)) {
         continue;
       }
+      sweepStaleTemps(version);
       try {
         entries.push({ version, mtimeMs: fs.statSync(fileOf(version)).mtimeMs });
       } catch (error) {

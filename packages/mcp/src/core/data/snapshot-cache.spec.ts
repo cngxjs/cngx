@@ -206,6 +206,38 @@ describe('createSnapshotCache concurrency', () => {
     expect(cache.read('0.2.0')).not.toBeNull();
   });
 
+  it('sweeps temp files a crashed writer left, keeps a fresh one and the entries', () => {
+    const crashed = join(root, 'snapshots', '0.1.0');
+    const partial = join(root, 'snapshots', '0.3.0');
+    fs.mkdirSync(crashed, { recursive: true });
+    fs.mkdirSync(partial, { recursive: true });
+    writeFileSync(join(crashed, 'documentation.json.1-a.tmp'), '{');
+    writeFileSync(join(partial, 'documentation.json.2-b.tmp'), '{');
+    const old = new Date(Date.now() - 60 * 60 * 1000);
+    utimesSync(join(crashed, 'documentation.json.1-a.tmp'), old, old);
+    const cache = createSnapshotCache({ dir: root });
+
+    cache.write('0.2.0', NEW);
+
+    expect(existsSync(crashed)).toBe(false);
+    expect(readdirSync(partial)).toEqual(['documentation.json.2-b.tmp']);
+    expect(cache.read('0.2.0')).not.toBeNull();
+  });
+
+  it('sweeps a stale temp file beside a cached entry and keeps the entry', () => {
+    const cache = createSnapshotCache({ dir: root });
+    cache.write('0.1.0', NEW);
+    const stale = join(root, 'snapshots', '0.1.0', 'documentation.json.3-c.tmp');
+    writeFileSync(stale, '{');
+    const old = new Date(Date.now() - 60 * 60 * 1000);
+    utimesSync(stale, old, old);
+
+    cache.write('0.2.0', NEW);
+
+    expect(existsSync(stale)).toBe(false);
+    expect(cache.read('0.1.0')).not.toBeNull();
+  });
+
   it('ignores an entry another process evicted between listing and stat', () => {
     const warn = vi.fn();
     const seed = createSnapshotCache({ dir: root });
