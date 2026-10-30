@@ -221,6 +221,7 @@ html { @include bridge.theme($theme); }
   it('maps the strong primary, primary text and danger text rungs (M3)', () => {
     const css = systemCss('v1');
     expect(css).toContain('--cngx-color-primary-strong: var(--mat-sys-primary)');
+    expect(css).toContain('--cngx-color-border-strong: var(--mat-sys-outline-variant)');
     expect(css).toContain('--cngx-color-primary-text: var(--mat-sys-primary)');
     expect(css).toContain('--cngx-color-danger-text: var(--mat-sys-error)');
   });
@@ -228,6 +229,7 @@ html { @include bridge.theme($theme); }
   it('maps the strong primary, primary text and danger text rungs (M2)', () => {
     const css = systemCss('v0');
     expect(css).toMatch(/--cngx-color-primary-strong: #[0-9a-f]{3,6}/);
+    expect(css).toMatch(/--cngx-color-border-strong: rgba\(/);
     expect(css).toMatch(/--cngx-color-primary-text: #[0-9a-f]{3,6}/);
     expect(css).toMatch(/--cngx-color-danger-text: #[0-9a-f]{3,6}/);
   });

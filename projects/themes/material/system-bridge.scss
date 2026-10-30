@@ -35,6 +35,9 @@
   --cngx-color-surface: var(--mat-sys-surface);
   --cngx-color-text: var(--mat-sys-on-surface);
   --cngx-color-border: var(--mat-sys-outline-variant);
+  // Same role as the border so a bare input and the outline field frame keep
+  // their Material look; the select trigger maps its own border to outline.
+  --cngx-color-border-strong: var(--mat-sys-outline-variant);
 
   // Brand and semantic colours. Material 3 has no first-class
   // success/warning/info - leave those at their cngx defaults so the
@@ -92,6 +95,7 @@
   --cngx-color-surface: #{$surface};
   --cngx-color-text: #{rgba($on-surface, 0.87)};
   --cngx-color-border: #{rgba($divider, 0.12)};
+  --cngx-color-border-strong: #{rgba($divider, 0.12)};
   --cngx-color-primary: #{$primary};
   --cngx-color-primary-strong: #{$primary};
   --cngx-color-primary-text: #{bridge.m2-primary-text($theme)};

@@ -18,7 +18,7 @@
  *   Windows-style bars to a macOS-overlay feel and matches the
  *   foundation border tone in both light and dark mode.
  * - `<input>`, `<textarea>`, `<select>` - transparent surface,
- *   hairline border, foundation typography, brand caret on text
+ *   `--cngx-color-border-strong` edge (3:1), foundation typography, brand caret on text
  *   inputs (`caret-color: var(--cngx-color-primary)`). The focus
  *   ring is owned by `cngx.reset` `:focus-visible` so layout
  *   doesn't shift between resting and focused state.
@@ -93,8 +93,9 @@
    * etc.) to override. Components that need a styled button MUST ship
    * their own `.cngx-<comp>__action` rule. */
 
-  /* Bare <input> / <textarea> / <select>: transparent + hairline, same
-   * footprint cngx inputs use. Focus ring comes from cngx.reset
+  /* Bare <input> / <textarea> / <select>: transparent + a strong-border edge
+   * (3:1 against the surface, WCAG 1.4.11), same footprint and edge colour
+   * as the cngx select trigger. Focus ring comes from cngx.reset
    * :focus-visible - using outline (not border) so the layout doesn't
    * shift between resting and focused state. The touch floor mirrors the
    * cngx select trigger: inert at 0px on a fine pointer, lifted to
@@ -104,7 +105,7 @@
   textarea,
   select {
     padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
-    border: 1px solid var(--cngx-color-border, oklch(0.88 0.005 250));
+    border: 1px solid var(--cngx-color-border-strong, oklch(0.62 0.005 250));
     border-radius: var(--cngx-radius-md, 8px);
     min-height: var(--cngx-target-min, 0px);
     background: transparent;
