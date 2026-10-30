@@ -26,8 +26,6 @@ const ICON_SVG_CLASS = 'cngx-menu-item__indicator-svg';
  * ```ts
  * providers: [{ provide: CNGX_MENU_ITEM_OWN_INDICATOR, useValue: true }]
  * ```
- *
- * @category interactive
  */
 export const CNGX_MENU_ITEM_OWN_INDICATOR = new InjectionToken<boolean>(
   'CNGX_MENU_ITEM_OWN_INDICATOR',
