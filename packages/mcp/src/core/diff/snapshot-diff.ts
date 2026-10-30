@@ -10,6 +10,7 @@
 // (certain) member rename. Newly-added symbols never break existing usage.
 
 import type { DocsIndex } from '../data/loader.js';
+import { byCodePoint } from '../data/order.js';
 import { normalizeSlots } from '../data/slots.js';
 import type { DocEntry, DocInput, DocOutput } from '../data/types.js';
 import { entryLib } from '../query.js';
@@ -153,9 +154,6 @@ function inputSignatureOf(input: DocInput): string {
 
 /** A slot description with its whitespace collapsed, so a reflowed doc comment is no change. */
 const slotDescriptionOf = (slot: { description: string }): string => slot.description.replace(/\s+/g, ' ').trim();
-
-/** Code-point order, never locale order, so the delta is byte-stable on every machine. */
-const byCodePoint = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
 const ownedOrder = (a: { owner?: string }, aName: string, b: { owner?: string }, bName: string): number =>
   byCodePoint(a.owner ?? '', b.owner ?? '') || byCodePoint(aName, bName);

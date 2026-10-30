@@ -1,12 +1,13 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { createDocsIndex, loadDocsFromFile } from '../data/loader.js';
+import { createDocsIndex, loadBundledDocs, loadDocsFromFile } from '../data/loader.js';
 import type { DocsResolverDeps } from '../data/docs-resolver.js';
 import { answerVersioned, createDocsResolver } from '../data/docs-resolver.js';
 import type { DocFunction, DocumentationJson } from '../data/types.js';
 import type { ConfigResult } from './get-config.js';
 import { getConfig as getConfigAnswer } from './get-config.js';
 import { isAmbiguous } from '../query.js';
+import { shuffled } from '../../testing/shuffle.js';
 
 /** The query answer for a name that must not be ambiguous. */
 function getConfig(...args: Parameters<typeof getConfigAnswer>): ConfigResult | null {
@@ -245,5 +246,56 @@ describe('get_config version wiring', () => {
     const answer = await answerVersioned(createDocsResolver(bundled, deps), '999.0.0', (resolved) => getConfig(resolved, 'CNGX_FOO_CONFIG'));
 
     expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'no release' });
+  });
+});
+
+describe('get_config over an ambiguous component selector', () => {
+  it('resolves cngxRouterSync in the bundled snapshot to the one token both candidates map to', () => {
+    const bundled = loadBundledDocs(fileURLToPath(new URL('../../../data/', import.meta.url)));
+
+    expect(getConfig(bundled, 'cngxRouterSync')).toMatchObject({ token: 'CNGX_BREADCRUMB_CONFIG', resolvedVia: 'component' });
+  });
+
+  const syncPair = (tokens: DocumentationJson['tokens'], second = 'projects/ui/b/b-sync.directive.ts'): DocumentationJson => ({
+    schemaVersion: 2,
+    components: [],
+    directives: [
+      { name: 'CngxSyncA', selector: 'cngx-a[cngxSync]', file: 'projects/ui/a/a-sync.directive.ts' },
+      { name: 'CngxSyncB', selector: 'cngx-b[cngxSync]', file: second },
+    ],
+    tokens,
+    miscellaneous: { functions: [] },
+  });
+
+  it('keeps the ambiguity when the candidates map to different tokens', () => {
+    const answer = getConfigAnswer(
+      createDocsIndex(
+        syncPair([
+          { name: 'CNGX_A_CONFIG', file: 'projects/ui/a/a-config.ts' },
+          { name: 'CNGX_B_CONFIG', file: 'projects/ui/b/b-config.ts' },
+        ]),
+      ),
+      'cngxSync',
+    );
+
+    expect(isAmbiguous(answer)).toBe(true);
+  });
+
+  it('keeps the ambiguity when one candidate maps to no token', () => {
+    const answer = getConfigAnswer(createDocsIndex(syncPair([{ name: 'CNGX_A_CONFIG', file: 'projects/ui/a/a-config.ts' }])), 'cngxSync');
+
+    expect(isAmbiguous(answer)).toBe(true);
+  });
+
+  it('breaks a tie of equal-length tokens on one root by code point, whatever the token order', () => {
+    const tokens = [
+      { name: 'CNGX_YB_CONFIG', file: 'projects/ui/a/yb-config.ts' },
+      { name: 'CNGX_XA_CONFIG', file: 'projects/ui/a/xa-config.ts' },
+    ];
+    const answers = [tokens, [...tokens].reverse(), shuffled(tokens, 1), shuffled(tokens, 2)].map((order) =>
+      getConfig(createDocsIndex(syncPair(order, 'projects/ui/a/b-sync.directive.ts')), 'cngxSync'),
+    );
+
+    expect(answers.map((answer) => answer?.token)).toEqual(Array(4).fill('CNGX_XA_CONFIG'));
   });
 });

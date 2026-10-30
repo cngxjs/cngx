@@ -15,9 +15,10 @@ import { defineCommand } from '../command.js';
 import { versionInput } from './version-input.js';
 import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
+import { byCodePoint } from '../data/order.js';
 import type { DocFunction, DocToken } from '../data/types.js';
 import type { AmbiguousMatch } from '../query.js';
-import { foundUnlessAmbiguous, isAmbiguous, resolveEntry } from '../query.js';
+import { allEntries, foundUnlessAmbiguous, isAmbiguous, resolveEntry } from '../query.js';
 import { ambiguousMarkdown, blocks, bullets, code, section, table } from './markdown.js';
 
 /** How the input mapped to the resolved config token. */
@@ -127,24 +128,44 @@ function resolveConfigToken(
 // feature directory is the nearest ancestor of the component's file. Deepest
 // match wins; the shortest token name breaks a tie so the select family's shared
 // directory (three tokens, one feature root) resolves to the generic
-// CNGX_SELECT_CONFIG rather than its action/reorderable neighbours. Absence of
-// any ancestor config token returns null - this never forces a wrong cascade. An
-// ambiguous selector is passed through so the caller can list the candidates.
+// CNGX_SELECT_CONFIG rather than its action/reorderable neighbours, and code-point
+// order breaks a tie of equal-length names so token order never decides. Absence
+// of any ancestor config token returns null - this never forces a wrong cascade.
+function nearestConfigToken(tokens: DocToken[], file: string): DocToken | null {
+  const componentDir = dirOf(file);
+  const candidates = tokens
+    .filter((token): token is DocToken & { file: string } => token.file !== undefined)
+    .map((token) => ({ token, root: featureDir(token.file) }))
+    .filter(({ root }) => root !== '' && isAncestorOrEqual(root, componentDir))
+    .sort(
+      (a, b) =>
+        b.root.length - a.root.length || a.token.name.length - b.token.name.length || byCodePoint(a.token.name, b.token.name),
+    );
+  return candidates[0]?.token ?? null;
+}
+
+// An ambiguous selector still has one answer when every candidate maps to the
+// same config token (both breadcrumb sync directives sit under the breadcrumb
+// config); only candidates that disagree, or one without a token, keep the ambiguity
+// so the caller can list them.
 function resolveComponentToken(docs: DocsIndex, tokens: DocToken[], name: string): DocToken | AmbiguousMatch | null {
   const match = resolveEntry(docs, name);
   if (isAmbiguous(match)) {
+    const entries = allEntries(docs);
+    const mapped = match.candidates.map((candidate) => {
+      const file = entries.find(({ entry, kind }) => entry.name === candidate.name && kind === candidate.kind)?.entry.file;
+      return file ? nearestConfigToken(tokens, file) : null;
+    });
+    const [first] = mapped;
+    if (first && mapped.every((token) => token?.name === first.name)) {
+      return first;
+    }
     return match;
   }
   if (!match?.entry.file) {
     return null;
   }
-  const componentDir = dirOf(match.entry.file);
-  const candidates = tokens
-    .filter((token): token is DocToken & { file: string } => token.file !== undefined)
-    .map((token) => ({ token, root: featureDir(token.file) }))
-    .filter(({ root }) => root !== '' && isAncestorOrEqual(root, componentDir))
-    .sort((a, b) => b.root.length - a.root.length || a.token.name.length - b.token.name.length);
-  return candidates[0]?.token ?? null;
+  return nearestConfigToken(tokens, match.entry.file);
 }
 
 /** Providers/features co-located with the token's file, falling back to its directory. */
