@@ -21,13 +21,6 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
 
-    env:
-      # Public URL where the examples app will be served from after this
-      # deploy. Consumed by scripts/backport-example-urls.mjs so the
-      # <example-url> tags rendered into the compodocx Examples tab point at
-      # the live production iframes (not localhost:4200).
-      EXAMPLES_BASE_URL: https://cngxjs.github.io/cngx/examples
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,18 +34,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Regenerate examples + backport <example-url> tags (prod URLs)
-        run: |
-          node scripts/examples-gen/index.mjs
-          node scripts/backport-example-urls.mjs
+      - name: Regenerate examples
+        run: node scripts/examples-gen/index.mjs
 
+      # The relative <example-url> tags resolve against `exampleUrlBase` in
+      # .compodocrc.json (the examples app this workflow publishes).
       - name: Build Docs
         run: npm run docs
 
       # Publish the llm-md export as static text at the site root:
       # /cngx/llms.txt (generated index) + /cngx/llms-full.txt (full dump).
-      # Runs after Build Docs because `npm run docs` starts with `rm -rf docs`,
-      # and after the URL backport so example links in the dump are prod URLs.
+      # Runs after Build Docs because `npm run docs` starts with `rm -rf docs`.
       - name: Publish llms.txt
         run: |
           npm run docs:llm
