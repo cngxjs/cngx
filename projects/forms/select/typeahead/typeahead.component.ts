@@ -80,6 +80,7 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
+import { isEmptyScalar } from '../shared/internal/compare';
 import { handlePageJumpKey } from '../shared/internal/page-jump-handler';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
@@ -583,7 +584,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     },
   });
   /** @internal */ readonly focused = this.hostFocus.focusedWithin;
-  readonly empty = computed<boolean>(() => this.value() === undefined);
+  readonly empty = computed<boolean>(() => isEmptyScalar(this.value()));
 
   /** @internal Folded substring match of the option label in the reading locale. */
   private readonly labelMatch = createListboxLabelMatch(injectLocale());
@@ -894,7 +895,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   protected readonly isCommittingOption = this.core.panelHostAdapter.isCommittingOption;
 
   protected isEmpty(): boolean {
-    return this.value() === undefined;
+    return isEmptyScalar(this.value());
   }
 
   constructor() {
@@ -936,7 +937,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     createFieldSync<T | undefined>({
       componentValue: this.value,
       valueEquals: (a, b) => (this.compareWith() as CngxSelectCompareFn<unknown>)(a, b),
-      coerceFromField: (x) => x as T | undefined,
+      coerceFromField: (x) => (isEmptyScalar(x) ? undefined : (x as T)),
     });
 
     // Auto-open on typing. `autoOpenGate` blocks during library-authored
@@ -1012,7 +1013,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   protected readonly clearCallback: () => void = () => {
     this.hostFocus.refocusOwnerBeforeRemoval();
     const current = this.value();
-    if (current === undefined) {
+    if (isEmptyScalar(current)) {
       return;
     }
     dispatchScalarClear({

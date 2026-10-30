@@ -126,11 +126,8 @@ describeCommitContract(SELECT, (c) => {
 });
 
 describeCommitContract(TYPEAHEAD, (c) => {
-  it.fails('A3/B2: field null reads as empty and never reaches displayWith', c.fieldNullIsEmpty);
-  it.fails(
-    "A3/B2: field '' reads as empty and never reaches displayWith",
-    c.fieldEmptyStringIsEmpty,
-  );
+  it('A3/B2: field null reads as empty and never reaches displayWith', c.fieldNullIsEmpty);
+  it("A3/B2: field '' reads as empty and never reaches displayWith", c.fieldEmptyStringIsEmpty);
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
   it('A15: Retry after a failed clear replays the clear', c.retryClear);
   it.fails(
@@ -147,11 +144,8 @@ describeCommitContract(TYPEAHEAD, (c) => {
 });
 
 describeCommitContract(ACTION_SELECT, (c) => {
-  it.fails('A3/B2: field null reads as empty and never reaches displayWith', c.fieldNullIsEmpty);
-  it.fails(
-    "A3/B2: field '' reads as empty and never reaches displayWith",
-    c.fieldEmptyStringIsEmpty,
-  );
+  it('A3/B2: field null reads as empty and never reaches displayWith', c.fieldNullIsEmpty);
+  it("A3/B2: field '' reads as empty and never reaches displayWith", c.fieldEmptyStringIsEmpty);
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
   it('A15: Retry after a failed clear replays the clear', c.retryClear);
   it.fails(
@@ -169,10 +163,7 @@ describeCommitContract(ACTION_SELECT, (c) => {
 
 describeCommitContract(SELECT_SHELL, (c) => {
   it('A3/B2: field null reads as empty and never reaches displayWith', c.fieldNullIsEmpty);
-  it.fails(
-    "A3/B2: field '' reads as empty and never reaches displayWith",
-    c.fieldEmptyStringIsEmpty,
-  );
+  it("A3/B2: field '' reads as empty and never reaches displayWith", c.fieldEmptyStringIsEmpty);
   it('A1/A11: Retry after a failed select replays the select', c.retrySelect);
   it('A15: Retry after a failed clear replays the clear', c.retryClear);
   it.fails(

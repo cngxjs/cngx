@@ -79,6 +79,7 @@ import {
 } from '../shared/config';
 import { type CngxSelectOptionDef, type CngxSelectOptionsInput } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
+import { isEmptyScalar } from '../shared/internal/compare';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
@@ -883,8 +884,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   // `''` counts as no selection: Signal Forms start a string field at '', and
   // the trigger must show that as the placeholder, styled as one.
   protected isEmpty(): boolean {
-    const v = this.value();
-    return v === undefined || v === null || v === '';
+    return isEmptyScalar(this.value());
   }
 
   constructor() {
@@ -993,7 +993,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly clearCallback: () => void = () => {
     this.hostFocus.refocusOwnerBeforeRemoval();
     const current = this.value();
-    if (current === undefined || current === null) {
+    if (isEmptyScalar(current)) {
       return;
     }
     dispatchScalarClear({

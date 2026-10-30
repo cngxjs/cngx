@@ -106,6 +106,7 @@ import {
 } from '../declarative/select-search-host';
 import { CngxSelectSearch } from '../declarative/select-search.component';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
+import { isEmptyScalar } from '../shared/internal/compare';
 import { resolvePageJumpSpace } from '../shared/internal/page-jump-handler';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
@@ -679,7 +680,7 @@ export class CngxSelectShell<T = unknown>
   private readonly handleClearAction = (): void => {
     this.hostFocus.refocusOwnerBeforeRemoval();
     const current = this.value();
-    if (current === undefined || current === null) {
+    if (isEmptyScalar(current)) {
       return;
     }
     dispatchScalarClear({
@@ -735,10 +736,7 @@ export class CngxSelectShell<T = unknown>
   });
   readonly focused = this.hostFocus.focusedWithin;
 
-  readonly empty = computed<boolean>(() => {
-    const v = this.value();
-    return v === undefined || v === null;
-  });
+  readonly empty = computed<boolean>(() => isEmptyScalar(this.value()));
 
   protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,

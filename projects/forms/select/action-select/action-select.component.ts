@@ -108,6 +108,7 @@ import { CNGX_SELECT_COMMIT_CONTROLLER_FACTORY } from '../shared/commit-controll
 import { mergeCommitState } from '../shared/internal/merged-commit-state';
 import { createActionTriggerInput } from '../shared/internal/action-trigger-input';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
+import { isEmptyScalar } from '../shared/internal/compare';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
 import {
@@ -634,7 +635,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     suppressOpenOnFocus: (active) => this.sheetWiring.handleTriggerRefocus(active),
   });
   /** @internal */ readonly focused = this.hostFocus.focusedWithin;
-  readonly empty = computed<boolean>(() => this.value() === undefined);
+  readonly empty = computed<boolean>(() => isEmptyScalar(this.value()));
 
   /** @internal Folded substring match of the option label in the reading locale. */
   private readonly labelMatch = createListboxLabelMatch(injectLocale());
@@ -1021,7 +1022,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly isCommittingOption = this.core.panelHostAdapter.isCommittingOption;
 
   protected isEmpty(): boolean {
-    return this.value() === undefined;
+    return isEmptyScalar(this.value());
   }
 
   constructor() {
@@ -1062,7 +1063,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     createFieldSync<T | undefined>({
       componentValue: this.value,
       valueEquals: (a, b) => (this.compareWith() as CngxSelectCompareFn<unknown>)(a, b),
-      coerceFromField: (x) => x as T | undefined,
+      coerceFromField: (x) => (isEmptyScalar(x) ? undefined : (x as T)),
     });
 
     // Auto-open on typing. Same gating as CngxTypeahead - display-binding
@@ -1160,7 +1161,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly clearCallback: () => void = () => {
     this.hostFocus.refocusOwnerBeforeRemoval();
     const current = this.value();
-    if (current === undefined) {
+    if (isEmptyScalar(current)) {
       return;
     }
     dispatchScalarClear({

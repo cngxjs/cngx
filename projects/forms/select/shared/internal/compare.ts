@@ -24,3 +24,14 @@ export function sameArrayContents<T>(
   }
   return true;
 }
+
+/**
+ * Whether a scalar select value counts as no selection. `null` arrives from
+ * nullable Reactive Forms controls and Signal Forms fields, `''` from a Signal
+ * Forms string field at its start value; both read like `undefined`.
+ *
+ * @internal
+ */
+export function isEmptyScalar(v: unknown): v is undefined | null | '' {
+  return v === undefined || v === null || v === '';
+}
