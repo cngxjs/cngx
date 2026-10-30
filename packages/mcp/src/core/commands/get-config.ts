@@ -11,6 +11,7 @@
 // forms/select/shared/ directory (each surface owns its own token file).
 
 import { z } from 'zod';
+import type { RenderOptions } from '../command.js';
 import { defineCommand } from '../command.js';
 import { versionInput } from './version-input.js';
 import { answerVersioned } from '../data/docs-resolver.js';
@@ -224,7 +225,8 @@ export function getConfig(docs: DocsIndex, name: string): ConfigResult | Ambiguo
 }
 
 /** The cascade: token, providers, features and the resolution order. */
-export function configMarkdown(config: ConfigResult | AmbiguousMatch | null): string {
+/** `compact` drops the resolution-priority prose. */
+export function configMarkdown(config: ConfigResult | AmbiguousMatch | null, opts: RenderOptions = {}): string {
   if (!config) {
     return 'No config token for that name.\n';
   }
@@ -237,7 +239,8 @@ export function configMarkdown(config: ConfigResult | AmbiguousMatch | null): st
     `Resolved via: ${config.resolvedVia}`,
     section('Providers', bullets(config.providers.map((p) => code(p))), 'None.'),
     section('Features', features.length ? table(['Function', 'Returns'], features) : '', 'None.'),
-    section('Resolution priority', config.resolutionPriority.map((step, i) => `${i + 1}. ${step}`).join('\n'), 'None.'),
+    opts.compact !== true &&
+      section('Resolution priority', config.resolutionPriority.map((step, i) => `${i + 1}. ${step}`).join('\n'), 'None.'),
   );
 }
 
@@ -268,5 +271,5 @@ export const getConfigCommand = defineCommand({
   cliFlags: { version: 'cngx-version' },
   run: (ctx, { name, version }) => answerVersioned(ctx.resolve, version, (resolved) => getConfig(resolved, name)),
   found: foundUnlessAmbiguous,
-  toMarkdown: (config: ConfigResult | AmbiguousMatch | null) => configMarkdown(config),
+  toMarkdown: (config: ConfigResult | AmbiguousMatch | null, opts) => configMarkdown(config, opts),
 });

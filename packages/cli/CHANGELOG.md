@@ -29,3 +29,7 @@ grounds against is a property of the bundled snapshot, not this version.
   most; a second run for the same release does not fetch.
 - `--offline` on the same commands: answer from the disk cache or the bundled
   snapshot, never fetch; an uncached explicit `--cngx-version` exits 1.
+- `api`, `slots`, `theme`, `config` and `example` take several names (md: one
+  block per name; json: a `result` array, `null` per missing name; exit 1 when
+  any name is missing), `--from <file>` (the names a file imports from
+  `@cngx/*`) and `--compact` (markdown without descriptions).

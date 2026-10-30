@@ -22,7 +22,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import type { ParseArgsConfig } from 'node:util';
 import { z } from 'zod';
-import type { CngxCommand, CommandContext } from './core/registry.js';
+import type { CngxCommand, CommandContext, RenderOptions } from './core/registry.js';
 import { COMMANDS, isFound, unwrapAnswer } from './core/registry.js';
 import type { DocsResolver } from './core/data/docs-resolver.js';
 import { createDocsResolver } from './core/data/docs-resolver.js';
@@ -31,6 +31,7 @@ import { loadBundledDocs, loadDocsFromFile } from './core/data/loader.js';
 import { createSnapshotCache, resolveCacheDir } from './core/data/snapshot-cache.js';
 import type { InstalledVersion } from './core/installed-version.js';
 import { resolveInstalledCngxVersion } from './core/installed-version.js';
+import { readCngxNames } from './from-file.js';
 
 export const EXIT_OK = 0;
 export const EXIT_NOT_FOUND = 1;
@@ -138,6 +139,16 @@ const VERSION_FLAG_HELP =
 
 const OFFLINE_HELP = 'Never fetch: answer from the disk cache, else the bundled snapshot.';
 
+const FROM_FLAG = 'from';
+
+/**
+ * Whether a command looks up names (`api`, `slots`, `theme`, `config`,
+ * `example`): it then takes several names, `--from <file>` and `--compact`.
+ */
+export function isNameTaking(def: CngxCommand): boolean {
+  return def.positional === 'name';
+}
+
 const unwrapOptional = (schema: z.ZodType): z.ZodType => (schema instanceof z.ZodOptional ? unwrapOptional(schema.unwrap() as z.ZodType) : schema);
 
 const isOptional = (schema: z.ZodType): boolean => schema.safeParse(undefined).success;
@@ -152,6 +163,10 @@ function commandOptions(def: CngxCommand): Options {
   }
   if (versionField(def) !== undefined) {
     options.offline = { type: 'boolean' };
+  }
+  if (isNameTaking(def)) {
+    options[FROM_FLAG] = { type: 'string' };
+    options.compact = { type: 'boolean' };
   }
   return options;
 }
@@ -170,8 +185,12 @@ function commandUsage(def: CngxCommand): string {
   const parts = [`cngx ${def.cliName}`];
   for (const [field, schema] of Object.entries(def.input)) {
     const optional = isOptional(schema);
-    const token = field === def.positional ? `<${field}>` : `--${flagName(def, field)}${valueHint(schema) ? ` ${valueHint(schema)}` : ''}`;
+    const name = isNameTaking(def) && field === def.positional ? `<${field}>...` : `<${field}>`;
+    const token = field === def.positional ? name : `--${flagName(def, field)}${valueHint(schema) ? ` ${valueHint(schema)}` : ''}`;
     parts.push(optional ? `[${token}]` : token);
+  }
+  if (isNameTaking(def)) {
+    parts.push(`[--${FROM_FLAG} <file>]`, '[--compact]');
   }
   if (versionField(def) !== undefined) {
     parts.push('[--offline]');
@@ -190,6 +209,10 @@ export function commandHelp(def: CngxCommand): string {
     const text = field === versionField(def) ? VERSION_FLAG_HELP : describe(schema);
     return [name, `${text}${isOptional(schema) ? '' : ' Required.'}`] as const;
   });
+  if (isNameTaking(def)) {
+    rows.push([`--${FROM_FLAG} <file>`, 'Also answer for every name the file imports from @cngx/*.']);
+    rows.push(['--compact', 'Shorter markdown: names and types without descriptions.']);
+  }
   if (versionField(def) !== undefined) {
     rows.push(['--offline', OFFLINE_HELP]);
   }
@@ -244,7 +267,7 @@ export function commandFlags(def: CngxCommand): string[] {
 
 /** The flags the adapter adds to a command beyond its inputs. */
 export function adapterFlags(def: CngxCommand): string[] {
-  return versionField(def) === undefined ? [] : ['--offline'];
+  return [...(versionField(def) === undefined ? [] : ['--offline']), ...(isNameTaking(def) ? [`--${FROM_FLAG}`, '--compact'] : [])];
 }
 
 /** Every flag the CLI accepts, long and short, across the globals and all commands. */
@@ -376,33 +399,53 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
     return usageError(io, `--cngx-version must be a release version like 0.1.0 or 0.2.0-rc.1: ${normalized.message}`, hint);
   }
 
-  const maxPositionals = def.positional === undefined ? 0 : 1;
+  const takesNames = isNameTaking(def);
+  const maxPositionals = def.positional === undefined ? 0 : takesNames ? Infinity : 1;
   if (positionals.length > maxPositionals) {
     return usageError(io, `unexpected argument "${positionals[maxPositionals]}".`, hint);
   }
 
-  const input: Record<string, unknown> = {};
+  const base: Record<string, unknown> = {};
   for (const field of Object.keys(def.input)) {
     const value = values[flagName(def, field)];
     if (value !== undefined) {
-      input[field] = value;
+      base[field] = value;
     }
   }
-  if (def.positional !== undefined && positionals.length === 1) {
-    if (input[def.positional] !== undefined) {
-      return usageError(io, `<${def.positional}> given twice.`, hint);
+  const named = [...positionals];
+  const fromFile = values[FROM_FLAG];
+  if (takesNames && typeof fromFile === 'string') {
+    try {
+      named.push(...readCngxNames(fromFile));
+    } catch (error) {
+      return usageError(io, `--${FROM_FLAG}: cannot read ${fromFile}: ${errorMessage(error)}`, hint);
     }
-    input[def.positional] = positionals[0];
+    if (named.length === 0) {
+      io.stderr(`cngx ${def.cliName}: no named @cngx imports in ${fromFile}.\n`);
+      if (format === 'json') {
+        io.stdout(`${JSON.stringify({ cngxVersion: null, result: [] }, null, 2)}\n`);
+      }
+      return EXIT_NOT_FOUND;
+    }
   }
+  const names = [...new Set(named)];
+  if (def.positional !== undefined && names.length > 0 && base[def.positional] !== undefined) {
+    return usageError(io, `<${def.positional}> given twice.`, hint);
+  }
+  const rawInputs = def.positional === undefined || names.length === 0 ? [base] : names.map((name) => ({ ...base, [def.positional!]: name }));
 
-  const validated = z.object(def.input).strict().safeParse(input);
-  if (!validated.success) {
-    const issues = validated.error.issues.map((issue) => {
-      const field = String(issue.path[0] ?? '');
-      const label = field === def.positional ? `<${field}>` : `--${flagName(def, field)}`;
-      return issue.code === 'invalid_type' && input[field] === undefined ? `${label} is required` : `${label}: ${issue.message}`;
-    });
-    return usageError(io, issues.join('; '), hint);
+  const inputs: Record<string, unknown>[] = [];
+  for (const input of rawInputs) {
+    const validated = z.object(def.input).strict().safeParse(input);
+    if (!validated.success) {
+      const issues = validated.error.issues.map((issue) => {
+        const field = String(issue.path[0] ?? '');
+        const label = field === def.positional ? `<${field}>` : `--${flagName(def, field)}`;
+        return issue.code === 'invalid_type' && input[field] === undefined ? `${label} is required` : `${label}: ${issue.message}`;
+      });
+      return usageError(io, issues.join('; '), hint);
+    }
+    inputs.push(validated.data as Record<string, unknown>);
   }
 
   const offline = values.offline === true;
@@ -415,7 +458,7 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
   }
 
   const field = versionField(def);
-  if (field !== undefined && validated.data[field] === undefined && env.detectVersion) {
+  if (field !== undefined && inputs[0][field] === undefined && env.detectVersion) {
     let detected: InstalledVersion;
     try {
       detected = env.detectVersion();
@@ -424,14 +467,16 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
     }
     const pinnedTo = pinDetected(detected, context, offline, io);
     if (pinnedTo !== null) {
-      validated.data[field] = pinnedTo.version;
+      for (const input of inputs) {
+        input[field] = pinnedTo.version;
+      }
       context = pinnedTo.context;
     }
   }
 
   let rendered: Rendered;
   try {
-    rendered = await answer(def, context, validated.data, format, hint);
+    rendered = await answer(def, context, inputs, format, hint, { compact: values.compact === true });
   } catch (error) {
     return internalError(io, `cngx ${def.cliName}`, error, format);
   }
@@ -490,37 +535,61 @@ interface Rendered {
   readonly exitCode: number;
 }
 
-/** Run `def` and render its answer; any throw here is an internal error of the caller's. */
+/**
+ * Run `def` once per input and render the answers; any throw here is an internal
+ * error of the caller's. One input keeps the single-answer shapes. Several inputs
+ * (several names) render one block per name in md and a `result` array in json;
+ * a name that is not found still leaves the found ones printed and exits 1. A
+ * resolve failure is per release, not per name, so the first one ends the run.
+ */
 async function answer(
   def: CngxCommand,
   context: CommandContext,
-  input: unknown,
+  inputs: readonly Record<string, unknown>[],
   format: OutputFormat,
   hint: string,
+  opts: RenderOptions,
 ): Promise<Rendered> {
-  const result = unwrapAnswer(await def.run(context, input as never));
-  // A malformed version is the caller's input, rejected before any fetch: a usage
-  // error like a malformed --cngx-version, with no json document under either format.
-  if (!result.ok && result.reason === 'invalid-version') {
-    return { stdout: '', stderr: usageText(result.message, hint), exitCode: EXIT_USAGE };
-  }
-  if (!result.ok) {
-    return {
-      stdout: format === 'json' ? failureDocument(result.reason, result.message) : '',
-      stderr: `cngx ${def.cliName}: ${result.reason}: ${result.message}\n`,
-      exitCode: EXIT_NOT_FOUND,
-    };
+  const payloads: unknown[] = [];
+  let groundedVersion: string | null | undefined;
+  for (const input of inputs) {
+    const result = unwrapAnswer(await def.run(context, input as never));
+    // A malformed version is the caller's input, rejected before any fetch: a usage
+    // error like a malformed --cngx-version, with no json document under either format.
+    if (!result.ok && result.reason === 'invalid-version') {
+      return { stdout: '', stderr: usageText(result.message, hint), exitCode: EXIT_USAGE };
+    }
+    if (!result.ok) {
+      return {
+        stdout: format === 'json' ? failureDocument(result.reason, result.message) : '',
+        stderr: `cngx ${def.cliName}: ${result.reason}: ${result.message}\n`,
+        exitCode: EXIT_NOT_FOUND,
+      };
+    }
+    payloads.push(result.payload);
+    groundedVersion ??= result.groundedVersion;
   }
 
   // Versioned commands report the release they grounded against, a migration its
   // target; the others answer from the bundled snapshot.
-  const cngxVersion =
-    result.groundedVersion ?? def.answeredVersion?.(result.payload) ?? context.bundled.meta.cngxVersion;
+  const cngxVersion = groundedVersion ?? def.answeredVersion?.(payloads[0]) ?? context.bundled.meta.cngxVersion;
+  const missing = inputs.filter((_, i) => !isFound(def, payloads[i]));
+  const exitCode = missing.length === 0 ? EXIT_OK : EXIT_NOT_FOUND;
+  const header = `> cngx ${cngxVersion ?? 'unknown'}\n\n`;
+  if (inputs.length === 1) {
+    const stdout =
+      format === 'json'
+        ? `${JSON.stringify({ cngxVersion, result: payloads[0] ?? null }, null, 2)}\n`
+        : `${header}${def.toMarkdown(payloads[0], opts)}`;
+    return { stdout, stderr: '', exitCode };
+  }
   const stdout =
     format === 'json'
-      ? `${JSON.stringify({ cngxVersion, result: result.payload ?? null }, null, 2)}\n`
-      : `> cngx ${cngxVersion ?? 'unknown'}\n\n${def.toMarkdown(result.payload, {})}`;
-  return { stdout, stderr: '', exitCode: isFound(def, result.payload) ? EXIT_OK : EXIT_NOT_FOUND };
+      ? `${JSON.stringify({ cngxVersion, result: payloads.map((payload) => payload ?? null) }, null, 2)}\n`
+      : `${header}${payloads.map((payload) => def.toMarkdown(payload, opts)).join('\n')}`;
+  const label = (input: Record<string, unknown>) => String(input[def.positional!]);
+  const stderr = missing.length === 0 ? '' : `cngx ${def.cliName}: not found: ${missing.map(label).join(', ')}\n`;
+  return { stdout, stderr, exitCode };
 }
 
 /** Package-relative locations the entry module resolves against its own URL. */

@@ -317,3 +317,65 @@ describe('markdown helpers', () => {
     expect(toPlainText('a &#x41; &#66; b')).toBe('a A B b');
   });
 });
+
+describe('compact rendering', () => {
+  async function both(cliName: string, name: string) {
+    const def = byCli(cliName);
+    const answer = unwrapAnswer(await def.run(ctx, { name } as never));
+    if (!answer.ok) {
+      throw new Error(answer.message);
+    }
+    return { full: def.toMarkdown(answer.payload, {}), compact: def.toMarkdown(answer.payload, { compact: true }) };
+  }
+
+  it('api drops the description prose and columns, keeps names and types', async () => {
+    const { full, compact } = await both('api', 'CngxSelect');
+
+    expect(full).toContain('|Name|Type|Default|Description|');
+    expect(compact).toContain('|Name|Type|Default|');
+    expect(compact).not.toContain('Description|');
+    expect(compact).toContain('# CngxSelect');
+    expect(compact.length).toBeLessThan(full.length);
+  });
+
+  it('slots lists the slot names without descriptions', async () => {
+    const { full, compact } = await both('slots', 'CngxSelect');
+
+    expect(full).toContain('|Slot|Description|');
+    expect(compact).toContain('|Slot|');
+    expect(compact).not.toContain('|Description|');
+    expect(compact).toContain('|`cngxSelectCaret`|');
+  });
+
+  it('theme drops the overview and the description column', async () => {
+    const { full, compact } = await both('theme', 'CngxSelect');
+
+    expect(full).toContain('|Description|');
+    expect(compact).toContain('|Token|Kind|Type|Default|');
+    expect(compact).not.toContain('|Description|');
+    expect(compact).toContain('`--cngx-select-panel-border`');
+  });
+
+  it('config drops the resolution priority', async () => {
+    const { full, compact } = await both('config', 'CNGX_SELECT_CONFIG');
+
+    expect(full).toContain('## Resolution priority');
+    expect(compact).not.toContain('## Resolution priority');
+    expect(compact).toContain('# CNGX_SELECT_CONFIG');
+  });
+
+  it('example keeps the links and drops the repo-internal source references', async () => {
+    const { full, compact } = await both('example', 'CngxSelect');
+
+    expect(compact).toContain('# CngxSelect examples');
+    expect(compact).not.toContain('Source references');
+    expect(compact.length).toBeLessThanOrEqual(full.length);
+  });
+
+  it('renders a miss the same in both views', async () => {
+    for (const cliName of ['api', 'slots', 'theme', 'config', 'example']) {
+      const { full, compact } = await both(cliName, 'NoSuchThing');
+      expect(compact).toBe(full);
+    }
+  });
+});

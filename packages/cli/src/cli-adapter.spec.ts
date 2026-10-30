@@ -168,11 +168,11 @@ describe('usage errors', () => {
     expect(run.stderr).toContain('<name> is required');
   });
 
-  it('rejects a second positional', async () => {
-    const run = await cli('api', 'CngxSelect', 'CngxChip');
+  it('rejects a second positional on a command that takes one query', async () => {
+    const run = await cli('find', 'select', 'chip');
 
     expect(run.code).toBe(EXIT_USAGE);
-    expect(run.stderr).toContain('CngxChip');
+    expect(run.stderr).toContain('chip');
   });
 
   it('rejects an unknown command, listing the commands', async () => {
@@ -721,7 +721,7 @@ describe('generated help', () => {
     const api = COMMANDS.find((def) => def.cliName === 'api');
 
     expect(api).toBeDefined();
-    expect(commandHelp(api!)).toContain('Usage: cngx api <name> [--cngx-version <value>] [--offline] [--format md|json]');
+    expect(commandHelp(api!)).toContain('Usage: cngx api <name>... [--cngx-version <value>] [--from <file>] [--compact] [--offline] [--format md|json]');
   });
 
   it('describes the version flag with the CLI default, not the MCP one', () => {
@@ -873,5 +873,100 @@ describe('installed-version pinning', () => {
 
     expect(run.code).toBe(EXIT_USAGE);
     expect(run.stderr).toContain('does not take --offline');
+  });
+});
+
+// Source of expected values: the "Several names", "--from errors" and "--compact"
+// decision rows of cngx-cli-core-phase-4-plan.md, over the sample fixture.
+describe('several names, --from and --compact', () => {
+  const sourceFile = (content: string) => {
+    const path = join(mkdtempSync(join(tmpdir(), 'cngx-from-')), 'app.component.ts');
+    writeFileSync(path, content);
+    return path;
+  };
+
+  it('keeps the single-name output byte for byte', async () => {
+    const single = await cli('api', 'CngxSelect');
+    const json = await cli('api', 'CngxSelect', '--format=json');
+
+    expect(single.stdout).toBe(`> cngx 0.1.0-rc.6\n\n${COMMANDS.find((d) => d.cliName === 'api')!.toMarkdown(JSON.parse(json.stdout).result, {})}`);
+    expect(Object.keys(JSON.parse(json.stdout).result)).toContain('name');
+  });
+
+  it('answers two names in md: one header, one block per name', async () => {
+    const run = await cli('slots', 'CngxSelect', 'CngxSelect', 'CngxAccordionItem');
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(run.stdout.match(/^> cngx /gm)).toHaveLength(1);
+    expect(run.stdout.match(/^# CngxSelect slots$/gm)).toHaveLength(1);
+    expect(run.stdout).toContain('# CngxAccordionItem slots');
+  });
+
+  it('answers two names in json as a result array in name order', async () => {
+    const run = await cli('api', 'CngxSelect', 'CngxRipple', '--format=json');
+    const document = JSON.parse(run.stdout) as { cngxVersion: string; result: { name: string }[] };
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(document.cngxVersion).toBe('0.1.0-rc.6');
+    expect(document.result.map((entry) => entry.name)).toEqual(['CngxSelect', 'CngxRipple']);
+  });
+
+  it('prints the found names, exits 1 and lists the missing ones on stderr', async () => {
+    const run = await cli('api', 'CngxSelect', 'NoSuchThing', '--format=json');
+
+    expect(run.code).toBe(EXIT_NOT_FOUND);
+    expect(JSON.parse(run.stdout).result).toEqual([expect.objectContaining({ name: 'CngxSelect' }), null]);
+    expect(run.stderr).toBe('cngx api: not found: NoSuchThing\n');
+  });
+
+  it('ends the run with one failure document when the release cannot be resolved', async () => {
+    const run = await cli('api', 'CngxSelect', 'CngxRipple', '--cngx-version=0.2.0', '--format=json');
+
+    expect(run.code).toBe(EXIT_NOT_FOUND);
+    expect(JSON.parse(run.stdout)).toEqual({ cngxVersion: null, result: null, error: { reason: 'asset-missing', message: 'no asset for v0.2.0' } });
+    expect(run.stderr.split('\n').filter(Boolean)).toHaveLength(1);
+  });
+
+  it('appends the --from names after the positionals, deduplicated', async () => {
+    const file = sourceFile("import { CngxRipple, CngxSelect } from '@cngx/common/interactive';\r\n");
+    const run = await cli('api', 'CngxSelect', '--from', file, '--format=json');
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(JSON.parse(run.stdout).result.map((entry: { name: string }) => entry.name)).toEqual(['CngxSelect', 'CngxRipple']);
+  });
+
+  it('exits 2 on an unreadable --from file', async () => {
+    const run = await cli('api', '--from', join(tmpdir(), 'cngx-no-such-file.ts'));
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toMatch(/^cngx: --from: cannot read .*cngx-no-such-file\.ts: /);
+  });
+
+  it('exits 1 when the --from file imports nothing from @cngx', async () => {
+    const file = sourceFile("import { Component } from '@angular/core';\n");
+    const md = await cli('api', '--from', file);
+    const json = await cli('api', '--from', file, '--format=json');
+
+    expect(md.code).toBe(EXIT_NOT_FOUND);
+    expect(md.stdout).toBe('');
+    expect(md.stderr).toBe(`cngx api: no named @cngx imports in ${file}.\n`);
+    expect(JSON.parse(json.stdout)).toEqual({ cngxVersion: null, result: [] });
+  });
+
+  it('passes --compact to the renderer and leaves json unchanged', async () => {
+    const full = await cli('api', 'CngxSelect');
+    const compact = await cli('api', 'CngxSelect', '--compact');
+    const json = await cli('api', 'CngxSelect', '--compact', '--format=json');
+
+    expect(compact.stdout).not.toContain('Description|');
+    expect(compact.stdout.length).toBeLessThan(full.stdout.length);
+    expect(json.stdout).toBe((await cli('api', 'CngxSelect', '--format=json')).stdout);
+  });
+
+  it.each([['find', 'select', '--compact'], ['di', '--from', 'x.ts'], ['list', '--compact']])('%s rejects the name flags with exit 2', async (...argv) => {
+    const run = await cli(...argv);
+
+    expect(run.code).toBe(EXIT_USAGE);
   });
 });

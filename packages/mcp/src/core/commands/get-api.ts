@@ -4,6 +4,7 @@
 // methods, and description.
 
 import { z } from 'zod';
+import type { RenderOptions } from '../command.js';
 import { defineCommand } from '../command.js';
 import { versionInput } from './version-input.js';
 import { answerVersioned } from '../data/docs-resolver.js';
@@ -122,7 +123,8 @@ export function getApi(docs: DocsIndex, name: string): ApiResult | AmbiguousMatc
 }
 
 /** The API surface as a heading, a summary line and one section per member group. */
-export function apiMarkdown(api: ApiResult | AmbiguousMatch | null): string {
+/** `compact` drops the description prose and the description columns. */
+export function apiMarkdown(api: ApiResult | AmbiguousMatch | null, opts: RenderOptions = {}): string {
   if (!api) {
     return 'No component, directive, or service by that name.\n';
   }
@@ -130,14 +132,17 @@ export function apiMarkdown(api: ApiResult | AmbiguousMatch | null): string {
     return ambiguousMarkdown(api);
   }
   const summary = [`Kind: ${api.kind}`, `Selector: ${code(api.selector)}`, `Signal-based: ${api.signal ? 'yes' : 'no'}`];
-  const inputs = api.inputs.map((i) => [code(i.name), code(i.type), code(i.defaultValue), textCell(i.description)]);
-  const outputs = api.outputs.map((o) => [code(o.name), code(o.type), textCell(o.description)]);
+  const compact = opts.compact === true;
+  const inputs = api.inputs.map((i) => [code(i.name), code(i.type), code(i.defaultValue), ...(compact ? [] : [textCell(i.description)])]);
+  const outputs = api.outputs.map((o) => [code(o.name), code(o.type), ...(compact ? [] : [textCell(o.description)])]);
+  const inputHeaders = ['Name', 'Type', 'Default', ...(compact ? [] : ['Description'])];
+  const outputHeaders = ['Name', 'Type', ...(compact ? [] : ['Description'])];
   return blocks(
     `# ${api.name}`,
     summary.join(' | '),
-    docText(api.description),
-    section('Inputs', inputs.length ? table(['Name', 'Type', 'Default', 'Description'], inputs) : '', 'None.'),
-    section('Outputs', outputs.length ? table(['Name', 'Type', 'Description'], outputs) : '', 'None.'),
+    !compact && docText(api.description),
+    section('Inputs', inputs.length ? table(inputHeaders, inputs) : '', 'None.'),
+    section('Outputs', outputs.length ? table(outputHeaders, outputs) : '', 'None.'),
     section('Host bindings', bullets(api.hostBindings.map((b) => code(b))), 'None.'),
     section('Methods', bullets(api.methods.map((m) => `${code(m.name)}: ${code(m.returnType)}`)), 'None.'),
   );
@@ -168,5 +173,5 @@ export const getApiCommand = defineCommand({
   cliFlags: { version: 'cngx-version' },
   run: (ctx, { name, version }) => answerVersioned(ctx.resolve, version, (resolved) => getApi(resolved, name)),
   found: foundUnlessAmbiguous,
-  toMarkdown: (api: ApiResult | AmbiguousMatch | null) => apiMarkdown(api),
+  toMarkdown: (api: ApiResult | AmbiguousMatch | null, opts) => apiMarkdown(api, opts),
 });

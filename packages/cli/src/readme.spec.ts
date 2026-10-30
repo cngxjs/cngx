@@ -6,7 +6,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { EXIT_INTERNAL, EXIT_NOT_FOUND, EXIT_OK, EXIT_USAGE, adapterFlags, commandFlags, globalFlags, knownFlags } from './cli-adapter.js';
+import { EXIT_INTERNAL, EXIT_NOT_FOUND, EXIT_OK, EXIT_USAGE, adapterFlags, commandFlags, globalFlags, isNameTaking, knownFlags } from './cli-adapter.js';
 import { COMMANDS } from './core/registry.js';
 import {
   commandRowFlags,
@@ -31,7 +31,7 @@ describe('README', () => {
     expect(README).toContain(`\`cngx ${cliName}`);
   });
 
-  it.each([...globalFlags(), VERSION_FLAG, OFFLINE_FLAG])('documents %s', (flag) => {
+  it.each([...globalFlags(), VERSION_FLAG, OFFLINE_FLAG, '--from', '--compact'])('documents %s', (flag) => {
     expect(README).toContain(`\`${flag}`);
   });
 
@@ -49,6 +49,13 @@ describe('README', () => {
     const taking = COMMANDS.filter((def) => commandFlags(def).includes(VERSION_FLAG)).map((def) => def.cliName);
 
     expect(flagRowCommands(README, VERSION_FLAG).sort()).toEqual(taking.sort());
+  });
+
+  it.each(['--from', '--compact'])('names exactly the name-taking commands in the %s Flags row', (flag) => {
+    const taking = COMMANDS.filter((def) => adapterFlags(def).includes(flag)).map((def) => def.cliName);
+
+    expect(taking).toEqual(COMMANDS.filter(isNameTaking).map((def) => def.cliName));
+    expect(flagRowCommands(README, flag).sort()).toEqual(taking.sort());
   });
 
   it('names exactly the commands that take --offline in its Flags row, the same as --cngx-version', () => {

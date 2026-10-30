@@ -57,6 +57,8 @@ Each command is generated from the same definition as its `@cngx/mcp` tool.
 |-|-|
 |`--format md\|json`|Output format. `md` (default) is markdown for people and agents; `json` is `{ "cngxVersion": "<version>", "result": <answer> }`, and a failure prints a failure document (see Failures). It has no short form.|
 |`--cngx-version <version>`|Answer against this cngx release (`find`, `api`, `slots`, `theme`, `di`, `config`); a leading `v` or `V` is accepted. Without it these commands answer for the release installed in the project (see Which release answers). The snapshot of a non-bundled release is fetched through `gh`, or over HTTPS when `gh` is missing or fails, and cached on disk. Other commands reject it.|
+|`--from <file>`|Also answer for every name the file imports from `@cngx/*` (`api`, `slots`, `theme`, `config`, `example`): named imports, `import type` and `as` aliases, LF or CRLF. An unreadable file is a usage error; a file with no such import exits 1.|
+|`--compact`|Shorter markdown (`api`, `slots`, `theme`, `config`, `example`): names and types without descriptions, no resolution-priority list, no repo-internal source references. JSON is unchanged.|
 |`--offline`|Never fetch (`find`, `api`, `slots`, `theme`, `di`, `config`): answer from the disk cache, else the bundled snapshot. An explicit `--cngx-version` that is not cached fails with exit 1 instead of answering for another release. Other commands reject it.|
 |`--version`, `-v`|Print the `@cngx/cli` version.|
 |`--help`, `-h`|Print the command list, or a command's help after the command name.|
@@ -91,6 +93,14 @@ keeps the 16 most recently read releases. An unreadable entry is removed and
 fetched again; a cache directory that cannot be written answers without caching
 and says so on stderr. Without a network, a detected release costs one fetch
 timeout per run before the fallback; pass `--offline` to skip it.
+
+`api`, `slots`, `theme`, `config` and `example` take several names:
+`cngx api CngxSelect CngxChip`. Repeated names answer once. Markdown prints one
+block per name under one `> cngx <version>` line; JSON prints
+`{ "cngxVersion": "<version>", "result": [<answer per name>] }`, with `null` for a
+name that matched nothing. When a name is not found the others still print,
+stderr lists the missing ones and the run exits 1. A single name keeps the
+single-answer shapes.
 
 Every answer names the cngx release it came from: the first markdown line is
 `> cngx <version>`, the JSON carries `cngxVersion`.
