@@ -20,7 +20,7 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/',
     },
   ],
-  apiComponents: ['CngxPopoverTrigger', 'CngxPopover', 'CngxButton', 'CngxDisclosure'],
+  apiComponents: ['CngxPopoverTrigger', 'CngxPopover', 'CngxButton'],
   moduleImports: [
     "import { CngxButton, CngxButtonEnd } from '@cngx/common/button';",
     "import { CngxIcon } from '@cngx/common/display';",
@@ -30,6 +30,7 @@ export const STORY: DemoSpec = {
   template: `
   <div class="demo-popover-stage">
     <button
+      type="button"
       cngxButton="outline"
       [cngxPopoverTrigger]="pop"
       [haspopup]="'none'"
