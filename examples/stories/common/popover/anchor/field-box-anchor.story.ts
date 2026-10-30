@@ -40,7 +40,7 @@ export const STORY: DemoSpec = {
     </div>
     <div cngxPopover #pop="cngxPopover" placement="bottom-start" [closeOnOutsideClick]="true"
          class="demo-popover-surface">
-      <ul class="demo-popover-menu">
+      <ul class="demo-popover-menu" role="list">
         @for (city of cities(); track city) {
           <li>{{ city }}</li>
         }

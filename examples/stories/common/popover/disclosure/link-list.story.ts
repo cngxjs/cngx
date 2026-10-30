@@ -16,7 +16,7 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/',
     },
     {
-      label: 'WAI-ARIA APG: Menu Button Pattern',
+      label: 'WAI-ARIA APG: Menu Button Pattern (for commands)',
       href: 'https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/',
     },
   ],
@@ -49,7 +49,7 @@ export const STORY: DemoSpec = {
       [closeOnOutsideClick]="true"
       class="demo-popover-surface"
     >
-      <ul class="demo-popover-menu">
+      <ul class="demo-popover-menu" role="list">
         <li><a class="demo-popover-menu-item" href="https://angular.dev/overview" target="_blank" rel="noopener">Angular overview</a></li>
         <li><a class="demo-popover-menu-item" href="https://angular.dev/guide/signals" target="_blank" rel="noopener">Signals guide</a></li>
         <li><a class="demo-popover-menu-item" href="https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/" target="_blank" rel="noopener">Disclosure pattern</a></li>
