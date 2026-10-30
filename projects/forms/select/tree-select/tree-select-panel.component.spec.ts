@@ -687,6 +687,62 @@ describe('CngxTreeSelectPanel - highlight across a nodes refresh', () => {
   });
 });
 
+describe('CngxTreeSelectPanel - slot handleSelect across a nodes refresh', () => {
+  const SLOT_SELECT_TEMPLATE = `
+    <div cngxPopover cngxPopoverSheet>
+      <cngx-tree-select-panel />
+    </div>
+    <ng-template cngxTreeSelectNode let-node let-select="handleSelect">
+      <button type="button" class="slot-select" [attr.data-id]="node.id" (click)="select()">
+        {{ node.label }}
+      </button>
+    </ng-template>
+    <ng-template #customTwisty><span class="custom-twisty">+</span></ng-template>
+  `;
+
+  function mount() {
+    TestBed.overrideTemplate(TreeHost, SLOT_SELECT_TEMPLATE);
+    const fixture = TestBed.createComponent(TreeHost);
+    fixture.componentInstance.useSlot.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const slotButton = (id: string) =>
+      root.querySelector<HTMLButtonElement>(`.slot-select[data-id="${id}"]`)!;
+    return { fixture, host: fixture.componentInstance, slotButton };
+  }
+
+  it('selects the refreshed node, not the first one, when the value objects are kept', () => {
+    const { fixture, host, slotButton } = mount();
+    slotButton('b').click();
+    const first = host.lastSelected();
+    expect(first?.disabled).toBeFalsy();
+
+    // Same value objects, re-derived nodes: Bravo is now disabled.
+    const kept = host.nodes();
+    host.nodes.set([kept[0], { ...kept[1], disabled: true }]);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    slotButton('b').click();
+    const second = host.lastSelected();
+    expect(second).not.toBe(first);
+    expect(second?.value).toBe(first?.value);
+    expect(second?.disabled).toBe(true);
+  });
+
+  it('keeps the handler identity stable while the node is unchanged', () => {
+    const { fixture, host, slotButton } = mount();
+    slotButton('a').click();
+    const first = host.lastSelected();
+    fixture.detectChanges();
+    slotButton('a').click();
+    expect(host.lastSelected()).toBe(first);
+  });
+});
+
 describe('CngxTreeSelectPanel stylesheet', () => {
   // A @media nested in @scope applies unreliably across engines; every
   // media override of this panel must sit outside its @scope blocks.
