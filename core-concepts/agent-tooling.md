@@ -62,7 +62,7 @@ config queries fetch a different release's snapshot when handed an optional
 |`get_theme_tokens`|`{ name, version? }`|The theming tokens (the CSS custom properties a component exposes) and its theme overview.|
 |`get_di_tokens`|`{ query?, version? }`|The top-level DI injection tokens, optionally filtered by a name fragment.|
 |`get_config`|`{ name, version? }`|A configuration cascade by config token name, stem, or component name: the config token, its provider functions, the `with*` feature functions, and the resolution-priority ordering.|
-|`get_story_example`|`{ name }`|The runnable example URLs (public documentation links) and a StackBlitz URL when one exists.|
+|`get_story_example`|`{ name }`|`{ ok: true, groundedVersion, result }` like the other name tools, `groundedVersion` always the bundled release: the runnable example URLs (public documentation links) and a StackBlitz URL when one exists. `result` is null for an unknown name.|
 |`migrate_usage`|`{ from, to? }`|A structured API delta between two CNGX releases: removed, renamed, and signature-changed components (injectable services included), inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version.|
 
 Each answer grounds against one CNGX release; the server reports the bundled
@@ -103,7 +103,8 @@ seconds. No network or an absent asset returns a typed error result instead:
 |-|-|
 |`gh-missing`|No longer produced: a missing `gh` falls back to HTTPS. Kept in the type for compatibility.|
 |`network`|The download failed for a network reason.|
-|`asset-missing`|The release or its `documentation.json` asset does not exist. Also covers a version that is not a release, a snapshot with an unreadable or unknown schema, and a query that threw (its message starts with `internal:`).|
+|`asset-missing`|The release or its `documentation.json` asset does not exist. Also covers a snapshot with an unreadable or unknown schema, and a query that threw (its message starts with `internal:`).|
+|`invalid-version`|A version that is not a release version (`1.2`, `01.2.3`, `1.2.3-rc.`), answered before any fetch.|
 
 ### The CLI
 
