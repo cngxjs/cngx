@@ -856,12 +856,13 @@
 
   /**
    * Border color painted on the trigger wrapper when `aria-invalid="true"`.
-   * Defaults track `--cngx-color-danger` via the delegating :root entry below.
+   * Defaults track `--cngx-color-danger` via the delegating :root entry below;
+   * registered as inheriting so that root value reaches the trigger.
    * @group State / Trigger invalid
    */
   @property --cngx-select-trigger-invalid-border-color {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.6 0.18 25);
   }
 
@@ -877,12 +878,13 @@
 
   /**
    * Outline color layered on the invalid trigger when focus is inside it.
-   * Defaults track `--cngx-color-danger` via the delegating :root entry below.
+   * Defaults track `--cngx-color-danger` via the delegating :root entry below;
+   * registered as inheriting so that root value reaches the trigger.
    * @group State / Trigger invalid
    */
   @property --cngx-select-trigger-invalid-outline-color {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.6 0.18 25);
   }
 
