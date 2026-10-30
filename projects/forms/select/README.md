@@ -78,3 +78,4 @@ Library defaults are English. Override on the per-instance level through ARIA-la
 ## See also
 
 - Component inputs, outputs, slot directives, and the 18 DI factory tokens in the **API** tab.
+- Which trigger? [Choosing a Trigger](https://cngxjs.github.io/cngx/additional-documentation/choosing-a-trigger.html) says when a value picker is a select and when it is a menu button, a split button or a toggle group.
