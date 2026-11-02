@@ -295,10 +295,19 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
     );
   }
 
+  /**
+   * CDK `DataSource` contract, called by the CDK table when it attaches. Returns
+   * an observable of `processed` (filtered, searched, sorted and paginated rows)
+   * that emits each time it changes.
+   */
   override connect(): Observable<T[]> {
     return toObservable(this.processed, { injector: this.injector });
   }
 
+  /**
+   * CDK `DataSource` contract, called by the CDK table when it detaches. No-op;
+   * the `toObservable` subscription ends with the injector's `DestroyRef`.
+   */
   override disconnect(): void {
     // Signal cleanup is handled by Angular's DestroyRef - no manual teardown needed.
   }

@@ -87,7 +87,7 @@ export const INTERNAL_BINDINGS = [
 /**
  * Lowered in every commit that closes rows, so growth is a visible constant edit.
  */
-export const CEILING = 68;
+export const CEILING = 51;
 
 /** @type {readonly ApiDocGap[]} */
 // prettier-ignore
@@ -96,23 +96,6 @@ export const RATCHET = [
   { entry: '@cngx/common/a11y', owner: 'CngxActiveDescendant', kind: 'method', member: 'highlightLast', phase: 3 },
   { entry: '@cngx/common/a11y', owner: 'CngxActiveDescendant', kind: 'method', member: 'highlightNext', phase: 3 },
   { entry: '@cngx/common/a11y', owner: 'CngxActiveDescendant', kind: 'method', member: 'highlightPrev', phase: 3 },
-  { entry: '@cngx/common/data', owner: 'CngxDataSource', kind: 'method', member: 'connect', phase: 3 },
-  { entry: '@cngx/common/data', owner: 'CngxDataSource', kind: 'method', member: 'disconnect', phase: 3 },
-  { entry: '@cngx/common/data', owner: 'CngxFilterChips', kind: 'input', member: 'errorMessageId', phase: 3 },
-  { entry: '@cngx/common/data', owner: 'CngxFilterChips', kind: 'input', member: 'filterKey', phase: 3 },
-  { entry: '@cngx/common/data', owner: 'CngxFilterChips', kind: 'input', member: 'filterRef', phase: 3 },
-  { entry: '@cngx/common/data', owner: 'CngxFilterChips', kind: 'input', member: 'invalid', phase: 3 },
-  { entry: '@cngx/common/data', owner: 'CngxFilterChips', kind: 'input', member: 'label', phase: 3 },
-  { entry: '@cngx/common/data', owner: 'CngxFilterChips', kind: 'input', member: 'optionLabel', phase: 3 },
-  { entry: '@cngx/common/data', owner: 'CngxFilterChips', kind: 'input', member: 'options', phase: 3 },
-  { entry: '@cngx/common/data', owner: 'CngxFilterChips', kind: 'input', member: 'optionValue', phase: 3 },
-  { entry: '@cngx/common/data', owner: 'CngxFilterChips', kind: 'input', member: 'orientation', phase: 3 },
-  { entry: '@cngx/common/data', owner: 'CngxFilterChips', kind: 'input', member: 'required', phase: 3 },
-  { entry: '@cngx/common/data', owner: 'CngxFilterChips', kind: 'input', member: 'state', phase: 3 },
-  { entry: '@cngx/common/data', owner: 'CngxFilterChips', kind: 'output', member: 'invalid', phase: 3 },
-  { entry: '@cngx/common/data', owner: 'CngxFilterChips', kind: 'output', member: 'required', phase: 3 },
-  { entry: '@cngx/common/data', owner: 'CngxSmartDataSource', kind: 'method', member: 'connect', phase: 3 },
-  { entry: '@cngx/common/data', owner: 'CngxSmartDataSource', kind: 'method', member: 'disconnect', phase: 3 },
   { entry: '@cngx/common/dialog', owner: 'CngxDialogOpener', kind: 'method', member: 'open', phase: 3 },
   { entry: '@cngx/core', owner: 'CngxContrast', kind: 'input', member: 'contrast', binding: 'cngxContrast', phase: 4 },
   { entry: '@cngx/core', owner: 'CngxDensity', kind: 'input', member: 'density', binding: 'cngxDensity', phase: 4 },

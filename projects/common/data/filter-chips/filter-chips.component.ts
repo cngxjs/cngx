@@ -188,10 +188,33 @@ export class CngxFilterChip<TItem = unknown, TValue = unknown> {
   `,
 })
 export class CngxFilterChips<TItem = unknown, TValue = unknown, TListItem = TItem> {
+  /**
+   * Name of the facet this strip filters. Renders as the visible, `aria-hidden`
+   * `.cngx-filter-chips__label` caption and is passed to the inner chip group
+   * as its accessible name.
+   */
   readonly label = input.required<string>();
+  /**
+   * Chip pool: one chip is rendered per item, in array order. A selected value
+   * whose option is no longer in the array is dropped from `selectedValues`.
+   */
   readonly options = input.required<readonly TItem[]>();
+  /**
+   * Maps an option to its chip text. It is the default chip body and the
+   * `label` field of the `cngxFilterChip` template context, which replaces the
+   * default body when projected.
+   */
   readonly optionLabel = input.required<(item: TItem) => string>();
+  /**
+   * Maps an option to the value that chip toggles into `selectedValues`. While
+   * `itemValue` is unbound it is also applied to the filtered list items to
+   * read the value the predicate compares against.
+   */
   readonly optionValue = input.required<(item: TItem) => TValue>();
+  /**
+   * The `CngxFilter` this strip registers its predicate on, under `filterKey`.
+   * Rebinding moves the registration to the new filter.
+   */
   readonly filterRef = input.required<CngxFilter<TListItem>>();
 
   /**
@@ -205,7 +228,17 @@ export class CngxFilterChips<TItem = unknown, TValue = unknown, TListItem = TIte
   readonly itemValue = input<((item: TListItem) => TValue | readonly TValue[]) | undefined>(
     undefined,
   );
+  /**
+   * Key the predicate is registered under on `filterRef`. Rebinding moves the
+   * registration; teardown removes the key only while it still maps to this
+   * strip's own predicate.
+   */
   readonly filterKey = input.required<string>();
+  /**
+   * Async state forwarded to the inner chip group, which reflects `loading` as
+   * `aria-busy`. When unset, the group falls back to an ancestor
+   * `CNGX_STATEFUL` provider.
+   */
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
 
   /**
@@ -216,9 +249,28 @@ export class CngxFilterChips<TItem = unknown, TValue = unknown, TListItem = TIte
    * / `CngxButtonToggleGroup` precedent.
    */
   readonly disabled = model<boolean>(false);
+  /**
+   * Two-way flag forwarded to the inner chip group, which sets
+   * `aria-required="true"` while it is true. Default `false`.
+   */
   readonly required = model<boolean>(false);
+  /**
+   * Two-way flag forwarded to the inner chip group, which sets
+   * `aria-invalid="true"` while it is true or the group's own error state is
+   * active. Default `false`.
+   */
   readonly invalid = model<boolean>(false);
+  /**
+   * Id of an external error element, forwarded to the inner chip group as
+   * `aria-errormessage`. The consumer renders the element. Default `null`
+   * omits the attribute.
+   */
   readonly errorMessageId = input<string | null>(null);
+  /**
+   * Layout and arrow-key axis of the strip. `'vertical'` stacks the chips and
+   * adds the `cngx-filter-chips--vertical` host class; the value is forwarded
+   * to the inner chip group's roving tabindex. Default `'horizontal'`.
+   */
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
 
   /**

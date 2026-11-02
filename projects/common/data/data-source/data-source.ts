@@ -32,10 +32,19 @@ export class CngxDataSource<T> extends DataSource<T> {
     super();
   }
 
+  /**
+   * CDK `DataSource` contract, called by the CDK table when it attaches. Returns
+   * an observable of the source signal that emits the array each time the
+   * signal changes.
+   */
   override connect(): Observable<T[]> {
     return toObservable(this.data, { injector: this.injector });
   }
 
+  /**
+   * CDK `DataSource` contract, called by the CDK table when it detaches. No-op;
+   * the `toObservable` subscription ends with the injector's `DestroyRef`.
+   */
   override disconnect(): void {
     // Signal cleanup is handled by Angular's DestroyRef - no manual teardown needed.
   }
