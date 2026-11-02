@@ -13,7 +13,13 @@ import {
   untracked,
   type Signal,
 } from '@angular/core';
-import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
+import {
+  buildAsyncStateView,
+  createVisibilityGate,
+  injectLoadingConfig,
+  type AsyncStatus,
+  type CngxAsyncState,
+} from '@cngx/core/utils';
 import { firstValueFrom, isObservable, type Observable } from 'rxjs';
 
 import { injectInteractiveI18n } from '../i18n/interactive-i18n';
@@ -39,6 +45,14 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
  * an auto-rendered polite live region (sibling of the host - inside a
  * `<button>` the text would pollute the accessible name); opt out with
  * `[autoAnnounce]="false"` and bind `announcement` to your own region.
+ *
+ * The busy visual is gated, the truth is not: {@link busyVisible} (and with it
+ * `cngx-async--pending` and the button-family spinner) turns on only after
+ * `CNGX_LOADING_CONFIG.showDelay` and, once shown, stays for at least
+ * `minDwell`, so a fast run never flashes a spinner. `pending()`, `status`,
+ * `aria-busy`, `aria-disabled`, the double-click guard and the settle
+ * announcement stay immediate. Override the timing per instance with
+ * `[busyDelay]` / `[busyMinDwell]`.
  *
  * ### Basic usage
  * ```html
@@ -80,9 +94,9 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
   host: {
     class: 'cngx-async',
     '(click)': 'handleClick($event)',
-    '[class.cngx-async--pending]': 'pending()',
-    '[class.cngx-async--success]': 'succeeded()',
-    '[class.cngx-async--error]': 'failed()',
+    '[class.cngx-async--pending]': 'busyVisible()',
+    '[class.cngx-async--success]': 'succeeded() && !busyVisible()',
+    '[class.cngx-async--error]': 'failed() && !busyVisible()',
     '[attr.aria-busy]': 'pending() || busy() || hostBusy() || null',
     '[attr.aria-disabled]': 'pending() || blocked() || null',
   },
@@ -153,6 +167,35 @@ export class CngxAsyncClick {
   protected readonly hostBusy = computed(() => this.hostState?.busy?.() ?? false);
 
   private readonly pendingState = signal(false);
+
+  /**
+   * Show delay (ms) of the busy visual, bound as `[busyDelay]` next to the
+   * directive. Unbound, it resolves to `CNGX_LOADING_CONFIG.showDelay`.
+   * `0` shows the busy visual on the first tick of a run.
+   */
+  readonly busyDelay = input<number | undefined>(undefined);
+
+  /**
+   * Minimum time (ms) a shown busy visual stays, bound as `[busyMinDwell]`.
+   * Unbound, it resolves to `CNGX_LOADING_CONFIG.minDwell`. `0` hides it as
+   * soon as the run ends.
+   */
+  readonly busyMinDwell = input<number | undefined>(undefined);
+
+  private readonly loadingConfig = injectLoadingConfig();
+
+  /**
+   * `true` while the busy visual should show: the run (own or host-reflected)
+   * after the show delay, held for at least the min-dwell. Drives
+   * `cngx-async--pending` and the button-family busy layer; `pending()` stays
+   * the immediate truth and `aria-busy` never waits on it.
+   */
+  readonly busyVisible: Signal<boolean> = createVisibilityGate(
+    computed(() => this.pendingState() || this.hostBusy()),
+    computed(() => this.busyDelay() ?? this.loadingConfig.showDelay),
+    computed(() => this.busyMinDwell() ?? this.loadingConfig.minDwell),
+  );
+
   private readonly succeededState = signal(false);
   private readonly failedState = signal(false);
   private readonly errorState = signal<unknown>(undefined);

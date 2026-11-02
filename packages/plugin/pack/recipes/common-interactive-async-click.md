@@ -1,12 +1,12 @@
 ---
 title: "CngxAsyncClick: Basic happy path"
-whenToUse: "Wraps a click handler in an async-state machine. The action factory you bind to [cngxAsyncClick] can return a Promise or an Observable; the directive runs it on click, flips its pending() signal while in flight, then settles to succeeded() or failed() for feedbackDuration ms (default 2000) before returning to idle. The host class .cngx-async--pending / --success / --error mirrors the lifecycle, and ARIA aria-busy / aria-disabled + the native disabled attribute (on form controls) prevent double-clicks. Template branches via @switch (btn.status())."
+whenToUse: "Wraps a click handler in an async-state machine. The action factory you bind to [cngxAsyncClick] can return a Promise or an Observable; the directive runs it on click, flips its pending() signal while in flight, then settles to succeeded() or failed() for feedbackDuration ms (default 2000) before returning to idle. The host class .cngx-async--pending / --success / --error mirrors the lifecycle; --pending follows the show delay of the loading config (a run faster than 120 ms never gets it), while aria-busy is set on the first tick. ARIA aria-busy / aria-disabled + the native disabled attribute (on form controls) prevent double-clicks. Template branches via @switch (btn.status())."
 symbols: [CngxAsyncClick]
 ---
 
 # CngxAsyncClick: Basic happy path
 
-Wraps a click handler in an async-state machine. The action factory you bind to [cngxAsyncClick] can return a Promise or an Observable; the directive runs it on click, flips its pending() signal while in flight, then settles to succeeded() or failed() for feedbackDuration ms (default 2000) before returning to idle. The host class .cngx-async--pending / --success / --error mirrors the lifecycle, and ARIA aria-busy / aria-disabled + the native disabled attribute (on form controls) prevent double-clicks. Template branches via @switch (btn.status()).
+Wraps a click handler in an async-state machine. The action factory you bind to [cngxAsyncClick] can return a Promise or an Observable; the directive runs it on click, flips its pending() signal while in flight, then settles to succeeded() or failed() for feedbackDuration ms (default 2000) before returning to idle. The host class .cngx-async--pending / --success / --error mirrors the lifecycle; --pending follows the show delay of the loading config (a run faster than 120 ms never gets it), while aria-busy is set on the first tick. ARIA aria-busy / aria-disabled + the native disabled attribute (on form controls) prevent double-clicks. Template branches via @switch (btn.status()).
 
 ## Symbols
 

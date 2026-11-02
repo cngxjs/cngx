@@ -53,6 +53,8 @@ import { warnStepperControlUnhosted } from '../warn-stepper-unhosted';
         'enabled',
         'succeededAnnouncement',
         'failedAnnouncement',
+        'busyDelay',
+        'busyMinDwell',
       ],
     },
   ],

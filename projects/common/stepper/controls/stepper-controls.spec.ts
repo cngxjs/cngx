@@ -60,6 +60,16 @@ class CompleteHost {
   }
 }
 
+@Component({
+  standalone: true,
+  imports: [CngxStepperComplete],
+  hostDirectives: [CngxStepperPresenter],
+  template: `<button [cngxStepperComplete]="action" [busyDelay]="0">Finish</button>`,
+})
+class ImmediateBusyCompleteHost {
+  readonly action = (): Promise<void> => new Promise<void>(() => undefined);
+}
+
 function navSetup(): {
   fixture: ReturnType<typeof TestBed.createComponent<NavHost>>;
   presenter: CngxStepperPresenter;
@@ -219,6 +229,26 @@ describe('stepper nav controls', () => {
         expect(fixture.componentInstance.completedCount).toBe(1);
       });
     });
+  });
+
+  it('forwards [busyDelay] to the composed CngxAsyncClick', async () => {
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(ImmediateBusyCompleteHost);
+    fixture.detectChanges();
+    const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
+    presenter.register(reg('a'));
+    presenter.register(reg('b'));
+    presenter.select(1);
+    fixture.detectChanges();
+    const asyncClick = fixture.debugElement.children[0].injector.get(CngxAsyncClick);
+    (fixture.nativeElement.querySelector('button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(asyncClick.pending()).toBe(true);
+
+    await vi.advanceTimersByTimeAsync(0);
+    expect(asyncClick.busyVisible()).toBe(true);
   });
 
   describe('dev-mode co-placement guard', () => {

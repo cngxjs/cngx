@@ -24,8 +24,11 @@
  *   `--cngx-button-neutral-tint-pressed`); `.cngx-pressed` is the class `cngxPressable`
  *   sets on pointerdown, so a touch press shows without the `:active` lag.
  *   Never on an `aria-disabled` (or busy) button
- * - `[aria-disabled='true']:not([data-busy])` - disabled by colour, never
- *   opacity; `cursor: not-allowed`; GrayText under forced colors
+ * - `[aria-disabled='true']:not([data-busy], [data-pending])` - disabled by
+ *   colour, never opacity; `cursor: not-allowed`; GrayText under forced colors.
+ *   `data-pending` is the immediate run flag; `data-busy` follows the loading
+ *   config's show delay, so without the pending exclusion the first frames of
+ *   every run (aria-disabled, no data-busy yet) would paint as disabled
  * - `[data-busy]` - label kept in the box and in the accessible name but
  *   painted at opacity 0 (width stable), spinner ring centred over it; the
  *   ring stops rotating under reduced motion. The fade sits on every direct
@@ -578,20 +581,21 @@
     }
 
     /* Disabled by colour, never opacity. A busy button is aria-disabled too
-       but reads as busy, not disabled. */
-    :scope[aria-disabled='true']:not([data-busy]) {
+       but reads as busy, not disabled - also in the show-delay window, where
+       data-pending is set before the gated data-busy. */
+    :scope[aria-disabled='true']:not([data-busy], [data-pending]) {
       color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
       cursor: not-allowed;
     }
-    :scope[aria-disabled='true']:not([data-busy]):is([data-variant='solid'], [data-variant='secondary']) {
+    :scope[aria-disabled='true']:not([data-busy], [data-pending]):is([data-variant='solid'], [data-variant='secondary']) {
       background: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 8%, transparent);
       border-color: transparent;
     }
-    :scope[aria-disabled='true']:not([data-busy])[data-variant='outline'] {
+    :scope[aria-disabled='true']:not([data-busy], [data-pending])[data-variant='outline'] {
       background: transparent;
       border-color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 20%, transparent);
     }
-    :scope[aria-disabled='true']:not([data-busy]):is([data-variant='ghost'], [data-variant='link']) {
+    :scope[aria-disabled='true']:not([data-busy], [data-pending]):is([data-variant='ghost'], [data-variant='link']) {
       background: transparent;
     }
 
@@ -713,7 +717,7 @@
     color: ActiveText !important;
     border-color: ButtonText !important;
   }
-  .cngx-button[aria-disabled='true']:not([data-busy]) {
+  .cngx-button[aria-disabled='true']:not([data-busy], [data-pending]) {
     background: ButtonFace !important;
     color: GrayText !important;
     border-color: GrayText !important;

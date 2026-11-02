@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { provideRouter, Router, RouterLink } from '@angular/router';
 import { CngxAsyncClick, type AsyncAction } from '@cngx/common/interactive';
 import { vi } from 'vitest';
+import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
 
 import {
   provideButtonConfig,
@@ -455,27 +456,66 @@ describe('CngxButton', () => {
     });
 
     it('shows the busy layer while the action runs and keeps the label', async () => {
+      vi.useFakeTimers();
       const { fixture, host, q } = render(AsyncHost);
       host.disabled.set(false);
       fixture.detectChanges();
       const btn = q('#button-first');
+      const advance = async (ms: number): Promise<void> => {
+        await vi.advanceTimersByTimeAsync(ms);
+        fixture.detectChanges();
+        TestBed.flushEffects();
+      };
       expect(btn.hasAttribute('aria-disabled')).toBe(false);
       expect(btn.querySelector('.cngx-button__busy')).toBeNull();
 
       btn.click();
       fixture.detectChanges();
+      TestBed.flushEffects();
       expect(host.calls).toBe(1);
-      expect(btn.dataset['busy']).toBe('true');
+      expect(btn.dataset['pending']).toBe('true');
       expect(btn.getAttribute('aria-disabled')).toBe('true');
       expect(btn.getAttribute('aria-busy')).toBe('true');
+      expect(btn.hasAttribute('data-busy')).toBe(false);
+      expect(btn.querySelector('.cngx-button__busy')).toBeNull();
+
+      await advance(CNGX_LOADING_DEFAULTS.showDelay);
+      expect(btn.dataset['busy']).toBe('true');
       expect(btn.querySelector('.cngx-button__busy')?.getAttribute('aria-hidden')).toBe('true');
       expect(btn.querySelector('.cngx-button__label')?.textContent?.trim()).toBe('A');
 
       host.release();
-      await fixture.whenStable();
-      fixture.detectChanges();
+      await advance(0);
+      expect(btn.hasAttribute('data-pending')).toBe(false);
+      expect(btn.hasAttribute('aria-busy')).toBe(false);
+      expect(btn.dataset['busy']).toBe('true');
+
+      await advance(CNGX_LOADING_DEFAULTS.minDwell);
       expect(btn.hasAttribute('data-busy')).toBe(false);
       expect(btn.querySelector('.cngx-button__busy')).toBeNull();
+    });
+
+    it('never paints the busy layer for a run that settles before showDelay', async () => {
+      vi.useFakeTimers();
+      const { fixture, host, q } = render(AsyncHost);
+      host.disabled.set(false);
+      fixture.detectChanges();
+      const btn = q('#click-first');
+
+      btn.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(btn.getAttribute('aria-busy')).toBe('true');
+      expect(btn.getAttribute('aria-disabled')).toBe('true');
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay - 1);
+      host.release();
+      for (let t = 0; t < CNGX_LOADING_DEFAULTS.minDwell; t += 50) {
+        await vi.advanceTimersByTimeAsync(50);
+        fixture.detectChanges();
+        TestBed.flushEffects();
+        expect(btn.hasAttribute('data-busy')).toBe(false);
+        expect(btn.querySelector('.cngx-button__busy')).toBeNull();
+      }
     });
   });
 

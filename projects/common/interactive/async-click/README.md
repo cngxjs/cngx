@@ -37,7 +37,7 @@ export class SaveButtonComponent {
 
 ## Accessibility
 
-- **ARIA roles:** Sets `aria-busy="true"` while pending, `aria-disabled="true"` while pending (for non-button elements)
+- **ARIA roles:** Sets `aria-busy="true"` while pending, `aria-disabled="true"` while pending (for non-button elements). Both are immediate; only the busy visual is delayed (see Styling)
 - **Keyboard interaction:**
   - `Enter`: Activates the action if focused (native button behavior)
   - `Space`: Activates the action if focused (native button behavior)
@@ -81,7 +81,9 @@ readonly [saveWithRetry, retryState] = withRetry(() => this.saveAction());
 
 ## Styling
 
-CngxAsyncClick sets the `cngx-async` class on its host at all times (the hook for a theme; `[cngxAsyncClick]` is a property binding and leaves no attribute) and three classes for state feedback: `.cngx-async--pending` while the action runs, `.cngx-async--success` and `.cngx-async--error` for `feedbackDuration` ms after it settles. `@cngx/common/theming/components/cngx-async.css` (part of the `cngx.css` bundle) paints them through these tokens on hosts without their own paint (a bare `<button>`, an anchor). Button-family hosts (`.cngx-button`: `cngxButton`, `cngxIconButton`, `cngxCloseButton`, `cngxActionButton`) are skipped; they keep their variant paint and show their own busy treatment.
+CngxAsyncClick sets the `cngx-async` class on its host at all times (the hook for a theme; `[cngxAsyncClick]` is a property binding and leaves no attribute) and three classes for state feedback: `.cngx-async--pending` while the busy visual shows, `.cngx-async--success` and `.cngx-async--error` for `feedbackDuration` ms after it settles.
+
+The busy visual is gated by `busyVisible`: `.cngx-async--pending` (and the button-family spinner) appears only after `CNGX_LOADING_CONFIG.showDelay` (120 ms by default) and, once shown, stays for at least `minDwell` (400 ms), so a fast run never flashes it. `pending()`, `status()`, `aria-busy`, `aria-disabled`, the double-click guard and the announcement stay immediate. Retime app-wide with `provideLoadingConfig(withShowDelay(...), withMinDwell(...))`, per subtree with `provideLoadingConfigAt(...)`, or per instance with `[busyDelay]` / `[busyMinDwell]`. The settle classes wait until the gate releases, so `--pending` and `--success` / `--error` never coexist; `feedbackDuration` is not extended, so the tint shows for `feedbackDuration` minus the remaining dwell, and a `feedbackDuration` shorter than the remaining dwell skips the tint (`succeeded()` / `failed()` and the announcement still fire). `@cngx/common/theming/components/cngx-async.css` (part of the `cngx.css` bundle) paints them through these tokens on hosts without their own paint (a bare `<button>`, an anchor). Button-family hosts (`.cngx-button`: `cngxButton`, `cngxIconButton`, `cngxCloseButton`, `cngxActionButton`) are skipped; they keep their variant paint and show their own busy treatment.
 
 |Token|Unset default|
 |-|-|

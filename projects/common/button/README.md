@@ -52,7 +52,7 @@ Density, text scale, touch floor, motion and contrast are not inputs. They come 
 - **Disabled links keep their `href`.** A disabled `<a cngxButton>` is marked with `aria-disabled` only, so the context menu can still open the link in a new tab; clicks and middle clicks are swallowed.
 - **`type="button"` by default** on a `<button>` host, so a button inside a `<form>` never submits by accident. `type="submit"` and `[type]` both work. An `<a>` host gets no `type`.
 - **Icon buttons need a name.** `cngxIconButton` warns `CNGX1071` in development when the host has no `aria-label`, `aria-labelledby` or `title`. A tooltip is optional and a per-icon decision; compose `[cngxTooltip]` where the glyph alone is ambiguous.
-- **Busy.** Co-host `cngxAsyncClick`: the label keeps its place under a spinner, `aria-busy` and the announcement stay with the directive. Under reduced motion the ring stops turning.
+- **Busy.** Co-host `cngxAsyncClick`: the label keeps its place under a spinner, `aria-busy` and the announcement stay with the directive. The spinner follows `CNGX_LOADING_CONFIG`: it appears after `showDelay` (120 ms by default, so a fast run shows none) and stays for at least `minDwell` (400 ms); `aria-busy`, `aria-disabled` and the announcement are immediate. Override per button with `[busyDelay]` / `[busyMinDwell]` next to `cngxAsyncClick`. Under reduced motion the ring stops turning.
 - **Touch.** Every control size floors to 44px on a coarse pointer; an icon button grows its hit area through a pseudo-element and keeps its visual size. The `link` variant is the inline exception (WCAG 2.5.8).
 - **Forced colors.** Every variant re-signals with system colours; disabled is `GrayText`.
 

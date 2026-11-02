@@ -182,7 +182,11 @@ describe('CngxActionButton geometry', () => {
     fixture.componentInstance.status.set('pending');
     fixture.detectChanges();
     TestBed.flushEffects();
-    expect(btn.querySelector('.cngx-button__busy')).not.toBeNull();
+    // The spinner follows the loading config's show delay.
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(btn.querySelector('.cngx-button__busy')).not.toBeNull();
+    });
     expect(await accessibleName('.bare')).toBe(idleName);
     expect(getComputedStyle(query(btn, '.cngx-action-button__labels')).opacity).toBe('0');
     expect(btn.getBoundingClientRect().width).toBe(idleWidth);

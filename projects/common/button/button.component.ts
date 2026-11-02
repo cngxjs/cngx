@@ -83,7 +83,8 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
     '[attr.data-variant]': 'core.variant()',
     '[attr.data-tone]': 'core.tone()',
     '[attr.data-size]': 'core.size()',
-    '[attr.data-busy]': 'core.busy() ? "true" : null',
+    '[attr.data-busy]': 'core.busyVisible() ? "true" : null',
+    '[attr.data-pending]': 'core.busy() ? "true" : null',
     '[attr.data-start]': 'startSlot() ? "" : null',
     '[attr.data-end]': 'endSlot() ? "" : null',
     '[attr.aria-disabled]': 'core.ariaDisabled()',
@@ -97,7 +98,7 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
     <ng-content select="[cngxButtonStart]" />
     <span class="cngx-button__label"><ng-content /></span>
     <ng-content select="[cngxButtonEnd]" />
-    @if (core.busy()) {
+    @if (core.busyVisible()) {
       <span class="cngx-button__busy" aria-hidden="true">
         <span class="cngx-button__spinner"></span>
       </span>

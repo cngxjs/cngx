@@ -2,7 +2,7 @@ import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxAsyncClick, type AsyncAction } from '@cngx/common/interactive';
 import { accessibleName, computedValue } from '@cngx/testing/geometry';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cdp, userEvent } from 'vitest/browser';
 
 import { CngxButton } from './button.component';
@@ -55,6 +55,15 @@ type Density = 'comfortable' | 'compact' | 'spacious';
       <p>
         <button cngxButton class="b-busy" [cngxAsyncClick]="action">Save changes</button>
       </p>
+      <!-- A show delay no test outlives: the run stays inside the delay window. -->
+      <p>
+        <button cngxButton class="b-window-solid" [cngxAsyncClick]="action" [busyDelay]="600000">Save</button>
+        <button cngxButton class="b-idle-solid">Save</button>
+        <button cngxButton="outline" class="b-window-outline" [cngxAsyncClick]="action" [busyDelay]="600000">
+          Save
+        </button>
+        <button cngxButton="outline" class="b-idle-outline">Save</button>
+      </p>
       <!-- Transition off so a computed colour read right after hover is the end state. -->
       <p style="--cngx-button-transition: 0s">
         <button cngxButton tone="primary" class="b-shade-default">Save</button>
@@ -90,6 +99,17 @@ function mount(density: Density = 'comfortable', touch = false) {
   document.body.appendChild(mountedRoot);
   fixture.detectChanges();
   return { fixture, root: mountedRoot };
+}
+
+// data-busy follows the loading config's show delay, so a run paints its busy
+// layer a beat after the click; data-pending and aria-busy are immediate.
+async function startRun(fixture: { detectChanges(): void }, btn: HTMLElement): Promise<void> {
+  btn.click();
+  fixture.detectChanges();
+  await vi.waitFor(() => {
+    fixture.detectChanges();
+    expect(btn.dataset['busy']).toBe('true');
+  });
 }
 
 function query(root: HTMLElement, selector: string): HTMLElement {
@@ -247,9 +267,7 @@ describe('CngxButton geometry: busy', () => {
     const btn = query(root, '.b-busy');
     const width = btn.getBoundingClientRect().width;
     expect(await accessibleName('.b-busy')).toBe('Save changes');
-    btn.click();
-    fixture.detectChanges();
-    expect(btn.dataset['busy']).toBe('true');
+    await startRun(fixture, btn);
     expect(await accessibleName('.b-busy')).toBe('Save changes');
     expect(btn.getBoundingClientRect().width).toBeCloseTo(width, 0);
     expect(computedValue(query(btn, '.cngx-button__label'), 'opacity')).toBe('0');
@@ -257,6 +275,26 @@ describe('CngxButton geometry: busy', () => {
     // inset: 0 spans the padding box, so it misses only the two border pixels.
     expect(busy.getBoundingClientRect().width).toBeGreaterThanOrEqual(width - 2.5);
   });
+});
+
+describe('CngxButton paint: show-delay window', () => {
+  const PAINT = ['color', 'background-color', 'border-top-color', 'cursor'] as const;
+  const paintOf = (el: HTMLElement): Record<string, string> =>
+    Object.fromEntries(PAINT.map((p) => [p, computedValue(el, p)]));
+
+  it.each(['solid', 'outline'])(
+    'keeps the idle %s paint while a run is pending but the busy layer is not shown yet',
+    (variant) => {
+      const { fixture, root } = mount();
+      const btn = query(root, `.b-window-${variant}`);
+      btn.click();
+      fixture.detectChanges();
+      expect(btn.dataset['pending']).toBe('true');
+      expect(btn.getAttribute('aria-disabled')).toBe('true');
+      expect(btn.hasAttribute('data-busy')).toBe(false);
+      expect(paintOf(btn)).toEqual(paintOf(query(root, `.b-idle-${variant}`)));
+    },
+  );
 });
 
 describe('CngxButton geometry: busy under forced colors', () => {
@@ -270,9 +308,7 @@ describe('CngxButton geometry: busy under forced colors', () => {
     });
     const { fixture, root } = mount();
     const btn = query(root, '.b-busy');
-    btn.click();
-    fixture.detectChanges();
-    expect(btn.dataset['busy']).toBe('true');
+    await startRun(fixture, btn);
     expect(await accessibleName('.b-busy')).toBe('Save changes');
   });
 });
@@ -302,11 +338,10 @@ describe('CngxButton paint: tokens', () => {
     expect(computedValue(thick, 'text-decoration-thickness')).toBe('4px');
   });
 
-  it('strokes the busy ring from --cngx-button-spinner-thickness', () => {
+  it('strokes the busy ring from --cngx-button-spinner-thickness', async () => {
     const { fixture, root } = mount();
     const btn = query(root, '.b-busy');
-    btn.click();
-    fixture.detectChanges();
+    await startRun(fixture, btn);
     const ring = query(btn, '.cngx-button__spinner');
     expect(computedValue(ring, 'border-inline-start-width')).toBe('2px');
     btn.style.setProperty('--cngx-button-spinner-thickness', '3px');

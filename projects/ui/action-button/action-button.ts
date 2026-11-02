@@ -112,7 +112,7 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
   hostDirectives: [
     {
       directive: CngxAsyncClick,
-      inputs: ['cngxAsyncClick: action', 'feedbackDuration'],
+      inputs: ['cngxAsyncClick: action', 'feedbackDuration', 'busyDelay', 'busyMinDwell'],
     },
   ],
   providers: [
@@ -127,7 +127,8 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
     '[attr.data-variant]': 'core.variant()',
     '[attr.data-tone]': 'core.tone()',
     '[attr.data-size]': 'core.size()',
-    '[attr.data-busy]': 'effectiveBusy() ? "true" : null',
+    '[attr.data-busy]': 'core.busyVisible() ? "true" : null',
+    '[attr.data-pending]': 'effectiveBusy() ? "true" : null',
     '[attr.data-status]': 'effectiveStatus()',
     '[attr.data-status-label]': 'activeCell() === "idle" ? null : ""',
     '[attr.aria-disabled]': 'core.ariaDisabled()',
@@ -185,7 +186,7 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
         </span>
       }
     </span>
-    @if (effectiveBusy() && activeCell() === 'idle') {
+    @if (core.busyVisible() && activeCell() === 'idle') {
       <span class="cngx-button__busy" aria-hidden="true">
         <span class="cngx-button__spinner"></span>
       </span>

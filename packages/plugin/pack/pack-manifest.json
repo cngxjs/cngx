@@ -69,7 +69,7 @@
     {
       "artifact": "pack/recipes/common-interactive-async-click.md",
       "source": "examples/stories/common/interactive/async-click/basic-happy-path.story.ts",
-      "contentHash": "sha256:ddf3b94c053cc15149e063b72611f0f33e78a7e185b7ecdb2f1c404f0349adf8"
+      "contentHash": "sha256:1b6e04a325ea34a059f23a3e938e31f0b065b2795e74dac6f84eaa86631fb597"
     },
     {
       "artifact": "pack/recipes/common-interactive-retry.md",
@@ -239,7 +239,7 @@
     {
       "artifact": "pack/recipes/common-button-button.md",
       "source": "examples/stories/common/button/button/async-click-busy.story.ts",
-      "contentHash": "sha256:36608aea3a6b97cdd4dc933a0e61975bc5402e6cbbf9bc0fb7c63c072c10f287"
+      "contentHash": "sha256:66e653095203fa826c9fb034c8e93a6444d7438f60d7857286e2684f117bd070"
     },
     {
       "artifact": "pack/recipes/common-menu-button-split-button.md",
