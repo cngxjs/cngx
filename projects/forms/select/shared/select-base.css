@@ -1015,9 +1015,11 @@
 }
 
 @layer cngx.components {
-  /* The default caret draws on the shared 24-unit icon grid, where the
-     triangle spans 14 units. Scaling the box by 24/14 keeps its width at the
-     0.27em of the variant's caret font-size the 10-unit caret drew before. */
+  /* The box never drops below 12px, where the 12-grid micro triangle (8 units,
+     8px) paints: the default 1.6em caret font rounds to 12px and the 0.75rem
+     floor lifts the Material 1.5rem caret from 11px. Past the floor the box
+     keeps the 24-grid width, the 14-unit triangle drawn 0.27em of the caret
+     font wide. */
   :is(
       .cngx-select__caret,
       .cngx-multi-select__caret,
@@ -1030,7 +1032,7 @@
       .cngx-select-shell__caret
     )
     > .cngx-icon-svg {
-    --cngx-icon-svg-size: calc(0.27em * 24 / 14);
+    --cngx-icon-svg-size: max(calc(0.27em * 24 / 14), 0.75rem);
   }
 
   /* The default clear glyph sits in an inline span, where an inline svg aligns
