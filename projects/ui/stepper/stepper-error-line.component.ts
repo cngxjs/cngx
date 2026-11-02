@@ -55,10 +55,13 @@ import { CNGX_ICON_ALERT, CNGX_ICON_BAN } from '@cngx/utils';
       border: 0;
     }
 
-    /* Standalone icon, no disc: 1.15em of the line font at stroke width 2,
-       painted in the line's text colour. */
+    /* Standalone icon, no disc, painted in the line's text colour. The box
+       rounds to 12px next to every default line font (13 to 14px; the em term
+       only grows it with a larger font), where it selects the 12-grid micro
+       drawing and sits at cap height. The stroke width reaches the 24-grid
+       path only, once the box passes 14px. */
     [cngxStepperErrorLine] .cngx-icon-svg {
-      --cngx-icon-svg-size: 1.15em;
+      --cngx-icon-svg-size: max(0.85em, 0.75rem);
       --cngx-icon-svg-stroke-width: 2;
     }
   `,

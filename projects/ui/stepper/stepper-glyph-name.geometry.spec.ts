@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxStep } from '@cngx/common/stepper';
 import { accessibleName } from '@cngx/testing/geometry';
@@ -12,11 +12,18 @@ import { CngxStepper } from './stepper.component';
 // status is the aria-hidden alert badge icon. The breadcrumb separator is
 // `::after` content of the step header, kept out of the name by CSS alt text.
 // The status the icons carry is spoken by the header's status text instead.
+// The host loads the global micro sheet, as `cngx.css` does, so a glyph box
+// in the 10 to 14px band paints its micro drawing.
 
 @Component({
   selector: 'cngx-stepper-glyph-name-host',
   standalone: true,
   imports: [CngxStepper, CngxStep],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../common/theming/components/cngx-icon-glyph.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
   template: `
     <div [attr.dir]="dir()">
       <cngx-stepper aria-label="Wizard" [skin]="skin()" [activeStepIndex]="2">
@@ -120,18 +127,23 @@ describe('stepper status glyphs', () => {
     expect(getComputedStyle(doneIcon(0)!).display).toBe('none');
   });
 
-  it('draws the classic disc check centred, as wide as the old bold check (0.72em)', () => {
+  it('draws the classic disc check as the micro drawing on a 12px box, centred', () => {
     mount('classic');
     const indicator = header(0).querySelector<HTMLElement>('.cngx-stepper__indicator')!;
     const svg = indicator.querySelector<SVGSVGElement>('svg.cngx-stepper__indicator-check')!;
     const glyph = indicator.querySelector<HTMLElement>('.cngx-stepper__indicator-glyph')!;
     expect(getComputedStyle(glyph).display).toBe('none');
-    const em = parseFloat(getComputedStyle(indicator).fontSize);
-    const ink = inkBox(svg);
-    expect(ink.width).toBeCloseTo(0.72 * em, 0);
+    const box = svg.getBoundingClientRect();
+    expect(box.width).toBe(12);
+    expect(box.height).toBe(12);
+    const micro = svg.querySelector('.cngx-icon-svg__micro')!;
+    expect(getComputedStyle(svg.querySelector('.cngx-icon-svg__path')!).display).toBe('none');
+    expect(getComputedStyle(micro).display).not.toBe('none');
+    // The micro check spans 10 units across (1 to 11).
+    expect(micro.getBoundingClientRect().width).toBeCloseTo(10, 1);
     const disc = indicator.getBoundingClientRect();
-    expect(ink.cx).toBeCloseTo(disc.left + disc.width / 2, 0);
-    expect(ink.cy).toBeCloseTo(disc.top + disc.height / 2, 0);
+    expect(box.left + box.width / 2).toBeCloseTo(disc.left + disc.width / 2, 0);
+    expect(box.top + box.height / 2).toBeCloseTo(disc.top + disc.height / 2, 0);
   });
 
   for (const skin of ['classic', 'path-chevron', 'chips', 'breadcrumb'] as const) {

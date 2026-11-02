@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxStep } from '@cngx/common/stepper';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -9,13 +9,20 @@ import { STEPPER_OUTCOME_SEAM, stepperOutcome } from './__test-helpers/stepper-o
 // Runs in a real Chromium (the `test-geometry` target). The error and refused
 // marks of `<cngx-dot-stepper>` are icons stacked over the dot in a one-cell
 // grid: centred on the dot, painted over it, sized from the 0.75rem glyph font
-// (exclamation mark 14 of 24 grid units as a fill, ban ring 0.8em with its stroke), and a
-// marked dot grows from 10px to 16px so the mark stays legible.
+// to a 12px box that selects the 12-grid micro drawings (exclamation mark 9
+// units tall, ban disc 12 units), and a marked dot grows from 10px to 16px so
+// the mark stays legible. The host loads the global micro sheet, as `cngx.css`
+// does.
 
 @Component({
   selector: 'cngx-dot-stepper-glyph-host',
   standalone: true,
   imports: [CngxDotStepper, CngxStep],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../common/theming/components/cngx-icon-glyph.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
   template: `
     <cngx-dot-stepper aria-label="Tour" [activeStepIndex]="2">
       <div cngxStep label="One"></div>
@@ -53,17 +60,21 @@ function icon(dot: HTMLElement): SVGSVGElement {
   return dot.nextElementSibling as SVGSVGElement;
 }
 
-/** Drawn box of the icon path, widened by its stroke when the glyph is a stroke. */
+/** The path the band rule paints: the micro drawing in a 10 to 14px box. */
+function visiblePath(svg: SVGSVGElement): SVGPathElement {
+  const painted = Array.from(svg.querySelectorAll('path')).filter(
+    (path) => getComputedStyle(path).display !== 'none',
+  );
+  expect(painted).toHaveLength(1);
+  return painted[0];
+}
+
+/** Drawn box of the painted micro path, a fill outline. */
 function ink(svg: SVGSVGElement): { height: number; cx: number; cy: number } {
-  const path = svg.querySelector('path')!.getBoundingClientRect();
-  const stroke = svg.classList.contains('cngx-icon-svg--stroke')
-    ? (parseFloat(getComputedStyle(svg).strokeWidth) * svg.getBoundingClientRect().width) / 24
-    : 0;
-  return {
-    height: path.height + stroke,
-    cx: path.left + path.width / 2,
-    cy: path.top + path.height / 2,
-  };
+  const path = visiblePath(svg);
+  expect(path.classList.contains('cngx-icon-svg__micro')).toBe(true);
+  const box = path.getBoundingClientRect();
+  return { height: box.height, cx: box.left + box.width / 2, cy: box.top + box.height / 2 };
 }
 
 afterEach(() => {
@@ -83,12 +94,26 @@ describe('dot stepper error marks', () => {
     }
   });
 
-  it('draws the exclamation mark 14 of 24 units and the ban ring 0.8em of the 12px glyph font', async () => {
+  it('draws both marks as the micro drawing on a 12px box: exclamation 9 units, ban disc 12', async () => {
     const dots = await mount();
-    expect(ink(icon(dots[3])).height).toBeCloseTo((14 / 24) * 12, 0);
-    expect(ink(icon(dots[1])).height).toBeCloseTo(0.8 * 12, 0);
+    for (const dot of [dots[1], dots[3]]) {
+      const box = icon(dot).getBoundingClientRect();
+      expect(box.width).toBe(12);
+      expect(box.height).toBe(12);
+    }
+    expect(ink(icon(dots[3])).height).toBeCloseTo(9, 1);
+    expect(ink(icon(dots[1])).height).toBeCloseTo(12, 1);
     // The active dot grows by 1.25, its mark with it.
-    expect(ink(icon(dots[2])).height).toBeCloseTo((14 / 24) * 12 * 1.25, 0);
+    expect(ink(icon(dots[2])).height).toBeCloseTo(9 * 1.25, 1);
+  });
+
+  it('draws the error line glyph as the micro drawing on a 12px box', async () => {
+    await mount();
+    const svg = mountedRoot!.querySelector<SVGSVGElement>('.cngx-dot-stepper__error svg')!;
+    const box = svg.getBoundingClientRect();
+    expect(box.width).toBe(12);
+    expect(box.height).toBe(12);
+    expect(visiblePath(svg).classList.contains('cngx-icon-svg__micro')).toBe(true);
   });
 
   it('paints the mark over the dot in the on-danger colour', async () => {
