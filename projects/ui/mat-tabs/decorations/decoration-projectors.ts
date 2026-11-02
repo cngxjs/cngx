@@ -111,6 +111,8 @@ function createIconGlyph(
 
 /**
  * Options for {@link createMatTabRejectionDecoration}.
+ *
+ * @internal
  */
 export interface CngxMatTabRejectionDecorationOptions {
   /** Host element whose subtree contains the `.mat-mdc-tab` buttons. */
@@ -480,6 +482,8 @@ export function createMatTabRejectionDecoration(
  * imperative-fallback path uses `announcement` only and ignores the
  * two extra fields. They stay on the shape so the contract is
  * uniform across render paths.
+ *
+ * @internal
  */
 export interface CngxMatTabAggregatorErrorEntry {
   readonly idx: number;
@@ -493,6 +497,8 @@ export interface CngxMatTabAggregatorErrorEntry {
 
 /**
  * Options for {@link createMatTabAggregatorDecoration}.
+ *
+ * @internal
  */
 export interface CngxMatTabAggregatorDecorationOptions {
   readonly hostEl: HTMLElement;

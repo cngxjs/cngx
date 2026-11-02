@@ -9,7 +9,11 @@ import {
   type CngxMatTabsRegistryHost,
 } from './mat-tabs-registry.directive';
 
-/** What a per-tab error directive writes through: its tab and the group's registry. */
+/**
+ * What a per-tab error directive writes through: its tab and the group's registry.
+ *
+ * @internal
+ */
 export interface CngxMatTabErrorTarget {
   readonly matTab: MatTab;
   readonly registry: CngxMatTabsRegistryHost;

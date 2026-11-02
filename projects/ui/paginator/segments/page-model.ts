@@ -41,6 +41,8 @@ function range(start: number, end: number): number[] {
  * each side; `boundaryCount` is how many pages are pinned at each end. Both
  * default to `1`, reproducing the v1 window byte-for-byte; the `cngx-pgn-pages`
  * inputs and {@link CNGX_PAGINATOR_PAGE_WINDOW_FACTORY} feed non-default values.
+ *
+ * @internal
  */
 export function pageWindow(
   current: number,
@@ -102,6 +104,8 @@ export function pageWindow(
  * Structural equality for two page windows. The `equal` fn for the segment's
  * `computed()` - keeps the reference stable across recomputes that yield an
  * identical window, so downstream `@for` does not churn.
+ *
+ * @internal
  */
 export function pageWindowEqual(a: PageWindow, b: PageWindow): boolean {
   if (a === b) {
