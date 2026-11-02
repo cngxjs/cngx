@@ -421,6 +421,11 @@ export const CNGX_LANGUAGE_DE = {
     announceMoved: '{field}: {option} verschoben',
     announceMovedTo: '{field}: {option} an Position {position} verschoben',
     announceMovedNoOption: '{field}: verschoben',
+    announceResults: {
+      one: '{count} Ergebnis',
+      other: '{count} Ergebnisse',
+    },
+    announceNoResults: 'Keine Ergebnisse',
     actionGroup: 'Inline-Aktion',
     reorderHint: 'Mit Alt + Pfeiltasten neu anordnen',
     reorderListLabel: 'Ausgewählt, in Reihenfolge',

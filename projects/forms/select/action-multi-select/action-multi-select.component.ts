@@ -124,7 +124,7 @@ import { createActionTriggerInput } from '../shared/internal/action-trigger-inpu
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
-import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
+import { CNGX_SEARCH_EFFECTS_FACTORY, searchResultsFrom } from '../shared/search-effects';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -1269,6 +1269,12 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
         skipInitial: this.skipInitial,
         onEmit: (term) => this.searchTermChange.emit(term),
       },
+      results: searchResultsFrom({
+        count: () => this.flatOptions().length,
+        activeView: this.activeView,
+        refreshing: this.showRefreshIndicator,
+        ariaLabels: this.config.ariaLabels,
+      }),
     });
   }
 

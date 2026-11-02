@@ -83,7 +83,7 @@ import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import { isEmptyScalar } from '../shared/internal/compare';
 import { handlePageJumpKey } from '../shared/internal/page-jump-handler';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
-import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
+import { CNGX_SEARCH_EFFECTS_FACTORY, searchResultsFrom } from '../shared/search-effects';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
   dispatchScalarClear,
@@ -948,6 +948,12 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       focused: this.focusState.focused,
       open: () => this.open(),
       autoOpenGate: () => !this.display.isWritingFromValue(),
+      results: searchResultsFrom({
+        count: () => this.flatOptions().length,
+        activeView: this.activeView,
+        refreshing: this.showRefreshIndicator,
+        ariaLabels: this.config.ariaLabels,
+      }),
     });
   }
 

@@ -1,8 +1,18 @@
 import { Component, signal, type WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import type { AsyncView } from '@cngx/common/data';
+import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/core/i18n';
+import type { CngxActiveLanguagePack } from '@cngx/core/i18n';
+import { stripBidiIsolates } from '@cngx/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { CNGX_SEARCH_EFFECTS_FACTORY, createSearchEffects } from './search-effects';
+import { CngxSelectAnnouncer } from './announcer';
+import { resolveSelectConfig } from './internal/resolve-config';
+import {
+  CNGX_SEARCH_EFFECTS_FACTORY,
+  createSearchEffects,
+  searchResultsFrom,
+} from './search-effects';
 
 @Component({ selector: 'auto-open-probe', template: '', standalone: true })
 class AutoOpenProbe {
@@ -127,5 +137,146 @@ describe('createSearchEffects - searchTermChange forward', () => {
 describe('CNGX_SEARCH_EFFECTS_FACTORY', () => {
   it('defaults to createSearchEffects', () => {
     expect(TestBed.inject(CNGX_SEARCH_EFFECTS_FACTORY)).toBe(createSearchEffects);
+  });
+});
+
+@Component({ selector: 'results-probe', template: '', standalone: true })
+class ResultsProbe {
+  readonly searchTerm: WritableSignal<string> = signal('');
+  readonly panelOpen = signal(true);
+  // Disabled so auto-open never runs; the announcement does not depend on it.
+  readonly disabled = signal(true);
+  readonly count = signal(3);
+  readonly view = signal<AsyncView>('content');
+  readonly refreshing = signal(false);
+  readonly config = resolveSelectConfig();
+
+  constructor() {
+    createSearchEffects({
+      searchTerm: this.searchTerm,
+      panelOpen: this.panelOpen,
+      disabled: this.disabled,
+      open: () => undefined,
+      results: searchResultsFrom({
+        count: () => this.count(),
+        activeView: this.view,
+        refreshing: this.refreshing,
+        ariaLabels: this.config.ariaLabels,
+      }),
+    });
+  }
+}
+
+describe('createSearchEffects - filter outcome announcement', () => {
+  let c: ResultsProbe;
+  let spoken: { message: string; politeness: string }[];
+  const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+
+  beforeEach(() => {
+    spoken = [];
+    pack.set(undefined);
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
+        {
+          provide: CngxSelectAnnouncer,
+          useValue: {
+            announce: (message: string, politeness = 'polite') =>
+              spoken.push({ message, politeness }),
+          },
+        },
+      ],
+    });
+    const fixture = TestBed.createComponent(ResultsProbe);
+    c = fixture.componentInstance;
+    fixture.detectChanges();
+    TestBed.flushEffects();
+  });
+
+  const messages = (): string[] => spoken.map((s) => stripBidiIsolates(s.message));
+
+  it('stays silent for the empty term', () => {
+    expect(spoken).toEqual([]);
+  });
+
+  it('speaks the plural count politely once the term settles', () => {
+    c.searchTerm.set('re');
+    TestBed.flushEffects();
+    expect(messages()).toEqual(['3 results']);
+    expect(spoken[0].politeness).toBe('polite');
+
+    c.count.set(1);
+    c.searchTerm.set('red');
+    TestBed.flushEffects();
+    expect(messages()).toEqual(['3 results', '1 result']);
+  });
+
+  it('speaks no results when nothing matches', () => {
+    c.count.set(0);
+    c.view.set('empty');
+    c.searchTerm.set('zzz');
+    TestBed.flushEffects();
+    expect(messages()).toEqual(['No results']);
+  });
+
+  it('waits until loading and refreshing are over', () => {
+    c.view.set('skeleton');
+    c.searchTerm.set('re');
+    TestBed.flushEffects();
+    expect(spoken).toEqual([]);
+
+    c.view.set('content');
+    c.refreshing.set(true);
+    TestBed.flushEffects();
+    expect(spoken).toEqual([]);
+
+    c.count.set(2);
+    c.refreshing.set(false);
+    TestBed.flushEffects();
+    expect(messages()).toEqual(['2 results']);
+  });
+
+  it('stays silent while the panel is closed and speaks when it opens', () => {
+    c.panelOpen.set(false);
+    c.searchTerm.set('re');
+    TestBed.flushEffects();
+    expect(spoken).toEqual([]);
+
+    c.panelOpen.set(true);
+    TestBed.flushEffects();
+    expect(messages()).toEqual(['3 results']);
+  });
+
+  it('speaks a term and count pair once, and again after the term was cleared', () => {
+    c.searchTerm.set('re');
+    TestBed.flushEffects();
+    c.panelOpen.set(false);
+    TestBed.flushEffects();
+    c.panelOpen.set(true);
+    TestBed.flushEffects();
+    expect(messages()).toEqual(['3 results']);
+
+    c.searchTerm.set('');
+    TestBed.flushEffects();
+    c.searchTerm.set('re');
+    TestBed.flushEffects();
+    expect(messages()).toEqual(['3 results', '3 results']);
+  });
+
+  it('reads the active pack without re-speaking on a language switch', () => {
+    c.searchTerm.set('ro');
+    TestBed.flushEffects();
+    expect(messages()).toEqual(['3 results']);
+
+    pack.set({
+      locale: 'de',
+      select: { announceResults: { one: '{count} Ergebnis', other: '{count} Ergebnisse' } },
+    });
+    TestBed.flushEffects();
+    expect(messages()).toEqual(['3 results']);
+
+    c.count.set(1200);
+    TestBed.flushEffects();
+    expect(messages()).toEqual(['3 results', '1.200 Ergebnisse']);
   });
 });

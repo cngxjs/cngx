@@ -358,6 +358,7 @@ export {
   createSearchEffects,
   type CngxSearchEffectsFactory,
   type SearchEffectsOptions,
+  type SearchEffectsResults,
 } from './shared/search-effects';
 
 export {

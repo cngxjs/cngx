@@ -189,6 +189,15 @@ export interface CngxSelectAriaLabels {
    * `aria-describedby` only in that state. Default `'Unavailable while saving'`.
    */
   readonly commitPending?: string;
+  /**
+   * Polite announcement when a typed filter settles on one or more matching
+   * options. Receives the number of matches and returns the whole text.
+   * Default `'{count} results'` (`'1 result'` for one), the count formatted
+   * for the reading locale.
+   */
+  readonly announceResults?: (count: number) => string;
+  /** Polite announcement when a typed filter settles on no matching option. Default `'No results'`. */
+  readonly announceNoResults?: string;
 }
 
 /**

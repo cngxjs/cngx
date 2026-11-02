@@ -110,7 +110,7 @@ import {
   dispatchScalarClear,
   type ScalarCommitHandler,
 } from '../shared/scalar-commit-handler';
-import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
+import { CNGX_SEARCH_EFFECTS_FACTORY, searchResultsFrom } from '../shared/search-effects';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -1178,6 +1178,12 @@ export class CngxSelectShell<T = unknown>
       panelOpen: this.panelOpen,
       disabled: this.disabled,
       open: () => this.open(),
+      results: searchResultsFrom({
+        count: () => this.visibleProjectedOptions().length,
+        activeView: this.activeView,
+        refreshing: this.showRefreshIndicator,
+        ariaLabels: this.config.ariaLabels,
+      }),
     });
   }
 

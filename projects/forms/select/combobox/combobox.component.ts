@@ -114,7 +114,7 @@ import {
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import { handlePageJumpKey } from '../shared/internal/page-jump-handler';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
-import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
+import { CNGX_SEARCH_EFFECTS_FACTORY, searchResultsFrom } from '../shared/search-effects';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
@@ -1185,6 +1185,12 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
         skipInitial: this.skipInitial,
         onEmit: (term) => this.searchTermChange.emit(term),
       },
+      results: searchResultsFrom({
+        count: () => this.flatOptions().length,
+        activeView: this.activeView,
+        refreshing: this.showRefreshIndicator,
+        ariaLabels: this.config.ariaLabels,
+      }),
     });
   }
 

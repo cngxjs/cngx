@@ -74,6 +74,8 @@ const EN_ARIA: CngxResolvedSelectAriaLabels = {
   sheetDone: 'Done',
   commitPending: 'Unavailable while saving',
   selectionSummary: (labels: readonly string[]) => labels.join(', '),
+  announceResults: (count: number) => `${count} results`,
+  announceNoResults: 'No results',
 };
 
 function createMockHost(): {

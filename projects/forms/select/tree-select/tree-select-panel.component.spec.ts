@@ -96,6 +96,8 @@ function makeShellHost(): CngxSelectPanelHost {
       sheetDone: 'Done',
       commitPending: 'Unavailable while saving',
       selectionSummary: (labels: readonly string[]) => labels.join(', '),
+      announceResults: (count: number) => `${count} results`,
+      announceNoResults: 'No results',
     }),
     resolvedListboxLabel: signal(''),
     resolvedShowSelectionIndicator: signal(true),
