@@ -85,11 +85,22 @@ export class CngxBreadcrumb implements CngxBreadcrumbHost {
   /** Whether any crumb is collapsed (drives the ellipsis trigger's visibility). */
   readonly hasCollapsed = computed(() => this.collapsedIndices().size > 0);
 
+  /**
+   * Returns whether the crumb is the last one in DOM order. Implements `isTerminal` of
+   * `CngxBreadcrumbHost`, called by `CngxBreadcrumbItem`; false for an item that is not a
+   * projected crumb of this breadcrumb.
+   */
   isTerminal(item: CngxBreadcrumbItem): boolean {
     const index = this.indexByItem().get(item);
     return index !== undefined && index === this.items().length - 1;
   }
 
+  /**
+   * Returns whether the crumb is currently collapsed into the overflow menu, according to
+   * `maxVisible` and the collapse strategy. Implements `isCollapsed` of `CngxBreadcrumbHost`,
+   * called by `CngxBreadcrumbItem`; false for an item that is not a projected crumb of this
+   * breadcrumb.
+   */
   isCollapsed(item: CngxBreadcrumbItem): boolean {
     const index = this.indexByItem().get(item);
     return index !== undefined && this.collapsedIndices().has(index);

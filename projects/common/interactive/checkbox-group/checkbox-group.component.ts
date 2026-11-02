@@ -124,9 +124,22 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, CngxFormFieldControl {
+  /**
+   * Values currently selected in the group, compared by `keyFn`. Two-way bindable with
+   * `[(selectedValues)]`; `value` is an alias of the same model. Default `[]`.
+   */
   readonly selectedValues = model<T[]>([]);
   readonly value = this.selectedValues;
+  /**
+   * Disables the group: `select`, `deselect` and `toggleAll` become no-ops and the host
+   * sets `aria-disabled="true"`. Projected checkboxes are not disabled automatically;
+   * bind `[disabled]` on each one. Default `false`.
+   */
   readonly disabled = model<boolean>(false);
+  /**
+   * Sets `aria-required="true"` on the host while true. The group performs no
+   * validation itself. Default `false`.
+   */
   readonly required = model<boolean>(false);
   /**
    * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
@@ -143,7 +156,18 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
    * with the supplied id. Default `null` skips the attribute.
    */
   readonly errorMessageId = input<string | null>(null);
+  /**
+   * Layout direction of the group. `'horizontal'` adds the
+   * `cngx-checkbox-group--horizontal` class. Default `'vertical'`. An explicit binding is also
+   * forwarded to the host `CngxRovingTabindex` as its arrow-key axis; while unbound, the layout is
+   * vertical but the roving axis keeps its own default `'horizontal'`.
+   */
   readonly orientation = input<'horizontal' | 'vertical'>('vertical');
+  /**
+   * Accessible name of the group, emitted as `aria-label`. A non-empty label also stops
+   * the group from referencing the surrounding `cngx-form-field` label through
+   * `aria-labelledby`. Default `undefined`.
+   */
   readonly label = input<string | undefined>(undefined);
 
   /**
@@ -151,6 +175,12 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
    * field-label reference applied inside a `cngx-form-field`.
    */
   readonly labelledBy = input<string | undefined>(undefined);
+  /**
+   * Full option pool behind a select-all control. When set, `allSelected` is true only
+   * if every pool value is selected, and `toggleAll` selects the missing pool values or
+   * clears them all. When unset, `allSelected` is true for any non-empty selection and
+   * `toggleAll` only clears. Default `undefined`.
+   */
   readonly allValues = input<readonly T[] | undefined>(undefined);
   /**
    * Optional async state driving `aria-busy`. An explicit binding wins;
@@ -163,6 +193,11 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
     CngxAsyncState<unknown> | undefined,
     CngxAsyncState<unknown> | '' | undefined
   >(undefined, { transform: (v) => (typeof v === 'string' ? undefined : v) });
+  /**
+   * Maps a value to the key used for membership checks, for example `(v) => v.id` for
+   * object values so re-fetched instances with the same id still match. Default is the
+   * identity function.
+   */
   readonly keyFn = input<(value: T) => unknown>((v) => v);
 
   private readonly controller: SelectionController<T> = inject(
@@ -209,6 +244,11 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
 
   protected readonly ariaBusy = this.groupHost.ariaBusy;
 
+  /**
+   * Selects or clears the whole group. With `allValues` set it selects every missing
+   * pool value, or removes the pool values when all are already selected; without
+   * `allValues` it clears a non-empty selection. No-op while `disabled`.
+   */
   toggleAll(): void {
     if (this.disabled()) {
       return;
@@ -223,6 +263,10 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
     }
   }
 
+  /**
+   * Adds `value` to `selectedValues` unless a value with the same `keyFn` key is
+   * already selected. No-op while `disabled`.
+   */
   select(value: T): void {
     if (this.disabled()) {
       return;
@@ -230,6 +274,10 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
     this.controller.select(value);
   }
 
+  /**
+   * Removes the value with the same `keyFn` key as `value` from `selectedValues`. No-op
+   * while `disabled` or when the value is not selected.
+   */
   deselect(value: T): void {
     if (this.disabled()) {
       return;

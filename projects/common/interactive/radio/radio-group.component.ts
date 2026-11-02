@@ -107,8 +107,23 @@ import {
 export class CngxRadioGroup<T = unknown>
   implements CngxRadioGroupContract<T>, CngxControlValue<T | undefined>, CngxFormFieldControl
 {
+  /**
+   * Value of the selected radio, or `undefined` when none is selected. Two-way bindable
+   * with `[(value)]`; a radio writes it on click, Space, Enter and arrow-key focus.
+   * Each radio is checked while its own value is strictly equal to it. Default
+   * `undefined`.
+   */
   readonly value = model<T | undefined>(undefined);
+  /**
+   * Disables every radio in the group: each radio combines it with its own `disabled`,
+   * and the host sets `aria-disabled="true"`. Arrow-key focus does not select while the
+   * group is disabled. Default `false`.
+   */
   readonly disabled = model<boolean>(false);
+  /**
+   * Sets `aria-required="true"` on the host while true. The group performs no
+   * validation itself. Default `false`.
+   */
   readonly required = model<boolean>(false);
   /**
    * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
@@ -126,7 +141,17 @@ export class CngxRadioGroup<T = unknown>
    * id is harmless when the field is valid.
    */
   readonly errorMessageId = input<string | null>(null);
+  /**
+   * Layout direction of the group, reflected as `aria-orientation`; `'horizontal'` also
+   * adds the `cngx-radio-group--horizontal` class. It does not change the keyboard
+   * axis, all four arrow keys always move focus. Default `'vertical'`.
+   */
   readonly orientation = input<'horizontal' | 'vertical'>('vertical');
+  /**
+   * Accessible name of the group, emitted as `aria-label`. A non-empty label also stops
+   * the group from referencing the surrounding `cngx-form-field` label through
+   * `aria-labelledby`. Default `undefined`.
+   */
   readonly label = input<string | undefined>(undefined);
   /**
    * Indicator skin for every radio in the group. A radio's own `[skin]`
@@ -151,6 +176,10 @@ export class CngxRadioGroup<T = unknown>
     CngxAsyncState<unknown> | undefined,
     CngxAsyncState<unknown> | '' | undefined
   >(undefined, { transform: (v) => (typeof v === 'string' ? undefined : v) });
+  /**
+   * Binding `[name]`: the `name` attribute written on every radio host. Falls back to a
+   * generated unique id when not set.
+   */
   readonly nameInput = input<string | undefined>(undefined, { alias: 'name' });
 
   private readonly fallbackName = nextUid('cngx-radio-group');
@@ -191,14 +220,31 @@ export class CngxRadioGroup<T = unknown>
     this.roving.orientation.set('both');
   }
 
+  /**
+   * Implements `CngxRadioGroupContract.register`: stores the registration in the
+   * group's registry under `radio.id`, replacing an earlier entry with the same id.
+   * Called by each `CngxRadio` from its constructor.
+   */
   register(radio: CngxRadioRegistration<T>): void {
     this.registry.set(radio.id, radio);
   }
 
+  /**
+   * Implements `CngxRadioGroupContract.unregister`: removes the registration stored
+   * under `id`. Called by each `CngxRadio` when it is destroyed.
+   */
   unregister(id: string): void {
     this.registry.delete(id);
   }
 
+  /**
+   * Implements `CngxRadioGroupContract.consumePendingArrowSelect`: when the host
+   * `CngxRovingTabindex` reports that focus just moved by a navigation key, sets the
+   * group `value` to `value` and returns `true`. Returns `false` for any other focus
+   * (such as Tab) or while the group is disabled. The transient flag is cleared on
+   * every call. Called by each `CngxRadio` from its focus handler, so arrow navigation
+   * selects.
+   */
   consumePendingArrowSelect(value: T): boolean {
     if (!this.roving.consumeNavigationKey()) {
       return false;

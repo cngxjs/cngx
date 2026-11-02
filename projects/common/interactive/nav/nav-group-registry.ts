@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
 import type { CngxDisclosure } from './disclosure.directive';
 
-/** Minimal interface for nav group instances tracked by the registry. */
+/**
+ * Minimal interface for nav group instances tracked by the registry.
+ * @internal
+ */
 export interface NavGroupRef {
   readonly disclosure: CngxDisclosure;
 }

@@ -169,17 +169,14 @@ export class CngxTagGroup implements CngxTagGroupHost {
   readonly label = input<string | undefined>(undefined);
 
   /**
-   * Input-binding hook for the public `[semanticList]` attribute.
-   * Accessed by Angular's template type-checker on consumer
-   * markup - therefore must be class-public (Angular rejects
-   * `private` per NG1053; `protected` blocks external template
-   * bindings). The hook is intentionally **not** the contract
-   * surface - that role belongs to `semanticList` below, typed
-   * `Signal<boolean>` so test doubles and programmatic
-   * implementers of `CngxTagGroupHost` can satisfy the interface
-   * without owning an Angular `input()`.
+   * Whether the group exposes itself as a list (`role="list"`, with `role="listitem"` on each
+   * projected tag), bound as `[semanticList]`. The default is the tag config's
+   * `groupDefaults.semanticList`, or `false`, read once when the group is constructed.
    *
-   * @internal
+   * The field is class-public because Angular rejects `private` on an input (NG1053) and `protected`
+   * blocks external template bindings. The host contract is the `semanticList` field below, typed
+   * `Signal<boolean>` so test doubles and programmatic implementers of `CngxTagGroupHost` can satisfy
+   * the interface without owning an Angular `input()`.
    */
   readonly semanticListInput = input<boolean>(this.cfg.groupDefaults?.semanticList ?? false, {
     alias: 'semanticList',

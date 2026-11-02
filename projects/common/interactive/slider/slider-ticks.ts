@@ -9,7 +9,10 @@
 import { computed, type Signal } from '@angular/core';
 import { arrayEqual, decimalPlaces } from '@cngx/utils';
 
-/** Tick view produced by {@link createSliderTicks}. */
+/**
+ * Tick view produced by {@link createSliderTicks}.
+ * @internal
+ */
 export interface CngxSliderTicksView {
   /** Tick spacing as a track percentage string (e.g. `"5%"`), or `null` when marks are off. */
   readonly interval: Signal<string | null>;
@@ -27,6 +30,7 @@ export interface CngxSliderTicksView {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider-ticks.ts
  * @since 0.1.0
+ * @internal
  */
 export function createSliderTicks(options: {
   readonly min: Signal<number>;
@@ -63,6 +67,10 @@ export function createSliderTicks(options: {
   };
 }
 
+/**
+ * Tick stops from `min` to `max` stepping by `step`, rounded to the step's decimal places; returns `[]` for a non-positive step or range, or when more than `maxCount` stops would result.
+ * @internal
+ */
 export function sliderTickValues(min: number, max: number, step: number, maxCount = 21): number[] {
   const span = max - min;
   if (step <= 0 || span <= 0) {

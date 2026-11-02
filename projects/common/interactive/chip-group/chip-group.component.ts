@@ -107,9 +107,26 @@ import { CNGX_CHIP_GROUP_HOST, type CngxChipGroupHost } from './chip-group-host.
 export class CngxChipGroup<T = unknown>
   implements CngxControlValue<T | undefined>, CngxChipGroupHost<T>, CngxFormFieldControl
 {
+  /**
+   * The selected chip value, bound two-way as `[(selected)]`. `undefined`
+   * means no chip is selected; clicking the selected chip again clears
+   * it back to `undefined`. `value` is the same signal under the
+   * form-control name.
+   */
   readonly selected = model<T | undefined>(undefined);
   readonly value = this.selected;
+  /**
+   * Disables the whole group, bound two-way as `[(disabled)]`. Default
+   * `false`. While `true` the host sets `aria-disabled="true"`, the
+   * projected `cngxChipInGroup` chips inherit it, and `toggle()` and
+   * `remove()` do nothing. A form bridge writes it for a disabled control.
+   */
   readonly disabled = model<boolean>(false);
+  /**
+   * Marks the group as required, bound two-way as `[(required)]`.
+   * Default `false`. While `true` the host sets `aria-required="true"`;
+   * it adds no validation and does not block clearing the selection.
+   */
   readonly required = model<boolean>(false);
   /**
    * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
@@ -127,7 +144,19 @@ export class CngxChipGroup<T = unknown>
    * id is harmless when the field is valid.
    */
   readonly errorMessageId = input<string | null>(null);
+  /**
+   * Layout and arrow-key axis of the group: `'horizontal'` (default)
+   * adds the `cngx-chip-group--horizontal` class, `'vertical'` omits it.
+   * The value is forwarded to the host `CngxRovingTabindex`, which
+   * decides which arrow keys move focus between chips.
+   */
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
+  /**
+   * Accessible name of the group, written to `aria-label` on the host.
+   * Default `undefined` (no attribute). While set, the automatic
+   * `aria-labelledby` reference to the surrounding form-field label is
+   * dropped; an explicit `labelledBy` still takes precedence.
+   */
   readonly label = input<string | undefined>(undefined);
 
   /**
@@ -162,10 +191,22 @@ export class CngxChipGroup<T = unknown>
 
   protected readonly ariaBusy = this.groupHost.ariaBusy;
 
+  /**
+   * Returns whether `value` is the current selection. Compares with
+   * `Object.is`, so object values match by reference. Called by
+   * `CngxChipInGroup` leaves through `CNGX_CHIP_GROUP_HOST` to derive
+   * their `aria-selected`.
+   */
   isSelected(value: T): boolean {
     return Object.is(this.selected(), value);
   }
 
+  /**
+   * Selects `value`, or clears the selection when `value` is already
+   * the selected one. Does nothing while the group is disabled. Called
+   * by `CngxChipInGroup` leaves on click, Space and Enter through
+   * `CNGX_CHIP_GROUP_HOST`.
+   */
   toggle(value: T): void {
     if (this.disabled()) {
       return;
@@ -177,6 +218,12 @@ export class CngxChipGroup<T = unknown>
     this.selected.set(value);
   }
 
+  /**
+   * Clears the selection when `value` is the selected one; any other
+   * value is left untouched. Does nothing while the group is disabled.
+   * Called by `CngxChipInGroup` leaves on Delete and Backspace through
+   * `CNGX_CHIP_GROUP_HOST`.
+   */
   remove(value: T): void {
     if (this.disabled()) {
       return;

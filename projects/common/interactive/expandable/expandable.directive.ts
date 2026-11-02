@@ -64,6 +64,10 @@ export class CngxExpandable {
   /** Emitted when the expanded state changes. */
   readonly expandedChange = output<boolean>();
 
+  /**
+   * Sets the internal state to expanded and emits `expandedChange` with `true`. No-op when
+   * already expanded; a bound `cngxExpandableOpen` still decides the resolved `expanded()`.
+   */
   expand(): void {
     if (this.expanded()) {
       return;
@@ -72,6 +76,10 @@ export class CngxExpandable {
     this.expandedChange.emit(true);
   }
 
+  /**
+   * Sets the internal state to collapsed and emits `expandedChange` with `false`. No-op when
+   * already collapsed; a bound `cngxExpandableOpen` still decides the resolved `expanded()`.
+   */
   collapse(): void {
     if (!this.expanded()) {
       return;
@@ -80,6 +88,10 @@ export class CngxExpandable {
     this.expandedChange.emit(false);
   }
 
+  /**
+   * Collapses when `expanded()` is true, otherwise expands, with the emission rules of
+   * `expand()` and `collapse()`.
+   */
   toggle(): void {
     if (this.expanded()) {
       this.collapse();

@@ -38,6 +38,7 @@ export interface RingBuffer<T> {
  * @param capacity positive integer maximum element count.
  * @throws `CngxRuntimeError` (`CNGX1050`) when `capacity` is not a positive
  *   integer.
+ * @internal
  */
 export function createRingBuffer<T>(capacity: number): RingBuffer<T> {
   if (!Number.isInteger(capacity) || capacity <= 0) {

@@ -37,8 +37,21 @@ import { CNGX_MENU_RADIO_GROUP, type CngxMenuRadioGroup } from './menu-radio-con
   },
 })
 export class CngxMenuItemRadio<T = unknown> implements CngxAdItemHandle {
+  /**
+   * Required value this radio represents. The item is checked while the enclosing
+   * `CngxMenuGroup` `selectedValue` is identical (`Object.is`) to it, and activation selects it.
+   */
   readonly value = input.required<T>();
+  /**
+   * Disables the item. A click then announces the menu's `itemDisabled` phrase and does not
+   * change the group selection, pointer enter no longer highlights, and the host gets
+   * `aria-disabled` and the `cngx-menu-item--disabled` class. Defaults to `false`.
+   */
   readonly disabled = input<boolean>(false);
+  /**
+   * Binds as `[label]`. Explicit label that `label()` returns for the active-descendant;
+   * when unset, `label()` falls back to the host's trimmed text content.
+   */
   readonly labelInput = input<string | undefined>(undefined, { alias: 'label' });
 
   private readonly group = injectMenuRadioGroup();

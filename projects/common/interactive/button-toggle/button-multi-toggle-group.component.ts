@@ -117,9 +117,22 @@ import {
 export class CngxButtonMultiToggleGroup<T = unknown>
   implements CngxButtonMultiToggleGroupContract<T>, CngxControlValue<T[]>, CngxFormFieldControl
 {
+  /**
+   * Values of the toggled-on buttons, compared by `keyFn`. Two-way bindable with
+   * `[(selectedValues)]`; `value` is an alias of the same model. Default `[]`.
+   */
   readonly selectedValues = model<T[]>([]);
   readonly value = this.selectedValues;
+  /**
+   * Disables every toggle in the group: each toggle combines it with its own
+   * `disabled`, `toggle` becomes a no-op and the host sets `aria-disabled="true"`.
+   * Default `false`.
+   */
   readonly disabled = model<boolean>(false);
+  /**
+   * Sets `aria-required="true"` on the host while true. The group performs no
+   * validation itself. Default `false`.
+   */
   readonly required = model<boolean>(false);
   /**
    * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
@@ -137,7 +150,18 @@ export class CngxButtonMultiToggleGroup<T = unknown>
    * id is harmless when the field is valid.
    */
   readonly errorMessageId = input<string | null>(null);
+  /**
+   * Layout direction of the group, reflected as `aria-orientation`; `'horizontal'` also
+   * adds the `cngx-button-multi-toggle-group--horizontal` class. The same binding is
+   * forwarded to the host `CngxRovingTabindex` as its arrow-key axis. Default
+   * `'horizontal'`.
+   */
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
+  /**
+   * Accessible name of the group, emitted as `aria-label`. A non-empty label also stops
+   * the group from referencing the surrounding `cngx-form-field` label through
+   * `aria-labelledby`. Default `undefined`.
+   */
   readonly label = input<string | undefined>(undefined);
 
   /**
@@ -156,6 +180,11 @@ export class CngxButtonMultiToggleGroup<T = unknown>
     CngxAsyncState<unknown> | undefined,
     CngxAsyncState<unknown> | '' | undefined
   >(undefined, { transform: (v) => (typeof v === 'string' ? undefined : v) });
+  /**
+   * Maps a value to the key used for membership checks, for example `(v) => v.id` for
+   * object values so re-fetched instances with the same id still match. Default is the
+   * identity function.
+   */
   readonly keyFn = input<(value: T) => unknown>((v) => v);
 
   private readonly controller: SelectionController<T> = inject(
@@ -168,10 +197,20 @@ export class CngxButtonMultiToggleGroup<T = unknown>
     inject(DestroyRef).onDestroy(() => this.controller.destroy());
   }
 
+  /**
+   * Implements `CngxButtonMultiToggleGroupContract.isSelected`: returns a signal that
+   * is true while a value with the same `keyFn` key as `value` is in `selectedValues`.
+   * Called by each `CngxButtonToggle` to derive its pressed state.
+   */
   isSelected(value: T): Signal<boolean> {
     return this.controller.isSelected(value);
   }
 
+  /**
+   * Implements `CngxButtonMultiToggleGroupContract.toggle`: adds `value` to
+   * `selectedValues`, or removes it when its key is already selected. No-op while
+   * `disabled`. Called by each `CngxButtonToggle` on click, Space and Enter.
+   */
   toggle(value: T): void {
     if (this.disabled()) {
       return;

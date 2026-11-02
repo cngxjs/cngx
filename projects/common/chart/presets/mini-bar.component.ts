@@ -118,11 +118,38 @@ import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
   ],
 })
 export class CngxMiniBar {
+  /**
+   * Required current reading. The fill width is its position between `[min]` and `[max]`, clamped to
+   * 0-100%, and the value is exposed as `aria-valuenow`.
+   */
   readonly value = input.required<number>();
+  /**
+   * Upper end of the track, exposed as `aria-valuemax`. Default `100`; a value not above `[min]`
+   * draws an empty fill.
+   */
   readonly max = input<number>(100);
+  /**
+   * Lower end of the track, exposed as `aria-valuemin`. Default `0`.
+   */
   readonly min = input<number>(0);
+  /**
+   * Visible caption above the track, which also names the host (`aria-label`) when `[aria-label]` is
+   * unbound. Unset shows no caption.
+   */
   readonly label = input<string | null>(null);
+  /**
+   * Optional async state that picks the view: a skeleton with `aria-busy` on the host during the
+   * first load, the built-in empty or error text after an empty or failed first load (copy from
+   * `CNGX_CHART_I18N`), nothing while idle, the drawing otherwise. Only its status, first-load and
+   * empty flags are read; the drawn values come from the preset's own inputs, and an unbound state
+   * always draws. `aria-valuenow`, `aria-valuemin` and `aria-valuemax` are set only while the
+   * drawing shows.
+   */
   readonly state = input<CngxAsyncState<number> | undefined>(undefined);
+  /**
+   * Accessible name of the meter, bound as `[aria-label]` and set on the host. Unset falls back to
+   * `[label]`; with neither the meter is unnamed and logs a dev-mode warning.
+   */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
 
   private readonly preset = injectPresetState(() => this.state());

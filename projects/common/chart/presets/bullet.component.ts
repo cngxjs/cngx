@@ -164,11 +164,41 @@ interface RangeRendering {
   ],
 })
 export class CngxBullet {
+  /**
+   * Required current reading. The filled bar runs from 0 to this value, clamped to the scale
+   * maximum, and the value is exposed as `aria-valuenow`.
+   */
   readonly actual = input.required<number>();
+  /**
+   * Value of the vertical target marker, on the same 0 to maximum scale as the bar. Default `null`,
+   * which does not hide the marker: it stays at the start of the track (0%).
+   */
   readonly target = input<number | null>(null);
+  /**
+   * Scale maximum, exposed as `aria-valuemax` (the minimum is fixed at 0). Default `null`, and a
+   * value of 0 or less counts as unset: the maximum is then the largest of `[actual]`, `[target]`
+   * and every range's `to`, or 1 when none is above 0.
+   */
   readonly max = input<number | null>(null);
+  /**
+   * Background bands behind the bar, each `{ from, to, color?, label? }` on the same scale with
+   * `from` and `to` in either order. Default empty; a band without `color` paints nothing, and
+   * `label` is not drawn.
+   */
   readonly ranges = input<readonly CngxBulletRange[]>([]);
+  /**
+   * Optional async state that picks the view: a skeleton with `aria-busy` on the host during the
+   * first load, the built-in empty or error text after an empty or failed first load (copy from
+   * `CNGX_CHART_I18N`), nothing while idle, the drawing otherwise. Only its status, first-load and
+   * empty flags are read; the drawn values come from the preset's own inputs, and an unbound state
+   * always draws. `aria-valuenow`, `aria-valuemin` and `aria-valuemax` are set only while the
+   * drawing shows.
+   */
   readonly state = input<CngxAsyncState<number> | undefined>(undefined);
+  /**
+   * Accessible name of the meter, bound as `[aria-label]` and set on the host. Unset leaves the
+   * meter unnamed, which logs a dev-mode warning.
+   */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
 
   private readonly preset = injectPresetState(() => this.state());

@@ -38,8 +38,21 @@ import { injectMenuItemCore } from './menu-item-core';
   },
 })
 export class CngxMenuItem<T = unknown> implements CngxAdItemHandle {
+  /**
+   * Payload the active-descendant uses to find and highlight this item on click and pointer
+   * enter. Defaults to `undefined`.
+   */
   readonly value = input<T | undefined>(undefined);
+  /**
+   * Disables the item. A click then announces the menu's `itemDisabled` phrase instead of
+   * activating, pointer enter no longer highlights, and the host gets `aria-disabled`
+   * and the `cngx-menu-item--disabled` class. Defaults to `false`.
+   */
   readonly disabled = input<boolean>(false);
+  /**
+   * Binds as `[label]`. Explicit label that `label()` returns for the active-descendant;
+   * when unset, `label()` falls back to the host's trimmed text content.
+   */
   readonly labelInput = input<string | undefined>(undefined, { alias: 'label' });
 
   private readonly core = injectMenuItemCore<T>({

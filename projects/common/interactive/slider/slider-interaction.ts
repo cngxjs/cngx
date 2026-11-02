@@ -11,6 +11,7 @@ import type { CngxSliderCore } from './slider-core';
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider-interaction.ts
  * @since 0.1.0
+ * @internal
  */
 export function pointerFraction(
   el: HTMLElement,
@@ -30,7 +31,10 @@ export function pointerFraction(
   return Math.min(1, Math.max(0, fraction));
 }
 
-/** Options for {@link createSliderInteraction}. */
+/**
+ * Options for {@link createSliderInteraction}.
+ * @internal
+ */
 export interface CngxSliderInteractionOptions {
   /** The value core the handlers drive. */
   readonly core: CngxSliderCore;
@@ -50,7 +54,10 @@ export interface CngxSliderInteractionOptions {
   readonly direction: Signal<CngxDirection>;
 }
 
-/** APG keyboard + pointer-drag handlers produced by {@link createSliderInteraction}. */
+/**
+ * APG keyboard + pointer-drag handlers produced by {@link createSliderInteraction}.
+ * @internal
+ */
 export interface CngxSliderInteraction {
   handleKeydown(event: KeyboardEvent): void;
   handlePointerDown(event: PointerEvent): void;
@@ -69,6 +76,7 @@ export interface CngxSliderInteraction {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider-interaction.ts
  * @since 0.1.0
  * @relatedTo createSliderCore, CngxSlider, CngxSliderThumb
+ * @internal
  */
 export function createSliderInteraction(
   options: CngxSliderInteractionOptions,

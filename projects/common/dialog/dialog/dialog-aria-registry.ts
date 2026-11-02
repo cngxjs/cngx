@@ -7,6 +7,7 @@ import { InjectionToken, type Signal } from '@angular/core';
  * `id` feeds the dialog's `aria-labelledby` / `aria-describedby`
  * derivation; `textContent` (title only) is read at announce time so the
  * live region speaks the current DOM text, not a cached first read.
+ * @internal
  */
 export interface DialogLabelHandle {
   /** Element id referenced from the dialog host's ARIA attributes. */
@@ -36,6 +37,7 @@ export interface DialogLabelHandle {
  * `DestroyRef.onDestroy`.
  *
  * Internal contract - intentionally not exported from `public-api.ts`.
+ * @internal
  */
 export interface CngxDialogAriaRegistry {
   /** Register the labelling source for `aria-labelledby` and the open announce. */
@@ -57,6 +59,7 @@ export interface CngxDialogAriaRegistry {
  *
  * Provided by `CngxDialog` (`useExisting`) on the dialog element and by
  * `CngxDialogOpener` on the programmatic content's child injector.
+ * @internal
  */
 export const CNGX_DIALOG_ARIA_REGISTRY = new InjectionToken<CngxDialogAriaRegistry>(
   'CngxDialogAriaRegistry',

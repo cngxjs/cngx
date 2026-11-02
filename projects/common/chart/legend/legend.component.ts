@@ -156,8 +156,21 @@ export interface CngxChartLegendItem<T = unknown> {
   ],
 })
 export class CngxChartLegend<T = unknown> {
+  /**
+   * Required entries to list; each shows a colour swatch, its `label` and, when `value` is not null,
+   * a trailing value (numbers in the app locale). A missing `color` leaves the swatch on the chart
+   * primary token.
+   */
   readonly items = input.required<readonly CngxChartLegendItem<T>[]>();
+  /**
+   * Layout of the entries: `'horizontal'` wraps them in a row, `'vertical'` stacks them in a column.
+   * Default `'horizontal'`.
+   */
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
+  /**
+   * Sets `justify-content` on the host to `flex-start`, `center` or `flex-end` for `'start'`,
+   * `'center'` or `'end'`, along the main axis of the current orientation. Default `'start'`.
+   */
   readonly align = input<'start' | 'center' | 'end'>('start');
 
   private readonly locale = injectLocale();

@@ -144,12 +144,44 @@ const TWO_PI = Math.PI * 2;
   ],
 })
 export class CngxDonut {
+  /**
+   * Required current reading. The foreground arc covers `value / max` of the ring, clamped to
+   * 0-100%, running clockwise from 12 o'clock, and the value is exposed as `aria-valuenow`.
+   */
   readonly value = input.required<number>();
+  /**
+   * Value at which the ring is full, exposed as `aria-valuemax` (the minimum is fixed at 0). Default
+   * `100`; 0 or less draws an empty ring.
+   */
   readonly max = input<number>(100);
+  /**
+   * Outer diameter of the ring in px; sets the SVG width, height and viewBox and the size of the
+   * loading skeleton. Default `48`.
+   */
   readonly size = input<number>(48);
+  /**
+   * Stroke width of the ring and the arc in px; the radius is `(size - thickness) / 2`, so the
+   * stroke stays inside `[size]`. Default `6`.
+   */
   readonly thickness = input<number>(6);
+  /**
+   * Visible text centred inside the ring, which also names the host (`aria-label`) when
+   * `[aria-label]` is unbound. Unset shows no text.
+   */
   readonly label = input<string | null>(null);
+  /**
+   * Optional async state that picks the view: a skeleton with `aria-busy` on the host during the
+   * first load, the built-in empty or error text after an empty or failed first load (copy from
+   * `CNGX_CHART_I18N`), nothing while idle, the drawing otherwise. Only its status, first-load and
+   * empty flags are read; the drawn values come from the preset's own inputs, and an unbound state
+   * always draws. `aria-valuenow`, `aria-valuemin` and `aria-valuemax` are set only while the
+   * drawing shows.
+   */
   readonly state = input<CngxAsyncState<number> | undefined>(undefined);
+  /**
+   * Accessible name of the meter, bound as `[aria-label]` and set on the host. Unset falls back to
+   * `[label]`; with neither the meter is unnamed and logs a dev-mode warning.
+   */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
 
   private readonly preset = injectPresetState(() => this.state());

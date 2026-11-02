@@ -115,12 +115,38 @@ import {
   ],
 })
 export class CngxArea<T = unknown> implements CngxChartLayer {
+  /**
+   * Reads the y value of each row as `(d, i) => number`, defaulting to `Number(d)`. The values form
+   * the upper edge of the filled area.
+   */
   readonly accessor = input<LineYAccessor<T>>((d: T) => Number(d));
+  /**
+   * Reads the x value of each row as `(d, i) => number | Date | string`. When unset the row index is
+   * used.
+   */
   readonly xAccessor = input<LineXAccessor<T> | undefined>(undefined);
+  /**
+   * Fill opacity of the area, as a number or numeric string. Unset falls back to
+   * `--cngx-area-opacity` (default `0.18`).
+   */
   readonly opacity = input<number | string | null>(null);
+  /**
+   * CSS colour of the area fill and its point markers, applied as an inline style and read by the
+   * canvas renderer. Unset falls back to `--cngx-area-fill`, then `--cngx-chart-primary`.
+   */
   readonly color = input<string | null>(null);
+  /**
+   * Interpolation between points: `'linear'` joins them with straight segments, `'monotone'` with a
+   * smooth curve that does not overshoot the data. Default `'linear'`.
+   */
   readonly curve = input<CngxCurve>('linear');
+  /**
+   * Y value the area is closed down to, projected through the chart's y scale. Default `0`.
+   */
   readonly baseline = input<number>(0);
+  /**
+   * Rows this layer draws. When unset the layer reads the parent chart's `[data]`.
+   */
   readonly data = input<readonly T[] | undefined>(undefined);
 
   /**

@@ -46,10 +46,36 @@ import {
   standalone: true,
 })
 export class CngxStep implements OnInit {
+  /**
+   * Identifier the step registers under with its host. Defaults to an auto-generated `cngx-step` uid.
+   * It is read once in `ngOnInit`, so a bound `[id]` must be set before init; the router-sync deep link
+   * and `selectById` match against this value.
+   */
   readonly id = input<string>(nextUid('cngx-step'));
+
+  /**
+   * Marks the step as not navigable. Defaults to `false`. A disabled step reports `state` `'disabled'`,
+   * is skipped by next/previous navigation and refused by `select`, and the strip header reflects it
+   * through `aria-disabled`.
+   */
   readonly disabled = input<boolean>(false);
+
+  /**
+   * Marks the step as done. Defaults to `false`. A completed step reports `state` `'success'` unless it is
+   * disabled or errored, and a `linear` stepper only lets the user move past steps that are in that state.
+   */
   readonly completed = input<boolean>(false);
+
+  /**
+   * Header text of the step, shown in the strip and used for the next/previous step labels and the
+   * announcement phrases. Defaults to an empty string.
+   */
   readonly label = input<string>('');
+
+  /**
+   * Optional error aggregator whose `hasError()` puts the step into the `'error'` state, for forms with
+   * several error sources. Defaults to `undefined`. It composes with `[error]`: either one errors the step.
+   */
   readonly errorAggregator = input<CngxErrorAggregatorContract | undefined>(undefined);
 
   /**

@@ -1,4 +1,7 @@
-/** DOM events `[cngxAudio]` may bind an earcon to. */
+/**
+ * DOM events `[cngxAudio]` may bind an earcon to.
+ * @internal
+ */
 export const CNGX_AUDIO_DOM_EVENTS = [
   'click',
   'focus',
@@ -22,10 +25,16 @@ const LIFECYCLE_KEYS = [
   'idle',
 ] as const;
 
-/** A `[cngxAudio]` DOM event name. */
+/**
+ * A `[cngxAudio]` DOM event name.
+ * @internal
+ */
 export type CngxAudioDomEvent = (typeof CNGX_AUDIO_DOM_EVENTS)[number];
 
-/** Result of parsing an `event:earcon` binding string. */
+/**
+ * Result of parsing an `event:earcon` binding string.
+ * @internal
+ */
 export interface ParsedEventBindings {
   /** Valid `domEvent -> earcon` pairs. */
   readonly bindings: ReadonlyMap<CngxAudioDomEvent, string>;
@@ -43,6 +52,7 @@ const LIFECYCLE_SET = new Set<string>(LIFECYCLE_KEYS);
  * DOM-event map. Pure - no DOM, no `inject()`. Keys are categorised so the
  * directive can dev-warn on unknown earcon keys and, separately, on lifecycle
  * keys that should have used `[cngxAudioStatus]`.
+ * @internal
  */
 export function parseEventBindings(spec: string): ParsedEventBindings {
   const bindings = new Map<CngxAudioDomEvent, string>();

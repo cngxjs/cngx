@@ -131,10 +131,29 @@ const FALLBACK_BASELINE = 0;
   ],
 })
 export class CngxBar<T = unknown> implements CngxChartLayer {
+  /**
+   * Reads the y value of each row as `(d, i) => number`, defaulting to `Number(d)`. Each bar spans
+   * from this value to `[baseline]`.
+   */
   readonly accessor = input<BarYAccessor<T>>(((d: T) => Number(d)) as BarYAccessor<T>);
+  /**
+   * Fraction of each bar's slot left empty, clamped to 0-1 and split evenly on both sides of the
+   * bar; a slot is the plot width divided by the row count. Default `0.1`.
+   */
   readonly gap = input<number>(0.1);
+  /**
+   * Y value the bars are anchored to, projected through the chart's y scale; values below it hang
+   * downward from it. Default `0`.
+   */
   readonly baseline = input<number>(FALLBACK_BASELINE);
+  /**
+   * Rows this layer draws. When unset the layer reads the parent chart's `[data]`.
+   */
   readonly data = input<readonly T[] | undefined>(undefined);
+  /**
+   * CSS colour of the bars, applied as an inline style and read by the canvas renderer. Unset falls
+   * back to `--cngx-bar-color`, then `--cngx-chart-primary`.
+   */
   readonly color = input<string | null>(null);
 
   protected readonly ctx = injectChartContext('cngxBar');

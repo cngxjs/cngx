@@ -8,6 +8,7 @@
  * targets and live regions must never be `display: none`.
  *
  * Internal helper - intentionally not exported from `public-api.ts`.
+ * @internal
  */
 export function applySrOnly(el: HTMLElement): void {
   el.className = 'cngx-sr-only';

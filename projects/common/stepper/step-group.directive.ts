@@ -44,8 +44,22 @@ import {
   providers: [{ provide: CNGX_STEP_GROUP_HOST, useExisting: CngxStepGroup }],
 })
 export class CngxStepGroup implements CngxStepGroupHost, OnInit {
+  /**
+   * Identifier the group registers under with the root presenter. Defaults to an auto-generated
+   * `cngx-step-group` uid. It is read once in `ngOnInit`, so a bound `[id]` must be set before init;
+   * child steps are registered with this id as their parent.
+   */
   readonly id = input<string>(nextUid('cngx-step-group'));
+
+  /**
+   * Disabled flag of the group node in the step tree. Defaults to `false`. It does not disable the child
+   * steps, which keep their own `[disabled]`.
+   */
   readonly disabled = input<boolean>(false);
+
+  /**
+   * Header text of the group, rendered as the group label in the stepper strip. Defaults to an empty string.
+   */
   readonly label = input<string>('');
 
   private readonly config = injectStepperConfig();
@@ -144,12 +158,22 @@ export class CngxStepGroup implements CngxStepGroupHost, OnInit {
     this.destroyRef.onDestroy(() => registrationHost.unregister(groupId, handle));
   }
 
+  /**
+   * `CngxStepGroupHost` contract, called by a nested `CngxStep` (or a nested `CngxStepGroup`) in its
+   * `ngOnInit`. Adds the handle to the group's own registry, which feeds `aggregatedStatus`, and forwards
+   * it to the root presenter with this group's id as parent.
+   */
   register(handle: CngxStepRegistration): void {
     this.childRegistry.update((cur) => [...cur, handle]);
     // Forward to the root with this group as parent so the tree shape is correct.
     this.stepperHost!.register(handle, this.id());
   }
 
+  /**
+   * `CngxStepGroupHost` contract, called from the destroy hook of a nested `CngxStep` or
+   * `CngxStepGroup`. Removes the registration from the group's registry and from the root presenter; when
+   * `handle` is passed, only that exact instance is evicted.
+   */
   unregister(id: string, handle?: CngxStepRegistration): void {
     // Same instance guard as the presenter: only evict the exact handle
     // (or fall back to id-keyed removal for handle-less callers).

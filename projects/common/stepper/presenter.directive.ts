@@ -80,10 +80,21 @@ export type CngxStepperCommitAction = (
 export class CngxStepperPresenter implements CngxStepperHost {
   private readonly config = injectStepperConfig();
 
+  /**
+   * Zero-based index of the active step among the steps only (group nodes do not count), two-way bindable
+   * as `[(activeStepIndex)]`. Defaults to `0`. The presenter writes it on navigation, so under a
+   * `commitAction` in `'pessimistic'` mode it changes only after the action resolves `true`; reads are
+   * clamped to the registered step count.
+   */
   readonly activeStepIndex = model<number>(0);
   // Raw *Input slots default undefined so the cascade resolves through
   // CNGX_STEPPER_CONFIG. Must stay public - the template type-checker
   // rejects protected/private on hostDirective alias bindings.
+  /**
+   * Binding `[linear]`: when `true`, moving forward is refused while any enabled step from the active
+   * one up to the target is not in the `'success'` state. Unset, it resolves through `defaultLinear` of the stepper config and then
+   * `false`.
+   */
   readonly linearInput = input<boolean | undefined>(undefined, {
     alias: 'linear',
   });
@@ -91,6 +102,11 @@ export class CngxStepperPresenter implements CngxStepperHost {
     () => this.linearInput() ?? this.config.defaultLinear ?? false,
   );
 
+  /**
+   * Binding `[orientation]`: layout axis of the stepper, `'horizontal'` or `'vertical'`. Unset, it resolves
+   * through `defaultOrientation` of the stepper config and then `'horizontal'`. The organism mirrors the
+   * resolved value to `aria-orientation` and `data-orientation`.
+   */
   readonly orientationInput = input<'horizontal' | 'vertical' | undefined>(undefined, {
     alias: 'orientation',
   });
@@ -98,7 +114,18 @@ export class CngxStepperPresenter implements CngxStepperHost {
     () => this.orientationInput() ?? this.config.defaultOrientation ?? 'horizontal',
   );
 
+  /**
+   * Async guard run before a step change: it receives the origin and target index and resolves `true` to
+   * advance or `false` to refuse. Defaults to `null`, which makes every `select` a synchronous move.
+   * Navigating back with `selectPrevious` bypasses it.
+   */
   readonly commitAction = input<CngxStepperCommitAction | null>(null);
+
+  /**
+   * Binding `[commitMode]`: whether `activeStepIndex` moves to the target before the `commitAction` resolves
+   * (`'optimistic'`, rolled back on refusal or failure) or only after it resolves `true` (`'pessimistic'`).
+   * Unset, it resolves through `defaultCommitMode` of the stepper config and then `'pessimistic'`.
+   */
   readonly commitModeInput = input<'optimistic' | 'pessimistic' | undefined>(undefined, {
     alias: 'commitMode',
   });
@@ -366,6 +393,12 @@ export class CngxStepperPresenter implements CngxStepperHost {
   >();
   private readonly insertionOrder: string[] = [];
 
+  /**
+   * `CngxStepperHost` contract, called by `CngxStep` and `CngxStepGroup` in their `ngOnInit`, or by a
+   * `CngxStepGroup` on behalf of a nested child with its own id as `parentId`. Adds the node to the step
+   * tree in registration order; a second call with a known id replaces the stored handle and keeps its
+   * position. A group must register before its children.
+   */
   register(handle: CngxStepRegistration, parentId: string | null = null): void {
     if (this.registry.has(handle.id)) {
       // Idempotent re-register - replace the handle, keep the ordering slot.
@@ -385,6 +418,11 @@ export class CngxStepperPresenter implements CngxStepperHost {
     this.rebuildTree();
   }
 
+  /**
+   * `CngxStepperHost` contract, called from the destroy hook of `CngxStep` and `CngxStepGroup`. Removes the
+   * node from the step tree; when `handle` is passed and is no longer the stored one (it was replaced by a
+   * re-register), the call does nothing.
+   */
   unregister(id: string, handle?: CngxStepRegistration): void {
     const entry = this.registry.get(id);
     if (!entry) {
@@ -472,6 +510,11 @@ export class CngxStepperPresenter implements CngxStepperHost {
     return !this.isLinearBlocked(index);
   }
 
+  /**
+   * Moves to the step at the given step-only index, clamped to the registered range. Does nothing when the
+   * target is the active step, is disabled, or is blocked by `linear`. Without a `commitAction` the move is
+   * synchronous; with one, the move follows `commitMode`, and a newer call supersedes the pending one.
+   */
   select(index: number): void {
     const stepsOnly = this.stepsOnly();
     if (stepsOnly.length === 0) {
@@ -551,6 +594,10 @@ export class CngxStepperPresenter implements CngxStepperHost {
     });
   }
 
+  /**
+   * Moves to the next enabled step after the active one, through `select`. Does nothing when no enabled
+   * step follows; the `linear` gate and the `commitAction` apply as for any other forward move.
+   */
   selectNext(): void {
     const next = this.nextEnabledIndex();
     if (next < this.stepsOnly().length) {
@@ -574,6 +621,10 @@ export class CngxStepperPresenter implements CngxStepperHost {
     }
   }
 
+  /**
+   * Moves to the step registered under the given id, through `select`. Group ids and unknown ids are
+   * ignored.
+   */
   selectById(id: string): void {
     const stepsOnly = this.stepsOnly();
     const idx = stepsOnly.findIndex((n) => n.id === id);
@@ -582,6 +633,10 @@ export class CngxStepperPresenter implements CngxStepperHost {
     }
   }
 
+  /**
+   * Returns to the first step without running the `commitAction`. Cancels a commit in flight and clears the
+   * origin, the rejection marker and the last outcome.
+   */
   reset(): void {
     this.activeStepIndex.set(0);
     this.lastCommittedIndex = 0;

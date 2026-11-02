@@ -143,10 +143,34 @@ import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
   ],
 })
 export class CngxDeviationBar {
+  /**
+   * Required current reading. The fill grows from the centre mark to the right when the value is
+   * above `[baseline]` and to the left when below, and the value is exposed as `aria-valuenow`.
+   */
   readonly value = input.required<number>();
+  /**
+   * Reference value shown at the centre mark of the track. Default `0`; the meter range exposed to
+   * assistive technology is `baseline - magnitude` to `baseline + magnitude`.
+   */
   readonly baseline = input<number>(0);
+  /**
+   * Distance from `[baseline]` to either end of the track, so a deviation of this size fills one
+   * half and larger ones are clamped. Default `100`; 0 or less draws no fill.
+   */
   readonly magnitude = input<number>(100);
+  /**
+   * Optional async state that picks the view: a skeleton with `aria-busy` on the host during the
+   * first load, the built-in empty or error text after an empty or failed first load (copy from
+   * `CNGX_CHART_I18N`), nothing while idle, the drawing otherwise. Only its status, first-load and
+   * empty flags are read; the drawn values come from the preset's own inputs, and an unbound state
+   * always draws. `aria-valuenow`, `aria-valuemin` and `aria-valuemax` are set only while the
+   * drawing shows.
+   */
   readonly state = input<CngxAsyncState<number> | undefined>(undefined);
+  /**
+   * Accessible name of the meter, bound as `[aria-label]` and set on the host. Unset leaves the
+   * meter unnamed, which logs a dev-mode warning.
+   */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
 
   private readonly preset = injectPresetState(() => this.state());

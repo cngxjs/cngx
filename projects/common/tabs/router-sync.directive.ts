@@ -61,10 +61,22 @@ import { injectTabsConfig } from './tabs-config';
 })
 export class CngxTabsFragmentSync implements AfterContentInit {
   // Default undefined so the cascade resolves through CNGX_TABS_CONFIG.
-  // Init-only: the seed and the write effect capture the resolved mode /
-  // param on their first run; changing either after init leaves the old
-  // URL key behind. Rebuild the directive to change them.
+  // The resolved mode / param are read on every URL write and read, not
+  // only at init; changing either after init applies to the next one and
+  // leaves the previous key behind in the URL.
+  /**
+   * Binding `[mode]`: where the active tab id is kept in the URL, `'fragment'` (`#tab=settings`) or
+   * `'queryParam'` (`?tab=settings`). Unset, it resolves through `fragmentSyncMode` of the tabs config and
+   * then `'fragment'`. A change after init applies to the next URL write or read and leaves the previous
+   * key in the URL.
+   */
   readonly modeInput = input<'fragment' | 'queryParam' | undefined>(undefined, { alias: 'mode' });
+
+  /**
+   * Binding `[paramName]`: name of the fragment or query key that carries the tab id. Unset, it resolves
+   * through `fragmentSyncParam` of the tabs config and then `'tab'`. A change after init applies to the next URL write or read and leaves the previous
+   * key in the URL.
+   */
   readonly paramNameInput = input<string | undefined>(undefined, {
     alias: 'paramName',
   });

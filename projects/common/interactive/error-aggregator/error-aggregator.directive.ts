@@ -142,10 +142,20 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
   readonly shouldShow = this.contract.shouldShow;
   readonly announcement = this.contract.announcement;
 
+  /**
+   * Registers an error source by its `key`; an entry with an existing key replaces the old
+   * one. Implements `addSource` of `CngxErrorAggregatorContract` (`CNGX_ERROR_AGGREGATOR`),
+   * called by `CngxErrorSource` on init.
+   */
   addSource(entry: CngxErrorAggregatorSourceEntry): void {
     this.contract.addSource(entry);
   }
 
+  /**
+   * Removes the error source registered under `key`; no-op when the key is absent.
+   * Implements `removeSource` of `CngxErrorAggregatorContract` (`CNGX_ERROR_AGGREGATOR`),
+   * called by `CngxErrorSource` on teardown.
+   */
   removeSource(key: string): void {
     this.contract.removeSource(key);
   }

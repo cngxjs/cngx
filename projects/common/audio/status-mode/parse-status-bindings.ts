@@ -18,7 +18,7 @@ const STATUS_ALIASES: Readonly<Record<string, AsyncStatus>> = {
 };
 
 /** DOM-event keys that belong to `[cngxAudio]`, rejected here. */
-export const CNGX_AUDIO_STATUS_DOM_EVENTS = [
+const CNGX_AUDIO_STATUS_DOM_EVENTS = [
   'click',
   'focus',
   'blur',
@@ -29,7 +29,11 @@ export const CNGX_AUDIO_STATUS_DOM_EVENTS = [
   'input',
 ] as const;
 
-/** Result of parsing a `status:earcon` binding string. */
+/**
+ * Result of parsing a `status:earcon` binding string.
+ *
+ * @internal
+ */
 export interface ParsedStatusBindings {
   /** Valid `status -> earcon` pairs, keyed by canonical `AsyncStatus`. */
   readonly bindings: ReadonlyMap<AsyncStatus, string>;
@@ -49,6 +53,8 @@ const DOM_EVENT_SET = new Set<string>(CNGX_AUDIO_STATUS_DOM_EVENTS);
  * Only own keys of the alias table resolve, so `constructor` or `toString` is
  * an unknown key. `succeeded`/`failed` normalise to `success`/`error` so a
  * lookup by the tracker's raw `AsyncStatus` hits.
+ *
+ * @internal
  */
 export function parseStatusBindings(spec: string): ParsedStatusBindings {
   const bindings = new Map<AsyncStatus, string>();

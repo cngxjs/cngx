@@ -74,11 +74,17 @@ export type CngxTabsCommitAction = (
 export class CngxTabGroupPresenter implements CngxTabGroupHost {
   private readonly config = injectTabsConfig();
 
+  /**
+   * Zero-based index of the active tab, two-way bindable as `[(activeIndex)]`. Defaults to `0`. The
+   * presenter writes it on navigation, so with a `commitAction` in `'pessimistic'` mode it changes only
+   * after the action resolves `true`; `activeId` reads it clamped to the registered tab count.
+   */
   readonly activeIndex = model<number>(0);
 
   /**
-   * @internal Two-field alias - bind the public `[orientation]`; read
-   * the resolved {@link orientation} computed (input ?? config ?? default).
+   * Axis of the tab list: `'horizontal'` or `'vertical'`, bound as `[orientation]`. The tab organisms
+   * reflect the resolved value as `aria-orientation` and `data-orientation`. Unbound, the
+   * {@link orientation} computed falls back to the tabs config `defaultOrientation`, then `'horizontal'`.
    */
   readonly orientationInput = input<'horizontal' | 'vertical' | undefined>(undefined, {
     alias: 'orientation',
@@ -88,8 +94,9 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
   );
 
   /**
-   * @internal Two-field alias - bind the public `[loop]`; read the
-   * resolved {@link loop} computed (input ?? config ?? default).
+   * Whether `selectNext` and `selectPrevious` wrap from the last enabled tab to the first and back,
+   * bound as `[loop]`. Unbound, the {@link loop} computed falls back to the tabs config `defaultLoop`,
+   * then `true`.
    */
   readonly loopInput = input<boolean | undefined>(undefined, {
     alias: 'loop',
@@ -103,21 +110,21 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
    * semantics come from the commit-controller - a rapid second
    * `select(...)` cancels the in-flight runner.
    *
-   * @internal Two-field alias - bind the public `[commitAction]`; read
-   * the resolved {@link commitAction} computed (input ?? DI fallback).
+   * Bound as `[commitAction]`. The {@link commitAction} computed resolves the input first, then the
+   * `CNGX_TABS_COMMIT_ACTION` DI fallback used by the router sync, then `null`; there is no config
+   * tier.
    */
   readonly commitActionInput = input<CngxTabsCommitAction | null>(null, {
     alias: 'commitAction',
   });
   /**
-   * Default `'optimistic'` - tab change is navigation, not a save,
-   * so eager visual feedback matches the user's mental model.
-   * Switch to `'pessimistic'` when the new tab must wait for the
-   * action to confirm.
+   * Whether a tab change lands before (`'optimistic'`) or after (`'pessimistic'`) the commit action
+   * resolves, bound as `[commitMode]`. A tab change is navigation, not a save, so the default is
+   * `'optimistic'`; choose `'pessimistic'` when the new tab must wait for the action to confirm.
    *
-   * @internal Two-field alias - bind the public `[commitMode]`; read
-   * the resolved {@link commitMode} computed (DI fallback mode wins
-   * when a routed action is active, else input ?? config ?? default).
+   * The {@link commitMode} computed lets the mode of an active `CNGX_TABS_COMMIT_ACTION` DI fallback
+   * win (the routed path pins `'pessimistic'`); otherwise it resolves the input, then the tabs config
+   * `defaultCommitMode`, then `'optimistic'`.
    */
   readonly commitModeInput = input<'optimistic' | 'pessimistic' | undefined>(undefined, {
     alias: 'commitMode',
@@ -243,6 +250,11 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     { equal: Object.is },
   );
 
+  /**
+   * `CngxTabGroupHost` contract, called by `CngxTab` in its `ngOnInit` and by `CngxTabLink`. Appends the
+   * handle to the tab list in registration order; a second call with a known id replaces the stored
+   * handle and keeps its position.
+   */
   register(handle: CngxTabHandle): void {
     const current = this.tabsState();
     const idx = current.findIndex((h) => h.id === handle.id);
@@ -255,6 +267,11 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     this.tabsState.set([...current, handle]);
   }
 
+  /**
+   * `CngxTabGroupHost` contract, called from the destroy hook of `CngxTab` and `CngxTabLink`. Removes the
+   * tab from the list; when `handle` is passed and is no longer the stored one (it was replaced by a
+   * re-register), the call does nothing.
+   */
   unregister(id: string, handle?: CngxTabHandle): void {
     const current = this.tabsState();
     const entry = current.find((h) => h.id === id);
@@ -274,6 +291,11 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     this.clearedSequenceState.set(this.lastOutcomeState()?.sequence);
   }
 
+  /**
+   * Activates the tab at the given index, clamped to the registered range. Does nothing when the target is
+   * the active tab or is disabled. Without a `commitAction` the change is synchronous; with one, it follows
+   * `commitMode`, and a newer call supersedes the pending one.
+   */
   select(index: number): void {
     const tabs = this.tabs();
     if (tabs.length === 0) {
@@ -336,6 +358,10 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     });
   }
 
+  /**
+   * Activates the next enabled tab after the active one, through `select`. At the end of the list it wraps
+   * to the first enabled tab when `loop` is on, otherwise it does nothing.
+   */
   selectNext(): void {
     const tabs = this.tabs();
     if (tabs.length === 0) {
@@ -360,6 +386,10 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     }
   }
 
+  /**
+   * Activates the previous enabled tab before the active one, through `select`. At the start of the list it
+   * wraps to the last enabled tab when `loop` is on, otherwise it does nothing.
+   */
   selectPrevious(): void {
     const tabs = this.tabs();
     if (tabs.length === 0) {
@@ -384,6 +414,9 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     }
   }
 
+  /**
+   * Activates the tab registered under the given id, through `select`. Unknown ids are ignored.
+   */
   selectById(id: string): void {
     const tabs = this.tabs();
     const idx = tabs.findIndex((h) => h.id === id);
@@ -392,6 +425,12 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     }
   }
 
+  /**
+   * Asks to close the tab with the given id: when an earlier tab closes it shifts `activeIndex` and the
+   * rejection markers so the same tab stays active; closing the active tab hands over to its neighbour.
+   * Then emits `tabClose` with the id and index. It does not remove the tab; the consumer
+   * drops it from its own data in the `(tabClose)` handler. Unknown ids are ignored.
+   */
   requestClose(id: string): void {
     const tabs = this.tabs();
     const index = tabs.findIndex((h) => h.id === id);
@@ -427,6 +466,10 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     this.tabClose.emit({ id, index });
   }
 
+  /**
+   * Emits `tabAdd`. The presenter creates no tab; the consumer appends one to its own data in the
+   * `(tabAdd)` handler.
+   */
   requestAdd(): void {
     this.tabAdd.emit();
   }
