@@ -104,7 +104,7 @@ import {
 import { CngxSelectSearch } from '../declarative/select-search.component';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import { isEmptyScalar } from '../shared/internal/compare';
-import { resolvePageJumpSpace } from '../shared/internal/page-jump-handler';
+import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
   dispatchScalarClear,
@@ -1293,35 +1293,16 @@ export class CngxSelectShell<T = unknown>
       }
     }
 
-    if (event.key === 'PageDown' || event.key === 'PageUp') {
-      event.preventDefault();
-      if (!pop || !lb) {
-        return;
-      }
-      if (!pop.isVisible()) {
-        pop.show();
-      }
-      const { items, currentIndex: currentListboxIndex } = resolvePageJumpSpace(
-        lb,
-        this.visibleProjectedOptions,
-      );
-      const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
-      const action = this.flatNavStrategy.onPageJump(
-        {
-          options: this.flatOptions(),
-          listboxItems: items,
-          currentFlatIndex: -1,
-          currentListboxIndex,
-          compareWith: this.compareWith(),
-          disabled: this.disabled(),
-          typeaheadController: this.typeaheadController,
-        },
-        direction,
-      );
-      if (action.kind === 'highlight') {
-        lb.ad.highlightByIndex(action.index);
-      }
-    }
+    handleFlatNavPageJumpKey(event, {
+      listbox: lb,
+      popover: pop,
+      strategy: this.flatNavStrategy,
+      flatOptions: this.flatOptions,
+      virtualSpace: this.visibleProjectedOptions,
+      compareWith: this.compareWith,
+      disabled: this.disabled,
+      typeaheadController: this.typeaheadController,
+    });
   }
 
   // CngxOptionInteractionHost: projected `<cngx-option>` elements

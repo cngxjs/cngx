@@ -120,6 +120,13 @@ export function createDefaultFlatNavStrategy(
  * `createDefaultFlatNavStrategy`. Override for fuzzy typeahead, custom
  * page-step, or group-aware jumps.
  *
+ * Reach: the four button-trigger composites (`CngxSelect`,
+ * `CngxMultiSelect`, `CngxReorderableMultiSelect`, `CngxSelectShell`) route
+ * closed-trigger typeahead and PageUp/PageDown through this strategy. The
+ * input variants (`CngxCombobox`, `CngxTypeahead`, `CngxActionSelect`,
+ * `CngxActionMultiSelect`) do not: their text input owns the caret, so
+ * PageUp/PageDown runs the fixed ten-option jump of `handlePageJumpKey`.
+ *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/flat-nav-strategy.ts
  * @since 0.1.0

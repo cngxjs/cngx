@@ -78,7 +78,7 @@ import {
   type CngxChipRemovalHandler,
 } from '../shared/chip-removal-handler';
 import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
-import { resolvePageJumpSpace } from '../shared/internal/page-jump-handler';
+import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import { sameArrayContents } from '../shared/internal/compare';
 import { CngxSelectReorderList } from '../shared/internal/reorder-list/reorder-list.component';
 import { CngxSelectSummary } from '../shared/internal/summary/select-summary.component';
@@ -1228,35 +1228,15 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       }
     }
 
-    if (event.key === 'PageDown' || event.key === 'PageUp') {
-      event.preventDefault();
-      if (!pop || !lb) {
-        return;
-      }
-      if (!pop.isVisible()) {
-        pop.show();
-      }
-      const { items, currentIndex: currentListboxIndex } = resolvePageJumpSpace(
-        lb,
-        this.flatOptions,
-      );
-      const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
-      const action = this.flatNavStrategy.onPageJump(
-        {
-          options: this.flatOptions(),
-          listboxItems: items,
-          currentFlatIndex: -1,
-          currentListboxIndex,
-          compareWith: this.compareWith(),
-          disabled: this.disabled(),
-          typeaheadController: this.typeaheadController,
-        },
-        direction,
-      );
-      if (action.kind === 'highlight') {
-        lb.ad.highlightByIndex(action.index);
-      }
-    }
+    handleFlatNavPageJumpKey(event, {
+      listbox: lb,
+      popover: pop,
+      strategy: this.flatNavStrategy,
+      flatOptions: this.flatOptions,
+      compareWith: this.compareWith,
+      disabled: this.disabled,
+      typeaheadController: this.typeaheadController,
+    });
   }
 
   /**

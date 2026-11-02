@@ -185,3 +185,51 @@ describe('page jump on a disabled control', () => {
     expect(show).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('handleFlatNavPageJumpKey - virtualSpace', () => {
+  const controller = () =>
+    createTypeaheadController<number>({
+      options: signal(FLAT),
+      compareWith: signal(cngxSelectDefaultCompare),
+      debounceMs: signal(200),
+      disabled: signal(false),
+    });
+
+  it('resolves the jump in virtualSpace and hands the strategy flatOptions', () => {
+    const { listbox } = fakeVirtualListbox(0, 3);
+    const visible = FLAT.slice(0, 50);
+    const strategy = createDefaultFlatNavStrategy();
+    const onPageJump = vi.spyOn(strategy, 'onPageJump');
+    handleFlatNavPageJumpKey(key('PageDown'), {
+      listbox,
+      popover,
+      strategy,
+      flatOptions: () => FLAT,
+      virtualSpace: () => visible,
+      compareWith: () => cngxSelectDefaultCompare,
+      disabled: () => false,
+      typeaheadController: controller(),
+    });
+    const [ctx] = onPageJump.mock.calls[0];
+    expect(ctx.listboxItems).toBe(visible);
+    expect(ctx.options).toBe(FLAT);
+    expect(ctx.currentListboxIndex).toBe(3);
+  });
+
+  it('passes Ctrl+PageDown through untouched', () => {
+    const { listbox, highlightByIndex } = fakeRenderedListbox(30, 3);
+    const event = new KeyboardEvent('keydown', { key: 'PageDown', ctrlKey: true, cancelable: true });
+    const handled = handleFlatNavPageJumpKey(event, {
+      listbox,
+      popover,
+      strategy: createDefaultFlatNavStrategy(),
+      flatOptions: () => FLAT,
+      compareWith: () => cngxSelectDefaultCompare,
+      disabled: () => false,
+      typeaheadController: controller(),
+    });
+    expect(handled).toBe(false);
+    expect(event.defaultPrevented).toBe(false);
+    expect(highlightByIndex).not.toHaveBeenCalled();
+  });
+});

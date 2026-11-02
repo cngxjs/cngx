@@ -92,14 +92,21 @@ export interface FlatNavPageJumpDeps<T> {
   readonly strategy: CngxFlatNavStrategy;
   /** Accessors (signals qualify) - read only after the key check, so the keydown hot path stays free. */
   readonly flatOptions: () => readonly CngxSelectOptionDef<T>[];
+  /**
+   * Absolute index space of a virtual panel when it differs from
+   * `flatOptions`; `CngxSelectShell` passes its visible projected options.
+   * Defaults to `flatOptions`.
+   */
+  readonly virtualSpace?: () => readonly CngxFlatNavListboxItem[];
   readonly compareWith: () => CngxSelectCompareFn<T>;
   readonly disabled: () => boolean;
   readonly typeaheadController: TypeaheadController<T>;
 }
 
 /**
- * Strategy-routed PageUp/PageDown handler for the flat-nav variants
- * (`CngxSelect`, `CngxMultiSelect`). Unlike {@link handlePageJumpKey}
+ * Strategy-routed PageUp/PageDown handler for the button-trigger flat-nav
+ * variants (`CngxSelect`, `CngxMultiSelect`, `CngxReorderableMultiSelect`,
+ * `CngxSelectShell`). Unlike {@link handlePageJumpKey}
  * (combobox/typeahead) the jump target resolves through the injected
  * {@link CngxFlatNavStrategy}, so a consumer `CNGX_FLAT_NAV_STRATEGY`
  * override keeps steering page jumps. Opens the popover when closed,
@@ -132,7 +139,10 @@ export function handleFlatNavPageJumpKey<T>(
   if (!pop.isVisible()) {
     pop.show();
   }
-  const { items, currentIndex: currentListboxIndex } = resolvePageJumpSpace(lb, deps.flatOptions);
+  const { items, currentIndex: currentListboxIndex } = resolvePageJumpSpace(
+    lb,
+    deps.virtualSpace ?? deps.flatOptions,
+  );
   const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
   const action = deps.strategy.onPageJump(
     {
