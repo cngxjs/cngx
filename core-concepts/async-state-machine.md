@@ -256,12 +256,12 @@ Standard cascade shape:
 
 Resolution priority for any one surface:
 
-1. Per-instance input (`[delay]` / `[minDwell]` on `cngx-loading-indicator` / `cngx-loading-overlay`; `[skeletonDelay]` on the recycler).
+1. Per-instance input (`[delay]` / `[minDwell]` on `cngx-loading-indicator` / `cngx-loading-overlay`; `[showDelay]` / `[minDwell]` on `cngxAsyncClick`; `skeletonDelay` / `skeletonMinDwell` on the recycler).
 2. `provideLoadingConfigAt(...)` in a component's `viewProviders`.
 3. `provideLoadingConfig(...)` at the app root.
 4. `CNGX_LOADING_DEFAULTS` (120 / 400 / 800).
 
-Surfaces that gate through it: `cngx-skeleton`, `cngx-loading-indicator`, `cngx-loading-overlay`, the `cngx-async-container` skeleton view and refresh bar, and the recycler skeleton (`injectRecycler`).
+Surfaces that gate through it: `cngx-skeleton`, `cngx-loading-indicator`, `cngx-loading-overlay`, the `cngx-async-container` skeleton view and refresh bar, the recycler skeleton (`injectRecycler`), and the busy visual of `cngxAsyncClick` (`cngx-async--pending` and the button-family spinner; `aria-busy` and the announcement stay immediate).
 
 <aside class="cc-note">
 

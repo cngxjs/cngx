@@ -214,8 +214,6 @@ export interface CngxSelectVirtualizationConfig {
   readonly threshold?: number;
   /** Forwarded to `injectRecycler.scrollDebounce`. Default `16` ms. */
   readonly scrollDebounce?: number;
-  /** Forwarded to `injectRecycler.skeletonDelay`. Default `0`. */
-  readonly skeletonDelay?: number;
 }
 
 /**

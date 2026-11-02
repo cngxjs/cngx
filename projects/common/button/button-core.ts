@@ -63,6 +63,12 @@ export interface CngxButtonCore {
   readonly size: Signal<CngxButtonSize>;
   /** `true` while a co-hosted `CngxAsyncClick` runs its action. */
   readonly busy: Signal<boolean>;
+  /**
+   * `true` while the busy layer is showing: the co-hosted run after the show
+   * delay and held for the min-dwell (`CngxAsyncClick.busyVisible`). `busy`
+   * stays the immediate truth.
+   */
+  readonly busyVisible: Signal<boolean>;
   /** `true` while the button refuses activation: disabled, busy or refused by the co-hosted `CngxAsyncClick`. */
   readonly blocked: Signal<boolean>;
   /** `aria-disabled` rendered from `blocked`. */
@@ -155,6 +161,7 @@ export function injectButtonCore(
     () => resolveButtonSize(inputs.size(), group, config),
   );
   const busy = computed(() => coHostedAsyncClick()?.pending() ?? false);
+  const busyVisible = computed(() => coHostedAsyncClick()?.busyVisible() ?? false);
   // CngxAsyncClick binds aria-disabled on the same host and only rewrites it
   // when its own value changes, so the button folds the directive's
   // `[enabled]="false"` in; otherwise a disabled -> enabled flip here writes
@@ -191,5 +198,16 @@ export function injectButtonCore(
     host.removeEventListener('auxclick', guard, { capture: true });
   });
 
-  return { variant, tone, size, busy, blocked, ariaDisabled, describedBy, reasonId, hostType };
+  return {
+    variant,
+    tone,
+    size,
+    busy,
+    busyVisible,
+    blocked,
+    ariaDisabled,
+    describedBy,
+    reasonId,
+    hostType,
+  };
 }

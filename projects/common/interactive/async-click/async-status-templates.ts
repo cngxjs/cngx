@@ -4,7 +4,9 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * Template shown while an async action is executing.
  *
  * Used by `CngxActionButton` and `CngxPopoverAction` to project
- * custom pending-state content.
+ * custom pending-state content. Both hosts show it once the run outlasts the
+ * busy gate's show delay (`CNGX_LOADING_CONFIG.showDelay`), so a fast run
+ * never flashes it.
  *
  * ```html
  * <ng-template cngxPending>Saving...</ng-template>

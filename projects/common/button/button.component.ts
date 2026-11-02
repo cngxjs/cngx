@@ -41,7 +41,10 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
  *
  * Co-host `cngxAsyncClick` for an async action: the label stays in place
  * (width stable) under a busy layer while the action runs, and the
- * directive keeps owning `aria-busy` and the announcement.
+ * directive keeps owning `aria-busy` and the announcement. The layer
+ * follows the directive's busy gate: it appears once the run outlasts
+ * `CNGX_LOADING_CONFIG.showDelay` and stays for at least `minDwell`;
+ * `aria-busy` is immediate.
  *
  * ```html
  * <button cngxButton="outline" tone="primary">Save draft</button>
@@ -83,7 +86,8 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
     '[attr.data-variant]': 'core.variant()',
     '[attr.data-tone]': 'core.tone()',
     '[attr.data-size]': 'core.size()',
-    '[attr.data-busy]': 'core.busy() ? "true" : null',
+    '[attr.data-busy]': 'core.busyVisible() ? "true" : null',
+    '[attr.data-pending]': 'core.busy() ? "true" : null',
     '[attr.data-start]': 'startSlot() ? "" : null',
     '[attr.data-end]': 'endSlot() ? "" : null',
     '[attr.aria-disabled]': 'core.ariaDisabled()',
@@ -97,7 +101,7 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
     <ng-content select="[cngxButtonStart]" />
     <span class="cngx-button__label"><ng-content /></span>
     <ng-content select="[cngxButtonEnd]" />
-    @if (core.busy()) {
+    @if (core.busyVisible()) {
       <span class="cngx-button__busy" aria-hidden="true">
         <span class="cngx-button__spinner"></span>
       </span>

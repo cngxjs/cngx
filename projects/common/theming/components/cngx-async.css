@@ -24,7 +24,11 @@
  *
  * **State modifiers**
  *
- * - `--pending` - dimmed opacity + `cursor: wait`
+ * - `--pending` - dimmed opacity + `cursor: wait`. Follows the directive's
+ *   `busyVisible` gate (`CNGX_LOADING_CONFIG` show delay and min-dwell,
+ *   `[showDelay]` / `[minDwell]` per instance), so a fast run never gets
+ *   it; `aria-busy` is immediate. `--success` / `--error` wait until the
+ *   gate releases, so a host never wears two modifiers
  * - `--success` - success-tinted surface, border, text
  * - `--error` - danger-tinted surface, border, text
  *

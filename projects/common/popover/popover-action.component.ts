@@ -41,6 +41,12 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
  *
  * Supports the same `cngxPending`/`cngxSucceeded`/`cngxFailed` templates
  * as `CngxActionButton`, or use `status()` + `@switch` for full control.
+ * Like there, the pending template waits for the busy gate of the internal
+ * `cngxAsyncClick` (`CNGX_LOADING_CONFIG.showDelay`, held for `minDwell`),
+ * so a fast run goes from the idle label straight to the result; the result
+ * templates and the announcement follow the run at once. `status()` stays
+ * immediate; branch a hand-rolled `@switch` on {@link busyVisible} for the
+ * same timing.
  *
  * ### Dismiss button
  * ```html
@@ -72,7 +78,7 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-action.component.ts
  * @since 0.1.0
  * @relatedTo CngxPopoverPanel, CngxPopoverFooter
- * @slot cngxPending Rendered while the action is running.
+ * @slot cngxPending Rendered while the action is running, once the run outlasts the show delay.
  * @slot cngxSucceeded Rendered after the action succeeds.
  * @slot cngxFailed Rendered when the action fails; gets the error.
  * <example-url>/#/common/popover/popover-panel/content-states</example-url>
@@ -109,7 +115,7 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
       >
         @switch (btn.status()) {
           @case ('pending') {
-            @if (pendingTpl(); as tpl) {
+            @if (busyVisible() && pendingTpl(); as tpl) {
               <ng-container *ngTemplateOutlet="tpl.templateRef" />
             } @else {
               <ng-container *ngTemplateOutlet="idle" />
@@ -181,6 +187,14 @@ export class CngxPopoverAction {
    * `role="dismiss"` (there is no async lifecycle to report).
    */
   readonly status = computed<AsyncStatus>(() => this.asyncClick()?.status() ?? 'idle');
+
+  /**
+   * `true` while the busy visual of the confirm action should show: the run
+   * after the loading config's show delay, held for its min-dwell (the
+   * internal `CngxAsyncClick.busyVisible`). Always `false` for
+   * `role="dismiss"`.
+   */
+  readonly busyVisible = computed(() => this.asyncClick()?.busyVisible() ?? false);
 
   private closeOnSuccessTimer: ReturnType<typeof setTimeout> | null = null;
 

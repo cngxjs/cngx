@@ -52,7 +52,12 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
  * templates) render stacked in one grid cell; only the active one is
  * visible and named, so the button is always as wide as its widest label
  * and never jumps after a run. Without a pending label or template, the
- * idle label stays in place under the busy spinner.
+ * idle label stays in place under the busy spinner. The spinner and the
+ * pending label wait for the `cngxAsyncClick` busy gate
+ * (`CNGX_LOADING_CONFIG.showDelay`, held for `minDwell`; `[showDelay]` /
+ * `[minDwell]` per button), so a fast run goes from the idle label straight
+ * to the result. The success and failure labels, `aria-busy` and the
+ * announcement follow the run at once.
  *
  * The status announcement is spoken through the `cngxAsyncClick` live
  * region next to the button, also for a bound `[externalState]`.
@@ -93,7 +98,7 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/action-button/action-button.ts
  * @since 0.1.0
  * @relatedTo CngxButton, CngxAsyncClick, CngxPending, CngxSucceeded, CngxFailed, CngxToaster
- * @slot cngxPending Replaces the label while the action runs.
+ * @slot cngxPending Replaces the label while the action runs, once the run outlasts the show delay.
  * @slot cngxSucceeded Replaces the label after the action succeeds.
  * @slot cngxFailed Replaces the label when the action fails; gets the error.
  * <example-url>/#/ui/action-button/async-button/random-outcome</example-url>
@@ -112,7 +117,7 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
   hostDirectives: [
     {
       directive: CngxAsyncClick,
-      inputs: ['cngxAsyncClick: action', 'feedbackDuration'],
+      inputs: ['cngxAsyncClick: action', 'feedbackDuration', 'showDelay', 'minDwell'],
     },
   ],
   providers: [
@@ -127,7 +132,8 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
     '[attr.data-variant]': 'core.variant()',
     '[attr.data-tone]': 'core.tone()',
     '[attr.data-size]': 'core.size()',
-    '[attr.data-busy]': 'effectiveBusy() ? "true" : null',
+    '[attr.data-busy]': 'core.busyVisible() ? "true" : null',
+    '[attr.data-pending]': 'effectiveBusy() ? "true" : null',
     '[attr.data-status]': 'effectiveStatus()',
     '[attr.data-status-label]': 'activeCell() === "idle" ? null : ""',
     '[attr.aria-disabled]': 'core.ariaDisabled()',
@@ -185,7 +191,7 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
         </span>
       }
     </span>
-    @if (effectiveBusy() && activeCell() === 'idle') {
+    @if (core.busyVisible() && activeCell() === 'idle') {
       <span class="cngx-button__busy" aria-hidden="true">
         <span class="cngx-button__spinner"></span>
       </span>
@@ -258,7 +264,10 @@ export class CngxActionButton {
    */
   readonly failedAnnouncement = input<string | undefined>(undefined);
 
-  /** Fallback text while pending (when no `cngxPending` template is projected). */
+  /**
+   * Fallback text while pending (when no `cngxPending` template is projected).
+   * Shows once the run outlasts the show delay, like the spinner.
+   */
   readonly pendingLabel = input<string | undefined>(undefined);
 
   /** Fallback text after success (when no `cngxSucceeded` template is projected). */
@@ -349,12 +358,14 @@ export class CngxActionButton {
 
   /**
    * @internal - the visible, named cell: the status cell when it exists,
-   * else the idle content.
+   * else the idle content. The pending cell waits for the busy gate, so a run
+   * faster than the show delay goes idle -> result without a pending flash
+   * in the label or the accessible name; the result cells follow the status.
    */
   protected readonly activeCell = computed<LabelCell>(() => {
     const status = this.effectiveStatus();
     const cells = this.hasCell();
-    if (status === 'pending' && cells.pending) {
+    if (status === 'pending' && cells.pending && this.core.busyVisible()) {
       return 'pending';
     }
     if (status === 'success' && cells.success) {

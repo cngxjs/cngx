@@ -19,7 +19,8 @@ import {
   type AsyncAction,
 } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverSheet } from '@cngx/common/popover';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CNGX_BUTTON_CARET_ICON } from './caret-icon.token';
 import { CngxMenuButton } from './menu-button.component';
@@ -264,11 +265,19 @@ describe('CngxMenuButton', () => {
       ['after', AsyncAfterHost],
       ['before', AsyncBeforeHost],
     ] as const)('builds with a co-hosted cngxAsyncClick written %s the selector', (_, type) => {
+      vi.useFakeTimers();
       const { button, flush } = setup(type as Type<unknown>);
       button.click();
       flush();
       expect(button.getAttribute('aria-busy')).toBe('true');
       expect(button.getAttribute('aria-disabled')).toBe('true');
+      expect(button.getAttribute('data-pending')).toBe('true');
+      expect(button.hasAttribute('data-busy')).toBe(false);
+
+      vi.advanceTimersByTime(CNGX_LOADING_DEFAULTS.showDelay);
+      flush();
+      expect(button.getAttribute('data-busy')).toBe('true');
+      expect(button.querySelector('.cngx-button__busy')).not.toBeNull();
     });
   });
 

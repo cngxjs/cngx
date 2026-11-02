@@ -97,7 +97,8 @@ import { CNGX_SPLIT_BUTTON } from './split-button.token';
     '[attr.data-variant]': 'core.variant()',
     '[attr.data-tone]': 'core.tone()',
     '[attr.data-size]': 'core.size()',
-    '[attr.data-busy]': 'core.busy() ? "true" : null',
+    '[attr.data-busy]': 'core.busyVisible() ? "true" : null',
+    '[attr.data-pending]': 'core.busy() ? "true" : null',
     '[attr.data-expanded]': 'expanded() ? "true" : "false"',
     '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.aria-disabled]': 'core.ariaDisabled()',
@@ -129,7 +130,7 @@ import { CNGX_SPLIT_BUTTON } from './split-button.token';
         <ng-content />
       }
     </span>
-    @if (core.busy()) {
+    @if (core.busyVisible()) {
       <span class="cngx-button__busy" aria-hidden="true">
         <span class="cngx-button__spinner"></span>
       </span>

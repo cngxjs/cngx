@@ -96,7 +96,8 @@ import { injectLazyHostDirective } from './internal/inject-lazy-host-directive';
     '[attr.data-variant]': 'core.variant()',
     '[attr.data-tone]': 'core.tone()',
     '[attr.data-size]': 'core.size()',
-    '[attr.data-busy]': 'core.busy() ? "true" : null',
+    '[attr.data-busy]': 'core.busyVisible() ? "true" : null',
+    '[attr.data-pending]': 'core.busy() ? "true" : null',
     '[attr.data-start]': 'startSlot() ? "" : null',
     // The end is never empty: a projected cngxButtonEnd or the caret.
     'data-end': '',
@@ -129,7 +130,7 @@ import { injectLazyHostDirective } from './internal/inject-lazy-host-directive';
         }
       </cngx-icon>
     }
-    @if (core.busy()) {
+    @if (core.busyVisible()) {
       <span class="cngx-button__busy" aria-hidden="true">
         <span class="cngx-button__spinner"></span>
       </span>

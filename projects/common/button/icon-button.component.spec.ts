@@ -1,6 +1,8 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { CngxAsyncClick } from '@cngx/common/interactive';
+import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
 import { vi } from 'vitest';
 
 import { provideButtonConfig, withButtonVariant } from './button-config';
@@ -46,6 +48,15 @@ class UnnamedHost {}
 })
 class GlyphHost {}
 
+@Component({
+  template: `<button id="gated" cngxIconButton aria-label="Run" [cngxAsyncClick]="run"></button>`,
+  imports: [CngxIconButton, CngxAsyncClick],
+})
+class GatedAsyncHost {
+  release: () => void = () => undefined;
+  readonly run = (): Promise<void> => new Promise<void>((resolve) => (this.release = resolve));
+}
+
 function render<T>(type: new () => T) {
   const fixture = TestBed.createComponent(type);
   fixture.detectChanges();
@@ -55,6 +66,40 @@ function render<T>(type: new () => T) {
 }
 
 describe('CngxIconButton', () => {
+  it('gates the busy layer of a co-hosted cngxAsyncClick behind the loading config', async () => {
+    vi.useFakeTimers();
+    const { fixture, host, q } = render(GatedAsyncHost);
+    const btn = q('#gated');
+    const advance = async (ms: number): Promise<void> => {
+      await vi.advanceTimersByTimeAsync(ms);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+    };
+
+    btn.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(btn.getAttribute('aria-busy')).toBe('true');
+    expect(btn.getAttribute('aria-disabled')).toBe('true');
+    expect(btn.getAttribute('data-pending')).toBe('true');
+    expect(btn.hasAttribute('data-busy')).toBe(false);
+    expect(btn.querySelector('.cngx-button__busy')).toBeNull();
+
+    await advance(CNGX_LOADING_DEFAULTS.showDelay);
+    expect(btn.getAttribute('data-busy')).toBe('true');
+    expect(btn.querySelector('.cngx-button__busy')?.getAttribute('aria-hidden')).toBe('true');
+
+    host.release();
+    await advance(0);
+    expect(btn.hasAttribute('data-pending')).toBe(false);
+    expect(btn.hasAttribute('aria-busy')).toBe(false);
+    expect(btn.getAttribute('data-busy')).toBe('true');
+
+    await advance(CNGX_LOADING_DEFAULTS.minDwell);
+    expect(btn.hasAttribute('data-busy')).toBe(false);
+    expect(btn.querySelector('.cngx-button__busy')).toBeNull();
+  });
+
   it('defaults to the ghost variant, neutral tone and md size', () => {
     const { q } = render(NamedHost);
     const btn = q('#named');

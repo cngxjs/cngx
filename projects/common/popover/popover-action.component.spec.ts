@@ -2,6 +2,7 @@ import { Component, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxFailed, CngxPending, CngxSucceeded } from '@cngx/common/interactive';
+import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
 
 import { CngxPopoverAction } from './popover-action.component';
 import { providePopoverPanel, withCloseOnSuccess } from './popover-panel.config';
@@ -127,7 +128,7 @@ describe('CngxPopoverAction', () => {
 
     btn.click();
     fixture.detectChanges();
-    await vi.advanceTimersByTimeAsync(0);
+    await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay);
     fixture.detectChanges();
 
     expect(btn.textContent).toContain('Saving...');
@@ -142,11 +143,32 @@ describe('CngxPopoverAction', () => {
 
     btn.click();
     fixture.detectChanges();
-    await vi.advanceTimersByTimeAsync(0);
+    await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay);
     fixture.detectChanges();
 
     expect(btn.textContent).toContain('Saving...');
     expect(btn.textContent).not.toContain('Save');
+  });
+
+  it('keeps the idle label for a run that settles before the show delay', async () => {
+    const { fixture } = setup(ConfirmHost);
+    const host = fixture.componentInstance;
+    const btn = (fixture.nativeElement as HTMLElement).querySelector(
+      '.cngx-popover-action',
+    ) as HTMLButtonElement;
+
+    btn.click();
+    fixture.detectChanges();
+    await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay - 1);
+    fixture.detectChanges();
+    expect(host.action().busyVisible()).toBe(false);
+    expect(btn.getAttribute('aria-busy')).toBe('true');
+    expect(btn.textContent).not.toContain('Saving...');
+
+    host.resolveFn();
+    await vi.advanceTimersByTimeAsync(0);
+    fixture.detectChanges();
+    expect(btn.textContent).toContain('Saved!');
   });
 
   it('should show succeeded template after success', async () => {

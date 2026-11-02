@@ -4,7 +4,7 @@ import { CngxButton, type CngxButtonSize } from '@cngx/common/button';
 import { CngxAsyncClick, CngxMenu, CngxMenuItem, type AsyncAction } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
 import { accessibleName, computedValue } from '@cngx/testing/geometry';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { CNGX_BUTTON_CARET_ICON } from './caret-icon.token';
 import { CngxMenuButton } from './menu-button.component';
@@ -192,8 +192,11 @@ describe('CngxMenuButton geometry', () => {
     button.click();
     fixture.detectChanges();
     TestBed.flushEffects();
-    fixture.detectChanges();
-    expect(button.dataset['busy']).toBe('true');
+    // data-busy follows the loading config's show delay.
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(button.dataset['busy']).toBe('true');
+    });
     expect(await accessibleName('.m-busy')).toBe('Export');
     expect(computedValue(query(button, '.cngx-button__label'), 'opacity')).toBe('0');
   });

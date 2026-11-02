@@ -1,6 +1,7 @@
 import { Component, computed, Directive, input, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
+import { CNGX_LOADING_DEFAULTS, provideLoadingConfigAt, withShowDelay } from '@cngx/core/utils';
 import { of, type Observable } from 'rxjs';
 import { provideInteractiveI18n, withInteractiveI18nLabels } from '../i18n/interactive-i18n';
 import { CngxAsyncClick, type AsyncAction } from './async-click.directive';
@@ -232,14 +233,17 @@ describe('CngxAsyncClick', () => {
   });
 
   it('should apply CSS classes', async () => {
+    vi.useFakeTimers();
     const d = deferred();
     const { btn, host, fixture } = setupButton();
     host.actionImpl = () => d.promise;
     btn.click();
     flush(fixture);
+    await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay);
+    flush(fixture);
     expect(btn.classList.contains('cngx-async--pending')).toBe(true);
     d.resolve();
-    await d.promise;
+    await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.minDwell);
     flush(fixture);
     expect(btn.classList.contains('cngx-async--success')).toBe(true);
   });
@@ -279,6 +283,181 @@ describe('CngxAsyncClick', () => {
     TestBed.flushEffects();
     const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
     expect(btn.nextElementSibling).toBeNull();
+  });
+});
+
+@Component({
+  template: `<button
+    [cngxAsyncClick]="action"
+    [showDelay]="showDelay()"
+    [minDwell]="minDwell()"
+    [feedbackDuration]="feedbackDuration()"
+  >Go</button>`,
+  imports: [CngxAsyncClick],
+})
+class GateHost {
+  readonly showDelay = signal<number | undefined>(undefined);
+  readonly minDwell = signal<number | undefined>(undefined);
+  readonly feedbackDuration = signal(2000);
+  readonly directive = viewChild.required(CngxAsyncClick);
+  callCount = 0;
+  actionImpl: () => Promise<unknown> = () => Promise.resolve();
+  readonly action: AsyncAction = () => {
+    this.callCount++;
+    return this.actionImpl();
+  };
+}
+
+@Component({
+  template: `<button [cngxAsyncClick]="action">Go</button>`,
+  imports: [CngxAsyncClick],
+  viewProviders: [...provideLoadingConfigAt(withShowDelay(300))],
+})
+class ScopedConfigGateHost {
+  readonly directive = viewChild.required(CngxAsyncClick);
+  readonly action: AsyncAction = () => new Promise(() => undefined);
+}
+
+describe('CngxAsyncClick busy visibility gate', () => {
+  const { showDelay, minDwell } = CNGX_LOADING_DEFAULTS;
+
+  function setup(configure?: (host: GateHost) => void) {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(GateHost);
+    configure?.(fixture.componentInstance);
+    flush(fixture);
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    const run = deferred();
+    fixture.componentInstance.actionImpl = () => run.promise;
+    const advance = async (ms: number): Promise<void> => {
+      await vi.advanceTimersByTimeAsync(ms);
+      flush(fixture);
+    };
+    const click = (): void => {
+      btn.click();
+      flush(fixture);
+    };
+    const host = fixture.componentInstance;
+    return { fixture, btn, run, advance, click, host, directive: host.directive() };
+  }
+
+  it('never shows the busy visual for a run that settles before showDelay', async () => {
+    const { btn, run, advance, click, host, directive } = setup();
+    click();
+    expect(directive.pending()).toBe(true);
+    expect(btn.getAttribute('aria-busy')).toBe('true');
+    expect(btn.getAttribute('aria-disabled')).toBe('true');
+    btn.click();
+    expect(host.callCount).toBe(1);
+
+    await advance(showDelay - 20);
+    expect(directive.busyVisible()).toBe(false);
+    expect(btn.classList.contains('cngx-async--pending')).toBe(false);
+
+    run.resolve();
+    await advance(showDelay + minDwell);
+    expect(directive.busyVisible()).toBe(false);
+    expect(btn.classList.contains('cngx-async--pending')).toBe(false);
+    expect(directive.succeeded()).toBe(true);
+  });
+
+  it('shows the busy visual after showDelay and holds it for minDwell past the settle', async () => {
+    const { btn, run, advance, click, directive } = setup();
+    click();
+    await advance(showDelay - 1);
+    expect(directive.busyVisible()).toBe(false);
+    await advance(1);
+    expect(directive.busyVisible()).toBe(true);
+    expect(btn.classList.contains('cngx-async--pending')).toBe(true);
+
+    await advance(10);
+    run.resolve();
+    await advance(0);
+    expect(directive.pending()).toBe(false);
+    expect(directive.succeeded()).toBe(true);
+    expect(directive.announcement()).not.toBe('');
+    expect(btn.hasAttribute('aria-busy')).toBe(false);
+    expect(directive.busyVisible()).toBe(true);
+    expect(btn.classList.contains('cngx-async--pending')).toBe(true);
+    expect(btn.classList.contains('cngx-async--success')).toBe(false);
+
+    await advance(minDwell - 11);
+    expect(directive.busyVisible()).toBe(true);
+    await advance(1);
+    expect(directive.busyVisible()).toBe(false);
+    expect(btn.classList.contains('cngx-async--pending')).toBe(false);
+    expect(btn.classList.contains('cngx-async--success')).toBe(true);
+  });
+
+  it('honours [showDelay]="0" and [minDwell]="0"', async () => {
+    const { run, advance, click, directive } = setup((h) => {
+      h.showDelay.set(0);
+      h.minDwell.set(0);
+    });
+    click();
+    await advance(0);
+    expect(directive.busyVisible()).toBe(true);
+
+    run.resolve();
+    await advance(1);
+    expect(directive.busyVisible()).toBe(false);
+  });
+
+  it('retimes through provideLoadingConfigAt(withShowDelay)', async () => {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(ScopedConfigGateHost);
+    flush(fixture);
+    const directive = fixture.componentInstance.directive();
+    (fixture.nativeElement.querySelector('button') as HTMLButtonElement).click();
+    flush(fixture);
+
+    await vi.advanceTimersByTimeAsync(299);
+    flush(fixture);
+    expect(directive.busyVisible()).toBe(false);
+    await vi.advanceTimersByTimeAsync(1);
+    flush(fixture);
+    expect(directive.busyVisible()).toBe(true);
+  });
+
+  it('keeps the layer when a new run starts inside the dwell tail', async () => {
+    const { run, advance, click, host, directive } = setup();
+    click();
+    await advance(showDelay + 10);
+    run.resolve();
+    await advance(0);
+    expect(directive.busyVisible()).toBe(true);
+
+    const second = deferred();
+    host.actionImpl = () => second.promise;
+    await advance(100);
+    click();
+    expect(host.callCount).toBe(2);
+    expect(directive.pending()).toBe(true);
+
+    for (let t = 0; t < minDwell + showDelay; t += 50) {
+      await advance(50);
+      expect(directive.busyVisible()).toBe(true);
+    }
+    second.resolve();
+    await advance(minDwell);
+    expect(directive.busyVisible()).toBe(false);
+  });
+
+  it('skips the success tint when feedbackDuration ends inside the dwell tail', async () => {
+    const { btn, run, advance, click, directive } = setup((h) => h.feedbackDuration.set(300));
+    click();
+    await advance(showDelay + 10);
+    run.resolve();
+    await advance(0);
+    expect(directive.succeeded()).toBe(true);
+    expect(directive.announcement()).not.toBe('');
+
+    for (let t = 0; t < minDwell; t += 25) {
+      await advance(25);
+      expect(btn.classList.contains('cngx-async--success')).toBe(false);
+    }
+    expect(directive.busyVisible()).toBe(false);
+    expect(directive.succeeded()).toBe(false);
   });
 });
 

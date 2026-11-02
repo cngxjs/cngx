@@ -10,7 +10,12 @@ import {
   withInteractiveI18nLabels,
   type CngxInteractiveI18n,
 } from '@cngx/common/interactive';
-import { type CngxAsyncState, buildAsyncStateView, type AsyncStatus } from '@cngx/core/utils';
+import {
+  CNGX_LOADING_DEFAULTS,
+  type CngxAsyncState,
+  buildAsyncStateView,
+  type AsyncStatus,
+} from '@cngx/core/utils';
 import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/core/i18n';
 import { stripBidiIsolates } from '@cngx/testing';
 import { CngxToastOn, CngxToaster, provideFeedback, withErrorDetail } from '@cngx/ui/feedback';
@@ -275,12 +280,15 @@ describe('CngxActionButton', () => {
     });
 
     it('should show pendingLabel while pending', async () => {
+      vi.useFakeTimers();
       const d = deferred();
       const fixture = TestBed.createComponent(SimpleHost);
       fixture.componentInstance.actionImpl = () => d.promise;
       fixture.detectChanges();
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
       btn.click();
+      flush(fixture);
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay);
       flush(fixture);
       expect(activeText(btn)).toBe('Saving...');
       // Busy communicates via aria; the hard disabled attr would drop focus.
@@ -317,12 +325,15 @@ describe('CngxActionButton', () => {
 
   describe('template slots', () => {
     it('should show pending template', async () => {
+      vi.useFakeTimers();
       const d = deferred();
       const fixture = TestBed.createComponent(TemplateHost);
       fixture.componentInstance.actionImpl = () => d.promise;
       fixture.detectChanges();
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
       btn.click();
+      flush(fixture);
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay);
       flush(fixture);
       expect(activeText(btn)).toBe('Loading...');
       d.resolve();
@@ -395,6 +406,7 @@ describe('CngxActionButton', () => {
     });
 
     it('should apply async CSS classes from directive', async () => {
+      vi.useFakeTimers();
       const d = deferred();
       const fixture = TestBed.createComponent(SimpleHost);
       fixture.componentInstance.actionImpl = () => d.promise;
@@ -402,9 +414,12 @@ describe('CngxActionButton', () => {
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
       btn.click();
       flush(fixture);
+      expect(btn.classList.contains('cngx-async--pending')).toBe(false);
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay);
+      flush(fixture);
       expect(btn.classList.contains('cngx-async--pending')).toBe(true);
       d.resolve();
-      await d.promise;
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.minDwell);
       flush(fixture);
       expect(btn.classList.contains('cngx-async--success')).toBe(true);
     });
@@ -432,6 +447,7 @@ describe('CngxActionButton', () => {
     });
 
     it('keeps one width: every status label sits stacked in the label cell', async () => {
+      vi.useFakeTimers();
       const d = deferred();
       const fixture = TestBed.createComponent(SimpleHost);
       fixture.componentInstance.actionImpl = () => d.promise;
@@ -446,6 +462,8 @@ describe('CngxActionButton', () => {
         cells().length - 1,
       );
       btn.click();
+      flush(fixture);
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay);
       flush(fixture);
       expect(active().length).toBe(1);
       expect(btn.hasAttribute('data-status-label')).toBe(true);
@@ -479,8 +497,11 @@ describe('CngxActionButton', () => {
 
   describe('externalState', () => {
     it('should show external pending label when external state is pending', () => {
+      vi.useFakeTimers();
       const fixture = TestBed.createComponent(ExternalStateHost);
       fixture.componentInstance.mock.status.set('pending');
+      flush(fixture);
+      vi.advanceTimersByTime(CNGX_LOADING_DEFAULTS.showDelay);
       flush(fixture);
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
       expect(activeText(btn)).toBe('Ext pending');
@@ -529,6 +550,45 @@ describe('CngxActionButton', () => {
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
       expect(btn.getAttribute('aria-busy')).toBe('true');
       expect(btn.getAttribute('aria-disabled')).toBe('true');
+    });
+
+    it('gates data-busy and the pending label of an external run behind the show delay', () => {
+      vi.useFakeTimers();
+      const fixture = TestBed.createComponent(ExternalStateHost);
+      flush(fixture);
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+      fixture.componentInstance.mock.status.set('pending');
+      flush(fixture);
+      expect(activeText(btn)).toBe('Idle');
+      expect(btn.getAttribute('data-status')).toBe('pending');
+      expect(btn.getAttribute('data-pending')).toBe('true');
+      expect(btn.getAttribute('aria-busy')).toBe('true');
+      expect(btn.hasAttribute('data-busy')).toBe(false);
+
+      vi.advanceTimersByTime(CNGX_LOADING_DEFAULTS.showDelay);
+      flush(fixture);
+      expect(activeText(btn)).toBe('Ext pending');
+      expect(btn.getAttribute('data-busy')).toBe('true');
+      expect(btn.querySelector('.cngx-button__busy')).toBeNull();
+    });
+
+    it('goes idle -> result without a pending label for a run faster than the show delay', () => {
+      vi.useFakeTimers();
+      const fixture = TestBed.createComponent(ExternalStateHost);
+      flush(fixture);
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+      fixture.componentInstance.mock.status.set('pending');
+      flush(fixture);
+      vi.advanceTimersByTime(CNGX_LOADING_DEFAULTS.showDelay - 1);
+      flush(fixture);
+      expect(activeText(btn)).toBe('Idle');
+
+      fixture.componentInstance.mock.status.set('success');
+      flush(fixture);
+      expect(activeText(btn)).toBe('Ext done');
+      vi.advanceTimersByTime(CNGX_LOADING_DEFAULTS.minDwell);
+      flush(fixture);
+      expect(activeText(btn)).toBe('Ext done');
     });
 
     it('blocks clicks while the external state is pending', () => {
