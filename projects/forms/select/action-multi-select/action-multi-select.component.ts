@@ -35,7 +35,6 @@ import {
   CngxListbox,
   CngxListboxSearch,
   CngxListboxTrigger,
-  createListboxLabelMatch,
 } from '@cngx/common/interactive';
 import {
   CngxPopover,
@@ -121,7 +120,7 @@ import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/p
 import { resolveActionSelectConfig } from '../shared/action-select-config';
 import { mergeCommitState } from '../shared/internal/merged-commit-state';
 import { createActionTriggerInput } from '../shared/internal/action-trigger-input';
-import { resolveSelectConfig } from '../shared/internal/resolve-config';
+import { resolveSearchMatch, resolveSelectConfig } from '../shared/internal/resolve-config';
 import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_SEARCH_EFFECTS_FACTORY, searchResultsFrom } from '../shared/search-effects';
@@ -713,12 +712,11 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   /** @internal */ readonly focused = this.hostFocus.focusedWithin;
   readonly empty = computed<boolean>(() => this.isEmpty());
 
-  /** @internal Folded substring match of the option label in the reading locale. */
-  private readonly labelMatch = createListboxLabelMatch(injectLocale());
-
-  /** @internal */
-  protected readonly effectiveMatchFn = computed<CngxSelectMatchFn<T>>(
-    () => this.searchMatchFn() ?? this.config.searchMatchFn ?? this.labelMatch,
+  /** @internal `[searchMatchFn]` > `CngxSelectConfig.searchMatchFn` > folded label match. */
+  protected readonly effectiveMatchFn = resolveSearchMatch(
+    this.searchMatchFn,
+    this.config,
+    injectLocale(),
   );
 
   /** @internal - `effectiveMatchFn` as the listbox search input takes it. */

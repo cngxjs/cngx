@@ -29,7 +29,6 @@ import {
   CngxListbox,
   CngxListboxSearch,
   CngxListboxTrigger,
-  createListboxLabelMatch,
 } from '@cngx/common/interactive';
 import { CngxIconSvg } from '@cngx/common/display';
 import { CNGX_ICON_CARET_DOWN, CNGX_ICON_X } from '@cngx/utils';
@@ -79,7 +78,7 @@ import {
   type CngxSelectOptionDef,
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
-import { resolveSelectConfig } from '../shared/internal/resolve-config';
+import { resolveSearchMatch, resolveSelectConfig } from '../shared/internal/resolve-config';
 import { isEmptyScalar } from '../shared/internal/compare';
 import { handlePageJumpKey } from '../shared/internal/page-jump-handler';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
@@ -582,12 +581,11 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** @internal */ readonly focused = this.hostFocus.focusedWithin;
   readonly empty = computed<boolean>(() => isEmptyScalar(this.value()));
 
-  /** @internal Folded substring match of the option label in the reading locale. */
-  private readonly labelMatch = createListboxLabelMatch(injectLocale());
-
-  /** @internal */
-  protected readonly effectiveMatchFn = computed<CngxSelectMatchFn<T>>(
-    () => this.searchMatchFn() ?? this.config.searchMatchFn ?? this.labelMatch,
+  /** @internal `[searchMatchFn]` > `CngxSelectConfig.searchMatchFn` > folded label match. */
+  protected readonly effectiveMatchFn = resolveSearchMatch(
+    this.searchMatchFn,
+    this.config,
+    injectLocale(),
   );
 
   /** @internal - `effectiveMatchFn` as the listbox search input takes it. */

@@ -1,9 +1,12 @@
-import { inject } from '@angular/core';
+import { computed, inject, type Signal } from '@angular/core';
+
+import { createListboxLabelMatch } from '@cngx/common/interactive';
 
 import {
   CNGX_SELECT_CONFIG,
   CNGX_SELECT_DEFAULTS,
   type CngxSelectConfig,
+  type CngxSelectMatchFn,
 } from '../config';
 import { type CngxResolvedSelectLabels, resolveSelectLabels } from './resolve-labels';
 
@@ -96,4 +99,21 @@ export function resolveSelectConfig(): Required<
       ...user.templates,
     },
   };
+}
+
+/**
+ * The effective search matcher of a searchable select variant:
+ * `[searchMatchFn]` > `CngxSelectConfig.searchMatchFn` > the folded label
+ * match in the reading locale. A `computed`, so a rebound input switches the
+ * matcher; the config tier is the resolved snapshot of the injector.
+ *
+ * @internal
+ */
+export function resolveSearchMatch<T>(
+  input: Signal<CngxSelectMatchFn<T> | null>,
+  config: { readonly searchMatchFn: CngxSelectMatchFn | null },
+  locale: Signal<string>,
+): Signal<CngxSelectMatchFn<T>> {
+  const labelMatch = createListboxLabelMatch(locale);
+  return computed<CngxSelectMatchFn<T>>(() => input() ?? config.searchMatchFn ?? labelMatch);
 }

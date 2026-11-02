@@ -30,7 +30,6 @@ import {
   CngxClickOutside,
   CngxListbox,
   CngxListboxTrigger,
-  createListboxLabelMatch,
   CNGX_OPTION_CONTAINER,
   CNGX_OPTION_FILTER_HOST,
   CNGX_OPTION_INTERACTION_HOST,
@@ -102,7 +101,7 @@ import {
   type CngxSelectShellSearchHost,
 } from '../declarative/select-search-host';
 import { CngxSelectSearch } from '../declarative/select-search.component';
-import { resolveSelectConfig } from '../shared/internal/resolve-config';
+import { resolveSearchMatch, resolveSelectConfig } from '../shared/internal/resolve-config';
 import { isEmptyScalar } from '../shared/internal/compare';
 import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import {
@@ -1065,11 +1064,12 @@ export class CngxSelectShell<T = unknown>
     this.localItemsBuffer.clear();
   }
 
-  /**
-   * @internal Folded substring match of an option label in the reading
-   * locale, cached per stable option record.
-   */
-  private readonly labelMatch = createListboxLabelMatch(injectLocale());
+  /** @internal `[searchMatchFn]` > `CngxSelectConfig.searchMatchFn` > folded label match. */
+  private readonly effectiveMatchFn = resolveSearchMatch(
+    this.searchMatchFn,
+    this.config,
+    injectLocale(),
+  );
 
   /**
    * @internal `CngxOptionFilterHost` policy. Resolves the projected option's
@@ -1085,10 +1085,8 @@ export class CngxSelectShell<T = unknown>
     return this.matchOption(record, term);
   }
 
-  /** @internal `[searchMatchFn]` > `CngxSelectConfig.searchMatchFn` > folded label match. */
   private matchOption(option: CngxSelectMatchOption<T>, term: string): boolean {
-    const fn = this.searchMatchFn() ?? this.config.searchMatchFn ?? this.labelMatch;
-    return fn(option, term);
+    return this.effectiveMatchFn()(option, term);
   }
 
   /**
