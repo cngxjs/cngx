@@ -51,7 +51,7 @@ export const INTERNAL_BINDINGS = [
 /**
  * Lowered in every commit that closes rows, so growth is a visible constant edit.
  */
-export const CEILING = 46;
+export const CEILING = 31;
 
 /** @type {readonly ApiDocGap[]} */
 // prettier-ignore
@@ -63,21 +63,6 @@ export const RATCHET = [
   { entry: '@cngx/core', owner: 'CngxTouchTarget', kind: 'input', member: 'touchTarget', binding: 'cngxTouchTarget', phase: 4 },
   { entry: '@cngx/core/utils', owner: 'createDefaultsFill', kind: 'function', member: 'createDefaultsFill', phase: 4 },
   { entry: '@cngx/core/utils', owner: 'createDefaultsFill', kind: 'function', member: 'createDefaultsFill', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'input', member: 'fields', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'input', member: 'value', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'output', member: 'value', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'method', member: 'addExpression', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'method', member: 'applyFieldChange', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'method', member: 'getFieldDef', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'method', member: 'getNodeAtPath', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'method', member: 'setField', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'method', member: 'setLogic', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'method', member: 'setOperator', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'method', member: 'setValue', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'method', member: 'toggleNegated', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterExpression', kind: 'input', member: 'path', binding: 'cngxFilterExpression', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterExpressionRow', kind: 'input', member: 'path', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterGroup', kind: 'input', member: 'path', binding: 'cngxFilterGroup', phase: 4 },
   { entry: '@cngx/forms/input', owner: 'CngxInput', kind: 'method', member: 'focus', phase: 4 },
   { entry: '@cngx/forms/input', owner: 'CngxPhoneInput', kind: 'method', member: 'focus', phase: 4 },
   { entry: '@cngx/forms/input', owner: 'CngxRating', kind: 'method', member: 'focus', phase: 4 },

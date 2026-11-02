@@ -40,6 +40,12 @@ const EMPTY_FILTERS: readonly FilterNode[] = Object.freeze([]) as readonly Filte
   },
 })
 export class CngxFilterGroup {
+  /**
+   * Index path of the group node in the presenter tree, bound as `[cngxFilterGroup]`; `[]`
+   * is the root. The path is positional: removing an earlier sibling in the parent group makes
+   * it name a different node, and when it does not resolve to a group, `node()` is `null`.
+   * The directive throws CNGX2014 when no presenter is above it.
+   */
   readonly path = input.required<readonly number[]>({ alias: 'cngxFilterGroup' });
 
   /**

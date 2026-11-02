@@ -60,8 +60,20 @@ import { injectFilterBuilderAnnouncerFactory } from './filter-builder-announcer'
 export class CngxFilterBuilderPresenter<TValue = unknown>
   implements CngxFilterBuilderHost<TValue>, CngxFormFieldControl
 {
+  /**
+   * Field descriptors the builder offers: one entry per filterable column, with its key,
+   * label, editor type and optional operator list. Required; the presenter builds its field
+   * lookup from it. A field key in `value` that no entry matches is not rejected, a dev-mode
+   * warning (CNGX2003) is logged once after first render.
+   */
   readonly fields = input.required<readonly FilterFieldDef<TValue>[]>();
 
+  /**
+   * Filter tree the builder edits, bindable two-way as `[(value)]`. Every mutator writes a
+   * new tree through it, so each change emits `valueChange`; the default is a frozen empty
+   * `and` root. Nodes without an `id` are given generated ids by a write-back after the
+   * value is set.
+   */
   readonly value = model<FilterGroup>(EMPTY_ROOT);
 
   private readonly config = injectFilterBuilderConfig();
@@ -212,6 +224,11 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
     }
   }
 
+  /**
+   * Appends `expression` as the last child of the group at `path` (`[]` is the root). It has
+   * no nesting cap, unlike `addGroup`, and a `path` that does not resolve to a group throws
+   * (CNGX2010, CNGX2011).
+   */
   addExpression(path: readonly number[], expression: FilterExpression): void {
     this.core.addExpression(path, expression);
   }
@@ -251,34 +268,71 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
     }
   }
 
+  /**
+   * Sets the logic of the group at `path` and emits one mutation event only when the logic
+   * differs. An expression node at `path` is left unchanged, and a `path` that does not
+   * resolve throws (CNGX2010, CNGX2011).
+   */
   setLogic(path: readonly number[], logic: FilterLogic): void {
     this.core.setLogic(path, logic);
   }
 
+  /**
+   * Flips `negated` on the group at `path`. An expression node at `path` is left unchanged,
+   * and a `path` that does not resolve throws (CNGX2010, CNGX2011).
+   */
   toggleNegated(path: readonly number[]): void {
     this.core.toggleNegated(path);
   }
 
+  /**
+   * Sets the field key of the expression at `path`, nothing else: the operator and value
+   * are kept even when they no longer fit the new field. A group node at `path` is left
+   * unchanged; the expression row uses `applyFieldChange` instead.
+   */
   setField(path: readonly number[], fieldKey: string): void {
     this.core.setField(path, fieldKey);
   }
 
+  /**
+   * Sets the operator key of the expression at `path`. A group node at `path` is left
+   * unchanged, and the value is kept.
+   */
   setOperator(path: readonly number[], operator: string): void {
     this.core.setOperator(path, operator);
   }
 
+  /**
+   * Applies a field change to the expression at `path` as one tree write and one `set-field`
+   * mutation event, so it is announced once. The operator is replaced by `plan.operator` and
+   * the value cleared only when `plan.resetValue` is set.
+   */
   applyFieldChange(path: readonly number[], plan: CngxFilterRowFieldChangePlan): void {
     this.core.applyFieldChange(path, plan);
   }
 
+  /**
+   * Sets the value of the expression at `path`. Writing a value equal under `Object.is`, or
+   * targeting a group node, changes nothing and emits no mutation event.
+   */
   setValue(path: readonly number[], value: unknown): void {
     this.core.setValue(path, value);
   }
 
+  /**
+   * Returns the node at the index `path` in the current tree (`[]` is the root), or `null`
+   * when the path does not resolve. It reads `tree()`, so a call inside a `computed()`,
+   * `effect()` or template tracks tree changes.
+   */
   getNodeAtPath(path: readonly number[]): FilterNode | null {
     return this.core.getNodeAtPath(path);
   }
 
+  /**
+   * Returns the entry of `fields` whose `key` equals `fieldKey`, or `undefined` when none
+   * matches. It reads the field lookup signal, so a reactive caller tracks changes to
+   * `fields`.
+   */
   getFieldDef(fieldKey: string): FilterFieldDef<TValue> | undefined {
     return this.core.getFieldDef(fieldKey);
   }

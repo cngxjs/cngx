@@ -63,6 +63,12 @@ export class CngxFilterExpressionRow {
   protected readonly glyphs = CNGX_FILTER_BUILDER_GLYPHS;
   protected readonly isNativeEditor = isNativeEditor;
 
+  /**
+   * Index path of the expression node the row edits in the presenter tree. The path is
+   * positional: removing an earlier sibling in the same group makes it name a different node.
+   * When it does not resolve to an expression, the row renders nothing. The component throws
+   * CNGX2014 when no presenter is above it.
+   */
   readonly path = input.required<readonly number[]>();
 
   /**
