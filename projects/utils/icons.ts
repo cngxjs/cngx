@@ -187,7 +187,7 @@ export const CNGX_ICON_ALERT = {
   paint: 'stroke',
   micro: {
     viewBox: '0 0 12 12',
-    d: 'M5 1H7L12 11H0ZM5 4L2 10H10L7 4ZM5 5H7V7H5ZM5 8H7V9H5Z',
+    d: 'M6.514 1.857L11.486 10.143Q12 11 11 11L1 11Q0 11 0.514 10.143L5.486 1.857Q6 1 6.514 1.857ZM5 5V8H7V5ZM5 9V10H7V9Z',
   },
 } as const satisfies CngxIconData;
 
@@ -203,7 +203,7 @@ export const CNGX_ICON_BAN = {
   paint: 'stroke',
   micro: {
     viewBox: '0 0 12 12',
-    d: 'M1 6A5 5 0 1 1 11 6A5 5 0 1 1 1 6ZM2 6A4 4 0 1 0 10 6A4 4 0 1 0 2 6ZM3 2L10 9L9 10L2 3Z',
+    d: 'M6 0A6 6 0 1 1 6 12A6 6 0 1 1 6 0ZM9.668 8.607A4.5 4.5 0 0 0 3.393 2.332ZM2.332 3.393A4.5 4.5 0 0 0 8.607 9.668Z',
   },
 } as const satisfies CngxIconData;
 
@@ -258,10 +258,6 @@ export const CNGX_ICON_X_CIRCLE = {
   viewBox: '0 0 24 24',
   d: 'M2.5 12a9.5 9.5 0 1 0 19 0a9.5 9.5 0 1 0-19 0zM9.5 9.5l5 5M14.5 9.5l-5 5',
   paint: 'stroke',
-  micro: {
-    viewBox: '0 0 12 12',
-    d: 'M1 6A5 5 0 1 1 11 6A5 5 0 1 1 1 6ZM2 6A4 4 0 1 0 10 6A4 4 0 1 0 2 6ZM4 5L5 4L8 7L7 8ZM7 4L8 5L5 8L4 7Z',
-  },
 } as const satisfies CngxIconData;
 
 /** Scissors (cut). @internal */
