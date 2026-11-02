@@ -288,7 +288,7 @@ describe('select-family field-skin rule set', () => {
     expect(focus.slice(0, focus.indexOf('}'))).toContain(
       'outline-offset: var(--cngx-field-ring-offset, -2px)',
     );
-    const invalidFocus = bare.slice(bare.indexOf("):focus-visible {"));
+    const invalidFocus = bare.slice(bare.indexOf('):is(:focus-visible, :focus-within) {'));
     expect(invalidFocus.slice(0, invalidFocus.indexOf('}'))).toContain(
       'outline-offset: var(--cngx-field-ring-offset, -2px)',
     );
