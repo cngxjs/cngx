@@ -3,5 +3,8 @@
   "dest": "../../dist/utils",
   "lib": {
     "entryFile": "public-api.ts"
-  }
+  },
+  "assets": [
+    { "input": ".", "glob": "NOTICE.md", "output": "." }
+  ]
 }
