@@ -701,7 +701,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** Debounced search term. */
   readonly searchTerm: Signal<string> = computed(() => this.searchInputRef()?.term() ?? '');
 
-
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
   protected readonly hostFocus = createHostFocusWithin({
@@ -1033,7 +1032,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   );
 
   private readonly togglingOption = this.core.togglingOption;
-
 
   /**
    * Toggle/clear finalize + AD-activation dispatch. Shared with

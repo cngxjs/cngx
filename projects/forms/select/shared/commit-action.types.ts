@@ -14,11 +14,9 @@ import type { Observable } from 'rxjs';
  * has nothing to return. A source that neither emits nor completes stays
  * pending until a newer commit supersedes it.
  */
-export type CngxSelectCommitAction<T> = (intended: T | undefined) =>
-  | Observable<T | undefined>
-  | Promise<T | undefined>
-  | T
-  | undefined;
+export type CngxSelectCommitAction<T> = (
+  intended: T | undefined,
+) => Observable<T | undefined> | Promise<T | undefined> | T | undefined;
 
 /**
  * Panel UX during an in-flight commit. Consecutive picks supersede.

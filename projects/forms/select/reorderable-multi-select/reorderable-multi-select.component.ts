@@ -658,7 +658,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /** @internal */
   readonly activeId = computed<string | null>(() => this.listboxRef()?.ad.activeId() ?? null);
 
-
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
   protected readonly hostFocus = createHostFocusWithin({
@@ -902,7 +901,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   );
 
   private readonly togglingOption = this.core.togglingOption;
-
 
   /**
    * Toggle/clear finalize + AD-activation dispatch. Shared with

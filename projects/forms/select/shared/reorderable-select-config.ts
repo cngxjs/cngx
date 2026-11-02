@@ -153,7 +153,10 @@ export function withReorderAriaLabel(
  * `select` language section.
  */
 export function withReorderListLabels(
-  labels: Pick<CngxReorderableSelectConfig, 'listLabel' | 'moveUp' | 'moveDown' | 'atStart' | 'atEnd'>,
+  labels: Pick<
+    CngxReorderableSelectConfig,
+    'listLabel' | 'moveUp' | 'moveDown' | 'atStart' | 'atEnd'
+  >,
 ): CngxReorderableSelectConfigFeature {
   return feature(labels);
 }

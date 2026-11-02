@@ -40,7 +40,11 @@ import type {
 
 /** Context type of a `TemplateRef`; a context-free slot maps to an empty record. */
 type CngxSelectTemplateContextOf<R> =
-  NonNullable<R> extends TemplateRef<infer C> ? (C extends void ? Record<string, never> : C) : never;
+  NonNullable<R> extends TemplateRef<infer C>
+    ? C extends void
+      ? Record<string, never>
+      : C
+    : never;
 
 /**
  * Override contexts mirroring the per-instance `*cngxSelect*` slots, one key

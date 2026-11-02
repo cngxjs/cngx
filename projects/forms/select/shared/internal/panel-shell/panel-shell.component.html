@@ -1,7 +1,17 @@
-<span class="cngx-select__status cngx-sr-only" role="status" aria-live="polite" aria-atomic="true">{{ statusText() }}</span>
+<span
+  class="cngx-select__status cngx-sr-only"
+  role="status"
+  aria-live="polite"
+  aria-atomic="true"
+  >{{ statusText() }}</span
+>
 @if (showActionTop()) {
   @if (host.tpl.action(); as tpl) {
-    <div class="cngx-select__action cngx-select__action--top" role="group" [attr.aria-label]="actionLabel()">
+    <div
+      class="cngx-select__action cngx-select__action--top"
+      role="group"
+      [attr.aria-label]="actionLabel()"
+    >
       <ng-container *ngTemplateOutlet="tpl; context: actionContext()" />
     </div>
   }
@@ -70,7 +80,7 @@
                 retry: host.handleRetry.bind(host),
                 error: host.errorContext().error,
                 disabled: false,
-                label: viewCopy().loadFailedRetry
+                label: viewCopy().loadFailedRetry,
               }
             "
           />
@@ -98,7 +108,7 @@
                   retry: host.handleRetry.bind(host),
                   error: host.errorContext().error,
                   disabled: false,
-                  label: inlineErrorCopy().retry
+                  label: inlineErrorCopy().retry,
                 }
               "
             />
@@ -133,12 +143,16 @@
                   retry: host.commitErrorContext().retry,
                   error: host.commitErrorContext().error,
                   disabled: commitRetryDisabled(),
-                  label: commitErrorCopy().retry
+                  label: commitErrorCopy().retry,
                 }
               "
             />
           } @else {
-            <button type="button" class="cngx-select__error-retry" (click)="host.commitErrorContext().retry()">
+            <button
+              type="button"
+              class="cngx-select__error-retry"
+              (click)="host.commitErrorContext().retry()"
+            >
               {{ commitErrorCopy().retry }}
             </button>
           }
@@ -150,7 +164,9 @@
         <ng-container *ngTemplateOutlet="tpl; context: refreshingContext()" />
       } @else {
         @switch (host.refreshingVariant()) {
-          @case ('none') { <!-- suppressed --> }
+          @case ('none') {
+            <!-- suppressed -->
+          }
           @case ('spinner') {
             <div class="cngx-select__refreshing-spinner" aria-hidden="true">
               @if (host.tpl.loadingGlyph(); as glyph) {
@@ -186,7 +202,11 @@
 }
 @if (showActionBottom()) {
   @if (host.tpl.action(); as tpl) {
-    <div class="cngx-select__action cngx-select__action--bottom" role="group" [attr.aria-label]="actionLabel()">
+    <div
+      class="cngx-select__action cngx-select__action--bottom"
+      role="group"
+      [attr.aria-label]="actionLabel()"
+    >
       <ng-container *ngTemplateOutlet="tpl; context: actionContext()" />
     </div>
   }

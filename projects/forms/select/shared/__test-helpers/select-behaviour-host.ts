@@ -390,14 +390,18 @@ export function describeSelectBehaviourHost(
       });
     });
 
-    it("keeps the panel open on Escape when it dismisses on outside clicks only", () => {
+    it('keeps the panel open on Escape when it dismisses on outside clicks only', () => {
       const { fixture, variant, trigger } = mount({
         providers: [provideSelectConfig(withDismissOn('outside'))],
       });
       variant.open();
       flush(fixture);
       expect(variant.panelOpen()).toBe(true);
-      const escape = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+      const escape = new KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+        cancelable: true,
+      });
       trigger().dispatchEvent(escape);
       flush(fixture);
       expect(variant.panelOpen()).toBe(true);
@@ -457,8 +461,9 @@ export function describeSelectBehaviourHost(
       it('cancels the pending typeahead buffer reset when the host is destroyed', () => {
         vi.useFakeTimers();
         const { fixture, cmp, trigger } = mount();
-        const debounceMs = (cmp as { typeaheadDebounceInterval: () => number })
-          .typeaheadDebounceInterval();
+        const debounceMs = (
+          cmp as { typeaheadDebounceInterval: () => number }
+        ).typeaheadDebounceInterval();
         const armed = vi.spyOn(globalThis, 'setTimeout');
         const cancelled = vi.spyOn(globalThis, 'clearTimeout');
         // No row starts with 'z': the buffer stays armed, no variant clears it on a match.
