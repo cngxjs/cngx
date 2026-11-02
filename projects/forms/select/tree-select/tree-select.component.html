@@ -26,6 +26,7 @@
     [attr.aria-invalid]="aria.invalid"
     [attr.aria-required]="aria.required"
     [attr.aria-busy]="aria.busy"
+    [attr.aria-readonly]="aria.readonly"
     (click)="handleTriggerClick()"
     (focus)="handleFocus()"
     (blur)="handleBlur()"
@@ -86,7 +87,7 @@
             />
           } @else {
             <cngx-chip
-              [removable]="!disabled()"
+              [removable]="!writeBlocked()"
               [removeAriaLabel]="chipRemoveLabelFor()(opt.label)"
               (remove)="handleChipRemoveClick($event, opt)"
             >
@@ -120,7 +121,7 @@
         }
       }
     </span>
-    @if (clearable() && !isEmpty() && !disabled()) {
+    @if (clearable() && !isEmpty() && !writeBlocked()) {
       @if (clearButtonTpl(); as tpl) {
         <span
           class="cngx-tree-select__clear-slot"
@@ -134,7 +135,7 @@
               context: {
                 $implicit: clearAll,
                 clear: clearAll,
-                disabled: disabled(),
+                disabled: writeBlocked(),
               }
             "
           />
@@ -177,6 +178,7 @@
     #pop="cngxPopover"
     [placement]="resolvedPopoverPlacement()"
     class="cngx-select__panel"
+    tabindex="-1"
     [class]="panelClassList()"
     [style.--cngx-select-panel-min-width]="panelWidthCss()"
     [cngxPopoverSheet]="sheetWiring.presentationRequest()"
@@ -191,4 +193,5 @@
     <cngx-tree-select-panel />
   </div>
   <span class="cngx-sr-only" [id]="commitErrorId">{{ commitErrorText() }}</span>
+  <span class="cngx-sr-only" [id]="disabledReasonId">{{ disabledReasonText() }}</span>
 </div>

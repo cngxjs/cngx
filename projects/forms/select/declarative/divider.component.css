@@ -13,17 +13,21 @@
  * - `--cngx-select-divider-margin` -> `--cngx-space-xs` 0 (density scale)
  */
 
-:host {
-  /* Derive the divider margin from the scale so a global [data-density]
-     compacts it. 0.25rem 0 -> xs 0. */
-  /**
-   * Block and inline margin around the divider rule.
-   * @type <length> <length>
-   * @group Layout
-   */
-  --cngx-select-divider-margin: var(--cngx-space-xs) 0;
-  display: block;
-  block-size: 1px;
-  margin: var(--cngx-select-divider-margin, 0.25rem 0);
-  background: var(--cngx-select-divider-color, var(--cngx-color-border, oklch(0.89 0 0)));
+/* Layered like select-base.css, so a consumer rule in a later layer and the
+   Material bridge reach the declarative parts as they reach the data rows. */
+@layer cngx.components {
+  :host {
+    /* Derive the divider margin from the scale so a global [data-density]
+       compacts it. 0.25rem 0 -> xs 0. */
+    /**
+     * Block and inline margin around the divider rule.
+     * @type <length> <length>
+     * @group Layout
+     */
+    --cngx-select-divider-margin: var(--cngx-space-xs) 0;
+    display: block;
+    block-size: 1px;
+    margin: var(--cngx-select-divider-margin, 0.25rem 0);
+    background: var(--cngx-select-divider-color, var(--cngx-color-border, oklch(0.89 0 0)));
+  }
 }

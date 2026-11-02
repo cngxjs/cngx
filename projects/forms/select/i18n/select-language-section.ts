@@ -101,6 +101,10 @@ export interface CngxSelectLanguageSection {
   readonly announceMovedTo: CngxMessage;
   /** `{field}`: announced when a chip moves and has no label. */
   readonly announceMovedNoOption: CngxMessage;
+  /** `{count}`: announced politely when a typed filter settles with matching options. */
+  readonly announceResults: CngxMessage;
+  /** Announced politely when a typed filter settles with no matching option. */
+  readonly announceNoResults: CngxMessage;
   /** Accessible name of the `*cngxSelectAction` group in a select panel. */
   readonly actionGroup: string;
   /** Keyboard hint of the reorderable chip strip and of the sortable list of selected values. */
@@ -167,6 +171,11 @@ export const CNGX_SELECT_LANGUAGE_EN: CngxSelectLanguageSection = {
   announceMoved: '{field}: {option} moved',
   announceMovedTo: '{field}: {option} moved to position {position}',
   announceMovedNoOption: '{field}: moved',
+  announceResults: {
+    one: '{count} result',
+    other: '{count} results',
+  },
+  announceNoResults: 'No results',
   actionGroup: 'Inline action',
   reorderHint: 'Reorder with Alt + arrow keys',
   reorderListLabel: 'Selected, in order',

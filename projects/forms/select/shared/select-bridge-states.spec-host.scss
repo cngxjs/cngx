@@ -1,0 +1,25 @@
+// Test-only entry for select-bridge-states.geometry.spec.ts: the M3 system
+// tokens plus the working-tree select bridge, the way a consumer stylesheet
+// includes them. Not shipped.
+@use '@angular/material' as mat;
+@use '../../../themes/material/select-theme' as select;
+
+$palette: (
+  theme-type: light,
+  primary: mat.$azure-palette,
+);
+$theme: mat.define-theme(
+  (
+    color: $palette,
+  )
+);
+
+html {
+  @include mat.theme(
+    (
+      color: $palette,
+      density: 0,
+    )
+  );
+  @include select.theme($theme);
+}

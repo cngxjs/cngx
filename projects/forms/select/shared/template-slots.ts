@@ -123,9 +123,11 @@ export interface CngxSelectRetryButtonContext {
   readonly retry: () => void;
   readonly error: unknown;
   /**
-   * Always `false` in the built-in surfaces: the panel shell passes `false`
-   * for the load, inline-error and commit-error retry buttons. Do not rely on
-   * it to disable an override button.
+   * `true` while the retried commit is pending: the commit-error surface
+   * passes the variant's `isCommitting()`, so an override button can turn
+   * itself `aria-disabled` while the retry runs. The load and inline
+   * refresh-error surfaces retry a load, not a commit, and always pass
+   * `false`.
    */
   readonly disabled: boolean;
   /** Library-default label per surface. */

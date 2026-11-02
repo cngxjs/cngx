@@ -1,5 +1,3 @@
-@use 'sass:map';
-@use 'sass:math';
 @use '@angular/material' as mat;
 @use './bridge' as bridge;
 
@@ -39,14 +37,20 @@
     --cngx-select-clear-color: var(--mat-sys-on-surface-variant);
     --cngx-tree-select-node-color: var(--mat-sys-on-surface);
 
-    // Keyboard-active / hover row uses Material's neutral state layer
-    // (on-surface 8%), matching mat-select's grey active row - the selected
-    // fill stays cngx-distinct.
+    // Option state layers as mat-option paints them. The keyboard-active row
+    // (and the active tree node, which reads the same token) takes the
+    // on-surface layer at the focus opacity (12%), mat-mdc-option-active; the
+    // pointer layer at the hover opacity (8%) is emitted in `theme` because a
+    // hovered row that is not the active one has no token of its own. A
+    // single-value selected row fills with secondary-container (option-theme
+    // carries the same value for a selective include); an active or hovered
+    // row shows its layer instead, as mat-select does.
     --cngx-select-option-highlight-bg: color-mix(
       in srgb,
-      var(--mat-sys-on-surface) 8%,
+      var(--mat-sys-on-surface) calc(var(--mat-sys-focus-state-layer-opacity, 0.12) * 100%),
       transparent
     );
+    --cngx-option-selected-bg: var(--mat-sys-secondary-container);
     --cngx-select-check-color: var(--mat-sys-primary);
     --cngx-select-placeholder-color: var(--mat-sys-on-surface-variant);
     --cngx-select-error-color: var(--mat-sys-error);
@@ -85,8 +89,13 @@
     --cngx-select-focus-offset: 0px;
 
     // Tree-select node states. A checked row takes no fill (an M3 checkbox
-    // list does not fill a checked row); the checkbox carries selection.
-    --cngx-tree-select-node-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 6%, transparent);
+    // list does not fill a checked row); the checkbox carries selection. The
+    // pointer layer is the M3 hover state layer, like a hovered mat-option.
+    --cngx-tree-select-node-hover-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) calc(var(--mat-sys-hover-state-layer-opacity, 0.08) * 100%),
+      transparent
+    );
   } @else {
     --cngx-select-panel-bg: #{mat.get-theme-color($theme, background, card)};
     --cngx-select-panel-color: #{mat.get-theme-color($theme, foreground, text)};
@@ -103,36 +112,46 @@
   }
 }
 
-@mixin density($theme) {
-  $scale: mat.get-theme-density($theme);
-  $scale: math.max(-4, math.min(0, $scale));
+// Metrics. Every length is a rung or a calc() of --cngx-space-* chosen so
+// comfortable (and Material density 0) equals M3, button-theme's approach: a
+// [data-density] island and a Material `density: -N` theme (density-bridge
+// rescales the same scale) both re-scale the bridged select. No density map
+// lives here. A box height is the field type role's line box plus twice a
+// block rung, so only the spacing scales, never the text:
+//
+//   metric                  expression              comfortable  compact  spacious
+//   trigger min-height      body-large lh + 2 * md  56           40       64
+//   trigger inline padding  md                      16           8        20
+//   option row min-height   body-large lh + 3 * sm  48           36       60
+//   option block padding    sm * 1.5                12           6        18
+//   option inline padding   md                      16           8        20
+//   tree indent / row end   md                      16           8        20
+//   panel list inset        sm (see `theme`)        8            4        12
+//
+// Material density -1 .. -4 lands the trigger exactly on the M3 outlined
+// field (52 / 48 / 44 / 40); the option row follows the scale (45 / 42 / 39
+// / 36 against M3 44 / 40 / 36 / 32). The --cngx-target-min floors stay at
+// the use sites (`max()` on every row and trigger), so a coarse pointer still
+// gets its 44px.
+$-line: 'var(--mat-sys-body-large-line-height, 1.5rem)';
+$-trigger-height: 'calc(#{$-line} + 2 * var(--cngx-space-md, 16px))';
+$-row-height: 'calc(#{$-line} + 3 * var(--cngx-space-sm, 8px))';
+$-row-padding: 'calc(var(--cngx-space-sm, 8px) * 1.5) var(--cngx-space-md, 16px)';
 
+@mixin density($theme) {
   // Option metrics - Material 3 menu/select options. The option padding is
   // emitted by `-option-padding` on the row itself, see `theme`.
-  $opt-min-heights: (
-    0: 48px,
-    -1: 44px,
-    -2: 40px,
-    -3: 36px,
-    -4: 32px,
-  );
-
-  --cngx-select-option-min-height: #{map.get($opt-min-heights, $scale)};
+  --cngx-select-option-min-height: #{$-row-height};
   --cngx-select-option-radius: 0;
-  // Options sit edge-to-edge with no outer panel inset (the highlight reaches
-  // the panel border on all sides). The listbox container inside the panel
-  // also drops its default 4px inset so nothing offsets the option rows.
-  --cngx-select-panel-padding: 0;
+  // The listbox container inside the panel drops its default 4px inset so
+  // nothing offsets the option rows. The panel and tree insets are emitted on
+  // their own elements, see `theme`.
   --cngx-listbox-padding: 0;
-  // Tree-select panel owns its own body padding token; zero it too so the tree
-  // rows sit flush like the flat option list.
-  --cngx-tree-select-tree-padding: 0;
   // Tree node rows track the flat option-row metrics so the tree body reads
-  // like the rest of the family: same density-scaled row height and the same
-  // 16px horizontal rhythm as --cngx-select-option-padding.
-  --cngx-tree-select-node-height: #{map.get($opt-min-heights, $scale)};
-  --cngx-tree-select-base-indent: 16px;
-  --cngx-tree-select-node-padding-end: 16px;
+  // like the rest of the family: same row height and the same inline rhythm
+  // as --cngx-select-option-padding.
+  --cngx-tree-select-node-height: #{$-row-height};
+  --cngx-tree-select-base-indent: var(--cngx-space-md, 16px);
   // Material option rows sit edge-to-edge (option-radius 0, panel padding 0);
   // match the tree node rows so the body reads identically under the bridge.
   --cngx-tree-select-node-radius: 0;
@@ -145,47 +164,100 @@
   // chunkier indicator; bump it so the dropdown chevron reads at full weight.
   --cngx-select-caret-size: 1.5rem;
 
-  // Trigger metrics - Material 3 outlined-input scale (56 / 52 / 48 / 44 / 40).
-  // Every Select-family variant's min-height / padding / radius token falls
-  // back to its family token, so the bridge sets only the --cngx-select-*
-  // ones and the trigger surface reads like an <mat-form-field
-  // appearance='outline'> input across all nine. A variant assignment would
-  // sit on the trigger (the bridge broadcasts onto every descendant), cut the
-  // chain, and a consumer family token would no longer reach that variant.
-  $trig-min-heights: (
-    0: 56px,
-    -1: 52px,
-    -2: 48px,
-    -3: 44px,
-    -4: 40px,
-  );
-  $trig-paddings: (
-    0: 0 16px,
-    -1: 0 14px,
-    -2: 0 12px,
-    -3: 0 10px,
-    -4: 0 8px,
-  );
-  $trig-radius: 4px; // var(--mat-sys-corner-extra-small)
-
-  --cngx-select-min-height: #{map.get($trig-min-heights, $scale)};
-  --cngx-select-padding: #{map.get($trig-paddings, $scale)};
-  --cngx-select-radius: #{$trig-radius};
+  // Trigger metrics - Material 3 outlined input. Every Select-family
+  // variant's min-height / padding / radius token falls back to its family
+  // token, so the bridge sets only the --cngx-select-* ones and the trigger
+  // surface reads like an <mat-form-field appearance='outline'> input across
+  // all nine. A variant assignment would sit on the trigger (the bridge
+  // broadcasts onto every descendant), cut the chain, and a consumer family
+  // token would no longer reach that variant.
+  --cngx-select-min-height: #{$-trigger-height};
+  --cngx-select-padding: 0 var(--cngx-space-md, 16px);
+  --cngx-select-radius: 4px; // var(--mat-sys-corner-extra-small)
 }
 
 // Option padding - Material 3 menu/select options. Emitted on the option row,
 // not through `density`: see the row rule in `theme`.
 @mixin -option-padding($theme) {
-  $scale: mat.get-theme-density($theme);
-  $scale: math.max(-4, math.min(0, $scale));
-  $opt-paddings: (
-    0: 12px 16px,
-    -1: 10px 14px,
-    -2: 8px 12px,
-    -3: 6px 10px,
-    -4: 4px 8px,
+  --cngx-select-option-padding: #{$-row-padding};
+}
+
+// Option rows of the flat panels: the data-mode row and the declarative
+// <cngx-option>. A row inside a multi-value listbox keeps no selected fill
+// (mat-mdc-option-multiple), so the selected rules skip it.
+$-rows: ':is(.cngx-select__option, cngx-option)';
+$-single: ':not(:is([aria-multiselectable="true"] *))';
+
+// The rest of the mat-option state matrix (see `color`): a hovered row that
+// is not the active one takes the hover layer over any selected fill, and a
+// selected single-value row paints its label in on-secondary-container while
+// it shows the fill, its check glyph always. The row rules carry real
+// specificity: select-base.css and cngx-listbox.css paint the row states at
+// (0,1,0) to (0,2,0) in the same layer.
+@mixin -option-states($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    $scope: ':is(.cngx-select__panel, #{$-hosts})';
+    @layer cngx.components {
+      #{$scope} #{$-rows}:hover:not(.cngx-option--highlighted, [aria-disabled='true']) {
+        background: color-mix(
+          in srgb,
+          var(--mat-sys-on-surface) calc(var(--mat-sys-hover-state-layer-opacity, 0.08) * 100%),
+          transparent
+        );
+      }
+      #{$scope} #{$-rows}.cngx-option--selected#{$-single} {
+        --cngx-checkbox-color: var(--mat-sys-on-secondary-container);
+      }
+      #{$scope}
+        #{$-rows}.cngx-option--selected#{$-single}:not(
+          .cngx-option--highlighted,
+          :hover,
+          [aria-disabled='true']
+        ) {
+        color: var(--mat-sys-on-secondary-container);
+      }
+    }
+  }
+}
+
+$-hosts:
+  cngx-select, cngx-multi-select, cngx-combobox, cngx-typeahead, cngx-tree-select,
+  cngx-reorderable-multi-select, cngx-action-select, cngx-action-multi-select, cngx-select-shell;
+
+// Focus ring of the outlined trigger, as mat-form-field appearance='outline'
+// draws it: the edge thickens to 2px in the primary colour inside the box on
+// any focus (pointer or keyboard, also focus inside the input-led triggers)
+// and while the panel is open, so the box keeps its height and the flush
+// panel never lands on the ring. The cngx default ring sits outside the edge
+// on :focus-visible only; the variant sheets SET it inside
+// `@scope` at up to (0,4,0), so these rules carry (0,6,1) and up. Only the
+// outline skin on a lone trigger: fill and bare draw their own focus, and a
+// trigger inside a field box leaves focus to the box. An invalid trigger
+// keeps its danger colour and drops the outside glow mat does not paint. The
+// unlayered forced-colors rules in select-base.css still win.
+$-outlined-trigger: ':is(#{$-hosts}):is(:not([data-skin]), [data-skin="outline"]):not(.cngx-field-box > *) > * > .cngx-field-trigger.cngx-field-trigger.cngx-field-trigger';
+$-trigger-focus: ':is(:focus-within, [aria-expanded="true"], :has([aria-expanded="true"]))';
+$-trigger-invalid: ':is([aria-invalid="true"], :has(> [role="combobox"][aria-invalid="true"]))';
+
+@mixin -focus-ring($theme) {
+  $ring: if(
+    mat.get-theme-version($theme) == 1,
+    var(--mat-sys-primary),
+    mat.get-theme-color($theme, primary)
   );
-  --cngx-select-option-padding: #{map.get($opt-paddings, $scale)};
+  @layer cngx.components {
+    #{$-outlined-trigger}#{$-trigger-focus} {
+      outline: 2px solid #{$ring};
+      outline-offset: -2px;
+    }
+    #{$-outlined-trigger}#{$-trigger-focus}#{$-trigger-invalid} {
+      outline-color: var(
+        --cngx-select-trigger-invalid-outline-color,
+        var(--cngx-color-danger, #{$ring})
+      );
+      box-shadow: none;
+    }
+  }
 }
 
 @mixin theme($theme) {
@@ -219,10 +291,11 @@
   }
 
   // `--cngx-select-option-padding` is registered `inherits: false` and SET on
-  // the row by select-base.css (`.cngx-select__option`, 0,1,0, same layer), so
-  // a zero-specificity bridge value never lands. The row rule carries real
-  // specificity (0,2,0) and reaches rows in a host, a detached panel and the
-  // tree panel alike.
+  // the row by select-base.css (`.cngx-select__option`, 0,1,0, same layer) and
+  // on the declarative `<cngx-option>` host (option.component.css, 0,1,0, same
+  // layer), so a zero-specificity bridge value never lands. The row rule
+  // carries real specificity (0,2,0) and reaches rows in a host, a detached
+  // panel and the tree panel alike.
   @layer cngx.components {
     :is(
         .cngx-select__panel,
@@ -237,8 +310,43 @@
         cngx-action-multi-select,
         cngx-select-shell
       )
-      .cngx-select__option {
+      :is(.cngx-select__option, cngx-option) {
       @include -option-padding($theme);
     }
+
+    // Material 3 menus sit their rows edge-to-edge inside an 8px block inset
+    // (mat-select panel `padding: 8px 0`), so the highlight reaches the panel
+    // edges and the tree rows sit flush like the flat list, and a tree row
+    // ends on the 16px of an option row. select-base.css,
+    // tree-select-panel.component.css and cngx-listbox.css SET these tokens
+    // from the scale on the same elements (0,1,0, same layer); the host
+    // ancestor lifts each bridge rule above it so it lands.
+    //
+    // The panel itself keeps no padding, so the loading and refreshing bars
+    // still bleed to its edge; the 8px block inset (the sm rung, so density
+    // re-scales it) sits on the list inside: the listbox of the flat panels
+    // and the tree container.
+    //
+    // mat-select opens flush on its field (no gap). CngxPopover writes its
+    // `offset` input as an inline margin, which only an important
+    // declaration outranks, so the bridge zeroes it on the select panels
+    // alone. The sheet and fullscreen presentations carry margin 0 already.
+    :is(#{$-hosts}) .cngx-select__panel {
+      --cngx-select-panel-padding: 0;
+      margin: 0 !important;
+    }
+    :is(#{$-hosts}) .cngx-select__panel [cngxListbox] {
+      --cngx-listbox-padding: 0;
+      padding-block: var(--cngx-space-sm, 8px);
+    }
+    :is(#{$-hosts}) .cngx-tree-select__tree {
+      --cngx-tree-select-tree-padding: var(--cngx-space-sm, 8px) 0;
+    }
+    :is(#{$-hosts}) .cngx-tree-select__node {
+      --cngx-tree-select-node-padding-end: var(--cngx-space-md, 16px);
+    }
   }
+
+  @include -option-states($theme);
+  @include -focus-ring($theme);
 }

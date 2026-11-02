@@ -1,5 +1,6 @@
 import { Component, signal, TemplateRef, viewChild, viewChildren } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { createManualState } from '@cngx/common/data';
 import {
   provideCngxI18n,
   withDocumentLanguage,
@@ -153,6 +154,33 @@ class ErrorHost {
 class EmptyHost {
   readonly panel = viewChild.required(CngxPopoverPanel);
 }
+
+@Component({
+  template: `
+    <cngx-popover-panel #panel="cngxPopoverPanel" [state]="state">
+      <p cngxPopoverBody>Normal content</p>
+      <ng-template cngxPopoverLoading>Loading...</ng-template>
+      <ng-template cngxPopoverError let-err>Error: {{ err }}</ng-template>
+      <ng-template cngxPopoverEmpty>Nothing here</ng-template>
+    </cngx-popover-panel>
+  `,
+  imports: [CngxPopoverPanel, CngxPopoverBody, CngxPopoverLoading, CngxPopoverError, CngxPopoverEmpty],
+})
+class StateHost {
+  readonly state = createManualState<string[]>();
+}
+
+@Component({
+  template: `
+    <cngx-popover-panel #panel="cngxPopoverPanel" [loading]="true" [error]="'Something broke'">
+      <p cngxPopoverBody>Normal content</p>
+      <ng-template cngxPopoverLoading>Loading...</ng-template>
+      <ng-template cngxPopoverError let-err>Error: {{ err }}</ng-template>
+    </cngx-popover-panel>
+  `,
+  imports: [CngxPopoverPanel, CngxPopoverBody, CngxPopoverLoading, CngxPopoverError],
+})
+class LoadingWithErrorHost {}
 
 @Component({
   template: `
@@ -360,6 +388,55 @@ describe('CngxPopoverPanel', () => {
     expect(empty).toBeTruthy();
     expect(empty!.textContent).toContain('Nothing here');
     expect(body).toBeNull();
+  });
+
+  it('should render the error slot for a [state] error on the first load', () => {
+    const { fixture, panelEl } = setup(StateHost);
+    fixture.componentInstance.state.set('loading');
+    fixture.detectChanges();
+    expect(panelEl.querySelector('.cngx-popover-panel__loading')).not.toBeNull();
+    expect(panelEl.getAttribute('aria-busy')).toBe('true');
+
+    fixture.componentInstance.state.setError('Network down');
+    fixture.detectChanges();
+    const error = panelEl.querySelector('.cngx-popover-panel__error');
+    expect(error?.textContent).toContain('Network down');
+    expect(panelEl.querySelector('.cngx-popover-panel__loading')).toBeNull();
+    expect(panelEl.querySelector('.cngx-popover-panel__body')).toBeNull();
+    expect(panelEl.getAttribute('aria-busy')).toBeNull();
+    expect(panelEl.getAttribute('aria-describedby')).toBeNull();
+  });
+
+  it('should render the body for [state] success data and the empty slot for empty data', () => {
+    const { fixture, panelEl } = setup(StateHost);
+    fixture.componentInstance.state.setSuccess(['a']);
+    fixture.detectChanges();
+    const body = panelEl.querySelector('.cngx-popover-panel__body');
+    expect(body?.textContent).toContain('Normal content');
+    expect(panelEl.getAttribute('aria-describedby')).toBe(body?.id);
+
+    fixture.componentInstance.state.setSuccess([]);
+    fixture.detectChanges();
+    expect(panelEl.querySelector('.cngx-popover-panel__empty')?.textContent).toContain(
+      'Nothing here',
+    );
+    expect(panelEl.querySelector('.cngx-popover-panel__body')).toBeNull();
+  });
+
+  it('should render neither body nor slot and not be busy for an idle [state]', () => {
+    const { panelEl } = setup(StateHost);
+    expect(panelEl.querySelector('.cngx-popover-panel__loading')).toBeNull();
+    expect(panelEl.querySelector('.cngx-popover-panel__body')).toBeNull();
+    expect(panelEl.getAttribute('aria-busy')).toBeNull();
+  });
+
+  it('should render loading when the manual inputs set loading and error together', () => {
+    const { panelEl } = setup(LoadingWithErrorHost);
+    expect(panelEl.querySelector('.cngx-popover-panel__loading')?.textContent).toContain(
+      'Loading...',
+    );
+    expect(panelEl.querySelector('.cngx-popover-panel__error')).toBeNull();
+    expect(panelEl.getAttribute('aria-busy')).toBe('true');
   });
 
   it('should set aria-labelledby to header id', () => {

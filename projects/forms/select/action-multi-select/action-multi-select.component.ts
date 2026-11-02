@@ -124,7 +124,7 @@ import { createActionTriggerInput } from '../shared/internal/action-trigger-inpu
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
-import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
+import { CNGX_SEARCH_EFFECTS_FACTORY, searchResultsFrom } from '../shared/search-effects';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -237,7 +237,7 @@ export interface CngxActionMultiSelectChange<T = unknown> {
  * @slot cngxSelectCommitError Replaces the panel's commit-error banner when a commit fails and commitErrorDisplay is 'banner'; gets error, option, retry.
  * @slot cngxMultiSelectChip Replaces each chip in the trigger strip unless cngxComboboxTriggerLabel is projected; gets option, remove. Fine pointer only.
  * @slot cngxSelectChipOverflow Replaces the +N badge after the visible chips when chipOverflow is 'truncate' and selected options are hidden, and the badge of the touch summary; gets count, label, hidden. The chip-strip badge is fine pointer only.
- * @slot cngxSelectClearButton Replaces the clear-all button, shown when clearable is set, a value is selected and the control is enabled; gets clear, disabled.
+ * @slot cngxSelectClearButton Replaces the clear-all button, shown when clearable is set, a value is selected and the control is enabled and not readonly; gets clear, disabled.
  * @slot cngxSelectOptionPending Replaces the spinner on an option row while its commit is in flight; gets option.
  * @slot cngxSelectOptionError Replaces the error mark on selected rows when a commit fails and commitErrorDisplay is 'inline'; gets option, error.
  * @slot cngxSelectInputPrefix Renders before the search input; gets disabled, focused, panelOpen.
@@ -295,8 +295,6 @@ export interface CngxActionMultiSelectChange<T = unknown> {
   hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
     class: 'cngx-action-multi-select',
-    '[id]': 'resolvedId()',
-    '[attr.aria-readonly]': 'ariaReadonly()',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
   },
@@ -403,7 +401,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   /** Replaces the built-in caret glyph. Ignored when `*cngxSelectCaret` is projected. */
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
-  /** Renders a clear button while the selection is not empty and the control is enabled. */
+  /** Renders a clear button while the selection is not empty and the control is enabled and not readonly. */
   readonly clearable = input<boolean>(false);
   /** @internal The select section at this reading site; per-variant defaults. */
   private readonly selectCopy = injectSelectCopy();
@@ -919,10 +917,11 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   /** @internal */
   protected readonly triggerAria = this.core.triggerAria;
   /** @internal */ protected readonly commitErrorId = this.core.commitErrorId;
+  /** @internal */ protected readonly disabledReasonId = this.core.disabledReasonId;
+  /** @internal */ protected readonly disabledReasonText = this.core.disabledReasonText;
   /** @internal */ protected readonly listboxId = this.core.listboxId;
   /** @internal */ protected readonly commitErrorText = this.core.commitErrorText;
   /** @internal */
-  protected readonly ariaReadonly = this.core.ariaReadonly;
   /** @internal */
   protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
   /** @internal */
@@ -931,6 +930,8 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   protected readonly showCommitError = this.core.showCommitError;
 
   readonly disabled = this.core.disabled;
+  /** @internal - disabled or readonly: every write path refuses, the panel still opens. */
+  protected readonly writeBlocked = this.core.writeBlocked;
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');
 
   /** @internal */
@@ -1020,26 +1021,12 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
+  // Every value draws a chip, matched or not: resolution runs against the
+  // unfiltered option merge (a search term never hides a picked chip) and a
+  // value with no option yet gets a fallback labelled from the value, so the
+  // strip agrees with `isEmpty`.
   protected readonly selectedOptions = computed<CngxSelectOptionDef<T>[]>(
-    () => {
-      const vals = this.values();
-      if (vals.length === 0) {
-        return [];
-      }
-      // Chip strip resolves against the UNFILTERED option merge so
-      // chips for previously-picked values stay visible when the
-      // search term hides the matching option from the listbox.
-      const eq = this.compareWith();
-      const out: CngxSelectOptionDef<T>[] = [];
-      const flat = this.core.unfilteredFlatOptions();
-      for (const v of vals) {
-        const match = flat.find((o) => eq(o.value, v));
-        if (match) {
-          out.push(match);
-        }
-      }
-      return out;
-    },
+    () => this.core.resolveSelectedOptions(this.values()),
     {
       equal: (a, b) => sameArrayContents(a, b, Object.is),
     },
@@ -1208,7 +1195,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   )<T>({
     values: this.values,
-    disabled: this.disabled,
+    disabled: this.core.writeBlocked,
     compareWith: this.compareWith,
     commitAction: this.commitAction,
     commitMode: this.commitMode,
@@ -1282,6 +1269,12 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
         skipInitial: this.skipInitial,
         onEmit: (term) => this.searchTermChange.emit(term),
       },
+      results: searchResultsFrom({
+        count: () => this.flatOptions().length,
+        activeView: this.activeView,
+        refreshing: this.showRefreshIndicator,
+        ariaLabels: this.config.ariaLabels,
+      }),
     });
   }
 
@@ -1326,6 +1319,9 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     hasQuickCreateAction: () => this.quickCreateAction() !== null,
     snapshotPrevious: () => [...this.values()],
     dispatch: (draft, term, previous) => {
+      if (this.core.writeBlocked()) {
+        return;
+      }
       this.lastCreateLabel.set(draft.label);
       this.createHandler.dispatch(draft, term, previous);
     },
@@ -1369,12 +1365,17 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     this.chipRemovalHandler.removeByValue(opt);
   }
 
-  /** @internal */
+  /**
+   * @internal - invoked by `CngxListboxTrigger`'s `(backspaceOnEmpty)`.
+   * Routes through the same commit-aware path and the same owner refocus as
+   * the chip remove button.
+   */
   protected removeLastChip(): void {
     const selected = this.selectedOptions();
     if (selected.length === 0) {
       return;
     }
+    this.hostFocus.refocusOwnerBeforeRemoval();
     this.chipRemovalHandler.removeByValue(selected[selected.length - 1]);
   }
 
@@ -1384,9 +1385,12 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   }
 
   /** @internal - imperative clear-all used by slot + default button. */
-  protected readonly clearAllCallback: () => void = this.hostFocus.withRefocus(
-    this.toggleDispatch.clearAll,
-  );
+  protected readonly clearAllCallback: () => void = this.hostFocus.withRefocus(() => {
+    if (this.core.writeBlocked()) {
+      return;
+    }
+    this.toggleDispatch.clearAll();
+  });
 
   protected handleFocus(): void {
     this.focusState.markFocused();

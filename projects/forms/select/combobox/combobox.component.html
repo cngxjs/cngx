@@ -16,6 +16,8 @@
     [cngxPopoverAnchor]="pop"
     [cngxSelectSheetTrigger]="sheetWiring.trigger"
     role="group"
+    [attr.aria-labelledby]="aria.labelledBy"
+    [attr.aria-label]="aria.label"
     [attr.aria-disabled]="aria.disabled"
     (click)="handleWrapperClick($event)"
   >
@@ -83,7 +85,7 @@
                 />
               } @else {
                 <cngx-chip
-                  [removable]="!disabled()"
+                  [removable]="!writeBlocked()"
                   [removeAriaLabel]="chipRemoveLabelFor()(opt.label)"
                   (remove)="handleChipRemoveClick($event, opt)"
                 >
@@ -154,6 +156,7 @@
       [attr.aria-invalid]="aria.invalid"
       [attr.aria-required]="aria.required"
       [attr.aria-busy]="aria.busy"
+      [attr.aria-readonly]="aria.readonly"
       (focus)="handleFocus()"
       (blur)="handleBlur()"
       (keydown)="handleInputKeydown($event)"
@@ -164,7 +167,7 @@
         <ng-container *ngTemplateOutlet="suffixTpl; context: inputSlotContext()" />
       </span>
     }
-    @if (clearable() && !isEmpty() && !disabled()) {
+    @if (clearable() && !isEmpty() && !writeBlocked()) {
       @if (tpl.clearButton(); as clearBtnTpl) {
         <span class="cngx-combobox__clear-slot" (click)="$event.stopPropagation()">
           <ng-container
@@ -173,7 +176,7 @@
               context: {
                 $implicit: clearAllCallback,
                 clear: clearAllCallback,
-                disabled: disabled(),
+                disabled: writeBlocked(),
               }
             "
           />
@@ -214,6 +217,7 @@
     #pop="cngxPopover"
     [placement]="popoverPlacement()"
     class="cngx-select__panel"
+    tabindex="-1"
     [class]="panelClassList()"
     [style.--cngx-select-panel-min-width]="panelWidthCss()"
     [cngxPopoverSheet]="sheetWiring.presentationRequest()"
@@ -245,5 +249,6 @@
     </div>
   </div>
   <span class="cngx-sr-only" [id]="commitErrorId">{{ commitErrorText() }}</span>
+  <span class="cngx-sr-only" [id]="disabledReasonId">{{ disabledReasonText() }}</span>
   <span class="cngx-sr-only" [id]="summaryDescriptionId">{{ summary.accessibleText() }}</span>
 </div>

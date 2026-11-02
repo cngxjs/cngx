@@ -133,6 +133,8 @@ export function selectCopyFrom(section: CngxSelectLanguageSection, locale: strin
       sheetClose: section.sheetClose,
       sheetDone: section.sheetDone,
       commitPending: section.commitPending,
+      announceResults: (count) => formatMessage(section.announceResults, { count }, locale),
+      announceNoResults: formatMessage(section.announceNoResults, {}, locale),
     },
     fallbackLabels: {
       loading: section.loading,

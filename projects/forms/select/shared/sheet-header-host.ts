@@ -37,8 +37,13 @@ export interface CngxSelectSheetHeaderHost {
   readonly searchTerm: Signal<string>;
   setSearchTerm(term: string): void;
   readonly listboxRef: Signal<CngxListbox | undefined>;
-  /** Id of the popover panel the header input controls. */
-  readonly panelId: Signal<string | null>;
+  /**
+   * Id of the listbox (or tree) the header input controls - the element
+   * that owns the options, not the sheet dialog around it.
+   */
+  readonly listboxId: Signal<string>;
+  /** Popup role of that element, for the header input's `aria-haspopup`. */
+  readonly popupRole: Signal<'listbox' | 'tree'>;
   /** X and Done. */
   close(): void;
   /** Escape in the header input. */

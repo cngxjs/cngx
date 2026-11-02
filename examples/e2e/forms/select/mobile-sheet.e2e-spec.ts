@@ -132,7 +132,7 @@ test.describe('select mobile sheet on a phone', () => {
     const host = await openVariant(page, 'cngx-multi-select');
     const panel = panelOf(host);
     await panel.getByRole('option', { name: 'Athens' }).tap();
-    await expect(panel.locator('[aria-live="polite"]')).toContainText('Athens');
+    await expect(panel.locator('[aria-live="polite"]:not([role="status"])')).toContainText('Athens');
     await expect(panel).toBeVisible();
   });
 

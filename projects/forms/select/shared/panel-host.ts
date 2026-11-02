@@ -96,6 +96,11 @@ export interface CngxSelectPanelViewHost<T = unknown> {
   readonly previousLoadedCount?: Signal<number>;
   /** Mirrors `CNGX_SELECT_CONFIG.ariaLabels`. Per-instance inputs apply outside. */
   readonly ariaLabels: Signal<CngxResolvedSelectAriaLabels>;
+  /**
+   * A commit is in flight; feeds the commit-error retry context's
+   * `disabled`. Every variant exposes it. Shell → `false` when omitted.
+   */
+  readonly isCommitting?: Signal<boolean>;
   handleRetry(): void;
 
   /** Action slot's live search term. Shell → `''` when omitted. */

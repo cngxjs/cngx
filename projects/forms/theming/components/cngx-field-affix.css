@@ -135,12 +135,12 @@
       line-height: var(--cngx-field-label-row, 0.875rem);
     }
 
-    /* Outline: the hairline the base layer draws on a lone control, moved to
-       the box. Its colour is its own token so the resting border can be
-       raised to 3:1 in one line. */
+    /* Outline: the edge the base layer draws on a lone control, moved to the
+       box, in the same strong-border rung (3:1 against the surface). Its
+       colour is its own token so a consumer can retune it in one line. */
     :scope[data-skin='outline'] {
       border: var(--cngx-field-border-width, 1px) solid
-        var(--cngx-field-outline-color, var(--cngx-color-border, oklch(0.88 0.005 250)));
+        var(--cngx-field-outline-color, var(--cngx-color-border-strong, oklch(0.62 0.005 250)));
       border-radius: var(--cngx-radius-md, 8px);
     }
 

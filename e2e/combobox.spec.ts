@@ -23,15 +23,17 @@ test.describe('CngxCombobox demo', () => {
     await expect(nested).toHaveCount(0);
   });
 
-  test('the focusable input carries the name, the group does not', async ({ page }) => {
+  test('the focusable input carries the name, the chip strip group shares it', async ({ page }) => {
     await page.goto(R.basic);
     const section = ex(page);
     const input = section.locator('input.cngx-combobox__input').first();
     const wrapper = section.locator('.cngx-combobox__trigger').first();
     const name = (await input.getAttribute('aria-label')) ?? (await input.getAttribute('aria-labelledby'));
     expect(name ?? '').not.toBe('');
-    await expect(wrapper).not.toHaveAttribute('aria-label', /.+/);
-    await expect(wrapper).not.toHaveAttribute('aria-labelledby', /.+/);
+    // An unnamed role="group" is noise to AT; it takes the field's name.
+    const groupName =
+      (await wrapper.getAttribute('aria-label')) ?? (await wrapper.getAttribute('aria-labelledby'));
+    expect(groupName).toBe(name);
   });
 
   test('typing filters options and toggles aria-expanded', async ({ page }) => {

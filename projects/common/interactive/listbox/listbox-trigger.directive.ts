@@ -137,6 +137,14 @@ export class CngxListboxTrigger<T = unknown> {
       return;
     }
 
+    // Keys pressed during an IME composition belong to the IME: the Enter that
+    // confirms a candidate must not pick an option, and the arrows move
+    // through the candidate list. Safari reports the confirming Enter with
+    // `isComposing: false` and keyCode 229, hence both checks.
+    if (event.isComposing || event.keyCode === 229) {
+      return;
+    }
+
     // Keys from an interactive descendant (a chip remove button, a clear
     // button) belong to that element. No preventDefault, so Enter / Space
     // still run the native button activation instead of opening the panel.
@@ -217,6 +225,12 @@ export class CngxListboxTrigger<T = unknown> {
       case 'Enter':
       case ' ':
         if (!ad.activeItem()) {
+          // Space on a button trigger scrolls the page by default; with the
+          // panel open it belongs to the listbox even when nothing is active.
+          // Enter stays untouched so a consumer's own Enter handler still runs.
+          if (key === ' ') {
+            event.preventDefault();
+          }
           return;
         }
         event.preventDefault();

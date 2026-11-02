@@ -72,6 +72,8 @@ export interface CngxSelectTriggerAria {
   readonly invalid: boolean | null;
   readonly required: boolean | null;
   readonly busy: boolean | null;
+  /** `true` while the field is readonly; bound as `aria-readonly` on the `role="combobox"` element. */
+  readonly readonly: boolean | null;
 }
 
 /**
@@ -229,6 +231,14 @@ export interface CngxSelectCore<T, TCommit> extends CngxCommitHandlerCore<T, TCo
   /** Text of the commit-error node; `''` while no commit error shows. */
   readonly commitErrorText: Signal<string>;
   /**
+   * Id of the visually hidden disabled-reason node each host renders outside
+   * the popover. Referenced from the trigger only while the control is
+   * disabled with a reason.
+   */
+  readonly disabledReasonId: string;
+  /** The bound field's disabled reasons (their `message`s), `''` when none. */
+  readonly disabledReasonText: Signal<string>;
+  /**
    * Id of the element carrying the popup role (`role="listbox"` or
    * `role="tree"`); the trigger's `aria-controls` names it while anchored.
    */
@@ -237,6 +247,14 @@ export interface CngxSelectCore<T, TCommit> extends CngxCommitHandlerCore<T, TCo
   readonly triggerAria: Signal<CngxSelectTriggerAria>;
 
   readonly disabled: Signal<boolean>;
+  /** The bound form field is readonly: the panel still opens for browsing, every write is refused. */
+  readonly readonly: Signal<boolean>;
+  /**
+   * `disabled() || readonly()`. Every write path (pick, clear, chip remove,
+   * reorder, typeahead-while-closed) reads this one signal; opening and
+   * keyboard browsing read {@link disabled} only.
+   */
+  readonly writeBlocked: Signal<boolean>;
 
   /**
    * Mode-agnostic membership test. Multi delegates to
@@ -276,6 +294,14 @@ export interface CngxSelectCore<T, TCommit> extends CngxCommitHandlerCore<T, TCo
     item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>,
   ): item is CngxSelectOptionGroupDef<T>;
   isCommittingOption(opt: CngxSelectOptionDef<T>): boolean;
+  /**
+   * One option per value, in value order. A value no option matches yet
+   * (options still loading, a server list that dropped it) resolves to a
+   * fallback option labelled {@link unresolvedOptionLabel}, so a chip strip
+   * draws every value and agrees with `isEmpty`. Fallbacks keep their
+   * identity across calls while their value stays selected.
+   */
+  resolveSelectedOptions(values: readonly T[]): CngxSelectOptionDef<T>[];
   commitErrorMessage(err: unknown): string;
   /** Polite `soft`-policy sentence for a failed commit (`commitFailedSoft`). */
   softCommitFailureMessage(): string;
@@ -336,6 +362,16 @@ export function createPresentationRequest(
 }
 
 /**
+ * Label of a selected value no option matches: `String(value)`. One rule for
+ * the whole family, chips, the single trigger and the tree.
+ *
+ * @internal
+ */
+export function unresolvedOptionLabel(value: unknown): string {
+  return String(value);
+}
+
+/**
  * Stateless signal graph shared by every select-family component.
  *
  * Factory rather than hostDirective: hostDirective collapses generics
@@ -371,6 +407,16 @@ export function createSelectCore<T, TCommit>(
     () => commitState.status() === 'error' && deps.commitErrorDisplay() !== 'none',
   );
 
+  // The "why" of a disabled field: the Signal Forms `disabled()` rule
+  // messages. Consumer copy, so it needs no select default.
+  const disabledReasonId = nextUid('cngx-select-disabled-reason');
+  const disabledReasonText = computed<string>(() =>
+    (presenter?.disabledReasons() ?? [])
+      .map((r) => r.message)
+      .filter(Boolean)
+      .join(' '),
+  );
+
   // Field half of the trigger ARIA: the one projection every field control
   // shares, with the select's own id, labelledby, required, failed commit and
   // loading / committing state fed in as control-side hooks.
@@ -379,6 +425,7 @@ export function createSelectCore<T, TCommit>(
     labelledByOverride: deps.ariaLabelledBy,
     localDisabled: deps.disabledInput,
     localRequired: deps.requiredInput,
+    disabledReason: { id: disabledReasonId, reason: disabledReasonText },
     localInvalid: () => showCommitError() || (deps.createErrorMessage?.() ?? null) !== null,
     localBusy: () => {
       const s = deps.state();
@@ -390,6 +437,8 @@ export function createSelectCore<T, TCommit>(
   });
 
   const disabled = fieldAria.disabled;
+  const readonlyField = computed<boolean>(() => fieldAria.ariaReadonly() === true);
+  const writeBlocked = computed<boolean>(() => disabled() || readonlyField());
 
   // Pre-filter merge of server options + `localItems`. Flattened into
   // `unfilteredFlatOptions` so chip strips bypass the search filter.
@@ -680,6 +729,7 @@ export function createSelectCore<T, TCommit>(
       invalid: ariaInvalid(),
       required: resolvedAriaRequired(),
       busy: ariaBusy(),
+      readonly: ariaReadonly(),
     }),
     {
       equal: (a, b) =>
@@ -690,13 +740,18 @@ export function createSelectCore<T, TCommit>(
         a.disabled === b.disabled &&
         a.invalid === b.invalid &&
         a.required === b.required &&
-        a.busy === b.busy,
+        a.busy === b.busy &&
+        a.readonly === b.readonly,
     },
   );
 
   const togglingOption = signal<CngxSelectOptionDef<T> | null>(null);
 
-  const externalActivation = computed<boolean>(() => deps.commitAction() !== null);
+  // A write-blocked select owns every activation too: the listbox then never
+  // writes its own value, and the dispatcher refuses the pick.
+  const externalActivation = computed<boolean>(
+    () => deps.commitAction() !== null || writeBlocked(),
+  );
 
   const commitErrorValue = computed<unknown>(() => commitState.error());
 
@@ -761,6 +816,29 @@ export function createSelectCore<T, TCommit>(
     }
     const eq = deps.compareWith();
     return unfilteredFlatOptions().find((o) => eq(o.value, value)) ?? null;
+  }
+
+  // Fallbacks of the last call, keyed by value: a chip for an unresolved
+  // value keeps its identity (and its cached remove closure) across
+  // recomputes, and entries for deselected values drop out.
+  let unresolvedOptions = new Map<unknown, CngxSelectOptionDef<T>>();
+
+  function resolveSelectedOptions(values: readonly T[]): CngxSelectOptionDef<T>[] {
+    const kept = new Map<unknown, CngxSelectOptionDef<T>>();
+    const out = values.map((value) => {
+      const match = findOption(value);
+      if (match) {
+        return match;
+      }
+      const fallback = unresolvedOptions.get(value) ?? {
+        value,
+        label: unresolvedOptionLabel(value),
+      };
+      kept.set(value, fallback);
+      return fallback;
+    });
+    unresolvedOptions = kept;
+    return out;
   }
 
   // Read untracked by the commit-error announcer, so a language flip never
@@ -883,10 +961,14 @@ export function createSelectCore<T, TCommit>(
     ariaErrorMessage,
     commitErrorId,
     commitErrorText,
+    disabledReasonId,
+    disabledReasonText,
     listboxId,
     effectiveTabIndex,
     triggerAria,
     disabled,
+    readonly: readonlyField,
+    writeBlocked,
     isSelected,
     isIndeterminate,
     selection,
@@ -902,6 +984,7 @@ export function createSelectCore<T, TCommit>(
     isGroup,
     isCommittingOption,
     findOption,
+    resolveSelectedOptions,
     commitErrorMessage,
     softCommitFailureMessage,
     createFailedMessage,

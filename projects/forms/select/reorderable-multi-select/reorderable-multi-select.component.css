@@ -12,7 +12,7 @@
  *
  * **State modifiers**
  *
- * - `:focus-visible` on `.cngx-reorderable-multi-select__trigger` -
+ * - `:focus-within` or open on `.cngx-reorderable-multi-select__trigger` -
  *   focus-ring outline + offset
  * - `[aria-disabled='true']` on the trigger - `cursor: not-allowed`; the
  *   field skin fades it by colour
@@ -120,7 +120,7 @@
    * `--cngx-multi-select-border`, then `--cngx-select-border`; see
    * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
-   * @default var(--cngx-multi-select-border, var(--cngx-select-border, 1px solid var(--cngx-color-border)))
+   * @default var(--cngx-multi-select-border, var(--cngx-select-border, 1px solid var(--cngx-color-border-strong)))
    * @see [[--cngx-color-border]]
    */
   @property --cngx-reorderable-multi-select-border {
@@ -256,7 +256,10 @@
         --cngx-reorderable-multi-select-border,
         var(
           --cngx-multi-select-border,
-          var(--cngx-select-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)))
+          var(
+            --cngx-select-border,
+            1px solid var(--cngx-color-border-strong, oklch(0.62 0.005 250))
+          )
         )
       );
       border-radius: var(
@@ -288,7 +291,10 @@
       user-select: none;
     }
 
-    .cngx-reorderable-multi-select__trigger:focus-visible {
+    /* The ring shows on any focus of the trigger (pointer or keyboard, also
+       focus inside it) and while the panel is open, the form-field
+       convention, the same in all nine selects. */
+    .cngx-reorderable-multi-select__trigger:is(:focus-within, [aria-expanded='true']) {
       outline: var(
         --cngx-reorderable-multi-select-focus-outline,
         var(

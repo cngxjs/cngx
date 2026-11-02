@@ -119,3 +119,69 @@ describe('handleFlatNavPageJumpKey - virtual panel', () => {
     expect(highlightByIndex).toHaveBeenCalledExactlyOnceWith(TOTAL - 11);
   });
 });
+
+describe('page jump on a disabled control', () => {
+  function closedPopover(): { popover: CngxPopover; show: ReturnType<typeof vi.fn> } {
+    const show = vi.fn();
+    return { popover: { isVisible: () => false, show } as unknown as CngxPopover, show };
+  }
+
+  it('handlePageJumpKey leaves the key alone and keeps the panel shut', () => {
+    const { listbox, highlightByIndex } = fakeRenderedListbox(30, 3);
+    const { popover: closed, show } = closedPopover();
+    const event = key('PageDown');
+    const handled = handlePageJumpKey(event, {
+      listbox,
+      popover: closed,
+      disabled: () => true,
+    });
+    expect(handled).toBe(false);
+    expect(event.defaultPrevented).toBe(false);
+    expect(show).not.toHaveBeenCalled();
+    expect(highlightByIndex).not.toHaveBeenCalled();
+  });
+
+  it('handleFlatNavPageJumpKey leaves the key alone and keeps the panel shut', () => {
+    const { listbox, highlightByIndex } = fakeRenderedListbox(30, 3);
+    const { popover: closed, show } = closedPopover();
+    const event = key('PageUp');
+    const handled = handleFlatNavPageJumpKey(event, {
+      listbox,
+      popover: closed,
+      strategy: createDefaultFlatNavStrategy(),
+      flatOptions: () => FLAT,
+      compareWith: () => cngxSelectDefaultCompare,
+      disabled: () => true,
+      typeaheadController: createTypeaheadController<number>({
+        options: signal(FLAT),
+        compareWith: signal(cngxSelectDefaultCompare),
+        debounceMs: signal(200),
+        disabled: signal(true),
+      }),
+    });
+    expect(handled).toBe(false);
+    expect(event.defaultPrevented).toBe(false);
+    expect(show).not.toHaveBeenCalled();
+    expect(highlightByIndex).not.toHaveBeenCalled();
+  });
+
+  it('handleFlatNavPageJumpKey opens a closed panel when enabled', () => {
+    const { listbox } = fakeRenderedListbox(30, 3);
+    const { popover: closed, show } = closedPopover();
+    handleFlatNavPageJumpKey(key('PageDown'), {
+      listbox,
+      popover: closed,
+      strategy: createDefaultFlatNavStrategy(),
+      flatOptions: () => FLAT,
+      compareWith: () => cngxSelectDefaultCompare,
+      disabled: () => false,
+      typeaheadController: createTypeaheadController<number>({
+        options: signal(FLAT),
+        compareWith: signal(cngxSelectDefaultCompare),
+        debounceMs: signal(200),
+        disabled: signal(false),
+      }),
+    });
+    expect(show).toHaveBeenCalledTimes(1);
+  });
+});

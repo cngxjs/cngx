@@ -74,6 +74,8 @@ const EN_ARIA: CngxResolvedSelectAriaLabels = {
   sheetDone: 'Done',
   commitPending: 'Unavailable while saving',
   selectionSummary: (labels: readonly string[]) => labels.join(', '),
+  announceResults: (count: number) => `${count} results`,
+  announceNoResults: 'No results',
 };
 
 function createMockHost(): {
@@ -260,6 +262,70 @@ describe('CngxSelectPanelShell', () => {
   });
 });
 
+describe('CngxSelectPanelShell - permanent status region', () => {
+  const statusRegions = (root: HTMLElement) => root.querySelectorAll('[role="status"]');
+  const statusText = (root: HTMLElement) =>
+    root.querySelector('.cngx-select__status')?.textContent?.trim();
+
+  it('keeps exactly one status region in the DOM across every view', () => {
+    const { fixture, controls } = setup();
+    const root = fixture.nativeElement as HTMLElement;
+    const views = ['content', 'skeleton', 'empty', 'none', 'error', 'content+error'] as const;
+    for (const view of views) {
+      controls.activeView.set(view);
+      fixture.detectChanges();
+      const regions = statusRegions(root);
+      expect(regions.length).toBe(1);
+      expect(regions[0].getAttribute('aria-live')).toBe('polite');
+    }
+    const first = statusRegions(root)[0];
+    controls.activeView.set('skeleton');
+    fixture.detectChanges();
+    expect(statusRegions(root)[0]).toBe(first);
+  });
+
+  it('speaks the loading copy while the default loading view shows, then goes quiet', () => {
+    const { fixture, controls } = setup();
+    const root = fixture.nativeElement as HTMLElement;
+    for (const variant of ['spinner', 'bar', 'skeleton'] as const) {
+      controls.loadingVariant.set(variant);
+      controls.activeView.set('skeleton');
+      fixture.detectChanges();
+      expect(statusText(root)).toBe('Loading options');
+      const indicator = root.querySelector(
+        '.cngx-select__spinner-wrap, .cngx-select__loading-bar, .cngx-select__skeleton',
+      );
+      expect(indicator?.getAttribute('aria-hidden')).toBe('true');
+      expect(indicator?.hasAttribute('aria-label')).toBe(false);
+    }
+    controls.loadingVariant.set('text');
+    fixture.detectChanges();
+    expect(statusText(root)).toBe('Loading…');
+
+    controls.activeView.set('content');
+    fixture.detectChanges();
+    expect(statusText(root)).toBe('');
+  });
+
+  it('speaks the refreshing copy while the default refresh indicator shows', () => {
+    const { fixture, controls } = setup();
+    const root = fixture.nativeElement as HTMLElement;
+    controls.refreshingVariant.set('dots');
+    controls.showRefreshIndicator.set(true);
+    fixture.detectChanges();
+    expect(statusText(root)).toBe('Refreshing options');
+
+    controls.refreshingVariant.set('none');
+    fixture.detectChanges();
+    expect(statusText(root)).toBe('');
+
+    controls.refreshingVariant.set('spinner');
+    controls.showRefreshIndicator.set(false);
+    fixture.detectChanges();
+    expect(statusText(root)).toBe('');
+  });
+});
+
 describe('CngxSelectPanelShell - language flip', () => {
   const DE_FALLBACK: Required<CngxSelectFallbackLabels> = {
     ...EN_FALLBACK,
@@ -310,8 +376,12 @@ describe('CngxSelectPanelShell - language flip', () => {
     expect(region.read(root)).toBe(region.de);
   }
 
+  // The indicators are aria-hidden visuals; the one permanent status region
+  // speaks for them. `selector` names the indicator that must be on screen.
   const label = (selector: string) => (root: HTMLElement) =>
-    root.querySelector(selector)?.getAttribute('aria-label');
+    root.querySelector(selector) === null
+      ? null
+      : root.querySelector('.cngx-select__status')?.textContent?.trim();
   const text = (selector: string) => (root: HTMLElement) =>
     root.querySelector(selector)?.textContent?.trim();
   const messageAndRetry = (selector: string) => (root: HTMLElement) => {
@@ -741,6 +811,43 @@ describe('CngxSelectPanelShell - *cngxSelectRetryButton override', () => {
     expect(custom!.textContent?.trim()).toBe('Retry');
     custom!.click();
     expect(controls.handleRetry).toHaveBeenCalledTimes(1);
+  });
+
+  it('passes the pending retried commit as disabled to the commit-error override', () => {
+    const { host, controls } = createMockHost();
+    const retrySlot = signal<TemplateRef<unknown> | null>(null);
+    const isCommitting = signal(false);
+    const hostWithRetry: CngxSelectPanelHost = {
+      ...host,
+      isCommitting,
+      tpl: { ...host.tpl, retryButton: retrySlot } as typeof host.tpl,
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: CNGX_SELECT_PANEL_HOST, useValue: hostWithRetry },
+        { provide: CNGX_SELECT_PANEL_VIEW_HOST, useValue: hostWithRetry },
+      ],
+    });
+    const fixture = TestBed.createComponent(RetryHost);
+    fixture.detectChanges();
+    retrySlot.set(fixture.componentInstance.retryTpl() ?? null);
+    controls.showCommitError.set(true);
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    const custom = () => root.querySelector<HTMLButtonElement>('.cngx-select__commit-error button.my-retry');
+    expect(custom()?.getAttribute('data-disabled')).toBe('false');
+
+    isCommitting.set(true);
+    fixture.detectChanges();
+    expect(custom()?.getAttribute('data-disabled')).toBe('true');
+
+    controls.activeView.set('error');
+    fixture.detectChanges();
+    expect(
+      root.querySelector('.cngx-select__error:not(.cngx-select__error--inline) button.my-retry')
+        ?.getAttribute('data-disabled'),
+    ).toBe('false');
   });
 
   it('keeps the default <button> when no override is supplied (back-compat)', () => {

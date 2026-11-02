@@ -137,7 +137,10 @@ export class CngxTreeSelectPanel<T = unknown> {
    *
    * Entries live until the tree source changes (the constructor
    * effect clears both Maps when `flatNodes` re-derives) or the panel
-   * is destroyed. `selectByValue` stays a WeakMap - self-collecting.
+   * is destroyed. `selectByNode` stays a WeakMap keyed on the
+   * `FlatTreeNode` itself - self-collecting, and a refresh that re-derives
+   * the nodes (even over the same value objects) binds a fresh handler to
+   * the fresh node instead of replaying the first one.
    */
   private readonly contextCache = new Map<
     string,
@@ -152,7 +155,7 @@ export class CngxTreeSelectPanel<T = unknown> {
     }
   >();
   private readonly toggleById = new Map<string, () => void>();
-  private readonly selectByValue = new WeakMap<object, () => void>();
+  private readonly selectByNode = new WeakMap<FlatTreeNode<T>, () => void>();
 
   protected nodeContext(node: FlatTreeNode<T>): CngxTreeSelectNodeContext<T> {
     const expanded = this.host.treeController.isExpanded(node.id)();
@@ -210,21 +213,12 @@ export class CngxTreeSelectPanel<T = unknown> {
   }
 
   private getHandleSelect(node: FlatTreeNode<T>): () => void {
-    // Cache only when `node.value` is an object - WeakMap contract.
-    // Primitive-valued callbacks are recreated per call; cheap.
-    const key =
-      typeof node.value === 'object' && node.value !== null
-        ? (node.value as unknown as object)
-        : null;
-    if (key) {
-      let cached = this.selectByValue.get(key);
-      if (!cached) {
-        cached = () => this.host.handleSelect(node);
-        this.selectByValue.set(key, cached);
-      }
-      return cached;
+    let cached = this.selectByNode.get(node);
+    if (!cached) {
+      cached = () => this.host.handleSelect(node);
+      this.selectByNode.set(node, cached);
     }
-    return () => this.host.handleSelect(node);
+    return cached;
   }
 
   /**

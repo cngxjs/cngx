@@ -1,4 +1,4 @@
-import { computed, Directive, effect, inject, untracked } from '@angular/core';
+import { computed, Directive, effect, ElementRef, inject, untracked } from '@angular/core';
 
 import { CngxListbox } from '@cngx/common/interactive';
 import { arrayEqual, cngxDevWarn } from '@cngx/utils';
@@ -63,7 +63,7 @@ import type { CngxFieldRef, CngxFormFieldControl } from './models';
     '[attr.aria-errormessage]': 'ariaErrorMessage()',
     '[attr.aria-readonly]': 'ariaReadonly()',
     '(focusin)': 'handleFocus()',
-    '(focusout)': 'handleBlur()',
+    '(focusout)': 'handleBlur($event)',
   },
 })
 export class CngxListboxFieldBridge implements CngxFormFieldControl {
@@ -72,6 +72,7 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
     host: true,
   });
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
+  private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
   private readonly aria = createFieldControlAria(this.presenter);
 
@@ -107,6 +108,20 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
         '[cngxListboxFieldBridge] has no form field to bind to, so it does nothing. Place it inside ' +
           '<cngx-form-field [field]="...">.',
       );
+    }
+    const presenter = this.presenter;
+    if (presenter !== null) {
+      // The listbox's disabled / readonly models gate activation and every
+      // selection write in the atom itself - without these writes a
+      // Signal-Forms-disabled or read-only field leaves the listbox writable.
+      effect(() => {
+        const disabled = presenter.disabled();
+        untracked(() => this.listbox.disabled.set(disabled));
+      });
+      effect(() => {
+        const isReadonly = presenter.readonly();
+        untracked(() => this.listbox.readonly.set(isReadonly));
+      });
     }
     // Kept as hand-rolled effects rather than createFieldSync: this bridge drives
     // two different writable signals by mode (value in single, selectedValues in
@@ -170,6 +185,11 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
   /** @internal */
   protected readonly handleFocus = this.aria.handleFocusIn;
 
-  /** @internal */
-  protected readonly handleBlur = this.aria.handleFocusOut;
+  /**
+   * @internal Focus moving to a descendant (an option, a projected search
+   * input) stays inside the control and does not mark the field touched.
+   */
+  protected handleBlur(event: FocusEvent): void {
+    this.aria.handleFocusOutWithin(event, this.hostEl);
+  }
 }

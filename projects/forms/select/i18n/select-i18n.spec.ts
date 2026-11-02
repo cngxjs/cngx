@@ -477,3 +477,44 @@ describe('sortable selection list copy', () => {
     expect(cfg.atEnd()).toBe('Already last');
   });
 });
+
+describe('search outcome copy', () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+  });
+
+  it('defaults to the English section', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const aria = resolve().ariaLabels();
+    expect(aria.announceResults(1)).toBe('1 result');
+    expect(aria.announceResults(1200)).toBe('1,200 results');
+    expect(aria.announceNoResults).toBe('No results');
+  });
+
+  it('reads the German pack', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(withPartialPack(CNGX_LANGUAGE_DE), withDocumentLanguage('off')),
+      ],
+    });
+    const aria = resolve().ariaLabels();
+    expect(aria.announceResults(1)).toBe('1 Ergebnis');
+    expect(aria.announceResults(1200)).toBe('1.200 Ergebnisse');
+    expect(aria.announceNoResults).toBe('Keine Ergebnisse');
+  });
+
+  it('lets withAriaLabels replace the outcome copy', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideSelectConfig(
+          withAriaLabels({ announceResults: (n) => `${n} matches`, announceNoResults: 'Nothing' }),
+        ),
+      ],
+    });
+    const aria = resolve().ariaLabels();
+    expect(aria.announceResults(4)).toBe('4 matches');
+    expect(aria.announceNoResults).toBe('Nothing');
+  });
+});

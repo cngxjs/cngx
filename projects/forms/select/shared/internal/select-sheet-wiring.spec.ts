@@ -231,7 +231,8 @@ describe('createSelectSheetWiring', () => {
     const host = wiring.headerHost;
     expect(host.showDone()).toBe(true);
     expect(host.showInput()).toBe(false);
-    expect(host.panelId()).toBe('panel-1');
+    expect(host.listboxId()).toBe('listbox-1');
+    expect(host.popupRole()).toBe('listbox');
     expect(host.label()).toBe('Colour');
     expect(host.searchTerm()).toBe('');
     // No trigger input: the write is a no-op.

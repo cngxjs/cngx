@@ -85,6 +85,11 @@ export function createActionTriggerInput<Prev>(
   };
 
   const handleTriggerEnter = (event: Event): void => {
+    // The Enter that confirms an IME candidate is not a create: the term is
+    // still being composed. keyCode 229 covers Safari's `isComposing: false`.
+    if (event instanceof KeyboardEvent && (event.isComposing || event.keyCode === 229)) {
+      return;
+    }
     const ad = deps.listbox()?.ad;
     if (ad?.activeItem()) {
       return;

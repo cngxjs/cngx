@@ -166,6 +166,49 @@ describe('createPanelLifecycleEmitter', () => {
     expect(c.restoringLog).toEqual([true, false]);
   });
 
+  it('keeps focus on an element outside the host the user moved it to', async () => {
+    const fixture = TestBed.createComponent(LifecycleProbe);
+    const c = fixture.componentInstance;
+    const { button, calls } = focusCountingButton();
+    c.target.set(new ElementRef(button));
+    c.panelOpen.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const next = document.createElement('input');
+    document.body.appendChild(next);
+    try {
+      next.focus();
+      c.panelOpen.set(false);
+      TestBed.flushEffects();
+      await drainMicrotasks();
+      expect(calls()).toBe(0);
+      expect(document.activeElement).toBe(next);
+      expect(c.restoringLog).toEqual([]);
+    } finally {
+      next.remove();
+    }
+  });
+
+  it('restores focus when focus sits inside the host at close', async () => {
+    const fixture = TestBed.createComponent(LifecycleProbe);
+    const c = fixture.componentInstance;
+    const { button, calls } = focusCountingButton();
+    c.target.set(new ElementRef(button));
+    c.panelOpen.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const hostEl = fixture.nativeElement as HTMLElement;
+    const inner = document.createElement('input');
+    hostEl.appendChild(inner);
+    inner.focus();
+    c.panelOpen.set(false);
+    TestBed.flushEffects();
+    await drainMicrotasks();
+    expect(calls()).toBe(1);
+  });
+
   it('does not restore focus when restoreFocus is false', async () => {
     const fixture = TestBed.createComponent(NoRestoreProbe);
     const c = fixture.componentInstance;

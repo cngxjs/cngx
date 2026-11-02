@@ -1,5 +1,7 @@
 import { ElementRef, inject, signal, type Signal } from '@angular/core';
 
+import { isFocusLeavingHost } from '@cngx/forms/field';
+
 /** @internal */
 export interface HostFocusWithinOptions {
   /** Runs once focus leaves the host; the variants mark the field touched here. */
@@ -27,7 +29,12 @@ export interface HostFocusWithin {
   readonly focusedWithin: Signal<boolean>;
   /** Host `(focusin)` handler. */
   handleFocusIn(): void;
-  /** Host `(focusout)` handler; a move to another descendant is not a leave. */
+  /**
+   * Host `(focusout)` handler; a move to another descendant is not a leave,
+   * and neither is focus dropping to nothing (`relatedTarget === null`) from
+   * an element inside the open panel - a click on a non-focusable part of the
+   * panel, not a move away from the control.
+   */
   handleFocusOut(event: FocusEvent): void;
   /**
    * Moves focus to the owner before a focused control inside the host goes
@@ -35,6 +42,11 @@ export interface HostFocusWithin {
    * focus to `body` and read as leaving the field. No-op unless the active
    * element is inside the host and is not the owner, so a call from outside
    * the control never steals focus.
+   *
+   * Modal contract: the mobile sheet's `(closing)` calls this, not
+   * {@link refocusOwnerBeforeClose}, so a modal sheet close always returns
+   * focus to the trigger - focus must not stay on a dialog that is being
+   * removed. `restoreFocus: false` governs the non-modal popover only.
    */
   refocusOwnerBeforeRemoval(): void;
   /**
@@ -86,13 +98,12 @@ export function createHostFocusWithin(opts: HostFocusWithinOptions): HostFocusWi
       focused.set(true);
     },
     handleFocusOut: (event) => {
-      const next = event.relatedTarget;
-      if (next instanceof Node && host.contains(next)) {
+      if (!isFocusLeavingHost(event, host) || isBlurInsideOpenPanel(event, host)) {
         return;
       }
       focused.set(false);
       opts.onLeave();
-      if (next instanceof Node) {
+      if (event.relatedTarget instanceof Node) {
         opts.close?.();
       }
     },
@@ -114,4 +125,18 @@ export function createHostFocusWithin(opts: HostFocusWithinOptions): HostFocusWi
       return fn;
     },
   };
+}
+
+/**
+ * Focus dropped to nothing from an element inside the host's open panel
+ * (`CngxPopover` marks its host `cngx-popover--open`). The panel is a DOM
+ * descendant of the host, so the element losing focus is still part of the
+ * control.
+ */
+function isBlurInsideOpenPanel(event: FocusEvent, host: HTMLElement): boolean {
+  if (event.relatedTarget !== null || !(event.target instanceof Element)) {
+    return false;
+  }
+  const panel = event.target.closest('.cngx-popover--open');
+  return panel !== null && host.contains(panel);
 }

@@ -107,7 +107,7 @@ import { createActionTriggerInput } from '../shared/internal/action-trigger-inpu
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import { isEmptyScalar } from '../shared/internal/compare';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
-import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
+import { CNGX_SEARCH_EFFECTS_FACTORY, searchResultsFrom } from '../shared/search-effects';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
   dispatchScalarClear,
@@ -211,7 +211,7 @@ export interface CngxActionSelectChange<T = unknown> {
  * @slot cngxSelectRetryButton Replaces the retry button inside the default load-error and commit-error blocks; gets $implicit/retry, error, disabled, label.
  * @slot cngxSelectRefreshing Replaces the refresh indicator shown while [state] reloads with options already listed; gets previousCount (always 0 on this host).
  * @slot cngxSelectCommitError Replaces the commit-error banner shown when a pick or create commit fails and commitErrorDisplay is 'banner'; gets $implicit/error, option, retry.
- * @slot cngxSelectClearButton Replaces the clear button, shown when [clearable] is set, a value is committed and the control is enabled; gets $implicit/clear, disabled.
+ * @slot cngxSelectClearButton Replaces the clear button, shown when [clearable] is set, a value is committed and the control is enabled and not readonly; gets $implicit/clear, disabled.
  * @slot cngxSelectOptionPending Replaces the spinner on the option row whose commit is in flight; gets $implicit/option.
  * @slot cngxSelectOptionError Replaces the ! glyph on the selected row when a commit fails and commitErrorDisplay is 'inline'; gets $implicit/option, error.
  * @slot cngxSelectInputPrefix Rendered before the <input> inside the trigger; gets disabled, focused, panelOpen.
@@ -262,8 +262,6 @@ export interface CngxActionSelectChange<T = unknown> {
   hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
     class: 'cngx-action-select',
-    '[id]': 'resolvedId()',
-    '[attr.aria-readonly]': 'ariaReadonly()',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
   },
@@ -370,7 +368,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly selectionIndicatorVariant = input<CngxSelectSelectionIndicatorVariant | null>(null);
   /** Hides the trigger caret. Defaults to the inverse of `CngxSelectConfig.showCaret`. */
   readonly hideCaret = input<boolean>(!this.config.showCaret);
-  /** Renders a clear button while the selection is not empty and the control is enabled. */
+  /** Renders a clear button while the selection is not empty and the control is enabled and not readonly. */
   readonly clearable = input<boolean>(false);
   /** @internal The select section at this reading site; per-variant defaults. */
   private readonly selectCopy = injectSelectCopy();
@@ -825,10 +823,11 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected readonly triggerAria = this.core.triggerAria;
   /** @internal */ protected readonly commitErrorId = this.core.commitErrorId;
+  /** @internal */ protected readonly disabledReasonId = this.core.disabledReasonId;
+  /** @internal */ protected readonly disabledReasonText = this.core.disabledReasonText;
   /** @internal */ protected readonly listboxId = this.core.listboxId;
   /** @internal */ protected readonly commitErrorText = this.core.commitErrorText;
   /** @internal */
-  protected readonly ariaReadonly = this.core.ariaReadonly;
   /** @internal */
   protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
   /** @internal */
@@ -837,6 +836,8 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly showCommitError = this.core.showCommitError;
 
   readonly disabled = this.core.disabled;
+  /** @internal - disabled or readonly: every write path refuses, the panel still opens. */
+  protected readonly writeBlocked = this.core.writeBlocked;
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');
 
   /** @internal */
@@ -1065,6 +1066,12 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       focused: this.focusState.focused,
       open: () => this.open(),
       autoOpenGate: () => !this.display.isWritingFromValue(),
+      results: searchResultsFrom({
+        count: () => this.flatOptions().length,
+        activeView: this.activeView,
+        refreshing: this.showRefreshIndicator,
+        ariaLabels: this.config.ariaLabels,
+      }),
     });
   }
 
@@ -1109,6 +1116,9 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     hasQuickCreateAction: () => this.quickCreateAction() !== null,
     snapshotPrevious: () => this.value(),
     dispatch: (draft, term, previous) => {
+      if (this.core.writeBlocked()) {
+        return;
+      }
       this.lastCreateLabel.set(draft.label);
       this.createHandler.dispatch(draft, term, previous);
     },
@@ -1149,6 +1159,9 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected readonly clearCallback: () => void = () => {
+    if (this.core.writeBlocked()) {
+      return;
+    }
     this.hostFocus.refocusOwnerBeforeRemoval();
     const current = this.value();
     if (isEmptyScalar(current)) {

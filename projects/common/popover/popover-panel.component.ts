@@ -13,6 +13,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { CngxCloseButton } from '@cngx/common/button';
+import { type AsyncView, resolveAsyncView } from '@cngx/common/data';
 import { createLanguageSection } from '@cngx/core/i18n';
 import type { CngxAsyncState } from '@cngx/core/utils';
 import { createOverrideMerge, nextUid } from '@cngx/core/utils';
@@ -120,7 +121,7 @@ const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER
     '[attr.role]': 'role()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.aria-describedby]': 'ariaDescribedBy()',
-    '[attr.aria-busy]': 'effectiveLoading() || null',
+    '[attr.aria-busy]': "view() === 'skeleton' || null",
   },
   template: `
     @if (showArrow()) {
@@ -131,25 +132,25 @@ const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER
       }
     }
 
-    @if (effectiveLoading()) {
+    @if (view() === 'skeleton') {
       @if (loadingTpl(); as tpl) {
         <div class="cngx-popover-panel__loading">
           <ng-container *ngTemplateOutlet="tpl.templateRef" />
         </div>
       }
-    } @else if (effectiveError(); as err) {
+    } @else if (view() === 'error' || view() === 'content+error') {
       @if (errorTpl(); as tpl) {
         <div class="cngx-popover-panel__error">
-          <ng-container *ngTemplateOutlet="tpl.templateRef; context: { $implicit: err }" />
+          <ng-container *ngTemplateOutlet="tpl.templateRef; context: { $implicit: viewError() }" />
         </div>
       }
-    } @else if (effectiveEmpty()) {
+    } @else if (view() === 'empty') {
       @if (emptyTpl(); as tpl) {
         <div class="cngx-popover-panel__empty">
           <ng-container *ngTemplateOutlet="tpl.templateRef" />
         </div>
       }
-    } @else {
+    } @else if (view() === 'content') {
       @if (hasHeader() || showClose()) {
         <div class="cngx-popover-panel__header-row">
           <div class="cngx-popover-panel__header" [id]="headerId">
@@ -265,16 +266,35 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
   /** Whether the panel content is empty. Fallback when `[state]` is not set. */
   readonly empty = input(false);
 
-  /** @internal Resolved loading - state takes precedence over boolean input. */
-  protected readonly effectiveLoading = computed(
-    () => this.state()?.isFirstLoad() ?? this.loading(),
-  );
+  /**
+   * @internal The one view the panel body renders. A bound `[state]` goes
+   * through the shared `resolveAsyncView` table (the same derivation the
+   * select panel uses), so a first-load error shows the error slot and an
+   * idle state renders no body (`'none'`). Without `[state]` the manual
+   * inputs resolve in the order loading, error, empty.
+   */
+  protected readonly view = computed<AsyncView>(() => {
+    const s = this.state();
+    if (s) {
+      return resolveAsyncView(s.status(), s.isFirstLoad(), s.isEmpty());
+    }
+    if (this.loading()) {
+      return 'skeleton';
+    }
+    if (this.error()) {
+      return 'error';
+    }
+    if (this.empty()) {
+      return 'empty';
+    }
+    return 'content';
+  });
 
-  /** @internal Resolved error - state takes precedence over direct input. */
-  protected readonly effectiveError = computed(() => this.state()?.error() ?? this.error());
-
-  /** @internal Resolved empty - state takes precedence over boolean input. */
-  protected readonly effectiveEmpty = computed(() => this.state()?.isEmpty() ?? this.empty());
+  /** @internal The error handed to the `*cngxPopoverError` template. */
+  protected readonly viewError = computed<unknown>(() => {
+    const s = this.state();
+    return s ? s.error() : this.error();
+  });
 
   protected readonly headerSlot = contentChild(CngxPopoverHeader);
   protected readonly footerSlot = contentChild(CngxPopoverFooter);
@@ -330,9 +350,9 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
    */
   protected readonly ariaLabelledBy = computed(() => (this.hasHeader() ? this.headerId : null));
 
-  /** Only point to body when default content is showing (not loading/error/empty). */
+  /** Only point to body when default content is showing (not loading/error/empty/none). */
   protected readonly ariaDescribedBy = computed(() =>
-    this.effectiveLoading() || this.effectiveError() || this.effectiveEmpty() ? null : this.bodyId,
+    this.view() === 'content' ? this.bodyId : null,
   );
 
   protected readonly hostClass = computed(() => {

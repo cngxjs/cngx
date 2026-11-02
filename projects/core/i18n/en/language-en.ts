@@ -425,6 +425,11 @@ export const CNGX_LANGUAGE_EN = {
     announceMoved: '{field}: {option} moved',
     announceMovedTo: '{field}: {option} moved to position {position}',
     announceMovedNoOption: '{field}: moved',
+    announceResults: {
+      one: '{count} result',
+      other: '{count} results',
+    },
+    announceNoResults: 'No results',
     actionGroup: 'Inline action',
     reorderHint: 'Reorder with Alt + arrow keys',
     reorderListLabel: 'Selected, in order',

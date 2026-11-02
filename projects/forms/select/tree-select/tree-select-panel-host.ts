@@ -32,6 +32,11 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
   /** A disabled select drops every activation. */
   readonly disabled: Signal<boolean>;
   /**
+   * Disabled or readonly: the footer clear-all reads it to render
+   * `aria-disabled`. Unset, the footer reads only the selection count.
+   */
+  readonly writeBlocked?: Signal<boolean>;
+  /**
    * Under the touch floor a touch / pen tap on a parent row expands it and
    * the checkbox target selects. A click without that pointer gesture (AT
    * activation, keyboard, mouse) keeps selecting.

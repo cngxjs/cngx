@@ -1,10 +1,35 @@
 import {
   InjectionToken,
+  computed,
   effect,
+  inject,
   untracked,
   type Signal,
   type WritableSignal,
 } from '@angular/core';
+
+import type { AsyncView } from '@cngx/common/data';
+
+import { CngxSelectAnnouncer } from './announcer';
+import type { CngxSelectAriaLabels } from './config';
+
+/**
+ * The filter outcome {@link createSearchEffects} speaks once a typed term
+ * settles.
+ */
+export interface SearchEffectsResults {
+  /** Options matching the settled term. */
+  readonly count: Signal<number>;
+  /**
+   * `true` while `count` reflects the term: the options are loaded and no
+   * refresh is in flight. Nothing is spoken until it is `true`.
+   */
+  readonly settled: Signal<boolean>;
+  /** The resolved copy keys; read untracked, so a language switch never re-speaks. */
+  readonly ariaLabels: Signal<
+    Required<Pick<CngxSelectAriaLabels, 'announceResults' | 'announceNoResults'>>
+  >;
+}
 
 /**
  * Config for {@link createSearchEffects}.
@@ -37,12 +62,20 @@ export interface SearchEffectsOptions {
     readonly skipInitial: Signal<boolean>;
     readonly onEmit: (term: string) => void;
   };
+  /**
+   * Speaks the filter outcome politely through the `CngxSelectAnnouncer` in
+   * scope: the number of matches, or that none matched. Silent for an empty
+   * term, while the panel is closed and until the results settle; a term and
+   * count pair is spoken once.
+   */
+  readonly results?: SearchEffectsResults;
 }
 
 /**
- * One or two `effect()`s for input-trigger variants: `skipInitial`-gated
- * `searchTermChange` forward (when `emit` is set) and auto-open-on-typing.
- * External calls wrapped in `untracked`. Injection context required.
+ * Up to three `effect()`s for input-trigger variants: `skipInitial`-gated
+ * `searchTermChange` forward (when `emit` is set), auto-open-on-typing, and
+ * the filter-outcome announcement (when `results` is set). External calls
+ * wrapped in `untracked`. Injection context required.
  */
 export function createSearchEffects(opts: SearchEffectsOptions): void {
   if (opts.emit) {
@@ -74,6 +107,58 @@ export function createSearchEffects(opts: SearchEffectsOptions): void {
       ) {
         opts.open();
       }
+    });
+  });
+
+  if (opts.results) {
+    announceSearchResults(opts, opts.results);
+  }
+}
+
+/**
+ * @internal The `results` option of a variant: the count of its filtered
+ * options, settled once the panel shows content or the empty state with no
+ * refresh in flight.
+ */
+export function searchResultsFrom(source: {
+  readonly count: () => number;
+  readonly activeView: Signal<AsyncView>;
+  readonly refreshing: Signal<boolean>;
+  readonly ariaLabels: SearchEffectsResults['ariaLabels'];
+}): SearchEffectsResults {
+  return {
+    count: computed(() => source.count()),
+    settled: computed(() => {
+      const view = source.activeView();
+      return (view === 'content' || view === 'empty') && !source.refreshing();
+    }),
+    ariaLabels: source.ariaLabels,
+  };
+}
+
+/** @internal The filter-outcome announcement of {@link createSearchEffects}. */
+function announceSearchResults(opts: SearchEffectsOptions, results: SearchEffectsResults): void {
+  const announcer = inject(CngxSelectAnnouncer);
+  let spokenKey: string | null = null;
+  effect(() => {
+    const term = opts.searchTerm();
+    const count = results.count();
+    const ready = results.settled() && opts.panelOpen();
+    if (term === '') {
+      spokenKey = null;
+      return;
+    }
+    const key = `${count}\u0000${term}`;
+    if (!ready || key === spokenKey) {
+      return;
+    }
+    spokenKey = key;
+    untracked(() => {
+      const copy = results.ariaLabels();
+      announcer.announce(
+        count === 0 ? copy.announceNoResults : copy.announceResults(count),
+        'polite',
+      );
     });
   });
 }

@@ -1,0 +1,17 @@
+// Test-only entry for select-bridge-padding.geometry.spec.ts: compiles the
+// working-tree select bridge the way a consumer stylesheet would. Not shipped.
+@use '@angular/material' as mat;
+@use '../../../themes/material/select-theme' as select;
+
+$theme: mat.define-theme(
+  (
+    color: (
+      theme-type: light,
+      primary: mat.$azure-palette,
+    ),
+  )
+);
+
+html {
+  @include select.theme($theme);
+}

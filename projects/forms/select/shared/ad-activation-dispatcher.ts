@@ -53,8 +53,8 @@ export function createADActivationDispatcher<T, V>(
     }
     const sub = lb.ad.activated.subscribe((raw: unknown) => {
       untracked(() => {
-        // A disabled select acts on nothing, even an activation already queued.
-        if (options.core.disabled()) {
+        // A disabled or readonly select writes nothing, even an activation already queued.
+        if (options.core.writeBlocked()) {
           return;
         }
         const value = raw as T;

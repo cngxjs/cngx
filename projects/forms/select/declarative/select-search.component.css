@@ -31,48 +31,52 @@
  * - `--cngx-select-search-focus-offset` - hardcoded `1px`
  */
 
-:host {
-  /* Derive search padding from the scale so a global [data-density] compacts
-     the search field. search-padding 0.5rem -> sm; input-padding 0.375/0.5 ->
-     xs/sm (block 6px tie -> xs, matching the option snap). Both cascade to the
-     descendant input. */
-  /**
-   * Padding around the search field, inside the divider.
-   * @type <length>
-   * @group Layout
-   */
-  --cngx-select-search-padding: var(--cngx-space-sm);
-  /**
-   * Padding inside the search input.
-   * @type <length> <length>
-   * @group Layout
-   */
-  --cngx-select-search-input-padding: var(--cngx-space-xs) var(--cngx-space-sm);
-  display: block;
-  padding: var(--cngx-select-search-padding, 0.5rem);
-  border-bottom: var(
-    --cngx-select-search-divider,
-    1px solid var(--cngx-color-border, oklch(0.92 0.005 250))
-  );
-}
+/* Layered like select-base.css, so a consumer rule in a later layer and the
+   Material bridge reach the declarative parts as they reach the data rows. */
+@layer cngx.components {
+  :host {
+    /* Derive search padding from the scale so a global [data-density] compacts
+       the search field. search-padding 0.5rem -> sm; input-padding 0.375/0.5 ->
+       xs/sm (block 6px tie -> xs, matching the option snap). Both cascade to the
+       descendant input. */
+    /**
+     * Padding around the search field, inside the divider.
+     * @type <length>
+     * @group Layout
+     */
+    --cngx-select-search-padding: var(--cngx-space-sm);
+    /**
+     * Padding inside the search input.
+     * @type <length> <length>
+     * @group Layout
+     */
+    --cngx-select-search-input-padding: var(--cngx-space-xs) var(--cngx-space-sm);
+    display: block;
+    padding: var(--cngx-select-search-padding, 0.5rem);
+    border-block-end: var(
+      --cngx-select-search-divider,
+      1px solid var(--cngx-color-border, oklch(0.92 0.005 250))
+    );
+  }
 
-.cngx-select-search__input {
-  width: 100%;
-  padding: var(--cngx-select-search-input-padding, 0.375rem 0.5rem);
-  border: var(
-    --cngx-select-search-input-border,
-    1px solid var(--cngx-color-border, oklch(0.85 0.01 250))
-  );
-  border-radius: var(--cngx-select-search-input-radius, 0.25rem);
-  background: var(--cngx-select-search-input-bg, transparent);
-  color: inherit;
-  font: inherit;
-}
+  .cngx-select-search__input {
+    width: 100%;
+    padding: var(--cngx-select-search-input-padding, 0.375rem 0.5rem);
+    border: var(
+      --cngx-select-search-input-border,
+      1px solid var(--cngx-color-border, oklch(0.85 0.01 250))
+    );
+    border-radius: var(--cngx-select-search-input-radius, 0.25rem);
+    background: var(--cngx-select-search-input-bg, transparent);
+    color: inherit;
+    font: inherit;
+  }
 
-.cngx-select-search__input:focus-visible {
-  outline: var(
-    --cngx-select-search-focus-outline,
-    2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
-  );
-  outline-offset: var(--cngx-select-search-focus-offset, 1px);
+  .cngx-select-search__input:focus-visible {
+    outline: var(
+      --cngx-select-search-focus-outline,
+      2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
+    );
+    outline-offset: var(--cngx-select-search-focus-offset, 1px);
+  }
 }

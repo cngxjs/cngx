@@ -221,12 +221,48 @@ export class CngxSelectPanelShell<T = unknown> {
   );
 
   /**
-   * @internal Refreshing indicator region, keyed on `showRefreshIndicator` and
+   * @internal Refreshing indicator copy, keyed on `showRefreshIndicator` and
    * `refreshingVariant`.
    */
   protected readonly refreshingLabel = computed(() => {
     this.host.showRefreshIndicator();
     this.host.refreshingVariant();
     return untracked(() => this.host.ariaLabels().statusRefreshing);
+  });
+
+  /** @internal Commit-error retry context `disabled`: the retried commit is pending. */
+  protected readonly commitRetryDisabled = computed<boolean>(
+    () => this.host.isCommitting?.() ?? false,
+  );
+
+  /**
+   * @internal Text of the one permanent `role="status"` region. A region
+   * inserted together with its first content is often not spoken, so the
+   * shell keeps a single region in the DOM and only swaps its text: the
+   * loading copy while the default loading view shows, the refreshing copy
+   * while the default refresh indicator shows, empty otherwise. Consumer
+   * `*cngxSelectLoading` / `*cngxSelectRefreshing` templates own their own
+   * announcement. The copy comes from the keyed `viewCopy` /
+   * `refreshingLabel` reads, so a language flip never re-speaks it. The
+   * region is a `<span>` so it does not shift `:nth-of-type` positions of
+   * projected option rows, and it mirrors the text into `aria-label` for the
+   * consumers that read the status region by its name.
+   */
+  protected readonly statusText = computed<string>(() => {
+    const view = this.host.activeView();
+    if (view === 'skeleton') {
+      if (this.host.tpl.loading()) {
+        return '';
+      }
+      const copy = this.viewCopy();
+      return this.host.loadingVariant() === 'text' ? copy.loading : copy.statusLoading;
+    }
+    const contentView = view === 'content' || view === 'content+error';
+    const refreshShown =
+      contentView &&
+      this.host.showRefreshIndicator() &&
+      !this.host.tpl.refreshing() &&
+      this.host.refreshingVariant() !== 'none';
+    return refreshShown ? this.refreshingLabel() : '';
   });
 }

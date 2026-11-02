@@ -46,6 +46,27 @@ describe('--cngx-color-primary-strong', () => {
   });
 });
 
+describe.each([
+  ['--cngx-color-border-strong', 'oklch(0.62 0.005 250)', 'oklch(0.57 0.005 250)'],
+  ['--cngx-color-on-primary-strong', 'oklch(1 0 0)', 'oklch(0.2 0.01 250)'],
+] as const)('%s', (token, light, dark) => {
+  it('registers as an inheriting colour with the light rung as initial', () => {
+    const block = schemeBlock(new RegExp(`@property ${token}\\s*{[^}]+}`));
+    expect(block).toContain("syntax: '<color>'");
+    expect(block).toContain('inherits: true');
+    expect(block).toContain(`initial-value: ${light}`);
+  });
+
+  it.each([
+    ['light', light],
+    ['os dark', dark],
+    ['explicit dark', dark],
+    ['explicit light', light],
+  ] as const)('is set in the %s block', (scheme, value) => {
+    expect(BLOCKS[scheme]()).toContain(`${token}: ${value};`);
+  });
+});
+
 describe('--cngx-color-primary-text', () => {
   // Same reason as the danger rung: a registration would pin a literal and
   // the derivation from a consumer's --cngx-color-primary would never apply.

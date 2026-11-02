@@ -129,6 +129,14 @@ export interface CommitContractCases {
   readonly staleTreeValueRemovalCommits: () => void;
   /** An option with value `''` is never shown as selected while the select is empty. */
   readonly emptyStringOptionNeverSelected: () => void;
+  /**
+   * B-A1: a keyboard Retry in the commit-error banner leaves focus on the
+   * trigger once the banner (and its focused button) goes away, and keeps the
+   * panel open state it had before the Retry.
+   */
+  readonly retryFocusesTrigger: () => void;
+  /** B-A1: the same after a failed reorder, where focus otherwise follows the moved chip. */
+  readonly retryReorderFocusesTrigger: () => void;
 }
 
 // The '' row sits last so the index-based picks never reach it.
@@ -340,6 +348,39 @@ export function describeCommitContract(
         button!.click();
         settle();
       };
+      // A keyboard Retry: the panel is opened from the keyboard, so the
+      // listbox holds an active option, and Enter goes to the focused button.
+      // The browser turns an Enter keydown nobody prevented into a click.
+      const retryFromKeyboard = () => {
+        if (variant.panelOpen()) {
+          variant.close();
+          settle();
+        }
+        const owner = trigger();
+        owner.focus();
+        owner.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
+        );
+        settle();
+        expect(variant.panelOpen(), `${host.selector} did not open on ArrowDown`).toBe(true);
+        const button = el.querySelector<HTMLElement>(
+          '.cngx-select__commit-error .cngx-select__error-retry',
+        );
+        expect(button, `${host.selector} renders no commit-error Retry`).not.toBeNull();
+        button!.focus();
+        expect(document.activeElement).toBe(button);
+        const callsBefore = h.calls.length;
+        const enter = new KeyboardEvent('keydown', {
+          key: 'Enter',
+          bubbles: true,
+          cancelable: true,
+        });
+        if (button!.dispatchEvent(enter)) {
+          button!.click();
+        }
+        settle();
+        return { callsBefore };
+      };
       const reorderFirstRight = () => {
         const chip = el.querySelector<HTMLElement>('[data-reorder-index="0"]');
         expect(chip, `${host.selector} renders no reorderable chip`).not.toBeNull();
@@ -375,6 +416,7 @@ export function describeCommitContract(
         trigger,
         clear,
         retry,
+        retryFromKeyboard,
         reorderFirstRight,
         resolveLast,
         rejectLast,
@@ -744,6 +786,33 @@ export function describeCommitContract(
         const shown = m.el.querySelector('.contract-error-option');
         expect(shown, `${host.selector} renders no commit-error slot`).not.toBeNull();
         expect(shown!.textContent).toBe('Blue');
+      },
+
+      retryFocusesTrigger: () => {
+        const kind = pickKind();
+        // Pessimistic: an optimistic scalar pick, replayed or not, closes the
+        // panel by design; the Retry itself must not change the popup state.
+        const m = mount({ mode: 'pessimistic', initial: kind === 'select' ? 'red' : [] });
+        m.pickAt(1);
+        const failed = m.h.calls.at(-1);
+        m.rejectLast();
+        m.retryFromKeyboard();
+        expect(m.h.calls.at(-1)).toEqual(failed);
+        expect(m.el.querySelector('.cngx-select__commit-error')).toBeNull();
+        expect(document.activeElement).toBe(m.trigger());
+        expect(m.variant.panelOpen()).toBe(true);
+      },
+
+      retryReorderFocusesTrigger: () => {
+        requireKind('reorder');
+        const m = mount({ initial: ['red', 'green', 'blue'] });
+        m.reorderFirstRight();
+        m.rejectLast();
+        m.retryFromKeyboard();
+        expect(m.h.calls.at(-1)).toEqual(['green', 'red', 'blue']);
+        expect(m.el.querySelector('.cngx-select__commit-error')).toBeNull();
+        expect(document.activeElement).toBe(m.trigger());
+        expect(m.variant.panelOpen()).toBe(true);
       },
     };
 

@@ -9,7 +9,7 @@
  *
  * **State modifiers**
  *
- * - `:focus-within` on `.cngx-action-select__trigger` - 2px primary
+ * - `:focus-within` or open on `.cngx-action-select__trigger` - 2px primary
  *   outline + 2px offset
  * - `.cngx-action-select__input:disabled` - `cursor: not-allowed`;
  *   the trigger takes the field skin colour
@@ -101,7 +101,7 @@
    * Border shorthand of the trigger. Falls back to `--cngx-select-border`; see
    * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
-   * @default var(--cngx-select-border, 1px solid var(--cngx-color-border))
+   * @default var(--cngx-select-border, 1px solid var(--cngx-color-border-strong))
    * @see [[--cngx-color-border]]
    */
   @property --cngx-action-select-border {
@@ -176,7 +176,7 @@
       );
       border: var(
         --cngx-action-select-border,
-        var(--cngx-select-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)))
+        var(--cngx-select-border, 1px solid var(--cngx-color-border-strong, oklch(0.62 0.005 250)))
       );
       border-radius: var(
         --cngx-action-select-radius,
@@ -187,7 +187,10 @@
       cursor: text;
     }
 
-    .cngx-action-select__trigger:has(:focus-visible) {
+    /* The ring shows on any focus of the trigger (pointer or keyboard, also
+       focus inside it) and while the panel is open, the form-field
+       convention, the same in all nine selects. */
+    .cngx-action-select__trigger:is(:focus-within, :has([aria-expanded='true'])) {
       outline: var(
         --cngx-select-focus-outline,
         2px solid

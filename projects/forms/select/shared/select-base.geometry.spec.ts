@@ -1,17 +1,29 @@
-import { Component, signal, ViewEncapsulation, type Type } from '@angular/core';
+import {
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  Directive,
+  model,
+  signal,
+  ViewEncapsulation,
+  type Type,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxFormField, CngxPrefix, type CngxFieldAccessor } from '@cngx/forms/field';
 import { CngxInput } from '@cngx/forms/input';
 import { createMockField } from '@cngx/forms/field/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { cdp, userEvent } from 'vitest/browser';
 
 import { CngxFieldBox } from '../../field/field-box.directive';
 import { CngxActionMultiSelect } from '../action-multi-select/action-multi-select.component';
 import { CngxActionSelect } from '../action-select/action-select.component';
 import { CngxCombobox } from '../combobox/combobox.component';
+import { CngxSelectDivider } from '../declarative/divider.component';
+import { CngxSelectOptgroup } from '../declarative/optgroup.component';
 import { CngxSelectOption } from '../declarative/option.component';
+import { CngxSelectSearch } from '../declarative/select-search.component';
+import { CNGX_SELECT_SHELL_SEARCH_HOST } from '../declarative/select-search-host';
 import { CngxMultiSelect } from '../multi-select/multi-select.component';
 import { CngxReorderableMultiSelect } from '../reorderable-multi-select/reorderable-multi-select.component';
 import { CngxSelectShell } from '../select-shell/select-shell.component';
@@ -301,6 +313,74 @@ class ClearableTriggersHost {
   readonly options = OPTIONS;
 }
 
+// A consumer override of the caret colour in a later layer, set on the root
+// and on a scheme island. The select scheme swaps live in the tokens layer, so
+// the override wins in the light and the dark scheme alike.
+@Component({
+  selector: 'cngx-select-caret-override-host',
+  standalone: true,
+  imports: [CngxSelect],
+  styleUrls: ['../../../core/theming/layers.css'],
+  styles: [
+    `
+      @layer app {
+        :root.cngx-caret-override-probe {
+          --cngx-select-caret-color: rgb(1, 2, 3);
+        }
+        .caret-island {
+          --cngx-select-caret-color: rgb(4, 5, 6);
+        }
+      }
+    `,
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <cngx-select class="v-root" [label]="'Colour'" [options]="options" />
+    <div class="caret-island" data-color-scheme="dark">
+      <cngx-select class="v-dark-island" [label]="'Colour'" [options]="options" />
+    </div>
+    <div class="caret-island" data-color-scheme="light">
+      <cngx-select class="v-light-island" [label]="'Colour'" [options]="options" />
+    </div>
+  `,
+})
+class CaretOverrideHost {
+  readonly options = OPTIONS;
+}
+
+// An outline and a fill trigger, a panel surface and a dragged chip under
+// the full token stack, for the WCAG contrast reads below. The scheme is
+// emulated at the root so every :root delegation resolves in it.
+@Component({
+  selector: 'cngx-select-contrast-host',
+  standalone: true,
+  imports: [CngxSelect, CngxReorderableMultiSelect],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    '../../theming/components/cngx-field-skin.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div class="contrast-page" style="background: var(--cngx-color-surface); padding: 1rem">
+      <cngx-select class="v-outline" [label]="'Colour'" [options]="options" />
+      <cngx-select class="v-fill" skin="fill" [label]="'Colour'" [options]="options" />
+      <div class="cngx-select__panel contrast-panel" style="position: static">Panel</div>
+      <cngx-reorderable-multi-select
+        class="contrast-reorder"
+        [label]="'Colours'"
+        [options]="options"
+        [values]="dragged"
+      />
+      <span class="muted-probe" style="color: var(--cngx-color-text-muted)">Muted</span>
+    </div>
+  `,
+})
+class ContrastHost {
+  readonly options = OPTIONS;
+  readonly dragged = ['red'];
+}
+
 const ALL_TRIGGERS = [
   '.v-select',
   '.v-multi',
@@ -353,9 +433,34 @@ function boxHeight(el: HTMLElement): number {
   return Math.max(formula, px(el, 'min-height'));
 }
 
-afterEach(() => {
+// Paints `layers` in order onto a 1px sRGB canvas and returns the WCAG
+// relative luminance of the result, so translucent layers composite the way
+// the page draws them.
+function luminance(...layers: string[]): number {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1;
+  canvas.height = 1;
+  const context = canvas.getContext('2d')!;
+  for (const layer of layers) {
+    context.fillStyle = layer;
+    context.fillRect(0, 0, 1, 1);
+  }
+  const [r, g, b] = Array.from(context.getImageData(0, 0, 1, 1).data.slice(0, 3)).map((v) => {
+    const c = v / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function contrast(a: number, b: number): number {
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+}
+
+afterEach(async () => {
   mountedRoot?.remove();
   mountedRoot = null;
+  document.documentElement.classList.remove('cngx-caret-override-probe');
+  await cdp().send('Emulation.setEmulatedMedia', { features: [] });
 });
 
 describe('select-family field skins', () => {
@@ -528,15 +633,17 @@ describe('select-family field skins', () => {
     const root = mount(ReadonlyHost);
     const editable = trigger(root, '.editable');
     const readonly = trigger(root, '.readonly');
-    expect(root.querySelector('.readonly')?.getAttribute('aria-readonly')).toBe('true');
+    expect(readonly.getAttribute('aria-readonly')).toBe('true');
     const editableRest = computedValue(editable, 'background-color');
     const readonlyRest = computedValue(readonly, 'background-color');
+    const readonlyUnderline = computedValue(readonly, 'border-bottom-color');
 
     await userEvent.hover(editable);
     expect(computedValue(editable, 'background-color')).not.toBe(editableRest);
 
     await userEvent.hover(readonly);
     expect(computedValue(readonly, 'background-color')).toBe(readonlyRest);
+    expect(computedValue(readonly, 'border-bottom-color')).toBe(readonlyUnderline);
   });
 
   // The single select stands in for the `display: contents` roots, the tree
@@ -585,4 +692,319 @@ describe('select-family field skins', () => {
       expect(computedValue(input!, 'color')).toBe(computedValue(el, 'color'));
     },
   );
+
+  describe.each(['light', 'dark'] as const)('%s scheme', (scheme) => {
+    async function mountOverride(): Promise<HTMLElement> {
+      await cdp().send('Emulation.setEmulatedMedia', {
+        features: [{ name: 'prefers-color-scheme', value: scheme }],
+      });
+      document.documentElement.classList.add('cngx-caret-override-probe');
+      const root = mount(CaretOverrideHost);
+      expect(matchMedia(`(prefers-color-scheme: ${scheme})`).matches).toBe(true);
+      return root;
+    }
+
+    function caret(root: HTMLElement, hostSelector: string): HTMLElement {
+      const el = trigger(root, hostSelector).querySelector<HTMLElement>('.cngx-select__caret');
+      if (!el) {
+        throw new Error(`${hostSelector} caret did not render`);
+      }
+      return el;
+    }
+
+    it('lets a layered root override of the caret colour win', async () => {
+      const root = await mountOverride();
+      expect(computedValue(caret(root, '.v-root'), 'color')).toBe('rgb(1, 2, 3)');
+    });
+
+    it.each(['.v-dark-island', '.v-light-island'])(
+      'lets a layered override on a scheme island win for %s',
+      async (hostSelector) => {
+        const root = await mountOverride();
+        expect(computedValue(caret(root, hostSelector), 'color')).toBe('rgb(4, 5, 6)');
+      },
+    );
+  });
+
+  describe.each(['light', 'dark'] as const)('%s scheme contrast', (scheme) => {
+    async function mountContrast(): Promise<HTMLElement> {
+      await cdp().send('Emulation.setEmulatedMedia', {
+        features: [{ name: 'prefers-color-scheme', value: scheme }],
+      });
+      const root = mount(ContrastHost);
+      expect(matchMedia(`(prefers-color-scheme: ${scheme})`).matches).toBe(true);
+      return root;
+    }
+
+    function one(root: HTMLElement, selector: string): HTMLElement {
+      const el = root.querySelector<HTMLElement>(selector);
+      if (!el) {
+        throw new Error(`${selector} did not render`);
+      }
+      return el;
+    }
+
+    it('keeps the outline trigger border at 3:1 on the page, the fill tint and the panel', async () => {
+      const root = await mountContrast();
+      const surface = computedValue(one(root, '.contrast-page'), 'background-color');
+      const border = luminance(
+        surface,
+        computedValue(trigger(root, '.v-outline'), 'border-top-color'),
+      );
+      const fill = luminance(surface, computedValue(trigger(root, '.v-fill'), 'background-color'));
+      const panel = luminance(
+        surface,
+        computedValue(one(root, '.contrast-panel'), 'background-color'),
+      );
+      expect(contrast(border, luminance(surface))).toBeGreaterThanOrEqual(3.5);
+      expect(contrast(border, fill)).toBeGreaterThanOrEqual(3);
+      expect(contrast(border, panel)).toBeGreaterThanOrEqual(3);
+    });
+
+    // The lift paints the chip wrap; the text is the <cngx-chip> label inside
+    // it, which reads its own colour token, so the label is what is measured.
+    // The chip eases its colour over 150ms: the read waits for the end state.
+    it('keeps the dragged chip label at 4.5:1 on its background', async () => {
+      const root = await mountContrast();
+      const wrap = one(root, '.contrast-reorder .cngx-select__chip-wrap');
+      wrap.classList.add('cngx-select__chip--dragging');
+      for (const animation of wrap.getAnimations({ subtree: true })) {
+        animation.finish();
+      }
+      const label = one(wrap, '.cngx-chip .cngx-chip__label');
+      const background = luminance(computedValue(wrap, 'background-color'));
+      expect(contrast(luminance(computedValue(label, 'color')), background)).toBeGreaterThanOrEqual(
+        4.5,
+      );
+    });
+
+    it('paints the placeholder in the muted text colour', async () => {
+      const root = await mountContrast();
+      const placeholder = one(root, '.v-outline .cngx-select__label--placeholder');
+      expect(computedValue(placeholder, 'color')).toBe(
+        computedValue(one(root, '.muted-probe'), 'color'),
+      );
+    });
+  });
+});
+
+// Every compactness token of the panel parts and the declarative building
+// blocks is SET from the --cngx-space-* scale at its default host, so a
+// [data-density] ancestor compacts it. Each density block carries a probe
+// that resolves the scale steps in that density.
+@Directive({
+  selector: '[fakeSearchHost]',
+  standalone: true,
+  providers: [{ provide: CNGX_SELECT_SHELL_SEARCH_HOST, useExisting: FakeSearchHost }],
+})
+class FakeSearchHost {
+  readonly searchTerm = model<string>('');
+  readonly listboxRef = signal(undefined);
+  close(): void {
+    /* no-op */
+  }
+  focus(): void {
+    /* no-op */
+  }
+}
+
+const DENSITIES = ['compact', 'comfortable'] as const;
+
+@Component({
+  selector: 'cngx-select-density-host',
+  standalone: true,
+  imports: [
+    CngxSelect,
+    CngxSelectOption,
+    CngxSelectOptgroup,
+    CngxSelectDivider,
+    CngxSelectSearch,
+    FakeSearchHost,
+  ],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    '../../../core/theming/density-tokens.css',
+    '../../theming/components/cngx-field-skin.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: `
+    @for (density of densities; track density) {
+      <div [class]="'d-' + density" [attr.data-density]="density">
+        <span
+          class="scale-probe"
+          style="
+            padding-block-start: var(--cngx-space-xs);
+            padding-inline-start: var(--cngx-space-sm);
+            padding-inline-end: var(--cngx-space-md);
+          "
+        ></span>
+        <cngx-select class="fill" skin="fill" [label]="'Colour'" [options]="options" />
+        <cngx-select
+          class="loading-text"
+          [label]="'Loading'"
+          [options]="[]"
+          [loading]="true"
+          loadingVariant="text"
+        />
+        <cngx-select-shell>
+          <div class="cngx-select__panel" style="position: static">
+            <div class="cngx-select__action--top">Top</div>
+            <div class="cngx-select__group-header">Group</div>
+            <div class="cngx-select__option">Row</div>
+            <div class="cngx-select__empty">Empty</div>
+            <div class="cngx-select__action--bottom">Bottom</div>
+          </div>
+        </cngx-select-shell>
+        <cngx-option class="decl-option" [value]="'red'">Red</cngx-option>
+        <cngx-optgroup label="Warm">
+          <cngx-option [value]="'amber'">Amber</cngx-option>
+        </cngx-optgroup>
+        <cngx-select-divider class="decl-divider" />
+        <div fakeSearchHost><cngx-select-search /></div>
+      </div>
+    }
+  `,
+})
+class DensityHost {
+  readonly densities = DENSITIES;
+  readonly options = OPTIONS;
+}
+
+// Loads only the foundation and density tokens, never select-base.css, so the
+// optgroup header can only take its padding from optgroup.component.css.
+@Component({
+  selector: 'cngx-select-optgroup-density-host',
+  standalone: true,
+  imports: [CngxSelectOptgroup, CngxSelectOption],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    '../../../core/theming/density-tokens.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    @for (density of densities; track density) {
+      <div [class]="'d-' + density" [attr.data-density]="density">
+        <span
+          class="scale-probe"
+          style="
+            padding-block-start: var(--cngx-space-xs);
+            padding-inline-start: var(--cngx-space-sm);
+            padding-inline-end: var(--cngx-space-md);
+          "
+        ></span>
+        <cngx-optgroup label="Warm">
+          <cngx-option [value]="'amber'">Amber</cngx-option>
+        </cngx-optgroup>
+      </div>
+    }
+  `,
+})
+class OptgroupDensityHost {
+  readonly densities = DENSITIES;
+}
+
+describe('select-family density derivation', () => {
+  type Box = 'padding' | 'margin';
+  type Side = 'top' | 'right' | 'bottom' | 'left';
+  type Step = 'xs' | 'sm' | 'md' | '0';
+
+  function scale(block: HTMLElement): Record<Step, string> {
+    const probe = block.querySelector<HTMLElement>('.scale-probe')!;
+    return {
+      xs: computedValue(probe, 'padding-top'),
+      sm: computedValue(probe, 'padding-left'),
+      md: computedValue(probe, 'padding-right'),
+      '0': '0px',
+    };
+  }
+
+  function el(block: HTMLElement, selector: string): HTMLElement {
+    const found = block.querySelector<HTMLElement>(selector);
+    if (!found) {
+      throw new Error(`${selector} did not render`);
+    }
+    return found;
+  }
+
+  // [selector, box, block step, inline step]
+  const CASES: [string, Box, Step, Step][] = [
+    ['.cngx-select__group-header', 'padding', 'xs', 'sm'],
+    ['cngx-optgroup .cngx-select__group-header', 'padding', 'xs', 'sm'],
+    ['.cngx-select__option', 'padding', 'xs', 'sm'],
+    ['cngx-option.decl-option', 'padding', 'xs', 'sm'],
+    ['.cngx-select__empty', 'padding', 'sm', 'sm'],
+    ['.loading-text .cngx-select__loading', 'padding', 'sm', 'sm'],
+    ['cngx-select-divider.decl-divider', 'margin', 'xs', '0'],
+    ['cngx-select-search', 'padding', 'sm', 'sm'],
+    ['.cngx-select-search__input', 'padding', 'xs', 'sm'],
+    ['.fill .cngx-field-trigger', 'padding', 'sm', 'md'],
+  ];
+
+  it.each(CASES)('sets the %s %s from the scale in every density', (selector, box, blockStep, inlineStep) => {
+    const root = mount(DensityHost);
+    const seen = new Set<string>();
+    for (const density of DENSITIES) {
+      const block = el(root, `.d-${density}`);
+      const steps = scale(block);
+      const target = el(block, selector);
+      const sides: [Side, Step][] = [
+        ['top', blockStep],
+        ['bottom', blockStep],
+        ['left', inlineStep],
+      ];
+      for (const [side, step] of sides) {
+        expect(computedValue(target, `${box}-${side}`), `${density} ${side}`).toBe(steps[step]);
+      }
+      seen.add(computedValue(target, `${box}-top`));
+    }
+    expect(seen.size).toBe(DENSITIES.length);
+  });
+
+  it('sets the declarative optgroup header padding from its own stylesheet', () => {
+    const root = mount(OptgroupDensityHost);
+    expect(
+      Array.from(document.styleSheets).some((sheet) =>
+        Array.from(sheet.cssRules).some((rule) => rule.cssText.includes('.cngx-select__panel')),
+      ),
+      'select-base.css must not be loaded',
+    ).toBe(false);
+    const seen = new Set<string>();
+    for (const density of DENSITIES) {
+      const block = el(root, `.d-${density}`);
+      const { xs, sm } = scale(block);
+      const header = el(block, 'cngx-optgroup .cngx-select__group-header');
+      expect(computedValue(header, 'padding-top'), `${density} top`).toBe(xs);
+      expect(computedValue(header, 'padding-bottom'), `${density} bottom`).toBe(xs);
+      expect(computedValue(header, 'padding-left'), `${density} left`).toBe(sm);
+      seen.add(computedValue(header, 'padding-top'));
+    }
+    expect(seen.size).toBe(DENSITIES.length);
+  });
+
+  it('sets the option-row gap from the scale on the data-mode and declarative rows', () => {
+    const root = mount(DensityHost);
+    for (const density of DENSITIES) {
+      const block = el(root, `.d-${density}`);
+      const { sm } = scale(block);
+      expect(computedValue(el(block, '.cngx-select__option'), 'column-gap')).toBe(sm);
+      expect(computedValue(el(block, 'cngx-option.decl-option'), 'column-gap')).toBe(sm);
+    }
+  });
+
+  it('sets the action separator padding and margin from the scale', () => {
+    const root = mount(DensityHost);
+    for (const density of DENSITIES) {
+      const block = el(root, `.d-${density}`);
+      const { xs } = scale(block);
+      const top = el(block, '.cngx-select__action--top');
+      const bottom = el(block, '.cngx-select__action--bottom');
+      expect(computedValue(top, 'padding-bottom')).toBe(xs);
+      expect(computedValue(top, 'margin-bottom')).toBe(xs);
+      expect(computedValue(bottom, 'padding-top')).toBe(xs);
+      expect(computedValue(bottom, 'margin-top')).toBe(xs);
+    }
+  });
 });

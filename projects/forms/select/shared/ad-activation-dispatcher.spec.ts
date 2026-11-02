@@ -31,12 +31,12 @@ function makeListbox(): { lb: CngxListbox<unknown>; activated: Subject<unknown> 
 
 function makeCore(
   options: readonly CngxSelectOptionDef<Value>[],
-  disabled: Signal<boolean> = signal(false),
+  writeBlocked: Signal<boolean> = signal(false),
 ): CngxSelectCore<Value, unknown> {
   const map = new Map(options.map((o) => [o.value, o]));
   return {
     findOption: (value: Value) => map.get(value) ?? null,
-    disabled,
+    writeBlocked,
   } as unknown as CngxSelectCore<Value, unknown>;
 }
 
@@ -130,13 +130,13 @@ describe('createADActivationDispatcher', () => {
     expect(onActivateCalls).toEqual([['a', optA]]);
   });
 
-  it('drops activations while the select is disabled', () => {
+  it('drops activations while the select is write-blocked (disabled or readonly)', () => {
     const { lb, activated } = makeListbox();
-    const disabled = signal(true);
+    const writeBlocked = signal(true);
     installProbe({
       listboxRef,
       commitAction,
-      core: makeCore([optA, optB], disabled),
+      core: makeCore([optA, optB], writeBlocked),
       closeOnSelect: false,
       onCommit: (v, o) => onCommitCalls.push([v, o]),
       onActivate: (v, o) => onActivateCalls.push([v, o]),
@@ -148,7 +148,7 @@ describe('createADActivationDispatcher', () => {
     expect(onActivateCalls).toEqual([]);
     expect(onCommitCalls).toEqual([]);
 
-    disabled.set(false);
+    writeBlocked.set(false);
     activated.next('b');
     expect(onActivateCalls).toEqual([['b', optB]]);
   });

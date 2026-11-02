@@ -87,6 +87,8 @@ import { CngxOption } from './option.directive';
     role: 'listbox',
     '[attr.aria-label]': 'label()',
     '[attr.aria-multiselectable]': 'multiple() ? "true" : null',
+    '[attr.aria-disabled]': 'ariaDisabled()',
+    '[attr.aria-readonly]': 'ariaReadonly()',
   },
 })
 export class CngxListbox<T = unknown> {
@@ -131,6 +133,36 @@ export class CngxListbox<T = unknown> {
    * everywhere outside the select family.
    */
   readonly externalActivation = input<boolean>(false);
+
+  /**
+   * Disables the listbox. While `true`, activation and the selection methods
+   * (`select`, `deselect`, `toggle`, `clear`, `selectAll`) write nothing and
+   * the host carries `aria-disabled="true"`. A `model()` so a forms bridge
+   * (`CngxListboxFieldBridge`) can forward a disabled field into the atom.
+   * Keyboard navigation stays live; the listbox only refuses writes.
+   */
+  readonly disabled = model<boolean>(false);
+
+  /**
+   * Makes the listbox read-only: options can be browsed and the active
+   * option moves, but activation and the selection methods write nothing.
+   * The host carries `aria-readonly="true"`. A `model()` so a forms bridge
+   * can forward a read-only field into the atom.
+   */
+  readonly readonly = model<boolean>(false);
+
+  /** `true` while `disabled` or `readonly` is set - every selection write checks it. */
+  readonly writeBlocked = computed<boolean>(() => this.disabled() || this.readonly());
+
+  /** @internal */
+  protected readonly ariaDisabled = computed<'true' | null>(() =>
+    this.disabled() ? 'true' : null,
+  );
+
+  /** @internal */
+  protected readonly ariaReadonly = computed<'true' | null>(() =>
+    this.readonly() ? 'true' : null,
+  );
 
   /**
    * Underlying `CngxActiveDescendant` host directive. Exposed so triggers
@@ -245,10 +277,11 @@ export class CngxListbox<T = unknown> {
   /**
    * Select the given value. In single mode, replaces the current selection.
    * In multi mode, adds to the selection if not already present. Values that
-   * do not correspond to any option are ignored.
+   * do not correspond to any option are ignored, and so is every call while
+   * the listbox is `disabled` or `readonly`.
    */
   select(value: T): void {
-    if (!this.hasOption(value)) {
+    if (this.writeBlocked() || !this.hasOption(value)) {
       return;
     }
     if (this.multiple()) {
@@ -263,6 +296,9 @@ export class CngxListbox<T = unknown> {
 
   /** Remove `value` from the selection. No-op if not selected. */
   deselect(value: T): void {
+    if (this.writeBlocked()) {
+      return;
+    }
     const eq = this.compareWith();
     if (this.multiple()) {
       this.selectedValues.set(this.selectedValues().filter((v) => !eq(v, value)));
@@ -276,6 +312,9 @@ export class CngxListbox<T = unknown> {
 
   /** Flip selection state for `value`. */
   toggle(value: T): void {
+    if (this.writeBlocked()) {
+      return;
+    }
     if (this.isSelected(value)) {
       this.deselect(value);
     } else {
@@ -285,6 +324,9 @@ export class CngxListbox<T = unknown> {
 
   /** Clear all selections. */
   clear(): void {
+    if (this.writeBlocked()) {
+      return;
+    }
     if (this.multiple()) {
       this.selectedValues.set([]);
     } else {
@@ -297,7 +339,7 @@ export class CngxListbox<T = unknown> {
    * mode this is a no-op.
    */
   selectAll(): void {
-    if (!this.multiple()) {
+    if (this.writeBlocked() || !this.multiple()) {
       return;
     }
     const values = this.options()
@@ -327,7 +369,7 @@ export class CngxListbox<T = unknown> {
   private handleActivation(value: unknown): void {
     // externalActivation: AD still emits on `activated`, but the consumer
     // owns the write (e.g. to capture a pre-pick rollback target).
-    if (this.externalActivation()) {
+    if (this.externalActivation() || this.writeBlocked()) {
       return;
     }
     // AD's Subject is typed `unknown`; the listbox owns the value domain.

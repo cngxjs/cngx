@@ -200,11 +200,11 @@ probe {
 // error text); without a bridge mapping they would keep the Ember / cngx red
 // under a Material theme.
 describe('system Material bridge', () => {
-  function systemCss(themeVersion: 'v1' | 'v0'): string {
+  function systemCss(themeVersion: 'v1' | 'v0', scheme: 'light' | 'dark' = 'light'): string {
     const theme =
       themeVersion === 'v1'
         ? `$theme: mat.define-theme((color: (theme-type: light, primary: mat.$azure-palette)));`
-        : `$theme: mat.m2-define-light-theme((color: (
+        : `$theme: mat.m2-define-${scheme}-theme((color: (
             primary: mat.m2-define-palette(mat.$m2-indigo-palette),
             accent: mat.m2-define-palette(mat.$m2-pink-palette),
           )));`;
@@ -221,6 +221,7 @@ html { @include bridge.theme($theme); }
   it('maps the strong primary, primary text and danger text rungs (M3)', () => {
     const css = systemCss('v1');
     expect(css).toContain('--cngx-color-primary-strong: var(--mat-sys-primary)');
+    expect(css).toContain('--cngx-color-border-strong: var(--mat-sys-outline);');
     expect(css).toContain('--cngx-color-primary-text: var(--mat-sys-primary)');
     expect(css).toContain('--cngx-color-danger-text: var(--mat-sys-error)');
   });
@@ -228,8 +229,18 @@ html { @include bridge.theme($theme); }
   it('maps the strong primary, primary text and danger text rungs (M2)', () => {
     const css = systemCss('v0');
     expect(css).toMatch(/--cngx-color-primary-strong: #[0-9a-f]{3,6}/);
+    expect(css).toContain('--cngx-color-border-strong: rgba(0, 0, 0, 0.38)');
     expect(css).toMatch(/--cngx-color-primary-text: #[0-9a-f]{3,6}/);
     expect(css).toMatch(/--cngx-color-danger-text: #[0-9a-f]{3,6}/);
+  });
+
+  // mat-form-field draws its resting outlined frame in the M2 system
+  // outline-variant: black or white at 0.38 per theme type.
+  it('maps the strong border rung to the M2 outlined frame colour per theme type', () => {
+    expect(systemCss('v0', 'light')).toContain('--cngx-color-border-strong: rgba(0, 0, 0, 0.38)');
+    expect(systemCss('v0', 'dark')).toContain(
+      '--cngx-color-border-strong: rgba(255, 255, 255, 0.38)',
+    );
   });
 });
 

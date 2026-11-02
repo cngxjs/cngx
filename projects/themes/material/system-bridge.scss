@@ -35,6 +35,9 @@
   --cngx-color-surface: var(--mat-sys-surface);
   --cngx-color-text: var(--mat-sys-on-surface);
   --cngx-color-border: var(--mat-sys-outline-variant);
+  // The control edge (bare input, outline field frame, select trigger) takes
+  // the outline role mat-form-field uses for its resting outlined frame.
+  --cngx-color-border-strong: var(--mat-sys-outline);
 
   // Brand and semantic colours. Material 3 has no first-class
   // success/warning/info - leave those at their cngx defaults so the
@@ -92,6 +95,13 @@
   --cngx-color-surface: #{$surface};
   --cngx-color-text: #{rgba($on-surface, 0.87)};
   --cngx-color-border: #{rgba($divider, 0.12)};
+  // Mirrors the M2 resting outlined form-field frame: the M2 system
+  // outline-variant, black or white at 0.38 per theme type.
+  @if mat.get-theme-type($theme) == dark {
+    --cngx-color-border-strong: #{rgba(white, 0.38)};
+  } @else {
+    --cngx-color-border-strong: #{rgba(black, 0.38)};
+  }
   --cngx-color-primary: #{$primary};
   --cngx-color-primary-strong: #{$primary};
   --cngx-color-primary-text: #{bridge.m2-primary-text($theme)};

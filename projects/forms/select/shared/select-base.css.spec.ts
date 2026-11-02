@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // Source-text guard for the field-skin rule set. The nine variants share ONE
 // rule set in `select-base.css` (already in every variant's `styleUrls`),
@@ -35,8 +35,14 @@ const VARIANT_FILES: Readonly<Record<(typeof VARIANTS)[number], string>> = {
   'select-shell': 'select-shell/select-shell',
 };
 
+// Resolved from this file, not the working directory, so the spec runs from
+// any cwd.
+function fromHere(relative: string): string {
+  return fileURLToPath(new URL(relative, import.meta.url));
+}
+
 function read(relative: string): string {
-  return readFileSync(resolve(process.cwd(), `projects/forms/select/${relative}`), 'utf8');
+  return readFileSync(fromHere(`../${relative}`), 'utf8');
 }
 
 const SHARED = read('shared/select-base.css');
@@ -186,20 +192,6 @@ describe('select-family field-skin rule set', () => {
     );
   });
 
-  it('defaults the placeholder to the muted text colour in every scheme', () => {
-    const assignments = [...SHARED.matchAll(/--cngx-select-placeholder-color: ([^;]+);/g)].map(
-      (m) => m[1],
-    );
-    // :root delegation plus the OS-dark, explicit-dark and explicit-light blocks
-    expect(assignments).toEqual(Array(4).fill('var(--cngx-color-text-muted)'));
-  });
-
-  it('derives the shared box padding from the density scale', () => {
-    expect(SHARED).toContain('--cngx-field-padding-block: var(--cngx-space-sm)');
-    expect(SHARED).toContain('--cngx-field-padding-inline: var(--cngx-space-md)');
-    expect(SHARED).not.toContain('--cngx-select-skin-padding');
-  });
-
   it('mixes the bare error text in oklab so it stays red', () => {
     const bare = scopeBlock(
       "@scope ([data-skin='bare']:not(.cngx-field-box > *) > * > .cngx-field-trigger)",
@@ -274,21 +266,6 @@ describe('select-family field-skin rule set', () => {
 
   // Parity with the fill / bare recipe in cngx-field-skin.css: the select
   // copy is kept (Track A vs Track B) and guarded row by row here.
-  it('keeps the resting fill surface on hover for a readonly trigger', () => {
-    const fill = scopeBlock(
-      "@scope ([data-skin='fill']:not(.cngx-field-box > *) > * > .cngx-field-trigger)",
-    )
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      .replace(/\s+/g, ' ');
-    const readonly = fill.slice(
-      fill.indexOf("[aria-readonly='true'] > * > :scope.cngx-field-trigger:hover {"),
-    );
-    expect(fill).toContain("[aria-readonly='true'] > * > :scope.cngx-field-trigger:hover {");
-    const body = readonly.slice(0, readonly.indexOf('}'));
-    expect(body).toContain('border-block-end-color: var( --cngx-field-underline-color,');
-    expect(body).toContain('background: var( --cngx-field-fill-bg,');
-  });
-
   it('pushes the resting fill underline to the text colour under more contrast', () => {
     const fill = scopeBlock(
       "@scope ([data-skin='fill']:not(.cngx-field-box > *) > * > .cngx-field-trigger)",
@@ -311,7 +288,7 @@ describe('select-family field-skin rule set', () => {
     expect(focus.slice(0, focus.indexOf('}'))).toContain(
       'outline-offset: var(--cngx-field-ring-offset, -2px)',
     );
-    const invalidFocus = bare.slice(bare.indexOf("):focus-visible {"));
+    const invalidFocus = bare.slice(bare.indexOf('):is(:focus-visible, :focus-within) {'));
     expect(invalidFocus.slice(0, invalidFocus.indexOf('}'))).toContain(
       'outline-offset: var(--cngx-field-ring-offset, -2px)',
     );
@@ -319,7 +296,7 @@ describe('select-family field-skin rule set', () => {
 
   it('offsets the forced-colours focus outline like the field skin', () => {
     const fieldSkin = readFileSync(
-      resolve(process.cwd(), 'projects/forms/theming/components/cngx-field-skin.css'),
+      fromHere('../../theming/components/cngx-field-skin.css'),
       'utf8',
     );
     const offsetOf = (css: string): string | undefined => {
@@ -379,7 +356,7 @@ describe('select-family action-region frame', () => {
 
   it('keeps the separator on under the Material bridge', () => {
     const bridge = readFileSync(
-      resolve(process.cwd(), 'projects/themes/material/select-theme.scss'),
+      fromHere('../../../themes/material/select-theme.scss'),
       'utf8',
     );
     const value = /--cngx-select-action-border:\s*([^;]+);/.exec(bridge)?.[1].trim();
