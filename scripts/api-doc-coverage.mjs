@@ -5,7 +5,6 @@
 // are already applied there, so the scan only applies the triage below.
 //
 //   node scripts/api-doc-coverage.mjs --report          markdown inventory per lib / entry point / owner
-//   node scripts/api-doc-coverage.mjs --rows            sorted ratchet rows for api-doc-coverage.fixtures.mjs
 //   node scripts/api-doc-coverage.mjs --doc=<path> ...  read another export than .compodoc/documentation.json
 
 import { existsSync, readFileSync } from 'node:fs';
@@ -77,13 +76,6 @@ function isUndocumented(row) {
 
 function libOf(file) {
   return /^projects\/([^/]+)\//.exec(file ?? '')?.[1] ?? '?';
-}
-
-/** The plan phase that closes gaps of an entry point: select, then common, then the rest. */
-export function closingPhase(entry) {
-  if (entry === '@cngx/forms/select') return 2;
-  if (entry === '@cngx/common' || entry.startsWith('@cngx/common/')) return 3;
-  return 4;
 }
 
 function emptyTotals() {
@@ -221,18 +213,6 @@ export function rowKey(row) {
   return `${row.entry} ${row.owner} ${row.kind} ${row.member}`;
 }
 
-/** A gap as a ratchet row: key fields, binding name when aliased, closing phase. */
-function toRatchetRow(gap) {
-  return {
-    entry: gap.entry,
-    owner: gap.owner,
-    kind: gap.kind,
-    member: gap.member,
-    ...(gap.binding ? { binding: gap.binding } : {}),
-    phase: closingPhase(gap.entry),
-  };
-}
-
 const FIELD_HEAD =
   /(?:(?:public|protected|private)\s+)?readonly\s+(\w+)\s*=\s*(input|model|output)(\.required)?\s*/g;
 
@@ -365,17 +345,6 @@ function renderReport({ gaps, totals }) {
   return lines.join('\n');
 }
 
-function renderRows(gaps) {
-  const rows = gaps.map((gap) => `  ${JSON.stringify(toRatchetRow(gap))},`);
-  return [
-    `export const CEILING = ${gaps.length};`,
-    '',
-    'export const RATCHET = [',
-    ...rows,
-    '];',
-  ].join('\n');
-}
-
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   const docArg = args.find((arg) => arg.startsWith('--doc='));
@@ -386,10 +355,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   }
   const doc = JSON.parse(readFileSync(docPath, 'utf8'));
   const result = scanApiDocCoverage(doc);
-  if (args.includes('--rows')) console.log(renderRows(result.gaps));
-  else if (args.includes('--report')) console.log(renderReport(result));
+  if (args.includes('--report')) console.log(renderReport(result));
   else {
-    console.error('usage: node scripts/api-doc-coverage.mjs --report | --rows [--doc=<path>]');
+    console.error('usage: node scripts/api-doc-coverage.mjs --report [--doc=<path>]');
     process.exit(1);
   }
 }
