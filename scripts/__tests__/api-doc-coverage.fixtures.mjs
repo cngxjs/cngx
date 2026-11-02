@@ -41,42 +41,6 @@
 /** @type {readonly InternalBinding[]} */
 export const INTERNAL_BINDINGS = [
   {
-    file: 'projects/common/chart/chart/chart.component.ts',
-    owner: 'CngxChart',
-    member: 'dataInput',
-    phase: 3,
-  },
-  {
-    file: 'projects/common/display/tag-group/tag-group.component.ts',
-    owner: 'CngxTagGroup',
-    member: 'semanticListInput',
-    phase: 3,
-  },
-  {
-    file: 'projects/common/tabs/presenter.directive.ts',
-    owner: 'CngxTabGroupPresenter',
-    member: 'orientationInput',
-    phase: 3,
-  },
-  {
-    file: 'projects/common/tabs/presenter.directive.ts',
-    owner: 'CngxTabGroupPresenter',
-    member: 'loopInput',
-    phase: 3,
-  },
-  {
-    file: 'projects/common/tabs/presenter.directive.ts',
-    owner: 'CngxTabGroupPresenter',
-    member: 'commitActionInput',
-    phase: 3,
-  },
-  {
-    file: 'projects/common/tabs/presenter.directive.ts',
-    owner: 'CngxTabGroupPresenter',
-    member: 'commitModeInput',
-    phase: 3,
-  },
-  {
     file: 'projects/ui/sidenav/sidenav-router-sync.directive.ts',
     owner: 'CngxSidenavRouterSync',
     member: 'paramInput',

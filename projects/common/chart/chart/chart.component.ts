@@ -488,12 +488,9 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
 })
 export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, number> {
   /**
-   * Raw data input. Aliased as `data` at the template-binding level so
-   * consumer markup stays `<cngx-chart [data]="rows">`. The public,
-   * typed read surface is the `data<U>()` method below - layer atoms
-   * call `this.ctx.data<T>()` to narrow without per-site casts.
-   *
-   * @internal - alias for the public `data<U>()` method
+   * The rows the chart plots, bound as `[data]`; required. Layer atoms read them through the
+   * `data<U>()` method below, which narrows the row type without per-site casts, so consumer markup
+   * stays `<cngx-chart [data]="rows">`.
    */
   readonly dataInput = input.required<readonly T[]>({ alias: 'data' });
   /**

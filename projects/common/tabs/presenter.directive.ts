@@ -82,8 +82,9 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
   readonly activeIndex = model<number>(0);
 
   /**
-   * @internal Two-field alias - bind the public `[orientation]`; read
-   * the resolved {@link orientation} computed (input ?? config ?? default).
+   * Axis of the tab list: `'horizontal'` or `'vertical'`, bound as `[orientation]`. The tab organisms
+   * reflect the resolved value as `aria-orientation` and `data-orientation`. Unbound, the
+   * {@link orientation} computed falls back to the tabs config `defaultOrientation`, then `'horizontal'`.
    */
   readonly orientationInput = input<'horizontal' | 'vertical' | undefined>(undefined, {
     alias: 'orientation',
@@ -93,8 +94,9 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
   );
 
   /**
-   * @internal Two-field alias - bind the public `[loop]`; read the
-   * resolved {@link loop} computed (input ?? config ?? default).
+   * Whether `selectNext` and `selectPrevious` wrap from the last enabled tab to the first and back,
+   * bound as `[loop]`. Unbound, the {@link loop} computed falls back to the tabs config `defaultLoop`,
+   * then `true`.
    */
   readonly loopInput = input<boolean | undefined>(undefined, {
     alias: 'loop',
@@ -108,21 +110,21 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
    * semantics come from the commit-controller - a rapid second
    * `select(...)` cancels the in-flight runner.
    *
-   * @internal Two-field alias - bind the public `[commitAction]`; read
-   * the resolved {@link commitAction} computed (input ?? DI fallback).
+   * Bound as `[commitAction]`. The {@link commitAction} computed resolves the input first, then the
+   * `CNGX_TABS_COMMIT_ACTION` DI fallback used by the router sync, then `null`; there is no config
+   * tier.
    */
   readonly commitActionInput = input<CngxTabsCommitAction | null>(null, {
     alias: 'commitAction',
   });
   /**
-   * Default `'optimistic'` - tab change is navigation, not a save,
-   * so eager visual feedback matches the user's mental model.
-   * Switch to `'pessimistic'` when the new tab must wait for the
-   * action to confirm.
+   * Whether a tab change lands before (`'optimistic'`) or after (`'pessimistic'`) the commit action
+   * resolves, bound as `[commitMode]`. A tab change is navigation, not a save, so the default is
+   * `'optimistic'`; choose `'pessimistic'` when the new tab must wait for the action to confirm.
    *
-   * @internal Two-field alias - bind the public `[commitMode]`; read
-   * the resolved {@link commitMode} computed (DI fallback mode wins
-   * when a routed action is active, else input ?? config ?? default).
+   * The {@link commitMode} computed lets the mode of an active `CNGX_TABS_COMMIT_ACTION` DI fallback
+   * win (the routed path pins `'pessimistic'`); otherwise it resolves the input, then the tabs config
+   * `defaultCommitMode`, then `'optimistic'`.
    */
   readonly commitModeInput = input<'optimistic' | 'pessimistic' | undefined>(undefined, {
     alias: 'commitMode',
