@@ -259,10 +259,19 @@
       line-height: 1;
       user-select: none;
 
-      /* Themable - the glyph svg is 1em of this font size */
+      /* Themable - the glyph svg is 1em of this font size. 0.75 of the md box
+         is 12px, which selects the 12-grid micro check and dash; the stroke
+         width reaches the 24-grid path only, from the 15px lg glyph up. */
       font-size: calc(var(--cngx-checkbox-size, 1em) * 0.75);
 
       --cngx-icon-svg-stroke-width: var(--cngx-checkbox-glyph-stroke-width, 3);
+    }
+
+    /* 6/7 of the 14px sm box keeps its glyph on the same 12px micro box as md
+       instead of 11px, where the micro grid would resample. */
+    :scope.cngx-checkbox-indicator--sm
+      :is(.cngx-checkbox-indicator__check, .cngx-checkbox-indicator__dash) {
+      font-size: calc(var(--cngx-checkbox-size, 1em) * 6 / 7);
     }
 
     /* checkmark variant - bare glyph, no box. Honor the checked color directly. */

@@ -1,3 +1,4 @@
+import { Component, input, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -78,88 +79,85 @@ describe('CngxStatus geometry', () => {
 
 // ── Tone glyphs from the shared icon set (status.component.css) ───────────────
 
-function px(el: Element, property: string): number {
-  return parseFloat(computedValue(el, property));
+// Loads the global micro sheet next to the component sheet, as `cngx.css` does.
+@Component({
+  selector: 'cngx-status-glyph-host',
+  standalone: true,
+  imports: [CngxStatus],
+  styleUrls: ['../../../core/theming/layers.css', '../../theming/components/cngx-icon-glyph.css'],
+  encapsulation: ViewEncapsulation.None,
+  template: '<cngx-status [tone]="tone()" label="Status" />',
+})
+class StatusGlyphHost {
+  readonly tone = input<StatusTone>('neutral');
 }
 
-interface GlyphInk {
-  readonly width: number;
-  readonly height: number;
-  readonly dx: number;
-  readonly dy: number;
-}
-
-// The drawn extent of a stroke glyph includes half the stroke on each side;
-// the path box alone is the geometric centre line.
-function glyphInk(dot: HTMLElement): GlyphInk {
-  const svg = dot.querySelector<SVGSVGElement>('svg.cngx-icon-svg');
-  const path = svg?.querySelector('path');
-  if (!svg || !path) {
+function mountGlyph(tone: StatusTone): { host: HTMLElement; dot: HTMLElement; svg: SVGSVGElement } {
+  const fixture = TestBed.createComponent(StatusGlyphHost);
+  fixture.componentRef.setInput('tone', tone);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  const host = mountedRoot.querySelector<HTMLElement>('cngx-status');
+  const dot = host?.querySelector<HTMLElement>('.cngx-status__dot');
+  const svg = dot?.querySelector<SVGSVGElement>('svg.cngx-icon-svg');
+  if (!host || !dot || !svg) {
     throw new Error('cngx-status dot renders no glyph');
   }
-  const stroke = svg.classList.contains('cngx-icon-svg--stroke')
-    ? (px(svg, 'stroke-width') * svg.getBoundingClientRect().width) / 24
-    : 0;
-  const ink = path.getBoundingClientRect();
-  const box = dot.getBoundingClientRect();
-  return {
-    width: ink.width + stroke,
-    height: ink.height + stroke,
-    dx: ink.left + ink.width / 2 - (box.left + box.width / 2),
-    dy: ink.top + ink.height / 2 - (box.top + box.height / 2),
-  };
+  return { host, dot, svg };
 }
 
-// Box of each tone icon as a fraction of the dot: scaled so the glyph's outer
-// edge, stroke included, sits at 65% of the dot diameter from the centre.
-const TONE_BOX: ReadonlyArray<[StatusTone, number]> = [
-  ['success', 0.754],
-  ['warning', 0.918],
-  ['danger', 0.764],
-  ['info', 0.918],
-  ['neutral', 0.996],
-];
+/** The path the band rule paints. */
+function paintedPath(svg: SVGSVGElement): SVGPathElement {
+  const painted = Array.from(svg.querySelectorAll('path')).filter(
+    (path) => computedValue(path, 'display') !== 'none',
+  );
+  expect(painted).toHaveLength(1);
+  return painted[0];
+}
+
+const TONES: readonly StatusTone[] = ['success', 'warning', 'danger', 'info', 'neutral'];
+
+// The question mark (neutral) carries no micro drawing and keeps its 24-grid
+// fill path at 12px.
+const MICRO_TONES: readonly StatusTone[] = ['success', 'warning', 'danger', 'info'];
 
 describe('CngxStatus tone glyphs', () => {
-  // The icon svg box rounds to whole pixels, so the expectation rounds too.
-  it.each(TONE_BOX)('sizes the %s icon box to %s of the dot, on the rounded box', (tone, fraction) => {
-    const { dot } = mount(tone);
-    const svg = dot.querySelector('svg.cngx-icon-svg') as SVGSVGElement;
-    expect(svg.getBoundingClientRect().width).toBeCloseTo(
-      Math.round(fraction * dot.getBoundingClientRect().width),
-      1,
-    );
+  it.each(TONES)('sizes the %s icon box to 12px, 0.75 of the 16px dot', (tone) => {
+    const { svg } = mountGlyph(tone);
+    const box = svg.getBoundingClientRect();
+    expect(box.width).toBe(12);
+    expect(box.height).toBe(12);
   });
 
-  it.each(TONE_BOX)('centres the %s glyph in the dot', (tone) => {
-    const { dot } = mount(tone);
-    const ink = glyphInk(dot);
-    expect(Math.abs(ink.dx)).toBeLessThanOrEqual(0.5);
-    expect(Math.abs(ink.dy)).toBeLessThanOrEqual(0.5);
+  it.each(MICRO_TONES)('paints the %s micro drawing', (tone) => {
+    const { svg } = mountGlyph(tone);
+    expect(paintedPath(svg).classList.contains('cngx-icon-svg__micro')).toBe(true);
   });
 
-  it.each(['success', 'danger'] as const)(
-    'draws the %s line glyph with a 1.75px stroke',
-    (tone) => {
-      const { dot } = mount(tone);
-      const svg = dot.querySelector('svg.cngx-icon-svg') as SVGSVGElement;
-      const strokePx = (px(svg, 'stroke-width') * svg.getBoundingClientRect().width) / 24;
-      expect(strokePx).toBeCloseTo(1.75, 1);
-      expect(computedValue(svg, 'stroke')).toBe(computedValue(dot, 'color'));
-    },
-  );
-
-  it.each(['warning', 'info', 'neutral'] as const)('fills the %s glyph in the dot foreground', (tone) => {
-    const { dot } = mount(tone);
-    const svg = dot.querySelector('svg.cngx-icon-svg') as SVGSVGElement;
+  it('paints the neutral question mark on its 24-grid fill path', () => {
+    const { svg } = mountGlyph('neutral');
+    expect(paintedPath(svg).classList.contains('cngx-icon-svg__path')).toBe(true);
     expect(svg.classList.contains('cngx-icon-svg--stroke')).toBe(false);
-    expect(computedValue(svg, 'fill')).toBe(computedValue(dot, 'color'));
   });
 
-  it('scales the glyph with --cngx-status-dot-size', () => {
-    const { host, dot } = mount('danger');
-    const before = glyphInk(dot).width;
+  it.each(TONES)('centres the %s glyph in the dot', (tone) => {
+    const { dot, svg } = mountGlyph(tone);
+    const ink = paintedPath(svg).getBoundingClientRect();
+    const box = dot.getBoundingClientRect();
+    expect(Math.abs(ink.left + ink.width / 2 - (box.left + box.width / 2))).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(ink.top + ink.height / 2 - (box.top + box.height / 2))).toBeLessThanOrEqual(0.5);
+  });
+
+  it.each(TONES)('fills the %s glyph in the dot foreground', (tone) => {
+    const { dot, svg } = mountGlyph(tone);
+    expect(computedValue(paintedPath(svg), 'fill')).toBe(computedValue(dot, 'color'));
+  });
+
+  it('scales the glyph box with --cngx-status-dot-size and leaves the band from a 20px dot', () => {
+    const { host, svg } = mountGlyph('danger');
     host.style.setProperty('--cngx-status-dot-size', '24px');
-    expect(glyphInk(dot).width).toBeCloseTo(before * 1.5, 1);
+    expect(svg.getBoundingClientRect().width).toBe(18);
+    expect(paintedPath(svg).classList.contains('cngx-icon-svg__path')).toBe(true);
   });
 });
