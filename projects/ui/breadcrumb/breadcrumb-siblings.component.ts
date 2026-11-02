@@ -50,7 +50,7 @@ import type { CngxBreadcrumbSibling } from './breadcrumb.types';
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbSiblingItem, CngxBreadcrumbSiblingsRouterSync, CngxBreadcrumbSiblingsSource, CngxBreadcrumbBar, CngxPopoverPanel, CngxPopoverTrigger
  * @slot cngxBreadcrumbSiblingItem Replaces a row in the sibling-navigation menu; gets the sibling.
- * <example-url>http://localhost:4200/#/ui/breadcrumb/siblings/static-siblings</example-url>
+ * <example-url>/#/ui/breadcrumb/siblings/static-siblings</example-url>
  */
 @Component({
   selector: 'cngx-breadcrumb-siblings',

@@ -37,11 +37,11 @@ export interface CngxTabIconContext {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/slots/tab-icon.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTabErrorBadge, CngxTab, CngxTabGroup
- * <example-url>http://localhost:4200/#/ui/tabs/tab-icons/icon-end</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-icons/icon-only</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-icons/icon-start</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-icons/icon-top</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-icons/icon-vertical-sidebar</example-url>
+ * <example-url>/#/ui/tabs/tab-icons/icon-end</example-url>
+ * <example-url>/#/ui/tabs/tab-icons/icon-only</example-url>
+ * <example-url>/#/ui/tabs/tab-icons/icon-start</example-url>
+ * <example-url>/#/ui/tabs/tab-icons/icon-top</example-url>
+ * <example-url>/#/ui/tabs/tab-icons/icon-vertical-sidebar</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxTabIcon]',

@@ -40,8 +40,8 @@ interface RangeRendering {
  * @since 0.1.0
  * @relatedTo CngxDonut, CngxMiniBar, CngxDeviationBar
  *
- * <example-url>http://localhost:4200/#/common/chart/bullet/async-state-machine</example-url>
- * <example-url>http://localhost:4200/#/common/chart/bullet/performance-vs-target</example-url>
+ * <example-url>/#/common/chart/bullet/async-state-machine</example-url>
+ * <example-url>/#/common/chart/bullet/performance-vs-target</example-url>
  * @axis level atom
  */
 @Component({

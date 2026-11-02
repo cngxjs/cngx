@@ -23,7 +23,7 @@ import { CngxRipple } from './ripple.directive';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/ripple/press-ripple.directive.ts
  * @since 0.1.0
  * @relatedTo CngxPressable, CngxRipple
- * <example-url>http://localhost:4200/#/common/interactive/ripple/press/buttons-with-press-ripple</example-url>
+ * <example-url>/#/common/interactive/ripple/press/buttons-with-press-ripple</example-url>
  * @axis level molecule
  */
 @Directive({

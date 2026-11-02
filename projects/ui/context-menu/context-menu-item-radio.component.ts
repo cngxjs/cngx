@@ -31,7 +31,7 @@ import { CNGX_ICON_DOT } from '@cngx/utils';
  * </div>
  * ```
  *
- * <example-url>http://localhost:4200/#/ui/context-menu/selection/checkbox-radio-items</example-url>
+ * <example-url>/#/ui/context-menu/selection/checkbox-radio-items</example-url>
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/context-menu/context-menu-item-radio.component.ts
  * @since 0.1.0

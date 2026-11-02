@@ -147,14 +147,14 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
  * @since 0.1.0
  * @relatedTo CngxAxis, CngxLine, CngxArea, CngxBar, CngxChartLegend
  *
- * <example-url>http://localhost:4200/#/common/chart/primitives/async-state-machine-on-the-primitive</example-url>
- * <example-url>http://localhost:4200/#/common/chart/primitives/combo-bars-moving-average-line</example-url>
- * <example-url>http://localhost:4200/#/common/chart/primitives/line-area-threshold-band</example-url>
- * <example-url>http://localhost:4200/#/common/chart/primitives/multi-series-line-axis-labels-legend</example-url>
- * <example-url>http://localhost:4200/#/common/chart/primitives/overlay-aligned-to-the-plot</example-url>
- * <example-url>http://localhost:4200/#/common/chart/primitives/responsive-fills-parent-width</example-url>
- * <example-url>http://localhost:4200/#/common/chart/primitives/scatter-with-performance-zones</example-url>
- * <example-url>http://localhost:4200/#/common/chart/primitives/time-series-with-threshold-zones</example-url>
+ * <example-url>/#/common/chart/primitives/async-state-machine-on-the-primitive</example-url>
+ * <example-url>/#/common/chart/primitives/combo-bars-moving-average-line</example-url>
+ * <example-url>/#/common/chart/primitives/line-area-threshold-band</example-url>
+ * <example-url>/#/common/chart/primitives/multi-series-line-axis-labels-legend</example-url>
+ * <example-url>/#/common/chart/primitives/overlay-aligned-to-the-plot</example-url>
+ * <example-url>/#/common/chart/primitives/responsive-fills-parent-width</example-url>
+ * <example-url>/#/common/chart/primitives/scatter-with-performance-zones</example-url>
+ * <example-url>/#/common/chart/primitives/time-series-with-threshold-zones</example-url>
  * @slot cngxChartLoading Replaces the centred spinner shown during the first load.
  * @slot cngxChartEmpty Rendered when the data resolves to nothing.
  * @slot cngxChartError Rendered when the load fails; gets the error.

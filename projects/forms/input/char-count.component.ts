@@ -51,7 +51,7 @@ import { injectInputAriaLabels } from './input-config';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/char-count.component.ts
  * @since 0.1.0
  * @relatedTo CngxInput, CngxFormField
- * <example-url>http://localhost:4200/#/forms/input/character-counter</example-url>
+ * <example-url>/#/forms/input/character-counter</example-url>
  */
 @Component({
   selector: 'cngx-char-count',

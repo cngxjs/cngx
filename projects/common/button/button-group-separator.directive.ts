@@ -21,7 +21,7 @@ import { Directive } from '@angular/core';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-group-separator.directive.ts
  * @since 0.1.0
  * @relatedTo CngxButtonGroup, CngxButtonGroupAddon
- * <example-url>http://localhost:4200/#/common/button/group/basic</example-url>
+ * <example-url>/#/common/button/group/basic</example-url>
  */
 @Directive({
   selector: '[cngxButtonGroupSeparator]',

@@ -27,8 +27,8 @@ import { CngxOption } from './option.directive';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/option-group.directive.ts
  * @since 0.1.0
  * @relatedTo CngxOption, CngxListbox
- * <example-url>http://localhost:4200/#/common/interactive/option/flat-options-with-ad</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/option/grouped-options</example-url>
+ * <example-url>/#/common/interactive/option/flat-options-with-ad</example-url>
+ * <example-url>/#/common/interactive/option/grouped-options</example-url>
  * @axis level molecule
  */
 @Directive({

@@ -35,8 +35,8 @@ import { Directive, input } from '@angular/core';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/aria/aria-expanded.directive.ts
  * @since 0.1.0
  * @relatedTo CngxLiveRegion, CngxExpandable, CngxDisclosure
- * <example-url>http://localhost:4200/#/common/a11y/aria-expanded/accordion-multiple-panels</example-url>
- * <example-url>http://localhost:4200/#/common/a11y/aria-expanded/disclosure-pattern</example-url>
+ * <example-url>/#/common/a11y/aria-expanded/accordion-multiple-panels</example-url>
+ * <example-url>/#/common/a11y/aria-expanded/disclosure-pattern</example-url>
  * @axis level atom
  */
 @Directive({

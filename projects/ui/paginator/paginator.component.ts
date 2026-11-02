@@ -89,13 +89,13 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
  * @playground Alphabetical bucket paging ./examples/alpha-mode/alpha-mode.component.ts
  * @playground Load-more (append) paging ./examples/load-more-mode/load-more-mode.component.ts
  * @playground Infinite scroll paging ./examples/infinite-mode/infinite-mode.component.ts
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/numbered</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/minimal</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/pill</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/segmented</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/rail</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/dots</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
+ * <example-url>/#/ui/paginator/paginator-skins/numbered</example-url>
+ * <example-url>/#/ui/paginator/paginator-skins/minimal</example-url>
+ * <example-url>/#/ui/paginator/paginator-skins/pill</example-url>
+ * <example-url>/#/ui/paginator/paginator-skins/segmented</example-url>
+ * <example-url>/#/ui/paginator/paginator-skins/rail</example-url>
+ * <example-url>/#/ui/paginator/paginator-skins/dots</example-url>
+ * <example-url>/#/ui/paginator/paginator-skins/bar</example-url>
  * @axis level organism
  */
 @Component({

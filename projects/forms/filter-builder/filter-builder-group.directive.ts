@@ -23,8 +23,8 @@ const EMPTY_FILTERS: readonly FilterNode[] = Object.freeze([]) as readonly Filte
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-group.directive.ts
  * @since 0.1.0
  * @relatedTo CngxFilterExpression, CngxFilterBuilderPresenter, CngxFilterBuilder
- * <example-url>http://localhost:4200/#/forms/filter-builder/basic-two-way-binding-json-inspection</example-url>
- * <example-url>http://localhost:4200/#/forms/filter-builder/seeded-tree-and-or-composition</example-url>
+ * <example-url>/#/forms/filter-builder/basic-two-way-binding-json-inspection</example-url>
+ * <example-url>/#/forms/filter-builder/seeded-tree-and-or-composition</example-url>
  */
 @Directive({
   selector: '[cngxFilterGroup]',

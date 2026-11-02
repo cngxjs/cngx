@@ -54,7 +54,7 @@ export interface CngxStepperCountHost {
  *
  * @since 0.1.0
  * @relatedTo CngxStepperHost, CngxStepperI18n
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-count/multi-instance-format-overrides</example-url>
+ * <example-url>/#/ui/stepper/stepper-count/multi-instance-format-overrides</example-url>
  */
 @Component({
   selector: 'cngx-stepper-count',

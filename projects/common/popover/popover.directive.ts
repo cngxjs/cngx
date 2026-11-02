@@ -223,11 +223,11 @@ function warnMissingFloatingMiddleware(doc: Document): void {
  *   {{ errorSummary() }}
  * </div>
  * ```
- * <example-url>http://localhost:4200/#/common/interactive/listbox/trigger/select-dropdown</example-url>
- * <example-url>http://localhost:4200/#/common/popover/click-popover</example-url>
- * <example-url>http://localhost:4200/#/common/popover/controlled-open</example-url>
- * <example-url>http://localhost:4200/#/common/popover/escape-mode</example-url>
- * <example-url>http://localhost:4200/#/common/popover/placement-variants</example-url>
+ * <example-url>/#/common/interactive/listbox/trigger/select-dropdown</example-url>
+ * <example-url>/#/common/popover/click-popover</example-url>
+ * <example-url>/#/common/popover/controlled-open</example-url>
+ * <example-url>/#/common/popover/escape-mode</example-url>
+ * <example-url>/#/common/popover/placement-variants</example-url>
  *
  * ### Collision recovery with `<try-tactic>` fallbacks
  * Apply CSS Anchor Positioning's `position-try-fallbacks` declaratively

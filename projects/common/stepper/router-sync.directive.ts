@@ -33,7 +33,7 @@ import { injectStepperHost } from './stepper-host.token';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/router-sync.directive.ts
  * @since 0.1.0
  * @relatedTo CngxStepperPresenter, CNGX_STEPPER_CONFIG
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-router-sync/deep-linking-with-fragment-queryparam-modes</example-url>
+ * <example-url>/#/ui/stepper/stepper-router-sync/deep-linking-with-fragment-queryparam-modes</example-url>
  */
 @Directive({
   selector: '[cngxStepperRouterSync]',

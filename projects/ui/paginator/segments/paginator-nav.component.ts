@@ -89,7 +89,7 @@ const NAV_TEMPLATE = `
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-nav.component.ts
  * @since 0.1.0
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/first/chevron</example-url>
+ * <example-url>/#/ui/paginator/paginator-parts/first/chevron</example-url>
  * @axis level atom
  */
 @Component({
@@ -118,7 +118,7 @@ export class CngxPaginatorFirst {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-nav.component.ts
  * @since 0.1.0
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/prev/chevron</example-url>
+ * <example-url>/#/ui/paginator/paginator-parts/prev/chevron</example-url>
  * @axis level atom
  */
 @Component({
@@ -147,7 +147,7 @@ export class CngxPaginatorPrev {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-nav.component.ts
  * @since 0.1.0
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/next/chevron</example-url>
+ * <example-url>/#/ui/paginator/paginator-parts/next/chevron</example-url>
  * @axis level atom
  */
 @Component({
@@ -176,7 +176,7 @@ export class CngxPaginatorNext {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-nav.component.ts
  * @since 0.1.0
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/last/chevron</example-url>
+ * <example-url>/#/ui/paginator/paginator-parts/last/chevron</example-url>
  * @axis level atom
  */
 @Component({

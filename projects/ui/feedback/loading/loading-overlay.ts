@@ -52,7 +52,7 @@ import { CngxLoadingIndicator } from './loading-indicator';
  * @since 0.1.0
  * @relatedTo CngxLoadingIndicator, CngxProgress, CngxAsyncContainer
  *
- * <example-url>http://localhost:4200/#/ui/feedback/loading-overlay/overlay-with-form</example-url>
+ * <example-url>/#/ui/feedback/loading-overlay/overlay-with-form</example-url>
  * @axis level molecule
  */
 @Component({

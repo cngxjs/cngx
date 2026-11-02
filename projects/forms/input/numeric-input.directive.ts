@@ -143,9 +143,9 @@ function isAllowedChar(
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/numeric-input.directive.ts
  * @since 0.1.0
  * @relatedTo CngxInput, CngxInputMask, CngxInputFormat, withNumericDefaults
- * <example-url>http://localhost:4200/#/forms/input/numeric/basic-numeric-input</example-url>
- * <example-url>http://localhost:4200/#/forms/input/numeric/locale-formatting</example-url>
- * <example-url>http://localhost:4200/#/forms/input/numeric/min-max-step-decimals</example-url>
+ * <example-url>/#/forms/input/numeric/basic-numeric-input</example-url>
+ * <example-url>/#/forms/input/numeric/locale-formatting</example-url>
+ * <example-url>/#/forms/input/numeric/min-max-step-decimals</example-url>
  * @axis level atom
  */
 @Directive({

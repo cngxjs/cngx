@@ -141,11 +141,11 @@ interface ActiveDrag {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/reorder.directive.ts
  * @since 0.1.0
  * @relatedTo CngxReorderableMultiSelect, CngxChipStripRovingController
- * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/basic-drag-chips-via-mouse-touch</example-url>
- * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/commit-action-optimistic-pessimistic-with-supersede</example-url>
- * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end</example-url>
- * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/optional-drag-handle-glyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/pre-seeded-values-reorder-log</example-url>
+ * <example-url>/#/forms/select/reorderable-multi-select/basic-drag-chips-via-mouse-touch</example-url>
+ * <example-url>/#/forms/select/reorderable-multi-select/commit-action-optimistic-pessimistic-with-supersede</example-url>
+ * <example-url>/#/forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end</example-url>
+ * <example-url>/#/forms/select/reorderable-multi-select/optional-drag-handle-glyph</example-url>
+ * <example-url>/#/forms/select/reorderable-multi-select/pre-seeded-values-reorder-log</example-url>
  * @axis level atom
  */
 @Directive({

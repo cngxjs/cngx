@@ -40,8 +40,8 @@ import {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/autofocus.directive.ts
  * @since 0.1.0
  * @relatedTo CngxFocusRestore, CngxFocusTrap, CngxFocusVisible
- * <example-url>http://localhost:4200/#/common/a11y/autofocus/conditional-focus</example-url>
- * <example-url>http://localhost:4200/#/common/a11y/autofocus/focus-on-insert</example-url>
+ * <example-url>/#/common/a11y/autofocus/conditional-focus</example-url>
+ * <example-url>/#/common/a11y/autofocus/focus-on-insert</example-url>
  * @axis level atom
  */
 @Directive({

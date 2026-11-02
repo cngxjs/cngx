@@ -46,10 +46,10 @@ import { injectAccordionConfig, injectAccordionLabels } from './config/inject-ac
  * @slot cngxAccordionItemBusy Rendered over the item while its content loads.
  * @slot cngxAccordionItemError Rendered when the item's content failed to load.
  *
- * <example-url>http://localhost:4200/#/ui/accordion/async-panel/lazy-fetch</example-url>
- * <example-url>http://localhost:4200/#/ui/accordion/disabled-lazy/disabled-and-lazy</example-url>
- * <example-url>http://localhost:4200/#/ui/accordion/custom-chevron/icon-slot</example-url>
- * <example-url>http://localhost:4200/#/ui/accordion/panel-content/table</example-url>
+ * <example-url>/#/ui/accordion/async-panel/lazy-fetch</example-url>
+ * <example-url>/#/ui/accordion/disabled-lazy/disabled-and-lazy</example-url>
+ * <example-url>/#/ui/accordion/custom-chevron/icon-slot</example-url>
+ * <example-url>/#/ui/accordion/panel-content/table</example-url>
  */
 @Component({
   selector: 'cngx-accordion-item',

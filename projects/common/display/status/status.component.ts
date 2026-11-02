@@ -67,8 +67,8 @@ const TONE_ICON: Record<StatusTone, CngxIconData> = {
  * @since 0.1.0
  * @relatedTo CngxBadge, CngxTag, CngxChip
  *
- * <example-url>http://localhost:4200/#/common/display/status/tone-matrix</example-url>
- * <example-url>http://localhost:4200/#/common/display/status/dot-only</example-url>
+ * <example-url>/#/common/display/status/tone-matrix</example-url>
+ * <example-url>/#/common/display/status/dot-only</example-url>
  * @axis level atom
  */
 @Component({

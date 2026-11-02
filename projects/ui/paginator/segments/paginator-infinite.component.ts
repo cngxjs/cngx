@@ -46,8 +46,8 @@ import { injectPaginatorHost } from '../paginator-host.token';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-infinite.component.ts
  * @since 0.1.0
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/infinite/sentinel</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-modes/infinite</example-url>
+ * <example-url>/#/ui/paginator/paginator-parts/infinite/sentinel</example-url>
+ * <example-url>/#/ui/paginator/paginator-modes/infinite</example-url>
  * @axis level atom
  */
 @Component({

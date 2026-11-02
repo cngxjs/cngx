@@ -40,8 +40,8 @@ interface SegmentRendering {
  * @since 0.1.0
  * @relatedTo CngxBar, CngxDeviationBar, CngxBullet
  *
- * <example-url>http://localhost:4200/#/common/chart/stacked-bar/async-state-machine</example-url>
- * <example-url>http://localhost:4200/#/common/chart/stacked-bar/proportional-share-strips</example-url>
+ * <example-url>/#/common/chart/stacked-bar/async-state-machine</example-url>
+ * <example-url>/#/common/chart/stacked-bar/proportional-share-strips</example-url>
  * @axis level atom
  */
 @Component({

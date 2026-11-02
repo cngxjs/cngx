@@ -11,7 +11,7 @@ import { Directive } from '@angular/core';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item-slot.directives.ts
  * @since 0.1.0
  * @relatedTo CngxMenuItem, CngxMenuItemLabel, CngxMenuItemSuffix, CngxMenuItemKbd
- * <example-url>http://localhost:4200/#/common/interactive/menu/base/action-menu-with-separator</example-url>
+ * <example-url>/#/common/interactive/menu/base/action-menu-with-separator</example-url>
  */
 @Directive({
   selector: '[cngxMenuItemIcon]',
@@ -34,7 +34,7 @@ export class CngxMenuItemIcon {}
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item-slot.directives.ts
  * @since 0.1.0
  * @relatedTo CngxMenuItem, CngxMenuItemIcon, CngxMenuItemSuffix, CngxMenuItemKbd
- * <example-url>http://localhost:4200/#/common/interactive/menu/base/action-menu-with-separator</example-url>
+ * <example-url>/#/common/interactive/menu/base/action-menu-with-separator</example-url>
  */
 @Directive({
   selector: '[cngxMenuItemLabel]',
@@ -57,7 +57,7 @@ export class CngxMenuItemLabel {}
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item-slot.directives.ts
  * @since 0.1.0
  * @relatedTo CngxMenuItem, CngxMenuItemIcon, CngxMenuItemLabel, CngxMenuItemKbd
- * <example-url>http://localhost:4200/#/common/interactive/menu/base/action-menu-with-separator</example-url>
+ * <example-url>/#/common/interactive/menu/base/action-menu-with-separator</example-url>
  */
 @Directive({
   selector: '[cngxMenuItemSuffix]',
@@ -83,7 +83,7 @@ export class CngxMenuItemSuffix {}
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item-slot.directives.ts
  * @since 0.1.0
  * @relatedTo CngxMenuItem, CngxMenuItemIcon, CngxMenuItemLabel, CngxMenuItemSuffix
- * <example-url>http://localhost:4200/#/common/interactive/menu/base/action-menu-with-separator</example-url>
+ * <example-url>/#/common/interactive/menu/base/action-menu-with-separator</example-url>
  */
 @Directive({
   selector: '[cngxMenuItemKbd]',

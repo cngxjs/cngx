@@ -11,16 +11,16 @@ import { computed, Injectable, signal, type Provider } from '@angular/core';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/dialog/dialog-stack.ts
  * @since 0.1.0
  * @relatedTo CngxDialog, CngxDialogOpener
- * <example-url>http://localhost:4200/#/common/dialog/alert-dialog</example-url>
- * <example-url>http://localhost:4200/#/common/dialog/bottom-sheet</example-url>
- * <example-url>http://localhost:4200/#/common/dialog/cngxdialogopener-programmatic</example-url>
- * <example-url>http://localhost:4200/#/common/dialog/draggable-dialog</example-url>
- * <example-url>http://localhost:4200/#/common/dialog/fully-declarative</example-url>
- * <example-url>http://localhost:4200/#/common/dialog/grid-snap-live-vs-release</example-url>
- * <example-url>http://localhost:4200/#/common/dialog/nested-dialogs-cngxdialogstack</example-url>
- * <example-url>http://localhost:4200/#/common/dialog/non-modal-panel</example-url>
- * <example-url>http://localhost:4200/#/common/dialog/programmatic-control</example-url>
- * <example-url>http://localhost:4200/#/common/dialog/template-directives</example-url>
+ * <example-url>/#/common/dialog/alert-dialog</example-url>
+ * <example-url>/#/common/dialog/bottom-sheet</example-url>
+ * <example-url>/#/common/dialog/cngxdialogopener-programmatic</example-url>
+ * <example-url>/#/common/dialog/draggable-dialog</example-url>
+ * <example-url>/#/common/dialog/fully-declarative</example-url>
+ * <example-url>/#/common/dialog/grid-snap-live-vs-release</example-url>
+ * <example-url>/#/common/dialog/nested-dialogs-cngxdialogstack</example-url>
+ * <example-url>/#/common/dialog/non-modal-panel</example-url>
+ * <example-url>/#/common/dialog/programmatic-control</example-url>
+ * <example-url>/#/common/dialog/template-directives</example-url>
  */
 @Injectable({ providedIn: 'root' })
 export class CngxDialogStack {

@@ -59,9 +59,9 @@ import { CNGX_CONTEXT_MENU_PANEL } from './context-menu-panel';
  * </cngx-context-menu>
  * ```
  *
- * <example-url>http://localhost:4200/#/ui/context-menu/basic/static-items</example-url>
- * <example-url>http://localhost:4200/#/ui/context-menu/submenu/nested-export-menu</example-url>
- * <example-url>http://localhost:4200/#/ui/context-menu/attribute-form/native-buttons</example-url>
+ * <example-url>/#/ui/context-menu/basic/static-items</example-url>
+ * <example-url>/#/ui/context-menu/submenu/nested-export-menu</example-url>
+ * <example-url>/#/ui/context-menu/attribute-form/native-buttons</example-url>
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/context-menu/context-menu-item.component.ts
  * @since 0.1.0

@@ -38,7 +38,7 @@ import { injectDataGridAccordionLabels } from './i18n/data-grid-accordion-i18n';
  * @since 0.1.0
  * @relatedTo CngxDataGridAccordion, CngxDgaFilter
  *
- * <example-url>http://localhost:4200/#/ui/data-grid-accordion/sortable-ledger</example-url>
+ * <example-url>/#/ui/data-grid-accordion/sortable-ledger</example-url>
  */
 @Directive({
   selector: '[cngxDgaCount]',

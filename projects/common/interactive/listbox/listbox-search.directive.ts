@@ -53,7 +53,7 @@ export function createListboxLabelMatch(
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/listbox-search.directive.ts
  * @since 0.1.0
  * @relatedTo CngxListbox, CngxSearch, CngxListboxTrigger
- * <example-url>http://localhost:4200/#/common/interactive/listbox/search/command-palette</example-url>
+ * <example-url>/#/common/interactive/listbox/search/command-palette</example-url>
  * @axis level molecule
  */
 @Directive({

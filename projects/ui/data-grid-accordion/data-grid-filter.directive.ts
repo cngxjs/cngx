@@ -32,8 +32,8 @@ import { injectDataGridAccordion } from './data-grid-accordion.token';
  * @since 0.1.0
  * @relatedTo CngxDataGridAccordion, CngxFilter, CngxDgaCount
  *
- * <example-url>http://localhost:4200/#/ui/data-grid-accordion/bound-sort-filter</example-url>
- * <example-url>http://localhost:4200/#/ui/data-grid-accordion/sortable-ledger</example-url>
+ * <example-url>/#/ui/data-grid-accordion/bound-sort-filter</example-url>
+ * <example-url>/#/ui/data-grid-accordion/sortable-ledger</example-url>
  */
 @Directive({
   selector: 'input[cngxDgaFilter]',

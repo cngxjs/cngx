@@ -27,9 +27,9 @@ import { CNGX_FIELD_AFFIX } from './field-box.token';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/prefix.directive.ts
  * @since 0.2.0
  * @relatedTo CngxSuffix, CngxFieldBox, CngxFormField, CngxInput, withCurrency
- * <example-url>http://localhost:4200/#/forms/field/affix/currency-and-unit</example-url>
- * <example-url>http://localhost:4200/#/forms/field/affix/icon-and-icon-button</example-url>
- * <example-url>http://localhost:4200/#/forms/field/affix/select-in-field</example-url>
+ * <example-url>/#/forms/field/affix/currency-and-unit</example-url>
+ * <example-url>/#/forms/field/affix/icon-and-icon-button</example-url>
+ * <example-url>/#/forms/field/affix/select-in-field</example-url>
  * @axis level molecule
  */
 @Directive({

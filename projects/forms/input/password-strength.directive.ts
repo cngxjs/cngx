@@ -47,7 +47,7 @@ const ANNOUNCE_DEBOUNCE_MS = 400;
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/password-strength.directive.ts
  * @since 0.2.0
  * @relatedTo CngxInput, CngxPasswordToggle, CngxCapsLock, CngxPasswordStrengthMeter, CNGX_PASSWORD_STRENGTH_FACTORY, withInputAriaLabels
- * <example-url>http://localhost:4200/#/forms/input/password-strength</example-url>
+ * <example-url>/#/forms/input/password-strength</example-url>
  * @axis level molecule
  */
 @Directive({

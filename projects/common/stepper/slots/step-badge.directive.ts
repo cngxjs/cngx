@@ -33,8 +33,8 @@ export interface CngxStepBadgeContext {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/slots/step-badge.directive.ts
  * @since 0.1.0
  * @relatedTo CngxStepIndicator, CngxStepBusySpinner, CngxStepRejection
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-error-badge-via-code-cngxstepbadge-code</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-error-aggregation/per-step-error-badges</example-url>
+ * <example-url>/#/ui/stepper/stepper-slot-overrides/custom-error-badge-via-code-cngxstepbadge-code</example-url>
+ * <example-url>/#/ui/stepper/stepper-error-aggregation/per-step-error-badges</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxStepBadge]',

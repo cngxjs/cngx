@@ -49,7 +49,7 @@ export interface QueryParamSyncOptions<T = boolean> {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/router/inject-query-param-sync.ts
  * @since 0.1.0
  * @relatedTo CngxStepperRouterSync
- * <example-url>http://localhost:4200/#/common/layout/router/persisted-toggle</example-url>
+ * <example-url>/#/common/layout/router/persisted-toggle</example-url>
  */
 export function injectQueryParamSync<T = boolean>(
   state: WritableSignal<T>,

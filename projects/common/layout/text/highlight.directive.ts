@@ -41,8 +41,8 @@ import {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/text/highlight.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTruncate, CngxExpandableText
- * <example-url>http://localhost:4200/#/common/layout/highlight/live-search-highlighting</example-url>
- * <example-url>http://localhost:4200/#/common/layout/highlight/multiple-paragraphs</example-url>
+ * <example-url>/#/common/layout/highlight/live-search-highlighting</example-url>
+ * <example-url>/#/common/layout/highlight/multiple-paragraphs</example-url>
  * @axis level atom
  */
 @Directive({

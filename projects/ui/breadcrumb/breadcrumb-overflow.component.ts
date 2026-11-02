@@ -52,7 +52,7 @@ import { injectBreadcrumbAriaLabels } from './config/inject-breadcrumb-config';
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbBar, CngxBreadcrumbOverflowItem, CngxIconMenuButton, CngxPopoverPanel, CngxMenu
  * @slot cngxBreadcrumbOverflowItem Replaces a row inside the collapsed-crumbs menu; gets the crumb.
- * <example-url>http://localhost:4200/#/ui/breadcrumb/overflow/collapsed-menu</example-url>
+ * <example-url>/#/ui/breadcrumb/overflow/collapsed-menu</example-url>
  */
 @Component({
   selector: 'cngx-breadcrumb-overflow',

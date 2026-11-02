@@ -24,9 +24,9 @@ import { injectDisplayI18n, type CngxAvatarStatus } from '../i18n/display-i18n';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/avatar/avatar.component.ts
  * @since 0.1.0
  * @relatedTo CngxIcon, CngxBadge, CngxChip
- * <example-url>http://localhost:4200/#/common/display/avatar/cascade-image-initials-fallback</example-url>
- * <example-url>http://localhost:4200/#/common/display/avatar/shapes-and-status</example-url>
- * <example-url>http://localhost:4200/#/common/display/avatar/sizes</example-url>
+ * <example-url>/#/common/display/avatar/cascade-image-initials-fallback</example-url>
+ * <example-url>/#/common/display/avatar/shapes-and-status</example-url>
+ * <example-url>/#/common/display/avatar/sizes</example-url>
  * @axis level atom
  */
 @Component({

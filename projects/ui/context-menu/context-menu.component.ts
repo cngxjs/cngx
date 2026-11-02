@@ -52,10 +52,10 @@ import { CNGX_CONTEXT_MENU_PANEL, type CngxContextMenuPanel } from './context-me
  * </cngx-context-menu>
  * ```
  *
- * <example-url>http://localhost:4200/#/ui/context-menu/basic/static-items</example-url>
- * <example-url>http://localhost:4200/#/ui/context-menu/grid/delegated-resolver</example-url>
- * <example-url>http://localhost:4200/#/ui/context-menu/submenu/nested-export-menu</example-url>
- * <example-url>http://localhost:4200/#/ui/context-menu/selection/checkbox-radio-items</example-url>
+ * <example-url>/#/ui/context-menu/basic/static-items</example-url>
+ * <example-url>/#/ui/context-menu/grid/delegated-resolver</example-url>
+ * <example-url>/#/ui/context-menu/submenu/nested-export-menu</example-url>
+ * <example-url>/#/ui/context-menu/selection/checkbox-radio-items</example-url>
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/context-menu/context-menu.component.ts
  * @since 0.1.0
