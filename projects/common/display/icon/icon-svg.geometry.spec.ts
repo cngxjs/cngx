@@ -288,6 +288,16 @@ describe('CngxIconSvg micro tier', () => {
     expect(micro).toBe(path);
   });
 
+  it('paints a fill glyph without a micro drawing in the forced colour', async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'forced-colors', value: 'active' }],
+    });
+    const svg = query(mountHost(IconSvgMicroGeometryHost), '.no-micro');
+    const fill = computedValue(query(svg, '.cngx-icon-svg__path'), 'fill');
+    expect(fill).not.toBe('rgb(255, 0, 0)');
+    expect(fill).toBe(computedValue(svg, 'color'));
+  });
+
   it('paints only the 24-grid path without the global sheet', () => {
     const svg = query(mountHost(IconSvgBareGeometryHost), '.bare');
     expect(visiblePath(svg)).toBe('path');
