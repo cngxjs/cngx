@@ -705,12 +705,22 @@ export class CngxTreeSelect<T = unknown>
   private readonly sheetRef = viewChild(CngxPopoverSheet);
 
   /**
+   * The tree the controller builds from: `[state]` data wins once it holds
+   * nodes, else `[nodes]`. Shallow equal, so a state that re-emits the same
+   * node objects does not rebuild the flat projection.
+   */
+  private readonly treeNodes = computed<readonly CngxTreeNode<T>[]>(
+    () => this.state()?.data() ?? this.nodes(),
+    { equal: (a, b) => sameArrayContents(a, b, Object.is) },
+  );
+
+  /**
    * Tree controller. Lambdas wrap each input read so the controller
    * sees the *current* signal value on every call - required inputs
    * like `nodeIdFn` aren't resolved at factory time.
    */
   readonly treeController: CngxTreeController<T> = inject(CNGX_TREE_CONTROLLER_FACTORY)<T>({
-    nodes: this.nodes,
+    nodes: this.treeNodes,
     nodeIdFn: (v, path) => `${this.nodeIdPrefix}-${this.nodeIdFn()(v, path)}`,
     labelFn: (v) => (this.labelFn() ?? ((x: T) => String(x)))(v),
     keyFn: (v) => (this.keyFn() ?? ((x: T) => x as unknown))(v),
