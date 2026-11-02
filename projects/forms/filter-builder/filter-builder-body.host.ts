@@ -9,7 +9,8 @@ import { CngxFilterBuilderBody } from './filter-builder-body.component';
  * consumers can replace the entire recursive renderer without forking the
  * shell.
  *
- * Default: `CngxFilterBuilderBody`. Override at root or component scope:
+ * Default: the built-in recursive body, which is not exported. Override at root or
+ * component scope:
  *
  * ```ts
  * providers: [
