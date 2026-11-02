@@ -130,8 +130,23 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxCheckbox implements CngxControlValue<boolean>, CngxFormFieldControl {
+  /**
+   * Checked state of the checkbox. Two-way bindable with `[(value)]`; click, Space and
+   * Enter flip it while the checkbox is enabled. Reflected as `aria-checked` (`'mixed'`
+   * while `indeterminate`). Default `false`.
+   */
   readonly value = model<boolean>(false);
+  /**
+   * Tri-state flag. While true, `aria-checked` is `'mixed'` and the indicator shows the
+   * dash glyph instead of the check. Activating an indeterminate checkbox sets `value`
+   * to `true` and clears the flag. Default `false`.
+   */
   readonly indeterminate = model<boolean>(false);
+  /**
+   * Disables the checkbox: click, Space and Enter are ignored and the host sets
+   * `aria-disabled="true"`. It is also forwarded to the host `CngxRovingItem`, so
+   * arrow-key navigation in a roving group skips the checkbox. Default `false`.
+   */
   readonly disabled = model<boolean>(false);
   /**
    * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
@@ -151,8 +166,21 @@ export class CngxCheckbox implements CngxControlValue<boolean>, CngxFormFieldCon
    * `null` skips the attribute entirely.
    */
   readonly errorMessageId = input<string | null>(null);
+  /**
+   * Free text that explains why the checkbox is disabled, rendered in a
+   * screen-reader-only span. The host references it through `aria-describedby` only
+   * while `disabled` is true and the text is non-empty. Default `''` (no text).
+   */
   readonly disabledReason = input<string>('');
+  /**
+   * Template that replaces the built-in check mark in the indicator while the checkbox
+   * is checked. Default `null` keeps the built-in glyph.
+   */
   readonly checkGlyph = input<TemplateRef<void> | null>(null);
+  /**
+   * Template that replaces the built-in dash in the indicator while `indeterminate` is
+   * true. Default `null` keeps the built-in glyph.
+   */
   readonly dashGlyph = input<TemplateRef<void> | null>(null);
 
   protected readonly describedId = nextUid('cngx-checkbox-desc');

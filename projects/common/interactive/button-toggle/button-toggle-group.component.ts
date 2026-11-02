@@ -101,8 +101,22 @@ import {
 export class CngxButtonToggleGroup<T = unknown>
   implements CngxButtonToggleGroupContract<T>, CngxControlValue<T | undefined>, CngxFormFieldControl
 {
+  /**
+   * Value of the selected toggle, or `undefined` when none is selected. Two-way
+   * bindable with `[(value)]`; a toggle writes it on click, Space, Enter and arrow-key
+   * focus. Default `undefined`.
+   */
   readonly value = model<T | undefined>(undefined);
+  /**
+   * Disables every toggle in the group: each toggle combines it with its own
+   * `disabled`, and the host sets `aria-disabled="true"`. Arrow-key focus does not
+   * select while the group is disabled. Default `false`.
+   */
   readonly disabled = model<boolean>(false);
+  /**
+   * Sets `aria-required="true"` on the host while true. The group performs no
+   * validation itself. Default `false`.
+   */
   readonly required = model<boolean>(false);
   /**
    * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
@@ -120,7 +134,18 @@ export class CngxButtonToggleGroup<T = unknown>
    * id is harmless when the field is valid.
    */
   readonly errorMessageId = input<string | null>(null);
+  /**
+   * Layout direction of the group, reflected as `aria-orientation`; `'horizontal'` also
+   * adds the `cngx-button-toggle-group--horizontal` class. The same binding is
+   * forwarded to the host `CngxRovingTabindex` as its arrow-key axis. Default
+   * `'horizontal'`.
+   */
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
+  /**
+   * Accessible name of the group, emitted as `aria-label`. A non-empty label also stops
+   * the group from referencing the surrounding `cngx-form-field` label through
+   * `aria-labelledby`. Default `undefined`.
+   */
   readonly label = input<string | undefined>(undefined);
 
   /**
@@ -142,6 +167,14 @@ export class CngxButtonToggleGroup<T = unknown>
 
   private readonly roving = inject(CngxRovingTabindex, { host: true });
 
+  /**
+   * Implements `CngxButtonToggleGroupContract.consumePendingArrowSelect`: when the host
+   * `CngxRovingTabindex` reports that focus just moved by a navigation key, sets the
+   * group `value` to `value` and returns `true`. Returns `false` for any other focus
+   * (such as Tab) or while the group is disabled. The transient flag is cleared on
+   * every call. Called by each `CngxButtonToggle` from its focus handler, so arrow
+   * navigation selects.
+   */
   consumePendingArrowSelect(value: T): boolean {
     if (!this.roving.consumeNavigationKey()) {
       return false;

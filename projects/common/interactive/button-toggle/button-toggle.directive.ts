@@ -126,8 +126,24 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
 export class CngxButtonToggle<T = unknown> {
   private readonly resolved: ParentResolution<T> = resolveParent<T>();
 
+  /**
+   * Value this toggle represents (required). In a single group the toggle is checked
+   * while the group's `value` is strictly equal to it; in a multi group while
+   * `isSelected` reports it as selected.
+   */
   readonly value = input.required<T>();
+  /**
+   * Disables this toggle. It also counts as disabled while its group is disabled; that
+   * effective state sets the native `disabled` attribute and `aria-disabled`, and makes
+   * click and keys ignored. Also forwarded to the host `CngxRovingItem`, so arrow-key
+   * navigation skips it. Default `false`.
+   */
   readonly disabled = input<boolean>(false);
+  /**
+   * Binding `[cngxDescribedBy]`: id of an element that describes the toggle, for
+   * example why it is disabled. Written to the host `aria-describedby`; the consumer
+   * renders that element. Default `null` omits the attribute.
+   */
   readonly describedBy = input<string | null>(null, {
     alias: 'cngxDescribedBy',
   });

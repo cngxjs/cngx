@@ -129,7 +129,17 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxToggle implements CngxControlValue<boolean>, CngxFormFieldControl {
+  /**
+   * On/off state of the switch, reflected as `aria-checked` on the host. Two-way
+   * bindable with `[(value)]`; click, Space and Enter flip it while the toggle is
+   * enabled. Default `false`.
+   */
   readonly value = model<boolean>(false);
+  /**
+   * Disables the switch: click, Space and Enter are ignored, and the host sets
+   * `aria-disabled="true"` and `tabindex="-1"`. Two-way bindable so a forms bridge can
+   * write it. Default `false`.
+   */
   readonly disabled = model<boolean>(false);
   /**
    * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
@@ -150,8 +160,21 @@ export class CngxToggle implements CngxControlValue<boolean>, CngxFormFieldContr
    * id is harmless when the field is valid.
    */
   readonly errorMessageId = input<string | null>(null);
+  /**
+   * Free text that explains why the switch is disabled, rendered in a
+   * screen-reader-only span. The host references it through `aria-describedby` only
+   * while `disabled` is true and the text is non-empty. Default `''` (no text).
+   */
   readonly disabledReason = input<string>('');
+  /**
+   * Places the projected label before or after the track. `'before'` adds the
+   * `cngx-toggle--label-before` class, which reverses the row. Default `'after'`.
+   */
   readonly labelPosition = input<'before' | 'after'>('after');
+  /**
+   * Template rendered inside the thumb, for example an icon. Default `null` renders
+   * nothing in the thumb.
+   */
   readonly thumbGlyph = input<TemplateRef<void> | null>(null);
 
   protected readonly describedId = nextUid('cngx-toggle-desc');

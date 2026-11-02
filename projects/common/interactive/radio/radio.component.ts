@@ -113,9 +113,29 @@ import { CNGX_RADIO_GROUP, type CngxRadioGroupContract } from './radio-group.tok
 export class CngxRadio<T = unknown> {
   protected readonly group = inject<CngxRadioGroupContract<T>>(CNGX_RADIO_GROUP);
 
+  /**
+   * Value this radio represents (required). The radio is checked while the group's
+   * `value` is strictly equal to it, and choosing the radio writes it to the group.
+   */
   readonly value = input.required<T>();
+  /**
+   * Disables this radio. The radio also counts as disabled while its group is disabled;
+   * that effective state sets `aria-disabled="true"` and makes click and keys ignored.
+   * Also forwarded to the host `CngxRovingItem`, so arrow-key navigation skips it.
+   * Default `false`.
+   */
   readonly disabled = model<boolean>(false);
+  /**
+   * Free text that explains why the radio is disabled, rendered in a screen-reader-only
+   * span. The host references it through `aria-describedby` only while the radio is
+   * effectively disabled (own flag or group) and the text is non-empty. Default `''`
+   * (no text).
+   */
   readonly disabledReason = input<string>('');
+  /**
+   * Template that replaces the built-in dot in the indicator while the radio is
+   * checked. Default `null` keeps the built-in dot.
+   */
   readonly dotGlyph = input<TemplateRef<void> | null>(null);
   /**
    * Indicator skin for this radio. Wins over the group's `[skin]`;
