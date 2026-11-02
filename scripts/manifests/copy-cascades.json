@@ -318,7 +318,7 @@
     {
       "class": "CngxActionMultiSelect",
       "file": "projects/forms/select/action-multi-select/action-multi-select.component.ts",
-      "line": 419,
+      "line": 417,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -340,7 +340,7 @@
     {
       "class": "CngxActionMultiSelect",
       "file": "projects/forms/select/action-multi-select/action-multi-select.component.ts",
-      "line": 430,
+      "line": 428,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -356,7 +356,7 @@
     {
       "class": "CngxActionSelect",
       "file": "projects/forms/select/action-select/action-select.component.ts",
-      "line": 386,
+      "line": 385,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -378,7 +378,7 @@
     {
       "class": "CngxCombobox",
       "file": "projects/forms/select/combobox/combobox.component.ts",
-      "line": 463,
+      "line": 461,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -400,7 +400,7 @@
     {
       "class": "CngxCombobox",
       "file": "projects/forms/select/combobox/combobox.component.ts",
-      "line": 475,
+      "line": 473,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -432,7 +432,7 @@
     {
       "class": "CngxSelectSearch",
       "file": "projects/forms/select/declarative/select-search.component.ts",
-      "line": 112,
+      "line": 115,
       "member": "resolvedAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -448,7 +448,7 @@
     {
       "class": "CngxMultiSelect",
       "file": "projects/forms/select/multi-select/multi-select.component.ts",
-      "line": 379,
+      "line": 378,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -470,7 +470,7 @@
     {
       "class": "CngxMultiSelect",
       "file": "projects/forms/select/multi-select/multi-select.component.ts",
-      "line": 390,
+      "line": 389,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -486,7 +486,7 @@
     {
       "class": "CngxReorderableMultiSelect",
       "file": "projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.ts",
-      "line": 395,
+      "line": 394,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -508,7 +508,7 @@
     {
       "class": "CngxReorderableMultiSelect",
       "file": "projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.ts",
-      "line": 406,
+      "line": 405,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -546,7 +546,7 @@
     {
       "class": "CngxSelect",
       "file": "projects/forms/select/single-select/select.component.ts",
-      "line": 351,
+      "line": 352,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -606,7 +606,7 @@
     {
       "class": "CngxTypeahead",
       "file": "projects/forms/select/typeahead/typeahead.component.ts",
-      "line": 375,
+      "line": 374,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
