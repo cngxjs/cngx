@@ -39,7 +39,7 @@ import { provideLocale } from '@cngx/core/utils';
 
 import { CngxSelectShell, type CngxSelectShellChange } from './select-shell.component';
 import type { CngxSelectOptionsInput } from '../shared/option.model';
-import { provideSelectConfig, withTemplates } from '../shared/config';
+import { provideSelectConfig, withTemplates, withTypeaheadDebounce } from '../shared/config';
 import type { CngxSelectTriggerLabelContext } from '../shared/template-slots';
 import { CngxSelectOption } from '../declarative/option.component';
 import { CngxSelectOptgroup } from '../declarative/optgroup.component';
@@ -1643,5 +1643,111 @@ describe('CngxSelectShell - empty-string option without a commit action', () => 
     flush(fixture);
     const none = shellEl.querySelectorAll('cngx-option')[1] as HTMLElement;
     expect(none.getAttribute('aria-selected')).not.toBe('true');
+  });
+});
+
+describe('CngxSelectShell - searchDebounceMs', () => {
+  @Component({
+    template: `
+      @if (bound()) {
+        <cngx-select-shell
+          [label]="'Colour'"
+          [searchDebounceMs]="ms()"
+          (searchTermChange)="terms.push($event)"
+        >
+          <cngx-select-search />
+          <cngx-option [value]="'red'">Red</cngx-option>
+          <cngx-option [value]="'green'">Green</cngx-option>
+        </cngx-select-shell>
+      } @else {
+        <cngx-select-shell [label]="'Colour'" (searchTermChange)="terms.push($event)">
+          <cngx-select-search />
+          <cngx-option [value]="'red'">Red</cngx-option>
+          <cngx-option [value]="'green'">Green</cngx-option>
+        </cngx-select-shell>
+      }
+    `,
+    imports: [CngxSelectShell, CngxSelectOption, CngxSelectSearch],
+  })
+  class DebounceHost {
+    readonly bound = signal(false);
+    readonly ms = signal(0);
+    readonly terms: string[] = [];
+  }
+
+  function setup(providers: unknown[], bind?: number) {
+    polyfillPopover();
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({ imports: [DebounceHost], providers: providers as never[] });
+    const fixture = TestBed.createComponent(DebounceHost);
+    if (bind !== undefined) {
+      fixture.componentInstance.bound.set(true);
+      fixture.componentInstance.ms.set(bind);
+    }
+    flush(fixture);
+    const shell = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .componentInstance as CngxSelectShell<string>;
+    shell.open();
+    flush(fixture);
+    const input = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
+      '.cngx-select-search__input',
+    )!;
+    const type = (text: string): void => {
+      input.value = text;
+      input.dispatchEvent(new Event('input'));
+    };
+    return { fixture, shell, type, terms: fixture.componentInstance.terms };
+  }
+
+  function settle(fixture: Parameters<typeof flush>[0], ms: number): void {
+    vi.advanceTimersByTime(ms);
+    flush(fixture);
+  }
+
+  it('defaults to the 300 ms of CNGX_SELECT_DEFAULTS', () => {
+    const { fixture, shell, type, terms } = setup([]);
+    expect(shell.searchDebounceMs()).toBe(300);
+    type('r');
+    type('re');
+    settle(fixture, 299);
+    expect(shell.searchTerm()).toBe('');
+    expect(terms).toEqual([]);
+    settle(fixture, 1);
+    expect(shell.searchTerm()).toBe('re');
+    expect(terms).toEqual(['re']);
+  });
+
+  it('reads CngxSelectConfig.typeaheadDebounceInterval when the input is unbound', () => {
+    const { fixture, shell, type, terms } = setup([provideSelectConfig(withTypeaheadDebounce(500))]);
+    expect(shell.searchDebounceMs()).toBe(500);
+    type('g');
+    settle(fixture, 300);
+    expect(terms).toEqual([]);
+    settle(fixture, 200);
+    expect(terms).toEqual(['g']);
+  });
+
+  it('lets a bound [searchDebounceMs] win over the config, 0 writing at once', () => {
+    const { fixture, shell, type, terms } = setup(
+      [provideSelectConfig(withTypeaheadDebounce(500))],
+      0,
+    );
+    type('g');
+    flush(fixture);
+    expect(shell.searchTerm()).toBe('g');
+    expect(terms).toEqual(['g']);
+  });
+
+  it('cancels a pending write when the shell is destroyed', () => {
+    const { fixture, type, terms } = setup([]);
+    type('r');
+    fixture.destroy();
+    vi.advanceTimersByTime(300);
+    expect(terms).toEqual([]);
+  });
+
+  it('applies the same precedence to typeaheadDebounceInterval', () => {
+    const { shell } = setup([provideSelectConfig(withTypeaheadDebounce(450))]);
+    expect(shell.typeaheadDebounceInterval()).toBe(450);
   });
 });

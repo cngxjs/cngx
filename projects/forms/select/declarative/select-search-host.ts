@@ -15,10 +15,14 @@ import type { CngxListbox } from '@cngx/common/interactive';
  *     `End`, `Escape` while focus stays in the input.
  *   - `close()` - closes panel and returns focus to the trigger
  *     (Escape path).
+ *   - `searchDebounceMs` - optional; how long the search element waits
+ *     after the last keystroke before it writes `searchTerm`. Omitted or
+ *     `0` writes on every keystroke.
  */
 export interface CngxSelectShellSearchHost {
   readonly searchTerm: ModelSignal<string>;
   readonly listboxRef: Signal<CngxListbox | undefined>;
+  readonly searchDebounceMs?: Signal<number>;
   close(): void;
   focus(): void;
   /**

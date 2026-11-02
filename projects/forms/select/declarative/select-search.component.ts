@@ -89,10 +89,13 @@ export class CngxSelectSearch {
 
   private readonly inputRef = viewChild.required<ElementRef<HTMLInputElement>>('searchInput');
 
+  private pendingWrite: ReturnType<typeof setTimeout> | undefined;
+
   constructor() {
     // Lead the mobile sheet: the shell makes this input its initial focus
     // once both views exist.
     const destroyRef = inject(DestroyRef);
+    destroyRef.onDestroy(() => clearTimeout(this.pendingWrite));
     afterNextRender(() => {
       const release = this.host.registerInitialFocus?.(this.inputRef().nativeElement);
       if (release) {
@@ -112,10 +115,21 @@ export class CngxSelectSearch {
     () => this.ariaLabel() ?? this.config.ariaLabels().searchInput,
   );
 
-  /** @internal */
+  /**
+   * Writes the typed term into the host after its `searchDebounceMs`, so the
+   * shell's `searchTermChange` fires once per pause, not once per keystroke.
+   *
+   * @internal
+   */
   protected handleInput(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    this.host.searchTerm.set(target.value);
+    const term = (event.target as HTMLInputElement).value;
+    clearTimeout(this.pendingWrite);
+    const delay = this.host.searchDebounceMs?.() ?? 0;
+    if (delay <= 0) {
+      this.host.searchTerm.set(term);
+      return;
+    }
+    this.pendingWrite = setTimeout(() => this.host.searchTerm.set(term), delay);
   }
 
   /**

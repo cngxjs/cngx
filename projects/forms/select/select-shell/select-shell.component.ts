@@ -262,6 +262,7 @@ export interface CngxSelectShellChange<T = unknown> {
         return {
           searchTerm: self.searchTerm,
           listboxRef: self.listboxRef,
+          searchDebounceMs: self.searchDebounceMs,
           // Escape in the search: the sheet gate while modal, today's close
           // while anchored. The trigger is inert under a modal sheet, so the
           // refocus is left to the close path.
@@ -482,9 +483,10 @@ export class CngxSelectShell<T = unknown>
    * skips hidden options. Empty string disables the filter.
    *
    * The model's own `searchTermChange` output fires on every change of the
-   * term. The seed `''` never emits: a model only emits when its value
-   * changes, so server-driven autocomplete consumers don't fire a blank
-   * search at hydrate time.
+   * term. A projected `<cngx-select-search>` writes the term after
+   * `searchDebounceMs`, so typing emits once per pause. The seed `''` never
+   * emits: a model only emits when its value changes, so server-driven
+   * autocomplete consumers don't fire a blank search at hydrate time.
    */
   readonly searchTerm = model<string>('');
 
@@ -497,12 +499,19 @@ export class CngxSelectShell<T = unknown>
   readonly searchMatchFn = input<CngxSelectMatchFn<T> | null>(null);
 
   /**
-   * Debounce for the search pipeline (ms). Forward-compatible input -
-   * the shipped `CNGX_SEARCH_EFFECTS_FACTORY` acts immediately;
-   * consumers overriding the factory read this signal to size their
-   * pipeline.
+   * Debounce (ms) between the last keystroke in the projected
+   * `<cngx-select-search>` and the `searchTerm` write that filters the
+   * options and fires `searchTermChange`. Wins over
+   * `CngxSelectConfig.typeaheadDebounceInterval` (default 300). `0` writes on
+   * every keystroke. A programmatic `searchTerm` write is never delayed.
    */
   readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
+
+  /**
+   * Buffer window (ms) of the closed-trigger typeahead. Wins over
+   * `CngxSelectConfig.typeaheadDebounceInterval` (default 300).
+   */
+  readonly typeaheadDebounceInterval = input<number>(this.config.typeaheadDebounceInterval);
 
   /**
    * Emits after a pick or clear settles, with the new value, the previous value
@@ -966,7 +975,7 @@ export class CngxSelectShell<T = unknown>
   private readonly typeaheadController = createTypeaheadController<T>({
     options: this.flatOptions,
     compareWith: this.compareWith,
-    debounceMs: computed(() => this.config.typeaheadDebounceInterval),
+    debounceMs: this.typeaheadDebounceInterval,
     disabled: this.core.writeBlocked,
     locale: injectLocale(),
   });
