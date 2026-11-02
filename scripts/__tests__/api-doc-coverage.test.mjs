@@ -5,7 +5,6 @@ import { matchesGlob, resolve } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import {
-  closingPhase,
   DOC_PATH,
   missingBindingRows,
   PRIVATE,
@@ -36,8 +35,9 @@ import { CEILING, INTERNAL_BINDINGS, RATCHET } from './api-doc-coverage.fixtures
  * Asserted against the repo:
  *   - every found gap is a {@link RATCHET} row and every row is still a gap
  *     (multiset on the key, so two overload rows stay two rows);
- *   - `RATCHET.length === CEILING`;
- *   - the binding fields tagged `@internal` are exactly {@link INTERNAL_BINDINGS};
+ *   - {@link RATCHET} and {@link INTERNAL_BINDINGS} are empty and `CEILING` is 0: a
+ *     gap is fixed at its source, never parked;
+ *   - no `input()` / `model()` / `output()` field is tagged `@internal`;
  *   - every other binding field of a public owner has a row in the export;
  *   - the scans found more than 1500 bindings, 250 methods and 1500 binding
  *     fields, so a scan that silently finds nothing fails.
@@ -75,15 +75,9 @@ describe('api doc coverage (repo)', () => {
     ).toEqual([]);
   });
 
-  it('pins the ratchet length to CEILING', () => {
-    expect(RATCHET).toHaveLength(CEILING);
-  });
-
-  it('assigns every row the phase that closes its entry point', () => {
-    expect(
-      RATCHET.filter((row) => row.phase !== closingPhase(row.entry)).map(rowKey),
-      'forms/select closes in phase 2, common in phase 3, the rest in phase 4',
-    ).toEqual([]);
+  it('keeps the ratchet empty', () => {
+    expect(RATCHET).toEqual([]);
+    expect(CEILING).toBe(0);
   });
 });
 
@@ -110,34 +104,20 @@ describe('api doc coverage (binding fields)', () => {
     expect(fields.length).toBeGreaterThan(1500);
   });
 
-  it('tags no binding field @internal outside INTERNAL_BINDINGS', () => {
-    const internal = fields.filter((field) => field.internal);
-    const internalKeys = internal.map(fieldKey);
-    const pinned = INTERNAL_BINDINGS.map(fieldKey);
+  it('tags no binding field @internal', () => {
+    const internalAliased = fields.filter((field) => field.internal);
     expect(
-      internal.filter((field) => !pinned.includes(fieldKey(field))).map(describeField),
+      internalAliased.map(describeField),
       'an input / model / output field is the binding: drop @internal and document the binding',
     ).toEqual([]);
-    expect(
-      INTERNAL_BINDINGS.filter((row) => !internalKeys.includes(fieldKey(row))).map(describeField),
-      'the field no longer carries @internal: delete its INTERNAL_BINDINGS row',
-    ).toEqual([]);
+    expect(INTERNAL_BINDINGS).toEqual([]);
   });
 
-  it('gives every other binding field of a public owner a row in the export', () => {
-    const pinned = INTERNAL_BINDINGS.map(fieldKey);
+  it('gives every binding field of a public owner a row in the export', () => {
     expect(
-      missingBindingRows(fields, exported)
-        .filter((field) => !pinned.includes(fieldKey(field)))
-        .map(describeField),
+      missingBindingRows(fields, exported).map(describeField),
       'the binding has no compodocx row: check for @internal or a private modifier on the field',
     ).toEqual([]);
-  });
-
-  it('assigns every INTERNAL_BINDINGS row phase 3 or 4', () => {
-    expect(INTERNAL_BINDINGS.filter((row) => ![3, 4].includes(row.phase)).map(fieldKey)).toEqual(
-      [],
-    );
   });
 });
 
@@ -181,11 +161,6 @@ function subtract(from, remove) {
 function describeGap(gap) {
   const location = gap.line ? `${gap.file}:${gap.line}` : gap.file;
   return `${rowKey(gap)} (${location})`;
-}
-
-/** File, owner and member: two classes in one file may declare the same field. */
-function fieldKey(field) {
-  return `${field.file} ${field.owner} ${field.member}`;
 }
 
 function describeField(field) {

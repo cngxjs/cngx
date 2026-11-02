@@ -69,6 +69,7 @@ Generate and serve the compodocx API documentation:
 ```bash
 npm run docs        # Generate docs into /docs
 npm run docs:serve  # Generate and serve at http://localhost:8080
+npm run docs:coverage # Inventory public API members that render without a description
 ```
 
 ### Building
@@ -140,6 +141,15 @@ later test in the *same* file must not see the fake clock or the stub. Spies are
 not covered: `vi.spyOn()` on a global object outlives the file, so restore it in
 the spec itself. See `projects/testing/README.md` for the details and the
 reference cases.
+
+Public API docs: every public input, output, method, function and token needs
+a JSDoc description, and `npm run test:scripts` fails on a gap
+(`scripts/__tests__/api-doc-coverage.test.mjs`). The guard reads
+`.compodoc/documentation.json`, so run `npm run docs:json` first; it does not
+regenerate it. The only opt-out is `@internal`, for a member that implements an
+unexported contract or that only the own template or class calls. Never put
+`@internal` on an aliased `input()` / `model()` field: the aliased field is the
+binding and carries the doc.
 
 ### End-to-end tests (Playwright)
 

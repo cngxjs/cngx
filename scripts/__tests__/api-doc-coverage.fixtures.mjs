@@ -10,9 +10,10 @@
  * member that moves within its file is the same gap, and a ratchet keyed on
  * line numbers would fail on every unrelated edit above it.
  *
- * The gap list only shrinks. A new gap is fixed at its source with a JSDoc
- * (or `@internal` when the member implements an unexported contract or only
- * the own template / class calls it), never parked here.
+ * Both lists are empty and the guard asserts they stay empty. A new gap is
+ * fixed at its source with a JSDoc (or `@internal` when the member implements
+ * an unexported contract or only the own template / class calls it), never
+ * parked here.
  */
 
 /**
@@ -24,7 +25,6 @@
  * @property {'entry' | 'input' | 'output' | 'method' | 'accessor' | 'token' | 'function'} kind
  * @property {string} member Field or method name; the owner name for entry, token and function rows.
  * @property {string} [binding] Binding name when the input or output is aliased.
- * @property {2 | 3 | 4} phase Plan phase that closes the row.
  */
 
 /**
@@ -35,15 +35,12 @@
  * @property {string} file Repo-relative path.
  * @property {string} owner Class that declares the field.
  * @property {string} member Field name.
- * @property {3 | 4} phase Plan phase that drops the tag.
  */
 
 /** @type {readonly InternalBinding[]} */
 export const INTERNAL_BINDINGS = [];
 
-/**
- * Lowered in every commit that closes rows, so growth is a visible constant edit.
- */
+/** Pinned to 0 by the guard. */
 export const CEILING = 0;
 
 /** @type {readonly ApiDocGap[]} */
