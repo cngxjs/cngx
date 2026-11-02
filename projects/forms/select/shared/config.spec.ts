@@ -24,6 +24,7 @@ import { CngxSelect } from '../single-select/select.component';
 import {
   CNGX_SELECT_CONFIG,
   CNGX_SELECT_DEFAULTS,
+  type CngxSelectTemplateContexts,
   makeSelectConfig,
   provideSelectConfig,
   provideSelectConfigAt,
@@ -57,7 +58,8 @@ import {
   type CngxSelectFallbackLabels,
 } from './config';
 import { resolveSelectConfig } from './internal/resolve-config';
-import type { CngxMultiSelectChipContext } from './template-slots';
+import type { CngxMultiSelectChipContext, CngxSelectSheetCountContext } from './template-slots';
+import type { CngxTreeSelectFooterContext } from '../tree-select/tree-select.model';
 import type { CngxSelectOptionDef } from './option.model';
 
 function resolveIn(providers: unknown[]): ReturnType<typeof resolveSelectConfig> {
@@ -887,5 +889,46 @@ describe('provideSelectConfigAt merges over the parent config', () => {
     const config = childConfig([], provideSelectConfigAt(withPanelWidth(300)));
     expect(config.panelWidth).toBe(300);
     expect(config.openOn).toBe(CNGX_SELECT_DEFAULTS.openOn);
+  });
+});
+
+describe('CngxSelectTemplateContexts - derived from the config templates', () => {
+  type ConfigTemplateKey = keyof NonNullable<CngxSelectConfig['templates']>;
+  type SameKeys<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
+
+  it('carries one context key per CngxSelectConfig.templates entry', () => {
+    const sameKeys: SameKeys<keyof CngxSelectTemplateContexts, ConfigTemplateKey> = true;
+    const contexts: Record<keyof CngxSelectTemplateContexts, true> = {
+      check: true,
+      caret: true,
+      optgroup: true,
+      placeholder: true,
+      empty: true,
+      loading: true,
+      triggerLabel: true,
+      optionLabel: true,
+      error: true,
+      retryButton: true,
+      loadingGlyph: true,
+      refreshing: true,
+      commitError: true,
+      clearButton: true,
+      optionPending: true,
+      optionError: true,
+      action: true,
+      sheetHandle: true,
+      treeNodeCount: true,
+      sheetCount: true,
+      treeFooter: true,
+    };
+    expect(sameKeys).toBe(true);
+    expect(Object.keys(contexts).sort()).toEqual(Object.keys(CNGX_SELECT_DEFAULTS.templates).sort());
+  });
+
+  it('maps each key to the context of its TemplateRef', () => {
+    const footer: CngxSelectTemplateContexts['treeFooter'] = {} as CngxTreeSelectFooterContext;
+    const count: CngxSelectTemplateContexts['sheetCount'] = {} as CngxSelectSheetCountContext;
+    const glyph: CngxSelectTemplateContexts['loadingGlyph'] = {};
+    expect([footer, count, glyph]).toHaveLength(3);
   });
 });

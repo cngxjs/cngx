@@ -38,30 +38,20 @@ import type {
   CngxSelectTriggerLabelContext,
 } from './template-slots';
 
+/** Context type of a `TemplateRef`; a context-free slot maps to an empty record. */
+type CngxSelectTemplateContextOf<R> =
+  NonNullable<R> extends TemplateRef<infer C> ? (C extends void ? Record<string, never> : C) : never;
+
 /**
- * Override contexts mirroring the per-instance `*cngxSelect*` slots.
+ * Override contexts mirroring the per-instance `*cngxSelect*` slots, one key
+ * per `CngxSelectConfig.templates` entry. Derived from that map, so a new
+ * config template key brings its context type along without a second edit.
  */
-export interface CngxSelectTemplateContexts {
-  readonly check?: CngxSelectCheckContext;
-  readonly caret?: CngxSelectCaretContext;
-  readonly optgroup?: CngxSelectOptgroupContext;
-  readonly placeholder?: CngxSelectPlaceholderContext;
-  readonly empty?: CngxSelectEmptyContext;
-  readonly loading?: CngxSelectLoadingContext;
-  readonly triggerLabel?: CngxSelectTriggerLabelContext;
-  readonly optionLabel?: CngxSelectOptionLabelContext;
-  readonly error?: CngxSelectErrorContext;
-  readonly retryButton?: CngxSelectRetryButtonContext;
-  /** Glyph slot inside spinner/bar/dots loading + refreshing indicators. */
-  readonly loadingGlyph?: Record<string, never>;
-  readonly refreshing?: CngxSelectRefreshingContext;
-  readonly commitError?: CngxSelectCommitErrorContext;
-  readonly clearButton?: CngxSelectClearButtonContext;
-  readonly optionPending?: CngxSelectOptionPendingContext;
-  readonly optionError?: CngxSelectOptionErrorContext;
-  readonly action?: CngxSelectActionContext;
-  readonly sheetHandle?: CngxSelectSheetHandleContext;
-}
+export type CngxSelectTemplateContexts = {
+  readonly [K in keyof NonNullable<CngxSelectConfig['templates']>]?: CngxSelectTemplateContextOf<
+    NonNullable<CngxSelectConfig['templates']>[K]
+  >;
+};
 
 /**
  * Live-region announcer config: politeness + formatter.
