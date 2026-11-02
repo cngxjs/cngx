@@ -153,7 +153,16 @@ describe('CngxSelectSearch placement (CNGX2018)', () => {
     );
   });
 
-  it('does not throw inside a search host', () => {
-    expect(() => TestBed.createComponent(HostNoLabel).detectChanges()).not.toThrow();
+  it('renders inside a search host and writes the typed term into it', () => {
+    const fixture = TestBed.createComponent(HostNoLabel);
+    fixture.detectChanges();
+    const host = fixture.debugElement
+      .query(By.directive(FakeSearchHostDir))
+      .injector.get(FakeSearchHostDir);
+    const input = fixture.debugElement.query(By.css('input[type=search]'))
+      .nativeElement as HTMLInputElement;
+    input.value = 'gr';
+    input.dispatchEvent(new Event('input'));
+    expect(host.searchTerm()).toBe('gr');
   });
 });

@@ -68,12 +68,15 @@ describe('createDismissHandler', () => {
     expect(popover.hideCalls).toBe(0);
   });
 
-  it('is a no-op when the popover ref is undefined', () => {
-    const handler = createDismissHandler({
-      popoverRef: signal<CngxPopover | undefined>(undefined),
-      dismissOn: 'both',
-    });
-    expect(() => handler.handleClickOutside()).not.toThrow();
+  it('is a no-op while the popover ref is undefined and reads the ref per call', () => {
+    const popoverRef = signal<CngxPopover | undefined>(undefined);
+    const handler = createDismissHandler({ popoverRef, dismissOn: 'both' });
+    handler.handleClickOutside();
+    const popover = makePopover();
+    expect(popover.hideCalls).toBe(0);
+    popoverRef.set(popover.ref);
+    handler.handleClickOutside();
+    expect(popover.hideCalls).toBe(1);
   });
 
   it('respects shouldBlockDismiss before the dismissOn check', () => {

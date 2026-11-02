@@ -24,6 +24,7 @@ import { CngxSelect, type CngxSelectChange } from './select.component';
 import { injectSelectConfig, injectSelectAnnouncer } from '../shared/inject-helpers';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { stripBidiIsolates } from '@cngx/testing';
+import { CNGX_SELECT_LANGUAGE_EN } from '../i18n/select-language-section';
 import {
   CNGX_DISMISS_HANDLER_FACTORY,
   createDismissHandler,
@@ -830,7 +831,8 @@ describe('CngxSelect - async state consumer', () => {
     host.state.setSuccess([]);
     triggerBtn.click();
     flush(fixture);
-    expect(panel().querySelector('.cngx-select__empty')).toBeTruthy();
+    const empty = panel().querySelector('.cngx-select__empty');
+    expect(stripBidiIsolates(empty?.textContent ?? '').trim()).toBe(CNGX_SELECT_LANGUAGE_EN.empty);
   });
 
   it('shows error panel with retry when state is error (first load)', () => {
@@ -839,8 +841,15 @@ describe('CngxSelect - async state consumer', () => {
     triggerBtn.click();
     flush(fixture);
     const errorEl = panel().querySelector('.cngx-select__error');
-    expect(errorEl).toBeTruthy();
+    expect(errorEl?.getAttribute('role')).toBe('alert');
+    const message = errorEl!.querySelector('.cngx-select__error-message');
+    expect(stripBidiIsolates(message?.textContent ?? '').trim()).toBe(
+      CNGX_SELECT_LANGUAGE_EN.loadFailed,
+    );
     const retryBtn = errorEl!.querySelector('button.cngx-select__error-retry') as HTMLElement;
+    expect(stripBidiIsolates(retryBtn.textContent ?? '').trim()).toBe(
+      CNGX_SELECT_LANGUAGE_EN.loadFailedRetry,
+    );
     retryBtn.click();
     flush(fixture);
     expect(host.reloadCalls).toBe(1);
@@ -937,8 +946,14 @@ describe('CngxSelect - async state consumer', () => {
     expect(panel().querySelectorAll('.cngx-select__option').length).toBe(3);
     // Error banner sits above them
     const banner = panel().querySelector('.cngx-select__error--inline');
-    expect(banner).toBeTruthy();
+    const bannerMessage = banner!.querySelector('.cngx-select__error-message');
+    expect(stripBidiIsolates(bannerMessage?.textContent ?? '').trim()).toBe(
+      CNGX_SELECT_LANGUAGE_EN.refreshFailed,
+    );
     const retryBtn = banner!.querySelector('button.cngx-select__error-retry') as HTMLElement;
+    expect(stripBidiIsolates(retryBtn.textContent ?? '').trim()).toBe(
+      CNGX_SELECT_LANGUAGE_EN.refreshFailedRetry,
+    );
     retryBtn.click();
     flush(fixture);
     expect(host.reloadCalls).toBe(1);

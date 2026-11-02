@@ -36,8 +36,10 @@ import {
 } from '../shared/projected-option-model';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 import { provideLocale } from '@cngx/core/utils';
+import { stripBidiIsolates } from '@cngx/testing';
 
 import { CngxSelectShell, type CngxSelectShellChange } from './select-shell.component';
+import { CNGX_SELECT_LANGUAGE_EN } from '../i18n/select-language-section';
 import type { CngxSelectOptionsInput } from '../shared/option.model';
 import { provideSelectConfig, withTemplates, withTypeaheadDebounce } from '../shared/config';
 import type { CngxSelectTriggerLabelContext } from '../shared/template-slots';
@@ -500,8 +502,7 @@ describe('CngxSelectShell - Phase 5 scaffold', () => {
     flush(fixture);
 
     const empty = shellDe.nativeElement.querySelector('.cngx-select__empty');
-    expect(empty).not.toBeNull();
-    expect(empty!.textContent).toBeTruthy();
+    expect(stripBidiIsolates(empty?.textContent ?? '').trim()).toBe(CNGX_SELECT_LANGUAGE_EN.empty);
   });
 
   it('renders the panel-shell loading status region when [loading] is true', () => {
