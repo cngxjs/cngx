@@ -2,7 +2,6 @@ import type { Signal, WritableSignal } from '@angular/core';
 
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from '../commit-action.types';
 import type { CngxSelectOptionDef } from '../option.model';
-import { commitLedgerFor } from './commit-ledger';
 import type { CngxSelectCompareFn, CngxSelectCore } from './select-core';
 
 /**
@@ -34,11 +33,6 @@ export interface ArrayToggleDispatchOptions<T> {
   readonly commitAction: Signal<CngxSelectCommitAction<T[]> | null>;
   /** Source of `togglingOption`, `announce`, `panelHostAdapter.isSelected`. */
   readonly core: CngxSelectCore<T, T[]>;
-  /**
-   * Store the pre-mutation snapshot (the confirmed value while another
-   * commit is in flight) that the toggle finalize reports as previous.
-   */
-  readonly setLastCommitted: (previous: T[]) => void;
   /** Lazy route into `ArrayCommitHandler.beginToggle`. */
   readonly beginToggle: (
     next: T[],
@@ -103,16 +97,16 @@ export interface ArrayToggleDispatch<T> {
  * (`CngxMultiSelect`, `CngxCombobox`, `CngxReorderableMultiSelect`,
  * `CngxActionMultiSelect`).
  * Owns the finalize events, the imperative clear-all, and the two
- * AD-activation closures; the variant owns outputs (`source: this`),
- * the `lastCommittedValues` snapshot field, and the commit handler.
+ * AD-activation closures; the variant owns outputs (`source: this`) and the
+ * commit handler. The `previous` a committed toggle reports comes from the
+ * commit ledger (`ArrayCommitHandlerOptions.onToggleFinalize`), never from a
+ * variant-side snapshot.
  *
  * @internal
  */
 export function createArrayToggleDispatch<T>(
   opts: ArrayToggleDispatchOptions<T>,
 ): ArrayToggleDispatch<T> {
-  const ledger = commitLedgerFor<T[], T>(opts.core.commitController);
-
   const finalizeToggle = (
     opt: CngxSelectOptionDef<T>,
     isNowSelected: boolean,
@@ -150,7 +144,6 @@ export function createArrayToggleDispatch<T>(
     }
     const action = opts.commitAction();
     if (action) {
-      opts.setLastCommitted(ledger.baseline(previous));
       opts.core.togglingOption.set(null);
       if (opts.commitMode() === 'optimistic') {
         opts.values.set([]);
@@ -169,8 +162,6 @@ export function createArrayToggleDispatch<T>(
     const next = wasSelected
       ? previous.filter((v) => !opts.compareWith()(v, toggledValue))
       : [...previous, toggledValue];
-    // Change events of a superseding toggle report the confirmed selection.
-    opts.setLastCommitted(ledger.baseline(previous));
     opts.core.togglingOption.set(opt);
     if (opts.commitMode() === 'optimistic') {
       opts.values.set(next);

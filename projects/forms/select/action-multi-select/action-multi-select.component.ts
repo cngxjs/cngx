@@ -13,7 +13,6 @@ import {
   model,
   output,
   signal,
-  untracked,
   viewChild,
   ElementRef,
   type Signal,
@@ -1074,7 +1073,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   );
 
   private readonly togglingOption = this.core.togglingOption;
-  private lastCommittedValues: T[] = [];
   private readonly hasEmittedInitial = signal(false);
 
   /**
@@ -1089,9 +1087,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     commitMode: this.commitMode,
     commitAction: this.commitAction,
     core: this.core,
-    setLastCommitted: (previous) => {
-      this.lastCommittedValues = previous;
-    },
     beginToggle: (next, previous, option, action) =>
       this.commitHandler.beginToggle(next, previous, option, action),
     beginClear: (previous, action) => this.commitHandler.beginClear(previous, action),
@@ -1122,8 +1117,8 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     commitMode: this.commitMode,
     core: this.core,
     commitAction: this.commitAction,
-    onToggleFinalize: (option, isNowSelected) =>
-      this.toggleDispatch.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
+    onToggleFinalize: (option, isNowSelected, previous) =>
+      this.toggleDispatch.finalizeToggle(option, isNowSelected, previous),
     onClearFinalize: (previous, finalValues) =>
       this.toggleDispatch.clearFinalize(previous, finalValues),
     onStateChange: (status) => this.stateChange.emit(status),
@@ -1203,10 +1198,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     commitMode: this.commitMode,
     beginCommit: (next, previous, item, action) =>
       this.commitHandler.beginToggle(next, previous, item, action),
-    onBeforeCommit: (previous, item) => {
-      this.lastCommittedValues = previous;
-      this.togglingOption.set(item);
-    },
+    onBeforeCommit: (_previous, item) => this.togglingOption.set(item),
     onSyncFinalize: (item, previous) => this.toggleDispatch.finalizeToggle(item, false, previous),
   });
 
@@ -1219,8 +1211,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     // Same teardown as the core's select controller: a create that settles
     // after the host is destroyed is dropped.
     inject(DestroyRef).onDestroy(() => this.createCommitController.cancel());
-    this.lastCommittedValues = untracked(() => [...this.values()]);
-
     injectChipFitFocusHandOff({
       strip: this.fitStrip,
       visibleCount: this.chipStrip.visibleCount,

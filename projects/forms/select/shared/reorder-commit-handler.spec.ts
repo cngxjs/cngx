@@ -124,6 +124,25 @@ describe('createReorderCommitHandler', () => {
     expect(onError).toHaveBeenCalledExactlyOnceWith(expect.any(Error));
   });
 
+  it('rolls a failed reorder back without a setLastCommitted hook', () => {
+    commitAction.set(() => Promise.resolve<string[] | undefined>(undefined));
+    const { controller, reject } = makeController<string[]>();
+    const handler = createReorderCommitHandler<string>({
+      values,
+      commitMode,
+      commitAction,
+      commitController: controller,
+      onReorder,
+      onAnnounce,
+      onStateChange,
+      onError,
+    });
+    handler.dispatch(['b', 'c', 'a', 'd'], ['a', 'b', 'c', 'd'], 0, 2, option('a'));
+    reject(new Error('boom'));
+    expect(values()).toEqual(['a', 'b', 'c', 'd']);
+    expect(onError).toHaveBeenCalledOnce();
+  });
+
   it('optimistic: keeps an external write made while the commit was pending', () => {
     commitMode.set('optimistic');
     const act: CngxSelectCommitAction<string[]> = () =>

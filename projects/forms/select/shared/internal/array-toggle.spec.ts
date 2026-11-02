@@ -40,7 +40,6 @@ interface Harness {
   readonly commitMode: WritableSignal<CngxSelectCommitMode>;
   readonly commitAction: WritableSignal<CngxSelectCommitAction<T[]> | null>;
   readonly coreMock: CoreMock;
-  readonly lastCommittedLog: T[][];
   readonly beginToggleLog: Array<[T[], T[], CngxSelectOptionDef<T>]>;
   readonly beginClearLog: T[][];
   readonly toggledLog: Array<[CngxSelectOptionDef<T>, boolean]>;
@@ -70,7 +69,6 @@ function makeHarness(initial: T[] = []): Harness {
     commitMode: signal<CngxSelectCommitMode>('optimistic'),
     commitAction: signal<CngxSelectCommitAction<T[]> | null>(null),
     coreMock,
-    lastCommittedLog: [],
     beginToggleLog: [],
     beginClearLog: [],
     toggledLog: [],
@@ -85,7 +83,6 @@ function makeHarness(initial: T[] = []): Harness {
     commitMode: h.commitMode,
     commitAction: h.commitAction,
     core: coreMock as unknown as CngxSelectCore<T, T[]>,
-    setLastCommitted: (previous) => h.lastCommittedLog.push(previous),
     beginToggle: (next, previous, option) => h.beginToggleLog.push([next, previous, option]),
     beginClear: (previous) => h.beginClearLog.push(previous),
     emitOptionToggled: (option, added) => h.toggledLog.push([option, added]),
@@ -187,10 +184,9 @@ describe('createArrayToggleDispatch', () => {
       h.commitAction.set((next) => next);
     });
 
-    it('snapshots, nulls togglingOption, writes optimistically and routes to beginClear', () => {
+    it('nulls togglingOption, writes optimistically and routes to beginClear', () => {
       h.coreMock.togglingOption.set(opt('a'));
       h.dispatch.clearAll();
-      expect(h.lastCommittedLog).toEqual([['a', 'b']]);
       expect(h.coreMock.togglingOption()).toBeNull();
       expect(h.values()).toEqual([]);
       expect(h.beginClearLog).toEqual([['a', 'b']]);
@@ -211,9 +207,8 @@ describe('createArrayToggleDispatch', () => {
       h.commitAction.set((next) => next);
     });
 
-    it('adds an unselected value, snapshots and routes to beginToggle', () => {
+    it('adds an unselected value and routes to beginToggle', () => {
       h.dispatch.handleADCommit('b', opt('b'));
-      expect(h.lastCommittedLog).toEqual([['a']]);
       expect(h.coreMock.togglingOption()).toEqual(opt('b'));
       expect(h.values()).toEqual(['a', 'b']);
       expect(h.beginToggleLog).toEqual([[['a', 'b'], ['a'], opt('b')]]);
@@ -232,7 +227,7 @@ describe('createArrayToggleDispatch', () => {
       expect(h.beginToggleLog).toEqual([[['a', 'b'], ['a'], opt('b')]]);
     });
 
-    it('snapshots the confirmed selection while another commit is in flight', () => {
+    it('hands beginToggle the live selection while another commit is in flight', () => {
       commitLedgerFor<T[], T>(h.coreMock.commitController).beginMembers<T[]>({
         kind: 'toggle',
         next: ['a', 'x'],
@@ -246,7 +241,6 @@ describe('createArrayToggleDispatch', () => {
       });
       h.values.set(['a', 'x']);
       h.dispatch.handleADCommit('b', opt('b'));
-      expect(h.lastCommittedLog).toEqual([['a']]);
       expect(h.beginToggleLog).toEqual([[['a', 'x', 'b'], ['a', 'x'], opt('b')]]);
     });
 
@@ -324,7 +318,6 @@ describe('createArrayToggleDispatch', () => {
       h = makeHarness(['a']);
       h.commitAction.set((next) => next);
       h.dispatch.toggleByUser(opt('b'));
-      expect(h.lastCommittedLog).toEqual([['a']]);
       expect(h.coreMock.togglingOption()).toEqual(opt('b'));
       expect(h.values()).toEqual(['a', 'b']);
       expect(h.beginToggleLog).toEqual([[['a', 'b'], ['a'], opt('b')]]);
