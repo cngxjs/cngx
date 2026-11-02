@@ -122,6 +122,8 @@ The colour tokens inherit, so a theme can set them once on `:root`:
 
 ### With Material
 
+`pending()` flips on the first tick of a run. To give a hand-rolled spinner the same show delay and min-dwell as the button family, branch on `btn.busyVisible()` instead.
+
 ```typescript
 <button mat-raised-button [cngxAsyncClick]="submitForm" #btn="cngxAsyncClick">
   @if (btn.pending()) {

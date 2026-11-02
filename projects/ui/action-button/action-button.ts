@@ -52,7 +52,12 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
  * templates) render stacked in one grid cell; only the active one is
  * visible and named, so the button is always as wide as its widest label
  * and never jumps after a run. Without a pending label or template, the
- * idle label stays in place under the busy spinner.
+ * idle label stays in place under the busy spinner. The spinner and the
+ * pending label wait for the `cngxAsyncClick` busy gate
+ * (`CNGX_LOADING_CONFIG.showDelay`, held for `minDwell`; `[showDelay]` /
+ * `[minDwell]` per button), so a fast run goes from the idle label straight
+ * to the result. The success and failure labels, `aria-busy` and the
+ * announcement follow the run at once.
  *
  * The status announcement is spoken through the `cngxAsyncClick` live
  * region next to the button, also for a bound `[externalState]`.
@@ -93,7 +98,7 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/action-button/action-button.ts
  * @since 0.1.0
  * @relatedTo CngxButton, CngxAsyncClick, CngxPending, CngxSucceeded, CngxFailed, CngxToaster
- * @slot cngxPending Replaces the label while the action runs.
+ * @slot cngxPending Replaces the label while the action runs, once the run outlasts the show delay.
  * @slot cngxSucceeded Replaces the label after the action succeeds.
  * @slot cngxFailed Replaces the label when the action fails; gets the error.
  * <example-url>/#/ui/action-button/async-button/random-outcome</example-url>
@@ -259,7 +264,10 @@ export class CngxActionButton {
    */
   readonly failedAnnouncement = input<string | undefined>(undefined);
 
-  /** Fallback text while pending (when no `cngxPending` template is projected). */
+  /**
+   * Fallback text while pending (when no `cngxPending` template is projected).
+   * Shows once the run outlasts the show delay, like the spinner.
+   */
   readonly pendingLabel = input<string | undefined>(undefined);
 
   /** Fallback text after success (when no `cngxSucceeded` template is projected). */

@@ -41,7 +41,10 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
  *
  * Co-host `cngxAsyncClick` for an async action: the label stays in place
  * (width stable) under a busy layer while the action runs, and the
- * directive keeps owning `aria-busy` and the announcement.
+ * directive keeps owning `aria-busy` and the announcement. The layer
+ * follows the directive's busy gate: it appears once the run outlasts
+ * `CNGX_LOADING_CONFIG.showDelay` and stays for at least `minDwell`;
+ * `aria-busy` is immediate.
  *
  * ```html
  * <button cngxButton="outline" tone="primary">Save draft</button>

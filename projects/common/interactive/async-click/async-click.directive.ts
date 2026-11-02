@@ -74,6 +74,9 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
  * </button>
  * ```
  *
+ * `pending()` flips on the first tick; bind `btn.busyVisible()` instead when
+ * a hand-rolled spinner should follow the show delay and min-dwell.
+ *
  * ### On any element
  * ```html
  * <a role="button" [cngxAsyncClick]="navigate" #btn="cngxAsyncClick">Go</a>
