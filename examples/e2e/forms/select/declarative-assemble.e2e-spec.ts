@@ -49,3 +49,25 @@ test.describe('declarative options in an assembled listbox', () => {
     await expect(valueOf(page)).toHaveText('blue');
   });
 });
+
+// A bare cngxPopover resets the UA popover chrome to transparent by design;
+// the story composes CngxPopoverPanel so the options sit on its surface.
+test.describe('assembled listbox popover surface', () => {
+  test('the open popover paints an opaque background', async ({ page }) => {
+    await gotoDemo(page, ROUTE);
+    await triggerOf(page).click();
+    const listbox = listboxOf(page);
+    await expect(listbox).toBeVisible();
+    const alpha = await listbox.evaluate((lb) => {
+      const popover = lb.closest('[popover]');
+      if (!popover) {
+        return -1;
+      }
+      const probe = document.createElement('canvas').getContext('2d')!;
+      probe.fillStyle = getComputedStyle(popover).backgroundColor;
+      probe.fillRect(0, 0, 1, 1);
+      return probe.getImageData(0, 0, 1, 1).data[3];
+    });
+    expect(alpha).toBe(255);
+  });
+});
