@@ -52,8 +52,8 @@ import { CNGX_SPLIT_BUTTON, type CngxSplitButtonContext } from './split-button.t
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/split-button.directive.ts
  * @since 0.1.0
  * @relatedTo CngxIconMenuButton, CngxButton, CngxButtonGroup, CNGX_BUTTON_STATE, CngxAsyncClick, CNGX_MENU_BUTTON_I18N
- * <example-url>http://localhost:4200/#/common/menu-button/split-button/basic</example-url>
- * <example-url>http://localhost:4200/#/common/menu-button/split-button/busy-and-disabled</example-url>
+ * <example-url>/#/common/menu-button/split-button/basic</example-url>
+ * <example-url>/#/common/menu-button/split-button/busy-and-disabled</example-url>
  * @axis level molecule
  */
 @Directive({

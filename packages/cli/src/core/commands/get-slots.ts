@@ -4,6 +4,7 @@
 // payload is exactly { name, description } per slot.
 
 import { z } from 'zod';
+import type { RenderOptions } from '../command.js';
 import { defineCommand } from '../command.js';
 import { versionInput } from './version-input.js';
 import { answerVersioned } from '../data/docs-resolver.js';
@@ -34,17 +35,19 @@ export function getSlots(docs: DocsIndex, name: string): SlotsResult | Ambiguous
 }
 
 /** The slots as one table under the component name. */
-export function slotsMarkdown(slots: SlotsResult | AmbiguousMatch | null): string {
+/** `compact` lists the slot names without their descriptions. */
+export function slotsMarkdown(slots: SlotsResult | AmbiguousMatch | null, opts: RenderOptions = {}): string {
   if (!slots) {
     return 'No component or directive by that name.\n';
   }
   if (isAmbiguous(slots)) {
     return ambiguousMarkdown(slots);
   }
-  const rows = slots.slots.map((slot) => [code(slot.name), textCell(slot.description)]);
+  const compact = opts.compact === true;
+  const rows = slots.slots.map((slot) => [code(slot.name), ...(compact ? [] : [textCell(slot.description)])]);
   return blocks(
     `# ${slots.name} slots`,
-    rows.length ? table(['Slot', 'Description'], rows) : 'No overridable template slots.',
+    rows.length ? table(['Slot', ...(compact ? [] : ['Description'])], rows) : 'No overridable template slots.',
   );
 }
 
@@ -69,5 +72,5 @@ export const getSlotsCommand = defineCommand({
   cliFlags: { version: 'cngx-version' },
   run: (ctx, { name, version }) => answerVersioned(ctx.resolve, version, (resolved) => getSlots(resolved, name)),
   found: foundUnlessAmbiguous,
-  toMarkdown: (slots: SlotsResult | AmbiguousMatch | null) => slotsMarkdown(slots),
+  toMarkdown: (slots: SlotsResult | AmbiguousMatch | null, opts) => slotsMarkdown(slots, opts),
 });

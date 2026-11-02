@@ -53,7 +53,7 @@ export interface CngxStepRejectionContext {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/slots/step-rejection.directive.ts
  * @since 0.1.0
  * @relatedTo CngxStepBadge, CngxStepIndicator, CngxStepBusySpinner
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/rejection-decoration-via-code-cngxsteprejection-code</example-url>
+ * <example-url>/#/ui/stepper/stepper-slot-overrides/rejection-decoration-via-code-cngxsteprejection-code</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxStepRejection]',

@@ -50,9 +50,9 @@ import type { EmptyReason } from './card.types';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card-grid.component.ts
  * @since 0.1.0
  * @relatedTo CngxCard, CngxCardGridEmpty, CngxRovingTabindex, CngxAsyncState
- * <example-url>http://localhost:4200/#/common/card/card-grid/basic-grid</example-url>
- * <example-url>http://localhost:4200/#/common/card/card-grid/density-variants</example-url>
- * <example-url>http://localhost:4200/#/common/card/card-grid/empty-state-with-reason</example-url>
+ * <example-url>/#/common/card/card-grid/basic-grid</example-url>
+ * <example-url>/#/common/card/card-grid/density-variants</example-url>
+ * <example-url>/#/common/card/card-grid/empty-state-with-reason</example-url>
  * @axis level molecule
  */
 @Component({

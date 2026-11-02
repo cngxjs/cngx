@@ -179,9 +179,9 @@ export interface CngxTypeaheadChange<T = unknown> {
  * @since 0.1.0
  * @relatedTo CngxCombobox, CngxSelect, CngxMultiSelect
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
- * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-bound-to-a-typed-form-field</example-url>
- * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-cngxselectoptionlabel-slot-override</example-url>
- * <example-url>http://localhost:4200/#/forms/select/mobile-sheet/all-variants</example-url>
+ * <example-url>/#/forms/select/typeahead/typeahead-bound-to-a-typed-form-field</example-url>
+ * <example-url>/#/forms/select/typeahead/typeahead-cngxselectoptionlabel-slot-override</example-url>
+ * <example-url>/#/forms/select/mobile-sheet/all-variants</example-url>
  * @slot cngxSelectCheck Replaces the selection indicator on each option row unless [hideSelectionIndicator] is set; gets $implicit/option, selected, variant (radio, checkbox or checkmark), position, and indeterminate (always false here, absent on radio).
  * @slot cngxSelectCaret Replaces the trigger caret unless [hideCaret] is set; gets $implicit/open.
  * @slot cngxSelectOptgroup Replaces the header of each option group; gets $implicit/group.

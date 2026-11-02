@@ -39,7 +39,7 @@ export interface SensitiveRevealAudit {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/sensitive-value.directive.ts
  * @since 0.2.0
  * @relatedTo CngxInput, CngxPasswordToggle, CngxCopyValue, withInputAriaLabels
- * <example-url>http://localhost:4200/#/forms/input/sensitive-value</example-url>
+ * <example-url>/#/forms/input/sensitive-value</example-url>
  * @axis level atom
  */
 @Directive({

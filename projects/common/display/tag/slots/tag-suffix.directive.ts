@@ -24,19 +24,19 @@ import type { CngxTagSuffixContext } from './tag-slot.context';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/tag/slots/tag-suffix.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTag, CngxTagLabel, CngxTagPrefix
- * <example-url>http://localhost:4200/#/common/display/tag/app-wide-defaults-via-providetagconfig</example-url>
- * <example-url>http://localhost:4200/#/common/display/tag/color-palette</example-url>
- * <example-url>http://localhost:4200/#/common/display/tag/composition-with-cngxicon</example-url>
- * <example-url>http://localhost:4200/#/common/display/tag/density</example-url>
- * <example-url>http://localhost:4200/#/common/display/tag/group-semantic-list</example-url>
- * <example-url>http://localhost:4200/#/common/display/tag/group-with-header-accessory</example-url>
- * <example-url>http://localhost:4200/#/common/display/tag/layout-only-alignment</example-url>
- * <example-url>http://localhost:4200/#/common/display/tag/layout-only-gap-variants</example-url>
- * <example-url>http://localhost:4200/#/common/display/tag/link-mode</example-url>
- * <example-url>http://localhost:4200/#/common/display/tag/slot-overrides-custom-label</example-url>
- * <example-url>http://localhost:4200/#/common/display/tag/slot-overrides-prefix-label-suffix</example-url>
- * <example-url>http://localhost:4200/#/common/display/tag/truncate-maxwidth</example-url>
- * <example-url>http://localhost:4200/#/common/display/tag/variant-matrix</example-url>
+ * <example-url>/#/common/display/tag/app-wide-defaults-via-providetagconfig</example-url>
+ * <example-url>/#/common/display/tag/color-palette</example-url>
+ * <example-url>/#/common/display/tag/composition-with-cngxicon</example-url>
+ * <example-url>/#/common/display/tag/density</example-url>
+ * <example-url>/#/common/display/tag/group-semantic-list</example-url>
+ * <example-url>/#/common/display/tag/group-with-header-accessory</example-url>
+ * <example-url>/#/common/display/tag/layout-only-alignment</example-url>
+ * <example-url>/#/common/display/tag/layout-only-gap-variants</example-url>
+ * <example-url>/#/common/display/tag/link-mode</example-url>
+ * <example-url>/#/common/display/tag/slot-overrides-custom-label</example-url>
+ * <example-url>/#/common/display/tag/slot-overrides-prefix-label-suffix</example-url>
+ * <example-url>/#/common/display/tag/truncate-maxwidth</example-url>
+ * <example-url>/#/common/display/tag/variant-matrix</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxTagSuffix]',

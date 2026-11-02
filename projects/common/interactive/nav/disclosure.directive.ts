@@ -47,9 +47,9 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/disclosure.directive.ts
  * @since 0.1.0
  * @relatedTo CngxNavGroup, CngxExpandable, CngxPopoverTrigger
- * <example-url>http://localhost:4200/#/common/interactive/disclosure/basic-uncontrolled</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/disclosure/controlled-mode</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/disclosure/faq-accordion</example-url>
+ * <example-url>/#/common/interactive/disclosure/basic-uncontrolled</example-url>
+ * <example-url>/#/common/interactive/disclosure/controlled-mode</example-url>
+ * <example-url>/#/common/interactive/disclosure/faq-accordion</example-url>
  * @axis level atom
  */
 @Directive({

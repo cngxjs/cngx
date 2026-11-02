@@ -46,7 +46,7 @@ export function connectPaginateResetOn(paginate: CngxPaginate, key: () => unknow
  * ```html
  * <table cngxPaginate [cngxPaginateResetOn]="filter()"><!-- ... --></table>
  * ```
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
+ * <example-url>/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/paginate/paginate-reset.directive.ts

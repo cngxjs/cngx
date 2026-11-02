@@ -96,9 +96,9 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
  * @slot cngxPending Replaces the label while the action runs.
  * @slot cngxSucceeded Replaces the label after the action succeeds.
  * @slot cngxFailed Replaces the label when the action fails; gets the error.
- * <example-url>http://localhost:4200/#/ui/action-button/async-button/random-outcome</example-url>
- * <example-url>http://localhost:4200/#/ui/action-button/async-button/string-labels</example-url>
- * <example-url>http://localhost:4200/#/ui/action-button/async-button/template-slots</example-url>
+ * <example-url>/#/ui/action-button/async-button/random-outcome</example-url>
+ * <example-url>/#/ui/action-button/async-button/string-labels</example-url>
+ * <example-url>/#/ui/action-button/async-button/template-slots</example-url>
  * @axis level organism
  */
 @Component({

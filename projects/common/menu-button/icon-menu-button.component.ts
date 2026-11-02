@@ -68,8 +68,8 @@ import { CNGX_SPLIT_BUTTON } from './split-button.token';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/icon-menu-button.component.ts
  * @since 0.1.0
  * @relatedTo CngxMenuButton, CngxSplitButton, CngxIconButton, CngxMenuTrigger, CNGX_MENU_BUTTON_I18N
- * <example-url>http://localhost:4200/#/common/menu-button/icon-menu-button/kebab</example-url>
- * <example-url>http://localhost:4200/#/common/menu-button/split-button/basic</example-url>
+ * <example-url>/#/common/menu-button/icon-menu-button/kebab</example-url>
+ * <example-url>/#/common/menu-button/split-button/basic</example-url>
  * @axis level molecule
  */
 @Component({

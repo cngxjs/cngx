@@ -116,7 +116,7 @@ export function provideRecyclerPlaceholderRow(
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/recycler/recycler-row.directive.ts
  * @since 0.1.0
  * @relatedTo injectRecycler, CngxRecyclerPlaceholder, CngxVirtualItem, CngxMeasure
- * <example-url>http://localhost:4200/#/common/data/recycler/windowed-data-availability</example-url>
+ * <example-url>/#/common/data/recycler/windowed-data-availability</example-url>
  * @axis level molecule
  */
 @Directive({

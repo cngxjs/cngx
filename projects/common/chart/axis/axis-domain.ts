@@ -41,8 +41,8 @@ const NO_RESERVATION: Signal<number> = signal(0).asReadonly();
  * @since 0.1.0
  * @relatedTo CngxAxis, CngxChart, CngxChartAxis
  *
- * <example-url>http://localhost:4200/#/ui/chart-panel/basic/titled-panel-with-legend</example-url>
- * <example-url>http://localhost:4200/#/ui/chart-panel/slots/actions-and-footer</example-url>
+ * <example-url>/#/ui/chart-panel/basic/titled-panel-with-legend</example-url>
+ * <example-url>/#/ui/chart-panel/slots/actions-and-footer</example-url>
  */
 @Directive({
   selector: '[cngxAxisDomain]',

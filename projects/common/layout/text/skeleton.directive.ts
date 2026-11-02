@@ -46,8 +46,8 @@ import { createMediaQuerySignal } from '@cngx/core/utils';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/text/skeleton.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTruncate, CngxExpandableText, CngxHighlight
- * <example-url>http://localhost:4200/#/common/layout/skeleton/basic-skeleton</example-url>
- * <example-url>http://localhost:4200/#/common/layout/skeleton/skeleton-container</example-url>
+ * <example-url>/#/common/layout/skeleton/basic-skeleton</example-url>
+ * <example-url>/#/common/layout/skeleton/skeleton-container</example-url>
  * @axis level atom
  */
 @Directive({

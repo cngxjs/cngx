@@ -10,6 +10,10 @@ describe('rebaseUrl', () => {
     expect(rebaseUrl(LOCAL, BASE)).toBe(`${BASE}/#/ui/feedback/toast/basic`);
   });
 
+  it('puts a relative hash route under the base', () => {
+    expect(rebaseUrl('/#/ui/feedback/toast/basic', BASE)).toBe(`${BASE}/#/ui/feedback/toast/basic`);
+  });
+
   it('leaves a URL without a hash route alone', () => {
     expect(rebaseUrl('http://localhost:4200/plain', BASE)).toBe('http://localhost:4200/plain');
   });

@@ -26,12 +26,12 @@ import type { CngxRecycler } from './recycler';
  * @since 0.1.0
  * @relatedTo CngxMeasure, CngxRecyclerAnnouncer, injectRecycler
  *
- * <example-url>http://localhost:4200/#/common/data/recycler/basic-list-fixed-item-height</example-url>
- * <example-url>http://localhost:4200/#/common/data/recycler/content-visibility-css-only</example-url>
- * <example-url>http://localhost:4200/#/common/data/recycler/infinite-scroll-recycler</example-url>
- * <example-url>http://localhost:4200/#/common/data/recycler/scrolltoindex-deep-link</example-url>
- * <example-url>http://localhost:4200/#/common/data/recycler/variable-heights-cngxmeasure</example-url>
- * <example-url>http://localhost:4200/#/common/data/recycler/with-cngxasyncstate-skeleton-first-load</example-url>
+ * <example-url>/#/common/data/recycler/basic-list-fixed-item-height</example-url>
+ * <example-url>/#/common/data/recycler/content-visibility-css-only</example-url>
+ * <example-url>/#/common/data/recycler/infinite-scroll-recycler</example-url>
+ * <example-url>/#/common/data/recycler/scrolltoindex-deep-link</example-url>
+ * <example-url>/#/common/data/recycler/variable-heights-cngxmeasure</example-url>
+ * <example-url>/#/common/data/recycler/with-cngxasyncstate-skeleton-first-load</example-url>
  */
 @Directive({
   selector: '[cngxVirtualItem]',

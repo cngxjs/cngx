@@ -107,8 +107,8 @@ function dotsEqual(a: DotModel, b: DotModel): boolean {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-dots.component.ts
  * @since 0.1.0
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/dots/dots</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/dots</example-url>
+ * <example-url>/#/ui/paginator/paginator-parts/dots/dots</example-url>
+ * <example-url>/#/ui/paginator/paginator-skins/dots</example-url>
  * @axis level atom
  */
 @Component({

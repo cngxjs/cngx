@@ -18,7 +18,7 @@ import { CngxErrorRegistry } from './error-registry';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/inject-error-scope.ts
  * @since 0.1.0
  * @relatedTo CngxErrorScope
- * <example-url>http://localhost:4200/#/common/interactive/error/registry/inject-error-scope-programmatic</example-url>
+ * <example-url>/#/common/interactive/error/registry/inject-error-scope-programmatic</example-url>
  */
 export function injectErrorScope(name?: string): CngxErrorScopeContract {
   const showErrorsState = signal(false);

@@ -44,9 +44,9 @@ export type CngxBadgePosition =
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/badge/badge.directive.ts
  * @since 0.1.0
  * @relatedTo CngxAvatar, CngxIcon, CngxChip
- * <example-url>http://localhost:4200/#/common/display/badge/colors-and-dot-mode</example-url>
- * <example-url>http://localhost:4200/#/common/display/badge/counts-with-overflow</example-url>
- * <example-url>http://localhost:4200/#/common/display/badge/inline-and-hidden</example-url>
+ * <example-url>/#/common/display/badge/colors-and-dot-mode</example-url>
+ * <example-url>/#/common/display/badge/counts-with-overflow</example-url>
+ * <example-url>/#/common/display/badge/inline-and-hidden</example-url>
  * @axis level atom
  */
 @Directive({

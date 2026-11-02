@@ -4,6 +4,7 @@
 // theme tokens here, never a DI-token list.
 
 import { z } from 'zod';
+import type { RenderOptions } from '../command.js';
 import { defineCommand } from '../command.js';
 import { versionInput } from './version-input.js';
 import { answerVersioned } from '../data/docs-resolver.js';
@@ -50,18 +51,27 @@ export function getThemeTokens(docs: DocsIndex, name: string): ThemeTokensResult
 }
 
 /** The theme overview and the tokens as one table under the component name. */
-export function themeTokensMarkdown(theme: ThemeTokensResult | AmbiguousMatch | null): string {
+/** `compact` drops the theme overview and the description column. */
+export function themeTokensMarkdown(theme: ThemeTokensResult | AmbiguousMatch | null, opts: RenderOptions = {}): string {
   if (!theme) {
     return 'No component or directive by that name.\n';
   }
   if (isAmbiguous(theme)) {
     return ambiguousMarkdown(theme);
   }
-  const rows = theme.themeTokens.map((t) => [code(t.name), cell(t.kind), code(t.type), code(t.defaultValue), textCell(t.description)]);
+  const compact = opts.compact === true;
+  const rows = theme.themeTokens.map((t) => [
+    code(t.name),
+    cell(t.kind),
+    code(t.type),
+    code(t.defaultValue),
+    ...(compact ? [] : [textCell(t.description)]),
+  ]);
+  const headers = ['Token', 'Kind', 'Type', 'Default', ...(compact ? [] : ['Description'])];
   return blocks(
     `# ${theme.name} theme tokens`,
-    docText(theme.themeOverview),
-    rows.length ? table(['Token', 'Kind', 'Type', 'Default', 'Description'], rows) : 'No theming tokens.',
+    !compact && docText(theme.themeOverview),
+    rows.length ? table(headers, rows) : 'No theming tokens.',
   );
 }
 
@@ -86,5 +96,5 @@ export const getThemeTokensCommand = defineCommand({
   cliFlags: { version: 'cngx-version' },
   run: (ctx, { name, version }) => answerVersioned(ctx.resolve, version, (resolved) => getThemeTokens(resolved, name)),
   found: foundUnlessAmbiguous,
-  toMarkdown: (theme: ThemeTokensResult | AmbiguousMatch | null) => themeTokensMarkdown(theme),
+  toMarkdown: (theme: ThemeTokensResult | AmbiguousMatch | null, opts) => themeTokensMarkdown(theme, opts),
 });

@@ -193,11 +193,11 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
  * @since 0.1.0
  * @relatedTo CngxMultiSelect, CngxSelect, CngxCombobox, CngxTreeSelect
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
- * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/basic-drag-chips-via-mouse-touch</example-url>
- * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end</example-url>
- * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/optional-drag-handle-glyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/pre-seeded-values-reorder-log</example-url>
- * <example-url>http://localhost:4200/#/forms/select/mobile-sheet/all-variants</example-url>
+ * <example-url>/#/forms/select/reorderable-multi-select/basic-drag-chips-via-mouse-touch</example-url>
+ * <example-url>/#/forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end</example-url>
+ * <example-url>/#/forms/select/reorderable-multi-select/optional-drag-handle-glyph</example-url>
+ * <example-url>/#/forms/select/reorderable-multi-select/pre-seeded-values-reorder-log</example-url>
+ * <example-url>/#/forms/select/mobile-sheet/all-variants</example-url>
  * @slot cngxSelectCheck Replaces the checkbox indicator on each option row unless hideSelectionIndicator is set; gets option, selected, variant, position, and indeterminate (always false here, absent under the radio variant).
  * @slot cngxSelectCaret Replaces the trigger caret unless hideCaret is set; gets open.
  * @slot cngxSelectOptgroup Replaces the header of each option group in the panel; gets group.

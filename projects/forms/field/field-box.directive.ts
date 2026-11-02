@@ -74,10 +74,10 @@ import { CngxFieldSkinHost } from './field-skin.directive';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/field-box.directive.ts
  * @since 0.2.0
  * @relatedTo CngxPrefix, CngxSuffix, CngxLabel, CngxFormField, CngxInput, CngxFieldSkinHost, CNGX_FIELD_BOX
- * <example-url>http://localhost:4200/#/forms/field/affix/currency-and-unit</example-url>
- * <example-url>http://localhost:4200/#/forms/field/skin/outline-anatomy</example-url>
- * <example-url>http://localhost:4200/#/forms/field/skin/fill-anatomy</example-url>
- * <example-url>http://localhost:4200/#/forms/field/skin/bare-anatomy</example-url>
+ * <example-url>/#/forms/field/affix/currency-and-unit</example-url>
+ * <example-url>/#/forms/field/skin/outline-anatomy</example-url>
+ * <example-url>/#/forms/field/skin/fill-anatomy</example-url>
+ * <example-url>/#/forms/field/skin/bare-anatomy</example-url>
  */
 @Directive({
   selector: '[cngxFieldBox]',

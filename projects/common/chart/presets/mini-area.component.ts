@@ -24,8 +24,8 @@ import { injectPresetState } from './preset-state';
  * @since 0.1.0
  * @relatedTo CngxSparkline, CngxMiniBar, CngxChart
  *
- * <example-url>http://localhost:4200/#/common/chart/mini-area/async-state-machine</example-url>
- * <example-url>http://localhost:4200/#/common/chart/mini-area/inline-area-trends</example-url>
+ * <example-url>/#/common/chart/mini-area/async-state-machine</example-url>
+ * <example-url>/#/common/chart/mini-area/inline-area-trends</example-url>
  * @axis level atom
  */
 @Component({

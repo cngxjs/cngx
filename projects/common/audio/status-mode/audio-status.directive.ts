@@ -40,7 +40,7 @@ import { parseStatusBindings } from './parse-status-bindings';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/status-mode/audio-status.directive.ts
  * @since 0.1.0
  * @relatedTo CngxAudio, injectCngxAudio, CngxAsyncClick
- * <example-url>http://localhost:4200/#/common/audio/status-bridge/async-click</example-url>
+ * <example-url>/#/common/audio/status-bridge/async-click</example-url>
  * @axis level atom
  */
 @Directive({

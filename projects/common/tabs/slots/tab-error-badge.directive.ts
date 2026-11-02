@@ -33,7 +33,7 @@ export interface CngxTabErrorBadgeContext {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/slots/tab-error-badge.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTabRejectionIcon, CngxTabBusySpinner, CngxTab
- * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/custom-error-badge-via-code-cngxtaberrorbadge-code</example-url>
+ * <example-url>/#/ui/tabs/tab-slot-overrides/custom-error-badge-via-code-cngxtaberrorbadge-code</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxTabErrorBadge]',

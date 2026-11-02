@@ -306,9 +306,9 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  * @relatedTo CngxInput, CngxInputFormat, CngxNumericInput, CngxFormBridge, withMaskPlaceholder, withMaskGuide, withCustomTokens
  * @playground All presets ./examples/all-presets/all-presets-example.component.ts
  * @playground Build your own pattern ./examples/pattern-builder/pattern-builder-example.component.ts
- * <example-url>http://localhost:4200/#/forms/input/mask/custom-pattern</example-url>
- * <example-url>http://localhost:4200/#/forms/input/mask/custom-tokens-and-transform</example-url>
- * <example-url>http://localhost:4200/#/forms/input/mask/locale-presets</example-url>
+ * <example-url>/#/forms/input/mask/custom-pattern</example-url>
+ * <example-url>/#/forms/input/mask/custom-tokens-and-transform</example-url>
+ * <example-url>/#/forms/input/mask/locale-presets</example-url>
  * @axis level atom
  */
 @Directive({

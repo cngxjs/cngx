@@ -38,11 +38,11 @@ import {
  * @selector [cngxInput]
  * @since 0.1.0
  * @relatedTo CngxFormField, CngxCharCount, CngxPasswordToggle, CngxInputClear, CngxFieldSkinHost
- * <example-url>http://localhost:4200/#/forms/input/character-counter</example-url>
- * <example-url>http://localhost:4200/#/forms/input/password-visibility-toggle</example-url>
- * <example-url>http://localhost:4200/#/forms/input/smart-autocomplete-and-spellcheck</example-url>
- * <example-url>http://localhost:4200/#/forms/field/skin/fill</example-url>
- * <example-url>http://localhost:4200/#/forms/field/skin/bare-cell-edit</example-url>
+ * <example-url>/#/forms/input/character-counter</example-url>
+ * <example-url>/#/forms/input/password-visibility-toggle</example-url>
+ * <example-url>/#/forms/input/smart-autocomplete-and-spellcheck</example-url>
+ * <example-url>/#/forms/field/skin/fill</example-url>
+ * <example-url>/#/forms/field/skin/bare-cell-edit</example-url>
  * @axis level molecule
  */
 @Directive({

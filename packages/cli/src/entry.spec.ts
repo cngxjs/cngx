@@ -2,7 +2,7 @@
 // the plan's process matrix. Runs the built entry the way a shell does, so it
 // needs `npm run build:cli` first (dist/ and the bundled data/).
 import { spawn, spawnSync } from 'node:child_process';
-import { closeSync, copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, openSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { closeSync, copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,7 +16,17 @@ const DATA = fileURLToPath(new URL('../data/documentation.json', import.meta.url
 const PIPE_BUFFER = 65536;
 const BIG = ['list', '--format=json'];
 
-const run = (...args: string[]) => spawnSync(process.execPath, [ENTRY, ...args], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+// Every run starts inside a project that has @cngx/core installed at the bundled
+// version, so the installed-version detector pins to the bundled snapshot and
+// says nothing: stderr carries only what a spec asserts.
+const PROJECT = mkdtempSync(join(tmpdir(), 'cngx-entry-project-'));
+const BUNDLED_VERSION = existsSync(DATA) ? (JSON.parse(readFileSync(DATA, 'utf8')) as { cngxVersion?: string }).cngxVersion : undefined;
+mkdirSync(join(PROJECT, 'node_modules', '@cngx', 'core'), { recursive: true });
+writeFileSync(join(PROJECT, 'node_modules', '@cngx', 'core', 'package.json'), JSON.stringify({ name: '@cngx/core', version: BUNDLED_VERSION }));
+afterAll(() => rmSync(PROJECT, { recursive: true, force: true }));
+
+const run = (...args: string[]) =>
+  spawnSync(process.execPath, [ENTRY, ...args], { cwd: PROJECT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
 
 describe('the built entry', () => {
   beforeAll(() => {
@@ -57,7 +67,7 @@ describe('the built entry', () => {
     // snapshot, makes its write fail with EPIPE every time. Waiting for a first
     // chunk instead races the parent's 64 KiB reads against the pipe buffer, and
     // an unguarded entry then passes whenever both together absorb the output.
-    const child = spawn(process.execPath, [ENTRY, ...BIG], { stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(process.execPath, [ENTRY, ...BIG], { cwd: PROJECT, stdio: ['ignore', 'pipe', 'pipe'] });
     let stderr = '';
     child.stderr.setEncoding('utf8').on('data', (chunk: string) => (stderr += chunk));
     child.stdout.destroy();
@@ -80,7 +90,7 @@ describe('the built entry', () => {
     afterAll(() => rmSync(hookDir, { recursive: true, force: true }));
 
     it('exits 3 with one stderr line and no stack trace', () => {
-      const result = spawnSync(process.execPath, ['--import', hook, ENTRY, 'api', 'CngxSelect'], { encoding: 'utf8' });
+      const result = spawnSync(process.execPath, ['--import', hook, ENTRY, 'api', 'CngxSelect'], { cwd: PROJECT, encoding: 'utf8' });
 
       expect(result.status).toBe(3);
       expect(result.stderr).toBe('cngx: internal error: ENOSPC: no space left on device, write\n');
@@ -129,7 +139,7 @@ describe('the built entry', () => {
   it('keeps exit 2 when stderr is a read-only file and the usage line cannot be written', () => {
     const fd = openSync('/etc/hosts', 'r');
     try {
-      const result = spawnSync(process.execPath, [ENTRY, 'bogus'], { encoding: 'utf8', stdio: ['ignore', 'pipe', fd] });
+      const result = spawnSync(process.execPath, [ENTRY, 'bogus'], { cwd: PROJECT, encoding: 'utf8', stdio: ['ignore', 'pipe', fd] });
 
       expect(result.status).toBe(2);
       expect(result.stdout).toBe('');
@@ -190,7 +200,7 @@ describe('the built entry', () => {
     const throwingAdapter = { 'cli-adapter.js': "throw new Error('adapter failed to load');\n" };
 
     it('exits 3 with one stderr line when the adapter fails to load', () => {
-      const result = spawnSync(process.execPath, [copiedEntry(throwingAdapter), 'api', 'CngxSelect'], { encoding: 'utf8' });
+      const result = spawnSync(process.execPath, [copiedEntry(throwingAdapter), 'api', 'CngxSelect'], { cwd: PROJECT, encoding: 'utf8' });
 
       expect(result.status).toBe(3);
       expect(result.stdout).toBe('');
@@ -198,7 +208,7 @@ describe('the built entry', () => {
     });
 
     it.each([['--format', 'json'], ['--format=json']])('prints one json failure document under %s', (...format) => {
-      const result = spawnSync(process.execPath, [copiedEntry(throwingAdapter), 'api', 'CngxSelect', ...format], { encoding: 'utf8' });
+      const result = spawnSync(process.execPath, [copiedEntry(throwingAdapter), 'api', 'CngxSelect', ...format], { cwd: PROJECT, encoding: 'utf8' });
 
       expect(result.status).toBe(3);
       expect(result.stderr).toBe('cngx: internal error: adapter failed to load\n');
@@ -214,7 +224,7 @@ describe('the built entry', () => {
       [['--format=json', '--format=md']],
       [['--', '--format=json']],
     ])('prints no document when the last --format before -- is not json: %j', (args) => {
-      const result = spawnSync(process.execPath, [copiedEntry(throwingAdapter), 'api', 'CngxSelect', ...args], { encoding: 'utf8' });
+      const result = spawnSync(process.execPath, [copiedEntry(throwingAdapter), 'api', 'CngxSelect', ...args], { cwd: PROJECT, encoding: 'utf8' });
 
       expect(result.status).toBe(3);
       expect(result.stdout).toBe('');
@@ -223,11 +233,59 @@ describe('the built entry', () => {
 
     it('exits 2 with the floor message when the node floor check fails', () => {
       const floor = { 'node-floor.js': "export const checkNodeFloor = () => 'cngx: Node 99 or newer is required (running test).';\n" };
-      const result = spawnSync(process.execPath, [copiedEntry(floor), 'api', 'CngxSelect'], { encoding: 'utf8' });
+      const result = spawnSync(process.execPath, [copiedEntry(floor), 'api', 'CngxSelect'], { cwd: PROJECT, encoding: 'utf8' });
 
       expect(result.status).toBe(2);
       expect(result.stdout).toBe('');
       expect(result.stderr).toBe('cngx: Node 99 or newer is required (running test).\n');
     });
+  });
+});
+
+// Source: the "Detected version" and "--offline" decision rows of the phase-4
+// plan. These run main() unstubbed: the disk cache, the installed-version
+// detector and the offline pass-through, which cli-adapter.spec injects as fakes.
+// --offline keeps every case off the network.
+describe('the built entry wires the cache, the detector and --offline', () => {
+  const cacheDir = () => mkdtempSync(join(tmpdir(), 'cngx-entry-cache-'));
+  const runIn = (cwd: string, env: Record<string, string>, ...args: string[]) =>
+    spawnSync(process.execPath, [ENTRY, ...args], { cwd, encoding: 'utf8', env: { ...process.env, ...env } });
+
+  it('pins to the installed release and, under --offline, falls back without a fetch', () => {
+    const project = mkdtempSync(join(tmpdir(), 'cngx-entry-pinned-'));
+    mkdirSync(join(project, 'node_modules', '@cngx', 'core'), { recursive: true });
+    writeFileSync(join(project, 'node_modules', '@cngx', 'core', 'package.json'), JSON.stringify({ name: '@cngx/core', version: '9.9.9' }));
+
+    const result = runIn(project, { CNGX_CACHE_DIR: cacheDir() }, 'api', 'CngxSelect', '--offline');
+
+    expect(result.status).toBe(0);
+    expect(result.stdout.split('\n')[0]).toBe(`> cngx ${BUNDLED_VERSION}`);
+    expect(result.stderr).toContain(`cngx: answering for the installed cngx 9.9.9; the bundled snapshot is ${BUNDLED_VERSION}.`);
+    expect(result.stderr).toContain('v9.9.9 is not cached and --offline forbids a fetch.');
+    rmSync(project, { recursive: true, force: true });
+  });
+
+  it('answers an explicit release from a seeded disk cache under --offline', () => {
+    const cache = cacheDir();
+    const entry = join(cache, 'snapshots', '0.0.9');
+    mkdirSync(entry, { recursive: true });
+    const doc = JSON.parse(readFileSync(DATA, 'utf8')) as Record<string, unknown>;
+    writeFileSync(join(entry, 'documentation.json'), JSON.stringify({ ...doc, cngxVersion: '0.0.9' }));
+
+    const result = runIn(PROJECT, { CNGX_CACHE_DIR: cache }, 'api', 'CngxSelect', '--cngx-version=0.0.9', '--offline');
+
+    expect(result.status).toBe(0);
+    expect(result.stdout.split('\n')[0]).toBe('> cngx 0.0.9');
+    expect(result.stderr).toBe('');
+    rmSync(cache, { recursive: true, force: true });
+  });
+
+  it('exits 1 for an explicit release missing from an empty cache under --offline', () => {
+    const cache = cacheDir();
+    const result = runIn(PROJECT, { CNGX_CACHE_DIR: cache }, 'api', 'CngxSelect', '--cngx-version=0.0.9', '--offline');
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toBe('cngx api: asset-missing: v0.0.9 is not cached and --offline forbids a fetch.\n');
+    rmSync(cache, { recursive: true, force: true });
   });
 });

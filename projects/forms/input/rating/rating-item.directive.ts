@@ -39,7 +39,7 @@ export interface CngxRatingItemContext {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/rating/rating-item.directive.ts
  * @since 0.1.0
  * @relatedTo CngxRating
- * <example-url>http://localhost:4200/#/forms/input/rating/basic</example-url>
+ * <example-url>/#/forms/input/rating/basic</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxRatingItem]',

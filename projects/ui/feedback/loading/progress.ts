@@ -47,9 +47,9 @@ const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
  * @since 0.1.0
  * @relatedTo CngxLoadingIndicator, CngxLoadingOverlay, CngxAsyncContainer
  *
- * <example-url>http://localhost:4200/#/ui/feedback/progress/circular-variant</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/progress/linear-determinate</example-url>
- * <example-url>http://localhost:4200/#/ui/feedback/progress/linear-indeterminate</example-url>
+ * <example-url>/#/ui/feedback/progress/circular-variant</example-url>
+ * <example-url>/#/ui/feedback/progress/linear-determinate</example-url>
+ * <example-url>/#/ui/feedback/progress/linear-indeterminate</example-url>
  * @axis level atom
  */
 @Component({

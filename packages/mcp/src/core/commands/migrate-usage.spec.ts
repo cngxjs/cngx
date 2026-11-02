@@ -50,7 +50,7 @@ describe('migrateUsage', () => {
     expect(result.ok).toBe(true);
     expect((result as UsageDelta).meta.resolvedFrom).toBe('0.1.0');
     expect(fetchSnapshot).toHaveBeenCalledWith('0.1.0');
-    expect(migrateUsageCommand.input.from.description).toContain('a leading "v" is accepted');
+    expect(migrateUsageCommand.input.from.description).toContain('a leading "v" or "V" is accepted');
   });
 
   it.each([

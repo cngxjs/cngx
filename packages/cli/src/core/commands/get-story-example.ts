@@ -6,6 +6,7 @@
 // labelled source references, never as openable links.
 
 import { z } from 'zod';
+import type { RenderOptions } from '../command.js';
 import { defineCommand } from '../command.js';
 import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
@@ -46,7 +47,8 @@ export function getStoryExample(docs: DocsIndex, name: string): StoryExampleResu
 }
 
 /** The example links, the StackBlitz link and the source references under the component name. */
-export function storyExampleMarkdown(example: StoryExampleResult | AmbiguousMatch | null): string {
+/** `compact` keeps the openable links and drops the repo-internal source references. */
+export function storyExampleMarkdown(example: StoryExampleResult | AmbiguousMatch | null, opts: RenderOptions = {}): string {
   if (!example) {
     return 'No component or directive by that name.\n';
   }
@@ -58,7 +60,7 @@ export function storyExampleMarkdown(example: StoryExampleResult | AmbiguousMatc
     `# ${example.name} examples`,
     section('Examples', bullets(example.exampleUrls), 'No example links.'),
     example.stackblitzUrl && `StackBlitz: ${example.stackblitzUrl}`,
-    refs.length > 0 && section('Source references (repo-internal, not openable links)', bullets(refs), ''),
+    opts.compact !== true && refs.length > 0 && section('Source references (repo-internal, not openable links)', bullets(refs), ''),
   );
 }
 
@@ -82,5 +84,5 @@ export const getStoryExampleCommand = defineCommand({
   // No `version` input: example URLs track the live docs site, so the answer always grounds on the bundled release.
   run: (ctx, { name }) => answerVersioned(ctx.resolve, undefined, (docs) => getStoryExample(docs, name)),
   found: foundUnlessAmbiguous,
-  toMarkdown: (example: StoryExampleResult | AmbiguousMatch | null) => storyExampleMarkdown(example),
+  toMarkdown: (example: StoryExampleResult | AmbiguousMatch | null, opts) => storyExampleMarkdown(example, opts),
 });

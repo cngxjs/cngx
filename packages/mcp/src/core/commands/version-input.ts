@@ -10,7 +10,7 @@ export const versionInput = z
   .string()
   .optional()
   .describe(
-    'Optional cngx version to ground the answer against, e.g. "0.2.0". Omit to answer from the ' +
+    'Optional cngx version to ground the answer against, e.g. "0.2.0"; a leading "v" or "V" is accepted. Omit to answer from the ' +
       'bundled snapshot offline; a non-bundled version fetches that release snapshot via gh, or over HTTPS ' +
       'when gh is missing or fails (fail-safe).',
   );

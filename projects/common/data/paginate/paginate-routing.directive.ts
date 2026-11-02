@@ -36,7 +36,7 @@ import { injectPaginate } from './inject-paginate';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/paginate/paginate-routing.directive.ts
  * @since 0.1.0
  * @relatedTo CngxPaginate, CngxPaginator, CngxMatPaginator
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/url-synced-paging</example-url>
+ * <example-url>/#/ui/paginator/paginator-behaviors/url-synced-paging</example-url>
  * @axis level organism
  */
 @Directive({

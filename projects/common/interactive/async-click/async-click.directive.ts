@@ -69,8 +69,8 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-click/async-click.directive.ts
  * @since 0.1.0
  * @relatedTo CngxPending, CngxSucceeded, CngxFailed, CngxActionButton
- * <example-url>http://localhost:4200/#/common/interactive/retry/optimistic-instant-like-toggle</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/retry/createretry-cngxasyncclick</example-url>
+ * <example-url>/#/common/interactive/retry/optimistic-instant-like-toggle</example-url>
+ * <example-url>/#/common/interactive/retry/createretry-cngxasyncclick</example-url>
  * @axis level atom
  */
 @Directive({

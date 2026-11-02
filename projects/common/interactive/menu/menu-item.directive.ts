@@ -16,10 +16,10 @@ import { injectMenuItemCore } from './menu-item-core';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item.directive.ts
  * @since 0.1.0
  * @relatedTo CngxMenu, CngxMenuItemCheckbox, CngxMenuItemRadio, CngxMenuItemSubmenu
- * <example-url>http://localhost:4200/#/common/interactive/context-menu/right-click-target-zone</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/menu/submenu/two-level-submenu</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/menu/trigger/dropdown-menu</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/menu/base/action-menu-with-separator</example-url>
+ * <example-url>/#/common/interactive/context-menu/right-click-target-zone</example-url>
+ * <example-url>/#/common/interactive/menu/submenu/two-level-submenu</example-url>
+ * <example-url>/#/common/interactive/menu/trigger/dropdown-menu</example-url>
+ * <example-url>/#/common/interactive/menu/base/action-menu-with-separator</example-url>
  */
 @Directive({
   selector: '[cngxMenuItem]',
