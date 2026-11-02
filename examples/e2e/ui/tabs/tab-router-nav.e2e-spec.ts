@@ -74,7 +74,7 @@ test.describe('ui/tabs/tab-router-nav', () => {
     await expect(profile).toHaveAttribute('aria-invalid', 'true');
     await expect(icon).toHaveCount(1);
     await expect(icon).toHaveAttribute('aria-hidden', 'true');
-    await expect(icon.locator('svg path')).toHaveAttribute('d', /^M12 3L2 20\.5h20z/);
+    await expect(icon.locator('svg path.cngx-icon-svg__path')).toHaveAttribute('d', /^M12 3L2 20\.5h20z/);
     await expect(icon).toBeVisible();
     await expect(page.getByRole('link', { name: 'Profile', exact: true })).toHaveCount(1);
 

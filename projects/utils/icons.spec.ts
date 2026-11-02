@@ -8,6 +8,27 @@ const entries = Object.entries(icons).filter(([name]) => name.startsWith('CNGX_I
   CngxIconData,
 ][];
 
+// Glyphs with a signed-off 12-grid drawing; the list grows with each batch.
+const MICRO_ICONS = [
+  'CNGX_ICON_ALERT',
+  'CNGX_ICON_BAN',
+  'CNGX_ICON_BELL',
+  'CNGX_ICON_CARET_DOWN',
+  'CNGX_ICON_CHECK',
+  'CNGX_ICON_CHEVRONS_LEFT',
+  'CNGX_ICON_CHEVRONS_RIGHT',
+  'CNGX_ICON_CHEVRON_LEFT',
+  'CNGX_ICON_CHEVRON_RIGHT',
+  'CNGX_ICON_EXCLAMATION',
+  'CNGX_ICON_EXCLAMATION_SOLID',
+  'CNGX_ICON_INFO',
+  'CNGX_ICON_MINUS',
+  'CNGX_ICON_MORE_HORIZONTAL',
+  'CNGX_ICON_PLUS',
+  'CNGX_ICON_TRASH',
+  'CNGX_ICON_X',
+] as const;
+
 const ARITY: Readonly<Record<string, number>> = {
   M: 2,
   L: 2,
@@ -21,12 +42,17 @@ const ARITY: Readonly<Record<string, number>> = {
   Z: 0,
 };
 
+// Solid silhouettes with rounded corners (ALERT) or a ring crossed by a slash
+// (BAN) have curve end points that are not whole units; only their cut-out
+// marks sit on the grid. Those two are checked against the 12 box instead.
+const CURVED_MICRO: ReadonlySet<string> = new Set(['CNGX_ICON_ALERT', 'CNGX_ICON_BAN']);
+
 /**
  * Every reason a micro `d` leaves the 12 grid. Absolute commands only, so a
  * coordinate in the string is the coordinate on the grid; every number is a
  * whole unit except the arc radii, which may end in `.5`.
  */
-function microGridViolations(d: string): string[] {
+function microGridViolations(d: string, curved = false): string[] {
   const tokens = d.match(/[A-Za-z]|-?\d*\.?\d+/g) ?? [];
   const violations: string[] = [];
   let index = 0;
@@ -52,7 +78,9 @@ function microGridViolations(d: string): string[] {
       }
       args.forEach((arg, position) => {
         const radius = command === 'A' && position < 2;
-        const onGrid = radius ? Number.isInteger(arg * 2) : Number.isInteger(arg);
+        const inBox = arg >= 0 && arg <= 12;
+        const wholeUnit = radius ? Number.isInteger(arg * 2) : Number.isInteger(arg);
+        const onGrid = curved ? inBox : wholeUnit;
         if (!onGrid) {
           violations.push(`${command} ${arg} off the grid`);
         }
@@ -130,7 +158,7 @@ describe('cngx default icon set', () => {
       if (!icon.micro) {
         return [];
       }
-      const problems = microGridViolations(icon.micro.d);
+      const problems = microGridViolations(icon.micro.d, CURVED_MICRO.has(name));
       if (icon.micro.viewBox !== '0 0 12 12') {
         problems.push(`viewBox ${icon.micro.viewBox}`);
       }
@@ -144,6 +172,20 @@ describe('cngx default icon set', () => {
     });
     expect(offGrid).toEqual([]);
   });
+
+  it.each(MICRO_ICONS)('%s carries a micro drawing', (name) => {
+    expect(entries.find(([entry]) => entry === name)?.[1].micro).toBeDefined();
+  });
+
+  // No 12-grid drawing of these read well on the sign-off sheet (the circled X
+  // loses its cross at 12px, the question mark never survived the grid), so they
+  // keep the 24-grid path at every size.
+  it.each(['CNGX_ICON_QUESTION', 'CNGX_ICON_X_CIRCLE'])(
+    '%s stays on the 24-grid path',
+    (name) => {
+      expect(entries.find(([entry]) => entry === name)?.[1].micro).toBeUndefined();
+    },
+  );
 
   it('draws the ban slash from top-left to bottom-right', () => {
     expect(icons.CNGX_ICON_BAN.d).toContain('M5.3 5.3l13.4 13.4');
@@ -167,8 +209,7 @@ describe('cngx default icon set', () => {
   });
 });
 
-// The set carries no micro drawing until the drawings land, so the grid rule
-// above passes vacuously; these fixtures prove it can fail.
+// Fixtures prove the grid rule above can fail.
 describe('micro grid rule', () => {
   it('accepts whole units, repeated arguments and half-unit arc radii', () => {
     expect(microGridViolations('M5 1H7L12 11H0ZM1 6A5 5 0 1 1 11 6A4.5 4.5 0 1 0 2 6Z')).toEqual(
@@ -183,6 +224,11 @@ describe('micro grid rule', () => {
 
   it('rejects a fractional arc end point', () => {
     expect(microGridViolations('M1 6A5 5 0 1 1 10.5 6Z')).toEqual(['A 10.5 off the grid']);
+  });
+
+  it('accepts fractional curve points inside the box when curved, and rejects strays', () => {
+    expect(microGridViolations('M6.514 1.857Q6 1 6.514 1.857Z', true)).toEqual([]);
+    expect(microGridViolations('M6.514 13.5Q6 1 6.514 1.857Z', true)).toEqual(['M 13.5 off the grid']);
   });
 
   it('rejects relative commands', () => {

@@ -7,7 +7,12 @@ import {
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { computedValue } from '@cngx/testing/geometry';
-import { CNGX_ICON_CARET_DOWN, CNGX_ICON_X, type CngxIconData } from '@cngx/utils';
+import {
+  CNGX_ICON_CARET_DOWN,
+  CNGX_ICON_QUESTION,
+  CNGX_ICON_X,
+  type CngxIconData,
+} from '@cngx/utils';
 import { afterEach, describe, expect, it } from 'vitest';
 import { cdp } from 'vitest/browser';
 
@@ -74,6 +79,7 @@ const BAND_SIZES = [9, 10, 12, 14, 15, 24] as const;
       <cngx-icon size="xs">
         <svg class="in-icon-xs" [cngxIconSvg]="icon"></svg>
       </cngx-icon>
+      <svg class="no-micro" style="--cngx-icon-svg-size: 12px" [cngxIconSvg]="withoutMicro"></svg>
       <svg class="one-axis" style="inline-size: auto; block-size: 12px" [cngxIconSvg]="icon"></svg>
       <svg class="one-axis-cap" style="inline-size: auto; max-block-size: 12px" [cngxIconSvg]="icon"></svg>
     </div>
@@ -82,6 +88,7 @@ const BAND_SIZES = [9, 10, 12, 14, 15, 24] as const;
 class IconSvgMicroGeometryHost {
   protected readonly sizes = BAND_SIZES;
   protected readonly icon = WITH_MICRO;
+  protected readonly withoutMicro = CNGX_ICON_QUESTION;
 }
 
 // Loads only the component sheet, as a playground or an ejected skin does.
@@ -244,6 +251,15 @@ describe('CngxIconSvg micro tier', () => {
     expect(visiblePath(svg)).toBe('micro');
   });
 
+  // An icon without a micro drawing has nothing to swap in, so the band must
+  // not hide its only path.
+  it('keeps the 24-grid path in a 12px box when the icon has no micro drawing', () => {
+    const svg = query(mountHost(IconSvgMicroGeometryHost), '.no-micro');
+    expect(svg.getBoundingClientRect().width).toBeCloseTo(12, 1);
+    expect(svg.querySelector('.cngx-icon-svg__micro')).toBeNull();
+    expect(computedValue(query(svg, '.cngx-icon-svg__path'), 'display')).not.toBe('none');
+  });
+
   // Size containment drops the svg's natural ratio, so a rule that sizes one
   // axis (the button-group addon caps the block size, inline size auto) would
   // otherwise collapse or stretch the other one.
@@ -270,6 +286,16 @@ describe('CngxIconSvg micro tier', () => {
     const path = computedValue(query(root, '.band-24 .cngx-icon-svg__path'), 'stroke');
     expect(micro).not.toBe('rgb(255, 0, 0)');
     expect(micro).toBe(path);
+  });
+
+  it('paints a fill glyph without a micro drawing in the forced colour', async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'forced-colors', value: 'active' }],
+    });
+    const svg = query(mountHost(IconSvgMicroGeometryHost), '.no-micro');
+    const fill = computedValue(query(svg, '.cngx-icon-svg__path'), 'fill');
+    expect(fill).not.toBe('rgb(255, 0, 0)');
+    expect(fill).toBe(computedValue(svg, 'color'));
   });
 
   it('paints only the 24-grid path without the global sheet', () => {

@@ -202,11 +202,12 @@
 }
 
 .cngx-dot-stepper__dot-glyph {
-  /* Sized in em of the glyph font (0.75rem): the exclamation mark spans 18 grid
-     units with its stroke, so the 1em box draws it 0.75em tall; the ban ring
-     (22.5 units) draws 0.8em wide. Both keep a rim of the dot fill around them,
-     and stroke width 3 keeps about a pixel at this size. A triangle or a ring
-     inside the round dot would crowd its edge. */
+  /* Sized in em of the glyph font (0.75rem): the 1em box is 12px, which selects
+     the 12-grid micro drawing of the exclamation mark (9 units, 0.75em tall);
+     its 24-grid fill path spans 14 units. The ban ring (22.5 units) draws 0.8em
+     wide, and stroke width 3 keeps about a pixel on it. Both keep a rim of the
+     dot fill around them. A triangle or a ring inside the round dot would crowd
+     its edge. */
   --cngx-icon-svg-size: 1em;
   --cngx-icon-svg-stroke-width: 3;
   /* Positioned like the dot, so the later icon paints over it. */
