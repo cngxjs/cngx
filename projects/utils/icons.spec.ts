@@ -8,6 +8,17 @@ const entries = Object.entries(icons).filter(([name]) => name.startsWith('CNGX_I
   CngxIconData,
 ][];
 
+// Glyphs with a signed-off 12-grid drawing; the list grows with each batch.
+const MICRO_ICONS = [
+  'CNGX_ICON_ALERT',
+  'CNGX_ICON_BAN',
+  'CNGX_ICON_BELL',
+  'CNGX_ICON_CARET_DOWN',
+  'CNGX_ICON_PLUS',
+  'CNGX_ICON_TRASH',
+  'CNGX_ICON_X_CIRCLE',
+] as const;
+
 const ARITY: Readonly<Record<string, number>> = {
   M: 2,
   L: 2,
@@ -145,6 +156,10 @@ describe('cngx default icon set', () => {
     expect(offGrid).toEqual([]);
   });
 
+  it.each(MICRO_ICONS)('%s carries a micro drawing', (name) => {
+    expect(entries.find(([entry]) => entry === name)?.[1].micro).toBeDefined();
+  });
+
   it('draws the ban slash from top-left to bottom-right', () => {
     expect(icons.CNGX_ICON_BAN.d).toContain('M5.3 5.3l13.4 13.4');
   });
@@ -167,8 +182,7 @@ describe('cngx default icon set', () => {
   });
 });
 
-// The set carries no micro drawing until the drawings land, so the grid rule
-// above passes vacuously; these fixtures prove it can fail.
+// Fixtures prove the grid rule above can fail.
 describe('micro grid rule', () => {
   it('accepts whole units, repeated arguments and half-unit arc radii', () => {
     expect(microGridViolations('M5 1H7L12 11H0ZM1 6A5 5 0 1 1 11 6A4.5 4.5 0 1 0 2 6Z')).toEqual(

@@ -67,6 +67,10 @@ export const CNGX_ICON_PLUS = {
   viewBox: '0 0 24 24',
   d: 'M12 3.5v17M3.5 12h17',
   paint: 'stroke',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M5 1H6V5H10V6H6V10H5V6H1V5H5Z',
+  },
 } as const satisfies CngxIconData;
 
 /** Horizontal bar (indeterminate checkbox). @internal */
@@ -81,6 +85,10 @@ export const CNGX_ICON_CARET_DOWN = {
   viewBox: '0 0 24 24',
   d: 'M5 8h14l-7 9z',
   paint: 'fill',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M2 4H10L6 8Z',
+  },
 } as const satisfies CngxIconData;
 
 /** Single chevron pointing to the inline start in LTR. @internal */
@@ -144,6 +152,10 @@ export const CNGX_ICON_ALERT = {
   viewBox: '0 0 24 24',
   d: 'M12 3L2 20.5h20zM12 9.5v5M12 17.5v.01',
   paint: 'stroke',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M5 1H7L12 11H0ZM5 4L2 10H10L7 4ZM5 5H7V7H5ZM5 8H7V9H5Z',
+  },
 } as const satisfies CngxIconData;
 
 /**
@@ -156,6 +168,10 @@ export const CNGX_ICON_BAN = {
   viewBox: '0 0 24 24',
   d: 'M2.5 12a9.5 9.5 0 1 0 19 0a9.5 9.5 0 1 0-19 0zM5.3 5.3l13.4 13.4',
   paint: 'stroke',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M1 6A5 5 0 1 1 11 6A5 5 0 1 1 1 6ZM2 6A4 4 0 1 0 10 6A4 4 0 1 0 2 6ZM3 2L10 9L9 10L2 3Z',
+  },
 } as const satisfies CngxIconData;
 
 /** Two columns of three dots (drag handle). @internal */
@@ -191,6 +207,10 @@ export const CNGX_ICON_TRASH = {
   viewBox: '0 0 24 24',
   d: 'M4 7h16M10 7V4h4v3M6 7l1 13h10l1-13',
   paint: 'stroke',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M4 1H8V3H7V2H5V3H4ZM1 3H11V4H1ZM2 4H3V10H9V4H10V11H2Z',
+  },
 } as const satisfies CngxIconData;
 
 /** Arrow into a tray (download, export). @internal */
@@ -205,6 +225,10 @@ export const CNGX_ICON_X_CIRCLE = {
   viewBox: '0 0 24 24',
   d: 'M2.5 12a9.5 9.5 0 1 0 19 0a9.5 9.5 0 1 0-19 0zM9.5 9.5l5 5M14.5 9.5l-5 5',
   paint: 'stroke',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M1 6A5 5 0 1 1 11 6A5 5 0 1 1 1 6ZM2 6A4 4 0 1 0 10 6A4 4 0 1 0 2 6ZM4 5L5 4L8 7L7 8ZM7 4L8 5L5 8L4 7Z',
+  },
 } as const satisfies CngxIconData;
 
 /** Scissors (cut). @internal */
@@ -282,6 +306,10 @@ export const CNGX_ICON_BELL = {
   viewBox: '0 0 24 24',
   d: 'M5 16.5V11a7 7 0 0 1 14 0v5.5l2 2H3zM9.5 21.5h5',
   paint: 'stroke',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M2 8V5A4 4 0 0 1 10 5V8H11V9H1V8ZM3 8H9V5A3 3 0 0 0 3 5ZM5 10H7V11H5Z',
+  },
 } as const satisfies CngxIconData;
 
 /**
