@@ -1,4 +1,4 @@
-<span class="cngx-select__status cngx-sr-only" role="status" aria-live="polite" aria-atomic="true" [attr.aria-label]="statusText() || null">{{ statusText() }}</span>
+<span class="cngx-select__status cngx-sr-only" role="status" aria-live="polite" aria-atomic="true">{{ statusText() }}</span>
 @if (showActionTop()) {
   @if (host.tpl.action(); as tpl) {
     <div class="cngx-select__action cngx-select__action--top" role="group" [attr.aria-label]="actionLabel()">

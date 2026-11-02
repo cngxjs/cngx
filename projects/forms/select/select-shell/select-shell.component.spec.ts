@@ -529,7 +529,10 @@ describe('CngxSelectShell - Phase 5 scaffold', () => {
 
     const status = shellDe.nativeElement.querySelector('[role="status"]');
     expect(status).not.toBeNull();
-    expect(status!.getAttribute('aria-label')).toBeTruthy();
+    expect(stripBidiIsolates(status!.textContent ?? '').trim()).toBe(
+      CNGX_SELECT_LANGUAGE_EN.statusLoading,
+    );
+    expect(status!.hasAttribute('aria-label')).toBe(false);
   });
 
   it('renders the panel-shell error region with retry when [state] is in first-load error', () => {
