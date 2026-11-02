@@ -52,6 +52,11 @@ export interface SelectBehaviourHostOptions {
    * values so the strip renders two chips addressed by `[data-reorder-index]`.
    */
   readonly chipRoving?: { readonly seed: (cmp: unknown) => void };
+  /**
+   * The variant runs the closed-trigger typeahead: a printable key without a
+   * matching row arms the debounced buffer reset.
+   */
+  readonly closedTypeahead?: boolean;
 }
 
 interface VariantApi {
@@ -445,6 +450,29 @@ export function describeSelectBehaviourHost(
         flush(fixture);
         expect(document.activeElement).toBe(chip(1));
         expect(chip(1).getAttribute('tabindex')).toBe('0');
+      });
+    }
+
+    if (opts.closedTypeahead) {
+      it('cancels the pending typeahead buffer reset when the host is destroyed', () => {
+        vi.useFakeTimers();
+        const { fixture, cmp, trigger } = mount();
+        const debounceMs = (cmp as { typeaheadDebounceInterval: () => number })
+          .typeaheadDebounceInterval();
+        const armed = vi.spyOn(globalThis, 'setTimeout');
+        const cancelled = vi.spyOn(globalThis, 'clearTimeout');
+        // No row starts with 'z': the buffer stays armed, no variant clears it on a match.
+        trigger().dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'z', bubbles: true, cancelable: true }),
+        );
+        const resetIndex = armed.mock.calls.map((call) => call[1]).lastIndexOf(debounceMs);
+        expect(resetIndex).toBeGreaterThanOrEqual(0);
+        const resetTimer = armed.mock.results[resetIndex].value as unknown;
+        expect(cancelled).not.toHaveBeenCalledWith(resetTimer);
+        fixture.destroy();
+        expect(cancelled).toHaveBeenCalledWith(resetTimer);
+        armed.mockRestore();
+        cancelled.mockRestore();
       });
     }
 

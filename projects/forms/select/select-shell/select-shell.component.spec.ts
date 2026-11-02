@@ -1559,6 +1559,7 @@ describeSelectBehaviourHost('CngxSelectShell', CngxSelectShell, 'cngx-select-she
   contentImports: [CngxSelectOption],
   optionSelector: 'cngx-option',
   readValue: (cmp) => (cmp as { value: () => unknown }).value(),
+  closedTypeahead: true,
 });
 
 describe('CngxSelectShell - live projected option text', () => {

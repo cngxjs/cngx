@@ -6,6 +6,7 @@ import {
   ViewEncapsulation,
   computed,
   contentChild,
+  DestroyRef,
   inject,
   Injector,
   input,
@@ -834,6 +835,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     debounceMs: this.typeaheadDebounceInterval,
     disabled: this.core.writeBlocked,
     locale: injectLocale(),
+    destroyRef: inject(DestroyRef),
   });
 
   /**

@@ -1992,6 +1992,7 @@ describeSelectBehaviourHost('CngxSelect', CngxSelect, 'cngx-select', {
   inputs: '[options]="options"',
   optionSelector: '[cngxOption]',
   readValue: (cmp) => (cmp as { value: () => unknown }).value(),
+  closedTypeahead: true,
 });
 
 describe('CngxSelect - highlight across an options swap', () => {

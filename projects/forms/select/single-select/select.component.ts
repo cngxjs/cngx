@@ -6,6 +6,7 @@ import {
   ViewEncapsulation,
   computed,
   contentChild,
+  DestroyRef,
   inject,
   input,
   model,
@@ -775,6 +776,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     debounceMs: this.typeaheadDebounceInterval,
     disabled: this.core.writeBlocked,
     locale: injectLocale(),
+    destroyRef: inject(DestroyRef),
   });
 
   /**

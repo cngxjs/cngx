@@ -740,6 +740,7 @@ describeSelectBehaviourHost(
         (cmp as { values: { set: (v: string[]) => void } }).values.set(['red', 'green']),
     },
     readValue: (cmp) => (cmp as { values: () => unknown }).values(),
+    closedTypeahead: true,
   },
 );
 

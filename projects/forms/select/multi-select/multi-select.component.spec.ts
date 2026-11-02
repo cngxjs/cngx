@@ -1262,6 +1262,7 @@ describeSelectBehaviourHost('CngxMultiSelect', CngxMultiSelect, 'cngx-multi-sele
   inputs: '[options]="options"',
   optionSelector: '[cngxOption]',
   readValue: (cmp) => (cmp as { values: () => unknown }).values(),
+  closedTypeahead: true,
 });
 
 // ── chipOverflow 'truncate' on a fine pointer: hidden values stay reachable ──

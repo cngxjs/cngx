@@ -6,6 +6,7 @@ import {
   ViewEncapsulation,
   computed,
   contentChild,
+  DestroyRef,
   inject,
   input,
   model,
@@ -752,6 +753,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     debounceMs: this.typeaheadDebounceInterval,
     disabled: this.core.writeBlocked,
     locale: injectLocale(),
+    destroyRef: inject(DestroyRef),
   });
 
   /**

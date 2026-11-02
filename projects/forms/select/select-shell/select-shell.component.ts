@@ -978,6 +978,7 @@ export class CngxSelectShell<T = unknown>
     debounceMs: this.typeaheadDebounceInterval,
     disabled: this.core.writeBlocked,
     locale: injectLocale(),
+    destroyRef: inject(DestroyRef),
   });
 
   /**
