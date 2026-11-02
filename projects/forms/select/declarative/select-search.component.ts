@@ -89,13 +89,17 @@ export class CngxSelectSearch {
 
   private readonly inputRef = viewChild.required<ElementRef<HTMLInputElement>>('searchInput');
 
-  private pendingWrite: ReturnType<typeof setTimeout> | undefined;
+  /** Debounced term still waiting for its write into the host. */
+  private pendingWrite: {
+    readonly timer: ReturnType<typeof setTimeout>;
+    readonly term: string;
+  } | null = null;
 
   constructor() {
     // Lead the mobile sheet: the shell makes this input its initial focus
     // once both views exist.
     const destroyRef = inject(DestroyRef);
-    destroyRef.onDestroy(() => clearTimeout(this.pendingWrite));
+    destroyRef.onDestroy(() => this.cancelPendingWrite());
     afterNextRender(() => {
       const release = this.host.registerInitialFocus?.(this.inputRef().nativeElement);
       if (release) {
@@ -123,25 +127,66 @@ export class CngxSelectSearch {
    */
   protected handleInput(event: Event): void {
     const term = (event.target as HTMLInputElement).value;
-    clearTimeout(this.pendingWrite);
+    this.cancelPendingWrite();
     const delay = this.host.searchDebounceMs?.() ?? 0;
     if (delay <= 0) {
       this.host.searchTerm.set(term);
       return;
     }
-    this.pendingWrite = setTimeout(() => this.host.searchTerm.set(term), delay);
+    const timer = setTimeout(() => {
+      this.pendingWrite = null;
+      this.host.searchTerm.set(term);
+    }, delay);
+    this.pendingWrite = { timer, term };
   }
 
   /**
    * Forward navigation keys into the listbox AD while focus stays in
-   * the search input. ArrowUp/Down move highlight, Home/End jump to
-   * ends, Enter activates the current item, Escape closes and
-   * restores focus.
+   * the search input. ArrowUp/Down move highlight, Enter activates the
+   * current item, Escape closes and restores focus. A debounced term still
+   * waiting for its write settles first: Enter writes it at once, so the pick
+   * runs against the filter the user sees; Escape drops it, so no write lands
+   * after the panel closed.
    *
    * @internal
    */
-  protected readonly handleKeydown = createListboxKeyForward(this.host.listboxRef, () => {
+  protected handleKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      this.flushPendingWrite();
+    } else if (event.key === 'Escape') {
+      this.dropPendingWrite();
+    }
+    this.forwardKey(event);
+  }
+
+  private readonly forwardKey = createListboxKeyForward(this.host.listboxRef, () => {
     this.host.close();
     this.host.focus();
   });
+
+  private cancelPendingWrite(): void {
+    if (this.pendingWrite) {
+      clearTimeout(this.pendingWrite.timer);
+      this.pendingWrite = null;
+    }
+  }
+
+  private flushPendingWrite(): void {
+    const pending = this.pendingWrite;
+    if (!pending) {
+      return;
+    }
+    this.cancelPendingWrite();
+    this.host.searchTerm.set(pending.term);
+  }
+
+  // The input keeps the dropped text otherwise: `[value]` re-renders only when
+  // `searchTerm` changes, and the dropped write never changes it.
+  private dropPendingWrite(): void {
+    if (!this.pendingWrite) {
+      return;
+    }
+    this.cancelPendingWrite();
+    this.inputRef().nativeElement.value = this.host.searchTerm();
+  }
 }

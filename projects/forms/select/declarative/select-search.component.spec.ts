@@ -1,7 +1,7 @@
 import { Component, Directive, model, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
   provideSelectConfig,
@@ -164,5 +164,91 @@ describe('CngxSelectSearch placement (CNGX2018)', () => {
     input.value = 'gr';
     input.dispatchEvent(new Event('input'));
     expect(host.searchTerm()).toBe('gr');
+  });
+});
+
+@Directive({
+  selector: '[debouncedSearchHost]',
+  standalone: true,
+  providers: [
+    { provide: CNGX_SELECT_SHELL_SEARCH_HOST, useExisting: DebouncedSearchHostDir },
+  ],
+})
+class DebouncedSearchHostDir {
+  readonly searchTerm = model<string>('');
+  readonly searchDebounceMs = signal(300);
+  readonly writes: string[] = [];
+  readonly termAtActivate: string[] = [];
+  readonly close = vi.fn();
+  readonly focus = vi.fn();
+  readonly listboxRef = signal({
+    ad: {
+      highlightNext: vi.fn(),
+      highlightPrev: vi.fn(),
+      activateCurrent: () => this.termAtActivate.push(this.searchTerm()),
+    },
+  } as never);
+
+  constructor() {
+    this.searchTerm.subscribe((term) => this.writes.push(term));
+  }
+}
+
+@Component({
+  template: `
+    <div debouncedSearchHost>
+      <cngx-select-search />
+    </div>
+  `,
+  imports: [CngxSelectSearch, DebouncedSearchHostDir],
+})
+class HostDebounced {}
+
+describe('CngxSelectSearch - pending debounced write on Escape and Enter', () => {
+  function mountDebounced() {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(HostDebounced);
+    fixture.detectChanges();
+    const host = fixture.debugElement
+      .query(By.directive(DebouncedSearchHostDir))
+      .injector.get(DebouncedSearchHostDir);
+    const input = fixture.debugElement.query(By.css('input[type=search]'))
+      .nativeElement as HTMLInputElement;
+    const type = (term: string) => {
+      input.value = term;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    const press = (key: string) =>
+      input.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+    return { fixture, host, input, type, press };
+  }
+
+  it('writes the term once after the debounce window without a key', () => {
+    const { host, type } = mountDebounced();
+    type('ber');
+    expect(host.writes).toEqual([]);
+    vi.advanceTimersByTime(300);
+    expect(host.writes).toEqual(['ber']);
+  });
+
+  it('Escape drops the pending write: nothing lands after the debounce window', () => {
+    const { host, input, type, press } = mountDebounced();
+    type('ber');
+    press('Escape');
+    expect(host.close).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(1000);
+    expect(host.writes).toEqual([]);
+    expect(host.searchTerm()).toBe('');
+    expect(input.value).toBe('');
+  });
+
+  it('Enter writes the pending term before it activates, and writes nothing later', () => {
+    const { host, type, press } = mountDebounced();
+    type('ber');
+    press('Enter');
+    expect(host.writes).toEqual(['ber']);
+    expect(host.termAtActivate).toEqual(['ber']);
+    vi.advanceTimersByTime(1000);
+    expect(host.writes).toEqual(['ber']);
   });
 });
