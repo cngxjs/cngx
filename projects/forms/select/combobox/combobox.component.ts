@@ -1252,13 +1252,15 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   /**
    * @internal - invoked by `CngxListboxTrigger`'s `(backspaceOnEmpty)`.
-   * Routes through the same commit-aware path as the chip remove button.
+   * Routes through the same commit-aware path and the same owner refocus as
+   * the chip remove button.
    */
   protected removeLastChip(): void {
     const selected = this.selectedOptions();
     if (selected.length === 0) {
       return;
     }
+    this.hostFocus.refocusOwnerBeforeRemoval();
     this.chipRemovalHandler.removeByValue(selected[selected.length - 1]);
   }
 
