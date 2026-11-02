@@ -746,6 +746,21 @@ export class CngxSelectShell<T = unknown>
     return isEmptyScalar(v) ? undefined : v;
   });
 
+  /**
+   * Writes a listbox pick into `value`. Without a commit action the listbox
+   * keeps its own model, so an empty pick (`''`) is reset there too; otherwise
+   * `listboxValue` stays `undefined`, never re-binds, and the row keeps
+   * `aria-selected`.
+   *
+   * @internal
+   */
+  protected handleListboxValueChange(next: T | undefined, listbox: CngxListbox<T>): void {
+    this.value.set(next);
+    if (isEmptyScalar(next)) {
+      listbox.value.set(undefined);
+    }
+  }
+
   protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );

@@ -1608,3 +1608,40 @@ describe('CngxSelectShell - live projected option text', () => {
     expect(fixture.componentInstance.value()).toBe('a');
   });
 });
+
+describe('CngxSelectShell - empty-string option without a commit action', () => {
+  @Component({
+    template: `
+      <cngx-select-shell [label]="'Colour'" [(value)]="value">
+        <cngx-option [value]="'red'">Red</cngx-option>
+        <cngx-option [value]="''">None</cngx-option>
+      </cngx-select-shell>
+    `,
+    imports: [CngxSelectShell, CngxSelectOption],
+  })
+  class EmptyStringHost {
+    readonly value = signal<string | undefined>(undefined);
+  }
+
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({});
+  });
+
+  it('picking the empty-string row from an empty value leaves it unselected', () => {
+    const fixture = TestBed.createComponent(EmptyStringHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const shellEl = fixture.debugElement.query(By.directive(CngxSelectShell)).nativeElement;
+    const trigger = shellEl.querySelector('.cngx-select-shell__trigger') as HTMLElement;
+    trigger.click();
+    flush(fixture);
+    (shellEl.querySelectorAll('cngx-option')[1] as HTMLElement).click();
+    flush(fixture);
+    expect(fixture.componentInstance.value()).toBe('');
+    trigger.click();
+    flush(fixture);
+    const none = shellEl.querySelectorAll('cngx-option')[1] as HTMLElement;
+    expect(none.getAttribute('aria-selected')).not.toBe('true');
+  });
+});

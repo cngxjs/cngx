@@ -540,6 +540,42 @@ describe('CngxSelect - closed typeahead and disabled groups', () => {
   });
 });
 
+describe('CngxSelect - empty-string option without a commit action', () => {
+  @Component({
+    template: `<cngx-select [label]="'Colour'" [options]="options" [(value)]="value" />`,
+    imports: [CngxSelect],
+  })
+  class EmptyStringHost {
+    readonly options: CngxSelectOptionDef<string>[] = [
+      { value: 'red', label: 'Red' },
+      { value: '', label: 'None' },
+    ];
+    readonly value = signal<string | undefined>(undefined);
+  }
+
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [EmptyStringHost] });
+  });
+
+  it('picking the empty-string row from an empty value leaves it unselected', () => {
+    const fixture = TestBed.createComponent(EmptyStringHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const trigger = fixture.nativeElement.querySelector('.cngx-select__trigger') as HTMLElement;
+    trigger.click();
+    flush(fixture);
+    const none = fixture.nativeElement.querySelector('[cngxOption]:nth-of-type(2)') as HTMLElement;
+    none.click();
+    flush(fixture);
+    expect(fixture.componentInstance.value()).toBe('');
+    trigger.click();
+    flush(fixture);
+    const row = fixture.nativeElement.querySelector('[cngxOption]:nth-of-type(2)') as HTMLElement;
+    expect(row.getAttribute('aria-selected')).not.toBe('true');
+  });
+});
+
 describe('inject helpers', () => {
   it('injectSelectConfig returns a fully populated resolved config', () => {
     TestBed.configureTestingModule({});
