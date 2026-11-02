@@ -24,7 +24,7 @@ export type CngxPaginatorPageWindowFn = (
 export type CngxPaginatorPageWindowFactory = () => CngxPaginatorPageWindowFn;
 
 /**
- * Default page-window factory. Resolves to the built-in {@link pageWindow} math
+ * Default page-window factory. Resolves to the built-in `pageWindow` math
  * (one sibling each side, one pinned boundary at each end at the `1 / 1`
  * defaults). The segment builds its window via
  * `inject(CNGX_PAGINATOR_PAGE_WINDOW_FACTORY)()` rather than calling this
