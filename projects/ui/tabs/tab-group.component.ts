@@ -567,8 +567,8 @@ export class CngxTabGroup implements CngxTabPanelHost {
 
   /**
    * Returns the `*cngxTabLabel` template of the tab with the given id, or `null` when the id is unknown
-   * or the tab has no label slot. `CngxTabPanelHost` contract method, called by skin sub-components that
-   * project the label.
+   * or the tab has no label slot. `CngxTabPanelHost` contract method: the tab group template calls it per
+   * tab, and a skin sub-component can call it through `CNGX_TAB_PANEL_HOST`.
    */
   labelTemplateFor(id: string): TemplateRef<unknown> | null {
     return this.tabDirectiveById().get(id)?.labelTemplate()?.templateRef ?? null;
@@ -583,8 +583,8 @@ export class CngxTabGroup implements CngxTabPanelHost {
 
   /**
    * Returns the `*cngxTabContent` template of the tab with the given id, or `null` when the id is unknown
-   * or the tab has no content slot. `CngxTabPanelHost` contract method, called by skin sub-components that
-   * project the panel body.
+   * or the tab has no content slot. `CngxTabPanelHost` contract method: the tab group template calls it per
+   * tab, and a skin sub-component can call it through `CNGX_TAB_PANEL_HOST`.
    */
   contentTemplateFor(id: string): TemplateRef<unknown> | null {
     return this.tabDirectiveById().get(id)?.contentTemplate()?.templateRef ?? null;
