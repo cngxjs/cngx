@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CNGX_ICON_CARET_DOWN, CNGX_ICON_X, type CngxIconData } from '@cngx/utils';
+import { CNGX_ICON_QUESTION, CNGX_ICON_X, type CngxIconData } from '@cngx/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxIconSvg } from './icon-svg.component';
@@ -15,7 +15,7 @@ const WITH_MICRO: CngxIconData = {
   imports: [CngxIconSvg],
 })
 class IconSvgHost {
-  readonly icon = signal<CngxIconData>(CNGX_ICON_CARET_DOWN);
+  readonly icon = signal<CngxIconData>(CNGX_ICON_QUESTION);
 }
 
 describe('CngxIconSvg', () => {
@@ -36,7 +36,7 @@ describe('CngxIconSvg', () => {
     expect(standalone.getAttribute('viewBox')).toBe('0 0 24 24');
     const paths = standalone.querySelectorAll('path');
     expect(paths.length).toBe(1);
-    expect(paths[0].getAttribute('d')).toBe(CNGX_ICON_CARET_DOWN.d);
+    expect(paths[0].getAttribute('d')).toBe(CNGX_ICON_QUESTION.d);
     expect(paths[0].namespaceURI).toBe('http://www.w3.org/2000/svg');
   });
 
@@ -66,9 +66,9 @@ describe('CngxIconSvg', () => {
     fixture.componentInstance.icon.set(CNGX_ICON_X);
     fixture.detectChanges();
     expect(standalone.querySelector('path')?.getAttribute('d')).toBe(CNGX_ICON_X.d);
-    fixture.componentInstance.icon.set(CNGX_ICON_CARET_DOWN);
+    fixture.componentInstance.icon.set(CNGX_ICON_QUESTION);
     fixture.detectChanges();
-    expect(standalone.querySelector('path')?.getAttribute('d')).toBe(CNGX_ICON_CARET_DOWN.d);
+    expect(standalone.querySelector('path')?.getAttribute('d')).toBe(CNGX_ICON_QUESTION.d);
     expect(standalone.hasAttribute('fill')).toBe(false);
   });
 
@@ -98,7 +98,7 @@ describe('CngxIconSvg', () => {
     const { fixture, standalone } = setup();
     fixture.componentInstance.icon.set(WITH_MICRO);
     fixture.detectChanges();
-    fixture.componentInstance.icon.set(CNGX_ICON_CARET_DOWN);
+    fixture.componentInstance.icon.set(CNGX_ICON_QUESTION);
     fixture.detectChanges();
     expect(standalone.querySelectorAll('path').length).toBe(1);
     expect(standalone.querySelector('.cngx-icon-svg__micro')).toBeNull();
