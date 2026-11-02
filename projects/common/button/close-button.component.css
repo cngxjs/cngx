@@ -137,8 +137,8 @@
     }
 
     .cngx-icon-button__glyph > :is(svg, img) {
-      inline-size: var(--cngx-close-button-icon-size, 1.25em);
-      block-size: var(--cngx-close-button-icon-size, 1.25em);
+      inline-size: round(nearest, var(--cngx-close-button-icon-size, 1.25em), 1px);
+      block-size: round(nearest, var(--cngx-close-button-icon-size, 1.25em), 1px);
       flex-shrink: 0;
     }
   }

@@ -1,0 +1,50 @@
+/**
+ * @overview
+ * Micro tier of the default cngx glyphs. Both renderers, `CngxIconSvg`
+ * and `createIconSvgElement`, put `.cngx-icon-glyph` on the svg and draw
+ * an icon's 12-grid `micro` drawing as a second path,
+ * `.cngx-icon-svg__micro`, next to the 24-grid `.cngx-icon-svg__path`.
+ * The svg is a size container, and a 10 to 14px box shows the micro path
+ * instead of the 24-grid path. The selection comes from layout: no size
+ * input, no measurement, and it is the same on every device pixel ratio.
+ *
+ * The rules live here and not in `icon-svg.component.css` because an svg
+ * the helper builds loads no component stylesheet. Without this sheet the
+ * micro path keeps its `display="none"` presentation attribute and the
+ * 24-grid path shows alone.
+ *
+ * The micro path is a fill outline in `currentColor`. The stroke-width
+ * tokens drive the 24-grid path only; the micro weight is part of the
+ * hint.
+ *
+ * The band bounds are px literals: `@container` conditions take no
+ * `var()`, and the band is about device pixels, so it must not follow
+ * the text scale.
+ */
+
+@layer cngx.components {
+  .cngx-icon-glyph {
+    /* Functional - hardcoded */
+    container: cngx-icon-glyph / size;
+    /* Size containment drops the svg's natural ratio; every glyph draws on a
+       square viewBox, so a rule that sizes one axis keeps the other. */
+    aspect-ratio: 1;
+  }
+
+  .cngx-icon-svg__micro {
+    /* Functional - hardcoded */
+    display: none;
+    fill: currentColor;
+    stroke: none;
+  }
+
+  @container cngx-icon-glyph (10px <= width < 15px) {
+    .cngx-icon-svg__path {
+      display: none;
+    }
+
+    .cngx-icon-svg__micro {
+      display: inline;
+    }
+  }
+}

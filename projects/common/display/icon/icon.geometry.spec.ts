@@ -3,7 +3,10 @@ import { TestBed } from '@angular/core/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { CNGX_ICON_CARET_DOWN } from '@cngx/utils';
+
 import { CngxIcon } from './icon.component';
+import { CngxIconSvg } from './icon-svg.component';
 
 // Runs in a real Chromium (the `test-geometry` target). The icon sizes itself
 // through `font-size: var(--cngx-icon-size)` on its own host, which only
@@ -22,7 +25,7 @@ const PRESETS = [
 @Component({
   selector: 'cngx-icon-geometry-host',
   standalone: true,
-  imports: [CngxIcon],
+  imports: [CngxIcon, CngxIconSvg],
   styleUrls: ['../../../core/theming/layers.css'],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -46,10 +49,19 @@ const PRESETS = [
         <svg class="filled" viewBox="0 0 24 24"><path d="M4 4h16v16H4z" /></svg>
       </cngx-icon>
     </div>
+    <div style="font-size: 13.3px">
+      @for (preset of presets; track preset[0]) {
+        <cngx-icon class="frac-{{ preset[0] }}" [size]="preset[0]">
+          <svg [cngxIconSvg]="caret"></svg>
+        </cngx-icon>
+      }
+      <svg class="frac-standalone" [cngxIconSvg]="caret"></svg>
+    </div>
   `,
 })
 class IconGeometryHost {
   protected readonly presets = PRESETS;
+  protected readonly caret = CNGX_ICON_CARET_DOWN;
 }
 
 let mountedRoot: HTMLElement | null = null;
@@ -125,5 +137,18 @@ describe('CngxIcon geometry', () => {
   it('fills an svg without a fill attribute with currentColor', () => {
     const root = mount();
     expect(computedValue(query(root, '.filled'), 'fill')).toBe('rgb(255, 0, 0)');
+  });
+
+  it.each(PRESETS)('snaps the %s preset to whole pixels at a fractional font size', (size) => {
+    const svg = query(mount(), `.frac-${size} svg`);
+    const box = svg.getBoundingClientRect();
+    expect(Number.isInteger(box.width)).toBe(true);
+    expect(Number.isInteger(box.height)).toBe(true);
+  });
+
+  it('snaps a standalone glyph to whole pixels at a fractional font size', () => {
+    const box = query(mount(), '.frac-standalone').getBoundingClientRect();
+    expect(box.width).toBe(13);
+    expect(box.height).toBe(13);
   });
 });

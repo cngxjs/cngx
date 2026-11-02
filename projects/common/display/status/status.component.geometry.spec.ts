@@ -121,11 +121,12 @@ const TONE_BOX: ReadonlyArray<[StatusTone, number]> = [
 ];
 
 describe('CngxStatus tone glyphs', () => {
-  it.each(TONE_BOX)('sizes the %s icon box to %s of the dot', (tone, fraction) => {
+  // The icon svg box rounds to whole pixels, so the expectation rounds too.
+  it.each(TONE_BOX)('sizes the %s icon box to %s of the dot, on the rounded box', (tone, fraction) => {
     const { dot } = mount(tone);
     const svg = dot.querySelector('svg.cngx-icon-svg') as SVGSVGElement;
     expect(svg.getBoundingClientRect().width).toBeCloseTo(
-      fraction * dot.getBoundingClientRect().width,
+      Math.round(fraction * dot.getBoundingClientRect().width),
       1,
     );
   });

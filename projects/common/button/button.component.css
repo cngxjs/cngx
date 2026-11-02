@@ -629,8 +629,8 @@
     /* The slot marker sits on the glyph itself or on a wrapper around it. */
     :is(svg, img).cngx-button__slot,
     .cngx-button__slot > :is(svg, img) {
-      inline-size: var(--cngx-button-icon-size, 1.25em);
-      block-size: var(--cngx-button-icon-size, 1.25em);
+      inline-size: round(nearest, var(--cngx-button-icon-size, 1.25em), 1px);
+      block-size: round(nearest, var(--cngx-button-icon-size, 1.25em), 1px);
     }
 
     /* Stronger chrome on the more-contrast axis: outline borders take the

@@ -339,6 +339,12 @@ function px(el: Element, property: string): number {
   return value;
 }
 
+// The icon svg box rounds to whole pixels: the ink a rule names in em lands
+// on the rounded box, `extent` grid units of 24.
+function inkOnRoundedBox(inkPx: number, extent: number): number {
+  return (Math.round((inkPx * 24) / extent) * extent) / 24;
+}
+
 // Line box + 2 * block padding + 2px border, floored by the min-height. Every
 // trigger sets border-box itself (this harness loads no global reset), so the
 // min-height floors the border box directly.
@@ -402,14 +408,17 @@ describe('select-family field skins', () => {
     expect(Math.abs(middle(clear) - middle(caret))).toBeLessThan(0.5);
   });
 
-  it.each(ALL_TRIGGERS)('draws the default %s caret 0.27em wide', (hostSelector) => {
+  it.each(ALL_TRIGGERS)('draws the default %s caret 0.27em wide, on the rounded box', (hostSelector) => {
     const el = trigger(mount(AllTriggersHost), hostSelector);
     const span = el.querySelector<HTMLElement>('[class*="__caret"]');
     const path = span?.querySelector('svg.cngx-icon-svg path');
     if (!span || !path) {
       throw new Error(`${hostSelector} renders no default caret icon`);
     }
-    expect(path.getBoundingClientRect().width).toBeCloseTo(0.27 * px(span, 'font-size'), 1);
+    expect(path.getBoundingClientRect().width).toBeCloseTo(
+      inkOnRoundedBox(0.27 * px(span, 'font-size'), 14),
+      1,
+    );
   });
 
   it('draws the fill trigger as an underline, not a box', () => {

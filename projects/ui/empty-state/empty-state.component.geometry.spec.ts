@@ -105,13 +105,17 @@ describe('CngxEmptyState default glyph', () => {
     expect(path.getBoundingClientRect().width + stroke).toBeCloseTo(47, 0);
   });
 
-  it('keeps the 48px footprint of the drawing it replaced', () => {
+  // The svg paints the rounded box and the margin hands back exactly that box,
+  // so the footprint stays 48px.
+  it('keeps the 48px footprint of the drawing it replaced, on the rounded box', () => {
     const host = mount();
     const { svg } = glyph(host);
+    const box = svg.getBoundingClientRect().height;
     const footprint =
-      svg.getBoundingClientRect().height +
+      box +
       parseFloat(computedValue(svg, 'margin-top')) +
       parseFloat(computedValue(svg, 'margin-bottom'));
+    expect(box).toBe(Math.round((48 * 47 * 24) / 48 / 21.4));
     expect(footprint).toBeCloseTo(48, 1);
     const title = query(host, '.cngx-empty-state__title').getBoundingClientRect();
     const gap = parseFloat(computedValue(host, 'row-gap'));
@@ -119,6 +123,19 @@ describe('CngxEmptyState default glyph', () => {
       gap + parseFloat(computedValue(svg, 'margin-bottom')),
       1,
     );
+  });
+
+  // An unset size token falls back to 1em on the svg; the margin reads the
+  // same fallback, so the footprint holds.
+  it('keeps the 48px footprint when the glyph size token is unset', () => {
+    const host = mount();
+    const { svg } = glyph(host);
+    svg.style.setProperty('--cngx-icon-svg-size', 'initial');
+    const footprint =
+      svg.getBoundingClientRect().height +
+      parseFloat(computedValue(svg, 'margin-top')) +
+      parseFloat(computedValue(svg, 'margin-bottom'));
+    expect(footprint).toBeCloseTo(48, 1);
   });
 
   it('paints the glyph stroke in the muted icon colour', () => {

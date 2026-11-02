@@ -17,8 +17,9 @@ import { resolve } from 'node:path';
 //      modality, or a pending migration) or it fails.
 //
 // A1 slice 2 moved the last legacy detections onto the contract. The tier
-// half stays empty; the viewport half admits only overlay modality (rule 2 of
-// the contract: a popover becoming a bottom sheet). Adding an entry is a
+// half admits only pixel hinting (the micro glyph band); the viewport half
+// admits only overlay modality (rule 2 of the contract: a popover becoming a
+// bottom sheet). Adding an entry is a
 // conscious edit with a one-clause reason, and the ratchet below keeps the
 // lists from growing quietly.
 //
@@ -31,8 +32,17 @@ const REPO_ROOT = resolve(__dirname, '..', '..', '..');
 /** The rem rungs from the contract. A component picks a rung, never a literal. */
 const TIERS: readonly string[] = ['20rem', '30rem', '48rem', '64rem'];
 
-/** `@container` size queries whose length is not yet on a tier. */
-const TIER_EXCEPTIONS: ReadonlyArray<{ file: string; note: string }> = [];
+/**
+ * `@container` size queries whose length is not on a tier. Only pixel hinting
+ * qualifies: a band that picks a drawing for whole device pixels must stay in
+ * px, because it must not follow the text scale.
+ */
+const TIER_EXCEPTIONS: ReadonlyArray<{ file: string; note: string }> = [
+  {
+    file: 'projects/common/theming/components/cngx-icon-glyph.css',
+    note: 'pixel hinting: the 12-grid micro glyph shows in a 10 to 14px box',
+  },
+];
 
 /** `@media` rules carrying a width condition on in-flow layout. */
 const VIEWPORT_MEDIA_ALLOWED: ReadonlyArray<{ file: string; note: string }> = [
@@ -160,8 +170,11 @@ describe('container-query contract', () => {
 });
 
 describe('container-query exception ratchet', () => {
-  it('carries no tier exceptions - adding one is a conscious edit', () => {
-    expect(TIER_EXCEPTIONS).toEqual([]);
+  it('admits off-tier lengths only for pixel hinting', () => {
+    const otherReasons = TIER_EXCEPTIONS.filter(
+      (entry) => !entry.note.startsWith('pixel hinting:'),
+    ).map((entry) => entry.file);
+    expect(otherReasons).toEqual([]);
   });
 
   it('admits viewport media only for overlay modality', () => {

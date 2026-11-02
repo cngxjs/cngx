@@ -67,7 +67,9 @@
     /**
      * Stroke width of outline glyphs in the `.cngx-icon--xs` variant, in
      * grid units of the 24x24 viewBox. Thicker than the default 2 so the
-     * strokes keep about a pixel at the 12px floor.
+     * strokes keep about a pixel at the 12px floor. An icon with a 12-grid
+     * micro drawing shows that instead at 10 to 14px, and this token does
+     * not reach it.
      * @type <number>
      * @group Variant / Size
      */
@@ -120,8 +122,10 @@
        */
       --cngx-icon-size: var(--cngx-icon-size-md, 1.25em);
 
-      /* Themable */
-      font-size: var(--cngx-icon-size, 1.25em);
+      /* Themable. Rounded to whole pixels so the 1em svg box is an
+       * integer; the em token stays unregistered (see the note on the size
+       * tokens above). */
+      font-size: round(nearest, var(--cngx-icon-size, 1.25em), 1px);
       color: var(--cngx-icon-color, currentColor);
     }
 

@@ -11,12 +11,35 @@
 export type CngxIconPaint = 'fill' | 'stroke';
 
 /**
+ * Hand-hinted drawing of a glyph on a `0 0 12 12` grid, for small boxes.
+ * At a 12px box one grid unit is one CSS pixel, so a line one unit wide
+ * paints exactly one device pixel at DPR 1, the same weight as the 24-grid
+ * stroke 2 at that size.
+ *
+ * Always a fill outline in `currentColor`: every edge sits on a whole unit
+ * (arc radii may end in `.5`), and caps and dots are explicit geometry, so
+ * the round-cap contract of `CngxIconPaint` does not apply. The stroke-width
+ * tokens (`--cngx-icon-svg-stroke-width`, `--cngx-icon-stroke-width-xs`) do
+ * not reach it either; the weight is part of the hint.
+ *
+ * @internal
+ */
+export interface CngxIconMicro {
+  readonly viewBox: '0 0 12 12';
+  readonly d: string;
+}
+
+/**
  * Framework-agnostic path data for one default cngx glyph. Every icon
  * sits on a `0 0 24 24` grid and is a single path, so a renderer needs
  * one `<path>` and no per-icon markup. Rendered by `CngxIconSvg` in
  * `@cngx/common/display`; an imperative renderer builds the same
  * `<svg><path>` from it and applies the paint contract of
  * `CngxIconPaint` itself.
+ *
+ * One source per glyph, two grid-specific drawings: `micro` is the
+ * optional 12-grid drawing (see `CngxIconMicro`) that renderers show in
+ * a 10 to 14px box instead of the 24-grid path.
  *
  * Exported because Sheriff forbids deep-relative imports across library
  * boundaries; `@internal` because cngx ships the glyphs it draws, not an
@@ -29,6 +52,7 @@ export interface CngxIconData {
   readonly viewBox: '0 0 24 24';
   readonly d: string;
   readonly paint: CngxIconPaint;
+  readonly micro?: CngxIconMicro;
 }
 
 /** Close / clear cross. @internal */

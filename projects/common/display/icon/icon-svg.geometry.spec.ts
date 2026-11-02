@@ -1,11 +1,19 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  inject,
+  Renderer2,
+  RendererStyleFlags2,
+  ViewEncapsulation,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { computedValue } from '@cngx/testing/geometry';
-import { CNGX_ICON_CARET_DOWN, CNGX_ICON_X } from '@cngx/utils';
+import { CNGX_ICON_CARET_DOWN, CNGX_ICON_X, type CngxIconData } from '@cngx/utils';
 import { afterEach, describe, expect, it } from 'vitest';
+import { cdp } from 'vitest/browser';
 
 import { CngxIcon } from './icon.component';
 import { CngxIconSvg } from './icon-svg.component';
+import { createIconSvgElement } from './icon-svg-element';
 
 // Runs in a real Chromium (the `test-geometry` target): paint and size come
 // from the layered stylesheets, which jsdom does not compute. The context
@@ -39,7 +47,114 @@ class IconSvgGeometryHost {
   protected readonly x = CNGX_ICON_X;
 }
 
+// Spec-local: the default set carries no micro drawing yet.
+const WITH_MICRO: CngxIconData = {
+  ...CNGX_ICON_X,
+  micro: { viewBox: '0 0 12 12', d: 'M3 3H9V9H3Z' },
+};
+
+const BAND_SIZES = [9, 10, 12, 14, 15, 24] as const;
+
+// Loads the global micro sheet next to the component sheet, as `cngx.css` does.
+@Component({
+  selector: 'cngx-icon-svg-micro-geometry-host',
+  standalone: true,
+  imports: [CngxIcon, CngxIconSvg],
+  styleUrls: ['../../../core/theming/layers.css', '../../theming/components/cngx-icon-glyph.css'],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div style="font-size: 16px; color: rgb(255, 0, 0)">
+      @for (size of sizes; track size) {
+        <svg
+          class="band-{{ size }}"
+          [style.--cngx-icon-svg-size.px]="size"
+          [cngxIconSvg]="icon"
+        ></svg>
+      }
+      <cngx-icon size="xs">
+        <svg class="in-icon-xs" [cngxIconSvg]="icon"></svg>
+      </cngx-icon>
+      <svg class="one-axis" style="inline-size: auto; block-size: 12px" [cngxIconSvg]="icon"></svg>
+      <svg class="one-axis-cap" style="inline-size: auto; max-block-size: 12px" [cngxIconSvg]="icon"></svg>
+    </div>
+  `,
+})
+class IconSvgMicroGeometryHost {
+  protected readonly sizes = BAND_SIZES;
+  protected readonly icon = WITH_MICRO;
+}
+
+// Loads only the component sheet, as a playground or an ejected skin does.
+@Component({
+  selector: 'cngx-icon-svg-bare-geometry-host',
+  standalone: true,
+  imports: [CngxIconSvg],
+  styleUrls: ['../../../core/theming/layers.css'],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div style="font-size: 16px">
+      <svg class="bare" style="--cngx-icon-svg-size: 12px" [cngxIconSvg]="icon"></svg>
+    </div>
+  `,
+})
+class IconSvgBareGeometryHost {
+  protected readonly icon = WITH_MICRO;
+}
+
+// Builds the glyph through the helper, as the tab link and menu indicator do.
+@Component({
+  selector: 'cngx-icon-svg-helper-geometry-host',
+  standalone: true,
+  template: '<div class="helper-root" style="font-size: 16px; color: rgb(255, 0, 0)"></div>',
+})
+class IconSvgHelperHost {
+  readonly renderer = inject(Renderer2);
+}
+
+@Component({
+  selector: 'cngx-icon-svg-helper-sheet-geometry-host',
+  standalone: true,
+  styleUrls: ['../../../core/theming/layers.css', '../../theming/components/cngx-icon-glyph.css'],
+  encapsulation: ViewEncapsulation.None,
+  template: '<div class="helper-root" style="font-size: 16px; color: rgb(255, 0, 0)"></div>',
+})
+class IconSvgHelperSheetHost {
+  readonly renderer = inject(Renderer2);
+}
+
 let mountedRoot: HTMLElement | null = null;
+
+function mountHelper(type: new () => { renderer: Renderer2 }, size: number): SVGSVGElement {
+  const fixture = TestBed.createComponent(type);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  const { renderer } = fixture.componentInstance;
+  const { element } = createIconSvgElement(renderer, WITH_MICRO, 'helper-glyph');
+  renderer.setStyle(element, '--cngx-icon-svg-size', `${size}px`, RendererStyleFlags2.DashCase);
+  renderer.appendChild(query(mountedRoot, '.helper-root'), element);
+  return element;
+}
+
+function mountHost(type: new () => unknown): HTMLElement {
+  const fixture = TestBed.createComponent(type);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  return mountedRoot;
+}
+
+function visiblePath(svg: Element): 'path' | 'micro' | 'both' | 'none' {
+  const path = computedValue(query(svg, '.cngx-icon-svg__path'), 'display') !== 'none';
+  const micro = computedValue(query(svg, '.cngx-icon-svg__micro'), 'display') !== 'none';
+  if (path && micro) {
+    return 'both';
+  }
+  if (path) {
+    return 'path';
+  }
+  return micro ? 'micro' : 'none';
+}
 
 function mount(): HTMLElement {
   const fixture = TestBed.createComponent(IconSvgGeometryHost);
@@ -49,7 +164,7 @@ function mount(): HTMLElement {
   return mountedRoot;
 }
 
-function query(root: HTMLElement, selector: string): Element {
+function query(root: Element, selector: string): Element {
   const el = root.querySelector(selector);
   if (!el) {
     throw new Error(`${selector} did not render`);
@@ -57,9 +172,10 @@ function query(root: HTMLElement, selector: string): Element {
   return el;
 }
 
-afterEach(() => {
+afterEach(async () => {
   mountedRoot?.remove();
   mountedRoot = null;
+  await cdp().send('Emulation.setEmulatedMedia', { features: [] });
 });
 
 describe('CngxIconSvg geometry', () => {
@@ -105,5 +221,73 @@ describe('CngxIconSvg geometry', () => {
   it('lets cngx-icon own the box', () => {
     const box = query(mount(), '.in-icon-fill').getBoundingClientRect();
     expect(box.height).toBeCloseTo(1.5 * 16, 0);
+  });
+});
+
+describe('CngxIconSvg micro tier', () => {
+  it.each([
+    [9, 'path'],
+    [10, 'micro'],
+    [12, 'micro'],
+    [14, 'micro'],
+    [15, 'path'],
+    [24, 'path'],
+  ] as const)('shows the %ipx box the %s', (size, expected) => {
+    const svg = query(mountHost(IconSvgMicroGeometryHost), `.band-${size}`);
+    expect(svg.getBoundingClientRect().width).toBeCloseTo(size, 1);
+    expect(visiblePath(svg)).toBe(expected);
+  });
+
+  it('shows the micro path in a cngx-icon xs box at 16px text', () => {
+    const svg = query(mountHost(IconSvgMicroGeometryHost), '.in-icon-xs');
+    expect(svg.getBoundingClientRect().width).toBeCloseTo(12, 1);
+    expect(visiblePath(svg)).toBe('micro');
+  });
+
+  // Size containment drops the svg's natural ratio, so a rule that sizes one
+  // axis (the button-group addon caps the block size, inline size auto) would
+  // otherwise collapse or stretch the other one.
+  it.each(['.one-axis', '.one-axis-cap'])('keeps the %s glyph square when one axis is sized', (selector) => {
+    const svg = query(mountHost(IconSvgMicroGeometryHost), selector);
+    const rect = svg.getBoundingClientRect();
+    expect(rect.height).toBeCloseTo(12, 1);
+    expect(rect.width).toBeCloseTo(12, 1);
+    expect(visiblePath(svg)).toBe('micro');
+  });
+
+  it('fills the micro path in the text colour without the outline stroke', () => {
+    const micro = query(mountHost(IconSvgMicroGeometryHost), '.band-12 .cngx-icon-svg__micro');
+    expect(computedValue(micro, 'fill')).toBe('rgb(255, 0, 0)');
+    expect(computedValue(micro, 'stroke')).toBe('none');
+  });
+
+  it('paints the micro fill in the forced colour of the 24-grid stroke', async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'forced-colors', value: 'active' }],
+    });
+    const root = mountHost(IconSvgMicroGeometryHost);
+    const micro = computedValue(query(root, '.band-12 .cngx-icon-svg__micro'), 'fill');
+    const path = computedValue(query(root, '.band-24 .cngx-icon-svg__path'), 'stroke');
+    expect(micro).not.toBe('rgb(255, 0, 0)');
+    expect(micro).toBe(path);
+  });
+
+  it('paints only the 24-grid path without the global sheet', () => {
+    const svg = query(mountHost(IconSvgBareGeometryHost), '.bare');
+    expect(visiblePath(svg)).toBe('path');
+  });
+
+  it('shows the micro path of a helper-built svg in the band with the global sheet', () => {
+    expect(visiblePath(mountHelper(IconSvgHelperSheetHost, 12))).toBe('micro');
+  });
+
+  it('keeps a helper-built svg on the 24-grid path outside the band', () => {
+    expect(visiblePath(mountHelper(IconSvgHelperSheetHost, 24))).toBe('path');
+  });
+
+  it('paints only the 24-grid path of a helper-built svg without the global sheet', () => {
+    const svg = mountHelper(IconSvgHelperHost, 12);
+    expect(svg.getBoundingClientRect().width).toBeCloseTo(12, 1);
+    expect(visiblePath(svg)).toBe('path');
   });
 });

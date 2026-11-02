@@ -19,7 +19,13 @@ import { CngxTabLink } from './tab-link.directive';
     <a cngxTabLink id="overview" href="#" style="font-size: 20px; color: rgb(200, 0, 0)">
       Overview
     </a>
-    <a cngxTabLink id="profile" href="#" [error]="true" style="font-size: 20px; color: rgb(200, 0, 0)">
+    <a
+      cngxTabLink
+      id="profile"
+      href="#"
+      [error]="true"
+      style="font-size: 20px; color: rgb(200, 0, 0)"
+    >
       Profile
     </a>
   `,
@@ -53,5 +59,13 @@ describe('bare tab link error icon', () => {
     expect(style.fill).toBe('none');
     expect(style.stroke).toBe('rgb(200, 0, 0)');
     expect(style.strokeWidth).toBe('2px');
+  });
+
+  it('paints only the 24-grid path without the global sheet', () => {
+    const painted = Array.from(mount().querySelectorAll('path')).filter(
+      (path) => getComputedStyle(path).display !== 'none',
+    );
+    expect(painted.length).toBe(1);
+    expect(painted[0].classList.contains('cngx-icon-svg__path')).toBe(true);
   });
 });

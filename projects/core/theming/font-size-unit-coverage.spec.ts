@@ -50,10 +50,10 @@ const REPO_ROOT = resolve(__dirname, '..', '..', '..');
 // Strip `/* */` comments so the value scan never reads px mentioned in prose
 // (a doc comment may legitimately say "12px-era" while the real declaration is
 // `em`). Replaced with a space so line numbers stay stable for offender reports.
-const stripComments = (css: string): string => css.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '));
+const stripComments = (css: string): string =>
+  css.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '));
 
-const readRepoCss = (relPath: string): string =>
-  readFileSync(resolve(REPO_ROOT, relPath), 'utf-8');
+const readRepoCss = (relPath: string): string => readFileSync(resolve(REPO_ROOT, relPath), 'utf-8');
 
 // Recursively collect every shipped `.css` under a repo-relative directory.
 // `/examples/` demo scaffolds are skipped wholesale (not shipped component CSS).
@@ -87,7 +87,43 @@ const FONT_SIZE_TOKEN = /--[a-z-]*font-size[a-z-]*\s*:\s*([^;}]+)/g;
 // (`0px`) carries no scalable text and is allowed, mirroring the `font-size: 0`
 // reset allowance - so `font-size: 0px` passes, `font-size: 1px` fails.
 const PX_NUMBER = /(\d*\.?\d+)\s*px/g;
-const hasNonZeroPx = (value: string): boolean => {
+const PX_LENGTH = /^\d*\.?\d+\s*px$/;
+
+// The step of `round(<strategy>?, <value>, <step>)` snaps a scalable size to
+// whole pixels; it pins nothing, so a px step is dropped before the scan. A px
+// in the rounded value itself is still a pin and still fails.
+const withoutRoundSteps = (value: string): string => {
+  let out = '';
+  let cursor = 0;
+  for (const match of value.matchAll(/\bround\(/g)) {
+    const open = (match.index ?? 0) + match[0].length;
+    if (open <= cursor) {
+      continue;
+    }
+    let depth = 1;
+    let lastComma = -1;
+    let index = open;
+    for (; index < value.length && depth > 0; index++) {
+      const char = value[index];
+      if (char === '(') {
+        depth++;
+      } else if (char === ')') {
+        depth--;
+      } else if (char === ',' && depth === 1) {
+        lastComma = index;
+      }
+    }
+    const close = index - 1;
+    if (lastComma !== -1 && PX_LENGTH.test(value.slice(lastComma + 1, close).trim())) {
+      out += value.slice(cursor, lastComma);
+      cursor = close;
+    }
+  }
+  return out + value.slice(cursor);
+};
+
+const hasNonZeroPx = (raw: string): boolean => {
+  const value = withoutRoundSteps(raw);
   PX_NUMBER.lastIndex = 0;
   let match: RegExpExecArray | null;
   while ((match = PX_NUMBER.exec(value)) !== null) {
@@ -123,7 +159,10 @@ const collectOffenders = (files: readonly string[]): Offender[] => {
   const offenders: Offender[] = [];
   for (const file of files) {
     const css = stripComments(readRepoCss(file));
-    offenders.push(...scanValues(file, css, FONT_SIZE_VALUE), ...scanValues(file, css, FONT_SIZE_TOKEN));
+    offenders.push(
+      ...scanValues(file, css, FONT_SIZE_VALUE),
+      ...scanValues(file, css, FONT_SIZE_TOKEN),
+    );
   }
   // A `--*-font-size` token definition is matched by BOTH regexes (its name ends
   // in `font-size`, so the value scan sees it too). Dedupe to one row per
@@ -142,6 +181,28 @@ const collectOffenders = (files: readonly string[]): Offender[] => {
     return true;
   });
 };
+
+describe('font-size px detection', () => {
+  it('flags a px font-size, alone or inside a function', () => {
+    expect(hasNonZeroPx('14px')).toBe(true);
+    expect(hasNonZeroPx('max(0.75em, 12px)')).toBe(true);
+  });
+
+  it('passes a zero px reset', () => {
+    expect(hasNonZeroPx('0px')).toBe(false);
+  });
+
+  it('passes a px snap step of round()', () => {
+    expect(hasNonZeroPx('round(nearest, var(--cngx-icon-size, 1.25em), 1px)')).toBe(false);
+    expect(hasNonZeroPx('round(1.25em, 1px)')).toBe(false);
+  });
+
+  it('still flags a px size inside round()', () => {
+    expect(hasNonZeroPx('round(nearest, 13px, 1px)')).toBe(true);
+    expect(hasNonZeroPx('round(nearest, var(--x, 14px), 1px)')).toBe(true);
+    expect(hasNonZeroPx('round(nearest, 1em, 1px) + 2px')).toBe(true);
+  });
+});
 
 describe('font-size unit coverage (source scan)', () => {
   const excluded = new Set(EXCLUDED_FONT_SIZE_FILES.map((e) => e.file));
@@ -223,7 +284,11 @@ const RELATIVE_UNIT = /\d\s*(rem|em|%|vh|vw|vmin|vmax|vi|vb|ch|ex|lh|rlh)\b/i;
 
 // Every definition value reachable from a token, following `var()` refs
 // transitively (cycle-guarded).
-const chainValues = (token: string, defs: Map<string, string[]>, seen = new Set<string>()): string[] => {
+const chainValues = (
+  token: string,
+  defs: Map<string, string[]>,
+  seen = new Set<string>(),
+): string[] => {
   if (seen.has(token)) {
     return [];
   }
@@ -255,7 +320,8 @@ describe('font-size unit coverage (var-chain resolution)', () => {
         const line = lineOf(css, match.index);
         for (const token of varsIn(match[1])) {
           const chain = chainValues(token, defs);
-          const pinnedPx = chain.some(hasNonZeroPx) && !chain.some((value) => RELATIVE_UNIT.test(value));
+          const pinnedPx =
+            chain.some(hasNonZeroPx) && !chain.some((value) => RELATIVE_UNIT.test(value));
           if (pinnedPx) {
             const pxDef = chain.find(hasNonZeroPx) ?? '';
             offenders.push(`${file}:${line} font-size reads ${token} = "${pxDef}" (px-only)`);

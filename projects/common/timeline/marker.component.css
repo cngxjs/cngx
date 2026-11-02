@@ -91,10 +91,11 @@
 
     /* A glyph wants padding around it, unlike a photo that bleeds to the
        edge. Percent of the marker box, not `em` - the font-size below is
-       0.625em and would otherwise decide the size instead of the token. */
+       0.625em and would otherwise decide the size instead of the token.
+       Rounded to whole pixels like every icon glyph box. */
     :scope > svg {
-      inline-size: var(--cngx-timeline-marker-glyph-size, 60%);
-      block-size: var(--cngx-timeline-marker-glyph-size, 60%);
+      inline-size: round(nearest, var(--cngx-timeline-marker-glyph-size, 60%), 1px);
+      block-size: round(nearest, var(--cngx-timeline-marker-glyph-size, 60%), 1px);
     }
 
     :scope[data-status='done'] {

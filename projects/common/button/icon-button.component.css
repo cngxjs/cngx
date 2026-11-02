@@ -47,8 +47,8 @@
     }
 
     .cngx-icon-button__glyph > :is(svg, img) {
-      inline-size: 1.25em;
-      block-size: 1.25em;
+      inline-size: round(nearest, 1.25em, 1px);
+      block-size: round(nearest, 1.25em, 1px);
     }
   }
 
