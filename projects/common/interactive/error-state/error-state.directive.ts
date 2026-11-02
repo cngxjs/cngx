@@ -41,6 +41,10 @@ import { computed, Directive, input } from '@angular/core';
   },
 })
 export class CngxErrorState {
+  /**
+   * Required error flag. While `true` the host gets the `cngx-error` class and
+   * `aria-invalid="true"`; while `false` it gets `aria-invalid="false"` and no class.
+   */
   readonly cngxErrorState = input.required<boolean>();
 
   /** Optional id of the element rendering the error message text. */

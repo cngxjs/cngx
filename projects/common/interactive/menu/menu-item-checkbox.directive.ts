@@ -37,9 +37,27 @@ import { injectMenuItemIndicator } from './menu-item-indicator';
   },
 })
 export class CngxMenuItemCheckbox<T = unknown> implements CngxAdItemHandle {
+  /**
+   * Payload the active-descendant uses to find and highlight this item on click and pointer
+   * enter. Defaults to `undefined`.
+   */
   readonly value = input<T | undefined>(undefined);
+  /**
+   * Disables the item. A click then announces the menu's `itemDisabled` phrase and leaves
+   * `checked` unchanged, pointer enter no longer highlights, and the host gets `aria-disabled`
+   * and the `cngx-menu-item--disabled` class. Defaults to `false`.
+   */
   readonly disabled = input<boolean>(false);
+  /**
+   * Binds as `[label]`. Explicit label that `label()` returns for the active-descendant;
+   * when unset, `label()` falls back to the host's trimmed text content.
+   */
   readonly labelInput = input<string | undefined>(undefined, { alias: 'label' });
+  /**
+   * Checked state, two-way bindable as `[(checked)]`. A click inside a surrounding
+   * `[cngxMenu]` flips it and emits `checkedChange`; it is mirrored to `aria-checked`, the
+   * `cngx-menu-item--checked` class and the check indicator. Defaults to `false`.
+   */
   readonly checked = model<boolean>(false);
 
   private readonly core = injectMenuItemCore<T>({

@@ -155,10 +155,18 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
     return popover ? `--cngx-pop-${popover.id()}` : null;
   });
 
+  /**
+   * Inner menu this item opens: the `submenuMenu` input when set, else the one supplied by
+   * the DI wiring. `null` while neither is available.
+   */
   get inner(): CngxMenuHost | null {
     return this.resolvedMenu();
   }
 
+  /**
+   * Opens the submenu popover. No-op when the item is unwired or the popover is already
+   * visible.
+   */
   open(): void {
     const popover = this.resolvedPopover();
     if (!popover) {
@@ -170,6 +178,9 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
     }
   }
 
+  /**
+   * Closes the submenu popover. No-op when the item is unwired or the popover is not visible.
+   */
   close(): void {
     const popover = this.resolvedPopover();
     if (popover?.isVisible()) {

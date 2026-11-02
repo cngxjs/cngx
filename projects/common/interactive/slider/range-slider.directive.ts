@@ -127,10 +127,20 @@ export class CngxRangeSliderTrack implements CngxSliderRangeHost {
     return Math.min(1, Math.max(0, (value - this.min()) / span));
   }
 
+  /**
+   * Returns the clamp bounds for one thumb: the start thumb ranges from `min` up to the
+   * current end value, the end thumb from the current start value up to `max`. Implements
+   * `boundsFor` of `CngxSliderRangeHost`, read by `CngxSliderThumb` so thumbs cannot cross.
+   */
   boundsFor(position: CngxSliderThumbPosition): CngxSliderThumbBounds {
     return position === 'start' ? this.startBounds : this.endBounds;
   }
 
+  /**
+   * Writes one end of the `[start, end]` value tuple; a value equal to the current one is
+   * skipped. Implements `commit` of `CngxSliderRangeHost`, called by `CngxSliderThumb` with
+   * the already snapped and clamped value.
+   */
   commit(position: CngxSliderThumbPosition, value: number): void {
     const [start, end] = this.value();
     if (position === 'start') {
@@ -142,6 +152,12 @@ export class CngxRangeSliderTrack implements CngxSliderRangeHost {
     }
   }
 
+  /**
+   * Maps a pointer position to a `0..1` fraction along the slider's own element, clamped to
+   * that range; vertical sliders measure from the bottom edge. Implements
+   * `fractionFromPointer` of `CngxSliderRangeHost`, called by `CngxSliderThumb` during pointer
+   * interaction.
+   */
   fractionFromPointer(clientX: number, clientY: number): number {
     return pointerFraction(this.el, this.orientation(), clientX, clientY);
   }

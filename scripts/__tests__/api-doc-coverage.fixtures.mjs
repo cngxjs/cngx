@@ -87,7 +87,7 @@ export const INTERNAL_BINDINGS = [
 /**
  * Lowered in every commit that closes rows, so growth is a visible constant edit.
  */
-export const CEILING = 223;
+export const CEILING = 192;
 
 /** @type {readonly ApiDocGap[]} */
 // prettier-ignore
@@ -198,37 +198,6 @@ export const RATCHET = [
   { entry: '@cngx/common/data', owner: 'CngxSmartDataSource', kind: 'method', member: 'connect', phase: 3 },
   { entry: '@cngx/common/data', owner: 'CngxSmartDataSource', kind: 'method', member: 'disconnect', phase: 3 },
   { entry: '@cngx/common/dialog', owner: 'CngxDialogOpener', kind: 'method', member: 'open', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxAccordion', kind: 'method', member: 'isOpen', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxAccordion', kind: 'method', member: 'registerHeader', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxAccordion', kind: 'method', member: 'setRovingActive', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxAccordion', kind: 'method', member: 'toggle', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxAccordion', kind: 'method', member: 'unregisterHeader', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxBreadcrumb', kind: 'method', member: 'isCollapsed', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxBreadcrumb', kind: 'method', member: 'isTerminal', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxErrorAggregator', kind: 'method', member: 'addSource', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxErrorAggregator', kind: 'method', member: 'removeSource', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxErrorState', kind: 'input', member: 'cngxErrorState', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxExpandable', kind: 'method', member: 'collapse', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxExpandable', kind: 'method', member: 'expand', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxExpandable', kind: 'method', member: 'toggle', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxMenuGroup', kind: 'method', member: 'select', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxMenuItem', kind: 'input', member: 'disabled', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxMenuItem', kind: 'input', member: 'labelInput', binding: 'label', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxMenuItem', kind: 'input', member: 'value', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxMenuItemCheckbox', kind: 'input', member: 'checked', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxMenuItemCheckbox', kind: 'input', member: 'disabled', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxMenuItemCheckbox', kind: 'input', member: 'labelInput', binding: 'label', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxMenuItemCheckbox', kind: 'input', member: 'value', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxMenuItemCheckbox', kind: 'output', member: 'checked', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxMenuItemRadio', kind: 'input', member: 'disabled', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxMenuItemRadio', kind: 'input', member: 'labelInput', binding: 'label', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxMenuItemRadio', kind: 'input', member: 'value', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxMenuItemSubmenu', kind: 'method', member: 'close', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxMenuItemSubmenu', kind: 'method', member: 'open', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxMenuItemSubmenu', kind: 'accessor', member: 'inner', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxRangeSliderTrack', kind: 'method', member: 'boundsFor', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxRangeSliderTrack', kind: 'method', member: 'commit', phase: 3 },
-  { entry: '@cngx/common/interactive', owner: 'CngxRangeSliderTrack', kind: 'method', member: 'fractionFromPointer', phase: 3 },
   { entry: '@cngx/common/stepper', owner: 'CngxStep', kind: 'input', member: 'completed', phase: 3 },
   { entry: '@cngx/common/stepper', owner: 'CngxStep', kind: 'input', member: 'disabled', phase: 3 },
   { entry: '@cngx/common/stepper', owner: 'CngxStep', kind: 'input', member: 'errorAggregator', phase: 3 },

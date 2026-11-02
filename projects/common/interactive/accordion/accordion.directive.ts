@@ -96,24 +96,45 @@ export class CngxAccordion implements CngxAccordionHost {
 
   readonly nav: CngxAccordionKeyboardNav = createAccordionKeyboardNav({ host: this });
 
+  /**
+   * Adds a header handle to the registry; a handle that is already registered is ignored.
+   * Implements `registerHeader` of `CngxAccordionHost`, called by `CngxAccordionPanel` on init.
+   */
   registerHeader(handle: CngxAccordionHeaderHandle): void {
     this.headersState.update((headers) =>
       headers.includes(handle) ? headers : [...headers, handle],
     );
   }
 
+  /**
+   * Removes a header handle from the registry. Implements `unregisterHeader` of
+   * `CngxAccordionHost`, called by `CngxAccordionPanel` on destroy.
+   */
   unregisterHeader(handle: CngxAccordionHeaderHandle): void {
     this.headersState.update((headers) => headers.filter((h) => h !== handle));
   }
 
+  /**
+   * Moves the group's single tab stop to the header with the given id by writing
+   * `rovingActiveId`. Implements `setRovingActive` of `CngxAccordionHost`, called by the
+   * accordion keyboard navigation after an ArrowUp, ArrowDown, Home or End key moves focus.
+   */
   setRovingActive(id: string): void {
     this.rovingActiveId.set(id);
   }
 
+  /**
+   * Returns whether the panel with the given id is open. Reads the open set after the
+   * single-open clamp, so with `multi` off only the last seeded id counts as open.
+   */
   isOpen(panelId: string): boolean {
     return this.effectiveOpenIds().has(panelId);
   }
 
+  /**
+   * Opens the panel when it is closed and closes it when it is open, by writing a new set
+   * to `openIds`. With `multi` off, opening a panel closes every other one.
+   */
   toggle(panelId: string): void {
     // Read the clamped set, not the raw model, so the mutate base matches what
     // isOpen() reports: clicking a panel the clamp has hidden opens it rather

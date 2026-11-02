@@ -34,6 +34,10 @@ export class CngxMenuGroup implements CngxMenuRadioGroup<unknown> {
   /** Currently selected radio value within this group. Two-way bindable. */
   readonly selectedValue = model<unknown>(undefined);
 
+  /**
+   * Sets `selectedValue` to the given value. Implements `select` of the `CNGX_MENU_RADIO_GROUP`
+   * contract (`CngxMenuRadioGroup`); `CngxMenuItemRadio` calls it when the item is activated.
+   */
   select(value: unknown): void {
     this.selectedValue.set(value);
   }
