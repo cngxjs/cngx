@@ -164,8 +164,8 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
   }
 
   /**
-   * Opens the submenu popover. No-op when the item is unwired or the popover is already
-   * visible.
+   * Opens the submenu popover anchored to this item. No-op when no popover resolves; the
+   * popover is shown unless it is already visible.
    */
   open(): void {
     const popover = this.resolvedPopover();
@@ -179,7 +179,7 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
   }
 
   /**
-   * Closes the submenu popover. No-op when the item is unwired or the popover is not visible.
+   * Closes the submenu popover. No-op when no popover resolves or it is not visible.
    */
   close(): void {
     const popover = this.resolvedPopover();

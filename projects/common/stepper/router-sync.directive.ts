@@ -42,19 +42,21 @@ import { injectStepperHost } from './stepper-host.token';
 })
 export class CngxStepperRouterSync implements AfterContentInit {
   // Default undefined so the cascade resolves through CNGX_STEPPER_CONFIG.
-  // Init-only: the seed and the write effect capture the resolved mode /
-  // param on their first run; changing either after init leaves the old
-  // URL key behind. Rebuild the directive to change them.
+  // The resolved mode / param are read on every URL write and read, not
+  // only at init; changing either after init applies to the next one and
+  // leaves the previous key behind in the URL.
   /**
    * Binding `[mode]`: where the active step id is kept in the URL, `'fragment'` (`#step=customer`) or
    * `'queryParam'` (`?step=customer`). Unset, it resolves through `routerSyncMode` of the stepper config
-   * and then `'fragment'`. Read once at init.
+   * and then `'fragment'`. A change after init applies to the next URL write or read and leaves the
+   * previous key in the URL.
    */
   readonly modeInput = input<'fragment' | 'queryParam' | undefined>(undefined, { alias: 'mode' });
 
   /**
    * Binding `[paramName]`: name of the fragment or query key that carries the step id. Unset, it resolves
-   * through `routerSyncParam` of the stepper config and then `'step'`. Read once at init.
+   * through `routerSyncParam` of the stepper config and then `'step'`. A change after init applies to the next URL write or read and leaves the
+   * previous key in the URL.
    */
   readonly paramNameInput = input<string | undefined>(undefined, {
     alias: 'paramName',

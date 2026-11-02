@@ -124,7 +124,9 @@ export class CngxChipInput implements CngxStateful<string> {
    * Emits the text of a new token: the trimmed input, or the value
    * `validateToken` resolved with. Fires on a separator key, once per
    * fragment of a multi-separator paste, and after a successful
-   * validation.
+   * validation. With `validateToken` set, each new fragment supersedes the
+   * pending validation of the previous one, so a multi-fragment paste emits
+   * only the last fragment that validates.
    */
   readonly tokenCreated = output<string>();
   /**

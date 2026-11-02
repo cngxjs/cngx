@@ -426,8 +426,9 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
   }
 
   /**
-   * Asks to close the tab with the given id: shifts `activeIndex` and the rejection markers so the same tab
-   * stays active, then emits `tabClose` with the id and index. It does not remove the tab; the consumer
+   * Asks to close the tab with the given id: when an earlier tab closes it shifts `activeIndex` and the
+   * rejection markers so the same tab stays active; closing the active tab hands over to its neighbour.
+   * Then emits `tabClose` with the id and index. It does not remove the tab; the consumer
    * drops it from its own data in the `(tabClose)` handler. Unknown ids are ignored.
    */
   requestClose(id: string): void {

@@ -158,8 +158,9 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
   readonly errorMessageId = input<string | null>(null);
   /**
    * Layout direction of the group. `'horizontal'` adds the
-   * `cngx-checkbox-group--horizontal` class. The same binding is forwarded to the host
-   * `CngxRovingTabindex` as its arrow-key axis. Default `'vertical'`.
+   * `cngx-checkbox-group--horizontal` class. Default `'vertical'`. An explicit binding is also
+   * forwarded to the host `CngxRovingTabindex` as its arrow-key axis; while unbound, the layout is
+   * vertical but the roving axis keeps its own default `'horizontal'`.
    */
   readonly orientation = input<'horizontal' | 'vertical'>('vertical');
   /**
