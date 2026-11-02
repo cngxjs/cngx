@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { computedValue, containerState } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -242,6 +242,22 @@ describe('CngxPaginator numeric readouts isolate under dir=rtl', () => {
 })
 class PaginatorGlyphHost {}
 
+// Loads the global micro sheet next to the component sheets, as `cngx.css` does.
+@Component({
+  selector: 'cngx-paginator-micro-glyph-host',
+  standalone: true,
+  imports: [CngxPaginator, CngxPaginatorPageSize, CngxPaginatorPageOfPages],
+  styleUrls: ['../../core/theming/layers.css', '../../common/theming/components/cngx-icon-glyph.css'],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <cngx-paginator aria-label="Pager" [total]="100" [pageIndex]="0" [pageSize]="10">
+      <cngx-pgn-page-size />
+      <cngx-pgn-page-of-pages />
+    </cngx-paginator>
+  `,
+})
+class PaginatorMicroGlyphHost {}
+
 function mountGlyphs(): HTMLElement {
   const fixture = TestBed.createComponent(PaginatorGlyphHost);
   mountedRoot = fixture.nativeElement as HTMLElement;
@@ -330,16 +346,21 @@ describe('CngxPaginator default glyphs', () => {
     );
   });
 
-  it.each(CARET_SEGMENTS)('draws the %s caret 0.4em of the caret font wide, on the rounded box', (selector) => {
-    const parts = glyph(mountGlyphs(), `${selector} .cngx-paginator__select-caret`);
-    const caret = parts.svg.parentElement;
-    if (!caret) {
-      throw new Error(`${selector} caret svg has no parent`);
-    }
-    expect(parts.path.getBoundingClientRect().width).toBeCloseTo(
-      inkOnRoundedBox(0.4 * px(caret, 'font-size'), 14),
-      1,
-    );
+  // The caret matches the select caret: a 12px box that paints the 12-grid
+  // micro triangle, 8 units wide.
+  it.each(CARET_SEGMENTS)('draws the %s caret as the micro drawing on a 12px box', (selector) => {
+    const fixture = TestBed.createComponent(PaginatorMicroGlyphHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const parts = glyph(mountedRoot, `${selector} .cngx-paginator__select-caret`);
+    const box = parts.svg.getBoundingClientRect();
+    expect(box.width).toBe(12);
+    expect(box.height).toBe(12);
+    const micro = parts.svg.querySelector('.cngx-icon-svg__micro')!;
+    expect(computedValue(parts.path, 'display')).toBe('none');
+    expect(computedValue(micro, 'display')).not.toBe('none');
+    expect(micro.getBoundingClientRect().width).toBeCloseTo(8, 1);
   });
 
   it.each([...NAV_SEGMENTS, '.cngx-paginator__more'])(
