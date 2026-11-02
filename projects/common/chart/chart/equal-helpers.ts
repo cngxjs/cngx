@@ -17,6 +17,7 @@ import type { CngxChartSlotContext } from './template-slots';
  * Length + `Object.is` per-index equality on a readonly numeric array.
  * Used by `summaryValues` and `summary.thresholds`. Reference-equal
  * arrays short-circuit immediately.
+ * @internal
  */
 export function sameNumberArr(a: readonly number[], b: readonly number[]): boolean {
   if (a === b) {
@@ -41,6 +42,7 @@ export function sameNumberArr(a: readonly number[], b: readonly number[]): boole
  * `snapshot()` allocates a fresh wrapper each call. Reference equality would
  * never fire here (the wrapper is always new); element-wise is the only
  * guard that dedups the buffer's `points` cascade.
+ * @internal
  */
 export function sameItemsArr<T>(a: readonly T[], b: readonly T[]): boolean {
   if (a === b) {
@@ -63,6 +65,7 @@ export function sameItemsArr<T>(a: readonly T[], b: readonly T[]): boolean {
  * produces a fresh literal even when the numeric pair is unchanged, so
  * an `equal` fn on this signal is the foundation of the chart-graph
  * cascade short-circuit.
+ * @internal
  */
 export function dimensionsEqual(
   a: { width: number; height: number },
@@ -77,6 +80,7 @@ export function dimensionsEqual(
  * re-emits, so without this guard an unchanged axis set would cascade
  * into the plot area and from there into both scale ranges and every
  * axis geometry on each pass.
+ * @internal
  */
 export function insetEqual(a: CngxChartInset, b: CngxChartInset): boolean {
   return (
@@ -91,6 +95,7 @@ export function insetEqual(a: CngxChartInset, b: CngxChartInset): boolean {
  * Field-wise equality on the published plot rectangle. Only the four
  * corners are compared - `width`/`height` are derived from them, so an
  * equal pair of corners implies equal extents.
+ * @internal
  */
 export function plotAreaEqual(a: CngxChartPlotArea, b: CngxChartPlotArea): boolean {
   return a.x0 === b.x0 && a.y0 === b.y0 && a.x1 === b.x1 && a.y1 === b.y1;
@@ -104,6 +109,7 @@ export function plotAreaEqual(a: CngxChartPlotArea, b: CngxChartPlotArea): boole
  * The context is a fresh literal on every read, so without this a
  * resize that lands on the same pixel still re-renders every projected
  * loading / empty / error template.
+ * @internal
  */
 export function slotContextEqual(a: CngxChartSlotContext, b: CngxChartSlotContext): boolean {
   return a.width === b.width && a.height === b.height && plotAreaEqual(a.plot, b.plot);

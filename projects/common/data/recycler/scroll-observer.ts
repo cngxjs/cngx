@@ -18,6 +18,7 @@ import { cngxDevWarn } from '@cngx/utils';
  * range tracks scroll without an extra frame of latency; Angular's signal
  * scheduler coalesces a burst of events into one recompute per frame.
  * `clientHeight` updates from a ResizeObserver, not on scroll.
+ * @internal
  */
 export interface ScrollState {
   readonly scrollTop: Signal<number>;

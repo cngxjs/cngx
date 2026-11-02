@@ -12,6 +12,7 @@ const MIN_DURATION_SEC = ATTACK_SEC + RELEASE_SEC;
  * baseline the generator uses.
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/tone-generator/tone-generator.ts
  * @since 0.1.0
+ * @internal
  */
 export const DEFAULT_TONE_GAIN = 0.2;
 

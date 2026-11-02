@@ -11,7 +11,10 @@ import {
 
 import { nextUid } from '@cngx/core/utils';
 
-/** Reactive surface {@link createSliderDisabledReason} hands back to the track. */
+/**
+ * Reactive surface {@link createSliderDisabledReason} hands back to the track.
+ * @internal
+ */
 export interface CngxSliderDisabledReason {
   /**
    * `aria-describedby` value for the track host: the internal reason id
@@ -35,6 +38,7 @@ export interface CngxSliderDisabledReason {
  * Must run in an injection context (field initializer / constructor).
  * Not exported from `public-api.ts` - decompose glue, not a consumer
  * contract.
+ * @internal
  */
 export function createSliderDisabledReason(opts: {
   /** Uid prefix for the span id (`cngx-slider-desc` / `cngx-range-slider-desc`). */

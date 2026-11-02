@@ -27,7 +27,10 @@ export type DeltaSentiment = 'positive' | 'negative' | 'neutral';
 /** Percent (default, one fraction digit + `%`) or a locale-formatted absolute number. */
 export type DeltaMode = 'percent' | 'absolute';
 
-/** `> 0 → up`, `< 0 → down`, `0 → flat`. */
+/**
+ * `> 0 → up`, `< 0 → down`, `0 → flat`.
+ * @internal
+ */
 export function deltaDirection(value: number): DeltaDirection {
   return value > 0 ? 'up' : value < 0 ? 'down' : 'flat';
 }
@@ -36,6 +39,7 @@ export function deltaDirection(value: number): DeltaDirection {
  * Combine movement with the caller's polarity. `flat` or `neutral` polarity
  * collapse to `neutral`; otherwise up is positive under `higher-is-better`
  * and negative under `lower-is-better` (and the reverse for down).
+ * @internal
  */
 export function deltaSentiment(
   direction: DeltaDirection,
@@ -49,7 +53,10 @@ export function deltaSentiment(
   return isGood ? 'positive' : 'negative';
 }
 
-/** Arrow glyph for the direction: `↑` / `↓` / `→`. */
+/**
+ * Arrow glyph for the direction: `↑` / `↓` / `→`.
+ * @internal
+ */
 export function directionGlyph(direction: DeltaDirection): string {
   return direction === 'up' ? '↑' : direction === 'down' ? '↓' : '→';
 }
@@ -62,6 +69,7 @@ export function directionGlyph(direction: DeltaDirection): string {
  * absolute mode uses the locale grouping.
  * A supplied `Intl.NumberFormatOptions` overrides the default digit handling
  * in both modes.
+ * @internal
  */
 export function formatDelta(
   value: number,
