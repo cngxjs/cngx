@@ -13,7 +13,7 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     'import { CngxReorderableMultiSelect, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
-    'import { delay, of, throwError } from \'rxjs\';',
+    'import { delay, of, switchMap, throwError, timer } from \'rxjs\';',
   ],
   imports: ['CngxReorderableMultiSelect'],
   setup: `protected readonly songs: CngxSelectOptionDef<string>[] = [
@@ -34,7 +34,7 @@ export const STORY: DemoSpec = {
     const line = ts + ' → [' + (intended ?? []).join(', ') + ']';
     this.commitLog.update((l) => [...l.slice(-4), line]);
     if (this.commitShouldFail()) {
-      return throwError(() => new Error('Save failed (demo)')).pipe(delay(700));
+      return timer(700).pipe(switchMap(() => throwError(() => new Error('Save failed (demo)'))));
     }
     return of(intended).pipe(delay(700));
   };
