@@ -658,7 +658,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /** @internal */
   readonly activeId = computed<string | null>(() => this.listboxRef()?.ad.activeId() ?? null);
 
-  readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
@@ -716,7 +715,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       hideCaret: this.hideCaret,
       commitErrorDisplay: this.commitErrorDisplay,
       commitAction: this.commitAction,
-      errorState: this.errorState,
       multi: computed(() => true),
       currentSelection: this.values,
       multiValues: this.values,
@@ -732,6 +730,9 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       announceTemplate: this.announceTemplate,
     },
   );
+
+  /** Whether the bound field shows its error; `false` without a form field. */
+  readonly errorState: Signal<boolean> = this.core.errorState;
 
   // Two handlers start commits here: Retry goes to whichever started the last.
   private readonly commitRetry = commitRetryFor(this.core.commitController);

@@ -748,7 +748,6 @@ export class CngxTreeSelect<T = unknown>
   /** @internal */ readonly panelOpen = computed<boolean>(
     () => this.popoverRef()?.isVisible() ?? false,
   );
-  readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
   /**
    * Family-shared signal graph. The tree's option source is its flat node
@@ -781,7 +780,6 @@ export class CngxTreeSelect<T = unknown>
       hideCaret: this.hideCaret,
       commitErrorDisplay: this.commitErrorDisplay,
       commitAction: this.commitAction,
-      errorState: this.errorState,
       multi: computed(() => true),
       currentSelection: this.values,
       selectionIndicatorPosition: computed(() => null),
@@ -795,6 +793,9 @@ export class CngxTreeSelect<T = unknown>
       announceTemplate: this.announceTemplate,
     },
   );
+
+  /** Whether the bound field shows its error; `false` without a form field. */
+  readonly errorState: Signal<boolean> = this.core.errorState;
 
   /**
    * Member identity, commit-error announcer, the array handler that owns the

@@ -618,7 +618,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly activeId = computed<string | null>(() => this.listboxRef()?.ad.activeId() ?? null);
   readonly searchTerm: Signal<string> = computed(() => this.searchInputRef()?.term() ?? '');
 
-  readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
   protected readonly hostFocus = createHostFocusWithin({
@@ -727,7 +726,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       hideCaret: this.hideCaret,
       commitErrorDisplay: this.commitErrorDisplay,
       commitAction: this.commitAction,
-      errorState: this.errorState,
       filter: this.filter,
       multi: computed(() => false),
       currentSelection: this.value,
@@ -745,6 +743,9 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       announceTemplate: this.announceTemplate,
     },
   );
+
+  /** Whether the bound field shows its error; `false` without a form field. */
+  readonly errorState: Signal<boolean> = this.core.errorState;
 
   /** @internal Mobile sheet presentation; also the scoped announcer's scope. */
   readonly sheetWiring: CngxSelectSheetWiring = createSelectSheetWiring({
