@@ -39,14 +39,7 @@
  */
 
 /** @type {readonly InternalBinding[]} */
-export const INTERNAL_BINDINGS = [
-  {
-    file: 'projects/ui/sidenav/sidenav-router-sync.directive.ts',
-    owner: 'CngxSidenavRouterSync',
-    member: 'paramInput',
-    phase: 4,
-  },
-];
+export const INTERNAL_BINDINGS = [];
 
 /**
  * Lowered in every commit that closes rows, so growth is a visible constant edit.
