@@ -57,7 +57,6 @@ export function createAutoPanelRenderer<T>(opts: {
     estimateSize: Math.max(1, vConfig.estimateSize ?? 32),
     overscan: vConfig.overscan ?? 5,
     scrollDebounce: vConfig.scrollDebounce,
-    skeletonDelay: vConfig.skeletonDelay,
   });
 
   const input: PanelRendererInput<T> = { flatOptions: opts.flatOptions };

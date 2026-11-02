@@ -5,11 +5,18 @@ import { createResizeObserverMock } from '@cngx/testing';
 
 import type { CngxPopover, CngxPopoverPresentation } from '@cngx/common/popover';
 
+import type { CngxSelectVirtualizationConfig } from '../config';
 import type { CngxSelectOptionDef } from '../option.model';
 import type { PanelRenderer } from '../panel-renderer';
 import { createAutoPanelRenderer } from './auto-virtualize';
 
 const TOTAL = 1000;
+
+// The virtualiser binds no state to the recycler, so a skeleton timing key
+// would be inert; the config refuses one.
+// @ts-expect-error -- skeletonDelay is not a virtualization key
+const noSkeletonDelay: CngxSelectVirtualizationConfig = { skeletonDelay: 0 };
+void noSkeletonDelay;
 
 describe('createAutoPanelRenderer - estimateSize clamp', () => {
   let container: HTMLDivElement;
