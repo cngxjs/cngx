@@ -224,6 +224,42 @@ $-hosts:
   cngx-select, cngx-multi-select, cngx-combobox, cngx-typeahead, cngx-tree-select,
   cngx-reorderable-multi-select, cngx-action-select, cngx-action-multi-select, cngx-select-shell;
 
+// Focus ring of the outlined trigger, as mat-form-field appearance='outline'
+// draws it: the edge thickens to 2px in the primary colour inside the box on
+// any focus (pointer or keyboard, also focus inside the input-led triggers)
+// and while the panel is open, so the box keeps its height and the flush
+// panel never lands on the ring. The cngx default ring sits outside the edge
+// on :focus-visible only; the variant sheets SET it inside
+// `@scope` at up to (0,4,0), so these rules carry (0,6,1) and up. Only the
+// outline skin on a lone trigger: fill and bare draw their own focus, and a
+// trigger inside a field box leaves focus to the box. An invalid trigger
+// keeps its danger colour and drops the outside glow mat does not paint. The
+// unlayered forced-colors rules in select-base.css still win.
+$-outlined-trigger: ':is(#{$-hosts}):is(:not([data-skin]), [data-skin="outline"]):not(.cngx-field-box > *) > * > .cngx-field-trigger.cngx-field-trigger.cngx-field-trigger';
+$-trigger-focus: ':is(:focus-within, [aria-expanded="true"], :has([aria-expanded="true"]))';
+$-trigger-invalid: ':is([aria-invalid="true"], :has(> [role="combobox"][aria-invalid="true"]))';
+
+@mixin -focus-ring($theme) {
+  $ring: if(
+    mat.get-theme-version($theme) == 1,
+    var(--mat-sys-primary),
+    mat.get-theme-color($theme, primary)
+  );
+  @layer cngx.components {
+    #{$-outlined-trigger}#{$-trigger-focus} {
+      outline: 2px solid #{$ring};
+      outline-offset: -2px;
+    }
+    #{$-outlined-trigger}#{$-trigger-focus}#{$-trigger-invalid} {
+      outline-color: var(
+        --cngx-select-trigger-invalid-outline-color,
+        var(--cngx-color-danger, #{$ring})
+      );
+      box-shadow: none;
+    }
+  }
+}
+
 @mixin theme($theme) {
   // Token map covers two surfaces simultaneously:
   //   - the popover panel (.cngx-select__panel) plus the tree-select host
@@ -312,4 +348,5 @@ $-hosts:
   }
 
   @include -option-states($theme);
+  @include -focus-ring($theme);
 }
