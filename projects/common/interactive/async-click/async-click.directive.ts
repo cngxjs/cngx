@@ -126,7 +126,8 @@ export class CngxAsyncClick {
    * External busy override. When `true`, the element is `aria-busy` even though
    * this directive is not running its own action - for a wrapper that tracks an
    * operation outside the click (e.g. an `[externalState]`). Purely an ARIA
-   * hint: it does not block clicks (gate those with `[enabled]`).
+   * hint: it does not block clicks (gate those with `[enabled]`) and does not
+   * open {@link busyVisible}, so no spinner or `cngx-async--pending` follows it.
    */
   readonly busy = input<boolean>(false);
 
