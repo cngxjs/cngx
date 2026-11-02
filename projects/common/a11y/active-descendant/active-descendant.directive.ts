@@ -287,6 +287,11 @@ export class CngxActiveDescendant {
     });
   }
 
+  /**
+   * Moves the highlight to the next item after the active one. Disabled items
+   * are skipped while `skipDisabled` is true; past the last item it wraps to the
+   * first when `loop` is true and stays put otherwise.
+   */
   highlightNext(): void {
     const next = this.findFrom(this.activeIndexState(), 1);
     if (next !== null) {
@@ -294,6 +299,11 @@ export class CngxActiveDescendant {
     }
   }
 
+  /**
+   * Moves the highlight to the item before the active one. Disabled items are
+   * skipped while `skipDisabled` is true; before the first item it wraps to the
+   * last when `loop` is true and stays put otherwise.
+   */
   highlightPrev(): void {
     const next = this.findFrom(this.activeIndexState(), -1);
     if (next !== null) {
@@ -301,6 +311,10 @@ export class CngxActiveDescendant {
     }
   }
 
+  /**
+   * Moves the highlight to the first enabled item (the first item when
+   * `skipDisabled` is false). Does nothing when no item qualifies.
+   */
   highlightFirst(): void {
     const first = this.findBoundary(1);
     if (first !== null) {
@@ -308,6 +322,12 @@ export class CngxActiveDescendant {
     }
   }
 
+  /**
+   * Moves the highlight to the last enabled item (the last item when
+   * `skipDisabled` is false). With a virtual count it targets the last absolute
+   * index even when that item is not rendered yet. Does nothing when no item
+   * qualifies.
+   */
   highlightLast(): void {
     const last = this.findBoundary(-1);
     if (last !== null) {

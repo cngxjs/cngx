@@ -231,6 +231,14 @@ export class CngxDialogOpener {
     config?: CngxDialogConfig<D, T>,
   ): CngxDialogRef<T>;
 
+  /**
+   * Opens a dialog whose body is a component type or a template. Creates the
+   * dialog outlet, appends it to `document.body`, applies the `config` flags
+   * (`modal`, `closeOnBackdropClick` and `closeOnEscape` default to `true`) and
+   * returns a `CngxDialogRef` that stays tracked, and is torn down, until the
+   * dialog closes. If creating the content throws, the outlet is removed and the
+   * error is rethrown.
+   */
   open<T = unknown, D = unknown>(
     content: Type<unknown> | TemplateRef<unknown>,
     config: CngxDialogConfig<D, T> = {},

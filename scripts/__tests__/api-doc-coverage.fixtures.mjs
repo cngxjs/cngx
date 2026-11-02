@@ -87,16 +87,11 @@ export const INTERNAL_BINDINGS = [
 /**
  * Lowered in every commit that closes rows, so growth is a visible constant edit.
  */
-export const CEILING = 51;
+export const CEILING = 46;
 
 /** @type {readonly ApiDocGap[]} */
 // prettier-ignore
 export const RATCHET = [
-  { entry: '@cngx/common/a11y', owner: 'CngxActiveDescendant', kind: 'method', member: 'highlightFirst', phase: 3 },
-  { entry: '@cngx/common/a11y', owner: 'CngxActiveDescendant', kind: 'method', member: 'highlightLast', phase: 3 },
-  { entry: '@cngx/common/a11y', owner: 'CngxActiveDescendant', kind: 'method', member: 'highlightNext', phase: 3 },
-  { entry: '@cngx/common/a11y', owner: 'CngxActiveDescendant', kind: 'method', member: 'highlightPrev', phase: 3 },
-  { entry: '@cngx/common/dialog', owner: 'CngxDialogOpener', kind: 'method', member: 'open', phase: 3 },
   { entry: '@cngx/core', owner: 'CngxContrast', kind: 'input', member: 'contrast', binding: 'cngxContrast', phase: 4 },
   { entry: '@cngx/core', owner: 'CngxDensity', kind: 'input', member: 'density', binding: 'cngxDensity', phase: 4 },
   { entry: '@cngx/core', owner: 'CngxDir', kind: 'input', member: 'direction', binding: 'cngxDir', phase: 4 },
