@@ -959,7 +959,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     commitMode: this.commitMode,
     beginCommit: (next, previous, item, action) =>
       this.commitHandler.beginToggle(next, previous, item, action),
-    onBeforeCommit: (_previous, item) => this.togglingOption.set(item),
+    onBeforeCommit: (item) => this.togglingOption.set(item),
     onSyncFinalize: (item, previous) => this.toggleDispatch.finalizeToggle(item, false, previous),
   });
 

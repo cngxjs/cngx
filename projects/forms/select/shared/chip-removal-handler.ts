@@ -61,7 +61,7 @@ export interface CngxChipRemovalHandlerOptions<
    * target is not the consumer's: the commit ledger rolls back to its
    * confirmed baseline.
    */
-  readonly onBeforeCommit?: (previous: T[], item: Item) => void;
+  readonly onBeforeCommit?: (item: Item) => void;
   /**
    * Runs on the sync branch after `values.set(next)`. Consumer emits the
    * change event and announces.
@@ -149,7 +149,7 @@ export function createChipRemovalHandler<
     const next = previous.filter((v) => !eq(v, item.value));
     const action = commitAction();
     if (action) {
-      opts.onBeforeCommit?.(previous, item);
+      opts.onBeforeCommit?.(item);
       if (commitMode() === 'optimistic') {
         values.set(next);
       }

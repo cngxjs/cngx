@@ -26,13 +26,6 @@ export interface ReorderCommitHandlerOptions<T> {
    */
   readonly commitController: CngxCommitController<T[]>;
   /**
-   * Optional notification: called with the pre-reorder order when a commit
-   * begins and with the server's canonicalised order on success. Not a
-   * rollback hook: the commit ledger rolls a failed reorder back to its
-   * confirmed baseline on its own. No shipped composite passes it.
-   */
-  readonly setLastCommitted?: (values: T[]) => void;
-  /**
    * Emit `selectionChange` + `reordered` payload. Consumer controls the
    * shape; signature covers optimistic / pessimistic / no-commit
    * branches.
@@ -132,7 +125,6 @@ export function createReorderCommitHandler<T>(
       return;
     }
 
-    opts.setLastCommitted?.([...previous]);
     if (opts.commitMode() === 'optimistic') {
       opts.values.set(next);
       opts.onReorder(next, previous, option, fromIndex, toIndex);
@@ -153,7 +145,6 @@ export function createReorderCommitHandler<T>(
       commitMode: opts.commitMode,
       onStateChange: opts.onStateChange,
       onSuccess: (final, confirmedPrevious) => {
-        opts.setLastCommitted?.([...final]);
         if (opts.commitMode() === 'pessimistic') {
           opts.onReorder(final, confirmedPrevious, option, fromIndex, toIndex);
           opts.onAnnounce(option, fromIndex, toIndex, final.length);

@@ -29,7 +29,7 @@ interface Harness {
     previous: T[];
     item: CngxSelectOptionDef<T>;
   }>;
-  readonly beforeCommitCalls: Array<{ previous: T[]; item: CngxSelectOptionDef<T> }>;
+  readonly beforeCommitCalls: Array<{ valuesAtCall: T[]; item: CngxSelectOptionDef<T> }>;
   readonly syncFinalizeCalls: Array<{ item: CngxSelectOptionDef<T>; previous: T[] }>;
   handler: CngxChipRemovalHandler<CngxSelectOptionDef<T>>;
 }
@@ -54,8 +54,8 @@ function makeHarness(initial: T[] = ['a', 'b', 'c']): Harness {
     commitMode,
     beginCommit: (next, previous, item) =>
       beginCommitCalls.push({ next, previous, item }),
-    onBeforeCommit: (previous, item) =>
-      beforeCommitCalls.push({ previous, item }),
+    onBeforeCommit: (item) =>
+      beforeCommitCalls.push({ valuesAtCall: [...values()], item }),
     onSyncFinalize: (item, previous) =>
       syncFinalizeCalls.push({ item, previous }),
   });
@@ -158,13 +158,12 @@ describe('createChipRemovalHandler', () => {
       expect(h.beginCommitCalls.length).toBe(1);
     });
 
-    it('fires onBeforeCommit BEFORE beginCommit with the pre-write snapshot', () => {
+    it('fires onBeforeCommit with the removed item BEFORE the optimistic write and beginCommit', () => {
       h.commitMode.set('optimistic');
       h.handler.removeByValue(opt('b'));
       expect(h.beforeCommitCalls.length).toBe(1);
-      expect(h.beforeCommitCalls[0].previous).toEqual(['a', 'b', 'c']);
-      // Since beforeCommit is called first, its snapshot should match
-      // the pre-optimistic-write state.
+      expect(h.beforeCommitCalls[0].item.value).toBe('b');
+      expect(h.beforeCommitCalls[0].valuesAtCall).toEqual(['a', 'b', 'c']);
     });
 
     it('does NOT fire onSyncFinalize on the commit branch', () => {
