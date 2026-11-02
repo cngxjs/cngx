@@ -34,6 +34,10 @@ import type { CngxTouchTargetValue } from './touch-target';
   },
 })
 export class CngxTouchTarget {
+  /**
+   * Binds `[cngxTouchTarget]` to the host `data-touch` attribute; accepts `'on'` or `'off'` only, `'auto'` is not a value of this input.
+   * A bare attribute (`''`) and an unset value both resolve to `undefined`, which leaves `data-touch` off the host so the subtree keeps the inherited hit-area floor.
+   */
   readonly touchTarget = input<
     Exclude<CngxTouchTargetValue, 'auto'> | undefined,
     Exclude<CngxTouchTargetValue, 'auto'> | '' | undefined

@@ -51,16 +51,9 @@ export const INTERNAL_BINDINGS = [
 /**
  * Lowered in every commit that closes rows, so growth is a visible constant edit.
  */
-export const CEILING = 7;
+export const CEILING = 0;
 
 /** @type {readonly ApiDocGap[]} */
 // prettier-ignore
 export const RATCHET = [
-  { entry: '@cngx/core', owner: 'CngxContrast', kind: 'input', member: 'contrast', binding: 'cngxContrast', phase: 4 },
-  { entry: '@cngx/core', owner: 'CngxDensity', kind: 'input', member: 'density', binding: 'cngxDensity', phase: 4 },
-  { entry: '@cngx/core', owner: 'CngxDir', kind: 'input', member: 'direction', binding: 'cngxDir', phase: 4 },
-  { entry: '@cngx/core', owner: 'CngxMotionScope', kind: 'input', member: 'motion', binding: 'cngxMotionScope', phase: 4 },
-  { entry: '@cngx/core', owner: 'CngxTouchTarget', kind: 'input', member: 'touchTarget', binding: 'cngxTouchTarget', phase: 4 },
-  { entry: '@cngx/core/utils', owner: 'createDefaultsFill', kind: 'function', member: 'createDefaultsFill', phase: 4 },
-  { entry: '@cngx/core/utils', owner: 'createDefaultsFill', kind: 'function', member: 'createDefaultsFill', phase: 4 },
 ];

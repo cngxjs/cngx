@@ -27,6 +27,10 @@ import type { CngxDensityValue } from './density';
   },
 })
 export class CngxDensity {
+  /**
+   * Binds `[cngxDensity]` to the host `data-density` attribute; accepts `'comfortable'`, `'compact'` or `'spacious'`.
+   * A bare attribute (`''`) and an unset value both resolve to `undefined`, which leaves `data-density` off the host so the subtree keeps the inherited density.
+   */
   readonly density = input<CngxDensityValue | undefined, CngxDensityValue | '' | undefined>(
     undefined,
     {

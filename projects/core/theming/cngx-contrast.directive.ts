@@ -42,6 +42,10 @@ import type { CngxContrastPreference } from './contrast';
   },
 })
 export class CngxContrast {
+  /**
+   * Binds `[cngxContrast]` to the host `data-contrast` attribute; accepts `'normal'` or `'more'` only, `'auto'` is not a value of this input.
+   * A bare attribute (`''`) and an unset value both resolve to `undefined`, which leaves `data-contrast` off the host so the subtree keeps the inherited contrast.
+   */
   readonly contrast = input<
     Exclude<CngxContrastPreference, 'auto'> | undefined,
     Exclude<CngxContrastPreference, 'auto'> | '' | undefined
