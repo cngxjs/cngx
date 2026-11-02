@@ -115,10 +115,29 @@ import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './cha
   ],
 })
 export class CngxBand implements CngxChartLayer {
+  /**
+   * Required y value of one edge of the band, projected through the chart's y scale. The rectangle
+   * spans the plot width between `[from]` and `[to]`, given in either order.
+   */
   readonly from = input.required<number>();
+  /**
+   * Required y value of the other edge of the band; see `[from]`.
+   */
   readonly to = input.required<number>();
+  /**
+   * Optional text drawn inside the band, vertically centred and 4 units in from the plot's left
+   * edge. Unset draws no text.
+   */
   readonly label = input<string | null>(null);
+  /**
+   * Fill opacity of the band, as a number or numeric string. Unset falls back to
+   * `--cngx-band-opacity` (default `0.12`).
+   */
   readonly opacity = input<number | string | null>(null);
+  /**
+   * CSS colour of the band fill, applied as an inline style and read by the canvas renderer. Unset
+   * falls back to `--cngx-band-color`, then `--cngx-chart-secondary`.
+   */
   readonly color = input<string | null>(null);
 
   protected readonly ctx = injectChartContext('cngxBand');

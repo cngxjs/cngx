@@ -139,11 +139,34 @@ import {
   ],
 })
 export class CngxLine<T = unknown> implements CngxChartLayer {
+  /**
+   * Reads the y value of each row as `(d, i) => number`, defaulting to `Number(d)`. The values form
+   * the path.
+   */
   readonly accessor = input<LineYAccessor<T>>((d: T) => Number(d));
+  /**
+   * Reads the x value of each row as `(d, i) => number | Date | string`. When unset the row index is
+   * used.
+   */
   readonly xAccessor = input<LineXAccessor<T> | undefined>(undefined);
+  /**
+   * CSS colour of the line stroke and its point markers, applied as an inline style and read by the
+   * canvas renderer. Unset falls back to `--cngx-line-color`, then `--cngx-chart-primary`.
+   */
   readonly color = input<string | null>(null);
+  /**
+   * Stroke width of the line. A number is read as px and a string passes through as a CSS length;
+   * unset falls back to `--cngx-line-stroke-width` (default `1.5px`).
+   */
   readonly strokeWidth = input<number | string | null>(null);
+  /**
+   * Interpolation between points: `'linear'` joins them with straight segments, `'monotone'` with a
+   * smooth curve that does not overshoot the data. Default `'linear'`.
+   */
   readonly curve = input<CngxCurve>('linear');
+  /**
+   * Rows this layer draws. When unset the layer reads the parent chart's `[data]`.
+   */
   readonly data = input<readonly T[] | undefined>(undefined);
 
   /**

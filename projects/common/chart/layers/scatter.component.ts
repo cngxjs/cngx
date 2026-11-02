@@ -121,10 +121,27 @@ interface ScatterCircle {
   ],
 })
 export class CngxScatter<T = unknown> implements CngxChartLayer {
+  /**
+   * Required reader of the x value of each row, `(d, i) => number | Date | string`; scatter has no
+   * index default.
+   */
   readonly x = input.required<ScatterXAccessor<T>>();
+  /**
+   * Required reader of the y value of each row, `(d, i) => number`.
+   */
   readonly y = input.required<ScatterYAccessor<T>>();
+  /**
+   * Radius of every circle in chart units (px when the chart is not scaled down). Default `3`.
+   */
   readonly radius = input<number>(3);
+  /**
+   * Rows this layer draws. When unset the layer reads the parent chart's `[data]`.
+   */
   readonly data = input<readonly T[] | undefined>(undefined);
+  /**
+   * CSS colour of the circles, applied as an inline style and read by the canvas renderer. Unset
+   * falls back to `--cngx-scatter-color`, then `--cngx-chart-primary`.
+   */
   readonly color = input<string | null>(null);
 
   protected readonly ctx = injectChartContext('cngxScatter');

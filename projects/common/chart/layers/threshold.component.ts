@@ -117,9 +117,25 @@ import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './cha
   ],
 })
 export class CngxThreshold implements CngxChartLayer {
+  /**
+   * Required y value of the horizontal reference line, projected through the chart's y scale. The
+   * line spans the plot width.
+   */
   readonly value = input.required<number>();
+  /**
+   * Optional text drawn just above the line near the plot's right edge, anchored at its end. Unset
+   * draws no text.
+   */
   readonly label = input<string | null>(null);
+  /**
+   * Draws the line with a `4 3` dash pattern instead of solid, in both the SVG and the canvas
+   * renderer. Default `false`.
+   */
   readonly dashed = input<boolean>(false);
+  /**
+   * CSS colour of the line, applied as an inline style and read by the canvas renderer. Unset falls
+   * back to `--cngx-threshold-color`, then `--cngx-chart-danger`.
+   */
   readonly color = input<string | null>(null);
 
   protected readonly ctx = injectChartContext('cngxThreshold');

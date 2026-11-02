@@ -125,9 +125,31 @@ interface SegmentRendering {
   ],
 })
 export class CngxStackedBar {
+  /**
+   * Required segments drawn left to right in order, each `{ value, label, color? }` and sized as
+   * `value / total` of the track. The label and value also feed each segment's `title` tooltip and
+   * the generated `aria-label`; a segment without `color` uses `--cngx-stacked-bar-segment-color`.
+   */
   readonly segments = input.required<readonly CngxStackedSegment[]>();
+  /**
+   * Value that fills the whole track. Default `null`, and a value of 0 or less counts as unset: the
+   * total is then the sum of the segment values (1 when that is not above 0), and segments beyond a
+   * smaller total are clipped by the track.
+   */
   readonly total = input<number | null>(null);
+  /**
+   * Optional async state that picks the view: a skeleton with `aria-busy` on the host during the
+   * first load, the built-in empty or error text after an empty or failed first load (copy from
+   * `CNGX_CHART_I18N`), nothing while idle, the drawing otherwise. Only its status, first-load and
+   * empty flags are read; the drawn values come from the preset's own inputs, and an unbound state
+   * always draws. The host `aria-label` switches to the built-in loading, empty or error text while
+   * the bar is loading, empty or failed.
+   */
   readonly state = input<CngxAsyncState<readonly CngxStackedSegment[]> | undefined>(undefined);
+  /**
+   * Accessible name of the host (`role="img"`), bound as `[aria-label]`; replaces the generated
+   * segment summary while the bar draws. Unset or empty keeps that summary.
+   */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
 
   private readonly preset = injectPresetState(() => this.state());

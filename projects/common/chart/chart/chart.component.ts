@@ -496,8 +496,22 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    * @internal - alias for the public `data<U>()` method
    */
   readonly dataInput = input.required<readonly T[]>({ alias: 'data' });
+  /**
+   * Fixed width of the chart in px, applied as the host's inline width and as the SVG viewBox width.
+   * Unset, the width is measured from the host; with `[height]` unset too the chart runs in
+   * responsive mode and fills its parent.
+   */
   readonly width = input<number | undefined>(undefined);
+  /**
+   * Fixed height of the chart in px, used as the SVG viewBox height. Unset, the height is measured
+   * from the host; with both `[width]` and `[height]` bound the host also gets `aspect-ratio: width
+   * / height`.
+   */
   readonly height = input<number | undefined>(undefined);
+  /**
+   * Value of the SVG `preserveAspectRatio` attribute, which decides how the viewBox is fitted when
+   * the host box has a different aspect ratio. Default `'xMidYMid meet'`.
+   */
   readonly preserveAspectRatio = input<string>('xMidYMid meet');
   /**
    * Optional explicit `aria-label` override. When set, supersedes the

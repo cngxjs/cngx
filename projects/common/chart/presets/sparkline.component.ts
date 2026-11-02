@@ -142,12 +142,42 @@ import { injectPresetState } from './preset-state';
   ],
 })
 export class CngxSparkline {
+  /**
+   * Required series of y values, drawn left to right at evenly spaced index positions. The vertical
+   * scale spans the data minimum to maximum, padded by one unit either side when every value is
+   * equal.
+   */
   readonly data = input.required<readonly number[]>();
+  /**
+   * Width of the chart in px, also the width of the loading skeleton. Default `80`.
+   */
   readonly width = input<number>(80);
+  /**
+   * Height of the chart in px, also the height of the loading skeleton. Default `24`.
+   */
   readonly height = input<number>(24);
+  /**
+   * Stroke width of the line. A number is read as px and a string passes through as a CSS length;
+   * unset falls back to `--cngx-line-stroke-width` (default `1.5px`).
+   */
   readonly strokeWidth = input<number | string | null>(null);
+  /**
+   * Fills the area under the line, down to the lowest value of `[data]`, with the same colour as the
+   * line. Default `false`.
+   */
   readonly showArea = input<boolean>(false);
+  /**
+   * Optional async state that picks the view: a skeleton with `aria-busy` on the host during the
+   * first load, the built-in empty or error text after an empty or failed first load (copy from
+   * `CNGX_CHART_I18N`), nothing while idle, the drawing otherwise. Only its status, first-load and
+   * empty flags are read; the drawn values come from the preset's own inputs, and an unbound state
+   * always draws.
+   */
   readonly state = input<CngxAsyncState<readonly number[]> | undefined>(undefined);
+  /**
+   * Accessible name of the chart, bound as `[aria-label]`; replaces the summary the chart generates
+   * from the data. Unset or empty keeps that generated summary.
+   */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
 
   private readonly preset = injectPresetState(() => this.state());

@@ -282,10 +282,34 @@ interface TickRendering {
   ],
 })
 export class CngxAxis implements CngxChartAxis {
+  /**
+   * Required side of the plot the axis sits on: `'top'`, `'right'`, `'bottom'` or `'left'`. Top and
+   * bottom axes supply the chart's x scale and left and right axes the y scale, and only the first
+   * axis of each orientation drives its scale.
+   */
   readonly position = input.required<CngxAxisPosition>();
+  /**
+   * Scale type: `'linear'` for numbers, `'time'` for Dates or timestamps, `'band'` for categories.
+   * Default `'linear'`; it decides how `[domain]` maps to the chart scale and how ticks are
+   * generated.
+   */
   readonly type = input<CngxAxisType>('linear');
+  /**
+   * Values the scale spans. For linear and time axes the first and last entries are the two ends,
+   * for band axes every entry is one category and one tick; fewer than two entries gives the chart
+   * no scale for this axis. Unset draws the axis line without ticks.
+   */
   readonly domain = input<readonly unknown[] | undefined>(undefined);
+  /**
+   * Number of evenly spaced ticks, bound as `[ticks]`, generated across a linear or time domain with
+   * both ends included. Default `5`; ignored on band axes, which tick every category.
+   */
   readonly tickCount = input<number | undefined>(undefined, { alias: 'ticks' });
+  /**
+   * Formats a tick value into its label, `(v: unknown) => string`. The default formats numbers and
+   * dates in the app locale (`CNGX_LOCALE`) and drops floating-point noise; the widest formatted
+   * label also sizes the gutter the chart reserves for the axis.
+   */
   readonly format = input<(v: unknown) => string>(defaultTickFormat);
   /**
    * Render decorative gridlines extending from each tick across the
