@@ -23,6 +23,7 @@ import { CngxSelect } from '../single-select/select.component';
 
 import {
   CNGX_SELECT_CONFIG,
+  CNGX_SELECT_DEFAULTS,
   makeSelectConfig,
   provideSelectConfig,
   provideSelectConfigAt,
@@ -854,5 +855,37 @@ describe('every select config feature reaches a mounted composite', () => {
       row.tag,
     );
     expect(row.observe(withIt)).toEqual(row.withFeature);
+  });
+});
+
+describe('provideSelectConfigAt merges over the parent config', () => {
+  function childConfig(parent: unknown[], child: ReturnType<typeof provideSelectConfigAt>) {
+    TestBed.configureTestingModule({ providers: parent as never[] });
+    const injector = Injector.create({ providers: child, parent: TestBed.inject(Injector) });
+    return runInInjectionContext(injector, () => resolveSelectConfig());
+  }
+
+  it('keeps app-wide German ariaLabels under a component-scope withPanelWidth', () => {
+    const config = childConfig(
+      [provideSelectConfig(withAriaLabels({ clearButton: 'Leeren' }), withPanelWidth(480))],
+      provideSelectConfigAt(withPanelWidth(300)),
+    );
+    expect(config.panelWidth).toBe(300);
+    expect(config.ariaLabels().clearButton).toBe('Leeren');
+  });
+
+  it('merges ariaLabels per key: the nearest key wins, the others inherit', () => {
+    const config = childConfig(
+      [provideSelectConfig(withAriaLabels({ clearButton: 'Leeren', searchInput: 'Suchen' }))],
+      provideSelectConfigAt(withAriaLabels({ clearButton: 'Entfernen' })),
+    );
+    expect(config.ariaLabels().clearButton).toBe('Entfernen');
+    expect(config.ariaLabels().searchInput).toBe('Suchen');
+  });
+
+  it('falls back to the library defaults without a parent config', () => {
+    const config = childConfig([], provideSelectConfigAt(withPanelWidth(300)));
+    expect(config.panelWidth).toBe(300);
+    expect(config.openOn).toBe(CNGX_SELECT_DEFAULTS.openOn);
   });
 });

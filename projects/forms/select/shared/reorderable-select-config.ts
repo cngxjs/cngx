@@ -205,7 +205,8 @@ export function provideReorderableSelectConfig(
 
 /**
  * Component-scoped reorderable-select config. Returns `Provider[]`
- * because `viewProviders` rejects `EnvironmentProviders`.
+ * because `viewProviders` rejects `EnvironmentProviders`. Merges over the
+ * config of the parent injector: the keys set here win, unset keys inherit.
  */
 export function provideReorderableSelectConfigAt(
   ...features: CngxReorderableSelectConfigFeature[]
@@ -216,7 +217,15 @@ export function provideReorderableSelectConfigAt(
   for (const f of features) {
     Object.assign(merged, f.config);
   }
-  return [{ provide: CNGX_REORDERABLE_SELECT_CONFIG, useValue: merged }];
+  return [
+    {
+      provide: CNGX_REORDERABLE_SELECT_CONFIG,
+      useFactory: (): CngxReorderableSelectConfig => ({
+        ...inject(CNGX_REORDERABLE_SELECT_CONFIG, { skipSelf: true, optional: true }),
+        ...merged,
+      }),
+    },
+  ];
 }
 
 /**

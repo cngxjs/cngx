@@ -1,4 +1,5 @@
 import {
+  inject,
   InjectionToken,
   type EnvironmentProviders,
   type Provider,
@@ -950,7 +951,10 @@ export function provideSelectConfig(...features: CngxSelectConfigFeature[]): Env
 
 /**
  * Component-scoped config. Returns `Provider[]` because `viewProviders`
- * rejects `EnvironmentProviders`.
+ * rejects `EnvironmentProviders`. Merges over the config of the parent
+ * injector: the keys set here win, every unset key inherits, and the deep
+ * keys (`ariaLabels`, `announcer`, `templates`) merge per entry, so an
+ * app-wide translation survives a component-scope `withPanelWidth`.
  *
  * ```ts
  * @Component({
@@ -959,5 +963,14 @@ export function provideSelectConfig(...features: CngxSelectConfigFeature[]): Env
  * ```
  */
 export function provideSelectConfigAt(...features: CngxSelectConfigFeature[]): Provider[] {
-  return [{ provide: CNGX_SELECT_CONFIG, useValue: makeSelectConfig(...features) }];
+  return [
+    {
+      provide: CNGX_SELECT_CONFIG,
+      useFactory: (): CngxSelectConfig => {
+        const parent = inject(CNGX_SELECT_CONFIG, { skipSelf: true, optional: true });
+        const inherited = parent ? [feature(parent)] : [];
+        return makeSelectConfig(...inherited, ...features);
+      },
+    },
+  ];
 }

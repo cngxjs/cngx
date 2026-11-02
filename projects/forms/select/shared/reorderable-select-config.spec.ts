@@ -242,3 +242,24 @@ describe('withDefaultDragHandle reaches a mounted CngxReorderableMultiSelect', (
     expect(el.querySelectorAll('.cngx-select__chip-handle .app-drag-handle').length).toBe(2);
   });
 });
+
+describe('provideReorderableSelectConfigAt merges over the parent config', () => {
+  it('keeps the app-wide keys a component scope does not set', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideReorderableSelectConfig(
+          withReorderAriaLabel('Mit Alt und Pfeiltasten sortieren'),
+          withReorderKeyboardModifier('meta'),
+        ),
+      ],
+    });
+    const injector = Injector.create({
+      providers: provideReorderableSelectConfigAt(withReorderStripFreeze(false)),
+      parent: TestBed.inject(Injector),
+    });
+    const cfg = runInInjectionContext(injector, () => resolveReorderableSelectConfig());
+    expect(cfg.freezeStripOnCommit).toBe(false);
+    expect(cfg.keyboardModifier).toBe('meta');
+    expect(cfg.ariaLabel()).toBe('Mit Alt und Pfeiltasten sortieren');
+  });
+});

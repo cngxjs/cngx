@@ -233,3 +233,21 @@ describe('every action select config feature reaches a mounted CngxActionSelect'
     expect(observeWith(row, [row.feature])).toEqual(row.withFeature);
   });
 });
+
+describe('provideActionSelectConfigAt merges over the parent config', () => {
+  it('keeps the app-wide keys a component scope does not set', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideActionSelectConfig(withActionAriaLabel('Schnellaktion'), withFocusTrapBehavior('always')),
+      ],
+    });
+    const injector = Injector.create({
+      providers: provideActionSelectConfigAt(withFocusTrapBehavior('never')),
+      parent: TestBed.inject(Injector),
+    });
+    const resolved = runInInjectionContext(injector, () => resolveActionSelectConfig());
+    expect(resolved.focusTrapBehavior).toBe('never');
+    expect(resolved.ariaLabel()).toBe('Schnellaktion');
+  });
+});
