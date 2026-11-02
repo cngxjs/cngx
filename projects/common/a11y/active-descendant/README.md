@@ -52,6 +52,8 @@ Counterpart to `CngxRovingTabindex` - use AD when options should not be individu
 
 Disabled items are skipped when `skipDisabled()` is `true` (default). `loop()` controls wrap-around.
 
+Enter / Space from a focused button, link, input or `[role="button"]` inside the host belong to that control: the directive neither prevents them nor activates the current item. With no active item, Space is prevented so the page does not scroll, unless the host itself takes text (text input, textarea, contenteditable). Enter with no active item passes through.
+
 ## Outputs
 
 | Output | Payload | Fires |

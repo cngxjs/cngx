@@ -143,7 +143,6 @@ export class CngxActiveDescendant {
   /** Guards host attribute writes until after first render. */
   private readonly initialized = signal(false);
 
-
   /** Index of an item that should be highlighted but is not in the DOM. */
   private readonly pendingHighlightState = signal<number | null>(null);
   readonly pendingHighlight = this.pendingHighlightState.asReadonly();
@@ -412,16 +411,38 @@ export class CngxActiveDescendant {
     }
 
     if (key === 'Enter' || key === ' ') {
-      if (this.activeItem()) {
-        event.preventDefault();
-        this.activateCurrent();
-      }
+      this.handleActivationKey(event, key);
       return;
     }
 
     if (this.typeahead() && isPrintableChar(key)) {
       event.preventDefault();
       this.handleTypeahead(key);
+    }
+  }
+
+  private handleActivationKey(event: KeyboardEvent, key: string): void {
+    const host = this.hostEl.nativeElement as HTMLElement;
+    // A focused control inside the host (a Retry button in an error banner)
+    // owns its Enter / Space: no preventDefault, so its native activation runs,
+    // and the active item stays untouched.
+    const target = event.target as Element | null;
+    const interactive = target?.closest(NESTED_INTERACTIVE_SELECTOR);
+    if (interactive && interactive !== host && host.contains(interactive)) {
+      return;
+    }
+
+    if (this.activeItem()) {
+      event.preventDefault();
+      this.activateCurrent();
+      return;
+    }
+
+    // Nothing to activate: Space would scroll the page from a focused host,
+    // unless the host takes text and the space must be typed. Enter stays
+    // untouched so a consumer's own Enter handler still runs.
+    if (key === ' ' && !isEditableTarget(host)) {
+      event.preventDefault();
     }
   }
 
@@ -630,6 +651,14 @@ function handleToItem(handle: CngxAdItemHandle): ActiveDescendantItem {
     disabled: handle.disabled?.() ?? false,
   };
 }
+
+/**
+ * Descendants that own Enter / Space themselves. Same set the listbox
+ * trigger leaves alone.
+ *
+ * @internal
+ */
+const NESTED_INTERACTIVE_SELECTOR = 'button, a[href], input, [role="button"]';
 
 /** @internal */
 function isPrintableChar(key: string): boolean {

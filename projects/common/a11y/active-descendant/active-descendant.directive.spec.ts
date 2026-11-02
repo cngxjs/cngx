@@ -1160,3 +1160,108 @@ describe('CngxActiveDescendant under dir=rtl', () => {
     expect(dir.activeItem()?.value).toBe('b');
   });
 });
+
+/* --- Enter / Space ownership: page scroll, text hosts, nested controls ----- */
+
+const SPACE_ITEMS: ActiveDescendantItem[] = [
+  { id: 'space-a', value: 'a', label: 'Apple' },
+  { id: 'space-b', value: 'b', label: 'Banana' },
+];
+
+@Component({
+  template: `
+    <div cngxActiveDescendant [items]="items" tabindex="0" data-testid="div-host">
+      <button type="button" data-testid="nested-button">Retry</button>
+      <a href="#retry" data-testid="nested-link">Retry link</a>
+      <span role="button" tabindex="0" data-testid="nested-role-button">Role button</span>
+    </div>
+    <input type="text" cngxActiveDescendant [items]="items" data-testid="input-host" />
+    <textarea cngxActiveDescendant [items]="items" data-testid="textarea-host"></textarea>
+  `,
+  imports: [CngxActiveDescendant],
+})
+class SpaceKeyHost {
+  readonly items = SPACE_ITEMS;
+}
+
+describe('CngxActiveDescendant - Enter and Space ownership', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [SpaceKeyHost] });
+  });
+
+  function setupSpace() {
+    const fixture = TestBed.createComponent(SpaceKeyHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const byTestId = (id: string): HTMLElement =>
+      root.querySelector(`[data-testid="${id}"]`) as HTMLElement;
+    const adOf = (id: string): CngxActiveDescendant =>
+      fixture.debugElement
+        .query(By.css(`[data-testid="${id}"]`))
+        .injector.get(CngxActiveDescendant);
+    const press = (el: HTMLElement, key: string): KeyboardEvent => {
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      el.dispatchEvent(event);
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      return event;
+    };
+    return { byTestId, adOf, press };
+  }
+
+  it('prevents the page scroll for Space on a focused host with no active option', () => {
+    const { byTestId, adOf, press } = setupSpace();
+    expect(adOf('div-host').activeItem()).toBeNull();
+    expect(press(byTestId('div-host'), ' ').defaultPrevented).toBe(true);
+  });
+
+  it('leaves Enter alone on a host with no active option', () => {
+    const { byTestId, press } = setupSpace();
+    expect(press(byTestId('div-host'), 'Enter').defaultPrevented).toBe(false);
+  });
+
+  it('lets Space type into a text input host with no active option', () => {
+    const { byTestId, adOf, press } = setupSpace();
+    expect(adOf('input-host').activeItem()).toBeNull();
+    expect(press(byTestId('input-host'), ' ').defaultPrevented).toBe(false);
+  });
+
+  it('lets Space type into a textarea host with no active option', () => {
+    const { byTestId, press } = setupSpace();
+    expect(press(byTestId('textarea-host'), ' ').defaultPrevented).toBe(false);
+  });
+
+  for (const key of ['Enter', ' ']) {
+    for (const nested of ['nested-button', 'nested-link', 'nested-role-button']) {
+      it(`leaves ${key === ' ' ? 'Space' : key} on ${nested} to that control, not the active item`, () => {
+        const { byTestId, adOf, press } = setupSpace();
+        const ad = adOf('div-host');
+        const spy = vi.fn<(v: unknown) => void>();
+        ad.activated.subscribe(spy);
+        ad.highlightByValue('b');
+        TestBed.flushEffects();
+        expect(ad.activeItem()?.value).toBe('b');
+
+        const event = press(byTestId(nested), key);
+
+        expect(event.defaultPrevented).toBe(false);
+        expect(spy).not.toHaveBeenCalled();
+        expect(ad.activeItem()?.value).toBe('b');
+      });
+    }
+  }
+
+  it('still activates the active item for Enter on the host itself', () => {
+    const { byTestId, adOf, press } = setupSpace();
+    const ad = adOf('div-host');
+    const spy = vi.fn<(v: unknown) => void>();
+    ad.activated.subscribe(spy);
+    ad.highlightByValue('a');
+    TestBed.flushEffects();
+    const event = press(byTestId('div-host'), 'Enter');
+    expect(event.defaultPrevented).toBe(true);
+    expect(spy).toHaveBeenCalledWith('a');
+  });
+});
