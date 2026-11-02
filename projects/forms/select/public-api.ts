@@ -270,6 +270,7 @@ export {
 export {
   createADActivationDispatcher,
   type ADActivationDispatcherOptions,
+  type CngxActivationDispatcherCore,
 } from './shared/ad-activation-dispatcher';
 
 export {

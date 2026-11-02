@@ -5,7 +5,23 @@ import type { CngxPopover } from '@cngx/common/popover';
 
 import type { CngxSelectCommitAction } from './commit-action.types';
 import type { CngxSelectOptionDef } from './option.model';
-import type { CngxSelectCore } from './internal/select-core';
+
+/**
+ * The part of a select composite's core that
+ * {@link createADActivationDispatcher} reads: the write gate and the option
+ * lookup. A composite passes its full core; a custom host only has to supply
+ * these two members.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/ad-activation-dispatcher.ts
+ * @since 0.1.0
+ * @relatedTo createADActivationDispatcher, CngxCommitHandlerCore
+ */
+export interface CngxActivationDispatcherCore<T> {
+  /** `true` while the control is disabled or readonly; activations are then dropped. */
+  readonly writeBlocked: Signal<boolean>;
+  /** Option for `value` among the merged options, `null` when none matches. */
+  findOption(value: T): CngxSelectOptionDef<T> | null;
+}
 
 /**
  * Dependencies and callbacks for {@link createADActivationDispatcher}.
@@ -16,8 +32,8 @@ export interface ADActivationDispatcherOptions<T, V> {
    * the viewChild resolves; the effect re-runs when it does.
    */
   readonly listboxRef: Signal<CngxListbox<unknown> | null | undefined>;
-  /** Select-core handle for option resolution. */
-  readonly core: CngxSelectCore<T, V>;
+  /** Write gate and option lookup, usually the composite's select core. */
+  readonly core: CngxActivationDispatcherCore<T>;
   /** Popover to hide after a non-commit activation when `closeOnSelect`. */
   readonly popoverRef?: Signal<CngxPopover | null | undefined>;
   /**
