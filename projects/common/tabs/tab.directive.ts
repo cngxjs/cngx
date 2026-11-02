@@ -49,8 +49,23 @@ import { CNGX_TAB_GROUP_HOST, type CngxTabHandle } from './tab-group-host.token'
   standalone: true,
 })
 export class CngxTab implements OnInit {
+  /**
+   * Identifier the tab registers under with its group. Defaults to an auto-generated `cngx-tab-` uid.
+   * It is captured once in `ngOnInit`, so a later rebind does not re-register; `selectById`, the
+   * `(tabClose)` event and the fragment-sync deep link match against it.
+   */
   readonly id = input<string>(nextUid('cngx-tab-'));
+
+  /**
+   * Marks the tab as not selectable. Defaults to `false`. A disabled tab is skipped by next/previous
+   * navigation and refused by `select`, and the strip header reflects it through `aria-disabled`.
+   */
   readonly disabled = input<boolean>(false);
+
+  /**
+   * Header text of the tab, shown in the strip. Defaults to `undefined`; the `*cngxTabLabel` slot
+   * provides richer content.
+   */
   readonly label = input<string | undefined>(undefined);
   /**
    * Optional secondary text line under the primary label (a count, a
@@ -59,6 +74,11 @@ export class CngxTab implements OnInit {
    * richer content. Folds into the tab's accessible name.
    */
   readonly subLabel = input<string | undefined>(undefined);
+  /**
+   * Optional error aggregator for forms with several error sources. Defaults to `undefined`. The tab
+   * counts as errored when the aggregator's `shouldShow()` is `true`, so a deferred-reveal validation stays
+   * silent until it is revealed; it composes with `[error]`, either one errors the tab.
+   */
   readonly errorAggregator = input<CngxErrorAggregatorContract | undefined>(undefined);
 
   /**

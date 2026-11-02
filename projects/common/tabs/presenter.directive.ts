@@ -74,6 +74,11 @@ export type CngxTabsCommitAction = (
 export class CngxTabGroupPresenter implements CngxTabGroupHost {
   private readonly config = injectTabsConfig();
 
+  /**
+   * Zero-based index of the active tab, two-way bindable as `[(activeIndex)]`. Defaults to `0`. The
+   * presenter writes it on navigation, so with a `commitAction` in `'pessimistic'` mode it changes only
+   * after the action resolves `true`; `activeId` reads it clamped to the registered tab count.
+   */
   readonly activeIndex = model<number>(0);
 
   /**
@@ -243,6 +248,11 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     { equal: Object.is },
   );
 
+  /**
+   * `CngxTabGroupHost` contract, called by `CngxTab` in its `ngOnInit` and by `CngxTabLink`. Appends the
+   * handle to the tab list in registration order; a second call with a known id replaces the stored
+   * handle and keeps its position.
+   */
   register(handle: CngxTabHandle): void {
     const current = this.tabsState();
     const idx = current.findIndex((h) => h.id === handle.id);
@@ -255,6 +265,11 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     this.tabsState.set([...current, handle]);
   }
 
+  /**
+   * `CngxTabGroupHost` contract, called from the destroy hook of `CngxTab` and `CngxTabLink`. Removes the
+   * tab from the list; when `handle` is passed and is no longer the stored one (it was replaced by a
+   * re-register), the call does nothing.
+   */
   unregister(id: string, handle?: CngxTabHandle): void {
     const current = this.tabsState();
     const entry = current.find((h) => h.id === id);
@@ -274,6 +289,11 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     this.clearedSequenceState.set(this.lastOutcomeState()?.sequence);
   }
 
+  /**
+   * Activates the tab at the given index, clamped to the registered range. Does nothing when the target is
+   * the active tab or is disabled. Without a `commitAction` the change is synchronous; with one, it follows
+   * `commitMode`, and a newer call supersedes the pending one.
+   */
   select(index: number): void {
     const tabs = this.tabs();
     if (tabs.length === 0) {
@@ -336,6 +356,10 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     });
   }
 
+  /**
+   * Activates the next enabled tab after the active one, through `select`. At the end of the list it wraps
+   * to the first enabled tab when `loop` is on, otherwise it does nothing.
+   */
   selectNext(): void {
     const tabs = this.tabs();
     if (tabs.length === 0) {
@@ -360,6 +384,10 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     }
   }
 
+  /**
+   * Activates the previous enabled tab before the active one, through `select`. At the start of the list it
+   * wraps to the last enabled tab when `loop` is on, otherwise it does nothing.
+   */
   selectPrevious(): void {
     const tabs = this.tabs();
     if (tabs.length === 0) {
@@ -384,6 +412,9 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     }
   }
 
+  /**
+   * Activates the tab registered under the given id, through `select`. Unknown ids are ignored.
+   */
   selectById(id: string): void {
     const tabs = this.tabs();
     const idx = tabs.findIndex((h) => h.id === id);
@@ -392,6 +423,11 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     }
   }
 
+  /**
+   * Asks to close the tab with the given id: shifts `activeIndex` and the rejection markers so the same tab
+   * stays active, then emits `tabClose` with the id and index. It does not remove the tab; the consumer
+   * drops it from its own data in the `(tabClose)` handler. Unknown ids are ignored.
+   */
   requestClose(id: string): void {
     const tabs = this.tabs();
     const index = tabs.findIndex((h) => h.id === id);
@@ -427,6 +463,10 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     this.tabClose.emit({ id, index });
   }
 
+  /**
+   * Emits `tabAdd`. The presenter creates no tab; the consumer appends one to its own data in the
+   * `(tabAdd)` handler.
+   */
   requestAdd(): void {
     this.tabAdd.emit();
   }

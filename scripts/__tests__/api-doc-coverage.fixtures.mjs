@@ -87,7 +87,7 @@ export const INTERNAL_BINDINGS = [
 /**
  * Lowered in every commit that closes rows, so growth is a visible constant edit.
  */
-export const CEILING = 84;
+export const CEILING = 68;
 
 /** @type {readonly ApiDocGap[]} */
 // prettier-ignore
@@ -114,22 +114,6 @@ export const RATCHET = [
   { entry: '@cngx/common/data', owner: 'CngxSmartDataSource', kind: 'method', member: 'connect', phase: 3 },
   { entry: '@cngx/common/data', owner: 'CngxSmartDataSource', kind: 'method', member: 'disconnect', phase: 3 },
   { entry: '@cngx/common/dialog', owner: 'CngxDialogOpener', kind: 'method', member: 'open', phase: 3 },
-  { entry: '@cngx/common/tabs', owner: 'CngxTab', kind: 'input', member: 'disabled', phase: 3 },
-  { entry: '@cngx/common/tabs', owner: 'CngxTab', kind: 'input', member: 'errorAggregator', phase: 3 },
-  { entry: '@cngx/common/tabs', owner: 'CngxTab', kind: 'input', member: 'id', phase: 3 },
-  { entry: '@cngx/common/tabs', owner: 'CngxTab', kind: 'input', member: 'label', phase: 3 },
-  { entry: '@cngx/common/tabs', owner: 'CngxTabGroupPresenter', kind: 'input', member: 'activeIndex', phase: 3 },
-  { entry: '@cngx/common/tabs', owner: 'CngxTabGroupPresenter', kind: 'output', member: 'activeIndex', phase: 3 },
-  { entry: '@cngx/common/tabs', owner: 'CngxTabGroupPresenter', kind: 'method', member: 'register', phase: 3 },
-  { entry: '@cngx/common/tabs', owner: 'CngxTabGroupPresenter', kind: 'method', member: 'requestAdd', phase: 3 },
-  { entry: '@cngx/common/tabs', owner: 'CngxTabGroupPresenter', kind: 'method', member: 'requestClose', phase: 3 },
-  { entry: '@cngx/common/tabs', owner: 'CngxTabGroupPresenter', kind: 'method', member: 'select', phase: 3 },
-  { entry: '@cngx/common/tabs', owner: 'CngxTabGroupPresenter', kind: 'method', member: 'selectById', phase: 3 },
-  { entry: '@cngx/common/tabs', owner: 'CngxTabGroupPresenter', kind: 'method', member: 'selectNext', phase: 3 },
-  { entry: '@cngx/common/tabs', owner: 'CngxTabGroupPresenter', kind: 'method', member: 'selectPrevious', phase: 3 },
-  { entry: '@cngx/common/tabs', owner: 'CngxTabGroupPresenter', kind: 'method', member: 'unregister', phase: 3 },
-  { entry: '@cngx/common/tabs', owner: 'CngxTabsFragmentSync', kind: 'input', member: 'modeInput', binding: 'mode', phase: 3 },
-  { entry: '@cngx/common/tabs', owner: 'CngxTabsFragmentSync', kind: 'input', member: 'paramNameInput', binding: 'paramName', phase: 3 },
   { entry: '@cngx/core', owner: 'CngxContrast', kind: 'input', member: 'contrast', binding: 'cngxContrast', phase: 4 },
   { entry: '@cngx/core', owner: 'CngxDensity', kind: 'input', member: 'density', binding: 'cngxDensity', phase: 4 },
   { entry: '@cngx/core', owner: 'CngxDir', kind: 'input', member: 'direction', binding: 'cngxDir', phase: 4 },
