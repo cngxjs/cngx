@@ -984,26 +984,12 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
+  // Every value draws a chip, matched or not: resolution runs against the
+  // unfiltered option merge (a search term never hides a picked chip) and a
+  // value with no option yet gets a fallback labelled from the value, so the
+  // strip agrees with `isEmpty`.
   protected readonly selectedOptions = computed<CngxSelectOptionDef<T>[]>(
-    () => {
-      const vals = this.values();
-      if (vals.length === 0) {
-        return [];
-      }
-      // Resolve selected values against the UNFILTERED option merge so
-      // chips for previously-picked values remain visible when the
-      // search term hides the matching option from the listbox.
-      const eq = this.compareWith();
-      const out: CngxSelectOptionDef<T>[] = [];
-      const flat = this.core.unfilteredFlatOptions();
-      for (const v of vals) {
-        const match = flat.find((o) => eq(o.value, v));
-        if (match) {
-          out.push(match);
-        }
-      }
-      return out;
-    },
+    () => this.core.resolveSelectedOptions(this.values()),
     {
       equal: (a, b) => sameArrayContents(a, b, Object.is),
     },

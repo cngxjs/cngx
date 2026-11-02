@@ -95,6 +95,7 @@ import { createHostFocusWithin } from '../shared/internal/host-focus-within';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
+  unresolvedOptionLabel,
   type CngxSelectCompareFn,
   type CngxSelectCore,
 } from '../shared/internal/select-core';
@@ -832,7 +833,14 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected readonly triggerText = computed<string>(() => {
-    return this.selectedOption()?.label ?? this.core.resolvedPlaceholder();
+    const option = this.selectedOption();
+    if (option) {
+      return option.label;
+    }
+    // A value whose option is not loaded yet still reads as the value, never
+    // as the placeholder dressed up as a selection.
+    const v = this.value();
+    return isEmptyScalar(v) ? this.core.resolvedPlaceholder() : unresolvedOptionLabel(v);
   });
 
   private readonly announceCommitError = this.core.createCommitErrorAnnouncer({

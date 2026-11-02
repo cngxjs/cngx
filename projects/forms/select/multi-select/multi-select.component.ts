@@ -816,34 +816,10 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     },
   );
 
+  // Every value draws a chip, matched or not (a fallback labelled from the
+  // value while its option is missing), so the strip agrees with `isEmpty`.
   protected readonly selectedOptions = computed<CngxSelectOptionDef<T>[]>(
-    () => {
-      const vals = this.values();
-      if (vals.length === 0) {
-        return [];
-      }
-      const map = this.core.valueToOptionMap();
-      if (map) {
-        const out: CngxSelectOptionDef<T>[] = [];
-        for (const v of vals) {
-          const match = map.get(v as unknown);
-          if (match) {
-            out.push(match);
-          }
-        }
-        return out;
-      }
-      const eq = this.compareWith();
-      const out: CngxSelectOptionDef<T>[] = [];
-      const flat = this.flatOptions();
-      for (const v of vals) {
-        const match = flat.find((o) => eq(o.value, v));
-        if (match) {
-          out.push(match);
-        }
-      }
-      return out;
-    },
+    () => this.core.resolveSelectedOptions(this.values()),
     {
       equal: (a, b) => sameArrayContents(a, b, Object.is),
     },

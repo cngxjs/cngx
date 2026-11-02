@@ -46,7 +46,11 @@ import {
   CNGX_SELECT_SHEET_SCOPE,
   CngxScopedSelectAnnouncer,
 } from '../shared/internal/scoped-announcer';
-import { createSelectCore, type CngxSelectCore } from '../shared/internal/select-core';
+import {
+  createSelectCore,
+  unresolvedOptionLabel,
+  type CngxSelectCore,
+} from '../shared/internal/select-core';
 import { createOptionsStateView } from '../shared/internal/options-state-view';
 import {
   createSelectSheetWiring,
@@ -1321,7 +1325,7 @@ export class CngxTreeSelect<T = unknown>
       return fn(value);
     }
     // O(1) via the tree-controller's value index.
-    return this.treeController.findByValue(value)?.label ?? String(value);
+    return this.treeController.findByValue(value)?.label ?? unresolvedOptionLabel(value);
   }
 
   private emitChange(change: Omit<CngxTreeSelectChange<T>, 'source'>): void {

@@ -294,6 +294,14 @@ export interface CngxSelectCore<T, TCommit> extends CngxCommitHandlerCore<T, TCo
     item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>,
   ): item is CngxSelectOptionGroupDef<T>;
   isCommittingOption(opt: CngxSelectOptionDef<T>): boolean;
+  /**
+   * One option per value, in value order. A value no option matches yet
+   * (options still loading, a server list that dropped it) resolves to a
+   * fallback option labelled {@link unresolvedOptionLabel}, so a chip strip
+   * draws every value and agrees with `isEmpty`. Fallbacks keep their
+   * identity across calls while their value stays selected.
+   */
+  resolveSelectedOptions(values: readonly T[]): CngxSelectOptionDef<T>[];
   commitErrorMessage(err: unknown): string;
   /** Polite `soft`-policy sentence for a failed commit (`commitFailedSoft`). */
   softCommitFailureMessage(): string;
@@ -351,6 +359,16 @@ export function createPresentationRequest(
   mobileSheet: 'auto' | 'off',
 ): Signal<CngxPopoverPresentationRequest> {
   return computed(() => input?.() ?? (mobileSheet === 'off' ? 'anchored' : 'auto'));
+}
+
+/**
+ * Label of a selected value no option matches: `String(value)`. One rule for
+ * the whole family, chips, the single trigger and the tree.
+ *
+ * @internal
+ */
+export function unresolvedOptionLabel(value: unknown): string {
+  return String(value);
 }
 
 /**
@@ -800,6 +818,29 @@ export function createSelectCore<T, TCommit>(
     return unfilteredFlatOptions().find((o) => eq(o.value, value)) ?? null;
   }
 
+  // Fallbacks of the last call, keyed by value: a chip for an unresolved
+  // value keeps its identity (and its cached remove closure) across
+  // recomputes, and entries for deselected values drop out.
+  let unresolvedOptions = new Map<unknown, CngxSelectOptionDef<T>>();
+
+  function resolveSelectedOptions(values: readonly T[]): CngxSelectOptionDef<T>[] {
+    const kept = new Map<unknown, CngxSelectOptionDef<T>>();
+    const out = values.map((value) => {
+      const match = findOption(value);
+      if (match) {
+        return match;
+      }
+      const fallback = unresolvedOptions.get(value) ?? {
+        value,
+        label: unresolvedOptionLabel(value),
+      };
+      kept.set(value, fallback);
+      return fallback;
+    });
+    unresolvedOptions = kept;
+    return out;
+  }
+
   // Read untracked by the commit-error announcer, so a language flip never
   // re-runs the effect that announced it.
   function commitErrorMessage(err: unknown): string {
@@ -943,6 +984,7 @@ export function createSelectCore<T, TCommit>(
     isGroup,
     isCommittingOption,
     findOption,
+    resolveSelectedOptions,
     commitErrorMessage,
     softCommitFailureMessage,
     createFailedMessage,
