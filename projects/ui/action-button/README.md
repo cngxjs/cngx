@@ -38,7 +38,7 @@ Three feedback pathways:
 2. **Template slots** - `cngxPending`, `cngxSucceeded`, `cngxFailed` directives
 3. **State** - bind `btn.state` to any state consumer
 
-The idle content and the status labels render stacked in one cell; only the active one is visible and part of the button name. The button is always as wide as its widest label, so it never jumps after a run. Without a pending label or template, the idle label stays in place under the busy spinner. The spinner follows `CNGX_LOADING_CONFIG`: it appears after `showDelay` (120 ms by default) and stays for at least `minDwell` (400 ms); override per button with `[busyDelay]` / `[busyMinDwell]`. The status labels, `aria-busy` and the announcement switch at once, they never wait for the spinner.
+The idle content and the status labels render stacked in one cell; only the active one is visible and part of the button name. The button is always as wide as its widest label, so it never jumps after a run. Without a pending label or template, the idle label stays in place under the busy spinner. The spinner follows `CNGX_LOADING_CONFIG`: it appears after `showDelay` (120 ms by default) and stays for at least `minDwell` (400 ms); override per button with `[busyDelay]` / `[busyMinDwell]`. The pending label waits for the same gate, so a fast run goes from the idle label straight to the result without a pending flash in the label or the accessible name. The success and error labels, `aria-busy` and the announcement switch at once.
 
 ## Accessibility
 

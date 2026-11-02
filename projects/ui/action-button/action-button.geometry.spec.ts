@@ -159,12 +159,17 @@ describe('CngxActionButton geometry', () => {
     expect(labels.getBoundingClientRect().width).toBeCloseTo(widest, 0);
   });
 
-  it('shows only the active label; the others keep their box but stay invisible', () => {
+  it('shows only the active label; the others keep their box but stay invisible', async () => {
     const fixture = mount();
     const btn = query(mountedRoot!, '.labels');
     fixture.componentInstance.status.set('pending');
     fixture.detectChanges();
     TestBed.flushEffects();
+    // The pending cell follows the loading config's show delay.
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(btn.getAttribute('data-status-label')).toBe('');
+    });
     const visible = Array.from(
       btn.querySelectorAll<HTMLElement>('.cngx-action-button__label'),
     ).filter((c) => getComputedStyle(c).visibility === 'visible');
