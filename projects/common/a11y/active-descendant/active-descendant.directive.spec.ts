@@ -1174,6 +1174,15 @@ const SPACE_ITEMS: ActiveDescendantItem[] = [
       <button type="button" data-testid="nested-button">Retry</button>
       <a href="#retry" data-testid="nested-link">Retry link</a>
       <span role="button" tabindex="0" data-testid="nested-role-button">Role button</span>
+      <select data-testid="nested-select"><option>One</option></select>
+      <textarea data-testid="nested-textarea"></textarea>
+      <details><summary data-testid="nested-summary">More</summary></details>
+      <span role="checkbox" aria-checked="false" tabindex="0" data-testid="nested-checkbox">Check</span>
+      <span role="switch" aria-checked="false" tabindex="0" data-testid="nested-switch">Switch</span>
+      <span role="menuitem" tabindex="-1" data-testid="nested-menuitem">Item</span>
+      <span role="menuitemcheckbox" aria-checked="false" tabindex="-1" data-testid="nested-menuitemcheckbox">Check item</span>
+      <span role="menuitemradio" aria-checked="false" tabindex="-1" data-testid="nested-menuitemradio">Radio item</span>
+      <span role="menuitemcheckbox" aria-checked="false" tabindex="-1" id="space-b" data-testid="own-item">Banana</span>
     </div>
     <input type="text" cngxActiveDescendant [items]="items" data-testid="input-host" />
     <textarea cngxActiveDescendant [items]="items" data-testid="textarea-host"></textarea>
@@ -1234,7 +1243,19 @@ describe('CngxActiveDescendant - Enter and Space ownership', () => {
   });
 
   for (const key of ['Enter', ' ']) {
-    for (const nested of ['nested-button', 'nested-link', 'nested-role-button']) {
+    for (const nested of [
+      'nested-button',
+      'nested-link',
+      'nested-role-button',
+      'nested-select',
+      'nested-textarea',
+      'nested-summary',
+      'nested-checkbox',
+      'nested-switch',
+      'nested-menuitem',
+      'nested-menuitemcheckbox',
+      'nested-menuitemradio',
+    ]) {
       it(`leaves ${key === ' ' ? 'Space' : key} on ${nested} to that control, not the active item`, () => {
         const { byTestId, adOf, press } = setupSpace();
         const ad = adOf('div-host');
@@ -1252,6 +1273,18 @@ describe('CngxActiveDescendant - Enter and Space ownership', () => {
       });
     }
   }
+
+  it("still activates the active item for Enter on the host's own item element", () => {
+    const { byTestId, adOf, press } = setupSpace();
+    const ad = adOf('div-host');
+    const spy = vi.fn<(v: unknown) => void>();
+    ad.activated.subscribe(spy);
+    ad.highlightByValue('b');
+    TestBed.flushEffects();
+    const event = press(byTestId('own-item'), 'Enter');
+    expect(event.defaultPrevented).toBe(true);
+    expect(spy).toHaveBeenCalledWith('b');
+  });
 
   it('still activates the active item for Enter on the host itself', () => {
     const { byTestId, adOf, press } = setupSpace();

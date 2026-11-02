@@ -19,6 +19,7 @@ import {
 } from '@angular/core';
 
 import {
+  CNGX_NESTED_INTERACTIVE_SELECTOR,
   CNGX_STATEFUL,
   injectLocale,
   type CngxAsyncState,
@@ -1092,8 +1093,8 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     // typeahead, no preventDefault, so Enter / Space run its activation.
     const host = event.currentTarget as Element | null;
     const target = event.target as Element | null;
-    const interactive = target?.closest('button, a[href], input, [role="button"]');
-    if (interactive && interactive !== host) {
+    const interactive = target?.closest(CNGX_NESTED_INTERACTIVE_SELECTOR);
+    if (interactive && interactive !== host && host?.contains(interactive)) {
       return;
     }
     const lb = this.listboxRef();

@@ -33,6 +33,7 @@ import {
   type PopoverPlacement,
 } from '@cngx/common/popover';
 import {
+  CNGX_NESTED_INTERACTIVE_SELECTOR,
   CNGX_SELECTION_CONTROLLER_FACTORY,
   CNGX_STATEFUL,
   nextUid,
@@ -1206,8 +1207,8 @@ export class CngxTreeSelect<T = unknown>
     // preventDefault, so Enter / Space run its native activation.
     const host = event.currentTarget as Element | null;
     const target = event.target as Element | null;
-    const interactive = target?.closest('button, a[href], input, [role="button"]');
-    if (interactive && interactive !== host) {
+    const interactive = target?.closest(CNGX_NESTED_INTERACTIVE_SELECTOR);
+    if (interactive && interactive !== host && host?.contains(interactive)) {
       return;
     }
     if (this.disabled()) {

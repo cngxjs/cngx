@@ -52,7 +52,7 @@ Counterpart to `CngxRovingTabindex` - use AD when options should not be individu
 
 Disabled items are skipped when `skipDisabled()` is `true` (default). `loop()` controls wrap-around.
 
-Enter / Space from a focused button, link, input or `[role="button"]` inside the host belong to that control: the directive neither prevents them nor activates the current item. With no active item, Space is prevented so the page does not scroll, unless the host itself takes text (text input, textarea, contenteditable). Enter with no active item passes through.
+Enter / Space from a focused nested control inside the host belong to that control: a button, link, `input`, `select`, `textarea` or `summary`, or an element with role `button`, `checkbox`, `switch`, `menuitem`, `menuitemcheckbox` or `menuitemradio`. The directive neither prevents them nor activates the current item. An element that renders one of the host's own items (its `id` is an item id) is not a nested control: Enter / Space on it still activate. With no active item, Space is prevented so the page does not scroll, unless the host itself takes text (text input, textarea, contenteditable). Enter with no active item passes through.
 
 ## Outputs
 

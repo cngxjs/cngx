@@ -105,3 +105,22 @@ export function matchesKeyCombo(event: KeyboardEvent, combo: KeyCombo, isMac: bo
   }
   return true;
 }
+
+/**
+ * Selector for the descendants that own Enter and Space themselves: native
+ * buttons, links, form controls and `<summary>`, plus the ARIA widget roles
+ * whose activation key is their own (button, checkbox, switch and the three
+ * menu item roles). A keyboard host that forwards Enter / Space (an
+ * active-descendant container, a listbox trigger, a select trigger) checks
+ * `event.target.closest(...)` against it and leaves a match inside itself
+ * alone: no `preventDefault`, no activation of its own.
+ *
+ * Exported through `public-api.ts` only so `@cngx/common` and `@cngx/forms`
+ * share one list across the secondary-entry boundary.
+ *
+ * @internal
+ */
+export const CNGX_NESTED_INTERACTIVE_SELECTOR =
+  'button, a[href], input, select, textarea, summary, ' +
+  '[role="button"], [role="checkbox"], [role="switch"], ' +
+  '[role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]';

@@ -1,4 +1,5 @@
 import { computed, Directive, ElementRef, inject, input, output } from '@angular/core';
+import { CNGX_NESTED_INTERACTIVE_SELECTOR } from '@cngx/core/utils';
 
 import { injectHostInteractionBlocked } from '../trigger-guard/host-interaction-blocked';
 
@@ -150,7 +151,7 @@ export class CngxListboxTrigger<T = unknown> {
     // still run the native button activation instead of opening the panel.
     const host = this.el.nativeElement;
     const target = event.target as Element | null;
-    const interactive = target?.closest('button, a[href], input, [role="button"]');
+    const interactive = target?.closest(CNGX_NESTED_INTERACTIVE_SELECTOR);
     if (interactive && interactive !== host && host.contains(interactive)) {
       return;
     }

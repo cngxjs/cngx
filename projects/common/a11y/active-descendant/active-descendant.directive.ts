@@ -19,7 +19,11 @@ import {
   resolveInlineStep,
   resolveStepFrom,
 } from '@cngx/core';
-import { createTypeaheadWalker, injectLocale } from '@cngx/core/utils';
+import {
+  CNGX_NESTED_INTERACTIVE_SELECTOR,
+  createTypeaheadWalker,
+  injectLocale,
+} from '@cngx/core/utils';
 
 import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from './ad-item.token';
 
@@ -421,14 +425,27 @@ export class CngxActiveDescendant {
     }
   }
 
+  /** @internal True when `el` renders one of the host's own items. */
+  private isOwnItemElement(el: Element): boolean {
+    const id = el.id;
+    return id !== '' && this.resolvedItems().some((item) => item.id === id);
+  }
+
   private handleActivationKey(event: KeyboardEvent, key: string): void {
     const host = this.hostEl.nativeElement as HTMLElement;
     // A focused control inside the host (a Retry button in an error banner)
     // owns its Enter / Space: no preventDefault, so its native activation runs,
-    // and the active item stays untouched.
+    // and the active item stays untouched. The host's own item elements
+    // (a role="menuitem" row that took focus from a click) are not such a
+    // control: their keys still activate through the directive.
     const target = event.target as Element | null;
-    const interactive = target?.closest(NESTED_INTERACTIVE_SELECTOR);
-    if (interactive && interactive !== host && host.contains(interactive)) {
+    const interactive = target?.closest(CNGX_NESTED_INTERACTIVE_SELECTOR);
+    if (
+      interactive &&
+      interactive !== host &&
+      host.contains(interactive) &&
+      !this.isOwnItemElement(interactive)
+    ) {
       return;
     }
 
@@ -651,14 +668,6 @@ function handleToItem(handle: CngxAdItemHandle): ActiveDescendantItem {
     disabled: handle.disabled?.() ?? false,
   };
 }
-
-/**
- * Descendants that own Enter / Space themselves. Same set the listbox
- * trigger leaves alone.
- *
- * @internal
- */
-const NESTED_INTERACTIVE_SELECTOR = 'button, a[href], input, [role="button"]';
 
 /** @internal */
 function isPrintableChar(key: string): boolean {
