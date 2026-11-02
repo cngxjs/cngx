@@ -2,16 +2,17 @@ import { Component, input, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import * as utils from '@cngx/utils';
 import type { CngxIconData } from '@cngx/utils';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { cdp, page } from 'vitest/browser';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxIconSvg } from './icon-svg.component';
 
-// Runs in a real Chromium (the `test-geometry` target) at devicePixelRatio 1,
-// pinned through CDP: the micro drawings exist so a 12px glyph paints on whole
-// device pixels. The readback counts anti-aliased pixels (neither pure black
-// nor pure white) of a black glyph on white, so it measures real raster output,
-// not computed style.
+// Runs in a real Chromium (the `test-geometry` target). The micro drawings
+// exist so a 12px glyph paints on whole device pixels. Each drawing is
+// rasterised into a 12x12 canvas, black on white, and the anti-aliased pixels
+// (neither pure black nor pure white) are counted, so the proof measures real
+// raster output, not computed style. The canvas is one canvas pixel per CSS
+// pixel at any devicePixelRatio, and it depends on no page layout, viewport or
+// pointer, which is what makes it stable in CI.
 
 const MICRO_ICONS = Object.entries(utils)
   .filter(([name]) => name.startsWith('CNGX_ICON_'))
@@ -41,6 +42,9 @@ const MEASURED_CEILINGS: Readonly<Record<string, number>> = {
   CNGX_ICON_BAN: 87,
 };
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const BOX = 12;
+
 @Component({
   selector: 'cngx-icon-micro-pixels-host',
   standalone: true,
@@ -48,51 +52,55 @@ const MEASURED_CEILINGS: Readonly<Record<string, number>> = {
   styleUrls: ['../../../core/theming/layers.css', '../../theming/components/cngx-icon-glyph.css'],
   encapsulation: ViewEncapsulation.None,
   template: `
-    <div
-      style="display: flex; flex-direction: column; gap: 4px; padding: 4px; inline-size: max-content; background: rgb(255, 255, 255); color: rgb(0, 0, 0)"
-    >
-      <svg class="micro" style="--cngx-icon-svg-size: 12px; display: block" [cngxIconSvg]="icon()"></svg>
-      <svg class="path24" style="--cngx-icon-svg-size: 12px; display: block" [cngxIconSvg]="withoutMicro()"></svg>
-    </div>
+    <svg class="micro" style="--cngx-icon-svg-size: 12px; display: block" [cngxIconSvg]="icon()"></svg>
   `,
 })
 class IconMicroPixelsHost {
   readonly icon = input.required<CngxIconData>();
-
-  protected withoutMicro(): CngxIconData {
-    const { micro: _micro, ...rest } = this.icon();
-    return rest;
-  }
 }
 
 let mountedRoot: HTMLElement | null = null;
 
-function mount(icon: CngxIconData): { micro: SVGSVGElement; path24: SVGSVGElement } {
+function mount(icon: CngxIconData): SVGSVGElement {
   const fixture = TestBed.createComponent(IconMicroPixelsHost);
   fixture.componentRef.setInput('icon', icon);
   mountedRoot = fixture.nativeElement as HTMLElement;
   document.body.appendChild(mountedRoot);
   fixture.detectChanges();
-  return {
-    micro: mountedRoot.querySelector('svg.micro') as SVGSVGElement,
-    path24: mountedRoot.querySelector('svg.path24') as SVGSVGElement,
-  };
+  return mountedRoot.querySelector('svg.micro') as SVGSVGElement;
+}
+
+/**
+ * The 24-grid path in a 12px box, with the paint contract of the shipped
+ * renderer (`icon-svg.component.css`): a stroke icon is a 2-unit round-capped
+ * outline, a fill icon fills its area.
+ */
+function path24Markup(icon: CngxIconData): string {
+  const paint =
+    icon.paint === 'stroke'
+      ? 'fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"'
+      : 'fill="#000"';
+  return `<svg xmlns="${SVG_NS}" width="${BOX}" height="${BOX}" viewBox="${icon.viewBox}"><path ${paint} d="${icon.d}"/></svg>`;
+}
+
+function microMarkup(icon: CngxIconData): string {
+  const micro = icon.micro!;
+  return `<svg xmlns="${SVG_NS}" width="${BOX}" height="${BOX}" viewBox="${micro.viewBox}"><path fill="#000" d="${micro.d}"/></svg>`;
 }
 
 /** Pixels that are neither pure black nor pure white, i.e. anti-aliased. */
-async function antiAliasedPixels(element: Element): Promise<number> {
-  const base64 = await page.screenshot({ element, save: false });
+async function antiAliasedPixels(markup: string): Promise<number> {
   const image = new Image();
-  image.src = `data:image/png;base64,${base64}`;
+  image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markup)}`;
   await image.decode();
-  expect(image.width).toBe(12);
-  expect(image.height).toBe(12);
   const canvas = document.createElement('canvas');
-  canvas.width = image.width;
-  canvas.height = image.height;
+  canvas.width = BOX;
+  canvas.height = BOX;
   const context = canvas.getContext('2d', { willReadFrequently: true })!;
-  context.drawImage(image, 0, 0);
-  const { data } = context.getImageData(0, 0, canvas.width, canvas.height);
+  context.fillStyle = '#fff';
+  context.fillRect(0, 0, BOX, BOX);
+  context.drawImage(image, 0, 0, BOX, BOX);
+  const { data } = context.getImageData(0, 0, BOX, BOX);
   let count = 0;
   for (let offset = 0; offset < data.length; offset += 4) {
     const luminance = (data[offset] + data[offset + 1] + data[offset + 2]) / 3;
@@ -103,38 +111,26 @@ async function antiAliasedPixels(element: Element): Promise<number> {
   return count;
 }
 
-beforeEach(async () => {
-  await cdp().send('Emulation.setDeviceMetricsOverride', {
-    width: window.innerWidth,
-    height: window.innerHeight,
-    deviceScaleFactor: 1,
-    mobile: false,
-  });
-  expect(window.devicePixelRatio).toBe(1);
-});
-
-afterEach(async () => {
+afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
-  await cdp().send('Emulation.clearDeviceMetricsOverride');
 });
 
-describe('micro icon pixels at DPR 1', () => {
+describe('micro icon pixels in a 12px box', () => {
   it('covers every micro-carrying icon', () => {
     // The set only gains micro drawings; a shrinking list means the readback went vacuous.
     expect(MICRO_ICONS.length).toBeGreaterThanOrEqual(15);
   });
 
   it.each(MICRO_ICONS)('%s shows the micro path in the 12px box', (_, icon) => {
-    const { micro } = mount(icon);
+    const micro = mount(icon);
     expect(getComputedStyle(micro.querySelector('.cngx-icon-svg__micro')!).display).not.toBe('none');
     expect(getComputedStyle(micro.querySelector('.cngx-icon-svg__path')!).display).toBe('none');
   });
 
   it.each(MICRO_ICONS)('%s keeps its anti-aliased pixels within the 24-grid path or its measured ceiling', async (name, icon) => {
-    const { micro, path24 } = mount(icon);
-    const microCount = await antiAliasedPixels(micro);
-    const path24Count = await antiAliasedPixels(path24);
+    const microCount = await antiAliasedPixels(microMarkup(icon));
+    const path24Count = await antiAliasedPixels(path24Markup(icon));
     const ceiling = MEASURED_CEILINGS[name];
     if (ceiling !== undefined) {
       expect(microCount, `${name} micro vs measured ceiling`).toBeLessThanOrEqual(ceiling);
@@ -150,7 +146,6 @@ describe('micro icon pixels at DPR 1', () => {
 
   it.each(RECTILINEAR)('%s paints on whole pixels only', async (name) => {
     const icon = (utils as unknown as Record<string, CngxIconData>)[name];
-    const { micro } = mount(icon);
-    expect(await antiAliasedPixels(micro)).toBe(0);
+    expect(await antiAliasedPixels(microMarkup(icon))).toBe(0);
   });
 });
