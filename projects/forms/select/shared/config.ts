@@ -354,7 +354,19 @@ export interface CngxSelectConfig {
   readonly commitErrorAnnouncePolicy?: CngxCommitErrorAnnouncePolicy | null;
   /** Class(es) applied to the panel root for theming. */
   readonly panelClass?: string | readonly string[];
-  /** Typeahead buffer reset window in ms. */
+  /**
+   * One window in ms with two roles. On the button-trigger variants
+   * (`CngxSelect`, `CngxMultiSelect`, `CngxReorderableMultiSelect`,
+   * `CngxSelectShell`) it is the typeahead buffer reset window: keys typed on
+   * the closed trigger within it join one query. On the input variants
+   * (`CngxCombobox`, `CngxTypeahead`, `CngxActionSelect`,
+   * `CngxActionMultiSelect`) and the `<cngx-select-search>` of
+   * `CngxSelectShell` it is the debounce between the last keystroke and the
+   * `searchTerm` / `searchTermChange` update. A per-instance
+   * `[typeaheadDebounceInterval]` or `[searchDebounceMs]` wins. Not read by
+   * `CngxTreeSelect`: its typeahead runs inside the open panel's
+   * `CngxActiveDescendant`. Default `300`.
+   */
   readonly typeaheadDebounceInterval?: number;
   /** Whether typeahead commits value while panel is closed (native `<select>` parity). */
   readonly typeaheadWhileClosed?: boolean;
@@ -367,7 +379,11 @@ export interface CngxSelectConfig {
    * substring). The matcher receives the option's `value` and `label`.
    */
   readonly searchMatchFn?: CngxSelectMatchFn | null;
-  /** Whether the default selected-indicator (checkmark) is shown at all. */
+  /**
+   * Whether the default selected-indicator (checkmark) is shown at all.
+   * `CngxTreeSelect` always renders its node checkbox and ignores this key
+   * (see the tree-select README, "Limitations").
+   */
   readonly showSelectionIndicator?: boolean;
   /**
    * Position of the per-option selection indicator inside a panel row:
@@ -378,16 +394,26 @@ export interface CngxSelectConfig {
   /**
    * Visual form of the per-option selection indicator. `'auto'` picks
    * `'checkbox'` for multi-select / combobox and `'checkmark'` for
-   * single-select. Defaults to `'auto'`.
+   * single-select. Defaults to `'auto'`. `CngxTreeSelect` keeps its node
+   * checkbox whatever the variant (see the tree-select README, "Limitations").
    */
   readonly selectionIndicatorVariant?: CngxSelectSelectionIndicatorVariant;
   /** Whether the default trigger caret is shown at all. */
   readonly showCaret?: boolean;
-  /** Focus-restore to trigger on panel close. */
+  /**
+   * Focus-restore to the trigger when the anchored popover closes. `false`
+   * leaves focus where the panel left it. A modal mobile sheet always returns
+   * focus to the trigger on close, whatever this key says: focus must not stay
+   * on a dialog that is being removed.
+   */
   readonly restoreFocus?: boolean;
   /** Dismiss strategy: click outside, Escape, or both. */
   readonly dismissOn?: 'outside' | 'escape' | 'both';
-  /** Open strategy: click, focus, or both. */
+  /**
+   * Open strategy: click, focus, or both. Honoured by all nine composites;
+   * the input variants open on focus of their text input. The focus restore
+   * after a close never reopens the panel.
+   */
   readonly openOn?: 'click' | 'focus' | 'click+focus';
   /**
    * Mobile presentation. `'auto'` (default) opens the panel as a modal bottom
@@ -691,7 +717,10 @@ export function withPanelClass(panelClass: string | readonly string[]): CngxSele
 }
 
 /**
- * Typeahead buffer debounce in ms. Default `300`.
+ * Sets `typeaheadDebounceInterval` in ms: the closed-trigger typeahead buffer
+ * window of the button-trigger variants and the `searchTermChange` debounce
+ * of combobox, typeahead, action-select, action-multi-select and the shell's
+ * `<cngx-select-search>`. Default `300`.
  */
 export function withTypeaheadDebounce(ms: number): CngxSelectConfigFeature {
   return feature({ typeaheadDebounceInterval: ms });
@@ -722,6 +751,7 @@ export function withSearchMatchFn(fn: CngxSelectMatchFn | null): CngxSelectConfi
 
 /**
  * Whether the selected-option checkmark is rendered at all. Default `true`.
+ * `CngxTreeSelect` ignores it and always renders its node checkbox.
  */
 export function withSelectionIndicator(enabled: boolean): CngxSelectConfigFeature {
   return feature({ showSelectionIndicator: enabled });
@@ -738,7 +768,8 @@ export function withSelectionIndicatorPosition(
 }
 
 /**
- * Sets the selection-indicator glyph. Default `'auto'`.
+ * Sets the selection-indicator glyph. Default `'auto'`. `CngxTreeSelect`
+ * ignores it and always renders its node checkbox.
  */
 export function withSelectionIndicatorVariant(
   variant: CngxSelectSelectionIndicatorVariant,
@@ -754,7 +785,9 @@ export function withCaret(enabled: boolean): CngxSelectConfigFeature {
 }
 
 /**
- * Whether the trigger is re-focused after the panel closes. Default `true`.
+ * Whether the trigger is re-focused after the anchored popover closes.
+ * Default `true`. The modal mobile sheet ignores it: closing a modal dialog
+ * always returns focus to its opener.
  */
 export function withRestoreFocus(enabled: boolean): CngxSelectConfigFeature {
   return feature({ restoreFocus: enabled });
@@ -783,7 +816,8 @@ export function withMobileSheet(mode: CngxSelectConfig['mobileSheet']): CngxSele
 }
 
 /**
- * Open strategy for the trigger. Default `'click'`.
+ * Open strategy for the trigger, honoured by all nine composites; the input
+ * variants open on focus of their text input. Default `'click'`.
  */
 export function withOpenOn(mode: CngxSelectConfig['openOn']): CngxSelectConfigFeature {
   return feature({ openOn: mode });

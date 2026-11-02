@@ -216,3 +216,9 @@ on the trigger.
 
 The flat panels (`CngxSelect`, `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`, `CngxReorderableMultiSelect`) support virtualisation via `CNGX_PANEL_RENDERER_FACTORY` + `injectRecycler`.
 Tree virtualisation is **not implemented** - the recycler contract conflicts with expand-state mutations.
+
+Config keys the tree does not read:
+
+- `showSelectionIndicator` and `selectionIndicatorVariant` - every node row renders its checkbox.
+- `typeaheadDebounceInterval` and `typeaheadWhileClosed` - typeahead runs inside the open panel only; `[expandToReveal]` extends it to collapsed nodes.
+- `chipOverflow` - the trigger keeps a fixed one-line chip count, capped by `maxVisibleChips`.

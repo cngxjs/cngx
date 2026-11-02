@@ -70,7 +70,7 @@ const NOT_APPLICABLE = {
     virtualization: 'tree virtualization deferred (accepted-debt section 4)',
     typeaheadDebounceInterval:
       'the tree typeahead runs inside CngxActiveDescendant on the open panel; no closed-trigger buffer',
-    typeaheadWhileClosed: 'no closed-trigger typeahead; [revealOnTypeahead] covers the open panel',
+    typeaheadWhileClosed: 'no closed-trigger typeahead; [expandToReveal] covers the open panel',
     searchMatchFn: NO_SEARCH,
     showSelectionIndicator: 'the tree panel always renders its checkbox (accepted-debt section 7)',
     selectionIndicatorVariant: 'the tree panel ignores the variant (accepted-debt section 7)',
