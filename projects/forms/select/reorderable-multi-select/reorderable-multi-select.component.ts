@@ -1333,13 +1333,51 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     if (this.summary.active()) {
       return;
     }
-    // Keep focus on the moved chip. Runs after the next render so the
-    // DOM reflects the updated @for ordering before the roving
-    // controller probes for [data-reorder-index=toIndex]. `setActive`
-    // updates synchronously so tabindex='0' lands on the right chip
-    // before focus moves.
-    this.chipStripRoving.setActive(toIndex);
-    afterNextRender(() => this.chipStripRoving.focusAt(toIndex), { injector: this.injector });
+    this.movedChip = { value: movedValue };
+    this.focusMovedChip();
+  }
+
+  /** Value of the chip the last reorder moved; focus follows it until the commit settles. */
+  private movedChip: { readonly value: T } | null = null;
+
+  /**
+   * Keeps focus on the chip the user moved, wherever its value sits: at its
+   * new place after a confirmed move, back at its old place after a rollback
+   * or a rejected pessimistic move. Focus follows the value, not `toIndex`,
+   * because a pending or failed commit leaves another chip at that index.
+   * `setActive` runs at once so tabindex='0' is right before the render; the
+   * focus move waits for the @for ordering and runs only while focus is still
+   * on a chip or was dropped by the re-render, so a Retry click keeps its
+   * focus.
+   */
+  private focusMovedChip(): void {
+    const moved = this.movedChip;
+    if (!moved || this.summary.active()) {
+      return;
+    }
+    const index = this.indexOfValue(moved.value);
+    if (index < 0) {
+      return;
+    }
+    this.chipStripRoving.setActive(index);
+    afterNextRender(
+      () => {
+        const strip = this.stripContainer();
+        const active = strip?.ownerDocument.activeElement ?? null;
+        const focusOnStripOrLost =
+          !active || active === strip?.ownerDocument.body || !!strip?.contains(active);
+        const at = this.indexOfValue(moved.value);
+        if (focusOnStripOrLost && at >= 0) {
+          this.chipStripRoving.focusAt(at);
+        }
+      },
+      { injector: this.injector },
+    );
+  }
+
+  private indexOfValue(value: T): number {
+    const eq = this.compareWith();
+    return this.values().findIndex((v) => eq(v, value));
   }
 
   /**
@@ -1372,12 +1410,16 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
         };
         this.selectionChange.emit(change);
         this.reordered.emit(change);
+        this.focusMovedChip();
       },
       onAnnounce: (option, fromIndex, toIndex, count) => {
         this.core.announce(option, 'reordered', count, true, fromIndex, toIndex);
       },
       onStateChange: (status) => this.stateChange.emit(status),
-      onError: (err) => this.commitError.emit(err),
+      onError: (err) => {
+        this.commitError.emit(err);
+        this.focusMovedChip();
+      },
       announceError: this.announceCommitError,
     }),
     ['dispatch'],

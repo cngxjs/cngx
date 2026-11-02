@@ -350,6 +350,85 @@ describe('CngxReorderableMultiSelect - commit action', () => {
   });
 });
 
+describe('CngxReorderableMultiSelect - focus follows the moved chip', () => {
+  function focusedValue(root: HTMLElement, values: readonly string[]): string | null {
+    const active = document.activeElement as HTMLElement | null;
+    if (!active || !root.contains(active)) {
+      return null;
+    }
+    const index = active.getAttribute('data-reorder-index');
+    return index === null ? null : values[Number(index)];
+  }
+
+  async function settle(fixture: {
+    detectChanges: () => void;
+    whenStable: () => Promise<unknown>;
+  }): Promise<void> {
+    await Promise.resolve();
+    await Promise.resolve();
+    flush(fixture);
+    await fixture.whenStable();
+    flush(fixture);
+  }
+
+  function mount(mode: CngxSelectCommitMode): {
+    fixture: ReturnType<typeof TestBed.createComponent<Host>>;
+    root: HTMLElement;
+    settleWith: (ok: boolean) => void;
+  } {
+    const fixture = TestBed.createComponent(Host);
+    const host = fixture.componentInstance;
+    let settleWith!: (ok: boolean) => void;
+    host.commitAction = () =>
+      new Promise<string[] | undefined>((res, rej) => {
+        settleWith = (ok) => (ok ? res(undefined) : rej(new Error('network down')));
+      });
+    host.commitMode = mode;
+    flush(fixture);
+    const root = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(root);
+    return { fixture, root, settleWith: (ok) => settleWith(ok) };
+  }
+
+  it('optimistic: a rolled-back move keeps focus on the moved chip', async () => {
+    const { fixture, root, settleWith } = mount('optimistic');
+    chipAt(root, 0).focus();
+    fireKey(chipAt(root, 0), 'ArrowRight', { alt: true });
+    flush(fixture);
+    settleWith(false);
+    await settle(fixture);
+    expect(fixture.componentInstance.values()).toEqual(['a', 'b', 'c', 'd']);
+    expect(focusedValue(root, fixture.componentInstance.values())).toBe('a');
+    root.remove();
+  });
+
+  it('pessimistic: a rejected move keeps focus on the chip the user moved', async () => {
+    const { fixture, root, settleWith } = mount('pessimistic');
+    chipAt(root, 2).focus();
+    fireKey(chipAt(root, 2), 'ArrowLeft', { alt: true });
+    flush(fixture);
+    await settle(fixture);
+    expect(focusedValue(root, fixture.componentInstance.values())).toBe('c');
+    settleWith(false);
+    await settle(fixture);
+    expect(fixture.componentInstance.values()).toEqual(['a', 'b', 'c', 'd']);
+    expect(focusedValue(root, fixture.componentInstance.values())).toBe('c');
+    root.remove();
+  });
+
+  it('pessimistic: a confirmed move lands focus on the moved chip at its new place', async () => {
+    const { fixture, root, settleWith } = mount('pessimistic');
+    chipAt(root, 2).focus();
+    fireKey(chipAt(root, 2), 'ArrowLeft', { alt: true });
+    flush(fixture);
+    settleWith(true);
+    await settle(fixture);
+    expect(fixture.componentInstance.values()).toEqual(['a', 'c', 'b', 'd']);
+    expect(focusedValue(root, fixture.componentInstance.values())).toBe('c');
+    root.remove();
+  });
+});
+
 describe('CngxReorderableMultiSelect - a11y + surface', () => {
   it('chip strip carries role="group" and the reorderAriaLabel', () => {
     const fixture = TestBed.createComponent(Host);
