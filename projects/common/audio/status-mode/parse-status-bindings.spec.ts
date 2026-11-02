@@ -38,6 +38,16 @@ describe('parseStatusBindings', () => {
     expect(domEventKeys).toEqual(['click', 'pointerenter']);
   });
 
+  it.each(['click', 'focus', 'blur', 'pointerenter', 'pointerleave', 'submit', 'change', 'input'])(
+    'routes the DOM-event key %s to domEventKeys',
+    (key) => {
+      const { bindings, domEventKeys, unknownKeys } = parseStatusBindings(`${key}:tap`);
+      expect(bindings.size).toBe(0);
+      expect(domEventKeys).toEqual([key]);
+      expect(unknownKeys).toHaveLength(0);
+    },
+  );
+
   it('collects unknown keys', () => {
     const { bindings, unknownKeys } = parseStatusBindings('done:tap');
     expect(bindings.size).toBe(0);

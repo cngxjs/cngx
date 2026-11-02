@@ -18,7 +18,7 @@ const STATUS_ALIASES: Readonly<Record<string, AsyncStatus>> = {
 };
 
 /** DOM-event keys that belong to `[cngxAudio]`, rejected here. */
-export const CNGX_AUDIO_STATUS_DOM_EVENTS = [
+const CNGX_AUDIO_STATUS_DOM_EVENTS = [
   'click',
   'focus',
   'blur',
