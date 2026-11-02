@@ -497,17 +497,14 @@
 
     /* The close and add glyphs sit in an inline span, where an inline svg
        aligns to the text's middle and lands off the button centre. As a
-       block it leaves the line box, so the button centres it. */
+       block it leaves the line box, so the button centres it.
+       Both boxes round to 12px at the 16px default, which selects the
+       12-grid micro drawings: the cross spans 8 units (8px), the plus 9
+       (9px). The 24-grid paths (cross 12 + 2, plus 17 + 2 units) take over
+       once a larger font moves the box past 14px. */
     :is(.cngx-tabs__close, .cngx-tabs__add) > span > .cngx-icon-svg {
+      --cngx-icon-svg-size: 0.75em;
       display: block;
-    }
-
-    .cngx-tabs__close > span > .cngx-icon-svg {
-      --cngx-icon-svg-size: calc(0.48em * 24 / 14);
-    }
-
-    .cngx-tabs__add > span > .cngx-icon-svg {
-      --cngx-icon-svg-size: calc(0.5em * 24 / 19);
     }
 
     /*

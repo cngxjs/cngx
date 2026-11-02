@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxTab, CngxTabAddIcon, CngxTabContent } from '@cngx/common/tabs';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -75,10 +75,16 @@ describe('CngxTabGroup add-tab affordance geometry', () => {
   });
 });
 
+// Loads the global micro sheet next to the component sheets, as `cngx.css` does.
 @Component({
   selector: 'cngx-tab-affordance-glyph-host',
   standalone: true,
   imports: [CngxTabGroup, CngxTab, CngxTabContent],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../common/theming/components/cngx-icon-glyph.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
   template: `
     <cngx-tab-group aria-label="Drafts" [addable]="true" [closable]="true">
       <div cngxTab [label]="'A'">
@@ -89,20 +95,21 @@ describe('CngxTabGroup add-tab affordance geometry', () => {
 })
 class AffordanceGlyphHost {}
 
-// The cross and the plus replaced the text glyphs; drawn with their stroke
-// they keep the text glyphs' width and sit on the button centre (the inline
-// text glyphs sat about 1px low).
+// Both glyph boxes round to 12px at the default tab font, where one micro
+// unit is one pixel: the cross spans 8 units (2 to 10), the plus 9 (1 to 10).
+// The plus sits 0.5px off the 6-unit centre, a 1-unit stroke cannot centre on
+// 12, so the ink centre is checked to half a pixel and the box exactly.
 describe('CngxTabGroup affordance glyphs', () => {
   afterEach(() => {
     mountedRoot?.remove();
     mountedRoot = null;
   });
 
-  for (const [name, selector, width] of [
-    ['close', '.cngx-tabs__close', 0.48],
-    ['add', '.cngx-tabs__add', 0.5],
+  for (const [name, selector, reach] of [
+    ['close', '.cngx-tabs__close', 8],
+    ['add', '.cngx-tabs__add', 9],
   ] as const) {
-    it(`draws the ${name} glyph ${width}em wide on the button centre`, () => {
+    it(`draws the ${name} glyph as the micro drawing on a 12px box on the button centre`, () => {
       const fixture = TestBed.createComponent(AffordanceGlyphHost);
       mountedRoot = fixture.nativeElement as HTMLElement;
       document.body.appendChild(mountedRoot);
@@ -110,13 +117,19 @@ describe('CngxTabGroup affordance glyphs', () => {
       const button = mountedRoot.querySelector<HTMLElement>(selector)!;
       const box = button.getBoundingClientRect();
       const svg = button.querySelector('svg')!;
-      const path = svg.querySelector('path')!.getBoundingClientRect();
-      const stroke =
-        (parseFloat(getComputedStyle(svg).strokeWidth) * svg.getBoundingClientRect().width) / 24;
-      const em = parseFloat(getComputedStyle(button).fontSize);
-      expect(path.width + stroke).toBeCloseTo(width * em, 0);
-      expect(path.left + path.width / 2).toBeCloseTo(box.left + box.width / 2, 0);
-      expect(path.top + path.height / 2).toBeCloseTo(box.top + box.height / 2, 0);
+      const svgBox = svg.getBoundingClientRect();
+      const micro = svg.querySelector('.cngx-icon-svg__micro')!;
+      const ink = micro.getBoundingClientRect();
+      expect(svgBox.width).toBe(12);
+      expect(svgBox.height).toBe(12);
+      expect(getComputedStyle(svg.querySelector('.cngx-icon-svg__path')!).display).toBe('none');
+      expect(getComputedStyle(micro).display).not.toBe('none');
+      expect(ink.width).toBeCloseTo(reach, 1);
+      expect(svgBox.left + svgBox.width / 2).toBeCloseTo(box.left + box.width / 2, 0);
+      expect(svgBox.top + svgBox.height / 2).toBeCloseTo(box.top + box.height / 2, 0);
+      expect(Math.abs(ink.left + ink.width / 2 - (box.left + box.width / 2))).toBeLessThanOrEqual(
+        0.5,
+      );
     });
   }
 });
