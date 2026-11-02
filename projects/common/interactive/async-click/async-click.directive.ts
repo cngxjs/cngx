@@ -52,7 +52,7 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
  * `minDwell`, so a fast run never flashes a spinner. `pending()`, `status`,
  * `aria-busy`, `aria-disabled`, the double-click guard and the settle
  * announcement stay immediate. Override the timing per instance with
- * `[busyDelay]` / `[busyMinDwell]`.
+ * `[showDelay]` / `[minDwell]`.
  *
  * ### Basic usage
  * ```html
@@ -169,18 +169,18 @@ export class CngxAsyncClick {
   private readonly pendingState = signal(false);
 
   /**
-   * Show delay (ms) of the busy visual, bound as `[busyDelay]` next to the
+   * Show delay (ms) of the busy visual, bound as `[showDelay]` next to the
    * directive. Unbound, it resolves to `CNGX_LOADING_CONFIG.showDelay`.
    * `0` shows the busy visual on the first tick of a run.
    */
-  readonly busyDelay = input<number | undefined>(undefined);
+  readonly showDelay = input<number | undefined>(undefined);
 
   /**
-   * Minimum time (ms) a shown busy visual stays, bound as `[busyMinDwell]`.
+   * Minimum time (ms) a shown busy visual stays, bound as `[minDwell]`.
    * Unbound, it resolves to `CNGX_LOADING_CONFIG.minDwell`. `0` hides it as
    * soon as the run ends.
    */
-  readonly busyMinDwell = input<number | undefined>(undefined);
+  readonly minDwell = input<number | undefined>(undefined);
 
   private readonly loadingConfig = injectLoadingConfig();
 
@@ -192,8 +192,8 @@ export class CngxAsyncClick {
    */
   readonly busyVisible: Signal<boolean> = createVisibilityGate(
     computed(() => this.pendingState() || this.hostBusy()),
-    computed(() => this.busyDelay() ?? this.loadingConfig.showDelay),
-    computed(() => this.busyMinDwell() ?? this.loadingConfig.minDwell),
+    computed(() => this.showDelay() ?? this.loadingConfig.showDelay),
+    computed(() => this.minDwell() ?? this.loadingConfig.minDwell),
   );
 
   private readonly succeededState = signal(false);

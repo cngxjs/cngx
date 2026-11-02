@@ -112,7 +112,7 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
   hostDirectives: [
     {
       directive: CngxAsyncClick,
-      inputs: ['cngxAsyncClick: action', 'feedbackDuration', 'busyDelay', 'busyMinDwell'],
+      inputs: ['cngxAsyncClick: action', 'feedbackDuration', 'showDelay', 'minDwell'],
     },
   ],
   providers: [

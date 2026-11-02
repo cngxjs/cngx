@@ -57,9 +57,9 @@ type Density = 'comfortable' | 'compact' | 'spacious';
       </p>
       <!-- A show delay no test outlives: the run stays inside the delay window. -->
       <p>
-        <button cngxButton class="b-window-solid" [cngxAsyncClick]="action" [busyDelay]="600000">Save</button>
+        <button cngxButton class="b-window-solid" [cngxAsyncClick]="action" [showDelay]="600000">Save</button>
         <button cngxButton class="b-idle-solid">Save</button>
-        <button cngxButton="outline" class="b-window-outline" [cngxAsyncClick]="action" [busyDelay]="600000">
+        <button cngxButton="outline" class="b-window-outline" [cngxAsyncClick]="action" [showDelay]="600000">
           Save
         </button>
         <button cngxButton="outline" class="b-idle-outline">Save</button>

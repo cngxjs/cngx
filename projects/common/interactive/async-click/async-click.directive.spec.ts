@@ -289,15 +289,15 @@ describe('CngxAsyncClick', () => {
 @Component({
   template: `<button
     [cngxAsyncClick]="action"
-    [busyDelay]="busyDelay()"
-    [busyMinDwell]="busyMinDwell()"
+    [showDelay]="showDelay()"
+    [minDwell]="minDwell()"
     [feedbackDuration]="feedbackDuration()"
   >Go</button>`,
   imports: [CngxAsyncClick],
 })
 class GateHost {
-  readonly busyDelay = signal<number | undefined>(undefined);
-  readonly busyMinDwell = signal<number | undefined>(undefined);
+  readonly showDelay = signal<number | undefined>(undefined);
+  readonly minDwell = signal<number | undefined>(undefined);
   readonly feedbackDuration = signal(2000);
   readonly directive = viewChild.required(CngxAsyncClick);
   callCount = 0;
@@ -389,10 +389,10 @@ describe('CngxAsyncClick busy visibility gate', () => {
     expect(btn.classList.contains('cngx-async--success')).toBe(true);
   });
 
-  it('honours [busyDelay]="0" and [busyMinDwell]="0"', async () => {
+  it('honours [showDelay]="0" and [minDwell]="0"', async () => {
     const { run, advance, click, directive } = setup((h) => {
-      h.busyDelay.set(0);
-      h.busyMinDwell.set(0);
+      h.showDelay.set(0);
+      h.minDwell.set(0);
     });
     click();
     await advance(0);

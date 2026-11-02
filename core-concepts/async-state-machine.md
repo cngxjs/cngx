@@ -256,7 +256,7 @@ Standard cascade shape:
 
 Resolution priority for any one surface:
 
-1. Per-instance input (`[delay]` / `[minDwell]` on `cngx-loading-indicator` / `cngx-loading-overlay`; `[busyDelay]` / `[busyMinDwell]` on `cngxAsyncClick`; `[skeletonDelay]` on the recycler).
+1. Per-instance input (`[delay]` / `[minDwell]` on `cngx-loading-indicator` / `cngx-loading-overlay`; `[showDelay]` / `[minDwell]` on `cngxAsyncClick`; `[skeletonDelay]` on the recycler).
 2. `provideLoadingConfigAt(...)` in a component's `viewProviders`.
 3. `provideLoadingConfig(...)` at the app root.
 4. `CNGX_LOADING_DEFAULTS` (120 / 400 / 800).

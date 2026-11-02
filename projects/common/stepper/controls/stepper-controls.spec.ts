@@ -64,7 +64,7 @@ class CompleteHost {
   standalone: true,
   imports: [CngxStepperComplete],
   hostDirectives: [CngxStepperPresenter],
-  template: `<button [cngxStepperComplete]="action" [busyDelay]="0">Finish</button>`,
+  template: `<button [cngxStepperComplete]="action" [showDelay]="0">Finish</button>`,
 })
 class ImmediateBusyCompleteHost {
   readonly action = (): Promise<void> => new Promise<void>(() => undefined);
@@ -231,7 +231,7 @@ describe('stepper nav controls', () => {
     });
   });
 
-  it('forwards [busyDelay] to the composed CngxAsyncClick', async () => {
+  it('forwards [showDelay] to the composed CngxAsyncClick', async () => {
     vi.useFakeTimers();
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
     const fixture = TestBed.createComponent(ImmediateBusyCompleteHost);
