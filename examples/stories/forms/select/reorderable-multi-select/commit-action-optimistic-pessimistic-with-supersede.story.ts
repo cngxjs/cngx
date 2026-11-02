@@ -2,7 +2,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxReorderableMultiSelect: commit action optimistic pessimistic with supersede',
-  subtitle: 'Each reorder hits the commit action. Optimistic applies immediately and rolls back on error; pessimistic freezes the whole strip until the write succeeds. Consecutive reorders supersede any in-flight commit - the state machine is shared with the rest of the select family.',
+  subtitle: 'Each reorder hits the commit action. Optimistic applies immediately and rolls back on error; pessimistic applies only after the write succeeds. In both modes the chip strip freezes while a commit is in flight (freezeStripOnCommit, default on), so a second reorder waits for the first to settle - the state machine is shared with the rest of the select family.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -13,7 +13,7 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     'import { CngxReorderableMultiSelect, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
-    'import { delay, of, throwError } from \'rxjs\';',
+    'import { delay, of, switchMap, throwError, timer } from \'rxjs\';',
   ],
   imports: ['CngxReorderableMultiSelect'],
   setup: `protected readonly songs: CngxSelectOptionDef<string>[] = [
@@ -34,7 +34,7 @@ export const STORY: DemoSpec = {
     const line = ts + ' → [' + (intended ?? []).join(', ') + ']';
     this.commitLog.update((l) => [...l.slice(-4), line]);
     if (this.commitShouldFail()) {
-      return throwError(() => new Error('Save failed (demo)')).pipe(delay(700));
+      return timer(700).pipe(switchMap(() => throwError(() => new Error('Save failed (demo)'))));
     }
     return of(intended).pipe(delay(700));
   };

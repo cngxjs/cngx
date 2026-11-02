@@ -1,6 +1,8 @@
 import { InjectionToken, type Signal } from '@angular/core';
 
 import type { AsyncStatus } from '@cngx/core/utils';
+import { CngxRuntimeError } from '@cngx/utils';
+import { isObservable, map, type Observable } from 'rxjs';
 
 import type { CngxCommitController } from './commit-controller.token';
 import type { CngxSelectCreateAction } from './create-action.types';
@@ -149,12 +151,15 @@ export function createCreateCommitHandler<T, Prev = unknown>(
     // Adapt to CngxSelectCommitAction<T> so the shared controller drives
     // the lifecycle. `intended` is ignored (always undefined on
     // dispatch) - the payload lives in the closure.
-    const adapted = (): ReturnType<CngxSelectCreateAction<T>> => action(searchTerm, draft);
+    const adapted = (): ReturnType<CngxSelectCreateAction<T>> =>
+      requireCreatedItem(action(searchTerm, draft));
 
     opts.onStateChange('pending');
     opts.commitController.begin(adapted, undefined, undefined, {
       onSuccess: (committed) => {
         opts.onStateChange('success');
+        // requireCreatedItem already fails an empty create; this only
+        // catches a custom controller that settles without running it.
         if (committed === undefined) {
           return;
         }
@@ -189,6 +194,33 @@ export function createCreateCommitHandler<T, Prev = unknown>(
   }
 
   return { dispatch, retryLast };
+}
+
+function createdItem<T>(value: T): T {
+  if (value === undefined) {
+    throw new CngxRuntimeError(
+      'CNGX2027',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        'quickCreateAction() settled without the created item; resolve to the new value',
+    );
+  }
+  return value;
+}
+
+// A create that resolves `undefined` creates nothing; settling it as a
+// success would leave the user with no option and no feedback, so every
+// result shape turns it into a CNGX2027 failure the controller records.
+function requireCreatedItem<T>(
+  result: Observable<T> | Promise<T> | T,
+): Observable<T> | Promise<T> | T {
+  if (isObservable(result)) {
+    return result.pipe(map(createdItem));
+  }
+  if (result != null && typeof (result as { then?: unknown }).then === 'function') {
+    return (result as Promise<T>).then(createdItem);
+  }
+  return createdItem(result as T);
 }
 
 /**

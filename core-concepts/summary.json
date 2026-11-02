@@ -506,6 +506,18 @@
                 "file": "error-codes/cngx2024.md"
             },
             {
+                "title": "CNGX2025",
+                "file": "error-codes/cngx2025.md"
+            },
+            {
+                "title": "CNGX2026",
+                "file": "error-codes/cngx2026.md"
+            },
+            {
+                "title": "CNGX2027",
+                "file": "error-codes/cngx2027.md"
+            },
+            {
                 "title": "CNGX3001",
                 "file": "error-codes/cngx3001.md"
             },

@@ -460,6 +460,21 @@ describe('CngxSelect - standalone a11y', () => {
     expect(fixture.componentInstance.value()).toBeUndefined();
   });
 
+  it('a letter on the clear button changes nothing', () => {
+    const fixture = TestBed.createComponent(StandaloneA11yHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const clear = fixture.debugElement.nativeElement.querySelector(
+      '.cngx-select__clear',
+    ) as HTMLElement;
+    const ev = new KeyboardEvent('keydown', { key: 'g', bubbles: true, cancelable: true });
+    clear.dispatchEvent(ev);
+    flush(fixture);
+    expect(fixture.componentInstance.value()).toBe('red');
+    expect(fixture.componentInstance.lastChange()).toBeNull();
+    expect(ev.defaultPrevented).toBe(false);
+  });
+
   it('clear emits selectionChange with previousValue = prior value', () => {
     const fixture = TestBed.createComponent(StandaloneA11yHost);
     fixture.detectChanges();
@@ -493,6 +508,71 @@ describe('CngxSelect - grouped options', () => {
     const options = fixture.debugElement.queryAll(By.directive(CngxListbox))[0];
     const listbox = options.injector.get(CngxListbox);
     expect(listbox.options().length).toBe(4);
+  });
+});
+
+describe('CngxSelect - closed typeahead and disabled groups', () => {
+  @Component({
+    template: `<cngx-select [label]="'Colour'" [options]="options" [(value)]="value" />`,
+    imports: [CngxSelect],
+  })
+  class DisabledGroupHost {
+    readonly options: CngxSelectOptionsInput<string> = [
+      { label: 'Retired', disabled: true, children: [{ value: 'grey', label: 'Grey' }] },
+      { label: 'Active', children: [{ value: 'green', label: 'Green' }] },
+    ];
+    readonly value = signal<string | undefined>(undefined);
+  }
+
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [DisabledGroupHost] });
+  });
+
+  it('skips a child of a disabled group', () => {
+    const fixture = TestBed.createComponent(DisabledGroupHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const trigger = fixture.nativeElement.querySelector('.cngx-select__trigger') as HTMLElement;
+    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'g', bubbles: true, cancelable: true }));
+    flush(fixture);
+    expect(fixture.componentInstance.value()).toBe('green');
+  });
+});
+
+describe('CngxSelect - empty-string option without a commit action', () => {
+  @Component({
+    template: `<cngx-select [label]="'Colour'" [options]="options" [(value)]="value" />`,
+    imports: [CngxSelect],
+  })
+  class EmptyStringHost {
+    readonly options: CngxSelectOptionDef<string>[] = [
+      { value: 'red', label: 'Red' },
+      { value: '', label: 'None' },
+    ];
+    readonly value = signal<string | undefined>(undefined);
+  }
+
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [EmptyStringHost] });
+  });
+
+  it('picking the empty-string row from an empty value leaves it unselected', () => {
+    const fixture = TestBed.createComponent(EmptyStringHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const trigger = fixture.nativeElement.querySelector('.cngx-select__trigger') as HTMLElement;
+    trigger.click();
+    flush(fixture);
+    const none = fixture.nativeElement.querySelector('[cngxOption]:nth-of-type(2)') as HTMLElement;
+    none.click();
+    flush(fixture);
+    expect(fixture.componentInstance.value()).toBe('');
+    trigger.click();
+    flush(fixture);
+    const row = fixture.nativeElement.querySelector('[cngxOption]:nth-of-type(2)') as HTMLElement;
+    expect(row.getAttribute('aria-selected')).not.toBe('true');
   });
 });
 
@@ -898,6 +978,7 @@ describe('CngxSelect - async state consumer', () => {
       [options]="options"
       [commitAction]="commitAction"
       [commitMode]="mode()"
+      [clearable]="clearable()"
       [(value)]="value"
       (commitError)="errors.push($event)"
       (stateChange)="statuses.push($event)"
@@ -909,16 +990,18 @@ class CommitHost {
   readonly options = OPTIONS;
   readonly value = signal<string | undefined>('red');
   readonly mode = signal<CngxSelectCommitMode>('optimistic');
+  readonly clearable = signal(false);
   readonly errors: unknown[] = [];
   readonly statuses: string[] = [];
+  readonly intents: (string | undefined)[] = [];
   pending: Subject<string | undefined> | null = null;
   commitCallCount = 0;
   readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
     this.commitCallCount += 1;
+    this.intents.push(intended);
     const subject = new Subject<string | undefined>();
     this.pending = subject;
     return subject.asObservable() as Observable<string | undefined>;
-    void intended;
   };
 }
 
@@ -1072,6 +1155,87 @@ describe('CngxSelect - commit action producer', () => {
     firstPending.complete();
     flush(fixture);
     expect(host.statuses).toEqual(statusesBefore);
+  });
+
+  it('clear calls the commit action with undefined and emits the clear on success', () => {
+    const { fixture, host, select } = setup();
+    host.clearable.set(true);
+    flush(fixture);
+    const changes: CngxSelectChange<string>[] = [];
+    select.selectionChange.subscribe((c: CngxSelectChange<string>) => changes.push(c));
+
+    (fixture.nativeElement.querySelector('.cngx-select__clear-target') as HTMLElement).click();
+    flush(fixture);
+
+    expect(host.intents).toEqual([undefined]);
+    expect(host.value()).toBeUndefined();
+    expect(changes).toEqual([]);
+
+    host.pending!.next(undefined);
+    host.pending!.complete();
+    flush(fixture);
+
+    expect(changes).toHaveLength(1);
+    expect(changes[0].value).toBeUndefined();
+    expect(changes[0].previousValue).toBe('red');
+    expect(changes[0].option).toBeNull();
+  });
+
+  it('a failed clear rolls back to the previous value', () => {
+    const { fixture, host } = setup();
+    host.clearable.set(true);
+    flush(fixture);
+    (fixture.nativeElement.querySelector('.cngx-select__clear-target') as HTMLElement).click();
+    flush(fixture);
+
+    host.pending!.error(new Error('server down'));
+    flush(fixture);
+
+    expect(host.value()).toBe('red');
+  });
+
+  it('clear while a pick is pending wins over the late pick result', () => {
+    const { fixture, host, triggerBtn, secondOption } = setup();
+    host.clearable.set(true);
+    flush(fixture);
+    triggerBtn.click();
+    flush(fixture);
+    secondOption().click();
+    flush(fixture);
+    const pickPending = host.pending!;
+
+    (fixture.nativeElement.querySelector('.cngx-select__clear-target') as HTMLElement).click();
+    flush(fixture);
+    pickPending.next('green');
+    pickPending.complete();
+    host.pending!.next(undefined);
+    host.pending!.complete();
+    flush(fixture);
+
+    expect(host.intents).toEqual(['green', undefined]);
+    expect(host.value()).toBeUndefined();
+  });
+
+  it('a letter on the closed trigger commits through the action and rolls back on failure', () => {
+    const { fixture, host, select, triggerBtn } = setup();
+    const changes: CngxSelectChange<string>[] = [];
+    select.selectionChange.subscribe((c: CngxSelectChange<string>) => changes.push(c));
+
+    triggerBtn.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'g', bubbles: true, cancelable: true }),
+    );
+    flush(fixture);
+
+    expect(select.panelOpen()).toBe(false);
+    expect(host.intents).toEqual(['green']);
+    expect(host.value()).toBe('green');
+    expect(changes).toEqual([]);
+
+    host.pending!.error(new Error('server down'));
+    flush(fixture);
+
+    expect(host.value()).toBe('red');
+    expect(changes).toEqual([]);
   });
 
   it('provides CNGX_STATEFUL that resolves to commitState', () => {

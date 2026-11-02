@@ -16,20 +16,24 @@ import {
   type SelectionController,
 } from '@cngx/core/utils';
 import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
-import type {
-  CngxPopoverPresentation,
-  CngxPopoverPresentationRequest,
-} from '@cngx/common/popover';
+import type { CngxPopoverPresentation, CngxPopoverPresentationRequest } from '@cngx/common/popover';
 
 import { CngxFormFieldPresenter, createFieldControlAria } from '@cngx/forms/field';
 
 import { CngxSelectAnnouncer } from '../announcer';
-import { sameArrayContents } from './compare';
+import { isEmptyScalar, sameArrayContents } from './compare';
 import {
   CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
   type CngxCommitController,
 } from '../commit-controller.token';
 import type { CngxSelectCommitAction, CngxSelectCommitErrorDisplay } from '../commit-action.types';
+import {
+  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
+  type CngxCommitErrorAnnouncePolicy,
+} from '../commit-error-announcer';
+import type { CngxCommitHandlerCore } from '../commit-handler-core';
+import { commitLedgerFor } from './commit-ledger';
+import { commitRetryFor } from './commit-retry';
 import type { CngxSelectCompareFn } from '../compare-fn.types';
 import { type CngxSelectAnnouncerConfig, type CngxSelectFallbackLabels } from '../config';
 import {
@@ -163,7 +167,7 @@ export interface CngxSelectAnnouncerInputs {
  *
  * @internal
  */
-export interface CngxSelectCore<T, TCommit> {
+export interface CngxSelectCore<T, TCommit> extends CngxCommitHandlerCore<T, TCommit> {
   readonly effectiveOptions: Signal<CngxSelectOptionsInput<T>>;
   readonly flatOptions: Signal<CngxSelectOptionDef<T>[]>;
   readonly valueToOptionMap: Signal<Map<unknown, CngxSelectOptionDef<T>> | null>;
@@ -249,19 +253,21 @@ export interface CngxSelectCore<T, TCommit> {
    */
   readonly selection: Signal<SelectionController<T> | null>;
 
-  readonly commitController: CngxCommitController<TCommit>;
   readonly commitState: CngxAsyncState<TCommit | undefined>;
   readonly isCommitting: Signal<boolean>;
-  readonly togglingOption: WritableSignal<CngxSelectOptionDef<T> | null>;
   readonly externalActivation: Signal<boolean>;
   readonly showCommitError: Signal<boolean>;
   readonly commitErrorValue: Signal<unknown>;
 
   /**
-   * Builds a `commitErrorContext` signal bound to the caller's retry.
-   * Cache the result per variant-specific retry signature.
+   * Builds a `commitErrorContext` signal bound to the caller's retry
+   * (default: the controller's `commitRetryFor(...).retry`, which replays
+   * through the commit source that claimed the last commit). Its `option` belongs to the commit
+   * that failed: the ledger record while the ledger ran that commit, else the
+   * toggling option, so a custom handler that bypasses the ledger reports its
+   * own. Cache the result per variant-specific retry signature.
    */
-  bindCommitRetry(retry: () => void): Signal<CngxSelectCommitErrorContext<T>>;
+  bindCommitRetry(retry?: () => void): Signal<CngxSelectCommitErrorContext<T>>;
 
   /** Panel-level `[state]` errors. Cache like `bindCommitRetry`. */
   makeErrorContext(retry: () => void): Signal<CngxSelectErrorContext>;
@@ -270,30 +276,37 @@ export interface CngxSelectCore<T, TCommit> {
     item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>,
   ): item is CngxSelectOptionGroupDef<T>;
   isCommittingOption(opt: CngxSelectOptionDef<T>): boolean;
-  findOption(value: T): CngxSelectOptionDef<T> | null;
   commitErrorMessage(err: unknown): string;
+  /** Polite `soft`-policy sentence for a failed commit (`commitFailedSoft`). */
+  softCommitFailureMessage(): string;
   /** Failed quick-create sentence for the draft label `option`. */
   createFailedMessage(option: string, err: unknown): string;
+  /**
+   * Builds a commit-error announce callback through
+   * `CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY` (resolved in the core's injection
+   * context), wired with the core's announcer, `commitErrorMessage` and
+   * `softCommitFailureMessage`.
+   */
+  createCommitErrorAnnouncer(
+    options: CngxSelectCommitErrorAnnouncerOptions,
+  ): (err: unknown, rolledBack?: boolean) => void;
   /**
    * Bound `isGroup`/`isSelected`/`isIndeterminate`/`isCommittingOption`
    * for spreading into a variant's `CngxSelectPanelHost`. Stable
    * identities for the core's lifetime.
    */
   readonly panelHostAdapter: CngxSelectPanelHostAdapter<T>;
+}
 
-  /**
-   * Announce a selection change via the live-region. Cascade:
-   * per-instance > config > default. `'reordered'` accepts
-   * `fromIndex`/`toIndex`; `'created'` is fired by action organisms.
-   */
-  announce(
-    option: CngxSelectOptionDef<T> | null,
-    action: 'added' | 'removed' | 'reordered' | 'created',
-    count: number,
-    multi: boolean,
-    fromIndex?: number,
-    toIndex?: number,
-  ): void;
+/**
+ * Options of {@link CngxSelectCore.createCommitErrorAnnouncer}.
+ *
+ * @internal
+ */
+export interface CngxSelectCommitErrorAnnouncerOptions {
+  readonly policy: Signal<CngxCommitErrorAnnouncePolicy>;
+  /** Verbose-path sentence. Default {@link CngxSelectCore.commitErrorMessage}. */
+  readonly message?: (err: unknown) => string;
 }
 
 /**
@@ -337,6 +350,7 @@ export function createSelectCore<T, TCommit>(
 ): CngxSelectCore<T, TCommit> {
   const presenter = inject(CngxFormFieldPresenter, { optional: true });
   const announcer = inject(CngxSelectAnnouncer);
+  const commitErrorAnnouncerFactory = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY);
   const config = resolveSelectConfig();
 
   // Built early so the field ARIA below can read commit state.
@@ -346,6 +360,7 @@ export function createSelectCore<T, TCommit>(
   // A commit that settles after the host is gone must neither write, emit
   // nor announce: cancel supersedes it and keeps the last status.
   inject(DestroyRef).onDestroy(() => commitController.cancel());
+  const commitLedger = commitLedgerFor<TCommit, T>(commitController);
   const commitState = commitController.state;
   const isCommitting = commitController.isCommitting;
   // `aria-invalid` projects both form-field validation and a
@@ -619,7 +634,7 @@ export function createSelectCore<T, TCommit>(
       return values.some((v) => eq(v, value));
     }
     const current = deps.currentSelection() as T | undefined;
-    if (current === undefined || current === null) {
+    if (isEmptyScalar(current)) {
       return false;
     }
     return eq(current, value);
@@ -685,12 +700,16 @@ export function createSelectCore<T, TCommit>(
 
   const commitErrorValue = computed<unknown>(() => commitState.error());
 
-  function bindCommitRetry(retry: () => void): Signal<CngxSelectCommitErrorContext<T>> {
+  const commitRetry = commitRetryFor(commitController);
+
+  function bindCommitRetry(
+    retry: () => void = () => commitRetry.retry(),
+  ): Signal<CngxSelectCommitErrorContext<T>> {
     return computed(
       () => ({
         $implicit: commitState.error(),
         error: commitState.error(),
-        option: togglingOption(),
+        option: commitLedger.last()?.option ?? togglingOption(),
         retry,
       }),
       {
@@ -749,6 +768,23 @@ export function createSelectCore<T, TCommit>(
   function commitErrorMessage(err: unknown): string {
     const detail = err instanceof Error ? err.message : undefined;
     return config.ariaLabels().commitFailedMessage(failureLabelText(), detail);
+  }
+
+  function softCommitFailureMessage(): string {
+    return config.ariaLabels().commitFailedSoft(failureLabelText());
+  }
+
+  function createCommitErrorAnnouncer(
+    options: CngxSelectCommitErrorAnnouncerOptions,
+  ): (err: unknown, rolledBack?: boolean) => void {
+    return commitErrorAnnouncerFactory({
+      deps: {
+        announcer,
+        commitErrorMessage: options.message ?? commitErrorMessage,
+        softFailureMessage: softCommitFailureMessage,
+      },
+      policy: options.policy,
+    });
   }
 
   function createFailedMessage(option: string, err: unknown): string {
@@ -867,7 +903,9 @@ export function createSelectCore<T, TCommit>(
     isCommittingOption,
     findOption,
     commitErrorMessage,
+    softCommitFailureMessage,
     createFailedMessage,
+    createCommitErrorAnnouncer,
     announce,
     panelHostAdapter,
   };

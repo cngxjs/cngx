@@ -57,7 +57,10 @@ import {
 } from '@cngx/forms/field';
 
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
-import { createArrayCommitHandler, type ArrayCommitHandler } from '../shared/array-commit-handler';
+import {
+  CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
+  type ArrayCommitHandler,
+} from '../shared/array-commit-handler';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import {
   CNGX_SELECT_SHEET_SCOPE,
@@ -69,10 +72,7 @@ import {
 } from '../shared/internal/select-sheet-wiring';
 import { CngxSelectSheetHeader } from '../shared/internal/sheet-header/sheet-header.component';
 import { CNGX_SELECT_SHEET_HEADER_HOST } from '../shared/sheet-header-host';
-import {
-  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
-  type CngxCommitErrorAnnouncePolicy,
-} from '../shared/commit-error-announcer';
+import { type CngxCommitErrorAnnouncePolicy } from '../shared/commit-error-announcer';
 import {
   CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   type CngxChipRemovalHandler,
@@ -110,6 +110,7 @@ import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
+import { commitRetryFor } from '../shared/internal/commit-retry';
 import { createHostFocusWithin } from '../shared/internal/host-focus-within';
 import {
   cngxSelectDefaultCompare,
@@ -733,6 +734,9 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     },
   );
 
+  // Two handlers start commits here: Retry goes to whichever started the last.
+  private readonly commitRetry = commitRetryFor(this.core.commitController);
+
   /** @internal Mobile sheet presentation; also the scoped announcer's scope. */
   readonly sheetWiring: CngxSelectSheetWiring = createSelectSheetWiring({
     popupRole: 'listbox',
@@ -845,7 +849,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /** @internal */
   protected readonly commitErrorContext = this.core.bindCommitRetry(() => {
     this.hostFocus.refocusOwnerBeforeRemoval();
-    this.commitHandler.retryLast();
+    this.commitRetry.retry();
   });
 
   /** @internal - full virtualisation wire-up (see setupVirtualization). */
@@ -945,39 +949,27 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     emitCleared: () => this.cleared.emit(),
   });
 
-  private readonly commitErrorAnnouncer = inject(CngxSelectAnnouncer);
-  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
-    deps: {
-      announcer: this.commitErrorAnnouncer,
-      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
-      // Soft policy: generic removal at the CURRENT selection count - the
-      // announcer's scalar-shaped count/multi args are replaced here.
-      softAnnounce: (opt, action) =>
-        this.core.announce(
-          opt as CngxSelectOptionDef<T> | null,
-          action,
-          this.values().length,
-          true,
-        ),
-    },
+  private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
     policy: this.commitErrorAnnouncePolicy,
   });
 
-  private readonly commitHandler: ArrayCommitHandler<T> = createArrayCommitHandler<T>({
-    values: this.values,
-    compareWith: this.compareWith,
-    commitMode: this.commitMode,
-    core: this.core,
-    commitAction: this.commitAction,
-    getLastCommitted: () => this.lastCommittedValues,
-    onToggleFinalize: (option, isNowSelected) =>
-      this.toggleDispatch.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
-    onClearFinalize: (previous, finalValues) =>
-      this.toggleDispatch.clearFinalize(previous, finalValues),
-    onStateChange: (status) => this.stateChange.emit(status),
-    onError: (err) => this.commitError.emit(err),
-    announceError: (err) => this.announceCommitError(err),
-  });
+  private readonly commitHandler: ArrayCommitHandler<T> = this.commitRetry.route(
+    inject(CNGX_ARRAY_COMMIT_HANDLER_FACTORY)<T>({
+      values: this.values,
+      compareWith: this.compareWith,
+      commitMode: this.commitMode,
+      core: this.core,
+      commitAction: this.commitAction,
+      onToggleFinalize: (option, isNowSelected) =>
+        this.toggleDispatch.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
+      onClearFinalize: (previous, finalValues) =>
+        this.toggleDispatch.clearFinalize(previous, finalValues),
+      onStateChange: (status) => this.stateChange.emit(status),
+      onError: (err) => this.commitError.emit(err),
+      announceError: this.announceCommitError,
+    }),
+    ['beginToggle', 'beginClear'],
+  );
 
   /**
    * Chip-removal handler. Reorder semantics independent - chip-remove
@@ -1220,6 +1212,14 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     if (event.ctrlKey || event.metaKey || event.altKey) {
       return;
     }
+    // Keys from the clear button or a chip belong to that control: no
+    // typeahead, no preventDefault, so Enter / Space run its activation.
+    const host = event.currentTarget as Element | null;
+    const target = event.target as Element | null;
+    const interactive = target?.closest('button, a[href], input, [role="button"]');
+    if (interactive && interactive !== host) {
+      return;
+    }
     const lb = this.listboxRef();
     const pop = this.popoverRef();
 
@@ -1240,7 +1240,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
         );
         if (action.kind === 'select') {
           event.preventDefault();
-          this.toggleOptionByUser(action.option);
+          this.toggleDispatch.toggleByUser(action.option);
           this.typeaheadController.clearBuffer();
           return;
         }
@@ -1333,69 +1333,95 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     if (this.summary.active()) {
       return;
     }
-    // Keep focus on the moved chip. Runs after the next render so the
-    // DOM reflects the updated @for ordering before the roving
-    // controller probes for [data-reorder-index=toIndex]. `setActive`
-    // updates synchronously so tabindex='0' lands on the right chip
-    // before focus moves.
-    this.chipStripRoving.setActive(toIndex);
-    afterNextRender(() => this.chipStripRoving.focusAt(toIndex), { injector: this.injector });
+    this.movedChip = { value: movedValue };
+    this.focusMovedChip();
   }
 
-  private toggleOptionByUser(opt: CngxSelectOptionDef<T>): void {
-    const action = this.commitAction();
-    const previous = [...this.values()];
-    const eq = this.compareWith();
-    const wasSelected = previous.some((v) => eq(v, opt.value));
-    const next = wasSelected ? previous.filter((v) => !eq(v, opt.value)) : [...previous, opt.value];
-    if (action) {
-      this.lastCommittedValues = previous;
-      this.togglingOption.set(opt);
-      if (this.commitMode() === 'optimistic') {
-        this.values.set(next);
-      }
-      this.commitHandler.beginToggle(next, previous, opt, action);
+  /** Value of the chip the last reorder moved; focus follows it until the commit settles. */
+  private movedChip: { readonly value: T } | null = null;
+
+  /**
+   * Keeps focus on the chip the user moved, wherever its value sits: at its
+   * new place after a confirmed move, back at its old place after a rollback
+   * or a rejected pessimistic move. Focus follows the value, not `toIndex`,
+   * because a pending or failed commit leaves another chip at that index.
+   * `setActive` runs at once so tabindex='0' is right before the render; the
+   * focus move waits for the @for ordering and runs only while focus is still
+   * on a chip or was dropped by the re-render, so a Retry click keeps its
+   * focus.
+   */
+  private focusMovedChip(): void {
+    const moved = this.movedChip;
+    if (!moved || this.summary.active()) {
       return;
     }
-    this.values.set(next);
-    this.toggleDispatch.finalizeToggle(opt, !wasSelected, previous);
+    const index = this.indexOfValue(moved.value);
+    if (index < 0) {
+      return;
+    }
+    this.chipStripRoving.setActive(index);
+    afterNextRender(
+      () => {
+        const strip = this.stripContainer();
+        const active = strip?.ownerDocument.activeElement ?? null;
+        const focusOnStripOrLost =
+          !active || active === strip?.ownerDocument.body || !!strip?.contains(active);
+        const at = this.indexOfValue(moved.value);
+        if (focusOnStripOrLost && at >= 0) {
+          this.chipStripRoving.focusAt(at);
+        }
+      },
+      { injector: this.injector },
+    );
+  }
+
+  private indexOfValue(value: T): number {
+    const eq = this.compareWith();
+    return this.values().findIndex((v) => eq(v, value));
   }
 
   /**
    * Reorder-commit handler. Bypasses `ArrayCommitHandler.beginToggle`
    * (its `sameArrayContents` guard would skip same-membership reorders)
-   * and drives the commit controller directly. Resolved via
+   * and records on the core's commit ledger. Resolved via
    * `CNGX_REORDER_COMMIT_HANDLER_FACTORY` so consumers can swap in
    * retry-with-backoff, offline queues, audit logging.
    */
-  private readonly reorderCommit = inject(CNGX_REORDER_COMMIT_HANDLER_FACTORY)<T>({
-    values: this.values,
-    commitMode: this.commitMode,
-    commitAction: this.commitAction,
-    commitController: this.core.commitController,
-    getLastCommitted: () => this.lastCommittedValues,
-    setLastCommitted: (v) => {
-      this.lastCommittedValues = [...v];
-    },
-    onReorder: (values, previous, option, fromIndex, toIndex) => {
-      const change: CngxReorderableMultiSelectChange<T> = {
-        source: this,
-        values,
-        previousValues: previous,
-        added: [],
-        removed: [],
-        option,
-        action: 'reorder',
-        fromIndex,
-        toIndex,
-      };
-      this.selectionChange.emit(change);
-      this.reordered.emit(change);
-    },
-    onAnnounce: (option, fromIndex, toIndex, count) => {
-      this.core.announce(option, 'reordered', count, true, fromIndex, toIndex);
-    },
-    onStateChange: (status) => this.stateChange.emit(status),
-    onError: (err) => this.commitError.emit(err),
-  });
+  private readonly reorderCommit = this.commitRetry.route(
+    inject(CNGX_REORDER_COMMIT_HANDLER_FACTORY)<T>({
+      values: this.values,
+      commitMode: this.commitMode,
+      commitAction: this.commitAction,
+      commitController: this.core.commitController,
+      setLastCommitted: (v) => {
+        this.lastCommittedValues = [...v];
+      },
+      onReorder: (values, previous, option, fromIndex, toIndex) => {
+        const change: CngxReorderableMultiSelectChange<T> = {
+          source: this,
+          values,
+          previousValues: previous,
+          added: [],
+          removed: [],
+          option,
+          action: 'reorder',
+          fromIndex,
+          toIndex,
+        };
+        this.selectionChange.emit(change);
+        this.reordered.emit(change);
+        this.focusMovedChip();
+      },
+      onAnnounce: (option, fromIndex, toIndex, count) => {
+        this.core.announce(option, 'reordered', count, true, fromIndex, toIndex);
+      },
+      onStateChange: (status) => this.stateChange.emit(status),
+      onError: (err) => {
+        this.commitError.emit(err);
+        this.focusMovedChip();
+      },
+      announceError: this.announceCommitError,
+    }),
+    ['dispatch'],
+  );
 }

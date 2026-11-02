@@ -58,7 +58,7 @@
         <ng-container *ngTemplateOutlet="suffixTpl; context: inputSlotContext()" />
       </span>
     }
-    @if (clearable() && value() !== undefined && !disabled()) {
+    @if (clearable() && !isEmpty() && !disabled()) {
       @if (tpl.clearButton(); as clearBtnTpl) {
         <span class="cngx-typeahead__clear-slot" (click)="$event.stopPropagation()">
           <ng-container

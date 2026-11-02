@@ -8,8 +8,11 @@ import type {
   CngxSelectCommitAction,
   CngxSelectCommitMode,
 } from '../../shared/commit-action.types';
+import { commitLedgerFor } from '../../shared/internal/commit-ledger';
+import { commitRetryFor } from '../../shared/internal/commit-retry';
 import { sameArrayContents } from '../../shared/internal/compare';
-import type { CngxSelectCompareFn, CngxSelectCore } from '../../shared/internal/select-core';
+import type { CngxSelectCore } from '../../shared/internal/select-core';
+import type { CngxSelectOptionDef } from '../../shared/option.model';
 import type { CngxTreeSelectChange } from '../tree-select.component';
 
 /**
@@ -20,19 +23,12 @@ import type { CngxTreeSelectChange } from '../tree-select.component';
 export interface TreeToggleMeta<T> {
   readonly added: readonly T[];
   readonly removed: readonly T[];
-  readonly node: FlatTreeNode<T>;
+  /** `null` for a stale value that is no longer in the tree. */
+  readonly node: FlatTreeNode<T> | null;
   readonly action: 'toggle' | 'cascade-toggle';
+  /** Option the announcement names; `null` speaks the count only. */
+  readonly spoken: CngxSelectOptionDef<T> | null;
 }
-
-/** The commit a tree-select Retry replays. */
-type TreeLastCommit<T> =
-  | {
-      readonly kind: 'toggle';
-      readonly next: T[];
-      readonly previous: T[];
-      readonly meta: TreeToggleMeta<T>;
-    }
-  | { readonly kind: 'clear' };
 
 /**
  * Inputs of {@link createTreeToggleDispatch}. Signals and callbacks only, so
@@ -42,21 +38,39 @@ type TreeLastCommit<T> =
  */
 export interface TreeToggleDispatchOptions<T> {
   readonly values: WritableSignal<T[]>;
-  /** Selection-boundary equality (`keyFn` first, else `compareWith`). */
+  /**
+   * Selection-boundary equality (`keyFn` first, else `compareWith`); also
+   * reconciles the committed array.
+   */
   readonly membersEqual: (a: T, b: T) => boolean;
-  /** Reconciliation equality of the committed array. */
-  readonly compareWith: Signal<CngxSelectCompareFn<T>>;
-  readonly treeController: Pick<CngxTreeController<T>, 'descendantsOfValue' | 'findByValue'>;
+  /**
+   * Set key of the member identity (`keyFn`, or the value itself under a
+   * reference `compareWith`); `null` when only a custom `compareWith` tells
+   * members apart. Keyed membership is O(1) per lookup in the cascade walks.
+   */
+  readonly memberKey: Signal<((value: T) => unknown) | null>;
+  readonly treeController: Pick<
+    CngxTreeController<T>,
+    'descendantsOfValue' | 'findByValue' | 'findById'
+  >;
+  /**
+   * `[cascadeChildren]`. When on, a parent's membership is derived from its
+   * descendants after every toggle, so ancestors follow a child toggle.
+   */
+  readonly cascade: Signal<boolean>;
   readonly commitAction: Signal<CngxSelectCommitAction<T[]> | null>;
   readonly commitMode: Signal<CngxSelectCommitMode>;
   readonly core: Pick<CngxSelectCore<T, T[]>, 'announce' | 'commitController'>;
-  /** The clear path and its retry stay on the shared array handler. */
-  readonly commitHandler: () => Pick<ArrayCommitHandler<T>, 'beginClear' | 'retryLast'>;
+  /**
+   * The clear path stays on the shared array handler. Wrap it with
+   * `commitRetryFor(controller).route` so a clear Retry reaches that handler.
+   */
+  readonly commitHandler: () => Pick<ArrayCommitHandler<T>, 'beginClear'>;
   readonly emitChange: (change: Omit<CngxTreeSelectChange<T>, 'source'>) => void;
   readonly emitCleared: () => void;
   readonly emitState: (status: AsyncStatus) => void;
   readonly emitCommitError: (err: unknown) => void;
-  readonly announceCommitError: (err: unknown) => void;
+  readonly announceCommitError: (err: unknown, rolledBack?: boolean) => void;
 }
 
 /**
@@ -67,18 +81,20 @@ export interface TreeToggleDispatchOptions<T> {
  * @internal
  */
 export interface TreeToggleDispatch<T> {
-  /** Flip one node. */
+  /** Flip one node; in cascade mode its ancestors are re-derived. */
   singleToggle(node: FlatTreeNode<T>): void;
-  /** Flip a node and every non-disabled descendant in one change. */
+  /**
+   * Select a node and every non-disabled descendant, or deselect them all
+   * when every one of them is already selected. A mixed subtree selects all
+   * (APG tri-state). Ancestors are re-derived afterwards.
+   */
   cascadeToggle(node: FlatTreeNode<T>): void;
   /** Remove one value: a tree value toggles off, a stale value is stripped. */
   removeValue(value: T, label: string): void;
   /** Clear the whole selection. */
   clearAll(): void;
-  /** Replay the last commit (commit-error Retry). */
+  /** Replay the last failed tree commit this dispatch started. */
   retryLast(): void;
-  /** Rollback target of the shared array handler. */
-  lastCommitted(): T[];
 }
 
 /** @internal */
@@ -86,20 +102,14 @@ export function createTreeToggleDispatch<T>(
   opts: TreeToggleDispatchOptions<T>,
 ): TreeToggleDispatch<T> {
   const { values, membersEqual } = opts;
-  let lastCommittedValues: T[] = untracked(() => [...values()]);
-  let lastCommit: TreeLastCommit<T> | null = null;
+  const ledger = commitLedgerFor<T[], T>(opts.core.commitController);
+  const retryLast = (): void => ledger.retry();
+  const owner = { retryLast };
 
   const snapshot = (): T[] => untracked(() => [...values()]);
 
   const announceToggle = (meta: TreeToggleMeta<T>, count: number): void => {
-    // Single toggle names the node; a cascade speaks the count only.
-    const label = meta.action === 'toggle' ? meta.node.label : null;
-    opts.core.announce(
-      label ? { value: meta.node.value, label } : null,
-      meta.added.length > 0 ? 'added' : 'removed',
-      count,
-      true,
-    );
+    opts.core.announce(meta.spoken, meta.added.length > 0 ? 'added' : 'removed', count, true);
   };
 
   const emitToggle = (next: T[], previous: T[], meta: TreeToggleMeta<T>): void => {
@@ -114,8 +124,9 @@ export function createTreeToggleDispatch<T>(
   };
 
   // Bypasses `ArrayCommitHandler.beginToggle` (its option-def shape does not
-  // fit the tree) and drives the commit controller directly; reconciliation
-  // and rollback match the array handler.
+  // fit the tree) and records kind `tree` on the shared commit ledger. The
+  // change event and the announcement wait for success in both modes, so a
+  // rejected commit never reports a selection it rolls back.
   const dispatch = (next: T[], previous: T[], meta: TreeToggleMeta<T>): void => {
     const action = opts.commitAction();
     if (!action) {
@@ -125,78 +136,136 @@ export function createTreeToggleDispatch<T>(
       return;
     }
 
-    lastCommittedValues = previous;
-    lastCommit = { kind: 'toggle', next, previous, meta };
     if (opts.commitMode() === 'optimistic') {
       values.set(next);
-      emitToggle(next, previous, meta);
-      announceToggle(meta, next.length);
     }
-    opts.emitState('pending');
-    opts.core.commitController.begin(action, next, previous, {
-      onSuccess: (committed) => {
-        opts.emitState('success');
-        const finalValues = committed ?? next;
-        if (!sameArrayContents(values(), finalValues, opts.compareWith())) {
-          values.set([...finalValues]);
-        }
-        lastCommittedValues = [...finalValues];
-        if (opts.commitMode() === 'pessimistic') {
-          emitToggle(finalValues, previous, meta);
-          announceToggle(meta, finalValues.length);
-        }
+    commitRetryFor(opts.core.commitController).claim(owner);
+    ledger.beginMembers<T[]>({
+      kind: 'tree',
+      next,
+      previous,
+      meta,
+      action,
+      commitAction: opts.commitAction,
+      value: values,
+      same: (a, b) => sameArrayContents(a, b, membersEqual),
+      copy: (v) => [...v],
+      commitMode: opts.commitMode,
+      onStateChange: opts.emitState,
+      onSuccess: (finalValues, confirmedPrevious) => {
+        emitToggle(finalValues, confirmedPrevious, meta);
+        announceToggle(meta, finalValues.length);
       },
-      onError: (err, rollbackTo) => {
-        opts.emitState('error');
-        opts.emitCommitError(err);
-        // An external write during the pending window wins over the stale
-        // rollback snapshot (same rule as the array commit handler).
-        const stillOptimistic = sameArrayContents(values(), next, opts.compareWith());
-        if (opts.commitMode() === 'optimistic' && stillOptimistic) {
-          values.set([...(rollbackTo ?? previous)]);
-        }
-        // Same order as the array commit handler: rollback, then speak.
-        opts.announceCommitError(err);
+      onError: opts.emitCommitError,
+      announceError: opts.announceCommitError,
+    });
+  };
+
+  const isIn = (set: readonly T[], value: T): boolean => set.some((v) => membersEqual(v, value));
+
+  // Built once per dispatch, so a deep cascade does not rescan the selection
+  // per descendant and per ancestor.
+  const indexOf = (members: readonly T[]): MemberIndex<T> => {
+    const key = untracked(opts.memberKey);
+    if (key) {
+      const keys = new Set(members.map(key));
+      return {
+        has: (v) => keys.has(key(v)),
+        add: (v) => keys.add(key(v)),
+        delete: (v) => keys.delete(key(v)),
+      };
+    }
+    let list = [...members];
+    return {
+      has: (v) => isIn(list, v),
+      add: (v) => list.push(v),
+      delete: (v) => {
+        list = list.filter((m) => !membersEqual(m, v));
       },
+    };
+  };
+
+  const dedup = (arr: readonly T[]): T[] => {
+    const seen = indexOf([]);
+    return arr.filter((v) => {
+      if (seen.has(v)) {
+        return false;
+      }
+      seen.add(v);
+      return true;
+    });
+  };
+
+  const enabledDescendants = (value: T): T[] => {
+    const tc = opts.treeController;
+    return tc.descendantsOfValue(value).filter((v) => tc.findByValue(v)?.disabled !== true);
+  };
+
+  // Parent membership is derived, not stored: walking nearest-first, an
+  // enabled ancestor is selected iff every enabled descendant is. A disabled
+  // ancestor keeps its state, like a disabled descendant in a cascade.
+  const deriveAncestors = (set: T[], node: FlatTreeNode<T>): T[] => {
+    let out = set;
+    const index = indexOf(out);
+    for (const id of [...node.parentIds].reverse()) {
+      const ancestor = opts.treeController.findById(id);
+      if (!ancestor || ancestor.disabled) {
+        continue;
+      }
+      const full = enabledDescendants(ancestor.value).every((v) => index.has(v));
+      const selected = index.has(ancestor.value);
+      if (full && !selected) {
+        out = [...out, ancestor.value];
+        index.add(ancestor.value);
+      } else if (!full && selected) {
+        out = out.filter((v) => !membersEqual(v, ancestor.value));
+        index.delete(ancestor.value);
+      }
+    }
+    return out;
+  };
+
+  const dispatchDiff = (
+    next: T[],
+    previous: T[],
+    node: FlatTreeNode<T>,
+    action: TreeToggleMeta<T>['action'],
+  ): void => {
+    const before = indexOf(previous);
+    const after = indexOf(next);
+    // Single toggle names the node; a cascade speaks the count only.
+    const named = action === 'toggle' && node.label;
+    dispatch(next, previous, {
+      added: next.filter((v) => !before.has(v)),
+      removed: previous.filter((v) => !after.has(v)),
+      node,
+      action,
+      spoken: named ? { value: node.value, label: node.label } : null,
     });
   };
 
   const singleToggle = (node: FlatTreeNode<T>): void => {
     const value = node.value;
     const previous = snapshot();
-    const wasSelected = previous.some((v) => membersEqual(v, value));
-    const next = wasSelected
+    const toggled = isIn(previous, value)
       ? previous.filter((v) => !membersEqual(v, value))
       : [...previous, value];
-    dispatch(next, previous, {
-      added: wasSelected ? [] : [value],
-      removed: wasSelected ? [value] : [],
-      node,
-      action: 'toggle',
-    });
+    const next = opts.cascade() ? deriveAncestors(toggled, node) : toggled;
+    dispatchDiff(next, previous, node, 'toggle');
   };
 
   const cascadeToggle = (node: FlatTreeNode<T>): void => {
     // A disabled descendant keeps whatever state it had: the user cannot
     // reverse a change on a row they cannot activate.
-    const tc = opts.treeController;
-    const descendants = tc
-      .descendantsOfValue(node.value)
-      .filter((v) => tc.findByValue(v)?.disabled !== true);
-    const allValues = [node.value, ...descendants];
+    const allValues = [node.value, ...enabledDescendants(node.value)];
     const previous = snapshot();
-    const parentSelected = previous.some((v) => membersEqual(v, node.value));
-    const isPrevious = (a: T): boolean => previous.some((v) => membersEqual(v, a));
-
-    const next = parentSelected
-      ? previous.filter((v) => !allValues.some((a) => membersEqual(v, a)))
-      : dedup([...previous, ...allValues], membersEqual);
-    dispatch(next, previous, {
-      added: parentSelected ? [] : allValues.filter((a) => !isPrevious(a)),
-      removed: parentSelected ? allValues.filter(isPrevious) : [],
-      node,
-      action: 'cascade-toggle',
-    });
+    const selected = indexOf(previous);
+    const subtree = indexOf(allValues);
+    const fullySelected = allValues.every((a) => selected.has(a));
+    const toggled = fullySelected
+      ? previous.filter((v) => !subtree.has(v))
+      : dedup([...previous, ...allValues]);
+    dispatchDiff(deriveAncestors(toggled, node), previous, node, 'cascade-toggle');
   };
 
   const removeValue = (value: T, label: string): void => {
@@ -205,19 +274,17 @@ export function createTreeToggleDispatch<T>(
       singleToggle(node);
       return;
     }
-    // Stale selection (value not in tree): strip it without the tree.
+    // Stale selection (value not in tree): strip it without the tree, but
+    // through the same commit path as every other tree mutation.
     const previous = snapshot();
     const next = previous.filter((v) => !membersEqual(v, value));
-    values.set(next);
-    opts.emitChange({
-      values: next,
-      previousValues: previous,
+    dispatch(next, previous, {
       added: [],
       removed: [value],
       node: null,
       action: 'toggle',
+      spoken: { value, label },
     });
-    opts.core.announce({ value, label }, 'removed', next.length, true);
   };
 
   const clearAll = (): void => {
@@ -227,8 +294,6 @@ export function createTreeToggleDispatch<T>(
     }
     const action = opts.commitAction();
     if (action) {
-      lastCommittedValues = previous;
-      lastCommit = { kind: 'clear' };
       if (opts.commitMode() === 'optimistic') {
         values.set([]);
       }
@@ -248,34 +313,17 @@ export function createTreeToggleDispatch<T>(
     opts.core.announce(null, 'removed', 0, true);
   };
 
-  const retryLast = (): void => {
-    const last = lastCommit;
-    if (!last) {
-      return;
-    }
-    if (last.kind === 'clear') {
-      opts.commitHandler().retryLast();
-      return;
-    }
-    dispatch(last.next, last.previous, last.meta);
-  };
-
   return {
     singleToggle,
     cascadeToggle,
     removeValue,
     clearAll,
     retryLast,
-    lastCommitted: () => lastCommittedValues,
   };
 }
 
-function dedup<T>(arr: readonly T[], eq: (a: T, b: T) => boolean): T[] {
-  const out: T[] = [];
-  for (const v of arr) {
-    if (!out.some((o) => eq(o, v))) {
-      out.push(v);
-    }
-  }
-  return out;
+interface MemberIndex<T> {
+  has(value: T): boolean;
+  add(value: T): void;
+  delete(value: T): void;
 }

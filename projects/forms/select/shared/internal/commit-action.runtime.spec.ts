@@ -1,4 +1,4 @@
-import { BehaviorSubject, config, finalize, of, Subject, throwError } from 'rxjs';
+import { BehaviorSubject, config, EMPTY, finalize, NEVER, of, Subject, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { runCommitAction } from './commit-action.runtime';
@@ -87,5 +87,69 @@ describe('runCommitAction', () => {
     expect(onError).toHaveBeenCalledWith(failure);
     expect(onSuccess).not.toHaveBeenCalled();
     expect(unhandled).not.toHaveBeenCalled();
+  });
+
+  it('settles an Observable that completes without a value as a CNGX2025 error', async () => {
+    const onSuccess = vi.fn();
+    const onError = vi.fn();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    runCommitAction<number>(() => EMPTY, 1, { onSuccess, onError });
+    await flushMacrotasks();
+
+    expect(onSuccess).not.toHaveBeenCalled();
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX2025',
+        message: expect.stringMatching(/^CNGX2025: commitAction\(\) completed without emitting/),
+      }),
+    );
+    expect(warn).not.toHaveBeenCalled();
+    expect(unhandled).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('keeps an Observable that neither emits nor completes pending without a warning', async () => {
+    const onSuccess = vi.fn();
+    const onError = vi.fn();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    runCommitAction<number>(() => NEVER, 1, { onSuccess, onError });
+    await flushMacrotasks();
+
+    expect(onSuccess).not.toHaveBeenCalled();
+    expect(onError).not.toHaveBeenCalled();
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('settles of(undefined) as a success, not as an empty completion', async () => {
+    const onSuccess = vi.fn();
+    const onError = vi.fn();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    runCommitAction<number>(() => of(undefined), 1, { onSuccess, onError });
+    await flushMacrotasks();
+
+    expect(onSuccess).toHaveBeenCalledTimes(1);
+    expect(onSuccess).toHaveBeenCalledWith(undefined);
+    expect(onError).not.toHaveBeenCalled();
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('does not settle twice when a Subject emits and then completes', () => {
+    const source = new Subject<number>();
+    const onSuccess = vi.fn();
+    const onError = vi.fn();
+
+    runCommitAction<number>(() => source, 1, { onSuccess, onError });
+    source.next(5);
+    source.complete();
+
+    expect(onSuccess).toHaveBeenCalledTimes(1);
+    expect(onError).not.toHaveBeenCalled();
   });
 });

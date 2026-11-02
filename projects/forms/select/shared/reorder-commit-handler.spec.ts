@@ -5,10 +5,7 @@ import { createManualState } from '@cngx/common/data';
 
 import { createReorderCommitHandler } from './reorder-commit-handler';
 import type { CngxCommitController } from './commit-controller.token';
-import type {
-  CngxSelectCommitAction,
-  CngxSelectCommitMode,
-} from './commit-action.types';
+import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-action.types';
 import type { CngxSelectOptionDef } from './option.model';
 
 function makeController<T>(): {
@@ -84,7 +81,6 @@ describe('createReorderCommitHandler', () => {
       commitMode,
       commitAction,
       commitController: controller,
-      getLastCommitted: () => lastCommitted,
       setLastCommitted: (v) => {
         lastCommitted = [...v];
       },
@@ -171,5 +167,65 @@ describe('createReorderCommitHandler', () => {
     resolve(['a', 'b', 'd', 'c']);
     expect(values()).toEqual(['a', 'b', 'd', 'c']);
     expect(lastCommitted).toEqual(['a', 'b', 'd', 'c']);
+  });
+
+  it('optimistic: rolls back before it announces the failure', () => {
+    commitMode.set('optimistic');
+    commitAction.set(() => Promise.resolve<string[] | undefined>(undefined));
+    const announced: string[][] = [];
+    const { controller, reject } = makeController<string[]>();
+    const handler = createReorderCommitHandler<string>({
+      values,
+      commitMode,
+      commitAction,
+      commitController: controller,
+      setLastCommitted: (v) => {
+        lastCommitted = [...v];
+      },
+      onReorder,
+      onAnnounce,
+      onStateChange,
+      onError,
+      announceError: () => announced.push([...values()]),
+    });
+    handler.dispatch(['b', 'c', 'a', 'd'], ['a', 'b', 'c', 'd'], 0, 2, option('a'));
+    reject(new Error('boom'));
+    expect(announced).toEqual([['a', 'b', 'c', 'd']]);
+  });
+
+  it('retryLast replays the failed reorder, not an earlier commit on the controller', () => {
+    commitMode.set('optimistic');
+    const sent: (string[] | undefined)[] = [];
+    commitAction.set((next) => {
+      sent.push(next);
+      return Promise.resolve<string[] | undefined>(undefined);
+    });
+    const { handler, reject } = make();
+    handler.dispatch(['b', 'c', 'a', 'd'], ['a', 'b', 'c', 'd'], 0, 2, option('a'));
+    reject(new Error('boom'));
+    expect(values()).toEqual(['a', 'b', 'c', 'd']);
+    onReorder.mockClear();
+
+    handler.retryLast?.();
+
+    expect(sent).toEqual([
+      ['b', 'c', 'a', 'd'],
+      ['b', 'c', 'a', 'd'],
+    ]);
+    expect(values()).toEqual(['b', 'c', 'a', 'd']);
+    expect(onReorder).not.toHaveBeenCalled();
+  });
+
+  it('pessimistic: a retried reorder emits once it succeeds', () => {
+    commitMode.set('pessimistic');
+    commitAction.set(() => Promise.resolve<string[] | undefined>(undefined));
+    const { handler, resolve, reject } = make();
+    handler.dispatch(['b', 'c', 'a', 'd'], ['a', 'b', 'c', 'd'], 0, 2, option('a'));
+    reject(new Error('boom'));
+    handler.retryLast?.();
+    expect(values()).toEqual(['a', 'b', 'c', 'd']);
+    resolve();
+    expect(values()).toEqual(['b', 'c', 'a', 'd']);
+    expect(onReorder).toHaveBeenCalledTimes(1);
   });
 });

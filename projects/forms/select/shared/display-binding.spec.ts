@@ -87,6 +87,27 @@ describe('createDisplayBinding', () => {
     expect(input.value).toBe('');
   });
 
+  it('clears the input for null and empty string without calling displayWith', () => {
+    const fixture = TestBed.createComponent(BindingHost);
+    flush(fixture);
+    const host = fixture.componentInstance;
+    const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+    const displayWith = vi.fn((v: string) => v.toUpperCase());
+    host.displayWith.set(displayWith);
+    host.value.set('bob');
+    flush(fixture);
+    expect(input.value).toBe('BOB');
+    displayWith.mockClear();
+
+    host.binding.writeFromValue(null as unknown as string);
+    expect(input.value).toBe('');
+    host.binding.writeFromValue('dave');
+    host.binding.writeFromValue('' as string);
+    expect(input.value).toBe('');
+
+    expect(displayWith.mock.calls.filter(([v]) => v === null || v === '')).toEqual([]);
+  });
+
   it('does not overwrite the input while focused=true', () => {
     const fixture = TestBed.createComponent(BindingHost);
     flush(fixture);

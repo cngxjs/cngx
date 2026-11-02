@@ -80,11 +80,13 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
+import { isEmptyScalar } from '../shared/internal/compare';
 import { handlePageJumpKey } from '../shared/internal/page-jump-handler';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
+  dispatchScalarClear,
   type ScalarCommitHandler,
 } from '../shared/scalar-commit-handler';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
@@ -100,10 +102,7 @@ import {
 import { CngxSelectSheetHeader } from '../shared/internal/sheet-header/sheet-header.component';
 import { CngxSelectSheetTrigger } from '../shared/internal/sheet-trigger.directive';
 import { CNGX_SELECT_SHEET_HEADER_HOST } from '../shared/sheet-header-host';
-import {
-  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
-  type CngxCommitErrorAnnouncePolicy,
-} from '../shared/commit-error-announcer';
+import { type CngxCommitErrorAnnouncePolicy } from '../shared/commit-error-announcer';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import { createHostFocusWithin } from '../shared/internal/host-focus-within';
@@ -464,7 +463,8 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   /**
    * Selected value, two-way bindable as `[(value)]`. Syncs with the bound field
-   * inside a `cngx-form-field`.
+   * inside a `cngx-form-field`. `null` and `''` count as no selection, like
+   * `undefined`, so an option whose value is `''` reads as empty.
    */
   readonly value = model<T | undefined>(undefined);
 
@@ -582,7 +582,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     },
   });
   /** @internal */ readonly focused = this.hostFocus.focusedWithin;
-  readonly empty = computed<boolean>(() => this.value() === undefined);
+  readonly empty = computed<boolean>(() => isEmptyScalar(this.value()));
 
   /** @internal Folded substring match of the option label in the reading locale. */
   private readonly labelMatch = createListboxLabelMatch(injectLocale());
@@ -750,7 +750,11 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   /** @internal - reactive context for the input prefix/suffix template outlets. */
   protected readonly inputSlotContext = computed<CngxSelectInputSlotContext>(
-    () => ({ disabled: this.disabled(), focused: this.focusState.focused(), panelOpen: this.panelOpen() }),
+    () => ({
+      disabled: this.disabled(),
+      focused: this.focusState.focused(),
+      panelOpen: this.panelOpen(),
+    }),
     {
       equal: (a, b) =>
         a.disabled === b.disabled && a.focused === b.focused && a.panelOpen === b.panelOpen,
@@ -791,7 +795,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   readonly selected = computed<CngxSelectOptionDef<T> | null>(
     () => {
       const v = this.value();
-      if (v === undefined || v === null) {
+      if (isEmptyScalar(v)) {
         return null;
       }
       const map = this.core.valueToOptionMap();
@@ -819,14 +823,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
-  private readonly announcer = inject(CngxSelectAnnouncer);
-  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
-    deps: {
-      announcer: this.announcer,
-      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
-      softAnnounce: (opt, action, count, multi) =>
-        this.core.announce(opt as CngxSelectOptionDef<T> | null, action, count, multi),
-    },
+  private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
     policy: this.commitErrorAnnouncePolicy,
   });
   /**
@@ -876,7 +873,8 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       });
       this.core.announce(option, 'added', 1, false);
     },
-    onCommitError: (err) => this.announceCommitError(err),
+    onClearFinalize: (previousValue) => this.finalizeClear(previousValue),
+    onCommitError: this.announceCommitError,
     onStateChange: (status) => this.stateChange.emit(status),
     onError: (err) => this.commitError.emit(err),
     onValueWrite: (v) => this.display.writeFromValue(v),
@@ -892,7 +890,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   protected readonly isCommittingOption = this.core.panelHostAdapter.isCommittingOption;
 
   protected isEmpty(): boolean {
-    return this.value() === undefined;
+    return isEmptyScalar(this.value());
   }
 
   constructor() {
@@ -934,7 +932,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     createFieldSync<T | undefined>({
       componentValue: this.value,
       valueEquals: (a, b) => (this.compareWith() as CngxSelectCompareFn<unknown>)(a, b),
-      coerceFromField: (x) => x as T | undefined,
+      coerceFromField: (x) => (isEmptyScalar(x) ? undefined : (x as T)),
     });
 
     // Auto-open on typing. `autoOpenGate` blocks during library-authored
@@ -1010,20 +1008,32 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   protected readonly clearCallback: () => void = () => {
     this.hostFocus.refocusOwnerBeforeRemoval();
     const current = this.value();
-    if (current === undefined) {
+    if (isEmptyScalar(current)) {
       return;
     }
-    this.value.set(undefined);
-    this.display.writeFromValue(undefined);
+    dispatchScalarClear({
+      core: this.core,
+      handler: this.scalarHandler,
+      commitAction: this.commitAction,
+      previous: current,
+      clearLocally: () => {
+        this.value.set(undefined);
+        this.display.writeFromValue(undefined);
+        this.finalizeClear(current);
+      },
+    });
+  };
+
+  private finalizeClear(previousValue: T | undefined): void {
     this.cleared.emit();
     this.selectionChange.emit({
       source: this,
       value: undefined,
-      previousValue: current,
+      previousValue,
       option: null,
     });
     this.core.announce(null, 'removed', 0, false);
-  };
+  }
 
   // True only inside the lifecycle emitter's post-close focus restore -
   // the programmatic refocus must not re-open under openOn: 'focus'.
@@ -1031,8 +1041,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   protected handleFocus(): void {
     this.focusState.markFocused();
-    const openOnFocus =
-      this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
+    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
     if (openOnFocus && !this.suppressOpenOnFocus) {
       this.open();
     }

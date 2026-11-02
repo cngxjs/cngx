@@ -1,34 +1,36 @@
 import { InjectionToken, untracked, type Signal } from '@angular/core';
 
 import type { CngxSelectAnnouncer } from './announcer';
-import type { CngxSelectOptionDef } from './option.model';
 
 /**
  * Scalar-commit failure announce policy.
  *
  * - `verbose` - error text verbatim into the live-region at the supplied
  *   severity. `CngxSelect` uses `assertive`.
- * - `soft` - generic "removed" via the configured announcer format,
- *   polite. `CngxTypeahead` uses this so the free-text flow isn't
- *   interrupted.
+ * - `soft` - polite. After a real rollback it speaks the `commitFailedSoft`
+ *   copy ("Save failed, previous value restored"); when nothing was restored
+ *   (pessimistic mode, an external write won) it speaks the regular
+ *   commit-failed sentence. `CngxTypeahead` uses this so the free-text flow
+ *   isn't interrupted.
  */
 export type CngxCommitErrorAnnouncePolicy =
   | { readonly kind: 'verbose'; readonly severity: 'assertive' | 'polite' }
   | { readonly kind: 'soft' };
 
 /**
- * Announcer surface for {@link createCommitErrorAnnouncer} - verbose path
- * through `announcer.announce`, soft path through `softAnnounce`.
+ * Announcer surface for {@link createCommitErrorAnnouncer}. Both policies
+ * speak through `announcer.announce`.
  */
 export interface CngxCommitErrorAnnounceDeps {
   readonly announcer: CngxSelectAnnouncer;
   readonly commitErrorMessage: (err: unknown) => string;
-  readonly softAnnounce: (
-    option: CngxSelectOptionDef<unknown> | null,
-    action: 'added' | 'removed',
-    count: number,
-    multi: boolean,
-  ) => void;
+  /**
+   * The polite sentence the `soft` policy speaks for a failed commit whose
+   * previous value was restored. Read untracked. Without it the soft path
+   * speaks `commitErrorMessage` politely; it never speaks the "selection
+   * cleared" phrase for a failure.
+   */
+  readonly softFailureMessage?: () => string;
 }
 
 /**
@@ -39,13 +41,13 @@ export interface CngxCommitErrorAnnounceDeps {
  * ```ts
  * // CngxSelect (verbose, assertive)
  * private readonly announceCommitError = createCommitErrorAnnouncer({
- *   deps: { announcer, commitErrorMessage, softAnnounce },
+ *   deps: { announcer, commitErrorMessage },
  *   policy: signal({ kind: 'verbose', severity: 'assertive' } as const),
  * });
  *
  * // CngxTypeahead (soft, polite)
  * private readonly announceCommitError = createCommitErrorAnnouncer({
- *   deps: { announcer, commitErrorMessage, softAnnounce },
+ *   deps: { announcer, commitErrorMessage, softFailureMessage },
  *   policy: signal({ kind: 'soft' } as const),
  * });
  * ```
@@ -58,25 +60,31 @@ export interface CngxCommitErrorAnnouncerOptions {
 /**
  * Default factory for the scalar commit-error announcer. Dispatches
  * via `policy.kind`: `'verbose'` announces the formatted error message
- * at the configured severity; `'soft'` calls the soft-announce hook
- * (`CngxTypeahead` removal pattern).
+ * at the configured severity; `'soft'` announces `softFailureMessage`
+ * politely after a real rollback, else the formatted error message politely.
+ * The returned callback takes `rolledBack`, `true` when the commit handler
+ * restored the previous value before the call; callers that cannot tell
+ * omit it.
  *
  * Override the {@link CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY} token to
  * swap in telemetry or locale-aware variants.
  */
 export function createCommitErrorAnnouncer(
   opts: CngxCommitErrorAnnouncerOptions,
-): (err: unknown) => void {
-  return (err: unknown): void => {
+): (err: unknown, rolledBack?: boolean) => void {
+  // Copy is read untracked so a language flip never re-runs an effect that
+  // announced it.
+  const regular = (err: unknown): string => untracked(() => opts.deps.commitErrorMessage(err));
+  return (err: unknown, rolledBack?: boolean): void => {
     const p = opts.policy();
     if (p.kind === 'verbose') {
-      // The message reads copy; untracked so a language flip never re-runs
-      // an effect that announced it.
-      const message = untracked(() => opts.deps.commitErrorMessage(err));
-      opts.deps.announcer.announce(message, p.severity);
+      opts.deps.announcer.announce(regular(err), p.severity);
       return;
     }
-    opts.deps.softAnnounce(null, 'removed', 0, false);
+    const soft = opts.deps.softFailureMessage;
+    // "Previous value restored" is only true after a real rollback.
+    const message = rolledBack === true && soft ? untracked(soft) : regular(err);
+    opts.deps.announcer.announce(message, 'polite');
   };
 }
 
@@ -85,7 +93,7 @@ export function createCommitErrorAnnouncer(
  */
 export type CngxCommitErrorAnnouncerFactory = (
   options: CngxCommitErrorAnnouncerOptions,
-) => (err: unknown) => void;
+) => (err: unknown, rolledBack?: boolean) => void;
 
 /**
  * Factory for the scalar-commit error-announce path - turns a failed commit

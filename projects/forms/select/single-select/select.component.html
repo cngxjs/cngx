@@ -144,7 +144,8 @@
       [items]="panelRef.items()"
       [virtualCount]="virtualItemCount()"
       [windowStart]="virtualWindowStart()"
-      [(value)]="value"
+      [value]="listboxValue()"
+      (valueChange)="handleListboxValueChange($event, lb)"
     >
       <cngx-select-panel #panelRef="cngxSelectPanel" />
     </div>

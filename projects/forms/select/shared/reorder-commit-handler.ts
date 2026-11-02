@@ -6,6 +6,7 @@ import { arrayEqual } from '@cngx/utils';
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-action.types';
 import type { CngxCommitController } from './commit-controller.token';
 import type { CngxSelectOptionDef } from './option.model';
+import { commitLedgerFor } from './internal/commit-ledger';
 
 /**
  * Configuration for {@link createReorderCommitHandler}.
@@ -20,11 +21,10 @@ export interface ReorderCommitHandlerOptions<T> {
   /**
    * Shared low-level commit controller. Reorder commits bypass
    * `createArrayCommitHandler` (whose `sameArrayContents` would skip
-   * same-membership writes) and drive this controller directly.
+   * same-membership writes) but run on the same controller, so a reorder
+   * supersedes a pending toggle and vice versa.
    */
   readonly commitController: CngxCommitController<T[]>;
-  /** Read the last successfully committed snapshot (rollback target). */
-  readonly getLastCommitted: () => T[];
   /**
    * Update the rollback snapshot. Called on optimistic-mode begin
    * (stash pre-reorder state) and on success (store canonicalised
@@ -57,6 +57,14 @@ export interface ReorderCommitHandlerOptions<T> {
   readonly onStateChange: (status: AsyncStatus) => void;
   /** Hook for the consumer's `commitError` output. */
   readonly onError: (err: unknown) => void;
+  /**
+   * Announce a failed reorder to AT, after the order was rolled back. Wire
+   * it to the commit-error announcer (`CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY`).
+   * When omitted a failed reorder is announced nothing; `onError` still
+   * fires. `rolledBack` is `true` when the previous order was restored
+   * before the call.
+   */
+  readonly announceError?: (err: unknown, rolledBack?: boolean) => void;
 }
 
 /**
@@ -81,6 +89,13 @@ export interface ReorderCommitHandler<T> {
     toIndex: number,
     option: CngxSelectOptionDef<T> | null,
   ): void;
+  /**
+   * Replay the last failed reorder this handler started (the commit-error
+   * Retry). The composite routes Retry here whenever this handler started
+   * the last commit, so a custom handler owns its own replay. No-op once
+   * the reorder succeeded or without a bound `commitAction`.
+   */
+  retryLast(): void;
 }
 
 /**
@@ -89,18 +104,17 @@ export interface ReorderCommitHandler<T> {
  * same-membership semantics.
  *
  * Why a separate factory (not a flag on `createArrayCommitHandler`):
- * the array handler's `reconcileValues` uses `sameArrayContents` to
- * short-circuit writes when the target matches current state - a pure
- * reorder would silently skip. A `bypassReconcile` flag would
- * complicate every other call-site; a dedicated factory keeps the
- * array handler's hot path small.
- *
- * `CngxTreeSelect.dispatchValueChange` follows the same pattern
- * inline; a future refactor could lift it here.
+ * the array handler reconciles with `sameArrayContents`, which would skip
+ * a pure reorder. Both are thin adapters over the same internal commit
+ * ledger; this one records kind `reorder` with order-sensitive equality,
+ * rolls back before `announceError` speaks and lets Retry replay the
+ * reorder.
  */
 export function createReorderCommitHandler<T>(
   opts: ReorderCommitHandlerOptions<T>,
 ): ReorderCommitHandler<T> {
+  const ledger = commitLedgerFor<T[], T>(opts.commitController);
+
   function dispatch(
     next: T[],
     previous: T[],
@@ -123,34 +137,33 @@ export function createReorderCommitHandler<T>(
       opts.onReorder(next, previous, option, fromIndex, toIndex);
       opts.onAnnounce(option, fromIndex, toIndex, next.length);
     }
-    opts.onStateChange('pending');
-    opts.commitController.begin(action, next, [...previous], {
-      onSuccess: (committed) => {
-        opts.onStateChange('success');
-        const final = committed ?? next;
-        // Always write - server canonicalisation may differ from the
-        // optimistic `next`.
-        opts.values.set([...final]);
+    ledger.beginMembers<T[]>({
+      kind: 'reorder',
+      next,
+      previous: [...previous],
+      option,
+      meta: { fromIndex, toIndex },
+      action,
+      commitAction: opts.commitAction,
+      value: opts.values,
+      // Order-sensitive: a same-membership reorder must still be written.
+      same: arrayEqual,
+      copy: (v) => [...v],
+      commitMode: opts.commitMode,
+      onStateChange: opts.onStateChange,
+      onSuccess: (final, confirmedPrevious) => {
         opts.setLastCommitted([...final]);
         if (opts.commitMode() === 'pessimistic') {
-          opts.onReorder(final, previous, option, fromIndex, toIndex);
+          opts.onReorder(final, confirmedPrevious, option, fromIndex, toIndex);
           opts.onAnnounce(option, fromIndex, toIndex, final.length);
         }
       },
-      onError: (err, rollbackTo) => {
-        opts.onStateChange('error');
-        opts.onError(err);
-        // An external write during the pending window wins over the stale
-        // rollback snapshot: roll back only while the model still holds the
-        // optimistic order this commit wrote.
-        if (opts.commitMode() === 'optimistic' && arrayEqual(opts.values(), next)) {
-          opts.values.set([...(rollbackTo ?? previous)]);
-        }
-      },
+      onError: opts.onError,
+      announceError: opts.announceError,
     });
   }
 
-  return { dispatch };
+  return { dispatch, retryLast: () => ledger.retry() };
 }
 
 /**

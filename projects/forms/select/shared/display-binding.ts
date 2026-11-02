@@ -9,6 +9,8 @@ import {
 
 import type { CngxListboxSearch } from '@cngx/common/interactive';
 
+import { isEmptyScalar } from './internal/compare';
+
 /**
  * Configuration for {@link createDisplayBinding}.
  */
@@ -59,7 +61,7 @@ export function createDisplayBinding<T>(opts: DisplayBindingOptions<T>): Display
     if (!search || !el) {
       return;
     }
-    const next = v === undefined ? '' : opts.displayWith()(v);
+    const next = isEmptyScalar(v) ? '' : opts.displayWith()(v);
     if (el.value === next && !search.hasValue()) {
       return;
     }

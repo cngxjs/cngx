@@ -66,6 +66,9 @@ describe('select language section', () => {
     expect(stripBidiIsolates(aria.commitFailedMessage('Colours', undefined))).toBe(
       'Colours: Save failed',
     );
+    expect(stripBidiIsolates(aria.commitFailedSoft('Colours'))).toBe(
+      'Colours: Save failed, previous value restored',
+    );
     expect(stripBidiIsolates(aria.createFailedMessage('Colours', 'Teal', 'server down'))).toBe(
       'Colours: Could not create Teal - server down',
     );
@@ -151,9 +154,13 @@ describe('select language section', () => {
         chipOverflowBadge: '+{count} weitere',
         announceAddedCount: '{field}: {option} hinzugefügt, {count} ausgewählt',
         actionGroup: 'Schnellaktion',
+        commitFailedSoft: '{label}: Speichern fehlgeschlagen',
       },
     });
     expect(config.fallbackLabels().empty).toBe('Keine Optionen');
+    expect(stripBidiIsolates(config.ariaLabels().commitFailedSoft('Farbe'))).toBe(
+      'Farbe: Speichern fehlgeschlagen',
+    );
     expect(config.fallbackLabels().chipOverflowBadge(1200)).toBe('+1.200 weitere');
     expect(stripBidiIsolates(config.ariaLabels().chipRemoveFor('Entfernen', 'Rot'))).toBe(
       'Rot Entfernen',

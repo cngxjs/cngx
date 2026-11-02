@@ -111,6 +111,13 @@ const RAW_THROW_EXEMPT = [
       'matcher argument validation inside a test runner; TypeError is the matcher-misuse convention and never runs in an app bundle',
   },
   {
+    file: 'projects/forms/select/shared/__test-helpers/commit-contract.ts',
+    count: 0,
+    constructions: 1,
+    reason:
+      'spec-only harness that fails a pending commit source with an Error; excluded-path-import-boundary.test.mjs fails any library import of a __test-helpers file',
+  },
+  {
     file: 'projects/forms/select/shared/__test-helpers/field-skin-host.ts',
     count: 1,
     constructions: 1,

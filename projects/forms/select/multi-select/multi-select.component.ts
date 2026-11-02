@@ -48,7 +48,10 @@ import {
 } from '@cngx/forms/field';
 
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
-import { createArrayCommitHandler, type ArrayCommitHandler } from '../shared/array-commit-handler';
+import {
+  CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
+  type ArrayCommitHandler,
+} from '../shared/array-commit-handler';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import {
   CNGX_SELECT_SHEET_SCOPE,
@@ -60,10 +63,7 @@ import {
 } from '../shared/internal/select-sheet-wiring';
 import { CngxSelectSheetHeader } from '../shared/internal/sheet-header/sheet-header.component';
 import { CNGX_SELECT_SHEET_HEADER_HOST } from '../shared/sheet-header-host';
-import {
-  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
-  type CngxCommitErrorAnnouncePolicy,
-} from '../shared/commit-error-announcer';
+import { type CngxCommitErrorAnnouncePolicy } from '../shared/commit-error-announcer';
 import {
   CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   type CngxChipRemovalHandler,
@@ -898,44 +898,31 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     emitCleared: () => this.cleared.emit(),
   });
 
+  private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
+    policy: this.commitErrorAnnouncePolicy,
+  });
+
   /**
    * Commit-flow handler. Owns commit-controller lifecycle, value
    * reconciliation, rollback-on-error, live-region announce. Shared
    * with `CngxCombobox`. Consumer emits change payloads via the
    * finalize callbacks.
    */
-  private readonly commitErrorAnnouncer = inject(CngxSelectAnnouncer);
-  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
-    deps: {
-      announcer: this.commitErrorAnnouncer,
-      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
-      // Soft policy: generic removal at the CURRENT selection count - the
-      // announcer's scalar-shaped count/multi args are replaced here.
-      softAnnounce: (opt, action) =>
-        this.core.announce(
-          opt as CngxSelectOptionDef<T> | null,
-          action,
-          this.values().length,
-          true,
-        ),
-    },
-    policy: this.commitErrorAnnouncePolicy,
-  });
-
-  private readonly commitHandler: ArrayCommitHandler<T> = createArrayCommitHandler<T>({
+  private readonly commitHandler: ArrayCommitHandler<T> = inject(
+    CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
+  )<T>({
     values: this.values,
     compareWith: this.compareWith,
     commitMode: this.commitMode,
     core: this.core,
     commitAction: this.commitAction,
-    getLastCommitted: () => this.lastCommittedValues,
     onToggleFinalize: (option, isNowSelected) =>
       this.toggleDispatch.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
     onClearFinalize: (previous, finalValues) =>
       this.toggleDispatch.clearFinalize(previous, finalValues),
     onStateChange: (status) => this.stateChange.emit(status),
     onError: (err) => this.commitError.emit(err),
-    announceError: (err) => this.announceCommitError(err),
+    announceError: this.announceCommitError,
   });
 
   /**
@@ -1141,7 +1128,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
         );
         if (action.kind === 'select') {
           event.preventDefault();
-          this.toggleOptionByUser(action.option);
+          this.toggleDispatch.toggleByUser(action.option);
           // Multi-toggle semantics: each keystroke is an independent
           // toggle. Reset the buffer so a repeat-key toggles the same
           // option off instead of accumulating ('rr' would match
@@ -1161,24 +1148,5 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       disabled: this.disabled,
       typeaheadController: this.typeaheadController,
     });
-  }
-
-  private toggleOptionByUser(opt: CngxSelectOptionDef<T>): void {
-    const action = this.commitAction();
-    const previous = [...this.values()];
-    const eq = this.compareWith();
-    const wasSelected = previous.some((v) => eq(v, opt.value));
-    const next = wasSelected ? previous.filter((v) => !eq(v, opt.value)) : [...previous, opt.value];
-    if (action) {
-      this.lastCommittedValues = previous;
-      this.togglingOption.set(opt);
-      if (this.commitMode() === 'optimistic') {
-        this.values.set(next);
-      }
-      this.commitHandler.beginToggle(next, previous, opt, action);
-      return;
-    }
-    this.values.set(next);
-    this.toggleDispatch.finalizeToggle(opt, !wasSelected, previous);
   }
 }

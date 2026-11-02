@@ -70,13 +70,11 @@ import {
   type FlatTreeNode,
   CNGX_ICON_CARET_DOWN,
   CNGX_ICON_X,
+  cngxDevWarn,
 } from '@cngx/utils';
 
-import { createArrayCommitHandler, type ArrayCommitHandler } from '../shared/array-commit-handler';
-import {
-  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
-  type CngxCommitErrorAnnouncePolicy,
-} from '../shared/commit-error-announcer';
+import { CNGX_ARRAY_COMMIT_HANDLER_FACTORY } from '../shared/array-commit-handler';
+import { type CngxCommitErrorAnnouncePolicy } from '../shared/commit-error-announcer';
 import {
   CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   type CngxChipRemovalHandler,
@@ -129,7 +127,7 @@ import { createTreeSelectionCounts } from './internal/tree-selection-counts';
 import { CngxTreeSelectNodeCount } from './tree-select-node-count.directive';
 import { CngxTreeSelectFooter } from './tree-select-footer.directive';
 import { injectResolvedTemplate } from '../shared/internal/resolve-template';
-import { createTreeToggleDispatch, type TreeToggleDispatch } from './internal/tree-toggle-dispatch';
+import { createTreeCommitWiring, isReferenceCompare } from './internal/tree-commit-wiring';
 import type {
   CngxTreeSelectAction,
   CngxTreeSelectChipContext,
@@ -141,9 +139,9 @@ import type {
   CngxTreeSelectedItem,
 } from './tree-select.model';
 
-const TRUNCATE: Signal<'wrap' | 'scroll-x' | 'truncate'> = signal<
-  'wrap' | 'scroll-x' | 'truncate'
->('truncate').asReadonly();
+const TRUNCATE: Signal<'wrap' | 'scroll-x' | 'truncate'> = signal<'wrap' | 'scroll-x' | 'truncate'>(
+  'truncate',
+).asReadonly();
 
 /**
  * Change event emitted by `CngxTreeSelect.selectionChange`. Shape
@@ -319,7 +317,11 @@ export class CngxTreeSelect<T = unknown>
   readonly nodeIdFn = input.required<(value: T, path: readonly number[]) => string>();
   /** Display label per node. Falls back to `node.label ?? String(value)`. */
   readonly labelFn = input<((value: T) => string) | undefined>(undefined);
-  /** Membership key for selection. Default identity. */
+  /**
+   * Membership key for selection: the tree's single identity. Default
+   * identity. Object values that arrive as fresh instances (a server
+   * payload) need it; `compareWith` alone cannot key the selection.
+   */
   readonly keyFn = input<((value: T) => unknown) | undefined>(undefined);
   /** Initial expansion seed (one-shot at construction). */
   readonly initiallyExpanded = input<'all' | 'none' | readonly string[] | undefined>(undefined);
@@ -386,7 +388,12 @@ export class CngxTreeSelect<T = unknown>
    * required state of an enclosing `cngx-form-field`.
    */
   readonly requiredInput = input<boolean>(false, { alias: 'required' });
-  /** Equality function that matches values to options. Defaults to `Object.is`. */
+  /**
+   * Equality function that matches values to options. Defaults to
+   * `Object.is`. Used only when `keyFn` is unset; the selection controller
+   * and the tree index always key by `keyFn`, so a custom `compareWith`
+   * without `keyFn` dev-warns `CNGX2026`.
+   */
   readonly compareWith = input<CngxSelectCompareFn<T>>(
     cngxSelectDefaultCompare as CngxSelectCompareFn<T>,
   );
@@ -530,7 +537,9 @@ export class CngxTreeSelect<T = unknown>
   /**
    * Async write handler run on every toggle, clear and chip removal with the
    * intended values. Unset, the change applies directly; `commitMode` decides
-   * how it shows while the handler runs.
+   * how it shows while the handler runs. Toggles and cascade toggles reach it
+   * through `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` only; the clear also runs
+   * through `CNGX_ARRAY_COMMIT_HANDLER_FACTORY`.
    */
   readonly commitAction = input<CngxSelectCommitAction<T[]> | null>(null);
   /**
@@ -612,8 +621,7 @@ export class CngxTreeSelect<T = unknown>
   private readonly clearButtonDir = contentChild<CngxSelectClearButton>(CngxSelectClearButton);
   private readonly emptyDir = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
   private readonly loadingDir = contentChild<CngxSelectLoading>(CngxSelectLoading);
-  private readonly loadingGlyphDir =
-    contentChild<CngxSelectLoadingGlyph>(CngxSelectLoadingGlyph);
+  private readonly loadingGlyphDir = contentChild<CngxSelectLoadingGlyph>(CngxSelectLoadingGlyph);
   private readonly errorDir = contentChild<CngxSelectError>(CngxSelectError);
   private readonly retryButtonDir = contentChild<CngxSelectRetryButton>(CngxSelectRetryButton);
   private readonly refreshingDir = contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
@@ -635,7 +643,8 @@ export class CngxTreeSelect<T = unknown>
     this.footerDir,
     'treeFooter',
   );
-  private readonly chipOverflowDir = contentChild<CngxSelectChipOverflow<T>>(CngxSelectChipOverflow);
+  private readonly chipOverflowDir =
+    contentChild<CngxSelectChipOverflow<T>>(CngxSelectChipOverflow);
   /** @internal - directive-only like the family's other chip-strip slots. */
   protected readonly chipOverflowTpl = computed<TemplateRef<
     CngxSelectChipOverflowContext<T>
@@ -772,67 +781,30 @@ export class CngxTreeSelect<T = unknown>
     },
   );
 
-  /** Shared live-region announcer. */
-  private readonly announcer = inject(CngxSelectAnnouncer);
-
-  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
-    deps: {
-      announcer: this.announcer,
-      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
-      softAnnounce: (_opt, action) => this.core.announce(null, action, this.values().length, true),
-    },
-    policy: this.commitErrorAnnouncePolicy,
-  });
-
-  private readonly commitHandler: ArrayCommitHandler<T> = createArrayCommitHandler<T>({
-    values: this.values,
-    compareWith: this.compareWith,
-    commitMode: this.commitMode,
-    core: this.core,
-    commitAction: this.commitAction,
-    getLastCommitted: () => this.dispatch.lastCommitted(),
-    onToggleFinalize: () => {
-      // Tree commit success uses cascade-aware
-      // `dispatchValueChange` directly. The handler's per-option
-      // finalize is bypassed because the clear path passes
-      // `null` option (treated as clear by ArrayCommitHandler).
-    },
-    onClearFinalize: (previous, finalValues) => {
-      this.cleared.emit();
-      this.emitChange({
-        values: finalValues,
-        previousValues: previous,
-        added: [],
-        removed: previous,
-        node: null,
-        action: 'clear',
-      });
-    },
-    onStateChange: (status) => this.stateChange.emit(status),
-    onError: (err) => this.commitError.emit(err),
-    announceError: (err) => this.announceCommitError(err),
-  });
-
   /**
-   * Toggle / cascade / remove / clear mutations with their commit paths. A
-   * toggle Retry replays through it (cascade meta included); a clear goes
-   * back to the array handler, which owns that path.
+   * Member identity, commit-error announcer, the array handler that owns the
+   * clear commit, the toggle dispatch that owns the tree commits, and the
+   * Retry routed to whichever started the last commit.
    */
-  private readonly dispatch: TreeToggleDispatch<T> = createTreeToggleDispatch<T>({
+  private readonly commits = createTreeCommitWiring<T>({
     values: this.values,
-    membersEqual: (a, b) => this.membersEqual(a, b),
+    keyFn: this.keyFn,
     compareWith: this.compareWith,
-    treeController: this.treeController,
+    cascade: this.cascadeChildren,
     commitAction: this.commitAction,
     commitMode: this.commitMode,
+    commitErrorAnnouncePolicy: this.commitErrorAnnouncePolicy,
     core: this.core,
-    commitHandler: () => this.commitHandler,
+    treeController: this.treeController,
+    arrayHandlerFactory: inject(CNGX_ARRAY_COMMIT_HANDLER_FACTORY),
     emitChange: (change) => this.emitChange(change),
     emitCleared: () => this.cleared.emit(),
     emitState: (status) => this.stateChange.emit(status),
     emitCommitError: (err) => this.commitError.emit(err),
-    announceCommitError: (err) => this.announceCommitError(err),
+    // Closure: `hostFocus` is declared further down in field order.
+    beforeRetry: () => this.hostFocus.refocusOwnerBeforeRemoval(),
   });
+  private readonly dispatch = this.commits.dispatch;
 
   /** @internal */ readonly activeView = this.core.activeView;
   /** @internal */ readonly showRefreshIndicator = this.core.showRefreshIndicator;
@@ -843,12 +815,10 @@ export class CngxTreeSelect<T = unknown>
   readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
   /** @internal */
   protected readonly resolvedPlaceholder = this.core.resolvedPlaceholder;
-  /** @internal The tree's active descendant matches values like the selection does. */
-  readonly adCompareWith = computed<(a: T, b: T) => boolean>(() => {
-    const keyFn = this.keyFn();
-    const eq = this.compareWith();
-    return keyFn ? (a: T, b: T) => keyFn(a) === keyFn(b) : (a: T, b: T) => eq(a, b);
-  });
+  /** Member identity: `keyFn` when set, else `compareWith`. */
+  private readonly memberEquality = this.commits.memberEquality;
+  /** @internal The tree's active descendant matches values by the member identity. */
+  readonly adCompareWith: Signal<(a: T, b: T) => boolean> = this.memberEquality;
   /** @internal - own template only; outer popover panel class binding. */
   protected readonly panelClassList = this.core.panelClassList;
   /** @internal - own template only; outer popover panel width binding. */
@@ -899,15 +869,8 @@ export class CngxTreeSelect<T = unknown>
   /** @internal */
   readonly errorContext = this.core.makeErrorContext(this.errorRetryBound);
 
-  // Stable retry closure - recreating per CD cycle churns
-  // `*ngTemplateOutlet` consumers of the commit-error context.
-  private readonly commitRetryBound: () => void = () => {
-    this.hostFocus.refocusOwnerBeforeRemoval();
-    this.dispatch.retryLast();
-  };
-
   /** @internal */
-  readonly commitErrorContext = this.core.bindCommitRetry(this.commitRetryBound);
+  readonly commitErrorContext = this.commits.commitErrorContext;
 
   /**
    * 5-slot bundle the shell reads. Tree-select has no flat option-
@@ -1008,7 +971,7 @@ export class CngxTreeSelect<T = unknown>
         if (a.length !== b.length) {
           return false;
         }
-        const eq = this.compareWith();
+        const eq = this.memberEquality();
         for (let i = 0; i < a.length; i++) {
           if (!eq(a[i].value, b[i].value) || a[i].label !== b[i].label) {
             return false;
@@ -1120,6 +1083,17 @@ export class CngxTreeSelect<T = unknown>
       if (this.autofocus()) {
         this.focus();
       }
+      if (
+        typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        this.keyFn() === undefined &&
+        !isReferenceCompare(this.compareWith())
+      ) {
+        cngxDevWarn(
+          'CNGX2026',
+          '[cngx-tree-select] [compareWith] is set without [keyFn]; the selection and the tree index key values by reference, so fresh object instances render unchecked. Pass a [keyFn] that returns the domain id.',
+        );
+      }
       // Apply `initiallyExpanded` after inputs resolve. The controller
       // sees `undefined` at field-init because signal inputs aren't
       // bound yet; applying here keeps one-shot semantics.
@@ -1148,7 +1122,7 @@ export class CngxTreeSelect<T = unknown>
 
     createFieldSync<T[]>({
       componentValue: this.values,
-      valueEquals: (a, b) => sameArrayContents(a, b, this.compareWith()),
+      valueEquals: (a, b) => sameArrayContents(a, b, this.memberEquality()),
       coerceFromField: (x) => (Array.isArray(x) ? [...(x as T[])] : []),
       toFieldValue: (v) => [...v],
     });
@@ -1170,21 +1144,6 @@ export class CngxTreeSelect<T = unknown>
     }
     this.dispatch.singleToggle(node);
   }
-
-  /**
-   * Semantic equality. Uses `keyFn` when provided so object-valued
-   * trees match by domain id (two `{ id: 'a' }` instances compare
-   * equal); falls back to `compareWith`. Every selection-boundary
-   * check routes through here to stay consistent with the
-   * `SelectionController`'s keyFn membership.
-   */
-  private readonly membersEqual = (a: T, b: T): boolean => {
-    const keyFn = this.keyFn();
-    if (keyFn) {
-      return keyFn(a) === keyFn(b);
-    }
-    return this.compareWith()(a, b);
-  };
 
   /** @internal */
   protected handleTriggerClick(): void {
@@ -1308,8 +1267,7 @@ export class CngxTreeSelect<T = unknown>
 
   protected handleFocus(): void {
     this.focusState.markFocused();
-    const openOnFocus =
-      this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
+    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
     if (openOnFocus && !this.suppressOpenOnFocus) {
       this.open();
     }

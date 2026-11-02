@@ -287,6 +287,8 @@ export {
   type DisplayBindingOptions,
 } from './shared/display-binding';
 
+export type { CngxCommitHandlerCore } from './shared/commit-handler-core';
+
 export {
   CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
   createArrayCommitHandler,

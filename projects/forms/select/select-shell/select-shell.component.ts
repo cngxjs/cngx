@@ -76,10 +76,7 @@ import { CngxSelectSheetHeader } from '../shared/internal/sheet-header/sheet-hea
 import { CngxSelectSheetTrigger } from '../shared/internal/sheet-trigger.directive';
 import { CNGX_SELECT_SHEET_HEADER_HOST } from '../shared/sheet-header-host';
 import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
-import {
-  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
-  type CngxCommitErrorAnnouncePolicy,
-} from '../shared/commit-error-announcer';
+import { type CngxCommitErrorAnnouncePolicy } from '../shared/commit-error-announcer';
 import {
   type CngxSelectAnnouncerConfig,
   type CngxSelectLoadingVariant,
@@ -106,9 +103,11 @@ import {
 } from '../declarative/select-search-host';
 import { CngxSelectSearch } from '../declarative/select-search.component';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
+import { isEmptyScalar } from '../shared/internal/compare';
 import { resolvePageJumpSpace } from '../shared/internal/page-jump-handler';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
+  dispatchScalarClear,
   type ScalarCommitHandler,
 } from '../shared/scalar-commit-handler';
 import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
@@ -298,7 +297,6 @@ export class CngxSelectShell<T = unknown>
     CngxSelectShellSearchHost
 {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
-  private readonly announcer = inject(CngxSelectAnnouncer);
   private readonly config = resolveSelectConfig();
 
   /**
@@ -474,7 +472,8 @@ export class CngxSelectShell<T = unknown>
 
   /**
    * Selected value, two-way bindable as `[(value)]`. Syncs with the bound field
-   * inside a `cngx-form-field`.
+   * inside a `cngx-form-field`. `null` and `''` count as no selection, like
+   * `undefined`, so an option whose value is `''` reads as empty.
    */
   readonly value = model<T | undefined>(undefined);
 
@@ -678,18 +677,30 @@ export class CngxSelectShell<T = unknown>
   private readonly handleClearAction = (): void => {
     this.hostFocus.refocusOwnerBeforeRemoval();
     const current = this.value();
-    if (current === undefined || current === null) {
+    if (isEmptyScalar(current)) {
       return;
     }
-    this.value.set(undefined);
+    dispatchScalarClear({
+      core: this.core,
+      handler: this.scalarHandler,
+      commitAction: this.commitAction,
+      previous: current,
+      clearLocally: () => {
+        this.value.set(undefined);
+        this.finalizeClear(current);
+      },
+    });
+  };
+
+  private finalizeClear(previousValue: T | undefined): void {
     this.selectionChange.emit({
       source: this,
       value: undefined,
-      previousValue: current,
+      previousValue,
       option: null,
     });
     this.core.announce(null, 'removed', 0, false);
-  };
+  }
 
   private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');
   /** @internal - exposed to satisfy `CngxSelectShellSearchHost` so the
@@ -722,10 +733,33 @@ export class CngxSelectShell<T = unknown>
   });
   readonly focused = this.hostFocus.focusedWithin;
 
-  readonly empty = computed<boolean>(() => {
+  readonly empty = computed<boolean>(() => isEmptyScalar(this.value()));
+
+  /**
+   * Value the listbox marks as selected; `''` and `null` read as empty, so an
+   * option whose value is `''` never shows as selected.
+   *
+   * @internal
+   */
+  protected readonly listboxValue = computed<T | undefined>(() => {
     const v = this.value();
-    return v === undefined || v === null;
+    return isEmptyScalar(v) ? undefined : v;
   });
+
+  /**
+   * Writes a listbox pick into `value`. Without a commit action the listbox
+   * keeps its own model, so an empty pick (`''`) is reset there too; otherwise
+   * `listboxValue` stays `undefined`, never re-binds, and the row keeps
+   * `aria-selected`.
+   *
+   * @internal
+   */
+  protected handleListboxValueChange(next: T | undefined, listbox: CngxListbox<T>): void {
+    this.value.set(next);
+    if (isEmptyScalar(next)) {
+      listbox.value.set(undefined);
+    }
+  }
 
   protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
@@ -859,13 +893,7 @@ export class CngxSelectShell<T = unknown>
    *
    * @internal
    */
-  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
-    deps: {
-      announcer: this.announcer,
-      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
-      softAnnounce: (opt, action, count, multi) =>
-        this.core.announce(opt as CngxSelectOptionDef<T> | null, action, count, multi),
-    },
+  private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
     policy: this.commitErrorAnnouncePolicy,
   });
 
@@ -904,7 +932,8 @@ export class CngxSelectShell<T = unknown>
         }
       }
     },
-    onCommitError: (err) => this.announceCommitError(err),
+    onClearFinalize: (previousValue) => this.finalizeClear(previousValue),
+    onCommitError: this.announceCommitError,
     onStateChange: (status) => {
       this.stateChange.emit(status);
       if (status === 'pending' && this.commitMode() === 'optimistic') {
@@ -964,7 +993,7 @@ export class CngxSelectShell<T = unknown>
   /** @internal */
   protected readonly selectedOption = computed<CngxSelectOptionDef<T> | null>(() => {
     const v = this.value();
-    if (v === undefined || v === null) {
+    if (isEmptyScalar(v)) {
       return null;
     }
     const map = this.core.valueToOptionMap();
@@ -1182,6 +1211,16 @@ export class CngxSelectShell<T = unknown>
     this.toggle();
   }
 
+  // A closed-trigger pick is a pick: with a bound action it must reach the
+  // server like a panel pick, or the trigger diverges from the backend.
+  private commitClosedPick(option: CngxSelectOptionDef<T>, previous: T | undefined): void {
+    if (this.commitAction()) {
+      this.scalarHandler.dispatchFromActivation(option.value, option);
+      return;
+    }
+    this.scalarHandler.finalizeSelection(option.value, option, previous);
+  }
+
   /**
    * Trigger keyboard. Typeahead-while-closed (native `<select>` parity)
    * and PageUp/PageDown jump-N - both delegate to
@@ -1196,6 +1235,14 @@ export class CngxSelectShell<T = unknown>
     if (event.ctrlKey || event.metaKey || event.altKey) {
       return;
     }
+    // Keys from the clear button or a chip belong to that control: no
+    // typeahead, no preventDefault, so Enter / Space run its activation.
+    const host = event.currentTarget as Element | null;
+    const target = event.target as Element | null;
+    const interactive = target?.closest('button, a[href], input, [role="button"]');
+    if (interactive && interactive !== host) {
+      return;
+    }
     const lb = this.listboxRef();
     const pop = this.popoverRef();
 
@@ -1205,8 +1252,7 @@ export class CngxSelectShell<T = unknown>
         const eq = this.compareWith();
         const flat = this.flatOptions();
         const v = this.value();
-        const currentFlatIndex =
-          v === undefined || v === null ? -1 : flat.findIndex((o) => eq(o.value, v));
+        const currentFlatIndex = isEmptyScalar(v) ? -1 : flat.findIndex((o) => eq(o.value, v));
         const action = this.flatNavStrategy.onTypeaheadWhileClosed(
           {
             options: flat,
@@ -1221,15 +1267,7 @@ export class CngxSelectShell<T = unknown>
         );
         if (action.kind === 'select') {
           event.preventDefault();
-          const previous = v;
-          this.value.set(action.option.value);
-          this.selectionChange.emit({
-            source: this,
-            value: action.option.value,
-            previousValue: previous,
-            option: action.option,
-          });
-          this.core.announce(action.option, 'added', 1, false);
+          this.commitClosedPick(action.option, v);
           return;
         }
       }
@@ -1326,19 +1364,7 @@ export class CngxSelectShell<T = unknown>
   /** @internal */
   protected handleClearClick(event: Event): void {
     event.stopPropagation();
-    this.hostFocus.refocusOwnerBeforeRemoval();
-    const current = this.value();
-    if (current === undefined || current === null) {
-      return;
-    }
-    this.value.set(undefined);
-    this.selectionChange.emit({
-      source: this,
-      value: undefined,
-      previousValue: current,
-      option: null,
-    });
-    this.core.announce(null, 'removed', 0, false);
+    this.handleClearAction();
   }
 
   /** @internal */

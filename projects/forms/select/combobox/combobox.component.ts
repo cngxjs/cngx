@@ -62,7 +62,10 @@ import {
   CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   type CngxChipRemovalHandler,
 } from '../shared/chip-removal-handler';
-import { createArrayCommitHandler, type ArrayCommitHandler } from '../shared/array-commit-handler';
+import {
+  CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
+  type ArrayCommitHandler,
+} from '../shared/array-commit-handler';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import {
   CNGX_SELECT_SHEET_SCOPE,
@@ -75,10 +78,7 @@ import {
 import { CngxSelectSheetHeader } from '../shared/internal/sheet-header/sheet-header.component';
 import { CngxSelectSheetTrigger } from '../shared/internal/sheet-trigger.directive';
 import { CNGX_SELECT_SHEET_HEADER_HOST } from '../shared/sheet-header-host';
-import {
-  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
-  type CngxCommitErrorAnnouncePolicy,
-} from '../shared/commit-error-announcer';
+import { type CngxCommitErrorAnnouncePolicy } from '../shared/commit-error-announcer';
 import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
 import { CngxSelectSummary } from '../shared/internal/summary/select-summary.component';
 import { createSelectSummary } from '../shared/internal/summary/select-summary';
@@ -903,7 +903,11 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   /** @internal - reactive context for the input prefix/suffix template outlets. */
   protected readonly inputSlotContext = computed<CngxSelectInputSlotContext>(
-    () => ({ disabled: this.disabled(), focused: this.focusState.focused(), panelOpen: this.panelOpen() }),
+    () => ({
+      disabled: this.disabled(),
+      focused: this.focusState.focused(),
+      panelOpen: this.panelOpen(),
+    }),
     {
       equal: (a, b) =>
         a.disabled === b.disabled && a.focused === b.focused && a.panelOpen === b.panelOpen,
@@ -1073,43 +1077,30 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** Tracks whether the first `searchTermChange` emission has been processed. */
   private readonly hasEmittedInitial = signal(false);
 
+  private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
+    policy: this.commitErrorAnnouncePolicy,
+  });
+
   /**
    * Commit-flow handler. Owns commit-controller lifecycle, value
    * reconciliation, rollback-on-error, live-region announce. Shared
    * with `CngxMultiSelect`.
    */
-  private readonly commitErrorAnnouncer = inject(CngxSelectAnnouncer);
-  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
-    deps: {
-      announcer: this.commitErrorAnnouncer,
-      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
-      // Soft policy: generic removal at the CURRENT selection count - the
-      // announcer's scalar-shaped count/multi args are replaced here.
-      softAnnounce: (opt, action) =>
-        this.core.announce(
-          opt as CngxSelectOptionDef<T> | null,
-          action,
-          this.values().length,
-          true,
-        ),
-    },
-    policy: this.commitErrorAnnouncePolicy,
-  });
-
-  private readonly commitHandler: ArrayCommitHandler<T> = createArrayCommitHandler<T>({
+  private readonly commitHandler: ArrayCommitHandler<T> = inject(
+    CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
+  )<T>({
     values: this.values,
     compareWith: this.compareWith,
     commitMode: this.commitMode,
     core: this.core,
     commitAction: this.commitAction,
-    getLastCommitted: () => this.lastCommittedValues,
     onToggleFinalize: (option, isNowSelected) =>
       this.toggleDispatch.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
     onClearFinalize: (previous, finalValues) =>
       this.toggleDispatch.clearFinalize(previous, finalValues),
     onStateChange: (status) => this.stateChange.emit(status),
     onError: (err) => this.commitError.emit(err),
-    announceError: (err) => this.announceCommitError(err),
+    announceError: this.announceCommitError,
   });
 
   /**

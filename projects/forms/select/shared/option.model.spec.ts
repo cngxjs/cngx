@@ -95,3 +95,38 @@ describe('mergeLocalItems', () => {
     ]);
   });
 });
+
+describe('flattenSelectOptions', () => {
+  it('marks the children of a disabled group disabled', () => {
+    const input: CngxSelectOptionsInput<string> = [
+      {
+        label: 'Off',
+        disabled: true,
+        children: [
+          { value: 'a', label: 'A' },
+          { value: 'b', label: 'B', disabled: true },
+        ],
+      },
+      { label: 'On', children: [{ value: 'c', label: 'C' }] },
+      { value: 'd', label: 'D' },
+    ];
+    const flat = flattenSelectOptions(input);
+    expect(flat.map((o) => [o.value, o.disabled === true])).toEqual([
+      ['a', true],
+      ['b', true],
+      ['c', false],
+      ['d', false],
+    ]);
+  });
+
+  it('keeps the child references that need no change', () => {
+    const b: CngxSelectOptionDef<string> = { value: 'b', label: 'B', disabled: true };
+    const c: CngxSelectOptionDef<string> = { value: 'c', label: 'C' };
+    const flat = flattenSelectOptions<string>([
+      { label: 'Off', disabled: true, children: [b] },
+      { label: 'On', children: [c] },
+    ]);
+    expect(flat[0]).toBe(b);
+    expect(flat[1]).toBe(c);
+  });
+});

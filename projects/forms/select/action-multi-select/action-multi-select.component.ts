@@ -61,7 +61,10 @@ import {
 
 import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
-import { createArrayCommitHandler, type ArrayCommitHandler } from '../shared/array-commit-handler';
+import {
+  CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
+  type ArrayCommitHandler,
+} from '../shared/array-commit-handler';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import {
   CNGX_SELECT_SHEET_SCOPE,
@@ -74,10 +77,7 @@ import {
 import { CngxSelectSheetHeader } from '../shared/internal/sheet-header/sheet-header.component';
 import { CngxSelectSheetTrigger } from '../shared/internal/sheet-trigger.directive';
 import { CNGX_SELECT_SHEET_HEADER_HOST } from '../shared/sheet-header-host';
-import {
-  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
-  type CngxCommitErrorAnnouncePolicy,
-} from '../shared/commit-error-announcer';
+import { type CngxCommitErrorAnnouncePolicy } from '../shared/commit-error-announcer';
 import {
   CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   type CngxChipRemovalHandler,
@@ -122,6 +122,7 @@ import { resolveActionSelectConfig } from '../shared/action-select-config';
 import { mergeCommitState } from '../shared/internal/merged-commit-state';
 import { createActionTriggerInput } from '../shared/internal/action-trigger-input';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
+import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
 import {
@@ -934,7 +935,11 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
 
   /** @internal */
   protected readonly inputSlotContext = computed<CngxSelectInputSlotContext>(
-    () => ({ disabled: this.disabled(), focused: this.focusState.focused(), panelOpen: this.panelOpen() }),
+    () => ({
+      disabled: this.disabled(),
+      focused: this.focusState.focused(),
+      panelOpen: this.panelOpen(),
+    }),
     {
       equal: (a, b) =>
         a.disabled === b.disabled && a.focused === b.focused && a.panelOpen === b.panelOpen,
@@ -1083,63 +1088,58 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   private lastCommittedValues: T[] = [];
   private readonly hasEmittedInitial = signal(false);
 
-  private readonly commitErrorAnnouncer = inject(CngxSelectAnnouncer);
-  /** A rejected quick-create is spoken assertively, whatever the select's own policy. */
-  private readonly announceCreateError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
-    deps: {
-      announcer: this.commitErrorAnnouncer,
-      commitErrorMessage: (err) => this.core.createFailedMessage(this.lastCreateLabel(), err),
-      softAnnounce: (opt, action) =>
-        this.core.announce(
-          opt as CngxSelectOptionDef<T> | null,
-          action,
-          this.values().length,
-          true,
-        ),
+  /**
+   * Toggle/clear finalize + AD-activation dispatch. Shared with
+   * `CngxMultiSelect` / `CngxCombobox` / `CngxReorderableMultiSelect`;
+   * this variant adds `source: this` and clears a stale quick-create error
+   * on a pick.
+   */
+  private readonly toggleDispatch = createArrayToggleDispatch<T>({
+    values: this.values,
+    compareWith: this.compareWith,
+    commitMode: this.commitMode,
+    commitAction: this.commitAction,
+    core: this.core,
+    setLastCommitted: (previous) => {
+      this.lastCommittedValues = previous;
     },
-    policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'verbose', severity: 'assertive' }),
+    beginToggle: (next, previous, option, action) =>
+      this.commitHandler.beginToggle(next, previous, option, action),
+    beginClear: (previous, action) => this.commitHandler.beginClear(previous, action),
+    emitOptionToggled: (option, added) => this.optionToggled.emit({ option, added }),
+    emitSelectionChange: (change) => this.selectionChange.emit({ source: this, ...change }),
+    emitCleared: () => this.cleared.emit(),
+    onToggled: (_option, isNowSelected) => {
+      if (isNowSelected) {
+        this.createErrorCleared.set(true);
+      }
+    },
   });
-  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
-    deps: {
-      announcer: this.commitErrorAnnouncer,
-      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
-      // Soft policy: generic removal at the CURRENT selection count - the
-      // announcer's scalar-shaped count/multi args are replaced here.
-      softAnnounce: (opt, action) =>
-        this.core.announce(
-          opt as CngxSelectOptionDef<T> | null,
-          action,
-          this.values().length,
-          true,
-        ),
-    },
+
+  /** A rejected quick-create is spoken assertively, whatever the select's own policy. */
+  private readonly announceCreateError = this.core.createCommitErrorAnnouncer({
+    policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'verbose', severity: 'assertive' }),
+    message: (err) => this.core.createFailedMessage(this.lastCreateLabel(), err),
+  });
+  private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
     policy: this.commitErrorAnnouncePolicy,
   });
 
-  private readonly commitHandler: ArrayCommitHandler<T> = createArrayCommitHandler<T>({
+  private readonly commitHandler: ArrayCommitHandler<T> = inject(
+    CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
+  )<T>({
     values: this.values,
     compareWith: this.compareWith,
     commitMode: this.commitMode,
     core: this.core,
     commitAction: this.commitAction,
-    getLastCommitted: () => this.lastCommittedValues,
     onToggleFinalize: (option, isNowSelected) =>
-      this.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
-    onClearFinalize: (previous, finalValues) => {
-      this.cleared.emit();
-      this.selectionChange.emit({
-        source: this,
-        values: finalValues,
-        previousValues: previous,
-        added: [],
-        removed: previous,
-        option: null,
-        action: 'clear',
-      });
-    },
+      this.toggleDispatch.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
+    onClearFinalize: (previous, finalValues) =>
+      this.toggleDispatch.clearFinalize(previous, finalValues),
     onStateChange: (status) => this.stateChange.emit(status),
     onError: (err) => this.commitError.emit(err),
-    announceError: (err) => this.announceCommitError(err),
+    announceError: this.announceCommitError,
   });
 
   /**
@@ -1218,7 +1218,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       this.lastCommittedValues = previous;
       this.togglingOption.set(item);
     },
-    onSyncFinalize: (item, previous) => this.finalizeToggle(item, false, previous),
+    onSyncFinalize: (item, previous) => this.toggleDispatch.finalizeToggle(item, false, previous),
   });
 
   /** @internal - stable per-option `remove()` closure for chip slots. */
@@ -1250,31 +1250,8 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       core: this.core,
       closeOnSelect: false,
       commitAction: this.commitAction,
-      onCommit: (toggledValue, opt) => {
-        const previous = [...this.values()];
-        const wasSelected = previous.some((v) => this.compareWith()(v, toggledValue));
-        const next = wasSelected
-          ? previous.filter((v) => !this.compareWith()(v, toggledValue))
-          : [...previous, toggledValue];
-        this.lastCommittedValues = previous;
-        this.togglingOption.set(opt);
-        if (this.commitMode() === 'optimistic') {
-          this.values.set(next);
-        }
-        const action = this.commitAction();
-        if (action) {
-          this.commitHandler.beginToggle(next, previous, opt, action);
-        }
-      },
-      onActivate: (_value, opt) => {
-        const currentSelected = this.isSelected(opt);
-        const current = this.values();
-        const eq = this.compareWith();
-        const previousValues = currentSelected
-          ? current.filter((v) => !eq(v, opt.value))
-          : [...current, opt.value];
-        this.finalizeToggle(opt, currentSelected, previousValues);
-      },
+      onCommit: this.toggleDispatch.handleADCommit,
+      onActivate: this.toggleDispatch.handleADActivate,
     });
 
     inject(CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY)({
@@ -1406,36 +1383,10 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     this.clearAllCallback();
   }
 
-  /** @internal */
-  protected readonly clearAllCallback: () => void = () => {
-    this.hostFocus.refocusOwnerBeforeRemoval();
-    const previous = [...this.values()];
-    if (previous.length === 0) {
-      return;
-    }
-    const action = this.commitAction();
-    if (action) {
-      this.lastCommittedValues = previous;
-      this.togglingOption.set(null);
-      if (this.commitMode() === 'optimistic') {
-        this.values.set([]);
-      }
-      this.commitHandler.beginClear(previous, action);
-      return;
-    }
-    this.values.set([]);
-    this.cleared.emit();
-    this.selectionChange.emit({
-      source: this,
-      values: [],
-      previousValues: previous,
-      added: [],
-      removed: previous,
-      option: null,
-      action: 'clear',
-    });
-    this.core.announce(null, 'removed', 0, true);
-  };
+  /** @internal - imperative clear-all used by slot + default button. */
+  protected readonly clearAllCallback: () => void = this.hostFocus.withRefocus(
+    this.toggleDispatch.clearAll,
+  );
 
   protected handleFocus(): void {
     this.focusState.markFocused();
@@ -1443,26 +1394,5 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
 
   protected handleBlur(): void {
     this.focusState.markBlurred();
-  }
-
-  private finalizeToggle(
-    opt: CngxSelectOptionDef<T>,
-    isNowSelected: boolean,
-    previousValues: readonly T[] = [],
-  ): void {
-    if (isNowSelected) {
-      this.createErrorCleared.set(true);
-    }
-    this.optionToggled.emit({ option: opt, added: isNowSelected });
-    this.selectionChange.emit({
-      source: this,
-      values: this.values(),
-      previousValues,
-      added: isNowSelected ? [opt.value] : [],
-      removed: isNowSelected ? [] : [opt.value],
-      option: opt,
-      action: 'toggle',
-    });
-    this.core.announce(opt, isNowSelected ? 'added' : 'removed', this.values().length, true);
   }
 }

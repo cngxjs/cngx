@@ -7,6 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { CNGX_DEV_DESCRIPTORS } from '@cngx/core/utils';
 import { createManualState } from '@cngx/common/data';
+import { stripBidiIsolates } from '@cngx/testing';
 
 import {
   provideSelectConfig,
@@ -17,9 +18,17 @@ import {
   type CngxSelectAriaLabels,
 } from '../config';
 import type { CngxSelectOptionDef } from '../option.model';
+import {
+  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
+  type CngxCommitErrorAnnouncePolicy,
+  type CngxCommitErrorAnnouncerFactory,
+} from '../commit-error-announcer';
+import { commitLedgerFor } from './commit-ledger';
+import { commitRetryFor } from './commit-retry';
 import { createSelectCore, type CngxSelectCoreDeps } from './select-core';
 
 const RED: CngxSelectOptionDef<string> = { value: 'red', label: 'Red' };
+const GREEN: CngxSelectOptionDef<string> = { value: 'green', label: 'Green' };
 
 function deps(): CngxSelectCoreDeps<string, string> {
   return {
@@ -120,10 +129,7 @@ describe('createSelectCore - dev descriptor', () => {
 });
 
 describe('createSelectCore - mobile sheet presentation', () => {
-  function coreWith(
-    extra: Partial<CngxSelectCoreDeps<string, string>>,
-    providers: unknown[] = [],
-  ) {
+  function coreWith(extra: Partial<CngxSelectCoreDeps<string, string>>, providers: unknown[] = []) {
     TestBed.configureTestingModule({ providers: providers as never[] });
     return TestBed.runInInjectionContext(() =>
       createSelectCore(
@@ -166,6 +172,167 @@ describe('createSelectCore - mobile sheet presentation', () => {
 
   it('keeps the width rule without a presentation dep', () => {
     expect(coreWith({ panelWidth: signal(240) }).panelWidthCss()).toBe('240px');
+  });
+});
+
+describe('createSelectCore - commit ledger retry', () => {
+  it('routes the default Retry through the commit source that claimed the last commit', () => {
+    const core = TestBed.runInInjectionContext(() =>
+      createSelectCore(deps(), { announceChanges: signal(null), announceTemplate: signal(null) }),
+    );
+    const log: string[] = [];
+    const router = commitRetryFor(core.commitController);
+    const a = router.route(
+      { begin: () => log.push('begin:a'), retryLast: () => log.push('retry:a') },
+      ['begin'],
+    );
+    const context = core.bindCommitRetry();
+    context().retry();
+    expect(log).toEqual([]);
+    a.begin();
+    context().retry();
+    expect(log).toEqual(['begin:a', 'retry:a']);
+  });
+
+  it('keeps the ledger and the retry plumbing off the core', () => {
+    const core = TestBed.runInInjectionContext(() =>
+      createSelectCore(deps(), { announceChanges: signal(null), announceTemplate: signal(null) }),
+    );
+    for (const key of [
+      'commitLedger',
+      'routeRetryThrough',
+      'claimCommitRetry',
+      'retryLastCommit',
+    ]) {
+      expect(key in core).toBe(false);
+    }
+  });
+
+  it('reads the option from the ledger record, else from the toggling option', () => {
+    const core = TestBed.runInInjectionContext(() =>
+      createSelectCore(deps(), { announceChanges: signal(null), announceTemplate: signal(null) }),
+    );
+    const context = core.bindCommitRetry(() => undefined);
+    expect(context().option).toBeNull();
+    core.togglingOption.set(RED);
+    expect(context().option).toBe(RED);
+  });
+
+  it('reads the option from the ledger record and replays it through a ledger-backed retry', () => {
+    const core = TestBed.runInInjectionContext(() =>
+      createSelectCore(deps(), { announceChanges: signal(null), announceTemplate: signal(null) }),
+    );
+    const value = signal<string | undefined>(undefined);
+    const calls: (string | undefined)[] = [];
+    const commitAction = signal<((next: string | undefined) => never) | null>((next) => {
+      calls.push(next);
+      throw new Error('down');
+    });
+    commitLedgerFor<string, string>(core.commitController).beginScalar<string | undefined>({
+      kind: 'select',
+      next: 'red',
+      previous: undefined,
+      option: RED,
+      action: commitAction()!,
+      commitAction,
+      value,
+      same: Object.is,
+      commitMode: signal('pessimistic'),
+      onSuccess: () => undefined,
+    });
+    core.togglingOption.set(null);
+    const context = core.bindCommitRetry(() => commitLedgerFor(core.commitController).retry());
+    expect(context().option).toBe(RED);
+    context().retry();
+    expect(calls).toEqual(['red', 'red']);
+  });
+});
+
+describe('createSelectCore - commit-error option', () => {
+  it('drops a failed ledger record once another commit source claims the next commit', () => {
+    const core = TestBed.runInInjectionContext(() =>
+      createSelectCore(deps(), { announceChanges: signal(null), announceTemplate: signal(null) }),
+    );
+    const value = signal<string | undefined>(undefined);
+    const commitAction = signal<((next: string | undefined) => never) | null>(() => {
+      throw new Error('down');
+    });
+    commitLedgerFor<string, string>(core.commitController).beginScalar<string | undefined>({
+      kind: 'select',
+      next: 'red',
+      previous: undefined,
+      option: RED,
+      action: commitAction()!,
+      commitAction,
+      value,
+      same: Object.is,
+      commitMode: signal('pessimistic'),
+      onSuccess: () => undefined,
+    });
+    const context = core.bindCommitRetry(() => undefined);
+    expect(context().option).toBe(RED);
+    // A custom handler that bypasses the ledger starts the next commit.
+    commitRetryFor(core.commitController).claim({ retryLast: () => undefined });
+    core.togglingOption.set(GREEN);
+    expect(context().option).toBe(GREEN);
+  });
+});
+
+describe('createSelectCore - commit-error announcer', () => {
+  function coreWith(
+    providers: unknown[],
+    coreDeps: CngxSelectCoreDeps<string, string> = deps(),
+  ): ReturnType<typeof createSelectCore<string, string>> {
+    TestBed.configureTestingModule({ providers: providers as never[] });
+    return TestBed.runInInjectionContext(() =>
+      createSelectCore(coreDeps, { announceChanges: signal(null), announceTemplate: signal(null) }),
+    );
+  }
+
+  it('builds the callback through a provided CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY', () => {
+    const announced: unknown[] = [];
+    const factory = vi.fn<CngxCommitErrorAnnouncerFactory>(() => (err) => announced.push(err));
+    const core = coreWith([{ provide: CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY, useValue: factory }]);
+    const policy = signal<CngxCommitErrorAnnouncePolicy>({ kind: 'soft' });
+
+    const callback = core.createCommitErrorAnnouncer({ policy });
+    const failure = new Error('down');
+    callback(failure);
+
+    expect(factory).toHaveBeenCalledTimes(1);
+    const options = factory.mock.calls[0][0];
+    expect(options.policy).toBe(policy);
+    expect(options.deps.softFailureMessage?.()).toContain('Save failed, previous value restored');
+    expect(options.deps.commitErrorMessage(failure)).toBe(core.commitErrorMessage(failure));
+    expect(announced).toEqual([failure]);
+  });
+
+  it('uses the message override for the verbose sentence', () => {
+    const factory = vi.fn<CngxCommitErrorAnnouncerFactory>(() => () => undefined);
+    const core = coreWith([{ provide: CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY, useValue: factory }]);
+
+    core.createCommitErrorAnnouncer({
+      policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'verbose', severity: 'assertive' }),
+      message: () => 'Colour: Could not create Teal',
+    });
+
+    expect(factory.mock.calls[0][0].deps.commitErrorMessage(new Error('x'))).toBe(
+      'Colour: Could not create Teal',
+    );
+  });
+
+  it('defaults to createCommitErrorAnnouncer and speaks the soft copy politely after a rollback', () => {
+    const core = coreWith([]);
+    const live = vi
+      .spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce')
+      .mockImplementation(() => {});
+    const callback = core.createCommitErrorAnnouncer({
+      policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'soft' }),
+    });
+    callback(new Error('down'), true);
+    expect(live).toHaveBeenCalledTimes(1);
+    expect(String(live.mock.calls[0][0])).toContain('Save failed, previous value restored');
+    expect(live.mock.calls[0][1]).toBe('polite');
   });
 });
 
@@ -279,5 +446,35 @@ describe('select-core removed aliases', () => {
     const status: import('./select-core').CngxSelectStatus | undefined = undefined;
     expect(control).toBeUndefined();
     expect(status).toBeUndefined();
+  });
+});
+
+describe('createSelectCore - non-Error failure detail', () => {
+  function labelledCore(): ReturnType<typeof createSelectCore<string, string>> {
+    return TestBed.runInInjectionContext(() =>
+      createSelectCore(
+        { ...deps(), label: signal('Colour') },
+        { announceChanges: signal(null), announceTemplate: signal(null) },
+      ),
+    );
+  }
+
+  it('speaks the bare commit sentence for a non-Error rejection, never its value', () => {
+    const core = labelledCore();
+    expect(stripBidiIsolates(core.commitErrorMessage('server down'))).toBe('Colour: Save failed');
+    expect(stripBidiIsolates(core.commitErrorMessage({ status: 500 }))).toBe('Colour: Save failed');
+    expect(stripBidiIsolates(core.commitErrorMessage(new Error('server down')))).toBe(
+      'Colour: Save failed - server down',
+    );
+  });
+
+  it('speaks the bare create sentence for a non-Error rejection', () => {
+    const core = labelledCore();
+    expect(stripBidiIsolates(core.createFailedMessage('Teal', 'server down'))).toBe(
+      'Colour: Could not create Teal',
+    );
+    expect(stripBidiIsolates(core.createFailedMessage('Teal', new Error('server down')))).toBe(
+      'Colour: Could not create Teal - server down',
+    );
   });
 });

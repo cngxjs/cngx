@@ -87,6 +87,7 @@ function makeShellHost(): CngxSelectPanelHost {
       statusRefreshing: 'Refreshing options',
       fieldLabelFallback: 'Selection',
       commitFailedMessage: (label: string) => `${label}: Save failed`,
+      commitFailedSoft: (label: string) => `${label}: Save failed, previous value restored`,
       createFailedMessage: (label: string, option: string) =>
         `${label}: Could not create ${option}`,
       searchInput: 'Search options',

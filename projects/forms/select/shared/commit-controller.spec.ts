@@ -110,6 +110,18 @@ describe('createCommitController (select-side adapter)', () => {
     source.next('a');
     expect(rec.successes).toEqual([]);
   });
+
+  it('cancel({ settle: true }) forwards the settle option and returns the state to idle', () => {
+    const ctrl = createCommitController<T>();
+    ctrl.begin(() => new Subject<T>().asObservable(), 'a', undefined, {
+      onSuccess: () => undefined,
+      onError: () => undefined,
+    });
+    expect(ctrl.state.status()).toBe('pending');
+    ctrl.cancel({ settle: true });
+    expect(ctrl.state.status()).toBe('idle');
+    expect(ctrl.intendedValue()).toBeUndefined();
+  });
 });
 
 describe('CNGX_SELECT_COMMIT_CONTROLLER_FACTORY', () => {

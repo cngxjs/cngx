@@ -2,7 +2,11 @@ import { signal, type WritableSignal } from '@angular/core';
 import { Subject } from 'rxjs';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { createScalarCommitHandler } from './scalar-commit-handler';
+import {
+  createScalarCommitHandler,
+  dispatchScalarClear,
+  type ScalarCommitHandler,
+} from './scalar-commit-handler';
 import { createCommitController } from './commit-controller.token';
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-action.types';
 import type { CngxSelectOptionDef } from './option.model';
@@ -69,8 +73,7 @@ function makeHarness(opts?: {
     onCommitError: (err) => commitErrorLog.push(err),
     onStateChange: (s) => stateLog.push(s),
     onError: (err) => errorLog.push(err),
-    onValueWrite:
-      opts?.withValueWrite === false ? undefined : (v) => valueWriteLog.push(v),
+    onValueWrite: opts?.withValueWrite === false ? undefined : (v) => valueWriteLog.push(v),
   });
 
   return {
@@ -123,6 +126,153 @@ describe('createScalarCommitHandler', () => {
     });
   });
 
+  describe('beginCommit - null result', () => {
+    it('keeps a null server result instead of falling back to the intended value', () => {
+      const action = (() => null) as unknown as CngxSelectCommitAction<T>;
+      h.handler.beginCommit('a', undefined, action);
+      expect(h.value()).toBeNull();
+    });
+  });
+
+  describe('beginClear', () => {
+    it('sends undefined, empties the value optimistically and finalizes on success', () => {
+      h.value.set('a');
+      h.togglingOption.set(opt('b'));
+      const calls: (T | undefined)[] = [];
+      const pending = new Subject<T | undefined>();
+      h.handler.beginClear('a', (next) => {
+        calls.push(next);
+        return pending.asObservable();
+      });
+      expect(calls).toEqual([undefined]);
+      expect(h.value()).toBeUndefined();
+      expect(h.togglingOption()).toBeNull();
+      pending.next(undefined);
+      pending.complete();
+      expect(h.stateLog).toEqual(['pending', 'success']);
+      expect(h.finalizeLog).toEqual([{ option: null, finalValue: undefined, previousValue: 'a' }]);
+    });
+
+    it('rolls back on failure and retry replays the clear', () => {
+      h.value.set('a');
+      const calls: (T | undefined)[] = [];
+      const action: CngxSelectCommitAction<T> = (next) => {
+        calls.push(next);
+        throw new Error('server down');
+      };
+      h.commitAction.set(action);
+      h.handler.beginClear('a', action);
+      expect(h.value()).toBe('a');
+      expect(h.commitErrorLog).toHaveLength(1);
+
+      h.handler.retryLast();
+
+      expect(calls).toEqual([undefined, undefined]);
+      expect(h.value()).toBe('a');
+    });
+
+    it('supersedes a pending select, so the late select result cannot undo the clear', () => {
+      h.value.set('b');
+      const first = new Subject<T | undefined>();
+      h.handler.beginCommit('b', 'a', () => first.asObservable());
+      h.handler.beginClear('b', () => undefined);
+      first.next('b');
+      first.complete();
+      expect(h.value()).toBeUndefined();
+    });
+
+    it('routes an empty result to onClearFinalize when one is given', () => {
+      const cleared: (T | undefined)[] = [];
+      const value = signal<T | undefined>('a');
+      const handler = createScalarCommitHandler<T>({
+        value,
+        compareWith: signal<CngxSelectCompareFn<T>>((a, b) => Object.is(a, b)),
+        commitMode: signal<CngxSelectCommitMode>('optimistic'),
+        core: {
+          commitController: createCommitController<T>(),
+          togglingOption: signal(null),
+          findOption: () => null,
+        } as unknown as CngxSelectCore<T, T>,
+        commitAction: signal(null),
+        onCommitFinalize: () => {
+          throw new Error('clear must not finalize as a selection');
+        },
+        onClearFinalize: (previous) => cleared.push(previous),
+        onCommitError: () => undefined,
+        onStateChange: () => undefined,
+        onError: () => undefined,
+      });
+      handler.beginClear('a', () => undefined);
+      expect(cleared).toEqual(['a']);
+    });
+  });
+
+  it('requires beginClear on a custom handler, so a clear never degrades silently', () => {
+    const partial = {
+      beginCommit: () => undefined,
+      dispatchFromActivation: () => undefined,
+      finalizeSelection: () => undefined,
+      retryLast: () => undefined,
+    };
+    // @ts-expect-error beginClear is a required member
+    const handler: ScalarCommitHandler<T> = partial;
+    expect(handler).toBe(partial);
+  });
+
+  describe('dispatchScalarClear', () => {
+    function coreOf(controller = createCommitController<T>()): CngxSelectCore<T, T> {
+      return {
+        commitController: controller,
+        togglingOption: signal<CngxSelectOptionDef<T> | null>(opt('a')),
+        findOption: () => null,
+      } as unknown as CngxSelectCore<T, T>;
+    }
+
+    it('without an action cancels a pending commit, settles its state and clears locally', () => {
+      const controller = createCommitController<T>();
+      const core = coreOf(controller);
+      controller.begin(() => new Subject<T>().asObservable(), 'a', undefined, {
+        onSuccess: () => undefined,
+        onError: () => undefined,
+      });
+      expect(controller.isCommitting()).toBe(true);
+      let cleared = false;
+      dispatchScalarClear<T>({
+        core,
+        handler: h.handler,
+        commitAction: signal(null),
+        previous: 'a',
+        clearLocally: () => {
+          cleared = true;
+        },
+      });
+      expect(controller.isCommitting()).toBe(false);
+      expect(controller.state.status()).toBe('idle');
+      expect(core.togglingOption()).toBeNull();
+      expect(cleared).toBe(true);
+    });
+
+    it('with an action routes through beginClear and never clears locally', () => {
+      h.value.set('a');
+      const calls: (T | undefined)[] = [];
+      const action: CngxSelectCommitAction<T> = (next) => {
+        calls.push(next);
+        return next;
+      };
+      dispatchScalarClear<T>({
+        core: coreOf(),
+        handler: h.handler,
+        commitAction: signal(action),
+        previous: 'a',
+        clearLocally: () => {
+          throw new Error('must not clear locally');
+        },
+      });
+      expect(calls).toEqual([undefined]);
+      expect(h.value()).toBeUndefined();
+    });
+  });
+
   describe('beginCommit - error', () => {
     it('in optimistic mode rolls the value back to the previous value', () => {
       h.value.set('b'); // consumer already wrote optimistically
@@ -171,14 +321,35 @@ describe('createScalarCommitHandler', () => {
     });
   });
 
+  describe('beginCommit - superseded', () => {
+    it('rolls a superseding commit back to the confirmed value, not the pending one', () => {
+      const first = new Subject<T>();
+      const second = new Subject<T>();
+      h.value.set('b');
+      h.handler.beginCommit('b', 'a', () => first);
+      h.value.set('c');
+      h.handler.beginCommit('c', 'b', () => second);
+      second.error(new Error('boom'));
+      expect(h.value()).toBe('a');
+      expect(h.valueWriteLog.at(-1)).toBe('a');
+    });
+
+    it('reports the confirmed value as previous when the superseding commit succeeds', () => {
+      const first = new Subject<T>();
+      h.value.set('b');
+      h.handler.beginCommit('b', 'a', () => first);
+      h.value.set('c');
+      h.handler.beginCommit('c', 'b', (next) => next);
+      expect(h.finalizeLog.at(-1)).toMatchObject({ finalValue: 'c', previousValue: 'a' });
+    });
+  });
+
   describe('finalizeSelection', () => {
     it('writes the value and finalizes without touching the commit state machine', () => {
       h.handler.finalizeSelection('a', opt('a'), 'b');
       expect(h.value()).toBe('a');
       expect(h.valueWriteLog).toEqual(['a']);
-      expect(h.finalizeLog).toEqual([
-        { option: opt('a'), finalValue: 'a', previousValue: 'b' },
-      ]);
+      expect(h.finalizeLog).toEqual([{ option: opt('a'), finalValue: 'a', previousValue: 'b' }]);
       expect(h.stateLog).toEqual([]);
     });
   });
@@ -202,16 +373,27 @@ describe('createScalarCommitHandler', () => {
   });
 
   describe('retryLast', () => {
-    it('replays the last commit using the controller intended value', () => {
+    it('replays the last failed commit using the controller intended value', () => {
       const action: CngxSelectCommitAction<T> = (next) => next;
       h.commitAction.set(action);
-      h.handler.beginCommit('a', undefined, action);
+      h.handler.beginCommit('a', undefined, () => {
+        throw new Error('first fail');
+      });
       h.stateLog.length = 0;
       h.finalizeLog.length = 0;
 
       h.handler.retryLast();
       expect(h.stateLog).toEqual(['pending', 'success']);
       expect(h.value()).toBe('a');
+    });
+
+    it('is a no-op once the last commit succeeded', () => {
+      const action: CngxSelectCommitAction<T> = (next) => next;
+      h.commitAction.set(action);
+      h.handler.beginCommit('a', undefined, action);
+      h.stateLog.length = 0;
+      h.handler.retryLast();
+      expect(h.stateLog).toEqual([]);
     });
 
     it('is a no-op when no commit action is bound', () => {
