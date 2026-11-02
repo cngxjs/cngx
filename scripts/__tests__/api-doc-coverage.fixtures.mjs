@@ -51,7 +51,7 @@ export const INTERNAL_BINDINGS = [
 /**
  * Lowered in every commit that closes rows, so growth is a visible constant edit.
  */
-export const CEILING = 31;
+export const CEILING = 28;
 
 /** @type {readonly ApiDocGap[]} */
 // prettier-ignore
@@ -63,9 +63,6 @@ export const RATCHET = [
   { entry: '@cngx/core', owner: 'CngxTouchTarget', kind: 'input', member: 'touchTarget', binding: 'cngxTouchTarget', phase: 4 },
   { entry: '@cngx/core/utils', owner: 'createDefaultsFill', kind: 'function', member: 'createDefaultsFill', phase: 4 },
   { entry: '@cngx/core/utils', owner: 'createDefaultsFill', kind: 'function', member: 'createDefaultsFill', phase: 4 },
-  { entry: '@cngx/forms/input', owner: 'CngxInput', kind: 'method', member: 'focus', phase: 4 },
-  { entry: '@cngx/forms/input', owner: 'CngxPhoneInput', kind: 'method', member: 'focus', phase: 4 },
-  { entry: '@cngx/forms/input', owner: 'CngxRating', kind: 'method', member: 'focus', phase: 4 },
   { entry: '@cngx/ui/feedback', owner: 'CngxToast', kind: 'input', member: 'actionHandler', phase: 4 },
   { entry: '@cngx/ui/mat-tabs', owner: 'CngxMatTabError', kind: 'input', member: 'aggregator', binding: 'cngxMatTabError', phase: 4 },
   { entry: '@cngx/ui/mat-tabs', owner: 'CngxMatTabErrorFlag', kind: 'input', member: 'error', binding: 'cngxMatTabErrorFlag', phase: 4 },

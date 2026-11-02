@@ -190,6 +190,10 @@ export class CngxInput implements CngxFormFieldControl {
     this.emptyState.set(!this.el.nativeElement.value);
   }
 
+  /**
+   * Focuses the host `input`, `textarea` or `select` element and passes `options` to `HTMLElement.focus()`.
+   * Implements the optional `focus` of `CngxFormFieldControl`, which `CngxFieldBox` calls when the box padding is clicked and `focusFirstError` calls for a field without a `[formField]` binding.
+   */
   focus(options?: FocusOptions): void {
     this.el.nativeElement.focus(options);
   }
