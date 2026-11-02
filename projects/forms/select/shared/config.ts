@@ -214,7 +214,11 @@ export interface CngxSelectVirtualizationConfig {
   readonly threshold?: number;
   /** Forwarded to `injectRecycler.scrollDebounce`. Default `16` ms. */
   readonly scrollDebounce?: number;
-  /** Forwarded to `injectRecycler.skeletonDelay`. Default `0`. */
+  /**
+   * Forwarded to `injectRecycler.skeletonDelay`. Default `CNGX_LOADING_CONFIG.showDelay`.
+   * The select virtualiser binds no `state` to the recycler, so its skeleton gate
+   * never opens today and this value has no visible effect.
+   */
   readonly skeletonDelay?: number;
 }
 

@@ -11,7 +11,15 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { createResizeObserverMock, stripBidiIsolates } from '@cngx/testing';
-import { provideLocaleAt, type CngxAsyncState, type AsyncStatus } from '@cngx/core/utils';
+import {
+  CNGX_LOADING_DEFAULTS,
+  provideLoadingConfig,
+  provideLocaleAt,
+  withMinDwell,
+  withShowDelay,
+  type CngxAsyncState,
+  type AsyncStatus,
+} from '@cngx/core/utils';
 
 import {
   injectRecycler,
@@ -429,6 +437,112 @@ describe('injectRecycler', () => {
       expect(recycler.showSkeleton()).toBe(true);
 
       vi.useRealTimers();
+    });
+  });
+
+  describe('showSkeleton reads CNGX_LOADING_CONFIG', () => {
+    const { showDelay, minDwell } = CNGX_LOADING_DEFAULTS;
+
+    function createGated(
+      isFirstLoad: WritableSignal<boolean>,
+      skeletonDelay?: number,
+    ): CngxRecycler {
+      let recycler!: CngxRecycler;
+      TestBed.runInInjectionContext(() => {
+        recycler = injectRecycler({
+          scrollElement: mockContainer,
+          totalCount: () => 0,
+          estimateSize: 48,
+          state: createMockState({ isFirstLoad }),
+          skeletonDelay,
+        });
+      });
+      TestBed.flushEffects();
+      return recycler;
+    }
+
+    function advance(ms: number): void {
+      vi.advanceTimersByTime(ms);
+      TestBed.flushEffects();
+    }
+
+    it('defaults the delay to CNGX_LOADING_DEFAULTS.showDelay', () => {
+      vi.useFakeTimers();
+      const recycler = createGated(signal(true));
+
+      advance(showDelay - 1);
+      expect(recycler.showSkeleton()).toBe(false);
+
+      advance(1);
+      expect(recycler.showSkeleton()).toBe(true);
+    });
+
+    it('retimes the delay through provideLoadingConfig(withShowDelay)', () => {
+      vi.useFakeTimers();
+      TestBed.configureTestingModule({ providers: [provideLoadingConfig(withShowDelay(500))] });
+      const recycler = createGated(signal(true));
+
+      advance(499);
+      expect(recycler.showSkeleton()).toBe(false);
+
+      advance(1);
+      expect(recycler.showSkeleton()).toBe(true);
+    });
+
+    it('lets an explicit skeletonDelay beat the config', () => {
+      vi.useFakeTimers();
+      TestBed.configureTestingModule({ providers: [provideLoadingConfig(withShowDelay(500))] });
+      const recycler = createGated(signal(true), 50);
+
+      advance(50);
+      expect(recycler.showSkeleton()).toBe(true);
+    });
+
+    it('never flips showSkeleton for a load that finishes before the show delay', () => {
+      vi.useFakeTimers();
+      const isFirstLoad = signal(true);
+      const recycler = createGated(isFirstLoad);
+
+      advance(showDelay - 1);
+      isFirstLoad.set(false);
+      TestBed.flushEffects();
+      advance(showDelay + minDwell);
+      expect(recycler.showSkeleton()).toBe(false);
+    });
+
+    it('holds a shown skeleton until minDwell has elapsed', () => {
+      vi.useFakeTimers();
+      const isFirstLoad = signal(true);
+      const recycler = createGated(isFirstLoad);
+
+      advance(showDelay);
+      expect(recycler.showSkeleton()).toBe(true);
+
+      advance(1);
+      isFirstLoad.set(false);
+      TestBed.flushEffects();
+      expect(recycler.showSkeleton()).toBe(true);
+
+      advance(minDwell - 2);
+      expect(recycler.showSkeleton()).toBe(true);
+
+      advance(1);
+      expect(recycler.showSkeleton()).toBe(false);
+    });
+
+    it('releases at once under withMinDwell(0)', () => {
+      vi.useFakeTimers();
+      TestBed.configureTestingModule({ providers: [provideLoadingConfig(withMinDwell(0))] });
+      const isFirstLoad = signal(true);
+      const recycler = createGated(isFirstLoad);
+
+      advance(showDelay);
+      expect(recycler.showSkeleton()).toBe(true);
+
+      isFirstLoad.set(false);
+      TestBed.flushEffects();
+      advance(1);
+      expect(recycler.showSkeleton()).toBe(false);
     });
   });
 

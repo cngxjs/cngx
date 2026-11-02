@@ -18,6 +18,7 @@ import {
   createOverrideMerge,
   createTransitionTracker,
   createVisibilityGate,
+  injectLoadingConfig,
 } from '@cngx/core/utils';
 
 import {
@@ -162,9 +163,10 @@ export interface RecyclerConfig {
   scrollDebounce?: number;
 
   /**
-   * Delay before skeletons are shown (ms). Default: 0.
-   * E.g. 300 means `showSkeleton` only becomes `true` after 300ms -
-   * fast loads (< 300ms) never show a skeleton.
+   * Delay before skeletons are shown (ms). Overrides `CNGX_LOADING_CONFIG.showDelay`;
+   * default is the config value. E.g. 300 means `showSkeleton` only becomes `true`
+   * after 300ms - fast loads (< 300ms) never show a skeleton. The min-dwell always
+   * comes from `CNGX_LOADING_CONFIG.minDwell`.
    */
   skeletonDelay?: number;
 
@@ -222,7 +224,10 @@ export interface CngxRecycler {
   readonly isEmpty: Signal<boolean>;
   /** How many skeleton items fit in the viewport: `ceil(clientHeight / estimateSize)`. */
   readonly skeletonSlots: Signal<number>;
-  /** `isLoading` AND `skeletonDelay` elapsed. Prevents skeleton flicker on fast loads. */
+  /**
+   * `isLoading` after the show delay, held for at least `minDwell`. Prevents
+   * skeleton flicker on fast loads and a jarring disappearance on slow ones.
+   */
   readonly showSkeleton: Signal<boolean>;
 
   /** First actually visible index (without overscan). For UI display. */
@@ -510,10 +515,11 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     return Math.ceil(ch / itemHeight);
   });
 
+  const loading = injectLoadingConfig();
   const showSkeleton = createVisibilityGate(
     isLoading,
-    computed(() => config.skeletonDelay ?? 0),
-    computed(() => 0),
+    computed(() => config.skeletonDelay ?? loading.showDelay),
+    computed(() => loading.minDwell),
   );
 
   // previousTotal is a signal, not a mutable let - reactive, no stale-value risk.
