@@ -51,7 +51,7 @@ export const INTERNAL_BINDINGS = [
 /**
  * Lowered in every commit that closes rows, so growth is a visible constant edit.
  */
-export const CEILING = 19;
+export const CEILING = 11;
 
 /** @type {readonly ApiDocGap[]} */
 // prettier-ignore
@@ -67,12 +67,4 @@ export const RATCHET = [
   { entry: '@cngx/ui/mat-tabs', owner: 'CngxMatTabError', kind: 'input', member: 'aggregator', binding: 'cngxMatTabError', phase: 4 },
   { entry: '@cngx/ui/mat-tabs', owner: 'CngxMatTabErrorFlag', kind: 'input', member: 'error', binding: 'cngxMatTabErrorFlag', phase: 4 },
   { entry: '@cngx/ui/mat-tabs', owner: 'CngxMatTabsRegistry', kind: 'method', member: 'getHandleSetup', phase: 4 },
-  { entry: '@cngx/ui/tabs', owner: 'CngxTabGroup', kind: 'input', member: 'ariaLabel', binding: 'aria-label', phase: 4 },
-  { entry: '@cngx/ui/tabs', owner: 'CngxTabGroup', kind: 'input', member: 'ariaLabelledBy', binding: 'aria-labelledby', phase: 4 },
-  { entry: '@cngx/ui/tabs', owner: 'CngxTabGroup', kind: 'method', member: 'contentTemplateFor', phase: 4 },
-  { entry: '@cngx/ui/tabs', owner: 'CngxTabGroup', kind: 'method', member: 'labelTemplateFor', phase: 4 },
-  { entry: '@cngx/ui/tabs', owner: 'CngxTabGroup', kind: 'method', member: 'selectById', phase: 4 },
-  { entry: '@cngx/ui/tabs', owner: 'CngxTabGroup', kind: 'method', member: 'subLabelTemplateFor', phase: 4 },
-  { entry: '@cngx/ui/tabs', owner: 'CngxTabNav', kind: 'input', member: 'ariaLabel', binding: 'aria-label', phase: 4 },
-  { entry: '@cngx/ui/tabs', owner: 'CngxTabNav', kind: 'input', member: 'ariaLabelledBy', binding: 'aria-labelledby', phase: 4 },
 ];
