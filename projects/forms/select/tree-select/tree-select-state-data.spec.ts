@@ -108,3 +108,66 @@ describe('CngxTreeSelect - nodes from [state] data', () => {
     expect(Object.is(tree.treeController.flatNodes(), before)).toBe(true);
   });
 });
+
+describe('CngxTreeSelect - initiallyExpanded with late nodes', () => {
+  @Component({
+    template: `
+      <cngx-tree-select
+        [label]="'Food'"
+        [nodes]="nodes()"
+        [nodeIdFn]="idFn"
+        [initiallyExpanded]="expand"
+      />
+    `,
+    imports: [CngxTreeSelect],
+  })
+  class LateNodesHost {
+    readonly nodes = signal<readonly CngxTreeNode<string>[]>([]);
+    readonly idFn = (v: string): string => v;
+    expand: 'all' | readonly string[] = 'all';
+  }
+
+  beforeEach(() => polyfillPopover());
+
+  function mount(expand: 'all' | readonly string[]) {
+    const fixture = TestBed.createComponent(LateNodesHost);
+    fixture.componentInstance.expand = expand;
+    fixture.detectChanges();
+    flush(fixture);
+    const tree = fixture.debugElement.query(By.directive(CngxTreeSelect))
+      .componentInstance as CngxTreeSelect<string>;
+    return { fixture, tree, host: fixture.componentInstance };
+  }
+
+  const expandedValues = (tree: CngxTreeSelect<string>): string[] =>
+    tree.treeController
+      .flatNodes()
+      .filter((n) => tree.treeController.isExpanded(n.id)())
+      .map((n) => n.value);
+
+  it("expands 'all' once async nodes arrive", () => {
+    const { fixture, tree, host } = mount('all');
+    expect(expandedValues(tree)).toEqual([]);
+    host.nodes.set(TREE);
+    flush(fixture);
+    expect(expandedValues(tree)).toEqual(['fruit', 'veg']);
+  });
+
+  it('expands the listed ids once async nodes arrive', () => {
+    const { fixture, tree, host } = mount(['veg']);
+    host.nodes.set(TREE);
+    flush(fixture);
+    expect(expandedValues(tree)).toEqual(['veg']);
+  });
+
+  it('seeds once: a later node change keeps what the user collapsed', () => {
+    const { fixture, tree, host } = mount('all');
+    host.nodes.set(TREE);
+    flush(fixture);
+    const fruit = tree.treeController.flatNodes().find((n) => n.value === 'fruit')!;
+    tree.treeController.collapse(fruit.id);
+    host.nodes.set([...TREE, { value: 'grain', children: [{ value: 'rice' }] }]);
+    flush(fixture);
+    expect(expandedValues(tree)).toEqual(['veg']);
+  });
+});

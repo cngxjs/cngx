@@ -6,11 +6,13 @@ import {
   ViewEncapsulation,
   computed,
   contentChild,
+  effect,
   inject,
   input,
   model,
   output,
   signal,
+  untracked,
   viewChild,
   type ElementRef,
   type Signal,
@@ -322,7 +324,7 @@ export class CngxTreeSelect<T = unknown>
    * payload) need it; `compareWith` alone cannot key the selection.
    */
   readonly keyFn = input<((value: T) => unknown) | undefined>(undefined);
-  /** Initial expansion seed (one-shot at construction). */
+  /** Initial expansion seed, applied once the tree first has nodes (one-shot). */
   readonly initiallyExpanded = input<'all' | 'none' | readonly string[] | undefined>(undefined);
   /**
    * When `true`, parent toggle selects/deselects every descendant
@@ -1110,18 +1112,30 @@ export class CngxTreeSelect<T = unknown>
           '[cngx-tree-select] [compareWith] is set without [keyFn]; the selection and the tree index key values by reference, so fresh object instances render unchecked. Pass a [keyFn] that returns the domain id.',
         );
       }
-      // Apply `initiallyExpanded` after inputs resolve. The controller
-      // sees `undefined` at field-init because signal inputs aren't
-      // bound yet; applying here keeps one-shot semantics.
-      const init = this.initiallyExpanded();
-      if (init === 'all') {
-        this.treeController.expandAll();
-      } else if (Array.isArray(init)) {
-        // Raw nodeIdFn ids in, instance-prefixed controller ids out.
-        for (const id of init as readonly string[]) {
-          this.treeController.expand(`${this.nodeIdPrefix}-${id}`);
-        }
+    });
+
+    // `initiallyExpanded` is a one-shot seed, applied the first time the
+    // tree has nodes: async `[nodes]` or `[state]` data arrive after the
+    // first render, and `expandAll()` only sees the nodes present when it
+    // runs. The latch keeps later node changes from re-expanding what the
+    // user collapsed.
+    let expansionSeeded = false;
+    effect(() => {
+      if (expansionSeeded || this.treeController.flatNodes().length === 0) {
+        return;
       }
+      expansionSeeded = true;
+      untracked(() => {
+        const init = this.initiallyExpanded();
+        if (init === 'all') {
+          this.treeController.expandAll();
+        } else if (Array.isArray(init)) {
+          // Raw nodeIdFn ids in, instance-prefixed controller ids out.
+          for (const id of init as readonly string[]) {
+            this.treeController.expand(`${this.nodeIdPrefix}-${id}`);
+          }
+        }
+      });
     });
 
     inject(CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY)({
