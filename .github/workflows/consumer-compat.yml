@@ -31,7 +31,7 @@ concurrency:
 
 jobs:
   changes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       relevant: ${{ steps.lib.outputs.changed }}
       cli: ${{ steps.cli.outputs.changed }}
@@ -69,7 +69,7 @@ jobs:
     needs: changes
     # fixture-cli installs the lib tarballs too.
     if: needs.changes.outputs.relevant == 'true' || needs.changes.outputs.cli == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -97,7 +97,7 @@ jobs:
   pack-cli:
     needs: changes
     if: needs.changes.outputs.cli == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -134,7 +134,7 @@ jobs:
     # unexpanded name and leave the required check pending. A failed
     # `changes` job fails every row in its first step instead.
     if: ${{ !cancelled() && needs.pack.result != 'failure' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -218,7 +218,7 @@ jobs:
   fixture-cli:
     needs: [changes, pack, pack-cli]
     if: ${{ !cancelled() && needs.changes.outputs.cli == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: angular-21-cli
     steps:
       - uses: actions/checkout@v4

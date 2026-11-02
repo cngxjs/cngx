@@ -1,9 +1,11 @@
 name: Set up Playwright chromium
 description: Restore the cached Playwright browsers and install chromium. Runs after npm ci.
 
-# No system deps: the ubuntu-latest image already carries every shared library
+# No system deps: the ubuntu-24.04 image already carries every shared library
 # chromium links against (ldd reports none missing), and the apt-get update
 # behind the deps install took anywhere from 20 seconds to 9 minutes.
+# Workflows pin ubuntu-24.04: ubuntu-latest moved to 26.04, where the pinned
+# Playwright refuses to install chromium.
 runs:
   using: composite
   steps:

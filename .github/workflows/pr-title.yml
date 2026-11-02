@@ -14,7 +14,7 @@ permissions:
 jobs:
   validate:
     name: Validate PR title
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: amannn/action-semantic-pull-request@v5
         env:
@@ -130,7 +130,7 @@ jobs:
   # scripts/migration-gate.mjs, unit-tested in scripts/__tests__.
   migration-gate:
     name: Migration gate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:

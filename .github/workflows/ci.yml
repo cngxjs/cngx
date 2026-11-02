@@ -24,7 +24,7 @@ jobs:
   # each restores this exact output, so their environment matches the old
   # serial pipeline byte-for-byte.
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -68,7 +68,7 @@ jobs:
 
   lint:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -86,7 +86,7 @@ jobs:
 
   test:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -109,7 +109,7 @@ jobs:
   # consumer-compat.yml.
   pack-check:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -127,7 +127,7 @@ jobs:
 
   geometry:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -151,7 +151,7 @@ jobs:
   # split by test across a fixed matrix.
   e2e-shard:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -191,7 +191,7 @@ jobs:
   e2e:
     needs: e2e-shard
     if: ${{ !cancelled() }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Collect the shards
@@ -203,7 +203,7 @@ jobs:
   # (scripts/e2e-scope.mjs); the two example suites run only their specs and
   # routes, on as many shards as the selection needs. A push runs everything.
   e2e-scope:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     outputs:
       mode: ${{ steps.scope.outputs.mode }}
@@ -236,7 +236,7 @@ jobs:
   examples-e2e-shard:
     needs: [build, e2e-scope]
     if: needs.e2e-scope.outputs.mode != 'none'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -281,7 +281,7 @@ jobs:
   examples-e2e:
     needs: [e2e-scope, examples-e2e-shard]
     if: ${{ !cancelled() }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Collect the shards
@@ -294,7 +294,7 @@ jobs:
   console-sweep-shard:
     needs: [build, e2e-scope]
     if: needs.e2e-scope.outputs.mode != 'none'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # 8.5 minutes locally for every route; the cap stops a hung server or page
     # long before the 6-hour default.
     timeout-minutes: 25
@@ -336,7 +336,7 @@ jobs:
   console-sweep:
     needs: [e2e-scope, console-sweep-shard]
     if: ${{ !cancelled() }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Collect the shards
@@ -348,7 +348,7 @@ jobs:
 
   build-examples:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -396,7 +396,7 @@ jobs:
   # Angular 22 needs ^24.15.0 on the 24 line, and 21.1 accepts >=24.0.0.
   # Each lib is its own step, so one red lib does not hide the next.
   angular-libs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -458,7 +458,7 @@ jobs:
   # in addition to the root one. It does not consume the Angular build output,
   # so it runs independently of `build`.
   eslint-plugin:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -482,7 +482,7 @@ jobs:
   # own package-lock and a package-local install on top of the root one.
   mcp:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -531,7 +531,7 @@ jobs:
   # build step and no package-local dependencies, so unlike eslint-plugin and
   # mcp it runs on the root install alone and declares no needs: build.
   plugin:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -554,7 +554,7 @@ jobs:
   # on the root install alone and declares no needs: build. The copy guard keeps
   # the plugin's in-process copy byte-identical to this package.
   doctor:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
