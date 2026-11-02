@@ -129,6 +129,7 @@ describeCommitContract(SELECT, (c) => {
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
   );
+  it('B-A1: a keyboard Retry leaves focus on the trigger', c.retryFocusesTrigger);
 });
 
 describeCommitContract(TYPEAHEAD, (c) => {
@@ -152,6 +153,7 @@ describeCommitContract(TYPEAHEAD, (c) => {
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
   );
+  it('B-A1: a keyboard Retry leaves focus on the trigger', c.retryFocusesTrigger);
 });
 
 describeCommitContract(ACTION_SELECT, (c) => {
@@ -175,6 +177,7 @@ describeCommitContract(ACTION_SELECT, (c) => {
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
   );
+  it('B-A1: a keyboard Retry leaves focus on the trigger', c.retryFocusesTrigger);
 });
 
 describeCommitContract(SELECT_SHELL, (c) => {
@@ -199,6 +202,7 @@ describeCommitContract(SELECT_SHELL, (c) => {
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
   );
+  it('B-A1: a keyboard Retry leaves focus on the trigger', c.retryFocusesTrigger);
 });
 
 describeCommitContract(MULTI_SELECT, (c) => {
@@ -215,6 +219,7 @@ describeCommitContract(MULTI_SELECT, (c) => {
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
   );
+  it('B-A1: a keyboard Retry leaves focus on the trigger', c.retryFocusesTrigger);
 });
 
 describeCommitContract(COMBOBOX, (c) => {
@@ -231,6 +236,7 @@ describeCommitContract(COMBOBOX, (c) => {
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
   );
+  it('B-A1: a keyboard Retry leaves focus on the trigger', c.retryFocusesTrigger);
 });
 
 describeCommitContract(ACTION_MULTI_SELECT, (c) => {
@@ -247,6 +253,7 @@ describeCommitContract(ACTION_MULTI_SELECT, (c) => {
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
   );
+  it('B-A1: a keyboard Retry leaves focus on the trigger', c.retryFocusesTrigger);
 });
 
 describeCommitContract(REORDERABLE, (c) => {
@@ -280,6 +287,8 @@ describeCommitContract(REORDERABLE, (c) => {
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
   );
+  it('B-A1: a keyboard Retry leaves focus on the trigger', c.retryFocusesTrigger);
+  it('B-A1: a keyboard Retry after a failed reorder leaves focus on the trigger', c.retryReorderFocusesTrigger);
 });
 
 describeCommitContract(TREE_SELECT, (c) => {
@@ -300,4 +309,5 @@ describeCommitContract(TREE_SELECT, (c) => {
     'A14: a second commit while pending rolls back to the confirmed value',
     c.secondCommitRollsBackToConfirmed,
   );
+  it('B-A1: a keyboard Retry leaves focus on the trigger', c.retryFocusesTrigger);
 });

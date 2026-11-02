@@ -114,7 +114,15 @@
       @if (host.tpl.commitError(); as tpl) {
         <ng-container *ngTemplateOutlet="tpl; context: host.commitErrorContext()" />
       } @else {
-        <div class="cngx-select__commit-error" role="alert">
+        <!-- The banner sits inside the listbox: without the stops, the
+             listbox takes Enter / Space on a focused Retry for its active
+             option and the button never clicks. -->
+        <div
+          class="cngx-select__commit-error"
+          role="alert"
+          (keydown.enter)="$event.stopPropagation()"
+          (keydown.space)="$event.stopPropagation()"
+        >
           <span class="cngx-select__error-message">{{ commitErrorCopy().message }}</span>
           @if (host.tpl.retryButton(); as retryT) {
             <ng-container
