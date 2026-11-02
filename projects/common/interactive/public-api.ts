@@ -33,6 +33,7 @@ export { CngxPressable } from './ripple/pressable.directive';
 export { CngxPressRipple } from './ripple/press-ripple.directive';
 export {
   CNGX_NAV_CONFIG,
+  CNGX_NAV_DEFAULTS,
   provideNavConfig,
   provideNavConfigAt,
   injectNavConfig,
