@@ -33,14 +33,14 @@ interface CngxMatTabsRegistryEntry {
 
 /**
  * Read-mostly contract for the per-tab handle-setup registry.
- * `[cngxMatTabError]` and any future `[cngxMatTab*]` decoration
- * directive injects this with `{ host: true }` to reach the
- * per-handle `errorAggregator` slot without walking the concrete
- * registry class.
+ * `[cngxMatTabError]`, `[cngxMatTabErrorFlag]` and any future
+ * `[cngxMatTab*]` decoration directive injects this with
+ * `{ host: true }` to reach the per-handle `errorAggregator` and
+ * `directError` slots without walking the concrete registry class.
  *
- * Return type narrows to `Pick<..., 'errorAggregator'>` so the
- * access path exposes only the per-handle aggregator slot; the
- * rest of the setup stays internal bookkeeping.
+ * Return type narrows to `Pick<..., 'errorAggregator' | 'directError'>`
+ * so the access path exposes only those two slots; the rest of the
+ * setup stays internal bookkeeping.
  */
 export interface CngxMatTabsRegistryHost {
   /**
