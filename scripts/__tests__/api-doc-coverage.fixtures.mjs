@@ -87,7 +87,7 @@ export const INTERNAL_BINDINGS = [
 /**
  * Lowered in every commit that closes rows, so growth is a visible constant edit.
  */
-export const CEILING = 108;
+export const CEILING = 84;
 
 /** @type {readonly ApiDocGap[]} */
 // prettier-ignore
@@ -114,30 +114,6 @@ export const RATCHET = [
   { entry: '@cngx/common/data', owner: 'CngxSmartDataSource', kind: 'method', member: 'connect', phase: 3 },
   { entry: '@cngx/common/data', owner: 'CngxSmartDataSource', kind: 'method', member: 'disconnect', phase: 3 },
   { entry: '@cngx/common/dialog', owner: 'CngxDialogOpener', kind: 'method', member: 'open', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStep', kind: 'input', member: 'completed', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStep', kind: 'input', member: 'disabled', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStep', kind: 'input', member: 'errorAggregator', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStep', kind: 'input', member: 'id', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStep', kind: 'input', member: 'label', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStepGroup', kind: 'input', member: 'disabled', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStepGroup', kind: 'input', member: 'id', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStepGroup', kind: 'input', member: 'label', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStepGroup', kind: 'method', member: 'register', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStepGroup', kind: 'method', member: 'unregister', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStepperPresenter', kind: 'input', member: 'activeStepIndex', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStepperPresenter', kind: 'input', member: 'commitAction', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStepperPresenter', kind: 'input', member: 'commitModeInput', binding: 'commitMode', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStepperPresenter', kind: 'input', member: 'linearInput', binding: 'linear', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStepperPresenter', kind: 'input', member: 'orientationInput', binding: 'orientation', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStepperPresenter', kind: 'output', member: 'activeStepIndex', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStepperPresenter', kind: 'method', member: 'register', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStepperPresenter', kind: 'method', member: 'reset', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStepperPresenter', kind: 'method', member: 'select', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStepperPresenter', kind: 'method', member: 'selectById', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStepperPresenter', kind: 'method', member: 'selectNext', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStepperPresenter', kind: 'method', member: 'unregister', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStepperRouterSync', kind: 'input', member: 'modeInput', binding: 'mode', phase: 3 },
-  { entry: '@cngx/common/stepper', owner: 'CngxStepperRouterSync', kind: 'input', member: 'paramNameInput', binding: 'paramName', phase: 3 },
   { entry: '@cngx/common/tabs', owner: 'CngxTab', kind: 'input', member: 'disabled', phase: 3 },
   { entry: '@cngx/common/tabs', owner: 'CngxTab', kind: 'input', member: 'errorAggregator', phase: 3 },
   { entry: '@cngx/common/tabs', owner: 'CngxTab', kind: 'input', member: 'id', phase: 3 },
