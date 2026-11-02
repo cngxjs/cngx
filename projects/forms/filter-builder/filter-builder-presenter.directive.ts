@@ -288,7 +288,8 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   /**
    * Sets the field key of the expression at `path`, nothing else: the operator and value
    * are kept even when they no longer fit the new field. A group node at `path` is left
-   * unchanged; the expression row uses `applyFieldChange` instead.
+   * unchanged, and a `path` that does not resolve throws (CNGX2010, CNGX2011); the expression
+   * row uses `applyFieldChange` instead.
    */
   setField(path: readonly number[], fieldKey: string): void {
     this.core.setField(path, fieldKey);
@@ -296,7 +297,8 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
 
   /**
    * Sets the operator key of the expression at `path`. A group node at `path` is left
-   * unchanged, and the value is kept.
+   * unchanged, the value is kept, and a `path` that does not resolve throws (CNGX2010,
+   * CNGX2011).
    */
   setOperator(path: readonly number[], operator: string): void {
     this.core.setOperator(path, operator);
@@ -305,7 +307,8 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   /**
    * Applies a field change to the expression at `path` as one tree write and one `set-field`
    * mutation event, so it is announced once. The operator is replaced by `plan.operator` and
-   * the value cleared only when `plan.resetValue` is set.
+   * the value cleared only when `plan.resetValue` is set. A group node at `path` is left
+   * unchanged, and a `path` that does not resolve throws (CNGX2010, CNGX2011).
    */
   applyFieldChange(path: readonly number[], plan: CngxFilterRowFieldChangePlan): void {
     this.core.applyFieldChange(path, plan);
@@ -313,7 +316,8 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
 
   /**
    * Sets the value of the expression at `path`. Writing a value equal under `Object.is`, or
-   * targeting a group node, changes nothing and emits no mutation event.
+   * targeting a group node, changes nothing and emits no mutation event. A `path` that does
+   * not resolve throws (CNGX2010, CNGX2011).
    */
   setValue(path: readonly number[], value: unknown): void {
     this.core.setValue(path, value);
