@@ -15,6 +15,8 @@
     [cngxPopoverAnchor]="pop"
     [cngxSelectSheetTrigger]="sheetWiring.trigger"
     role="group"
+    [attr.aria-labelledby]="aria.labelledBy"
+    [attr.aria-label]="aria.label"
     [attr.aria-disabled]="aria.disabled"
     (click)="handleWrapperClick($event)"
   >
@@ -242,5 +244,6 @@
     </div>
   </div>
   <span class="cngx-sr-only" [id]="commitErrorId">{{ commitErrorText() }}</span>
+  <span class="cngx-sr-only" [id]="disabledReasonId">{{ disabledReasonText() }}</span>
   <span class="cngx-sr-only" [id]="summaryDescriptionId">{{ summary.accessibleText() }}</span>
 </div>

@@ -1,6 +1,6 @@
 import { Component, signal, type Type } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
-import { form, readonly, required, validate } from '@angular/forms/signals';
+import { disabled, form, readonly, required, validate } from '@angular/forms/signals';
 import { By } from '@angular/platform-browser';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -52,8 +52,8 @@ function isFilled(value: unknown): boolean {
  * write and every error-gated attribute has something to show. Rows: dirty on a
  * user write (never on the seed), the field ARIA on the `role="combobox"`
  * element (required, labelledby, a single-IDREF errormessage, invalid,
- * busy, readonly, the control id the label points at) and the `focus()`
- * contract.
+ * busy, readonly, the disabled reason, the control id the label points at),
+ * the name of a `role="group"` wrapper and the `focus()` contract.
  *
  * Built on a real form rather than `createMockField`: the mock does not
  * model dirty through `controlValue`, which is what these rows lock.
@@ -76,9 +76,11 @@ export function describeFieldAriaHost(
       readonly state = signal<CngxAsyncState<unknown> | null>(null);
       readonly model = signal<PickModel>({ pick: opts.initial });
       readonly readonlyFlag = signal(false);
+      readonly disabledReason = signal<string | false>(false);
       readonly f = form(this.model, (p) => {
         required(p.pick);
         readonly(p.pick, () => this.readonlyFlag());
+        disabled(p.pick, () => this.disabledReason());
         // Signal Forms' `required` passes an empty array, so a reject-all
         // rule keeps the array variants invalid too.
         validate(p.pick, () => ({ kind: 'rejected' }));
@@ -232,6 +234,32 @@ export function describeFieldAriaHost(
       host.readonlyFlag.set(false);
       flush(fixture);
       expect(el.getAttribute('aria-readonly')).toBeNull();
+    });
+
+    it('names a role="group" wrapper around the combobox from the field label', () => {
+      const { combobox, presenter } = mount();
+      const el = combobox();
+      const group = el.parentElement?.closest('[role="group"]');
+      if (!group || !group.closest(elementSelector)) {
+        return;
+      }
+      expect(group.getAttribute('aria-labelledby')).toBe(presenter.labelId());
+    });
+
+    it('references the field disabled reason only while it is disabled', () => {
+      const { fixture, host, combobox } = mount();
+      const reasonText = (): string[] =>
+        (combobox().getAttribute('aria-describedby') ?? '')
+          .split(/\s+/)
+          .filter(Boolean)
+          .map((id) => document.getElementById(id)?.textContent?.trim() ?? '');
+      expect(reasonText()).not.toContain('Locked by an admin');
+      host.disabledReason.set('Locked by an admin');
+      flush(fixture);
+      expect(reasonText()).toContain('Locked by an admin');
+      host.disabledReason.set(false);
+      flush(fixture);
+      expect(reasonText()).not.toContain('Locked by an admin');
     });
 
     it('marks the trigger busy while the [state] loads', () => {
