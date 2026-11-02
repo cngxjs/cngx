@@ -213,8 +213,8 @@ export function templateUsesClass(cls, tpl, selectorMap) {
 
 /**
  * Strip demo-chrome divs from a displayed template - `event-grid`/`event-row`
- * (state readouts), `button-row`/`status-row` (config toggles), `cngx-ex-chrome`
- * (explicit opt-in marker). Walks balanced <div>/</div> so nested chrome
+ * (state readouts), `button-row`/`status-row` (config toggles), `cngx-ex-sr-output`
+ * (screen-reader output mirror), `cngx-ex-chrome` (explicit opt-in marker). Walks balanced <div>/</div> so nested chrome
  * inside an outer chrome block is removed together. The live rendered
  * template keeps everything; this only affects the Template-panel display
  * and complements the `templateChrome` field for sections that haven't
@@ -222,7 +222,7 @@ export function templateUsesClass(cls, tpl, selectorMap) {
  */
 export function stripDemoChrome(html) {
   const opener =
-    /<div\b[^>]*\bclass=["'][^"']*\b(?:event-grid|event-row|button-row|status-row|cngx-ex-chrome)\b[^"']*["'][^>]*>/g;
+    /<div\b[^>]*\bclass=["'][^"']*\b(?:event-grid|event-row|button-row|status-row|cngx-ex-sr-output|cngx-ex-chrome)\b[^"']*["'][^>]*>/g;
   let result = html;
   while (true) {
     opener.lastIndex = 0;
