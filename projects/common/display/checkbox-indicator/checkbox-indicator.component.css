@@ -267,18 +267,19 @@
       --cngx-icon-svg-stroke-width: var(--cngx-checkbox-glyph-stroke-width, 3);
     }
 
-    /* 6/7 of the 14px sm box keeps its glyph on the same 12px micro box as md
-       instead of 11px, where the micro grid would resample. */
-    :scope.cngx-checkbox-indicator--sm
-      :is(.cngx-checkbox-indicator__check, .cngx-checkbox-indicator__dash) {
-      font-size: calc(var(--cngx-checkbox-size, 1em) * 6 / 7);
-    }
-
     /* checkmark variant - bare glyph, no box. Honor the checked color directly. */
     :scope.cngx-checkbox-indicator--checkmark .cngx-checkbox-indicator__check,
     :scope.cngx-checkbox-indicator--checkmark .cngx-checkbox-indicator__dash {
       color: var(--cngx-checkbox-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
       font-size: var(--cngx-checkbox-size, 1em);
+    }
+
+    /* 6/7 of the 14px sm size keeps the glyph of both variants on the 12px
+       micro box: the boxed glyph instead of 11px, the bare checkmark instead
+       of 14px. After the checkmark rule, so it wins at equal specificity. */
+    :scope.cngx-checkbox-indicator--sm
+      :is(.cngx-checkbox-indicator__check, .cngx-checkbox-indicator__dash) {
+      font-size: calc(var(--cngx-checkbox-size, 1em) * 6 / 7);
     }
   }
 }
