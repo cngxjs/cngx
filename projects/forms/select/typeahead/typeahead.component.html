@@ -49,6 +49,7 @@
       [attr.aria-invalid]="aria.invalid"
       [attr.aria-required]="aria.required"
       [attr.aria-busy]="aria.busy"
+      [attr.aria-readonly]="aria.readonly"
       (focus)="handleFocus()"
       (blur)="handleBlur()"
       (keydown)="handleInputKeydown($event)"
@@ -58,13 +59,13 @@
         <ng-container *ngTemplateOutlet="suffixTpl; context: inputSlotContext()" />
       </span>
     }
-    @if (clearable() && !isEmpty() && !disabled()) {
+    @if (clearable() && !isEmpty() && !writeBlocked()) {
       @if (tpl.clearButton(); as clearBtnTpl) {
         <span class="cngx-typeahead__clear-slot" (click)="$event.stopPropagation()">
           <ng-container
             *ngTemplateOutlet="
               clearBtnTpl;
-              context: { $implicit: clearCallback, clear: clearCallback, disabled: disabled() }
+              context: { $implicit: clearCallback, clear: clearCallback, disabled: writeBlocked() }
             "
           />
         </span>

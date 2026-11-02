@@ -186,7 +186,7 @@ export interface CngxSelectChange<T = unknown> {
  * @slot cngxSelectRetryButton Replaces the retry button inside the default load-error and commit-error blocks; gets $implicit/retry, error, disabled, label.
  * @slot cngxSelectRefreshing Replaces the refresh indicator shown while [state] reloads with options already listed; gets previousCount (always 0 on this host).
  * @slot cngxSelectCommitError Replaces the commit-error banner shown when a commit fails and commitErrorDisplay is 'banner'; gets $implicit/error, option, retry.
- * @slot cngxSelectClearButton Replaces the clear button, shown when [clearable] is set, a value is selected and the control is enabled; gets $implicit/clear, disabled.
+ * @slot cngxSelectClearButton Replaces the clear button, shown when [clearable] is set, a value is selected and the control is enabled and not readonly; gets $implicit/clear, disabled.
  * @slot cngxSelectOptionPending Replaces the spinner on the option row whose commit is in flight; gets $implicit/option.
  * @slot cngxSelectOptionError Replaces the ! glyph on the selected row when a commit fails and commitErrorDisplay is 'inline'; gets $implicit/option, error.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
@@ -233,7 +233,6 @@ export interface CngxSelectChange<T = unknown> {
   host: {
     class: 'cngx-select',
     '[id]': 'resolvedId()',
-    '[attr.aria-readonly]': 'ariaReadonly()',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
   },
@@ -333,7 +332,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   /** Replaces the built-in caret glyph. Ignored when `*cngxSelectCaret` is projected. */
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
-  /** Renders a clear button while the selection is not empty and the control is enabled. */
+  /** Renders a clear button while the selection is not empty and the control is enabled and not readonly. */
   readonly clearable = input<boolean>(false);
   /** @internal The select section at this reading site; per-variant defaults. */
   private readonly selectCopy = injectSelectCopy();
@@ -751,12 +750,13 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */ protected readonly commitErrorId = this.core.commitErrorId;
   /** @internal */ protected readonly listboxId = this.core.listboxId;
   /** @internal */ protected readonly commitErrorText = this.core.commitErrorText;
-  /** @internal */ protected readonly ariaReadonly = this.core.ariaReadonly;
   /** @internal */ protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
   /** @internal */ protected readonly externalActivation = this.core.externalActivation;
   /** @internal */ protected readonly showCommitError = this.core.showCommitError;
 
   readonly disabled = this.core.disabled;
+  /** @internal - disabled or readonly: every write path refuses, the panel still opens. */
+  protected readonly writeBlocked = this.core.writeBlocked;
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');
 
   /**
@@ -768,7 +768,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     options: this.flatOptions,
     compareWith: this.compareWith,
     debounceMs: this.typeaheadDebounceInterval,
-    disabled: this.disabled,
+    disabled: this.core.writeBlocked,
     locale: injectLocale(),
   });
 
@@ -1008,6 +1008,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal - imperative clear path. Stable reference for ngTemplateOutlet. */
   protected readonly clearCallback: () => void = () => {
+    if (this.core.writeBlocked()) {
+      return;
+    }
     this.hostFocus.refocusOwnerBeforeRemoval();
     const current = this.value();
     if (isEmptyScalar(current)) {
@@ -1099,7 +1102,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
             currentFlatIndex,
             currentListboxIndex: -1,
             compareWith: eq,
-            disabled: this.disabled(),
+            disabled: this.core.writeBlocked(),
             typeaheadController: this.typeaheadController,
           },
           key,

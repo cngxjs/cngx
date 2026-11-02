@@ -77,7 +77,7 @@
                 />
               } @else {
                 <cngx-chip
-                  [removable]="!disabled()"
+                  [removable]="!writeBlocked()"
                   [removeAriaLabel]="chipRemoveLabelFor()(opt.label)"
                   (remove)="handleChipRemoveClick($event, opt)"
                 >
@@ -148,6 +148,7 @@
       [attr.aria-invalid]="aria.invalid"
       [attr.aria-required]="aria.required"
       [attr.aria-busy]="aria.busy"
+      [attr.aria-readonly]="aria.readonly"
       (focus)="handleFocus()"
       (blur)="handleBlur()"
       (backspaceOnEmpty)="removeLastChip()"
@@ -159,7 +160,7 @@
         <ng-container *ngTemplateOutlet="suffixTpl; context: inputSlotContext()" />
       </span>
     }
-    @if (clearable() && !isEmpty() && !disabled()) {
+    @if (clearable() && !isEmpty() && !writeBlocked()) {
       @if (tpl.clearButton(); as clearBtnTpl) {
         <span class="cngx-action-multi-select__clear-slot" (click)="$event.stopPropagation()">
           <ng-container
@@ -168,7 +169,7 @@
               context: {
                 $implicit: clearAllCallback,
                 clear: clearAllCallback,
-                disabled: disabled(),
+                disabled: writeBlocked(),
               }
             "
           />

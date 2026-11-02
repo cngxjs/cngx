@@ -72,6 +72,8 @@ export interface CngxSelectTriggerAria {
   readonly invalid: boolean | null;
   readonly required: boolean | null;
   readonly busy: boolean | null;
+  /** `true` while the field is readonly; bound as `aria-readonly` on the `role="combobox"` element. */
+  readonly readonly: boolean | null;
 }
 
 /**
@@ -237,6 +239,14 @@ export interface CngxSelectCore<T, TCommit> extends CngxCommitHandlerCore<T, TCo
   readonly triggerAria: Signal<CngxSelectTriggerAria>;
 
   readonly disabled: Signal<boolean>;
+  /** The bound form field is readonly: the panel still opens for browsing, every write is refused. */
+  readonly readonly: Signal<boolean>;
+  /**
+   * `disabled() || readonly()`. Every write path (pick, clear, chip remove,
+   * reorder, typeahead-while-closed) reads this one signal; opening and
+   * keyboard browsing read {@link disabled} only.
+   */
+  readonly writeBlocked: Signal<boolean>;
 
   /**
    * Mode-agnostic membership test. Multi delegates to
@@ -390,6 +400,8 @@ export function createSelectCore<T, TCommit>(
   });
 
   const disabled = fieldAria.disabled;
+  const readonlyField = computed<boolean>(() => fieldAria.ariaReadonly() === true);
+  const writeBlocked = computed<boolean>(() => disabled() || readonlyField());
 
   // Pre-filter merge of server options + `localItems`. Flattened into
   // `unfilteredFlatOptions` so chip strips bypass the search filter.
@@ -680,6 +692,7 @@ export function createSelectCore<T, TCommit>(
       invalid: ariaInvalid(),
       required: resolvedAriaRequired(),
       busy: ariaBusy(),
+      readonly: ariaReadonly(),
     }),
     {
       equal: (a, b) =>
@@ -690,13 +703,18 @@ export function createSelectCore<T, TCommit>(
         a.disabled === b.disabled &&
         a.invalid === b.invalid &&
         a.required === b.required &&
-        a.busy === b.busy,
+        a.busy === b.busy &&
+        a.readonly === b.readonly,
     },
   );
 
   const togglingOption = signal<CngxSelectOptionDef<T> | null>(null);
 
-  const externalActivation = computed<boolean>(() => deps.commitAction() !== null);
+  // A write-blocked select owns every activation too: the listbox then never
+  // writes its own value, and the dispatcher refuses the pick.
+  const externalActivation = computed<boolean>(
+    () => deps.commitAction() !== null || writeBlocked(),
+  );
 
   const commitErrorValue = computed<unknown>(() => commitState.error());
 
@@ -887,6 +905,8 @@ export function createSelectCore<T, TCommit>(
     effectiveTabIndex,
     triggerAria,
     disabled,
+    readonly: readonlyField,
+    writeBlocked,
     isSelected,
     isIndeterminate,
     selection,

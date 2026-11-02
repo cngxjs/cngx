@@ -633,7 +633,7 @@ describe('select-family field skins', () => {
     const root = mount(ReadonlyHost);
     const editable = trigger(root, '.editable');
     const readonly = trigger(root, '.readonly');
-    expect(root.querySelector('.readonly')?.getAttribute('aria-readonly')).toBe('true');
+    expect(readonly.getAttribute('aria-readonly')).toBe('true');
     const editableRest = computedValue(editable, 'background-color');
     const readonlyRest = computedValue(readonly, 'background-color');
     const readonlyUnderline = computedValue(readonly, 'border-bottom-color');

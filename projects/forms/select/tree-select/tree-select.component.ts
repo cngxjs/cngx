@@ -221,7 +221,7 @@ export interface CngxTreeSelectChange<T = unknown> {
  * @slot cngxSelectRetryButton Replaces the retry button inside the built-in load-error, inline-error and commit-error blocks; gets retry, error, disabled, label.
  * @slot cngxSelectRefreshing Replaces the refresh indicator shown above the tree while a reload runs; previousCount is always 0 on this host.
  * @slot cngxSelectCommitError Replaces the panel's commit-error banner when a commit fails and commitErrorDisplay is 'banner'; gets error and retry (option is always null on this host).
- * @slot cngxSelectClearButton Replaces the clear-all button, shown when clearable is set, a value is selected and the control is enabled; gets clear, disabled.
+ * @slot cngxSelectClearButton Replaces the clear-all button, shown when clearable is set, a value is selected and the control is enabled and not readonly; gets clear, disabled.
  * @slot cngxTreeSelectNode Replaces each whole treeitem row, twisty and checkbox included, so the template owns the treeitem ARIA; gets node, depth, expanded, hasChildren, selected, indeterminate, disabled, selectedCount, descendantCount, toggleExpand, handleSelect.
  * @slot cngxTreeSelectChip Replaces each chip in the trigger strip unless cngxTreeSelectTriggerLabel is projected; gets option, remove. Fine pointer only.
  * @slot cngxTreeSelectTriggerLabel Replaces the whole chip strip, and the touch summary, while at least one value is selected; gets selected, values, count.
@@ -271,7 +271,6 @@ export interface CngxTreeSelectChange<T = unknown> {
   host: {
     class: 'cngx-tree-select',
     '[id]': 'resolvedId()',
-    '[attr.aria-readonly]': 'ariaReadonly()',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
   },
@@ -471,7 +470,7 @@ export class CngxTreeSelect<T = unknown>
   readonly checkGlyph = input<TemplateRef<void> | null>(null);
   /** Forwarded to `<cngx-checkbox-indicator [dashGlyph]>`. */
   readonly dashGlyph = input<TemplateRef<void> | null>(null);
-  /** Renders a clear button while the selection is not empty and the control is enabled. */
+  /** Renders a clear button while the selection is not empty and the control is enabled and not readonly. */
   readonly clearable = input<boolean>(false);
   /** @internal The select section at this reading site; per-variant defaults. */
   private readonly selectCopy = injectSelectCopy();
@@ -855,6 +854,8 @@ export class CngxTreeSelect<T = unknown>
   readonly focused: Signal<boolean> = this.hostFocus.focusedWithin;
   readonly empty = computed<boolean>(() => this.isEmpty());
   readonly disabled = this.core.disabled;
+  /** @internal - disabled or readonly: every write path refuses, the panel still opens. */
+  readonly writeBlocked = this.core.writeBlocked;
 
   /** @internal - panel-shell fallback labels (i18n). */
   readonly fallbackLabels = this.core.fallbackLabels;
@@ -1009,6 +1010,9 @@ export class CngxTreeSelect<T = unknown>
 
   /** @internal Clear from the panel footer; focus stays in the panel. */
   clearAllInPanel(): void {
+    if (this.core.writeBlocked()) {
+      return;
+    }
     this.dispatch.clearAll();
   }
 
@@ -1135,7 +1139,7 @@ export class CngxTreeSelect<T = unknown>
    * cascade + commit plumbing.
    */
   handleSelect(node: FlatTreeNode<T>): void {
-    if (this.disabled() || node.disabled) {
+    if (this.core.writeBlocked() || node.disabled) {
       return;
     }
     if (this.cascadeChildren() && node.hasChildren) {
@@ -1221,7 +1225,7 @@ export class CngxTreeSelect<T = unknown>
   private readonly chipRemovalHandler: CngxChipRemovalHandler<CngxTreeSelectedItem<T>> = inject(
     CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   )<T, CngxTreeSelectedItem<T>>({
-    disabled: this.disabled,
+    disabled: this.core.writeBlocked,
     removeOverride: (item) => this.removeSelectedItem(item),
   });
 
@@ -1250,6 +1254,9 @@ export class CngxTreeSelect<T = unknown>
 
   /** @internal - exposed for the `*cngxSelectClearButton` slot. */
   protected readonly clearAll: () => void = () => {
+    if (this.core.writeBlocked()) {
+      return;
+    }
     this.hostFocus.refocusOwnerBeforeRemoval();
     this.dispatch.clearAll();
   };

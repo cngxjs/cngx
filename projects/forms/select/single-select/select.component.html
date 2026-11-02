@@ -26,6 +26,7 @@
     [attr.aria-describedby]="aria.describedBy"
     [attr.aria-errormessage]="aria.errorMessage"
     [attr.aria-disabled]="aria.disabled"
+    [attr.aria-readonly]="aria.readonly"
     [attr.aria-invalid]="aria.invalid"
     [attr.aria-required]="aria.required"
     [attr.aria-busy]="aria.busy"
@@ -63,7 +64,7 @@
         {{ triggerText() }}
       }
     </span>
-    @if (clearable() && !isEmpty() && !disabled()) {
+    @if (clearable() && !isEmpty() && !writeBlocked()) {
       @if (tpl.clearButton(); as clearBtnTpl) {
         <span
           class="cngx-select__clear-slot"
@@ -77,7 +78,7 @@
               context: {
                 $implicit: clearCallback,
                 clear: clearCallback,
-                disabled: disabled(),
+                disabled: writeBlocked(),
               }
             "
           />

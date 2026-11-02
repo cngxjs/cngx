@@ -210,7 +210,7 @@ export interface CngxSelectShellChange<T = unknown> {
  * @slot cngxSelectRetryButton Replaces the retry button inside the default load-error and commit-error blocks; gets $implicit/retry, error, disabled, label.
  * @slot cngxSelectRefreshing Replaces the refresh indicator shown while [state] reloads with options already listed; gets previousCount.
  * @slot cngxSelectCommitError Replaces the commit-error banner shown when a commit fails and commitErrorDisplay is 'banner'; gets $implicit/error, option, retry.
- * @slot cngxSelectClearButton Replaces the clear button, shown when [clearable] is set, a value is selected and the control is enabled; gets $implicit/clear, disabled.
+ * @slot cngxSelectClearButton Replaces the clear button, shown when [clearable] is set, a value is selected and the control is enabled and not readonly; gets $implicit/clear, disabled.
  * @slot cngxSelectOptionPending Rendered inside the projected <cngx-option> whose commit is in flight, with no built-in fallback; gets no context.
  * @slot cngxSelectOptionError Rendered inside the projected <cngx-option> whose commit failed, regardless of commitErrorDisplay, with no built-in fallback; gets no context.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
@@ -280,7 +280,6 @@ export interface CngxSelectShellChange<T = unknown> {
   host: {
     class: 'cngx-select-shell',
     '[id]': 'resolvedId()',
-    '[attr.aria-readonly]': 'ariaReadonly()',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
   },
@@ -367,7 +366,7 @@ export class CngxSelectShell<T = unknown>
   readonly selectionIndicatorVariant = input<CngxSelectSelectionIndicatorVariant | null>(null);
   /** Hides the trigger caret. Defaults to the inverse of `CngxSelectConfig.showCaret`. */
   readonly hideCaret = input<boolean>(!this.config.showCaret);
-  /** Renders a clear button while the selection is not empty and the control is enabled. */
+  /** Renders a clear button while the selection is not empty and the control is enabled and not readonly. */
   readonly clearable = input<boolean>(false);
   /** @internal The select section at this reading site; per-variant defaults. */
   private readonly selectCopy = injectSelectCopy();
@@ -662,7 +661,7 @@ export class CngxSelectShell<T = unknown>
     () => ({
       $implicit: this.handleClearAction,
       clear: this.handleClearAction,
-      disabled: this.disabled(),
+      disabled: this.core.writeBlocked(),
     }),
     { equal: (a, b) => a.disabled === b.disabled },
   );
@@ -675,6 +674,9 @@ export class CngxSelectShell<T = unknown>
    * @internal
    */
   private readonly handleClearAction = (): void => {
+    if (this.core.writeBlocked()) {
+      return;
+    }
     this.hostFocus.refocusOwnerBeforeRemoval();
     const current = this.value();
     if (isEmptyScalar(current)) {
@@ -855,7 +857,6 @@ export class CngxSelectShell<T = unknown>
   /** @internal */ protected readonly commitErrorId = this.core.commitErrorId;
   /** @internal */ protected readonly listboxId = this.core.listboxId;
   /** @internal */ protected readonly commitErrorText = this.core.commitErrorText;
-  protected readonly ariaReadonly = this.core.ariaReadonly;
   protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
   protected readonly externalActivation = this.core.externalActivation;
   protected readonly showCommitError = this.core.showCommitError;
@@ -880,6 +881,8 @@ export class CngxSelectShell<T = unknown>
   protected readonly virtualWindowStart = this.virtualSetup.virtualWindowStart;
 
   readonly disabled = this.core.disabled;
+  /** @internal - disabled or readonly: every write path refuses, the panel still opens. */
+  protected readonly writeBlocked = this.core.writeBlocked;
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');
 
   readonly commitState = this.core.commitState;
@@ -962,7 +965,7 @@ export class CngxSelectShell<T = unknown>
     options: this.flatOptions,
     compareWith: this.compareWith,
     debounceMs: computed(() => this.config.typeaheadDebounceInterval),
-    disabled: this.disabled,
+    disabled: this.core.writeBlocked,
     locale: injectLocale(),
   });
 
@@ -1260,7 +1263,7 @@ export class CngxSelectShell<T = unknown>
             currentFlatIndex,
             currentListboxIndex: -1,
             compareWith: eq,
-            disabled: this.disabled(),
+            disabled: this.core.writeBlocked(),
             typeaheadController: this.typeaheadController,
           },
           key,

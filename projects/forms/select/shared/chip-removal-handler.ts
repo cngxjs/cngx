@@ -26,7 +26,11 @@ export interface CngxChipRemovalHandlerOptions<
   T,
   Item extends CngxChipRemovableItem<T> = CngxSelectOptionDef<T>,
 > {
-  /** When `true`, `removeByValue` is a no-op. */
+  /**
+   * When `true`, `removeByValue` is a no-op. The select composites pass
+   * `core.writeBlocked`, so a readonly field refuses chip removal like a
+   * disabled one.
+   */
   readonly disabled: Signal<boolean>;
 
   /**

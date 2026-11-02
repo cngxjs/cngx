@@ -1915,8 +1915,9 @@
 
     /* Readonly is editable-looking but inert: keep the resting surface on
        hover so the trigger does not invite a click it will not honour. The
-       host carries `aria-readonly`, as on the field skin. */
-    [aria-readonly='true'] > * > :scope.cngx-field-trigger:hover {
+       `role="combobox"` element carries `aria-readonly`: the trigger itself,
+       or the input inside it on the input-led variants. */
+    :scope.cngx-field-trigger:is([aria-readonly='true'], :has([aria-readonly='true'])):hover {
       border-block-end-color: var(
         --cngx-field-underline-color,
         var(--cngx-color-text-muted, oklch(0.5 0.01 250))

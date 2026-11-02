@@ -223,7 +223,7 @@ export interface CngxComboboxChange<T = unknown> {
  * @slot cngxSelectRetryButton Replaces the retry button inside the built-in load-error, inline-error and commit-error blocks; gets retry, error, disabled, label.
  * @slot cngxSelectRefreshing Replaces the refresh indicator shown above the options while a reload runs; previousCount is always 0 on this host.
  * @slot cngxSelectCommitError Replaces the panel's commit-error banner when a commit fails and commitErrorDisplay is 'banner'; gets error, option, retry.
- * @slot cngxSelectClearButton Replaces the clear-all button, shown when clearable is set, a value is selected and the control is enabled; gets clear, disabled.
+ * @slot cngxSelectClearButton Replaces the clear-all button, shown when clearable is set, a value is selected and the control is enabled and not readonly; gets clear, disabled.
  * @slot cngxSelectOptionPending Replaces the spinner on an option row while its commit is in flight; gets option.
  * @slot cngxSelectOptionError Replaces the error mark on selected rows when a commit fails and commitErrorDisplay is 'inline'; gets option, error.
  * @slot cngxSelectInputPrefix Renders before the search input; gets disabled, focused, panelOpen.
@@ -278,7 +278,6 @@ export interface CngxComboboxChange<T = unknown> {
   host: {
     class: 'cngx-combobox',
     '[id]': 'resolvedId()',
-    '[attr.aria-readonly]': 'ariaReadonly()',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
   },
@@ -446,7 +445,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** Replaces the built-in caret glyph. Ignored when `*cngxSelectCaret` is projected. */
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
 
-  /** Renders a clear button while the selection is not empty and the control is enabled. */
+  /** Renders a clear button while the selection is not empty and the control is enabled and not readonly. */
   readonly clearable = input<boolean>(false);
 
   /** @internal The select section at this reading site; per-variant defaults. */
@@ -890,7 +889,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** @internal */ protected readonly listboxId = this.core.listboxId;
   /** @internal */ protected readonly commitErrorText = this.core.commitErrorText;
   /** @internal */
-  protected readonly ariaReadonly = this.core.ariaReadonly;
   /** @internal */
   protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
   /** @internal */
@@ -899,6 +897,8 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   protected readonly showCommitError = this.core.showCommitError;
 
   readonly disabled = this.core.disabled;
+  /** @internal - disabled or readonly: every write path refuses, the panel still opens. */
+  protected readonly writeBlocked = this.core.writeBlocked;
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');
 
   /** @internal - reactive context for the input prefix/suffix template outlets. */
@@ -1112,7 +1112,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   )<T>({
     values: this.values,
-    disabled: this.disabled,
+    disabled: this.core.writeBlocked,
     compareWith: this.compareWith,
     commitAction: this.commitAction,
     commitMode: this.commitMode,
@@ -1282,9 +1282,12 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   }
 
   /** @internal - imperative clear-all used by slot + default button. */
-  protected readonly clearAllCallback: () => void = this.hostFocus.withRefocus(
-    this.toggleDispatch.clearAll,
-  );
+  protected readonly clearAllCallback: () => void = this.hostFocus.withRefocus(() => {
+    if (this.core.writeBlocked()) {
+      return;
+    }
+    this.toggleDispatch.clearAll();
+  });
 
   /** @internal */
   // True only inside the lifecycle emitter's post-close focus restore -

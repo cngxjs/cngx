@@ -34,7 +34,7 @@ import type { CngxTreeSelectFooterContext } from './tree-select.model';
         <button
           type="button"
           class="cngx-tree-select__footer-clear"
-          [attr.aria-disabled]="empty() ? 'true' : null"
+          [attr.aria-disabled]="blocked() ? 'true' : null"
           [attr.aria-describedby]="empty() ? countId : null"
           (click)="clear()"
         >
@@ -49,8 +49,11 @@ export class CngxTreeSelectFooterBar {
   protected readonly countId = nextUid('cngx-tree-select-footer-count');
   protected readonly countText = this.host.selectionCountText;
   protected readonly empty = computed(() => this.host.selectionCount() === 0);
+  protected readonly blocked = computed(
+    () => this.empty() || (this.host.writeBlocked?.() ?? false),
+  );
   protected readonly clear = (): void => {
-    if (!this.empty()) {
+    if (!this.blocked()) {
       this.host.clearAllInPanel();
     }
   };

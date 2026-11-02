@@ -202,7 +202,7 @@ export interface CngxMultiSelectChange<T = unknown> {
  * @slot cngxSelectCommitError Replaces the panel's commit-error banner when a commit fails and commitErrorDisplay is 'banner'; gets error, option, retry.
  * @slot cngxMultiSelectChip Replaces each chip in the trigger strip unless cngxMultiSelectTriggerLabel is projected; gets option, remove. Fine pointer only.
  * @slot cngxSelectChipOverflow Replaces the +N badge after the visible chips when chipOverflow is 'truncate' and selected options are hidden, and the badge of the touch summary; gets count, label, hidden. The chip-strip badge is fine pointer only.
- * @slot cngxSelectClearButton Replaces the clear-all button, shown when clearable is set, a value is selected and the control is enabled; gets clear, disabled.
+ * @slot cngxSelectClearButton Replaces the clear-all button, shown when clearable is set, a value is selected and the control is enabled and not readonly; gets clear, disabled.
  * @slot cngxSelectOptionPending Replaces the spinner on an option row while its commit is in flight; gets option.
  * @slot cngxSelectOptionError Replaces the error mark on selected rows when a commit fails and commitErrorDisplay is 'inline'; gets option, error.
  * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
@@ -252,7 +252,6 @@ export interface CngxMultiSelectChange<T = unknown> {
   host: {
     class: 'cngx-multi-select',
     '[id]': 'resolvedId()',
-    '[attr.aria-readonly]': 'ariaReadonly()',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
   },
@@ -362,7 +361,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   /** Replaces the built-in caret glyph. Ignored when `*cngxSelectCaret` is projected. */
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
-  /** Renders a clear button while the selection is not empty and the control is enabled. */
+  /** Renders a clear button while the selection is not empty and the control is enabled and not readonly. */
   readonly clearable = input<boolean>(false);
   /** @internal The select section at this reading site; per-variant defaults. */
   private readonly selectCopy = injectSelectCopy();
@@ -731,12 +730,13 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */ protected readonly commitErrorId = this.core.commitErrorId;
   /** @internal */ protected readonly listboxId = this.core.listboxId;
   /** @internal */ protected readonly commitErrorText = this.core.commitErrorText;
-  /** @internal */ protected readonly ariaReadonly = this.core.ariaReadonly;
   /** @internal */ protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
   /** @internal */ protected readonly externalActivation = this.core.externalActivation;
   /** @internal */ protected readonly showCommitError = this.core.showCommitError;
 
   readonly disabled = this.core.disabled;
+  /** @internal - disabled or readonly: every write path refuses, the panel still opens. */
+  protected readonly writeBlocked = this.core.writeBlocked;
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');
 
   /**
@@ -748,7 +748,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     options: this.flatOptions,
     compareWith: this.compareWith,
     debounceMs: this.typeaheadDebounceInterval,
-    disabled: this.disabled,
+    disabled: this.core.writeBlocked,
     locale: injectLocale(),
   });
 
@@ -933,7 +933,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   )<T>({
     values: this.values,
-    disabled: this.disabled,
+    disabled: this.core.writeBlocked,
     compareWith: this.compareWith,
     commitAction: this.commitAction,
     commitMode: this.commitMode,
@@ -1070,9 +1070,12 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   /** @internal - imperative clear-all used by slot + default button. */
-  protected readonly clearAllCallback: () => void = this.hostFocus.withRefocus(
-    this.toggleDispatch.clearAll,
-  );
+  protected readonly clearAllCallback: () => void = this.hostFocus.withRefocus(() => {
+    if (this.core.writeBlocked()) {
+      return;
+    }
+    this.toggleDispatch.clearAll();
+  });
 
   /** @internal */
   // True only inside the lifecycle emitter's post-close focus restore -
@@ -1121,7 +1124,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
             currentFlatIndex: -1,
             currentListboxIndex: -1,
             compareWith: this.compareWith(),
-            disabled: this.disabled(),
+            disabled: this.core.writeBlocked(),
             typeaheadController: this.typeaheadController,
           },
           key,

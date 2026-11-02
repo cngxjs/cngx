@@ -24,6 +24,7 @@
     [attr.aria-invalid]="aria.invalid"
     [attr.aria-required]="aria.required"
     [attr.aria-busy]="aria.busy"
+    [attr.aria-readonly]="aria.readonly"
     (click)="handleTriggerClick()"
     (focus)="handleFocus()"
     (blur)="handleBlur()"
@@ -139,7 +140,7 @@
                 />
               } @else {
                 <cngx-chip
-                  [removable]="!disabled()"
+                  [removable]="!writeBlocked()"
                   [removeAriaLabel]="chipRemoveLabelFor()(opt.label)"
                   (remove)="handleChipRemoveClick($event, opt)"
                 >
@@ -151,7 +152,7 @@
         }
       </span>
     }
-    @if (clearable() && !isEmpty() && !disabled()) {
+    @if (clearable() && !isEmpty() && !writeBlocked()) {
       @if (tpl.clearButton(); as clearBtnTpl) {
         <span
           class="cngx-reorderable-multi-select__clear-slot"
@@ -165,7 +166,7 @@
               context: {
                 $implicit: clearAllCallback,
                 clear: clearAllCallback,
-                disabled: disabled(),
+                disabled: writeBlocked(),
               }
             "
           />
