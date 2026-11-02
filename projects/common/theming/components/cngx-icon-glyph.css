@@ -13,6 +13,10 @@
  * micro path keeps its `display="none"` presentation attribute and the
  * 24-grid path shows alone.
  *
+ * An icon without a `micro` drawing renders no micro path, and the band
+ * rule then leaves its 24-grid path showing: the 24-grid path is hidden
+ * only where a micro path follows it.
+ *
  * The micro path is a fill outline in `currentColor`. The stroke-width
  * tokens drive the 24-grid path only; the micro weight is part of the
  * hint.
@@ -39,7 +43,7 @@
   }
 
   @container cngx-icon-glyph (10px <= width < 15px) {
-    .cngx-icon-svg__path {
+    .cngx-icon-svg__path:has(+ .cngx-icon-svg__micro) {
       display: none;
     }
 
