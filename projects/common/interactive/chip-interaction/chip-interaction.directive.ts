@@ -151,6 +151,12 @@ export class CngxChipInteraction<T = unknown>
    */
   readonly value = model<boolean>(false, { alias: 'selected' });
 
+  /**
+   * Disables the chip, bound two-way as `[(disabled)]`. Default `false`.
+   * While `true` the host sets `aria-disabled="true"` and `tabindex="-1"`,
+   * and click, Space, Enter, Delete and Backspace do nothing. A form
+   * bridge writes it for a disabled control.
+   */
   readonly disabled = model<boolean>(false);
   /**
    * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
@@ -171,6 +177,12 @@ export class CngxChipInteraction<T = unknown>
    * id is harmless when the field is valid.
    */
   readonly errorMessageId = input<string | null>(null);
+  /**
+   * Text that explains why the chip is disabled, default `''`. It is
+   * placed in a visually hidden span inside the host and referenced by
+   * `aria-describedby`, only while the chip is disabled and the text is
+   * non-empty; it takes precedence over `cngxDescribedBy` in that state.
+   */
   readonly disabledReason = input<string>('');
 
   /**

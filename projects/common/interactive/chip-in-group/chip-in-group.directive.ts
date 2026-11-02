@@ -106,8 +106,25 @@ import { injectChipGroupHost } from '../chip-group/chip-group-host.token';
 export class CngxChipInGroup<T = unknown> {
   protected readonly parent = injectChipGroupHost<T>();
 
+  /**
+   * The payload this chip stands for, required. It is passed to the
+   * parent group's `isSelected`, `toggle` and `remove`, which decide
+   * whether the chip is selected (`aria-selected`).
+   */
   readonly value = input.required<T>();
+  /**
+   * Disables this chip. Default `false`. The chip is also disabled while
+   * the parent group is; either one sets `aria-disabled="true"` and
+   * stops click, Space, Enter, Delete and Backspace from reaching the
+   * group. The flag is forwarded to the roving tabindex item, so arrow
+   * navigation skips the chip.
+   */
   readonly disabled = input<boolean>(false);
+  /**
+   * Id of an external description element, bound as
+   * `[cngxDescribedBy]`. Written to `aria-describedby` on the host;
+   * default `null` omits the attribute.
+   */
   readonly describedBy = input<string | null>(null, {
     alias: 'cngxDescribedBy',
   });

@@ -136,9 +136,25 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
 export class CngxMultiChipGroup<T = unknown>
   implements CngxControlValue<T[]>, CngxChipGroupHost<T>, CngxFormFieldControl
 {
+  /**
+   * The selected chip values, bound two-way as `[(selectedValues)]`.
+   * Default `[]`. Membership is compared through `keyFn`. `value` is the
+   * same signal under the form-control name.
+   */
   readonly selectedValues = model<T[]>([]);
   readonly value = this.selectedValues;
+  /**
+   * Disables the whole group, bound two-way as `[(disabled)]`. Default
+   * `false`. While `true` the host sets `aria-disabled="true"`, the
+   * projected `cngxChipInGroup` chips inherit it, and `toggle()` and
+   * `remove()` do nothing. A form bridge writes it for a disabled control.
+   */
   readonly disabled = model<boolean>(false);
+  /**
+   * Marks the group as required, bound two-way as `[(required)]`.
+   * Default `false`. While `true` the host sets `aria-required="true"`;
+   * it adds no validation and does not block clearing the selection.
+   */
   readonly required = model<boolean>(false);
   /**
    * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
@@ -156,7 +172,19 @@ export class CngxMultiChipGroup<T = unknown>
    * id is harmless when the field is valid.
    */
   readonly errorMessageId = input<string | null>(null);
+  /**
+   * Layout and arrow-key axis of the group: `'horizontal'` (default)
+   * adds the `cngx-multi-chip-group--horizontal` class, `'vertical'`
+   * omits it. The value is forwarded to the host `CngxRovingTabindex`,
+   * which decides which arrow keys move focus between chips.
+   */
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
+  /**
+   * Accessible name of the group, written to `aria-label` on the host.
+   * Default `undefined` (no attribute). While set, the automatic
+   * `aria-labelledby` reference to the surrounding form-field label is
+   * dropped; an explicit `labelledBy` still takes precedence.
+   */
   readonly label = input<string | undefined>(undefined);
 
   /**
@@ -175,6 +203,12 @@ export class CngxMultiChipGroup<T = unknown>
     CngxAsyncState<unknown> | undefined,
     CngxAsyncState<unknown> | '' | undefined
   >(undefined, { transform: (v) => (typeof v === 'string' ? undefined : v) });
+  /**
+   * Maps a chip value to the key used to decide whether two values are
+   * the same selection. Default is the identity function, so objects
+   * match by reference; pass `(v) => v.id` for object values that are
+   * recreated between renders.
+   */
   readonly keyFn = input<(value: T) => unknown>((v) => v);
 
   /** CngxChipGroupHost - leaf-side cascade source. */
@@ -205,10 +239,21 @@ export class CngxMultiChipGroup<T = unknown>
     inject(DestroyRef).onDestroy(() => this.controller.destroy());
   }
 
+  /**
+   * Returns whether `value` is in `selectedValues`, matched through
+   * `keyFn`. Called by `CngxChipInGroup` leaves through
+   * `CNGX_CHIP_GROUP_HOST` to derive their `aria-selected`.
+   */
   isSelected(value: T): boolean {
     return this.controller.isSelected(value)();
   }
 
+  /**
+   * Adds `value` to the selection, or removes it when it is already
+   * selected. Does nothing while the group is disabled. Called by
+   * `CngxChipInGroup` leaves on click, Space and Enter through
+   * `CNGX_CHIP_GROUP_HOST`.
+   */
   toggle(value: T): void {
     if (this.disabled()) {
       return;
@@ -216,6 +261,12 @@ export class CngxMultiChipGroup<T = unknown>
     this.controller.toggle(value);
   }
 
+  /**
+   * Removes `value` from the selection; a value that is not selected is
+   * ignored. Does nothing while the group is disabled. Called by
+   * `CngxChipInGroup` leaves on Delete and Backspace through
+   * `CNGX_CHIP_GROUP_HOST`.
+   */
   remove(value: T): void {
     if (this.disabled()) {
       return;

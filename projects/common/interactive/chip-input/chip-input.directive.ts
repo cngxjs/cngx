@@ -81,16 +81,62 @@ import { firstValueFrom, isObservable, type Observable } from 'rxjs';
   providers: [{ provide: CNGX_STATEFUL, useExisting: CngxChipInput }],
 })
 export class CngxChipInput implements CngxStateful<string> {
+  /**
+   * Keys that turn the typed text into a token, compared with
+   * `KeyboardEvent.key`. Default `[',', 'Enter']`. A matching keydown is
+   * prevented and the input is cleared. On paste only the
+   * single-character entries split the text; longer names such as
+   * `'Enter'` are keyboard-only.
+   */
   readonly separators = input<readonly string[]>([',', 'Enter']);
+  /**
+   * Whether a token already listed in `existingTokens` may be created
+   * again. Default `false`: the duplicate is dropped without an event.
+   * The check runs on the trimmed text before `validateToken`.
+   */
   readonly allowDuplicates = input<boolean>(false);
+  /**
+   * Whether surrounding whitespace is removed from a token before it is
+   * checked and emitted. Default `true`. Tokens that are empty after
+   * this step are dropped in either mode.
+   */
   readonly trimWhitespace = input<boolean>(true);
+  /**
+   * The consumer's current chip texts, read on every token creation to
+   * detect duplicates. Default `[]`. The directive keeps no list of its
+   * own, so bind the canonical chip list here.
+   */
   readonly existingTokens = input<readonly string[]>([]);
+  /**
+   * Optional async validator run on each new token. It returns a
+   * `Promise` or `Observable` of the string to emit; only the first
+   * value of an `Observable` is used. While it runs the input sets
+   * `aria-busy` and `state` is `'pending'`; a rejection sets
+   * `aria-invalid`, fires `validationError` and creates no token. A
+   * newer token supersedes an unfinished one, whose result is dropped.
+   * Default `undefined`: tokens are emitted synchronously.
+   */
   readonly validateToken = input<
     ((value: string) => Promise<string> | Observable<string>) | undefined
   >(undefined);
 
+  /**
+   * Emits the text of a new token: the trimmed input, or the value
+   * `validateToken` resolved with. Fires on a separator key, once per
+   * fragment of a multi-separator paste, and after a successful
+   * validation.
+   */
   readonly tokenCreated = output<string>();
+  /**
+   * Emits when Backspace is pressed while the input is empty. The
+   * directive does not own the chip list, so the consumer removes the
+   * last chip in response.
+   */
   readonly tokenRemoved = output<void>();
+  /**
+   * Emits the rejection or error thrown by `validateToken`. Not emitted
+   * for a validation that was superseded by a newer token.
+   */
   readonly validationError = output<unknown>();
 
   private readonly statusState = signal<AsyncStatus>('idle');
