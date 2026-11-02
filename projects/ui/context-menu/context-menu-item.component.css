@@ -128,14 +128,15 @@
     color: var(--cngx-context-menu-item-caret-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
   }
 
-  /* The caret chevron draws on the shared 24-unit icon grid, where its stroke
-     spans 6 + 2 = 8 units across. Scaling the box by 24/8 keeps its width at
-     the 0.3em the text caret drew before. As a block it leaves the line box, so
+  /* The box rounds to 12px at the 16px default, which selects the 12-grid
+     micro chevron (4 units across, 4px, near the 0.3em the text caret drew).
+     The 24-grid path (6 + 2 = 8 units with its stroke) takes over once a
+     larger font moves the box past 14px. As a block it leaves the line box, so
      the flex row centres it on the label instead of the text middle. */
   cngx-context-menu-item .cngx-menu-item__suffix > .cngx-icon-svg,
   button[cngxContextMenuItem] .cngx-menu-item__suffix > .cngx-icon-svg {
     display: block;
-    --cngx-icon-svg-size: calc(0.3em * 24 / 8);
+    --cngx-icon-svg-size: 0.75em;
   }
 
   /* The caret is a directional glyph; flip it inline under RTL rather than
