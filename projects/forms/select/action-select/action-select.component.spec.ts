@@ -6,6 +6,7 @@ import { Subject } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { CngxSelectAction } from '../shared/template-slots';
+import { provideSelectConfig, withOpenOn } from '../shared/config';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { stripBidiIsolates } from '@cngx/testing';
 import { CngxActionSelect, type CngxActionSelectChange } from './action-select.component';
@@ -714,4 +715,46 @@ describe('CngxActionSelect - placeholder falls back to the label', () => {
     flush(fixture);
     expect(input.placeholder).toBe('Pick a tag');
   });
+});
+
+describe('CngxActionSelect - openOn config integration', () => {
+  @Component({
+    template: `<cngx-action-select [label]="'Tag'" [options]="options" />`,
+    imports: [CngxActionSelect],
+  })
+  class OpenOnHost {
+    readonly options = TAGS;
+  }
+
+  function setupOpenOn(providers: unknown[]): {
+    fixture: ReturnType<typeof TestBed.createComponent<OpenOnHost>>;
+    select: CngxActionSelect<Tag>;
+    input: HTMLInputElement;
+  } {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [OpenOnHost], providers: providers as never[] });
+    const fixture = TestBed.createComponent(OpenOnHost);
+    flush(fixture);
+    const select = fixture.debugElement.query(By.directive(CngxActionSelect))
+      .componentInstance as CngxActionSelect<Tag>;
+    const input = fixture.nativeElement.querySelector('input.cngx-action-select__input') as HTMLInputElement;
+    return { fixture, select, input };
+  }
+
+  it('keeps the panel closed on input focus under the default click strategy', () => {
+    const { fixture, select, input } = setupOpenOn([]);
+    input.dispatchEvent(new Event('focus'));
+    flush(fixture);
+    expect(select.panelOpen()).toBe(false);
+  });
+
+  it.each(['focus', 'click+focus'] as const)(
+    'opens the panel on input focus with withOpenOn(%s)',
+    (mode) => {
+      const { fixture, select, input } = setupOpenOn([provideSelectConfig(withOpenOn(mode))]);
+      input.dispatchEvent(new Event('focus'));
+      flush(fixture);
+      expect(select.panelOpen()).toBe(true);
+    },
+  );
 });
