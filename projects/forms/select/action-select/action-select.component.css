@@ -9,7 +9,7 @@
  *
  * **State modifiers**
  *
- * - `:focus-within` on `.cngx-action-select__trigger` - 2px primary
+ * - `:focus-within` or open on `.cngx-action-select__trigger` - 2px primary
  *   outline + 2px offset
  * - `.cngx-action-select__input:disabled` - `cursor: not-allowed`;
  *   the trigger takes the field skin colour
@@ -187,7 +187,10 @@
       cursor: text;
     }
 
-    .cngx-action-select__trigger:has(:focus-visible) {
+    /* The ring shows on any focus of the trigger (pointer or keyboard, also
+       focus inside it) and while the panel is open, the form-field
+       convention, the same in all nine selects. */
+    .cngx-action-select__trigger:is(:focus-within, :has([aria-expanded='true'])) {
       outline: var(
         --cngx-select-focus-outline,
         2px solid

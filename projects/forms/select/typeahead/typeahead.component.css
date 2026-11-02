@@ -8,7 +8,7 @@
  *
  * **State modifiers**
  *
- * - `:focus-within` on `.cngx-typeahead__trigger` - 2px primary outline
+ * - `:focus-within` or open on `.cngx-typeahead__trigger` - 2px primary outline
  *   + 2px offset
  * - `:has(> [role='combobox'][aria-invalid='true'])` on the trigger -
  *   danger border + box-shadow glow at focus-within time (paints on the
@@ -190,7 +190,10 @@
       cursor: text;
     }
 
-    .cngx-typeahead__trigger:has(:focus-visible) {
+    /* The ring shows on any focus of the trigger (pointer or keyboard, also
+       focus inside it) and while the panel is open, the form-field
+       convention, the same in all nine selects. */
+    .cngx-typeahead__trigger:is(:focus-within, :has([aria-expanded='true'])) {
       outline: var(
         --cngx-select-focus-outline,
         2px solid

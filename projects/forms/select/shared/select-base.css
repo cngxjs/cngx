@@ -2035,7 +2035,7 @@
     :scope.cngx-field-trigger:is(
         [aria-invalid='true'],
         :has(> [role='combobox'][aria-invalid='true'])
-      ):focus-visible {
+      ):is(:focus-visible, :focus-within) {
       outline: var(--cngx-field-ring-width, 2px) solid
         var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
       outline-offset: var(--cngx-field-ring-offset, -2px);
