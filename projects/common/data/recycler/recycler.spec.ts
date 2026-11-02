@@ -446,6 +446,7 @@ describe('injectRecycler', () => {
     function createGated(
       isFirstLoad: WritableSignal<boolean>,
       skeletonDelay?: number,
+      skeletonMinDwell?: number,
     ): CngxRecycler {
       let recycler!: CngxRecycler;
       TestBed.runInInjectionContext(() => {
@@ -455,6 +456,7 @@ describe('injectRecycler', () => {
           estimateSize: 48,
           state: createMockState({ isFirstLoad }),
           skeletonDelay,
+          skeletonMinDwell,
         });
       });
       TestBed.flushEffects();
@@ -539,6 +541,36 @@ describe('injectRecycler', () => {
       advance(showDelay);
       expect(recycler.showSkeleton()).toBe(true);
 
+      isFirstLoad.set(false);
+      TestBed.flushEffects();
+      advance(1);
+      expect(recycler.showSkeleton()).toBe(false);
+    });
+
+    it('lets an explicit skeletonMinDwell beat the config', () => {
+      vi.useFakeTimers();
+      TestBed.configureTestingModule({ providers: [provideLoadingConfig(withMinDwell(1000))] });
+      const isFirstLoad = signal(true);
+      const recycler = createGated(isFirstLoad, undefined, 50);
+
+      advance(showDelay);
+      expect(recycler.showSkeleton()).toBe(true);
+      isFirstLoad.set(false);
+      TestBed.flushEffects();
+      advance(49);
+      expect(recycler.showSkeleton()).toBe(true);
+      advance(1);
+      expect(recycler.showSkeleton()).toBe(false);
+    });
+
+    it('releases at once with skeletonMinDwell: 0 under an app-wide dwell', () => {
+      vi.useFakeTimers();
+      TestBed.configureTestingModule({ providers: [provideLoadingConfig(withMinDwell(1000))] });
+      const isFirstLoad = signal(true);
+      const recycler = createGated(isFirstLoad, undefined, 0);
+
+      advance(showDelay);
+      expect(recycler.showSkeleton()).toBe(true);
       isFirstLoad.set(false);
       TestBed.flushEffects();
       advance(1);

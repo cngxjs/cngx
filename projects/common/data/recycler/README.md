@@ -168,7 +168,7 @@ readonly recycler = injectRecycler({
 readonly visible = this.recycler.sliced(computed(() => this.state.data() ?? []));
 ```
 
-The skeleton is gated through `createVisibilityGate` from `@cngx/core/utils` and reads `CNGX_LOADING_CONFIG`. `skeletonDelay` is the recycler's per-instance override of `showDelay`; omit it and the app-wide `provideLoadingConfig(withShowDelay(...))` value applies (120 ms by default). Once shown, the skeleton stays for at least `minDwell` (400 ms by default), which always comes from the config. `skeletonDelay: 0` shows the skeleton at once and still holds it for the min-dwell; opt out of the hold for a subtree with `provideLoadingConfigAt(withMinDwell(0))`.
+The skeleton is gated through `createVisibilityGate` from `@cngx/core/utils` and reads `CNGX_LOADING_CONFIG`. `skeletonDelay` is the recycler's per-instance override of `showDelay`; omit it and the app-wide `provideLoadingConfig(withShowDelay(...))` value applies (120 ms by default). Once shown, the skeleton stays for at least `minDwell` (400 ms by default); `skeletonMinDwell` overrides it per instance. `skeletonDelay: 0` shows the skeleton at once and still holds it for the min-dwell; `skeletonMinDwell: 0` swaps it for the rows as soon as the first load ends. For a whole subtree, retime both through `provideLoadingConfigAt(withShowDelay(...), withMinDwell(...))`.
 
 ```html
 <div class="scroll" [attr.aria-busy]="recycler.isLoading() || recycler.isRefreshing() || null">

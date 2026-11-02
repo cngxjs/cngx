@@ -901,7 +901,7 @@ handleUpload(files: File[]): void {
 | `[cngxFileDrop]` | `uploading`, `uploadProgress`, `uploadError`, blocks drop/browse |
 | `injectSmartDataSource` | `isLoading`, `isRefreshing`, `error`, `isEmpty`, `filteredCount` |
 
-The loading surfaces above (skeleton, overlay, async-container refresh bar, recycler skeleton) debounce their show/hide through the `CNGX_LOADING_CONFIG` cascade in `@cngx/core/utils`: `provideLoadingConfig(withShowDelay(...), withMinDwell(...))` suppresses the flash on fast operations app-wide, with per-instance `[delay]` / `[minDwell]` / `[skeletonDelay]` overrides. See the Async State Machine chapter for the full timing model.
+The loading surfaces above (skeleton, overlay, async-container refresh bar, recycler skeleton) debounce their show/hide through the `CNGX_LOADING_CONFIG` cascade in `@cngx/core/utils`: `provideLoadingConfig(withShowDelay(...), withMinDwell(...))` suppresses the flash on fast operations app-wide, with per-instance `[delay]` / `[minDwell]` / `[showDelay]` overrides and the recycler's `skeletonDelay` / `skeletonMinDwell`. See the Async State Machine chapter for the full timing model.
 
 ## Latency probe
 

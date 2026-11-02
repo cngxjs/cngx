@@ -165,10 +165,16 @@ export interface RecyclerConfig {
   /**
    * Delay before skeletons are shown (ms). Overrides `CNGX_LOADING_CONFIG.showDelay`;
    * default is the config value. E.g. 300 means `showSkeleton` only becomes `true`
-   * after 300ms - fast loads (< 300ms) never show a skeleton. The min-dwell always
-   * comes from `CNGX_LOADING_CONFIG.minDwell`.
+   * after 300ms - fast loads (< 300ms) never show a skeleton.
    */
   skeletonDelay?: number;
+
+  /**
+   * Minimum time (ms) a shown skeleton stays. Overrides
+   * `CNGX_LOADING_CONFIG.minDwell`; default is the config value. `0` swaps the
+   * skeleton for the rows as soon as the first load ends.
+   */
+  skeletonMinDwell?: number;
 
   /**
    * Async state source. When set, the recycler derives skeleton rendering,
@@ -519,7 +525,7 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
   const showSkeleton = createVisibilityGate(
     isLoading,
     computed(() => config.skeletonDelay ?? loading.showDelay),
-    computed(() => loading.minDwell),
+    computed(() => config.skeletonMinDwell ?? loading.minDwell),
   );
 
   // previousTotal is a signal, not a mutable let - reactive, no stale-value risk.
