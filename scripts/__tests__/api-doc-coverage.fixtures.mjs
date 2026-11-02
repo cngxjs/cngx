@@ -51,7 +51,7 @@ export const INTERNAL_BINDINGS = [
 /**
  * Lowered in every commit that closes rows, so growth is a visible constant edit.
  */
-export const CEILING = 11;
+export const CEILING = 7;
 
 /** @type {readonly ApiDocGap[]} */
 // prettier-ignore
@@ -63,8 +63,4 @@ export const RATCHET = [
   { entry: '@cngx/core', owner: 'CngxTouchTarget', kind: 'input', member: 'touchTarget', binding: 'cngxTouchTarget', phase: 4 },
   { entry: '@cngx/core/utils', owner: 'createDefaultsFill', kind: 'function', member: 'createDefaultsFill', phase: 4 },
   { entry: '@cngx/core/utils', owner: 'createDefaultsFill', kind: 'function', member: 'createDefaultsFill', phase: 4 },
-  { entry: '@cngx/ui/feedback', owner: 'CngxToast', kind: 'input', member: 'actionHandler', phase: 4 },
-  { entry: '@cngx/ui/mat-tabs', owner: 'CngxMatTabError', kind: 'input', member: 'aggregator', binding: 'cngxMatTabError', phase: 4 },
-  { entry: '@cngx/ui/mat-tabs', owner: 'CngxMatTabErrorFlag', kind: 'input', member: 'error', binding: 'cngxMatTabErrorFlag', phase: 4 },
-  { entry: '@cngx/ui/mat-tabs', owner: 'CngxMatTabsRegistry', kind: 'method', member: 'getHandleSetup', phase: 4 },
 ];

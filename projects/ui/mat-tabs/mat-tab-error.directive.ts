@@ -40,6 +40,12 @@ export class CngxMatTabError {
   private readonly target = injectMatTabErrorTarget('cngxMatTabError');
   private readonly destroyRef = inject(DestroyRef);
 
+  /**
+   * Error aggregator for this tab, bound as `[cngxMatTabError]`. Its `shouldShow()` decides
+   * whether the tab header shows the error badge, and it is written into the tab's aggregator
+   * slot in the registry. A string value (the bare attribute) and `undefined` both mean no
+   * aggregator, and the slot is reset to `undefined` when the directive is destroyed.
+   */
   readonly aggregator = input<
     CngxErrorAggregatorContract | undefined,
     CngxErrorAggregatorContract | '' | undefined
