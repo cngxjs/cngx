@@ -9,6 +9,6 @@ describe('@cngx/ui/sidenav public API shape', () => {
     // @ts-expect-error 'auto' is not a resolved mode
     const auto: ResolvedSidenavMode = 'auto';
     expect(declared).toHaveLength(resolved.length + 1);
-    expect(auto).toBe('auto');
+    expect(resolved).not.toContain(auto);
   });
 });
