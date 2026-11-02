@@ -31,15 +31,16 @@ export interface CngxIconMicro {
 
 /**
  * Framework-agnostic path data for one default cngx glyph. Every icon
- * sits on a `0 0 24 24` grid and is a single path, so a renderer needs
- * one `<path>` and no per-icon markup. Rendered by `CngxIconSvg` in
+ * sits on a `0 0 24 24` grid and is drawn as a single path, so a renderer
+ * needs one `<path>` for it and no per-icon markup. Rendered by `CngxIconSvg` in
  * `@cngx/common/display`; an imperative renderer builds the same
  * `<svg><path>` from it and applies the paint contract of
  * `CngxIconPaint` itself.
  *
  * One source per glyph, two grid-specific drawings: `micro` is the
- * optional 12-grid drawing (see `CngxIconMicro`) that renderers show in
- * a 10 to 14px box instead of the 24-grid path.
+ * optional 12-grid drawing (see `CngxIconMicro`), drawn as a second
+ * `<path>`, that renderers show in a 10 to 14px box instead of the 24-grid
+ * path. An icon without one keeps the 24-grid path at every size.
  *
  * Exported because Sheriff forbids deep-relative imports across library
  * boundaries; `@internal` because cngx ships the glyphs it draws, not an
