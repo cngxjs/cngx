@@ -138,7 +138,7 @@ describe('CngxStatus tone glyphs', () => {
     expect(Math.abs(ink.dy)).toBeLessThanOrEqual(0.5);
   });
 
-  it.each(['success', 'danger', 'neutral'] as const)(
+  it.each(['success', 'danger'] as const)(
     'draws the %s line glyph with a 1.75px stroke',
     (tone) => {
       const { dot } = mount(tone);
@@ -149,7 +149,7 @@ describe('CngxStatus tone glyphs', () => {
     },
   );
 
-  it.each(['warning', 'info'] as const)('fills the %s glyph in the dot foreground', (tone) => {
+  it.each(['warning', 'info', 'neutral'] as const)('fills the %s glyph in the dot foreground', (tone) => {
     const { dot } = mount(tone);
     const svg = dot.querySelector('svg.cngx-icon-svg') as SVGSVGElement;
     expect(svg.classList.contains('cngx-icon-svg--stroke')).toBe(false);

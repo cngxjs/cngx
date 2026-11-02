@@ -92,15 +92,12 @@ export const STORY: DemoSpec = {
     minus: CNGX_ICON_MINUS,
   } as const;
 
-  protected readonly checkDraft = 'M2 6L3 5L5 7L9 3L10 4L5 9Z';
-  protected readonly minusDraft = 'M3 5H9V7H3Z';
-
-  protected readonly toneDrafts = [
-    { tone: 'success', color: 'var(--cngx-status-success-color, oklch(0.65 0.18 145))', d: 'M2 6L3 5L5 7L9 3L10 4L5 9Z' },
-    { tone: 'danger', color: 'var(--cngx-status-danger-color, oklch(0.65 0.22 25))', d: 'M3 4L4 3L9 8L8 9ZM8 3L9 4L4 9L3 8Z' },
-    { tone: 'warning', color: 'var(--cngx-status-warning-color, oklch(0.75 0.15 85))', d: 'M5 2H7V8H5ZM5 9H7V11H5Z' },
-    { tone: 'info', color: 'var(--cngx-status-info-color, oklch(0.6 0.14 250))', d: 'M5 1H7V3H5ZM4 4H7V9H8V10H4V9H5V5H4Z' },
-    { tone: 'neutral', color: 'var(--cngx-status-neutral-color, oklch(0.6 0.02 290))', d: 'M4 1H8V2H4ZM3 2H4V4H3ZM8 2H9V5H8ZM6 5H8V6H6ZM5 6H7V8H5ZM5 9H7V11H5Z' },
+  protected readonly tones = [
+    { tone: 'success', color: 'var(--cngx-status-success-color, oklch(0.65 0.18 145))', icon: CNGX_ICON_CHECK },
+    { tone: 'danger', color: 'var(--cngx-status-danger-color, oklch(0.65 0.22 25))', icon: CNGX_ICON_X },
+    { tone: 'warning', color: 'var(--cngx-status-warning-color, oklch(0.75 0.15 85))', icon: CNGX_ICON_EXCLAMATION_SOLID },
+    { tone: 'info', color: 'var(--cngx-status-info-color, oklch(0.6 0.14 250))', icon: CNGX_ICON_INFO },
+    { tone: 'neutral', color: 'var(--cngx-status-neutral-color, oklch(0.6 0.02 290))', icon: CNGX_ICON_QUESTION },
   ] as const;`,
   template: `
   <cngx-grid columns="repeat(7, auto) 1fr auto" gap="8px 24px" style="align-items:center; justify-items:center">
@@ -156,22 +153,22 @@ export const STORY: DemoSpec = {
   <h3>Checkbox sm vs md</h3>
   <ng-template #check12><svg [cngxIconSvg]="glyphs.check" style="--cngx-icon-svg-size:12px"></svg></ng-template>
   <ng-template #minus12><svg [cngxIconSvg]="glyphs.minus" style="--cngx-icon-svg-size:12px"></svg></ng-template>
-  <ng-template #checkMicro><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path fill="currentColor" [attr.d]="checkDraft" /></svg></ng-template>
-  <ng-template #minusMicro><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path fill="currentColor" [attr.d]="minusDraft" /></svg></ng-template>
+  <ng-template #checkMicro><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path fill="currentColor" [attr.d]="glyphs.check.micro.d" /></svg></ng-template>
+  <ng-template #minusMicro><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path fill="currentColor" [attr.d]="glyphs.minus.micro.d" /></svg></ng-template>
   <cngx-grid columns="auto auto auto" gap="8px 16px" style="align-items:center; justify-items:center">
     <span style="justify-self:start">sm today (10.5px glyph)</span>
     <cngx-checkbox-indicator size="sm" [checked]="true" />
     <cngx-checkbox-indicator size="sm" [indeterminate]="true" />
-    <span style="justify-self:start">sm, 24 path at 12px</span>
+    <span style="justify-self:start">sm, shipped glyph at 12px</span>
     <cngx-checkbox-indicator size="sm" [checked]="true" [checkGlyph]="check12" />
     <cngx-checkbox-indicator size="sm" [indeterminate]="true" [dashGlyph]="minus12" />
-    <span style="justify-self:start">sm, micro draft at 12px</span>
+    <span style="justify-self:start">sm, bare micro at 12px</span>
     <cngx-checkbox-indicator size="sm" [checked]="true" [checkGlyph]="checkMicro" />
     <cngx-checkbox-indicator size="sm" [indeterminate]="true" [dashGlyph]="minusMicro" />
     <span style="justify-self:start">md today (12px glyph)</span>
     <cngx-checkbox-indicator [checked]="true" />
     <cngx-checkbox-indicator [indeterminate]="true" />
-    <span style="justify-self:start">md, micro draft at 12px</span>
+    <span style="justify-self:start">md, bare micro at 12px</span>
     <cngx-checkbox-indicator [checked]="true" [checkGlyph]="checkMicro" />
     <cngx-checkbox-indicator [indeterminate]="true" [dashGlyph]="minusMicro" />
   </cngx-grid>
@@ -201,12 +198,12 @@ export const STORY: DemoSpec = {
     <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path fill="currentColor" [attr.d]="glyphs.caret.micro.d" /></svg>
   </cngx-grid>
 
-  <h3>Status tones: radial fit vs 12px micro</h3>
+  <h3>Status tones: shipped vs 12px glyph in a 16px dot</h3>
   <cngx-grid columns="auto auto auto" gap="8px 16px" style="align-items:center; justify-items:start">
-    @for (t of toneDrafts; track t.tone) {
+    @for (t of tones; track t.tone) {
       <code>{{ t.tone }}</code>
       <cngx-status [tone]="t.tone" [label]="t.tone + ', today'" />
-      <span style="display:inline-flex; align-items:center; justify-content:center; inline-size:16px; block-size:16px; border-radius:50%; color:var(--cngx-status-dot-fg, white)" [style.background]="t.color"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path fill="currentColor" [attr.d]="t.d" /></svg></span>
+      <span style="display:inline-flex; align-items:center; justify-content:center; inline-size:16px; block-size:16px; border-radius:50%; color:var(--cngx-status-dot-fg, white)" [style.background]="t.color"><svg [cngxIconSvg]="t.icon" style="--cngx-icon-svg-size:12px"></svg></span>
     }
   </cngx-grid>
 

@@ -139,17 +139,17 @@ describe('CngxStatCard glyphs', () => {
   });
 
   // The bold text exclamation inked 0.54 of the 16px badge tall. The icon svg
-  // box rounds to whole pixels, so the ink lands on the rounded box: 17.5 of
-  // its 24 grid units.
-  it('draws the stale exclamation 0.54 of the badge tall on the rounded box, centred in it', () => {
+  // box rounds to whole pixels and is sized to land in the micro band; the
+  // 24-grid fill path inks 14 of its 24 units.
+  it('draws the stale exclamation 14 of 24 units tall on the rounded box, centred in it', () => {
     const host = mountGlyphs('stale');
     const badge = query(host, '.cngx-stat-card__stale-glyph');
-    const { svg, path } = svgIn(badge, 'svg.cngx-icon-svg');
+    const { path } = svgIn(badge, 'svg.cngx-icon-svg');
     const box = badge.getBoundingClientRect();
     const ink = path.getBoundingClientRect();
     expect(box.width).toBeCloseTo(16, 1);
-    expect(ink.height + strokePx(svg)).toBeCloseTo(
-      (Math.round((0.54 * box.height * 24) / 17.5) * 17.5) / 24,
+    expect(ink.height).toBeCloseTo(
+      (Math.round((0.54 * box.height * 24) / 17.5) * 14) / 24,
       1,
     );
     expect(Math.abs(ink.left + ink.width / 2 - (box.left + box.width / 2))).toBeLessThanOrEqual(
@@ -173,7 +173,7 @@ describe('CngxStatCard glyphs', () => {
     const host = mountGlyphs('stale');
     const badge = query(host, '.cngx-stat-card__stale-glyph');
     const { svg } = svgIn(badge, 'svg.cngx-icon-svg');
-    expect(computedValue(svg, 'stroke')).toBe(computedValue(badge, 'color'));
+    expect(computedValue(svg, 'fill')).toBe(computedValue(badge, 'color'));
     expect(computedValue(badge, 'background-color')).not.toBe(computedValue(badge, 'color'));
     expect(badge.getAttribute('aria-hidden')).toBe('true');
   });

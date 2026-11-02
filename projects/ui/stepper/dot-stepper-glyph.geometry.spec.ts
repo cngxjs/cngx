@@ -9,7 +9,7 @@ import { STEPPER_OUTCOME_SEAM, stepperOutcome } from './__test-helpers/stepper-o
 // Runs in a real Chromium (the `test-geometry` target). The error and refused
 // marks of `<cngx-dot-stepper>` are icons stacked over the dot in a one-cell
 // grid: centred on the dot, painted over it, sized from the 0.75rem glyph font
-// (exclamation mark 0.75em tall, ban ring 0.8em, each with its stroke), and a
+// (exclamation mark 14 of 24 grid units as a fill, ban ring 0.8em with its stroke), and a
 // marked dot grows from 10px to 16px so the mark stays legible.
 
 @Component({
@@ -53,11 +53,12 @@ function icon(dot: HTMLElement): SVGSVGElement {
   return dot.nextElementSibling as SVGSVGElement;
 }
 
-/** Drawn box of the icon path, widened by its stroke. */
+/** Drawn box of the icon path, widened by its stroke when the glyph is a stroke. */
 function ink(svg: SVGSVGElement): { height: number; cx: number; cy: number } {
   const path = svg.querySelector('path')!.getBoundingClientRect();
-  const stroke =
-    (parseFloat(getComputedStyle(svg).strokeWidth) * svg.getBoundingClientRect().width) / 24;
+  const stroke = svg.classList.contains('cngx-icon-svg--stroke')
+    ? (parseFloat(getComputedStyle(svg).strokeWidth) * svg.getBoundingClientRect().width) / 24
+    : 0;
   return {
     height: path.height + stroke,
     cx: path.left + path.width / 2,
@@ -82,12 +83,12 @@ describe('dot stepper error marks', () => {
     }
   });
 
-  it('draws the exclamation mark 0.75em and the ban ring 0.8em of the 12px glyph font', async () => {
+  it('draws the exclamation mark 14 of 24 units and the ban ring 0.8em of the 12px glyph font', async () => {
     const dots = await mount();
-    expect(ink(icon(dots[3])).height).toBeCloseTo(0.75 * 12, 0);
+    expect(ink(icon(dots[3])).height).toBeCloseTo((14 / 24) * 12, 0);
     expect(ink(icon(dots[1])).height).toBeCloseTo(0.8 * 12, 0);
     // The active dot grows by 1.25, its mark with it.
-    expect(ink(icon(dots[2])).height).toBeCloseTo(0.75 * 12 * 1.25, 0);
+    expect(ink(icon(dots[2])).height).toBeCloseTo((14 / 24) * 12 * 1.25, 0);
   });
 
   it('paints the mark over the dot in the on-danger colour', async () => {
@@ -98,7 +99,7 @@ describe('dot stepper error marks', () => {
     mark.style.pointerEvents = 'auto';
     const hit = document.elementFromPoint(centre.cx, centre.cy);
     expect(hit === mark || mark.contains(hit)).toBe(true);
-    expect(getComputedStyle(mark).stroke).toBe('rgb(255, 255, 255)');
+    expect(getComputedStyle(mark).fill).toBe('rgb(255, 255, 255)');
   });
 
   it('grows a marked dot to 16px and leaves the plain dot at 10px', async () => {

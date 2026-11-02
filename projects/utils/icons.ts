@@ -60,6 +60,10 @@ export const CNGX_ICON_X = {
   viewBox: '0 0 24 24',
   d: 'M6 6l12 12M18 6L6 18',
   paint: 'stroke',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M2 3L3 2L10 9L9 10ZM9 2L10 3L3 10L2 9Z',
+  },
 } as const satisfies CngxIconData;
 
 /** Add plus. @internal */
@@ -78,6 +82,10 @@ export const CNGX_ICON_MINUS = {
   viewBox: '0 0 24 24',
   d: 'M5 12h14',
   paint: 'stroke',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M3 5H9V7H3Z',
+  },
 } as const satisfies CngxIconData;
 
 /** Solid dropdown caret pointing down. @internal */
@@ -96,6 +104,10 @@ export const CNGX_ICON_CHEVRON_LEFT = {
   viewBox: '0 0 24 24',
   d: 'M15 6l-6 6 6 6',
   paint: 'stroke',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M7 3L4 6L7 9L8 8L6 6L8 4Z',
+  },
 } as const satisfies CngxIconData;
 
 /** Single chevron pointing to the inline end in LTR. @internal */
@@ -103,6 +115,10 @@ export const CNGX_ICON_CHEVRON_RIGHT = {
   viewBox: '0 0 24 24',
   d: 'M9 6l6 6-6 6',
   paint: 'stroke',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M5 3L8 6L5 9L4 8L6 6L4 4Z',
+  },
 } as const satisfies CngxIconData;
 
 /** Double chevron pointing left (first page). @internal */
@@ -110,6 +126,10 @@ export const CNGX_ICON_CHEVRONS_LEFT = {
   viewBox: '0 0 24 24',
   d: 'M11 6l-6 6 6 6M19 6l-6 6 6 6',
   paint: 'stroke',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M9 3L6 6L9 9L10 8L8 6L10 4ZM5 3L2 6L5 9L6 8L4 6L6 4Z',
+  },
 } as const satisfies CngxIconData;
 
 /** Double chevron pointing right (last page). @internal */
@@ -117,6 +137,10 @@ export const CNGX_ICON_CHEVRONS_RIGHT = {
   viewBox: '0 0 24 24',
   d: 'M13 6l6 6-6 6M5 6l6 6-6 6',
   paint: 'stroke',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M3 3L6 6L3 9L2 8L4 6L2 4ZM7 3L10 6L7 9L6 8L8 6L6 4Z',
+  },
 } as const satisfies CngxIconData;
 
 /** Horizontal ellipsis, three dots. @internal */
@@ -124,6 +148,10 @@ export const CNGX_ICON_MORE_HORIZONTAL = {
   viewBox: '0 0 24 24',
   d: 'M3 12a2 2 0 1 0 4 0a2 2 0 1 0-4 0zM10 12a2 2 0 1 0 4 0a2 2 0 1 0-4 0zM17 12a2 2 0 1 0 4 0a2 2 0 1 0-4 0z',
   paint: 'fill',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M1 5H3V7H1ZM5 5H7V7H5ZM9 5H11V7H9Z',
+  },
 } as const satisfies CngxIconData;
 
 /** Vertical ellipsis, three dots (overflow menu). @internal */
@@ -138,6 +166,10 @@ export const CNGX_ICON_CHECK = {
   viewBox: '0 0 24 24',
   d: 'M5 12.5l4.5 4.5L19 7',
   paint: 'stroke',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M1 6L2 5L5 8L10 3L11 4L5 10Z',
+  },
 } as const satisfies CngxIconData;
 
 /** Solid dot. @internal */
@@ -321,30 +353,53 @@ export const CNGX_ICON_INFO = {
   viewBox: '0 0 24 24',
   d: 'M10.1 5.4a1.9 1.9 0 1 0 3.8 0a1.9 1.9 0 1 0-3.8 0zM9.3 9.5H13.3V17.6H14.7V20H9.3V17.6H10.7V11.9H9.3Z',
   paint: 'fill',
-} as const satisfies CngxIconData;
-
-/** Exclamation mark (error dot of a dot stepper, stale badge). @internal */
-export const CNGX_ICON_EXCLAMATION = {
-  viewBox: '0 0 24 24',
-  d: 'M12 4.5V14M12 19.5v.01',
-  paint: 'stroke',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M5 1H7V3H5ZM5 4H7V10H5Z',
+  },
 } as const satisfies CngxIconData;
 
 /**
- * Exclamation mark as a tapered wedge over a round dot, filled (warning tone
- * of a status dot). @internal
+ * Exclamation mark, filled (error dot of a dot stepper, stale badge). Drawn
+ * after the Material Symbols `exclamation` glyph (FILL 0, wght 400, opsz 24),
+ * Apache-2.0, Copyright Google LLC. @internal
+ */
+export const CNGX_ICON_EXCLAMATION = {
+  viewBox: '0 0 24 24',
+  d: 'M11,14V5h2v9H11Zm0,5V17h2v2H11Z',
+  paint: 'fill',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M5 2H7V8H5ZM5 9H7V11H5Z',
+  },
+} as const satisfies CngxIconData;
+
+/**
+ * Exclamation mark as a heavy bar over a round dot, filled (warning tone of a
+ * status dot). Drawn after the Material Symbols `priority_high` glyph (FILL 0,
+ * wght 400, opsz 24), Apache-2.0, Copyright Google LLC. @internal
  */
 export const CNGX_ICON_EXCLAMATION_SOLID = {
   viewBox: '0 0 24 24',
-  d: 'M10 5.6a2 2 0 0 1 4 0l-.75 8.6a1.25 1.25 0 0 1-2.5 0zM10.1 18.6a1.9 1.9 0 1 0 3.8 0a1.9 1.9 0 1 0-3.8 0z',
+  d: 'M12,21q-0.82,0-1.41-0.59T10,19t0.59-1.41T12,17t1.41,0.59Q14,18.18 14,19t-0.59,1.41T12,21Zm-2-6V3h4V15H10Z',
   paint: 'fill',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M5 2H7V8H5ZM5 9H7V11H5Z',
+  },
 } as const satisfies CngxIconData;
 
-/** Question mark (neutral, unknown tone of a status dot). @internal */
+/**
+ * Question mark, filled (neutral, unknown tone of a status dot). Drawn after
+ * the Material Symbols `question_mark` glyph (FILL 0, wght 400, opsz 24),
+ * Apache-2.0, Copyright Google LLC. Carries no micro drawing: no 12-grid
+ * variant read well, so it stays on the 24-grid path at every size.
+ * @internal
+ */
 export const CNGX_ICON_QUESTION = {
   viewBox: '0 0 24 24',
-  d: 'M9 8.5a3 3 0 1 1 4.5 2.6c-.9.5-1.5 1.2-1.5 2.2V14M12 18.5v.01',
-  paint: 'stroke',
+  d: 'M10.6,16q0-2.03 0.36-2.91t1.54-1.94q1.03-0.9 1.56-1.56T14.6,8.07q0-1.02-0.69-1.7T12,5.7q-1.27,0-1.94,0.77T9.13,8.05L6.55,6.95q0.52-1.6 1.92-2.78T12,3q2.63,0 4.04,1.46q1.41,1.46 1.41,3.51q0,1.25-0.54,2.14t-1.69,2.01Q14,13.3 13.74,13.91T13.48,16H10.6ZM12,22q-0.82,0-1.41-0.59T10,20t0.59-1.41T12,18t1.41,0.59Q14,19.18 14,20t-0.59,1.41T12,22Z',
+  paint: 'fill',
 } as const satisfies CngxIconData;
 
 /** Lowercase i in a circle (info severity). @internal */

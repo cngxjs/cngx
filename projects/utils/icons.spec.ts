@@ -14,8 +14,19 @@ const MICRO_ICONS = [
   'CNGX_ICON_BAN',
   'CNGX_ICON_BELL',
   'CNGX_ICON_CARET_DOWN',
+  'CNGX_ICON_CHECK',
+  'CNGX_ICON_CHEVRONS_LEFT',
+  'CNGX_ICON_CHEVRONS_RIGHT',
+  'CNGX_ICON_CHEVRON_LEFT',
+  'CNGX_ICON_CHEVRON_RIGHT',
+  'CNGX_ICON_EXCLAMATION',
+  'CNGX_ICON_EXCLAMATION_SOLID',
+  'CNGX_ICON_INFO',
+  'CNGX_ICON_MINUS',
+  'CNGX_ICON_MORE_HORIZONTAL',
   'CNGX_ICON_PLUS',
   'CNGX_ICON_TRASH',
+  'CNGX_ICON_X',
   'CNGX_ICON_X_CIRCLE',
 ] as const;
 
@@ -158,6 +169,12 @@ describe('cngx default icon set', () => {
 
   it.each(MICRO_ICONS)('%s carries a micro drawing', (name) => {
     expect(entries.find(([entry]) => entry === name)?.[1].micro).toBeDefined();
+  });
+
+  // No 12-grid variant of the question mark read well on the sign-off sheet.
+  it('leaves the question mark on the 24-grid path', () => {
+    expect(icons.CNGX_ICON_QUESTION.paint).toBe('fill');
+    expect('micro' in icons.CNGX_ICON_QUESTION).toBe(false);
   });
 
   it('draws the ban slash from top-left to bottom-right', () => {
