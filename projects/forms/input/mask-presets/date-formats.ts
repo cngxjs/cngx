@@ -62,6 +62,7 @@ export const DATE_FORMATS: Record<string, string> = {
   'tr-TR': '00.00.0000',
 };
 
+/** @internal */
 export const DATE_SHORT_FORMATS: Record<string, string> = {
   'de-DE': '00.00.00',
   'de-AT': '00.00.00',

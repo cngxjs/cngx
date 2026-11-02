@@ -191,6 +191,8 @@ export const CNGX_FILTER_BUILTIN_OPERATOR_DEFS: ReadonlyMap<string, CngxFilterOp
  * map when none is supplied. Returns `undefined` for unknown keys - the
  * evaluation path turns that into a one-shot dev warning plus a `false`
  * result.
+ *
+ * @internal
  */
 export function resolveOperatorDef(
   operator: string,

@@ -9,6 +9,8 @@ export type MaskPresetKey = 'phone' | 'date' | 'iban' | 'zip';
 /**
  * Lazily-loaded preset tables. Each field is populated on first use of a mask
  * that needs it; absent fields fall back to the directive's inline defaults.
+ *
+ * @internal
  */
 export interface MaskPresetTables {
   readonly phone?: Record<string, string>;
