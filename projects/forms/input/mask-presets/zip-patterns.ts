@@ -7,6 +7,8 @@
  * (Ireland's Eircode is highly irregular), so treat these as UI hints, not hard
  * validators. Countries with no postal-code system (HK, AE, ...) are
  * intentionally omitted - do not apply a `zip:` mask there.
+ *
+ * @internal
  */
 export const ZIP_PATTERNS: Record<string, string> = {
   // DACH

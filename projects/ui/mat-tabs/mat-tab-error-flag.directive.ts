@@ -8,7 +8,7 @@ import { injectMatTabErrorTarget } from './mat-tab-error-target';
  * `string | boolean` writes the per-handle `directError` slot, which
  * folds into the handle's `hasError` / `errorMessage`. A non-empty
  * string doubles as the SR descriptor message; `true` marks the tab
- * invalid with no message; `false` / `''` clear it. The folded state
+ * invalid with no message; `false` clears it. The folded state
  * drives the same header decoration as the aggregator: the
  * `cngx-mat-tab--has-errors` badge plus an SR-only descriptor span
  * referenced through `aria-describedby` (message, else the
@@ -40,6 +40,13 @@ export class CngxMatTabErrorFlag {
   private readonly target = injectMatTabErrorTarget('cngxMatTabErrorFlag');
   private readonly destroyRef = inject(DestroyRef);
 
+  /**
+   * Direct invalid flag for this tab, bound as `[cngxMatTabErrorFlag]`. `true` marks the tab
+   * invalid, a non-empty string also serves as the screen-reader message, and `false` (the
+   * default) clears the flag. The empty string (the bare attribute) is coerced to `true`. The
+   * value is written into the tab's direct-error slot in the registry, which is reset to `false`
+   * when the directive is destroyed.
+   */
   readonly error = input<string | boolean, string | boolean>(false, {
     alias: 'cngxMatTabErrorFlag',
     transform: (value) => (value === '' ? true : value),

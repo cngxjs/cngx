@@ -139,7 +139,16 @@ import { installTabGroupDevChecks } from './tab-group-dev-checks';
   },
 })
 export class CngxTabGroup implements CngxTabPanelHost {
+  /**
+   * Accessible name of the tab group host, bound as `[aria-label]`. When unset it falls back to the
+   * `tabsRegion` entry of the tabs aria-label config, then to the `tabsLabel` i18n copy. It is dropped
+   * while a non-empty `[aria-labelledby]` is set.
+   */
   readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
+  /**
+   * Id reference of the element that names the tab group host, bound as `[aria-labelledby]`. A non-empty
+   * value suppresses the host `aria-label`, including the config and i18n fallbacks. Unset by default.
+   */
   readonly ariaLabelledBy = input<string | undefined>(undefined, { alias: 'aria-labelledby' });
 
   /**
@@ -537,6 +546,12 @@ export class CngxTabGroup implements CngxTabPanelHost {
 
   // CngxTabPanelHost contract - presenter owns clamping, disabled-skip,
   // commit-action gating.
+  /**
+   * Activates the tab registered under the given id. `CngxTabPanelHost` contract method, called by the
+   * overflow menu when a hidden tab is picked. An unknown id is ignored; otherwise it goes through the
+   * presenter `select`, which does nothing for the active or a disabled tab and defers to `commitAction`
+   * when one is set.
+   */
   selectById(id: string): void {
     this.presenter.selectById(id);
   }
@@ -550,14 +565,27 @@ export class CngxTabGroup implements CngxTabPanelHost {
     this.presenter.clearLastFailed();
   }
 
+  /**
+   * Returns the `*cngxTabLabel` template of the tab with the given id, or `null` when the id is unknown
+   * or the tab has no label slot. `CngxTabPanelHost` contract method: the tab group template calls it per
+   * tab, and a skin sub-component can call it through `CNGX_TAB_PANEL_HOST`.
+   */
   labelTemplateFor(id: string): TemplateRef<unknown> | null {
     return this.tabDirectiveById().get(id)?.labelTemplate()?.templateRef ?? null;
   }
 
+  /**
+   * @internal
+   */
   subLabelTemplateFor(id: string): TemplateRef<unknown> | null {
     return this.tabDirectiveById().get(id)?.subLabelTemplate()?.templateRef ?? null;
   }
 
+  /**
+   * Returns the `*cngxTabContent` template of the tab with the given id, or `null` when the id is unknown
+   * or the tab has no content slot. `CngxTabPanelHost` contract method: the tab group template calls it per
+   * tab, and a skin sub-component can call it through `CNGX_TAB_PANEL_HOST`.
+   */
   contentTemplateFor(id: string): TemplateRef<unknown> | null {
     return this.tabDirectiveById().get(id)?.contentTemplate()?.templateRef ?? null;
   }

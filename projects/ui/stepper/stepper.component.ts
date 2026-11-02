@@ -185,7 +185,17 @@ const STEPPER_ICONS = {
   },
 })
 export class CngxStepper implements CngxStepPanelHost {
+  /**
+   * Accessible name of the stepper host, bound as `[aria-label]`. Resolution order: this input,
+   * then `ariaLabels.stepperRegion` from the stepper config, then the `stepperLabel` string of
+   * the stepper i18n bundle. Ignored while `[aria-labelledby]` is set.
+   */
   readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
+  /**
+   * Id reference list naming the stepper host, bound as `[aria-labelledby]`. A non-empty value
+   * is written to the host and suppresses the `aria-label` cascade, so the host carries no
+   * `aria-label` at all.
+   */
   readonly ariaLabelledBy = input<string | undefined>(undefined, { alias: 'aria-labelledby' });
 
   /** Per-instance skin override; flips `[data-skin]`, structure/ARIA unchanged. */
@@ -212,6 +222,12 @@ export class CngxStepper implements CngxStepPanelHost {
    */
   readonly showStepCount = input<boolean>(false);
 
+  /**
+   * Places the mobile-collapse indicator (the dots row or the step text) above or below the
+   * panels, as `'top'` or `'bottom'`. Resolution order: this input, then `mobileIndicatorPosition`
+   * from the stepper config, then `'top'`. The result is written to `data-mobile-indicator-position`,
+   * and `'bottom'` reorders the host through CSS; the classic strip layout has no indicator to move.
+   */
   readonly mobileIndicatorPosition = input<CngxStepperMobileIndicatorPosition | undefined>(
     undefined,
   );
@@ -586,10 +602,20 @@ export class CngxStepper implements CngxStepPanelHost {
   }
 
   // CngxStepPanelHost contract - O(1) via the pre-built map.
+  /**
+   * Returns the `*cngxStepLabel` template of the step with the given id, or `null` when no step has
+   * that id or the step supplies none. Implements `CngxStepPanelHost.labelTemplateFor`; the stepper
+   * template calls it per header and renders the default label text on `null`.
+   */
   labelTemplateFor(id: string): TemplateRef<CngxStepLabelContext> | null {
     return this.stepDirectiveById().get(id)?.labelTemplate()?.templateRef ?? null;
   }
 
+  /**
+   * Returns the `*cngxStepContent` template of the step with the given id, or `null` when no step
+   * has that id or the step supplies none. Implements `CngxStepPanelHost.contentTemplateFor`; the
+   * stepper template calls it per panel and renders no body on `null`.
+   */
   contentTemplateFor(id: string): TemplateRef<CngxStepContentContext> | null {
     return this.stepDirectiveById().get(id)?.contentTemplate()?.templateRef ?? null;
   }

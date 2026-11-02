@@ -4,4 +4,4 @@
  */
 
 export { CngxOverlay, provideOverlay, type CngxOverlayConfig } from './overlay.service';
-export { CngxOverlayRef } from './overlay-ref';
+export { CngxOverlayRef, type CngxOverlayRefConfig } from './overlay-ref';

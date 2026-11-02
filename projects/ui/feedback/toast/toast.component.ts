@@ -91,6 +91,12 @@ export class CngxToast {
 
   /** Action button config. */
   readonly actionLabel = input<string | undefined>(undefined);
+  /**
+   * Callback run, without arguments, when the toast's action button is clicked. The button
+   * renders only when `actionLabel` is set as well, and the click does not dismiss the toast.
+   * The label and handler are read when the toast is shown, so later changes do not update a
+   * toast that is already visible.
+   */
   readonly actionHandler = input<(() => void) | undefined>(undefined);
 
   /** Emitted when the shown toast is dismissed (auto, manual, or falling edge). */

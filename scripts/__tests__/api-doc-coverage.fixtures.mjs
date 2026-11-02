@@ -39,67 +39,14 @@
  */
 
 /** @type {readonly InternalBinding[]} */
-export const INTERNAL_BINDINGS = [
-  {
-    file: 'projects/ui/sidenav/sidenav-router-sync.directive.ts',
-    owner: 'CngxSidenavRouterSync',
-    member: 'paramInput',
-    phase: 4,
-  },
-];
+export const INTERNAL_BINDINGS = [];
 
 /**
  * Lowered in every commit that closes rows, so growth is a visible constant edit.
  */
-export const CEILING = 46;
+export const CEILING = 0;
 
 /** @type {readonly ApiDocGap[]} */
 // prettier-ignore
 export const RATCHET = [
-  { entry: '@cngx/core', owner: 'CngxContrast', kind: 'input', member: 'contrast', binding: 'cngxContrast', phase: 4 },
-  { entry: '@cngx/core', owner: 'CngxDensity', kind: 'input', member: 'density', binding: 'cngxDensity', phase: 4 },
-  { entry: '@cngx/core', owner: 'CngxDir', kind: 'input', member: 'direction', binding: 'cngxDir', phase: 4 },
-  { entry: '@cngx/core', owner: 'CngxMotionScope', kind: 'input', member: 'motion', binding: 'cngxMotionScope', phase: 4 },
-  { entry: '@cngx/core', owner: 'CngxTouchTarget', kind: 'input', member: 'touchTarget', binding: 'cngxTouchTarget', phase: 4 },
-  { entry: '@cngx/core/utils', owner: 'createDefaultsFill', kind: 'function', member: 'createDefaultsFill', phase: 4 },
-  { entry: '@cngx/core/utils', owner: 'createDefaultsFill', kind: 'function', member: 'createDefaultsFill', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'input', member: 'fields', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'input', member: 'value', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'output', member: 'value', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'method', member: 'addExpression', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'method', member: 'applyFieldChange', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'method', member: 'getFieldDef', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'method', member: 'getNodeAtPath', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'method', member: 'setField', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'method', member: 'setLogic', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'method', member: 'setOperator', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'method', member: 'setValue', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterBuilderPresenter', kind: 'method', member: 'toggleNegated', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterExpression', kind: 'input', member: 'path', binding: 'cngxFilterExpression', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterExpressionRow', kind: 'input', member: 'path', phase: 4 },
-  { entry: '@cngx/forms/filter-builder', owner: 'CngxFilterGroup', kind: 'input', member: 'path', binding: 'cngxFilterGroup', phase: 4 },
-  { entry: '@cngx/forms/input', owner: 'CngxInput', kind: 'method', member: 'focus', phase: 4 },
-  { entry: '@cngx/forms/input', owner: 'CngxPhoneInput', kind: 'method', member: 'focus', phase: 4 },
-  { entry: '@cngx/forms/input', owner: 'CngxRating', kind: 'method', member: 'focus', phase: 4 },
-  { entry: '@cngx/ui/feedback', owner: 'CngxToast', kind: 'input', member: 'actionHandler', phase: 4 },
-  { entry: '@cngx/ui/mat-tabs', owner: 'CngxMatTabError', kind: 'input', member: 'aggregator', binding: 'cngxMatTabError', phase: 4 },
-  { entry: '@cngx/ui/mat-tabs', owner: 'CngxMatTabErrorFlag', kind: 'input', member: 'error', binding: 'cngxMatTabErrorFlag', phase: 4 },
-  { entry: '@cngx/ui/mat-tabs', owner: 'CngxMatTabsRegistry', kind: 'method', member: 'getHandleSetup', phase: 4 },
-  { entry: '@cngx/ui/stepper', owner: 'CngxDotStepper', kind: 'input', member: 'ariaLabel', binding: 'aria-label', phase: 4 },
-  { entry: '@cngx/ui/stepper', owner: 'CngxDotStepper', kind: 'input', member: 'ariaLabelledBy', binding: 'aria-labelledby', phase: 4 },
-  { entry: '@cngx/ui/stepper', owner: 'CngxProgressBarStepper', kind: 'input', member: 'ariaLabel', binding: 'aria-label', phase: 4 },
-  { entry: '@cngx/ui/stepper', owner: 'CngxProgressBarStepper', kind: 'input', member: 'ariaLabelledBy', binding: 'aria-labelledby', phase: 4 },
-  { entry: '@cngx/ui/stepper', owner: 'CngxStepper', kind: 'input', member: 'ariaLabel', binding: 'aria-label', phase: 4 },
-  { entry: '@cngx/ui/stepper', owner: 'CngxStepper', kind: 'input', member: 'ariaLabelledBy', binding: 'aria-labelledby', phase: 4 },
-  { entry: '@cngx/ui/stepper', owner: 'CngxStepper', kind: 'input', member: 'mobileIndicatorPosition', phase: 4 },
-  { entry: '@cngx/ui/stepper', owner: 'CngxStepper', kind: 'method', member: 'contentTemplateFor', phase: 4 },
-  { entry: '@cngx/ui/stepper', owner: 'CngxStepper', kind: 'method', member: 'labelTemplateFor', phase: 4 },
-  { entry: '@cngx/ui/tabs', owner: 'CngxTabGroup', kind: 'input', member: 'ariaLabel', binding: 'aria-label', phase: 4 },
-  { entry: '@cngx/ui/tabs', owner: 'CngxTabGroup', kind: 'input', member: 'ariaLabelledBy', binding: 'aria-labelledby', phase: 4 },
-  { entry: '@cngx/ui/tabs', owner: 'CngxTabGroup', kind: 'method', member: 'contentTemplateFor', phase: 4 },
-  { entry: '@cngx/ui/tabs', owner: 'CngxTabGroup', kind: 'method', member: 'labelTemplateFor', phase: 4 },
-  { entry: '@cngx/ui/tabs', owner: 'CngxTabGroup', kind: 'method', member: 'selectById', phase: 4 },
-  { entry: '@cngx/ui/tabs', owner: 'CngxTabGroup', kind: 'method', member: 'subLabelTemplateFor', phase: 4 },
-  { entry: '@cngx/ui/tabs', owner: 'CngxTabNav', kind: 'input', member: 'ariaLabel', binding: 'aria-label', phase: 4 },
-  { entry: '@cngx/ui/tabs', owner: 'CngxTabNav', kind: 'input', member: 'ariaLabelledBy', binding: 'aria-labelledby', phase: 4 },
 ];

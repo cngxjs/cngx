@@ -219,11 +219,18 @@ export function createDefaultsFill<T extends object>(
   merged: Signal<Partial<T>>,
   defaults: T | Signal<T>,
 ): Signal<T>;
+/**
+ * Keyed overload: fills the nested record at `key` key by key against `defaults[key]`, besides the top-level fill.
+ * `key` must be a single key of `T` whose value is a record; a union of keys is rejected at compile time.
+ */
 export function createDefaultsFill<T extends object, K extends RecordKeys<T>>(
   merged: Signal<Partial<T>>,
   defaults: T | Signal<T>,
   key: true extends IsUnion<K> ? never : K,
 ): Signal<T>;
+/**
+ * Shared implementation of both overloads: without `key` it fills the top level only, with `key` it also fills the nested record at that key.
+ */
 export function createDefaultsFill<T extends object>(
   merged: Signal<Partial<T>>,
   defaults: T | Signal<T>,

@@ -37,6 +37,10 @@ import type { CngxDirection } from './direction';
   },
 })
 export class CngxDir {
+  /**
+   * Binds `[cngxDir]` to the host `dir` attribute; accepts `'ltr'` or `'rtl'`.
+   * A bare attribute (`''`) and an unset value both resolve to `undefined`, which leaves `dir` off the host so the subtree keeps the inherited direction.
+   */
   readonly direction = input<CngxDirection | undefined, CngxDirection | '' | undefined>(undefined, {
     alias: 'cngxDir',
     transform: (value) => (value === '' ? undefined : value),

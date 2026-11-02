@@ -294,6 +294,10 @@ export class CngxRating implements CngxFormFieldControl {
     this.aria.handleFocusOutWithin(event, this.host.nativeElement);
   }
 
+  /**
+   * Focuses the rating item that matches the current value, or the first item when the value is `0` or does not sit on a step, and passes `options` to `HTMLElement.focus()`.
+   * Implements the optional `focus` of `CngxFormFieldControl`, which `CngxFieldBox` calls when the box padding is clicked and `focusFirstError` calls for a field without a `[formField]` binding.
+   */
   focus(options?: FocusOptions): void {
     const buttons =
       this.host.nativeElement.querySelectorAll<HTMLButtonElement>('.cngx-rating__item');

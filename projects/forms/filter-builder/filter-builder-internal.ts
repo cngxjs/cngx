@@ -16,6 +16,8 @@ import { resolveOperatorDef, type CngxFilterOperatorDef } from './filter-builder
  *
  * Explicit `equal` fn on every object/array computed prevents downstream
  * cascades.
+ *
+ * @internal
  */
 export const referenceEqual = <T>(a: T, b: T): boolean => a === b;
 
@@ -27,6 +29,8 @@ export const referenceEqual = <T>(a: T, b: T): boolean => a === b;
  * registry is passed). Shared by `evaluateExpression`'s no-op guard, the
  * presenter's `errorState` count, and the row's dashed-outline CSS state
  * so the three surfaces can never drift apart again.
+ *
+ * @internal
  */
 export function isExpressionValueEmpty(
   expression: FilterExpression,
@@ -43,6 +47,8 @@ export function isExpressionValueEmpty(
  * An expression is incomplete while the user has not finished it: missing
  * field, missing operator, or an unfilled value (see
  * {@link isExpressionValueEmpty}).
+ *
+ * @internal
  */
 export function isExpressionIncomplete(
   expression: FilterExpression,

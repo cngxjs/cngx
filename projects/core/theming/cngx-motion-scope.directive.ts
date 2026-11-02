@@ -42,6 +42,10 @@ import type { CngxMotionPreference } from './motion';
   },
 })
 export class CngxMotionScope {
+  /**
+   * Binds `[cngxMotionScope]` to the host `data-motion` attribute; accepts `'full'` or `'reduced'` only, `'auto'` is not a value of this input.
+   * A bare attribute (`''`) and an unset value both resolve to `undefined`, which leaves `data-motion` off the host so the subtree keeps the inherited motion preference.
+   */
   readonly motion = input<
     Exclude<CngxMotionPreference, 'auto'> | undefined,
     Exclude<CngxMotionPreference, 'auto'> | '' | undefined

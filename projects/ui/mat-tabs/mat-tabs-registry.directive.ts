@@ -154,6 +154,12 @@ export class CngxMatTabsRegistry implements CngxMatTabsRegistryHost {
     this.destroyRef.onDestroy(() => this.seam.clear());
   }
 
+  /**
+   * Returns the writable `errorAggregator` and `directError` slots of the given `<mat-tab>`, or
+   * `undefined` while the tab is not registered yet. Implements `CngxMatTabsRegistryHost`, which
+   * `CngxMatTabError` and `CngxMatTabErrorFlag` call to write their value and to reset it on
+   * destroy.
+   */
   getHandleSetup(
     matTab: MatTab,
   ): Pick<CngxMatTabHandleSetup, 'errorAggregator' | 'directError'> | undefined {

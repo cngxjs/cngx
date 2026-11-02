@@ -434,6 +434,10 @@ export class CngxPhoneInput implements CngxFormFieldControl, OnInit {
     this.aria.handleFocusOutWithin(event, this.host.nativeElement);
   }
 
+  /**
+   * Focuses the number input (`.cngx-phone-input__number`), not the country picker, and passes `options` to `HTMLElement.focus()`; does nothing while that input is not in the DOM.
+   * Implements the optional `focus` of `CngxFormFieldControl`, which `CngxFieldBox` calls when the box padding is clicked and `focusFirstError` calls for a field without a `[formField]` binding.
+   */
   focus(options?: FocusOptions): void {
     this.host.nativeElement
       .querySelector<HTMLInputElement>('.cngx-phone-input__number')

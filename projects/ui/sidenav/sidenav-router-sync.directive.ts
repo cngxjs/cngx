@@ -33,8 +33,12 @@ export class CngxSidenavRouterSync {
   private readonly cfg = injectSidenavConfig();
 
   /**
-   * Raw `[param]` input. Read the resolved {@link param} computed instead.
-   * @internal
+   * Query-param key that the sidenav `opened` state syncs to, set through `[param]`.
+   * Falls back to the config `routerSync.param`, then to `'nav'`; the resolved key is
+   * the `param` computed. An empty string is a set value and is used as the key.
+   * A `[param]` set after construction renames the synced key: the current state is reflected under the
+   * new key and the old key is removed. The initial URL is read once at construction with the key
+   * resolved then (config `routerSync.param` or `'nav'`), before `[param]` is bound.
    */
   readonly paramInput = input<string | undefined>(undefined, { alias: 'param' });
 

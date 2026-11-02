@@ -13,7 +13,11 @@ import type { FilterExpression, FilterGroup, FilterNode } from './filter-builder
  * child.
  */
 
-/** Resolve the node at `path` against `root`. Returns `null` for invalid paths. */
+/**
+ * Resolve the node at `path` against `root`. Returns `null` for invalid paths.
+ *
+ * @internal
+ */
 export function getNodeAtPath(root: FilterGroup, path: readonly number[]): FilterNode | null {
   if (path.length === 0) {
     return root;
@@ -37,6 +41,8 @@ export function getNodeAtPath(root: FilterGroup, path: readonly number[]): Filte
  * Replace the node at `path` via `updater`. Returns the original `root` when no descendant
  * changed (identity-preserving). Throws `CNGX2009` when a root replacement is not a group,
  * `CNGX2010` on an out-of-range index and `CNGX2011` when the path crosses an expression.
+ *
+ * @internal
  */
 export function updateAtPath(
   root: FilterGroup,
@@ -100,7 +106,11 @@ function updateGroupAtPath(
   return { ...group, filters: nextFilters };
 }
 
-/** Remove the node at `path`. Throws `CNGX2012` on empty path - the root cannot be removed. */
+/**
+ * Remove the node at `path`. Throws `CNGX2012` on empty path - the root cannot be removed.
+ *
+ * @internal
+ */
 export function removeAtPath(root: FilterGroup, path: readonly number[]): FilterGroup {
   if (path.length === 0) {
     throw new CngxRuntimeError(
@@ -143,7 +153,11 @@ function removeFromGroupAtPath(
   return { ...group, filters: nextFilters };
 }
 
-/** Append `child` to the group at `path`. Throws `CNGX2010` / `CNGX2011` when `path` does not resolve to a group. */
+/**
+ * Append `child` to the group at `path`. Throws `CNGX2010` / `CNGX2011` when `path` does not resolve to a group.
+ *
+ * @internal
+ */
 export function appendAtPath(
   root: FilterGroup,
   path: readonly number[],
@@ -171,6 +185,8 @@ export function appendAtPath(
  * option on `computed` / `linkedSignal` exposing a `FilterGroup`, per
  * the cngx signal-architecture equality rule (object/array computeds
  * MUST pass an explicit equal fn). Identity short-circuits.
+ *
+ * @internal
  */
 export function filterTreeEqual(a: FilterGroup, b: FilterGroup): boolean {
   if (a === b) {

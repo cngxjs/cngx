@@ -11,5 +11,9 @@ export const CNGX_FILTER_BUILDER_GLYPHS = {
   negate: '!',
 } as const;
 
-/** Valid keys of the default glyph map. */
+/**
+ * Valid keys of the default glyph map.
+ *
+ * @internal
+ */
 export type CngxFilterBuilderGlyphKey = keyof typeof CNGX_FILTER_BUILDER_GLYPHS;

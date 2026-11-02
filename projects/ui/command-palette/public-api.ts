@@ -15,6 +15,7 @@ export {
 } from './palette/palette-keybinding';
 export {
   CNGX_COMMAND_PALETTE_CONFIG,
+  DEFAULT_COMMAND_PALETTE_CONFIG,
   provideCommandPaletteConfig,
   provideCommandPaletteConfigAt,
   injectCommandPaletteConfig,

@@ -89,7 +89,17 @@ import {
   },
 })
 export class CngxTabNav {
+  /**
+   * Accessible name of the navigation host, bound straight to `[attr.aria-label]` through the
+   * `[aria-label]` alias. There is no config or i18n fallback: unset renders no attribute, and it stays
+   * set next to `[aria-labelledby]`.
+   */
   readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
+  /**
+   * Id reference of the element that names the navigation host, bound straight to
+   * `[attr.aria-labelledby]` through the `[aria-labelledby]` alias. It does not clear `[aria-label]`;
+   * unset renders no attribute.
+   */
   readonly ariaLabelledBy = input<string | undefined>(undefined, { alias: 'aria-labelledby' });
 
   /**

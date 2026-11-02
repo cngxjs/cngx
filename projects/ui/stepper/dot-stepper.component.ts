@@ -99,7 +99,17 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
   },
 })
 export class CngxDotStepper {
+  /**
+   * Accessible name of the stepper host, bound as `[aria-label]`. Resolution order: this input,
+   * then `ariaLabels.stepperRegion` from the stepper config, then the `stepperLabel` string of
+   * the stepper i18n bundle. Ignored while `[aria-labelledby]` is set.
+   */
   readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
+  /**
+   * Id reference list naming the stepper host, bound as `[aria-labelledby]`. A non-empty value
+   * is written to the host and suppresses the `aria-label` cascade, so the host carries no
+   * `aria-label` at all.
+   */
   readonly ariaLabelledBy = input<string | undefined>(undefined, { alias: 'aria-labelledby' });
 
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
