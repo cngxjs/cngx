@@ -240,7 +240,7 @@ export function describeFieldAriaHost(
       const { combobox, presenter } = mount();
       const el = combobox();
       const group = el.parentElement?.closest('[role="group"]');
-      if (!group || !group.closest(elementSelector)) {
+      if (!group?.closest(elementSelector)) {
         return;
       }
       expect(group.getAttribute('aria-labelledby')).toBe(presenter.labelId());
