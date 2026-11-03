@@ -389,7 +389,8 @@
 
   /**
    * Ink on a strong-primary fill - text and glyphs drawn on
-   * `--cngx-color-primary-strong` (a dragged chip). Near-white on light
+   * `--cngx-color-primary-strong` (a solid primary button, a dragged
+   * chip). Near-white on light
    * (4.6:1), the dark neutral on dark, where the strong primary is light
    * (6.9:1).
    * @group Surface
