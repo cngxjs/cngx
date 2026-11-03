@@ -36,8 +36,10 @@
  * - **Surface** - `--cngx-color-{surface|text|text-muted|border|
  *   primary|danger|success|warning|info}`. Primary is Ember
  *   `oklch(0.66 0.19 50)`; semantic colours stay in the same hue
- *   family across modes. Three derived rungs sit next to them:
- *   `--cngx-color-primary-strong` (an accent on a tinted surface),
+ *   family across modes. Derived rungs sit next to them:
+ *   `--cngx-color-primary-strong` (an accent on a tinted surface, a solid
+ *   primary fill) and `--cngx-color-danger-strong` (a solid danger fill),
+ *   each with an `--cngx-color-on-*-strong` ink, plus
  *   `--cngx-color-primary-text` and `--cngx-color-danger-text` (primary and
  *   danger as readable text, unregistered). Two opt-in brand tokens derive
  *   from primary as well: `--cngx-color-accent` (primary with the hue turned
@@ -427,6 +429,31 @@
     initial-value: oklch(0.6 0.18 25);
   }
 
+  /**
+   * Strong danger - the danger hue one rung darker on light, for a solid
+   * destructive fill that carries text (a danger button). On dark it equals
+   * the dark danger. Pairs with `--cngx-color-on-danger-strong`: 6.1:1 on
+   * light, 5.8:1 on dark.
+   * @group Surface
+   */
+  @property --cngx-color-danger-strong {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.52 0.19 25);
+  }
+
+  /**
+   * Ink on a strong-danger fill - text and glyphs drawn on
+   * `--cngx-color-danger-strong`. White on light (6.1:1), the dark neutral
+   * on dark, where the strong danger is light (5.8:1).
+   * @group Surface
+   */
+  @property --cngx-color-on-danger-strong {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
   /* --cngx-color-danger-text - danger as TEXT: 75% danger mixed in oklab
    * toward the text colour, so it clears 4.5:1 on the page in both schemes
    * and stays red (an oklch mix walks the hue through magenta). Deliberately
@@ -600,6 +627,8 @@
      */
     --cngx-gradient-brand: linear-gradient(100deg, var(--cngx-color-primary), var(--cngx-color-accent));
     --cngx-color-danger: oklch(0.6 0.18 25);
+    --cngx-color-danger-strong: oklch(0.52 0.19 25);
+    --cngx-color-on-danger-strong: oklch(1 0 0);
     --cngx-color-danger-text: color-mix(in oklab, var(--cngx-color-danger) 75%, var(--cngx-color-text));
     --cngx-color-success: oklch(0.6 0.15 145);
     --cngx-color-warning: oklch(0.72 0.15 75);
@@ -628,6 +657,8 @@
       --cngx-color-accent: oklch(from var(--cngx-color-primary) l c calc(h - 70));
       --cngx-gradient-brand: linear-gradient(100deg, var(--cngx-color-primary), var(--cngx-color-accent));
       --cngx-color-danger: oklch(0.68 0.17 25);
+      --cngx-color-danger-strong: oklch(0.68 0.17 25);
+      --cngx-color-on-danger-strong: oklch(0.2 0.01 250);
       --cngx-color-danger-text: color-mix(in oklab, var(--cngx-color-danger) 75%, var(--cngx-color-text));
       --cngx-color-success: oklch(0.68 0.14 145);
       --cngx-color-warning: oklch(0.78 0.14 75);
@@ -658,6 +689,8 @@
     --cngx-color-accent: oklch(from var(--cngx-color-primary) l c calc(h - 70));
     --cngx-gradient-brand: linear-gradient(100deg, var(--cngx-color-primary), var(--cngx-color-accent));
     --cngx-color-danger: oklch(0.68 0.17 25);
+    --cngx-color-danger-strong: oklch(0.68 0.17 25);
+    --cngx-color-on-danger-strong: oklch(0.2 0.01 250);
     --cngx-color-danger-text: color-mix(in oklab, var(--cngx-color-danger) 75%, var(--cngx-color-text));
     --cngx-color-success: oklch(0.68 0.14 145);
     --cngx-color-warning: oklch(0.78 0.14 75);
@@ -685,6 +718,8 @@
     --cngx-color-accent: oklch(from var(--cngx-color-primary) l c calc(h - 70));
     --cngx-gradient-brand: linear-gradient(100deg, var(--cngx-color-primary), var(--cngx-color-accent));
     --cngx-color-danger: oklch(0.6 0.18 25);
+    --cngx-color-danger-strong: oklch(0.52 0.19 25);
+    --cngx-color-on-danger-strong: oklch(1 0 0);
     --cngx-color-danger-text: color-mix(in oklab, var(--cngx-color-danger) 75%, var(--cngx-color-text));
     --cngx-color-success: oklch(0.6 0.15 145);
     --cngx-color-warning: oklch(0.72 0.15 75);

@@ -49,6 +49,8 @@ describe('--cngx-color-primary-strong', () => {
 describe.each([
   ['--cngx-color-border-strong', 'oklch(0.62 0.005 250)', 'oklch(0.57 0.005 250)'],
   ['--cngx-color-on-primary-strong', 'oklch(1 0 0)', 'oklch(0.2 0.01 250)'],
+  ['--cngx-color-danger-strong', 'oklch(0.52 0.19 25)', 'oklch(0.68 0.17 25)'],
+  ['--cngx-color-on-danger-strong', 'oklch(1 0 0)', 'oklch(0.2 0.01 250)'],
 ] as const)('%s', (token, light, dark) => {
   it('registers as an inheriting colour with the light rung as initial', () => {
     const block = schemeBlock(new RegExp(`@property ${token}\\s*{[^}]+}`));
