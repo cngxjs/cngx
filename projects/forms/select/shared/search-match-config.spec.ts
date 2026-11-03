@@ -336,7 +336,11 @@ describe('resolveSearchMatch', () => {
 
   it('falls back to the config matcher when the input is null', () => {
     const fromConfig = vi.fn<CngxSelectMatchFn>(() => true);
-    const fn = resolveSearchMatch<string>(signal(null), { searchMatchFn: fromConfig }, signal('en'));
+    const fn = resolveSearchMatch<string>(
+      signal(null),
+      { searchMatchFn: fromConfig },
+      signal('en'),
+    );
     expect(fn()(option, 'zzz')).toBe(true);
     expect(fromConfig).toHaveBeenCalledOnce();
   });

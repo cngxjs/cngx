@@ -225,7 +225,11 @@ describe('handleFlatNavPageJumpKey - virtualSpace', () => {
 
   it('passes Ctrl+PageDown through untouched', () => {
     const { listbox, highlightByIndex } = fakeRenderedListbox(30, 3);
-    const event = new KeyboardEvent('keydown', { key: 'PageDown', ctrlKey: true, cancelable: true });
+    const event = new KeyboardEvent('keydown', {
+      key: 'PageDown',
+      ctrlKey: true,
+      cancelable: true,
+    });
     const handled = handleFlatNavPageJumpKey(event, {
       listbox,
       popover,
