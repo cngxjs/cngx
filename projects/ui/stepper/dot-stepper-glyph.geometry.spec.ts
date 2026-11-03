@@ -116,6 +116,20 @@ describe('dot stepper error marks', () => {
     expect(visiblePath(svg).classList.contains('cngx-icon-svg__micro')).toBe(true);
   });
 
+  // Without the floor the line font sizes the glyph again, below 12px too.
+  it('sizes the error line glyph from the line font once the micro floor is lifted', async () => {
+    await mount();
+    mountedRoot!.style.setProperty('--cngx-icon-svg-micro-floor', '0px');
+    const line = mountedRoot!.querySelector<HTMLElement>('.cngx-dot-stepper__error')!;
+    line.style.fontSize = '10px';
+    const svg = line.querySelector<SVGSVGElement>('svg')!;
+    const width = svg.getBoundingClientRect().width;
+    expect(width).toBe(Math.round(0.85 * parseFloat(getComputedStyle(svg).fontSize)));
+    expect(width).toBeGreaterThan(0);
+    expect(width).toBeLessThan(10);
+    expect(visiblePath(svg).classList.contains('cngx-icon-svg__micro')).toBe(false);
+  });
+
   it('paints the mark over the dot in the on-danger colour', async () => {
     const dots = await mount();
     const mark = icon(dots[3]);

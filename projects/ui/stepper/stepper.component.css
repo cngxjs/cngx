@@ -90,7 +90,9 @@
   }
 
   /**
-   * Font-size of the indicator glyph.
+   * Font-size of the indicator glyph. The default completed check never
+   * drops below `--cngx-icon-svg-micro-floor` (12px); set that token to
+   * `0px` as well for a check smaller than the 12px micro box.
    * @group Typography
    */
   @property --cngx-step-indicator-font-size {
@@ -341,12 +343,14 @@
        custom theme. The check is part of the *default* indicator template
        only - a consumer-provided `*cngxStepIndicator` slot replaces it with
        its own art, so the two never stack. The box rounds to 12px in every
-       default disc (0.75rem; the em term only grows it with a larger
-       indicator font), which selects the 12-grid micro check (10 units
-       across, 10px). The 24-grid path (17 units with its stroke) and the
-       stroke width take over once the box passes 14px. */
+       default disc (the 0.75rem micro floor; the em term only grows it with
+       a larger indicator font), which selects the 12-grid micro check (10
+       units across, 10px). The 24-grid path (17 units with its stroke) and
+       the stroke width take over once the box passes 14px.
+       `--cngx-icon-svg-micro-floor: 0px` lets
+       `--cngx-step-indicator-font-size` shrink the check below 12px too. */
     .cngx-stepper__indicator-check {
-      --cngx-icon-svg-size: max(0.85em, 0.75rem);
+      --cngx-icon-svg-size: max(0.85em, var(--cngx-icon-svg-micro-floor, 0.75rem));
       --cngx-icon-svg-stroke-width: 3;
       display: block;
     }

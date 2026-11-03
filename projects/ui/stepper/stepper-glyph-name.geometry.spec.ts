@@ -146,6 +146,21 @@ describe('stepper status glyphs', () => {
     expect(box.top + box.height / 2).toBeCloseTo(disc.top + disc.height / 2, 0);
   });
 
+  // Without the floor the indicator font sizes the check again, below 12px too.
+  it('sizes the classic disc check from the indicator font once the micro floor is lifted', () => {
+    mount('classic');
+    mountedRoot!.style.setProperty('--cngx-icon-svg-micro-floor', '0px');
+    const indicator = header(0).querySelector<HTMLElement>('.cngx-stepper__indicator')!;
+    // A rem value: an em value on this registered token is a font-size cycle.
+    indicator.style.setProperty('--cngx-step-indicator-font-size', '0.5rem');
+    const svg = indicator.querySelector<SVGSVGElement>('svg.cngx-stepper__indicator-check')!;
+    const width = svg.getBoundingClientRect().width;
+    expect(width).toBe(Math.round(0.85 * parseFloat(getComputedStyle(svg).fontSize)));
+    expect(width).toBeGreaterThan(0);
+    expect(width).toBeLessThan(10);
+    expect(getComputedStyle(svg.querySelector('.cngx-icon-svg__path')!).display).not.toBe('none');
+  });
+
   for (const skin of ['classic', 'path-chevron', 'chips', 'breadcrumb'] as const) {
     it(`keep the ${skin} glyphs out of the step names`, async () => {
       mount(skin);
