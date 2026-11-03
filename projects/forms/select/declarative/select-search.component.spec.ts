@@ -15,9 +15,7 @@ import { CNGX_SELECT_SHELL_SEARCH_HOST } from './select-search-host';
 @Directive({
   selector: '[fakeSearchHost]',
   standalone: true,
-  providers: [
-    { provide: CNGX_SELECT_SHELL_SEARCH_HOST, useExisting: FakeSearchHostDir },
-  ],
+  providers: [{ provide: CNGX_SELECT_SHELL_SEARCH_HOST, useExisting: FakeSearchHostDir }],
 })
 class FakeSearchHostDir {
   readonly searchTerm = model<string>('');
@@ -78,9 +76,7 @@ describe('CngxSelectSearch - aria-label cascade', () => {
 
   it('config override via withAriaLabels({ searchInput }) applies when no instance value is set', () => {
     TestBed.configureTestingModule({
-      providers: [
-        provideSelectConfig(withAriaLabels({ searchInput: 'Find an option' })),
-      ],
+      providers: [provideSelectConfig(withAriaLabels({ searchInput: 'Find an option' }))],
     });
     const { input } = setup(HostNoLabel);
     expect(input.getAttribute('aria-label')).toBe('Find an option');
@@ -170,9 +166,7 @@ describe('CngxSelectSearch placement (CNGX2018)', () => {
 @Directive({
   selector: '[debouncedSearchHost]',
   standalone: true,
-  providers: [
-    { provide: CNGX_SELECT_SHELL_SEARCH_HOST, useExisting: DebouncedSearchHostDir },
-  ],
+  providers: [{ provide: CNGX_SELECT_SHELL_SEARCH_HOST, useExisting: DebouncedSearchHostDir }],
 })
 class DebouncedSearchHostDir {
   readonly searchTerm = model<string>('');
@@ -274,6 +268,24 @@ describe('CngxSelectSearch - pending debounced write on Escape and Enter', () =>
     host.panelOpen.set(false);
     fixture.detectChanges();
     vi.advanceTimersByTime(1000);
+    expect(host.writes).toEqual(['ber']);
+    expect(input.value).toBe('ber');
+  });
+
+  it('destroying the element drops the pending write', () => {
+    const { fixture, host, type } = mountDebounced();
+    type('ber');
+    fixture.destroy();
+    vi.advanceTimersByTime(1000);
+    expect(host.writes).toEqual([]);
+  });
+
+  it('a host-side close settles nothing when no write is pending', () => {
+    const { fixture, host, input, type } = mountDebounced();
+    type('ber');
+    vi.advanceTimersByTime(300);
+    host.panelOpen.set(false);
+    fixture.detectChanges();
     expect(host.writes).toEqual(['ber']);
     expect(input.value).toBe('ber');
   });

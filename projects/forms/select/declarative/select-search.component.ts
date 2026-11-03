@@ -12,6 +12,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
+import { CngxSearch } from '@cngx/common/interactive';
 
 import { createListboxKeyForward } from '../shared/internal/listbox-key-forward';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
@@ -25,7 +26,9 @@ import { injectSelectShellSearchHost } from './select-search-host';
  * Two-way binds the shell's `searchTerm` via
  * `CNGX_SELECT_SHELL_SEARCH_HOST` and forwards
  * `ArrowUp/Down`/`Home`/`End`/`Enter`/`Escape` into the listbox AD so
- * the user can filter and pick without leaving the input.
+ * the user can filter and pick without leaving the input. The input carries
+ * `CngxSearch`, so the shell's `searchDebounceMs` runs through the same
+ * debounce as the input variants' `CngxListboxSearch`.
  *
  * **Usage:** direct child of `<cngx-select-shell>`. The shell projects
  * via `<ng-content select="cngx-select-search" />`.
@@ -42,7 +45,7 @@ import { injectSelectShellSearchHost } from './select-search-host';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/declarative/select-search.component.ts
  * @since 0.1.0
- * @relatedTo CngxSelectShell, CngxSelectOption, CngxSelectOptgroup
+ * @relatedTo CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSearch
  * <example-url>/#/forms/select/declarative/search</example-url>
  * @axis level organism
  */
@@ -55,9 +58,11 @@ import { injectSelectShellSearchHost } from './select-search-host';
     <input
       type="search"
       #searchInput
+      cngxSearch
       class="cngx-select-search__input"
       [value]="host.searchTerm()"
-      (input)="handleInput($event)"
+      [debounceMs]="debounceMs()"
+      (searchChange)="host.searchTerm.set($event)"
       (keydown)="handleKeydown($event)"
       [attr.aria-label]="resolvedAriaLabel()"
       [placeholder]="resolvedPlaceholder()"
@@ -65,6 +70,7 @@ import { injectSelectShellSearchHost } from './select-search-host';
     />
   `,
   styleUrls: ['./select-search.component.css'],
+  imports: [CngxSearch],
 })
 export class CngxSelectSearch {
   private readonly config = resolveSelectConfig();
@@ -94,17 +100,19 @@ export class CngxSelectSearch {
 
   private readonly inputRef = viewChild.required<ElementRef<HTMLInputElement>>('searchInput');
 
-  /** Debounced term still waiting for its write into the host. */
-  private pendingWrite: {
-    readonly timer: ReturnType<typeof setTimeout>;
-    readonly term: string;
-  } | null = null;
+  // Optional: the panel-close effect can run before the first render.
+  private readonly search = viewChild(CngxSearch);
+
+  /**
+   * How long a typed term waits before it reaches `host.searchTerm`, so the
+   * shell's `searchTermChange` fires once per pause, not once per keystroke.
+   * A host without `searchDebounceMs` gets a write on every keystroke.
+   *
+   * @internal
+   */
+  protected readonly debounceMs = computed<number>(() => this.host.searchDebounceMs?.() ?? 0);
 
   constructor() {
-    // Lead the mobile sheet: the shell makes this input its initial focus
-    // once both views exist.
-    const destroyRef = inject(DestroyRef);
-    destroyRef.onDestroy(() => this.cancelPendingWrite());
     // The element stays mounted while the panel is closed, so a close by Tab,
     // outside click, trigger click or pick must not let the write land later.
     effect(() => {
@@ -113,6 +121,9 @@ export class CngxSelectSearch {
         untracked(() => this.dropPendingWrite());
       }
     });
+    // Lead the mobile sheet: the shell makes this input its initial focus
+    // once both views exist.
+    const destroyRef = inject(DestroyRef);
     afterNextRender(() => {
       const release = this.host.registerInitialFocus?.(this.inputRef().nativeElement);
       if (release) {
@@ -133,27 +144,6 @@ export class CngxSelectSearch {
   );
 
   /**
-   * Writes the typed term into the host after its `searchDebounceMs`, so the
-   * shell's `searchTermChange` fires once per pause, not once per keystroke.
-   *
-   * @internal
-   */
-  protected handleInput(event: Event): void {
-    const term = (event.target as HTMLInputElement).value;
-    this.cancelPendingWrite();
-    const delay = this.host.searchDebounceMs?.() ?? 0;
-    if (delay <= 0) {
-      this.host.searchTerm.set(term);
-      return;
-    }
-    const timer = setTimeout(() => {
-      this.pendingWrite = null;
-      this.host.searchTerm.set(term);
-    }, delay);
-    this.pendingWrite = { timer, term };
-  }
-
-  /**
    * Forward navigation keys into the listbox AD while focus stays in
    * the search input. ArrowUp/Down move highlight, Enter activates the
    * current item, Escape closes and restores focus. A debounced term still
@@ -167,7 +157,7 @@ export class CngxSelectSearch {
    * @internal
    */
   protected handleKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Enter' && this.flushPendingWrite()) {
+    if (event.key === 'Enter' && this.search()?.flush()) {
       event.preventDefault();
       // The listbox reads the filtered options through a template binding,
       // which refreshes on the next render, not on the term write.
@@ -187,30 +177,12 @@ export class CngxSelectSearch {
     this.host.focus();
   });
 
-  private cancelPendingWrite(): void {
-    if (this.pendingWrite) {
-      clearTimeout(this.pendingWrite.timer);
-      this.pendingWrite = null;
-    }
-  }
-
-  private flushPendingWrite(): boolean {
-    const pending = this.pendingWrite;
-    if (!pending) {
-      return false;
-    }
-    this.cancelPendingWrite();
-    this.host.searchTerm.set(pending.term);
-    return true;
-  }
-
   // The input keeps the dropped text otherwise: `[value]` re-renders only when
   // `searchTerm` changes, and the dropped write never changes it.
   private dropPendingWrite(): void {
-    if (!this.pendingWrite) {
+    if (!this.search()?.cancel()) {
       return;
     }
-    this.cancelPendingWrite();
     this.inputRef().nativeElement.value = this.host.searchTerm();
   }
 }
