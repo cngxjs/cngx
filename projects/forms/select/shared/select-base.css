@@ -390,6 +390,9 @@
    * is load-bearing: with `inherits: false` the registered initial
    * would always win at the caret and no consumer or composing
    * organism could ever set the token (the inherits:false trap).
+   * The default glyph box never drops below
+   * `--cngx-icon-svg-micro-floor` (12px); set that token to `0px` as well
+   * for a caret smaller than the 12px micro box.
    * @group Layout
    */
   @property --cngx-select-caret-size {
@@ -1015,11 +1018,12 @@
 }
 
 @layer cngx.components {
-  /* The box never drops below 12px, where the 12-grid micro triangle (8 units,
-     8px) paints: the default 1.6em caret font rounds to 12px and the 0.75rem
-     floor lifts the Material 1.5rem caret from 11px. Past the floor the box
-     keeps the 24-grid width, the 14-unit triangle drawn 0.27em of the caret
-     font wide. */
+  /* The box never drops below the micro floor (12px), where the 12-grid micro
+     triangle (8 units, 8px) paints: the default 1.6em caret font rounds to
+     12px and the floor lifts the Material 1.5rem caret from 11px. Past the
+     floor the box keeps the 24-grid width, the 14-unit triangle drawn 0.27em
+     of the caret font wide. `--cngx-icon-svg-micro-floor: 0px` hands the box
+     back to the caret font in both directions. */
   :is(
       .cngx-select__caret,
       .cngx-multi-select__caret,
@@ -1032,7 +1036,7 @@
       .cngx-select-shell__caret
     )
     > .cngx-icon-svg {
-    --cngx-icon-svg-size: max(calc(0.27em * 24 / 14), 0.75rem);
+    --cngx-icon-svg-size: max(calc(0.27em * 24 / 14), var(--cngx-icon-svg-micro-floor, 0.75rem));
   }
 
   /* The default clear glyph sits in an inline span, where an inline svg aligns

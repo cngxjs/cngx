@@ -203,6 +203,18 @@ class AffixBlockHost {
     <div style="display: grid; line-height: 1.5">
       <cngx-select class="default" [label]="'Colour'" [options]="options" />
       <cngx-select class="material" style="--cngx-select-caret-size: 1.5rem" [label]="'Colour'" [options]="options" />
+      <cngx-select
+        class="unfloored"
+        style="--cngx-icon-svg-micro-floor: 0px; --cngx-select-caret-size: 1.5rem"
+        [label]="'Colour'"
+        [options]="options"
+      />
+      <cngx-select
+        class="compact"
+        style="--cngx-icon-svg-micro-floor: 0px; --cngx-select-caret-size: 1em"
+        [label]="'Colour'"
+        [options]="options"
+      />
     </div>
   `,
   styleUrls: ['../../../core/theming/layers.css', '../../../common/theming/components/cngx-icon-glyph.css'],
@@ -544,6 +556,26 @@ describe('select-family field skins', () => {
     expect(computedValue(svg.querySelector('.cngx-icon-svg__path')!, 'display')).toBe('none');
     expect(computedValue(micro, 'display')).not.toBe('none');
     expect(micro.getBoundingClientRect().width).toBeCloseTo(8, 1);
+  });
+
+  // Without the floor the box follows the caret font again, below 12px too:
+  // 11px at the Material 1.5rem caret font, 7px at a 1em one.
+  it.each(['.unfloored', '.compact'])('sizes the %s caret box from the caret font without the micro floor', (hostSelector) => {
+    const el = trigger(mount(CaretMicroHost), hostSelector);
+    const svg = el.querySelector<SVGSVGElement>('[class*="__caret"] svg.cngx-icon-svg')!;
+    const caretFont = parseFloat(computedValue(svg, 'font-size'));
+    const width = svg.getBoundingClientRect().width;
+    expect(width).toBe(Math.round(((0.27 * 24) / 14) * caretFont));
+    expect(width).toBeLessThan(12);
+  });
+
+  it('paints the 24-grid caret below the band once the floor is lifted', () => {
+    const el = trigger(mount(CaretMicroHost), '.compact');
+    const svg = el.querySelector<SVGSVGElement>('[class*="__caret"] svg.cngx-icon-svg')!;
+    expect(svg.getBoundingClientRect().width).toBeGreaterThan(0);
+    expect(svg.getBoundingClientRect().width).toBeLessThan(10);
+    expect(computedValue(svg.querySelector('.cngx-icon-svg__path')!, 'display')).not.toBe('none');
+    expect(computedValue(svg.querySelector('.cngx-icon-svg__micro')!, 'display')).toBe('none');
   });
 
   it('draws the fill trigger as an underline, not a box', () => {
