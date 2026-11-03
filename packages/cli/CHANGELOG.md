@@ -47,3 +47,7 @@ grounds against is a property of the bundled snapshot, not this version.
   error finding, an unknown flag, a `<projectDir>` that is not a directory, a
   second `<projectDir>` or `--json` exits 2 before any scan, a throw exits 3;
   `--version` and `--help` print the CLI's version and the `cngx doctor` help.
+
+### Changed
+
+- `cngx doctor` runs on `@cngx/doctor` 0.2 and 0.3.

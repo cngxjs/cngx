@@ -29,7 +29,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@cngx/doctor": "^0.2.1",
+    "@cngx/doctor": "^0.2.1 || ^0.3.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
