@@ -102,6 +102,36 @@ describe('CngxSelectReorderList under the touch floor', () => {
     expect(grip.height).toBeCloseTo(inkOnRoundedBox(0.8125 * em, 15), 1);
   });
 
+  // The 24/15 grip scaling holds only on the 24-grid path, so a small list
+  // font must not move the grip box into the micro band.
+  it('keeps the grip on the 24-grid path at a 10px font', async () => {
+    const fixture = TestBed.createComponent(Host);
+    root = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(root);
+    fixture.detectChanges();
+    root.querySelector<HTMLElement>('[data-touch]')!.style.fontSize = '10px';
+    await nextFrame();
+
+    const grip = root.querySelector<SVGSVGElement>('li[data-reorder-index] [data-reorder-handle] svg')!;
+    expect(grip.getBoundingClientRect().width).toBe(15);
+    expect(getComputedStyle(grip.querySelector('.cngx-icon-svg__path')!).display).not.toBe('none');
+    expect(getComputedStyle(grip.querySelector('.cngx-icon-svg__micro')!).display).toBe('none');
+  });
+
+  it('hands the move arrows to the 24-grid path at a 20px font', async () => {
+    const fixture = TestBed.createComponent(Host);
+    root = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(root);
+    fixture.detectChanges();
+    root.querySelector<HTMLElement>('[data-touch]')!.style.fontSize = '20px';
+    await nextFrame();
+
+    const arrow = root.querySelector<SVGSVGElement>('li[data-reorder-index] [data-move] svg')!;
+    expect(arrow.getBoundingClientRect().width).toBe(15);
+    expect(getComputedStyle(arrow.querySelector('.cngx-icon-svg__path')!).display).not.toBe('none');
+    expect(getComputedStyle(arrow.querySelector('.cngx-icon-svg__micro')!).display).toBe('none');
+  });
+
   it.each([16, 14])('lands the move arrows on the 12px micro box at a %ipx font', async (fontPx) => {
     const fixture = TestBed.createComponent(Host);
     root = fixture.nativeElement as HTMLElement;

@@ -50,9 +50,12 @@
   }
 
   /* The grip draws its dots over 15 of the 24 grid units; scaling the box by
-     24/15 keeps them the 0.8125em tall column the 10x16 handle drew. */
+     24/15 keeps them the 0.8125em tall column the 10x16 handle drew. The
+     scaling only holds for the 24-grid path, so the box never drops below
+     15px, the upper edge of the micro band in `cngx-icon-glyph.css`; a small
+     list font keeps the 24-grid grip instead of switching to the micro one. */
   .cngx-select-reorder-list__handle > .cngx-icon-svg {
-    --cngx-icon-svg-size: calc(0.8125em * 24 / 15);
+    --cngx-icon-svg-size: max(calc(0.8125em * 24 / 15), 15px);
   }
 
   /* The box lands on 12px at the 16px default and at any smaller font (the
