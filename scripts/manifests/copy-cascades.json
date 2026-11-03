@@ -416,7 +416,7 @@
     {
       "class": "CngxSelectSearch",
       "file": "projects/forms/select/declarative/select-search.component.ts",
-      "line": 77,
+      "line": 80,
       "member": "resolvedPlaceholder",
       "enclosing": "computed",
       "tiers": [
@@ -432,7 +432,7 @@
     {
       "class": "CngxSelectSearch",
       "file": "projects/forms/select/declarative/select-search.component.ts",
-      "line": 119,
+      "line": 132,
       "member": "resolvedAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -524,7 +524,7 @@
     {
       "class": "CngxSelectShell",
       "file": "projects/forms/select/select-shell/select-shell.component.ts",
-      "line": 385,
+      "line": 386,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
