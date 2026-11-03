@@ -10,8 +10,8 @@ import { cdp, userEvent } from 'vitest/browser';
 // only marker of the current crumb (toolbar, chips, iconlabel, path, the
 // editorial gradient, the siblings current row, the overflow hover and the
 // open siblings caret), it paints the primary text rung
-// (`--cngx-color-primary-text`, falling back to primary mixed 70% into the
-// text colour) at 4.5:1 instead of the raw primary (2.9-3.3:1 on light). The
+// (`--cngx-color-primary-text`, falling back to primary at the text-rung
+// lightness) at 4.5:1 instead of the raw primary (2.9-3.3:1 on light). The
 // filled skins (pill, ribbon, icononly) keep the raw primary fill and set the
 // label (and the icononly glyph, currentColor) in the scheme's dark neutral:
 // the text colour in light, the surface colour in dark. A declared

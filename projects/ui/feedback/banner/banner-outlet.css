@@ -377,7 +377,7 @@
   @property --cngx-banner-error-color {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.5 0.133 24);
+    initial-value: oklch(0.46 0.18 25);
   }
 
   /**
@@ -478,7 +478,7 @@
    * declared per block so a dark island re-derives it. The
    * action-hover overlay flips alpha-on-black to alpha-on-white. */
   :root {
-    --cngx-banner-error-color: var(--cngx-color-danger-text, oklch(0.5 0.133 24));
+    --cngx-banner-error-color: var(--cngx-color-danger-text, oklch(0.46 0.18 25));
     --cngx-banner-bg: oklch(0.98 0.005 250);
     --cngx-banner-info-bg: var(--cngx-feedback-info-bg, oklch(0.96 0.025 240));
     --cngx-banner-info-border: var(--cngx-feedback-info-border, oklch(0.85 0.07 240));
@@ -497,7 +497,7 @@
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
-      --cngx-banner-error-color: var(--cngx-color-danger-text, oklch(0.75 0.126 24));
+      --cngx-banner-error-color: var(--cngx-color-danger-text, oklch(0.74 0.17 25));
       --cngx-banner-bg: oklch(0.22 0.01 250);
       --cngx-banner-info-bg: var(--cngx-feedback-info-bg, oklch(0.3 0.05 240));
       --cngx-banner-info-border: var(--cngx-feedback-info-border, oklch(0.5 0.08 240));
@@ -517,7 +517,7 @@
 
   [data-color-scheme='dark'],
   .dark {
-    --cngx-banner-error-color: var(--cngx-color-danger-text, oklch(0.75 0.126 24));
+    --cngx-banner-error-color: var(--cngx-color-danger-text, oklch(0.74 0.17 25));
     --cngx-banner-bg: oklch(0.22 0.01 250);
     --cngx-banner-info-bg: var(--cngx-feedback-info-bg, oklch(0.3 0.05 240));
     --cngx-banner-info-border: var(--cngx-feedback-info-border, oklch(0.5 0.08 240));
@@ -536,7 +536,7 @@
 
   [data-color-scheme='light'],
   .light {
-    --cngx-banner-error-color: var(--cngx-color-danger-text, oklch(0.5 0.133 24));
+    --cngx-banner-error-color: var(--cngx-color-danger-text, oklch(0.46 0.18 25));
     --cngx-banner-bg: oklch(0.98 0.005 250);
     --cngx-banner-info-bg: var(--cngx-feedback-info-bg, oklch(0.96 0.025 240));
     --cngx-banner-info-border: var(--cngx-feedback-info-border, oklch(0.85 0.07 240));
@@ -653,7 +653,7 @@
     .cngx-banner__error {
       display: block;
       font-size: var(--cngx-banner-error-font-size, 0.875rem);
-      color: var(--cngx-banner-error-color, var(--cngx-color-danger-text, oklch(0.5 0.133 24)));
+      color: var(--cngx-banner-error-color, var(--cngx-color-danger-text, oklch(0.46 0.18 25)));
       margin-top: 2px;
     }
 

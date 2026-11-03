@@ -128,11 +128,7 @@
       --cngx-field-error-color,
       var(
         --cngx-color-danger-text,
-        color-mix(
-          in oklab,
-          var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
-          var(--cngx-color-text, oklch(0.2 0.01 250))
-        )
+        oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)
       )
     );
   }
@@ -153,11 +149,7 @@
       --cngx-field-error-color,
       var(
         --cngx-color-danger-text,
-        color-mix(
-          in oklab,
-          var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
-          var(--cngx-color-text, oklch(0.2 0.01 250))
-        )
+        oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)
       )
     );
   }
