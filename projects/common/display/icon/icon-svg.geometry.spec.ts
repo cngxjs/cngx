@@ -229,6 +229,15 @@ describe('CngxIconSvg geometry', () => {
     const box = query(mount(), '.in-icon-fill').getBoundingClientRect();
     expect(box.height).toBeCloseTo(1.5 * 16, 0);
   });
+
+  // The organisms that size a default glyph to the 12px micro box floor it
+  // with this token; it inherits, so `0px` on an ancestor lifts the floor.
+  it('declares the micro floor at 0.75rem and lets an ancestor override it', () => {
+    const root = mount();
+    expect(computedValue(query(root, '.fill'), '--cngx-icon-svg-micro-floor')).toBe('0.75rem');
+    root.style.setProperty('--cngx-icon-svg-micro-floor', '0px');
+    expect(computedValue(query(root, '.fill'), '--cngx-icon-svg-micro-floor')).toBe('0px');
+  });
 });
 
 describe('CngxIconSvg micro tier', () => {

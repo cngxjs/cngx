@@ -18,8 +18,9 @@
  *
  * **Inheritance**
  *
- * `--cngx-icon-svg-size` and `--cngx-icon-svg-stroke-width` are
- * unregistered and declared on `:root`, so an override on any ancestor
+ * `--cngx-icon-svg-size`, `--cngx-icon-svg-micro-floor` and
+ * `--cngx-icon-svg-stroke-width` are unregistered and declared on
+ * `:root`, so an override on any ancestor
  * reaches every glyph below it; the em size resolves against the font
  * size the glyph sits in.
  */
@@ -34,6 +35,20 @@
      * @group Layout
      */
     --cngx-icon-svg-size: 1em;
+    /**
+     * Lower bound of the glyph box where a cngx organism sizes a default
+     * glyph to the 12px micro box: the select caret, the paginator
+     * page-size caret, the stepper check and error line, the tab add and
+     * close glyphs and the context-menu submenu caret read it as
+     * `max(<em size>, var(--cngx-icon-svg-micro-floor, 0.75rem))`. The em
+     * size still grows the box with a larger font. Set it to `0px` on any
+     * ancestor to let the em size, and the size token that feeds it,
+     * shrink the box below 12px, out of the micro band. It must be a
+     * length: a unitless `0` makes the `max()` invalid.
+     * @type <length>
+     * @group Layout
+     */
+    --cngx-icon-svg-micro-floor: 0.75rem;
     /**
      * Stroke width of outline glyphs, in grid units of the 24x24 viewBox.
      * Drives the 24-grid path only; the 12-grid micro drawing is a fill
