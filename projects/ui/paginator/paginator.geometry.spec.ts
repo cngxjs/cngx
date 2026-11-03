@@ -363,6 +363,22 @@ describe('CngxPaginator default glyphs', () => {
     expect(micro.getBoundingClientRect().width).toBeCloseTo(8, 1);
   });
 
+  // Without the floor the caret font sizes the box again, below 12px too.
+  it.each(CARET_SEGMENTS)('sizes the %s caret from the caret font once the micro floor is lifted', (selector) => {
+    const fixture = TestBed.createComponent(PaginatorMicroGlyphHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    mountedRoot.style.setProperty('--cngx-icon-svg-micro-floor', '0px');
+    mountedRoot.style.setProperty('--cngx-paginator-caret-size', '0.75em');
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const parts = glyph(mountedRoot, `${selector} .cngx-paginator__select-caret`);
+    const width = parts.svg.getBoundingClientRect().width;
+    expect(width).toBe(Math.round(((0.4 * 24) / 14) * px(parts.svg, 'font-size')));
+    expect(width).toBeGreaterThan(0);
+    expect(width).toBeLessThan(10);
+    expect(computedValue(parts.path, 'display')).not.toBe('none');
+  });
+
   it.each([...NAV_SEGMENTS, '.cngx-paginator__more'])(
     'centres the %s glyph in its button',
     (selector) => {
