@@ -24,8 +24,13 @@ import { describe, expect, it } from 'vitest';
  * scheme block of `system-tokens.css` declares. A literal fallback ignores a
  * brand primary, and a hand-copied lightness drifts the next time core moves
  * it. The tone literal names the scheme: the light literal pairs with the
- * light L, the dark literal with the dark L. Both allowlists are empty on
- * purpose.
+ * light L, the dark literal with the dark L.
+ *
+ * A registered property whose assignment reads a rung directly keeps the
+ * rung's light value as its `initial-value` (the registration convention:
+ * the initial is the light default as a literal), so the registration
+ * documents the colour the reader actually paints. All allowlists are empty
+ * on purpose.
  */
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -129,7 +134,9 @@ export function readSchemes(tokens) {
       scheme[tone] = { literal: literal?.[1] };
       for (const rung of ['text', 'strong']) {
         const derived = body.match(
-          new RegExp(`--cngx-color-${tone}-${rung}: oklch\\(from var\\(--cngx-color-${tone}\\) ([0-9.]+) c h\\);`),
+          new RegExp(
+            `--cngx-color-${tone}-${rung}: oklch\\(from var\\(--cngx-color-${tone}\\) ([0-9.]+) c h\\);`,
+          ),
         );
         scheme[tone][rung] = derived?.[1];
       }
@@ -168,14 +175,57 @@ export function findDriftedFallbacks(source, schemes) {
     const [head, tone, rung] = reader;
     const fallback = body.slice(head.length, -1).trim();
     const derived = fallback.match(
-      new RegExp(`^oklch\\(from var\\(--cngx-color-${tone}, (oklch\\([^()]*\\))\\) ([0-9.]+) c h\\)$`),
+      new RegExp(
+        `^oklch\\(from var\\(--cngx-color-${tone}, (oklch\\([^()]*\\))\\) ([0-9.]+) c h\\)$`,
+      ),
     );
     const scheme = derived && Object.values(schemes).find((s) => s[tone].literal === derived[1]);
     const ok = scheme && scheme[tone][rung] === derived[2];
     if (!ok) {
-      hits.push({ line: code.slice(0, at).split('\n').length, reason: `--cngx-color-${tone}-${rung} falls back to ${fallback}` });
+      hits.push({
+        line: code.slice(0, at).split('\n').length,
+        reason: `--cngx-color-${tone}-${rung} falls back to ${fallback}`,
+      });
     }
   }
+}
+
+const PROPERTY_BLOCK = /@property\s+(--[a-z0-9-]+)\s*\{([^}]*)\}/gi;
+
+/**
+ * Registered properties in `source` that are assigned straight from a rung
+ * but whose `initial-value` is not that rung's light value.
+ */
+export function findStaleInitials(source, schemes) {
+  const code = stripComments(source);
+  const hits = [];
+  PROPERTY_BLOCK.lastIndex = 0;
+  let m;
+  while ((m = PROPERTY_BLOCK.exec(code)) !== null) {
+    const [, name, body] = m;
+    const initial = body.match(/initial-value\s*:\s*([^;]+);/)?.[1].trim();
+    const assignments = [...code.matchAll(new RegExp(`${name}\\s*:\\s*([^;]{0,80})`, 'g'))].map(
+      (a) =>
+        a[1].replace(/\s+/g, ' ').match(/^var\( ?--cngx-color-(primary|danger)-(text|strong)\b/),
+    );
+    const [first] = assignments;
+    // Only a property fed by exactly one rung everywhere: a per-tone property
+    // (assigned from several rungs) keeps a neutral initial on purpose.
+    const single = first && assignments.every((x) => x && x[1] === first[1] && x[2] === first[2]);
+    if (!initial || !single) {
+      continue;
+    }
+    const [, tone, rung] = first;
+    const light = schemes.light[tone];
+    const expected = light.literal.replace(/^oklch\(([0-9.]+)/, `oklch(${light[rung]}`);
+    if (initial !== expected) {
+      hits.push({
+        line: code.slice(0, m.index).split('\n').length,
+        reason: `${name} initial-value ${initial}, expected ${expected} (--cngx-color-${tone}-${rung})`,
+      });
+    }
+  }
+  return hits;
 }
 
 // --- fixtures --------------------------------------------------------------
@@ -218,14 +268,31 @@ describe('findRetiredMixes', () => {
   });
 
   it('maps a multi-line hit to the line the mix starts on', () => {
-    const source = ['.x {', '  color: color-mix(', '    in oklab,', '    var(--cngx-color-danger) 75%,', '    black', '  );', '}'].join('\n');
+    const source = [
+      '.x {',
+      '  color: color-mix(',
+      '    in oklab,',
+      '    var(--cngx-color-danger) 75%,',
+      '    black',
+      '  );',
+      '}',
+    ].join('\n');
     expect(findRetiredMixes(source)).toEqual([2]);
   });
 
   it.each([
-    ['the relative-colour derivation', '.x { color: oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h); }'],
-    ['a 70% mix of an unrelated token', '.x { color: color-mix(in oklab, var(--cngx-color-warning) 70%, var(--cngx-color-text)); }'],
-    ['the retired formula inside a comment', '/* color-mix(in oklab, var(--cngx-color-primary) 70%, var(--cngx-color-text)) */ .x { color: red; }'],
+    [
+      'the relative-colour derivation',
+      '.x { color: oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h); }',
+    ],
+    [
+      'a 70% mix of an unrelated token',
+      '.x { color: color-mix(in oklab, var(--cngx-color-warning) 70%, var(--cngx-color-text)); }',
+    ],
+    [
+      'the retired formula inside a comment',
+      '/* color-mix(in oklab, var(--cngx-color-primary) 70%, var(--cngx-color-text)) */ .x { color: red; }',
+    ],
   ])('leaves %s alone', (_, source) => {
     expect(findRetiredMixes(source)).toEqual([]);
   });
@@ -275,7 +342,14 @@ describe('findDriftedFallbacks', () => {
     ['a reader without a fallback', '.x { color: var(--cngx-color-primary-strong); }'],
     [
       'the light derivation over several lines',
-      ['.x {', '  color: var(', '    --cngx-color-danger-text,', '    oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)', '  );', '}'].join('\n'),
+      [
+        '.x {',
+        '  color: var(',
+        '    --cngx-color-danger-text,',
+        '    oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)',
+        '  );',
+        '}',
+      ].join('\n'),
     ],
     [
       'the dark derivation',
@@ -287,6 +361,42 @@ describe('findDriftedFallbacks', () => {
     ],
   ])('leaves %s alone', (_, source) => {
     expect(findDriftedFallbacks(source, SCHEMES)).toEqual([]);
+  });
+});
+
+describe('findStaleInitials', () => {
+  const registered = (initial) =>
+    [
+      `@property --x-fg { syntax: '<color>'; inherits: true; initial-value: ${initial}; }`,
+      ':root {',
+      '  --x-fg: var(',
+      '    --cngx-color-danger-text,',
+      '    oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)',
+      '  );',
+      '}',
+    ].join('\n');
+
+  it('flags an initial that is not the light rung value', () => {
+    expect(findStaleInitials(registered('oklch(0.55 0.18 25)'), SCHEMES)).toHaveLength(1);
+  });
+
+  it('accepts the light rung value', () => {
+    expect(findStaleInitials(registered('oklch(0.46 0.18 25)'), SCHEMES)).toEqual([]);
+  });
+
+  it('ignores a per-tone property fed by several rungs', () => {
+    const source = [
+      "@property --t { syntax: '<color>'; inherits: true; initial-value: currentColor; }",
+      '.p { --t: var(--cngx-color-primary-text); }',
+      '.d { --t: var(--cngx-color-danger-text); }',
+    ].join('\n');
+    expect(findStaleInitials(source, SCHEMES)).toEqual([]);
+  });
+
+  it('ignores a registered property that does not read a rung', () => {
+    const source =
+      "@property --y { syntax: '<color>'; inherits: true; initial-value: red; } :root { --y: var(--cngx-color-danger); }";
+    expect(findStaleInitials(source, SCHEMES)).toEqual([]);
   });
 });
 
@@ -311,6 +421,17 @@ describe('tone-rung mix guard', () => {
         continue;
       }
       for (const { line, reason } of findDriftedFallbacks(readFileSync(file, 'utf8'), schemes)) {
+        hits.push(`${relative(REPO_ROOT, file)}:${line} ${reason}`);
+      }
+    }
+    expect(hits).toEqual([]);
+  });
+
+  it('finds no registered rung reader under projects/ with a stale initial-value', () => {
+    const schemes = readSchemes(readFileSync(TOKENS, 'utf8'));
+    const hits = [];
+    for (const file of walkStyles(PROJECTS)) {
+      for (const { line, reason } of findStaleInitials(readFileSync(file, 'utf8'), schemes)) {
         hits.push(`${relative(REPO_ROOT, file)}:${line} ${reason}`);
       }
     }

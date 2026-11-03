@@ -1035,7 +1035,7 @@
 @property --cngx-breadcrumb-toolbar-active-color {
   syntax: '<color>';
   inherits: true;
-  initial-value: oklch(0.52 0.13 50);
+  initial-value: oklch(0.54 0.19 50);
 }
 /**
  * Toolbar skin: font size of the cell labels.
@@ -1206,7 +1206,7 @@
 @property --cngx-breadcrumb-chips-active-color {
   syntax: '<color>';
   inherits: true;
-  initial-value: oklch(0.52 0.13 50);
+  initial-value: oklch(0.54 0.19 50);
 }
 /**
  * Chips skin: font size of the chip labels and the chevron separator.
@@ -1354,7 +1354,7 @@
 @property --cngx-breadcrumb-path-active-color {
   syntax: '<color>';
   inherits: true;
-  initial-value: oklch(0.52 0.13 50);
+  initial-value: oklch(0.54 0.19 50);
 }
 /**
  * Path skin: separator colour.
@@ -1491,7 +1491,7 @@
 @property --cngx-breadcrumb-iconlabel-active-color {
   syntax: '<color>';
   inherits: true;
-  initial-value: oklch(0.52 0.13 50);
+  initial-value: oklch(0.54 0.19 50);
 }
 /**
  * Iconlabel skin: corner radius of the links.

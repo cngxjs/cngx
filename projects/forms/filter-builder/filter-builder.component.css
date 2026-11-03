@@ -362,7 +362,7 @@
   @property --cngx-filter-builder-action-remove-fg {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.55 0.18 25);
+    initial-value: oklch(0.46 0.18 25);
   }
 
   /**
@@ -373,7 +373,7 @@
   @property --cngx-filter-builder-error-fg {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.55 0.18 25);
+    initial-value: oklch(0.46 0.18 25);
   }
 
   /**
