@@ -228,9 +228,20 @@ export function createMenuDismissHandler(
         fire('focus-out');
       };
       doc.addEventListener('focusin', onFocusIn, true);
+      // A Tab that leaves the document fires no focusin, so the arm would
+      // survive into the next pointer focus on the trigger and close the
+      // menu the click is about to reopen. A pointer press or a window blur
+      // ends the Tab gesture.
+      const disarm = (): void => {
+        tabArmed = false;
+      };
+      doc.addEventListener('pointerdown', disarm, true);
+      win?.addEventListener('blur', disarm);
       teardowns.push(() => {
         doc.removeEventListener('keydown', onTabKeyDown, true);
         doc.removeEventListener('focusin', onFocusIn, true);
+        doc.removeEventListener('pointerdown', disarm, true);
+        win?.removeEventListener('blur', disarm);
       });
     }
 

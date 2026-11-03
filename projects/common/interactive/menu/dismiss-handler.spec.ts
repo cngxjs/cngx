@@ -63,9 +63,7 @@ describe('createMenuDismissHandler', () => {
     outside.remove();
   });
 
-  function build(
-    overrides: Partial<CngxMenuDismissHandlerOptions> = {},
-  ): {
+  function build(overrides: Partial<CngxMenuDismissHandlerOptions> = {}): {
     onDismiss: ReturnType<typeof vi.fn<(source: CngxMenuDismissSource) => void>>;
     teardown: () => void;
   } {
@@ -112,9 +110,7 @@ describe('createMenuDismissHandler', () => {
     it('dismisses on left-button pointerdown outside both popover and host', () => {
       const { onDismiss, teardown } = build({ dismissOnOutsideClick: true });
       try {
-        outside.dispatchEvent(
-          new PointerEvent('pointerdown', { bubbles: true, button: 0 }),
-        );
+        outside.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0 }));
         expect(popoverFake.popover.hide).toHaveBeenCalledTimes(1);
         expect(onDismiss).toHaveBeenCalledWith('outside-click');
       } finally {
@@ -125,9 +121,7 @@ describe('createMenuDismissHandler', () => {
     it('dismisses on right-button pointerdown outside both popover and host', () => {
       const { onDismiss, teardown } = build({ dismissOnOutsideClick: true });
       try {
-        outside.dispatchEvent(
-          new PointerEvent('pointerdown', { bubbles: true, button: 2 }),
-        );
+        outside.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 2 }));
         expect(popoverFake.popover.hide).toHaveBeenCalledTimes(1);
         expect(onDismiss).toHaveBeenCalledWith('outside-click');
       } finally {
@@ -418,6 +412,30 @@ describe('createMenuDismissHandler', () => {
         teardown();
       }
     });
+
+    it.each([
+      ['a window blur', (): void => void window.dispatchEvent(new Event('blur'))],
+      [
+        'a pointerdown',
+        (host: HTMLElement): void =>
+          void host.dispatchEvent(new Event('pointerdown', { bubbles: true })),
+      ],
+    ] as const)(
+      'drops the Tab arm after %s, so a later pointer focus on the host does not close',
+      (_, disarm) => {
+        const inside = focusable(popoverFake.element);
+        inside.focus();
+        const { teardown } = build({ dismissOnFocusOut: true });
+        try {
+          inside.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+          disarm(hostEl);
+          hostEl.focus();
+          expect(popoverFake.popover.hide).not.toHaveBeenCalled();
+        } finally {
+          teardown();
+        }
+      },
+    );
 
     it('stays off when dismissOnFocusOut is false or unset', () => {
       const target = focusable(outside);
