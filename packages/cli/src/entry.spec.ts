@@ -289,3 +289,39 @@ describe('the built entry wires the cache, the detector and --offline', () => {
     rmSync(cache, { recursive: true, force: true });
   });
 });
+
+// Runs the real @cngx/doctor import from packages/cli/node_modules in required
+// CI; with the dependency missing, both cases exit 3 (internal error).
+describe('the built entry runs cngx doctor', () => {
+  const projects: string[] = [];
+
+  function doctorProject(source: string): string {
+    const dir = mkdtempSync(join(tmpdir(), 'cngx-entry-doctor-'));
+    projects.push(dir);
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'fixture', dependencies: { '@cngx/ui': '0.1.0' } }));
+    mkdirSync(join(dir, 'src'));
+    writeFileSync(join(dir, 'src', 'main.ts'), source);
+    return dir;
+  }
+
+  afterAll(() => {
+    for (const dir of projects) {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('answers [] and exits 0 for a clean project', () => {
+    const result = run('doctor', doctorProject('export const main = 1;\n'), '--format', 'json');
+
+    expect(result.stderr).toBe('');
+    expect(result.status).toBe(0);
+    expect(JSON.parse(result.stdout)).toEqual([]);
+  });
+
+  it('exits 1 with the finding for a toaster without withToasts()', () => {
+    const result = run('doctor', doctorProject("import { CngxToaster } from '@cngx/ui/feedback';\n"), '--format', 'json');
+
+    expect(result.status).toBe(1);
+    expect((JSON.parse(result.stdout) as { id: string }[]).map((f) => f.id)).toContain('toaster-without-withtoasts');
+  });
+});
