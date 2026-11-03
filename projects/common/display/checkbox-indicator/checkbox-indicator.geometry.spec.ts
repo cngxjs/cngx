@@ -43,10 +43,14 @@ function mountGlyph(
   indeterminate: boolean,
   variant: 'checkbox' | 'checkmark' = 'checkbox',
   smSize?: string,
+  microFloor?: string,
 ): SVGSVGElement {
   const fixture = TestBed.createComponent(CheckboxGlyphHost);
   if (smSize) {
     (fixture.nativeElement as HTMLElement).style.setProperty('--cngx-checkbox-size-sm', smSize);
+  }
+  if (microFloor) {
+    (fixture.nativeElement as HTMLElement).style.setProperty('--cngx-icon-svg-micro-floor', microFloor);
   }
   fixture.componentRef.setInput('variant', variant);
   fixture.componentRef.setInput('size', size);
@@ -170,5 +174,26 @@ describe('CngxCheckboxIndicator glyph geometry', () => {
         expect(paintedPath(sm).getAttribute('class')).toBe(mdPath);
       });
     }
+  }
+
+  // The checkmark step sits at 14.5px, where the rounded box leaves the band:
+  // a 15px box fills with the 24-grid glyph, a 14px box keeps the micro one.
+  it('fills a checkmark box that rounds out of the band with the 24-grid glyph', () => {
+    const svg = mountGlyph('sm', false, 'checkmark', '15px');
+    expect(svg.getBoundingClientRect().width).toBe(15);
+    expect(paintedPath(svg).classList.contains('cngx-icon-svg__path')).toBe(true);
+  });
+
+  // Without the floor the glyph follows the box again, below 12px too: 0.75
+  // of a 12px sm box is 9px, below the band, so the 24-grid path paints.
+  for (const variant of ['checkbox', 'checkmark'] as const) {
+    it(`shrinks the ${variant} glyph with a 12px sm box once the micro floor is lifted`, () => {
+      const floored = mountGlyph('sm', false, variant, '12px');
+      expect(floored.getBoundingClientRect().width).toBe(12);
+      mountedRoot?.remove();
+      const svg = mountGlyph('sm', false, variant, '12px', '0px');
+      expect(svg.getBoundingClientRect().width).toBe(9);
+      expect(paintedPath(svg).classList.contains('cngx-icon-svg__path')).toBe(true);
+    });
   }
 });

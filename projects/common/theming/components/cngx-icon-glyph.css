@@ -23,7 +23,8 @@
  *
  * The band bounds are px literals: `@container` conditions take no
  * `var()`, and the band is about device pixels, so it must not follow
- * the text scale.
+ * the text scale. The checkmark step in `checkbox-indicator.component.css`
+ * (14.5px) mirrors the 15px upper edge; move both together.
  */
 
 @layer cngx.components {

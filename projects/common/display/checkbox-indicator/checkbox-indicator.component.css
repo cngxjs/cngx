@@ -133,7 +133,10 @@
   }
 
   /**
-   * Size token for the `.cngx-checkbox-indicator--sm` variant.
+   * Size token for the `.cngx-checkbox-indicator--sm` variant. The check
+   * and dash glyph never drop below `--cngx-icon-svg-micro-floor` (12px),
+   * which fits a box from 14px up; for a smaller box set that token to
+   * `0px` as well, so the glyph shrinks with the box.
    * @group Variant / Size
    */
   @property --cngx-checkbox-size-sm {
@@ -278,7 +281,10 @@
        The glyph fills the whole box once the box rounds out of the micro band
        (14.5px and up, so 16px md and 20px lg); a smaller box keeps the boxed
        rule's 12px micro glyph. The min() term is the box size from 14.5px up
-       and far below zero under it, so max() picks the box or the micro size. */
+       and far below zero under it, so max() picks the box or the micro size.
+       14.5px is the 15px upper band edge of `cngx-icon-glyph.css` minus half
+       a pixel: the svg base rule rounds the box, so 14.5px is the first size
+       that rounds out of the band. Moving the band edge moves this step. */
     :scope.cngx-checkbox-indicator--checkmark .cngx-checkbox-indicator__check,
     :scope.cngx-checkbox-indicator--checkmark .cngx-checkbox-indicator__dash {
       color: var(--cngx-checkbox-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));

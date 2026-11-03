@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxCheckboxIndicator: Sizes',
   subtitle: 'Three presets driven by <code>--cngx-checkbox-size</code>. Default <code>md</code>; override via the host token.',
-  description: 'Three indicators in the same checked state across the size scale. Each preset pins <code>--cngx-checkbox-size</code> to its tier token, which the glyph, the box stroke, and the focus padding all read through. Override <code>--cngx-checkbox-size-sm</code> / <code>--cngx-checkbox-size-md</code> / <code>--cngx-checkbox-size-lg</code> at any DOM level to retune the whole scale without forking the atom.',
+  description: 'Three indicators in the same checked state across the size scale. Each preset pins <code>--cngx-checkbox-size</code> to its tier token, which the glyph, the box stroke, and the focus padding all read through. Override <code>--cngx-checkbox-size-sm</code> / <code>--cngx-checkbox-size-md</code> / <code>--cngx-checkbox-size-lg</code> at any DOM level to retune the whole scale without forking the atom. The glyph keeps a 12px floor (<code>--cngx-icon-svg-micro-floor</code>); for a box below 14px set that token to <code>0px</code> as well.',
   level: 'atom',
   audience: ['dev', 'design'],
   artifact: 'standalone',
