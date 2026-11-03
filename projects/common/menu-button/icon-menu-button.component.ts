@@ -5,11 +5,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   ElementRef,
   inject,
   input,
-  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 import {
@@ -244,14 +242,6 @@ export class CngxIconMenuButton implements CngxButtonState {
   readonly blocked = this.core.blocked;
 
   constructor() {
-    // The popover is told it holds a menu, so the trigger's aria-haspopup
-    // reads `menu` without a consumer [haspopup]; released on swap and destroy.
-    effect((onCleanup) => {
-      const pop = this.popoverTrigger().popoverRef();
-      untracked(() => pop.setHaspopup('menu'));
-      onCleanup(() => pop.setHaspopup(undefined));
-    });
-
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
       afterNextRender(() => {

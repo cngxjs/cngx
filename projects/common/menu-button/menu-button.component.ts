@@ -5,10 +5,8 @@ import {
   Component,
   computed,
   contentChild,
-  effect,
   inject,
   input,
-  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 import {
@@ -210,16 +208,6 @@ export class CngxMenuButton implements CngxButtonState {
    * co-hosted `cngxAsyncClick`, or refused by its `[enabled]="false"`.
    */
   readonly blocked = this.core.blocked;
-
-  constructor() {
-    // The popover is told it holds a menu, so the trigger's aria-haspopup
-    // reads `menu` without a consumer [haspopup]; released on swap and destroy.
-    effect((onCleanup) => {
-      const pop = this.popoverTrigger().popoverRef();
-      untracked(() => pop.setHaspopup('menu'));
-      onCleanup(() => pop.setHaspopup(undefined));
-    });
-  }
 
   /**
    * Returns early while the button is blocked (disabled, a pending co-hosted

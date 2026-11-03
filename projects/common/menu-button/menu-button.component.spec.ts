@@ -320,7 +320,7 @@ describe('CngxMenuButton', () => {
       expect(button.getAttribute('aria-haspopup')).toBe('dialog');
     });
 
-    it('releases the hint on popover swap and on destroy', () => {
+    it('the menu trigger moves both hints on popover swap and releases them on destroy', () => {
       const { fixture, host, flush } = setup(LifecycleHost);
       const pops = fixture.debugElement
         .queryAll(By.directive(CngxPopover))
@@ -333,10 +333,13 @@ describe('CngxMenuButton', () => {
       flush();
       expect(popA.haspopup()).toBeUndefined();
       expect(popB.haspopup()).toBe('menu');
+      expect(popA.controlsHint()).toBeNull();
+      expect(popB.controlsHint()).toMatch(/^cngx-menu-/);
 
       host.shown.set(false);
       flush();
       expect(popB.haspopup()).toBeUndefined();
+      expect(popB.controlsHint()).toBeNull();
     });
   });
 
