@@ -438,6 +438,22 @@ describe('track-b-symbols drift guard', () => {
 });
 
 describe('incremental scan style resolution', () => {
+  it('re-strips a source whose text changed, also when the sources object is reused', () => {
+    const dir = project({
+      sources: { 'src/app.ts': "import { CngxToaster } from '@cngx/ui/feedback';\n" },
+    });
+    const snapshot = scan(dir);
+    expect(runChecks(snapshot).map((f) => f.id)).toEqual(['toaster-without-withtoasts']);
+    expect(runChecks(snapshot)).toEqual(runChecks(snapshot));
+
+    snapshot.sources['src/app.ts'] = "// import { CngxToaster } from '@cngx/ui/feedback';\n";
+    expect(runChecks(snapshot)).toEqual([]);
+
+    writeFileSync(join(dir, 'src', 'app.ts'), "import { CngxToaster } from '@cngx/ui/feedback';\n");
+    const warm = scan(dir, { prior: snapshot, changedFile: join(dir, 'src', 'app.ts') });
+    expect(runChecks(warm).map((f) => f.id)).toEqual(['toaster-without-withtoasts']);
+  });
+
   it('clears a Track-B finding on the warm path when a stylesheet appears', () => {
     const dir = project({
       sources: { 'src/app.ts': "import { CngxTooltip } from '@cngx/common';\n" },

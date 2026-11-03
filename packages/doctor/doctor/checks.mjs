@@ -42,7 +42,7 @@ function importsCngxSymbol(text, symbol) {
 
 function findSourceImporting(sources, symbol) {
   for (const [path, text] of Object.entries(sources)) {
-    if (importsCngxSymbol(stripComments(path, text), symbol)) {
+    if (importsCngxSymbol(strippedSource(sources, path, text), symbol)) {
       return path;
     }
   }
@@ -152,8 +152,29 @@ export function stripComments(path, text) {
   return path.endsWith('.html') ? stripHtmlComments(text) : stripTsComments(text);
 }
 
+// Each check asks per symbol, so one run would strip every source about 25
+// times. The cache lives as long as the snapshot's sources object; an entry is
+// reused only while its text is the same string.
+/** @type {WeakMap<Record<string, string>, Map<string, { text: string, stripped: string }>>} */
+const strippedCache = new WeakMap();
+
+function strippedSource(sources, path, text) {
+  let byPath = strippedCache.get(sources);
+  if (!byPath) {
+    byPath = new Map();
+    strippedCache.set(sources, byPath);
+  }
+  const hit = byPath.get(path);
+  if (hit && hit.text === text) {
+    return hit.stripped;
+  }
+  const stripped = stripComments(path, text);
+  byPath.set(path, { text, stripped });
+  return stripped;
+}
+
 function anySourceContainsCode(sources, needle) {
-  return Object.entries(sources).some(([path, text]) => stripComments(path, text).includes(needle));
+  return Object.entries(sources).some(([path, text]) => strippedSource(sources, path, text).includes(needle));
 }
 
 // A Track-B directive is styled either by the single-import bundle or by the
