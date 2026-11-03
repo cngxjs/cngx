@@ -464,20 +464,36 @@ export function describeSelectBehaviourHost(
         const debounceMs = (
           cmp as { typeaheadDebounceInterval: () => number }
         ).typeaheadDebounceInterval();
-        const armed = vi.spyOn(globalThis, 'setTimeout');
-        const cancelled = vi.spyOn(globalThis, 'clearTimeout');
-        // No row starts with 'z': the buffer stays armed, no variant clears it on a match.
-        trigger().dispatchEvent(
-          new KeyboardEvent('keydown', { key: 'z', bubbles: true, cancelable: true }),
-        );
-        const resetIndex = armed.mock.calls.map((call) => call[1]).lastIndexOf(debounceMs);
-        expect(resetIndex).toBeGreaterThanOrEqual(0);
-        const resetTimer = armed.mock.results[resetIndex].value as unknown;
-        expect(cancelled).not.toHaveBeenCalledWith(resetTimer);
-        fixture.destroy();
-        expect(cancelled).toHaveBeenCalledWith(resetTimer);
-        armed.mockRestore();
-        cancelled.mockRestore();
+        // Wrapped by hand, not with vi.spyOn: a spy on the fake clock stays in
+        // vitest's registry, and a later vi.restoreAllMocks() in the same worker
+        // writes the fake setTimeout back onto globalThis after real timers return.
+        const fakeSet = globalThis.setTimeout;
+        const fakeClear = globalThis.clearTimeout;
+        const armed: { delay: unknown; id: unknown }[] = [];
+        const cancelled: unknown[] = [];
+        globalThis.setTimeout = ((...args: Parameters<typeof setTimeout>) => {
+          const id = fakeSet(...args);
+          armed.push({ delay: args[1], id });
+          return id;
+        }) as typeof setTimeout;
+        globalThis.clearTimeout = ((id?: Parameters<typeof clearTimeout>[0]) => {
+          cancelled.push(id);
+          fakeClear(id);
+        }) as typeof clearTimeout;
+        try {
+          // No row starts with 'z': the buffer stays armed, no variant clears it on a match.
+          trigger().dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'z', bubbles: true, cancelable: true }),
+          );
+          const reset = armed.filter((call) => call.delay === debounceMs).at(-1);
+          expect(reset).toBeDefined();
+          expect(cancelled).not.toContain(reset!.id);
+          fixture.destroy();
+          expect(cancelled).toContain(reset!.id);
+        } finally {
+          globalThis.setTimeout = fakeSet;
+          globalThis.clearTimeout = fakeClear;
+        }
       });
     }
 
