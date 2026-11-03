@@ -177,6 +177,7 @@ describe('CngxSelectSearch placement (CNGX2018)', () => {
 class DebouncedSearchHostDir {
   readonly searchTerm = model<string>('');
   readonly searchDebounceMs = signal(300);
+  readonly panelOpen = signal(true);
   readonly writes: string[] = [];
   readonly termAtActivate: string[] = [];
   readonly close = vi.fn();
@@ -250,5 +251,28 @@ describe('CngxSelectSearch - pending debounced write on Escape and Enter', () =>
     expect(host.termAtActivate).toEqual(['ber']);
     vi.advanceTimersByTime(1000);
     expect(host.writes).toEqual(['ber']);
+  });
+
+  it('a host-side close drops the pending write and restores the input to the term', () => {
+    const { fixture, host, input, type } = mountDebounced();
+    type('ber');
+    host.panelOpen.set(false);
+    fixture.detectChanges();
+    vi.advanceTimersByTime(1000);
+    expect(host.writes).toEqual([]);
+    expect(host.searchTerm()).toBe('');
+    expect(input.value).toBe('');
+  });
+
+  it('a host-side close keeps a term that already landed', () => {
+    const { fixture, host, input, type } = mountDebounced();
+    type('ber');
+    vi.advanceTimersByTime(300);
+    type('berl');
+    host.panelOpen.set(false);
+    fixture.detectChanges();
+    vi.advanceTimersByTime(1000);
+    expect(host.writes).toEqual(['ber']);
+    expect(input.value).toBe('ber');
   });
 });

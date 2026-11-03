@@ -263,6 +263,7 @@ export interface CngxSelectShellChange<T = unknown> {
           searchTerm: self.searchTerm,
           listboxRef: self.listboxRef,
           searchDebounceMs: self.searchDebounceMs,
+          panelOpen: self.panelOpen,
           // Escape in the search: the sheet gate while modal, today's close
           // while anchored. The trigger is inert under a modal sheet, so the
           // refocus is left to the close path.

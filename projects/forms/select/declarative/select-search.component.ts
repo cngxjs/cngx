@@ -4,9 +4,11 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   type ElementRef,
   inject,
   input,
+  untracked,
   viewChild,
 } from '@angular/core';
 
@@ -100,6 +102,14 @@ export class CngxSelectSearch {
     // once both views exist.
     const destroyRef = inject(DestroyRef);
     destroyRef.onDestroy(() => this.cancelPendingWrite());
+    // The element stays mounted while the panel is closed, so a close by Tab,
+    // outside click, trigger click or pick must not let the write land later.
+    effect(() => {
+      const open = this.host.panelOpen?.() ?? true;
+      if (!open) {
+        untracked(() => this.dropPendingWrite());
+      }
+    });
     afterNextRender(() => {
       const release = this.host.registerInitialFocus?.(this.inputRef().nativeElement);
       if (release) {
@@ -145,8 +155,8 @@ export class CngxSelectSearch {
    * the search input. ArrowUp/Down move highlight, Enter activates the
    * current item, Escape closes and restores focus. A debounced term still
    * waiting for its write settles first: Enter writes it at once, so the pick
-   * runs against the filter the user sees; Escape drops it, so no write lands
-   * after the panel closed.
+   * runs against the filter the user sees; Escape drops it, as every other
+   * close of the panel does, so no write lands after the panel closed.
    *
    * @internal
    */

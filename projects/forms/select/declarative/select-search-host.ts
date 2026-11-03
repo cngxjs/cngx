@@ -18,11 +18,15 @@ import type { CngxListbox } from '@cngx/common/interactive';
  *   - `searchDebounceMs` - optional; how long the search element waits
  *     after the last keystroke before it writes `searchTerm`. Omitted or
  *     `0` writes on every keystroke.
+ *   - `panelOpen` - optional; whether the host's panel is open. When it
+ *     turns `false`, by any close path, the search element drops a debounced
+ *     term still waiting for its write.
  */
 export interface CngxSelectShellSearchHost {
   readonly searchTerm: ModelSignal<string>;
   readonly listboxRef: Signal<CngxListbox | undefined>;
   readonly searchDebounceMs?: Signal<number>;
+  readonly panelOpen?: Signal<boolean>;
   close(): void;
   focus(): void;
   /**
