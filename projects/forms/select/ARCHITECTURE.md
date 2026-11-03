@@ -18,7 +18,7 @@ For day-to-day API reference (inputs, outputs, signals, CSS variables) see the c
   - [Core factory `createSelectCore`](#core-factory-createselectcore)
   - [DI factory tokens (18)](#di-factory-tokens-18)
 - [Template slot system](#template-slot-system)
-  - [The 18 public slots](#the-18-public-slots)
+  - [The shared slots](#the-shared-slots)
   - [Three-stage cascade](#three-stage-cascade)
   - [Default glyphs](#default-glyphs)
 - [Configuration cascade](#configuration-cascade)
@@ -218,7 +218,7 @@ The slot directives live in `shared/template-slots.ts` and project a typed conte
 
 ### The shared slots
 
-`shared/template-slots.ts` exports 27 slot directives. The table covers the shared slots; the list below covers the variant-specific ones.
+`shared/template-slots.ts` exports every slot directive. The table covers the shared slots; the list below covers the variant-specific ones.
 
 | Slot directive | Where it renders | Context |
 |-|-|-|

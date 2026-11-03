@@ -298,8 +298,8 @@ They do **not** inherit:
 - Selection semantics (lives in `createSelectionController<T>`, injected via `CNGX_SELECTION_CONTROLLER_FACTORY`)
 - The async-commit lifecycle (lives in `createCommitController` and the `CngxAsyncState<T>` view)
 - The form-field integration (lives behind `CNGX_FORM_FIELD_CONTROL`)
-- The 17 slot directives (still re-projectable from the new shell)
-- The 18 override tokens that let the consumer further customise selection, commit, panel hosting, announcement, focus, and template registration
+- The slot directives (still re-projectable from the new shell)
+- The override tokens that let the consumer further customise selection, commit, panel hosting, announcement, focus, and template registration
 
 ### The trade
 

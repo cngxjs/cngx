@@ -340,7 +340,7 @@ Four thin convenience helpers for the most-injected tokens. All four are exporte
 
 ### `template-slots.ts`
 
-The 27 slot directives + their context interfaces, all exported from `public-api.ts`.
+The slot directives + their context interfaces, all exported from `public-api.ts`.
 Each slot is a structural directive whose only job is to project a `TemplateRef` with the documented context shape.
 
 Slot list (with the cascade tier each slot belongs to - every slot flows through the three-stage cascade in `template-registry.ts`):
