@@ -267,8 +267,15 @@ export class CngxIconMenuButton implements CngxButtonState {
     }
   }
 
-  /** The core's capture-phase guard swallows the click while the button is blocked. */
+  /**
+   * Returns early while the button is blocked (disabled, a pending co-hosted
+   * `cngxAsyncClick`, or its `[enabled]="false"`); the core's capture guard
+   * handles only `disabled`, so consumer `(click)` handlers still run.
+   */
   protected handleClick(): void {
+    if (this.core.blocked()) {
+      return;
+    }
     this.popoverTrigger().popoverRef().toggle();
   }
 }

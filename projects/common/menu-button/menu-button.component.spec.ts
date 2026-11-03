@@ -279,6 +279,26 @@ describe('CngxMenuButton', () => {
       expect(button.getAttribute('data-busy')).toBe('true');
       expect(button.querySelector('.cngx-button__busy')).not.toBeNull();
     });
+
+    it.each([
+      ['after', AsyncAfterHost],
+      ['before', AsyncBeforeHost],
+    ] as const)(
+      'refuses the menu click while a cngxAsyncClick written %s the selector is pending',
+      (_, type) => {
+        const { button, popover, flush } = setup(type as Type<unknown>);
+        button.click();
+        flush();
+        popover.hide();
+        flush();
+        expect(button.getAttribute('aria-disabled')).toBe('true');
+
+        button.click();
+        flush();
+        expect(popover.isVisible()).toBe(false);
+        expect(button.getAttribute('aria-disabled')).toBe('true');
+      },
+    );
   });
 
   describe('aria-haspopup hint', () => {
