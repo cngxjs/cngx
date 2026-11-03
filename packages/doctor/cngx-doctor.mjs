@@ -12,7 +12,7 @@
  * error-gates/warn-reports split a lint run gives.
  */
 
-import { readFileSync, realpathSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { runChecks } from './doctor/checks.mjs';
 import { scan } from './doctor/scan.mjs';
@@ -27,7 +27,7 @@ Deterministic project-wiring scan for cngx consumer apps.
   -v, --version  print the @cngx/doctor version and exit
 
 Exit code: 0 when clean or only warn findings exist, 1 on any error finding,
-2 on an unknown option or a project dir that is not a directory.
+2 on an unknown option or a project dir that is not a readable directory.
 `;
 
 /**
@@ -82,6 +82,20 @@ function formatHuman(findings) {
   return lines.join('\n');
 }
 
+/** Why `projectDir` cannot be scanned, or `null` when it can. */
+function projectDirProblem(projectDir) {
+  try {
+    if (statSync(projectDir, { throwIfNoEntry: false })?.isDirectory() !== true) {
+      return 'is not a directory';
+    }
+    readdirSync(projectDir);
+    return null;
+  } catch (error) {
+    const code = error instanceof Error && 'code' in error ? error.code : 'unknown error';
+    return `cannot be read (${code})`;
+  }
+}
+
 /**
  * @param {string[]} argv  process.argv.slice(2)
  * @returns {{ findings: import('./doctor/checks.mjs').Finding[], output: string, warnings: string[], exitCode: number }}
@@ -99,9 +113,11 @@ export function runDoctor(argv) {
   if (unknownFlags.length > 0) {
     return { findings: [], output: '', warnings, exitCode: 2 };
   }
-  // A missing or mistyped dir would scan nothing and read as a clean project.
-  if (statSync(projectDir, { throwIfNoEntry: false })?.isDirectory() !== true) {
-    warnings.push(`cngx-doctor: ${projectDir} is not a directory.`);
+  // A missing, mistyped or unreadable dir would scan nothing and read as a clean
+  // project. Only the root is checked: the scan still skips an unreadable subdir.
+  const unusable = projectDirProblem(projectDir);
+  if (unusable !== null) {
+    warnings.push(`cngx-doctor: ${projectDir} ${unusable}.`);
     return { findings: [], output: '', warnings, exitCode: 2 };
   }
 

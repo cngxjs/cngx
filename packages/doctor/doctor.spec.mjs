@@ -1,5 +1,5 @@
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -328,6 +328,51 @@ describe('cngx-doctor CLI', () => {
       expect(status).toBe(2);
       expect(stdout).toBe('');
       expect(stderr).toBe(`cngx-doctor: ${missing} is not a directory.\n`);
+    }
+  });
+
+  // root reads through any mode bits, so the permission cases only run unprivileged.
+  const unprivileged = process.getuid?.() !== 0;
+
+  it.runIf(unprivileged)('exits 2 for a project dir it cannot read instead of reporting it clean', () => {
+    const dir = project({ sources: { 'src/app.ts': "import { CngxToaster } from '@cngx/ui/feedback';\n" } });
+    chmodSync(dir, 0o000);
+    try {
+      const { status, stdout, stderr } = runCliStreams([dir, '--json']);
+      expect(status).toBe(2);
+      expect(stdout).toBe('');
+      expect(stderr).toMatch(new RegExp(`^cngx-doctor: ${dir} cannot be read \\(EACCES\\)\\.\\n$`));
+    } finally {
+      chmodSync(dir, 0o755);
+    }
+  });
+
+  it.runIf(unprivileged)('exits 2 instead of crashing when a path component denies access', () => {
+    const parent = project({});
+    const child = join(parent, 'app');
+    mkdirSync(child);
+    chmodSync(parent, 0o000);
+    try {
+      const { status, stdout, stderr } = runCliStreams([child, '--json']);
+      expect(status).toBe(2);
+      expect(stdout).toBe('');
+      expect(stderr).toBe(`cngx-doctor: ${child} cannot be read (EACCES).\n`);
+    } finally {
+      chmodSync(parent, 0o755);
+    }
+  });
+
+  it.runIf(unprivileged)('still scans a project whose subdirectory cannot be read', () => {
+    const dir = project({ sources: { 'src/app.ts': "import { CngxToaster } from '@cngx/ui/feedback';\n" } });
+    const locked = join(dir, 'src', 'locked');
+    mkdirSync(locked);
+    chmodSync(locked, 0o000);
+    try {
+      const json = runCli(dir, ['--json']);
+      expect(json.status).toBe(1);
+      expect(JSON.parse(json.stdout).map((f) => f.id)).toEqual(['toaster-without-withtoasts']);
+    } finally {
+      chmodSync(locked, 0o755);
     }
   });
 

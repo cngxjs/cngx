@@ -47,7 +47,8 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/cngx-doctor.mjs" [projectDir] --json
 ```
 
 The exit code is `0` when clean or only warn findings remain, `1` on an error
-finding, and `2` on a usage error (unknown option, missing project directory).
+finding, and `2` on a usage error (unknown option, missing or unreadable
+project directory).
 The finding you fixed should be gone. If it persists, the wiring did not land where
 the scan looks for it - re-read `message` and `fixHint` rather than forcing a
 second approach.

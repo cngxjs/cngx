@@ -17,8 +17,8 @@ an unknown flag is named on stderr and exits `2` without scanning. The exit code
 follows lint semantics: `0` when clean or when only warn-severity findings exist
 (they are still reported in the output), `1` when any error-severity finding
 exists, and `2` on a usage error - an unknown flag, or a `projectDir` that is not
-a directory, so a mistyped path never reads as a clean project. Wire it straight
-into a CI step:
+a readable directory, so a mistyped or locked path never reads as a clean
+project. Wire it straight into a CI step:
 
 ```yaml
 - run: npx @cngx/doctor
