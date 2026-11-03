@@ -14,6 +14,8 @@ library releases; this file tracks the doctor package.
 
 - A missing or mistyped project directory exits `2` with a stderr line instead of
   reporting a clean project.
+- A commented-out `@cngx` import no longer counts as usage, and a `/*` or `//`
+  inside a string or regex literal no longer hides code from either scan.
 
 ## 0.2.1 - 2026-10-21
 

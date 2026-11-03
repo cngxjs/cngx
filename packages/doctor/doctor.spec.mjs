@@ -222,6 +222,64 @@ describe('cngx-doctor CLI', () => {
     expect(findings[0].id).toBe('toaster-without-withtoasts');
   });
 
+  it('ignores a line-commented and a block-commented @cngx import', () => {
+    for (const text of [
+      "// import { CngxToaster } from '@cngx/ui/feedback';\nexport class App {}\n",
+      "/* import { CngxToaster } from '@cngx/ui/feedback'; */\nexport class App {}\n",
+    ]) {
+      const { status, stdout } = runCli(project({ sources: { 'src/app.ts': text } }), ['--json']);
+      expect(status).toBe(0);
+      expect(JSON.parse(stdout)).toEqual([]);
+    }
+  });
+
+  it('still flags a real import next to a commented-out one', () => {
+    const dir = project({
+      sources: {
+        'src/app.ts':
+          "// import { CngxToaster } from '@cngx/ui/feedback';\nimport { CngxToaster } from '@cngx/ui/feedback';\n",
+      },
+    });
+    const json = runCli(dir, ['--json']);
+    expect(json.status).toBe(1);
+    expect(JSON.parse(json.stdout).map((f) => f.id)).toEqual(['toaster-without-withtoasts']);
+  });
+
+  it('a /* or // inside a string or regex literal hides no code from the import scan', () => {
+    for (const before of ["const glob = 'src/*.ts';\n", 'const r = /\\/*/;\n']) {
+      const dir = project({
+        sources: { 'src/app.ts': `${before}import { CngxToaster } from '@cngx/ui/feedback';\n// */\n` },
+      });
+      const json = runCli(dir, ['--json']);
+      expect(json.status).toBe(1);
+      expect(JSON.parse(json.stdout).map((f) => f.id)).toEqual(['toaster-without-withtoasts']);
+    }
+  });
+
+  it('a // inside a URL string hides no opt-in after it', () => {
+    const dir = project({
+      sources: {
+        'src/app.ts':
+          "import { CngxToaster, provideFeedback, withToasts } from '@cngx/ui/feedback';\nfetch('https://x'); export const p = provideFeedback(withToasts());\n",
+      },
+    });
+    const { status, stdout } = runCli(dir, ['--json']);
+    expect(status).toBe(0);
+    expect(JSON.parse(stdout)).toEqual([]);
+  });
+
+  it('strips only <!-- --> in .html: a commented opt-in stays commented, an apostrophe opens nothing', () => {
+    const dir = project({
+      sources: {
+        'src/app.ts': "import { CngxToaster } from '@cngx/ui/feedback';\n",
+        'src/app.html': "<p>don't</p>\n<!-- withToasts() -->\n",
+      },
+    });
+    const json = runCli(dir, ['--json']);
+    expect(json.status).toBe(1);
+    expect(JSON.parse(json.stdout).map((f) => f.id)).toEqual(['toaster-without-withtoasts']);
+  });
+
   it('reports @floating-ui/dom without provideFloatingFallback() as a warn (exit 0)', () => {
     const dir = project({
       pkg: { name: 'floating', dependencies: { '@floating-ui/dom': '^1.6.0' } },
