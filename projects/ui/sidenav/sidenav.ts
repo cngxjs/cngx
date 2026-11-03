@@ -144,11 +144,11 @@ export type ResolvedSidenavMode = Exclude<SidenavMode, 'auto'>;
     '[class.cngx-sidenav--resizing]': 'resizing()',
     '[attr.aria-hidden]':
       "effectiveMode() === 'side' || effectiveMode() === 'mini' ? null : !opened()",
+    '[attr.role]': 'hostRole()',
     '[attr.aria-modal]': "overlayActive() ? 'true' : null",
     '[style.--cngx-sidenav-width]': 'effectiveWidth()',
     '[style.--cngx-sidenav-mini-width]': 'miniWidth()',
-    role: 'complementary',
-    '[attr.aria-label]': 'ariaLabel() || null',
+    '[attr.aria-label]': 'resolvedAriaLabel()',
     '(keydown.escape)': 'closeIfOverlay()',
   },
   template: `
@@ -190,7 +190,12 @@ export class CngxSidenav {
   /** Logical position: `'start'` (default left in LTR) or `'end'` (right in LTR). */
   readonly position = input<SidenavPosition>('start');
 
-  /** Accessible label for the complementary landmark. */
+  /**
+   * Accessible name of the rail: of the `complementary` landmark, or of the
+   * modal `dialog` while it is an open overlay. Unbound, the `startRegion` /
+   * `endRegion` label (`withSidenavLabels`, then the language pack) applies by
+   * `position`, so two rails never share one name.
+   */
   readonly ariaLabel = input<string | undefined>(undefined);
 
   /**
@@ -232,6 +237,22 @@ export class CngxSidenav {
 
   private readonly labels = injectSidenavLabels();
   private readonly locale = injectLocale();
+
+  /**
+   * @internal An open overlay is a modal dialog (focus trap, Escape, backdrop);
+   * every other state is a complementary landmark. `aria-modal` follows the
+   * same `overlayActive()`, so it never sits on a non-dialog role.
+   */
+  protected readonly hostRole = computed(() =>
+    this.overlayActive() ? 'dialog' : 'complementary',
+  );
+
+  /** @internal */
+  protected readonly resolvedAriaLabel = computed(() => {
+    const labels = this.labels();
+    const fallback = this.position() === 'end' ? labels.endRegion : labels.startRegion;
+    return this.ariaLabel() ?? fallback;
+  });
 
   /** @internal */
   protected readonly resolvedResizeLabel = computed(

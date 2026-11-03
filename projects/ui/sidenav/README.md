@@ -197,11 +197,12 @@ Resolution order for the key: per-instance `[param]` beats `withSidenavRouterSyn
 
 ## Accessibility
 
-- **ARIA roles:** Sidebar carries `role="complementary"` with optional `[attr.aria-label]`. In overlay mode, `aria-hidden="true"` when closed.
+- **ARIA roles:** The rail is a `role="complementary"` landmark while docked or closed. An open overlay (`over`, including `auto` below the threshold) is a modal dialog instead: `role="dialog"` with `aria-modal="true"`, matching its focus trap, Escape and backdrop. `aria-modal` never appears without `role="dialog"`. In overlay mode, `aria-hidden="true"` when closed.
+- **Accessible name:** Every rail is named. Resolution: `[ariaLabel]`, then `withSidenavLabels({ startRegion, endRegion })`, then the `sidenav` language section. The default depends on `position`: `Navigation` for `start`, `Side panel` for `end`, so two rails never share one name.
 - **Keyboard interaction:**
   - `Escape` - Closes overlay mode sidenav
   - Custom shortcut (if configured) - Toggles opened state globally
-- **Screen reader:** Complementary landmark announces the sidebar label; scroll lock prevents reading body content when sidebar is open in overlay.
+- **Screen reader:** The landmark or dialog announces the rail's name; scroll lock prevents reading body content when sidebar is open in overlay.
 - **Focus management:** In overlay (`over`) mode a CDK focus trap keeps Tab within the rail while open, moves focus into the rail on open, and restores focus to the element that opened it on close.
 
 ## Composition

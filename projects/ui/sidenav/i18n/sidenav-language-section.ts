@@ -10,6 +10,10 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * @relatedTo CNGX_SIDENAV_CONFIG, withSidenavLabels
  */
 export interface CngxSidenavLanguageSection {
+  /** Accessible name of a `position="start"` rail while `[ariaLabel]` is unbound. */
+  readonly startRegion: string;
+  /** Accessible name of a `position="end"` rail while `[ariaLabel]` is unbound. */
+  readonly endRegion: string;
   /** Accessible name of the resize separator while `[resizeLabel]` is unbound. */
   readonly resizeHandle: string;
   /**
@@ -28,6 +32,8 @@ export interface CngxSidenavLanguageSection {
  * @relatedTo CNGX_SIDENAV_CONFIG
  */
 export const CNGX_SIDENAV_LANGUAGE_EN: CngxSidenavLanguageSection = {
+  startRegion: 'Navigation',
+  endRegion: 'Side panel',
   resizeHandle: 'Resize navigation',
   resizeValueText: '{value}',
 };

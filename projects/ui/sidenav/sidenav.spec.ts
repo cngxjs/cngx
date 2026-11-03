@@ -673,9 +673,9 @@ describe('CngxSidenav ariaLabel', () => {
     expect(leftEl.getAttribute('aria-label')).toBe('Main navigation');
   });
 
-  it('does not set aria-label when undefined', () => {
+  it('falls back to the start-rail default name when undefined', () => {
     const { leftEl } = setupDual();
-    expect(leftEl.getAttribute('aria-label')).toBeNull();
+    expect(leftEl.getAttribute('aria-label')).toBe('Navigation');
   });
 });
 

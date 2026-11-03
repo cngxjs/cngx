@@ -89,6 +89,16 @@ export interface CngxSidenavConfig {
  */
 export interface CngxSidenavLabels {
   /**
+   * Default accessible name of a `position="start"` rail while `[ariaLabel]`
+   * is unbound.
+   */
+  readonly startRegion: string;
+  /**
+   * Default accessible name of a `position="end"` rail while `[ariaLabel]` is
+   * unbound. Distinct from `startRegion` so two rails never share one name.
+   */
+  readonly endRegion: string;
+  /**
    * Default of `[resizeLabel]`, the accessible name of the resize separator.
    */
   readonly resizeHandle: string;

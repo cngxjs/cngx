@@ -439,6 +439,8 @@ export const CNGX_LANGUAGE_EN = {
     reorderAtEnd: 'Already last',
   },
   sidenav: {
+    startRegion: 'Navigation',
+    endRegion: 'Side panel',
     resizeHandle: 'Resize navigation',
     resizeValueText: '{value}',
   },
