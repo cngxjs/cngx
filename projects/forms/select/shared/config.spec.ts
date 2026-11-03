@@ -216,7 +216,7 @@ describe('runtime language switch', () => {
     expect(config.fallbackLabels().loadFailedRetry).toBe('Retry');
   });
 
-  it('keeps replace semantics for fallbackLabels across features', () => {
+  it('merges fallbackLabels per key across features', () => {
     const config = resolveIn([
       provideSelectConfig(
         withFallbackLabels({ empty: 'Nothing', loading: 'Wait' }),
@@ -224,7 +224,7 @@ describe('runtime language switch', () => {
       ),
     ]);
     expect(config.fallbackLabels().empty).toBe('Keine Optionen');
-    expect(config.fallbackLabels().loading).toBe('Loading…');
+    expect(config.fallbackLabels().loading).toBe('Wait');
   });
 
   it('swaps the announcer formatter through a Signal and keeps the default without one', () => {
@@ -894,6 +894,26 @@ describe('provideSelectConfigAt merges over the parent config', () => {
     );
     expect(config.ariaLabels().clearButton).toBe('Entfernen');
     expect(config.ariaLabels().searchInput).toBe('Suchen');
+  });
+
+  it('merges fallbackLabels per key: a subtree key wins, the parent keys survive', () => {
+    const config = childConfig(
+      [provideSelectConfig(withFallbackLabels({ empty: 'Keine Optionen', loadFailed: 'Fehler' }))],
+      provideSelectConfigAt(withFallbackLabels({ empty: 'Nichts gefunden' })),
+    );
+    expect(config.fallbackLabels().empty).toBe('Nichts gefunden');
+    expect(config.fallbackLabels().loadFailed).toBe('Fehler');
+  });
+
+  it('merges a Signal of fallbackLabels per key and follows it', () => {
+    const parent = signal<CngxSelectFallbackLabels>({ empty: 'Keine Optionen', loadFailed: 'Fehler' });
+    const config = childConfig(
+      [provideSelectConfig(withFallbackLabels(parent))],
+      provideSelectConfigAt(withFallbackLabels({ empty: 'Nichts gefunden' })),
+    );
+    parent.set({ empty: 'No options', loadFailed: 'Failed' });
+    expect(config.fallbackLabels().empty).toBe('Nichts gefunden');
+    expect(config.fallbackLabels().loadFailed).toBe('Failed');
   });
 
   it('falls back to the library defaults without a parent config', () => {

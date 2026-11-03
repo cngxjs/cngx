@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 
 import type { PopoverPlacement } from '@cngx/common/popover';
-import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
+import { createOverrideMerge } from '@cngx/core/utils';
 
 import type { CngxSelectCommitErrorDisplay } from './commit-action.types';
 import type { CngxCommitErrorAnnouncePolicy } from './commit-error-announcer';
@@ -735,8 +735,9 @@ export function withVirtualization(
 /**
  * Sets the panel-shell visible-fallback labels. Partial. Per-instance
  * template projection wins. Pass a `Signal` to follow a runtime language
- * switch. A later `withFallbackLabels` replaces an earlier one as a whole;
- * the keys of the two bundles are not merged.
+ * switch. Bundles merge per key: a later `withFallbackLabels`, or one under
+ * `provideSelectConfigAt`, overrides only the keys it sets and every other key
+ * keeps the earlier or inherited value.
  *
  * ```ts
  * bootstrapApplication(App, {
@@ -963,6 +964,7 @@ export function withTemplates(
 
 const NO_ANNOUNCER: CngxSelectAnnouncerConfig = {};
 const NO_ARIA_LABELS: CngxSelectAriaLabels = {};
+const NO_FALLBACK_LABELS: CngxSelectFallbackLabels = {};
 
 /**
  * Pure merge of `with*` features into a `CngxSelectConfig` value - the
@@ -972,8 +974,9 @@ const NO_ARIA_LABELS: CngxSelectAriaLabels = {};
  * view is live (see `withTemplates`). For static values, prefer the
  * two provide functions.
  *
- * `fallbackLabels` is the exception to the merge: a later
- * `withFallbackLabels` feature replaces an earlier one as a whole.
+ * The deep keys (`ariaLabels`, `fallbackLabels`, `announcer`, `templates`)
+ * merge per entry across features; every other key is replaced by the last
+ * feature that sets it.
  */
 export function makeSelectConfig(...features: CngxSelectConfigFeature[]): CngxSelectConfig {
   const merged: {
@@ -982,7 +985,7 @@ export function makeSelectConfig(...features: CngxSelectConfigFeature[]): CngxSe
   for (const f of features) {
     // Pull deep-merged keys aside before the flat assign so partial
     // overrides across features don't wipe earlier keys.
-    const { announcer, templates, ariaLabels, ...flat } = f.config;
+    const { announcer, templates, ariaLabels, fallbackLabels, ...flat } = f.config;
     Object.assign(merged, flat);
     if (announcer) {
       merged.announcer = createOverrideMerge(merged.announcer ?? NO_ANNOUNCER, announcer);
@@ -993,10 +996,12 @@ export function makeSelectConfig(...features: CngxSelectConfigFeature[]): CngxSe
     if (ariaLabels) {
       merged.ariaLabels = createOverrideMerge(merged.ariaLabels ?? NO_ARIA_LABELS, ariaLabels);
     }
-  }
-  // Replaced, not merged, across features; a Signal like the other copy keys.
-  if (merged.fallbackLabels) {
-    merged.fallbackLabels = coerceSignal(merged.fallbackLabels);
+    if (fallbackLabels) {
+      merged.fallbackLabels = createOverrideMerge(
+        merged.fallbackLabels ?? NO_FALLBACK_LABELS,
+        fallbackLabels,
+      );
+    }
   }
   return merged;
 }
@@ -1015,8 +1020,9 @@ export function provideSelectConfig(...features: CngxSelectConfigFeature[]): Env
  * Component-scoped config. Returns `Provider[]` because `viewProviders`
  * rejects `EnvironmentProviders`. Merges over the config of the parent
  * injector: the keys set here win, every unset key inherits, and the deep
- * keys (`ariaLabels`, `announcer`, `templates`) merge per entry, so an
- * app-wide translation survives a component-scope `withPanelWidth`.
+ * keys (`ariaLabels`, `fallbackLabels`, `announcer`, `templates`) merge per
+ * entry, so an app-wide translation survives a component-scope
+ * `withPanelWidth` or a subtree `withFallbackLabels({ empty })`.
  *
  * ```ts
  * @Component({
