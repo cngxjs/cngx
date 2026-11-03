@@ -22,7 +22,8 @@
     "cngx-doctor.mjs",
     "doctor",
     "README.md",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "LICENSE"
   ],
   "scripts": {
     "test": "vitest run"

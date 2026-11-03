@@ -19,6 +19,10 @@ library releases; this file tracks the doctor package.
 - A commented-out `@cngx` import no longer counts as usage, and a `/*` or `//`
   inside a string or regex literal no longer hides code from either scan.
 
+### Added
+
+- The tarball ships the MIT license text (`LICENSE`).
+
 ## 0.2.1 - 2026-10-21
 
 ### Fixed

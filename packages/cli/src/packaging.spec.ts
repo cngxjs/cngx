@@ -33,8 +33,8 @@ describe('@cngx/cli package manifest', () => {
     expect(pkg.bin).toEqual({ cngx: 'dist/index.js' });
   });
 
-  it('publishes dist, the bundled data, the readme and the changelog', () => {
-    expect([...pkg.files].sort()).toEqual(['CHANGELOG.md', 'README.md', 'data', 'dist']);
+  it('publishes dist, the bundled data, the readme, the changelog and the license', () => {
+    expect([...pkg.files].sort()).toEqual(['CHANGELOG.md', 'LICENSE', 'README.md', 'data', 'dist']);
   });
 
   it('declares the Node 20 floor', () => {
@@ -81,7 +81,7 @@ describe('@cngx/cli sources', () => {
 // compiled JavaScript with its maps, never a spec, a test or a test-only guard, and
 // no declarations (the package has no `types` or `exports`). Every sourcemap it
 // ships either points at a shipped file or carries its source.
-const FIXED_FILES: ReadonlySet<string> = new Set(['package.json', 'README.md', 'CHANGELOG.md', 'data/documentation.json']);
+const FIXED_FILES: ReadonlySet<string> = new Set(['package.json', 'README.md', 'CHANGELOG.md', 'LICENSE', 'data/documentation.json']);
 const COMPILED = /^dist\/.+\.js(?:\.map)?$/;
 const TEST_ONLY = /(?:\.spec|\.core-spec|\.test)\.js(?:\.map)?$|^dist\/(?:readme-guard|output-guards)\.|(?:^|\/)(?:testing|__fixtures__)\//;
 
@@ -124,6 +124,10 @@ describe('@cngx/cli tarball', () => {
   it('ships only allowlisted paths, every fixed file among them', () => {
     expect(offAllowlist(files)).toEqual([]);
     expect(files.filter((file) => FIXED_FILES.has(file)).sort()).toEqual([...FIXED_FILES].sort());
+  });
+
+  it('ships the root LICENSE byte for byte', () => {
+    expect(readFileSync(join(PKG_DIR, 'LICENSE'))).toEqual(readFileSync(join(PKG_DIR, '..', '..', 'LICENSE')));
   });
 
   it('ships no sourcemap that points at an unshipped source', () => {

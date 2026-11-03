@@ -412,6 +412,15 @@ describe('package exports', () => {
   });
 });
 
+describe('package license', () => {
+  const PKG_DIR = dirname(CLI);
+
+  it('ships the root LICENSE byte for byte and lists it in files', () => {
+    expect(readFileSync(join(PKG_DIR, 'LICENSE'))).toEqual(readFileSync(join(PKG_DIR, '..', '..', 'LICENSE')));
+    expect(JSON.parse(readFileSync(join(PKG_DIR, 'package.json'), 'utf8')).files).toContain('LICENSE');
+  });
+});
+
 describe('track-b-symbols drift guard', () => {
   it('equals the cngx.components layer set in projects/themes/cngx.css', () => {
     // Repo root is two levels up from packages/doctor.
