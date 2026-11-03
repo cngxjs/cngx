@@ -193,8 +193,8 @@ class AffixBlockHost {
   readonly nodeId = (value: unknown): string => String(value);
 }
 
-// Loads the global micro sheet, as `cngx.css` does; `.material` carries the
-// caret font the Material bridge sets.
+// Loads the global micro sheet, as `cngx.css` does; `.material` carries a
+// 1.5rem caret font, `.bridge` the caret font the Material bridge sets.
 @Component({
   selector: 'cngx-select-caret-micro-host',
   standalone: true,
@@ -203,6 +203,12 @@ class AffixBlockHost {
     <div style="display: grid; line-height: 1.5">
       <cngx-select class="default" [label]="'Colour'" [options]="options" />
       <cngx-select class="material" style="--cngx-select-caret-size: 1.5rem" [label]="'Colour'" [options]="options" />
+      <cngx-select
+        class="bridge"
+        style="--cngx-select-caret-size: calc(0.625rem / 0.27)"
+        [label]="'Colour'"
+        [options]="options"
+      />
       <cngx-select
         class="unfloored"
         style="--cngx-icon-svg-micro-floor: 0px; --cngx-select-caret-size: 1.5rem"
@@ -546,8 +552,8 @@ describe('select-family field skins', () => {
     expect(box.height).toBe(12);
   });
 
-  // The Material bridge sets a 1.5rem caret font, where the 24-grid box would
-  // round to 11px; the 0.75rem floor keeps it on the 12px micro box.
+  // A 1.5rem caret font would round the 24-grid box to 11px; the 0.75rem floor
+  // keeps it on the 12px micro box.
   it.each(['.default', '.material'])('paints the micro caret, 8 units wide, on the %s caret', (hostSelector) => {
     const el = trigger(mount(CaretMicroHost), hostSelector);
     const svg = el.querySelector<SVGSVGElement>('[class*="__caret"] svg.cngx-icon-svg')!;
@@ -556,6 +562,18 @@ describe('select-family field skins', () => {
     expect(computedValue(svg.querySelector('.cngx-icon-svg__path')!, 'display')).toBe('none');
     expect(computedValue(micro, 'display')).not.toBe('none');
     expect(micro.getBoundingClientRect().width).toBeCloseTo(8, 1);
+  });
+
+  // The Material bridge matches the mat-select arrow, 10px of ink: the box
+  // rounds to 17px, past the band, and the 24-grid triangle (14 units) paints.
+  it('draws the Material bridge caret as wide as the mat-select arrow', () => {
+    const el = trigger(mount(CaretMicroHost), '.bridge');
+    const svg = el.querySelector<SVGSVGElement>('[class*="__caret"] svg.cngx-icon-svg')!;
+    expect(svg.getBoundingClientRect().width).toBe(17);
+    const path = svg.querySelector('.cngx-icon-svg__path')!;
+    expect(computedValue(path, 'display')).not.toBe('none');
+    expect(computedValue(svg.querySelector('.cngx-icon-svg__micro')!, 'display')).toBe('none');
+    expect(path.getBoundingClientRect().width).toBeCloseTo(10, 0);
   });
 
   // Without the floor the box follows the caret font again, below 12px too:

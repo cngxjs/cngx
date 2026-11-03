@@ -363,4 +363,15 @@ describe('select-family action-region frame', () => {
     expect(value).toBeDefined();
     expect(value).not.toBe('none');
   });
+
+  // The bridge caret matches the 10px mat-select arrow; the geometry spec
+  // pins the same value to a 17px box with 10px of ink.
+  it('sizes the Material bridge caret to the 10px mat-select arrow', () => {
+    const bridge = readFileSync(
+      fromHere('../../../themes/material/select-theme.scss'),
+      'utf8',
+    );
+    const value = /--cngx-select-caret-size:\s*([^;]+);/.exec(bridge)?.[1].trim();
+    expect(value).toBe('calc(0.625rem / 0.27)');
+  });
 });
