@@ -37,10 +37,11 @@ export interface CngxIconMicro {
  * `<svg><path>` from it and applies the paint contract of
  * `CngxIconPaint` itself.
  *
- * One source per glyph, two grid-specific drawings: `micro` is the
- * optional 12-grid drawing (see `CngxIconMicro`), drawn as a second
- * `<path>`, that renderers show in a 10 to 14px box instead of the 24-grid
- * path. An icon without one keeps the 24-grid path at every size.
+ * One source per glyph, two grid-specific drawings: `micro` is the 12-grid
+ * drawing (see `CngxIconMicro`), drawn as a second `<path>`, that renderers
+ * show in a box from 10px up to, but not including, 15px instead of the
+ * 24-grid path. Every icon must decide: `null` is a recorded decision that no
+ * 12-grid drawing reads well, and the 24-grid path then shows at every size.
  *
  * Exported because Sheriff forbids deep-relative imports across library
  * boundaries; `@internal` because cngx ships the glyphs it draws, not an
@@ -53,7 +54,7 @@ export interface CngxIconData {
   readonly viewBox: '0 0 24 24';
   readonly d: string;
   readonly paint: CngxIconPaint;
-  readonly micro?: CngxIconMicro;
+  readonly micro: CngxIconMicro | null;
 }
 
 /** Close / clear cross. @internal */
@@ -281,11 +282,16 @@ export const CNGX_ICON_DOWNLOAD = {
   },
 } as const satisfies CngxIconData;
 
-/** Cross in a circle (dismiss, clear with emphasis). @internal */
+/**
+ * Cross in a circle (dismiss, clear with emphasis). No micro drawing: on the
+ * 12 grid the cross closes up inside the ring, so it keeps the 24-grid path.
+ * @internal
+ */
 export const CNGX_ICON_X_CIRCLE = {
   viewBox: '0 0 24 24',
   d: 'M2.5 12a9.5 9.5 0 1 0 19 0a9.5 9.5 0 1 0-19 0zM9.5 9.5l5 5M14.5 9.5l-5 5',
   paint: 'stroke',
+  micro: null,
 } as const satisfies CngxIconData;
 
 /** Scissors (cut). @internal */
@@ -465,6 +471,7 @@ export const CNGX_ICON_QUESTION = {
   viewBox: '0 0 24 24',
   d: 'M10.6,16q0-2.03 0.36-2.91t1.54-1.94q1.03-0.9 1.56-1.56T14.6,8.07q0-1.02-0.69-1.7T12,5.7q-1.27,0-1.94,0.77T9.13,8.05L6.55,6.95q0.52-1.6 1.92-2.78T12,3q2.63,0 4.04,1.46q1.41,1.46 1.41,3.51q0,1.25-0.54,2.14t-1.69,2.01Q14,13.3 13.74,13.91T13.48,16H10.6ZM12,22q-0.82,0-1.41-0.59T10,20t0.59-1.41T12,18t1.41,0.59Q14,19.18 14,20t-0.59,1.41T12,22Z',
   paint: 'fill',
+  micro: null,
 } as const satisfies CngxIconData;
 
 /** Lowercase i in a circle (info severity). @internal */

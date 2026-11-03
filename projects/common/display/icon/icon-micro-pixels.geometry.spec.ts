@@ -17,7 +17,12 @@ import { CngxIconSvg } from './icon-svg.component';
 const MICRO_ICONS = Object.entries(utils)
   .filter(([name]) => name.startsWith('CNGX_ICON_'))
   .map(([name, icon]) => [name, icon as CngxIconData] as const)
-  .filter(([, icon]) => icon.micro !== undefined);
+  .filter(([, icon]) => icon.micro !== null);
+
+const NO_MICRO_ICONS = Object.entries(utils)
+  .filter(([name]) => name.startsWith('CNGX_ICON_'))
+  .map(([name, icon]) => [name, icon as CngxIconData] as const)
+  .filter(([, icon]) => icon.micro === null);
 
 // Straight edges on whole units: nothing may anti-alias. Every other glyph has
 // a diagonal or an arc, which anti-aliases on any grid, so it is held to "not
@@ -155,6 +160,19 @@ describe('micro icon pixels in a 12px box', () => {
       return;
     }
     expect(microCount, `${name} micro vs 24 path`).toBeLessThan(path24Count);
+  });
+
+  it('finds the icons that keep the 24-grid path', () => {
+    expect(NO_MICRO_ICONS.map(([name]) => name).sort()).toEqual([
+      'CNGX_ICON_QUESTION',
+      'CNGX_ICON_X_CIRCLE',
+    ]);
+  });
+
+  it.each(NO_MICRO_ICONS)('%s keeps the 24-grid path in the 12px box', (_, icon) => {
+    const svg = mount(icon);
+    expect(svg.querySelector('.cngx-icon-svg__micro')).toBeNull();
+    expect(getComputedStyle(svg.querySelector('.cngx-icon-svg__path')!).display).not.toBe('none');
   });
 
   it.each(RECTILINEAR)('%s paints on whole pixels only', async (name) => {

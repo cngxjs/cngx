@@ -205,18 +205,23 @@ describe('cngx default icon set', () => {
   });
 
   it.each(MICRO_ICONS)('%s carries a micro drawing', (name) => {
-    expect(entries.find(([entry]) => entry === name)?.[1].micro).toBeDefined();
+    expect(entries.find(([entry]) => entry === name)?.[1].micro).toEqual(
+      expect.objectContaining({ viewBox: '0 0 12 12' }),
+    );
+  });
+
+  // The type requires the field; this catches a cast or a spread that drops it.
+  it.each(entries)('%s records a micro decision', (_, icon) => {
+    expect(icon.micro).not.toBeUndefined();
   });
 
   // No 12-grid drawing of these read well on the sign-off sheet (the circled X
   // loses its cross at 12px, the question mark never survived the grid), so they
-  // keep the 24-grid path at every size.
-  it.each(['CNGX_ICON_QUESTION', 'CNGX_ICON_X_CIRCLE'])(
-    '%s stays on the 24-grid path',
-    (name) => {
-      expect(entries.find(([entry]) => entry === name)?.[1].micro).toBeUndefined();
-    },
-  );
+  // keep the 24-grid path at every size. The list is exactly the signed-off one.
+  it('keeps the 24-grid path only on the signed-off icons', () => {
+    const withoutMicro = entries.filter(([, icon]) => icon.micro === null).map(([name]) => name);
+    expect(withoutMicro.sort()).toEqual(['CNGX_ICON_QUESTION', 'CNGX_ICON_X_CIRCLE']);
+  });
 
   it('draws the ban slash from top-left to bottom-right', () => {
     expect(icons.CNGX_ICON_BAN.d).toContain('M5.3 5.3l13.4 13.4');
