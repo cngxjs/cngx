@@ -17,7 +17,12 @@ import { CngxIconSvg } from './icon-svg.component';
 const MICRO_ICONS = Object.entries(utils)
   .filter(([name]) => name.startsWith('CNGX_ICON_'))
   .map(([name, icon]) => [name, icon as CngxIconData] as const)
-  .filter(([, icon]) => icon.micro !== undefined);
+  .filter(([, icon]) => icon.micro !== null);
+
+const NO_MICRO_ICONS = Object.entries(utils)
+  .filter(([name]) => name.startsWith('CNGX_ICON_'))
+  .map(([name, icon]) => [name, icon as CngxIconData] as const)
+  .filter(([, icon]) => icon.micro === null);
 
 // Straight edges on whole units: nothing may anti-alias. Every other glyph has
 // a diagonal or an arc, which anti-aliases on any grid, so it is held to "not
@@ -29,17 +34,30 @@ const RECTILINEAR = [
   'CNGX_ICON_EXCLAMATION_SOLID',
   'CNGX_ICON_INFO',
   'CNGX_ICON_MORE_HORIZONTAL',
+  'CNGX_ICON_MORE_VERTICAL',
+  'CNGX_ICON_GRIP_VERTICAL',
+  'CNGX_ICON_COPY',
+  'CNGX_ICON_CLIPBOARD',
+  'CNGX_ICON_MAXIMIZE',
+  'CNGX_ICON_ARCHIVE',
 ] as const;
 
 // Signed-off drawings that anti-alias more than their 24-grid path: 1.41-unit
 // diagonal strips (X, CHECK) straddle pixel boundaries on any whole-unit grid,
 // and BAN's 1.5-unit ring and slash carry more edge than the 24-grid hairlines
-// (they paint full-weight pixels the hairlines never reach). Measured ceilings
-// keep them from getting worse without redrawing what the sheet signed off.
+// (they paint full-weight pixels the hairlines never reach). The magnifier lens
+// is centred on 5.5 so its plus and minus centre in the hole, which puts the
+// whole ring between pixels; the pencil's diagonal body ties its 24-grid path.
+// Measured ceilings keep them from getting worse without redrawing what the
+// sheet signed off.
 const MEASURED_CEILINGS: Readonly<Record<string, number>> = {
   CNGX_ICON_X: 30,
   CNGX_ICON_CHECK: 20,
   CNGX_ICON_BAN: 87,
+  CNGX_ICON_SEARCH: 57,
+  CNGX_ICON_ZOOM_IN: 57,
+  CNGX_ICON_ZOOM_OUT: 57,
+  CNGX_ICON_PENCIL: 19,
 };
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -119,7 +137,7 @@ afterEach(() => {
 describe('micro icon pixels in a 12px box', () => {
   it('covers every micro-carrying icon', () => {
     // The set only gains micro drawings; a shrinking list means the readback went vacuous.
-    expect(MICRO_ICONS.length).toBeGreaterThanOrEqual(15);
+    expect(MICRO_ICONS.length).toBeGreaterThanOrEqual(39);
   });
 
   it.each(MICRO_ICONS)('%s shows the micro path in the 12px box', (_, icon) => {
@@ -142,6 +160,19 @@ describe('micro icon pixels in a 12px box', () => {
       return;
     }
     expect(microCount, `${name} micro vs 24 path`).toBeLessThan(path24Count);
+  });
+
+  it('finds the icons that keep the 24-grid path', () => {
+    expect(NO_MICRO_ICONS.map(([name]) => name).sort()).toEqual([
+      'CNGX_ICON_QUESTION',
+      'CNGX_ICON_X_CIRCLE',
+    ]);
+  });
+
+  it.each(NO_MICRO_ICONS)('%s keeps the 24-grid path in the 12px box', (_, icon) => {
+    const svg = mount(icon);
+    expect(svg.querySelector('.cngx-icon-svg__micro')).toBeNull();
+    expect(getComputedStyle(svg.querySelector('.cngx-icon-svg__path')!).display).not.toBe('none');
   });
 
   it.each(RECTILINEAR)('%s paints on whole pixels only', async (name) => {

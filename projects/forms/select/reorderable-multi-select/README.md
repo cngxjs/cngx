@@ -80,6 +80,20 @@ No grip renders by default - the whole chip is the drag surface. Two-stage casca
 
 The handle wrapper stays `aria-hidden="true"` - drag affordance is exposed to AT via `[reorderAriaLabel]`.
 
+### Move-glyph override
+
+The move-up / move-down buttons of the reorder list the panel shows under the touch floor draw triangles by default. Same cascade as the drag handle: the directive wins over the `[moveGlyph]` Input, whose app-wide default comes from `withDefaultMoveGlyph`. The context carries the `direction` (`'up'` or `'down'`, also `$implicit`):
+
+```html
+<cngx-reorderable-multi-select [options]="people" [(values)]="values">
+  <ng-template cngxMultiSelectMoveGlyph let-direction>
+    <my-arrow [direction]="direction" />
+  </ng-template>
+</cngx-reorderable-multi-select>
+```
+
+The glyph renders inside the move button in an `aria-hidden="true"` wrapper; the button keeps its accessible name (`moveUp` / `moveDown` copy). `--cngx-select-reorder-move-size` (default `0.75em`) sizes the default triangles and is the font size of the projected wrapper. The triangles never drop below the 12px micro floor; set `--cngx-icon-svg-micro-floor: 0px` as well for a smaller box.
+
 ### Custom chip rendering with positional labels
 
 ```html
@@ -113,6 +127,7 @@ Each row moves in one of three ways, all reporting the same reorder:
 While a commit is pending every path is frozen. The move buttons are `aria-disabled` and reference the `commitPending` reason, and the list is `aria-busy`. In a pessimistic commit the sheet header X and Done reference the same reason. In a sheet or fullscreen panel the list scrolls past `--cngx-select-reorder-list-max-block-size` (default `40dvh`).
 
 - `*cngxMultiSelectChip`, `*cngxMultiSelectChipHandle` and `chipOverflow` apply on a fine pointer only, or with the opt-out.
+- `*cngxMultiSelectMoveGlyph` (and `[moveGlyph]`) applies under the touch floor only, where the panel list shows.
 - `*cngxSelectChipOverflow` is not rendered by this variant. The summary badge is always the built-in `+N`.
 - `*cngxMultiSelectTriggerLabel` replaces the summary once a value is selected. The panel list still shows the values.
 - `[cngxTouchTarget]="'off'"` (or `data-touch="off"`) brings the reorderable chip strip back on a touch screen, and the panel list is not shown.
@@ -124,6 +139,7 @@ All [`CngxMultiSelect` slots](../multi-select/README.md#template-slots) except `
 | Slot | Replaces |
 |-|-|
 | `*cngxMultiSelectChipHandle` | Drag-handle glyph inside each chip (highest precedence in the three-stage cascade) |
+| `*cngxMultiSelectMoveGlyph` | Glyph of the move-up / move-down buttons in the touch reorder list (wins over `[moveGlyph]`); context `{ $implicit, direction }` |
 
 ## Keyboard
 
@@ -151,6 +167,7 @@ import {
   withReorderKeyboardModifier,
   withReorderStripFreeze,
   withDefaultDragHandle,
+  withDefaultMoveGlyph,
 } from '@cngx/forms/select';
 
 bootstrapApplication(App, {
@@ -159,6 +176,7 @@ bootstrapApplication(App, {
       withReorderKeyboardModifier('meta'),
       withReorderStripFreeze(true),
       withDefaultDragHandle(myDragHandleTemplate),
+      withDefaultMoveGlyph(myMoveGlyphTemplate),
     ),
   ],
 });

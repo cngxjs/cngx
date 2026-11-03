@@ -88,7 +88,7 @@ The shell uses the same slot cascade as the rest of the family. Project a slot d
 </cngx-select-shell>
 ```
 
-Cascade per slot: instance `contentChild` &rarr; `CNGX_SELECT_CONFIG.templates.<key>` &rarr; fallback. The shell queries these 14 slot directives: `*cngxSelectCaret`, `*cngxSelectPlaceholder`, `*cngxSelectEmpty`, `*cngxSelectLoading`, `*cngxSelectLoadingGlyph`, `*cngxSelectTriggerLabel`, `*cngxSelectError`, `*cngxSelectRetryButton`, `*cngxSelectRefreshing`, `*cngxSelectCommitError`, `*cngxSelectClearButton`, `*cngxSelectOptionPending`, `*cngxSelectOptionError` and `*cngxSelectSheetHandle`. It does not query `*cngxSelectCheck`, `*cngxSelectOptgroup` or `*cngxSelectOptionLabel`. See the `shared/` README for the full slot list.
+Cascade per slot: instance `contentChild` &rarr; `CNGX_SELECT_CONFIG.templates.<key>` &rarr; fallback. The shell queries these slot directives: `*cngxSelectCaret`, `*cngxSelectPlaceholder`, `*cngxSelectEmpty`, `*cngxSelectLoading`, `*cngxSelectLoadingGlyph`, `*cngxSelectTriggerLabel`, `*cngxSelectError`, `*cngxSelectRetryButton`, `*cngxSelectRefreshing`, `*cngxSelectCommitError`, `*cngxSelectClearButton`, `*cngxSelectOptionPending`, `*cngxSelectOptionError` and `*cngxSelectSheetHandle`. It does not query `*cngxSelectCheck`, `*cngxSelectOptgroup` or `*cngxSelectOptionLabel`. See the `shared/` README for the full slot list.
 
 ## A11y
 

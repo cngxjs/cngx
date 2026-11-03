@@ -1,7 +1,17 @@
-import { Component, signal } from '@angular/core';
+import {
+  ApplicationRef,
+  Component,
+  createComponent,
+  EnvironmentInjector,
+  Injector,
+  signal,
+  type TemplateRef,
+  viewChild,
+} from '@angular/core';
 import { CngxPopoverSheet, type CngxPopoverPresentationRequest } from '@cngx/common/popover';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { DebugElement, getDebugNode } from '@angular/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { stripBidiIsolates } from '@cngx/testing';
@@ -13,7 +23,15 @@ import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host'
 import { describeSelectBehaviourHost } from '../shared/__test-helpers/select-behaviour-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 import { stubTouchFloor } from '../shared/__test-helpers/touch-floor';
-import { CngxMultiSelectTriggerLabel } from '../shared/template-slots';
+import {
+  CngxMultiSelectMoveGlyph,
+  CngxMultiSelectTriggerLabel,
+  type CngxMultiSelectMoveGlyphContext,
+} from '../shared/template-slots';
+import {
+  provideReorderableSelectConfigAt,
+  withDefaultMoveGlyph,
+} from '../shared/reorderable-select-config';
 import {
   CngxReorderableMultiSelect,
   type CngxReorderableMultiSelectChange,
@@ -1024,5 +1042,175 @@ describe('CngxReorderableMultiSelect - sorting in the panel under the touch floo
     expect(list()!.contains(document.activeElement)).toBe(true);
     expect(setActive).not.toHaveBeenCalled();
     expect(focusAt).not.toHaveBeenCalled();
+  });
+});
+
+// -- Move-glyph cascade of the touch reorder list ----------------------
+
+@Component({
+  template: `
+    <cngx-reorderable-multi-select
+      [label]="'Glyphs'"
+      [options]="options"
+      [presentation]="'sheet'"
+      [moveGlyph]="withInput() ? inputGlyph : null"
+      [(values)]="values"
+    >
+      @if (withDirective()) {
+        <ng-template cngxMultiSelectMoveGlyph let-direction>
+          <i class="slot-glyph" [attr.data-direction]="direction"></i>
+        </ng-template>
+      }
+    </cngx-reorderable-multi-select>
+    <ng-template #inputGlyph let-direction="direction">
+      <i class="input-glyph" [attr.data-direction]="direction"></i>
+    </ng-template>
+  `,
+  imports: [CngxReorderableMultiSelect, CngxMultiSelectMoveGlyph],
+})
+class MoveGlyphHost {
+  readonly options = OPTIONS;
+  readonly values = signal<string[]>(['a', 'b']);
+  readonly withInput = signal(false);
+  readonly withDirective = signal(false);
+}
+
+@Component({
+  template: `
+    <ng-template #glyph let-direction>
+      <i class="config-glyph" [attr.data-direction]="direction"></i>
+    </ng-template>
+  `,
+})
+class MoveGlyphTemplateHolder {
+  readonly glyph = viewChild.required<TemplateRef<CngxMultiSelectMoveGlyphContext>>('glyph');
+}
+
+@Component({
+  template: `
+    <cngx-reorderable-multi-select
+      [label]="'Glyphs'"
+      [options]="options"
+      [presentation]="'sheet'"
+      [(values)]="values"
+    />
+  `,
+  imports: [CngxReorderableMultiSelect],
+})
+class MoveGlyphConfigHost {
+  readonly options = OPTIONS;
+  readonly values = signal<string[]>(['a', 'b']);
+}
+
+describe('CngxReorderableMultiSelect - move-glyph cascade', () => {
+  let restore: (() => void) | null = null;
+
+  afterEach(() => {
+    restore?.();
+    restore = null;
+  });
+
+  function openList(root: HTMLElement, detect: () => void): HTMLElement {
+    const de = (getDebugNode(root) as DebugElement).query(By.directive(CngxReorderableMultiSelect));
+    (de.componentInstance as CngxReorderableMultiSelect<string>).open();
+    detect();
+    return (de.nativeElement as HTMLElement).querySelector<HTMLElement>(
+      'cngx-select-reorder-list',
+    )!;
+  }
+
+  function glyphs(list: HTMLElement, cls: string): string[] {
+    return Array.from(list.querySelectorAll<HTMLElement>('[data-reorder-index="0"] [data-move]')).map(
+      (button) => {
+        const wrap = button.querySelector<HTMLElement>('.cngx-select-reorder-list__move-glyph');
+        expect(wrap?.getAttribute('aria-hidden')).toBe('true');
+        return wrap?.querySelector<HTMLElement>(`.${cls}`)?.dataset['direction'] ?? '';
+      },
+    );
+  }
+
+  function renderHost(input: boolean, directive: boolean): HTMLElement {
+    polyfillPopover();
+    restore = stubTouchFloor();
+    const fixture = TestBed.createComponent(MoveGlyphHost);
+    fixture.componentInstance.withInput.set(input);
+    fixture.componentInstance.withDirective.set(directive);
+    flush(fixture);
+    return openList(fixture.nativeElement as HTMLElement, () => flush(fixture));
+  }
+
+  it('draws the default triangles without a slot, input or config', () => {
+    const list = renderHost(false, false);
+    expect(list.querySelector('.cngx-select-reorder-list__move-glyph')).toBeNull();
+    expect(list.querySelectorAll('.cngx-select-reorder-list__move svg').length).toBe(4);
+  });
+
+  it('renders the [moveGlyph] input with the direction of each button', () => {
+    const list = renderHost(true, false);
+    expect(glyphs(list, 'input-glyph')).toEqual(['up', 'down']);
+  });
+
+  it('lets the *cngxMultiSelectMoveGlyph slot win over the [moveGlyph] input', () => {
+    const list = renderHost(true, true);
+    expect(glyphs(list, 'slot-glyph')).toEqual(['up', 'down']);
+    expect(list.querySelector('.input-glyph')).toBeNull();
+  });
+
+  /** Renders `cmp` under `provideReorderableSelectConfigAt(withDefaultMoveGlyph(...))`. */
+  function renderUnderConfig<C>(
+    cmp: new () => C,
+    configure: (instance: C) => void,
+    check: (list: HTMLElement) => void,
+  ): void {
+    polyfillPopover();
+    restore = stubTouchFloor();
+    const holder = TestBed.createComponent(MoveGlyphTemplateHolder);
+    holder.detectChanges();
+    const elementInjector = Injector.create({
+      providers: provideReorderableSelectConfigAt(
+        withDefaultMoveGlyph(holder.componentInstance.glyph()),
+      ),
+      parent: holder.componentRef.injector,
+    });
+    const ref = createComponent(cmp, {
+      environmentInjector: TestBed.inject(EnvironmentInjector),
+      elementInjector,
+    });
+    configure(ref.instance);
+    const appRef = TestBed.inject(ApplicationRef);
+    appRef.attachView(ref.hostView);
+    const root = ref.location.nativeElement as HTMLElement;
+    document.body.appendChild(root);
+    const detect = () => {
+      TestBed.flushEffects();
+      ref.changeDetectorRef.detectChanges();
+    };
+    try {
+      detect();
+      check(openList(root, detect));
+    } finally {
+      appRef.detachView(ref.hostView);
+      ref.destroy();
+      root.remove();
+    }
+  }
+
+  it('takes the app-wide default from withDefaultMoveGlyph', () => {
+    renderUnderConfig(
+      MoveGlyphConfigHost,
+      () => undefined,
+      (list) => expect(glyphs(list, 'config-glyph')).toEqual(['up', 'down']),
+    );
+  });
+
+  it('lets the [moveGlyph] input win over withDefaultMoveGlyph', () => {
+    renderUnderConfig(
+      MoveGlyphHost,
+      (host) => host.withInput.set(true),
+      (list) => {
+        expect(glyphs(list, 'input-glyph')).toEqual(['up', 'down']);
+        expect(list.querySelector('.config-glyph')).toBeNull();
+      },
+    );
   });
 });

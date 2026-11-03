@@ -81,8 +81,8 @@ export const STORY: DemoSpec = {
 
   protected readonly sheetSizes = [10, 11, 12, 13, 14, 16] as const;
 
-  // Only glyphs that carry a micro drawing get a row; the table grows with the batches.
-  protected readonly sheetRows = this.icons.filter((entry) => entry.icon.micro !== undefined);
+  // Only glyphs that carry a micro drawing get a row; a null micro keeps the 24-grid path.
+  protected readonly sheetRows = this.icons.filter((entry) => entry.icon.micro !== null);
 
   protected readonly glyphs = {
     alert: CNGX_ICON_ALERT,

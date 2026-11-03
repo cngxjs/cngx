@@ -50,15 +50,36 @@
   }
 
   /* The grip draws its dots over 15 of the 24 grid units; scaling the box by
-     24/15 keeps them the 0.8125em tall column the 10x16 handle drew. */
+     24/15 keeps them the 0.8125em tall column the 10x16 handle drew. The
+     scaling only holds for the 24-grid path, so the box never drops below
+     15px, the upper edge of the micro band in `cngx-icon-glyph.css`; a small
+     list font keeps the 24-grid grip instead of switching to the micro one. */
   .cngx-select-reorder-list__handle > .cngx-icon-svg {
-    --cngx-icon-svg-size: calc(0.8125em * 24 / 15);
+    --cngx-icon-svg-size: max(calc(0.8125em * 24 / 15), 15px);
   }
 
-  /* The triangles span 14 of the 24 grid units; scaling the box by 24/14
-     keeps them the 0.5625em width the 12-unit arrows drew. */
+  /* `--cngx-select-reorder-move-size` (default 0.75em) drives the box. At
+     the default it lands on 12px at the 16px font and at any smaller font
+     (the 0.75rem micro floor still applies), which selects the 12-grid micro
+     triangle (8 units across, 8px, near the 0.5625em the 12-unit arrows
+     drew). A larger font or token moves the box past 14px and hands it to
+     the 24-grid path; `--cngx-icon-svg-micro-floor: 0px` lets it shrink
+     below 12px. */
   .cngx-select-reorder-list__move > .cngx-icon-svg {
-    --cngx-icon-svg-size: calc(0.5625em * 24 / 14);
+    --cngx-icon-svg-size: max(
+      var(--cngx-select-reorder-move-size, 0.75em),
+      var(--cngx-icon-svg-micro-floor, 0.75rem)
+    );
+  }
+
+  /* A projected glyph reads the same token as its font size, so an em-sized
+     glyph scales with it. */
+  .cngx-select-reorder-list__move-glyph {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--cngx-select-reorder-move-size, 0.75em);
+    line-height: 1;
   }
 
   .cngx-select-reorder-list__label {

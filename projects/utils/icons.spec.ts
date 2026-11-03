@@ -8,25 +8,48 @@ const entries = Object.entries(icons).filter(([name]) => name.startsWith('CNGX_I
   CngxIconData,
 ][];
 
-// Glyphs with a signed-off 12-grid drawing; the list grows with each batch.
+// Glyphs with a signed-off 12-grid drawing: every default icon except the two
+// that keep the 24-grid path at every size.
 const MICRO_ICONS = [
   'CNGX_ICON_ALERT',
+  'CNGX_ICON_ARCHIVE',
   'CNGX_ICON_BAN',
   'CNGX_ICON_BELL',
   'CNGX_ICON_CARET_DOWN',
   'CNGX_ICON_CHECK',
+  'CNGX_ICON_CHECK_CIRCLE',
   'CNGX_ICON_CHEVRONS_LEFT',
   'CNGX_ICON_CHEVRONS_RIGHT',
+  'CNGX_ICON_CHEVRON_DOWN',
   'CNGX_ICON_CHEVRON_LEFT',
   'CNGX_ICON_CHEVRON_RIGHT',
+  'CNGX_ICON_CLIPBOARD',
+  'CNGX_ICON_COPY',
+  'CNGX_ICON_CUT',
+  'CNGX_ICON_DOT',
+  'CNGX_ICON_DOWNLOAD',
   'CNGX_ICON_EXCLAMATION',
   'CNGX_ICON_EXCLAMATION_SOLID',
+  'CNGX_ICON_GRIP_VERTICAL',
   'CNGX_ICON_INFO',
+  'CNGX_ICON_INFO_CIRCLE',
+  'CNGX_ICON_MAXIMIZE',
   'CNGX_ICON_MINUS',
   'CNGX_ICON_MORE_HORIZONTAL',
+  'CNGX_ICON_MORE_VERTICAL',
+  'CNGX_ICON_PENCIL',
   'CNGX_ICON_PLUS',
+  'CNGX_ICON_REDO',
+  'CNGX_ICON_SEARCH',
+  'CNGX_ICON_STOP',
   'CNGX_ICON_TRASH',
+  'CNGX_ICON_TRIANGLE_DOWN',
+  'CNGX_ICON_TRIANGLE_UP',
+  'CNGX_ICON_UNDO',
+  'CNGX_ICON_VOLUME',
   'CNGX_ICON_X',
+  'CNGX_ICON_ZOOM_IN',
+  'CNGX_ICON_ZOOM_OUT',
 ] as const;
 
 const ARITY: Readonly<Record<string, number>> = {
@@ -44,8 +67,16 @@ const ARITY: Readonly<Record<string, number>> = {
 
 // Solid silhouettes with rounded corners (ALERT) or a ring crossed by a slash
 // (BAN) have curve end points that are not whole units; only their cut-out
-// marks sit on the grid. Those two are checked against the 12 box instead.
-const CURVED_MICRO: ReadonlySet<string> = new Set(['CNGX_ICON_ALERT', 'CNGX_ICON_BAN']);
+// marks sit on the grid. The three magnifiers share a lens centred on 5.5,
+// because a 1-unit plus or minus only centres in a hole of odd width. These
+// are checked against the 12 box instead.
+const CURVED_MICRO: ReadonlySet<string> = new Set([
+  'CNGX_ICON_ALERT',
+  'CNGX_ICON_BAN',
+  'CNGX_ICON_SEARCH',
+  'CNGX_ICON_ZOOM_IN',
+  'CNGX_ICON_ZOOM_OUT',
+]);
 
 /**
  * Every reason a micro `d` leaves the 12 grid. Absolute commands only, so a
@@ -174,18 +205,23 @@ describe('cngx default icon set', () => {
   });
 
   it.each(MICRO_ICONS)('%s carries a micro drawing', (name) => {
-    expect(entries.find(([entry]) => entry === name)?.[1].micro).toBeDefined();
+    expect(entries.find(([entry]) => entry === name)?.[1].micro).toEqual(
+      expect.objectContaining({ viewBox: '0 0 12 12' }),
+    );
+  });
+
+  // The type requires the field; this catches a cast or a spread that drops it.
+  it.each(entries)('%s records a micro decision', (_, icon) => {
+    expect(icon.micro).not.toBeUndefined();
   });
 
   // No 12-grid drawing of these read well on the sign-off sheet (the circled X
   // loses its cross at 12px, the question mark never survived the grid), so they
-  // keep the 24-grid path at every size.
-  it.each(['CNGX_ICON_QUESTION', 'CNGX_ICON_X_CIRCLE'])(
-    '%s stays on the 24-grid path',
-    (name) => {
-      expect(entries.find(([entry]) => entry === name)?.[1].micro).toBeUndefined();
-    },
-  );
+  // keep the 24-grid path at every size. The list is exactly the signed-off one.
+  it('keeps the 24-grid path only on the signed-off icons', () => {
+    const withoutMicro = entries.filter(([, icon]) => icon.micro === null).map(([name]) => name);
+    expect(withoutMicro.sort()).toEqual(['CNGX_ICON_QUESTION', 'CNGX_ICON_X_CIRCLE']);
+  });
 
   it('draws the ban slash from top-left to bottom-right', () => {
     expect(icons.CNGX_ICON_BAN.d).toContain('M5.3 5.3l13.4 13.4');

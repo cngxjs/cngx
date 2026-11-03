@@ -123,6 +123,8 @@ import {
   CngxMultiSelectChip,
   CngxMultiSelectChipHandle,
   type CngxMultiSelectChipContext,
+  CngxMultiSelectMoveGlyph,
+  type CngxMultiSelectMoveGlyphContext,
   CngxMultiSelectTriggerLabel,
   type CngxMultiSelectTriggerLabelContext,
   CngxSelectCaret,
@@ -176,10 +178,11 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
  * `cngxSelectRefreshing`, `cngxSelectCommitError`, `cngxSelectClearButton`,
  * `cngxSelectOptionPending` and `cngxSelectOptionError` also take an
  * app-wide default through `CNGX_SELECT_CONFIG.templates` (`withTemplates`);
- * `cngxMultiSelectTriggerLabel`, `cngxMultiSelectChip` and
- * `cngxMultiSelectChipHandle` are directive-only, the handle's app-wide
- * default comes from `withDefaultDragHandle` (via `[chipDragHandle]`), not
- * from `templates`. `cngxSelectLoadingGlyph` resolves from the projected
+ * `cngxMultiSelectTriggerLabel`, `cngxMultiSelectChip`,
+ * `cngxMultiSelectChipHandle` and `cngxMultiSelectMoveGlyph` are
+ * directive-only, the handle's app-wide default comes from
+ * `withDefaultDragHandle` (via `[chipDragHandle]`) and the move glyph's from
+ * `withDefaultMoveGlyph` (via `[moveGlyph]`), not from `templates`. `cngxSelectLoadingGlyph` resolves from the projected
  * directive first and `templates.loadingGlyph` second.
  *
  * **Mobile sheet.** On a coarse screen narrower than 48rem the panel opens as
@@ -198,6 +201,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
  * <example-url>/#/forms/select/reorderable-multi-select/basic-drag-chips-via-mouse-touch</example-url>
  * <example-url>/#/forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end</example-url>
  * <example-url>/#/forms/select/reorderable-multi-select/optional-drag-handle-glyph</example-url>
+ * <example-url>/#/forms/select/reorderable-multi-select/custom-move-glyphs</example-url>
  * <example-url>/#/forms/select/reorderable-multi-select/pre-seeded-values-reorder-log</example-url>
  * <example-url>/#/forms/select/mobile-sheet/all-variants</example-url>
  * @slot cngxSelectCheck Replaces the checkbox indicator on each option row unless hideSelectionIndicator is set; gets option, selected, variant, position, and indeterminate (always false here, absent under the radio variant).
@@ -215,6 +219,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
  * @slot cngxSelectCommitError Replaces the panel's commit-error banner when a commit fails and commitErrorDisplay is 'banner'; gets error, option, retry.
  * @slot cngxMultiSelectChip Replaces each chip inside its drag wrapper unless cngxMultiSelectTriggerLabel is projected; gets option, remove, index. Fine pointer only.
  * @slot cngxMultiSelectChipHandle Renders the drag-handle glyph before each chip in an aria-hidden span and wins over [chipDragHandle]; no context. Fine pointer only.
+ * @slot cngxMultiSelectMoveGlyph Replaces the triangle glyph inside the move-up / move-down buttons of the panel's reorder list in an aria-hidden span and wins over [moveGlyph]; gets $implicit/direction ('up' or 'down'). Under the touch floor only.
  * @slot cngxSelectClearButton Replaces the clear-all button, shown when clearable is set, a value is selected and the control is enabled and not readonly; gets clear, disabled.
  * @slot cngxSelectOptionPending Replaces the spinner on an option row while its commit is in flight; gets option.
  * @slot cngxSelectOptionError Replaces the error mark on selected rows when a commit fails and commitErrorDisplay is 'inline'; gets option, error.
@@ -528,6 +533,19 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   readonly chipDragHandle = input<TemplateRef<void> | null>(this.reorderableConfig.dragHandle);
 
   /**
+   * Optional glyph template for the move-up / move-down buttons of the
+   * reorder list the panel shows under the touch floor. By default the
+   * buttons draw triangles; supply a template here (or via
+   * `*cngxMultiSelectMoveGlyph`) to replace them. The context carries the
+   * `direction` (`'up'` or `'down'`). The glyph renders in an `aria-hidden`
+   * wrapper; the button keeps its accessible name. App-wide default via
+   * `withDefaultMoveGlyph`.
+   */
+  readonly moveGlyph = input<TemplateRef<CngxMultiSelectMoveGlyphContext> | null>(
+    this.reorderableConfig.moveGlyph,
+  );
+
+  /**
    * Emits after a toggle, clear or reorder settles, with the new and previous
    * values, the added and removed values, the toggled option and, for a
    * reorder, the source and target index. With `commitAction` bound it fires on
@@ -596,6 +614,12 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    */
   private readonly chipHandleDirective =
     contentChild<CngxMultiSelectChipHandle>(CngxMultiSelectChipHandle);
+  /**
+   * Highest-precedence move-glyph slot. Wins over `[moveGlyph]` and the
+   * default triangles.
+   */
+  private readonly moveGlyphDirective =
+    contentChild<CngxMultiSelectMoveGlyph>(CngxMultiSelectMoveGlyph);
   private readonly clearButtonDirective =
     contentChild<CngxSelectClearButton>(CngxSelectClearButton);
   private readonly optionPendingDirective =
@@ -644,6 +668,18 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    */
   protected readonly chipDragHandleTpl = computed<TemplateRef<void> | null>(
     () => this.chipHandleDirective()?.templateRef ?? this.chipDragHandle(),
+  );
+
+  /**
+   * Move-glyph template cascade of the touch reorder list:
+   *   1. `*cngxMultiSelectMoveGlyph` (highest).
+   *   2. `[moveGlyph]` input (app-wide default via `withDefaultMoveGlyph`).
+   *   3. `null` -> the list draws its default triangles.
+   *
+   * @internal
+   */
+  protected readonly moveGlyphTpl = computed<TemplateRef<CngxMultiSelectMoveGlyphContext> | null>(
+    () => this.moveGlyphDirective()?.templateRef ?? this.moveGlyph(),
   );
 
   private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');

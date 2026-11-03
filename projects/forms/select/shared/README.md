@@ -351,7 +351,7 @@ Four thin convenience helpers for the most-injected tokens. All four are exporte
 
 ### `template-slots.ts`
 
-The 27 slot directives + their context interfaces, all exported from `public-api.ts`.
+The slot directives + their context interfaces, all exported from `public-api.ts`.
 Each slot is a structural directive whose only job is to project a `TemplateRef` with the documented context shape.
 
 Slot list (with the cascade tier each slot belongs to - every slot flows through the three-stage cascade in `template-registry.ts`):
@@ -385,6 +385,7 @@ Plus the variant-specific slots (also defined here):
 | `CngxSelectTriggerLabel<T>`                                 | single only         |
 | `CngxMultiSelectChip<T>` / `CngxMultiSelectTriggerLabel<T>` | multi + reorderable |
 | `CngxMultiSelectChipHandle`                                 | reorderable only    |
+| `CngxMultiSelectMoveGlyph`                                  | reorderable only    |
 | `CngxComboboxChip<T>` / `CngxComboboxTriggerLabel<T>`       | combobox            |
 | `CngxSelectChipOverflow<T>`                                 | multi, combobox, action-multi, reorderable, tree |
 
@@ -436,7 +437,7 @@ Public exports:
 `CNGX_REORDERABLE_SELECT_CONFIG` token + `provideReorderableSelectConfig(...)` /
 `*At` providers + 5 features:
 
-- **Features**: `withReorderKeyboardModifier`, `withReorderAriaLabel`, `withReorderListLabels`, `withReorderStripFreeze`, `withDefaultDragHandle`.
+- **Features**: `withReorderKeyboardModifier`, `withReorderAriaLabel`, `withReorderListLabels`, `withReorderStripFreeze`, `withDefaultDragHandle`, `withDefaultMoveGlyph`.
 - **Types**: `CngxReorderableSelectConfig`, `CngxReorderableSelectConfigFeature`.
 
 ### `provide-cngx-select.ts`

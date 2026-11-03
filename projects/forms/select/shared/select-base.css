@@ -736,6 +736,21 @@
   }
 
   /**
+   * Size of the move-up / move-down glyph in the reorder list the panel
+   * shows under the touch floor: the box of the default triangles (still
+   * floored at the 0.75rem micro floor) and the font-size of a projected
+   * `*cngxMultiSelectMoveGlyph`. Read at the move button (a descendant of
+   * the select host), so `inherits: true` is load-bearing: with
+   * `inherits: false` a host-level override would never reach it.
+   * @group Layout
+   */
+  @property --cngx-select-reorder-move-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.75em;
+  }
+
+  /**
    * Drop-shadow of the chip lifted into the dragging state.
    * `inherits: true` so the :root dark-mode override (deeper shadow
    * on dark) reaches the chip while it's being dragged.

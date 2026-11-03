@@ -90,7 +90,7 @@ Atoms and molecules are terminal: they have no skin to eject.
     Live regions are always in the DOM; describedby IDs are always present, visibility toggles via `aria-hidden`.
 - **A DI-first toolkit.** Logic units (controllers, factories, panel hosts, announcers) are injected via tokens.
 
-    The select family alone exposes 18 DI override tokens and 17 template slots. Every part is replaceable via the standard Angular DI tree.
+    The select family alone exposes its parts as DI override tokens and template slots. Every part is replaceable via the standard Angular DI tree.
 
 ---
 
