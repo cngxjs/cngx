@@ -309,8 +309,11 @@ function installFieldSkinToggle(): void {
 
   const pref = readPersistedFieldSkin();
   const label = pref ?? 'outline';
-  // F for field; o / f / b for the active skin.
-  btn.textContent = `[F:${label.charAt(0)}]`;
+  // F for field; o / f / b for the active skin. The marker is painted by a
+  // CSS ::before with empty alt text (styles.scss), not as text content: the
+  // accessible name spells the skin out, and a "[F:o]" text node missing from
+  // that name fails WCAG 2.5.3 (label in name).
+  btn.dataset['marker'] = `[F:${label.charAt(0)}]`;
   btn.title = `Field skin: ${label} - click to cycle (reloads the page)`;
   btn.setAttribute('aria-label', `Field skin: ${label}. Activate to cycle; the page reloads.`);
 

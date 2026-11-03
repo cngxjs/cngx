@@ -244,6 +244,7 @@
       padding: 0 0.25rem;
     }
     .cngx-action-select__clear {
+      padding: var(--cngx-select-clear-padding, 0 0.25rem);
       color: var(--cngx-select-clear-color, currentColor);
       font: inherit;
     }

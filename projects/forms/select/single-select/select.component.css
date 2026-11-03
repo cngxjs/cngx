@@ -343,7 +343,7 @@
       background: transparent;
       color: var(--cngx-select-clear-color, inherit);
       cursor: pointer;
-      padding: 0 0.25rem;
+      padding: var(--cngx-select-clear-padding, 0 0.25rem);
       font: inherit;
     }
     .cngx-select__clear:hover {

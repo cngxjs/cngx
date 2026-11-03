@@ -134,6 +134,9 @@ body {
   font-size: 0.8125rem;
   line-height: 1.2;
 }
+#cngx-ex-field-skin-toggle::before {
+  content: attr(data-marker) / '';
+}
 #cngx-ex-color-scheme-toggle:hover,
 #cngx-ex-density-toggle:hover,
 #cngx-ex-field-skin-toggle:hover,

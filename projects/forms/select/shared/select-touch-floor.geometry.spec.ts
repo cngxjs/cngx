@@ -772,9 +772,9 @@ describe('tree-select clear-all touch floor', () => {
     return button!.getBoundingClientRect();
   }
 
-  it('keeps the 20px button on a fine pointer', () => {
+  it('lifts the 20px button to the 24px fine-pointer floor', () => {
     const rect = clearAll(false);
-    expect([Math.round(rect.width), Math.round(rect.height)]).toEqual([20, 20]);
+    expect([Math.round(rect.width), Math.round(rect.height)]).toEqual([24, 24]);
   });
 
   it('lifts the button to the 44px floor under the touch floor', () => {
