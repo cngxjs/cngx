@@ -225,7 +225,9 @@ describe('button Material bridge', () => {
     expect(m3).toContain('gap: calc(var(--cngx-space-xs, 4px) / 2)');
     expect(m3).toContain('border-start-end-radius: var(--mat-sys-corner-extra-small, 4px)');
     expect(m3).toContain('border-start-start-radius: var(--mat-sys-corner-extra-small, 4px)');
-    expect(m3).toContain('border-inline-start-color: var(--cngx-button-tone, currentColor)');
+    expect(m3).toContain(
+      'border-inline-start-color: var(--cngx-button-tone-fill, var(--cngx-button-tone, currentColor))',
+    );
     expect(m3).not.toContain('data-expanded');
     const m2 = compileThemeEntry(M2_ENTRY);
     expect(m2).not.toContain('cngx-split-button');

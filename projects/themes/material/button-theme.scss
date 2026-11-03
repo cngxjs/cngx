@@ -408,7 +408,7 @@ $_unsized: 'cngx-icon.cngx-icon:not(.cngx-icon--xs, .cngx-icon--sm, .cngx-icon--
       #{$_split}
         > [data-variant='solid']
         ~ [data-variant='solid']:not([aria-disabled='true']):nth-child(n + 2 of :not([aria-live])) {
-        border-inline-start-color: var(--cngx-button-tone, currentColor);
+        border-inline-start-color: var(--cngx-button-tone-fill, var(--cngx-button-tone, currentColor));
       }
     }
 
