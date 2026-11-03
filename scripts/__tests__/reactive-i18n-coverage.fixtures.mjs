@@ -182,6 +182,7 @@ export const COPY_TOKENS = [
       'dismissOnOutsideClick',
       'dismissOnScroll',
       'dismissOnBlur',
+      'dismissOnFocusOut',
     ],
   },
   {
