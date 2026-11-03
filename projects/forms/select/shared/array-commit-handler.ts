@@ -25,7 +25,8 @@ export interface ArrayCommitHandlerOptions<T> {
    * Consumer emits `selectionChange`/`optionToggled` and announces.
    * `previous` is the selection the toggle replaced: the ledger's rollback
    * target, so a toggle that superseded another reports the last confirmed
-   * selection, not the unconfirmed one in between.
+   * selection, not the unconfirmed one in between. A replacement handler
+   * reads that target from `createCommitBaseline(core.commitController)`.
    */
   readonly onToggleFinalize: (
     option: CngxSelectOptionDef<T>,

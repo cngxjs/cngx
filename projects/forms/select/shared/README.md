@@ -118,6 +118,15 @@ Reorderable-specific position-move commit. Bypasses the array handler's `sameArr
 | `CngxReorderCommitHandlerFactory`     | DI factory type |
 | `CNGX_REORDER_COMMIT_HANDLER_FACTORY` | DI token        |
 
+### `commit-baseline.ts`
+
+The confirmed value a superseding commit rolls back to, shared by every handler on one commit controller. A full replacement of the array, scalar or reorder handler factory reports its commits through it (`begin(previous)` returns the rollback target, `confirm(final)` on success), so it rolls back like the default handlers and agrees with the ones next to it. It records values only; Retry routing for a bypassing commit stays with the replacement.
+
+| Symbol | Purpose |
+|-|-|
+| `createCommitBaseline<T>(controller)` | The baseline of `controller` |
+| `CngxCommitBaseline<T>`               | API: `begin`, `confirm`      |
+
 ### `create-commit-handler.ts` + `create-action.types.ts`
 
 Action-host quick-create commit flow (used by `CngxActionSelect` and `CngxActionMultiSelect`). Owns the `(created)` output dispatch, the `localItems` buffer write, and the action-slot's `retry()` / `(retry)` semantics.
