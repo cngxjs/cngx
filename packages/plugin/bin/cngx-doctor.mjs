@@ -12,7 +12,7 @@
  * error-gates/warn-reports split a lint run gives.
  */
 
-import { readFileSync, realpathSync } from 'node:fs';
+import { readFileSync, realpathSync, statSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { runChecks } from './doctor/checks.mjs';
 import { scan } from './doctor/scan.mjs';
@@ -26,7 +26,8 @@ Deterministic project-wiring scan for cngx consumer apps.
   -h, --help     print this usage and exit
   -v, --version  print the @cngx/doctor version and exit
 
-Exit code: 0 when clean or only warn findings exist, 1 on any error finding.
+Exit code: 0 when clean or only warn findings exist, 1 on any error finding,
+2 on an unknown option or a project dir that is not a directory.
 `;
 
 /**
@@ -47,8 +48,8 @@ export function parseArgs(argv) {
     } else if (arg === '--version' || arg === '-v') {
       version = true;
     } else if (arg.startsWith('-')) {
-      // An unrecognised flag must not silently pass as a no-op - a typo like
-      // --jsno would otherwise flip the caller onto human output unnoticed.
+      // An unrecognised flag fails the run: a typo like --jsno would otherwise
+      // flip the caller onto human output, or a gated CI job onto a false pass.
       unknownFlags.push(arg);
     } else {
       projectDir = arg;
@@ -94,6 +95,14 @@ export function runDoctor(argv) {
   }
   if (version) {
     return { findings: [], output: `${ownVersion()}\n`, warnings, exitCode: 0 };
+  }
+  if (unknownFlags.length > 0) {
+    return { findings: [], output: '', warnings, exitCode: 2 };
+  }
+  // A missing or mistyped dir would scan nothing and read as a clean project.
+  if (statSync(projectDir, { throwIfNoEntry: false })?.isDirectory() !== true) {
+    warnings.push(`cngx-doctor: ${projectDir} is not a directory.`);
+    return { findings: [], output: '', warnings, exitCode: 2 };
   }
 
   const findings = runChecks(scan(projectDir));

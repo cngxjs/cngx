@@ -1,4 +1,4 @@
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -40,6 +40,12 @@ function runCli(dir, args = []) {
   } catch (err) {
     return { status: err.status, stdout: err.stdout ?? '' };
   }
+}
+
+// Like runCli, but keeps stderr, for the usage-error paths that answer there.
+function runCliStreams(args) {
+  const { status, stdout, stderr } = spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8' });
+  return { status, stdout, stderr };
 }
 
 afterEach(() => {
@@ -257,6 +263,24 @@ describe('cngx-doctor CLI', () => {
     expect(JSON.parse(stdout)).toEqual([]);
   });
 
+  it('exits 2 with a stderr line for a project dir that does not exist (text and --json)', () => {
+    const missing = join(project({}), 'aps', 'web');
+    for (const args of [[missing], [missing, '--json']]) {
+      const { status, stdout, stderr } = runCliStreams(args);
+      expect(status).toBe(2);
+      expect(stdout).toBe('');
+      expect(stderr).toBe(`cngx-doctor: ${missing} is not a directory.\n`);
+    }
+  });
+
+  it('exits 2 for a project dir that is a file', () => {
+    const file = join(project({}), 'package.json');
+    const { status, stdout, stderr } = runCliStreams([file, '--json']);
+    expect(status).toBe(2);
+    expect(stdout).toBe('');
+    expect(stderr).toBe(`cngx-doctor: ${file} is not a directory.\n`);
+  });
+
   it('prints human findings (no --json) and exits non-zero', () => {
     const dir = project({
       sources: { 'src/app.ts': "import { CngxToaster } from '@cngx/ui/feedback';\n" },
@@ -281,11 +305,19 @@ describe('CLI flags', () => {
     expect(stdout.trim()).toMatch(/^\d+\.\d+\.\d+/);
   });
 
-  it('collects an unknown flag as a warning instead of silently ignoring it', () => {
+  it('fails an unknown flag with exit 2 instead of running the scan', () => {
     const dir = project({ sources: { 'src/app.ts': 'export class App {}\n' } });
-    const { warnings, exitCode } = runDoctor(['--jsno', dir]);
+    const { warnings, exitCode, output } = runDoctor(['--jsno', dir]);
     expect(warnings).toEqual(["cngx-doctor: unknown option '--jsno' (see --help)"]);
-    expect(exitCode).toBe(0);
+    expect(exitCode).toBe(2);
+    expect(output).toBe('');
+  });
+
+  it('--help still wins over an unknown flag: exit 0, usage on stdout, warning on stderr', () => {
+    const { status, stdout, stderr } = runCliStreams(['--help', '--bogus']);
+    expect(status).toBe(0);
+    expect(stdout).toBe(USAGE);
+    expect(stderr).toBe("cngx-doctor: unknown option '--bogus' (see --help)\n");
   });
 
   it('parseArgs keeps the positional projectDir alongside flags', () => {

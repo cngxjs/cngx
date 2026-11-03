@@ -3,6 +3,18 @@
 Hand-maintained, per package version. The root CHANGELOG.md tracks the cngx
 library releases; this file tracks the doctor package.
 
+## Unreleased
+
+### Breaking
+
+- An unknown option exits `2` without scanning instead of a stderr warning plus a
+  text-mode run. `--help` and `--version` still answer first with exit `0`.
+
+### Fixed
+
+- A missing or mistyped project directory exits `2` with a stderr line instead of
+  reporting a clean project.
+
 ## 0.2.1 - 2026-10-21
 
 ### Fixed
