@@ -57,3 +57,6 @@ grounds against is a property of the bundled snapshot, not this version.
   description column for `api`, `slots` and `theme`; `di` and `migrate` have no
   short view.
 - The tarball ships the MIT license text (`LICENSE`).
+- `cngx doctor` exits 2 for a `<projectDir>` it cannot read (a locked directory,
+  or a path component that denies access) instead of a clean `[]` or an internal
+  error.

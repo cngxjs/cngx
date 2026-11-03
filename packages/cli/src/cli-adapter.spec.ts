@@ -4,7 +4,7 @@
 // packages/mcp/test/fixtures/documentation.sample.json (cngxVersion 0.1.0-rc.6),
 // read through the cli's own core copy. `--version` is read from
 // packages/cli/package.json.
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -1116,6 +1116,39 @@ describe('cngx doctor', () => {
     expect(run.code).toBe(EXIT_USAGE);
     expect(run.runDoctor).not.toHaveBeenCalled();
     expect(run.stderr).toBe(`cngx: ${message}\nRun \`cngx doctor --help\` for usage.\n`);
+  });
+
+  // root reads through any mode bits, so the permission cases only run unprivileged.
+  const unprivileged = process.getuid?.() !== 0;
+
+  it.runIf(unprivileged)('exits 2 before any scan for a directory it cannot read', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'cngx-doctor-locked-'));
+    chmodSync(dir, 0o000);
+    try {
+      const run = await doctor(['doctor', dir]);
+
+      expect(run.code).toBe(EXIT_USAGE);
+      expect(run.runDoctor).not.toHaveBeenCalled();
+      expect(run.stderr).toBe(`cngx: doctor: ${dir} cannot be read (EACCES).\nRun \`cngx doctor --help\` for usage.\n`);
+    } finally {
+      chmodSync(dir, 0o755);
+    }
+  });
+
+  it.runIf(unprivileged)('exits 2 instead of an internal error when a path component denies access', async () => {
+    const parent = mkdtempSync(join(tmpdir(), 'cngx-doctor-locked-'));
+    const child = join(parent, 'app');
+    mkdirSync(child);
+    chmodSync(parent, 0o000);
+    try {
+      const run = await doctor(['doctor', child]);
+
+      expect(run.code).toBe(EXIT_USAGE);
+      expect(run.runDoctor).not.toHaveBeenCalled();
+      expect(run.stderr).toBe(`cngx: doctor: ${child} cannot be read (EACCES).\nRun \`cngx doctor --help\` for usage.\n`);
+    } finally {
+      chmodSync(parent, 0o755);
+    }
   });
 
   it('takes a directory after --', async () => {
