@@ -7,6 +7,10 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  * `aria-expanded` and `aria-controls` host attributes directly - no need
  * to compose `CngxAriaExpanded` separately.
  *
+ * Enter and Space toggle once and cancel the key's default action, so a
+ * native `<button>` host does not fire its own activation click on top and
+ * toggle a second time.
+ *
  * Supports controlled (`[cngxDisclosureOpened]`) and uncontrolled modes,
  * following the same pattern as `CngxDrawer` and `CngxSort`.
  *
@@ -60,7 +64,7 @@ import { computed, Directive, input, output, signal } from '@angular/core';
     '[attr.aria-expanded]': 'opened()',
     '[attr.aria-controls]': 'controls() ?? null',
     '(click)': 'toggle()',
-    '(keydown.enter)': 'toggle()',
+    '(keydown.enter)': 'toggle(); $event.preventDefault()',
     '(keydown.space)': 'toggle(); $event.preventDefault()',
   },
 })

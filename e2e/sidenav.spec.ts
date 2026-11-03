@@ -55,9 +55,9 @@ test.describe('CngxSidenav layout regressions', () => {
     expect(focusedInCollapsedGroup).toBe(false);
     await expect(members).not.toBeFocused();
 
-    await team.click();
-    await expect(team).toHaveAttribute('aria-expanded', 'true');
     await team.focus();
+    await page.keyboard.press('Enter');
+    await expect(team).toHaveAttribute('aria-expanded', 'true');
     await page.keyboard.press('Tab');
     await expect(members).toBeFocused();
   });

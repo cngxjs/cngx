@@ -59,11 +59,15 @@ describe('CngxDisclosure', () => {
     expect(el.getAttribute('aria-expanded')).toBe('true');
   });
 
-  it('toggles on Enter key', () => {
+  it('toggles on Enter key and prevents default', () => {
     const { fixture, dir, el } = setup();
-    el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    // Not cancelling would let a native <button> host fire its activation
+    // click after keydown and toggle a second time.
+    const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    el.dispatchEvent(event);
     fixture.detectChanges();
     expect(dir.opened()).toBe(true);
+    expect(event.defaultPrevented).toBe(true);
   });
 
   it('toggles on Space key and prevents default', () => {
@@ -72,6 +76,7 @@ describe('CngxDisclosure', () => {
     el.dispatchEvent(event);
     fixture.detectChanges();
     expect(dir.opened()).toBe(true);
+    expect(event.defaultPrevented).toBe(true);
   });
 
   it('emits openedChange', () => {
