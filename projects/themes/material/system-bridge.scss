@@ -45,6 +45,7 @@
   // re-interpretation of Material's palette.
   --cngx-color-primary: var(--mat-sys-primary);
   --cngx-color-primary-strong: var(--mat-sys-primary);
+  --cngx-color-on-primary-strong: var(--mat-sys-on-primary);
   --cngx-color-primary-text: var(--mat-sys-primary);
   // Re-derived, not mapped to tertiary: the core rung resolves against the
   // core primary where it is declared, so a bridge host that is not :root
@@ -57,6 +58,7 @@
   );
   --cngx-color-danger: var(--mat-sys-error);
   --cngx-color-danger-strong: var(--mat-sys-error);
+  --cngx-color-on-danger-strong: var(--mat-sys-on-error);
   --cngx-color-danger-text: var(--mat-sys-error);
   --cngx-color-info: var(--mat-sys-primary);
 
@@ -104,7 +106,10 @@
     --cngx-color-border-strong: #{rgba(black, 0.38)};
   }
   --cngx-color-primary: #{$primary};
+  // A strong fill and its ink travel as a pair, so every reader of the
+  // pair (not only the button host) paints Material ink on a Material fill.
   --cngx-color-primary-strong: #{$primary};
+  --cngx-color-on-primary-strong: #{mat.get-theme-color($theme, primary, default-contrast)};
   --cngx-color-primary-text: #{bridge.m2-primary-text($theme)};
   --cngx-color-accent: oklch(from var(--cngx-color-primary) l c calc(h - 70));
   --cngx-gradient-brand: linear-gradient(
@@ -115,6 +120,7 @@
   // danger stays the raw warn (a fill colour); the text rung is derived
   --cngx-color-danger: #{$warn};
   --cngx-color-danger-strong: #{$warn};
+  --cngx-color-on-danger-strong: #{mat.get-theme-color($theme, warn, default-contrast)};
   --cngx-color-danger-text: #{bridge.m2-warn-text($theme)};
   --cngx-color-info: #{$primary};
 }
