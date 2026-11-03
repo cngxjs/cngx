@@ -50,9 +50,9 @@ export interface CngxCommitBaseline<TCommit> {
  * The {@link CngxCommitBaseline} of `controller`. Every call with the same
  * controller returns a view on the same state, which the default commit
  * handlers on that controller share, so a replacement handler and the default
- * ones next to it (a reorderable select's toggle and reorder, an action
- * select's pick and create) agree on the confirmed value. No injection context
- * needed.
+ * ones next to it (a reorderable select's toggle and reorder) agree on the
+ * confirmed value. An action select's create runs on its own controller and
+ * keeps no baseline. No injection context needed.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/commit-baseline.ts
  * @since 0.1.0
