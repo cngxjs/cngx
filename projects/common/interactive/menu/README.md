@@ -42,11 +42,12 @@ A `cngxMenu` with `cngxMenuItem` children. The menu fires `itemActivated` on Ent
 
 ### Dropdown menu (button + popover)
 
-`CngxMenuTrigger` wires a focusable element to the menu and the popover. Activation always closes the menu (menu semantics).
+`CngxMenuTrigger` wires a focusable element to the menu and the popover. Co-host `[cngxPopoverTrigger]`: it writes `aria-haspopup`, `aria-expanded` and `aria-controls` (a trigger without it warns `CNGX1074` in development). Activation always closes the menu (menu semantics).
 
 ```html
 <button type="button"
         [cngxMenuTrigger]="menu"
+        [cngxPopoverTrigger]="pop"
         [popover]="pop"
         (click)="pop.toggle()">
   Actions
@@ -234,11 +235,11 @@ Open menu:
 - `ArrowLeft` closes the current submenu if one is open.
 - Printable characters drive typeahead: the buffer accumulates within `typeaheadDebounce` ms and jumps to the next item whose label starts with the buffer.
 
-Focus is captured at open time and restored to that element after the menu closes (via `queueMicrotask` so the DOM has settled).
+After open, focus moves into the `role="menu"` element, which owns `aria-activedescendant` (WAI-ARIA APG Menu Button). Submenus keep focus on the root menu. Focus is captured at open time and restored to that element after the menu closes (via `queueMicrotask` so the DOM has settled), except after a focus-out close: `Tab` / `Shift+Tab` out of the menu leaves focus where it went.
 
 ### Dismissal paths
 
-`CngxMenuTrigger` and `CngxContextMenuTrigger` close the menu on four sources by default. `Escape` is owned by `CngxPopover` (global document listener). The other three install through `CNGX_MENU_DISMISS_HANDLER_FACTORY` (default factory: `createMenuDismissHandler`) and only attach while the menu is open.
+`CngxMenuTrigger` and `CngxContextMenuTrigger` close the menu on five sources by default. `Escape` is owned by `CngxPopover` (global document listener). The other four install through `CNGX_MENU_DISMISS_HANDLER_FACTORY` (default factory: `createMenuDismissHandler`) and only attach while the menu is open.
 
 | Source | Default | Override |
 |-|-|-|
@@ -246,6 +247,7 @@ Focus is captured at open time and restored to that element after the menu close
 | `pointerdown` outside popover and host | on | `withDismissOnOutsideClick(false)` |
 | `scroll` (window) | off | `withDismissOnScroll(true)` |
 | `blur` + `pointercancel` (bundled) | on | `withDismissOnBlur(false)` |
+| focus leaving trigger and open menu chain (`'focus-out'`) | on | `withDismissOnFocusOut(false)` |
 
 Toggle at app root:
 

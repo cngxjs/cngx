@@ -43,7 +43,9 @@ import { CNGX_SPLIT_BUTTON } from './split-button.token';
  * `cngxMenuButton`: `[menu]` is the `cngxMenu`, `[popover]` the
  * `cngxPopover` around it. Keyboard model, `aria-expanded`,
  * `aria-haspopup="menu"`, anchor and click toggle work as on
- * `cngxMenuButton`.
+ * `cngxMenuButton`: after open, focus moves into the menu, which carries
+ * `aria-activedescendant`; Escape returns focus to the button, Tab closes
+ * the menu.
  *
  * Outside a split button the glyph is whatever you project (a kebab icon,
  * an ellipsis) and the name is yours: set `aria-label` (or

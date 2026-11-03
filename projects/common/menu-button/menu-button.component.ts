@@ -36,13 +36,16 @@ import { injectLazyHostDirective } from './internal/inject-lazy-host-directive';
  *
  * Two bindings wire it: `[menu]` is the `cngxMenu` it drives and
  * `[popover]` the `cngxPopover` that wraps the menu. The button composes
- * `CngxMenuTrigger` (keyboard model, `aria-expanded`, focus kept on the
- * button, dismissal) and `CngxPopoverTrigger` (anchor, `aria-controls`) as
- * host directives, tells the popover it holds a menu so `aria-haspopup`
- * reads `menu` (a sheet or fullscreen presentation reads `dialog`), and
- * toggles the popover on click. ArrowDown, Enter or Space opens the menu
- * and highlights the first item, ArrowUp the last; Escape closes it and
- * focus stays on the button.
+ * `CngxMenuTrigger` (keyboard model, focus, dismissal, the `menu` haspopup
+ * hint) and `CngxPopoverTrigger` (anchor, `aria-haspopup`, `aria-expanded`,
+ * `aria-controls`) as host directives, and toggles the popover on click.
+ * `aria-haspopup` reads `menu` and `aria-controls` names the `role="menu"`
+ * element; a sheet or fullscreen presentation reads `dialog` and names the
+ * popover. ArrowDown, Enter or Space opens the menu and highlights the
+ * first item, ArrowUp the last. After open, focus moves into the menu,
+ * which carries `aria-activedescendant`. Escape or an activation closes it
+ * and returns focus to the button; Tab or Shift+Tab closes it and leaves
+ * focus where it went.
  *
  * The end of the button renders a caret that turns while the menu is open.
  * Swap the glyph app-wide with `CNGX_BUTTON_CARET_ICON`, or project your
