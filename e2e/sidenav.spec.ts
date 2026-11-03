@@ -40,4 +40,25 @@ test.describe('CngxSidenav layout regressions', () => {
     // mini rail has no `--open`, so it pushed content instead of overlaying.
     expect(Math.abs(contentLeftAfter - contentLeftBefore)).toBeLessThanOrEqual(1);
   });
+
+  test('Tab skips the links of a collapsed animated nav group', async ({ page }) => {
+    await page.goto('/#/ui/sidenav/full-navigation-sidebar');
+    const team = page.getByRole('button', { name: 'Team' });
+    const members = page.locator('#team-items').getByText('Members');
+    await expect(team).toHaveAttribute('aria-expanded', 'false');
+
+    await team.focus();
+    await page.keyboard.press('Tab');
+    const focusedInCollapsedGroup = await page.evaluate(
+      () => (document.activeElement?.closest('#team-items') ?? null) !== null,
+    );
+    expect(focusedInCollapsedGroup).toBe(false);
+    await expect(members).not.toBeFocused();
+
+    await team.click();
+    await expect(team).toHaveAttribute('aria-expanded', 'true');
+    await team.focus();
+    await page.keyboard.press('Tab');
+    await expect(members).toBeFocused();
+  });
 });

@@ -18,9 +18,9 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     'import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxSidenavHeader, CngxSidenavFooter } from \'@cngx/ui\';',
-    'import { CngxNavLink, CngxNavLabel, CngxNavGroup, CngxNavBadge } from \'@cngx/common\';',
+    'import { CngxNavLink, CngxNavLabel, CngxNavGroup, CngxNavGroupContent, CngxNavBadge } from \'@cngx/common\';',
   ],
-  imports: ['CngxSidenavLayout', 'CngxSidenav', 'CngxSidenavContent', 'CngxSidenavHeader', 'CngxSidenavFooter', 'CngxNavLink', 'CngxNavLabel', 'CngxNavGroup', 'CngxNavBadge'],
+  imports: ['CngxSidenavLayout', 'CngxSidenav', 'CngxSidenavContent', 'CngxSidenavHeader', 'CngxSidenavFooter', 'CngxNavLink', 'CngxNavLabel', 'CngxNavGroup', 'CngxNavGroupContent', 'CngxNavBadge'],
   setup: `protected readonly navOpen = signal(true);
   protected readonly navMode = signal<'over' | 'push' | 'side' | 'mini'>('side');
   protected readonly modes: ('over' | 'push' | 'side' | 'mini')[] = ['over', 'push', 'side', 'mini'];
@@ -74,7 +74,7 @@ export const STORY: DemoSpec = {
         <span class="demo-sidenav__chevron"
               [style.transform]="settingsGroup.disclosure.opened() ? 'rotate(90deg)' : ''">&#9654;</span>
       </button>
-      <div class="cngx-nav-group-content" [class.cngx-nav-group-content--open]="settingsGroup.disclosure.opened()">
+      <div [cngxNavGroupContent]="settingsGroup">
         <div id="settings-items" role="group" [attr.aria-labelledby]="'settings-lbl'">
           @for (sub of ['General', 'Security', 'Notifications', 'Billing']; track sub) {
             <a cngxNavLink [depth]="1" class="demo-sidenav__link--sub"
@@ -93,7 +93,7 @@ export const STORY: DemoSpec = {
         <span class="demo-sidenav__chevron"
               [style.transform]="teamGroup.disclosure.opened() ? 'rotate(90deg)' : ''">&#9654;</span>
       </button>
-      <div class="cngx-nav-group-content" [class.cngx-nav-group-content--open]="teamGroup.disclosure.opened()">
+      <div [cngxNavGroupContent]="teamGroup">
         <div id="team-items" role="group" [attr.aria-labelledby]="'team-lbl'">
           @for (sub of ['Members', 'Roles', 'Invites']; track sub) {
             <a cngxNavLink [depth]="1" class="demo-sidenav__link--sub">
