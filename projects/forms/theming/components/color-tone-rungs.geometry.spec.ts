@@ -16,6 +16,14 @@ type Scheme = (typeof SCHEMES)[number];
 // The documented warm band: a brand inside it keeps every rung at 4.5:1.
 const WARM_HUES = [0, 25, 300, 330] as const;
 
+// Band edges, light only: 50 and 280 bound the strong-fill band (both rungs
+// pass), 145 and 235 the wider primary text band (the text rung passes, the
+// strong fill does not). Gamut clipping moves the rendered hue by up to 14
+// degrees at the edges, so they assert contrast, not hue tracking.
+const STRONG_EDGE_HUES = [50, 280] as const;
+const TEXT_EDGE_HUES = [145, 235] as const;
+const EDGE_HUES = [...STRONG_EDGE_HUES, ...TEXT_EDGE_HUES] as const;
+
 // Cool brands sit outside the band and re-pin both light primary rungs at
 // lightness 0.5, the migration-note example.
 const COOL_HUES = [150, 180, 210, 240] as const;
@@ -42,6 +50,15 @@ const brand = (hue: number): string => `oklch(0.62 0.19 ${hue})`;
           <ng-container *ngTemplateOutlet="probes" />
         </div>
       }
+    }
+    @for (hue of edgeHues; track hue) {
+      <div
+        data-color-scheme="light"
+        [class]="'edge-' + hue"
+        [style.--cngx-color-primary]="brand(hue)"
+      >
+        <ng-container *ngTemplateOutlet="probes" />
+      </div>
     }
     @for (hue of coolHues; track hue) {
       <div
@@ -73,6 +90,7 @@ const brand = (hue: number): string => `oklch(0.62 0.19 ${hue})`;
 class ToneRungsHost {
   protected readonly schemes = SCHEMES;
   protected readonly warmHues = WARM_HUES;
+  protected readonly edgeHues = EDGE_HUES;
   protected readonly coolHues = COOL_HUES;
   protected readonly repin = REPIN;
   protected readonly brand = brand;
@@ -151,6 +169,20 @@ describe.each(SCHEMES)('tone rungs, warm brand override, %s', (scheme: Scheme) =
     );
     expect(hueDrift(read('primary-text'), hue)).toBeLessThanOrEqual(10);
     expect(hueDrift(read('primary-strong'), hue)).toBeLessThanOrEqual(10);
+  });
+});
+
+describe('tone rungs, band edges, light', () => {
+  it.each(EDGE_HUES)('keeps primary text at 4.5:1 at hue %i', (hue) => {
+    const read = reader(mount(), `edge-${hue}`);
+    expect(contrastRatio(read('primary-text'), read('surface'))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it.each(STRONG_EDGE_HUES)('keeps the strong fill at 4.5:1 with its ink at hue %i', (hue) => {
+    const read = reader(mount(), `edge-${hue}`);
+    expect(contrastRatio(read('on-primary-strong'), read('primary-strong'))).toBeGreaterThanOrEqual(
+      4.5,
+    );
   });
 });
 
