@@ -61,7 +61,7 @@ export const STORY: DemoSpec = {
 
   <div class="demo-config-compare">
     <div class="demo-config-compare-pane">
-      <h3 class="demo-config-compare-heading">Per-instance [searchDebounceMs]="0"</h3>
+      <h2 class="demo-config-compare-heading">Per-instance [searchDebounceMs]="0"</h2>
       <cngx-action-multi-select
         [label]="'Tags (no debounce)'"
         [options]="options"
@@ -84,7 +84,7 @@ export const STORY: DemoSpec = {
       </cngx-action-multi-select>
     </div>
     <div class="demo-config-compare-pane">
-      <h3 class="demo-config-compare-heading">withOpenOn('focus') + withSearchDebounce(800)</h3>
+      <h2 class="demo-config-compare-heading">withOpenOn('focus') + withSearchDebounce(800)</h2>
       <ng-container *ngTemplateOutlet="tagPickerScoped; injector: configScope" />
     </div>
   </div>`,

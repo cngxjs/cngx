@@ -87,11 +87,11 @@ export const STORY: DemoSpec = {
 
   <div class="demo-config-compare">
     <div class="demo-config-compare-pane">
-      <h3 class="demo-config-compare-heading">Library defaults</h3>
+      <h2 class="demo-config-compare-heading">Library defaults</h2>
       <ng-container *ngTemplateOutlet="notebook; context: { $implicit: 0 }" />
     </div>
     <div class="demo-config-compare-pane">
-      <h3 class="demo-config-compare-heading">Scoped config</h3>
+      <h2 class="demo-config-compare-heading">Scoped config</h2>
       <ng-container *ngTemplateOutlet="notebook; context: { $implicit: 1 }; injector: tabsScope" />
     </div>
   </div>`,
