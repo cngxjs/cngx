@@ -49,8 +49,9 @@ type CngxSelectTemplateContextOf<R> =
 /**
  * Override contexts mirroring the per-instance `*cngxSelect*` slots, one key
  * per `CngxSelectConfig.templates` entry. Derived from that map, so a new
- * config template key brings its context type and its key docs along without
- * a second edit; a context-free slot maps to an empty record.
+ * config template key brings its context type along; a context-free slot maps
+ * to an empty record. The table below is written by hand, and a repo check
+ * fails when its rows drift from the config keys, contexts or slots.
  *
  * | Key | Context | Slot |
  * |-|-|-|
