@@ -97,9 +97,9 @@ describe('CngxSelectReorderList under the touch floor', () => {
     const em = parseFloat(getComputedStyle(row).fontSize);
     const inkOnRoundedBox = (inkPx: number, extent: number): number =>
       (Math.round((inkPx * 24) / extent) * extent) / 24;
-    const grip = row.querySelector('[data-reorder-handle] svg path')!.getBoundingClientRect();
+    const grip = row.querySelector('[data-reorder-handle] svg .cngx-icon-svg__path')!.getBoundingClientRect();
     expect(grip.height).toBeCloseTo(inkOnRoundedBox(0.8125 * em, 15), 1);
-    for (const arrow of Array.from(row.querySelectorAll('[data-move] svg path'))) {
+    for (const arrow of Array.from(row.querySelectorAll('[data-move] svg .cngx-icon-svg__path'))) {
       expect(arrow.getBoundingClientRect().width).toBeCloseTo(inkOnRoundedBox(0.5625 * em, 14), 1);
     }
   });
