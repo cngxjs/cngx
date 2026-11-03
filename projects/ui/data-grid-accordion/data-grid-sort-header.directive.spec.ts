@@ -80,14 +80,20 @@ describe('CngxDgaSortHeader', () => {
   it('activates on Enter and on Space like a click', () => {
     const { fixture, sort, nameEl } = setup();
 
-    nameEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    nameEl.dispatchEvent(enter);
     fixture.detectChanges();
     expect(sort.active()).toBe('name');
     expect(sort.direction()).toBe('asc');
+    // Not cancelling would let a native <button> host fire its activation
+    // click after keydown and sort a second time.
+    expect(enter.defaultPrevented).toBe(true);
 
-    nameEl.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    const space = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+    nameEl.dispatchEvent(space);
     fixture.detectChanges();
     expect(sort.direction()).toBe('desc');
+    expect(space.defaultPrevented).toBe(true);
   });
 
   it('adds a secondary sort on Shift+click when multiSort is enabled', () => {

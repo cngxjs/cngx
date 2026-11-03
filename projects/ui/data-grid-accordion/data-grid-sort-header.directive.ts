@@ -68,7 +68,7 @@ import { injectDataGridAccordion } from './data-grid-accordion.token';
     '[class.cngx-dga-sort-header--asc]': 'isAsc()',
     '[class.cngx-dga-sort-header--desc]': 'isDesc()',
     '(click)': 'handleSort($event)',
-    '(keydown.enter)': 'handleSort($event)',
+    '(keydown.enter)': 'handleActivateKey($event)',
     '(keydown.space)': 'handleActivateKey($event)',
   },
 })
@@ -213,7 +213,9 @@ export class CngxDgaSortHeader {
   }
 
   protected handleActivateKey(event: Event): void {
-    // Space would scroll the grid's overflow container; suppress it and activate.
+    // Cancel the key's default: Space would scroll the grid's overflow container,
+    // and on a native <button> host either key would fire an activation click
+    // on top and sort a second time.
     event.preventDefault();
     this.handleSort(event);
   }
