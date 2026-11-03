@@ -55,10 +55,13 @@
     --cngx-icon-svg-size: calc(0.8125em * 24 / 15);
   }
 
-  /* The triangles span 14 of the 24 grid units; scaling the box by 24/14
-     keeps them the 0.5625em width the 12-unit arrows drew. */
+  /* The box lands on 12px at the 16px default and at any smaller font (the
+     0.75rem micro floor), which selects the 12-grid micro triangle (8 units
+     across, 8px, near the 0.5625em the 12-unit arrows drew). A larger font
+     moves the box past 14px and hands it to the 24-grid path;
+     `--cngx-icon-svg-micro-floor: 0px` lets a smaller font shrink it again. */
   .cngx-select-reorder-list__move > .cngx-icon-svg {
-    --cngx-icon-svg-size: calc(0.5625em * 24 / 14);
+    --cngx-icon-svg-size: max(0.75em, var(--cngx-icon-svg-micro-floor, 0.75rem));
   }
 
   .cngx-select-reorder-list__label {

@@ -25,6 +25,7 @@ const OPTIONS: CngxSelectOptionDef<string>[] = [
     '../../../../../core/theming/system-tokens.css',
     '../../../../../core/theming/reset.css',
     '../../../../../core/theming/base.css',
+    '../../../../../common/theming/components/cngx-icon-glyph.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -83,10 +84,10 @@ describe('CngxSelectReorderList under the touch floor', () => {
     );
   });
 
-  // The shared icons pad their ink inside the 24-unit grid; the list scales
-  // the boxes so the drawn grip and arrows keep the size they had before. The
-  // icon svg box rounds to whole pixels, so the ink lands on the rounded box.
-  it('draws the grip 0.8125em tall and the arrows 0.5625em wide, on the rounded box', async () => {
+  // The grip pads its ink inside the 24-unit grid; the list scales its box so
+  // the drawn grip keeps the size it had before. The icon svg box rounds to
+  // whole pixels, so the ink lands on the rounded box.
+  it('draws the grip 0.8125em tall on the rounded box', async () => {
     const fixture = TestBed.createComponent(Host);
     root = fixture.nativeElement as HTMLElement;
     document.body.appendChild(root);
@@ -99,8 +100,22 @@ describe('CngxSelectReorderList under the touch floor', () => {
       (Math.round((inkPx * 24) / extent) * extent) / 24;
     const grip = row.querySelector('[data-reorder-handle] svg .cngx-icon-svg__path')!.getBoundingClientRect();
     expect(grip.height).toBeCloseTo(inkOnRoundedBox(0.8125 * em, 15), 1);
-    for (const arrow of Array.from(row.querySelectorAll('[data-move] svg .cngx-icon-svg__path'))) {
-      expect(arrow.getBoundingClientRect().width).toBeCloseTo(inkOnRoundedBox(0.5625 * em, 14), 1);
+  });
+
+  it.each([16, 14])('lands the move arrows on the 12px micro box at a %ipx font', async (fontPx) => {
+    const fixture = TestBed.createComponent(Host);
+    root = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(root);
+    fixture.detectChanges();
+    root.querySelector<HTMLElement>('[data-touch]')!.style.fontSize = `${fontPx}px`;
+    await nextFrame();
+
+    const arrows = Array.from(root.querySelectorAll<SVGSVGElement>('li[data-reorder-index] [data-move] svg'));
+    expect(arrows.length).toBeGreaterThan(0);
+    for (const arrow of arrows) {
+      expect(arrow.getBoundingClientRect().width).toBe(12);
+      expect(getComputedStyle(arrow.querySelector('.cngx-icon-svg__micro')!).display).not.toBe('none');
+      expect(getComputedStyle(arrow.querySelector('.cngx-icon-svg__path')!).display).toBe('none');
     }
   });
 });
