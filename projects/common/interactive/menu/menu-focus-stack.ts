@@ -1,5 +1,6 @@
 import { effect, InjectionToken, signal, untracked, type Signal } from '@angular/core';
 
+import type { CngxMenuDismissSource } from './dismiss-handler';
 import type { CngxMenuHost } from './menu-host.token';
 import type { CngxMenuNavStrategy } from './menu-nav-strategy';
 import type { CngxMenuSubmenuLike } from './menu-submenu.token';
@@ -54,9 +55,16 @@ export interface CngxMenuFocusStack {
   /**
    * Drop the captured element without focusing it. For ownership handoffs
    * where another opener now owns focus and a restore would yank it away.
-   * Optional so custom factory implementations stay assignable.
    */
-  discardFocus?(): void;
+  discardFocus(): void;
+  /**
+   * Settle focus after the menu closed, given the dismissal source that
+   * closed it (`null` for an item activation or a toggle). The default
+   * discards the saved focus for `'focus-out'` (focus stays where the user
+   * moved it) and restores it for every other source. A custom factory
+   * owns this policy per source.
+   */
+  settleFocus(source: CngxMenuDismissSource | null): void;
   /** Escape: pop the innermost submenu, or hide the popover at the root. */
   handleEscape(event: KeyboardEvent): void;
   /** ArrowRight: open the active item's submenu when the policy allows. */
@@ -200,6 +208,17 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
     deps.popover().hide();
   };
 
+  const restoreFocus = (): void => {
+    const target = savedFocus;
+    savedFocus = null;
+    if (!target) {
+      return;
+    }
+    queueMicrotask(() => {
+      target.focus();
+    });
+  };
+
   return {
     stack: submenuStack.asReadonly(),
     effectiveMenu,
@@ -213,18 +232,16 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
         savedFocus = active instanceof HTMLElement ? active : null;
       }
     },
-    restoreFocus(): void {
-      const target = savedFocus;
-      savedFocus = null;
-      if (!target) {
-        return;
-      }
-      queueMicrotask(() => {
-        target.focus();
-      });
-    },
+    restoreFocus,
     discardFocus(): void {
       savedFocus = null;
+    },
+    settleFocus(source: CngxMenuDismissSource | null): void {
+      if (source === 'focus-out') {
+        savedFocus = null;
+        return;
+      }
+      restoreFocus();
     },
     handleEscape(event: KeyboardEvent): void {
       event.preventDefault();

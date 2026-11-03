@@ -223,6 +223,13 @@ function key(el: HTMLElement, k: string): void {
   el.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
 }
 
+/** Lets the open-time focus move (and a close-time restore) run. */
+async function settle(): Promise<void> {
+  TestBed.flushEffects();
+  await Promise.resolve();
+  await Promise.resolve();
+}
+
 describe('CngxMenuButton', () => {
   beforeEach(() => {
     polyfillPopover();
@@ -279,6 +286,46 @@ describe('CngxMenuButton', () => {
       expect(button.getAttribute('data-busy')).toBe('true');
       expect(button.querySelector('.cngx-button__busy')).not.toBeNull();
     });
+
+    it.each([
+      ['after', AsyncAfterHost],
+      ['before', AsyncBeforeHost],
+    ] as const)(
+      'refuses the menu click while a cngxAsyncClick written %s the selector is pending',
+      (_, type) => {
+        const { button, popover, flush } = setup(type as Type<unknown>);
+        button.click();
+        flush();
+        // The first click opens the menu and starts the run.
+        expect(popover.isVisible()).toBe(true);
+        popover.hide();
+        flush();
+        expect(button.getAttribute('aria-disabled')).toBe('true');
+
+        button.click();
+        flush();
+        expect(popover.isVisible()).toBe(false);
+        expect(button.getAttribute('aria-disabled')).toBe('true');
+      },
+    );
+
+    it.each([
+      ['after', AsyncAfterHost],
+      ['before', AsyncBeforeHost],
+    ] as const)(
+      'still closes the open menu on click while a cngxAsyncClick written %s the selector is pending',
+      (_, type) => {
+        const { button, popover, flush } = setup(type as Type<unknown>);
+        button.click();
+        flush();
+        expect(popover.isVisible()).toBe(true);
+        expect(button.getAttribute('aria-disabled')).toBe('true');
+
+        button.click();
+        flush();
+        expect(popover.isVisible()).toBe(false);
+      },
+    );
   });
 
   describe('aria-haspopup hint', () => {
@@ -293,7 +340,7 @@ describe('CngxMenuButton', () => {
       expect(button.getAttribute('aria-haspopup')).toBe('dialog');
     });
 
-    it('releases the hint on popover swap and on destroy', () => {
+    it('the menu trigger moves both hints on popover swap and releases them on destroy', () => {
       const { fixture, host, flush } = setup(LifecycleHost);
       const pops = fixture.debugElement
         .queryAll(By.directive(CngxPopover))
@@ -306,17 +353,26 @@ describe('CngxMenuButton', () => {
       flush();
       expect(popA.haspopup()).toBeUndefined();
       expect(popB.haspopup()).toBe('menu');
+      expect(popA.controlsHint()).toBeNull();
+      expect(popB.controlsHint()).toMatch(/^cngx-menu-/);
 
       host.shown.set(false);
       flush();
       expect(popB.haspopup()).toBeUndefined();
+      expect(popB.controlsHint()).toBeNull();
     });
   });
 
   describe('popover wiring', () => {
-    it('anchors the popover and points aria-controls at it', () => {
-      const { button, popover } = setup(BasicHost);
+    it('anchors the popover and points aria-controls at the menu', () => {
+      const { button, popover, menu } = setup(BasicHost);
       expect(popover.anchorElement()).toBe(button);
+      expect(button.getAttribute('aria-controls')).toBe(menu?.id());
+      expect(document.getElementById(menu?.id() ?? '')?.getAttribute('role')).toBe('menu');
+    });
+
+    it('names the popover in aria-controls when it lays out as a sheet', () => {
+      const { button, popover } = setup(SheetHost);
       expect(button.getAttribute('aria-controls')).toBe(popover.id());
     });
 
@@ -373,13 +429,31 @@ describe('CngxMenuButton', () => {
       expect(menu?.ad.activeValue()).toBe('xlsx');
     });
 
-    it('Escape closes and focus stays on the button', () => {
+    it('moves focus to the menu after open, which carries aria-activedescendant', async () => {
+      const { button, popover, menu, flush } = setup(BasicHost);
+      button.focus();
+      key(button, 'ArrowDown');
+      flush();
+      await settle();
+      expect(popover.isVisible()).toBe(true);
+      const focused = document.activeElement as HTMLElement;
+      expect(focused.getAttribute('role')).toBe('menu');
+      expect(focused.getAttribute('aria-activedescendant')).toBe(menu?.ad.activeId());
+
+      key(focused, 'ArrowDown');
+      flush();
+      expect(menu?.ad.activeValue()).toBe('csv');
+    });
+
+    it('Escape on the focused menu closes and restores focus to the button', async () => {
       const { button, popover, flush } = setup(BasicHost);
       button.focus();
       key(button, 'ArrowDown');
       flush();
-      key(button, 'Escape');
+      await settle();
+      key(document.activeElement as HTMLElement, 'Escape');
       flush();
+      await settle();
       expect(popover.isVisible()).toBe(false);
       expect(document.activeElement).toBe(button);
     });

@@ -5,11 +5,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   ElementRef,
   inject,
   input,
-  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 import {
@@ -45,7 +43,9 @@ import { CNGX_SPLIT_BUTTON } from './split-button.token';
  * `cngxMenuButton`: `[menu]` is the `cngxMenu`, `[popover]` the
  * `cngxPopover` around it. Keyboard model, `aria-expanded`,
  * `aria-haspopup="menu"`, anchor and click toggle work as on
- * `cngxMenuButton`.
+ * `cngxMenuButton`: after open, focus moves into the menu, which carries
+ * `aria-activedescendant`; Escape returns focus to the button, Tab closes
+ * the menu.
  *
  * Outside a split button the glyph is whatever you project (a kebab icon,
  * an ellipsis) and the name is yours: set `aria-label` (or
@@ -244,14 +244,6 @@ export class CngxIconMenuButton implements CngxButtonState {
   readonly blocked = this.core.blocked;
 
   constructor() {
-    // The popover is told it holds a menu, so the trigger's aria-haspopup
-    // reads `menu` without a consumer [haspopup]; released on swap and destroy.
-    effect((onCleanup) => {
-      const pop = this.popoverTrigger().popoverRef();
-      untracked(() => pop.setHaspopup('menu'));
-      onCleanup(() => pop.setHaspopup(undefined));
-    });
-
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
       afterNextRender(() => {
@@ -267,8 +259,18 @@ export class CngxIconMenuButton implements CngxButtonState {
     }
   }
 
-  /** The core's capture-phase guard swallows the click while the button is blocked. */
+  /**
+   * Refuses to open the menu while the button is blocked (disabled, a
+   * pending co-hosted `cngxAsyncClick`, or its `[enabled]="false"`); an
+   * open menu still closes on click, so a run that started with the opening
+   * click never leaves a menu that cannot be clicked shut. The core's
+   * capture guard handles only `disabled`, so consumer `(click)` handlers
+   * still run.
+   */
   protected handleClick(): void {
+    if (this.core.blocked() && !this.expanded()) {
+      return;
+    }
     this.popoverTrigger().popoverRef().toggle();
   }
 }

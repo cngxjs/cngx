@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxMenuTrigger: esc-only dismissal',
   subtitle:
-    'Component-scoped opt-out of the outside-click and blur dismissal defaults. Only Escape closes the menu - useful for tutorial overlays, guided tours, and menus that must survive incidental focus loss.',
+    'Component-scoped opt-out of the outside-click, blur and focus-out dismissal defaults. Only Escape closes the menu - useful for tutorial overlays, guided tours, and menus that must survive incidental focus loss.',
   description:
-    'The menu defaults (outside-click and blur both dismiss) are inverted here via <code>provideMenuConfigAt(withDismissOnOutsideClick(false), withDismissOnBlur(false))</code> in <code>viewProviders</code>. The popover\'s own <code>closeOnEscape</code> still owns the actual close path; the factory continues to record <code>\'escape\'</code> as <code>lastDismissSource</code>. Click outside the menu or switch tabs - the menu stays open. Press Escape - the menu closes.',
+    'The menu defaults (outside-click, blur and focus leaving the menu all dismiss) are inverted here via <code>provideMenuConfigAt(withDismissOnOutsideClick(false), withDismissOnBlur(false), withDismissOnFocusOut(false))</code> in <code>viewProviders</code>. The popover\'s own <code>closeOnEscape</code> still owns the actual close path; the factory continues to record <code>\'escape\'</code> as <code>lastDismissSource</code>. Click outside the menu, Tab out of it or switch tabs - the menu stays open. Press Escape - the menu closes.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -18,12 +18,12 @@ export const STORY: DemoSpec = {
   ],
   apiComponents: ['CngxMenuTrigger', 'CngxMenu', 'CngxMenuItem'],
   moduleImports: [
-    "import { CngxMenu, CngxMenuItem, CngxMenuTrigger, provideMenuConfigAt, withDismissOnBlur, withDismissOnOutsideClick } from '@cngx/common/interactive';",
+    "import { CngxMenu, CngxMenuItem, CngxMenuTrigger, provideMenuConfigAt, withDismissOnBlur, withDismissOnFocusOut, withDismissOnOutsideClick } from '@cngx/common/interactive';",
     "import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';",
   ],
   imports: ['CngxMenu', 'CngxMenuItem', 'CngxMenuTrigger', 'CngxPopover', 'CngxPopoverTrigger'],
   viewProviders: [
-    'provideMenuConfigAt(withDismissOnOutsideClick(false), withDismissOnBlur(false))',
+    'provideMenuConfigAt(withDismissOnOutsideClick(false), withDismissOnBlur(false), withDismissOnFocusOut(false))',
   ],
   setup: `protected readonly lastAction = signal<string | null>(null);`,
   template: `  <button

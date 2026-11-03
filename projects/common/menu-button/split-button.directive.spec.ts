@@ -223,6 +223,27 @@ describe('CngxSplitButton', () => {
     }
   });
 
+  it('opens the caret menu on Enter with focus in the menu, Escape returns to the caret', async () => {
+    const { q, popover, flush } = setup(SplitHost);
+    const caret = q('#caret');
+    caret.focus();
+    key(caret, 'Enter');
+    flush();
+    TestBed.flushEffects();
+    await Promise.resolve();
+    expect(popover.isVisible()).toBe(true);
+    const focused = document.activeElement as HTMLElement;
+    expect(focused.getAttribute('role')).toBe('menu');
+    expect(focused.getAttribute('aria-activedescendant')).toBeTruthy();
+    expect(caret.getAttribute('aria-controls')).toBe(focused.id);
+
+    key(focused, 'Escape');
+    flush();
+    await Promise.resolve();
+    expect(popover.isVisible()).toBe(false);
+    expect(document.activeElement).toBe(caret);
+  });
+
   describe('main action running', () => {
     it('blocks the caret without a reason of its own', () => {
       const { q, flush } = setup(SplitHost);

@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxPopover } from './popover.directive';
 import { CngxPopoverAnchor } from './popover-anchor.directive';
+import { CngxPopoverSheet } from './popover-sheet.directive';
 import { CngxPopoverTrigger } from './popover-trigger.directive';
 
 // ── Test helpers ────────────────────────────────────────────────────────
@@ -43,6 +44,28 @@ class BasicTriggerHost {
 class MenuTriggerHost {
   readonly popover = viewChild.required(CngxPopover);
   readonly trigger = viewChild.required(CngxPopoverTrigger);
+}
+
+@Component({
+  template: `
+    <button [cngxPopoverTrigger]="pop" id="trigger">Open</button>
+    <div cngxPopover #pop="cngxPopover"><ul role="menu" id="inner-menu"></ul></div>
+  `,
+  imports: [CngxPopover, CngxPopoverTrigger],
+})
+class ControlsHintHost {
+  readonly popover = viewChild.required(CngxPopover);
+}
+
+@Component({
+  template: `
+    <button [cngxPopoverTrigger]="pop" id="trigger">Open</button>
+    <div cngxPopover cngxPopoverSheet="sheet" #pop="cngxPopover"><ul role="menu"></ul></div>
+  `,
+  imports: [CngxPopover, CngxPopoverTrigger, CngxPopoverSheet],
+})
+class SheetControlsHintHost {
+  readonly popover = viewChild.required(CngxPopover);
 }
 
 @Component({
@@ -159,6 +182,54 @@ describe('CngxPopoverTrigger', () => {
       expect(triggerEl.getAttribute('aria-controls')).toBe(host.popover().id());
       host.controls.set(undefined);
       fixture.detectChanges();
+      expect(triggerEl.getAttribute('aria-controls')).toBe(host.popover().id());
+    });
+
+    it('names the element a composer registers through the controls hint', () => {
+      const { fixture, triggerEl } = setup(ControlsHintHost);
+      const host = fixture.componentInstance as ControlsHintHost;
+      host.popover().setControls(signal('inner-menu'));
+      fixture.detectChanges();
+      expect(host.popover().controlsHint()).toBe('inner-menu');
+      expect(triggerEl.getAttribute('aria-controls')).toBe('inner-menu');
+    });
+
+    it('follows a change of the registered source without another setControls', () => {
+      const { fixture, triggerEl } = setup(ControlsHintHost);
+      const host = fixture.componentInstance as ControlsHintHost;
+      const source = signal('inner-menu');
+      host.popover().setControls(source);
+      fixture.detectChanges();
+      source.set('renamed-menu');
+      fixture.detectChanges();
+      expect(triggerEl.getAttribute('aria-controls')).toBe('renamed-menu');
+    });
+
+    it('clears the hint with setControls(null)', () => {
+      const { fixture, triggerEl } = setup(ControlsHintHost);
+      const host = fixture.componentInstance as ControlsHintHost;
+      host.popover().setControls(signal('inner-menu'));
+      fixture.detectChanges();
+      host.popover().setControls(null);
+      fixture.detectChanges();
+      expect(host.popover().controlsHint()).toBeNull();
+      expect(triggerEl.getAttribute('aria-controls')).toBe(host.popover().id());
+    });
+
+    it('lets a bound controls win over the hint', () => {
+      const { fixture, triggerEl } = setup(ControlsTriggerHost);
+      const host = fixture.componentInstance as ControlsTriggerHost;
+      host.popover().setControls(signal('hinted'));
+      fixture.detectChanges();
+      expect(triggerEl.getAttribute('aria-controls')).toBe('inner-list');
+    });
+
+    it('ignores the hint in a sheet presentation and names the popover', () => {
+      const { fixture, triggerEl } = setup(SheetControlsHintHost);
+      const host = fixture.componentInstance as SheetControlsHintHost;
+      host.popover().setControls(signal('inner-menu'));
+      fixture.detectChanges();
+      expect(host.popover().controlsHint()).toBeNull();
       expect(triggerEl.getAttribute('aria-controls')).toBe(host.popover().id());
     });
 

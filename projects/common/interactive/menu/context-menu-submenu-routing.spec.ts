@@ -19,24 +19,39 @@ interface MockMenu {
   host: CngxMenuHost;
   activeId: ReturnType<typeof signal<string | null>>;
   highlightFirst: ReturnType<typeof vi.fn>;
+  highlightNext: ReturnType<typeof vi.fn>;
   submenus: ReturnType<typeof signal<readonly CngxMenuSubmenuLike[]>>;
+  orientation: ReturnType<typeof signal<'vertical' | 'horizontal'>>;
 }
 
 function mockMenu(): MockMenu {
   const activeId = signal<string | null>(null);
   const highlightFirst = vi.fn();
+  const highlightNext = vi.fn();
   const submenus = signal<readonly CngxMenuSubmenuLike[]>([]);
+  const orientation = signal<'vertical' | 'horizontal'>('vertical');
   const ad = {
     activeId,
     activeItem: signal<unknown>(null),
     highlightFirst,
+    highlightNext,
     activateCurrent: vi.fn(),
+    orientation,
   } as unknown as CngxActiveDescendant;
   return {
-    host: { ad, submenuItems: submenus, focus: vi.fn(), registerSubmenuItem: () => () => {} },
+    host: {
+      ad,
+      id: signal('cngx-menu-mock'),
+      contains: () => false,
+      submenuItems: submenus,
+      focus: vi.fn(),
+      registerSubmenuItem: () => () => {},
+    },
     activeId,
     highlightFirst,
+    highlightNext,
     submenus,
+    orientation,
   };
 }
 
@@ -58,14 +73,16 @@ describe('context-menu trigger core - submenu keyboard routing', () => {
   let root: MockMenu;
   let visible: ReturnType<typeof signal<boolean>>;
   let core: CngxContextMenuTriggerCore;
+  let popoverEl: HTMLElement;
 
   beforeEach(() => {
     root = mockMenu();
     visible = signal(true);
+    popoverEl = document.createElement('div');
     const popover: CngxContextMenuTriggerPopoverRef = {
       isVisible: () => visible(),
       hide: () => visible.set(false),
-      elementRef: { nativeElement: document.createElement('div') },
+      elementRef: { nativeElement: popoverEl },
       show: () => visible.set(true),
       setAnchorElement: vi.fn(),
       id: () => 'test',
@@ -172,6 +189,90 @@ describe('context-menu trigger core - submenu keyboard routing', () => {
 
     expect(submenu.open).not.toHaveBeenCalled();
     expect(inner.highlightFirst).not.toHaveBeenCalled();
+  });
+
+  it('routes navigation keys from the focused menu to an open submenu, not the root', () => {
+    const inner = mockMenu();
+    const submenu = mockSubmenu('sub-1', inner.host);
+    root.submenus.set([submenu]);
+    root.activeId.set('sub-1');
+    core.syncOpenState(true);
+    core.handleKeydown(key('ArrowRight'));
+
+    const rootListener = vi.fn();
+    popoverEl.addEventListener('keydown', rootListener);
+    const event = new KeyboardEvent('keydown', {
+      key: 'ArrowDown',
+      bubbles: true,
+      cancelable: true,
+    });
+    popoverEl.dispatchEvent(event);
+
+    expect(inner.highlightNext).toHaveBeenCalledOnce();
+    expect(root.highlightNext).not.toHaveBeenCalled();
+    expect(rootListener).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('leaves navigation keys from the focused root menu to its own active descendant', () => {
+    core.syncOpenState(true);
+    const rootListener = vi.fn();
+    popoverEl.addEventListener('keydown', rootListener);
+    popoverEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+
+    expect(rootListener).toHaveBeenCalledOnce();
+    expect(root.highlightNext).not.toHaveBeenCalled();
+  });
+
+  it('lets ArrowRight / ArrowLeft reach a listener on the root menu while no submenu is open', () => {
+    core.syncOpenState(true);
+    const rootListener = vi.fn();
+    popoverEl.addEventListener('keydown', rootListener);
+    popoverEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    popoverEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+
+    expect(rootListener).toHaveBeenCalledTimes(2);
+  });
+
+  it('stops ArrowRight / ArrowLeft on a horizontal root menu, whose own navigation would act on them', () => {
+    root.orientation.set('horizontal');
+    core.syncOpenState(true);
+    const rootListener = vi.fn();
+    popoverEl.addEventListener('keydown', rootListener);
+    popoverEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    popoverEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+
+    expect(rootListener).not.toHaveBeenCalled();
+  });
+
+  it('ignores a forwarded keydown that originated inside the menu', () => {
+    const inner = mockMenu();
+    const submenu = mockSubmenu('sub-1', inner.host);
+    root.submenus.set([submenu]);
+    root.activeId.set('sub-1');
+    const item = document.createElement('li');
+    popoverEl.appendChild(item);
+    const event = new KeyboardEvent('keydown', { key: 'ArrowRight' });
+    item.dispatchEvent(event);
+
+    core.handleKeydown(event);
+
+    expect(submenu.open).not.toHaveBeenCalled();
+  });
+
+  it('cancels the queued focus move when the trigger is destroyed first', async () => {
+    core.syncOpenState(true);
+    core.destroy();
+    await Promise.resolve();
+
+    expect(root.host.focus).not.toHaveBeenCalled();
+  });
+
+  it('moves focus into the root menu a microtask after open', async () => {
+    core.syncOpenState(true);
+    await Promise.resolve();
+
+    expect(root.host.focus).toHaveBeenCalledOnce();
   });
 
   it('ArrowLeft pops the current submenu level', () => {

@@ -271,6 +271,7 @@ export {
   withAriaLabels,
   withCloseOnSelect,
   withDismissOnBlur,
+  withDismissOnFocusOut,
   withDismissOnOutsideClick,
   withDismissOnScroll,
   withSubmenuCloseDelay,

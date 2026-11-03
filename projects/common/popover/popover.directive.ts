@@ -10,6 +10,7 @@ import {
   input,
   signal,
   untracked,
+  type Signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent } from 'rxjs';
@@ -562,6 +563,22 @@ export class CngxPopover {
     this.anchored() ? this.haspopupState() : 'dialog',
   );
 
+  /** Backing state for {@link controlsHint}: the registered id source. */
+  private readonly controlsSourceState = signal<Signal<string> | null>(null);
+
+  /**
+   * Hint for the `CngxPopoverTrigger`'s `aria-controls` value: the id of the
+   * popup element inside the popover (a `role="menu"`), read from the source
+   * a composer registers via {@link setControls}. Derived, so a change of
+   * that source id reaches every trigger without another registration.
+   * `null` in a sheet or fullscreen presentation, where the popup is the
+   * dialog itself, so the trigger names the popover. A `controls` bound on
+   * the trigger still wins.
+   */
+  readonly controlsHint = computed<string | null>(() =>
+    this.anchored() ? (this.controlsSourceState()?.() ?? null) : null,
+  );
+
   protected readonly isOpening = computed(() => this.stateSignal() === 'opening');
   protected readonly isOpen = computed(() => this.stateSignal() === 'open');
   protected readonly isClosing = computed(() => this.stateSignal() === 'closing');
@@ -817,6 +834,15 @@ export class CngxPopover {
    */
   setHaspopup(value: PopoverHaspopup | undefined): void {
     this.haspopupState.set(value);
+  }
+
+  /**
+   * Register the id source triggers name in `aria-controls` when the
+   * consumer sets none. Composers (menu wirings) pass the popup element's id
+   * Signal, not its value, on register and swap; `null` clears the hint.
+   */
+  setControls(source: Signal<string> | null): void {
+    this.controlsSourceState.set(source);
   }
 
   /**
