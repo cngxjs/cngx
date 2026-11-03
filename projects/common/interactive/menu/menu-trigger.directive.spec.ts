@@ -614,6 +614,53 @@ describe('CngxMenuTrigger submenu arrows under dir', () => {
   });
 });
 
+describe('CngxMenuTrigger focus settle per open cycle', () => {
+  afterEach(() => {
+    document.body.querySelectorAll('.cngx-menu-announcer').forEach((el) => el.remove());
+  });
+
+  it('does not settle focus at mount and settles exactly once per real close', () => {
+    polyfillPopover();
+    let stack: CngxMenuFocusStack | undefined;
+    TestBed.configureTestingModule({
+      imports: [TriggerHost],
+      providers: [
+        {
+          provide: CNGX_MENU_FOCUS_STACK_FACTORY,
+          useValue: (deps: Parameters<typeof createMenuFocusStack>[0]) => {
+            const real = createMenuFocusStack(deps);
+            vi.spyOn(real, 'settleFocus');
+            stack = real;
+            return real;
+          },
+        },
+      ],
+    });
+    const fixture = TestBed.createComponent(TriggerHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const settleFocus = (stack as CngxMenuFocusStack).settleFocus;
+    expect(settleFocus).not.toHaveBeenCalled();
+
+    const popover = fixture.debugElement
+      .query(By.directive(CngxPopover))
+      .injector.get(CngxPopover);
+    popover.show();
+    TestBed.flushEffects();
+    expect(settleFocus).not.toHaveBeenCalled();
+    popover.hide();
+    TestBed.flushEffects();
+    expect(settleFocus).toHaveBeenCalledOnce();
+
+    popover.show();
+    TestBed.flushEffects();
+    popover.hide();
+    TestBed.flushEffects();
+    expect(settleFocus).toHaveBeenCalledTimes(2);
+  });
+});
+
 // Stands in for a co-hosted cngxButton: publishes its disabled state the way
 // the button family does, without pulling @cngx/common/button into this lib.
 const stateDisabled = signal(false);

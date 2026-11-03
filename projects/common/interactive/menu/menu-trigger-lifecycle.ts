@@ -79,7 +79,11 @@ export interface CngxMenuTriggerLifecycle {
   /**
    * Close branch: remove the listeners, cancel a pending focus move, clear
    * the submenu chain and hand the closing source to the focus stack's
-   * `settleFocus`, which owns the restore-or-discard policy.
+   * `settleFocus`, which owns the restore-or-discard policy. Focus settles
+   * only when an open cycle is active, so the caller's mount-time
+   * `isOpen() === false` run settles nothing. The teardown half always runs:
+   * a submenu can be pushed by a routed key before the `isOpen` effect ran
+   * `open()`, and the next open must still start from the root.
    */
   close(): void;
   /**
@@ -131,6 +135,9 @@ export function createMenuTriggerLifecycle(
   // open never lands after the menu closed or the trigger was destroyed.
   let focusTicket = 0;
   let destroyed = false;
+  // Set by open(), cleared by close / standDown / destroy: settleFocus runs
+  // only when an open cycle actually ends.
+  let cycleOpen = false;
 
   const scheduleMenuFocus = (): void => {
     const ticket = ++focusTicket;
@@ -241,6 +248,7 @@ export function createMenuTriggerLifecycle(
   return {
     lastDismissSource: dismissBinding.lastSource,
     open(): void {
+      cycleOpen = true;
       focusStack.captureFocus();
       dismissBinding.attach();
       attachKeydown();
@@ -248,9 +256,14 @@ export function createMenuTriggerLifecycle(
     },
     close(): void {
       release();
+      if (!cycleOpen) {
+        return;
+      }
+      cycleOpen = false;
       focusStack.settleFocus(dismissBinding.closedBy());
     },
     standDown(): void {
+      cycleOpen = false;
       release();
       focusStack.discardFocus();
     },
@@ -262,6 +275,7 @@ export function createMenuTriggerLifecycle(
     },
     destroy(): void {
       destroyed = true;
+      cycleOpen = false;
       focusTicket++;
       dismissBinding.detach();
       detachKeydown();
