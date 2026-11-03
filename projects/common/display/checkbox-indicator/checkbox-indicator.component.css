@@ -259,27 +259,34 @@
       line-height: 1;
       user-select: none;
 
-      /* Themable - the glyph svg is 1em of this font size. 0.75 of the md box
-         is 12px, which selects the 12-grid micro check and dash; the stroke
-         width reaches the 24-grid path only, from the 15px lg glyph up. */
-      font-size: calc(var(--cngx-checkbox-size, 1em) * 0.75);
+      /* Themable - the glyph box follows the resolved box size, never the
+         size class, so a retuned sm renders like md at the same size. Three
+         quarters of the box, never below the micro floor: the 14px sm and the
+         16px md box both land on 12px, the 12-grid micro check and dash (ink
+         at most 10px, inside the 11px inner area of the sm box), and the 20px
+         lg box on 15px, the 24-grid path. The stroke width reaches the 24-grid
+         path only. The svg base rule rounds the box to whole pixels. */
+      --cngx-icon-svg-size: max(
+        calc(var(--cngx-checkbox-size, 1em) * 0.75),
+        var(--cngx-icon-svg-micro-floor, 0.75rem)
+      );
 
       --cngx-icon-svg-stroke-width: var(--cngx-checkbox-glyph-stroke-width, 3);
     }
 
-    /* checkmark variant - bare glyph, no box. Honor the checked color directly. */
+    /* checkmark variant - bare glyph, no box. Honor the checked color directly.
+       The glyph fills the whole box once the box rounds out of the micro band
+       (14.5px and up, so 16px md and 20px lg); a smaller box keeps the boxed
+       rule's 12px micro glyph. The min() term is the box size from 14.5px up
+       and far below zero under it, so max() picks the box or the micro size. */
     :scope.cngx-checkbox-indicator--checkmark .cngx-checkbox-indicator__check,
     :scope.cngx-checkbox-indicator--checkmark .cngx-checkbox-indicator__dash {
       color: var(--cngx-checkbox-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
-      font-size: var(--cngx-checkbox-size, 1em);
-    }
-
-    /* 6/7 of the 14px sm size keeps the glyph of both variants on the 12px
-       micro box: the boxed glyph instead of 11px, the bare checkmark instead
-       of 14px. After the checkmark rule, so it wins at equal specificity. */
-    :scope.cngx-checkbox-indicator--sm
-      :is(.cngx-checkbox-indicator__check, .cngx-checkbox-indicator__dash) {
-      font-size: calc(var(--cngx-checkbox-size, 1em) * 6 / 7);
+      --cngx-icon-svg-size: max(
+        calc(var(--cngx-checkbox-size, 1em) * 0.75),
+        var(--cngx-icon-svg-micro-floor, 0.75rem),
+        min(var(--cngx-checkbox-size, 1em), calc((var(--cngx-checkbox-size, 1em) - 14.5px) * 1000))
+      );
     }
   }
 }

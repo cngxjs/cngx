@@ -5,12 +5,13 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxCheckboxIndicator } from './checkbox-indicator.component';
 
-// Runs in a real Chromium (the `test-geometry` target). The check and dash
-// glyphs of the sm and md boxes both land on a 12px box, where the global
-// micro sheet (loaded here as `cngx.css` does) paints the 12-grid drawings:
-// md is 0.75 of its 16px box, sm 6/7 of its 14px box. The lg glyph (15px)
-// leaves the band and keeps the 24-grid path. The bare checkmark variant is
-// 1em of its size, except sm, which takes the same 6/7 and lands on 12px.
+// Runs in a real Chromium (the `test-geometry` target). The glyph box derives
+// from the resolved box size, not the size class: 0.75 of it, never below the
+// 12px micro floor. The 14px sm and 16px md boxes both land on 12px, where the
+// global micro sheet (loaded here as `cngx.css` does) paints the 12-grid
+// drawings; the 20px lg box lands on 15px and keeps the 24-grid path. The bare
+// checkmark variant fills its box once the box leaves the band (md 16px, lg
+// 20px) and takes the 12px micro glyph below it (sm).
 
 @Component({
   selector: 'cngx-checkbox-indicator-glyph-host',
@@ -41,8 +42,12 @@ function mountGlyph(
   size: 'sm' | 'md' | 'lg',
   indeterminate: boolean,
   variant: 'checkbox' | 'checkmark' = 'checkbox',
+  smSize?: string,
 ): SVGSVGElement {
   const fixture = TestBed.createComponent(CheckboxGlyphHost);
+  if (smSize) {
+    (fixture.nativeElement as HTMLElement).style.setProperty('--cngx-checkbox-size-sm', smSize);
+  }
   fixture.componentRef.setInput('variant', variant);
   fixture.componentRef.setInput('size', size);
   fixture.componentRef.setInput('indeterminate', indeterminate);
@@ -119,4 +124,51 @@ describe('CngxCheckboxIndicator glyph geometry', () => {
     expect(svg.getBoundingClientRect().width).toBe(15);
     expect(paintedPath(svg).classList.contains('cngx-icon-svg__path')).toBe(true);
   });
+
+  it('keeps the lg checkmark at 1em on the 24-grid path', () => {
+    const svg = mountGlyph('lg', false, 'checkmark');
+    expect(svg.getBoundingClientRect().width).toBe(20);
+    expect(paintedPath(svg).classList.contains('cngx-icon-svg__path')).toBe(true);
+  });
+
+  // The micro ink stays inside the box border (1.5px), the 11px inner area of
+  // the sm box included.
+  for (const size of ['sm', 'md'] as const) {
+    for (const [state, indeterminate] of [
+      ['check', false],
+      ['dash', true],
+    ] as const) {
+      it(`fits the ${size} ${state} ink inside the box border`, () => {
+        const ink = paintedPath(mountGlyph(size, indeterminate)).getBoundingClientRect();
+        const box = mountedRoot!.querySelector('.cngx-checkbox-indicator__box')!.getBoundingClientRect();
+        expect(ink.width).toBeGreaterThan(0);
+        expect(ink.left).toBeGreaterThanOrEqual(box.left + 1.5);
+        expect(ink.right).toBeLessThanOrEqual(box.right - 1.5);
+        expect(ink.top).toBeGreaterThanOrEqual(box.top + 1.5);
+        expect(ink.bottom).toBeLessThanOrEqual(box.bottom - 1.5);
+      });
+    }
+  }
+
+  // The glyph follows the resolved box size, not the size class: sm retuned to
+  // the 16px md size renders the md glyph in both variants.
+  for (const variant of ['checkbox', 'checkmark'] as const) {
+    for (const [state, indeterminate] of [
+      ['check', false],
+      ['dash', true],
+    ] as const) {
+      it(`renders a ${variant} ${state} with sm retuned to 16px like md`, () => {
+        const md = mountGlyph('md', indeterminate, variant);
+        const mdBox = md.getBoundingClientRect();
+        const mdPath = paintedPath(md).getAttribute('class');
+        mountedRoot?.remove();
+        const sm = mountGlyph('sm', indeterminate, variant, '1em');
+        expect(mountedRoot!.querySelector('.cngx-checkbox-indicator')!.getBoundingClientRect().width).toBe(16);
+        const smBox = sm.getBoundingClientRect();
+        expect(smBox.width).toBe(mdBox.width);
+        expect(smBox.height).toBe(mdBox.height);
+        expect(paintedPath(sm).getAttribute('class')).toBe(mdPath);
+      });
+    }
+  }
 });

@@ -36,10 +36,10 @@
      */
     --cngx-icon-svg-size: 1em;
     /**
-     * Lower bound of the glyph box where a cngx organism sizes a default
-     * glyph to the 12px micro box: the select caret, the paginator
-     * page-size caret, the stepper check and error line, the tab add and
-     * close glyphs and the context-menu submenu caret read it as
+     * Lower bound of the glyph box where cngx sizes a default glyph to the
+     * 12px micro box: the select caret, the paginator page-size caret, the
+     * stepper check and error line, the tab add and close glyphs, the
+     * context-menu submenu caret and the checkbox check and dash read it as
      * `max(<em size>, var(--cngx-icon-svg-micro-floor, 0.75rem))`. The em
      * size still grows the box with a larger font. Set it to `0px` on any
      * ancestor to let the em size, and the size token that feeds it,
