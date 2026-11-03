@@ -203,11 +203,11 @@
 
 .cngx-dot-stepper__dot-glyph {
   /* Sized in em of the glyph font (0.75rem): the 1em box is 12px, which selects
-     the 12-grid micro drawing of the exclamation mark (9 units, 0.75em tall);
-     its 24-grid fill path spans 14 units. The ban ring (22.5 units) draws 0.8em
-     wide, and stroke width 3 keeps about a pixel on it. Both keep a rim of the
-     dot fill around them. A triangle or a ring inside the round dot would crowd
-     its edge. */
+     the 12-grid micro drawings, the exclamation mark 9 units tall and the ban
+     disc 12 units with its ring and slash cut out. The 24-grid paths (mark 14
+     units, ring 22.5 with stroke width 3) take over once a larger glyph font
+     moves the box past 14px. Both keep a rim of the 16px dot fill around them.
+     A triangle inside the round dot would crowd its edge. */
   --cngx-icon-svg-size: 1em;
   --cngx-icon-svg-stroke-width: 3;
   /* Positioned like the dot, so the later icon paints over it. */
@@ -217,10 +217,6 @@
   font-size: var(--cngx-dot-step-error-glyph-size, 0.75rem);
   color: var(--cngx-dot-step-error-glyph-color, var(--cngx-color-on-danger, white));
   transition: transform var(--cngx-duration-fast, 150ms) ease-out;
-}
-
-.cngx-dot-stepper__dot[data-reason='refused'] + .cngx-dot-stepper__dot-glyph {
-  --cngx-icon-svg-size: calc(0.8em * 24 / 22.5);
 }
 
 /* The active dot grows; its icon grows with it. */

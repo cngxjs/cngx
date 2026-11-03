@@ -247,11 +247,11 @@ describe('CngxFilterBuilder geometry', () => {
     expect(joiner.getBoundingClientRect().bottom).toBeLessThan(rows[1].getBoundingClientRect().y + 1);
   });
 
-  it('keeps the caret glyph at label size inside the builder', () => {
+  it('draws the caret glyph on the 12px micro box inside the builder', () => {
     const host = mountRaster();
-    const trigger = query(host, '.cngx-filter-builder__field-select .cngx-select__trigger');
-    const caret = query(host, '.cngx-select__caret');
-    expect(computedValue(caret, 'font-size')).toBe(computedValue(trigger, 'font-size'));
+    const svg = query(query(host, '.cngx-select__caret'), 'svg');
+    expect(svg.getBoundingClientRect().width).toBe(12);
+    expect(svg.getBoundingClientRect().height).toBe(12);
   });
 
   it('floors the compact remove button on both axes via the target-min token', () => {

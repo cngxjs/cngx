@@ -160,9 +160,11 @@ $-row-padding: 'calc(var(--cngx-space-sm, 8px) * 1.5) var(--cngx-space-md, 16px)
   // button and glyph so the twisty matches the option row's visual weight.
   --cngx-tree-select-twisty-size: 1.5rem;
   --cngx-tree-select-twisty-font-size: 1.125rem;
-  // Trigger caret: the default text glyph is too light next to Material's
-  // chunkier indicator; bump it so the dropdown chevron reads at full weight.
-  --cngx-select-caret-size: 1.5rem;
+  // Trigger caret: as wide as the mat-select arrow, 10px (0.625rem) of ink.
+  // The caret triangle inks 0.27em of the caret font, so the font is the ink
+  // width over 0.27; its box rounds to 17px, past the micro band, so the
+  // 24-grid triangle paints.
+  --cngx-select-caret-size: calc(0.625rem / 0.27);
 
   // Trigger metrics - Material 3 outlined input. Every Select-family
   // variant's min-height / padding / radius token falls back to its family

@@ -1046,10 +1046,14 @@
     --cngx-icon-svg-size: calc(0.63em * 24 / 18);
   }
 
-  /* Caret: the triangle spans 14 units, drawn 0.4em wide, the width of the
-     select caret. As a block it leaves the line box, so the trigger centres it. */
+  /* Caret: never below the micro floor (the 12px micro box of the select caret
+     it matches), where the micro triangle spans 8 units (8px). Past the floor
+     the box keeps the 24-grid width, the 14-unit triangle drawn 0.4em wide;
+     `--cngx-icon-svg-micro-floor: 0px` lets `--cngx-paginator-caret-size`
+     shrink it below 12px too. As a block it leaves the line box, so the
+     trigger centres it. */
   .cngx-paginator__select-caret > .cngx-icon-svg {
-    --cngx-icon-svg-size: calc(0.4em * 24 / 14);
+    --cngx-icon-svg-size: max(calc(0.4em * 24 / 14), var(--cngx-icon-svg-micro-floor, 0.75rem));
     display: block;
   }
 }

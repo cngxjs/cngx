@@ -17,10 +17,12 @@ import { CngxContextMenuItemRadio } from './context-menu-item-radio.component';
 // Runs in a real Chromium (the `test-geometry` target) with the real context
 // menu shells and the base menu skin. The checked tick, the radio dot and the
 // submenu caret are shared-icon svgs sized to the ink of the text glyphs they
-// replace: tick and dot 0.73em across, caret 0.3em across. The indicators sit
-// in an always-present gutter, so the label never moves with the checked
-// state, and both glyphs centre on the label line. Every icon svg box rounds
-// to whole pixels, so the box assertions round the em product too.
+// replace: tick and dot 0.73em across. The caret box is 12px, where the
+// global micro sheet (loaded here as `cngx.css` does) paints the 12-grid
+// chevron. The indicators sit in an always-present gutter, so the label never
+// moves with the checked state, and both glyphs centre on the label line.
+// Every icon svg box rounds to whole pixels, so the box assertions round the
+// em product too.
 
 const SCHEMES = ['light', 'dark'] as const;
 
@@ -34,7 +36,12 @@ const SCHEMES = ['light', 'dark'] as const;
     CngxContextMenuItemRadio,
     CngxMenuGroup,
   ],
-  styleUrls: ['../../core/theming/system-tokens.css', '../../common/theming/components/cngx-menu.css'],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../core/theming/system-tokens.css',
+    '../../common/theming/components/cngx-menu.css',
+    '../../common/theming/components/cngx-icon-glyph.css',
+  ],
   encapsulation: ViewEncapsulation.None,
   template: `
     <cngx-context-menu ariaLabel="View" class="main">
@@ -117,11 +124,27 @@ describe('context-menu glyph geometry', () => {
     expect(box.width).toBeCloseTo(Math.round((0.73 * 24 * fs) / 8), 1);
   });
 
-  it('sizes the caret to 0.3em of ink across (box 0.3em * 24 / 8, rounded)', async () => {
+  it('draws the caret as the micro chevron on a 12px box, 4 units across', async () => {
     const root = await mount();
-    const fs = fontSize(one(root, '.item-sub'));
-    const box = rect(root, '.item-sub .cngx-menu-item__suffix > svg');
-    expect(box.width).toBeCloseTo(Math.round((0.3 * 24 * fs) / 8), 1);
+    const svg = one(root, '.item-sub .cngx-menu-item__suffix > svg');
+    const box = svg.getBoundingClientRect();
+    expect(box.width).toBe(12);
+    expect(box.height).toBe(12);
+    const micro = one(svg, '.cngx-icon-svg__micro');
+    expect(computedValue(one(svg, '.cngx-icon-svg__path'), 'display')).toBe('none');
+    expect(computedValue(micro, 'display')).not.toBe('none');
+    expect(micro.getBoundingClientRect().width).toBeCloseTo(4, 1);
+  });
+
+  // A 14px font would round the 0.75em box to 11px, off the 12-unit grid;
+  // the micro floor holds it on 12 until it is lifted.
+  it('floors the caret box at 12px under a smaller font until the micro floor is lifted', async () => {
+    const root = await mount();
+    const svg = one(root, '.item-sub .cngx-menu-item__suffix > svg');
+    one(root, '.item-sub .cngx-menu-item__suffix').style.fontSize = '14px';
+    expect(svg.getBoundingClientRect().width).toBe(12);
+    root.style.setProperty('--cngx-icon-svg-micro-floor', '0px');
+    expect(svg.getBoundingClientRect().width).toBe(11);
   });
 
   it('keeps the oversized dot box from growing the row', async () => {
@@ -224,6 +247,7 @@ describe.each(SCHEMES)('context-menu glyphs under forced colors, %s', (scheme) =
     expect(computedValue(one(root, '.item-check .cngx-menu-item__check > svg'), 'stroke')).toBe(canvasText);
     expect(computedValue(one(root, '.item-cozy .cngx-menu-item__check > svg'), 'fill')).toBe(canvasText);
     expect(computedValue(one(root, '.item-sub .cngx-menu-item__suffix > svg'), 'stroke')).toBe(canvasText);
+    expect(computedValue(one(root, '.item-sub .cngx-menu-item__suffix .cngx-icon-svg__micro'), 'fill')).toBe(canvasText);
   });
 
   it('paints the highlighted tick, dot and caret in HighlightText', async () => {

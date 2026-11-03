@@ -193,6 +193,43 @@ class AffixBlockHost {
   readonly nodeId = (value: unknown): string => String(value);
 }
 
+// Loads the global micro sheet, as `cngx.css` does; `.material` carries a
+// 1.5rem caret font, `.bridge` the caret font the Material bridge sets.
+@Component({
+  selector: 'cngx-select-caret-micro-host',
+  standalone: true,
+  imports: [CngxSelect],
+  template: `
+    <div style="display: grid; line-height: 1.5">
+      <cngx-select class="default" [label]="'Colour'" [options]="options" />
+      <cngx-select class="material" style="--cngx-select-caret-size: 1.5rem" [label]="'Colour'" [options]="options" />
+      <cngx-select
+        class="bridge"
+        style="--cngx-select-caret-size: calc(0.625rem / 0.27)"
+        [label]="'Colour'"
+        [options]="options"
+      />
+      <cngx-select
+        class="unfloored"
+        style="--cngx-icon-svg-micro-floor: 0px; --cngx-select-caret-size: 1.5rem"
+        [label]="'Colour'"
+        [options]="options"
+      />
+      <cngx-select
+        class="compact"
+        style="--cngx-icon-svg-micro-floor: 0px; --cngx-select-caret-size: 1em"
+        [label]="'Colour'"
+        [options]="options"
+      />
+    </div>
+  `,
+  styleUrls: ['../../../core/theming/layers.css', '../../../common/theming/components/cngx-icon-glyph.css'],
+  encapsulation: ViewEncapsulation.None,
+})
+class CaretMicroHost {
+  readonly options = OPTIONS;
+}
+
 // Every variant in the default (outline) skin, so the box-sizing contract is
 // checked on all nine triggers, not only the two shape stand-ins above.
 @Component({
@@ -419,12 +456,6 @@ function px(el: Element, property: string): number {
   return value;
 }
 
-// The icon svg box rounds to whole pixels: the ink a rule names in em lands
-// on the rounded box, `extent` grid units of 24.
-function inkOnRoundedBox(inkPx: number, extent: number): number {
-  return (Math.round((inkPx * 24) / extent) * extent) / 24;
-}
-
 // Line box + 2 * block padding + 2px border, floored by the min-height. Every
 // trigger sets border-box itself (this harness loads no global reset), so the
 // min-height floors the border box directly.
@@ -494,9 +525,6 @@ describe('select-family field skins', () => {
     expect(Math.abs(caret.top + caret.height / 2 - (box.top + box.height / 2))).toBeLessThanOrEqual(0.5);
   });
 
-  // The shared icon grid pads the triangle inside its 24-unit box; the caret
-  // rule scales the box so the drawn triangle keeps the 0.27em width the
-  // 10-unit caret it replaced drew at the caret font-size.
   // The clear glyph sits in an inline span; as an inline svg it would align
   // to the text middle and land below the caret.
   it.each(['.v-select', '.v-multi'])('centres the default %s clear glyph on the caret', (hostSelector) => {
@@ -513,17 +541,59 @@ describe('select-family field skins', () => {
     expect(Math.abs(middle(clear) - middle(caret))).toBeLessThan(0.5);
   });
 
-  it.each(ALL_TRIGGERS)('draws the default %s caret 0.27em wide, on the rounded box', (hostSelector) => {
+  it.each(ALL_TRIGGERS)('sizes the default %s caret box to 12px, the micro box', (hostSelector) => {
     const el = trigger(mount(AllTriggersHost), hostSelector);
-    const span = el.querySelector<HTMLElement>('[class*="__caret"]');
-    const path = span?.querySelector('svg.cngx-icon-svg path');
-    if (!span || !path) {
+    const svg = el.querySelector('[class*="__caret"] svg.cngx-icon-svg');
+    if (!svg) {
       throw new Error(`${hostSelector} renders no default caret icon`);
     }
-    expect(path.getBoundingClientRect().width).toBeCloseTo(
-      inkOnRoundedBox(0.27 * px(span, 'font-size'), 14),
-      1,
-    );
+    const box = svg.getBoundingClientRect();
+    expect(box.width).toBe(12);
+    expect(box.height).toBe(12);
+  });
+
+  // A 1.5rem caret font would round the 24-grid box to 11px; the 0.75rem floor
+  // keeps it on the 12px micro box.
+  it.each(['.default', '.material'])('paints the micro caret, 8 units wide, on the %s caret', (hostSelector) => {
+    const el = trigger(mount(CaretMicroHost), hostSelector);
+    const svg = el.querySelector<SVGSVGElement>('[class*="__caret"] svg.cngx-icon-svg')!;
+    expect(svg.getBoundingClientRect().width).toBe(12);
+    const micro = svg.querySelector('.cngx-icon-svg__micro')!;
+    expect(computedValue(svg.querySelector('.cngx-icon-svg__path')!, 'display')).toBe('none');
+    expect(computedValue(micro, 'display')).not.toBe('none');
+    expect(micro.getBoundingClientRect().width).toBeCloseTo(8, 1);
+  });
+
+  // The Material bridge matches the mat-select arrow, 10px of ink: the box
+  // rounds to 17px, past the band, and the 24-grid triangle (14 units) paints.
+  it('draws the Material bridge caret as wide as the mat-select arrow', () => {
+    const el = trigger(mount(CaretMicroHost), '.bridge');
+    const svg = el.querySelector<SVGSVGElement>('[class*="__caret"] svg.cngx-icon-svg')!;
+    expect(svg.getBoundingClientRect().width).toBe(17);
+    const path = svg.querySelector('.cngx-icon-svg__path')!;
+    expect(computedValue(path, 'display')).not.toBe('none');
+    expect(computedValue(svg.querySelector('.cngx-icon-svg__micro')!, 'display')).toBe('none');
+    expect(path.getBoundingClientRect().width).toBeCloseTo(10, 0);
+  });
+
+  // Without the floor the box follows the caret font again, below 12px too:
+  // 11px at the Material 1.5rem caret font, 7px at a 1em one.
+  it.each(['.unfloored', '.compact'])('sizes the %s caret box from the caret font without the micro floor', (hostSelector) => {
+    const el = trigger(mount(CaretMicroHost), hostSelector);
+    const svg = el.querySelector<SVGSVGElement>('[class*="__caret"] svg.cngx-icon-svg')!;
+    const caretFont = parseFloat(computedValue(svg, 'font-size'));
+    const width = svg.getBoundingClientRect().width;
+    expect(width).toBe(Math.round(((0.27 * 24) / 14) * caretFont));
+    expect(width).toBeLessThan(12);
+  });
+
+  it('paints the 24-grid caret below the band once the floor is lifted', () => {
+    const el = trigger(mount(CaretMicroHost), '.compact');
+    const svg = el.querySelector<SVGSVGElement>('[class*="__caret"] svg.cngx-icon-svg')!;
+    expect(svg.getBoundingClientRect().width).toBeGreaterThan(0);
+    expect(svg.getBoundingClientRect().width).toBeLessThan(10);
+    expect(computedValue(svg.querySelector('.cngx-icon-svg__path')!, 'display')).not.toBe('none');
+    expect(computedValue(svg.querySelector('.cngx-icon-svg__micro')!, 'display')).toBe('none');
   });
 
   it('draws the fill trigger as an underline, not a box', () => {

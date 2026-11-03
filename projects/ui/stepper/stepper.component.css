@@ -90,7 +90,9 @@
   }
 
   /**
-   * Font-size of the indicator glyph.
+   * Font-size of the indicator glyph. The default completed check never
+   * drops below `--cngx-icon-svg-micro-floor` (12px); set that token to
+   * `0px` as well for a check smaller than the 12px micro box.
    * @group Typography
    */
   @property --cngx-step-indicator-font-size {
@@ -340,10 +342,15 @@
        stay distinct even when both states happen to share a hue under a
        custom theme. The check is part of the *default* indicator template
        only - a consumer-provided `*cngxStepIndicator` slot replaces it with
-       its own art, so the two never stack. Inked 0.72em wide, drawn 17 grid
-       units wide with its heavier stroke. */
+       its own art, so the two never stack. The box rounds to 12px in every
+       default disc (the 0.75rem micro floor; the em term only grows it with
+       a larger indicator font), which selects the 12-grid micro check (10
+       units across, 10px). The 24-grid path (17 units with its stroke) and
+       the stroke width take over once the box passes 14px.
+       `--cngx-icon-svg-micro-floor: 0px` lets
+       `--cngx-step-indicator-font-size` shrink the check below 12px too. */
     .cngx-stepper__indicator-check {
-      --cngx-icon-svg-size: calc(0.72em * 24 / 17);
+      --cngx-icon-svg-size: max(0.85em, var(--cngx-icon-svg-micro-floor, 0.75rem));
       --cngx-icon-svg-stroke-width: 3;
       display: block;
     }
@@ -2107,7 +2114,8 @@
    takes the ban icon, so it never differs from an error by colour alone.
    Mirrors the standalone `<cngx-dot-stepper>` treatment. */
 .cngx-stepper__mobile-dot-glyph {
-  /* Sized like the `<cngx-dot-stepper>` icon, in em of the glyph font. */
+  /* Sized like the `<cngx-dot-stepper>` icon: the 1em box is 12px, which
+     selects the 12-grid micro drawing of both marks. */
   --cngx-icon-svg-size: 1em;
   --cngx-icon-svg-stroke-width: 3;
   position: absolute;
@@ -2117,10 +2125,6 @@
   pointer-events: none;
   font-size: var(--cngx-dot-step-error-glyph-size, 0.75rem);
   color: var(--cngx-dot-step-error-glyph-color, var(--cngx-color-on-danger, white));
-}
-
-.cngx-stepper__mobile-dot[data-reason='refused'] .cngx-stepper__mobile-dot-glyph {
-  --cngx-icon-svg-size: calc(0.8em * 24 / 22.5);
 }
 
 /* Error sub-line for the mobile-collapse `text` branch - the count alone
