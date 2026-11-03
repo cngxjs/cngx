@@ -155,8 +155,10 @@ export const CNGX_NESTED_INTERACTIVE_SELECTOR = new InjectionToken<string>(
  * Adds `selectors` to the {@link CNGX_NESTED_INTERACTIVE_SELECTOR} of the
  * surrounding injector, so a keyboard host leaves Enter / Space inside a
  * matching descendant to it. Works app-wide (`bootstrapApplication`
- * providers) and per subtree (`providers` / `viewProviders`); a nested call
- * extends the list of its parent, never replaces it.
+ * providers) and per subtree (`providers` / `viewProviders`); a call in a
+ * child injector extends the list of its parent. Two calls in the same
+ * `providers` array do not add up: the last one wins, so pass every selector
+ * of one level to a single call.
  *
  * ```ts
  * bootstrapApplication(App, {
