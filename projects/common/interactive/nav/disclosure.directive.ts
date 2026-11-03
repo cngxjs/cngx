@@ -1,4 +1,4 @@
-import { computed, Directive, input, output, signal } from '@angular/core';
+import { computed, Directive, ElementRef, inject, input, output, signal } from '@angular/core';
 
 /**
  * Generic expand/collapse (disclosure) behavior.
@@ -7,9 +7,11 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  * `aria-expanded` and `aria-controls` host attributes directly - no need
  * to compose `CngxAriaExpanded` separately.
  *
- * Enter and Space toggle once and cancel the key's default action, so a
- * native `<button>` host does not fire its own activation click on top and
- * toggle a second time.
+ * On a native `<button>` host the browser turns Enter and Space into a
+ * `click`, so the directive leaves both keys alone and toggles on that click:
+ * one toggle per key press, and a consumer `(click)` on the host still fires
+ * from the keyboard. Any other host (`<div role="button">`) gets no native
+ * click, so the directive toggles on the key itself and cancels its default.
  *
  * Supports controlled (`[cngxDisclosureOpened]`) and uncontrolled modes,
  * following the same pattern as `CngxDrawer` and `CngxSort`.
@@ -64,8 +66,8 @@ import { computed, Directive, input, output, signal } from '@angular/core';
     '[attr.aria-expanded]': 'opened()',
     '[attr.aria-controls]': 'controls() ?? null',
     '(click)': 'toggle()',
-    '(keydown.enter)': 'toggle(); $event.preventDefault()',
-    '(keydown.space)': 'toggle(); $event.preventDefault()',
+    '(keydown.enter)': 'handleActivationKey($event)',
+    '(keydown.space)': 'handleActivationKey($event)',
   },
 })
 export class CngxDisclosure {
@@ -76,6 +78,9 @@ export class CngxDisclosure {
   readonly controls = input<string | undefined>(undefined);
 
   private readonly openedState = signal(false);
+
+  private readonly nativeButtonHost =
+    (inject(ElementRef).nativeElement as HTMLElement).tagName === 'BUTTON';
 
   /** Resolved opened state - controlled input wins over internal state. */
   readonly opened = computed(() => this.openedInput() ?? this.openedState());
@@ -99,6 +104,15 @@ export class CngxDisclosure {
     }
     this.openedState.set(false);
     this.openedChange.emit(false);
+  }
+
+  /** @internal Enter/Space on a non-button host; a native button activates through its click. */
+  protected handleActivationKey(event: Event): void {
+    if (this.nativeButtonHost) {
+      return;
+    }
+    event.preventDefault();
+    this.toggle();
   }
 
   /** Toggles the disclosure between open and closed. */
