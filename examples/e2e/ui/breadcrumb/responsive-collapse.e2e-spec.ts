@@ -95,4 +95,24 @@ test.describe('ui/breadcrumb/responsive-collapse', () => {
     // The middle crumbs the trail hid are all listed in the menu, in order.
     await expect(page.getByRole('menuitem')).toHaveText(['Catalog', 'Books', 'Fantasy', 'Tolkien']);
   });
+
+  test('the overflow trigger moves focus into the collapsed-crumb menu', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 720 });
+    await gotoDemo(page, ROUTE);
+
+    const trigger = overflowTrigger(page);
+    await expect(trigger).toBeVisible();
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+
+    const menu = page.getByRole('menu');
+    await expect(menu).toBeVisible();
+    await expect(menu).toBeFocused();
+    await expect(menu).toHaveAttribute('aria-activedescendant', /.+/);
+    await expect(trigger).toHaveAttribute('aria-controls', (await menu.getAttribute('id')) ?? '');
+
+    await page.keyboard.press('Escape');
+    await expect(menu).toBeHidden();
+    await expect(trigger).toBeFocused();
+  });
 });

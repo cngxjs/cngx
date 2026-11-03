@@ -223,6 +223,13 @@ function key(el: HTMLElement, k: string): void {
   el.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
 }
 
+/** Lets the open-time focus move (and a close-time restore) run. */
+async function settle(): Promise<void> {
+  TestBed.flushEffects();
+  await Promise.resolve();
+  await Promise.resolve();
+}
+
 describe('CngxMenuButton', () => {
   beforeEach(() => {
     polyfillPopover();
@@ -334,9 +341,15 @@ describe('CngxMenuButton', () => {
   });
 
   describe('popover wiring', () => {
-    it('anchors the popover and points aria-controls at it', () => {
-      const { button, popover } = setup(BasicHost);
+    it('anchors the popover and points aria-controls at the menu', () => {
+      const { button, popover, menu } = setup(BasicHost);
       expect(popover.anchorElement()).toBe(button);
+      expect(button.getAttribute('aria-controls')).toBe(menu?.id());
+      expect(document.getElementById(menu?.id() ?? '')?.getAttribute('role')).toBe('menu');
+    });
+
+    it('names the popover in aria-controls when it lays out as a sheet', () => {
+      const { button, popover } = setup(SheetHost);
       expect(button.getAttribute('aria-controls')).toBe(popover.id());
     });
 
@@ -393,13 +406,31 @@ describe('CngxMenuButton', () => {
       expect(menu?.ad.activeValue()).toBe('xlsx');
     });
 
-    it('Escape closes and focus stays on the button', () => {
+    it('moves focus to the menu after open, which carries aria-activedescendant', async () => {
+      const { button, popover, menu, flush } = setup(BasicHost);
+      button.focus();
+      key(button, 'ArrowDown');
+      flush();
+      await settle();
+      expect(popover.isVisible()).toBe(true);
+      const focused = document.activeElement as HTMLElement;
+      expect(focused.getAttribute('role')).toBe('menu');
+      expect(focused.getAttribute('aria-activedescendant')).toBe(menu?.ad.activeId());
+
+      key(focused, 'ArrowDown');
+      flush();
+      expect(menu?.ad.activeValue()).toBe('csv');
+    });
+
+    it('Escape on the focused menu closes and restores focus to the button', async () => {
       const { button, popover, flush } = setup(BasicHost);
       button.focus();
       key(button, 'ArrowDown');
       flush();
-      key(button, 'Escape');
+      await settle();
+      key(document.activeElement as HTMLElement, 'Escape');
       flush();
+      await settle();
       expect(popover.isVisible()).toBe(false);
       expect(document.activeElement).toBe(button);
     });

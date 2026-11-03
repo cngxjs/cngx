@@ -37,6 +37,8 @@ function mockMenu(): CngxMenuHost & { highlightFirst: ReturnType<typeof vi.fn> }
     ad: { highlightFirst } as unknown as CngxActiveDescendant,
     submenuItems: signal([]),
     focus: vi.fn(),
+    id: signal('cngx-menu-mock'),
+    contains: () => false,
     registerSubmenuItem: () => () => {},
     highlightFirst,
   };

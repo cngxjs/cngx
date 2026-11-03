@@ -33,6 +33,8 @@ function mockMenu(): { host: CngxMenuHost; ad: MockAd; submenus: ReturnType<type
     ad: ad as unknown as CngxActiveDescendant,
     submenuItems: submenus,
     focus: vi.fn(),
+    id: signal('cngx-menu-mock'),
+    contains: () => false,
     registerSubmenuItem: () => () => {},
   };
   return { host, ad, submenus };

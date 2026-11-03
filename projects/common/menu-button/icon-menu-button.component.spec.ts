@@ -186,6 +186,13 @@ function key(el: HTMLElement, k: string): void {
   el.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
 }
 
+/** Lets the open-time focus move (and a close-time restore) run. */
+async function settle(): Promise<void> {
+  TestBed.flushEffects();
+  await Promise.resolve();
+  await Promise.resolve();
+}
+
 describe('CngxIconMenuButton', () => {
   beforeEach(() => {
     polyfillPopover();
@@ -286,14 +293,20 @@ describe('CngxIconMenuButton', () => {
       expect(button.dataset['expanded']).toBe('false');
     });
 
-    it('opens on ArrowDown and closes on Escape with focus kept', () => {
+    it('opens on ArrowDown with focus in the menu and closes on Escape back to the button', async () => {
       const { button, popover, flush } = setup(KebabHost);
       button.focus();
       key(button, 'ArrowDown');
       flush();
+      await settle();
       expect(popover.isVisible()).toBe(true);
-      key(button, 'Escape');
+      const focused = document.activeElement as HTMLElement;
+      expect(focused.getAttribute('role')).toBe('menu');
+      expect(focused.getAttribute('aria-activedescendant')).toBeTruthy();
+      expect(button.getAttribute('aria-controls')).toBe(focused.id);
+      key(focused, 'Escape');
       flush();
+      await settle();
       expect(popover.isVisible()).toBe(false);
       expect(document.activeElement).toBe(button);
     });
