@@ -44,6 +44,11 @@ describe('the built entry', () => {
     assertNoAnsi(result.stdout);
   });
 
+  it('prints every description in full in default markdown', () => {
+    // A cut cell ends in `...` right before the closing pipe of its row.
+    expect(run('api', 'CngxSelect').stdout).not.toMatch(/\.\.\.\|/);
+  });
+
   it('prints the version and exits 0', () => {
     const result = run('--version');
 

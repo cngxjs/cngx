@@ -53,3 +53,5 @@ grounds against is a property of the bundled snapshot, not this version.
 - `cngx doctor` runs on `@cngx/doctor` 0.2 and 0.3.
 - A positional argument is taken only by position: `--name` and `migrate --from`
   are not flags and exit 2 as an unknown option.
+- Default markdown prints every description in full; `--compact` stays the short
+  view.
