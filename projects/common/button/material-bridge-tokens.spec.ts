@@ -66,10 +66,12 @@ const CONSUMED = [
   '--cngx-close-button-size',
   '--cngx-color-border',
   '--cngx-color-danger',
+  '--cngx-color-danger-strong',
   '--cngx-color-danger-text',
-  '--cngx-color-on-danger',
-  '--cngx-color-on-primary',
+  '--cngx-color-on-danger-strong',
+  '--cngx-color-on-primary-strong',
   '--cngx-color-primary',
+  '--cngx-color-primary-strong',
   '--cngx-color-primary-text',
   '--cngx-color-surface',
   '--cngx-color-text',
@@ -130,9 +132,13 @@ describe('button Material bridge', () => {
     const css = compileThemeEntry(M3_ENTRY);
     const host = block(css, '.cngx-button');
     expect(host).toContain('--cngx-color-primary: var(--mat-sys-primary)');
-    expect(host).toContain('--cngx-color-on-primary: var(--mat-sys-on-primary)');
+    expect(host).toContain('--cngx-color-primary-strong: var(--mat-sys-primary)');
+    expect(host).toContain('--cngx-color-on-primary-strong: var(--mat-sys-on-primary)');
     expect(host).toContain('--cngx-color-danger: var(--mat-sys-error)');
-    expect(host).toContain('--cngx-color-on-danger: var(--mat-sys-on-error)');
+    expect(host).toContain('--cngx-color-danger-strong: var(--mat-sys-error)');
+    expect(host).toContain('--cngx-color-on-danger-strong: var(--mat-sys-on-error)');
+    expect(host).not.toContain('--cngx-color-on-primary:');
+    expect(host).not.toContain('--cngx-color-on-danger:');
     expect(block(css, '.cngx-button[data-tone=primary]')).toContain(
       '--cngx-button-hover-shade: var(--mat-sys-on-primary)',
     );
@@ -142,6 +148,20 @@ describe('button Material bridge', () => {
     expect(block(css, '.cngx-button[data-variant=outline]')).toContain(
       '--cngx-color-border: var(--mat-sys-outline)',
     );
+  });
+
+  it('maps the strong fill pairs onto primary and warn with their contrast colours (M2)', () => {
+    const host = block(compileThemeEntry(M2_ENTRY), '.cngx-button');
+    for (const token of [
+      '--cngx-color-primary-strong',
+      '--cngx-color-on-primary-strong',
+      '--cngx-color-danger-strong',
+      '--cngx-color-on-danger-strong',
+    ]) {
+      expect(host).toContain(`${token}:`);
+    }
+    expect(host).not.toContain('--cngx-color-on-primary:');
+    expect(host).not.toContain('--cngx-color-on-danger:');
   });
 
   it('paints the secondary variant from the container roles per tone (M3)', () => {

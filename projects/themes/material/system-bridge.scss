@@ -56,6 +56,7 @@
     var(--cngx-color-accent)
   );
   --cngx-color-danger: var(--mat-sys-error);
+  --cngx-color-danger-strong: var(--mat-sys-error);
   --cngx-color-danger-text: var(--mat-sys-error);
   --cngx-color-info: var(--mat-sys-primary);
 
@@ -113,6 +114,7 @@
   );
   // danger stays the raw warn (a fill colour); the text rung is derived
   --cngx-color-danger: #{$warn};
+  --cngx-color-danger-strong: #{$warn};
   --cngx-color-danger-text: #{bridge.m2-warn-text($theme)};
   --cngx-color-info: #{$primary};
 }
