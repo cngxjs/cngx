@@ -39,7 +39,7 @@ function regexLiteralEnd(source: string, start: number): number {
  * after it, a commented-out import would count, and a `/*` inside a regex literal
  * would read as a comment that swallows the rest of the file.
  */
-function stripComments(source: string): string {
+export function stripComments(source: string): string {
   let out = '';
   let i = 0;
   while (i < source.length) {
