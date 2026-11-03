@@ -67,12 +67,15 @@ export class CngxMenu implements CngxMenuHost {
    * Element id of the menu; defaults to a generated `cngx-menu-*` id. Read
    * by a menu trigger for `aria-controls`.
    */
-  readonly idInput = input<string | undefined>(undefined, { alias: 'id' });
+  readonly idInput = input<string | null>(null, { alias: 'id' });
 
   private readonly autoId = nextUid('cngx-menu');
 
-  /** Resolved element id: the bound `id`, else the generated one. */
-  readonly id = computed(() => this.idInput() ?? this.autoId);
+  /** Resolved element id: the bound `id`, else (unset or empty) the generated one. */
+  readonly id = computed(() => {
+    const bound = this.idInput();
+    return bound === null || bound === '' ? this.autoId : bound;
+  });
 
   /** Underlying `CngxActiveDescendant` - exposed for trigger composition. */
   readonly ad = inject(CngxActiveDescendant, { self: true, host: true });
