@@ -11,7 +11,6 @@ import {
   model,
   output,
   signal,
-  untracked,
   viewChild,
   ElementRef,
   type Signal,
@@ -33,7 +32,6 @@ import {
   CngxListbox,
   CngxListboxSearch,
   CngxListboxTrigger,
-  createListboxLabelMatch,
 } from '@cngx/common/interactive';
 import {
   CngxPopover,
@@ -111,7 +109,8 @@ import {
   type CngxSelectOptionDef,
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
-import { resolveSelectConfig } from '../shared/internal/resolve-config';
+import { resolveSearchMatch, resolveSelectConfig } from '../shared/internal/resolve-config';
+import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
 import { handlePageJumpKey } from '../shared/internal/page-jump-handler';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_SEARCH_EFFECTS_FACTORY, searchResultsFrom } from '../shared/search-effects';
@@ -406,10 +405,10 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   /**
    * Debounce in ms between a keystroke and the search filter update and
-   * `searchTermChange`. Defaults to
-   * `CngxSelectConfig.typeaheadDebounceInterval`.
+   * `searchTermChange`. Wins over `CngxSelectConfig.searchDebounceMs`
+   * (default 300). `0` updates on every keystroke.
    */
-  readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
+  readonly searchDebounceMs = input<number>(this.config.searchDebounceMs);
 
   /** Suppresses the first `searchTermChange` emission, the empty term written on hydration. */
   readonly skipInitial = input<boolean>(false);
@@ -703,8 +702,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** Debounced search term. */
   readonly searchTerm: Signal<string> = computed(() => this.searchInputRef()?.term() ?? '');
 
-  readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
-
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
   protected readonly hostFocus = createHostFocusWithin({
@@ -722,12 +719,11 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   readonly empty = computed<boolean>(() => this.isEmpty());
 
-  /** @internal Folded substring match of the option label in the reading locale. */
-  private readonly labelMatch = createListboxLabelMatch(injectLocale());
-
-  /** @internal */
-  protected readonly effectiveMatchFn = computed<CngxSelectMatchFn<T>>(
-    () => this.searchMatchFn() ?? this.config.searchMatchFn ?? this.labelMatch,
+  /** @internal `[searchMatchFn]` > `CngxSelectConfig.searchMatchFn` > folded label match. */
+  protected readonly effectiveMatchFn = resolveSearchMatch(
+    this.searchMatchFn,
+    this.config,
+    injectLocale(),
   );
 
   /** @internal - `effectiveMatchFn` as the listbox search input takes it. */
@@ -789,7 +785,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       hideCaret: this.hideCaret,
       commitErrorDisplay: this.commitErrorDisplay,
       commitAction: this.commitAction,
-      errorState: this.errorState,
       filter: this.filter,
       multi: computed(() => true),
       currentSelection: this.values,
@@ -808,6 +803,9 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       announceTemplate: this.announceTemplate,
     },
   );
+
+  /** Whether the bound field shows its error; `false` without a form field. */
+  readonly errorState: Signal<boolean> = this.core.errorState;
 
   /** @internal Mobile sheet presentation; also the scoped announcer's scope. */
   readonly sheetWiring: CngxSelectSheetWiring = createSelectSheetWiring({
@@ -1036,9 +1034,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   private readonly togglingOption = this.core.togglingOption;
 
-  /** Rollback target for a commit in flight. */
-  private lastCommittedValues: T[] = [];
-
   /**
    * Toggle/clear finalize + AD-activation dispatch. Shared with
    * `CngxMultiSelect` / `CngxReorderableMultiSelect`; this variant adds
@@ -1050,9 +1045,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     commitMode: this.commitMode,
     commitAction: this.commitAction,
     core: this.core,
-    setLastCommitted: (previous) => {
-      this.lastCommittedValues = previous;
-    },
     beginToggle: (next, previous, option, action) =>
       this.commitHandler.beginToggle(next, previous, option, action),
     beginClear: (previous, action) => this.commitHandler.beginClear(previous, action),
@@ -1081,8 +1073,8 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     commitMode: this.commitMode,
     core: this.core,
     commitAction: this.commitAction,
-    onToggleFinalize: (option, isNowSelected) =>
-      this.toggleDispatch.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
+    onToggleFinalize: (option, isNowSelected, previous) =>
+      this.toggleDispatch.finalizeToggle(option, isNowSelected, previous),
     onClearFinalize: (previous, finalValues) =>
       this.toggleDispatch.clearFinalize(previous, finalValues),
     onStateChange: (status) => this.stateChange.emit(status),
@@ -1105,10 +1097,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     commitMode: this.commitMode,
     beginCommit: (next, previous, item, action) =>
       this.commitHandler.beginToggle(next, previous, item, action),
-    onBeforeCommit: (previous, item) => {
-      this.lastCommittedValues = previous;
-      this.togglingOption.set(item);
-    },
+    onBeforeCommit: (item) => this.togglingOption.set(item),
     onSyncFinalize: (item, previous) => this.toggleDispatch.finalizeToggle(item, false, previous),
   });
 
@@ -1128,8 +1117,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   }
 
   constructor() {
-    this.lastCommittedValues = untracked(() => [...this.values()]);
-
     injectChipFitFocusHandOff({
       strip: this.fitStrip,
       visibleCount: this.chipStrip.visibleCount,
@@ -1302,12 +1289,20 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     this.focusState.markBlurred();
   }
 
-  /** @internal - PageUp/PageDown shared behaviour (±10 option jump). */
+  /**
+   * Flat-nav policy via `CNGX_FLAT_NAV_STRATEGY`: picks the PageUp/PageDown
+   * target. The input owns typing, so its typeahead hook never runs here.
+   */
+  private readonly flatNavStrategy = inject(CNGX_FLAT_NAV_STRATEGY);
+
+  /** @internal - PageUp/PageDown through the flat-nav strategy (default ±10). */
   protected handleInputKeydown(event: KeyboardEvent): void {
     handlePageJumpKey(event, {
       listbox: this.listboxRef(),
       popover: this.popoverRef(),
+      strategy: this.flatNavStrategy,
       flatOptions: this.flatOptions,
+      compareWith: this.compareWith,
     });
   }
 }

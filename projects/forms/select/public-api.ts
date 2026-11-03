@@ -148,6 +148,7 @@ export {
   withPanelWidth,
   withPanelClass,
   withTypeaheadDebounce,
+  withSearchDebounce,
   withTypeaheadWhileClosed,
   withSearchMatchFn,
   withSelectionIndicator,
@@ -270,6 +271,7 @@ export {
 export {
   createADActivationDispatcher,
   type ADActivationDispatcherOptions,
+  type CngxActivationDispatcherCore,
 } from './shared/ad-activation-dispatcher';
 
 export {
@@ -288,6 +290,8 @@ export {
 } from './shared/display-binding';
 
 export type { CngxCommitHandlerCore } from './shared/commit-handler-core';
+
+export { createCommitBaseline, type CngxCommitBaseline } from './shared/commit-baseline';
 
 export {
   CNGX_ARRAY_COMMIT_HANDLER_FACTORY,

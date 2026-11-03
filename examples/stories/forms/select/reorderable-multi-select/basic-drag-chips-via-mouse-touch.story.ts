@@ -39,7 +39,11 @@ export const STORY: DemoSpec = {
     [(values)]="basicValues"
     placeholder="Choose recipients…"
   />`,
-  templateChrome: `<div class="event-grid" style="margin-top:12px">
+  templateChrome: `<div
+    class="event-grid"
+    style="margin-top:12px"
+    [attr.data-cngx-ex-order]="basicValues().join(',')"
+  >
     <div class="event-row">
       <span class="event-label">Current order</span>
       <span class="event-value">{{ basicValues().join(' → ') || '—' }}</span>

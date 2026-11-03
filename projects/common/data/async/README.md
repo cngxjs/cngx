@@ -296,6 +296,6 @@ The directive includes `ngTemplateContextGuard` for template type inference:
 ## See Also
 
 - [Async State System](../async-state/README.md) - `CngxAsyncState<T>`, factories, operators
-- [CngxAsyncContainer](../../ui/feedback/README.md) - component alternative with named slots
+- [CngxAsyncContainer](../../../ui/feedback/README.md) - component alternative with named slots
 - [resolveAsyncView](../async-state/README.md#view-resolution) - view state machine
 - Compodoc: Full API reference at `/docs`

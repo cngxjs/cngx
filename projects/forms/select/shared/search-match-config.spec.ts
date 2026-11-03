@@ -19,6 +19,7 @@ import {
   type CngxSelectMatchOption,
 } from './config';
 import type { CngxSelectOptionDef } from './option.model';
+import { resolveSearchMatch } from './internal/resolve-config';
 
 const OPTIONS: CngxSelectOptionDef<string>[] = [
   { value: 'red', label: 'Rot' },
@@ -314,5 +315,38 @@ describe('CngxSelectConfig.searchMatchFn', () => {
       expect(match(ITEM, 'blau')).toBe(false);
     }
     expect(shellOf(fixture).matches('green', 'Grün', 'GRUN')).toBe(true);
+  });
+});
+
+describe('resolveSearchMatch', () => {
+  const option = { value: 'green', label: 'Grün' };
+
+  it('resolves input > config > folded label match, switching on a rebound input', () => {
+    const input = signal<CngxSelectMatchFn<string> | null>(null);
+    const config = { searchMatchFn: null as CngxSelectMatchFn | null };
+    const fn = resolveSearchMatch(input, config, signal('de'));
+    expect(fn()(option, 'grun')).toBe(true);
+    expect(fn()(option, 'blau')).toBe(false);
+
+    const bound = vi.fn<CngxSelectMatchFn<string>>(() => false);
+    input.set(bound);
+    expect(fn()(option, 'grun')).toBe(false);
+    expect(bound).toHaveBeenCalledWith(option, 'grun');
+  });
+
+  it('falls back to the config matcher when the input is null', () => {
+    const fromConfig = vi.fn<CngxSelectMatchFn>(() => true);
+    const fn = resolveSearchMatch<string>(
+      signal(null),
+      { searchMatchFn: fromConfig },
+      signal('en'),
+    );
+    expect(fn()(option, 'zzz')).toBe(true);
+    expect(fromConfig).toHaveBeenCalledOnce();
+  });
+
+  it('keeps the same matcher reference while nothing changes', () => {
+    const fn = resolveSearchMatch<string>(signal(null), { searchMatchFn: null }, signal('en'));
+    expect(fn()).toBe(fn());
   });
 });

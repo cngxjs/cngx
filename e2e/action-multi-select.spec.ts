@@ -1,4 +1,6 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
+
+import { expect, test } from '../examples/e2e/_test';
 
 // One story = one example page. Each behaviour lives on its own leaf route.
 const BASE = '/#/forms/select/action-multi-select';
@@ -16,6 +18,11 @@ function artifact(page: Page): Locator {
 
 function chrome(page: Page): Locator {
   return page.locator('.cngx-ex-chrome');
+}
+
+/** The demo chrome's state readout, exposed as a `data-cngx-ex-*` hook. */
+function readout(page: Page, hook: string): Locator {
+  return chrome(page).locator(`[data-cngx-ex-${hook}]`);
 }
 
 function inputOf(page: Page): Locator {
@@ -49,8 +56,7 @@ test.describe('CngxActionMultiSelect demo', () => {
     await expect(strip.locator('cngx-chip')).toHaveCount(1);
     await expect(strip.locator('cngx-chip').first()).toContainText('Security');
 
-    const countRow = chrome(page).locator('.event-row').filter({ hasText: 'Count' }).first();
-    await expect(countRow).toContainText('1');
+    await expect(readout(page, 'count')).toHaveAttribute('data-cngx-ex-count', '1');
   });
 
   test('two consecutive creates append both chips (input auto-clears between)', async ({ page }) => {
@@ -96,16 +102,14 @@ test.describe('CngxActionMultiSelect demo', () => {
     await expect(actionBtn).toBeEnabled({ timeout: 2000 });
     await clickInPopover(actionBtn);
 
-    const changeRow = chrome(page).locator('.event-row').filter({ hasText: 'change' }).last();
-    await expect(changeRow).toContainText('create');
-    await expect(changeRow).toContainText('Logistics');
+    const change = readout(page, 'change');
+    await expect(change).toHaveAttribute('data-cngx-ex-change', /create/);
+    await expect(change).toHaveAttribute('data-cngx-ex-change', /Logistics/);
   });
 
   test('async error surfaces commitError and leaves values untouched', async ({ page }) => {
     await page.goto(ROUTES.async);
-    const failCheckbox = chrome(page)
-      .locator('label', { hasText: 'Server fails' })
-      .locator('input[type="checkbox"]');
+    const failCheckbox = chrome(page).locator('[data-cngx-ex-fail]');
     await failCheckbox.check();
 
     const input = inputOf(page);
@@ -117,11 +121,10 @@ test.describe('CngxActionMultiSelect demo', () => {
     await expect(actionBtn).toBeEnabled({ timeout: 2000 });
     await clickInPopover(actionBtn);
 
-    const errorRow = chrome(page).locator('.event-row').filter({ hasText: 'error' }).last();
-    await expect(errorRow).toContainText(/rejected "Ops"/, { timeout: 3000 });
-
-    const valuesRow = chrome(page).locator('.event-row').filter({ hasText: 'Values' }).first();
-    await expect(valuesRow).toContainText('—');
+    await expect(readout(page, 'error')).toHaveAttribute('data-cngx-ex-error', /rejected "Ops"/, {
+      timeout: 3000,
+    });
+    await expect(readout(page, 'values')).toHaveAttribute('data-cngx-ex-values', '');
   });
 
   test('dirty-guard blocks click-outside dismissal while the note field is dirty', async ({ page }) => {
@@ -181,7 +184,6 @@ test.describe('CngxActionMultiSelect demo', () => {
     await clickInPopover(actionBtn);
 
     await expect(input).toHaveAttribute('aria-expanded', 'false');
-    const invitedRow = chrome(page).locator('.event-row').filter({ hasText: 'Invited' }).first();
-    await expect(invitedRow).toContainText('Alice');
+    await expect(readout(page, 'values')).toHaveAttribute('data-cngx-ex-values', /Alice/);
   });
 });

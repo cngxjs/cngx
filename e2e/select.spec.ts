@@ -50,6 +50,7 @@ test.describe('CngxSelect demo', () => {
   test('keyboard typeahead: first-letter jump updates highlight repeatedly', async ({
     page,
   }) => {
+    await page.clock.install();
     await page.goto(R.standalone);
     const section = ex(page);
     const trigger = section.locator('cngx-select .cngx-select__trigger').first();
@@ -57,24 +58,26 @@ test.describe('CngxSelect demo', () => {
     await trigger.click();
 
     // aria-activedescendant lives on the focused trigger (ARIA 1.2 combobox).
-    // Wait 350ms+ between keys so each letter starts a fresh typeahead buffer
-    // (300ms debounce + margin) - exercises the "only works once" regression.
-    // Options are Red / Green / Blue (English library defaults).
+    // The fake clock jumps past the 300ms typeahead buffer between keys so
+    // each letter starts a fresh buffer - exercises the "only works once"
+    // regression. Options are Red / Green / Blue (English library defaults).
+    const active = () =>
+      trigger.evaluate((el) => {
+        const id = el.getAttribute('aria-activedescendant');
+        return id ? (document.getElementById(id)?.textContent ?? '') : '';
+      });
+
     await page.keyboard.press('g');
     await expect(trigger).toHaveAttribute('aria-activedescendant', /cngx-option-\d+/);
-    const afterG = await trigger.getAttribute('aria-activedescendant');
-    expect(await page.locator(`#${afterG}`).textContent()).toContain('Green');
+    await expect.poll(active).toContain('Green');
 
-    await page.waitForTimeout(500);
+    await page.clock.fastForward(500);
     await page.keyboard.press('b');
-    const afterB = await trigger.getAttribute('aria-activedescendant');
-    expect(afterB).not.toBe(afterG);
-    expect(await page.locator(`#${afterB}`).textContent()).toContain('Blue');
+    await expect.poll(active).toContain('Blue');
 
-    await page.waitForTimeout(500);
+    await page.clock.fastForward(500);
     await page.keyboard.press('r');
-    const afterR = await trigger.getAttribute('aria-activedescendant');
-    expect(await page.locator(`#${afterR}`).textContent()).toContain('Red');
+    await expect.poll(active).toContain('Red');
 
     await page.keyboard.press('Enter');
     await expect(

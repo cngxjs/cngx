@@ -1,4 +1,4 @@
-import type { Signal } from '@angular/core';
+import { signal, type Signal } from '@angular/core';
 
 // Combining marks, plus format characters such as the U+2068 / U+2069 isolates
 // formatMessage wraps around inserted text.
@@ -102,6 +102,133 @@ export function createTypeaheadMatcher(
 ): (label: string, key?: object) => boolean {
   const folded = foldForMatching(term, locale);
   return (label, key) => foldedLabelOf(label, locale, key).startsWith(folded);
+}
+
+/**
+ * Options for {@link createTypeaheadWalker}. Both are read on every keystroke,
+ * so a signal input passed as-is keeps the walker current.
+ *
+ * @since 0.1.0
+ * @relatedTo createTypeaheadWalker
+ */
+export interface CngxTypeaheadWalkerOptions {
+  /** Buffer-reset window in milliseconds after the last keystroke. */
+  readonly debounceMs: () => number;
+  /**
+   * Locale the buffer and the labels are folded with. Without it, both
+   * lowercase with `toLowerCase()`; accents are ignored either way.
+   */
+  readonly locale?: () => string | undefined;
+}
+
+/**
+ * Buffer and walk returned by {@link createTypeaheadWalker}.
+ *
+ * @since 0.1.0
+ * @relatedTo createTypeaheadWalker
+ */
+export interface CngxTypeaheadWalker {
+  /** The typed characters since the last reset, lowercased in the locale. */
+  readonly buffer: Signal<string>;
+  /**
+   * Appends `char` to the buffer, restarts the reset timer and returns the
+   * term to search for: a buffer of one repeated letter (`'bbb'`) collapses
+   * to that letter, so repeat presses cycle instead of matching nothing.
+   */
+  type(char: string): string;
+  /**
+   * Index of the first item whose label starts with `term`
+   * ({@link createTypeaheadMatcher}), or `-1`. A one-character term starts
+   * AFTER `currentIndex`, so each press advances through the matches; a
+   * longer term starts AT it; `currentIndex` `-1` (no current item) starts
+   * either at 0. The walk wraps once around `items`.
+   * Disabled items are skipped unless `skipDisabled` is `false`. Labels are
+   * folded once per item object (the item is the fold cache key).
+   */
+  find<I extends { readonly label: string; readonly disabled?: boolean }>(
+    items: readonly I[],
+    term: string,
+    currentIndex: number,
+    skipDisabled?: boolean,
+  ): number;
+  /** Idempotent: empties the buffer and cancels the pending reset. */
+  clear(): void;
+}
+
+/**
+ * The type-to-find buffer and walk every cngx typeahead surface shares: the
+ * open listbox (`CngxActiveDescendant`) and the closed select trigger
+ * (`createTypeaheadController` in `@cngx/forms/select`). One implementation
+ * keeps the two in step - the same key sequence lands on the same option
+ * whether the panel is open or closed (WAI-ARIA APG listbox typeahead).
+ *
+ * The walker holds a buffer and a timer but no DI: the caller owns its
+ * lifetime and calls `clear()` on destroy so no reset fires afterwards.
+ *
+ * ```typescript
+ * const walker = createTypeaheadWalker({ debounceMs: () => 300, locale });
+ * const term = walker.type(event.key);
+ * const index = walker.find(options, term, activeIndex);
+ * inject(DestroyRef).onDestroy(() => walker.clear());
+ * ```
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/typeahead.util.ts
+ * @since 0.1.0
+ * @relatedTo createTypeaheadMatcher, matchesTypeahead, CngxActiveDescendant
+ */
+export function createTypeaheadWalker(options: CngxTypeaheadWalkerOptions): CngxTypeaheadWalker {
+  const buffer = signal('');
+  let timer: ReturnType<typeof setTimeout> | null = null;
+
+  const clear = (): void => {
+    if (timer !== null) {
+      clearTimeout(timer);
+      timer = null;
+    }
+    buffer.set('');
+  };
+
+  const type = (char: string): string => {
+    const locale = options.locale?.();
+    const next = buffer() + (locale ? char.toLocaleLowerCase(locale) : char.toLowerCase());
+    buffer.set(next);
+    if (timer !== null) {
+      clearTimeout(timer);
+    }
+    timer = setTimeout(() => {
+      buffer.set('');
+      timer = null;
+    }, options.debounceMs());
+    const sameChar = next.length > 1 && [...next].every((c) => c === next[0]);
+    return sameChar ? next[0] : next;
+  };
+
+  const find = <I extends { readonly label: string; readonly disabled?: boolean }>(
+    items: readonly I[],
+    term: string,
+    currentIndex: number,
+    skipDisabled = true,
+  ): number => {
+    const count = items.length;
+    // `-1` (no current item) starts a one-character walk at 0 as well. An
+    // index outside `items` (a virtual window scrolled past the active item)
+    // wraps like any other start.
+    const start = term.length === 1 ? currentIndex + 1 : Math.max(0, currentIndex);
+    const matches = createTypeaheadMatcher(term, options.locale?.());
+    for (let step = 0; step < count; step++) {
+      const index = (((start + step) % count) + count) % count;
+      const item = items[index];
+      if (skipDisabled && item.disabled) {
+        continue;
+      }
+      if (matches(item.label, item)) {
+        return index;
+      }
+    }
+    return -1;
+  };
+
+  return { buffer: buffer.asReadonly(), type, find, clear };
 }
 
 interface FoldedText {

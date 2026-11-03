@@ -67,7 +67,11 @@ export const STORY: DemoSpec = {
       </button>
     </ng-template>
   </cngx-action-multi-select>`,
-  templateChrome: `<div class="event-grid" style="margin-top:12px">
+  templateChrome: `<div
+    class="event-grid"
+    style="margin-top:12px"
+    [attr.data-cngx-ex-values]="closeValues().map(v => v.name).join(',')"
+  >
     <div class="event-row">
       <span class="event-label">Invited</span>
       <span class="event-value">{{ closeValues().map(v => v.name).join(', ') || '—' }}</span>

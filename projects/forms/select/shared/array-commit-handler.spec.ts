@@ -56,6 +56,7 @@ interface Harness {
   readonly errorLog: unknown[];
   readonly announceErrorLog: unknown[];
   readonly toggleFinalizeLog: Array<[CngxSelectOptionDef<T>, boolean]>;
+  readonly toggleFinalizePreviousLog: Array<readonly T[]>;
   readonly clearFinalizeLog: Array<[T[], T[]]>;
   handler: ReturnType<typeof createArrayCommitHandler<T>>;
 }
@@ -70,6 +71,7 @@ function makeHarness(initial: T[] = [], withAnnounceError = true): Harness {
   const errorLog: unknown[] = [];
   const announceErrorLog: unknown[] = [];
   const toggleFinalizeLog: Harness['toggleFinalizeLog'] = [];
+  const toggleFinalizePreviousLog: Harness['toggleFinalizePreviousLog'] = [];
   const clearFinalizeLog: Harness['clearFinalizeLog'] = [];
   const harness: Harness = {
     values,
@@ -81,6 +83,7 @@ function makeHarness(initial: T[] = [], withAnnounceError = true): Harness {
     errorLog,
     announceErrorLog,
     toggleFinalizeLog,
+    toggleFinalizePreviousLog,
     clearFinalizeLog,
     handler: null as unknown as ReturnType<typeof createArrayCommitHandler<T>>,
   };
@@ -90,7 +93,10 @@ function makeHarness(initial: T[] = [], withAnnounceError = true): Harness {
     commitMode,
     core: coreMock as unknown as CngxSelectCore<T, T[]>,
     commitAction,
-    onToggleFinalize: (option, isNowSelected) => toggleFinalizeLog.push([option, isNowSelected]),
+    onToggleFinalize: (option, isNowSelected, previous) => {
+      toggleFinalizeLog.push([option, isNowSelected]);
+      toggleFinalizePreviousLog.push(previous);
+    },
     onClearFinalize: (previous, finalValues) => clearFinalizeLog.push([previous, finalValues]),
     onStateChange: (s) => stateLog.push(s),
     onError: (err) => errorLog.push(err),
@@ -107,6 +113,21 @@ describe('createArrayCommitHandler', () => {
   });
 
   describe('beginToggle - success path', () => {
+    it('reports the previous selection the toggle replaced', () => {
+      h.handler.beginToggle(['a', 'b'], ['a'], opt('b'), (next) => next);
+      expect(h.toggleFinalizePreviousLog).toEqual([['a']]);
+    });
+
+    it('reports the confirmed selection when the toggle superseded another one', () => {
+      const first = new Subject<T[]>();
+      const second = new Subject<T[]>();
+      h.handler.beginToggle(['a', 'x'], ['a'], opt('x'), () => first);
+      h.handler.beginToggle(['a', 'x', 'b'], ['a', 'x'], opt('b'), () => second);
+      second.next(['a', 'x', 'b']);
+      expect(h.toggleFinalizeLog).toEqual([[opt('b'), true]]);
+      expect(h.toggleFinalizePreviousLog).toEqual([['a']]);
+    });
+
     it('emits pending → success and reconciles values', () => {
       const action: CngxSelectCommitAction<T[]> = (next) => next;
       h.handler.beginToggle(['a', 'b'], ['a'], opt('b'), action);

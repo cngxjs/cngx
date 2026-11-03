@@ -83,7 +83,11 @@ export const STORY: DemoSpec = {
       </button>
     </ng-template>
   </cngx-action-select>`,
-  templateChrome: `<div class="event-grid" style="margin-top:12px">
+  templateChrome: `<div
+    class="event-grid"
+    style="margin-top:12px"
+    [attr.data-cngx-ex-selected]="basicValue()?.name ?? ''"
+  >
     <div class="event-row">
       <span class="event-label">Selected</span>
       <span class="event-value">{{ basicValue()?.name ?? '—' }}</span>

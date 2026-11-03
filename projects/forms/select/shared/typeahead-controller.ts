@@ -1,6 +1,6 @@
-import { signal, type Signal } from '@angular/core';
+import type { DestroyRef, Signal } from '@angular/core';
 
-import { createTypeaheadMatcher } from '@cngx/core/utils';
+import { createTypeaheadWalker } from '@cngx/core/utils';
 
 import type { CngxSelectOptionDef } from './option.model';
 import type { CngxSelectCompareFn } from './internal/select-core';
@@ -23,6 +23,12 @@ export interface TypeaheadControllerOptions<T> {
    * either way.
    */
   readonly locale?: Signal<string>;
+  /**
+   * Lifetime of the controller. When given, the pending buffer reset is
+   * cancelled on destroy, so no timer outlives the host. Without it the caller
+   * owns the lifetime and calls `clearBuffer()` itself.
+   */
+  readonly destroyRef?: DestroyRef;
 }
 
 /**
@@ -49,32 +55,20 @@ export interface TypeaheadController<T> {
 
 /**
  * `<select>` keyboard-typeahead: printable-key guard, folded prefix match,
- * disabled skip, round-robin walk, debounced buffer reset. State-holding
- * (buffer + timer) but no DI refs; caller owns the lifetime.
+ * disabled skip, round-robin walk, debounced buffer reset. The buffer and the
+ * walk are `createTypeaheadWalker` from `@cngx/core/utils`, the same walk the
+ * open listbox runs, so a key sequence lands on the same option with the
+ * panel open or closed. State-holding (buffer + timer) but no DI refs; pass
+ * `destroyRef` to cancel the pending reset on destroy.
  */
 export function createTypeaheadController<T>(
   options: TypeaheadControllerOptions<T>,
 ): TypeaheadController<T> {
-  const buffer = signal<string>('');
-  let timer: ReturnType<typeof setTimeout> | null = null;
-
-  const scheduleReset = (): void => {
-    if (timer !== null) {
-      clearTimeout(timer);
-    }
-    timer = setTimeout(() => {
-      buffer.set('');
-      timer = null;
-    }, options.debounceMs());
-  };
-
-  const clearBuffer = (): void => {
-    if (timer !== null) {
-      clearTimeout(timer);
-      timer = null;
-    }
-    buffer.set('');
-  };
+  const walker = createTypeaheadWalker({
+    debounceMs: options.debounceMs,
+    locale: options.locale,
+  });
+  options.destroyRef?.onDestroy(() => walker.clear());
 
   const matchFromIndex = (char: string, currentIndex: number): CngxSelectOptionDef<T> | null => {
     if (options.disabled()) {
@@ -83,42 +77,16 @@ export function createTypeaheadController<T>(
     if (char.length !== 1 || !/\S/.test(char)) {
       return null;
     }
-    const locale = options.locale?.();
-    const next = buffer() + (locale ? char.toLocaleLowerCase(locale) : char.toLowerCase());
-    buffer.set(next);
-    scheduleReset();
-
+    const term = walker.type(char);
     const opts = options.options();
-    const count = opts.length;
-    if (count === 0) {
-      return null;
-    }
-    // Same walk as the open listbox (CngxActiveDescendant): a repeated
-    // letter collapses to that letter, and a single-character term cycles
-    // from AFTER the current option. A genuine multi-character term keeps
-    // matching the current option first. No highlight walks from 0.
-    const sameChar = next.length > 1 && [...next].every((c) => c === next[0]);
-    const term = sameChar ? next[0] : next;
-    const cycles = term.length === 1 && currentIndex >= 0;
-    const effectiveStart = cycles ? currentIndex + 1 : Math.max(0, currentIndex);
-    const matches = createTypeaheadMatcher(term, locale);
-    for (let i = 0; i < count; i++) {
-      const idx = (effectiveStart + i) % count;
-      const candidate = opts[idx];
-      if (candidate.disabled) {
-        continue;
-      }
-      if (matches(candidate.label, candidate)) {
-        return candidate;
-      }
-    }
-    return null;
+    const index = walker.find(opts, term, currentIndex);
+    return index < 0 ? null : opts[index];
   };
 
   return {
     matchFromIndex,
-    clearBuffer,
-    buffer: buffer.asReadonly(),
+    clearBuffer: () => walker.clear(),
+    buffer: walker.buffer,
   };
 }
 

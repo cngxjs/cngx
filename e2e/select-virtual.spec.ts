@@ -77,11 +77,9 @@ test.describe('CngxSelect — virtualized panel', () => {
     await panel.evaluate((el: HTMLElement) => {
       el.scrollTop = 160_000;
     });
-    await page.waitForTimeout(80);
-
-    const firstAfter = await panel.locator('.cngx-select__option').first().textContent();
-    expect(firstAfter).not.toBe(firstBefore);
-    expect(firstAfter).toMatch(/Item #0[3-9]\d{3}|Item #1\d{4}/);
+    const firstRow = () => panel.locator('.cngx-select__option').first().textContent();
+    await expect.poll(firstRow).not.toBe(firstBefore);
+    await expect.poll(firstRow).toMatch(/Item #0[3-9]\d{3}|Item #1\d{4}/);
   });
 
   test('CngxCombobox picks up the same withVirtualization() config', async ({ page }) => {

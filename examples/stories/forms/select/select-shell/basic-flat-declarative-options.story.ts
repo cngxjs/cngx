@@ -35,7 +35,11 @@ export const STORY: DemoSpec = {
     <cngx-option [value]="'blue'">Blue</cngx-option>
     <cngx-option [value]="'disabled'" [disabled]="true">Unavailable</cngx-option>
   </cngx-select-shell>`,
-  templateChrome: `<div class="event-grid" style="margin-top:12px">
+  templateChrome: `<div
+    class="event-grid"
+    style="margin-top:12px"
+    [attr.data-cngx-ex-value]="basicValue() ?? ''"
+  >
     <div class="event-row">
       <span class="event-label">value</span>
       <span class="event-value">{{ basicValue() ?? '—' }}</span>

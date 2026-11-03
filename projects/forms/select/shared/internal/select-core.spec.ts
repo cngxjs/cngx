@@ -51,7 +51,6 @@ function deps(): CngxSelectCoreDeps<string, string> {
     hideCaret: signal(false),
     commitErrorDisplay: signal('banner'),
     commitAction: signal(null),
-    errorState: signal(false),
     multi: signal(false),
     currentSelection: signal(undefined),
     selectionIndicatorPosition: signal(null),
@@ -476,5 +475,21 @@ describe('createSelectCore - non-Error failure detail', () => {
     expect(stripBidiIsolates(core.createFailedMessage('Teal', new Error('server down')))).toBe(
       'Colour: Could not create Teal - server down',
     );
+  });
+});
+
+describe('createSelectCore - errorState', () => {
+  it('derives errorState from the field ARIA, not from a variant dep', () => {
+    const coreDeps = deps();
+    expect('errorState' in coreDeps).toBe(false);
+    const core = TestBed.runInInjectionContext(() =>
+      createSelectCore(coreDeps, {
+        announceChanges: signal(null),
+        announceTemplate: signal(null),
+      }),
+    );
+    expect(core.errorState()).toBe(false);
+    expect(core.ariaInvalid()).toBeNull();
+    expect(core.ariaErrorMessage()).toBeNull();
   });
 });

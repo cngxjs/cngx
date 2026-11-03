@@ -229,6 +229,20 @@ describe('CngxMultiSelect - skeleton', () => {
     expect(clear).not.toBeNull();
   });
 
+  it('renders no clear-all button when not clearable, even with a selection', () => {
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.values.set(['red']);
+    flush(fixture);
+    expect(fixture.nativeElement.querySelector('.cngx-multi-select__clear-all')).toBeNull();
+  });
+
+  it('renders no clear-all button when clearable but nothing is selected', () => {
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.clearable = true;
+    flush(fixture);
+    expect(fixture.nativeElement.querySelector('.cngx-multi-select__clear-all')).toBeNull();
+  });
+
   it('clear-all empties values and emits a clear-action selectionChange', () => {
     const fixture = TestBed.createComponent(Host);
     fixture.componentInstance.clearable = true;
@@ -1248,6 +1262,7 @@ describeSelectBehaviourHost('CngxMultiSelect', CngxMultiSelect, 'cngx-multi-sele
   inputs: '[options]="options"',
   optionSelector: '[cngxOption]',
   readValue: (cmp) => (cmp as { values: () => unknown }).values(),
+  closedTypeahead: true,
 });
 
 // ── chipOverflow 'truncate' on a fine pointer: hidden values stay reachable ──

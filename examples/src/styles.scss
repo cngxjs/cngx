@@ -3441,6 +3441,9 @@ pre.code-block code {
   background: color-mix(in oklch, var(--cngx-color-warning, #b45309) 10%, transparent);
   border-color: color-mix(in oklch, var(--cngx-color-warning, #b45309) 35%, transparent);
   color: var(--cngx-color-warning, #b45309);
+  // Projected slot content is consumer-owned: the library touch floor on the
+  // default Retry cannot reach it, so the story's button sets its own.
+  min-block-size: var(--cngx-target-min, 0px);
 }
 .demo-multi-chip-remove,
 .demo-combobox-chip-remove {

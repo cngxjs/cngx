@@ -16,6 +16,7 @@ test.describe('CngxReorderableMultiSelect — trigger border on commit error', (
     page,
   }) => {
     await gotoDemo(page, ROUTE);
+    const serverFails = page.locator('.cngx-ex-chrome [data-cngx-ex-fail]');
 
     const trigger = page.locator('.cngx-reorderable-multi-select__trigger');
     await expect(trigger).toBeVisible();
@@ -35,7 +36,7 @@ test.describe('CngxReorderableMultiSelect — trigger border on commit error', (
 
     // Optimistic is the demo default. Toggling Server fails on makes the next
     // reorder reject from the demo's commitAction stub.
-    await page.getByLabel('Server fails').check();
+    await serverFails.check();
 
     const firstChip = page.locator('[data-reorder-index="0"]').first();
     await firstChip.focus();
@@ -51,7 +52,7 @@ test.describe('CngxReorderableMultiSelect — trigger border on commit error', (
 
     // Untoggle Server fails and reorder again — commit succeeds, the trigger
     // returns to the neutral border so the visual signal can't get stuck.
-    await page.getByLabel('Server fails').uncheck();
+    await serverFails.uncheck();
 
     await firstChip.focus();
     await firstChip.press('Alt+ArrowDown');

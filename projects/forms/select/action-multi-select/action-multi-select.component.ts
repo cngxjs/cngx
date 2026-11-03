@@ -13,7 +13,6 @@ import {
   model,
   output,
   signal,
-  untracked,
   viewChild,
   ElementRef,
   type Signal,
@@ -35,7 +34,6 @@ import {
   CngxListbox,
   CngxListboxSearch,
   CngxListboxTrigger,
-  createListboxLabelMatch,
 } from '@cngx/common/interactive';
 import {
   CngxPopover,
@@ -120,8 +118,9 @@ import {
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import { resolveActionSelectConfig } from '../shared/action-select-config';
 import { mergeCommitState } from '../shared/internal/merged-commit-state';
+import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
 import { createActionTriggerInput } from '../shared/internal/action-trigger-input';
-import { resolveSelectConfig } from '../shared/internal/resolve-config';
+import { resolveSearchMatch, resolveSelectConfig } from '../shared/internal/resolve-config';
 import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_SEARCH_EFFECTS_FACTORY, searchResultsFrom } from '../shared/search-effects';
@@ -370,10 +369,10 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly searchMatchFn = input<CngxSelectMatchFn<T> | null>(null);
   /**
    * Debounce in ms between a keystroke and the search filter update and
-   * `searchTermChange`. Defaults to
-   * `CngxSelectConfig.typeaheadDebounceInterval`.
+   * `searchTermChange`. Wins over `CngxSelectConfig.searchDebounceMs`
+   * (default 300). `0` updates on every keystroke.
    */
-  readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
+  readonly searchDebounceMs = input<number>(this.config.searchDebounceMs);
   /** Suppresses the first `searchTermChange` emission, the empty term written on hydration. */
   readonly skipInitial = input<boolean>(false);
   /**
@@ -696,7 +695,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly activeId = computed<string | null>(() => this.listboxRef()?.ad.activeId() ?? null);
   readonly searchTerm: Signal<string> = computed(() => this.searchInputRef()?.term() ?? '');
 
-  readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
   protected readonly hostFocus = createHostFocusWithin({
@@ -705,17 +703,19 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     close: () => this.sheetWiring.handleFocusLeave(),
     owner: () => this.inputEl()?.nativeElement,
     restoreFocus: this.config.restoreFocus,
-    suppressOpenOnFocus: (active) => this.sheetWiring.handleTriggerRefocus(active),
+    suppressOpenOnFocus: (active) => {
+      this.suppressOpenOnFocus = active;
+      this.sheetWiring.handleTriggerRefocus(active);
+    },
   });
   /** @internal */ readonly focused = this.hostFocus.focusedWithin;
   readonly empty = computed<boolean>(() => this.isEmpty());
 
-  /** @internal Folded substring match of the option label in the reading locale. */
-  private readonly labelMatch = createListboxLabelMatch(injectLocale());
-
-  /** @internal */
-  protected readonly effectiveMatchFn = computed<CngxSelectMatchFn<T>>(
-    () => this.searchMatchFn() ?? this.config.searchMatchFn ?? this.labelMatch,
+  /** @internal `[searchMatchFn]` > `CngxSelectConfig.searchMatchFn` > folded label match. */
+  protected readonly effectiveMatchFn = resolveSearchMatch(
+    this.searchMatchFn,
+    this.config,
+    injectLocale(),
   );
 
   /** @internal - `effectiveMatchFn` as the listbox search input takes it. */
@@ -821,7 +821,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       hideCaret: this.hideCaret,
       commitErrorDisplay: this.commitErrorDisplay,
       commitAction: this.commitAction,
-      errorState: this.errorState,
       filter: this.filter,
       multi: computed(() => true),
       currentSelection: this.values,
@@ -842,6 +841,9 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       announceTemplate: this.announceTemplate,
     },
   );
+
+  /** Whether the bound field shows its error; `false` without a form field. */
+  readonly errorState: Signal<boolean> = this.core.errorState;
 
   /** @internal Mobile sheet presentation; also the scoped announcer's scope. */
   readonly sheetWiring: CngxSelectSheetWiring = createSelectSheetWiring({
@@ -1072,7 +1074,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   );
 
   private readonly togglingOption = this.core.togglingOption;
-  private lastCommittedValues: T[] = [];
   private readonly hasEmittedInitial = signal(false);
 
   /**
@@ -1087,9 +1088,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     commitMode: this.commitMode,
     commitAction: this.commitAction,
     core: this.core,
-    setLastCommitted: (previous) => {
-      this.lastCommittedValues = previous;
-    },
     beginToggle: (next, previous, option, action) =>
       this.commitHandler.beginToggle(next, previous, option, action),
     beginClear: (previous, action) => this.commitHandler.beginClear(previous, action),
@@ -1120,8 +1118,8 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     commitMode: this.commitMode,
     core: this.core,
     commitAction: this.commitAction,
-    onToggleFinalize: (option, isNowSelected) =>
-      this.toggleDispatch.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
+    onToggleFinalize: (option, isNowSelected, previous) =>
+      this.toggleDispatch.finalizeToggle(option, isNowSelected, previous),
     onClearFinalize: (previous, finalValues) =>
       this.toggleDispatch.clearFinalize(previous, finalValues),
     onStateChange: (status) => this.stateChange.emit(status),
@@ -1201,10 +1199,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     commitMode: this.commitMode,
     beginCommit: (next, previous, item, action) =>
       this.commitHandler.beginToggle(next, previous, item, action),
-    onBeforeCommit: (previous, item) => {
-      this.lastCommittedValues = previous;
-      this.togglingOption.set(item);
-    },
+    onBeforeCommit: (item) => this.togglingOption.set(item),
     onSyncFinalize: (item, previous) => this.toggleDispatch.finalizeToggle(item, false, previous),
   });
 
@@ -1217,8 +1212,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     // Same teardown as the core's select controller: a create that settles
     // after the host is destroyed is dropped.
     inject(DestroyRef).onDestroy(() => this.createCommitController.cancel());
-    this.lastCommittedValues = untracked(() => [...this.values()]);
-
     injectChipFitFocusHandOff({
       strip: this.fitStrip,
       visibleCount: this.chipStrip.visibleCount,
@@ -1248,7 +1241,10 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       openedChange: this.openedChange,
       opened: this.opened,
       closed: this.closed,
-      restoringFocus: (active) => this.sheetWiring.handleTriggerRefocus(active),
+      restoringFocus: (active) => {
+        this.suppressOpenOnFocus = active;
+        this.sheetWiring.handleTriggerRefocus(active);
+      },
     });
 
     createFieldSync<T[]>({
@@ -1305,13 +1301,18 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     this.inputEl()?.nativeElement.focus(options);
   }
 
+  /** Flat-nav policy via `CNGX_FLAT_NAV_STRATEGY`: picks the PageUp/PageDown target. */
+  private readonly flatNavStrategy = inject(CNGX_FLAT_NAV_STRATEGY);
+
   /**
    * Trigger-input keyboard + live-term dispatch. Shared with
    * `CngxActionSelect`; this variant snapshots the values array.
    */
-  private readonly triggerInput = createActionTriggerInput<readonly T[]>({
+  private readonly triggerInput = createActionTriggerInput<readonly T[], T>({
     listbox: this.listboxRef,
     popover: this.popoverRef,
+    strategy: this.flatNavStrategy,
+    compareWith: this.compareWith,
     flatOptions: () => this.core.flatOptions(),
     input: this.inputEl,
     searchTerm: this.searchTerm,
@@ -1392,8 +1393,16 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     this.toggleDispatch.clearAll();
   });
 
+  // True only inside the lifecycle emitter's post-close focus restore -
+  // the programmatic refocus must not re-open under openOn: 'focus'.
+  private suppressOpenOnFocus = false;
+
   protected handleFocus(): void {
     this.focusState.markFocused();
+    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
+    if (openOnFocus && !this.suppressOpenOnFocus) {
+      this.open();
+    }
   }
 
   protected handleBlur(): void {

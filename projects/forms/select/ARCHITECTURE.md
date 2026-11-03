@@ -1,7 +1,7 @@
 # `@cngx/forms/select` - Architecture
 
 > The nine-composite select family - eight data-driven variants (single, multi, combobox, typeahead, tree, reorderable, action-select, action-multi-select) plus the declarative `<cngx-select-shell>`.
-> Same commit machinery, same async-state machine, same slot system, eight different value-shape × panel-surface combinations.
+> Same commit machinery, same async-state machine, same slot system, nine different value-shape × trigger × option-source combinations.
 
 This document is the canonical entry point for understanding how the family is composed, where to override behaviour, and which variant to reach for.
 For day-to-day API reference (inputs, outputs, signals, CSS variables) see the compodoc output (`npm run docs:serve`) or the in-source JSDoc.
@@ -11,14 +11,14 @@ For day-to-day API reference (inputs, outputs, signals, CSS variables) see the c
 ## Table of contents
 
 - [Mission statement](#mission-statement)
-- [The eight variants](#the-eight-variants)
+- [The nine composites](#the-nine-composites)
 - [Layer composition](#layer-composition)
 - [Pick-your-select decision guide](#pick-your-select-decision-guide)
 - [Shared infrastructure](#shared-infrastructure)
   - [Core factory `createSelectCore`](#core-factory-createselectcore)
   - [DI factory tokens (18)](#di-factory-tokens-18)
 - [Template slot system](#template-slot-system)
-  - [The 18 public slots](#the-18-public-slots)
+  - [The shared slots](#the-shared-slots)
   - [Three-stage cascade](#three-stage-cascade)
   - [Default glyphs](#default-glyphs)
 - [Configuration cascade](#configuration-cascade)
@@ -35,7 +35,7 @@ For day-to-day API reference (inputs, outputs, signals, CSS variables) see the c
 
 ## Mission statement
 
-The select family delivers eight distinct widget shapes against three non-negotiable pillars from the cngx codebase philosophy:
+The select family delivers nine distinct widget shapes against three non-negotiable pillars from the cngx codebase philosophy:
 
 1. **Derive over manage** - every reactive value is a `computed()` from
    a single source of truth. No subscription-driven local state, no
@@ -54,7 +54,7 @@ The family is **decompose-ready** - every `@Component` is a thin declaration del
 
 ---
 
-## The eight variants
+## The nine composites
 
 | Component | Value shape | Trigger | Panel | ARIA pattern |
 |-|-|-|-|-|
@@ -66,8 +66,9 @@ The family is **decompose-ready** - every `@Component` is a thin declaration del
 | `CngxReorderableMultiSelect` | `T[]` (ordered)  | `<div role="combobox">` + reorderable chips | flat listbox               | combobox + listbox |
 | `CngxActionSelect`           | `T \| undefined` | `<input>` + action panel                    | flat listbox + action slot | combobox + listbox |
 | `CngxActionMultiSelect`      | `T[]`            | `<input>` + chips + action panel            | flat listbox + action slot | combobox + listbox |
+| `CngxSelectShell`            | `T \| undefined` | `<div role="combobox">`                     | projected `<cngx-option>` children, optional `<cngx-select-search>` | combobox + listbox |
 
-Each variant provides `CNGX_FORM_FIELD_CONTROL` directly - no bridge directive needed. All eight share the same slot directives, the same config surface, the same announcer, and the same commit lifecycle. `<cngx-select-shell>` shares them too; it differs only in where its options come from (projected `<cngx-option>` children instead of `[options]`).
+Each composite provides `CNGX_FORM_FIELD_CONTROL` directly - no bridge directive needed. All nine share the same slot directives, the same config surface, the same announcer, and the same commit lifecycle. `<cngx-select-shell>` differs from `CngxSelect` only in where its options come from (projected `<cngx-option>` children instead of `[options]`).
 What differs is the _value-shape adapter_ on top of `createSelectCore` and the _trigger-element template_.
 
 ---
@@ -83,7 +84,7 @@ graph TD
   end
 
   subgraph L3["Level 3 - @cngx/forms/select"]
-    Variants["CngxSelect / Multi / Combobox / Typeahead /<br/>Tree / Reorderable / Action / ActionMulti"]
+    Variants["CngxSelect / Multi / Combobox / Typeahead /<br/>Tree / Reorderable / Action / ActionMulti / Shell"]
     Shared["shared/<br/>(factories, tokens, slots, config)"]
     Variants --> Shared
   end
@@ -162,7 +163,7 @@ graph LR
   Inputs --> Core[createSelectCore]
   Core --> Options["Option model<br/>effectiveOptions, flatOptions,<br/>valueToOptionMap, unfilteredFlatOptions"]
   Core --> Panel["Panel view<br/>activeView, showRefreshIndicator,<br/>showInlineError, skeletonIndices,<br/>panelClassList, panelWidthCss"]
-  Core --> Aria["ARIA projection<br/>resolvedId, triggerAria, describedBy,<br/>ariaInvalid, ariaBusy, ariaReadonly"]
+  Core --> Aria["ARIA projection<br/>resolvedId, triggerAria, describedBy,<br/>errorState, readonly, writeBlocked"]
   Core --> Selection["Selection<br/>isSelected, isIndeterminate,<br/>resolvedSelectionIndicatorVariant"]
   Core --> Commit["Commit infra<br/>commitController, commitState,<br/>isCommitting, togglingOption"]
   Core --> Annc["Announcer hook<br/>announce(option, action, count, multi)"]
@@ -218,7 +219,7 @@ The slot directives live in `shared/template-slots.ts` and project a typed conte
 
 ### The shared slots
 
-`shared/template-slots.ts` exports 27 slot directives. The table covers the shared slots; the list below covers the variant-specific ones.
+`shared/template-slots.ts` exports 27 slot directives and `tree-select/` adds 5 more, 32 in all. The table covers the shared slots; the list below covers the variant-specific ones.
 
 | Slot directive | Where it renders | Context |
 |-|-|-|
@@ -240,6 +241,8 @@ The slot directives live in `shared/template-slots.ts` and project a typed conte
 | `*cngxSelectAction`                                 | Action panel slot (action-\* variants)  | `{ searchTerm, commit, close, isPending, dirty, retry, error, value }` |
 | `*cngxSelectInputPrefix` / `*cngxSelectInputSuffix` | Input adornments (combobox + typeahead) | `{ disabled, focused, panelOpen }`                                     |
 | `*cngxSelectSheetHandle` | Decorative drag handle of the mobile sheet (inside an `aria-hidden` wrapper) | `{ presentation, dragging }` |
+
+`disabled` in the `*cngxSelectRetryButton` context is `true` only on the commit-error surface while the retried commit is pending (the variant's `isCommitting()`), so an override button can turn itself `aria-disabled` instead of starting a second retry. The load and inline refresh-error surfaces retry a load and always pass `false`.
 
 Variant-specific slots that complement the table above:
 
@@ -344,7 +347,16 @@ Resolution priority for any setting (`panelWidth`, `dismissOn`,
 2. **`provideCngxSelectAt(...)` in `viewProviders`** (component scope).
 3. **`provideCngxSelect(...)` at app root** (or one of the three
    individual providers).
-4. **Library default** (defined in `CNGX_SELECT_DEFAULTS`).
+4. **The active language pack** (`provideCngxI18n(withPack(...))` from
+   `@cngx/core/i18n`) - copy keys only (`ariaLabels`, `fallbackLabels`):
+   the pack's `select` section, formatted for the app locale.
+5. **Library default** - `CNGX_SELECT_DEFAULTS` for settings,
+   `CNGX_SELECT_LANGUAGE_EN` for copy.
+
+A `*At` provider merges onto the configuration of the enclosing scope: it
+reads the parent value of its token (`skipSelf`) and applies its features
+on top, so a component-scoped `provideCngxSelectAt(withPanelWidth(...))`
+keeps every app-root setting it does not name.
 
 The `with*` features used inside `provide*` calls are typed so the
 compiler catches typos and wrong-surface mixes within a single
@@ -352,7 +364,17 @@ compiler catches typos and wrong-surface mixes within a single
 three feature types simultaneously.
 
 Library defaults are English (`'Loading options'`, `'Save failed'`,
-`'Reset selection'`, …). German consumers configure at bootstrap:
+`'Reset selection'`, …). The usual way to another language is the
+language pack, which covers the copy of every cngx lib at once:
+
+```typescript
+import { provideCngxI18n, withPack } from '@cngx/core/i18n';
+import { CNGX_LANGUAGE_DE } from '@cngx/core/i18n/de';
+
+bootstrapApplication(App, { providers: [provideCngxI18n(withPack(CNGX_LANGUAGE_DE))] });
+```
+
+Single keys are overridden on top of the pack through the config features:
 
 ```typescript
 provideCngxSelect(
@@ -426,8 +448,8 @@ sequenceDiagram
   participant Server
 
   User->>Variant: clicks option
-  Variant->>CommitController: begin(action, intended, previous)
-  CommitController->>CommitController: commitId++, slot.set('pending')
+  Variant->>CommitController: ledger.begin(kind, next, previous)
+  CommitController->>CommitController: record { kind, intended, previous }, commitId++, slot.set('pending')
   alt optimistic
     Variant->>Variant: values.set(next) immediately, panel closes
   else pessimistic
@@ -447,14 +469,49 @@ sequenceDiagram
     Variant->>Variant: emit selectionChange + announce
   else error
     Action-->>CommitController: error
-    CommitController->>Variant: onError(err, previous)
-    alt optimistic
-      Variant->>Variant: rollback values to previous
+    CommitController->>Variant: onError(err)
+    alt optimistic and model unchanged since begin
+      CommitController->>Variant: rollback values to previous
     end
     Note over Variant: announcer reads error assertively
     Variant->>Variant: surface via commitErrorDisplay
   end
 ```
+
+**Commit ledger.** Every commit handler begins through one ledger per
+commit controller (`shared/internal/commit-ledger.ts`, layered over
+whatever `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` returns). The
+controller keeps the async-state slot and the supersede id; the ledger
+owns the commit record and the model side: reconcile on success,
+guarded rollback on failure (optimistic mode only, and only when nothing
+else wrote the model while the commit was pending), the announcement and
+Retry.
+
+**Rollback target.** The `previous` of a begin is the ledger's
+baseline: the last value no pending commit wrote. A commit that
+supersedes a pending one therefore rolls back to the confirmed value,
+never to the unconfirmed optimistic value of the commit it replaced.
+The array toggle and chip-removal flows read this target from the
+ledger, so no composite mirrors a "last committed" value of its own.
+
+**Recorded kinds.** The record carries the kind of the commit
+(`'select' | 'toggle' | 'clear' | 'reorder' | 'tree'`), the intended and
+previous value, the option and kind-specific detail (`fromIndex` /
+`toIndex` for a reorder). Retry replays the recorded kind, never the
+kind some handler saw last.
+
+**Retry routing.** A composite with more than one commit source (scalar
+pick and quick-create, toggle and clear-all, tree toggle and clear)
+wraps each handler through the controller's retry router. Starting a
+commit claims the router for that handler, so the commit-error Retry
+reaches the handler that started the failed commit, also when a
+consumer swapped it through its factory token.
+
+**Settling.** A `commitAction` settles on its first value. An
+Observable that completes without a value settles as an error
+(`CNGX2025`, plus a dev warning), so the panel never stays blocked on a
+commit that has nothing to return; a quick-create commit that resolves
+`undefined` settles the same way (`CNGX2027`).
 
 **Supersede semantics.** Every `begin(...)` increments a monotonic
 `commitId`. Outcome callbacks check their captured id against the
@@ -483,6 +540,16 @@ Common properties are derived from the same `triggerAria()` projection on `creat
 | Combobox, Typeahead, Action\*          | `<input role="combobox" aria-autocomplete="list">` | inline-input combobox           |
 
 The `<div role="combobox">` choice on the chip-carrying variants is deliberate: WAI-ARIA 1.2 forbids interactive children inside `<button>` (chip remove buttons would nest), so a `div` with a click handler fronts the combobox semantic.
+
+**Two typing windows.** `typeaheadDebounceInterval` is the buffer window of the closed-trigger typeahead on the button-trigger variants (Single, Multi, Reorderable, Shell): keys typed within it join one query. `searchDebounceMs` is the wait between the last keystroke in a search input and the `searchTerm` update, on Combobox, Typeahead, Action\* and the shell's `<cngx-select-search>`. Each has its own config key (`withTypeaheadDebounce`, `withSearchDebounce`) and per-instance input. Every search input debounces through the `CngxSearch` atom (`CngxListboxSearch` on the input variants, `CngxSearch` itself on `<cngx-select-search>`), whose `flush()` and `cancel()` settle a pending term on Enter and on a panel close.
+
+**Readonly.** A readonly bound field (`aria-readonly`, from the field
+projection) keeps the select browsable and refuses every write. The
+core derives `writeBlocked = disabled() || readonly()`; every write
+path (pick, clear, chip remove, reorder, typeahead-while-closed, the
+activation dispatcher) reads that one signal, while opening the panel
+and keyboard browsing read `disabled()` only. Clear buttons and chip
+remove affordances are not rendered while writes are blocked.
 
 **Live ARIA on the trigger**: `aria-disabled`, `aria-invalid`, `aria-required`, `aria-busy`, `aria-describedby`, `aria-errormessage` come from `core.triggerAria`. `aria-expanded`, `aria-haspopup` and `aria-controls` have one writer, `CngxPopoverTrigger`: the template binds `[haspopup]="sheetWiring.triggerHaspopup()"` and `[controls]="sheetWiring.triggerControls()"` (the listbox / tree id while anchored, `'dialog'` and the sheet id while modal).
 All are reactive computeds - they always reflect the current state, never go stale.
@@ -589,7 +656,7 @@ On a coarse, narrow viewport every variant opens its panel as a modal sheet inst
 
 ## Class size and decompose strategy
 
-Each variant's `*.component.ts` file runs from roughly 860 to 1220 lines, depending on value-shape complexity.
+Each composite's `*.component.ts` file runs from roughly 1080 to 1410 lines (730 to 940 lines without comments), depending on value-shape complexity.
 Sub-200-LOC targets are structurally unreachable under the locked patterns (no inheritance, no abstract base classes).
 The 18 DI tokens + the slot system ARE the real decompose strategy: they eliminate cross-variant duplication and let consumers swap implementations.
 
@@ -618,7 +685,7 @@ A few representative extension paths.
 **Add a new template slot.**
 
 1. Add the directive class + context interface in `shared/template-slots.ts`.
-2. Add the slot key to `CngxSelectTemplateContexts` and `CNGX_SELECT_DEFAULTS.templates` in `shared/config.ts`.
+2. Add the slot key to the `templates` type of `CngxSelectConfig` and to `CNGX_SELECT_DEFAULTS.templates` in `shared/config.ts`. `CngxSelectTemplateContexts` is derived from that type, so it needs no edit.
 3. Add the slot to `CngxSelectTemplateRegistryQueries` + `CngxSelectTemplateRegistry` in `shared/template-registry.ts`, then wire `injectResolvedTemplate(...)` inside `createTemplateRegistry`.
 4. Each variant declares the corresponding `contentChild` and adds the field to the registry call.
 5. Bind the resolved `host.tpl.<slot>()` in the panel template with an `@else` default.
@@ -642,12 +709,12 @@ A few representative extension paths.
    ```
 3. Every select-family variant picks it up automatically.
 
-**Add a ninth variant.**
+**Add a tenth composite.**
 
 1. Build the trigger template; pick the appropriate ARIA pattern.
 2. Instantiate `createSelectCore<T, TCommit>` in a field initialiser.
 3. Provide `CNGX_FORM_FIELD_CONTROL` (`useExisting: self`) and `CNGX_STATEFUL` for transition-bridge integration.
 4. Provide `CNGX_SELECT_PANEL_VIEW_HOST` (and `CNGX_SELECT_PANEL_HOST` if the panel is option-loop-shaped); satisfy the contract.
-5. Wire `CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY`, `CNGX_TEMPLATE_REGISTRY_FACTORY`, and the appropriate commit handler factory.
+5. Wire `CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY`, `CNGX_TEMPLATE_REGISTRY_FACTORY`, and the appropriate commit handler factory. `createADActivationDispatcher` reads only `CngxActivationDispatcherCore<T>` (`writeBlocked`, `findOption`) from the core, so a composite can hand it the select core or any object with those two members.
 6. Reuse the value-shape glue closest to your variant (`createArrayCommitHandler` for arrays, `createScalarCommitHandler` for singles, `createReorderCommitHandler` for ordered arrays).
 7. Export the component + change-event interface from `public-api.ts`.

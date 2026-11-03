@@ -19,7 +19,7 @@ The artifacts cluster into seven concerns:
 6. [Configuration cascade](#6-configuration-cascade) - three config surfaces + aggregator.
 7. [Family primitives](#7-family-primitives) - option model, navigation helpers, glyphs, CSS.
 
-Every public token follows the `provide` / `with` / `inject` / `create` prefix convention (see global memory `reference_api_prefix_convention.md`).
+Every public token follows the `provide` / `with` / `inject` / `create` prefix convention: `provide*` returns providers, `with*` builds one config feature, `inject*` reads a value inside an injection context, `create*` builds a plain factory result.
 Every factory has a corresponding DI token (`Cngx<Name>Factory` type + `CNGX_<NAME>_FACTORY` constant) for swap-without-fork extensibility.
 
 
@@ -44,7 +44,7 @@ Internal symbols. None of these is in `public-api.ts`; the variants use them and
 | `CngxSelectTriggerAria`          | Bundled ARIA projection for the trigger             |
 | `CngxSelectAnnouncerInputs`      | Per-instance announcer config                       |
 
-See [`ARCHITECTURE.md` § Core factory](../../../ARCHITECTURE.md#core-factory-createselectcore) for the input/output diagram.
+See [`ARCHITECTURE.md` § Core factory](../ARCHITECTURE.md#core-factory-createselectcore) for the input/output diagram.
 
 
 
@@ -118,6 +118,15 @@ Reorderable-specific position-move commit. Bypasses the array handler's `sameArr
 | `CngxReorderCommitHandlerFactory`     | DI factory type |
 | `CNGX_REORDER_COMMIT_HANDLER_FACTORY` | DI token        |
 
+### `commit-baseline.ts`
+
+The confirmed value a superseding commit rolls back to, shared by every handler on one commit controller. A full replacement of the array, scalar or reorder handler factory reports its commits through it (`begin(previous)` returns the rollback target, `confirm(final)` on success), so it rolls back like the default handlers and agrees with the ones next to it. It records values only; Retry routing for a bypassing commit stays with the replacement.
+
+| Symbol | Purpose |
+|-|-|
+| `createCommitBaseline<T>(controller)` | The baseline of `controller` |
+| `CngxCommitBaseline<T>`               | API: `begin`, `confirm`      |
+
 ### `create-commit-handler.ts` + `create-action.types.ts`
 
 Action-host quick-create commit flow (used by `CngxActionSelect` and `CngxActionMultiSelect`). Owns the `(created)` output dispatch, the `localItems` buffer write, and the action-slot's `retry()` / `(retry)` semantics.
@@ -147,8 +156,8 @@ Declarative scalar commit-error announce policy. Two policies:
 | `CngxCommitErrorAnnouncerFactory`     | DI factory type      |
 | `CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY` | DI token             |
 
-The two-policy split is documented as accepted debt - see
-`select-family-accepted-debt.md` entry #1.
+The two-policy split is deliberate: `CngxSelect` and `CngxTypeahead` keep their own close timing and
+announce channel, see [`ARCHITECTURE.md` § Commit-action lifecycle](../ARCHITECTURE.md#commit-action-lifecycle).
 
 ### `chip-removal-handler.ts`
 
@@ -333,6 +342,8 @@ Four thin convenience helpers for the most-injected tokens. All four are exporte
 |-|-|
 | `injectSelectConfig()`    | Resolved `CngxSelectConfig` for the current injector (`resolveSelectConfig()`) |
 | `injectSelectAnnouncer()` | `inject(CngxSelectAnnouncer)`                                                  |
+| `injectActionSelectConfig()` | Resolved `CngxActionSelectConfig` for the current injector (`resolveActionSelectConfig()`) |
+| `injectReorderableSelectConfig()` | Resolved `CngxReorderableSelectConfig` for the current injector (`resolveReorderableSelectConfig()`) |
 
 
 
@@ -364,6 +375,8 @@ Slot list (with the cascade tier each slot belongs to - every slot flows through
 | `CngxSelectOptionError<T>`                        | `CngxSelectOptionErrorContext<T>`   |
 | `CngxSelectAction`                                | `CngxSelectActionContext`           |
 | `CngxSelectInputPrefix` / `CngxSelectInputSuffix` | `CngxSelectInputSlotContext`        |
+| `CngxSelectSheetHandle`                           | `CngxSelectSheetHandleContext`      |
+| `CngxSelectSheetCount`                            | `CngxSelectSheetCountContext`       |
 
 Plus the variant-specific slots (also defined here):
 
@@ -373,6 +386,7 @@ Plus the variant-specific slots (also defined here):
 | `CngxMultiSelectChip<T>` / `CngxMultiSelectTriggerLabel<T>` | multi + reorderable |
 | `CngxMultiSelectChipHandle`                                 | reorderable only    |
 | `CngxComboboxChip<T>` / `CngxComboboxTriggerLabel<T>`       | combobox            |
+| `CngxSelectChipOverflow<T>`                                 | multi, combobox, action-multi, reorderable, tree |
 
 ### `template-registry.ts`
 
@@ -407,7 +421,7 @@ Public exports:
 - **Token**: `CNGX_SELECT_CONFIG`.
 - **Providers**: `provideSelectConfig`, `provideSelectConfigAt`.
 - **Type aliases**: `CngxSelectConfig`, `CngxSelectAnnouncerConfig`, `CngxSelectAriaLabels`, `CngxSelectFallbackLabels`, `CngxSelectTemplateContexts`, `CngxSelectConfigFeature`, `CngxSelectVirtualizationConfig`, plus the four enum types (`CngxSelectLoadingVariant`, `CngxSelectRefreshingVariant`, `CngxSelectSelectionIndicatorPosition`, `CngxSelectSelectionIndicatorVariant`).
-- **Features** (examples; the full `with*` list is in `public-api.ts`): `withPanelWidth`, `withPanelClass`, `withTypeaheadDebounce`, `withTypeaheadWhileClosed`, `withSelectionIndicator`, `withSelectionIndicatorPosition`, `withSelectionIndicatorVariant`, `withCaret`, `withRestoreFocus`, `withDismissOn`, `withOpenOn`, `withAnnouncer`, `withAriaLabels`, `withFallbackLabels`, `withLoadingVariant`, `withSkeletonRowCount`, `withRefreshingVariant`, `withCommitErrorDisplay`, `withCommitErrorAnnouncePolicy`, `withChipOverflow`, `withMaxVisibleChips`, `withInputMode`, `withEnterKeyHint`, `withPopoverPlacement`, `withVirtualization`.
+- **Features** (examples; the full `with*` list is in `public-api.ts`): `withPanelWidth`, `withPanelClass`, `withTypeaheadDebounce`, `withSearchDebounce`, `withTypeaheadWhileClosed`, `withSelectionIndicator`, `withSelectionIndicatorPosition`, `withSelectionIndicatorVariant`, `withCaret`, `withRestoreFocus`, `withDismissOn`, `withOpenOn`, `withAnnouncer`, `withAriaLabels`, `withFallbackLabels`, `withLoadingVariant`, `withSkeletonRowCount`, `withRefreshingVariant`, `withCommitErrorDisplay`, `withCommitErrorAnnouncePolicy`, `withChipOverflow`, `withMaxVisibleChips`, `withInputMode`, `withEnterKeyHint`, `withPopoverPlacement`, `withVirtualization`.
 
 ### `action-select-config.ts`
 
@@ -437,7 +451,7 @@ Unified aggregator across all three config surfaces.
 | `CngxSelectAggregatorFeature`                            | `CngxSelectConfigFeature \| CngxActionSelectConfigFeature \| CngxReorderableSelectConfigFeature` |
 
 The three individual `provide*` providers stay exported for back-compat - the aggregator is purely additive.
-See [`ARCHITECTURE.md` § Configuration cascade](../../../ARCHITECTURE.md#configuration-cascade).
+See [`ARCHITECTURE.md` § Configuration cascade](../ARCHITECTURE.md#configuration-cascade).
 
 ### `internal/resolve-config.ts`
 
@@ -487,7 +501,7 @@ Keyboard typeahead engine: buffer signal + debounced reset + walk semantics (rou
 
 ### `flat-nav-strategy.ts`
 
-Policy layer over `TypeaheadController` + `resolvePageJumpTarget` shared by `CngxSelect`, `CngxMultiSelect`, `CngxReorderableMultiSelect`.
+Policy layer over `TypeaheadController` + `resolvePageJumpTarget`. `onPageJump` steers PageUp/PageDown on every flat variant (`CngxSelect`, `CngxMultiSelect`, `CngxReorderableMultiSelect`, `CngxSelectShell` and the input variants `CngxCombobox`, `CngxTypeahead`, `CngxActionSelect`, `CngxActionMultiSelect`); `onTypeaheadWhileClosed` runs on the button-trigger ones only.
 Returns a discriminated `CngxFlatNavAction` (`'select' \| 'highlight' \| 'noop'`) the variant dispatches.
 
 | Symbol | Purpose |
@@ -501,7 +515,7 @@ Returns a discriminated `CngxFlatNavAction` (`'select' \| 'highlight' \| 'noop'`
 
 ### `page-jump-handler.ts`
 
-Internal helper used by combobox/typeahead/action variants - they delegate to `CngxListboxSearch` for keyboard input but still need to intercept `PageUp` / `PageDown` directly. `handlePageJumpKey(event, ctx)` returns a boolean indicating whether the key was handled.
+Internal helpers. `handleFlatNavPageJumpKey` serves the button-trigger variants; `handlePageJumpKey` serves combobox/typeahead/action variants, whose input keeps the caret and filters through `CngxListboxSearch` but still intercepts `PageUp` / `PageDown` from its own keydown. Both take the target from `CNGX_FLAT_NAV_STRATEGY.onPageJump` and return whether the key was handled.
 
 ### `select-base.css`
 
@@ -515,4 +529,4 @@ The schematic can eject the trigger skin into the consumer's project while keepi
 
 ## How to extend
 
-See [`ARCHITECTURE.md` § How to extend](../../../ARCHITECTURE.md#how-to-extend) - four walkthroughs covering new slots, new ariaLabels keys, factory overrides, and adding a ninth variant.
+See [`ARCHITECTURE.md` § How to extend](../ARCHITECTURE.md#how-to-extend) - four walkthroughs covering new slots, new ariaLabels keys, factory overrides, and adding a ninth variant.

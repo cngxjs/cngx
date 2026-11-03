@@ -26,12 +26,6 @@ export interface ReorderCommitHandlerOptions<T> {
    */
   readonly commitController: CngxCommitController<T[]>;
   /**
-   * Update the rollback snapshot. Called on optimistic-mode begin
-   * (stash pre-reorder state) and on success (store canonicalised
-   * server value).
-   */
-  readonly setLastCommitted: (values: T[]) => void;
-  /**
    * Emit `selectionChange` + `reordered` payload. Consumer controls the
    * shape; signature covers optimistic / pessimistic / no-commit
    * branches.
@@ -131,7 +125,6 @@ export function createReorderCommitHandler<T>(
       return;
     }
 
-    opts.setLastCommitted([...previous]);
     if (opts.commitMode() === 'optimistic') {
       opts.values.set(next);
       opts.onReorder(next, previous, option, fromIndex, toIndex);
@@ -152,7 +145,6 @@ export function createReorderCommitHandler<T>(
       commitMode: opts.commitMode,
       onStateChange: opts.onStateChange,
       onSuccess: (final, confirmedPrevious) => {
-        opts.setLastCommitted([...final]);
         if (opts.commitMode() === 'pessimistic') {
           opts.onReorder(final, confirmedPrevious, option, fromIndex, toIndex);
           opts.onAnnounce(option, fromIndex, toIndex, final.length);

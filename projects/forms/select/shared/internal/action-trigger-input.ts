@@ -3,8 +3,10 @@ import type { ElementRef, Signal } from '@angular/core';
 import type { CngxListbox } from '@cngx/common/interactive';
 import type { CngxPopover } from '@cngx/common/popover';
 
-import type { CngxFlatNavListboxItem } from '../flat-nav-strategy';
+import type { CngxFlatNavStrategy } from '../flat-nav-strategy';
+import type { CngxSelectOptionDef } from '../option.model';
 import { handlePageJumpKey } from './page-jump-handler';
+import type { CngxSelectCompareFn } from './select-core';
 
 /**
  * Dependencies for {@link createActionTriggerInput}. `Prev` is the
@@ -13,11 +15,14 @@ import { handlePageJumpKey } from './page-jump-handler';
  *
  * @internal
  */
-export interface ActionTriggerInputDeps<Prev> {
+export interface ActionTriggerInputDeps<Prev, T = unknown> {
   readonly listbox: () => CngxListbox | undefined;
   readonly popover: () => CngxPopover | undefined;
+  /** Injected `CNGX_FLAT_NAV_STRATEGY`; picks the PageUp/PageDown target. */
+  readonly strategy: CngxFlatNavStrategy;
   /** Full flat option list; the page-jump index space of a virtual panel. */
-  readonly flatOptions: () => readonly CngxFlatNavListboxItem[];
+  readonly flatOptions: () => readonly CngxSelectOptionDef<T>[];
+  readonly compareWith: () => CngxSelectCompareFn<T>;
   readonly input: () => ElementRef<HTMLInputElement> | undefined;
   readonly searchTerm: Signal<string>;
   readonly liveInputFallback: Signal<boolean>;
@@ -42,7 +47,7 @@ export interface ActionTriggerInput {
    * already activated it; this is a no-op.
    */
   readonly handleTriggerEnter: (event: Event) => void;
-  /** PageUp/PageDown shared behaviour (±10 option jump). */
+  /** PageUp/PageDown through the flat-nav strategy (default ±10 option jump). */
   readonly handleInputKeydown: (event: KeyboardEvent) => void;
   /** Create-flow entry: draft from the action slot, else the live term. */
   readonly handleActionCommit: (draft?: { readonly label: string }) => void;
@@ -64,8 +69,8 @@ export interface ActionTriggerInput {
  *
  * @internal
  */
-export function createActionTriggerInput<Prev>(
-  deps: ActionTriggerInputDeps<Prev>,
+export function createActionTriggerInput<Prev, T = unknown>(
+  deps: ActionTriggerInputDeps<Prev, T>,
 ): ActionTriggerInput {
   const resolveLiveTerm = (): string => {
     const term = deps.searchTerm();
@@ -109,7 +114,9 @@ export function createActionTriggerInput<Prev>(
     handlePageJumpKey(event, {
       listbox: deps.listbox(),
       popover: deps.popover(),
+      strategy: deps.strategy,
       flatOptions: deps.flatOptions,
+      compareWith: deps.compareWith,
     });
   };
 

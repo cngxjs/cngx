@@ -60,11 +60,14 @@ export type CngxFlatNavAction<T> =
   | { readonly kind: 'noop' };
 
 /**
- * Keyboard-nav policy for the flat select variants (single, multi,
- * reorderable-multi): PageUp/PageDown via {@link resolvePageJumpTarget}
- * and typeahead-while-closed via {@link TypeaheadController.matchFromIndex}.
- * Combobox / typeahead / action variants delegate to `CngxListboxSearch`
- * and don't consume this.
+ * Keyboard-nav policy for the flat select variants: PageUp/PageDown via
+ * {@link resolvePageJumpTarget} on all eight flat variants, and
+ * typeahead-while-closed via {@link TypeaheadController.matchFromIndex} on
+ * the button-trigger ones (single, multi, reorderable-multi, shell). The
+ * input variants (combobox, typeahead, action-select, action-multi-select)
+ * filter through `CngxListboxSearch` instead, so `onTypeaheadWhileClosed`
+ * never runs for them and their context carries a controller that matches
+ * nothing.
  */
 export interface CngxFlatNavStrategy {
   /** PageUp/PageDown. Returns `highlight` with target or `noop`. */
@@ -120,10 +123,20 @@ export function createDefaultFlatNavStrategy(
  * `createDefaultFlatNavStrategy`. Override for fuzzy typeahead, custom
  * page-step, or group-aware jumps.
  *
+ * Reach: every flat composite routes PageUp/PageDown through `onPageJump`,
+ * the four button-trigger ones (`CngxSelect`, `CngxMultiSelect`,
+ * `CngxReorderableMultiSelect`, `CngxSelectShell`) and the four input
+ * variants (`CngxCombobox`, `CngxTypeahead`, `CngxActionSelect`,
+ * `CngxActionMultiSelect`), whose text input keeps the caret and handles the
+ * key from its own keydown. Closed-trigger typeahead (`onTypeaheadWhileClosed`)
+ * runs on the button-trigger composites only; the input owns typing on the
+ * others. `CngxTreeSelect` navigates its tree through
+ * `CNGX_HIERARCHICAL_NAV_STRATEGY` instead.
+ *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/flat-nav-strategy.ts
  * @since 0.1.0
- * @relatedTo CngxSelect, CngxCombobox, CngxTypeahead
+ * @relatedTo CngxSelect, CngxCombobox, CngxTypeahead, CngxActionSelect, CngxActionMultiSelect
  */
 export const CNGX_FLAT_NAV_STRATEGY = new InjectionToken<CngxFlatNavStrategy>(
   'CngxFlatNavStrategy',

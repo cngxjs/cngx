@@ -35,7 +35,6 @@ interface Tag {
       [label]="'Tags'"
       [options]="tags"
       [compareWith]="compare"
-      [displayWith]="display"
       [quickCreateAction]="create"
       [(values)]="values"
       placeholder="Pick or create tags…"
@@ -59,7 +58,6 @@ export class TagMultiPicker {
     { value: { id: 't2', name: 'Backend' }, label: 'Backend' },
   ];
   protected readonly compare = (a?: Tag, b?: Tag) => a?.id === b?.id;
-  protected readonly display = (t: Tag) => t.name;
   protected readonly create = (term: string) =>
     of({ id: `t-${Date.now()}`, name: term }).pipe(delay(400));
 }
@@ -84,29 +82,39 @@ The default `(created)` flow:
 3. `quickCreateAction(term)` resolves to a new `T`.
 4. The new value is **added to `values()`** AND emitted via `(created)`.
 5. The action input clears; the panel stays open (override via `withCloseOnCreate(true)`).
-6. Subsequent option-list refetches (`[state]` updates) merge the `localItems` buffer into the panel so the just-created tag stays visible until the server-side list catches up.
+6. Subsequent option-list refetches (`[state]` updates) merge the component's local-items buffer into the panel so the just-created tag stays visible until the server-side list catches up.
 
 ### Persistent quick-create buffer
 
+The component owns its local-items buffer: every quick-created item is patched into it, and the panel merges it over `[options]` until a server-side refetch contains the same value (deduped via `compareWith`). There is no `[localItems]` input. To change how the buffer behaves - audit logging, persistence, backend sync - override `CNGX_LOCAL_ITEMS_BUFFER_FACTORY`. The factory receives the component's `compareWith` as a `Signal<CngxSelectCompareFn<T>>`:
+
 ```typescript
-import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '@cngx/forms/select';
+import {
+  CNGX_LOCAL_ITEMS_BUFFER_FACTORY,
+  createLocalItemsBuffer,
+  type CngxLocalItemsBufferFactory,
+} from '@cngx/forms/select';
 
-readonly localItems = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<Tag>({
-  compareWith: (a, b) => a.id === b.id,
-});
+const auditedBuffer: CngxLocalItemsBufferFactory = (compareWith) => {
+  const buffer = createLocalItemsBuffer(compareWith);
+  return {
+    items: buffer.items,
+    patch(item) {
+      auditLog('patch', item);
+      buffer.patch(item);
+    },
+    clear() {
+      buffer.clear();
+    },
+  };
+};
+
+@Component({
+  providers: [{ provide: CNGX_LOCAL_ITEMS_BUFFER_FACTORY, useValue: auditedBuffer }],
+  // ...
+})
+export class TagMultiPicker {}
 ```
-
-```html
-<cngx-action-multi-select
-  [options]="serverTags()"
-  [state]="state"
-  [localItems]="localItems.items"
-  [(values)]="values"
-  [quickCreateAction]="create"
-/>
-```
-
-The buffer survives state refetches - items drop out silently once the server-side list contains them (deduped via `compareWith`).
 
 ### Custom chip rendering
 

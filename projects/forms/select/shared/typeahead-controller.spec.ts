@@ -1,4 +1,4 @@
-import { signal, type Signal } from '@angular/core';
+import { DestroyRef, signal, type Signal } from '@angular/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -43,6 +43,35 @@ function makeController(
 describe('createTypeaheadController', () => {
   beforeEach(() => {
     vi.useFakeTimers();
+  });
+
+  it('cancels the pending buffer reset when its destroyRef is destroyed', () => {
+    let onDestroy: (() => void) | null = null;
+    const destroyRef = {
+      onDestroy: (fn: () => void) => {
+        onDestroy = fn;
+        return () => undefined;
+      },
+    } as unknown as DestroyRef;
+    const controller = createTypeaheadController<string>({
+      options: signal([opt('Apple')]),
+      compareWith: signal(cngxSelectDefaultCompare) as Signal<typeof cngxSelectDefaultCompare>,
+      debounceMs: signal(200),
+      disabled: signal(false),
+      destroyRef,
+    });
+    controller.matchFromIndex('a', -1);
+    expect(vi.getTimerCount()).toBe(1);
+    onDestroy!();
+    expect(vi.getTimerCount()).toBe(0);
+    expect(controller.buffer()).toBe('');
+  });
+
+  it('shares the open-listbox walk: a repeated letter cycles past a disabled match', () => {
+    const { controller } = makeController([opt('Bravo'), opt('Banana', true), opt('Blueberry')]);
+    expect(controller.matchFromIndex('b', 0)).toEqual(opt('Blueberry'));
+    expect(controller.matchFromIndex('b', 2)).toEqual(opt('Bravo'));
+    expect(controller.buffer()).toBe('bb');
   });
 
   it('with no current (currentIndex -1) matches the first option from index 0', () => {

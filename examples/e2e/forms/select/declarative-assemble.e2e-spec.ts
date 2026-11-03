@@ -16,10 +16,11 @@ test.describe('declarative options in an assembled listbox', () => {
     await gotoDemo(page, ROUTE);
   });
 
-  test('the intro names the listbox atoms, not the CngxSelect organism', async ({ page }) => {
-    const intro = page.locator('header.cngx-ex-intro');
-    await expect(intro).toContainText('CngxListbox');
-    await expect(intro).not.toContainText('CngxSelect - native-feeling single-select');
+  test('mounts the assembled listbox atoms, not the CngxSelect organism', async ({ page }) => {
+    const artifact = page.locator('.cngx-ex-artifact');
+    await expect(artifact.locator('button[aria-haspopup="listbox"]')).toHaveCount(1);
+    await expect(artifact.locator('[role="listbox"]')).toHaveCount(1);
+    await expect(artifact.locator('cngx-select')).toHaveCount(0);
   });
 
   test('renders the divider between the two groups', async ({ page }) => {
@@ -46,5 +47,27 @@ test.describe('declarative options in an assembled listbox', () => {
     await trigger.press('b');
     await trigger.press('Enter');
     await expect(valueOf(page)).toHaveText('blue');
+  });
+});
+
+// A bare cngxPopover resets the UA popover chrome to transparent by design;
+// the story composes CngxPopoverPanel so the options sit on its surface.
+test.describe('assembled listbox popover surface', () => {
+  test('the open popover paints an opaque background', async ({ page }) => {
+    await gotoDemo(page, ROUTE);
+    await triggerOf(page).click();
+    const listbox = listboxOf(page);
+    await expect(listbox).toBeVisible();
+    const alpha = await listbox.evaluate((lb) => {
+      const popover = lb.closest('[popover]');
+      if (!popover) {
+        return -1;
+      }
+      const probe = document.createElement('canvas').getContext('2d')!;
+      probe.fillStyle = getComputedStyle(popover).backgroundColor;
+      probe.fillRect(0, 0, 1, 1);
+      return probe.getImageData(0, 0, 1, 1).data[3];
+    });
+    expect(alpha).toBe(255);
   });
 });

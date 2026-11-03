@@ -123,6 +123,10 @@ npm run test:core        # single library (test:utils / test:common / test:forms
 npm run test:scripts     # tests for scripts/ (separate vitest config)
 ```
 
+`npm run test:scripts` reads the built libs and the compodoc JSON: run
+`npm run build:libs` and `npm run docs:json` first. Its pretest names whichever
+is missing.
+
 Conventions: call `TestBed.flushEffects()` after signal mutations, use
 `vi.useFakeTimers()` for debounce, and reuse the shared helpers from
 `@cngx/testing`. Public reactive state, the `computed()` graph, and the

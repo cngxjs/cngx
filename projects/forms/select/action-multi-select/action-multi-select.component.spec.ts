@@ -6,6 +6,7 @@ import { Subject } from 'rxjs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxComboboxTriggerLabel, CngxSelectAction } from '../shared/template-slots';
+import { provideSelectConfig, withOpenOn } from '../shared/config';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { stripBidiIsolates } from '@cngx/testing';
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
@@ -704,4 +705,46 @@ describeChipFit('CngxActionMultiSelect', CngxActionMultiSelect, {
       .map((ref) => (ref ? (document.getElementById(ref)?.textContent ?? '') : ''))
       .join(' ');
   },
+});
+
+describe('CngxActionMultiSelect - openOn config integration', () => {
+  @Component({
+    template: `<cngx-action-multi-select [label]="'Tag'" [options]="options" />`,
+    imports: [CngxActionMultiSelect],
+  })
+  class OpenOnHost {
+    readonly options = TAGS;
+  }
+
+  function setupOpenOn(providers: unknown[]): {
+    fixture: ReturnType<typeof TestBed.createComponent<OpenOnHost>>;
+    select: CngxActionMultiSelect<Tag>;
+    input: HTMLInputElement;
+  } {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [OpenOnHost], providers: providers as never[] });
+    const fixture = TestBed.createComponent(OpenOnHost);
+    flush(fixture);
+    const select = fixture.debugElement.query(By.directive(CngxActionMultiSelect))
+      .componentInstance as CngxActionMultiSelect<Tag>;
+    const input = fixture.nativeElement.querySelector('input.cngx-action-multi-select__input') as HTMLInputElement;
+    return { fixture, select, input };
+  }
+
+  it('keeps the panel closed on input focus under the default click strategy', () => {
+    const { fixture, select, input } = setupOpenOn([]);
+    input.dispatchEvent(new Event('focus'));
+    flush(fixture);
+    expect(select.panelOpen()).toBe(false);
+  });
+
+  it.each(['focus', 'click+focus'] as const)(
+    'opens the panel on input focus with withOpenOn(%s)',
+    (mode) => {
+      const { fixture, select, input } = setupOpenOn([provideSelectConfig(withOpenOn(mode))]);
+      input.dispatchEvent(new Event('focus'));
+      flush(fixture);
+      expect(select.panelOpen()).toBe(true);
+    },
+  );
 });

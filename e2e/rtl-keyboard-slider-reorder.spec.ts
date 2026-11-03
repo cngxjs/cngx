@@ -10,6 +10,26 @@ const SLIDER = '/#/common/interactive/slider/keyboard-and-steps';
 const REORDER_MULTI =
   '/#/forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end';
 const CHIP_STRIP = '/#/common/interactive/reorder/with-chip-strip-roving';
+// Chip strips without roving arrow keys: under rtl the strip mirrors its
+// reading order, so the first chip moves to the inline start (right) of what
+// follows it - the next chip, or the `+N` badge of a strip in 'fit' mode.
+const SECOND_CHIP = '.cngx-select__chip-list cngx-chip >> nth=1';
+const FIT_BADGE = '.cngx-select__chip-overflow-slot';
+const CHIP_STRIPS = [
+  [
+    'multi-select',
+    '/#/forms/select/multi-select/multi-chip-overflow-scroll',
+    'cngx-multi-select',
+    SECOND_CHIP,
+  ],
+  ['combobox', '/#/forms/select/combobox/combobox-chip-overflow-fit', 'cngx-combobox', FIT_BADGE],
+  [
+    'action-multi-select',
+    '/#/forms/select/action-multi-select/action-multi-chip-overflow-fit',
+    'cngx-action-multi-select',
+    FIT_BADGE,
+  ],
+] as const;
 
 function setRtl(page: Page): Promise<void> {
   return page.locator('html').evaluate((el) => el.setAttribute('dir', 'rtl'));
@@ -59,4 +79,19 @@ test.describe('RTL keyboard navigation: slider and reorder', () => {
     await page.keyboard.press('ArrowRight');
     await expect(activeIndex).toHaveText('0');
   });
+
+  for (const [name, route, host, follower] of CHIP_STRIPS) {
+    test(`${name}: the chip strip mirrors its reading order`, async ({ page }) => {
+      await page.goto(route);
+      const strip = page.locator(`.cngx-ex-artifact ${host}`);
+      const first = strip.locator('.cngx-select__chip-list cngx-chip').first();
+      const next = strip.locator(follower).first();
+      await expect(next).toBeVisible();
+      const gap = async () => (await next.boundingBox())!.x - (await first.boundingBox())!.x;
+      expect(await gap()).toBeGreaterThan(0);
+
+      await setRtl(page);
+      await expect.poll(gap).toBeLessThan(0);
+    });
+  }
 });

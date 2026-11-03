@@ -147,24 +147,33 @@ provideCngxSelect(
 
 ### Persistent local-items buffer
 
-Just-created items survive a server `[state]` refetch - useful when the consumer creates an option locally before the next list refresh sees it.
+Just-created items survive a server `[state]` refetch - useful when the consumer creates an option locally before the next list refresh sees it. The component owns the buffer and patches every quick-created item into it; there is no `[localItems]` input. Entries drop out once the server-side list contains the same value (deduped via `compareWith`). To change the buffer, override `CNGX_LOCAL_ITEMS_BUFFER_FACTORY`; `createLocalItemsBuffer` takes the component's `compareWith` as a `Signal<CngxSelectCompareFn<T>>`:
 
 ```typescript
-import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '@cngx/forms/select';
+import {
+  CNGX_LOCAL_ITEMS_BUFFER_FACTORY,
+  createLocalItemsBuffer,
+  type CngxLocalItemsBufferFactory,
+} from '@cngx/forms/select';
 
-readonly localItems = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<Tag>({
-  compareWith: (a, b) => a.id === b.id,
-});
+const persistedBuffer: CngxLocalItemsBufferFactory = (compareWith) => {
+  const buffer = createLocalItemsBuffer(compareWith);
+  return {
+    items: buffer.items,
+    patch(item) {
+      buffer.patch(item);
+      persist(buffer.items());
+    },
+    clear() {
+      buffer.clear();
+      persist([]);
+    },
+  };
+};
 ```
 
-```html
-<cngx-action-select
-  [options]="serverTags()"
-  [state]="state"
-  [localItems]="localItems.items"
-  [(value)]="value"
-  [quickCreateAction]="create"
-/>
+```typescript
+providers: [{ provide: CNGX_LOCAL_ITEMS_BUFFER_FACTORY, useValue: persistedBuffer }],
 ```
 
 ## Mobile sheet

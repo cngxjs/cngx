@@ -74,7 +74,11 @@ export const STORY: DemoSpec = {
       </button>
     </ng-template>
   </cngx-action-multi-select>`,
-  templateChrome: `<div class="event-grid" style="margin-top:12px">
+  templateChrome: `<div
+    class="event-grid"
+    style="margin-top:12px"
+    [attr.data-cngx-ex-count]="basicValues().length"
+  >
     <div class="event-row">
       <span class="event-label">Count</span>
       <span class="event-value">{{ basicValues().length }}</span>

@@ -67,13 +67,19 @@ export const STORY: DemoSpec = {
     <label>
       <input
         type="checkbox"
+        data-cngx-ex-fail
         [checked]="commitShouldFail()"
         (change)="commitShouldFail.set($any($event.target).checked)"
       />
       Server fails next commit
     </label>
   </div>
-<div class="event-grid" style="margin-top:12px">
+<div
+    class="event-grid"
+    style="margin-top:12px"
+    [attr.data-cngx-ex-value]="commitValue() ?? ''"
+    [attr.data-cngx-ex-commit-error]="commitErrors().at(-1) ?? ''"
+  >
     <div class="event-row">
       <span class="event-label">value</span>
       <span class="event-value">{{ commitValue() ?? '—' }}</span>
