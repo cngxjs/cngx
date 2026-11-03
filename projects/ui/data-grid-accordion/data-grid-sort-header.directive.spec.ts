@@ -28,6 +28,16 @@ class Host {
   readonly multi = signal(false);
 }
 
+@Component({
+  template: `<cngx-data-grid-accordion>
+    <cngx-dga-header>
+      <button type="button" cngxDgaCell cngxDgaSortHeader="name">Name</button>
+    </cngx-dga-header>
+  </cngx-data-grid-accordion>`,
+  imports: [CngxDataGridAccordion, CngxDataGridHeader, CngxDgCell, CngxDgaSortHeader],
+})
+class ButtonHost {}
+
 describe('CngxDgaSortHeader', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [Host, LabelHost] }));
 
@@ -85,8 +95,6 @@ describe('CngxDgaSortHeader', () => {
     fixture.detectChanges();
     expect(sort.active()).toBe('name');
     expect(sort.direction()).toBe('asc');
-    // Not cancelling would let a native <button> host fire its activation
-    // click after keydown and sort a second time.
     expect(enter.defaultPrevented).toBe(true);
 
     const space = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
@@ -94,6 +102,30 @@ describe('CngxDgaSortHeader', () => {
     fixture.detectChanges();
     expect(sort.direction()).toBe('desc');
     expect(space.defaultPrevented).toBe(true);
+  });
+
+  it('leaves Enter and Space to the native click on a button host', () => {
+    const fixture = TestBed.createComponent(ButtonHost);
+    fixture.detectChanges();
+    const sort = fixture.debugElement
+      .query(By.directive(CngxDataGridAccordion))
+      .injector.get(CngxSort);
+    const button = fixture.debugElement.query(By.directive(CngxDgaSortHeader))
+      .nativeElement as HTMLButtonElement;
+
+    // The browser turns both keys into a click on a <button>; handling the key
+    // as well would sort twice and cancelling it would starve a consumer (click).
+    for (const key of ['Enter', ' ']) {
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      button.dispatchEvent(event);
+      fixture.detectChanges();
+      expect(sort.active()).toBeUndefined();
+      expect(event.defaultPrevented).toBe(false);
+    }
+
+    button.click();
+    fixture.detectChanges();
+    expect(sort.active()).toBe('name');
   });
 
   it('adds a secondary sort on Shift+click when multiSort is enabled', () => {
