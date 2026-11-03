@@ -81,7 +81,7 @@ export const STORY: DemoSpec = {
 
   protected readonly sheetSizes = [10, 11, 12, 13, 14, 16] as const;
 
-  // Only glyphs that carry a micro drawing get a row; `null` keeps the 24-grid path.
+  // Only glyphs that carry a micro drawing get a row; a null micro keeps the 24-grid path.
   protected readonly sheetRows = this.icons.filter((entry) => entry.icon.micro !== null);
 
   protected readonly glyphs = {
