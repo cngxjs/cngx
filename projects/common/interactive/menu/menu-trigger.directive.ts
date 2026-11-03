@@ -62,8 +62,8 @@ interface PopoverController extends CngxMenuDismissPopoverRef {
  * disabled while the panel is open, the panel closes. The trigger guards
  * only the keys it handles: a `(click)="pop.toggle()"` on a plain button
  * is the consumer's and must check the blocked state itself; the
- * `cngxMenuButton` / `cngxIconMenuButton` hosts return early from their
- * click while blocked.
+ * `cngxMenuButton` / `cngxIconMenuButton` hosts refuse the opening click
+ * while blocked and still close an open menu on click.
  *
  * ### Focus model
  *
