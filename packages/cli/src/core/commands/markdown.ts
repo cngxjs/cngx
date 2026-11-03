@@ -91,7 +91,10 @@ export function docText(value: string | null | undefined): string | null {
   return /^\s*<p>/i.test(value) ? toPlainText(value) : value.trim();
 }
 
-/** A description as one table cell. `--compact` drops the column instead of shortening it. */
+/**
+ * A description as one table cell, never shortened. `api`, `slots` and `theme`
+ * drop the column under `--compact`; `di` and `migrate` have no short view.
+ */
 export function textCell(value: string | null | undefined): string {
   return cell(docText(value));
 }
