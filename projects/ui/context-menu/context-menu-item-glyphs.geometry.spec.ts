@@ -136,6 +136,17 @@ describe('context-menu glyph geometry', () => {
     expect(micro.getBoundingClientRect().width).toBeCloseTo(4, 1);
   });
 
+  // A 14px font would round the 0.75em box to 11px, off the 12-unit grid;
+  // the micro floor holds it on 12 until it is lifted.
+  it('floors the caret box at 12px under a smaller font until the micro floor is lifted', async () => {
+    const root = await mount();
+    const svg = one(root, '.item-sub .cngx-menu-item__suffix > svg');
+    one(root, '.item-sub .cngx-menu-item__suffix').style.fontSize = '14px';
+    expect(svg.getBoundingClientRect().width).toBe(12);
+    root.style.setProperty('--cngx-icon-svg-micro-floor', '0px');
+    expect(svg.getBoundingClientRect().width).toBe(11);
+  });
+
   it('keeps the oversized dot box from growing the row', async () => {
     const root = await mount();
     expect(rect(root, '.item-cozy').height).toBeCloseTo(rect(root, '.item-compact').height, 1);
