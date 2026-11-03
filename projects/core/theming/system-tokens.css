@@ -431,21 +431,21 @@
   }
 
   /**
-   * Strong danger - the danger hue one rung darker on light, for a solid
+   * Strong danger - the danger hue two rungs darker on light, for a solid
    * destructive fill that carries text (a danger button). On dark it equals
-   * the dark danger. Pairs with `--cngx-color-on-danger-strong`: 6.1:1 on
+   * the dark danger. Pairs with `--cngx-color-on-danger-strong`: 7.1:1 on
    * light, 5.8:1 on dark.
    * @group Surface
    */
   @property --cngx-color-danger-strong {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.52 0.19 25);
+    initial-value: oklch(0.48 0.2 25);
   }
 
   /**
    * Ink on a strong-danger fill - text and glyphs drawn on
-   * `--cngx-color-danger-strong`. White on light (6.1:1), the dark neutral
+   * `--cngx-color-danger-strong`. White on light (7.1:1), the dark neutral
    * on dark, where the strong danger is light (5.8:1).
    * @group Surface
    */
@@ -628,7 +628,7 @@
      */
     --cngx-gradient-brand: linear-gradient(100deg, var(--cngx-color-primary), var(--cngx-color-accent));
     --cngx-color-danger: oklch(0.6 0.18 25);
-    --cngx-color-danger-strong: oklch(0.52 0.19 25);
+    --cngx-color-danger-strong: oklch(0.48 0.2 25);
     --cngx-color-on-danger-strong: oklch(1 0 0);
     --cngx-color-danger-text: color-mix(in oklab, var(--cngx-color-danger) 75%, var(--cngx-color-text));
     --cngx-color-success: oklch(0.6 0.15 145);
@@ -719,7 +719,7 @@
     --cngx-color-accent: oklch(from var(--cngx-color-primary) l c calc(h - 70));
     --cngx-gradient-brand: linear-gradient(100deg, var(--cngx-color-primary), var(--cngx-color-accent));
     --cngx-color-danger: oklch(0.6 0.18 25);
-    --cngx-color-danger-strong: oklch(0.52 0.19 25);
+    --cngx-color-danger-strong: oklch(0.48 0.2 25);
     --cngx-color-on-danger-strong: oklch(1 0 0);
     --cngx-color-danger-text: color-mix(in oklab, var(--cngx-color-danger) 75%, var(--cngx-color-text));
     --cngx-color-success: oklch(0.6 0.15 145);
