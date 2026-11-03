@@ -131,18 +131,23 @@ export class CngxSidenavLayout {
 
     // Dismiss on pointerdown, not click: an external open-trigger's pointerdown
     // fires before the click that flips opened(), so hasOverlay() is still false
-    // here at that point and the same-gesture open cannot self-close.
+    // here at that point and the same-gesture open cannot self-close. A rail's
+    // own toggle (an [aria-controls] naming the rail id) is skipped: dismissing
+    // on its pointerdown would let the following click reopen the rail.
     fromEvent<PointerEvent>(doc, 'pointerdown')
       .pipe(takeUntilDestroyed())
       .subscribe((e) => {
         if (!this.hasOverlay()) {
           return;
         }
+        const target = e.target as Node;
+        const controlledIds = controlledIdsOf(e.target);
         for (const nav of this.sidenavs()) {
           if (
             nav.isOverlay() &&
             nav.opened() &&
-            !(nav.elementRef.nativeElement as HTMLElement).contains(e.target as Node)
+            !(nav.elementRef.nativeElement as HTMLElement).contains(target) &&
+            !controlledIds.includes(nav.id())
           ) {
             nav.close();
           }
@@ -158,4 +163,15 @@ export class CngxSidenavLayout {
       }
     }
   }
+}
+
+/** Ids listed in the `aria-controls` of the nearest controlling ancestor of `target`. */
+function controlledIdsOf(target: EventTarget | null): readonly string[] {
+  const element =
+    target instanceof Element ? target : target instanceof Node ? target.parentElement : null;
+  const controls = element?.closest('[aria-controls]')?.getAttribute('aria-controls');
+  if (!controls) {
+    return [];
+  }
+  return controls.split(/\s+/).filter(Boolean);
 }

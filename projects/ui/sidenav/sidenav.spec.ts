@@ -65,6 +65,12 @@ class AutoModeHost {
 }
 
 @Component({
+  template: `<cngx-sidenav id="main-nav">Nav</cngx-sidenav>`,
+  imports: [CngxSidenav],
+})
+class StaticIdHost {}
+
+@Component({
   template: `<cngx-sidenav position="start" [(opened)]="open">Nav</cngx-sidenav>`,
   imports: [CngxSidenav],
 })
@@ -268,6 +274,79 @@ describe('CngxSidenav', () => {
     expect(host.leftOpen()).toBe(false);
 
     external.remove();
+  });
+
+  it('a toggle whose aria-controls names the rail closes the open overlay in one gesture', () => {
+    const { fixture, host, left } = setupDual();
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.setAttribute('aria-controls', `other-panel ${left.id()}`);
+    const icon = document.createElement('span');
+    toggle.appendChild(icon);
+    toggle.addEventListener('click', () => host.leftOpen.update((v) => !v));
+    document.body.appendChild(toggle);
+
+    host.leftOpen.set(true);
+    fixture.detectChanges();
+
+    icon.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    expect(host.leftOpen()).toBe(true);
+    icon.dispatchEvent(new Event('click', { bubbles: true }));
+    expect(host.leftOpen()).toBe(false);
+
+    toggle.remove();
+  });
+
+  it('a toggle for one rail still dismisses the other open overlay', () => {
+    const { fixture, host, left } = setupDual();
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.setAttribute('aria-controls', left.id());
+    document.body.appendChild(toggle);
+
+    host.leftOpen.set(true);
+    host.rightOpen.set(true);
+    fixture.detectChanges();
+
+    toggle.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    expect(host.leftOpen()).toBe(true);
+    expect(host.rightOpen()).toBe(false);
+
+    toggle.remove();
+  });
+
+  it('a plain outside button without aria-controls still dismisses', () => {
+    const { fixture, host } = setupDual();
+    const plain = document.createElement('button');
+    plain.type = 'button';
+    document.body.appendChild(plain);
+
+    host.leftOpen.set(true);
+    fixture.detectChanges();
+
+    plain.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    expect(host.leftOpen()).toBe(false);
+
+    plain.remove();
+  });
+
+  it('renders a generated id on each rail and keeps them distinct', () => {
+    const { fixture, left, right } = setupDual();
+    const [leftEl, rightEl] = fixture.debugElement
+      .queryAll(By.directive(CngxSidenav))
+      .map((d) => d.nativeElement as HTMLElement);
+    expect(left.id()).toMatch(/^cngx-sidenav-/);
+    expect(leftEl.id).toBe(left.id());
+    expect(rightEl.id).toBe(right.id());
+    expect(left.id()).not.toBe(right.id());
+  });
+
+  it('keeps a static id attribute', () => {
+    const fixture = TestBed.createComponent(StaticIdHost);
+    fixture.detectChanges();
+    const de = fixture.debugElement.query(By.directive(CngxSidenav));
+    expect(de.injector.get(CngxSidenav).id()).toBe('main-nav');
+    expect((de.nativeElement as HTMLElement).id).toBe('main-nav');
   });
 
   it('sets aria-hidden on overlay sidenavs', () => {

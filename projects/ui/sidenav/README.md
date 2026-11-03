@@ -95,6 +95,28 @@ A rail mounted without `<cngx-sidenav-layout>` has no container to measure; it r
 
 See `core-concepts/responsive-by-default.md` for the library-wide contract.
 
+## External toggle
+
+A hamburger outside the rail toggles it with one button. Name the rail in the button's `aria-controls` and reflect the state in `aria-expanded`:
+
+```html
+<button
+  type="button"
+  [attr.aria-controls]="nav.id()"
+  [attr.aria-expanded]="nav.opened()"
+  (click)="navOpen.set(!navOpen())"
+>
+  Menu
+</button>
+
+<cngx-sidenav-layout>
+  <cngx-sidenav #nav [(opened)]="navOpen">…</cngx-sidenav>
+  <cngx-sidenav-content>…</cngx-sidenav-content>
+</cngx-sidenav-layout>
+```
+
+`CngxSidenavLayout` closes an open overlay on any `pointerdown` outside the rail, except inside an element whose `aria-controls` lists the rail's id. Without that attribute the toggle cannot close the overlay: its `pointerdown` dismisses the rail and its `click` reopens it. Every rail has an id: a generated one by default, or the static `id="..."` you set on the host (read it back via `nav.id()`).
+
 ## Configuration
 
 Every dimension default, the toggle shortcut, and the mini hover dwell resolve through a standard cascade. The docking threshold is deliberately not in the cascade - it is a CSS rule (see above), so it travels with the skin. Per-instance bindings always win; unset keys fall back to the library defaults, so an unconfigured `<cngx-sidenav>` behaves exactly as before.

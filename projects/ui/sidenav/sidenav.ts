@@ -19,6 +19,7 @@ import {
   createTransitionTracker,
   injectLocale,
   matchesKeyCombo,
+  nextUid,
   numberFormatterFor,
   parseKeyCombo,
 } from '@cngx/core/utils';
@@ -130,6 +131,7 @@ export type ResolvedSidenavMode = Exclude<SidenavMode, 'auto'>;
   ],
   host: {
     '[class.cngx-sidenav]': 'true',
+    '[attr.id]': 'id()',
     '[class.cngx-sidenav--start]': "position() === 'start'",
     '[class.cngx-sidenav--end]': "position() === 'end'",
     '[class.cngx-sidenav--open]': 'opened()',
@@ -190,6 +192,17 @@ export class CngxSidenav {
 
   /** Accessible label for the complementary landmark. */
   readonly ariaLabel = input<string | undefined>(undefined);
+
+  /**
+   * Element id of the rail. Defaults to a generated id; a static `id="..."`
+   * attribute on the host is captured here and kept.
+   *
+   * An external toggle names this id in its `aria-controls`
+   * (`[attr.aria-controls]="nav.id()"`). `CngxSidenavLayout` ignores a
+   * `pointerdown` inside such a control when it dismisses open overlays, so
+   * the toggle's own click can close the rail instead of reopening it.
+   */
+  readonly id = input<string>(nextUid('cngx-sidenav-'));
 
   /**
    * Drawer mode. `'auto'` (the default) resolves to `'side'` once the
