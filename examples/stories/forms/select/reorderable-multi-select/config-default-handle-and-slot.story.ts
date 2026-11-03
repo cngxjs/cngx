@@ -64,7 +64,7 @@ export const STORY: DemoSpec = {
 
   <div class="demo-config-compare">
     <div class="demo-config-compare-pane">
-      <h3 class="demo-config-compare-heading">Library defaults</h3>
+      <h2 class="demo-config-compare-heading">Library defaults</h2>
       <cngx-reorderable-multi-select
         [label]="'Defaults'"
         [options]="teams"
@@ -72,7 +72,7 @@ export const STORY: DemoSpec = {
       />
     </div>
     <div class="demo-config-compare-pane">
-      <h3 class="demo-config-compare-heading">Scoped config</h3>
+      <h2 class="demo-config-compare-heading">Scoped config</h2>
       <ng-container *ngTemplateOutlet="scoped; injector: reorderScope()" />
     </div>
   </div>`,

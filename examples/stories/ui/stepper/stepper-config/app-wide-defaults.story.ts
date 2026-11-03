@@ -96,11 +96,11 @@ export const STORY: DemoSpec = {
 
   <div class="demo-config-compare demo-config-compare--stacked">
     <div class="demo-config-compare-pane">
-      <h3 class="demo-config-compare-heading">Library defaults</h3>
+      <h2 class="demo-config-compare-heading">Library defaults</h2>
       <ng-container *ngTemplateOutlet="wizard; context: { $implicit: 0 }" />
     </div>
     <div class="demo-config-compare-pane">
-      <h3 class="demo-config-compare-heading">Scoped config</h3>
+      <h2 class="demo-config-compare-heading">Scoped config</h2>
       <ng-container *ngTemplateOutlet="wizard; context: { $implicit: 1 }; injector: stepperScope" />
     </div>
   </div>`,
