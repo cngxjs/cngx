@@ -911,6 +911,46 @@ describe('CngxMenuTrigger submenu keys on the focused menu', () => {
     expect(outer.ad.activeValue()).toBe('recent');
   });
 
+  it('a consumer keydown on the root menu sees horizontal arrows with no submenu open, not nav keys while one is open', async () => {
+    const fixture = TestBed.createComponent(SubmenuTriggerHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const triggerEl = fixture.debugElement.query(By.directive(CngxMenuTrigger))
+      .nativeElement as HTMLElement;
+    const [, inner] = fixture.debugElement
+      .queryAll(By.directive(CngxMenu))
+      .map((de) => de.injector.get(CngxMenu));
+    const [, innerPop] = fixture.debugElement
+      .queryAll(By.directive(CngxPopover))
+      .map((de) => de.injector.get(CngxPopover));
+
+    triggerEl.focus();
+    press(triggerEl, 'ArrowDown');
+    await settle();
+    const rootMenuEl = document.activeElement as HTMLElement;
+    const seen: string[] = [];
+    rootMenuEl.addEventListener('keydown', (event) => seen.push(event.key));
+
+    // Highlight sits on the leaf "cut": no submenu opens, nothing to stop.
+    press(rootMenuEl, 'ArrowRight');
+    press(rootMenuEl, 'ArrowLeft');
+    TestBed.flushEffects();
+    expect(innerPop.isVisible()).toBe(false);
+    expect(seen).toEqual(['ArrowRight', 'ArrowLeft']);
+
+    press(rootMenuEl, 'ArrowDown');
+    press(rootMenuEl, 'ArrowRight');
+    TestBed.flushEffects();
+    expect(innerPop.isVisible()).toBe(true);
+    seen.length = 0;
+
+    press(rootMenuEl, 'ArrowDown');
+    TestBed.flushEffects();
+    expect(inner.ad.activeValue()).toBe('file2');
+    expect(seen).toEqual([]);
+  });
+
   it('focus moving into the open submenu popover does not close the menu', async () => {
     const fixture = TestBed.createComponent(SubmenuTriggerHost);
     fixture.detectChanges();

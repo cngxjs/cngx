@@ -21,6 +21,7 @@ interface MockMenu {
   highlightFirst: ReturnType<typeof vi.fn>;
   highlightNext: ReturnType<typeof vi.fn>;
   submenus: ReturnType<typeof signal<readonly CngxMenuSubmenuLike[]>>;
+  orientation: ReturnType<typeof signal<'vertical' | 'horizontal'>>;
 }
 
 function mockMenu(): MockMenu {
@@ -28,12 +29,14 @@ function mockMenu(): MockMenu {
   const highlightFirst = vi.fn();
   const highlightNext = vi.fn();
   const submenus = signal<readonly CngxMenuSubmenuLike[]>([]);
+  const orientation = signal<'vertical' | 'horizontal'>('vertical');
   const ad = {
     activeId,
     activeItem: signal<unknown>(null),
     highlightFirst,
     highlightNext,
     activateCurrent: vi.fn(),
+    orientation,
   } as unknown as CngxActiveDescendant;
   return {
     host: {
@@ -48,6 +51,7 @@ function mockMenu(): MockMenu {
     highlightFirst,
     highlightNext,
     submenus,
+    orientation,
   };
 }
 
@@ -218,6 +222,27 @@ describe('context-menu trigger core - submenu keyboard routing', () => {
 
     expect(rootListener).toHaveBeenCalledOnce();
     expect(root.highlightNext).not.toHaveBeenCalled();
+  });
+
+  it('lets ArrowRight / ArrowLeft reach a listener on the root menu while no submenu is open', () => {
+    core.syncOpenState(true);
+    const rootListener = vi.fn();
+    popoverEl.addEventListener('keydown', rootListener);
+    popoverEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    popoverEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+
+    expect(rootListener).toHaveBeenCalledTimes(2);
+  });
+
+  it('stops ArrowRight / ArrowLeft on a horizontal root menu, whose own navigation would act on them', () => {
+    root.orientation.set('horizontal');
+    core.syncOpenState(true);
+    const rootListener = vi.fn();
+    popoverEl.addEventListener('keydown', rootListener);
+    popoverEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    popoverEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+
+    expect(rootListener).not.toHaveBeenCalled();
   });
 
   it('ignores a forwarded keydown that originated inside the menu', () => {

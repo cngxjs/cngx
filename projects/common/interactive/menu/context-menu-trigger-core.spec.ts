@@ -37,7 +37,10 @@ function mockPopover(): CngxContextMenuTriggerPopoverRef & {
 function mockMenu(): CngxMenuHost & { highlightFirst: ReturnType<typeof vi.fn> } {
   const highlightFirst = vi.fn();
   return {
-    ad: { highlightFirst } as unknown as CngxActiveDescendant,
+    ad: {
+      highlightFirst,
+      orientation: signal<'vertical' | 'horizontal'>('vertical'),
+    } as unknown as CngxActiveDescendant,
     submenuItems: signal([]),
     focus: vi.fn(),
     id: signal('cngx-menu-mock'),

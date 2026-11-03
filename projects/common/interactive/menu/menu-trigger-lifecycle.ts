@@ -58,6 +58,13 @@ export interface CngxMenuTriggerLifecycleDeps {
  * routes the submenu keys plus, while a submenu is open, every navigation
  * key to the innermost menu.
  *
+ * Propagation rule for keys that reach the root popover's capture listener:
+ * while a submenu is open, navigation keys are routed to it and do not reach
+ * listeners inside the root menu (the root `CngxActiveDescendant` must not
+ * move too). With no submenu open, ArrowRight / ArrowLeft are routed (to
+ * open a submenu) but keep propagating, since a vertical root menu ignores
+ * them; only a `horizontal` root menu has them stopped.
+ *
  * @internal
  */
 export interface CngxMenuTriggerLifecycle {
@@ -155,9 +162,16 @@ export function createMenuTriggerLifecycle(
         return;
       }
     }
-    if (fromMenu) {
-      // The root popover can be the menu element itself (the context-menu
-      // organism), so the root AD listens on the same node: stop it too.
+    // Stop only when the root AD would also act. While a submenu is open the
+    // key belongs to the innermost menu. With the stack empty only the
+    // horizontal arrows get here: a vertical root AD ignores them (no move,
+    // no preventDefault), so they bubble on to consumer listeners; a
+    // horizontal root AD would step its highlight on them, so stop those.
+    // `stopImmediatePropagation`, because the root popover can be the menu
+    // element itself (the context-menu organism), where the AD listens on
+    // the same node.
+    const rootAdActs = submenuOpen || deps.menu().ad.orientation() === 'horizontal';
+    if (fromMenu && rootAdActs) {
       event.stopImmediatePropagation();
     }
 

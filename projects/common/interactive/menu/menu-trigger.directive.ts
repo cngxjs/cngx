@@ -76,8 +76,12 @@ interface PopoverController extends CngxMenuDismissPopoverRef {
  * the highlight empty until the first arrow key. The trigger routes only
  * the submenu keys (ArrowRight / ArrowLeft) through a capture listener on
  * the popover, and while a submenu is open every navigation key and
- * Escape to the innermost menu. Escape at the root, an item activation and
- * every dismissal except a focus-out restore focus to the trigger. The
+ * Escape to the innermost menu. While a submenu is open, navigation keys
+ * are routed to it and do not reach listeners inside the root menu; with
+ * no submenu open, ArrowRight / ArrowLeft still reach a consumer
+ * `(keydown)` on the menu (a `horizontal` menu excepted, whose own
+ * navigation would act on them). Escape at the root, an item activation
+ * and every dismissal except a focus-out restore focus to the trigger. The
  * context-menu trigger runs the same model through the shared internal
  * menu-trigger lifecycle.
  *
