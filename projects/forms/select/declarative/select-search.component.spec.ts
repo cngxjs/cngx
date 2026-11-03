@@ -243,11 +243,13 @@ describe('CngxSelectSearch - pending debounced write on Escape and Enter', () =>
     expect(input.value).toBe('');
   });
 
-  it('Enter writes the pending term before it activates, and writes nothing later', () => {
-    const { host, type, press } = mountDebounced();
+  it('Enter writes the pending term, activates after the next render, and writes nothing later', () => {
+    const { fixture, host, type, press } = mountDebounced();
     type('ber');
     press('Enter');
     expect(host.writes).toEqual(['ber']);
+    expect(host.termAtActivate).toEqual([]);
+    fixture.detectChanges();
     expect(host.termAtActivate).toEqual(['ber']);
     vi.advanceTimersByTime(1000);
     expect(host.writes).toEqual(['ber']);

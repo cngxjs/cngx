@@ -7,6 +7,7 @@ import {
   effect,
   type ElementRef,
   inject,
+  Injector,
   input,
   untracked,
   viewChild,
@@ -89,6 +90,8 @@ export class CngxSelectSearch {
   /** @internal */
   protected readonly host = injectSelectShellSearchHost();
 
+  private readonly injector = inject(Injector);
+
   private readonly inputRef = viewChild.required<ElementRef<HTMLInputElement>>('searchInput');
 
   /** Debounced term still waiting for its write into the host. */
@@ -154,16 +157,26 @@ export class CngxSelectSearch {
    * Forward navigation keys into the listbox AD while focus stays in
    * the search input. ArrowUp/Down move highlight, Enter activates the
    * current item, Escape closes and restores focus. A debounced term still
-   * waiting for its write settles first: Enter writes it at once, so the pick
-   * runs against the filter the user sees; Escape drops it, as every other
-   * close of the panel does, so no write lands after the panel closed.
+   * waiting for its write settles first: Enter writes it at once and
+   * activates after the next render, once the listbox holds the options the
+   * term filters to, so the pick resolves against the flushed filter (an
+   * active option the term hides is no longer active, and nothing is picked);
+   * Escape drops it, as every other close of the panel does, so no write
+   * lands after the panel closed.
    *
    * @internal
    */
   protected handleKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Enter') {
-      this.flushPendingWrite();
-    } else if (event.key === 'Escape') {
+    if (event.key === 'Enter' && this.flushPendingWrite()) {
+      event.preventDefault();
+      // The listbox reads the filtered options through a template binding,
+      // which refreshes on the next render, not on the term write.
+      afterNextRender(() => this.host.listboxRef()?.ad.activateCurrent(), {
+        injector: this.injector,
+      });
+      return;
+    }
+    if (event.key === 'Escape') {
       this.dropPendingWrite();
     }
     this.forwardKey(event);
@@ -181,13 +194,14 @@ export class CngxSelectSearch {
     }
   }
 
-  private flushPendingWrite(): void {
+  private flushPendingWrite(): boolean {
     const pending = this.pendingWrite;
     if (!pending) {
-      return;
+      return false;
     }
     this.cancelPendingWrite();
     this.host.searchTerm.set(pending.term);
+    return true;
   }
 
   // The input keeps the dropped text otherwise: `[value]` re-renders only when

@@ -1755,4 +1755,43 @@ describe('CngxSelectShell - searchDebounceMs', () => {
     const { shell } = setup([provideSelectConfig(withTypeaheadDebounce(450))]);
     expect(shell.typeaheadDebounceInterval()).toBe(450);
   });
+
+  it('Enter after the debounced write landed picks from the narrowed list', () => {
+    const { fixture, shell, type } = setup([]);
+    const input = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
+      '.cngx-select-search__input',
+    )!;
+    const listbox = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox);
+    listbox.ad.highlightFirst();
+    flush(fixture);
+    type('gre');
+    settle(fixture, 300);
+    expect(listbox.ad.activeValue()).toBeNull();
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+    flush(fixture);
+    expect(shell.value()).toBeUndefined();
+  });
+
+  it('Enter inside the debounce window resolves the pick against the flushed filter', () => {
+    const { fixture, shell, type } = setup([]);
+    const input = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
+      '.cngx-select-search__input',
+    )!;
+    const listbox = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox);
+    listbox.ad.highlightFirst();
+    flush(fixture);
+    expect(listbox.ad.activeValue()).toBe('red');
+    type('gre');
+    const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    input.dispatchEvent(enter);
+    expect(enter.defaultPrevented).toBe(true);
+    flush(fixture);
+    expect(shell.searchTerm()).toBe('gre');
+    // The highlighted Red is hidden by the flushed term, so nothing is picked.
+    expect(shell.value()).toBeUndefined();
+    listbox.ad.highlightFirst();
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+    flush(fixture);
+    expect(shell.value()).toBe('green');
+  });
 });
