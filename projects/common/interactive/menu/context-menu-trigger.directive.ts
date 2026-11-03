@@ -54,16 +54,18 @@ import { CNGX_MENU_NAV_STRATEGY } from './menu-nav-strategy';
  *
  * ### Dismissal
  *
- * Four sources close the menu by default: `Escape`, `pointerdown` outside
- * both the popover and the trigger host, window `blur`, and document
- * `pointercancel`. Window `scroll` is opt-in via
- * {@link withDismissOnScroll}. Touch users get backdrop dismissal through
- * the same `pointerdown` listener - no ESC dependency. The dismissal
- * source that fired most recently is readable through
+ * Five sources close the menu by default: `Escape`, `pointerdown` outside
+ * both the popover and the trigger host, window `blur`, document
+ * `pointercancel`, and focus leaving the target and the open menu chain
+ * (`'focus-out'`, which leaves focus where it went). Window `scroll` is
+ * opt-in via {@link withDismissOnScroll}. Touch users get backdrop
+ * dismissal through the same `pointerdown` listener - no ESC dependency.
+ * The dismissal source that fired most recently is readable through
  * {@link lastDismissSource}.
  *
  * Override individual sources at app root with `withDismissOnOutsideClick`,
- * `withDismissOnScroll`, `withDismissOnBlur`, or swap the whole handler via
+ * `withDismissOnScroll`, `withDismissOnBlur`, `withDismissOnFocusOut`, or
+ * swap the whole handler via
  * {@link CNGX_MENU_DISMISS_HANDLER_FACTORY}.
  *
  * @wcag AA

@@ -3434,13 +3434,13 @@ pre.code-block code {
   padding: 0.5rem 0.75rem;
   color: var(--cngx-color-danger, #d32f2f);
 }
-.demo-popover-padding-sm {
-  padding: 0.25rem;
-}
 .demo-select-retry-button--warn {
   background: color-mix(in oklch, var(--cngx-color-warning, #b45309) 10%, transparent);
   border-color: color-mix(in oklch, var(--cngx-color-warning, #b45309) 35%, transparent);
   color: var(--cngx-color-warning, #b45309);
+  // Projected slot content is consumer-owned: the library touch floor on the
+  // default Retry cannot reach it, so the story's button sets its own.
+  min-block-size: var(--cngx-target-min, 0px);
 }
 .demo-multi-chip-remove,
 .demo-combobox-chip-remove {

@@ -51,6 +51,25 @@ for (const dir of ['ltr', 'rtl'] as const) {
       await expect(main).toBeFocused();
     });
 
+    test('Enter on the caret moves focus into the menu, Escape returns it', async ({ page }) => {
+      await gotoDemo(page, BASIC);
+      await setDirection(page, dir);
+
+      const caret = page.getByRole('button', { name: 'More options' });
+      const menu = page.getByRole('menu', { name: 'Publish options' });
+
+      await caret.focus();
+      await page.keyboard.press('Enter');
+      await expect(menu).toBeVisible();
+      await expect(menu).toBeFocused();
+      await expect(menu).toHaveAttribute('aria-activedescendant', /.+/);
+      await expect(caret).toHaveAttribute('aria-controls', (await menu.getAttribute('id')) ?? '');
+
+      await page.keyboard.press('Escape');
+      await expect(menu).toBeHidden();
+      await expect(caret).toBeFocused();
+    });
+
     test('the caret refuses activation while the main action runs', async ({ page }) => {
       await gotoDemo(page, BASIC);
       await setDirection(page, dir);

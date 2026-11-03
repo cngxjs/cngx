@@ -4,11 +4,17 @@ import { expect, type Locator, type Page } from '@playwright/test';
  * The examples app uses Angular's hash location strategy
  * (provideRouter(routes, withHashLocation())) so deep links resolve off
  * the `#` fragment. Always navigate through this helper so tests don't
- * accidentally land on the home/index page.
+ * accidentally land on the home/index page: an unknown route redirects to
+ * the home page (`**` -> `''`), and the helper fails when the hash no longer
+ * names the requested route.
  */
 export async function gotoDemo(page: Page, routePath: string): Promise<void> {
   const clean = routePath.replace(/^\/+/, '');
-  await page.goto(`/#/${clean}`);
+  const expected = `#/${clean}`;
+  await page.goto(`/${expected}`);
+  await expect(page, `route ${clean} did not resolve`).toHaveURL(
+    (url) => url.hash === expected || url.hash.startsWith(`${expected}?`),
+  );
 }
 
 /**

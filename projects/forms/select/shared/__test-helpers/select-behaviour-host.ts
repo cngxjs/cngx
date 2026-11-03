@@ -13,6 +13,13 @@ import { Subject, type Observable } from 'rxjs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { CngxPopoverPresentationRequest } from '@cngx/common/popover';
+import { provideDirection } from '@cngx/core';
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+} from '@cngx/core/i18n';
 import { CngxFormField, CngxFormFieldPresenter } from '@cngx/forms/field';
 
 import { CngxSelectAnnouncer } from '../announcer';
@@ -40,6 +47,16 @@ export interface SelectBehaviourHostOptions {
    * to opening the panel and clicking the second row.
    */
   readonly commitPick?: (cmp: unknown, fixture: ComponentFixture<unknown>) => void;
+  /**
+   * The variant's roving chip strip, when it has one: seeds two selected
+   * values so the strip renders two chips addressed by `[data-reorder-index]`.
+   */
+  readonly chipRoving?: { readonly seed: (cmp: unknown) => void };
+  /**
+   * The variant runs the closed-trigger typeahead: a printable key without a
+   * matching row arms the debounced buffer reset.
+   */
+  readonly closedTypeahead?: boolean;
 }
 
 interface VariantApi {
@@ -100,7 +117,8 @@ function flush(fixture: ComponentFixture<unknown>): void {
  * stays reachable from the trigger while the panel is closed; a select that
  * turns disabled closes and ignores activations; focus leaving the host
  * closes the anchored panel; Escape follows `dismissOn`; `aria-controls`
- * names the element with the popup role.
+ * names the element with the popup role; a language-pack flip re-renders the
+ * commit-failure copy; a roving chip strip mirrors its arrow keys under RTL.
  *
  * @internal
  */
@@ -372,19 +390,112 @@ export function describeSelectBehaviourHost(
       });
     });
 
-    it("keeps the panel open on Escape when it dismisses on outside clicks only", () => {
+    it('keeps the panel open on Escape when it dismisses on outside clicks only', () => {
       const { fixture, variant, trigger } = mount({
         providers: [provideSelectConfig(withDismissOn('outside'))],
       });
       variant.open();
       flush(fixture);
       expect(variant.panelOpen()).toBe(true);
-      const escape = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+      const escape = new KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+        cancelable: true,
+      });
       trigger().dispatchEvent(escape);
       flush(fixture);
       expect(variant.panelOpen()).toBe(true);
       expect(escape.defaultPrevented).toBe(false);
     });
+
+    it('re-renders the commit-failure copy when the language pack flips', () => {
+      const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+      const { fixture, host, pick, trigger, closePanel } = mount({
+        providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
+      });
+      pick();
+      host.pending!.error(new Error('server down'));
+      flush(fixture);
+      closePanel();
+      const message = () =>
+        document.getElementById(trigger().getAttribute('aria-errormessage') ?? '')?.textContent ??
+        '';
+      expect(message()).toContain('Save failed');
+
+      pack.set({
+        locale: 'de',
+        select: {
+          commitFailed: 'Speichern fehlgeschlagen',
+          commitFailedAnnouncement: '{label}: Speichern fehlgeschlagen',
+          commitFailedAnnouncementDetail: '{label}: Speichern fehlgeschlagen - {detail}',
+        },
+      });
+      flush(fixture);
+      expect(message()).toContain('Speichern fehlgeschlagen');
+      expect(message()).not.toContain('Save failed');
+    });
+
+    if (opts.chipRoving) {
+      const chipRoving = opts.chipRoving;
+      it.each([
+        ['ltr', 'ArrowRight'],
+        ['rtl', 'ArrowLeft'],
+      ] as const)('roves to the next chip on %s with %s', (dir, nextKey) => {
+        const { fixture, el, cmp } = mount({ providers: [provideDirection(dir)] });
+        chipRoving.seed(cmp);
+        flush(fixture);
+        const chip = (index: number) =>
+          el.querySelector<HTMLElement>(`[data-reorder-index="${index}"]`)!;
+        chip(0).focus();
+        flush(fixture);
+        chip(0).dispatchEvent(
+          new KeyboardEvent('keydown', { key: nextKey, bubbles: true, cancelable: true }),
+        );
+        flush(fixture);
+        expect(document.activeElement).toBe(chip(1));
+        expect(chip(1).getAttribute('tabindex')).toBe('0');
+      });
+    }
+
+    if (opts.closedTypeahead) {
+      it('cancels the pending typeahead buffer reset when the host is destroyed', () => {
+        vi.useFakeTimers();
+        const { fixture, cmp, trigger } = mount();
+        const debounceMs = (
+          cmp as { typeaheadDebounceInterval: () => number }
+        ).typeaheadDebounceInterval();
+        // Wrapped by hand, not with vi.spyOn: a spy on the fake clock stays in
+        // vitest's registry, and a later vi.restoreAllMocks() in the same worker
+        // writes the fake setTimeout back onto globalThis after real timers return.
+        const fakeSet = globalThis.setTimeout;
+        const fakeClear = globalThis.clearTimeout;
+        const armed: { delay: unknown; id: unknown }[] = [];
+        const cancelled: unknown[] = [];
+        globalThis.setTimeout = ((...args: Parameters<typeof setTimeout>) => {
+          const id = fakeSet(...args);
+          armed.push({ delay: args[1], id });
+          return id;
+        }) as typeof setTimeout;
+        globalThis.clearTimeout = ((id?: Parameters<typeof clearTimeout>[0]) => {
+          cancelled.push(id);
+          fakeClear(id);
+        }) as typeof clearTimeout;
+        try {
+          // No row starts with 'z': the buffer stays armed, no variant clears it on a match.
+          trigger().dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'z', bubbles: true, cancelable: true }),
+          );
+          const reset = armed.filter((call) => call.delay === debounceMs).at(-1);
+          expect(reset).toBeDefined();
+          expect(cancelled).not.toContain(reset!.id);
+          fixture.destroy();
+          expect(cancelled).toContain(reset!.id);
+        } finally {
+          globalThis.setTimeout = fakeSet;
+          globalThis.clearTimeout = fakeClear;
+        }
+      });
+    }
 
     it('points aria-controls at the listbox or tree while anchored', () => {
       const { fixture, variant, trigger } = mount();

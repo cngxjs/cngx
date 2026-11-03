@@ -33,7 +33,11 @@ export const STORY: DemoSpec = {
     [(values)]="keyboardValues"
     [reorderAriaLabel]="'Reorder agenda with Alt and arrow keys'"
   />`,
-  templateChrome: `<div class="event-grid" style="margin-top:12px">
+  templateChrome: `<div
+    class="event-grid"
+    style="margin-top:12px"
+    [attr.data-cngx-ex-order]="keyboardValues().join(',')"
+  >
    <div class="kbd-hint">
     <strong>Keyboard:</strong>
     <span><kbd>Tab</kbd> into the strip</span>

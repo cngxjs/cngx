@@ -6,6 +6,7 @@ import {
   ViewEncapsulation,
   computed,
   contentChild,
+  DestroyRef,
   inject,
   input,
   model,
@@ -13,10 +14,12 @@ import {
   untracked,
   viewChild,
   ElementRef,
+  type Signal,
   type TemplateRef,
 } from '@angular/core';
 
 import {
+  CNGX_NESTED_INTERACTIVE_SELECTOR,
   CNGX_STATEFUL,
   injectLocale,
   type CngxAsyncState,
@@ -562,8 +565,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   readonly activeId = computed<string | null>(() => this.listboxRef()?.ad.activeId() ?? null);
 
-  readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
-
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
   protected readonly hostFocus = createHostFocusWithin({
@@ -660,7 +661,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       hideCaret: this.hideCaret,
       commitErrorDisplay: this.commitErrorDisplay,
       commitAction: this.commitAction,
-      errorState: this.errorState,
       multi: computed(() => false),
       currentSelection: this.value,
       selectionIndicatorPosition: this.selectionIndicatorPosition,
@@ -675,6 +675,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       announceTemplate: this.announceTemplate,
     },
   );
+
+  /** Whether the bound field shows its error; `false` without a form field. */
+  readonly errorState: Signal<boolean> = this.core.errorState;
 
   /** @internal Mobile sheet presentation; also the scoped announcer's scope. */
   readonly sheetWiring: CngxSelectSheetWiring = createSelectSheetWiring({
@@ -773,6 +776,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     debounceMs: this.typeaheadDebounceInterval,
     disabled: this.core.writeBlocked,
     locale: injectLocale(),
+    destroyRef: inject(DestroyRef),
   });
 
   /**
@@ -1077,6 +1081,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.scalarHandler.finalizeSelection(option.value, option, previous);
   }
 
+  /** Descendants that own Enter / Space; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
+  private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
+
   /** @internal */
   protected handleTriggerKeydown(event: KeyboardEvent): void {
     // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
@@ -1089,8 +1096,8 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     // typeahead, no preventDefault, so Enter / Space run its activation.
     const host = event.currentTarget as Element | null;
     const target = event.target as Element | null;
-    const interactive = target?.closest('button, a[href], input, [role="button"]');
-    if (interactive && interactive !== host) {
+    const interactive = target?.closest(this.nestedInteractive);
+    if (interactive && interactive !== host && host?.contains(interactive)) {
       return;
     }
     const lb = this.listboxRef();

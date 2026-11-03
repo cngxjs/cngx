@@ -14,11 +14,16 @@
   "bin": {
     "cngx-doctor": "cngx-doctor.mjs"
   },
+  "exports": {
+    "./cngx-doctor.mjs": "./cngx-doctor.mjs",
+    "./package.json": "./package.json"
+  },
   "files": [
     "cngx-doctor.mjs",
     "doctor",
     "README.md",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "LICENSE"
   ],
   "scripts": {
     "test": "vitest run"

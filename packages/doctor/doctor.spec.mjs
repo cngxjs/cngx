@@ -1,5 +1,5 @@
-import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -40,6 +40,12 @@ function runCli(dir, args = []) {
   } catch (err) {
     return { status: err.status, stdout: err.stdout ?? '' };
   }
+}
+
+// Like runCli, but keeps stderr, for the usage-error paths that answer there.
+function runCliStreams(args) {
+  const { status, stdout, stderr } = spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8' });
+  return { status, stdout, stderr };
 }
 
 afterEach(() => {
@@ -216,6 +222,64 @@ describe('cngx-doctor CLI', () => {
     expect(findings[0].id).toBe('toaster-without-withtoasts');
   });
 
+  it('ignores a line-commented and a block-commented @cngx import', () => {
+    for (const text of [
+      "// import { CngxToaster } from '@cngx/ui/feedback';\nexport class App {}\n",
+      "/* import { CngxToaster } from '@cngx/ui/feedback'; */\nexport class App {}\n",
+    ]) {
+      const { status, stdout } = runCli(project({ sources: { 'src/app.ts': text } }), ['--json']);
+      expect(status).toBe(0);
+      expect(JSON.parse(stdout)).toEqual([]);
+    }
+  });
+
+  it('still flags a real import next to a commented-out one', () => {
+    const dir = project({
+      sources: {
+        'src/app.ts':
+          "// import { CngxToaster } from '@cngx/ui/feedback';\nimport { CngxToaster } from '@cngx/ui/feedback';\n",
+      },
+    });
+    const json = runCli(dir, ['--json']);
+    expect(json.status).toBe(1);
+    expect(JSON.parse(json.stdout).map((f) => f.id)).toEqual(['toaster-without-withtoasts']);
+  });
+
+  it('a /* or // inside a string or regex literal hides no code from the import scan', () => {
+    for (const before of ["const glob = 'src/*.ts';\n", 'const r = /\\/*/;\n']) {
+      const dir = project({
+        sources: { 'src/app.ts': `${before}import { CngxToaster } from '@cngx/ui/feedback';\n// */\n` },
+      });
+      const json = runCli(dir, ['--json']);
+      expect(json.status).toBe(1);
+      expect(JSON.parse(json.stdout).map((f) => f.id)).toEqual(['toaster-without-withtoasts']);
+    }
+  });
+
+  it('a // inside a URL string hides no opt-in after it', () => {
+    const dir = project({
+      sources: {
+        'src/app.ts':
+          "import { CngxToaster, provideFeedback, withToasts } from '@cngx/ui/feedback';\nfetch('https://x'); export const p = provideFeedback(withToasts());\n",
+      },
+    });
+    const { status, stdout } = runCli(dir, ['--json']);
+    expect(status).toBe(0);
+    expect(JSON.parse(stdout)).toEqual([]);
+  });
+
+  it('strips only <!-- --> in .html: a commented opt-in stays commented, an apostrophe opens nothing', () => {
+    const dir = project({
+      sources: {
+        'src/app.ts': "import { CngxToaster } from '@cngx/ui/feedback';\n",
+        'src/app.html': "<p>don't</p>\n<!-- withToasts() -->\n",
+      },
+    });
+    const json = runCli(dir, ['--json']);
+    expect(json.status).toBe(1);
+    expect(JSON.parse(json.stdout).map((f) => f.id)).toEqual(['toaster-without-withtoasts']);
+  });
+
   it('reports @floating-ui/dom without provideFloatingFallback() as a warn (exit 0)', () => {
     const dir = project({
       pkg: { name: 'floating', dependencies: { '@floating-ui/dom': '^1.6.0' } },
@@ -257,6 +321,69 @@ describe('cngx-doctor CLI', () => {
     expect(JSON.parse(stdout)).toEqual([]);
   });
 
+  it('exits 2 with a stderr line for a project dir that does not exist (text and --json)', () => {
+    const missing = join(project({}), 'aps', 'web');
+    for (const args of [[missing], [missing, '--json']]) {
+      const { status, stdout, stderr } = runCliStreams(args);
+      expect(status).toBe(2);
+      expect(stdout).toBe('');
+      expect(stderr).toBe(`cngx-doctor: ${missing} is not a directory.\n`);
+    }
+  });
+
+  // root reads through any mode bits, so the permission cases only run unprivileged.
+  const unprivileged = process.getuid?.() !== 0;
+
+  it.runIf(unprivileged)('exits 2 for a project dir it cannot read instead of reporting it clean', () => {
+    const dir = project({ sources: { 'src/app.ts': "import { CngxToaster } from '@cngx/ui/feedback';\n" } });
+    chmodSync(dir, 0o000);
+    try {
+      const { status, stdout, stderr } = runCliStreams([dir, '--json']);
+      expect(status).toBe(2);
+      expect(stdout).toBe('');
+      expect(stderr).toMatch(new RegExp(`^cngx-doctor: ${dir} cannot be read \\(EACCES\\)\\.\\n$`));
+    } finally {
+      chmodSync(dir, 0o755);
+    }
+  });
+
+  it.runIf(unprivileged)('exits 2 instead of crashing when a path component denies access', () => {
+    const parent = project({});
+    const child = join(parent, 'app');
+    mkdirSync(child);
+    chmodSync(parent, 0o000);
+    try {
+      const { status, stdout, stderr } = runCliStreams([child, '--json']);
+      expect(status).toBe(2);
+      expect(stdout).toBe('');
+      expect(stderr).toBe(`cngx-doctor: ${child} cannot be read (EACCES).\n`);
+    } finally {
+      chmodSync(parent, 0o755);
+    }
+  });
+
+  it.runIf(unprivileged)('still scans a project whose subdirectory cannot be read', () => {
+    const dir = project({ sources: { 'src/app.ts': "import { CngxToaster } from '@cngx/ui/feedback';\n" } });
+    const locked = join(dir, 'src', 'locked');
+    mkdirSync(locked);
+    chmodSync(locked, 0o000);
+    try {
+      const json = runCli(dir, ['--json']);
+      expect(json.status).toBe(1);
+      expect(JSON.parse(json.stdout).map((f) => f.id)).toEqual(['toaster-without-withtoasts']);
+    } finally {
+      chmodSync(locked, 0o755);
+    }
+  });
+
+  it('exits 2 for a project dir that is a file', () => {
+    const file = join(project({}), 'package.json');
+    const { status, stdout, stderr } = runCliStreams([file, '--json']);
+    expect(status).toBe(2);
+    expect(stdout).toBe('');
+    expect(stderr).toBe(`cngx-doctor: ${file} is not a directory.\n`);
+  });
+
   it('prints human findings (no --json) and exits non-zero', () => {
     const dir = project({
       sources: { 'src/app.ts': "import { CngxToaster } from '@cngx/ui/feedback';\n" },
@@ -281,11 +408,19 @@ describe('CLI flags', () => {
     expect(stdout.trim()).toMatch(/^\d+\.\d+\.\d+/);
   });
 
-  it('collects an unknown flag as a warning instead of silently ignoring it', () => {
+  it('fails an unknown flag with exit 2 instead of running the scan', () => {
     const dir = project({ sources: { 'src/app.ts': 'export class App {}\n' } });
-    const { warnings, exitCode } = runDoctor(['--jsno', dir]);
+    const { warnings, exitCode, output } = runDoctor(['--jsno', dir]);
     expect(warnings).toEqual(["cngx-doctor: unknown option '--jsno' (see --help)"]);
-    expect(exitCode).toBe(0);
+    expect(exitCode).toBe(2);
+    expect(output).toBe('');
+  });
+
+  it('--help still wins over an unknown flag: exit 0, usage on stdout, warning on stderr', () => {
+    const { status, stdout, stderr } = runCliStreams(['--help', '--bogus']);
+    expect(status).toBe(0);
+    expect(stdout).toBe(USAGE);
+    expect(stderr).toBe("cngx-doctor: unknown option '--bogus' (see --help)\n");
   });
 
   it('parseArgs keeps the positional projectDir alongside flags', () => {
@@ -296,6 +431,38 @@ describe('CLI flags', () => {
       version: false,
       unknownFlags: [],
     });
+  });
+});
+
+describe('package exports', () => {
+  // A package self-reference resolves only through `exports`, so importing by
+  // name from inside packages/doctor exercises the published contract.
+  function importByName(specifier) {
+    return spawnSync(process.execPath, ['--input-type=module', '-e', `await import('${specifier}')`], {
+      cwd: dirname(CLI),
+      encoding: 'utf8',
+    });
+  }
+
+  it('exposes the bin module', () => {
+    const { status, stderr } = importByName('@cngx/doctor/cngx-doctor.mjs');
+    expect(stderr).toBe('');
+    expect(status).toBe(0);
+  });
+
+  it('hides the doctor/* modules', () => {
+    const { status, stderr } = importByName('@cngx/doctor/doctor/checks.mjs');
+    expect(status).not.toBe(0);
+    expect(stderr).toContain('ERR_PACKAGE_PATH_NOT_EXPORTED');
+  });
+});
+
+describe('package license', () => {
+  const PKG_DIR = dirname(CLI);
+
+  it('ships the root LICENSE byte for byte and lists it in files', () => {
+    expect(readFileSync(join(PKG_DIR, 'LICENSE'))).toEqual(readFileSync(join(PKG_DIR, '..', '..', 'LICENSE')));
+    expect(JSON.parse(readFileSync(join(PKG_DIR, 'package.json'), 'utf8')).files).toContain('LICENSE');
   });
 });
 
@@ -316,6 +483,22 @@ describe('track-b-symbols drift guard', () => {
 });
 
 describe('incremental scan style resolution', () => {
+  it('re-strips a source whose text changed, also when the sources object is reused', () => {
+    const dir = project({
+      sources: { 'src/app.ts': "import { CngxToaster } from '@cngx/ui/feedback';\n" },
+    });
+    const snapshot = scan(dir);
+    expect(runChecks(snapshot).map((f) => f.id)).toEqual(['toaster-without-withtoasts']);
+    expect(runChecks(snapshot)).toEqual(runChecks(snapshot));
+
+    snapshot.sources['src/app.ts'] = "// import { CngxToaster } from '@cngx/ui/feedback';\n";
+    expect(runChecks(snapshot)).toEqual([]);
+
+    writeFileSync(join(dir, 'src', 'app.ts'), "import { CngxToaster } from '@cngx/ui/feedback';\n");
+    const warm = scan(dir, { prior: snapshot, changedFile: join(dir, 'src', 'app.ts') });
+    expect(runChecks(warm).map((f) => f.id)).toEqual(['toaster-without-withtoasts']);
+  });
+
   it('clears a Track-B finding on the warm path when a stylesheet appears', () => {
     const dir = project({
       sources: { 'src/app.ts': "import { CngxTooltip } from '@cngx/common';\n" },

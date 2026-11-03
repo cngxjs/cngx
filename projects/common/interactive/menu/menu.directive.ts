@@ -1,4 +1,4 @@
-import { Directive, ElementRef, inject, input, signal, untracked } from '@angular/core';
+import { computed, Directive, ElementRef, inject, input, signal, untracked } from '@angular/core';
 import {
   outputFromObservable,
   outputToObservable,
@@ -6,7 +6,7 @@ import {
 } from '@angular/core/rxjs-interop';
 
 import { CngxActiveDescendant } from '@cngx/common/a11y';
-import { coerceSignal } from '@cngx/core/utils';
+import { coerceSignal, nextUid } from '@cngx/core/utils';
 import { cngxDevWarn } from '@cngx/utils';
 
 import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
@@ -56,11 +56,26 @@ const warnedFocusHosts = new WeakSet<HTMLElement>();
     role: 'menu',
     tabindex: '0',
     '[attr.aria-label]': 'label()',
+    '[attr.id]': 'id()',
   },
 })
 export class CngxMenu implements CngxMenuHost {
   /** Accessible label. */
   readonly label = input.required<string>();
+
+  /**
+   * Element id of the menu; defaults to a generated `cngx-menu-*` id. Read
+   * by a menu trigger for `aria-controls`.
+   */
+  readonly idInput = input<string | null>(null, { alias: 'id' });
+
+  private readonly autoId = nextUid('cngx-menu');
+
+  /** Resolved element id: the bound `id`, else (unset or empty) the generated one. */
+  readonly id = computed(() => {
+    const bound = this.idInput();
+    return bound === null || bound === '' ? this.autoId : bound;
+  });
 
   /** Underlying `CngxActiveDescendant` - exposed for trigger composition. */
   readonly ad = inject(CngxActiveDescendant, { self: true, host: true });
@@ -110,11 +125,16 @@ export class CngxMenu implements CngxMenuHost {
       });
   }
 
+  /** `true` when `node` is the menu container or one of its descendants. */
+  contains(node: Node | null): boolean {
+    return node !== null && this.elementRef.nativeElement.contains(node);
+  }
+
   /**
    * Move DOM focus to the menu container so its host
-   * `CngxActiveDescendant` receives keyboard input. Consumers (notably
-   * `CngxContextMenuTrigger`) call this after open to transfer focus
-   * from the trigger zone into the menu. The host element MUST carry a
+   * `CngxActiveDescendant` receives keyboard input. Both menu triggers
+   * (`CngxMenuTrigger`, `CngxContextMenuTrigger`) call this after open to
+   * transfer focus into the menu. The host element MUST carry a
    * non-negative `tabindex` for focus to land - the menu's stories use
    * `tabindex="0"` and consumers should mirror that.
    *

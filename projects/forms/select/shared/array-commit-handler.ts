@@ -21,8 +21,18 @@ export interface ArrayCommitHandlerOptions<T> {
   /** Source of `commitController`, `togglingOption`, `announce`. */
   readonly core: CngxCommitHandlerCore<T, T[]>;
   readonly commitAction: Signal<CngxSelectCommitAction<T[]> | null>;
-  /** Consumer emits `selectionChange`/`optionToggled` and announces. */
-  readonly onToggleFinalize: (option: CngxSelectOptionDef<T>, isNowSelected: boolean) => void;
+  /**
+   * Consumer emits `selectionChange`/`optionToggled` and announces.
+   * `previous` is the selection the toggle replaced: the ledger's rollback
+   * target, so a toggle that superseded another reports the last confirmed
+   * selection, not the unconfirmed one in between. A replacement handler
+   * reads that target from `createCommitBaseline(core.commitController)`.
+   */
+  readonly onToggleFinalize: (
+    option: CngxSelectOptionDef<T>,
+    isNowSelected: boolean,
+    previous: readonly T[],
+  ) => void;
   /** Consumer emits `cleared` + `selectionChange(action:'clear')`. */
   readonly onClearFinalize: (previous: T[], finalValues: T[]) => void;
   readonly onStateChange: (status: AsyncStatus) => void;
@@ -116,11 +126,11 @@ export function createArrayCommitHandler<T>(
       option,
       action,
       onReplay: () => togglingOption.set(option),
-      onSuccess: (finalValues) => {
+      onSuccess: (finalValues, confirmedPrevious) => {
         const eq = opts.compareWith();
         const isNowSelected = finalValues.some((v) => eq(v, option.value));
         togglingOption.set(null);
-        opts.onToggleFinalize(option, isNowSelected);
+        opts.onToggleFinalize(option, isNowSelected, confirmedPrevious);
       },
     });
   };

@@ -57,10 +57,11 @@ export interface CngxChipRemovalHandlerOptions<
     action: CngxSelectCommitAction<T[]>,
   ) => void;
   /**
-   * Runs before `beginCommit`. Stash rollback snapshot + mark the toggling
-   * option here.
+   * Runs before `beginCommit`. Mark the toggling option here. The rollback
+   * target is not the consumer's: the commit ledger rolls back to its
+   * confirmed baseline.
    */
-  readonly onBeforeCommit?: (previous: T[], item: Item) => void;
+  readonly onBeforeCommit?: (item: Item) => void;
   /**
    * Runs on the sync branch after `values.set(next)`. Consumer emits the
    * change event and announces.
@@ -84,7 +85,7 @@ export interface CngxChipRemovalHandler<Item extends CngxChipRemovableItem<unkno
 /**
  * Builds a {@link CngxChipRemovalHandler}. Owns disabled-guard, snapshot,
  * filter, branch dispatch, WeakMap closure stability. Consumer owns the
- * commit dispatch (`beginCommit`), rollback snapshotting
+ * commit dispatch (`beginCommit`), the toggling marker
  * (`onBeforeCommit`), and change-event emission (`onSyncFinalize`).
  */
 export function createChipRemovalHandler<
@@ -148,7 +149,7 @@ export function createChipRemovalHandler<
     const next = previous.filter((v) => !eq(v, item.value));
     const action = commitAction();
     if (action) {
-      opts.onBeforeCommit?.(previous, item);
+      opts.onBeforeCommit?.(item);
       if (commitMode() === 'optimistic') {
         values.set(next);
       }

@@ -97,3 +97,17 @@ export function withDismissOnScroll(dismiss: boolean): CngxMenuConfigFeature {
 export function withDismissOnBlur(dismiss: boolean): CngxMenuConfigFeature {
   return defineMenuConfigFeature((cfg) => ({ ...cfg, dismissOnBlur: dismiss }));
 }
+
+/**
+ * Whether focus leaving the trigger and the open menu chain dismisses the
+ * menu (`'focus-out'`): `Tab` / `Shift+Tab` out of the menu, or focus
+ * landing anywhere outside the trigger, the popover and the open submenus.
+ * The close keeps focus where it went instead of restoring it to the
+ * trigger. Pass `false` for a menu that must survive focus moving away
+ * (a guided tour next to the page it explains).
+ *
+ * Default: `true`.
+ */
+export function withDismissOnFocusOut(dismiss: boolean): CngxMenuConfigFeature {
+  return defineMenuConfigFeature((cfg) => ({ ...cfg, dismissOnFocusOut: dismiss }));
+}

@@ -6,7 +6,10 @@ import { Subject } from 'rxjs';
 import type { CngxListbox } from '@cngx/common/interactive';
 import type { CngxPopover } from '@cngx/common/popover';
 
-import { createADActivationDispatcher } from './ad-activation-dispatcher';
+import {
+  createADActivationDispatcher,
+  type CngxActivationDispatcherCore,
+} from './ad-activation-dispatcher';
 import type { CngxSelectCommitAction } from './commit-action.types';
 import type { CngxSelectOptionDef } from './option.model';
 import type { CngxSelectCore } from './internal/select-core';
@@ -32,12 +35,13 @@ function makeListbox(): { lb: CngxListbox<unknown>; activated: Subject<unknown> 
 function makeCore(
   options: readonly CngxSelectOptionDef<Value>[],
   writeBlocked: Signal<boolean> = signal(false),
-): CngxSelectCore<Value, unknown> {
+): CngxActivationDispatcherCore<Value> {
   const map = new Map(options.map((o) => [o.value, o]));
+  // No cast: the two members the dispatcher reads are the whole contract.
   return {
     findOption: (value: Value) => map.get(value) ?? null,
     writeBlocked,
-  } as unknown as CngxSelectCore<Value, unknown>;
+  };
 }
 
 function makePopover(): { popoverRef: Signal<CngxPopover | null>; hideCount: { n: number } } {
@@ -55,7 +59,7 @@ interface ProbeInputs {
   readonly listboxRef: WritableSignal<CngxListbox<unknown> | null>;
   readonly commitAction: WritableSignal<CngxSelectCommitAction<unknown> | null>;
   readonly popoverRef?: Signal<CngxPopover | null>;
-  readonly core: CngxSelectCore<Value, unknown>;
+  readonly core: CngxActivationDispatcherCore<Value>;
   readonly closeOnSelect: boolean;
   readonly onCommit: (v: Value, o: CngxSelectOptionDef<Value>) => void;
   readonly onActivate: (v: Value, o: CngxSelectOptionDef<Value>) => void;
@@ -299,5 +303,13 @@ describe('createADActivationDispatcher', () => {
 
     activated.next('b');
     expect(onActivateCalls.length).toBe(1);
+  });
+});
+
+describe('CngxActivationDispatcherCore', () => {
+  it('is satisfied by the full select core', () => {
+    const full = {} as CngxSelectCore<Value, Value[]>;
+    const narrow: CngxActivationDispatcherCore<Value> = full;
+    expect(narrow).toBe(full);
   });
 });

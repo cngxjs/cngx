@@ -3,6 +3,27 @@
 Hand-maintained, per package version. The root CHANGELOG.md tracks the cngx
 library releases; this file tracks the doctor package.
 
+## Unreleased
+
+### Breaking
+
+- An unknown option exits `2` without scanning instead of a stderr warning plus a
+  text-mode run. `--help` and `--version` still answer first with exit `0`.
+- `exports` limits the package to `cngx-doctor.mjs` and `package.json`; the
+  `doctor/*` modules are no longer importable.
+
+### Fixed
+
+- A missing, mistyped or unreadable project directory exits `2` with a stderr
+  line instead of reporting a clean project; a path that denies access no longer
+  crashes with exit `1`.
+- A commented-out `@cngx` import no longer counts as usage, and a `/*` or `//`
+  inside a string or regex literal no longer hides code from either scan.
+
+### Added
+
+- The tarball ships the MIT license text (`LICENSE`).
+
 ## 0.2.1 - 2026-10-21
 
 ### Fixed

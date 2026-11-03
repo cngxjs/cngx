@@ -102,8 +102,6 @@ export interface CngxSelectCoreDeps<T, TCommit> {
   readonly hideCaret: Signal<boolean>;
   readonly commitErrorDisplay: Signal<CngxSelectCommitErrorDisplay>;
   readonly commitAction: Signal<CngxSelectCommitAction<TCommit> | null>;
-  /** `presenter?.showError() ?? false`. */
-  readonly errorState: Signal<boolean>;
   /** Combobox uses this for inline search filtering. */
   readonly filter?: Signal<
     ((input: CngxSelectOptionsInput<T>) => CngxSelectOptionsInput<T>) | null
@@ -216,9 +214,11 @@ export interface CngxSelectCore<T, TCommit> extends CngxCommitHandlerCore<T, TCo
    * multi, `'checkmark'` in single.
    */
   readonly resolvedSelectionIndicatorVariant: Signal<'checkbox' | 'checkmark' | 'radio'>;
-  /** `instance > config > 'before'` cascade. */
+  /** `instance > config > 'after'` cascade (`CNGX_SELECT_DEFAULTS.selectionIndicatorPosition`). */
   readonly resolvedSelectionIndicatorPosition: Signal<'before' | 'after'>;
   readonly describedBy: Signal<string | null>;
+  /** The bound field shows its error (`presenter.showError()`); `false` without a field. */
+  readonly errorState: Signal<boolean>;
   readonly ariaInvalid: Signal<boolean | null>;
   readonly ariaBusy: Signal<boolean | null>;
   readonly ariaReadonly: Signal<boolean | null>;
@@ -955,6 +955,7 @@ export function createSelectCore<T, TCommit>(
     resolvedSelectionIndicatorVariant,
     resolvedSelectionIndicatorPosition,
     describedBy,
+    errorState: fieldAria.errorState,
     ariaInvalid,
     ariaBusy,
     ariaReadonly,

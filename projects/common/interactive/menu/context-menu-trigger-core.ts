@@ -1,9 +1,8 @@
 import { type Signal } from '@angular/core';
-import { resolveInlineArrowKey, type CngxDirection } from '@cngx/core';
+import { type CngxDirection } from '@cngx/core';
 import { coerceSignal } from '@cngx/core/utils';
 
 import {
-  createMenuTriggerDismissBinding,
   type CngxMenuDismissHandlerFactory,
   type CngxMenuDismissPopoverRef,
   type CngxMenuDismissSource,
@@ -13,6 +12,7 @@ import type { CngxMenuConfig } from './menu-config';
 import type { CngxMenuFocusStack, CngxMenuFocusStackFactory } from './menu-focus-stack';
 import type { CngxMenuHost } from './menu-host.token';
 import type { CngxMenuNavStrategy } from './menu-nav-strategy';
+import { createMenuTriggerLifecycle, isMenuShortcutCombo } from './menu-trigger-lifecycle';
 
 /**
  * Popover surface the context-menu core drives at pointer coordinates.
@@ -110,7 +110,11 @@ export interface CngxContextMenuTriggerCore {
   readonly focusStack: CngxMenuFocusStack;
   /** `contextmenu` host handler - consults `resolveOpen` before opening. */
   handleContextMenu(event: MouseEvent): void;
-  /** Keydown host handler - `Shift+F10` opens at the host centre. */
+  /**
+   * Keydown host handler - `Shift+F10` opens at the host centre; while open,
+   * a key from outside the root popover routes through the shared menu
+   * lifecycle (submenu keys, and navigation to an open submenu).
+   */
   handleKeydown(event: KeyboardEvent): void;
   /**
    * Open the submenu of the effective menu's active item through the focus
@@ -168,10 +172,8 @@ export function createContextMenuTriggerCore(
   const resolveKeyboardOpen = deps.resolveKeyboardOpen ?? DEFAULT_RESOLVE_KEYBOARD_OPEN;
   const ariaLabels = coerceSignal(deps.menuConfig.ariaLabels);
 
-  // Shared submenu focus-stack model - identical W3C APG keyboard contract to
-  // CngxMenuTrigger. The core owns the ArrowRight/ArrowLeft/Escape routing;
-  // whoever forwards keydown into `handleKeydown` (the trigger host, and the
-  // organism panel in @cngx/ui/context-menu) drives it.
+  // Shared submenu focus-stack model and open / close / key-routing
+  // lifecycle - the same focus model as CngxMenuTrigger.
   const focusStack = deps.focusStackFactory({
     rootMenu: () => deps.menu(),
     popover: () => deps.popover(),
@@ -179,11 +181,14 @@ export function createContextMenuTriggerCore(
     document: deps.document,
   });
 
-  const dismissBinding = createMenuTriggerDismissBinding({
+  const lifecycle = createMenuTriggerLifecycle({
+    menu: () => deps.menu(),
     popover: () => deps.popover(),
     hostElement: deps.hostElement,
     menuConfig: deps.menuConfig,
-    factory: deps.dismissFactory,
+    dismissFactory: deps.dismissFactory,
+    focusStack,
+    direction: deps.direction,
     onDismiss: () => deps.announcer.announce(ariaLabels().menuDismissed),
   });
 
@@ -222,22 +227,17 @@ export function createContextMenuTriggerCore(
     if (!deps.popover().isVisible()) {
       deps.popover().show();
     }
-    // Attach the dismiss listeners eagerly here, not only from the `isOpen`
-    // effect: `showPopover()` makes the menu visible synchronously, but the
-    // effect runs a change-detection flush later, leaving a
-    // visible-but-not-listening window in which an immediate scroll / blur /
-    // outside-pointerdown would fail to dismiss. `attach()` is idempotent, so
-    // the effect's later call is a no-op.
-    dismissBinding.attach();
+    // Run the open branch eagerly here, not only from the `isOpen` effect:
+    // `showPopover()` makes the menu visible synchronously, but the effect
+    // runs a change-detection flush later, leaving a visible-but-not-listening
+    // window in which an immediate scroll / blur / outside-pointerdown would
+    // fail to dismiss. `open()` is idempotent, so the effect's call is safe.
+    lifecycle.open();
     deps.menu().ad.highlightFirst();
-    // Defer one microtask so showPopover()'s top-layer DOM mutation settles
-    // before focus moves into the menu container - matches the close-time
-    // `restoreFocus` pattern.
-    queueMicrotask(() => deps.menu().focus());
   };
 
   return {
-    lastDismissSource: dismissBinding.lastSource,
+    lastDismissSource: lifecycle.lastDismissSource,
     focusStack,
     handleContextMenu(event: MouseEvent): void {
       const decision = resolveOpen(event);
@@ -249,12 +249,10 @@ export function createContextMenuTriggerCore(
       openAt(event.clientX, event.clientY);
     },
     handleKeydown(event: KeyboardEvent): void {
-      // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
-      // untouched - the same guard the nav strategies apply. Shift stays
-      // allowed (Shift+F10 below is the open gesture).
-      if (event.ctrlKey || event.metaKey || event.altKey) {
+      if (isMenuShortcutCombo(event)) {
         return;
       }
+      // Shift+F10 (the open gesture) first; Shift stays allowed.
       if (event.key === 'F10' && event.shiftKey) {
         const decision = resolveKeyboardOpen(event);
         if (!decision.open) {
@@ -266,27 +264,8 @@ export function createContextMenuTriggerCore(
         openAt(rect.left + rect.width / 2, rect.top + rect.height / 2);
         return;
       }
-      // Submenu keyboard routing while the menu is open. Down/Up/Home/End/Enter
-      // are owned by the menu container's CngxActiveDescendant; the focus stack
-      // adds ArrowRight/ArrowLeft (open/close a submenu) and innermost-first
-      // Escape. Root-level Escape stays owned by CngxPopover's global listener,
-      // so it is only routed here once a submenu is on the stack.
-      if (!deps.popover().isVisible()) {
-        return;
-      }
-      const menu = focusStack.effectiveMenu();
-      switch (resolveInlineArrowKey(event.key, deps.direction())) {
-        case 'ArrowRight':
-          focusStack.handleArrowRight(menu, event);
-          return;
-        case 'ArrowLeft':
-          focusStack.handleArrowLeft(menu, event);
-          return;
-        case 'Escape':
-          if (focusStack.stack().length > 0) {
-            focusStack.handleEscape(event);
-          }
-          return;
+      if (deps.popover().isVisible()) {
+        lifecycle.routeHostKey(event);
       }
     },
     openActiveSubmenu(): void {
@@ -303,26 +282,17 @@ export function createContextMenuTriggerCore(
     },
     syncOpenState(open: boolean): void {
       if (open) {
-        focusStack.captureFocus();
-        dismissBinding.attach();
+        lifecycle.open();
       } else {
-        dismissBinding.detach();
-        // Clear any open submenu chain: a non-Escape dismissal (outside-click,
-        // blur, scroll) hides the root popover without touching the stack, so
-        // without this a reopened menu's effectiveMenu() would be a submenu
-        // that no longer exists and Arrow/Home/Enter would route into thin air.
-        focusStack.reset();
-        focusStack.restoreFocus();
+        lifecycle.close();
       }
     },
     standDown(): void {
-      dismissBinding.detach();
-      focusStack.reset();
-      focusStack.discardFocus?.();
+      lifecycle.standDown();
     },
     destroy(): void {
       removeVirtualAnchor();
-      dismissBinding.detach();
+      lifecycle.destroy();
     },
   };
 }

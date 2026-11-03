@@ -20,6 +20,8 @@ function innerMenu(): CngxMenuHost {
     ad: {} as CngxMenuHost['ad'],
     submenuItems: signal([]),
     focus: () => {},
+    id: signal('cngx-menu-mock'),
+    contains: () => false,
     registerSubmenuItem: () => () => {},
   };
 }

@@ -1,12 +1,22 @@
-import { Injector, runInInjectionContext, signal, type TemplateRef } from '@angular/core';
+import {
+  Component,
+  Injector,
+  runInInjectionContext,
+  signal,
+  viewChild,
+  type TemplateRef,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+
+import { CngxReorderableMultiSelect } from '../reorderable-multi-select/reorderable-multi-select.component';
 
 import { CNGX_SELECT_LANGUAGE_EN } from '../i18n/select-language-section';
 
 import { injectReorderableSelectConfig } from './inject-helpers';
 import type { CngxMultiSelectMoveGlyphContext } from './template-slots';
 import {
+  CNGX_REORDERABLE_SELECT_CONFIG,
   CNGX_REORDERABLE_SELECT_DEFAULTS,
   provideReorderableSelectConfig,
   provideReorderableSelectConfigAt,
@@ -203,5 +213,93 @@ describe('resolveReorderableSelectConfig - move glyph', () => {
     const cfg = TestBed.runInInjectionContext(() => resolveReorderableSelectConfig());
     expect(cfg.moveGlyph).toBeNull();
     expect(cfg.dragHandle).toBe(grip);
+  });
+});
+
+@Component({
+  selector: 'drag-handle-source',
+  template: `<ng-template #handle><span class="app-drag-handle"></span></ng-template>`,
+})
+class DragHandleSource {
+  readonly handle = viewChild.required<TemplateRef<void>>('handle');
+}
+
+@Component({
+  selector: 'drag-handle-host',
+  template: `
+    <cngx-reorderable-multi-select [label]="'Colour'" [options]="options" [(values)]="values" />
+  `,
+  imports: [CngxReorderableMultiSelect],
+})
+class DragHandleHost {
+  readonly options = [
+    { value: 'red', label: 'Red' },
+    { value: 'green', label: 'Green' },
+  ];
+  readonly values = signal<string[]>(['red', 'green']);
+}
+
+describe('withDefaultDragHandle reaches a mounted CngxReorderableMultiSelect', () => {
+  const roots: HTMLElement[] = [];
+  afterEach(() => {
+    roots.splice(0).forEach((el) => el.remove());
+  });
+
+  // The TemplateRef only exists once a view renders it, so the config is
+  // provided through a factory that reads it when the select first injects it.
+  function mountWithHandle(useHandle: boolean): HTMLElement {
+    const holder: { tpl: TemplateRef<void> | null } = { tpl: null };
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: CNGX_REORDERABLE_SELECT_CONFIG,
+          useFactory: () => (useHandle ? withDefaultDragHandle(holder.tpl).config : {}),
+        },
+      ],
+    });
+    const source = TestBed.createComponent(DragHandleSource);
+    source.detectChanges();
+    holder.tpl = source.componentInstance.handle();
+    const fixture = TestBed.createComponent(DragHandleHost);
+    roots.push(fixture.nativeElement as HTMLElement);
+    document.body.appendChild(fixture.nativeElement as HTMLElement);
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    return fixture.nativeElement as HTMLElement;
+  }
+
+  it('writes the dragHandle key', () => {
+    const tpl = {} as TemplateRef<void>;
+    expect(withDefaultDragHandle(tpl).config.dragHandle).toBe(tpl);
+  });
+
+  it('renders the configured glyph in every chip handle', () => {
+    expect(mountWithHandle(false).querySelectorAll('.app-drag-handle').length).toBe(0);
+    const el = mountWithHandle(true);
+    expect(el.querySelectorAll('.cngx-select__chip-handle .app-drag-handle').length).toBe(2);
+  });
+});
+
+describe('provideReorderableSelectConfigAt merges over the parent config', () => {
+  it('keeps the app-wide keys a component scope does not set', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideReorderableSelectConfig(
+          withReorderAriaLabel('Mit Alt und Pfeiltasten sortieren'),
+          withReorderKeyboardModifier('meta'),
+        ),
+      ],
+    });
+    const injector = Injector.create({
+      providers: provideReorderableSelectConfigAt(withReorderStripFreeze(false)),
+      parent: TestBed.inject(Injector),
+    });
+    const cfg = runInInjectionContext(injector, () => resolveReorderableSelectConfig());
+    expect(cfg.freezeStripOnCommit).toBe(false);
+    expect(cfg.keyboardModifier).toBe('meta');
+    expect(cfg.ariaLabel()).toBe('Mit Alt und Pfeiltasten sortieren');
   });
 });

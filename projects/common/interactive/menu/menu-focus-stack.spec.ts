@@ -21,7 +21,11 @@ interface MockAd {
   activateCurrent: ReturnType<typeof vi.fn>;
 }
 
-function mockMenu(): { host: CngxMenuHost; ad: MockAd; submenus: ReturnType<typeof signal<readonly CngxMenuSubmenuLike[]>> } {
+function mockMenu(): {
+  host: CngxMenuHost;
+  ad: MockAd;
+  submenus: ReturnType<typeof signal<readonly CngxMenuSubmenuLike[]>>;
+} {
   const ad: MockAd = {
     activeId: signal<string | null>(null),
     activeItem: signal<unknown>(null),
@@ -33,6 +37,8 @@ function mockMenu(): { host: CngxMenuHost; ad: MockAd; submenus: ReturnType<type
     ad: ad as unknown as CngxActiveDescendant,
     submenuItems: submenus,
     focus: vi.fn(),
+    id: signal('cngx-menu-mock'),
+    contains: () => false,
     registerSubmenuItem: () => () => {},
   };
   return { host, ad, submenus };
@@ -387,6 +393,45 @@ describe('createMenuFocusStack', () => {
     button.remove();
     other.remove();
   });
+
+  it('settleFocus discards the saved focus after a focus-out close', async () => {
+    const button = document.createElement('button');
+    const other = document.createElement('button');
+    document.body.append(button, other);
+    button.focus();
+    const stack = build();
+    stack.captureFocus();
+    other.focus();
+
+    stack.settleFocus('focus-out');
+    await Promise.resolve();
+    expect(document.activeElement).toBe(other);
+
+    stack.restoreFocus();
+    await Promise.resolve();
+    expect(document.activeElement).toBe(other);
+    button.remove();
+    other.remove();
+  });
+
+  it.each(['escape', 'outside-click', null] as const)(
+    'settleFocus restores the saved focus after a %s close',
+    async (source) => {
+      const button = document.createElement('button');
+      const other = document.createElement('button');
+      document.body.append(button, other);
+      button.focus();
+      const stack = build();
+      stack.captureFocus();
+      other.focus();
+
+      stack.settleFocus(source);
+      await Promise.resolve();
+      expect(document.activeElement).toBe(button);
+      button.remove();
+      other.remove();
+    },
+  );
 });
 
 describe('connectSubmenuHoverToFocusStack', () => {

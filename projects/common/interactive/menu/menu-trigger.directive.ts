@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import {
+  afterNextRender,
   computed,
   DestroyRef,
   Directive,
@@ -8,29 +9,33 @@ import {
   inject,
   input,
   untracked,
+  type Signal,
 } from '@angular/core';
 import { outputToObservable } from '@angular/core/rxjs-interop';
-import { injectDirection, resolveInlineArrowKey } from '@cngx/core';
+import { injectDirection } from '@cngx/core';
 import { coerceSignal } from '@cngx/core/utils';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { injectHostInteractionBlocked } from '../trigger-guard/host-interaction-blocked';
 import {
   CNGX_MENU_DISMISS_HANDLER_FACTORY,
-  createMenuTriggerDismissBinding,
   type CngxMenuDismissPopoverRef,
 } from './dismiss-handler';
 import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
 import { injectMenuConfig } from './menu-config';
-import {
-  CNGX_MENU_FOCUS_STACK_FACTORY,
-  connectSubmenuHoverToFocusStack,
-} from './menu-focus-stack';
+import { CNGX_MENU_FOCUS_STACK_FACTORY, connectSubmenuHoverToFocusStack } from './menu-focus-stack';
 import type { CngxMenuHost } from './menu-host.token';
 import { CNGX_MENU_NAV_STRATEGY } from './menu-nav-strategy';
+import { createMenuTriggerLifecycle, isMenuShortcutCombo } from './menu-trigger-lifecycle';
 
-/** See `CngxListboxTrigger` - same structural contract. */
+/**
+ * See `CngxListboxTrigger` - same structural contract, plus the two composer
+ * hints the popover trigger reads for `aria-haspopup` and `aria-controls`.
+ */
 interface PopoverController extends CngxMenuDismissPopoverRef {
   show(): void;
+  setHaspopup(value: 'menu' | undefined): void;
+  setControls(source: Signal<string> | null): void;
 }
 
 /**
@@ -56,29 +61,53 @@ interface PopoverController extends CngxMenuDismissPopoverRef {
  * stays focusable, so keydown still arrives). When a cngx button becomes
  * disabled while the panel is open, the panel closes. The trigger guards
  * only the keys it handles: a `(click)="pop.toggle()"` on a plain button
- * is the consumer's and must check the blocked state itself; a
- * `cngxButton` host swallows that click on its own.
+ * is the consumer's and must check the blocked state itself; the
+ * `cngxMenuButton` / `cngxIconMenuButton` hosts refuse the opening click
+ * while blocked and still close an open menu on click.
  *
  * ### Focus model
  *
- * The dropdown trigger deliberately keeps DOM focus on the trigger
- * button while the menu is open - WAI-ARIA APG Menu Button Pattern -
- * and drives the menu's `CngxActiveDescendant` from there via host
- * keydown. It does NOT call {@link CngxMenuHost.focus} after open;
- * that path is reserved for {@link CngxContextMenuTrigger}, where the
- * trigger zone is non-focusable consumer content and the menu
- * container itself must take focus to receive keyboard input.
+ * WAI-ARIA APG Menu Button Pattern: after the menu opens, DOM focus moves
+ * into the `role="menu"` element (a microtask after open, so the popover's
+ * top-layer mutation settles first), and the menu's own
+ * `CngxActiveDescendant` owns `aria-activedescendant` and Down / Up /
+ * Home / End / Enter / Space / typeahead. Every open path moves focus; the
+ * keyboard opens highlight the first or last item, a pointer open leaves
+ * the highlight empty until the first arrow key. The trigger routes only
+ * the submenu keys (ArrowRight / ArrowLeft) through a capture listener on
+ * the popover, and while a submenu is open every navigation key and
+ * Escape to the innermost menu. While a submenu is open, navigation keys
+ * are routed to it and do not reach listeners inside the root menu; with
+ * no submenu open, ArrowRight / ArrowLeft still reach a consumer
+ * `(keydown)` on the menu (a `horizontal` menu excepted, whose own
+ * navigation would act on them). Escape at the root, an item activation
+ * and every dismissal except a focus-out restore focus to the trigger. The
+ * context-menu trigger runs the same model through the shared internal
+ * menu-trigger lifecycle.
+ *
+ * ### ARIA
+ *
+ * The co-hosted `CngxPopoverTrigger` is the single writer of
+ * `aria-haspopup`, `aria-expanded` and `aria-controls`. This trigger
+ * registers `menu` as the popover's haspopup hint and the menu's id as its
+ * controls hint, so `aria-controls` names the `role="menu"` element. A
+ * trigger without a co-hosted `[cngxPopoverTrigger]` emits none of the
+ * three (dev builds warn `CNGX1074`).
  *
  * ### Dismissal
  *
- * Four dismissal sources close the menu by default: `Escape`, `pointerdown`
- * outside both the popover and the trigger host, window `blur`, and
- * document `pointercancel`. Window `scroll` is opt-in via
- * {@link withDismissOnScroll}. The source that fired most recently is
- * readable through {@link lastDismissSource}.
+ * Five dismissal sources close the menu by default: `Escape`, `pointerdown`
+ * outside both the popover and the trigger host, window `blur`, document
+ * `pointercancel`, and focus leaving the trigger and the open menu chain
+ * (`Tab` / `Shift+Tab` out of the menu, `'focus-out'`). Window `scroll` is
+ * opt-in via {@link withDismissOnScroll}. A focus-out close keeps focus
+ * where the user moved it; every other source restores focus to the
+ * trigger. The source that fired most recently is readable through
+ * {@link lastDismissSource}.
  *
  * Override individual sources at app root with `withDismissOnOutsideClick`,
- * `withDismissOnScroll`, `withDismissOnBlur`, or swap the whole handler via
+ * `withDismissOnScroll`, `withDismissOnBlur`, `withDismissOnFocusOut`, or
+ * swap the whole handler via
  * {@link CNGX_MENU_DISMISS_HANDLER_FACTORY} for telemetry-wrapped or
  * test-doubled dismissal.
  *
@@ -96,8 +125,6 @@ interface PopoverController extends CngxMenuDismissPopoverRef {
   exportAs: 'cngxMenuTrigger',
   standalone: true,
   host: {
-    '[attr.aria-haspopup]': '"menu"',
-    '[attr.aria-expanded]': 'isOpen()',
     '(keydown)': 'handleKeydown($event)',
   },
 })
@@ -130,11 +157,14 @@ export class CngxMenuTrigger {
     document: this.doc,
   });
 
-  private readonly dismissBinding = createMenuTriggerDismissBinding({
+  private readonly lifecycle = createMenuTriggerLifecycle({
+    menu: () => this.menu(),
     popover: () => this.popover(),
     hostElement: this.hostElRef.nativeElement,
     menuConfig: this.menuConfig,
-    factory: inject(CNGX_MENU_DISMISS_HANDLER_FACTORY),
+    dismissFactory: inject(CNGX_MENU_DISMISS_HANDLER_FACTORY),
+    focusStack: this.focusStack,
+    direction: this.direction,
     onDismiss: () => this.announcer.announce(this.ariaLabels().menuDismissed),
   });
 
@@ -143,7 +173,7 @@ export class CngxMenuTrigger {
    * before the first close. Surface for demos, telemetry, and audit
    * sinks - reads which path fired without re-installing listeners.
    */
-  readonly lastDismissSource = this.dismissBinding.lastSource;
+  readonly lastDismissSource = this.lifecycle.lastDismissSource;
 
   /** A disabled `cngxButton` stays focusable, so keydown still reaches the trigger. */
   private readonly hostGuard = injectHostInteractionBlocked({
@@ -152,22 +182,26 @@ export class CngxMenuTrigger {
   });
 
   constructor() {
-    inject(DestroyRef).onDestroy(() => this.dismissBinding.detach());
+    inject(DestroyRef).onDestroy(() => this.lifecycle.destroy());
+    // Composer hints for the co-hosted CngxPopoverTrigger, the single writer
+    // of aria-haspopup / aria-expanded / aria-controls. Tracks only the two
+    // references; the menu id Signal itself is registered, so an id change
+    // reaches aria-controls without re-running this effect.
+    effect((onCleanup) => {
+      const pop = this.popover();
+      const menu = this.menu();
+      untracked(() => {
+        pop.setHaspopup('menu');
+        pop.setControls(menu.id);
+      });
+      onCleanup(() => {
+        pop.setHaspopup(undefined);
+        pop.setControls(null);
+      });
+    });
     effect(() => {
       const open = this.isOpen();
-      untracked(() => {
-        if (open) {
-          this.focusStack.captureFocus();
-          this.dismissBinding.attach();
-        } else {
-          this.dismissBinding.detach();
-          // Clear any open submenu chain so a non-Escape dismissal never leaves
-          // a stale submenu on the stack for the next open (mirrors the
-          // context-menu trigger core).
-          this.focusStack.reset();
-          this.focusStack.restoreFocus();
-        }
-      });
+      untracked(() => (open ? this.lifecycle.open() : this.lifecycle.close()));
     });
     // A pointer click on an item routes through its menu's `activated` output
     // (CngxMenuItem funnels click into `activateCurrent`), not the keydown
@@ -192,6 +226,19 @@ export class CngxMenuTrigger {
       rootMenu: () => this.menu(),
       rootOpen: () => this.isOpen(),
     });
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      const host = this.hostElRef.nativeElement;
+      afterNextRender(() => {
+        if (host.hasAttribute('aria-expanded')) {
+          return;
+        }
+        cngxDevWarn(
+          'CNGX1074',
+          '[cngxMenuTrigger] has no aria-expanded writer. Co-host [cngxPopoverTrigger] on the same element; it writes aria-haspopup, aria-expanded and aria-controls for the menu.',
+          host,
+        );
+      });
+    }
   }
 
   private handleActivated(menu: CngxMenuHost): void {
@@ -205,70 +252,24 @@ export class CngxMenuTrigger {
   }
 
   protected handleKeydown(event: KeyboardEvent): void {
-    // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
-    // untouched - the same guard the nav strategies and CngxListboxTrigger
-    // apply. Shift stays allowed.
-    if (event.ctrlKey || event.metaKey || event.altKey) {
+    if (this.isOpen()) {
+      this.lifecycle.routeHostKey(event);
       return;
     }
-
+    if (isMenuShortcutCombo(event) || this.hostGuard.isBlockedNow()) {
+      return;
+    }
     const key = event.key;
-
-    if (!this.isOpen()) {
-      if (this.hostGuard.isBlockedNow()) {
-        return;
-      }
-      if (key === 'ArrowDown' || key === 'Enter' || key === ' ') {
-        event.preventDefault();
-        this.popover().show();
-        this.menu().ad.highlightFirst();
-        return;
-      }
-      if (key === 'ArrowUp') {
-        event.preventDefault();
-        this.popover().show();
-        this.menu().ad.highlightLast();
-        return;
-      }
+    if (key === 'ArrowDown' || key === 'Enter' || key === ' ') {
+      event.preventDefault();
+      this.popover().show();
+      this.menu().ad.highlightFirst();
       return;
     }
-
-    const menu = this.focusStack.effectiveMenu();
-    const ad = menu.ad;
-
-    // Resolve the physical arrow to its inline-logical intent: under `rtl`
-    // physical ArrowLeft opens the submenu and physical ArrowRight pops it.
-    // Vertical / Home / End / activation keys pass through unchanged.
-    switch (resolveInlineArrowKey(key, this.direction())) {
-      case 'Escape':
-        this.focusStack.handleEscape(event);
-        return;
-      case 'ArrowDown':
-        event.preventDefault();
-        ad.highlightNext();
-        return;
-      case 'ArrowUp':
-        event.preventDefault();
-        ad.highlightPrev();
-        return;
-      case 'Home':
-        event.preventDefault();
-        ad.highlightFirst();
-        return;
-      case 'End':
-        event.preventDefault();
-        ad.highlightLast();
-        return;
-      case 'ArrowRight':
-        this.focusStack.handleArrowRight(menu, event);
-        return;
-      case 'ArrowLeft':
-        this.focusStack.handleArrowLeft(menu, event);
-        return;
-      case 'Enter':
-      case ' ':
-        this.focusStack.handleActivation(menu, event);
-        return;
+    if (key === 'ArrowUp') {
+      event.preventDefault();
+      this.popover().show();
+      this.menu().ad.highlightLast();
     }
   }
 }

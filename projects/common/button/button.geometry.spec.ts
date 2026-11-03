@@ -71,7 +71,7 @@ type Density = 'comfortable' | 'compact' | 'spacious';
           cngxButton
           tone="primary"
           class="b-shade-tone"
-          style="--cngx-button-hover-shade: var(--cngx-button-tone)"
+          style="--cngx-button-hover-shade: var(--cngx-button-tone-fill)"
         >
           Save
         </button>
@@ -321,7 +321,7 @@ describe('CngxButton paint: tokens', () => {
     await userEvent.hover(shaded);
     expect(computedValue(shaded, 'background-color')).not.toBe(rest);
 
-    // A shade equal to the tone leaves the hover fill on the rest fill.
+    // A shade equal to the solid fill leaves the hover fill on the rest fill.
     const toned = query(root, '.b-shade-tone');
     const tonedRest = computedValue(toned, 'background-color');
     await userEvent.hover(toned);

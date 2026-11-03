@@ -359,6 +359,6 @@ source.pipe(tapAsyncState(state)).subscribe({
 ## See Also
 
 - [CngxSmartDataSource](../data-source/README.md) - integrates async state with table rendering
-- [CngxAsyncContainer](../../ui/feedback/README.md) - built-in skeleton/error/empty templates for async state
+- [CngxAsyncContainer](../../../ui/feedback/README.md) - built-in skeleton/error/empty templates for async state
 - [CngxAsyncClick](../../interactive/README.md) - directive that wires async action buttons to this system
 - Compodoc: Full type reference at `/docs`

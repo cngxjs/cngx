@@ -13,10 +13,12 @@ import type { CngxSelectOptionDef } from './option.model';
  *
  * Retry routing and the commit record above the controller stay internal;
  * swap `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` to change how a commit runs.
+ * The confirmed value a superseding commit rolls back to is public:
+ * `createCommitBaseline(core.commitController)`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/commit-handler-core.ts
  * @since 0.1.0
- * @relatedTo CNGX_ARRAY_COMMIT_HANDLER_FACTORY, CNGX_SCALAR_COMMIT_HANDLER_FACTORY, CNGX_SELECT_COMMIT_CONTROLLER_FACTORY
+ * @relatedTo CNGX_ARRAY_COMMIT_HANDLER_FACTORY, CNGX_SCALAR_COMMIT_HANDLER_FACTORY, CNGX_SELECT_COMMIT_CONTROLLER_FACTORY, createCommitBaseline
  */
 export interface CngxCommitHandlerCore<T, TCommit> {
   /** Commit state machine of the composite, from `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY`. */

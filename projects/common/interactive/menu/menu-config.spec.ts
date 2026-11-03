@@ -20,6 +20,7 @@ import {
   withAriaLabels,
   withCloseOnSelect,
   withDismissOnBlur,
+  withDismissOnFocusOut,
   withDismissOnOutsideClick,
   withDismissOnScroll,
   withSubmenuCloseDelay,
@@ -43,6 +44,7 @@ describe('CNGX_MENU_CONFIG', () => {
     expect(config.dismissOnOutsideClick).toBe(true);
     expect(config.dismissOnScroll).toBe(false);
     expect(config.dismissOnBlur).toBe(true);
+    expect(config.dismissOnFocusOut).toBe(true);
     expect(config).toEqual({ ...DEFAULT_MENU_CONFIG, ariaLabels: expect.any(Function) });
     expect(coerceSignal(config.ariaLabels)()).toEqual(DEFAULT_MENU_CONFIG.ariaLabels);
   });
@@ -54,6 +56,7 @@ describe('CNGX_MENU_CONFIG', () => {
           withDismissOnOutsideClick(false),
           withDismissOnScroll(true),
           withDismissOnBlur(false),
+          withDismissOnFocusOut(false),
         ),
       ],
     });
@@ -61,6 +64,7 @@ describe('CNGX_MENU_CONFIG', () => {
     expect(config.dismissOnOutsideClick).toBe(false);
     expect(config.dismissOnScroll).toBe(true);
     expect(config.dismissOnBlur).toBe(false);
+    expect(config.dismissOnFocusOut).toBe(false);
   });
 
   it('provideMenuConfig + withAriaLabels overrides only the keys passed in', () => {
@@ -126,6 +130,7 @@ describe('CNGX_MENU_CONFIG', () => {
       withDismissOnOutsideClick(false),
       withDismissOnScroll(true),
       withDismissOnBlur(false),
+      withDismissOnFocusOut(false),
     ];
     for (const f of features) {
       expect((f as { _target?: string })._target).toBe('config');

@@ -84,13 +84,19 @@ export const STORY: DemoSpec = {
     <label>
       <input
         type="checkbox"
+        data-cngx-ex-fail
         [checked]="asyncShouldFail()"
         (change)="asyncShouldFail.set($any($event.target).checked)"
       />
       Server fails
     </label>
   </div>
-<div class="event-grid" style="margin-top:12px">
+<div
+    class="event-grid"
+    style="margin-top:12px"
+    [attr.data-cngx-ex-selected]="asyncValue()?.name ?? ''"
+    [attr.data-cngx-ex-error]="asyncLog().at(-1) ?? ''"
+  >
     <div class="event-row">
       <span class="event-label">Selected</span>
       <span class="event-value">{{ asyncValue()?.name ?? '—' }}</span>

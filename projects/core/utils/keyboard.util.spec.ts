@@ -1,5 +1,12 @@
+import { Injector } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { describe, it, expect } from 'vitest';
-import { matchesKeyCombo, parseKeyCombo } from './keyboard.util';
+import {
+  CNGX_NESTED_INTERACTIVE_SELECTOR,
+  matchesKeyCombo,
+  parseKeyCombo,
+  provideNestedInteractiveSelector,
+} from './keyboard.util';
 
 function press(
   key: string,
@@ -106,5 +113,52 @@ describe("matchesKeyCombo literal '+' key", () => {
     expect(matchesKeyCombo(press('+', { meta: true, shift: true }), combo, true)).toBe(true);
     expect(matchesKeyCombo(press('+', { ctrl: true }), combo, false)).toBe(true);
     expect(matchesKeyCombo(press('+'), combo, true)).toBe(false);
+  });
+});
+
+describe('CNGX_NESTED_INTERACTIVE_SELECTOR', () => {
+  const matches = (selector: string, html: string): boolean => {
+    const host = document.createElement('div');
+    host.innerHTML = html;
+    return host.firstElementChild!.matches(selector);
+  };
+
+  it('names the native controls, editable regions and the widget roles by default', () => {
+    const selector = TestBed.inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
+    for (const html of [
+      '<button></button>',
+      '<a href="#"></a>',
+      '<input />',
+      '<summary></summary>',
+      '<span contenteditable="true"></span>',
+      '<span contenteditable=""></span>',
+      '<span role="radio"></span>',
+      '<span role="tab"></span>',
+      '<span role="slider"></span>',
+      '<span role="menuitemradio"></span>',
+    ]) {
+      expect(matches(selector, html), html).toBe(true);
+    }
+    for (const html of ['<a></a>', '<span contenteditable="false"></span>', '<span role="option"></span>']) {
+      expect(matches(selector, html), html).toBe(false);
+    }
+  });
+
+  it('provideNestedInteractiveSelector extends the default list', () => {
+    TestBed.configureTestingModule({ providers: [provideNestedInteractiveSelector('app-rating')] });
+    const selector = TestBed.inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
+    expect(matches(selector, '<app-rating></app-rating>')).toBe(true);
+    expect(matches(selector, '<button></button>')).toBe(true);
+  });
+
+  it('a nested provider extends its parent, not the default', () => {
+    TestBed.configureTestingModule({ providers: [provideNestedInteractiveSelector('app-rating')] });
+    const child = Injector.create({
+      providers: provideNestedInteractiveSelector('[role="spinbutton"]'),
+      parent: TestBed.inject(Injector),
+    });
+    const selector = child.get(CNGX_NESTED_INTERACTIVE_SELECTOR);
+    expect(matches(selector, '<app-rating></app-rating>')).toBe(true);
+    expect(matches(selector, '<span role="spinbutton"></span>')).toBe(true);
   });
 });

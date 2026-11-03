@@ -6,12 +6,12 @@ import {
   ViewEncapsulation,
   computed,
   contentChild,
+  DestroyRef,
   inject,
   Injector,
   input,
   model,
   output,
-  untracked,
   viewChild,
   ElementRef,
   type Signal,
@@ -19,6 +19,7 @@ import {
 } from '@angular/core';
 
 import {
+  CNGX_NESTED_INTERACTIVE_SELECTOR,
   CNGX_STATEFUL,
   injectLocale,
   type AsyncStatus,
@@ -78,7 +79,7 @@ import {
   type CngxChipRemovalHandler,
 } from '../shared/chip-removal-handler';
 import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
-import { resolvePageJumpSpace } from '../shared/internal/page-jump-handler';
+import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import { sameArrayContents } from '../shared/internal/compare';
 import { CngxSelectReorderList } from '../shared/internal/reorder-list/reorder-list.component';
 import { CngxSelectSummary } from '../shared/internal/summary/select-summary.component';
@@ -694,8 +695,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /** @internal */
   readonly activeId = computed<string | null>(() => this.listboxRef()?.ad.activeId() ?? null);
 
-  readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
-
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
   protected readonly hostFocus = createHostFocusWithin({
@@ -752,7 +751,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       hideCaret: this.hideCaret,
       commitErrorDisplay: this.commitErrorDisplay,
       commitAction: this.commitAction,
-      errorState: this.errorState,
       multi: computed(() => true),
       currentSelection: this.values,
       multiValues: this.values,
@@ -768,6 +766,9 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       announceTemplate: this.announceTemplate,
     },
   );
+
+  /** Whether the bound field shows its error; `false` without a form field. */
+  readonly errorState: Signal<boolean> = this.core.errorState;
 
   // Two handlers start commits here: Retry goes to whichever started the last.
   private readonly commitRetry = commitRetryFor(this.core.commitController);
@@ -870,6 +871,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     debounceMs: this.typeaheadDebounceInterval,
     disabled: this.core.writeBlocked,
     locale: injectLocale(),
+    destroyRef: inject(DestroyRef),
   });
 
   /**
@@ -937,9 +939,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
 
   private readonly togglingOption = this.core.togglingOption;
 
-  /** Rollback target for a commit in flight. */
-  private lastCommittedValues: T[] = [];
-
   /**
    * Toggle/clear finalize + AD-activation dispatch. Shared with
    * `CngxMultiSelect` / `CngxCombobox`; this variant adds
@@ -952,9 +951,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     commitMode: this.commitMode,
     commitAction: this.commitAction,
     core: this.core,
-    setLastCommitted: (previous) => {
-      this.lastCommittedValues = previous;
-    },
     beginToggle: (next, previous, option, action) =>
       this.commitHandler.beginToggle(next, previous, option, action),
     beginClear: (previous, action) => this.commitHandler.beginClear(previous, action),
@@ -974,8 +970,8 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       commitMode: this.commitMode,
       core: this.core,
       commitAction: this.commitAction,
-      onToggleFinalize: (option, isNowSelected) =>
-        this.toggleDispatch.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
+      onToggleFinalize: (option, isNowSelected, previous) =>
+        this.toggleDispatch.finalizeToggle(option, isNowSelected, previous),
       onClearFinalize: (previous, finalValues) =>
         this.toggleDispatch.clearFinalize(previous, finalValues),
       onStateChange: (status) => this.stateChange.emit(status),
@@ -1000,10 +996,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     commitMode: this.commitMode,
     beginCommit: (next, previous, item, action) =>
       this.commitHandler.beginToggle(next, previous, item, action),
-    onBeforeCommit: (previous, item) => {
-      this.lastCommittedValues = previous;
-      this.togglingOption.set(item);
-    },
+    onBeforeCommit: (item) => this.togglingOption.set(item),
     onSyncFinalize: (item, previous) => this.toggleDispatch.finalizeToggle(item, false, previous),
   });
 
@@ -1091,8 +1084,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   }
 
   constructor() {
-    this.lastCommittedValues = untracked(() => [...this.values()]);
-
     afterNextRender(() => {
       if (this.autofocus()) {
         this.focus();
@@ -1221,6 +1212,9 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     this.focusState.markBlurred();
   }
 
+  /** Descendants that own Enter / Space; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
+  private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
+
   /** @internal */
   protected handleTriggerKeydown(event: KeyboardEvent): void {
     // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
@@ -1233,8 +1227,8 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     // typeahead, no preventDefault, so Enter / Space run its activation.
     const host = event.currentTarget as Element | null;
     const target = event.target as Element | null;
-    const interactive = target?.closest('button, a[href], input, [role="button"]');
-    if (interactive && interactive !== host) {
+    const interactive = target?.closest(this.nestedInteractive);
+    if (interactive && interactive !== host && host?.contains(interactive)) {
       return;
     }
     const lb = this.listboxRef();
@@ -1264,35 +1258,15 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       }
     }
 
-    if (event.key === 'PageDown' || event.key === 'PageUp') {
-      event.preventDefault();
-      if (!pop || !lb) {
-        return;
-      }
-      if (!pop.isVisible()) {
-        pop.show();
-      }
-      const { items, currentIndex: currentListboxIndex } = resolvePageJumpSpace(
-        lb,
-        this.flatOptions,
-      );
-      const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
-      const action = this.flatNavStrategy.onPageJump(
-        {
-          options: this.flatOptions(),
-          listboxItems: items,
-          currentFlatIndex: -1,
-          currentListboxIndex,
-          compareWith: this.compareWith(),
-          disabled: this.disabled(),
-          typeaheadController: this.typeaheadController,
-        },
-        direction,
-      );
-      if (action.kind === 'highlight') {
-        lb.ad.highlightByIndex(action.index);
-      }
-    }
+    handleFlatNavPageJumpKey(event, {
+      listbox: lb,
+      popover: pop,
+      strategy: this.flatNavStrategy,
+      flatOptions: this.flatOptions,
+      compareWith: this.compareWith,
+      disabled: this.disabled,
+      typeaheadController: this.typeaheadController,
+    });
   }
 
   /**
@@ -1410,9 +1384,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       commitMode: this.commitMode,
       commitAction: this.commitAction,
       commitController: this.core.commitController,
-      setLastCommitted: (v) => {
-        this.lastCommittedValues = [...v];
-      },
       onReorder: (values, previous, option, fromIndex, toIndex) => {
         const change: CngxReorderableMultiSelectChange<T> = {
           source: this,

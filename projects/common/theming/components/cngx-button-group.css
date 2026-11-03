@@ -192,7 +192,8 @@
       z-index: 2;
     }
 
-    /* Solid primary / danger segments share fill and border colour; a seam
+    /* Solid primary / danger segments share fill and border colour (the
+     * solid fill token, as on the button itself); a seam
      * line mixed from the on-tone colour keeps them apart. Mixed in oklab:
      * an oklch mix would swing the hue between the two colours. */
     :scope:not(:has(> .cngx-button-group))
@@ -201,17 +202,17 @@
       border-inline-start-color: color-mix(
         in oklab,
         var(--cngx-button-on-tone, Canvas) 40%,
-        var(--cngx-button-tone, currentColor)
+        var(--cngx-button-tone-fill, var(--cngx-button-tone, currentColor))
       );
     }
     :scope[data-orientation='vertical']:not(:has(> .cngx-button-group))
       > [data-variant='solid']:not([data-tone='neutral'])
       ~ [data-variant='solid']:not([data-tone='neutral'], [aria-disabled='true']) {
-      border-inline-start-color: var(--cngx-button-tone, currentColor);
+      border-inline-start-color: var(--cngx-button-tone-fill, var(--cngx-button-tone, currentColor));
       border-block-start-color: color-mix(
         in oklab,
         var(--cngx-button-on-tone, Canvas) 40%,
-        var(--cngx-button-tone, currentColor)
+        var(--cngx-button-tone-fill, var(--cngx-button-tone, currentColor))
       );
     }
 

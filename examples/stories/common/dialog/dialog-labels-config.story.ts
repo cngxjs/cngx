@@ -63,13 +63,13 @@ export const STORY: DemoSpec = {
 
   <div class="demo-config-compare">
     <div class="demo-config-compare-pane">
-      <h3 class="demo-config-compare-heading">Library labels</h3>
+      <h2 class="demo-config-compare-heading">Library labels</h2>
       <div class="demo-inline-actions">
         <ng-container *ngTemplateOutlet="panel; context: { $implicit: 0 }" />
       </div>
     </div>
     <div class="demo-config-compare-pane">
-      <h3 class="demo-config-compare-heading">Scoped labels</h3>
+      <h2 class="demo-config-compare-heading">Scoped labels</h2>
       <div class="demo-inline-actions">
         <ng-container *ngTemplateOutlet="panel; context: { $implicit: 1 }; injector: dialogScope" />
       </div>

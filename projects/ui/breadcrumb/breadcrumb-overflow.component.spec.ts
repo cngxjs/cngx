@@ -134,10 +134,10 @@ describe('CngxBreadcrumbOverflow', () => {
     expect(trigger.getAttribute('aria-label')).toBe('Show collapsed breadcrumbs');
     expect(trigger.getAttribute('aria-haspopup')).toBe('menu');
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
-    // The trigger composes CngxPopoverTrigger, which wires aria-controls to the
-    // popover id and sets the CSS anchor-name; without it the panel is unanchored.
-    // aria-controls was absent before that directive was added - assert it is present.
-    expect(trigger.getAttribute('aria-controls')).toBeTruthy();
+    // The trigger composes CngxPopoverTrigger, which wires aria-controls and
+    // sets the CSS anchor-name; the menu trigger names the role=menu element.
+    const controlled = document.getElementById(trigger.getAttribute('aria-controls') ?? '');
+    expect(controlled?.getAttribute('role')).toBe('menu');
     expect(labels(root)).toEqual(['Catalog', 'Books']);
   });
 
@@ -195,15 +195,29 @@ describe('CngxBreadcrumbOverflow', () => {
     trigger.click();
     fixture.detectChanges();
     expect(trigger.getAttribute('aria-expanded')).toBe('true');
+    await flushMicrotasks();
+    expect(document.activeElement?.getAttribute('role')).toBe('menu');
 
-    // Focus moves away; closing the menu must restore it to the trigger.
-    sibling.focus();
-    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    (document.activeElement as HTMLElement).dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    );
     fixture.detectChanges();
     await flushMicrotasks();
 
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
     expect(document.activeElement).toBe(trigger);
+
+    // Focus leaving trigger and menu closes the panel and stays where it went.
+    trigger.click();
+    fixture.detectChanges();
+    await flushMicrotasks();
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+    sibling.focus();
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(sibling);
   });
 
   it('renders nothing when no crumb is collapsed', () => {

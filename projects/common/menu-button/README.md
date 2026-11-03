@@ -30,9 +30,9 @@ export class AppExport {
 
 ## What the button wires
 
-- `[menu]` and `[popover]` are the only bindings. `CngxMenuTrigger` (keyboard model, `aria-expanded`, dismissal, focus kept on the button) and `CngxPopoverTrigger` (CSS anchor, `aria-controls`) sit on the button as host directives.
-- The popover is told it holds a menu, so `aria-haspopup` reads `menu` without a `[haspopup]`. A popover laid out as a sheet or fullscreen reads `dialog`. The hint is released when the button binds another popover or is destroyed.
-- A click toggles the popover. ArrowDown, Enter or Space opens the menu and highlights the first item, ArrowUp the last. Escape closes it and focus stays on the button.
+- `[menu]` and `[popover]` are the only bindings. `CngxMenuTrigger` (keyboard model, focus, dismissal) and `CngxPopoverTrigger` (CSS anchor, `aria-haspopup`, `aria-expanded`, `aria-controls`) sit on the button as host directives.
+- The menu trigger tells the popover it holds a menu, so `aria-haspopup` reads `menu` without a `[haspopup]` and `aria-controls` names the `role="menu"` element. A popover laid out as a sheet or fullscreen reads `dialog` and names the popover. The hints are released when the button binds another popover or is destroyed.
+- A click toggles the popover. ArrowDown, Enter or Space opens the menu and highlights the first item, ArrowUp the last. After open, focus moves into the menu, which carries `aria-activedescendant`. Escape or an activation closes it and returns focus to the button; Tab or Shift+Tab closes it and leaves focus where it went.
 - `expanded` (a signal) mirrors the popover's visibility; the host carries `data-expanded`.
 
 ## Axes and states

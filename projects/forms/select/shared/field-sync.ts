@@ -9,6 +9,10 @@ import { createFieldSync as createFieldSyncField, type FieldSyncOptions } from '
  * composite control (e.g. `cngx-filter-builder`) is the form-field's control
  * and its inner pickers must not write the composite's object value into
  * their own scalar `value` model.
+ *
+ * Optional, no default: the token has no factory, so read it with
+ * `inject(CNGX_SELECT_DISABLE_FIELD_SYNC, { optional: true })`; an absent
+ * provider means the value-sync stays on.
  */
 export const CNGX_SELECT_DISABLE_FIELD_SYNC = new InjectionToken<boolean>(
   'CngxSelectDisableFieldSync',

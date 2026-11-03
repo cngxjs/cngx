@@ -3,9 +3,9 @@ import type { Locator, Page } from '@playwright/test';
 import { expect, test } from '../../_test';
 import { gotoDemo } from '../../_helpers';
 
-// Story: CngxMenuButton is the APG menu button on the button core. The button
-// keeps focus while the menu is open and drives the menu's active descendant;
-// the panel is anchored to the button. The vertical keys do not depend on the
+// Story: CngxMenuButton is the APG menu button on the button core. After open,
+// focus moves into the menu, which carries aria-activedescendant; Escape and
+// activation return focus to the button. The panel is anchored to the button. The vertical keys do not depend on the
 // writing direction, so the pass runs once per direction and also pins that
 // the caret sits at the inline end.
 
@@ -50,8 +50,16 @@ for (const dir of ['ltr', 'rtl'] as const) {
       await page.keyboard.press('ArrowDown');
       await expect(menu).toBeVisible();
       await expect(button).toHaveAttribute('aria-expanded', 'true');
-      await expect(button).toBeFocused();
-      await expect.poll(() => activeItem(page, menu)).toBe('PDF');
+      // The focused element is the role=menu, and its aria-activedescendant
+      // resolves to the highlighted menuitem.
+      await expect(menu).toBeFocused();
+      await expect.poll(() => activeItem(page, page.locator(':focus'))).toBe('PDF');
+      const activeRole = await page.evaluate(() => {
+        const id = document.activeElement?.getAttribute('aria-activedescendant');
+        return id ? document.getElementById(id)?.getAttribute('role') : null;
+      });
+      expect(activeRole).toBe('menuitem');
+      await expect(button).toHaveAttribute('aria-controls', (await menu.getAttribute('id')) ?? '');
 
       // The panel is anchored to the button, not laid out at the page origin.
       const anchorName = await button.evaluate((el) =>
@@ -102,9 +110,41 @@ for (const dir of ['ltr', 'rtl'] as const) {
         await page.waitForTimeout(100);
         await expect(menu).toBeVisible();
         await expect(button).toHaveAttribute('aria-expanded', 'true');
-        await expect(button).toBeFocused();
+        await expect(menu).toBeFocused();
       });
     }
+
+    test('Tab out of the open menu closes it and leaves focus where it went', async ({ page }) => {
+      await gotoDemo(page, BASIC);
+      await setDirection(page, dir);
+
+      const button = page.getByRole('button', { name: 'Export' });
+      const menu = page.getByRole('menu', { name: 'Export format' });
+      await button.focus();
+      await page.keyboard.press('ArrowDown');
+      await expect(menu).toBeFocused();
+
+      await page.keyboard.press('Tab');
+      await expect(menu).toBeHidden();
+      await expect(button).toHaveAttribute('aria-expanded', 'false');
+      await expect(button).not.toBeFocused();
+    });
+
+    test('Shift+Tab from the open menu closes it on the button', async ({ page }) => {
+      await gotoDemo(page, BASIC);
+      await setDirection(page, dir);
+
+      const button = page.getByRole('button', { name: 'Export' });
+      const menu = page.getByRole('menu', { name: 'Export format' });
+      await button.focus();
+      await page.keyboard.press('ArrowDown');
+      await expect(menu).toBeFocused();
+
+      await page.keyboard.press('Shift+Tab');
+      await expect(menu).toBeHidden();
+      await expect(button).toHaveAttribute('aria-expanded', 'false');
+      await expect(button).toBeFocused();
+    });
 
     test('click toggles the menu', async ({ page }) => {
       await gotoDemo(page, BASIC);

@@ -109,6 +109,15 @@ export interface CommitLedger<TCommit, TOption = unknown> {
    * to it.
    */
   baseline<V extends TCommit | undefined>(current: V): V;
+  /**
+   * The rollback target for a commit about to begin with `previous`: the
+   * {@link baseline}, which becomes the confirmed value while nothing is in
+   * flight. Every begin runs through it, the ledger's own and the external
+   * ones reported via the public `CngxCommitBaseline`.
+   */
+  track<V extends TCommit | undefined>(previous: V): V;
+  /** Records `value` as the confirmed value (a commit's final value on success). */
+  confirm(value: TCommit | undefined): void;
   beginMembers<V extends TCommit | undefined>(
     request: CommitLedgerMembersRequest<TCommit, V, TOption>,
   ): void;
@@ -172,6 +181,14 @@ export function createCommitLedger<TCommit, TOption = unknown>(
   const baseline = <V extends TCommit | undefined>(current: V): V =>
     settled && untracked(controller.isCommitting) ? (confirmed as V) : current;
 
+  const track = <V extends TCommit | undefined>(previous: V): V => {
+    const target = baseline(previous);
+    if (!untracked(controller.isCommitting)) {
+      settle(target);
+    }
+    return target;
+  };
+
   const run = <V extends TCommit | undefined>(
     req: CommitLedgerRequest<TCommit, V, TOption>,
     action: CngxSelectCommitAction<TCommit>,
@@ -185,10 +202,7 @@ export function createCommitLedger<TCommit, TOption = unknown>(
     };
     const { next } = req;
     // A superseded commit never confirmed its value: roll back past it.
-    const previous = baseline(req.previous);
-    if (!untracked(controller.isCommitting)) {
-      settle(previous);
-    }
+    const previous = track(req.previous);
     const mode = req.commitMode();
     if (replay) {
       if (mode === 'optimistic') {
@@ -250,6 +264,8 @@ export function createCommitLedger<TCommit, TOption = unknown>(
   return {
     last: last.asReadonly(),
     baseline,
+    track,
+    confirm: settle,
     beginMembers: (request) => run(request, request.action, false),
     beginScalar: (request) => run(request, request.action, false),
     retry: () => replayLast?.(),

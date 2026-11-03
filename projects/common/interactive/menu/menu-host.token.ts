@@ -13,6 +13,18 @@ import type { CngxMenuSubmenuLike } from './menu-submenu.token';
 export interface CngxMenuHost {
   readonly ad: CngxActiveDescendant;
   /**
+   * Element id of the `role="menu"` container. A menu trigger registers it
+   * as the popover's `aria-controls` hint, so the trigger names the menu,
+   * not the popover wrapper.
+   */
+  readonly id: Signal<string>;
+  /**
+   * `true` when `node` is the menu container or inside it. Dismissal reads
+   * it across the open submenu chain, whose popovers are siblings of the
+   * root popover, to tell a focus move inside the menu from one that leaves.
+   */
+  contains(node: Node | null): boolean;
+  /**
    * Submenu companions registered inside this menu's content tree.
    * Empty when no submenu directive is present. Recursive: each entry's
    * `inner` is itself a `CngxMenuHost` with its own (possibly empty)

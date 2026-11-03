@@ -187,7 +187,8 @@ export function provideActionSelectConfig(
 
 /**
  * Component-scoped action-select config. Returns `Provider[]` because
- * `viewProviders` rejects `EnvironmentProviders`.
+ * `viewProviders` rejects `EnvironmentProviders`. Merges over the
+ * config of the parent injector: the keys set here win, unset keys inherit.
  */
 export function provideActionSelectConfigAt(
   ...features: CngxActionSelectConfigFeature[]
@@ -198,7 +199,15 @@ export function provideActionSelectConfigAt(
   for (const f of features) {
     Object.assign(merged, f.config);
   }
-  return [{ provide: CNGX_ACTION_SELECT_CONFIG, useValue: merged }];
+  return [
+    {
+      provide: CNGX_ACTION_SELECT_CONFIG,
+      useFactory: (): CngxActionSelectConfig => ({
+        ...inject(CNGX_ACTION_SELECT_CONFIG, { skipSelf: true, optional: true }),
+        ...merged,
+      }),
+    },
+  ];
 }
 
 /**

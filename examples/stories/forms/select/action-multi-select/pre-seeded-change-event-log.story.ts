@@ -70,7 +70,11 @@ export const STORY: DemoSpec = {
       </button>
     </ng-template>
   </cngx-action-multi-select>`,
-  templateChrome: `<div class="event-grid" style="margin-top:12px">
+  templateChrome: `<div
+    class="event-grid"
+    style="margin-top:12px"
+    [attr.data-cngx-ex-change]="seededLog().at(-1) ?? ''"
+  >
     <div class="event-row">
       <span class="event-label">Values</span>
       <span class="event-value">{{ seededValues().map(v => v.name).join(', ') || '—' }}</span>

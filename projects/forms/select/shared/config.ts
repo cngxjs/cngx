@@ -1,4 +1,5 @@
 import {
+  inject,
   InjectionToken,
   type EnvironmentProviders,
   type Provider,
@@ -8,7 +9,7 @@ import {
 } from '@angular/core';
 
 import type { PopoverPlacement } from '@cngx/common/popover';
-import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
+import { createOverrideMerge } from '@cngx/core/utils';
 
 import type { CngxSelectCommitErrorDisplay } from './commit-action.types';
 import type { CngxCommitErrorAnnouncePolicy } from './commit-error-announcer';
@@ -37,30 +38,50 @@ import type {
   CngxSelectTriggerLabelContext,
 } from './template-slots';
 
+/** Context type of a `TemplateRef`; a context-free slot maps to an empty record. */
+type CngxSelectTemplateContextOf<R> =
+  NonNullable<R> extends TemplateRef<infer C>
+    ? C extends void
+      ? Record<string, never>
+      : C
+    : never;
+
 /**
- * Override contexts mirroring the per-instance `*cngxSelect*` slots.
+ * Override contexts mirroring the per-instance `*cngxSelect*` slots, one key
+ * per `CngxSelectConfig.templates` entry. Derived from that map, so a new
+ * config template key brings its context type along; a context-free slot maps
+ * to an empty record. The table below is written by hand, and a repo check
+ * fails when its rows drift from the config keys, contexts or slots.
+ *
+ * | Key | Context | Slot |
+ * |-|-|-|
+ * | `check` | `CngxSelectCheckContext` | `*cngxSelectCheck` |
+ * | `caret` | `CngxSelectCaretContext` | `*cngxSelectCaret` |
+ * | `optgroup` | `CngxSelectOptgroupContext` | `*cngxSelectOptgroup` |
+ * | `placeholder` | `CngxSelectPlaceholderContext` | `*cngxSelectPlaceholder` |
+ * | `empty` | `CngxSelectEmptyContext` | `*cngxSelectEmpty` |
+ * | `loading` | `CngxSelectLoadingContext` | `*cngxSelectLoading` |
+ * | `triggerLabel` | `CngxSelectTriggerLabelContext` | `*cngxSelectTriggerLabel` |
+ * | `optionLabel` | `CngxSelectOptionLabelContext` | `*cngxSelectOptionLabel` |
+ * | `error` | `CngxSelectErrorContext` | `*cngxSelectError` |
+ * | `retryButton` | `CngxSelectRetryButtonContext` | `*cngxSelectRetryButton` |
+ * | `loadingGlyph` | `Record<string, never>` | `*cngxSelectLoadingGlyph` |
+ * | `refreshing` | `CngxSelectRefreshingContext` | `*cngxSelectRefreshing` |
+ * | `commitError` | `CngxSelectCommitErrorContext` | `*cngxSelectCommitError` |
+ * | `clearButton` | `CngxSelectClearButtonContext` | `*cngxSelectClearButton` |
+ * | `optionPending` | `CngxSelectOptionPendingContext` | `*cngxSelectOptionPending` |
+ * | `optionError` | `CngxSelectOptionErrorContext` | `*cngxSelectOptionError` |
+ * | `action` | `CngxSelectActionContext` | `*cngxSelectAction` (action variants only) |
+ * | `sheetHandle` | `CngxSelectSheetHandleContext` | `*cngxSelectSheetHandle` |
+ * | `treeNodeCount` | `CngxTreeSelectNodeCountContext` | `*cngxTreeSelectNodeCount` |
+ * | `sheetCount` | `CngxSelectSheetCountContext` | `*cngxSelectSheetCount` |
+ * | `treeFooter` | `CngxTreeSelectFooterContext` | `*cngxTreeSelectFooter` |
  */
-export interface CngxSelectTemplateContexts {
-  readonly check?: CngxSelectCheckContext;
-  readonly caret?: CngxSelectCaretContext;
-  readonly optgroup?: CngxSelectOptgroupContext;
-  readonly placeholder?: CngxSelectPlaceholderContext;
-  readonly empty?: CngxSelectEmptyContext;
-  readonly loading?: CngxSelectLoadingContext;
-  readonly triggerLabel?: CngxSelectTriggerLabelContext;
-  readonly optionLabel?: CngxSelectOptionLabelContext;
-  readonly error?: CngxSelectErrorContext;
-  readonly retryButton?: CngxSelectRetryButtonContext;
-  /** Glyph slot inside spinner/bar/dots loading + refreshing indicators. */
-  readonly loadingGlyph?: Record<string, never>;
-  readonly refreshing?: CngxSelectRefreshingContext;
-  readonly commitError?: CngxSelectCommitErrorContext;
-  readonly clearButton?: CngxSelectClearButtonContext;
-  readonly optionPending?: CngxSelectOptionPendingContext;
-  readonly optionError?: CngxSelectOptionErrorContext;
-  readonly action?: CngxSelectActionContext;
-  readonly sheetHandle?: CngxSelectSheetHandleContext;
-}
+export type CngxSelectTemplateContexts = {
+  readonly [K in keyof NonNullable<CngxSelectConfig['templates']>]?: CngxSelectTemplateContextOf<
+    NonNullable<CngxSelectConfig['templates']>[K]
+  >;
+};
 
 /**
  * Live-region announcer config: politeness + formatter.
@@ -354,8 +375,27 @@ export interface CngxSelectConfig {
   readonly commitErrorAnnouncePolicy?: CngxCommitErrorAnnouncePolicy | null;
   /** Class(es) applied to the panel root for theming. */
   readonly panelClass?: string | readonly string[];
-  /** Typeahead buffer reset window in ms. */
+  /**
+   * Typeahead buffer reset window in ms of the button-trigger variants
+   * (`CngxSelect`, `CngxMultiSelect`, `CngxReorderableMultiSelect`,
+   * `CngxSelectShell`): keys typed on the closed trigger within it join one
+   * query. A per-instance `[typeaheadDebounceInterval]` wins. The search
+   * debounce of the input variants is `searchDebounceMs`. Not read by
+   * `CngxTreeSelect`: its typeahead runs inside the open panel's
+   * `CngxActiveDescendant`. Default `300`.
+   */
   readonly typeaheadDebounceInterval?: number;
+  /**
+   * Debounce in ms between the last keystroke in a search input and the
+   * `searchTerm` / `searchTermChange` update, on the input variants
+   * (`CngxCombobox`, `CngxTypeahead`, `CngxActionSelect`,
+   * `CngxActionMultiSelect`) and the `<cngx-select-search>` of
+   * `CngxSelectShell`. A per-instance `[searchDebounceMs]` wins. `0` writes on
+   * every keystroke. Not read by `CngxSelect`, `CngxMultiSelect`,
+   * `CngxReorderableMultiSelect` or `CngxTreeSelect`, which have no search
+   * input. Default `300`.
+   */
+  readonly searchDebounceMs?: number;
   /** Whether typeahead commits value while panel is closed (native `<select>` parity). */
   readonly typeaheadWhileClosed?: boolean;
   /**
@@ -367,7 +407,11 @@ export interface CngxSelectConfig {
    * substring). The matcher receives the option's `value` and `label`.
    */
   readonly searchMatchFn?: CngxSelectMatchFn | null;
-  /** Whether the default selected-indicator (checkmark) is shown at all. */
+  /**
+   * Whether the default selected-indicator (checkmark) is shown at all.
+   * `CngxTreeSelect` always renders its node checkbox and ignores this key
+   * (see the tree-select README, "Limitations").
+   */
   readonly showSelectionIndicator?: boolean;
   /**
    * Position of the per-option selection indicator inside a panel row:
@@ -378,16 +422,26 @@ export interface CngxSelectConfig {
   /**
    * Visual form of the per-option selection indicator. `'auto'` picks
    * `'checkbox'` for multi-select / combobox and `'checkmark'` for
-   * single-select. Defaults to `'auto'`.
+   * single-select. Defaults to `'auto'`. `CngxTreeSelect` keeps its node
+   * checkbox whatever the variant (see the tree-select README, "Limitations").
    */
   readonly selectionIndicatorVariant?: CngxSelectSelectionIndicatorVariant;
   /** Whether the default trigger caret is shown at all. */
   readonly showCaret?: boolean;
-  /** Focus-restore to trigger on panel close. */
+  /**
+   * Focus-restore to the trigger when the anchored popover closes. `false`
+   * leaves focus where the panel left it. A modal mobile sheet always returns
+   * focus to the trigger on close, whatever this key says: focus must not stay
+   * on a dialog that is being removed.
+   */
   readonly restoreFocus?: boolean;
   /** Dismiss strategy: click outside, Escape, or both. */
   readonly dismissOn?: 'outside' | 'escape' | 'both';
-  /** Open strategy: click, focus, or both. */
+  /**
+   * Open strategy: click, focus, or both. Honoured by all nine composites;
+   * the input variants open on focus of their text input. The focus restore
+   * after a close never reopens the panel.
+   */
   readonly openOn?: 'click' | 'focus' | 'click+focus';
   /**
    * Mobile presentation. `'auto'` (default) opens the panel as a modal bottom
@@ -408,33 +462,53 @@ export interface CngxSelectConfig {
    * template wins.
    */
   readonly fallbackLabels?: CngxSelectFallbackLabels | Signal<CngxSelectFallbackLabels>;
-  /** Default template overrides applied when no per-instance slot is projected. */
+  /**
+   * Default template overrides applied when no per-instance slot is projected.
+   * Each key mirrors one `*cngxSelect*` slot and takes a template with that
+   * slot's context; `null` keeps the built-in rendering.
+   */
   readonly templates?: {
+    /** Selection indicator inside each option (`*cngxSelectCheck`). */
     readonly check?: TemplateRef<CngxSelectCheckContext> | null;
+    /** Trigger caret glyph (`*cngxSelectCaret`). */
     readonly caret?: TemplateRef<CngxSelectCaretContext> | null;
+    /** Optgroup header row (`*cngxSelectOptgroup`). */
     readonly optgroup?: TemplateRef<CngxSelectOptgroupContext> | null;
+    /** Trigger content while nothing is selected (`*cngxSelectPlaceholder`). */
     readonly placeholder?: TemplateRef<CngxSelectPlaceholderContext> | null;
+    /** Panel body when no option matches or none exist (`*cngxSelectEmpty`). */
     readonly empty?: TemplateRef<CngxSelectEmptyContext> | null;
+    /** Panel body during the first load (`*cngxSelectLoading`). */
     readonly loading?: TemplateRef<CngxSelectLoadingContext> | null;
+    /** Trigger content for the selected value (`*cngxSelectTriggerLabel`). */
     readonly triggerLabel?: TemplateRef<CngxSelectTriggerLabelContext> | null;
+    /** Rich content inside each option row (`*cngxSelectOptionLabel`). */
     readonly optionLabel?: TemplateRef<CngxSelectOptionLabelContext> | null;
+    /** Panel body when the options failed to load (`*cngxSelectError`). */
     readonly error?: TemplateRef<CngxSelectErrorContext> | null;
+    /** Retry button of every retry surface (`*cngxSelectRetryButton`). */
     readonly retryButton?: TemplateRef<CngxSelectRetryButtonContext> | null;
+    /** Glyph inside the spinner, bar and dots loading and refreshing indicators (`*cngxSelectLoadingGlyph`). Context-free. */
     readonly loadingGlyph?: TemplateRef<void> | null;
+    /** Indicator over the visible options during a reload (`*cngxSelectRefreshing`). */
     readonly refreshing?: TemplateRef<CngxSelectRefreshingContext> | null;
+    /** Failed-commit surface with its retry (`*cngxSelectCommitError`). */
     readonly commitError?: TemplateRef<CngxSelectCommitErrorContext> | null;
+    /** Single-clear and clear-all button (`*cngxSelectClearButton`). */
     readonly clearButton?: TemplateRef<CngxSelectClearButtonContext> | null;
+    /** Per-row indicator while that row's commit is in flight (`*cngxSelectOptionPending`). */
     readonly optionPending?: TemplateRef<CngxSelectOptionPendingContext> | null;
+    /** Per-row glyph after that row's commit failed (`*cngxSelectOptionError`). */
     readonly optionError?: TemplateRef<CngxSelectOptionErrorContext> | null;
-    /** Honoured only by `CngxActionSelect` and `CngxActionMultiSelect`; the flat variants have no action area. */
+    /** Inline action area (`*cngxSelectAction`). Honoured only by `CngxActionSelect` and `CngxActionMultiSelect`; the flat variants have no action area. */
     readonly action?: TemplateRef<CngxSelectActionContext> | null;
-    /** Decorative drag handle of the mobile sheet. */
+    /** Decorative drag handle of the mobile sheet (`*cngxSelectSheetHandle`). */
     readonly sheetHandle?: TemplateRef<CngxSelectSheetHandleContext> | null;
-    /** Selected-of-total count on a `CngxTreeSelect` parent row. */
+    /** Selected-of-total count on a `CngxTreeSelect` parent row (`*cngxTreeSelectNodeCount`). */
     readonly treeNodeCount?: TemplateRef<CngxTreeSelectNodeCountContext> | null;
-    /** Selected count in the mobile sheet header (variants that report one). */
+    /** Selected count in the mobile sheet header, for variants that report one (`*cngxSelectSheetCount`). */
     readonly sheetCount?: TemplateRef<CngxSelectSheetCountContext> | null;
-    /** Panel footer (count and clear-all) of `CngxTreeSelect`. */
+    /** Panel footer (count and clear-all) of `CngxTreeSelect` (`*cngxTreeSelectFooter`). */
     readonly treeFooter?: TemplateRef<CngxTreeSelectFooterContext> | null;
   };
 }
@@ -466,6 +540,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
   virtualization: null as CngxSelectVirtualizationConfig | null,
   panelClass: '',
   typeaheadDebounceInterval: 300,
+  searchDebounceMs: 300,
   typeaheadWhileClosed: true,
   searchMatchFn: null as CngxSelectMatchFn | null,
   showSelectionIndicator: true,
@@ -660,8 +735,9 @@ export function withVirtualization(
 /**
  * Sets the panel-shell visible-fallback labels. Partial. Per-instance
  * template projection wins. Pass a `Signal` to follow a runtime language
- * switch. A later `withFallbackLabels` replaces an earlier one as a whole;
- * the keys of the two bundles are not merged.
+ * switch. Bundles merge per key: a later `withFallbackLabels`, or one under
+ * `provideSelectConfigAt`, overrides only the keys it sets and every other key
+ * keeps the earlier or inherited value.
  *
  * ```ts
  * bootstrapApplication(App, {
@@ -691,10 +767,27 @@ export function withPanelClass(panelClass: string | readonly string[]): CngxSele
 }
 
 /**
- * Typeahead buffer debounce in ms. Default `300`.
+ * Sets `typeaheadDebounceInterval` in ms: the closed-trigger typeahead buffer
+ * window of the button-trigger variants. Default `300`. The search debounce of
+ * the input variants is `withSearchDebounce`.
  */
 export function withTypeaheadDebounce(ms: number): CngxSelectConfigFeature {
   return feature({ typeaheadDebounceInterval: ms });
+}
+
+/**
+ * Sets `searchDebounceMs`: the wait in ms between the last keystroke and the
+ * `searchTerm` / `searchTermChange` update of combobox, typeahead,
+ * action-select, action-multi-select and the shell's `<cngx-select-search>`.
+ * A per-instance `[searchDebounceMs]` wins; `0` writes on every keystroke.
+ * Default `300`.
+ *
+ * ```ts
+ * provideSelectConfig(withSearchDebounce(150));
+ * ```
+ */
+export function withSearchDebounce(ms: number): CngxSelectConfigFeature {
+  return feature({ searchDebounceMs: ms });
 }
 
 /**
@@ -722,6 +815,7 @@ export function withSearchMatchFn(fn: CngxSelectMatchFn | null): CngxSelectConfi
 
 /**
  * Whether the selected-option checkmark is rendered at all. Default `true`.
+ * `CngxTreeSelect` ignores it and always renders its node checkbox.
  */
 export function withSelectionIndicator(enabled: boolean): CngxSelectConfigFeature {
   return feature({ showSelectionIndicator: enabled });
@@ -738,7 +832,8 @@ export function withSelectionIndicatorPosition(
 }
 
 /**
- * Sets the selection-indicator glyph. Default `'auto'`.
+ * Sets the selection-indicator glyph. Default `'auto'`. `CngxTreeSelect`
+ * ignores it and always renders its node checkbox.
  */
 export function withSelectionIndicatorVariant(
   variant: CngxSelectSelectionIndicatorVariant,
@@ -754,7 +849,9 @@ export function withCaret(enabled: boolean): CngxSelectConfigFeature {
 }
 
 /**
- * Whether the trigger is re-focused after the panel closes. Default `true`.
+ * Whether the trigger is re-focused after the anchored popover closes.
+ * Default `true`. The modal mobile sheet ignores it: closing a modal dialog
+ * always returns focus to its opener.
  */
 export function withRestoreFocus(enabled: boolean): CngxSelectConfigFeature {
   return feature({ restoreFocus: enabled });
@@ -783,7 +880,8 @@ export function withMobileSheet(mode: CngxSelectConfig['mobileSheet']): CngxSele
 }
 
 /**
- * Open strategy for the trigger. Default `'click'`.
+ * Open strategy for the trigger, honoured by all nine composites; the input
+ * variants open on focus of their text input. Default `'click'`.
  */
 export function withOpenOn(mode: CngxSelectConfig['openOn']): CngxSelectConfigFeature {
   return feature({ openOn: mode });
@@ -866,6 +964,7 @@ export function withTemplates(
 
 const NO_ANNOUNCER: CngxSelectAnnouncerConfig = {};
 const NO_ARIA_LABELS: CngxSelectAriaLabels = {};
+const NO_FALLBACK_LABELS: CngxSelectFallbackLabels = {};
 
 /**
  * Pure merge of `with*` features into a `CngxSelectConfig` value - the
@@ -875,8 +974,9 @@ const NO_ARIA_LABELS: CngxSelectAriaLabels = {};
  * view is live (see `withTemplates`). For static values, prefer the
  * two provide functions.
  *
- * `fallbackLabels` is the exception to the merge: a later
- * `withFallbackLabels` feature replaces an earlier one as a whole.
+ * The deep keys (`ariaLabels`, `fallbackLabels`, `announcer`, `templates`)
+ * merge per entry across features; every other key is replaced by the last
+ * feature that sets it.
  */
 export function makeSelectConfig(...features: CngxSelectConfigFeature[]): CngxSelectConfig {
   const merged: {
@@ -885,7 +985,7 @@ export function makeSelectConfig(...features: CngxSelectConfigFeature[]): CngxSe
   for (const f of features) {
     // Pull deep-merged keys aside before the flat assign so partial
     // overrides across features don't wipe earlier keys.
-    const { announcer, templates, ariaLabels, ...flat } = f.config;
+    const { announcer, templates, ariaLabels, fallbackLabels, ...flat } = f.config;
     Object.assign(merged, flat);
     if (announcer) {
       merged.announcer = createOverrideMerge(merged.announcer ?? NO_ANNOUNCER, announcer);
@@ -896,10 +996,12 @@ export function makeSelectConfig(...features: CngxSelectConfigFeature[]): CngxSe
     if (ariaLabels) {
       merged.ariaLabels = createOverrideMerge(merged.ariaLabels ?? NO_ARIA_LABELS, ariaLabels);
     }
-  }
-  // Replaced, not merged, across features; a Signal like the other copy keys.
-  if (merged.fallbackLabels) {
-    merged.fallbackLabels = coerceSignal(merged.fallbackLabels);
+    if (fallbackLabels) {
+      merged.fallbackLabels = createOverrideMerge(
+        merged.fallbackLabels ?? NO_FALLBACK_LABELS,
+        fallbackLabels,
+      );
+    }
   }
   return merged;
 }
@@ -916,7 +1018,11 @@ export function provideSelectConfig(...features: CngxSelectConfigFeature[]): Env
 
 /**
  * Component-scoped config. Returns `Provider[]` because `viewProviders`
- * rejects `EnvironmentProviders`.
+ * rejects `EnvironmentProviders`. Merges over the config of the parent
+ * injector: the keys set here win, every unset key inherits, and the deep
+ * keys (`ariaLabels`, `fallbackLabels`, `announcer`, `templates`) merge per
+ * entry, so an app-wide translation survives a component-scope
+ * `withPanelWidth` or a subtree `withFallbackLabels({ empty })`.
  *
  * ```ts
  * @Component({
@@ -925,5 +1031,14 @@ export function provideSelectConfig(...features: CngxSelectConfigFeature[]): Env
  * ```
  */
 export function provideSelectConfigAt(...features: CngxSelectConfigFeature[]): Provider[] {
-  return [{ provide: CNGX_SELECT_CONFIG, useValue: makeSelectConfig(...features) }];
+  return [
+    {
+      provide: CNGX_SELECT_CONFIG,
+      useFactory: (): CngxSelectConfig => {
+        const parent = inject(CNGX_SELECT_CONFIG, { skipSelf: true, optional: true });
+        const inherited = parent ? [feature(parent)] : [];
+        return makeSelectConfig(...inherited, ...features);
+      },
+    },
+  ];
 }

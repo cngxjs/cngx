@@ -61,7 +61,6 @@ describe('createReorderCommitHandler', () => {
   let onAnnounce: ReturnType<typeof vi.fn> & ((...args: unknown[]) => void);
   let onStateChange: ReturnType<typeof vi.fn> & ((status: string) => void);
   let onError: ReturnType<typeof vi.fn> & ((err: unknown) => void);
-  let lastCommitted: string[];
 
   beforeEach(() => {
     values = signal<string[]>(['a', 'b', 'c', 'd']);
@@ -71,7 +70,6 @@ describe('createReorderCommitHandler', () => {
     onAnnounce = vi.fn() as never;
     onStateChange = vi.fn() as never;
     onError = vi.fn() as never;
-    lastCommitted = [];
   });
 
   function make() {
@@ -81,9 +79,6 @@ describe('createReorderCommitHandler', () => {
       commitMode,
       commitAction,
       commitController: controller,
-      setLastCommitted: (v) => {
-        lastCommitted = [...v];
-      },
       onReorder,
       onAnnounce,
       onStateChange,
@@ -122,6 +117,25 @@ describe('createReorderCommitHandler', () => {
     expect(values()).toEqual(['a', 'b', 'c', 'd']);
     expect(onStateChange).toHaveBeenCalledWith('error');
     expect(onError).toHaveBeenCalledExactlyOnceWith(expect.any(Error));
+  });
+
+  it('rolls a failed reorder back to the confirmed order on its own', () => {
+    commitAction.set(() => Promise.resolve<string[] | undefined>(undefined));
+    const { controller, reject } = makeController<string[]>();
+    const handler = createReorderCommitHandler<string>({
+      values,
+      commitMode,
+      commitAction,
+      commitController: controller,
+      onReorder,
+      onAnnounce,
+      onStateChange,
+      onError,
+    });
+    handler.dispatch(['b', 'c', 'a', 'd'], ['a', 'b', 'c', 'd'], 0, 2, option('a'));
+    reject(new Error('boom'));
+    expect(values()).toEqual(['a', 'b', 'c', 'd']);
+    expect(onError).toHaveBeenCalledOnce();
   });
 
   it('optimistic: keeps an external write made while the commit was pending', () => {
@@ -166,7 +180,6 @@ describe('createReorderCommitHandler', () => {
     // Server returns a differently-ordered canonical array.
     resolve(['a', 'b', 'd', 'c']);
     expect(values()).toEqual(['a', 'b', 'd', 'c']);
-    expect(lastCommitted).toEqual(['a', 'b', 'd', 'c']);
   });
 
   it('optimistic: rolls back before it announces the failure', () => {
@@ -179,9 +192,6 @@ describe('createReorderCommitHandler', () => {
       commitMode,
       commitAction,
       commitController: controller,
-      setLastCommitted: (v) => {
-        lastCommitted = [...v];
-      },
       onReorder,
       onAnnounce,
       onStateChange,

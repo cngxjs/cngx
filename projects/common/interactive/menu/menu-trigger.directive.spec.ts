@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { provideDirection } from '@cngx/core';
 
-import { CngxPopover } from '@cngx/common/popover';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 
 import { CNGX_HOST_INTERACTION_STATE } from '../async-click/host-interaction-state.token';
 
@@ -21,11 +21,13 @@ import {
 import { provideMenuConfig } from './menu-config';
 import {
   withDismissOnBlur,
+  withDismissOnFocusOut,
   withDismissOnOutsideClick,
   withDismissOnScroll,
 } from './menu-config-features';
 import { CngxMenuTrigger } from './menu-trigger.directive';
 import { CngxMenuItem } from './menu-item.directive';
+import { CngxMenuItemSubmenu } from './menu-item-submenu.directive';
 import { CngxMenu } from './menu.directive';
 
 function polyfillPopover(): void {
@@ -61,6 +63,7 @@ function polyfillPopover(): void {
       type="button"
       [cngxMenuTrigger]="menu"
       [popover]="pop"
+      [cngxPopoverTrigger]="pop"
       #trigger="cngxMenuTrigger"
     >
       Actions
@@ -73,9 +76,35 @@ function polyfillPopover(): void {
       </ul>
     </div>
   `,
-  imports: [CngxMenu, CngxMenuItem, CngxMenuTrigger, CngxPopover],
+  imports: [CngxMenu, CngxMenuItem, CngxMenuTrigger, CngxPopover, CngxPopoverTrigger],
 })
 class TriggerHost {}
+
+@Component({
+  template: `
+    <button type="button" [cngxMenuTrigger]="menu" [popover]="pop">Actions</button>
+    <div cngxPopover #pop="cngxPopover">
+      <ul cngxMenu [label]="'Actions'" tabindex="0" #menu="cngxMenu">
+        <li cngxMenuItem value="cut">Cut</li>
+      </ul>
+    </div>
+  `,
+  imports: [CngxMenu, CngxMenuItem, CngxMenuTrigger, CngxPopover],
+})
+class BareTriggerHost {}
+
+/** Lets the open-time focus microtask (and a close-time restore) run. */
+async function settle(): Promise<void> {
+  TestBed.flushEffects();
+  await Promise.resolve();
+  await Promise.resolve();
+}
+
+function press(el: Element | null, key: string, init: KeyboardEventInit = {}): KeyboardEvent {
+  const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init });
+  el?.dispatchEvent(event);
+  return event;
+}
 
 describe('CngxMenuTrigger', () => {
   beforeEach(() => {
@@ -113,6 +142,46 @@ describe('CngxMenuTrigger', () => {
   it('aria-haspopup=menu on trigger', () => {
     const { triggerEl } = setup();
     expect(triggerEl.getAttribute('aria-haspopup')).toBe('menu');
+  });
+
+  it('aria-controls names the role=menu element, not the popover wrapper', () => {
+    const { triggerEl, menu, popover } = setup();
+    const menuEl = document.querySelector('[role="menu"]');
+    expect(menuEl?.id).toBe(menu.id());
+    expect(triggerEl.getAttribute('aria-controls')).toBe(menu.id());
+    expect(triggerEl.getAttribute('aria-controls')).not.toBe(popover.id());
+  });
+
+  it.each(['ArrowDown', 'Enter'])('%s moves focus to the menu after open', async (key) => {
+    const { triggerEl, menu, popover } = setup();
+    triggerEl.focus();
+    press(triggerEl, key);
+    await settle();
+    expect(popover.isVisible()).toBe(true);
+    const menuEl = document.activeElement as HTMLElement;
+    expect(menuEl.getAttribute('role')).toBe('menu');
+    expect(menuEl.getAttribute('aria-activedescendant')).toBe(menu.ad.activeId());
+    expect(menu.ad.activeValue()).toBe('cut');
+  });
+
+  it('a pointer open also moves focus to the menu, with no highlight', async () => {
+    const { triggerEl, menu, popover } = setup();
+    triggerEl.focus();
+    popover.show();
+    await settle();
+    expect(document.activeElement?.getAttribute('role')).toBe('menu');
+    expect(menu.ad.activeValue()).toBeNull();
+  });
+
+  it('ArrowDown on the focused menu moves the highlight through the menu', async () => {
+    const { triggerEl, menu } = setup();
+    triggerEl.focus();
+    press(triggerEl, 'ArrowDown');
+    await settle();
+    press(document.activeElement, 'ArrowDown');
+    TestBed.flushEffects();
+    expect(menu.ad.activeValue()).toBe('copy');
+    expect(document.activeElement?.getAttribute('aria-activedescendant')).toBe(menu.ad.activeId());
   });
 
   it('ArrowDown opens popover and highlights first', () => {
@@ -172,6 +241,32 @@ describe('CngxMenuTrigger', () => {
     expect(popover.isVisible()).toBe(false);
   });
 
+  it('Enter on the focused menu activates the highlighted item, closes and restores focus', async () => {
+    const { triggerEl, menu, popover } = setup();
+    const picked: unknown[] = [];
+    menu.itemActivated.subscribe((v) => picked.push(v));
+    triggerEl.focus();
+    press(triggerEl, 'ArrowDown');
+    await settle();
+    press(document.activeElement, 'Enter');
+    await settle();
+    expect(picked).toEqual(['cut']);
+    expect(popover.isVisible()).toBe(false);
+    expect(document.activeElement).toBe(triggerEl);
+  });
+
+  it('Escape on the focused menu closes and restores focus to the trigger', async () => {
+    const { triggerEl, popover } = setup();
+    triggerEl.focus();
+    press(triggerEl, 'ArrowDown');
+    await settle();
+    expect(document.activeElement?.getAttribute('role')).toBe('menu');
+    press(document.activeElement, 'Escape');
+    await settle();
+    expect(popover.isVisible()).toBe(false);
+    expect(document.activeElement).toBe(triggerEl);
+  });
+
   it('Ctrl/Cmd/Alt+ArrowDown on a closed trigger neither opens nor swallows the event', () => {
     const { triggerEl, popover } = setup();
     for (const modifier of [{ ctrlKey: true }, { metaKey: true }, { altKey: true }]) {
@@ -200,28 +295,20 @@ describe('CngxMenuTrigger', () => {
 
   it('keyboard-opening then Escape restores focus to the trigger', async () => {
     const { triggerEl, popover } = setup();
-    const probe = document.createElement('button');
-    probe.type = 'button';
-    document.body.appendChild(probe);
-    try {
-      triggerEl.focus();
-      expect(document.activeElement).toBe(triggerEl);
+    triggerEl.focus();
+    expect(document.activeElement).toBe(triggerEl);
 
-      triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
-      TestBed.flushEffects();
-      expect(popover.isVisible()).toBe(true);
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    await settle();
+    expect(popover.isVisible()).toBe(true);
+    expect(document.activeElement).not.toBe(triggerEl);
 
-      probe.focus();
-      expect(document.activeElement).toBe(probe);
-
-      triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-      TestBed.flushEffects();
-      await Promise.resolve();
-      expect(popover.isVisible()).toBe(false);
-      expect(document.activeElement).toBe(triggerEl);
-    } finally {
-      probe.remove();
-    }
+    (document.activeElement as HTMLElement).dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    );
+    await settle();
+    expect(popover.isVisible()).toBe(false);
+    expect(document.activeElement).toBe(triggerEl);
   });
 
   describe('dismiss handler wiring', () => {
@@ -346,6 +433,92 @@ describe('CngxMenuTrigger', () => {
     });
   });
 
+  describe('focus-out dismissal', () => {
+    function outsideButton(): HTMLButtonElement {
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.textContent = 'Next';
+      document.body.appendChild(el);
+      return el;
+    }
+
+    function getTrigger(
+      fixture: ReturnType<typeof TestBed.createComponent<TriggerHost>>,
+    ): CngxMenuTrigger {
+      return fixture.debugElement.query(By.directive(CngxMenuTrigger)).injector.get(CngxMenuTrigger);
+    }
+
+    it('Tab out of the menu closes it without pulling focus back', async () => {
+      const { fixture, triggerEl, popover } = setup();
+      const next = outsideButton();
+      try {
+        triggerEl.focus();
+        press(triggerEl, 'ArrowDown');
+        await settle();
+        press(document.activeElement, 'Tab');
+        next.focus();
+        await settle();
+        fixture.detectChanges();
+        expect(popover.isVisible()).toBe(false);
+        expect(triggerEl.getAttribute('aria-expanded')).toBe('false');
+        expect(document.activeElement).toBe(next);
+        expect(getTrigger(fixture).lastDismissSource()).toBe('focus-out');
+      } finally {
+        next.remove();
+      }
+    });
+
+    it('Shift+Tab out of the menu onto the trigger closes it', async () => {
+      const { fixture, triggerEl, popover } = setup();
+      triggerEl.focus();
+      press(triggerEl, 'ArrowDown');
+      await settle();
+      press(document.activeElement, 'Tab', { shiftKey: true });
+      triggerEl.focus();
+      await settle();
+      fixture.detectChanges();
+      expect(popover.isVisible()).toBe(false);
+      expect(triggerEl.getAttribute('aria-expanded')).toBe('false');
+      expect(document.activeElement).toBe(triggerEl);
+    });
+
+    it('focusing an element outside closes without restoring focus', async () => {
+      const { triggerEl, popover } = setup();
+      const next = outsideButton();
+      try {
+        triggerEl.focus();
+        press(triggerEl, 'ArrowDown');
+        await settle();
+        next.focus();
+        await settle();
+        expect(popover.isVisible()).toBe(false);
+        expect(document.activeElement).toBe(next);
+      } finally {
+        next.remove();
+      }
+    });
+
+    it('withDismissOnFocusOut(false) keeps the menu open', async () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [TriggerHost],
+        providers: [provideMenuConfig(withDismissOnFocusOut(false))],
+      });
+      const { triggerEl, popover } = setup();
+      const next = outsideButton();
+      try {
+        triggerEl.focus();
+        press(triggerEl, 'ArrowDown');
+        await settle();
+        next.focus();
+        await settle();
+        expect(popover.isVisible()).toBe(true);
+      } finally {
+        next.remove();
+      }
+    });
+  });
+
   describe('lastDismissSource', () => {
     function getTrigger(
       fixture: ReturnType<typeof TestBed.createComponent<TriggerHost>>,
@@ -441,6 +614,53 @@ describe('CngxMenuTrigger submenu arrows under dir', () => {
   });
 });
 
+describe('CngxMenuTrigger focus settle per open cycle', () => {
+  afterEach(() => {
+    document.body.querySelectorAll('.cngx-menu-announcer').forEach((el) => el.remove());
+  });
+
+  it('does not settle focus at mount and settles exactly once per real close', () => {
+    polyfillPopover();
+    let stack: CngxMenuFocusStack | undefined;
+    TestBed.configureTestingModule({
+      imports: [TriggerHost],
+      providers: [
+        {
+          provide: CNGX_MENU_FOCUS_STACK_FACTORY,
+          useValue: (deps: Parameters<typeof createMenuFocusStack>[0]) => {
+            const real = createMenuFocusStack(deps);
+            vi.spyOn(real, 'settleFocus');
+            stack = real;
+            return real;
+          },
+        },
+      ],
+    });
+    const fixture = TestBed.createComponent(TriggerHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const settleFocus = (stack as CngxMenuFocusStack).settleFocus;
+    expect(settleFocus).not.toHaveBeenCalled();
+
+    const popover = fixture.debugElement
+      .query(By.directive(CngxPopover))
+      .injector.get(CngxPopover);
+    popover.show();
+    TestBed.flushEffects();
+    expect(settleFocus).not.toHaveBeenCalled();
+    popover.hide();
+    TestBed.flushEffects();
+    expect(settleFocus).toHaveBeenCalledOnce();
+
+    popover.show();
+    TestBed.flushEffects();
+    popover.hide();
+    TestBed.flushEffects();
+    expect(settleFocus).toHaveBeenCalledTimes(2);
+  });
+});
+
 // Stands in for a co-hosted cngxButton: publishes its disabled state the way
 // the button family does, without pulling @cngx/common/button into this lib.
 const stateDisabled = signal(false);
@@ -453,11 +673,34 @@ class ProbeHostState {}
 
 @Component({
   template: `
-    <button type="button" id="stated" probeHostState [cngxMenuTrigger]="menu" [popover]="pop">
+    <button
+      type="button"
+      id="stated"
+      probeHostState
+      [cngxMenuTrigger]="menu"
+      [popover]="pop"
+      [cngxPopoverTrigger]="pop"
+    >
       A
     </button>
-    <button type="button" id="native" disabled [cngxMenuTrigger]="menu" [popover]="pop">B</button>
-    <button type="button" id="aria" aria-disabled="true" [cngxMenuTrigger]="menu" [popover]="pop">
+    <button
+      type="button"
+      id="native"
+      disabled
+      [cngxMenuTrigger]="menu"
+      [popover]="pop"
+      [cngxPopoverTrigger]="pop"
+    >
+      B
+    </button>
+    <button
+      type="button"
+      id="aria"
+      aria-disabled="true"
+      [cngxMenuTrigger]="menu"
+      [popover]="pop"
+      [cngxPopoverTrigger]="pop"
+    >
       C
     </button>
     <div cngxPopover #pop="cngxPopover">
@@ -467,7 +710,7 @@ class ProbeHostState {}
       </ul>
     </div>
   `,
-  imports: [CngxMenu, CngxMenuItem, CngxMenuTrigger, CngxPopover, ProbeHostState],
+  imports: [CngxMenu, CngxMenuItem, CngxMenuTrigger, CngxPopover, CngxPopoverTrigger, ProbeHostState],
 })
 class BlockedTriggerHost {}
 
@@ -550,6 +793,7 @@ describe('CngxMenuTrigger on a blocked host', () => {
       [attr.aria-disabled]="disabled() ? 'true' : null"
       [cngxMenuTrigger]="menu"
       [popover]="pop"
+      [cngxPopoverTrigger]="pop"
       (click)="disabled() || pop.toggle()"
     >
       A
@@ -560,7 +804,7 @@ describe('CngxMenuTrigger on a blocked host', () => {
       </ul>
     </div>
   `,
-  imports: [CngxMenu, CngxMenuItem, CngxMenuTrigger, CngxPopover],
+  imports: [CngxMenu, CngxMenuItem, CngxMenuTrigger, CngxPopover, CngxPopoverTrigger],
 })
 class GuardedClickHost {
   readonly disabled = signal(true);
@@ -599,5 +843,182 @@ describe('CngxMenuTrigger on a plain aria-disabled button with a click toggle', 
     button.click();
     TestBed.flushEffects();
     expect(popover.isVisible()).toBe(true);
+  });
+});
+
+describe('CngxMenuTrigger without a co-hosted popover trigger', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [BareTriggerHost] });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    document.body.querySelectorAll('.cngx-menu-announcer').forEach((el) => el.remove());
+  });
+
+  it('writes no aria-expanded / aria-haspopup and warns CNGX1074 once', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fixture = TestBed.createComponent(BareTriggerHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const triggerEl = fixture.debugElement.query(By.directive(CngxMenuTrigger))
+      .nativeElement as HTMLElement;
+    expect(triggerEl.hasAttribute('aria-expanded')).toBe(false);
+    expect(triggerEl.hasAttribute('aria-haspopup')).toBe(false);
+    const coded = warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1074'));
+    expect(coded).toHaveLength(1);
+    expect(coded[0][0]).toMatch(/^CNGX1074: \[cngxMenuTrigger\] has no aria-expanded writer\./);
+    expect(coded[0]).toContain(triggerEl);
+  });
+
+  it('stays silent with a co-hosted popover trigger', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ imports: [TriggerHost] });
+    const fixture = TestBed.createComponent(TriggerHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1074'))).toHaveLength(0);
+  });
+});
+
+@Component({
+  template: `
+    <button type="button" [cngxMenuTrigger]="outer" [popover]="outerPop" [cngxPopoverTrigger]="outerPop">
+      Actions
+    </button>
+    <div cngxPopover #outerPop="cngxPopover">
+      <ul cngxMenu [label]="'Outer'" tabindex="0" #outer="cngxMenu">
+        <li cngxMenuItem value="cut">Cut</li>
+        <li cngxMenuItem [cngxMenuItemSubmenu]="innerPop" [submenuMenu]="inner" value="recent">
+          Open Recent
+        </li>
+        <li cngxMenuItem value="paste">Paste</li>
+      </ul>
+    </div>
+    <div cngxPopover #innerPop="cngxPopover" [exclusive]="false">
+      <ul cngxMenu [label]="'Recent'" tabindex="0" #inner="cngxMenu">
+        <li cngxMenuItem value="file1">file1.ts</li>
+        <li cngxMenuItem value="file2">file2.ts</li>
+      </ul>
+    </div>
+  `,
+  imports: [CngxMenu, CngxMenuItem, CngxMenuItemSubmenu, CngxMenuTrigger, CngxPopover, CngxPopoverTrigger],
+})
+class SubmenuTriggerHost {}
+
+describe('CngxMenuTrigger submenu keys on the focused menu', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [SubmenuTriggerHost] });
+  });
+
+  afterEach(() => {
+    document.body.querySelectorAll('.cngx-menu-announcer').forEach((el) => el.remove());
+  });
+
+  it('routes ArrowRight / ArrowDown / ArrowLeft through the popover listener, root highlight unchanged', async () => {
+    const fixture = TestBed.createComponent(SubmenuTriggerHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const triggerEl = fixture.debugElement.query(By.directive(CngxMenuTrigger))
+      .nativeElement as HTMLElement;
+    const [outer, inner] = fixture.debugElement
+      .queryAll(By.directive(CngxMenu))
+      .map((de) => de.injector.get(CngxMenu));
+    const [, innerPop] = fixture.debugElement
+      .queryAll(By.directive(CngxPopover))
+      .map((de) => de.injector.get(CngxPopover));
+
+    triggerEl.focus();
+    press(triggerEl, 'ArrowDown');
+    await settle();
+    const rootMenuEl = document.activeElement as HTMLElement;
+    expect(rootMenuEl.getAttribute('role')).toBe('menu');
+
+    press(rootMenuEl, 'ArrowDown');
+    TestBed.flushEffects();
+    expect(outer.ad.activeValue()).toBe('recent');
+
+    press(rootMenuEl, 'ArrowRight');
+    TestBed.flushEffects();
+    expect(innerPop.isVisible()).toBe(true);
+    expect(inner.ad.activeValue()).toBe('file1');
+
+    press(rootMenuEl, 'ArrowDown');
+    TestBed.flushEffects();
+    expect(inner.ad.activeValue()).toBe('file2');
+    expect(outer.ad.activeValue()).toBe('recent');
+
+    press(rootMenuEl, 'ArrowLeft');
+    TestBed.flushEffects();
+    expect(innerPop.isVisible()).toBe(false);
+    expect(outer.ad.activeValue()).toBe('recent');
+  });
+
+  it('a consumer keydown on the root menu sees horizontal arrows with no submenu open, not nav keys while one is open', async () => {
+    const fixture = TestBed.createComponent(SubmenuTriggerHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const triggerEl = fixture.debugElement.query(By.directive(CngxMenuTrigger))
+      .nativeElement as HTMLElement;
+    const [, inner] = fixture.debugElement
+      .queryAll(By.directive(CngxMenu))
+      .map((de) => de.injector.get(CngxMenu));
+    const [, innerPop] = fixture.debugElement
+      .queryAll(By.directive(CngxPopover))
+      .map((de) => de.injector.get(CngxPopover));
+
+    triggerEl.focus();
+    press(triggerEl, 'ArrowDown');
+    await settle();
+    const rootMenuEl = document.activeElement as HTMLElement;
+    const seen: string[] = [];
+    rootMenuEl.addEventListener('keydown', (event) => seen.push(event.key));
+
+    // Highlight sits on the leaf "cut": no submenu opens, nothing to stop.
+    press(rootMenuEl, 'ArrowRight');
+    press(rootMenuEl, 'ArrowLeft');
+    TestBed.flushEffects();
+    expect(innerPop.isVisible()).toBe(false);
+    expect(seen).toEqual(['ArrowRight', 'ArrowLeft']);
+
+    press(rootMenuEl, 'ArrowDown');
+    press(rootMenuEl, 'ArrowRight');
+    TestBed.flushEffects();
+    expect(innerPop.isVisible()).toBe(true);
+    seen.length = 0;
+
+    press(rootMenuEl, 'ArrowDown');
+    TestBed.flushEffects();
+    expect(inner.ad.activeValue()).toBe('file2');
+    expect(seen).toEqual([]);
+  });
+
+  it('focus moving into the open submenu popover does not close the menu', async () => {
+    const fixture = TestBed.createComponent(SubmenuTriggerHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const triggerEl = fixture.debugElement.query(By.directive(CngxMenuTrigger))
+      .nativeElement as HTMLElement;
+    const [outerPop, innerPop] = fixture.debugElement
+      .queryAll(By.directive(CngxPopover))
+      .map((de) => de.injector.get(CngxPopover));
+    triggerEl.focus();
+    press(triggerEl, 'ArrowDown');
+    await settle();
+    const rootMenuEl = document.activeElement as HTMLElement;
+    press(rootMenuEl, 'ArrowDown');
+    press(rootMenuEl, 'ArrowRight');
+    TestBed.flushEffects();
+    expect(innerPop.isVisible()).toBe(true);
+
+    (innerPop.elementRef.nativeElement.querySelector('[role="menu"]') as HTMLElement).focus();
+    await settle();
+    expect(outerPop.isVisible()).toBe(true);
   });
 });

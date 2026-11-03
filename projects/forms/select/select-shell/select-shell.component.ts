@@ -20,6 +20,7 @@ import {
 } from '@angular/core';
 
 import {
+  CNGX_NESTED_INTERACTIVE_SELECTOR,
   CNGX_STATEFUL,
   injectLocale,
   nextUid,
@@ -30,7 +31,6 @@ import {
   CngxClickOutside,
   CngxListbox,
   CngxListboxTrigger,
-  createListboxLabelMatch,
   CNGX_OPTION_CONTAINER,
   CNGX_OPTION_FILTER_HOST,
   CNGX_OPTION_INTERACTION_HOST,
@@ -102,9 +102,9 @@ import {
   type CngxSelectShellSearchHost,
 } from '../declarative/select-search-host';
 import { CngxSelectSearch } from '../declarative/select-search.component';
-import { resolveSelectConfig } from '../shared/internal/resolve-config';
+import { resolveSearchMatch, resolveSelectConfig } from '../shared/internal/resolve-config';
 import { isEmptyScalar } from '../shared/internal/compare';
-import { resolvePageJumpSpace } from '../shared/internal/page-jump-handler';
+import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
   dispatchScalarClear,
@@ -262,6 +262,8 @@ export interface CngxSelectShellChange<T = unknown> {
         return {
           searchTerm: self.searchTerm,
           listboxRef: self.listboxRef,
+          searchDebounceMs: self.searchDebounceMs,
+          panelOpen: self.panelOpen,
           // Escape in the search: the sheet gate while modal, today's close
           // while anchored. The trigger is inert under a modal sheet, so the
           // refocus is left to the close path.
@@ -482,9 +484,10 @@ export class CngxSelectShell<T = unknown>
    * skips hidden options. Empty string disables the filter.
    *
    * The model's own `searchTermChange` output fires on every change of the
-   * term. The seed `''` never emits: a model only emits when its value
-   * changes, so server-driven autocomplete consumers don't fire a blank
-   * search at hydrate time.
+   * term. A projected `<cngx-select-search>` writes the term after
+   * `searchDebounceMs`, so typing emits once per pause. The seed `''` never
+   * emits: a model only emits when its value changes, so server-driven
+   * autocomplete consumers don't fire a blank search at hydrate time.
    */
   readonly searchTerm = model<string>('');
 
@@ -497,12 +500,19 @@ export class CngxSelectShell<T = unknown>
   readonly searchMatchFn = input<CngxSelectMatchFn<T> | null>(null);
 
   /**
-   * Debounce for the search pipeline (ms). Forward-compatible input -
-   * the shipped `CNGX_SEARCH_EFFECTS_FACTORY` acts immediately;
-   * consumers overriding the factory read this signal to size their
-   * pipeline.
+   * Debounce (ms) between the last keystroke in the projected
+   * `<cngx-select-search>` and the `searchTerm` write that filters the
+   * options and fires `searchTermChange`. Wins over
+   * `CngxSelectConfig.searchDebounceMs` (default 300). `0` writes on every
+   * keystroke. A programmatic `searchTerm` write is never delayed.
    */
-  readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
+  readonly searchDebounceMs = input<number>(this.config.searchDebounceMs);
+
+  /**
+   * Buffer window (ms) of the closed-trigger typeahead. Wins over
+   * `CngxSelectConfig.typeaheadDebounceInterval` (default 300).
+   */
+  readonly typeaheadDebounceInterval = input<number>(this.config.typeaheadDebounceInterval);
 
   /**
    * Emits after a pick or clear settles, with the new value, the previous value
@@ -719,8 +729,6 @@ export class CngxSelectShell<T = unknown>
 
   readonly activeId = computed<string | null>(() => this.listboxRef()?.ad.activeId() ?? null);
 
-  readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
-
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
   protected readonly hostFocus = createHostFocusWithin({
@@ -795,7 +803,6 @@ export class CngxSelectShell<T = unknown>
       hideCaret: this.hideCaret,
       commitErrorDisplay: this.commitErrorDisplay,
       commitAction: this.commitAction,
-      errorState: this.errorState,
       multi: computed(() => false),
       currentSelection: this.value,
       selectionIndicatorPosition: this.selectionIndicatorPosition,
@@ -810,6 +817,9 @@ export class CngxSelectShell<T = unknown>
       announceTemplate: this.announceTemplate,
     },
   );
+
+  /** Whether the bound field shows its error; `false` without a form field. */
+  readonly errorState: Signal<boolean> = this.core.errorState;
 
   /** @internal Mobile sheet presentation; also the scoped announcer's scope. */
   readonly sheetWiring: CngxSelectSheetWiring = createSelectSheetWiring({
@@ -966,9 +976,10 @@ export class CngxSelectShell<T = unknown>
   private readonly typeaheadController = createTypeaheadController<T>({
     options: this.flatOptions,
     compareWith: this.compareWith,
-    debounceMs: computed(() => this.config.typeaheadDebounceInterval),
+    debounceMs: this.typeaheadDebounceInterval,
     disabled: this.core.writeBlocked,
     locale: injectLocale(),
+    destroyRef: inject(DestroyRef),
   });
 
   /**
@@ -1056,11 +1067,12 @@ export class CngxSelectShell<T = unknown>
     this.localItemsBuffer.clear();
   }
 
-  /**
-   * @internal Folded substring match of an option label in the reading
-   * locale, cached per stable option record.
-   */
-  private readonly labelMatch = createListboxLabelMatch(injectLocale());
+  /** @internal `[searchMatchFn]` > `CngxSelectConfig.searchMatchFn` > folded label match. */
+  private readonly effectiveMatchFn = resolveSearchMatch(
+    this.searchMatchFn,
+    this.config,
+    injectLocale(),
+  );
 
   /**
    * @internal `CngxOptionFilterHost` policy. Resolves the projected option's
@@ -1076,10 +1088,8 @@ export class CngxSelectShell<T = unknown>
     return this.matchOption(record, term);
   }
 
-  /** @internal `[searchMatchFn]` > `CngxSelectConfig.searchMatchFn` > folded label match. */
   private matchOption(option: CngxSelectMatchOption<T>, term: string): boolean {
-    const fn = this.searchMatchFn() ?? this.config.searchMatchFn ?? this.labelMatch;
-    return fn(option, term);
+    return this.effectiveMatchFn()(option, term);
   }
 
   /**
@@ -1232,6 +1242,9 @@ export class CngxSelectShell<T = unknown>
     this.scalarHandler.finalizeSelection(option.value, option, previous);
   }
 
+  /** Descendants that own Enter / Space; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
+  private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
+
   /**
    * Trigger keyboard. Typeahead-while-closed (native `<select>` parity)
    * and PageUp/PageDown jump-N - both delegate to
@@ -1250,8 +1263,8 @@ export class CngxSelectShell<T = unknown>
     // typeahead, no preventDefault, so Enter / Space run its activation.
     const host = event.currentTarget as Element | null;
     const target = event.target as Element | null;
-    const interactive = target?.closest('button, a[href], input, [role="button"]');
-    if (interactive && interactive !== host) {
+    const interactive = target?.closest(this.nestedInteractive);
+    if (interactive && interactive !== host && host?.contains(interactive)) {
       return;
     }
     const lb = this.listboxRef();
@@ -1284,35 +1297,16 @@ export class CngxSelectShell<T = unknown>
       }
     }
 
-    if (event.key === 'PageDown' || event.key === 'PageUp') {
-      event.preventDefault();
-      if (!pop || !lb) {
-        return;
-      }
-      if (!pop.isVisible()) {
-        pop.show();
-      }
-      const { items, currentIndex: currentListboxIndex } = resolvePageJumpSpace(
-        lb,
-        this.visibleProjectedOptions,
-      );
-      const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
-      const action = this.flatNavStrategy.onPageJump(
-        {
-          options: this.flatOptions(),
-          listboxItems: items,
-          currentFlatIndex: -1,
-          currentListboxIndex,
-          compareWith: this.compareWith(),
-          disabled: this.disabled(),
-          typeaheadController: this.typeaheadController,
-        },
-        direction,
-      );
-      if (action.kind === 'highlight') {
-        lb.ad.highlightByIndex(action.index);
-      }
-    }
+    handleFlatNavPageJumpKey(event, {
+      listbox: lb,
+      popover: pop,
+      strategy: this.flatNavStrategy,
+      flatOptions: this.flatOptions,
+      virtualSpace: this.visibleProjectedOptions,
+      compareWith: this.compareWith,
+      disabled: this.disabled,
+      typeaheadController: this.typeaheadController,
+    });
   }
 
   // CngxOptionInteractionHost: projected `<cngx-option>` elements

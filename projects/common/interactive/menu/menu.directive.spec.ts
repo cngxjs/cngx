@@ -29,6 +29,36 @@ class MenuHost {
   readonly lastActivated = signal<string | null>(null);
 }
 
+@Component({
+  template: `<ul cngxMenu label="Ids" [id]="id()"></ul>`,
+  imports: [CngxMenu],
+})
+class MenuIdHost {
+  readonly id = signal<string | null>('');
+}
+
+describe('CngxMenu id', () => {
+  function render(id: string | null): { menu: CngxMenu; el: HTMLElement } {
+    const fixture = TestBed.createComponent(MenuIdHost);
+    fixture.componentInstance.id.set(id);
+    fixture.detectChanges();
+    const de = fixture.debugElement.query(By.directive(CngxMenu));
+    return { menu: de.injector.get(CngxMenu), el: de.nativeElement as HTMLElement };
+  }
+
+  it.each(['', null])('falls back to the generated id for %j', (id) => {
+    const { menu, el } = render(id);
+    expect(menu.id()).toMatch(/^cngx-menu-/);
+    expect(el.id).toBe(menu.id());
+  });
+
+  it('uses a bound id', () => {
+    const { menu, el } = render('actions-menu');
+    expect(menu.id()).toBe('actions-menu');
+    expect(el.id).toBe('actions-menu');
+  });
+});
+
 describe('CngxMenu', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [MenuHost] }));
 

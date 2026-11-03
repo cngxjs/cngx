@@ -1468,6 +1468,23 @@
       ]
     },
     {
+      "code": "CNGX1074",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Menu trigger without an ARIA writer",
+      "page": "core-concepts/error-codes/cngx1074.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1074.html",
+      "status": "active",
+      "files": ["projects/common/interactive/menu/menu-trigger.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/menu/menu-trigger.directive.ts",
+          "text": "[cngxMenuTrigger] has no aria-expanded writer. Co-host [cngxPopoverTrigger] on the same element; it writes aria-haspopup, aria-expanded and aria-controls for the menu."
+        }
+      ]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",

@@ -134,7 +134,7 @@ const RAW_THROW_EXEMPT = [
   {
     file: 'projects/forms/select/shared/__test-helpers/select-behaviour-host.ts',
     count: 0,
-    constructions: 4,
+    constructions: 5,
     reason:
       'spec-only harness that fails a pending commit source with an Error; excluded-path-import-boundary.test.mjs fails any library import of a __test-helpers file',
   },

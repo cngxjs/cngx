@@ -131,7 +131,7 @@ if (id) {
 ### Custom chip / trigger summary
 
 `*cngxTreeSelectChip` overrides individual chips; `*cngxTreeSelectTriggerLabel` replaces the entire chip strip.
-Same context shape as the multi-select equivalents - see [`ARCHITECTURE.md`](../../../ARCHITECTURE.md#template-slot-system).
+Same context shape as the multi-select equivalents - see [`ARCHITECTURE.md`](../ARCHITECTURE.md#template-slot-system).
 
 ## Mobile sheet
 
@@ -216,3 +216,10 @@ on the trigger.
 
 The flat panels (`CngxSelect`, `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`, `CngxReorderableMultiSelect`) support virtualisation via `CNGX_PANEL_RENDERER_FACTORY` + `injectRecycler`.
 Tree virtualisation is **not implemented** - the recycler contract conflicts with expand-state mutations.
+
+Config keys the tree does not read:
+
+- `showSelectionIndicator` and `selectionIndicatorVariant` - every node row renders its checkbox.
+- `typeaheadDebounceInterval` and `typeaheadWhileClosed` - typeahead runs inside the open panel only; `[expandToReveal]` extends it to collapsed nodes.
+- `searchDebounceMs` - the tree has no search input.
+- `chipOverflow` - the trigger keeps a fixed one-line chip count, capped by `maxVisibleChips`.

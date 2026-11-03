@@ -186,6 +186,13 @@ function key(el: HTMLElement, k: string): void {
   el.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
 }
 
+/** Lets the open-time focus move (and a close-time restore) run. */
+async function settle(): Promise<void> {
+  TestBed.flushEffects();
+  await Promise.resolve();
+  await Promise.resolve();
+}
+
 describe('CngxIconMenuButton', () => {
   beforeEach(() => {
     polyfillPopover();
@@ -235,6 +242,46 @@ describe('CngxIconMenuButton', () => {
       expect(button.getAttribute('data-busy')).toBe('true');
       expect(button.querySelector('.cngx-button__busy')).not.toBeNull();
     });
+
+    it.each([
+      ['after', AsyncAfterHost],
+      ['before', AsyncBeforeHost],
+    ] as const)(
+      'refuses the menu click while a cngxAsyncClick written %s the selector is pending',
+      (_, type) => {
+        const { button, popover, flush } = setup(type as Type<unknown>);
+        button.click();
+        flush();
+        // The first click opens the menu and starts the run.
+        expect(popover.isVisible()).toBe(true);
+        popover.hide();
+        flush();
+        expect(button.getAttribute('aria-disabled')).toBe('true');
+
+        button.click();
+        flush();
+        expect(popover.isVisible()).toBe(false);
+        expect(button.getAttribute('aria-disabled')).toBe('true');
+      },
+    );
+
+    it.each([
+      ['after', AsyncAfterHost],
+      ['before', AsyncBeforeHost],
+    ] as const)(
+      'still closes the open menu on click while a cngxAsyncClick written %s the selector is pending',
+      (_, type) => {
+        const { button, popover, flush } = setup(type as Type<unknown>);
+        button.click();
+        flush();
+        expect(popover.isVisible()).toBe(true);
+        expect(button.getAttribute('aria-disabled')).toBe('true');
+
+        button.click();
+        flush();
+        expect(popover.isVisible()).toBe(false);
+      },
+    );
   });
 
   describe('outside a split button', () => {
@@ -266,14 +313,20 @@ describe('CngxIconMenuButton', () => {
       expect(button.dataset['expanded']).toBe('false');
     });
 
-    it('opens on ArrowDown and closes on Escape with focus kept', () => {
+    it('opens on ArrowDown with focus in the menu and closes on Escape back to the button', async () => {
       const { button, popover, flush } = setup(KebabHost);
       button.focus();
       key(button, 'ArrowDown');
       flush();
+      await settle();
       expect(popover.isVisible()).toBe(true);
-      key(button, 'Escape');
+      const focused = document.activeElement as HTMLElement;
+      expect(focused.getAttribute('role')).toBe('menu');
+      expect(focused.getAttribute('aria-activedescendant')).toBeTruthy();
+      expect(button.getAttribute('aria-controls')).toBe(focused.id);
+      key(focused, 'Escape');
       flush();
+      await settle();
       expect(popover.isVisible()).toBe(false);
       expect(document.activeElement).toBe(button);
     });

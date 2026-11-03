@@ -1,8 +1,15 @@
-import { Component, signal, type WritableSignal } from '@angular/core';
+import {
+  Component,
+  EnvironmentInjector,
+  Injector,
+  runInInjectionContext,
+  signal,
+  type WritableSignal,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { CngxFormField } from '@cngx/forms/field';
+import { CngxFormField, CngxFormFieldPresenter } from '@cngx/forms/field';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 import type { CngxFieldAccessor, CngxFieldRef } from '@cngx/forms/field';
 
@@ -234,24 +241,39 @@ describe('createFieldSync', () => {
     });
   });
 
-  describe('internal write helper', () => {
-    it('silently skips when fieldRef.value is not a writable signal', () => {
-      const readonlySignal = signal('frozen').asReadonly();
-      const fakeRef: CngxFieldRef<string> = {
-        ...createMockField<string>({ value: 'frozen' }).ref,
-        value: readonlySignal,
+  describe('readonly field ref', () => {
+    it('skips the write-back silently when fieldRef.value is not writable', () => {
+      const mock = createMockField<string>({ value: 'frozen' });
+      const readonlyRef = {
+        ...mock.ref,
+        value: signal('frozen').asReadonly(),
       } as CngxFieldRef<string>;
-      // No TypeError - writing to a non-writable ref is a documented silent no-op.
-      expect(() => {
-        const signalLike = fakeRef.value as unknown;
-        if (
-          typeof signalLike === 'function' &&
-          'set' in signalLike &&
-          typeof (signalLike as { set: unknown }).set === 'function'
-        ) {
-          throw new Error('unexpected writable detection');
-        }
-      }).not.toThrow();
+      const injector = Injector.create({
+        providers: [
+          {
+            provide: CngxFormFieldPresenter,
+            useValue: { fieldState: signal<CngxFieldRef<string>>(readonlyRef) },
+          },
+        ],
+        parent: TestBed.inject(EnvironmentInjector),
+      });
+      const value = signal<string | undefined>(undefined);
+
+      runInInjectionContext(injector, () =>
+        createFieldSync<string | undefined>({
+          componentValue: value,
+          valueEquals: (a, b) => Object.is(a, b),
+          coerceFromField: (x) => x as string | undefined,
+        }),
+      );
+      expect(() => TestBed.flushEffects()).not.toThrow();
+      expect(value()).toBe('frozen');
+
+      value.set('thawed');
+      expect(() => TestBed.flushEffects()).not.toThrow();
+      expect(readonlyRef.value()).toBe('frozen');
+      expect(mock.ref.dirty()).toBe(false);
+      expect(value()).toBe('thawed');
     });
   });
 });

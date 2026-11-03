@@ -14,11 +14,9 @@ import type { Observable } from 'rxjs';
  * has nothing to return. A source that neither emits nor completes stays
  * pending until a newer commit supersedes it.
  */
-export type CngxSelectCommitAction<T> = (intended: T | undefined) =>
-  | Observable<T | undefined>
-  | Promise<T | undefined>
-  | T
-  | undefined;
+export type CngxSelectCommitAction<T> = (
+  intended: T | undefined,
+) => Observable<T | undefined> | Promise<T | undefined> | T | undefined;
 
 /**
  * Panel UX during an in-flight commit. Consecutive picks supersede.
@@ -27,6 +25,11 @@ export type CngxSelectCommitAction<T> = (intended: T | undefined) =>
  *   rolls back on error.
  * - `'pessimistic'` - panel stays open, option-row spinner, trigger
  *   disabled. Closes on success; stays open on error with inline UI.
+ *
+ * In `'optimistic'` mode a bound form field mirrors the model, so it holds
+ * the intended value while the commit is in flight and rolls back with the
+ * model on error. Pick `'pessimistic'` when the field must only ever hold a
+ * server-confirmed value.
  */
 export type CngxSelectCommitMode = 'optimistic' | 'pessimistic';
 

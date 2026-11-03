@@ -6,11 +6,11 @@ import {
   ViewEncapsulation,
   computed,
   contentChild,
+  DestroyRef,
   inject,
   input,
   model,
   output,
-  untracked,
   viewChild,
   ElementRef,
   type Signal,
@@ -18,6 +18,7 @@ import {
 } from '@angular/core';
 
 import {
+  CNGX_NESTED_INTERACTIVE_SELECTOR,
   CNGX_STATEFUL,
   injectLocale,
   type CngxAsyncState,
@@ -592,8 +593,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   readonly activeId = computed<string | null>(() => this.listboxRef()?.ad.activeId() ?? null);
 
-  readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
-
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
   protected readonly hostFocus = createHostFocusWithin({
@@ -653,7 +652,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       hideCaret: this.hideCaret,
       commitErrorDisplay: this.commitErrorDisplay,
       commitAction: this.commitAction,
-      errorState: this.errorState,
       multi: computed(() => true),
       currentSelection: this.values,
       multiValues: this.values,
@@ -669,6 +667,9 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       announceTemplate: this.announceTemplate,
     },
   );
+
+  /** Whether the bound field shows its error; `false` without a form field. */
+  readonly errorState: Signal<boolean> = this.core.errorState;
 
   /** @internal Mobile sheet presentation; also the scoped announcer's scope. */
   readonly sheetWiring: CngxSelectSheetWiring = createSelectSheetWiring({
@@ -752,6 +753,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     debounceMs: this.typeaheadDebounceInterval,
     disabled: this.core.writeBlocked,
     locale: injectLocale(),
+    destroyRef: inject(DestroyRef),
   });
 
   /**
@@ -851,9 +853,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
 
   private readonly togglingOption = this.core.togglingOption;
 
-  /** Rollback target for a commit in flight. */
-  private lastCommittedValues: T[] = [];
-
   /**
    * Toggle/clear finalize + AD-activation dispatch. Shared with
    * `CngxCombobox` / `CngxReorderableMultiSelect`; this variant adds
@@ -865,9 +864,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     commitMode: this.commitMode,
     commitAction: this.commitAction,
     core: this.core,
-    setLastCommitted: (previous) => {
-      this.lastCommittedValues = previous;
-    },
     beginToggle: (next, previous, option, action) =>
       this.commitHandler.beginToggle(next, previous, option, action),
     beginClear: (previous, action) => this.commitHandler.beginClear(previous, action),
@@ -894,8 +890,8 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     commitMode: this.commitMode,
     core: this.core,
     commitAction: this.commitAction,
-    onToggleFinalize: (option, isNowSelected) =>
-      this.toggleDispatch.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
+    onToggleFinalize: (option, isNowSelected, previous) =>
+      this.toggleDispatch.finalizeToggle(option, isNowSelected, previous),
     onClearFinalize: (previous, finalValues) =>
       this.toggleDispatch.clearFinalize(previous, finalValues),
     onStateChange: (status) => this.stateChange.emit(status),
@@ -917,10 +913,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     commitMode: this.commitMode,
     beginCommit: (next, previous, item, action) =>
       this.commitHandler.beginToggle(next, previous, item, action),
-    onBeforeCommit: (previous, item) => {
-      this.lastCommittedValues = previous;
-      this.togglingOption.set(item);
-    },
+    onBeforeCommit: (item) => this.togglingOption.set(item),
     onSyncFinalize: (item, previous) => this.toggleDispatch.finalizeToggle(item, false, previous),
   });
 
@@ -935,8 +928,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   constructor() {
-    this.lastCommittedValues = untracked(() => [...this.values()]);
-
     injectChipFitFocusHandOff({
       strip: this.fitStrip,
       visibleCount: this.chipStrip.visibleCount,
@@ -1073,6 +1064,9 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     this.focusState.markBlurred();
   }
 
+  /** Descendants that own Enter / Space; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
+  private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
+
   /** @internal */
   protected handleTriggerKeydown(event: KeyboardEvent): void {
     // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
@@ -1085,8 +1079,8 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     // preventDefault, so Enter / Space run its native activation.
     const host = event.currentTarget as Element | null;
     const target = event.target as Element | null;
-    const interactive = target?.closest('button, a[href], input, [role="button"]');
-    if (interactive && interactive !== host) {
+    const interactive = target?.closest(this.nestedInteractive);
+    if (interactive && interactive !== host && host?.contains(interactive)) {
       return;
     }
     const lb = this.listboxRef();

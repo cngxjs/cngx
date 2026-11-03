@@ -37,17 +37,23 @@ export interface CngxMenuDismissPopoverRef {
  *   menu actually closes is owned by `CngxPopover.closeOnEscape`:
  *   consumers who set `[closeOnEscape]="false"` keep their menu open
  *   even though `lastSource` reports `'escape'`. The other sources
- *   (`outside-click`, `scroll`, `blur`, `pointer-cancel`) call
- *   `popover.hide()` themselves and so always coincide with an actual
- *   close - `'escape'` is the one source where intent and effect can
- *   diverge.
+ *   (`outside-click`, `scroll`, `blur`, `pointer-cancel`, `focus-out`)
+ *   call `popover.hide()` themselves and so always coincide with an
+ *   actual close - `'escape'` is the one source where intent and effect
+ *   can diverge.
+ * - `focus-out` - focus leaves the trigger and the open menu chain: a
+ *   `Tab` out of the menu, a `Shift+Tab` that lands back on the trigger,
+ *   or focus landing anywhere outside the trigger host, the popover and
+ *   the open submenus. Focus is NOT restored to the trigger after a
+ *   focus-out close; it stays where the user moved it.
  */
 export type CngxMenuDismissSource =
   | 'outside-click'
   | 'scroll'
   | 'blur'
   | 'pointer-cancel'
-  | 'escape';
+  | 'escape'
+  | 'focus-out';
 
 /**
  * Options for {@link createMenuDismissHandler}.
@@ -79,6 +85,18 @@ export interface CngxMenuDismissHandlerOptions {
    * filtered out (in-menu palm rejection must not dismiss).
    */
   readonly dismissOnBlur: boolean;
+  /**
+   * Install the document `focusin` listener behind the `focus-out` source,
+   * plus the one-shot `Tab` arm that closes a `Shift+Tab` back onto the
+   * trigger.
+   */
+  readonly dismissOnFocusOut: boolean;
+  /**
+   * `true` when a node lies inside the open menu chain. Submenu popovers
+   * are siblings of the root popover, so the popover element alone cannot
+   * tell a focus move into a submenu from one that leaves the menu.
+   */
+  readonly menuChainContains?: (node: Node) => boolean;
   /**
    * Synchronous callback invoked from the DOM event handler whenever a
    * dismissal source fires. Runs AFTER `popover.hide()` so consumers
@@ -160,6 +178,16 @@ export function createMenuDismissHandler(
     );
   };
 
+  const isInsideMenu = (target: EventTarget | null): boolean => {
+    if (!(target instanceof Node)) {
+      return false;
+    }
+    return (
+      opts.popover.elementRef.nativeElement.contains(target) ||
+      (opts.menuChainContains?.(target) ?? false)
+    );
+  };
+
   const fire = (source: CngxMenuDismissSource): void => {
     if (!opts.popover.isVisible()) {
       return;
@@ -173,6 +201,48 @@ export function createMenuDismissHandler(
     const doc = opts.hostElement.ownerDocument;
     const win = doc.defaultView;
     const skip = opts.skipSources;
+    const focusOut = opts.dismissOnFocusOut && !skip?.has('focus-out');
+    // Armed by a Tab inside the menu, so the focus it moves closes the menu
+    // even when it lands on the trigger host (Shift+Tab). The close itself
+    // waits for that focusin: hiding the popover inside the Tab keydown
+    // would let the browser's focus fixup send the Tab to `body`.
+    let tabArmed = false;
+
+    if (focusOut) {
+      const onTabKeyDown = (event: KeyboardEvent): void => {
+        if (event.key === 'Tab' && opts.popover.isVisible() && isInsideMenu(event.target)) {
+          tabArmed = true;
+        }
+      };
+      doc.addEventListener('keydown', onTabKeyDown, true);
+      const onFocusIn = (event: FocusEvent): void => {
+        if (!opts.popover.isVisible() || isInsideMenu(event.target)) {
+          return;
+        }
+        const armed = tabArmed;
+        tabArmed = false;
+        if (!armed && opts.hostElement.contains(event.target as Node | null)) {
+          return;
+        }
+        fire('focus-out');
+      };
+      doc.addEventListener('focusin', onFocusIn, true);
+      // A Tab that leaves the document fires no focusin, so the arm would
+      // survive into the next pointer focus on the trigger and close the
+      // menu the click is about to reopen. A pointer press or a window blur
+      // ends the Tab gesture.
+      const disarm = (): void => {
+        tabArmed = false;
+      };
+      doc.addEventListener('pointerdown', disarm, true);
+      win?.addEventListener('blur', disarm);
+      teardowns.push(() => {
+        doc.removeEventListener('keydown', onTabKeyDown, true);
+        doc.removeEventListener('focusin', onFocusIn, true);
+        doc.removeEventListener('pointerdown', disarm, true);
+        win?.removeEventListener('blur', disarm);
+      });
+    }
 
     // Escape detection. Records the source without calling popover.hide() -
     // `CngxPopover.closeOnEscape` owns the actual close decision, so a
@@ -289,6 +359,11 @@ export interface CngxMenuTriggerDismissBindingOptions {
   readonly menuConfig: CngxMenuConfig;
   readonly factory: CngxMenuDismissHandlerFactory;
   /**
+   * `true` when a node lies inside the open menu chain (root menu plus the
+   * open submenus). Forwarded to the handler for the `focus-out` source.
+   */
+  readonly menuChainContains?: (node: Node) => boolean;
+  /**
    * Synchronous notification invoked from the DOM event handler after
    * the binding's `lastSource` signal is updated. Trigger directives
    * use it to call `CngxMenuAnnouncer.announce(...)` so screen readers
@@ -317,6 +392,13 @@ export interface CngxMenuTriggerDismissBinding {
    * before the first close. Read by templates / telemetry sinks.
    */
   readonly lastSource: Signal<CngxMenuDismissSource | null>;
+  /**
+   * The source that closed the current open cycle, `null` while open or
+   * after a close no source reported (an item activation, a toggle). Reset
+   * on every `attach()`. A plain read for the trigger's close branch, which
+   * discards the saved focus after a `focus-out` instead of restoring it.
+   */
+  closedBy(): CngxMenuDismissSource | null;
 }
 
 /**
@@ -336,11 +418,13 @@ export function createMenuTriggerDismissBinding(
   const _lastSource = signal<CngxMenuDismissSource | null>(null);
   let handler: CngxMenuDismissHandler | null = null;
   let teardown: (() => void) | null = null;
+  let cycleSource: CngxMenuDismissSource | null = null;
 
   const attach = (): void => {
     if (teardown !== null) {
       return;
     }
+    cycleSource = null;
     // Stable-input assumption: the popover thunk and menuConfig snapshot
     // resolve once at first open and are reused for the directive's
     // lifetime. Trigger directives bind popover via input.required (stable
@@ -352,7 +436,10 @@ export function createMenuTriggerDismissBinding(
       dismissOnOutsideClick: opts.menuConfig.dismissOnOutsideClick,
       dismissOnScroll: opts.menuConfig.dismissOnScroll,
       dismissOnBlur: opts.menuConfig.dismissOnBlur,
+      dismissOnFocusOut: opts.menuConfig.dismissOnFocusOut,
+      menuChainContains: opts.menuChainContains,
       onDismiss: (source) => {
+        cycleSource = source;
         _lastSource.set(source);
         opts.onDismiss?.(source);
       },
@@ -372,5 +459,6 @@ export function createMenuTriggerDismissBinding(
     attach,
     detach,
     lastSource: _lastSource.asReadonly(),
+    closedBy: () => cycleSource,
   };
 }

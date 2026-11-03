@@ -36,10 +36,17 @@ import {
 } from '../shared/projected-option-model';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 import { provideLocale } from '@cngx/core/utils';
+import { stripBidiIsolates } from '@cngx/testing';
 
 import { CngxSelectShell, type CngxSelectShellChange } from './select-shell.component';
+import { CNGX_SELECT_LANGUAGE_EN } from '../i18n/select-language-section';
 import type { CngxSelectOptionsInput } from '../shared/option.model';
-import { provideSelectConfig, withTemplates } from '../shared/config';
+import {
+  provideSelectConfig,
+  withSearchDebounce,
+  withTemplates,
+  withTypeaheadDebounce,
+} from '../shared/config';
 import type { CngxSelectTriggerLabelContext } from '../shared/template-slots';
 import { CngxSelectOption } from '../declarative/option.component';
 import { CngxSelectOptgroup } from '../declarative/optgroup.component';
@@ -500,8 +507,7 @@ describe('CngxSelectShell - Phase 5 scaffold', () => {
     flush(fixture);
 
     const empty = shellDe.nativeElement.querySelector('.cngx-select__empty');
-    expect(empty).not.toBeNull();
-    expect(empty!.textContent).toBeTruthy();
+    expect(stripBidiIsolates(empty?.textContent ?? '').trim()).toBe(CNGX_SELECT_LANGUAGE_EN.empty);
   });
 
   it('renders the panel-shell loading status region when [loading] is true', () => {
@@ -528,7 +534,10 @@ describe('CngxSelectShell - Phase 5 scaffold', () => {
 
     const status = shellDe.nativeElement.querySelector('[role="status"]');
     expect(status).not.toBeNull();
-    expect(status!.getAttribute('aria-label')).toBeTruthy();
+    expect(stripBidiIsolates(status!.textContent ?? '').trim()).toBe(
+      CNGX_SELECT_LANGUAGE_EN.statusLoading,
+    );
+    expect(status!.hasAttribute('aria-label')).toBe(false);
   });
 
   it('renders the panel-shell error region with retry when [state] is in first-load error', () => {
@@ -1555,6 +1564,7 @@ describeSelectBehaviourHost('CngxSelectShell', CngxSelectShell, 'cngx-select-she
   contentImports: [CngxSelectOption],
   optionSelector: 'cngx-option',
   readValue: (cmp) => (cmp as { value: () => unknown }).value(),
+  closedTypeahead: true,
 });
 
 describe('CngxSelectShell - live projected option text', () => {
@@ -1643,5 +1653,159 @@ describe('CngxSelectShell - empty-string option without a commit action', () => 
     flush(fixture);
     const none = shellEl.querySelectorAll('cngx-option')[1] as HTMLElement;
     expect(none.getAttribute('aria-selected')).not.toBe('true');
+  });
+});
+
+describe('CngxSelectShell - searchDebounceMs', () => {
+  @Component({
+    template: `
+      @if (bound()) {
+        <cngx-select-shell
+          [label]="'Colour'"
+          [searchDebounceMs]="ms()"
+          (searchTermChange)="terms.push($event)"
+        >
+          <cngx-select-search />
+          <cngx-option [value]="'red'">Red</cngx-option>
+          <cngx-option [value]="'green'">Green</cngx-option>
+        </cngx-select-shell>
+      } @else {
+        <cngx-select-shell [label]="'Colour'" (searchTermChange)="terms.push($event)">
+          <cngx-select-search />
+          <cngx-option [value]="'red'">Red</cngx-option>
+          <cngx-option [value]="'green'">Green</cngx-option>
+        </cngx-select-shell>
+      }
+    `,
+    imports: [CngxSelectShell, CngxSelectOption, CngxSelectSearch],
+  })
+  class DebounceHost {
+    readonly bound = signal(false);
+    readonly ms = signal(0);
+    readonly terms: string[] = [];
+  }
+
+  function setup(providers: unknown[], bind?: number) {
+    polyfillPopover();
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({ imports: [DebounceHost], providers: providers as never[] });
+    const fixture = TestBed.createComponent(DebounceHost);
+    if (bind !== undefined) {
+      fixture.componentInstance.bound.set(true);
+      fixture.componentInstance.ms.set(bind);
+    }
+    flush(fixture);
+    const shell = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .componentInstance as CngxSelectShell<string>;
+    shell.open();
+    flush(fixture);
+    const input = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
+      '.cngx-select-search__input',
+    )!;
+    const type = (text: string): void => {
+      input.value = text;
+      input.dispatchEvent(new Event('input'));
+    };
+    return { fixture, shell, type, terms: fixture.componentInstance.terms };
+  }
+
+  function settle(fixture: Parameters<typeof flush>[0], ms: number): void {
+    vi.advanceTimersByTime(ms);
+    flush(fixture);
+  }
+
+  it('defaults to the 300 ms of CNGX_SELECT_DEFAULTS', () => {
+    const { fixture, shell, type, terms } = setup([]);
+    expect(shell.searchDebounceMs()).toBe(300);
+    type('r');
+    type('re');
+    settle(fixture, 299);
+    expect(shell.searchTerm()).toBe('');
+    expect(terms).toEqual([]);
+    settle(fixture, 1);
+    expect(shell.searchTerm()).toBe('re');
+    expect(terms).toEqual(['re']);
+  });
+
+  it('reads CngxSelectConfig.searchDebounceMs when the input is unbound', () => {
+    const { fixture, shell, type, terms } = setup([provideSelectConfig(withSearchDebounce(500))]);
+    expect(shell.searchDebounceMs()).toBe(500);
+    type('g');
+    settle(fixture, 300);
+    expect(terms).toEqual([]);
+    settle(fixture, 200);
+    expect(terms).toEqual(['g']);
+  });
+
+  it('lets a bound [searchDebounceMs] win over the config, 0 writing at once', () => {
+    const { fixture, shell, type, terms } = setup(
+      [provideSelectConfig(withSearchDebounce(500))],
+      0,
+    );
+    type('g');
+    flush(fixture);
+    expect(shell.searchTerm()).toBe('g');
+    expect(terms).toEqual(['g']);
+  });
+
+  it('cancels a pending write when the shell is destroyed', () => {
+    const { fixture, type, terms } = setup([]);
+    type('r');
+    fixture.destroy();
+    vi.advanceTimersByTime(300);
+    expect(terms).toEqual([]);
+  });
+
+  it('applies the same precedence to typeaheadDebounceInterval', () => {
+    const { shell } = setup([provideSelectConfig(withTypeaheadDebounce(450))]);
+    expect(shell.typeaheadDebounceInterval()).toBe(450);
+  });
+
+  it('keeps the two keys apart: each feature sets only its own window', () => {
+    const typeahead = setup([provideSelectConfig(withTypeaheadDebounce(450))]).shell;
+    expect(typeahead.searchDebounceMs()).toBe(300);
+    TestBed.resetTestingModule();
+    const search = setup([provideSelectConfig(withSearchDebounce(150))]).shell;
+    expect(search.typeaheadDebounceInterval()).toBe(300);
+    expect(search.searchDebounceMs()).toBe(150);
+  });
+
+  it('Enter after the debounced write landed picks from the narrowed list', () => {
+    const { fixture, shell, type } = setup([]);
+    const input = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
+      '.cngx-select-search__input',
+    )!;
+    const listbox = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox);
+    listbox.ad.highlightFirst();
+    flush(fixture);
+    type('gre');
+    settle(fixture, 300);
+    expect(listbox.ad.activeValue()).toBeNull();
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+    flush(fixture);
+    expect(shell.value()).toBeUndefined();
+  });
+
+  it('Enter inside the debounce window resolves the pick against the flushed filter', () => {
+    const { fixture, shell, type } = setup([]);
+    const input = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
+      '.cngx-select-search__input',
+    )!;
+    const listbox = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox);
+    listbox.ad.highlightFirst();
+    flush(fixture);
+    expect(listbox.ad.activeValue()).toBe('red');
+    type('gre');
+    const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    input.dispatchEvent(enter);
+    expect(enter.defaultPrevented).toBe(true);
+    flush(fixture);
+    expect(shell.searchTerm()).toBe('gre');
+    // The highlighted Red is hidden by the flushed term, so nothing is picked.
+    expect(shell.value()).toBeUndefined();
+    listbox.ad.highlightFirst();
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+    flush(fixture);
+    expect(shell.value()).toBe('green');
   });
 });

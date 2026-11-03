@@ -1,10 +1,18 @@
-import { Component, Directive, computed, inject, input, signal } from '@angular/core';
+import {
+  Component,
+  Directive,
+  computed,
+  inject,
+  input,
+  signal,
+  type Provider,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { provideDirection } from '@cngx/core';
-import { provideLocale } from '@cngx/core/utils';
+import { provideLocale, provideNestedInteractiveSelector } from '@cngx/core/utils';
 
 import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from './ad-item.token';
 import { CngxActiveDescendant } from './active-descendant.directive';
@@ -1158,5 +1166,220 @@ describe('CngxActiveDescendant under dir=rtl', () => {
     TestBed.flushEffects();
     key('ArrowDown');
     expect(dir.activeItem()?.value).toBe('b');
+  });
+});
+
+/* --- Enter / Space ownership: page scroll, text hosts, nested controls ----- */
+
+const SPACE_ITEMS: ActiveDescendantItem[] = [
+  { id: 'space-a', value: 'a', label: 'Apple' },
+  { id: 'space-b', value: 'b', label: 'Banana' },
+];
+
+@Component({
+  template: `
+    <div cngxActiveDescendant [items]="items" tabindex="0" data-testid="div-host">
+      <button type="button" data-testid="nested-button">Retry</button>
+      <a href="#retry" data-testid="nested-link">Retry link</a>
+      <span role="button" tabindex="0" data-testid="nested-role-button">Role button</span>
+      <select data-testid="nested-select"><option>One</option></select>
+      <textarea data-testid="nested-textarea"></textarea>
+      <details><summary data-testid="nested-summary">More</summary></details>
+      <span role="checkbox" aria-checked="false" tabindex="0" data-testid="nested-checkbox">Check</span>
+      <span role="switch" aria-checked="false" tabindex="0" data-testid="nested-switch">Switch</span>
+      <span role="menuitem" tabindex="-1" data-testid="nested-menuitem">Item</span>
+      <span role="menuitemcheckbox" aria-checked="false" tabindex="-1" data-testid="nested-menuitemcheckbox">Check item</span>
+      <span role="menuitemradio" aria-checked="false" tabindex="-1" data-testid="nested-menuitemradio">Radio item</span>
+      <span role="radio" aria-checked="false" tabindex="0" data-testid="nested-radio">Radio</span>
+      <span role="tab" aria-selected="false" tabindex="0" data-testid="nested-tab">Tab</span>
+      <span role="slider" aria-valuenow="1" tabindex="0" data-testid="nested-slider">Slider</span>
+      <span contenteditable="true" data-testid="nested-editable">Edit me</span>
+      <span contenteditable="false" tabindex="0" data-testid="not-editable">Read only</span>
+      <span role="menuitemcheckbox" aria-checked="false" tabindex="-1" id="space-b" data-testid="own-item">Banana</span>
+      <span role="radio" aria-checked="false" tabindex="-1" id="space-a" data-testid="own-radio-item">Apple</span>
+    </div>
+    <input type="text" cngxActiveDescendant [items]="items" data-testid="input-host" />
+    <textarea cngxActiveDescendant [items]="items" data-testid="textarea-host"></textarea>
+  `,
+  imports: [CngxActiveDescendant],
+})
+class SpaceKeyHost {
+  readonly items = SPACE_ITEMS;
+}
+
+describe('CngxActiveDescendant - Enter and Space ownership', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [SpaceKeyHost] });
+  });
+
+  function setupSpace() {
+    const fixture = TestBed.createComponent(SpaceKeyHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const byTestId = (id: string): HTMLElement =>
+      root.querySelector(`[data-testid="${id}"]`) as HTMLElement;
+    const adOf = (id: string): CngxActiveDescendant =>
+      fixture.debugElement
+        .query(By.css(`[data-testid="${id}"]`))
+        .injector.get(CngxActiveDescendant);
+    const press = (el: HTMLElement, key: string): KeyboardEvent => {
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      el.dispatchEvent(event);
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      return event;
+    };
+    return { byTestId, adOf, press };
+  }
+
+  it('prevents the page scroll for Space on a focused host with no active option', () => {
+    const { byTestId, adOf, press } = setupSpace();
+    expect(adOf('div-host').activeItem()).toBeNull();
+    expect(press(byTestId('div-host'), ' ').defaultPrevented).toBe(true);
+  });
+
+  it('leaves Enter alone on a host with no active option', () => {
+    const { byTestId, press } = setupSpace();
+    expect(press(byTestId('div-host'), 'Enter').defaultPrevented).toBe(false);
+  });
+
+  it('lets Space type into a text input host with no active option', () => {
+    const { byTestId, adOf, press } = setupSpace();
+    expect(adOf('input-host').activeItem()).toBeNull();
+    expect(press(byTestId('input-host'), ' ').defaultPrevented).toBe(false);
+  });
+
+  it('lets Space type into a textarea host with no active option', () => {
+    const { byTestId, press } = setupSpace();
+    expect(press(byTestId('textarea-host'), ' ').defaultPrevented).toBe(false);
+  });
+
+  for (const key of ['Enter', ' ']) {
+    for (const nested of [
+      'nested-button',
+      'nested-link',
+      'nested-role-button',
+      'nested-select',
+      'nested-textarea',
+      'nested-summary',
+      'nested-checkbox',
+      'nested-switch',
+      'nested-menuitem',
+      'nested-menuitemcheckbox',
+      'nested-menuitemradio',
+      'nested-radio',
+      'nested-tab',
+      'nested-slider',
+      'nested-editable',
+    ]) {
+      it(`leaves ${key === ' ' ? 'Space' : key} on ${nested} to that control, not the active item`, () => {
+        const { byTestId, adOf, press } = setupSpace();
+        const ad = adOf('div-host');
+        const spy = vi.fn<(v: unknown) => void>();
+        ad.activated.subscribe(spy);
+        ad.highlightByValue('b');
+        TestBed.flushEffects();
+        expect(ad.activeItem()?.value).toBe('b');
+
+        const event = press(byTestId(nested), key);
+
+        expect(event.defaultPrevented).toBe(false);
+        expect(spy).not.toHaveBeenCalled();
+        expect(ad.activeItem()?.value).toBe('b');
+      });
+    }
+  }
+
+  it("still activates the active item for Enter on the host's own item element", () => {
+    const { byTestId, adOf, press } = setupSpace();
+    const ad = adOf('div-host');
+    const spy = vi.fn<(v: unknown) => void>();
+    ad.activated.subscribe(spy);
+    ad.highlightByValue('b');
+    TestBed.flushEffects();
+    const event = press(byTestId('own-item'), 'Enter');
+    expect(event.defaultPrevented).toBe(true);
+    expect(spy).toHaveBeenCalledWith('b');
+  });
+
+  it('still activates the active item for Enter on an own item with a radio role', () => {
+    const { byTestId, adOf, press } = setupSpace();
+    const ad = adOf('div-host');
+    const spy = vi.fn<(v: unknown) => void>();
+    ad.activated.subscribe(spy);
+    ad.highlightByValue('a');
+    TestBed.flushEffects();
+    const event = press(byTestId('own-radio-item'), 'Enter');
+    expect(event.defaultPrevented).toBe(true);
+    expect(spy).toHaveBeenCalledWith('a');
+  });
+
+  it('activates the active item for Enter on a contenteditable="false" descendant', () => {
+    const { byTestId, adOf, press } = setupSpace();
+    const ad = adOf('div-host');
+    const spy = vi.fn<(v: unknown) => void>();
+    ad.activated.subscribe(spy);
+    ad.highlightByValue('a');
+    TestBed.flushEffects();
+    expect(press(byTestId('not-editable'), 'Enter').defaultPrevented).toBe(true);
+    expect(spy).toHaveBeenCalledWith('a');
+  });
+
+  it('still activates the active item for Enter on the host itself', () => {
+    const { byTestId, adOf, press } = setupSpace();
+    const ad = adOf('div-host');
+    const spy = vi.fn<(v: unknown) => void>();
+    ad.activated.subscribe(spy);
+    ad.highlightByValue('a');
+    TestBed.flushEffects();
+    const event = press(byTestId('div-host'), 'Enter');
+    expect(event.defaultPrevented).toBe(true);
+    expect(spy).toHaveBeenCalledWith('a');
+  });
+});
+
+@Component({
+  template: `
+    <div cngxActiveDescendant [items]="items" tabindex="0" data-testid="host">
+      <span tabindex="0" class="app-rating" data-testid="custom">Rating</span>
+    </div>
+  `,
+  imports: [CngxActiveDescendant],
+})
+class CustomNestedHost {
+  readonly items = SPACE_ITEMS;
+}
+
+describe('CngxActiveDescendant - provideNestedInteractiveSelector', () => {
+  function pressEnterOnCustom(providers: Provider[]): { prevented: boolean; activated: boolean } {
+    TestBed.configureTestingModule({ imports: [CustomNestedHost], providers });
+    const fixture = TestBed.createComponent(CustomNestedHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const ad = fixture.debugElement
+      .query(By.css('[data-testid="host"]'))
+      .injector.get(CngxActiveDescendant);
+    const spy = vi.fn<(v: unknown) => void>();
+    ad.activated.subscribe(spy);
+    ad.highlightByValue('a');
+    TestBed.flushEffects();
+    const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    (fixture.nativeElement as HTMLElement)
+      .querySelector('[data-testid="custom"]')!
+      .dispatchEvent(event);
+    return { prevented: event.defaultPrevented, activated: spy.mock.calls.length > 0 };
+  }
+
+  it('activates through a descendant the default list does not name', () => {
+    expect(pressEnterOnCustom([])).toEqual({ prevented: true, activated: true });
+  });
+
+  it('leaves Enter to a descendant the provider adds', () => {
+    expect(pressEnterOnCustom(provideNestedInteractiveSelector('.app-rating'))).toEqual({
+      prevented: false,
+      activated: false,
+    });
   });
 });

@@ -1,9 +1,12 @@
-import { inject } from '@angular/core';
+import { computed, inject, type Signal } from '@angular/core';
+
+import { createListboxLabelMatch } from '@cngx/common/interactive';
 
 import {
   CNGX_SELECT_CONFIG,
   CNGX_SELECT_DEFAULTS,
   type CngxSelectConfig,
+  type CngxSelectMatchFn,
 } from '../config';
 import { type CngxResolvedSelectLabels, resolveSelectLabels } from './resolve-labels';
 
@@ -43,10 +46,7 @@ export function coerceMaxVisibleChips(count: number | undefined): number {
  * @internal
  */
 export function resolveSelectConfig(): Required<
-  Omit<
-    CngxSelectConfig,
-    'panelClass' | 'templates' | 'announcer' | 'ariaLabels' | 'fallbackLabels'
-  >
+  Omit<CngxSelectConfig, 'panelClass' | 'templates' | 'announcer' | 'ariaLabels' | 'fallbackLabels'>
 > &
   Pick<typeof CNGX_SELECT_DEFAULTS, 'panelClass' | 'templates'> &
   CngxResolvedSelectLabels {
@@ -54,8 +54,7 @@ export function resolveSelectConfig(): Required<
   return {
     ...resolveSelectLabels(user),
     // `null` means natural width, so only an unset key takes the default.
-    panelWidth:
-      user.panelWidth === undefined ? CNGX_SELECT_DEFAULTS.panelWidth : user.panelWidth,
+    panelWidth: user.panelWidth === undefined ? CNGX_SELECT_DEFAULTS.panelWidth : user.panelWidth,
     loadingVariant: user.loadingVariant ?? CNGX_SELECT_DEFAULTS.loadingVariant,
     skeletonRowCount: user.skeletonRowCount ?? CNGX_SELECT_DEFAULTS.skeletonRowCount,
     refreshingVariant: user.refreshingVariant ?? CNGX_SELECT_DEFAULTS.refreshingVariant,
@@ -65,20 +64,16 @@ export function resolveSelectConfig(): Required<
     popoverPlacement: user.popoverPlacement ?? CNGX_SELECT_DEFAULTS.popoverPlacement,
     inputMode: user.inputMode ?? CNGX_SELECT_DEFAULTS.inputMode,
     enterKeyHint:
-      user.enterKeyHint === undefined
-        ? CNGX_SELECT_DEFAULTS.enterKeyHint
-        : user.enterKeyHint,
+      user.enterKeyHint === undefined ? CNGX_SELECT_DEFAULTS.enterKeyHint : user.enterKeyHint,
     chipOverflow: user.chipOverflow ?? CNGX_SELECT_DEFAULTS.chipOverflow,
     maxVisibleChips: coerceMaxVisibleChips(user.maxVisibleChips),
     virtualization:
-      user.virtualization === undefined
-        ? CNGX_SELECT_DEFAULTS.virtualization
-        : user.virtualization,
+      user.virtualization === undefined ? CNGX_SELECT_DEFAULTS.virtualization : user.virtualization,
     panelClass: user.panelClass ?? CNGX_SELECT_DEFAULTS.panelClass,
     typeaheadDebounceInterval:
       user.typeaheadDebounceInterval ?? CNGX_SELECT_DEFAULTS.typeaheadDebounceInterval,
-    typeaheadWhileClosed:
-      user.typeaheadWhileClosed ?? CNGX_SELECT_DEFAULTS.typeaheadWhileClosed,
+    searchDebounceMs: user.searchDebounceMs ?? CNGX_SELECT_DEFAULTS.searchDebounceMs,
+    typeaheadWhileClosed: user.typeaheadWhileClosed ?? CNGX_SELECT_DEFAULTS.typeaheadWhileClosed,
     searchMatchFn: user.searchMatchFn ?? CNGX_SELECT_DEFAULTS.searchMatchFn,
     showSelectionIndicator:
       user.showSelectionIndicator ?? CNGX_SELECT_DEFAULTS.showSelectionIndicator,
@@ -96,4 +91,21 @@ export function resolveSelectConfig(): Required<
       ...user.templates,
     },
   };
+}
+
+/**
+ * The effective search matcher of a searchable select variant:
+ * `[searchMatchFn]` > `CngxSelectConfig.searchMatchFn` > the folded label
+ * match in the reading locale. A `computed`, so a rebound input switches the
+ * matcher; the config tier is the resolved snapshot of the injector.
+ *
+ * @internal
+ */
+export function resolveSearchMatch<T>(
+  input: Signal<CngxSelectMatchFn<T> | null>,
+  config: { readonly searchMatchFn: CngxSelectMatchFn | null },
+  locale: Signal<string>,
+): Signal<CngxSelectMatchFn<T>> {
+  const labelMatch = createListboxLabelMatch(locale);
+  return computed<CngxSelectMatchFn<T>>(() => input() ?? config.searchMatchFn ?? labelMatch);
 }

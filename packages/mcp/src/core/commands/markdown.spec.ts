@@ -56,11 +56,11 @@ describe('textCell', () => {
     expect(textCell('<p>Short.</p>')).toBe('Short.');
   });
 
-  it('caps a long description at a word boundary', () => {
-    const capped = textCell(`<p>${'word '.repeat(200)}</p>`);
+  it('keeps a 1000-character description whole, without ...', () => {
+    const whole = textCell(`<p>${'word '.repeat(200)}</p>`);
 
-    expect(capped.length).toBeLessThanOrEqual(203);
-    expect(capped).toMatch(/word\.\.\.$/);
+    expect(whole).toBe('word '.repeat(200).trim());
+    expect(whole).not.toContain('...');
   });
 });
 

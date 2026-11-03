@@ -101,6 +101,21 @@ describe('README', () => {
     expect(unknownFlags(README, knownFlags(COMMANDS))).toEqual([]);
   });
 
+  it('documents exactly the long flags the adapter accepts, in both directions', () => {
+    const long = (flags: Iterable<string>) => [...new Set([...flags].filter((flag) => flag.startsWith('--')))].sort();
+
+    expect(long(documentedFlags(README))).toEqual(long(knownFlags(COMMANDS)));
+  });
+
+  it('mutation: a README without the --offline row no longer matches the adapter', () => {
+    const planted = README.split('\n')
+      .filter((line) => !line.includes('`--offline`'))
+      .join('\n');
+
+    expect(documentedFlags(planted)).not.toContain('--offline');
+    expect(knownFlags(COMMANDS).has('--offline')).toBe(true);
+  });
+
   it('mutation: a README row for a nonexistent flag fails (GP15)', () => {
     const planted = `${README}\n|\`--stale\`|Answer from a stale cache.|\n`;
 

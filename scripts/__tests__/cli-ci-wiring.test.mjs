@@ -174,11 +174,13 @@ describe('cli core copy guard wiring', () => {
     expect(buildSyncs(scripts)).toBe(false);
   });
 
-  it('build:cli and the cli prepublishOnly run the copy check first', () => {
+  it('build:cli and the cli prepublishOnly run the copy check first (prepublish: right after the dist check)', () => {
     const cliScripts = JSON.parse(read('packages', 'cli', 'package.json')).scripts;
 
     expect(scripts['build:cli']).toMatch(/^npm run cli:copy-check && /);
-    expect(cliScripts.prepublishOnly).toMatch(/^node \.\.\/\.\.\/scripts\/cli-core-copy-check\.mjs && /);
+    expect(cliScripts.prepublishOnly).toMatch(
+      /^node \.\.\/\.\.\/scripts\/package-dist-check\.mjs --package-dir=\. && node \.\.\/\.\.\/scripts\/cli-core-copy-check\.mjs && /,
+    );
   });
 
   it('the mcp job checks the committed copy before it builds the cli', () => {

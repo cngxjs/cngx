@@ -93,7 +93,8 @@ export class CngxPopoverTrigger {
    * ARIA controls override. When set, `aria-controls` names this id instead
    * of the popover element - correct when the popup role sits on an element
    * inside the popover (a `role="listbox"` or `role="tree"` panel). `null`
-   * or unset falls back to `popoverRef().id()`.
+   * or unset falls back to the popover's `controlsHint()` (installed by a
+   * composer such as a menu trigger), then to `popoverRef().id()`.
    */
   readonly controlsInput = input<string | null | undefined>(undefined, {
     alias: 'controls',
@@ -126,9 +127,12 @@ export class CngxPopoverTrigger {
     return resolved === 'none' ? null : resolved;
   });
 
-  /** Resolved `aria-controls`: the consumer override, else the popover id. */
+  /**
+   * Resolved `aria-controls`: the consumer override, else the popover's
+   * composer hint, else the popover id.
+   */
   protected readonly controls = computed<string>(
-    () => this.controlsInput() ?? this.popoverRef().id(),
+    () => this.controlsInput() ?? this.popoverRef().controlsHint() ?? this.popoverRef().id(),
   );
 
   /**
