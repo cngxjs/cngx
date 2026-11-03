@@ -1,6 +1,6 @@
 {
   "name": "@cngx/doctor",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Deterministic project-wiring scanner for cngx consumer apps: the whole-project checks ESLint's per-file scope cannot see, as an npx-able CI gate.",
   "license": "MIT",
   "repository": {

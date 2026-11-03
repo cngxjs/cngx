@@ -3,7 +3,7 @@
 Hand-maintained, per package version. The root CHANGELOG.md tracks the cngx
 library releases; this file tracks the doctor package.
 
-## Unreleased
+## 0.3.0 - 2026-11-03
 
 ### Breaking
 
