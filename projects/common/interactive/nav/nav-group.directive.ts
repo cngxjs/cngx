@@ -1,4 +1,4 @@
-import { DestroyRef, Directive, effect, inject, input, untracked } from '@angular/core';
+import { DestroyRef, Directive, effect, ElementRef, inject, input, untracked } from '@angular/core';
 import { CngxDisclosure } from './disclosure.directive';
 import { CNGX_NAV_CONFIG, CNGX_NAV_DEFAULTS } from './nav-config';
 import { CngxNavGroupRegistry } from './nav-group-registry';
@@ -94,6 +94,7 @@ export class CngxNavGroup {
   /** Nesting depth for indentation. Consumer sets manually. */
   readonly depth = input<number>(0);
 
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly registry = inject(CngxNavGroupRegistry, { optional: true });
   private readonly config = inject(CNGX_NAV_CONFIG, { optional: true });
 
@@ -103,6 +104,15 @@ export class CngxNavGroup {
   protected readonly navIndent = this.config?.indent !== undefined ? `${this.config.indent}px` : null;
   protected readonly navTransition =
     this.config?.animationDuration !== undefined ? `${this.config.animationDuration}ms` : null;
+
+  /**
+   * Moves focus to the group trigger. `CngxNavGroupContent` calls it when the
+   * group closes while focus sits inside the content, so focus never falls to
+   * `<body>` when the region turns `inert`.
+   */
+  focus(options?: FocusOptions): void {
+    this.host.focus(options);
+  }
 
   constructor() {
     this.registry?.register(this);
