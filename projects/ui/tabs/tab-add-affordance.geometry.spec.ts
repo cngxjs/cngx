@@ -131,5 +131,20 @@ describe('CngxTabGroup affordance glyphs', () => {
         0.5,
       );
     });
+
+    // A 14px font would round the 0.75em box to 11px, off the 12-unit grid;
+    // the micro floor holds it on 12 until it is lifted.
+    it(`floors the ${name} glyph box at 12px under a smaller font until the micro floor is lifted`, () => {
+      const fixture = TestBed.createComponent(AffordanceGlyphHost);
+      mountedRoot = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(mountedRoot);
+      fixture.detectChanges();
+      const button = mountedRoot.querySelector<HTMLElement>(selector)!;
+      button.style.fontSize = '14px';
+      const svg = button.querySelector('svg')!;
+      expect(svg.getBoundingClientRect().width).toBe(12);
+      mountedRoot.style.setProperty('--cngx-icon-svg-micro-floor', '0px');
+      expect(svg.getBoundingClientRect().width).toBe(11);
+    });
   }
 });
