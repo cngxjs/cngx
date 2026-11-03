@@ -74,6 +74,7 @@ describe('createMenuDismissHandler', () => {
       dismissOnOutsideClick: false,
       dismissOnScroll: false,
       dismissOnBlur: false,
+      dismissOnFocusOut: false,
       onDismiss,
       ...overrides,
     });
@@ -437,7 +438,28 @@ describe('createMenuDismissHandler', () => {
       },
     );
 
-    it('stays off when dismissOnFocusOut is false or unset', () => {
+    it('requires the focus-out toggle like every other source toggle', () => {
+      const options: CngxMenuDismissHandlerOptions = {
+        popover: popoverFake.popover,
+        hostElement: hostEl,
+        dismissOnOutsideClick: false,
+        dismissOnScroll: false,
+        dismissOnBlur: false,
+        dismissOnFocusOut: false,
+      };
+      // @ts-expect-error dismissOnFocusOut is required
+      const missing: CngxMenuDismissHandlerOptions = {
+        popover: popoverFake.popover,
+        hostElement: hostEl,
+        dismissOnOutsideClick: false,
+        dismissOnScroll: false,
+        dismissOnBlur: false,
+      };
+      expect(options.dismissOnFocusOut).toBe(false);
+      expect(missing).toBeDefined();
+    });
+
+    it('stays off when dismissOnFocusOut is false', () => {
       const target = focusable(outside);
       const { teardown } = build({ dismissOnFocusOut: false });
       try {

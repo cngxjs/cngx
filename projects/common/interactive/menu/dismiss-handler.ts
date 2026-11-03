@@ -88,10 +88,9 @@ export interface CngxMenuDismissHandlerOptions {
   /**
    * Install the document `focusin` listener behind the `focus-out` source,
    * plus the one-shot `Tab` arm that closes a `Shift+Tab` back onto the
-   * trigger. Unset reads as `false`, so a hand-built options object keeps
-   * its previous behaviour.
+   * trigger.
    */
-  readonly dismissOnFocusOut?: boolean;
+  readonly dismissOnFocusOut: boolean;
   /**
    * `true` when a node lies inside the open menu chain. Submenu popovers
    * are siblings of the root popover, so the popover element alone cannot
@@ -202,7 +201,7 @@ export function createMenuDismissHandler(
     const doc = opts.hostElement.ownerDocument;
     const win = doc.defaultView;
     const skip = opts.skipSources;
-    const focusOut = opts.dismissOnFocusOut === true && !skip?.has('focus-out');
+    const focusOut = opts.dismissOnFocusOut && !skip?.has('focus-out');
     // Armed by a Tab inside the menu, so the focus it moves closes the menu
     // even when it lands on the trigger host (Shift+Tab). The close itself
     // waits for that focusin: hiding the popover inside the Tab keydown
