@@ -83,7 +83,7 @@ describe('@cngx/cli sources', () => {
 // ships either points at a shipped file or carries its source.
 const FIXED_FILES: ReadonlySet<string> = new Set(['package.json', 'README.md', 'CHANGELOG.md', 'data/documentation.json']);
 const COMPILED = /^dist\/.+\.js(?:\.map)?$/;
-const TEST_ONLY = /(?:\.spec|\.core-spec|\.test)\.js(?:\.map)?$|^dist\/(?:readme-guard|output-guards)\./;
+const TEST_ONLY = /(?:\.spec|\.core-spec|\.test)\.js(?:\.map)?$|^dist\/(?:readme-guard|output-guards)\.|(?:^|\/)(?:testing|__fixtures__)\//;
 
 /** Tarball paths outside the allowlist. */
 const offAllowlist = (files: readonly string[]): string[] =>
@@ -131,8 +131,16 @@ describe('@cngx/cli tarball', () => {
     expect(danglingSources(files, readMap)).toEqual([]);
   });
 
-  it('mutation: a test file, a guard, a spec and a declaration fall off the allowlist', () => {
-    const planted = ['dist/x.test.js', 'dist/readme-guard.js', 'dist/core/query.spec.js.map', 'dist/index.d.ts', 'src/index.ts'];
+  it('mutation: a test file, a guard, a spec, test helpers, fixtures and a declaration fall off the allowlist', () => {
+    const planted = [
+      'dist/x.test.js',
+      'dist/readme-guard.js',
+      'dist/core/query.spec.js.map',
+      'dist/testing/x.js',
+      'dist/core/__fixtures__/x.js',
+      'dist/index.d.ts',
+      'src/index.ts',
+    ];
 
     expect(offAllowlist([...files, ...planted])).toEqual(planted);
   });
