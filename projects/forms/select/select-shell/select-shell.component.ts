@@ -1242,6 +1242,9 @@ export class CngxSelectShell<T = unknown>
     this.scalarHandler.finalizeSelection(option.value, option, previous);
   }
 
+  /** Descendants that own Enter / Space; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
+  private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
+
   /**
    * Trigger keyboard. Typeahead-while-closed (native `<select>` parity)
    * and PageUp/PageDown jump-N - both delegate to
@@ -1260,7 +1263,7 @@ export class CngxSelectShell<T = unknown>
     // typeahead, no preventDefault, so Enter / Space run its activation.
     const host = event.currentTarget as Element | null;
     const target = event.target as Element | null;
-    const interactive = target?.closest(CNGX_NESTED_INTERACTIVE_SELECTOR);
+    const interactive = target?.closest(this.nestedInteractive);
     if (interactive && interactive !== host && host?.contains(interactive)) {
       return;
     }

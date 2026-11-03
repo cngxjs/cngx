@@ -1,3 +1,5 @@
+import { inject, InjectionToken, type Provider } from '@angular/core';
+
 /**
  * Parsed keyboard combo.
  *
@@ -106,21 +108,77 @@ export function matchesKeyCombo(event: KeyboardEvent, combo: KeyCombo, isMac: bo
   return true;
 }
 
+const NESTED_INTERACTIVE_DEFAULTS = [
+  'button',
+  'a[href]',
+  'input',
+  'select',
+  'textarea',
+  'summary',
+  '[contenteditable]:not([contenteditable="false"])',
+  '[role="button"]',
+  '[role="checkbox"]',
+  '[role="switch"]',
+  '[role="radio"]',
+  '[role="tab"]',
+  '[role="slider"]',
+  '[role="menuitem"]',
+  '[role="menuitemcheckbox"]',
+  '[role="menuitemradio"]',
+].join(', ');
+
 /**
- * Selector for the descendants that own Enter and Space themselves: native
- * buttons, links, form controls and `<summary>`, plus the ARIA widget roles
- * whose activation key is their own (button, checkbox, switch and the three
- * menu item roles). A keyboard host that forwards Enter / Space (an
- * active-descendant container, a listbox trigger, a select trigger) checks
- * `event.target.closest(...)` against it and leaves a match inside itself
- * alone: no `preventDefault`, no activation of its own.
+ * Selector for the descendants that own Enter and Space themselves. A
+ * keyboard host that forwards Enter / Space (`CngxActiveDescendant`,
+ * `CngxListboxTrigger`, the select-family triggers) checks
+ * `event.target.closest(selector)` and leaves a match inside itself alone: no
+ * `preventDefault`, no activation of its own. The host's own items (an
+ * active-descendant option or menu item that took focus) are never such a
+ * match.
  *
- * Exported through `public-api.ts` only so `@cngx/common` and `@cngx/forms`
- * share one list across the secondary-entry boundary.
+ * Default: native buttons, links, form controls, `<summary>` and editable
+ * regions (`contenteditable`), plus the ARIA widget roles whose activation key
+ * is their own (button, checkbox, switch, radio, tab, slider and the three
+ * menu item roles). Extend it with {@link provideNestedInteractiveSelector}
+ * when slot content carries another custom widget.
  *
- * @internal
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/keyboard.util.ts
+ * @since 0.1.0
+ * @relatedTo provideNestedInteractiveSelector, CngxActiveDescendant, CngxListboxTrigger
  */
-export const CNGX_NESTED_INTERACTIVE_SELECTOR =
-  'button, a[href], input, select, textarea, summary, ' +
-  '[role="button"], [role="checkbox"], [role="switch"], ' +
-  '[role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]';
+export const CNGX_NESTED_INTERACTIVE_SELECTOR = new InjectionToken<string>(
+  'CNGX_NESTED_INTERACTIVE_SELECTOR',
+  { providedIn: 'root', factory: () => NESTED_INTERACTIVE_DEFAULTS },
+);
+
+/**
+ * Adds `selectors` to the {@link CNGX_NESTED_INTERACTIVE_SELECTOR} of the
+ * surrounding injector, so a keyboard host leaves Enter / Space inside a
+ * matching descendant to it. Works app-wide (`bootstrapApplication`
+ * providers) and per subtree (`providers` / `viewProviders`); a nested call
+ * extends the list of its parent, never replaces it.
+ *
+ * ```ts
+ * bootstrapApplication(App, {
+ *   providers: [provideNestedInteractiveSelector('[role="spinbutton"]', 'app-rating')],
+ * });
+ * ```
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/keyboard.util.ts
+ * @since 0.1.0
+ * @relatedTo CNGX_NESTED_INTERACTIVE_SELECTOR
+ */
+export function provideNestedInteractiveSelector(...selectors: string[]): Provider[] {
+  return [
+    {
+      provide: CNGX_NESTED_INTERACTIVE_SELECTOR,
+      useFactory: (): string => {
+        // At the root injector the parent is the platform, which has no list.
+        const parent =
+          inject(CNGX_NESTED_INTERACTIVE_SELECTOR, { skipSelf: true, optional: true }) ??
+          NESTED_INTERACTIVE_DEFAULTS;
+        return [parent, ...selectors].join(', ');
+      },
+    },
+  ];
+}

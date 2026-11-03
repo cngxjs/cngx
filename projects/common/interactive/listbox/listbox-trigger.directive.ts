@@ -130,6 +130,9 @@ export class CngxListboxTrigger<T = unknown> {
     close: () => this.popover().hide(),
   });
 
+  /** Descendants that own Enter / Space; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
+  private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
+
   protected handleKeydown(event: KeyboardEvent): void {
     // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
     // untouched - the same guard the nav strategies apply. Without it,
@@ -151,7 +154,7 @@ export class CngxListboxTrigger<T = unknown> {
     // still run the native button activation instead of opening the panel.
     const host = this.el.nativeElement;
     const target = event.target as Element | null;
-    const interactive = target?.closest(CNGX_NESTED_INTERACTIVE_SELECTOR);
+    const interactive = target?.closest(this.nestedInteractive);
     if (interactive && interactive !== host && host.contains(interactive)) {
       return;
     }

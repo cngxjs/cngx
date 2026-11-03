@@ -1,10 +1,18 @@
-import { Component, Directive, computed, inject, input, signal } from '@angular/core';
+import {
+  Component,
+  Directive,
+  computed,
+  inject,
+  input,
+  signal,
+  type Provider,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { provideDirection } from '@cngx/core';
-import { provideLocale } from '@cngx/core/utils';
+import { provideLocale, provideNestedInteractiveSelector } from '@cngx/core/utils';
 
 import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from './ad-item.token';
 import { CngxActiveDescendant } from './active-descendant.directive';
@@ -1182,7 +1190,13 @@ const SPACE_ITEMS: ActiveDescendantItem[] = [
       <span role="menuitem" tabindex="-1" data-testid="nested-menuitem">Item</span>
       <span role="menuitemcheckbox" aria-checked="false" tabindex="-1" data-testid="nested-menuitemcheckbox">Check item</span>
       <span role="menuitemradio" aria-checked="false" tabindex="-1" data-testid="nested-menuitemradio">Radio item</span>
+      <span role="radio" aria-checked="false" tabindex="0" data-testid="nested-radio">Radio</span>
+      <span role="tab" aria-selected="false" tabindex="0" data-testid="nested-tab">Tab</span>
+      <span role="slider" aria-valuenow="1" tabindex="0" data-testid="nested-slider">Slider</span>
+      <span contenteditable="true" data-testid="nested-editable">Edit me</span>
+      <span contenteditable="false" tabindex="0" data-testid="not-editable">Read only</span>
       <span role="menuitemcheckbox" aria-checked="false" tabindex="-1" id="space-b" data-testid="own-item">Banana</span>
+      <span role="radio" aria-checked="false" tabindex="-1" id="space-a" data-testid="own-radio-item">Apple</span>
     </div>
     <input type="text" cngxActiveDescendant [items]="items" data-testid="input-host" />
     <textarea cngxActiveDescendant [items]="items" data-testid="textarea-host"></textarea>
@@ -1255,6 +1269,10 @@ describe('CngxActiveDescendant - Enter and Space ownership', () => {
       'nested-menuitem',
       'nested-menuitemcheckbox',
       'nested-menuitemradio',
+      'nested-radio',
+      'nested-tab',
+      'nested-slider',
+      'nested-editable',
     ]) {
       it(`leaves ${key === ' ' ? 'Space' : key} on ${nested} to that control, not the active item`, () => {
         const { byTestId, adOf, press } = setupSpace();
@@ -1286,6 +1304,29 @@ describe('CngxActiveDescendant - Enter and Space ownership', () => {
     expect(spy).toHaveBeenCalledWith('b');
   });
 
+  it('still activates the active item for Enter on an own item with a radio role', () => {
+    const { byTestId, adOf, press } = setupSpace();
+    const ad = adOf('div-host');
+    const spy = vi.fn<(v: unknown) => void>();
+    ad.activated.subscribe(spy);
+    ad.highlightByValue('a');
+    TestBed.flushEffects();
+    const event = press(byTestId('own-radio-item'), 'Enter');
+    expect(event.defaultPrevented).toBe(true);
+    expect(spy).toHaveBeenCalledWith('a');
+  });
+
+  it('activates the active item for Enter on a contenteditable="false" descendant', () => {
+    const { byTestId, adOf, press } = setupSpace();
+    const ad = adOf('div-host');
+    const spy = vi.fn<(v: unknown) => void>();
+    ad.activated.subscribe(spy);
+    ad.highlightByValue('a');
+    TestBed.flushEffects();
+    expect(press(byTestId('not-editable'), 'Enter').defaultPrevented).toBe(true);
+    expect(spy).toHaveBeenCalledWith('a');
+  });
+
   it('still activates the active item for Enter on the host itself', () => {
     const { byTestId, adOf, press } = setupSpace();
     const ad = adOf('div-host');
@@ -1296,5 +1337,49 @@ describe('CngxActiveDescendant - Enter and Space ownership', () => {
     const event = press(byTestId('div-host'), 'Enter');
     expect(event.defaultPrevented).toBe(true);
     expect(spy).toHaveBeenCalledWith('a');
+  });
+});
+
+@Component({
+  template: `
+    <div cngxActiveDescendant [items]="items" tabindex="0" data-testid="host">
+      <span tabindex="0" class="app-rating" data-testid="custom">Rating</span>
+    </div>
+  `,
+  imports: [CngxActiveDescendant],
+})
+class CustomNestedHost {
+  readonly items = SPACE_ITEMS;
+}
+
+describe('CngxActiveDescendant - provideNestedInteractiveSelector', () => {
+  function pressEnterOnCustom(providers: Provider[]): { prevented: boolean; activated: boolean } {
+    TestBed.configureTestingModule({ imports: [CustomNestedHost], providers });
+    const fixture = TestBed.createComponent(CustomNestedHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const ad = fixture.debugElement
+      .query(By.css('[data-testid="host"]'))
+      .injector.get(CngxActiveDescendant);
+    const spy = vi.fn<(v: unknown) => void>();
+    ad.activated.subscribe(spy);
+    ad.highlightByValue('a');
+    TestBed.flushEffects();
+    const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    (fixture.nativeElement as HTMLElement)
+      .querySelector('[data-testid="custom"]')!
+      .dispatchEvent(event);
+    return { prevented: event.defaultPrevented, activated: spy.mock.calls.length > 0 };
+  }
+
+  it('activates through a descendant the default list does not name', () => {
+    expect(pressEnterOnCustom([])).toEqual({ prevented: true, activated: true });
+  });
+
+  it('leaves Enter to a descendant the provider adds', () => {
+    expect(pressEnterOnCustom(provideNestedInteractiveSelector('.app-rating'))).toEqual({
+      prevented: false,
+      activated: false,
+    });
   });
 });

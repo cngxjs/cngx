@@ -1189,6 +1189,9 @@ export class CngxTreeSelect<T = unknown>
     this.toggle();
   }
 
+  /** Descendants that own Enter / Space; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
+  private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
+
   /**
    * Combobox-style trigger keyboard. ArrowDown/Up/Enter/Space open the
    * panel when closed (panel AD takes over once focus transfers);
@@ -1207,7 +1210,7 @@ export class CngxTreeSelect<T = unknown>
     // preventDefault, so Enter / Space run its native activation.
     const host = event.currentTarget as Element | null;
     const target = event.target as Element | null;
-    const interactive = target?.closest(CNGX_NESTED_INTERACTIVE_SELECTOR);
+    const interactive = target?.closest(this.nestedInteractive);
     if (interactive && interactive !== host && host?.contains(interactive)) {
       return;
     }

@@ -19,8 +19,10 @@ export {
 } from './intl-format.util';
 export { CNGX_LOCALE, injectLocale, provideLocale, provideLocaleAt } from './locale';
 export { parseKeyCombo, matchesKeyCombo, type KeyCombo } from './keyboard.util';
-// `@internal`: shared across secondary entries, hidden from the generated docs.
-export { CNGX_NESTED_INTERACTIVE_SELECTOR } from './keyboard.util';
+export {
+  CNGX_NESTED_INTERACTIVE_SELECTOR,
+  provideNestedInteractiveSelector,
+} from './keyboard.util';
 export {
   createLabelMatcher,
   createTypeaheadMatcher,

@@ -1081,6 +1081,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.scalarHandler.finalizeSelection(option.value, option, previous);
   }
 
+  /** Descendants that own Enter / Space; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
+  private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
+
   /** @internal */
   protected handleTriggerKeydown(event: KeyboardEvent): void {
     // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
@@ -1093,7 +1096,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     // typeahead, no preventDefault, so Enter / Space run its activation.
     const host = event.currentTarget as Element | null;
     const target = event.target as Element | null;
-    const interactive = target?.closest(CNGX_NESTED_INTERACTIVE_SELECTOR);
+    const interactive = target?.closest(this.nestedInteractive);
     if (interactive && interactive !== host && host?.contains(interactive)) {
       return;
     }

@@ -431,6 +431,9 @@ export class CngxActiveDescendant {
     return id !== '' && this.resolvedItems().some((item) => item.id === id);
   }
 
+  /** Descendants that own Enter / Space; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
+  private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
+
   private handleActivationKey(event: KeyboardEvent, key: string): void {
     const host = this.hostEl.nativeElement as HTMLElement;
     // A focused control inside the host (a Retry button in an error banner)
@@ -439,7 +442,7 @@ export class CngxActiveDescendant {
     // (a role="menuitem" row that took focus from a click) are not such a
     // control: their keys still activate through the directive.
     const target = event.target as Element | null;
-    const interactive = target?.closest(CNGX_NESTED_INTERACTIVE_SELECTOR);
+    const interactive = target?.closest(this.nestedInteractive);
     if (
       interactive &&
       interactive !== host &&
