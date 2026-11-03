@@ -29,17 +29,30 @@ const RECTILINEAR = [
   'CNGX_ICON_EXCLAMATION_SOLID',
   'CNGX_ICON_INFO',
   'CNGX_ICON_MORE_HORIZONTAL',
+  'CNGX_ICON_MORE_VERTICAL',
+  'CNGX_ICON_GRIP_VERTICAL',
+  'CNGX_ICON_COPY',
+  'CNGX_ICON_CLIPBOARD',
+  'CNGX_ICON_MAXIMIZE',
+  'CNGX_ICON_ARCHIVE',
 ] as const;
 
 // Signed-off drawings that anti-alias more than their 24-grid path: 1.41-unit
 // diagonal strips (X, CHECK) straddle pixel boundaries on any whole-unit grid,
 // and BAN's 1.5-unit ring and slash carry more edge than the 24-grid hairlines
-// (they paint full-weight pixels the hairlines never reach). Measured ceilings
-// keep them from getting worse without redrawing what the sheet signed off.
+// (they paint full-weight pixels the hairlines never reach). The magnifier lens
+// is centred on 5.5 so its plus and minus centre in the hole, which puts the
+// whole ring between pixels; the pencil's diagonal body ties its 24-grid path.
+// Measured ceilings keep them from getting worse without redrawing what the
+// sheet signed off.
 const MEASURED_CEILINGS: Readonly<Record<string, number>> = {
   CNGX_ICON_X: 30,
   CNGX_ICON_CHECK: 20,
   CNGX_ICON_BAN: 87,
+  CNGX_ICON_SEARCH: 57,
+  CNGX_ICON_ZOOM_IN: 57,
+  CNGX_ICON_ZOOM_OUT: 57,
+  CNGX_ICON_PENCIL: 19,
 };
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -119,7 +132,7 @@ afterEach(() => {
 describe('micro icon pixels in a 12px box', () => {
   it('covers every micro-carrying icon', () => {
     // The set only gains micro drawings; a shrinking list means the readback went vacuous.
-    expect(MICRO_ICONS.length).toBeGreaterThanOrEqual(15);
+    expect(MICRO_ICONS.length).toBeGreaterThanOrEqual(39);
   });
 
   it.each(MICRO_ICONS)('%s shows the micro path in the 12px box', (_, icon) => {
