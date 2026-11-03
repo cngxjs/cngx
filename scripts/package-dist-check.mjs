@@ -6,8 +6,9 @@
 //
 // The compiled set is read from the build config (`include` minus `exclude`),
 // so a spec-only edit never refuses a fresh build. Only the pattern forms the
-// packages use today are understood; any other form exits 1 naming it, so a new
-// tsconfig pattern cannot silently widen or narrow the set.
+// packages use today are understood. Any other form, a missing `include`, or an
+// `extends` / `files` field exits 1 naming it, so a tsconfig change cannot
+// silently widen or narrow the set.
 //
 //   node ../../scripts/package-dist-check.mjs --package-dir=.
 
@@ -52,9 +53,19 @@ function walk(dir) {
  */
 export function compiledSources(packageDir) {
   const config = JSON.parse(readFileSync(join(packageDir, 'tsconfig.json'), 'utf8'));
+  // Fields that change the compiled set but are not read here would make the
+  // check pass on a set it never saw, so they refuse instead.
+  for (const field of ['extends', 'files']) {
+    if (field in config) {
+      throw new Error(`tsconfig field '${field}' is not read by this check`);
+    }
+  }
+  if (!Array.isArray(config.include) || config.include.length === 0) {
+    throw new Error('tsconfig has no include; the compiled set would be empty');
+  }
   const excluded = (config.exclude ?? []).map(excludeMatcher);
   const files = new Set();
-  for (const pattern of config.include ?? []) {
+  for (const pattern of config.include) {
     const match = RECURSIVE_SUFFIX.exec(pattern);
     if (!match) {
       throw new Error(`unsupported tsconfig include form '${pattern}'`);

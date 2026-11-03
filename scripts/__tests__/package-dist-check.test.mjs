@@ -12,11 +12,11 @@ const created = [];
 // The exclude forms of packages/cli and packages/mcp today.
 const EXCLUDE = ['dist', 'node_modules', 'src/**/*.spec.ts', 'src/testing/**', 'src/readme-guard.ts'];
 
-function pkg(files, { exclude = EXCLUDE, dist = true } = {}) {
+function pkg(files, { exclude = EXCLUDE, dist = true, tsconfig } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'cngx-dist-check-'));
   created.push(dir);
   writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: '@cngx/cli' }));
-  writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify({ include: ['src/**/*.ts'], exclude }));
+  writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify(tsconfig ?? { include: ['src/**/*.ts'], exclude }));
   for (const file of ['src/index.ts', ...files]) {
     mkdirSync(dirname(join(dir, file)), { recursive: true });
     writeFileSync(join(dir, file), '');
@@ -80,6 +80,18 @@ describe('package-dist-check', () => {
     const result = checkDist(pkg([], { exclude: ['src/**/fixtures/*.ts'] }));
 
     expect(result).toEqual({ ok: false, message: "unsupported tsconfig exclude form 'src/**/fixtures/*.ts'" });
+  });
+
+  it.each([
+    [{ exclude: EXCLUDE }, 'tsconfig has no include'],
+    [{ include: [], exclude: EXCLUDE }, 'tsconfig has no include'],
+    [{ extends: './base.json', include: ['src/**/*.ts'] }, "tsconfig field 'extends' is not read"],
+    [{ files: ['src/index.ts'], include: ['src/**/*.ts'] }, "tsconfig field 'files' is not read"],
+  ])('fails a tsconfig it cannot read fully: %j', (tsconfig, message) => {
+    const result = checkDist(pkg([], { tsconfig }));
+
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain(message);
   });
 
   it('reads the real cli and mcp tsconfigs', () => {
