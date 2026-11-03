@@ -32,7 +32,7 @@ export const STORY: DemoSpec = {
   }`,
   template: `  <ng-template #cityPickerScoped>
     <cngx-select-shell
-      [label]="'City'"
+      [label]="'City (focus, 800 ms)'"
       [value]="city[1]()"
       (valueChange)="city[1].set($event)"
       (searchTermChange)="logTerm(1, $event)"
@@ -49,7 +49,7 @@ export const STORY: DemoSpec = {
     <div class="demo-config-compare-pane">
       <h3 class="demo-config-compare-heading">Per-instance [searchDebounceMs]="0"</h3>
       <cngx-select-shell
-        [label]="'City'"
+        [label]="'City (no debounce)'"
         [searchDebounceMs]="0"
         [value]="city[0]()"
         (valueChange)="city[0].set($event)"

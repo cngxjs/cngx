@@ -39,7 +39,7 @@ export const STORY: DemoSpec = {
   }`,
   template: `  <ng-template #tagPickerScoped>
     <cngx-action-select
-      [label]="'Tag'"
+      [label]="'Tag (focus, 800 ms)'"
       [options]="options"
       [quickCreateAction]="create"
       [value]="tag[1]()"
@@ -63,7 +63,7 @@ export const STORY: DemoSpec = {
     <div class="demo-config-compare-pane">
       <h3 class="demo-config-compare-heading">Per-instance [searchDebounceMs]="0"</h3>
       <cngx-action-select
-        [label]="'Tag'"
+        [label]="'Tag (no debounce)'"
         [options]="options"
         [quickCreateAction]="create"
         [searchDebounceMs]="0"
