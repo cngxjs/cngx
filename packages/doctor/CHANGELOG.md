@@ -9,6 +9,8 @@ library releases; this file tracks the doctor package.
 
 - An unknown option exits `2` without scanning instead of a stderr warning plus a
   text-mode run. `--help` and `--version` still answer first with exit `0`.
+- `exports` limits the package to `cngx-doctor.mjs` and `package.json`; the
+  `doctor/*` modules are no longer importable.
 
 ### Fixed
 

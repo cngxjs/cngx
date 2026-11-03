@@ -389,6 +389,29 @@ describe('CLI flags', () => {
   });
 });
 
+describe('package exports', () => {
+  // A package self-reference resolves only through `exports`, so importing by
+  // name from inside packages/doctor exercises the published contract.
+  function importByName(specifier) {
+    return spawnSync(process.execPath, ['--input-type=module', '-e', `await import('${specifier}')`], {
+      cwd: dirname(CLI),
+      encoding: 'utf8',
+    });
+  }
+
+  it('exposes the bin module', () => {
+    const { status, stderr } = importByName('@cngx/doctor/cngx-doctor.mjs');
+    expect(stderr).toBe('');
+    expect(status).toBe(0);
+  });
+
+  it('hides the doctor/* modules', () => {
+    const { status, stderr } = importByName('@cngx/doctor/doctor/checks.mjs');
+    expect(status).not.toBe(0);
+    expect(stderr).toContain('ERR_PACKAGE_PATH_NOT_EXPORTED');
+  });
+});
+
 describe('track-b-symbols drift guard', () => {
   it('equals the cngx.components layer set in projects/themes/cngx.css', () => {
     // Repo root is two levels up from packages/doctor.
