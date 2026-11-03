@@ -221,4 +221,5 @@ Config keys the tree does not read:
 
 - `showSelectionIndicator` and `selectionIndicatorVariant` - every node row renders its checkbox.
 - `typeaheadDebounceInterval` and `typeaheadWhileClosed` - typeahead runs inside the open panel only; `[expandToReveal]` extends it to collapsed nodes.
+- `searchDebounceMs` - the tree has no search input.
 - `chipOverflow` - the trigger keeps a fixed one-line chip count, capped by `maxVisibleChips`.

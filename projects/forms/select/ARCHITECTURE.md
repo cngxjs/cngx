@@ -541,6 +541,8 @@ Common properties are derived from the same `triggerAria()` projection on `creat
 
 The `<div role="combobox">` choice on the chip-carrying variants is deliberate: WAI-ARIA 1.2 forbids interactive children inside `<button>` (chip remove buttons would nest), so a `div` with a click handler fronts the combobox semantic.
 
+**Two typing windows.** `typeaheadDebounceInterval` is the buffer window of the closed-trigger typeahead on the button-trigger variants (Single, Multi, Reorderable, Shell): keys typed within it join one query. `searchDebounceMs` is the wait between the last keystroke in a search input and the `searchTerm` update, on Combobox, Typeahead, Action\* and the shell's `<cngx-select-search>`. Each has its own config key (`withTypeaheadDebounce`, `withSearchDebounce`) and per-instance input. Every search input debounces through the `CngxSearch` atom (`CngxListboxSearch` on the input variants, `CngxSearch` itself on `<cngx-select-search>`), whose `flush()` and `cancel()` settle a pending term on Enter and on a panel close.
+
 **Readonly.** A readonly bound field (`aria-readonly`, from the field
 projection) keeps the select browsable and refuses every write. The
 core derives `writeBlocked = disabled() || readonly()`; every write

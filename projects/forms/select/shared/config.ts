@@ -376,19 +376,26 @@ export interface CngxSelectConfig {
   /** Class(es) applied to the panel root for theming. */
   readonly panelClass?: string | readonly string[];
   /**
-   * One window in ms with two roles. On the button-trigger variants
+   * Typeahead buffer reset window in ms of the button-trigger variants
    * (`CngxSelect`, `CngxMultiSelect`, `CngxReorderableMultiSelect`,
-   * `CngxSelectShell`) it is the typeahead buffer reset window: keys typed on
-   * the closed trigger within it join one query. On the input variants
-   * (`CngxCombobox`, `CngxTypeahead`, `CngxActionSelect`,
-   * `CngxActionMultiSelect`) and the `<cngx-select-search>` of
-   * `CngxSelectShell` it is the debounce between the last keystroke and the
-   * `searchTerm` / `searchTermChange` update. A per-instance
-   * `[typeaheadDebounceInterval]` or `[searchDebounceMs]` wins. Not read by
+   * `CngxSelectShell`): keys typed on the closed trigger within it join one
+   * query. A per-instance `[typeaheadDebounceInterval]` wins. The search
+   * debounce of the input variants is `searchDebounceMs`. Not read by
    * `CngxTreeSelect`: its typeahead runs inside the open panel's
    * `CngxActiveDescendant`. Default `300`.
    */
   readonly typeaheadDebounceInterval?: number;
+  /**
+   * Debounce in ms between the last keystroke in a search input and the
+   * `searchTerm` / `searchTermChange` update, on the input variants
+   * (`CngxCombobox`, `CngxTypeahead`, `CngxActionSelect`,
+   * `CngxActionMultiSelect`) and the `<cngx-select-search>` of
+   * `CngxSelectShell`. A per-instance `[searchDebounceMs]` wins. `0` writes on
+   * every keystroke. Not read by `CngxSelect`, `CngxMultiSelect`,
+   * `CngxReorderableMultiSelect` or `CngxTreeSelect`, which have no search
+   * input. Default `300`.
+   */
+  readonly searchDebounceMs?: number;
   /** Whether typeahead commits value while panel is closed (native `<select>` parity). */
   readonly typeaheadWhileClosed?: boolean;
   /**
@@ -533,6 +540,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
   virtualization: null as CngxSelectVirtualizationConfig | null,
   panelClass: '',
   typeaheadDebounceInterval: 300,
+  searchDebounceMs: 300,
   typeaheadWhileClosed: true,
   searchMatchFn: null as CngxSelectMatchFn | null,
   showSelectionIndicator: true,
@@ -759,12 +767,26 @@ export function withPanelClass(panelClass: string | readonly string[]): CngxSele
 
 /**
  * Sets `typeaheadDebounceInterval` in ms: the closed-trigger typeahead buffer
- * window of the button-trigger variants and the `searchTermChange` debounce
- * of combobox, typeahead, action-select, action-multi-select and the shell's
- * `<cngx-select-search>`. Default `300`.
+ * window of the button-trigger variants. Default `300`. The search debounce of
+ * the input variants is `withSearchDebounce`.
  */
 export function withTypeaheadDebounce(ms: number): CngxSelectConfigFeature {
   return feature({ typeaheadDebounceInterval: ms });
+}
+
+/**
+ * Sets `searchDebounceMs`: the wait in ms between the last keystroke and the
+ * `searchTerm` / `searchTermChange` update of combobox, typeahead,
+ * action-select, action-multi-select and the shell's `<cngx-select-search>`.
+ * A per-instance `[searchDebounceMs]` wins; `0` writes on every keystroke.
+ * Default `300`.
+ *
+ * ```ts
+ * provideSelectConfig(withSearchDebounce(150));
+ * ```
+ */
+export function withSearchDebounce(ms: number): CngxSelectConfigFeature {
+  return feature({ searchDebounceMs: ms });
 }
 
 /**

@@ -37,8 +37,11 @@ const COMPOSITES = {
 const BUTTON_TRIGGER = 'button trigger: no text input carries inputmode or enterkeyhint';
 const SCALAR = 'scalar value: no chip strip';
 const NO_SEARCH = 'no search input: nothing to match against';
+const NO_SEARCH_DEBOUNCE = 'no search input: no keystroke to debounce';
 const INPUT_OWNS_TYPING =
   'the text input owns typing, so there is no closed-trigger typeahead to toggle';
+const INPUT_OWNS_BUFFER =
+  'the text input owns typing, so there is no closed-trigger typeahead buffer; searchDebounceMs debounces the input';
 const ACTION_PLACEMENT =
   'placement comes from CNGX_ACTION_SELECT_CONFIG.popoverPlacement (withActionPopoverPlacement)';
 
@@ -49,18 +52,22 @@ const NOT_APPLICABLE = {
     chipOverflow: SCALAR,
     maxVisibleChips: SCALAR,
     searchMatchFn: NO_SEARCH,
+    searchDebounceMs: NO_SEARCH_DEBOUNCE,
   },
   CngxMultiSelect: {
     inputMode: BUTTON_TRIGGER,
     enterKeyHint: BUTTON_TRIGGER,
     searchMatchFn: NO_SEARCH,
+    searchDebounceMs: NO_SEARCH_DEBOUNCE,
   },
   CngxCombobox: {
+    typeaheadDebounceInterval: INPUT_OWNS_BUFFER,
     typeaheadWhileClosed: INPUT_OWNS_TYPING,
   },
   CngxTypeahead: {
     chipOverflow: SCALAR,
     maxVisibleChips: SCALAR,
+    typeaheadDebounceInterval: INPUT_OWNS_BUFFER,
     typeaheadWhileClosed: INPUT_OWNS_TYPING,
   },
   CngxTreeSelect: {
@@ -72,6 +79,7 @@ const NOT_APPLICABLE = {
       'the tree typeahead runs inside CngxActiveDescendant on the open panel; no closed-trigger buffer',
     typeaheadWhileClosed: 'no closed-trigger typeahead; [expandToReveal] covers the open panel',
     searchMatchFn: NO_SEARCH,
+    searchDebounceMs: NO_SEARCH_DEBOUNCE,
     showSelectionIndicator: 'the tree panel always renders its checkbox (accepted-debt section 7)',
     selectionIndicatorVariant: 'the tree panel ignores the variant (accepted-debt section 7)',
   },
@@ -80,15 +88,18 @@ const NOT_APPLICABLE = {
     enterKeyHint: BUTTON_TRIGGER,
     maxVisibleChips: "'truncate' renders as 'scroll-x', so there is no cap (accepted-debt section 19)",
     searchMatchFn: NO_SEARCH,
+    searchDebounceMs: NO_SEARCH_DEBOUNCE,
   },
   CngxActionSelect: {
     popoverPlacement: ACTION_PLACEMENT,
     chipOverflow: SCALAR,
     maxVisibleChips: SCALAR,
+    typeaheadDebounceInterval: INPUT_OWNS_BUFFER,
     typeaheadWhileClosed: INPUT_OWNS_TYPING,
   },
   CngxActionMultiSelect: {
     popoverPlacement: ACTION_PLACEMENT,
+    typeaheadDebounceInterval: INPUT_OWNS_BUFFER,
     typeaheadWhileClosed: INPUT_OWNS_TYPING,
   },
   CngxSelectShell: {
@@ -156,6 +167,7 @@ describe('select config reader matrix', () => {
   it('finds the CNGX_SELECT_DEFAULTS keys', () => {
     expect(keys).toContain('openOn');
     expect(keys).toContain('typeaheadDebounceInterval');
+    expect(keys).toContain('searchDebounceMs');
     expect(keys.length).toBeGreaterThan(20);
   });
 

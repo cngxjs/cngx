@@ -72,6 +72,7 @@ export function resolveSelectConfig(): Required<
     panelClass: user.panelClass ?? CNGX_SELECT_DEFAULTS.panelClass,
     typeaheadDebounceInterval:
       user.typeaheadDebounceInterval ?? CNGX_SELECT_DEFAULTS.typeaheadDebounceInterval,
+    searchDebounceMs: user.searchDebounceMs ?? CNGX_SELECT_DEFAULTS.searchDebounceMs,
     typeaheadWhileClosed: user.typeaheadWhileClosed ?? CNGX_SELECT_DEFAULTS.typeaheadWhileClosed,
     searchMatchFn: user.searchMatchFn ?? CNGX_SELECT_DEFAULTS.searchMatchFn,
     showSelectionIndicator:

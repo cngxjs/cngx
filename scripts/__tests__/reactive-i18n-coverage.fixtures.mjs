@@ -228,6 +228,7 @@ export const COPY_TOKENS = [
       'commitErrorAnnouncePolicy',
       'panelClass',
       'typeaheadDebounceInterval',
+      'searchDebounceMs',
       'typeaheadWhileClosed',
       'searchMatchFn',
       'showSelectionIndicator',

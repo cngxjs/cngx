@@ -16,7 +16,12 @@ import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 import { CngxTypeahead } from './typeahead.component';
 import type { CngxSelectOptionsInput } from '../shared/option.model';
 import type { CngxSelectCommitAction } from '../shared/commit-action.types';
-import { provideSelectConfig, withOpenOn, withTypeaheadDebounce } from '../shared/config';
+import {
+  provideSelectConfig,
+  withOpenOn,
+  withSearchDebounce,
+  withTypeaheadDebounce,
+} from '../shared/config';
 import { CngxSelectInputPrefix, CngxSelectInputSuffix } from '../shared/template-slots';
 
 type User = { readonly id: number; readonly name: string };
@@ -419,7 +424,7 @@ describe('CngxTypeahead - clearOnBlur', () => {
   });
 });
 
-// ── Config cascade - searchDebounceMs honors typeaheadDebounceInterval ─
+// ── Config cascade - searchDebounceMs honors searchDebounceMs ─
 
 describe('CngxTypeahead - searchDebounceMs config integration', () => {
   @Component({
@@ -441,7 +446,19 @@ describe('CngxTypeahead - searchDebounceMs config integration', () => {
     expect(typeahead.searchDebounceMs()).toBe(300);
   });
 
-  it('app-scope provideSelectConfig(withTypeaheadDebounce(ms)) overrides the default', () => {
+  it('app-scope provideSelectConfig(withSearchDebounce(ms)) overrides the default', () => {
+    TestBed.configureTestingModule({
+      imports: [ConfigHost],
+      providers: [provideSelectConfig(withSearchDebounce(500))],
+    });
+    const fixture = TestBed.createComponent(ConfigHost);
+    flush(fixture);
+    const typeahead = fixture.debugElement.query(By.directive(CngxTypeahead))
+      .componentInstance as CngxTypeahead<string>;
+    expect(typeahead.searchDebounceMs()).toBe(500);
+  });
+
+  it('withTypeaheadDebounce no longer moves the search debounce', () => {
     TestBed.configureTestingModule({
       imports: [ConfigHost],
       providers: [provideSelectConfig(withTypeaheadDebounce(500))],
@@ -450,7 +467,7 @@ describe('CngxTypeahead - searchDebounceMs config integration', () => {
     flush(fixture);
     const typeahead = fixture.debugElement.query(By.directive(CngxTypeahead))
       .componentInstance as CngxTypeahead<string>;
-    expect(typeahead.searchDebounceMs()).toBe(500);
+    expect(typeahead.searchDebounceMs()).toBe(300);
   });
 });
 

@@ -41,7 +41,12 @@ import { stripBidiIsolates } from '@cngx/testing';
 import { CngxSelectShell, type CngxSelectShellChange } from './select-shell.component';
 import { CNGX_SELECT_LANGUAGE_EN } from '../i18n/select-language-section';
 import type { CngxSelectOptionsInput } from '../shared/option.model';
-import { provideSelectConfig, withTemplates, withTypeaheadDebounce } from '../shared/config';
+import {
+  provideSelectConfig,
+  withSearchDebounce,
+  withTemplates,
+  withTypeaheadDebounce,
+} from '../shared/config';
 import type { CngxSelectTriggerLabelContext } from '../shared/template-slots';
 import { CngxSelectOption } from '../declarative/option.component';
 import { CngxSelectOptgroup } from '../declarative/optgroup.component';
@@ -1722,8 +1727,8 @@ describe('CngxSelectShell - searchDebounceMs', () => {
     expect(terms).toEqual(['re']);
   });
 
-  it('reads CngxSelectConfig.typeaheadDebounceInterval when the input is unbound', () => {
-    const { fixture, shell, type, terms } = setup([provideSelectConfig(withTypeaheadDebounce(500))]);
+  it('reads CngxSelectConfig.searchDebounceMs when the input is unbound', () => {
+    const { fixture, shell, type, terms } = setup([provideSelectConfig(withSearchDebounce(500))]);
     expect(shell.searchDebounceMs()).toBe(500);
     type('g');
     settle(fixture, 300);
@@ -1734,7 +1739,7 @@ describe('CngxSelectShell - searchDebounceMs', () => {
 
   it('lets a bound [searchDebounceMs] win over the config, 0 writing at once', () => {
     const { fixture, shell, type, terms } = setup(
-      [provideSelectConfig(withTypeaheadDebounce(500))],
+      [provideSelectConfig(withSearchDebounce(500))],
       0,
     );
     type('g');
@@ -1754,6 +1759,15 @@ describe('CngxSelectShell - searchDebounceMs', () => {
   it('applies the same precedence to typeaheadDebounceInterval', () => {
     const { shell } = setup([provideSelectConfig(withTypeaheadDebounce(450))]);
     expect(shell.typeaheadDebounceInterval()).toBe(450);
+  });
+
+  it('keeps the two keys apart: each feature sets only its own window', () => {
+    const typeahead = setup([provideSelectConfig(withTypeaheadDebounce(450))]).shell;
+    expect(typeahead.searchDebounceMs()).toBe(300);
+    TestBed.resetTestingModule();
+    const search = setup([provideSelectConfig(withSearchDebounce(150))]).shell;
+    expect(search.typeaheadDebounceInterval()).toBe(300);
+    expect(search.searchDebounceMs()).toBe(150);
   });
 
   it('Enter after the debounced write landed picks from the narrowed list', () => {

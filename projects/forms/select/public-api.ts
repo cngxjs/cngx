@@ -148,6 +148,7 @@ export {
   withPanelWidth,
   withPanelClass,
   withTypeaheadDebounce,
+  withSearchDebounce,
   withTypeaheadWhileClosed,
   withSearchMatchFn,
   withSelectionIndicator,

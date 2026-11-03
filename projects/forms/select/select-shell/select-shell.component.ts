@@ -503,10 +503,10 @@ export class CngxSelectShell<T = unknown>
    * Debounce (ms) between the last keystroke in the projected
    * `<cngx-select-search>` and the `searchTerm` write that filters the
    * options and fires `searchTermChange`. Wins over
-   * `CngxSelectConfig.typeaheadDebounceInterval` (default 300). `0` writes on
-   * every keystroke. A programmatic `searchTerm` write is never delayed.
+   * `CngxSelectConfig.searchDebounceMs` (default 300). `0` writes on every
+   * keystroke. A programmatic `searchTerm` write is never delayed.
    */
-  readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
+  readonly searchDebounceMs = input<number>(this.config.searchDebounceMs);
 
   /**
    * Buffer window (ms) of the closed-trigger typeahead. Wins over

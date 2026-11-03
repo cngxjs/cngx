@@ -404,10 +404,10 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   /**
    * Debounce in ms between a keystroke and the search filter update and
-   * `searchTermChange`. Defaults to
-   * `CngxSelectConfig.typeaheadDebounceInterval`.
+   * `searchTermChange`. Wins over `CngxSelectConfig.searchDebounceMs`
+   * (default 300). `0` updates on every keystroke.
    */
-  readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
+  readonly searchDebounceMs = input<number>(this.config.searchDebounceMs);
 
   /** Suppresses the first `searchTermChange` emission, the empty term written on hydration. */
   readonly skipInitial = input<boolean>(false);

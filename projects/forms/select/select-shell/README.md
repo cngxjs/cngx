@@ -58,6 +58,8 @@ Custom value / label / disabled extraction (data-* attrs, signal-typed labels, a
 
 The projected `<cngx-select-search>` calls into the shell through `CNGX_SELECT_SHELL_SEARCH_HOST` - no ancestor injection. `(searchTermChange)` is the `searchTerm` model's own change output: it fires on every change and never for the seed `''`, so server-driven autocomplete consumers don't fire a blank search at hydrate time.
 
+The search input carries `CngxSearch`, the atom the input variants debounce through. It writes `searchTerm` after `[searchDebounceMs]`, else `CNGX_SELECT_CONFIG.searchDebounceMs` (`withSearchDebounce(ms)`), else 300 ms; `0` writes on every keystroke. Enter writes a pending term at once, Escape and every other panel close drop it. `typeaheadDebounceInterval` is the separate buffer window of the closed-trigger typeahead.
+
 ## Async + commit
 
 `[state]` accepts a `CngxAsyncState<CngxSelectOptionsInput<T>>` - the shell drives the panel view machine (loading skeleton, refresh indicator, empty state, error state) off the status. `[retryFn]` and `(retry)` cover the error-recovery handshake.
