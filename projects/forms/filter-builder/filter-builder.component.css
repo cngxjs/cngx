@@ -399,11 +399,11 @@
     --cngx-filter-builder-rail: 2px solid var(--cngx-color-border);
     --cngx-filter-builder-action-remove-fg: var(
       --cngx-color-danger-text,
-      oklch(from var(--cngx-color-danger) 0.46 c h)
+      oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)
     );
     --cngx-filter-builder-error-fg: var(
       --cngx-color-danger-text,
-      oklch(from var(--cngx-color-danger) 0.46 c h)
+      oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)
     );
   }
 
