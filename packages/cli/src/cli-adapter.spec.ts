@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
 import type { CliIo, ContextOptions, DoctorModule } from './cli-adapter.js';
-import { EXIT_INTERNAL, EXIT_NOT_FOUND, EXIT_OK, EXIT_USAGE, commandHelp, doctorHelp, generalHelp, main, runCli } from './cli-adapter.js';
+import { EXIT_INTERNAL, EXIT_NOT_FOUND, EXIT_OK, EXIT_USAGE, adapterFlags, commandHelp, doctorHelp, flagName, generalHelp, main, runCli } from './cli-adapter.js';
 import type { CngxCommand, CommandContext } from './core/registry.js';
 import { COMMANDS } from './core/registry.js';
 import type { DocsResolverDeps } from './core/data/docs-resolver.js';
@@ -144,6 +144,27 @@ describe('usage errors', () => {
     expect(run.stdout).toBe('');
     expect(run.stderr).toContain("'-f'");
     expect(run.stderr).toContain(`Run \`cngx ${args[0]} --help\` for usage.`);
+  });
+
+  const POSITIONAL_FLAGS = COMMANDS.filter((def) => def.positional !== undefined)
+    .map((def) => [def.cliName, `--${flagName(def, def.positional!)}`] as const)
+    .filter(([cliName, flag]) => !adapterFlags(COMMANDS.find((def) => def.cliName === cliName)!).includes(flag));
+
+  it('covers every positional of the registry that is not also an adapter flag', () => {
+    expect(POSITIONAL_FLAGS.map(([cliName]) => cliName).sort()).toEqual(['api', 'config', 'di', 'example', 'find', 'migrate', 'slots', 'theme']);
+  });
+
+  it.each(POSITIONAL_FLAGS)('takes the positional of cngx %s only by position, never as %s', async (cliName, flag) => {
+    const run = await cli(cliName, flag, 'x');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toContain(`Unknown option '${flag}'`);
+    expect(run.stderr).toContain(`Run \`cngx ${cliName} --help\` for usage.`);
+  });
+
+  it('still parses a positional given by position', async () => {
+    expect((await cli('migrate', '0.1.0-rc.6')).code).toBe(EXIT_OK);
   });
 
   it('rejects a schema violation', async () => {

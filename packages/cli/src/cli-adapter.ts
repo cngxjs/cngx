@@ -170,7 +170,10 @@ const isBoolean = (schema: z.ZodType): boolean => unwrapOptional(schema) instanc
 function commandOptions(def: CngxCommand): Options {
   const options: Options = { ...GLOBAL_OPTIONS };
   for (const [field, schema] of Object.entries(def.input)) {
-    options[flagName(def, field)] = { type: isBoolean(schema) ? 'boolean' : 'string' };
+    // A positional is taken by position only, never as a flag.
+    if (field !== def.positional) {
+      options[flagName(def, field)] = { type: isBoolean(schema) ? 'boolean' : 'string' };
+    }
   }
   if (versionField(def) !== undefined) {
     options.offline = { type: 'boolean' };
@@ -464,6 +467,7 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
     }
   }
   const names = [...new Set(named)];
+  // argv cannot reach this since positionals have no flag; kept for a later flag alias.
   if (def.positional !== undefined && names.length > 0 && base[def.positional] !== undefined) {
     return usageError(io, `<${def.positional}> given twice.`, hint);
   }
