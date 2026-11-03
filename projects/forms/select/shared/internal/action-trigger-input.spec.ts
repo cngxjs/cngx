@@ -1,7 +1,9 @@
 import { signal, type ElementRef } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { createDefaultFlatNavStrategy } from '../flat-nav-strategy';
 import { createActionTriggerInput } from './action-trigger-input';
+import { cngxSelectDefaultCompare } from './select-core';
 import type { CngxListbox } from '@cngx/common/interactive';
 
 interface Harness {
@@ -31,7 +33,9 @@ function makeHarness(): Harness {
   h.trigger = createActionTriggerInput<string | undefined>({
     listbox: () => ({ ad: { activeItem: () => h.activeItem } }) as unknown as CngxListbox,
     popover: () => undefined,
+    strategy: createDefaultFlatNavStrategy(),
     flatOptions: () => [],
+    compareWith: () => cngxSelectDefaultCompare,
     input: () =>
       ({ nativeElement: { value: h.inputValue } }) as unknown as ElementRef<HTMLInputElement>,
     searchTerm,

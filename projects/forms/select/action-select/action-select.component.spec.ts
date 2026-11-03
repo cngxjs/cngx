@@ -7,6 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { CngxSelectAction } from '../shared/template-slots';
 import { provideSelectConfig, withOpenOn } from '../shared/config';
+import { CNGX_FLAT_NAV_STRATEGY, createDefaultFlatNavStrategy } from '../shared/flat-nav-strategy';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { stripBidiIsolates } from '@cngx/testing';
 import { CngxActionSelect, type CngxActionSelectChange } from './action-select.component';
@@ -757,4 +758,41 @@ describe('CngxActionSelect - openOn config integration', () => {
       expect(select.panelOpen()).toBe(true);
     },
   );
+});
+
+describe('CngxActionSelect - PageUp/PageDown through CNGX_FLAT_NAV_STRATEGY', () => {
+  @Component({
+    template: `<cngx-action-select [label]="'Tag'" [options]="options" />`,
+    imports: [CngxActionSelect],
+  })
+  class PageJumpHost {
+    readonly options = TAGS;
+  }
+
+  function pageDown(providers: unknown[]): number {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [PageJumpHost], providers: providers as never[] });
+    const fixture = TestBed.createComponent(PageJumpHost);
+    flush(fixture);
+    const input = fixture.nativeElement.querySelector(
+      'input.cngx-action-select__input',
+    ) as HTMLInputElement;
+    input.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true, cancelable: true }),
+    );
+    flush(fixture);
+    const listbox = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox);
+    return listbox.ad.activeIndex();
+  }
+
+  it('jumps by the default ten-option step to the last option', () => {
+    expect(pageDown([])).toBe(1);
+  });
+
+  it('takes the target from a provided strategy', () => {
+    const onPageJump = vi.fn(() => ({ kind: 'highlight' as const, index: 0 }));
+    const strategy = { ...createDefaultFlatNavStrategy(), onPageJump };
+    expect(pageDown([{ provide: CNGX_FLAT_NAV_STRATEGY, useValue: strategy }])).toBe(0);
+    expect(onPageJump).toHaveBeenCalledOnce();
+  });
 });

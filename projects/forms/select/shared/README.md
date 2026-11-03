@@ -501,7 +501,7 @@ Keyboard typeahead engine: buffer signal + debounced reset + walk semantics (rou
 
 ### `flat-nav-strategy.ts`
 
-Policy layer over `TypeaheadController` + `resolvePageJumpTarget` shared by `CngxSelect`, `CngxMultiSelect`, `CngxReorderableMultiSelect`.
+Policy layer over `TypeaheadController` + `resolvePageJumpTarget`. `onPageJump` steers PageUp/PageDown on every flat variant (`CngxSelect`, `CngxMultiSelect`, `CngxReorderableMultiSelect`, `CngxSelectShell` and the input variants `CngxCombobox`, `CngxTypeahead`, `CngxActionSelect`, `CngxActionMultiSelect`); `onTypeaheadWhileClosed` runs on the button-trigger ones only.
 Returns a discriminated `CngxFlatNavAction` (`'select' \| 'highlight' \| 'noop'`) the variant dispatches.
 
 | Symbol | Purpose |
@@ -515,7 +515,7 @@ Returns a discriminated `CngxFlatNavAction` (`'select' \| 'highlight' \| 'noop'`
 
 ### `page-jump-handler.ts`
 
-Internal helper used by combobox/typeahead/action variants - they delegate to `CngxListboxSearch` for keyboard input but still need to intercept `PageUp` / `PageDown` directly. `handlePageJumpKey(event, ctx)` returns a boolean indicating whether the key was handled.
+Internal helpers. `handleFlatNavPageJumpKey` serves the button-trigger variants; `handlePageJumpKey` serves combobox/typeahead/action variants, whose input keeps the caret and filters through `CngxListboxSearch` but still intercepts `PageUp` / `PageDown` from its own keydown. Both take the target from `CNGX_FLAT_NAV_STRATEGY.onPageJump` and return whether the key was handled.
 
 ### `select-base.css`
 

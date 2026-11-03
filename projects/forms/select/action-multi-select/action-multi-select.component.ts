@@ -118,6 +118,7 @@ import {
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import { resolveActionSelectConfig } from '../shared/action-select-config';
 import { mergeCommitState } from '../shared/internal/merged-commit-state';
+import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
 import { createActionTriggerInput } from '../shared/internal/action-trigger-input';
 import { resolveSearchMatch, resolveSelectConfig } from '../shared/internal/resolve-config';
 import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
@@ -1300,13 +1301,18 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     this.inputEl()?.nativeElement.focus(options);
   }
 
+  /** Flat-nav policy via `CNGX_FLAT_NAV_STRATEGY`: picks the PageUp/PageDown target. */
+  private readonly flatNavStrategy = inject(CNGX_FLAT_NAV_STRATEGY);
+
   /**
    * Trigger-input keyboard + live-term dispatch. Shared with
    * `CngxActionSelect`; this variant snapshots the values array.
    */
-  private readonly triggerInput = createActionTriggerInput<readonly T[]>({
+  private readonly triggerInput = createActionTriggerInput<readonly T[], T>({
     listbox: this.listboxRef,
     popover: this.popoverRef,
+    strategy: this.flatNavStrategy,
+    compareWith: this.compareWith,
     flatOptions: () => this.core.flatOptions(),
     input: this.inputEl,
     searchTerm: this.searchTerm,

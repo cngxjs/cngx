@@ -110,6 +110,7 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { resolveSearchMatch, resolveSelectConfig } from '../shared/internal/resolve-config';
+import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
 import { handlePageJumpKey } from '../shared/internal/page-jump-handler';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_SEARCH_EFFECTS_FACTORY, searchResultsFrom } from '../shared/search-effects';
@@ -1288,12 +1289,20 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     this.focusState.markBlurred();
   }
 
-  /** @internal - PageUp/PageDown shared behaviour (±10 option jump). */
+  /**
+   * Flat-nav policy via `CNGX_FLAT_NAV_STRATEGY`: picks the PageUp/PageDown
+   * target. The input owns typing, so its typeahead hook never runs here.
+   */
+  private readonly flatNavStrategy = inject(CNGX_FLAT_NAV_STRATEGY);
+
+  /** @internal - PageUp/PageDown through the flat-nav strategy (default ±10). */
   protected handleInputKeydown(event: KeyboardEvent): void {
     handlePageJumpKey(event, {
       listbox: this.listboxRef(),
       popover: this.popoverRef(),
+      strategy: this.flatNavStrategy,
       flatOptions: this.flatOptions,
+      compareWith: this.compareWith,
     });
   }
 }

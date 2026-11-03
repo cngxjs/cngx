@@ -102,6 +102,7 @@ import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/p
 import { resolveActionSelectConfig } from '../shared/action-select-config';
 import { CNGX_SELECT_COMMIT_CONTROLLER_FACTORY } from '../shared/commit-controller.token';
 import { mergeCommitState } from '../shared/internal/merged-commit-state';
+import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
 import { createActionTriggerInput } from '../shared/internal/action-trigger-input';
 import { resolveSearchMatch, resolveSelectConfig } from '../shared/internal/resolve-config';
 import { isEmptyScalar } from '../shared/internal/compare';
@@ -1107,13 +1108,18 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     this.inputEl()?.nativeElement.focus(options);
   }
 
+  /** Flat-nav policy via `CNGX_FLAT_NAV_STRATEGY`: picks the PageUp/PageDown target. */
+  private readonly flatNavStrategy = inject(CNGX_FLAT_NAV_STRATEGY);
+
   /**
    * Trigger-input keyboard + live-term dispatch. Shared with
    * `CngxActionMultiSelect`; this variant snapshots the scalar `value`.
    */
-  private readonly triggerInput = createActionTriggerInput<T | undefined>({
+  private readonly triggerInput = createActionTriggerInput<T | undefined, T>({
     listbox: this.listboxRef,
     popover: this.popoverRef,
+    strategy: this.flatNavStrategy,
+    compareWith: this.compareWith,
     flatOptions: () => this.core.flatOptions(),
     input: this.inputEl,
     searchTerm: this.searchTerm,

@@ -22,6 +22,7 @@ import { CngxSelectAnnouncer } from '../shared/announcer';
 import { CngxCombobox, type CngxComboboxChange } from './combobox.component';
 import { CngxComboboxChip, CngxComboboxTriggerLabel } from '../shared/template-slots';
 import { provideSelectConfig, withOpenOn, type CngxSelectMatchFn } from '../shared/config';
+import { CNGX_FLAT_NAV_STRATEGY, createDefaultFlatNavStrategy } from '../shared/flat-nav-strategy';
 import {
   filterSelectOptions,
   type CngxSelectOptionDef,
@@ -1259,6 +1260,49 @@ describe('CngxCombobox - openOn config integration', () => {
     flush(fixture);
     expect(combobox.panelOpen()).toBe(false);
     expect(ev.defaultPrevented).toBe(false);
+  });
+});
+
+describe('CngxCombobox - PageUp/PageDown through CNGX_FLAT_NAV_STRATEGY', () => {
+  @Component({
+    template: `<cngx-combobox [label]="'Letter'" [options]="options" />`,
+    imports: [CngxCombobox],
+  })
+  class PageJumpHost {
+    readonly options = [
+      { value: 'a', label: 'Alpha' },
+      { value: 'b', label: 'Bravo' },
+      { value: 'c', label: 'Charlie' },
+    ];
+  }
+
+  function pageDown(providers: unknown[]): number {
+    TestBed.configureTestingModule({ imports: [PageJumpHost], providers: providers as never[] });
+    const fixture = TestBed.createComponent(PageJumpHost);
+    flush(fixture);
+    const input = fixture.nativeElement.querySelector('.cngx-combobox__input') as HTMLInputElement;
+    input.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true, cancelable: true }),
+    );
+    flush(fixture);
+    const listbox = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox);
+    return listbox.ad.activeIndex();
+  }
+
+  it('jumps by the default ten-option step to the last option', () => {
+    expect(pageDown([])).toBe(2);
+  });
+
+  it('takes the target from a provided strategy', () => {
+    const onPageJump = vi.fn(() => ({ kind: 'highlight' as const, index: 1 }));
+    const strategy = { ...createDefaultFlatNavStrategy(), onPageJump };
+    expect(pageDown([{ provide: CNGX_FLAT_NAV_STRATEGY, useValue: strategy }])).toBe(1);
+    expect(onPageJump).toHaveBeenCalledOnce();
+  });
+
+  it('honours a custom page step', () => {
+    const strategy = createDefaultFlatNavStrategy({ pageStep: 1 });
+    expect(pageDown([{ provide: CNGX_FLAT_NAV_STRATEGY, useValue: strategy }])).toBe(1);
   });
 });
 

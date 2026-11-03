@@ -62,6 +62,12 @@ function fakeRenderedListbox(count: number, activeIndex: number): FakeListbox {
 
 const popover = { isVisible: () => true, show: vi.fn() } as unknown as CngxPopover;
 
+const STRATEGY_DEPS = {
+  strategy: createDefaultFlatNavStrategy(),
+  flatOptions: () => FLAT,
+  compareWith: () => cngxSelectDefaultCompare,
+};
+
 function key(name: 'PageDown' | 'PageUp'): KeyboardEvent {
   return new KeyboardEvent('keydown', { key: name, cancelable: true });
 }
@@ -69,21 +75,21 @@ function key(name: 'PageDown' | 'PageUp'): KeyboardEvent {
 describe('handlePageJumpKey - virtual panel', () => {
   it('jumps from the absolute active index, not the rendered-window index', () => {
     const { listbox, highlightByIndex } = fakeVirtualListbox(15, 21);
-    const ctx = { listbox, popover, flatOptions: () => FLAT };
+    const ctx = { listbox, popover, ...STRATEGY_DEPS };
     handlePageJumpKey(key('PageDown'), ctx);
     expect(highlightByIndex).toHaveBeenCalledExactlyOnceWith(31);
   });
 
   it('jumps back from the end of the list in absolute space', () => {
     const { listbox, highlightByIndex } = fakeVirtualListbox(TOTAL - WINDOW, TOTAL - 1);
-    const ctx = { listbox, popover, flatOptions: () => FLAT };
+    const ctx = { listbox, popover, ...STRATEGY_DEPS };
     handlePageJumpKey(key('PageUp'), ctx);
     expect(highlightByIndex).toHaveBeenCalledExactlyOnceWith(TOTAL - 11);
   });
 
   it('keeps the rendered options as the index space without virtualisation', () => {
     const { listbox, highlightByIndex } = fakeRenderedListbox(30, 3);
-    const ctx = { listbox, popover, flatOptions: () => FLAT };
+    const ctx = { listbox, popover, ...STRATEGY_DEPS };
     handlePageJumpKey(key('PageDown'), ctx);
     expect(highlightByIndex).toHaveBeenCalledExactlyOnceWith(13);
   });
@@ -133,6 +139,7 @@ describe('page jump on a disabled control', () => {
     const handled = handlePageJumpKey(event, {
       listbox,
       popover: closed,
+      ...STRATEGY_DEPS,
       disabled: () => true,
     });
     expect(handled).toBe(false);
@@ -230,6 +237,33 @@ describe('handleFlatNavPageJumpKey - virtualSpace', () => {
     });
     expect(handled).toBe(false);
     expect(event.defaultPrevented).toBe(false);
+    expect(highlightByIndex).not.toHaveBeenCalled();
+  });
+});
+
+describe('handlePageJumpKey - strategy routing', () => {
+  it('jumps by the page step of the injected strategy', () => {
+    const { listbox, highlightByIndex } = fakeRenderedListbox(30, 3);
+    handlePageJumpKey(key('PageDown'), {
+      listbox,
+      popover,
+      ...STRATEGY_DEPS,
+      strategy: createDefaultFlatNavStrategy({ pageStep: 5 }),
+    });
+    expect(highlightByIndex).toHaveBeenCalledExactlyOnceWith(8);
+  });
+
+  it('keeps the key handled and highlights nothing when the strategy returns noop', () => {
+    const { listbox, highlightByIndex } = fakeRenderedListbox(30, 3);
+    const event = key('PageDown');
+    const handled = handlePageJumpKey(event, {
+      listbox,
+      popover,
+      ...STRATEGY_DEPS,
+      strategy: { ...createDefaultFlatNavStrategy(), onPageJump: () => ({ kind: 'noop' }) },
+    });
+    expect(handled).toBe(true);
+    expect(event.defaultPrevented).toBe(true);
     expect(highlightByIndex).not.toHaveBeenCalled();
   });
 });
