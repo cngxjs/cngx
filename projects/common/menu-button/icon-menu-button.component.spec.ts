@@ -252,6 +252,8 @@ describe('CngxIconMenuButton', () => {
         const { button, popover, flush } = setup(type as Type<unknown>);
         button.click();
         flush();
+        // The first click opens the menu and starts the run.
+        expect(popover.isVisible()).toBe(true);
         popover.hide();
         flush();
         expect(button.getAttribute('aria-disabled')).toBe('true');
@@ -260,6 +262,24 @@ describe('CngxIconMenuButton', () => {
         flush();
         expect(popover.isVisible()).toBe(false);
         expect(button.getAttribute('aria-disabled')).toBe('true');
+      },
+    );
+
+    it.each([
+      ['after', AsyncAfterHost],
+      ['before', AsyncBeforeHost],
+    ] as const)(
+      'still closes the open menu on click while a cngxAsyncClick written %s the selector is pending',
+      (_, type) => {
+        const { button, popover, flush } = setup(type as Type<unknown>);
+        button.click();
+        flush();
+        expect(popover.isVisible()).toBe(true);
+        expect(button.getAttribute('aria-disabled')).toBe('true');
+
+        button.click();
+        flush();
+        expect(popover.isVisible()).toBe(false);
       },
     );
   });
