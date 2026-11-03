@@ -50,7 +50,7 @@ export const STORY: DemoSpec = {
       }
     </cngx-sidenav-content>
 
-    <cngx-sidenav position="end" [(opened)]="rightOpen" mode="over" width="280px">
+    <cngx-sidenav #detailNav position="end" [(opened)]="rightOpen" mode="over" width="280px">
       <div class="demo-sidenav__detail-pad">
         @if (selectedItem()) {
           <h3 class="demo-sidenav__content-title demo-sidenav__content-title--small">{{ selectedItem() }}</h3>
@@ -70,8 +70,12 @@ export const STORY: DemoSpec = {
     <button class="sort-btn" type="button" (click)="leftOpen.set(!leftOpen())">
       Left: {{ leftOpen() ? 'open' : 'closed' }}
     </button>
-    <button class="sort-btn" type="button" (click)="rightOpen.set(true)">Open right</button>
-    <button class="sort-btn" type="button" (click)="rightOpen.set(false)">Close right</button>
+    <button class="sort-btn" type="button"
+            [attr.aria-controls]="detailNav.id()"
+            [attr.aria-expanded]="rightOpen()"
+            (click)="rightOpen.set(!rightOpen())">
+      Right: {{ rightOpen() ? 'open' : 'closed' }}
+    </button>
   </div>
 <div class="status-row" style="margin-top: 0.5rem;">
     <span class="status-badge" [class.active]="leftOpen()">left: {{ leftOpen() ? 'open' : 'closed' }}</span>
