@@ -30,6 +30,7 @@ import { CngxTypeahead } from '../typeahead/typeahead.component';
 
 const TEMPLATE = `
   <div data-touch="off" [attr.data-density]="density()" style="display: block; width: 20rem; margin: 1rem">
+    <span class="scale-probe" style="padding-inline-start: var(--cngx-space-xs)"></span>
       <div class="with-clear">
         <cngx-select [label]="'C'" [options]="options" [clearable]="true" [value]="'red'" />
         <cngx-multi-select
@@ -255,6 +256,33 @@ describe('select clear button fine-pointer hit area', () => {
         expectHitArea(remove, remove.closest('.cngx-field-trigger')?.parentElement?.tagName ?? '');
       }
     });
+  });
+
+  it('sets the clear button inline padding from the scale in every density', () => {
+    const seen = new Set<string>();
+    for (const density of ['comfortable', 'compact'] as const) {
+      const root = mount(FineTargetHost, density);
+      const xs = getComputedStyle(
+        root.querySelector<HTMLElement>('.scale-probe')!,
+      ).paddingInlineStart;
+      for (const [tag, selector] of Object.entries(CLEAR_BUTTONS)) {
+        if (tag === 'cngx-tree-select') {
+          // Sized by --cngx-tree-select-clear-size with no padding.
+          continue;
+        }
+        const style = getComputedStyle(
+          root.querySelector<HTMLElement>(`.with-clear ${tag} ${selector}`)!,
+        );
+        expect(
+          [style.paddingInlineStart, style.paddingInlineEnd, style.paddingBlockStart],
+          `${density} ${tag}`,
+        ).toEqual([xs, xs, '0px']);
+      }
+      seen.add(xs);
+      root.remove();
+      mountedRoot = null;
+    }
+    expect(seen.size).toBe(2);
   });
 
   it('--cngx-select-clear-target-min set on an ancestor resizes every clear button', () => {

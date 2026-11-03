@@ -1449,8 +1449,10 @@
      chip remove button's pattern). At the default 24px line box the fine
      floor adds nothing and the margin is 0. The inline axis grows in layout
      instead, so the hit area never overlaps the caret or a chip next to it.
-     Every variant tags its clear button with this shared class. */
+     Every variant tags its clear button with this shared class.
+     clear-padding 0.25 -> xs; every variant stylesheet reads it. */
   .cngx-select__clear-target {
+    --cngx-select-clear-padding: 0 var(--cngx-space-xs);
     --_cngx-select-clear-min: max(
       var(--cngx-select-clear-target-min, 24px),
       var(--cngx-target-min, 0px)
