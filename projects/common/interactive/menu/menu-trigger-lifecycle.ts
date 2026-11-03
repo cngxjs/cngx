@@ -71,8 +71,8 @@ export interface CngxMenuTriggerLifecycle {
   open(): void;
   /**
    * Close branch: remove the listeners, cancel a pending focus move, clear
-   * the submenu chain and let the focus stack settle focus for the source
-   * that closed the menu.
+   * the submenu chain and hand the closing source to the focus stack's
+   * `settleFocus`, which owns the restore-or-discard policy.
    */
   close(): void;
   /**
@@ -234,16 +234,11 @@ export function createMenuTriggerLifecycle(
     },
     close(): void {
       release();
-      // A focus-out close leaves focus where the user moved it.
-      if (dismissBinding.closedBy() === 'focus-out') {
-        focusStack.discardFocus?.();
-      } else {
-        focusStack.restoreFocus();
-      }
+      focusStack.settleFocus(dismissBinding.closedBy());
     },
     standDown(): void {
       release();
-      focusStack.discardFocus?.();
+      focusStack.discardFocus();
     },
     routeHostKey(event: KeyboardEvent): void {
       if (isInsideRootPopover(event.target)) {

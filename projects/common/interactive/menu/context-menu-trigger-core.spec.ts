@@ -7,7 +7,10 @@ import {
   createContextMenuTriggerCore,
   type CngxContextMenuTriggerPopoverRef,
 } from './context-menu-trigger-core';
-import type { CngxMenuDismissHandlerFactory, CngxMenuDismissHandlerOptions } from './dismiss-handler';
+import type {
+  CngxMenuDismissHandlerFactory,
+  CngxMenuDismissHandlerOptions,
+} from './dismiss-handler';
 import { createMenuFocusStack, type CngxMenuFocusStack } from './menu-focus-stack';
 import { DEFAULT_MENU_CONFIG } from './menu-config';
 import { withAriaLabels } from './menu-config-features';
@@ -234,6 +237,7 @@ describe('createContextMenuTriggerCore', () => {
   function stackSpies() {
     const discardFocus = vi.fn();
     const restoreFocus = vi.fn();
+    const settleFocus = vi.fn();
     const stack = {
       stack: signal<readonly CngxMenuHost[]>([]).asReadonly(),
       effectiveMenu: () => menu,
@@ -241,6 +245,7 @@ describe('createContextMenuTriggerCore', () => {
       captureFocus: vi.fn(),
       restoreFocus,
       discardFocus,
+      settleFocus,
       reset: vi.fn(),
       handleEscape: vi.fn(),
       handleArrowRight: vi.fn(),
@@ -248,41 +253,39 @@ describe('createContextMenuTriggerCore', () => {
       openSubmenuFor: vi.fn(),
       noteSubmenuOpened: vi.fn(),
     } as unknown as CngxMenuFocusStack;
-    return { stack, discardFocus, restoreFocus };
+    return { stack, settleFocus };
   }
 
-  it('a focus-out close discards the saved focus instead of restoring it', () => {
+  it('hands a focus-out close to the focus stack to settle', () => {
     let opts: CngxMenuDismissHandlerOptions | undefined;
     const capturingFactory: CngxMenuDismissHandlerFactory = (o) => {
       opts = o;
       return { attach: () => () => {} };
     };
-    const { stack, discardFocus, restoreFocus } = stackSpies();
+    const { stack, settleFocus } = stackSpies();
     const core = build({ dismissFactory: capturingFactory, focusStackFactory: () => stack });
     core.handleContextMenu(mouse());
     core.syncOpenState(true);
     popover.hide();
     opts?.onDismiss?.('focus-out');
     core.syncOpenState(false);
-    expect(discardFocus).toHaveBeenCalled();
-    expect(restoreFocus).not.toHaveBeenCalled();
+    expect(settleFocus).toHaveBeenCalledExactlyOnceWith('focus-out');
   });
 
-  it('any other close restores focus', () => {
+  it('hands any other close source to the focus stack to settle', () => {
     let opts: CngxMenuDismissHandlerOptions | undefined;
     const capturingFactory: CngxMenuDismissHandlerFactory = (o) => {
       opts = o;
       return { attach: () => () => {} };
     };
-    const { stack, discardFocus, restoreFocus } = stackSpies();
+    const { stack, settleFocus } = stackSpies();
     const core = build({ dismissFactory: capturingFactory, focusStackFactory: () => stack });
     core.handleContextMenu(mouse());
     core.syncOpenState(true);
     popover.hide();
     opts?.onDismiss?.('outside-click');
     core.syncOpenState(false);
-    expect(restoreFocus).toHaveBeenCalled();
-    expect(discardFocus).not.toHaveBeenCalled();
+    expect(settleFocus).toHaveBeenCalledExactlyOnceWith('outside-click');
   });
 
   it('hands the dismiss handler the menu chain and the focus-out toggle', () => {
