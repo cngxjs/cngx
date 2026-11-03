@@ -2,7 +2,7 @@
 
 import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { computedValue } from '@cngx/testing/geometry';
+import { computedValue, contrastRatio } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 import { cdp, userEvent } from 'vitest/browser';
 
@@ -156,18 +156,9 @@ function paint(...layers: string[]): Rgb {
   return [r, g, b];
 }
 
-function luminance(rgb: Rgb): number {
-  const [r, g, b] = rgb.map((v) => {
-    const c = v / 255;
-    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-  });
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
-
-function contrast(a: Rgb, b: Rgb): number {
-  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-  return (hi + 0.05) / (lo + 0.05);
-}
+// The ratio over composited pixels: `paint` already flattened the layers.
+const contrast = (a: Rgb, b: Rgb): number =>
+  contrastRatio(`rgb(${a.join(', ')})`, `rgb(${b.join(', ')})`);
 
 // The painted ground of an element: every background from the scheme wrapper
 // down to the element, composited in order.

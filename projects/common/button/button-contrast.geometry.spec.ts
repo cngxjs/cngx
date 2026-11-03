@@ -58,39 +58,6 @@ function mount(): HTMLElement {
   return mountedRoot;
 }
 
-// Chromium reports the tokens in oklch / color() notation; painting the colour
-// and reading the pixel back is the stable way to get sRGB bytes.
-function toRgb(color: string): [number, number, number] {
-  const canvas = document.createElement('canvas');
-  canvas.width = 1;
-  canvas.height = 1;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) {
-    throw new Error('2d context unavailable');
-  }
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(0, 0, 1, 1);
-  ctx.fillStyle = color;
-  ctx.fillRect(0, 0, 1, 1);
-  const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
-  return [r, g, b];
-}
-
-function relativeLuminance([r, g, b]: [number, number, number]): number {
-  const lin = (v: number): number => {
-    const c = v / 255;
-    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-  };
-  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
-}
-
-function contrast(a: string, b: string): number {
-  const la = relativeLuminance(toRgb(a));
-  const lb = relativeLuminance(toRgb(b));
-  const [hi, lo] = la > lb ? [la, lb] : [lb, la];
-  return (hi + 0.05) / (lo + 0.05);
-}
-
 function query(root: HTMLElement, selector: string): HTMLElement {
   const el = root.querySelector(selector);
   if (!el) {
@@ -112,7 +79,7 @@ describe('solid button label contrast (default palette)', () => {
     ['danger', 'dark'],
   ] as const)('solid %s in the %s scheme clears 4.5:1', (tone, scheme) => {
     const button = query(mount(), `.b-${tone}-${scheme}`);
-    const ratio = contrast(
+    const ratio = contrastRatio(
       computedValue(button, 'color'),
       computedValue(button, 'background-color'),
     );
