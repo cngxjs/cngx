@@ -12,6 +12,9 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 const SCHEMES = ['light', 'dark'] as const;
 
+// The rung's OKLCH lightness per scheme; hue and chroma come from primary.
+const TEXT_LIGHTNESS: Record<(typeof SCHEMES)[number], string> = { light: '0.54', dark: '0.8' };
+
 @Component({
   selector: 'cngx-primary-text-host',
   standalone: true,
@@ -31,8 +34,8 @@ const SCHEMES = ['light', 'dark'] as const;
           >Current</span
         >
         <span
-          class="probe-mix"
-          style="color: color-mix(in oklab, var(--cngx-color-primary) 70%, var(--cngx-color-text))"
+          class="probe-derived"
+          [style.color]="'oklch(from var(--cngx-color-primary) ' + lightness[scheme] + ' c h)'"
         ></span>
         <span class="probe-primary" style="color: var(--cngx-color-primary)"></span>
         <span class="probe-surface" style="color: var(--cngx-color-surface)"></span>
@@ -42,6 +45,7 @@ const SCHEMES = ['light', 'dark'] as const;
 })
 class PrimaryTextHost {
   readonly schemes = SCHEMES;
+  readonly lightness = TEXT_LIGHTNESS;
 }
 
 let mountedRoot: HTMLElement | null = null;
@@ -101,10 +105,10 @@ describe.each(SCHEMES)('--cngx-color-primary-text, %s', (scheme) => {
   const at = (root: HTMLElement, selector: string): HTMLElement =>
     one(root, `.scheme-${scheme} ${selector}`);
 
-  it('resolves to primary mixed 70% toward the text colour in oklab', () => {
+  it("resolves to primary at the scheme's text lightness", () => {
     const root = mount();
     const text = toRgb(computedValue(at(root, '.as-text'), 'color'));
-    expect(text).toEqual(toRgb(computedValue(at(root, '.probe-mix'), 'color')));
+    expect(text).toEqual(toRgb(computedValue(at(root, '.probe-derived'), 'color')));
     expect(text).not.toEqual(toRgb(computedValue(at(root, '.probe-primary'), 'color')));
   });
 

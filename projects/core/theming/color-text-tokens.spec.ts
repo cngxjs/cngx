@@ -8,11 +8,12 @@ import { resolve } from 'node:path';
 
 const css = readFileSync(resolve(__dirname, 'system-tokens.css'), 'utf-8');
 
-const PRIMARY_TEXT =
-  '--cngx-color-primary-text: color-mix(in oklab, var(--cngx-color-primary) 70%, var(--cngx-color-text));';
-
-const DANGER_TEXT =
-  '--cngx-color-danger-text: color-mix(in oklab, var(--cngx-color-danger) 75%, var(--cngx-color-text));';
+// The four tone rungs keep the tone's hue and chroma and pin the lightness
+// per scheme and per tone, so a brand override re-hues them while the
+// contrast pairing against the fixed surface and inks holds.
+function derived(tone: 'primary' | 'danger', lightness: string): string {
+  return `oklch(from var(--cngx-color-${tone}) ${lightness} c h)`;
+}
 
 function schemeBlock(pattern: RegExp): string {
   const match = css.match(pattern);
@@ -37,26 +38,36 @@ describe('--cngx-color-primary-strong', () => {
   });
 
   it.each([
-    ['light', 'oklch(0.58 0.19 50)'],
-    ['os dark', 'oklch(0.72 0.18 50)'],
-    ['explicit dark', 'oklch(0.72 0.18 50)'],
-    ['explicit light', 'oklch(0.58 0.19 50)'],
-  ] as const)('is set in the %s block', (scheme, value) => {
+    ['light', derived('primary', '0.58')],
+    ['os dark', derived('primary', '0.72')],
+    ['explicit dark', derived('primary', '0.72')],
+    ['explicit light', derived('primary', '0.58')],
+  ] as const)('derives from primary in the %s block', (scheme, value) => {
     expect(BLOCKS[scheme]()).toContain(`--cngx-color-primary-strong: ${value};`);
   });
 });
 
 describe.each([
-  ['--cngx-color-border-strong', 'oklch(0.62 0.005 250)', 'oklch(0.57 0.005 250)'],
-  ['--cngx-color-on-primary-strong', 'oklch(1 0 0)', 'oklch(0.2 0.01 250)'],
-  ['--cngx-color-danger-strong', 'oklch(0.48 0.2 25)', 'oklch(0.68 0.17 25)'],
-  ['--cngx-color-on-danger-strong', 'oklch(1 0 0)', 'oklch(0.2 0.01 250)'],
-] as const)('%s', (token, light, dark) => {
+  [
+    '--cngx-color-border-strong',
+    'oklch(0.62 0.005 250)',
+    'oklch(0.62 0.005 250)',
+    'oklch(0.57 0.005 250)',
+  ],
+  ['--cngx-color-on-primary-strong', 'oklch(1 0 0)', 'oklch(1 0 0)', 'oklch(0.2 0.01 250)'],
+  [
+    '--cngx-color-danger-strong',
+    'oklch(0.48 0.18 25)',
+    derived('danger', '0.48'),
+    derived('danger', '0.68'),
+  ],
+  ['--cngx-color-on-danger-strong', 'oklch(1 0 0)', 'oklch(1 0 0)', 'oklch(0.2 0.01 250)'],
+] as const)('%s', (token, initial, light, dark) => {
   it('registers as an inheriting colour with the light rung as initial', () => {
     const block = schemeBlock(new RegExp(`@property ${token}\\s*{[^}]+}`));
     expect(block).toContain("syntax: '<color>'");
     expect(block).toContain('inherits: true');
-    expect(block).toContain(`initial-value: ${light}`);
+    expect(block).toContain(`initial-value: ${initial}`);
   });
 
   it.each([
@@ -76,12 +87,16 @@ describe('--cngx-color-primary-text', () => {
     expect(css).not.toMatch(/@property --cngx-color-primary-text/);
   });
 
-  it.each(Object.keys(BLOCKS) as (keyof typeof BLOCKS)[])(
-    'derives from primary and text in oklab in the %s block',
-    (scheme) => {
-      expect(BLOCKS[scheme]()).toContain(PRIMARY_TEXT);
-    },
-  );
+  it.each([
+    ['light', '0.54'],
+    ['os dark', '0.8'],
+    ['explicit dark', '0.8'],
+    ['explicit light', '0.54'],
+  ] as const)('derives from primary in the %s block', (scheme, lightness) => {
+    expect(BLOCKS[scheme]()).toContain(
+      `--cngx-color-primary-text: ${derived('primary', lightness)};`,
+    );
+  });
 });
 
 describe('--cngx-color-danger-text', () => {
@@ -91,12 +106,14 @@ describe('--cngx-color-danger-text', () => {
     expect(css).not.toMatch(/@property --cngx-color-danger-text/);
   });
 
-  it.each(Object.keys(BLOCKS) as (keyof typeof BLOCKS)[])(
-    'derives from danger and text in oklab in the %s block',
-    (scheme) => {
-      expect(BLOCKS[scheme]()).toContain(DANGER_TEXT);
-    },
-  );
+  it.each([
+    ['light', '0.46'],
+    ['os dark', '0.74'],
+    ['explicit dark', '0.74'],
+    ['explicit light', '0.46'],
+  ] as const)('derives from danger in the %s block', (scheme, lightness) => {
+    expect(BLOCKS[scheme]()).toContain(`--cngx-color-danger-text: ${derived('danger', lightness)};`);
+  });
 });
 
 describe('--cngx-color-highlight', () => {

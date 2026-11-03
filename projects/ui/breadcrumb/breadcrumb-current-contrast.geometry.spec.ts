@@ -20,6 +20,10 @@ import { cdp, userEvent } from 'vitest/browser';
 // Under forced colors the current sibling row paints the Highlight pair.
 
 const SCHEMES = ['light', 'dark'] as const;
+
+// OKLCH lightness of --cngx-color-primary-text per scheme; hue and chroma
+// come from primary.
+const TEXT_LIGHTNESS: Record<(typeof SCHEMES)[number], string> = { light: '0.54', dark: '0.8' };
 const TEXT_SKINS = ['toolbar', 'chips', 'iconlabel', 'path'] as const;
 const FILLED_SKINS = ['pill', 'ribbon', 'icononly'] as const;
 
@@ -96,7 +100,7 @@ const FILLED_SKINS = ['pill', 'ribbon', 'icononly'] as const;
         <span class="plain" style="color: rgb(200, 0, 0)">Plain</span>
         <span
           class="probe-pt"
-          style="color: color-mix(in oklab, var(--cngx-color-primary) 70%, var(--cngx-color-text))"
+          [style.color]="'oklch(from var(--cngx-color-primary) ' + textLightness[scheme] + ' c h)'"
         ></span>
         <span class="probe-primary" style="color: var(--cngx-color-primary)"></span>
         <span class="probe-text" style="color: var(--cngx-color-text)"></span>
@@ -110,6 +114,7 @@ const FILLED_SKINS = ['pill', 'ribbon', 'icononly'] as const;
 })
 class CurrentHost {
   readonly schemes = SCHEMES;
+  readonly textLightness = TEXT_LIGHTNESS;
   readonly skins = [...TEXT_SKINS, ...FILLED_SKINS, 'editorial'];
 }
 
