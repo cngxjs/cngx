@@ -5,6 +5,7 @@
  * @module @cngx/testing/geometry
  */
 export { accessibleName } from './accessible-name';
+export { contrastRatio, oklabOf, rasterise, type Oklab, type Rgba } from './colour';
 export {
   computedValue,
   containerState,
