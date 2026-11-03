@@ -194,9 +194,12 @@ export class CngxSidenav {
    * Accessible name of the rail: of the `complementary` landmark, or of the
    * modal `dialog` while it is an open overlay. Unbound, the `startRegion` /
    * `endRegion` label (`withSidenavLabels`, then the language pack) applies by
-   * `position`, so two rails never share one name.
+   * `position`, so two rails never share one name. An empty or blank value
+   * counts as unbound, so the rail is never left without a name.
    */
-  readonly ariaLabel = input<string | undefined>(undefined);
+  readonly ariaLabel = input<string | undefined, string | undefined>(undefined, {
+    transform: (value) => (value?.trim() ? value : undefined),
+  });
 
   /**
    * Element id of the rail. Defaults to a generated id; a static `id="..."`

@@ -294,6 +294,15 @@ describe('CngxSidenav accessible name', () => {
     expect(start.getAttribute('aria-label')).toBe('Main navigation');
   });
 
+  it('treats an empty or blank [ariaLabel] as unbound', () => {
+    const { fixture, host, start } = setup();
+    for (const blank of ['', '   ']) {
+      host.startLabel.set(blank);
+      fixture.detectChanges();
+      expect(start.getAttribute('aria-label')).toBe('Navigation');
+    }
+  });
+
   it('renames an unbound rail on a language switch', () => {
     const labels = signal<Partial<CngxSidenavLabels>>({});
     TestBed.configureTestingModule({
