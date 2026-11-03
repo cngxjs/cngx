@@ -59,7 +59,7 @@ The touch floor is on while `--cngx-target-min` resolves above `0px`: on a coars
 - `chipOverflow`, `maxVisibleChips` and the chip slots (`*cngxMultiSelectChip`, `*cngxComboboxChip`, `*cngxTreeSelectChip`, `*cngxMultiSelectChipHandle`) apply on a fine pointer only, or with the opt-out.
 - `*cngxSelectChipOverflow` also replaces the `+N` badge of the summary. `CngxReorderableMultiSelect` keeps the built-in `+N` badge; it does not render `*cngxSelectChipOverflow`.
 - A trigger-label slot (`*cngxMultiSelectTriggerLabel`, `*cngxComboboxTriggerLabel`, `*cngxTreeSelectTriggerLabel`) replaces the summary in the same place it replaces the chips. The per-variant READMEs state the precedence against the placeholder.
-- `CngxReorderableMultiSelect` moves its sorting into a list in the panel; see its README.
+- `CngxReorderableMultiSelect` moves its sorting into a list in the panel; see its README. `*cngxMultiSelectMoveGlyph` (or `[moveGlyph]`, app-wide `withDefaultMoveGlyph`) replaces the glyph of its move buttons.
 
 ## Selected rows in multi-value panels
 

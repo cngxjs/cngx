@@ -1,4 +1,4 @@
-import { DOCUMENT } from '@angular/common';
+import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   ChangeDetectionStrategy,
@@ -9,6 +9,7 @@ import {
   Injector,
   input,
   output,
+  type TemplateRef,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -26,6 +27,7 @@ import {
 } from '@cngx/utils';
 
 import type { CngxSelectOptionDef } from '../../option.model';
+import type { CngxMultiSelectMoveGlyphContext } from '../../template-slots';
 
 /** Direction of a move button. */
 type MoveDirection = 'up' | 'down';
@@ -51,7 +53,7 @@ const LABEL_ONLY = (label: string): string => label;
 @Component({
   selector: 'cngx-select-reorder-list',
   standalone: true,
-  imports: [CngxIconSvg, CngxReorder],
+  imports: [CngxIconSvg, CngxReorder, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: { class: 'cngx-select-reorder-list' },
@@ -85,6 +87,12 @@ export class CngxSelectReorderList<T = unknown> {
   readonly disabled = input<boolean>(false);
   /** A commit holds the list frozen; reported as `aria-busy` on the list. */
   readonly busy = input<boolean>(false);
+  /**
+   * Glyph of the move buttons. `null` draws the default triangles; a
+   * template renders inside an `aria-hidden` wrapper with the direction as
+   * context, and the button keeps its accessible name.
+   */
+  readonly moveGlyph = input<TemplateRef<CngxMultiSelectMoveGlyphContext> | null>(null);
 
   /** A drag, a modifier-key move or a move button settled on a new order. */
   readonly reordered = output<CngxReorderEvent<T>>();
@@ -100,6 +108,17 @@ export class CngxSelectReorderList<T = unknown> {
   protected readonly handleIcon = CNGX_ICON_GRIP_VERTICAL;
   protected readonly moveUpIcon = CNGX_ICON_TRIANGLE_UP;
   protected readonly moveDownIcon = CNGX_ICON_TRIANGLE_DOWN;
+
+  /** @internal Stable outlet context of the move-up glyph. */
+  protected readonly moveUpGlyphContext: CngxMultiSelectMoveGlyphContext = {
+    $implicit: 'up',
+    direction: 'up',
+  };
+  /** @internal Stable outlet context of the move-down glyph. */
+  protected readonly moveDownGlyphContext: CngxMultiSelectMoveGlyphContext = {
+    $implicit: 'down',
+    direction: 'down',
+  };
 
   /** @internal The busy reason, appended to a row button's own boundary reason. */
   protected describedBy(boundaryId: string | null): string | null {

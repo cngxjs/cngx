@@ -234,6 +234,7 @@
         [keyboardModifier]="reorderKeyboardModifier()"
         [disabled]="reorderDisabled()"
         [busy]="reorderFrozenOnCommit()"
+        [moveGlyph]="moveGlyphTpl()"
         (reordered)="handleReorder($event)"
       />
     }

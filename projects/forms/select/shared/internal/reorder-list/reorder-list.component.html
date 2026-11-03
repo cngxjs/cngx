@@ -35,7 +35,13 @@
         [attr.aria-describedby]="describedBy(first ? atStartId : null)"
         (click)="handleMove(i, 'up')"
       >
-        <svg [cngxIconSvg]="moveUpIcon"></svg>
+        @if (moveGlyph(); as glyph) {
+          <span class="cngx-select-reorder-list__move-glyph" aria-hidden="true">
+            <ng-container *ngTemplateOutlet="glyph; context: moveUpGlyphContext" />
+          </span>
+        } @else {
+          <svg [cngxIconSvg]="moveUpIcon"></svg>
+        }
       </button>
       <button
         type="button"
@@ -46,7 +52,13 @@
         [attr.aria-describedby]="describedBy(last ? atEndId : null)"
         (click)="handleMove(i, 'down')"
       >
-        <svg [cngxIconSvg]="moveDownIcon"></svg>
+        @if (moveGlyph(); as glyph) {
+          <span class="cngx-select-reorder-list__move-glyph" aria-hidden="true">
+            <ng-container *ngTemplateOutlet="glyph; context: moveDownGlyphContext" />
+          </span>
+        } @else {
+          <svg [cngxIconSvg]="moveDownIcon"></svg>
+        }
       </button>
     </li>
   }

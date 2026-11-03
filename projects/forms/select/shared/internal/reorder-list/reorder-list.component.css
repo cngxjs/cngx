@@ -58,13 +58,28 @@
     --cngx-icon-svg-size: max(calc(0.8125em * 24 / 15), 15px);
   }
 
-  /* The box lands on 12px at the 16px default and at any smaller font (the
-     0.75rem micro floor), which selects the 12-grid micro triangle (8 units
-     across, 8px, near the 0.5625em the 12-unit arrows drew). A larger font
-     moves the box past 14px and hands it to the 24-grid path;
-     `--cngx-icon-svg-micro-floor: 0px` lets a smaller font shrink it again. */
+  /* `--cngx-select-reorder-move-size` (default 0.75em) drives the box. At
+     the default it lands on 12px at the 16px font and at any smaller font
+     (the 0.75rem micro floor still applies), which selects the 12-grid micro
+     triangle (8 units across, 8px, near the 0.5625em the 12-unit arrows
+     drew). A larger font or token moves the box past 14px and hands it to
+     the 24-grid path; `--cngx-icon-svg-micro-floor: 0px` lets it shrink
+     below 12px. */
   .cngx-select-reorder-list__move > .cngx-icon-svg {
-    --cngx-icon-svg-size: max(0.75em, var(--cngx-icon-svg-micro-floor, 0.75rem));
+    --cngx-icon-svg-size: max(
+      var(--cngx-select-reorder-move-size, 0.75em),
+      var(--cngx-icon-svg-micro-floor, 0.75rem)
+    );
+  }
+
+  /* A projected glyph reads the same token as its font size, so an em-sized
+     glyph scales with it. */
+  .cngx-select-reorder-list__move-glyph {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--cngx-select-reorder-move-size, 0.75em);
+    line-height: 1;
   }
 
   .cngx-select-reorder-list__label {

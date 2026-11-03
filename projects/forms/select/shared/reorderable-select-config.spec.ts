@@ -1,15 +1,18 @@
-import { Injector, runInInjectionContext, signal } from '@angular/core';
+import { Injector, runInInjectionContext, signal, type TemplateRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import { CNGX_SELECT_LANGUAGE_EN } from '../i18n/select-language-section';
 
 import { injectReorderableSelectConfig } from './inject-helpers';
+import type { CngxMultiSelectMoveGlyphContext } from './template-slots';
 import {
   CNGX_REORDERABLE_SELECT_DEFAULTS,
   provideReorderableSelectConfig,
   provideReorderableSelectConfigAt,
   resolveReorderableSelectConfig,
+  withDefaultDragHandle,
+  withDefaultMoveGlyph,
   withReorderAriaLabel,
   withReorderKeyboardModifier,
   withReorderListLabels,
@@ -25,6 +28,8 @@ describe('resolveReorderableSelectConfig', () => {
     expect(cfg.keyboardModifier).toBe(CNGX_REORDERABLE_SELECT_DEFAULTS.keyboardModifier);
     expect(cfg.ariaLabel()).toBe(CNGX_SELECT_LANGUAGE_EN.reorderHint);
     expect(cfg.dragHandle).toBe(CNGX_REORDERABLE_SELECT_DEFAULTS.dragHandle);
+    expect(cfg.moveGlyph).toBeNull();
+    expect(CNGX_REORDERABLE_SELECT_DEFAULTS.moveGlyph).toBeNull();
     expect(cfg.freezeStripOnCommit).toBe(
       CNGX_REORDERABLE_SELECT_DEFAULTS.freezeStripOnCommit,
     );
@@ -162,5 +167,41 @@ describe('resolveReorderableSelectConfig - sortable list copy', () => {
     moveDown.set((label) => `Runter ${label}`);
     expect(cfg.listLabel()).toBe('Reihenfolge');
     expect(cfg.moveDown()('Rot')).toBe('Runter Rot');
+  });
+});
+
+describe('resolveReorderableSelectConfig - move glyph', () => {
+  const tpl = {} as TemplateRef<CngxMultiSelectMoveGlyphContext>;
+
+  it('resolves withDefaultMoveGlyph app-wide and leaves the drag handle alone', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideReorderableSelectConfig(withDefaultMoveGlyph(tpl))],
+    });
+    const cfg = TestBed.runInInjectionContext(() => resolveReorderableSelectConfig());
+    expect(cfg.moveGlyph).toBe(tpl);
+    expect(cfg.dragHandle).toBeNull();
+  });
+
+  it('resolves withDefaultMoveGlyph component-scoped', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [...provideReorderableSelectConfigAt(withDefaultMoveGlyph(tpl))],
+    });
+    const cfg = TestBed.runInInjectionContext(() => resolveReorderableSelectConfig());
+    expect(cfg.moveGlyph).toBe(tpl);
+  });
+
+  it('keeps an explicit null and does not mix with withDefaultDragHandle', () => {
+    const grip = {} as TemplateRef<void>;
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideReorderableSelectConfig(withDefaultDragHandle(grip), withDefaultMoveGlyph(null)),
+      ],
+    });
+    const cfg = TestBed.runInInjectionContext(() => resolveReorderableSelectConfig());
+    expect(cfg.moveGlyph).toBeNull();
+    expect(cfg.dragHandle).toBe(grip);
   });
 });

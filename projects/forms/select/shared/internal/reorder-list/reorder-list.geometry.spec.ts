@@ -148,4 +148,25 @@ describe('CngxSelectReorderList under the touch floor', () => {
       expect(getComputedStyle(arrow.querySelector('.cngx-icon-svg__path')!).display).toBe('none');
     }
   });
+
+  // The size token drives the box: 1.5em at the 16px font is 24px, past the
+  // micro band, so the arrows draw from the 24-grid path.
+  it('lifts the move arrows out of the micro band through --cngx-select-reorder-move-size', async () => {
+    const fixture = TestBed.createComponent(Host);
+    root = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(root);
+    fixture.detectChanges();
+    const scope = root.querySelector<HTMLElement>('[data-touch]')!;
+    scope.style.fontSize = '16px';
+    scope.style.setProperty('--cngx-select-reorder-move-size', '1.5em');
+    await nextFrame();
+
+    const arrows = Array.from(root.querySelectorAll<SVGSVGElement>('li[data-reorder-index] [data-move] svg'));
+    expect(arrows.length).toBeGreaterThan(0);
+    for (const arrow of arrows) {
+      expect(arrow.getBoundingClientRect().width).toBe(24);
+      expect(getComputedStyle(arrow.querySelector('.cngx-icon-svg__path')!).display).not.toBe('none');
+      expect(getComputedStyle(arrow.querySelector('.cngx-icon-svg__micro')!).display).toBe('none');
+    }
+  });
 });

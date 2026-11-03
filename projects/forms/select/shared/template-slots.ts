@@ -166,6 +166,17 @@ export interface CngxMultiSelectChipContext<T = unknown> {
 }
 
 /**
+ * Context of the `*cngxMultiSelectMoveGlyph` slot. The glyph is decorative
+ * (its wrapper is `aria-hidden`; the move button keeps its `aria-label`), so
+ * the context only says which button it renders in.
+ */
+export interface CngxMultiSelectMoveGlyphContext {
+  readonly $implicit: 'up' | 'down';
+  /** `'up'` in the move-up button, `'down'` in the move-down button. */
+  readonly direction: 'up' | 'down';
+}
+
+/**
  * Context of the `*cngxSelectSheetHandle` slot. The handle is decorative
  * (always `aria-hidden`), so the context carries visual state only.
  */
@@ -633,7 +644,7 @@ export class CngxMultiSelectChip<T = unknown> {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
- * @relatedTo CngxReorderableMultiSelect, CngxMultiSelectChip
+ * @relatedTo CngxReorderableMultiSelect, CngxMultiSelectChip, CngxMultiSelectMoveGlyph
  */
 @Directive({
   selector: 'ng-template[cngxMultiSelectChipHandle]',
@@ -642,6 +653,39 @@ export class CngxMultiSelectChip<T = unknown> {
 })
 export class CngxMultiSelectChipHandle {
   readonly templateRef = inject<TemplateRef<void>>(TemplateRef);
+}
+
+/**
+ * `*cngxMultiSelectMoveGlyph` slot - glyph of the move-up / move-down
+ * buttons in the reorder list the panel shows under the touch floor.
+ * Cascade: this slot > `[moveGlyph]` Input (app-wide default via
+ * `withDefaultMoveGlyph`) > the default triangles. The glyph renders inside
+ * the move button in an `aria-hidden="true"` wrapper; the button keeps its
+ * `aria-label`. `direction` (also `$implicit`) is `'up'` or `'down'`. Only
+ * rendered under the touch floor, where the reorder list shows; on a fine
+ * pointer the chip strip reorders by drag and keyboard instead. Size the
+ * default triangles and the wrapper with `--cngx-select-reorder-move-size`.
+ *
+ * ```html
+ * <cngx-reorderable-multi-select ...>
+ *   <ng-template cngxMultiSelectMoveGlyph let-direction>
+ *     <my-arrow [direction]="direction" />
+ *   </ng-template>
+ * </cngx-reorderable-multi-select>
+ * ```
+ *
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxReorderableMultiSelect, CngxMultiSelectChipHandle
+ */
+@Directive({
+  selector: 'ng-template[cngxMultiSelectMoveGlyph]',
+  standalone: true,
+  exportAs: 'cngxMultiSelectMoveGlyph',
+})
+export class CngxMultiSelectMoveGlyph {
+  readonly templateRef = inject<TemplateRef<CngxMultiSelectMoveGlyphContext>>(TemplateRef);
 }
 
 /**

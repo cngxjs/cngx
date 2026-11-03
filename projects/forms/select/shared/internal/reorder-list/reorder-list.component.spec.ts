@@ -29,14 +29,19 @@ const OPTIONS: CngxSelectOptionDef<string>[] = [
       [pendingText]="pendingText()"
       [disabled]="disabled()"
       [busy]="busy()"
+      [moveGlyph]="withGlyph() ? glyph : null"
       (reordered)="handle($event)"
     />
+    <ng-template #glyph let-direction let-dir="direction">
+      <i class="custom-move" [attr.data-direction]="direction" [attr.data-dir]="dir"></i>
+    </ng-template>
   `,
 })
 class Host {
   readonly items = signal<readonly CngxSelectOptionDef<string>[]>(OPTIONS);
   readonly disabled = signal(false);
   readonly busy = signal(false);
+  readonly withGlyph = signal(false);
   readonly pendingText = signal('Unavailable while saving');
   readonly events: CngxReorderEvent<string>[] = [];
   readonly up = (label: string): string => `${label}: move up`;
@@ -287,5 +292,30 @@ describe('CngxSelectReorderList', () => {
     await fixture.whenStable();
     expect(labels(root)).toEqual(['Red', 'Green', 'Blue']);
     expect(document.activeElement).toBe(button(root, 1, 'down'));
+  });
+
+  it('draws the default triangles without a move glyph', () => {
+    const { root } = setup();
+    for (const dir of ['up', 'down'] as const) {
+      const b = button(root, 1, dir);
+      expect(b.querySelector('svg')).not.toBeNull();
+      expect(b.querySelector('.cngx-select-reorder-list__move-glyph')).toBeNull();
+    }
+  });
+
+  it('renders a move glyph in an aria-hidden wrapper with the button direction', () => {
+    const { host, root } = setup();
+    host.withGlyph.set(true);
+    settle();
+    for (const dir of ['up', 'down'] as const) {
+      const b = button(root, 1, dir);
+      const wrap = b.querySelector<HTMLElement>('.cngx-select-reorder-list__move-glyph')!;
+      expect(wrap.getAttribute('aria-hidden')).toBe('true');
+      const glyph = wrap.querySelector<HTMLElement>('.custom-move')!;
+      expect(glyph.dataset['direction']).toBe(dir);
+      expect(glyph.dataset['dir']).toBe(dir);
+      expect(b.querySelector('svg')).toBeNull();
+      expect(b.getAttribute('aria-label')).toBe(`Green: move ${dir}`);
+    }
   });
 });

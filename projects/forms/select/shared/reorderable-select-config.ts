@@ -12,6 +12,7 @@ import type { CngxReorderModifier } from '@cngx/common/interactive';
 import { coerceSignal } from '@cngx/core/utils';
 
 import { injectSelectWord } from '../i18n/select-i18n';
+import type { CngxMultiSelectMoveGlyphContext } from './template-slots';
 
 /**
  * App-wide config for reorder-aware select variants. Cascade:
@@ -32,6 +33,12 @@ export interface CngxReorderableSelectConfig {
    * `[chipDragHandle]` wins.
    */
   readonly dragHandle?: TemplateRef<void> | null;
+  /**
+   * Glyph of the move-up / move-down buttons in the reorder list the panel
+   * shows under the touch floor. `null` keeps the default triangles.
+   * Per-instance `[moveGlyph]` wins.
+   */
+  readonly moveGlyph?: TemplateRef<CngxMultiSelectMoveGlyphContext> | null;
   /**
    * Freezes the chip strip during an in-flight commit. Default `true` -
    * reorders are sub-second, freeze is clearer than per-chip spinners.
@@ -78,19 +85,21 @@ type CopyKey = 'ariaLabel' | 'listLabel' | 'moveUp' | 'moveDown' | 'atStart' | '
 
 /** Library defaults. Required-shape so resolution stays `??`-friendly. @internal */
 export const CNGX_REORDERABLE_SELECT_DEFAULTS: Required<
-  Omit<CngxReorderableSelectConfig, 'dragHandle' | CopyKey>
+  Omit<CngxReorderableSelectConfig, 'dragHandle' | 'moveGlyph' | CopyKey>
 > & {
   readonly dragHandle: TemplateRef<void> | null;
+  readonly moveGlyph: TemplateRef<CngxMultiSelectMoveGlyphContext> | null;
 } = {
   keyboardModifier: 'alt',
   dragHandle: null,
+  moveGlyph: null,
   freezeStripOnCommit: true,
 };
 
 /**
  * Resolved configuration for `CngxReorderableMultiSelect` - the keyboard
- * reorder modifier, drag-handle template, selection-strip freeze-on-commit,
- * and ARIA label.
+ * reorder modifier, drag-handle template, move-button glyph template,
+ * selection-strip freeze-on-commit, and ARIA label.
  *
  * Provide it through one of two entry points, never the token directly:
  *
@@ -99,14 +108,14 @@ export const CNGX_REORDERABLE_SELECT_DEFAULTS: Required<
  *
  * Compose from the `with*` features (`withReorderKeyboardModifier`,
  * `withReorderAriaLabel`, `withReorderListLabels`, `withDefaultDragHandle`,
- * `withReorderStripFreeze`).
+ * `withDefaultMoveGlyph`, `withReorderStripFreeze`).
  * Resolution is nearest-wins: a nested provider replaces an ancestor config for
  * its subtree, it does not deep-merge.
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/reorderable-select-config.ts
  * @since 0.1.0
- * @relatedTo provideReorderableSelectConfig, provideReorderableSelectConfigAt, injectReorderableSelectConfig, withReorderKeyboardModifier, withReorderAriaLabel, withReorderListLabels, withDefaultDragHandle, withReorderStripFreeze, CngxReorderableMultiSelect
+ * @relatedTo provideReorderableSelectConfig, provideReorderableSelectConfigAt, injectReorderableSelectConfig, withReorderKeyboardModifier, withReorderAriaLabel, withReorderListLabels, withDefaultDragHandle, withDefaultMoveGlyph, withReorderStripFreeze, CngxReorderableMultiSelect
  */
 export const CNGX_REORDERABLE_SELECT_CONFIG = new InjectionToken<CngxReorderableSelectConfig>(
   'CngxReorderableSelectConfig',
@@ -165,6 +174,17 @@ export function withDefaultDragHandle(
   template: TemplateRef<void> | null,
 ): CngxReorderableSelectConfigFeature {
   return feature({ dragHandle: template });
+}
+
+/**
+ * Sets the default move-up / move-down glyph of the touch reorder list
+ * app-wide via `TemplateRef<CngxMultiSelectMoveGlyphContext>`; the context
+ * carries the `direction`. `null` keeps the default triangles.
+ */
+export function withDefaultMoveGlyph(
+  template: TemplateRef<CngxMultiSelectMoveGlyphContext> | null,
+): CngxReorderableSelectConfigFeature {
+  return feature({ moveGlyph: template });
 }
 
 /**
@@ -227,9 +247,10 @@ export function provideReorderableSelectConfigAt(
  * @internal
  */
 export function resolveReorderableSelectConfig(): Required<
-  Omit<CngxReorderableSelectConfig, 'dragHandle' | CopyKey>
+  Omit<CngxReorderableSelectConfig, 'dragHandle' | 'moveGlyph' | CopyKey>
 > & {
   readonly dragHandle: TemplateRef<void> | null;
+  readonly moveGlyph: TemplateRef<CngxMultiSelectMoveGlyphContext> | null;
   readonly ariaLabel: Signal<string>;
   readonly listLabel: Signal<string>;
   readonly moveUp: Signal<CngxReorderMoveLabel>;
@@ -248,6 +269,8 @@ export function resolveReorderableSelectConfig(): Required<
     atEnd: coerceSignal(user.atEnd ?? injectSelectWord('reorderAtEnd')),
     dragHandle:
       user.dragHandle === undefined ? CNGX_REORDERABLE_SELECT_DEFAULTS.dragHandle : user.dragHandle,
+    moveGlyph:
+      user.moveGlyph === undefined ? CNGX_REORDERABLE_SELECT_DEFAULTS.moveGlyph : user.moveGlyph,
     freezeStripOnCommit:
       user.freezeStripOnCommit ?? CNGX_REORDERABLE_SELECT_DEFAULTS.freezeStripOnCommit,
   };

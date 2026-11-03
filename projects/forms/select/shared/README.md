@@ -372,6 +372,7 @@ Plus the variant-specific slots (also defined here):
 | `CngxSelectTriggerLabel<T>`                                 | single only         |
 | `CngxMultiSelectChip<T>` / `CngxMultiSelectTriggerLabel<T>` | multi + reorderable |
 | `CngxMultiSelectChipHandle`                                 | reorderable only    |
+| `CngxMultiSelectMoveGlyph`                                  | reorderable only    |
 | `CngxComboboxChip<T>` / `CngxComboboxTriggerLabel<T>`       | combobox            |
 
 ### `template-registry.ts`
@@ -422,7 +423,7 @@ Public exports:
 `CNGX_REORDERABLE_SELECT_CONFIG` token + `provideReorderableSelectConfig(...)` /
 `*At` providers + 5 features:
 
-- **Features**: `withReorderKeyboardModifier`, `withReorderAriaLabel`, `withReorderListLabels`, `withReorderStripFreeze`, `withDefaultDragHandle`.
+- **Features**: `withReorderKeyboardModifier`, `withReorderAriaLabel`, `withReorderListLabels`, `withReorderStripFreeze`, `withDefaultDragHandle`, `withDefaultMoveGlyph`.
 - **Types**: `CngxReorderableSelectConfig`, `CngxReorderableSelectConfigFeature`.
 
 ### `provide-cngx-select.ts`
