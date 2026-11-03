@@ -91,17 +91,12 @@ export function docText(value: string | null | undefined): string | null {
   return /^\s*<p>/i.test(value) ? toPlainText(value) : value.trim();
 }
 
-const CELL_MAX = 200;
-
-/** A description as one table cell, capped at 200 characters on a word boundary. */
+/**
+ * A description as one table cell, never shortened. `api`, `slots` and `theme`
+ * drop the column under `--compact`; `di` and `migrate` have no short view.
+ */
 export function textCell(value: string | null | undefined): string {
-  const text = cell(docText(value));
-  if (text.length <= CELL_MAX) {
-    return text;
-  }
-  const cut = text.slice(0, CELL_MAX);
-  const space = cut.lastIndexOf(' ');
-  return `${(space > 0 ? cut.slice(0, space) : cut).replace(/[\s,;:.\\-]+$/, '')}...`;
+  return cell(docText(value));
 }
 
 /** An ambiguous selector: every candidate, each asked for again by its class name, which always resolves to it alone. */

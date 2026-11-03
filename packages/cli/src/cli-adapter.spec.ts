@@ -4,13 +4,13 @@
 // packages/mcp/test/fixtures/documentation.sample.json (cngxVersion 0.1.0-rc.6),
 // read through the cli's own core copy. `--version` is read from
 // packages/cli/package.json.
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
 import type { CliIo, ContextOptions, DoctorModule } from './cli-adapter.js';
-import { EXIT_INTERNAL, EXIT_NOT_FOUND, EXIT_OK, EXIT_USAGE, commandHelp, doctorHelp, generalHelp, main, runCli } from './cli-adapter.js';
+import { EXIT_INTERNAL, EXIT_NOT_FOUND, EXIT_OK, EXIT_USAGE, adapterFlags, commandHelp, doctorHelp, flagName, generalHelp, main, runCli } from './cli-adapter.js';
 import type { CngxCommand, CommandContext } from './core/registry.js';
 import { COMMANDS } from './core/registry.js';
 import type { DocsResolverDeps } from './core/data/docs-resolver.js';
@@ -144,6 +144,27 @@ describe('usage errors', () => {
     expect(run.stdout).toBe('');
     expect(run.stderr).toContain("'-f'");
     expect(run.stderr).toContain(`Run \`cngx ${args[0]} --help\` for usage.`);
+  });
+
+  const POSITIONAL_FLAGS = COMMANDS.filter((def) => def.positional !== undefined)
+    .map((def) => [def.cliName, `--${flagName(def, def.positional!)}`] as const)
+    .filter(([cliName, flag]) => !adapterFlags(COMMANDS.find((def) => def.cliName === cliName)!).includes(flag));
+
+  it('covers every positional of the registry that is not also an adapter flag', () => {
+    expect(POSITIONAL_FLAGS.map(([cliName]) => cliName).sort()).toEqual(['api', 'config', 'di', 'example', 'find', 'migrate', 'slots', 'theme']);
+  });
+
+  it.each(POSITIONAL_FLAGS)('takes the positional of cngx %s only by position, never as %s', async (cliName, flag) => {
+    const run = await cli(cliName, flag, 'x');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toContain(`Unknown option '${flag}'`);
+    expect(run.stderr).toContain(`Run \`cngx ${cliName} --help\` for usage.`);
+  });
+
+  it('still parses a positional given by position', async () => {
+    expect((await cli('migrate', '0.1.0-rc.6')).code).toBe(EXIT_OK);
   });
 
   it('rejects a schema violation', async () => {
@@ -1095,6 +1116,39 @@ describe('cngx doctor', () => {
     expect(run.code).toBe(EXIT_USAGE);
     expect(run.runDoctor).not.toHaveBeenCalled();
     expect(run.stderr).toBe(`cngx: ${message}\nRun \`cngx doctor --help\` for usage.\n`);
+  });
+
+  // root reads through any mode bits, so the permission cases only run unprivileged.
+  const unprivileged = process.getuid?.() !== 0;
+
+  it.runIf(unprivileged)('exits 2 before any scan for a directory it cannot read', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'cngx-doctor-locked-'));
+    chmodSync(dir, 0o000);
+    try {
+      const run = await doctor(['doctor', dir]);
+
+      expect(run.code).toBe(EXIT_USAGE);
+      expect(run.runDoctor).not.toHaveBeenCalled();
+      expect(run.stderr).toBe(`cngx: doctor: ${dir} cannot be read (EACCES).\nRun \`cngx doctor --help\` for usage.\n`);
+    } finally {
+      chmodSync(dir, 0o755);
+    }
+  });
+
+  it.runIf(unprivileged)('exits 2 instead of an internal error when a path component denies access', async () => {
+    const parent = mkdtempSync(join(tmpdir(), 'cngx-doctor-locked-'));
+    const child = join(parent, 'app');
+    mkdirSync(child);
+    chmodSync(parent, 0o000);
+    try {
+      const run = await doctor(['doctor', child]);
+
+      expect(run.code).toBe(EXIT_USAGE);
+      expect(run.runDoctor).not.toHaveBeenCalled();
+      expect(run.stderr).toBe(`cngx: doctor: ${child} cannot be read (EACCES).\nRun \`cngx doctor --help\` for usage.\n`);
+    } finally {
+      chmodSync(parent, 0o755);
+    }
   });
 
   it('takes a directory after --', async () => {

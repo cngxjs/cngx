@@ -33,8 +33,8 @@ describe('@cngx/cli package manifest', () => {
     expect(pkg.bin).toEqual({ cngx: 'dist/index.js' });
   });
 
-  it('publishes dist, the bundled data, the readme and the changelog', () => {
-    expect([...pkg.files].sort()).toEqual(['CHANGELOG.md', 'README.md', 'data', 'dist']);
+  it('publishes dist, the bundled data, the readme, the changelog and the license', () => {
+    expect([...pkg.files].sort()).toEqual(['CHANGELOG.md', 'LICENSE', 'README.md', 'data', 'dist']);
   });
 
   it('declares the Node 20 floor', () => {
@@ -81,9 +81,9 @@ describe('@cngx/cli sources', () => {
 // compiled JavaScript with its maps, never a spec, a test or a test-only guard, and
 // no declarations (the package has no `types` or `exports`). Every sourcemap it
 // ships either points at a shipped file or carries its source.
-const FIXED_FILES: ReadonlySet<string> = new Set(['package.json', 'README.md', 'CHANGELOG.md', 'data/documentation.json']);
+const FIXED_FILES: ReadonlySet<string> = new Set(['package.json', 'README.md', 'CHANGELOG.md', 'LICENSE', 'data/documentation.json']);
 const COMPILED = /^dist\/.+\.js(?:\.map)?$/;
-const TEST_ONLY = /(?:\.spec|\.core-spec|\.test)\.js(?:\.map)?$|^dist\/(?:readme-guard|output-guards)\./;
+const TEST_ONLY = /(?:\.spec|\.core-spec|\.test)\.js(?:\.map)?$|^dist\/(?:readme-guard|output-guards)\.|(?:^|\/)(?:testing|__fixtures__)\//;
 
 /** Tarball paths outside the allowlist. */
 const offAllowlist = (files: readonly string[]): string[] =>
@@ -126,13 +126,25 @@ describe('@cngx/cli tarball', () => {
     expect(files.filter((file) => FIXED_FILES.has(file)).sort()).toEqual([...FIXED_FILES].sort());
   });
 
+  it('ships the root LICENSE byte for byte', () => {
+    expect(readFileSync(join(PKG_DIR, 'LICENSE'))).toEqual(readFileSync(join(PKG_DIR, '..', '..', 'LICENSE')));
+  });
+
   it('ships no sourcemap that points at an unshipped source', () => {
     expect(files.some((file) => file.endsWith('.map'))).toBe(true);
     expect(danglingSources(files, readMap)).toEqual([]);
   });
 
-  it('mutation: a test file, a guard, a spec and a declaration fall off the allowlist', () => {
-    const planted = ['dist/x.test.js', 'dist/readme-guard.js', 'dist/core/query.spec.js.map', 'dist/index.d.ts', 'src/index.ts'];
+  it('mutation: a test file, a guard, a spec, test helpers, fixtures and a declaration fall off the allowlist', () => {
+    const planted = [
+      'dist/x.test.js',
+      'dist/readme-guard.js',
+      'dist/core/query.spec.js.map',
+      'dist/testing/x.js',
+      'dist/core/__fixtures__/x.js',
+      'dist/index.d.ts',
+      'src/index.ts',
+    ];
 
     expect(offAllowlist([...files, ...planted])).toEqual(planted);
   });

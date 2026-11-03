@@ -260,15 +260,15 @@ describe('toMarkdown over compodoc HTML', () => {
     expect(markdown).toContain('First paragraph.\n\nSecond paragraph.');
   });
 
-  it('api: caps a 1000-character input description', () => {
+  it('api: keeps a 1000-character input description whole', () => {
     const api = getApi(bundled, 'CngxSelect') as ApiResult;
     const long = `<p>${'x'.repeat(1000)}</p>`;
 
     const markdown = apiMarkdown({ ...api, inputs: [{ ...api.inputs[0], description: long }] });
     const row = markdown.split('\n').find((line) => line.startsWith('|`value`|'));
 
-    expect(row).toContain(`${'x'.repeat(200)}...|`);
-    expect(row).not.toContain('x'.repeat(201));
+    expect(row).toContain(`${'x'.repeat(1000)}|`);
+    expect(row).not.toContain('...');
   });
 });
 

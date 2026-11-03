@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "prepublishOnly": "node ../../scripts/mcp-bundle-check.mjs",
+    "prepublishOnly": "node ../../scripts/package-dist-check.mjs --package-dir=. && node ../../scripts/mcp-bundle-check.mjs",
     "test": "vitest run"
   },
   "dependencies": {

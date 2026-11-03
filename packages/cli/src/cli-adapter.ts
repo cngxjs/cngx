@@ -16,7 +16,7 @@
 // failure carries `error: { reason, message }` next to `result: null` (reason
 // `internal` for exit 3), a not-found answer has no `error`.
 
-import { readFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -170,7 +170,10 @@ const isBoolean = (schema: z.ZodType): boolean => unwrapOptional(schema) instanc
 function commandOptions(def: CngxCommand): Options {
   const options: Options = { ...GLOBAL_OPTIONS };
   for (const [field, schema] of Object.entries(def.input)) {
-    options[flagName(def, field)] = { type: isBoolean(schema) ? 'boolean' : 'string' };
+    // A positional is taken by position only, never as a flag.
+    if (field !== def.positional) {
+      options[flagName(def, field)] = { type: isBoolean(schema) ? 'boolean' : 'string' };
+    }
   }
   if (versionField(def) !== undefined) {
     options.offline = { type: 'boolean' };
@@ -464,6 +467,7 @@ export async function runCli(argv: readonly string[], env: CliEnv): Promise<numb
     }
   }
   const names = [...new Set(named)];
+  // argv cannot reach this since positionals have no flag; kept for a later flag alias.
   if (def.positional !== undefined && names.length > 0 && base[def.positional] !== undefined) {
     return usageError(io, `<${def.positional}> given twice.`, hint);
   }
@@ -577,6 +581,20 @@ function pinDetected(
   return { version, context: { ...context, resolve } };
 }
 
+/** Why a doctor `<projectDir>` cannot be scanned, or `null` when it can; doctor's own guard words it the same. */
+function projectDirProblem(dir: string): string | null {
+  try {
+    if (statSync(dir, { throwIfNoEntry: false })?.isDirectory() !== true) {
+      return 'is not a directory';
+    }
+    readdirSync(dir);
+    return null;
+  } catch (error) {
+    const code = error instanceof Error && 'code' in error ? String(error.code) : 'unknown error';
+    return `cannot be read (${code})`;
+  }
+}
+
 /**
  * `cngx doctor`: the `@cngx/doctor` wiring scan with the CLI's flag and exit
  * contract. `--version` / `--help` are the CLI's, never doctor's; `--format json`
@@ -645,11 +663,12 @@ async function runDoctorCommand(
   if (dirs.length > 1) {
     return usageError(io, `doctor takes one <projectDir>, got ${dirs.length}.`, hint);
   }
-  // The scan reads what it finds and reports nothing for a missing directory, so a
-  // mistyped path would pass as a clean project.
+  // The scan reads what it finds and reports nothing for a missing or unreadable
+  // directory, so a mistyped or locked path would pass as a clean project.
   if (dirs.length === 1) {
-    if (statSync(dirs[0], { throwIfNoEntry: false })?.isDirectory() !== true) {
-      return usageError(io, `doctor: ${dirs[0]} is not a directory.`, hint);
+    const problem = projectDirProblem(dirs[0]);
+    if (problem !== null) {
+      return usageError(io, `doctor: ${dirs[0]} ${problem}.`, hint);
     }
     args.push(dirs[0].startsWith('-') ? `./${dirs[0]}` : dirs[0]);
   }

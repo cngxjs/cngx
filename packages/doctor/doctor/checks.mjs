@@ -42,21 +42,139 @@ function importsCngxSymbol(text, symbol) {
 
 function findSourceImporting(sources, symbol) {
   for (const [path, text] of Object.entries(sources)) {
-    if (importsCngxSymbol(text, symbol)) {
+    if (importsCngxSymbol(strippedSource(sources, path, text), symbol)) {
       return path;
     }
   }
   return null;
 }
 
-// Strip comments before an opt-in scan so a commented-out `// withToasts()`
-// (or one inside a block comment) does not falsely suppress a finding.
-function stripComments(text) {
-  return text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+// Both scans read sources with comments stripped, so a commented-out import
+// does not count as usage and a commented-out `withToasts()` does not count as
+// an opt-in. `stripTsComments` is a port of `stripComments` in
+// packages/cli/src/from-file.ts (doctor cannot import the CLI);
+// packages/cli/src/comment-strip-parity.spec.ts pins the two equal.
+
+// A `/` after one of these (or a keyword below) starts a regex literal, not a division.
+const REGEX_AFTER_CHAR = new Set([...'(,=:[!&|?{};+-*%<>~^']);
+const REGEX_AFTER_WORD = /\b(?:return|typeof|instanceof|in|of|new|delete|void|throw|case|do|else|yield|await)$/;
+
+/** The end (exclusive) of the regex literal starting at `start`, or -1 when it is not one. */
+function regexLiteralEnd(source, start) {
+  let inClass = false;
+  for (let j = start + 1; j < source.length; j++) {
+    const char = source[j];
+    if (char === '\n') {
+      return -1;
+    }
+    if (char === '\\') {
+      j++;
+    } else if (char === '[') {
+      inClass = true;
+    } else if (char === ']') {
+      inClass = false;
+    } else if (char === '/' && !inClass) {
+      return j + 1;
+    }
+  }
+  return -1;
+}
+
+/**
+ * `source` with every comment replaced by a space, string, template and regex
+ * literals kept, so a `/*` or `//` inside a string, URL or regex does not eat
+ * the code after it.
+ *
+ * @param {string} source
+ * @returns {string}
+ */
+export function stripTsComments(source) {
+  let out = '';
+  let i = 0;
+  while (i < source.length) {
+    const char = source[i];
+    const next = source[i + 1];
+    if (char === '/' && next === '/') {
+      while (i < source.length && source[i] !== '\n') {
+        i++;
+      }
+      out += ' ';
+      continue;
+    }
+    if (char === '/' && next === '*') {
+      const end = source.indexOf('*/', i + 2);
+      i = end === -1 ? source.length : end + 2;
+      out += ' ';
+      continue;
+    }
+    if (char === '/') {
+      const before = out.trimEnd();
+      const startsRegex = before === '' || REGEX_AFTER_CHAR.has(before[before.length - 1]) || REGEX_AFTER_WORD.test(before);
+      const end = startsRegex ? regexLiteralEnd(source, i) : -1;
+      if (end !== -1) {
+        out += source.slice(i, end);
+        i = end;
+        continue;
+      }
+    }
+    if (char === "'" || char === '"' || char === '`') {
+      let j = i + 1;
+      while (j < source.length && source[j] !== char) {
+        j += source[j] === '\\' ? 2 : 1;
+      }
+      out += source.slice(i, j + 1);
+      i = j + 1;
+      continue;
+    }
+    out += char;
+    i++;
+  }
+  return out;
+}
+
+/**
+ * `source` with every `<!-- -->` comment replaced by a space. HTML has no `//`,
+ * and an apostrophe in prose must not open a literal, so only HTML comments go.
+ *
+ * @param {string} source
+ * @returns {string}
+ */
+export function stripHtmlComments(source) {
+  return source.replace(/<!--[\s\S]*?(?:-->|$)/g, ' ');
+}
+
+/**
+ * @param {string} path  picks the comment syntax by extension
+ * @param {string} text
+ * @returns {string}
+ */
+export function stripComments(path, text) {
+  return path.endsWith('.html') ? stripHtmlComments(text) : stripTsComments(text);
+}
+
+// Each check asks per symbol, so one run would strip every source about 25
+// times. The cache lives as long as the snapshot's sources object; an entry is
+// reused only while its text is the same string.
+/** @type {WeakMap<Record<string, string>, Map<string, { text: string, stripped: string }>>} */
+const strippedCache = new WeakMap();
+
+function strippedSource(sources, path, text) {
+  let byPath = strippedCache.get(sources);
+  if (!byPath) {
+    byPath = new Map();
+    strippedCache.set(sources, byPath);
+  }
+  const hit = byPath.get(path);
+  if (hit && hit.text === text) {
+    return hit.stripped;
+  }
+  const stripped = stripComments(path, text);
+  byPath.set(path, { text, stripped });
+  return stripped;
 }
 
 function anySourceContainsCode(sources, needle) {
-  return Object.values(sources).some((text) => stripComments(text).includes(needle));
+  return Object.entries(sources).some(([path, text]) => strippedSource(sources, path, text).includes(needle));
 }
 
 // A Track-B directive is styled either by the single-import bundle or by the

@@ -18,18 +18,19 @@
     "dist",
     "data",
     "README.md",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=20"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "prepublishOnly": "node ../../scripts/cli-core-copy-check.mjs && node ../../scripts/mcp-bundle-check.mjs --data-dir=packages/cli/data",
+    "prepublishOnly": "node ../../scripts/package-dist-check.mjs --package-dir=. && node ../../scripts/cli-core-copy-check.mjs && node ../../scripts/mcp-bundle-check.mjs --data-dir=packages/cli/data",
     "test": "vitest run"
   },
   "dependencies": {
-    "@cngx/doctor": "^0.2.1",
+    "@cngx/doctor": "^0.2.1 || ^0.3.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
