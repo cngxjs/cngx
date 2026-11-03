@@ -1,6 +1,6 @@
 import { Component, inject, Renderer2 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CNGX_ICON_ALERT, CNGX_ICON_DOT, type CngxIconData } from '@cngx/utils';
+import { CNGX_ICON_ALERT, CNGX_ICON_QUESTION, type CngxIconData } from '@cngx/utils';
 import { describe, expect, it } from 'vitest';
 
 import { createIconSvgElement } from './icon-svg-element';
@@ -50,9 +50,9 @@ describe('createIconSvgElement', () => {
 
   it('switches the paint when a fill icon replaces a stroke icon', () => {
     const icon = createIconSvgElement(renderer(), CNGX_ICON_ALERT, 'my-icon');
-    icon.setIcon(CNGX_ICON_DOT);
+    icon.setIcon(CNGX_ICON_QUESTION);
     const { element } = icon;
-    expect(element.querySelector('path')?.getAttribute('d')).toBe(CNGX_ICON_DOT.d);
+    expect(element.querySelector('path')?.getAttribute('d')).toBe(CNGX_ICON_QUESTION.d);
     expect(element.classList.contains('my-icon--stroke')).toBe(false);
     expect(element.getAttribute('fill')).toBe('currentColor');
     expect(element.hasAttribute('stroke')).toBe(false);
@@ -82,7 +82,7 @@ describe('createIconSvgElement', () => {
 
   it('drops the micro path when the next icon has none, and rebuilds it once', () => {
     const icon = createIconSvgElement(renderer(), WITH_MICRO, 'my-icon');
-    icon.setIcon(CNGX_ICON_DOT);
+    icon.setIcon(CNGX_ICON_QUESTION);
     expect(icon.element.querySelectorAll('path').length).toBe(1);
     expect(icon.element.querySelector('.cngx-icon-svg__micro')).toBeNull();
     icon.setIcon(WITH_MICRO);
