@@ -4162,6 +4162,13 @@ app-menu-button-material-bridge {
   color: var(--cngx-color-primary);
 }
 
+/* No font-size: the reorder list sizes a projected move glyph through
+   --cngx-select-reorder-move-size. */
+.demo-move-glyph {
+  font-weight: 700;
+  color: var(--cngx-color-primary);
+}
+
 .tree-node-row {
   display: inline-flex;
   align-items: center;

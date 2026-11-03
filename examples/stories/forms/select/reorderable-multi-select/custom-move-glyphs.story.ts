@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Under the touch floor the panel lists the selected values with a move-up and a move-down button per row. A projected <code>*cngxMultiSelectMoveGlyph</code> replaces the default triangles in both buttons; <code>let-direction</code> says which one it renders in.',
   description:
-    'The slot wins over the <code>[moveGlyph]</code> input, whose app-wide default comes from <code>withDefaultMoveGlyph</code>; with neither the list draws its triangles. The glyph renders inside the button in an <code>aria-hidden</code> wrapper, so the button keeps its accessible name (for example "Berlin: move up") and the arrows add nothing to it. The wrapper takes <code>--cngx-select-reorder-move-size</code> (default <code>0.75em</code>) as its font size, the same token that sizes the default triangles. The slot only renders under the touch floor, forced on here with <code>[cngxTouchTarget]</code>; on a fine pointer without it the chip strip reorders by drag and keyboard instead. Pick <strong>sheet</strong> to see the list in the mobile sheet on a desktop.',
+    'The slot wins over the <code>[moveGlyph]</code> input, whose app-wide default comes from <code>withDefaultMoveGlyph</code>; with neither the list draws its triangles. The glyph renders inside the button in an <code>aria-hidden</code> wrapper, so the button keeps its accessible name (for example "Berlin: move up") and the arrows add nothing to it. The wrapper takes <code>--cngx-select-reorder-move-size</code> (default <code>0.75em</code>) as its font size, the same token that sizes the default triangles; here it is set to <code>1em</code>, so the arrows draw at the list font size. The slot only renders under the touch floor, forced on here with <code>[cngxTouchTarget]</code>; on a fine pointer without it the chip strip reorders by drag and keyboard instead. Pick <strong>sheet</strong> to see the list in the mobile sheet on a desktop.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -22,7 +22,7 @@ export const STORY: DemoSpec = {
   ].map((name) => ({ value: name, label: name }));
   protected readonly route = signal<string[]>(['Berlin', 'Prague', 'Vienna']);`,
   setupChrome: `protected readonly presentation = signal<'anchored' | 'sheet'>('anchored');`,
-  template: `<div [cngxTouchTarget]="'on'" style="max-inline-size: 24rem">
+  template: `<div [cngxTouchTarget]="'on'" style="max-inline-size: 24rem; --cngx-select-reorder-move-size: 1em">
     <cngx-reorderable-multi-select
       label="Route"
       [options]="stops"
@@ -30,7 +30,7 @@ export const STORY: DemoSpec = {
       [presentation]="presentation()"
     >
       <ng-template cngxMultiSelectMoveGlyph let-direction>
-        <span class="demo-grip-glyph">
+        <span class="demo-move-glyph">
           @if (direction === 'up') { &uarr; } @else { &darr; }
         </span>
       </ng-template>
