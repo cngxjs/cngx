@@ -442,10 +442,10 @@
       --cngx-filter-builder-gap: var(--cngx-space-sm);
       /* One control scale for the whole builder: type from the sm rung
          (SET-from-scale), and the composed cngx-select context compacted
-         via its inheritable tokens - caret at label size (the 1.25em
-         default caret line-box is what inflates a default trigger), tap
-         floor to 2rem. Both are family tokens, so they also reach any
-         other select variant a consumer renders as a value editor. */
+         via its inheritable tokens - tap floor to 2rem, a family token, so
+         it also reaches any other select variant a consumer renders as a
+         value editor. The caret keeps the family default, the 12px micro
+         box. */
       /**
        * Font size of the builder host, inherited by its controls.
        * @type <length>
@@ -453,7 +453,6 @@
        */
       --cngx-filter-builder-control-font-size: var(--cngx-font-size-sm);
       --cngx-filter-builder-action-font-size: var(--cngx-font-size-sm);
-      --cngx-select-caret-size: 1em;
       --cngx-select-min-height: 2rem;
       display: block;
       padding: var(--cngx-filter-builder-padding, 0.5rem);
