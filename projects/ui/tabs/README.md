@@ -51,7 +51,7 @@ A rejected tab (the latest commit refused or failed) carries the rejection icon 
 |`line`|colour only: no surface, no line; the label turns the reason colour (`--cngx-tab-failed-text-color`, `--cngx-tab-refused-text-color`)|
 |`contained`, `segmented`, `pill`, `pill-outline`|the reason colour tints the tab background (`--cngx-tab-rejection-tint`, 18%) in the skin's own shape; the label keeps its colour|
 
-The colours chain to `--cngx-color-danger` / `--cngx-color-danger-text` and to `--cngx-color-warning` mixed toward `--cngx-color-text`, so they follow the light and dark scheme. Under forced colors the tint and the label colour vanish, so a rejected tab draws a 2px `CanvasText` outline and both icons paint the system text colour.
+The colours chain to `--cngx-color-danger` and to `--cngx-color-danger-text` (danger at the text lightness), and to `--cngx-color-warning` mixed toward `--cngx-color-text`, so they follow the light and dark scheme. Under forced colors the tint and the label colour vanish, so a rejected tab draws a 2px `CanvasText` outline and both icons paint the system text colour.
 
 ## Companion entries
 
