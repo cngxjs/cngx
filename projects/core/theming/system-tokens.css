@@ -419,8 +419,8 @@
    * lightness differs from the danger text rung on purpose: at the same
    * lightness Ember and red sit only 0.045 apart in OKLab, at 0.54 against
    * 0.46 they sit 0.094 apart and read as two colours. On light it holds
-   * 4.5:1 on the surface for brand hues about 240..150 through red; a brand
-   * at hue 160..230 re-declares the rung next to its primary, for example at
+   * 4.5:1 on the surface for brand hues about 235..145 through red; a brand
+   * at hue 150..230 re-declares the rung next to its primary, for example at
    * lightness 0.5.
    * It reads only the tone, so a themed --cngx-color-text no longer moves it,
    * and a subtree that re-themes primary outside the scheme blocks

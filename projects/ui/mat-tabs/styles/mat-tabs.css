@@ -66,8 +66,8 @@
  * foundation danger / warning / text tokens when they are present and
  * from the same literal values otherwise, with a light and a dark set:
  * the failed colour reads --cngx-color-danger-text, falling back to danger
- * at the core text-rung lightness (4.5:1 as label text), the refused amber is warning mixed 70% (icon) and 55%
- * (label) toward it.
+ * at the core text-rung lightness (4.5:1 as label text), the refused amber
+ * is warning mixed 70% (icon) and 55% (label) toward it.
  *
  * **Dark mode**
  *
