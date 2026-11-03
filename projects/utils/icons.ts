@@ -39,9 +39,9 @@ export interface CngxIconMicro {
  *
  * One source per glyph, two grid-specific drawings: `micro` is the 12-grid
  * drawing (see `CngxIconMicro`), drawn as a second `<path>`, that renderers
- * show in a box from 10px up to, but not including, 15px instead of the
- * 24-grid path. Every icon must decide: `null` is a recorded decision that no
- * 12-grid drawing reads well, and the 24-grid path then shows at every size.
+ * show in a 10 to 14px box instead of the 24-grid path. Every icon must
+ * decide: `null` is a recorded decision that no 12-grid drawing reads well,
+ * and the 24-grid path then shows at every size.
  *
  * Exported because Sheriff forbids deep-relative imports across library
  * boundaries; `@internal` because cngx ships the glyphs it draws, not an
