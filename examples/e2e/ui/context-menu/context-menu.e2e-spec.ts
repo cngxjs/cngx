@@ -29,4 +29,20 @@ test.describe('ui/context-menu', () => {
     await page.keyboard.press('Escape');
     await expect(menu).toBeHidden();
   });
+
+  test('static-items: Tab out of the keyboard-opened menu closes it', async ({ page }) => {
+    await gotoDemo(page, 'ui/context-menu/basic/static-items');
+    const zone = page.locator('.demo-ctx-zone').first();
+    const menu = page.locator('[role="menu"]');
+
+    await zone.focus();
+    await page.keyboard.press('Shift+F10');
+    await expect(menu).toBeVisible();
+    await expect(menu).toBeFocused();
+
+    await page.keyboard.press('Tab');
+    await expect(menu).toBeHidden();
+    await expect(zone).toHaveAttribute('aria-expanded', 'false');
+    await expect(zone).not.toBeFocused();
+  });
 });

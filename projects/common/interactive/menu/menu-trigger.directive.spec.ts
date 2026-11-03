@@ -21,6 +21,7 @@ import {
 import { provideMenuConfig } from './menu-config';
 import {
   withDismissOnBlur,
+  withDismissOnFocusOut,
   withDismissOnOutsideClick,
   withDismissOnScroll,
 } from './menu-config-features';
@@ -294,28 +295,20 @@ describe('CngxMenuTrigger', () => {
 
   it('keyboard-opening then Escape restores focus to the trigger', async () => {
     const { triggerEl, popover } = setup();
-    const probe = document.createElement('button');
-    probe.type = 'button';
-    document.body.appendChild(probe);
-    try {
-      triggerEl.focus();
-      expect(document.activeElement).toBe(triggerEl);
+    triggerEl.focus();
+    expect(document.activeElement).toBe(triggerEl);
 
-      triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
-      TestBed.flushEffects();
-      expect(popover.isVisible()).toBe(true);
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    await settle();
+    expect(popover.isVisible()).toBe(true);
+    expect(document.activeElement).not.toBe(triggerEl);
 
-      probe.focus();
-      expect(document.activeElement).toBe(probe);
-
-      triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-      TestBed.flushEffects();
-      await Promise.resolve();
-      expect(popover.isVisible()).toBe(false);
-      expect(document.activeElement).toBe(triggerEl);
-    } finally {
-      probe.remove();
-    }
+    (document.activeElement as HTMLElement).dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    );
+    await settle();
+    expect(popover.isVisible()).toBe(false);
+    expect(document.activeElement).toBe(triggerEl);
   });
 
   describe('dismiss handler wiring', () => {
@@ -437,6 +430,92 @@ describe('CngxMenuTrigger', () => {
       window.dispatchEvent(new Event('blur'));
       TestBed.flushEffects();
       expect(popover.isVisible()).toBe(false);
+    });
+  });
+
+  describe('focus-out dismissal', () => {
+    function outsideButton(): HTMLButtonElement {
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.textContent = 'Next';
+      document.body.appendChild(el);
+      return el;
+    }
+
+    function getTrigger(
+      fixture: ReturnType<typeof TestBed.createComponent<TriggerHost>>,
+    ): CngxMenuTrigger {
+      return fixture.debugElement.query(By.directive(CngxMenuTrigger)).injector.get(CngxMenuTrigger);
+    }
+
+    it('Tab out of the menu closes it without pulling focus back', async () => {
+      const { fixture, triggerEl, popover } = setup();
+      const next = outsideButton();
+      try {
+        triggerEl.focus();
+        press(triggerEl, 'ArrowDown');
+        await settle();
+        press(document.activeElement, 'Tab');
+        next.focus();
+        await settle();
+        fixture.detectChanges();
+        expect(popover.isVisible()).toBe(false);
+        expect(triggerEl.getAttribute('aria-expanded')).toBe('false');
+        expect(document.activeElement).toBe(next);
+        expect(getTrigger(fixture).lastDismissSource()).toBe('focus-out');
+      } finally {
+        next.remove();
+      }
+    });
+
+    it('Shift+Tab out of the menu onto the trigger closes it', async () => {
+      const { fixture, triggerEl, popover } = setup();
+      triggerEl.focus();
+      press(triggerEl, 'ArrowDown');
+      await settle();
+      press(document.activeElement, 'Tab', { shiftKey: true });
+      triggerEl.focus();
+      await settle();
+      fixture.detectChanges();
+      expect(popover.isVisible()).toBe(false);
+      expect(triggerEl.getAttribute('aria-expanded')).toBe('false');
+      expect(document.activeElement).toBe(triggerEl);
+    });
+
+    it('focusing an element outside closes without restoring focus', async () => {
+      const { triggerEl, popover } = setup();
+      const next = outsideButton();
+      try {
+        triggerEl.focus();
+        press(triggerEl, 'ArrowDown');
+        await settle();
+        next.focus();
+        await settle();
+        expect(popover.isVisible()).toBe(false);
+        expect(document.activeElement).toBe(next);
+      } finally {
+        next.remove();
+      }
+    });
+
+    it('withDismissOnFocusOut(false) keeps the menu open', async () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [TriggerHost],
+        providers: [provideMenuConfig(withDismissOnFocusOut(false))],
+      });
+      const { triggerEl, popover } = setup();
+      const next = outsideButton();
+      try {
+        triggerEl.focus();
+        press(triggerEl, 'ArrowDown');
+        await settle();
+        next.focus();
+        await settle();
+        expect(popover.isVisible()).toBe(true);
+      } finally {
+        next.remove();
+      }
     });
   });
 
@@ -830,5 +909,29 @@ describe('CngxMenuTrigger submenu keys on the focused menu', () => {
     TestBed.flushEffects();
     expect(innerPop.isVisible()).toBe(false);
     expect(outer.ad.activeValue()).toBe('recent');
+  });
+
+  it('focus moving into the open submenu popover does not close the menu', async () => {
+    const fixture = TestBed.createComponent(SubmenuTriggerHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const triggerEl = fixture.debugElement.query(By.directive(CngxMenuTrigger))
+      .nativeElement as HTMLElement;
+    const [outerPop, innerPop] = fixture.debugElement
+      .queryAll(By.directive(CngxPopover))
+      .map((de) => de.injector.get(CngxPopover));
+    triggerEl.focus();
+    press(triggerEl, 'ArrowDown');
+    await settle();
+    const rootMenuEl = document.activeElement as HTMLElement;
+    press(rootMenuEl, 'ArrowDown');
+    press(rootMenuEl, 'ArrowRight');
+    TestBed.flushEffects();
+    expect(innerPop.isVisible()).toBe(true);
+
+    (innerPop.elementRef.nativeElement.querySelector('[role="menu"]') as HTMLElement).focus();
+    await settle();
+    expect(outerPop.isVisible()).toBe(true);
   });
 });

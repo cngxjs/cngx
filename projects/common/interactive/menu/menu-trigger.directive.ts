@@ -105,14 +105,18 @@ interface PopoverController extends CngxMenuDismissPopoverRef {
  *
  * ### Dismissal
  *
- * Four dismissal sources close the menu by default: `Escape`, `pointerdown`
- * outside both the popover and the trigger host, window `blur`, and
- * document `pointercancel`. Window `scroll` is opt-in via
- * {@link withDismissOnScroll}. The source that fired most recently is
- * readable through {@link lastDismissSource}.
+ * Five dismissal sources close the menu by default: `Escape`, `pointerdown`
+ * outside both the popover and the trigger host, window `blur`, document
+ * `pointercancel`, and focus leaving the trigger and the open menu chain
+ * (`Tab` / `Shift+Tab` out of the menu, `'focus-out'`). Window `scroll` is
+ * opt-in via {@link withDismissOnScroll}. A focus-out close keeps focus
+ * where the user moved it; every other source restores focus to the
+ * trigger. The source that fired most recently is readable through
+ * {@link lastDismissSource}.
  *
  * Override individual sources at app root with `withDismissOnOutsideClick`,
- * `withDismissOnScroll`, `withDismissOnBlur`, or swap the whole handler via
+ * `withDismissOnScroll`, `withDismissOnBlur`, `withDismissOnFocusOut`, or
+ * swap the whole handler via
  * {@link CNGX_MENU_DISMISS_HANDLER_FACTORY} for telemetry-wrapped or
  * test-doubled dismissal.
  *
@@ -167,6 +171,8 @@ export class CngxMenuTrigger {
     hostElement: this.hostElRef.nativeElement,
     menuConfig: this.menuConfig,
     factory: inject(CNGX_MENU_DISMISS_HANDLER_FACTORY),
+    menuChainContains: (node) =>
+      [this.menu(), ...this.focusStack.stack()].some((m) => m.contains(node)),
     onDismiss: () => this.announcer.announce(this.ariaLabels().menuDismissed),
   });
 
@@ -235,7 +241,13 @@ export class CngxMenuTrigger {
           // a stale submenu on the stack for the next open (mirrors the
           // context-menu trigger core).
           this.focusStack.reset();
-          this.focusStack.restoreFocus();
+          // A focus-out close (Tab, Shift+Tab, focus moved elsewhere) leaves
+          // focus where the user put it; every other close restores it.
+          if (this.dismissBinding.closedBy() === 'focus-out') {
+            this.focusStack.discardFocus?.();
+          } else {
+            this.focusStack.restoreFocus();
+          }
         }
       });
     });

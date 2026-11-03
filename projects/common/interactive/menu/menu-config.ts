@@ -62,6 +62,14 @@ export interface CngxMenuConfig {
    * Default `true`.
    */
   readonly dismissOnBlur: boolean;
+  /**
+   * Whether focus leaving the trigger and the open menu chain dismisses
+   * the menu: `Tab` / `Shift+Tab` out of the menu, or focus landing
+   * anywhere else. Focus stays where it went (no restore to the trigger).
+   * Default `true` (WAI-ARIA APG Menu Button). Opt out via
+   * {@link withDismissOnFocusOut}.
+   */
+  readonly dismissOnFocusOut: boolean;
 }
 
 /**
@@ -101,6 +109,7 @@ export const DEFAULT_MENU_CONFIG: CngxMenuConfig = {
   dismissOnOutsideClick: true,
   dismissOnScroll: false,
   dismissOnBlur: true,
+  dismissOnFocusOut: true,
 };
 
 /** @internal The menu section of the active pack over the English section. */

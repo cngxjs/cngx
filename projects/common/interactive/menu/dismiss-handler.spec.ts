@@ -348,6 +348,89 @@ describe('createMenuDismissHandler', () => {
     });
   });
 
+  describe('focus-out', () => {
+    function focusable(parent: HTMLElement): HTMLButtonElement {
+      const el = document.createElement('button');
+      el.type = 'button';
+      parent.appendChild(el);
+      return el;
+    }
+
+    it('dismisses when focus lands outside host, popover and menu chain', () => {
+      const target = focusable(outside);
+      const { onDismiss, teardown } = build({ dismissOnFocusOut: true });
+      try {
+        target.focus();
+        expect(popoverFake.popover.hide).toHaveBeenCalledTimes(1);
+        expect(onDismiss).toHaveBeenCalledWith('focus-out');
+      } finally {
+        teardown();
+      }
+    });
+
+    it('does NOT dismiss when focus moves inside the popover or onto the host', () => {
+      const inside = focusable(popoverFake.element);
+      const { teardown } = build({ dismissOnFocusOut: true });
+      try {
+        inside.focus();
+        hostEl.focus();
+        expect(popoverFake.popover.hide).not.toHaveBeenCalled();
+      } finally {
+        teardown();
+      }
+    });
+
+    it('does NOT dismiss when focus moves into a sibling submenu popover of the chain', () => {
+      const sibling = document.createElement('div');
+      document.body.appendChild(sibling);
+      const inSubmenu = focusable(sibling);
+      const { teardown } = build({
+        dismissOnFocusOut: true,
+        menuChainContains: (node) => sibling.contains(node),
+      });
+      try {
+        inSubmenu.focus();
+        expect(popoverFake.popover.hide).not.toHaveBeenCalled();
+      } finally {
+        teardown();
+        sibling.remove();
+      }
+    });
+
+    it('a Tab inside the menu closes even when focus lands on the host (Shift+Tab)', () => {
+      const inside = focusable(popoverFake.element);
+      inside.focus();
+      const { onDismiss, teardown } = build({ dismissOnFocusOut: true });
+      try {
+        const tab = new KeyboardEvent('keydown', {
+          key: 'Tab',
+          shiftKey: true,
+          bubbles: true,
+          cancelable: true,
+        });
+        inside.dispatchEvent(tab);
+        expect(popoverFake.popover.hide).not.toHaveBeenCalled();
+        expect(tab.defaultPrevented).toBe(false);
+        hostEl.focus();
+        expect(popoverFake.popover.hide).toHaveBeenCalledTimes(1);
+        expect(onDismiss).toHaveBeenCalledWith('focus-out');
+      } finally {
+        teardown();
+      }
+    });
+
+    it('stays off when dismissOnFocusOut is false or unset', () => {
+      const target = focusable(outside);
+      const { teardown } = build({ dismissOnFocusOut: false });
+      try {
+        target.focus();
+        expect(popoverFake.popover.hide).not.toHaveBeenCalled();
+      } finally {
+        teardown();
+      }
+    });
+  });
+
   describe('teardown', () => {
     it('removes every installed listener', () => {
       const { onDismiss, teardown } = build({
@@ -491,6 +574,36 @@ describe('createMenuTriggerDismissBinding', () => {
     try {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
       expect(binding.lastSource()).toBe('escape');
+    } finally {
+      binding.detach();
+    }
+  });
+
+  it('closedBy() reports the source of the current open cycle and resets on attach()', () => {
+    const binding = build({ dismissOnOutsideClick: true });
+    binding.attach();
+    dispatchPointerDownOn(outside);
+    expect(binding.closedBy()).toBe('outside-click');
+    binding.detach();
+    popoverFake.popover.setVisible(true);
+    binding.attach();
+    try {
+      expect(binding.closedBy()).toBeNull();
+      expect(binding.lastSource()).toBe('outside-click');
+    } finally {
+      binding.detach();
+    }
+  });
+
+  it('passes dismissOnFocusOut from the config (default true)', () => {
+    const target = document.createElement('button');
+    outside.appendChild(target);
+    const binding = build();
+    binding.attach();
+    try {
+      target.focus();
+      expect(binding.lastSource()).toBe('focus-out');
+      expect(binding.closedBy()).toBe('focus-out');
     } finally {
       binding.detach();
     }

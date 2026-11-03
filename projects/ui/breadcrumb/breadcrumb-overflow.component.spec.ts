@@ -198,14 +198,26 @@ describe('CngxBreadcrumbOverflow', () => {
     await flushMicrotasks();
     expect(document.activeElement?.getAttribute('role')).toBe('menu');
 
-    // Focus moves away; closing the menu must restore it to the trigger.
-    sibling.focus();
-    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    (document.activeElement as HTMLElement).dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    );
     fixture.detectChanges();
     await flushMicrotasks();
 
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
     expect(document.activeElement).toBe(trigger);
+
+    // Focus leaving trigger and menu closes the panel and stays where it went.
+    trigger.click();
+    fixture.detectChanges();
+    await flushMicrotasks();
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+    sibling.focus();
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(sibling);
   });
 
   it('renders nothing when no crumb is collapsed', () => {

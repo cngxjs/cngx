@@ -114,6 +114,38 @@ for (const dir of ['ltr', 'rtl'] as const) {
       });
     }
 
+    test('Tab out of the open menu closes it and leaves focus where it went', async ({ page }) => {
+      await gotoDemo(page, BASIC);
+      await setDirection(page, dir);
+
+      const button = page.getByRole('button', { name: 'Export' });
+      const menu = page.getByRole('menu', { name: 'Export format' });
+      await button.focus();
+      await page.keyboard.press('ArrowDown');
+      await expect(menu).toBeFocused();
+
+      await page.keyboard.press('Tab');
+      await expect(menu).toBeHidden();
+      await expect(button).toHaveAttribute('aria-expanded', 'false');
+      await expect(button).not.toBeFocused();
+    });
+
+    test('Shift+Tab from the open menu closes it on the button', async ({ page }) => {
+      await gotoDemo(page, BASIC);
+      await setDirection(page, dir);
+
+      const button = page.getByRole('button', { name: 'Export' });
+      const menu = page.getByRole('menu', { name: 'Export format' });
+      await button.focus();
+      await page.keyboard.press('ArrowDown');
+      await expect(menu).toBeFocused();
+
+      await page.keyboard.press('Shift+Tab');
+      await expect(menu).toBeHidden();
+      await expect(button).toHaveAttribute('aria-expanded', 'false');
+      await expect(button).toBeFocused();
+    });
+
     test('click toggles the menu', async ({ page }) => {
       await gotoDemo(page, BASIC);
       await setDirection(page, dir);

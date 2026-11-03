@@ -184,6 +184,7 @@ export function createContextMenuTriggerCore(
     hostElement: deps.hostElement,
     menuConfig: deps.menuConfig,
     factory: deps.dismissFactory,
+    menuChainContains: (node) => [deps.menu(), ...focusStack.stack()].some((m) => m.contains(node)),
     onDismiss: () => deps.announcer.announce(ariaLabels().menuDismissed),
   });
 
@@ -312,7 +313,12 @@ export function createContextMenuTriggerCore(
         // without this a reopened menu's effectiveMenu() would be a submenu
         // that no longer exists and Arrow/Home/Enter would route into thin air.
         focusStack.reset();
-        focusStack.restoreFocus();
+        // A focus-out close leaves focus where the user moved it.
+        if (dismissBinding.closedBy() === 'focus-out') {
+          focusStack.discardFocus?.();
+        } else {
+          focusStack.restoreFocus();
+        }
       }
     },
     standDown(): void {
