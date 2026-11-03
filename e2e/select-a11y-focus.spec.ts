@@ -28,16 +28,27 @@ function ex(page: Page): Locator {
   return page.locator('main');
 }
 
-// The close restore runs in a microtask after the panel flips shut; two frames
-// later any stray restore has landed on the trigger.
-async function settledActiveText(page: Page): Promise<string> {
-  return page.evaluate(
-    () =>
-      new Promise<string>((resolve) =>
+// Where focus sits relative to the select host once the close settled (the
+// close restore runs in a microtask; two frames later a stray restore has
+// landed on the trigger). The next Tab stop is platform policy (macOS WebKit
+// skips buttons unless Full Keyboard Access is on), so the leave contract is:
+// focus moved forward, out of the host, and was not pulled back to the trigger.
+async function settledFocusAfter(host: Locator): Promise<'inside' | 'before' | 'after' | 'body'> {
+  return host.evaluate(
+    (el) =>
+      new Promise<'inside' | 'before' | 'after' | 'body'>((resolve) =>
         requestAnimationFrame(() =>
           requestAnimationFrame(() => {
             const active = document.activeElement;
-            resolve(active === document.body ? 'body' : (active?.textContent ?? '').trim());
+            if (!active || active === document.body) {
+              resolve('body');
+            } else if (el.contains(active)) {
+              resolve('inside');
+            } else if (el.compareDocumentPosition(active) & Node.DOCUMENT_POSITION_FOLLOWING) {
+              resolve('after');
+            } else {
+              resolve('before');
+            }
           }),
         ),
       ),
@@ -54,7 +65,7 @@ test.describe('select family focus on leave', () => {
 
     await page.keyboard.press('Tab');
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
-    expect(await settledActiveText(page)).toBe('Submit');
+    expect(await settledFocusAfter(section.locator('cngx-select').first())).toBe('after');
   });
 
   test('Tab out of an open select with a scrolling list skips the panel', async ({ page }) => {
@@ -77,15 +88,23 @@ test.describe('select family focus on leave', () => {
   });
 
   test('a click into another control keeps focus there', async ({ page }) => {
-    await page.goto(R.signalForms);
+    // A text input takes focus on click in every engine; a button does not
+    // in WebKit on macOS, where the click drops focus to body instead. The
+    // action select input sits below the open panel, so the click reaches it.
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto(R.allVariants);
     const section = ex(page);
     const trigger = section.locator('cngx-select .cngx-select__trigger').first();
     await trigger.click();
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
 
-    await section.getByRole('button', { name: 'Submit', exact: true }).click();
+    const otherInput = section
+      .locator('cngx-action-select input.cngx-action-select__input')
+      .first();
+    await otherInput.click();
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
-    expect(await settledActiveText(page)).toBe('Submit');
+    expect(await settledFocusAfter(section.locator('cngx-select').first())).toBe('after');
+    await expect(otherInput).toBeFocused();
   });
 });
 

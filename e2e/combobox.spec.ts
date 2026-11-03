@@ -95,8 +95,27 @@ test.describe('CngxCombobox demo', () => {
     await expect(input).toHaveValue('a ');
     await expect(section.locator('cngx-chip')).toHaveCount(chipsBefore);
 
+    // Home must reach the input untouched: not prevented, highlight not moved
+    // to the first option. Where the caret goes is the platform's key binding
+    // (macOS WebKit maps Home to scroll, not to line start), so the spec reads
+    // the default-prevented flag after every handler instead of the caret.
+    const activeBefore = await input.getAttribute('aria-activedescendant');
+    expect(activeBefore).not.toBeNull();
+    await input.evaluate((el) => {
+      el.ownerDocument.addEventListener(
+        'keydown',
+        (e) => {
+          if (e.key === 'Home') {
+            el.setAttribute('data-home-prevented', String(e.defaultPrevented));
+          }
+        },
+        { once: true },
+      );
+    });
     await input.press('Home');
-    expect(await input.evaluate((el) => (el as HTMLInputElement).selectionStart)).toBe(0);
+    await expect(input).toHaveAttribute('data-home-prevented', 'false');
+    await expect(input).toHaveValue('a ');
+    expect(await input.getAttribute('aria-activedescendant')).toBe(activeBefore);
   });
 
   test('click outside the trigger closes the panel', async ({ page }) => {
