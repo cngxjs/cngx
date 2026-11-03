@@ -19,6 +19,7 @@ import {
   createTransitionTracker,
   injectLocale,
   matchesKeyCombo,
+  nextUid,
   numberFormatterFor,
   parseKeyCombo,
 } from '@cngx/core/utils';
@@ -130,6 +131,7 @@ export type ResolvedSidenavMode = Exclude<SidenavMode, 'auto'>;
   ],
   host: {
     '[class.cngx-sidenav]': 'true',
+    '[attr.id]': 'id()',
     '[class.cngx-sidenav--start]': "position() === 'start'",
     '[class.cngx-sidenav--end]': "position() === 'end'",
     '[class.cngx-sidenav--open]': 'opened()',
@@ -142,11 +144,11 @@ export type ResolvedSidenavMode = Exclude<SidenavMode, 'auto'>;
     '[class.cngx-sidenav--resizing]': 'resizing()',
     '[attr.aria-hidden]':
       "effectiveMode() === 'side' || effectiveMode() === 'mini' ? null : !opened()",
+    '[attr.role]': 'hostRole()',
     '[attr.aria-modal]': "overlayActive() ? 'true' : null",
     '[style.--cngx-sidenav-width]': 'effectiveWidth()',
     '[style.--cngx-sidenav-mini-width]': 'miniWidth()',
-    role: 'complementary',
-    '[attr.aria-label]': 'ariaLabel() || null',
+    '[attr.aria-label]': 'resolvedAriaLabel()',
     '(keydown.escape)': 'closeIfOverlay()',
   },
   template: `
@@ -188,8 +190,27 @@ export class CngxSidenav {
   /** Logical position: `'start'` (default left in LTR) or `'end'` (right in LTR). */
   readonly position = input<SidenavPosition>('start');
 
-  /** Accessible label for the complementary landmark. */
-  readonly ariaLabel = input<string | undefined>(undefined);
+  /**
+   * Accessible name of the rail: of the `complementary` landmark, or of the
+   * modal `dialog` while it is an open overlay. Unbound, the `startRegion` /
+   * `endRegion` label (`withSidenavLabels`, then the language pack) applies by
+   * `position`, so two rails never share one name. An empty or blank value
+   * counts as unbound, so the rail is never left without a name.
+   */
+  readonly ariaLabel = input<string | undefined, string | undefined>(undefined, {
+    transform: (value) => (value?.trim() ? value : undefined),
+  });
+
+  /**
+   * Element id of the rail. Defaults to a generated id; a static `id="..."`
+   * attribute on the host is captured here and kept.
+   *
+   * An external toggle names this id in its `aria-controls`
+   * (`[attr.aria-controls]="nav.id()"`). `CngxSidenavLayout` ignores a
+   * `pointerdown` inside such a control when it dismisses open overlays, so
+   * the toggle's own click can close the rail instead of reopening it.
+   */
+  readonly id = input<string>(nextUid('cngx-sidenav-'));
 
   /**
    * Drawer mode. `'auto'` (the default) resolves to `'side'` once the
@@ -219,6 +240,22 @@ export class CngxSidenav {
 
   private readonly labels = injectSidenavLabels();
   private readonly locale = injectLocale();
+
+  /**
+   * @internal An open overlay is a modal dialog (focus trap, Escape, backdrop);
+   * every other state is a complementary landmark. `aria-modal` follows the
+   * same `overlayActive()`, so it never sits on a non-dialog role.
+   */
+  protected readonly hostRole = computed(() =>
+    this.overlayActive() ? 'dialog' : 'complementary',
+  );
+
+  /** @internal */
+  protected readonly resolvedAriaLabel = computed(() => {
+    const labels = this.labels();
+    const fallback = this.position() === 'end' ? labels.endRegion : labels.startRegion;
+    return this.ariaLabel() ?? fallback;
+  });
 
   /** @internal */
   protected readonly resolvedResizeLabel = computed(

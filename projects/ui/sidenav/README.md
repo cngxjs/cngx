@@ -95,6 +95,28 @@ A rail mounted without `<cngx-sidenav-layout>` has no container to measure; it r
 
 See `core-concepts/responsive-by-default.md` for the library-wide contract.
 
+## External toggle
+
+A hamburger outside the rail toggles it with one button. Name the rail in the button's `aria-controls` and reflect the state in `aria-expanded`:
+
+```html
+<button
+  type="button"
+  [attr.aria-controls]="nav.id()"
+  [attr.aria-expanded]="nav.opened()"
+  (click)="navOpen.set(!navOpen())"
+>
+  Menu
+</button>
+
+<cngx-sidenav-layout>
+  <cngx-sidenav #nav [(opened)]="navOpen">…</cngx-sidenav>
+  <cngx-sidenav-content>…</cngx-sidenav-content>
+</cngx-sidenav-layout>
+```
+
+`CngxSidenavLayout` closes an open overlay on any `pointerdown` outside the rail, except inside an element whose `aria-controls` lists the rail's id. Without that attribute the toggle cannot close the overlay: its `pointerdown` dismisses the rail and its `click` reopens it. Every rail has an id: a generated one by default, or the static `id="..."` you set on the host (read it back via `nav.id()`).
+
 ## Configuration
 
 Every dimension default, the toggle shortcut, and the mini hover dwell resolve through a standard cascade. The docking threshold is deliberately not in the cascade - it is a CSS rule (see above), so it travels with the skin. Per-instance bindings always win; unset keys fall back to the library defaults, so an unconfigured `<cngx-sidenav>` behaves exactly as before.
@@ -175,11 +197,12 @@ Resolution order for the key: per-instance `[param]` beats `withSidenavRouterSyn
 
 ## Accessibility
 
-- **ARIA roles:** Sidebar carries `role="complementary"` with optional `[attr.aria-label]`. In overlay mode, `aria-hidden="true"` when closed.
+- **ARIA roles:** The rail is a `role="complementary"` landmark while docked or closed. An open overlay (`over`, including `auto` below the threshold) is a modal dialog instead: `role="dialog"` with `aria-modal="true"`, matching its focus trap, Escape and backdrop. `aria-modal` never appears without `role="dialog"`. In overlay mode, `aria-hidden="true"` when closed.
+- **Accessible name:** Every rail is named. Resolution: `[ariaLabel]`, then `withSidenavLabels({ startRegion, endRegion })`, then the `sidenav` language section. The default depends on `position`: `Navigation` for `start`, `Side panel` for `end`, so two rails never share one name.
 - **Keyboard interaction:**
   - `Escape` - Closes overlay mode sidenav
   - Custom shortcut (if configured) - Toggles opened state globally
-- **Screen reader:** Complementary landmark announces the sidebar label; scroll lock prevents reading body content when sidebar is open in overlay.
+- **Screen reader:** The landmark or dialog announces the rail's name; scroll lock prevents reading body content when sidebar is open in overlay.
 - **Focus management:** In overlay (`over`) mode a CDK focus trap keeps Tab within the rail while open, moves focus into the rail on open, and restores focus to the element that opened it on close.
 
 ## Composition

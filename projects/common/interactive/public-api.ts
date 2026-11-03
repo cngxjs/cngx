@@ -44,6 +44,7 @@ export {
   type NavConfigFeature,
 } from './nav/nav-config';
 export { CngxNavGroup } from './nav/nav-group.directive';
+export { CngxNavGroupContent } from './nav/nav-group-content.directive';
 export { CngxNavGroupRegistry } from './nav/nav-group-registry';
 export { CngxNavLabel } from './nav/nav-label.directive';
 export { CngxNavLink } from './nav/nav-link.directive';

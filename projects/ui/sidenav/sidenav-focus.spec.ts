@@ -1,5 +1,5 @@
 import { FocusTrapFactory } from '@angular/cdk/a11y';
-import { Component, signal } from '@angular/core';
+import { Component, signal, type DebugElement } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -7,6 +7,10 @@ import type { SidenavMode } from './sidenav';
 import { CngxSidenav } from './sidenav';
 import { CngxSidenavContent } from './sidenav-content';
 import { CngxSidenavLayout } from './sidenav-layout';
+import { provideSidenavConfig } from './config/provide-sidenav-config';
+import { withSidenavLabels } from './config/features';
+import type { CngxSidenavLabels } from './config/sidenav.config';
+import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/core/i18n';
 
 let mockTrap: {
   enabled: boolean;
@@ -31,6 +35,28 @@ let mockTrap: {
 class FocusHost {
   open = signal(false);
   mode = signal<SidenavMode>('over');
+}
+
+@Component({
+  template: `
+    <cngx-sidenav-layout>
+      <cngx-sidenav position="start" [ariaLabel]="startLabel()">Start</cngx-sidenav>
+      <cngx-sidenav-content>Main</cngx-sidenav-content>
+      <cngx-sidenav position="end" mode="over">End</cngx-sidenav>
+    </cngx-sidenav-layout>
+  `,
+  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
+})
+class NamedHost {
+  startLabel = signal<string | undefined>(undefined);
+}
+
+function railsOf(fixture: { debugElement: DebugElement }) {
+  const rails = fixture.debugElement.queryAll(By.directive(CngxSidenav));
+  const byPosition = (position: 'start' | 'end') =>
+    rails.find((d) => d.injector.get(CngxSidenav).position() === position)!
+      .nativeElement as HTMLElement;
+  return { start: byPosition('start'), end: byPosition('end') };
 }
 
 describe('CngxSidenav focus management', () => {
@@ -107,6 +133,45 @@ describe('CngxSidenav focus management', () => {
     host.open.set(false);
     fixture.detectChanges();
     expect(sidenavEl.getAttribute('aria-modal')).toBeNull();
+  });
+
+  it('is a complementary landmark while closed and a modal dialog while the overlay is open', () => {
+    const { fixture, host, sidenavEl } = setup();
+    expect(sidenavEl.getAttribute('role')).toBe('complementary');
+
+    host.open.set(true);
+    fixture.detectChanges();
+    expect(sidenavEl.getAttribute('role')).toBe('dialog');
+    expect(sidenavEl.getAttribute('aria-modal')).toBe('true');
+
+    host.open.set(false);
+    fixture.detectChanges();
+    expect(sidenavEl.getAttribute('role')).toBe('complementary');
+    expect(sidenavEl.getAttribute('aria-modal')).toBeNull();
+  });
+
+  it('stays complementary while docked, open or not', () => {
+    const { fixture, host, sidenavEl } = setup();
+    host.open.set(true);
+    for (const mode of ['side', 'mini', 'push'] as const) {
+      host.mode.set(mode);
+      fixture.detectChanges();
+      expect(sidenavEl.getAttribute('role')).toBe('complementary');
+    }
+  });
+
+  it('never sets aria-modal without role="dialog"', () => {
+    const { fixture, host, sidenavEl } = setup();
+    for (const mode of ['over', 'push', 'side', 'mini'] as const) {
+      for (const open of [false, true]) {
+        host.mode.set(mode);
+        host.open.set(open);
+        fixture.detectChanges();
+        if (sidenavEl.getAttribute('aria-modal') !== null) {
+          expect(sidenavEl.getAttribute('role')).toBe('dialog');
+        }
+      }
+    }
   });
 
   it('never sets aria-modal in side or mini mode', () => {
@@ -192,5 +257,74 @@ describe('CngxSidenav focus management', () => {
 
     fixture.nativeElement.remove();
     fixture.destroy();
+  });
+});
+
+describe('CngxSidenav accessible name', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  function setup() {
+    const fixture = TestBed.createComponent(NamedHost);
+    fixture.detectChanges();
+    return { fixture, host: fixture.componentInstance, ...railsOf(fixture) };
+  }
+
+  it('names each rail by position without consumer input', () => {
+    const { start, end } = setup();
+    expect(start.getAttribute('aria-label')).toBe('Navigation');
+    expect(end.getAttribute('aria-label')).toBe('Side panel');
+  });
+
+  it('lets [ariaLabel] win over withSidenavLabels, which wins over the pack', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxI18n(
+          withPartialPack({ locale: 'de', sidenav: { startRegion: 'Pack start', endRegion: 'Pack end' } }),
+          withDocumentLanguage('off'),
+        ),
+        provideSidenavConfig(withSidenavLabels({ startRegion: 'Config start' })),
+      ],
+    });
+    const { fixture, host, start, end } = setup();
+    expect(start.getAttribute('aria-label')).toBe('Config start');
+    expect(end.getAttribute('aria-label')).toBe('Pack end');
+
+    host.startLabel.set('Main navigation');
+    fixture.detectChanges();
+    expect(start.getAttribute('aria-label')).toBe('Main navigation');
+  });
+
+  it('treats an empty or blank [ariaLabel] as unbound', () => {
+    const { fixture, host, start } = setup();
+    for (const blank of ['', '   ']) {
+      host.startLabel.set(blank);
+      fixture.detectChanges();
+      expect(start.getAttribute('aria-label')).toBe('Navigation');
+    }
+  });
+
+  it('renames an unbound rail on a language switch', () => {
+    const labels = signal<Partial<CngxSidenavLabels>>({});
+    TestBed.configureTestingModule({
+      providers: [provideSidenavConfig(withSidenavLabels(labels))],
+    });
+    const { fixture, start, end } = setup();
+    expect(start.getAttribute('aria-label')).toBe('Navigation');
+
+    labels.set({ startRegion: 'Navigation', endRegion: 'Seitenbereich' });
+    fixture.detectChanges();
+    expect(end.getAttribute('aria-label')).toBe('Seitenbereich');
+  });
+
+  it('names the open overlay dialog with the same resolved label', () => {
+    const { fixture, end } = setup();
+    const rail = fixture.debugElement
+      .queryAll(By.directive(CngxSidenav))
+      .map((d) => d.injector.get(CngxSidenav))
+      .find((nav) => nav.position() === 'end')!;
+    rail.open();
+    fixture.detectChanges();
+    expect(end.getAttribute('role')).toBe('dialog');
+    expect(end.getAttribute('aria-label')).toBe('Side panel');
   });
 });

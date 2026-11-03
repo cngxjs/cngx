@@ -28,6 +28,16 @@ class Host {
   readonly multi = signal(false);
 }
 
+@Component({
+  template: `<cngx-data-grid-accordion>
+    <cngx-dga-header>
+      <button type="button" cngxDgaCell cngxDgaSortHeader="name">Name</button>
+    </cngx-dga-header>
+  </cngx-data-grid-accordion>`,
+  imports: [CngxDataGridAccordion, CngxDataGridHeader, CngxDgCell, CngxDgaSortHeader],
+})
+class ButtonHost {}
+
 describe('CngxDgaSortHeader', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [Host, LabelHost] }));
 
@@ -80,14 +90,42 @@ describe('CngxDgaSortHeader', () => {
   it('activates on Enter and on Space like a click', () => {
     const { fixture, sort, nameEl } = setup();
 
-    nameEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    nameEl.dispatchEvent(enter);
     fixture.detectChanges();
     expect(sort.active()).toBe('name');
     expect(sort.direction()).toBe('asc');
+    expect(enter.defaultPrevented).toBe(true);
 
-    nameEl.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    const space = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+    nameEl.dispatchEvent(space);
     fixture.detectChanges();
     expect(sort.direction()).toBe('desc');
+    expect(space.defaultPrevented).toBe(true);
+  });
+
+  it('leaves Enter and Space to the native click on a button host', () => {
+    const fixture = TestBed.createComponent(ButtonHost);
+    fixture.detectChanges();
+    const sort = fixture.debugElement
+      .query(By.directive(CngxDataGridAccordion))
+      .injector.get(CngxSort);
+    const button = fixture.debugElement.query(By.directive(CngxDgaSortHeader))
+      .nativeElement as HTMLButtonElement;
+
+    // The browser turns both keys into a click on a <button>; handling the key
+    // as well would sort twice and cancelling it would starve a consumer (click).
+    for (const key of ['Enter', ' ']) {
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      button.dispatchEvent(event);
+      fixture.detectChanges();
+      expect(sort.active()).toBeUndefined();
+      expect(event.defaultPrevented).toBe(false);
+    }
+
+    button.click();
+    fixture.detectChanges();
+    expect(sort.active()).toBe('name');
   });
 
   it('adds a secondary sort on Shift+click when multiSort is enabled', () => {

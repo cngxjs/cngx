@@ -1,4 +1,4 @@
-import { DestroyRef, Directive, effect, inject, input, untracked } from '@angular/core';
+import { DestroyRef, Directive, effect, ElementRef, inject, input, untracked } from '@angular/core';
 import { CngxDisclosure } from './disclosure.directive';
 import { CNGX_NAV_CONFIG, CNGX_NAV_DEFAULTS } from './nav-config';
 import { CngxNavGroupRegistry } from './nav-group-registry';
@@ -15,7 +15,11 @@ import { CngxNavGroupRegistry } from './nav-group-registry';
  *
  * Applied to the **trigger** element (the group header button).
  * The consumer renders the content separately and wires `role="group"`
- * and `aria-labelledby` on the content container.
+ * and `aria-labelledby` on the content container. Two paths: remove the
+ * content with `@if` (no animation), or keep it in the DOM inside a
+ * `[cngxNavGroupContent]` wrapper (animated). The animated wrapper must use
+ * `CngxNavGroupContent`: it makes collapsed links `inert`, so they leave the
+ * tab order and the accessibility tree.
  *
  * ### Basic
  * ```html
@@ -31,6 +35,20 @@ import { CngxNavGroupRegistry } from './nav-group-registry';
  * }
  * ```
  *
+ * ### Animated
+ * ```html
+ * <button cngxNavGroup #group="cngxNavGroup" [controls]="'settings-nav'"
+ *         id="settings-label">
+ *   Settings
+ * </button>
+ * <div [cngxNavGroupContent]="group">
+ *   <div id="settings-nav" role="group" aria-labelledby="settings-label">
+ *     <a cngxNavLink [depth]="1">General</a>
+ *     <a cngxNavLink [depth]="1">Security</a>
+ *   </div>
+ * </div>
+ * ```
+ *
  * ### Single-accordion mode
  * ```typescript
  * @Component({
@@ -44,7 +62,7 @@ import { CngxNavGroupRegistry } from './nav-group-registry';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-group.directive.ts
  * @since 0.1.0
- * @relatedTo CngxNavLink, CngxDisclosure, CngxNavGroupRegistry, CngxNavLabel
+ * @relatedTo CngxNavLink, CngxNavGroupContent, CngxDisclosure, CngxNavGroupRegistry, CngxNavLabel
  * <example-url>/#/common/interactive/nav/nav-badge-counts-and-dots</example-url>
  * <example-url>/#/common/interactive/nav/nav-group-accordion-sections</example-url>
  * <example-url>/#/common/interactive/nav/nav-links-active-state-depth</example-url>
@@ -76,6 +94,7 @@ export class CngxNavGroup {
   /** Nesting depth for indentation. Consumer sets manually. */
   readonly depth = input<number>(0);
 
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly registry = inject(CngxNavGroupRegistry, { optional: true });
   private readonly config = inject(CNGX_NAV_CONFIG, { optional: true });
 
@@ -85,6 +104,15 @@ export class CngxNavGroup {
   protected readonly navIndent = this.config?.indent !== undefined ? `${this.config.indent}px` : null;
   protected readonly navTransition =
     this.config?.animationDuration !== undefined ? `${this.config.animationDuration}ms` : null;
+
+  /**
+   * Moves focus to the group trigger. `CngxNavGroupContent` calls it when the
+   * group closes while focus sits inside the content, so focus never falls to
+   * `<body>` when the region turns `inert`.
+   */
+  focus(options?: FocusOptions): void {
+    this.host.focus(options);
+  }
 
   constructor() {
     this.registry?.register(this);

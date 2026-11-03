@@ -24,6 +24,30 @@ test.describe('common/interactive/disclosure', () => {
 
   });
 
+  test('basic-uncontrolled: Enter and Space toggle once and still fire the host click', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/interactive/disclosure/basic-uncontrolled');
+
+    const trigger = page.locator('button[cngxdisclosure]').first();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await trigger.evaluate((el) => {
+      el.setAttribute('data-clicks', '0');
+      el.addEventListener('click', () =>
+        el.setAttribute('data-clicks', String(Number(el.getAttribute('data-clicks')) + 1)),
+      );
+    });
+
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expect(trigger).toHaveAttribute('data-clicks', '1');
+
+    await page.keyboard.press(' ');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(trigger).toHaveAttribute('data-clicks', '2');
+  });
+
   test('controlled-mode: state is driven by the external signal toggle', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/disclosure/controlled-mode');
 

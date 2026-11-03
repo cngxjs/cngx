@@ -40,4 +40,54 @@ test.describe('CngxSidenav layout regressions', () => {
     // mini rail has no `--open`, so it pushed content instead of overlaying.
     expect(Math.abs(contentLeftAfter - contentLeftBefore)).toBeLessThanOrEqual(1);
   });
+
+  test('Tab skips the links of a collapsed animated nav group', async ({ page }) => {
+    await page.goto('/#/ui/sidenav/full-navigation-sidebar');
+    const team = page.getByRole('button', { name: 'Team' });
+    const members = page.locator('#team-items').getByText('Members');
+    await expect(team).toHaveAttribute('aria-expanded', 'false');
+
+    await team.focus();
+    await page.keyboard.press('Tab');
+    const focusedInCollapsedGroup = await page.evaluate(
+      () => (document.activeElement?.closest('#team-items') ?? null) !== null,
+    );
+    expect(focusedInCollapsedGroup).toBe(false);
+    await expect(members).not.toBeFocused();
+
+    await team.focus();
+    await page.keyboard.press('Enter');
+    await expect(team).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('Tab');
+    await expect(members).toBeFocused();
+  });
+
+  test('a nav group closing around focus hands focus to its trigger', async ({ page }) => {
+    await page.goto('/#/ui/sidenav/full-navigation-sidebar');
+    const team = page.getByRole('button', { name: 'Team' });
+    const members = page.locator('#team-items').getByText('Members');
+
+    await team.click();
+    await expect(team).toHaveAttribute('aria-expanded', 'true');
+    await members.focus();
+    await expect(members).toBeFocused();
+
+    // A programmatic close (no pointer or key on the trigger) is the case
+    // where inert would otherwise drop focus to <body>.
+    await team.evaluate((el) => {
+      const ngApi = (
+        window as unknown as {
+          ng: { getDirectives: (node: Element) => { constructor: { name: string } }[] };
+        }
+      ).ng;
+      const disclosure = ngApi
+        .getDirectives(el)
+        .find((d) => typeof (d as { close?: unknown }).close === 'function') as
+        | { close: () => void }
+        | undefined;
+      disclosure!.close();
+    });
+    await expect(team).toHaveAttribute('aria-expanded', 'false');
+    await expect(team).toBeFocused();
+  });
 });

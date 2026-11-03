@@ -7,6 +7,7 @@ Composable atoms for sidebars and navigation menus.
 ```typescript
 import {
   CngxNavGroup,
+  CngxNavGroupContent,
   CngxNavLink,
   CngxNavLabel,
   CngxNavBadge,
@@ -68,6 +69,27 @@ export class SidebarComponent {
 }
 ```
 
+## Group content: two paths
+
+A `CngxNavGroup` sits on the trigger. The content is yours to render, in one of two ways:
+
+- **`@if` (no animation):** remove the content while the group is closed, as in the Quick Start. Removed links are neither focusable nor exposed to assistive technology.
+- **`[cngxNavGroupContent]` (animated):** keep the content in the DOM and let the height transition run. The wrapper must use `CngxNavGroupContent`: it sets the `.cngx-nav-group-content` / `--open` classes the sidenav stylesheet animates and makes the region `inert` while the group is closed, so collapsed links leave the tab order and the accessibility tree.
+
+```html
+<button cngxNavGroup #group="cngxNavGroup" [controls]="'settings-nav'" id="settings-label">
+  Settings
+</button>
+<div [cngxNavGroupContent]="group">
+  <div id="settings-nav" role="group" aria-labelledby="settings-label">
+    <a cngxNavLink [depth]="1">General</a>
+    <a cngxNavLink [depth]="1">Security</a>
+  </div>
+</div>
+```
+
+The grid-rows animation needs exactly one wrapper child inside the directive host.
+
 ## Configuration
 
 ### provideNavConfig Function
@@ -109,6 +131,7 @@ Injects resolved nav config with defaults merged in. Must be called in an inject
   - CngxNavLabel: Optional `role="heading"` (opt-in)
   - CngxNavBadge: `aria-hidden="true"` by default; `aria-label` when meaningful
   - CngxDisclosure: `aria-expanded`, `aria-controls`
+  - CngxNavGroupContent: `inert` while the group is closed
 - **Keyboard interaction:**
   - CngxNavLink: Standard link/button behavior
   - CngxDisclosure: Enter/Space to toggle, click to toggle
@@ -119,6 +142,7 @@ Injects resolved nav config with defaults merged in. Must be called in an inject
   - Disclosure announces expanded state via `aria-expanded`
 - **Focus management:**
   - All elements are keyboard focusable
+  - Links inside a collapsed animated group are not (`CngxNavGroupContent` sets `inert`)
   - Active link can auto-scroll into view via `scrollOnActive`
 
 ## Composition
@@ -188,16 +212,7 @@ All nav elements use CSS custom properties for indentation, animation, and spaci
   padding-left: calc(var(--cngx-nav-depth, 0) * var(--cngx-nav-indent, 12px));
 }
 
-// Disclosure animation
-#settings-nav {
-  transition: max-height var(--cngx-nav-transition, 150ms);
-  max-height: 500px;
-}
-
-#settings-nav[hidden] {
-  max-height: 0;
-  overflow: hidden;
-}
+// Disclosure animation: use [cngxNavGroupContent] (see "Group content: two paths")
 
 // Active link styling
 [cngxNavLink][aria-current="page"] {

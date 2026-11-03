@@ -19,6 +19,14 @@ export const STORY: DemoSpec = {
   setup: `protected readonly navOpen = signal(true);
   protected readonly nav = viewChild(CngxSidenav);`,
   setupChrome: `protected readonly pinned = signal(false);
+  protected togglePinned(): void {
+    this.pinned.update((v) => !v);
+    // The pin button sits outside the rail, so its pointerdown dismisses an
+    // open overlay; reopen it so pinning shows the overlay with its backdrop.
+    if (this.pinned()) {
+      this.navOpen.set(true);
+    }
+  }
   private readonly frame = viewChild<ElementRef<HTMLElement>>('frame');
   protected setFrameWidth(width: string): void {
     const el = this.frame()?.nativeElement;
@@ -49,9 +57,13 @@ export const STORY: DemoSpec = {
   templateChrome: `<div class="button-row" style="margin-top: 12px">
     <button class="sort-btn" type="button" (click)="setFrameWidth('40rem')">Width 40rem</button>
     <button class="sort-btn" type="button" (click)="setFrameWidth('72rem')">Width 72rem</button>
-    <button class="sort-btn" type="button" (click)="navOpen.set(true)">Open</button>
-    <button class="sort-btn" type="button" (click)="navOpen.set(false)">Close</button>
-    <button class="sort-btn" type="button" (click)="pinned.set(!pinned())">
+    <button class="sort-btn" type="button"
+            [attr.aria-controls]="nav()?.id()"
+            [attr.aria-expanded]="navOpen()"
+            (click)="navOpen.set(!navOpen())">
+      {{ navOpen() ? 'Close' : 'Open' }}
+    </button>
+    <button class="sort-btn" type="button" (click)="togglePinned()">
       {{ pinned() ? 'Back to auto' : 'Pin mode="over"' }}
     </button>
   </div>

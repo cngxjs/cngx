@@ -435,6 +435,8 @@ export const CNGX_LANGUAGE_DE = {
     reorderAtEnd: 'Bereits an letzter Stelle',
   },
   sidenav: {
+    startRegion: 'Navigation',
+    endRegion: 'Seitenbereich',
     resizeHandle: 'Navigationsbreite ändern',
     resizeValueText: '{value}',
   },
