@@ -307,13 +307,15 @@ switching, mini/rail mode, resize handle, and keyboard shortcut toggle.
 
 **Animated nav group expand/collapse:**
 
-Replace `@if` with the `.cngx-nav-group-content` wrapper for smooth height animation
-via the CSS `grid-template-rows: 0fr/1fr` trick (no `@angular/animations` needed):
+Replace `@if` with a `[cngxNavGroupContent]` wrapper (`@cngx/common/interactive`) for
+smooth height animation via the CSS `grid-template-rows: 0fr/1fr` trick (no
+`@angular/animations` needed). The directive sets the `.cngx-nav-group-content` /
+`--open` classes and makes the region `inert` while the group is closed, so collapsed
+links leave the tab order and the accessibility tree. Do not set the classes by hand:
 
 ```html
 <button cngxNavGroup #group="cngxNavGroup" [controls]="'items'">Settings</button>
-<div class="cngx-nav-group-content"
-     [class.cngx-nav-group-content--open]="group.disclosure.opened()">
+<div [cngxNavGroupContent]="group">
   <div id="items" role="group">
     <a cngxNavLink [depth]="1">General</a>
     <a cngxNavLink [depth]="1">Security</a>
