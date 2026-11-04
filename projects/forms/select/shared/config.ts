@@ -601,8 +601,11 @@ export const CNGX_SELECT_DEFAULTS: Required<
  *   when the payload only exists at injection time (`TemplateRef`s from a
  *   live view, values read from another service).
  *
- * Resolution is nearest-wins: a nested provider replaces an ancestor config for
- * its subtree, it does not deep-merge. The action-select and reorderable
+ * Resolution is nearest-wins per key: `provideSelectConfig` at the root
+ * replaces the whole config, while `provideSelectConfigAt` in a subtree merges
+ * over the parent scope key by key - the keys it sets win, every unset key
+ * inherits, and the deep bundles (`ariaLabels`, `fallbackLabels`, `announcer`,
+ * `templates`) merge per entry. The action-select and reorderable
  * composites layer their own `CNGX_ACTION_SELECT_CONFIG` /
  * `CNGX_REORDERABLE_SELECT_CONFIG` on top of this base.
  *
@@ -937,9 +940,9 @@ export function withAriaLabels(
  *
  * Resolution per slot: projected `*cngxSelect...` template -> the
  * nearest provided config's `templates.<slot>` -> built-in default.
- * Like every `CNGX_SELECT_CONFIG` key, the token is nearest-wins
- * across injector levels: an `At`-scope config replaces a root config
- * wholesale for its subtree, it does not inherit root slots.
+ * Like every `CNGX_SELECT_CONFIG` key, an `At`-scope config merges
+ * over the parent scope: the slots it sets win and every slot it
+ * leaves unset inherits the root template.
  *
  * `TemplateRef`s need a live view, so they cannot sit in a static
  * provider array evaluated at bootstrap. Declare the templates in a

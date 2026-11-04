@@ -109,8 +109,9 @@ export const CNGX_REORDERABLE_SELECT_DEFAULTS: Required<
  * Compose from the `with*` features (`withReorderKeyboardModifier`,
  * `withReorderAriaLabel`, `withReorderListLabels`, `withDefaultDragHandle`,
  * `withDefaultMoveGlyph`, `withReorderStripFreeze`).
- * Resolution is nearest-wins: a nested provider replaces an ancestor config for
- * its subtree, it does not deep-merge.
+ * `provideReorderableSelectConfig` at the root replaces the whole config;
+ * `provideReorderableSelectConfigAt` merges over the parent scope, key by key -
+ * the keys it sets win, unset keys inherit.
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/reorderable-select-config.ts
