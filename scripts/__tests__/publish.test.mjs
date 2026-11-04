@@ -1,4 +1,5 @@
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { EventEmitter } from 'node:events';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -835,6 +836,33 @@ describe('runStep', () => {
     expect(() => runStep('npx tsc -p packages/cli', '/repo', () => ({ status: 2, signal: null }))).toThrow(
       'npx tsc -p packages/cli exited with 2',
     );
+  });
+
+  it('holds a SIGINT listener on the parent only while the child runs, so Ctrl+C ends the step, not the release', () => {
+    const proc = new EventEmitter();
+    const seen = [];
+    const spawn = () => {
+      seen.push(proc.listenerCount('SIGINT'));
+      proc.emit('SIGINT');
+      return { status: null, signal: 'SIGINT' };
+    };
+
+    expect(() => runStep('npx tsc -p packages/mcp', '/repo', spawn, proc)).toThrow(
+      'npx tsc -p packages/mcp was ended by SIGINT',
+    );
+    expect(seen).toEqual([1]);
+    expect(proc.listenerCount('SIGINT')).toBe(0);
+  });
+
+  it('removes the SIGINT listener when the spawn itself throws', () => {
+    const proc = new EventEmitter();
+
+    expect(() =>
+      runStep('npm publish', '/repo', () => {
+        throw new Error('EAGAIN');
+      }, proc),
+    ).toThrow('EAGAIN');
+    expect(proc.listenerCount('SIGINT')).toBe(0);
   });
 
   it('throws when the child cannot be started', () => {

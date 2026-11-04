@@ -606,13 +606,22 @@ export function readPackageVersion(name) {
   return readPackageManifest(name).version;
 }
 
-// Runs one release step through the shell with inherited stdio. A step that
-// exits non-zero or whose child a signal ended (Ctrl+C reaches the whole
-// process group) throws, so the restore paths run; a signal-ended step never
-// counts as done. No signal handler is installed: main() is synchronous, so
-// Node would run one only after the release finished.
-export function runStep(cmd, cwd = ROOT, spawn = spawnSync) {
-  const result = spawn(cmd, { cwd, stdio: 'inherit', shell: true });
+// Runs one release step through the shell with inherited stdio. Ctrl+C
+// sends SIGINT to the whole process group: the child dies of it, and the
+// no-op listener held for the length of the call keeps Node's default SIGINT
+// exit off the parent, so the step throws and the restore paths run. A step
+// that exits non-zero or whose child a signal ended throws; a signal-ended
+// step never counts as done. A signal sent to the parent alone is not
+// handled (cli-accepted-debt §16).
+export function runStep(cmd, cwd = ROOT, spawn = spawnSync, proc = process) {
+  const keepParentAlive = () => {};
+  proc.on('SIGINT', keepParentAlive);
+  let result;
+  try {
+    result = spawn(cmd, { cwd, stdio: 'inherit', shell: true });
+  } finally {
+    proc.off('SIGINT', keepParentAlive);
+  }
   if (result.error) {
     throw result.error;
   }
