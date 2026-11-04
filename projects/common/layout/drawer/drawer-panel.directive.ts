@@ -11,7 +11,7 @@ import {
 /**
  * How the drawer panel interacts with the content area.
  */
-export type DrawerMode = 'over' | 'push' | 'side';
+export type DrawerMode = 'over' | 'push';
 
 /**
  * The sliding panel of a drawer. Reads its open state from an explicit
@@ -22,7 +22,7 @@ export type DrawerMode = 'over' | 'push' | 'side';
  * Android back gesture and a press outside the panel close the drawer
  * (`closeOnClickOutside`, default `true`). A press on the trigger whose
  * `aria-controls` names the panel `id` is not outside, so the trigger
- * toggles the drawer itself. While closed (except in `side` mode) the panel
+ * toggles the drawer itself. While closed the panel
  * is `aria-hidden` AND `inert`. On close, focus returns to the element that
  * was focused when the drawer opened - unless the user moved focus to
  * another element themselves.
@@ -54,7 +54,7 @@ export type DrawerMode = 'over' | 'push' | 'side';
  * <example-url>/#/common/layout/drawer/controlled-mode</example-url>
  * <example-url>/#/common/layout/drawer/direction-all-four-sides</example-url>
  * <example-url>/#/common/layout/drawer/events-openedchange-closed</example-url>
- * <example-url>/#/common/layout/drawer/mode-over-push-side</example-url>
+ * <example-url>/#/common/layout/drawer/mode-over-push</example-url>
  * <example-url>/#/common/layout/drawer/pattern-consumer-wiring</example-url>
  */
 @Directive({
@@ -72,10 +72,9 @@ export type DrawerMode = 'over' | 'push' | 'side';
     '[class.cngx-drawer-panel--bottom]': "position() === 'bottom'",
     '[class.cngx-drawer-panel--over]': "mode() === 'over'",
     '[class.cngx-drawer-panel--push]': "mode() === 'push'",
-    '[class.cngx-drawer-panel--side]': "mode() === 'side'",
     '[class.cngx-drawer-panel--modal]': 'surfaceModal()',
-    '[attr.aria-hidden]': "mode() !== 'side' && !isOpen() ? true : null",
-    '[attr.inert]': "mode() !== 'side' && !isOpen() ? '' : null",
+    '[attr.aria-hidden]': 'isOpen() ? null : true',
+    '[attr.inert]': "isOpen() ? null : ''",
   },
 })
 export class CngxDrawerPanel implements CngxDrawerSurfaceDriver {
@@ -96,7 +95,6 @@ export class CngxDrawerPanel implements CngxDrawerSurfaceDriver {
    * How the panel interacts with the content area:
    * - `'over'` (default) - overlays content (absolute positioned)
    * - `'push'` - pushes content aside (content gets margin)
-   * - `'side'` - always visible, no toggle behavior
    */
   readonly mode = input<DrawerMode>('over');
 
@@ -124,21 +122,13 @@ export class CngxDrawerPanel implements CngxDrawerSurfaceDriver {
   /** The resolved drawer: the explicit reference wins over a `CngxDrawer` on the host. */
   readonly drawerRef = computed(() => this.drawerInput() ?? this.hostDrawer);
 
-  /** Whether the drawer is currently open (derived from the drawer ref). In `side` mode, always `true`. */
-  readonly isOpen = computed(() => this.mode() === 'side' || (this.drawerRef()?.opened() ?? false));
+  /** Whether the drawer is currently open (derived from the drawer ref). */
+  readonly isOpen = computed(() => this.drawerRef()?.opened() ?? false);
 
   /** @internal Drives the composed `CngxDrawerSurface`. */
-  readonly surfaceActive = computed(
-    () => this.mode() !== 'side' && (this.drawerRef()?.opened() ?? false),
-  );
+  readonly surfaceActive = this.isOpen;
   /** @internal Drives the composed `CngxDrawerSurface`. */
-  readonly surfaceModal = computed(() => {
-    const mode = this.mode();
-    if (mode !== 'over') {
-      return false;
-    }
-    return this.modal() ?? true;
-  });
+  readonly surfaceModal = computed(() => this.mode() === 'over' && (this.modal() ?? true));
   /** @internal Drives the composed `CngxDrawerSurface`. */
   readonly surfaceLandmarkRole = this.role;
   /** @internal Drives the composed `CngxDrawerSurface`. */

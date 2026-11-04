@@ -1,6 +1,8 @@
 # Drawer System
 
-Complete drawer/sidebar control with state management, focus trapping, and backdrop handling. Supports both controlled and uncontrolled modes with multiple interaction patterns and accessibility built in.
+Complete drawer control with state management, focus trapping, and backdrop handling. Supports both controlled and uncontrolled modes with multiple interaction patterns and accessibility built in.
+
+A drawer is always transient: `over` overlays the content, `push` lays the panel out next to it. A panel that stays visible is a sidebar, not a drawer.
 
 ## Import
 
@@ -142,10 +144,6 @@ nav[cngxDrawerPanel] {
     position: relative;
   }
 
-  &.cngx-drawer-panel--side {
-    position: relative;
-    box-shadow: none;
-  }
 }
 
 // Content offset
@@ -175,7 +173,7 @@ main[cngxDrawerContent] {
 
 ## Examples
 
-### Responsive Drawer (Over/Side Toggle)
+### Responsive Drawer (Over/Push Toggle)
 
 ```typescript
 @Component({
@@ -187,7 +185,7 @@ main[cngxDrawerContent] {
       <div [cngxBackdrop]="drawer.opened() && !mq.matches()"
            (backdropClick)="drawer.close()"></div>
       <nav [cngxDrawerPanel]="drawer"
-           [mode]="mq.matches() ? 'side' : 'over'"
+           [mode]="mq.matches() ? 'push' : 'over'"
            [closeOnClickOutside]="!mq.matches()">
         <!-- Navigation -->
       </nav>

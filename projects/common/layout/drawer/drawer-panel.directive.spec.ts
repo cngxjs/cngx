@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { FocusTrapFactory } from '@angular/cdk/a11y';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxDrawer } from './drawer.directive';
-import { CngxDrawerPanel } from './drawer-panel.directive';
+import { CngxDrawerPanel, type DrawerMode } from './drawer-panel.directive';
 
 let mockTrap: {
   enabled: boolean;
@@ -39,7 +39,7 @@ let mockTrap: {
 })
 class TestHost {
   position = signal<'left' | 'right' | 'top' | 'bottom'>('left');
-  mode = signal<'over' | 'push' | 'side'>('over');
+  mode = signal<DrawerMode>('over');
   modal = signal<boolean | undefined>(undefined);
   role = signal<string | null>('complementary');
   closeOnClickOutside = signal(true);
@@ -129,9 +129,13 @@ describe('CngxDrawerPanel', () => {
     expect(panelEl.hasAttribute('inert')).toBe(false);
   });
 
-  it('is never inert in side mode', () => {
-    const { fixture, panelEl, host } = setup();
-    host.mode.set('side');
+  it('is inert and aria-hidden while closed in push mode too', () => {
+    const { fixture, drawer, panelEl, host } = setup();
+    host.mode.set('push');
+    fixture.detectChanges();
+    expect(panelEl.hasAttribute('inert')).toBe(true);
+    expect(panelEl.getAttribute('aria-hidden')).toBe('true');
+    drawer.open();
     fixture.detectChanges();
     expect(panelEl.hasAttribute('inert')).toBe(false);
     expect(panelEl.hasAttribute('aria-hidden')).toBe(false);
