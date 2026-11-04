@@ -103,7 +103,7 @@ import {
 } from '../declarative/select-search-host';
 import { CngxSelectSearch } from '../declarative/select-search.component';
 import { resolveSearchMatch, resolveSelectConfig } from '../shared/internal/resolve-config';
-import { isEmptyScalar } from '../shared/internal/compare';
+import { coerceScalarFromField, isEmptyScalar } from '../shared/internal/compare';
 import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
@@ -1188,7 +1188,7 @@ export class CngxSelectShell<T = unknown>
     createFieldSync<T | undefined>({
       componentValue: this.value,
       valueEquals: (a, b) => (this.compareWith() as CngxSelectCompareFn<unknown>)(a, b),
-      coerceFromField: (x) => x as T | undefined,
+      coerceFromField: (x) => coerceScalarFromField<T>(x),
     });
 
     inject(CNGX_SEARCH_EFFECTS_FACTORY)({

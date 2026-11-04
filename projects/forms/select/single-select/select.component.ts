@@ -82,7 +82,7 @@ import {
 } from '../shared/config';
 import { type CngxSelectOptionDef, type CngxSelectOptionsInput } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
-import { isEmptyScalar } from '../shared/internal/compare';
+import { coerceScalarFromField, isEmptyScalar } from '../shared/internal/compare';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
@@ -962,7 +962,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     createFieldSync<T | undefined>({
       componentValue: this.value,
       valueEquals: (a, b) => (this.compareWith() as CngxSelectCompareFn<unknown>)(a, b),
-      coerceFromField: (x) => x as T | undefined,
+      coerceFromField: (x) => coerceScalarFromField<T>(x),
     });
   }
 

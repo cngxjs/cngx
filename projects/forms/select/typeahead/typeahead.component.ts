@@ -79,7 +79,7 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { resolveSearchMatch, resolveSelectConfig } from '../shared/internal/resolve-config';
-import { isEmptyScalar } from '../shared/internal/compare';
+import { coerceScalarFromField, isEmptyScalar } from '../shared/internal/compare';
 import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
 import { handlePageJumpKey } from '../shared/internal/page-jump-handler';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
@@ -933,7 +933,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     createFieldSync<T | undefined>({
       componentValue: this.value,
       valueEquals: (a, b) => (this.compareWith() as CngxSelectCompareFn<unknown>)(a, b),
-      coerceFromField: (x) => (isEmptyScalar(x) ? undefined : (x as T)),
+      coerceFromField: (x) => coerceScalarFromField<T>(x),
     });
 
     // Auto-open on typing. `autoOpenGate` blocks during library-authored

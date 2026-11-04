@@ -36,10 +36,10 @@ interface ScalarVariant {
 }
 
 const VARIANTS: readonly ScalarVariant[] = [
-  { name: 'CngxSelect', component: CngxSelect, selector: 'cngx-select', projected: false, coerces: false },
+  { name: 'CngxSelect', component: CngxSelect, selector: 'cngx-select', projected: false, coerces: true },
   { name: 'CngxTypeahead', component: CngxTypeahead, selector: 'cngx-typeahead', projected: false, coerces: true },
   { name: 'CngxActionSelect', component: CngxActionSelect, selector: 'cngx-action-select', projected: false, coerces: true },
-  { name: 'CngxSelectShell', component: CngxSelectShell, selector: 'cngx-select-shell', projected: true, coerces: false },
+  { name: 'CngxSelectShell', component: CngxSelectShell, selector: 'cngx-select-shell', projected: true, coerces: true },
 ];
 
 // A26 / A5: a scalar composite bound to a form field whose value is '' or null

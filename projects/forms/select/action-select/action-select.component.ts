@@ -105,7 +105,7 @@ import { mergeCommitState } from '../shared/internal/merged-commit-state';
 import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
 import { createActionTriggerInput } from '../shared/internal/action-trigger-input';
 import { resolveSearchMatch, resolveSelectConfig } from '../shared/internal/resolve-config';
-import { isEmptyScalar } from '../shared/internal/compare';
+import { coerceScalarFromField, isEmptyScalar } from '../shared/internal/compare';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_SEARCH_EFFECTS_FACTORY, searchResultsFrom } from '../shared/search-effects';
 import {
@@ -1060,7 +1060,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     createFieldSync<T | undefined>({
       componentValue: this.value,
       valueEquals: (a, b) => (this.compareWith() as CngxSelectCompareFn<unknown>)(a, b),
-      coerceFromField: (x) => (isEmptyScalar(x) ? undefined : (x as T)),
+      coerceFromField: (x) => coerceScalarFromField<T>(x),
     });
 
     // Auto-open on typing. Same gating as CngxTypeahead - display-binding
