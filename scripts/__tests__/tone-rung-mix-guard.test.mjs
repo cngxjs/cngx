@@ -31,6 +31,10 @@ import { describe, expect, it } from 'vitest';
  * the initial is the light default as a literal), so the registration
  * documents the colour the reader actually paints. All allowlists are empty
  * on purpose.
+ *
+ * Scope: the rules read source text, not the cascade. They see a rung only
+ * where it is named directly (`--x: var(--cngx-color-<tone>-<rung>`); a rung
+ * passed through an intermediate custom property is invisible to them.
  */
 
 const HERE = dirname(fileURLToPath(import.meta.url));
