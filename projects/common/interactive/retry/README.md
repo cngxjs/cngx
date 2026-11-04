@@ -67,7 +67,7 @@ createRetry composes naturally with CngxAsyncClick and the feedback system:
 
 `createRetry` is a pure factory: it needs no injection context. The lifetime of a run comes from the runner that owns it:
 
-- `cngxAsyncClick` passes an `AbortSignal` to the wrapped action, aborted when the runner is destroyed. On abort the backoff timer is cleared, no further attempt starts and no state is written.
+- `cngxAsyncClick` passes an `AbortSignal` to the wrapped action, aborted when the runner is destroyed. On abort the backoff timer is cleared, no further attempt starts and an aborted run settles the retry state idle (`attempt` 0, `retrying` false, `lastError` kept). A run a newer call already superseded writes nothing.
 - The library never aborts the in-flight attempt. The signal is forwarded to your action, so passing it on (`fetch(url, { signal })`, an `HttpClient` call ended on the abort event) opts in to cancellation.
 - A run that ends without an outcome (superseded by a new call, `reset()`, or aborted) resolves `CNGX_ASYNC_CANCELLED` instead of `undefined`. `cngxAsyncClick` maps it to `idle`: no announcement, no `(settled)`. Compare the result with it where you `await` the action yourself.
 - A direct call without a signal (`saveWithRetry()`) has no destroy binding and runs to its end.

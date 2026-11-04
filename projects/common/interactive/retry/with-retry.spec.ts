@@ -131,7 +131,7 @@ describe('withRetry', () => {
       expect(state.attempt()).toBe(0);
     });
 
-    it('abort during backoff clears the timer, starts no attempt and writes no state', async () => {
+    it('abort during backoff clears the timer, starts no attempt and settles idle', async () => {
       vi.useFakeTimers();
       const action = vi.fn().mockRejectedValue(new Error('fail'));
       const [retryable, state] = createRetry(action, { maxAttempts: 3, delay: 1000 });
@@ -148,12 +148,14 @@ describe('withRetry', () => {
       await vi.advanceTimersByTimeAsync(5000);
 
       expect(action).toHaveBeenCalledTimes(1);
-      expect(state.attempt()).toBe(1);
-      expect(state.retrying()).toBe(true);
+      expect(state.attempt()).toBe(0);
+      expect(state.retrying()).toBe(false);
       expect(state.exhausted()).toBe(false);
+      expect(state.state.status()).toBe('idle');
+      expect(state.lastError()).toEqual(new Error('fail'));
     });
 
-    it('abort during the in-flight attempt lets it finish but writes nothing', async () => {
+    it('abort during the in-flight attempt lets it finish and settles idle', async () => {
       let finish!: () => void;
       const action = vi.fn(() => new Promise<void>((resolve) => (finish = resolve)));
       const [retryable, state] = createRetry(action);
@@ -164,8 +166,35 @@ describe('withRetry', () => {
       finish();
 
       await expect(result).resolves.toBe(CNGX_ASYNC_CANCELLED);
+      expect(state.state.status()).toBe('idle');
+      expect(state.attempt()).toBe(0);
+      expect(state.retrying()).toBe(false);
+    });
+
+    it('an aborted run that a newer run superseded writes nothing', async () => {
+      const finishers: (() => void)[] = [];
+      const [retryable, state] = createRetry(
+        () => new Promise<void>((resolve) => finishers.push(resolve)),
+      );
+      const controller = new AbortController();
+      const first = retryable(controller.signal);
+      const second = retryable();
+      controller.abort();
+      finishers[0]();
+      await expect(first).resolves.toBe(CNGX_ASYNC_CANCELLED);
       expect(state.state.status()).toBe('pending');
       expect(state.attempt()).toBe(1);
+      finishers[1]();
+      await expect(second).resolves.toBeUndefined();
+      expect(state.state.status()).toBe('success');
+    });
+
+    it('runs at least one attempt when maxAttempts is below 1', async () => {
+      const action = vi.fn().mockRejectedValue(new Error('fail'));
+      const [retryable, state] = createRetry(action, { maxAttempts: 0 });
+      await expect(retryable()).rejects.toThrow('fail');
+      expect(action).toHaveBeenCalledTimes(1);
+      expect(state.exhausted()).toBe(true);
     });
 
     it('reset() mid-run resolves CNGX_ASYNC_CANCELLED', async () => {
