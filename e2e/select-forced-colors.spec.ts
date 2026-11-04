@@ -97,18 +97,10 @@ test.describe('select forced-colors (WHCM) row paint', () => {
     expect(s['outline-color']).toBe(sys.highlightText);
   });
 
-  // further C - a disabled reorder move button fades to GrayText.
-  test.fail('a disabled reorder move button computes GrayText', async ({ page }) => {
-    await openForced(page, '/#/forms/select/reorderable-multi-select/pre-seeded-values-reorder-log');
-    await openPanel(page);
-    const disabledMove = page
-      .locator('.cngx-ex-artifact .cngx-select-reorder-list__move[aria-disabled="true"]')
-      .first();
-    await expect(disabledMove).toBeVisible();
-    const sys = await systemColours(page);
-    const s = await style(disabledMove, ['color']);
-    expect(s['color']).toBe(sys.grayText);
-  });
+  // further C - a disabled reorder move button fades to GrayText: the keyboard
+  // move buttons only render under the touch floor, so that check lives in a
+  // direct component mount at
+  // shared/internal/reorder-list/reorder-list-forced-colors.geometry.spec.ts.
 
   // verify first - the select family's own rule paints the highlighted flat
   // option in the Highlight pair (ownership independent of the listbox CSS).
