@@ -493,6 +493,84 @@ describe('CngxAsyncClick busy visibility gate', () => {
     expect(directive.succeeded()).toBe(false);
     expect(btn.classList.contains('cngx-async--success')).toBe(false);
   });
+
+  it('leaves no timer and writes no state when destroyed mid-run', async () => {
+    const { fixture, run, advance, click, directive } = setup();
+    click();
+    await advance(showDelay + 10);
+    expect(directive.pending()).toBe(true);
+    expect(directive.busyVisible()).toBe(true);
+
+    fixture.destroy();
+    // The gate's delay/minDwell timers are cleared on destroy; the pending run
+    // has armed no feedback timer yet (it arms only after settle + release).
+    expect(vi.getTimerCount()).toBe(0);
+
+    run.resolve();
+    await vi.advanceTimersByTimeAsync(showDelay + minDwell + 2000);
+    // The destroyed guard drops the resolve: the state is frozen as it was at
+    // destroy (pending, never settled), no late success write, no new timer.
+    expect(directive.succeeded()).toBe(false);
+    expect(directive.pending()).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('clears the first error when a second run starts', async () => {
+    const { advance, click, host, directive } = setup();
+    const first = deferred();
+    host.actionImpl = () => first.promise;
+    click();
+    await advance(showDelay + 10);
+    first.reject('first');
+    await advance(minDwell + 1);
+    expect(directive.failed()).toBe(true);
+    expect(directive.error()).toBe('first');
+
+    const second = deferred();
+    host.actionImpl = () => second.promise;
+    click();
+    // The new run clears the prior feedback at click.
+    expect(directive.failed()).toBe(false);
+    expect(directive.error()).toBeUndefined();
+    expect(directive.pending()).toBe(true);
+
+    await advance(showDelay + 10);
+    second.reject('second');
+    await advance(minDwell + 1);
+    expect(directive.failed()).toBe(true);
+    expect(directive.error()).toBe('second');
+  });
+
+  it('keeps separate gates for two instances', async () => {
+    const one = setup();
+    const two = setup();
+    one.click();
+    await one.advance(showDelay + 1);
+    // Only the clicked instance opens its gate; the idle one stays closed.
+    expect(one.directive.busyVisible()).toBe(true);
+    expect(two.directive.busyVisible()).toBe(false);
+
+    one.run.resolve();
+    await one.advance(minDwell);
+    expect(one.directive.busyVisible()).toBe(false);
+    expect(two.directive.busyVisible()).toBe(false);
+  });
+
+  it('never opens the busy visual from the [busy] ARIA hint (negative)', async () => {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(ButtonHost);
+    fixture.componentInstance.busy.set(true);
+    flush(fixture);
+    const directive = fixture.componentInstance.directive();
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+
+    await vi.advanceTimersByTimeAsync(showDelay + minDwell + 1);
+    flush(fixture);
+    // [busy] is an ARIA hint only: aria-busy reflects it, but no gate opens.
+    expect(btn.getAttribute('aria-busy')).toBe('true');
+    expect(directive.busyVisible()).toBe(false);
+    expect(btn.classList.contains('cngx-async--pending')).toBe(false);
+  });
 });
 
 describe('CngxAsyncClick language switch', () => {
