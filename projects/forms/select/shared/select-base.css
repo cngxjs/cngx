@@ -1996,7 +1996,7 @@
   .cngx-select__commit-error-hint {
     --cngx-select-commit-error-hint-margin: var(--cngx-space-xs);
     margin-block-start: var(--cngx-select-commit-error-hint-margin, 0.25rem);
-    color: var(--cngx-select-commit-error-hint-color, var(--cngx-color-danger-text, oklch(0.46 0.18 25)));
+    color: var(--cngx-select-commit-error-hint-color, var(--cngx-color-danger-text, oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)));
     font-size: var(--cngx-font-size-sm, 0.875rem);
   }
 
