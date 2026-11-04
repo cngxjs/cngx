@@ -14,11 +14,10 @@ import type { CngxSelectOptionDef } from './option.model';
 
 // Runs in a real Chromium (the `test-geometry` target). Pins the strand-B
 // theming contract: a host-set token reaches the panel (E2), a colour-scheme
-// island keeps panel and disabled-option text legible (E1), the error text tier
-// clears 4.5:1 on white (E3), the skeleton shimmer follows the app scheme not
-// the OS (E4), and the keyboard-active row and the tree container carry a
-// visible affordance (E5). The red cases are `it.fails` until Phase 2 flips
-// them.
+// island paints the panel in its own scheme with legible text (E1), the error
+// text tier clears 4.5:1 on white (E3), the skeleton shimmer follows the actual
+// panel scheme not the OS alone (E4), and the keyboard-active row and the tree
+// container carry a visible affordance (E5). Every case is green after Phase 2.
 
 const HARNESS_STYLES = [
   '../../../core/theming/layers.css',
@@ -255,7 +254,7 @@ describe('select review 2 theming', () => {
   });
 
   // E5 - the keyboard-active row carries a >= 3:1 affordance.
-  it.fails('E5: the active row affordance clears 3:1 against the panel', async () => {
+  it('E5: the active row affordance clears 3:1 against the panel', async () => {
     const fixture = mount();
     const root = fixture.nativeElement as HTMLElement;
     await open(fixture);
@@ -275,7 +274,7 @@ describe('select review 2 theming', () => {
   });
 
   // E5 - the tree container keeps a focus-visible outline.
-  it.fails('E5: the tree container shows a focus-visible outline', async () => {
+  it('E5: the tree container shows a focus-visible outline', async () => {
     const fixture = mount((h) => h.variant.set('tree'));
     const root = fixture.nativeElement as HTMLElement;
     await open(fixture);

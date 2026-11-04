@@ -322,6 +322,20 @@
   }
 
   /**
+   * Colour of the inline-start indicator bar on the keyboard-active row. The
+   * background tint alone is ~1.1:1 against the panel; this opaque bar carries
+   * the active affordance at >= 3:1. Delegates to the primary colour below, so
+   * it follows the scheme and a re-theme.
+   * @group State
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-select-option-active-indicator {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.5 0.2 275);
+  }
+
+  /**
    * Background of a selected row in a multi-value panel whose selection
    * indicator renders. Transparent by default: the checkbox carries the
    * selection, so a mostly-selected panel does not turn into a solid
@@ -998,6 +1012,7 @@
     --cngx-select-panel-bg: var(--cngx-color-surface);
     --cngx-select-panel-color: var(--cngx-color-text);
     --cngx-select-check-color: var(--cngx-color-primary);
+    --cngx-select-option-active-indicator: var(--cngx-color-primary);
     --cngx-select-spinner-color: var(--cngx-color-primary);
     --cngx-select-loading-bar-color: var(--cngx-color-primary);
     --cngx-select-refreshing-color: var(--cngx-color-primary);
@@ -1048,6 +1063,7 @@
       --cngx-select-panel-bg: var(--cngx-color-surface);
       --cngx-select-panel-color: var(--cngx-color-text);
       --cngx-select-check-color: var(--cngx-color-primary);
+      --cngx-select-option-active-indicator: var(--cngx-color-primary);
       --cngx-select-spinner-color: var(--cngx-color-primary);
       --cngx-select-loading-bar-color: var(--cngx-color-primary);
       --cngx-select-refreshing-color: var(--cngx-color-primary);
@@ -1084,6 +1100,7 @@
     --cngx-select-panel-bg: var(--cngx-color-surface);
     --cngx-select-panel-color: var(--cngx-color-text);
     --cngx-select-check-color: var(--cngx-color-primary);
+    --cngx-select-option-active-indicator: var(--cngx-color-primary);
     --cngx-select-spinner-color: var(--cngx-color-primary);
     --cngx-select-loading-bar-color: var(--cngx-color-primary);
     --cngx-select-refreshing-color: var(--cngx-color-primary);
@@ -1116,6 +1133,7 @@
     --cngx-select-panel-bg: var(--cngx-color-surface);
     --cngx-select-panel-color: var(--cngx-color-text);
     --cngx-select-check-color: var(--cngx-color-primary);
+    --cngx-select-option-active-indicator: var(--cngx-color-primary);
     --cngx-select-spinner-color: var(--cngx-color-primary);
     --cngx-select-loading-bar-color: var(--cngx-color-primary);
     --cngx-select-refreshing-color: var(--cngx-color-primary);
@@ -1340,6 +1358,15 @@
   }
   .cngx-select__option.cngx-option--highlighted {
     background: var(--cngx-select-option-highlight-bg, oklch(0.66 0.19 50 / 0.1));
+    /* The tint alone is ~1.1:1 against the panel; an inset inline-start bar
+       carries the active affordance at >= 3:1 (an inset box-shadow, so no
+       layout shift and no ::before, which the option suppresses). */
+    box-shadow: inset 3px 0 0 0
+      var(--cngx-select-option-active-indicator, var(--cngx-color-primary, oklch(0.5 0.2 275)));
+  }
+  [dir='rtl'] .cngx-select__option.cngx-option--highlighted {
+    box-shadow: inset -3px 0 0 0
+      var(--cngx-select-option-active-indicator, var(--cngx-color-primary, oklch(0.5 0.2 275)));
   }
   .cngx-select__option--pending {
     cursor: progress;
