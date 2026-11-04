@@ -2,7 +2,7 @@
 
 import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { computedValue } from '@cngx/testing/geometry';
+import { computedValue, contrastRatio } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 import { cdp, userEvent } from 'vitest/browser';
 
@@ -10,8 +10,8 @@ import { cdp, userEvent } from 'vitest/browser';
 // only marker of the current crumb (toolbar, chips, iconlabel, path, the
 // editorial gradient, the siblings current row, the overflow hover and the
 // open siblings caret), it paints the primary text rung
-// (`--cngx-color-primary-text`, falling back to primary mixed 70% into the
-// text colour) at 4.5:1 instead of the raw primary (2.9-3.3:1 on light). The
+// (`--cngx-color-primary-text`, falling back to primary at the text-rung
+// lightness) at 4.5:1 instead of the raw primary (2.9-3.3:1 on light). The
 // filled skins (pill, ribbon, icononly) keep the raw primary fill and set the
 // label (and the icononly glyph, currentColor) in the scheme's dark neutral:
 // the text colour in light, the surface colour in dark. A declared
@@ -20,6 +20,10 @@ import { cdp, userEvent } from 'vitest/browser';
 // Under forced colors the current sibling row paints the Highlight pair.
 
 const SCHEMES = ['light', 'dark'] as const;
+
+// OKLCH lightness of --cngx-color-primary-text per scheme; hue and chroma
+// come from primary.
+const TEXT_LIGHTNESS: Record<(typeof SCHEMES)[number], string> = { light: '0.54', dark: '0.8' };
 const TEXT_SKINS = ['toolbar', 'chips', 'iconlabel', 'path'] as const;
 const FILLED_SKINS = ['pill', 'ribbon', 'icononly'] as const;
 
@@ -96,7 +100,7 @@ const FILLED_SKINS = ['pill', 'ribbon', 'icononly'] as const;
         <span class="plain" style="color: rgb(200, 0, 0)">Plain</span>
         <span
           class="probe-pt"
-          style="color: color-mix(in oklab, var(--cngx-color-primary) 70%, var(--cngx-color-text))"
+          [style.color]="'oklch(from var(--cngx-color-primary) ' + textLightness[scheme] + ' c h)'"
         ></span>
         <span class="probe-primary" style="color: var(--cngx-color-primary)"></span>
         <span class="probe-text" style="color: var(--cngx-color-text)"></span>
@@ -110,6 +114,7 @@ const FILLED_SKINS = ['pill', 'ribbon', 'icononly'] as const;
 })
 class CurrentHost {
   readonly schemes = SCHEMES;
+  readonly textLightness = TEXT_LIGHTNESS;
   readonly skins = [...TEXT_SKINS, ...FILLED_SKINS, 'editorial'];
 }
 
@@ -151,18 +156,9 @@ function paint(...layers: string[]): Rgb {
   return [r, g, b];
 }
 
-function luminance(rgb: Rgb): number {
-  const [r, g, b] = rgb.map((v) => {
-    const c = v / 255;
-    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-  });
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
-
-function contrast(a: Rgb, b: Rgb): number {
-  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-  return (hi + 0.05) / (lo + 0.05);
-}
+// The ratio over composited pixels: `paint` already flattened the layers.
+const contrast = (a: Rgb, b: Rgb): number =>
+  contrastRatio(`rgb(${a.join(', ')})`, `rgb(${b.join(', ')})`);
 
 // The painted ground of an element: every background from the scheme wrapper
 // down to the element, composited in order.

@@ -192,11 +192,11 @@ describe('select-family field-skin rule set', () => {
     );
   });
 
-  it('mixes the bare error text in oklab so it stays red', () => {
+  it('derives the bare error text from danger at a fixed lightness so it stays red', () => {
     const bare = scopeBlock(
       "@scope ([data-skin='bare']:not(.cngx-field-box > *) > * > .cngx-field-trigger)",
     );
-    expect(bare).toContain('in oklab');
+    expect(bare).toContain('oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)');
     expect(bare).not.toMatch(/in oklch,\s*var\(--cngx-color-danger/);
   });
 
