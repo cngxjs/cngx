@@ -159,13 +159,14 @@ describe('rejected step per skin', () => {
     expect(refused).not.toBe(failed);
   });
 
-  it('classic: the rejection icon is a bare 1.15em glyph at stroke 2', async () => {
+  it('classic: the rejection icon is a bare 16px glyph at stroke 2', async () => {
     const { steps } = await mount('classic', refuse);
     const icon = part(steps[1], 'rejection-icon');
     expect(computedValue(icon, 'background-color')).toBe(TRANSPARENT);
     const svg = icon.querySelector('svg')!;
-    const em = parseFloat(computedValue(part(steps[1], 'label'), 'font-size'));
-    expect(svg.getBoundingClientRect().width).toBeCloseTo(1.15 * em, 0);
+    // The box lands on 1rem (16px); this harness loads no global icon sheet, so
+    // the band rule never fires and the 24-grid stroke glyph paints at that box.
+    expect(svg.getBoundingClientRect().width).toBeCloseTo(16, 0);
     expect(getComputedStyle(svg).strokeWidth).toBe('2px');
   });
 

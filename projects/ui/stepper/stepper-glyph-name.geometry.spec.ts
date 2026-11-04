@@ -125,6 +125,20 @@ describe('stepper status glyphs', () => {
     }
   });
 
+  it('sizes the label done-check box to the exact 1rem (16px) box', () => {
+    mount('chips');
+    const svg = doneIcon(0)!.querySelector('svg')!;
+    expect(svg.getBoundingClientRect().width).toBeCloseTo(16, 0);
+    mountedRoot?.remove();
+  });
+
+  it('draws the error badge on the 16-grid small path at the 1rem box', () => {
+    mount('chips');
+    const svg = header(1).querySelector<SVGSVGElement>('.cngx-stepper__badge svg')!;
+    expect(svg.getBoundingClientRect().width).toBeCloseTo(16, 0);
+    expect(visiblePath(svg).classList.contains('cngx-icon-svg__small')).toBe(true);
+  });
+
   it('hides the label check in the disc skins', () => {
     mount('classic');
     expect(getComputedStyle(doneIcon(0)!).display).toBe('none');
