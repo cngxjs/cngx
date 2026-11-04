@@ -157,6 +157,31 @@ describe('createArrayCommitHandler', () => {
     });
   });
 
+  describe('beginToggle - composes on the live selection', () => {
+    it('keeps a concurrent addition when a pending removal succeeds', () => {
+      h.values.set(['a', 'b']);
+      const pending = new Subject<T[]>();
+      // Optimistic removal of 'a'; consumer wrote the optimistic value.
+      h.values.set(['b']);
+      h.handler.beginToggle(['b'], ['a', 'b'], opt('a'), () => pending);
+      // A concurrent commit adds 'c' while the removal is in flight.
+      h.values.set(['b', 'c']);
+      pending.next(undefined as unknown as T[]);
+      pending.complete();
+      expect(h.values()).toEqual(['b', 'c']);
+    });
+
+    it('restores the removed value to its slot on error without dropping a concurrent addition', () => {
+      h.values.set(['a', 'b']);
+      const pending = new Subject<T[]>();
+      h.values.set(['b']);
+      h.handler.beginToggle(['b'], ['a', 'b'], opt('a'), () => pending);
+      h.values.set(['b', 'c']);
+      pending.error(new Error('nope'));
+      expect(h.values()).toEqual(['a', 'b', 'c']);
+    });
+  });
+
   describe('beginToggle - error path', () => {
     it('in optimistic mode, rolls values back to rollbackTo', async () => {
       h.values.set(['a', 'b']); // optimistic write already done by consumer
