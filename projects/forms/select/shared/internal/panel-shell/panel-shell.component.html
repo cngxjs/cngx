@@ -124,12 +124,14 @@
   @if (host.tpl.commitError(); as tpl) {
     <ng-container *ngTemplateOutlet="tpl; context: host.commitErrorContext()" />
   } @else {
-    <!-- The banner is a sibling of the listbox, not a descendant (C4), so the
-         listbox never takes Enter / Space meant for a focused Retry; the stops
-         below stay as a cheap guard for consumers that nest it differently. -->
+    <!-- No role="alert": the commit failure is spoken once by the announcer
+         and referenced from the trigger via aria-errormessage / aria-describedby
+         (I8), so a live-region role here would double-speak it. The banner is a
+         sibling of the listbox, not a descendant (C4), so the listbox never
+         takes Enter / Space meant for a focused Retry; the stops below stay as a
+         cheap guard for consumers that nest it differently. -->
     <div
       class="cngx-select__commit-error"
-      role="alert"
       (keydown.enter)="$event.stopPropagation()"
       (keydown.space)="$event.stopPropagation()"
     >

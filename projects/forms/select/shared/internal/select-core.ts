@@ -709,9 +709,10 @@ export function createSelectCore<T, TCommit>(
   }
 
   // The commit-error node lives outside the popover, so a closed panel still
-  // leaves the failure reachable from the trigger. The field error keeps the
-  // single-IDREF aria-errormessage; the commit error then rides on
-  // aria-describedby.
+  // leaves the failure reachable from the trigger. The commit error rides on
+  // aria-errormessage alone when no field error holds it; only when a field
+  // error already occupies the single-IDREF aria-errormessage does the commit
+  // error fall back to aria-describedby - never both at once (I8).
   const commitErrorId = nextUid('cngx-select-commit-error');
   const listboxId = nextUid('cngx-select-listbox');
   const commitErrorText = computed<string>(() => {
@@ -720,7 +721,7 @@ export function createSelectCore<T, TCommit>(
   });
   const commitErrorShown = computed<boolean>(() => commitErrorText() !== '');
   const describedBy = computed<string | null>(() => {
-    const commitRef = commitErrorShown() ? commitErrorId : null;
+    const commitRef = commitErrorShown() && fieldAria.ariaErrorMessage() ? commitErrorId : null;
     const summaryRef = deps.summaryDescribedBy?.() ?? null;
     return [fieldAria.describedBy(), commitRef, summaryRef].filter(Boolean).join(' ') || null;
   });

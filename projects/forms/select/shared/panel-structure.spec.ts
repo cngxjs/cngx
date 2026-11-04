@@ -65,7 +65,7 @@ describe('C4: the listbox/tree container holds no status, alert or group node', 
 // ── I8: the commit-error id is referenced once, not by both attributes ───────
 describe('I8: the commit-error id rides on exactly one aria reference', () => {
   for (const kind of ALL) {
-    it.fails(`${kind.name}: commit-error id is in aria-errormessage xor aria-describedby`, () => {
+    it(`${kind.name}: commit-error id is in aria-errormessage xor aria-describedby`, () => {
       const m = errorMount(kind);
       const id = commitErrorId(m);
       if (!id) {

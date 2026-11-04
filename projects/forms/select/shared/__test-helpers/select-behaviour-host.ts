@@ -285,7 +285,9 @@ export function describeSelectBehaviourHost(
         const node = document.getElementById(ref!);
         expect(node?.textContent).toContain('Save failed');
         expect(panel().contains(node)).toBe(false);
-        expect(idrefs(t, 'aria-describedby')).toContain(ref);
+        // I8: with no field error occupying aria-errormessage, the commit error
+        // rides there alone - never duplicated onto aria-describedby.
+        expect(idrefs(t, 'aria-describedby')).not.toContain(ref);
       },
     );
 
