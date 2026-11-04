@@ -17,6 +17,8 @@ export interface CngxLayoutLanguageSection {
   readonly resizeHandle: string;
   /** `aria-valuetext` of a `CngxResizable` handle. Placeholder: `{size}` (px). */
   readonly resizeValueText: CngxMessage;
+  /** Accessible name of a `CngxPanelTrigger` without text content. */
+  readonly panelTrigger: string;
 }
 
 /**
@@ -31,6 +33,7 @@ export const CNGX_LAYOUT_LANGUAGE_EN: CngxLayoutLanguageSection = {
   expandableTextLess: 'Show less',
   resizeHandle: 'Resize',
   resizeValueText: '{size} pixels',
+  panelTrigger: 'Toggle panel',
 };
 
 declare module '@cngx/core/i18n' {

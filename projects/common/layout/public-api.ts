@@ -27,6 +27,11 @@ export {
   createContainerSize,
   injectContainerSize,
 } from './observers/container-size';
+export { CNGX_PANEL_TARGET, type CngxPanelTarget } from './panel-trigger/panel-target';
+export {
+  CngxPanelTrigger,
+  type CngxPanelTriggerAction,
+} from './panel-trigger/panel-trigger.directive';
 export { CngxResizable, type CngxResizableEdge } from './resizable/resizable.directive';
 export { CngxScrollLock } from './scroll/scroll-lock.directive';
 export { createPinnedScrollLock, createScrollLock } from './scroll/scroll-lock-core';

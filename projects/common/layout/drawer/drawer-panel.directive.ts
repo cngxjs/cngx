@@ -1,4 +1,12 @@
-import { computed, Directive, effect, inject, input, untracked } from '@angular/core';
+import {
+  computed,
+  Directive,
+  effect,
+  HostAttributeToken,
+  inject,
+  input,
+  untracked,
+} from '@angular/core';
 import { cngxDevWarn } from '@cngx/utils';
 
 import { CngxDrawer, type DrawerPosition } from './drawer.directive';
@@ -73,6 +81,7 @@ export type DrawerMode = 'over' | 'push';
     '[class.cngx-drawer-panel--over]': "mode() === 'over'",
     '[class.cngx-drawer-panel--push]': "mode() === 'push'",
     '[class.cngx-drawer-panel--modal]': 'surfaceModal()',
+    '[attr.id]': 'panelId()',
     '[attr.aria-hidden]': 'isOpen() ? null : true',
     '[attr.inert]': "isOpen() ? null : ''",
   },
@@ -121,6 +130,17 @@ export class CngxDrawerPanel implements CngxDrawerSurfaceDriver {
 
   /** The resolved drawer: the explicit reference wins over a `CngxDrawer` on the host. */
   readonly drawerRef = computed(() => this.drawerInput() ?? this.hostDrawer);
+
+  private readonly staticId = inject(new HostAttributeToken('id'), { optional: true });
+
+  /** The panel's `id`: a static `id` attribute wins over the drawer's `panelId`. */
+  protected readonly panelId = computed(() => {
+    const fromDrawer = this.drawerRef()?.panelId();
+    if (this.staticId !== null) {
+      return this.staticId;
+    }
+    return fromDrawer === undefined || fromDrawer === '' ? null : fromDrawer;
+  });
 
   /** Whether the drawer is currently open (derived from the drawer ref). */
   readonly isOpen = computed(() => this.drawerRef()?.opened() ?? false);

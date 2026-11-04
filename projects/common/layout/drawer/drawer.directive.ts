@@ -1,5 +1,7 @@
 import { computed, Directive, ElementRef, inject, input, output, signal } from '@angular/core';
 
+import { CNGX_PANEL_TARGET, type CngxPanelTarget } from '../panel-trigger/panel-target';
+
 /**
  * Position from which the drawer panel slides in.
  */
@@ -14,6 +16,19 @@ export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
  *
  * Child directives (`CngxDrawerPanel`, `CngxDrawerContent`) receive a
  * reference to this directive via an explicit input - no ancestor injection.
+ *
+ * The drawer is a `CngxPanelTarget`: a `[cngxPanelTrigger]="drawer"` button
+ * mirrors `opened` as `aria-expanded` and points `aria-controls` at
+ * `panelId`, which the panel takes as its `id`. Inside the drawer it provides
+ * `CNGX_PANEL_TARGET` for a bare `cngxPanelTrigger`.
+ *
+ * ### With a panel trigger
+ * ```html
+ * <button type="button" [cngxPanelTrigger]="drawer">Menu</button>
+ * <div cngxDrawer #drawer="cngxDrawer" panelId="main-nav">
+ *   <nav [cngxDrawerPanel]="drawer">…</nav>
+ * </div>
+ * ```
  *
  * ### Uncontrolled
  * ```html
@@ -48,14 +63,22 @@ export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
   selector: '[cngxDrawer]',
   exportAs: 'cngxDrawer',
   standalone: true,
+  providers: [{ provide: CNGX_PANEL_TARGET, useExisting: CngxDrawer }],
   host: {
     '[class.cngx-drawer--opened]': 'opened()',
     '(keydown.escape)': 'close()',
   },
 })
-export class CngxDrawer {
-  /** @internal Host element ref - used by `CngxDrawerPanel` for click-outside containment. */
+export class CngxDrawer implements CngxPanelTarget {
+  /** @internal Host element ref. */
   readonly elementRef = inject(ElementRef<HTMLElement>);
+
+  /**
+   * The `id` of the drawer's panel element. `CngxDrawerPanel` renders it as
+   * its `id` unless the panel carries a static one, and a panel trigger
+   * points `aria-controls` at it.
+   */
+  readonly panelId = input<string | undefined>(undefined);
 
   /** Controlled opened state. When bound, takes precedence over internal state. */
   readonly openedInput = input<boolean | undefined>(undefined, { alias: 'cngxDrawerOpened' });
@@ -64,6 +87,12 @@ export class CngxDrawer {
 
   /** Resolved opened state - controlled input wins over internal state. */
   readonly opened = computed(() => this.openedInput() ?? this.openedState());
+
+  /** {@link CngxPanelTarget} view of {@link panelId}; empty when unset. */
+  readonly id = computed(() => this.panelId() ?? '');
+
+  /** {@link CngxPanelTarget} view of {@link opened}. */
+  readonly expanded = this.opened;
 
   /** Emitted when the opened state changes. Wire to a signal for two-way binding. */
   readonly openedChange = output<boolean>();

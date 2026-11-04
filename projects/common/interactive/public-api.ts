@@ -184,6 +184,7 @@ export {
 } from './reorder/chip-strip-roving';
 export { CngxKeyboardShortcut } from './keyboard/keyboard-shortcut.directive';
 export { CngxSearch } from './keyboard/search.directive';
+export { createActivationKeyHandler } from './keyboard/activation-key';
 export {
   CngxClickOutside,
   CNGX_CLICK_OUTSIDE_DRIVER,
