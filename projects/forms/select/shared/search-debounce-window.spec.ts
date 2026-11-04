@@ -40,7 +40,7 @@ function pickedGreen(m: ReturnType<typeof mount>, kind: Kind): boolean {
 describe('search debounce window keeps the filter in step with the keys', () => {
   for (const key of INPUT_KEYS) {
     const kind = KINDS[key];
-    it.fails(`${kind.name}: ArrowDown + Enter inside the window act on the typed filter`, () => {
+    it(`${kind.name}: ArrowDown + Enter inside the window act on the typed filter`, () => {
       vi.useFakeTimers();
       const m = mount(kind, { providers: [provideSelectConfig(withSearchDebounce(300))] });
       m.open();

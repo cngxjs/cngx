@@ -1,7 +1,7 @@
 import { Component, Directive, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxActiveDescendant } from '@cngx/common/a11y';
 import { CngxPopover } from '@cngx/common/popover';
@@ -612,5 +612,77 @@ describe('CngxListboxTrigger - review 2 editable combobox and Alt shortcuts', ()
     TestBed.flushEffects();
     expect(popover.isVisible()).toBe(false);
     expect(triggerEl.hasAttribute('aria-activedescendant')).toBe(false);
+  });
+});
+
+@Component({
+  template: `
+    <input
+      role="combobox"
+      cngxListboxSearch
+      #search="cngxListboxSearch"
+      [debounceMs]="300"
+      [cngxListboxTrigger]="lb"
+      [popover]="pop"
+      [closeOnSelect]="false"
+    />
+    <div cngxPopover #pop="cngxPopover">
+      <div cngxListbox [label]="'Colors'" #lb="cngxListbox">
+        <div cngxOption value="red">Red</div>
+        <div cngxOption value="green">Green</div>
+      </div>
+    </div>
+  `,
+  imports: [CngxListbox, CngxOption, CngxListboxTrigger, CngxListboxSearch, CngxPopover],
+})
+class DebouncedSearchInputHost {}
+
+describe('CngxListboxTrigger - settles a pending search term before listbox keys', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [DebouncedSearchInputHost] });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function setup() {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(DebouncedSearchInputHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const de = fixture.debugElement.query(By.directive(CngxListboxTrigger));
+    const input = de.nativeElement as HTMLInputElement;
+    const search = fixture.debugElement
+      .query(By.directive(CngxListboxSearch))
+      .injector.get(CngxListboxSearch);
+    const type = (value: string): void => {
+      input.value = value;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    const press = (key: string): void => {
+      input.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+      TestBed.flushEffects();
+    };
+    return { fixture, input, search, type, press };
+  }
+
+  it('flushes the pending term on an ArrowDown inside the debounce window', () => {
+    const { type, press, search } = setup();
+    press('ArrowDown');
+    type('gr');
+    expect(search.term()).toBe('');
+    press('ArrowDown');
+    expect(search.term()).toBe('gr');
+  });
+
+  it('flushes the pending term on blur', () => {
+    const { input, type, search } = setup();
+    type('gr');
+    expect(search.term()).toBe('');
+    input.dispatchEvent(new FocusEvent('blur'));
+    expect(search.term()).toBe('gr');
   });
 });

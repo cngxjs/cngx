@@ -1,6 +1,16 @@
-import { computed, Directive, ElementRef, inject, input, output } from '@angular/core';
+import {
+  afterNextRender,
+  computed,
+  Directive,
+  ElementRef,
+  inject,
+  Injector,
+  input,
+  output,
+} from '@angular/core';
 import { CNGX_NESTED_INTERACTIVE_SELECTOR } from '@cngx/core/utils';
 
+import { CngxSearch } from '../keyboard/search.directive';
 import { injectHostInteractionBlocked } from '../trigger-guard/host-interaction-blocked';
 
 import type { CngxListbox } from './listbox.directive';
@@ -81,6 +91,7 @@ interface PopoverController {
   host: {
     '[attr.aria-activedescendant]': 'activeDescendant()',
     '(keydown)': 'handleKeydown($event)',
+    '(blur)': 'handleBlur()',
   },
 })
 export class CngxListboxTrigger<T = unknown> {
@@ -122,6 +133,9 @@ export class CngxListboxTrigger<T = unknown> {
    * automatically; classic button triggers keep native-`<select>` parity.
    */
   private readonly search = inject(CngxListboxSearch, { optional: true, self: true });
+  /** The co-located debounce owner, present whenever `search` is. Used to settle a pending term. */
+  private readonly searchCtrl = inject(CngxSearch, { optional: true, self: true });
+  private readonly injector = inject(Injector);
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
   /** A disabled `cngxButton` stays focusable, so keydown still reaches the trigger. */
@@ -202,28 +216,61 @@ export class CngxListboxTrigger<T = unknown> {
       return;
     }
 
+    // A combobox input with a debounced term still pending settles it before a
+    // navigation or activation key, then runs the key after the next render so
+    // the listbox reflects the filtered options - the stale-filter rule the
+    // declarative search already applies. A button trigger has no co-located
+    // search, so this never fires for it.
+    if (this.searchCtrl && this.isNavOrActivate(key) && this.searchCtrl.flush()) {
+      event.preventDefault();
+      afterNextRender(() => this.runOpenKey(key, null), { injector: this.injector });
+      return;
+    }
+    this.runOpenKey(key, event);
+  }
+
+  /** Whether `key` navigates or activates the open listbox. */
+  private isNavOrActivate(key: string): boolean {
+    return (
+      key === 'ArrowDown' ||
+      key === 'ArrowUp' ||
+      key === 'Home' ||
+      key === 'End' ||
+      key === 'Enter' ||
+      key === ' '
+    );
+  }
+
+  /** Flush a pending debounced term when focus leaves the trigger. */
+  protected handleBlur(): void {
+    this.searchCtrl?.flush();
+  }
+
+  /** The open-panel key actions. `event` is `null` when run deferred after a flush. */
+  private runOpenKey(key: string, event: KeyboardEvent | null): void {
+    const ad = this.listbox().ad;
     switch (key) {
       case 'Escape':
         if (this.popover().closeOnEscape?.() === false) {
           return;
         }
-        event.preventDefault();
+        event?.preventDefault();
         this.popover().hide();
         return;
       case 'ArrowDown':
-        event.preventDefault();
+        event?.preventDefault();
         ad.highlightNext();
         return;
       case 'ArrowUp':
-        event.preventDefault();
+        event?.preventDefault();
         ad.highlightPrev();
         return;
       case 'Home':
-        event.preventDefault();
+        event?.preventDefault();
         ad.highlightFirst();
         return;
       case 'End':
-        event.preventDefault();
+        event?.preventDefault();
         ad.highlightLast();
         return;
       case 'Enter':
@@ -233,11 +280,11 @@ export class CngxListboxTrigger<T = unknown> {
           // panel open it belongs to the listbox even when nothing is active.
           // Enter stays untouched so a consumer's own Enter handler still runs.
           if (key === ' ') {
-            event.preventDefault();
+            event?.preventDefault();
           }
           return;
         }
-        event.preventDefault();
+        event?.preventDefault();
         ad.activateCurrent();
         if (this.closeOnSelect()) {
           this.popover().hide();
@@ -252,7 +299,7 @@ export class CngxListboxTrigger<T = unknown> {
     if (key.length === 1 && /\S/.exec(key) !== null) {
       // Native <select> parity: printable chars drive AD typeahead while
       // focus stays on the trigger.
-      event.preventDefault();
+      event?.preventDefault();
       ad.typeaheadChar(key);
     }
   }
