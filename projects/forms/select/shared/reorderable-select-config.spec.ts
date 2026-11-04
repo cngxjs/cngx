@@ -36,7 +36,7 @@ describe('resolveReorderableSelectConfig', () => {
       resolveReorderableSelectConfig(),
     );
     expect(cfg.keyboardModifier).toBe(CNGX_REORDERABLE_SELECT_DEFAULTS.keyboardModifier);
-    expect(cfg.ariaLabel).toBeUndefined();
+    expect(cfg.ariaLabel()).toBeUndefined();
     expect(cfg.reorderHint()('alt').replace(/[\u2068\u2069]/g, "")).toBe('Reorder with Alt + arrow keys');
     expect(cfg.dragHandle).toBe(CNGX_REORDERABLE_SELECT_DEFAULTS.dragHandle);
     expect(cfg.moveGlyph).toBeNull();
@@ -55,7 +55,7 @@ describe('resolveReorderableSelectConfig', () => {
     );
     expect(cfg.keyboardModifier).toBe('alt');
     // Non-overridden keys stay at the library default.
-    expect(cfg.ariaLabel).toBeUndefined();
+    expect(cfg.ariaLabel()).toBeUndefined();
     expect(cfg.reorderHint()('alt').replace(/[\u2068\u2069]/g, "")).toBe('Reorder with Alt + arrow keys');
   });
 
@@ -73,7 +73,7 @@ describe('resolveReorderableSelectConfig', () => {
       resolveReorderableSelectConfig(),
     );
     expect(cfg.keyboardModifier).toBe('alt');
-    expect(cfg.ariaLabel?.()).toBe('Reorder with Alt + arrows');
+    expect(cfg.ariaLabel()).toBe('Reorder with Alt + arrows');
     expect(cfg.freezeStripOnCommit).toBe(false);
   });
 
@@ -111,7 +111,7 @@ describe('injectReorderableSelectConfig', () => {
       providers: [provideReorderableSelectConfig(withReorderAriaLabel('Reorder entries'))],
     });
     const cfg = TestBed.runInInjectionContext(() => injectReorderableSelectConfig());
-    expect(cfg.ariaLabel?.()).toBe('Reorder entries');
+    expect(cfg.ariaLabel()).toBe('Reorder entries');
     expect(cfg.keyboardModifier).toBe(CNGX_REORDERABLE_SELECT_DEFAULTS.keyboardModifier);
   });
 });
@@ -123,7 +123,7 @@ describe('resolveReorderableSelectConfig - runtime language switch', () => {
     TestBed.configureTestingModule({ providers: [provideReorderableSelectConfig(withReorderAriaLabel(label))] });
     const resolved = TestBed.runInInjectionContext(() => resolveReorderableSelectConfig());
     label.set('Neu anordnen');
-    expect(resolved.ariaLabel?.()).toBe('Neu anordnen');
+    expect(resolved.ariaLabel()).toBe('Neu anordnen');
   });
 
   it('shares one Signal for equal plain labels', () => {
@@ -302,6 +302,6 @@ describe('provideReorderableSelectConfigAt merges over the parent config', () =>
     const cfg = runInInjectionContext(injector, () => resolveReorderableSelectConfig());
     expect(cfg.freezeStripOnCommit).toBe(false);
     expect(cfg.keyboardModifier).toBe('meta');
-    expect(cfg.ariaLabel?.()).toBe('Mit Alt und Pfeiltasten sortieren');
+    expect(cfg.ariaLabel()).toBe('Mit Alt und Pfeiltasten sortieren');
   });
 });

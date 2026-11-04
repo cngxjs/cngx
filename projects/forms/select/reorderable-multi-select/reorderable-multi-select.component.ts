@@ -526,7 +526,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * named for the effective `reorderKeyboardModifier`; follows a language switch.
    */
   protected readonly resolvedReorderAriaLabel = computed<string>(() => {
-    const custom = this.reorderAriaLabel() ?? this.reorderableConfig.ariaLabel?.();
+    const custom = this.reorderAriaLabel() ?? this.reorderableConfig.ariaLabel();
     return custom ?? this.reorderableConfig.reorderHint()(this.reorderKeyboardModifier());
   });
 

@@ -264,8 +264,8 @@ export function resolveReorderableSelectConfig(): Required<
 > & {
   readonly dragHandle: TemplateRef<void> | null;
   readonly moveGlyph: TemplateRef<CngxMultiSelectMoveGlyphContext> | null;
-  /** A custom chip-strip label, or `undefined` to let `reorderHint` name the modifier. */
-  readonly ariaLabel: Signal<string> | undefined;
+  /** A custom chip-strip label, or a signal of `undefined` to let `reorderHint` name the modifier. */
+  readonly ariaLabel: Signal<string | undefined>;
   /** Formats the default chip-strip hint for a keyboard modifier. */
   readonly reorderHint: Signal<(modifier: CngxReorderModifier) => string>;
   readonly listLabel: Signal<string>;
@@ -277,7 +277,7 @@ export function resolveReorderableSelectConfig(): Required<
   const user = inject(CNGX_REORDERABLE_SELECT_CONFIG, { optional: true }) ?? {};
   return {
     keyboardModifier: user.keyboardModifier ?? CNGX_REORDERABLE_SELECT_DEFAULTS.keyboardModifier,
-    ariaLabel: user.ariaLabel === undefined ? undefined : coerceSignal(user.ariaLabel),
+    ariaLabel: coerceSignal(user.ariaLabel),
     reorderHint: injectSelectWord('reorderHint'),
     listLabel: coerceSignal(user.listLabel ?? injectSelectWord('reorderListLabel')),
     moveUp: coerceSignal(user.moveUp ?? injectSelectWord('reorderMoveUp')),
