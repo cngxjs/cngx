@@ -71,6 +71,10 @@ export interface CngxButtonCore {
   readonly busyVisible: Signal<boolean>;
   /** `true` while the button refuses activation: disabled, busy or refused by the co-hosted `CngxAsyncClick`. */
   readonly blocked: Signal<boolean>;
+  /** `data-busy` attribute value, rendered from `busyVisible` (gated). */
+  readonly busyAttr: Signal<'true' | null>;
+  /** `data-pending` attribute value, rendered from `busy` (immediate). */
+  readonly pendingAttr: Signal<'true' | null>;
   /** `aria-disabled` rendered from `blocked`. */
   readonly ariaDisabled: Signal<'true' | null>;
   /**
@@ -171,6 +175,8 @@ export function injectButtonCore(
   const blocked = computed(
     () => inputs.disabled() || busy() || busyVisible() || asyncClickRefuses(),
   );
+  const busyAttr = computed<'true' | null>(() => (busyVisible() ? 'true' : null));
+  const pendingAttr = computed<'true' | null>(() => (busy() ? 'true' : null));
   const ariaDisabled = computed<'true' | null>(() => (blocked() ? 'true' : null));
   const reasonIds = computed(() =>
     inputs.disabled() && inputs.disabledReason() ? reasonId : null,
@@ -208,6 +214,8 @@ export function injectButtonCore(
     busy,
     busyVisible,
     blocked,
+    busyAttr,
+    pendingAttr,
     ariaDisabled,
     describedBy,
     reasonId,
