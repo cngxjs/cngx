@@ -398,7 +398,7 @@ describe('Material bridge: menu dropdown check', () => {
     root = null;
   });
 
-  it('draws the check on the 16px small box while the item font stays 0.875rem', () => {
+  it('draws the check on the 24-grid path at the 16px box while the item font stays 0.875rem', () => {
     const f = TestBed.createComponent(MenuCheckBridgeHost);
     root = f.nativeElement as HTMLElement;
     document.body.appendChild(root);
@@ -412,6 +412,7 @@ describe('Material bridge: menu dropdown check', () => {
       (p) => getComputedStyle(p).display !== 'none',
     );
     expect(painted).toHaveLength(1);
-    expect(painted[0].classList.contains('cngx-icon-svg__small')).toBe(true);
+    // CHECK carries no 16-grid drawing (1x smoke), so the 24-grid path paints.
+    expect(painted[0].classList.contains('cngx-icon-svg__path')).toBe(true);
   });
 });
