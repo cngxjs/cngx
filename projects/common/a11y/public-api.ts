@@ -7,7 +7,12 @@ export { CngxLiveAnnouncer, type AriaLivePoliteness } from './aria/live-announce
 export { injectScopedLiveRegion, type CngxScopedLiveRegion } from './aria/scoped-live-region';
 export type { CngxPendingAnnouncement } from './aria/live-region-pair';
 export { CngxAutofocus } from './focus/autofocus.directive';
-export { CngxFocusRestore, CNGX_FOCUSABLE_SELECTOR } from './focus/focus-restore.directive';
+export {
+  CngxFocusRestore,
+  CNGX_FOCUSABLE_SELECTOR,
+  CNGX_FOCUS_RESTORE_DRIVER,
+  type CngxFocusRestoreDriver,
+} from './focus/focus-restore.directive';
 export {
   CngxFocusTrap,
   CNGX_FOCUS_TRAP_DRIVER,
