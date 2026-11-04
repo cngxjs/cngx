@@ -1667,7 +1667,7 @@ describe('CngxTreeSelect - review 2 dismiss and tree keyboard', () => {
   });
 
   // I10: PageDown moves the active node by a page (clamped to the last node here).
-  it.fails('PageDown moves the active node toward the end', () => {
+  it('PageDown moves the active node toward the end', () => {
     const m = probeMount(PROBE_KINDS['tree']);
     m.open();
     const tree = treeEl(m.el);

@@ -25,6 +25,7 @@ import {
   type CngxTreeSelectPanelHost,
 } from './tree-select-panel-host';
 import { CngxTreeSelectFooterBar } from './tree-select-footer.component';
+import { resolvePageJumpTarget } from '../shared/typeahead-controller';
 import type { CngxTreeSelectNodeContext } from './tree-select.model';
 
 /**
@@ -291,6 +292,35 @@ export class CngxTreeSelectPanel<T = unknown> {
   protected handleEscape(event: Event): void {
     event.preventDefault();
     this.host.close();
+  }
+
+  /**
+   * PageUp/PageDown jump over the rendered tree rows (`visibleNodes`),
+   * mirroring the flat-nav variants' clamped `±step` jump with
+   * disabled-skip. Highlights the target node via the AD; the key is
+   * left alone (no `preventDefault`) when disabled or the tree is empty.
+   */
+  protected handlePageJump(event: Event, ad: CngxActiveDescendant, direction: 1 | -1): void {
+    if (this.host.disabled()) {
+      return;
+    }
+    const nodes = this.host.treeController.visibleNodes();
+    if (nodes.length === 0) {
+      return;
+    }
+    event.preventDefault();
+    const activeId = ad.activeItem()?.id ?? null;
+    const currentIndex = activeId === null ? -1 : nodes.findIndex((n) => n.id === activeId);
+    const target = resolvePageJumpTarget(
+      nodes,
+      currentIndex,
+      direction,
+      (n) => n.disabled === true,
+    );
+    if (target === null) {
+      return;
+    }
+    ad.highlightByValue(nodes[target].value);
   }
 
   /**

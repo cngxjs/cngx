@@ -17,6 +17,8 @@
     (keydown.enter)="handleActivate($event, ad)"
     (keydown.space)="handleActivate($event, ad)"
     (keydown.escape)="handleEscape($event)"
+    (keydown.pageDown)="handlePageJump($event, ad, 1)"
+    (keydown.pageUp)="handlePageJump($event, ad, -1)"
     (typeaheadMissed)="handleTypeaheadMiss($event, ad)"
     (mousedown)="handleTreeMouseDown($event)"
     tabindex="0"

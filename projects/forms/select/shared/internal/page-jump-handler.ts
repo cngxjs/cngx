@@ -79,6 +79,35 @@ export interface PageJumpDeps<T> {
  * @internal
  */
 export function handlePageJumpKey<T>(event: KeyboardEvent, deps: PageJumpDeps<T>): boolean {
+  return runPageJump(event, {
+    listbox: deps.listbox,
+    popover: deps.popover,
+    strategy: deps.strategy,
+    flatOptions: deps.flatOptions,
+    compareWith: deps.compareWith,
+    disabled: deps.disabled?.() ?? false,
+    typeaheadController: NO_TYPEAHEAD as TypeaheadController<T>,
+  });
+}
+
+/**
+ * Shared page-jump body for both entry points. A missing listbox or popover
+ * leaves the key unhandled - no `preventDefault`, returns `false` - identically
+ * in both, so an anchored and a button-trigger host behave the same (B3).
+ */
+function runPageJump<T>(
+  event: KeyboardEvent,
+  deps: {
+    readonly listbox: CngxListbox<unknown> | undefined;
+    readonly popover: CngxPopover | undefined;
+    readonly strategy: CngxFlatNavStrategy;
+    readonly flatOptions: () => readonly CngxSelectOptionDef<T>[];
+    readonly virtualSpace?: () => readonly CngxFlatNavListboxItem[];
+    readonly compareWith: () => CngxSelectCompareFn<T>;
+    readonly disabled: boolean;
+    readonly typeaheadController: TypeaheadController<T>;
+  },
+): boolean {
   if (event.key !== 'PageDown' && event.key !== 'PageUp') {
     return false;
   }
@@ -88,15 +117,21 @@ export function handlePageJumpKey<T>(event: KeyboardEvent, deps: PageJumpDeps<T>
   if (event.ctrlKey || event.metaKey || event.altKey) {
     return false;
   }
+  if (deps.disabled) {
+    return false;
+  }
   const { listbox, popover } = deps;
-  if (!listbox || !popover || deps.disabled?.()) {
+  if (!listbox || !popover) {
     return false;
   }
   event.preventDefault();
   if (!popover.isVisible()) {
     popover.show();
   }
-  const { items, currentIndex } = resolvePageJumpSpace(listbox, deps.flatOptions);
+  const { items, currentIndex } = resolvePageJumpSpace(
+    listbox,
+    deps.virtualSpace ?? deps.flatOptions,
+  );
   const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
   const action = deps.strategy.onPageJump(
     {
@@ -106,7 +141,7 @@ export function handlePageJumpKey<T>(event: KeyboardEvent, deps: PageJumpDeps<T>
       currentListboxIndex: currentIndex,
       compareWith: deps.compareWith(),
       disabled: false,
-      typeaheadController: NO_TYPEAHEAD,
+      typeaheadController: deps.typeaheadController,
     },
     direction,
   );
@@ -160,40 +195,14 @@ export function handleFlatNavPageJumpKey<T>(
   if (event.key !== 'PageDown' && event.key !== 'PageUp') {
     return false;
   }
-  if (event.ctrlKey || event.metaKey || event.altKey) {
-    return false;
-  }
-  if (deps.disabled()) {
-    return false;
-  }
-  event.preventDefault();
-  const pop = deps.popover;
-  const lb = deps.listbox;
-  if (!pop || !lb) {
-    return true;
-  }
-  if (!pop.isVisible()) {
-    pop.show();
-  }
-  const { items, currentIndex: currentListboxIndex } = resolvePageJumpSpace(
-    lb,
-    deps.virtualSpace ?? deps.flatOptions,
-  );
-  const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
-  const action = deps.strategy.onPageJump(
-    {
-      options: deps.flatOptions(),
-      listboxItems: items,
-      currentFlatIndex: -1,
-      currentListboxIndex,
-      compareWith: deps.compareWith(),
-      disabled: deps.disabled(),
-      typeaheadController: deps.typeaheadController,
-    },
-    direction,
-  );
-  if (action.kind === 'highlight') {
-    lb.ad.highlightByIndex(action.index);
-  }
-  return true;
+  return runPageJump(event, {
+    listbox: deps.listbox,
+    popover: deps.popover,
+    strategy: deps.strategy,
+    flatOptions: deps.flatOptions,
+    virtualSpace: deps.virtualSpace,
+    compareWith: deps.compareWith,
+    disabled: deps.disabled(),
+    typeaheadController: deps.typeaheadController,
+  });
 }

@@ -291,7 +291,7 @@ describe('B3: both page-jump handlers treat a missing listbox the same way', () 
     };
   }
 
-  it.fails('return value and preventDefault match for PageDown with no listbox', () => {
+  it('return value and preventDefault match for PageDown with no listbox', () => {
     const anchored = key('PageDown');
     const anchoredRet = handlePageJumpKey(anchored, { listbox: undefined, popover, ...STRATEGY_DEPS });
     const flatNav = key('PageDown');
