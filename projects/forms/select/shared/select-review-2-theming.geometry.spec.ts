@@ -204,7 +204,7 @@ describe('select review 2 theming', () => {
   });
 
   // E2 - a host-set max-height reaches the panel.
-  it.fails('E2: a host-set panel max-height reaches the panel', async () => {
+  it('E2: a host-set panel max-height reaches the panel', async () => {
     const fixture = mount((h) => h.maxHeight.set('30rem'));
     const root = fixture.nativeElement as HTMLElement;
     await open(fixture);

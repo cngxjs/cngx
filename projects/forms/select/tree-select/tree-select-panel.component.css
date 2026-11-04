@@ -76,7 +76,7 @@
    */
   @property --cngx-tree-select-tree-padding {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.25rem;
   }
 
@@ -86,7 +86,7 @@
    */
   @property --cngx-tree-select-node-gap {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.5rem;
   }
 
@@ -96,7 +96,7 @@
    */
   @property --cngx-tree-select-node-height {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 2rem;
   }
 
@@ -108,7 +108,7 @@
    */
   @property --cngx-tree-select-node-radius {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.125rem;
   }
 
@@ -118,7 +118,7 @@
    */
   @property --cngx-tree-select-base-indent {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.5rem;
   }
 
@@ -129,7 +129,7 @@
    */
   @property --cngx-tree-select-level-indent {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1.25rem;
   }
 
@@ -139,7 +139,7 @@
    */
   @property --cngx-tree-select-node-padding-end {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.75rem;
   }
 
@@ -159,7 +159,7 @@
    */
   @property --cngx-tree-select-node-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: transparent;
   }
 
@@ -204,7 +204,7 @@
    */
   @property --cngx-tree-select-twisty-size {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1.25rem;
   }
 
@@ -224,7 +224,7 @@
    */
   @property --cngx-tree-select-twisty-font-size {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1rem;
   }
 

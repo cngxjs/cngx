@@ -172,7 +172,7 @@
    */
   @property --cngx-select-panel-radius {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.25rem;
   }
 
@@ -265,7 +265,7 @@
    */
   @property --cngx-select-panel-max-height {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 16rem;
   }
 
@@ -280,7 +280,7 @@
    */
   @property --cngx-select-option-padding {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.375rem 0.5rem;
   }
 
@@ -294,7 +294,7 @@
    */
   @property --cngx-select-option-min-height {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0px;
   }
 
@@ -304,7 +304,7 @@
    */
   @property --cngx-select-option-radius {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.125rem;
   }
 
@@ -421,7 +421,7 @@
    */
   @property --cngx-select-skeleton-gap {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.25rem;
   }
 
@@ -431,7 +431,7 @@
    */
   @property --cngx-select-skeleton-padding {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.25rem;
   }
 
@@ -441,7 +441,7 @@
    */
   @property --cngx-select-skeleton-row-height {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1.75rem;
   }
 
@@ -451,7 +451,7 @@
    */
   @property --cngx-select-skeleton-row-radius {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.125rem;
   }
 
@@ -461,7 +461,7 @@
    */
   @property --cngx-select-spinner-padding {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1rem;
   }
 
@@ -471,7 +471,7 @@
    */
   @property --cngx-select-spinner-size {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1.5rem;
   }
 
@@ -504,7 +504,7 @@
    */
   @property --cngx-select-loading-bar-height {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 3px;
   }
 
@@ -525,7 +525,7 @@
    */
   @property --cngx-select-refreshing-height {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 2px;
   }
 
@@ -546,7 +546,7 @@
    */
   @property --cngx-select-refreshing-spinner-padding {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.25rem;
   }
 
@@ -556,7 +556,7 @@
    */
   @property --cngx-select-refreshing-dots-gap {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.25rem;
   }
 
@@ -566,7 +566,7 @@
    */
   @property --cngx-select-refreshing-dots-padding {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.375rem;
   }
 
@@ -576,7 +576,7 @@
    */
   @property --cngx-select-refreshing-dot-size {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.375rem;
   }
 
@@ -596,7 +596,7 @@
    */
   @property --cngx-select-option-spinner-size {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.875rem;
   }
 
@@ -637,7 +637,7 @@
    */
   @property --cngx-select-chip-wrap-radius {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.25rem;
   }
 
@@ -679,7 +679,7 @@
    */
   @property --cngx-select-chip-wrap-gap {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.25rem;
   }
 
@@ -690,7 +690,7 @@
    */
   @property --cngx-select-chip-remove-size {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1.25rem;
   }
 
@@ -731,7 +731,7 @@
    */
   @property --cngx-select-chip-handle-size {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.75rem;
   }
 
@@ -793,7 +793,7 @@
    */
   @property --cngx-select-chip-drag-scale {
     syntax: '<number>';
-    inherits: false;
+    inherits: true;
     initial-value: 1.06;
   }
 
@@ -803,7 +803,7 @@
    */
   @property --cngx-select-chip-drag-tilt {
     syntax: '<angle>';
-    inherits: false;
+    inherits: true;
     initial-value: -1.5deg;
   }
 
@@ -813,7 +813,7 @@
    */
   @property --cngx-select-chip-drop-bar-width {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 3px;
   }
 
@@ -834,7 +834,7 @@
    */
   @property --cngx-select-error-gap {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.5rem;
   }
 
@@ -844,7 +844,7 @@
    */
   @property --cngx-select-error-padding {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.5rem 0.75rem;
   }
 
@@ -866,7 +866,7 @@
    */
   @property --cngx-select-error-inline-padding {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.375rem 0.5rem;
   }
 
@@ -876,7 +876,7 @@
    */
   @property --cngx-select-error-inline-radius {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.125rem;
   }
 
@@ -886,7 +886,7 @@
    */
   @property --cngx-select-error-retry-border {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1px solid currentColor;
   }
 
@@ -908,7 +908,7 @@
    */
   @property --cngx-select-trigger-invalid-border-width {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 1px;
   }
 
@@ -931,7 +931,7 @@
    */
   @property --cngx-select-trigger-invalid-glow {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0 0 0 3px oklch(0.6 0.18 25 / 0.2);
   }
 
@@ -941,7 +941,7 @@
    */
   @property --cngx-select-commit-error-padding {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.375rem 0.5rem;
   }
 
@@ -951,7 +951,7 @@
    */
   @property --cngx-select-commit-error-radius {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.125rem;
   }
 

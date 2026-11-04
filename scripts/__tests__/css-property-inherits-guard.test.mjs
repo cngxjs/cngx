@@ -133,6 +133,50 @@ describe('non-inheriting @property detection', () => {
   });
 });
 
+/**
+ * OD4: every `@property` registered under `projects/forms/select` is
+ * `inherits: true`, because each is set on the host (or a colour-scheme island
+ * ancestor) and read on a descendant - the panel, an option, a chip, a tree
+ * node. A registered `inherits: false` there is the cascade trap this strand
+ * closes. A token that genuinely must stay `inherits: false` goes in the map
+ * with a one-clause reason; the count is exact, so a new `inherits: false`
+ * select token fails the guard.
+ */
+const SELECT_INHERITS_FALSE_EXEMPT = new Map([
+  // Empty: no select @property stays non-inheriting after OD4.
+]);
+
+function selectNonInheriting() {
+  const names = new Set();
+  for (const { rel, source } of STYLE_FILES) {
+    if (!rel.startsWith('/projects/forms/select/')) {
+      continue;
+    }
+    for (const name of nonInheritingProperties(source)) {
+      names.add(name);
+    }
+  }
+  return names;
+}
+
+describe('select @property inherits (OD4)', () => {
+  it('registers every select token inherits: true unless exempted', () => {
+    const offenders = [...selectNonInheriting()].filter(
+      (name) => !SELECT_INHERITS_FALSE_EXEMPT.has(name),
+    );
+    expect(
+      offenders,
+      `these select @property tokens are inherits: false, so a host-level or scheme-island override never reaches the descendant that reads them (register inherits: true, or add an exempt row with a reason):\n${offenders.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  it('keeps the exemption table exact', () => {
+    const nonInheriting = selectNonInheriting();
+    const stale = [...SELECT_INHERITS_FALSE_EXEMPT.keys()].filter((name) => !nonInheriting.has(name));
+    expect(stale, 'an exempt token is no longer inherits: false - drop its row').toEqual([]);
+  });
+});
+
 describe('css @property inherits regression guard', () => {
   it('no inherits: false @property is assigned on :root or html', () => {
     const nonInheriting = new Set();
