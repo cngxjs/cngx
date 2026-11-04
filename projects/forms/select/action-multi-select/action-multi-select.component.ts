@@ -21,6 +21,7 @@ import {
 } from '@angular/core';
 
 import {
+  CNGX_NESTED_INTERACTIVE_SELECTOR,
   CNGX_STATEFUL,
   injectLocale,
   nextUid,
@@ -1340,12 +1341,15 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   protected readonly handleInputKeydown = this.triggerInput.handleInputKeydown;
   private readonly handleActionCommit = this.triggerInput.handleActionCommit;
 
+  /** Descendants that own their own click; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
+  private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
+
   protected handleWrapperClick(event: MouseEvent): void {
     if (this.disabled()) {
       return;
     }
     const target = event.target as HTMLElement | null;
-    if (target?.closest('button, .cngx-chip__remove')) {
+    if (target?.closest(this.nestedInteractive)) {
       return;
     }
     this.focus();

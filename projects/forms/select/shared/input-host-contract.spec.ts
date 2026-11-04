@@ -114,11 +114,11 @@ describe('A25: typeahead commits a value with no option', () => {
 // ── B22: the wrapper click honours CNGX_NESTED_INTERACTIVE_SELECTOR ─────────
 describe('B22: wrapper click respects the nested-interactive selector', () => {
   for (const key of ['combobox', 'actionMulti'] as const) {
-    it.fails(`${key}: a click on a custom nested-interactive descendant does not open the panel`, () => {
+    it(`${key}: a click on a custom nested-interactive descendant does not open the panel`, () => {
       const m = mount(KINDS[key], {
         providers: [{ provide: CNGX_NESTED_INTERACTIVE_SELECTOR, useValue: 'button, .cngx-chip__remove, [data-custom]' }],
       });
-      const trigger = m.el.querySelector<HTMLElement>('[class$="__trigger"]')!;
+      const trigger = m.el.querySelector<HTMLElement>('.cngx-field-trigger')!;
       const custom = document.createElement('span');
       custom.setAttribute('data-custom', '');
       trigger.appendChild(custom);

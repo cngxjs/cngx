@@ -18,6 +18,7 @@ import {
 } from '@angular/core';
 
 import {
+  CNGX_NESTED_INTERACTIVE_SELECTOR,
   CNGX_STATEFUL,
   injectLocale,
   nextUid,
@@ -1209,13 +1210,16 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     this.inputEl()?.nativeElement.focus(options);
   }
 
+  /** Descendants that own their own click; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
+  private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
+
   /** @internal - wrapper click routes focus into the input and opens. */
   protected handleWrapperClick(event: MouseEvent): void {
     if (this.disabled()) {
       return;
     }
     const target = event.target as HTMLElement | null;
-    if (target?.closest('button, .cngx-chip__remove')) {
+    if (target?.closest(this.nestedInteractive)) {
       return;
     }
     this.focus();
