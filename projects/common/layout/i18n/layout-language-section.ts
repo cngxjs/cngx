@@ -1,5 +1,5 @@
 // Pulls the augmented module into the program; ng-packagr rejects `declare module` (TS2664) otherwise.
-import type {} from '@cngx/core/i18n';
+import type { CngxMessage } from '@cngx/core/i18n';
 
 /**
  * The layout section of a {@link CngxLanguagePack}: the copy of the
@@ -13,6 +13,10 @@ export interface CngxLayoutLanguageSection {
   readonly expandableTextMore: string;
   /** Label of the `CngxExpandableText` collapse control. */
   readonly expandableTextLess: string;
+  /** Accessible name of a `CngxResizable` handle. */
+  readonly resizeHandle: string;
+  /** `aria-valuetext` of a `CngxResizable` handle. Placeholder: `{size}` (px). */
+  readonly resizeValueText: CngxMessage;
 }
 
 /**
@@ -25,6 +29,8 @@ export interface CngxLayoutLanguageSection {
 export const CNGX_LAYOUT_LANGUAGE_EN: CngxLayoutLanguageSection = {
   expandableTextMore: 'Show more',
   expandableTextLess: 'Show less',
+  resizeHandle: 'Resize',
+  resizeValueText: '{size} pixels',
 };
 
 declare module '@cngx/core/i18n' {

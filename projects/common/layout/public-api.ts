@@ -27,6 +27,7 @@ export {
   createContainerSize,
   injectContainerSize,
 } from './observers/container-size';
+export { CngxResizable, type CngxResizableEdge } from './resizable/resizable.directive';
 export { CngxScrollLock } from './scroll/scroll-lock.directive';
 export { createPinnedScrollLock, createScrollLock } from './scroll/scroll-lock-core';
 export { CngxScrollEdges } from './scroll/scroll-edges.directive';
