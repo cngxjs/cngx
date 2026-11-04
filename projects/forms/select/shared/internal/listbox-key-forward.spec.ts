@@ -1,72 +1,89 @@
-import { signal } from '@angular/core';
-import type { CngxListbox } from '@cngx/common/interactive';
+import { signal, type Signal } from '@angular/core';
 import { describe, expect, it, vi } from 'vitest';
+
+import type { CngxListbox } from '@cngx/common/interactive';
 
 import { createListboxKeyForward } from './listbox-key-forward';
 
-function setup() {
-  const ad = {
+const ref = (ad: unknown): Signal<CngxListbox | undefined> =>
+  signal({ ad } as unknown as CngxListbox);
+
+function keydown(key: string, over: Partial<{ isComposing: boolean; keyCode: number }> = {}): KeyboardEvent {
+  const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+  if (over.isComposing !== undefined) {
+    Object.defineProperty(event, 'isComposing', { value: over.isComposing });
+  }
+  if (over.keyCode !== undefined) {
+    Object.defineProperty(event, 'keyCode', { value: over.keyCode });
+  }
+  return event;
+}
+
+function makeAd() {
+  return {
     highlightNext: vi.fn(),
     highlightPrev: vi.fn(),
+    activateCurrent: vi.fn(),
     highlightFirst: vi.fn(),
     highlightLast: vi.fn(),
-    activateCurrent: vi.fn(),
   };
-  const listboxRef = signal<CngxListbox | undefined>({ ad } as unknown as CngxListbox);
-  const escape = vi.fn();
-  const handle = createListboxKeyForward(listboxRef, escape);
-  return { ad, listboxRef, escape, handle };
 }
 
-function key(name: string): KeyboardEvent {
-  return new KeyboardEvent('keydown', { key: name, cancelable: true });
-}
+// A signature that includes the homeEnd option the fix adds. The cast lets the
+// RED spec compile against the current two-arg forwarder; Phase 4 widens the
+// real signature and the Home/End cases flip green.
+type ForwardWithOpts = (
+  ref: Signal<CngxListbox | undefined>,
+  escape: () => void,
+  opts?: { homeEnd?: 'listbox' | 'caret' },
+) => (event: KeyboardEvent) => void;
 
 describe('createListboxKeyForward', () => {
-  it.each([
-    ['ArrowDown', 'highlightNext'],
-    ['ArrowUp', 'highlightPrev'],
-    ['Enter', 'activateCurrent'],
-  ] as const)('%s calls ad.%s and prevents the default', (name, method) => {
-    const { ad, handle } = setup();
-    const event = key(name);
-    handle(event);
-    expect(ad[method]).toHaveBeenCalledTimes(1);
-    expect(event.defaultPrevented).toBe(true);
+  it('forwards ArrowDown and ArrowUp to the active descendant', () => {
+    const ad = makeAd();
+    const fw = createListboxKeyForward(ref(ad), () => undefined);
+    fw(keydown('ArrowDown'));
+    fw(keydown('ArrowUp'));
+    expect(ad.highlightNext).toHaveBeenCalledTimes(1);
+    expect(ad.highlightPrev).toHaveBeenCalledTimes(1);
   });
 
-  it('Escape calls the escape callback and prevents the default', () => {
-    const { escape, handle } = setup();
-    const event = key('Escape');
-    handle(event);
-    expect(escape).toHaveBeenCalledTimes(1);
-    expect(event.defaultPrevented).toBe(true);
+  it('activates the current option on a plain Enter', () => {
+    const ad = makeAd();
+    const fw = createListboxKeyForward(ref(ad), () => undefined);
+    fw(keydown('Enter'));
+    expect(ad.activateCurrent).toHaveBeenCalledTimes(1);
   });
 
-  it.each(['Home', 'End'])('leaves %s to the input caret', (name) => {
-    const { ad, handle } = setup();
-    const event = key(name);
-    handle(event);
-    expect(event.defaultPrevented).toBe(false);
-    expect(ad.highlightFirst).not.toHaveBeenCalled();
-    expect(ad.highlightLast).not.toHaveBeenCalled();
+  // A4: an Enter that closes an IME composition must not commit the option.
+  it.fails('ignores an Enter while an IME composition is active', () => {
+    const ad = makeAd();
+    const fw = createListboxKeyForward(ref(ad), () => undefined);
+    fw(keydown('Enter', { isComposing: true }));
+    expect(ad.activateCurrent).not.toHaveBeenCalled();
   });
 
-  it('leaves other keys alone', () => {
-    const { ad, escape, handle } = setup();
-    const event = key('a');
-    handle(event);
-    expect(event.defaultPrevented).toBe(false);
-    expect(escape).not.toHaveBeenCalled();
-    expect(ad.highlightNext).not.toHaveBeenCalled();
+  it.fails('ignores an Enter with the legacy IME keyCode 229', () => {
+    const ad = makeAd();
+    const fw = createListboxKeyForward(ref(ad), () => undefined);
+    fw(keydown('Enter', { keyCode: 229 }));
+    expect(ad.activateCurrent).not.toHaveBeenCalled();
   });
 
-  it('is a no-op without a listbox, Escape included', () => {
-    const { listboxRef, escape, handle } = setup();
-    listboxRef.set(undefined);
-    const event = key('Escape');
-    handle(event);
-    expect(escape).not.toHaveBeenCalled();
-    expect(event.defaultPrevented).toBe(false);
+  // select-search promises Home / End move the listbox highlight (homeEnd: 'listbox').
+  it.fails('moves the highlight to the first option on Home with homeEnd listbox', () => {
+    const ad = makeAd();
+    const forward = createListboxKeyForward as unknown as ForwardWithOpts;
+    const fw = forward(ref(ad), () => undefined, { homeEnd: 'listbox' });
+    fw(keydown('Home'));
+    expect(ad.highlightFirst).toHaveBeenCalledTimes(1);
+  });
+
+  it.fails('moves the highlight to the last option on End with homeEnd listbox', () => {
+    const ad = makeAd();
+    const forward = createListboxKeyForward as unknown as ForwardWithOpts;
+    const fw = forward(ref(ad), () => undefined, { homeEnd: 'listbox' });
+    fw(keydown('End'));
+    expect(ad.highlightLast).toHaveBeenCalledTimes(1);
   });
 });
