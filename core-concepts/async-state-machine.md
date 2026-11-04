@@ -250,14 +250,14 @@ interface CngxLoadingConfig {
 Standard cascade shape:
 
 - `provideLoadingConfig(withShowDelay(200), withMinDwell(600))` - app-wide, in `bootstrapApplication` providers.
-- `provideLoadingConfigAt(withShowDelay(0))` - component scope, in `viewProviders`.
+- `provideLoadingConfigAt(withShowDelay(0))` - component scope, in `viewProviders`. It merges onto the ancestor scope: under an app-wide `provideLoadingConfig(withMinDwell(600))` it yields `{ showDelay: 0, minDwell: 600 }`, and nested scopes cascade the same way. Restate a feature to override an inherited field.
 - `injectLoadingConfig()` - read the resolved config in an injection context.
 - Features: `withShowDelay(ms)`, `withMinDwell(ms)`, `withSpinnerVsSkeletonCutoff(ms)`.
 
 Resolution priority for any one surface:
 
 1. Per-instance input (`[delay]` / `[minDwell]` on `cngx-loading-indicator` / `cngx-loading-overlay`; `[showDelay]` / `[minDwell]` on `cngxAsyncClick`; `skeletonDelay` / `skeletonMinDwell` on the recycler).
-2. `provideLoadingConfigAt(...)` in a component's `viewProviders`.
+2. `provideLoadingConfigAt(...)` in a component's `viewProviders`, per field: the nearest scope that names a feature wins, the fields it leaves out come from the ancestor scopes.
 3. `provideLoadingConfig(...)` at the app root.
 4. `CNGX_LOADING_DEFAULTS` (120 / 400 / 800).
 

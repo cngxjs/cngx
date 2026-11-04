@@ -61,7 +61,7 @@ describe('CNGX_LOADING_CONFIG cascade', () => {
     expect(inject()).toEqual({ showDelay: 50, minDwell: 400, spinnerVsSkeletonCutoff: 800 });
   });
 
-  it('a nested At-scope resolves against the defaults, not the ancestor override', () => {
+  it('a nested At-scope merges onto the ancestor override', () => {
     TestBed.configureTestingModule({ providers: [provideLoadingConfig(withMinDwell(600))] });
     const parent = TestBed.inject(Injector);
     const child = Injector.create({
@@ -69,15 +69,35 @@ describe('CNGX_LOADING_CONFIG cascade', () => {
       parent,
     });
 
-    // The scope override is a full restatement: minDwell falls back to the
-    // library default 400, it does not inherit the ancestor's 600.
     expect(child.get(CNGX_LOADING_CONFIG)).toEqual({
       showDelay: 0,
-      minDwell: 400,
+      minDwell: 600,
       spinnerVsSkeletonCutoff: 800,
     });
     // The ancestor scope keeps its own resolution.
     expect(inject()).toEqual({ showDelay: 120, minDwell: 600, spinnerVsSkeletonCutoff: 800 });
+  });
+
+  it('cascades through nested At-scopes, the nearest feature winning', () => {
+    TestBed.configureTestingModule({ providers: [provideLoadingConfig(withMinDwell(600))] });
+    const outer = Injector.create({
+      providers: provideLoadingConfigAt(withShowDelay(0), withSpinnerVsSkeletonCutoff(1200)),
+      parent: TestBed.inject(Injector),
+    });
+    const inner = Injector.create({
+      providers: provideLoadingConfigAt(withShowDelay(50)),
+      parent: outer,
+    });
+
+    expect(inner.get(CNGX_LOADING_CONFIG)).toEqual({
+      showDelay: 50,
+      minDwell: 600,
+      spinnerVsSkeletonCutoff: 1200,
+    });
+  });
+
+  it('provideLoadingConfigAt() without features adds no provider', () => {
+    expect(provideLoadingConfigAt()).toEqual([]);
   });
 
   it('never exposes the frozen CNGX_LOADING_DEFAULTS const for mutation', () => {

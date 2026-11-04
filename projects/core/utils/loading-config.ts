@@ -43,8 +43,9 @@ export const CNGX_LOADING_DEFAULTS = {
  * Injection token carrying the resolved {@link CngxLoadingConfig}. Provided in
  * `'root'` with {@link CNGX_LOADING_DEFAULTS}; override app-wide via
  * `provideLoadingConfig(...)` or per component tree via `provideLoadingConfigAt(...)`.
- * Either override resolves its features against the library defaults, not the
- * ancestor scope - a subtree override replaces the whole config.
+ * `provideLoadingConfig` resolves its features against the library defaults;
+ * `provideLoadingConfigAt` merges its features onto the ancestor scope, so a
+ * subtree override changes only the fields it names.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/loading-config.ts
  * @since 0.1.0
@@ -127,8 +128,11 @@ export function resolveLoadingTreatment(
   return lastDuration > cutoff ? 'skeleton' : 'spinner';
 }
 
-function resolveLoadingConfig(features: CngxLoadingConfigFeature[]): CngxLoadingConfig {
-  let config: CngxLoadingConfig = { ...CNGX_LOADING_DEFAULTS };
+function resolveLoadingConfig(
+  features: readonly CngxLoadingConfigFeature[],
+  base: CngxLoadingConfig,
+): CngxLoadingConfig {
+  let config: CngxLoadingConfig = { ...base };
   for (const f of features) {
     config = f._apply(config);
   }
@@ -144,17 +148,19 @@ function resolveLoadingConfig(features: CngxLoadingConfigFeature[]): CngxLoading
  * });
  * ```
  *
- * Features resolve against {@link CNGX_LOADING_DEFAULTS}, not against an
- * ancestor config: every field a `with*` feature does not touch carries the
- * library default. The same rule applies to {@link provideLoadingConfigAt},
- * so a nested scope does not inherit app-wide overrides - restate them if
- * the subtree should keep them.
+ * Features resolve against {@link CNGX_LOADING_DEFAULTS}: every field a
+ * `with*` feature does not touch carries the library default. A nested
+ * {@link provideLoadingConfigAt} scope merges onto this config, so it keeps
+ * the app-wide overrides it does not restate.
  */
 export function provideLoadingConfig(
   ...features: CngxLoadingConfigFeature[]
 ): EnvironmentProviders {
   return makeEnvironmentProviders([
-    { provide: CNGX_LOADING_CONFIG, useValue: resolveLoadingConfig(features) },
+    {
+      provide: CNGX_LOADING_CONFIG,
+      useValue: resolveLoadingConfig(features, CNGX_LOADING_DEFAULTS),
+    },
   ]);
 }
 
@@ -165,14 +171,30 @@ export function provideLoadingConfig(
  * @Component({ viewProviders: [...provideLoadingConfigAt(withShowDelay(0))] })
  * ```
  *
- * Resolves against {@link CNGX_LOADING_DEFAULTS}, not against the ancestor
- * config: `provideLoadingConfigAt(withShowDelay(0))` under an app-wide
- * `provideLoadingConfig(withMinDwell(600))` yields the default `minDwell`
- * of 400, not 600. A scope override is a full restatement - repeat the
- * ancestor features the subtree should keep.
+ * Merges onto the ancestor scope (the nearest `provideLoadingConfigAt`, else
+ * the app-wide {@link provideLoadingConfig}, else
+ * {@link CNGX_LOADING_DEFAULTS}): `provideLoadingConfigAt(withShowDelay(0))`
+ * under an app-wide `provideLoadingConfig(withMinDwell(600))` yields
+ * `{ showDelay: 0, minDwell: 600 }`. Nested scopes cascade the same way; to
+ * override an inherited field, restate its feature. No features, no
+ * provider: the scope keeps the ancestor config.
  */
 export function provideLoadingConfigAt(...features: CngxLoadingConfigFeature[]): Provider[] {
-  return [{ provide: CNGX_LOADING_CONFIG, useValue: resolveLoadingConfig(features) }];
+  if (features.length === 0) {
+    return [];
+  }
+  return [
+    {
+      provide: CNGX_LOADING_CONFIG,
+      // Optional: placed in a root environment injector there is no
+      // ancestor scope, and the defaults stand in for it.
+      useFactory: () =>
+        resolveLoadingConfig(
+          features,
+          inject(CNGX_LOADING_CONFIG, { skipSelf: true, optional: true }) ?? CNGX_LOADING_DEFAULTS,
+        ),
+    },
+  ];
 }
 
 /**
