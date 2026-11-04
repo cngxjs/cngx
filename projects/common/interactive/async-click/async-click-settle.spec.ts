@@ -59,6 +59,18 @@ class ActionButtonHost {
 }
 
 @Component({
+  template: `<button cngxActionButton [action]="action">Save</button>`,
+  imports: [CngxActionButton],
+})
+class ActionButtonMixedHost {
+  private runs = 0;
+  readonly action = (): Promise<void> => {
+    this.runs += 1;
+    return this.runs === 1 ? Promise.resolve() : Promise.reject(new Error('nope'));
+  };
+}
+
+@Component({
   imports: [CngxStepperComplete],
   hostDirectives: [CngxStepperPresenter],
   template: `<button [cngxStepperComplete]="action" (completed)="completedCount.set(completedCount() + 1)">
@@ -110,6 +122,19 @@ describe('cngxAsyncClick settle side effects across two runs without change dete
     flush(fixture);
 
     expect(show).toHaveBeenCalledTimes(2);
+  });
+
+  it('speaks each action button settle with its own outcome', async () => {
+    const fixture = TestBed.createComponent(ActionButtonMixedHost);
+    flush(fixture);
+    const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    const region = button.nextElementSibling as HTMLElement;
+    const writes = recordWrites(region);
+
+    await clickTwiceWithoutChangeDetection(button);
+    flush(fixture);
+
+    expect(writes()).toEqual(['Action succeeded', 'Action failed']);
   });
 
   it('emits stepper (completed) once per successful run', async () => {

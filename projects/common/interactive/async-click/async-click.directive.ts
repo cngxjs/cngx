@@ -479,13 +479,16 @@ export class CngxAsyncClick {
     this.scheduleFeedbackReset();
 
     this.generation += 1;
-    this.settled.emit({ generation: this.generation, status, error: err });
+    const settle: CngxAsyncSettle = { generation: this.generation, status, error: err };
+    this.settled.emit(settle);
 
     // Own copy resolves now: a later language switch or a feedback reset
-    // inside the render gap cannot change what this settle speaks.
+    // inside the render gap cannot change what this settle speaks. The host
+    // gets this settle, not the status after the render, which may already
+    // show a later run.
     const own = untracked(this.announcement);
     const hostAnnouncement = this.hostState?.announcement;
-    this.speak(() => (hostAnnouncement ? untracked(hostAnnouncement) : own));
+    this.speak(() => (hostAnnouncement ? untracked(() => hostAnnouncement(settle)) : own));
   }
 
   private scheduleFeedbackReset(): void {

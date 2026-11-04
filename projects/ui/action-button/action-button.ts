@@ -422,12 +422,15 @@ export class CngxActionButton {
   /**
    * @internal - what the co-hosted `CngxAsyncClick` folds in: the blocked
    * flag, the external busy bit and the announcement, read by the directive
-   * once per own settle after render.
+   * once per own settle after render with that settle's outcome. While
+   * `[externalState]` is bound the own runs speak nothing: the external
+   * edges own the region, like the toast.
    */
   readonly hostInteraction: CngxHostInteractionState = {
     disabled: this.blocked,
     busy: this.externalBusy,
-    announcement: () => this.resolveAnnouncement(untracked(this.effectiveStatus)),
+    announcement: (settle) =>
+      settle && !untracked(this.externalState) ? this.resolveAnnouncement(settle.status) : '',
   };
 
   /** @internal */
@@ -527,7 +530,7 @@ export class CngxActionButton {
     }
     this.showToast(status, this.effectiveError());
     // After render, so a projected failed template shows the new error
-    // before its text is read.
+    // before its text is read. The edge status, not the status at render.
     afterNextRender(
       { write: () => this.asyncClick.announce(this.resolveAnnouncement(status)) },
       { injector: this.injector },
@@ -575,11 +578,8 @@ export class CngxActionButton {
    * `[autoAnnounce]="false"`, and for an outcome a shown toast covers unless
    * `[autoAnnounce]="true"`.
    */
-  private resolveAnnouncement(status: AsyncStatus): string {
+  private resolveAnnouncement(status: 'success' | 'error'): string {
     return untracked(() => {
-      if (status !== 'success' && status !== 'error') {
-        return '';
-      }
       const auto = this.autoAnnounce();
       if (auto === false) {
         return '';

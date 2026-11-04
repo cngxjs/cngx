@@ -1,5 +1,7 @@
 import { InjectionToken, type Signal } from '@angular/core';
 
+import type { CngxAsyncSettle } from './async-click.directive';
+
 /**
  * Interaction state a host component publishes to the directives it
  * co-hosts. A co-hosted `CngxAsyncClick` reads three members:
@@ -12,8 +14,8 @@ import { InjectionToken, type Signal } from '@angular/core';
  * - `busy` (optional) - folded into `aria-busy`, for a run the host
  *   reflects but the directive did not start (an external async state).
  *   It does not block clicks.
- * - `announcement` (optional) - read once per settle, after render; its
- *   value fully replaces the text the directive's auto-rendered live region
+ * - `announcement` (optional) - called once per settle, after render, with
+ *   the settle it speaks for; its value fully replaces the text the directive's auto-rendered live region
  *   speaks for that settle, `''` included: an empty string silences the
  *   region, it does not fall back to the directive's own settle copy. The
  *   directive's public `announcement` signal keeps reporting its own text,
@@ -30,12 +32,15 @@ export interface CngxHostInteractionState {
   /**
    * Text the directive's live region speaks instead of its own settle
    * announcement, for a host that derives the announcement from more than
-   * the directive's runs (labels, rendered status content). Read once per
-   * settle, after render, outside any reactive context, so it may read the
+   * the directive's runs (labels, rendered status content). Called once per
+   * settle, after render, outside any reactive context, with the settle it
+   * speaks for: two runs that settle before one render each get their own
+   * call with their own `status`, so derive the outcome from `settle`, not
+   * from a status signal that already shows the later run. It may read the
    * DOM; every `Signal<string>` satisfies it. A language switch never
    * re-voices the region, because nothing re-reads it between settles.
    */
-  readonly announcement?: () => string;
+  readonly announcement?: (settle?: CngxAsyncSettle) => string;
 }
 
 /**
