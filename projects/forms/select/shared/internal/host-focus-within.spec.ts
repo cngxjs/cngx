@@ -71,6 +71,25 @@ describe('createHostFocusWithin', () => {
     expect(close).toHaveBeenCalledTimes(1);
   });
 
+  it('collapses the open panel when focus moves onto a nested interactive control outside it', () => {
+    const { host, focus } = setup();
+    const panel = host.querySelector<HTMLElement & { hidePopover?: () => void }>('.panel')!;
+    const hide = vi.fn();
+    panel.hidePopover = hide;
+    const chipRemove = document.createElement('button');
+    chipRemove.className = 'chip-remove';
+    host.insertBefore(chipRemove, panel);
+
+    const owner = host.querySelector<HTMLElement>('.owner')!;
+    owner.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+
+    focusOut(owner, chipRemove);
+    expect(hide).toHaveBeenCalledTimes(1);
+    expect(onLeave).not.toHaveBeenCalled();
+    expect(close).not.toHaveBeenCalled();
+    expect(focus.focusedWithin()).toBe(true);
+  });
+
   it('keeps focus within when focus moves from the trigger into the panel', () => {
     const { host, focus } = setup();
     const owner = host.querySelector<HTMLElement>('.owner')!;

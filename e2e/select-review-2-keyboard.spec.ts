@@ -91,14 +91,11 @@ test.describe('I1: Escape during the search debounce leaves the panel closed', (
 // ── I6: Tab from the open trigger onto a chip remove or clear button leaves
 // aria-expanded="false". ─────────────────────────────────────────────────────
 test.describe('I6: Tab onto an in-host control collapses aria-expanded', () => {
-  // Shell already collapses aria-expanded on Tab; multi, reorderable, tree
-  // and action-multi do not.
-  const I6_GREEN = new Set(['shell']);
+  // A Tab onto an in-host control (chip remove, clear-all) collapses the panel
+  // on every chip host: host-focus-within hides the open panel when focus
+  // lands on a nested interactive control outside it.
   for (const key of ['multi', 'reorder', 'tree', 'shell', 'actionMulti'] as const) {
     test(`${key}: Tab to the next control sets aria-expanded false`, async ({ page }) => {
-      if (!I6_GREEN.has(key)) {
-        test.fail();
-      }
       await page.goto(ROUTES[key]);
       await openByClick(page);
       await expect(combobox(page)).toHaveAttribute('aria-expanded', 'true');
