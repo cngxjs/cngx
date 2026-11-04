@@ -239,9 +239,10 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     const confirm = page.locator('.cngx-popover-action--primary').first();
     await expect(confirm).toBeVisible();
     await confirm.click();
-    // Past the 120ms show delay, well before the 1.5s resolve: the run is busy,
-    // so the confirm carries a run flag and must not take the disabled GrayText.
-    await page.waitForTimeout(250);
+    // Wait for the gated busy flag rather than a fixed sleep: once data-busy is
+    // set the run is busy (well before the 1.5s resolve) and the confirm must
+    // not take the disabled GrayText.
+    await expect(confirm).toHaveAttribute('data-busy', 'true');
     const paint = await confirm.evaluate((el) => {
       const probe = document.createElement('span');
       probe.style.color = 'GrayText';
@@ -268,10 +269,10 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     const button = page.locator('.cngx-ex-artifact .cngx-button').first();
     await expect(button).toBeVisible();
     await button.click();
-    // Past the 120ms show delay of the default (slow) run: data-busy is set and
-    // the directive now also drives aria-disabled, which must not paint
+    // Wait for the gated busy flag rather than a fixed sleep. data-busy is set
+    // and the directive now also drives aria-disabled, which must not paint
     // GrayText because the :not([data-busy], [data-pending]) rule excludes it.
-    await page.waitForTimeout(300);
+    await expect(button).toHaveAttribute('data-busy', 'true');
     const paint = await button.evaluate((el) => {
       const probe = document.createElement('span');
       probe.style.color = 'GrayText';
