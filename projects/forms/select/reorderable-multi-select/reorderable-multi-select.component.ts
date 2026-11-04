@@ -272,7 +272,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
   hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
     class: 'cngx-reorderable-multi-select',
-    '[id]': 'resolvedId()',
+    '[attr.id]': 'resolvedId() || null',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
   },

@@ -16,7 +16,7 @@ afterEach(() => {
 // H6: without a bound id the host renders no id attribute (id="" is invalid).
 describe('H6: no id attribute without a bound id', () => {
   for (const key of ['select', 'multi', 'reorder', 'shell', 'tree'] as const) {
-    it.fails(`${KINDS[key].name} renders no id attribute`, () => {
+    it(`${KINDS[key].name} renders no id attribute`, () => {
       const m = mount(KINDS[key]);
       expect(m.el.hasAttribute('id')).toBe(false);
     });

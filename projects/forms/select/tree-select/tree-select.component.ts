@@ -277,7 +277,7 @@ export interface CngxTreeSelectChange<T = unknown> {
   hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
     class: 'cngx-tree-select',
-    '[id]': 'resolvedId()',
+    '[attr.id]': 'resolvedId() || null',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
   },
