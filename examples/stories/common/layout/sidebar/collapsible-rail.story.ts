@@ -18,7 +18,7 @@ export const STORY: DemoSpec = {
   protected readonly collapsedAs = signal<'rail' | 'hidden'>('rail');
   protected readonly links = ['Inbox', 'Drafts', 'Archive'];`,
   template: `
-  <button type="button" [cngxPanelTrigger]="sidebar">Navigation</button>
+  <button type="button" class="sort-btn" [cngxPanelTrigger]="sidebar">Navigation</button>
   <div style="display: flex; block-size: 14rem; margin-top: 0.5rem; border: 1px solid var(--cngx-border, currentColor); border-radius: 0.5rem; overflow: hidden;">
     <nav cngxSidebar #sidebar="cngxSidebar" [role]="null" aria-label="Main"
          [(collapsed)]="collapsed" [collapsedAs]="collapsedAs()"
