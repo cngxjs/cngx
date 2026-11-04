@@ -173,9 +173,16 @@ const toolingFiles = (root) =>
 // runs the tooling build. The originals stay in memory and are written back
 // byte for byte when a step fails, and after success unless `keepStamped`
 // (a real run, whose publish loop and release commit need the stamp). A
-// failure is thrown, never a process exit, so the restore always runs.
+// failure is thrown, never a process exit, so the restore always runs. The
+// returned `restore` writes the same originals back, for a publish loop that
+// fails before anything reached the registry.
 export function runToolingSection({ root, nextVersion, run: runStep, keepStamped, read = readFileSync, write = writeFileSync }) {
   const originals = toolingFiles(root).map((file) => [file, read(file)]);
+  const restore = () => {
+    for (const [file, bytes] of originals) {
+      write(file, bytes);
+    }
+  };
   let built = false;
   try {
     for (const name of TOOLING_PACKAGES) {
@@ -199,11 +206,44 @@ export function runToolingSection({ root, nextVersion, run: runStep, keepStamped
     built = true;
   } finally {
     if (!built || !keepStamped) {
-      for (const [file, bytes] of originals) {
-        write(file, bytes);
-      }
+      restore();
     }
   }
+  return { restore };
+}
+
+// What a failed `npm publish` leaves behind. Before any package reached the
+// registry the tooling stamp is undone, so the same --version can run again.
+// Once one is on npm the version is taken: the stamp stays and the message
+// names what is on npm, what is not, and how to finish by hand.
+export function publishFailurePlan({ published, remaining, nextVersion, error }) {
+  const failed = remaining[0];
+  const cause = `npm publish of @cngx/${failed} failed: ${error.message}`;
+  if (published.length === 0) {
+    return {
+      restore: true,
+      message: `${cause}. Nothing is on npm; the tooling manifests and lockfiles are restored. Retry with --version ${nextVersion}.`,
+    };
+  }
+  const tooling = remaining.filter((name) => TOOLING_PACKAGES.includes(name));
+  const libs = remaining.filter((name) => !TOOLING_PACKAGES.includes(name));
+  const from = [
+    ...tooling.map((name) => `@cngx/${name} from packages/${name} (stamped)`),
+    ...(libs.length > 0
+      ? [`the libs from dist/<lib>, once each manifest and bundle carries ${nextVersion} (a run stamps a lib's dist only right before its own publish)`]
+      : []),
+  ];
+  return {
+    restore: false,
+    message: [
+      `${cause}.`,
+      `On npm at ${nextVersion}: ${published.map((name) => `@cngx/${name}`).join(', ')}.`,
+      `Not published: ${remaining.map((name) => `@cngx/${name}`).join(', ')}.`,
+      `The stamp stays; --version must stay ${nextVersion} (it is taken on npm).`,
+      `Publish the remaining packages by hand: ${from.join('; ')}.`,
+      `Then bring the release files to ${nextVersion} (root version, changelogs, plugin @cngx/mcp pin) and commit them: ${releaseCommitFiles().join(', ')}.`,
+    ].join('\n'),
+  };
 }
 
 // What a release publishes, in order: the tooling packages first, because
@@ -766,8 +806,9 @@ function main() {
   // manifests (the bundle and dist checks read them from disk). A dry run
   // and a failure leave the manifests as they were.
   console.log('\n[mcp, cli]');
+  let tooling;
   try {
-    runToolingSection({ root: ROOT, nextVersion, run, keepStamped: !dryRun });
+    tooling = runToolingSection({ root: ROOT, nextVersion, run, keepStamped: !dryRun });
   } catch (error) {
     console.error(`  Refusing to publish: ${error.message}`);
     process.exit(1);
@@ -784,8 +825,31 @@ function main() {
   );
 
   const libReleases = new Map(releases.map((release) => [release.lib, release]));
-  for (const { name, tooling } of publishOrder(libs)) {
-    if (tooling) {
+  const order = publishOrder(libs);
+  const published = [];
+  for (const [index, entry] of order.entries()) {
+    try {
+      publishEntry(entry);
+    } catch (error) {
+      const plan = publishFailurePlan({
+        published,
+        remaining: order.slice(index).map(({ name }) => name),
+        nextVersion,
+        error,
+      });
+      if (plan.restore) {
+        tooling.restore();
+      }
+      console.error(`\nRelease stopped: ${plan.message}`);
+      process.exit(1);
+    }
+    if (!dryRun) {
+      published.push(entry.name);
+    }
+  }
+
+  function publishEntry({ name, tooling: isTooling }) {
+    if (isTooling) {
       const distTag = toolingDistTags.get(name);
       console.log(`\n[${name}]`);
       if (!dryRun) {
@@ -794,7 +858,7 @@ function main() {
       } else {
         console.log(`  Would publish @cngx/${name}@${nextVersion} (packages/${name}, dist-tag ${distTag})`);
       }
-      continue;
+      return;
     }
     const { lib, distPkg, distPkgPath, stamp, distTag } = libReleases.get(name);
     console.log(`\n[${lib}]`);

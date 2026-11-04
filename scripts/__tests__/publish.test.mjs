@@ -24,6 +24,7 @@ import {
   findPlaceholders,
   libBuildCommand,
   npmViewVersion,
+  publishFailurePlan,
   publishOrder,
   REFRESH_FACTORY,
   refreshMigrationKey,
@@ -775,6 +776,56 @@ describe('runToolingSection', () => {
     expect(files.map(versionOnDisk)).toEqual(['0.3.0', '0.3.0', '0.3.0', '0.3.0']);
     const lock = JSON.parse(readFileSync(join(root, 'packages', 'cli', 'package-lock.json'), 'utf8'));
     expect(lock.packages[''].version).toBe('0.3.0');
+  });
+
+  it('hands back a restore that writes the originals byte for byte after a kept stamp', () => {
+    const before = snapshot();
+
+    const { restore } = runToolingSection({ root, nextVersion: '0.3.0', run: () => {}, keepStamped: true });
+    restore();
+
+    expect(snapshot()).toEqual(before);
+  });
+});
+
+describe('publishFailurePlan', () => {
+  const error = new Error('E403 forbidden');
+  const order = ['mcp', 'cli', ...PACKED_LIBS];
+
+  it('restores the stamp when the first publish fails, so the same --version can run again', () => {
+    const plan = publishFailurePlan({ published: [], remaining: order, nextVersion: '0.3.0', error });
+
+    expect(plan.restore).toBe(true);
+    expect(plan.message).toBe(
+      'npm publish of @cngx/mcp failed: E403 forbidden. Nothing is on npm; the tooling manifests and lockfiles are restored. Retry with --version 0.3.0.',
+    );
+  });
+
+  it('keeps the stamp once a package is on npm and names what is published, what remains and how to finish', () => {
+    const plan = publishFailurePlan({ published: ['mcp'], remaining: order.slice(1), nextVersion: '0.3.0', error });
+    const lines = plan.message.split('\n');
+
+    expect(plan.restore).toBe(false);
+    expect(lines[0]).toBe('npm publish of @cngx/cli failed: E403 forbidden.');
+    expect(lines[1]).toBe('On npm at 0.3.0: @cngx/mcp.');
+    expect(lines[2]).toBe(`Not published: ${order.slice(1).map((name) => `@cngx/${name}`).join(', ')}.`);
+    expect(lines[3]).toBe('The stamp stays; --version must stay 0.3.0 (it is taken on npm).');
+    expect(lines[4]).toContain('@cngx/cli from packages/cli (stamped)');
+    expect(lines[4]).toContain('the libs from dist/<lib>');
+    expect(lines[5]).toContain(releaseCommitFiles().join(', '));
+  });
+
+  it('names only the libs once both tooling packages are on npm', () => {
+    const plan = publishFailurePlan({
+      published: ['mcp', 'cli', 'utils'],
+      remaining: order.slice(3),
+      nextVersion: '0.3.0',
+      error,
+    });
+
+    expect(plan.restore).toBe(false);
+    expect(plan.message).toContain('On npm at 0.3.0: @cngx/mcp, @cngx/cli, @cngx/utils.');
+    expect(plan.message).not.toContain('from packages/cli');
   });
 });
 
