@@ -4,14 +4,15 @@ export const STORY: DemoSpec = {
   title: 'CngxPopoverPanel: With footer actions',
   subtitle:
     'Compose <code>cngx-popover-action</code> inside <code>cngxPopoverFooter</code>. <code>role="dismiss"</code> closes the panel; <code>role="confirm"</code> runs an async action with <code>cngxPending</code> / <code>cngxSucceeded</code> / <code>cngxFailed</code> templates.',
-  description:
-    'A confirm panel pairs a dismiss button with an async confirm. The confirm button drives <code>CngxAsyncClick</code> under the hood, so the projected templates swap based on the returned promise. The first popover resolves in 1.5s and renders the success template; the second rejects after 1s and surfaces the rejection value via <code>cngxFailed</code> with <code>$implicit</code>.',
+    description:
+    'A confirm panel pairs a dismiss button with an async confirm. The confirm button drives <code>CngxAsyncClick</code> under the hood, so the projected templates swap based on the returned promise. The first popover resolves and renders the success template; the second rejects and surfaces the rejection value via <code>cngxFailed</code> with <code>$implicit</code>. Pick fast (80 ms) to see a confirm settle with no busy template, medium (200 ms) to watch the pending template held through its dwell while the action refuses a second click, or slow (1.5 s) for a long run.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['async-state', 'composition'],
   apiComponents: ['CngxPopoverPanel', 'CngxPopoverAction'],
   moduleImports: [
+    "import { signal } from '@angular/core';",
     "import { CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody, CngxPopoverFooter, CngxPopoverAction } from '@cngx/common/popover';",
     "import { CngxPending, CngxSucceeded, CngxFailed } from '@cngx/common/interactive';",
   ],
@@ -26,8 +27,44 @@ export const STORY: DemoSpec = {
     'CngxSucceeded',
     'CngxFailed',
   ],
-  setup: `protected simulateSave = () => new Promise<void>(resolve => setTimeout(resolve, 1500));
-  protected simulateDelete = () => new Promise<void>((_, reject) => setTimeout(() => reject('Permission denied'), 1000));`,
+  setup: `protected simulateSave = () => new Promise<void>(resolve => setTimeout(resolve, this.latencyMs()));
+  protected simulateDelete = () => new Promise<void>((_, reject) => setTimeout(() => reject('Permission denied'), this.latencyMs()));`,
+  setupChrome: `
+  protected readonly latency = signal<'fast' | 'medium' | 'slow'>('medium');
+
+  protected latencyMs(): number {
+    switch (this.latency()) {
+      case 'fast':
+        return 80;
+      case 'medium':
+        return 200;
+      default:
+        return 1500;
+    }
+  }`,
+  templateChrome: `
+  <div class="button-row" style="margin-bottom:12px">
+    <div role="radiogroup" aria-label="Confirm latency" style="display:inline-flex;gap:12px">
+      <label style="display:inline-flex;gap:4px;align-items:center">
+        <input type="radio" name="cngx-popover-footer-latency"
+               [checked]="latency() === 'fast'"
+               (change)="latency.set('fast')" />
+        fast (80 ms)
+      </label>
+      <label style="display:inline-flex;gap:4px;align-items:center">
+        <input type="radio" name="cngx-popover-footer-latency"
+               [checked]="latency() === 'medium'"
+               (change)="latency.set('medium')" />
+        medium (200 ms)
+      </label>
+      <label style="display:inline-flex;gap:4px;align-items:center">
+        <input type="radio" name="cngx-popover-footer-latency"
+               [checked]="latency() === 'slow'"
+               (change)="latency.set('slow')" />
+        slow (1.5 s)
+      </label>
+    </div>
+  </div>`,
   template: `
   <div class="demo-popover-stage" style="display:flex;gap:16px;flex-wrap:wrap">
     <div>
