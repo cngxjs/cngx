@@ -331,6 +331,7 @@ export const CNGX_LANGUAGE_DE = {
     resizeHandle: 'Größe ändern',
     resizeValueText: '{size} Pixel',
     panelTrigger: 'Bereich umschalten',
+    sidebarRegion: 'Seitenleiste',
   },
   menu: {
     submenuOpened: 'Untermenü geöffnet',

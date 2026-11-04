@@ -41,6 +41,11 @@ export {
   type CngxScrollEdgesState,
   type ScrollEdgesHost,
 } from './scroll/scroll-edges-core';
+export {
+  CngxSidebar,
+  type CngxSidebarCollapsedAs,
+  type CngxSidebarState,
+} from './sidebar/sidebar.directive';
 export { CngxSkeleton } from './text/skeleton.directive';
 export { CngxInfiniteScroll } from './scroll/infinite-scroll.directive';
 export { CngxStickyHeader } from './scroll/sticky-header.directive';

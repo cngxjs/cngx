@@ -335,6 +335,7 @@ export const CNGX_LANGUAGE_EN = {
     resizeHandle: 'Resize',
     resizeValueText: '{size} pixels',
     panelTrigger: 'Toggle panel',
+    sidebarRegion: 'Sidebar',
   },
   menu: {
     submenuOpened: 'Submenu opened',

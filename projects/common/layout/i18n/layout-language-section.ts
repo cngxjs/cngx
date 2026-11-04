@@ -19,6 +19,8 @@ export interface CngxLayoutLanguageSection {
   readonly resizeValueText: CngxMessage;
   /** Accessible name of a `CngxPanelTrigger` without text content. */
   readonly panelTrigger: string;
+  /** Accessible name of a `CngxSidebar` region without a bound label. */
+  readonly sidebarRegion: string;
 }
 
 /**
@@ -34,6 +36,7 @@ export const CNGX_LAYOUT_LANGUAGE_EN: CngxLayoutLanguageSection = {
   resizeHandle: 'Resize',
   resizeValueText: '{size} pixels',
   panelTrigger: 'Toggle panel',
+  sidebarRegion: 'Sidebar',
 };
 
 declare module '@cngx/core/i18n' {

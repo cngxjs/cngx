@@ -29,6 +29,8 @@ export interface CngxLayoutI18n {
   readonly resizeValueText: (size: number) => string;
   /** Fallback of `CngxPanelTrigger.label` on a trigger without text content. */
   readonly panelTrigger: string;
+  /** Fallback of `CngxSidebar.label`, the region's accessible name. */
+  readonly sidebarRegion: string;
 }
 
 /** @internal The English section with the active pack's layout section on top. */
@@ -42,6 +44,7 @@ function layoutBundleFrom(section: CngxLayoutLanguageSection, locale: string): C
     resizeHandle: section.resizeHandle,
     resizeValueText: (size) => formatMessage(section.resizeValueText, { size }, locale),
     panelTrigger: section.panelTrigger,
+    sidebarRegion: section.sidebarRegion,
   };
 }
 
@@ -59,7 +62,7 @@ const layoutBundle = createSectionBundle<CngxLayoutLanguageSection, CngxLayoutI1
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/i18n/layout-i18n.ts
  * @since 0.1.0
- * @relatedTo CngxExpandableText, CngxResizable, CngxPanelTrigger
+ * @relatedTo CngxExpandableText, CngxResizable, CngxPanelTrigger, CngxSidebar
  */
 export const CNGX_LAYOUT_I18N = new InjectionToken<Signal<CngxLayoutI18n>>('CngxLayoutI18n', {
   providedIn: 'root',
