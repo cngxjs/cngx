@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -17,6 +17,13 @@ let mountedRoot: HTMLElement | null = null;
 @Component({
   standalone: true,
   imports: [CngxChip],
+  // Load the global icon sheet (as cngx.css does) so the remove X picks its tier
+  // by box; without it the band rule never swaps and the 24-grid path stays.
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../theming/components/cngx-icon-glyph.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
   template: `<cngx-chip [removable]="true">Label</cngx-chip>`,
 })
 class ChipHost {}
@@ -129,5 +136,18 @@ describe('CngxChip geometry', () => {
     host.style.setProperty('--cngx-font-size-sm', '18px');
     host.style.setProperty('--cngx-chip-font-size', '20px');
     expect(computedValue(host, 'font-size')).toBe('20px');
+  });
+
+  // The remove X lands on the exact 1rem (16px) box, in the small band, where the
+  // 16-grid small X paints instead of the sub-pixel-scaled 24 path.
+  it('draws the remove X on the 16-grid small path at the 1rem box', () => {
+    const host = mount();
+    const svg = query(host, 'svg.cngx-chip__remove-icon') as unknown as SVGSVGElement;
+    expect(svg.getBoundingClientRect().width).toBeCloseTo(16, 0);
+    const painted = Array.from(svg.querySelectorAll('path')).filter(
+      (path) => getComputedStyle(path).display !== 'none',
+    );
+    expect(painted).toHaveLength(1);
+    expect(painted[0].classList.contains('cngx-icon-svg__small')).toBe(true);
   });
 });

@@ -11,8 +11,9 @@ import { CngxCheckboxIndicator } from './checkbox-indicator.component';
 // floor. The global sheet (loaded here as `cngx.css` does) picks the tier by
 // box: the 12-grid micro drawing in a 10 to 14px box, the 16-grid small drawing
 // in a 15 to 19px box, the 24-grid path at 20px and up. sm and md boxed land on
-// the 12px micro box; lg boxed lands on 15px (small); the bare md checkmark is
-// 16px (small) and the bare lg checkmark 20px (24-grid path).
+// the 12px micro box; lg boxed takes its own 0.8 term to the exact 16px small
+// box; the bare md checkmark is 16px (small) and the bare lg checkmark 20px
+// (24-grid path).
 
 @Component({
   selector: 'cngx-checkbox-indicator-glyph-host',
@@ -124,9 +125,9 @@ describe('CngxCheckboxIndicator glyph geometry', () => {
     expect(paintedPath(svg).classList.contains('cngx-icon-svg__small')).toBe(true);
   });
 
-  it('draws the lg boxed check on the small path at the 15px band edge', () => {
+  it('draws the lg boxed check on the small path at the exact 16px box', () => {
     const svg = mountGlyph('lg', false);
-    expect(svg.getBoundingClientRect().width).toBe(15);
+    expect(svg.getBoundingClientRect().width).toBe(16);
     expect(paintedPath(svg).classList.contains('cngx-icon-svg__small')).toBe(true);
   });
 
