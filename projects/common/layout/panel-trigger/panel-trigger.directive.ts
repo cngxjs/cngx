@@ -48,7 +48,11 @@ export type CngxPanelTriggerAction = 'toggle' | 'peek';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/panel-trigger/panel-trigger.directive.ts
  * @since 0.1.0
  * @relatedTo CngxPanelTarget, CNGX_PANEL_TARGET, CngxDrawer, CngxSidebar
+ * <example-url>/#/common/layout/sidebar/clipped-below-header</example-url>
  * <example-url>/#/common/layout/sidebar/collapsible-rail</example-url>
+ * <example-url>/#/common/layout/sidebar/inset-app-sidebar</example-url>
+ * <example-url>/#/common/layout/drawer/app-header-clipped</example-url>
+ * <example-url>/#/common/layout/drawer/full-height-modal</example-url>
  * @axis level atom
  */
 @Directive({
