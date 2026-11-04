@@ -40,7 +40,7 @@ const TIERS: readonly string[] = ['20rem', '30rem', '48rem', '64rem'];
 const TIER_EXCEPTIONS: ReadonlyArray<{ file: string; note: string }> = [
   {
     file: 'projects/common/theming/components/cngx-icon-glyph.css',
-    note: 'pixel hinting: the 12-grid micro glyph shows in a 10 to 14px box',
+    note: 'pixel hinting: the 12-grid micro glyph shows in a 10 to 14px box, the 16-grid small glyph in a 15 to 19px box',
   },
 ];
 
