@@ -32,13 +32,16 @@ test.describe('select runtime language flip', () => {
   test('the live region does not re-speak on a flip', async ({ page }) => {
     await gotoDemo(page, ROUTE);
 
-    const liveRegion = page.locator('.cdk-live-announcer-element');
-    const before = (await liveRegion.textContent()) ?? '';
+    const liveRegion = page.locator('.cdk-live-announcer-element').first();
+    const readRegion = async (): Promise<string> =>
+      (await liveRegion.count()) > 0 ? ((await liveRegion.textContent()) ?? '') : '';
+    const before = await readRegion();
 
     await toGerman(page).click();
     await expect(trigger(page)).toHaveAttribute('aria-label', 'Farbe');
 
-    const after = (await liveRegion.textContent()) ?? '';
-    expect(after).toBe(before);
+    // A flip retunes bound copy; it must not push a new announcement onto the
+    // polite region, which reads its copy untracked.
+    expect(await readRegion()).toBe(before);
   });
 });
