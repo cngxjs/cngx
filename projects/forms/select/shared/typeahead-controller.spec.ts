@@ -222,7 +222,7 @@ describe('createTypeaheadController - matchFromValue seeds the start', () => {
 
   // matchFromValue resolves the current option through the custom compareWith,
   // so a value selected case-insensitively seeds the typeahead start index.
-  it.fails('resolves the start index through a custom compareWith', () => {
+  it('resolves the start index through a custom compareWith', () => {
     const compareCI: CngxSelectCompareFn<string> = (a, b) =>
       (a ?? '').toLowerCase() === (b ?? '').toLowerCase();
     const controller = createTypeaheadController<string>({

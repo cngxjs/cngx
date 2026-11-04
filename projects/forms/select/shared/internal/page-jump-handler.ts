@@ -36,6 +36,7 @@ export function resolvePageJumpSpace(
  */
 const NO_TYPEAHEAD: TypeaheadController<never> = {
   matchFromIndex: () => null,
+  matchFromValue: () => -1,
   clearBuffer: () => undefined,
   buffer: signal('').asReadonly(),
 };

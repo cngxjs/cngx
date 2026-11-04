@@ -11,7 +11,12 @@ import type { CngxSelectCompareFn } from './internal/select-core';
 export interface TypeaheadControllerOptions<T> {
   /** Flat candidate list in listbox order. */
   readonly options: Signal<readonly CngxSelectOptionDef<T>[]>;
-  /** Reserved - the matcher compares labels only. */
+  /**
+   * Resolves a value to its option index for {@link TypeaheadController.matchFromValue},
+   * so a value selected under a custom equality (e.g. case-insensitive) seeds
+   * the typeahead round-robin start. The prefix match itself still compares
+   * labels only.
+   */
   readonly compareWith: Signal<CngxSelectCompareFn<T>>;
   /** Buffer-reset window. Maps to `typeaheadDebounceInterval`. */
   readonly debounceMs: Signal<number>;
@@ -48,6 +53,12 @@ export interface TypeaheadController<T> {
    * Buffer auto-clears after `debounceMs`.
    */
   matchFromIndex(char: string, currentIndex: number): CngxSelectOptionDef<T> | null;
+  /**
+   * Resolves `value` to its option index through `compareWith`, so the current
+   * selection seeds the typeahead round-robin start without each host
+   * re-implementing the lookup. Returns `-1` for `undefined` or no match.
+   */
+  matchFromValue(value: T | undefined): number;
   /** Idempotent - clears buffer + pending timer. */
   clearBuffer(): void;
   readonly buffer: Signal<string>;
@@ -88,8 +99,17 @@ export function createTypeaheadController<T>(
     return index < 0 ? null : opts[index];
   };
 
+  const matchFromValue = (value: T | undefined): number => {
+    if (value === undefined) {
+      return -1;
+    }
+    const eq = options.compareWith();
+    return options.options().findIndex((o) => eq(o.value, value));
+  };
+
   return {
     matchFromIndex,
+    matchFromValue,
     clearBuffer: () => walker.clear(),
     buffer: walker.buffer,
   };
