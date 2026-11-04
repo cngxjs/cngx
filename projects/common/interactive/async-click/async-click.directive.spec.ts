@@ -443,21 +443,31 @@ describe('CngxAsyncClick busy visibility gate', () => {
     expect(directive.busyVisible()).toBe(false);
   });
 
-  it('skips the success tint when feedbackDuration ends inside the dwell tail', async () => {
-    const { btn, run, advance, click, directive } = setup((h) => h.feedbackDuration.set(300));
+  it('paints the success tint for feedbackDuration after the busy visual releases (C2)', async () => {
+    const { btn, run, advance, click, directive } = setup((h) => h.feedbackDuration.set(100));
     click();
     await advance(showDelay + 10);
     run.resolve();
     await advance(0);
     expect(directive.succeeded()).toBe(true);
     expect(directive.announcement()).not.toBe('');
+    // Held dwell: the tint is suppressed behind the still-shown busy visual.
+    expect(btn.classList.contains('cngx-async--success')).toBe(false);
 
-    for (let t = 0; t < minDwell; t += 25) {
-      await advance(25);
-      expect(btn.classList.contains('cngx-async--success')).toBe(false);
-    }
+    // Release edge: shown at showDelay, held for minDwell past the settle.
+    await advance(minDwell - 10);
     expect(directive.busyVisible()).toBe(false);
+    expect(directive.succeeded()).toBe(true);
+    expect(btn.classList.contains('cngx-async--success')).toBe(true);
+
+    // The window runs for the full feedbackDuration from the release, not from
+    // the earlier settle (which under the old timing reset it mid-dwell, so the
+    // tint was never painted when feedbackDuration < the remaining dwell).
+    await advance(99);
+    expect(btn.classList.contains('cngx-async--success')).toBe(true);
+    await advance(2);
     expect(directive.succeeded()).toBe(false);
+    expect(btn.classList.contains('cngx-async--success')).toBe(false);
   });
 });
 
@@ -642,5 +652,82 @@ describe('CngxAsyncClick with a host-reflected run and announcement', () => {
     expect(directive.succeeded()).toBe(true);
     expect(directive.announcement()).not.toBe('');
     expect(region()!.textContent).toBe('');
+  });
+});
+
+@Component({
+  template: `<button
+    [testHostBusy]="hostBusy()"
+    [cngxAsyncClick]="action"
+    [showDelay]="0"
+    [minDwell]="50"
+    [feedbackDuration]="100"
+  >Go</button>`,
+  imports: [CngxAsyncClick, TestHostBusy],
+})
+class ReArmHost {
+  readonly hostBusy = signal(false);
+  readonly directive = viewChild.required(CngxAsyncClick);
+  actionImpl: () => Promise<unknown> = () => Promise.resolve();
+  readonly action: AsyncAction = () => this.actionImpl();
+}
+
+describe('CngxAsyncClick feedback window re-arm (C2)', () => {
+  it('restarts the window on a host-busy reopen and keeps exactly one timer', async () => {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(ReArmHost);
+    flush(fixture);
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    const host = fixture.componentInstance;
+    const directive = host.directive();
+    const run = deferred();
+    host.actionImpl = () => run.promise;
+    const advance = async (ms: number): Promise<void> => {
+      await vi.advanceTimersByTimeAsync(ms);
+      flush(fixture);
+    };
+
+    btn.click();
+    flush(fixture);
+    await advance(0);
+    expect(directive.busyVisible()).toBe(true);
+
+    run.resolve();
+    await advance(0);
+    expect(directive.succeeded()).toBe(true);
+    expect(directive.busyVisible()).toBe(true);
+
+    // First release at minDwell (t=50): the feedback window arms here.
+    await advance(50);
+    expect(directive.busyVisible()).toBe(false);
+    expect(btn.classList.contains('cngx-async--success')).toBe(true);
+
+    // Reopen the busy visual inside the window (hostBusy): the tint hides
+    // while it shows, and the first timer is still pending.
+    host.hostBusy.set(true);
+    flush(fixture);
+    await advance(0);
+    expect(directive.busyVisible()).toBe(true);
+    expect(btn.classList.contains('cngx-async--success')).toBe(false);
+
+    // Let the reopen settle; its own minDwell (50) brings the second release
+    // at t=100, which re-arms the window (clearing the first timer).
+    host.hostBusy.set(false);
+    await advance(50);
+    expect(directive.busyVisible()).toBe(false);
+    expect(directive.succeeded()).toBe(true);
+    expect(btn.classList.contains('cngx-async--success')).toBe(true);
+
+    // Past the FIRST window's end (t=50+100=150) the tint still stands: the
+    // original timer was cleared, so only the re-armed one is pending.
+    await advance(60);
+    expect(directive.succeeded()).toBe(true);
+    expect(vi.getTimerCount()).toBe(1);
+
+    // The re-armed window ends at the second release + feedbackDuration (t=200).
+    await advance(45);
+    expect(directive.succeeded()).toBe(false);
+    expect(btn.classList.contains('cngx-async--success')).toBe(false);
+    vi.useRealTimers();
   });
 });

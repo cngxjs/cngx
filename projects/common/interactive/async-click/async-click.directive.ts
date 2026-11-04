@@ -115,7 +115,12 @@ export class CngxAsyncClick {
   /** The async action to execute on click. */
   readonly action = input.required<AsyncAction>({ alias: 'cngxAsyncClick' });
 
-  /** Duration in ms to show success/error state before reset. */
+  /**
+   * Duration in ms to show the success/error state before reset. Counted from
+   * the release of the busy visual (its show delay plus min-dwell), not from
+   * the moment the run settles, so the tint is always painted for the full
+   * duration even when the dwell outlasts it.
+   */
   readonly feedbackDuration = input<number>(2000);
 
   /**
@@ -212,6 +217,21 @@ export class CngxAsyncClick {
       this.destroyed = true;
       if (this.feedbackTimer != null) {
         clearTimeout(this.feedbackTimer);
+      }
+    });
+
+    // Arm the feedback-reset window when the run has settled AND the busy
+    // visual has released, so the success/error tint gets its full
+    // feedbackDuration after the dwell instead of being cut short by it. A
+    // side effect only: scheduleFeedbackReset arms a timer and clears any
+    // previous one, so a reopened-then-released busy visual (hostBusy) restarts
+    // the window and never leaves two timers pending. The state writes stay in
+    // the timer, not in the effect.
+    effect(() => {
+      const settled = this.succeededState() || this.failedState();
+      const released = !this.busyVisible();
+      if (settled && released) {
+        untracked(() => this.scheduleFeedbackReset());
       }
     });
 
@@ -349,7 +369,6 @@ export class CngxAsyncClick {
       this.pendingState.set(false);
       this.succeededState.set(true);
       this.lastUpdatedState.set(new Date());
-      this.scheduleFeedbackReset();
     } catch (err: unknown) {
       if (this.destroyed) {
         return;
@@ -357,7 +376,6 @@ export class CngxAsyncClick {
       this.pendingState.set(false);
       this.failedState.set(true);
       this.errorState.set(err);
-      this.scheduleFeedbackReset();
     }
   }
 
