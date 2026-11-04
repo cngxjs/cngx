@@ -145,7 +145,7 @@ describe('search-results announcements follow the announcer config', () => {
     m.settle();
   }
 
-  it.fails('a results announcement uses the configured politeness (assertive)', () => {
+  it('a results announcement uses the configured politeness (assertive)', () => {
     const m = mount(KINDS['combobox'], {
       providers: [provideSelectConfig(withSearchDebounce(0), withAnnouncer({ politeness: 'assertive' }))],
     });
@@ -155,7 +155,7 @@ describe('search-results announcements follow the announcer config', () => {
     expect(results.every((s) => s.politeness === 'assertive')).toBe(true);
   });
 
-  it.fails('no results announcement is spoken when the announcer is disabled', () => {
+  it('no results announcement is spoken when the announcer is disabled', () => {
     const m = mount(KINDS['combobox'], {
       providers: [provideSelectConfig(withSearchDebounce(0), withAnnouncer({ enabled: false }))],
     });

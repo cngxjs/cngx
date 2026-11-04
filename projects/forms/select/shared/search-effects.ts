@@ -12,6 +12,7 @@ import type { AsyncView } from '@cngx/common/data';
 
 import { CngxSelectAnnouncer } from './announcer';
 import type { CngxSelectAriaLabels } from './config';
+import { resolveSelectConfig } from './internal/resolve-config';
 
 /**
  * The filter outcome {@link createSearchEffects} speaks once a typed term
@@ -154,6 +155,7 @@ export function searchResultsFrom(source: {
 /** @internal The filter-outcome announcement of {@link createSearchEffects}. */
 function announceSearchResults(opts: SearchEffectsOptions, results: SearchEffectsResults): void {
   const announcer = inject(CngxSelectAnnouncer);
+  const config = resolveSelectConfig();
   let spokenKey: string | null = null;
   effect(() => {
     const term = opts.searchTerm();
@@ -169,10 +171,14 @@ function announceSearchResults(opts: SearchEffectsOptions, results: SearchEffect
     }
     spokenKey = key;
     untracked(() => {
+      const announcerConfig = config.announcer();
+      if (announcerConfig.enabled === false) {
+        return;
+      }
       const copy = results.ariaLabels();
       announcer.announce(
         count === 0 ? copy.announceNoResults : copy.announceResults(count),
-        'polite',
+        announcerConfig.politeness ?? 'polite',
       );
     });
   });
