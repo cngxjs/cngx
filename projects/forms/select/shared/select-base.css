@@ -661,7 +661,7 @@
   @property --cngx-select-option-error-color {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.6 0.18 25);
+    initial-value: oklch(0.46 0.18 25);
   }
 
   /**
@@ -900,7 +900,7 @@
   @property --cngx-select-error-color {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.6 0.18 25);
+    initial-value: oklch(0.46 0.18 25);
   }
 
   /**
@@ -1996,7 +1996,7 @@
   .cngx-select__commit-error-hint {
     --cngx-select-commit-error-hint-margin: var(--cngx-space-xs);
     margin-block-start: var(--cngx-select-commit-error-hint-margin, 0.25rem);
-    color: var(--cngx-select-commit-error-hint-color, var(--cngx-color-danger-text, oklch(0.5 0.2 25)));
+    color: var(--cngx-select-commit-error-hint-color, var(--cngx-color-danger-text, oklch(0.46 0.18 25)));
     font-size: var(--cngx-font-size-sm, 0.875rem);
   }
 
