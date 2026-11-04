@@ -297,6 +297,15 @@ export function releaseCommitFiles() {
   ];
 }
 
+// What a --skip-git-tag run leaves to the releaser. The root changelog is
+// regenerated only on the tagging path, so this path names it as stale.
+export function skipGitTagNote() {
+  return (
+    'Note: CHANGELOG.md is not regenerated with --skip-git-tag; refresh it with `npm run changelog` before committing.\n' +
+    `Commit the release files yourself: ${releaseCommitFiles().join(', ')}.`
+  );
+}
+
 // The pins a release writes into versions.json: @cngx/mcp is published in the
 // same run, so its pin is the release version.
 export function releasePins({ nextVersion, eslintPluginVersion }) {
@@ -910,7 +919,7 @@ function main() {
 
     if (skipGitTag) {
       console.log('\nGit tagging skipped (--skip-git-tag).');
-      console.log(`Note: commit the release files yourself: ${releaseCommitFiles().join(', ')}.`);
+      console.log(skipGitTagNote());
     } else {
       console.log('\nCreating git tag...');
       // Refresh the changelog for this version, then commit it together with

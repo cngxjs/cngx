@@ -33,6 +33,7 @@ import {
   replaceVersionInDist,
   resolveDistTag,
   runToolingSection,
+  skipGitTagNote,
   stampManifest,
   stampRefreshMigration,
   stampSchematicsDist,
@@ -901,5 +902,16 @@ describe('releaseCommitFiles', () => {
     for (const file of files) {
       expect(() => readFileSync(join(ROOT_DIR, file))).not.toThrow();
     }
+  });
+});
+
+describe('skipGitTagNote', () => {
+  it('says the root changelog is not regenerated and names the release files once', () => {
+    const [changelog, commit] = skipGitTagNote().split('\n');
+
+    expect(changelog).toBe(
+      'Note: CHANGELOG.md is not regenerated with --skip-git-tag; refresh it with `npm run changelog` before committing.',
+    );
+    expect(commit).toBe(`Commit the release files yourself: ${releaseCommitFiles().join(', ')}.`);
   });
 });
