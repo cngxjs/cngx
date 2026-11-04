@@ -74,7 +74,12 @@ export function createTypeaheadController<T>(
     if (options.disabled()) {
       return null;
     }
-    if (char.length !== 1 || !/\S/.test(char)) {
+    if (char.length !== 1) {
+      return null;
+    }
+    // A leading space is not a typeahead key; a space inside a running buffer
+    // is part of a multi-word term ("new y" -> "New York").
+    if (!/\S/.test(char) && walker.buffer() === '') {
       return null;
     }
     const term = walker.type(char);

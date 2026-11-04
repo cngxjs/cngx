@@ -202,7 +202,7 @@ describe('createTypeaheadController - spaces in the buffer', () => {
   });
 
   // A space after a non-empty buffer is part of the term ("new y" -> "New York").
-  it.fails('extends the match when a space follows a non-empty buffer', () => {
+  it('extends the match when a space follows a non-empty buffer', () => {
     const { controller } = makeController([opt('New York'), opt('New Jersey'), opt('Newark')]);
     expect(typeSeq(controller, 'new y')).toEqual(opt('New York'));
   });
