@@ -113,22 +113,20 @@ function inkOnRoundedBox(inkPx: number, extent: number): number {
 }
 
 describe('base menu checked indicator', () => {
-  // The check box lands on exactly 1rem (16px), in the 15 to 19px band, so the
-  // hand-hinted 16-grid small check paints. 1rem follows the root text scale, so
-  // the box no longer tracks the item font (Q2).
-  it('draws the check on the 16-grid small path at the 1rem box', () => {
+  // The check box lands on exactly 1rem (16px), decoupled from the item font (Q2).
+  // CHECK carries no 16-grid drawing (1x smoke), so the 24-grid path paints there.
+  it('draws the check on the 24-grid path at the 1rem box', () => {
     const { svg, path } = parts(mount().root, '.item-check');
     expect(svg.getBoundingClientRect().width).toBeCloseTo(16, 0);
-    expect(path.classList.contains('cngx-icon-svg__small')).toBe(true);
+    expect(path.classList.contains('cngx-icon-svg__path')).toBe(true);
   });
 
   // The compact popover-panel menu runs a 0.75rem item font, but the check box is
-  // 1rem (root-relative), so it stays at 16px small there too - decoupled from the
-  // item font by design.
-  it('keeps the popover-panel menu check on the 1rem small box', () => {
+  // 1rem (root-relative), so it stays 16px there too - the 24-grid path at 16px.
+  it('keeps the popover-panel menu check on the 1rem box', () => {
     const { svg, path } = parts(mount().root, '.item-check-panel');
     expect(svg.getBoundingClientRect().width).toBeCloseTo(16, 0);
-    expect(path.classList.contains('cngx-icon-svg__small')).toBe(true);
+    expect(path.classList.contains('cngx-icon-svg__path')).toBe(true);
   });
 
   it('draws the radio dot 0.7em of the item font across, on the rounded box', () => {
