@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,7 +10,7 @@ import {
   SchemaVersionError,
   SUPPORTED_SCHEMA_VERSIONS,
 } from '../../packages/mcp/src/core/data/loader.ts';
-import { checkBundledSnapshot, parseBundleCheckArgs } from '../mcp-bundle-check.mjs';
+import { checkBundledSnapshot, expectedVersionFor, parseBundleCheckArgs } from '../mcp-bundle-check.mjs';
 
 const FIXTURES = resolve(dirname(fileURLToPath(import.meta.url)), '../../packages/mcp/test/fixtures');
 const readFixture = (name) => JSON.parse(readFileSync(join(FIXTURES, name), 'utf8'));
@@ -86,6 +86,7 @@ describe('parseBundleCheckArgs', () => {
       ok: true,
       dataDir: join(root, 'packages', 'mcp', 'data'),
       label: 'packages/mcp/data',
+      expect: 'root',
     });
   });
 
@@ -94,7 +95,24 @@ describe('parseBundleCheckArgs', () => {
       ok: true,
       dataDir: join(root, 'packages', 'cli', 'data'),
       label: 'packages/cli/data',
+      expect: 'root',
     });
+  });
+
+  it('reads --expect=package next to --data-dir', () => {
+    expect(parseBundleCheckArgs(['--data-dir=packages/cli/data', '--expect=package'], root)).toMatchObject({
+      ok: true,
+      dataDir: join(root, 'packages', 'cli', 'data'),
+      expect: 'package',
+    });
+    expect(parseBundleCheckArgs(['--expect=root'], root)).toMatchObject({ ok: true, expect: 'root' });
+  });
+
+  it('rejects an unknown --expect value, naming it', () => {
+    const result = parseBundleCheckArgs(['--expect=registry'], root);
+
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain('registry');
   });
 
   it('keeps an absolute --data-dir', () => {
@@ -112,5 +130,44 @@ describe('parseBundleCheckArgs', () => {
 
     expect(result.ok).toBe(false);
     expect(result.message).toContain('--data=packages/cli/data');
+  });
+});
+
+describe('package mode', () => {
+  // A repo root at one version holding a package at another, like a release
+  // run that stamped the tooling manifest but has not bumped the root yet.
+  function releaseTree(packageVersion) {
+    const root = mkdtempSync(join(tmpdir(), 'cngx-mcp-release-'));
+    const dataDir = join(root, 'packages', 'mcp', 'data');
+    mkdirSync(dataDir, { recursive: true });
+    writeFileSync(join(root, 'package.json'), JSON.stringify({ version: '0.1.0-rc.9' }));
+    writeFileSync(join(root, 'packages', 'mcp', 'package.json'), JSON.stringify({ version: packageVersion }));
+    writeFileSync(join(dataDir, 'documentation.json'), JSON.stringify({ ...schemaSix(), cngxVersion: '0.3.0' }));
+    return { root, dataDir };
+  }
+
+  it('expects the version of the package that owns the data dir', () => {
+    const { root, dataDir } = releaseTree('0.3.0');
+
+    expect(expectedVersionFor({ expect: 'package', root, dataDir })).toBe('0.3.0');
+    expect(expectedVersionFor({ expect: 'root', root, dataDir })).toBe('0.1.0-rc.9');
+  });
+
+  it('accepts a bundle stamped with the package version while the root is behind', () => {
+    const { root, dataDir } = releaseTree('0.3.0');
+    const expectedVersion = expectedVersionFor({ expect: 'package', root, dataDir });
+
+    expect(checkBundledSnapshot({ dataDir, expectedVersion, loadBundledDocs })).toMatchObject({ ok: true });
+  });
+
+  it('rejects a bundle stamped with another version than the package, naming both', () => {
+    const { root, dataDir } = releaseTree('0.3.1');
+    const expectedVersion = expectedVersionFor({ expect: 'package', root, dataDir });
+
+    const result = checkBundledSnapshot({ dataDir, expectedVersion, loadBundledDocs });
+
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain('0.3.0');
+    expect(result.message).toContain('0.3.1');
   });
 });
