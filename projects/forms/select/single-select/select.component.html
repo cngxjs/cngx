@@ -30,6 +30,7 @@
     [attr.aria-invalid]="aria.invalid"
     [attr.aria-required]="aria.required"
     [attr.aria-busy]="aria.busy"
+    (pointerdown)="handlePointerDown()"
     (click)="handleTriggerClick()"
     (focus)="handleFocus()"
     (blur)="handleBlur()"

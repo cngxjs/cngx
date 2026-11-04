@@ -40,6 +40,7 @@ import {
 } from '@cngx/common/popover';
 
 import { injectSelectCopy } from '../i18n/select-i18n';
+import { createOpenOnFocusGesture } from '../shared/internal/open-on-focus-gesture';
 import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
 
@@ -993,9 +994,24 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.triggerBtn()?.nativeElement.focus(options);
   }
 
+  /** @internal openOn-focus gesture guard (`project-openon-focus-click-toggle`). */
+  private readonly openOnGesture = createOpenOnFocusGesture({
+    openOn: () => this.config.openOn,
+    open: () => this.open(),
+    suppress: () => this.suppressOpenOnFocus,
+  });
+
+  /** @internal */
+  protected handlePointerDown(): void {
+    this.openOnGesture.handlePointerDown();
+  }
+
   /** @internal */
   protected handleTriggerClick(): void {
     if (this.disabled()) {
+      return;
+    }
+    if (this.openOnGesture.consumeClick()) {
       return;
     }
     this.toggle();
@@ -1060,10 +1076,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   protected handleFocus(): void {
     this.focusState.markFocused();
-    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
-    if (openOnFocus && !this.suppressOpenOnFocus) {
-      this.open();
-    }
+    this.openOnGesture.handleFocus();
   }
 
   /** @internal */

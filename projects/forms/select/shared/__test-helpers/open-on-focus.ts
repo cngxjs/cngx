@@ -18,7 +18,7 @@ import { type Kind, mount } from './review-probe-host';
 export function describeOpenOnFocusClick(kind: Kind): void {
   describe(`${kind.name}: openOn focus/click does not toggle itself closed`, () => {
     for (const mode of ['focus', 'click+focus'] as const) {
-      it.fails(`${mode}: a pointerdown-focus-click sequence leaves the panel open`, () => {
+      it(`${mode}: a pointerdown-focus-click sequence leaves the panel open`, () => {
         const m = mount(kind, { providers: [provideSelectConfig(withOpenOn(mode))] });
         const trigger = m.el.querySelector<HTMLElement>('.cngx-field-trigger');
         if (!trigger) {

@@ -52,6 +52,7 @@ import {
   unresolvedOptionLabel,
   type CngxSelectCore,
 } from '../shared/internal/select-core';
+import { createOpenOnFocusGesture } from '../shared/internal/open-on-focus-gesture';
 import { createOptionsStateView } from '../shared/internal/options-state-view';
 import {
   createSelectSheetWiring,
@@ -1186,6 +1187,9 @@ export class CngxTreeSelect<T = unknown>
     if (this.disabled()) {
       return;
     }
+    if (this.openOnGesture.consumeClick()) {
+      return;
+    }
     this.toggle();
   }
 
@@ -1307,12 +1311,21 @@ export class CngxTreeSelect<T = unknown>
   // the programmatic refocus must not re-open under openOn: 'focus'.
   private suppressOpenOnFocus = false;
 
+  /** @internal openOn-focus gesture guard (`project-openon-focus-click-toggle`). */
+  private readonly openOnGesture = createOpenOnFocusGesture({
+    openOn: () => this.config.openOn,
+    open: () => this.open(),
+    suppress: () => this.suppressOpenOnFocus,
+  });
+
+  /** @internal */
+  protected handlePointerDown(): void {
+    this.openOnGesture.handlePointerDown();
+  }
+
   protected handleFocus(): void {
     this.focusState.markFocused();
-    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
-    if (openOnFocus && !this.suppressOpenOnFocus) {
-      this.open();
-    }
+    this.openOnGesture.handleFocus();
   }
 
   /** @internal */

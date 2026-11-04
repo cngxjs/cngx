@@ -79,6 +79,7 @@ import {
   type CngxChipRemovalHandler,
 } from '../shared/chip-removal-handler';
 import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
+import { createOpenOnFocusGesture } from '../shared/internal/open-on-focus-gesture';
 import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import { sameArrayContents } from '../shared/internal/compare';
 import { CngxSelectReorderList } from '../shared/internal/reorder-list/reorder-list.component';
@@ -1154,6 +1155,9 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     if (this.disabled()) {
       return;
     }
+    if (this.openOnGesture.consumeClick()) {
+      return;
+    }
     this.toggle();
   }
 
@@ -1201,12 +1205,21 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   // the programmatic refocus must not re-open under openOn: 'focus'.
   private suppressOpenOnFocus = false;
 
+  /** @internal openOn-focus gesture guard (`project-openon-focus-click-toggle`). */
+  private readonly openOnGesture = createOpenOnFocusGesture({
+    openOn: () => this.config.openOn,
+    open: () => this.open(),
+    suppress: () => this.suppressOpenOnFocus,
+  });
+
+  /** @internal */
+  protected handlePointerDown(): void {
+    this.openOnGesture.handlePointerDown();
+  }
+
   protected handleFocus(): void {
     this.focusState.markFocused();
-    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
-    if (openOnFocus && !this.suppressOpenOnFocus) {
-      this.open();
-    }
+    this.openOnGesture.handleFocus();
   }
 
   /** @internal */

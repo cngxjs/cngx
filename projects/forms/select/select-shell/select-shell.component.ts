@@ -104,6 +104,7 @@ import {
 import { CngxSelectSearch } from '../declarative/select-search.component';
 import { resolveSearchMatch, resolveSelectConfig } from '../shared/internal/resolve-config';
 import { coerceScalarFromField, isEmptyScalar } from '../shared/internal/compare';
+import { createOpenOnFocusGesture } from '../shared/internal/open-on-focus-gesture';
 import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
@@ -1237,6 +1238,9 @@ export class CngxSelectShell<T = unknown>
     if (this.disabled()) {
       return;
     }
+    if (this.openOnGesture.consumeClick()) {
+      return;
+    }
     this.toggle();
   }
 
@@ -1385,12 +1389,21 @@ export class CngxSelectShell<T = unknown>
   // the programmatic refocus must not re-open under openOn: 'focus'.
   private suppressOpenOnFocus = false;
 
+  /** @internal openOn-focus gesture guard (`project-openon-focus-click-toggle`). */
+  private readonly openOnGesture = createOpenOnFocusGesture({
+    openOn: () => this.config.openOn,
+    open: () => this.open(),
+    suppress: () => this.suppressOpenOnFocus,
+  });
+
+  /** @internal */
+  protected handlePointerDown(): void {
+    this.openOnGesture.handlePointerDown();
+  }
+
   protected handleFocus(): void {
     this.focusState.markFocused();
-    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
-    if (openOnFocus && !this.suppressOpenOnFocus) {
-      this.open();
-    }
+    this.openOnGesture.handleFocus();
   }
 
   /** @internal */
