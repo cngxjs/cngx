@@ -214,13 +214,13 @@ describe('select review 2 theming', () => {
   });
 
   // E3 - error text reads the danger-text tier (>= 4.5:1 on white).
-  it.fails('E3: the select error colour clears 4.5:1 on white', () => {
+  it('E3: the select error colour clears 4.5:1 on white', () => {
     const root = mount().nativeElement as HTMLElement;
     const white = colourOf(one(root, '.probe-white'), 'background-color');
     expect(contrast(colourOf(one(root, '.probe-error'), 'color'), white)).toBeGreaterThanOrEqual(4.5);
   });
 
-  it.fails('E3: the option error colour clears 4.5:1 on white', () => {
+  it('E3: the option error colour clears 4.5:1 on white', () => {
     const root = mount().nativeElement as HTMLElement;
     const white = colourOf(one(root, '.probe-white'), 'background-color');
     expect(
