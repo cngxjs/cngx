@@ -30,8 +30,28 @@ import { CNGX_HOST_INTERACTION_STATE } from './host-interaction-state.token';
 
 /**
  * Action function that returns a Promise or Observable.
+ *
+ * `cngxAsyncClick` passes an `AbortSignal` that aborts when the runner is
+ * destroyed. The library never aborts the run itself: a destroyed runner
+ * only stops listening. Pass the signal on (`fetch(url, { signal })`, an
+ * `HttpClient` call ended with `takeUntil(fromEvent(signal, 'abort'))`) to
+ * opt in to cancellation. Zero-argument actions stay assignable.
  */
-export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
+export type AsyncAction = (signal?: AbortSignal) => Promise<unknown> | Observable<unknown>;
+
+/**
+ * Resolve value of a run that ended without an outcome: superseded by a
+ * newer run, reset, or aborted through its `AbortSignal`. `createRetry`
+ * resolves it instead of `undefined`; `cngxAsyncClick` maps it to `idle`
+ * with no announcement and no `(settled)`. Resolved, not rejected, so an
+ * `await` caller outside the directive gets no surprise throw: compare the
+ * result with it where the result is used.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-click/async-click.directive.ts
+ * @since 0.1.0
+ * @relatedTo createRetry, CngxAsyncClick
+ */
+export const CNGX_ASYNC_CANCELLED: unique symbol = Symbol('CNGX_ASYNC_CANCELLED');
 
 /**
  * One settle of a `cngxAsyncClick` run, emitted through `(settled)`.
@@ -76,6 +96,14 @@ export interface CngxAsyncSettle {
  * runs that settle before change detection are spoken twice. Side effects
  * that must happen per run (a toast, a close, a completion output) belong
  * on `(settled)`; `status` and `state` stay derived state.
+ *
+ * Destroy ends the lifecycle without aborting the run: the in-flight action
+ * keeps running (the library never cancels it), but no state is written, no
+ * `(settled)` is emitted, nothing is spoken and the feedback timer is
+ * cleared. The `AbortSignal` handed to the action aborts, so an action that
+ * forwards it (and `createRetry`, which stops its backoff loop on it) can
+ * end early. A run that resolves {@link CNGX_ASYNC_CANCELLED} returns to
+ * `idle` silently.
  *
  * The busy visual is gated, the truth is not: {@link busyVisible} (and with it
  * `cngx-async--pending` and the button-family spinner) turns on only after
@@ -248,6 +276,7 @@ export class CngxAsyncClick {
   private generation = 0;
   private readonly injector = inject(Injector);
   private regionSpan: HTMLSpanElement | null = null;
+  private readonly abortController = new AbortController();
 
   constructor() {
     this.destroyRef.onDestroy(() => {
@@ -255,6 +284,7 @@ export class CngxAsyncClick {
       if (this.feedbackTimer != null) {
         clearTimeout(this.feedbackTimer);
       }
+      this.abortController.abort();
     });
 
     if (isPlatformBrowser(inject(PLATFORM_ID))) {
@@ -415,12 +445,16 @@ export class CngxAsyncClick {
 
     try {
       const actionFn = this.action();
-      const result$ = actionFn();
+      const result$ = actionFn(this.abortController.signal);
       const promise = isObservable(result$)
         ? firstValueFrom(result$, { defaultValue: undefined })
         : result$;
-      await promise;
+      const result = await promise;
       if (this.destroyed) {
+        return;
+      }
+      if (result === CNGX_ASYNC_CANCELLED) {
+        this.pendingState.set(false);
         return;
       }
       this.settle('success', undefined);

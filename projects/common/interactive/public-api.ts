@@ -2,6 +2,7 @@
  * @module @cngx/common/interactive
  */
 export {
+  CNGX_ASYNC_CANCELLED,
   CngxAsyncClick,
   type AsyncAction,
   type CngxAsyncSettle,
