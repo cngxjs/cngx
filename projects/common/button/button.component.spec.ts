@@ -487,11 +487,14 @@ describe('CngxButton', () => {
       host.release();
       await advance(0);
       expect(btn.hasAttribute('data-pending')).toBe(false);
-      expect(btn.hasAttribute('aria-busy')).toBe(false);
+      // aria-busy is held until the busy visual releases (E4), not cleared at
+      // the settle.
+      expect(btn.getAttribute('aria-busy')).toBe('true');
       expect(btn.dataset['busy']).toBe('true');
 
       await advance(CNGX_LOADING_DEFAULTS.minDwell);
       expect(btn.hasAttribute('data-busy')).toBe(false);
+      expect(btn.hasAttribute('aria-busy')).toBe(false);
       expect(btn.querySelector('.cngx-button__busy')).toBeNull();
     });
 
@@ -516,6 +519,84 @@ describe('CngxButton', () => {
         expect(btn.hasAttribute('data-busy')).toBe(false);
         expect(btn.querySelector('.cngx-button__busy')).toBeNull();
       }
+    });
+
+    it('refuses a second run for the whole dwell and clears all flags on release (E4)', async () => {
+      vi.useFakeTimers();
+      const { fixture, host, q } = render(AsyncHost);
+      host.disabled.set(false);
+      fixture.detectChanges();
+      const btn = q('#button-first');
+      const advance = async (ms: number): Promise<void> => {
+        await vi.advanceTimersByTimeAsync(ms);
+        fixture.detectChanges();
+        TestBed.flushEffects();
+      };
+
+      btn.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(host.calls).toBe(1);
+      await advance(CNGX_LOADING_DEFAULTS.showDelay);
+      expect(btn.dataset['busy']).toBe('true');
+
+      host.release();
+      await advance(0);
+      // Settled, but the busy visual (and the refusal) is still held.
+      expect(btn.dataset['busy']).toBe('true');
+      expect(btn.getAttribute('aria-disabled')).toBe('true');
+      expect(btn.getAttribute('aria-busy')).toBe('true');
+
+      btn.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(host.calls).toBe(1);
+
+      await advance(CNGX_LOADING_DEFAULTS.minDwell);
+      expect(btn.hasAttribute('data-busy')).toBe(false);
+      expect(btn.hasAttribute('aria-disabled')).toBe(false);
+      expect(btn.hasAttribute('aria-busy')).toBe(false);
+
+      // Activation works again once the dwell ends.
+      btn.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(host.calls).toBe(2);
+      vi.useRealTimers();
+    });
+
+    it('keeps keyboard focus and never sets the native disabled attribute through a run and its dwell', async () => {
+      vi.useFakeTimers();
+      const { fixture, host, q } = render(AsyncHost);
+      host.disabled.set(false);
+      fixture.detectChanges();
+      const btn = q('#button-first');
+      const advance = async (ms: number): Promise<void> => {
+        await vi.advanceTimersByTimeAsync(ms);
+        fixture.detectChanges();
+        TestBed.flushEffects();
+      };
+
+      btn.focus();
+      expect(document.activeElement).toBe(btn);
+      // Activation (a keyboard Enter resolves to the same click path).
+      btn.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      await advance(CNGX_LOADING_DEFAULTS.showDelay);
+      expect(btn.hasAttribute('disabled')).toBe(false);
+      expect(document.activeElement).toBe(btn);
+
+      host.release();
+      await advance(0);
+      expect(btn.hasAttribute('disabled')).toBe(false);
+      expect(document.activeElement).toBe(btn);
+
+      await advance(CNGX_LOADING_DEFAULTS.minDwell);
+      expect(btn.hasAttribute('disabled')).toBe(false);
+      expect(document.activeElement).toBe(btn);
+      vi.useRealTimers();
     });
   });
 

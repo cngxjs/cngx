@@ -460,10 +460,13 @@ describe('CngxPopoverAction', () => {
       fixture.detectChanges();
 
       // Inside the held dwell: the run settled (pending() false) but the busy
-      // visual is still held, so data-busy is set and data-pending is cleared.
+      // visual is still held, so data-busy is set, data-pending is cleared, and
+      // the inner CngxAsyncClick still refuses with aria-disabled - which the
+      // data-busy flag keeps out of the disabled paint.
       expect(host.action().busyVisible()).toBe(true);
       expect(btn.hasAttribute('data-pending')).toBe(false);
       expect(btn.getAttribute('data-busy')).toBe('true');
+      expect(btn.getAttribute('aria-disabled')).toBe('true');
       expect(paintsDisabled(btn)).toBe(false);
 
       await vi.advanceTimersByTimeAsync(DWELL);

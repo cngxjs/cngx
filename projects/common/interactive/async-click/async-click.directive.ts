@@ -49,9 +49,11 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
  * The busy visual is gated, the truth is not: {@link busyVisible} (and with it
  * `cngx-async--pending` and the button-family spinner) turns on only after
  * `CNGX_LOADING_CONFIG.showDelay` and, once shown, stays for at least
- * `minDwell`, so a fast run never flashes a spinner. `pending()`, `status`,
- * `aria-busy`, `aria-disabled`, the double-click guard and the settle
- * announcement stay immediate. Override the timing per instance with
+ * `minDwell`, so a fast run never flashes a spinner. `pending()`, `status` and
+ * the settle announcement stay immediate; `aria-busy`, `aria-disabled` and the
+ * double-click guard are set at click and held until the busy visual releases,
+ * so a control that looks busy refuses activation and reads as busy for the
+ * whole dwell - never as a bare disabled. Override the timing per instance with
  * `[showDelay]` / `[minDwell]`.
  *
  * ### Basic usage
@@ -100,8 +102,8 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
     '[class.cngx-async--pending]': 'busyVisible()',
     '[class.cngx-async--success]': 'succeeded() && !busyVisible()',
     '[class.cngx-async--error]': 'failed() && !busyVisible()',
-    '[attr.aria-busy]': 'pending() || busy() || hostBusy() || null',
-    '[attr.aria-disabled]': 'pending() || blocked() || null',
+    '[attr.aria-busy]': 'pending() || busyVisible() || busy() || hostBusy() || null',
+    '[attr.aria-disabled]': 'pending() || busyVisible() || blocked() || null',
   },
 })
 export class CngxAsyncClick {
@@ -348,7 +350,7 @@ export class CngxAsyncClick {
 
   /** @internal */
   protected async handleClick(event: Event): Promise<void> {
-    if (this.blocked() || this.pendingState()) {
+    if (this.blocked() || this.pendingState() || this.busyVisible()) {
       event.preventDefault();
       return;
     }
