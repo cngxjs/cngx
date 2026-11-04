@@ -269,6 +269,16 @@ export function publishInLockstep({ order, nextVersion, registryFlag = '', skipG
   return { published, failure: null };
 }
 
+// The tooling dist-tags come from the registry (`npm view`, outside runStep
+// and its SIGINT listener), so they are resolved before the tooling section
+// stamps the manifests: from the stamp to the first publish, every child runs
+// through runStep, and Ctrl+C there ends in a restore or a recovery message.
+export function prepareToolingRelease({ resolveDistTags, stamp }) {
+  const distTags = resolveDistTags();
+  const tooling = stamp();
+  return { distTags, tooling };
+}
+
 // What a release publishes, in order: the tooling packages first, because
 // @cngx/core ships versions.json pinning @cngx/mcp at the release version,
 // then the libs in build order.
@@ -943,22 +953,26 @@ function main() {
   // and a failure leave the manifests as they were.
   console.log('\n[mcp, cli]');
   let tooling;
+  let toolingDistTags;
   try {
-    tooling = runToolingSection({ root: ROOT, nextVersion, run, keepStamped: !dryRun });
+    ({ distTags: toolingDistTags, tooling } = prepareToolingRelease({
+      resolveDistTags: () =>
+        new Map(
+          TOOLING_PACKAGES.map((name) => [
+            name,
+            resolveDistTag({
+              nextVersion,
+              explicitTag: tag,
+              hasStableRelease: tag ? false : containsStableRelease(publishedVersions(name, registryFlag)),
+            }),
+          ]),
+        ),
+      stamp: () => runToolingSection({ root: ROOT, nextVersion, run, keepStamped: !dryRun }),
+    }));
   } catch (error) {
     console.error(`  Refusing to publish: ${error.message}`);
     process.exit(1);
   }
-  const toolingDistTags = new Map(
-    TOOLING_PACKAGES.map((name) => [
-      name,
-      resolveDistTag({
-        nextVersion,
-        explicitTag: tag,
-        hasStableRelease: tag ? false : containsStableRelease(publishedVersions(name, registryFlag)),
-      }),
-    ]),
-  );
 
   const libReleases = new Map(releases.map((release) => [release.lib, release]));
   const order = publishOrder(libs).map(({ name, tooling: isTooling }) => ({

@@ -28,6 +28,7 @@ import {
   npmViewVersion,
   publishFailurePlan,
   publishInLockstep,
+  prepareToolingRelease,
   publishOrder,
   releaseFinishFailure,
   releaseFinishSteps,
@@ -1158,5 +1159,39 @@ describe('dryRunStampLines', () => {
     );
     expect(dryRunStampLines({ lib: 'utils', stamp: null, nextVersion: '0.3.0' })).toEqual([]);
     expect(dryRunStampLines({ lib: 'mcp', stamp: undefined, nextVersion: '0.3.0' })).toEqual([]);
+  });
+});
+
+describe('prepareToolingRelease', () => {
+  it('resolves the dist-tags from the registry before the tooling section stamps anything', () => {
+    const events = [];
+
+    const result = prepareToolingRelease({
+      resolveDistTags: () => {
+        events.push('dist-tags');
+        return new Map([['mcp', 'latest']]);
+      },
+      stamp: () => {
+        events.push('stamp');
+        return { restore: () => {} };
+      },
+    });
+
+    expect(events).toEqual(['dist-tags', 'stamp']);
+    expect(result.distTags.get('mcp')).toBe('latest');
+  });
+
+  it('stamps nothing when the dist-tag lookup throws', () => {
+    const events = [];
+
+    expect(() =>
+      prepareToolingRelease({
+        resolveDistTags: () => {
+          throw new Error('ENOTFOUND');
+        },
+        stamp: () => events.push('stamp'),
+      }),
+    ).toThrow('ENOTFOUND');
+    expect(events).toEqual([]);
   });
 });
