@@ -45,13 +45,7 @@ describe('P5 commitAction resolves null (HttpClient 204)', () => {
   for (const key of ['select', 'typeahead', 'actionSelect', 'shell', 'multi', 'combobox', 'actionMulti', 'tree', 'reorder']) {
     for (const shape of ['of(null)', 'Promise null'] as const) {
       for (const op of ['pick', 'clear'] as const) {
-        // OD1 (commit 2.1) flips every pick green and the clears of the seven
-        // composites that own a `cleared` output. CngxSelect and CngxSelectShell
-        // carry no `cleared` output (they clear through `selectionChange`), so
-        // their clear cases stay red until A2 (commit 2.2) settles them.
-        const clearStillRed = op === 'clear' && (key === 'select' || key === 'shell');
-        const run = clearStillRed ? it.fails : it;
-        run(`${key} ${shape} ${op}`, async () => {
+        it(`${key} ${shape} ${op}`, async () => {
           const kind = KINDS[key];
           const nullAction = () => (shape === 'of(null)' ? of(null) : Promise.resolve(null));
           const initial = op === 'clear' ? (kind.model === 'value' ? 'red' : ['red']) : undefined;
@@ -90,8 +84,15 @@ describe('P5 commitAction resolves null (HttpClient 204)', () => {
             } else {
               expect(m.readModel()).toEqual([]);
             }
-            // A2: a clear resolving null finalizes as a clear.
-            expect(names).toContain('cleared');
+            // A2: a clear resolving null finalizes as a clear. CngxSelect and
+            // CngxSelectShell carry no `cleared` output - a single-select clear
+            // is a selection change to no value - so they signal it through
+            // `selectionChange`; the seven multi-capable composites emit `cleared`.
+            if (key === 'select' || key === 'shell') {
+              expect(names).toContain('selectionChange');
+            } else {
+              expect(names).toContain('cleared');
+            }
             expect(spokenMsgs.some((msg) => /cleared/i.test(msg))).toBe(true);
             expect(spokenMsgs.some((msg) => /added/i.test(msg))).toBe(false);
           }
