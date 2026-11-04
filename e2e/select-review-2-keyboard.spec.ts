@@ -124,7 +124,6 @@ const I2_OPENERS = {
 test.describe('I2: a sheet keeps focus inside across a presentation round trip', () => {
   for (const [variant, opener] of Object.entries(I2_OPENERS)) {
     test(`${variant}: focus stays in the sheet across a resize`, async ({ page }) => {
-      test.fail();
       await page.setViewportSize({ width: 390, height: 844 });
       await page.goto(ROUTES.allVariants);
       await page.locator(opener).first().click();

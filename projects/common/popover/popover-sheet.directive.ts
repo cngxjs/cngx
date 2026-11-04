@@ -355,7 +355,11 @@ export class CngxPopoverSheet
       const previous = active.previous();
       untracked(() => {
         if (now && !previous && !this.engaged) {
-          this.engage(!this.host.contains(this.doc.activeElement));
+          const focusWasOutside = !this.host.contains(this.doc.activeElement);
+          this.engage(false);
+          if (focusWasOutside) {
+            this.rehomeFocusIntoSheet();
+          }
         }
         if (!now && previous && this.engaged) {
           const opener = this.savedFocus;
@@ -503,6 +507,26 @@ export class CngxPopoverSheet
     this.doc.addEventListener('pointerdown', this.outsidePointerDown, true);
     this.doc.addEventListener('keydown', this.escapeKeydown, true);
     this.armCloseWatcher();
+  }
+
+  // The reverse: a flip back to modal while open re-homes focus into the
+  // sheet. Deferred with afterNextRender so the restored modal DOM (host
+  // tabindex, lifted inert, a visible sheet-header input) exists when
+  // focusInitial reads it - a synchronous move inside the flip effect runs
+  // before change detection applies those bindings. Independent of
+  // `restoreFocus`, which governs a close, not a flip.
+  private rehomeFocusIntoSheet(): void {
+    afterNextRender(
+      () => {
+        if (!this.engaged || !this.modal() || !this.popover.isVisible()) {
+          return;
+        }
+        if (!this.host.contains(this.doc.activeElement)) {
+          this.focusInitial();
+        }
+      },
+      { injector: this.injector },
+    );
   }
 
   // A flip back to anchored while open strips the modal focus targets (the
