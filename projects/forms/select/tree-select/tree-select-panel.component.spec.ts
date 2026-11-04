@@ -291,13 +291,13 @@ describe('CngxTreeSelectPanel', () => {
     expect(host.lastSelected()).not.toBeNull();
   });
 
-  it('renders a role="tree" container without the aria-selected-model attributes', () => {
+  it('renders a role="tree" container that announces multi-select, no aria-selected model', () => {
     const { root } = setup();
     const tree = root.querySelector('[role="tree"]');
     expect(tree).toBeTruthy();
-    // APG checkbox-tree: per-row aria-checked communicates multi-ness;
-    // aria-multiselectable belongs to the aria-selected model.
-    expect(tree?.hasAttribute('aria-multiselectable')).toBe(false);
+    // I3: the tree announces that several nodes can be selected; per-row
+    // aria-checked still carries the tri-state, no aria-selected model.
+    expect(tree?.getAttribute('aria-multiselectable')).toBe('true');
   });
 
   it('names the role="tree" container from the host listbox label', () => {
@@ -361,7 +361,6 @@ describe('CngxTreeSelectPanel', () => {
     const indicator = itemById('a').querySelector('cngx-checkbox-indicator');
     expect(indicator).toBeTruthy();
     expect(root.querySelector('[aria-selected]')).toBeNull();
-    expect(root.querySelector('[aria-multiselectable]')).toBeNull();
   });
 
   it('twisty click toggles the controller expansion state', () => {
