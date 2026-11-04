@@ -19,7 +19,14 @@ import { afterEach, describe, expect, it } from 'vitest';
   selector: 'cngx-menu-indicator-host',
   standalone: true,
   imports: [CngxMenu, CngxMenuGroup, CngxMenuItemCheckbox, CngxMenuItemIcon, CngxMenuItemRadio],
-  styleUrls: ['../../../core/theming/system-tokens.css', './cngx-menu.css'],
+  // cngx-icon-glyph.css (as cngx.css loads it) lets the check pick its tier by
+  // box; without it the band rule never swaps and the 24-grid path stays.
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    './cngx-icon-glyph.css',
+    './cngx-menu.css',
+  ],
   encapsulation: ViewEncapsulation.None,
   template: `
     <ul cngxMenu [label]="'Format'" tabindex="0">
@@ -32,6 +39,11 @@ import { afterEach, describe, expect, it } from 'vitest';
         <li cngxMenuItemRadio value="left" class="item-radio">Left</li>
       </div>
     </ul>
+    <div class="cngx-popover-panel">
+      <ul cngxMenu [label]="'Compact'" tabindex="0">
+        <li cngxMenuItemCheckbox value="b" [checked]="true" class="item-check-panel">Bold</li>
+      </ul>
+    </div>
   `,
 })
 class MenuIndicatorHost {
@@ -76,11 +88,18 @@ function parts(root: HTMLElement, selector: string): IndicatorParts {
   const item = one(root, selector);
   const gutter = one(item, '.cngx-menu-item__indicator');
   const svg = gutter.querySelector<SVGSVGElement>('svg.cngx-menu-item__indicator-svg');
-  const path = svg?.querySelector('path');
-  if (!svg || !path) {
+  if (!svg) {
     throw new Error(`${selector} indicator renders no icon`);
   }
-  return { item, gutter, svg, path };
+  // The tier rule hides all but one path (24-grid, micro or small); measure the
+  // one that paints, not the first in DOM order.
+  const painted = Array.from(svg.querySelectorAll('path')).filter(
+    (p) => computedValue(p, 'display') !== 'none',
+  );
+  if (painted.length !== 1) {
+    throw new Error(`${selector} indicator paints ${painted.length} paths`);
+  }
+  return { item, gutter, svg, path: painted[0] };
 }
 
 function px(el: Element, property: string): number {
@@ -94,15 +113,22 @@ function inkOnRoundedBox(inkPx: number, extent: number): number {
 }
 
 describe('base menu checked indicator', () => {
-  // The bold text tick drew 0.72em wide; the check spans 14 units plus the
-  // 2-unit stroke, on the rounded box.
-  it('draws the check 0.72em of the item font wide, on the rounded box', () => {
-    const { svg, path, item } = parts(mount().root, '.item-check');
-    const stroke = (px(svg, 'stroke-width') * svg.getBoundingClientRect().width) / 24;
-    expect(path.getBoundingClientRect().width + stroke).toBeCloseTo(
-      inkOnRoundedBox(0.72 * px(item, 'font-size'), 16),
-      1,
-    );
+  // The check box lands on exactly 1rem (16px), in the 15 to 19px band, so the
+  // hand-hinted 16-grid small check paints. 1rem follows the root text scale, so
+  // the box no longer tracks the item font (Q2).
+  it('draws the check on the 16-grid small path at the 1rem box', () => {
+    const { svg, path } = parts(mount().root, '.item-check');
+    expect(svg.getBoundingClientRect().width).toBeCloseTo(16, 0);
+    expect(path.classList.contains('cngx-icon-svg__small')).toBe(true);
+  });
+
+  // The compact popover-panel menu runs a 0.75rem item font, but the check box is
+  // 1rem (root-relative), so it stays at 16px small there too - decoupled from the
+  // item font by design.
+  it('keeps the popover-panel menu check on the 1rem small box', () => {
+    const { svg, path } = parts(mount().root, '.item-check-panel');
+    expect(svg.getBoundingClientRect().width).toBeCloseTo(16, 0);
+    expect(path.classList.contains('cngx-icon-svg__small')).toBe(true);
   });
 
   it('draws the radio dot 0.7em of the item font across, on the rounded box', () => {
