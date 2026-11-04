@@ -29,8 +29,7 @@ const altRight = (m: Mount) => {
  */
 describe('P13 reorder rejected', () => {
   for (const mode of ['optimistic', 'pessimistic'] as const) {
-    const run = mode === 'optimistic' ? it.fails : it;
-    run(mode, () => {
+    it(mode, () => {
       const pend: Subject<unknown>[] = [];
       const m = mount(KINDS['reorder'], {
         mode,

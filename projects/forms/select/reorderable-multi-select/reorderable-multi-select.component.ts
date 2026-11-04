@@ -560,7 +560,9 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /**
    * Dedicated channel for reorder events. Fires after
    * `selectionChange` with the same payload so consumers only caring
-   * about positional changes can bind `(reordered)` directly.
+   * about positional changes can bind `(reordered)` directly. With
+   * `commitAction` bound it fires on commit success only (both modes) - an
+   * optimistic reorder that the server rejects rolls back and emits nothing.
    */
   readonly reordered = output<CngxReorderableMultiSelectChange<T>>();
   /** Emits `true` when the panel opens and `false` when it closes. */

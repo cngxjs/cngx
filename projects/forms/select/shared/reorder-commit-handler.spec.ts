@@ -102,21 +102,40 @@ describe('createReorderCommitHandler', () => {
     expect(onStateChange).not.toHaveBeenCalled();
   });
 
-  it('optimistic: writes + emits immediately, rolls back on error', () => {
+  it('optimistic: writes immediately but defers the emit to success, rolls back on error', () => {
     commitMode.set('optimistic');
-    const act: CngxSelectCommitAction<string[]> = () =>
-      Promise.resolve<string[] | undefined>(undefined);
-    commitAction.set(act);
+    commitAction.set(() => Promise.resolve<string[] | undefined>(undefined));
     const { handler, reject } = make();
     handler.dispatch(['b', 'c', 'a', 'd'], ['a', 'b', 'c', 'd'], 0, 2, option('a'));
+    // The order lands at once for instant UI, but nothing is emitted yet.
     expect(values()).toEqual(['b', 'c', 'a', 'd']);
-    expect(onReorder).toHaveBeenCalledTimes(1);
+    expect(onReorder).not.toHaveBeenCalled();
+    expect(onAnnounce).not.toHaveBeenCalled();
     expect(onStateChange).toHaveBeenCalledWith('pending');
 
     reject(new Error('boom'));
     expect(values()).toEqual(['a', 'b', 'c', 'd']);
+    expect(onReorder).not.toHaveBeenCalled();
+    expect(onAnnounce).not.toHaveBeenCalled();
     expect(onStateChange).toHaveBeenCalledWith('error');
     expect(onError).toHaveBeenCalledExactlyOnceWith(expect.any(Error));
+  });
+
+  it('optimistic: emits once the commit succeeds', () => {
+    commitMode.set('optimistic');
+    commitAction.set(() => Promise.resolve<string[] | undefined>(undefined));
+    const { handler, resolve } = make();
+    handler.dispatch(['b', 'c', 'a', 'd'], ['a', 'b', 'c', 'd'], 0, 2, option('a'));
+    expect(onReorder).not.toHaveBeenCalled();
+    resolve(undefined);
+    expect(onReorder).toHaveBeenCalledExactlyOnceWith(
+      ['b', 'c', 'a', 'd'],
+      ['a', 'b', 'c', 'd'],
+      option('a'),
+      0,
+      2,
+    );
+    expect(onAnnounce).toHaveBeenCalledExactlyOnceWith(option('a'), 0, 2, 4);
   });
 
   it('rolls a failed reorder back to the confirmed order on its own', () => {
