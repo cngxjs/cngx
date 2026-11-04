@@ -37,11 +37,12 @@ import {
 import {
   buildAsyncStateView,
   createTransitionTracker,
+  resolveSpokenText,
   type AsyncStatus,
   type CngxAsyncState,
 } from '@cngx/core/utils';
 import { CngxToastOn, CngxToaster, injectErrorDetail, injectFeedbackI18n } from '@cngx/ui/feedback';
-import { cngxDevWarn, readSpokenText } from '@cngx/utils';
+import { cngxDevWarn } from '@cngx/utils';
 
 type LabelCell = 'idle' | 'pending' | 'success' | 'error';
 
@@ -605,7 +606,7 @@ export class CngxActionButton {
     if (!cell) {
       return undefined;
     }
-    const text = readSpokenText(cell.nativeElement as Element);
+    const text = resolveSpokenText(cell.nativeElement as Element);
     return text === '' ? undefined : text;
   }
 }

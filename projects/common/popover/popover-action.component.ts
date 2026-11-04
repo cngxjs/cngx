@@ -15,7 +15,7 @@ import {
   ViewEncapsulation,
   viewChild,
 } from '@angular/core';
-import type { AsyncStatus } from '@cngx/core/utils';
+import { resolveSpokenText, type AsyncStatus } from '@cngx/core/utils';
 import {
   CngxAsyncClick,
   CngxFailed,
@@ -24,7 +24,7 @@ import {
   type AsyncAction,
   type CngxAsyncSettle,
 } from '@cngx/common/interactive';
-import { cngxDevWarn, readSpokenText } from '@cngx/utils';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { CNGX_POPOVER_PANEL_CONFIG } from './popover-panel.config';
 import { CngxPopover } from './popover.directive';
@@ -283,7 +283,7 @@ export class CngxPopoverAction {
             return;
           }
           const button = this.confirmButton()?.nativeElement as Element | undefined;
-          const rendered = hasTemplate && button ? readSpokenText(button) : '';
+          const rendered = hasTemplate && button ? resolveSpokenText(button) : '';
           region.textContent = rendered === '' ? fallback : rendered;
         },
       },
