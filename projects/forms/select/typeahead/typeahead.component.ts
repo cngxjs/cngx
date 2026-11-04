@@ -1059,13 +1059,23 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     }
   }
 
-  protected handleBlur(): void {
+  private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  protected handleBlur(event?: FocusEvent): void {
     this.focusState.markBlurred();
     // Snap input back to `displayWith(value)` when text drifted from
     // the committed value. Disable via `[clearOnBlur]="false"`.
-    if (this.clearOnBlur()) {
-      this.display.writeFromValue(this.value());
+    if (!this.clearOnBlur()) {
+      return;
     }
+    // Focus moving INSIDE the component (a panel Retry button, an option row)
+    // must keep the typed term: the blur races the click, and snapping back
+    // to `displayWith(value)` here would drop the draft before the click runs.
+    const related = event?.relatedTarget as HTMLElement | null;
+    if (related && this.hostEl.nativeElement.contains(related)) {
+      return;
+    }
+    this.display.writeFromValue(this.value());
   }
 
   /**

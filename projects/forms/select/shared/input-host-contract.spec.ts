@@ -86,7 +86,7 @@ function mountReadonly(
 
 // ── A24: a blur into the panel (Retry) keeps the typed term ────────────────
 describe('A24: typeahead keeps the typed term on a blur into its own panel', () => {
-  it.fails('does not snap the input back when focus moves to a node inside the component', () => {
+  it('does not snap the input back when focus moves to a node inside the component', () => {
     const m = mount(KINDS['typeahead']);
     m.open();
     const input = m.el.querySelector<HTMLInputElement>('input')!;

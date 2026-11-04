@@ -52,7 +52,7 @@
       [attr.aria-readonly]="aria.readonly"
       [readOnly]="aria.readonly ?? false"
       (focus)="handleFocus()"
-      (blur)="handleBlur()"
+      (blur)="handleBlur($event)"
       (keydown)="handleInputKeydown($event)"
     />
     @if (inputSuffixTpl(); as suffixTpl) {
