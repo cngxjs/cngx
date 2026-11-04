@@ -331,6 +331,20 @@ export class CngxAsyncClick {
       });
     });
 
+    // The spoken text lives as long as the feedback window it describes: when
+    // the run falls back to idle the region is emptied (silently), so a
+    // browse-mode reader never finds a stale outcome.
+    effect(() => {
+      if (this.status() !== 'idle') {
+        return;
+      }
+      untracked(() => {
+        if (this.regionSpan) {
+          this.regionSpan.textContent = '';
+        }
+      });
+    });
+
     this.destroyRef.onDestroy(() => this.removeRegion(renderer));
   }
 

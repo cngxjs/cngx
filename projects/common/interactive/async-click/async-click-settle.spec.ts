@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
+import { createManualState } from '@cngx/common/data';
 import { CngxPopoverAction } from '@cngx/common/popover';
 import { CngxStepperComplete, CngxStepperPresenter } from '@cngx/common/stepper';
 import { CngxActionButton } from '@cngx/ui/action-button';
@@ -163,5 +164,61 @@ describe('cngxAsyncClick settle side effects across two runs without change dete
     flush(fixture);
 
     expect(writes()).toEqual(['Action failed', 'Action failed']);
+  });
+});
+
+@Component({
+  template: `<button [cngxAsyncClick]="action" [feedbackDuration]="500">Go</button>`,
+  imports: [CngxAsyncClick],
+})
+class FeedbackWindowHost {
+  readonly action: AsyncAction = () => Promise.reject(new Error('nope'));
+}
+
+@Component({
+  template: `<button cngxActionButton [action]="action" [externalState]="state">Save</button>`,
+  imports: [CngxActionButton],
+})
+class ExternalStateHost {
+  readonly state = createManualState<void>();
+  readonly action = (): Promise<void> => Promise.resolve();
+}
+
+describe('cngxAsyncClick live region lifetime', () => {
+  it('empties the region when the feedback window closes', async () => {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(FeedbackWindowHost);
+    flush(fixture);
+    const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    const region = button.nextElementSibling as HTMLElement;
+
+    button.click();
+    await drainMicrotasks();
+    flush(fixture);
+    expect(region.textContent).toBe('Action failed');
+
+    vi.advanceTimersByTime(600);
+    flush(fixture);
+    expect(region.textContent).toBe('');
+  });
+
+  it('empties the action button region when the external state returns to idle', () => {
+    const fixture = TestBed.createComponent(ExternalStateHost);
+    flush(fixture);
+    const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    const region = button.nextElementSibling as HTMLElement;
+    const state = fixture.componentInstance.state;
+
+    state.set('pending');
+    flush(fixture);
+    state.setError(new Error('nope'));
+    flush(fixture);
+    flush(fixture);
+    expect(region.textContent).toBe('Action failed');
+
+    state.setIdle();
+    flush(fixture);
+    flush(fixture);
+    expect(region.textContent).toBe('');
   });
 });

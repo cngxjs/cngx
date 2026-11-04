@@ -520,7 +520,16 @@ export class CngxActionButton {
   }
 
   private handleExternalEdge(status: AsyncStatus): void {
-    if (!this.externalState() || (status !== 'success' && status !== 'error')) {
+    if (!this.externalState()) {
+      return;
+    }
+    // Back to idle closes the feedback window: empty the region so no stale
+    // outcome stays readable, as the directive does for its own runs.
+    if (status === 'idle') {
+      this.asyncClick.announce('');
+      return;
+    }
+    if (status !== 'success' && status !== 'error') {
       return;
     }
     this.showToast(status, this.effectiveError());
