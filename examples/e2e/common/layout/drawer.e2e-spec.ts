@@ -10,3 +10,42 @@ test.describe('common/layout/drawer', () => {
     });
   }
 });
+
+test.describe('common/layout/drawer: modal inert scope', () => {
+  const route = 'common/layout/drawer/mode-over-push';
+
+  test('modal over drawer: Tab and Shift+Tab wrap inside the panel', async ({ page }) => {
+    await gotoDemo(page, route);
+    await page.getByRole('button', { name: 'Toggle over drawer' }).click();
+    const panel = page.locator('#mode-panel');
+    await expect(panel).toHaveAttribute('aria-modal', 'true');
+
+    await panel.getByRole('button', { name: 'Close' }).focus();
+    await page.keyboard.press('Tab');
+    await expect(panel.getByRole('button', { name: 'Inbox' })).toBeFocused();
+
+    await page.keyboard.press('Shift+Tab');
+    await expect(panel.getByRole('button', { name: 'Close' })).toBeFocused();
+
+    const chipInert = await page
+      .getByRole('button', { name: 'push', exact: true })
+      .evaluate((el) => el.closest('[inert]') !== null);
+    expect(chipInert).toBe(true);
+  });
+
+  test('non-modal over drawer: Tab leaves the panel', async ({ page }) => {
+    await gotoDemo(page, route);
+    await page.getByRole('button', { name: 'non-modal' }).click();
+    await page.getByRole('button', { name: 'Toggle over drawer' }).click();
+    const panel = page.locator('#mode-panel');
+    await expect(panel).toHaveClass(/cngx-drawer-panel--open/);
+    await expect(panel).not.toHaveAttribute('aria-modal', 'true');
+
+    await panel.getByRole('button', { name: 'Close' }).focus();
+    await page.keyboard.press('Tab');
+    const insidePanel = await page.evaluate(
+      () => document.getElementById('mode-panel')?.contains(document.activeElement) ?? false,
+    );
+    expect(insidePanel).toBe(false);
+  });
+});

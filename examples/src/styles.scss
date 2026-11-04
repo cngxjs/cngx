@@ -2546,6 +2546,72 @@ button.chip.demo-chip--copied {
   min-height: 220px;
 }
 
+// Drawer stories with a scrolling content lane. The layout is the nearest
+// scroll container above the panel, so a modal drawer locks it instead of
+// the page. The panel sticks to the lane's top edge so it stays in view
+// whatever the scroll position; in over mode its negative end margin keeps
+// it out of the flow.
+.demo-drawer-layout--scroll {
+  box-sizing: border-box;
+  height: var(--demo-drawer-lane-height, 280px);
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  align-items: flex-start;
+}
+.demo-drawer-layout--scroll > .demo-drawer-panel {
+  position: sticky;
+  inset: 0 auto auto 0;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  height: 100%;
+  margin-inline-end: -220px;
+}
+.demo-drawer-layout--scroll > .demo-drawer-panel--static {
+  margin-inline-end: 0;
+}
+.demo-drawer-layout--scroll > .demo-drawer-main {
+  box-sizing: border-box;
+  min-height: 100%;
+}
+.demo-drawer-lane-header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: -0.75rem -1rem 0.75rem;
+  padding: 0.5rem 1rem;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #ffffff));
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+}
+
+// Scrim for a modal drawer, keyed on the panel's own host classes: shown
+// only while the panel is open AND modal. The panel (z-index 2) stays above
+// it; a press on the scrim lands outside the panel and dismisses it.
+.demo-drawer-container--scrim::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--cngx-backdrop-bg, rgba(0, 0, 0, 0.4));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.demo-drawer-container--scrim:has(.cngx-drawer-panel--modal.cngx-drawer-panel--open)::after {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+// Story chrome marks a mode or modality switch on its chip group for one
+// frame; the drawer snaps to the new layout instead of animating the panel
+// from the old one (absolute overlay vs. in-flow width).
+.cngx-ex-chrome:has(.demo-drawer-switching) ~ .cngx-ex-artifact .demo-drawer-panel,
+.cngx-ex-chrome:has(.demo-drawer-switching) ~ .cngx-ex-artifact .demo-drawer-main {
+  transition: none;
+}
+
 // CngxExpandableText custom-toggle-template story. The library default
 // toggle ships its own `.cngx-expandable-text__toggle` skin, but the
 // custom-template demo intentionally renders a different button shape;
