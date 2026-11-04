@@ -123,7 +123,7 @@ describe('cngxAsyncClick settle side effects across two runs without change dete
     expect(fixture.componentInstance.completedCount()).toBe(2);
   });
 
-  it.fails('writes the popover action region once per failed run', async () => {
+  it('writes the popover action region once per failed run', async () => {
     const fixture = TestBed.createComponent(PopoverActionHost);
     flush(fixture);
     const root = fixture.nativeElement as HTMLElement;
