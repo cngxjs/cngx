@@ -106,4 +106,28 @@ describe('CngxChip geometry', () => {
     expect(computedValue(remove, 'min-inline-size')).toBe('40px');
     expect(computedValue(remove, 'min-block-size')).toBe('40px');
   });
+
+  // Dropping the @property initial-value lets the documented var() chain apply:
+  // font-size falls through --cngx-chip-font-size (unset) to --cngx-font-size-sm
+  // and, absent that too, to 0.8125rem (13px at a 16px root).
+  it('falls the chip label font-size back to the small text token with no override', () => {
+    const host = mount();
+    const root = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    expect(parseFloat(computedValue(host, 'font-size'))).toBeCloseTo(0.8125 * root, 1);
+  });
+
+  it('honours --cngx-font-size-sm when the chip token is unset', () => {
+    const host = mount();
+    host.style.setProperty('--cngx-font-size-sm', '18px');
+    expect(computedValue(host, 'font-size')).toBe('18px');
+  });
+
+  // The @property is inherits:false, so an override lands on the chip itself, the
+  // way the themes set it (example-brand.css, chip-theme.scss); it wins the chain.
+  it('lets --cngx-chip-font-size on the chip win over the small token', () => {
+    const host = mount();
+    host.style.setProperty('--cngx-font-size-sm', '18px');
+    host.style.setProperty('--cngx-chip-font-size', '20px');
+    expect(computedValue(host, 'font-size')).toBe('20px');
+  });
 });

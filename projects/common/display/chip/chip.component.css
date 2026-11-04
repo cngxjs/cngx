@@ -147,7 +147,6 @@
   @property --cngx-chip-font-size {
     syntax: '*';
     inherits: false;
-    initial-value: 0.875em;
   }
 
   /**
