@@ -344,12 +344,15 @@ $-trigger-invalid: ':is([aria-invalid="true"], :has(> [role="combobox"][aria-inv
     // and the tree container.
     //
     // mat-select opens flush on its field (no gap). CngxPopover writes its
-    // `offset` input as an inline margin, which only an important
-    // declaration outranks, so the bridge zeroes it on the select panels
-    // alone. The sheet and fullscreen presentations carry margin 0 already.
+    // `offset` as an inline custom property that cngx-popover.css applies in
+    // the components layer; the bridge zeroes the gap through the
+    // `--cngx-popover-margin-override` knob that rule reads first - no important
+    // declaration needed (a stylesheet cannot outrank the inline value, but the
+    // override var is not set inline). The sheet and fullscreen presentations
+    // carry margin 0 already.
     :is(#{$-hosts}) .cngx-select__panel {
       --cngx-select-panel-padding: 0;
-      margin: 0 !important;
+      --cngx-popover-margin-override: 0;
     }
     :is(#{$-hosts}) .cngx-select__panel [cngxListbox] {
       --cngx-listbox-padding: 0;

@@ -35,11 +35,15 @@
   }
 
   /* The anchor offset margin, applied to every anchored popover (the styled
-     panels included) from the custom property the directive writes. Sheet and
+     panels included) from the custom property the directive writes inline.
+     `--cngx-popover-margin-override` lets a theme (the Material select bridge)
+     force the margin to 0 without `!important`: a stylesheet cannot outrank the
+     directive's inline `--cngx-popover-anchor-margin`, but the override var is
+     read first and is not set inline, so the theme's value wins. Sheet and
      fullscreen presentations own their own box, so they are excluded. */
   [cngxPopover]:not([data-cngx-presentation='sheet']):not(
       [data-cngx-presentation='fullscreen']
     ) {
-    margin: var(--cngx-popover-anchor-margin, 0);
+    margin: var(--cngx-popover-margin-override, var(--cngx-popover-anchor-margin, 0));
   }
 }
