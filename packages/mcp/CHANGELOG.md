@@ -44,6 +44,7 @@ answer grounds against is a runtime property (`cngx://provenance`,
 
 ### Changed
 
+- The tarball ships the MIT license text (`LICENSE`).
 - Released in lockstep with the cngx libraries through `publish:*`: one
   version for the libs, `@cngx/mcp` and `@cngx/cli`, published in the same run.
 - `list_components` matches the `lib` filter case-insensitively (it was exact)

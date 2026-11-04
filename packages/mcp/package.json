@@ -20,7 +20,9 @@
     "dist",
     "data",
     "mcp.json",
-    "CHANGELOG.md"
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
