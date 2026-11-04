@@ -14,7 +14,7 @@ afterEach(() => {
 // should rewrite the display text. The value->input effect reads displayWith
 // inside `untracked`, so today a displayWith change alone does not re-run it.
 describe('display binding reacts to a displayWith swap while unfocused', () => {
-  it.fails('rewrites the input text when displayWith changes and the value is unchanged', () => {
+  it('rewrites the input text when displayWith changes and the value is unchanged', () => {
     const inputElement = document.createElement('input');
     const search: CngxListboxSearch = {
       hasValue: () => false,
