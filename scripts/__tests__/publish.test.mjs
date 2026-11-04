@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { PACKED_LIBS } from '../cngx-libs.mjs';
+import { PACKED_LIBS, TOOLING_PACKAGES } from '../cngx-libs.mjs';
 
 import {
   assertDependencyResolvable,
@@ -23,13 +23,18 @@ import {
   findPlaceholders,
   libBuildCommand,
   npmViewVersion,
+  publishOrder,
   REFRESH_FACTORY,
   refreshMigrationKey,
+  releasePins,
   replaceVersionInDist,
   resolveDistTag,
+  runToolingSection,
   stampManifest,
   stampRefreshMigration,
   stampSchematicsDist,
+  stampToolingManifest,
+  toolingBuildSteps,
 } from '../publish.mjs';
 
 describe('resolveDistTag', () => {
@@ -128,6 +133,15 @@ describe('createSchematicsVersions', () => {
         angularRange: '^21.2.0',
       }),
     ).toEqual({ cngx: '0.1.0', mcp: '0.2.0', eslintPlugin: '0.2.1', angular: '^21.2.0' });
+  });
+
+  it('pins @cngx/mcp at the release version, published in the same run', () => {
+    const versions = createSchematicsVersions({
+      ...releasePins({ nextVersion: '0.3.0', eslintPluginVersion: '0.2.1' }),
+      angularRange: '^21.2.0',
+    });
+
+    expect(versions).toEqual({ cngx: '0.3.0', mcp: '0.3.0', eslintPlugin: '0.2.1', angular: '^21.2.0' });
   });
 });
 
@@ -613,5 +627,135 @@ describe('Angular CLI migration range', () => {
 
   it('skips the entry of the release an app already runs', () => {
     expect(selects('0.1.1', '0.1.2', '0.1.1')).toBe(false);
+  });
+});
+
+describe('stampToolingManifest', () => {
+  const pkg = { name: '@cngx/mcp', version: '0.2.0', dependencies: { zod: '^4.4.3' } };
+  const lock = {
+    name: '@cngx/mcp',
+    version: '0.2.0',
+    lockfileVersion: 3,
+    packages: {
+      '': { name: '@cngx/mcp', version: '0.2.0', dependencies: { zod: '^4.4.3' } },
+      'node_modules/zod': { version: '4.4.3' },
+    },
+  };
+
+  it('rewrites the manifest version and the lockfile root, nothing else', () => {
+    const stamped = stampToolingManifest(pkg, lock, '0.3.0');
+
+    expect(stamped.pkg).toEqual({ ...pkg, version: '0.3.0' });
+    expect(stamped.lock.version).toBe('0.3.0');
+    expect(stamped.lock.packages['']).toEqual({ ...lock.packages[''], version: '0.3.0' });
+    expect(stamped.lock.packages['node_modules/zod']).toEqual({ version: '4.4.3' });
+    expect(stamped.pkg.dependencies).toEqual({ zod: '^4.4.3' });
+  });
+
+  it('leaves its inputs as they are', () => {
+    stampToolingManifest(pkg, lock, '0.3.0');
+
+    expect(pkg.version).toBe('0.2.0');
+    expect(lock.packages[''].version).toBe('0.2.0');
+  });
+});
+
+describe('toolingBuildSteps', () => {
+  const steps = toolingBuildSteps('0.3.0');
+
+  it('regenerates both docs exports before the snapshot', () => {
+    expect(steps.slice(0, 3)).toEqual([
+      'npm run docs:json',
+      'npm run docs:llm',
+      'node scripts/mcp-snapshot.mjs --cngx-version=0.3.0 --require-llm-dump',
+    ]);
+  });
+
+  it('cleans each dist directly before its compile, mcp before cli', () => {
+    const compiles = steps.flatMap((step, i) => (/tsc -p packages\/\w+$/.test(step) ? [i] : []));
+
+    expect(compiles.map((i) => steps[i])).toEqual(['npx tsc -p packages/mcp', 'npx tsc -p packages/cli']);
+    for (const i of compiles) {
+      const name = steps[i].split('/').pop();
+      expect(steps[i - 1]).toBe(`rm -rf packages/${name}/dist`);
+    }
+  });
+
+  it('checks both bundles against the package version, then both dists, after the compiles', () => {
+    expect(steps.slice(-4)).toEqual([
+      'node scripts/mcp-bundle-check.mjs --expect=package',
+      'node scripts/mcp-bundle-check.mjs --data-dir=packages/cli/data --expect=package',
+      'node scripts/package-dist-check.mjs --package-dir=packages/mcp',
+      'node scripts/package-dist-check.mjs --package-dir=packages/cli',
+    ]);
+    expect(steps).toHaveLength(11);
+  });
+});
+
+describe('publishOrder', () => {
+  it('publishes @cngx/mcp, then @cngx/cli, then the libs in build order', () => {
+    expect(publishOrder(PACKED_LIBS).map(({ name }) => name)).toEqual(['mcp', 'cli', ...PACKED_LIBS]);
+    expect(publishOrder(PACKED_LIBS).filter(({ tooling }) => tooling).map(({ name }) => name)).toEqual(
+      TOOLING_PACKAGES,
+    );
+  });
+});
+
+describe('runToolingSection', () => {
+  let root;
+  const files = TOOLING_PACKAGES.flatMap((name) => [`packages/${name}/package.json`, `packages/${name}/package-lock.json`]);
+
+  beforeEach(() => {
+    root = mkdtempSync(join(tmpdir(), 'cngx-tooling-release-'));
+    for (const name of TOOLING_PACKAGES) {
+      mkdirSync(join(root, 'packages', name), { recursive: true });
+      // Hand-formatted on purpose: a restore must give back the bytes, not a re-serialisation.
+      writeFileSync(join(root, 'packages', name, 'package.json'), `{"name": "@cngx/${name}", "version": "0.2.0"}\n`);
+      writeFileSync(
+        join(root, 'packages', name, 'package-lock.json'),
+        `{"name": "@cngx/${name}", "version": "0.2.0", "packages": {"": {"version": "0.2.0"}}}`,
+      );
+    }
+  });
+
+  afterEach(() => {
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  const snapshot = () => files.map((file) => readFileSync(join(root, file)));
+  const versionOnDisk = (file) => JSON.parse(readFileSync(join(root, file), 'utf8')).version;
+
+  it('restores both manifests and lockfiles byte for byte when a step fails', () => {
+    const before = snapshot();
+    const ran = [];
+    const run = (step) => {
+      ran.push(step);
+      expect(files.map(versionOnDisk)).toEqual(['0.3.0', '0.3.0', '0.3.0', '0.3.0']);
+      if (step.includes('mcp-bundle-check')) {
+        throw new Error('stale bundle');
+      }
+    };
+
+    expect(() => runToolingSection({ root, nextVersion: '0.3.0', run, keepStamped: true })).toThrow(
+      /tooling build step failed \(node scripts\/mcp-bundle-check\.mjs --expect=package\): stale bundle/,
+    );
+    expect(snapshot()).toEqual(before);
+    expect(ran.at(-1)).toContain('mcp-bundle-check');
+  });
+
+  it('restores the originals after a dry run', () => {
+    const before = snapshot();
+
+    runToolingSection({ root, nextVersion: '0.3.0', run: () => {}, keepStamped: false });
+
+    expect(snapshot()).toEqual(before);
+  });
+
+  it('keeps the stamp after a real run that built, for the publish loop and the release commit', () => {
+    runToolingSection({ root, nextVersion: '0.3.0', run: () => {}, keepStamped: true });
+
+    expect(files.map(versionOnDisk)).toEqual(['0.3.0', '0.3.0', '0.3.0', '0.3.0']);
+    const lock = JSON.parse(readFileSync(join(root, 'packages', 'cli', 'package-lock.json'), 'utf8'));
+    expect(lock.packages[''].version).toBe('0.3.0');
   });
 });

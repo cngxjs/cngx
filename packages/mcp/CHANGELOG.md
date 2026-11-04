@@ -44,6 +44,8 @@ answer grounds against is a runtime property (`cngx://provenance`,
 
 ### Changed
 
+- Released in lockstep with the cngx libraries through `publish:*`: one
+  version for the libs, `@cngx/mcp` and `@cngx/cli`, published in the same run.
 - `list_components` matches the `lib` filter case-insensitively (it was exact)
   and sorts by code point, not by locale; its description and `lib` input say so.
 - `get_api` lists only public methods; private and protected ones are dropped.

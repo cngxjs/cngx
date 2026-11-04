@@ -8,13 +8,16 @@
 //   node scripts/publish.mjs --tag next --bump major   # force a dist-tag (default: derived, see resolveDistTag)
 //   node scripts/publish.mjs --skip-git-tag --bump patch  # do not tag/push git
 //   node scripts/publish.mjs --registry <url> ...      # override npm registry
+//
+// Every run releases the libs, @cngx/mcp and @cngx/cli at one version
+// (LOCKSTEP_PACKAGES in cngx-libs.mjs): mcp and cli first, then the libs.
 
 import { execSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { dirname, resolve, join, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { PACKED_LIBS } from './cngx-libs.mjs';
+import { PACKED_LIBS, TOOLING_PACKAGES } from './cngx-libs.mjs';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -126,6 +129,93 @@ export function stampManifest(distPkg, nextVersion) {
     }
   }
   return distPkg;
+}
+
+// The release version written into a tooling package's source manifest and
+// its lockfile root; dependencies stay as they are. Returns new objects, the
+// inputs left as they are.
+export function stampToolingManifest(pkg, lock, nextVersion) {
+  const root = lock.packages?.[''];
+  return {
+    pkg: { ...pkg, version: nextVersion },
+    lock: {
+      ...lock,
+      version: nextVersion,
+      ...(root ? { packages: { ...lock.packages, '': { ...root, version: nextVersion } } } : {}),
+    },
+  };
+}
+
+// The tooling build of a release: `build:mcp` and `build:cli` with the
+// release stamp instead of the root version, the llm dump required, and the
+// bundle checks in package mode (the root is bumped only after publishing),
+// then the dist freshness gate of both packages. Run from the repo root.
+export function toolingBuildSteps(nextVersion) {
+  return [
+    'npm run docs:json',
+    'npm run docs:llm',
+    `node scripts/mcp-snapshot.mjs --cngx-version=${nextVersion} --require-llm-dump`,
+    ...TOOLING_PACKAGES.flatMap((name) => [`rm -rf packages/${name}/dist`, `npx tsc -p packages/${name}`]),
+    'node scripts/mcp-bundle-check.mjs --expect=package',
+    'node scripts/mcp-bundle-check.mjs --data-dir=packages/cli/data --expect=package',
+    ...TOOLING_PACKAGES.map((name) => `node scripts/package-dist-check.mjs --package-dir=packages/${name}`),
+  ];
+}
+
+const toolingFiles = (root) =>
+  TOOLING_PACKAGES.flatMap((name) => [
+    join(root, 'packages', name, 'package.json'),
+    join(root, 'packages', name, 'package-lock.json'),
+  ]);
+
+// Stamps both tooling manifests and lockfiles with the release version, then
+// runs the tooling build. The originals stay in memory and are written back
+// byte for byte when a step fails, and after success unless `keepStamped`
+// (a real run, whose publish loop and release commit need the stamp). A
+// failure is thrown, never a process exit, so the restore always runs.
+export function runToolingSection({ root, nextVersion, run: runStep, keepStamped, read = readFileSync, write = writeFileSync }) {
+  const originals = toolingFiles(root).map((file) => [file, read(file)]);
+  let built = false;
+  try {
+    for (const name of TOOLING_PACKAGES) {
+      const pkgPath = join(root, 'packages', name, 'package.json');
+      const lockPath = join(root, 'packages', name, 'package-lock.json');
+      const stamped = stampToolingManifest(
+        JSON.parse(read(pkgPath, 'utf8')),
+        JSON.parse(read(lockPath, 'utf8')),
+        nextVersion,
+      );
+      write(pkgPath, JSON.stringify(stamped.pkg, null, 2) + '\n');
+      write(lockPath, JSON.stringify(stamped.lock, null, 2) + '\n');
+    }
+    for (const step of toolingBuildSteps(nextVersion)) {
+      try {
+        runStep(step);
+      } catch (error) {
+        throw new Error(`tooling build step failed (${step}): ${error.message}`);
+      }
+    }
+    built = true;
+  } finally {
+    if (!built || !keepStamped) {
+      for (const [file, bytes] of originals) {
+        write(file, bytes);
+      }
+    }
+  }
+}
+
+// What a release publishes, in order: the tooling packages first, because
+// @cngx/core ships versions.json pinning @cngx/mcp at the release version,
+// then the libs in build order.
+export function publishOrder(libs) {
+  return [...TOOLING_PACKAGES.map((name) => ({ name, tooling: true })), ...libs.map((name) => ({ name, tooling: false }))];
+}
+
+// The pins a release writes into versions.json: @cngx/mcp is published in the
+// same run, so its pin is the release version.
+export function releasePins({ nextVersion, eslintPluginVersion }) {
+  return { nextVersion, mcpVersion: nextVersion, eslintPluginVersion };
 }
 
 // A tarball that still names the placeholder cannot be installed: the version
@@ -539,6 +629,7 @@ function main() {
 
   console.log(`\nVersion:  ${currentVersion} -> ${nextVersion}${dryRun ? ' (dry run)' : ''}`);
   console.log(`Libs:     ${libs.join(', ')}`);
+  console.log(`Tooling:  ${TOOLING_PACKAGES.join(', ')} (published first)`);
   console.log(`Tag:      ${tag ?? 'derived per lib (see resolveDistTag)'}`);
   if (registry) console.log(`Registry: ${registry}`);
   console.log(`Git tag:  ${skipGitTag ? 'skipped' : gitTagName}\n`);
@@ -607,9 +698,7 @@ function main() {
       try {
         stamp = planSchematicsStamp({
           schematicsDir: join(ROOT, 'dist', lib, 'schematics'),
-          nextVersion,
-          mcpVersion: readPackageVersion('mcp'),
-          eslintPluginVersion: readPackageVersion('eslint-plugin'),
+          ...releasePins({ nextVersion, eslintPluginVersion: readPackageVersion('eslint-plugin') }),
           angularRange: distPkg.peerDependencies['@angular/core'],
         });
       } catch (error) {
@@ -627,7 +716,42 @@ function main() {
     releases.push({ lib, distPkg, distPkgPath, stamp, distTag });
   }
 
-  for (const { lib, distPkg, distPkgPath, stamp, distTag } of releases) {
+  // The tooling packages are built and checked after the libs and before the
+  // first `npm publish`, with the release version stamped into their source
+  // manifests (the bundle and dist checks read them from disk). A dry run
+  // and a failure leave the manifests as they were.
+  console.log('\n[mcp, cli]');
+  try {
+    runToolingSection({ root: ROOT, nextVersion, run, keepStamped: !dryRun });
+  } catch (error) {
+    console.error(`  Refusing to publish: ${error.message}`);
+    process.exit(1);
+  }
+  const toolingDistTags = new Map(
+    TOOLING_PACKAGES.map((name) => [
+      name,
+      resolveDistTag({
+        nextVersion,
+        explicitTag: tag,
+        hasStableRelease: tag ? false : containsStableRelease(publishedVersions(name, registryFlag)),
+      }),
+    ]),
+  );
+
+  const libReleases = new Map(releases.map((release) => [release.lib, release]));
+  for (const { name, tooling } of publishOrder(libs)) {
+    if (tooling) {
+      const distTag = toolingDistTags.get(name);
+      console.log(`\n[${name}]`);
+      if (!dryRun) {
+        run(`npm publish --access public --tag ${distTag}${registryFlag}`, join(ROOT, 'packages', name));
+        console.log(`  Published @cngx/${name}@${nextVersion} (dist-tag ${distTag})`);
+      } else {
+        console.log(`  Would publish @cngx/${name}@${nextVersion} (packages/${name}, dist-tag ${distTag})`);
+      }
+      continue;
+    }
+    const { lib, distPkg, distPkgPath, stamp, distTag } = libReleases.get(name);
     console.log(`\n[${lib}]`);
     const migrationsFile = `dist/${lib}/schematics/migrations/migrations.json`;
     const refreshKey = refreshMigrationKey(nextVersion);
