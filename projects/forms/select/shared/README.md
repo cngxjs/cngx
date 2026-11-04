@@ -389,6 +389,18 @@ Plus the variant-specific slots (also defined here):
 | `CngxComboboxChip<T>` / `CngxComboboxTriggerLabel<T>`       | combobox            |
 | `CngxSelectChipOverflow<T>`                                 | multi, combobox, action-multi, reorderable, tree |
 
+**Config-tier asymmetry.** `CngxSelectConfig.templates` (and `withTemplates`)
+carries only the shared registry slots - the ones `createTemplateRegistry`
+resolves for every host. The variant-specific slots above (the chip, chip-handle
+and overflow-badge templates, the tree-node and tree-chip templates), the input
+affixes (`CngxSelectInputPrefix` / `CngxSelectInputSuffix`) and the per-variant
+trigger-label directives have **no** config tier: they are projected per instance
+only. They live outside the shared registry queries, so an app-wide default would
+need a per-variant registry extension, and no consumer has asked for app-wide
+chip / node / affix defaults. The reorderable drag handle is the exception - it
+has its own config tier through `withDefaultDragHandle`. Tracked as accepted debt
+(select-family register, section 8).
+
 ### `template-registry.ts`
 
 Three-stage cascade resolver. Variants declare their `contentChild()` queries inline (Angular's NG8110 rejects the call from helper functions) and pass the bundle to `createTemplateRegistry({...})`.
