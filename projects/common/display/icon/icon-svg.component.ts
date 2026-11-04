@@ -13,11 +13,13 @@ import type { CngxIconData } from '@cngx/utils';
  * attribute.
  *
  * An icon with a 12-grid `micro` drawing gets a second path,
- * `.cngx-icon-svg__micro`, scaled onto the shared 24 viewBox. It carries
+ * `.cngx-icon-svg__micro`, scaled onto the shared 24 viewBox, and a 16-grid
+ * `small` drawing a third, `.cngx-icon-svg__small`. Both carry
  * `display="none"`, `fill="currentColor"` and `stroke="none"` as
  * presentation attributes, so without `cngx.css` the 24-grid path shows
- * alone. With `cngx.css` loaded, the `.cngx-icon-glyph` container rules
- * show the micro path instead of the 24-grid path in a 10 to 14px box.
+ * alone. With `cngx.css` loaded, the `.cngx-icon-glyph` container rules show
+ * the micro path in a 10 to 14px box and the small path in a 15 to 19px box,
+ * each instead of the 24-grid path. DOM order is always 24 path, micro, small.
  *
  * @internal
  */
@@ -37,6 +39,16 @@ import type { CngxIconData } from '@cngx/utils';
         stroke="none"
         display="none"
         [attr.d]="micro.d"
+      />
+    }
+    @if (icon().small; as small) {
+      <svg:path
+        class="cngx-icon-svg__small"
+        transform="scale(1.5)"
+        fill="currentColor"
+        stroke="none"
+        display="none"
+        [attr.d]="small.d"
       />
     }
   `,

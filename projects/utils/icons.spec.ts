@@ -79,11 +79,12 @@ const CURVED_MICRO: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * Every reason a micro `d` leaves the 12 grid. Absolute commands only, so a
- * coordinate in the string is the coordinate on the grid; every number is a
- * whole unit except the arc radii, which may end in `.5`.
+ * Every reason a `d` leaves its grid. Absolute commands only, so a coordinate
+ * in the string is the coordinate on the grid; every number is a whole unit
+ * except the arc radii, which may end in `.5`. `box` is the grid size (12 for
+ * the micro tier, 16 for the small tier).
  */
-function microGridViolations(d: string, curved = false): string[] {
+function gridViolations(d: string, box: number, curved = false): string[] {
   const tokens = d.match(/[A-Za-z]|-?\d*\.?\d+/g) ?? [];
   const violations: string[] = [];
   let index = 0;
@@ -109,7 +110,7 @@ function microGridViolations(d: string, curved = false): string[] {
       }
       args.forEach((arg, position) => {
         const radius = command === 'A' && position < 2;
-        const inBox = arg >= 0 && arg <= 12;
+        const inBox = arg >= 0 && arg <= box;
         const wholeUnit = radius ? Number.isInteger(arg * 2) : Number.isInteger(arg);
         const onGrid = curved ? inBox : wholeUnit;
         if (!onGrid) {
@@ -121,6 +122,9 @@ function microGridViolations(d: string, curved = false): string[] {
   }
   return violations;
 }
+
+const microGridViolations = (d: string, curved = false): string[] => gridViolations(d, 12, curved);
+const smallGridViolations = (d: string, curved = false): string[] => gridViolations(d, 16, curved);
 
 describe('cngx default icon set', () => {
   it('exports the full default set', () => {
@@ -215,6 +219,31 @@ describe('cngx default icon set', () => {
     expect(icon.micro).not.toBeUndefined();
   });
 
+  it('keeps every small drawing on the 16 grid', () => {
+    const offGrid = entries.flatMap(([name, icon]) => {
+      if (!icon.small) {
+        return [];
+      }
+      const problems = smallGridViolations(icon.small.d, CURVED_MICRO.has(name));
+      if (icon.small.viewBox !== '0 0 16 16') {
+        problems.push(`viewBox ${icon.small.viewBox}`);
+      }
+      if (!/^M[\d.\s,-]/.test(icon.small.d)) {
+        problems.push('does not start with a moveto');
+      }
+      if (!/^[MmLlHhVvCcSsQqTtAaZz\d.\s,-]+$/.test(icon.small.d)) {
+        problems.push('leaves the path grammar');
+      }
+      return problems.map((problem) => `${name}: ${problem}`);
+    });
+    expect(offGrid).toEqual([]);
+  });
+
+  // The type requires the field; this catches a cast or a spread that drops it.
+  it.each(entries)('%s records a small decision', (_, icon) => {
+    expect(icon.small).not.toBeUndefined();
+  });
+
   // No 12-grid drawing of these read well on the sign-off sheet (the circled X
   // loses its cross at 12px, the question mark never survived the grid), so they
   // keep the 24-grid path at every size. The list is exactly the signed-off one.
@@ -273,5 +302,10 @@ describe('micro grid rule', () => {
 
   it('rejects a command with missing arguments', () => {
     expect(microGridViolations('M5 1L7')).toEqual(['L needs 2 numbers']);
+  });
+
+  it('admits a coordinate on the 16 grid that the 12 grid rejects when curved', () => {
+    expect(smallGridViolations('M14 2L2 2Z', true)).toEqual([]);
+    expect(microGridViolations('M14 2L2 2Z', true)).toEqual(['M 14 off the grid']);
   });
 });
