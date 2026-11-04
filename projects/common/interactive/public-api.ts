@@ -184,7 +184,11 @@ export {
 } from './reorder/chip-strip-roving';
 export { CngxKeyboardShortcut } from './keyboard/keyboard-shortcut.directive';
 export { CngxSearch } from './keyboard/search.directive';
-export { CngxClickOutside } from './keyboard/click-outside.directive';
+export {
+  CngxClickOutside,
+  CNGX_CLICK_OUTSIDE_DRIVER,
+  type CngxClickOutsideDriver,
+} from './keyboard/click-outside.directive';
 export { CngxBeforeUnload } from './guard/before-unload.directive';
 export { canDeactivateWhenClean } from './guard/can-deactivate';
 export { CngxHoverable } from './hoverable/hoverable.directive';
