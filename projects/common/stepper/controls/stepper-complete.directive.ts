@@ -1,4 +1,4 @@
-import { computed, Directive, inject, input, output, untracked, type Signal } from '@angular/core';
+import { computed, Directive, inject, input, output, type Signal } from '@angular/core';
 
 import { CngxAsyncClick } from '@cngx/common/interactive';
 
@@ -82,7 +82,7 @@ export class CngxStepperComplete {
     // The subscription ends with the runner, which shares this element.
     this.runner.settled.subscribe((settle) => {
       if (settle.status === 'success') {
-        untracked(() => this.completed.emit());
+        this.completed.emit();
       }
     });
   }
