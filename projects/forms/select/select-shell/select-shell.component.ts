@@ -265,6 +265,7 @@ export interface CngxSelectShellChange<T = unknown> {
           listboxRef: self.listboxRef,
           searchDebounceMs: self.searchDebounceMs,
           panelOpen: self.panelOpen,
+          listboxId: computed(() => self.listboxId),
           // Escape in the search: the sheet gate while modal, today's close
           // while anchored. The trigger is inert under a modal sheet, so the
           // refocus is left to the close path.
@@ -295,8 +296,7 @@ export class CngxSelectShell<T = unknown>
     CngxFormFieldControl,
     CngxOptionStatusHost,
     CngxOptionFilterHost,
-    CngxOptionInteractionHost,
-    CngxSelectShellSearchHost
+    CngxOptionInteractionHost
 {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = resolveSelectConfig();
@@ -868,7 +868,7 @@ export class CngxSelectShell<T = unknown>
   /** @internal */ protected readonly commitErrorId = this.core.commitErrorId;
   /** @internal */ protected readonly disabledReasonId = this.core.disabledReasonId;
   /** @internal */ protected readonly disabledReasonText = this.core.disabledReasonText;
-  /** @internal */ protected readonly listboxId = this.core.listboxId;
+  /** @internal */ readonly listboxId = this.core.listboxId;
   /** @internal */ protected readonly commitErrorText = this.core.commitErrorText;
   protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
   protected readonly externalActivation = this.core.externalActivation;

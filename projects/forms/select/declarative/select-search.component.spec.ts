@@ -178,6 +178,7 @@ class DebouncedSearchHostDir {
   readonly focus = vi.fn();
   readonly listboxRef = signal({
     ad: {
+      activeId: signal<string | null>(null),
       highlightNext: vi.fn(),
       highlightPrev: vi.fn(),
       activateCurrent: () => this.termAtActivate.push(this.searchTerm()),
@@ -353,18 +354,18 @@ describe('CngxSelectSearch - combobox ARIA and keyboard', () => {
     return { fixture, host, input, press };
   }
 
-  it.fails('carries role="combobox" and aria-autocomplete="list"', () => {
+  it('carries role="combobox" and aria-autocomplete="list"', () => {
     const { input } = mountAria();
     expect(input.getAttribute('role')).toBe('combobox');
     expect(input.getAttribute('aria-autocomplete')).toBe('list');
   });
 
-  it.fails('points aria-controls at the host listbox id', () => {
+  it('points aria-controls at the host listbox id', () => {
     const { input, host } = mountAria();
     expect(input.getAttribute('aria-controls')).toBe(host.listboxId());
   });
 
-  it.fails('reflects the panel open state on aria-expanded', () => {
+  it('reflects the panel open state on aria-expanded', () => {
     const { input, host, fixture } = mountAria();
     expect(input.getAttribute('aria-expanded')).toBe('false');
     host.panelOpen.set(true);
@@ -372,7 +373,7 @@ describe('CngxSelectSearch - combobox ARIA and keyboard', () => {
     expect(input.getAttribute('aria-expanded')).toBe('true');
   });
 
-  it.fails('follows the listbox highlight on aria-activedescendant', () => {
+  it('follows the listbox highlight on aria-activedescendant', () => {
     const { input, press } = mountAria();
     press('ArrowDown');
     expect(input.getAttribute('aria-activedescendant')).toBe('opt-1');
