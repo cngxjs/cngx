@@ -13,6 +13,7 @@ import {
   model,
   output,
   signal,
+  untracked,
   viewChild,
   ElementRef,
   type Signal,
@@ -1142,7 +1143,11 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     closeOnSuccess: this.closeOnCreate,
     onCreated: (option, previousValues) => {
       // No dedup - quickCreateAction is intentional, the value is fresh by definition.
-      const next = [...previousValues, option.value];
+      // Merge into the LIVE values, not the dispatch snapshot: chips the user
+      // added or removed while the create was in flight must survive. The
+      // snapshot `previousValues` feeds only the event payload.
+      const live = untracked(this.values);
+      const next = [...live, option.value];
       this.values.set(next);
       // Tag-input UX: clear the term so the next chip can be typed. CngxActionSelect
       // takes the opposite branch and writes displayWith(value) instead.

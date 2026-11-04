@@ -39,7 +39,7 @@ function setup(withCommit: boolean) {
  * Phase 2 merges into `untracked(this.values)` and flips A/B/C/E green.
  */
 describe('P12 action-multi-select: create pending then other edits', () => {
-  it.fails('A: chip removal during pending create, then create resolves', () => {
+  it('A: chip removal during pending create, then create resolves', () => {
     const { m, createSubj } = setup(false);
     (m.v as any).actionCallbacks().commit({ label: 'Purple' }); m.settle();
     const opt = (m.v as any).core.flatOptions().find((o: any) => o.value === 'red');
@@ -49,7 +49,7 @@ describe('P12 action-multi-select: create pending then other edits', () => {
     expect(m.readModel()).toEqual(['green', 'purple']);
   });
 
-  it.fails('B: toggle other option during pending create, then create resolves', () => {
+  it('B: toggle other option during pending create, then create resolves', () => {
     const { m, createSubj } = setup(false);
     (m.v as any).actionCallbacks().commit({ label: 'Purple' }); m.settle();
     m.pickAt(2); // blue
@@ -58,7 +58,7 @@ describe('P12 action-multi-select: create pending then other edits', () => {
     expect(m.readModel()).toEqual(['red', 'green', 'blue', 'purple']);
   });
 
-  it.fails('C: with commitAction, chip removal pending + create pending, resolve in both orders', () => {
+  it('C: with commitAction, chip removal pending + create pending, resolve in both orders', () => {
     const { m, createSubj, toggleSubj } = setup(true);
     (m.v as any).actionCallbacks().commit({ label: 'Purple' }); m.settle();
     const opt = (m.v as any).core.flatOptions().find((o: any) => o.value === 'red');
@@ -80,7 +80,7 @@ describe('P12 action-multi-select: create pending then other edits', () => {
     expect(m.readModel()).toEqual(['red', 'green', 'purple']);
   });
 
-  it.fails('E: clear during pending create', () => {
+  it('E: clear during pending create', () => {
     const { m, createSubj } = setup(false);
     (m.v as any).actionCallbacks().commit({ label: 'Purple' }); m.settle();
     m.clear();
