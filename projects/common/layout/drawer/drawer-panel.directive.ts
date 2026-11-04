@@ -36,9 +36,10 @@ export type DrawerMode = 'over' | 'push';
  * another element themselves.
  *
  * **Modality.** `modal` defaults to `mode === 'over'`. A modal open panel
- * traps focus, renders `role="dialog"` + `aria-modal="true"`, makes its
- * siblings `inert` and locks scrolling on the nearest scroll container above
- * it (else the document root). A non-modal panel keeps the page around it
+ * traps focus, renders `role="dialog"` + `aria-modal="true"`, makes
+ * everything outside it `inert` up to `<body>` (focus-trap anchors, live
+ * regions and a visible backdrop stay live) and locks scrolling on the
+ * nearest scroll container above it (else the document root). A non-modal panel keeps the page around it
  * operable and renders its landmark `role`. `push` is never modal: it lays
  * the panel out next to the content, which stays in use.
  *

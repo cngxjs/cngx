@@ -75,9 +75,13 @@ const SCROLLING_OVERFLOW = new Set(['auto', 'scroll']);
  * to the element focused at activation when the surface deactivates.
  *
  * Modal (`[modal]="true"`, the default) additionally traps focus, renders
- * `role="dialog"` + `aria-modal="true"`, makes the host's siblings `inert`
- * and locks scrolling on the nearest scroll container above the host (the
- * nearest ancestor with a computed `overflow-y` of `auto` or `scroll`, else
+ * `role="dialog"` + `aria-modal="true"`, makes everything outside the host
+ * `inert` up to `<body>` (the siblings of the host and of every ancestor,
+ * like a modal dialog; focus-trap anchors, live regions, the CDK overlay
+ * container, the toast and banner outlets and a visible `CngxBackdrop` stay
+ * live, and an `inert` set by someone else is kept on release) and locks
+ * scrolling on the nearest scroll container above the host (the nearest
+ * ancestor with a computed `overflow-y` of `auto` or `scroll`, else
  * the document root). Non-modal keeps the page around it operable: no trap,
  * no lock, no inert, `role="complementary"`.
  *
@@ -127,7 +131,7 @@ export class CngxDrawerSurface
   readonly active = input<boolean>(false);
   /**
    * Whether the engaged surface is modal: focus trap, `aria-modal`, inert
-   * siblings and scroll lock. `false` keeps the page around it operable.
+   * outside the host up to `<body>` and scroll lock. `false` keeps the page around it operable.
    */
   readonly modal = input<boolean>(true);
   /**
@@ -198,7 +202,7 @@ export class CngxDrawerSurface
       if (!this.domReady() || !this.engagedModal()) {
         return;
       }
-      const releaseInert = createInertSiblings(this.host);
+      const releaseInert = createInertSiblings(this.host, { scope: 'outside' });
       const releaseLock = createScrollLock(this.scrollScope());
       onCleanup(() => {
         releaseInert();

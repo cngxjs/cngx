@@ -99,7 +99,7 @@ describe('CngxDrawerSurface', () => {
   }
 
   describe('modal', () => {
-    it('traps focus, renders a modal dialog and inerts the siblings', () => {
+    it('traps focus, renders a modal dialog and inerts the host siblings', () => {
       const { q, set, surface } = setup();
       set((h) => h.active.set(true));
 
@@ -108,6 +108,39 @@ describe('CngxDrawerSurface', () => {
       expect(surface.getAttribute('aria-modal')).toBe('true');
       expect(q('.sibling').hasAttribute('inert')).toBe(true);
       expect(surface.hasAttribute('inert')).toBe(false);
+    });
+
+    it('inerts everything outside the host up to body and releases it', () => {
+      const bodyLevel = document.createElement('div');
+      document.body.appendChild(bodyLevel);
+      try {
+        const { q, set, surface } = setup();
+        set((h) => h.active.set(true));
+
+        expect(q('.outside').hasAttribute('inert')).toBe(true);
+        expect(q('.controller').hasAttribute('inert')).toBe(true);
+        expect(q('.opener').hasAttribute('inert')).toBe(true);
+        expect(bodyLevel.hasAttribute('inert')).toBe(true);
+        expect(q('.scope').hasAttribute('inert')).toBe(false);
+        expect(surface.parentElement?.closest('[inert]')).toBeNull();
+
+        set((h) => h.active.set(false));
+        expect(q('.outside').hasAttribute('inert')).toBe(false);
+        expect(bodyLevel.hasAttribute('inert')).toBe(false);
+      } finally {
+        bodyLevel.remove();
+      }
+    });
+
+    it('releases inert when destroyed while engaged', () => {
+      const { fixture, q, set } = setup();
+      set((h) => h.active.set(true));
+      const sibling = q('.sibling');
+      const outside = q('.outside');
+      fixture.destroy();
+
+      expect(sibling.hasAttribute('inert')).toBe(false);
+      expect(outside.hasAttribute('inert')).toBe(false);
     });
 
     it('locks the document root when no scroll container is above the host', () => {
