@@ -1,3 +1,4 @@
+import { JSONFile } from '@schematics/angular/utility/json-file';
 import { describe, expect, it } from 'vitest';
 
 import { createFixtureTree } from '../../testing/run-schematic';
@@ -90,6 +91,18 @@ describe('cngxShaped', () => {
         '.vscode/mcp.json': `// servers\n{ "servers": { "cngx": { "args": ["-y", "@cngx/mcp@${PIN}"], "command": "npx", "type": "stdio" } } }`,
       }).vscode,
     ).toBe(true);
+  });
+
+  it('keeps the comments of a JSONC config when the pin moves', () => {
+    const before = `// cngx writes this server\n{ "servers": { "cngx": ${JSON.stringify(serverEntry('vscode', PIN))} } }\n`;
+    const tree = createFixtureTree('standalone-app', { '.vscode/mcp.json': before });
+
+    new JSONFile(tree, '.vscode/mcp.json').modify(['servers', 'cngx'], serverEntry('vscode', '0.3.0'), false);
+
+    const after = tree.readText('.vscode/mcp.json');
+    expect(after).toContain('// cngx writes this server');
+    expect(after).toContain('@cngx/mcp@0.3.0');
+    expect(mcpConfigsOf(tree).vscode).toEqual({ state: 'wired', pin: '0.3.0', cngxShaped: true });
   });
 
   it.each([

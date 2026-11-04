@@ -4,6 +4,7 @@ import {
   type Change,
   CNGX_LIBS,
   type CngxLib,
+  compareVersions,
   createNote,
   createProvenance,
   isBoolean,
@@ -211,9 +212,8 @@ function planAiToolingRerun(
   ]);
 }
 
-// A cngx server entry ng add wrote and recorded, still in the exact shape
-// cngx writes, running an older pin. Anything else in a wired config is the
-// user's: it stays as it is.
+// A cngx server entry ng add wrote and recorded that runs another pin than
+// this release: the run either moves it or names why it stays.
 function movesPin(
   tool: AiTool,
   facts: ProjectFacts,
@@ -229,6 +229,20 @@ function movesPin(
   );
 }
 
+// Why a recorded entry stays as it is; `undefined` when cngx moves its pin.
+// Only the exact shape cngx writes, running an older release, is moved: a
+// user's edit and a newer pin (set by hand in the same shape) are kept.
+function keptReason(pin: string | undefined, shaped: boolean, mcpVersion: string): string | undefined {
+  if (!shaped || pin === undefined) {
+    return 'the entry is not the one cngx wrote, so it stays as it is';
+  }
+  const order = compareVersions(pin, mcpVersion);
+  if (order === undefined || order > 0) {
+    return 'it runs a newer @cngx/mcp than this release, so it stays as it is';
+  }
+  return undefined;
+}
+
 function mcpPinChange(
   tool: AiTool,
   facts: ProjectFacts,
@@ -237,11 +251,13 @@ function mcpPinChange(
 ): Change {
   const { path, key } = MCP_CONFIGS[tool];
   const id = aiToolId(tool);
-  if (!facts.mcpCngxShaped[tool]) {
+  const pin = facts.mcpPins[tool];
+  const kept = keptReason(pin, facts.mcpCngxShaped[tool], versions.mcp);
+  if (kept !== undefined) {
     return createNote({
       id,
       label: `Keep the cngx MCP server in ${path}`,
-      reason: `${wiredReason(path, facts.mcpPins[tool], versions.mcp)}; the entry is not the one cngx wrote, so it stays as it is`,
+      reason: `${wiredReason(path, pin, versions.mcp)}; ${kept}`,
       provenance,
     });
   }
@@ -249,7 +265,7 @@ function mcpPinChange(
     kind: 'write-json',
     id,
     label: `Move the cngx MCP server in ${path} to @cngx/mcp@${versions.mcp}`,
-    reason: `${EDITOR_NAMES[tool]} ran @cngx/mcp@${facts.mcpPins[tool] ?? 'unknown'}, which this release replaces`,
+    reason: `${EDITOR_NAMES[tool]} ran @cngx/mcp@${pin}, which this release replaces`,
     provenance,
     path,
     entries: [[[key, 'cngx'], serverEntry(tool, versions.mcp)]],

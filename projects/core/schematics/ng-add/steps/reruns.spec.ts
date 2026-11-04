@@ -323,6 +323,22 @@ describe('planManifestReruns: editor mcp pins', () => {
     );
   });
 
+  it('keeps an entry pinned by hand to a newer release in the cngx shape and names it', () => {
+    const newer = '9.0.0';
+    const facts = wiredFacts('claude', true, { mcpPins: { ...NONE, claude: newer } });
+
+    const result = rerun(facts, recordFor(['claude']), NEXT);
+
+    expect(result.changes.some((change) => change.kind === 'write-json' && change.id === 'ai-tools:claude')).toBe(false);
+    expect(result.changes).toContainEqual(
+      expect.objectContaining({
+        kind: 'note',
+        id: 'ai-tools:claude',
+        reason: expect.stringContaining(`pinned to @cngx/mcp@${newer} (this release pins ${NEXT.mcp}); it runs a newer @cngx/mcp`),
+      }),
+    );
+  });
+
   it('leaves an entry ng add did not record alone', () => {
     const result = rerun(wiredFacts('claude', true), recordFor(['claude'], []), NEXT);
 

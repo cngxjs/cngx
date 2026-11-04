@@ -224,8 +224,9 @@ rewrites every literal of it in the bundles.
   (`.mcp.json`, `.cursor/mcp.json`, `.vscode/mcp.json`) to the release's pin
   once the release moved it, but only for an entry `ng add` wrote and
   recorded that still has the exact shape cngx writes. A hand-edited entry
-  (another command, an extra arg or key) stays as it is and is named in a
-  note with its pin. `ng add` itself never rewrites an existing entry.
+  (another command, an extra arg or key) or a pin newer than the release's
+  stays as it is and is named in a note with its pin; the move never
+  downgrades. `ng add` itself never rewrites an existing entry.
 - `ng add <pkg> --dry-run` for a package that is not installed never reaches a
   rule. Preview with `ng add`, then `ng g @cngx/core:ng-add --dry-run`.
 - Prompts run inside the rule after the CLI's install spinner has finished,
