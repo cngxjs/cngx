@@ -21,9 +21,12 @@ import {
 import {
   CNGX_STATEFUL,
   injectLocale,
+  nextUid,
   type CngxAsyncState,
   type AsyncStatus,
 } from '@cngx/core/utils';
+
+import { type AsyncView } from '@cngx/common/data';
 
 import {
   CngxClickOutside,
@@ -700,12 +703,46 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   protected readonly effectiveOptions = this.core.effectiveOptions;
   /** @internal */
   protected readonly flatOptions = this.core.flatOptions;
-  /** @internal */
-  protected readonly activeView = this.core.activeView;
+  /**
+   * @internal I9: a first-load error on a CLOSED typeahead surfaces on the
+   * input (aria-invalid + aria-describedby), never as a `role="alert"` inside
+   * the hidden popover. The panel error view renders only once the panel opens.
+   */
+  protected readonly activeView = computed<AsyncView>(() => {
+    const view = this.core.activeView();
+    if (!this.panelOpen() && view === 'error') {
+      return 'content';
+    }
+    return view;
+  });
   /** @internal */
   protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
-  /** @internal */
-  protected readonly showInlineError = this.core.showInlineError;
+  /** @internal The inline refresh error stays inside the panel, so a closed panel never carries a `role="alert"` (I9). */
+  protected readonly showInlineError = computed<boolean>(
+    () => this.panelOpen() && this.core.showInlineError(),
+  );
+  /** @internal True while a closed typeahead carries a first-load error (I9). */
+  protected readonly closedLoadError = computed<boolean>(
+    () => !this.panelOpen() && this.core.activeView() === 'error',
+  );
+  /** @internal Id of the load-error node the input references while closed (I9). */
+  protected readonly loadErrorId = nextUid('cngx-typeahead-load-error');
+  /** @internal Load-error copy, `''` unless a closed typeahead carries one (I9). */
+  protected readonly loadErrorText = computed<string>(() =>
+    this.closedLoadError() ? this.fallbackLabels().loadFailed : '',
+  );
+  /** @internal aria-invalid folds in the closed load error (I9). */
+  protected readonly resolvedAriaInvalid = computed<boolean | null>(() =>
+    this.closedLoadError() ? true : this.triggerAria().invalid,
+  );
+  /** @internal aria-describedby references the load-error node while closed (I9). */
+  protected readonly resolvedAriaDescribedBy = computed<string | null>(() => {
+    const base = this.triggerAria().describedBy;
+    if (!this.closedLoadError()) {
+      return base;
+    }
+    return [base, this.loadErrorId].filter(Boolean).join(' ') || null;
+  });
   /** @internal */
   protected readonly skeletonIndices = this.core.skeletonIndices;
   /** @internal */

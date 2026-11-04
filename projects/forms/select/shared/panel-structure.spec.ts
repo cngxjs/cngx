@@ -200,7 +200,7 @@ describe('I9: a closed typeahead load error is announced on the input, not insid
     return { root, host: fixture.componentInstance, fixture };
   }
 
-  it.fails('sets aria-invalid on the input and renders no role=alert in the closed popover', () => {
+  it('sets aria-invalid on the input and renders no role=alert in the closed popover', () => {
     const { root, host, fixture } = mountState();
     host.state.setError(new Error('load failed'));
     fixture.detectChanges();
