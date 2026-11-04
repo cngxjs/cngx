@@ -2,7 +2,7 @@ import { Component, ViewEncapsulation } from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { CngxButton } from '@cngx/common/button';
 import { CngxIcon } from '@cngx/common/display';
-import { CngxMenu, CngxMenuItem } from '@cngx/common/interactive';
+import { CngxMenu, CngxMenuItem, CngxMenuItemCheckbox } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -365,5 +365,53 @@ describe('Material bridge: split button', () => {
   it('draws no seam line between two solid parts (the gap divides)', () => {
     const caret = getComputedStyle(query(mount(), '.caret-comfortable'));
     expect(caret.borderInlineStartColor).toBe(caret.backgroundColor);
+  });
+});
+
+// The menu check lands on commit-4's 1rem box. Under the Material bridge the
+// item font is M3 label-large (0.875rem / 14px), but 1rem is root-relative, so
+// the check is still a 16px box - the bridge needs no menu-theme edit for it.
+@Component({
+  selector: 'cngx-menu-check-bridge-host',
+  standalone: true,
+  imports: [CngxMenu, CngxMenuItemCheckbox],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../core/theming/system-tokens.css',
+    '../theming/components/cngx-icon-glyph.css',
+    '../theming/components/cngx-menu.css',
+    './material-bridge.spec-host.scss',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <ul cngxMenu [label]="'Format'" tabindex="0">
+      <li cngxMenuItemCheckbox value="bold" [checked]="true" class="chk">Bold</li>
+    </ul>
+  `,
+})
+class MenuCheckBridgeHost {}
+
+describe('Material bridge: menu dropdown check', () => {
+  let root: HTMLElement | null = null;
+  afterEach(() => {
+    root?.remove();
+    root = null;
+  });
+
+  it('draws the check on the 16px small box while the item font stays 0.875rem', () => {
+    const f = TestBed.createComponent(MenuCheckBridgeHost);
+    root = f.nativeElement as HTMLElement;
+    document.body.appendChild(root);
+    f.detectChanges();
+    const item = root.querySelector<HTMLElement>('.chk')!;
+    // The M3 bridge sets the item font to label-large, 0.875rem (14px).
+    expect(parseFloat(getComputedStyle(item).fontSize)).toBeCloseTo(14, 0);
+    const svg = item.querySelector<SVGSVGElement>('svg.cngx-menu-item__indicator-svg')!;
+    expect(svg.getBoundingClientRect().width).toBeCloseTo(16, 0);
+    const painted = Array.from(svg.querySelectorAll('path')).filter(
+      (p) => getComputedStyle(p).display !== 'none',
+    );
+    expect(painted).toHaveLength(1);
+    expect(painted[0].classList.contains('cngx-icon-svg__small')).toBe(true);
   });
 });
