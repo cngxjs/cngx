@@ -581,7 +581,7 @@ describe('CngxListboxTrigger - review 2 editable combobox and Alt shortcuts', ()
 
   // A closed editable combobox inside a form must leave Enter to the form so
   // the native submit still runs; opening belongs to Alt+ArrowDown.
-  it.fails('Enter on a closed editable combobox does not preventDefault', () => {
+  it('Enter on a closed editable combobox does not preventDefault', () => {
     const fixture = TestBed.createComponent(InputComboHost);
     fixture.detectChanges();
     TestBed.flushEffects();

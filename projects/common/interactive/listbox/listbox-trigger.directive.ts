@@ -214,7 +214,12 @@ export class CngxListboxTrigger<T = unknown> {
       if (this.hostGuard.isBlockedNow()) {
         return;
       }
-      if (key === 'ArrowDown' || key === 'Enter' || key === ' ') {
+      // An editable combobox (co-located search) leaves a closed Enter to the
+      // form: the native implicit submit must run, opening belongs to
+      // Alt+ArrowDown. Space already reached the input as an editing key above.
+      const openKeys =
+        key === 'ArrowDown' || (!this.search && (key === 'Enter' || key === ' '));
+      if (openKeys) {
         event.preventDefault();
         this.popover().show();
         ad.highlightFirst();
