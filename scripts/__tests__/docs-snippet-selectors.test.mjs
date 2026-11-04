@@ -38,16 +38,7 @@ const DOC_PATH = resolve(REPO_ROOT, '.compodoc/documentation.json');
  * is documentation, the key for the diff is file:line + kind + tag + binding.
  */
 const KNOWN_FAILURES = [
-  { finding: 'further-D (snippet)', file: 'core-concepts/atomic-decompose.md', line: 211, kind: 'unknown-binding', tag: 'cngx-select', binding: 'field' },
-  { finding: 'further-D (snippet)', file: 'core-concepts/instrumentation-pattern.md', line: 157, kind: 'unknown-tag', tag: 'cngx-toast-on' },
-  { finding: 'further-D (snippet)', file: 'core-concepts/instrumentation-pattern.md', line: 158, kind: 'unknown-tag', tag: 'cngx-banner-on' },
-  { finding: 'further-D (snippet)', file: 'core-concepts/three-pillars.md', line: 194, kind: 'unknown-binding', tag: 'cngx-select', binding: 'field' },
-  { finding: 'further-D (snippet)', file: 'core-concepts/three-pillars.md', line: 195, kind: 'unknown-binding', tag: 'cngx-multi-select', binding: 'field' },
-  { finding: 'further-D (snippet)', file: 'core-concepts/three-pillars.md', line: 196, kind: 'unknown-binding', tag: 'cngx-combobox', binding: 'field' },
-  { finding: 'further-D (snippet)', file: 'core-concepts/three-pillars.md', line: 197, kind: 'unknown-binding', tag: 'cngx-typeahead', binding: 'field' },
-  { finding: 'further-D (snippet)', file: 'core-concepts/three-pillars.md', line: 197, kind: 'unknown-binding', tag: 'cngx-typeahead', binding: 'loadOptions' },
-  { finding: 'further-D (snippet)', file: 'core-concepts/three-pillars.md', line: 198, kind: 'unknown-binding', tag: 'cngx-tree-select', binding: 'field' },
-  { finding: 'further-D (snippet)', file: 'core-concepts/three-pillars.md', line: 199, kind: 'unknown-binding', tag: 'cngx-reorderable-multi-select', binding: 'field' },
+  // Empty: every documentation snippet now binds a real selector and input.
 ];
 
 /** Bindings that are Angular common directives or native DOM, never a cngx input. */
