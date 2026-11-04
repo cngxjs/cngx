@@ -103,8 +103,8 @@
     --cngx-select-color: #{mat.get-theme-color($theme, foreground, text)};
 
     --cngx-select-check-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-select-error-color: #{mat.get-theme-color($theme, warn)};
-    --cngx-select-option-error-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-select-error-color: #{bridge.m2-warn-text($theme)};
+    --cngx-select-option-error-color: #{bridge.m2-warn-text($theme)};
     --cngx-select-spinner-color: #{mat.get-theme-color($theme, primary)};
     --cngx-select-loading-bar-color: #{mat.get-theme-color($theme, primary)};
     --cngx-select-refreshing-color: #{mat.get-theme-color($theme, primary)};
