@@ -327,9 +327,9 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   readonly idInput = input<string | null>(null, { alias: 'id' });
 
   /**
-   * Accessible name of the trigger. Wins over `label`; inside a
-   * `cngx-form-field` the field label referenced through `aria-labelledby`
-   * takes precedence.
+   * Accessible name of the trigger. Wins over `label`, and inside a
+   * `cngx-form-field` over the field label too; only a consumer
+   * `aria-labelledby` outranks it.
    */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
 

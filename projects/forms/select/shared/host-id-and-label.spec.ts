@@ -40,7 +40,9 @@ describe('explicit aria-label inside a form field', () => {
       readonly nodes = NODES;
       readonly idFn = (v: unknown): string => String(v);
       readonly labelFn = (v: unknown): string => String(v);
-      readonly model = signal<{ pick: unknown }>({ pick: kind.model === 'value' ? undefined : [] });
+      // A scalar field needs a defined start value: form() over `undefined`
+      // yields a non-callable child accessor. '' coerces to the empty value.
+      readonly model = signal<{ pick: unknown }>({ pick: kind.model === 'value' ? '' : [] });
       readonly f = form(this.model);
     }
     TestBed.overrideComponent(Host, {
@@ -67,20 +69,14 @@ describe('explicit aria-label inside a form field', () => {
     return combobox!;
   }
 
-  // The scalar composites still let the field label override a consumer
-  // aria-labelledby; the decision gives the consumer precedence. The array
-  // composites already honour it.
-  const NEEDS_LABEL_FIX = new Set(['select', 'typeahead', 'actionSelect', 'shell']);
-
   for (const key of ['select', 'multi', 'combobox', 'typeahead', 'actionSelect', 'actionMulti', 'reorder', 'tree', 'shell'] as const) {
-    it.fails(`${KINDS[key].name}: an explicit [aria-label] names the trigger and drops aria-labelledby`, () => {
+    it(`${KINDS[key].name}: an explicit [aria-label] names the trigger and drops aria-labelledby`, () => {
       const el = mountInField(key, `[aria-label]="'Pick colour'"`);
       expect(el.getAttribute('aria-label')).toBe('Pick colour');
       expect(el.getAttribute('aria-labelledby')).toBeNull();
     });
 
-    const consumerWins = NEEDS_LABEL_FIX.has(key) ? it.fails : it;
-    consumerWins(`${KINDS[key].name}: a consumer aria-labelledby wins over both`, () => {
+    it(`${KINDS[key].name}: a consumer aria-labelledby wins over both`, () => {
       const el = mountInField(key, `[aria-label]="'Pick colour'" aria-labelledby="ext-label"`);
       expect(el.getAttribute('aria-labelledby')).toBe('ext-label');
     });

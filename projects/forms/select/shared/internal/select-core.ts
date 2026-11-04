@@ -603,7 +603,21 @@ export function createSelectCore<T, TCommit>(
   );
 
   const resolvedId = fieldAria.id;
-  const resolvedAriaLabelledBy = fieldAria.labelledBy;
+
+  // A consumer aria-labelledby wins over everything. Otherwise an explicit
+  // aria-label replaces the form-field presenter label, so labelledby is
+  // dropped - aria-labelledby would win over aria-label per accname, which is
+  // what silently discarded the explicit label inside a field.
+  const resolvedAriaLabelledBy = computed<string | null>(() => {
+    const consumer = deps.ariaLabelledBy();
+    if (consumer) {
+      return consumer;
+    }
+    if (deps.ariaLabel()) {
+      return null;
+    }
+    return fieldAria.labelledBy();
+  });
 
   const resolvedAriaLabel = computed<string | null>(() => {
     const explicit = deps.ariaLabel();
