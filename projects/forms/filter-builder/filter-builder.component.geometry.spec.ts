@@ -103,8 +103,8 @@ function query(root: HTMLElement, selector: string): HTMLElement {
   return el as HTMLElement;
 }
 
-// The remove glyph is text: it reads the danger TEXT rung (danger pulled
-// toward the text colour), never plain danger, which sits near 4:1 on the
+// The remove glyph is text: it reads the danger TEXT rung (danger at the
+// text-rung lightness), never plain danger, which sits near 4:1 on the
 // page. The glyph is muted at rest and turns danger on hover / focus-visible.
 // Set on the root because the delegating SET lives on :root.
 const DANGER_PROPS = ['--cngx-color-danger', '--cngx-color-danger-text', '--cngx-color-text'];
@@ -151,7 +151,7 @@ describe('CngxFilterBuilder geometry', () => {
     remove.focus();
     expect(remove.matches(':focus-visible')).toBe(true);
     expect(computedValue(remove, 'color')).toBe(
-      resolvedColor('color-mix(in oklab, rgb(200, 0, 0) 75%, rgb(0, 0, 0))'),
+      resolvedColor('oklch(from rgb(200, 0, 0) 0.46 c h)'),
     );
   });
 

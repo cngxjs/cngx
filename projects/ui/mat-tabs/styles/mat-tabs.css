@@ -65,9 +65,9 @@
  * Imported standalone (no bridge), the colours derive from the cngx
  * foundation danger / warning / text tokens when they are present and
  * from the same literal values otherwise, with a light and a dark set:
- * the failed colour is danger mixed 75% toward the text colour (4.5:1 as
- * label text), the refused amber is warning mixed 70% (icon) and 55%
- * (label) toward it.
+ * the failed colour reads --cngx-color-danger-text, falling back to danger
+ * at the core text-rung lightness (4.5:1 as label text), the refused amber
+ * is warning mixed 70% (icon) and 55% (label) toward it.
  *
  * **Dark mode**
  *
@@ -253,10 +253,9 @@
    * `[data-color-scheme]` / `.dark` island switches them too.
    */
   :root {
-    --cngx-mat-tab-error-color: color-mix(
-      in oklab,
-      var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
-      var(--cngx-color-text, oklch(0.2 0.01 250))
+    --cngx-mat-tab-error-color: var(
+      --cngx-color-danger-text,
+      oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)
     );
     --cngx-mat-tab-has-errors-color: var(--cngx-color-danger, oklch(0.6 0.18 25));
     --cngx-mat-tab-refused-color: color-mix(
@@ -273,10 +272,9 @@
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
-      --cngx-mat-tab-error-color: color-mix(
-        in oklab,
-        var(--cngx-color-danger, oklch(0.68 0.17 25)) 75%,
-        var(--cngx-color-text, oklch(0.95 0.01 250))
+      --cngx-mat-tab-error-color: var(
+        --cngx-color-danger-text,
+        oklch(from var(--cngx-color-danger, oklch(0.68 0.17 25)) 0.74 c h)
       );
       --cngx-mat-tab-has-errors-color: var(--cngx-color-danger, oklch(0.68 0.17 25));
       --cngx-mat-tab-refused-color: color-mix(
@@ -294,10 +292,9 @@
 
   [data-color-scheme='dark'],
   .dark {
-    --cngx-mat-tab-error-color: color-mix(
-      in oklab,
-      var(--cngx-color-danger, oklch(0.68 0.17 25)) 75%,
-      var(--cngx-color-text, oklch(0.95 0.01 250))
+    --cngx-mat-tab-error-color: var(
+      --cngx-color-danger-text,
+      oklch(from var(--cngx-color-danger, oklch(0.68 0.17 25)) 0.74 c h)
     );
     --cngx-mat-tab-has-errors-color: var(--cngx-color-danger, oklch(0.68 0.17 25));
     --cngx-mat-tab-refused-color: color-mix(
@@ -314,10 +311,9 @@
 
   [data-color-scheme='light'],
   .light {
-    --cngx-mat-tab-error-color: color-mix(
-      in oklab,
-      var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
-      var(--cngx-color-text, oklch(0.2 0.01 250))
+    --cngx-mat-tab-error-color: var(
+      --cngx-color-danger-text,
+      oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)
     );
     --cngx-mat-tab-has-errors-color: var(--cngx-color-danger, oklch(0.6 0.18 25));
     --cngx-mat-tab-refused-color: color-mix(

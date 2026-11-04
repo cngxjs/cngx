@@ -63,7 +63,7 @@
 
 /// Mixes `$color` toward `$toward` in oklab, one percent at a time, until it
 /// clears `$ratio` (WCAG 2 contrast) against every one of `$surfaces`. The
-/// compile-time twin of the core `--cngx-color-danger-text` derivation: an M2
+/// compile-time counterpart of the core `--cngx-color-danger-text` rung: an M2
 /// palette hands the bridge a literal, and the raw 500 shade of most warn
 /// palettes misses 4.5:1 as text (red 3.7:1 on white, 2.7:1 on the dark
 /// card). Stepping instead of a fixed weight keeps the hue as close to the
@@ -96,7 +96,7 @@
   @return readable-on(mat.get-theme-color($theme, warn), $text, $surfaces);
 }
 
-/// The M2 primary as a text colour, the compile-time twin of the core
+/// The M2 primary as a text colour, the compile-time counterpart of the core
 /// `--cngx-color-primary-text` rung. Same surfaces and mix target as
 /// `m2-warn-text`; a primary 500 that already clears 4.5:1 (indigo on white)
 /// returns unchanged. M3 needs none of this: its primary role is a text tone.

@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Default glyphs (internal)',
   subtitle: 'Every glyph cngx draws itself, rendered from <code>@cngx/utils</code> path data by <code>svg[cngxIconSvg]</code>. Internal sign-off surface, not a public icon set.',
-  description: 'Each row shows the glyph standalone at the running text size (1em) and projected into <code>&lt;cngx-icon&gt;</code> at every size preset (<code>xs</code> to <code>xl</code>), which then owns the box. Fill glyphs paint their area in <code>currentColor</code>; stroke glyphs paint only the outline with round caps. The micro column shows the 12-grid drawing in a 12px box for the icons that carry one and stays empty for the rest. Check the shapes in light, dark and forced colors. The small-size sheet below is the 1x sign-off surface for the 12-grid micro tier: every glyph with a micro drawing at 10 to 16px as its bare 24-grid path, as its bare micro drawing and as the shipped renderer, which picks the micro path in a 10 to 14px box. Open it at browser zoom 100% on a devicePixelRatio 1 screen.',
+  description: 'Each row shows the glyph standalone at the running text size (1em) and projected into <code>&lt;cngx-icon&gt;</code> at every size preset (<code>xs</code> to <code>xl</code>), which then owns the box. Fill glyphs paint their area in <code>currentColor</code>; stroke glyphs paint only the outline with round caps. The micro column shows the 12-grid drawing in a 12px box for the icons that carry one and stays empty for the rest. Check the shapes in light, dark and forced colors. The small-size sheet below is the 1x sign-off surface for the 12-grid micro tier: every glyph with a micro drawing at 10 to 16px as its bare 24-grid path, as its bare micro drawing and as the shipped renderer, which picks the micro path in a 10 to 14px box. Open it at browser zoom 100% on a devicePixelRatio 1 screen. A second sign-off sheet below shows draft 16-grid candidates for the nine band glyphs at a 16px box next to the 24-grid path; the weight and shape get picked at the joint session, and nothing lands in the data until then.',
   audience: ['design'],
   focus: ['visual-variants'],
   apiComponents: ['CngxIconSvg'],
@@ -92,6 +92,49 @@ export const STORY: DemoSpec = {
     minus: CNGX_ICON_MINUS,
   } as const;
 
+  // Draft 16-grid candidates for the nine band glyphs, story-local until the
+  // joint session picks weight and shape (nothing lands in @cngx/utils yet).
+  // Straight glyphs carry a 1-unit and a 2-unit option; solid and curved ones
+  // carry one draft.
+  protected readonly draft16: readonly {
+    name: string;
+    icon: CngxIconData;
+    options: readonly { weight: string; d: string }[];
+  }[] = [
+    { name: 'CNGX_ICON_CHECK', icon: CNGX_ICON_CHECK, options: [
+      { weight: '1u', d: 'M1 8L3 7L7 11L13 4L15 5L7 13Z' },
+      { weight: '2u', d: 'M1 8L3 6L7 10L13 3L15 5L7 14Z' },
+    ] },
+    { name: 'CNGX_ICON_MINUS', icon: CNGX_ICON_MINUS, options: [
+      { weight: '1u', d: 'M3 7H13V8H3Z' },
+      { weight: '2u', d: 'M3 7H13V9H3Z' },
+    ] },
+    { name: 'CNGX_ICON_X', icon: CNGX_ICON_X, options: [
+      { weight: '1u', d: 'M3 4L4 3L13 12L12 13ZM12 3L13 4L4 13L3 12Z' },
+      { weight: '2u', d: 'M3 5L5 3L13 11L11 13ZM11 3L13 5L5 13L3 11Z' },
+    ] },
+    { name: 'CNGX_ICON_CHEVRON_RIGHT', icon: CNGX_ICON_CHEVRON_RIGHT, options: [
+      { weight: '1u', d: 'M7 4L11 8L7 12L5 11L8 8L5 5Z' },
+      { weight: '2u', d: 'M6 4L11 8L6 12L4 10L8 8L4 6Z' },
+    ] },
+    { name: 'CNGX_ICON_CARET_DOWN', icon: CNGX_ICON_CARET_DOWN, options: [
+      { weight: 'wide', d: 'M3 6H13L8 12Z' },
+      { weight: 'tight', d: 'M4 6H12L8 11Z' },
+    ] },
+    { name: 'CNGX_ICON_VOLUME', icon: CNGX_ICON_VOLUME, options: [
+      { weight: 'solid', d: 'M2 6H4L8 3V13L4 10H2ZM10 6H11V10H10ZM13 4H14V12H13Z' },
+    ] },
+    { name: 'CNGX_ICON_STOP', icon: CNGX_ICON_STOP, options: [
+      { weight: 'solid', d: 'M5 4H11A1 1 0 0 1 12 5V11A1 1 0 0 1 11 12H5A1 1 0 0 1 4 11V5A1 1 0 0 1 5 4Z' },
+    ] },
+    { name: 'CNGX_ICON_ALERT', icon: CNGX_ICON_ALERT, options: [
+      { weight: 'solid', d: 'M8 2L14 14H2ZM7 6V10H9V6ZM7 11V13H9V11Z' },
+    ] },
+    { name: 'CNGX_ICON_BAN', icon: CNGX_ICON_BAN, options: [
+      { weight: 'solid', d: 'M1 8A7 7 0 1 1 15 8A7 7 0 1 1 1 8ZM3 8A5 5 0 1 0 13 8A5 5 0 1 0 3 8ZM4 5L5 4L12 11L11 12Z' },
+    ] },
+  ] as const;
+
   protected readonly tones = [
     { tone: 'success', color: 'var(--cngx-status-success-color, oklch(0.65 0.18 145))', icon: CNGX_ICON_CHECK },
     { tone: 'danger', color: 'var(--cngx-status-danger-color, oklch(0.65 0.22 25))', icon: CNGX_ICON_X },
@@ -143,6 +186,26 @@ export const STORY: DemoSpec = {
       }
     }
   </cngx-grid>
+
+  <h3>16-grid sign-off sheet (draft)</h3>
+  <p>Draft 16-grid candidates for the nine band consumers, each at a 16px box next to the 24-grid path. Pick weight and shape at the joint session; nothing lands in <code>@cngx/utils</code> until then. Open at browser zoom 100% on a devicePixelRatio 1 screen.</p>
+  <div style="display:flex; flex-direction:column; gap:8px">
+    @for (row of draft16; track row.name) {
+      <div style="display:flex; align-items:center; gap:20px">
+        <code style="inline-size:220px">{{ row.name }}</code>
+        <span style="display:inline-flex; flex-direction:column; align-items:center; gap:2px">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" [attr.fill]="row.icon.paint === 'fill' ? 'currentColor' : 'none'" [attr.stroke]="row.icon.paint === 'stroke' ? 'currentColor' : 'none'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path [attr.d]="row.icon.d" /></svg>
+          <small>24</small>
+        </span>
+        @for (opt of row.options; track opt.weight) {
+          <span style="display:inline-flex; flex-direction:column; align-items:center; gap:2px">
+            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" [attr.d]="opt.d" /></svg>
+            <small>{{ opt.weight }}</small>
+          </span>
+        }
+      </div>
+    }
+  </div>
 
   <h3>Checkbox check vs radio check skin</h3>
   <div style="display:flex; align-items:center; gap:16px">

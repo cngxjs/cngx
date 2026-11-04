@@ -26,7 +26,7 @@
       --cngx-breadcrumb-overflow-trigger-hover-bg,
       color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%, transparent)
     );
-    color: var(--cngx-breadcrumb-overflow-trigger-hover-color, var(--cngx-color-primary-text, color-mix(in oklab, var(--cngx-color-primary, oklch(0.66 0.19 50)) 70%, var(--cngx-color-text, oklch(0.2 0.01 250)))));
+    color: var(--cngx-breadcrumb-overflow-trigger-hover-color, var(--cngx-color-primary-text, oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.54 c h)));
     border-color: var(
       --cngx-breadcrumb-overflow-trigger-hover-border,
       var(--cngx-color-primary, oklch(0.66 0.19 50))

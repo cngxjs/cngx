@@ -52,13 +52,31 @@ class IconSvgGeometryHost {
   protected readonly x = CNGX_ICON_X;
 }
 
-// Spec-local: the default set carries no micro drawing yet.
+// Spec-local: the default set carries no small drawing yet, and only the
+// signed-off glyphs carry a micro one.
 const WITH_MICRO: CngxIconData = {
   ...CNGX_ICON_X,
   micro: { viewBox: '0 0 12 12', d: 'M3 3H9V9H3Z' },
+  small: null,
+};
+
+// All three drawings, to prove the two bands select independently.
+const WITH_ALL: CngxIconData = {
+  ...CNGX_ICON_X,
+  micro: { viewBox: '0 0 12 12', d: 'M3 3H9V9H3Z' },
+  small: { viewBox: '0 0 16 16', d: 'M4 4H12V12H4Z' },
+};
+
+// A small drawing but no micro, to prove the small band does not depend on a
+// micro sibling.
+const SMALL_ONLY: CngxIconData = {
+  ...CNGX_ICON_X,
+  micro: null,
+  small: { viewBox: '0 0 16 16', d: 'M4 4H12V12H4Z' },
 };
 
 const BAND_SIZES = [9, 10, 12, 14, 15, 24] as const;
+const SMALL_BAND_SIZES = [9, 10, 14, 15, 16, 19, 20, 24] as const;
 
 // Loads the global micro sheet next to the component sheet, as `cngx.css` does.
 @Component({
@@ -89,6 +107,34 @@ class IconSvgMicroGeometryHost {
   protected readonly sizes = BAND_SIZES;
   protected readonly icon = WITH_MICRO;
   protected readonly withoutMicro = CNGX_ICON_QUESTION;
+}
+
+// Loads the global sheet and carries an icon with all three drawings plus a
+// small-only icon, to select across both bands.
+@Component({
+  selector: 'cngx-icon-svg-small-geometry-host',
+  standalone: true,
+  imports: [CngxIconSvg],
+  styleUrls: ['../../../core/theming/layers.css', '../../theming/components/cngx-icon-glyph.css'],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div style="font-size: 16px; color: rgb(255, 0, 0)">
+      @for (size of sizes; track size) {
+        <svg
+          class="sband-{{ size }}"
+          [style.--cngx-icon-svg-size.px]="size"
+          [cngxIconSvg]="icon"
+        ></svg>
+      }
+      <svg class="small-no-micro-12" style="--cngx-icon-svg-size: 12px" [cngxIconSvg]="smallOnly"></svg>
+      <svg class="small-no-micro-16" style="--cngx-icon-svg-size: 16px" [cngxIconSvg]="smallOnly"></svg>
+    </div>
+  `,
+})
+class IconSvgSmallGeometryHost {
+  protected readonly sizes = SMALL_BAND_SIZES;
+  protected readonly icon = WITH_ALL;
+  protected readonly smallOnly = SMALL_ONLY;
 }
 
 // Loads only the component sheet, as a playground or an ejected skin does.
@@ -131,13 +177,17 @@ class IconSvgHelperSheetHost {
 
 let mountedRoot: HTMLElement | null = null;
 
-function mountHelper(type: new () => { renderer: Renderer2 }, size: number): SVGSVGElement {
+function mountHelper(
+  type: new () => { renderer: Renderer2 },
+  size: number,
+  icon: CngxIconData = WITH_MICRO,
+): SVGSVGElement {
   const fixture = TestBed.createComponent(type);
   mountedRoot = fixture.nativeElement as HTMLElement;
   document.body.appendChild(mountedRoot);
   fixture.detectChanges();
   const { renderer } = fixture.componentInstance;
-  const { element } = createIconSvgElement(renderer, WITH_MICRO, 'helper-glyph');
+  const { element } = createIconSvgElement(renderer, icon, 'helper-glyph');
   renderer.setStyle(element, '--cngx-icon-svg-size', `${size}px`, RendererStyleFlags2.DashCase);
   renderer.appendChild(query(mountedRoot, '.helper-root'), element);
   return element;
@@ -161,6 +211,22 @@ function visiblePath(svg: Element): 'path' | 'micro' | 'both' | 'none' {
     return 'path';
   }
   return micro ? 'micro' : 'none';
+}
+
+// Like `visiblePath`, but names the small tier too: returns the single tier
+// whose path is displayed (24 path, micro or small), or none.
+function visibleTier(svg: Element): 'path' | 'micro' | 'small' | 'none' {
+  const shown = (selector: string): boolean => {
+    const el = svg.querySelector(selector);
+    return !!el && computedValue(el, 'display') !== 'none';
+  };
+  if (shown('.cngx-icon-svg__path')) {
+    return 'path';
+  }
+  if (shown('.cngx-icon-svg__micro')) {
+    return 'micro';
+  }
+  return shown('.cngx-icon-svg__small') ? 'small' : 'none';
 }
 
 function mount(): HTMLElement {
@@ -324,5 +390,60 @@ describe('CngxIconSvg micro tier', () => {
     const svg = mountHelper(IconSvgHelperHost, 12);
     expect(svg.getBoundingClientRect().width).toBeCloseTo(12, 1);
     expect(visiblePath(svg)).toBe('path');
+  });
+});
+
+describe('CngxIconSvg small tier', () => {
+  it.each([
+    [9, 'path'],
+    [10, 'micro'],
+    [14, 'micro'],
+    [15, 'small'],
+    [16, 'small'],
+    [19, 'small'],
+    [20, 'path'],
+    [24, 'path'],
+  ] as const)('shows the %ipx box the %s', (size, expected) => {
+    const svg = query(mountHost(IconSvgSmallGeometryHost), `.sband-${size}`);
+    expect(svg.getBoundingClientRect().width).toBeCloseTo(size, 1);
+    expect(visibleTier(svg)).toBe(expected);
+  });
+
+  // A small drawing selects in its band whether or not a micro path exists: the
+  // band rule keys on the small sibling alone.
+  it('keeps the 24-grid path at 12px for a small-only icon and shows small at 16px', () => {
+    const root = mountHost(IconSvgSmallGeometryHost);
+    const at12 = query(root, '.small-no-micro-12');
+    expect(at12.querySelector('.cngx-icon-svg__micro')).toBeNull();
+    expect(visibleTier(at12)).toBe('path');
+    const at16 = query(root, '.small-no-micro-16');
+    expect(visibleTier(at16)).toBe('small');
+  });
+
+  it('fills the small path in the text colour without the outline stroke', () => {
+    const small = query(mountHost(IconSvgSmallGeometryHost), '.sband-16 .cngx-icon-svg__small');
+    expect(computedValue(small, 'fill')).toBe('rgb(255, 0, 0)');
+    expect(computedValue(small, 'stroke')).toBe('none');
+  });
+
+  it('paints the small fill in the forced colour of the 24-grid stroke', async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'forced-colors', value: 'active' }],
+    });
+    const root = mountHost(IconSvgSmallGeometryHost);
+    const small = computedValue(query(root, '.sband-16 .cngx-icon-svg__small'), 'fill');
+    const path = computedValue(query(root, '.sband-24 .cngx-icon-svg__path'), 'stroke');
+    expect(small).not.toBe('rgb(255, 0, 0)');
+    expect(small).toBe(path);
+  });
+
+  it('shows the small path of a helper-built svg in the band with the global sheet', () => {
+    expect(visibleTier(mountHelper(IconSvgHelperSheetHost, 16, WITH_ALL))).toBe('small');
+  });
+
+  it('paints only the 24-grid path of a helper-built svg at 16px without the global sheet', () => {
+    const svg = mountHelper(IconSvgHelperHost, 16, WITH_ALL);
+    expect(svg.getBoundingClientRect().width).toBeCloseTo(16, 1);
+    expect(visibleTier(svg)).toBe('path');
   });
 });

@@ -1877,7 +1877,7 @@
     box-shadow: var(--cngx-select-chip-drag-shadow, 0 8px 20px oklch(0 0 0 / 0.28));
     background: var(
       --cngx-select-chip-drag-bg,
-      var(--cngx-color-primary-strong, oklch(0.58 0.19 50))
+      var(--cngx-color-primary-strong, oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h))
     );
     color: var(--cngx-select-chip-drag-color, var(--cngx-color-on-primary-strong, oklch(1 0 0)));
     transform: scale(var(--cngx-select-chip-drag-scale, 1.06))
@@ -2041,7 +2041,7 @@
      back to the strong accent there. Private and unregistered: it only
      feeds the fallback, `--cngx-select-focus-outline` still wins. */
   [data-skin='fill'] {
-    --_cngx-select-focus-ring-color: var(--cngx-color-primary-strong, oklch(0.58 0.19 50));
+    --_cngx-select-focus-ring-color: var(--cngx-color-primary-strong, oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h));
   }
 
   @scope ([data-skin='fill']:not(.cngx-field-box > *) > * > .cngx-field-trigger) {
@@ -2109,13 +2109,13 @@
          to the underline size: one line, one colour. */
       border-block-end-color: var(
         --cngx-field-underline-focus-color,
-        var(--cngx-color-primary-strong, oklch(0.58 0.19 50))
+        var(--cngx-color-primary-strong, oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h))
       );
       box-shadow: inset 0
         calc(var(--cngx-field-border-width, 1px) - var(--cngx-field-underline-size, 2px)) 0
         var(
           --cngx-field-underline-focus-color,
-          var(--cngx-color-primary-strong, oklch(0.58 0.19 50))
+          var(--cngx-color-primary-strong, oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h))
         );
     }
 
@@ -2180,11 +2180,7 @@
         --cngx-field-bare-error-text-color,
         var(
           --cngx-color-danger-text,
-          color-mix(
-            in oklab,
-            var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
-            var(--cngx-color-text, oklch(0.2 0.01 250))
-          )
+          oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)
         )
       );
     }

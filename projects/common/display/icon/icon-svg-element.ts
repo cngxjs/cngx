@@ -30,10 +30,13 @@ const ICON_BOX_SIZE = 'round(nearest, var(--cngx-icon-svg-size, 1em), 1px)';
  * shared `cngx-icon-glyph` class and its 24-grid path `cngx-icon-svg__path`.
  *
  * An icon with a 12-grid `micro` drawing gets a second path,
- * `cngx-icon-svg__micro`, scaled onto the 24 viewBox and hidden, filled and
- * unstroked by presentation attributes. Bare, the 24-grid path shows alone;
- * with `cngx.css` loaded, the `.cngx-icon-glyph` container rules show the
- * micro path instead in a 10 to 14px box.
+ * `cngx-icon-svg__micro`, scaled onto the 24 viewBox and hidden, and a
+ * 16-grid `small` drawing a third, `cngx-icon-svg__small`; both are filled and
+ * unstroked by presentation attributes. DOM order is always 24 path, micro,
+ * small - a micro added to an svg that already has a small path is inserted
+ * before it. Bare, the 24-grid path shows alone; with `cngx.css` loaded, the
+ * `.cngx-icon-glyph` container rules show the micro path in a 10 to 14px box
+ * and the small path in a 15 to 19px box.
  *
  * Decorative only (`aria-hidden`, `focusable="false"`).
  *
@@ -56,6 +59,19 @@ export function createIconSvgElement(
   renderer.addClass(path, 'cngx-icon-svg__path');
   renderer.appendChild(svg, path);
   let micro: SVGElement | null = null;
+  let small: SVGElement | null = null;
+
+  const setSmall = (d: string | undefined): void => {
+    if (d === undefined) {
+      if (small) {
+        renderer.removeChild(svg, small);
+        small = null;
+      }
+      return;
+    }
+    small ??= createSmallPath(renderer, svg);
+    renderer.setAttribute(small, 'd', d);
+  };
 
   const setMicro = (d: string | undefined): void => {
     if (d === undefined) {
@@ -65,7 +81,9 @@ export function createIconSvgElement(
       }
       return;
     }
-    micro ??= createMicroPath(renderer, svg);
+    // Pinned DOM order is 24 path, micro, small: a micro created while a small
+    // path already exists is inserted before it, never appended after it.
+    micro ??= createMicroPath(renderer, svg, small);
     renderer.setAttribute(micro, 'd', d);
   };
 
@@ -74,6 +92,7 @@ export function createIconSvgElement(
     renderer.setAttribute(svg, 'viewBox', next.viewBox);
     renderer.setAttribute(path, 'd', next.d);
     setMicro(next.micro?.d);
+    setSmall(next.small?.d);
     if (next.paint === 'stroke') {
       renderer.addClass(svg, strokeClassName);
       renderer.setAttribute(svg, 'fill', 'none');
@@ -95,15 +114,32 @@ export function createIconSvgElement(
   return { element: svg, setIcon };
 }
 
-function createMicroPath(renderer: Renderer2, svg: SVGSVGElement): SVGElement {
+function createMicroPath(
+  renderer: Renderer2,
+  svg: SVGSVGElement,
+  before: SVGElement | null,
+): SVGElement {
   const micro = renderer.createElement('path', 'svg') as SVGElement;
   renderer.addClass(micro, 'cngx-icon-svg__micro');
   renderer.setAttribute(micro, 'transform', 'scale(2)');
   renderer.setAttribute(micro, 'fill', 'currentColor');
   renderer.setAttribute(micro, 'stroke', 'none');
   renderer.setAttribute(micro, 'display', 'none');
-  renderer.appendChild(svg, micro);
+  // `before` is the small path when one exists (null appends), keeping the
+  // 24 path, micro, small order.
+  renderer.insertBefore(svg, micro, before);
   return micro;
+}
+
+function createSmallPath(renderer: Renderer2, svg: SVGSVGElement): SVGElement {
+  const small = renderer.createElement('path', 'svg') as SVGElement;
+  renderer.addClass(small, 'cngx-icon-svg__small');
+  renderer.setAttribute(small, 'transform', 'scale(1.5)');
+  renderer.setAttribute(small, 'fill', 'currentColor');
+  renderer.setAttribute(small, 'stroke', 'none');
+  renderer.setAttribute(small, 'display', 'none');
+  renderer.appendChild(svg, small);
+  return small;
 }
 
 function setTokenStyle(renderer: Renderer2, el: Element, property: string, value: string): void {
