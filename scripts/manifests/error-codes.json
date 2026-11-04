@@ -1485,6 +1485,23 @@
       ]
     },
     {
+      "code": "CNGX1075",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Push drawer requested as modal",
+      "page": "core-concepts/error-codes/cngx1075.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1075.html",
+      "status": "active",
+      "files": ["projects/common/layout/drawer/drawer-panel.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/layout/drawer/drawer-panel.directive.ts",
+          "text": "[cngxDrawerPanel] mode=\"push\" is never modal; [modal]=\"true\" is ignored. A push drawer lays out next to the content, which stays in use. Use mode=\"over\" for a modal drawer."
+        }
+      ]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",

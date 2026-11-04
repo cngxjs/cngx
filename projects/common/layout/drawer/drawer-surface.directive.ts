@@ -51,6 +51,8 @@ export interface CngxDrawerSurfaceDriver {
    * surface renders `complementary`.
    */
   readonly surfaceLandmarkRole?: Signal<string | null>;
+  /** Whether a press outside the host asks for dismissal. Without it, it does. */
+  readonly surfaceOutsideDismiss?: Signal<boolean>;
   /** Called for every dismissal request (Escape, back gesture, outside press). */
   surfaceDismiss(): void;
 }
@@ -169,7 +171,9 @@ export class CngxDrawerSurface
   /** @internal Drives the composed `CngxFocusRestore`. */
   readonly focusRestoreActive = this.isActive;
   /** @internal Drives the composed `CngxClickOutside`. */
-  readonly clickOutsideEnabled = this.isActive;
+  readonly clickOutsideEnabled = computed(
+    () => this.isActive() && (this.driver()?.surfaceOutsideDismiss?.() ?? true),
+  );
 
   private readonly closeWatcher = createCloseWatcher(() => this.requestDismiss(), injectWindow());
 

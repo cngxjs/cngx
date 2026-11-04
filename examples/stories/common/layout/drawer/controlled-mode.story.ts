@@ -19,8 +19,7 @@ export const STORY: DemoSpec = {
        (openedChange)="controlledOpen.set($event)"
        class="demo-drawer-container demo-drawer-container--bordered">
     <div class="demo-drawer-layout">
-      <nav [cngxDrawerPanel]="ctrlDrawer" position="left"
-           [enabled]="ctrlDrawer.opened()"
+      <nav id="ctrl-panel" [cngxDrawerPanel]="ctrlDrawer" position="left"
            class="demo-drawer-panel">
         <div class="demo-drawer-panel-content">
           <strong>Controlled</strong>
@@ -35,7 +34,9 @@ export const STORY: DemoSpec = {
     </div>
   </div>`,
   templateChrome: `<div class="button-row">
-    <button type="button" class="sort-btn" (click)="controlledOpen.set(!controlledOpen())">
+    <button type="button" class="sort-btn" aria-controls="ctrl-panel"
+            [attr.aria-expanded]="controlledOpen()"
+            (click)="controlledOpen.set(!controlledOpen())">
       External toggle: {{ controlledOpen() ? 'open' : 'closed' }}
     </button>
   </div>

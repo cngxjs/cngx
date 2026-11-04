@@ -28,7 +28,8 @@ export const STORY: DemoSpec = {
   <div cngxDrawer #modeDrawer="cngxDrawer" class="demo-drawer-container demo-drawer-container--bordered">
     @if (mode() !== 'side') {
       <div class="button-row" style="padding: 0.5rem;">
-        <button type="button" class="sort-btn" (click)="modeDrawer.toggle()">
+        <button type="button" class="sort-btn" aria-controls="mode-panel"
+                [attr.aria-expanded]="modeDrawer.opened()" (click)="modeDrawer.toggle()">
           Toggle {{ mode() }} drawer
         </button>
       </div>
@@ -36,8 +37,7 @@ export const STORY: DemoSpec = {
 
     <div class="demo-drawer-layout demo-drawer-layout--relative"
          [class.demo-drawer-layout--push]="mode() === 'push' || mode() === 'side'">
-      <aside [cngxDrawerPanel]="modeDrawer" position="left" [mode]="mode()"
-             [enabled]="modeDrawer.opened() && mode() !== 'side'"
+      <aside id="mode-panel" [cngxDrawerPanel]="modeDrawer" position="left" [mode]="mode()"
              class="demo-drawer-panel"
              [class.demo-drawer-panel--static]="mode() === 'push' || mode() === 'side'">
         <div class="demo-drawer-panel-content">

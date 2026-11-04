@@ -22,12 +22,12 @@ export const STORY: DemoSpec = {
        (closed)="logEvent('closed')"
        class="demo-drawer-container demo-drawer-container--bordered">
     <div class="button-row" style="padding: 0.5rem;">
-      <button type="button" class="sort-btn" (click)="evDrawer.toggle()">Toggle</button>
+      <button type="button" class="sort-btn" aria-controls="ev-panel"
+              [attr.aria-expanded]="evDrawer.opened()" (click)="evDrawer.toggle()">Toggle</button>
     </div>
 
     <div class="demo-drawer-layout">
-      <aside [cngxDrawerPanel]="evDrawer" position="right"
-             [enabled]="evDrawer.opened()"
+      <aside id="ev-panel" [cngxDrawerPanel]="evDrawer" position="right"
              class="demo-drawer-panel">
         <div class="demo-drawer-panel-content">
           <strong>Right panel</strong>

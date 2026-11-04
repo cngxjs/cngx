@@ -33,9 +33,7 @@ import { CngxDrawer, CngxDrawerPanel, CngxDrawerContent, CngxBackdrop } from '@c
       <!-- Panel (sidebar) -->
       <nav [cngxDrawerPanel]="drawer"
            position="left"
-           mode="over"
-           [enabled]="drawer.opened()"
-           [autoFocus]="true">
+           mode="over">
         <button (click)="drawer.close()">Close</button>
         <a href="/home">Home</a>
         <a href="/about">About</a>
@@ -55,21 +53,18 @@ export class DrawerExampleComponent {}
 
 ## Accessibility
 
-- **ARIA roles:** Panel marked as `role="complementary"`. Backdrop is `aria-hidden`. Content has no special role, allowing natural semantic flow.
-- **Keyboard interaction:**
-  - `Escape` - Closes the drawer (handled by `CngxDrawer`)
-  - Arrow keys - Managed by `CngxFocusTrap` (if enabled)
-  - Tab - Trapped within the panel when open (via `CngxFocusTrap`)
-- **Screen reader:** Siblings are marked `inert` when backdrop is visible, preventing SR navigation behind the overlay. Focus is automatically trapped and restored.
-- **Focus management:** `CngxFocusTrap` (composed by `CngxDrawerPanel`) handles focus on open and restoration on close. Set `[autoFocus]` to control the focus target.
+- **Transient surface:** an open panel runs on `CngxDrawerSurface`. Escape (focus inside the panel), the Android back gesture (`CloseWatcher`) and a press outside the panel close the drawer. A press on the trigger whose `aria-controls` names the panel `id` is not outside, so give the toggle `aria-controls` and the panel an `id`.
+- **Modality:** `[modal]` defaults to `mode === 'over'`. A modal open panel traps focus (`CngxFocusTrap`), renders `role="dialog"` + `aria-modal="true"`, makes its siblings `inert` and locks scrolling on the nearest scroll container above it, else the document root. A non-modal panel keeps the page operable and renders its landmark `role` (default `complementary`). `push` is never modal; `[modal]="true"` with `push` warns `CNGX1075`.
+- **Closed state:** the panel is `aria-hidden` and `inert` while closed, so its controls are unreachable for keyboard and AT.
+- **Focus management:** focus moves into a modal panel on open and returns to the element focused at open when the drawer closes, unless the user moved focus elsewhere.
 
 ## Composition
 
 The drawer system integrates with:
 
-- **Host directives:** `CngxDrawerPanel` composes `CngxFocusTrap` for automatic focus management.
-- **Combines with:** `CngxScrollLock` (prevent scrolling when drawer is open), `CngxBackdrop` (visual overlay and sibling inert toggling).
-- **Provides:** No injectable tokens (all state is passed via inputs).
+- **Host directives:** `CngxDrawerPanel` composes `CngxDrawerSurface`, which composes `CngxFocusTrap`, `CngxFocusRestore` and `CngxClickOutside` and drives them; none of their inputs is re-exposed.
+- **Combines with:** `CngxBackdrop` (visual overlay and sibling inert toggling).
+- **Provides:** No injectable tokens (all state is passed via inputs). A bare `cngxDrawerPanel` attribute on an element that also carries `cngxDrawer` resolves that drawer.
 
 ### Example: Full Drawer with Scroll Lock
 
@@ -81,8 +76,7 @@ The drawer system integrates with:
        class="drawer-backdrop"></div>
   <nav [cngxDrawerPanel]="drawer"
        position="left"
-       mode="over"
-       [enabled]="drawer.opened()">
+       mode="over">
     <!-- Navigation items -->
   </nav>
   <main [cngxDrawerContent]="drawer">
@@ -194,9 +188,7 @@ main[cngxDrawerContent] {
            (backdropClick)="drawer.close()"></div>
       <nav [cngxDrawerPanel]="drawer"
            [mode]="mq.matches() ? 'side' : 'over'"
-           [closeOnClickOutside]="!mq.matches()"
-           [enabled]="drawer.opened()"
-           [autoFocus]="true">
+           [closeOnClickOutside]="!mq.matches()">
         <!-- Navigation -->
       </nav>
       <main [cngxDrawerContent]="drawer">
@@ -211,6 +203,8 @@ export class ResponsiveDrawerComponent {}
 
 ### Modal Drawer (Focus Trap + Escape Close)
 
+`mode="over"` is modal by default; the panel traps focus and locks scrolling on its own.
+
 ```typescript
 <div cngxDrawer #drawer="cngxDrawer" [cngxScrollLock]="drawer.opened()">
   <div [cngxBackdrop]="drawer.opened()"
@@ -219,9 +213,7 @@ export class ResponsiveDrawerComponent {}
        class="modal-backdrop"></div>
   <aside [cngxDrawerPanel]="drawer"
          position="right"
-         mode="over"
-         [enabled]="drawer.opened()"
-         [autoFocus]="'first-focusable'">
+         mode="over">
     <h2>Dialog Title</h2>
     <p>Dialog content</p>
     <button (click)="drawer.close()">Close</button>
@@ -235,8 +227,7 @@ export class ResponsiveDrawerComponent {}
 <div cngxDrawer #drawer="cngxDrawer">
   <nav [cngxDrawerPanel]="drawer"
        position="left"
-       mode="push"
-       [enabled]="drawer.opened()">
+       mode="push">
     <!-- Navigation links -->
   </nav>
   <main [cngxDrawerContent]="drawer">
@@ -250,5 +241,5 @@ export class ResponsiveDrawerComponent {}
 - [compodocx API documentation](https://cngxjs.github.io/cngx/)
 - Demo: `examples/stories/common/drawer-demo/`
 - Tests: `projects/common/layout/drawer/*.spec.ts`
-- `CngxFocusTrap` in `@cngx/common/a11y` - Composed by `CngxDrawerPanel`
+- `CngxDrawerSurface` in `@cngx/common/layout` - Composed by `CngxDrawerPanel`
 - `CngxScrollLock` in `@cngx/common/layout` - Pair with drawer to prevent scrolling

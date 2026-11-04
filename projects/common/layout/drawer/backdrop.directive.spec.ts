@@ -176,6 +176,8 @@ describe('CngxBackdrop', () => {
           useValue: {
             create: vi.fn(() => ({
               enabled: false,
+              hasAttached: () => true,
+              attachAnchors: vi.fn(),
               focusFirstTabbableElementWhenReady: vi.fn(),
               focusLastTabbableElementWhenReady: vi.fn(),
               destroy: vi.fn(),

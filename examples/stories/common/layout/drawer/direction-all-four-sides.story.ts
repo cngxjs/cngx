@@ -25,14 +25,14 @@ export const STORY: DemoSpec = {
 
   <div cngxDrawer #dirDrawer="cngxDrawer" class="demo-drawer-container demo-drawer-container--bordered">
     <div class="button-row" style="padding: 0.5rem;">
-      <button type="button" class="sort-btn" (click)="dirDrawer.toggle()">
+      <button type="button" class="sort-btn" aria-controls="dir-panel"
+              [attr.aria-expanded]="dirDrawer.opened()" (click)="dirDrawer.toggle()">
         Toggle {{ direction() }} drawer
       </button>
     </div>
 
     <div class="demo-drawer-layout demo-drawer-layout--relative">
-      <aside [cngxDrawerPanel]="dirDrawer" [position]="direction()"
-             [enabled]="dirDrawer.opened()"
+      <aside id="dir-panel" [cngxDrawerPanel]="dirDrawer" [position]="direction()"
              class="demo-drawer-panel">
         <div class="demo-drawer-panel-content">
           <strong>{{ direction() }} panel</strong>
