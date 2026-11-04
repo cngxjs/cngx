@@ -1,7 +1,7 @@
-import { Component, Directive, signal } from '@angular/core';
+import { Component, Directive, effect, input, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CNGX_FOCUS_RESTORE_DRIVER, CngxFocusRestore } from './focus-restore.directive';
 
 @Component({
@@ -46,6 +46,39 @@ class FallbackHost {
 class WhileHost {
   readonly open = signal(false);
   readonly mounted = signal(true);
+}
+
+// Holds `inert` on its target from an effect, like CngxBackdrop. Declared
+// after the restore host, so its release runs after the falling edge.
+@Directive({ selector: '[testInertOwner]' })
+class TestInertOwner {
+  readonly active = input(false, { alias: 'testInertOwner' });
+  readonly target = input.required<HTMLElement>({ alias: 'inertTarget' });
+
+  constructor() {
+    effect((onCleanup) => {
+      if (!this.active()) {
+        return;
+      }
+      const target = this.target();
+      target.setAttribute('inert', '');
+      onCleanup(() => target.removeAttribute('inert'));
+    });
+  }
+}
+
+@Component({
+  template: `
+    <div #wrap><button class="trigger">Trigger</button></div>
+    <div cngxFocusRestore [cngxFocusRestoreWhile]="open()">
+      <button class="inside">Inside</button>
+    </div>
+    <span [testInertOwner]="open()" [inertTarget]="wrap"></span>
+  `,
+  imports: [CngxFocusRestore, TestInertOwner],
+})
+class InertOwnerHost {
+  readonly open = signal(false);
 }
 
 const driverActive = signal(false);
@@ -206,6 +239,38 @@ describe('CngxFocusRestore', () => {
       fixture.detectChanges();
 
       expect(document.activeElement).toBe(q('.trigger'));
+    });
+  });
+
+  describe('target inert at the falling edge', () => {
+    beforeEach(() => TestBed.configureTestingModule({ imports: [InertOwnerHost] }));
+
+    it('restores once the owner released inert on the target', () => {
+      const fixture = TestBed.createComponent(InertOwnerHost);
+      document.body.appendChild(fixture.nativeElement as HTMLElement);
+      fixture.detectChanges();
+      const q = (sel: string) =>
+        fixture.debugElement.query(By.css(sel)).nativeElement as HTMLElement;
+      const trigger = q('.trigger');
+      trigger.focus();
+      fixture.componentInstance.open.set(true);
+      fixture.detectChanges();
+      expect(trigger.closest('[inert]')).not.toBeNull();
+      q('.inside').focus();
+      const inertAtFocus: boolean[] = [];
+      const nativeFocus = HTMLElement.prototype.focus;
+      vi.spyOn(trigger, 'focus').mockImplementation((options?: FocusOptions) => {
+        inertAtFocus.push(trigger.closest('[inert]') !== null);
+        nativeFocus.call(trigger, options);
+      });
+
+      fixture.componentInstance.open.set(false);
+      fixture.detectChanges();
+      TestBed.tick();
+
+      expect(inertAtFocus).toEqual([false]);
+      expect(document.activeElement).toBe(trigger);
+      (fixture.nativeElement as HTMLElement).remove();
     });
   });
 

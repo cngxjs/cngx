@@ -33,6 +33,20 @@ class TestHost {
   clicked = vi.fn();
 }
 
+// The backdrop after the panel: its release runs after the panel's focus
+// restore edge in the same pass.
+@Component({
+  template: `
+    <div cngxDrawer #drawer="cngxDrawer">
+      <nav id="late-panel" [cngxDrawerPanel]="drawer" modality="none"><a href="#">Link</a></nav>
+      <button class="opener" type="button">Open</button>
+      <div [cngxBackdrop]="drawer.opened()"></div>
+    </div>
+  `,
+  imports: [CngxDrawer, CngxDrawerPanel, CngxBackdrop],
+})
+class LateBackdropHost {}
+
 @Component({
   template: `
     <div cngxDrawer #drawer="cngxDrawer">
@@ -198,5 +212,30 @@ describe('CngxBackdrop', () => {
     const contentEl = fixture.debugElement.query(By.css('.content')).nativeElement as HTMLElement;
     expect(panelEl.hasAttribute('inert')).toBe(false);
     expect(contentEl.hasAttribute('inert')).toBe(true);
+  });
+
+  it('returns focus to an opener the backdrop held inert once it is released', () => {
+    TestBed.configureTestingModule({ imports: [LateBackdropHost] });
+    const fixture = TestBed.createComponent(LateBackdropHost);
+    const root = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(root);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const drawer = fixture.debugElement.query(By.directive(CngxDrawer)).injector.get(CngxDrawer);
+    const opener = root.querySelector('.opener') as HTMLElement;
+    opener.focus();
+    drawer.open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(opener.hasAttribute('inert')).toBe(true);
+    (root.querySelector('a') as HTMLElement).focus();
+
+    drawer.close();
+    fixture.detectChanges();
+    TestBed.tick();
+
+    expect(opener.hasAttribute('inert')).toBe(false);
+    expect(document.activeElement).toBe(opener);
+    root.remove();
   });
 });

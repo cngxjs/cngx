@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import {
+  afterNextRender,
   computed,
   DestroyRef,
   Directive,
@@ -79,7 +80,9 @@ export const CNGX_FOCUS_RESTORE_DRIVER = new InjectionToken<CngxFocusRestoreDriv
  * ```
  * `true` captures the focused element, `false` restores it when focus is
  * still inside the host or has dropped to `<body>`. Focus the user moved
- * elsewhere in the meantime stays where it is.
+ * elsewhere in the meantime stays where it is. A target that is still
+ * `inert` at the falling edge (a backdrop released in the same pass) is
+ * focused after the next render instead.
  *
  * ### With explicit fallback
  * ```html
@@ -198,11 +201,33 @@ export class CngxFocusRestore {
   }
 
   private restoreIfFocusInside(): void {
-    const activeEl = this.doc.activeElement;
-    const lost = !activeEl || activeEl === this.doc.body || this.host().contains(activeEl);
-    if (lost) {
-      this.restore();
+    if (!this.focusLost()) {
+      return;
     }
+    const target = this.resolveTarget();
+    if (!target) {
+      return;
+    }
+    if (!target.closest('[inert]')) {
+      target.focus();
+      return;
+    }
+    // Another owner (a backdrop) can still hold `inert` on the target in
+    // this pass; focus() on an inert element is a no-op. Its release runs in
+    // the same change detection, so retry once after the render.
+    afterNextRender(
+      () => {
+        if (this.focusLost() && !target.closest('[inert]')) {
+          target.focus();
+        }
+      },
+      { injector: this.injector },
+    );
+  }
+
+  private focusLost(): boolean {
+    const activeEl = this.doc.activeElement;
+    return !activeEl || activeEl === this.doc.body || this.host().contains(activeEl);
   }
 
   private host(): HTMLElement {
