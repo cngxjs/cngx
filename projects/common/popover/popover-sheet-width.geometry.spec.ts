@@ -102,7 +102,7 @@ afterEach(async () => {
 });
 
 describe('CngxPopoverSheet width with classic scrollbars', () => {
-  it.fails('spans the full layout viewport despite a classic scrollbar gutter', async () => {
+  it('spans the full layout viewport despite a classic scrollbar gutter', async () => {
     const { panel } = await open();
     const rect = panel.getBoundingClientRect();
     expect(Math.round(rect.left)).toBe(0);
