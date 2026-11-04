@@ -518,3 +518,99 @@ describe('CngxListboxTrigger on a blocked host', () => {
     expect(popover.isVisible()).toBe(false);
   });
 });
+
+// ── Review 2 (commit 6) verify-first: editable-combobox Enter, Alt open/close,
+// and aria-activedescendant clearing. Red cases flip in a later phase. ────────
+@Component({
+  template: `
+    <form (submit)="submitted.set(true)">
+      <input
+        type="text"
+        [cngxListboxTrigger]="lb"
+        cngxListboxSearch
+        [popover]="pop"
+        #inputTrigger="cngxListboxTrigger"
+      />
+    </form>
+    <div cngxPopover #pop="cngxPopover">
+      <div cngxListbox [label]="'Colors'" tabindex="0" #lb="cngxListbox">
+        <div cngxOption value="red">Red</div>
+        <div cngxOption value="green">Green</div>
+        <div cngxOption value="blue">Blue</div>
+      </div>
+    </div>
+  `,
+  imports: [CngxListbox, CngxOption, CngxListboxTrigger, CngxListboxSearch, CngxPopover],
+})
+class InputComboHost {
+  readonly submitted = signal(false);
+}
+
+describe('CngxListboxTrigger - review 2 editable combobox and Alt shortcuts', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [TriggerHost, InputComboHost] });
+  });
+
+  function setupButton(): { triggerEl: HTMLElement; popover: CngxPopover; ad: CngxActiveDescendant } {
+    const fixture = TestBed.createComponent(TriggerHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const triggerEntry = fixture.debugElement.query(By.directive(CngxListboxTrigger));
+    const popoverEntry = fixture.debugElement.query(By.directive(CngxPopover));
+    const listboxEntry = fixture.debugElement.query(By.directive(CngxListbox));
+    return {
+      triggerEl: triggerEntry.nativeElement as HTMLElement,
+      popover: popoverEntry.injector.get(CngxPopover),
+      ad: listboxEntry.injector.get(CngxActiveDescendant),
+    };
+  }
+
+  // A closed editable combobox inside a form must leave Enter to the form so
+  // the native submit still runs; opening belongs to Alt+ArrowDown.
+  it.fails('Enter on a closed editable combobox does not preventDefault', () => {
+    const fixture = TestBed.createComponent(InputComboHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+    input.focus();
+    const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    input.dispatchEvent(enter);
+    TestBed.flushEffects();
+    expect(enter.defaultPrevented).toBe(false);
+  });
+
+  // ARIA combobox: Alt+ArrowDown opens the popup without moving the highlight.
+  it.fails('Alt+ArrowDown opens the panel without moving the highlight', () => {
+    const { triggerEl, popover, ad } = setupButton();
+    triggerEl.focus();
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, altKey: true }));
+    TestBed.flushEffects();
+    expect(popover.isVisible()).toBe(true);
+    expect(ad.activeItem()).toBeNull();
+  });
+
+  // ARIA combobox: Alt+ArrowUp closes an open popup.
+  it.fails('Alt+ArrowUp closes an open panel', () => {
+    const { triggerEl, popover } = setupButton();
+    popover.show();
+    TestBed.flushEffects();
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, altKey: true }));
+    TestBed.flushEffects();
+    expect(popover.isVisible()).toBe(false);
+  });
+
+  // I10 (verify first): closing clears aria-activedescendant.
+  it('clears aria-activedescendant when the panel closes', () => {
+    const { triggerEl, popover } = setupButton();
+    triggerEl.focus();
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    TestBed.flushEffects();
+    expect(triggerEl.getAttribute('aria-activedescendant')).toBeTruthy();
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    TestBed.flushEffects();
+    expect(popover.isVisible()).toBe(false);
+    expect(triggerEl.hasAttribute('aria-activedescendant')).toBe(false);
+  });
+});

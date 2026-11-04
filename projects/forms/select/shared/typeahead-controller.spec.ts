@@ -7,7 +7,7 @@ import {
   type TypeaheadController,
 } from './typeahead-controller';
 import type { CngxSelectOptionDef } from './option.model';
-import { cngxSelectDefaultCompare } from './internal/select-core';
+import { cngxSelectDefaultCompare, type CngxSelectCompareFn } from './internal/select-core';
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
@@ -179,6 +179,60 @@ describe('createTypeaheadController', () => {
     vi.advanceTimersByTime(300); // ensure buffer starts clean
     options.set([opt('Zoo'), opt('Zebra')]);
     expect(controller.matchFromIndex('z', -1)).toEqual(opt('Zoo'));
+  });
+});
+
+// ── Buffer spaces and value-seeded start (commit 6, flipped in Phase 4) ──
+
+function typeSeq(
+  controller: TypeaheadController<string>,
+  seq: string,
+  currentIndex = -1,
+): CngxSelectOptionDef<string> | null {
+  let last: CngxSelectOptionDef<string> | null = null;
+  for (const char of seq) {
+    last = controller.matchFromIndex(char, currentIndex);
+  }
+  return last;
+}
+
+describe('createTypeaheadController - spaces in the buffer', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  // A space after a non-empty buffer is part of the term ("new y" -> "New York").
+  it.fails('extends the match when a space follows a non-empty buffer', () => {
+    const { controller } = makeController([opt('New York'), opt('New Jersey'), opt('Newark')]);
+    expect(typeSeq(controller, 'new y')).toEqual(opt('New York'));
+  });
+
+  // A leading space with an empty buffer is still non-printable - returns null.
+  it('a leading space with an empty buffer still returns null', () => {
+    const { controller } = makeController([opt('New York'), opt('Newark')]);
+    expect(controller.matchFromIndex(' ', -1)).toBeNull();
+    expect(controller.buffer()).toBe('');
+  });
+});
+
+describe('createTypeaheadController - matchFromValue seeds the start', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  // matchFromValue resolves the current option through the custom compareWith,
+  // so a value selected case-insensitively seeds the typeahead start index.
+  it.fails('resolves the start index through a custom compareWith', () => {
+    const compareCI: CngxSelectCompareFn<string> = (a, b) =>
+      (a ?? '').toLowerCase() === (b ?? '').toLowerCase();
+    const controller = createTypeaheadController<string>({
+      options: signal([opt('Avocado'), opt('Avalanche'), opt('Banana')]),
+      compareWith: signal(compareCI) as Signal<CngxSelectCompareFn<string>>,
+      debounceMs: signal(200),
+      disabled: signal(false),
+    });
+    const withValue = controller as unknown as { matchFromValue(v: string | undefined): number };
+    expect(withValue.matchFromValue('AVALANCHE')).toBe(1);
   });
 });
 

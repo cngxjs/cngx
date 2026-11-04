@@ -271,3 +271,32 @@ describe('handlePageJumpKey - strategy routing', () => {
     expect(highlightByIndex).not.toHaveBeenCalled();
   });
 });
+
+// ── B3 (commit 6): the two handlers must treat a missing listbox alike. ──────
+describe('B3: both page-jump handlers treat a missing listbox the same way', () => {
+  function flatDepsNoListbox() {
+    return {
+      listbox: undefined,
+      popover,
+      strategy: createDefaultFlatNavStrategy(),
+      flatOptions: () => FLAT,
+      compareWith: () => cngxSelectDefaultCompare,
+      disabled: () => false,
+      typeaheadController: createTypeaheadController<number>({
+        options: signal(FLAT),
+        compareWith: signal(cngxSelectDefaultCompare),
+        debounceMs: signal(200),
+        disabled: signal(false),
+      }),
+    };
+  }
+
+  it.fails('return value and preventDefault match for PageDown with no listbox', () => {
+    const anchored = key('PageDown');
+    const anchoredRet = handlePageJumpKey(anchored, { listbox: undefined, popover, ...STRATEGY_DEPS });
+    const flatNav = key('PageDown');
+    const flatNavRet = handleFlatNavPageJumpKey(flatNav, flatDepsNoListbox());
+    expect(flatNavRet).toBe(anchoredRet);
+    expect(flatNav.defaultPrevented).toBe(anchored.defaultPrevented);
+  });
+});
