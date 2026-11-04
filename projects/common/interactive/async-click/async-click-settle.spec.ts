@@ -73,7 +73,10 @@ class ActionButtonMixedHost {
 @Component({
   imports: [CngxStepperComplete],
   hostDirectives: [CngxStepperPresenter],
-  template: `<button [cngxStepperComplete]="action" (completed)="completedCount.set(completedCount() + 1)">
+  template: `<button
+    [cngxStepperComplete]="action"
+    (completed)="completedCount.set(completedCount() + 1)"
+  >
     Finish
   </button>`,
 })
