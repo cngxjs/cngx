@@ -6,11 +6,15 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { CngxTreeNode } from '@cngx/utils';
 
 import { CngxActionMultiSelect } from '../action-multi-select/action-multi-select.component';
+import { CngxActionSelect } from '../action-select/action-select.component';
 import { CngxCombobox } from '../combobox/combobox.component';
+import { CngxSelectOption } from '../declarative/option.component';
 import { CngxMultiSelect } from '../multi-select/multi-select.component';
 import { CngxReorderableMultiSelect } from '../reorderable-multi-select/reorderable-multi-select.component';
+import { CngxSelectShell } from '../select-shell/select-shell.component';
 import { CngxSelect } from '../single-select/select.component';
 import { CngxTreeSelect } from '../tree-select/tree-select.component';
+import { CngxTypeahead } from '../typeahead/typeahead.component';
 import type { CngxSelectOptionDef } from './option.model';
 
 interface FormControlLike {
@@ -194,5 +198,83 @@ describe('unresolved values (CngxTreeSelect)', () => {
     fixture.componentInstance.nodes.set([{ value: 'de', label: 'German' }]);
     flush(fixture);
     expect(chipTexts(root)).toEqual(['German']);
+  });
+});
+
+// F3: the input-led scalar composites draw the raw bound value into their
+// field before the options load, so an unresolved value is never lost.
+describe.each([
+  { name: 'CngxTypeahead', component: CngxTypeahead, selector: 'cngx-typeahead' },
+  { name: 'CngxActionSelect', component: CngxActionSelect, selector: 'cngx-action-select' },
+])('unresolved values ($name)', (variant) => {
+  @Component({ template: '', imports: [] })
+  class InputHost {
+    readonly options = signal<CngxSelectOptionDef<string>[]>([]);
+    readonly value = signal<string | undefined>('green');
+  }
+
+  function mount() {
+    TestBed.overrideComponent(InputHost, {
+      set: {
+        template: `
+          <${variant.selector}
+            [label]="'Colour'"
+            [placeholder]="'Pick a colour'"
+            [options]="options()"
+            [(value)]="value"
+          />
+        `,
+        imports: [variant.component],
+      },
+    });
+    const fixture = TestBed.createComponent(InputHost);
+    const root = attach(fixture);
+    fixture.detectChanges();
+    flush(fixture);
+    const input = () => root.querySelector<HTMLInputElement>('input')!;
+    return { fixture, root, input, host: fixture.componentInstance };
+  }
+
+  it('shows the raw value in the input before the options arrive', () => {
+    const { input } = mount();
+    expect(input().value).toBe('green');
+  });
+});
+
+describe('unresolved values (CngxSelectShell)', () => {
+  @Component({ template: '', imports: [] })
+  class ShellHost {
+    readonly value = signal<string | undefined>('green');
+    readonly show = signal(false);
+  }
+
+  function mount() {
+    TestBed.overrideComponent(ShellHost, {
+      set: {
+        template: `
+          <cngx-select-shell [label]="'Colour'" [placeholder]="'Pick a colour'" [(value)]="value" [presentation]="'anchored'">
+            @if (show()) {
+              <cngx-option [value]="'red'">Red</cngx-option>
+              <cngx-option [value]="'green'">Green</cngx-option>
+            }
+          </cngx-select-shell>
+        `,
+        imports: [CngxSelectShell, CngxSelectOption],
+      },
+    });
+    const fixture = TestBed.createComponent(ShellHost);
+    const root = attach(fixture);
+    fixture.detectChanges();
+    flush(fixture);
+    const label = () => root.querySelector<HTMLElement>('.cngx-select__label')!;
+    return { fixture, root, label, host: fixture.componentInstance };
+  }
+
+  // A23 / H3: a projected option behind @if is not mounted yet, but the bound
+  // value must still read as the raw value, not fall back to the placeholder.
+  it.fails('shows the raw value, not the placeholder, while the options are hidden', () => {
+    const { label } = mount();
+    expect(label().textContent?.trim()).toBe('green');
+    expect(label().classList.contains('cngx-select__label--placeholder')).toBe(false);
   });
 });
