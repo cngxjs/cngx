@@ -292,6 +292,49 @@ In `@cngx/common/data`, `injectLatencyProbe()` bridges the app-wide `CngxAsyncRe
 
 ---
 
+## Settle events
+
+Status is state. A settle is an event. The two differ when two runs settle before change detection: an effect that reads `status()` sees only the final value of the flush, so it fires once for two runs. That is correct for state consumers (a skeleton, an alert that shows the current outcome) and wrong for side effects that must happen per run: a toast, a completion output, a close-on-success, a live-region write.
+
+`cngxAsyncClick` therefore emits `(settled)` once per success or error settle, synchronously from the settle path, with a `CngxAsyncSettle` payload:
+
+```typescript
+interface CngxAsyncSettle {
+  readonly generation: number; // 1, 2, ... per directive instance
+  readonly status: 'success' | 'error';
+  readonly error: unknown; // the rejection value, undefined on success
+}
+```
+
+It never emits on a cancelled run, on reset or after destroy. The hosts that run their side effects on it:
+
+- `CngxActionButton` shows its toast per own settle and re-exports `(settled)`. A bound `[externalState]` stays state: one toast and one announcement per observed edge.
+- `CngxStepperComplete` emits `(completed)` once per successful finish run.
+- `CngxPopoverAction` re-arms close-on-success and speaks its result once per settle.
+
+The `cngxAsyncClick` live region follows the same rule: it is cleared at the settle and written after the next render (so a host can read the content the settle rendered), once per settle. No effect reads the copy, so a language switch never re-voices it. `announce(message)` speaks a settle the host reflects but the directive did not run.
+
+Keep `status()` / `state` for everything that shows the current outcome; put per-run side effects on `(settled)`. The consumer-placed bridges below (`[cngxToastOn]`, `[cngxAlertOn]`, `[cngxBannerOn]`) bind state and fire per observed transition.
+
+### Run lifetime and cancellation
+
+`AsyncAction` is `(signal?: AbortSignal) => Promise<unknown> | Observable<unknown>`. `cngxAsyncClick` passes a signal that aborts when the directive is destroyed:
+
+- The library never aborts the in-flight run. On destroy it stops listening: no state write, no `(settled)`, no announcement, the feedback timer cleared, and the signal aborts.
+- An action that wants cancellation owns it: pass the signal on to `fetch` or end an `HttpClient` call on its abort event.
+- `createRetry` forwards the signal to every attempt and stops on it: the backoff timer is cleared and no further attempt starts. It stays a pure factory (no injection context); a direct call without a signal has no destroy binding.
+- A run that ends without an outcome (superseded, `reset()`, aborted) resolves `CNGX_ASYNC_CANCELLED` instead of `undefined`. It is resolved, not rejected, so an `await` caller gets no surprise throw. `cngxAsyncClick` maps it to `idle`: no announcement, no `(settled)`.
+
+```typescript
+const [save, retryState] = createRetry((signal) => fetch('/api/save', { method: 'POST', signal }), {
+  maxAttempts: 3,
+});
+// <button [cngxAsyncClick]="save">Save</button>
+// Destroying the button aborts the signal: the fetch is cancelled and no retry starts.
+```
+
+---
+
 ## Transition bridges
 
 A **transition bridge** reacts to a status transition (`idle -> success`, `loading -> error`, `refreshing -> error`) and triggers an out-of-band notification.
