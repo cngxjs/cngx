@@ -197,6 +197,49 @@
       ]
     },
     {
+      "class": "CngxResizable",
+      "file": "projects/common/layout/resizable/resizable.directive.ts",
+      "line": 96,
+      "member": "resolvedLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "label" },
+        { "kind": "bundle", "field": "i18n", "path": ["resizeHandle"], "token": "CNGX_LAYOUT_I18N" }
+      ]
+    },
+    {
+      "class": "CngxResizable",
+      "file": "projects/common/layout/resizable/resizable.directive.ts",
+      "line": 98,
+      "member": "resolvedValueText",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "valueText" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["resizeValueText"],
+          "token": "CNGX_LAYOUT_I18N"
+        }
+      ]
+    },
+    {
+      "class": "CngxSidebar",
+      "file": "projects/common/layout/sidebar/sidebar.directive.ts",
+      "line": 151,
+      "member": "resolvedLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "label" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["sidebarRegion"],
+          "token": "CNGX_LAYOUT_I18N"
+        }
+      ]
+    },
+    {
       "class": "CngxExpandableText",
       "file": "projects/common/layout/text/expandable-text.ts",
       "line": 151,
@@ -806,7 +849,7 @@
     {
       "class": "CngxDgaSortHeader",
       "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
-      "line": 149,
+      "line": 150,
       "member": "statusText",
       "enclosing": "computed",
       "tiers": [
@@ -822,7 +865,7 @@
     {
       "class": "CngxDgaSortHeader",
       "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
-      "line": 152,
+      "line": 153,
       "member": "statusText",
       "enclosing": "computed",
       "tiers": [
@@ -838,7 +881,7 @@
     {
       "class": "CngxDgaSortHeader",
       "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
-      "line": 154,
+      "line": 155,
       "member": "statusText",
       "enclosing": "computed",
       "tiers": [
@@ -854,7 +897,7 @@
     {
       "class": "CngxDgaSortHeader",
       "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
-      "line": 199,
+      "line": 200,
       "member": "announcementTemplate",
       "enclosing": "method",
       "tiers": [
@@ -870,7 +913,7 @@
     {
       "class": "CngxDgaSortHeader",
       "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
-      "line": 202,
+      "line": 203,
       "member": "announcementTemplate",
       "enclosing": "method",
       "tiers": [
@@ -886,7 +929,7 @@
     {
       "class": "CngxDgaSortHeader",
       "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
-      "line": 204,
+      "line": 205,
       "member": "announcementTemplate",
       "enclosing": "method",
       "tiers": [

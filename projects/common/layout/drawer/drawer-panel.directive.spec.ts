@@ -317,7 +317,7 @@ describe('CngxDrawerPanel', () => {
 
       expect(ctx.panelEl.hasAttribute('aria-modal')).toBe(false);
       expect(mockTrap.enabled).toBe(false);
-      const calls = warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1075'));
+      const calls = warn.mock.calls.filter(([msg]) => /^CNGX1075: /.test(String(msg)));
       expect(calls).toHaveLength(1);
     });
 
