@@ -1660,7 +1660,7 @@ describe('CngxTreeSelect - review 2 dismiss and tree keyboard', () => {
   });
 
   // I3: the tree announces that several nodes can be selected.
-  it.fails('the role=tree container carries aria-multiselectable="true"', () => {
+  it('the role=tree container carries aria-multiselectable="true"', () => {
     const m = probeMount(PROBE_KINDS['tree']);
     m.open();
     expect(treeEl(m.el).getAttribute('aria-multiselectable')).toBe('true');
