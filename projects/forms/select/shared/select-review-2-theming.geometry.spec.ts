@@ -173,6 +173,8 @@ async function emulateScheme(value: 'light' | 'dark') {
 afterEach(async () => {
   mountedRoot?.remove();
   mountedRoot = null;
+  document.documentElement.style.removeProperty('--cngx-color-surface');
+  document.documentElement.style.removeProperty('--cngx-color-text');
   await cdp().send('Emulation.setEmulatedMedia', { features: [] });
 });
 
@@ -228,18 +230,28 @@ describe('select review 2 theming', () => {
     ).toBeGreaterThanOrEqual(4.5);
   });
 
-  // E4 - the skeleton shimmer follows the app scheme, not the OS alone.
-  it.fails('E4: a light app keeps the skeleton paint across OS schemes', async () => {
-    await emulateScheme('light');
-    let fixture = mount((h) => h.loading.set(true));
-    await open(fixture);
-    const light = computedValue(one(fixture.nativeElement, '.cngx-select__skeleton-row'), 'background-image');
-    mountedRoot?.remove();
+  // E4 - the skeleton shimmer follows the actual panel scheme, not the OS
+  // alone. A consumer light theme (a light surface + dark text pinned on :root,
+  // no `data-color-scheme` attribute) under OS dark must keep a DARKENING
+  // shimmer on its light panel; the old OS-keyed swap flipped it to
+  // alpha-on-white and it dissolved.
+  it('E4: a light panel keeps a darkening skeleton shimmer under OS dark', async () => {
     await emulateScheme('dark');
-    fixture = mount((h) => h.loading.set(true));
+    document.documentElement.style.setProperty('--cngx-color-surface', 'oklch(0.99 0 0)');
+    document.documentElement.style.setProperty('--cngx-color-text', 'oklch(0.2 0.01 250)');
+    const fixture = mount((h) => h.loading.set(true));
     await open(fixture);
-    const dark = computedValue(one(fixture.nativeElement, '.cngx-select__skeleton-row'), 'background-image');
-    expect(dark).toBe(light);
+    const panel = one(fixture.nativeElement as HTMLElement, '.cngx-select__panel');
+    const row = one(panel, '.cngx-select__skeleton-row');
+    const panelBg = colourOf(panel, 'background-color');
+    const stop = computedValue(row, 'background-image').match(
+      /(?:oklch|oklab|rgba?|color)\([^)]*\)/,
+    )?.[0];
+    expect(stop, 'skeleton gradient has a resolvable colour stop').toBeTruthy();
+    const shimmer = over(resolveColour(stop!), panelBg);
+    // A light panel: the shimmer must darken it (sit below the panel luminance),
+    // not lighten it toward invisibility.
+    expect(luminance(shimmer)).toBeLessThan(luminance(panelBg));
   });
 
   // E5 - the keyboard-active row carries a >= 3:1 affordance.

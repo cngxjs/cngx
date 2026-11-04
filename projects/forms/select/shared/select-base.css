@@ -456,6 +456,35 @@
   }
 
   /**
+   * Base colour the skeleton shimmer gradient is mixed from. Defaults from the
+   * foundation text colour, so the shimmer darkens a light panel and lightens a
+   * dark one in every scheme (OS, a `data-color-scheme` island, or a consumer
+   * light theme under OS dark) without a hardcoded dark-mode swap. The Material
+   * bridge sets it from `--mat-sys-on-surface`.
+   * @group State / Loading
+   * @see [[--cngx-color-text]]
+   */
+  @property --cngx-select-skeleton-shimmer {
+    syntax: '*';
+    inherits: true;
+    initial-value: oklch(0.2 0.01 250);
+  }
+
+  /**
+   * Track (resting ring) colour of the per-option commit spinner. Defaults from
+   * the foundation text colour at a low alpha, so it reads on the panel in
+   * every scheme without a dark swap. The Material bridge sets it from
+   * `--mat-sys-on-surface`.
+   * @group State / Commit
+   * @see [[--cngx-color-text]]
+   */
+  @property --cngx-select-option-spinner-track {
+    syntax: '*';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.15);
+  }
+
+  /**
    * Padding around the first-load spinner wrapper.
    * @group State / Loading
    */
@@ -1344,6 +1373,10 @@
     /* skeleton-gap 0.25 -> xs; skeleton-padding 0.25 -> xs. */
     --cngx-select-skeleton-gap: var(--cngx-space-xs);
     --cngx-select-skeleton-padding: var(--cngx-space-xs);
+    /* The shimmer base follows the foundation text colour, so the gradient
+       darkens a light panel and lightens a dark one in every scheme - no
+       hardcoded dark-mode swap. */
+    --cngx-select-skeleton-shimmer: var(--cngx-color-text, oklch(0.2 0.01 250));
     display: flex;
     flex-direction: column;
     gap: var(--cngx-select-skeleton-gap, 0.25rem);
@@ -1354,9 +1387,12 @@
     border-radius: var(--cngx-select-skeleton-row-radius, 0.125rem);
     background: linear-gradient(
       90deg,
-      oklch(0 0 0 / 0.08) 25%,
-      oklch(0 0 0 / 0.12) 50%,
-      oklch(0 0 0 / 0.08) 75%
+      color-mix(in oklab, var(--cngx-select-skeleton-shimmer, oklch(0.2 0.01 250)) 8%, transparent)
+        25%,
+      color-mix(in oklab, var(--cngx-select-skeleton-shimmer, oklch(0.2 0.01 250)) 12%, transparent)
+        50%,
+      color-mix(in oklab, var(--cngx-select-skeleton-shimmer, oklch(0.2 0.01 250)) 8%, transparent)
+        75%
     );
     background-size: 200% 100%;
     animation: cngx-select-skeleton-shimmer 1.5s ease-in-out infinite;
@@ -1466,6 +1502,13 @@
 
   .cngx-select__option-spinner {
     margin-inline-start: auto;
+    /* Track follows the foundation text colour, so it reads on the panel in
+       every scheme without a dark swap. */
+    --cngx-select-option-spinner-track: color-mix(
+      in oklab,
+      var(--cngx-color-text, oklch(0.2 0.01 250)) 15%,
+      transparent
+    );
     width: var(--cngx-select-option-spinner-size, 0.875rem);
     height: var(--cngx-select-option-spinner-size, 0.875rem);
     border: 2px solid var(--cngx-select-option-spinner-track, oklch(0 0 0 / 0.15));
@@ -1896,47 +1939,11 @@
     font-size: var(--cngx-font-size-sm, 0.875rem);
   }
 
-  /* Dark-mode swap for the hardcoded alpha-on-black surfaces that
-   * don't have a dedicated token - the skeleton shimmer gradient
-   * (three alpha stops baked into the rule) and the option-spinner
-   * track. Both flip to alpha-on-white so they read on a dark
-   * panel-bg without dissolving. */
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-color-scheme='light']):not(.light) .cngx-select__skeleton-row {
-      background: linear-gradient(
-        90deg,
-        oklch(1 0 0 / 0.08) 25%,
-        oklch(1 0 0 / 0.12) 50%,
-        oklch(1 0 0 / 0.08) 75%
-      );
-      background-size: 200% 100%;
-    }
-    :root:not([data-color-scheme='light']):not(.light) .cngx-select__option-spinner {
-      border-color: oklch(1 0 0 / 0.15);
-      border-top-color: var(
-        --cngx-select-option-spinner-color,
-        var(--cngx-color-primary, oklch(0.72 0.18 50))
-      );
-    }
-  }
-  [data-color-scheme='dark'] .cngx-select__skeleton-row,
-  .dark .cngx-select__skeleton-row {
-    background: linear-gradient(
-      90deg,
-      oklch(1 0 0 / 0.08) 25%,
-      oklch(1 0 0 / 0.12) 50%,
-      oklch(1 0 0 / 0.08) 75%
-    );
-    background-size: 200% 100%;
-  }
-  [data-color-scheme='dark'] .cngx-select__option-spinner,
-  .dark .cngx-select__option-spinner {
-    border-color: oklch(1 0 0 / 0.15);
-    border-top-color: var(
-      --cngx-select-option-spinner-color,
-      var(--cngx-color-primary, oklch(0.72 0.18 50))
-    );
-  }
+  /* The skeleton shimmer and the option-spinner track derive from the
+   * foundation text colour (see their token SETs above), so they follow the
+   * panel scheme - an OS dark, a `data-color-scheme` island, or a consumer
+   * light theme under OS dark - without the old hardcoded alpha-on-black ->
+   * alpha-on-white swap, which flipped a light panel wrong under OS dark. */
 
   /* ── Field skins ──────────────────────────────────────────────────────
      One rule set for all nine triggers, keyed on the shared
