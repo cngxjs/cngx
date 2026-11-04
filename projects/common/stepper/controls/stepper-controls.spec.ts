@@ -266,6 +266,39 @@ describe('stepper nav controls', () => {
     expect(asyncClick.busyVisible()).toBe(true);
   });
 
+  it('forwards [minDwell] to the composed CngxAsyncClick', async () => {
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(DwellCompleteHost);
+    fixture.detectChanges();
+    const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
+    presenter.register(reg('a'));
+    presenter.register(reg('b'));
+    presenter.select(1);
+    fixture.detectChanges();
+    const host = fixture.componentInstance;
+    const asyncClick = fixture.debugElement.children[0].injector.get(CngxAsyncClick);
+    const advance = async (ms: number): Promise<void> => {
+      await vi.advanceTimersByTimeAsync(ms);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+    };
+
+    (fixture.nativeElement.querySelector('button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    await advance(0);
+    expect(asyncClick.busyVisible()).toBe(true);
+
+    host.release();
+    // The forwarded 50 ms dwell holds the visual, not the 400 ms default.
+    await advance(49);
+    expect(asyncClick.busyVisible()).toBe(true);
+    await advance(1);
+    expect(asyncClick.busyVisible()).toBe(false);
+    vi.useRealTimers();
+  });
+
   it('refuses a second finish run through the dwell and clears aria-busy on release (E4)', async () => {
     vi.useFakeTimers();
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
