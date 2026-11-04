@@ -848,9 +848,10 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
    * Scalar commit handler. Typeahead wrinkles:
    *   - `onValueWrite` mirrors the value into the `<input>` via the
    *     display binding.
-   *   - `onCommitFinalize` emits only when the option resolved; an
-   *     unresolved value can't be described to AT, so the change event
-   *     is dropped.
+   *   - `onCommitFinalize` emits `selectionChange` for every committed
+   *     value, with `option: null` when the value resolved to no option
+   *     (a free-typed commit), and announces it through the core, like
+   *     action-select; only a `finalValue === undefined` returns early.
    *
    * @internal
    */
@@ -863,7 +864,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     core: this.core,
     commitAction: this.commitAction,
     onCommitFinalize: (option, finalValue, previousValue) => {
-      if (option === null || finalValue === undefined) {
+      if (finalValue === undefined) {
         return;
       }
       this.selectionChange.emit({
@@ -872,7 +873,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
         previousValue,
         option,
       });
-      this.core.announce(option, 'added', 1, false);
+      this.core.announce(option, 'added', option ? 1 : 0, false);
     },
     onClearFinalize: (previousValue) => this.finalizeClear(previousValue),
     onCommitError: this.announceCommitError,

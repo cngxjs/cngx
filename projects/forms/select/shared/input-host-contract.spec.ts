@@ -102,7 +102,7 @@ describe('A24: typeahead keeps the typed term on a blur into its own panel', () 
 
 // ── A25: a committed value with no matching option still emits and speaks ──
 describe('A25: typeahead commits a value with no option', () => {
-  it.fails('emits selectionChange and announces when the resolved value has no option', () => {
+  it('emits selectionChange and announces when the resolved value has no option', () => {
     const m = mount(KINDS['typeahead'], { commit: () => of('purple') });
     m.pickAt(1);
     m.settle();
