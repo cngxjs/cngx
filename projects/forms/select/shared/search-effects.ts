@@ -39,6 +39,12 @@ export interface SearchEffectsOptions {
   readonly searchTerm: Signal<string>;
   readonly panelOpen: Signal<boolean>;
   readonly disabled: Signal<boolean>;
+  /**
+   * `true` while the field is readonly. A readonly host accepts no write, so
+   * a settled term never auto-opens its panel. Omitted defaults to never
+   * readonly.
+   */
+  readonly readonly?: Signal<boolean>;
   /** Typically `() => this.popoverRef()?.show()`. */
   readonly open: () => void;
   /**
@@ -102,6 +108,7 @@ export function createSearchEffects(opts: SearchEffectsOptions): void {
         term !== '' &&
         !opts.panelOpen() &&
         !opts.disabled() &&
+        !(opts.readonly?.() ?? false) &&
         (opts.focused?.() ?? true) &&
         autoOpenGate()
       ) {

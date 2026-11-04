@@ -45,7 +45,7 @@ describe('C3: readonly input hosts', () => {
       expect(input.getAttribute('aria-readonly')).toBe('true');
     });
 
-    it.fails(`${variant.name}: a readonly field sets the native readonly attribute`, () => {
+    it(`${variant.name}: a readonly field sets the native readonly attribute`, () => {
       const input = mountReadonly(variant, roots);
       expect(input.hasAttribute('readonly')).toBe(true);
     });

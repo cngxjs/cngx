@@ -151,6 +151,7 @@
       [attr.aria-required]="aria.required"
       [attr.aria-busy]="aria.busy"
       [attr.aria-readonly]="aria.readonly"
+      [readOnly]="aria.readonly ?? false"
       (focus)="handleFocus()"
       (blur)="handleBlur()"
       (backspaceOnEmpty)="removeLastChip()"
