@@ -148,9 +148,22 @@ export class CngxListboxTrigger<T = unknown> {
   private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
 
   protected handleKeydown(event: KeyboardEvent): void {
-    // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
-    // untouched - the same guard the nav strategies apply. Without it,
-    // Ctrl+ArrowDown on a trigger would navigate and swallow the event.
+    // ARIA combobox Alt shortcuts: Alt+ArrowDown opens the panel without moving
+    // the highlight, Alt+ArrowUp closes it. Every other Ctrl/Meta/Alt combo is a
+    // browser or app shortcut and passes through untouched - the same guard the
+    // nav strategies apply.
+    if (event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+      if (event.key === 'ArrowDown' && !this.isOpen() && !this.hostGuard.isBlockedNow()) {
+        event.preventDefault();
+        this.popover().show();
+        return;
+      }
+      if (event.key === 'ArrowUp' && this.isOpen()) {
+        event.preventDefault();
+        this.closePanel();
+        return;
+      }
+    }
     if (event.ctrlKey || event.metaKey || event.altKey) {
       return;
     }
@@ -246,6 +259,17 @@ export class CngxListboxTrigger<T = unknown> {
     this.searchCtrl?.flush();
   }
 
+  /**
+   * Close the panel and reset the active-descendant highlight, so the closed
+   * listbox element carries no stale `aria-activedescendant` and a reopen
+   * starts fresh (ARIA 1.2 combobox, I10). The listbox is popover-free and
+   * cannot observe the close itself, so the trigger owns the reset.
+   */
+  private closePanel(): void {
+    this.popover().hide();
+    this.listbox().ad.resetHighlight();
+  }
+
   /** The open-panel key actions. `event` is `null` when run deferred after a flush. */
   private runOpenKey(key: string, event: KeyboardEvent | null): void {
     const ad = this.listbox().ad;
@@ -255,7 +279,7 @@ export class CngxListboxTrigger<T = unknown> {
           return;
         }
         event?.preventDefault();
-        this.popover().hide();
+        this.closePanel();
         return;
       case 'ArrowDown':
         event?.preventDefault();
@@ -287,7 +311,7 @@ export class CngxListboxTrigger<T = unknown> {
         event?.preventDefault();
         ad.activateCurrent();
         if (this.closeOnSelect()) {
-          this.popover().hide();
+          this.closePanel();
         }
         return;
     }

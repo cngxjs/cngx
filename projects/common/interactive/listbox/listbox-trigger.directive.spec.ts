@@ -107,10 +107,10 @@ describe('CngxListboxTrigger', () => {
     expect(triggerEl.hasAttribute('aria-expanded')).toBe(false);
   });
 
-  it('ignores keys with ctrl/meta/alt held (browser shortcuts pass through)', () => {
+  it('ignores Ctrl/Meta + ArrowDown (browser shortcuts pass through)', () => {
     const { popover, triggerEl, ad } = setup();
     triggerEl.focus();
-    for (const modifier of [{ ctrlKey: true }, { metaKey: true }, { altKey: true }]) {
+    for (const modifier of [{ ctrlKey: true }, { metaKey: true }]) {
       const event = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, ...modifier });
       triggerEl.dispatchEvent(event);
       TestBed.flushEffects();
@@ -118,6 +118,18 @@ describe('CngxListboxTrigger', () => {
       expect(ad.activeItem()).toBeNull();
       expect(event.defaultPrevented).toBe(false);
     }
+  });
+
+  // Alt owns ArrowDown/ArrowUp (open/close); every other Alt combo is an app
+  // shortcut and still passes through untouched.
+  it('ignores Alt held on a non-navigation key', () => {
+    const { popover, triggerEl } = setup();
+    triggerEl.focus();
+    const event = new KeyboardEvent('keydown', { key: 'a', bubbles: true, altKey: true });
+    triggerEl.dispatchEvent(event);
+    TestBed.flushEffects();
+    expect(popover.isVisible()).toBe(false);
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it('ignores navigation with modifiers while open', () => {
@@ -582,7 +594,7 @@ describe('CngxListboxTrigger - review 2 editable combobox and Alt shortcuts', ()
   });
 
   // ARIA combobox: Alt+ArrowDown opens the popup without moving the highlight.
-  it.fails('Alt+ArrowDown opens the panel without moving the highlight', () => {
+  it('Alt+ArrowDown opens the panel without moving the highlight', () => {
     const { triggerEl, popover, ad } = setupButton();
     triggerEl.focus();
     triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, altKey: true }));
@@ -592,7 +604,7 @@ describe('CngxListboxTrigger - review 2 editable combobox and Alt shortcuts', ()
   });
 
   // ARIA combobox: Alt+ArrowUp closes an open popup.
-  it.fails('Alt+ArrowUp closes an open panel', () => {
+  it('Alt+ArrowUp closes an open panel', () => {
     const { triggerEl, popover } = setupButton();
     popover.show();
     TestBed.flushEffects();
