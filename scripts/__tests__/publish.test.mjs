@@ -22,6 +22,7 @@ import {
   containsStableRelease,
   createSchematicsVersions,
   declaresSchematics,
+  dryRunStampLines,
   findPlaceholders,
   libBuildCommand,
   npmViewVersion,
@@ -1138,5 +1139,24 @@ describe('releaseFinishFailure', () => {
     expect(message).toContain('Done: none of the release steps.');
     expect(message).toContain('  set "version" in package.json to 0.3.0');
     expect(message).not.toContain('git tag');
+  });
+});
+
+describe('dryRunStampLines', () => {
+  const versions = { cngx: '0.3.0', mcp: '0.3.0', eslintPlugin: '0.2.0', angular: '^21.2.0' };
+
+  it('reports the versions.json write and the refresh entry for the lib it belongs to', () => {
+    expect(dryRunStampLines({ lib: 'core', stamp: { versions, addsRefresh: true }, nextVersion: '0.3.0' })).toEqual([
+      `  Would write dist/core/schematics/versions.json ${JSON.stringify(versions)}`,
+      `  Would add ${refreshMigrationKey('0.3.0')} to dist/core/schematics/migrations/migrations.json`,
+    ]);
+  });
+
+  it('reports a kept migration, and nothing for a lib without a stamp or a tooling package', () => {
+    expect(dryRunStampLines({ lib: 'core', stamp: { versions, addsRefresh: false }, nextVersion: '0.3.0' })[1]).toBe(
+      '  Keeps the migration of 0.3.0 in dist/core/schematics/migrations/migrations.json',
+    );
+    expect(dryRunStampLines({ lib: 'utils', stamp: null, nextVersion: '0.3.0' })).toEqual([]);
+    expect(dryRunStampLines({ lib: 'mcp', stamp: undefined, nextVersion: '0.3.0' })).toEqual([]);
   });
 });

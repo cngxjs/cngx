@@ -497,6 +497,21 @@ export function writeSchematicsStamp({ schematicsDir, versions, migrations, migr
   }
 }
 
+const migrationsFileOf = (lib) => `dist/${lib}/schematics/migrations/migrations.json`;
+
+// What a dry run reports for a lib's schematics stamp, printed under the
+// lib's own header after its "Would publish" line; nothing for a lib without
+// a stamp.
+export function dryRunStampLines({ lib, stamp, nextVersion }) {
+  if (!stamp) {
+    return [];
+  }
+  const migrations = stamp.addsRefresh
+    ? `  Would add ${refreshMigrationKey(nextVersion)} to ${migrationsFileOf(lib)}`
+    : `  Keeps the migration of ${nextVersion} in ${migrationsFileOf(lib)}`;
+  return [`  Would write dist/${lib}/schematics/versions.json ${JSON.stringify(stamp.versions)}`, migrations];
+}
+
 export function stampSchematicsDist(options) {
   const stamp = planSchematicsStamp(options);
   writeSchematicsStamp(stamp);
@@ -971,38 +986,30 @@ function main() {
   // A real run writes every lib's stamped manifest, schematics stamp and
   // bundles before the first `npm publish`; a dry run only reports them.
   function prepareLibDists() {
+    if (dryRun) {
+      return;
+    }
+    console.log('\n[lib dists]');
     for (const { lib, distPkg, distPkgPath, stamp } of releases) {
-      const migrationsFile = `dist/${lib}/schematics/migrations/migrations.json`;
-      const refreshKey = refreshMigrationKey(nextVersion);
-      if (dryRun) {
-        if (stamp) {
-          console.log(`  Would write dist/${lib}/schematics/versions.json ${JSON.stringify(stamp.versions)}`);
-          if (stamp.addsRefresh) {
-            console.log(`  Would add ${refreshKey} to ${migrationsFile}`);
-          } else {
-            console.log(`  Keeps the migration of ${nextVersion} in ${migrationsFile}`);
-          }
-        }
-        continue;
-      }
       writeFileSync(distPkgPath, JSON.stringify(distPkg, null, 2) + '\n');
       if (stamp) {
         writeSchematicsStamp(stamp);
         if (stamp.addsRefresh) {
-          console.log(`  Added ${refreshKey} to ${migrationsFile}`);
+          console.log(`  Added ${refreshMigrationKey(nextVersion)} to ${migrationsFileOf(lib)}`);
         }
       }
       replaceVersionInDist(join(ROOT, 'dist', lib), nextVersion);
     }
-    if (!dryRun) {
-      console.log(`\nStamped ${releases.map(({ lib }) => `dist/${lib}`).join(', ')} with ${nextVersion}`);
-    }
+    console.log(`  Stamped ${releases.map(({ lib }) => `dist/${lib}`).join(', ')} with ${nextVersion}`);
   }
 
   function publishEntry({ name, dir, distTag }) {
     console.log(`\n[${name}]`);
     if (dryRun) {
       console.log(`  Would publish @cngx/${name}@${nextVersion} (${dir}, dist-tag ${distTag})`);
+      for (const line of dryRunStampLines({ lib: name, stamp: libReleases.get(name)?.stamp, nextVersion })) {
+        console.log(line);
+      }
       return;
     }
     run(`npm publish --access public --tag ${distTag}${registryFlag}`, join(ROOT, dir));
