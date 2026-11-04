@@ -182,6 +182,13 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
     /* no-op in the spec harness */
   }
 
+  readonly escapeEnabledState = signal(true);
+  readonly escapeEnabled = this.escapeEnabledState.asReadonly();
+  readonly escapeClosed = signal(0);
+  escapeClose(): void {
+    this.escapeClosed.update((n) => n + 1);
+  }
+
   readonly treeController: CngxTreeController<Row> = TestBed.runInInjectionContext(() =>
     createTreeController<Row>({
       nodes: this.nodes,

@@ -1650,7 +1650,7 @@ describe('CngxTreeSelect - review 2 dismiss and tree keyboard', () => {
   }
 
   // C2: dismissOn 'outside' turns Escape dismissal off, so Escape keeps the tree open.
-  it.fails('Escape keeps the tree open under dismissOn outside', () => {
+  it('Escape keeps the tree open under dismissOn outside', () => {
     const m = probeMount(PROBE_KINDS['tree'], { providers: [provideSelectConfig(withDismissOn('outside'))] });
     m.open();
     expect(m.v.panelOpen()).toBe(true);

@@ -1091,6 +1091,10 @@ export class CngxTreeSelect<T = unknown>
     this.hostFocus.refocusOwnerBeforeClose();
     this.popoverRef()?.hide();
   }
+  /** @internal Dismiss-policy gate for the panel's Escape handler. */
+  readonly escapeEnabled = this.sheetWiring.escapeEnabled;
+  /** @internal Dismiss-policy close for the panel's Escape handler. */
+  readonly escapeClose = (): void => this.sheetWiring.escapeClose();
   /**
    * Opens the panel when it is closed and closes it when it is open. On a
    * disabled control an open is undone at once, as with `open()`.

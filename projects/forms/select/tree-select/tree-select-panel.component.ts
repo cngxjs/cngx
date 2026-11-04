@@ -290,8 +290,11 @@ export class CngxTreeSelectPanel<T = unknown> {
   }
 
   protected handleEscape(event: Event): void {
+    if (!this.host.escapeEnabled()) {
+      return;
+    }
     event.preventDefault();
-    this.host.close();
+    this.host.escapeClose();
   }
 
   /**
