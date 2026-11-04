@@ -111,6 +111,10 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
         #btn="cngxAsyncClick"
         [feedbackDuration]="feedbackDuration()"
         [autoAnnounce]="false"
+        [showDelay]="showDelay()"
+        [minDwell]="minDwell()"
+        [attr.data-pending]="btn.pending() ? 'true' : null"
+        [attr.data-busy]="btn.busyVisible() ? 'true' : null"
         [class]="'cngx-popover-action cngx-popover-action--' + variant()"
       >
         @switch (btn.status()) {
@@ -174,6 +178,20 @@ export class CngxPopoverAction {
 
   /** Duration in ms to show success/error feedback. */
   readonly feedbackDuration = input(2000);
+
+  /**
+   * Show delay (ms) of the confirm action's busy visual, forwarded to the
+   * internal `CngxAsyncClick`. Unbound, it resolves to
+   * `CNGX_LOADING_CONFIG.showDelay` through the directive.
+   */
+  readonly showDelay = input<number | undefined>(undefined);
+
+  /**
+   * Minimum time (ms) the confirm action's busy visual stays once shown,
+   * forwarded to the internal `CngxAsyncClick`. Unbound, it resolves to
+   * `CNGX_LOADING_CONFIG.minDwell` through the directive.
+   */
+  readonly minDwell = input<number | undefined>(undefined);
 
   protected readonly pendingTpl = contentChild(CngxPending);
   protected readonly succeededTpl = contentChild(CngxSucceeded);

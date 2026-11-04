@@ -233,6 +233,36 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     expect(ring.outlineColor).toBe(ring.highlight);
   });
 
+  test('a pending popover confirm keeps its busy paint and never computes GrayText', async ({ page }) => {
+    await openForced(page, '/#/common/popover/popover-panel/with-footer-actions');
+    await page.locator('.cngx-ex-artifact button.chip', { hasText: 'Save Confirm' }).click();
+    const confirm = page.locator('.cngx-popover-action--primary').first();
+    await expect(confirm).toBeVisible();
+    await confirm.click();
+    // Past the 120ms show delay, well before the 1.5s resolve: the run is busy,
+    // so the confirm carries a run flag and must not take the disabled GrayText.
+    await page.waitForTimeout(250);
+    const paint = await confirm.evaluate((el) => {
+      const probe = document.createElement('span');
+      probe.style.color = 'GrayText';
+      document.body.appendChild(probe);
+      const grayText = getComputedStyle(probe).color;
+      probe.remove();
+      const cs = getComputedStyle(el as Element);
+      return {
+        color: cs.color,
+        borderTopColor: cs.borderTopColor,
+        grayText,
+        runFlag:
+          (el as Element).getAttribute('data-busy') ??
+          (el as Element).getAttribute('data-pending'),
+      };
+    });
+    expect(paint.runFlag).toBe('true');
+    expect(paint.color).not.toBe(paint.grayText);
+    expect(paint.borderTopColor).not.toBe(paint.grayText);
+  });
+
   test('selected card re-signals with a Highlight border (base :scope rule beaten)', async ({ page }) => {
     await openForced(page, '/#/common/card/action-card-with-selection');
     const clickable = page.locator('.cngx-ex-artifact .cngx-card--interactive').first();
