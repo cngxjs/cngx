@@ -210,7 +210,9 @@ describe('CngxSelectPanelShell', () => {
     fixture.detectChanges();
     const root = fixture.nativeElement as HTMLElement;
     expect(root.querySelector('.cngx-select__spinner-wrap')).toBeTruthy();
-    expect(root.querySelector('.projected-body')).toBeNull();
+    // C4: the body (the listbox) stays mounted in every view; the skeleton
+    // renders as a sibling, not in place of it.
+    expect(root.querySelector('.projected-body')).toBeTruthy();
   });
 
   it('renders the empty message in "empty" and "none" views', () => {
@@ -219,7 +221,8 @@ describe('CngxSelectPanelShell', () => {
     fixture.detectChanges();
     let root = fixture.nativeElement as HTMLElement;
     expect(root.querySelector('.cngx-select__empty')?.textContent).toBe('No options');
-    expect(root.querySelector('.projected-body')).toBeNull();
+    // C4: the body stays mounted; the empty message is a sibling of it.
+    expect(root.querySelector('.projected-body')).toBeTruthy();
 
     controls.activeView.set('none');
     fixture.detectChanges();

@@ -40,6 +40,7 @@ import {
 
 import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
+import { CngxSelectPanelShell } from '../shared/internal/panel-shell/panel-shell.component';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -229,6 +230,7 @@ export interface CngxMultiSelectChange<T = unknown> {
     CngxSelectChipFitSlot,
     CngxSelectChipFitStrip,
     CngxSelectPanel,
+    CngxSelectPanelShell,
     CngxSelectSummary,
     NgTemplateOutlet,
   ],

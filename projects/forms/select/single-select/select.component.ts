@@ -43,6 +43,7 @@ import { injectSelectCopy } from '../i18n/select-i18n';
 import { createOpenOnFocusGesture } from '../shared/internal/open-on-focus-gesture';
 import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
+import { CngxSelectPanelShell } from '../shared/internal/panel-shell/panel-shell.component';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -213,6 +214,7 @@ export interface CngxSelectChange<T = unknown> {
     CngxPopoverSheetInitialFocus,
     CngxPopoverTrigger,
     CngxSelectPanel,
+    CngxSelectPanelShell,
     CngxSelectSheetHeader,
     NgTemplateOutlet,
   ],

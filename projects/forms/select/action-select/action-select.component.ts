@@ -48,6 +48,7 @@ import {
 
 import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
+import { CngxSelectPanelShell } from '../shared/internal/panel-shell/panel-shell.component';
 import { toListboxMatchFn } from '../shared/internal/listbox-match';
 
 import {
@@ -239,6 +240,7 @@ export interface CngxActionSelectChange<T = unknown> {
     CngxPopoverAnchor,
     CngxPopoverTrigger,
     CngxSelectPanel,
+    CngxSelectPanelShell,
     NgTemplateOutlet,
   ],
   providers: [

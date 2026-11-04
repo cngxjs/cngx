@@ -12,7 +12,6 @@ import { CngxCheckboxIndicator, CngxRadioIndicator } from '@cngx/common/display'
 import { CngxRecyclerPlaceholder } from '@cngx/common/data';
 import { CngxOption } from '@cngx/common/interactive';
 
-import { CngxSelectPanelShell } from '../panel-shell/panel-shell.component';
 import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../../panel-host';
 import type { CngxSelectOptionDef, CngxSelectOptionGroupDef } from '../../option.model';
 import type { CngxSelectCheckContext } from '../../template-slots';
@@ -24,8 +23,11 @@ import { isCngxSelectOptionGroupDef } from '../../option.model';
 
 /**
  * Panel body for the flat (non-tree) select family. Renders the
- * grouped/flat option loop inside `<cngx-select-panel-shell>`; the
- * shell owns loading / empty / error / refreshing / commit-error.
+ * grouped/flat option loop only; the surrounding
+ * `<cngx-select-panel-shell>` (loading / empty / error / refreshing /
+ * commit-error and the action regions) wraps the `cngxListbox` element
+ * in the variant template, so the chrome stays a sibling of the listbox
+ * rather than a descendant (C4).
  *
  * The outer `<div cngxPopover>` and `<div cngxListbox>` stay on
  * `CngxSelect` so the trigger button's `[popover]` /
@@ -52,7 +54,6 @@ import { isCngxSelectOptionGroupDef } from '../../option.model';
     CngxCheckboxIndicator,
     CngxRadioIndicator,
     CngxRecyclerPlaceholder,
-    CngxSelectPanelShell,
     NgTemplateOutlet,
   ],
   host: {

@@ -50,8 +50,7 @@ function errorCombobox(m: Mount): HTMLElement {
 // listbox today; only the tree container is already clean.
 describe('C4: the listbox/tree container holds no status, alert or group node', () => {
   for (const kind of ALL) {
-    const run = kind.name === 'CngxTreeSelect' ? it : it.fails;
-    run(`${kind.name}: no role=status/alert/group descendant inside the option container`, () => {
+    it(`${kind.name}: no role=status/alert/group descendant inside the option container`, () => {
       const m = mount(kind);
       m.open();
       const box = container(m);

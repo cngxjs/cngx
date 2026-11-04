@@ -49,6 +49,7 @@ import {
 
 import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
+import { CngxSelectPanelShell } from '../shared/internal/panel-shell/panel-shell.component';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -245,6 +246,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
     CngxPopoverTrigger,
     CngxReorder,
     CngxSelectPanel,
+    CngxSelectPanelShell,
     CngxSelectReorderList,
     CngxSelectSummary,
     NgTemplateOutlet,
