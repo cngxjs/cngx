@@ -266,15 +266,15 @@ describe('unresolved values (CngxSelectShell)', () => {
     const root = attach(fixture);
     fixture.detectChanges();
     flush(fixture);
-    const label = () => root.querySelector<HTMLElement>('.cngx-select__label')!;
+    const label = () => root.querySelector<HTMLElement>('.cngx-select-shell__label')!;
     return { fixture, root, label, host: fixture.componentInstance };
   }
 
   // A23 / H3: a projected option behind @if is not mounted yet, but the bound
   // value must still read as the raw value, not fall back to the placeholder.
-  it.fails('shows the raw value, not the placeholder, while the options are hidden', () => {
+  it('shows the raw value, not the placeholder, while the options are hidden', () => {
     const { label } = mount();
     expect(label().textContent?.trim()).toBe('green');
-    expect(label().classList.contains('cngx-select__label--placeholder')).toBe(false);
+    expect(label().classList.contains('cngx-select-shell__label--placeholder')).toBe(false);
   });
 });

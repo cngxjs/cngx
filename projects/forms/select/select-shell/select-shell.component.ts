@@ -114,6 +114,7 @@ import { CNGX_SEARCH_EFFECTS_FACTORY, searchResultsFrom } from '../shared/search
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
+  unresolvedOptionLabel,
   type CngxSelectCompareFn,
   type CngxSelectCore,
 } from '../shared/internal/select-core';
@@ -1021,11 +1022,18 @@ export class CngxSelectShell<T = unknown>
   });
 
   /** @internal */
-  protected readonly isEmpty = computed<boolean>(() => this.selectedOption() == null);
+  protected readonly isEmpty = computed<boolean>(() => isEmptyScalar(this.value()));
 
   /** @internal */
   protected readonly triggerText = computed<string>(() => {
-    return this.selectedOption()?.label ?? this.core.resolvedPlaceholder();
+    const option = this.selectedOption();
+    if (option) {
+      return option.label;
+    }
+    // A value whose option is not projected yet still reads as the value, never
+    // as the placeholder dressed up as a selection.
+    const v = this.value();
+    return isEmptyScalar(v) ? this.core.resolvedPlaceholder() : unresolvedOptionLabel(v);
   });
 
   /** @internal */
