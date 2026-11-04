@@ -2,6 +2,7 @@ import { computed, inject, InjectionToken, type Signal } from '@angular/core';
 
 import { createLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
 import { memoize } from '@cngx/core/utils';
+import type { CngxReorderModifier } from '@cngx/common/interactive';
 
 import type {
   CngxSelectAnnouncerConfig,
@@ -38,8 +39,8 @@ export interface CngxSelectCopy {
   readonly resetSelection: string;
   /** Default accessible name of the action-select action group. */
   readonly actionGroup: string;
-  /** Default accessible name of the reorderable-select reorder hint. */
-  readonly reorderHint: string;
+  /** Default reorder hint of the reorderable select, named for the keyboard modifier. */
+  readonly reorderHint: (modifier: CngxReorderModifier) => string;
   /** Default accessible name of the sortable selected-values list. */
   readonly reorderListLabel: string;
   /** Default accessible name of a sortable row's move-up button. */
@@ -103,6 +104,13 @@ function announceFormatFrom(
   };
 }
 
+/** @internal The section word for each reorder modifier, substituted into `reorderHint`. */
+const MODIFIER_WORD: Record<CngxReorderModifier, (section: CngxSelectLanguageSection) => string> = {
+  alt: (s) => s.modifierAlt,
+  ctrl: (s) => s.modifierCtrl,
+  meta: (s) => s.modifierMeta,
+};
+
 /** @internal Turns a select section into the config copy keys for a locale. Pure. */
 export function selectCopyFrom(section: CngxSelectLanguageSection, locale: string): CngxSelectCopy {
   return {
@@ -155,7 +163,8 @@ export function selectCopyFrom(section: CngxSelectLanguageSection, locale: strin
     clearSelection: section.clearSelection,
     resetSelection: section.resetSelection,
     actionGroup: section.actionGroup,
-    reorderHint: section.reorderHint,
+    reorderHint: (modifier) =>
+      formatMessage(section.reorderHint, { modifier: MODIFIER_WORD[modifier](section) }, locale),
     reorderListLabel: section.reorderListLabel,
     reorderMoveUp: (label) => formatMessage(section.reorderMoveUp, { label }, locale),
     reorderMoveDown: (label) => formatMessage(section.reorderMoveDown, { label }, locale),

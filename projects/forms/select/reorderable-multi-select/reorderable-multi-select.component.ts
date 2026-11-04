@@ -521,10 +521,14 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * in so they understand they've entered a reorderable widget.
    */
   readonly reorderAriaLabel = input<string | undefined>(undefined);
-  /** @internal Bound value, else the config copy; follows a language switch. */
-  protected readonly resolvedReorderAriaLabel = computed<string>(
-    () => this.reorderAriaLabel() ?? this.reorderableConfig.ariaLabel(),
-  );
+  /**
+   * @internal Bound value, else a custom config label, else the default hint
+   * named for the effective `reorderKeyboardModifier`; follows a language switch.
+   */
+  protected readonly resolvedReorderAriaLabel = computed<string>(() => {
+    const custom = this.reorderAriaLabel() ?? this.reorderableConfig.ariaLabel?.();
+    return custom ?? this.reorderableConfig.reorderHint()(this.reorderKeyboardModifier());
+  });
 
   /**
    * Optional drag-handle template. By default no grip renders and the

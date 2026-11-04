@@ -107,8 +107,14 @@ export interface CngxSelectLanguageSection {
   readonly announceNoResults: CngxMessage;
   /** Accessible name of the `*cngxSelectAction` group in a select panel. */
   readonly actionGroup: string;
-  /** Keyboard hint of the reorderable chip strip and of the sortable list of selected values. */
-  readonly reorderHint: string;
+  /** `{modifier}`: keyboard hint of the reorderable chip strip and of the sortable list of selected values. */
+  readonly reorderHint: CngxMessage;
+  /** Name of the Alt reorder modifier, substituted into `reorderHint`. */
+  readonly modifierAlt: string;
+  /** Name of the Ctrl reorder modifier, substituted into `reorderHint`. */
+  readonly modifierCtrl: string;
+  /** Name of the Meta reorder modifier, substituted into `reorderHint`. */
+  readonly modifierMeta: string;
   /** Accessible name of the sortable list of selected values in a reorderable select panel. */
   readonly reorderListLabel: string;
   /** `{label}`: accessible name of the move-up button of a row in the sortable list. */
@@ -177,7 +183,10 @@ export const CNGX_SELECT_LANGUAGE_EN: CngxSelectLanguageSection = {
   },
   announceNoResults: 'No results',
   actionGroup: 'Inline action',
-  reorderHint: 'Reorder with Alt + arrow keys',
+  reorderHint: 'Reorder with {modifier} + arrow keys',
+  modifierAlt: 'Alt',
+  modifierCtrl: 'Ctrl',
+  modifierMeta: 'Cmd',
   reorderListLabel: 'Selected, in order',
   reorderMoveUp: '{label}: move up',
   reorderMoveDown: '{label}: move down',

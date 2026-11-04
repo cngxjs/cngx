@@ -454,7 +454,7 @@ describe('CngxReorderableMultiSelect - a11y + surface', () => {
     const root = fixture.nativeElement as HTMLElement;
     const strip = chipStrip(root);
     expect(strip.getAttribute('role')).toBe('group');
-    expect(strip.getAttribute('aria-label')).toMatch(/Reorder with Alt/i);
+    expect(strip.getAttribute('aria-label')).toMatch(/Reorder with .*Alt.* \+ arrow keys/i);
   });
 
   it('inline roving: only the active chip has tabindex="0"', () => {

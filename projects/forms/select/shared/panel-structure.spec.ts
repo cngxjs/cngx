@@ -116,13 +116,12 @@ describe('H7: an optimistic rejection surfaces a visible trigger error while clo
 // ── D4: the reorder hint names the configured keyboard modifier. ─────────────
 describe('D4: the reorder hint names the configured keyboard modifier', () => {
   const cases = [
-    { modifier: 'alt', needle: /alt/i, red: false },
-    { modifier: 'ctrl', needle: /ctrl|control|strg/i, red: true },
-    { modifier: 'meta', needle: /meta|cmd|command|⌘/i, red: true },
+    { modifier: 'alt', needle: /alt/i },
+    { modifier: 'ctrl', needle: /ctrl|control|strg/i },
+    { modifier: 'meta', needle: /meta|cmd|command|⌘/i },
   ] as const;
   for (const c of cases) {
-    const run = c.red ? it.fails : it;
-    run(`modifier ${c.modifier}: the chip-strip hint names it`, () => {
+    it(`modifier ${c.modifier}: the chip-strip hint names it`, () => {
       const m = mount(KINDS['reorder'], { initial: ['red', 'green'], extraInputs: `[reorderKeyboardModifier]="'${c.modifier}'"` });
       const strip = m.el.querySelector<HTMLElement>('.cngx-select__chip-list');
       if (!strip) {

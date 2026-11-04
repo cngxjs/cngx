@@ -127,9 +127,11 @@ describe('select language section', () => {
     expect(TestBed.runInInjectionContext(() => resolveActionSelectConfig()).ariaLabel()).toBe(
       'Inline action',
     );
-    expect(TestBed.runInInjectionContext(() => resolveReorderableSelectConfig()).ariaLabel()).toBe(
-      'Reorder with Alt + arrow keys',
-    );
+    expect(
+      TestBed.runInInjectionContext(() => resolveReorderableSelectConfig())
+        .reorderHint()('alt')
+        .replace(/[⁨⁩]/g, ''),
+    ).toBe('Reorder with Alt + arrow keys');
     expect(EN_SECTION.chipRemoveFor).toBe('{action}: {label}');
   });
 
