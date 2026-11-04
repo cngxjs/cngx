@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "cngx": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@cngx/mcp@0.1.0"
+      ],
+      "env": {
+        "CNGX_MCP_LOG": "debug"
+      }
+    }
+  }
+}

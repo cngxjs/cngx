@@ -215,10 +215,12 @@ describe('createMigration', () => {
   it('plans the workspace readme once when the first record cannot carry it', async () => {
     const recorded = twoRecordedApplications();
     const { projects } = JSON.parse(recorded['.cngx/install.json'] ?? '{}') as InstallManifest;
+    // No editor config recorded: the README is the only workspace-wide step under test.
     const stale = (record: ProjectRecord | undefined) => ({
       ...record,
       mcpVersion: '0.0.1',
       answers: { ...record?.answers, aiTools: ['claude'] },
+      steps: record?.steps.filter((step) => !step.id.startsWith('ai-tools:')),
     });
     const withRecords = (alpha: object) => ({
       ...recorded,
