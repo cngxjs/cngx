@@ -23,7 +23,11 @@ export async function gotoDemo(page: Page, routePath: string): Promise<void> {
  */
 export async function gotoDemoLang(page: Page, routePath: string, lang: string): Promise<void> {
   const clean = routePath.replace(/^\/+/, '');
+  const expected = `#/${clean}`;
   await page.goto(`/?lang=${lang}#/${clean}`);
+  await expect(page, `route ${clean} did not resolve under ?lang=${lang}`).toHaveURL(
+    (url) => url.hash === expected || url.hash.startsWith(`${expected}?`),
+  );
 }
 
 /**
