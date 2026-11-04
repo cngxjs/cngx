@@ -12,8 +12,11 @@ import { CngxStepper } from './stepper.component';
 // status is the aria-hidden alert badge icon. The breadcrumb separator is
 // `::after` content of the step header, kept out of the name by CSS alt text.
 // The status the icons carry is spoken by the header's status text instead.
-// The host loads the global micro sheet, as `cngx.css` does, so a glyph box
-// in the 10 to 14px band paints its micro drawing.
+// The host loads the global icon sheet, as `cngx.css` does, so a glyph box in
+// the 10 to 14px band paints its 12-grid micro drawing and one in the 15 to
+// 19px band its 16-grid small drawing. The label done-check box sits in the
+// small band, so it draws the small CHECK; Phase 3 retunes the box to land it
+// at exactly 16px.
 
 @Component({
   selector: 'cngx-stepper-glyph-name-host',
@@ -66,16 +69,13 @@ afterEach(() => {
   mountedRoot = null;
 });
 
-/** Drawn box of an icon's path, widened by its stroke. */
-function inkBox(svg: SVGSVGElement): { width: number; cx: number; cy: number } {
-  const path = svg.querySelector('path')!.getBoundingClientRect();
-  const stroke =
-    (parseFloat(getComputedStyle(svg).strokeWidth) * svg.getBoundingClientRect().width) / 24;
-  return {
-    width: path.width + stroke,
-    cx: path.left + path.width / 2,
-    cy: path.top + path.height / 2,
-  };
+/** The single path the tier rule leaves visible (24-grid, micro or small). */
+function visiblePath(svg: SVGSVGElement): SVGPathElement {
+  const painted = Array.from(svg.querySelectorAll('path')).filter(
+    (path) => getComputedStyle(path).display !== 'none',
+  );
+  expect(painted).toHaveLength(1);
+  return painted[0];
 }
 
 function doneIcon(index: number): HTMLElement | null {
@@ -109,15 +109,18 @@ describe('stepper status glyphs', () => {
     });
   }
 
-  it('draws the label check as wide as the old text check (0.7em), centred on the label', () => {
+  it('draws the label done-check on the 16-grid small path, centred on the label', () => {
     for (const skin of ['chips', 'breadcrumb'] as const) {
       mount(skin);
       const svg = doneIcon(0)!.querySelector('svg')!;
-      const em = parseFloat(getComputedStyle(header(0)).fontSize);
-      const ink = inkBox(svg);
-      expect(ink.width).toBeCloseTo(0.7 * em, 0);
+      const painted = visiblePath(svg);
+      expect(painted.classList.contains('cngx-icon-svg__small')).toBe(true);
+      const ink = painted.getBoundingClientRect();
+      expect(ink.width).toBeGreaterThan(0);
       const text = label(0).getBoundingClientRect();
-      expect(Math.abs(ink.cy - (text.top + text.height / 2))).toBeLessThanOrEqual(1.5);
+      expect(Math.abs(ink.top + ink.height / 2 - (text.top + text.height / 2))).toBeLessThanOrEqual(
+        1.5,
+      );
       mountedRoot?.remove();
     }
   });
