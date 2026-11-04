@@ -50,10 +50,15 @@ async function openByClick(page: Page): Promise<Locator> {
 }
 
 // ── I10: Alt+ArrowDown opens the panel on every host. ────────────────────────
+// The button-trigger hosts open through CngxListboxTrigger (fixed in phase 4);
+// the input-trigger hosts and the tree are addressed later and stay red.
+const I10_GREEN = new Set(['select', 'multi', 'reorder', 'shell']);
 test.describe('I10: Alt+ArrowDown opens every select host', () => {
   for (const [key, route] of Object.entries(ROUTES).filter(([k]) => k !== 'allVariants' && k !== 'shellSearch')) {
     test(`${key}: Alt+ArrowDown opens the panel`, async ({ page }) => {
-      test.fail();
+      if (!I10_GREEN.has(key)) {
+        test.fail();
+      }
       await page.goto(route);
       const trigger = page.locator('.cngx-ex-artifact .cngx-field-trigger, .cngx-ex-artifact [role="combobox"]').first();
       await expect(trigger).toBeVisible();
