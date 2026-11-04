@@ -44,10 +44,10 @@ export class SaveButtonComponent {
   - Disabled during action execution (pointer-events: none)
 - **Screen reader:**
   - An auto-rendered polite region (a sibling of the host, outside its accessible name) speaks every success and error settle once
-  - The region is cleared at the settle and written after the next render, so two runs that settle before change detection are written twice and a host can read content the settle rendered. Specs that read the region need a render pass (`fixture.detectChanges()`) after the settle
+  - The region gets one write per settle: cleared at the settle, the text written after the next render, so a host can read content the settle rendered. Two runs that settle before change detection produce two writes in the same render pass; whether a screen reader voices both depends on the assistive technology. Specs that read the region need a render pass (`fixture.detectChanges()`) after the settle
   - No effect reads the copy: a language switch never re-voices the region; the next settle speaks the new language
   - `announce(message)` speaks a host message through the same region after the next render, for a settle the host reflects but the directive did not run (an external async state). It is a no-op with `[autoAnnounce]="false"`
-  - `[autoAnnounce]="false"` removes the region; bind `announcement` to your own region then
+  - `[autoAnnounce]="false"` removes the region; drive your own region from `(settled)` then (clear it, write the copy for `settle.status`). The `announcement` signal is state and coalesces settles within one flush
 - **Focus management:**
   - Focus remains on the button throughout the action lifecycle
   - No focus trap or modal management (button stays focusable)

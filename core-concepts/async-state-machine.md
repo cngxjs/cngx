@@ -312,7 +312,7 @@ It never emits on a cancelled run, on reset or after destroy. The hosts that run
 - `CngxStepperComplete` emits `(completed)` once per successful finish run.
 - `CngxPopoverAction` re-arms close-on-success and speaks its result once per settle.
 
-The `cngxAsyncClick` live region follows the same rule: it is cleared at the settle and written after the next render (so a host can read the content the settle rendered), once per settle. No effect reads the copy, so a language switch never re-voices it. `announce(message)` speaks a settle the host reflects but the directive did not run.
+The `cngxAsyncClick` live region follows the same rule: one write per settle, cleared at the settle and written after the next render (so a host can read the content the settle rendered). Two runs that settle before change detection produce two writes in the same render pass; whether a screen reader voices both depends on the assistive technology. No effect reads the copy, so a language switch never re-voices it. `announce(message)` speaks a settle the host reflects but the directive did not run.
 
 Keep `status()` / `state` for everything that shows the current outcome; put per-run side effects on `(settled)`. The consumer-placed bridges below (`[cngxToastOn]`, `[cngxAlertOn]`, `[cngxBannerOn]`) bind state and fire per observed transition.
 

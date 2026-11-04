@@ -88,14 +88,16 @@ export interface CngxAsyncSettle {
  * when it must not. Success and failure are announced through
  * an auto-rendered polite live region (sibling of the host - inside a
  * `<button>` the text would pollute the accessible name); opt out with
- * `[autoAnnounce]="false"` and bind `announcement` to your own region.
+ * `[autoAnnounce]="false"` and drive your own region from `(settled)`.
  *
  * Every settle is an event, not only a state: `(settled)` emits once per
- * success or error with a monotonic `generation`, and the region is written
- * once per settle (cleared at once, filled after the next render), so two
- * runs that settle before change detection are spoken twice. Side effects
- * that must happen per run (a toast, a close, a completion output) belong
- * on `(settled)`; `status` and `state` stay derived state.
+ * success or error with a monotonic `generation`, and the region gets one
+ * write per settle (cleared at the settle, the text written after the next
+ * render). Two runs that settle before change detection produce two writes
+ * in the same render pass; whether a screen reader voices both depends on
+ * the assistive technology. Side effects that must happen per run (a toast,
+ * a close, a completion output) belong on `(settled)`; `status` and `state`
+ * stay derived state.
  *
  * Destroy ends the lifecycle without aborting the run: the in-flight action
  * keeps running (the library never cancels it), but no state is written, no
@@ -209,8 +211,7 @@ export class CngxAsyncClick {
 
   /**
    * Auto-render the polite live region announcing success/failure.
-   * Opt out (`false`) to wire {@link announcement} to your own region -
-   * also when a toast/alert bridge (`cngxToastOn`, `cngxAlertOn`) on the
+   * Opt out (`false`) to drive your own region from `(settled)` - also when a toast/alert bridge (`cngxToastOn`, `cngxAlertOn`) on the
    * same element already announces the settle, or the user hears it twice.
    */
   readonly autoAnnounce = input<boolean>(true);
@@ -344,7 +345,7 @@ export class CngxAsyncClick {
   /**
    * Clears the region at once, then writes `read()` after the next render,
    * so a host can read content the settle rendered. Two settles before a
-   * render produce two writes.
+   * render produce two writes in that one render pass.
    */
   private speak(read: () => string): void {
     if (!untracked(this.autoAnnounce)) {
@@ -404,9 +405,13 @@ export class CngxAsyncClick {
   });
 
   /**
-   * Screen reader announcement for the current state. Written into the auto
-   * polite region once per settle; only needs manual wiring when
-   * `autoAnnounce` is `false`.
+   * Announcement copy for the current state: the succeeded or failed text
+   * while that feedback window is open, else `''`. It is state, so two
+   * settles within one change-detection flush coalesce into the last one.
+   * The auto region does not bind it (it writes per settle). With
+   * `[autoAnnounce]="false"`, drive your own region from `(settled)`
+   * (clear it, then write the copy for `settle.status`) instead of binding
+   * this signal, or a second run that settles before the render is lost.
    */
   readonly announcement = computed(() => {
     // Copy is read untracked: only a settle re-derives the region, so a
