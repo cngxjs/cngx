@@ -1809,3 +1809,7 @@ describe('CngxSelectShell - searchDebounceMs', () => {
     expect(shell.value()).toBe('green');
   });
 });
+
+import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
+
+describeCommitControllerCascade('CngxSelectShell');

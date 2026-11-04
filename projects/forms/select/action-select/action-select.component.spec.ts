@@ -796,3 +796,7 @@ describe('CngxActionSelect - PageUp/PageDown through CNGX_FLAT_NAV_STRATEGY', ()
     expect(onPageJump).toHaveBeenCalledOnce();
   });
 });
+
+import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
+
+describeCommitControllerCascade('CngxActionSelect');
