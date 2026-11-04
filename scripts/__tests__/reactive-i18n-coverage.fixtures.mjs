@@ -731,12 +731,6 @@ export const LIVE_REGIONS = [
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(commitErrorCopy,commitRetryDisabled,host.commitErrorContext,host.tpl)',
-    spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
-    testName: 'keeps the commit-error banner and its retry label on a language flip',
-  },
-  {
-    file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
     region: 'CngxSelectPanelShell.div(host.errorContext,host.handleRetry,host.tpl,inlineErrorCopy)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'keeps the inline refresh error and its retry label on a language flip',
