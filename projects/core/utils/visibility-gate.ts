@@ -7,6 +7,12 @@ import { DestroyRef, effect, inject, type Signal, signal } from '@angular/core';
  * - `delay`: suppresses visibility for fast operations (no flash)
  * - `minDwell`: keeps visible for at least this long once shown (no jarring disappearance)
  *
+ * Re-arm rule: a change to `delay` or `minDwell` while the run is active
+ * re-runs the gate. A change in the delay window restarts the delay from the
+ * change with the new value; a change while already shown re-arms the delay
+ * and restarts the min-dwell, so the visual honours the new timing from that
+ * point.
+ *
  * Must be called in an injection context (uses `inject(DestroyRef)` for cleanup).
  *
  * @returns A readonly signal that is `true` when the indicator should be visible.

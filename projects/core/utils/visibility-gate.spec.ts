@@ -130,4 +130,43 @@ describe('createVisibilityGate', () => {
     vi.advanceTimersByTime(0);
     expect(visible()).toBe(true);
   });
+
+  it('restarts the delay from the change when delay is raised mid-window (A-n1)', () => {
+    const { isActive, delay, visible } = setup({ delay: 200, minDwell: 500 });
+
+    isActive.set(true);
+    TestBed.flushEffects();
+    vi.advanceTimersByTime(150);
+    expect(visible()).toBe(false);
+
+    delay.set(300);
+    TestBed.flushEffects();
+    // The new delay is counted from the change, not from the original start.
+    vi.advanceTimersByTime(299);
+    expect(visible()).toBe(false);
+    vi.advanceTimersByTime(1);
+    expect(visible()).toBe(true);
+  });
+
+  it('re-arms and restarts the dwell when minDwell changes while shown (A-n1)', () => {
+    const { isActive, minDwell, visible } = setup({ delay: 100, minDwell: 300 });
+
+    isActive.set(true);
+    TestBed.flushEffects();
+    vi.advanceTimersByTime(100);
+    expect(visible()).toBe(true);
+
+    vi.advanceTimersByTime(50);
+    minDwell.set(500);
+    TestBed.flushEffects();
+    // Re-arm: the delay re-fires, the visual stays shown, the dwell restarts.
+    vi.advanceTimersByTime(100);
+
+    isActive.set(false);
+    TestBed.flushEffects();
+    vi.advanceTimersByTime(499);
+    expect(visible()).toBe(true);
+    vi.advanceTimersByTime(1);
+    expect(visible()).toBe(false);
+  });
 });
