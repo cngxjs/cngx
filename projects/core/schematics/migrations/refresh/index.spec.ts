@@ -114,7 +114,22 @@ describe('refresh migration', () => {
     });
 
     expect(logs[0]).toBe('cngx 0.1.1 migration');
-    expect(logs).toContain('cngx 0.1.1 migration applied 1 change.');
+    expect(logs).toContain('cngx 0.1.1 migration applied 2 changes.');
+  });
+
+  it('moves the mcp pin of the editor config cngx wrote and names the one the user edited', async () => {
+    const { before, after } = readMigrationFixture('refresh');
+
+    const { tree, logs } = await runRule(migrate(), createMemoryTree(before));
+    const output = logs.join('\n');
+
+    expect(tree.readText('.mcp.json')).toBe(after['.mcp.json']);
+    expect(after['.mcp.json']).toContain(`@cngx/mcp@${DEFAULT_MCP_VERSION}`);
+    expect(tree.readText('.cursor/mcp.json')).toBe(before['.cursor/mcp.json']);
+    expect(output).toContain(`Move the cngx MCP server in .mcp.json to @cngx/mcp@${DEFAULT_MCP_VERSION}`);
+    expect(output).toContain(
+      `.cursor/mcp.json already declares a cngx server, pinned to @cngx/mcp@${OLDER_MCP} (this release pins ${DEFAULT_MCP_VERSION})`,
+    );
   });
 
   it('regenerates the helper README once the MCP release moved', async () => {
@@ -146,7 +161,7 @@ describe('refresh migration', () => {
 
     expect(readTree(tree)).toEqual(after);
     expect(logs).not.toContain('Planned (1):');
-    expect(logs).toContain(`cngx ${recordOf(after).cngxVersion} migration applied 1 change.`);
+    expect(logs).toContain(`cngx ${recordOf(after).cngxVersion} migration applied 2 changes.`);
   });
 
   it('plans one note for a missing manifest and changes nothing', async () => {

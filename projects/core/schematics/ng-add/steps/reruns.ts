@@ -1,5 +1,6 @@
 import {
   AI_TOOLS,
+  type AiTool,
   type Change,
   CNGX_LIBS,
   type CngxLib,
@@ -16,8 +17,8 @@ import {
   type StepResult,
   THEME_CHOICES,
 } from '../../engine';
-import { type ProjectFacts } from '../detect/detect';
-import { withdrawnAiTargets } from './ai-tools';
+import { MCP_CONFIGS, type ProjectFacts, serverEntry } from '../detect/detect';
+import { aiToolId, EDITOR_NAMES, wiredReason, withdrawnAiTargets } from './ai-tools';
 import { planAppShellRerun } from './app-shell';
 import { planHelperReadme } from './helper-readme';
 import { INSTALL_MANIFEST_PATH, type ProjectRecord, unionLibs } from './manifest';
@@ -135,7 +136,8 @@ export interface WorkspaceReadme {
  * since; the template and the spec are never written. The
  * theme steps are checked once the cngx version moved and only reported;
  * the helper README, which pins the MCP version, is regenerated once that
- * version moved, and only for the project handed `readme`. Neither brings
+ * version moved, and only for the project handed `readme`, which also moves
+ * the pin of every editor config entry cngx wrote. Neither brings
  * back a file that is gone, and a README cngx did not write stays as it is.
  */
 export function planManifestReruns(
@@ -174,11 +176,15 @@ export function planManifestReruns(
   return mergeStepResults([
     theme,
     planAppShellRerun(facts, answers, [...recorded], provenance),
-    planReadmeRerun(facts, record, answers, versions, readme, provenance),
+    planAiToolingRerun(facts, record, answers, versions, readme, provenance),
   ]);
 }
 
-function planReadmeRerun(
+// The editor configs and the helper README are workspace-wide: only the
+// project handed `readme` plans them, once the MCP version moved. ng update
+// asks for no editor, so every removal the user made since the install
+// holds, the same way a later `ng add` respects it.
+function planAiToolingRerun(
   facts: ProjectFacts,
   record: ProjectRecord,
   answers: OnboardingAnswers,
@@ -189,9 +195,114 @@ function planReadmeRerun(
   if (readme === undefined || record.mcpVersion === versions.mcp) {
     return NO_CHANGES;
   }
-  // ng update asks for no editor, so every removal the user made since the
-  // install holds, the same way a later `ng add` respects it.
   const withdrawn = withdrawnAiTargets(facts, answers, readme.installed, []);
+  const installed = new Set(readme.installed);
+  const pins = planMcpPinRerun(facts, installed, versions, withdrawn, provenance);
+  return mergeStepResults([
+    pins,
+    planReadmeRerun(
+      factsAfterPinMove(facts, pins, versions.mcp),
+      answers,
+      versions,
+      readme,
+      withdrawn,
+      provenance,
+    ),
+  ]);
+}
+
+// A cngx server entry ng add wrote and recorded, still in the exact shape
+// cngx writes, running an older pin. Anything else in a wired config is the
+// user's: it stays as it is.
+function movesPin(
+  tool: AiTool,
+  facts: ProjectFacts,
+  installed: ReadonlySet<string>,
+  versions: Versions,
+  withdrawn: ReadonlySet<string>,
+): boolean {
+  return (
+    facts.mcpConfigs[tool] === 'wired' &&
+    facts.mcpPins[tool] !== versions.mcp &&
+    installed.has(aiToolId(tool)) &&
+    !withdrawn.has(aiToolId(tool))
+  );
+}
+
+function mcpPinChange(
+  tool: AiTool,
+  facts: ProjectFacts,
+  versions: Versions,
+  provenance: Provenance,
+): Change {
+  const { path, key } = MCP_CONFIGS[tool];
+  const id = aiToolId(tool);
+  if (!facts.mcpCngxShaped[tool]) {
+    return createNote({
+      id,
+      label: `Keep the cngx MCP server in ${path}`,
+      reason: `${wiredReason(path, facts.mcpPins[tool], versions.mcp)}; the entry is not the one cngx wrote, so it stays as it is`,
+      provenance,
+    });
+  }
+  return {
+    kind: 'write-json',
+    id,
+    label: `Move the cngx MCP server in ${path} to @cngx/mcp@${versions.mcp}`,
+    reason: `${EDITOR_NAMES[tool]} ran @cngx/mcp@${facts.mcpPins[tool] ?? 'unknown'}, which this release replaces`,
+    provenance,
+    path,
+    entries: [[[key, 'cngx'], serverEntry(tool, versions.mcp)]],
+  };
+}
+
+/**
+ * Moves the `@cngx/mcp` pin of every editor config whose `cngx` entry cngx
+ * wrote and recorded (`ai-tools:<tool>`) to the release's pin. A wired entry
+ * the user edited is named in a note and left as it is.
+ */
+function planMcpPinRerun(
+  facts: ProjectFacts,
+  installed: ReadonlySet<string>,
+  versions: Versions,
+  withdrawn: ReadonlySet<string>,
+  provenance: Provenance,
+): StepResult {
+  const changes = AI_TOOLS.filter((tool) =>
+    movesPin(tool, facts, installed, versions, withdrawn),
+  ).map((tool) => mcpPinChange(tool, facts, versions, provenance));
+  return { changes, skipped: [] };
+}
+
+// The facts as they read once the planned pin moves are applied, so the
+// regenerated README does not name the pin it just replaced.
+function factsAfterPinMove(
+  facts: ProjectFacts,
+  pins: StepResult,
+  mcpVersion: string,
+): ProjectFacts {
+  const moved = new Set(
+    pins.changes.filter((change) => change.kind === 'write-json').map((change) => change.id),
+  );
+  if (moved.size === 0) {
+    return facts;
+  }
+  const pinOf = (tool: AiTool): string | undefined =>
+    moved.has(aiToolId(tool)) ? mcpVersion : facts.mcpPins[tool];
+  return {
+    ...facts,
+    mcpPins: { claude: pinOf('claude'), cursor: pinOf('cursor'), vscode: pinOf('vscode') },
+  };
+}
+
+function planReadmeRerun(
+  facts: ProjectFacts,
+  answers: OnboardingAnswers,
+  versions: Versions,
+  readme: WorkspaceReadme,
+  withdrawn: ReadonlySet<string>,
+  provenance: Provenance,
+): StepResult {
   const libs = unionLibs(answers.libs, readme.libs);
   return restoreNotes(
     planHelperReadme(facts, { ...answers, libs }, versions, withdrawn),

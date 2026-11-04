@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { createChangePlan, type JsonEntry, type StepResult } from '../../engine';
+import { type AiTool, createChangePlan, type JsonEntry, type StepResult } from '../../engine';
 import { createAnswers, createFacts, deepFreeze, VERSIONS } from '../../testing/onboarding';
 import { planManifest, type ProjectRecord } from './manifest';
-import { type ProjectFacts } from '../detect/detect';
+import { type ProjectFacts, serverEntry } from '../detect/detect';
 import { type OnboardingAnswers, type Versions } from './model';
 import { planManifestReruns, readRecordedAnswers } from './reruns';
 
@@ -254,5 +254,124 @@ describe('planManifestReruns', () => {
         deepFreeze(NEXT),
       ),
     ).not.toThrow();
+  });
+});
+
+describe('planManifestReruns: editor mcp pins', () => {
+  const OLD = VERSIONS.mcp;
+  const NONE = { claude: undefined, cursor: undefined, vscode: undefined } as const;
+  const UNSHAPED = { claude: false, cursor: false, vscode: false } as const;
+
+  function wiredFacts(
+    tool: AiTool,
+    shaped: boolean,
+    overrides: Partial<ProjectFacts> = {},
+  ): ProjectFacts {
+    return createFacts({
+      mcpConfigs: { claude: 'absent', cursor: 'absent', vscode: 'absent', [tool]: 'wired' },
+      mcpPins: { ...NONE, [tool]: OLD },
+      mcpCngxShaped: { ...UNSHAPED, [tool]: shaped },
+      ...overrides,
+    });
+  }
+
+  function recordFor(
+    tools: readonly AiTool[],
+    ids: readonly string[] = tools.map((tool) => `ai-tools:${tool}`),
+  ): ProjectRecord {
+    return {
+      ...installed(ids),
+      answers: JSON.parse(
+        JSON.stringify(createAnswers({ aiTools: [...tools] })),
+      ) as ProjectRecord['answers'],
+    };
+  }
+
+  it.each([
+    ['claude', '.mcp.json', 'mcpServers'],
+    ['cursor', '.cursor/mcp.json', 'mcpServers'],
+    ['vscode', '.vscode/mcp.json', 'servers'],
+  ] as const)('moves the pin of the %s entry cngx wrote to the release pin', (tool, path, key) => {
+    const result = rerun(wiredFacts(tool, true), recordFor([tool]), NEXT);
+
+    expect(result.changes).toContainEqual(
+      expect.objectContaining({
+        kind: 'write-json',
+        id: `ai-tools:${tool}`,
+        path,
+        entries: [[[key, 'cngx'], serverEntry(tool, NEXT.mcp)]],
+      }),
+    );
+  });
+
+  it('keeps a hand-edited entry and names it with its pin', () => {
+    const result = rerun(wiredFacts('cursor', false), recordFor(['cursor']), NEXT);
+
+    expect(
+      result.changes.some(
+        (change) => change.kind === 'write-json' && change.id === 'ai-tools:cursor',
+      ),
+    ).toBe(false);
+    expect(result.changes).toContainEqual(
+      expect.objectContaining({
+        kind: 'note',
+        id: 'ai-tools:cursor',
+        reason: expect.stringContaining(
+          `.cursor/mcp.json already declares a cngx server, pinned to @cngx/mcp@${OLD} (this release pins ${NEXT.mcp})`,
+        ),
+      }),
+    );
+  });
+
+  it('leaves an entry ng add did not record alone', () => {
+    const result = rerun(wiredFacts('claude', true), recordFor(['claude'], []), NEXT);
+
+    expect(result.changes.map((change) => change.id)).not.toContain('ai-tools:claude');
+  });
+
+  it('writes no entry back into a config the user removed it from', () => {
+    const facts = createFacts({
+      mcpConfigs: { claude: 'present', cursor: 'absent', vscode: 'absent' },
+    });
+
+    const result = rerun(facts, recordFor(['claude']), NEXT);
+
+    expect(result.changes.map((change) => change.id)).not.toContain('ai-tools:claude');
+  });
+
+  it('plans no pin move while the MCP version stands', () => {
+    // The record already names this release: the old pin in the config is no move this run makes.
+    const result = rerun(wiredFacts('claude', true), { ...recordFor(['claude']), mcpVersion: NEXT.mcp }, NEXT);
+
+    expect(result.changes.map((change) => change.id)).not.toContain('ai-tools:claude');
+  });
+
+  it('leaves the pins to the project that carries the README', () => {
+    const result = planManifestReruns(
+      wiredFacts('claude', true),
+      recordFor(['claude']),
+      NEXT,
+      defaultsFor,
+      undefined,
+    );
+
+    expect(result.changes.map((change) => change.id)).not.toContain('ai-tools:claude');
+  });
+
+  it('regenerates the README against the moved pin, not the one it replaced', () => {
+    const facts = wiredFacts('claude', true, {
+      helperReadme: { generated: true, fingerprint: 'old' },
+    });
+
+    const readme = rerun(
+      facts,
+      recordFor(['claude'], ['ai-tools:claude', 'helper-readme:file']),
+      NEXT,
+    ).changes.find((change) => change.id === 'helper-readme:file');
+
+    const content = readme?.kind === 'edit-file' ? readme.edit('') : '';
+    expect(content).toContain('- `.mcp.json`');
+    expect(content).toContain(`\`@cngx/mcp@${NEXT.mcp}\``);
+    expect(content).not.toContain(`@cngx/mcp@${OLD}`);
   });
 });

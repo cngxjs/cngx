@@ -17,11 +17,41 @@
         "a11yPreferences": false,
         "feedback": false,
         "floatingFallback": false,
-        "aiTools": []
+        "aiTools": ["claude", "cursor"]
       },
       "steps": [
-        { "id": "dependency:@cngx/core", "outcome": "satisfied", "provenance": { "source": "ng-add", "version": "0.1.0-rc.4" } },
-        { "id": "dependency:@cngx/ui", "outcome": "satisfied", "provenance": { "source": "ng-add", "version": "0.1.0-rc.4" } }
+        {
+          "id": "dependency:@cngx/core",
+          "outcome": "satisfied",
+          "provenance": {
+            "source": "ng-add",
+            "version": "0.1.0-rc.4"
+          }
+        },
+        {
+          "id": "dependency:@cngx/ui",
+          "outcome": "satisfied",
+          "provenance": {
+            "source": "ng-add",
+            "version": "0.1.0-rc.4"
+          }
+        },
+        {
+          "id": "ai-tools:claude",
+          "outcome": "satisfied",
+          "provenance": {
+            "source": "ng-update",
+            "version": "0.0.0-PLACEHOLDER"
+          }
+        },
+        {
+          "id": "ai-tools:cursor",
+          "outcome": "satisfied",
+          "provenance": {
+            "source": "ng-add",
+            "version": "0.1.0-rc.4"
+          }
+        }
       ],
       "facts": { "project": "fixture-app", "maturity": "fresh" },
       "createdAt": "2026-10-01T08:00:00.000Z",
