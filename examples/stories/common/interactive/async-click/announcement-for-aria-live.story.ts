@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxAsyncClick: Announcement for aria-live',
   subtitle: 'Opt out of the built-in polite region with <code>[autoAnnounce]="false"</code> and drive your own <code>aria-live</code> region from <code>(settled)</code>.',
-  description: 'By default the directive auto-renders a polite live region next to the host, so success and failure are announced with zero wiring. Opt out with <code>[autoAnnounce]="false"</code> when the announcement belongs somewhere else: a shared page-level announcer, a region with different politeness, or (as here) a region you want to inspect. Write that region from <code>(settled)</code>, once per run: clear it, then put the copy for <code>settle.status</code> in after the next render, the way the built-in region does. Do not bind the <code>announcement()</code> signal into it. That signal is state, so two runs that settle before change detection coalesce into one value and the first one is never spoken. Without the opt-out, the built-in region and yours would both speak every settle. The result reaches the screen reader only; the dashed box below mirrors what the region holds.',
+  description: 'By default the directive auto-renders a polite live region next to the host, so success and failure are announced with zero wiring. Opt out with <code>[autoAnnounce]="false"</code> when the announcement belongs somewhere else: a shared page-level announcer, a region with different politeness, or (as here) a region you want to inspect. Write that region from <code>(settled)</code>, once per run: clear it, then put the copy for <code>settle.status</code> in after the next render, the way the built-in region does. Do not bind the <code>announcement()</code> signal into it. That signal is state, so two runs that settle before change detection coalesce into one value and the first one is never spoken. Without the opt-out, the built-in region and yours would both speak every settle. The result reaches the screen reader only; the dashed box below logs what the region receives.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -36,7 +36,56 @@ export const STORY: DemoSpec = {
     afterNextRender({ write: () => this.spoken.set(text) }, { injector: this.injector });
   }`,
   setupChrome: `
-  protected readonly shouldFail = signal<boolean>(false);`,
+  protected readonly shouldFail = signal<boolean>(false);
+
+  private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly destroyRef = inject(DestroyRef);
+  protected readonly heard = signal<readonly { n: number; text: string }[]>([]);
+  protected readonly ariaBusy = signal('-');
+
+  // Logs the real DOM writes into the live region next to each async button.
+  private readonly srMirror = afterNextRender(() => {
+    const host = this.hostEl.nativeElement;
+    const lastText = new WeakMap<Element, string>();
+    let count = 0;
+    const readBusy = (): void => {
+      const buttons = Array.from(host.querySelectorAll('button')).filter(
+        (b) => b.nextElementSibling?.hasAttribute('aria-live') ?? false,
+      );
+      this.ariaBusy.set(
+        buttons.map((b) => (b.getAttribute('aria-busy') ?? '-')).join(', ') || '-',
+      );
+    };
+    const observer = new MutationObserver((records) => {
+      for (const record of records) {
+        const el = record.target instanceof Element ? record.target : record.target.parentElement;
+        const region = el?.closest('[aria-live]');
+        if (!region || !host.contains(region) || region.previousElementSibling?.tagName !== 'BUTTON') {
+          continue;
+        }
+        const text = region.textContent?.trim() ?? '';
+        if (text === lastText.get(region)) {
+          continue;
+        }
+        lastText.set(region, text);
+        if (text !== '') {
+          count += 1;
+          const entry = { n: count, text: '"' + text + '"' };
+          this.heard.update((list) => [...list, entry].slice(-5));
+        }
+      }
+      readBusy();
+    });
+    observer.observe(host, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['aria-busy'],
+    });
+    readBusy();
+    this.destroyRef.onDestroy(() => observer.disconnect());
+  });`,
   template: `
   <button type="button"
     [cngxAsyncClick]="saveAction"
@@ -69,11 +118,18 @@ export const STORY: DemoSpec = {
   <div class="cngx-ex-sr-output">
     <p class="cngx-ex-sr-output__title">Screen reader hears</p>
     <dl class="cngx-ex-sr-output__list">
-      <dt>#save-announcer</dt>
-      <dd>{{ spoken() ? '"' + spoken() + '"' : '-' }}</dd>
+      <dt>aria-busy</dt>
+      <dd>{{ ariaBusy() }}</dd>
+      @for (entry of heard(); track entry.n) {
+        <dt>#{{ entry.n }}</dt>
+        <dd>{{ entry.text }}</dd>
+      } @empty {
+        <dt>announced</dt>
+        <dd>-</dd>
+      }
     </dl>
     <p class="cngx-ex-sr-output__note">
-      The region is visually hidden: it holds the text of the last settle until the next run clears it.
+      The last five texts written to <code>#save-announcer</code>, newest last. The region is visually hidden, so they are spoken only; two writes in one frame may be voiced once, depending on the screen reader.
     </p>
   </div>`,
 };
