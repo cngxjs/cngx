@@ -60,6 +60,13 @@ export interface SearchEffectsOptions {
    */
   readonly focused?: Signal<boolean>;
   /**
+   * Term the user dismissed with Escape or blur while its debounce was still
+   * pending. A settling term equal to this marker never auto-opens, so an
+   * Escape inside the debounce window keeps the panel shut. Typing a new term
+   * clears it. Omitted means nothing is ever treated as dismissed.
+   */
+  readonly dismissedTerm?: Signal<string | null>;
+  /**
    * Optional `searchTermChange` forward. Display-binding variants
    * route through `onUserSearchTerm` and leave this undefined.
    */
@@ -106,6 +113,7 @@ export function createSearchEffects(opts: SearchEffectsOptions): void {
     untracked(() => {
       if (
         term !== '' &&
+        term !== (opts.dismissedTerm?.() ?? null) &&
         !opts.panelOpen() &&
         !opts.disabled() &&
         !(opts.readonly?.() ?? false) &&

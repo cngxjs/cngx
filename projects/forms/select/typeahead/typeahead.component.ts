@@ -10,6 +10,7 @@ import {
   input,
   model,
   output,
+  signal,
   untracked,
   viewChild,
   ElementRef,
@@ -948,6 +949,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       disabled: this.disabled,
       readonly: this.core.readonly,
       focused: this.focusState.focused,
+      dismissedTerm: this.dismissedTerm.asReadonly(),
       open: () => this.open(),
       autoOpenGate: () => !this.display.isWritingFromValue(),
       results: searchResultsFrom({
@@ -1051,6 +1053,10 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   // the programmatic refocus must not re-open under openOn: 'focus'.
   private suppressOpenOnFocus = false;
 
+  // Raw input value the user dismissed with Escape or blur while its debounce
+  // was still pending; a term that settles equal to it must not auto-open.
+  private readonly dismissedTerm = signal<string | null>(null);
+
   protected handleFocus(): void {
     this.focusState.markFocused();
     const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
@@ -1063,6 +1069,9 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   protected handleBlur(event?: FocusEvent): void {
     this.focusState.markBlurred();
+    // A term still inside its debounce when focus leaves must not reopen the
+    // panel once it settles: mark the raw draft as dismissed.
+    this.dismissedTerm.set(this.inputEl()?.nativeElement.value ?? null);
     // Snap input back to `displayWith(value)` when text drifted from
     // the committed value. Disable via `[clearOnBlur]="false"`.
     if (!this.clearOnBlur()) {
@@ -1086,6 +1095,14 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   /** @internal - PageUp/PageDown through the flat-nav strategy (default ±10). */
   protected handleInputKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      // Escape closes an open panel and must also cancel a still-pending
+      // debounced open: mark the raw draft as dismissed.
+      this.dismissedTerm.set(this.inputEl()?.nativeElement.value ?? null);
+    } else {
+      // Any other keystroke is fresh intent; let the next settled term open.
+      this.dismissedTerm.set(null);
+    }
     handlePageJumpKey(event, {
       listbox: this.listboxRef(),
       popover: this.popoverRef(),

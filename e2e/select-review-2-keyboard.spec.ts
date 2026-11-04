@@ -68,7 +68,6 @@ test.describe('I10: Alt+ArrowDown opens every select host', () => {
 test.describe('I1: Escape during the search debounce leaves the panel closed', () => {
   for (const key of ['typeahead', 'combobox'] as const) {
     test(`${key}: Escape in the debounce window keeps the panel closed`, async ({ page }) => {
-      test.fail();
       // The fake clock drives the search debounce deterministically: Escape
       // must cancel the pending term, so the panel stays closed when it fires.
       await page.clock.install();
