@@ -18,6 +18,7 @@ import { dirname, resolve, join, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { PACKED_LIBS, TOOLING_PACKAGES } from './cngx-libs.mjs';
+import { bumpMcpPin } from './plugin-release.mjs';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -210,6 +211,50 @@ export function runToolingSection({ root, nextVersion, run: runStep, keepStamped
 // then the libs in build order.
 export function publishOrder(libs) {
   return [...TOOLING_PACKAGES.map((name) => ({ name, tooling: true })), ...libs.map((name) => ({ name, tooling: false }))];
+}
+
+export const LOCKSTEP_NO_CHANGES = 'Released in lockstep with the cngx libraries; no changes in this package.';
+
+// Stamps a tooling CHANGELOG for the release: `## Unreleased` becomes
+// `## <version> - <date>`; an empty Unreleased section gets the lockstep
+// line, and a file without one gets a new section with it above the newest
+// release (below the header paragraph). Every other section stays as it is.
+export function stampToolingChangelog(text, version, date) {
+  const heading = `## ${version} - ${date}`;
+  const lines = text.split('\n');
+  const unreleased = lines.findIndex((line) => line.trim() === '## Unreleased');
+  if (unreleased !== -1) {
+    const next = lines.findIndex((line, i) => i > unreleased && line.startsWith('## '));
+    const body = lines.slice(unreleased + 1, next === -1 ? lines.length : next);
+    if (body.some((line) => line.trim() !== '')) {
+      lines[unreleased] = heading;
+      return lines.join('\n');
+    }
+    const rest = next === -1 ? [] : lines.slice(next);
+    return [...lines.slice(0, unreleased), heading, '', LOCKSTEP_NO_CHANGES, '', ...rest].join('\n');
+  }
+  const firstRelease = lines.findIndex((line) => line.startsWith('## '));
+  if (firstRelease === -1) {
+    const trimmed = text.replace(/\n*$/, '');
+    return `${trimmed}\n\n${heading}\n\n${LOCKSTEP_NO_CHANGES}\n`;
+  }
+  return [...lines.slice(0, firstRelease), heading, '', LOCKSTEP_NO_CHANGES, '', ...lines.slice(firstRelease)].join('\n');
+}
+
+// Every file a real release run leaves changed, relative to the repo root:
+// the root version and changelog, both tooling manifests, lockfiles and
+// changelogs, and the plugin's @cngx/mcp pin.
+export function releaseCommitFiles() {
+  return [
+    'package.json',
+    'CHANGELOG.md',
+    ...TOOLING_PACKAGES.flatMap((name) => [
+      `packages/${name}/package.json`,
+      `packages/${name}/package-lock.json`,
+      `packages/${name}/CHANGELOG.md`,
+    ]),
+    'packages/plugin/.mcp.json',
+  ];
 }
 
 // The pins a release writes into versions.json: @cngx/mcp is published in the
@@ -786,16 +831,29 @@ function main() {
     writeRootPkg(rootPkg);
     console.log(`\nRoot package.json updated to ${nextVersion}`);
 
+    // Both paths write the same files: the tooling changelogs get their
+    // release section and the plugin runs the @cngx/mcp just published
+    // (plugin-release.test.mjs pins it to packages/mcp/package.json).
+    const releaseDate = new Date().toISOString().slice(0, 10);
+    for (const name of TOOLING_PACKAGES) {
+      const changelogPath = join(ROOT, 'packages', name, 'CHANGELOG.md');
+      writeFileSync(changelogPath, stampToolingChangelog(readFileSync(changelogPath, 'utf8'), nextVersion, releaseDate));
+    }
+    const pluginMcpPath = join(ROOT, 'packages', 'plugin', '.mcp.json');
+    const pluginMcp = bumpMcpPin(JSON.parse(readFileSync(pluginMcpPath, 'utf8')), nextVersion);
+    writeFileSync(pluginMcpPath, JSON.stringify(pluginMcp, null, 2) + '\n');
+    console.log(`Tooling changelogs and the plugin @cngx/mcp pin updated to ${nextVersion}`);
+
     if (skipGitTag) {
       console.log('\nGit tagging skipped (--skip-git-tag).');
-      console.log('Note: root package.json was bumped - remember to commit it.');
+      console.log(`Note: commit the release files yourself: ${releaseCommitFiles().join(', ')}.`);
     } else {
       console.log('\nCreating git tag...');
       // Refresh the changelog for this version, then commit it together with
-      // the root version bump so the tag points at a commit that already
+      // every other release file so the tag points at a commit that already
       // carries its own changelog section.
       regenerateChangelog(gitTagName);
-      run(`git add package.json CHANGELOG.md`);
+      run(`git add ${releaseCommitFiles().join(' ')}`);
       run(`git commit -m "chore(release): ${nextVersion}"`);
       createAndPushGitTag(nextVersion);
       run(`git push origin HEAD`);

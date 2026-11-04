@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { PACKED_LIBS, TOOLING_PACKAGES } from '../cngx-libs.mjs';
 
 import {
+  LOCKSTEP_NO_CHANGES,
   assertDependencyResolvable,
   assertPinsPublished,
   assertVersionAdvances,
@@ -26,6 +27,7 @@ import {
   publishOrder,
   REFRESH_FACTORY,
   refreshMigrationKey,
+  releaseCommitFiles,
   releasePins,
   replaceVersionInDist,
   resolveDistTag,
@@ -33,6 +35,7 @@ import {
   stampManifest,
   stampRefreshMigration,
   stampSchematicsDist,
+  stampToolingChangelog,
   stampToolingManifest,
   toolingBuildSteps,
 } from '../publish.mjs';
@@ -751,11 +754,101 @@ describe('runToolingSection', () => {
     expect(snapshot()).toEqual(before);
   });
 
+  it('writes only files the release commit takes', () => {
+    const written = [];
+    const write = (file, data) => {
+      written.push(file.slice(root.length + 1).split('\\').join('/'));
+      writeFileSync(file, data);
+    };
+
+    runToolingSection({ root, nextVersion: '0.3.0', run: () => {}, keepStamped: true, write });
+
+    expect(written.length).toBeGreaterThan(0);
+    for (const file of written) {
+      expect(releaseCommitFiles()).toContain(file);
+    }
+  });
+
   it('keeps the stamp after a real run that built, for the publish loop and the release commit', () => {
     runToolingSection({ root, nextVersion: '0.3.0', run: () => {}, keepStamped: true });
 
     expect(files.map(versionOnDisk)).toEqual(['0.3.0', '0.3.0', '0.3.0', '0.3.0']);
     const lock = JSON.parse(readFileSync(join(root, 'packages', 'cli', 'package-lock.json'), 'utf8'));
     expect(lock.packages[''].version).toBe('0.3.0');
+  });
+});
+
+describe('stampToolingChangelog', () => {
+  const header = '# @cngx/mcp changelog\n\nHand-maintained, per package version.\n';
+  const released = '## 0.2.0 - 2026-08-27\n\n### Fixed\n\n- An old fix.\n';
+
+  it('renames a filled Unreleased section to the release', () => {
+    const text = `${header}\n## Unreleased\n\n### Added\n\n- A new tool.\n\n${released}`;
+
+    expect(stampToolingChangelog(text, '0.3.0', '2026-11-20')).toBe(
+      `${header}\n## 0.3.0 - 2026-11-20\n\n### Added\n\n- A new tool.\n\n${released}`,
+    );
+  });
+
+  it('fills an empty Unreleased section with the lockstep line', () => {
+    const text = `${header}\n## Unreleased\n\n${released}`;
+
+    expect(stampToolingChangelog(text, '0.3.0', '2026-11-20')).toBe(
+      `${header}\n## 0.3.0 - 2026-11-20\n\n${LOCKSTEP_NO_CHANGES}\n\n${released}`,
+    );
+  });
+
+  it('inserts a missing section below the header paragraph, above the newest release', () => {
+    const text = `${header}\n${released}`;
+
+    expect(stampToolingChangelog(text, '0.3.0', '2026-11-20')).toBe(
+      `${header}\n## 0.3.0 - 2026-11-20\n\n${LOCKSTEP_NO_CHANGES}\n\n${released}`,
+    );
+  });
+
+  it('appends the section to a changelog with no release yet', () => {
+    expect(stampToolingChangelog(header, '0.3.0', '2026-11-20')).toBe(
+      `${header}\n## 0.3.0 - 2026-11-20\n\n${LOCKSTEP_NO_CHANGES}\n`,
+    );
+  });
+
+  it('leaves every other section as it is', () => {
+    const text = `${header}\n## Unreleased\n\n- Change.\n\n${released}`;
+    const stamped = stampToolingChangelog(text, '0.3.0', '2026-11-20');
+
+    expect(stamped.endsWith(released)).toBe(true);
+    expect(stamped.startsWith(header)).toBe(true);
+    expect(stamped).not.toContain('## Unreleased');
+  });
+
+  it('stamps the real tooling changelogs without losing a line', () => {
+    for (const name of TOOLING_PACKAGES) {
+      const text = readFileSync(join(ROOT_DIR, 'packages', name, 'CHANGELOG.md'), 'utf8');
+      const stamped = stampToolingChangelog(text, '0.3.0', '2026-11-20');
+
+      expect(stamped).toContain('## 0.3.0 - 2026-11-20');
+      expect(stamped.split('\n')).toHaveLength(text.split('\n').length);
+    }
+  });
+});
+
+describe('releaseCommitFiles', () => {
+  it('holds the root, both tooling packages and the plugin mcp pin, each an existing file', () => {
+    const files = releaseCommitFiles();
+
+    expect(files).toEqual([
+      'package.json',
+      'CHANGELOG.md',
+      'packages/mcp/package.json',
+      'packages/mcp/package-lock.json',
+      'packages/mcp/CHANGELOG.md',
+      'packages/cli/package.json',
+      'packages/cli/package-lock.json',
+      'packages/cli/CHANGELOG.md',
+      'packages/plugin/.mcp.json',
+    ]);
+    for (const file of files) {
+      expect(() => readFileSync(join(ROOT_DIR, file))).not.toThrow();
+    }
   });
 });
