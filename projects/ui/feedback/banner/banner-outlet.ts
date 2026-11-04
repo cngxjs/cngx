@@ -48,6 +48,7 @@ import { CngxBanner, type BannerState } from './banner.service';
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'cngx-banner-outlet',
+    'data-cngx-live-surface': '',
   },
   template: `
     @for (banner of service.banners(); track banner.id) {

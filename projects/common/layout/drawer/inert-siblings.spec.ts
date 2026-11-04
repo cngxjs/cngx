@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
+import { CNGX_LIVE_SURFACE_ATTR } from '@cngx/core/utils';
 import { createInertSiblings } from './inert-siblings';
 
 function mount(html: string): HTMLElement {
@@ -99,8 +100,8 @@ describe('createInertSiblings', () => {
         <div class="log" role="log"></div>
         <div class="cdk-live-announcer-element"></div>
         <div class="cdk-overlay-container"></div>
-        <div class="cngx-toast-outlet" role="region"></div>
-        <div class="cngx-banner-outlet"></div>
+        <div class="marked-region" role="region" ${CNGX_LIVE_SURFACE_ATTR}></div>
+        <div class="marked" ${CNGX_LIVE_SURFACE_ATTR}></div>
         <div class="plain"></div>
       `);
       createInertSiblings(q('.host'), { scope: 'outside' });
@@ -110,13 +111,28 @@ describe('createInertSiblings', () => {
         '.log',
         '.cdk-live-announcer-element',
         '.cdk-overlay-container',
-        '.cngx-toast-outlet',
-        '.cngx-banner-outlet',
+        '.marked-region',
+        '.marked',
       ];
       for (const sel of live) {
         expect(q(sel).hasAttribute('inert')).toBe(false);
       }
       expect(q('.plain').hasAttribute('inert')).toBe(true);
+    });
+
+    it('keeps a marked live surface live and inerts its other container children', () => {
+      root = mount(`
+        <aside class="host"></aside>
+        <div class="shell">
+          <section class="surface" ${CNGX_LIVE_SURFACE_ATTR}></section>
+          <div class="sibling"></div>
+        </div>
+      `);
+      createInertSiblings(q('.host'), { scope: 'outside' });
+
+      expect(q('.surface').hasAttribute('inert')).toBe(false);
+      expect(q('.shell').hasAttribute('inert')).toBe(false);
+      expect(q('.sibling').hasAttribute('inert')).toBe(true);
     });
 
     it('preserves a pre-existing inert on release', () => {

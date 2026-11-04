@@ -2,6 +2,8 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { CNGX_LIVE_SURFACE_ATTR, CNGX_LIVE_SURFACE_SELECTOR } from '@cngx/core/utils';
+
 import { CNGX_FEEDBACK_I18N, type CngxFeedbackI18n } from '../config/feedback-i18n';
 import { CngxBanner } from './banner.service';
 import { CngxBannerOutlet } from './banner-outlet';
@@ -31,6 +33,12 @@ describe('CngxBannerOutlet', () => {
   it('renders with the cngx-banner-outlet host class', () => {
     const { outletEl } = setup();
     expect(outletEl.classList.contains('cngx-banner-outlet')).toBe(true);
+  });
+
+  it('marks the host as a live surface so a modal inert scope leaves it live', () => {
+    const { outletEl } = setup();
+    expect(outletEl.hasAttribute(CNGX_LIVE_SURFACE_ATTR)).toBe(true);
+    expect(outletEl.matches(CNGX_LIVE_SURFACE_SELECTOR)).toBe(true);
   });
 
   it('announces warning banners assertively, matching their role="alert"', () => {

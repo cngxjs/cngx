@@ -34,6 +34,7 @@ export {
 } from './typeahead.util';
 export { hasTransition, onTransitionDone, type TransitionDoneHandle } from './transition.util';
 export { nextUid } from './uid.util';
+export { CNGX_LIVE_SURFACE_ATTR, CNGX_LIVE_SURFACE_SELECTOR } from './live-surface';
 export { type AsyncStatus, type CngxAsyncState } from './async-state';
 export { buildAsyncStateView, type AsyncStateViewSources } from './build-async-state-view';
 export { createAggregateAsyncState } from './aggregate-async-state';

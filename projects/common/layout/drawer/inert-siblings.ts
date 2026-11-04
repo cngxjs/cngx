@@ -1,3 +1,5 @@
+import { CNGX_LIVE_SURFACE_SELECTOR } from '@cngx/core/utils';
+
 /**
  * @internal How far `createInertSiblings` reaches.
  *
@@ -13,9 +15,10 @@ export type CngxInertScope = 'siblings' | 'outside';
  *
  * - CDK focus-trap anchors: an inert anchor cannot take focus, so the trap
  *   next to it stops wrapping and Tab leaves the modal.
- * - Live regions and announcer containers (the CDK announcer, the
- *   `@cngx/ui` toast and banner outlets): inert content leaves the
- *   accessibility tree, and an announcement written into it is never spoken.
+ * - Live regions, announcer containers (the CDK announcer) and every
+ *   element marked with `CNGX_LIVE_SURFACE_ATTR` (the toast and banner
+ *   outlets): inert content leaves the accessibility tree, and an
+ *   announcement written into it is never spoken.
  * - The CDK overlay container: overlays opened from inside the modal render
  *   there, outside the host.
  * - A visible `CngxBackdrop`: it holds no focusable content, and inerting it
@@ -28,8 +31,7 @@ const KEEP_LIVE_SELECTOR = [
   '[role="alert"]',
   '[role="log"]',
   '.cdk-live-announcer-element',
-  '.cngx-toast-outlet',
-  '.cngx-banner-outlet',
+  CNGX_LIVE_SURFACE_SELECTOR,
   '.cdk-overlay-container',
   '.cngx-backdrop--visible',
 ].join(', ');
@@ -51,7 +53,7 @@ export interface CngxInertSiblingsOptions {
  * `@defer`) are covered by the next call. Elements that already carry
  * `inert` are skipped and never touched on release, so a consumer-set or
  * other-owner `inert` survives. Focus-trap anchors, live regions, the CDK
- * overlay container, the toast and banner outlets and a visible backdrop
+ * overlay container, marked live surfaces and a visible backdrop
  * stay live; an element that only contains one of them is not inerted as a
  * whole, its other children are.
  * Release is idempotent.

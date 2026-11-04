@@ -61,6 +61,7 @@ export type ToastPosition =
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'cngx-toast-outlet',
+    'data-cngx-live-surface': '',
     '[class]': 'positionClass()',
     role: 'region',
     '[attr.aria-label]': 'regionLabel()',
