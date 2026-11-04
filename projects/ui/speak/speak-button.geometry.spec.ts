@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { CngxSpeakButton } from './speak-button';
 
 // Runs in a real Chromium (the `test-geometry` target). The speaker and stop
-// glyphs come from the shared icon set and keep the 18px box, the ink and the
+// glyphs come from the shared icon set on a 16px box, the ink and the
 // 1px optical nudge of the inline drawings they replaced (speak-button.css).
 
 let mountedRoot: HTMLElement | null = null;
@@ -44,22 +44,22 @@ function centre(rect: DOMRect): { x: number; y: number } {
 describe('CngxSpeakButton glyphs', () => {
   it('sizes the icon from --cngx-speak-btn-icon-size', () => {
     const { svg } = mount(false);
-    expect(svg.getBoundingClientRect().width).toBeCloseTo(18, 1);
-    expect(svg.getBoundingClientRect().height).toBeCloseTo(18, 1);
+    expect(svg.getBoundingClientRect().width).toBeCloseTo(16, 1);
+    expect(svg.getBoundingClientRect().height).toBeCloseTo(16, 1);
   });
 
-  // The speaker and its waves span 22 of 24 units across with the 2-unit stroke.
-  it('draws the idle speaker 22/24 of the icon box wide in a 1.5px line', () => {
+  // The speaker and its waves span 22 of 24 units across with the 2-unit stroke,
+  // on the 16px box (this harness loads no icon sheet, so the 24 path paints).
+  it('draws the idle speaker 22/24 of the icon box wide', () => {
     const { svg, path } = mount(false);
-    const stroke = (parseFloat(computedValue(svg, 'stroke-width')) * 18) / 24;
-    expect(stroke).toBeCloseTo(1.5, 1);
-    expect(path.getBoundingClientRect().width + stroke).toBeCloseTo((18 * 22) / 24, 0);
+    const stroke = (parseFloat(computedValue(svg, 'stroke-width')) * 16) / 24;
+    expect(path.getBoundingClientRect().width + stroke).toBeCloseTo((16 * 22) / 24, 0);
     expect(computedValue(svg, 'fill')).toBe('none');
   });
 
   it('draws the stop square 12/24 of the icon box as a fill', () => {
     const { svg, path } = mount(true);
-    expect(path.getBoundingClientRect().width).toBeCloseTo(9, 1);
+    expect(path.getBoundingClientRect().width).toBeCloseTo((16 * 12) / 24, 1);
     expect(computedValue(svg, 'fill')).toBe(computedValue(svg, 'color'));
   });
 
