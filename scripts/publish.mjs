@@ -220,7 +220,7 @@ export function runToolingSection({ root, nextVersion, run: runStep, keepStamped
 // already stamped (publishInLockstep prepares them all first), and the
 // message names the exact command for each, then the release commit.
 // `stage` is 'stamp' when stamping the lib dists failed, before any publish.
-export function publishFailurePlan({ published, remaining, nextVersion, registryFlag = '', error, stage = 'publish' }) {
+export function publishFailurePlan({ published, remaining, nextVersion, registryFlag = '', skipGitTag = false, error, stage = 'publish' }) {
   const cause =
     stage === 'stamp'
       ? `Stamping the lib dists failed, before any npm publish: ${error.message}`
@@ -240,7 +240,8 @@ export function publishFailurePlan({ published, remaining, nextVersion, registry
       `The stamp stays; --version must stay ${nextVersion} (it is taken on npm).`,
       'Publish the remaining packages by hand, in this order, from the repo root:',
       ...remaining.map(({ dir, distTag }) => `  (cd ${dir} && npm publish --access public --tag ${distTag}${registryFlag})`),
-      `Then bring the release files to ${nextVersion} (root version, changelogs, plugin @cngx/mcp pin) and commit them: ${releaseCommitFiles().join(', ')}.`,
+      'Then finish the release, in this order:',
+      ...releaseFinishSteps({ nextVersion, skipGitTag }).map(({ text }) => `  ${text}`),
     ].join('\n'),
   };
 }
@@ -249,12 +250,12 @@ export function publishFailurePlan({ published, remaining, nextVersion, registry
 // first, so a failure part way through leaves each remaining package ready
 // for a plain `npm publish`; then `publish` runs per entry in order. A throw
 // from either stops the run and comes back as a publishFailurePlan.
-export function publishInLockstep({ order, nextVersion, registryFlag = '', prepare, publish }) {
+export function publishInLockstep({ order, nextVersion, registryFlag = '', skipGitTag = false, prepare, publish }) {
   const published = [];
   try {
     prepare();
   } catch (error) {
-    return { published, failure: publishFailurePlan({ published, remaining: order, nextVersion, registryFlag, error, stage: 'stamp' }) };
+    return { published, failure: publishFailurePlan({ published, remaining: order, nextVersion, registryFlag, skipGitTag, error, stage: 'stamp' }) };
   }
   let index = 0;
   try {
@@ -263,7 +264,7 @@ export function publishInLockstep({ order, nextVersion, registryFlag = '', prepa
       published.push(order[index].name);
     }
   } catch (error) {
-    return { published, failure: publishFailurePlan({ published, remaining: order.slice(index), nextVersion, registryFlag, error }) };
+    return { published, failure: publishFailurePlan({ published, remaining: order.slice(index), nextVersion, registryFlag, skipGitTag, error }) };
   }
   return { published, failure: null };
 }
@@ -319,13 +320,62 @@ export function releaseCommitFiles() {
   ];
 }
 
+// The root changelog command: the tagging path labels the unreleased commits
+// with the tag about to be cut; without a tag it is a plain refresh.
+export function rootChangelogCommand(nextVersion, skipGitTag) {
+  return skipGitTag ? 'npm run changelog' : `npm run changelog -- --tag v${nextVersion}`;
+}
+
 // What a --skip-git-tag run leaves to the releaser. The root changelog is
 // regenerated only on the tagging path, so this path names it as stale.
 export function skipGitTagNote() {
   return (
-    'Note: CHANGELOG.md is not regenerated with --skip-git-tag; refresh it with `npm run changelog` before committing.\n' +
+    `Note: CHANGELOG.md is not regenerated with --skip-git-tag; refresh it with \`${rootChangelogCommand(null, true)}\` before committing.\n` +
     `Commit the release files yourself: ${releaseCommitFiles().join(', ')}.`
   );
+}
+
+// Every step a release runs once all packages are on npm, in order, keyed by
+// id so a run that stops part way can name the ones left. The single source
+// for the manual recovery of publishFailurePlan and releaseFinishFailure.
+export function releaseFinishSteps({ nextVersion, skipGitTag }) {
+  const tagName = `v${nextVersion}`;
+  return [
+    { id: 'root-version', text: `set "version" in package.json to ${nextVersion}` },
+    {
+      id: 'tooling-files',
+      text:
+        `stamp packages/{${TOOLING_PACKAGES.join(',')}}/CHANGELOG.md with the ${nextVersion} section ` +
+        `and set the @cngx/mcp pin in packages/plugin/.mcp.json to ${nextVersion}`,
+    },
+    { id: 'changelog', text: `regenerate CHANGELOG.md: ${rootChangelogCommand(nextVersion, skipGitTag)}` },
+    {
+      id: 'commit',
+      text: `git add ${releaseCommitFiles().join(' ')} && git commit -m "chore(release): ${nextVersion}"`,
+    },
+    ...(skipGitTag
+      ? []
+      : [
+          { id: 'tag', text: `git tag ${tagName} -m "Release ${tagName}"` },
+          { id: 'push-tag', text: `git push origin ${tagName}` },
+          { id: 'push', text: 'git push origin HEAD' },
+        ]),
+  ];
+}
+
+// A failure after every package reached npm: names what is done and the
+// steps left to run by hand.
+export function releaseFinishFailure({ nextVersion, skipGitTag, done, error }) {
+  const steps = releaseFinishSteps({ nextVersion, skipGitTag });
+  const left = steps.filter(({ id }) => !done.includes(id));
+  const finished = steps.filter(({ id }) => done.includes(id));
+  return [
+    `${error.message}.`,
+    `Every package is on npm at ${nextVersion}; --version must stay ${nextVersion}.`,
+    `Done: ${finished.length > 0 ? finished.map(({ id }) => id).join(', ') : 'none of the release steps'}.`,
+    'Run the rest by hand, in this order:',
+    ...left.map(({ text }) => `  ${text}`),
+  ].join('\n');
 }
 
 // The pins a release writes into versions.json: @cngx/mcp is published in the
@@ -670,9 +720,13 @@ function assertTagAvailable(tagName) {
   }
 }
 
-function createAndPushGitTag(version) {
+function createGitTag(version) {
   const tagName = `v${version}`;
   run(`git tag ${tagName} -m "Release ${tagName}"`);
+}
+
+function pushGitTag(version) {
+  const tagName = `v${version}`;
   run(`git push origin ${tagName}`);
   console.log(`  Pushed git tag ${tagName}`);
 }
@@ -681,9 +735,9 @@ function createAndPushGitTag(version) {
 // currently-unreleased commits. git-cliff's --tag labels the unreleased
 // section as this version even though the tag does not exist yet, so the tag
 // and its changelog section agree once committed.
-function regenerateChangelog(tagName) {
-  run(`npx git-cliff --tag ${tagName} -o CHANGELOG.md`);
-  console.log(`  Regenerated CHANGELOG.md for ${tagName}`);
+function regenerateChangelog(version) {
+  run(rootChangelogCommand(version, false));
+  console.log(`  Regenerated CHANGELOG.md for v${version}`);
 }
 
 // Every @cngx/* package peers on the others at the exact release and the
@@ -896,7 +950,14 @@ function main() {
     dir: isTooling ? `packages/${name}` : `dist/${name}`,
     distTag: isTooling ? toolingDistTags.get(name) : libReleases.get(name).distTag,
   }));
-  const { failure } = publishInLockstep({ order, nextVersion, registryFlag, prepare: prepareLibDists, publish: publishEntry });
+  const { failure } = publishInLockstep({
+    order,
+    nextVersion,
+    registryFlag,
+    skipGitTag,
+    prepare: prepareLibDists,
+    publish: publishEntry,
+  });
   if (failure) {
     if (failure.restore) {
       tooling.restore();
@@ -946,38 +1007,53 @@ function main() {
     console.log(`  Published @cngx/${name}@${nextVersion} (dist-tag ${distTag})`);
   }
 
-  // Update root version after all libs published successfully
+  // Every package is on npm from here: a failure names what is done and what
+  // is left to run by hand.
   if (!dryRun) {
-    rootPkg.version = nextVersion;
-    writeRootPkg(rootPkg);
-    console.log(`\nRoot package.json updated to ${nextVersion}`);
+    const done = [];
+    try {
+      rootPkg.version = nextVersion;
+      writeRootPkg(rootPkg);
+      done.push('root-version');
+      console.log(`\nRoot package.json updated to ${nextVersion}`);
 
-    // Both paths write the same files: the tooling changelogs get their
-    // release section and the plugin runs the @cngx/mcp just published
-    // (plugin-release.test.mjs pins it to packages/mcp/package.json).
-    const releaseDate = new Date().toISOString().slice(0, 10);
-    for (const name of TOOLING_PACKAGES) {
-      const changelogPath = join(ROOT, 'packages', name, 'CHANGELOG.md');
-      writeFileSync(changelogPath, stampToolingChangelog(readFileSync(changelogPath, 'utf8'), nextVersion, releaseDate));
-    }
-    const pluginMcpPath = join(ROOT, 'packages', 'plugin', '.mcp.json');
-    const pluginMcp = bumpMcpPin(JSON.parse(readFileSync(pluginMcpPath, 'utf8')), nextVersion);
-    writeFileSync(pluginMcpPath, JSON.stringify(pluginMcp, null, 2) + '\n');
-    console.log(`Tooling changelogs and the plugin @cngx/mcp pin updated to ${nextVersion}`);
+      // Both paths write the same files: the tooling changelogs get their
+      // release section and the plugin runs the @cngx/mcp just published
+      // (plugin-release.test.mjs pins it to packages/mcp/package.json).
+      const releaseDate = new Date().toISOString().slice(0, 10);
+      for (const name of TOOLING_PACKAGES) {
+        const changelogPath = join(ROOT, 'packages', name, 'CHANGELOG.md');
+        writeFileSync(changelogPath, stampToolingChangelog(readFileSync(changelogPath, 'utf8'), nextVersion, releaseDate));
+      }
+      const pluginMcpPath = join(ROOT, 'packages', 'plugin', '.mcp.json');
+      const pluginMcp = bumpMcpPin(JSON.parse(readFileSync(pluginMcpPath, 'utf8')), nextVersion);
+      writeFileSync(pluginMcpPath, JSON.stringify(pluginMcp, null, 2) + '\n');
+      done.push('tooling-files');
+      console.log(`Tooling changelogs and the plugin @cngx/mcp pin updated to ${nextVersion}`);
 
-    if (skipGitTag) {
-      console.log('\nGit tagging skipped (--skip-git-tag).');
-      console.log(skipGitTagNote());
-    } else {
-      console.log('\nCreating git tag...');
-      // Refresh the changelog for this version, then commit it together with
-      // every other release file so the tag points at a commit that already
-      // carries its own changelog section.
-      regenerateChangelog(gitTagName);
-      run(`git add ${releaseCommitFiles().join(' ')}`);
-      run(`git commit -m "chore(release): ${nextVersion}"`);
-      createAndPushGitTag(nextVersion);
-      run(`git push origin HEAD`);
+      if (skipGitTag) {
+        console.log('\nGit tagging skipped (--skip-git-tag).');
+        console.log(skipGitTagNote());
+      } else {
+        console.log('\nCreating git tag...');
+        // Refresh the changelog for this version, then commit it together with
+        // every other release file so the tag points at a commit that already
+        // carries its own changelog section.
+        regenerateChangelog(nextVersion);
+        done.push('changelog');
+        run(`git add ${releaseCommitFiles().join(' ')}`);
+        run(`git commit -m "chore(release): ${nextVersion}"`);
+        done.push('commit');
+        createGitTag(nextVersion);
+        done.push('tag');
+        pushGitTag(nextVersion);
+        done.push('push-tag');
+        run(`git push origin HEAD`);
+        done.push('push');
+      }
+    } catch (error) {
+      console.error(`\nRelease stopped after publishing: ${releaseFinishFailure({ nextVersion, skipGitTag, done, error })}`);
+      process.exit(1);
     }
   }
 

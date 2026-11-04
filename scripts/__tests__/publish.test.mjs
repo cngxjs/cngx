@@ -28,6 +28,9 @@ import {
   publishFailurePlan,
   publishInLockstep,
   publishOrder,
+  releaseFinishFailure,
+  releaseFinishSteps,
+  rootChangelogCommand,
   REFRESH_FACTORY,
   refreshMigrationKey,
   releaseCommitFiles,
@@ -905,13 +908,20 @@ describe('publishFailurePlan', () => {
       'The stamp stays; --version must stay 0.3.0 (it is taken on npm).',
       'Publish the remaining packages by hand, in this order, from the repo root:',
     ]);
-    expect(lines.slice(5, -1)).toEqual(
+    const publishes = order.slice(1).length;
+    expect(lines.slice(5, 5 + publishes)).toEqual(
       order
         .slice(1)
         .map(({ dir }) => `  (cd ${dir} && npm publish --access public --tag latest --registry http://localhost:4873)`),
     );
     expect(lines[5]).toBe('  (cd packages/cli && npm publish --access public --tag latest --registry http://localhost:4873)');
-    expect(lines.at(-1)).toContain(releaseCommitFiles().join(', '));
+    expect(lines.slice(5 + publishes)).toEqual([
+      'Then finish the release, in this order:',
+      ...releaseFinishSteps({ nextVersion: '0.3.0', skipGitTag: false }).map(({ text }) => `  ${text}`),
+    ]);
+    expect(plan.message).toContain('npm run changelog -- --tag v0.3.0');
+    expect(plan.message).toContain('git tag v0.3.0 -m "Release v0.3.0"');
+    expect(plan.message).toContain('git push origin v0.3.0');
   });
 
   it('names only the libs once both tooling packages are on npm', () => {
@@ -1066,5 +1076,58 @@ describe('skipGitTagNote', () => {
       'Note: CHANGELOG.md is not regenerated with --skip-git-tag; refresh it with `npm run changelog` before committing.',
     );
     expect(commit).toBe(`Commit the release files yourself: ${releaseCommitFiles().join(', ')}.`);
+  });
+});
+
+describe('releaseFinishSteps', () => {
+  it('lists the post-publish steps of a tagged release in the order the run takes them', () => {
+    expect(releaseFinishSteps({ nextVersion: '0.3.0', skipGitTag: false })).toEqual([
+      { id: 'root-version', text: 'set "version" in package.json to 0.3.0' },
+      {
+        id: 'tooling-files',
+        text: 'stamp packages/{mcp,cli}/CHANGELOG.md with the 0.3.0 section and set the @cngx/mcp pin in packages/plugin/.mcp.json to 0.3.0',
+      },
+      { id: 'changelog', text: 'regenerate CHANGELOG.md: npm run changelog -- --tag v0.3.0' },
+      { id: 'commit', text: `git add ${releaseCommitFiles().join(' ')} && git commit -m "chore(release): 0.3.0"` },
+      { id: 'tag', text: 'git tag v0.3.0 -m "Release v0.3.0"' },
+      { id: 'push-tag', text: 'git push origin v0.3.0' },
+      { id: 'push', text: 'git push origin HEAD' },
+    ]);
+  });
+
+  it('drops the tag and push steps and uses the plain changelog refresh with --skip-git-tag', () => {
+    const steps = releaseFinishSteps({ nextVersion: '0.3.0', skipGitTag: true });
+
+    expect(steps.map(({ id }) => id)).toEqual(['root-version', 'tooling-files', 'changelog', 'commit']);
+    expect(steps[2].text).toBe('regenerate CHANGELOG.md: npm run changelog');
+    expect(skipGitTagNote()).toContain(`\`${rootChangelogCommand('0.3.0', true)}\``);
+  });
+});
+
+describe('releaseFinishFailure', () => {
+  it('names the done steps and lists the rest in order when the commit fails', () => {
+    const message = releaseFinishFailure({
+      nextVersion: '0.3.0',
+      skipGitTag: false,
+      done: ['root-version', 'tooling-files', 'changelog'],
+      error: new Error('git commit exited with 1'),
+    });
+    const steps = releaseFinishSteps({ nextVersion: '0.3.0', skipGitTag: false });
+
+    expect(message.split('\n')).toEqual([
+      'git commit exited with 1.',
+      'Every package is on npm at 0.3.0; --version must stay 0.3.0.',
+      'Done: root-version, tooling-files, changelog.',
+      'Run the rest by hand, in this order:',
+      ...steps.slice(3).map(({ text }) => `  ${text}`),
+    ]);
+  });
+
+  it('lists every step when the first one fails', () => {
+    const message = releaseFinishFailure({ nextVersion: '0.3.0', skipGitTag: true, done: [], error: new Error('EACCES package.json') });
+
+    expect(message).toContain('Done: none of the release steps.');
+    expect(message).toContain('  set "version" in package.json to 0.3.0');
+    expect(message).not.toContain('git tag');
   });
 });
