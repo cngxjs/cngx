@@ -103,7 +103,7 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
     '[class.cngx-async--success]': 'succeeded() && !busyVisible()',
     '[class.cngx-async--error]': 'failed() && !busyVisible()',
     '[attr.aria-busy]': 'pending() || busyVisible() || busy() || hostBusy() || null',
-    '[attr.aria-disabled]': 'pending() || busyVisible() || blocked() || null',
+    '[attr.aria-disabled]': 'ariaDisabledAttr()',
   },
 })
 export class CngxAsyncClick {
@@ -318,6 +318,17 @@ export class CngxAsyncClick {
     }
     return 'idle';
   });
+
+  /**
+   * `aria-disabled` attribute value (`'true' | null`). This is the single
+   * source the host renders; a co-hosting button core reads it instead of
+   * recomputing an equal value, so the two bindings on a shared host can never
+   * diverge regardless of directive write order.
+   * @internal
+   */
+  readonly ariaDisabledAttr = computed<'true' | null>(() =>
+    this.pending() || this.busyVisible() || this.blocked() ? 'true' : null,
+  );
 
   /**
    * Screen reader announcement for the current state. Rendered automatically

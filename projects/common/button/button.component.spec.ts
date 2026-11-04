@@ -436,6 +436,38 @@ describe('CngxButton', () => {
       expect(host.calls).toBe(0);
     });
 
+    it('renders the aria-disabled value from the co-hosted directive, not an independent recompute', async () => {
+      vi.useFakeTimers();
+      const { fixture, host, q } = render(AsyncHost);
+      host.disabled.set(false);
+      fixture.detectChanges();
+      const btn = q('#button-first');
+      const directive = fixture.debugElement
+        .query(By.css('#button-first'))
+        .injector.get(CngxAsyncClick);
+      const advance = async (ms: number): Promise<void> => {
+        await vi.advanceTimersByTimeAsync(ms);
+        fixture.detectChanges();
+        TestBed.flushEffects();
+      };
+      const sampleMatchesDirective = (): void => {
+        expect(btn.getAttribute('aria-disabled')).toBe(directive.ariaDisabledAttr());
+      };
+
+      sampleMatchesDirective();
+      btn.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      sampleMatchesDirective();
+      await advance(CNGX_LOADING_DEFAULTS.showDelay);
+      sampleMatchesDirective();
+      host.release();
+      await advance(0);
+      sampleMatchesDirective();
+      await advance(CNGX_LOADING_DEFAULTS.minDwell + 1);
+      sampleMatchesDirective();
+    });
+
     it('keeps aria-disabled while [enabled]="false" outlives the button disabled flag', () => {
       const { fixture, host, q } = render(RefusingAsyncHost);
       const btn = q('#refusing');
