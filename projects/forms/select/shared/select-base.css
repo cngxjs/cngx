@@ -2364,7 +2364,11 @@
  * `.cngx-select__option.cngx-option--highlighted` base rule; the plain two-
  * class compound wins without !important (unlayered beats layered). */
 @media (forced-colors: active) {
-  .cngx-select__option.cngx-option--highlighted {
+  /* The atom class `cngx-option--highlighted` carries the highlight, so the
+     rule reaches both a data-mode `.cngx-select__option` row and the shell's
+     projected declarative `<cngx-option>` without depending on the
+     `@cngx/common` listbox stylesheet being on the page. */
+  .cngx-option--highlighted {
     background: Highlight;
     color: HighlightText;
     /* An outline inside the Highlight plate marks the active row apart from a
@@ -2379,7 +2383,7 @@
     forced-color-adjust: none;
     --_cngx-forced-ink: HighlightText;
   }
-  .cngx-select__option.cngx-option--highlighted .cngx-select__check {
+  .cngx-option--highlighted .cngx-select__check {
     color: HighlightText;
   }
 

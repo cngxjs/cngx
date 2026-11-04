@@ -7,12 +7,13 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 //   - I5: a selected-but-not-active option must stay distinguishable from the
 //     active row - a 2px CanvasText inline-start bar - and the active row
 //     carries a HighlightText outline inside its plate.
-//   - further C: a disabled reorder move button fades to GrayText, the system
-//     colour for a disabled control (today it inherits CanvasText).
-//   - verify first: the select family's own forced-colors rule paints the
-//     highlighted flat option and the shell option in the Highlight pair
-//     without relying on the common listbox stylesheet.
-// Red cases are `test.fail` until Phase 2 flips them.
+//   - the select family's own forced-colors rule paints the highlighted flat
+//     option and the shell's declarative option in the Highlight pair, keyed on
+//     the atom class so it does not rely on the common listbox stylesheet.
+// The disabled reorder move button (further C) is a touch-floor-only button, so
+// its GrayText check lives in a direct component mount at
+// shared/internal/reorder-list/reorder-list-forced-colors.geometry.spec.ts.
+// All cases here are green after Phase 2.
 //
 // Chromium-only: forced-colors system-colour resolution under emulation is
 // reliable there; Firefox/WebKit emulation does not resolve the keyword
@@ -116,11 +117,10 @@ test.describe('select forced-colors (WHCM) row paint', () => {
     expect(s['color']).toBe(sys.highlightText);
   });
 
-  // Red: the shell projects declarative `<cngx-option>` hosts, which the
-  // select-base forced-colors rule (`.cngx-select__option.cngx-option--highlighted`)
-  // does not match, so the row keeps its author tint. Phase 2 commit 2.15 extends
-  // the rule to the declarative host class.
-  test.fail('a shell option highlights with the Highlight pair', async ({ page }) => {
+  // The shell projects declarative `<cngx-option>` hosts; the forced-colors
+  // highlight rule keys on the atom class `cngx-option--highlighted`, so the
+  // row paints the Highlight pair like a data-mode row.
+  test('a shell option highlights with the Highlight pair', async ({ page }) => {
     await openForced(page, '/#/forms/select/select-shell/basic-flat-declarative-options');
     await openPanel(page, '.cngx-select-shell__trigger');
     await page.keyboard.press('ArrowDown');
