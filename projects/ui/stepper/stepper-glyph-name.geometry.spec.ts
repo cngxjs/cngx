@@ -14,9 +14,9 @@ import { CngxStepper } from './stepper.component';
 // The status the icons carry is spoken by the header's status text instead.
 // The host loads the global icon sheet, as `cngx.css` does, so a glyph box in
 // the 10 to 14px band paints its 12-grid micro drawing and one in the 15 to
-// 19px band its 16-grid small drawing. The label done-check box sits in the
-// small band, so it draws the small CHECK; Phase 3 retunes the box to land it
-// at exactly 16px.
+// 19px band its 16-grid small drawing. The label done-check box lands on 1rem
+// (16px); CHECK carries no 16-grid drawing (1x smoke), so it paints the 24-grid
+// path there. The error badge is ALERT, which keeps its small drawing.
 
 @Component({
   selector: 'cngx-stepper-glyph-name-host',
@@ -109,12 +109,13 @@ describe('stepper status glyphs', () => {
     });
   }
 
-  it('draws the label done-check on the 16-grid small path, centred on the label', () => {
+  it('draws the label done-check on the 24-grid path, centred on the label', () => {
     for (const skin of ['chips', 'breadcrumb'] as const) {
       mount(skin);
       const svg = doneIcon(0)!.querySelector('svg')!;
       const painted = visiblePath(svg);
-      expect(painted.classList.contains('cngx-icon-svg__small')).toBe(true);
+      // CHECK carries no 16-grid drawing (1x smoke), so the 24-grid path paints.
+      expect(painted.classList.contains('cngx-icon-svg__path')).toBe(true);
       const ink = painted.getBoundingClientRect();
       expect(ink.width).toBeGreaterThan(0);
       const text = label(0).getBoundingClientRect();
