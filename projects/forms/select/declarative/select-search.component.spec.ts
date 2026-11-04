@@ -379,7 +379,7 @@ describe('CngxSelectSearch - combobox ARIA and keyboard', () => {
     expect(input.getAttribute('aria-activedescendant')).toBe('opt-1');
   });
 
-  it.fails('moves the listbox highlight on Home and End', () => {
+  it('moves the listbox highlight on Home and End', () => {
     const { host, press } = mountAria();
     press('Home');
     press('End');
@@ -387,7 +387,7 @@ describe('CngxSelectSearch - combobox ARIA and keyboard', () => {
     expect(host.highlightLast).toHaveBeenCalledTimes(1);
   });
 
-  it.fails('does not commit on an Enter that closes an IME composition', () => {
+  it('does not commit on an Enter that closes an IME composition', () => {
     const { host, press } = mountAria();
     press('Enter', { isComposing: true });
     press('Enter', { keyCode: 229 });

@@ -190,10 +190,14 @@ export class CngxSelectSearch {
     this.forwardKey(event);
   }
 
-  private readonly forwardKey = createListboxKeyForward(this.host.listboxRef, () => {
-    this.host.close();
-    this.host.focus();
-  });
+  private readonly forwardKey = createListboxKeyForward(
+    this.host.listboxRef,
+    () => {
+      this.host.close();
+      this.host.focus();
+    },
+    { homeEnd: 'listbox' },
+  );
 
   // The input keeps the dropped text otherwise: `[value]` re-renders only when
   // `searchTerm` changes, and the dropped write never changes it.

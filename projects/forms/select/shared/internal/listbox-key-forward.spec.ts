@@ -56,14 +56,14 @@ describe('createListboxKeyForward', () => {
   });
 
   // A4: an Enter that closes an IME composition must not commit the option.
-  it.fails('ignores an Enter while an IME composition is active', () => {
+  it('ignores an Enter while an IME composition is active', () => {
     const ad = makeAd();
     const fw = createListboxKeyForward(ref(ad), () => undefined);
     fw(keydown('Enter', { isComposing: true }));
     expect(ad.activateCurrent).not.toHaveBeenCalled();
   });
 
-  it.fails('ignores an Enter with the legacy IME keyCode 229', () => {
+  it('ignores an Enter with the legacy IME keyCode 229', () => {
     const ad = makeAd();
     const fw = createListboxKeyForward(ref(ad), () => undefined);
     fw(keydown('Enter', { keyCode: 229 }));
@@ -71,7 +71,7 @@ describe('createListboxKeyForward', () => {
   });
 
   // select-search promises Home / End move the listbox highlight (homeEnd: 'listbox').
-  it.fails('moves the highlight to the first option on Home with homeEnd listbox', () => {
+  it('moves the highlight to the first option on Home with homeEnd listbox', () => {
     const ad = makeAd();
     const forward = createListboxKeyForward as unknown as ForwardWithOpts;
     const fw = forward(ref(ad), () => undefined, { homeEnd: 'listbox' });
@@ -79,7 +79,7 @@ describe('createListboxKeyForward', () => {
     expect(ad.highlightFirst).toHaveBeenCalledTimes(1);
   });
 
-  it.fails('moves the highlight to the last option on End with homeEnd listbox', () => {
+  it('moves the highlight to the last option on End with homeEnd listbox', () => {
     const ad = makeAd();
     const forward = createListboxKeyForward as unknown as ForwardWithOpts;
     const fw = forward(ref(ad), () => undefined, { homeEnd: 'listbox' });
