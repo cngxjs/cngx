@@ -60,8 +60,30 @@ const MEASURED_CEILINGS: Readonly<Record<string, number>> = {
   CNGX_ICON_PENCIL: 19,
 };
 
+const SMALL_ICONS = Object.entries(utils)
+  .filter(([name]) => name.startsWith('CNGX_ICON_'))
+  .map(([name, icon]) => [name, icon as CngxIconData] as const)
+  .filter(([, icon]) => icon.small !== null);
+
+// Straight edges on whole units in the 16 box: nothing may anti-alias. MINUS is
+// the only rectilinear small drawing; every other band glyph has a diagonal or
+// an arc and is held to "not worse than the 24-grid path in the same box".
+const RECTILINEAR_SMALL = ['CNGX_ICON_MINUS'] as const;
+
+// Signed-off 16-grid drawings whose anti-aliased pixel count edges past their
+// 24-grid path in a 16px box: X and CHECK are 1-unit diagonal strips that
+// straddle pixel boundaries on the whole-unit grid (X 38 vs 36, CHECK 38 vs 37,
+// as the micro tier). Every other band glyph stays at or under its 24 path.
+// Measured ceilings keep these two from getting worse without redrawing what the
+// sheet signed off.
+const MEASURED_CEILINGS_SMALL: Readonly<Record<string, number>> = {
+  CNGX_ICON_X: 38,
+  CNGX_ICON_CHECK: 38,
+};
+
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const BOX = 12;
+const BOX16 = 16;
 
 @Component({
   selector: 'cngx-icon-micro-pixels-host',
@@ -93,12 +115,12 @@ function mount(icon: CngxIconData): SVGSVGElement {
  * renderer (`icon-svg.component.css`): a stroke icon is a 2-unit round-capped
  * outline, a fill icon fills its area.
  */
-function path24Markup(icon: CngxIconData): string {
+function path24Markup(icon: CngxIconData, box = BOX): string {
   const paint =
     icon.paint === 'stroke'
       ? 'fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"'
       : 'fill="#000"';
-  return `<svg xmlns="${SVG_NS}" width="${BOX}" height="${BOX}" viewBox="${icon.viewBox}"><path ${paint} d="${icon.d}"/></svg>`;
+  return `<svg xmlns="${SVG_NS}" width="${box}" height="${box}" viewBox="${icon.viewBox}"><path ${paint} d="${icon.d}"/></svg>`;
 }
 
 function microMarkup(icon: CngxIconData): string {
@@ -106,19 +128,24 @@ function microMarkup(icon: CngxIconData): string {
   return `<svg xmlns="${SVG_NS}" width="${BOX}" height="${BOX}" viewBox="${micro.viewBox}"><path fill="#000" d="${micro.d}"/></svg>`;
 }
 
+function smallMarkup(icon: CngxIconData): string {
+  const small = icon.small!;
+  return `<svg xmlns="${SVG_NS}" width="${BOX16}" height="${BOX16}" viewBox="${small.viewBox}"><path fill="#000" d="${small.d}"/></svg>`;
+}
+
 /** Pixels that are neither pure black nor pure white, i.e. anti-aliased. */
-async function antiAliasedPixels(markup: string): Promise<number> {
+async function antiAliasedPixels(markup: string, box = BOX): Promise<number> {
   const image = new Image();
   image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markup)}`;
   await image.decode();
   const canvas = document.createElement('canvas');
-  canvas.width = BOX;
-  canvas.height = BOX;
+  canvas.width = box;
+  canvas.height = box;
   const context = canvas.getContext('2d', { willReadFrequently: true })!;
   context.fillStyle = '#fff';
-  context.fillRect(0, 0, BOX, BOX);
-  context.drawImage(image, 0, 0, BOX, BOX);
-  const { data } = context.getImageData(0, 0, BOX, BOX);
+  context.fillRect(0, 0, box, box);
+  context.drawImage(image, 0, 0, box, box);
+  const { data } = context.getImageData(0, 0, box, box);
   let count = 0;
   for (let offset = 0; offset < data.length; offset += 4) {
     const luminance = (data[offset] + data[offset + 1] + data[offset + 2]) / 3;
@@ -178,5 +205,28 @@ describe('micro icon pixels in a 12px box', () => {
   it.each(RECTILINEAR)('%s paints on whole pixels only', async (name) => {
     const icon = (utils as unknown as Record<string, CngxIconData>)[name];
     expect(await antiAliasedPixels(microMarkup(icon))).toBe(0);
+  });
+});
+
+describe('small icon pixels in a 16px box', () => {
+  it('covers every small-carrying icon', () => {
+    // The set only gains small drawings; a shrinking list means the readback went vacuous.
+    expect(SMALL_ICONS.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it.each(SMALL_ICONS)('%s keeps its anti-aliased pixels within the 24-grid path or its measured ceiling', async (name, icon) => {
+    const smallCount = await antiAliasedPixels(smallMarkup(icon), BOX16);
+    const path24Count = await antiAliasedPixels(path24Markup(icon, BOX16), BOX16);
+    const ceiling = MEASURED_CEILINGS_SMALL[name];
+    if (ceiling !== undefined) {
+      expect(smallCount, `${name} small vs measured ceiling`).toBeLessThanOrEqual(ceiling);
+      return;
+    }
+    expect(smallCount, `${name} small vs 24 path`).toBeLessThanOrEqual(path24Count);
+  });
+
+  it.each(RECTILINEAR_SMALL)('%s paints on whole pixels only', async (name) => {
+    const icon = (utils as unknown as Record<string, CngxIconData>)[name];
+    expect(await antiAliasedPixels(smallMarkup(icon), BOX16)).toBe(0);
   });
 });
