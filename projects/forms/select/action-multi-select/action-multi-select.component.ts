@@ -1349,7 +1349,10 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       return;
     }
     const target = event.target as HTMLElement | null;
-    if (target?.closest(this.nestedInteractive)) {
+    const nested = target?.closest(this.nestedInteractive) as HTMLElement | null;
+    // The own input matches the selector too; a click on it must still open.
+    // Only a genuinely nested control (chip remove, clear button) is left alone.
+    if (nested && nested !== this.inputEl()?.nativeElement) {
       return;
     }
     this.focus();
