@@ -38,13 +38,6 @@ const DOC_PATH = resolve(REPO_ROOT, '.compodoc/documentation.json');
  * is documentation, the key for the diff is file:line + kind + tag + binding.
  */
 const KNOWN_FAILURES = [
-  { finding: 'D1', file: 'projects/forms/select/select-shell/README.md', line: 21, kind: 'unknown-tag', tag: 'cngx-select-option' },
-  { finding: 'D1', file: 'projects/forms/select/select-shell/README.md', line: 22, kind: 'unknown-tag', tag: 'cngx-select-option' },
-  { finding: 'D1', file: 'projects/forms/select/select-shell/README.md', line: 23, kind: 'unknown-tag', tag: 'cngx-select-option' },
-  { finding: 'D1', file: 'projects/forms/select/select-shell/README.md', line: 32, kind: 'unknown-tag', tag: 'cngx-select-option' },
-  { finding: 'D1', file: 'projects/forms/select/select-shell/README.md', line: 33, kind: 'unknown-tag', tag: 'cngx-select-option' },
-  { finding: 'D1', file: 'projects/forms/select/select-shell/README.md', line: 86, kind: 'unknown-tag', tag: 'cngx-select-option' },
-  { finding: 'D1', file: 'projects/forms/select/select-shell/README.md', line: 87, kind: 'unknown-tag', tag: 'cngx-select-option' },
   { finding: 'D3', file: 'core-concepts/forms-and-inputs.md', line: 126, kind: 'unknown-binding', tag: 'cngx-multi-select', binding: 'value' },
   { finding: 'further-D (snippet)', file: 'core-concepts/atomic-decompose.md', line: 211, kind: 'unknown-binding', tag: 'cngx-select', binding: 'field' },
   { finding: 'further-D (snippet)', file: 'core-concepts/instrumentation-pattern.md', line: 157, kind: 'unknown-tag', tag: 'cngx-toast-on' },
