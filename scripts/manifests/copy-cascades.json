@@ -81,7 +81,7 @@
     {
       "class": "CngxAsyncClick",
       "file": "projects/common/interactive/async-click/async-click.directive.ts",
-      "line": 415,
+      "line": 420,
       "member": "announcement",
       "enclosing": "untracked",
       "tiers": [
@@ -97,7 +97,7 @@
     {
       "class": "CngxAsyncClick",
       "file": "projects/common/interactive/async-click/async-click.directive.ts",
-      "line": 418,
+      "line": 423,
       "member": "announcement",
       "enclosing": "untracked",
       "tiers": [
@@ -644,7 +644,7 @@
     {
       "class": "CngxActionButton",
       "file": "projects/ui/action-button/action-button.ts",
-      "line": 585,
+      "line": 587,
       "member": "resolveAnnouncement",
       "enclosing": "untracked",
       "tiers": [
@@ -661,7 +661,7 @@
     {
       "class": "CngxActionButton",
       "file": "projects/ui/action-button/action-button.ts",
-      "line": 598,
+      "line": 600,
       "member": "resolveAnnouncement",
       "enclosing": "untracked",
       "tiers": [
