@@ -58,9 +58,9 @@ export function installPopoverPolyfill(): void {
     const shouldOpen = requested ?? !this.hasAttribute(OPEN_ATTR);
     const self = this as HTMLElement & PopoverProto;
     if (shouldOpen) {
-      self.showPopover!();
+      self.showPopover();
     } else {
-      self.hidePopover!();
+      self.hidePopover();
     }
     return this.hasAttribute(OPEN_ATTR);
   };
