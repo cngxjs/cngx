@@ -55,13 +55,13 @@ afterEach(() => {
 });
 
 describe('tab-nav error icon', () => {
-  it('draws a 1.15em box, the triangle centred on the label line', () => {
+  it('draws a 16px box, the triangle centred on the label line', () => {
     const link = mount();
     const svg = link.querySelector<SVGSVGElement>('.cngx-tab-link__error-icon > svg')!;
-    const em = parseFloat(getComputedStyle(link).fontSize);
+    // 1.15em of the 0.875rem (14px) tab font rounds to a 16px box, in the band.
     const box = svg.getBoundingClientRect();
-    expect(box.width).toBeCloseTo(1.15 * em, 0);
-    expect(box.height).toBeCloseTo(1.15 * em, 0);
+    expect(box.width).toBeCloseTo(16, 0);
+    expect(box.height).toBeCloseTo(16, 0);
     const path = svg.querySelector('path')!.getBoundingClientRect();
     const text = labelRect(link);
     expect(Math.abs(path.top + path.height / 2 - (text.top + text.height / 2))).toBeLessThanOrEqual(
