@@ -501,11 +501,18 @@ function splitVersion(version) {
   const at = version.indexOf('-');
   const base = at === -1 ? version : version.slice(0, at);
   const pre = at === -1 ? '' : version.slice(at + 1);
-  const numbers = base.split('.').map(Number);
-  if (numbers.length !== 3 || numbers.some((n) => !Number.isInteger(n))) {
+  // Number('') is 0, so each part is checked as a digit string first: 1..0
+  // would otherwise read as 1.0.0.
+  const parts = base.split('.');
+  const identifiers = at === -1 ? [] : pre.split('.');
+  const wellFormed =
+    parts.length === 3 &&
+    parts.every((part) => /^\d+$/.test(part)) &&
+    identifiers.every((id) => /^[0-9A-Za-z-]+$/.test(id));
+  if (!wellFormed) {
     throw new Error(`"${version}" is not a release version (x.y.z or x.y.z-pre)`);
   }
-  return [numbers, pre === '' ? [] : pre.split('.')];
+  return [parts.map(Number), identifiers];
 }
 
 function compareIdentifiers(a, b) {

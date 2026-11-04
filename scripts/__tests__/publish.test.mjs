@@ -228,6 +228,18 @@ describe('compareReleaseVersions', () => {
   it('refuses a string that is no release version', () => {
     expect(() => compareReleaseVersions('0.1', '0.1.0')).toThrow(/not a release version/);
   });
+
+  it('refuses empty or non-digit version parts and a malformed prerelease', () => {
+    for (const version of ['1..0', '.1.0', '1.0.', '1.0.x', '1.0.0-', '1.0.0-rc..1', '1.0.0-rc.', '1.0.0-rc_1']) {
+      expect(() => compareReleaseVersions(version, '0.1.0')).toThrow(`"${version}" is not a release version`);
+    }
+  });
+
+  it('refuses --version 1..0 before any build, in the version pre-flight', () => {
+    const current = { 'the libs (root package.json)': '0.1.0-rc.9', '@cngx/mcp': '0.2.0', '@cngx/cli': '0.1.0' };
+
+    expect(() => assertVersionAdvances({ nextVersion: '1..0', current })).toThrow('"1..0" is not a release version');
+  });
 });
 
 describe('assertVersionAdvances', () => {
