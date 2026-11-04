@@ -14,6 +14,7 @@ import {
   CngxBackdrop,
   type DrawerPosition,
   type DrawerMode,
+  type CngxDrawerModality,
 } from '@cngx/common/layout';
 ```
 
@@ -56,16 +57,21 @@ export class DrawerExampleComponent {}
 ## Accessibility
 
 - **Transient surface:** an open panel runs on `CngxDrawerSurface`. Escape (focus inside the panel), the Android back gesture (`CloseWatcher`) and a press outside the panel close the drawer. A press on the trigger whose `aria-controls` names the panel `id` is not outside, so give the toggle `aria-controls` and the panel an `id`.
-- **Modality:** `[modal]` defaults to `mode === 'over'`. A modal open panel traps focus (`CngxFocusTrap`), renders `role="dialog"` + `aria-modal="true"`, makes everything outside it `inert` up to `<body>` like a modal dialog (focus-trap anchors, live regions, the CDK overlay container, the toast and banner outlets and a visible `CngxBackdrop` stay live; a pre-existing `inert` is kept on release) and locks scrolling on the nearest scroll container above it, else the document root. A non-modal panel keeps the page operable and renders its landmark `role` (default `complementary`). `push` is never modal; `[modal]="true"` with `push` warns `CNGX1075`.
+- **Modality:** `modality` is `'page'`, `'contained'` or `'none'`; unbound, `over` is `'page'` and `push` is `'none'`.
+  - `'page'` (full-height drawer over the app header): the open panel traps focus (`CngxFocusTrap`), renders `role="dialog"` + `aria-modal="true"`, makes everything outside it `inert` up to `<body>` like a modal dialog and locks scrolling on the nearest scroll container above it, else the document root.
+  - `'contained'` (clipped drawer below a live app header): `inert` and scroll lock stay inside the `[cngxDrawer]` host; everything outside the host stays live, and the element whose `aria-controls` names the panel is never inerted. No trap and no `aria-modal`; the panel keeps its landmark `role`, focus moves into it on open and Tab can reach the header. Put the header outside the `[cngxDrawer]` host.
+  - `'none'`: the page stays operable and the panel renders its landmark `role` (default `complementary`).
+  - In every modality focus-trap anchors, live regions, the CDK overlay container, the toast and banner outlets and a visible `CngxBackdrop` stay live, and a pre-existing `inert` is kept on release. `push` is never modal; `'page'` or `'contained'` with `push` resolve to `'none'` and warn `CNGX1075`.
 - **Closed state:** the panel is `aria-hidden` and `inert` while closed, so its controls are unreachable for keyboard and AT.
-- **Focus management:** focus moves into a modal panel on open and returns to the element focused at open when the drawer closes, unless the user moved focus elsewhere.
+- **Focus management:** focus moves into a `page` or `contained` panel on open and returns to the element focused at open when the drawer closes, unless the user moved focus elsewhere. A restore target that another owner (a `CngxBackdrop`) still holds `inert` is focused after the release.
+- **Scrim:** add the `cngx-drawer` class to the `[cngxDrawer]` host and the bundled `cngx-drawer.css` paints a scrim over the host while a `page` or `contained` panel is open (`--cngx-drawer-scrim-bg`, default `--cngx-backdrop-bg`; `--cngx-drawer-scrim-z-index`, default `1`; `--cngx-drawer-scrim-duration`). A press on the scrim closes the drawer. Position the panel above the scrim with a higher `z-index`.
 
 ## Composition
 
 The drawer system integrates with:
 
 - **Host directives:** `CngxDrawerPanel` composes `CngxDrawerSurface`, which composes `CngxFocusTrap`, `CngxFocusRestore` and `CngxClickOutside` and drives them; none of their inputs is re-exposed.
-- **Combines with:** `CngxBackdrop` (visual overlay and sibling inert toggling).
+- **Combines with:** `CngxBackdrop` (visual overlay and sibling inert toggling) when the scrim must live outside the drawer host; otherwise the `cngx-drawer` class is enough.
 - **Provides:** No injectable tokens (all state is passed via inputs). A bare `cngxDrawerPanel` attribute on an element that also carries `cngxDrawer` resolves that drawer.
 
 ### Example: Full Drawer with Scroll Lock
@@ -199,9 +205,25 @@ main[cngxDrawerContent] {
 export class ResponsiveDrawerComponent {}
 ```
 
+### Clipped Drawer Below a Live Header
+
+The header sits outside the `[cngxDrawer]` host, so the contained panel leaves it live; the hamburger stays the toggle.
+
+```typescript
+<header>
+  <button type="button" [cngxPanelTrigger]="drawer">Menu</button>
+</header>
+<div cngxDrawer #drawer="cngxDrawer" panelId="app-nav" class="cngx-drawer">
+  <nav [cngxDrawerPanel]="drawer" modality="contained" [role]="null" aria-label="Main">
+    <!-- Navigation links -->
+  </nav>
+  <main [cngxDrawerContent]="drawer"><!-- Content under the scrim --></main>
+</div>
+```
+
 ### Modal Drawer (Focus Trap + Escape Close)
 
-`mode="over"` is modal by default; the panel traps focus and locks scrolling on its own.
+`mode="over"` is page-modal by default; the panel traps focus and locks scrolling on its own.
 
 ```typescript
 <div cngxDrawer #drawer="cngxDrawer" [cngxScrollLock]="drawer.opened()">

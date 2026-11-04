@@ -22,6 +22,12 @@ export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
  * `panelId`, which the panel takes as its `id`. Inside the drawer it provides
  * `CNGX_PANEL_TARGET` for a bare `cngxPanelTrigger`.
  *
+ * The drawer host is also the boundary of a `'contained'` panel and the
+ * area its scrim covers: with the opt-in `cngx-drawer` class (stylesheet
+ * `@cngx/common/theming/components/cngx-drawer.css`, part of the cngx
+ * bundle) the host paints a scrim over itself while a modal panel inside it
+ * is open. Keep an app header that must stay live outside the host.
+ *
  * ### With a panel trigger
  * ```html
  * <button type="button" [cngxPanelTrigger]="drawer">Menu</button>
@@ -55,7 +61,9 @@ export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
  * <example-url>/#/common/layout/drawer/controlled-mode</example-url>
  * <example-url>/#/common/layout/drawer/direction-all-four-sides</example-url>
  * <example-url>/#/common/layout/drawer/events-openedchange-closed</example-url>
- * <example-url>/#/common/layout/drawer/mode-over-push</example-url>
+ * <example-url>/#/common/layout/drawer/app-header-clipped</example-url>
+ * <example-url>/#/common/layout/drawer/full-height-modal</example-url>
+ * <example-url>/#/common/layout/drawer/filter-panel-push</example-url>
  * <example-url>/#/common/layout/drawer/pattern-consumer-wiring</example-url>
  * @axis level organism
  */

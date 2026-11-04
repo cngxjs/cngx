@@ -1497,7 +1497,7 @@
       "messages": [
         {
           "file": "projects/common/layout/drawer/drawer-panel.directive.ts",
-          "text": "[cngxDrawerPanel] mode=\"push\" is never modal; [modal]=\"true\" is ignored. A push drawer lays out next to the content, which stays in use. Use mode=\"over\" for a modal drawer."
+          "text": "[cngxDrawerPanel] mode=\"push\" is never modal; a page or contained modality resolves to \"none\". A push drawer lays out next to the content, which stays in use. Use mode=\"over\" for a modal drawer."
         }
       ]
     },

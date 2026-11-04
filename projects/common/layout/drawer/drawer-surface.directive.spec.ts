@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FocusTrapFactory } from '@angular/cdk/a11y';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CngxDrawerSurface } from './drawer-surface.directive';
+import { type CngxDrawerModality, CngxDrawerSurface } from './drawer-surface.directive';
 
 interface FakeWatcher {
   onclose: (() => void) | null;
@@ -25,13 +25,17 @@ let mockTrap: {
         id="surface"
         cngxDrawerSurface
         [active]="active()"
-        [modal]="modal()"
+        [modality]="modality()"
         (dismiss)="dismissed()"
       >
         <button class="inside">Inside</button>
       </aside>
       <main class="sibling">Content</main>
       <div class="already-inert" inert>Inert</div>
+      <div class="inner-bar">
+        <button class="inner-controller" aria-controls="surface">Inner toggle</button>
+        <span class="inner-text">Title</span>
+      </div>
     </section>
     <button class="controller" aria-controls="surface">Toggle</button>
     <button class="outside">Outside</button>
@@ -40,7 +44,7 @@ let mockTrap: {
 })
 class TestHost {
   readonly active = signal(false);
-  readonly modal = signal(true);
+  readonly modality = signal<CngxDrawerModality>('page');
   readonly scrolling = signal(false);
   dismissed = vi.fn();
 }
@@ -98,7 +102,7 @@ describe('CngxDrawerSurface', () => {
     target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
   }
 
-  describe('modal', () => {
+  describe('page', () => {
     it('traps focus, renders a modal dialog and inerts the host siblings', () => {
       const { q, set, surface } = setup();
       set((h) => h.active.set(true));
@@ -120,6 +124,7 @@ describe('CngxDrawerSurface', () => {
         expect(q('.outside').hasAttribute('inert')).toBe(true);
         expect(q('.controller').hasAttribute('inert')).toBe(true);
         expect(q('.opener').hasAttribute('inert')).toBe(true);
+        expect(q('.inner-bar').hasAttribute('inert')).toBe(true);
         expect(bodyLevel.hasAttribute('inert')).toBe(true);
         expect(q('.scope').hasAttribute('inert')).toBe(false);
         expect(surface.parentElement?.closest('[inert]')).toBeNull();
@@ -171,9 +176,94 @@ describe('CngxDrawerSurface', () => {
     });
   });
 
-  describe('non-modal', () => {
+  describe('contained', () => {
+    const contained = (h: TestHost) => h.modality.set('contained');
+
+    it('keeps the landmark role: no dialog, no aria-modal, no trap', () => {
+      const { set, surface } = setup(contained);
+      set((h) => h.active.set(true));
+
+      expect(surface.getAttribute('role')).toBe('complementary');
+      expect(surface.hasAttribute('aria-modal')).toBe(false);
+      expect(mockTrap.enabled).toBe(false);
+    });
+
+    it('moves focus into the host on activation', () => {
+      const { set } = setup(contained);
+      set((h) => h.active.set(true));
+      expect(mockTrap.focusFirstTabbableElementWhenReady).toHaveBeenCalledTimes(1);
+    });
+
+    it('inerts the host siblings inside the boundary and nothing outside it', () => {
+      const { q, set } = setup(contained);
+      set((h) => h.active.set(true));
+
+      expect(q('.sibling').hasAttribute('inert')).toBe(true);
+      expect(q('.inner-text').hasAttribute('inert')).toBe(true);
+      expect(q('.scope').hasAttribute('inert')).toBe(false);
+      expect(q('.opener').hasAttribute('inert')).toBe(false);
+      expect(q('.outside').hasAttribute('inert')).toBe(false);
+      expect(q('.controller').hasAttribute('inert')).toBe(false);
+
+      set((h) => h.active.set(false));
+      expect(q('.sibling').hasAttribute('inert')).toBe(false);
+      expect(q('.inner-text').hasAttribute('inert')).toBe(false);
+      expect(q('.already-inert').hasAttribute('inert')).toBe(true);
+    });
+
+    it('never inerts the aria-controls owner inside the boundary', () => {
+      const { q, set } = setup(contained);
+      set((h) => h.active.set(true));
+
+      expect(q('.inner-controller').hasAttribute('inert')).toBe(false);
+      expect(q('.inner-bar').hasAttribute('inert')).toBe(false);
+    });
+
+    it('locks a scroll container inside the boundary, never the document root', () => {
+      const { q, set } = setup((h) => {
+        contained(h);
+        h.scrolling.set(true);
+      });
+      set((h) => h.active.set(true));
+
+      expect(q('.scope').style.overflow).toBe('hidden');
+      expect(document.documentElement.style.overflow).not.toBe('hidden');
+
+      set((h) => h.active.set(false));
+      expect(q('.scope').style.overflow).not.toBe('hidden');
+    });
+
+    it('locks nothing when nothing between the host and the boundary scrolls', () => {
+      const { q, set } = setup(contained);
+      set((h) => h.active.set(true));
+
+      expect(q('.scope').style.overflow).not.toBe('hidden');
+      expect(document.documentElement.style.overflow).not.toBe('hidden');
+    });
+
+    it('asks for dismissal on Escape and on a press outside the boundary', () => {
+      const { host, q, set } = setup(contained);
+      set((h) => h.active.set(true));
+      q('.inside').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      press(q('.outside'));
+      expect(host.dismissed).toHaveBeenCalledTimes(2);
+    });
+
+    it('restores focus to the opener on deactivate', () => {
+      const { q, set } = setup(contained);
+      q('.opener').focus();
+      set((h) => h.active.set(true));
+      q('.inside').focus();
+
+      set((h) => h.active.set(false));
+
+      expect(document.activeElement).toBe(q('.opener'));
+    });
+  });
+
+  describe('none', () => {
     it('keeps the page operable: no trap, no inert, no lock, complementary', () => {
-      const { q, set, surface } = setup((h) => h.modal.set(false));
+      const { q, set, surface } = setup((h) => h.modality.set('none'));
       set((h) => h.active.set(true));
 
       expect(mockTrap.enabled).toBe(false);
@@ -226,7 +316,7 @@ describe('CngxDrawerSurface', () => {
     });
 
     it('ignores a press on the controller and inside the host', () => {
-      const { host, set, q } = setup((h) => h.modal.set(false));
+      const { host, set, q } = setup((h) => h.modality.set('none'));
       set((h) => h.active.set(true));
       press(q('.controller'));
       press(q('.inside'));
@@ -243,7 +333,7 @@ describe('CngxDrawerSurface', () => {
   });
 
   it('restores focus to the opener on deactivate', () => {
-    const { q, set } = setup((h) => h.modal.set(false));
+    const { q, set } = setup((h) => h.modality.set('none'));
     q('.opener').focus();
     set((h) => h.active.set(true));
     q('.inside').focus();

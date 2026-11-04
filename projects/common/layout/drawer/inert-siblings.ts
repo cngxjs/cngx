@@ -4,9 +4,10 @@ import { CNGX_LIVE_SURFACE_SELECTOR } from '@cngx/core/utils';
  * @internal How far `createInertSiblings` reaches.
  *
  * - `'siblings'`: the element siblings of the host only (`CngxBackdrop`).
- * - `'outside'`: everything outside the host up to `document.body`: the
- *   siblings of the host and of every ancestor below `<body>`, like a modal
- *   dialog (`CngxDrawerSurface`).
+ * - `'outside'`: everything outside the host up to the `within` boundary
+ *   (default `document.body`): the siblings of the host and of every
+ *   ancestor below the boundary, like a modal dialog (`CngxDrawerSurface`).
+ *   Nothing outside the boundary is touched.
  */
 export type CngxInertScope = 'siblings' | 'outside';
 
@@ -42,6 +43,18 @@ export interface CngxInertSiblingsOptions {
   readonly scope?: CngxInertScope;
   /** Keeps further elements live (the backdrop keeps the drawer panel it guards). */
   readonly exclude?: (element: HTMLElement) => boolean;
+  /**
+   * The boundary of the `'outside'` scope: only elements inside it are
+   * inerted. Defaults to `document.body`. A boundary that does not contain
+   * the host inerts nothing.
+   */
+  readonly within?: HTMLElement;
+  /**
+   * A selector for further elements that stay live like the built-in ones:
+   * a match is not inerted, and an element that contains a match is entered
+   * instead of being inerted as a whole.
+   */
+  readonly keepLive?: string;
 }
 
 /**
@@ -62,16 +75,17 @@ export function createInertSiblings(
   host: HTMLElement,
   options: CngxInertSiblingsOptions = {},
 ): () => void {
-  const { scope = 'siblings', exclude = () => false } = options;
-  const root = scope === 'outside' ? host.ownerDocument.body : host.parentElement;
+  const { scope = 'siblings', exclude = () => false, within, keepLive } = options;
+  const root = scope === 'outside' ? (within ?? host.ownerDocument.body) : host.parentElement;
+  const liveSelector = keepLive ? `${KEEP_LIVE_SELECTOR}, ${keepLive}` : KEEP_LIVE_SELECTOR;
   const targets: HTMLElement[] = [];
 
   const keepsLive = (element: HTMLElement): boolean =>
-    element.matches(KEEP_LIVE_SELECTOR) || exclude(element);
+    element.matches(liveSelector) || exclude(element);
 
   const containsLive = (element: HTMLElement): boolean =>
     element.contains(host) ||
-    Array.from(element.querySelectorAll<HTMLElement>(KEEP_LIVE_SELECTOR)).some(
+    Array.from(element.querySelectorAll<HTMLElement>(liveSelector)).some(
       (node) => !host.contains(node),
     );
 
@@ -91,7 +105,7 @@ export function createInertSiblings(
     }
   };
 
-  if (root?.contains(host)) {
+  if (root && root !== host && root.contains(host)) {
     collect(root);
   }
   targets.forEach((target) => target.setAttribute('inert', ''));

@@ -8,6 +8,7 @@ export { CngxDrawerContent } from './drawer/drawer-content.directive';
 export {
   CngxDrawerSurface,
   CNGX_DRAWER_SURFACE_DRIVER,
+  type CngxDrawerModality,
   type CngxDrawerSurfaceDriver,
 } from './drawer/drawer-surface.directive';
 export { CngxIntersectionObserver } from './observers/intersection-observer.directive';

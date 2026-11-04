@@ -12,6 +12,7 @@ import { cngxDevWarn } from '@cngx/utils';
 import { CngxDrawer, type DrawerPosition } from './drawer.directive';
 import {
   CNGX_DRAWER_SURFACE_DRIVER,
+  type CngxDrawerModality,
   CngxDrawerSurface,
   type CngxDrawerSurfaceDriver,
 } from './drawer-surface.directive';
@@ -35,15 +36,38 @@ export type DrawerMode = 'over' | 'push';
  * was focused when the drawer opened - unless the user moved focus to
  * another element themselves.
  *
- * **Modality.** `modal` defaults to `mode === 'over'`. A modal open panel
- * traps focus, renders `role="dialog"` + `aria-modal="true"`, makes
- * everything outside it `inert` up to `<body>` (focus-trap anchors, live
- * regions and a visible backdrop stay live) and locks scrolling on the
- * nearest scroll container above it (else the document root). A non-modal panel keeps the page around it
- * operable and renders its landmark `role`. `push` is never modal: it lays
- * the panel out next to the content, which stays in use.
+ * **Modality.** `modality` defaults to `'page'` for `over` and `'none'` for
+ * `push`:
  *
- * The `role` input (landmark while not an open modal) defaults to
+ * - `'page'`: the open panel traps focus, renders `role="dialog"` +
+ *   `aria-modal="true"`, makes everything outside it `inert` up to `<body>`
+ *   (focus-trap anchors, live regions and a visible backdrop stay live) and
+ *   locks scrolling on the nearest scroll container above it (else the
+ *   document root). The full-height drawer that covers the app header.
+ * - `'contained'`: the same inside the `[cngxDrawer]` host only. The
+ *   panel's siblings inside the host are `inert` and a scroll container
+ *   between the panel and the host is locked; everything outside the host
+ *   stays live. No trap and no `aria-modal`: focus moves into the panel on
+ *   open, returns to the opener on close, and Tab can reach the page
+ *   around the host. The clipped drawer below a live app header: place the
+ *   header outside `[cngxDrawer]`.
+ * - `'none'`: the page around the panel stays operable.
+ *
+ * `push` is never modal: it lays the panel out next to the content, which
+ * stays in use; `'page'` or `'contained'` with `push` resolve to `'none'`
+ * and warn `CNGX1075` in development.
+ *
+ * **Scrim.** The panel renders `cngx-drawer-panel--modal` while its
+ * resolved modality is `'page'` or `'contained'` (plus
+ * `cngx-drawer-panel--contained` for the latter). The opt-in stylesheet
+ * `cngx-drawer.css` paints the scrim from it: add the `cngx-drawer` class
+ * to the `[cngxDrawer]` host and the host shows a scrim over itself while
+ * a modal panel inside it is open (`--cngx-drawer-scrim-bg`, default
+ * `--cngx-backdrop-bg`). A press on the scrim is a press outside the panel
+ * and closes the drawer. The panel sits above the scrim when it is
+ * positioned with a `z-index` above `--cngx-drawer-scrim-z-index` (`1`).
+ *
+ * The `role` input (landmark while not an open page modal) defaults to
  * `complementary`. On a `<nav>` host pass `[role]="null"` so the implicit
  * navigation landmark survives:
  *
@@ -63,7 +87,9 @@ export type DrawerMode = 'over' | 'push';
  * <example-url>/#/common/layout/drawer/controlled-mode</example-url>
  * <example-url>/#/common/layout/drawer/direction-all-four-sides</example-url>
  * <example-url>/#/common/layout/drawer/events-openedchange-closed</example-url>
- * <example-url>/#/common/layout/drawer/mode-over-push</example-url>
+ * <example-url>/#/common/layout/drawer/app-header-clipped</example-url>
+ * <example-url>/#/common/layout/drawer/full-height-modal</example-url>
+ * <example-url>/#/common/layout/drawer/filter-panel-push</example-url>
  * <example-url>/#/common/layout/drawer/pattern-consumer-wiring</example-url>
  */
 @Directive({
@@ -81,7 +107,8 @@ export type DrawerMode = 'over' | 'push';
     '[class.cngx-drawer-panel--bottom]': "position() === 'bottom'",
     '[class.cngx-drawer-panel--over]': "mode() === 'over'",
     '[class.cngx-drawer-panel--push]': "mode() === 'push'",
-    '[class.cngx-drawer-panel--modal]': 'surfaceModal()',
+    '[class.cngx-drawer-panel--modal]': "surfaceModality() !== 'none'",
+    '[class.cngx-drawer-panel--contained]': "surfaceModality() === 'contained'",
     '[attr.id]': 'panelId()',
     '[attr.aria-hidden]': 'isOpen() ? null : true',
     '[attr.inert]': "isOpen() ? null : ''",
@@ -109,19 +136,21 @@ export class CngxDrawerPanel implements CngxDrawerSurfaceDriver {
   readonly mode = input<DrawerMode>('over');
 
   /**
-   * Whether the open panel is modal (focus trap, `aria-modal`, inert
-   * siblings, scroll lock). Unbound, it follows the mode: `over` is modal,
-   * `push` is not. `push` is never modal; `[modal]="true"` with `push`
-   * resolves to non-modal and warns `CNGX1075` in development.
+   * How far the open panel takes over the page: `'page'` (modal dialog,
+   * inert up to `<body>`), `'contained'` (scrim, inert and scroll lock
+   * inside the `[cngxDrawer]` host only, no trap) or `'none'`. Unbound, it
+   * follows the mode: `over` is `'page'`, `push` is `'none'`. `push` is
+   * never modal; `'page'` or `'contained'` with `push` resolve to `'none'`
+   * and warn `CNGX1075` in development. See {@link CngxDrawerModality}.
    */
-  readonly modal = input<boolean | undefined>(undefined);
+  readonly modality = input<CngxDrawerModality | undefined>(undefined);
 
   /** Whether a press outside the panel closes the drawer. */
   readonly closeOnClickOutside = input<boolean>(true);
 
   /**
-   * Landmark role rendered on the panel while it is not an open modal (an
-   * open modal panel is a `dialog`). Defaults to `complementary`; pass
+   * Landmark role rendered on the panel while it is not an open page modal
+   * (an open `'page'` panel is a `dialog`; a `'contained'` one keeps this role). Defaults to `complementary`; pass
    * `navigation` for nav drawers or `null` to keep the element's implicit
    * role (e.g. on a `<nav>` host).
    */
@@ -149,7 +178,13 @@ export class CngxDrawerPanel implements CngxDrawerSurfaceDriver {
   /** @internal Drives the composed `CngxDrawerSurface`. */
   readonly surfaceActive = this.isOpen;
   /** @internal Drives the composed `CngxDrawerSurface`. */
-  readonly surfaceModal = computed(() => this.mode() === 'over' && (this.modal() ?? true));
+  readonly surfaceModality = computed<CngxDrawerModality>(() =>
+    this.mode() === 'push' ? 'none' : (this.modality() ?? 'page'),
+  );
+  /** @internal Drives the composed `CngxDrawerSurface`: the `[cngxDrawer]` host. */
+  readonly surfaceBoundary = computed<HTMLElement | null>(
+    () => (this.drawerRef()?.elementRef.nativeElement as HTMLElement | undefined) ?? null,
+  );
   /** @internal Drives the composed `CngxDrawerSurface`. */
   readonly surfaceLandmarkRole = this.role;
   /** @internal Drives the composed `CngxDrawerSurface`. */
@@ -158,15 +193,17 @@ export class CngxDrawerPanel implements CngxDrawerSurfaceDriver {
   constructor() {
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       effect(() => {
-        if (this.mode() !== 'push' || this.modal() !== true) {
+        const requested = this.modality();
+        if (this.mode() !== 'push' || requested === undefined || requested === 'none') {
           return;
         }
         untracked(() =>
           cngxDevWarn(
             'CNGX1075',
-            '[cngxDrawerPanel] mode="push" is never modal; [modal]="true" is ignored. ' +
+            '[cngxDrawerPanel] mode="push" is never modal; a page or contained modality resolves to "none". ' +
               'A push drawer lays out next to the content, which stays in use. ' +
               'Use mode="over" for a modal drawer.',
+            { modality: requested },
           ),
         );
       });

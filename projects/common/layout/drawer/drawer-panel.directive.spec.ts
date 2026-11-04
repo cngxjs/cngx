@@ -5,6 +5,7 @@ import { FocusTrapFactory } from '@angular/cdk/a11y';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxDrawer } from './drawer.directive';
 import { CngxDrawerPanel, type DrawerMode } from './drawer-panel.directive';
+import type { CngxDrawerModality } from './drawer-surface.directive';
 
 let mockTrap: {
   enabled: boolean;
@@ -21,18 +22,19 @@ let mockTrap: {
     <button class="controller" aria-controls="panel" (click)="drawerDir.toggle()" type="button">
       toggle
     </button>
-    <div cngxDrawer #drawer="cngxDrawer">
+    <div cngxDrawer #drawer="cngxDrawer" class="drawer-host">
       <nav
         id="panel"
         [cngxDrawerPanel]="drawer"
         [position]="position()"
         [mode]="mode()"
-        [modal]="modal()"
+        [modality]="modality()"
         [role]="role()"
         [closeOnClickOutside]="closeOnClickOutside()"
       >
         <a href="#">Link</a>
       </nav>
+      <main class="content">Content</main>
     </div>
   `,
   imports: [CngxDrawer, CngxDrawerPanel],
@@ -40,7 +42,7 @@ let mockTrap: {
 class TestHost {
   position = signal<'left' | 'right' | 'top' | 'bottom'>('left');
   mode = signal<DrawerMode>('over');
-  modal = signal<boolean | undefined>(undefined);
+  modality = signal<CngxDrawerModality | undefined>(undefined);
   role = signal<string | null>('complementary');
   closeOnClickOutside = signal(true);
   drawerDir!: CngxDrawer;
@@ -292,7 +294,7 @@ describe('CngxDrawerPanel', () => {
 
     it('keeps a non-modal over panel operable', () => {
       const ctx = setup();
-      ctx.host.modal.set(false);
+      ctx.host.modality.set('none');
       open(ctx);
       expect(ctx.panelEl.getAttribute('role')).toBe('complementary');
       expect(ctx.panelEl.hasAttribute('aria-modal')).toBe(false);
@@ -308,17 +310,111 @@ describe('CngxDrawerPanel', () => {
       expect(mockTrap.enabled).toBe(false);
     });
 
-    it('resolves push with [modal]="true" to non-modal and warns CNGX1075', () => {
+    for (const requested of ['page', 'contained'] as const) {
+      it(`resolves push with modality="${requested}" to none and warns CNGX1075`, () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const ctx = setup();
+        ctx.host.mode.set('push');
+        ctx.host.modality.set(requested);
+        open(ctx);
+
+        expect(ctx.panelEl.hasAttribute('aria-modal')).toBe(false);
+        expect(ctx.panelEl.classList).not.toContain('cngx-drawer-panel--modal');
+        expect(mockTrap.enabled).toBe(false);
+        expect(ctx.fixture.nativeElement.querySelector('.content').hasAttribute('inert')).toBe(
+          false,
+        );
+        const calls = warn.mock.calls.filter(([msg]) => /^CNGX1075: /.test(String(msg)));
+        expect(calls).toHaveLength(1);
+      });
+    }
+
+    it('does not warn for push with modality="none"', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
       const ctx = setup();
       ctx.host.mode.set('push');
-      ctx.host.modal.set(true);
+      ctx.host.modality.set('none');
       open(ctx);
-
-      expect(ctx.panelEl.hasAttribute('aria-modal')).toBe(false);
-      expect(mockTrap.enabled).toBe(false);
       const calls = warn.mock.calls.filter(([msg]) => /^CNGX1075: /.test(String(msg)));
-      expect(calls).toHaveLength(1);
+      expect(calls).toHaveLength(0);
+    });
+
+    describe('matrix', () => {
+      const q = (ctx: ReturnType<typeof setup>, sel: string) =>
+        (ctx.fixture.nativeElement as HTMLElement).querySelector(sel) as HTMLElement;
+
+      it('page: dialog, aria-modal, trap, inert up to body, document lock', () => {
+        const ctx = setup();
+        ctx.host.modality.set('page');
+        open(ctx);
+
+        expect(ctx.panelEl.getAttribute('role')).toBe('dialog');
+        expect(ctx.panelEl.getAttribute('aria-modal')).toBe('true');
+        expect(mockTrap.enabled).toBe(true);
+        expect(q(ctx, '.content').hasAttribute('inert')).toBe(true);
+        expect(q(ctx, '.controller').hasAttribute('inert')).toBe(true);
+        expect(q(ctx, '.outside-toggle').hasAttribute('inert')).toBe(true);
+        expect(document.documentElement.style.overflow).toBe('hidden');
+        expect(ctx.panelEl.classList).toContain('cngx-drawer-panel--modal');
+        expect(ctx.panelEl.classList).not.toContain('cngx-drawer-panel--contained');
+      });
+
+      it('contained: landmark role, no trap, inert inside the drawer host only', () => {
+        const ctx = setup();
+        ctx.host.modality.set('contained');
+        open(ctx);
+
+        expect(ctx.panelEl.getAttribute('role')).toBe('complementary');
+        expect(ctx.panelEl.hasAttribute('aria-modal')).toBe(false);
+        expect(mockTrap.enabled).toBe(false);
+        expect(mockTrap.focusFirstTabbableElementWhenReady).toHaveBeenCalledTimes(1);
+        expect(q(ctx, '.content').hasAttribute('inert')).toBe(true);
+        expect(q(ctx, '.drawer-host').hasAttribute('inert')).toBe(false);
+        expect(q(ctx, '.controller').hasAttribute('inert')).toBe(false);
+        expect(q(ctx, '.outside-toggle').hasAttribute('inert')).toBe(false);
+        expect(document.documentElement.style.overflow).not.toBe('hidden');
+        expect(ctx.panelEl.classList).toContain('cngx-drawer-panel--modal');
+        expect(ctx.panelEl.classList).toContain('cngx-drawer-panel--contained');
+      });
+
+      it('contained: a header control outside the drawer host stays operable', () => {
+        const ctx = setup();
+        ctx.host.modality.set('contained');
+        open(ctx);
+
+        q(ctx, '.controller').click();
+        ctx.fixture.detectChanges();
+        expect(ctx.drawer.opened()).toBe(false);
+      });
+
+      it('contained: Escape closes, focus returns to the opener', () => {
+        const ctx = setup();
+        ctx.host.modality.set('contained');
+        const opener = q(ctx, '.outside-toggle');
+        opener.focus();
+        open(ctx);
+        (ctx.panelEl.querySelector('a') as HTMLElement).focus();
+
+        ctx.panelEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        ctx.fixture.detectChanges();
+        TestBed.flushEffects();
+
+        expect(ctx.drawer.opened()).toBe(false);
+        expect(document.activeElement).toBe(opener);
+        expect(q(ctx, '.content').hasAttribute('inert')).toBe(false);
+      });
+
+      it('none: landmark role, no trap, nothing inert, no lock, no scrim class', () => {
+        const ctx = setup();
+        ctx.host.modality.set('none');
+        open(ctx);
+
+        expect(ctx.panelEl.getAttribute('role')).toBe('complementary');
+        expect(mockTrap.enabled).toBe(false);
+        expect(q(ctx, '.content').hasAttribute('inert')).toBe(false);
+        expect(document.documentElement.style.overflow).not.toBe('hidden');
+        expect(ctx.panelEl.classList).not.toContain('cngx-drawer-panel--modal');
+      });
     });
 
     it('closes a push panel on Escape and an outside press', () => {

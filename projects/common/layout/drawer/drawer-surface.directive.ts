@@ -35,8 +35,26 @@ import { createScrollLock } from '../scroll/scroll-lock-core';
 import { createInertSiblings } from './inert-siblings';
 
 /**
+ * How far an engaged `CngxDrawerSurface` takes over the page.
+ *
+ * - `'page'`: a modal dialog. Focus trap, `role="dialog"` + `aria-modal`,
+ *   everything outside the host `inert` up to `<body>`, scroll lock on the
+ *   nearest scroll container above the host.
+ * - `'contained'`: modal only inside a boundary element (for a drawer, the
+ *   `[cngxDrawer]` host). The host's siblings inside the boundary are
+ *   `inert` and a scroll container inside the boundary is locked; everything
+ *   outside the boundary (an app header above a clipped drawer) stays live.
+ *   No trap and no `aria-modal`: focus moves into the host on activation
+ *   and Tab can reach the live page around the boundary.
+ * - `'none'`: the page stays operable. No trap, no inert, no lock.
+ *
+ * @since 0.1.0
+ */
+export type CngxDrawerModality = 'page' | 'contained' | 'none';
+
+/**
  * @internal Lets a directive that composes `CngxDrawerSurface` as a host
- * directive drive it from its own state instead of `[active]` / `[modal]`.
+ * directive drive it from its own state instead of `[active]` / `[modality]`.
  * Provided by the composer on the same element (`useExisting`); the surface
  * resolves it lazily with `self: true`, because the composer constructs after
  * its host directives.
@@ -44,11 +62,16 @@ import { createInertSiblings } from './inert-siblings';
 export interface CngxDrawerSurfaceDriver {
   /** Whether the surface is engaged; wins over `[active]`. */
   readonly surfaceActive: Signal<boolean>;
-  /** Whether the engaged surface is modal; wins over `[modal]`. */
-  readonly surfaceModal: Signal<boolean>;
+  /** The modality of the engaged surface; wins over `[modality]`. */
+  readonly surfaceModality: Signal<CngxDrawerModality>;
   /**
-   * Landmark role while the surface is not an engaged modal. Without it the
-   * surface renders `complementary`.
+   * The boundary of a `contained` surface. Without it, or when it does not
+   * contain the host, the host's parent element is the boundary.
+   */
+  readonly surfaceBoundary?: Signal<HTMLElement | null>;
+  /**
+   * Landmark role while the surface is not an engaged page modal. Without it
+   * the surface renders `complementary`.
    */
   readonly surfaceLandmarkRole?: Signal<string | null>;
   /** Whether a press outside the host asks for dismissal. Without it, it does. */
@@ -74,23 +97,38 @@ const SCROLLING_OVERFLOW = new Set(['auto', 'scroll']);
  * not outside, so the trigger can toggle the surface itself. Focus returns
  * to the element focused at activation when the surface deactivates.
  *
- * Modal (`[modal]="true"`, the default) additionally traps focus, renders
- * `role="dialog"` + `aria-modal="true"`, makes everything outside the host
- * `inert` up to `<body>` (the siblings of the host and of every ancestor,
- * like a modal dialog; focus-trap anchors, live regions, the CDK overlay
+ * `modality` decides how far the engaged surface takes over the page:
+ *
+ * - `'page'` (default) additionally traps focus, renders `role="dialog"` +
+ *   `aria-modal="true"`, makes everything outside the host `inert` up to
+ *   `<body>` (the siblings of the host and of every ancestor, like a modal
+ *   dialog) and locks scrolling on the nearest scroll container above the
+ *   host (the nearest ancestor with a computed `overflow-y` of `auto` or
+ *   `scroll`, else the document root).
+ * - `'contained'` does the same inside a boundary only: the host's siblings
+ *   inside the boundary are `inert`, the nearest scroll container between
+ *   the host and the boundary (inclusive) is locked if there is one, and
+ *   nothing outside the boundary is touched. The element whose `aria-controls`
+ *   names the host stays live wherever it sits. No trap and no
+ *   `aria-modal` (the page around the boundary is operable, so the surface
+ *   must not claim it is not); the landmark role stays and focus moves to
+ *   the first tabbable element inside the host on activation. The
+ *   boundary is the host's parent element unless a composer names one
+ *   (`CngxDrawerPanel` names its `[cngxDrawer]` host).
+ * - `'none'` keeps the page around it operable: no trap, no lock, no
+ *   inert, `role="complementary"`.
+ *
+ * In every modality focus-trap anchors, live regions, the CDK overlay
  * container, the toast and banner outlets and a visible `CngxBackdrop` stay
- * live, and an `inert` set by someone else is kept on release) and locks
- * scrolling on the nearest scroll container above the host (the nearest
- * ancestor with a computed `overflow-y` of `auto` or `scroll`, else
- * the document root). Non-modal keeps the page around it operable: no trap,
- * no lock, no inert, `role="complementary"`.
+ * live, and an `inert` set by someone else is kept on release. Escape, the
+ * back gesture and an outside press ask for dismissal in all three.
  *
  * The surface does not own the open state: it reports `dismiss` and the
  * owner decides. It composes `CngxFocusTrap`, `CngxFocusRestore` and
  * `CngxClickOutside` and drives them; none of their inputs is re-exposed.
  *
  * ```html
- * <aside id="filters" cngxDrawerSurface [active]="open()" [modal]="false"
+ * <aside id="filters" cngxDrawerSurface [active]="open()" modality="none"
  *        (dismiss)="open.set(false)">…</aside>
  * <button aria-controls="filters" [attr.aria-expanded]="open()"
  *         (click)="open.set(!open())">Filters</button>
@@ -117,7 +155,7 @@ const SCROLLING_OVERFLOW = new Set(['auto', 'scroll']);
   ],
   host: {
     '[attr.role]': 'surfaceRole()',
-    '[attr.aria-modal]': "engagedModal() ? 'true' : null",
+    '[attr.aria-modal]': "engagedPage() ? 'true' : null",
     '(keydown.escape)': 'handleEscape()',
   },
 })
@@ -130,10 +168,11 @@ export class CngxDrawerSurface
    */
   readonly active = input<boolean>(false);
   /**
-   * Whether the engaged surface is modal: focus trap, `aria-modal`, inert
-   * outside the host up to `<body>` and scroll lock. `false` keeps the page around it operable.
+   * How far the engaged surface takes over the page: `'page'` (modal dialog,
+   * inert up to `<body>`), `'contained'` (inert and scroll lock inside the
+   * boundary only, no trap) or `'none'`. See {@link CngxDrawerModality}.
    */
-  readonly modal = input<boolean>(true);
+  readonly modality = input<CngxDrawerModality>('page');
   /**
    * Emitted when the user asks to dismiss the engaged surface: Escape, the
    * back gesture, or a press outside the host. The owner closes it.
@@ -144,10 +183,11 @@ export class CngxDrawerSurface
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly doc = inject(DOCUMENT);
   private readonly domReady = signal(false);
-  // True while the modal scope (inert outside the host, scroll lock) is
+  // True while the modal scope (inert around the host, scroll lock) is
   // applied. Focus restore waits for it: the opener sits outside the host,
   // and focus() on an inert element is a no-op that leaves focus on <body>.
-  private readonly modalScopeHeld = signal(false);
+  private readonly scopeHeld = signal(false);
+  private readonly focusTrap = inject(CngxFocusTrap, { self: true });
   private destroyed = false;
 
   private resolvedDriver: CngxDrawerSurfaceDriver | null | undefined = undefined;
@@ -160,12 +200,18 @@ export class CngxDrawerSurface
 
   /** Whether the surface is engaged, after the driver. */
   readonly isActive = computed(() => this.driver()?.surfaceActive() ?? this.active());
-  /** Whether the surface is modal, after the driver. */
-  readonly isModal = computed(() => this.driver()?.surfaceModal() ?? this.modal());
+  /** The modality of the surface, after the driver. */
+  readonly resolvedModality = computed<CngxDrawerModality>(
+    () => this.driver()?.surfaceModality() ?? this.modality(),
+  );
 
-  protected readonly engagedModal = computed(() => this.isActive() && this.isModal());
+  /** The modality while engaged; `'none'` while the surface is not active. */
+  protected readonly engagedModality = computed<CngxDrawerModality>(() =>
+    this.isActive() ? this.resolvedModality() : 'none',
+  );
+  protected readonly engagedPage = computed(() => this.engagedModality() === 'page');
   protected readonly surfaceRole = computed(() => {
-    if (this.engagedModal()) {
+    if (this.engagedPage()) {
       return 'dialog';
     }
     const landmark = this.driver()?.surfaceLandmarkRole;
@@ -173,14 +219,14 @@ export class CngxDrawerSurface
   });
 
   /** @internal Drives the composed `CngxFocusTrap`. */
-  readonly focusTrapEnabled = this.engagedModal;
+  readonly focusTrapEnabled = this.engagedPage;
   /** @internal Drives the composed `CngxFocusTrap`. */
   readonly focusTrapAutoFocus = true;
   /**
    * @internal Drives the composed `CngxFocusRestore`. Falls only once the
    * modal scope is released, so the restore target is no longer inert.
    */
-  readonly focusRestoreActive = computed(() => this.isActive() || this.modalScopeHeld());
+  readonly focusRestoreActive = computed(() => this.isActive() || this.scopeHeld());
   /** @internal Drives the composed `CngxClickOutside`. */
   readonly clickOutsideEnabled = computed(
     () => this.isActive() && (this.driver()?.surfaceOutsideDismiss?.() ?? true),
@@ -206,18 +252,56 @@ export class CngxDrawerSurface
     });
 
     effect((onCleanup) => {
-      if (!this.domReady() || !this.engagedModal()) {
+      const modality = this.engagedModality();
+      if (!this.domReady() || modality === 'none') {
         return;
       }
-      const releaseInert = createInertSiblings(this.host, { scope: 'outside' });
-      const releaseLock = createScrollLock(this.scrollScope());
-      untracked(() => this.modalScopeHeld.set(true));
+      const release = untracked(() =>
+        modality === 'page' ? this.holdPageScope() : this.holdContainedScope(),
+      );
+      untracked(() => this.scopeHeld.set(true));
       onCleanup(() => {
-        releaseInert();
-        releaseLock();
-        this.modalScopeHeld.set(false);
+        release();
+        this.scopeHeld.set(false);
       });
     });
+  }
+
+  private holdPageScope(): () => void {
+    const releaseInert = createInertSiblings(this.host, { scope: 'outside' });
+    const releaseLock = createScrollLock(this.scrollScope(this.doc.documentElement));
+    return () => {
+      releaseInert();
+      releaseLock();
+    };
+  }
+
+  // No trap: focus moves in once, Tab may leave for the live page around
+  // the boundary. The trap's focusFirst() waits for the render that drops
+  // the closed panel's inert.
+  private holdContainedScope(): () => void {
+    const boundary = this.containedBoundary();
+    const id = this.host.id;
+    const releaseInert = createInertSiblings(this.host, {
+      scope: 'outside',
+      within: boundary,
+      keepLive: id ? `[aria-controls~="${id.replace(/["\\]/g, '\\$&')}"]` : undefined,
+    });
+    const scroller = this.scrollScope(null, boundary);
+    const releaseLock = scroller ? createScrollLock(scroller) : null;
+    this.focusTrap.focusFirst();
+    return () => {
+      releaseInert();
+      releaseLock?.();
+    };
+  }
+
+  private containedBoundary(): HTMLElement {
+    const named = this.driver()?.surfaceBoundary?.();
+    if (named && named !== this.host && named.contains(this.host)) {
+      return named;
+    }
+    return this.host.parentElement ?? this.doc.body;
   }
 
   protected handleEscape(): void {
@@ -250,7 +334,12 @@ export class CngxDrawerSurface
     }
   }
 
-  private scrollScope(): HTMLElement {
+  // The nearest ancestor with a scrolling overflow-y, searched up to `stop`
+  // (inclusive) or to the document root.
+  private scrollScope<T extends HTMLElement | null>(
+    fallback: T,
+    stop?: HTMLElement,
+  ): HTMLElement | T {
     const view = this.doc.defaultView;
     let node = this.host.parentElement;
     while (node && node !== this.doc.body && node !== this.doc.documentElement) {
@@ -258,8 +347,11 @@ export class CngxDrawerSurface
       if (SCROLLING_OVERFLOW.has(overflowY)) {
         return node;
       }
+      if (node === stop) {
+        break;
+      }
       node = node.parentElement;
     }
-    return this.doc.documentElement;
+    return fallback;
   }
 }

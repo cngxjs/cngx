@@ -64,6 +64,46 @@ describe('CngxBackdrop geometry (Track-B)', () => {
   });
 });
 
+// ── cngx-drawer.css ────────────────────────────────────────────────────────
+
+@Component({
+  standalone: true,
+  encapsulation: ViewEncapsulation.None,
+  styleUrls: ['./cngx-drawer.css'],
+  template: `
+    <div class="cngx-drawer drawer-idle">
+      <nav class="cngx-drawer-panel cngx-drawer-panel--modal"></nav>
+    </div>
+    <div class="cngx-drawer drawer-modal">
+      <nav class="cngx-drawer-panel cngx-drawer-panel--modal cngx-drawer-panel--open"></nav>
+    </div>
+    <div class="cngx-drawer drawer-none">
+      <nav class="cngx-drawer-panel cngx-drawer-panel--open"></nav>
+    </div>
+  `,
+})
+class DrawerScrimHost {}
+
+describe('CngxDrawer scrim geometry (Track-B)', () => {
+  it('covers the host and shows only while a modal panel is open', () => {
+    const fixture = TestBed.createComponent(DrawerScrimHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const host = (sel: string) => mountedRoot?.querySelector(sel) as HTMLElement;
+    const scrim = (sel: string) => getComputedStyle(host(sel), '::after');
+
+    expect(computedValue(host('.drawer-idle'), 'position')).toBe('relative');
+    expect(scrim('.drawer-idle').position).toBe('absolute');
+    expect(scrim('.drawer-idle').top).toBe('0px');
+    expect(scrim('.drawer-idle').opacity).toBe('0');
+    expect(scrim('.drawer-idle').pointerEvents).toBe('none');
+    expect(scrim('.drawer-modal').opacity).toBe('1');
+    expect(scrim('.drawer-modal').pointerEvents).toBe('auto');
+    expect(scrim('.drawer-none').opacity).toBe('0');
+  });
+});
+
 // ── cngx-badge.css ─────────────────────────────────────────────────────────
 
 @Component({
