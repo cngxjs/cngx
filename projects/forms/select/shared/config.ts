@@ -435,7 +435,13 @@ export interface CngxSelectConfig {
    * on a dialog that is being removed.
    */
   readonly restoreFocus?: boolean;
-  /** Dismiss strategy: click outside, Escape, or both. */
+  /**
+   * Dismiss strategy: click outside, Escape, or both. This governs the
+   * pointer and Escape vectors only. Focus leaving the host (Tab navigation
+   * out of the control) always closes the panel, in every mode including
+   * `'escape'`: a panel the user has Tab-navigated away from is no longer
+   * theirs to keep open, and it is not an outside dismissal to suppress.
+   */
   readonly dismissOn?: 'outside' | 'escape' | 'both';
   /**
    * Open strategy: click, focus, or both. Honoured by all nine composites;
@@ -858,7 +864,10 @@ export function withRestoreFocus(enabled: boolean): CngxSelectConfigFeature {
 }
 
 /**
- * Dismiss strategy for the panel. Default `'both'`.
+ * Dismiss strategy for the panel. Default `'both'`. Controls the pointer and
+ * Escape vectors; focus leaving the host (Tab navigation out of the control)
+ * closes the panel in every mode, `'escape'` included - a Tab-navigation
+ * close is not an outside dismissal, so no `dismissOn` value suppresses it.
  */
 export function withDismissOn(mode: CngxSelectConfig['dismissOn']): CngxSelectConfigFeature {
   return feature({ dismissOn: mode });
