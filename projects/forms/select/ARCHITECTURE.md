@@ -603,6 +603,10 @@ Then bind the resulting `Field<T>` to `<cngx-form-field [field]="rfField">` exac
 
 `createFieldSync` (in `projects/forms/field/field-sync.ts`, exported from `@cngx/forms/field`) is the shared bridge - two `effect()`s install bidirectional `componentValue ↔ field.value()` sync, both directions guarded by `valueEquals` to suppress redundant writes. The select family reaches it through `shared/field-sync.ts`, which gates the sync on `CNGX_SELECT_DISABLE_FIELD_SYNC`: a subtree can opt out of value-sync (while keeping the disabled / focused / errorState bridge) by providing that token truthy - used by composites like `CngxFilterBuilderFormFieldControl` that are themselves the form-field control, so their inner selects never sync the composite's object value.
 
+### Why the select family has no ControlValueAccessor
+
+A `ControlValueAccessor` is imperative by construction: `writeValue` -> `registerOnChange` -> `registerOnTouched` are callbacks outside the signal graph, and every control that implements them re-plumbs the same `onChange` / `onTouched` wiring. The select family carries one source of truth instead - the primary `model()` (`value` / `values`) - and bridges to a form through `CNGX_FORM_FIELD_CONTROL` plus `createFieldSync`, so value, disabled, focused and error state all derive from signals the trigger already shows. A consumer who has a CVA control (Material, native, third-party) still bridges it with `cngxBindField`; CNGX just never authors one on its own atoms. Reactive Forms reach the same surface through the one-shot `adaptFormControl` above, not through a CVA.
+
 ---
 
 ## Panel-shell + panel split
