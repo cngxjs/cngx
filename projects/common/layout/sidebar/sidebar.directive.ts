@@ -66,7 +66,9 @@ export type CngxSidebarState = 'expanded' | 'rail' | 'hidden' | 'peek';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/sidebar/sidebar.directive.ts
  * @since 0.1.0
  * @relatedTo CngxPanelTrigger, CngxDrawer, CngxHoverIntent, CngxResizable
+ * <example-url>/#/common/layout/sidebar/clipped-below-header</example-url>
  * <example-url>/#/common/layout/sidebar/collapsible-rail</example-url>
+ * <example-url>/#/common/layout/sidebar/inset-app-sidebar</example-url>
  * @axis level molecule
  */
 @Directive({
