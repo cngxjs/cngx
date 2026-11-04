@@ -226,7 +226,7 @@
     {
       "class": "CngxSidebar",
       "file": "projects/common/layout/sidebar/sidebar.directive.ts",
-      "line": 151,
+      "line": 153,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
