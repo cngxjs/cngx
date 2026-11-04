@@ -91,7 +91,7 @@ describe('I8: the commit-error id rides on exactly one aria reference', () => {
 // non-sr-only error on the trigger. ─────────────────────────────────────────
 describe('H7: an optimistic rejection surfaces a visible trigger error while closed', () => {
   for (const kind of ALL) {
-    it.fails(`${kind.name}: the commit error renders outside the sr-only node and the closed panel`, () => {
+    it(`${kind.name}: the commit error renders outside the sr-only node and the closed panel`, () => {
       const m = mount(kind, { mode: 'optimistic', commit: () => throwError(() => new Error('rejected')) });
       m.pickAt(1);
       m.v.close();
