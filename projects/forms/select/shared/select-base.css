@@ -2333,6 +2333,11 @@
   .cngx-select__option.cngx-option--highlighted {
     background: Highlight;
     color: HighlightText;
+    /* An outline inside the Highlight plate marks the active row apart from a
+       merely selected one (which carries a CanvasText bar below); HighlightText
+       reads on the plate. */
+    outline: 2px solid HighlightText;
+    outline-offset: -2px;
     /* Chromium paints a Canvas backplate behind the label text; without the
      * opt-out the HighlightText label sits on that plate and vanishes. The
      * opt-out is inherited, so the row declares its ink for nested indicators
@@ -2342,6 +2347,16 @@
   }
   .cngx-select__option.cngx-option--highlighted .cngx-select__check {
     color: HighlightText;
+  }
+
+  /* A selected row that is not the active one: the author tint collapses to
+     Canvas, so it re-signals with a 2px CanvasText bar on the inline-start
+     edge. Covers the data-mode modifier (`cngx-select__option--selected`) and
+     the declarative / shell atom class (`cngx-option--selected`). */
+  .cngx-select__option--selected:not(.cngx-option--highlighted),
+  .cngx-option--selected:not(.cngx-option--highlighted) {
+    border-inline-start: 2px solid CanvasText;
+    forced-color-adjust: none;
   }
 
   /* A disabled option fades by colour, which the forced palette overrides

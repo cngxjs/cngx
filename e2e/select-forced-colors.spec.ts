@@ -68,16 +68,14 @@ test.describe('select forced-colors (WHCM) row paint', () => {
     await trigger.click();
   }
 
-  // I5 - selected-but-not-active option keeps a 2px CanvasText inline-start bar.
-  test.fail('a selected, not active option keeps a CanvasText inline-start bar', async ({ page }) => {
-    await openForced(page, '/#/forms/select/multi-select/multi-basic');
-    await openPanel(page);
-    const options = page.locator('.cngx-ex-artifact .cngx-select__option');
-    await expect(options.first()).toBeVisible();
-    await options.nth(0).click();
-    await page.keyboard.press('ArrowDown');
+  // I5 - selected-but-not-active option keeps a 2px CanvasText inline-start
+  // bar. The route pre-seeds several values, so a selected-not-active row is on
+  // screen as soon as the panel opens (no fragile click sequence).
+  test('a selected, not active option keeps a CanvasText inline-start bar', async ({ page }) => {
+    await openForced(page, '/#/forms/select/multi-select/multi-chip-overflow-truncate');
+    await openPanel(page, '.cngx-multi-select__trigger');
     const selected = page
-      .locator('.cngx-ex-artifact .cngx-option--selected:not(.cngx-option--highlighted)')
+      .locator('.cngx-ex-artifact .cngx-select__option--selected:not(.cngx-option--highlighted)')
       .first();
     await expect(selected).toBeVisible();
     const sys = await systemColours(page);
@@ -87,7 +85,7 @@ test.describe('select forced-colors (WHCM) row paint', () => {
   });
 
   // I5 - the active row carries a HighlightText outline inside its Highlight plate.
-  test.fail('the active option row draws a HighlightText outline inside its plate', async ({ page }) => {
+  test('the active option row draws a HighlightText outline inside its plate', async ({ page }) => {
     await openForced(page, '/#/forms/select/single-select/clearable');
     await openPanel(page);
     await page.keyboard.press('ArrowDown');
