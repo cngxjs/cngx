@@ -29,6 +29,7 @@ export const INPUTS = [
   { include: 'scripts/pack-libs.mjs' },
   { include: 'scripts/consumer-fixture.mjs' },
   { include: 'scripts/publish.mjs' },
+  { include: 'scripts/plugin-release.mjs' },
   { include: 'scripts/cngx-libs.mjs' },
   { include: 'scripts/schematics-consumer-inputs.mjs' },
   { include: 'package.json' },
