@@ -574,13 +574,15 @@ function splitVersion(version) {
   const base = at === -1 ? version : version.slice(0, at);
   const pre = at === -1 ? '' : version.slice(at + 1);
   // Number('') is 0, so each part is checked as a digit string first: 1..0
-  // would otherwise read as 1.0.0.
+  // would otherwise read as 1.0.0. Semver 2.0 forbids a leading zero in a
+  // numeric part and in a numeric prerelease identifier.
+  const numeric = /^(0|[1-9]\d*)$/;
   const parts = base.split('.');
   const identifiers = at === -1 ? [] : pre.split('.');
   const wellFormed =
     parts.length === 3 &&
-    parts.every((part) => /^\d+$/.test(part)) &&
-    identifiers.every((id) => /^[0-9A-Za-z-]+$/.test(id));
+    parts.every((part) => numeric.test(part)) &&
+    identifiers.every((id) => /^[0-9A-Za-z-]+$/.test(id) && (!/^\d+$/.test(id) || numeric.test(id)));
   if (!wellFormed) {
     throw new Error(`"${version}" is not a release version (x.y.z or x.y.z-pre)`);
   }

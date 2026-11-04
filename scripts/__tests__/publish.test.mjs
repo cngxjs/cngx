@@ -241,6 +241,15 @@ describe('compareReleaseVersions', () => {
     }
   });
 
+  it('refuses a leading zero in a numeric part or numeric prerelease identifier, as semver 2.0 does', () => {
+    for (const version of ['01.2.0', '1.02.0', '1.0.00', '1.0.0-01', '1.0.0-rc.007']) {
+      expect(() => compareReleaseVersions(version, '0.1.0')).toThrow(`"${version}" is not a release version`);
+    }
+    expect(compareReleaseVersions('1.0.0-rc.0', '0.3.0')).toBeGreaterThan(0);
+    expect(compareReleaseVersions('0.3.0', '0.3.0')).toBe(0);
+    expect(compareReleaseVersions('1.0.0-0a', '1.0.0-0')).toBeGreaterThan(0);
+  });
+
   it('refuses --version 1..0 before any build, in the version pre-flight', () => {
     const current = { 'the libs (root package.json)': '0.1.0-rc.9', '@cngx/mcp': '0.2.0', '@cngx/cli': '0.1.0' };
 
