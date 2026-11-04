@@ -12,7 +12,7 @@
 // Every run releases the libs, @cngx/mcp and @cngx/cli at one version
 // (LOCKSTEP_PACKAGES in cngx-libs.mjs): mcp and cli first, then the libs.
 
-import { execSync } from 'node:child_process';
+import { execSync, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { dirname, resolve, join, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -592,9 +592,27 @@ export function readPackageVersion(name) {
   return readPackageManifest(name).version;
 }
 
+// Runs one release step through the shell with inherited stdio. A step that
+// exits non-zero or whose child a signal ended (Ctrl+C reaches the whole
+// process group) throws, so the restore paths run; a signal-ended step never
+// counts as done. No signal handler is installed: main() is synchronous, so
+// Node would run one only after the release finished.
+export function runStep(cmd, cwd = ROOT, spawn = spawnSync) {
+  const result = spawn(cmd, { cwd, stdio: 'inherit', shell: true });
+  if (result.error) {
+    throw result.error;
+  }
+  if (result.signal) {
+    throw new Error(`${cmd} was ended by ${result.signal}`);
+  }
+  if (result.status !== 0) {
+    throw new Error(`${cmd} exited with ${result.status}`);
+  }
+}
+
 function run(cmd, cwd = ROOT) {
   console.log(`  $ ${cmd}`);
-  execSync(cmd, { cwd, stdio: 'inherit' });
+  runStep(cmd, cwd);
 }
 
 function capture(cmd, cwd = ROOT) {

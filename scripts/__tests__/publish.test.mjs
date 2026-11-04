@@ -32,6 +32,7 @@ import {
   releasePins,
   replaceVersionInDist,
   resolveDistTag,
+  runStep,
   runToolingSection,
   skipGitTagNote,
   stampManifest,
@@ -791,6 +792,16 @@ describe('runToolingSection', () => {
     expect(lock.packages[''].version).toBe('0.3.0');
   });
 
+  it('restores the files byte for byte when a step child is ended by a signal', () => {
+    const before = snapshot();
+    const spawn = (cmd) => (cmd.startsWith('npx tsc') ? { status: null, signal: 'SIGINT' } : { status: 0, signal: null });
+
+    expect(() =>
+      runToolingSection({ root, nextVersion: '0.3.0', run: (step) => runStep(step, root, spawn), keepStamped: true }),
+    ).toThrow(/npx tsc -p packages\/mcp was ended by SIGINT/);
+    expect(snapshot()).toEqual(before);
+  });
+
   it('hands back a restore that writes the originals byte for byte after a kept stamp', () => {
     const before = snapshot();
 
@@ -798,6 +809,35 @@ describe('runToolingSection', () => {
     restore();
 
     expect(snapshot()).toEqual(before);
+  });
+});
+
+describe('runStep', () => {
+  it('runs the command through the shell with inherited stdio in the given directory', () => {
+    const calls = [];
+    const spawn = (cmd, options) => {
+      calls.push([cmd, options]);
+      return { status: 0, signal: null };
+    };
+
+    expect(() => runStep('npm publish', '/repo/packages/mcp', spawn)).not.toThrow();
+    expect(calls).toEqual([['npm publish', { cwd: '/repo/packages/mcp', stdio: 'inherit', shell: true }]]);
+  });
+
+  it('throws for a child ended by a signal, never treating it as success', () => {
+    expect(() => runStep('npm publish', '/repo', () => ({ status: null, signal: 'SIGTERM' }))).toThrow(
+      'npm publish was ended by SIGTERM',
+    );
+  });
+
+  it('throws for a non-zero exit', () => {
+    expect(() => runStep('npx tsc -p packages/cli', '/repo', () => ({ status: 2, signal: null }))).toThrow(
+      'npx tsc -p packages/cli exited with 2',
+    );
+  });
+
+  it('throws when the child cannot be started', () => {
+    expect(() => runStep('npm publish', '/repo', () => ({ error: new Error('spawn ENOENT') }))).toThrow('spawn ENOENT');
   });
 });
 
