@@ -9,8 +9,11 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { PACKED_LIBS } from '../cngx-libs.mjs';
 
 import {
+  assertDependencyResolvable,
   assertPinsPublished,
+  assertVersionAdvances,
   assertWholeGroup,
+  compareReleaseVersions,
   assertReleaseMigration,
   checkReleaseMigrations,
   releaseMigrationKeys,
@@ -129,9 +132,9 @@ describe('createSchematicsVersions', () => {
 });
 
 describe('assertPinsPublished', () => {
-  const pins = { mcpVersion: '0.2.0', eslintPluginVersion: '0.2.1' };
+  const pins = { eslintPluginVersion: '0.2.1' };
 
-  it('passes when every pinned version is on npm', () => {
+  it('looks up only the eslint-plugin pin; @cngx/mcp is published in the same run', () => {
     const asked = [];
     const view = (spec) => {
       asked.push(spec);
@@ -139,11 +142,11 @@ describe('assertPinsPublished', () => {
     };
 
     expect(() => assertPinsPublished(pins, view)).not.toThrow();
-    expect(asked).toEqual(['@cngx/mcp@0.2.0', '@cngx/eslint-plugin@0.2.1']);
+    expect(asked).toEqual(['@cngx/eslint-plugin@0.2.1']);
   });
 
   it('refuses a pin npm does not list', () => {
-    const view = (spec) => (spec.startsWith('@cngx/eslint-plugin') ? '' : '0.2.0');
+    const view = () => '';
 
     expect(() => assertPinsPublished(pins, view)).toThrow(
       '@cngx/eslint-plugin@0.2.1 is not on npm; publish it first',
@@ -155,7 +158,9 @@ describe('assertPinsPublished', () => {
       throw new Error('ENOTFOUND');
     };
 
-    expect(() => assertPinsPublished(pins, view)).toThrow('could not look up @cngx/mcp@0.2.0 on npm: ENOTFOUND');
+    expect(() => assertPinsPublished(pins, view)).toThrow(
+      'could not look up @cngx/eslint-plugin@0.2.1 on npm: ENOTFOUND',
+    );
   });
 
   it('refuses an E404 from npm view as not on npm', () => {
@@ -165,10 +170,117 @@ describe('assertPinsPublished', () => {
         stderr: 'npm warn noise\nnpm error code E404\nnpm error 404 No match found for version 0.2.1\n',
       });
     };
-    const view = (spec) => (spec.startsWith('@cngx/mcp') ? '0.2.0\n' : npmViewVersion(spec, '', exec));
+    const view = (spec) => npmViewVersion(spec, '', exec);
 
     expect(() => assertPinsPublished(pins, view)).toThrow(
       '@cngx/eslint-plugin@0.2.1 is not on npm; publish it first',
+    );
+  });
+});
+
+describe('compareReleaseVersions', () => {
+  it('sorts a prerelease below its release and the release below the next patch', () => {
+    expect(compareReleaseVersions('0.1.0-rc.9', '0.1.0')).toBeLessThan(0);
+    expect(compareReleaseVersions('0.1.0', '0.1.1')).toBeLessThan(0);
+    expect(compareReleaseVersions('0.1.1', '0.1.0-rc.9')).toBeGreaterThan(0);
+  });
+
+  it('compares numeric prerelease identifiers as numbers', () => {
+    expect(compareReleaseVersions('0.1.0-rc.9', '0.1.0-rc.10')).toBeLessThan(0);
+    expect(compareReleaseVersions('0.1.0-rc.10', '0.1.0-rc.9')).toBeGreaterThan(0);
+  });
+
+  it('lets a minor beat any patch and a major beat any minor', () => {
+    expect(compareReleaseVersions('0.2.0', '0.1.9')).toBeGreaterThan(0);
+    expect(compareReleaseVersions('1.0.0', '0.99.99')).toBeGreaterThan(0);
+  });
+
+  it('is 0 for equal versions', () => {
+    expect(compareReleaseVersions('0.3.0', '0.3.0')).toBe(0);
+    expect(compareReleaseVersions('0.1.0-rc.9', '0.1.0-rc.9')).toBe(0);
+  });
+
+  it('sorts numeric identifiers below alphanumeric ones and shorter lists first', () => {
+    expect(compareReleaseVersions('1.0.0-1', '1.0.0-alpha')).toBeLessThan(0);
+    expect(compareReleaseVersions('1.0.0-alpha', '1.0.0-alpha.1')).toBeLessThan(0);
+    expect(compareReleaseVersions('1.0.0-alpha', '1.0.0-beta')).toBeLessThan(0);
+  });
+
+  it('refuses a string that is no release version', () => {
+    expect(() => compareReleaseVersions('0.1', '0.1.0')).toThrow(/not a release version/);
+  });
+});
+
+describe('assertVersionAdvances', () => {
+  const current = { 'the libs (root package.json)': '0.1.0-rc.9', '@cngx/mcp': '0.2.0', '@cngx/cli': '0.1.0' };
+
+  it('refuses 0.1.1, which would move @cngx/mcp backwards, naming it and --version 0.3.0', () => {
+    expect(() => assertVersionAdvances({ nextVersion: '0.1.1', current })).toThrow(
+      /does not advance @cngx\/mcp 0\.2\.0; .*--version 0\.3\.0/,
+    );
+  });
+
+  it('names every member at or above the release version', () => {
+    let message = '';
+    try {
+      assertVersionAdvances({ nextVersion: '0.1.0', current });
+    } catch (error) {
+      message = error.message;
+    }
+
+    expect(message).toContain('@cngx/mcp 0.2.0');
+    expect(message).toContain('@cngx/cli 0.1.0');
+    expect(message).not.toContain('root package.json');
+  });
+
+  it('refuses the prerelease bump 0.1.0-rc.10 below @cngx/mcp 0.2.0', () => {
+    expect(() => assertVersionAdvances({ nextVersion: '0.1.0-rc.10', current })).toThrow(/@cngx\/mcp 0\.2\.0/);
+  });
+
+  it('accepts 0.3.0 against rc.9, 0.2.0 and 0.1.0', () => {
+    expect(() => assertVersionAdvances({ nextVersion: '0.3.0', current })).not.toThrow();
+  });
+
+  it('refuses a release equal to a member version', () => {
+    const aligned = { 'the libs (root package.json)': '0.3.0', '@cngx/mcp': '0.3.0', '@cngx/cli': '0.3.0' };
+
+    expect(() => assertVersionAdvances({ nextVersion: '0.3.0', current: aligned })).toThrow(/0\.3\.0 does not advance/);
+    expect(() => assertVersionAdvances({ nextVersion: '0.3.1', current: aligned })).not.toThrow();
+  });
+});
+
+describe('assertDependencyResolvable', () => {
+  it('passes when the range matches a published version', () => {
+    const asked = [];
+    const view = (spec) => {
+      asked.push(spec);
+      return '0.3.0\n';
+    };
+
+    expect(() => assertDependencyResolvable('@cngx/doctor', '^0.3.0', view)).not.toThrow();
+    expect(asked).toEqual(['@cngx/doctor@^0.3.0']);
+  });
+
+  it('refuses a range npm matches nothing for (E404)', () => {
+    const exec = () => {
+      throw Object.assign(new Error('Command failed'), {
+        status: 1,
+        stderr: 'npm error code E404\nnpm error 404 No match found for version ^0.4.0\n',
+      });
+    };
+
+    expect(() =>
+      assertDependencyResolvable('@cngx/doctor', '^0.4.0', (spec) => npmViewVersion(spec, '', exec)),
+    ).toThrow('@cngx/doctor@^0.4.0 matches no version on npm; publish it first');
+  });
+
+  it('fails closed when the lookup throws', () => {
+    const view = () => {
+      throw new Error('ENOTFOUND');
+    };
+
+    expect(() => assertDependencyResolvable('@cngx/doctor', '^0.3.0', view)).toThrow(
+      'could not look up @cngx/doctor@^0.3.0 on npm: ENOTFOUND',
     );
   });
 });

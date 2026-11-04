@@ -269,12 +269,11 @@ export function npmViewVersion(spec, registryFlag = '', exec = execSync) {
 // Every pin createSchematicsVersions writes must resolve on the registry, or
 // `ng add` installs a version that does not exist. `view` returns what
 // `npm view` prints, empty for an unlisted version; a lookup that throws
-// fails closed, since an unreachable registry proves nothing.
-export function assertPinsPublished({ mcpVersion, eslintPluginVersion }, view) {
-  const pins = [
-    ['@cngx/mcp', mcpVersion],
-    ['@cngx/eslint-plugin', eslintPluginVersion],
-  ];
+// fails closed, since an unreachable registry proves nothing. The @cngx/mcp
+// pin is the release version itself: mcp is published in the same run,
+// before @cngx/core, so only the eslint-plugin pin is looked up here.
+export function assertPinsPublished({ eslintPluginVersion }, view) {
+  const pins = [['@cngx/eslint-plugin', eslintPluginVersion]];
   for (const [name, version] of pins) {
     let found;
     try {
@@ -285,6 +284,90 @@ export function assertPinsPublished({ mcpVersion, eslintPluginVersion }, view) {
     if (found?.trim() !== version) {
       throw new Error(`${name}@${version} is not on npm; publish it first`);
     }
+  }
+}
+
+// Semver precedence of two release versions: negative when `a` sorts below
+// `b`, 0 when equal, positive above. A prerelease sorts below its release
+// (0.1.0-rc.9 < 0.1.0), numeric identifiers compare as numbers (rc.9 < rc.10),
+// a numeric identifier sorts below an alphanumeric one, and a shorter
+// identifier list below a longer one with the same prefix. Build metadata is
+// not used by cngx releases and is not handled.
+export function compareReleaseVersions(a, b) {
+  const [baseA, preA] = splitVersion(a);
+  const [baseB, preB] = splitVersion(b);
+  for (let i = 0; i < 3; i++) {
+    if (baseA[i] !== baseB[i]) {
+      return baseA[i] - baseB[i];
+    }
+  }
+  if (preA.length === 0 || preB.length === 0) {
+    return preB.length - preA.length;
+  }
+  for (let i = 0; i < Math.min(preA.length, preB.length); i++) {
+    const order = compareIdentifiers(preA[i], preB[i]);
+    if (order !== 0) {
+      return order;
+    }
+  }
+  return preA.length - preB.length;
+}
+
+function splitVersion(version) {
+  const at = version.indexOf('-');
+  const base = at === -1 ? version : version.slice(0, at);
+  const pre = at === -1 ? '' : version.slice(at + 1);
+  const numbers = base.split('.').map(Number);
+  if (numbers.length !== 3 || numbers.some((n) => !Number.isInteger(n))) {
+    throw new Error(`"${version}" is not a release version (x.y.z or x.y.z-pre)`);
+  }
+  return [numbers, pre === '' ? [] : pre.split('.')];
+}
+
+function compareIdentifiers(a, b) {
+  const numericA = /^\d+$/.test(a);
+  const numericB = /^\d+$/.test(b);
+  if (numericA && numericB) {
+    return Number(a) - Number(b);
+  }
+  if (numericA !== numericB) {
+    return numericA ? -1 : 1;
+  }
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+// The libs, @cngx/mcp and @cngx/cli release at one version, so the release
+// version must lie above every member's current version: one at or above it
+// would be moved backwards or republished. `current` maps a member name to
+// its version; the message names every member in the way and a version that
+// clears them all.
+export function assertVersionAdvances({ nextVersion, current }) {
+  const blocking = Object.entries(current).filter(([, version]) => compareReleaseVersions(version, nextVersion) >= 0);
+  if (blocking.length === 0) {
+    return;
+  }
+  const highest = Object.values(current).reduce((max, v) => (compareReleaseVersions(v, max) > 0 ? v : max));
+  const [[major, minor]] = splitVersion(highest);
+  const named = blocking.map(([name, version]) => `${name} ${version}`).join(', ');
+  throw new Error(
+    `${nextVersion} does not advance ${named}; every lockstep member releases at one higher version. ` +
+      `Pass --version ${major}.${minor + 1}.0 or above.`,
+  );
+}
+
+// A dependency range a tooling package ships must match at least one version
+// on the registry, or installing the package fails. `view` returns what
+// `npm view <name>@<range> version` prints, empty when nothing matches; a
+// lookup that throws fails closed, like assertPinsPublished.
+export function assertDependencyResolvable(name, range, view) {
+  let found;
+  try {
+    found = view(`${name}@${range}`);
+  } catch (error) {
+    throw new Error(`could not look up ${name}@${range} on npm: ${error.message}`);
+  }
+  if (!found?.trim()) {
+    throw new Error(`${name}@${range} matches no version on npm; publish it first`);
   }
 }
 
@@ -310,8 +393,12 @@ function shipsSchematics(lib) {
   return existsSync(join(ROOT, 'projects', lib, 'schematics')) && declaresSchematics(readSourcePkg(lib));
 }
 
+function readPackageManifest(name) {
+  return JSON.parse(readFileSync(join(ROOT, 'packages', name, 'package.json'), 'utf8'));
+}
+
 export function readPackageVersion(name) {
-  return JSON.parse(readFileSync(join(ROOT, 'packages', name, 'package.json'), 'utf8')).version;
+  return readPackageManifest(name).version;
 }
 
 function run(cmd, cwd = ROOT) {
@@ -430,6 +517,20 @@ function main() {
   const nextVersion = version ?? bumpVersion(currentVersion, bump);
   const gitTagName = `v${nextVersion}`;
 
+  try {
+    assertVersionAdvances({
+      nextVersion,
+      current: {
+        'the libs (root package.json)': currentVersion,
+        '@cngx/mcp': readPackageVersion('mcp'),
+        '@cngx/cli': readPackageVersion('cli'),
+      },
+    });
+  } catch (error) {
+    console.error(`Refusing to publish: ${error.message}`);
+    process.exit(1);
+  }
+
   // Pre-flight: clean worktree + tag availability when going for real
   if (!dryRun) {
     assertCleanWorktree();
@@ -444,11 +545,22 @@ function main() {
 
   const registryFlag = registry ? ` --registry ${registry}` : '';
 
+  // Tooling pre-flight: the cli core must be a current copy of the mcp core,
+  // and the @cngx/doctor range the cli ships must resolve on the registry.
+  try {
+    run('npm run cli:copy-check');
+    assertDependencyResolvable('@cngx/doctor', readPackageManifest('cli').dependencies['@cngx/doctor'], (spec) =>
+      npmViewVersion(spec, registryFlag),
+    );
+  } catch (error) {
+    console.error(`Refusing to publish: ${error.message}`);
+    process.exit(1);
+  }
+
   if (libs.includes('core') && shipsSchematics('core')) {
     try {
-      assertPinsPublished(
-        { mcpVersion: readPackageVersion('mcp'), eslintPluginVersion: readPackageVersion('eslint-plugin') },
-        (spec) => npmViewVersion(spec, registryFlag),
+      assertPinsPublished({ eslintPluginVersion: readPackageVersion('eslint-plugin') }, (spec) =>
+        npmViewVersion(spec, registryFlag),
       );
       // The build copies migrations.json and bundles every migrations/<folder>/index.ts,
       // so a source collection that checks out here builds one that does too.
