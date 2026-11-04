@@ -112,7 +112,7 @@ describe('cngxAsyncClick settle side effects across two runs without change dete
     expect(show).toHaveBeenCalledTimes(2);
   });
 
-  it.fails('emits stepper (completed) once per successful run', async () => {
+  it('emits stepper (completed) once per successful run', async () => {
     const fixture = TestBed.createComponent(StepperCompleteHost);
     flush(fixture);
     const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;

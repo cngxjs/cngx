@@ -64,6 +64,31 @@ class CompleteHost {
   standalone: true,
   imports: [CngxStepperComplete],
   hostDirectives: [CngxStepperPresenter],
+  template: `
+    <button
+      [cngxStepperComplete]="action"
+      [enabled]="enabled()"
+      (completed)="completedCount = completedCount + 1"
+    >
+      Finish
+    </button>
+  `,
+})
+class LifecycleCompleteHost {
+  readonly enabled = signal(true);
+  ran = 0;
+  completedCount = 0;
+  actionImpl: () => Promise<void> = () => Promise.resolve();
+  readonly action = (): Promise<void> => {
+    this.ran++;
+    return this.actionImpl();
+  };
+}
+
+@Component({
+  standalone: true,
+  imports: [CngxStepperComplete],
+  hostDirectives: [CngxStepperPresenter],
   template: `<button [cngxStepperComplete]="action" [showDelay]="0">Finish</button>`,
 })
 class ImmediateBusyCompleteHost {
@@ -228,6 +253,67 @@ describe('stepper nav controls', () => {
         expect(fixture.componentInstance.ran).toBe(1);
         expect(fixture.componentInstance.completedCount).toBe(1);
       });
+    });
+  });
+
+  describe('CngxStepperComplete run lifecycle', () => {
+    async function drainMicrotasks(): Promise<void> {
+      for (let i = 0; i < 20; i++) {
+        await Promise.resolve();
+      }
+    }
+
+    function lifecycleSetup() {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(LifecycleCompleteHost);
+      fixture.detectChanges();
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+      const runner = fixture.debugElement.children[0].injector.get(CngxAsyncClick);
+      return { fixture, host: fixture.componentInstance, btn, runner };
+    }
+
+    it('emits nothing on a failed run and reports the error status', async () => {
+      const { fixture, host, btn, runner } = lifecycleSetup();
+      host.actionImpl = () => Promise.reject(new Error('nope'));
+      btn.click();
+      await drainMicrotasks();
+      fixture.detectChanges();
+      expect(host.ran).toBe(1);
+      expect(runner.status()).toBe('error');
+      expect(host.completedCount).toBe(0);
+    });
+
+    it('does not run the action with [enabled]="false"', () => {
+      const { fixture, host, btn } = lifecycleSetup();
+      host.enabled.set(false);
+      fixture.detectChanges();
+      btn.click();
+      expect(host.ran).toBe(0);
+      expect(btn.getAttribute('aria-disabled')).toBe('true');
+    });
+
+    it('emits once per success, also for two runs with no change detection between', async () => {
+      const { fixture, host, btn } = lifecycleSetup();
+      btn.click();
+      await drainMicrotasks();
+      btn.click();
+      await drainMicrotasks();
+      expect(host.ran).toBe(2);
+      expect(host.completedCount).toBe(2);
+      fixture.detectChanges();
+      expect(host.completedCount).toBe(2);
+    });
+
+    it('emits nothing when destroyed mid-run', async () => {
+      const { fixture, host, btn } = lifecycleSetup();
+      let resolve!: () => void;
+      host.actionImpl = () => new Promise<void>((r) => (resolve = r));
+      btn.click();
+      fixture.detectChanges();
+      fixture.destroy();
+      resolve();
+      await drainMicrotasks();
+      expect(host.completedCount).toBe(0);
     });
   });
 

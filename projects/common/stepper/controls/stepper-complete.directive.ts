@@ -1,16 +1,6 @@
-import {
-  computed,
-  Directive,
-  effect,
-  inject,
-  input,
-  output,
-  untracked,
-  type Signal,
-} from '@angular/core';
+import { computed, Directive, inject, input, output, untracked, type Signal } from '@angular/core';
 
 import { CngxAsyncClick } from '@cngx/common/interactive';
-import { createTransitionTracker } from '@cngx/core/utils';
 
 import { CNGX_STEPPER_HOST, type CngxStepperHost } from '../stepper-host.token';
 import { warnStepperControlUnhosted } from '../warn-stepper-unhosted';
@@ -27,7 +17,7 @@ import { warnStepperControlUnhosted } from '../warn-stepper-unhosted';
  * falling back to the ambient {@link CNGX_STEPPER_HOST}. {@link isActive}
  * exposes whether the active step is the last one, so a consumer renders
  * the finish control only on the final step. `(completed)` emits once
- * after the action resolves successfully.
+ * per successful run of the action.
  *
  * ```html
  * @if (s.presenter.isLastStep()) {
@@ -68,9 +58,10 @@ export class CngxStepperComplete {
   readonly host = input<CngxStepperHost | null>(null);
 
   /**
-   * Emits once per `pending → success` transition of the finish action.
-   * Does NOT re-emit when the `feedbackDuration` window resets the runner
-   * back to idle - the transition tracker guards on the success edge only.
+   * Emits once per successful run of the finish action, driven by the
+   * runner's `(settled)` event: two runs that succeed before change
+   * detection emit twice. Never on failure, cancel or after destroy, and
+   * not when the `feedbackDuration` window resets the runner to idle.
    */
   readonly completed = output<void>();
 
@@ -88,11 +79,9 @@ export class CngxStepperComplete {
       warnStepperControlUnhosted('cngxStepperComplete', this.resolvedHost);
     }
 
-    const tracker = createTransitionTracker(() => this.runner.status());
-    effect(() => {
-      if (tracker.current() === 'success' && tracker.previous() !== 'success') {
-        // Consumer handlers run outside the tracking context so their
-        // ambient signal reads cannot widen this effect's dep graph.
+    // The subscription ends with the runner, which shares this element.
+    this.runner.settled.subscribe((settle) => {
+      if (settle.status === 'success') {
         untracked(() => this.completed.emit());
       }
     });
