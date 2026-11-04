@@ -135,7 +135,6 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
         'feedbackDuration',
         'showDelay',
         'minDwell',
-        'autoAnnounce',
       ],
       outputs: ['settled'],
     },
@@ -287,12 +286,14 @@ export class CngxActionButton {
   readonly failedAnnouncement = input<string | undefined>(undefined);
 
   /**
-   * The `cngxAsyncClick` live region next to the button. Unbound, the region
-   * stays and speaks every settle except an outcome a shown toast already
-   * announces (`toastSuccess` / `toastError` set and a `CngxToaster`
-   * provided), so it is heard once. `false` removes the region. `true` speaks
-   * every settle, also next to a toast. Bind a boolean: the binding is also
-   * forwarded to the co-hosted `cngxAsyncClick`, which owns the region.
+   * What the `cngxAsyncClick` live region next to the button speaks. Unbound,
+   * it speaks every settle except an outcome a shown toast already announces
+   * (`toastSuccess` / `toastError` set and a `CngxToaster` provided), so it
+   * is heard once. `true` speaks every settle, also next to a toast. `false`
+   * keeps the region silent: it stays in the DOM (the co-hosted
+   * `cngxAsyncClick` owns it) but receives no text; drive your own region
+   * from `(settled)` then. Accepts `boolean | undefined`, so a signal that
+   * starts unset binds as is.
    */
   readonly autoAnnounce = input<boolean | undefined>(undefined);
 
@@ -570,15 +571,20 @@ export class CngxActionButton {
 
   /**
    * The settle text the region speaks, read once per settle after render:
-   * the same precedence as the visible cell. `''` for an outcome a shown
-   * toast covers, unless `[autoAnnounce]="true"`.
+   * the same precedence as the visible cell. `''` under
+   * `[autoAnnounce]="false"`, and for an outcome a shown toast covers unless
+   * `[autoAnnounce]="true"`.
    */
   private resolveAnnouncement(status: AsyncStatus): string {
     return untracked(() => {
       if (status !== 'success' && status !== 'error') {
         return '';
       }
-      if (this.toastCovers(status) && this.autoAnnounce() !== true) {
+      const auto = this.autoAnnounce();
+      if (auto === false) {
+        return '';
+      }
+      if (this.toastCovers(status) && auto !== true) {
         return '';
       }
       if (status === 'success') {
