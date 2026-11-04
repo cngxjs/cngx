@@ -196,6 +196,6 @@ The architectural reason is documented in `projects/forms/select/ARCHITECTURE.md
 |Signal-native code, fresh feature|Signal Forms + `[formField]`|The default. Smallest binding, full signal-graph integration.|
 |Reactive Forms control already in place|`adaptFormControl` + `[formControl]`|One-line bridge; RF stays the source of truth.|
 |Material / native / third-party CVA control|`cngxBindField` + `[formControl]`|`[formControl]` drives the value via the host's existing CVA; `cngxBindField` carries the form-field ARIA.|
-|Standalone usage, no form involved|`[(value)]` or template-variable read|Works on every CNGX control with a `value` model.|
+|Standalone usage, no form involved|`[(value)]`, or `[(values)]` on the multi-value controls, or a template-variable read|Works on every CNGX control with a `value` / `values` model.|
 
 The decision is one-way. Start on Signal Forms and every CNGX control fits without an adapter. Start on Reactive Forms and every CNGX control still fits - through one `adaptFormControl` call per control.

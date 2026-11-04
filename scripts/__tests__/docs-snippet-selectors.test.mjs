@@ -38,7 +38,6 @@ const DOC_PATH = resolve(REPO_ROOT, '.compodoc/documentation.json');
  * is documentation, the key for the diff is file:line + kind + tag + binding.
  */
 const KNOWN_FAILURES = [
-  { finding: 'D3', file: 'core-concepts/forms-and-inputs.md', line: 126, kind: 'unknown-binding', tag: 'cngx-multi-select', binding: 'value' },
   { finding: 'further-D (snippet)', file: 'core-concepts/atomic-decompose.md', line: 211, kind: 'unknown-binding', tag: 'cngx-select', binding: 'field' },
   { finding: 'further-D (snippet)', file: 'core-concepts/instrumentation-pattern.md', line: 157, kind: 'unknown-tag', tag: 'cngx-toast-on' },
   { finding: 'further-D (snippet)', file: 'core-concepts/instrumentation-pattern.md', line: 158, kind: 'unknown-tag', tag: 'cngx-banner-on' },
