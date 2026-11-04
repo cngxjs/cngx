@@ -1,7 +1,7 @@
 # `shared/` - Select-family infrastructure
 
 This folder is the spine of `@cngx/forms/select`.
-The eight variants (`single-select`, `multi-select`, `combobox`, `typeahead`, `tree-select`, `reorderable-multi-select`, `action-select`, `action-multi-select`) are thin `@Component` declarations that delegate every cross-cutting concern to factories, tokens, slot directives, and config helpers defined here.
+The data-mode variants (`single-select`, `multi-select`, `combobox`, `typeahead`, `tree-select`, `reorderable-multi-select`, `action-select`, `action-multi-select`) and the projection shell `select-shell` are thin `@Component` declarations that delegate every cross-cutting concern to factories, tokens, slot directives, and config helpers defined here.
 
 If you're consuming the public API, you usually don't import from here directly - pull from `@cngx/forms/select` and the right facade is re-exported.
 If you're extending the family (new variant, telemetry override, custom commit policy), this README is the navigation guide.
@@ -187,9 +187,9 @@ Two host-contract tokens that the panel-shell + panel components consume from th
 | Symbol | Purpose |
 |-|-|
 | `CngxSelectPanelViewHost<T>`       | Narrow shell contract - `activeView`, `skeletonIndices`, error/commit-error contexts, `tpl`, `fallbackLabels`, `ariaLabels`, optional `searchTerm` / `unfilteredCount` / `previousLoadedCount` |
-| `CNGX_SELECT_PANEL_VIEW_HOST`      | Token for the narrow contract - provided by all 8 variants, injected by `CngxSelectPanelShell`                                                                                                 |
+| `CNGX_SELECT_PANEL_VIEW_HOST`      | Token for the narrow contract - provided by every variant, injected by `CngxSelectPanelShell`                                                                                                 |
 | `CngxSelectPanelHost<T>`           | Full option-loop contract - extends the view host with `options`, `isSelected`, `isIndeterminate`, indicator resolution, listbox comparator, AD active id, commit-error value                  |
-| `CNGX_SELECT_PANEL_HOST`           | Token for the full contract - provided by 7 of 8 variants (tree-select uses `CNGX_TREE_SELECT_PANEL_HOST` instead)                                                                             |
+| `CNGX_SELECT_PANEL_HOST`           | Token for the full contract - provided by every variant except tree-select (which uses `CNGX_TREE_SELECT_PANEL_HOST` instead)                                                                             |
 | `CngxSelectPanelShellTemplates<T>` | Narrow 7-slot template bundle the shell reads                                                                                                                                                  |
 | `CngxSelectActionCallbacks`        | Action-slot callback bundle                                                                                                                                                                    |
 
@@ -231,7 +231,7 @@ Convenience helpers that wire the recycler renderer for variants with the `withV
 
 ### `panel-lifecycle-emitter.ts`
 
-Single shared `effect()` that emits `openedChange` + `opened` + `closed` outputs in response to `panelOpen` flips (never the mount value) and restores focus to the trigger after an open -> closed flip. All 8 variants wire through this factory.
+Single shared `effect()` that emits `openedChange` + `opened` + `closed` outputs in response to `panelOpen` flips (never the mount value) and restores focus to the trigger after an open -> closed flip. Every variant wires through this factory.
 
 | Symbol | Purpose |
 |-|-|
@@ -388,6 +388,18 @@ Plus the variant-specific slots (also defined here):
 | `CngxMultiSelectMoveGlyph`                                  | reorderable only    |
 | `CngxComboboxChip<T>` / `CngxComboboxTriggerLabel<T>`       | combobox            |
 | `CngxSelectChipOverflow<T>`                                 | multi, combobox, action-multi, reorderable, tree |
+
+**Config-tier asymmetry.** `CngxSelectConfig.templates` (and `withTemplates`)
+carries only the shared registry slots - the ones `createTemplateRegistry`
+resolves for every host. The variant-specific slots above (the chip, chip-handle
+and overflow-badge templates, the tree-node and tree-chip templates), the input
+affixes (`CngxSelectInputPrefix` / `CngxSelectInputSuffix`) and the per-variant
+trigger-label directives have **no** config tier: they are projected per instance
+only. They live outside the shared registry queries, so an app-wide default would
+need a per-variant registry extension, and no consumer has asked for app-wide
+chip / node / affix defaults. The reorderable drag handle is the exception - it
+has its own config tier through `withDefaultDragHandle`. Tracked as accepted debt
+(select-family register, section 8).
 
 ### `template-registry.ts`
 

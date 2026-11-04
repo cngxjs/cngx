@@ -84,4 +84,13 @@ describe('CngxReorderableMultiSelect geometry', () => {
     expect(computedValue(trigger, 'padding-inline-start')).toBe('16px');
     expect(computedValue(trigger, 'padding-inline-end')).toBe('16px');
   });
+
+  it('vertically centres the caret in the trigger', () => {
+    const host = mount();
+    const trigger = query(host, '.cngx-reorderable-multi-select__trigger').getBoundingClientRect();
+    const caret = query(host, '.cngx-reorderable-multi-select__caret').getBoundingClientRect();
+    expect(
+      Math.abs(caret.top + caret.height / 2 - (trigger.top + trigger.height / 2)),
+    ).toBeLessThanOrEqual(2);
+  });
 });

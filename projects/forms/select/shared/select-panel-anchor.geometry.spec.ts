@@ -42,6 +42,9 @@ const HARNESS_STYLES = [
   '../../../core/theming/system-tokens.css',
   '../../../core/theming/reset.css',
   '../../../core/theming/base.css',
+  // The anchor offset margin is applied from cngx-popover.css (the directive
+  // writes it as --cngx-popover-anchor-margin); the real app always loads it.
+  '../../../common/theming/components/cngx-popover.css',
   '../../theming/components/cngx-field-affix.css',
   '../../theming/components/cngx-field-skin.css',
   './select-base.css',

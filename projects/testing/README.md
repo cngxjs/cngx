@@ -265,6 +265,17 @@ function createAudioContextMock(initialState?: AudioContextState): AudioContextM
 
 Cast at the call site: `mock as unknown as AudioContext`. Assert against `mock.oscillators` / `mock.gains` (creation order) and advance the clock with `mock.advanceTime(seconds)`.
 
+### installPopoverPolyfill / restorePopoverPolyfill
+
+jsdom has no HTML Popover API, so `CngxPopover` cannot toggle a panel under a non-browser `test` target. The shared `vitest-setup` installs this polyfill before each file and restores it after, so a spec no longer needs its own copy. It patches `showPopover` / `hidePopover` / `togglePopover` on `HTMLElement.prototype` only when they are absent - a real browser (the `test-geometry` target) keeps its native implementation. The open state is a `data-popover-open` attribute (the stand-in for `:popover-open`), and the `beforetoggle` / `toggle` events fire so the directive's reactive state follows.
+
+```typescript
+function installPopoverPolyfill(): void
+function restorePopoverPolyfill(): void
+```
+
+Idempotent: calling install twice is a no-op, and restore removes only what install added. A spec that needs the API gone mid-file can call `restorePopoverPolyfill()` itself.
+
 ## Geometry Subpath
 
 `@cngx/testing/geometry` is deliberately **not** re-exported from the root barrel: its helpers read the CSSOM (`getComputedStyle`, grid track resolution), which jsdom answers with empty strings. They are only meaningful in the `*.geometry.spec.ts` suites that run in a real Chromium.

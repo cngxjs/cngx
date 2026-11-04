@@ -266,11 +266,16 @@
 
   .cngx-popover-sheet:is([data-cngx-presentation='sheet'], [data-cngx-presentation='fullscreen']) {
     position: fixed;
-    inset: auto 0 0 0;
+    /* Span the full layout viewport width (100vw includes the classic
+       scrollbar gutter) rather than `100%` of the fixed containing block,
+       which excludes the gutter and left the sheet inset ~11px on a classic
+       scrollbar. The sheet is modal and locks scroll, so 100vw never overflows
+       into a horizontal scrollbar. */
+    inset: auto auto 0 0;
     margin: 0;
     box-sizing: border-box;
-    inline-size: 100%;
-    max-inline-size: 100%;
+    inline-size: 100vw;
+    max-inline-size: 100vw;
     min-inline-size: 0;
     max-block-size: var(--cngx-popover-sheet-max-block-size, 80dvh);
     flex-direction: column;
