@@ -448,6 +448,9 @@ export class CngxAsyncClick {
     this.clearFeedback();
     this.pendingState.set(true);
 
+    // Only the action is guarded: a throw inside settle() (a (settled)
+    // listener, say) must not turn into a second, error settle.
+    let outcome: { readonly status: 'success' | 'error'; readonly error: unknown };
     try {
       const actionFn = this.action();
       const result$ = actionFn(this.abortController.signal);
@@ -455,20 +458,20 @@ export class CngxAsyncClick {
         ? firstValueFrom(result$, { defaultValue: undefined })
         : result$;
       const result = await promise;
-      if (this.destroyed) {
-        return;
-      }
       if (result === CNGX_ASYNC_CANCELLED) {
-        this.pendingState.set(false);
+        if (!this.destroyed) {
+          this.pendingState.set(false);
+        }
         return;
       }
-      this.settle('success', undefined);
+      outcome = { status: 'success', error: undefined };
     } catch (err: unknown) {
-      if (this.destroyed) {
-        return;
-      }
-      this.settle('error', err);
+      outcome = { status: 'error', error: err };
     }
+    if (this.destroyed) {
+      return;
+    }
+    this.settle(outcome.status, outcome.error);
   }
 
   /** Ends a run: writes the state, emits `(settled)` and speaks the outcome once. */

@@ -1,4 +1,12 @@
-import { Component, computed, Directive, input, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  Directive,
+  ErrorHandler,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { CNGX_LOADING_DEFAULTS, provideLoadingConfigAt, withShowDelay } from '@cngx/core/utils';
@@ -300,6 +308,38 @@ describe('CngxAsyncClick', () => {
       { generation: 1, status: 'success', error: undefined },
       { generation: 2, status: 'error', error: err },
     ]);
+  });
+
+  it('a throwing (settled) listener does not produce a second, error settle', async () => {
+    const listenerError = new Error('listener');
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: ErrorHandler,
+          useValue: {
+            handleError: (err: unknown) => {
+              throw err;
+            },
+          },
+        },
+      ],
+    });
+    const { directive } = setupButton();
+    const events: CngxAsyncSettle[] = [];
+    directive.settled.subscribe((e) => {
+      events.push(e);
+      if (events.length === 1) {
+        throw listenerError;
+      }
+    });
+
+    const run = (directive as unknown as { handleClick(e: Event): Promise<void> }).handleClick(
+      new Event('click'),
+    );
+
+    await expect(run).rejects.toBe(listenerError);
+    expect(events).toEqual([{ generation: 1, status: 'success', error: undefined }]);
+    expect(directive.status()).toBe('success');
   });
 
   it('clears the region at the settle and writes it after the next render', async () => {
