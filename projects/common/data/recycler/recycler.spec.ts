@@ -204,6 +204,43 @@ describe('injectRecycler', () => {
       expect(recycler.isEmpty()).toBe(true);
     });
 
+    it('keeps isEmpty false while the first-load skeleton is held, true only after release', async () => {
+      vi.useFakeTimers();
+      const isFirstLoad = signal(true);
+      const isBusy = signal(true);
+      const mockState = createMockState({ isFirstLoad, isBusy });
+
+      let recycler!: CngxRecycler;
+      TestBed.runInInjectionContext(() => {
+        recycler = injectRecycler({
+          scrollElement: mockContainer,
+          totalCount: () => 0,
+          estimateSize: 48,
+          state: mockState,
+        });
+      });
+      TestBed.flushEffects();
+
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay);
+      TestBed.flushEffects();
+      expect(recycler.showSkeleton()).toBe(true);
+
+      // Empty load settles while the skeleton is held: isEmpty must not flip yet.
+      await vi.advanceTimersByTimeAsync(80);
+      isFirstLoad.set(false);
+      isBusy.set(false);
+      TestBed.flushEffects();
+      expect(recycler.showSkeleton()).toBe(true);
+      expect(recycler.isEmpty()).toBe(false);
+
+      // Skeleton releases after its min-dwell: now the empty state shows.
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.minDwell);
+      TestBed.flushEffects();
+      expect(recycler.showSkeleton()).toBe(false);
+      expect(recycler.isEmpty()).toBe(true);
+      vi.useRealTimers();
+    });
+
     it('should compute skeletonSlots based on clientHeight and estimateSize', () => {
       const recycler = createRecycler();
       expect(recycler.skeletonSlots()).toBe(Math.ceil(500 / 48));
