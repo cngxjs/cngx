@@ -4,7 +4,7 @@ import { vi } from 'vitest';
 import { CNGX_LOADING_DEFAULTS, provideLoadingConfigAt, withShowDelay } from '@cngx/core/utils';
 import { of, type Observable } from 'rxjs';
 import { provideInteractiveI18n, withInteractiveI18nLabels } from '../i18n/interactive-i18n';
-import { CngxAsyncClick, type AsyncAction } from './async-click.directive';
+import { CngxAsyncClick, type AsyncAction, type CngxAsyncSettle } from './async-click.directive';
 import { CNGX_HOST_INTERACTION_STATE } from './host-interaction-state.token';
 
 // ── Deferred promise helper ─────────────────────────────────────────────
@@ -276,6 +276,64 @@ describe('CngxAsyncClick', () => {
     });
   });
 
+  it('emits (settled) once per run with a monotonic generation', async () => {
+    const { btn, directive, host } = setupButton();
+    const events: CngxAsyncSettle[] = [];
+    directive.settled.subscribe((e) => events.push(e));
+    const err = new Error('nope');
+
+    btn.click();
+    await vi.waitFor(() => expect(events).toHaveLength(1));
+    host.actionImpl = () => Promise.reject(err);
+    btn.click();
+    await vi.waitFor(() => expect(events).toHaveLength(2));
+
+    expect(events).toEqual([
+      { generation: 1, status: 'success', error: undefined },
+      { generation: 2, status: 'error', error: err },
+    ]);
+  });
+
+  it('clears the region at the settle and writes it after the next render', async () => {
+    const { btn, fixture, host } = setupButton();
+    const region = btn.nextElementSibling as HTMLElement;
+    btn.click();
+    await vi.waitFor(() => {
+      flush(fixture);
+      expect(region.textContent).toBe('Action succeeded');
+    });
+
+    const run = deferred();
+    host.actionImpl = () => run.promise;
+    btn.click();
+    run.resolve();
+    await run.promise;
+    await Promise.resolve();
+    expect(region.textContent).toBe('');
+    flush(fixture);
+    expect(region.textContent).toBe('Action succeeded');
+  });
+
+  it('announce() speaks a host message once after the next render', () => {
+    const { btn, directive, fixture } = setupButton();
+    const region = btn.nextElementSibling as HTMLElement;
+    directive.announce('Saved elsewhere');
+    expect(region.textContent).toBe('');
+    flush(fixture);
+    expect(region.textContent).toBe('Saved elsewhere');
+  });
+
+  it('announce() is a no-op without the auto region', () => {
+    const fixture = TestBed.createComponent(ButtonHost);
+    fixture.componentInstance.autoAnnounce.set(false);
+    flush(fixture);
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    fixture.componentInstance.directive().announce('Saved elsewhere');
+    flush(fixture);
+    expect(btn.nextElementSibling).toBeNull();
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Saved elsewhere');
+  });
+
   it('removes the auto region when autoAnnounce is opted out', () => {
     const fixture = TestBed.createComponent(ButtonHost);
     fixture.componentInstance.autoAnnounce.set(false);
@@ -488,6 +546,7 @@ describe('CngxAsyncClick language switch', () => {
 
     lang.set('de');
     flush(fixture);
+    flush(fixture);
     expect(region.textContent?.trim()).toBe('Action succeeded');
 
     host.actionImpl = () => Promise.reject(new Error('nope'));
@@ -622,7 +681,8 @@ describe('CngxAsyncClick with a host-reflected run and announcement', () => {
     expect(region()!.textContent).toBe('');
     host.text.set('Saved by the host');
     flush(fixture);
-    expect(region()!.textContent).toBe('Saved by the host');
+    // Read per settle, not per change: no settle, nothing spoken.
+    expect(region()!.textContent).toBe('');
     button.click();
     await fixture.whenStable();
     flush(fixture);

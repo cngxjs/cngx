@@ -601,18 +601,25 @@ describe('CngxActionButton', () => {
       expect(fixture.componentInstance.callCount).toBe(0);
     });
 
+    // External state is state: it is spoken on an observed edge, so each
+    // case mounts idle first.
     it('announces an external success in the live region', () => {
       const fixture = TestBed.createComponent(ExternalStateHost);
+      flush(fixture);
       fixture.componentInstance.mock.status.set('success');
       flush(fixture);
+      // The region is written after the render that follows the edge.
+      fixture.detectChanges();
       const live = fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement;
       expect(live.textContent?.trim()).toBe('Ext done');
     });
 
     it('announces an external failure in the live region', () => {
       const fixture = TestBed.createComponent(ExternalStateHost);
+      flush(fixture);
       fixture.componentInstance.mock.status.set('error');
       flush(fixture);
+      fixture.detectChanges();
       const live = fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement;
       expect(live.textContent?.trim()).toBe('Ext error');
     });
@@ -858,13 +865,18 @@ describe('CngxActionButton', () => {
       });
     });
 
-    const liveText = (fixture: ReturnType<typeof TestBed.createComponent>): string =>
-      (
+    // A render pass first: the region is written after the render that
+    // follows the settle.
+    const liveText = (fixture: ReturnType<typeof TestBed.createComponent>): string => {
+      fixture.detectChanges();
+      return (
         fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement
       ).textContent!.trim();
+    };
 
     it('announces the EN default without labels or a translation', () => {
       const fixture = TestBed.createComponent(UnlabelledExternalHost);
+      flush(fixture);
       fixture.componentInstance.mock.status.set('success');
       flush(fixture);
       expect(liveText(fixture)).toBe('Action succeeded');
@@ -872,6 +884,7 @@ describe('CngxActionButton', () => {
 
     it('keeps a shown announcement on a copy flip and speaks the new language next', () => {
       const fixture = TestBed.createComponent(UnlabelledExternalHost);
+      flush(fixture);
       const { status } = fixture.componentInstance.mock;
       status.set('success');
       flush(fixture);
@@ -891,6 +904,7 @@ describe('CngxActionButton', () => {
     it('falls back to the translated failure phrase', () => {
       i18nOverrides.set({ asyncClickFailed: 'Fehlgeschlagen' });
       const fixture = TestBed.createComponent(UnlabelledExternalHost);
+      flush(fixture);
       fixture.componentInstance.mock.status.set('error');
       flush(fixture);
       expect(liveText(fixture)).toBe('Fehlgeschlagen');

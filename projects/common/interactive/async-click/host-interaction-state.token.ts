@@ -12,12 +12,12 @@ import { InjectionToken, type Signal } from '@angular/core';
  * - `busy` (optional) - folded into `aria-busy`, for a run the host
  *   reflects but the directive did not start (an external async state).
  *   It does not block clicks.
- * - `announcement` (optional) - when provided, its value fully replaces
- *   the text the directive's auto-rendered live region speaks, `''`
- *   included: an empty string silences the region, it does not fall back
- *   to the directive's own settle copy. The directive's public
- *   `announcement` signal keeps reporting its own text, and with
- *   `[autoAnnounce]="false"` no region renders at all.
+ * - `announcement` (optional) - read once per settle, after render; its
+ *   value fully replaces the text the directive's auto-rendered live region
+ *   speaks for that settle, `''` included: an empty string silences the
+ *   region, it does not fall back to the directive's own settle copy. The
+ *   directive's public `announcement` signal keeps reporting its own text,
+ *   and with `[autoAnnounce]="false"` no region renders at all.
  */
 export interface CngxHostInteractionState {
   /** `true` while the host is disabled; clicks are swallowed and `aria-disabled` is set. */
@@ -30,10 +30,12 @@ export interface CngxHostInteractionState {
   /**
    * Text the directive's live region speaks instead of its own settle
    * announcement, for a host that derives the announcement from more than
-   * the directive's runs (labels, an external state). The host reads its
-   * copy untracked, so a language switch never re-voices the region.
+   * the directive's runs (labels, rendered status content). Read once per
+   * settle, after render, outside any reactive context, so it may read the
+   * DOM; every `Signal<string>` satisfies it. A language switch never
+   * re-voices the region, because nothing re-reads it between settles.
    */
-  readonly announcement?: Signal<string>;
+  readonly announcement?: () => string;
 }
 
 /**

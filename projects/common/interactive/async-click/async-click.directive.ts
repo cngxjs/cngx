@@ -1,12 +1,15 @@
 import { isPlatformBrowser } from '@angular/common';
 import {
+  afterNextRender,
   computed,
   DestroyRef,
   Directive,
   effect,
   ElementRef,
   inject,
+  Injector,
   input,
+  output,
   PLATFORM_ID,
   Renderer2,
   signal,
@@ -31,6 +34,27 @@ import { CNGX_HOST_INTERACTION_STATE } from './host-interaction-state.token';
 export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
 
 /**
+ * One settle of a `cngxAsyncClick` run, emitted through `(settled)`.
+ *
+ * `generation` counts the settles of one directive instance (1, 2, ...), so
+ * two runs that settle before change detection still arrive as two events.
+ * `error` carries the rejection value of an `'error'` settle and is
+ * `undefined` for `'success'`.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-click/async-click.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxAsyncClick
+ */
+export interface CngxAsyncSettle {
+  /** Monotonic settle counter of the emitting directive, starting at 1. */
+  readonly generation: number;
+  /** Outcome of the run. */
+  readonly status: 'success' | 'error';
+  /** Rejection value of an `'error'` settle; `undefined` on success. */
+  readonly error: unknown;
+}
+
+/**
  * Async action handler with loading state, auto-disable, and success/error feedback.
  *
  * Place on any clickable element (button, link, div). Executes the provided
@@ -45,6 +69,13 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
  * an auto-rendered polite live region (sibling of the host - inside a
  * `<button>` the text would pollute the accessible name); opt out with
  * `[autoAnnounce]="false"` and bind `announcement` to your own region.
+ *
+ * Every settle is an event, not only a state: `(settled)` emits once per
+ * success or error with a monotonic `generation`, and the region is written
+ * once per settle (cleared at once, filled after the next render), so two
+ * runs that settle before change detection are spoken twice. Side effects
+ * that must happen per run (a toast, a close, a completion output) belong
+ * on `(settled)`; `status` and `state` stay derived state.
  *
  * The busy visual is gated, the truth is not: {@link busyVisible} (and with it
  * `cngx-async--pending` and the button-family spinner) turns on only after
@@ -157,6 +188,14 @@ export class CngxAsyncClick {
   readonly autoAnnounce = input<boolean>(true);
 
   /**
+   * Emits once per success or error settle with a monotonic generation;
+   * never on cancel, reset or after destroy. Use it for side effects that
+   * must happen per run - a status edge read in an effect coalesces two runs
+   * that settle before change detection into one.
+   */
+  readonly settled = output<CngxAsyncSettle>();
+
+  /**
    * `true` when clicks are refused outside a running action: `enabled` is
    * `false` or a co-hosted component reports itself disabled through
    * `CNGX_HOST_INTERACTION_STATE`.
@@ -206,6 +245,9 @@ export class CngxAsyncClick {
   private readonly lastUpdatedState = signal<Date | undefined>(undefined);
   private feedbackTimer: ReturnType<typeof setTimeout> | null = null;
   private destroyed = false;
+  private generation = 0;
+  private readonly injector = inject(Injector);
+  private regionSpan: HTMLSpanElement | null = null;
 
   constructor() {
     this.destroyRef.onDestroy(() => {
@@ -223,51 +265,86 @@ export class CngxAsyncClick {
   private installAnnounceRegion(): void {
     const renderer = inject(Renderer2);
     const hostEl = this.el.nativeElement;
-    let span: HTMLSpanElement | null = null;
 
+    // Owns only the region element. The text is written per settle by
+    // speak(), so no effect reads copy and a language switch never re-voices.
     effect(() => {
       const enabled = this.autoAnnounce();
-      const text = this.hostState?.announcement?.() ?? this.announcement();
 
       untracked(() => {
         if (!enabled) {
-          if (span?.parentNode) {
-            renderer.removeChild(span.parentNode, span);
-          }
-          span = null;
+          this.removeRegion(renderer);
           return;
         }
-
-        if (!span) {
-          const parent = renderer.parentNode(hostEl) as Node | null;
-          if (!parent) {
-            return;
-          }
-          const el = renderer.createElement('span') as HTMLSpanElement;
-          renderer.setStyle(el, 'position', 'var(--cngx-sr-only-position, absolute)');
-          renderer.setStyle(el, 'width', 'var(--cngx-sr-only-size, 1px)');
-          renderer.setStyle(el, 'height', 'var(--cngx-sr-only-size, 1px)');
-          renderer.setStyle(el, 'overflow', 'var(--cngx-sr-only-overflow, hidden)');
-          renderer.setStyle(el, 'clip', 'var(--cngx-sr-only-clip, rect(0, 0, 0, 0))');
-          renderer.setStyle(el, 'white-space', 'var(--cngx-sr-only-white-space, nowrap)');
-          renderer.setAttribute(el, 'aria-atomic', 'true');
-          renderer.setAttribute(el, 'role', 'status');
-          renderer.setAttribute(el, 'aria-live', 'polite');
-          // Sibling, not child: inside a <button> host the region's text
-          // would land in the control's accessible name.
-          renderer.insertBefore(parent, el, hostEl.nextSibling);
-          span = el;
+        if (this.regionSpan) {
+          return;
         }
-        span.textContent = text;
+        const parent = renderer.parentNode(hostEl) as Node | null;
+        if (!parent) {
+          return;
+        }
+        const el = renderer.createElement('span') as HTMLSpanElement;
+        renderer.setStyle(el, 'position', 'var(--cngx-sr-only-position, absolute)');
+        renderer.setStyle(el, 'width', 'var(--cngx-sr-only-size, 1px)');
+        renderer.setStyle(el, 'height', 'var(--cngx-sr-only-size, 1px)');
+        renderer.setStyle(el, 'overflow', 'var(--cngx-sr-only-overflow, hidden)');
+        renderer.setStyle(el, 'clip', 'var(--cngx-sr-only-clip, rect(0, 0, 0, 0))');
+        renderer.setStyle(el, 'white-space', 'var(--cngx-sr-only-white-space, nowrap)');
+        renderer.setAttribute(el, 'aria-atomic', 'true');
+        renderer.setAttribute(el, 'role', 'status');
+        renderer.setAttribute(el, 'aria-live', 'polite');
+        // Sibling, not child: inside a <button> host the region's text
+        // would land in the control's accessible name.
+        renderer.insertBefore(parent, el, hostEl.nextSibling);
+        this.regionSpan = el;
       });
     });
 
-    this.destroyRef.onDestroy(() => {
-      if (span?.parentNode) {
-        renderer.removeChild(span.parentNode, span);
-      }
-      span = null;
-    });
+    this.destroyRef.onDestroy(() => this.removeRegion(renderer));
+  }
+
+  private removeRegion(renderer: Renderer2): void {
+    const span = this.regionSpan;
+    if (span?.parentNode) {
+      renderer.removeChild(span.parentNode, span);
+    }
+    this.regionSpan = null;
+  }
+
+  /**
+   * Clears the region at once, then writes `read()` after the next render,
+   * so a host can read content the settle rendered. Two settles before a
+   * render produce two writes.
+   */
+  private speak(read: () => string): void {
+    if (!untracked(this.autoAnnounce)) {
+      return;
+    }
+    // The region may not exist yet (a settle before the first render); the
+    // write resolves it then.
+    if (this.regionSpan) {
+      this.regionSpan.textContent = '';
+    }
+    afterNextRender(
+      {
+        write: () => {
+          const current = this.regionSpan;
+          if (!this.destroyed && current) {
+            current.textContent = read();
+          }
+        },
+      },
+      { injector: this.injector },
+    );
+  }
+
+  /**
+   * Speaks `message` once through the auto region after the next render, for
+   * a settle the host reflects but the directive did not run (an external
+   * async state). No-op with `[autoAnnounce]="false"` or outside the browser.
+   */
+  announce(message: string): void {
+    this.speak(() => message);
   }
 
   /** `true` while the action is executing. */
@@ -297,8 +374,8 @@ export class CngxAsyncClick {
   });
 
   /**
-   * Screen reader announcement for the current state. Rendered automatically
-   * into the auto polite region; only needs manual wiring when
+   * Screen reader announcement for the current state. Written into the auto
+   * polite region once per settle; only needs manual wiring when
    * `autoAnnounce` is `false`.
    */
   readonly announcement = computed(() => {
@@ -346,19 +423,35 @@ export class CngxAsyncClick {
       if (this.destroyed) {
         return;
       }
-      this.pendingState.set(false);
-      this.succeededState.set(true);
-      this.lastUpdatedState.set(new Date());
-      this.scheduleFeedbackReset();
+      this.settle('success', undefined);
     } catch (err: unknown) {
       if (this.destroyed) {
         return;
       }
-      this.pendingState.set(false);
+      this.settle('error', err);
+    }
+  }
+
+  /** Ends a run: writes the state, emits `(settled)` and speaks the outcome once. */
+  private settle(status: 'success' | 'error', err: unknown): void {
+    this.pendingState.set(false);
+    if (status === 'success') {
+      this.succeededState.set(true);
+      this.lastUpdatedState.set(new Date());
+    } else {
       this.failedState.set(true);
       this.errorState.set(err);
-      this.scheduleFeedbackReset();
     }
+    this.scheduleFeedbackReset();
+
+    this.generation += 1;
+    this.settled.emit({ generation: this.generation, status, error: err });
+
+    // Own copy resolves now: a later language switch or a feedback reset
+    // inside the render gap cannot change what this settle speaks.
+    const own = untracked(this.announcement);
+    const hostAnnouncement = this.hostState?.announcement;
+    this.speak(() => (hostAnnouncement ? untracked(hostAnnouncement) : own));
   }
 
   private scheduleFeedbackReset(): void {

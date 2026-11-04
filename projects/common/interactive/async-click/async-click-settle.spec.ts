@@ -86,7 +86,7 @@ async function clickTwiceWithoutChangeDetection(button: HTMLElement): Promise<vo
 }
 
 describe('cngxAsyncClick settle side effects across two runs without change detection', () => {
-  it.fails('writes the plain directive live region once per failed run', async () => {
+  it('writes the plain directive live region once per failed run', async () => {
     const fixture = TestBed.createComponent(PlainHost);
     flush(fixture);
     const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;

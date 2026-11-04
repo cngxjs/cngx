@@ -481,6 +481,11 @@ export class CngxActionButton {
       // rebind while status sits in success/error. Doctrine: bridge effects
       // untrack service calls.
       untracked(() => {
+        // The directive speaks its own runs per settle; an external edge is
+        // spoken here, since the directive never sees that run.
+        if (this.externalState() && (status === 'success' || status === 'error')) {
+          this.asyncClick.announce(this.effectiveAnnouncement());
+        }
         if (status === 'success') {
           // Producer write for the buildAsyncStateView `lastUpdated` slot (no other
           // source feeds it) - state production, not derived-state sync. This is the

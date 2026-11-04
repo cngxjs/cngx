@@ -682,12 +682,6 @@ export const LIVE_REGIONS = [
     testName: 'does not re-announce on a language flip',
   },
   {
-    file: 'projects/common/interactive/async-click/async-click.directive.ts',
-    region: 'CngxAsyncClick.installAnnounceRegion:effect#1',
-    spec: 'projects/common/interactive/async-click/async-click.directive.spec.ts',
-    testName: 'does not re-announce on a language flip',
-  },
-  {
     file: 'projects/common/interactive/copy/copy-block.ts',
     region: 'CngxCopyBlock.span(liveAnnouncement)',
     spec: 'projects/common/interactive/copy/copy-block.spec.ts',
@@ -757,6 +751,12 @@ export const LIVE_REGIONS = [
     file: 'projects/ui/accordion/accordion-item.component.ts',
     region: 'CngxAccordionItem.div(errorTemplate,resolvedErrorMessage)',
     spec: 'projects/ui/accordion/accordion-item.component.spec.ts',
+    testName: 'does not re-announce on a language flip',
+  },
+  {
+    file: 'projects/ui/action-button/action-button.ts',
+    region: 'CngxActionButton.constructor:effect#1',
+    spec: 'projects/ui/action-button/action-button.spec.ts',
     testName: 'does not re-announce on a language flip',
   },
   {

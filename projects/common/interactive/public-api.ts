@@ -1,7 +1,11 @@
 /**
  * @module @cngx/common/interactive
  */
-export { CngxAsyncClick, type AsyncAction } from './async-click/async-click.directive';
+export {
+  CngxAsyncClick,
+  type AsyncAction,
+  type CngxAsyncSettle,
+} from './async-click/async-click.directive';
 export {
   CNGX_HOST_INTERACTION_STATE,
   type CngxHostInteractionState,
