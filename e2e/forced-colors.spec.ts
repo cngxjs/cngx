@@ -368,6 +368,8 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
 
     // Arrow until the highlight has visited an unchecked and the checked
     // option; both must paint in the row ink. Paints transition, so poll.
+    // O1: each ArrowDown awaits aria-activedescendant to change before the
+    // row ink is read, so the read never races a highlight still in flight.
     const seen = new Set<'checked' | 'unchecked'>();
     for (let step = 0; step < 4 && seen.size < 2; step++) {
       const isChecked = await highlighted.evaluate((el) =>
@@ -382,7 +384,11 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
           .toBe(highlightText);
       }
       seen.add(isChecked ? 'checked' : 'unchecked');
+      const activeBefore = await trigger.getAttribute('aria-activedescendant');
       await page.keyboard.press('ArrowDown');
+      await expect
+        .poll(async () => trigger.getAttribute('aria-activedescendant'))
+        .not.toBe(activeBefore);
     }
     expect([...seen].sort()).toEqual(['checked', 'unchecked']);
   });
