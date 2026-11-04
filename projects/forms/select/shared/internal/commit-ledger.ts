@@ -236,9 +236,10 @@ export function createCommitLedger<TCommit, TOption = unknown>(
           last.set(null);
         }
         req.onStateChange?.('success');
-        // `null` is a legitimate server result (a `??` would drop it); only a
-        // missing one falls back to the intended value.
-        const hasResult = committed !== undefined;
+        // `null` and `undefined` both mean "no result" (an HttpClient 204
+        // resolves `null`): keep the intended value. Only a concrete result
+        // reconciles over it.
+        const hasResult = committed != null;
         const final = (hasResult ? committed : next) as V;
         reconcile(final);
         settle(final);
