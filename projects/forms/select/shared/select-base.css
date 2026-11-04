@@ -998,6 +998,29 @@
     initial-value: 0.125rem;
   }
 
+  /**
+   * Text colour of the commit-error hint shown under a closed trigger.
+   * Defaults to the danger-text contrast tier so it clears 4.5:1 like the
+   * inline banner.
+   * @group State / Commit
+   * @see [[--cngx-color-danger-text]]
+   */
+  @property --cngx-select-commit-error-hint-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.5 0.2 25);
+  }
+
+  /**
+   * Block-start margin of the commit-error hint, set from the density scale.
+   * @group State / Commit
+   */
+  @property --cngx-select-commit-error-hint-margin {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.25rem;
+  }
+
   /* Delegating tokens - panel surface + every primary-tinted glyph
    * and danger-toned error surface track the foundation chain so a
    * dark-mode swap on `--cngx-color-surface` / `--cngx-color-text` /
@@ -1963,6 +1986,17 @@
     border: 1px solid currentColor;
     border-radius: var(--cngx-select-commit-error-radius, 0.125rem);
     color: var(--cngx-select-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
+    font-size: var(--cngx-font-size-sm, 0.875rem);
+  }
+
+  /* Hint shown under a closed trigger when a commit error is current (strand A
+     renders it through the `commitErrorShown` gate; until then the class has no
+     consumer). Reads the danger-text tier, a density-scale block-start margin
+     and the small font rung. */
+  .cngx-select__commit-error-hint {
+    --cngx-select-commit-error-hint-margin: var(--cngx-space-xs);
+    margin-block-start: var(--cngx-select-commit-error-hint-margin, 0.25rem);
+    color: var(--cngx-select-commit-error-hint-color, var(--cngx-color-danger-text, oklch(0.5 0.2 25)));
     font-size: var(--cngx-font-size-sm, 0.875rem);
   }
 
