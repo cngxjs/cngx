@@ -10,5 +10,6 @@ export { CNGX_ERROR_DOCS_URL, cngxDevError, cngxDevWarn, type CngxErrorCode } fr
 export * from './equality';
 export * from './icons';
 export * from './runtime-error';
+export * from './spoken-text';
 export * from './tree';
 export * from './version';

@@ -7,11 +7,12 @@ import {
   computed,
   contentChild,
   effect,
+  ElementRef,
   inject,
   Injector,
   input,
-  signal,
   untracked,
+  viewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import {
@@ -30,11 +31,17 @@ import {
   CngxSucceeded,
   injectInteractiveI18n,
   reflectAsyncDisplayStatus,
+  type CngxAsyncSettle,
   type CngxHostInteractionState,
 } from '@cngx/common/interactive';
-import { buildAsyncStateView, createTransitionTracker, type CngxAsyncState } from '@cngx/core/utils';
+import {
+  buildAsyncStateView,
+  createTransitionTracker,
+  type AsyncStatus,
+  type CngxAsyncState,
+} from '@cngx/core/utils';
 import { CngxToastOn, CngxToaster, injectErrorDetail, injectFeedbackI18n } from '@cngx/ui/feedback';
-import { cngxDevWarn } from '@cngx/utils';
+import { cngxDevWarn, readSpokenText } from '@cngx/utils';
 
 type LabelCell = 'idle' | 'pending' | 'success' | 'error';
 
@@ -60,7 +67,12 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
  * announcement follow the run at once.
  *
  * The status announcement is spoken through the `cngxAsyncClick` live
- * region next to the button, also for a bound `[externalState]`.
+ * region next to the button, once per run (`(settled)`), also for a bound
+ * `[externalState]` (once per observed edge). It speaks what the button
+ * shows: on failure `failedAnnouncement`, then the text of a projected
+ * `cngxFailed` template, then `failedLabel`, then
+ * `CNGX_INTERACTIVE_I18N.asyncClickFailed`. An outcome a shown toast already
+ * announces is not spoken twice (see `autoAnnounce`).
  *
  * For full control, use `cngxButton` with `[cngxAsyncClick]` directly.
  *
@@ -117,7 +129,14 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
   hostDirectives: [
     {
       directive: CngxAsyncClick,
-      inputs: ['cngxAsyncClick: action', 'feedbackDuration', 'showDelay', 'minDwell'],
+      inputs: [
+        'cngxAsyncClick: action',
+        'feedbackDuration',
+        'showDelay',
+        'minDwell',
+        'autoAnnounce',
+      ],
+      outputs: ['settled'],
     },
   ],
   providers: [
@@ -177,6 +196,7 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
       }
       @if (hasCell().error) {
         <span
+          #failedCell
           class="cngx-action-button__label"
           [attr.data-active]="activeCell() === 'error' ? '' : null"
           [attr.aria-hidden]="activeCell() === 'error' ? null : 'true'"
@@ -259,10 +279,21 @@ export class CngxActionButton {
   readonly succeededAnnouncement = input<string | undefined>(undefined);
 
   /**
-   * SR announcement on failure. Falls back to `failedLabel`, then
-   * `CNGX_INTERACTIVE_I18N.asyncClickFailed`.
+   * SR announcement on failure. Falls back to the text of a projected
+   * `cngxFailed` template (what the button shows, `aria-hidden` parts
+   * skipped), then `failedLabel`, then `CNGX_INTERACTIVE_I18N.asyncClickFailed`.
    */
   readonly failedAnnouncement = input<string | undefined>(undefined);
+
+  /**
+   * The `cngxAsyncClick` live region next to the button. Unbound, the region
+   * stays and speaks every settle except an outcome a shown toast already
+   * announces (`toastSuccess` / `toastError` set and a `CngxToaster`
+   * provided), so it is heard once. `false` removes the region. `true` speaks
+   * every settle, also next to a toast. Bind a boolean: the binding is also
+   * forwarded to the co-hosted `cngxAsyncClick`, which owns the region.
+   */
+  readonly autoAnnounce = input<boolean | undefined>(undefined);
 
   /**
    * Fallback text while pending (when no `cngxPending` template is projected).
@@ -278,7 +309,16 @@ export class CngxActionButton {
 
   /**
    * Bind an external async state to derive visual status from.
-   * When set, the button's status display follows `externalState.status()`.
+   * When set, the button's status display, `state`, toasts and announcement
+   * follow `externalState`, and clicks are refused while it is pending.
+   *
+   * Exclusive with the button's own runs: bind either `[action]` (the button
+   * runs it and reports each settle) or `[externalState]` (the button
+   * reflects a run it does not own). With both bound, the external state
+   * wins for display, `state` and feedback. External state is state: the
+   * toast and the announcement fire once per observed `success` / `error`
+   * edge, so an identical settle with no change in between is not re-spoken,
+   * and a state that is already settled when bound is not an edge.
    */
   readonly externalState = input<CngxAsyncState<unknown> | undefined>(undefined);
 
@@ -378,38 +418,14 @@ export class CngxActionButton {
   });
 
   /**
-   * @internal - SR announcement derived from the effective status, so an
-   * external success/error settles audibly too (the directive only knows
-   * its own runs). Spoken by the directive's live region through
-   * `CNGX_HOST_INTERACTION_STATE.announcement`. Mirrors the label fallback
-   * chain the template uses.
-   */
-  protected readonly effectiveAnnouncement = computed(() => {
-    switch (this.effectiveStatus()) {
-      case 'success':
-        return untracked(
-          () =>
-            this.succeededAnnouncement() ??
-            this.succeededLabel() ??
-            this.i18n().asyncClickSucceeded,
-        );
-      case 'error':
-        return untracked(
-          () => this.failedAnnouncement() ?? this.failedLabel() ?? this.i18n().asyncClickFailed,
-        );
-      default:
-        return '';
-    }
-  });
-
-  /**
    * @internal - what the co-hosted `CngxAsyncClick` folds in: the blocked
-   * flag, the external busy bit and the announcement.
+   * flag, the external busy bit and the announcement, read by the directive
+   * once per own settle after render.
    */
   readonly hostInteraction: CngxHostInteractionState = {
     disabled: this.blocked,
     busy: this.externalBusy,
-    announcement: this.effectiveAnnouncement,
+    announcement: () => this.resolveAnnouncement(untracked(this.effectiveStatus)),
   };
 
   /** @internal */
@@ -426,7 +442,15 @@ export class CngxActionButton {
     { variant: 'solid' },
   );
 
-  private readonly lastUpdatedState = signal<Date | undefined>(undefined);
+  /**
+   * @internal - one source per mode: the external state's stamp while
+   * `[externalState]` is bound (no fall-through to the own runs), else the
+   * co-hosted `CngxAsyncClick`.
+   */
+  private readonly effectiveLastUpdated = computed(() => {
+    const ext = this.externalState();
+    return ext ? ext.lastUpdated() : this.asyncClick.state.lastUpdated();
+  });
 
   /**
    * Full `CngxAsyncState` view of this button's effective lifecycle.
@@ -440,7 +464,7 @@ export class CngxActionButton {
     status: this.effectiveStatus,
     data: computed(() => undefined),
     error: this.effectiveError,
-    lastUpdated: this.lastUpdatedState.asReadonly(),
+    lastUpdated: this.effectiveLastUpdated,
   });
 
   /** @internal */
@@ -449,6 +473,8 @@ export class CngxActionButton {
   protected readonly succeededTpl = contentChild(CngxSucceeded);
   /** @internal */
   protected readonly failedTpl = contentChild(CngxFailed);
+
+  private readonly failedCell = viewChild('failedCell', { read: ElementRef });
 
   constructor() {
     // Double-toast guard, consumer placed [cngxToastOn] on the same element.
@@ -465,56 +491,121 @@ export class CngxActionButton {
       });
     }
 
-    const tracker = createTransitionTracker(() => this.effectiveStatus());
+    // Own runs: one toast per settle. The co-hosted directive cannot be read
+    // during construction (it injects the host state this component
+    // provides), and a settle needs a click on the rendered button.
+    afterNextRender(() => {
+      this.asyncClick.settled.subscribe((settle) => this.handleOwnSettle(settle));
+    });
 
+    // External runs: state, so one toast and one announcement per edge.
+    const tracker = createTransitionTracker(() => this.effectiveStatus());
     effect(() => {
       const status = tracker.current();
       const previous = tracker.previous();
-
       if (status === previous) {
         return;
       }
-
-      // Only the transition edge may re-run this body. The toast inputs and
-      // effectiveError are read untracked: previous() stays stale for the whole
-      // settled window, so a tracked read would re-fire the toast on any input
-      // rebind while status sits in success/error. Doctrine: bridge effects
-      // untrack service calls.
-      untracked(() => {
-        // The directive speaks its own runs per settle; an external edge is
-        // spoken here, since the directive never sees that run.
-        if (this.externalState() && (status === 'success' || status === 'error')) {
-          this.asyncClick.announce(this.effectiveAnnouncement());
-        }
-        if (status === 'success') {
-          // Producer write for the buildAsyncStateView `lastUpdated` slot (no other
-          // source feeds it) - state production, not derived-state sync. This is the
-          // sanctioned signal-write-in-effect class, same as the async-state-view pattern.
-          this.lastUpdatedState.set(new Date());
-          const msg = this.toastSuccess();
-          if (msg && this.toaster) {
-            this.toaster.show({
-              message: msg,
-              severity: 'success',
-              duration: this.toastSuccessDuration(),
-            });
-          }
-        }
-
-        if (status === 'error') {
-          const msg = this.toastError();
-          if (msg && this.toaster) {
-            const err = this.effectiveError();
-            const detail =
-              this.toastErrorDetail() && err != null ? this.errorDetail(err) : undefined;
-            this.toaster.show({
-              message: detail ? this.feedbackI18n().errorWithDetail(msg, detail) : msg,
-              severity: 'error',
-              duration: this.toastErrorDuration(),
-            });
-          }
-        }
-      });
+      // Only the edge re-runs this body; everything else is read untracked,
+      // so a toast-input rebind inside the settled window cannot re-fire.
+      untracked(() => this.handleExternalEdge(status));
     });
+  }
+
+  private handleOwnSettle(settle: CngxAsyncSettle): void {
+    if (untracked(this.externalState)) {
+      return;
+    }
+    untracked(() => this.showToast(settle.status, settle.error));
+  }
+
+  private handleExternalEdge(status: AsyncStatus): void {
+    if (!this.externalState() || (status !== 'success' && status !== 'error')) {
+      return;
+    }
+    this.showToast(status, this.effectiveError());
+    // After render, so a projected failed template shows the new error
+    // before its text is read.
+    afterNextRender(
+      { write: () => this.asyncClick.announce(this.resolveAnnouncement(status)) },
+      { injector: this.injector },
+    );
+  }
+
+  private showToast(status: 'success' | 'error', err: unknown): void {
+    if (!this.toaster) {
+      return;
+    }
+    if (status === 'success') {
+      const msg = this.toastSuccess();
+      if (msg) {
+        this.toaster.show({
+          message: msg,
+          severity: 'success',
+          duration: this.toastSuccessDuration(),
+        });
+      }
+      return;
+    }
+    const msg = this.toastError();
+    if (!msg) {
+      return;
+    }
+    const detail = this.toastErrorDetail() && err != null ? this.errorDetail(err) : undefined;
+    this.toaster.show({
+      message: detail ? this.feedbackI18n().errorWithDetail(msg, detail) : msg,
+      severity: 'error',
+      duration: this.toastErrorDuration(),
+    });
+  }
+
+  /** `true` when a shown toast already announces this outcome. */
+  private toastCovers(status: 'success' | 'error'): boolean {
+    if (!this.toaster) {
+      return false;
+    }
+    return status === 'success' ? !!this.toastSuccess() : !!this.toastError();
+  }
+
+  /**
+   * The settle text the region speaks, read once per settle after render:
+   * the same precedence as the visible cell. `''` for an outcome a shown
+   * toast covers, unless `[autoAnnounce]="true"`.
+   */
+  private resolveAnnouncement(status: AsyncStatus): string {
+    return untracked(() => {
+      if (status !== 'success' && status !== 'error') {
+        return '';
+      }
+      if (this.toastCovers(status) && this.autoAnnounce() !== true) {
+        return '';
+      }
+      if (status === 'success') {
+        return (
+          this.succeededAnnouncement() ?? this.succeededLabel() ?? this.i18n().asyncClickSucceeded
+        );
+      }
+      // The rendered template ranks between the explicit announcement and
+      // the label, like the visible cell.
+      const explicit = this.failedAnnouncement();
+      if (explicit !== undefined) {
+        return explicit;
+      }
+      const rendered = this.renderedFailedText();
+      if (rendered !== undefined) {
+        return rendered;
+      }
+      return this.failedLabel() ?? this.i18n().asyncClickFailed;
+    });
+  }
+
+  /** Text of the rendered `cngxFailed` template, or `undefined` without one. */
+  private renderedFailedText(): string | undefined {
+    const cell = this.failedTpl() ? this.failedCell() : undefined;
+    if (!cell) {
+      return undefined;
+    }
+    const text = readSpokenText(cell.nativeElement as Element);
+    return text === '' ? undefined : text;
   }
 }

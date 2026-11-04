@@ -99,7 +99,7 @@ describe('cngxAsyncClick settle side effects across two runs without change dete
     expect(writes()).toEqual(['Action failed', 'Action failed']);
   });
 
-  it.fails('shows the action button error toast once per failed run', async () => {
+  it('shows the action button error toast once per failed run', async () => {
     const show = vi.fn();
     TestBed.configureTestingModule({ providers: [{ provide: CngxToaster, useValue: { show } }] });
     const fixture = TestBed.createComponent(ActionButtonHost);
