@@ -11,6 +11,7 @@ import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host'
 import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
 import { describeSelectBehaviourHost } from '../shared/__test-helpers/select-behaviour-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
+import { KINDS as PROBE_KINDS, cleanupRoots as cleanupProbeRoots, mount as probeMount } from '../shared/__test-helpers/review-probe-host';
 import { stubTouchFloor } from '../shared/__test-helpers/touch-floor';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { stripBidiIsolates } from '@cngx/testing';
@@ -19,6 +20,7 @@ import {
   makeSelectConfig,
   provideSelectConfig,
   withAriaLabels,
+  withDismissOn,
   withFallbackLabels,
   withPanelClass,
   withTemplates,
@@ -1629,5 +1631,52 @@ describe('CngxTreeSelect - panel footer', () => {
     } finally {
       configFooterTpl = null;
     }
+  });
+});
+
+// ── Review 2 (commit 7): dismiss, aria-multiselectable, PageUp/PageDown. ─────
+describe('CngxTreeSelect - review 2 dismiss and tree keyboard', () => {
+  afterEach(() => {
+    cleanupProbeRoots();
+    vi.restoreAllMocks();
+  });
+
+  function treeEl(root: HTMLElement): HTMLElement {
+    const tree = root.querySelector<HTMLElement>('[role="tree"]');
+    if (!tree) {
+      expect.fail('no role=tree container');
+    }
+    return tree!;
+  }
+
+  // C2: dismissOn 'outside' turns Escape dismissal off, so Escape keeps the tree open.
+  it.fails('Escape keeps the tree open under dismissOn outside', () => {
+    const m = probeMount(PROBE_KINDS['tree'], { providers: [provideSelectConfig(withDismissOn('outside'))] });
+    m.open();
+    expect(m.v.panelOpen()).toBe(true);
+    treeEl(m.el).dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+    m.settle();
+    expect(m.v.panelOpen()).toBe(true);
+  });
+
+  // I3: the tree announces that several nodes can be selected.
+  it.fails('the role=tree container carries aria-multiselectable="true"', () => {
+    const m = probeMount(PROBE_KINDS['tree']);
+    m.open();
+    expect(treeEl(m.el).getAttribute('aria-multiselectable')).toBe('true');
+  });
+
+  // I10: PageDown moves the active node by a page (clamped to the last node here).
+  it.fails('PageDown moves the active node toward the end', () => {
+    const m = probeMount(PROBE_KINDS['tree']);
+    m.open();
+    const tree = treeEl(m.el);
+    tree.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
+    m.settle();
+    const first = tree.getAttribute('aria-activedescendant');
+    tree.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true, cancelable: true }));
+    m.settle();
+    const after = tree.getAttribute('aria-activedescendant');
+    expect(after).not.toBe(first);
   });
 });

@@ -184,3 +184,29 @@ describe('createHostFocusWithin - modal sheet close contract', () => {
     }
   });
 });
+
+// ── B2 (commit 7): focus leaving the host closes an anchored panel even under
+// dismissOn 'escape' - this pins the current behaviour, not a change. ─────────
+import { afterEach as afterEachB2 } from 'vitest';
+import { provideSelectConfig, withDismissOn } from '../config';
+import { KINDS as B2_KINDS, cleanupRoots as b2Cleanup, mount as b2Mount } from '../__test-helpers/review-probe-host';
+
+describe('B2: focus leaving the host closes the anchored panel under dismissOn escape', () => {
+  afterEachB2(() => {
+    b2Cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it('closes when focus moves to a control outside the host', () => {
+    const m = b2Mount(B2_KINDS['select'], { providers: [provideSelectConfig(withDismissOn('escape'))] });
+    const trigger = m.el.querySelector<HTMLElement>('.cngx-field-trigger')!;
+    trigger.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    m.open();
+    expect(m.v.panelOpen()).toBe(true);
+
+    const outside = m.fixture.nativeElement.querySelector('.outside-btn') as HTMLElement;
+    trigger.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: outside }));
+    m.settle();
+    expect(m.v.panelOpen()).toBe(false);
+  });
+});
