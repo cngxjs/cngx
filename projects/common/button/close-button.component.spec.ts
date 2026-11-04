@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxAsyncClick } from '@cngx/common/interactive';
-import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
+import { CNGX_LOADING_DEFAULTS, provideLoadingConfigAt, withShowDelay } from '@cngx/core/utils';
 import { CNGX_ICON_X } from '@cngx/utils';
 import { vi } from 'vitest';
 
@@ -75,6 +75,16 @@ class AsyncHost {
   imports: [CngxCloseButton, CngxAsyncClick],
 })
 class GatedAsyncHost {
+  release: () => void = () => undefined;
+  readonly run = (): Promise<void> => new Promise<void>((resolve) => (this.release = resolve));
+}
+
+@Component({
+  template: `<button id="scoped" cngxCloseButton aria-label="Run" [cngxAsyncClick]="run"></button>`,
+  imports: [CngxCloseButton, CngxAsyncClick],
+  viewProviders: [provideLoadingConfigAt(withShowDelay(300))],
+})
+class ScopedGatedAsyncHost {
   release: () => void = () => undefined;
   readonly run = (): Promise<void> => new Promise<void>((resolve) => (this.release = resolve));
 }
@@ -208,6 +218,32 @@ describe('CngxCloseButton', () => {
     expect(btn.hasAttribute('data-busy')).toBe(false);
     expect(btn.hasAttribute('aria-busy')).toBe(false);
     expect(btn.querySelector('.cngx-button__busy')).toBeNull();
+  });
+
+  it('retimes the busy layer through provideLoadingConfigAt(withShowDelay)', async () => {
+    vi.useFakeTimers();
+    const { fixture, host, q } = render(ScopedGatedAsyncHost);
+    const btn = q('#scoped');
+    const advance = async (ms: number): Promise<void> => {
+      await vi.advanceTimersByTimeAsync(ms);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+    };
+
+    btn.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(btn.getAttribute('data-pending')).toBe('true');
+
+    await advance(CNGX_LOADING_DEFAULTS.showDelay);
+    expect(btn.hasAttribute('data-busy')).toBe(false);
+    await advance(300 - CNGX_LOADING_DEFAULTS.showDelay);
+    expect(btn.getAttribute('data-busy')).toBe('true');
+
+    host.release();
+    await advance(CNGX_LOADING_DEFAULTS.minDwell);
+    expect(btn.hasAttribute('data-busy')).toBe(false);
+    vi.useRealTimers();
   });
 
   it('keeps aria-disabled when a co-hosted cngxAsyncClick is idle', () => {

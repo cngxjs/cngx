@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { provideRouter, Router, RouterLink } from '@angular/router';
 import { CngxAsyncClick, type AsyncAction } from '@cngx/common/interactive';
 import { vi } from 'vitest';
-import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
+import { CNGX_LOADING_DEFAULTS, provideLoadingConfigAt, withShowDelay } from '@cngx/core/utils';
 
 import {
   provideButtonConfig,
@@ -207,6 +207,20 @@ class RefusingAsyncHost {
   readonly action: AsyncAction = () => {
     this.calls++;
     return Promise.resolve();
+  };
+}
+
+@Component({
+  template: `<button id="scoped" cngxButton [cngxAsyncClick]="action">Save</button>`,
+  imports: [CngxButton, CngxAsyncClick],
+  viewProviders: [provideLoadingConfigAt(withShowDelay(300))],
+})
+class ScopedLoadingAsyncHost {
+  calls = 0;
+  release: () => void = () => undefined;
+  readonly action: AsyncAction = () => {
+    this.calls++;
+    return new Promise<void>((resolve) => (this.release = resolve));
   };
 }
 
@@ -562,6 +576,35 @@ describe('CngxButton', () => {
       fixture.detectChanges();
       TestBed.flushEffects();
       expect(host.calls).toBe(2);
+      vi.useRealTimers();
+    });
+
+    it('retimes the busy layer through provideLoadingConfigAt(withShowDelay)', async () => {
+      vi.useFakeTimers();
+      const { fixture, host, q } = render(ScopedLoadingAsyncHost);
+      const btn = q('#scoped');
+      const advance = async (ms: number): Promise<void> => {
+        await vi.advanceTimersByTimeAsync(ms);
+        fixture.detectChanges();
+        TestBed.flushEffects();
+      };
+
+      btn.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(host.calls).toBe(1);
+      // data-pending is immediate; data-busy waits the scoped 300 ms delay, not
+      // the 120 ms default.
+      expect(btn.dataset['pending']).toBe('true');
+
+      await advance(CNGX_LOADING_DEFAULTS.showDelay);
+      expect(btn.hasAttribute('data-busy')).toBe(false);
+      await advance(300 - CNGX_LOADING_DEFAULTS.showDelay);
+      expect(btn.dataset['busy']).toBe('true');
+
+      host.release();
+      await advance(CNGX_LOADING_DEFAULTS.minDwell);
+      expect(btn.hasAttribute('data-busy')).toBe(false);
       vi.useRealTimers();
     });
 
