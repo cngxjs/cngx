@@ -33,6 +33,25 @@ test.describe('common/layout/drawer: modal inert scope', () => {
     expect(chipInert).toBe(true);
   });
 
+  for (const modality of ['mode default', 'modal']) {
+    test(`modal over drawer (${modality}): Escape closes it and focus returns to the toggle`, async ({
+      page,
+    }) => {
+      await gotoDemo(page, route);
+      await page.getByRole('button', { name: modality, exact: true }).click();
+      const toggle = page.getByRole('button', { name: 'Toggle over drawer' });
+      await toggle.click();
+      const panel = page.locator('#mode-panel');
+      await expect(panel).toHaveAttribute('aria-modal', 'true');
+      await expect(panel.getByRole('button', { name: 'Inbox' })).toBeFocused();
+
+      await page.keyboard.press('Escape');
+
+      await expect(panel).not.toHaveClass(/cngx-drawer-panel--open/);
+      await expect(toggle).toBeFocused();
+    });
+  }
+
   test('non-modal over drawer: Tab leaves the panel', async ({ page }) => {
     await gotoDemo(page, route);
     await page.getByRole('button', { name: 'non-modal' }).click();

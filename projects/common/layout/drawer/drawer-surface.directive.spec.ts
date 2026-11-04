@@ -252,4 +252,25 @@ describe('CngxDrawerSurface', () => {
 
     expect(document.activeElement).toBe(q('.opener'));
   });
+
+  it('restores focus to the opener after the modal scope is released', () => {
+    const { q, set } = setup();
+    const opener = q('.opener');
+    opener.focus();
+    set((h) => h.active.set(true));
+    q('.inside').focus();
+    // focus() on an inert element is a no-op in browsers; record the state
+    // the restore sees.
+    const inertAtFocus: boolean[] = [];
+    const nativeFocus = HTMLElement.prototype.focus;
+    vi.spyOn(opener, 'focus').mockImplementation((options?: FocusOptions) => {
+      inertAtFocus.push(opener.closest('[inert]') !== null);
+      nativeFocus.call(opener, options);
+    });
+
+    set((h) => h.active.set(false));
+
+    expect(inertAtFocus).toEqual([false]);
+    expect(document.activeElement).toBe(opener);
+  });
 });

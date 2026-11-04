@@ -144,6 +144,10 @@ export class CngxDrawerSurface
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly doc = inject(DOCUMENT);
   private readonly domReady = signal(false);
+  // True while the modal scope (inert outside the host, scroll lock) is
+  // applied. Focus restore waits for it: the opener sits outside the host,
+  // and focus() on an inert element is a no-op that leaves focus on <body>.
+  private readonly modalScopeHeld = signal(false);
   private destroyed = false;
 
   private resolvedDriver: CngxDrawerSurfaceDriver | null | undefined = undefined;
@@ -172,8 +176,11 @@ export class CngxDrawerSurface
   readonly focusTrapEnabled = this.engagedModal;
   /** @internal Drives the composed `CngxFocusTrap`. */
   readonly focusTrapAutoFocus = true;
-  /** @internal Drives the composed `CngxFocusRestore`. */
-  readonly focusRestoreActive = this.isActive;
+  /**
+   * @internal Drives the composed `CngxFocusRestore`. Falls only once the
+   * modal scope is released, so the restore target is no longer inert.
+   */
+  readonly focusRestoreActive = computed(() => this.isActive() || this.modalScopeHeld());
   /** @internal Drives the composed `CngxClickOutside`. */
   readonly clickOutsideEnabled = computed(
     () => this.isActive() && (this.driver()?.surfaceOutsideDismiss?.() ?? true),
@@ -204,9 +211,11 @@ export class CngxDrawerSurface
       }
       const releaseInert = createInertSiblings(this.host, { scope: 'outside' });
       const releaseLock = createScrollLock(this.scrollScope());
+      untracked(() => this.modalScopeHeld.set(true));
       onCleanup(() => {
         releaseInert();
         releaseLock();
+        this.modalScopeHeld.set(false);
       });
     });
   }
