@@ -1,5 +1,17 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
+// Chromium-only: these pins assert keyboard activation, Tab-leave and focus
+// containment. macOS WebKit skips buttons on Tab unless Full Keyboard Access is
+// on and drops focus to body (see e2e/select-a11y-focus.spec.ts), so the Tab,
+// focus and aria-activedescendant contracts diverge there by platform policy,
+// not by a cngx defect. The underlying logic is covered browser-agnostically in
+// the listbox-trigger and select-core unit specs; this file proves the Chromium
+// browser result the 2026-11-03 review observed.
+test.skip(
+  ({ browserName }) => browserName !== 'chromium',
+  'keyboard, Tab-leave and focus containment follow WebKit platform policy; the logic is covered by the unit specs across every environment',
+);
+
 // Routes for the 2026-11-03 independent-review keyboard, sheet and Tab
 // findings (I1, I2, I4, I6, I10). Red cases are test.fail - the Phase 2-5
 // fixes flip them.
@@ -57,13 +69,16 @@ test.describe('I1: Escape during the search debounce leaves the panel closed', (
   for (const key of ['typeahead', 'combobox'] as const) {
     test(`${key}: Escape in the debounce window keeps the panel closed`, async ({ page }) => {
       test.fail();
+      // The fake clock drives the search debounce deterministically: Escape
+      // must cancel the pending term, so the panel stays closed when it fires.
+      await page.clock.install();
       await page.goto(ROUTES[key]);
       const input = page.locator('.cngx-ex-artifact input').first();
       await expect(input).toBeVisible();
       await input.focus();
       await input.pressSequentially('gr', { delay: 20 });
       await page.keyboard.press('Escape');
-      await page.waitForTimeout(600);
+      await page.clock.runFor(1000);
       await expect(panel(page)).toBeHidden();
     });
   }
@@ -82,6 +97,13 @@ test.describe('I6: Tab onto an in-host control collapses aria-expanded', () => {
       }
       await page.goto(ROUTES[key]);
       await openByClick(page);
+      await expect(combobox(page)).toHaveAttribute('aria-expanded', 'true');
+      // The in-host clear-all is the next Tab stop on the chip hosts; wait for it
+      // so the Tab lands on it deterministically under parallel load.
+      const clearAll = page.locator('.cngx-ex-artifact .cngx-select__clear-target');
+      if ((await clearAll.count()) > 0) {
+        await expect(clearAll.first()).toBeVisible();
+      }
       await page.keyboard.press('Tab');
       await expect(combobox(page)).toHaveAttribute('aria-expanded', 'false');
     });
@@ -102,15 +124,15 @@ test.describe('I2: a sheet keeps focus inside across a presentation round trip',
       await page.setViewportSize({ width: 390, height: 844 });
       await page.goto(ROUTES.allVariants);
       await page.locator(opener).first().click();
-      const sheet = page.locator('.cngx-popover-sheet:not([aria-hidden="true"])').first();
-      await expect(sheet).toBeVisible({ timeout: 3000 });
+      const openSheet = page.locator('.cngx-popover-sheet:not([aria-hidden="true"])');
+      await expect(openSheet.first()).toBeVisible({ timeout: 3000 });
+      // Flip to an anchored panel: the sheet is dismissed, the panel stays open.
       await page.setViewportSize({ width: 1024, height: 768 });
-      await page.waitForTimeout(150);
+      await expect.poll(() => openSheet.count()).toBe(0);
+      // Flip back to a sheet; the open-focus step must re-home focus into it.
       await page.setViewportSize({ width: 390, height: 844 });
-      await page.waitForTimeout(250);
-      const open = page.locator('.cngx-popover-sheet:not([aria-hidden="true"])').first();
-      await expect(open).toBeVisible();
-      const inSheet = await open.evaluate((el) => el.contains(document.activeElement));
+      await expect(openSheet.first()).toBeVisible();
+      const inSheet = await openSheet.first().evaluate((el) => el.contains(document.activeElement));
       expect(inSheet).toBe(true);
     });
   }
