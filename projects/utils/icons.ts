@@ -219,10 +219,7 @@ export const CNGX_ICON_CHECK = {
     viewBox: '0 0 12 12',
     d: 'M1 6L2 5L5 8L10 3L11 4L5 10Z',
   },
-  small: {
-    viewBox: '0 0 16 16',
-    d: 'M1 8L3 7L7 11L13 4L15 5L7 13Z',
-  },
+  small: null,
 } as const satisfies CngxIconData;
 
 /** Solid dot. @internal */
@@ -266,10 +263,7 @@ export const CNGX_ICON_BAN = {
     viewBox: '0 0 12 12',
     d: 'M6 0A6 6 0 1 1 6 12A6 6 0 1 1 6 0ZM9.668 8.607A4.5 4.5 0 0 0 3.393 2.332ZM2.332 3.393A4.5 4.5 0 0 0 8.607 9.668Z',
   },
-  small: {
-    viewBox: '0 0 16 16',
-    d: 'M1 8A7 7 0 1 1 15 8A7 7 0 1 1 1 8ZM3 8A5 5 0 1 0 13 8A5 5 0 1 0 3 8ZM4 5L5 4L12 11L11 12Z',
-  },
+  small: null,
 } as const satisfies CngxIconData;
 
 /** Two columns of three dots (drag handle). @internal */

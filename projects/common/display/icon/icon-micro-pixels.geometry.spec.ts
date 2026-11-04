@@ -71,14 +71,13 @@ const SMALL_ICONS = Object.entries(utils)
 const RECTILINEAR_SMALL = ['CNGX_ICON_MINUS'] as const;
 
 // Signed-off 16-grid drawings whose anti-aliased pixel count edges past their
-// 24-grid path in a 16px box: X and CHECK are 1-unit diagonal strips that
-// straddle pixel boundaries on the whole-unit grid (X 38 vs 36, CHECK 38 vs 37,
-// as the micro tier). Every other band glyph stays at or under its 24 path.
-// Measured ceilings keep these two from getting worse without redrawing what the
-// sheet signed off.
+// 24-grid path in a 16px box: X is a 1-unit diagonal strip that straddles pixel
+// boundaries on the whole-unit grid (38 vs 36). Every other band glyph stays at
+// or under its 24 path. The measured ceiling keeps X from getting worse without
+// redrawing what the sheet signed off. (CHECK and BAN carry no small drawing -
+// the 1x smoke kept them on the 24-grid path.)
 const MEASURED_CEILINGS_SMALL: Readonly<Record<string, number>> = {
   CNGX_ICON_X: 38,
-  CNGX_ICON_CHECK: 38,
 };
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -210,8 +209,9 @@ describe('micro icon pixels in a 12px box', () => {
 
 describe('small icon pixels in a 16px box', () => {
   it('covers every small-carrying icon', () => {
-    // The set only gains small drawings; a shrinking list means the readback went vacuous.
-    expect(SMALL_ICONS.length).toBeGreaterThanOrEqual(8);
+    // The six band glyphs that carry a small drawing (CHECK, BAN and CARET_DOWN
+    // stay on the 24-grid path); a shorter list means the readback went vacuous.
+    expect(SMALL_ICONS.length).toBeGreaterThanOrEqual(6);
   });
 
   it.each(SMALL_ICONS)('%s keeps its anti-aliased pixels within the 24-grid path or its measured ceiling', async (name, icon) => {

@@ -53,12 +53,12 @@ const MICRO_ICONS = [
 ] as const;
 
 // Glyphs with a signed-off 16-grid drawing: the band consumers in the 15 to
-// 20px box. CARET_DOWN is excluded (Q3: the bridge caret stays on the 24 path),
-// so it is the one band glyph that keeps small: null.
+// 20px box. Excluded (kept on the 24-grid path, small: null): CARET_DOWN (Q3,
+// bridge caret), and CHECK and BAN (1x smoke 2026-11-04 - the user chose the
+// 24-grid path for both; the hinted check read as a different icon, the hinted
+// ban rang a touch too thick).
 const SMALL_ICONS = [
   'CNGX_ICON_ALERT',
-  'CNGX_ICON_BAN',
-  'CNGX_ICON_CHECK',
   'CNGX_ICON_CHEVRON_RIGHT',
   'CNGX_ICON_MINUS',
   'CNGX_ICON_STOP',
