@@ -49,6 +49,7 @@ export const STORY: DemoSpec = {
     }, 1500);
   }`,
   template: `  <div class="async-scroll demo-scroll-frame" role="list" aria-label="Demo items"
+       [attr.aria-busy]="asyncRecycler.isLoading() || asyncRecycler.showSkeleton() || asyncRecycler.isRefreshing() || null"
        style="height:300px;overflow-y:auto">
     @if (asyncRecycler.showSkeleton()) {
       @for (_ of skeletonRange(asyncRecycler.skeletonSlots()); track $index) {
