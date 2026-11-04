@@ -212,38 +212,52 @@ export function runToolingSection({ root, nextVersion, run: runStep, keepStamped
   return { restore };
 }
 
-// What a failed `npm publish` leaves behind. Before any package reached the
-// registry the tooling stamp is undone, so the same --version can run again.
-// Once one is on npm the version is taken: the stamp stays and the message
-// names what is on npm, what is not, and how to finish by hand.
-export function publishFailurePlan({ published, remaining, nextVersion, error }) {
-  const failed = remaining[0];
-  const cause = `npm publish of @cngx/${failed} failed: ${error.message}`;
+// What a failed release step leaves behind. `remaining` holds the packages
+// not on npm, in publish order, each with its directory (relative to the
+// repo root) and dist-tag. Before any package reached the registry the
+// tooling stamp is undone, so the same --version can run again. Once one is
+// on npm the version is taken: the stamp stays, every remaining directory is
+// already stamped (publishInLockstep prepares them all first), and the
+// message names the exact command for each, then the release commit.
+export function publishFailurePlan({ published, remaining, nextVersion, registryFlag = '', error }) {
+  const cause = `@cngx/${remaining[0].name} was not published: ${error.message}`;
   if (published.length === 0) {
     return {
       restore: true,
       message: `${cause}. Nothing is on npm; the tooling manifests and lockfiles are restored. Retry with --version ${nextVersion}.`,
     };
   }
-  const tooling = remaining.filter((name) => TOOLING_PACKAGES.includes(name));
-  const libs = remaining.filter((name) => !TOOLING_PACKAGES.includes(name));
-  const from = [
-    ...tooling.map((name) => `@cngx/${name} from packages/${name} (stamped)`),
-    ...(libs.length > 0
-      ? [`the libs from dist/<lib>, once each manifest and bundle carries ${nextVersion} (a run stamps a lib's dist only right before its own publish)`]
-      : []),
-  ];
   return {
     restore: false,
     message: [
       `${cause}.`,
       `On npm at ${nextVersion}: ${published.map((name) => `@cngx/${name}`).join(', ')}.`,
-      `Not published: ${remaining.map((name) => `@cngx/${name}`).join(', ')}.`,
+      `Not published: ${remaining.map(({ name }) => `@cngx/${name}`).join(', ')}.`,
       `The stamp stays; --version must stay ${nextVersion} (it is taken on npm).`,
-      `Publish the remaining packages by hand: ${from.join('; ')}.`,
+      'Publish the remaining packages by hand, in this order, from the repo root:',
+      ...remaining.map(({ dir, distTag }) => `  (cd ${dir} && npm publish --access public --tag ${distTag}${registryFlag})`),
       `Then bring the release files to ${nextVersion} (root version, changelogs, plugin @cngx/mcp pin) and commit them: ${releaseCommitFiles().join(', ')}.`,
     ].join('\n'),
   };
+}
+
+// The publish phase of a release: `prepare` stamps every package directory
+// first, so a failure part way through leaves each remaining package ready
+// for a plain `npm publish`; then `publish` runs per entry in order. A throw
+// from either stops the run and comes back as a publishFailurePlan.
+export function publishInLockstep({ order, nextVersion, registryFlag = '', prepare, publish }) {
+  const published = [];
+  let index = 0;
+  try {
+    prepare();
+    for (; index < order.length; index++) {
+      publish(order[index]);
+      published.push(order[index].name);
+    }
+  } catch (error) {
+    return { published, failure: publishFailurePlan({ published, remaining: order.slice(index), nextVersion, registryFlag, error }) };
+  }
+  return { published, failure: null };
 }
 
 // What a release publishes, in order: the tooling packages first, because
@@ -859,47 +873,38 @@ function main() {
   );
 
   const libReleases = new Map(releases.map((release) => [release.lib, release]));
-  const order = publishOrder(libs);
-  const published = [];
-  for (const [index, entry] of order.entries()) {
-    try {
-      publishEntry(entry);
-    } catch (error) {
-      const plan = publishFailurePlan({
-        published,
-        remaining: order.slice(index).map(({ name }) => name),
-        nextVersion,
-        error,
-      });
-      if (plan.restore) {
-        tooling.restore();
-      }
-      console.error(`\nRelease stopped: ${plan.message}`);
-      process.exit(1);
+  const order = publishOrder(libs).map(({ name, tooling: isTooling }) => ({
+    name,
+    tooling: isTooling,
+    dir: isTooling ? `packages/${name}` : `dist/${name}`,
+    distTag: isTooling ? toolingDistTags.get(name) : libReleases.get(name).distTag,
+  }));
+  const { failure } = publishInLockstep({ order, nextVersion, registryFlag, prepare: prepareLibDists, publish: publishEntry });
+  if (failure) {
+    if (failure.restore) {
+      tooling.restore();
     }
-    if (!dryRun) {
-      published.push(entry.name);
-    }
+    console.error(`\nRelease stopped: ${failure.message}`);
+    process.exit(1);
   }
 
-  function publishEntry({ name, tooling: isTooling }) {
-    if (isTooling) {
-      const distTag = toolingDistTags.get(name);
-      console.log(`\n[${name}]`);
-      if (!dryRun) {
-        run(`npm publish --access public --tag ${distTag}${registryFlag}`, join(ROOT, 'packages', name));
-        console.log(`  Published @cngx/${name}@${nextVersion} (dist-tag ${distTag})`);
-      } else {
-        console.log(`  Would publish @cngx/${name}@${nextVersion} (packages/${name}, dist-tag ${distTag})`);
+  // A real run writes every lib's stamped manifest, schematics stamp and
+  // bundles before the first `npm publish`; a dry run only reports them.
+  function prepareLibDists() {
+    for (const { lib, distPkg, distPkgPath, stamp } of releases) {
+      const migrationsFile = `dist/${lib}/schematics/migrations/migrations.json`;
+      const refreshKey = refreshMigrationKey(nextVersion);
+      if (dryRun) {
+        if (stamp) {
+          console.log(`  Would write dist/${lib}/schematics/versions.json ${JSON.stringify(stamp.versions)}`);
+          if (stamp.addsRefresh) {
+            console.log(`  Would add ${refreshKey} to ${migrationsFile}`);
+          } else {
+            console.log(`  Keeps the migration of ${nextVersion} in ${migrationsFile}`);
+          }
+        }
+        continue;
       }
-      return;
-    }
-    const { lib, distPkg, distPkgPath, stamp, distTag } = libReleases.get(name);
-    console.log(`\n[${lib}]`);
-    const migrationsFile = `dist/${lib}/schematics/migrations/migrations.json`;
-    const refreshKey = refreshMigrationKey(nextVersion);
-
-    if (!dryRun) {
       writeFileSync(distPkgPath, JSON.stringify(distPkg, null, 2) + '\n');
       if (stamp) {
         writeSchematicsStamp(stamp);
@@ -908,19 +913,20 @@ function main() {
         }
       }
       replaceVersionInDist(join(ROOT, 'dist', lib), nextVersion);
-      run(`npm publish --access public --tag ${distTag}${registryFlag}`, join(ROOT, 'dist', lib));
-      console.log(`  Published @cngx/${lib}@${nextVersion} (dist-tag ${distTag})`);
-    } else {
-      console.log(`  Would publish @cngx/${lib}@${nextVersion} (dist/${lib}, dist-tag ${distTag})`);
-      if (stamp) {
-        console.log(`  Would write dist/${lib}/schematics/versions.json ${JSON.stringify(stamp.versions)}`);
-        if (stamp.addsRefresh) {
-          console.log(`  Would add ${refreshKey} to ${migrationsFile}`);
-        } else {
-          console.log(`  Keeps the migration of ${nextVersion} in ${migrationsFile}`);
-        }
-      }
     }
+    if (!dryRun) {
+      console.log(`\nStamped ${releases.map(({ lib }) => `dist/${lib}`).join(', ')} with ${nextVersion}`);
+    }
+  }
+
+  function publishEntry({ name, dir, distTag }) {
+    console.log(`\n[${name}]`);
+    if (dryRun) {
+      console.log(`  Would publish @cngx/${name}@${nextVersion} (${dir}, dist-tag ${distTag})`);
+      return;
+    }
+    run(`npm publish --access public --tag ${distTag}${registryFlag}`, join(ROOT, dir));
+    console.log(`  Published @cngx/${name}@${nextVersion} (dist-tag ${distTag})`);
   }
 
   // Update root version after all libs published successfully

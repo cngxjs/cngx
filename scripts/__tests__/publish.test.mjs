@@ -25,6 +25,7 @@ import {
   libBuildCommand,
   npmViewVersion,
   publishFailurePlan,
+  publishInLockstep,
   publishOrder,
   REFRESH_FACTORY,
   refreshMigrationKey,
@@ -843,42 +844,110 @@ describe('runStep', () => {
 
 describe('publishFailurePlan', () => {
   const error = new Error('E403 forbidden');
-  const order = ['mcp', 'cli', ...PACKED_LIBS];
+  const order = publishOrder(PACKED_LIBS).map(({ name, tooling }) => ({
+    name,
+    dir: tooling ? `packages/${name}` : `dist/${name}`,
+    distTag: 'latest',
+  }));
 
   it('restores the stamp when the first publish fails, so the same --version can run again', () => {
     const plan = publishFailurePlan({ published: [], remaining: order, nextVersion: '0.3.0', error });
 
     expect(plan.restore).toBe(true);
     expect(plan.message).toBe(
-      'npm publish of @cngx/mcp failed: E403 forbidden. Nothing is on npm; the tooling manifests and lockfiles are restored. Retry with --version 0.3.0.',
+      '@cngx/mcp was not published: E403 forbidden. Nothing is on npm; the tooling manifests and lockfiles are restored. Retry with --version 0.3.0.',
     );
   });
 
-  it('keeps the stamp once a package is on npm and names what is published, what remains and how to finish', () => {
-    const plan = publishFailurePlan({ published: ['mcp'], remaining: order.slice(1), nextVersion: '0.3.0', error });
+  it('keeps the stamp once a package is on npm and names the exact publish command per remaining dir', () => {
+    const plan = publishFailurePlan({
+      published: ['mcp'],
+      remaining: order.slice(1),
+      nextVersion: '0.3.0',
+      registryFlag: ' --registry http://localhost:4873',
+      error,
+    });
     const lines = plan.message.split('\n');
 
     expect(plan.restore).toBe(false);
-    expect(lines[0]).toBe('npm publish of @cngx/cli failed: E403 forbidden.');
-    expect(lines[1]).toBe('On npm at 0.3.0: @cngx/mcp.');
-    expect(lines[2]).toBe(`Not published: ${order.slice(1).map((name) => `@cngx/${name}`).join(', ')}.`);
-    expect(lines[3]).toBe('The stamp stays; --version must stay 0.3.0 (it is taken on npm).');
-    expect(lines[4]).toContain('@cngx/cli from packages/cli (stamped)');
-    expect(lines[4]).toContain('the libs from dist/<lib>');
-    expect(lines[5]).toContain(releaseCommitFiles().join(', '));
+    expect(lines.slice(0, 5)).toEqual([
+      '@cngx/cli was not published: E403 forbidden.',
+      'On npm at 0.3.0: @cngx/mcp.',
+      `Not published: ${order.slice(1).map(({ name }) => `@cngx/${name}`).join(', ')}.`,
+      'The stamp stays; --version must stay 0.3.0 (it is taken on npm).',
+      'Publish the remaining packages by hand, in this order, from the repo root:',
+    ]);
+    expect(lines.slice(5, -1)).toEqual(
+      order
+        .slice(1)
+        .map(({ dir }) => `  (cd ${dir} && npm publish --access public --tag latest --registry http://localhost:4873)`),
+    );
+    expect(lines[5]).toBe('  (cd packages/cli && npm publish --access public --tag latest --registry http://localhost:4873)');
+    expect(lines.at(-1)).toContain(releaseCommitFiles().join(', '));
   });
 
   it('names only the libs once both tooling packages are on npm', () => {
-    const plan = publishFailurePlan({
-      published: ['mcp', 'cli', 'utils'],
-      remaining: order.slice(3),
-      nextVersion: '0.3.0',
-      error,
-    });
+    const plan = publishFailurePlan({ published: ['mcp', 'cli', 'utils'], remaining: order.slice(3), nextVersion: '0.3.0', error });
 
     expect(plan.restore).toBe(false);
     expect(plan.message).toContain('On npm at 0.3.0: @cngx/mcp, @cngx/cli, @cngx/utils.');
-    expect(plan.message).not.toContain('from packages/cli');
+    expect(plan.message).not.toContain('cd packages/');
+  });
+});
+
+describe('publishInLockstep', () => {
+  const order = publishOrder(['utils', 'core']).map(({ name, tooling }) => ({
+    name,
+    dir: tooling ? `packages/${name}` : `dist/${name}`,
+    distTag: 'next',
+  }));
+
+  it('stamps every package dir before the first publish, then publishes in order', () => {
+    const events = [];
+
+    const result = publishInLockstep({
+      order,
+      nextVersion: '0.3.0',
+      prepare: () => events.push('prepare'),
+      publish: ({ name }) => events.push(`publish ${name}`),
+    });
+
+    expect(events).toEqual(['prepare', 'publish mcp', 'publish cli', 'publish utils', 'publish core']);
+    expect(result).toEqual({ published: ['mcp', 'cli', 'utils', 'core'], failure: null });
+  });
+
+  it('publishes nothing and asks for a restore when the stamping fails', () => {
+    const published = [];
+
+    const { failure } = publishInLockstep({
+      order,
+      nextVersion: '0.3.0',
+      prepare: () => {
+        throw new Error('EACCES dist/core/package.json');
+      },
+      publish: ({ name }) => published.push(name),
+    });
+
+    expect(published).toEqual([]);
+    expect(failure.restore).toBe(true);
+  });
+
+  it('stops at the failed package and keeps the stamp for the ones after it', () => {
+    const { published, failure } = publishInLockstep({
+      order,
+      nextVersion: '0.3.0',
+      prepare: () => {},
+      publish: ({ name }) => {
+        if (name === 'utils') {
+          throw new Error('E503');
+        }
+      },
+    });
+
+    expect(published).toEqual(['mcp', 'cli']);
+    expect(failure.restore).toBe(false);
+    expect(failure.message).toContain('Not published: @cngx/utils, @cngx/core.');
+    expect(failure.message).toContain('(cd dist/core && npm publish --access public --tag next)');
   });
 });
 
