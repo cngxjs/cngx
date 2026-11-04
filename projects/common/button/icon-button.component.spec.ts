@@ -92,11 +92,13 @@ describe('CngxIconButton', () => {
     host.release();
     await advance(0);
     expect(btn.hasAttribute('data-pending')).toBe(false);
-    expect(btn.hasAttribute('aria-busy')).toBe(false);
+    // aria-busy is held until the busy visual releases (E4), not cleared at settle.
+    expect(btn.getAttribute('aria-busy')).toBe('true');
     expect(btn.getAttribute('data-busy')).toBe('true');
 
     await advance(CNGX_LOADING_DEFAULTS.minDwell);
     expect(btn.hasAttribute('data-busy')).toBe(false);
+    expect(btn.hasAttribute('aria-busy')).toBe(false);
     expect(btn.querySelector('.cngx-button__busy')).toBeNull();
   });
 
