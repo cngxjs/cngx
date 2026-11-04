@@ -103,7 +103,7 @@ import { CngxPending, CngxSucceeded, CngxFailed } from '@cngx/common/interactive
   
   <div cngxPopoverFooter>
     <cngx-popover-action role="dismiss">Cancel</cngx-popover-action>
-    <cngx-popover-action role="confirm" [action]="deleteItem" variant="danger">
+    <cngx-popover-action role="confirm" [action]="deleteItem" variant="danger" [showDelay]="120">
       Delete
       <ng-template cngxPending>Deleting...</ng-template>
       <ng-template cngxSucceeded>Deleted!</ng-template>
@@ -112,6 +112,8 @@ import { CngxPending, CngxSucceeded, CngxFailed } from '@cngx/common/interactive
   </div>
 </cngx-popover-panel>
 ```
+
+The confirm action times its busy visual through the loading gate. The `cngxPending` template shows only after `showDelay` (unbound, `CNGX_LOADING_CONFIG.showDelay`), so a run that settles before the delay never flashes "Deleting..."; once shown it is held for `minDwell` past the run, and for that whole window the action is painted busy (not disabled) and refuses a second click. Bind `[showDelay]` / `[minDwell]` to override per instance, or leave them unbound to inherit the config.
 
 ### Content States
 

@@ -182,7 +182,8 @@ export class CngxAsyncClick {
   /**
    * Show delay (ms) of the busy visual, bound as `[showDelay]` next to the
    * directive. Unbound, it resolves to `CNGX_LOADING_CONFIG.showDelay`.
-   * `0` shows the busy visual on the first tick of a run.
+   * `0` shows the busy visual one task later (the gate arms through
+   * `setTimeout(0)`), not on the first tick of a run.
    */
   readonly showDelay = input<number | undefined>(undefined);
 
