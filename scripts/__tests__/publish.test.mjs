@@ -958,6 +958,10 @@ describe('publishInLockstep', () => {
 
     expect(published).toEqual([]);
     expect(failure.restore).toBe(true);
+    expect(failure.message).toBe(
+      'Stamping the lib dists failed, before any npm publish: EACCES dist/core/package.json. Nothing is on npm; the tooling manifests and lockfiles are restored. Retry with --version 0.3.0.',
+    );
+    expect(failure.message).not.toContain('@cngx/mcp');
   });
 
   it('stops at the failed package and keeps the stamp for the ones after it', () => {

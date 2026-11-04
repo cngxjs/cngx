@@ -219,8 +219,12 @@ export function runToolingSection({ root, nextVersion, run: runStep, keepStamped
 // on npm the version is taken: the stamp stays, every remaining directory is
 // already stamped (publishInLockstep prepares them all first), and the
 // message names the exact command for each, then the release commit.
-export function publishFailurePlan({ published, remaining, nextVersion, registryFlag = '', error }) {
-  const cause = `@cngx/${remaining[0].name} was not published: ${error.message}`;
+// `stage` is 'stamp' when stamping the lib dists failed, before any publish.
+export function publishFailurePlan({ published, remaining, nextVersion, registryFlag = '', error, stage = 'publish' }) {
+  const cause =
+    stage === 'stamp'
+      ? `Stamping the lib dists failed, before any npm publish: ${error.message}`
+      : `@cngx/${remaining[0].name} was not published: ${error.message}`;
   if (published.length === 0) {
     return {
       restore: true,
@@ -247,9 +251,13 @@ export function publishFailurePlan({ published, remaining, nextVersion, registry
 // from either stops the run and comes back as a publishFailurePlan.
 export function publishInLockstep({ order, nextVersion, registryFlag = '', prepare, publish }) {
   const published = [];
-  let index = 0;
   try {
     prepare();
+  } catch (error) {
+    return { published, failure: publishFailurePlan({ published, remaining: order, nextVersion, registryFlag, error, stage: 'stamp' }) };
+  }
+  let index = 0;
+  try {
     for (; index < order.length; index++) {
       publish(order[index]);
       published.push(order[index].name);
