@@ -1,5 +1,6 @@
 import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
 import { CngxCloseButton } from '@cngx/common/button';
+import { CNGX_LIVE_SURFACE_ATTR } from '@cngx/core/utils';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -61,7 +62,7 @@ export type ToastPosition =
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'cngx-toast-outlet',
-    'data-cngx-live-surface': '',
+    [CNGX_LIVE_SURFACE_ATTR]: '',
     '[class]': 'positionClass()',
     role: 'region',
     '[attr.aria-label]': 'regionLabel()',

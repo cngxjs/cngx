@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 
 import { CngxCloseButton } from '@cngx/common/button';
+import { CNGX_LIVE_SURFACE_ATTR } from '@cngx/core/utils';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 import { injectFeedbackI18n } from '../config/feedback-i18n';
@@ -48,7 +49,7 @@ import { CngxBanner, type BannerState } from './banner.service';
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'cngx-banner-outlet',
-    'data-cngx-live-surface': '',
+    [CNGX_LIVE_SURFACE_ATTR]: '',
   },
   template: `
     @for (banner of service.banners(); track banner.id) {
