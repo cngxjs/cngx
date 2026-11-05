@@ -308,6 +308,35 @@ describe('CngxDrawerSurface', () => {
       expect(host.dismissed).toHaveBeenCalledTimes(1);
     });
 
+    it('re-arms the watcher after the Escape task while still engaged', () => {
+      vi.useFakeTimers();
+      const { set, q } = setup();
+      set((h) => h.active.set(true));
+      q('.inside').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      expect(watchers[0].destroy).toHaveBeenCalledTimes(1);
+
+      vi.runAllTimers();
+
+      expect(watchers).toHaveLength(2);
+    });
+
+    it('clears the pending Escape re-arm when destroyed', () => {
+      const { fixture, set, q } = setup();
+      set((h) => h.active.set(true));
+      const scheduled = vi.spyOn(globalThis, 'setTimeout');
+      q('.inside').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      const ids = scheduled.mock.results.map((r) => r.value as unknown);
+      scheduled.mockRestore();
+      const cleared = vi.spyOn(globalThis, 'clearTimeout');
+
+      fixture.destroy();
+
+      const clearedIds = cleared.mock.calls.map(([id]) => id as unknown);
+      cleared.mockRestore();
+      expect(ids.some((id) => clearedIds.includes(id))).toBe(true);
+      expect(watchers).toHaveLength(1);
+    });
+
     it('asks on a press outside the host', () => {
       const { host, set, q } = setup();
       set((h) => h.active.set(true));

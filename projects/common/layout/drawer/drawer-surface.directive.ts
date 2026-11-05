@@ -185,6 +185,9 @@ export class CngxDrawerSurface
   private readonly domReady = signal(false);
   private readonly focusTrap = inject(CngxFocusTrap, { self: true });
   private destroyed = false;
+  // Chromium also turns an unhandled Escape into a CloseWatcher close; the
+  // watcher stays disarmed until this keydown task is over.
+  private escapeRearmTimer: ReturnType<typeof setTimeout> | null = null;
 
   private resolvedDriver: CngxDrawerSurfaceDriver | null | undefined = undefined;
   private driver(): CngxDrawerSurfaceDriver | null {
@@ -235,6 +238,7 @@ export class CngxDrawerSurface
     afterNextRender(() => this.domReady.set(true));
     inject(DestroyRef).onDestroy(() => {
       this.destroyed = true;
+      this.clearEscapeRearm();
       this.closeWatcher.disarm();
     });
 
@@ -245,7 +249,10 @@ export class CngxDrawerSurface
         return;
       }
       untracked(() => this.closeWatcher.arm());
-      onCleanup(() => this.closeWatcher.disarm());
+      onCleanup(() => {
+        this.clearEscapeRearm();
+        this.closeWatcher.disarm();
+      });
     });
 
     effect((onCleanup) => {
@@ -301,12 +308,22 @@ export class CngxDrawerSurface
     if (!this.isActive()) {
       return;
     }
-    // Chromium also turns an unhandled Escape into a CloseWatcher close; one
-    // keypress must reach the owner once, so no watcher exists until the
-    // keydown task is over.
+    // One keypress must reach the owner once, so no watcher exists until
+    // the keydown task is over.
     this.closeWatcher.disarm();
     this.emitDismiss();
-    setTimeout(() => this.rearmIfEngaged());
+    this.clearEscapeRearm();
+    this.escapeRearmTimer = setTimeout(() => {
+      this.escapeRearmTimer = null;
+      this.rearmIfEngaged();
+    });
+  }
+
+  private clearEscapeRearm(): void {
+    if (this.escapeRearmTimer !== null) {
+      clearTimeout(this.escapeRearmTimer);
+      this.escapeRearmTimer = null;
+    }
   }
 
   private requestDismiss(): void {
