@@ -7,7 +7,7 @@ import { CngxPopoverTrigger } from '@cngx/common/popover';
 import { CNGX_ICON_CHEVRON_DOWN } from '@cngx/utils';
 
 import { injectButtonCaretIcon } from './caret-icon.token';
-import { injectMenuToggle } from './menu-toggle';
+import { injectMenuToggle } from './internal/menu-toggle';
 import { CngxSplitCaret } from './split-caret.directive';
 
 /**

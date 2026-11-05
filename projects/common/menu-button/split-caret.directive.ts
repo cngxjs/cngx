@@ -40,7 +40,7 @@ import { CNGX_SPLIT_CARET } from './split-caret.token';
  *     CngxSplitCaret,
  *   ],
  *   providers: [provideButtonHost('appCaret', { defaultVariant: 'solid', iconOnly: true })],
- *   host: { '(click)': 'toggle.handleClick()' },
+ *   host: { '(click)': 'toggle()' },
  *   template: `
  *     <span aria-hidden="true">v</span>
  *     @if (caret.isCaret()) {
@@ -51,14 +51,24 @@ import { CNGX_SPLIT_CARET } from './split-caret.token';
  * })
  * class AppCaret {
  *   protected readonly caret = inject(CngxSplitCaret);
- *   protected readonly toggle = injectMenuToggle(inject(CngxButtonBrain).blocked);
+ *   private readonly brain = inject(CngxButtonBrain);
+ *   private readonly menu = inject(CngxMenuTrigger);
+ *   private readonly popover = inject(CngxPopoverTrigger);
+ *
+ *   // A blocked caret never opens its menu; an open one still closes.
+ *   protected toggle(): void {
+ *     if (this.brain.blocked() && !this.menu.isOpen()) {
+ *       return;
+ *     }
+ *     this.popover.popoverRef().toggle();
+ *   }
  * }
  * ```
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/split-caret.directive.ts
  * @since 0.1.0
- * @relatedTo CngxSplitButton, CngxIconMenuButton, CngxButtonBrain, injectMenuToggle, CNGX_SPLIT_BUTTON
+ * @relatedTo CngxSplitButton, CngxIconMenuButton, CngxButtonBrain, CNGX_SPLIT_BUTTON
  * <example-url>/#/common/menu-button/split-button/custom-caret-host</example-url>
  * @axis level molecule
  */

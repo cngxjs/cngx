@@ -18,7 +18,7 @@ import { CngxPopoverTrigger } from '@cngx/common/popover';
 import { CNGX_ICON_CHEVRON_DOWN } from '@cngx/utils';
 
 import { injectButtonCaretIcon } from './caret-icon.token';
-import { injectMenuToggle } from './menu-toggle';
+import { injectMenuToggle } from './internal/menu-toggle';
 
 /**
  * A button that opens a menu: the WAI-ARIA APG Menu Button Pattern as its

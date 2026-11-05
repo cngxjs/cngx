@@ -35,7 +35,7 @@ function polyfillPopover(): void {
   }
 }
 
-// A custom menu host written in the app: the brain, both triggers and the toggle.
+// A minimal host on the brain and both triggers, outside the shipped components.
 @Component({
   selector: 'button[demoMenuButton]',
   hostDirectives: [
@@ -80,7 +80,7 @@ function setup() {
   return { host: fixture.componentInstance, button, popover, flush };
 }
 
-describe('injectMenuToggle on a custom host', () => {
+describe('injectMenuToggle', () => {
   beforeEach(() => polyfillPopover());
 
   it('toggles the menu on click', () => {

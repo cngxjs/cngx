@@ -19,7 +19,7 @@ import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxIconMenuButton } from './icon-menu-button.component';
-import { injectMenuToggle } from './menu-toggle';
+import { injectMenuToggle } from './internal/menu-toggle';
 import { CngxSplitButton } from './split-button.directive';
 import { CngxSplitCaret } from './split-caret.directive';
 
