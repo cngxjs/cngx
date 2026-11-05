@@ -56,7 +56,8 @@
   }
 
   /**
-   * Edge length of an `svg` or `img` glyph. Unset by default (`1.25em` of
+   * Edge length of an `svg` or `img` glyph, projected or drawn by a
+   * `provideButtonCloseIcon` component. Unset by default (`1.25em` of
    * the button font). Inherits so a value set on the button reaches the
    * glyph.
    * @group Layout
@@ -137,6 +138,17 @@
     }
 
     .cngx-icon-button__glyph > :is(svg, img) {
+      inline-size: round(nearest, var(--cngx-close-button-icon-size, 1.25em), 1px);
+      block-size: round(nearest, var(--cngx-close-button-icon-size, 1.25em), 1px);
+      flex-shrink: 0;
+    }
+
+    /* A provideButtonCloseIcon component renders its glyph inside its own host,
+     * one level below the glyph span; size a bare svg or img there like a
+     * projected one. Block, so the host's line box adds no baseline gap and the
+     * glyph stays centred. A projected cngx-icon sizes itself. */
+    .cngx-icon-button__glyph > :not(svg, img, .cngx-icon) > :is(svg, img) {
+      display: block;
       inline-size: round(nearest, var(--cngx-close-button-icon-size, 1.25em), 1px);
       block-size: round(nearest, var(--cngx-close-button-icon-size, 1.25em), 1px);
       flex-shrink: 0;
