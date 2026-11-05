@@ -35,10 +35,16 @@ export interface CngxLazySelfOptions {
  * @since 0.1.0
  */
 export function injectLazySelf<T>(token: ProviderToken<T>): () => T;
+/**
+ * Optional overload: the getter returns `null` for an absent token and looks it up only once.
+ */
 export function injectLazySelf<T>(
   token: ProviderToken<T>,
   options: CngxLazySelfOptions,
 ): () => T | null;
+/**
+ * Shared implementation of both overloads: a required lookup throws while the token is absent, an optional one caches `null`.
+ */
 export function injectLazySelf<T>(
   token: ProviderToken<T>,
   options?: CngxLazySelfOptions,
