@@ -16,9 +16,9 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/',
     },
   ],
-  apiComponents: ['CngxDrawer', 'CngxDrawerPanel', 'CngxDrawerContent', 'CngxPanelTrigger'],
+  apiComponents: ['CngxDrawer', 'CngxDrawerPanel', 'CngxDrawerContent', 'CngxPanelToggle'],
   moduleImports: [
-    "import { CngxDrawer, CngxDrawerContent, CngxDrawerPanel, CngxPanelTrigger } from '@cngx/common/layout';",
+    "import { CngxDrawer, CngxDrawerContent, CngxDrawerPanel, CngxPanelToggle } from '@cngx/common/layout';",
     "import { CngxNavLink } from '@cngx/common/interactive';",
     "import { CngxIconButton } from '@cngx/common/button';",
     "import { CngxAvatar, CngxIcon } from '@cngx/common/display';",
@@ -28,7 +28,7 @@ export const STORY: DemoSpec = {
     'CngxDrawer',
     'CngxDrawerPanel',
     'CngxDrawerContent',
-    'CngxPanelTrigger',
+    'CngxPanelToggle',
     'CngxNavLink',
     'CngxIconButton',
     'CngxAvatar',
@@ -73,9 +73,7 @@ export const STORY: DemoSpec = {
     </nav>
 
     <header class="demo-app-header">
-      <button type="button" cngxIconButton [cngxPanelTrigger]="fullNav" label="Main navigation">
-        <cngx-icon><mat-icon>menu</mat-icon></cngx-icon>
-      </button>
+      <button type="button" [cngxPanelToggle]="fullNav" label="Main navigation"></button>
       <cngx-avatar initials="A" shape="square" size="sm" />
       <span class="demo-app-brand">Acme</span>
       <span class="demo-app-spacer"></span>

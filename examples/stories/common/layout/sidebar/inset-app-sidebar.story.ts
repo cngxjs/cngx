@@ -3,29 +3,27 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxSidebar: Inset app sidebar',
   subtitle:
-    'A full-height <code>[cngxSidebar]</code> with the brand in its head, grouped navigation and the account in its foot. A <code>[cngxPanelTrigger]</code> at the top of the content column collapses it to an icon rail.',
+    'A full-height <code>[cngxSidebar]</code> with the brand in its head, grouped navigation and the account in its foot. A <code>[cngxPanelToggle]</code> at the top of the content column collapses it to an icon rail.',
   description:
     'The inset app layout: there is no global header, the brand lives in the sidebar and the sidebar toggle sits at the top of the content column. The navigation groups are CngxNavGroup disclosures that expand inline. Collapsed, the sidebar rests as a rail with the brand mark, one icon per entry and the avatar; the labels stay in the accessible name and show as a tooltip on hover and focus. Group entries are hidden in the rail until the rail flyout exists (planned for a later phase); expanding the sidebar shows them again.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['composition', 'behavior', 'a11y-pattern'],
-  apiComponents: ['CngxSidebar', 'CngxPanelTrigger'],
+  apiComponents: ['CngxSidebar', 'CngxPanelToggle'],
   moduleImports: [
-    "import { CngxPanelTrigger, CngxSidebar } from '@cngx/common/layout';",
+    "import { CngxPanelToggle, CngxSidebar } from '@cngx/common/layout';",
     "import { CngxNavGroup, CngxNavLabel, CngxNavLink } from '@cngx/common/interactive';",
-    "import { CngxIconButton } from '@cngx/common/button';",
     "import { CngxAvatar, CngxIcon } from '@cngx/common/display';",
     "import { CngxTooltip } from '@cngx/common/popover';",
     "import { MatIconModule } from '@angular/material/icon';",
   ],
   imports: [
     'CngxSidebar',
-    'CngxPanelTrigger',
+    'CngxPanelToggle',
     'CngxNavGroup',
     'CngxNavLabel',
     'CngxNavLink',
-    'CngxIconButton',
     'CngxAvatar',
     'CngxIcon',
     'CngxTooltip',
@@ -91,9 +89,7 @@ export const STORY: DemoSpec = {
 
     <div class="demo-app-column">
       <div class="demo-app-header">
-        <button type="button" cngxIconButton [cngxPanelTrigger]="appSidebar" label="Main sidebar">
-          <cngx-icon><mat-icon>{{ appSidebar.expanded() ? 'menu_open' : 'menu' }}</mat-icon></cngx-icon>
-        </button>
+        <button type="button" [cngxPanelToggle]="appSidebar" label="Main sidebar"></button>
         <span class="demo-app-brand">{{ current() }}</span>
       </div>
       <main class="demo-drawer-main demo-app-main">

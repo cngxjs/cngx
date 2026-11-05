@@ -5,14 +5,14 @@ export const STORY: DemoSpec = {
   subtitle:
     '<code>[cngxSidebar]</code> collapses to an icon rail. Each entry shows its label as a tooltip on hover and focus; resting the pointer on the rail peeks the full sidebar over the content without reflow, and the pin button toggles it between pinned and peeked.',
   description:
-    'A navigation sidebar that starts collapsed as a rail. The entries are CngxNavLink anchors with an icon and a label; in the rail the label is hidden visually but stays the accessible name, and a CngxTooltip shows it on hover and focus. Resting the pointer on the rail peeks the sidebar at full size over the content: the content column keeps its position because the reserved space stays at the rail size. While peeked, the pin button calls pin() and the sidebar stays expanded. The same button stays in place while expanded and reports aria-pressed; pressing it again collapses the sidebar back into a peek, so the focused button never disappears. Escape on it moves focus to the panel trigger before the peek ends. The head rows of the sidebar and the content column keep one fixed height in every state. Escape, moving focus out or leaving with the pointer ends the peek. The [cngxPanelTrigger] at the top of the content column toggles collapsed and carries aria-expanded and aria-controls. Collapsed as hidden, the sidebar reserves no space and is inert and aria-hidden until expanded.',
+    'A navigation sidebar that starts collapsed as a rail. The entries are CngxNavLink anchors with an icon and a label; in the rail the label is hidden visually but stays the accessible name, and a CngxTooltip shows it on hover and focus. Resting the pointer on the rail peeks the sidebar at full size over the content: the content column keeps its position because the reserved space stays at the rail size. While peeked, the pin button calls pin() and the sidebar stays expanded. The same button stays in place while expanded and reports aria-pressed; pressing it again collapses the sidebar back into a peek, so the focused button never disappears. Escape on it moves focus to the panel trigger before the peek ends. The head rows of the sidebar and the content column keep one fixed height in every state. Escape, moving focus out or leaving with the pointer ends the peek. The [cngxPanelToggle] at the top of the content column shows the panel glyph, toggles collapsed and carries aria-expanded and aria-controls. Collapsed as hidden, the sidebar reserves no space and is inert and aria-hidden until expanded.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['behavior', 'a11y-pattern'],
-  apiComponents: ['CngxSidebar', 'CngxPanelTrigger'],
+  apiComponents: ['CngxSidebar', 'CngxPanelToggle'],
   moduleImports: [
-    "import { CngxPanelTrigger, CngxSidebar } from '@cngx/common/layout';",
+    "import { CngxPanelToggle, CngxSidebar } from '@cngx/common/layout';",
     "import { CngxNavLink } from '@cngx/common/interactive';",
     "import { CngxIconButton } from '@cngx/common/button';",
     "import { CngxAvatar, CngxIcon } from '@cngx/common/display';",
@@ -21,7 +21,7 @@ export const STORY: DemoSpec = {
   ],
   imports: [
     'CngxSidebar',
-    'CngxPanelTrigger',
+    'CngxPanelToggle',
     'CngxNavLink',
     'CngxIconButton',
     'CngxAvatar',
@@ -102,9 +102,7 @@ export const STORY: DemoSpec = {
 
     <div class="demo-app-column">
       <div class="demo-app-header">
-        <button type="button" cngxIconButton [cngxPanelTrigger]="sidebar" label="Main sidebar">
-          <cngx-icon><mat-icon>{{ sidebar.expanded() ? 'menu_open' : 'menu' }}</mat-icon></cngx-icon>
-        </button>
+        <button type="button" [cngxPanelToggle]="sidebar" label="Main sidebar"></button>
         <span class="demo-app-brand">{{ current() }}</span>
       </div>
       <main class="demo-drawer-main demo-app-main">

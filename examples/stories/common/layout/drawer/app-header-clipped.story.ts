@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'The app header spans the full width and stays live; the drawer opens below it with <code>modality="contained"</code>, so the scrim, <code>inert</code> and the scroll lock stay inside the <code>[cngxDrawer]</code> host.',
   description:
-    'A clipped navigation drawer, the layout of web apps with a top bar. The header sits outside the [cngxDrawer] host, the panel and the content row inside it. A contained panel makes only the content row inert and scrims it through the cngx-drawer class; the header is neither dimmed nor inert. The hamburger is a [cngxPanelTrigger], so it carries aria-expanded and aria-controls and closes the drawer again. Pressing another header control closes the drawer as an outside press and still runs that control. The panel keeps its navigation landmark instead of claiming aria-modal: focus moves into it on open, Tab can reach the header, and Escape closes the drawer and returns focus to the hamburger.',
+    'A clipped navigation drawer, the layout of web apps with a top bar. The header sits outside the [cngxDrawer] host, the panel and the content row inside it. A contained panel makes only the content row inert and scrims it through the cngx-drawer class; the header is neither dimmed nor inert. The hamburger is a [cngxPanelToggle]: a modal over-drawer gets three bars while closed and a cross while open, and the button carries aria-expanded and aria-controls and closes the drawer again. Pressing another header control closes the drawer as an outside press and still runs that control. The panel keeps its navigation landmark instead of claiming aria-modal: focus moves into it on open, Tab can reach the header, and Escape closes the drawer and returns focus to the hamburger.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -16,9 +16,9 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/',
     },
   ],
-  apiComponents: ['CngxDrawer', 'CngxDrawerPanel', 'CngxDrawerContent', 'CngxPanelTrigger'],
+  apiComponents: ['CngxDrawer', 'CngxDrawerPanel', 'CngxDrawerContent', 'CngxPanelToggle'],
   moduleImports: [
-    "import { CngxDrawer, CngxDrawerContent, CngxDrawerPanel, CngxPanelTrigger } from '@cngx/common/layout';",
+    "import { CngxDrawer, CngxDrawerContent, CngxDrawerPanel, CngxPanelToggle } from '@cngx/common/layout';",
     "import { CngxNavLink } from '@cngx/common/interactive';",
     "import { CngxIconButton } from '@cngx/common/button';",
     "import { CngxAvatar, CngxIcon } from '@cngx/common/display';",
@@ -28,7 +28,7 @@ export const STORY: DemoSpec = {
     'CngxDrawer',
     'CngxDrawerPanel',
     'CngxDrawerContent',
-    'CngxPanelTrigger',
+    'CngxPanelToggle',
     'CngxNavLink',
     'CngxIconButton',
     'CngxAvatar',
@@ -52,9 +52,7 @@ export const STORY: DemoSpec = {
   template: `
   <div class="demo-drawer-container demo-drawer-container--bordered demo-app-frame">
     <header class="demo-app-header">
-      <button type="button" cngxIconButton [cngxPanelTrigger]="appNav" label="Main navigation">
-        <cngx-icon><mat-icon>menu</mat-icon></cngx-icon>
-      </button>
+      <button type="button" [cngxPanelToggle]="appNav" label="Main navigation"></button>
       <cngx-avatar initials="A" shape="square" size="sm" />
       <span class="demo-app-brand">Acme</span>
       <span class="demo-app-spacer"></span>

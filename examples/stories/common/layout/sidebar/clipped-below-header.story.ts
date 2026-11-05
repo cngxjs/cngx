@@ -5,14 +5,14 @@ export const STORY: DemoSpec = {
   subtitle:
     'A full-width app header with the toggle and the brand; the <code>[cngxSidebar]</code> is docked below it and collapses to a rail. The content reflows, nothing is dimmed.',
   description:
-    'The clipped app layout with a docked sidebar instead of a drawer: the header spans the full width and carries a [cngxPanelTrigger] hamburger with aria-expanded and aria-controls. The sidebar below it is part of the layout, never modal, so there is no scrim and nothing becomes inert; collapsing it to the rail moves the content start edge. In the rail the labels stay in the accessible name and show as a tooltip on hover and focus.',
+    'The clipped app layout with a docked sidebar instead of a drawer: the header spans the full width and carries a [cngxPanelToggle] with aria-expanded and aria-controls; a sidebar is an inline panel, so the toggle shows the panel glyph in both states and the name says what a press does. The sidebar below it is part of the layout, never modal, so there is no scrim and nothing becomes inert; collapsing it to the rail moves the content start edge. In the rail the labels stay in the accessible name and show as a tooltip on hover and focus.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['composition', 'behavior'],
-  apiComponents: ['CngxSidebar', 'CngxPanelTrigger'],
+  apiComponents: ['CngxSidebar', 'CngxPanelToggle'],
   moduleImports: [
-    "import { CngxPanelTrigger, CngxSidebar } from '@cngx/common/layout';",
+    "import { CngxPanelToggle, CngxSidebar } from '@cngx/common/layout';",
     "import { CngxNavLink } from '@cngx/common/interactive';",
     "import { CngxIconButton } from '@cngx/common/button';",
     "import { CngxAvatar, CngxIcon } from '@cngx/common/display';",
@@ -21,7 +21,7 @@ export const STORY: DemoSpec = {
   ],
   imports: [
     'CngxSidebar',
-    'CngxPanelTrigger',
+    'CngxPanelToggle',
     'CngxNavLink',
     'CngxIconButton',
     'CngxAvatar',
@@ -45,9 +45,7 @@ export const STORY: DemoSpec = {
   template: `
   <div class="demo-drawer-container demo-drawer-container--bordered demo-app-frame">
     <header class="demo-app-header">
-      <button type="button" cngxIconButton [cngxPanelTrigger]="docked" label="Main sidebar">
-        <cngx-icon><mat-icon>menu</mat-icon></cngx-icon>
-      </button>
+      <button type="button" [cngxPanelToggle]="docked" label="Main sidebar"></button>
       <cngx-avatar initials="A" shape="square" size="sm" />
       <span class="demo-app-brand">Acme</span>
       <span class="demo-app-spacer"></span>

@@ -5,14 +5,14 @@ export const STORY: DemoSpec = {
   subtitle:
     'A <code>push</code> panel lays out next to the content, which stays in use: no scrim, no <code>inert</code>, no focus trap. The chips switch <code>[mode]</code> and <code>modality</code>, and the line under them says what the current combination blocks.',
   description:
-    'A filter panel next to an order list, the inspector use of a drawer. The Filters button is a [cngxPanelTrigger]; the panel pushes the list aside, and the list keeps reacting to the filters while the panel is open. The modality input says how much of the page the open panel blocks. Whole page blocked (page) is a modal dialog: a scrim over the list, everything else inert, focus trapped. Only this area blocked (contained) puts the scrim and inert on the [cngxDrawer] host below the header only, so the header stays clickable and focus is not trapped. Nothing blocked (none) keeps everything operable. Mode default means page for over and none for push. push never blocks: page or contained with push resolve to none and warn CNGX1075 in the console, so the modality chips are disabled while push is selected. Escape and the close button close the panel in every combination; a press outside closes only the over panel, so working in the list keeps the push panel open.',
+    'A filter panel next to an order list, the inspector use of a drawer. The Filters button is a [cngxPanelToggle]; it shows the panel glyph while the panel pushes or overlays without blocking, and the menu bars and cross once a modal over panel blocks the page. The panel pushes the list aside, and the list keeps reacting to the filters while the panel is open. The modality input says how much of the page the open panel blocks. Whole page blocked (page) is a modal dialog: a scrim over the list, everything else inert, focus trapped. Only this area blocked (contained) puts the scrim and inert on the [cngxDrawer] host below the header only, so the header stays clickable and focus is not trapped. Nothing blocked (none) keeps everything operable. Mode default means page for over and none for push. push never blocks: page or contained with push resolve to none and warn CNGX1075 in the console, so the modality chips are disabled while push is selected. Escape and the close button close the panel in every combination; a press outside closes only the over panel, so working in the list keeps the push panel open.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['visual-variants', 'composition', 'behavior', 'a11y-pattern'],
-  apiComponents: ['CngxDrawer', 'CngxDrawerPanel', 'CngxDrawerContent', 'CngxPanelTrigger'],
+  apiComponents: ['CngxDrawer', 'CngxDrawerPanel', 'CngxDrawerContent', 'CngxPanelToggle'],
   moduleImports: [
-    "import { CngxDrawer, CngxDrawerContent, CngxDrawerPanel, CngxPanelTrigger, type CngxDrawerModality, type DrawerMode } from '@cngx/common/layout';",
+    "import { CngxDrawer, CngxDrawerContent, CngxDrawerPanel, CngxPanelToggle, type CngxDrawerModality, type DrawerMode } from '@cngx/common/layout';",
     "import { CngxIconButton } from '@cngx/common/button';",
     "import { CngxIcon } from '@cngx/common/display';",
     "import { MatIconModule } from '@angular/material/icon';",
@@ -21,7 +21,7 @@ export const STORY: DemoSpec = {
     'CngxDrawer',
     'CngxDrawerPanel',
     'CngxDrawerContent',
-    'CngxPanelTrigger',
+    'CngxPanelToggle',
     'CngxIconButton',
     'CngxIcon',
     'MatIconModule',
@@ -53,7 +53,7 @@ export const STORY: DemoSpec = {
     <header class="demo-app-header">
       <span class="demo-app-brand">Orders</span>
       <span class="demo-app-spacer"></span>
-      <button type="button" class="sort-btn" [cngxPanelTrigger]="filters">Filters</button>
+      <button type="button" [cngxPanelToggle]="filters" label="Filters"></button>
     </header>
 
     <div cngxDrawer #filters="cngxDrawer" panelId="order-filters" class="cngx-drawer demo-app-body">
