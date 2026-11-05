@@ -15,7 +15,12 @@ import {
   withButtonTone,
   withButtonVariant,
 } from './button-config';
-import { CNGX_CLOSE_ICON, CngxCloseButton } from './close-button.component';
+import {
+  CNGX_CLOSE_ICON,
+  CngxCloseButton,
+  injectCloseIcon,
+  provideCloseIcon,
+} from './close-button.component';
 
 @Component({
   template: `
@@ -176,12 +181,22 @@ describe('CngxCloseButton', () => {
     expect(btn.querySelector('.cngx-icon-button__glyph')!.getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('renders the CNGX_CLOSE_ICON component when nothing is projected', () => {
-    TestBed.configureTestingModule({ providers: [{ provide: CNGX_CLOSE_ICON, useValue: TokenGlyph }] });
+  it('renders the provideCloseIcon component when nothing is projected', () => {
+    TestBed.configureTestingModule({ providers: [provideCloseIcon(TokenGlyph)] });
     const { q } = render(TokenHost);
     const btn = q('#tokened');
     expect(btn.querySelector('.token-glyph')).not.toBeNull();
     expect(btn.querySelector('svg.cngx-close-button__icon')).toBeNull();
+  });
+
+  it('pairs provideCloseIcon with injectCloseIcon on CNGX_CLOSE_ICON', () => {
+    TestBed.configureTestingModule({ providers: [provideCloseIcon(TokenGlyph)] });
+    expect(TestBed.runInInjectionContext(() => injectCloseIcon())).toBe(TokenGlyph);
+    expect(TestBed.inject(CNGX_CLOSE_ICON)).toBe(TokenGlyph);
+  });
+
+  it('reads null from injectCloseIcon without a provider', () => {
+    expect(TestBed.runInInjectionContext(() => injectCloseIcon())).toBeNull();
   });
 
   it('renders a blocked close as aria-disabled with the reason and swallows clicks', () => {

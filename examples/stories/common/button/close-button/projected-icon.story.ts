@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxCloseButton: Projected icon',
   subtitle: 'Project any glyph into <code>&lt;button cngxCloseButton&gt;</code> to replace the default X per instance. The name, the focus ring and the click stay with the button.',
-  description: 'The default template renders a stroke-style X SVG. When you project content, it replaces the default; a <code>cngx-icon</code> sizes itself, a bare <code>svg</code> or <code>img</code> is sized to the button font. The glyph sits in an <code>aria-hidden</code> span, so projected text never becomes the name; <code>aria-label</code> on the host stays the only name. For app-wide swaps (every alert, toast, popover uses the same icon) prefer the <code>CNGX_CLOSE_ICON</code> DI token wired through <code>provideFeedback(withCloseIcon(...))</code>. Per-instance projection is for one-off chrome that does not warrant a global override.',
+  description: 'The default template renders a stroke-style X SVG. When you project content, it replaces the default; a <code>cngx-icon</code> sizes itself, a bare <code>svg</code> or <code>img</code> is sized to the button font. The glyph sits in an <code>aria-hidden</code> span, so projected text never becomes the name; <code>aria-label</code> on the host stays the only name. For app-wide swaps (every alert, toast, popover uses the same icon) prefer <code>provideCloseIcon(MyIcon)</code> (the <code>CNGX_CLOSE_ICON</code> token; <code>provideFeedback(withCloseIcon(...))</code> forwards to it). Per-instance projection is for one-off chrome that does not warrant a global override.',
   level: 'atom',
   audience: ['dev', 'design'],
   artifact: 'standalone',

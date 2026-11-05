@@ -4,6 +4,7 @@ import {
   Component,
   InjectionToken,
   inject,
+  type Provider,
   type Type,
   ViewEncapsulation,
 } from '@angular/core';
@@ -15,15 +16,49 @@ import { provideButtonHost } from './button-host.token';
 
 /**
  * Injection token for a custom close icon component, rendered by every
- * `button[cngxCloseButton]` that projects no glyph of its own. Set via
- * `provideFeedback(withCloseIcon(MyIcon))`, which forwards to this token, or
- * provide it directly.
+ * `button[cngxCloseButton]` that projects no glyph of its own. Set it with
+ * {@link provideCloseIcon}, or through `provideFeedback(withCloseIcon(MyIcon))`,
+ * which forwards to it.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/close-button.component.ts
  * @since 0.1.0
- * @relatedTo CngxCloseButton
+ * @relatedTo provideCloseIcon, injectCloseIcon, CngxCloseButton
  */
 export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon');
+
+/**
+ * Provides `component` as the glyph of every close button below the
+ * provider that projects none (`CNGX_CLOSE_ICON`). Works in `providers` and
+ * `viewProviders`; the nearest provider wins. Alerts, toasts and banners get
+ * it through `provideFeedback(withCloseIcon(...))`, which uses this function.
+ *
+ * ```ts
+ * bootstrapApplication(App, { providers: [provideCloseIcon(MaterialCloseIcon)] });
+ * ```
+ *
+ * @param component The glyph component; it renders inside the `aria-hidden` glyph span.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/close-button.component.ts
+ * @since 0.1.0
+ * @relatedTo CNGX_CLOSE_ICON, injectCloseIcon, CngxCloseButton
+ * <example-url>/#/common/button/close-button/projected-icon</example-url>
+ */
+export function provideCloseIcon(component: Type<unknown>): Provider {
+  return { provide: CNGX_CLOSE_ICON, useValue: component };
+}
+
+/**
+ * Reads the close glyph component provided through {@link provideCloseIcon},
+ * or `null` when none is set and the default X renders. Runs in an
+ * injection context; a custom dismiss host reads its glyph through it.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/close-button.component.ts
+ * @since 0.1.0
+ * @relatedTo CNGX_CLOSE_ICON, provideCloseIcon
+ */
+export function injectCloseIcon(): Type<unknown> | null {
+  return inject(CNGX_CLOSE_ICON, { optional: true });
+}
 
 /**
  * Close / dismiss button on the icon-button brain. Sits on the native
@@ -32,7 +67,7 @@ export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon'
  * the real element.
  *
  * It renders the default X glyph unless the consumer projects one or
- * `CNGX_CLOSE_ICON` swaps it app-wide; the glyph is hidden from assistive
+ * `provideCloseIcon` swaps it app-wide; the glyph is hidden from assistive
  * technology, so the name is the consumer's copy: set `aria-label` on the
  * host and name the dismissed artifact, not the affordance (`"Close
  * session-expired alert"`, not `"Close"`). A host without `aria-label`,
@@ -59,7 +94,7 @@ export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon'
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/close-button.component.ts
  * @since 0.1.0
- * @relatedTo CNGX_CLOSE_ICON, CngxIconButton, CngxButtonBrain, CngxAlert, CngxToastOutlet, CngxPopoverPanel
+ * @relatedTo provideCloseIcon, CngxIconButton, CngxButtonBrain, CngxAlert, CngxToastOutlet, CngxPopoverPanel
  * <example-url>/#/common/button/close-button/basic</example-url>
  * <example-url>/#/common/button/close-button/projected-icon</example-url>
  * <example-url>/#/common/button/close-button/contextual-labels</example-url>
@@ -126,7 +161,7 @@ export class CngxCloseButton {
   protected readonly brain = inject(CngxButtonBrain);
 
   /** @internal - app-wide glyph from `CNGX_CLOSE_ICON`. */
-  protected readonly customIcon = inject(CNGX_CLOSE_ICON, { optional: true });
+  protected readonly customIcon = injectCloseIcon();
 
   /** @internal - default X glyph from the shared icon set. */
   protected readonly closeIcon = CNGX_ICON_X;
