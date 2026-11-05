@@ -1,29 +1,14 @@
 import { NgComponentOutlet } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  ViewEncapsulation,
-} from '@angular/core';
-import {
-  CNGX_BUTTON_HOST_STATE,
-  CNGX_BUTTON_STATE,
-  CngxButtonBrain,
-  provideButtonHost,
-  type CngxButtonHostState,
-} from '@cngx/common/button';
+import { ChangeDetectionStrategy, Component, inject, ViewEncapsulation } from '@angular/core';
+import { CngxButtonBrain, provideButtonHost } from '@cngx/common/button';
 import { CngxIcon, CngxIconSvg } from '@cngx/common/display';
 import { CngxMenuTrigger } from '@cngx/common/interactive';
 import { CngxPopoverTrigger } from '@cngx/common/popover';
-import { injectDescribedByContribution, nextUid } from '@cngx/core/utils';
 import { CNGX_ICON_CHEVRON_DOWN } from '@cngx/utils';
 
 import { injectButtonCaretIcon } from './caret-icon.token';
-import { injectMenuButtonI18n } from './i18n/menu-button-i18n';
 import { injectMenuToggle } from './menu-toggle';
-import { CNGX_SPLIT_BUTTON } from './split-button.token';
-import { CNGX_SPLIT_CARET } from './split-caret.token';
+import { CngxSplitCaret } from './split-caret.directive';
 
 /**
  * A square, icon-only button that opens a menu: the kebab or "more" button
@@ -62,7 +47,7 @@ import { CNGX_SPLIT_CARET } from './split-caret.token';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/icon-menu-button.component.ts
  * @since 0.1.0
- * @relatedTo CngxMenuButton, CngxButtonBrain, CngxSplitButton, CngxIconButton, CngxMenuTrigger, CNGX_MENU_BUTTON_I18N
+ * @relatedTo CngxMenuButton, CngxButtonBrain, CngxSplitButton, CngxSplitCaret, CngxIconButton, CngxMenuTrigger, CNGX_MENU_BUTTON_I18N
  * <example-url>/#/common/menu-button/icon-menu-button/kebab</example-url>
  * <example-url>/#/common/menu-button/split-button/basic</example-url>
  * @axis level molecule
@@ -90,16 +75,9 @@ import { CNGX_SPLIT_CARET } from './split-caret.token';
     },
     { directive: CngxMenuTrigger, inputs: ['cngxMenuTrigger: menu', 'popover'] },
     { directive: CngxPopoverTrigger, inputs: ['cngxPopoverTrigger: popover'] },
+    CngxSplitCaret,
   ],
-  providers: [
-    provideButtonHost('cngxIconMenuButton', { defaultVariant: 'ghost', iconOnly: true }),
-    {
-      provide: CNGX_BUTTON_HOST_STATE,
-      useFactory: (): CngxButtonHostState => inject(CngxIconMenuButton).hostState,
-    },
-    // Same instance as CNGX_BUTTON_STATE, so the split compares main and caret as states.
-    { provide: CNGX_SPLIT_CARET, useExisting: CNGX_BUTTON_STATE },
-  ],
+  providers: [provideButtonHost('cngxIconMenuButton', { defaultVariant: 'ghost', iconOnly: true })],
   host: {
     class: 'cngx-button cngx-icon-button cngx-icon-menu-button',
     '[attr.data-expanded]': 'expanded() ? "true" : "false"',
@@ -107,7 +85,7 @@ import { CNGX_SPLIT_CARET } from './split-caret.token';
   },
   template: `
     <span class="cngx-button__label cngx-icon-button__glyph" aria-hidden="true">
-      @if (isSplitCaret()) {
+      @if (caret.isCaret()) {
         <cngx-icon class="cngx-menu-button__caret">
           @if (customCaret) {
             <ng-container *ngComponentOutlet="customCaret" />
@@ -119,16 +97,18 @@ import { CNGX_SPLIT_CARET } from './split-caret.token';
         <ng-content />
       }
     </span>
-    @if (isSplitCaret()) {
-      <span class="cngx-sr-only">{{ i18n().splitToggle }}</span>
-      <span [id]="mainBusyId" hidden>{{ i18n().splitMainBusy }}</span>
+    @if (caret.isCaret()) {
+      <span class="cngx-sr-only">{{ caret.label() }}</span>
+      <span [id]="caret.busyNoteId" hidden>{{ caret.busyNote() }}</span>
     }
     @if (brain.busyVisible()) {
       <span class="cngx-button__busy" aria-hidden="true">
         <span class="cngx-button__spinner"></span>
       </span>
     }
-    <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason() }}</span>
+    <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{
+      brain.disabledReason()
+    }}</span>
   `,
   styleUrls: [
     '../button/button.component.css',
@@ -140,12 +120,8 @@ export class CngxIconMenuButton {
   /** @internal */
   protected readonly brain = inject(CngxButtonBrain);
 
-  private readonly split = inject(CNGX_SPLIT_BUTTON, { optional: true });
-  /** @internal */
-  protected readonly i18n = injectMenuButtonI18n();
-
-  /** @internal - `true` when this button is the caret of a split (its direct child). */
-  protected readonly isSplitCaret = computed(() => this.split?.caret() === this.brain);
+  /** @internal - the caret role inside a `cngxSplitButton`. */
+  protected readonly caret = inject(CngxSplitCaret);
 
   /**
    * @internal - refuses to open the menu while the button is blocked; an
@@ -156,39 +132,9 @@ export class CngxIconMenuButton {
   /** `true` while the menu is open. Mirrors the popover's visibility. */
   readonly expanded = this.toggle.expanded;
 
-  /**
-   * @internal - the caret of a split refuses while the main action is
-   * blocked; the brain folds it in without referencing the own reason.
-   */
-  readonly hostState: CngxButtonHostState = {
-    refusing: computed(() => this.isSplitCaret() && (this.split?.mainBlocked() ?? false)),
-  };
-
-  /** @internal - id of the caret's busy note, referenced while the main action runs. */
-  protected readonly mainBusyId = nextUid('cngx-split-caret-busy-');
-
-  // The cause of a refusal that comes from the main: its reason, or the busy
-  // note while it runs.
-  private readonly mainDescriptionIds = computed(() => {
-    if (!this.isSplitCaret() || !this.split) {
-      return null;
-    }
-    const ids = [this.split.mainReasonId(), this.split.mainBusy() ? this.mainBusyId : null];
-    return ids.filter(Boolean).join(' ') || null;
-  });
-
-  /** @internal - the reason renders for the own `disabled` only. */
-  protected readonly reason = computed(() =>
-    this.brain.disabled() ? this.brain.disabledReason() : undefined,
-  );
-
   /** @internal - app-wide glyph from `CNGX_BUTTON_CARET_ICON`. */
   protected readonly customCaret = injectButtonCaretIcon();
 
   /** @internal - default chevron from the shared icon set. */
   protected readonly caretIcon = CNGX_ICON_CHEVRON_DOWN;
-
-  constructor() {
-    injectDescribedByContribution(this.mainBusyId, this.mainDescriptionIds);
-  }
 }

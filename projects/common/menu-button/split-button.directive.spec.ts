@@ -1,13 +1,27 @@
-import { Component, signal, type Type } from '@angular/core';
+import { Component, inject, signal, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { CNGX_BUTTON_STATE, CngxButton, CngxIconButton } from '@cngx/common/button';
-import { CngxAsyncClick, CngxMenu, CngxMenuItem, type AsyncAction } from '@cngx/common/interactive';
-import { CngxPopover } from '@cngx/common/popover';
+import {
+  CNGX_BUTTON_STATE,
+  CngxButton,
+  CngxButtonBrain,
+  CngxIconButton,
+  provideButtonHost,
+} from '@cngx/common/button';
+import {
+  CngxAsyncClick,
+  CngxMenu,
+  CngxMenuItem,
+  CngxMenuTrigger,
+  type AsyncAction,
+} from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxIconMenuButton } from './icon-menu-button.component';
+import { injectMenuToggle } from './menu-toggle';
 import { CngxSplitButton } from './split-button.directive';
+import { CngxSplitCaret } from './split-caret.directive';
 
 function polyfillPopover(): void {
   const proto = HTMLElement.prototype as unknown as {
@@ -195,6 +209,61 @@ class IconMainHost {
 })
 class CaretFirstHost {
   readonly disabled = signal(false);
+}
+
+// A caret written in the app on the public contract: brain, triggers, CngxSplitCaret.
+@Component({
+  selector: 'button[demoCaret]',
+  hostDirectives: [
+    { directive: CngxButtonBrain, inputs: ['variant: demoCaret', 'disabled', 'disabledReason'] },
+    { directive: CngxMenuTrigger, inputs: ['cngxMenuTrigger: menu', 'popover'] },
+    { directive: CngxPopoverTrigger, inputs: ['cngxPopoverTrigger: popover'] },
+    CngxSplitCaret,
+  ],
+  providers: [provideButtonHost('demoCaret', { defaultVariant: 'solid', iconOnly: true })],
+  host: { '(click)': 'toggle.handleClick()' },
+  template: `<span aria-hidden="true">v</span>
+    @if (caret.isCaret()) {
+      <span class="cngx-sr-only">{{ caret.label() }}</span>
+      <span [id]="caret.busyNoteId" hidden>{{ caret.busyNote() }}</span>
+    }`,
+})
+class DemoCaret {
+  protected readonly caret = inject(CngxSplitCaret);
+  protected readonly toggle = injectMenuToggle(inject(CngxButtonBrain).blocked);
+}
+
+@Component({
+  template: `
+    <div cngxSplitButton aria-label="Publish">
+      <button
+        id="main"
+        cngxButton
+        [cngxAsyncClick]="publish"
+        [disabled]="mainDisabled()"
+        [disabledReason]="mainReason()"
+      >
+        Publish
+      </button>
+      <button id="caret" demoCaret [menu]="menu" [popover]="pop"></button>
+    </div>
+    ${MENU}
+  `,
+  imports: [
+    CngxSplitButton,
+    CngxButton,
+    CngxAsyncClick,
+    DemoCaret,
+    CngxMenu,
+    CngxMenuItem,
+    CngxPopover,
+  ],
+})
+class CustomCaretHost {
+  readonly mainDisabled = signal(false);
+  readonly mainReason = signal<string | undefined>(undefined);
+  release: () => void = () => undefined;
+  readonly publish: AsyncAction = () => new Promise<void>((resolve) => (this.release = resolve));
 }
 
 function setup<T>(type: Type<T>) {
@@ -402,6 +471,42 @@ describe('CngxSplitButton', () => {
     flush();
     expect(caret.hasAttribute('aria-disabled')).toBe(false);
     expect(caret.getAttribute('aria-describedby')).toBeNull();
+  });
+
+  it('gives a custom host on CngxSplitCaret the caret role, refusal and description', async () => {
+    const { fixture, host, q, split, popover, flush } = setup(CustomCaretHost);
+    const caret = q('#caret');
+    const main = fixture.debugElement.query(By.css('#main')).injector.get(CNGX_BUTTON_STATE);
+    expect(split.caret()).toBe(
+      fixture.debugElement.query(By.css('#caret')).injector.get(CNGX_BUTTON_STATE),
+    );
+    expect(nameOf(caret)).toBe('More options');
+
+    host.mainReason.set('Fix the errors first');
+    host.mainDisabled.set(true);
+    flush();
+    expect(caret.getAttribute('aria-disabled')).toBe('true');
+    expect(describedIds(caret)).toEqual([main.activeReasonId()]);
+    caret.click();
+    flush();
+    expect(popover.isVisible()).toBe(false);
+
+    host.mainDisabled.set(false);
+    flush();
+    q('#main').click();
+    flush();
+    await Promise.resolve();
+    flush();
+    const [busyId] = describedIds(caret);
+    expect(document.getElementById(busyId)?.textContent).toBe('The main action is running');
+    expect(nameOf(caret)).toBe('More options');
+
+    host.release();
+    await Promise.resolve();
+    await Promise.resolve();
+    flush();
+    expect(caret.hasAttribute('aria-describedby')).toBe(false);
+    expect(caret.hasAttribute('aria-disabled')).toBe(false);
   });
 
   it("references the caret's reason while its own disabled is set", () => {
