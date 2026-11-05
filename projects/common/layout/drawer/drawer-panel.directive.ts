@@ -136,12 +136,22 @@ export class CngxDrawerPanel implements CngxDrawerSurfaceDriver {
   readonly mode = input<DrawerMode>('over');
 
   /**
-   * How far the open panel takes over the page: `'page'` (modal dialog,
-   * inert up to `<body>`), `'contained'` (scrim, inert and scroll lock
-   * inside the `[cngxDrawer]` host only, no trap) or `'none'`. Unbound, it
-   * follows the mode: `over` is `'page'`, `push` is `'none'`. `push` is
-   * never modal; `'page'` or `'contained'` with `push` resolve to `'none'`
-   * and warn `CNGX1075` in development. See {@link CngxDrawerModality}.
+   * How much of the page the open panel blocks:
+   *
+   * - `'page'`: the whole page is blocked. The panel is a modal dialog,
+   *   focus is trapped in it and everything outside it is `inert` up to
+   *   `<body>`.
+   * - `'contained'`: only the `[cngxDrawer]` host is blocked. The content
+   *   beside the panel is `inert` and scroll-locked, everything outside the
+   *   host (an app header above it) stays clickable, and focus moves into
+   *   the panel without being trapped.
+   * - `'none'`: nothing is blocked. No `inert`, no lock, no trap.
+   *
+   * With the `cngx-drawer` stylesheet, `'page'` and `'contained'` show a
+   * scrim over the `[cngxDrawer]` host. Unbound, it follows the mode: `over`
+   * is `'page'`, `push` is `'none'`. `push` never blocks: `'page'` or
+   * `'contained'` with `push` resolve to `'none'` and warn `CNGX1075` in
+   * development. See {@link CngxDrawerModality}.
    */
   readonly modality = input<CngxDrawerModality | undefined>(undefined);
 
