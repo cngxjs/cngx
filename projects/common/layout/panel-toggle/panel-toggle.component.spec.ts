@@ -92,6 +92,26 @@ function mount<T>(host: new () => T, providers: unknown[] = []) {
   return { fixture, host: fixture.componentInstance, settle, toggle, glyph, path, mirrored };
 }
 
+@Component({
+  template: `
+    <button type="button" class="toggle" [cngxPanelToggle]="drawer" #toggle="cngxPanelToggle">
+      <span
+        class="glyph"
+        [attr.data-expanded]="toggle.expanded()"
+        [attr.data-modal]="toggle.modalOverlay()"
+        [attr.data-mirrored]="toggle.mirrored()"
+      ></span>
+    </button>
+    <div cngxDrawer #drawer="cngxDrawer" panelId="nav">
+      <nav [cngxDrawerPanel]="drawer" [mode]="mode()" position="right">Links</nav>
+    </div>
+  `,
+  imports: [CngxPanelToggle, CngxDrawer, CngxDrawerPanel],
+})
+class ProjectedGlyphHost {
+  readonly mode = signal<DrawerMode>('push');
+}
+
 describe('CngxPanelToggle', () => {
   it('is an icon button on the button core', () => {
     const { toggle } = mount(SidebarHost);
@@ -217,6 +237,30 @@ describe('CngxPanelToggle', () => {
     const { path, mirrored } = mount(TargetHost);
     expect(path()).toBe(CNGX_ICON_PANEL_OPEN.d);
     expect(mirrored()).toBe(false);
+  });
+
+  it('exposes the glyph state to a projected glyph and draws no default one', () => {
+    TestBed.configureTestingModule({ imports: [ProjectedGlyphHost] });
+    const fixture = TestBed.createComponent(ProjectedGlyphHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const glyph = root.querySelector('.glyph') as HTMLElement;
+    const read = () => [
+      glyph.dataset['expanded'],
+      glyph.dataset['modal'],
+      glyph.dataset['mirrored'],
+    ];
+
+    expect(root.querySelector('.cngx-panel-toggle__icon')).toBeNull();
+    expect(read()).toEqual(['false', 'false', 'true']);
+
+    (root.querySelector('.toggle') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(read()).toEqual(['true', 'false', 'true']);
+
+    fixture.componentInstance.mode.set('over');
+    fixture.detectChanges();
+    expect(read()).toEqual(['true', 'true', 'false']);
   });
 
   it('hides the glyph from assistive technology', () => {

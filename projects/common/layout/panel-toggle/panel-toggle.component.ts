@@ -52,7 +52,17 @@ import { CngxPanelTrigger } from '../panel-trigger/panel-trigger.directive';
  *
  * A target without `mode` / `modal` / `side` (a consumer-built
  * `CngxPanelTarget`) reads as an inline panel on the start side. The glyph
- * is `aria-hidden`; project an icon to replace it.
+ * is `aria-hidden`; project an icon to replace it. The state the default
+ * glyph follows is public on the exported instance (`expanded`,
+ * `modalOverlay`, `mirrored`), so a projected glyph can follow it too:
+ *
+ * ```html
+ * <button type="button" [cngxPanelToggle]="nav" #toggle="cngxPanelToggle">
+ *   <cngx-icon [style.transform]="toggle.mirrored() ? 'scaleX(-1)' : null">
+ *     <mat-icon>{{ toggle.expanded() ? 'menu_open' : 'menu' }}</mat-icon>
+ *   </cngx-icon>
+ * </button>
+ * ```
  *
  * Shares the button family's state surface: `disabled` renders
  * `aria-disabled` (the button stays focusable and swallows activation) and
@@ -76,6 +86,7 @@ import { CngxPanelTrigger } from '../panel-trigger/panel-trigger.directive';
  * <example-url>/#/common/layout/drawer/app-header-clipped</example-url>
  * <example-url>/#/common/layout/drawer/full-height-modal</example-url>
  * <example-url>/#/common/layout/drawer/filter-panel-push</example-url>
+ * <example-url>/#/common/layout/sidebar/projected-toggle-glyph</example-url>
  * @axis level molecule
  */
 @Component({
@@ -162,24 +173,29 @@ export class CngxPanelToggle {
   private readonly trigger = inject(CngxPanelTrigger, { host: true });
   private readonly direction = injectDirection();
 
-  /** @internal - whether the target shows the panel as a modal over-drawer right now. */
-  protected readonly modalOverlay = computed(() => {
+  /**
+   * Whether the target shows the panel right now. Read it from a projected
+   * glyph through `#toggle="cngxPanelToggle"`.
+   */
+  readonly expanded = this.trigger.expanded;
+
+  /**
+   * Whether the target presents the panel as a modal over-drawer right now
+   * (`mode="over"` with a blocking modality). The default glyph draws menu
+   * bars and a cross then; a projected glyph can follow the same switch.
+   */
+  readonly modalOverlay = computed(() => {
     const target = this.trigger.target();
     const mode = target?.mode?.() ?? 'inline';
     return mode === 'over' && (target?.modal?.() ?? false);
   });
 
-  /** @internal - the default glyph for the current presentation and state. */
-  protected readonly icon = computed(() => {
-    const expanded = this.trigger.expanded();
-    if (this.modalOverlay()) {
-      return expanded ? CNGX_ICON_X : CNGX_ICON_MENU;
-    }
-    return expanded ? CNGX_ICON_PANEL_CLOSE : CNGX_ICON_PANEL_OPEN;
-  });
-
-  /** @internal - the panel glyph is drawn for a left panel; flip it for a right one. */
-  protected readonly mirrored = computed(() => {
+  /**
+   * Whether a panel glyph drawn for a left panel must be flipped: the panel
+   * sits on the right (`right`, `end` in LTR, `start` in RTL). Always
+   * `false` while {@link modalOverlay} holds.
+   */
+  readonly mirrored = computed(() => {
     if (this.modalOverlay()) {
       return false;
     }
@@ -195,6 +211,15 @@ export class CngxPanelToggle {
       default:
         return false;
     }
+  });
+
+  /** @internal - the default glyph for the current presentation and state. */
+  protected readonly icon = computed(() => {
+    const expanded = this.expanded();
+    if (this.modalOverlay()) {
+      return expanded ? CNGX_ICON_X : CNGX_ICON_MENU;
+    }
+    return expanded ? CNGX_ICON_PANEL_CLOSE : CNGX_ICON_PANEL_OPEN;
   });
 
   /** @internal */
