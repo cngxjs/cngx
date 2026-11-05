@@ -147,6 +147,7 @@ function partitionFeatures(
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/provide-cngx-button.ts
  * @since 0.1.0
  * @relatedTo provideCngxButtonAt, provideButtonConfig, provideCloseIcon, provideButtonSpinner
+ * <example-url>/#/common/button/button/scoped-defaults</example-url>
  */
 export function provideCngxButton(...features: readonly CngxButtonFeature[]): EnvironmentProviders {
   const { config, providers } = partitionFeatures(features, 'provideCngxButton');
@@ -167,6 +168,7 @@ export function provideCngxButton(...features: readonly CngxButtonFeature[]): En
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/provide-cngx-button.ts
  * @since 0.1.0
  * @relatedTo provideCngxButton, provideButtonConfigAt
+ * <example-url>/#/common/button/button/scoped-defaults</example-url>
  */
 export function provideCngxButtonAt(...features: readonly CngxButtonFeature[]): Provider[] {
   const { config, providers } = partitionFeatures(features, 'provideCngxButtonAt');

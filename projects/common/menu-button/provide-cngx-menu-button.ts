@@ -116,6 +116,7 @@ function toProviders({ caret, i18n }: PartitionedFeatures): Provider[] {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/provide-cngx-menu-button.ts
  * @since 0.1.0
  * @relatedTo provideCngxMenuButtonAt, provideButtonCaretIcon, provideMenuButtonI18n
+ * <example-url>/#/common/menu-button/menu-button/scoped-defaults</example-url>
  */
 export function provideCngxMenuButton(
   ...features: readonly CngxMenuButtonFeature[]
@@ -140,6 +141,7 @@ export function provideCngxMenuButton(
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/provide-cngx-menu-button.ts
  * @since 0.1.0
  * @relatedTo provideCngxMenuButton
+ * <example-url>/#/common/menu-button/menu-button/scoped-defaults</example-url>
  */
 export function provideCngxMenuButtonAt(...features: readonly CngxMenuButtonFeature[]): Provider[] {
   return toProviders(partitionFeatures(features, 'provideCngxMenuButtonAt'));
