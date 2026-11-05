@@ -1,13 +1,4 @@
-import {
-  computed,
-  Directive,
-  ElementRef,
-  inject,
-  input,
-  output,
-  signal,
-  type Signal,
-} from '@angular/core';
+import { computed, Directive, ElementRef, inject, input, output, signal } from '@angular/core';
 import { createSlotRegistry } from '@cngx/core/utils';
 
 import {
@@ -16,26 +7,16 @@ import {
   type CngxPanelSide,
   type CngxPanelTarget,
 } from '../panel-trigger/panel-target';
-import type { DrawerMode } from './drawer-panel.directive';
+import {
+  CNGX_DRAWER_HOST,
+  type CngxDrawerHost,
+  type CngxDrawerPanelPresentation,
+} from './drawer-host';
 
 /**
  * Position from which the drawer panel slides in.
  */
 export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
-
-/**
- * What a `CngxDrawerPanel` reports to its drawer, so the drawer's
- * `CngxPanelTarget` view says how the panel is presented.
- *
- * @internal
- */
-export interface CngxDrawerPanelPresentation {
-  readonly mode: Signal<DrawerMode>;
-  readonly modal: Signal<boolean>;
-  readonly position: Signal<DrawerPosition>;
-  /** The panel element; Escape inside it belongs to the panel's surface. */
-  readonly element: HTMLElement;
-}
 
 /**
  * State owner for a drawer / sidebar system.
@@ -46,6 +27,8 @@ export interface CngxDrawerPanelPresentation {
  *
  * Child directives (`CngxDrawerPanel`, `CngxDrawerContent`) receive a
  * reference to this directive via an explicit input - no ancestor injection.
+ * The panel reads it through the `CngxDrawerHost` contract, which the drawer
+ * also provides as `CNGX_DRAWER_HOST` for a panel on its own element.
  *
  * The drawer is a `CngxPanelTarget`: a `[cngxPanelTrigger]="drawer"` button
  * mirrors `opened` as `aria-expanded` and points `aria-controls` at
@@ -103,13 +86,16 @@ export interface CngxDrawerPanelPresentation {
   selector: '[cngxDrawer]',
   exportAs: 'cngxDrawer',
   standalone: true,
-  providers: [{ provide: CNGX_PANEL_TARGET, useExisting: CngxDrawer }],
+  providers: [
+    { provide: CNGX_PANEL_TARGET, useExisting: CngxDrawer },
+    { provide: CNGX_DRAWER_HOST, useExisting: CngxDrawer },
+  ],
   host: {
     '[class.cngx-drawer--opened]': 'opened()',
     '(keydown.escape)': 'handleEscape($event)',
   },
 })
-export class CngxDrawer implements CngxPanelTarget {
+export class CngxDrawer implements CngxPanelTarget, CngxDrawerHost {
   /** @internal Host element ref. */
   readonly elementRef = inject(ElementRef<HTMLElement>);
 
@@ -180,14 +166,10 @@ export class CngxDrawer implements CngxPanelTarget {
     this.close();
   }
 
-  /** @internal Called by `CngxDrawerPanel`; the latest panel wins. */
-  registerPanel(panel: CngxDrawerPanelPresentation): void {
+  /** {@link CngxDrawerHost}: connects a panel; the latest panel wins. */
+  connectPanel(panel: CngxDrawerPanelPresentation): () => void {
     this.panelSlot.register(panel);
-  }
-
-  /** @internal Called by `CngxDrawerPanel` when it leaves or switches drawers. */
-  unregisterPanel(panel: CngxDrawerPanelPresentation): void {
-    this.panelSlot.unregister(panel);
+    return () => this.panelSlot.unregister(panel);
   }
 
   /** Toggles the drawer between open and closed. */

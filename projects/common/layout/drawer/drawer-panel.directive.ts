@@ -10,11 +10,12 @@ import {
 } from '@angular/core';
 import { cngxDevWarn } from '@cngx/utils';
 
+import type { DrawerPosition } from './drawer.directive';
 import {
-  CngxDrawer,
+  CNGX_DRAWER_HOST,
+  type CngxDrawerHost,
   type CngxDrawerPanelPresentation,
-  type DrawerPosition,
-} from './drawer.directive';
+} from './drawer-host';
 import {
   CNGX_DRAWER_SURFACE_DRIVER,
   type CngxDrawerModality,
@@ -29,8 +30,10 @@ export type DrawerMode = 'over' | 'push';
 
 /**
  * The sliding panel of a drawer. Reads its open state from an explicit
- * `[cngxDrawerPanel]` reference, or from a `CngxDrawer` on the same element
- * when the attribute is bare - no ancestor injection.
+ * `[cngxDrawerPanel]` reference, or from the `CNGX_DRAWER_HOST` a
+ * `CngxDrawer` on the same element provides when the attribute is bare - no
+ * ancestor injection. Both go through the `CngxDrawerHost` contract, never
+ * the concrete `CngxDrawer` class.
  *
  * The open panel is a transient surface (`CngxDrawerSurface`): Escape, the
  * Android back gesture and a press outside the panel close the drawer
@@ -121,14 +124,17 @@ export type DrawerMode = 'over' | 'push';
 })
 export class CngxDrawerPanel implements CngxDrawerSurfaceDriver {
   /**
-   * The `CngxDrawer` state owner. Bind it explicitly
-   * (`[cngxDrawerPanel]="drawer"`), or leave the attribute bare on an element
-   * that also carries `cngxDrawer`.
+   * The drawer state owner (a `CngxDrawer`, or anything implementing
+   * `CngxDrawerHost`). Bind it explicitly (`[cngxDrawerPanel]="drawer"`), or
+   * leave the attribute bare on an element that also carries `cngxDrawer`.
    */
-  readonly drawerInput = input<CngxDrawer | undefined, CngxDrawer | '' | undefined>(undefined, {
-    alias: 'cngxDrawerPanel',
-    transform: (v) => (typeof v === 'string' ? undefined : v),
-  });
+  readonly drawerInput = input<CngxDrawerHost | undefined, CngxDrawerHost | '' | undefined>(
+    undefined,
+    {
+      alias: 'cngxDrawerPanel',
+      transform: (v) => (typeof v === 'string' ? undefined : v),
+    },
+  );
 
   /** Direction the panel slides from. */
   readonly position = input<DrawerPosition>('left');
@@ -171,9 +177,9 @@ export class CngxDrawerPanel implements CngxDrawerSurfaceDriver {
    */
   readonly role = input<string | null>('complementary');
 
-  private readonly hostDrawer = inject(CngxDrawer, { self: true, optional: true });
+  private readonly hostDrawer = inject(CNGX_DRAWER_HOST, { self: true, optional: true });
 
-  /** The resolved drawer: the explicit reference wins over a `CngxDrawer` on the host. */
+  /** The resolved drawer: the explicit reference wins over a drawer host on the element. */
   readonly drawerRef = computed(() => this.drawerInput() ?? this.hostDrawer);
 
   private readonly staticId = inject(new HostAttributeToken('id'), { optional: true });
@@ -198,7 +204,7 @@ export class CngxDrawerPanel implements CngxDrawerSurfaceDriver {
   );
   /** @internal Drives the composed `CngxDrawerSurface`: the `[cngxDrawer]` host. */
   readonly surfaceBoundary = computed<HTMLElement | null>(
-    () => (this.drawerRef()?.elementRef.nativeElement as HTMLElement | undefined) ?? null,
+    () => this.drawerRef()?.elementRef.nativeElement ?? null,
   );
   /** @internal Drives the composed `CngxDrawerSurface`. */
   readonly surfaceLandmarkRole = this.role;
@@ -220,8 +226,7 @@ export class CngxDrawerPanel implements CngxDrawerSurfaceDriver {
       if (!drawer) {
         return;
       }
-      untracked(() => drawer.registerPanel(this.presentation));
-      onCleanup(() => drawer.unregisterPanel(this.presentation));
+      onCleanup(untracked(() => drawer.connectPanel(this.presentation)));
     });
 
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {

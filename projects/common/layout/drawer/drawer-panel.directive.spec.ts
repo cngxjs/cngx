@@ -1,9 +1,14 @@
-import { Component, signal } from '@angular/core';
+import { Component, ElementRef, inject, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { FocusTrapFactory } from '@angular/cdk/a11y';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxDrawer } from './drawer.directive';
+import {
+  CNGX_DRAWER_HOST,
+  type CngxDrawerHost,
+  type CngxDrawerPanelPresentation,
+} from './drawer-host';
 import { CngxDrawerPanel, type DrawerMode } from './drawer-panel.directive';
 import type { CngxDrawerModality } from './drawer-surface.directive';
 
@@ -542,5 +547,62 @@ describe('CngxDrawerPanel on a CngxDrawer host', () => {
     fixture.detectChanges();
     expect(panel.isOpen()).toBe(true);
     expect((el.nativeElement as HTMLElement).classList).toContain('cngx-drawer-panel--open');
+  });
+});
+
+@Component({
+  template: `<nav [cngxDrawerPanel]="customHost" modality="none"><a href="#">Link</a></nav>`,
+  imports: [CngxDrawerPanel],
+})
+class CustomHostHost {
+  readonly opened = signal(true);
+  readonly connected: CngxDrawerPanelPresentation[] = [];
+  readonly disconnected: CngxDrawerPanelPresentation[] = [];
+  readonly close = vi.fn(() => this.opened.set(false));
+  readonly customHost: CngxDrawerHost = {
+    opened: this.opened,
+    panelId: signal<string | undefined>('custom-panel'),
+    elementRef: inject<ElementRef<HTMLElement>>(ElementRef),
+    close: this.close,
+    connectPanel: (panel) => {
+      this.connected.push(panel);
+      return () => this.disconnected.push(panel);
+    },
+  };
+}
+
+describe('CngxDrawerPanel with a custom CngxDrawerHost', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [CustomHostHost] });
+  });
+
+  it('reads the open state, the id and dismissals through the contract', () => {
+    const fixture = TestBed.createComponent(CustomHostHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const host = fixture.componentInstance;
+    const nav = (fixture.nativeElement as HTMLElement).querySelector('nav') as HTMLElement;
+
+    expect(nav.id).toBe('custom-panel');
+    expect(nav.classList).toContain('cngx-drawer-panel--open');
+    expect(host.connected).toHaveLength(1);
+    expect(host.connected[0].element).toBe(nav);
+
+    (nav.querySelector('a') as HTMLElement).dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    );
+    expect(host.close).toHaveBeenCalledTimes(1);
+
+    fixture.destroy();
+    expect(host.disconnected).toEqual(host.connected);
+  });
+
+  it('is what CngxDrawer provides as CNGX_DRAWER_HOST', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ imports: [BareHost] });
+    const fixture = TestBed.createComponent(BareHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxDrawer));
+    expect(el.injector.get(CNGX_DRAWER_HOST)).toBe(el.injector.get(CngxDrawer));
   });
 });

@@ -3,6 +3,11 @@
  */
 export { CngxBackdrop } from './drawer/backdrop.directive';
 export { CngxDrawer, type DrawerPosition } from './drawer/drawer.directive';
+export {
+  CNGX_DRAWER_HOST,
+  type CngxDrawerHost,
+  type CngxDrawerPanelPresentation,
+} from './drawer/drawer-host';
 export { CngxDrawerPanel, type DrawerMode } from './drawer/drawer-panel.directive';
 export { CngxDrawerContent } from './drawer/drawer-content.directive';
 export {
