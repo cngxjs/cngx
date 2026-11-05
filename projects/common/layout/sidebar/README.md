@@ -66,7 +66,7 @@ A collapsed rail stays operable: nothing in it is made `inert`.
 
 `CngxSidebar` implements `CngxPanelTarget` and provides `CNGX_PANEL_TARGET`. A `[cngxPanelTrigger]="sidebar"` gets `aria-controls` from the host id (a static `id`, else a generated one) and `aria-expanded` from `expanded()`; a click toggles `collapsed`. `action="peek"` peeks instead.
 
-`button[cngxPanelToggle]="sidebar"` is the icon-button form with its own glyph: a sidebar is an inline panel on the start side, so it shows the panel frame in both states (mirrored under RTL) and the state lives in the name and `aria-expanded`. Use `[cngxPanelTrigger]` on any element with its own content.
+`button[cngxPanelToggle]="sidebar"` is the icon-button form with its own glyph: a sidebar is an inline panel on the start side, so it shows the panel frame with a chevron that draws what a press does: pointing away from the column while collapsed (expand), toward it while expanded (collapse), mirrored under RTL. The name and `aria-expanded` carry the same state. Use `[cngxPanelTrigger]` on any element with its own content.
 
 ## Theming
 

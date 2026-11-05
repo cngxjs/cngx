@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'A full-width app header with the toggle and the brand; the <code>[cngxSidebar]</code> is docked below it and collapses to a rail. The content reflows, nothing is dimmed.',
   description:
-    'The clipped app layout with a docked sidebar instead of a drawer: the header spans the full width and carries a [cngxPanelToggle] with aria-expanded and aria-controls; a sidebar is an inline panel, so the toggle shows the panel glyph in both states and the name says what a press does. The sidebar below it is part of the layout, never modal, so there is no scrim and nothing becomes inert; collapsing it to the rail moves the content start edge. In the rail the labels stay in the accessible name and show as a tooltip on hover and focus.',
+    'The clipped app layout with a docked sidebar instead of a drawer: the header spans the full width and carries a [cngxPanelToggle] with aria-expanded and aria-controls; a sidebar is an inline panel, so the toggle shows the panel glyph, whose chevron points away from the column while collapsed and toward it while expanded, and the name says what a press does. The sidebar below it is part of the layout, never modal, so there is no scrim and nothing becomes inert; collapsing it to the rail moves the content start edge. In the rail the labels stay in the accessible name and show as a tooltip on hover and focus.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
