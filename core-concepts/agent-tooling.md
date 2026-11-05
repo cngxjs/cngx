@@ -61,6 +61,7 @@ config queries fetch a different release's snapshot when handed an optional
 |`get_config`|`{ name, version? }`|A configuration cascade by config token name, stem, or component name: the config token, its provider functions, the `with*` feature functions, and the resolution-priority ordering.|
 |`get_story_example`|`{ name }`|`{ ok: true, groundedVersion, result }` like the other name tools, `groundedVersion` always the bundled release: the runnable example URLs (public documentation links) and a StackBlitz URL when one exists. `result` is null for an unknown name.|
 |`migrate_usage`|`{ from, to? }`|A structured API delta between two CNGX releases: removed, renamed, and signature-changed components (injectable services included), inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version.|
+|`get_error_code`|`{ code }`|`{ ok: true, groundedVersion, result }` like `get_story_example`, `groundedVersion` always the bundled release: a CNGX error code's title, owning lib, severity, production behaviour, call-site messages, and documentation page. Accepts a bare code, a four-digit number, or a pasted console line. `result` is null for an input that is not a code, and a not-found view (the matching lib and its nearest codes) for an unknown code.|
 
 Each answer grounds against one CNGX release; the server reports the bundled
 version and the snapshot timestamp in its connect-time instructions. An answer
@@ -106,7 +107,7 @@ seconds. No network or an absent asset returns a typed error result instead:
 ### The CLI
 
 `@cngx/cli` exposes the same queries as `cngx` subcommands (`cngx api CngxSelect`,
-`cngx migrate 0.1.0 --to 0.2.0`) for agents and CI jobs that do not speak MCP. It
+`cngx migrate 0.1.0 --to 0.2.0`, `cngx explain CNGX0001`) for agents and CI jobs that do not speak MCP. It
 does not depend on the MCP SDK: both packages run one query core, kept in
 `packages/mcp/src/core` and copied byte for byte into `packages/cli/src/core` by
 `npm run cli:sync`. CI runs `npm run cli:copy-check`, so the copy cannot drift
