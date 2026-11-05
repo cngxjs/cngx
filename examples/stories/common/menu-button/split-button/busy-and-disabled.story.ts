@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxSplitButton: Busy and disabled',
   subtitle: 'The caret follows the main action; its own <code>disabledReason</code> speaks only for its own <code>disabled</code>.',
-  description: 'The caret derives its blocked state from the main <code>cngxButton</code>: while the main button is disabled or running its action, the caret reads <code>aria-disabled</code>, opens on neither click nor key and closes an open menu. In that state the caret\'s <code>aria-describedby</code> says why: the main button\'s reason while it is disabled with one, and "The main action is running" while the action runs; the main button keeps <code>aria-busy</code> and the announcement. A <code>[disabled]</code> on the caret itself blocks only the alternatives and reads the caret\'s <code>disabledReason</code> through <code>aria-describedby</code>. A format from the menu runs through the main button, so the settle announcement names the format that was exported. Open the menu, then start the slow export to see it close.',
+  description: 'The caret derives its blocked state from the main <code>cngxButton</code>: while the main button is disabled or running its action, the caret reads <code>aria-disabled</code>, opens on neither click nor key and closes an open menu. In that state the caret\'s <code>aria-describedby</code> says why: the main button\'s reason while it is disabled with one, and "The main action is running" while the action runs; the main button keeps <code>aria-busy</code> and the announcement. A <code>[disabled]</code> on the caret itself blocks only the alternatives and reads the caret\'s <code>disabledReason</code> through <code>aria-describedby</code>. A format from the menu runs through the main button, so the settle announcement names the format that was exported. Open the menu, then start the slow export to see it close. The dashed box below mirrors what a screen reader gets for the main button and the caret: role, name, description, state and the announcements are exposed or spoken, not painted.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -14,6 +14,7 @@ export const STORY: DemoSpec = {
     "import { CngxAsyncClick, CngxMenu, CngxMenuItem } from '@cngx/common/interactive';",
     "import { CngxIconMenuButton, CngxSplitButton } from '@cngx/common/menu-button';",
     "import { CngxPopover } from '@cngx/common/popover';",
+    "import { mirrorScreenReader } from '../../../../fixtures';",
   ],
   imports: [
     'CngxButton',
@@ -85,6 +86,12 @@ export const STORY: DemoSpec = {
     </ul>
   </div>`,
   setupChrome: `
+  // Mirrors the accessibility layer of the buttons into the box below.
+  protected readonly sr = mirrorScreenReader([
+    { label: 'main', selector: '[cngxsplitbutton] > button:first-of-type' },
+    { label: 'caret', selector: '[cngxsplitbutton] > button:last-of-type' },
+  ]);
+
   protected handleToggleRole(): void {
     this.canExport.update((v) => !v);
   }
@@ -102,5 +109,30 @@ export const STORY: DemoSpec = {
       <span class="event-label">Exporting</span>
       <span class="event-value">{{ run.pending() ? 'yes' : 'no' }}</span>
     </div>
+  </div>
+  <div class="cngx-ex-sr-output">
+    <p class="cngx-ex-sr-output__title">Screen reader hears</p>
+    <dl class="cngx-ex-sr-output__list">
+      @for (row of sr.rows(); track row.label) {
+        <dt>{{ row.label }} role</dt>
+        <dd>{{ row.role }}{{ row.popup ? ', ' + row.popup : '' }}</dd>
+        <dt>{{ row.label }} name</dt>
+        <dd>"{{ row.name }}"</dd>
+        <dt>{{ row.label }} description</dt>
+        <dd>{{ row.description }}</dd>
+        <dt>{{ row.label }} state</dt>
+        <dd>aria-disabled {{ row.disabled }}, aria-busy {{ row.busy }}</dd>
+      }
+      @for (entry of sr.heard(); track entry.n) {
+        <dt>announced #{{ entry.n }}</dt>
+        <dd>{{ entry.text }}</dd>
+      } @empty {
+        <dt>announced</dt>
+        <dd>-</dd>
+      }
+    </dl>
+    <p class="cngx-ex-sr-output__note">
+      Read live from the DOM attributes the accessibility layer exposes, plus the last five texts written to a live region, newest last; none of it is painted. The name approximates accname: aria-labelledby, then aria-label, then the text without aria-hidden or hidden parts; the browser accessibility tree stays the reference.
+    </p>
   </div>`,
 };

@@ -12,6 +12,7 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { CngxButton } from '@cngx/common/button';",
     "import { CngxAsyncClick } from '@cngx/common/interactive';",
+    "import { mirrorScreenReader } from '../../../../fixtures';",
   ],
   imports: ['CngxButton', 'CngxAsyncClick'],
   setup: `
@@ -27,6 +28,11 @@ export const STORY: DemoSpec = {
     );`,
   template: `
   <button cngxButton tone="primary" [cngxAsyncClick]="save" #btn="cngxAsyncClick">Save changes</button>`,
+  setupChrome: `
+  // Mirrors the accessibility layer of the button into the box below.
+  protected readonly sr = mirrorScreenReader([
+    { label: 'save', selector: 'button[cngxbutton]' },
+  ]);`,
   templateChrome: `
   <div class="button-row" style="margin-top:12px">
     <div role="radiogroup" aria-label="Save latency" style="display:inline-flex;gap:12px">
@@ -51,13 +57,23 @@ export const STORY: DemoSpec = {
   <div class="cngx-ex-sr-output">
     <p class="cngx-ex-sr-output__title">Screen reader hears</p>
     <dl class="cngx-ex-sr-output__list">
+      @for (row of sr.rows(); track row.label) {
+        <dt>{{ row.label }} role</dt>
+        <dd>{{ row.role }}</dd>
+        <dt>{{ row.label }} name</dt>
+        <dd>"{{ row.name }}"</dd>
+        <dt>{{ row.label }} description</dt>
+        <dd>{{ row.description }}</dd>
+        <dt>{{ row.label }} aria-disabled</dt>
+        <dd>{{ row.disabled }}</dd>
+      }
       <dt>aria-busy</dt>
       <dd>{{ btn.pending() ? 'true' : '-' }}</dd>
       <dt>announced</dt>
       <dd>{{ btn.announcement() ? '"' + btn.announcement() + '"' : '-' }}</dd>
     </dl>
     <p class="cngx-ex-sr-output__note">
-      Not shown on the button: the label stays fixed, the result is spoken only, for 2 s after the run settles.
+      Not shown on the button: the label stays fixed, the result is spoken only, for 2 s after the run settles. The name approximates accname (aria-labelledby, then aria-label, then the text without aria-hidden or hidden parts); the browser accessibility tree stays the reference.
     </p>
   </div>`,
 };
