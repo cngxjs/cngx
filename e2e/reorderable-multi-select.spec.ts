@@ -89,10 +89,12 @@ test.describe('CngxReorderableMultiSelect demo', () => {
     await page.goto(ROUTES.basic);
     const strip = stripOf(page);
     await expect(strip).toHaveAttribute('role', 'group');
-    // Library default label is English ('Reorder with Alt + arrow keys').
+    // Library default label is English ('Reorder with Alt + arrow keys'). The
+    // interpolated modifier is bidi-fenced (format-message wraps the {modifier}
+    // param in U+2068/U+2069), so the isolates around 'Alt' are optional here.
     await expect(strip).toHaveAttribute(
       'aria-label',
-      /Reorder with Alt \+ arrow keys/,
+      /Reorder with ⁨?Alt⁩? \+ arrow keys/,
     );
   });
 
