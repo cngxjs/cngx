@@ -48,7 +48,13 @@ const MENU = `
 @Component({
   template: `
     <div cngxSplitButton variant="outline" size="sm" aria-label="Publish">
-      <button id="main" cngxButton [cngxAsyncClick]="publish" [disabled]="mainDisabled()">
+      <button
+        id="main"
+        cngxButton
+        [cngxAsyncClick]="publish"
+        [disabled]="mainDisabled()"
+        [disabledReason]="mainReason()"
+      >
         Publish
       </button>
       <button
@@ -74,6 +80,7 @@ const MENU = `
 })
 class SplitHost {
   readonly mainDisabled = signal(false);
+  readonly mainReason = signal<string | undefined>(undefined);
   readonly caretDisabled = signal(false);
   readonly caretReason = signal<string | undefined>('Nothing else to publish');
   release: () => void = () => undefined;
@@ -214,6 +221,38 @@ function setup<T>(type: Type<T>) {
   };
 }
 
+/** The id list of `aria-describedby`, empty without one. */
+function describedIds(el: HTMLElement): string[] {
+  return (el.getAttribute('aria-describedby') ?? '').split(/\s+/).filter(Boolean);
+}
+
+/**
+ * The name a button gets from its attributes or, without one, from its
+ * content: text outside every `aria-hidden="true"` and `hidden` subtree.
+ */
+function nameOf(el: Element): string {
+  const label = el.getAttribute('aria-label')?.trim();
+  if (label) {
+    return label;
+  }
+  const walk = (node: Node): string =>
+    Array.from(node.childNodes)
+      .map((child) => {
+        if (child.nodeType === Node.TEXT_NODE) {
+          return child.textContent ?? '';
+        }
+        if (child.nodeType !== Node.ELEMENT_NODE) {
+          return '';
+        }
+        const element = child as Element;
+        const hidden =
+          element.getAttribute('aria-hidden') === 'true' || element.hasAttribute('hidden');
+        return hidden ? '' : walk(element);
+      })
+      .join('');
+  return walk(el).replace(/\s+/g, ' ').trim();
+}
+
 function key(el: HTMLElement, k: string): void {
   el.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
 }
@@ -259,15 +298,43 @@ describe('CngxSplitButton', () => {
   });
 
   describe('main action running', () => {
-    it('blocks the caret without a reason of its own', () => {
+    it('blocks the caret and describes it as busy, without a reason of its own', () => {
       const { q, flush } = setup(SplitHost);
       const caret = q('#caret');
       expect(caret.hasAttribute('aria-disabled')).toBe(false);
+      expect(caret.getAttribute('aria-describedby')).toBeNull();
 
       q('#main').click();
       flush();
       expect(caret.getAttribute('aria-disabled')).toBe('true');
-      expect(caret.getAttribute('aria-describedby')).toBeNull();
+      const ids = describedIds(caret);
+      expect(ids).toHaveLength(1);
+      const busy = document.getElementById(ids[0]);
+      expect(busy?.textContent?.trim()).toBe('The main action is running');
+      expect(caret.contains(busy)).toBe(true);
+      expect(busy?.hasAttribute('hidden')).toBe(true);
+    });
+
+    it('keeps the caret name exactly "More options" while the main action is pending', () => {
+      const { q, flush } = setup(SplitHost);
+      const caret = q('#caret');
+      expect(nameOf(caret)).toBe('More options');
+      q('#main').click();
+      flush();
+      expect(caret.getAttribute('aria-disabled')).toBe('true');
+      expect(nameOf(caret)).toBe('More options');
+    });
+
+    it('drops the busy description once the action settles', async () => {
+      const { fixture, host, q, flush } = setup(SplitHost);
+      q('#main').click();
+      flush();
+      expect(describedIds(q('#caret'))).toHaveLength(1);
+
+      host.release();
+      await fixture.whenStable();
+      flush();
+      expect(q('#caret').getAttribute('aria-describedby')).toBeNull();
     });
 
     it('swallows click and ArrowDown on the caret', () => {
@@ -315,6 +382,26 @@ describe('CngxSplitButton', () => {
     expect(split.mainBlocked()).toBe(true);
     expect(q('#caret').getAttribute('aria-disabled')).toBe('true');
     expect(q('#caret').getAttribute('aria-describedby')).toBeNull();
+  });
+
+  it("references the main's reason while the main is disabled with one", () => {
+    const { fixture, host, q, flush } = setup(SplitHost);
+    host.mainReason.set('Fix the errors first');
+    host.mainDisabled.set(true);
+    flush();
+    const caret = q('#caret');
+    const main = fixture.debugElement.query(By.css('#main')).injector.get(CNGX_BUTTON_STATE);
+    const mainReasonId = main.activeReasonId();
+    expect(mainReasonId).not.toBeNull();
+    expect(caret.getAttribute('aria-disabled')).toBe('true');
+    expect(describedIds(caret)).toEqual([mainReasonId]);
+    expect(document.getElementById(mainReasonId ?? '')?.textContent).toBe('Fix the errors first');
+    expect(nameOf(caret)).toBe('More options');
+
+    host.mainDisabled.set(false);
+    flush();
+    expect(caret.hasAttribute('aria-disabled')).toBe(false);
+    expect(caret.getAttribute('aria-describedby')).toBeNull();
   });
 
   it("references the caret's reason while its own disabled is set", () => {

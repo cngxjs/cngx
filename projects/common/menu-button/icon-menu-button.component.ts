@@ -16,6 +16,7 @@ import {
 import { CngxIcon } from '@cngx/common/display';
 import { CngxMenuTrigger } from '@cngx/common/interactive';
 import { CngxPopoverTrigger } from '@cngx/common/popover';
+import { injectDescribedByContribution, nextUid } from '@cngx/core/utils';
 
 import { CNGX_BUTTON_CARET_ICON } from './caret-icon.token';
 import { injectMenuButtonI18n } from './i18n/menu-button-i18n';
@@ -46,7 +47,10 @@ import { CNGX_SPLIT_CARET } from './split-caret.token';
  * as visually hidden text, so a consumer `aria-label` still wins and the
  * button never writes one itself. It is blocked
  * while the main action is: `aria-disabled`, no click, no key, an open menu
- * closes. Its `disabledReason` only describes its own `[disabled]`.
+ * closes. Its `aria-describedby` then references the main's reason (main
+ * disabled with one) or a hidden "The main action is running" note
+ * (`menuButton.splitMainBusy`, main action pending); its own
+ * `disabledReason` only describes its own `[disabled]`.
  *
  * ```html
  * <button cngxIconMenuButton aria-label="Row actions" [menu]="menu" [popover]="pop">
@@ -125,6 +129,7 @@ import { CNGX_SPLIT_CARET } from './split-caret.token';
     </span>
     @if (isSplitCaret()) {
       <span class="cngx-sr-only">{{ i18n().splitToggle }}</span>
+      <span [id]="mainBusyId" hidden>{{ i18n().splitMainBusy }}</span>
     }
     @if (brain.busyVisible()) {
       <span class="cngx-button__busy" aria-hidden="true">
@@ -167,6 +172,19 @@ export class CngxIconMenuButton {
     refusing: computed(() => this.isSplitCaret() && (this.split?.mainBlocked() ?? false)),
   };
 
+  /** @internal - id of the caret's busy note, referenced while the main action runs. */
+  protected readonly mainBusyId = nextUid('cngx-split-caret-busy-');
+
+  // The cause of a refusal that comes from the main: its reason, or the busy
+  // note while it runs.
+  private readonly mainDescriptionIds = computed(() => {
+    if (!this.isSplitCaret() || !this.split) {
+      return null;
+    }
+    const ids = [this.split.mainReasonId(), this.split.mainBusy() ? this.mainBusyId : null];
+    return ids.filter(Boolean).join(' ') || null;
+  });
+
   /** @internal - the reason renders for the own `disabled` only. */
   protected readonly reason = computed(() =>
     this.brain.disabled() ? this.brain.disabledReason() : undefined,
@@ -174,4 +192,8 @@ export class CngxIconMenuButton {
 
   /** @internal - app-wide glyph from `CNGX_BUTTON_CARET_ICON`. */
   protected readonly customCaret = inject(CNGX_BUTTON_CARET_ICON, { optional: true });
+
+  constructor() {
+    injectDescribedByContribution(this.mainBusyId, this.mainDescriptionIds);
+  }
 }

@@ -16,6 +16,12 @@ export interface CngxMenuButtonLanguageSection {
    * names the icon menu button.
    */
   readonly splitToggle: string;
+  /**
+   * Description of the split caret while the main action runs, so the
+   * caret's refusal says why. Referenced through `aria-describedby`, never
+   * part of the caret's name.
+   */
+  readonly splitMainBusy: string;
 }
 
 /**
@@ -28,6 +34,7 @@ export interface CngxMenuButtonLanguageSection {
  */
 export const CNGX_MENU_BUTTON_LANGUAGE_EN: CngxMenuButtonLanguageSection = {
   splitToggle: 'More options',
+  splitMainBusy: 'The main action is running',
 };
 
 declare module '@cngx/core/i18n' {
