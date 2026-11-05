@@ -25,9 +25,9 @@ async function heightOf(el: Locator): Promise<number> {
 async function rowDeltaOf(page: Page, button: Locator): Promise<number> {
   const withSlot = await heightOf(triggerOf(page));
   const handle = await button.elementHandle();
-  await handle!.evaluate((el) => ((el as HTMLElement).style.display = 'none'));
+  await handle.evaluate((el) => (el.style.display = 'none'));
   const withoutSlot = await heightOf(triggerOf(page));
-  await handle!.evaluate((el) => ((el as HTMLElement).style.display = ''));
+  await handle.evaluate((el) => (el.style.display = ''));
   return Math.abs(withSlot - withoutSlot);
 }
 

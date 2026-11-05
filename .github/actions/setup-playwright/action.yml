@@ -1,11 +1,24 @@
-name: Set up Playwright chromium
-description: Restore the cached Playwright browsers and install chromium. Runs after npm ci.
+name: Set up Playwright
+description: Restore the cached Playwright browsers and install the requested ones. Runs after npm ci.
 
-# No system deps: the ubuntu-24.04 image already carries every shared library
-# chromium links against (ldd reports none missing), and the apt-get update
-# behind the deps install took anywhere from 20 seconds to 9 minutes.
+# Defaults install chromium with no system deps: the ubuntu-24.04 image already
+# carries every shared library chromium links against (ldd reports none missing),
+# and the apt-get update behind the deps install took anywhere from 20 seconds to
+# 9 minutes. Firefox and WebKit link against shared libs the image does not carry
+# for them, so a caller that installs those passes with-deps: true. The defaults
+# keep every ci.yml caller (which passes no inputs) byte-equivalent to the old
+# chromium/no-deps behaviour.
 # Workflows pin ubuntu-24.04: ubuntu-latest moved to 26.04, where the pinned
 # Playwright refuses to install chromium.
+inputs:
+  browsers:
+    description: Space-separated Playwright browsers to install (e.g. "chromium firefox webkit").
+    required: false
+    default: chromium
+  with-deps:
+    description: Install the browsers' system dependencies (--with-deps). Needed for firefox/webkit on the runner image.
+    required: false
+    default: 'false'
 runs:
   using: composite
   steps:
@@ -16,6 +29,14 @@ runs:
         key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
         restore-keys: |
           ${{ runner.os }}-playwright-
-    - name: Install Playwright chromium
+    - name: Install Playwright browsers
       shell: bash
-      run: npx playwright install chromium
+      # Exact string match on the literal "true" - NOT ${VAR:+...}, which expands
+      # for any non-empty value (including the literal "false") and would always
+      # add --with-deps.
+      run: |
+        if [ "${{ inputs.with-deps }}" = "true" ]; then
+          npx playwright install --with-deps ${{ inputs.browsers }}
+        else
+          npx playwright install ${{ inputs.browsers }}
+        fi

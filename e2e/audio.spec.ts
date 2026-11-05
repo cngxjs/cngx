@@ -104,7 +104,13 @@ test.describe('CngxAudioZone enter/leave', () => {
 test.describe('CngxAudioPitch sonification', () => {
   const PITCH_ROUTE = '/#/common/audio/pitch/slider';
 
-  test('spins up the audio context when the slider is swept', async ({ page }) => {
+  test('spins up the audio context when the slider is swept', async ({ page, browserName }) => {
+    // Headless Firefox on CI has no audio output device, so cubeb never starts
+    // and the AudioContext stays suspended - the sonification itself is fine
+    // (verified on macOS Firefox, and chromium/webkit reach 'running' via a null
+    // sink). Skip the context-running assertion on Firefox rather than flake the
+    // cross-browser nightly; the earcon specs above still cover Firefox playback.
+    test.skip(browserName === 'firefox', 'headless Firefox has no audio sink on CI');
     await page.goto(PITCH_ROUTE);
     await page.waitForFunction(() => '__cngxAudioEngine' in window);
 
