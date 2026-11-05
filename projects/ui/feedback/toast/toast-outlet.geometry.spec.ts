@@ -1,6 +1,6 @@
 /// <reference types="@vitest/browser-playwright" />
 
-import { Component } from '@angular/core';
+import { Component, type TemplateRef, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -12,10 +12,11 @@ import { CngxToastOutlet } from './toast-outlet';
 // Runs in a real Chromium (the `test-geometry` target). The layout the
 // `@scope (.cngx-toast-outlet)` block SETs (toast-outlet.css): the outlet is a
 // fixed-position vertical flex column that stacks its toasts, and each toast is a
-// top-aligned flex row whose body grows and may shrink past its intrinsic width.
-// The toast draws on the overlay surface: a full 1px border instead of a
-// severity stripe, the popover-panel shadow, and the action in a trailing
-// column next to the text; a title-less toast centres on one line. jsdom reports `''` for every one of these reads.
+// flex row whose body grows and may shrink past its intrinsic width. The toast
+// draws on the overlay surface: a full 1px border instead of a severity stripe,
+// the popover-panel shadow, and the action trailing the text block, centred on
+// it. A title-less toast centres on one line; with a title the icon stays level
+// with the title. jsdom reports `''` for every one of these reads.
 
 const SCHEMES = ['light', 'dark'] as const;
 const SIDES = ['top', 'right', 'bottom', 'left'] as const;
@@ -24,13 +25,27 @@ const SIDES = ['top', 'right', 'bottom', 'left'] as const;
   selector: 'cngx-toast-outlet-geometry-host',
   standalone: true,
   imports: [CngxToastOutlet],
-  template: `<cngx-toast-outlet />`,
+  template: `
+    <cngx-toast-outlet />
+    <ng-template #multiRoot>
+      <span class="root-a">First line of a projected body</span>
+      <p class="root-b">Second root node</p>
+      <p class="root-c">Third root node</p>
+    </ng-template>
+  `,
 })
-class ToastOutletHost {}
+class ToastOutletHost {
+  readonly multiRoot = viewChild.required<TemplateRef<unknown>>('multiRoot');
+}
 
 let mountedRoot: HTMLElement | null = null;
 
-function mount(pushToast: boolean, withAction = false, title?: string): HTMLElement {
+function mount(
+  pushToast: boolean,
+  withAction = false,
+  title?: string,
+  multiRoot = false,
+): HTMLElement {
   const fixture = TestBed.createComponent(ToastOutletHost);
   mountedRoot = fixture.nativeElement as HTMLElement;
   document.body.appendChild(mountedRoot);
@@ -41,6 +56,7 @@ function mount(pushToast: boolean, withAction = false, title?: string): HTMLElem
       title,
       severity: 'success',
       action: withAction ? { label: 'Undo', handler: () => undefined } : undefined,
+      contentTemplate: multiRoot ? fixture.componentInstance.multiRoot() : undefined,
     });
     fixture.detectChanges();
   }
@@ -49,6 +65,13 @@ function mount(pushToast: boolean, withAction = false, title?: string): HTMLElem
     throw new Error('cngx-toast-outlet did not render');
   }
   return outlet as HTMLElement;
+}
+
+function centreOffset(root: HTMLElement, a: string, b: string): number {
+  const middle = (r: DOMRect): number => r.top + r.height / 2;
+  return Math.abs(
+    middle(query(root, a).getBoundingClientRect()) - middle(query(root, b).getBoundingClientRect()),
+  );
 }
 
 function query(root: HTMLElement, selector: string): HTMLElement {
@@ -120,7 +143,7 @@ describe('CngxToastOutlet geometry', () => {
     expect(dark).toBe('oklch(1 0 0 / 0.12)');
   });
 
-  it('puts the action in a trailing column, centred on the text line', () => {
+  it('puts the action after the text, centred on the text line', () => {
     const outlet = mount(true, true);
     const message = query(outlet, '.cngx-toast__message');
     const action = query(outlet, '.cngx-toast__action');
@@ -145,12 +168,24 @@ describe('CngxToastOutlet geometry', () => {
     expect(Math.abs(icon - middle(query(outlet, '.cngx-toast__message')))).toBeLessThanOrEqual(1);
   });
 
-  it('keeps the icon level with the title and spans the action over the text', () => {
+  it('keeps the icon level with the title and centres the action on the text block', () => {
     const outlet = mount(true, true, 'Offline');
     const toast = query(outlet, '.cngx-toast');
     expect(computedValue(toast, 'align-items')).toBe('flex-start');
-    const action = query(outlet, '.cngx-toast__action');
-    expect(computedValue(action, 'grid-row-end')).toBe('span 2');
+    expect(centreOffset(outlet, '.cngx-toast__action', '.cngx-toast__text')).toBeLessThanOrEqual(1);
+  });
+
+  // A projected template with several root nodes still lands in the text
+  // block, so the action centres on all of them, not on the first.
+  it('centres the action on a multi-root projected body', () => {
+    const outlet = mount(true, true, 'Synced', true);
+    const text = query(outlet, '.cngx-toast__text');
+    for (const sel of ['.root-a', '.root-b', '.root-c']) {
+      expect(text.contains(query(outlet, sel)), sel).toBe(true);
+    }
+    const action = query(outlet, '.cngx-toast__action').getBoundingClientRect();
+    expect(action.left).toBeGreaterThanOrEqual(text.getBoundingClientRect().right);
+    expect(centreOffset(outlet, '.cngx-toast__action', '.cngx-toast__text')).toBeLessThanOrEqual(1);
   });
 
   it('draws the action border in its label colour', () => {

@@ -3199,7 +3199,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-toast-description-font-size`|`0.8125rem`|Typography|Font-size of the description slot.|
 |`--cngx-toast-description-color`|`oklch(0.5 0.01 250)`|Typography|Text color of the description slot.|
 |`--cngx-toast-description-line-height`|`1.4`|Typography|Line-height of the description slot.|
-|`--cngx-toast-actions-gap`|`8px`|Layout|Gap between the text column and the trailing action.|
+|`--cngx-toast-actions-gap`|`8px`|Layout|Gap between the text block and the trailing action.|
 |`--cngx-toast-action-padding`|`4px 8px`|State / Action|Padding shorthand of the action button.|
 |`--cngx-toast-action-radius`|`4px`|State / Action|Corner radius of the action button.|
 |`--cngx-toast-action-color`|`color-mix(in oklab, var(--cngx-toast-accent) 60%, var(--cngx-color-text))`|State / Action|Label and border color of the action button. Unset by default, so the use site derives it from `--cngx-toast-accent` mixed 60% into the text color: the pure accent misses 4.5:1 on the light surface. Pin it to `--cngx-toast-accent` to paint the action in the pure accent again (the Material 3 bridge does).|

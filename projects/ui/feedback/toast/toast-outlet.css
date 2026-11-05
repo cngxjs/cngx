@@ -3,7 +3,7 @@
  * Default visuals for `CngxToastOutlet`. The host carries
  * `.cngx-toast-outlet` and is fixed-positioned with `z-index: 9999`
  * so toasts overlay dialogs and popovers. Each toast renders as
- * `.cngx-toast` with `__icon`, `__body`, `__message`, `__title`,
+ * `.cngx-toast` with `__icon`, `__body`, `__text`, `__message`, `__title`,
  * `__description`, `__count`, `__action`, and `__dismiss` children.
  * Toasts use their own `--cngx-toast-*` namespace, separate from
  * alert and banner so the three feedback channels can be themed
@@ -38,8 +38,10 @@
  * - `.cngx-toast__description` - secondary copy, line-clamped via
  *   `--cngx-toast-description-max-lines` (default 3)
  * - `.cngx-toast__count` - trailing message-count badge (muted text colour)
- * - `.cngx-toast__action` - outlined action button in the trailing column
- *   of the body, centred on the text; label and border mix
+ * - `.cngx-toast__text` - text block (title, message or projected body,
+ *   count) next to the action
+ * - `.cngx-toast__action` - outlined action button trailing the text
+ *   block, centred on it; label and border mix
  *   `--cngx-toast-accent` into the text colour for 4.5:1
  * - `.cngx-toast__dismiss` - dismiss control
  *
@@ -384,7 +386,7 @@
   }
 
   /**
-   * Gap between the text column and the trailing action.
+   * Gap between the text block and the trailing action.
    * @group Layout
    */
   @property --cngx-toast-actions-gap {
@@ -624,19 +626,19 @@
       display: block;
     }
 
-    /* Two columns: the text stacks in the first, the action sits in the
-       trailing one, centred on the text rows it spans. No template wrapper. */
+    /* Text block and trailing action side by side; the action centres on
+       the whole text block, whatever the text or a projected body holds. */
     .cngx-toast__body {
       flex: 1;
       min-width: 0;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      column-gap: var(--cngx-toast-actions-gap, 8px);
+      display: flex;
       align-items: center;
+      gap: var(--cngx-toast-actions-gap, 8px);
     }
 
-    .cngx-toast__body > * {
-      grid-column: 1;
+    .cngx-toast__text {
+      flex: 1;
+      min-width: 0;
     }
 
     .cngx-toast__message {
@@ -670,13 +672,12 @@
       font-size: var(--cngx-toast-description-font-size, 0.8125rem);
     }
 
-    /* Outlined action in the trailing column of the body, spanning every
-     * text row (title, text, count). Label and border track `--cngx-toast-accent` mixed 60% into the
-     * text colour for 4.5:1, the alert action recipe. */
+    /* Outlined action trailing the text block. Label and border track
+     * `--cngx-toast-accent` mixed 60% into the text colour for 4.5:1, the
+     * alert action recipe. */
     .cngx-toast__action {
       appearance: none;
-      grid-column: 2;
-      grid-row: 1;
+      flex-shrink: 0;
       display: flex;
       align-items: center;
       background: transparent;
@@ -698,14 +699,6 @@
         )
       );
       white-space: nowrap;
-    }
-
-    .cngx-toast__body:has(> .cngx-toast__title, > .cngx-toast__count) > .cngx-toast__action {
-      grid-row: 1 / span 2;
-    }
-
-    .cngx-toast__body:has(> .cngx-toast__title):has(> .cngx-toast__count) > .cngx-toast__action {
-      grid-row: 1 / span 3;
     }
 
     .cngx-toast__action:hover {
