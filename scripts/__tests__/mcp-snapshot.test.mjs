@@ -1,10 +1,22 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { llmDumpPresent, parseSnapshotArgs, rebaseExampleUrls, rebaseUrl } from '../mcp-snapshot.mjs';
+import {
+  buildErrorCodeBlock,
+  dedupeMessageTexts,
+  llmDumpPresent,
+  parseSnapshotArgs,
+  rebaseExampleUrls,
+  rebaseUrl,
+  stripPageBody,
+} from '../mcp-snapshot.mjs';
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const DOCS_BASE = 'https://cngxjs.github.io/cngx/additional-documentation/error-codes/';
 
 const BASE = 'https://cngxjs.github.io/cngx/examples';
 const LOCAL = 'http://localhost:4200/#/ui/feedback/toast/basic';
@@ -63,6 +75,109 @@ describe('parseSnapshotArgs', () => {
     expect(options.requireLlmDump).toBe(true);
     expect(options.baseUrl).toBe('https://x.test/ex');
     expect(parseSnapshotArgs([], '0.1.0', { EXAMPLES_BASE_URL: 'https://env.test/' }).baseUrl).toBe('https://env.test');
+  });
+});
+
+describe('dedupeMessageTexts', () => {
+  it('keeps each distinct text once in first-seen order, dropping file', () => {
+    const messages = [
+      { file: 'a.ts', text: 'same text' },
+      { file: 'b.ts', text: 'same text' },
+      { file: 'c.ts', text: 'other text' },
+    ];
+
+    expect(dedupeMessageTexts(messages)).toEqual(['same text', 'other text']);
+  });
+
+  it('is empty when there are no messages', () => {
+    expect(dedupeMessageTexts(undefined)).toEqual([]);
+  });
+});
+
+describe('stripPageBody', () => {
+  it('drops the @aiGenerated marker and the # CNGXnnnn heading, keeping the ## title', () => {
+    const raw = '<!-- @aiGenerated Claude -->\n\n# CNGX0001\n\n## Locale is not a BCP 47 tag\n\nBody text.\n';
+
+    expect(stripPageBody(raw, DOCS_BASE)).toBe('## Locale is not a BCP 47 tag\n\nBody text.');
+  });
+
+  it('rewrites a relative cngxNNNN.html link and keeps an absolute one', () => {
+    const raw = '# CNGX0001\n\nSee [CNGX0002](cngx0002.html) and [live](https://example.com/cngx0003.html).';
+
+    const body = stripPageBody(raw, DOCS_BASE);
+    expect(body).toContain(`[CNGX0002](${DOCS_BASE}cngx0002.html)`);
+    expect(body).toContain('[live](https://example.com/cngx0003.html)');
+  });
+
+  it('equals the trimmed rest of the page', () => {
+    const raw = '<!-- @aiGenerated Claude -->\n\n# CNGX0009\n\n## Title\n\nProse only.\n';
+
+    expect(stripPageBody(raw, DOCS_BASE)).toBe('## Title\n\nProse only.');
+  });
+});
+
+describe('buildErrorCodeBlock', () => {
+  it('copies schemaVersion/docsBaseUrl/ranges, dedupes messages, drops files and page, carries the body', () => {
+    const manifest = {
+      schemaVersion: 3,
+      docsBaseUrl: 'https://docs.test/error-codes/',
+      ranges: [{ lib: 'core', from: 1, to: 899 }],
+      codes: [
+        {
+          code: 'CNGX0001',
+          lib: 'core',
+          severity: 'warn',
+          production: 'stripped',
+          title: 'Title one',
+          page: 'core-concepts/error-codes/cngx0001.md',
+          url: 'https://docs.test/error-codes/cngx0001.html',
+          status: 'active',
+          files: ['projects/core/x.ts'],
+          messages: [
+            { file: 'projects/core/x.ts', text: 'dup' },
+            { file: 'projects/core/y.ts', text: 'dup' },
+          ],
+        },
+      ],
+    };
+    const pages = {
+      'core-concepts/error-codes/cngx0001.md': '<!-- @aiGenerated Claude -->\n\n# CNGX0001\n\n## Title one\n\nBody.\n',
+    };
+
+    const block = buildErrorCodeBlock(manifest, (page) => pages[page]);
+
+    expect(block.schemaVersion).toBe(3);
+    expect(block.docsBaseUrl).toBe('https://docs.test/error-codes/');
+    expect(block.ranges).toEqual([{ lib: 'core', from: 1, to: 899 }]);
+    expect(block.codes).toHaveLength(1);
+
+    const [entry] = block.codes;
+    expect(entry).toEqual({
+      code: 'CNGX0001',
+      lib: 'core',
+      severity: 'warn',
+      production: 'stripped',
+      title: 'Title one',
+      status: 'active',
+      url: 'https://docs.test/error-codes/cngx0001.html',
+      messages: ['dup'],
+      body: '## Title one\n\nBody.',
+    });
+    expect(entry).not.toHaveProperty('files');
+    expect(entry).not.toHaveProperty('page');
+  });
+
+  it('builds a non-empty, marker-free body for every code over the real manifest', () => {
+    const manifest = JSON.parse(readFileSync(join(ROOT, 'scripts/manifests/error-codes.json'), 'utf8'));
+
+    const block = buildErrorCodeBlock(manifest, (page) => readFileSync(join(ROOT, page), 'utf8'));
+
+    expect(block.codes).toHaveLength(manifest.codes.length);
+    for (const entry of block.codes) {
+      expect(entry.body.length, `${entry.code} body`).toBeGreaterThan(0);
+      expect(entry.body).not.toContain('@aiGenerated');
+      expect(entry.body).not.toMatch(/^# CNGX\d{4}/m);
+    }
   });
 });
 

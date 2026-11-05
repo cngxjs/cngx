@@ -15,12 +15,34 @@ import { checkBundledSnapshot, expectedVersionFor, parseBundleCheckArgs } from '
 const FIXTURES = resolve(dirname(fileURLToPath(import.meta.url)), '../../packages/mcp/test/fixtures');
 const readFixture = (name) => JSON.parse(readFileSync(join(FIXTURES, name), 'utf8'));
 
+// The gate now also requires a readable error-code block; every fixture bundle
+// carries one so the version and shape cases below stay about their own axis.
+const errorCodeBlock = () => ({
+  schemaVersion: 3,
+  docsBaseUrl: 'https://cngxjs.github.io/cngx/additional-documentation/error-codes/',
+  ranges: [{ lib: 'core', from: 1, to: 899 }],
+  codes: [
+    {
+      code: 'CNGX0001',
+      lib: 'core',
+      severity: 'warn',
+      production: 'stripped',
+      title: 'Locale is not a BCP 47 tag',
+      status: 'active',
+      url: 'https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0001.html',
+      messages: ['formatMessage(): not a BCP 47 locale'],
+      body: '## Locale is not a BCP 47 tag',
+    },
+  ],
+});
+
 // The schema-2 sample predates `miscellaneous`; the gate requires at least one function.
 const schemaTwo = () => ({
   ...readFixture('documentation.sample.json'),
   miscellaneous: { functions: [{ name: 'provideSelectConfig', file: 'projects/forms/select/shared/config.ts' }] },
+  cngxErrorCodes: errorCodeBlock(),
 });
-const schemaSix = () => readFixture('documentation.v6.sample.json');
+const schemaSix = () => ({ ...readFixture('documentation.v6.sample.json'), cngxErrorCodes: errorCodeBlock() });
 
 function check(doc, expectedVersion) {
   const dataDir = mkdtempSync(join(tmpdir(), 'cngx-mcp-bundle-'));
@@ -44,6 +66,27 @@ describe('checkBundledSnapshot', () => {
 
     expect(result).toMatchObject({ ok: true, meta: { schemaVersion: 6, cngxVersion: '0.1.0-rc.9' } });
     expect(result.counts.functions).toBeGreaterThan(0);
+  });
+
+  it('counts the error codes of a valid block', () => {
+    const result = check(schemaSix(), '0.1.0-rc.9');
+
+    expect(result).toMatchObject({ ok: true });
+    expect(result.counts.errorCodes).toBe(1);
+  });
+
+  it('rejects a bundle with no error-code block', () => {
+    const result = check({ ...schemaSix(), cngxErrorCodes: undefined }, '0.1.0-rc.9');
+
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain('error-code block');
+  });
+
+  it('rejects a bundle whose error-code block has no codes', () => {
+    const result = check({ ...schemaSix(), cngxErrorCodes: { ...errorCodeBlock(), codes: [] } }, '0.1.0-rc.9');
+
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain('error-code block');
   });
 
   // Derived from the loader so adding a supported version never breaks this case.

@@ -11,6 +11,7 @@ import { getDiTokensCommand } from './commands/get-di-tokens.js';
 import { getConfigCommand } from './commands/get-config.js';
 import { getStoryExampleCommand } from './commands/get-story-example.js';
 import { migrateUsageCommand } from './commands/migrate-usage.js';
+import { explainErrorCommand } from './commands/get-error-code.js';
 
 export type {
   Answer,
@@ -35,4 +36,5 @@ export const COMMANDS: readonly CngxCommand[] = [
   getConfigCommand,
   getStoryExampleCommand,
   migrateUsageCommand,
+  explainErrorCommand,
 ];

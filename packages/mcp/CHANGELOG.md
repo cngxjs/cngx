@@ -36,6 +36,8 @@ release (`cngx://provenance` and `groundedVersion` name the one that answered).
 
 ### Added
 
+- `get_error_code` returns a CNGX error code's title, lib, severity, production
+  behaviour, messages and doc page from the bundled snapshot.
 - A `migrate_usage` `signatureChanged` row of an input carries `changed`, the
   parts of its binding contract that moved (`type`, `required`,
   `binding kind`). Rows of the other categories have no `changed` field.
