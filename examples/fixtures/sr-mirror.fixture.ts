@@ -107,7 +107,13 @@ function approximateName(el: Element): string {
 }
 
 function implicitRole(el: Element): string {
-  return el.tagName === 'BUTTON' ? 'button' : el.tagName.toLowerCase();
+  if (el.tagName === 'BUTTON') {
+    return 'button';
+  }
+  if (el.tagName === 'A' && el.hasAttribute('href')) {
+    return 'link';
+  }
+  return el.tagName.toLowerCase();
 }
 
 function readRow(target: SrMirrorTarget, el: Element): SrMirrorRow {
