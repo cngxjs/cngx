@@ -645,7 +645,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(css).not.toContain('--cngx-mat-tab-error-outline');
     // Every colour has a light and a dark value off the foundation tokens.
     expect(css).toMatch(
-      /\[data-color-scheme='dark'\],\s*\.dark\s*\{\s*--cngx-mat-tab-error-color: color-mix\(\s*in oklab,\s*var\(--cngx-color-danger, oklch\(0\.68 0\.17 25\)\)/,
+      /\[data-color-scheme='dark'\],\s*\.dark\s*\{\s*--cngx-mat-tab-error-color: var\(\s*--cngx-color-danger-text,\s*oklch\(from var\(--cngx-color-danger, oklch\(0\.68 0\.17 25\)\) 0\.74 c h\)/,
     );
     // Forced colours: CanvasText icons and an outline on the rejected tab.
     expect(css).toMatch(

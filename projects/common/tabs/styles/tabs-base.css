@@ -245,7 +245,7 @@
   /**
    * Label colour of a failed tab under the colour-only `line` skin.
    * Registered without an initial value, so the fallback to
-   * `--cngx-color-danger-text` (danger mixed toward the text colour, 4.5:1
+   * `--cngx-color-danger-text` (danger at the text-rung lightness, 4.5:1
    * on the page in both schemes) applies until a theme sets it.
    * @group State / Rejected
    * @see [[--cngx-color-danger]]

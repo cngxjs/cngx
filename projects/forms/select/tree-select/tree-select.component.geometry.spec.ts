@@ -150,6 +150,17 @@ describe('CngxTreeSelect twisty glyph direction', () => {
     expect(computedValue(twisty, 'transform')).toBe(TWISTY_IDENTITY);
   });
 
+  // The twisty font is 1rem, so its 1em icon box is 16px, in the 15 to 19px band
+  // where the hand-hinted 16-grid small chevron paints.
+  it('sizes the panel twisty to a 16px box', () => {
+    const { twisty } = mountOpenTwisty();
+    const svg = twisty.querySelector<SVGSVGElement>('svg');
+    if (!svg) {
+      throw new Error('tree-select twisty renders no icon');
+    }
+    expect(svg.getBoundingClientRect().width).toBeCloseTo(16, 0);
+  });
+
   it('leaves the open twisty rotate untouched in both directions', () => {
     const { fixture, twisty } = mountOpenTwisty();
     twisty.click();

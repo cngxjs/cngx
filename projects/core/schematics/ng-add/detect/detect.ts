@@ -91,6 +91,7 @@ export {
   type InstructionState,
   MCP_CONFIGS,
   type McpConfigState,
+  serverEntry,
 } from './ai-tooling';
 export {
   APP_SHELL_BLOCKED_REASONS,
@@ -196,6 +197,8 @@ export interface ProjectFacts {
   readonly mcpConfigs: Readonly<Record<AiTool, McpConfigState>>;
   /** The `@cngx/mcp` version a `wired` config pins; `undefined` when none is found. */
   readonly mcpPins: Readonly<Record<AiTool, string | undefined>>;
+  /** Whether a `wired` config's `cngx` entry is exactly the one cngx writes for its pin (`serverEntry`). */
+  readonly mcpCngxShaped: Readonly<Record<AiTool, boolean>>;
   /** `AGENTS.md`: missing, present, or already carrying the cngx block. */
   readonly agentsMd: InstructionState;
   /**
@@ -348,6 +351,11 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
       claude: mcpConfigs.claude.pin,
       cursor: mcpConfigs.cursor.pin,
       vscode: mcpConfigs.vscode.pin,
+    },
+    mcpCngxShaped: {
+      claude: mcpConfigs.claude.cngxShaped,
+      cursor: mcpConfigs.cursor.cngxShaped,
+      vscode: mcpConfigs.vscode.cngxShaped,
     },
     agentsMd: instructionState(read, 'AGENTS.md'),
     claudeInstructions: claudeInstructionsOf(read),

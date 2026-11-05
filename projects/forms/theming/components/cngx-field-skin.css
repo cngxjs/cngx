@@ -183,13 +183,13 @@
          to the underline size: one line, one colour. */
       border-block-end-color: var(
         --cngx-field-underline-focus-color,
-        var(--cngx-color-primary-strong, oklch(0.58 0.19 50))
+        var(--cngx-color-primary-strong, oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h))
       );
       box-shadow: inset 0
         calc(var(--cngx-field-border-width, 1px) - var(--cngx-field-underline-size, 2px)) 0
         var(
           --cngx-field-underline-focus-color,
-          var(--cngx-color-primary-strong, oklch(0.58 0.19 50))
+          var(--cngx-color-primary-strong, oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h))
         );
     }
 
@@ -199,7 +199,7 @@
         inset 0 calc(var(--cngx-field-border-width, 1px) - var(--cngx-field-underline-size, 2px)) 0
           var(
             --cngx-field-underline-focus-color,
-            var(--cngx-color-primary-strong, oklch(0.58 0.19 50))
+            var(--cngx-color-primary-strong, oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h))
           ),
         inset 0 0 0 100vh
           var(
@@ -300,8 +300,8 @@
     }
 
     /* No underline in any state - that is the fill look. An error tints the
-       value text with --cngx-color-danger-text: danger pulled toward the text
-       colour in oklab, so it clears the 4.5:1 text floor and stays red. In a
+       value text with --cngx-color-danger-text: danger at the text-rung
+       lightness, so it clears the 4.5:1 text floor and stays red. In a
        box the nested control inherits the colour through its reset. */
     :scope:is([aria-invalid='true'], [data-invalid]),
     :scope:has(> :is(input, textarea, select)[aria-invalid='true']) {
@@ -309,11 +309,7 @@
         --cngx-field-bare-error-text-color,
         var(
           --cngx-color-danger-text,
-          color-mix(
-            in oklab,
-            var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
-            var(--cngx-color-text, oklch(0.2 0.01 250))
-          )
+          oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)
         )
       );
     }

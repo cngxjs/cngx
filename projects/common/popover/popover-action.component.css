@@ -12,9 +12,14 @@
  * - `:hover` - wash applied via `--cngx-popover-action-hover-bg`
  * - `:focus-visible` - outline ring in
  *   `--cngx-popover-panel-accent-text`
- * - `:disabled` / `[aria-disabled="true"]` - 38% text (the disabled field
- *   recipe), never opacity; a filled variant fills with the disabled
- *   colour; cursor: not-allowed; GrayText under forced colors
+ * - `:disabled` / `[aria-disabled="true"]:not([data-busy], [data-pending])`
+ *   - 38% text (the disabled field recipe), never opacity; a filled variant
+ *   fills with the disabled colour; cursor: not-allowed; GrayText under
+ *   forced colors. Excludes a running confirm action so a busy button never
+ *   paints as disabled.
+ * - `[data-pending]` - the immediate run flag (`btn.pending()`), set at click
+ * - `[data-busy]` - the gated busy flag (`btn.busyVisible()`), set after the
+ *   show delay and held for the min-dwell; `cursor: progress`
  *
  * **Variants**
  *
@@ -204,9 +209,16 @@
       outline: 2px solid var(--cngx-popover-panel-accent-text, currentColor);
       outline-offset: 2px;
     }
-    :scope:disabled,
-    :scope[aria-disabled='true'] {
+    :scope:is(:disabled, [aria-disabled='true']):not([data-busy], [data-pending]) {
       cursor: not-allowed;
+    }
+
+    /* Gated busy paint. data-pending is the immediate run flag; data-busy
+       follows the loading gate. A pending confirm is aria-disabled too, so
+       without this the :not([data-busy], [data-pending]) exclusion above it
+       would read as a bare non-interactive cursor during the run. */
+    :scope[data-busy] {
+      cursor: progress;
     }
 
     :scope.cngx-popover-action--primary {
@@ -238,13 +250,13 @@
     /* Disabled by colour, never opacity (the field recipe). After the
      * variants so it wins; a filled variant fills with the disabled colour
      * and keeps a surface label. */
-    :scope:is(:disabled, [aria-disabled='true']) {
+    :scope:is(:disabled, [aria-disabled='true']):not([data-busy], [data-pending]) {
       color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
     }
     :scope:is(.cngx-popover-action--primary, .cngx-popover-action--danger):is(
         :disabled,
         [aria-disabled='true']
-      ) {
+      ):not([data-busy], [data-pending]) {
       background: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
       color: var(--cngx-color-surface, oklch(1 0 0));
       filter: none;
@@ -274,7 +286,7 @@
  * does not, so restate it. Unlayered + direct selector (outside @scope) to beat
  * the layered rule. */
 @media (forced-colors: active) {
-  .cngx-popover-action:is(:disabled, [aria-disabled='true']) {
+  .cngx-popover-action:is(:disabled, [aria-disabled='true']):not([data-busy], [data-pending]) {
     color: GrayText;
     border-color: GrayText;
   }

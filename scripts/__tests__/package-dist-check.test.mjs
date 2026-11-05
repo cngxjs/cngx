@@ -38,6 +38,13 @@ function setAge(dir, file, secondsAgo) {
 
 /** Whether a prepublishOnly chain runs the dist check before anything else. */
 const startsWithDistCheck = (chain) => typeof chain === 'string' && chain.startsWith(DIST_CHECK);
+// The bundle check inside `npm publish` compares the stamp with the package
+// being published: the release run bumps the root version last.
+const bundleCheckExpectsPackage = (chain) =>
+  typeof chain === 'string' &&
+  chain
+    .split('&&')
+    .some((step) => step.includes('scripts/mcp-bundle-check.mjs') && step.split(/\s+/).includes('--expect=package'));
 
 afterEach(() => {
   while (created.length > 0) {
@@ -111,7 +118,19 @@ describe('prepublishOnly wiring', () => {
     }
   });
 
+  it('the cli and mcp chains check the bundle against the package version', () => {
+    for (const name of ['cli', 'mcp']) {
+      const { scripts } = JSON.parse(readFileSync(join(ROOT, 'packages', name, 'package.json'), 'utf8'));
+      expect(bundleCheckExpectsPackage(scripts.prepublishOnly), `${name}: ${scripts.prepublishOnly}`).toBe(true);
+    }
+  });
+
   it('mutation: a chain without the dist check fails the same assertion', () => {
     expect(startsWithDistCheck('node ../../scripts/mcp-bundle-check.mjs')).toBe(false);
+  });
+
+  it('mutation: a bundle check in root mode fails the package-version assertion', () => {
+    expect(bundleCheckExpectsPackage(`${DIST_CHECK}node ../../scripts/mcp-bundle-check.mjs`)).toBe(false);
+    expect(bundleCheckExpectsPackage(`${DIST_CHECK}node ../../scripts/mcp-bundle-check.mjs --expect=root`)).toBe(false);
   });
 });

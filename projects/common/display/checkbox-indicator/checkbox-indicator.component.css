@@ -218,6 +218,12 @@
     }
     :scope.cngx-checkbox-indicator--lg {
       --cngx-checkbox-size: var(--cngx-checkbox-size-lg, 1.25em);
+
+      /* lg boxed lands on the exact 16px small box: 0.8 of the 20px lg box. The
+         shared box rule reads this inherited factor (0.75 would give 15px,
+         hinted not exact; raising the shared default would push md to 12.8px,
+         off the 12px micro box). sm and md keep the 0.75 default. */
+      --cngx-checkbox-glyph-box-factor: 0.8;
     }
 
     .cngx-checkbox-indicator__box {
@@ -266,11 +272,12 @@
          size class, so a retuned sm renders like md at the same size. Three
          quarters of the box, never below the micro floor: the 14px sm and the
          16px md box both land on 12px, the 12-grid micro check and dash (ink
-         at most 10px, inside the 11px inner area of the sm box), and the 20px
-         lg box on 15px, the 24-grid path. The stroke width reaches the 24-grid
-         path only. The svg base rule rounds the box to whole pixels. */
+         at most 10px, inside the 11px inner area of the sm box). The 20px lg
+         box takes its own 0.8 term below, landing on the exact 16px small box.
+         The stroke width reaches the 24-grid path only. The svg base rule
+         rounds the box to whole pixels. */
       --cngx-icon-svg-size: max(
-        calc(var(--cngx-checkbox-size, 1em) * 0.75),
+        calc(var(--cngx-checkbox-size, 1em) * var(--cngx-checkbox-glyph-box-factor, 0.75)),
         var(--cngx-icon-svg-micro-floor, 0.75rem)
       );
 

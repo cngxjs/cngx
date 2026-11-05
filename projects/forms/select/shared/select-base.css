@@ -172,7 +172,7 @@
    */
   @property --cngx-select-panel-radius {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.25rem;
   }
 
@@ -265,7 +265,7 @@
    */
   @property --cngx-select-panel-max-height {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 16rem;
   }
 
@@ -280,7 +280,7 @@
    */
   @property --cngx-select-option-padding {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.375rem 0.5rem;
   }
 
@@ -294,7 +294,7 @@
    */
   @property --cngx-select-option-min-height {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0px;
   }
 
@@ -304,7 +304,7 @@
    */
   @property --cngx-select-option-radius {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.125rem;
   }
 
@@ -319,6 +319,20 @@
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.66 0.19 50 / 0.1);
+  }
+
+  /**
+   * Colour of the inline-start indicator bar on the keyboard-active row. The
+   * background tint alone is ~1.1:1 against the panel; this opaque bar carries
+   * the active affordance at >= 3:1. Delegates to the primary colour below, so
+   * it follows the scheme and a re-theme.
+   * @group State
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-select-option-active-indicator {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.5 0.2 275);
   }
 
   /**
@@ -421,7 +435,7 @@
    */
   @property --cngx-select-skeleton-gap {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.25rem;
   }
 
@@ -431,7 +445,7 @@
    */
   @property --cngx-select-skeleton-padding {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.25rem;
   }
 
@@ -441,7 +455,7 @@
    */
   @property --cngx-select-skeleton-row-height {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1.75rem;
   }
 
@@ -451,8 +465,37 @@
    */
   @property --cngx-select-skeleton-row-radius {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.125rem;
+  }
+
+  /**
+   * Base colour the skeleton shimmer gradient is mixed from. Defaults from the
+   * foundation text colour, so the shimmer darkens a light panel and lightens a
+   * dark one in every scheme (OS, a `data-color-scheme` island, or a consumer
+   * light theme under OS dark) without a hardcoded dark-mode swap. The Material
+   * bridge sets it from `--mat-sys-on-surface`.
+   * @group State / Loading
+   * @see [[--cngx-color-text]]
+   */
+  @property --cngx-select-skeleton-shimmer {
+    syntax: '*';
+    inherits: true;
+    initial-value: oklch(0.2 0.01 250);
+  }
+
+  /**
+   * Track (resting ring) colour of the per-option commit spinner. Defaults from
+   * the foundation text colour at a low alpha, so it reads on the panel in
+   * every scheme without a dark swap. The Material bridge sets it from
+   * `--mat-sys-on-surface`.
+   * @group State / Commit
+   * @see [[--cngx-color-text]]
+   */
+  @property --cngx-select-option-spinner-track {
+    syntax: '*';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.15);
   }
 
   /**
@@ -461,7 +504,7 @@
    */
   @property --cngx-select-spinner-padding {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1rem;
   }
 
@@ -471,7 +514,7 @@
    */
   @property --cngx-select-spinner-size {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1.5rem;
   }
 
@@ -504,7 +547,7 @@
    */
   @property --cngx-select-loading-bar-height {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 3px;
   }
 
@@ -525,7 +568,7 @@
    */
   @property --cngx-select-refreshing-height {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 2px;
   }
 
@@ -546,7 +589,7 @@
    */
   @property --cngx-select-refreshing-spinner-padding {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.25rem;
   }
 
@@ -556,7 +599,7 @@
    */
   @property --cngx-select-refreshing-dots-gap {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.25rem;
   }
 
@@ -566,7 +609,7 @@
    */
   @property --cngx-select-refreshing-dots-padding {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.375rem;
   }
 
@@ -576,7 +619,7 @@
    */
   @property --cngx-select-refreshing-dot-size {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.375rem;
   }
 
@@ -596,7 +639,7 @@
    */
   @property --cngx-select-option-spinner-size {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.875rem;
   }
 
@@ -618,7 +661,7 @@
   @property --cngx-select-option-error-color {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.6 0.18 25);
+    initial-value: oklch(0.46 0.18 25);
   }
 
   /**
@@ -637,7 +680,7 @@
    */
   @property --cngx-select-chip-wrap-radius {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.25rem;
   }
 
@@ -679,7 +722,7 @@
    */
   @property --cngx-select-chip-wrap-gap {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.25rem;
   }
 
@@ -690,7 +733,7 @@
    */
   @property --cngx-select-chip-remove-size {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1.25rem;
   }
 
@@ -731,7 +774,7 @@
    */
   @property --cngx-select-chip-handle-size {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.75rem;
   }
 
@@ -793,7 +836,7 @@
    */
   @property --cngx-select-chip-drag-scale {
     syntax: '<number>';
-    inherits: false;
+    inherits: true;
     initial-value: 1.06;
   }
 
@@ -803,7 +846,7 @@
    */
   @property --cngx-select-chip-drag-tilt {
     syntax: '<angle>';
-    inherits: false;
+    inherits: true;
     initial-value: -1.5deg;
   }
 
@@ -813,7 +856,7 @@
    */
   @property --cngx-select-chip-drop-bar-width {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 3px;
   }
 
@@ -834,7 +877,7 @@
    */
   @property --cngx-select-error-gap {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.5rem;
   }
 
@@ -844,7 +887,7 @@
    */
   @property --cngx-select-error-padding {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.5rem 0.75rem;
   }
 
@@ -857,7 +900,7 @@
   @property --cngx-select-error-color {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.6 0.18 25);
+    initial-value: oklch(0.46 0.18 25);
   }
 
   /**
@@ -866,7 +909,7 @@
    */
   @property --cngx-select-error-inline-padding {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.375rem 0.5rem;
   }
 
@@ -876,7 +919,7 @@
    */
   @property --cngx-select-error-inline-radius {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.125rem;
   }
 
@@ -886,7 +929,7 @@
    */
   @property --cngx-select-error-retry-border {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1px solid currentColor;
   }
 
@@ -908,7 +951,7 @@
    */
   @property --cngx-select-trigger-invalid-border-width {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 1px;
   }
 
@@ -931,7 +974,7 @@
    */
   @property --cngx-select-trigger-invalid-glow {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0 0 0 3px oklch(0.6 0.18 25 / 0.2);
   }
 
@@ -941,7 +984,7 @@
    */
   @property --cngx-select-commit-error-padding {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.375rem 0.5rem;
   }
 
@@ -951,8 +994,31 @@
    */
   @property --cngx-select-commit-error-radius {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.125rem;
+  }
+
+  /**
+   * Text colour of the commit-error hint shown under a closed trigger.
+   * Defaults to the danger-text contrast tier so it clears 4.5:1 like the
+   * inline banner.
+   * @group State / Commit
+   * @see [[--cngx-color-danger-text]]
+   */
+  @property --cngx-select-commit-error-hint-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.5 0.2 25);
+  }
+
+  /**
+   * Block-start margin of the commit-error hint, set from the density scale.
+   * @group State / Commit
+   */
+  @property --cngx-select-commit-error-hint-margin {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.25rem;
   }
 
   /* Delegating tokens - panel surface + every primary-tinted glyph
@@ -969,12 +1035,13 @@
     --cngx-select-panel-bg: var(--cngx-color-surface);
     --cngx-select-panel-color: var(--cngx-color-text);
     --cngx-select-check-color: var(--cngx-color-primary);
+    --cngx-select-option-active-indicator: var(--cngx-color-primary);
     --cngx-select-spinner-color: var(--cngx-color-primary);
     --cngx-select-loading-bar-color: var(--cngx-color-primary);
     --cngx-select-refreshing-color: var(--cngx-color-primary);
     --cngx-select-option-spinner-color: var(--cngx-color-primary);
-    --cngx-select-option-error-color: var(--cngx-color-danger);
-    --cngx-select-error-color: var(--cngx-color-danger);
+    --cngx-select-option-error-color: var(--cngx-color-danger-text);
+    --cngx-select-error-color: var(--cngx-color-danger-text);
     --cngx-select-chip-remove-hover-color: var(--cngx-color-danger);
     --cngx-select-chip-drag-bg: var(--cngx-color-primary-strong);
     --cngx-select-chip-drag-color: var(--cngx-color-on-primary-strong);
@@ -1010,6 +1077,29 @@
       --cngx-select-chip-drag-shadow: 0 8px 20px oklch(0 0 0 / 0.6);
       --cngx-select-caret-color: oklch(1 0 0 / 0.5);
       --cngx-select-clear-color: oklch(1 0 0 / 0.5);
+      /* E1: restate every delegating token from the :root block above so the
+         panel, option, error and chip surfaces re-resolve against the island's
+         foundation colours instead of the frozen :root computed value. Keep in
+         lockstep with the :root list. */
+      --cngx-select-panel-border: 1px solid var(--cngx-color-border);
+      --cngx-select-action-border: 1px solid var(--cngx-color-border);
+      --cngx-select-panel-bg: var(--cngx-color-surface);
+      --cngx-select-panel-color: var(--cngx-color-text);
+      --cngx-select-check-color: var(--cngx-color-primary);
+      --cngx-select-option-active-indicator: var(--cngx-color-primary);
+      --cngx-select-spinner-color: var(--cngx-color-primary);
+      --cngx-select-loading-bar-color: var(--cngx-color-primary);
+      --cngx-select-refreshing-color: var(--cngx-color-primary);
+      --cngx-select-option-spinner-color: var(--cngx-color-primary);
+      --cngx-select-option-error-color: var(--cngx-color-danger-text);
+      --cngx-select-error-color: var(--cngx-color-danger-text);
+      --cngx-select-chip-remove-hover-color: var(--cngx-color-danger);
+      --cngx-select-chip-drop-bar-color: var(--cngx-color-primary);
+      --cngx-select-trigger-invalid-border-color: var(--cngx-color-danger);
+      --cngx-select-trigger-invalid-outline-color: var(--cngx-color-danger);
+      --cngx-select-placeholder-color: var(--cngx-color-text-muted);
+      --cngx-select-chip-drag-bg: var(--cngx-color-primary-strong);
+      --cngx-select-chip-drag-color: var(--cngx-color-on-primary-strong);
     }
   }
   [data-color-scheme='dark'],
@@ -1027,6 +1117,23 @@
     --cngx-select-chip-drag-color: var(--cngx-color-on-primary-strong);
     --cngx-select-caret-color: oklch(1 0 0 / 0.5);
     --cngx-select-clear-color: oklch(1 0 0 / 0.5);
+    /* E1: full delegating list, in lockstep with the :root block. */
+    --cngx-select-panel-border: 1px solid var(--cngx-color-border);
+    --cngx-select-action-border: 1px solid var(--cngx-color-border);
+    --cngx-select-panel-bg: var(--cngx-color-surface);
+    --cngx-select-panel-color: var(--cngx-color-text);
+    --cngx-select-check-color: var(--cngx-color-primary);
+    --cngx-select-option-active-indicator: var(--cngx-color-primary);
+    --cngx-select-spinner-color: var(--cngx-color-primary);
+    --cngx-select-loading-bar-color: var(--cngx-color-primary);
+    --cngx-select-refreshing-color: var(--cngx-color-primary);
+    --cngx-select-option-spinner-color: var(--cngx-color-primary);
+    --cngx-select-option-error-color: var(--cngx-color-danger-text);
+    --cngx-select-error-color: var(--cngx-color-danger-text);
+    --cngx-select-chip-remove-hover-color: var(--cngx-color-danger);
+    --cngx-select-chip-drop-bar-color: var(--cngx-color-primary);
+    --cngx-select-trigger-invalid-border-color: var(--cngx-color-danger);
+    --cngx-select-trigger-invalid-outline-color: var(--cngx-color-danger);
   }
   [data-color-scheme='light'],
   .light {
@@ -1043,6 +1150,23 @@
     --cngx-select-chip-drag-color: var(--cngx-color-on-primary-strong);
     --cngx-select-caret-color: oklch(0 0 0 / 0.5);
     --cngx-select-clear-color: oklch(0 0 0 / 0.5);
+    /* E1: full delegating list, in lockstep with the :root block. */
+    --cngx-select-panel-border: 1px solid var(--cngx-color-border);
+    --cngx-select-action-border: 1px solid var(--cngx-color-border);
+    --cngx-select-panel-bg: var(--cngx-color-surface);
+    --cngx-select-panel-color: var(--cngx-color-text);
+    --cngx-select-check-color: var(--cngx-color-primary);
+    --cngx-select-option-active-indicator: var(--cngx-color-primary);
+    --cngx-select-spinner-color: var(--cngx-color-primary);
+    --cngx-select-loading-bar-color: var(--cngx-color-primary);
+    --cngx-select-refreshing-color: var(--cngx-color-primary);
+    --cngx-select-option-spinner-color: var(--cngx-color-primary);
+    --cngx-select-option-error-color: var(--cngx-color-danger-text);
+    --cngx-select-error-color: var(--cngx-color-danger-text);
+    --cngx-select-chip-remove-hover-color: var(--cngx-color-danger);
+    --cngx-select-chip-drop-bar-color: var(--cngx-color-primary);
+    --cngx-select-trigger-invalid-border-color: var(--cngx-color-danger);
+    --cngx-select-trigger-invalid-outline-color: var(--cngx-color-danger);
   }
 }
 
@@ -1257,6 +1381,15 @@
   }
   .cngx-select__option.cngx-option--highlighted {
     background: var(--cngx-select-option-highlight-bg, oklch(0.66 0.19 50 / 0.1));
+    /* The tint alone is ~1.1:1 against the panel; an inset inline-start bar
+       carries the active affordance at >= 3:1 (an inset box-shadow, so no
+       layout shift and no ::before, which the option suppresses). */
+    box-shadow: inset 3px 0 0 0
+      var(--cngx-select-option-active-indicator, var(--cngx-color-primary, oklch(0.5 0.2 275)));
+  }
+  [dir='rtl'] .cngx-select__option.cngx-option--highlighted {
+    box-shadow: inset -3px 0 0 0
+      var(--cngx-select-option-active-indicator, var(--cngx-color-primary, oklch(0.5 0.2 275)));
   }
   .cngx-select__option--pending {
     cursor: progress;
@@ -1290,6 +1423,10 @@
     /* skeleton-gap 0.25 -> xs; skeleton-padding 0.25 -> xs. */
     --cngx-select-skeleton-gap: var(--cngx-space-xs);
     --cngx-select-skeleton-padding: var(--cngx-space-xs);
+    /* The shimmer base follows the foundation text colour, so the gradient
+       darkens a light panel and lightens a dark one in every scheme - no
+       hardcoded dark-mode swap. */
+    --cngx-select-skeleton-shimmer: var(--cngx-color-text, oklch(0.2 0.01 250));
     display: flex;
     flex-direction: column;
     gap: var(--cngx-select-skeleton-gap, 0.25rem);
@@ -1300,9 +1437,12 @@
     border-radius: var(--cngx-select-skeleton-row-radius, 0.125rem);
     background: linear-gradient(
       90deg,
-      oklch(0 0 0 / 0.08) 25%,
-      oklch(0 0 0 / 0.12) 50%,
-      oklch(0 0 0 / 0.08) 75%
+      color-mix(in oklab, var(--cngx-select-skeleton-shimmer, oklch(0.2 0.01 250)) 8%, transparent)
+        25%,
+      color-mix(in oklab, var(--cngx-select-skeleton-shimmer, oklch(0.2 0.01 250)) 12%, transparent)
+        50%,
+      color-mix(in oklab, var(--cngx-select-skeleton-shimmer, oklch(0.2 0.01 250)) 8%, transparent)
+        75%
     );
     background-size: 200% 100%;
     animation: cngx-select-skeleton-shimmer 1.5s ease-in-out infinite;
@@ -1412,6 +1552,13 @@
 
   .cngx-select__option-spinner {
     margin-inline-start: auto;
+    /* Track follows the foundation text colour, so it reads on the panel in
+       every scheme without a dark swap. */
+    --cngx-select-option-spinner-track: color-mix(
+      in oklab,
+      var(--cngx-color-text, oklch(0.2 0.01 250)) 15%,
+      transparent
+    );
     width: var(--cngx-select-option-spinner-size, 0.875rem);
     height: var(--cngx-select-option-spinner-size, 0.875rem);
     border: 2px solid var(--cngx-select-option-spinner-track, oklch(0 0 0 / 0.15));
@@ -1730,7 +1877,7 @@
     box-shadow: var(--cngx-select-chip-drag-shadow, 0 8px 20px oklch(0 0 0 / 0.28));
     background: var(
       --cngx-select-chip-drag-bg,
-      var(--cngx-color-primary-strong, oklch(0.58 0.19 50))
+      var(--cngx-color-primary-strong, oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h))
     );
     color: var(--cngx-select-chip-drag-color, var(--cngx-color-on-primary-strong, oklch(1 0 0)));
     transform: scale(var(--cngx-select-chip-drag-scale, 1.06))
@@ -1842,47 +1989,22 @@
     font-size: var(--cngx-font-size-sm, 0.875rem);
   }
 
-  /* Dark-mode swap for the hardcoded alpha-on-black surfaces that
-   * don't have a dedicated token - the skeleton shimmer gradient
-   * (three alpha stops baked into the rule) and the option-spinner
-   * track. Both flip to alpha-on-white so they read on a dark
-   * panel-bg without dissolving. */
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-color-scheme='light']):not(.light) .cngx-select__skeleton-row {
-      background: linear-gradient(
-        90deg,
-        oklch(1 0 0 / 0.08) 25%,
-        oklch(1 0 0 / 0.12) 50%,
-        oklch(1 0 0 / 0.08) 75%
-      );
-      background-size: 200% 100%;
-    }
-    :root:not([data-color-scheme='light']):not(.light) .cngx-select__option-spinner {
-      border-color: oklch(1 0 0 / 0.15);
-      border-top-color: var(
-        --cngx-select-option-spinner-color,
-        var(--cngx-color-primary, oklch(0.72 0.18 50))
-      );
-    }
+  /* Hint shown under a closed trigger when a commit error is current (strand A
+     renders it through the `commitErrorShown` gate; until then the class has no
+     consumer). Reads the danger-text tier, a density-scale block-start margin
+     and the small font rung. */
+  .cngx-select__commit-error-hint {
+    --cngx-select-commit-error-hint-margin: var(--cngx-space-xs);
+    margin-block-start: var(--cngx-select-commit-error-hint-margin, 0.25rem);
+    color: var(--cngx-select-commit-error-hint-color, var(--cngx-color-danger-text, oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)));
+    font-size: var(--cngx-font-size-sm, 0.875rem);
   }
-  [data-color-scheme='dark'] .cngx-select__skeleton-row,
-  .dark .cngx-select__skeleton-row {
-    background: linear-gradient(
-      90deg,
-      oklch(1 0 0 / 0.08) 25%,
-      oklch(1 0 0 / 0.12) 50%,
-      oklch(1 0 0 / 0.08) 75%
-    );
-    background-size: 200% 100%;
-  }
-  [data-color-scheme='dark'] .cngx-select__option-spinner,
-  .dark .cngx-select__option-spinner {
-    border-color: oklch(1 0 0 / 0.15);
-    border-top-color: var(
-      --cngx-select-option-spinner-color,
-      var(--cngx-color-primary, oklch(0.72 0.18 50))
-    );
-  }
+
+  /* The skeleton shimmer and the option-spinner track derive from the
+   * foundation text colour (see their token SETs above), so they follow the
+   * panel scheme - an OS dark, a `data-color-scheme` island, or a consumer
+   * light theme under OS dark - without the old hardcoded alpha-on-black ->
+   * alpha-on-white swap, which flipped a light panel wrong under OS dark. */
 
   /* ── Field skins ──────────────────────────────────────────────────────
      One rule set for all nine triggers, keyed on the shared
@@ -1919,7 +2041,7 @@
      back to the strong accent there. Private and unregistered: it only
      feeds the fallback, `--cngx-select-focus-outline` still wins. */
   [data-skin='fill'] {
-    --_cngx-select-focus-ring-color: var(--cngx-color-primary-strong, oklch(0.58 0.19 50));
+    --_cngx-select-focus-ring-color: var(--cngx-color-primary-strong, oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h));
   }
 
   @scope ([data-skin='fill']:not(.cngx-field-box > *) > * > .cngx-field-trigger) {
@@ -1987,13 +2109,13 @@
          to the underline size: one line, one colour. */
       border-block-end-color: var(
         --cngx-field-underline-focus-color,
-        var(--cngx-color-primary-strong, oklch(0.58 0.19 50))
+        var(--cngx-color-primary-strong, oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h))
       );
       box-shadow: inset 0
         calc(var(--cngx-field-border-width, 1px) - var(--cngx-field-underline-size, 2px)) 0
         var(
           --cngx-field-underline-focus-color,
-          var(--cngx-color-primary-strong, oklch(0.58 0.19 50))
+          var(--cngx-color-primary-strong, oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h))
         );
     }
 
@@ -2058,11 +2180,7 @@
         --cngx-field-bare-error-text-color,
         var(
           --cngx-color-danger-text,
-          color-mix(
-            in oklab,
-            var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
-            var(--cngx-color-text, oklch(0.2 0.01 250))
-          )
+          oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)
         )
       );
     }
@@ -2242,9 +2360,18 @@
  * `.cngx-select__option.cngx-option--highlighted` base rule; the plain two-
  * class compound wins without !important (unlayered beats layered). */
 @media (forced-colors: active) {
-  .cngx-select__option.cngx-option--highlighted {
+  /* The atom class `cngx-option--highlighted` carries the highlight, so the
+     rule reaches both a data-mode `.cngx-select__option` row and the shell's
+     projected declarative `<cngx-option>` without depending on the
+     `@cngx/common` listbox stylesheet being on the page. */
+  .cngx-option--highlighted {
     background: Highlight;
     color: HighlightText;
+    /* An outline inside the Highlight plate marks the active row apart from a
+       merely selected one (which carries a CanvasText bar below); HighlightText
+       reads on the plate. */
+    outline: 2px solid HighlightText;
+    outline-offset: -2px;
     /* Chromium paints a Canvas backplate behind the label text; without the
      * opt-out the HighlightText label sits on that plate and vanishes. The
      * opt-out is inherited, so the row declares its ink for nested indicators
@@ -2252,8 +2379,18 @@
     forced-color-adjust: none;
     --_cngx-forced-ink: HighlightText;
   }
-  .cngx-select__option.cngx-option--highlighted .cngx-select__check {
+  .cngx-option--highlighted .cngx-select__check {
     color: HighlightText;
+  }
+
+  /* A selected row that is not the active one: the author tint collapses to
+     Canvas, so it re-signals with a 2px CanvasText bar on the inline-start
+     edge. Covers the data-mode modifier (`cngx-select__option--selected`) and
+     the declarative / shell atom class (`cngx-option--selected`). */
+  .cngx-select__option--selected:not(.cngx-option--highlighted),
+  .cngx-option--selected:not(.cngx-option--highlighted) {
+    border-inline-start: 2px solid CanvasText;
+    forced-color-adjust: none;
   }
 
   /* A disabled option fades by colour, which the forced palette overrides

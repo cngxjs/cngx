@@ -154,8 +154,8 @@ Because the presenter provides `CNGX_STATEFUL`, transition bridges compose as si
 
 ```html
 <mat-stepper cngxMatStepper [commitAction]="saveStep">...</mat-stepper>
-<cngx-toast-on transition="success->idle" message="Saved." />
-<cngx-banner-on status="error" />
+<div [cngxToastOn]="saveState" toastSuccess="Saved."></div>
+<div [cngxBannerOn]="saveState" bannerError="Save failed."></div>
 ```
 
 ---

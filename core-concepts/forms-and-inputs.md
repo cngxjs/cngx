@@ -120,10 +120,10 @@ To read a control back out of a `FormGroup` with its type intact instead of cast
 
 ### A control on its own
 
-Every CNGX control with a value exposes a two-way `value`. Used outside a form, that is all you need:
+Every CNGX control with a value exposes a two-way binding - `value` on the single-value controls, `values` on the multi-value ones (`cngx-multi-select`, `cngx-combobox`). Used outside a form, that is all you need:
 
 ```html
-<cngx-multi-select [(value)]="selectedTags" [options]="allTags" />
+<cngx-multi-select [(values)]="selectedTags" [options]="allTags" />
 ```
 
 ---

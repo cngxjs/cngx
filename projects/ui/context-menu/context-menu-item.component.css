@@ -185,12 +185,14 @@
     translate: -50% -50%;
   }
 
-  /* The check stroke spans 14 + 2 = 16 grid units across; scaling the box by
-     24/16 inks it 0.73em wide, a check at label weight. */
+  /* The check box lands on exactly 1rem (16px at a 16px root), in the 15 to 19px
+     band, where the hand-hinted 16-grid small check is drawn. 1rem follows the
+     root text scale, not the item font, so the box no longer tracks a retuned
+     item font (Q2). */
   :is(cngx-context-menu-item-checkbox, button[cngxContextMenuItemCheckbox])
     > .cngx-menu-item__check
     > .cngx-icon-svg {
-    --cngx-icon-svg-size: calc(0.73em * 24 / 16);
+    --cngx-icon-svg-size: 1rem;
   }
 
   /* The dot is a fill glyph 8 grid units across (no stroke); scaling the box

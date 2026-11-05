@@ -1,6 +1,6 @@
 # Select Shell
 
-`CngxSelectShell` is the projection variant of the select family. Single-value dropdown that takes `<cngx-select-option>` / `<cngx-select-optgroup>` / `<cngx-select-divider>` / `<cngx-select-search>` children projected by the consumer and derives the option model from the DOM. Same shared core as the data-mode `CngxSelect` (`createSelectCore<T, T>`), same trigger ARIA, same template-slot cascade, same async commit machinery - the difference is where the options come from. Bridge between the raw-listbox compose-yourself path and the data-mode `[options]` path.
+`CngxSelectShell` is the projection variant of the select family. Single-value dropdown that takes `<cngx-option>` / `<cngx-optgroup>` / `<cngx-select-divider>` / `<cngx-select-search>` children projected by the consumer and derives the option model from the DOM. Same shared core as the data-mode `CngxSelect` (`createSelectCore<T, T>`), same trigger ARIA, same template-slot cascade, same async commit machinery - the difference is where the options come from. Bridge between the raw-listbox compose-yourself path and the data-mode `[options]` path.
 
 ## Import
 
@@ -18,9 +18,9 @@ import {
 
 ```html
 <cngx-select-shell label="Country" [(value)]="country" clearable>
-  <cngx-select-option value="at">Austria</cngx-select-option>
-  <cngx-select-option value="de">Germany</cngx-select-option>
-  <cngx-select-option value="ch">Switzerland</cngx-select-option>
+  <cngx-option value="at">Austria</cngx-option>
+  <cngx-option value="de">Germany</cngx-option>
+  <cngx-option value="ch">Switzerland</cngx-option>
 </cngx-select-shell>
 ```
 
@@ -29,8 +29,8 @@ Inside a form field:
 ```html
 <cngx-form-field label="Country" [field]="f.country">
   <cngx-select-shell>
-    <cngx-select-option value="at">Austria</cngx-select-option>
-    <cngx-select-option value="de">Germany</cngx-select-option>
+    <cngx-option value="at">Austria</cngx-option>
+    <cngx-option value="de">Germany</cngx-option>
   </cngx-select-shell>
 </cngx-form-field>
 ```
@@ -43,8 +43,8 @@ Direct children of `<cngx-select-shell>` are read through `contentChildren(CNGX_
 
 | Child | Role |
 |-|-|
-| `<cngx-select-option [value]>` | Leaf option. `value` typed `T`, label is the projected content. |
-| `<cngx-select-optgroup [label]>` | Group parent. Children are options of the group. |
+| `<cngx-option [value]>` | Leaf option. `value` typed `T`, label is the projected content. |
+| `<cngx-optgroup [label]>` | Group parent. Children are options of the group. |
 | `<cngx-select-divider>` | Visual divider inside the panel. |
 | `<cngx-select-search>` | Inline filter input. Forwards keyboard nav into the listbox via `CNGX_SELECT_SHELL_SEARCH_HOST`. |
 
@@ -83,8 +83,8 @@ The shell uses the same slot cascade as the rest of the family. Project a slot d
   </ng-template>
   <ng-template cngxSelectEmpty>No countries match.</ng-template>
 
-  <cngx-select-option value="at">Austria</cngx-select-option>
-  <cngx-select-option value="de">Germany</cngx-select-option>
+  <cngx-option value="at">Austria</cngx-option>
+  <cngx-option value="de">Germany</cngx-option>
 </cngx-select-shell>
 ```
 

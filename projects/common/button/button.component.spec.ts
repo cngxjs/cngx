@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { provideRouter, Router, RouterLink } from '@angular/router';
 import { CngxAsyncClick, type AsyncAction } from '@cngx/common/interactive';
 import { vi } from 'vitest';
-import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
+import { CNGX_LOADING_DEFAULTS, provideLoadingConfigAt, withShowDelay } from '@cngx/core/utils';
 
 import {
   provideButtonConfig,
@@ -207,6 +207,20 @@ class RefusingAsyncHost {
   readonly action: AsyncAction = () => {
     this.calls++;
     return Promise.resolve();
+  };
+}
+
+@Component({
+  template: `<button id="scoped" cngxButton [cngxAsyncClick]="action">Save</button>`,
+  imports: [CngxButton, CngxAsyncClick],
+  viewProviders: [provideLoadingConfigAt(withShowDelay(300))],
+})
+class ScopedLoadingAsyncHost {
+  calls = 0;
+  release: () => void = () => undefined;
+  readonly action: AsyncAction = () => {
+    this.calls++;
+    return new Promise<void>((resolve) => (this.release = resolve));
   };
 }
 
@@ -422,6 +436,38 @@ describe('CngxButton', () => {
       expect(host.calls).toBe(0);
     });
 
+    it('renders the aria-disabled value from the co-hosted directive, not an independent recompute', async () => {
+      vi.useFakeTimers();
+      const { fixture, host, q } = render(AsyncHost);
+      host.disabled.set(false);
+      fixture.detectChanges();
+      const btn = q('#button-first');
+      const directive = fixture.debugElement
+        .query(By.css('#button-first'))
+        .injector.get(CngxAsyncClick);
+      const advance = async (ms: number): Promise<void> => {
+        await vi.advanceTimersByTimeAsync(ms);
+        fixture.detectChanges();
+        TestBed.flushEffects();
+      };
+      const sampleMatchesDirective = (): void => {
+        expect(btn.getAttribute('aria-disabled')).toBe(directive.ariaDisabledAttr());
+      };
+
+      sampleMatchesDirective();
+      btn.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      sampleMatchesDirective();
+      await advance(CNGX_LOADING_DEFAULTS.showDelay);
+      sampleMatchesDirective();
+      host.release();
+      await advance(0);
+      sampleMatchesDirective();
+      await advance(CNGX_LOADING_DEFAULTS.minDwell + 1);
+      sampleMatchesDirective();
+    });
+
     it('keeps aria-disabled while [enabled]="false" outlives the button disabled flag', () => {
       const { fixture, host, q } = render(RefusingAsyncHost);
       const btn = q('#refusing');
@@ -487,11 +533,14 @@ describe('CngxButton', () => {
       host.release();
       await advance(0);
       expect(btn.hasAttribute('data-pending')).toBe(false);
-      expect(btn.hasAttribute('aria-busy')).toBe(false);
+      // aria-busy is held until the busy visual releases (E4), not cleared at
+      // the settle.
+      expect(btn.getAttribute('aria-busy')).toBe('true');
       expect(btn.dataset['busy']).toBe('true');
 
       await advance(CNGX_LOADING_DEFAULTS.minDwell);
       expect(btn.hasAttribute('data-busy')).toBe(false);
+      expect(btn.hasAttribute('aria-busy')).toBe(false);
       expect(btn.querySelector('.cngx-button__busy')).toBeNull();
     });
 
@@ -516,6 +565,113 @@ describe('CngxButton', () => {
         expect(btn.hasAttribute('data-busy')).toBe(false);
         expect(btn.querySelector('.cngx-button__busy')).toBeNull();
       }
+    });
+
+    it('refuses a second run for the whole dwell and clears all flags on release (E4)', async () => {
+      vi.useFakeTimers();
+      const { fixture, host, q } = render(AsyncHost);
+      host.disabled.set(false);
+      fixture.detectChanges();
+      const btn = q('#button-first');
+      const advance = async (ms: number): Promise<void> => {
+        await vi.advanceTimersByTimeAsync(ms);
+        fixture.detectChanges();
+        TestBed.flushEffects();
+      };
+
+      btn.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(host.calls).toBe(1);
+      await advance(CNGX_LOADING_DEFAULTS.showDelay);
+      expect(btn.dataset['busy']).toBe('true');
+
+      host.release();
+      await advance(0);
+      // Settled, but the busy visual (and the refusal) is still held.
+      expect(btn.dataset['busy']).toBe('true');
+      expect(btn.getAttribute('aria-disabled')).toBe('true');
+      expect(btn.getAttribute('aria-busy')).toBe('true');
+
+      btn.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(host.calls).toBe(1);
+
+      await advance(CNGX_LOADING_DEFAULTS.minDwell);
+      expect(btn.hasAttribute('data-busy')).toBe(false);
+      expect(btn.hasAttribute('aria-disabled')).toBe(false);
+      expect(btn.hasAttribute('aria-busy')).toBe(false);
+
+      // Activation works again once the dwell ends.
+      btn.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(host.calls).toBe(2);
+      vi.useRealTimers();
+    });
+
+    it('retimes the busy layer through provideLoadingConfigAt(withShowDelay)', async () => {
+      vi.useFakeTimers();
+      const { fixture, host, q } = render(ScopedLoadingAsyncHost);
+      const btn = q('#scoped');
+      const advance = async (ms: number): Promise<void> => {
+        await vi.advanceTimersByTimeAsync(ms);
+        fixture.detectChanges();
+        TestBed.flushEffects();
+      };
+
+      btn.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(host.calls).toBe(1);
+      // data-pending is immediate; data-busy waits the scoped 300 ms delay, not
+      // the 120 ms default.
+      expect(btn.dataset['pending']).toBe('true');
+
+      await advance(CNGX_LOADING_DEFAULTS.showDelay);
+      expect(btn.hasAttribute('data-busy')).toBe(false);
+      await advance(300 - CNGX_LOADING_DEFAULTS.showDelay);
+      expect(btn.dataset['busy']).toBe('true');
+
+      host.release();
+      await advance(CNGX_LOADING_DEFAULTS.minDwell);
+      expect(btn.hasAttribute('data-busy')).toBe(false);
+      vi.useRealTimers();
+    });
+
+    it('keeps keyboard focus and never sets the native disabled attribute through a run and its dwell', async () => {
+      vi.useFakeTimers();
+      const { fixture, host, q } = render(AsyncHost);
+      host.disabled.set(false);
+      fixture.detectChanges();
+      const btn = q('#button-first');
+      const advance = async (ms: number): Promise<void> => {
+        await vi.advanceTimersByTimeAsync(ms);
+        fixture.detectChanges();
+        TestBed.flushEffects();
+      };
+
+      btn.focus();
+      expect(document.activeElement).toBe(btn);
+      // Activation (a keyboard Enter resolves to the same click path).
+      btn.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      await advance(CNGX_LOADING_DEFAULTS.showDelay);
+      expect(btn.hasAttribute('disabled')).toBe(false);
+      expect(document.activeElement).toBe(btn);
+
+      host.release();
+      await advance(0);
+      expect(btn.hasAttribute('disabled')).toBe(false);
+      expect(document.activeElement).toBe(btn);
+
+      await advance(CNGX_LOADING_DEFAULTS.minDwell);
+      expect(btn.hasAttribute('disabled')).toBe(false);
+      expect(document.activeElement).toBe(btn);
+      vi.useRealTimers();
     });
   });
 

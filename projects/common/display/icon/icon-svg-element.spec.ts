@@ -13,10 +13,34 @@ class RendererHost {
 const WITH_MICRO: CngxIconData = {
   ...CNGX_ICON_ALERT,
   micro: { viewBox: '0 0 12 12', d: 'M5 1H7V9H5Z' },
+  small: null,
+};
+
+const WITH_SMALL: CngxIconData = {
+  ...CNGX_ICON_ALERT,
+  micro: null,
+  small: { viewBox: '0 0 16 16', d: 'M7 2H9V11H7Z' },
+};
+
+const WITH_BOTH: CngxIconData = {
+  ...CNGX_ICON_ALERT,
+  micro: { viewBox: '0 0 12 12', d: 'M5 1H7V9H5Z' },
+  small: { viewBox: '0 0 16 16', d: 'M7 2H9V11H7Z' },
 };
 
 function renderer(): Renderer2 {
   return TestBed.createComponent(RendererHost).componentInstance.renderer;
+}
+
+// The tier each sibling path belongs to, in DOM order.
+function tierOrder(el: SVGSVGElement): string[] {
+  return Array.from(el.querySelectorAll('path')).map((p) =>
+    p.classList.contains('cngx-icon-svg__micro')
+      ? 'micro'
+      : p.classList.contains('cngx-icon-svg__small')
+        ? 'small'
+        : 'path',
+  );
 }
 
 describe('createIconSvgElement', () => {
@@ -88,5 +112,45 @@ describe('createIconSvgElement', () => {
     icon.setIcon(WITH_MICRO);
     icon.setIcon(WITH_MICRO);
     expect(icon.element.querySelectorAll('.cngx-icon-svg__micro').length).toBe(1);
+  });
+
+  it('builds the small path third, hidden and filled by presentation attributes', () => {
+    const { element } = createIconSvgElement(renderer(), WITH_BOTH, 'my-icon');
+    const paths = element.querySelectorAll('path');
+    expect(paths.length).toBe(3);
+    expect(paths[0].getAttribute('d')).toBe(CNGX_ICON_ALERT.d);
+    expect(paths[1].classList.contains('cngx-icon-svg__micro')).toBe(true);
+    const small = paths[2];
+    expect(small.classList.contains('cngx-icon-svg__small')).toBe(true);
+    expect(small.getAttribute('d')).toBe(WITH_BOTH.small?.d);
+    expect(small.getAttribute('transform')).toBe('scale(1.5)');
+    expect(small.getAttribute('fill')).toBe('currentColor');
+    expect(small.getAttribute('stroke')).toBe('none');
+    expect(small.getAttribute('display')).toBe('none');
+  });
+
+  it('drops the small path when the next icon has none, and rebuilds it once', () => {
+    const icon = createIconSvgElement(renderer(), WITH_SMALL, 'my-icon');
+    icon.setIcon(CNGX_ICON_QUESTION);
+    expect(icon.element.querySelector('.cngx-icon-svg__small')).toBeNull();
+    icon.setIcon(WITH_SMALL);
+    icon.setIcon(WITH_SMALL);
+    expect(icon.element.querySelectorAll('.cngx-icon-svg__small').length).toBe(1);
+  });
+
+  it('keeps the DOM order 24, micro, small through a full swap sequence', () => {
+    const icon = createIconSvgElement(renderer(), CNGX_ICON_QUESTION, 'my-icon');
+    expect(tierOrder(icon.element)).toEqual(['path']);
+    icon.setIcon(WITH_MICRO);
+    expect(tierOrder(icon.element)).toEqual(['path', 'micro']);
+    icon.setIcon(WITH_SMALL);
+    expect(tierOrder(icon.element)).toEqual(['path', 'small']);
+    // small-only -> both: the new micro path must land before the existing small.
+    icon.setIcon(WITH_BOTH);
+    expect(tierOrder(icon.element)).toEqual(['path', 'micro', 'small']);
+    icon.setIcon(WITH_MICRO);
+    expect(tierOrder(icon.element)).toEqual(['path', 'micro']);
+    icon.setIcon(CNGX_ICON_QUESTION);
+    expect(tierOrder(icon.element)).toEqual(['path']);
   });
 });

@@ -71,6 +71,10 @@ export interface CngxButtonCore {
   readonly busyVisible: Signal<boolean>;
   /** `true` while the button refuses activation: disabled, busy or refused by the co-hosted `CngxAsyncClick`. */
   readonly blocked: Signal<boolean>;
+  /** `data-busy` attribute value, rendered from `busyVisible` (gated). */
+  readonly busyAttr: Signal<'true' | null>;
+  /** `data-pending` attribute value, rendered from `busy` (immediate). */
+  readonly pendingAttr: Signal<'true' | null>;
   /** `aria-disabled` rendered from `blocked`. */
   readonly ariaDisabled: Signal<'true' | null>;
   /**
@@ -162,13 +166,21 @@ export function injectButtonCore(
   );
   const busy = computed(() => coHostedAsyncClick()?.pending() ?? false);
   const busyVisible = computed(() => coHostedAsyncClick()?.busyVisible() ?? false);
-  // CngxAsyncClick binds aria-disabled on the same host and only rewrites it
-  // when its own value changes, so the button folds the directive's
-  // `[enabled]="false"` in; otherwise a disabled -> enabled flip here writes
-  // null while the directive still refuses clicks.
   const asyncClickRefuses = computed(() => coHostedAsyncClick()?.enabled() === false);
-  const blocked = computed(() => inputs.disabled() || busy() || asyncClickRefuses());
-  const ariaDisabled = computed<'true' | null>(() => (blocked() ? 'true' : null));
+  const blocked = computed(
+    () => inputs.disabled() || busy() || busyVisible() || asyncClickRefuses(),
+  );
+  const busyAttr = computed<'true' | null>(() => (busyVisible() ? 'true' : null));
+  const pendingAttr = computed<'true' | null>(() => (busy() ? 'true' : null));
+  // CngxAsyncClick binds aria-disabled on the same host. When one is co-hosted
+  // the button renders the directive's own value rather than an independently
+  // computed equal one, so the two host bindings share a single source and can
+  // never diverge whatever the write order. Without a co-hosted directive the
+  // button is the sole writer and uses its own blocked state.
+  const ariaDisabled = computed<'true' | null>(() => {
+    const asyncClickHost = coHostedAsyncClick();
+    return asyncClickHost ? asyncClickHost.ariaDisabledAttr() : blocked() ? 'true' : null;
+  });
   const reasonIds = computed(() =>
     inputs.disabled() && inputs.disabledReason() ? reasonId : null,
   );
@@ -205,6 +217,8 @@ export function injectButtonCore(
     busy,
     busyVisible,
     blocked,
+    busyAttr,
+    pendingAttr,
     ariaDisabled,
     describedBy,
     reasonId,

@@ -147,7 +147,6 @@
   @property --cngx-chip-font-size {
     syntax: '*';
     inherits: false;
-    initial-value: 0.875em;
   }
 
   /**
@@ -551,10 +550,12 @@
           )
       );
     }
-    /* The X spans 12 grid units plus its 2-unit stroke; scaling the box by
-       24/14 inks it 0.7em across, a remove mark at label size. */
+    /* The box lands on exactly 1rem (16px at a 16px root), where the hand-hinted
+       16-grid small X paints. It follows the root text scale, not the chip font,
+       so it is crisp at 16px under the 13px chip text and under the Material
+       bridge alike; the old 0.7em*24/14 factor tracked the 24-path ink instead. */
     .cngx-chip__remove-icon {
-      --cngx-icon-svg-size: calc(0.7em * 24 / 14);
+      --cngx-icon-svg-size: 1rem;
       display: block;
     }
     .cngx-chip__remove:hover {

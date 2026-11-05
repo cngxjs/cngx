@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Default glyphs (internal)',
   subtitle: 'Every glyph cngx draws itself, rendered from <code>@cngx/utils</code> path data by <code>svg[cngxIconSvg]</code>. Internal sign-off surface, not a public icon set.',
-  description: 'Each row shows the glyph standalone at the running text size (1em) and projected into <code>&lt;cngx-icon&gt;</code> at every size preset (<code>xs</code> to <code>xl</code>), which then owns the box. Fill glyphs paint their area in <code>currentColor</code>; stroke glyphs paint only the outline with round caps. The micro column shows the 12-grid drawing in a 12px box for the icons that carry one and stays empty for the rest. Check the shapes in light, dark and forced colors. The small-size sheet below is the 1x sign-off surface for the 12-grid micro tier: every glyph with a micro drawing at 10 to 16px as its bare 24-grid path, as its bare micro drawing and as the shipped renderer, which picks the micro path in a 10 to 14px box. Open it at browser zoom 100% on a devicePixelRatio 1 screen.',
+  description: 'Each row shows the glyph standalone at the running text size (1em) and projected into <code>&lt;cngx-icon&gt;</code> at every size preset (<code>xs</code> to <code>xl</code>), which then owns the box. Fill glyphs paint their area in <code>currentColor</code>; stroke glyphs paint only the outline with round caps. The micro column shows the 12-grid drawing in a 12px box for the icons that carry one and stays empty for the rest. Check the shapes in light, dark and forced colors. The small-size sheet below is the 1x sign-off surface for the 12-grid micro tier: every glyph with a micro drawing at 10 to 16px as its bare 24-grid path, as its bare micro drawing and as the shipped renderer, which picks the micro path in a 10 to 14px box. Open it at browser zoom 100% on a devicePixelRatio 1 screen. A second sign-off sheet below shows the signed-off 16-grid drawing for each band glyph at a 16px box next to the 24-grid path, read from the shipped <code>icon.small</code>.',
   audience: ['design'],
   focus: ['visual-variants'],
   apiComponents: ['CngxIconSvg'],
@@ -92,6 +92,10 @@ export const STORY: DemoSpec = {
     minus: CNGX_ICON_MINUS,
   } as const;
 
+  // The band glyphs that carry a signed-off 16-grid drawing; the sheet reads the
+  // shipped icon.small. CARET_DOWN keeps small: null (Q3) and drops out here.
+  protected readonly smallRows = this.icons.filter((entry) => entry.icon.small !== null);
+
   protected readonly tones = [
     { tone: 'success', color: 'var(--cngx-status-success-color, oklch(0.65 0.18 145))', icon: CNGX_ICON_CHECK },
     { tone: 'danger', color: 'var(--cngx-status-danger-color, oklch(0.65 0.22 25))', icon: CNGX_ICON_X },
@@ -143,6 +147,24 @@ export const STORY: DemoSpec = {
       }
     }
   </cngx-grid>
+
+  <h3>16-grid sign-off sheet</h3>
+  <p>The signed-off 16-grid drawings for the band consumers, each at a 16px box next to the 24-grid path. These are the shipped <code>icon.small</code> values. Open at browser zoom 100% on a devicePixelRatio 1 screen.</p>
+  <div style="display:flex; flex-direction:column; gap:8px">
+    @for (row of smallRows; track row.name) {
+      <div style="display:flex; align-items:center; gap:20px">
+        <code style="inline-size:220px">{{ row.name }}</code>
+        <span style="display:inline-flex; flex-direction:column; align-items:center; gap:2px">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" [attr.fill]="row.icon.paint === 'fill' ? 'currentColor' : 'none'" [attr.stroke]="row.icon.paint === 'stroke' ? 'currentColor' : 'none'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path [attr.d]="row.icon.d" /></svg>
+          <small>24</small>
+        </span>
+        <span style="display:inline-flex; flex-direction:column; align-items:center; gap:2px">
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" [attr.d]="row.icon.small?.d" /></svg>
+          <small>16</small>
+        </span>
+      </div>
+    }
+  </div>
 
   <h3>Checkbox check vs radio check skin</h3>
   <div style="display:flex; align-items:center; gap:16px">

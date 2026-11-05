@@ -285,7 +285,7 @@ The commit / async channel is separate: a rejected `commitAction` decorates the 
 
 ### How each skin draws the error
 
-The validation badge is a bare alert icon (no disc, `1.15em` of the label font, stroke 2) that follows the label in the errored colour. On `path-chevron` it leads the label and centres with it in the tile; on the red `path-chevron` tile and the red `chips` chip it paints in the tile text colour. `stripe-status-rich` hides it: the status pill says "Errored".
+The validation badge is a bare alert icon (no disc, a `1rem` (16px) box drawing the hand-hinted 16-grid small alert, stroke 2 on the fallback 24-grid path) that follows the label in the errored colour. On `path-chevron` it leads the label and centres with it in the tile; on the red `path-chevron` tile and the red `chips` chip it paints in the tile text colour. `stripe-status-rich` hides it: the status pill says "Errored".
 
 A rejected step (the latest commit refused or failed) carries the rejection icon and a reason colour: red for a failed commit, amber for a refused one.
 

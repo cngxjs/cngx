@@ -61,6 +61,14 @@
     --cngx-select-loading-bar-color: var(--mat-sys-primary);
     --cngx-select-refreshing-color: var(--mat-sys-primary);
     --cngx-select-option-spinner-color: var(--mat-sys-primary);
+    // Loading shimmer base and the per-option spinner track read the M3 ink,
+    // so both follow the Material surface in either scheme.
+    --cngx-select-skeleton-shimmer: var(--mat-sys-on-surface);
+    --cngx-select-option-spinner-track: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 15%,
+      transparent
+    );
 
     // Reorder visuals (multi-select chip cluster)
     --cngx-select-chip-drag-bg: var(--mat-sys-primary);
@@ -103,11 +111,17 @@
     --cngx-select-color: #{mat.get-theme-color($theme, foreground, text)};
 
     --cngx-select-check-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-select-error-color: #{mat.get-theme-color($theme, warn)};
-    --cngx-select-option-error-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-select-error-color: #{bridge.m2-warn-text($theme)};
+    --cngx-select-option-error-color: #{bridge.m2-warn-text($theme)};
     --cngx-select-spinner-color: #{mat.get-theme-color($theme, primary)};
     --cngx-select-loading-bar-color: #{mat.get-theme-color($theme, primary)};
     --cngx-select-refreshing-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-select-skeleton-shimmer: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-select-option-spinner-track: color-mix(
+      in srgb,
+      #{mat.get-theme-color($theme, foreground, text)} 15%,
+      transparent
+    );
     --cngx-select-shell-focus-ring: #{mat.get-theme-color($theme, primary)};
   }
 }
@@ -156,10 +170,11 @@ $-row-padding: 'calc(var(--cngx-space-sm, 8px) * 1.5) var(--cngx-space-md, 16px)
   // match the tree node rows so the body reads identically under the bridge.
   --cngx-tree-select-node-radius: 0;
   // Material's tree expand toggle reads as a ~24px chevron; the cngx default
-  // 1.25rem button with a 1rem chevron is small next to mat-tree. Bump the
-  // button and glyph so the twisty matches the option row's visual weight.
+  // 1.25rem button is small next to mat-tree, so bump the button to 1.5rem. The
+  // glyph font stays at 1rem so its 1em box lands on the exact 16px small box
+  // (the hand-hinted 16-grid chevron), matching the other bridge glyphs.
   --cngx-tree-select-twisty-size: 1.5rem;
-  --cngx-tree-select-twisty-font-size: 1.125rem;
+  --cngx-tree-select-twisty-font-size: 1rem;
   // Trigger caret: as wide as the mat-select arrow, 10px (0.625rem) of ink.
   // The caret triangle inks 0.27em of the caret font, so the font is the ink
   // width over 0.27; its box rounds to 17px, past the micro band, so the
@@ -330,12 +345,15 @@ $-trigger-invalid: ':is([aria-invalid="true"], :has(> [role="combobox"][aria-inv
     // and the tree container.
     //
     // mat-select opens flush on its field (no gap). CngxPopover writes its
-    // `offset` input as an inline margin, which only an important
-    // declaration outranks, so the bridge zeroes it on the select panels
-    // alone. The sheet and fullscreen presentations carry margin 0 already.
+    // `offset` as an inline custom property that cngx-popover.css applies in
+    // the components layer; the bridge zeroes the gap through the
+    // `--cngx-popover-margin-override` knob that rule reads first - no important
+    // declaration needed (a stylesheet cannot outrank the inline value, but the
+    // override var is not set inline). The sheet and fullscreen presentations
+    // carry margin 0 already.
     :is(#{$-hosts}) .cngx-select__panel {
       --cngx-select-panel-padding: 0;
-      margin: 0 !important;
+      --cngx-popover-margin-override: 0;
     }
     :is(#{$-hosts}) .cngx-select__panel [cngxListbox] {
       --cngx-listbox-padding: 0;

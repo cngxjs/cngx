@@ -154,10 +154,10 @@ describe('CngxStatus tone glyphs', () => {
     expect(computedValue(paintedPath(svg), 'fill')).toBe(computedValue(dot, 'color'));
   });
 
-  it('scales the glyph box with --cngx-status-dot-size and leaves the band from a 20px dot', () => {
+  it('scales the glyph box with --cngx-status-dot-size and draws the small path at an 18px box', () => {
     const { host, svg } = mountGlyph('danger');
     host.style.setProperty('--cngx-status-dot-size', '24px');
     expect(svg.getBoundingClientRect().width).toBe(18);
-    expect(paintedPath(svg).classList.contains('cngx-icon-svg__path')).toBe(true);
+    expect(paintedPath(svg).classList.contains('cngx-icon-svg__small')).toBe(true);
   });
 });

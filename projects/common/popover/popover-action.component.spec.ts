@@ -2,7 +2,12 @@ import { Component, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxFailed, CngxPending, CngxSucceeded } from '@cngx/common/interactive';
-import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
+import {
+  CNGX_LOADING_DEFAULTS,
+  provideLoadingConfig,
+  withMinDwell,
+  withShowDelay,
+} from '@cngx/core/utils';
 
 import { CngxPopoverAction } from './popover-action.component';
 import { providePopoverPanel, withCloseOnSuccess } from './popover-panel.config';
@@ -78,6 +83,67 @@ class ConfirmHost {
 })
 class ActionlessConfirmHost {
   readonly action = viewChild.required(CngxPopoverAction);
+}
+
+@Component({
+  template: `
+    <div cngxPopover #pop="cngxPopover">
+      <cngx-popover-action
+        role="confirm"
+        [action]="saveAction"
+        [feedbackDuration]="500"
+        [showDelay]="0"
+        [minDwell]="0"
+        #act="cngxPopoverAction"
+      >
+        Save
+      </cngx-popover-action>
+    </div>
+  `,
+  imports: [CngxPopover, CngxPopoverAction],
+})
+class ForwardConfirmHost {
+  readonly action = viewChild.required(CngxPopoverAction);
+
+  resolveFn!: () => void;
+
+  readonly saveAction = () =>
+    new Promise<void>((resolve) => {
+      this.resolveFn = resolve;
+    });
+}
+
+@Component({
+  template: `
+    <div cngxPopover #pop="cngxPopover">
+      <cngx-popover-action role="confirm" [action]="saveAction">
+        Save
+        <ng-template cngxFailed><span aria-hidden="true">!</span> Permission denied</ng-template>
+      </cngx-popover-action>
+    </div>
+  `,
+  imports: [CngxPopover, CngxPopoverAction, CngxFailed],
+})
+class GlyphFailedHost {
+  readonly popover = viewChild.required(CngxPopover);
+  outcome: 'success' | 'error' = 'error';
+  readonly saveAction = () =>
+    this.outcome === 'success' ? Promise.resolve() : Promise.reject(new Error('403'));
+}
+
+@Component({
+  template: `
+    <div cngxPopover #pop="cngxPopover">
+      <cngx-popover-action role="confirm" [action]="saveAction">Save</cngx-popover-action>
+    </div>
+  `,
+  imports: [CngxPopover, CngxPopoverAction],
+})
+class PlainConfirmHost {
+  readonly popover = viewChild.required(CngxPopover);
+  outcome: 'success' | 'error' = 'error';
+  readonly saveAction = () =>
+    this.outcome === 'success' ? Promise.resolve() : Promise.reject(new Error('nope'));
 }
 
 function setup<T>(hostType: new () => T) {
@@ -256,9 +322,7 @@ describe('CngxPopoverAction', () => {
       btn.click();
     }
 
-    async function settle(fixture: {
-      detectChanges(): void;
-    }): Promise<void> {
+    async function settle(fixture: { detectChanges(): void }): Promise<void> {
       await vi.advanceTimersByTimeAsync(0);
       fixture.detectChanges();
       TestBed.flushEffects();
@@ -365,6 +429,129 @@ describe('CngxPopoverAction', () => {
     });
   });
 
+  describe('busy-gate DOM contract', () => {
+    const SHOW = CNGX_LOADING_DEFAULTS.showDelay;
+    const DWELL = CNGX_LOADING_DEFAULTS.minDwell;
+
+    // The confirm button never paints as the disabled field (aria-disabled
+    // true with neither run flag set) during a run: the gated busy flags keep
+    // it out of the :not([data-busy], [data-pending]) disabled rules.
+    function paintsDisabled(btn: HTMLElement): boolean {
+      return (
+        btn.getAttribute('aria-disabled') === 'true' &&
+        !btn.hasAttribute('data-busy') &&
+        !btn.hasAttribute('data-pending')
+      );
+    }
+
+    function confirmButton(fixture: { nativeElement: HTMLElement }): HTMLButtonElement {
+      return fixture.nativeElement.querySelector('.cngx-popover-action') as HTMLButtonElement;
+    }
+
+    it('sets data-pending at click and data-busy only after the show delay', async () => {
+      const { fixture } = setup(ConfirmHost);
+      const btn = confirmButton(fixture);
+
+      btn.click();
+      fixture.detectChanges();
+      expect(btn.getAttribute('data-pending')).toBe('true');
+      expect(btn.hasAttribute('data-busy')).toBe(false);
+
+      await vi.advanceTimersByTimeAsync(SHOW);
+      fixture.detectChanges();
+      expect(btn.getAttribute('data-busy')).toBe('true');
+    });
+
+    it('never paints disabled in the delay window (data-pending set)', async () => {
+      const { fixture } = setup(ConfirmHost);
+      const btn = confirmButton(fixture);
+
+      btn.click();
+      fixture.detectChanges();
+      await vi.advanceTimersByTimeAsync(SHOW - 1);
+      fixture.detectChanges();
+
+      expect(btn.getAttribute('aria-busy')).toBe('true');
+      expect(btn.getAttribute('data-pending')).toBe('true');
+      expect(paintsDisabled(btn)).toBe(false);
+    });
+
+    it('never paints disabled in the post-settle dwell (data-busy held)', async () => {
+      const { fixture } = setup(ConfirmHost);
+      const host = fixture.componentInstance;
+      const btn = confirmButton(fixture);
+
+      btn.click();
+      fixture.detectChanges();
+      await vi.advanceTimersByTimeAsync(SHOW);
+      fixture.detectChanges();
+
+      host.resolveFn();
+      await vi.advanceTimersByTimeAsync(0);
+      fixture.detectChanges();
+
+      // Inside the held dwell: the run settled (pending() false) but the busy
+      // visual is still held, so data-busy is set, data-pending is cleared, and
+      // the inner CngxAsyncClick still refuses with aria-disabled - which the
+      // data-busy flag keeps out of the disabled paint.
+      expect(host.action().busyVisible()).toBe(true);
+      expect(btn.hasAttribute('data-pending')).toBe(false);
+      expect(btn.getAttribute('data-busy')).toBe('true');
+      expect(btn.getAttribute('aria-disabled')).toBe('true');
+      expect(paintsDisabled(btn)).toBe(false);
+
+      await vi.advanceTimersByTimeAsync(DWELL);
+      fixture.detectChanges();
+      expect(btn.hasAttribute('data-busy')).toBe(false);
+    });
+
+    it('forwards [showDelay] / [minDwell] to the inner CngxAsyncClick', async () => {
+      const { fixture } = setup(ForwardConfirmHost);
+      const host = fixture.componentInstance;
+      const btn = confirmButton(fixture);
+
+      btn.click();
+      fixture.detectChanges();
+      // showDelay 0: the busy visual opens one task later, well before the
+      // default 120ms delay would.
+      await vi.advanceTimersByTimeAsync(0);
+      fixture.detectChanges();
+      expect(host.action().busyVisible()).toBe(true);
+
+      host.resolveFn();
+      await vi.advanceTimersByTimeAsync(10);
+      fixture.detectChanges();
+      // minDwell 0: the visual releases right after the run ends - far short of
+      // the default 400ms dwell, which would still hold it here.
+      expect(host.action().busyVisible()).toBe(false);
+    });
+
+    it('holds the busy visual for a config-scoped dwell (provideLoadingConfig)', async () => {
+      TestBed.configureTestingModule({
+        imports: [ConfirmHost],
+        providers: [provideLoadingConfig(withShowDelay(60), withMinDwell(300))],
+      });
+      const { fixture } = setup(ConfirmHost);
+      const host = fixture.componentInstance;
+      const btn = confirmButton(fixture);
+
+      btn.click();
+      fixture.detectChanges();
+      await vi.advanceTimersByTimeAsync(60);
+      fixture.detectChanges();
+      expect(btn.getAttribute('data-busy')).toBe('true');
+
+      host.resolveFn();
+      await vi.advanceTimersByTimeAsync(0);
+      fixture.detectChanges();
+      expect(btn.getAttribute('data-busy')).toBe('true');
+
+      await vi.advanceTimersByTimeAsync(300);
+      fixture.detectChanges();
+      expect(btn.hasAttribute('data-busy')).toBe(false);
+    });
+  });
+
   it('should show failed template with error context after failure', async () => {
     const { fixture } = setup(ConfirmHost);
     const host = fixture.componentInstance;
@@ -382,5 +569,111 @@ describe('CngxPopoverAction', () => {
     fixture.detectChanges();
 
     expect(btn.textContent).toContain('Network error');
+  });
+  describe('settle announcement', () => {
+    const region = (fixture: { nativeElement: HTMLElement }): HTMLElement =>
+      fixture.nativeElement.querySelector('.cngx-popover-action__sr-only') as HTMLElement;
+    const button = (fixture: { nativeElement: HTMLElement }): HTMLButtonElement =>
+      fixture.nativeElement.querySelector('.cngx-popover-action') as HTMLButtonElement;
+
+    async function settleRender(fixture: { detectChanges(): void }): Promise<void> {
+      await vi.advanceTimersByTimeAsync(0);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+    }
+
+    it('speaks the rendered result template after success and after failure', async () => {
+      const { fixture } = setup(ConfirmHost);
+      const host = fixture.componentInstance;
+      button(fixture).click();
+      await settleRender(fixture);
+      host.resolveFn();
+      await settleRender(fixture);
+      expect(region(fixture).textContent).toBe('Saved!');
+
+      await vi.advanceTimersByTimeAsync(500);
+      button(fixture).click();
+      await settleRender(fixture);
+      host.rejectFn('Network error');
+      await settleRender(fixture);
+      expect(region(fixture).textContent).toBe('Failed: Network error');
+    });
+
+    it('skips an aria-hidden glyph in the failed template', async () => {
+      const { fixture } = setup(GlyphFailedHost);
+      button(fixture).click();
+      await settleRender(fixture);
+      expect(region(fixture).textContent).toBe('Permission denied');
+    });
+
+    it('speaks the cngxAsyncClick announcement without result templates', async () => {
+      const { fixture } = setup(PlainConfirmHost);
+      button(fixture).click();
+      await settleRender(fixture);
+      expect(region(fixture).textContent).toBe('Action failed');
+    });
+
+    it('writes the region once per settle', async () => {
+      const { fixture } = setup(PlainConfirmHost);
+      const writes: string[] = [];
+      const observer = new MutationObserver((records) => {
+        for (const r of records) {
+          const text = Array.from(r.addedNodes, (n) => n.textContent ?? '').join('');
+          if (text) {
+            writes.push(text);
+          }
+        }
+      });
+      observer.observe(region(fixture), { childList: true });
+      button(fixture).click();
+      await vi.advanceTimersByTimeAsync(0);
+      button(fixture).click();
+      await vi.advanceTimersByTimeAsync(0);
+      fixture.detectChanges();
+      await Promise.resolve();
+      observer.disconnect();
+      expect(writes).toEqual(['Action failed', 'Action failed']);
+    });
+
+    it('closes once per success under withCloseOnSuccess', async () => {
+      TestBed.configureTestingModule({
+        imports: [PlainConfirmHost],
+        providers: [providePopoverPanel(withCloseOnSuccess(100))],
+      });
+      const { fixture, popoverEl } = setup(PlainConfirmHost);
+      const host = fixture.componentInstance;
+      host.outcome = 'success';
+      for (let run = 1; run <= 2; run++) {
+        host.popover().show();
+        fixture.detectChanges();
+        button(fixture).click();
+        await settleRender(fixture);
+        await vi.advanceTimersByTimeAsync(100);
+        expect(popoverEl.hidePopover).toHaveBeenCalledTimes(run);
+      }
+    });
+
+    it('leaves no close timer and no write when destroyed mid-run', async () => {
+      TestBed.configureTestingModule({
+        imports: [ConfirmHost],
+        providers: [providePopoverPanel(withCloseOnSuccess(100))],
+      });
+      const { fixture, popoverEl } = setup(ConfirmHost);
+      const host = fixture.componentInstance;
+      host.popover().show();
+      fixture.detectChanges();
+      const live = region(fixture);
+      button(fixture).click();
+      await settleRender(fixture);
+      fixture.destroy();
+      // Destroying the popover itself may hide it; only later hides count.
+      const hidesAtDestroy = (popoverEl.hidePopover as ReturnType<typeof vi.fn>).mock.calls.length;
+      host.resolveFn();
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(vi.getTimerCount()).toBe(0);
+      expect(live.textContent).toBe('');
+      expect(popoverEl.hidePopover).toHaveBeenCalledTimes(hidesAtDestroy);
+    });
   });
 });

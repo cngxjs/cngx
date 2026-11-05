@@ -452,14 +452,14 @@
        the strong rung, so its label clears 4.5:1 in both schemes. */
     :scope[data-tone='primary'] {
       --cngx-button-tone: var(--cngx-color-primary, oklch(0.66 0.19 50));
-      --cngx-button-tone-text: var(--cngx-color-primary-text, oklch(0.5 0.15 50));
-      --cngx-button-tone-fill: var(--cngx-color-primary-strong, oklch(0.58 0.19 50));
+      --cngx-button-tone-text: var(--cngx-color-primary-text, oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.54 c h));
+      --cngx-button-tone-fill: var(--cngx-color-primary-strong, oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h));
       --cngx-button-on-tone: var(--cngx-color-on-primary-strong, oklch(1 0 0));
     }
     :scope[data-tone='danger'] {
-      --cngx-button-tone: var(--cngx-color-danger, oklch(0.58 0.2 25));
-      --cngx-button-tone-text: var(--cngx-color-danger-text, oklch(0.48 0.17 25));
-      --cngx-button-tone-fill: var(--cngx-color-danger-strong, oklch(0.48 0.2 25));
+      --cngx-button-tone: var(--cngx-color-danger, oklch(0.6 0.18 25));
+      --cngx-button-tone-text: var(--cngx-color-danger-text, oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h));
+      --cngx-button-tone-fill: var(--cngx-color-danger-strong, oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.48 c h));
       --cngx-button-on-tone: var(--cngx-color-on-danger-strong, oklch(1 0 0));
     }
 
@@ -687,7 +687,8 @@
  * opts out so the system pair paints: every variant is a ButtonText border on
  * ButtonFace (link stays LinkText), disabled is GrayText. A solid primary or
  * danger button fills with Highlight so the main action still stands out once
- * colour emphasis is gone; a press inverts the pair. The reset's focus outline would keep its author
+ * colour emphasis is gone. Transitions are off: system colours switch, they
+ * never fade through author mixes. The reset's focus outline would keep its author
  * colour under the opt-out, so it is re-pointed at Highlight. Unlayered, outside
  * @scope, `!important` because the base uses `:scope[data-*]` compounds. */
 @media (forced-colors: active) {
@@ -696,6 +697,7 @@
     background: ButtonFace !important;
     color: ButtonText !important;
     border-color: ButtonText !important;
+    transition: none !important;
   }
   .cngx-button[data-variant='link'] {
     background: transparent !important;
@@ -712,10 +714,12 @@
   .cngx-button[data-variant='solid']:is([data-tone='primary'], [data-tone='danger']):hover {
     border-color: ButtonText !important;
   }
-  /* Pressed inverts the system pair, so a press still reads once the tone mix
-   * is gone: ButtonFace buttons fill with Highlight, a Highlight-filled solid
-   * tone drops back to ButtonFace with a Highlight edge, a link turns
-   * ActiveText. Never on an aria-disabled (or busy) button. */
+  /* Pressed, so a press still reads once the tone mix is gone: ButtonFace
+   * buttons fill with Highlight, a link turns ActiveText. A Highlight-filled
+   * solid tone keeps its fill (dropping it reads as the button vanishing,
+   * and an async button flips aria-disabled mid-press) and marks the press
+   * on the edge: a ButtonText border plus an inset ButtonText outline. Never
+   * on an aria-disabled (or busy) button. */
   .cngx-button:is(:active, .cngx-pressed):not([aria-disabled='true']) {
     background: Highlight !important;
     color: HighlightText !important;
@@ -725,9 +729,11 @@
       :active,
       .cngx-pressed
     ):not([aria-disabled='true']) {
-    background: ButtonFace !important;
-    color: ButtonText !important;
-    border-color: Highlight !important;
+    background: Highlight !important;
+    color: HighlightText !important;
+    border-color: ButtonText !important;
+    outline: 2px solid ButtonText !important;
+    outline-offset: -3px !important;
   }
   .cngx-button[data-variant='link']:is(:active, .cngx-pressed):not([aria-disabled='true']) {
     background: transparent !important;

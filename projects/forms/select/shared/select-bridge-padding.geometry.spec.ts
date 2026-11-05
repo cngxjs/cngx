@@ -135,6 +135,8 @@ const COMPOSITE_STYLES = [
   '../../../core/theming/reset.css',
   '../../../core/theming/base.css',
   '../../../common/theming/components/cngx-listbox.css',
+  // Holds the anchor offset margin rule (--cngx-popover-anchor-margin).
+  '../../../common/theming/components/cngx-popover.css',
   '../../theming/components/cngx-field-affix.css',
   '../../theming/components/cngx-field-skin.css',
   './select-base.css',

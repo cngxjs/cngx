@@ -157,4 +157,13 @@
     background: Highlight;
     forced-color-adjust: none;
   }
+
+  /* A disabled move button fades by colour; the forced palette would override
+     that with ButtonText (a <button> gets the control forcing) and read as
+     enabled, so it opts out and names GrayText, the system colour for a
+     disabled control. */
+  .cngx-select-reorder-list__move[aria-disabled='true'] {
+    color: GrayText;
+    forced-color-adjust: none;
+  }
 }
