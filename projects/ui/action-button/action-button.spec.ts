@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, vi } from 'vitest';
 import { By } from '@angular/platform-browser';
 import {
+  CNGX_BUTTON_HOST_STATE,
   CNGX_BUTTON_STATE,
   CngxButtonBrain,
   CngxButtonEnd,
@@ -15,6 +16,7 @@ import { CngxPopover } from '@cngx/common/popover';
 import { CngxActionButton } from './action-button';
 import {
   CNGX_ASYNC_RUN_STATE,
+  CNGX_HOST_INTERACTION_STATE,
   CngxFailed,
   CngxPending,
   CngxSucceeded,
@@ -1151,6 +1153,27 @@ class LastUpdatedHost {
   readonly ext = signal<CngxAsyncState<unknown> | undefined>(this.external);
   readonly action = () => Promise.resolve();
 }
+
+describe('CngxActionButton host state', () => {
+  it('publishes hostState and hostInteraction through the brain tokens', () => {
+    const fixture = TestBed.createComponent(UnlabelledExternalHost);
+    fixture.detectChanges();
+    const de = fixture.debugElement.query(By.directive(CngxActionButton));
+    const button = de.injector.get(CngxActionButton);
+    const el = de.nativeElement as HTMLElement;
+    expect(de.injector.get(CNGX_BUTTON_HOST_STATE)).toBe(button.hostState);
+    expect(de.injector.get(CNGX_HOST_INTERACTION_STATE)).toBe(button.hostInteraction);
+
+    fixture.componentInstance.mock.status.set('pending');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(button.hostState.refusing()).toBe(true);
+    expect(button.hostInteraction.disabled()).toBe(true);
+    expect(el.getAttribute('aria-busy')).toBe('true');
+    expect(el.getAttribute('aria-disabled')).toBe('true');
+  });
+});
 
 describe('CngxActionButton settle lifecycle', () => {
   afterEach(() => {
