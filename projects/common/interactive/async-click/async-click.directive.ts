@@ -26,6 +26,7 @@ import {
 import { firstValueFrom, isObservable, type Observable } from 'rxjs';
 
 import { injectInteractiveI18n } from '../i18n/interactive-i18n';
+import { CNGX_ASYNC_RUN_STATE, type CngxAsyncRunState } from './async-run-state.token';
 import { CNGX_HOST_INTERACTION_STATE } from './host-interaction-state.token';
 
 /**
@@ -155,6 +156,7 @@ export interface CngxAsyncSettle {
   selector: '[cngxAsyncClick]',
   standalone: true,
   exportAs: 'cngxAsyncClick',
+  providers: [{ provide: CNGX_ASYNC_RUN_STATE, useExisting: CngxAsyncClick }],
   host: {
     class: 'cngx-async',
     '(click)': 'handleClick($event)',
@@ -165,7 +167,7 @@ export interface CngxAsyncSettle {
     '[attr.aria-disabled]': 'pending() || blocked() || null',
   },
 })
-export class CngxAsyncClick {
+export class CngxAsyncClick implements CngxAsyncRunState {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
   private readonly hostState = inject(CNGX_HOST_INTERACTION_STATE, {
