@@ -1,7 +1,7 @@
 import { Component, signal, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { CNGX_BUTTON_STATE, CngxButton } from '@cngx/common/button';
+import { CNGX_BUTTON_STATE, CngxButton, CngxButtonBrain } from '@cngx/common/button';
 import {
   CNGX_HOST_INTERACTION_STATE,
   CngxAsyncClick,
@@ -217,7 +217,8 @@ describe('CngxIconMenuButton', () => {
       const de = fixture.debugElement.query(By.directive(CngxIconMenuButton));
       const interaction = de.injector.get(CNGX_HOST_INTERACTION_STATE);
       const state = de.injector.get(CNGX_BUTTON_STATE);
-      expect(state).toBe(de.injector.get(CngxIconMenuButton));
+      expect(state).toBe(de.injector.get(CngxButtonBrain));
+      expect(interaction).toBe(de.injector.get(CngxButtonBrain).interaction);
       expect([interaction.disabled(), state.blocked()]).toEqual([false, false]);
       host.disabled.set(true);
       flush();
@@ -347,9 +348,10 @@ describe('CngxIconMenuButton', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
       const { fixture, button } = setup(UnnamedHost);
       await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve));
       const calls = warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1071'));
       expect(calls).toHaveLength(1);
-      expect(calls[0][0]).toMatch(/^CNGX1071: \[cngxIconMenuButton\] has no accessible name\./);
+      expect(calls[0][0]).toMatch(/^CNGX1071: CngxIconMenuButton has no accessible name\./);
       expect(calls[0]).toContain(button);
       warn.mockRestore();
     });
@@ -358,6 +360,7 @@ describe('CngxIconMenuButton', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
       const { fixture } = setup(KebabHost);
       await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve));
       expect(warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1071'))).toEqual([]);
       warn.mockRestore();
     });
@@ -407,6 +410,7 @@ describe('CngxIconMenuButton', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
       const { fixture } = setup(CustomCaretSplitHost);
       await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve));
       expect(warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1071'))).toEqual([]);
       warn.mockRestore();
     });

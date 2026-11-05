@@ -1413,18 +1413,11 @@
       "page": "core-concepts/error-codes/cngx1071.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1071.html",
       "status": "active",
-      "files": [
-        "projects/common/button/button-brain.directive.ts",
-        "projects/common/menu-button/icon-menu-button.component.ts"
-      ],
+      "files": ["projects/common/button/button-brain.directive.ts"],
       "messages": [
         {
           "file": "projects/common/button/button-brain.directive.ts",
           "text": "${...} has no accessible name. Set aria-label, aria-labelledby or title on the host; the glyph alone is silent to assistive technology."
-        },
-        {
-          "file": "projects/common/menu-button/icon-menu-button.component.ts",
-          "text": "[cngxIconMenuButton] has no accessible name. Set aria-label, aria-labelledby or title on the host; the icon alone is silent to assistive technology."
         }
       ]
     },

@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import {
   CNGX_BUTTON_STATE,
   CngxButton,
+  CngxButtonBrain,
   CngxButtonEnd,
   CngxButtonGroup,
   provideButtonConfigAt,
@@ -246,11 +247,11 @@ describe('CngxMenuButton', () => {
       expect(button.getAttribute('aria-haspopup')).toBe('menu');
     });
 
-    it('publishes itself as the host interaction state, its disabled input as the one truth', () => {
+    it('publishes the brain as the host interaction state, its disabled input as the one truth', () => {
       const { fixture, host, flush } = setup(BasicHost);
       const de = fixture.debugElement.query(By.directive(CngxMenuButton));
       const state = de.injector.get(CNGX_HOST_INTERACTION_STATE);
-      expect(state).toBe(de.injector.get(CngxMenuButton));
+      expect(state).toBe(de.injector.get(CngxButtonBrain).interaction);
       expect(state.disabled()).toBe(false);
       host.disabled.set(true);
       flush();
@@ -261,7 +262,7 @@ describe('CngxMenuButton', () => {
       const { fixture, host, flush } = setup(BasicHost);
       const de = fixture.debugElement.query(By.directive(CngxMenuButton));
       const state = de.injector.get(CNGX_BUTTON_STATE);
-      expect(state).toBe(de.injector.get(CngxMenuButton));
+      expect(state).toBe(de.injector.get(CngxButtonBrain));
       expect(state.blocked()).toBe(false);
       host.disabled.set(true);
       flush();
