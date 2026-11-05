@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Subject } from 'rxjs';
 
-import { CngxAsyncClick } from '@cngx/common/interactive';
+import { CNGX_ASYNC_RUN_STATE, CngxAsyncClick } from '@cngx/common/interactive';
 
 import { provideStepperI18n, withStepperI18nLabels } from '../i18n/stepper-i18n';
 import { CngxStepperPresenter } from '../presenter.directive';
@@ -268,7 +268,7 @@ describe('stepper nav controls', () => {
       const fixture = TestBed.createComponent(LifecycleCompleteHost);
       fixture.detectChanges();
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
-      const runner = fixture.debugElement.children[0].injector.get(CngxAsyncClick);
+      const runner = fixture.debugElement.children[0].injector.get(CNGX_ASYNC_RUN_STATE);
       return { fixture, host: fixture.componentInstance, btn, runner };
     }
 
@@ -279,7 +279,7 @@ describe('stepper nav controls', () => {
       await drainMicrotasks();
       fixture.detectChanges();
       expect(host.ran).toBe(1);
-      expect(runner.status()).toBe('error');
+      expect(runner.state.status()).toBe('error');
       expect(host.completedCount).toBe(0);
     });
 
@@ -327,7 +327,7 @@ describe('stepper nav controls', () => {
     presenter.register(reg('b'));
     presenter.select(1);
     fixture.detectChanges();
-    const asyncClick = fixture.debugElement.children[0].injector.get(CngxAsyncClick);
+    const asyncClick = fixture.debugElement.children[0].injector.get(CNGX_ASYNC_RUN_STATE);
     (fixture.nativeElement.querySelector('button') as HTMLButtonElement).click();
     fixture.detectChanges();
     TestBed.flushEffects();

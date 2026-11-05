@@ -9,7 +9,7 @@ import {
   type Signal,
 } from '@angular/core';
 
-import { CngxAsyncClick } from '@cngx/common/interactive';
+import { CNGX_ASYNC_RUN_STATE } from '@cngx/common/interactive';
 import { cngxDevWarn } from '@cngx/utils';
 
 import { injectStepperI18n } from '../i18n/stepper-i18n';
@@ -68,7 +68,10 @@ export class CngxStepperNext {
     () => this.host() ?? this.injectedHost,
   );
 
-  private readonly coPlacedAsyncClick = inject(CngxAsyncClick, { self: true, optional: true });
+  private readonly coPlacedAsyncClick = inject(CNGX_ASYNC_RUN_STATE, {
+    self: true,
+    optional: true,
+  });
 
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly i18n = injectStepperI18n();
