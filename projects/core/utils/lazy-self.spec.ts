@@ -59,6 +59,15 @@ describe('injectLazySelf', () => {
     );
   });
 
+  it('retries a required lookup that threw on the next call', () => {
+    const { injector, lookups } = inEnv([]);
+    const read = runInInjectionContext(injector, () => injectLazySelf(TOKEN));
+
+    expect(() => read()).toThrow();
+    expect(() => read()).toThrow();
+    expect(lookups()).toBe(2);
+  });
+
   describe('on an element', () => {
     @Directive({
       selector: '[lazySelfProvider]',
