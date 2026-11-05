@@ -7,13 +7,26 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { projectSchemaV2 } from './schema-v2.js';
 import { projectSchemaV6 } from './schema-v6.js';
-import type { DocEntry, DocFunction, DocToken, DocumentationJson, ErrorCodeBlock } from './types.js';
+import type {
+  DocEntry,
+  DocFunction,
+  DocToken,
+  DocumentationJson,
+  ErrorCodeBlock,
+  ErrorCodeEntry,
+  ErrorCodeRange,
+} from './types.js';
 
 /** The projected error-code view: the block without its manifest `schemaVersion`. */
 export type ErrorCodeIndex = Omit<ErrorCodeBlock, 'schemaVersion'>;
 
 /** The manifest `schemaVersion` the bundled error-code block must carry to be read. */
 const ERROR_CODE_SCHEMA_VERSION = 3;
+
+/** Narrows to `unknown[]` rather than `Array.isArray`'s `any[]`, so the cast below stays type-safe. */
+function isUnknownArray(value: unknown): value is readonly unknown[] {
+  return Array.isArray(value);
+}
 
 /**
  * The `documentation.json` schema versions this server reads. Both are projected
@@ -120,14 +133,15 @@ function projectErrorCodes(raw: DocumentationJson): ErrorCodeIndex | null {
   if (block === null || typeof block !== 'object') {
     return null;
   }
-  const { schemaVersion, docsBaseUrl, ranges, codes } = block as Record<string, unknown>;
-  if (schemaVersion !== ERROR_CODE_SCHEMA_VERSION) {
+  const candidate = block as { schemaVersion?: unknown; docsBaseUrl?: unknown; ranges?: unknown; codes?: unknown };
+  if (candidate.schemaVersion !== ERROR_CODE_SCHEMA_VERSION) {
     return null;
   }
-  if (typeof docsBaseUrl !== 'string' || !Array.isArray(ranges) || !Array.isArray(codes)) {
+  const { docsBaseUrl, ranges, codes } = candidate;
+  if (typeof docsBaseUrl !== 'string' || !isUnknownArray(ranges) || !isUnknownArray(codes)) {
     return null;
   }
-  return { docsBaseUrl, ranges, codes } as ErrorCodeIndex;
+  return { docsBaseUrl, ranges: ranges as ErrorCodeRange[], codes: codes as ErrorCodeEntry[] };
 }
 
 /**
