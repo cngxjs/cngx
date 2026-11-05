@@ -152,6 +152,15 @@ export class CngxActiveDescendant {
   readonly pendingHighlight = this.pendingHighlightState.asReadonly();
 
   /**
+   * A highlight gesture that fired while the option rows were not in the DOM
+   * (a deferred-render panel just opened, OD5): the id space does not exist
+   * yet, so the gesture is kept as INTENT - not a resolved index, which an
+   * empty item space resolves to nothing - and re-applied once the rows
+   * render. Non-virtual path only; the virtual path uses `pendingHighlight`.
+   */
+  private readonly pendingIntentState = signal<PendingIntent | null>(null);
+
+  /**
    * Resolved item list. Input `items` wins; otherwise the contentChildren
    * handles are projected into `ActiveDescendantItem` shape.
    */
@@ -285,7 +294,66 @@ export class CngxActiveDescendant {
       queueMicrotask(() => this.scrollActiveIntoView());
     });
 
+    // Deferred-render re-apply (non-virtual path): when the option rows arrive
+    // after a highlight gesture was remembered as intent (empty item space at
+    // the time), re-run the gesture against the now-populated space and drop
+    // the intent. Tracks only `resolvedItems`; the intent is read and cleared
+    // untracked so storing or clearing it never re-triggers this effect.
+    effect(() => {
+      if (this.resolvedItems().length === 0) {
+        return;
+      }
+      const intent = untracked(() => this.pendingIntentState());
+      if (intent === null) {
+        return;
+      }
+      untracked(() => {
+        this.pendingIntentState.set(null);
+        this.applyIntent(intent);
+      });
+    });
+
     inject(DestroyRef).onDestroy(() => this.typeaheadWalker.clear());
+  }
+
+  /**
+   * Non-virtual path with no rendered rows yet (a deferred-render panel just
+   * opened, OD5): the option id space does not exist, so a highlight resolves
+   * against nothing and is lost. Remember the gesture as intent - the
+   * constructor effect re-applies it once the rows render - and report that it
+   * was deferred. The virtual path never defers here; its out-of-window
+   * targets surface through `pendingHighlight` instead.
+   */
+  private deferIfUnrendered(intent: PendingIntent): boolean {
+    if (this.virtualCount() == null && this.resolvedItems().length === 0) {
+      this.pendingIntentState.set(intent);
+      return true;
+    }
+    return false;
+  }
+
+  /** Re-run a remembered highlight gesture now the rows exist. */
+  private applyIntent(intent: PendingIntent): void {
+    switch (intent.kind) {
+      case 'first':
+        this.highlightFirst();
+        return;
+      case 'last':
+        this.highlightLast();
+        return;
+      case 'next':
+        this.highlightNext();
+        return;
+      case 'prev':
+        this.highlightPrev();
+        return;
+      case 'byIndex':
+        this.highlightByIndex(intent.index);
+        return;
+      case 'byValue':
+        this.highlightByValue(intent.value);
+        return;
+    }
   }
 
   /**
@@ -294,6 +362,9 @@ export class CngxActiveDescendant {
    * first when `loop` is true and stays put otherwise.
    */
   highlightNext(): void {
+    if (this.deferIfUnrendered({ kind: 'next' })) {
+      return;
+    }
     const next = this.findFrom(this.activeIndexState(), 1);
     if (next !== null) {
       this.activeIndexState.set(next);
@@ -306,6 +377,9 @@ export class CngxActiveDescendant {
    * last when `loop` is true and stays put otherwise.
    */
   highlightPrev(): void {
+    if (this.deferIfUnrendered({ kind: 'prev' })) {
+      return;
+    }
     const next = this.findFrom(this.activeIndexState(), -1);
     if (next !== null) {
       this.activeIndexState.set(next);
@@ -317,6 +391,9 @@ export class CngxActiveDescendant {
    * `skipDisabled` is false). Does nothing when no item qualifies.
    */
   highlightFirst(): void {
+    if (this.deferIfUnrendered({ kind: 'first' })) {
+      return;
+    }
     const first = this.findBoundary(1);
     if (first !== null) {
       this.activeIndexState.set(first);
@@ -330,6 +407,9 @@ export class CngxActiveDescendant {
    * qualifies.
    */
   highlightLast(): void {
+    if (this.deferIfUnrendered({ kind: 'last' })) {
+      return;
+    }
     const last = this.findBoundary(-1);
     if (last !== null) {
       this.activeIndexState.set(last);
@@ -341,6 +421,9 @@ export class CngxActiveDescendant {
    * Disabled items are rejected when `skipDisabled()` is true.
    */
   highlightByIndex(index: number): void {
+    if (this.deferIfUnrendered({ kind: 'byIndex', index })) {
+      return;
+    }
     const total = this.totalCount();
     if (index < 0 || index >= total) {
       return;
@@ -358,6 +441,9 @@ export class CngxActiveDescendant {
    * index is absolute.
    */
   highlightByValue(value: unknown): void {
+    if (this.deferIfUnrendered({ kind: 'byValue', value })) {
+      return;
+    }
     const items = this.resolvedItems();
     const idx = items.findIndex((it) => Object.is(it.value, value));
     if (idx < 0) {
@@ -369,8 +455,9 @@ export class CngxActiveDescendant {
     this.activeIndexState.set(idx + this.windowOffset());
   }
 
-  /** Clear the highlight. */
+  /** Clear the highlight, including a gesture still pending a deferred render. */
   resetHighlight(): void {
+    this.pendingIntentState.set(null);
     this.activeIndexState.set(-1);
   }
 
@@ -617,6 +704,20 @@ export class CngxActiveDescendant {
     }
   }
 }
+
+/**
+ * @internal A highlight gesture remembered while the option rows are absent,
+ * re-applied once they render. Captured as the gesture, not a resolved index:
+ * an empty item space resolves to nothing, so the index must be computed
+ * against the populated space at re-apply time.
+ */
+type PendingIntent =
+  | { readonly kind: 'first' }
+  | { readonly kind: 'last' }
+  | { readonly kind: 'next' }
+  | { readonly kind: 'prev' }
+  | { readonly kind: 'byIndex'; readonly index: number }
+  | { readonly kind: 'byValue'; readonly value: unknown };
 
 /** @internal Item space the active index is derived against. */
 interface ActiveIndexSource {

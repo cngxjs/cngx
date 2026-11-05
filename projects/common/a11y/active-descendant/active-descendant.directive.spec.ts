@@ -486,6 +486,125 @@ describe('CngxActiveDescendant - typeahead', () => {
   });
 });
 
+/* --- Deferred-render re-apply (non-virtual) ------------------------------ */
+
+// Mirrors the OD5 deferred-render seam: the option rows are gated on a
+// visibility signal, so a highlight gesture can fire while the AD item space
+// is still empty. The gesture must be held as intent and re-applied once the
+// rows render, not lost against the empty space.
+@Component({
+  template: `
+    <div cngxActiveDescendant #ad="cngxActiveDescendant" tabindex="0">
+      @if (visible()) {
+        @for (opt of options; track opt.value) {
+          <div testAdItem [value]="opt.value" [label]="opt.label">{{ opt.label }}</div>
+        }
+      }
+    </div>
+  `,
+  imports: [CngxActiveDescendant, TestAdItem],
+})
+class DeferredItemsHost {
+  readonly visible = signal(false);
+  readonly options = [
+    { value: 'a', label: 'Apple' },
+    { value: 'b', label: 'Banana' },
+    { value: 'c', label: 'Cherry' },
+  ];
+}
+
+describe('CngxActiveDescendant - deferred-render re-apply', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [DeferredItemsHost] });
+  });
+
+  function setupDeferred(): {
+    fixture: ReturnType<typeof TestBed.createComponent<DeferredItemsHost>>;
+    container: ReturnType<typeof TestBed.createComponent<DeferredItemsHost>>['debugElement'];
+    dir: CngxActiveDescendant;
+  } {
+    const fixture = TestBed.createComponent(DeferredItemsHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    return { fixture, container, dir: container.injector.get(CngxActiveDescendant) };
+  }
+
+  function render(fixture: ReturnType<typeof setupDeferred>['fixture']): void {
+    fixture.componentInstance.visible.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+  }
+
+  it('holds a nav key fired before the rows render, then applies it', async () => {
+    const { fixture, container, dir } = setupDeferred();
+    // Nav key before the rows exist: empty item space, so it cannot resolve.
+    container.triggerEventHandler('keydown', new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+    TestBed.flushEffects();
+    expect(dir.activeItem()).toBeNull();
+
+    // Rows render; the held gesture applies to the first option.
+    fixture.componentInstance.visible.set(true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    TestBed.flushEffects();
+    expect(dir.activeValue()).toBe('a');
+  });
+
+  it('re-applies highlightFirst once the rows arrive', () => {
+    const { fixture, dir } = setupDeferred();
+    dir.highlightFirst();
+    TestBed.flushEffects();
+    expect(dir.activeItem()).toBeNull();
+    render(fixture);
+    expect(dir.activeValue()).toBe('a');
+  });
+
+  it('re-applies highlightLast once the rows arrive', () => {
+    const { fixture, dir } = setupDeferred();
+    dir.highlightLast();
+    TestBed.flushEffects();
+    expect(dir.activeItem()).toBeNull();
+    render(fixture);
+    expect(dir.activeValue()).toBe('c');
+  });
+
+  it('re-applies highlightByIndex against the populated space', () => {
+    const { fixture, dir } = setupDeferred();
+    dir.highlightByIndex(1);
+    TestBed.flushEffects();
+    expect(dir.activeItem()).toBeNull();
+    render(fixture);
+    expect(dir.activeValue()).toBe('b');
+  });
+
+  it('re-applies highlightByValue against the populated space', () => {
+    const { fixture, dir } = setupDeferred();
+    dir.highlightByValue('c');
+    TestBed.flushEffects();
+    expect(dir.activeItem()).toBeNull();
+    render(fixture);
+    expect(dir.activeValue()).toBe('c');
+  });
+
+  it('resetHighlight drops a gesture still pending a deferred render', () => {
+    const { fixture, dir } = setupDeferred();
+    dir.highlightFirst();
+    TestBed.flushEffects();
+    dir.resetHighlight();
+    render(fixture);
+    expect(dir.activeItem()).toBeNull();
+  });
+
+  it('applies a highlight synchronously once the rows are already present', () => {
+    const { fixture, dir } = setupDeferred();
+    render(fixture);
+    dir.highlightFirst();
+    TestBed.flushEffects();
+    expect(dir.activeValue()).toBe('a');
+  });
+});
+
 /* --- Virtual mode -------------------------------------------------------- */
 
 @Component({
