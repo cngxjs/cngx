@@ -868,10 +868,19 @@
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1041.html",
       "status": "active",
       "files": [
+        "projects/common/button/provide-cngx-button.ts",
         "projects/common/stepper/provide-cngx-stepper.ts",
         "projects/common/tabs/provide-cngx-tabs.ts"
       ],
       "messages": [
+        {
+          "file": "projects/common/button/provide-cngx-button.ts",
+          "text": "provideCngxButton(): dropped feature without a `_target` discriminator. Pass config through the `withButton*` helpers of @cngx/common/button."
+        },
+        {
+          "file": "projects/common/button/provide-cngx-button.ts",
+          "text": "provideCngxButtonAt(): dropped feature without a `_target` discriminator. Pass config through the `withButton*` helpers of @cngx/common/button."
+        },
         {
           "file": "projects/common/stepper/provide-cngx-stepper.ts",
           "text": "provideCngxStepper(): dropped feature without a `_target` discriminator. Pass config through the `with*` helpers of @cngx/common/stepper and labels through `withStepperI18nLabels(...)`."

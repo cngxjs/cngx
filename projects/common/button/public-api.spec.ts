@@ -32,7 +32,11 @@ describe('@cngx/common/button public API shape', () => {
       'provideButtonHost',
       'provideButtonSpinner',
       'provideCloseIcon',
+      'provideCngxButton',
+      'provideCngxButtonAt',
+      'withButtonCloseIcon',
       'withButtonSize',
+      'withButtonSpinner',
       'withButtonTone',
       'withButtonVariant',
     ]);
