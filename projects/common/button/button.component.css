@@ -646,8 +646,8 @@
        styles keeps that size (unlayered beats this layer). */
     .cngx-button__busy > * > :is(svg, img) {
       display: block;
-      inline-size: var(--cngx-button-spinner-size, 1em);
-      block-size: var(--cngx-button-spinner-size, 1em);
+      inline-size: round(nearest, var(--cngx-button-spinner-size, 1em), 1px);
+      block-size: round(nearest, var(--cngx-button-spinner-size, 1em), 1px);
     }
 
     /* Content slots scale with the button font. */
