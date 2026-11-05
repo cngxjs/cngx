@@ -2,7 +2,8 @@ import { Component, inject, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { CNGX_HOST_INTERACTION_STATE, CngxAsyncClick } from '@cngx/common/interactive';
-import { describe, expect, it, vi } from 'vitest';
+import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxButtonBrain } from './button-brain.directive';
 import {
@@ -178,6 +179,37 @@ class RunnerRefusalHost {
     return Promise.resolve();
   };
 }
+
+// A runner on the default loading config: no [showDelay] / [minDwell] bound.
+@Component({
+  template: `<button id="gated" demoChip [cngxAsyncClick]="run">Run</button>`,
+  imports: [DemoChip, CngxAsyncClick],
+})
+class DefaultGateHost {
+  release: () => void = () => undefined;
+  readonly run = (): Promise<void> => new Promise<void>((resolve) => (this.release = resolve));
+}
+
+// A runnerless host that reflects a run of its own, starting idle.
+@Component({
+  selector: 'button[demoReflect]',
+  hostDirectives: [{ directive: CngxButtonBrain, inputs: ['disabled'] }],
+  providers: [
+    provideButtonHost('demoReflect', { defaultVariant: 'solid' }),
+    { provide: CNGX_BUTTON_HOST_STATE, useFactory: () => inject(DemoReflect).hostState },
+  ],
+  template: `<ng-content />`,
+})
+class DemoReflect {
+  readonly running = signal(false);
+  readonly hostState = { refusing: signal(false).asReadonly(), busy: this.running.asReadonly() };
+}
+
+@Component({
+  template: `<button id="reflect" demoReflect>Sync</button>`,
+  imports: [DemoReflect],
+})
+class ReflectHost {}
 
 function render<T>(type: new () => T) {
   const fixture = TestBed.createComponent(type);
@@ -396,6 +428,55 @@ describe('CngxButtonBrain', () => {
       expect(btn.hasAttribute('aria-disabled')).toBe(false);
       btn.click();
       expect(listener).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('busy gate', () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('a co-hosted runner on the default config opens data-busy only after the show delay', async () => {
+      vi.useFakeTimers();
+      const { q, host, flush } = render(DefaultGateHost);
+      const btn = q('#gated');
+      btn.click();
+      flush();
+      expect(btn.getAttribute('data-pending')).toBe('true');
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay - 1);
+      flush();
+      expect(btn.hasAttribute('data-busy')).toBe(false);
+      await vi.advanceTimersByTimeAsync(1);
+      flush();
+      expect(btn.getAttribute('data-busy')).toBe('true');
+      host.release();
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.minDwell);
+      flush();
+      expect(btn.hasAttribute('data-busy')).toBe(false);
+    });
+
+    it('a runnerless busy host opens its own busy layer behind the loading config gate', async () => {
+      vi.useFakeTimers();
+      const { q, fixture, flush } = render(ReflectHost);
+      const btn = q('#reflect');
+      const de = fixture.debugElement.query(By.css('#reflect'));
+      const brain = de.injector.get(CngxButtonBrain);
+      de.injector.get(DemoReflect).running.set(true);
+      flush();
+      expect(btn.getAttribute('aria-busy')).toBe('true');
+      expect(btn.hasAttribute('data-busy')).toBe(false);
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay);
+      flush();
+      expect(brain.busyVisible()).toBe(true);
+      expect(btn.getAttribute('data-busy')).toBe('true');
+
+      de.injector.get(DemoReflect).running.set(false);
+      flush();
+      expect(btn.hasAttribute('aria-busy')).toBe(false);
+      expect(btn.getAttribute('data-busy')).toBe('true');
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.minDwell);
+      flush();
+      expect(btn.hasAttribute('data-busy')).toBe(false);
     });
   });
 });

@@ -2,8 +2,10 @@ import { computed, DestroyRef, ElementRef, inject, type Signal } from '@angular/
 import { CNGX_ASYNC_RUN_STATE } from '@cngx/common/interactive';
 import {
   CNGX_DESCRIBED_BY,
+  createVisibilityGate,
   injectDescribedByContribution,
   injectLazySelf,
+  injectLoadingConfig,
   nextUid,
 } from '@cngx/core/utils';
 
@@ -63,9 +65,10 @@ export interface CngxButtonCore {
   /** `true` while a co-hosted runner runs its action or the host reflects a run. */
   readonly busy: Signal<boolean>;
   /**
-   * `true` while the busy layer is showing: the co-hosted run after the show
-   * delay and held for the min-dwell (`CngxAsyncClick.busyVisible`). `busy`
-   * stays the immediate truth.
+   * `true` while the busy layer is showing: the run after the show delay,
+   * held for the min-dwell. With a co-hosted runner its gate decides
+   * (`CngxAsyncClick.busyVisible`); without one, a gate over `hostBusy` on
+   * the `CNGX_LOADING_CONFIG` timing. `busy` stays the immediate truth.
    */
   readonly busyVisible: Signal<boolean>;
   /**
@@ -156,7 +159,19 @@ export function injectButtonCore(
   );
   const hostBusy = inputs.hostBusy;
   const busy = computed(() => (runState()?.pending() ?? false) || (hostBusy?.() ?? false));
-  const busyVisible = computed(() => runState()?.busyVisible() ?? false);
+  // Without a co-hosted runner nothing gates a run the host reflects, so the
+  // core opens its own gate on the loading-config timing. With a runner its
+  // gate stays the source (it already folds the host's run in).
+  const loadingConfig = injectLoadingConfig();
+  const ownBusyVisible = createVisibilityGate(
+    computed(() => runState() === null && (hostBusy?.() ?? false)),
+    computed(() => loadingConfig.showDelay),
+    computed(() => loadingConfig.minDwell),
+  );
+  const busyVisible = computed(() => {
+    const run = runState();
+    return run ? run.busyVisible() : ownBusyVisible();
+  });
   // CngxAsyncClick binds aria-disabled on the same host and only rewrites it
   // when its own value changes, so the button folds the runner's
   // `[enabled]="false"` in; otherwise a disabled -> enabled flip here writes

@@ -56,7 +56,9 @@ import type {
  * for an accessible name once the app is stable and warns `CNGX1071`
  * without one.
  *
- * The host template renders the busy layer from `busyVisible()` (its glyph
+ * The host template renders the busy layer from `busyVisible()` (the
+ * co-hosted runner's gate, or the brain's own gate over a run the host
+ * reflects through `CNGX_BUTTON_HOST_STATE.busy`; its glyph
  * is `spinner`, the `provideButtonSpinner` component, or the built-in
  * spinner when it is `null`) and, while `disabledReason()` is set, the
  * reason span with `[id]="brain.reasonId"`.
@@ -195,7 +197,11 @@ export class CngxButtonBrain implements CngxButtonState {
   readonly sizeValue = this.core.size;
   /** `true` while the co-hosted run is pending or the host reflects a run; the immediate truth. */
   readonly busy = this.core.busy;
-  /** `true` while the busy layer shows (the runner's show delay and min-dwell applied). */
+  /**
+   * `true` while the busy layer shows: the co-hosted runner's gate, or
+   * without a runner the brain's own gate over the host's run, both on the
+   * `CNGX_LOADING_CONFIG` show delay and min-dwell.
+   */
   readonly busyVisible = this.core.busyVisible;
   /**
    * `true` while the button refuses activation: refusing, busy or refused by
