@@ -123,9 +123,9 @@ import { injectMenuToggle } from './internal/menu-toggle';
         }
       </span>
     }
-    <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{
-      brain.disabledReason()
-    }}</span>
+    @if (brain.disabledReason(); as reason) {
+      <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
+    }
   `,
   styleUrls: ['../button/button.component.css', './menu-button.component.css'],
 })

@@ -497,6 +497,14 @@ describe('CngxMenuButton', () => {
       expect(popover.isVisible()).toBe(false);
     });
 
+    it('renders the reason span only while a reason exists', () => {
+      const { button, host, flush } = setup(BasicHost);
+      expect(button.querySelector('.cngx-button__reason')).toBeNull();
+      host.reason.set('No data to export');
+      flush();
+      expect(button.querySelector('.cngx-button__reason')?.textContent).toBe('No data to export');
+    });
+
     it('references the reason only while disabled', () => {
       const { button, host, flush } = setup(BasicHost);
       host.reason.set('No data to export');

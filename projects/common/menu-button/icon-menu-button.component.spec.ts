@@ -335,6 +335,11 @@ describe('CngxIconMenuButton', () => {
       expect(button.querySelector('.cngx-menu-button__caret')).toBeNull();
     });
 
+    it('renders no reason span without a reason', () => {
+      const { button } = setup(KebabHost);
+      expect(button.querySelector('.cngx-button__reason')).toBeNull();
+    });
+
     it('carries the consumer name and no default name', () => {
       expect(setup(KebabHost).button.getAttribute('aria-label')).toBe('Row actions');
       expect(setup(UnnamedHost).button.hasAttribute('aria-label')).toBe(false);
