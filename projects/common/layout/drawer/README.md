@@ -72,7 +72,9 @@ The drawer system integrates with:
 
 - **Host directives:** `CngxDrawerPanel` composes `CngxDrawerSurface`, which composes `CngxFocusTrap`, `CngxFocusRestore` and `CngxClickOutside` and drives them; none of their inputs is re-exposed.
 - **Combines with:** `CngxBackdrop` (visual overlay and sibling inert toggling) when the scrim must live outside the drawer host; otherwise the `cngx-drawer` class is enough.
-- **Provides:** No injectable tokens (all state is passed via inputs). A bare `cngxDrawerPanel` attribute on an element that also carries `cngxDrawer` resolves that drawer.
+- **Provides:** `CngxDrawer` provides `CNGX_PANEL_TARGET` and `CNGX_DRAWER_HOST` (`useExisting`). The panel reads its drawer through the `CngxDrawerHost` contract (`opened`, `panelId`, `elementRef`, `close()`, `connectPanel()`), bound explicitly (`[cngxDrawerPanel]="drawer"`) or, on a bare `cngxDrawerPanel` attribute next to `cngxDrawer`, from `CNGX_DRAWER_HOST`. Any state owner that implements the contract can drive a panel.
+- **Escape:** inside the open panel, the panel's surface closes the drawer; elsewhere in the `[cngxDrawer]` host, the drawer closes itself. One keypress closes once, controlled or not.
+- **Standalone surface:** `[cngxDrawerSurface]` works without a drawer: bind `[active]`, handle `(dismiss)`, and pass `[role]="null"` on a `<nav>` / `<aside>` host to keep its implicit role.
 
 ### Example: Full Drawer with Scroll Lock
 
