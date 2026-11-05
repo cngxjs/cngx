@@ -143,12 +143,9 @@
   --cngx-toast-border-radius: 8px;
   --cngx-toast-bg: #fff;
   --cngx-toast-color: #1e293b;
-  --cngx-toast-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  --cngx-toast-accent-width: 3px;
   --cngx-toast-icon-size: 20px;
   --cngx-toast-font-size: 0.875rem;
   --cngx-toast-line-height: 1.5;
-  --cngx-toast-action-padding: 4px 0;
   --cngx-toast-action-weight: 600;
   --cngx-toast-action-size: 0.8125rem;
 
@@ -165,13 +162,19 @@
     --cngx-toast-color: var(--mat-sys-on-surface);
     --cngx-toast-title-color: var(--mat-sys-on-surface);
     --cngx-toast-description-color: var(--mat-sys-on-surface-variant);
-    --cngx-toast-shadow: var(--mat-sys-level3, 0 4px 12px rgba(0, 0, 0, 0.15));
+    // The popover-panel overlay pair, so both overlays match under M3.
+    --cngx-toast-border: 1px solid var(--mat-sys-outline-variant);
+    --cngx-toast-shadow: 0 8px 24px color-mix(in srgb, var(--mat-sys-shadow) 18%, transparent);
+    // The alert and banner pin: the action paints the pure severity accent.
+    --cngx-toast-action-color: var(--cngx-toast-accent);
 
     --cngx-toast-info-accent: var(--mat-sys-primary);
     --cngx-toast-success-accent: var(--mat-sys-tertiary);
     --cngx-toast-warning-accent: var(--mat-sys-secondary);
     --cngx-toast-error-accent: var(--mat-sys-error);
   } @else {
+    // No border or shadow mapping: like the popover panel, M2 keeps the cngx
+    // overlay defaults (alpha border, popover-panel shadow, dark flip).
     --cngx-toast-bg: #{mat.get-theme-color($theme, background, card)};
     --cngx-toast-color: #{mat.get-theme-color($theme, foreground, text)};
     --cngx-toast-title-color: #{mat.get-theme-color($theme, foreground, text)};

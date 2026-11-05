@@ -1,6 +1,6 @@
 # cngx theming tokens
 
-Every cngx component themes through `--cngx-*` CSS custom properties with literal fallbacks. Set any token in your own stylesheet to override it; leave it unset to keep the default below. 2490 tokens across 155 components.
+Every cngx component themes through `--cngx-*` CSS custom properties with literal fallbacks. Set any token in your own stylesheet to override it; leave it unset to keep the default below. 2558 tokens across 155 components.
 
 ## CngxA11yPanel
 
@@ -115,16 +115,20 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-option-min-height`|`0px`|Layout|Minimum height of an option row - defaults to `0px` (content-driven, so dense rows stay compact) and composes into the touch-target floor via `max()`. A `0px` rather than `auto` default is deliberate: `auto` cannot be an argument to `max()`, and the floor needs to compose the row height against `--cngx-target-min`.|
 |`--cngx-select-option-radius`|`0.125rem`|Layout|Corner radius of an option row.|
 |`--cngx-select-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background of the keyboard-highlighted option row. Defaults to a low-alpha tint of `--cngx-color-primary` so the highlight reads as brand-accented without competing with selection state.|
+|`--cngx-select-option-active-indicator`|`oklch(0.5 0.2 275)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1. Delegates to the primary colour below, so it follows the scheme and a re-theme.|
 |`--cngx-select-option-multi-selected-bg`|`transparent`|State / Selected|Background of a selected row in a multi-value panel whose selection indicator renders. Transparent by default: the checkbox carries the selection, so a mostly-selected panel does not turn into a solid block. Assign a colour to opt the fill back in. Single-value panels and rows with the indicator hidden keep `--cngx-option-selected-bg`.|
 |`--cngx-select-check-color`|`oklch(0.66 0.19 50)`|State / Selected|Color of the selected-option checkmark glyph. Falls back through `--cngx-color-primary`.|
 |`--cngx-select-placeholder-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the placeholder text shown when no value is selected.|
 |`--cngx-select-caret-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the dropdown caret glyph shared across every variant. Muted by default to mirror the placeholder token; the Material bridge maps it to `--mat-sys-on-surface-variant`. `inherits: true` so a trigger-level override reaches the glyph element.|
 |`--cngx-select-clear-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the clear-button glyph shared across every variant. Tracks the same muted default as the caret so both trigger affordances read uniformly. `inherits: true` so a trigger-level override reaches the glyph element.|
 |`--cngx-select-caret-size`|`1.6em`|Layout|Font-size of the dropdown caret glyph shared across every variant. Read at the caret span (a trigger descendant), so `inherits: true` is load-bearing: with `inherits: false` the registered initial would always win at the caret and no consumer or composing organism could ever set the token (the inherits:false trap). The default glyph box never drops below `--cngx-icon-svg-micro-floor` (12px); set that token to `0px` as well for a caret smaller than the 12px micro box.|
+|`--cngx-select-clear-target-min`|`24px`|Layout|Fine-pointer hit-area floor of the clear button, on both axes. The 24px default meets WCAG 2.5.8 (AA); under the touch floor the larger `--cngx-target-min` wins. The trigger row keeps its height: the box hands back what it adds over the control line box. `inherits: true` so a trigger-level or ancestor override reaches the button.|
 |`--cngx-select-skeleton-gap`|`0.25rem`|State / Loading|Vertical gap between skeleton placeholder rows.|
 |`--cngx-select-skeleton-padding`|`0.25rem`|State / Loading|Padding around the skeleton placeholder block.|
 |`--cngx-select-skeleton-row-height`|`1.75rem`|State / Loading|Height of each skeleton placeholder row.|
 |`--cngx-select-skeleton-row-radius`|`0.125rem`|State / Loading|Corner radius of each skeleton placeholder row.|
+|`--cngx-select-skeleton-shimmer`|`oklch(0.2 0.01 250)`|State / Loading|Base colour the skeleton shimmer gradient is mixed from. Defaults from the foundation text colour, so the shimmer darkens a light panel and lightens a dark one in every scheme (OS, a `data-color-scheme` island, or a consumer light theme under OS dark) without a hardcoded dark-mode swap. The Material bridge sets it from `--mat-sys-on-surface`.|
+|`--cngx-select-option-spinner-track`|`oklch(0 0 0 / 0.15)`|State / Commit|Track (resting ring) colour of the per-option commit spinner. Defaults from the foundation text colour at a low alpha, so it reads on the panel in every scheme without a dark swap. The Material bridge sets it from `--mat-sys-on-surface`.|
 |`--cngx-select-spinner-padding`|`1rem`|State / Loading|Padding around the first-load spinner wrapper.|
 |`--cngx-select-spinner-size`|`1.5rem`|State / Loading|Diameter of the first-load spinner ring.|
 |`--cngx-select-spinner-border`|`2px solid oklch(0 0 0 / 0.15)`|State / Loading|Track stroke of the first-load spinner ring. `inherits: true` so the :root dark-mode override (alpha-on-white on dark) reaches the spinner inside the floating panel.|
@@ -140,7 +144,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-refreshing-dot-color`|`currentColor`|State / Refreshing|Color of each refreshing dot.|
 |`--cngx-select-option-spinner-size`|`0.875rem`|State / Commit|Diameter of the per-row commit spinner.|
 |`--cngx-select-option-spinner-color`|`oklch(0.66 0.19 50)`|State / Commit|Indicator stroke of the per-row commit spinner.|
-|`--cngx-select-option-error-color`|`oklch(0.6 0.18 25)`|State / Commit|Glyph color of the per-row commit error indicator. Falls back to `--cngx-color-danger`.|
+|`--cngx-select-option-error-color`|`oklch(0.46 0.18 25)`|State / Commit|Glyph color of the per-row commit error indicator. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-chip-gap`|`0.25rem`|Layout|Gap between chips inside the trigger chip list.|
 |`--cngx-select-chip-wrap-radius`|`0.25rem`|Layout|Corner radius of the reorderable chip wrap container.|
 |`--cngx-select-chip-overflow-badge-bg`|`oklch(0 0 0 / 0.08)`|State / Overflow|Background of the chip overflow badge shown in `truncate` overflow mode.|
@@ -151,6 +155,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-chip-remove-hover-color`|`oklch(0.6 0.18 25)`|State / Remove|Foreground color of the chip remove button on hover. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-chip-handle-color`|`oklch(0.5 0.01 250)`|State / Reorder|Color of the optional projected drag-handle glyph.|
 |`--cngx-select-chip-handle-size`|`0.75rem`|State / Reorder|Font-size of the optional projected drag-handle glyph.|
+|`--cngx-select-reorder-move-size`|`0.75em`|Layout|Size of the move-up / move-down glyph in the reorder list the panel shows under the touch floor: the box of the default triangles (still floored at the 0.75rem micro floor) and the font-size of a projected `*cngxMultiSelectMoveGlyph`. Read at the move button (a descendant of the select host), so `inherits: true` is load-bearing: with `inherits: false` a host-level override would never reach it.|
 |`--cngx-select-chip-drag-shadow`|`0 8px 20px oklch(0 0 0 / 0.28)`|State / Dragging|Drop-shadow of the chip lifted into the dragging state. `inherits: true` so the :root dark-mode override (deeper shadow on dark) reaches the chip while it's being dragged.|
 |`--cngx-select-chip-drag-bg`|`oklch(0.58 0.19 50)`|State / Dragging|Background of the chip lifted into the dragging state. Defaults track `--cngx-color-primary-strong` via the delegating entries below.|
 |`--cngx-select-chip-drag-color`|`oklch(1 0 0)`|State / Dragging|Text color of the chip lifted into the dragging state. Defaults track `--cngx-color-on-primary-strong`, which holds 4.5:1 on the drag background in both schemes.|
@@ -160,7 +165,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-chip-drop-bar-color`|`oklch(0.66 0.19 50)`|State / Dragging|Color of the drop-indicator bar between chips. Falls back to `--cngx-color-primary`.|
 |`--cngx-select-error-gap`|`0.5rem`|State / Error|Gap between the error message and the retry button.|
 |`--cngx-select-error-padding`|`0.5rem 0.75rem`|State / Error|Padding of the panel-wide error block.|
-|`--cngx-select-error-color`|`oklch(0.6 0.18 25)`|State / Error|Text color of every error surface. Falls back to `--cngx-color-danger`.|
+|`--cngx-select-error-color`|`oklch(0.46 0.18 25)`|State / Error|Text color of every error surface. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-error-inline-padding`|`0.375rem 0.5rem`|State / Error|Padding of the inline error banner shown above the option list.|
 |`--cngx-select-error-inline-radius`|`0.125rem`|State / Error|Corner radius of the inline error banner.|
 |`--cngx-select-error-retry-border`|`1px solid currentColor`|State / Error|Border shorthand of the error retry button.|
@@ -170,6 +175,8 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-trigger-invalid-glow`|`0 0 0 3px oklch(0.6 0.18 25 / 0.2)`|State / Trigger invalid|Soft halo layered behind the invalid trigger at focus time. Authored as a `box-shadow` so it composes with any consumer-supplied focus outline.|
 |`--cngx-select-commit-error-padding`|`0.375rem 0.5rem`|State / Commit|Padding of the commit error banner.|
 |`--cngx-select-commit-error-radius`|`0.125rem`|State / Commit|Corner radius of the commit error banner.|
+|`--cngx-select-commit-error-hint-color`|`oklch(0.5 0.2 25)`|State / Commit|Text colour of the commit-error hint shown under a closed trigger. Defaults to the danger-text contrast tier so it clears 4.5:1 like the inline banner.|
+|`--cngx-select-commit-error-hint-margin`|`0.25rem`|State / Commit|Block-start margin of the commit-error hint, set from the density scale.|
 |`--cngx-select-reorder-list-max-block-size`|`40dvh`|Layout|Height cap of the sortable list of selected values that a reorderable select shows in its sheet under the touch floor. A longer selection scrolls inside the list, so the options below stay reachable.|
 |`--cngx-option-gap`|`var(--cngx-space-sm)`|Layout|Gap between the parts of the option row, such as the check indicator and the label.|
 |`--cngx-select-message-padding`|`var(--cngx-space-sm) var(--cngx-space-sm)`|Layout|Padding of the loading and empty message rows in the panel.|
@@ -204,16 +211,20 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-option-min-height`|`0px`|Layout|Minimum height of an option row - defaults to `0px` (content-driven, so dense rows stay compact) and composes into the touch-target floor via `max()`. A `0px` rather than `auto` default is deliberate: `auto` cannot be an argument to `max()`, and the floor needs to compose the row height against `--cngx-target-min`.|
 |`--cngx-select-option-radius`|`0.125rem`|Layout|Corner radius of an option row.|
 |`--cngx-select-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background of the keyboard-highlighted option row. Defaults to a low-alpha tint of `--cngx-color-primary` so the highlight reads as brand-accented without competing with selection state.|
+|`--cngx-select-option-active-indicator`|`oklch(0.5 0.2 275)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1. Delegates to the primary colour below, so it follows the scheme and a re-theme.|
 |`--cngx-select-option-multi-selected-bg`|`transparent`|State / Selected|Background of a selected row in a multi-value panel whose selection indicator renders. Transparent by default: the checkbox carries the selection, so a mostly-selected panel does not turn into a solid block. Assign a colour to opt the fill back in. Single-value panels and rows with the indicator hidden keep `--cngx-option-selected-bg`.|
 |`--cngx-select-check-color`|`oklch(0.66 0.19 50)`|State / Selected|Color of the selected-option checkmark glyph. Falls back through `--cngx-color-primary`.|
 |`--cngx-select-placeholder-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the placeholder text shown when no value is selected.|
 |`--cngx-select-caret-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the dropdown caret glyph shared across every variant. Muted by default to mirror the placeholder token; the Material bridge maps it to `--mat-sys-on-surface-variant`. `inherits: true` so a trigger-level override reaches the glyph element.|
 |`--cngx-select-clear-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the clear-button glyph shared across every variant. Tracks the same muted default as the caret so both trigger affordances read uniformly. `inherits: true` so a trigger-level override reaches the glyph element.|
 |`--cngx-select-caret-size`|`1.6em`|Layout|Font-size of the dropdown caret glyph shared across every variant. Read at the caret span (a trigger descendant), so `inherits: true` is load-bearing: with `inherits: false` the registered initial would always win at the caret and no consumer or composing organism could ever set the token (the inherits:false trap). The default glyph box never drops below `--cngx-icon-svg-micro-floor` (12px); set that token to `0px` as well for a caret smaller than the 12px micro box.|
+|`--cngx-select-clear-target-min`|`24px`|Layout|Fine-pointer hit-area floor of the clear button, on both axes. The 24px default meets WCAG 2.5.8 (AA); under the touch floor the larger `--cngx-target-min` wins. The trigger row keeps its height: the box hands back what it adds over the control line box. `inherits: true` so a trigger-level or ancestor override reaches the button.|
 |`--cngx-select-skeleton-gap`|`0.25rem`|State / Loading|Vertical gap between skeleton placeholder rows.|
 |`--cngx-select-skeleton-padding`|`0.25rem`|State / Loading|Padding around the skeleton placeholder block.|
 |`--cngx-select-skeleton-row-height`|`1.75rem`|State / Loading|Height of each skeleton placeholder row.|
 |`--cngx-select-skeleton-row-radius`|`0.125rem`|State / Loading|Corner radius of each skeleton placeholder row.|
+|`--cngx-select-skeleton-shimmer`|`oklch(0.2 0.01 250)`|State / Loading|Base colour the skeleton shimmer gradient is mixed from. Defaults from the foundation text colour, so the shimmer darkens a light panel and lightens a dark one in every scheme (OS, a `data-color-scheme` island, or a consumer light theme under OS dark) without a hardcoded dark-mode swap. The Material bridge sets it from `--mat-sys-on-surface`.|
+|`--cngx-select-option-spinner-track`|`oklch(0 0 0 / 0.15)`|State / Commit|Track (resting ring) colour of the per-option commit spinner. Defaults from the foundation text colour at a low alpha, so it reads on the panel in every scheme without a dark swap. The Material bridge sets it from `--mat-sys-on-surface`.|
 |`--cngx-select-spinner-padding`|`1rem`|State / Loading|Padding around the first-load spinner wrapper.|
 |`--cngx-select-spinner-size`|`1.5rem`|State / Loading|Diameter of the first-load spinner ring.|
 |`--cngx-select-spinner-border`|`2px solid oklch(0 0 0 / 0.15)`|State / Loading|Track stroke of the first-load spinner ring. `inherits: true` so the :root dark-mode override (alpha-on-white on dark) reaches the spinner inside the floating panel.|
@@ -229,7 +240,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-refreshing-dot-color`|`currentColor`|State / Refreshing|Color of each refreshing dot.|
 |`--cngx-select-option-spinner-size`|`0.875rem`|State / Commit|Diameter of the per-row commit spinner.|
 |`--cngx-select-option-spinner-color`|`oklch(0.66 0.19 50)`|State / Commit|Indicator stroke of the per-row commit spinner.|
-|`--cngx-select-option-error-color`|`oklch(0.6 0.18 25)`|State / Commit|Glyph color of the per-row commit error indicator. Falls back to `--cngx-color-danger`.|
+|`--cngx-select-option-error-color`|`oklch(0.46 0.18 25)`|State / Commit|Glyph color of the per-row commit error indicator. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-chip-gap`|`0.25rem`|Layout|Gap between chips inside the trigger chip list.|
 |`--cngx-select-chip-wrap-radius`|`0.25rem`|Layout|Corner radius of the reorderable chip wrap container.|
 |`--cngx-select-chip-overflow-badge-bg`|`oklch(0 0 0 / 0.08)`|State / Overflow|Background of the chip overflow badge shown in `truncate` overflow mode.|
@@ -240,6 +251,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-chip-remove-hover-color`|`oklch(0.6 0.18 25)`|State / Remove|Foreground color of the chip remove button on hover. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-chip-handle-color`|`oklch(0.5 0.01 250)`|State / Reorder|Color of the optional projected drag-handle glyph.|
 |`--cngx-select-chip-handle-size`|`0.75rem`|State / Reorder|Font-size of the optional projected drag-handle glyph.|
+|`--cngx-select-reorder-move-size`|`0.75em`|Layout|Size of the move-up / move-down glyph in the reorder list the panel shows under the touch floor: the box of the default triangles (still floored at the 0.75rem micro floor) and the font-size of a projected `*cngxMultiSelectMoveGlyph`. Read at the move button (a descendant of the select host), so `inherits: true` is load-bearing: with `inherits: false` a host-level override would never reach it.|
 |`--cngx-select-chip-drag-shadow`|`0 8px 20px oklch(0 0 0 / 0.28)`|State / Dragging|Drop-shadow of the chip lifted into the dragging state. `inherits: true` so the :root dark-mode override (deeper shadow on dark) reaches the chip while it's being dragged.|
 |`--cngx-select-chip-drag-bg`|`oklch(0.58 0.19 50)`|State / Dragging|Background of the chip lifted into the dragging state. Defaults track `--cngx-color-primary-strong` via the delegating entries below.|
 |`--cngx-select-chip-drag-color`|`oklch(1 0 0)`|State / Dragging|Text color of the chip lifted into the dragging state. Defaults track `--cngx-color-on-primary-strong`, which holds 4.5:1 on the drag background in both schemes.|
@@ -249,7 +261,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-chip-drop-bar-color`|`oklch(0.66 0.19 50)`|State / Dragging|Color of the drop-indicator bar between chips. Falls back to `--cngx-color-primary`.|
 |`--cngx-select-error-gap`|`0.5rem`|State / Error|Gap between the error message and the retry button.|
 |`--cngx-select-error-padding`|`0.5rem 0.75rem`|State / Error|Padding of the panel-wide error block.|
-|`--cngx-select-error-color`|`oklch(0.6 0.18 25)`|State / Error|Text color of every error surface. Falls back to `--cngx-color-danger`.|
+|`--cngx-select-error-color`|`oklch(0.46 0.18 25)`|State / Error|Text color of every error surface. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-error-inline-padding`|`0.375rem 0.5rem`|State / Error|Padding of the inline error banner shown above the option list.|
 |`--cngx-select-error-inline-radius`|`0.125rem`|State / Error|Corner radius of the inline error banner.|
 |`--cngx-select-error-retry-border`|`1px solid currentColor`|State / Error|Border shorthand of the error retry button.|
@@ -259,6 +271,8 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-trigger-invalid-glow`|`0 0 0 3px oklch(0.6 0.18 25 / 0.2)`|State / Trigger invalid|Soft halo layered behind the invalid trigger at focus time. Authored as a `box-shadow` so it composes with any consumer-supplied focus outline.|
 |`--cngx-select-commit-error-padding`|`0.375rem 0.5rem`|State / Commit|Padding of the commit error banner.|
 |`--cngx-select-commit-error-radius`|`0.125rem`|State / Commit|Corner radius of the commit error banner.|
+|`--cngx-select-commit-error-hint-color`|`oklch(0.5 0.2 25)`|State / Commit|Text colour of the commit-error hint shown under a closed trigger. Defaults to the danger-text contrast tier so it clears 4.5:1 like the inline banner.|
+|`--cngx-select-commit-error-hint-margin`|`0.25rem`|State / Commit|Block-start margin of the commit-error hint, set from the density scale.|
 |`--cngx-select-reorder-list-max-block-size`|`40dvh`|Layout|Height cap of the sortable list of selected values that a reorderable select shows in its sheet under the touch floor. A longer selection scrolls inside the list, so the options below stay reachable.|
 |`--cngx-option-gap`|`var(--cngx-space-sm)`|Layout|Gap between the parts of the option row, such as the check indicator and the label.|
 |`--cngx-select-message-padding`|`var(--cngx-space-sm) var(--cngx-space-sm)`|Layout|Padding of the loading and empty message rows in the panel.|
@@ -560,7 +574,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-banner-font-size`|`0.9375rem`|Typography|Font-size of the body message.|
 |`--cngx-banner-line-height`|`1.5`|Typography|Line-height of the body message.|
 |`--cngx-banner-error-font-size`|`0.875rem`|State / Error|Font-size of the inline-error sub-line.|
-|`--cngx-banner-error-color`|`oklch(0.5 0.133 24)`|State / Error|Text color of the inline-error sub-line. Falls back to `--cngx-color-danger-text` (the raw danger is a fill colour and sits under 4.5:1 as text on the light tints).|
+|`--cngx-banner-error-color`|`oklch(0.46 0.18 25)`|State / Error|Text color of the inline-error sub-line. Falls back to `--cngx-color-danger-text` (the raw danger is a fill colour and sits under 4.5:1 as text on the light tints).|
 |`--cngx-banner-action-bg`|`transparent`|State / Action|Background of the action button.|
 |`--cngx-banner-action-radius`|`4px`|State / Action|Corner radius of the action button.|
 |`--cngx-banner-action-padding`|`4px 10px`|State / Action|Padding shorthand of the action button.|
@@ -646,7 +660,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-breadcrumb-toolbar-hover-bg`|`oklch(0.97 0.005 250)`|Skin|Toolbar skin: cell fill on hover.|
 |`--cngx-breadcrumb-toolbar-hover-color`|`oklch(0.2 0.01 250)`|Skin|Toolbar skin: cell label colour on hover.|
 |`--cngx-breadcrumb-toolbar-active-bg`|`oklch(0.95 0.03 50)`|Skin|Toolbar skin: fill of the current-page cell.|
-|`--cngx-breadcrumb-toolbar-active-color`|`oklch(0.52 0.13 50)`|Skin|Toolbar skin: label colour of the current-page cell.|
+|`--cngx-breadcrumb-toolbar-active-color`|`oklch(0.54 0.19 50)`|Skin|Toolbar skin: label colour of the current-page cell.|
 |`--cngx-breadcrumb-toolbar-font-size`|`0.875rem`|Skin|Toolbar skin: font size of the cell labels.|
 |`--cngx-breadcrumb-toolbar-radius`|`4px`|Skin|Toolbar skin: corner radius of the strip.|
 |`--cngx-breadcrumb-chips-bg`|`oklch(1 0 0)`|Skin|Chips skin: resting chip fill.|
@@ -657,7 +671,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-breadcrumb-chips-hover-color`|`oklch(0.2 0.01 250)`|Skin|Chips skin: chip label colour on hover.|
 |`--cngx-breadcrumb-chips-active-bg`|`oklch(0.95 0.03 50)`|Skin|Chips skin: fill of the current-page chip.|
 |`--cngx-breadcrumb-chips-active-border`|`oklch(0.82 0.08 50)`|Skin|Chips skin: border colour of the current-page chip.|
-|`--cngx-breadcrumb-chips-active-color`|`oklch(0.52 0.13 50)`|Skin|Chips skin: label colour of the current-page chip.|
+|`--cngx-breadcrumb-chips-active-color`|`oklch(0.54 0.19 50)`|Skin|Chips skin: label colour of the current-page chip.|
 |`--cngx-breadcrumb-chips-font-size`|`0.875rem`|Skin|Chips skin: font size of the chip labels and the chevron separator.|
 |`--cngx-breadcrumb-chips-radius`|`999px`|Skin|Chips skin: corner radius of the chips.|
 |`--cngx-breadcrumb-path-track-bg`|`oklch(0.97 0.005 250)`|Skin|Path skin: fill of the track behind the crumbs.|
@@ -665,7 +679,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-breadcrumb-path-color`|`oklch(0.5 0.01 250)`|Skin|Path skin: resting link colour.|
 |`--cngx-breadcrumb-path-hover-bg`|`oklch(1 0 0)`|Skin|Path skin: link background on hover.|
 |`--cngx-breadcrumb-path-hover-color`|`oklch(0.2 0.01 250)`|Skin|Path skin: link colour on hover.|
-|`--cngx-breadcrumb-path-active-color`|`oklch(0.52 0.13 50)`|Skin|Path skin: colour of the current-page link.|
+|`--cngx-breadcrumb-path-active-color`|`oklch(0.54 0.19 50)`|Skin|Path skin: colour of the current-page link.|
 |`--cngx-breadcrumb-path-sep-color`|`oklch(0.5 0.01 250)`|Skin|Path skin: separator colour.|
 |`--cngx-breadcrumb-path-radius`|`8px`|Skin|Path skin: corner radius of the track.|
 |`--cngx-breadcrumb-path-link-radius`|`4px`|Skin|Path skin: corner radius of each link.|
@@ -674,7 +688,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-breadcrumb-iconlabel-hover-bg`|`oklch(0.97 0.005 250)`|Skin|Iconlabel skin: link background on hover.|
 |`--cngx-breadcrumb-iconlabel-hover-color`|`oklch(0.2 0.01 250)`|Skin|Iconlabel skin: link colour on hover.|
 |`--cngx-breadcrumb-iconlabel-active-bg`|`oklch(0.95 0.03 50)`|Skin|Iconlabel skin: background of the current-page link.|
-|`--cngx-breadcrumb-iconlabel-active-color`|`oklch(0.52 0.13 50)`|Skin|Iconlabel skin: label and icon colour of the current-page crumb.|
+|`--cngx-breadcrumb-iconlabel-active-color`|`oklch(0.54 0.19 50)`|Skin|Iconlabel skin: label and icon colour of the current-page crumb.|
 |`--cngx-breadcrumb-iconlabel-radius`|`999px`|Skin|Iconlabel skin: corner radius of the links.|
 |`--cngx-breadcrumb-iconlabel-font-size`|`0.875rem`|Skin|Iconlabel skin: font size of the link labels and the chevron separator.|
 |`--cngx-breadcrumb-icononly-color`|`oklch(0.5 0.01 250)`|Skin|Icononly skin: resting colour of the icon squares.|
@@ -963,7 +977,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-chip-bg`|`oklch(0.66 0.19 50 / 0.12)`|Surface|Background of the default (unkeyed) chip. Primary-tinted at low alpha so the chip reads as accented without competing with stronger surfaces.|
 |`--cngx-chip-color`|`currentColor`|Surface|Text color. Defaults to `currentColor` so the chip inherits the container's text color.|
 |`--cngx-chip-border`|`0 solid transparent`|Surface|Border shorthand. Zero-width by default - pillows fill the box.|
-|`--cngx-chip-font-size`|`0.875em`|Typography|Font-size of the chip label.|
+|`--cngx-chip-font-size`|``|Typography|Font-size of the chip label.|
 |`--cngx-chip-transition`|`background-color 150ms ease,
       color 150ms ease,
       border-color 150ms ease`|Motion|Transition shorthand for background / color / border-color changes on hover, selected, and disabled states. Derives from the `--cngx-duration-fast` rung of the motion scale; a `--cngx-duration-*` brand override re-times it library-wide.|
@@ -1047,16 +1061,20 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-option-min-height`|`0px`|Layout|Minimum height of an option row - defaults to `0px` (content-driven, so dense rows stay compact) and composes into the touch-target floor via `max()`. A `0px` rather than `auto` default is deliberate: `auto` cannot be an argument to `max()`, and the floor needs to compose the row height against `--cngx-target-min`.|
 |`--cngx-select-option-radius`|`0.125rem`|Layout|Corner radius of an option row.|
 |`--cngx-select-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background of the keyboard-highlighted option row. Defaults to a low-alpha tint of `--cngx-color-primary` so the highlight reads as brand-accented without competing with selection state.|
+|`--cngx-select-option-active-indicator`|`oklch(0.5 0.2 275)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1. Delegates to the primary colour below, so it follows the scheme and a re-theme.|
 |`--cngx-select-option-multi-selected-bg`|`transparent`|State / Selected|Background of a selected row in a multi-value panel whose selection indicator renders. Transparent by default: the checkbox carries the selection, so a mostly-selected panel does not turn into a solid block. Assign a colour to opt the fill back in. Single-value panels and rows with the indicator hidden keep `--cngx-option-selected-bg`.|
 |`--cngx-select-check-color`|`oklch(0.66 0.19 50)`|State / Selected|Color of the selected-option checkmark glyph. Falls back through `--cngx-color-primary`.|
 |`--cngx-select-placeholder-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the placeholder text shown when no value is selected.|
 |`--cngx-select-caret-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the dropdown caret glyph shared across every variant. Muted by default to mirror the placeholder token; the Material bridge maps it to `--mat-sys-on-surface-variant`. `inherits: true` so a trigger-level override reaches the glyph element.|
 |`--cngx-select-clear-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the clear-button glyph shared across every variant. Tracks the same muted default as the caret so both trigger affordances read uniformly. `inherits: true` so a trigger-level override reaches the glyph element.|
 |`--cngx-select-caret-size`|`1.6em`|Layout|Font-size of the dropdown caret glyph shared across every variant. Read at the caret span (a trigger descendant), so `inherits: true` is load-bearing: with `inherits: false` the registered initial would always win at the caret and no consumer or composing organism could ever set the token (the inherits:false trap). The default glyph box never drops below `--cngx-icon-svg-micro-floor` (12px); set that token to `0px` as well for a caret smaller than the 12px micro box.|
+|`--cngx-select-clear-target-min`|`24px`|Layout|Fine-pointer hit-area floor of the clear button, on both axes. The 24px default meets WCAG 2.5.8 (AA); under the touch floor the larger `--cngx-target-min` wins. The trigger row keeps its height: the box hands back what it adds over the control line box. `inherits: true` so a trigger-level or ancestor override reaches the button.|
 |`--cngx-select-skeleton-gap`|`0.25rem`|State / Loading|Vertical gap between skeleton placeholder rows.|
 |`--cngx-select-skeleton-padding`|`0.25rem`|State / Loading|Padding around the skeleton placeholder block.|
 |`--cngx-select-skeleton-row-height`|`1.75rem`|State / Loading|Height of each skeleton placeholder row.|
 |`--cngx-select-skeleton-row-radius`|`0.125rem`|State / Loading|Corner radius of each skeleton placeholder row.|
+|`--cngx-select-skeleton-shimmer`|`oklch(0.2 0.01 250)`|State / Loading|Base colour the skeleton shimmer gradient is mixed from. Defaults from the foundation text colour, so the shimmer darkens a light panel and lightens a dark one in every scheme (OS, a `data-color-scheme` island, or a consumer light theme under OS dark) without a hardcoded dark-mode swap. The Material bridge sets it from `--mat-sys-on-surface`.|
+|`--cngx-select-option-spinner-track`|`oklch(0 0 0 / 0.15)`|State / Commit|Track (resting ring) colour of the per-option commit spinner. Defaults from the foundation text colour at a low alpha, so it reads on the panel in every scheme without a dark swap. The Material bridge sets it from `--mat-sys-on-surface`.|
 |`--cngx-select-spinner-padding`|`1rem`|State / Loading|Padding around the first-load spinner wrapper.|
 |`--cngx-select-spinner-size`|`1.5rem`|State / Loading|Diameter of the first-load spinner ring.|
 |`--cngx-select-spinner-border`|`2px solid oklch(0 0 0 / 0.15)`|State / Loading|Track stroke of the first-load spinner ring. `inherits: true` so the :root dark-mode override (alpha-on-white on dark) reaches the spinner inside the floating panel.|
@@ -1072,7 +1090,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-refreshing-dot-color`|`currentColor`|State / Refreshing|Color of each refreshing dot.|
 |`--cngx-select-option-spinner-size`|`0.875rem`|State / Commit|Diameter of the per-row commit spinner.|
 |`--cngx-select-option-spinner-color`|`oklch(0.66 0.19 50)`|State / Commit|Indicator stroke of the per-row commit spinner.|
-|`--cngx-select-option-error-color`|`oklch(0.6 0.18 25)`|State / Commit|Glyph color of the per-row commit error indicator. Falls back to `--cngx-color-danger`.|
+|`--cngx-select-option-error-color`|`oklch(0.46 0.18 25)`|State / Commit|Glyph color of the per-row commit error indicator. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-chip-gap`|`0.25rem`|Layout|Gap between chips inside the trigger chip list.|
 |`--cngx-select-chip-wrap-radius`|`0.25rem`|Layout|Corner radius of the reorderable chip wrap container.|
 |`--cngx-select-chip-overflow-badge-bg`|`oklch(0 0 0 / 0.08)`|State / Overflow|Background of the chip overflow badge shown in `truncate` overflow mode.|
@@ -1083,6 +1101,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-chip-remove-hover-color`|`oklch(0.6 0.18 25)`|State / Remove|Foreground color of the chip remove button on hover. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-chip-handle-color`|`oklch(0.5 0.01 250)`|State / Reorder|Color of the optional projected drag-handle glyph.|
 |`--cngx-select-chip-handle-size`|`0.75rem`|State / Reorder|Font-size of the optional projected drag-handle glyph.|
+|`--cngx-select-reorder-move-size`|`0.75em`|Layout|Size of the move-up / move-down glyph in the reorder list the panel shows under the touch floor: the box of the default triangles (still floored at the 0.75rem micro floor) and the font-size of a projected `*cngxMultiSelectMoveGlyph`. Read at the move button (a descendant of the select host), so `inherits: true` is load-bearing: with `inherits: false` a host-level override would never reach it.|
 |`--cngx-select-chip-drag-shadow`|`0 8px 20px oklch(0 0 0 / 0.28)`|State / Dragging|Drop-shadow of the chip lifted into the dragging state. `inherits: true` so the :root dark-mode override (deeper shadow on dark) reaches the chip while it's being dragged.|
 |`--cngx-select-chip-drag-bg`|`oklch(0.58 0.19 50)`|State / Dragging|Background of the chip lifted into the dragging state. Defaults track `--cngx-color-primary-strong` via the delegating entries below.|
 |`--cngx-select-chip-drag-color`|`oklch(1 0 0)`|State / Dragging|Text color of the chip lifted into the dragging state. Defaults track `--cngx-color-on-primary-strong`, which holds 4.5:1 on the drag background in both schemes.|
@@ -1092,7 +1111,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-chip-drop-bar-color`|`oklch(0.66 0.19 50)`|State / Dragging|Color of the drop-indicator bar between chips. Falls back to `--cngx-color-primary`.|
 |`--cngx-select-error-gap`|`0.5rem`|State / Error|Gap between the error message and the retry button.|
 |`--cngx-select-error-padding`|`0.5rem 0.75rem`|State / Error|Padding of the panel-wide error block.|
-|`--cngx-select-error-color`|`oklch(0.6 0.18 25)`|State / Error|Text color of every error surface. Falls back to `--cngx-color-danger`.|
+|`--cngx-select-error-color`|`oklch(0.46 0.18 25)`|State / Error|Text color of every error surface. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-error-inline-padding`|`0.375rem 0.5rem`|State / Error|Padding of the inline error banner shown above the option list.|
 |`--cngx-select-error-inline-radius`|`0.125rem`|State / Error|Corner radius of the inline error banner.|
 |`--cngx-select-error-retry-border`|`1px solid currentColor`|State / Error|Border shorthand of the error retry button.|
@@ -1102,6 +1121,8 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-trigger-invalid-glow`|`0 0 0 3px oklch(0.6 0.18 25 / 0.2)`|State / Trigger invalid|Soft halo layered behind the invalid trigger at focus time. Authored as a `box-shadow` so it composes with any consumer-supplied focus outline.|
 |`--cngx-select-commit-error-padding`|`0.375rem 0.5rem`|State / Commit|Padding of the commit error banner.|
 |`--cngx-select-commit-error-radius`|`0.125rem`|State / Commit|Corner radius of the commit error banner.|
+|`--cngx-select-commit-error-hint-color`|`oklch(0.5 0.2 25)`|State / Commit|Text colour of the commit-error hint shown under a closed trigger. Defaults to the danger-text contrast tier so it clears 4.5:1 like the inline banner.|
+|`--cngx-select-commit-error-hint-margin`|`0.25rem`|State / Commit|Block-start margin of the commit-error hint, set from the density scale.|
 |`--cngx-select-reorder-list-max-block-size`|`40dvh`|Layout|Height cap of the sortable list of selected values that a reorderable select shows in its sheet under the touch floor. A longer selection scrolls inside the list, so the options below stay reachable.|
 |`--cngx-option-gap`|`var(--cngx-space-sm)`|Layout|Gap between the parts of the option row, such as the check indicator and the label.|
 |`--cngx-select-message-padding`|`var(--cngx-space-sm) var(--cngx-space-sm)`|Layout|Padding of the loading and empty message rows in the panel.|
@@ -1430,8 +1451,8 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-filter-builder-focus-outline`|`2px solid currentColor`|State / Focus|Focus-ring outline shorthand applied to action buttons.|
 |`--cngx-filter-builder-focus-outline-offset`|`2px`|State / Focus|Outline offset of the focus ring.|
 |`--cngx-filter-builder-action-disabled-opacity`|`0.5`|State / Disabled|Opacity multiplier applied to disabled action buttons.|
-|`--cngx-filter-builder-action-remove-fg`|`oklch(0.55 0.18 25)`|Variant / Remove|Foreground color of the destructive remove button. Falls back through `--cngx-filter-builder-error-fg` and then `--cngx-color-danger-text`.|
-|`--cngx-filter-builder-error-fg`|`oklch(0.55 0.18 25)`|State / Error|Error-tone foreground shared across the builder's error states. Falls back through `--cngx-color-danger-text`.|
+|`--cngx-filter-builder-action-remove-fg`|`oklch(0.46 0.18 25)`|Variant / Remove|Foreground color of the destructive remove button. Falls back through `--cngx-filter-builder-error-fg` and then `--cngx-color-danger-text`.|
+|`--cngx-filter-builder-error-fg`|`oklch(0.46 0.18 25)`|State / Error|Error-tone foreground shared across the builder's error states. Falls back through `--cngx-color-danger-text`.|
 |`--cngx-filter-builder-action-glyph-size`|`1em`|Layout|Font-size of the action-button glyph slot.|
 |`--cngx-filter-builder-control-font-size`|`var(--cngx-font-size-sm)`|Typography|Font size of the builder host, inherited by its controls.|
 
@@ -1837,16 +1858,20 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-option-min-height`|`0px`|Layout|Minimum height of an option row - defaults to `0px` (content-driven, so dense rows stay compact) and composes into the touch-target floor via `max()`. A `0px` rather than `auto` default is deliberate: `auto` cannot be an argument to `max()`, and the floor needs to compose the row height against `--cngx-target-min`.|
 |`--cngx-select-option-radius`|`0.125rem`|Layout|Corner radius of an option row.|
 |`--cngx-select-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background of the keyboard-highlighted option row. Defaults to a low-alpha tint of `--cngx-color-primary` so the highlight reads as brand-accented without competing with selection state.|
+|`--cngx-select-option-active-indicator`|`oklch(0.5 0.2 275)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1. Delegates to the primary colour below, so it follows the scheme and a re-theme.|
 |`--cngx-select-option-multi-selected-bg`|`transparent`|State / Selected|Background of a selected row in a multi-value panel whose selection indicator renders. Transparent by default: the checkbox carries the selection, so a mostly-selected panel does not turn into a solid block. Assign a colour to opt the fill back in. Single-value panels and rows with the indicator hidden keep `--cngx-option-selected-bg`.|
 |`--cngx-select-check-color`|`oklch(0.66 0.19 50)`|State / Selected|Color of the selected-option checkmark glyph. Falls back through `--cngx-color-primary`.|
 |`--cngx-select-placeholder-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the placeholder text shown when no value is selected.|
 |`--cngx-select-caret-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the dropdown caret glyph shared across every variant. Muted by default to mirror the placeholder token; the Material bridge maps it to `--mat-sys-on-surface-variant`. `inherits: true` so a trigger-level override reaches the glyph element.|
 |`--cngx-select-clear-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the clear-button glyph shared across every variant. Tracks the same muted default as the caret so both trigger affordances read uniformly. `inherits: true` so a trigger-level override reaches the glyph element.|
 |`--cngx-select-caret-size`|`1.6em`|Layout|Font-size of the dropdown caret glyph shared across every variant. Read at the caret span (a trigger descendant), so `inherits: true` is load-bearing: with `inherits: false` the registered initial would always win at the caret and no consumer or composing organism could ever set the token (the inherits:false trap). The default glyph box never drops below `--cngx-icon-svg-micro-floor` (12px); set that token to `0px` as well for a caret smaller than the 12px micro box.|
+|`--cngx-select-clear-target-min`|`24px`|Layout|Fine-pointer hit-area floor of the clear button, on both axes. The 24px default meets WCAG 2.5.8 (AA); under the touch floor the larger `--cngx-target-min` wins. The trigger row keeps its height: the box hands back what it adds over the control line box. `inherits: true` so a trigger-level or ancestor override reaches the button.|
 |`--cngx-select-skeleton-gap`|`0.25rem`|State / Loading|Vertical gap between skeleton placeholder rows.|
 |`--cngx-select-skeleton-padding`|`0.25rem`|State / Loading|Padding around the skeleton placeholder block.|
 |`--cngx-select-skeleton-row-height`|`1.75rem`|State / Loading|Height of each skeleton placeholder row.|
 |`--cngx-select-skeleton-row-radius`|`0.125rem`|State / Loading|Corner radius of each skeleton placeholder row.|
+|`--cngx-select-skeleton-shimmer`|`oklch(0.2 0.01 250)`|State / Loading|Base colour the skeleton shimmer gradient is mixed from. Defaults from the foundation text colour, so the shimmer darkens a light panel and lightens a dark one in every scheme (OS, a `data-color-scheme` island, or a consumer light theme under OS dark) without a hardcoded dark-mode swap. The Material bridge sets it from `--mat-sys-on-surface`.|
+|`--cngx-select-option-spinner-track`|`oklch(0 0 0 / 0.15)`|State / Commit|Track (resting ring) colour of the per-option commit spinner. Defaults from the foundation text colour at a low alpha, so it reads on the panel in every scheme without a dark swap. The Material bridge sets it from `--mat-sys-on-surface`.|
 |`--cngx-select-spinner-padding`|`1rem`|State / Loading|Padding around the first-load spinner wrapper.|
 |`--cngx-select-spinner-size`|`1.5rem`|State / Loading|Diameter of the first-load spinner ring.|
 |`--cngx-select-spinner-border`|`2px solid oklch(0 0 0 / 0.15)`|State / Loading|Track stroke of the first-load spinner ring. `inherits: true` so the :root dark-mode override (alpha-on-white on dark) reaches the spinner inside the floating panel.|
@@ -1862,7 +1887,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-refreshing-dot-color`|`currentColor`|State / Refreshing|Color of each refreshing dot.|
 |`--cngx-select-option-spinner-size`|`0.875rem`|State / Commit|Diameter of the per-row commit spinner.|
 |`--cngx-select-option-spinner-color`|`oklch(0.66 0.19 50)`|State / Commit|Indicator stroke of the per-row commit spinner.|
-|`--cngx-select-option-error-color`|`oklch(0.6 0.18 25)`|State / Commit|Glyph color of the per-row commit error indicator. Falls back to `--cngx-color-danger`.|
+|`--cngx-select-option-error-color`|`oklch(0.46 0.18 25)`|State / Commit|Glyph color of the per-row commit error indicator. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-chip-gap`|`0.25rem`|Layout|Gap between chips inside the trigger chip list.|
 |`--cngx-select-chip-wrap-radius`|`0.25rem`|Layout|Corner radius of the reorderable chip wrap container.|
 |`--cngx-select-chip-overflow-badge-bg`|`oklch(0 0 0 / 0.08)`|State / Overflow|Background of the chip overflow badge shown in `truncate` overflow mode.|
@@ -1873,6 +1898,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-chip-remove-hover-color`|`oklch(0.6 0.18 25)`|State / Remove|Foreground color of the chip remove button on hover. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-chip-handle-color`|`oklch(0.5 0.01 250)`|State / Reorder|Color of the optional projected drag-handle glyph.|
 |`--cngx-select-chip-handle-size`|`0.75rem`|State / Reorder|Font-size of the optional projected drag-handle glyph.|
+|`--cngx-select-reorder-move-size`|`0.75em`|Layout|Size of the move-up / move-down glyph in the reorder list the panel shows under the touch floor: the box of the default triangles (still floored at the 0.75rem micro floor) and the font-size of a projected `*cngxMultiSelectMoveGlyph`. Read at the move button (a descendant of the select host), so `inherits: true` is load-bearing: with `inherits: false` a host-level override would never reach it.|
 |`--cngx-select-chip-drag-shadow`|`0 8px 20px oklch(0 0 0 / 0.28)`|State / Dragging|Drop-shadow of the chip lifted into the dragging state. `inherits: true` so the :root dark-mode override (deeper shadow on dark) reaches the chip while it's being dragged.|
 |`--cngx-select-chip-drag-bg`|`oklch(0.58 0.19 50)`|State / Dragging|Background of the chip lifted into the dragging state. Defaults track `--cngx-color-primary-strong` via the delegating entries below.|
 |`--cngx-select-chip-drag-color`|`oklch(1 0 0)`|State / Dragging|Text color of the chip lifted into the dragging state. Defaults track `--cngx-color-on-primary-strong`, which holds 4.5:1 on the drag background in both schemes.|
@@ -1882,7 +1908,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-chip-drop-bar-color`|`oklch(0.66 0.19 50)`|State / Dragging|Color of the drop-indicator bar between chips. Falls back to `--cngx-color-primary`.|
 |`--cngx-select-error-gap`|`0.5rem`|State / Error|Gap between the error message and the retry button.|
 |`--cngx-select-error-padding`|`0.5rem 0.75rem`|State / Error|Padding of the panel-wide error block.|
-|`--cngx-select-error-color`|`oklch(0.6 0.18 25)`|State / Error|Text color of every error surface. Falls back to `--cngx-color-danger`.|
+|`--cngx-select-error-color`|`oklch(0.46 0.18 25)`|State / Error|Text color of every error surface. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-error-inline-padding`|`0.375rem 0.5rem`|State / Error|Padding of the inline error banner shown above the option list.|
 |`--cngx-select-error-inline-radius`|`0.125rem`|State / Error|Corner radius of the inline error banner.|
 |`--cngx-select-error-retry-border`|`1px solid currentColor`|State / Error|Border shorthand of the error retry button.|
@@ -1892,6 +1918,8 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-trigger-invalid-glow`|`0 0 0 3px oklch(0.6 0.18 25 / 0.2)`|State / Trigger invalid|Soft halo layered behind the invalid trigger at focus time. Authored as a `box-shadow` so it composes with any consumer-supplied focus outline.|
 |`--cngx-select-commit-error-padding`|`0.375rem 0.5rem`|State / Commit|Padding of the commit error banner.|
 |`--cngx-select-commit-error-radius`|`0.125rem`|State / Commit|Corner radius of the commit error banner.|
+|`--cngx-select-commit-error-hint-color`|`oklch(0.5 0.2 25)`|State / Commit|Text colour of the commit-error hint shown under a closed trigger. Defaults to the danger-text contrast tier so it clears 4.5:1 like the inline banner.|
+|`--cngx-select-commit-error-hint-margin`|`0.25rem`|State / Commit|Block-start margin of the commit-error hint, set from the density scale.|
 |`--cngx-select-reorder-list-max-block-size`|`40dvh`|Layout|Height cap of the sortable list of selected values that a reorderable select shows in its sheet under the touch floor. A longer selection scrolls inside the list, so the options below stay reachable.|
 |`--cngx-option-gap`|`var(--cngx-space-sm)`|Layout|Gap between the parts of the option row, such as the check indicator and the label.|
 |`--cngx-select-message-padding`|`var(--cngx-space-sm) var(--cngx-space-sm)`|Layout|Padding of the loading and empty message rows in the panel.|
@@ -2231,16 +2259,20 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-option-min-height`|`0px`|Layout|Minimum height of an option row - defaults to `0px` (content-driven, so dense rows stay compact) and composes into the touch-target floor via `max()`. A `0px` rather than `auto` default is deliberate: `auto` cannot be an argument to `max()`, and the floor needs to compose the row height against `--cngx-target-min`.|
 |`--cngx-select-option-radius`|`0.125rem`|Layout|Corner radius of an option row.|
 |`--cngx-select-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background of the keyboard-highlighted option row. Defaults to a low-alpha tint of `--cngx-color-primary` so the highlight reads as brand-accented without competing with selection state.|
+|`--cngx-select-option-active-indicator`|`oklch(0.5 0.2 275)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1. Delegates to the primary colour below, so it follows the scheme and a re-theme.|
 |`--cngx-select-option-multi-selected-bg`|`transparent`|State / Selected|Background of a selected row in a multi-value panel whose selection indicator renders. Transparent by default: the checkbox carries the selection, so a mostly-selected panel does not turn into a solid block. Assign a colour to opt the fill back in. Single-value panels and rows with the indicator hidden keep `--cngx-option-selected-bg`.|
 |`--cngx-select-check-color`|`oklch(0.66 0.19 50)`|State / Selected|Color of the selected-option checkmark glyph. Falls back through `--cngx-color-primary`.|
 |`--cngx-select-placeholder-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the placeholder text shown when no value is selected.|
 |`--cngx-select-caret-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the dropdown caret glyph shared across every variant. Muted by default to mirror the placeholder token; the Material bridge maps it to `--mat-sys-on-surface-variant`. `inherits: true` so a trigger-level override reaches the glyph element.|
 |`--cngx-select-clear-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the clear-button glyph shared across every variant. Tracks the same muted default as the caret so both trigger affordances read uniformly. `inherits: true` so a trigger-level override reaches the glyph element.|
 |`--cngx-select-caret-size`|`1.6em`|Layout|Font-size of the dropdown caret glyph shared across every variant. Read at the caret span (a trigger descendant), so `inherits: true` is load-bearing: with `inherits: false` the registered initial would always win at the caret and no consumer or composing organism could ever set the token (the inherits:false trap). The default glyph box never drops below `--cngx-icon-svg-micro-floor` (12px); set that token to `0px` as well for a caret smaller than the 12px micro box.|
+|`--cngx-select-clear-target-min`|`24px`|Layout|Fine-pointer hit-area floor of the clear button, on both axes. The 24px default meets WCAG 2.5.8 (AA); under the touch floor the larger `--cngx-target-min` wins. The trigger row keeps its height: the box hands back what it adds over the control line box. `inherits: true` so a trigger-level or ancestor override reaches the button.|
 |`--cngx-select-skeleton-gap`|`0.25rem`|State / Loading|Vertical gap between skeleton placeholder rows.|
 |`--cngx-select-skeleton-padding`|`0.25rem`|State / Loading|Padding around the skeleton placeholder block.|
 |`--cngx-select-skeleton-row-height`|`1.75rem`|State / Loading|Height of each skeleton placeholder row.|
 |`--cngx-select-skeleton-row-radius`|`0.125rem`|State / Loading|Corner radius of each skeleton placeholder row.|
+|`--cngx-select-skeleton-shimmer`|`oklch(0.2 0.01 250)`|State / Loading|Base colour the skeleton shimmer gradient is mixed from. Defaults from the foundation text colour, so the shimmer darkens a light panel and lightens a dark one in every scheme (OS, a `data-color-scheme` island, or a consumer light theme under OS dark) without a hardcoded dark-mode swap. The Material bridge sets it from `--mat-sys-on-surface`.|
+|`--cngx-select-option-spinner-track`|`oklch(0 0 0 / 0.15)`|State / Commit|Track (resting ring) colour of the per-option commit spinner. Defaults from the foundation text colour at a low alpha, so it reads on the panel in every scheme without a dark swap. The Material bridge sets it from `--mat-sys-on-surface`.|
 |`--cngx-select-spinner-padding`|`1rem`|State / Loading|Padding around the first-load spinner wrapper.|
 |`--cngx-select-spinner-size`|`1.5rem`|State / Loading|Diameter of the first-load spinner ring.|
 |`--cngx-select-spinner-border`|`2px solid oklch(0 0 0 / 0.15)`|State / Loading|Track stroke of the first-load spinner ring. `inherits: true` so the :root dark-mode override (alpha-on-white on dark) reaches the spinner inside the floating panel.|
@@ -2256,7 +2288,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-refreshing-dot-color`|`currentColor`|State / Refreshing|Color of each refreshing dot.|
 |`--cngx-select-option-spinner-size`|`0.875rem`|State / Commit|Diameter of the per-row commit spinner.|
 |`--cngx-select-option-spinner-color`|`oklch(0.66 0.19 50)`|State / Commit|Indicator stroke of the per-row commit spinner.|
-|`--cngx-select-option-error-color`|`oklch(0.6 0.18 25)`|State / Commit|Glyph color of the per-row commit error indicator. Falls back to `--cngx-color-danger`.|
+|`--cngx-select-option-error-color`|`oklch(0.46 0.18 25)`|State / Commit|Glyph color of the per-row commit error indicator. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-chip-gap`|`0.25rem`|Layout|Gap between chips inside the trigger chip list.|
 |`--cngx-select-chip-wrap-radius`|`0.25rem`|Layout|Corner radius of the reorderable chip wrap container.|
 |`--cngx-select-chip-overflow-badge-bg`|`oklch(0 0 0 / 0.08)`|State / Overflow|Background of the chip overflow badge shown in `truncate` overflow mode.|
@@ -2267,6 +2299,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-chip-remove-hover-color`|`oklch(0.6 0.18 25)`|State / Remove|Foreground color of the chip remove button on hover. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-chip-handle-color`|`oklch(0.5 0.01 250)`|State / Reorder|Color of the optional projected drag-handle glyph.|
 |`--cngx-select-chip-handle-size`|`0.75rem`|State / Reorder|Font-size of the optional projected drag-handle glyph.|
+|`--cngx-select-reorder-move-size`|`0.75em`|Layout|Size of the move-up / move-down glyph in the reorder list the panel shows under the touch floor: the box of the default triangles (still floored at the 0.75rem micro floor) and the font-size of a projected `*cngxMultiSelectMoveGlyph`. Read at the move button (a descendant of the select host), so `inherits: true` is load-bearing: with `inherits: false` a host-level override would never reach it.|
 |`--cngx-select-chip-drag-shadow`|`0 8px 20px oklch(0 0 0 / 0.28)`|State / Dragging|Drop-shadow of the chip lifted into the dragging state. `inherits: true` so the :root dark-mode override (deeper shadow on dark) reaches the chip while it's being dragged.|
 |`--cngx-select-chip-drag-bg`|`oklch(0.58 0.19 50)`|State / Dragging|Background of the chip lifted into the dragging state. Defaults track `--cngx-color-primary-strong` via the delegating entries below.|
 |`--cngx-select-chip-drag-color`|`oklch(1 0 0)`|State / Dragging|Text color of the chip lifted into the dragging state. Defaults track `--cngx-color-on-primary-strong`, which holds 4.5:1 on the drag background in both schemes.|
@@ -2276,7 +2309,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-chip-drop-bar-color`|`oklch(0.66 0.19 50)`|State / Dragging|Color of the drop-indicator bar between chips. Falls back to `--cngx-color-primary`.|
 |`--cngx-select-error-gap`|`0.5rem`|State / Error|Gap between the error message and the retry button.|
 |`--cngx-select-error-padding`|`0.5rem 0.75rem`|State / Error|Padding of the panel-wide error block.|
-|`--cngx-select-error-color`|`oklch(0.6 0.18 25)`|State / Error|Text color of every error surface. Falls back to `--cngx-color-danger`.|
+|`--cngx-select-error-color`|`oklch(0.46 0.18 25)`|State / Error|Text color of every error surface. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-error-inline-padding`|`0.375rem 0.5rem`|State / Error|Padding of the inline error banner shown above the option list.|
 |`--cngx-select-error-inline-radius`|`0.125rem`|State / Error|Corner radius of the inline error banner.|
 |`--cngx-select-error-retry-border`|`1px solid currentColor`|State / Error|Border shorthand of the error retry button.|
@@ -2286,6 +2319,8 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-trigger-invalid-glow`|`0 0 0 3px oklch(0.6 0.18 25 / 0.2)`|State / Trigger invalid|Soft halo layered behind the invalid trigger at focus time. Authored as a `box-shadow` so it composes with any consumer-supplied focus outline.|
 |`--cngx-select-commit-error-padding`|`0.375rem 0.5rem`|State / Commit|Padding of the commit error banner.|
 |`--cngx-select-commit-error-radius`|`0.125rem`|State / Commit|Corner radius of the commit error banner.|
+|`--cngx-select-commit-error-hint-color`|`oklch(0.5 0.2 25)`|State / Commit|Text colour of the commit-error hint shown under a closed trigger. Defaults to the danger-text contrast tier so it clears 4.5:1 like the inline banner.|
+|`--cngx-select-commit-error-hint-margin`|`0.25rem`|State / Commit|Block-start margin of the commit-error hint, set from the density scale.|
 |`--cngx-select-reorder-list-max-block-size`|`40dvh`|Layout|Height cap of the sortable list of selected values that a reorderable select shows in its sheet under the touch floor. A longer selection scrolls inside the list, so the options below stay reachable.|
 |`--cngx-option-gap`|`var(--cngx-space-sm)`|Layout|Gap between the parts of the option row, such as the check indicator and the label.|
 |`--cngx-select-message-padding`|`var(--cngx-space-sm) var(--cngx-space-sm)`|Layout|Padding of the loading and empty message rows in the panel.|
@@ -2338,16 +2373,20 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-option-min-height`|`0px`|Layout|Minimum height of an option row - defaults to `0px` (content-driven, so dense rows stay compact) and composes into the touch-target floor via `max()`. A `0px` rather than `auto` default is deliberate: `auto` cannot be an argument to `max()`, and the floor needs to compose the row height against `--cngx-target-min`.|
 |`--cngx-select-option-radius`|`0.125rem`|Layout|Corner radius of an option row.|
 |`--cngx-select-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background of the keyboard-highlighted option row. Defaults to a low-alpha tint of `--cngx-color-primary` so the highlight reads as brand-accented without competing with selection state.|
+|`--cngx-select-option-active-indicator`|`oklch(0.5 0.2 275)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1. Delegates to the primary colour below, so it follows the scheme and a re-theme.|
 |`--cngx-select-option-multi-selected-bg`|`transparent`|State / Selected|Background of a selected row in a multi-value panel whose selection indicator renders. Transparent by default: the checkbox carries the selection, so a mostly-selected panel does not turn into a solid block. Assign a colour to opt the fill back in. Single-value panels and rows with the indicator hidden keep `--cngx-option-selected-bg`.|
 |`--cngx-select-check-color`|`oklch(0.66 0.19 50)`|State / Selected|Color of the selected-option checkmark glyph. Falls back through `--cngx-color-primary`.|
 |`--cngx-select-placeholder-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the placeholder text shown when no value is selected.|
 |`--cngx-select-caret-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the dropdown caret glyph shared across every variant. Muted by default to mirror the placeholder token; the Material bridge maps it to `--mat-sys-on-surface-variant`. `inherits: true` so a trigger-level override reaches the glyph element.|
 |`--cngx-select-clear-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the clear-button glyph shared across every variant. Tracks the same muted default as the caret so both trigger affordances read uniformly. `inherits: true` so a trigger-level override reaches the glyph element.|
 |`--cngx-select-caret-size`|`1.6em`|Layout|Font-size of the dropdown caret glyph shared across every variant. Read at the caret span (a trigger descendant), so `inherits: true` is load-bearing: with `inherits: false` the registered initial would always win at the caret and no consumer or composing organism could ever set the token (the inherits:false trap). The default glyph box never drops below `--cngx-icon-svg-micro-floor` (12px); set that token to `0px` as well for a caret smaller than the 12px micro box.|
+|`--cngx-select-clear-target-min`|`24px`|Layout|Fine-pointer hit-area floor of the clear button, on both axes. The 24px default meets WCAG 2.5.8 (AA); under the touch floor the larger `--cngx-target-min` wins. The trigger row keeps its height: the box hands back what it adds over the control line box. `inherits: true` so a trigger-level or ancestor override reaches the button.|
 |`--cngx-select-skeleton-gap`|`0.25rem`|State / Loading|Vertical gap between skeleton placeholder rows.|
 |`--cngx-select-skeleton-padding`|`0.25rem`|State / Loading|Padding around the skeleton placeholder block.|
 |`--cngx-select-skeleton-row-height`|`1.75rem`|State / Loading|Height of each skeleton placeholder row.|
 |`--cngx-select-skeleton-row-radius`|`0.125rem`|State / Loading|Corner radius of each skeleton placeholder row.|
+|`--cngx-select-skeleton-shimmer`|`oklch(0.2 0.01 250)`|State / Loading|Base colour the skeleton shimmer gradient is mixed from. Defaults from the foundation text colour, so the shimmer darkens a light panel and lightens a dark one in every scheme (OS, a `data-color-scheme` island, or a consumer light theme under OS dark) without a hardcoded dark-mode swap. The Material bridge sets it from `--mat-sys-on-surface`.|
+|`--cngx-select-option-spinner-track`|`oklch(0 0 0 / 0.15)`|State / Commit|Track (resting ring) colour of the per-option commit spinner. Defaults from the foundation text colour at a low alpha, so it reads on the panel in every scheme without a dark swap. The Material bridge sets it from `--mat-sys-on-surface`.|
 |`--cngx-select-spinner-padding`|`1rem`|State / Loading|Padding around the first-load spinner wrapper.|
 |`--cngx-select-spinner-size`|`1.5rem`|State / Loading|Diameter of the first-load spinner ring.|
 |`--cngx-select-spinner-border`|`2px solid oklch(0 0 0 / 0.15)`|State / Loading|Track stroke of the first-load spinner ring. `inherits: true` so the :root dark-mode override (alpha-on-white on dark) reaches the spinner inside the floating panel.|
@@ -2363,7 +2402,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-refreshing-dot-color`|`currentColor`|State / Refreshing|Color of each refreshing dot.|
 |`--cngx-select-option-spinner-size`|`0.875rem`|State / Commit|Diameter of the per-row commit spinner.|
 |`--cngx-select-option-spinner-color`|`oklch(0.66 0.19 50)`|State / Commit|Indicator stroke of the per-row commit spinner.|
-|`--cngx-select-option-error-color`|`oklch(0.6 0.18 25)`|State / Commit|Glyph color of the per-row commit error indicator. Falls back to `--cngx-color-danger`.|
+|`--cngx-select-option-error-color`|`oklch(0.46 0.18 25)`|State / Commit|Glyph color of the per-row commit error indicator. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-chip-gap`|`0.25rem`|Layout|Gap between chips inside the trigger chip list.|
 |`--cngx-select-chip-wrap-radius`|`0.25rem`|Layout|Corner radius of the reorderable chip wrap container.|
 |`--cngx-select-chip-overflow-badge-bg`|`oklch(0 0 0 / 0.08)`|State / Overflow|Background of the chip overflow badge shown in `truncate` overflow mode.|
@@ -2374,6 +2413,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-chip-remove-hover-color`|`oklch(0.6 0.18 25)`|State / Remove|Foreground color of the chip remove button on hover. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-chip-handle-color`|`oklch(0.5 0.01 250)`|State / Reorder|Color of the optional projected drag-handle glyph.|
 |`--cngx-select-chip-handle-size`|`0.75rem`|State / Reorder|Font-size of the optional projected drag-handle glyph.|
+|`--cngx-select-reorder-move-size`|`0.75em`|Layout|Size of the move-up / move-down glyph in the reorder list the panel shows under the touch floor: the box of the default triangles (still floored at the 0.75rem micro floor) and the font-size of a projected `*cngxMultiSelectMoveGlyph`. Read at the move button (a descendant of the select host), so `inherits: true` is load-bearing: with `inherits: false` a host-level override would never reach it.|
 |`--cngx-select-chip-drag-shadow`|`0 8px 20px oklch(0 0 0 / 0.28)`|State / Dragging|Drop-shadow of the chip lifted into the dragging state. `inherits: true` so the :root dark-mode override (deeper shadow on dark) reaches the chip while it's being dragged.|
 |`--cngx-select-chip-drag-bg`|`oklch(0.58 0.19 50)`|State / Dragging|Background of the chip lifted into the dragging state. Defaults track `--cngx-color-primary-strong` via the delegating entries below.|
 |`--cngx-select-chip-drag-color`|`oklch(1 0 0)`|State / Dragging|Text color of the chip lifted into the dragging state. Defaults track `--cngx-color-on-primary-strong`, which holds 4.5:1 on the drag background in both schemes.|
@@ -2383,7 +2423,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-chip-drop-bar-color`|`oklch(0.66 0.19 50)`|State / Dragging|Color of the drop-indicator bar between chips. Falls back to `--cngx-color-primary`.|
 |`--cngx-select-error-gap`|`0.5rem`|State / Error|Gap between the error message and the retry button.|
 |`--cngx-select-error-padding`|`0.5rem 0.75rem`|State / Error|Padding of the panel-wide error block.|
-|`--cngx-select-error-color`|`oklch(0.6 0.18 25)`|State / Error|Text color of every error surface. Falls back to `--cngx-color-danger`.|
+|`--cngx-select-error-color`|`oklch(0.46 0.18 25)`|State / Error|Text color of every error surface. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-error-inline-padding`|`0.375rem 0.5rem`|State / Error|Padding of the inline error banner shown above the option list.|
 |`--cngx-select-error-inline-radius`|`0.125rem`|State / Error|Corner radius of the inline error banner.|
 |`--cngx-select-error-retry-border`|`1px solid currentColor`|State / Error|Border shorthand of the error retry button.|
@@ -2393,6 +2433,8 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-trigger-invalid-glow`|`0 0 0 3px oklch(0.6 0.18 25 / 0.2)`|State / Trigger invalid|Soft halo layered behind the invalid trigger at focus time. Authored as a `box-shadow` so it composes with any consumer-supplied focus outline.|
 |`--cngx-select-commit-error-padding`|`0.375rem 0.5rem`|State / Commit|Padding of the commit error banner.|
 |`--cngx-select-commit-error-radius`|`0.125rem`|State / Commit|Corner radius of the commit error banner.|
+|`--cngx-select-commit-error-hint-color`|`oklch(0.5 0.2 25)`|State / Commit|Text colour of the commit-error hint shown under a closed trigger. Defaults to the danger-text contrast tier so it clears 4.5:1 like the inline banner.|
+|`--cngx-select-commit-error-hint-margin`|`0.25rem`|State / Commit|Block-start margin of the commit-error hint, set from the density scale.|
 |`--cngx-select-reorder-list-max-block-size`|`40dvh`|Layout|Height cap of the sortable list of selected values that a reorderable select shows in its sheet under the touch floor. A longer selection scrolls inside the list, so the options below stay reachable.|
 |`--cngx-option-gap`|`var(--cngx-space-sm)`|Layout|Gap between the parts of the option row, such as the check indicator and the label.|
 |`--cngx-select-message-padding`|`var(--cngx-space-sm) var(--cngx-space-sm)`|Layout|Padding of the loading and empty message rows in the panel.|
@@ -2452,16 +2494,20 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-option-min-height`|`0px`|Layout|Minimum height of an option row - defaults to `0px` (content-driven, so dense rows stay compact) and composes into the touch-target floor via `max()`. A `0px` rather than `auto` default is deliberate: `auto` cannot be an argument to `max()`, and the floor needs to compose the row height against `--cngx-target-min`.|
 |`--cngx-select-option-radius`|`0.125rem`|Layout|Corner radius of an option row.|
 |`--cngx-select-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background of the keyboard-highlighted option row. Defaults to a low-alpha tint of `--cngx-color-primary` so the highlight reads as brand-accented without competing with selection state.|
+|`--cngx-select-option-active-indicator`|`oklch(0.5 0.2 275)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1. Delegates to the primary colour below, so it follows the scheme and a re-theme.|
 |`--cngx-select-option-multi-selected-bg`|`transparent`|State / Selected|Background of a selected row in a multi-value panel whose selection indicator renders. Transparent by default: the checkbox carries the selection, so a mostly-selected panel does not turn into a solid block. Assign a colour to opt the fill back in. Single-value panels and rows with the indicator hidden keep `--cngx-option-selected-bg`.|
 |`--cngx-select-check-color`|`oklch(0.66 0.19 50)`|State / Selected|Color of the selected-option checkmark glyph. Falls back through `--cngx-color-primary`.|
 |`--cngx-select-placeholder-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the placeholder text shown when no value is selected.|
 |`--cngx-select-caret-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the dropdown caret glyph shared across every variant. Muted by default to mirror the placeholder token; the Material bridge maps it to `--mat-sys-on-surface-variant`. `inherits: true` so a trigger-level override reaches the glyph element.|
 |`--cngx-select-clear-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the clear-button glyph shared across every variant. Tracks the same muted default as the caret so both trigger affordances read uniformly. `inherits: true` so a trigger-level override reaches the glyph element.|
 |`--cngx-select-caret-size`|`1.6em`|Layout|Font-size of the dropdown caret glyph shared across every variant. Read at the caret span (a trigger descendant), so `inherits: true` is load-bearing: with `inherits: false` the registered initial would always win at the caret and no consumer or composing organism could ever set the token (the inherits:false trap). The default glyph box never drops below `--cngx-icon-svg-micro-floor` (12px); set that token to `0px` as well for a caret smaller than the 12px micro box.|
+|`--cngx-select-clear-target-min`|`24px`|Layout|Fine-pointer hit-area floor of the clear button, on both axes. The 24px default meets WCAG 2.5.8 (AA); under the touch floor the larger `--cngx-target-min` wins. The trigger row keeps its height: the box hands back what it adds over the control line box. `inherits: true` so a trigger-level or ancestor override reaches the button.|
 |`--cngx-select-skeleton-gap`|`0.25rem`|State / Loading|Vertical gap between skeleton placeholder rows.|
 |`--cngx-select-skeleton-padding`|`0.25rem`|State / Loading|Padding around the skeleton placeholder block.|
 |`--cngx-select-skeleton-row-height`|`1.75rem`|State / Loading|Height of each skeleton placeholder row.|
 |`--cngx-select-skeleton-row-radius`|`0.125rem`|State / Loading|Corner radius of each skeleton placeholder row.|
+|`--cngx-select-skeleton-shimmer`|`oklch(0.2 0.01 250)`|State / Loading|Base colour the skeleton shimmer gradient is mixed from. Defaults from the foundation text colour, so the shimmer darkens a light panel and lightens a dark one in every scheme (OS, a `data-color-scheme` island, or a consumer light theme under OS dark) without a hardcoded dark-mode swap. The Material bridge sets it from `--mat-sys-on-surface`.|
+|`--cngx-select-option-spinner-track`|`oklch(0 0 0 / 0.15)`|State / Commit|Track (resting ring) colour of the per-option commit spinner. Defaults from the foundation text colour at a low alpha, so it reads on the panel in every scheme without a dark swap. The Material bridge sets it from `--mat-sys-on-surface`.|
 |`--cngx-select-spinner-padding`|`1rem`|State / Loading|Padding around the first-load spinner wrapper.|
 |`--cngx-select-spinner-size`|`1.5rem`|State / Loading|Diameter of the first-load spinner ring.|
 |`--cngx-select-spinner-border`|`2px solid oklch(0 0 0 / 0.15)`|State / Loading|Track stroke of the first-load spinner ring. `inherits: true` so the :root dark-mode override (alpha-on-white on dark) reaches the spinner inside the floating panel.|
@@ -2477,7 +2523,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-refreshing-dot-color`|`currentColor`|State / Refreshing|Color of each refreshing dot.|
 |`--cngx-select-option-spinner-size`|`0.875rem`|State / Commit|Diameter of the per-row commit spinner.|
 |`--cngx-select-option-spinner-color`|`oklch(0.66 0.19 50)`|State / Commit|Indicator stroke of the per-row commit spinner.|
-|`--cngx-select-option-error-color`|`oklch(0.6 0.18 25)`|State / Commit|Glyph color of the per-row commit error indicator. Falls back to `--cngx-color-danger`.|
+|`--cngx-select-option-error-color`|`oklch(0.46 0.18 25)`|State / Commit|Glyph color of the per-row commit error indicator. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-chip-gap`|`0.25rem`|Layout|Gap between chips inside the trigger chip list.|
 |`--cngx-select-chip-wrap-radius`|`0.25rem`|Layout|Corner radius of the reorderable chip wrap container.|
 |`--cngx-select-chip-overflow-badge-bg`|`oklch(0 0 0 / 0.08)`|State / Overflow|Background of the chip overflow badge shown in `truncate` overflow mode.|
@@ -2488,6 +2534,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-chip-remove-hover-color`|`oklch(0.6 0.18 25)`|State / Remove|Foreground color of the chip remove button on hover. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-chip-handle-color`|`oklch(0.5 0.01 250)`|State / Reorder|Color of the optional projected drag-handle glyph.|
 |`--cngx-select-chip-handle-size`|`0.75rem`|State / Reorder|Font-size of the optional projected drag-handle glyph.|
+|`--cngx-select-reorder-move-size`|`0.75em`|Layout|Size of the move-up / move-down glyph in the reorder list the panel shows under the touch floor: the box of the default triangles (still floored at the 0.75rem micro floor) and the font-size of a projected `*cngxMultiSelectMoveGlyph`. Read at the move button (a descendant of the select host), so `inherits: true` is load-bearing: with `inherits: false` a host-level override would never reach it.|
 |`--cngx-select-chip-drag-shadow`|`0 8px 20px oklch(0 0 0 / 0.28)`|State / Dragging|Drop-shadow of the chip lifted into the dragging state. `inherits: true` so the :root dark-mode override (deeper shadow on dark) reaches the chip while it's being dragged.|
 |`--cngx-select-chip-drag-bg`|`oklch(0.58 0.19 50)`|State / Dragging|Background of the chip lifted into the dragging state. Defaults track `--cngx-color-primary-strong` via the delegating entries below.|
 |`--cngx-select-chip-drag-color`|`oklch(1 0 0)`|State / Dragging|Text color of the chip lifted into the dragging state. Defaults track `--cngx-color-on-primary-strong`, which holds 4.5:1 on the drag background in both schemes.|
@@ -2497,7 +2544,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-chip-drop-bar-color`|`oklch(0.66 0.19 50)`|State / Dragging|Color of the drop-indicator bar between chips. Falls back to `--cngx-color-primary`.|
 |`--cngx-select-error-gap`|`0.5rem`|State / Error|Gap between the error message and the retry button.|
 |`--cngx-select-error-padding`|`0.5rem 0.75rem`|State / Error|Padding of the panel-wide error block.|
-|`--cngx-select-error-color`|`oklch(0.6 0.18 25)`|State / Error|Text color of every error surface. Falls back to `--cngx-color-danger`.|
+|`--cngx-select-error-color`|`oklch(0.46 0.18 25)`|State / Error|Text color of every error surface. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-error-inline-padding`|`0.375rem 0.5rem`|State / Error|Padding of the inline error banner shown above the option list.|
 |`--cngx-select-error-inline-radius`|`0.125rem`|State / Error|Corner radius of the inline error banner.|
 |`--cngx-select-error-retry-border`|`1px solid currentColor`|State / Error|Border shorthand of the error retry button.|
@@ -2507,6 +2554,8 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-trigger-invalid-glow`|`0 0 0 3px oklch(0.6 0.18 25 / 0.2)`|State / Trigger invalid|Soft halo layered behind the invalid trigger at focus time. Authored as a `box-shadow` so it composes with any consumer-supplied focus outline.|
 |`--cngx-select-commit-error-padding`|`0.375rem 0.5rem`|State / Commit|Padding of the commit error banner.|
 |`--cngx-select-commit-error-radius`|`0.125rem`|State / Commit|Corner radius of the commit error banner.|
+|`--cngx-select-commit-error-hint-color`|`oklch(0.5 0.2 25)`|State / Commit|Text colour of the commit-error hint shown under a closed trigger. Defaults to the danger-text contrast tier so it clears 4.5:1 like the inline banner.|
+|`--cngx-select-commit-error-hint-margin`|`0.25rem`|State / Commit|Block-start margin of the commit-error hint, set from the density scale.|
 |`--cngx-select-reorder-list-max-block-size`|`40dvh`|Layout|Height cap of the sortable list of selected values that a reorderable select shows in its sheet under the touch floor. A longer selection scrolls inside the list, so the options below stay reachable.|
 |`--cngx-option-gap`|`var(--cngx-space-sm)`|Layout|Gap between the parts of the option row, such as the check indicator and the label.|
 |`--cngx-select-message-padding`|`var(--cngx-space-sm) var(--cngx-space-sm)`|Layout|Padding of the loading and empty message rows in the panel.|
@@ -2620,7 +2669,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |Token|Default|Group|Description|
 |-|-|-|-|
 |`--cngx-speak-btn-size`|`36px`|Layout|Hit-target diameter of the button.|
-|`--cngx-speak-btn-icon-size`|`18px`|Layout|Inner icon size.|
+|`--cngx-speak-btn-icon-size`|`16px`|Layout|Inner icon size.|
 |`--cngx-speak-btn-radius`|`8px`|Layout|Corner radius.|
 |`--cngx-speak-btn-border-width`|`1px`|Surface|Border width.|
 |`--cngx-speak-btn-bg`|`oklch(1 0 0)`|Surface|Resting background. Falls back through `--cngx-color-surface`.|
@@ -2696,9 +2745,9 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-step-indicator-size`|`1.75rem`|Layout|Diameter of the indicator disc.|
 |`--cngx-step-group-font-weight`|`600`|Typography|Font-weight of the group header.|
 |`--cngx-step-group-indent`|`0.5rem`|Layout|Inline-start indent applied to nested steps and group headers.|
-|`--cngx-step-badge-size`|`1.15em`|State / Error|Rendered size of the validation-error icon after the step label, in `em` of the label font. The universal syntax keeps the `em` unresolved until the icon reads it, and it inherits so a host override reaches the glyph.|
+|`--cngx-step-badge-size`|``|State / Error|Rendered size of the validation-error icon after the step label. Registered without an initial value, so the rule's `1rem` fallback (16px, the hand-hinted small tier) applies until a host sets it; it inherits so a host override reaches the glyph.|
 |`--cngx-step-error-badge-color`|``|State / Error|Colour of the validation-error icon. Registered without an initial value, so the fallback to `--cngx-step-errored-color` (and on to `--cngx-color-danger`) applies until a theme sets it.|
-|`--cngx-step-rejection-icon-size`|`1.15em`|State / Rejected|Rendered size of the persistent-rejection icon (slashed circle refused, alert triangle failed), in `em` of the label font. A failed commit paints it in `--cngx-step-errored-color`, a refused one in `--cngx-step-refused-color`.|
+|`--cngx-step-rejection-icon-size`|``|State / Rejected|Rendered size of the persistent-rejection icon (slashed circle refused, alert triangle failed). Registered without an initial value, so the rule's `1rem` fallback (16px, the small tier) applies until a host sets it. A failed commit paints it in `--cngx-step-errored-color`, a refused one in `--cngx-step-refused-color`.|
 |`--cngx-step-rejection-tint`|`18%`|State / Rejected|Strength of the rejected-step surface: the share of the reason colour (errored red for a failed commit, refused amber for a refused one) mixed into transparent. Skins that draw no surface ignore it.|
 |`--cngx-step-rejection-radius`|`0.5rem`|State / Rejected|Corner radius of the rejected-step surface in the classic and stripe-status-rich skins. The shaped skins (path-chevron, pill-segment, chips) keep their own step shape.|
 |`--cngx-step-distance`|`0`|Layout / Density|Distance of a step from the active one (`abs(index - active)`). Published per-step as data under `density: 'auto'`; it raises the step's shrink priority so the furthest steps give up their label first. Set and consumed on the step element, so it does not inherit.|
@@ -2823,7 +2872,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-tab-busy-spinner-color`|`currentColor`|State / Busy|Stroke color of the busy spinner.|
 |`--cngx-tab-rejection-icon-size`|`1.15em`|State / Rejected|Rendered size of the persistent rejection icon (slashed circle refused, alert triangle failed), in `em` of the tab label font. The universal syntax keeps the `em` unresolved until the icon reads it, and it inherits so a host override reaches the glyph.|
 |`--cngx-tab-rejection-icon-color`|``|State / Rejected|Colour of a failed tab (the commit action threw): its alert icon and the base of its tinted surface. Registered without an initial value, so the fallback to `--cngx-color-danger` (and its dark-scheme value) applies until a theme sets it.|
-|`--cngx-tab-failed-text-color`|``|State / Rejected|Label colour of a failed tab under the colour-only `line` skin. Registered without an initial value, so the fallback to `--cngx-color-danger-text` (danger mixed toward the text colour, 4.5:1 on the page in both schemes) applies until a theme sets it.|
+|`--cngx-tab-failed-text-color`|``|State / Rejected|Label colour of a failed tab under the colour-only `line` skin. Registered without an initial value, so the fallback to `--cngx-color-danger-text` (danger at the text-rung lightness, 4.5:1 on the page in both schemes) applies until a theme sets it.|
 |`--cngx-tab-rejection-tint`|`18%`|State / Rejected|Strength of the rejected-tab surface: the share of the reason colour (danger red for a failed switch, refused amber for a refused one) mixed into transparent. The `contained`, `segmented`, `pill` and `pill-outline` skins tint the tab in their own shape; the colour-only `line` skin ignores it. The pulse peaks at twice the share.|
 |`--cngx-tab-rejected-pulse-duration`|`600ms`|State / Rejected|Duration of the rejected-tab pulse animation.|
 |`--cngx-tab-refused-color`|``|State / Refused|Colour of a refused tab (the commit action answered `false`): its slashed-circle icon and the base of its tinted surface. A refusal is no error, so it wears amber; a failed switch takes `--cngx-tab-rejection-icon-color`. Registered without an initial value, so the fallback applies until a theme sets it: `--cngx-color-warning` mixed 70% toward `--cngx-color-text`, which keeps the icon at 3:1 on the light page (the raw warning amber reads 2.5:1 there).|
@@ -2880,7 +2929,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-tab-busy-spinner-color`|`currentColor`|State / Busy|Stroke color of the busy spinner.|
 |`--cngx-tab-rejection-icon-size`|`1.15em`|State / Rejected|Rendered size of the persistent rejection icon (slashed circle refused, alert triangle failed), in `em` of the tab label font. The universal syntax keeps the `em` unresolved until the icon reads it, and it inherits so a host override reaches the glyph.|
 |`--cngx-tab-rejection-icon-color`|``|State / Rejected|Colour of a failed tab (the commit action threw): its alert icon and the base of its tinted surface. Registered without an initial value, so the fallback to `--cngx-color-danger` (and its dark-scheme value) applies until a theme sets it.|
-|`--cngx-tab-failed-text-color`|``|State / Rejected|Label colour of a failed tab under the colour-only `line` skin. Registered without an initial value, so the fallback to `--cngx-color-danger-text` (danger mixed toward the text colour, 4.5:1 on the page in both schemes) applies until a theme sets it.|
+|`--cngx-tab-failed-text-color`|``|State / Rejected|Label colour of a failed tab under the colour-only `line` skin. Registered without an initial value, so the fallback to `--cngx-color-danger-text` (danger at the text-rung lightness, 4.5:1 on the page in both schemes) applies until a theme sets it.|
 |`--cngx-tab-rejection-tint`|`18%`|State / Rejected|Strength of the rejected-tab surface: the share of the reason colour (danger red for a failed switch, refused amber for a refused one) mixed into transparent. The `contained`, `segmented`, `pill` and `pill-outline` skins tint the tab in their own shape; the colour-only `line` skin ignores it. The pulse peaks at twice the share.|
 |`--cngx-tab-rejected-pulse-duration`|`600ms`|State / Rejected|Duration of the rejected-tab pulse animation.|
 |`--cngx-tab-refused-color`|``|State / Refused|Colour of a refused tab (the commit action answered `false`): its slashed-circle icon and the base of its tinted surface. A refusal is no error, so it wears amber; a failed switch takes `--cngx-tab-rejection-icon-color`. Registered without an initial value, so the fallback applies until a theme sets it: `--cngx-color-warning` mixed 70% toward `--cngx-color-text`, which keeps the icon at 3:1 on the light page (the raw warning amber reads 2.5:1 there).|
@@ -3131,14 +3180,15 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-toast-border-radius`|`8px`|Layout|Corner radius of each toast.|
 |`--cngx-toast-bg`|`oklch(1 0 0)`|Surface|Background of each toast.|
 |`--cngx-toast-color`|`oklch(0.25 0.015 250)`|Surface|Text color of each toast.|
-|`--cngx-toast-shadow`|`0 4px 12px oklch(0 0 0 / 0.15)`|Surface|Drop-shadow of each toast.|
+|`--cngx-toast-shadow`|`0 8px 24px oklch(0 0 0 / 0.12)`|Surface|Drop-shadow of each toast.|
+|`--cngx-toast-border`|`1px solid oklch(0 0 0 / 0.08)`|Surface|Border shorthand of each toast. The real border keeps the overlay edge visible under forced colors, where the shadow is dropped.|
 |`--cngx-toast-enter-duration`|`200ms`|Motion|Duration of the enter animation. Derives from the `--cngx-duration-base` rung of the motion scale; a `--cngx-duration-*` brand override re-times it library-wide.|
 |`--cngx-toast-enter-easing`|`ease-out`|Motion|Easing curve of the enter animation.|
-|`--cngx-toast-accent-width`|`3px`|Surface|Width of the leading-edge severity stripe.|
-|`--cngx-toast-info-accent`|`oklch(0.6 0.11 240)`|Variant / Info|Severity stripe and icon of the info variant. Delegates to the shared `--cngx-feedback-info-icon` (`--cngx-color-info` mixed 90% into the text colour), the alert and banner glyph colour.|
-|`--cngx-toast-success-accent`|`oklch(0.56 0.135 145)`|Variant / Success|Severity stripe and icon of the success variant. Delegates to the shared `--cngx-feedback-success-icon` (`--cngx-color-success` mixed 90% into the text colour), the alert and banner glyph colour.|
-|`--cngx-toast-warning-accent`|`oklch(0.67 0.135 75)`|Variant / Warning|Severity stripe and icon of the warning variant. Delegates to the shared `--cngx-feedback-warning-icon` (`--cngx-color-warning` mixed 90% into the text colour), the alert and banner glyph colour.|
-|`--cngx-toast-error-accent`|`oklch(0.56 0.16 25)`|Variant / Error|Severity stripe and icon of the error variant. Delegates to the shared `--cngx-feedback-error-icon` (`--cngx-color-danger` mixed 90% into the text colour), the alert and banner glyph colour.|
+|`--cngx-toast-accent`|`currentColor`|Surface|Severity accent the glyph and the action derive from. Set by each `.cngx-toast--{severity}` rule from `--cngx-toast-{severity}-accent`; theme the per-severity tokens, not this hook.|
+|`--cngx-toast-info-accent`|`oklch(0.6 0.11 240)`|Variant / Info|Glyph and action accent of the info variant. Delegates to the shared `--cngx-feedback-info-icon` (`--cngx-color-info` mixed 90% into the text colour), the alert and banner glyph colour.|
+|`--cngx-toast-success-accent`|`oklch(0.56 0.135 145)`|Variant / Success|Glyph and action accent of the success variant. Delegates to the shared `--cngx-feedback-success-icon` (`--cngx-color-success` mixed 90% into the text colour), the alert and banner glyph colour.|
+|`--cngx-toast-warning-accent`|`oklch(0.67 0.135 75)`|Variant / Warning|Glyph and action accent of the warning variant. Delegates to the shared `--cngx-feedback-warning-icon` (`--cngx-color-warning` mixed 90% into the text colour), the alert and banner glyph colour.|
+|`--cngx-toast-error-accent`|`oklch(0.56 0.16 25)`|Variant / Error|Glyph and action accent of the error variant. Delegates to the shared `--cngx-feedback-error-icon` (`--cngx-color-danger` mixed 90% into the text colour), the alert and banner glyph colour.|
 |`--cngx-toast-icon-size`|`20px`|Layout|Default icon size when no custom icon is projected.|
 |`--cngx-toast-font-size`|`0.875rem`|Typography|Font-size of the toast body text.|
 |`--cngx-toast-line-height`|`1.5`|Typography|Line-height of the toast body text.|
@@ -3149,9 +3199,13 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-toast-description-font-size`|`0.8125rem`|Typography|Font-size of the description slot.|
 |`--cngx-toast-description-color`|`oklch(0.5 0.01 250)`|Typography|Text color of the description slot.|
 |`--cngx-toast-description-line-height`|`1.4`|Typography|Line-height of the description slot.|
-|`--cngx-toast-action-padding`|`4px 0`|Layout|Padding shorthand of the inline action button.|
-|`--cngx-toast-action-weight`|`600`|Typography|Font-weight of the inline action button.|
-|`--cngx-toast-action-size`|`0.8125rem`|Typography|Font-size of the inline action button.|
+|`--cngx-toast-actions-gap`|`8px`|Layout|Gap between the text block and the trailing action.|
+|`--cngx-toast-action-padding`|`4px 8px`|State / Action|Padding shorthand of the action button.|
+|`--cngx-toast-action-radius`|`4px`|State / Action|Corner radius of the action button.|
+|`--cngx-toast-action-color`|`color-mix(in oklab, var(--cngx-toast-accent) 60%, var(--cngx-color-text))`|State / Action|Label and border color of the action button. Unset by default, so the use site derives it from `--cngx-toast-accent` mixed 60% into the text color: the pure accent misses 4.5:1 on the light surface. Pin it to `--cngx-toast-accent` to paint the action in the pure accent again (the Material 3 bridge does).|
+|`--cngx-toast-action-hover-bg`|`oklch(0 0 0 / 0.04)`|State / Action|Background tint applied on hover of the action button.|
+|`--cngx-toast-action-weight`|`600`|Typography|Font-weight of the action button.|
+|`--cngx-toast-action-size`|`0.8125rem`|Typography|Font-size of the action button.|
 
 ## CngxToc
 
@@ -3219,16 +3273,20 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-option-min-height`|`0px`|Layout|Minimum height of an option row - defaults to `0px` (content-driven, so dense rows stay compact) and composes into the touch-target floor via `max()`. A `0px` rather than `auto` default is deliberate: `auto` cannot be an argument to `max()`, and the floor needs to compose the row height against `--cngx-target-min`.|
 |`--cngx-select-option-radius`|`0.125rem`|Layout|Corner radius of an option row.|
 |`--cngx-select-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background of the keyboard-highlighted option row. Defaults to a low-alpha tint of `--cngx-color-primary` so the highlight reads as brand-accented without competing with selection state.|
+|`--cngx-select-option-active-indicator`|`oklch(0.5 0.2 275)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1. Delegates to the primary colour below, so it follows the scheme and a re-theme.|
 |`--cngx-select-option-multi-selected-bg`|`transparent`|State / Selected|Background of a selected row in a multi-value panel whose selection indicator renders. Transparent by default: the checkbox carries the selection, so a mostly-selected panel does not turn into a solid block. Assign a colour to opt the fill back in. Single-value panels and rows with the indicator hidden keep `--cngx-option-selected-bg`.|
 |`--cngx-select-check-color`|`oklch(0.66 0.19 50)`|State / Selected|Color of the selected-option checkmark glyph. Falls back through `--cngx-color-primary`.|
 |`--cngx-select-placeholder-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the placeholder text shown when no value is selected.|
 |`--cngx-select-caret-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the dropdown caret glyph shared across every variant. Muted by default to mirror the placeholder token; the Material bridge maps it to `--mat-sys-on-surface-variant`. `inherits: true` so a trigger-level override reaches the glyph element.|
 |`--cngx-select-clear-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the clear-button glyph shared across every variant. Tracks the same muted default as the caret so both trigger affordances read uniformly. `inherits: true` so a trigger-level override reaches the glyph element.|
 |`--cngx-select-caret-size`|`1.6em`|Layout|Font-size of the dropdown caret glyph shared across every variant. Read at the caret span (a trigger descendant), so `inherits: true` is load-bearing: with `inherits: false` the registered initial would always win at the caret and no consumer or composing organism could ever set the token (the inherits:false trap). The default glyph box never drops below `--cngx-icon-svg-micro-floor` (12px); set that token to `0px` as well for a caret smaller than the 12px micro box.|
+|`--cngx-select-clear-target-min`|`24px`|Layout|Fine-pointer hit-area floor of the clear button, on both axes. The 24px default meets WCAG 2.5.8 (AA); under the touch floor the larger `--cngx-target-min` wins. The trigger row keeps its height: the box hands back what it adds over the control line box. `inherits: true` so a trigger-level or ancestor override reaches the button.|
 |`--cngx-select-skeleton-gap`|`0.25rem`|State / Loading|Vertical gap between skeleton placeholder rows.|
 |`--cngx-select-skeleton-padding`|`0.25rem`|State / Loading|Padding around the skeleton placeholder block.|
 |`--cngx-select-skeleton-row-height`|`1.75rem`|State / Loading|Height of each skeleton placeholder row.|
 |`--cngx-select-skeleton-row-radius`|`0.125rem`|State / Loading|Corner radius of each skeleton placeholder row.|
+|`--cngx-select-skeleton-shimmer`|`oklch(0.2 0.01 250)`|State / Loading|Base colour the skeleton shimmer gradient is mixed from. Defaults from the foundation text colour, so the shimmer darkens a light panel and lightens a dark one in every scheme (OS, a `data-color-scheme` island, or a consumer light theme under OS dark) without a hardcoded dark-mode swap. The Material bridge sets it from `--mat-sys-on-surface`.|
+|`--cngx-select-option-spinner-track`|`oklch(0 0 0 / 0.15)`|State / Commit|Track (resting ring) colour of the per-option commit spinner. Defaults from the foundation text colour at a low alpha, so it reads on the panel in every scheme without a dark swap. The Material bridge sets it from `--mat-sys-on-surface`.|
 |`--cngx-select-spinner-padding`|`1rem`|State / Loading|Padding around the first-load spinner wrapper.|
 |`--cngx-select-spinner-size`|`1.5rem`|State / Loading|Diameter of the first-load spinner ring.|
 |`--cngx-select-spinner-border`|`2px solid oklch(0 0 0 / 0.15)`|State / Loading|Track stroke of the first-load spinner ring. `inherits: true` so the :root dark-mode override (alpha-on-white on dark) reaches the spinner inside the floating panel.|
@@ -3244,7 +3302,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-refreshing-dot-color`|`currentColor`|State / Refreshing|Color of each refreshing dot.|
 |`--cngx-select-option-spinner-size`|`0.875rem`|State / Commit|Diameter of the per-row commit spinner.|
 |`--cngx-select-option-spinner-color`|`oklch(0.66 0.19 50)`|State / Commit|Indicator stroke of the per-row commit spinner.|
-|`--cngx-select-option-error-color`|`oklch(0.6 0.18 25)`|State / Commit|Glyph color of the per-row commit error indicator. Falls back to `--cngx-color-danger`.|
+|`--cngx-select-option-error-color`|`oklch(0.46 0.18 25)`|State / Commit|Glyph color of the per-row commit error indicator. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-chip-gap`|`0.25rem`|Layout|Gap between chips inside the trigger chip list.|
 |`--cngx-select-chip-wrap-radius`|`0.25rem`|Layout|Corner radius of the reorderable chip wrap container.|
 |`--cngx-select-chip-overflow-badge-bg`|`oklch(0 0 0 / 0.08)`|State / Overflow|Background of the chip overflow badge shown in `truncate` overflow mode.|
@@ -3255,6 +3313,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-chip-remove-hover-color`|`oklch(0.6 0.18 25)`|State / Remove|Foreground color of the chip remove button on hover. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-chip-handle-color`|`oklch(0.5 0.01 250)`|State / Reorder|Color of the optional projected drag-handle glyph.|
 |`--cngx-select-chip-handle-size`|`0.75rem`|State / Reorder|Font-size of the optional projected drag-handle glyph.|
+|`--cngx-select-reorder-move-size`|`0.75em`|Layout|Size of the move-up / move-down glyph in the reorder list the panel shows under the touch floor: the box of the default triangles (still floored at the 0.75rem micro floor) and the font-size of a projected `*cngxMultiSelectMoveGlyph`. Read at the move button (a descendant of the select host), so `inherits: true` is load-bearing: with `inherits: false` a host-level override would never reach it.|
 |`--cngx-select-chip-drag-shadow`|`0 8px 20px oklch(0 0 0 / 0.28)`|State / Dragging|Drop-shadow of the chip lifted into the dragging state. `inherits: true` so the :root dark-mode override (deeper shadow on dark) reaches the chip while it's being dragged.|
 |`--cngx-select-chip-drag-bg`|`oklch(0.58 0.19 50)`|State / Dragging|Background of the chip lifted into the dragging state. Defaults track `--cngx-color-primary-strong` via the delegating entries below.|
 |`--cngx-select-chip-drag-color`|`oklch(1 0 0)`|State / Dragging|Text color of the chip lifted into the dragging state. Defaults track `--cngx-color-on-primary-strong`, which holds 4.5:1 on the drag background in both schemes.|
@@ -3264,7 +3323,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-chip-drop-bar-color`|`oklch(0.66 0.19 50)`|State / Dragging|Color of the drop-indicator bar between chips. Falls back to `--cngx-color-primary`.|
 |`--cngx-select-error-gap`|`0.5rem`|State / Error|Gap between the error message and the retry button.|
 |`--cngx-select-error-padding`|`0.5rem 0.75rem`|State / Error|Padding of the panel-wide error block.|
-|`--cngx-select-error-color`|`oklch(0.6 0.18 25)`|State / Error|Text color of every error surface. Falls back to `--cngx-color-danger`.|
+|`--cngx-select-error-color`|`oklch(0.46 0.18 25)`|State / Error|Text color of every error surface. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-error-inline-padding`|`0.375rem 0.5rem`|State / Error|Padding of the inline error banner shown above the option list.|
 |`--cngx-select-error-inline-radius`|`0.125rem`|State / Error|Corner radius of the inline error banner.|
 |`--cngx-select-error-retry-border`|`1px solid currentColor`|State / Error|Border shorthand of the error retry button.|
@@ -3274,6 +3333,8 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-trigger-invalid-glow`|`0 0 0 3px oklch(0.6 0.18 25 / 0.2)`|State / Trigger invalid|Soft halo layered behind the invalid trigger at focus time. Authored as a `box-shadow` so it composes with any consumer-supplied focus outline.|
 |`--cngx-select-commit-error-padding`|`0.375rem 0.5rem`|State / Commit|Padding of the commit error banner.|
 |`--cngx-select-commit-error-radius`|`0.125rem`|State / Commit|Corner radius of the commit error banner.|
+|`--cngx-select-commit-error-hint-color`|`oklch(0.5 0.2 25)`|State / Commit|Text colour of the commit-error hint shown under a closed trigger. Defaults to the danger-text contrast tier so it clears 4.5:1 like the inline banner.|
+|`--cngx-select-commit-error-hint-margin`|`0.25rem`|State / Commit|Block-start margin of the commit-error hint, set from the density scale.|
 |`--cngx-select-reorder-list-max-block-size`|`40dvh`|Layout|Height cap of the sortable list of selected values that a reorderable select shows in its sheet under the touch floor. A longer selection scrolls inside the list, so the options below stay reachable.|
 |`--cngx-option-gap`|`var(--cngx-space-sm)`|Layout|Gap between the parts of the option row, such as the check indicator and the label.|
 |`--cngx-select-message-padding`|`var(--cngx-space-sm) var(--cngx-space-sm)`|Layout|Padding of the loading and empty message rows in the panel.|
@@ -3363,16 +3424,20 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-option-min-height`|`0px`|Layout|Minimum height of an option row - defaults to `0px` (content-driven, so dense rows stay compact) and composes into the touch-target floor via `max()`. A `0px` rather than `auto` default is deliberate: `auto` cannot be an argument to `max()`, and the floor needs to compose the row height against `--cngx-target-min`.|
 |`--cngx-select-option-radius`|`0.125rem`|Layout|Corner radius of an option row.|
 |`--cngx-select-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background of the keyboard-highlighted option row. Defaults to a low-alpha tint of `--cngx-color-primary` so the highlight reads as brand-accented without competing with selection state.|
+|`--cngx-select-option-active-indicator`|`oklch(0.5 0.2 275)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1. Delegates to the primary colour below, so it follows the scheme and a re-theme.|
 |`--cngx-select-option-multi-selected-bg`|`transparent`|State / Selected|Background of a selected row in a multi-value panel whose selection indicator renders. Transparent by default: the checkbox carries the selection, so a mostly-selected panel does not turn into a solid block. Assign a colour to opt the fill back in. Single-value panels and rows with the indicator hidden keep `--cngx-option-selected-bg`.|
 |`--cngx-select-check-color`|`oklch(0.66 0.19 50)`|State / Selected|Color of the selected-option checkmark glyph. Falls back through `--cngx-color-primary`.|
 |`--cngx-select-placeholder-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the placeholder text shown when no value is selected.|
 |`--cngx-select-caret-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the dropdown caret glyph shared across every variant. Muted by default to mirror the placeholder token; the Material bridge maps it to `--mat-sys-on-surface-variant`. `inherits: true` so a trigger-level override reaches the glyph element.|
 |`--cngx-select-clear-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the clear-button glyph shared across every variant. Tracks the same muted default as the caret so both trigger affordances read uniformly. `inherits: true` so a trigger-level override reaches the glyph element.|
 |`--cngx-select-caret-size`|`1.6em`|Layout|Font-size of the dropdown caret glyph shared across every variant. Read at the caret span (a trigger descendant), so `inherits: true` is load-bearing: with `inherits: false` the registered initial would always win at the caret and no consumer or composing organism could ever set the token (the inherits:false trap). The default glyph box never drops below `--cngx-icon-svg-micro-floor` (12px); set that token to `0px` as well for a caret smaller than the 12px micro box.|
+|`--cngx-select-clear-target-min`|`24px`|Layout|Fine-pointer hit-area floor of the clear button, on both axes. The 24px default meets WCAG 2.5.8 (AA); under the touch floor the larger `--cngx-target-min` wins. The trigger row keeps its height: the box hands back what it adds over the control line box. `inherits: true` so a trigger-level or ancestor override reaches the button.|
 |`--cngx-select-skeleton-gap`|`0.25rem`|State / Loading|Vertical gap between skeleton placeholder rows.|
 |`--cngx-select-skeleton-padding`|`0.25rem`|State / Loading|Padding around the skeleton placeholder block.|
 |`--cngx-select-skeleton-row-height`|`1.75rem`|State / Loading|Height of each skeleton placeholder row.|
 |`--cngx-select-skeleton-row-radius`|`0.125rem`|State / Loading|Corner radius of each skeleton placeholder row.|
+|`--cngx-select-skeleton-shimmer`|`oklch(0.2 0.01 250)`|State / Loading|Base colour the skeleton shimmer gradient is mixed from. Defaults from the foundation text colour, so the shimmer darkens a light panel and lightens a dark one in every scheme (OS, a `data-color-scheme` island, or a consumer light theme under OS dark) without a hardcoded dark-mode swap. The Material bridge sets it from `--mat-sys-on-surface`.|
+|`--cngx-select-option-spinner-track`|`oklch(0 0 0 / 0.15)`|State / Commit|Track (resting ring) colour of the per-option commit spinner. Defaults from the foundation text colour at a low alpha, so it reads on the panel in every scheme without a dark swap. The Material bridge sets it from `--mat-sys-on-surface`.|
 |`--cngx-select-spinner-padding`|`1rem`|State / Loading|Padding around the first-load spinner wrapper.|
 |`--cngx-select-spinner-size`|`1.5rem`|State / Loading|Diameter of the first-load spinner ring.|
 |`--cngx-select-spinner-border`|`2px solid oklch(0 0 0 / 0.15)`|State / Loading|Track stroke of the first-load spinner ring. `inherits: true` so the :root dark-mode override (alpha-on-white on dark) reaches the spinner inside the floating panel.|
@@ -3388,7 +3453,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-refreshing-dot-color`|`currentColor`|State / Refreshing|Color of each refreshing dot.|
 |`--cngx-select-option-spinner-size`|`0.875rem`|State / Commit|Diameter of the per-row commit spinner.|
 |`--cngx-select-option-spinner-color`|`oklch(0.66 0.19 50)`|State / Commit|Indicator stroke of the per-row commit spinner.|
-|`--cngx-select-option-error-color`|`oklch(0.6 0.18 25)`|State / Commit|Glyph color of the per-row commit error indicator. Falls back to `--cngx-color-danger`.|
+|`--cngx-select-option-error-color`|`oklch(0.46 0.18 25)`|State / Commit|Glyph color of the per-row commit error indicator. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-chip-gap`|`0.25rem`|Layout|Gap between chips inside the trigger chip list.|
 |`--cngx-select-chip-wrap-radius`|`0.25rem`|Layout|Corner radius of the reorderable chip wrap container.|
 |`--cngx-select-chip-overflow-badge-bg`|`oklch(0 0 0 / 0.08)`|State / Overflow|Background of the chip overflow badge shown in `truncate` overflow mode.|
@@ -3399,6 +3464,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-chip-remove-hover-color`|`oklch(0.6 0.18 25)`|State / Remove|Foreground color of the chip remove button on hover. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-chip-handle-color`|`oklch(0.5 0.01 250)`|State / Reorder|Color of the optional projected drag-handle glyph.|
 |`--cngx-select-chip-handle-size`|`0.75rem`|State / Reorder|Font-size of the optional projected drag-handle glyph.|
+|`--cngx-select-reorder-move-size`|`0.75em`|Layout|Size of the move-up / move-down glyph in the reorder list the panel shows under the touch floor: the box of the default triangles (still floored at the 0.75rem micro floor) and the font-size of a projected `*cngxMultiSelectMoveGlyph`. Read at the move button (a descendant of the select host), so `inherits: true` is load-bearing: with `inherits: false` a host-level override would never reach it.|
 |`--cngx-select-chip-drag-shadow`|`0 8px 20px oklch(0 0 0 / 0.28)`|State / Dragging|Drop-shadow of the chip lifted into the dragging state. `inherits: true` so the :root dark-mode override (deeper shadow on dark) reaches the chip while it's being dragged.|
 |`--cngx-select-chip-drag-bg`|`oklch(0.58 0.19 50)`|State / Dragging|Background of the chip lifted into the dragging state. Defaults track `--cngx-color-primary-strong` via the delegating entries below.|
 |`--cngx-select-chip-drag-color`|`oklch(1 0 0)`|State / Dragging|Text color of the chip lifted into the dragging state. Defaults track `--cngx-color-on-primary-strong`, which holds 4.5:1 on the drag background in both schemes.|
@@ -3408,7 +3474,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-chip-drop-bar-color`|`oklch(0.66 0.19 50)`|State / Dragging|Color of the drop-indicator bar between chips. Falls back to `--cngx-color-primary`.|
 |`--cngx-select-error-gap`|`0.5rem`|State / Error|Gap between the error message and the retry button.|
 |`--cngx-select-error-padding`|`0.5rem 0.75rem`|State / Error|Padding of the panel-wide error block.|
-|`--cngx-select-error-color`|`oklch(0.6 0.18 25)`|State / Error|Text color of every error surface. Falls back to `--cngx-color-danger`.|
+|`--cngx-select-error-color`|`oklch(0.46 0.18 25)`|State / Error|Text color of every error surface. Falls back to `--cngx-color-danger`.|
 |`--cngx-select-error-inline-padding`|`0.375rem 0.5rem`|State / Error|Padding of the inline error banner shown above the option list.|
 |`--cngx-select-error-inline-radius`|`0.125rem`|State / Error|Corner radius of the inline error banner.|
 |`--cngx-select-error-retry-border`|`1px solid currentColor`|State / Error|Border shorthand of the error retry button.|
@@ -3418,6 +3484,8 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-trigger-invalid-glow`|`0 0 0 3px oklch(0.6 0.18 25 / 0.2)`|State / Trigger invalid|Soft halo layered behind the invalid trigger at focus time. Authored as a `box-shadow` so it composes with any consumer-supplied focus outline.|
 |`--cngx-select-commit-error-padding`|`0.375rem 0.5rem`|State / Commit|Padding of the commit error banner.|
 |`--cngx-select-commit-error-radius`|`0.125rem`|State / Commit|Corner radius of the commit error banner.|
+|`--cngx-select-commit-error-hint-color`|`oklch(0.5 0.2 25)`|State / Commit|Text colour of the commit-error hint shown under a closed trigger. Defaults to the danger-text contrast tier so it clears 4.5:1 like the inline banner.|
+|`--cngx-select-commit-error-hint-margin`|`0.25rem`|State / Commit|Block-start margin of the commit-error hint, set from the density scale.|
 |`--cngx-select-reorder-list-max-block-size`|`40dvh`|Layout|Height cap of the sortable list of selected values that a reorderable select shows in its sheet under the touch floor. A longer selection scrolls inside the list, so the options below stay reachable.|
 |`--cngx-option-gap`|`var(--cngx-space-sm)`|Layout|Gap between the parts of the option row, such as the check indicator and the label.|
 |`--cngx-select-message-padding`|`var(--cngx-space-sm) var(--cngx-space-sm)`|Layout|Padding of the loading and empty message rows in the panel.|

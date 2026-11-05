@@ -3,14 +3,17 @@
 import { CUSTOM_ELEMENTS_SCHEMA, Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { computedValue } from '@cngx/testing/geometry';
-import { afterEach, describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { cdp, userEvent } from 'vitest/browser';
 
-// Runs in a real Chromium (the `test-geometry` target). An enabled alert or
-// banner action paints its label in the severity accent mixed into the text
-// colour, so it clears 4.5:1 on the light severity tint as well as on the
-// hover overlay; the pure accent missed it (2.1-3.6). The border follows the
-// label, and a per-instance `--cngx-*-action-color` pin still wins.
+// Runs in a real Chromium (the `test-geometry` target). An enabled alert,
+// banner or toast action paints its label in the severity accent mixed into
+// the text colour, so it clears 4.5:1 on the light severity tint (alert,
+// banner) or the toast surface as well as on the hover overlay; the pure
+// accent missed it (2.1-3.6). The border follows the label, and a
+// per-instance `--cngx-*-action-color` pin still wins. The toast background
+// resolves at the root, so a scheme island would not reach it: the toast rows
+// emulate the scheme page-wide instead.
 
 const SCHEMES = ['light', 'dark'] as const;
 const SEVERITIES = ['info', 'success', 'warning', 'error'] as const;
@@ -23,6 +26,7 @@ const SEVERITIES = ['info', 'success', 'warning', 'error'] as const;
     './styles/feedback-severity.css',
     './alert/alert.css',
     './banner/banner-outlet.css',
+    './toast/toast-outlet.css',
   ],
   encapsulation: ViewEncapsulation.None,
   // Bare outlet tags carry only the shipped classes; the components
@@ -54,17 +58,31 @@ const SEVERITIES = ['info', 'success', 'warning', 'error'] as const;
         </div>
       </div>
     }
+    @if (toasts) {
+      <!-- Fixed overlay: rendered only for the toast rows so it never covers
+           the alert and banner actions. -->
+      <cngx-toast-outlet class="cngx-toast-outlet cngx-toast-outlet--top-start">
+        @for (severity of severities; track severity) {
+          <div [class]="'cngx-toast cngx-toast--' + severity + ' toast-' + severity">
+            <span class="cngx-toast__body">Message archived</span>
+            <button type="button" class="cngx-toast__action">Undo</button>
+          </div>
+        }
+      </cngx-toast-outlet>
+    }
   `,
 })
 class ActionContrastHost {
   readonly schemes = SCHEMES;
   readonly severities = SEVERITIES;
+  toasts = false;
 }
 
 let mountedRoot: HTMLElement | null = null;
 
-function mount(): HTMLElement {
+function mount(toasts = false): HTMLElement {
   const fixture = TestBed.createComponent(ActionContrastHost);
+  fixture.componentInstance.toasts = toasts;
   mountedRoot = fixture.nativeElement as HTMLElement;
   document.body.appendChild(mountedRoot);
   fixture.detectChanges();
@@ -126,6 +144,7 @@ function labelContrast(action: HTMLElement, surface: HTMLElement): number {
 afterEach(async () => {
   mountedRoot?.remove();
   mountedRoot = null;
+  await cdp().send('Emulation.setEmulatedMedia', { features: [] });
 });
 
 describe.each(SCHEMES)('enabled feedback action contrast, %s', (scheme) => {
@@ -172,5 +191,34 @@ describe.each(SCHEMES)('enabled feedback action contrast, %s', (scheme) => {
     expect(paint(computedValue(pinned, 'color'))).toEqual(paint(icon));
     const derived = at(root, '.alert-warning .cngx-alert__action');
     expect(paint(computedValue(derived, 'color'))).not.toEqual(paint(icon));
+  });
+});
+
+describe.each(SCHEMES)('enabled toast action contrast, %s', (scheme) => {
+  beforeEach(async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'prefers-color-scheme', value: scheme }],
+    });
+  });
+
+  describe.each(SEVERITIES)('%s', (severity) => {
+    it('clears 4.5:1 at rest, the border following the label', () => {
+      const root = mount(true);
+      const toast = one(root, `.toast-${severity}`);
+      const action = one(toast, '.cngx-toast__action');
+      expect(labelContrast(action, toast)).toBeGreaterThanOrEqual(4.5);
+      expect(computedValue(action, 'border-top-color')).toBe(computedValue(action, 'color'));
+    });
+
+    it('clears 4.5:1 on the hover overlay', async () => {
+      const root = mount(true);
+      const toast = one(root, `.toast-${severity}`);
+      const action = one(toast, '.cngx-toast__action');
+      const rest = computedValue(action, 'background-color');
+      await userEvent.hover(action);
+      expect(computedValue(action, 'background-color')).not.toBe(rest);
+      expect(labelContrast(action, toast)).toBeGreaterThanOrEqual(4.5);
+      await userEvent.unhover(action);
+    });
   });
 });

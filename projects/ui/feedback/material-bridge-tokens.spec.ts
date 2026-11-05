@@ -127,11 +127,11 @@ describe('feedback Material bridge', () => {
     '--cngx-progress-label-gap',
     '--cngx-progress-label-size',
     '--cngx-progress-track-color',
-    '--cngx-toast-accent-width',
-    '--cngx-toast-action-padding',
+    '--cngx-toast-action-color',
     '--cngx-toast-action-size',
     '--cngx-toast-action-weight',
     '--cngx-toast-bg',
+    '--cngx-toast-border',
     '--cngx-toast-border-radius',
     '--cngx-toast-color',
     '--cngx-toast-description-color',
@@ -164,7 +164,7 @@ describe('feedback Material bridge', () => {
     }
   });
 
-  it('pins the alert and banner action to the pure severity accent (M3 only)', () => {
+  it('pins the alert, banner and toast action to the pure severity accent (M3 only)', () => {
     // The cngx default mixes the accent into the text colour for 4.5:1 on the
     // light tint; the M3 accents already clear it, so the bridge keeps the
     // Material look. The M2 warn 500 misses 4.5:1 on its tint, so M2 keeps
@@ -172,9 +172,11 @@ describe('feedback Material bridge', () => {
     const m3 = compiledTheme('v1');
     expect(m3).toContain('--cngx-alert-action-color: var(--cngx-alert-icon-color)');
     expect(m3).toContain('--cngx-banner-action-color: var(--cngx-banner-accent)');
+    expect(m3).toContain('--cngx-toast-action-color: var(--cngx-toast-accent)');
     const m2 = compiledTheme('v0');
     expect(m2).not.toContain('--cngx-alert-action-color');
     expect(m2).not.toContain('--cngx-banner-action-color');
+    expect(m2).not.toContain('--cngx-toast-action-color');
   });
 
   it('leaves the M2 alert and banner success / warning to the derived cngx defaults', () => {
