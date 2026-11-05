@@ -869,6 +869,7 @@
       "status": "active",
       "files": [
         "projects/common/button/provide-cngx-button.ts",
+        "projects/common/menu-button/provide-cngx-menu-button.ts",
         "projects/common/stepper/provide-cngx-stepper.ts",
         "projects/common/tabs/provide-cngx-tabs.ts"
       ],
@@ -880,6 +881,14 @@
         {
           "file": "projects/common/button/provide-cngx-button.ts",
           "text": "provideCngxButtonAt(): dropped feature without a `_target` discriminator. Pass config through the `withButton*` helpers of @cngx/common/button."
+        },
+        {
+          "file": "projects/common/menu-button/provide-cngx-menu-button.ts",
+          "text": "provideCngxMenuButton(): dropped feature without a `_target` discriminator. Pass the caret through `withButtonCaretIcon(...)` and labels through `withMenuButtonI18nLabels(...)`."
+        },
+        {
+          "file": "projects/common/menu-button/provide-cngx-menu-button.ts",
+          "text": "provideCngxMenuButtonAt(): dropped feature without a `_target` discriminator. Pass the caret through `withButtonCaretIcon(...)` and labels through `withMenuButtonI18nLabels(...)`."
         },
         {
           "file": "projects/common/stepper/provide-cngx-stepper.ts",
