@@ -90,7 +90,10 @@ export const CNGX_ICON_X = {
     viewBox: '0 0 12 12',
     d: 'M2 3L3 2L10 9L9 10ZM9 2L10 3L3 10L2 9Z',
   },
-  small: null,
+  small: {
+    viewBox: '0 0 16 16',
+    d: 'M3 4L4 3L13 12L12 13ZM12 3L13 4L4 13L3 12Z',
+  },
 } as const satisfies CngxIconData;
 
 /** Add plus. @internal */
@@ -114,7 +117,10 @@ export const CNGX_ICON_MINUS = {
     viewBox: '0 0 12 12',
     d: 'M3 5H9V7H3Z',
   },
-  small: null,
+  small: {
+    viewBox: '0 0 16 16',
+    d: 'M3 7H13V8H3Z',
+  },
 } as const satisfies CngxIconData;
 
 /** Solid dropdown caret pointing down. @internal */
@@ -150,7 +156,10 @@ export const CNGX_ICON_CHEVRON_RIGHT = {
     viewBox: '0 0 12 12',
     d: 'M5 3L8 6L5 9L4 8L6 6L4 4Z',
   },
-  small: null,
+  small: {
+    viewBox: '0 0 16 16',
+    d: 'M7 4L11 8L7 12L5 11L8 8L5 5Z',
+  },
 } as const satisfies CngxIconData;
 
 /** Double chevron pointing left (first page). @internal */
@@ -234,7 +243,10 @@ export const CNGX_ICON_ALERT = {
     viewBox: '0 0 12 12',
     d: 'M6.514 1.857L11.486 10.143Q12 11 11 11L1 11Q0 11 0.514 10.143L5.486 1.857Q6 1 6.514 1.857ZM5 5V8H7V5ZM5 9V10H7V9Z',
   },
-  small: null,
+  small: {
+    viewBox: '0 0 16 16',
+    d: 'M8 2L14 14H2ZM7 6V10H9V6ZM7 11V13H9V11Z',
+  },
 } as const satisfies CngxIconData;
 
 /**
@@ -579,7 +591,10 @@ export const CNGX_ICON_VOLUME = {
     viewBox: '0 0 12 12',
     d: 'M1 4H3L6 2V10L3 8H1ZM8 4H9V8H8ZM10 2H11V10H10Z',
   },
-  small: null,
+  small: {
+    viewBox: '0 0 16 16',
+    d: 'M2 6H4L8 3V13L4 10H2ZM10 6H11V10H10ZM13 4H14V12H13Z',
+  },
 } as const satisfies CngxIconData;
 
 /** Rounded square (stop playback). @internal */
@@ -591,5 +606,8 @@ export const CNGX_ICON_STOP = {
     viewBox: '0 0 12 12',
     d: 'M4 3H8A1 1 0 0 1 9 4V8A1 1 0 0 1 8 9H4A1 1 0 0 1 3 8V4A1 1 0 0 1 4 3Z',
   },
-  small: null,
+  small: {
+    viewBox: '0 0 16 16',
+    d: 'M5 4H11A1 1 0 0 1 12 5V11A1 1 0 0 1 11 12H5A1 1 0 0 1 4 11V5A1 1 0 0 1 5 4Z',
+  },
 } as const satisfies CngxIconData;

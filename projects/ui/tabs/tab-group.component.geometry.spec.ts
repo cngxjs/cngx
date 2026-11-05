@@ -164,6 +164,8 @@ describe('CngxTabGroup geometry', () => {
     const refusedIcon = query(tabs[1], '.cngx-tabs__rejection-icon');
     // A standalone icon: no disc behind it.
     expect(computedValue(refusedIcon, 'background-color')).toBe('rgba(0, 0, 0, 0)');
+    // 1.15em of the 0.875rem (14px) tab font rounds to a 16px box, in the band.
+    expect(refusedIcon.querySelector('svg')!.getBoundingClientRect().width).toBeCloseTo(16, 0);
     const refusedColour = computedValue(refusedIcon, 'color');
     // The line skin colours the refused label too, away from the resting one.
     expect(computedValue(query(tabs[1], '.cngx-tabs__label'), 'color')).not.toBe(restingLabel);

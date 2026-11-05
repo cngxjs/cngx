@@ -163,16 +163,15 @@
   }
 
   /**
-   * Rendered size of the validation-error icon after the step label, in
-   * `em` of the label font. The universal syntax keeps the `em` unresolved
-   * until the icon reads it, and it inherits so a host override reaches
-   * the glyph.
+   * Rendered size of the validation-error icon after the step label.
+   * Registered without an initial value, so the rule's `1rem` fallback
+   * (16px, the hand-hinted small tier) applies until a host sets it; it
+   * inherits so a host override reaches the glyph.
    * @group State / Error
    */
   @property --cngx-step-badge-size {
     syntax: '*';
     inherits: true;
-    initial-value: 1.15em;
   }
 
   /**
@@ -189,15 +188,15 @@
 
   /**
    * Rendered size of the persistent-rejection icon (slashed circle
-   * refused, alert triangle failed), in `em` of the label font. A failed
-   * commit paints it in `--cngx-step-errored-color`, a refused one in
-   * `--cngx-step-refused-color`.
+   * refused, alert triangle failed). Registered without an initial value,
+   * so the rule's `1rem` fallback (16px, the small tier) applies until a
+   * host sets it. A failed commit paints it in `--cngx-step-errored-color`,
+   * a refused one in `--cngx-step-refused-color`.
    * @group State / Rejected
    */
   @property --cngx-step-rejection-icon-size {
     syntax: '*';
     inherits: true;
-    initial-value: 1.15em;
   }
 
   /**
@@ -677,15 +676,17 @@
     color: var(--cngx-step-refused-color, oklch(0.62 0.15 60));
   }
 
-  /* Both icons draw on the 24-unit grid at stroke width 2, sized in em of
-     the label font they sit next to. */
+  /* Both icons land on the exact 1rem (16px) box, in the 15 to 19px band, where
+     the hand-hinted 16-grid alert and ban are drawn. 1rem follows the root text
+     scale, not the label font (the old 1.15em gave 18.4px); the stroke width
+     reaches the 24-grid path only. */
   .cngx-stepper__badge > .cngx-icon-svg {
-    --cngx-icon-svg-size: var(--cngx-step-badge-size, 1.15em);
+    --cngx-icon-svg-size: var(--cngx-step-badge-size, 1rem);
     --cngx-icon-svg-stroke-width: 2;
   }
 
   .cngx-stepper__rejection-icon > .cngx-icon-svg {
-    --cngx-icon-svg-size: var(--cngx-step-rejection-icon-size, 1.15em);
+    --cngx-icon-svg-size: var(--cngx-step-rejection-icon-size, 1rem);
     --cngx-icon-svg-stroke-width: 2;
   }
 

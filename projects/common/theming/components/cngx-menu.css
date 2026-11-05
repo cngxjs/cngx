@@ -382,10 +382,13 @@
     translate: -50% -50%;
   }
 
-  /* The check spans 16 grid units across with stroke; scaling the box by
-     24/16 inks it 0.72em wide, a check at label weight. */
+  /* The check box lands on exactly 1rem (16px at a 16px root), in the 15 to 19px
+     band, where the hand-hinted 16-grid small check is drawn. It follows the root
+     text scale, not the item font, so it is 16px in the default theme and under
+     the Material bridge (0.875rem item font) alike - the bridge needs no edit for
+     this row. The trade: the check no longer tracks a retuned item font (Q2). */
   [cngxMenuItemCheckbox] > .cngx-menu-item__indicator > .cngx-menu-item__indicator-svg {
-    --cngx-icon-svg-size: calc(0.72em * 24 / 16);
+    --cngx-icon-svg-size: 1rem;
   }
 
   /* The dot is a fill glyph 8 grid units across; scaling the box by 24/8

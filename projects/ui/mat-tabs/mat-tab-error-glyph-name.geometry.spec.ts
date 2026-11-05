@@ -151,13 +151,13 @@ afterEach(async () => {
 
 describe('mat-tab error icons', () => {
   for (const sel of ['.tab-flagged .cngx-mat-tab__error-badge', '.tab-failed .cngx-mat-tab__rejection-icon', '.tab-refused .cngx-mat-tab__rejection-icon'] as const) {
-    it(`draws ${sel} as a bare 1.15em icon at stroke 2`, () => {
+    it(`draws ${sel} as a bare 16px icon at stroke 2`, () => {
       const icon = el(el(mount(), '.strip-ltr'), sel);
       expect(getComputedStyle(icon).backgroundColor).toBe('rgba(0, 0, 0, 0)');
       const svg = el<SVGElement>(icon, 'svg');
       const path = el<SVGPathElement>(svg, 'path');
-      const em = parseFloat(getComputedStyle(icon).fontSize);
-      expect(svg.getBoundingClientRect().width).toBeCloseTo(1.15 * em, 0);
+      // 1.15em of the 14px tab font rounds to a 16px box, in the band.
+      expect(svg.getBoundingClientRect().width).toBeCloseTo(16, 0);
       expect(getComputedStyle(svg).strokeWidth).toBe('2px');
       expect(getComputedStyle(path).stroke).toBe(getComputedStyle(icon).color);
       expect(getComputedStyle(path).fill).toBe('none');

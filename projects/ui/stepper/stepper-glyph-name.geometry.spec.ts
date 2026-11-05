@@ -12,8 +12,11 @@ import { CngxStepper } from './stepper.component';
 // status is the aria-hidden alert badge icon. The breadcrumb separator is
 // `::after` content of the step header, kept out of the name by CSS alt text.
 // The status the icons carry is spoken by the header's status text instead.
-// The host loads the global micro sheet, as `cngx.css` does, so a glyph box
-// in the 10 to 14px band paints its micro drawing.
+// The host loads the global icon sheet, as `cngx.css` does, so a glyph box in
+// the 10 to 14px band paints its 12-grid micro drawing and one in the 15 to
+// 19px band its 16-grid small drawing. The label done-check box lands on 1rem
+// (16px); CHECK carries no 16-grid drawing (1x smoke), so it paints the 24-grid
+// path there. The error badge is ALERT, which keeps its small drawing.
 
 @Component({
   selector: 'cngx-stepper-glyph-name-host',
@@ -66,16 +69,13 @@ afterEach(() => {
   mountedRoot = null;
 });
 
-/** Drawn box of an icon's path, widened by its stroke. */
-function inkBox(svg: SVGSVGElement): { width: number; cx: number; cy: number } {
-  const path = svg.querySelector('path')!.getBoundingClientRect();
-  const stroke =
-    (parseFloat(getComputedStyle(svg).strokeWidth) * svg.getBoundingClientRect().width) / 24;
-  return {
-    width: path.width + stroke,
-    cx: path.left + path.width / 2,
-    cy: path.top + path.height / 2,
-  };
+/** The single path the tier rule leaves visible (24-grid, micro or small). */
+function visiblePath(svg: SVGSVGElement): SVGPathElement {
+  const painted = Array.from(svg.querySelectorAll('path')).filter(
+    (path) => getComputedStyle(path).display !== 'none',
+  );
+  expect(painted).toHaveLength(1);
+  return painted[0];
 }
 
 function doneIcon(index: number): HTMLElement | null {
@@ -109,17 +109,35 @@ describe('stepper status glyphs', () => {
     });
   }
 
-  it('draws the label check as wide as the old text check (0.7em), centred on the label', () => {
+  it('draws the label done-check on the 24-grid path, centred on the label', () => {
     for (const skin of ['chips', 'breadcrumb'] as const) {
       mount(skin);
       const svg = doneIcon(0)!.querySelector('svg')!;
-      const em = parseFloat(getComputedStyle(header(0)).fontSize);
-      const ink = inkBox(svg);
-      expect(ink.width).toBeCloseTo(0.7 * em, 0);
+      const painted = visiblePath(svg);
+      // CHECK carries no 16-grid drawing (1x smoke), so the 24-grid path paints.
+      expect(painted.classList.contains('cngx-icon-svg__path')).toBe(true);
+      const ink = painted.getBoundingClientRect();
+      expect(ink.width).toBeGreaterThan(0);
       const text = label(0).getBoundingClientRect();
-      expect(Math.abs(ink.cy - (text.top + text.height / 2))).toBeLessThanOrEqual(1.5);
+      expect(Math.abs(ink.top + ink.height / 2 - (text.top + text.height / 2))).toBeLessThanOrEqual(
+        1.5,
+      );
       mountedRoot?.remove();
     }
+  });
+
+  it('sizes the label done-check box to the exact 1rem (16px) box', () => {
+    mount('chips');
+    const svg = doneIcon(0)!.querySelector('svg')!;
+    expect(svg.getBoundingClientRect().width).toBeCloseTo(16, 0);
+    mountedRoot?.remove();
+  });
+
+  it('draws the error badge on the 16-grid small path at the 1rem box', () => {
+    mount('chips');
+    const svg = header(1).querySelector<SVGSVGElement>('.cngx-stepper__badge svg')!;
+    expect(svg.getBoundingClientRect().width).toBeCloseTo(16, 0);
+    expect(visiblePath(svg).classList.contains('cngx-icon-svg__small')).toBe(true);
   });
 
   it('hides the label check in the disc skins', () => {

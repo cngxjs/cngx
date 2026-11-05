@@ -52,6 +52,20 @@ const MICRO_ICONS = [
   'CNGX_ICON_ZOOM_OUT',
 ] as const;
 
+// Glyphs with a signed-off 16-grid drawing: the band consumers in the 15 to
+// 20px box. Excluded (kept on the 24-grid path, small: null): CARET_DOWN (Q3,
+// bridge caret), and CHECK and BAN (1x smoke 2026-11-04 - the user chose the
+// 24-grid path for both; the hinted check read as a different icon, the hinted
+// ban rang a touch too thick).
+const SMALL_ICONS = [
+  'CNGX_ICON_ALERT',
+  'CNGX_ICON_CHEVRON_RIGHT',
+  'CNGX_ICON_MINUS',
+  'CNGX_ICON_STOP',
+  'CNGX_ICON_VOLUME',
+  'CNGX_ICON_X',
+] as const;
+
 const ARITY: Readonly<Record<string, number>> = {
   M: 2,
   L: 2,
@@ -242,6 +256,19 @@ describe('cngx default icon set', () => {
   // The type requires the field; this catches a cast or a spread that drops it.
   it.each(entries)('%s records a small decision', (_, icon) => {
     expect(icon.small).not.toBeUndefined();
+  });
+
+  it.each(SMALL_ICONS)('%s carries a small drawing', (name) => {
+    expect(entries.find(([entry]) => entry === name)?.[1].small).toEqual(
+      expect.objectContaining({ viewBox: '0 0 16 16' }),
+    );
+  });
+
+  // Exactly the signed-off band glyphs carry a 16-grid drawing; every other icon
+  // keeps small: null (CARET_DOWN among them, per Q3). The list is pinned.
+  it('draws the small tier only on the signed-off band glyphs', () => {
+    const withSmall = entries.filter(([, icon]) => icon.small !== null).map(([name]) => name);
+    expect(withSmall.sort()).toEqual([...SMALL_ICONS].sort());
   });
 
   // No 12-grid drawing of these read well on the sign-off sheet (the circled X

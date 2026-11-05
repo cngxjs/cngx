@@ -170,10 +170,11 @@ $-row-padding: 'calc(var(--cngx-space-sm, 8px) * 1.5) var(--cngx-space-md, 16px)
   // match the tree node rows so the body reads identically under the bridge.
   --cngx-tree-select-node-radius: 0;
   // Material's tree expand toggle reads as a ~24px chevron; the cngx default
-  // 1.25rem button with a 1rem chevron is small next to mat-tree. Bump the
-  // button and glyph so the twisty matches the option row's visual weight.
+  // 1.25rem button is small next to mat-tree, so bump the button to 1.5rem. The
+  // glyph font stays at 1rem so its 1em box lands on the exact 16px small box
+  // (the hand-hinted 16-grid chevron), matching the other bridge glyphs.
   --cngx-tree-select-twisty-size: 1.5rem;
-  --cngx-tree-select-twisty-font-size: 1.125rem;
+  --cngx-tree-select-twisty-font-size: 1rem;
   // Trigger caret: as wide as the mat-select arrow, 10px (0.625rem) of ink.
   // The caret triangle inks 0.27em of the caret font, so the font is the ink
   // width over 0.27; its box rounds to 17px, past the micro band, so the
