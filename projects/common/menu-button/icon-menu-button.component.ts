@@ -103,7 +103,11 @@ import { CngxSplitCaret } from './split-caret.directive';
     }
     @if (brain.busyVisible()) {
       <span class="cngx-button__busy" aria-hidden="true">
-        <span class="cngx-button__spinner"></span>
+        @if (brain.spinner; as spinner) {
+          <ng-container *ngComponentOutlet="spinner" />
+        } @else {
+          <span class="cngx-button__spinner"></span>
+        }
       </span>
     }
     <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{
