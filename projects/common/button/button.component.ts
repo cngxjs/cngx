@@ -1,21 +1,13 @@
 import {
-  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   contentChild,
-  input,
+  inject,
   ViewEncapsulation,
 } from '@angular/core';
-import { CNGX_HOST_INTERACTION_STATE } from '@cngx/common/interactive';
 
-import { injectButtonCore, provideButtonDescribedBy } from './button-core';
-import { CNGX_BUTTON_STATE, type CngxButtonState } from './button-state.token';
-import type {
-  CngxButtonSize,
-  CngxButtonTone,
-  CngxButtonType,
-  CngxButtonVariant,
-} from './button.types';
+import { CngxButtonBrain } from './button-brain.directive';
+import { provideButtonHost } from './button-host.token';
 import { CngxButtonEnd, CngxButtonStart } from './slots';
 
 /**
@@ -58,7 +50,11 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button.component.ts
  * @since 0.1.0
- * @relatedTo CngxIconButton, CngxButtonStart, CngxButtonEnd, CngxAsyncClick, provideButtonConfig, CngxMenuButton
+ * State, axes and ARIA come from the `CngxButtonBrain` host directive;
+ * read them programmatically through `CngxButtonBrain` or
+ * `CNGX_BUTTON_STATE` on the element injector.
+ *
+ * @relatedTo CngxIconButton, CngxButtonBrain, CngxButtonStart, CngxButtonEnd, CngxAsyncClick, provideButtonConfig, CngxMenuButton
  * <example-url>/#/common/button/button/variants</example-url>
  * <example-url>/#/common/button/button/tones</example-url>
  * <example-url>/#/common/button/button/sizes</example-url>
@@ -76,99 +72,45 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
   exportAs: 'cngxButton',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  providers: [
-    { provide: CNGX_HOST_INTERACTION_STATE, useExisting: CngxButton },
-    { provide: CNGX_BUTTON_STATE, useExisting: CngxButton },
-    provideButtonDescribedBy('CngxButton'),
+  hostDirectives: [
+    {
+      directive: CngxButtonBrain,
+      inputs: [
+        'variant: cngxButton',
+        'tone',
+        'size',
+        'disabled',
+        'disabledReason',
+        'cngxDescribedBy',
+        'type',
+      ],
+    },
   ],
+  providers: [provideButtonHost('CngxButton', { defaultVariant: 'solid' })],
   host: {
     class: 'cngx-button',
-    '[attr.data-variant]': 'core.variant()',
-    '[attr.data-tone]': 'core.tone()',
-    '[attr.data-size]': 'core.size()',
-    '[attr.data-busy]': 'core.busyVisible() ? "true" : null',
-    '[attr.data-pending]': 'core.busy() ? "true" : null',
     '[attr.data-start]': 'startSlot() ? "" : null',
     '[attr.data-end]': 'endSlot() ? "" : null',
-    '[attr.aria-disabled]': 'core.ariaDisabled()',
-    '[attr.aria-describedby]': 'core.describedBy()',
-    '[attr.type]': 'core.hostType()',
-    // A static `disabled` attribute would make the native element
-    // unfocusable; the input renders it as aria-disabled instead.
-    '[attr.disabled]': 'null',
   },
   template: `
     <ng-content select="[cngxButtonStart]" />
     <span class="cngx-button__label"><ng-content /></span>
     <ng-content select="[cngxButtonEnd]" />
-    @if (core.busyVisible()) {
+    @if (brain.busyVisible()) {
       <span class="cngx-button__busy" aria-hidden="true">
         <span class="cngx-button__spinner"></span>
       </span>
     }
-    <span class="cngx-button__reason" [id]="core.reasonId" hidden>{{ disabledReason() }}</span>
+    <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{
+      brain.disabledReason()
+    }}</span>
   `,
   styleUrl: './button.component.css',
 })
-export class CngxButton implements CngxButtonState {
-  /**
-   * Emphasis. Bound through the selector itself: `cngxButton="outline"` and
-   * `[cngxButton]="variant()"` both land here; the bare attribute falls
-   * through to the group, the config and the default `solid`.
-   */
-  readonly variant = input<CngxButtonVariant | undefined, CngxButtonVariant | '' | undefined>(
-    undefined,
-    { alias: 'cngxButton', transform: (v) => (v === '' ? undefined : v) },
-  );
-
-  /** Intent. Falls through to the config and the default `neutral`. */
-  readonly tone = input<CngxButtonTone | undefined>(undefined);
-
-  /** Size. `md` matches the form-control row. Falls through to the group, the config and `md`. */
-  readonly size = input<CngxButtonSize | undefined>(undefined);
-
-  /** Rendered as `aria-disabled`; the element stays focusable and activation is swallowed. */
-  readonly disabled = input(false, { transform: booleanAttribute });
-
-  /** Why the button is disabled; referenced through `aria-describedby` while disabled. */
-  readonly disabledReason = input<string | undefined>(undefined);
-
-  /**
-   * Ids of external description elements, space-separated, joined into the
-   * button's `aria-describedby` after a static `aria-describedby` and before
-   * the disabled reason and a co-hosted `[cngxTooltip]`. Reactive: changed
-   * ids replace the old ones, `null` removes them. Same surface as
-   * `CngxChipInteraction` and the slider, but merged instead of replaced by
-   * the reason.
-   */
-  readonly describedBy = input<string | null>(null, {
-    alias: 'cngxDescribedBy',
-  });
-
-  /** Native `type` on a `<button>` host. Defaults to `'button'`; ignored on `<a>`. */
-  readonly type = input<CngxButtonType | undefined>(undefined);
+export class CngxButton {
+  /** @internal */
+  protected readonly brain = inject(CngxButtonBrain);
 
   protected readonly startSlot = contentChild(CngxButtonStart);
   protected readonly endSlot = contentChild(CngxButtonEnd);
-
-  /** @internal */
-  protected readonly core = injectButtonCore(
-    {
-      variant: this.variant,
-      tone: this.tone,
-      size: this.size,
-      disabled: this.disabled,
-      disabledReason: this.disabledReason,
-      describedBy: this.describedBy,
-      type: this.type,
-    },
-    { variant: 'solid' },
-  );
-
-  /**
-   * `true` while the button refuses activation: disabled, running a
-   * co-hosted `cngxAsyncClick`, or refused by its `[enabled]="false"`. Read
-   * it to derive the state of composed controls, e.g. a split-button caret.
-   */
-  readonly blocked = this.core.blocked;
 }

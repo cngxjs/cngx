@@ -1,7 +1,7 @@
 import { Component, signal, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { CngxButton, CngxIconButton } from '@cngx/common/button';
+import { CNGX_BUTTON_STATE, CngxButton, CngxIconButton } from '@cngx/common/button';
 import { CngxAsyncClick, CngxMenu, CngxMenuItem, type AsyncAction } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -316,7 +316,7 @@ describe('CngxSplitButton', () => {
 
   it('ignores a cngxAsyncClick button inside the projected menu', () => {
     const { fixture, q, split, flush } = setup(NestedAsyncHost);
-    const nested = fixture.debugElement.query(By.css('#nested')).injector.get(CngxButton);
+    const nested = fixture.debugElement.query(By.css('#nested')).injector.get(CNGX_BUTTON_STATE);
     q('#nested').click();
     flush();
     expect(nested.blocked()).toBe(true);

@@ -6,6 +6,7 @@ import { CngxAsyncClick, type AsyncAction } from '@cngx/common/interactive';
 import { vi } from 'vitest';
 import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
 
+import { CngxButtonBrain } from './button-brain.directive';
 import {
   provideButtonConfig,
   provideButtonConfigAt,
@@ -521,7 +522,7 @@ describe('CngxButton', () => {
 
   describe('blocked', () => {
     const buttonAt = (fixture: ComponentFixture<unknown>, id: string) =>
-      fixture.debugElement.query(By.css(id)).injector.get(CngxButton);
+      fixture.debugElement.query(By.css(id)).injector.get(CngxButtonBrain);
 
     it('is true while disabled and false once enabled', () => {
       const { fixture, host } = render(AsyncHost);
@@ -564,7 +565,7 @@ describe('CngxButton', () => {
       const { fixture } = render(AsyncHost);
       const de = fixture.debugElement.query(By.css('#button-first'));
       const state = de.injector.get(CNGX_BUTTON_STATE);
-      expect(state).toBe(de.injector.get(CngxButton));
+      expect(state).toBe(de.injector.get(CngxButtonBrain));
       expect(state.blocked()).toBe(true);
     });
 

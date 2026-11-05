@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { hasAccessibleName } from './accessible-name';
 import { CngxButtonBrain } from './button-brain.directive';
 import { provideButtonHost } from './button-host.token';
+import { CngxIconButton } from './icon-button.component';
 
 // Icon-only custom host: glyph hidden, reason in a hidden span, like the icon button.
 @Component({
@@ -29,6 +30,17 @@ class DemoIcon {
   imports: [DemoIcon],
 })
 class LateLabelHost {
+  readonly label = signal<string | null>(null);
+  constructor() {
+    afterNextRender(() => this.label.set('Delete row'));
+  }
+}
+
+@Component({
+  template: `<button id="late-icon" cngxIconButton [attr.aria-label]="label()">x</button>`,
+  imports: [CngxIconButton],
+})
+class LateLabelIconButtonHost {
   readonly label = signal<string | null>(null);
   constructor() {
     afterNextRender(() => this.label.set('Delete row'));
@@ -68,6 +80,10 @@ async function warningsFor<T>(type: new () => T): Promise<unknown[][]> {
 describe('CNGX1071 accessible-name check', () => {
   it('raises no warning for a label bound after the first render', async () => {
     expect(await warningsFor(LateLabelHost)).toEqual([]);
+  });
+
+  it('raises no warning for a late-bound label on cngxIconButton', async () => {
+    expect(await warningsFor(LateLabelIconButtonHost)).toEqual([]);
   });
 
   it('warns once for an unnamed icon-only host, naming the host', async () => {

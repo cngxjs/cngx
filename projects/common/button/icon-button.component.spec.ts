@@ -5,6 +5,7 @@ import { CngxAsyncClick } from '@cngx/common/interactive';
 import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
 import { vi } from 'vitest';
 
+import { CngxButtonBrain } from './button-brain.directive';
 import { provideButtonConfig, withButtonVariant } from './button-config';
 import { CNGX_BUTTON_STATE } from './button-state.token';
 import { CngxIconButton } from './icon-button.component';
@@ -139,7 +140,7 @@ describe('CngxIconButton', () => {
     const { fixture, host } = render(NamedHost);
     const de = fixture.debugElement.query(By.css('#disabled'));
     const state = de.injector.get(CNGX_BUTTON_STATE);
-    expect(state).toBe(de.injector.get(CngxIconButton));
+    expect(state).toBe(de.injector.get(CngxButtonBrain));
     expect(state.blocked()).toBe(true);
 
     host.disabled.set(false);
@@ -162,6 +163,7 @@ describe('CngxIconButton', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const { fixture } = render(NamedHost);
     await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve));
     expect(warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1071'))).toEqual([]);
     warn.mockRestore();
   });
@@ -170,8 +172,9 @@ describe('CngxIconButton', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const { fixture, q } = render(UnnamedHost);
     await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve));
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn.mock.calls[0][0]).toMatch(/^CNGX1071: \[cngxIconButton\] has no accessible name\./);
+    expect(warn.mock.calls[0][0]).toMatch(/^CNGX1071: CngxIconButton has no accessible name\./);
     expect(warn.mock.calls[0]).toContain(q('#unnamed'));
     warn.mockRestore();
   });
