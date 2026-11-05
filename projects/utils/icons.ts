@@ -626,3 +626,24 @@ export const CNGX_ICON_MENU = {
     d: 'M2 3H14V4H2ZM2 7H14V8H2ZM2 11H14V12H2Z',
   },
 } as const satisfies CngxIconData;
+
+/**
+ * Rounded frame with a column on its left edge (a side panel and its
+ * content). Drawn for a panel on the start side in LTR; a renderer mirrors
+ * it with `scaleX(-1)` for a panel on the right. The micro and small drawings
+ * round the frame by leaving out the corner pixels, so every edge stays on a
+ * whole unit. @internal
+ */
+export const CNGX_ICON_PANEL = {
+  viewBox: '0 0 24 24',
+  d: 'M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM9 3v18',
+  paint: 'stroke',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M2 1H10V2H2ZM2 10H10V11H2ZM1 2H2V10H1ZM10 2H11V10H10ZM4 2H5V10H4Z',
+  },
+  small: {
+    viewBox: '0 0 16 16',
+    d: 'M3 2H13V3H3ZM3 13H13V14H3ZM2 3H3V13H2ZM13 3H14V13H13ZM6 3H7V13H6Z',
+  },
+} as const satisfies CngxIconData;
