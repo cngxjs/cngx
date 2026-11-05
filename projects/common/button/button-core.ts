@@ -84,6 +84,8 @@ export interface CngxButtonCore {
    */
   readonly describedBy: Signal<string | null>;
   readonly reasonId: string;
+  /** `reasonId` while it describes the element (`disabled` with a reason), else `null`. */
+  readonly activeReasonId: Signal<string | null>;
   /** `type` attribute value: the input or `'button'` on a `<button>`, `null` on an `<a>`. */
   readonly hostType: Signal<CngxButtonType | null>;
 }
@@ -197,6 +199,7 @@ export function injectButtonCore(
     ariaBusy,
     describedBy,
     reasonId,
+    activeReasonId: reasonIds,
     hostType,
   };
 }

@@ -192,9 +192,7 @@ export class CngxButtonBrain implements CngxButtonState {
   /** Id the host template puts on its reason span. */
   readonly reasonId = this.core.reasonId;
   /** `reasonId` while it describes the element (`disabled` with a reason), else `null`. */
-  readonly activeReasonId = computed(() =>
-    this.disabled() && this.disabledReason() ? this.reasonId : null,
-  );
+  readonly activeReasonId = this.core.activeReasonId;
 
   /**
    * What a co-hosted runner or trigger folds in. A host that overrides

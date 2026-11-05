@@ -181,7 +181,7 @@ describe('CngxButtonBrain', () => {
   });
 
   it('renders disabled as aria-disabled, references the reason and swallows clicks', () => {
-    const { q, host, flush } = render(Host);
+    const { q, fixture, host, flush } = render(Host);
     const chip = q('#chip');
     expect(chip.getAttribute('aria-disabled')).toBeNull();
     expect(chip.getAttribute('aria-describedby')).toBe('static-id');
@@ -194,6 +194,9 @@ describe('CngxButtonBrain', () => {
     expect(chip.hasAttribute('disabled')).toBe(false);
     expect(chip.getAttribute('aria-describedby')).toBe(`static-id extra-id ${reason.id}`);
     expect(reason.textContent).toBe('Saving');
+    // One source: the published id is the one aria-describedby references.
+    const brain = fixture.debugElement.query(By.css('#chip')).injector.get(CngxButtonBrain);
+    expect(brain.activeReasonId()).toBe(reason.id);
 
     chip.click();
     expect(host.clicks).toBe(0);
