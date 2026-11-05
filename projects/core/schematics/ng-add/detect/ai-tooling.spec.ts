@@ -1,7 +1,8 @@
+import { JSONFile } from '@schematics/angular/utility/json-file';
 import { describe, expect, it } from 'vitest';
 
 import { createFixtureTree } from '../../testing/run-schematic';
-import { claudeInstructionsOf, helperReadmeOf, instructionState, mcpConfigsOf } from './ai-tooling';
+import { claudeInstructionsOf, helperReadmeOf, instructionState, mcpConfigsOf, serverEntry } from './ai-tooling';
 import { type Read } from './workspace';
 
 function readerOf(files: Readonly<Record<string, string>>): Read {
@@ -57,6 +58,74 @@ describe('mcpConfigsOf', () => {
         '.vscode/mcp.json': JSON.stringify({ servers: [] }),
       }),
     ).toEqual({ claude: 'invalid', cursor: 'invalid', vscode: 'invalid' });
+  });
+});
+
+describe('cngxShaped', () => {
+  const PIN = '0.2.0';
+
+  function shapedOf(files: Readonly<Record<string, string>>) {
+    const configs = mcpConfigsOf(createFixtureTree('standalone-app', files));
+    return {
+      claude: configs.claude.cngxShaped,
+      cursor: configs.cursor.cngxShaped,
+      vscode: configs.vscode.cngxShaped,
+    };
+  }
+
+  it('marks the entry cngx writes for its own pin as cngx-shaped in every editor', () => {
+    expect(
+      shapedOf({
+        '.mcp.json': JSON.stringify({ mcpServers: { cngx: serverEntry('claude', PIN) } }),
+        '.cursor/mcp.json': JSON.stringify({ mcpServers: { cngx: serverEntry('cursor', PIN) } }),
+        '.vscode/mcp.json': JSON.stringify({
+          servers: { other: {}, cngx: serverEntry('vscode', PIN) },
+        }),
+      }),
+    ).toEqual({ claude: true, cursor: true, vscode: true });
+  });
+
+  it('reads key order and JSONC comments as the written shape', () => {
+    expect(
+      shapedOf({
+        '.vscode/mcp.json': `// servers\n{ "servers": { "cngx": { "args": ["-y", "@cngx/mcp@${PIN}"], "command": "npx", "type": "stdio" } } }`,
+      }).vscode,
+    ).toBe(true);
+  });
+
+  it('keeps the comments of a JSONC config when the pin moves', () => {
+    const before = `// cngx writes this server\n{ "servers": { "cngx": ${JSON.stringify(serverEntry('vscode', PIN))} } }\n`;
+    const tree = createFixtureTree('standalone-app', { '.vscode/mcp.json': before });
+
+    new JSONFile(tree, '.vscode/mcp.json').modify(['servers', 'cngx'], serverEntry('vscode', '0.3.0'), false);
+
+    const after = tree.readText('.vscode/mcp.json');
+    expect(after).toContain('// cngx writes this server');
+    expect(after).toContain('@cngx/mcp@0.3.0');
+    expect(mcpConfigsOf(tree).vscode).toEqual({ state: 'wired', pin: '0.3.0', cngxShaped: true });
+  });
+
+  it.each([
+    ['an extra arg', { command: 'npx', args: ['-y', `@cngx/mcp@${PIN}`, '--verbose'] }],
+    ['another command', { command: 'pnpm', args: ['dlx', `@cngx/mcp@${PIN}`] }],
+    ['an extra key', { command: 'npx', args: ['-y', `@cngx/mcp@${PIN}`], env: { DEBUG: '1' } }],
+    [
+      'the transport of another editor',
+      { type: 'stdio', command: 'npx', args: ['-y', `@cngx/mcp@${PIN}`] },
+    ],
+    ['no readable pin', { command: 'npx', args: ['-y', '@cngx/mcp'] }],
+  ])('marks an entry with %s as not cngx-shaped', (_label, entry) => {
+    expect(shapedOf({ '.mcp.json': JSON.stringify({ mcpServers: { cngx: entry } }) }).claude).toBe(
+      false,
+    );
+  });
+
+  it('marks a config without a cngx entry as not cngx-shaped', () => {
+    expect(shapedOf({ '.mcp.json': JSON.stringify({ mcpServers: {} }) })).toEqual({
+      claude: false,
+      cursor: false,
+      vscode: false,
+    });
   });
 });
 

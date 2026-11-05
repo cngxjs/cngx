@@ -64,12 +64,12 @@
     {
       "artifact": "pack/recipes/common-data-recycler.md",
       "source": "examples/stories/common/data/recycler/with-cngxasyncstate-skeleton-first-load.story.ts",
-      "contentHash": "sha256:bc229f20ae331e8bbf75a4100e2ab3d9d67dcd486873a2fef3b7ff57e382d423"
+      "contentHash": "sha256:56f18c3fe87b1a78dba23439f1c0e100f7b8f9fc76c9a885c61831ae63504f6e"
     },
     {
       "artifact": "pack/recipes/common-interactive-async-click.md",
       "source": "examples/stories/common/interactive/async-click/basic-happy-path.story.ts",
-      "contentHash": "sha256:1b6e04a325ea34a059f23a3e938e31f0b065b2795e74dac6f84eaa86631fb597"
+      "contentHash": "sha256:9df675d81157cfec302acac1ac9a8240b00c64a23f75749d20e9b6165b673f4b"
     },
     {
       "artifact": "pack/recipes/common-interactive-retry.md",
@@ -239,7 +239,7 @@
     {
       "artifact": "pack/recipes/common-button-button.md",
       "source": "examples/stories/common/button/button/async-click-busy.story.ts",
-      "contentHash": "sha256:66e653095203fa826c9fb034c8e93a6444d7438f60d7857286e2684f117bd070"
+      "contentHash": "sha256:234c67b71e334301168aefd4230c980f686691b63310692958abf402b9d6e468"
     },
     {
       "artifact": "pack/recipes/common-menu-button-split-button.md",

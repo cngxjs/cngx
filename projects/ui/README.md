@@ -204,7 +204,7 @@ label in every state.
 | `disabled` | `boolean` | `false` | Rendered as `aria-disabled`; the button stays focusable, clicks are swallowed |
 | `disabledReason` | `string` | -- | Referenced through `aria-describedby` while disabled |
 | `type` | `'button' \| 'submit' \| 'reset'` | `'button'` | Native type |
-| `pendingLabel` | `string` | -- | Text while pending (when no `cngxPending` template); without one the idle label stays under the spinner |
+| `pendingLabel` | `string` | -- | Text while pending (when no `cngxPending` template); shown after the show delay and held for the dwell past the run, so a fast run never flashes it; without one the idle label stays under the spinner |
 | `succeededLabel` | `string` | -- | Text after success (when no `cngxSucceeded` template) |
 | `failedLabel` | `string` | -- | Text after failure (when no `cngxFailed` template) |
 | `succeededAnnouncement` | `string` | -- | SR announcement on success (falls back to `succeededLabel`) |

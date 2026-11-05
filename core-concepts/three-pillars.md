@@ -191,12 +191,12 @@ Two further problems:
 The select family is the canonical example. `@cngx/forms/select` ships six dedicated organisms, one per intent, instead of one monolith with a `[mode]` flag:
 
 ```html
-<cngx-select [field]="f.single" [options]="opts" />
-<cngx-multi-select [field]="f.many" [options]="opts" />
-<cngx-combobox [field]="f.tags" [options]="opts" />
-<cngx-typeahead [field]="f.search" [loadOptions]="search" />
-<cngx-tree-select [field]="f.tree" [nodes]="tree" [nodeIdFn]="idFn" />
-<cngx-reorderable-multi-select [field]="f.ordered" [options]="opts" />
+<cngx-select [(value)]="single" [options]="opts" />
+<cngx-multi-select [(values)]="many" [options]="opts" />
+<cngx-combobox [(values)]="tags" [options]="opts" />
+<cngx-typeahead [(value)]="search" [options]="opts" />
+<cngx-tree-select [(values)]="tree" [nodes]="nodes" [nodeIdFn]="idFn" />
+<cngx-reorderable-multi-select [(values)]="ordered" [options]="opts" />
 ```
 
 Shared logic is never shared by inheritance. It is shared via three mechanisms:

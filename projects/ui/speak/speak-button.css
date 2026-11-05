@@ -56,7 +56,7 @@
   @property --cngx-speak-btn-icon-size {
     syntax: '<length>';
     inherits: false;
-    initial-value: 18px;
+    initial-value: 16px;
   }
 
   /**
@@ -214,7 +214,7 @@
     }
 
     .cngx-speak-button__icon {
-      --cngx-icon-svg-size: var(--cngx-speak-btn-icon-size, 18px);
+      --cngx-icon-svg-size: var(--cngx-speak-btn-icon-size, 16px);
       transform: translateX(1px);
     }
   }

@@ -1,31 +1,40 @@
 /**
  * @overview
- * Micro tier of the default cngx glyphs. Both renderers, `CngxIconSvg`
- * and `createIconSvgElement`, put `.cngx-icon-glyph` on the svg and draw
- * an icon's 12-grid `micro` drawing as a second path,
- * `.cngx-icon-svg__micro`, next to the 24-grid `.cngx-icon-svg__path`.
- * The svg is a size container, and a 10 to 14px box shows the micro path
- * instead of the 24-grid path. The selection comes from layout: no size
- * input, no measurement, and it is the same on every device pixel ratio.
+ * Pixel-hinted tiers of the default cngx glyphs. Both renderers,
+ * `CngxIconSvg` and `createIconSvgElement`, put `.cngx-icon-glyph` on the
+ * svg and draw an icon's 12-grid `micro` drawing as a second path,
+ * `.cngx-icon-svg__micro`, and its 16-grid `small` drawing as a third,
+ * `.cngx-icon-svg__small`, next to the 24-grid `.cngx-icon-svg__path`.
+ * The svg is a size container: a 10 to 14px box shows the micro path, a 15
+ * to 19px box the small path, each instead of the 24-grid path. The
+ * selection comes from layout: no size input, no measurement, and it is the
+ * same on every device pixel ratio.
  *
  * The rules live here and not in `icon-svg.component.css` because an svg
- * the helper builds loads no component stylesheet. Without this sheet the
- * micro path keeps its `display="none"` presentation attribute and the
+ * the helper builds loads no component stylesheet. Without this sheet both
+ * hinted paths keep their `display="none"` presentation attribute and the
  * 24-grid path shows alone.
  *
- * An icon without a `micro` drawing renders no micro path, and the band
- * rule then leaves its 24-grid path showing: the 24-grid path is hidden
- * only where a micro path follows it.
+ * An icon without a drawing on a tier renders no path for it, and the band
+ * rule then leaves its 24-grid path showing: the 24-grid path is hidden in
+ * a band only where that band's hinted path is one of its siblings. Both
+ * rules use the general sibling combinator (`~`), so an icon with a small
+ * drawing and no micro (or the reverse) works in either band independently
+ * of the pinned DOM order.
  *
- * The micro path is a fill outline in `currentColor`. The stroke-width
- * tokens drive the 24-grid path only; the micro weight is part of the
- * hint.
+ * Both hinted paths are fill outlines in `currentColor`. The stroke-width
+ * tokens drive the 24-grid path only; the hinted weight is part of the
+ * drawing.
  *
- * The band bounds are px literals: `@container` conditions take no
- * `var()`, and the band is about device pixels, so it must not follow
- * the text scale. The checkmark step in `checkbox-indicator.component.css`
- * (14.5px) and the reorder grip floor in `reorder-list.component.css`
- * (15px) mirror the 15px upper edge; move them together.
+ * The band bounds are px literals: `@container` conditions take no `var()`,
+ * and the bands are about device pixels, so they must not follow the text
+ * scale. Two edges couple to consumers:
+ * - 15px (micro/small boundary): the checkmark step in
+ *   `checkbox-indicator.component.css` (14.5px) and the reorder grip floor
+ *   in `reorder-list.component.css` (15px) mirror it; move them together.
+ * - 20px (small upper edge): the checkbox lg checkmark renders at exactly
+ *   20px and must stay at or above it, out of the small band
+ *   (`checkbox-indicator.geometry.spec.ts` pins it).
  */
 
 @layer cngx.components {
@@ -37,7 +46,8 @@
     aspect-ratio: 1;
   }
 
-  .cngx-icon-svg__micro {
+  .cngx-icon-svg__micro,
+  .cngx-icon-svg__small {
     /* Functional - hardcoded */
     display: none;
     fill: currentColor;
@@ -45,11 +55,21 @@
   }
 
   @container cngx-icon-glyph (10px <= width < 15px) {
-    .cngx-icon-svg__path:has(+ .cngx-icon-svg__micro) {
+    .cngx-icon-svg__path:has(~ .cngx-icon-svg__micro) {
       display: none;
     }
 
     .cngx-icon-svg__micro {
+      display: inline;
+    }
+  }
+
+  @container cngx-icon-glyph (15px <= width < 20px) {
+    .cngx-icon-svg__path:has(~ .cngx-icon-svg__small) {
+      display: none;
+    }
+
+    .cngx-icon-svg__small {
       display: inline;
     }
   }

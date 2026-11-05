@@ -368,8 +368,10 @@
     }
 
     .cngx-stepper__done-icon > .cngx-icon-svg {
-      /* Inked 0.7em wide, drawn 16.5 grid units wide with its stroke. */
-      --cngx-icon-svg-size: calc(0.7em * 24 / 16.5);
+      /* The box lands on exactly 1rem (16px), in the 15 to 19px band, where the
+         hand-hinted 16-grid small check is drawn; 1rem follows the root text
+         scale (the old 0.7em*24/16.5 gave ~16.3px off the label font). */
+      --cngx-icon-svg-size: 1rem;
       --cngx-icon-svg-stroke-width: 2.5;
       display: block;
     }

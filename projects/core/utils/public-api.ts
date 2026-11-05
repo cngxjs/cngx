@@ -47,6 +47,7 @@ export {
 } from './transition-tracker';
 export { createVisibilityGate } from './visibility-gate';
 export { createCloseWatcher, type CngxCloseWatcher } from './close-watcher';
+export { resolveSpokenText } from './spoken-text';
 export { createLatencyProbe, type CngxLatencyProbe } from './latency-probe';
 export {
   type CngxLoadingConfig,

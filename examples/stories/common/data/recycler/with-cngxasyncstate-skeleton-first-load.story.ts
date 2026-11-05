@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxRecycler: First-load skeleton via CngxAsyncState',
   subtitle: 'The recycler derives <code>isLoading</code>, <code>showSkeleton</code>, and <code>isEmpty</code> from a <code>CngxAsyncState</code> source; same pattern as <code>CngxCardGrid</code> and <code>CngxTreetable</code>. Skeleton slots fill the viewport height automatically.',
-  description: 'Passing a CngxAsyncState source lets the recycler derive isLoading, showSkeleton, and isEmpty automatically. Skeleton slots fill the viewport while data loads; skeletonDelay suppresses the skeleton on fast loads to prevent flashes.',
+  description: 'Passing a CngxAsyncState source lets the recycler derive isLoading, showSkeleton, and isEmpty automatically. Skeleton slots fill the viewport while data loads. The skeleton is timed by the loading gate: it appears only after the showDelay (120 ms by default via CNGX_LOADING_CONFIG) so a fast load never flashes it, and is held for minDwell (400 ms) once shown. Override with provideLoadingConfigAt(withShowDelay(...), withMinDwell(...)).',
   level: 'molecule',
   audience: ['dev'],
   artifact: 'building-block',
@@ -21,7 +21,6 @@ export const STORY: DemoSpec = {
     totalCount: () => (this.asyncState.data() ?? []).length,
     estimateSize: 48,
     state: this.asyncState,
-    skeletonDelay: 0,
   });
   protected readonly asyncVisible = this.asyncRecycler.sliced(
     computed(() => this.asyncState.data() ?? []),
@@ -49,6 +48,7 @@ export const STORY: DemoSpec = {
     }, 1500);
   }`,
   template: `  <div class="async-scroll demo-scroll-frame" role="list" aria-label="Demo items"
+       [attr.aria-busy]="asyncRecycler.isLoading() || asyncRecycler.showSkeleton() || asyncRecycler.isRefreshing() || null"
        style="height:300px;overflow-y:auto">
     @if (asyncRecycler.showSkeleton()) {
       @for (_ of skeletonRange(asyncRecycler.skeletonSlots()); track $index) {

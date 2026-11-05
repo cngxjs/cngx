@@ -38,7 +38,7 @@ type Density = 'comfortable' | 'compact' | 'spacious';
         </p>
       }
       <p>
-        <button cngxMenuButton class="m-busy" [cngxAsyncClick]="action" [menu]="menu" [popover]="pop">
+        <button cngxMenuButton class="m-busy" [cngxAsyncClick]="action" [showDelay]="0" [menu]="menu" [popover]="pop">
           Export
         </button>
       </p>
@@ -192,7 +192,8 @@ describe('CngxMenuButton geometry', () => {
     button.click();
     fixture.detectChanges();
     TestBed.flushEffects();
-    // data-busy follows the loading config's show delay.
+    // [showDelay]="0" on .m-busy paints the busy layer on the next task instead
+    // of waiting the real 120 ms config delay.
     await vi.waitFor(() => {
       fixture.detectChanges();
       expect(button.dataset['busy']).toBe('true');

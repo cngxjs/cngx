@@ -30,6 +30,7 @@ const STATUSES: readonly AsyncStatus[] = ['idle', 'pending', 'success', 'error']
         class="labels"
         [action]="action"
         [externalState]="state"
+        [showDelay]="0"
         pendingLabel="Saving the draft..."
         succeededLabel="Saved"
         failedLabel="Could not save, retry"
@@ -38,7 +39,7 @@ const STATUSES: readonly AsyncStatus[] = ['idle', 'pending', 'success', 'error']
       </button>
     </div>
     <div style="display: flex; align-items: flex-start">
-      <button cngxActionButton class="bare" [action]="action" [externalState]="state">
+      <button cngxActionButton class="bare" [action]="action" [externalState]="state" [showDelay]="0">
         Save draft
       </button>
     </div>
@@ -76,7 +77,7 @@ class GeometryHost {
         Save
       </button>
       <button cngxActionButton class="fail" [action]="fail" [feedbackDuration]="60000">Save</button>
-      <button cngxActionButton class="busy" [action]="hang">Save</button>
+      <button cngxActionButton class="busy" [action]="hang" [showDelay]="0">Save</button>
     </p>
     <p class="outline-danger">
       <button cngxActionButton="outline" tone="danger" class="ref" [action]="hang">Save</button>
@@ -98,7 +99,7 @@ class GeometryHost {
       >
         Save
       </button>
-      <button cngxActionButton="outline" tone="danger" class="busy" [action]="hang">Save</button>
+      <button cngxActionButton="outline" tone="danger" class="busy" [action]="hang" [showDelay]="0">Save</button>
     </p>
   `,
 })
@@ -165,7 +166,8 @@ describe('CngxActionButton geometry', () => {
     fixture.componentInstance.status.set('pending');
     fixture.detectChanges();
     TestBed.flushEffects();
-    // The pending cell follows the loading config's show delay.
+    // [showDelay]="0" paints the pending cell on the next task, not after the
+    // real 120 ms config delay.
     await vi.waitFor(() => {
       fixture.detectChanges();
       expect(btn.getAttribute('data-status-label')).toBe('');
@@ -187,7 +189,8 @@ describe('CngxActionButton geometry', () => {
     fixture.componentInstance.status.set('pending');
     fixture.detectChanges();
     TestBed.flushEffects();
-    // The spinner follows the loading config's show delay.
+    // [showDelay]="0" paints the spinner on the next task, not after the real
+    // 120 ms config delay.
     await vi.waitFor(() => {
       fixture.detectChanges();
       expect(btn.querySelector('.cngx-button__busy')).not.toBeNull();

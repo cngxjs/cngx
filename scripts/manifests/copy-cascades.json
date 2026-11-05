@@ -81,7 +81,7 @@
     {
       "class": "CngxAsyncClick",
       "file": "projects/common/interactive/async-click/async-click.directive.ts",
-      "line": 308,
+      "line": 468,
       "member": "announcement",
       "enclosing": "untracked",
       "tiers": [
@@ -97,7 +97,7 @@
     {
       "class": "CngxAsyncClick",
       "file": "projects/common/interactive/async-click/async-click.directive.ts",
-      "line": 311,
+      "line": 471,
       "member": "announcement",
       "enclosing": "untracked",
       "tiers": [
@@ -687,8 +687,8 @@
     {
       "class": "CngxActionButton",
       "file": "projects/ui/action-button/action-button.ts",
-      "line": 392,
-      "member": "effectiveAnnouncement",
+      "line": 602,
+      "member": "resolveAnnouncement",
       "enclosing": "untracked",
       "tiers": [
         { "kind": "input", "field": "succeededAnnouncement" },
@@ -704,11 +704,10 @@
     {
       "class": "CngxActionButton",
       "file": "projects/ui/action-button/action-button.ts",
-      "line": 398,
-      "member": "effectiveAnnouncement",
+      "line": 615,
+      "member": "resolveAnnouncement",
       "enclosing": "untracked",
       "tiers": [
-        { "kind": "input", "field": "failedAnnouncement" },
         { "kind": "input", "field": "failedLabel" },
         {
           "kind": "bundle",

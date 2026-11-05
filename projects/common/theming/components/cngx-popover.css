@@ -11,12 +11,15 @@
  *
  * Neutralise the chrome on hosts that carry no surface of their own; the
  * styled surfaces are excluded by class so they keep their own paint. Only the
- * chrome is reset - positioning (`inset`, `position-anchor`, the host's inline
- * `margin`) is owned by `CngxPopover` and left untouched. The UA `overflow:
- * auto` goes too: the host is exactly as large as its content, so it would
- * clip the shadow of the surface inside it (a `cngxMenu`'s elevation). A `cngxPopoverSheet`
- * in its sheet or fullscreen presentation paints its own surface
- * (`cngx-popover-sheet.css`), so it is excluded too.
+ * chrome is reset - positioning (`inset`, `position-anchor`) is owned by
+ * `CngxPopover`. The anchor offset margin is written by `CngxPopover` as the
+ * `--cngx-popover-anchor-margin` custom property and applied here in the
+ * components layer, so a Material bridge can zero it by setting the variable
+ * (no `!important` needed - an inline `margin` could only be beaten by one).
+ * The UA `overflow: auto` goes too: the host is exactly as large as its
+ * content, so it would clip the shadow of the surface inside it (a `cngxMenu`'s
+ * elevation). A `cngxPopoverSheet` in its sheet or fullscreen presentation
+ * paints its own surface (`cngx-popover-sheet.css`), so it is excluded too.
  *
  * @themes CngxPopover
  */
@@ -29,5 +32,18 @@
     background: transparent;
     color: inherit;
     overflow: visible;
+  }
+
+  /* The anchor offset margin, applied to every anchored popover (the styled
+     panels included) from the custom property the directive writes inline.
+     `--cngx-popover-margin-override` lets a theme (the Material select bridge)
+     force the margin to 0 without `!important`: a stylesheet cannot outrank the
+     directive's inline `--cngx-popover-anchor-margin`, but the override var is
+     read first and is not set inline, so the theme's value wins. Sheet and
+     fullscreen presentations own their own box, so they are excluded. */
+  [cngxPopover]:not([data-cngx-presentation='sheet']):not(
+      [data-cngx-presentation='fullscreen']
+    ) {
+    margin: var(--cngx-popover-margin-override, var(--cngx-popover-anchor-margin, 0));
   }
 }

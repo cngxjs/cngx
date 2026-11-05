@@ -208,7 +208,7 @@ protected readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
 Authoring a slot consumer-side is a one-liner:
 
 ```html
-<cngx-select [field]="f.country" [options]="countries">
+<cngx-select [(value)]="country" [options]="countries">
   <ng-template cngxSelectEmpty>No countries match your filter.</ng-template>
 </cngx-select>
 ```

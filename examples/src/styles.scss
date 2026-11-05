@@ -4962,6 +4962,11 @@ mat-icon.demo-breadcrumb-icon {
   gap: var(--cngx-space-xs, 4px);
 }
 
+.demo-select-config-panel {
+  background: var(--cngx-color-surface-raised, #f4f6ff);
+  border-inline-start: 3px solid var(--cngx-color-primary, #3f51b5);
+}
+
 .demo-action-slot-button {
   display: inline-flex;
   align-items: center;

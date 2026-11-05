@@ -29,6 +29,7 @@ export {
   type ThemeChoice,
 } from './options';
 export {
+  compareVersions,
   declaredRange,
   type PackageManifest,
   parseManifest,

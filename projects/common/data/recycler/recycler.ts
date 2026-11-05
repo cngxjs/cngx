@@ -226,7 +226,11 @@ export interface CngxRecycler {
   readonly isLoading: Signal<boolean>;
   /** `true` during refresh (`state.isRefreshing()`). Data remains visible. */
   readonly isRefreshing: Signal<boolean>;
-  /** `true` when `totalCount === 0` and not busy. */
+  /**
+   * `true` when `totalCount === 0` and not busy. Stays `false` while the
+   * first-load skeleton is held (`showSkeleton`), so an empty first load shows
+   * the skeleton to its dwell, never an empty-then-skeleton flicker.
+   */
   readonly isEmpty: Signal<boolean>;
   /** How many skeleton items fit in the viewport: `ceil(clientHeight / estimateSize)`. */
   readonly skeletonSlots: Signal<number>;
@@ -503,8 +507,17 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
   const isLoading = computed(() => state?.isFirstLoad() ?? false);
   const isRefreshing = computed(() => state?.isRefreshing() ?? false);
 
+  const loading = injectLoadingConfig();
+  // Declared before isEmpty so the empty state can wait on the held skeleton:
+  // one truth for the template, no empty-then-skeleton flicker on first load.
+  const showSkeleton = createVisibilityGate(
+    isLoading,
+    computed(() => config.skeletonDelay ?? loading.showDelay),
+    computed(() => config.skeletonMinDwell ?? loading.minDwell),
+  );
+
   const isEmpty = computed(() => {
-    if (state?.isBusy()) {
+    if (state?.isBusy() || showSkeleton()) {
       return false;
     }
     return config.totalCount() === 0;
@@ -520,13 +533,6 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
       typeof config.estimateSize === 'number' ? config.estimateSize : config.estimateSize(0);
     return Math.ceil(ch / itemHeight);
   });
-
-  const loading = injectLoadingConfig();
-  const showSkeleton = createVisibilityGate(
-    isLoading,
-    computed(() => config.skeletonDelay ?? loading.showDelay),
-    computed(() => config.skeletonMinDwell ?? loading.minDwell),
-  );
 
   // previousTotal is a signal, not a mutable let - reactive, no stale-value risk.
   const announcementState = signal('');

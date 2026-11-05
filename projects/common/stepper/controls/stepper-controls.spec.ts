@@ -64,10 +64,50 @@ class CompleteHost {
   standalone: true,
   imports: [CngxStepperComplete],
   hostDirectives: [CngxStepperPresenter],
+  template: `
+    <button
+      [cngxStepperComplete]="action"
+      [enabled]="enabled()"
+      (completed)="completedCount = completedCount + 1"
+    >
+      Finish
+    </button>
+  `,
+})
+class LifecycleCompleteHost {
+  readonly enabled = signal(true);
+  ran = 0;
+  completedCount = 0;
+  actionImpl: () => Promise<void> = () => Promise.resolve();
+  readonly action = (): Promise<void> => {
+    this.ran++;
+    return this.actionImpl();
+  };
+}
+
+@Component({
+  standalone: true,
+  imports: [CngxStepperComplete],
+  hostDirectives: [CngxStepperPresenter],
   template: `<button [cngxStepperComplete]="action" [showDelay]="0">Finish</button>`,
 })
 class ImmediateBusyCompleteHost {
   readonly action = (): Promise<void> => new Promise<void>(() => undefined);
+}
+
+@Component({
+  standalone: true,
+  imports: [CngxStepperComplete],
+  hostDirectives: [CngxStepperPresenter],
+  template: `<button [cngxStepperComplete]="action" [showDelay]="0" [minDwell]="50">Finish</button>`,
+})
+class DwellCompleteHost {
+  ran = 0;
+  release: () => void = () => undefined;
+  readonly action = (): Promise<void> => {
+    this.ran++;
+    return new Promise<void>((resolve) => (this.release = resolve));
+  };
 }
 
 function navSetup(): {
@@ -231,6 +271,67 @@ describe('stepper nav controls', () => {
     });
   });
 
+  describe('CngxStepperComplete run lifecycle', () => {
+    async function drainMicrotasks(): Promise<void> {
+      for (let i = 0; i < 20; i++) {
+        await Promise.resolve();
+      }
+    }
+
+    function lifecycleSetup() {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(LifecycleCompleteHost);
+      fixture.detectChanges();
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+      const runner = fixture.debugElement.children[0].injector.get(CngxAsyncClick);
+      return { fixture, host: fixture.componentInstance, btn, runner };
+    }
+
+    it('emits nothing on a failed run and reports the error status', async () => {
+      const { fixture, host, btn, runner } = lifecycleSetup();
+      host.actionImpl = () => Promise.reject(new Error('nope'));
+      btn.click();
+      await drainMicrotasks();
+      fixture.detectChanges();
+      expect(host.ran).toBe(1);
+      expect(runner.status()).toBe('error');
+      expect(host.completedCount).toBe(0);
+    });
+
+    it('does not run the action with [enabled]="false"', () => {
+      const { fixture, host, btn } = lifecycleSetup();
+      host.enabled.set(false);
+      fixture.detectChanges();
+      btn.click();
+      expect(host.ran).toBe(0);
+      expect(btn.getAttribute('aria-disabled')).toBe('true');
+    });
+
+    it('emits once per success, also for two runs with no change detection between', async () => {
+      const { fixture, host, btn } = lifecycleSetup();
+      btn.click();
+      await drainMicrotasks();
+      btn.click();
+      await drainMicrotasks();
+      expect(host.ran).toBe(2);
+      expect(host.completedCount).toBe(2);
+      fixture.detectChanges();
+      expect(host.completedCount).toBe(2);
+    });
+
+    it('emits nothing when destroyed mid-run', async () => {
+      const { fixture, host, btn } = lifecycleSetup();
+      let resolve!: () => void;
+      host.actionImpl = () => new Promise<void>((r) => (resolve = r));
+      btn.click();
+      fixture.detectChanges();
+      fixture.destroy();
+      resolve();
+      await drainMicrotasks();
+      expect(host.completedCount).toBe(0);
+    });
+  });
+
   it('forwards [showDelay] to the composed CngxAsyncClick', async () => {
     vi.useFakeTimers();
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
@@ -249,6 +350,84 @@ describe('stepper nav controls', () => {
 
     await vi.advanceTimersByTimeAsync(0);
     expect(asyncClick.busyVisible()).toBe(true);
+  });
+
+  it('forwards [minDwell] to the composed CngxAsyncClick', async () => {
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(DwellCompleteHost);
+    fixture.detectChanges();
+    const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
+    presenter.register(reg('a'));
+    presenter.register(reg('b'));
+    presenter.select(1);
+    fixture.detectChanges();
+    const host = fixture.componentInstance;
+    const asyncClick = fixture.debugElement.children[0].injector.get(CngxAsyncClick);
+    const advance = async (ms: number): Promise<void> => {
+      await vi.advanceTimersByTimeAsync(ms);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+    };
+
+    (fixture.nativeElement.querySelector('button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    await advance(0);
+    expect(asyncClick.busyVisible()).toBe(true);
+
+    host.release();
+    // The forwarded 50 ms dwell holds the visual, not the 400 ms default.
+    await advance(49);
+    expect(asyncClick.busyVisible()).toBe(true);
+    await advance(1);
+    expect(asyncClick.busyVisible()).toBe(false);
+    vi.useRealTimers();
+  });
+
+  it('refuses a second finish run through the dwell and clears aria-busy on release (E4)', async () => {
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(DwellCompleteHost);
+    fixture.detectChanges();
+    const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
+    presenter.register(reg('a'));
+    presenter.register(reg('b'));
+    presenter.select(1);
+    fixture.detectChanges();
+    const host = fixture.componentInstance;
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    const asyncClick = fixture.debugElement.children[0].injector.get(CngxAsyncClick);
+    const advance = async (ms: number): Promise<void> => {
+      await vi.advanceTimersByTimeAsync(ms);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+    };
+
+    btn.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(host.ran).toBe(1);
+    await advance(0);
+    expect(asyncClick.busyVisible()).toBe(true);
+
+    host.release();
+    await advance(0);
+    expect(asyncClick.pending()).toBe(false);
+    // The finish action settled but its busy visual is held: it must not
+    // submit a second time, and aria-busy stands for the whole dwell.
+    expect(asyncClick.busyVisible()).toBe(true);
+    expect(btn.getAttribute('aria-busy')).toBe('true');
+
+    btn.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(host.ran).toBe(1);
+
+    await advance(50);
+    expect(asyncClick.busyVisible()).toBe(false);
+    expect(btn.hasAttribute('aria-busy')).toBe(false);
+    vi.useRealTimers();
   });
 
   describe('dev-mode co-placement guard', () => {

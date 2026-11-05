@@ -109,12 +109,18 @@ afterEach(async () => {
 });
 
 describe('context-menu glyph geometry', () => {
-  it('sizes the tick to 0.73em of ink across (box 0.73em * 24 / 16, rounded)', async () => {
+  it('draws the tick on the 24-grid path at the 1rem box', async () => {
     const root = await mount();
-    const fs = fontSize(one(root, '.item-check'));
-    const box = rect(root, '.item-check .cngx-menu-item__check > svg');
-    expect(box.width).toBeCloseTo(Math.round((0.73 * 24 * fs) / 16), 1);
-    expect(box.height).toBeCloseTo(Math.round((0.73 * 24 * fs) / 16), 1);
+    const svg = one(root, '.item-check .cngx-menu-item__check > svg');
+    const box = svg.getBoundingClientRect();
+    expect(box.width).toBeCloseTo(16, 0);
+    expect(box.height).toBeCloseTo(16, 0);
+    const painted = Array.from(svg.querySelectorAll('path')).filter(
+      (p) => computedValue(p, 'display') !== 'none',
+    );
+    expect(painted).toHaveLength(1);
+    // CHECK carries no 16-grid drawing (1x smoke), so the 24-grid path paints.
+    expect(painted[0].classList.contains('cngx-icon-svg__path')).toBe(true);
   });
 
   it('sizes the dot to 0.73em across (box 0.73em * 24 / 8, rounded)', async () => {

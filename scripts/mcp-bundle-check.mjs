@@ -10,8 +10,15 @@
 //
 //   - `build:mcp` (last step): mcp-snapshot.mjs has just restamped the bundle,
 //     so this catches an unsupported schemaVersion or an empty projection;
-//   - `prepublishOnly` in packages/mcp: runs over whatever sits in data/, so it
-//     also catches a stale bundle stamped with an older root version.
+//   - `prepublishOnly` in packages/mcp and packages/cli: runs over whatever
+//     sits in data/ with `--expect=package`, so it also catches a bundle not
+//     stamped with the version of the package being published.
+//
+// `--expect=root` (the default, the `build:mcp` / `build:cli` mode) compares the
+// stamp with the root package.json version. `--expect=package` compares it with
+// the version of the package that owns the data dir (`<dataDir>/../package.json`):
+// the release run stamps the tooling manifests with the release version and
+// bumps the root only after every package is published.
 //
 // `--data-dir=<path>` checks another package's bundle (resolved against the repo
 // root, so it works from any cwd): `build:cli` and the @cngx/cli `prepublishOnly`
@@ -21,6 +28,7 @@
 //
 //   node scripts/mcp-bundle-check.mjs
 //   node scripts/mcp-bundle-check.mjs --data-dir=packages/cli/data
+//   node scripts/mcp-bundle-check.mjs --data-dir=packages/cli/data --expect=package
 
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
@@ -29,6 +37,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_DATA_DIR = join('packages', 'mcp', 'data');
 const LOADER = join(ROOT, 'packages', 'mcp', 'dist', 'core', 'data', 'loader.js');
+const EXPECT_MODES = ['root', 'package'];
+const USAGE = 'Usage: mcp-bundle-check.mjs [--data-dir=<path>] [--expect=root|package]';
 
 /**
  * Load the bundle in `dataDir` and decide whether the server can serve it.
@@ -66,9 +76,17 @@ export function checkBundledSnapshot({ dataDir, expectedVersion, loadBundledDocs
  */
 export function parseBundleCheckArgs(argv, root) {
   let dataDir = DEFAULT_DATA_DIR;
+  let expect = 'root';
   for (const arg of argv) {
+    if (arg.startsWith('--expect=')) {
+      expect = arg.slice('--expect='.length);
+      if (!EXPECT_MODES.includes(expect)) {
+        return { ok: false, message: `--expect must be ${EXPECT_MODES.join(' or ')}, got "${expect}"` };
+      }
+      continue;
+    }
     if (!arg.startsWith('--data-dir=')) {
-      return { ok: false, message: `unknown argument ${arg}. Usage: mcp-bundle-check.mjs [--data-dir=<path>]` };
+      return { ok: false, message: `unknown argument ${arg}. ${USAGE}` };
     }
     dataDir = arg.slice('--data-dir='.length);
     if (dataDir === '') {
@@ -77,7 +95,17 @@ export function parseBundleCheckArgs(argv, root) {
   }
   const absolute = resolve(root, dataDir);
   const label = relative(root, absolute).split(sep).join('/') || '.';
-  return { ok: true, dataDir: absolute, label };
+  return { ok: true, dataDir: absolute, label, expect };
+}
+
+/**
+ * The version the bundle must be stamped with: the root package.json version
+ * for `expect: 'root'`, the version of the package that owns `dataDir` for
+ * `expect: 'package'`.
+ */
+export function expectedVersionFor({ expect, root, dataDir, read = readFileSync }) {
+  const manifest = expect === 'package' ? join(dataDir, '..', 'package.json') : join(root, 'package.json');
+  return JSON.parse(read(manifest, 'utf8')).version;
 }
 
 async function main() {
@@ -93,7 +121,7 @@ async function main() {
     return;
   }
   const { loadBundledDocs } = await import(pathToFileURL(LOADER).href);
-  const expectedVersion = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).version;
+  const expectedVersion = expectedVersionFor({ expect: args.expect, root: ROOT, dataDir: args.dataDir });
   const result = checkBundledSnapshot({ dataDir: args.dataDir, expectedVersion, loadBundledDocs });
   if (!result.ok) {
     console.error(`mcp-bundle-check: ${result.message}`);

@@ -6,12 +6,16 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { CngxCheckboxIndicator } from './checkbox-indicator.component';
 
 // Runs in a real Chromium (the `test-geometry` target). The glyph box derives
-// from the resolved box size, not the size class: 0.75 of it, never below the
-// 12px micro floor. The 14px sm and 16px md boxes both land on 12px, where the
-// global micro sheet (loaded here as `cngx.css` does) paints the 12-grid
-// drawings; the 20px lg box lands on 15px and keeps the 24-grid path. The bare
-// checkmark variant fills its box once the box leaves the band (md 16px, lg
-// 20px) and takes the 12px micro glyph below it (sm).
+// from the resolved box size, not the size class: 0.75 of it for the boxed
+// variant, the full box for the bare checkmark, never below the 12px micro
+// floor. The global sheet (loaded here as `cngx.css` does) picks the tier by
+// box: the 12-grid micro drawing in a 10 to 14px box, the 16-grid small drawing
+// in a 15 to 19px box, the 24-grid path at 20px and up. CHECK carries no small
+// drawing (1x smoke kept it on the 24-grid path), so in the 15 to 19px band it
+// paints the 24 path, not a small glyph; its micro drawing still shows below 15.
+// sm and md boxed land on the 12px micro box; lg boxed takes its own 0.8 term to
+// the exact 16px box; the bare md checkmark is 16px and the bare lg checkmark
+// 20px.
 
 @Component({
   selector: 'cngx-checkbox-indicator-glyph-host',
@@ -117,15 +121,17 @@ describe('CngxCheckboxIndicator glyph geometry', () => {
     });
   }
 
-  it('keeps the md checkmark at 1em, outside the band', () => {
+  // CHECK carries no 16-grid drawing (1x smoke): at a 16px box the band rule
+  // finds no small path to swap to, so the 24-grid path paints.
+  it('draws the md checkmark on the 24-grid path at the 16px box', () => {
     const svg = mountGlyph('md', false, 'checkmark');
     expect(svg.getBoundingClientRect().width).toBe(16);
     expect(paintedPath(svg).classList.contains('cngx-icon-svg__path')).toBe(true);
   });
 
-  it('keeps the lg check on the 24-grid path, outside the band', () => {
+  it('draws the lg boxed check on the 24-grid path at the exact 16px box', () => {
     const svg = mountGlyph('lg', false);
-    expect(svg.getBoundingClientRect().width).toBe(15);
+    expect(svg.getBoundingClientRect().width).toBe(16);
     expect(paintedPath(svg).classList.contains('cngx-icon-svg__path')).toBe(true);
   });
 
@@ -176,9 +182,9 @@ describe('CngxCheckboxIndicator glyph geometry', () => {
     }
   }
 
-  // The checkmark step sits at 14.5px, where the rounded box leaves the band:
-  // a 15px box fills with the 24-grid glyph, a 14px box keeps the micro one.
-  it('fills a checkmark box that rounds out of the band with the 24-grid glyph', () => {
+  // The checkmark step sits at 14.5px, the micro/small boundary: a 15px box
+  // shows the 24-grid path (CHECK has no small drawing), a 14px box the micro one.
+  it('draws a checkmark box that rounds into the 15px band on the 24-grid path', () => {
     const svg = mountGlyph('sm', false, 'checkmark', '15px');
     expect(svg.getBoundingClientRect().width).toBe(15);
     expect(paintedPath(svg).classList.contains('cngx-icon-svg__path')).toBe(true);

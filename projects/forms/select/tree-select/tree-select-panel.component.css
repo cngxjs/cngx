@@ -76,7 +76,7 @@
    */
   @property --cngx-tree-select-tree-padding {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.25rem;
   }
 
@@ -86,7 +86,7 @@
    */
   @property --cngx-tree-select-node-gap {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.5rem;
   }
 
@@ -96,7 +96,7 @@
    */
   @property --cngx-tree-select-node-height {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 2rem;
   }
 
@@ -108,7 +108,7 @@
    */
   @property --cngx-tree-select-node-radius {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.125rem;
   }
 
@@ -118,7 +118,7 @@
    */
   @property --cngx-tree-select-base-indent {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.5rem;
   }
 
@@ -129,7 +129,7 @@
    */
   @property --cngx-tree-select-level-indent {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1.25rem;
   }
 
@@ -139,7 +139,7 @@
    */
   @property --cngx-tree-select-node-padding-end {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.75rem;
   }
 
@@ -159,7 +159,7 @@
    */
   @property --cngx-tree-select-node-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: transparent;
   }
 
@@ -204,7 +204,7 @@
    */
   @property --cngx-tree-select-twisty-size {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1.25rem;
   }
 
@@ -224,7 +224,7 @@
    */
   @property --cngx-tree-select-twisty-font-size {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1rem;
   }
 
@@ -327,8 +327,17 @@
     .cngx-tree-select__tree {
       /* tree-padding 0.25 -> xs. */
       --cngx-tree-select-tree-padding: var(--cngx-space-xs);
-      outline: none;
       padding: var(--cngx-tree-select-tree-padding, 0.25rem);
+    }
+    /* The tree container is a roving-tabindex focus host; keep a visible
+       focus-visible ring instead of suppressing the outline, read from the
+       family's focus tokens. */
+    .cngx-tree-select__tree:focus-visible {
+      outline: var(
+        --cngx-select-focus-outline,
+        2px solid var(--_cngx-select-focus-ring-color, var(--cngx-color-primary, oklch(0.66 0.19 50)))
+      );
+      outline-offset: var(--cngx-select-focus-offset, -2px);
     }
 
     .cngx-tree-select__node {

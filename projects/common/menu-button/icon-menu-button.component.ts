@@ -97,8 +97,8 @@ import { CNGX_SPLIT_BUTTON } from './split-button.token';
     '[attr.data-variant]': 'core.variant()',
     '[attr.data-tone]': 'core.tone()',
     '[attr.data-size]': 'core.size()',
-    '[attr.data-busy]': 'core.busyVisible() ? "true" : null',
-    '[attr.data-pending]': 'core.busy() ? "true" : null',
+    '[attr.data-busy]': 'core.busyAttr()',
+    '[attr.data-pending]': 'core.pendingAttr()',
     '[attr.data-expanded]': 'expanded() ? "true" : "false"',
     '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.aria-disabled]': 'core.ariaDisabled()',
@@ -261,11 +261,13 @@ export class CngxIconMenuButton implements CngxButtonState {
 
   /**
    * Refuses to open the menu while the button is blocked (disabled, a
-   * pending co-hosted `cngxAsyncClick`, or its `[enabled]="false"`); an
-   * open menu still closes on click, so a run that started with the opening
-   * click never leaves a menu that cannot be clicked shut. The core's
-   * capture guard handles only `disabled`, so consumer `(click)` handlers
-   * still run.
+   * co-hosted `cngxAsyncClick` that runs or holds its busy visual through the
+   * dwell, or its `[enabled]="false"`); as a split caret it also follows the
+   * main action's `mainBlocked`, so it refuses for the whole run and dwell of
+   * the main action. An open menu still closes on click, so a run that started
+   * with the opening click never leaves a menu that cannot be clicked shut. The
+   * core's capture guard handles only `disabled`, so consumer `(click)`
+   * handlers still run.
    */
   protected handleClick(): void {
     if (this.core.blocked() && !this.expanded()) {

@@ -74,7 +74,7 @@ describe('CngxPopover presentation gate (geometry)', () => {
   function anchorWrites(panel: HTMLElement) {
     return {
       anchor: panel.style.getPropertyValue('position-anchor'),
-      margin: panel.style.getPropertyValue('margin'),
+      margin: panel.style.getPropertyValue('--cngx-popover-anchor-margin'),
       tryFallbacks: panel.style.getPropertyValue('position-try-fallbacks'),
       area: panel.style.getPropertyValue(ANCHOR_AREA_PROPERTY),
     };

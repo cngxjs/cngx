@@ -7,19 +7,22 @@ import {
   contentChild,
   DestroyRef,
   effect,
+  ElementRef,
   inject,
+  Injector,
   input,
   untracked,
   ViewEncapsulation,
   viewChild,
 } from '@angular/core';
-import type { AsyncStatus } from '@cngx/core/utils';
+import { resolveSpokenText, type AsyncStatus } from '@cngx/core/utils';
 import {
   CngxAsyncClick,
   CngxFailed,
   CngxPending,
   CngxSucceeded,
   type AsyncAction,
+  type CngxAsyncSettle,
 } from '@cngx/common/interactive';
 import { cngxDevWarn } from '@cngx/utils';
 
@@ -44,7 +47,11 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
  * Like there, the pending template waits for the busy gate of the internal
  * `cngxAsyncClick` (`CNGX_LOADING_CONFIG.showDelay`, held for `minDwell`),
  * so a fast run goes from the idle label straight to the result; the result
- * templates and the announcement follow the run at once. `status()` stays
+ * templates and the announcement follow the run at once. Each settle is
+ * announced once, with the text the button shows (the rendered
+ * `cngxSucceeded` / `cngxFailed` template, `aria-hidden` parts skipped, else
+ * the `cngxAsyncClick` announcement), and closes the panel once per success
+ * under `withCloseOnSuccess()`. `status()` stays
  * immediate; branch a hand-rolled `@switch` on {@link busyVisible} for the
  * same timing.
  *
@@ -106,11 +113,17 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
       </button>
     } @else if (action(); as act) {
       <button
+        #confirmButton
         type="button"
         [cngxAsyncClick]="act"
         #btn="cngxAsyncClick"
         [feedbackDuration]="feedbackDuration()"
         [autoAnnounce]="false"
+        [showDelay]="showDelay()"
+        [minDwell]="minDwell()"
+        [attr.data-pending]="btn.pending() ? 'true' : null"
+        [attr.data-busy]="btn.busyVisible() ? 'true' : null"
+        (settled)="handleSettled($event)"
         [class]="'cngx-popover-action cngx-popover-action--' + variant()"
       >
         @switch (btn.status()) {
@@ -142,9 +155,12 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
           }
         }
       </button>
-      <span aria-live="polite" aria-atomic="true" class="cngx-popover-action__sr-only">
-        {{ btn.announcement() }}
-      </span>
+      <span
+        #announcer
+        aria-live="polite"
+        aria-atomic="true"
+        class="cngx-popover-action__sr-only"
+      ></span>
     } @else {
       <!-- confirm without [action]: CNGX1035; the click runs nothing -->
       <button
@@ -162,6 +178,8 @@ export class CngxPopoverAction {
   private readonly popover = inject(CngxPopover, { optional: true });
   private readonly config = inject(CNGX_POPOVER_PANEL_CONFIG);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
+  private destroyed = false;
 
   /** Button role: `'dismiss'` closes immediately, `'confirm'` runs an async action. */
   readonly role = input<'dismiss' | 'confirm'>('confirm');
@@ -175,11 +193,27 @@ export class CngxPopoverAction {
   /** Duration in ms to show success/error feedback. */
   readonly feedbackDuration = input(2000);
 
+  /**
+   * Show delay (ms) of the confirm action's busy visual, forwarded to the
+   * internal `CngxAsyncClick`. Unbound, it resolves to
+   * `CNGX_LOADING_CONFIG.showDelay` through the directive.
+   */
+  readonly showDelay = input<number | undefined>(undefined);
+
+  /**
+   * Minimum time (ms) the confirm action's busy visual stays once shown,
+   * forwarded to the internal `CngxAsyncClick`. Unbound, it resolves to
+   * `CNGX_LOADING_CONFIG.minDwell` through the directive.
+   */
+  readonly minDwell = input<number | undefined>(undefined);
+
   protected readonly pendingTpl = contentChild(CngxPending);
   protected readonly succeededTpl = contentChild(CngxSucceeded);
   protected readonly failedTpl = contentChild(CngxFailed);
 
   private readonly asyncClick = viewChild(CngxAsyncClick);
+  private readonly confirmButton = viewChild('confirmButton', { read: ElementRef });
+  private readonly announcer = viewChild('announcer', { read: ElementRef });
 
   /**
    * Lifecycle status of the confirm action - `'idle' | 'pending' | 'success'
@@ -199,26 +233,19 @@ export class CngxPopoverAction {
   private closeOnSuccessTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
-    // withCloseOnSuccess(): a confirmed footer action hides the composing
-    // popover after the configured delay. A follow-up run cancels the
-    // pending close so a re-triggered action never yanks the panel away
-    // mid-interaction.
+    // A follow-up run cancels a scheduled close, so a re-triggered action
+    // never yanks the panel away mid-interaction. Idempotent: a coalesced
+    // pending is harmless, the next settle clears and re-arms.
     effect(() => {
-      const status = this.status();
-      const delay = untracked(() => this.config.closeOnSuccessDelay);
-      if (status === 'pending') {
-        this.clearCloseOnSuccessTimer();
-      }
-      if (status === 'success' && delay !== undefined && this.popover) {
-        this.clearCloseOnSuccessTimer();
-        this.closeOnSuccessTimer = setTimeout(() => {
-          this.closeOnSuccessTimer = null;
-          this.popover?.hide();
-        }, delay);
+      if (this.status() === 'pending') {
+        untracked(() => this.clearCloseOnSuccessTimer());
       }
     });
 
-    this.destroyRef.onDestroy(() => this.clearCloseOnSuccessTimer());
+    this.destroyRef.onDestroy(() => {
+      this.destroyed = true;
+      this.clearCloseOnSuccessTimer();
+    });
 
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       afterNextRender(() => {
@@ -235,6 +262,51 @@ export class CngxPopoverAction {
 
   protected handleDismiss(): void {
     this.popover?.hide();
+  }
+
+  /**
+   * One settle of the confirm action: re-arms close-on-success
+   * (`withCloseOnSuccess()`) and speaks the outcome once.
+   */
+  protected handleSettled(settle: CngxAsyncSettle): void {
+    this.clearCloseOnSuccessTimer();
+    const delay = this.config.closeOnSuccessDelay;
+    if (settle.status === 'success' && delay !== undefined && this.popover) {
+      this.closeOnSuccessTimer = setTimeout(() => {
+        this.closeOnSuccessTimer = null;
+        this.popover?.hide();
+      }, delay);
+    }
+    this.speak(settle.status);
+  }
+
+  /**
+   * Clears the region at once and writes it after the next render, so the
+   * text matches the result template the settle rendered.
+   */
+  private speak(status: 'success' | 'error'): void {
+    const region = this.announcer()?.nativeElement as HTMLElement | undefined;
+    if (!region) {
+      return;
+    }
+    region.textContent = '';
+    const fallback = untracked(() => this.asyncClick()?.announcement() ?? '');
+    const hasTemplate = untracked(() =>
+      status === 'success' ? !!this.succeededTpl() : !!this.failedTpl(),
+    );
+    afterNextRender(
+      {
+        write: () => {
+          if (this.destroyed) {
+            return;
+          }
+          const button = this.confirmButton()?.nativeElement as Element | undefined;
+          const rendered = hasTemplate && button ? resolveSpokenText(button) : '';
+          region.textContent = rendered === '' ? fallback : rendered;
+        },
+      },
+      { injector: this.injector },
+    );
   }
 
   private clearCloseOnSuccessTimer(): void {

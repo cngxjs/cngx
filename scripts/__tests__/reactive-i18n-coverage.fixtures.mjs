@@ -686,12 +686,6 @@ export const LIVE_REGIONS = [
     testName: 'does not re-announce on a language flip',
   },
   {
-    file: 'projects/common/interactive/async-click/async-click.directive.ts',
-    region: 'CngxAsyncClick.installAnnounceRegion:effect#1',
-    spec: 'projects/common/interactive/async-click/async-click.directive.spec.ts',
-    testName: 'does not re-announce on a language flip',
-  },
-  {
     file: 'projects/common/interactive/copy/copy-block.ts',
     region: 'CngxCopyBlock.span(liveAnnouncement)',
     spec: 'projects/common/interactive/copy/copy-block.spec.ts',

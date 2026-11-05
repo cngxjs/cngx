@@ -3,7 +3,9 @@
 // standalone offline. One snapshot step feeds both packages. Two transforms
 // bridge gaps in the raw data:
 //
-//   (a) stamp `cngxVersion` from the root package.json `version` - the raw
+//   (a) stamp `cngxVersion` from the root package.json `version`, or from
+//       `--cngx-version=<v>` when the release run stamps the version it is
+//       about to publish - the raw
 //       compodocx output carries only schemaVersion / generatedAt /
 //       compodocxVersion, none of which is the library version the answers
 //       ground against;
@@ -24,6 +26,7 @@
 //   node scripts/mcp-snapshot.mjs                                        # GH Pages default
 //   node scripts/mcp-snapshot.mjs --base=https://example.com/examples    # explicit override
 //   EXAMPLES_BASE_URL=https://example.com/examples node scripts/mcp-snapshot.mjs
+//   node scripts/mcp-snapshot.mjs --cngx-version=0.3.0 --require-llm-dump  # release stamp, dump required
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -35,9 +38,10 @@ const DEST_DIR = join(ROOT, 'packages', 'mcp', 'data');
 const DEST = join(DEST_DIR, 'documentation.json');
 const CLI_DEST_DIR = join(ROOT, 'packages', 'cli', 'data');
 const CLI_DEST = join(CLI_DEST_DIR, 'documentation.json');
-// The verbatim compodocx llm-md dump (npm run docs:llm). Optional to the build:
-// copied when present, warned-and-skipped when absent so a docs-less checkout
-// still builds; the cngx://llms-full resource degrades to an empty read.
+// The verbatim compodocx llm-md dump (npm run docs:llm). Optional to the dev
+// build: copied when present, warned-and-skipped when absent so a docs-less
+// checkout still builds; the cngx://llms-full resource degrades to an empty
+// read. The release run passes --require-llm-dump, which makes it mandatory.
 const LLM_DUMP_SOURCE = join(ROOT, '.compodoc-llm', 'llm-context.md');
 const LLM_DUMP_DEST = join(DEST_DIR, 'llm-context.md');
 
@@ -69,13 +73,66 @@ export function rebaseExampleUrls(doc, base) {
   return rebased;
 }
 
-function main() {
-  const args = new Map(process.argv.slice(2).map((a) => a.split('=', 2)).map(([k, v]) => [k, v ?? '']));
-  // Precedence: --base=… CLI flag > EXAMPLES_BASE_URL env var > GH Pages default.
-  const BASE_URL = (args.get('--base') || process.env.EXAMPLES_BASE_URL || 'https://cngxjs.github.io/cngx/examples').replace(
+const SEMVER = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
+
+/**
+ * Reads the snapshot flags. `cngxVersion` is `--cngx-version=<v>` when given
+ * (a malformed one throws), else `rootVersion`; base precedence is the
+ * `--base=` flag, then `env.EXAMPLES_BASE_URL`, then the GH Pages default.
+ */
+export function parseSnapshotArgs(argv, rootVersion, env = {}) {
+  const args = new Map(argv.map((a) => a.split('=', 2)).map(([k, v]) => [k, v ?? '']));
+  const baseUrl = (args.get('--base') || env.EXAMPLES_BASE_URL || 'https://cngxjs.github.io/cngx/examples').replace(
     /\/+$/,
     '',
   );
+  let cngxVersion = rootVersion;
+  if (args.has('--cngx-version')) {
+    cngxVersion = args.get('--cngx-version');
+    if (!SEMVER.test(cngxVersion)) {
+      throw new Error(`--cngx-version "${cngxVersion}" is not a well-formed semver`);
+    }
+  }
+  return { baseUrl, cngxVersion, requireLlmDump: args.has('--require-llm-dump') };
+}
+
+/**
+ * Whether the llm-md dump at `source` is there to copy. A missing dump is a
+ * skip for the dev build and a thrown error under `--require-llm-dump`.
+ */
+export function llmDumpPresent(source, required, exists = existsSync) {
+  if (exists(source)) {
+    return true;
+  }
+  if (required) {
+    throw new Error(`${source} not found and --require-llm-dump is set. Run \`npm run docs:llm\` first.`);
+  }
+  return false;
+}
+
+function main() {
+  let options;
+  try {
+    options = parseSnapshotArgs(
+      process.argv.slice(2),
+      JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).version,
+      process.env,
+    );
+  } catch (error) {
+    console.error(`mcp-snapshot: ${error.message}`);
+    process.exit(1);
+  }
+  const { baseUrl: BASE_URL, cngxVersion, requireLlmDump } = options;
+
+  // Checked before anything is written, so a required dump that is missing
+  // leaves the data dirs as they were.
+  let dumpPresent;
+  try {
+    dumpPresent = llmDumpPresent(LLM_DUMP_SOURCE, requireLlmDump);
+  } catch (error) {
+    console.error(`mcp-snapshot: ${error.message}`);
+    process.exit(1);
+  }
 
   if (!existsSync(SOURCE)) {
     console.error(
@@ -86,7 +143,6 @@ function main() {
 
   const doc = JSON.parse(readFileSync(SOURCE, 'utf8'));
 
-  const cngxVersion = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).version;
   doc.cngxVersion = cngxVersion;
 
   const rebased = rebaseExampleUrls(doc, BASE_URL);
@@ -102,7 +158,7 @@ function main() {
       `(cngxVersion ${cngxVersion}, schemaVersion ${doc.schemaVersion}, ${rebased} example URL(s) rebased to ${BASE_URL}).`,
   );
 
-  if (existsSync(LLM_DUMP_SOURCE)) {
+  if (dumpPresent) {
     const dump = readFileSync(LLM_DUMP_SOURCE);
     writeFileSync(LLM_DUMP_DEST, dump);
     console.log(`mcp-snapshot: copied packages/mcp/data/llm-context.md (${dump.byteLength} bytes).`);

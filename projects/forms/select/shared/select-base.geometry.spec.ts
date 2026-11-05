@@ -541,6 +541,17 @@ describe('select-family field skins', () => {
     expect(Math.abs(middle(clear) - middle(caret))).toBeLessThan(0.5);
   });
 
+  // The clear box is 1em of the trigger font (16px by default), in the 15 to 19px
+  // band, where the hand-hinted 16-grid small X paints.
+  it.each(['.v-select', '.v-multi'])('sizes the default %s clear glyph to a 16px box', (hostSelector) => {
+    const el = trigger(mount(ClearableTriggersHost), hostSelector);
+    const clear = el.querySelector<SVGSVGElement>('.cngx-select__clear-target svg.cngx-icon-svg');
+    if (!clear) {
+      throw new Error(`${hostSelector} renders no default clear icon`);
+    }
+    expect(clear.getBoundingClientRect().width).toBeCloseTo(16, 0);
+  });
+
   it.each(ALL_TRIGGERS)('sizes the default %s caret box to 12px, the micro box', (hostSelector) => {
     const el = trigger(mount(AllTriggersHost), hostSelector);
     const svg = el.querySelector('[class*="__caret"] svg.cngx-icon-svg');

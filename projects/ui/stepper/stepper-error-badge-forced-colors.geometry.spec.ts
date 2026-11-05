@@ -94,6 +94,8 @@ describe.each(SCHEMES)('stepper error badge under forced colors, %s', (scheme) =
       // Fully transparent (forced colors may rewrite the channels, never alpha).
       expect(computedValue(badge, 'background-color')).toMatch(/, 0\)$/);
       expect(computedValue(badge, 'color')).toBe(probe(root, 'canvastext'));
+      // This harness loads no global icon sheet, so the band rule never fires
+      // and the 24-grid stroke alert paints; forced colors render it CanvasText.
       const glyph = badge.querySelector('svg path');
       expect(glyph).not.toBeNull();
       expect(computedValue(glyph!, 'stroke')).toBe(probe(root, 'canvastext'));
@@ -114,18 +116,17 @@ describe('stepper error badge without forced colors', () => {
     expect(computedValue(glyph, 'stroke')).toBe(computedValue(badge, 'color'));
   });
 
-  // Standalone icon: 1.15em of the label font, stroke width 2, after the
-  // label and vertically centred on it.
-  it('draws the alert icon 1.15em wide at stroke 2 after the label', async () => {
+  // Standalone icon in a 1rem (16px) box, stroke width 2 (no icon sheet here, so
+  // the 24-grid stroke alert paints), after the label and vertically centred.
+  it('draws the alert on the 16px box at stroke 2 after the label', async () => {
     const root = await mount();
     const [badge] = badges(root);
     const step = badge.closest('.cngx-stepper__step') as HTMLElement;
     const label = step.querySelector('.cngx-stepper__label') as HTMLElement;
     const svg = badge.querySelector('svg')!;
     const box = svg.getBoundingClientRect();
-    const em = parseFloat(getComputedStyle(label).fontSize);
-    expect(box.width).toBeCloseTo(1.15 * em, 0);
-    expect(box.height).toBeCloseTo(1.15 * em, 0);
+    expect(box.width).toBeCloseTo(16, 0);
+    expect(box.height).toBeCloseTo(16, 0);
     expect(getComputedStyle(svg).strokeWidth).toBe('2px');
     const text = label.getBoundingClientRect();
     expect(box.left).toBeGreaterThanOrEqual(text.right);
