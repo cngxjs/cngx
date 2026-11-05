@@ -38,9 +38,13 @@ export interface CngxAsyncRunState {
 
 /**
  * DI token `CngxAsyncClick` provides (`useExisting`) on its own element
- * with its {@link CngxAsyncRunState}. A co-hosted component reads it with
- * `{ self: true }` (lazily, because the runner in turn reads the host's
- * `CNGX_HOST_INTERACTION_STATE`), never through the directive class.
+ * with its {@link CngxAsyncRunState}. A co-hosted unit reads it from that
+ * element, never through the directive class: a host that also provides
+ * `CNGX_HOST_INTERACTION_STATE` (the button family) reads it lazily with
+ * `{ self: true }`, because the runner in turn reads that state; a unit
+ * without that cycle may inject it eagerly (`{ self: true }` on the
+ * stepper next / previous controls, `{ host: true }` on the stepper
+ * complete control).
  *
  * No `providedIn`, no default: an element without a runner has no run.
  *
