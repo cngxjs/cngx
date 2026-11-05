@@ -88,6 +88,7 @@ export type CngxSidebarState = 'expanded' | 'rail' | 'hidden' | 'peek';
  * <example-url>/#/common/layout/sidebar/clipped-below-header</example-url>
  * <example-url>/#/common/layout/sidebar/collapsible-rail</example-url>
  * <example-url>/#/common/layout/sidebar/inset-app-sidebar</example-url>
+ * <example-url>/#/common/layout/sidebar/projected-toggle-glyph</example-url>
  * @axis level molecule
  */
 @Directive({
