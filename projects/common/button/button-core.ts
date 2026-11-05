@@ -82,6 +82,11 @@ export interface CngxButtonCore {
   /** `aria-disabled` rendered from `blocked`. */
   readonly ariaDisabled: Signal<'true' | null>;
   /**
+   * `aria-busy`: the co-hosted run, the runner's own busy override or the
+   * host's run. The same value the runner renders, so the two writers agree.
+   */
+  readonly ariaBusy: Signal<'true' | null>;
+  /**
    * The element's merged `aria-describedby`: the consumer's static ids, the
    * `cngxDescribedBy` ids, the reason id while disabled with a reason, and
    * the ids of co-hosted contributors such as `[cngxTooltip]`.
@@ -179,6 +184,9 @@ export function injectButtonCore(
   const asyncClickRefuses = computed(() => runState()?.enabled() === false);
   const blocked = computed(() => inputs.disabled() || busy() || asyncClickRefuses());
   const ariaDisabled = computed<'true' | null>(() => (blocked() ? 'true' : null));
+  const ariaBusy = computed<'true' | null>(() =>
+    busy() || (runState()?.busy() ?? false) ? 'true' : null,
+  );
   const reasonIds = computed(() =>
     inputs.disabled() && inputs.disabledReason() ? reasonId : null,
   );
@@ -216,6 +224,7 @@ export function injectButtonCore(
     busyVisible,
     blocked,
     ariaDisabled,
+    ariaBusy,
     describedBy,
     reasonId,
     hostType,

@@ -65,6 +65,33 @@ class DemoStateful {
   readonly hostState = { refusing: this.refusing.asReadonly(), busy: this.running.asReadonly() };
 }
 
+// Reflects a run from the first render on, with or without a co-hosted runner.
+@Component({
+  selector: 'button[demoBusyOnly]',
+  hostDirectives: [{ directive: CngxButtonBrain, inputs: ['disabled'] }],
+  providers: [
+    provideButtonHost('demoBusyOnly', { defaultVariant: 'solid' }),
+    { provide: CNGX_BUTTON_HOST_STATE, useFactory: () => inject(DemoBusyOnly).hostState },
+  ],
+  template: `<ng-content />`,
+})
+class DemoBusyOnly {
+  readonly running = signal(true);
+  readonly hostState = { refusing: signal(false).asReadonly(), busy: this.running.asReadonly() };
+}
+
+@Component({
+  template: `
+    <button id="busy-only" demoBusyOnly (click)="clicks = clicks + 1">Sync</button>
+    <button id="busy-runner" demoBusyOnly [cngxAsyncClick]="run">Sync</button>
+  `,
+  imports: [DemoBusyOnly, CngxAsyncClick],
+})
+class BusyOnlyHost {
+  clicks = 0;
+  readonly run = (): Promise<void> => Promise.resolve();
+}
+
 @Component({
   template: `
     <button
@@ -264,5 +291,40 @@ describe('CngxButtonBrain', () => {
     expect(btn.getAttribute('data-pending')).toBe('true');
     expect(btn.getAttribute('aria-disabled')).toBe('true');
     expect(interaction.busy?.()).toBe(true);
+  });
+
+  it('a busy-only host reads busy and disabled to assistive technology and refuses activation', () => {
+    const { q, fixture, host, flush } = render(BusyOnlyHost);
+    const btn = q('#busy-only');
+    const demo = fixture.debugElement.query(By.css('#busy-only')).injector.get(DemoBusyOnly);
+
+    expect(btn.getAttribute('aria-busy')).toBe('true');
+    expect(btn.getAttribute('aria-disabled')).toBe('true');
+    btn.click();
+    expect(host.clicks).toBe(0);
+
+    demo.running.set(false);
+    flush();
+    expect(btn.hasAttribute('aria-busy')).toBe(false);
+    expect(btn.hasAttribute('aria-disabled')).toBe(false);
+    btn.click();
+    expect(host.clicks).toBe(1);
+  });
+
+  it('a busy-only host and its co-hosted runner agree on aria-disabled and aria-busy', () => {
+    const { q, fixture, flush } = render(BusyOnlyHost);
+    const btn = q('#busy-runner');
+    const de = fixture.debugElement.query(By.css('#busy-runner'));
+    const interaction = de.injector.get(CNGX_HOST_INTERACTION_STATE);
+
+    expect(interaction.disabled()).toBe(true);
+    expect(btn.getAttribute('aria-disabled')).toBe('true');
+    expect(btn.getAttribute('aria-busy')).toBe('true');
+
+    de.injector.get(DemoBusyOnly).running.set(false);
+    flush();
+    expect(interaction.disabled()).toBe(false);
+    expect(btn.hasAttribute('aria-disabled')).toBe(false);
+    expect(btn.hasAttribute('aria-busy')).toBe(false);
   });
 });

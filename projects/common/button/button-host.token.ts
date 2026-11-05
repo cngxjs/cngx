@@ -80,8 +80,11 @@ export interface CngxButtonHostState {
   readonly refusing: Signal<boolean>;
   /**
    * `true` while the host reflects a run the co-hosted runner does not own.
-   * Folded into `busy` (so `data-pending`, `blocked` and `aria-disabled`)
-   * and into `CNGX_HOST_INTERACTION_STATE.busy`.
+   * Folded into `busy` (so `data-pending`, `aria-busy`, `blocked` and
+   * `aria-disabled`), into `refusing` (the activation guard and the
+   * co-hosted runner's disabled state) and into
+   * `CNGX_HOST_INTERACTION_STATE.busy`. A busy host refuses activation
+   * without setting `refusing` itself.
    */
   readonly busy?: Signal<boolean>;
 }

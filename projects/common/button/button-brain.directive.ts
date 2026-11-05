@@ -37,7 +37,9 @@ import type {
  * It resolves the axes (`input ?? fixed ?? group ?? config ?? default`;
  * tone skips the group) into `data-variant` / `data-tone` / `data-size`,
  * renders `disabled` as `aria-disabled` so the element stays focusable,
- * swallows activation in the capture phase while refusing, and owns
+ * swallows activation in the capture phase while refusing, renders
+ * `aria-busy` while a run is in flight (the co-hosted runner's or the
+ * host's, with the same value the runner writes), and owns
  * `aria-describedby` through `CNGX_DESCRIBED_BY` (static ids, the
  * `cngxDescribedBy` ids, the reason while disabled, co-hosted contributors
  * such as `[cngxTooltip]`). A co-hosted runner is read through
@@ -103,6 +105,7 @@ import type {
     '[attr.data-busy]': 'busyVisible() ? "true" : null',
     '[attr.data-pending]': 'busy() ? "true" : null',
     '[attr.aria-disabled]': 'ariaDisabled()',
+    '[attr.aria-busy]': 'ariaBusy()',
     '[attr.aria-describedby]': 'describedByValue()',
     '[attr.type]': 'hostType()',
     // A static `disabled` attribute would make the native element
@@ -149,10 +152,15 @@ export class CngxButtonBrain implements CngxButtonState {
   // injects this brain, so an eager read is a cycle.
   private readonly hostState = injectLazySelf(CNGX_BUTTON_HOST_STATE, { optional: true });
 
-  /** `true` while activation is swallowed: `disabled` or the host's own refusal. */
-  readonly refusing = computed(() => this.disabled() || (this.hostState()?.refusing() ?? false));
-
   private readonly hostBusy = computed(() => this.hostState()?.busy?.() ?? false);
+
+  /**
+   * `true` while activation is swallowed: `disabled`, the host's own
+   * refusal or a run the host reflects.
+   */
+  readonly refusing = computed(
+    () => this.disabled() || (this.hostState()?.refusing() ?? false) || this.hostBusy(),
+  );
 
   private readonly core = injectButtonCore(
     {
@@ -198,6 +206,7 @@ export class CngxButtonBrain implements CngxButtonState {
   };
 
   protected readonly ariaDisabled = this.core.ariaDisabled;
+  protected readonly ariaBusy = this.core.ariaBusy;
   protected readonly describedByValue = this.core.describedBy;
   protected readonly hostType = this.core.hostType;
 
