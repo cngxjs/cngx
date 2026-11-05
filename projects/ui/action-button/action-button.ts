@@ -359,12 +359,10 @@ export class CngxActionButton {
   );
 
   /**
-   * What the button tells its brain through `CNGX_BUTTON_HOST_STATE`: an
-   * external run in flight refuses clicks, so a click cannot start a second
-   * run while an external state is pending, and reads as busy
-   * (`data-pending`, `aria-busy`, `aria-disabled`). The reason stays gated
-   * on the consumer's `[disabled]`. Read-only; the provider reads it, a
-   * consumer may too.
+   * @internal - an external run in flight refuses clicks, so a click cannot
+   * start a second run while an external state is pending, and reads as
+   * busy (`data-pending`, `aria-disabled`). The brain folds both in; the
+   * reason stays gated on the consumer's `[disabled]`.
    */
   readonly hostState: CngxButtonHostState = {
     refusing: this.externalBusy,
@@ -405,12 +403,11 @@ export class CngxActionButton {
   });
 
   /**
-   * What the co-hosted `CngxAsyncClick` folds in through
-   * `CNGX_HOST_INTERACTION_STATE`: the brain's `interaction` (refusal and the
-   * external busy bit) plus the announcement, read by the directive once
-   * per own settle after render with that settle's outcome. While
-   * `[externalState]` is bound the own runs speak nothing: the external
-   * edges own the region, like the toast. Read-only.
+   * @internal - what the co-hosted `CngxAsyncClick` folds in: the brain's
+   * refusal and external busy bit, plus the announcement, read by the
+   * directive once per own settle after render with that settle's outcome.
+   * While `[externalState]` is bound the own runs speak nothing: the
+   * external edges own the region, like the toast.
    */
   readonly hostInteraction: CngxHostInteractionState = {
     ...this.brain.interaction,
