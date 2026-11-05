@@ -16,11 +16,13 @@ import {
   withPartialPack,
   type CngxActiveLanguagePack,
 } from '@cngx/core/i18n';
+import { CNGX_LANGUAGE_DE } from '@cngx/core/i18n/de';
 import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
 import { CNGX_ICON_CHEVRON_DOWN } from '@cngx/utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { provideButtonCaretIcon } from './caret-icon.token';
+import { provideMenuButtonI18n, withMenuButtonI18nLabels } from './i18n/menu-button-i18n';
 import { CngxIconMenuButton } from './icon-menu-button.component';
 import { CngxSplitButton } from './split-button.directive';
 
@@ -478,6 +480,38 @@ describe('CngxIconMenuButton', () => {
 
       pack.set({ locale: 'de', menuButton: { splitToggle: 'Weitere Optionen' } });
       flush();
+      expect(nameOf(button)).toBe('Weitere Optionen');
+    });
+
+    it('reads the busy note from the active pack and follows a flip to German', () => {
+      const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+      TestBed.configureTestingModule({
+        providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
+      });
+      const { button, flush } = setup(SplitHost);
+      const note = () => button.querySelector('[id^="cngx-split-caret-busy-"]');
+      expect(note()?.textContent).toBe('The main action is running');
+
+      pack.set(CNGX_LANGUAGE_DE);
+      flush();
+      expect(note()?.textContent).toBe('Die Hauptaktion läuft');
+      expect(nameOf(button)).toBe('Weitere Optionen');
+
+      pack.set(undefined);
+      flush();
+      expect(note()?.textContent).toBe('The main action is running');
+    });
+
+    it('takes the busy note from a withMenuButtonI18nLabels override over the pack', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideCngxI18n(withPartialPack(CNGX_LANGUAGE_DE), withDocumentLanguage('off')),
+          provideMenuButtonI18n(withMenuButtonI18nLabels({ splitMainBusy: 'Publishing' })),
+        ],
+      });
+      const { button } = setup(SplitHost);
+      const note = button.querySelector('[id^="cngx-split-caret-busy-"]');
+      expect(note?.textContent).toBe('Publishing');
       expect(nameOf(button)).toBe('Weitere Optionen');
     });
 
