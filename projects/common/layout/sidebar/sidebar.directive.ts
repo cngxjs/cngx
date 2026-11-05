@@ -1,6 +1,8 @@
+import { DOCUMENT } from '@angular/common';
 import {
   computed,
   Directive,
+  effect,
   ElementRef,
   HostAttributeToken,
   inject,
@@ -46,7 +48,9 @@ export type CngxSidebarState = 'expanded' | 'rail' | 'hidden' | 'peek';
  * over the content without reflowing it (the reserved space stays at the
  * rest size). Peek comes from the pointer resting on the host
  * (`CngxHoverIntent`, gated by `expandOnHover`) or from `peek()`, and ends
- * on Escape, when focus leaves the host, or when the pointer leaves.
+ * on Escape (wherever focus is, so a hover peek over the page is
+ * dismissible without moving focus, WCAG 1.4.13), when focus leaves the
+ * host, or when the pointer leaves.
  * `pin()` turns a peek into the expanded state.
  *
  * Sizes are tokens with fallbacks: `--cngx-sidebar-size` (expanded, default
@@ -118,6 +122,7 @@ export class CngxSidebar implements CngxPanelTarget {
 
   private readonly hover = inject(CngxHoverIntent, { self: true });
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private readonly doc = inject(DOCUMENT);
   private readonly i18n = injectLayoutI18n();
   private readonly peekState = signal(false);
   // Escape ends a hover peek while the pointer still rests on the host; the
@@ -188,6 +193,28 @@ export class CngxSidebar implements CngxPanelTarget {
     const rest = this.collapsedAs() === 'rail' ? 'var(--cngx-sidebar-rail-size, 3.5rem)' : '0px';
     return `calc(${rest} - var(--cngx-sidebar-size, 16rem))`;
   });
+
+  constructor() {
+    // A peek is content shown on hover: Escape must dismiss it even while
+    // focus sits elsewhere on the page. Listen on the document only while
+    // peeked; an Escape inside the host is the host binding's.
+    effect((onCleanup) => {
+      if (!this.peeked()) {
+        return;
+      }
+      const onKeydown = (event: KeyboardEvent): void => {
+        if (event.key !== 'Escape') {
+          return;
+        }
+        if (event.target instanceof Node && this.host.contains(event.target)) {
+          return;
+        }
+        this.unpeek();
+      };
+      this.doc.addEventListener('keydown', onKeydown);
+      onCleanup(() => this.doc.removeEventListener('keydown', onKeydown));
+    });
+  }
 
   /** Collapses an expanded sidebar, expands a collapsed one. Ends a peek. */
   toggle(): void {

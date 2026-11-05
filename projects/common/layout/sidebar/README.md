@@ -43,7 +43,7 @@ The host is a flex item: its `inline-size` is set from the state, so the sibling
 | `true` | `hidden` | no | `hidden` | `0`, host `inert` + `aria-hidden` |
 | `true` | any | yes | `peek` | the rest size; the host overlays at full size |
 
-A peek starts when the pointer rests on a collapsed sidebar (`CngxHoverIntent`, gated by `expandOnHover`, delays via `expandDelay` / `collapseDelay`) or on `peek()`. It ends on Escape, when focus leaves the host, or when the pointer leaves. `pin()` turns it into the expanded state.
+A peek starts when the pointer rests on a collapsed sidebar (`CngxHoverIntent`, gated by `expandOnHover`, delays via `expandDelay` / `collapseDelay`) or on `peek()`. It ends on Escape wherever focus is (a hover peek stays dismissible without moving focus, WCAG 1.4.13), when focus leaves the host, or when the pointer leaves. `pin()` turns it into the expanded state.
 
 A collapsed rail stays operable: nothing in it is made `inert`.
 

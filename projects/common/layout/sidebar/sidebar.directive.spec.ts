@@ -225,6 +225,45 @@ describe('CngxSidebar', () => {
       expect(sidebar.peeked()).toBe(false);
     });
 
+    it('ends a hover peek on Escape while focus sits outside the host', () => {
+      const { el, q, sidebar, set, fixture } = setup();
+      set((h) => h.collapsed.set(true));
+      q('.outside').focus();
+      hover(el, true);
+      vi.advanceTimersByTime(50);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(sidebar.peeked()).toBe(true);
+
+      q('.outside').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+
+      expect(sidebar.peeked()).toBe(false);
+    });
+
+    it('listens on the document only while peeked', () => {
+      const { sidebar, set, fixture } = setup();
+      const added = vi.spyOn(document, 'addEventListener');
+      const removed = vi.spyOn(document, 'removeEventListener');
+      const keydownCalls = (spy: typeof added) =>
+        spy.mock.calls.filter(([type]) => type === 'keydown').length;
+      set((h) => h.collapsed.set(true));
+      TestBed.flushEffects();
+      expect(keydownCalls(added)).toBe(0);
+
+      sidebar.peek();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(keydownCalls(added)).toBe(1);
+
+      document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(sidebar.peeked()).toBe(false);
+      expect(keydownCalls(removed)).toBe(1);
+      added.mockRestore();
+      removed.mockRestore();
+    });
+
     it('ends an explicit peek when focus leaves the host, not when it moves inside', () => {
       const { q, sidebar, set } = setup();
       set((h) => h.collapsed.set(true));
