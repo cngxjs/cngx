@@ -9,6 +9,7 @@ import {
   contentChildren,
   DestroyRef,
   inject,
+  Injector,
   input,
   model,
   output,
@@ -991,6 +992,7 @@ export class CngxSelectShell<T = unknown>
    * @internal
    */
   private readonly flatNavStrategy = inject(CNGX_FLAT_NAV_STRATEGY);
+  private readonly injector = inject(Injector);
 
   /** Currently selected option resolved against the derived option model. */
   readonly selected = computed<CngxSelectOptionDef<T> | null>(() => this.selectedOption(), {
@@ -1318,6 +1320,7 @@ export class CngxSelectShell<T = unknown>
       compareWith: this.compareWith,
       disabled: this.disabled,
       typeaheadController: this.typeaheadController,
+      injector: this.injector,
     });
   }
 

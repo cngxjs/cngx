@@ -1287,6 +1287,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       compareWith: this.compareWith,
       disabled: this.disabled,
       typeaheadController: this.typeaheadController,
+      injector: this.injector,
     });
   }
 

@@ -187,7 +187,6 @@ export class CngxListboxTrigger<T = unknown> {
     }
 
     const key = event.key;
-    const ad = this.listbox().ad;
 
     // Tag-input convention: Backspace on an empty co-located search input
     // emits backspaceOnEmpty for the parent composite (CngxCombobox, …)
@@ -222,13 +221,13 @@ export class CngxListboxTrigger<T = unknown> {
       if (openKeys) {
         event.preventDefault();
         this.popover().show();
-        ad.highlightFirst();
+        this.highlightOnOpen('first');
         return;
       }
       if (key === 'ArrowUp') {
         event.preventDefault();
         this.popover().show();
-        ad.highlightLast();
+        this.highlightOnOpen('last');
         return;
       }
       return;
@@ -245,6 +244,24 @@ export class CngxListboxTrigger<T = unknown> {
       return;
     }
     this.runOpenKey(key, event);
+  }
+
+  /**
+   * Highlight the first / last option when a key opens a closed panel. A
+   * deferred-render panel (the `CngxSelect` family, OD5) renders no option
+   * rows until its first open, so the AD item space is empty at keydown and
+   * `highlightFirst` / `highlightLast` would no-op; there the highlight is
+   * applied after the first render. A panel that already holds its rows (menu,
+   * command palette) highlights synchronously, unchanged.
+   */
+  private highlightOnOpen(which: 'first' | 'last'): void {
+    const lb = this.listbox();
+    const apply = (): void => (which === 'first' ? lb.ad.highlightFirst() : lb.ad.highlightLast());
+    if (lb.options().length === 0) {
+      afterNextRender(apply, { injector: this.injector });
+      return;
+    }
+    apply();
   }
 
   /** Whether `key` navigates or activates the open listbox. */

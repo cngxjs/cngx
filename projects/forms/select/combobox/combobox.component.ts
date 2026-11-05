@@ -7,6 +7,7 @@ import {
   computed,
   contentChild,
   inject,
+  Injector,
   input,
   model,
   output,
@@ -1312,6 +1313,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
    * target. The input owns typing, so its typeahead hook never runs here.
    */
   private readonly flatNavStrategy = inject(CNGX_FLAT_NAV_STRATEGY);
+  private readonly injector = inject(Injector);
 
   /** @internal - PageUp/PageDown through the flat-nav strategy (default ±10). */
   protected handleInputKeydown(event: KeyboardEvent): void {
@@ -1329,6 +1331,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       strategy: this.flatNavStrategy,
       flatOptions: this.flatOptions,
       compareWith: this.compareWith,
+      injector: this.injector,
     });
   }
 }

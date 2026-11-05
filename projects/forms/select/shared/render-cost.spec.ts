@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { By } from '@angular/platform-browser';
 
 import { KINDS, cleanupRoots, mount } from './__test-helpers/review-probe-host';
 import { provideSelectConfig, withVirtualization } from './config';
+import { CngxSelectPanel } from './internal/panel/panel.component';
 
 afterEach(() => {
   cleanupRoots();
@@ -23,17 +25,34 @@ const MID = flat(1000);
 // ── H5 / OD5: a closed panel renders no option nodes and mounts cheaply. ─────
 describe('H5: a large closed panel renders no option nodes', () => {
   for (const key of ['select', 'multi', 'combobox'] as const) {
-    it.fails(`${KINDS[key].name}: zero role=option nodes while the panel is closed`, () => {
+    it(`${KINDS[key].name}: zero role=option nodes while the panel is closed`, () => {
       const m = mount(KINDS[key], { options: BIG });
       expect(m.v.panelOpen()).toBe(false);
       expect(m.el.querySelectorAll('[role="option"]').length).toBe(0);
     });
   }
 
-  it.fails('CngxSelect: mounts 2000 options under a 300 ms budget', () => {
+  it('CngxSelect: mounts 2000 options under a 300 ms budget', () => {
     const start = performance.now();
     mount(KINDS['select'], { options: BIG });
     expect(performance.now() - start).toBeLessThan(300);
+  });
+
+  it('CngxSelect: a never-opened closed panel keeps the listbox element mounted', () => {
+    const m = mount(KINDS['select'], { options: BIG });
+    expect(m.el.querySelector('[role="listbox"]')).not.toBeNull();
+    expect(m.el.querySelectorAll('[role="option"]').length).toBe(0);
+  });
+
+  it('CngxSelect: renderItems holds a stable array reference across reads once open', () => {
+    const m = mount(KINDS['select'], { options: MID });
+    m.open();
+    const panel = m.fixture.debugElement.query(By.directive(CngxSelectPanel))!
+      .componentInstance as { renderItems: () => unknown };
+    const first = panel.renderItems();
+    m.settle();
+    const second = panel.renderItems();
+    expect(Object.is(first, second)).toBe(true);
   });
 });
 

@@ -169,6 +169,15 @@ export interface CngxSelectPanelHost<T = unknown> extends CngxSelectPanelViewHos
   readonly tpl: CngxSelectTemplateRegistry<T>;
   readonly commitErrorValue: Signal<unknown>;
   readonly activeId: Signal<string | null>;
+  /**
+   * Whether the panel is currently open. The panel body latches on this
+   * to defer rendering option rows until the first open (OD5): a panel
+   * that has never opened renders zero option rows while the listbox
+   * element, its id and `aria-controls` target stay mounted.
+   *
+   * @internal
+   */
+  readonly panelOpen: Signal<boolean>;
   isGroup(item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>):
     item is CngxSelectOptionGroupDef<T>;
   isSelected(opt: CngxSelectOptionDef<T>): boolean;

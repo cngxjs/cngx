@@ -1003,12 +1003,16 @@ describe('CngxTreeSelect - per-instance node ids', () => {
       const trees = fixture.debugElement
         .queryAll(By.directive(CngxTreeSelect))
         .map((de) => de.componentInstance as CngxTreeSelect<Row>);
+      // Deferred render (OD5): a tree renders its nodes on its first open and
+      // latches them. Two popover=auto panels can't be open at once, so open
+      // each with a render in between - the first keeps its rows after the
+      // second light-dismisses it.
       for (const t of trees) {
         t.open();
+        fixture.detectChanges();
+        TestBed.flushEffects();
+        fixture.detectChanges();
       }
-      fixture.detectChanges();
-      TestBed.flushEffects();
-      fixture.detectChanges();
 
       const ids = Array.from(root.querySelectorAll('[role="treeitem"]')).map((el) => el.id);
       expect(ids.length).toBe(8);

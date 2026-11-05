@@ -5,6 +5,7 @@ import {
   ViewEncapsulation,
   computed,
   inject,
+  linkedSignal,
   viewChildren,
 } from '@angular/core';
 
@@ -20,6 +21,14 @@ import {
   type PanelRenderer,
 } from '../../panel-renderer';
 import { isCngxSelectOptionGroupDef } from '../../option.model';
+import { sameArrayContents } from '../compare';
+
+/**
+ * Stable empty slice returned while the panel has never opened. Shared so
+ * the deferred-render branch never allocates and the `renderItems` equal
+ * fn resolves to one reference.
+ */
+const EMPTY_RENDER_ITEMS: readonly unknown[] = [];
 
 /**
  * Panel body for the flat (non-tree) select family. Renders the
@@ -110,15 +119,43 @@ export class CngxSelectPanel<T = unknown> {
    */
   protected readonly renderItems = computed<
     (CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>)[]
-  >(() => {
-    const effective = this.host.effectiveOptions();
-    // Any group → route through `effectiveOptions` as-is. Virtualising
-    // renderers deliberately don't touch grouped lists.
-    const hasGroup = effective.some(isCngxSelectOptionGroupDef);
-    if (hasGroup) {
-      return [...effective];
-    }
-    return [...this.renderer.renderOptions()];
+  >(
+    () => {
+      // Deferred render (OD5): no option rows until the first open. The
+      // listbox element, its id and `aria-controls` target stay mounted
+      // in the variant template - only this loop is empty.
+      if (!this.hasOpened()) {
+        return EMPTY_RENDER_ITEMS as (
+          | CngxSelectOptionDef<T>
+          | CngxSelectOptionGroupDef<T>
+        )[];
+      }
+      const effective = this.host.effectiveOptions();
+      // Any group → route through `effectiveOptions` as-is. Virtualising
+      // renderers deliberately don't touch grouped lists.
+      const hasGroup = effective.some(isCngxSelectOptionGroupDef);
+      if (hasGroup) {
+        return [...effective];
+      }
+      return [...this.renderer.renderOptions()];
+    },
+    // Element-identity equal so the extra `hasOpened` branch and the
+    // fresh spreads above never cascade a new array reference when the
+    // contents are unchanged (reference_signal_architecture).
+    { equal: (a, b) => sameArrayContents(a, b, Object.is) },
+  );
+
+  /**
+   * Latches `true` on the panel's first open and stays true. Option rows
+   * are deferred until then (OD5): a panel that has never opened renders
+   * nothing, which keeps mounting a large closed list cheap. Re-closing
+   * after the first open keeps the rows, so re-open is instant.
+   *
+   * @internal
+   */
+  private readonly hasOpened = linkedSignal<boolean, boolean>({
+    source: () => this.host.panelOpen(),
+    computation: (open, previous) => open || previous?.value === true,
   });
 
   /**

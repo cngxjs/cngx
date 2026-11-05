@@ -149,6 +149,7 @@ function createMockHost(): {
     },
     commitErrorValue: signal(null),
     activeId: signal(null),
+    panelOpen: signal(false),
     isGroup: ((..._args: unknown[]) => false) as CngxSelectPanelHost['isGroup'],
     isSelected: () => false,
     isIndeterminate: () => false,

@@ -1,4 +1,4 @@
-import { signal } from '@angular/core';
+import { afterNextRender, signal, type Injector } from '@angular/core';
 import type { CngxListbox } from '@cngx/common/interactive';
 import type { CngxPopover } from '@cngx/common/popover';
 
@@ -9,10 +9,13 @@ import type { CngxSelectCompareFn } from './select-core';
 
 /**
  * Item list and current index a page jump resolves in, in the index space
- * `ad.highlightByIndex` addresses. A virtual panel renders only a window,
- * so `listbox.options()` and the active id would yield a window-relative
- * index; there the full flat list and `ad.activeIndex()` (absolute) are
- * used instead. Without virtualisation the rendered options are the space.
+ * `ad.highlightByIndex` addresses. The full flat list is the space and
+ * `ad.activeIndex()` (absolute) the current index: a virtual panel renders
+ * only a window, and a deferred-render closed panel renders no option rows
+ * at all until its first open (OD5), so `listbox.options()` would be a
+ * window-relative or empty space while a key both opens the panel and
+ * jumps in one gesture. The flat list is always complete and ordered the
+ * same as the rendered rows once they materialise.
  *
  * @internal
  */
@@ -21,12 +24,33 @@ export function resolvePageJumpSpace(
   flatOptions: (() => readonly CngxFlatNavListboxItem[]) | undefined,
 ): { readonly items: readonly CngxFlatNavListboxItem[]; readonly currentIndex: number } {
   const ad = listbox.ad;
-  if (flatOptions && ad.virtualCount() != null) {
+  if (flatOptions) {
     return { items: flatOptions(), currentIndex: ad.activeIndex() };
   }
   const items = listbox.options();
   const currentId = ad.activeId();
   return { items, currentIndex: items.findIndex((o) => o.id === currentId) };
+}
+
+/**
+ * Applies the resolved page-jump highlight. When the key opened a closed
+ * panel, the option rows (and their generated ids, the AD's item space)
+ * render one tick later under deferred render (OD5), so `highlightByIndex`
+ * would no-op against an empty space; the highlight is then applied after
+ * the first render via `afterNextRender`. An already-open panel applies it
+ * synchronously, exactly as before.
+ */
+function applyPageJumpHighlight(
+  listbox: CngxListbox<unknown>,
+  index: number,
+  justOpened: boolean,
+  injector: Injector | undefined,
+): void {
+  if (justOpened && injector) {
+    afterNextRender(() => listbox.ad.highlightByIndex(index), { injector });
+    return;
+  }
+  listbox.ad.highlightByIndex(index);
 }
 
 /**
@@ -63,6 +87,13 @@ export interface PageJumpDeps<T> {
    * never see the key; a focusable `aria-disabled` host passes this.
    */
   readonly disabled?: () => boolean;
+  /**
+   * Composite injector, used to defer the highlight to after the first
+   * open render when the key opened a closed (deferred-render) panel.
+   * Omitting it keeps the synchronous apply (correct only for an already
+   * rendered panel).
+   */
+  readonly injector?: Injector;
 }
 
 /**
@@ -87,6 +118,7 @@ export function handlePageJumpKey<T>(event: KeyboardEvent, deps: PageJumpDeps<T>
     compareWith: deps.compareWith,
     disabled: deps.disabled?.() ?? false,
     typeaheadController: NO_TYPEAHEAD as TypeaheadController<T>,
+    injector: deps.injector,
   });
 }
 
@@ -106,6 +138,7 @@ function runPageJump<T>(
     readonly compareWith: () => CngxSelectCompareFn<T>;
     readonly disabled: boolean;
     readonly typeaheadController: TypeaheadController<T>;
+    readonly injector?: Injector;
   },
 ): boolean {
   if (event.key !== 'PageDown' && event.key !== 'PageUp') {
@@ -125,7 +158,8 @@ function runPageJump<T>(
     return false;
   }
   event.preventDefault();
-  if (!popover.isVisible()) {
+  const justOpened = !popover.isVisible();
+  if (justOpened) {
     popover.show();
   }
   const { items, currentIndex } = resolvePageJumpSpace(
@@ -146,7 +180,7 @@ function runPageJump<T>(
     direction,
   );
   if (action.kind === 'highlight') {
-    listbox.ad.highlightByIndex(action.index);
+    applyPageJumpHighlight(listbox, action.index, justOpened, deps.injector);
   }
   return true;
 }
@@ -172,6 +206,11 @@ export interface FlatNavPageJumpDeps<T> {
   readonly compareWith: () => CngxSelectCompareFn<T>;
   readonly disabled: () => boolean;
   readonly typeaheadController: TypeaheadController<T>;
+  /**
+   * Composite injector; defers the highlight to after the first open
+   * render when the key opened a deferred-render closed panel.
+   */
+  readonly injector?: Injector;
 }
 
 /**
@@ -204,5 +243,6 @@ export function handleFlatNavPageJumpKey<T>(
     compareWith: deps.compareWith,
     disabled: deps.disabled(),
     typeaheadController: deps.typeaheadController,
+    injector: deps.injector,
   });
 }

@@ -127,6 +127,7 @@ function makeShellHost(): CngxSelectPanelHost {
     },
     commitErrorValue: signal(null),
     activeId: signal(null),
+    panelOpen: signal(false),
     isGroup: ((..._a: unknown[]) => false) as CngxSelectPanelHost['isGroup'],
     isSelected: () => false,
     isIndeterminate: () => false,
