@@ -234,6 +234,65 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     expect(ring.outlineColor).toBe(ring.highlight);
   });
 
+  test('a pending popover confirm keeps its busy paint and never computes GrayText', async ({ page }) => {
+    await openForced(page, '/#/common/popover/popover-panel/with-footer-actions');
+    await page.locator('.cngx-ex-artifact button.chip', { hasText: 'Save Confirm' }).click();
+    const confirm = page.locator('.cngx-popover-action--primary').first();
+    await expect(confirm).toBeVisible();
+    await confirm.click();
+    // Wait for the gated busy flag rather than a fixed sleep: once data-busy is
+    // set the run is busy (well before the 1.5s resolve) and the confirm must
+    // not take the disabled GrayText.
+    await expect(confirm).toHaveAttribute('data-busy', 'true');
+    const paint = await confirm.evaluate((el) => {
+      const probe = document.createElement('span');
+      probe.style.color = 'GrayText';
+      document.body.appendChild(probe);
+      const grayText = getComputedStyle(probe).color;
+      probe.remove();
+      const cs = getComputedStyle(el as Element);
+      return {
+        color: cs.color,
+        borderTopColor: cs.borderTopColor,
+        grayText,
+        runFlag:
+          (el as Element).getAttribute('data-busy') ??
+          (el as Element).getAttribute('data-pending'),
+      };
+    });
+    expect(paint.runFlag).toBe('true');
+    expect(paint.color).not.toBe(paint.grayText);
+    expect(paint.borderTopColor).not.toBe(paint.grayText);
+  });
+
+  test('a busy cngx-button never computes GrayText (the extended aria-disabled excludes data-busy)', async ({ page }) => {
+    await openForced(page, '/#/common/button/button/async-click-busy');
+    const button = page.locator('.cngx-ex-artifact .cngx-button').first();
+    await expect(button).toBeVisible();
+    await button.click();
+    // Wait for the gated busy flag rather than a fixed sleep. data-busy is set
+    // and the directive now also drives aria-disabled, which must not paint
+    // GrayText because the :not([data-busy], [data-pending]) rule excludes it.
+    await expect(button).toHaveAttribute('data-busy', 'true');
+    const paint = await button.evaluate((el) => {
+      const probe = document.createElement('span');
+      probe.style.color = 'GrayText';
+      document.body.appendChild(probe);
+      const grayText = getComputedStyle(probe).color;
+      probe.remove();
+      const cs = getComputedStyle(el as Element);
+      return {
+        color: cs.color,
+        dataBusy: (el as Element).getAttribute('data-busy'),
+        ariaDisabled: (el as Element).getAttribute('aria-disabled'),
+        grayText,
+      };
+    });
+    expect(paint.dataBusy).toBe('true');
+    expect(paint.ariaDisabled).toBe('true');
+    expect(paint.color).not.toBe(paint.grayText);
+  });
+
   test('selected card re-signals with a Highlight border (base :scope rule beaten)', async ({ page }) => {
     await openForced(page, '/#/common/card/action-card-with-selection');
     const clickable = page.locator('.cngx-ex-artifact .cngx-card--interactive').first();

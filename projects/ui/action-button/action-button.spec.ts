@@ -191,6 +191,32 @@ class ExternalFailedTemplateHost {
   readonly action = () => Promise.resolve();
 }
 
+// ── Success-only host (result cell, no pending cell) ─────────────────────
+
+@Component({
+  template: `<button cngxActionButton [action]="action" succeededLabel="Saved">Go</button>`,
+  imports: [CngxActionButton],
+})
+class SuccessOnlyHost {
+  release: () => void = () => undefined;
+  readonly action = () => new Promise<void>((resolve) => (this.release = resolve));
+}
+
+@Component({
+  template: `<button
+    cngxActionButton
+    [action]="action"
+    [minDwell]="600"
+    pendingLabel="Saving..."
+    succeededLabel="Done!"
+  >Save</button>`,
+  imports: [CngxActionButton],
+})
+class MinDwellHost {
+  actionImpl = () => Promise.resolve();
+  readonly action = () => this.actionImpl();
+}
+
 @Component({
   template: `
     <button
@@ -471,6 +497,141 @@ describe('CngxActionButton', () => {
       expect(btn.hasAttribute('data-status-label')).toBe(true);
       d.resolve();
       await d.promise;
+    });
+
+    it('keeps the pending label through the dwell and shows the result only after release (E2)', async () => {
+      vi.useFakeTimers();
+      const d = deferred();
+      const fixture = TestBed.createComponent(SimpleHost);
+      fixture.componentInstance.actionImpl = () => d.promise;
+      fixture.detectChanges();
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+
+      btn.click();
+      flush(fixture);
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay);
+      flush(fixture);
+      expect(activeText(btn)).toBe('Saving...');
+
+      d.resolve();
+      await vi.advanceTimersByTimeAsync(0);
+      flush(fixture);
+      // Settled, but the busy visual is held: the pending label stays and the
+      // result label is not shown yet.
+      expect(btn.getAttribute('data-busy')).toBe('true');
+      expect(activeText(btn)).toBe('Saving...');
+
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.minDwell);
+      flush(fixture);
+      expect(btn.hasAttribute('data-busy')).toBe(false);
+      expect(activeText(btn)).toContain('Done!');
+    });
+
+    it('holds a result-only run on the spinner through the dwell, no result label under data-busy (A-n3)', async () => {
+      vi.useFakeTimers();
+      const fixture = TestBed.createComponent(SuccessOnlyHost);
+      fixture.detectChanges();
+      const host = fixture.componentInstance;
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+
+      btn.click();
+      flush(fixture);
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay);
+      flush(fixture);
+
+      host.release();
+      await vi.advanceTimersByTimeAsync(0);
+      flush(fixture);
+      // Busy held after settle: no result cell is active (no data-status-label),
+      // the spinner is shown, and the idle content stays in place.
+      expect(btn.getAttribute('data-busy')).toBe('true');
+      expect(btn.hasAttribute('data-status-label')).toBe(false);
+      expect(btn.querySelector('.cngx-button__busy')).not.toBeNull();
+      expect(activeText(btn)).toContain('Go');
+
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.minDwell);
+      flush(fixture);
+      expect(btn.hasAttribute('data-busy')).toBe(false);
+      expect(activeText(btn)).toContain('Saved');
+    });
+
+    it('goes from the idle label straight to the result for a run under the show delay', async () => {
+      vi.useFakeTimers();
+      const d = deferred();
+      const fixture = TestBed.createComponent(SimpleHost);
+      fixture.componentInstance.actionImpl = () => d.promise;
+      fixture.detectChanges();
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+
+      btn.click();
+      flush(fixture);
+      // Settle before the show delay: the gate never opens.
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay - 1);
+      d.resolve();
+      await vi.advanceTimersByTimeAsync(0);
+      flush(fixture);
+      expect(btn.hasAttribute('data-busy')).toBe(false);
+      expect(activeText(btn)).not.toBe('Saving...');
+      expect(activeText(btn)).toContain('Done!');
+
+      // No busy layer appears afterwards either.
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.minDwell);
+      flush(fixture);
+      expect(btn.hasAttribute('data-busy')).toBe(false);
+    });
+
+    it('forwards [minDwell] to the inner cngxAsyncClick', async () => {
+      vi.useFakeTimers();
+      const d = deferred();
+      const fixture = TestBed.createComponent(MinDwellHost);
+      fixture.componentInstance.actionImpl = () => d.promise;
+      fixture.detectChanges();
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+
+      btn.click();
+      flush(fixture);
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay);
+      flush(fixture);
+      expect(btn.getAttribute('data-busy')).toBe('true');
+
+      d.resolve();
+      await vi.advanceTimersByTimeAsync(0);
+      flush(fixture);
+      // The default 400 ms dwell is not enough; the forwarded 600 ms holds it.
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.minDwell);
+      flush(fixture);
+      expect(btn.getAttribute('data-busy')).toBe('true');
+      await vi.advanceTimersByTimeAsync(600 - CNGX_LOADING_DEFAULTS.minDwell);
+      flush(fixture);
+      expect(btn.hasAttribute('data-busy')).toBe(false);
+    });
+
+    it('gates the result cell of an external run behind the busy visual (E2, A-n3)', async () => {
+      vi.useFakeTimers();
+      const fixture = TestBed.createComponent(ExternalStateHost);
+      fixture.detectChanges();
+      const host = fixture.componentInstance;
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+
+      host.mock.status.set('pending');
+      flush(fixture);
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay);
+      flush(fixture);
+      expect(btn.getAttribute('data-busy')).toBe('true');
+      expect(activeText(btn)).toBe('Ext pending');
+
+      host.mock.status.set('success');
+      await vi.advanceTimersByTimeAsync(0);
+      flush(fixture);
+      // The external run settled but the busy visual is still held: the pending
+      // label stays, the result label waits.
+      expect(btn.getAttribute('data-busy')).toBe('true');
+      expect(activeText(btn)).toBe('Ext pending');
+
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.minDwell);
+      flush(fixture);
+      expect(btn.hasAttribute('data-busy')).toBe(false);
+      expect(activeText(btn)).toBe('Ext done');
     });
   });
 

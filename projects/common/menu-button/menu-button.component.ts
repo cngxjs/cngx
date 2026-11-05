@@ -97,8 +97,8 @@ import { injectLazyHostDirective } from './internal/inject-lazy-host-directive';
     '[attr.data-variant]': 'core.variant()',
     '[attr.data-tone]': 'core.tone()',
     '[attr.data-size]': 'core.size()',
-    '[attr.data-busy]': 'core.busyVisible() ? "true" : null',
-    '[attr.data-pending]': 'core.busy() ? "true" : null',
+    '[attr.data-busy]': 'core.busyAttr()',
+    '[attr.data-pending]': 'core.pendingAttr()',
     '[attr.data-start]': 'startSlot() ? "" : null',
     // The end is never empty: a projected cngxButtonEnd or the caret.
     'data-end': '',

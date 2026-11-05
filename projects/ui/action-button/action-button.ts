@@ -395,16 +395,22 @@ export class CngxActionButton {
 
   /**
    * @internal - the visible, named cell: the status cell when it exists,
-   * else the idle content. The pending cell waits for the busy gate, so a run
-   * faster than the show delay goes idle -> result without a pending flash
-   * in the label or the accessible name; the result cells follow the status.
+   * else the idle content. Gated on the busy visual: a run faster than the
+   * show delay goes idle -> result with no pending flash; while the busy
+   * visual is held (the run and its dwell) the pending cell stays if there is
+   * one, else idle under the spinner, and the result cells render only once it
+   * releases - so a result label never sits under `data-busy` and the
+   * start/end slots never hide beneath it (E2, A-n3).
    */
   protected readonly activeCell = computed<LabelCell>(() => {
     const status = this.effectiveStatus();
     const cells = this.hasCell();
-    if (status === 'pending' && cells.pending && this.core.busyVisible()) {
-      return 'pending';
+    if (this.core.busyVisible()) {
+      return cells.pending ? 'pending' : 'idle';
     }
+    // Busy visual not shown: the delay window and fast runs stay idle (no
+    // pending flash), and result cells render only once the visual has
+    // released.
     if (status === 'success' && cells.success) {
       return 'success';
     }

@@ -41,7 +41,7 @@ const SCHEMES = ['light', 'dark'] as const;
         <button type="button" class="fail" [cngxAsyncClick]="fail" [feedbackDuration]="60000">
           Save
         </button>
-        <button type="button" class="busy" [cngxAsyncClick]="hang">Save</button>
+        <button type="button" class="busy" [cngxAsyncClick]="hang" [showDelay]="0">Save</button>
         <span
           class="probe-success-bg"
           style="color: color-mix(in oklab, var(--cngx-color-success) 12%, transparent)"
@@ -101,7 +101,7 @@ class TintHost {
       <button cngxButton class="fail" [cngxAsyncClick]="fail" [feedbackDuration]="60000">
         Save
       </button>
-      <button cngxButton class="busy" [cngxAsyncClick]="hang">Save</button>
+      <button cngxButton class="busy" [cngxAsyncClick]="hang" [showDelay]="0">Save</button>
     </p>
     <p class="outline-danger">
       <button cngxButton="outline" tone="danger" class="ref">Save</button>
@@ -123,7 +123,7 @@ class TintHost {
       >
         Save
       </button>
-      <button cngxButton="outline" tone="danger" class="busy" [cngxAsyncClick]="hang">Save</button>
+      <button cngxButton="outline" tone="danger" class="busy" [cngxAsyncClick]="hang" [showDelay]="0">Save</button>
     </p>
   `,
 })
