@@ -75,7 +75,7 @@ describe('A3: grouped options with virtualization render no spacer and warn once
     });
     m.open();
     expect(m.el.querySelector('.cngx-select__virtual-spacer')).toBeNull();
-    const coded = warn.mock.calls.filter((c) => String(c[0]).includes('CNGX2028'));
+    const coded = warn.mock.calls.filter((c) => /^CNGX2028: /.test(String(c[0])));
     expect(coded.length).toBe(1);
   });
 });

@@ -211,7 +211,7 @@ export class CngxSelectPanel<T = unknown> {
           this.warnedGroupedVirtualization = true;
           cngxDevWarn(
             'CNGX2028',
-            'Grouped select options ignore the configured virtualization: every option renders and the recycler window is dropped. Flatten the options or drop the virtualization config for this select.',
+            'withVirtualization(): grouped select options ignore the configured virtualization; every option renders and the recycler window is dropped. Flatten the options or drop withVirtualization() for this select.',
           );
         }
       });

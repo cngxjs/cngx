@@ -2007,7 +2007,7 @@
       "messages": [
         {
           "file": "projects/forms/select/shared/internal/panel/panel.component.ts",
-          "text": "Grouped select options ignore the configured virtualization: every option renders and the recycler window is dropped. Flatten the options or drop the virtualization config for this select."
+          "text": "withVirtualization(): grouped select options ignore the configured virtualization; every option renders and the recycler window is dropped. Flatten the options or drop withVirtualization() for this select."
         }
       ]
     },
