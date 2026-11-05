@@ -168,3 +168,21 @@ describe.each(SCHEMES)('active group chip, %s', (scheme) => {
     expect(size(chip)).toEqual(before);
   });
 });
+
+// This host mounts a hand-written `.cngx-stepper__group-header` fragment, not a
+// real `cngx-stepper`, so the proof is override-only: it shows a declared em
+// value of the token now reaches the chip (the registered @property used to
+// drop it as a font-size cycle). The chip's `:root` default is covered by the
+// un-themed default staying unchanged across the rest of the suite.
+describe('group chip font-size knob', () => {
+  it('sizes the group header from a declared em override on the host', () => {
+    const root = mount();
+    const chip = one(root, '.cngx-stepper__group-header');
+    const parentFont = parseFloat(getComputedStyle(chip.parentElement!).fontSize);
+    const base = parseFloat(getComputedStyle(chip).fontSize);
+    root.style.setProperty('--cngx-stepper-group-chip-font-size', '2em');
+    const sized = parseFloat(getComputedStyle(chip).fontSize);
+    expect(sized).toBeCloseTo(2 * parentFont, 1);
+    expect(sized).toBeGreaterThan(base);
+  });
+});

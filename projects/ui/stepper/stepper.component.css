@@ -89,16 +89,16 @@
     initial-value: currentColor;
   }
 
-  /**
-   * Font-size of the indicator glyph. The default completed check never
-   * drops below `--cngx-icon-svg-micro-floor` (12px); set that token to
-   * `0px` as well for a check smaller than the 12px micro box.
-   * @group Typography
-   */
-  @property --cngx-step-indicator-font-size {
-    syntax: '*';
-    inherits: false;
-    initial-value: 0.85em;
+  /* Not registered as @property: an em value on a registered token
+   * computes where it is declared, not where font-size reads it. */
+  :root {
+    /**
+     * Font-size of the indicator glyph. The default completed check never
+     * drops below `--cngx-icon-svg-micro-floor` (12px); set that token to
+     * `0px` as well for a check smaller than the 12px micro box.
+     * @group Typography
+     */
+    --cngx-step-indicator-font-size: 0.85em;
   }
 
   /**
