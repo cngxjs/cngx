@@ -18,6 +18,7 @@ import {
 
 import { injectButtonConfig, type CngxButtonConfig } from './button-config';
 import { CNGX_BUTTON_GROUP, type CngxButtonGroupContext } from './button-group.token';
+import type { CngxButtonHostDescriptor } from './button-host.token';
 import type {
   CngxButtonSize,
   CngxButtonTone,
@@ -40,6 +41,11 @@ export interface CngxButtonCoreInputs {
   readonly disabledReason: Signal<string | undefined>;
   readonly describedBy: Signal<string | null>;
   readonly type: Signal<CngxButtonType | undefined>;
+  /**
+   * A run the host reflects that the co-hosted runner does not own; folded
+   * into `busy`. `CngxButtonBrain` passes `CNGX_BUTTON_HOST_STATE.busy`.
+   */
+  readonly hostBusy?: Signal<boolean>;
 }
 
 /**
@@ -50,6 +56,8 @@ export interface CngxButtonCoreInputs {
  */
 export interface CngxButtonCoreDefaults {
   readonly variant: CngxButtonVariant;
+  /** Axes pinned right after the input, ahead of the group and the config. */
+  readonly fixed?: CngxButtonHostDescriptor['fixed'];
 }
 
 /**
@@ -61,7 +69,7 @@ export interface CngxButtonCore {
   readonly variant: Signal<CngxButtonVariant>;
   readonly tone: Signal<CngxButtonTone>;
   readonly size: Signal<CngxButtonSize>;
-  /** `true` while a co-hosted `CngxAsyncClick` runs its action. */
+  /** `true` while a co-hosted runner runs its action or the host reflects a run. */
   readonly busy: Signal<boolean>;
   /**
    * `true` while the busy layer is showing: the co-hosted run after the show
@@ -122,9 +130,9 @@ export function provideButtonDescribedBy(name: string): Provider {
 }
 
 /**
- * Shared brain of the button family. Resolves the three visual axes
- * (`input ?? group ?? config ?? default`), renders `disabled` as
- * `aria-disabled` so the element stays focusable, swallows activation while
+ * Derivation behind `CngxButtonBrain`. Resolves the three visual axes
+ * (`input ?? fixed ?? group ?? config ?? default`; tone skips the group),
+ * renders `disabled` as `aria-disabled` so the element stays focusable, swallows activation while
  * disabled and reads a co-hosted run through `CNGX_ASYNC_RUN_STATE`.
  *
  * The activation guard is a capture-phase listener on the host: it runs
@@ -150,12 +158,19 @@ export function injectButtonCore(
   const describedByKey = nextUid('cngx-button-describedby-');
   const isButtonHost = host.tagName === 'BUTTON';
 
+  const fixed = defaults.fixed;
   const variant = computed<CngxButtonVariant>(
-    () => inputs.variant() ?? group?.variant() ?? config.variant ?? defaults.variant,
+    () =>
+      inputs.variant() ?? fixed?.variant ?? group?.variant() ?? config.variant ?? defaults.variant,
   );
-  const tone = computed<CngxButtonTone>(() => inputs.tone() ?? config.tone ?? DEFAULT_TONE);
-  const size = computed<CngxButtonSize>(() => resolveButtonSize(inputs.size(), group, config));
-  const busy = computed(() => runState()?.pending() ?? false);
+  const tone = computed<CngxButtonTone>(
+    () => inputs.tone() ?? fixed?.tone ?? config.tone ?? DEFAULT_TONE,
+  );
+  const size = computed<CngxButtonSize>(() =>
+    resolveButtonSize(inputs.size() ?? fixed?.size, group, config),
+  );
+  const hostBusy = inputs.hostBusy;
+  const busy = computed(() => (runState()?.pending() ?? false) || (hostBusy?.() ?? false));
   const busyVisible = computed(() => runState()?.busyVisible() ?? false);
   // CngxAsyncClick binds aria-disabled on the same host and only rewrites it
   // when its own value changes, so the button folds the runner's
