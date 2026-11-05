@@ -11,7 +11,6 @@ import {
   Injector,
   input,
   type Signal,
-  signal,
   untracked,
 } from '@angular/core';
 import { createTransitionTracker } from '@cngx/core/utils';
@@ -125,7 +124,9 @@ export class CngxFocusRestore {
   private readonly doc = inject(DOCUMENT);
   private readonly el = inject(ElementRef<HTMLElement>);
   private readonly injector = inject(Injector);
-  private readonly storedElement = signal<HTMLElement | null>(null);
+  // Read only inside the restore paths (untracked edge, destroy, manual
+  // restore()); nothing derives from it, so it is not a signal.
+  private storedElement: HTMLElement | null = null;
 
   private resolvedDriver: CngxFocusRestoreDriver | null | undefined = undefined;
   private driver(): CngxFocusRestoreDriver | null {
@@ -143,7 +144,7 @@ export class CngxFocusRestore {
   constructor() {
     const activeEl = this.doc.activeElement;
     if (activeEl instanceof HTMLElement) {
-      this.storedElement.set(activeEl);
+      this.storedElement = activeEl;
     }
 
     effect(() => {
@@ -175,7 +176,7 @@ export class CngxFocusRestore {
   capture(): void {
     const activeEl = this.doc.activeElement;
     if (activeEl instanceof HTMLElement) {
-      this.storedElement.set(activeEl);
+      this.storedElement = activeEl;
     }
   }
 
@@ -196,7 +197,7 @@ export class CngxFocusRestore {
   private captureOutside(): void {
     const activeEl = this.doc.activeElement;
     if (activeEl instanceof HTMLElement && !this.host().contains(activeEl)) {
-      this.storedElement.set(activeEl);
+      this.storedElement = activeEl;
     }
   }
 
@@ -241,7 +242,7 @@ export class CngxFocusRestore {
    * 3. Nearest focusable ancestor
    */
   private resolveTarget(): HTMLElement | null {
-    const stored = this.storedElement();
+    const stored = this.storedElement;
     // Skip body - it signals "nothing meaningful was focused", not a real restore target.
     if (
       stored &&

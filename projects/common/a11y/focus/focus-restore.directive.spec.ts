@@ -131,6 +131,29 @@ describe('CngxFocusRestore', () => {
     });
   });
 
+  describe('manual capture and restore', () => {
+    beforeEach(() => TestBed.configureTestingModule({ imports: [WhileHost] }));
+
+    it('restores to the element of the latest capture()', () => {
+      const fixture = TestBed.createComponent(WhileHost);
+      document.body.appendChild(fixture.nativeElement as HTMLElement);
+      fixture.detectChanges();
+      const q = (sel: string) =>
+        fixture.debugElement.query(By.css(sel)).nativeElement as HTMLElement;
+      const dir = fixture.debugElement
+        .query(By.directive(CngxFocusRestore))
+        .injector.get(CngxFocusRestore);
+
+      q('.elsewhere').focus();
+      dir.capture();
+      q('.inside').focus();
+      dir.restore();
+
+      expect(document.activeElement).toBe(q('.elsewhere'));
+      (fixture.nativeElement as HTMLElement).remove();
+    });
+  });
+
   describe('fallback', () => {
     beforeEach(() => TestBed.configureTestingModule({ imports: [FallbackHost] }));
 
