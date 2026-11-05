@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, vi } from 'vitest';
 import { CngxActionButton } from './action-button';
 import {
-  CngxAsyncClick,
+  CNGX_ASYNC_RUN_STATE,
   CngxFailed,
   CngxPending,
   CngxSucceeded,
@@ -1156,7 +1156,9 @@ describe('CngxActionButton settle lifecycle', () => {
     btn.click();
     await vi.waitFor(() => {
       flush(fixture);
-      expect(fixture.debugElement.children[0].injector.get(CngxAsyncClick).succeeded()).toBe(true);
+      expect(
+        fixture.debugElement.children[0].injector.get(CNGX_ASYNC_RUN_STATE).state.status(),
+      ).toBe('success');
     });
     expect(ab.state.lastUpdated()).toBeUndefined();
 

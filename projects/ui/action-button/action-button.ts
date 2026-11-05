@@ -24,6 +24,7 @@ import {
   type CngxButtonVariant,
 } from '@cngx/common/button';
 import {
+  CNGX_ASYNC_RUN_STATE,
   CNGX_HOST_INTERACTION_STATE,
   CngxAsyncClick,
   CngxFailed,
@@ -37,6 +38,7 @@ import {
 import {
   buildAsyncStateView,
   createTransitionTracker,
+  injectLazySelf,
   resolveSpokenText,
   type AsyncStatus,
   type CngxAsyncState,
@@ -222,14 +224,11 @@ export class CngxActionButton {
   private readonly externalToastOn = inject(CngxToastOn, { self: true, optional: true });
   protected readonly i18n = injectInteractiveI18n();
 
-  // The host directive is resolved on first read: CngxAsyncClick is created
-  // before this component and injects the CNGX_HOST_INTERACTION_STATE it
-  // provides, so an eager inject here would be a cycle.
   private readonly injector = inject(Injector);
-  private asyncClickRef: CngxAsyncClick | undefined;
-  private get asyncClick(): CngxAsyncClick {
-    return (this.asyncClickRef ??= this.injector.get(CngxAsyncClick, undefined, { self: true }));
-  }
+  // The co-hosted run is resolved on first read: the runner is created before
+  // this component and injects the CNGX_HOST_INTERACTION_STATE it provides,
+  // so an eager inject here would be a cycle.
+  private readonly runState = injectLazySelf(CNGX_ASYNC_RUN_STATE);
 
   /**
    * Emphasis, bound through the selector: `cngxActionButton="outline"`. The
@@ -351,7 +350,7 @@ export class CngxActionButton {
     if (ext) {
       return reflectAsyncDisplayStatus(ext);
     }
-    return this.asyncClick.status();
+    return this.runState().state.status();
   });
 
   /** @internal - effective error value from external state or the directive. */
@@ -360,7 +359,7 @@ export class CngxActionButton {
     if (ext) {
       return ext.error();
     }
-    return this.asyncClick.error();
+    return this.runState().state.error();
   });
 
   /** @internal - busy while the effective status (directive or external) is pending. */
@@ -449,7 +448,7 @@ export class CngxActionButton {
    */
   private readonly effectiveLastUpdated = computed(() => {
     const ext = this.externalState();
-    return ext ? ext.lastUpdated() : this.asyncClick.state.lastUpdated();
+    return ext ? ext.lastUpdated() : this.runState().state.lastUpdated();
   });
 
   /**
@@ -495,7 +494,7 @@ export class CngxActionButton {
     // during construction (it injects the host state this component
     // provides), and a settle needs a click on the rendered button.
     afterNextRender(() => {
-      this.asyncClick.settled.subscribe((settle) => this.handleOwnSettle(settle));
+      this.runState().settled.subscribe((settle) => this.handleOwnSettle(settle));
     });
 
     // External runs: state, so one toast and one announcement per edge.
@@ -526,7 +525,7 @@ export class CngxActionButton {
     // Back to idle closes the feedback window: empty the region so no stale
     // outcome stays readable, as the directive does for its own runs.
     if (status === 'idle') {
-      this.asyncClick.announce('');
+      this.runState().announce('');
       return;
     }
     if (status !== 'success' && status !== 'error') {
@@ -536,7 +535,7 @@ export class CngxActionButton {
     // After render, so a projected failed template shows the new error
     // before its text is read. The edge status, not the status at render.
     afterNextRender(
-      { write: () => this.asyncClick.announce(this.resolveAnnouncement(status)) },
+      { write: () => this.runState().announce(this.resolveAnnouncement(status)) },
       { injector: this.injector },
     );
   }
