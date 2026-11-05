@@ -8,6 +8,7 @@ import {
   ElementRef,
   HostAttributeToken,
   inject,
+  Injector,
   input,
 } from '@angular/core';
 import {
@@ -53,8 +54,8 @@ import type {
  * Provides `CNGX_BUTTON_STATE` (read by `cngxSplitButton`),
  * `CNGX_HOST_INTERACTION_STATE` (read by a co-hosted `cngxAsyncClick` or
  * `cngxMenuTrigger`) and `CNGX_DESCRIBED_BY`. An `iconOnly` host is checked
- * for an accessible name once the app is stable and warns `CNGX1071`
- * without one.
+ * for an accessible name once the app is stable; a miss is confirmed on the
+ * next stable cycle before it warns `CNGX1071`.
  *
  * The host template renders the busy layer from `busyVisible()` (the
  * co-hosted runner's gate, or the brain's own gate over a run the host
@@ -237,13 +238,22 @@ export class CngxButtonBrain implements CngxButtonState {
   constructor() {
     if (typeof ngDevMode !== 'undefined' && ngDevMode && this.descriptor.iconOnly) {
       // After the app is stable, not after the first render: a label bound
-      // in a later pass is a name too.
+      // in a later pass is a name too. A miss is looked at once more on the
+      // next stable cycle, so a label that lands after the first one does
+      // not warn either.
       const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
       const appRef = inject(ApplicationRef);
+      const injector = inject(Injector);
       let destroyed = false;
       inject(DestroyRef).onDestroy(() => (destroyed = true));
-      afterNextRender(() => {
-        void appRef.whenStable().then(() => {
+      const onStableCycle = (check: () => void): void => {
+        afterNextRender(() => void appRef.whenStable().then(check), { injector });
+      };
+      onStableCycle(() => {
+        if (destroyed || hasAccessibleName(host)) {
+          return;
+        }
+        onStableCycle(() => {
           if (destroyed || hasAccessibleName(host)) {
             return;
           }

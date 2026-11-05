@@ -1,6 +1,6 @@
 import { afterNextRender, Component, inject, input, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { hasAccessibleName } from './accessible-name';
 import { CngxButtonBrain } from './button-brain.directive';
@@ -65,19 +65,57 @@ class ReasonOnlyHost {}
 })
 class SrLabelHost {}
 
+@Component({
+  template: `<button id="later" demoIcon [attr.aria-label]="label()">x</button>`,
+  imports: [DemoIcon],
+})
+class LaterLabelHost {
+  readonly label = signal<string | null>(null);
+}
+
+const coded = (warn: { mock: { calls: unknown[][] } }): unknown[][] =>
+  warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1071'));
+
+// One stability cycle: change detection, the app stable, then the turn the check waits for.
+async function settle(fixture: { detectChanges(): void; whenStable(): Promise<unknown> }) {
+  fixture.detectChanges();
+  await fixture.whenStable();
+  await new Promise((resolve) => setTimeout(resolve));
+}
+
 async function warningsFor<T>(type: new () => T): Promise<unknown[][]> {
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
   const fixture = TestBed.createComponent(type);
-  fixture.detectChanges();
-  await fixture.whenStable();
-  // The check itself waits for the app to be stable, one turn after the fixture.
-  await new Promise((resolve) => setTimeout(resolve));
-  const calls = warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1071'));
-  warn.mockRestore();
-  return calls;
+  // The check looks on the first stable cycle and confirms a miss on the next one.
+  await settle(fixture);
+  await settle(fixture);
+  return coded(warn);
 }
 
 describe('CNGX1071 accessible-name check', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('raises no warning for a label that arrives after the first stable cycle', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fixture = TestBed.createComponent(LaterLabelHost);
+    await settle(fixture);
+    fixture.componentInstance.label.set('Delete row');
+    await settle(fixture);
+    await settle(fixture);
+    expect(coded(warn)).toEqual([]);
+  });
+
+  it('does not warn before the next stable cycle confirms the miss', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fixture = TestBed.createComponent(UnnamedHost);
+    await settle(fixture);
+    expect(coded(warn)).toEqual([]);
+    await settle(fixture);
+    expect(coded(warn)).toHaveLength(1);
+  });
+
   it('raises no warning for a label bound after the first render', async () => {
     expect(await warningsFor(LateLabelHost)).toEqual([]);
   });

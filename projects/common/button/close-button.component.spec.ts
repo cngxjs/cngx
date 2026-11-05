@@ -274,6 +274,10 @@ describe('CngxCloseButton', () => {
     const { fixture, q } = render(UnnamedHost);
     await fixture.whenStable();
     await new Promise((resolve) => setTimeout(resolve));
+    // The miss is confirmed on the next stable cycle before it warns.
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve));
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn.mock.calls[0][0]).toMatch(/^CNGX1071: \[cngxCloseButton\] has no accessible name\./);
     expect(warn.mock.calls[0]).toContain(q('#unnamed'));

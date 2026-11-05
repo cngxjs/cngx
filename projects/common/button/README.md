@@ -60,7 +60,7 @@ Density, text scale, touch floor, motion and contrast are not inputs. They come 
 
 ## Close button
 
-`button[cngxCloseButton]` is the icon button with the cngx X glyph, used by alerts, toasts, banners and the popover panel. Project a glyph to replace the X per instance, or call `provideCloseIcon(MyIcon)` (the `CNGX_CLOSE_ICON` token; `provideFeedback(withCloseIcon(...))` in `@cngx/ui/feedback` forwards to it) to swap it app-wide. A custom host reads it with `injectCloseIcon()`. The name is your copy on the host:
+`button[cngxCloseButton]` is the icon button with the cngx X glyph, used by alerts, toasts, banners and the popover panel. Project a glyph to replace the X per instance, or call `provideCloseIcon(MyIcon)` (the `CNGX_CLOSE_ICON` token; `provideFeedback(withCloseIcon(...))` in `@cngx/ui/feedback` forwards to it) to swap it app-wide. A custom host reads it with `injectCloseIcon()`. The name is your copy on the host; name what it closes, not the affordance, since a bare "Close" reads the same for every dismiss target on the page:
 
 ```html
 <button cngxCloseButton aria-label="Close settings dialog" (click)="close()"></button>
