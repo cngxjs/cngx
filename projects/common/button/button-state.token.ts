@@ -3,6 +3,10 @@ import { InjectionToken, type Signal } from '@angular/core';
 /**
  * State every cngx button type publishes about itself, so a composing
  * molecule reads it without importing a concrete button class.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-state.token.ts
+ * @since 0.1.0
+ * @relatedTo CNGX_BUTTON_STATE, CngxButtonBrain
  */
 export interface CngxButtonState {
   /**
