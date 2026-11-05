@@ -7,12 +7,7 @@ import { CngxSidebar, type CngxSidebarCollapsedAs } from './sidebar.directive';
 // Runs in a real Chromium (the `test-geometry` target): real flex layout, so
 // the reserved space is measured off the content lane beside the sidebar.
 
-@Component({
-  selector: 'cngx-sidebar-geometry-host',
-  standalone: true,
-  imports: [CngxSidebar],
-  encapsulation: ViewEncapsulation.None,
-  styles: `
+const GEOMETRY_STYLES = `
     .sb-row {
       display: flex;
       inline-size: 900px;
@@ -29,7 +24,14 @@ import { CngxSidebar, type CngxSidebarCollapsedAs } from './sidebar.directive';
       flex: 1;
       min-inline-size: 0;
     }
-  `,
+  `;
+
+@Component({
+  selector: 'cngx-sidebar-geometry-host',
+  standalone: true,
+  imports: [CngxSidebar],
+  encapsulation: ViewEncapsulation.None,
+  styles: GEOMETRY_STYLES,
   template: `
     <div class="sb-row">
       <aside
@@ -47,6 +49,27 @@ class GeometryHost {
   readonly collapsed = signal(false);
   readonly collapsedAs = signal<CngxSidebarCollapsedAs>('rail');
 }
+
+@Component({
+  selector: 'cngx-sidebar-end-geometry-host',
+  standalone: true,
+  imports: [CngxSidebar],
+  encapsulation: ViewEncapsulation.None,
+  styles: GEOMETRY_STYLES,
+  template: `
+    <div class="sb-row">
+      <main class="sb-main"></main>
+      <aside
+        class="sb-side"
+        cngxSidebar
+        side="end"
+        [collapsed]="true"
+        [expandOnHover]="false"
+      ></aside>
+    </div>
+  `,
+})
+class EndGeometryHost {}
 
 describe('CngxSidebar geometry', () => {
   let host: HTMLElement | null = null;
@@ -122,5 +145,27 @@ describe('CngxSidebar geometry', () => {
 
     expect(side.getBoundingClientRect().width).toBe(240);
     expect(mainOffset()).toBe(0);
+  });
+
+  it('overlays an end rail peek towards the start without moving the content lane', () => {
+    const fixture = TestBed.createComponent(EndGeometryHost);
+    host = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(host);
+    fixture.detectChanges();
+    const side = host.querySelector('.sb-side') as HTMLElement;
+    const main = host.querySelector('.sb-main') as HTMLElement;
+    const sidebar = fixture.debugElement
+      .query((d) => d.nativeElement === side)
+      .injector.get(CngxSidebar);
+    const row = (host.querySelector('.sb-row') as HTMLElement).getBoundingClientRect();
+    const mainWidth = main.getBoundingClientRect().width;
+
+    sidebar.peek();
+    fixture.detectChanges();
+
+    const peeked = side.getBoundingClientRect();
+    expect(peeked.width).toBe(240);
+    expect(peeked.right).toBe(row.right);
+    expect(main.getBoundingClientRect().width).toBe(mainWidth);
   });
 });

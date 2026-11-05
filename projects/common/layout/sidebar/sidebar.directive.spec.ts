@@ -4,7 +4,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { provideLayoutI18n, withLayoutI18nLabels } from '../i18n/layout-i18n';
 import { CngxPanelTrigger } from '../panel-trigger/panel-trigger.directive';
-import { CngxSidebar, type CngxSidebarCollapsedAs } from './sidebar.directive';
+import {
+  CngxSidebar,
+  type CngxSidebarCollapsedAs,
+  type CngxSidebarSide,
+} from './sidebar.directive';
 
 @Component({
   template: `
@@ -16,6 +20,7 @@ import { CngxSidebar, type CngxSidebarCollapsedAs } from './sidebar.directive';
       [collapsedAs]="collapsedAs()"
       [expandOnHover]="expandOnHover()"
       [label]="label()"
+      [side]="side()"
       [expandDelay]="50"
     >
       <a href="#a" class="inside">Inbox</a>
@@ -29,6 +34,7 @@ class Host {
   readonly collapsedAs = signal<CngxSidebarCollapsedAs>('rail');
   readonly expandOnHover = signal(true);
   readonly label = signal<string | undefined>(undefined);
+  readonly side = signal<CngxSidebarSide>('start');
 }
 
 @Component({
@@ -184,6 +190,23 @@ describe('CngxSidebar', () => {
       vi.advanceTimersByTime(0);
       fixture.detectChanges();
       expect(sidebar.peeked()).toBe(false);
+      expect(el.style.marginInlineEnd).toBe('');
+    });
+
+    it('grows an end sidebar peek towards the start', () => {
+      const { el, sidebar, set, fixture } = setup();
+      set((h) => {
+        h.side.set('end');
+        h.collapsed.set(true);
+      });
+      expect(sidebar.side()).toBe('end');
+
+      sidebar.peek();
+      fixture.detectChanges();
+
+      expect(el.style.marginInlineStart).toBe(
+        'calc(var(--cngx-sidebar-rail-size, 3.5rem) - var(--cngx-sidebar-size, 16rem))',
+      );
       expect(el.style.marginInlineEnd).toBe('');
     });
 

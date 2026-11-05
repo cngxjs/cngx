@@ -18,7 +18,6 @@ import { injectLayoutI18n } from '../i18n/layout-i18n';
 import {
   CNGX_PANEL_TARGET,
   type CngxPanelMode,
-  type CngxPanelSide,
   type CngxPanelTarget,
 } from '../panel-trigger/panel-target';
 
@@ -29,6 +28,14 @@ import {
  * @since 0.1.0
  */
 export type CngxSidebarCollapsedAs = 'rail' | 'hidden';
+
+/**
+ * The edge a `CngxSidebar` sits on, in the writing direction: a `start`
+ * sidebar peeks towards the end, an `end` sidebar towards the start.
+ *
+ * @since 0.1.0
+ */
+export type CngxSidebarSide = 'start' | 'end';
 
 /**
  * The resting state a `CngxSidebar` renders as `data-sidebar-state`.
@@ -52,6 +59,9 @@ export type CngxSidebarState = 'expanded' | 'rail' | 'hidden' | 'peek';
  * dismissible without moving focus, WCAG 1.4.13), when focus leaves the
  * host, or when the pointer leaves.
  * `pin()` turns a peek into the expanded state.
+ *
+ * `side` names the edge the sidebar sits on (`start`, default, or `end` for
+ * an inspector after the content); a peek grows away from it.
  *
  * Sizes are tokens with fallbacks: `--cngx-sidebar-size` (expanded, default
  * `16rem`) and `--cngx-sidebar-rail-size` (default `3.5rem`), plus
@@ -99,7 +109,8 @@ export type CngxSidebarState = 'expanded' | 'rail' | 'hidden' | 'peek';
     '[attr.aria-hidden]': "concealed() ? 'true' : null",
     '[attr.data-sidebar-state]': 'state()',
     '[style.inline-size]': 'inlineSize()',
-    '[style.margin-inline-end]': 'peekOffset()',
+    '[style.margin-inline-end]': "side() === 'start' ? peekOffset() : null",
+    '[style.margin-inline-start]': "side() === 'end' ? peekOffset() : null",
     '[style.z-index]': "peeked() ? 'var(--cngx-sidebar-peek-z-index, 2)' : null",
     '(keydown.escape)': 'handleEscape()',
     '(focusout)': 'handleFocusOut($event)',
@@ -110,6 +121,11 @@ export class CngxSidebar implements CngxPanelTarget {
   readonly collapsed = model<boolean>(false);
   /** How a collapsed sidebar rests: an operable `rail` or `hidden`. */
   readonly collapsedAs = input<CngxSidebarCollapsedAs>('rail');
+  /**
+   * {@link CngxPanelTarget}: the edge the sidebar sits on, in the writing
+   * direction. A peek grows away from it.
+   */
+  readonly side = input<CngxSidebarSide>('start');
   /** Whether the pointer resting on a collapsed sidebar peeks it. */
   readonly expandOnHover = input<boolean>(true);
   /**
@@ -132,16 +148,16 @@ export class CngxSidebar implements CngxPanelTarget {
     computation: () => false,
   });
 
-  /** The host `id` (a static `id` attribute, else a generated one); the trigger's `aria-controls`. */
+  /**
+   * The host `id` (a static `id` attribute, else a generated one); the
+   * trigger's `aria-controls`.
+   */
   readonly id = signal(
     inject(new HostAttributeToken('id'), { optional: true }) ?? nextUid('cngx-sidebar'),
   ).asReadonly();
 
   /** {@link CngxPanelTarget}: a sidebar reserves inline space, it is never an overlay. */
   readonly mode = signal<CngxPanelMode>('inline').asReadonly();
-
-  /** {@link CngxPanelTarget}: the sidebar sits on the start edge (its peek grows towards the end). */
-  readonly side = signal<CngxPanelSide>('start').asReadonly();
 
   /** Whether a collapsed sidebar currently shows at full size over the content. */
   readonly peeked = computed(() => {
@@ -184,8 +200,8 @@ export class CngxSidebar implements CngxPanelTarget {
     }
   });
 
-  // A peek keeps the rest footprint: the negative end margin cancels the
-  // growth, so the content beside the sidebar does not reflow.
+  // A peek keeps the rest footprint: a negative margin on the edge facing
+  // the content cancels the growth, so the content does not reflow.
   protected readonly peekOffset = computed(() => {
     if (!this.peeked()) {
       return null;

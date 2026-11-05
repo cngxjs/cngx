@@ -56,6 +56,7 @@ export {
 export {
   CngxSidebar,
   type CngxSidebarCollapsedAs,
+  type CngxSidebarSide,
   type CngxSidebarState,
 } from './sidebar/sidebar.directive';
 export { CngxSkeleton } from './text/skeleton.directive';

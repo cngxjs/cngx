@@ -53,6 +53,7 @@ A collapsed rail stays operable: nothing in it is made `inert`.
 |-|-|-|
 | `collapsed` | `model<boolean>` | Collapsed rest vs. expanded. Two-way. |
 | `collapsedAs` | `input<'rail' \| 'hidden'>` | How a collapsed sidebar rests. Default `rail`. |
+| `side` | `input<'start' \| 'end'>` | The edge the sidebar sits on, in the writing direction. Default `start`; `end` for an inspector after the content. A peek grows away from it. Also the `CngxPanelTarget` `side`. |
 | `expandOnHover` | `input<boolean>` | Hover peeks a collapsed sidebar. Default `true`. |
 | `expandDelay` / `collapseDelay` | `input<number>` | Hover dwell in ms (from `CngxHoverIntent`). |
 | `role` | `input<string \| null>` | Landmark role. Default `complementary`; `null` keeps the implicit role of a `<nav>` / `<aside>`. |
