@@ -125,8 +125,11 @@ export class CngxDrawer implements CngxPanelTarget, CngxDrawerHost {
   /** {@link CngxPanelTarget} view of the panel's `mode`; `over` until a panel registers. */
   readonly mode = computed<CngxPanelMode>(() => this.panelSlot.current()?.mode() ?? 'over');
 
-  /** {@link CngxPanelTarget}: whether the panel's resolved modality blocks anything. */
-  readonly modal = computed(() => this.panelSlot.current()?.modal() ?? true);
+  /**
+   * {@link CngxPanelTarget}: whether the panel's resolved modality blocks
+   * anything; `false` until a panel connects, like an unset `modal`.
+   */
+  readonly modal = computed(() => this.panelSlot.current()?.modal() ?? false);
 
   /** {@link CngxPanelTarget} view of the panel's `position`; `left` until a panel registers. */
   readonly side = computed<CngxPanelSide>(() => this.panelSlot.current()?.position() ?? 'left');
