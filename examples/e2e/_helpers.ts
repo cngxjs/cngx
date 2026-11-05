@@ -8,12 +8,32 @@ import { expect, type Locator, type Page } from '@playwright/test';
  * the home page (`**` -> `''`), and the helper fails when the hash no longer
  * names the requested route.
  */
+/**
+ * The requested route resolved if the hash is exactly the route, or the route
+ * followed by a query string (`?…`) or a nested fragment (`#…`). Demos that
+ * sync state into the URL append their own fragment after the hash route — the
+ * stepper router-sync demo writes `#step=…`, so the live hash reads
+ * `#/<route>#step=profile`. A bare equality (or route-plus-`?`) check is too
+ * strict for those; the delimiter check still rejects a different route that
+ * merely shares this one as a prefix.
+ */
+function hashNamesRoute(hash: string, expected: string): boolean {
+  if (hash === expected) {
+    return true;
+  }
+  if (!hash.startsWith(expected)) {
+    return false;
+  }
+  const rest = hash.slice(expected.length);
+  return rest.startsWith('?') || rest.startsWith('#');
+}
+
 export async function gotoDemo(page: Page, routePath: string): Promise<void> {
   const clean = routePath.replace(/^\/+/, '');
   const expected = `#/${clean}`;
   await page.goto(`/${expected}`);
-  await expect(page, `route ${clean} did not resolve`).toHaveURL(
-    (url) => url.hash === expected || url.hash.startsWith(`${expected}?`),
+  await expect(page, `route ${clean} did not resolve`).toHaveURL((url) =>
+    hashNamesRoute(url.hash, expected),
   );
 }
 
@@ -25,8 +45,8 @@ export async function gotoDemoLang(page: Page, routePath: string, lang: string):
   const clean = routePath.replace(/^\/+/, '');
   const expected = `#/${clean}`;
   await page.goto(`/?lang=${lang}#/${clean}`);
-  await expect(page, `route ${clean} did not resolve under ?lang=${lang}`).toHaveURL(
-    (url) => url.hash === expected || url.hash.startsWith(`${expected}?`),
+  await expect(page, `route ${clean} did not resolve under ?lang=${lang}`).toHaveURL((url) =>
+    hashNamesRoute(url.hash, expected),
   );
 }
 
