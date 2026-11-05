@@ -56,7 +56,7 @@ A collapsed rail stays operable: nothing in it is made `inert`.
 | `expandOnHover` | `input<boolean>` | Hover peeks a collapsed sidebar. Default `true`. |
 | `expandDelay` / `collapseDelay` | `input<number>` | Hover dwell in ms (from `CngxHoverIntent`). |
 | `role` | `input<string \| null>` | Landmark role. Default `complementary`; `null` keeps the implicit role of a `<nav>` / `<aside>`. |
-| `label` | `input<string>` | Accessible name. Falls back to `CNGX_LAYOUT_I18N.sidebarRegion`. |
+| `label` | `input<string>` | Accessible name. Falls back to `CNGX_LAYOUT_I18N.sidebarRegion`. The resolved name is also the `CngxPanelTarget` `label`, so an icon-only `cngxPanelToggle` without its own `label` is named after the sidebar. |
 | `expanded` | `Signal<boolean>` | Full size: expanded or peeked. |
 | `peeked` | `Signal<boolean>` | Collapsed and currently peeking. |
 | `state` | `Signal<CngxSidebarState>` | `expanded`, `rail`, `hidden` or `peek`. |

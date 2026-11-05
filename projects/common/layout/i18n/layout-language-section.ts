@@ -17,10 +17,8 @@ export interface CngxLayoutLanguageSection {
   readonly resizeHandle: string;
   /** `aria-valuetext` of a `CngxResizable` handle. Placeholder: `{size}` (px). */
   readonly resizeValueText: CngxMessage;
-  /** Accessible name of a `CngxPanelTrigger` without text content while its panel is hidden. */
-  readonly panelTriggerOpen: string;
-  /** Accessible name of a `CngxPanelTrigger` without text content while its panel is shown. */
-  readonly panelTriggerClose: string;
+  /** Accessible name of a `CngxPanelTrigger` without text content whose panel has no label. */
+  readonly panelTrigger: string;
   /** Accessible name of a `CngxSidebar` region without a bound label. */
   readonly sidebarRegion: string;
 }
@@ -37,8 +35,7 @@ export const CNGX_LAYOUT_LANGUAGE_EN: CngxLayoutLanguageSection = {
   expandableTextLess: 'Show less',
   resizeHandle: 'Resize',
   resizeValueText: '{size} pixels',
-  panelTriggerOpen: 'Open panel',
-  panelTriggerClose: 'Close panel',
+  panelTrigger: 'Panel',
   sidebarRegion: 'Sidebar',
 };
 

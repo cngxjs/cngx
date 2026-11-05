@@ -43,6 +43,13 @@ export interface CngxPanelTarget {
   readonly modal?: Signal<boolean>;
   /** The edge the panel sits on. Optional; unset reads as `start`. */
   readonly side?: Signal<CngxPanelSide>;
+  /**
+   * The panel's accessible name. A trigger without text content takes it
+   * as its own name, so the name stays the same while the panel opens and
+   * closes. Optional; unset or `undefined` falls back to
+   * `CNGX_LAYOUT_I18N.panelTrigger`.
+   */
+  readonly label?: Signal<string | undefined>;
 }
 
 /**

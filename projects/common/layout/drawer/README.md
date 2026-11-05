@@ -207,7 +207,7 @@ export class ResponsiveDrawerComponent {}
 
 ### Clipped Drawer Below a Live Header
 
-The header sits outside the `[cngxDrawer]` host, so the contained panel leaves it live; the hamburger stays the toggle. `button[cngxPanelToggle]` is the icon-button form of `cngxPanelTrigger` with its own glyph: three bars and a cross on a modal over-drawer like this one, a panel frame for a push or non-modal drawer, with a chevron that points away from the panel column while closed and toward it while open. The glyph follows the panel's live `mode` and modality, so a breakpoint that switches `mode` switches it too.
+The header sits outside the `[cngxDrawer]` host, so the contained panel leaves it live; the hamburger stays the toggle. `button[cngxPanelToggle]` is the icon-button form of `cngxPanelTrigger` with its own glyph: three bars and a cross on a modal over-drawer like this one, a panel frame for a push or non-modal drawer, with a chevron that points away from the panel column while closed and toward it while open. The glyph follows the panel's live `mode` and modality, so a breakpoint that switches `mode` switches it too. The toggle's name does not change with the state: bind `label` (a drawer gives its trigger no name, so it falls back to `CNGX_LAYOUT_I18N.panelTrigger`), and `aria-expanded` reports whether the panel is open.
 
 ```typescript
 <header>

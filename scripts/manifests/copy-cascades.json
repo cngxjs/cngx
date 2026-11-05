@@ -226,11 +226,11 @@
     {
       "class": "CngxSidebar",
       "file": "projects/common/layout/sidebar/sidebar.directive.ts",
-      "line": 164,
-      "member": "resolvedLabel",
+      "line": 169,
+      "member": "label",
       "enclosing": "computed",
       "tiers": [
-        { "kind": "input", "field": "label" },
+        { "kind": "input", "field": "labelInput" },
         {
           "kind": "bundle",
           "field": "i18n",

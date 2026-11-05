@@ -27,10 +27,11 @@ export interface CngxLayoutI18n {
   readonly resizeHandle: string;
   /** Fallback of `CngxResizable.valueText`: the handle's `aria-valuetext` for a px size. */
   readonly resizeValueText: (size: number) => string;
-  /** Fallback of `CngxPanelTrigger.label` on a trigger without text content, panel hidden. */
-  readonly panelTriggerOpen: string;
-  /** Fallback of `CngxPanelTrigger.label` on a trigger without text content, panel shown. */
-  readonly panelTriggerClose: string;
+  /**
+   * Fallback of `CngxPanelTrigger.label` on a trigger without text content
+   * whose panel has no `label`. Stable: the panel state is `aria-expanded`.
+   */
+  readonly panelTrigger: string;
   /** Fallback of `CngxSidebar.label`, the region's accessible name. */
   readonly sidebarRegion: string;
 }
@@ -45,8 +46,7 @@ function layoutBundleFrom(section: CngxLayoutLanguageSection, locale: string): C
     expandableTextLess: section.expandableTextLess,
     resizeHandle: section.resizeHandle,
     resizeValueText: (size) => formatMessage(section.resizeValueText, { size }, locale),
-    panelTriggerOpen: section.panelTriggerOpen,
-    panelTriggerClose: section.panelTriggerClose,
+    panelTrigger: section.panelTrigger,
     sidebarRegion: section.sidebarRegion,
   };
 }

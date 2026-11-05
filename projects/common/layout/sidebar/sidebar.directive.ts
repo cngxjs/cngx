@@ -90,7 +90,7 @@ export type CngxSidebarState = 'expanded' | 'rail' | 'hidden' | 'peek';
   host: {
     '[attr.id]': 'id()',
     '[attr.role]': 'role()',
-    '[attr.aria-label]': 'resolvedLabel()',
+    '[attr.aria-label]': 'label()',
     '[attr.inert]': "concealed() ? '' : null",
     '[attr.aria-hidden]': "concealed() ? 'true' : null",
     '[attr.data-sidebar-state]': 'state()',
@@ -114,7 +114,7 @@ export class CngxSidebar implements CngxPanelTarget {
    */
   readonly role = input<string | null>('complementary');
   /** Accessible name of the region. Falls back to `CNGX_LAYOUT_I18N.sidebarRegion`. */
-  readonly label = input<string | undefined>(undefined);
+  readonly labelInput = input<string | undefined>(undefined, { alias: 'label' });
 
   private readonly hover = inject(CngxHoverIntent, { self: true });
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
@@ -161,7 +161,12 @@ export class CngxSidebar implements CngxPanelTarget {
   });
 
   protected readonly concealed = computed(() => this.state() === 'hidden');
-  protected readonly resolvedLabel = computed(() => this.label() ?? this.i18n().sidebarRegion);
+  /**
+   * {@link CngxPanelTarget}: the region's resolved accessible name, the bound
+   * `label` or `CNGX_LAYOUT_I18N.sidebarRegion`. An icon-only trigger takes
+   * it as its name.
+   */
+  readonly label = computed(() => this.labelInput() ?? this.i18n().sidebarRegion);
 
   protected readonly inlineSize = computed(() => {
     switch (this.state()) {

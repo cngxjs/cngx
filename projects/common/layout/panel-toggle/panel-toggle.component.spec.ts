@@ -222,26 +222,36 @@ describe('CngxPanelToggle', () => {
     expect(glyph().getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('is named by the panel state', () => {
+  it('is named after the sidebar region and keeps the name across states', () => {
     const { host, settle, toggle } = mount(SidebarHost);
-    expect(toggle.getAttribute('aria-label')).toBe('Close panel');
+    expect(toggle.getAttribute('aria-label')).toBe('Sidebar');
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
     host.collapsed.set(true);
     settle();
-    expect(toggle.getAttribute('aria-label')).toBe('Open panel');
+    expect(toggle.getAttribute('aria-label')).toBe('Sidebar');
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
   });
 
-  it('keeps the state name while a disabled reason renders', () => {
+  it('keeps its name while a disabled reason renders', () => {
     TestBed.configureTestingModule({ imports: [ReasonHost] });
     const fixture = TestBed.createComponent(ReasonHost);
     fixture.detectChanges();
     TestBed.tick();
     const toggle = (fixture.nativeElement as HTMLElement).querySelector('.toggle')!;
-    expect(toggle.getAttribute('aria-label')).toBe('Close panel');
+    expect(toggle.getAttribute('aria-label')).toBe('Sidebar');
   });
 
-  it('takes a bound label over the state name', () => {
+  it('takes a bound label over the panel name', () => {
     const { toggle } = mount(TargetHost);
     expect(toggle.getAttribute('aria-label')).toBe('Filters');
+  });
+
+  it('takes the default name for a drawer, whatever its state', () => {
+    const { settle, toggle } = mount(DrawerHost);
+    expect(toggle.getAttribute('aria-label')).toBe('Panel');
+    toggle.click();
+    settle();
+    expect(toggle.getAttribute('aria-label')).toBe('Panel');
   });
 
   it('composes the panel trigger: aria-expanded, aria-controls and the toggle', () => {

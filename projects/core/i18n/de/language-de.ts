@@ -330,8 +330,7 @@ export const CNGX_LANGUAGE_DE = {
     expandableTextLess: 'Weniger anzeigen',
     resizeHandle: 'Größe ändern',
     resizeValueText: '{size} Pixel',
-    panelTriggerOpen: 'Bereich öffnen',
-    panelTriggerClose: 'Bereich schließen',
+    panelTrigger: 'Seitenbereich',
     sidebarRegion: 'Seitenleiste',
   },
   menu: {

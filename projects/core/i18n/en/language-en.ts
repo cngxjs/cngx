@@ -334,8 +334,7 @@ export const CNGX_LANGUAGE_EN = {
     expandableTextLess: 'Show less',
     resizeHandle: 'Resize',
     resizeValueText: '{size} pixels',
-    panelTriggerOpen: 'Open panel',
-    panelTriggerClose: 'Close panel',
+    panelTrigger: 'Panel',
     sidebarRegion: 'Sidebar',
   },
   menu: {

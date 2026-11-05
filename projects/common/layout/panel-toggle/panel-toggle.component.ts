@@ -25,9 +25,10 @@ import { CngxPanelTrigger } from '../panel-trigger/panel-trigger.directive';
  * Icon button that opens and closes a drawer or sidebar and draws its own
  * glyph. The behaviour is a composed `CngxPanelTrigger`: `aria-expanded`
  * mirrors the panel, `aria-controls` names it, a press toggles it (or peeks
- * it with `action="peek"`), and the accessible name follows the panel
- * state (`CNGX_LAYOUT_I18N.panelTriggerOpen` / `panelTriggerClose`) unless
- * `label` names the panel instead.
+ * it with `action="peek"`), and the accessible name is the panel's: a
+ * bound `label`, else the target's `label`, else
+ * `CNGX_LAYOUT_I18N.panelTrigger`. The name stays the same while the panel
+ * opens and closes.
  *
  * The glyph follows how the target presents the panel right now, so it
  * changes with a breakpoint that switches the panel's `mode`:
@@ -39,8 +40,8 @@ import { CngxPanelTrigger } from '../panel-trigger/panel-trigger.directive';
  *   non-modal over-drawer) shows a panel glyph that draws what a press
  *   does: a frame with a column on the panel's side and a chevron pointing
  *   away from the column while the panel is closed (open it), toward the
- *   column while it is open (close it). The name and `aria-expanded` carry
- *   the same state for assistive technology. The glyph mirrors for a panel
+ *   column while it is open (close it). `aria-expanded` carries the same
+ *   state for assistive technology. The glyph mirrors for a panel
  *   on the right: `position="right"`, or the end side in LTR and the start
  *   side in RTL (`CNGX_DIRECTION`).
  *

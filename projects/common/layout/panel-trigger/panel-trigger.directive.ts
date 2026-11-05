@@ -33,12 +33,12 @@ export type CngxPanelTriggerAction = 'toggle' | 'peek';
  *
  * On a native `<button>` the browser turns Enter and Space into the click.
  * Any other host gets `role="button"`, `tabindex="0"` and its own
- * Enter / Space handling. An icon-only trigger (no text content) is named
- * by the panel state unless `label` is bound (text inside `hidden` or
- * `aria-hidden` elements does not count as a name):
- * `CNGX_LAYOUT_I18N.panelTriggerOpen` while the panel is hidden,
- * `panelTriggerClose` while it is shown. A trigger with visible text keeps
- * its text as its name.
+ * Enter / Space handling. An icon-only trigger (no text content; text
+ * inside `hidden` or `aria-hidden` elements does not count) is named after
+ * the panel: a bound `label`, else the target's `label`, else
+ * `CNGX_LAYOUT_I18N.panelTrigger`. The name stays the same while the panel
+ * opens and closes; `aria-expanded` carries the state. A trigger with
+ * visible text keeps its text as its name.
  *
  * The trigger draws nothing: the host's content is the consumer's. For an
  * icon button with a glyph that follows the panel, use
@@ -96,8 +96,8 @@ export class CngxPanelTrigger {
   readonly action = input<CngxPanelTriggerAction>('toggle');
   /**
    * Accessible name. On a trigger without text content it falls back to
-   * `CNGX_LAYOUT_I18N.panelTriggerOpen` or `panelTriggerClose`, following
-   * the panel state.
+   * the target's `label`, then to `CNGX_LAYOUT_I18N.panelTrigger`. It does
+   * not follow the panel state; `aria-expanded` does.
    */
   readonly label = input<string | undefined>(undefined);
 
@@ -118,14 +118,13 @@ export class CngxPanelTrigger {
     const id = this.target()?.id();
     return id === undefined || id === '' ? null : id;
   });
-  private readonly stateLabel = computed(() => {
+  private readonly fallbackLabel = computed(() => {
     if (this.hasOwnName()) {
       return null;
     }
-    const i18n = this.i18n();
-    return this.expanded() ? i18n.panelTriggerClose : i18n.panelTriggerOpen;
+    return this.target()?.label?.() ?? this.i18n().panelTrigger;
   });
-  protected readonly resolvedLabel = computed(() => this.label() ?? this.stateLabel());
+  protected readonly resolvedLabel = computed(() => this.label() ?? this.fallbackLabel());
 
   protected readonly handleActivationKey = createActivationKeyHandler(this.host, () =>
     this.activate(),

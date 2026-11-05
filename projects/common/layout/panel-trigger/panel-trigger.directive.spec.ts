@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, type Signal, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -8,12 +8,13 @@ import { type CngxLayoutI18n, provideLayoutI18n, withLayoutI18nLabels } from '..
 import { CNGX_PANEL_TARGET, type CngxPanelTarget } from './panel-target';
 import { CngxPanelTrigger, type CngxPanelTriggerAction } from './panel-trigger.directive';
 
-function createTarget(withPeek = true) {
+function createTarget(withPeek = true, label?: Signal<string | undefined>) {
   const open = signal(false);
   const target: CngxPanelTarget & { peek?: () => void } = {
     id: signal('panel-a').asReadonly(),
     expanded: computed(() => open()),
     toggle: vi.fn(() => open.update((v) => !v)),
+    label,
   };
   if (withPeek) {
     target.peek = vi.fn();
@@ -100,19 +101,40 @@ describe('CngxPanelTrigger', () => {
     expect(target.toggle).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps the text name of a trigger with text and names an icon trigger by the panel state', () => {
-    const { fixture, open, q } = setup();
+  it('keeps the text name of a trigger with text and gives an icon trigger the default name', () => {
+    const { q } = setup();
     expect(q('.text').hasAttribute('aria-label')).toBe(false);
-    expect(q('.icon').getAttribute('aria-label')).toBe('Open panel');
+    expect(q('.icon').getAttribute('aria-label')).toBe('Panel');
+  });
+
+  it('keeps the name stable while aria-expanded follows the panel', () => {
+    const { fixture, open, q } = setup();
+    expect(q('.icon').getAttribute('aria-label')).toBe('Panel');
+    expect(q('.icon').getAttribute('aria-expanded')).toBe('false');
 
     open.set(true);
     fixture.detectChanges();
-    expect(q('.icon').getAttribute('aria-label')).toBe('Close panel');
+    expect(q('.icon').getAttribute('aria-label')).toBe('Panel');
+    expect(q('.icon').getAttribute('aria-expanded')).toBe('true');
     expect(q('.text').hasAttribute('aria-label')).toBe(false);
   });
 
-  it('lets a bound label win over the state copy in both states', () => {
-    const { fixture, open, q } = setup();
+  it('takes the target label when no label is bound', () => {
+    const name = signal<string | undefined>('Navigation');
+    const { fixture, open, q } = setup(createTarget(true, name));
+    expect(q('.icon').getAttribute('aria-label')).toBe('Navigation');
+
+    open.set(true);
+    fixture.detectChanges();
+    expect(q('.icon').getAttribute('aria-label')).toBe('Navigation');
+
+    name.set(undefined);
+    fixture.detectChanges();
+    expect(q('.icon').getAttribute('aria-label')).toBe('Panel');
+  });
+
+  it('lets a bound label win over the target label in both states', () => {
+    const { fixture, open, q } = setup(createTarget(true, signal('Navigation')));
     fixture.componentInstance.label.set('Filters');
     fixture.detectChanges();
     expect(q('.icon').getAttribute('aria-label')).toBe('Filters');
@@ -122,20 +144,14 @@ describe('CngxPanelTrigger', () => {
     expect(q('.icon').getAttribute('aria-label')).toBe('Filters');
   });
 
-  it('follows a language flip of the state copy', () => {
+  it('follows a language flip of the default name', () => {
     const lang = signal<Partial<CngxLayoutI18n>>({});
-    const { fixture, open, q } = setup(createTarget(), [
-      provideLayoutI18n(withLayoutI18nLabels(lang)),
-    ]);
-    expect(q('.icon').getAttribute('aria-label')).toBe('Open panel');
+    const { fixture, q } = setup(createTarget(), [provideLayoutI18n(withLayoutI18nLabels(lang))]);
+    expect(q('.icon').getAttribute('aria-label')).toBe('Panel');
 
-    lang.set({ panelTriggerOpen: 'Bereich öffnen', panelTriggerClose: 'Bereich schließen' });
+    lang.set({ panelTrigger: 'Seitenbereich' });
     fixture.detectChanges();
-    expect(q('.icon').getAttribute('aria-label')).toBe('Bereich öffnen');
-
-    open.set(true);
-    fixture.detectChanges();
-    expect(q('.icon').getAttribute('aria-label')).toBe('Bereich schließen');
+    expect(q('.icon').getAttribute('aria-label')).toBe('Seitenbereich');
   });
 
   it('writes nothing into the host', () => {
@@ -149,10 +165,10 @@ describe('CngxPanelTrigger', () => {
 
   it('does not take hidden or aria-hidden text as its name', () => {
     const { fixture, open, q } = setup();
-    expect(q('.hidden-text').getAttribute('aria-label')).toBe('Open panel');
+    expect(q('.hidden-text').getAttribute('aria-label')).toBe('Panel');
     open.set(true);
     fixture.detectChanges();
-    expect(q('.hidden-text').getAttribute('aria-label')).toBe('Close panel');
+    expect(q('.hidden-text').getAttribute('aria-label')).toBe('Panel');
   });
 
   it('gives a non-button host button semantics and Enter / Space activation', () => {
