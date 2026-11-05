@@ -171,9 +171,9 @@ export class CngxDrawerPanel implements CngxDrawerSurfaceDriver {
 
   /**
    * Landmark role rendered on the panel while it is not an open page modal
-   * (an open `'page'` panel is a `dialog`; a `'contained'` one keeps this role). Defaults to `complementary`; pass
-   * `navigation` for nav drawers or `null` to keep the element's implicit
-   * role (e.g. on a `<nav>` host).
+   * (an open `'page'` panel is a `dialog`; a `'contained'` one keeps this
+   * role). Defaults to `complementary`; pass `navigation` for nav drawers or
+   * `null` to keep the element's implicit role (e.g. on a `<nav>` host).
    */
   readonly role = input<string | null>('complementary');
 
