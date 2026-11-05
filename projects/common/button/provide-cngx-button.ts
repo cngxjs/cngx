@@ -12,11 +12,11 @@ import {
   type CngxButtonConfigFeature,
 } from './button-config';
 import { provideButtonSpinner } from './button-spinner.token';
-import { provideCloseIcon } from './close-button.component';
+import { provideButtonCloseIcon } from './close-button.component';
 
 /**
  * Feature of {@link withButtonCloseIcon}: the close glyph component, routed
- * to {@link provideCloseIcon} by the hidden `_target: 'closeIcon'`.
+ * to {@link provideButtonCloseIcon} by the hidden `_target: 'closeIcon'`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/provide-cngx-button.ts
  * @since 0.1.0
@@ -50,11 +50,11 @@ export type CngxButtonFeature =
 
 /**
  * The close glyph of every `cngxCloseButton` in scope, as a
- * {@link provideCngxButton} feature. Same effect as {@link provideCloseIcon}.
+ * {@link provideCngxButton} feature. Same effect as {@link provideButtonCloseIcon}.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/provide-cngx-button.ts
  * @since 0.1.0
- * @relatedTo provideCngxButton, provideCloseIcon
+ * @relatedTo provideCngxButton, provideButtonCloseIcon
  */
 export function withButtonCloseIcon(component: Type<unknown>): CngxButtonCloseIconFeature {
   return { _target: 'closeIcon', component };
@@ -92,7 +92,7 @@ function partitionFeatures(
       continue;
     }
     if (feat._target === 'closeIcon') {
-      providers.push(provideCloseIcon(feat.component));
+      providers.push(provideButtonCloseIcon(feat.component));
       continue;
     }
     if (feat._target === 'spinner') {
@@ -105,13 +105,17 @@ function partitionFeatures(
         cngxDevWarn(
           'CNGX1041',
           'provideCngxButtonAt(): dropped feature without a `_target` ' +
-            'discriminator. Pass config through the `withButton*` helpers of @cngx/common/button.',
+            'discriminator. Pass config through `withButtonVariant` / `withButtonTone` / ' +
+            '`withButtonSize` and the glyphs through `withButtonCloseIcon` / `withButtonSpinner`; ' +
+            'the caret goes through `withButtonCaretIcon` in `provideCngxMenuButton` (@cngx/common/menu-button).',
         );
       } else {
         cngxDevWarn(
           'CNGX1041',
           'provideCngxButton(): dropped feature without a `_target` ' +
-            'discriminator. Pass config through the `withButton*` helpers of @cngx/common/button.',
+            'discriminator. Pass config through `withButtonVariant` / `withButtonTone` / ' +
+            '`withButtonSize` and the glyphs through `withButtonCloseIcon` / `withButtonSpinner`; ' +
+            'the caret goes through `withButtonCaretIcon` in `provideCngxMenuButton` (@cngx/common/menu-button).',
         );
       }
     }
@@ -122,7 +126,7 @@ function partitionFeatures(
 /**
  * Unified aggregator for the button family. Filters by `_target` and
  * forwards: config features to {@link provideButtonConfig}, the close glyph
- * to {@link provideCloseIcon}, the busy glyph to
+ * to {@link provideButtonCloseIcon}, the busy glyph to
  * {@link provideButtonSpinner}. Mirrors `provideCngxStepper` /
  * `provideCngxTabs`. The menu buttons have their own,
  * `provideCngxMenuButton` in `@cngx/common/menu-button`.
@@ -146,7 +150,7 @@ function partitionFeatures(
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/provide-cngx-button.ts
  * @since 0.1.0
- * @relatedTo provideCngxButtonAt, provideButtonConfig, provideCloseIcon, provideButtonSpinner
+ * @relatedTo provideCngxButtonAt, provideButtonConfig, provideButtonCloseIcon, provideButtonSpinner
  * <example-url>/#/common/button/button/scoped-defaults</example-url>
  */
 export function provideCngxButton(...features: readonly CngxButtonFeature[]): EnvironmentProviders {

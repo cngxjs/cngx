@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CNGX_CLOSE_ICON, injectCloseIcon } from '@cngx/common/button';
+import { CNGX_BUTTON_CLOSE_ICON, injectButtonCloseIcon } from '@cngx/common/button';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -62,11 +62,11 @@ describe('provideFeedback merge rule', () => {
 class CloseGlyph {}
 
 describe('withCloseIcon', () => {
-  it('provides the glyph through provideCloseIcon and records it on the config', () => {
+  it('provides the glyph through provideButtonCloseIcon and records it on the config', () => {
     const config = resolveConfig(withCloseIcon(CloseGlyph));
     expect(config.closeIconComponent).toBe(CloseGlyph);
-    expect(TestBed.inject(CNGX_CLOSE_ICON)).toBe(CloseGlyph);
-    expect(TestBed.runInInjectionContext(() => injectCloseIcon())).toBe(CloseGlyph);
+    expect(TestBed.inject(CNGX_BUTTON_CLOSE_ICON)).toBe(CloseGlyph);
+    expect(TestBed.runInInjectionContext(() => injectButtonCloseIcon())).toBe(CloseGlyph);
   });
 });
 

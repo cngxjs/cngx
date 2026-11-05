@@ -876,11 +876,11 @@
       "messages": [
         {
           "file": "projects/common/button/provide-cngx-button.ts",
-          "text": "provideCngxButton(): dropped feature without a `_target` discriminator. Pass config through the `withButton*` helpers of @cngx/common/button."
+          "text": "provideCngxButton(): dropped feature without a `_target` discriminator. Pass config through `withButtonVariant` / `withButtonTone` / `withButtonSize` and the glyphs through `withButtonCloseIcon` / `withButtonSpinner`; the caret goes through `withButtonCaretIcon` in `provideCngxMenuButton` (@cngx/common/menu-button)."
         },
         {
           "file": "projects/common/button/provide-cngx-button.ts",
-          "text": "provideCngxButtonAt(): dropped feature without a `_target` discriminator. Pass config through the `withButton*` helpers of @cngx/common/button."
+          "text": "provideCngxButtonAt(): dropped feature without a `_target` discriminator. Pass config through `withButtonVariant` / `withButtonTone` / `withButtonSize` and the glyphs through `withButtonCloseIcon` / `withButtonSpinner`; the caret goes through `withButtonCaretIcon` in `provideCngxMenuButton` (@cngx/common/menu-button)."
         },
         {
           "file": "projects/common/menu-button/provide-cngx-menu-button.ts",

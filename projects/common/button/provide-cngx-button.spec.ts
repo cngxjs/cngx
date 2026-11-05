@@ -9,7 +9,7 @@ import {
   withButtonVariant,
 } from './button-config';
 import { CNGX_BUTTON_SPINNER } from './button-spinner.token';
-import { CNGX_CLOSE_ICON } from './close-button.component';
+import { CNGX_BUTTON_CLOSE_ICON } from './close-button.component';
 import {
   provideCngxButton,
   provideCngxButtonAt,
@@ -39,7 +39,7 @@ describe('provideCngxButton', () => {
       ],
     });
     expect(TestBed.inject(CNGX_BUTTON_CONFIG)).toEqual({ variant: 'outline', size: 'sm' });
-    expect(TestBed.inject(CNGX_CLOSE_ICON)).toBe(DemoX);
+    expect(TestBed.inject(CNGX_BUTTON_CLOSE_ICON)).toBe(DemoX);
     expect(TestBed.inject(CNGX_BUTTON_SPINNER)).toBe(DemoDots);
   });
 
@@ -67,7 +67,7 @@ describe('provideCngxButtonAt', () => {
     });
     expect(child.get(CNGX_BUTTON_CONFIG)).toEqual({ size: 'lg', variant: 'ghost' });
     expect(child.get(CNGX_BUTTON_SPINNER)).toBe(DemoDots);
-    expect(child.get(CNGX_CLOSE_ICON, null)).toBeNull();
+    expect(child.get(CNGX_BUTTON_CLOSE_ICON, null)).toBeNull();
   });
 
   it('plants no config without config features', () => {

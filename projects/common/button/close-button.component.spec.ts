@@ -16,10 +16,10 @@ import {
   withButtonVariant,
 } from './button-config';
 import {
-  CNGX_CLOSE_ICON,
+  CNGX_BUTTON_CLOSE_ICON,
   CngxCloseButton,
-  injectCloseIcon,
-  provideCloseIcon,
+  injectButtonCloseIcon,
+  provideButtonCloseIcon,
 } from './close-button.component';
 
 @Component({
@@ -186,22 +186,22 @@ describe('CngxCloseButton', () => {
     expect(btn.querySelector('.cngx-icon-button__glyph')!.getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('renders the provideCloseIcon component when nothing is projected', () => {
-    TestBed.configureTestingModule({ providers: [provideCloseIcon(TokenGlyph)] });
+  it('renders the provideButtonCloseIcon component when nothing is projected', () => {
+    TestBed.configureTestingModule({ providers: [provideButtonCloseIcon(TokenGlyph)] });
     const { q } = render(TokenHost);
     const btn = q('#tokened');
     expect(btn.querySelector('.token-glyph')).not.toBeNull();
     expect(btn.querySelector('svg.cngx-close-button__icon')).toBeNull();
   });
 
-  it('pairs provideCloseIcon with injectCloseIcon on CNGX_CLOSE_ICON', () => {
-    TestBed.configureTestingModule({ providers: [provideCloseIcon(TokenGlyph)] });
-    expect(TestBed.runInInjectionContext(() => injectCloseIcon())).toBe(TokenGlyph);
-    expect(TestBed.inject(CNGX_CLOSE_ICON)).toBe(TokenGlyph);
+  it('pairs provideButtonCloseIcon with injectButtonCloseIcon on CNGX_BUTTON_CLOSE_ICON', () => {
+    TestBed.configureTestingModule({ providers: [provideButtonCloseIcon(TokenGlyph)] });
+    expect(TestBed.runInInjectionContext(() => injectButtonCloseIcon())).toBe(TokenGlyph);
+    expect(TestBed.inject(CNGX_BUTTON_CLOSE_ICON)).toBe(TokenGlyph);
   });
 
-  it('reads null from injectCloseIcon without a provider', () => {
-    expect(TestBed.runInInjectionContext(() => injectCloseIcon())).toBeNull();
+  it('reads null from injectButtonCloseIcon without a provider', () => {
+    expect(TestBed.runInInjectionContext(() => injectButtonCloseIcon())).toBeNull();
   });
 
   it('renders a blocked close as aria-disabled with the reason and swallows clicks', () => {
