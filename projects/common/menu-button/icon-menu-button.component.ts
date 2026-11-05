@@ -13,12 +13,13 @@ import {
   provideButtonHost,
   type CngxButtonHostState,
 } from '@cngx/common/button';
-import { CngxIcon } from '@cngx/common/display';
+import { CngxIcon, CngxIconSvg } from '@cngx/common/display';
 import { CngxMenuTrigger } from '@cngx/common/interactive';
 import { CngxPopoverTrigger } from '@cngx/common/popover';
 import { injectDescribedByContribution, nextUid } from '@cngx/core/utils';
+import { CNGX_ICON_CHEVRON_DOWN } from '@cngx/utils';
 
-import { CNGX_BUTTON_CARET_ICON } from './caret-icon.token';
+import { injectButtonCaretIcon } from './caret-icon.token';
 import { injectMenuButtonI18n } from './i18n/menu-button-i18n';
 import { injectMenuToggle } from './internal/menu-toggle';
 import { CNGX_SPLIT_BUTTON } from './split-button.token';
@@ -41,8 +42,8 @@ import { CNGX_SPLIT_CARET } from './split-caret.token';
  * `aria-labelledby` / `title`); a host without one warns `CNGX1071` in
  * development mode.
  *
- * As the direct child of a `cngxSplitButton` it renders the caret (`CNGX_BUTTON_CARET_ICON`
- * swaps it) instead of the projected content, is named by content: the
+ * As the direct child of a `cngxSplitButton` it renders the caret (the
+ * shared chevron; `provideButtonCaretIcon` swaps it) instead of the projected content, is named by content: the
  * `menuButton.splitToggle` copy ("More options") of the active language pack
  * as visually hidden text, so a consumer `aria-label` still wins and the
  * button never writes one itself. It is blocked
@@ -71,7 +72,7 @@ import { CNGX_SPLIT_CARET } from './split-caret.token';
   selector: 'button[cngxIconMenuButton]',
   standalone: true,
   exportAs: 'cngxIconMenuButton',
-  imports: [NgComponentOutlet, CngxIcon],
+  imports: [NgComponentOutlet, CngxIcon, CngxIconSvg],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
@@ -111,16 +112,7 @@ import { CNGX_SPLIT_CARET } from './split-caret.token';
           @if (customCaret) {
             <ng-container *ngComponentOutlet="customCaret" />
           } @else {
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="m6 9 6 6 6-6" />
-            </svg>
+            <svg [cngxIconSvg]="caretIcon"></svg>
           }
         </cngx-icon>
       } @else {
@@ -191,7 +183,10 @@ export class CngxIconMenuButton {
   );
 
   /** @internal - app-wide glyph from `CNGX_BUTTON_CARET_ICON`. */
-  protected readonly customCaret = inject(CNGX_BUTTON_CARET_ICON, { optional: true });
+  protected readonly customCaret = injectButtonCaretIcon();
+
+  /** @internal - default chevron from the shared icon set. */
+  protected readonly caretIcon = CNGX_ICON_CHEVRON_DOWN;
 
   constructor() {
     injectDescribedByContribution(this.mainBusyId, this.mainDescriptionIds);

@@ -17,9 +17,10 @@ import {
   type CngxActiveLanguagePack,
 } from '@cngx/core/i18n';
 import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
+import { CNGX_ICON_CHEVRON_DOWN } from '@cngx/utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CNGX_BUTTON_CARET_ICON } from './caret-icon.token';
+import { provideButtonCaretIcon } from './caret-icon.token';
 import { CngxIconMenuButton } from './icon-menu-button.component';
 import { CngxSplitButton } from './split-button.directive';
 
@@ -171,7 +172,7 @@ class CustomCaret {}
     ${MENU}
   `,
   imports: [CngxSplitButton, CngxButton, CngxIconMenuButton, CngxMenu, CngxMenuItem, CngxPopover],
-  providers: [{ provide: CNGX_BUTTON_CARET_ICON, useValue: CustomCaret }],
+  providers: [provideButtonCaretIcon(CustomCaret)],
 })
 class CustomCaretSplitHost {}
 
@@ -424,7 +425,15 @@ describe('CngxIconMenuButton', () => {
       expect(caret?.closest('[aria-hidden="true"]')).not.toBeNull();
     });
 
-    it('renders the CNGX_BUTTON_CARET_ICON component', () => {
+    it('draws the default caret from CNGX_ICON_CHEVRON_DOWN', () => {
+      const { button } = setup(SplitHost);
+      const svg = button.querySelector('.cngx-menu-button__caret svg.cngx-icon-svg');
+      expect(svg?.querySelector('.cngx-icon-svg__path')?.getAttribute('d')).toBe(
+        CNGX_ICON_CHEVRON_DOWN.d,
+      );
+    });
+
+    it('renders the provideButtonCaretIcon component', () => {
       const { button } = setup(CustomCaretSplitHost);
       expect(button.querySelector('.cngx-menu-button__caret .custom-caret')).not.toBeNull();
     });

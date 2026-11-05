@@ -21,9 +21,14 @@ import {
 } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverSheet } from '@cngx/common/popover';
 import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
+import { CNGX_ICON_CHEVRON_DOWN } from '@cngx/utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CNGX_BUTTON_CARET_ICON } from './caret-icon.token';
+import {
+  CNGX_BUTTON_CARET_ICON,
+  injectButtonCaretIcon,
+  provideButtonCaretIcon,
+} from './caret-icon.token';
 import { CngxMenuButton } from './menu-button.component';
 
 function polyfillPopover(): void {
@@ -162,7 +167,7 @@ class CustomCaret {}
     ${MENU}
   `,
   imports: [CngxMenuButton, CngxMenu, CngxMenuItem, CngxPopover],
-  providers: [{ provide: CNGX_BUTTON_CARET_ICON, useValue: CustomCaret }],
+  providers: [provideButtonCaretIcon(CustomCaret)],
 })
 class CustomCaretHost {}
 
@@ -516,6 +521,21 @@ describe('CngxMenuButton', () => {
       expect(button.hasAttribute('data-end')).toBe(true);
     });
 
+    it('draws the chevron from CNGX_ICON_CHEVRON_DOWN through svg[cngxIconSvg]', () => {
+      const { button } = setup(BasicHost);
+      const svgs = button.querySelectorAll('.cngx-menu-button__caret svg');
+      expect(svgs).toHaveLength(1);
+      const svg = svgs[0];
+      expect(svg.classList.contains('cngx-icon-svg')).toBe(true);
+      expect(svg.getAttribute('viewBox')).toBe(CNGX_ICON_CHEVRON_DOWN.viewBox);
+      expect(svg.querySelector('.cngx-icon-svg__path')?.getAttribute('d')).toBe(
+        CNGX_ICON_CHEVRON_DOWN.d,
+      );
+      expect(svg.querySelector('.cngx-icon-svg__micro')?.getAttribute('d')).toBe(
+        CNGX_ICON_CHEVRON_DOWN.micro.d,
+      );
+    });
+
     it('gives way to projected cngxButtonEnd content', () => {
       const { button } = setup(EndSlotHost);
       expect(button.querySelector('.cngx-menu-button__caret')).toBeNull();
@@ -528,6 +548,16 @@ describe('CngxMenuButton', () => {
       const caret = button.querySelector('.cngx-menu-button__caret');
       expect(caret?.querySelector('.custom-caret')).not.toBeNull();
       expect(caret?.querySelector('svg')).toBeNull();
+    });
+
+    it('pairs provideButtonCaretIcon with injectButtonCaretIcon', () => {
+      TestBed.configureTestingModule({ providers: [provideButtonCaretIcon(CustomCaret)] });
+      expect(TestBed.runInInjectionContext(() => injectButtonCaretIcon())).toBe(CustomCaret);
+      expect(TestBed.inject(CNGX_BUTTON_CARET_ICON)).toBe(CustomCaret);
+    });
+
+    it('reads null from injectButtonCaretIcon without a provider', () => {
+      expect(TestBed.runInInjectionContext(() => injectButtonCaretIcon())).toBeNull();
     });
   });
 

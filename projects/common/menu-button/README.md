@@ -41,9 +41,9 @@ Variant (through the selector value), `tone`, `size`, group membership and `prov
 
 ## Caret
 
-The end of the button renders a chevron inside `<cngx-icon>`, `1em` of the button font (`--cngx-menu-button-caret-size`), turned half a turn while the menu is open. The turn is timed from `--cngx-button-transition` and is instant under reduced motion. The caret is decorative and hidden from assistive technology.
+The end of the button renders the chevron of the shared icon set (`CNGX_ICON_CHEVRON_DOWN`, drawn through `svg[cngxIconSvg]`) inside `<cngx-icon>`, `1em` of the button font (`--cngx-menu-button-caret-size`), turned half a turn while the menu is open. The turn is timed from `--cngx-button-transition` and is instant under reduced motion. The caret is decorative and hidden from assistive technology.
 
-- App-wide: provide a component through `CNGX_BUTTON_CARET_ICON`, for example a wrapper around a Material `arrow_drop_down` icon.
+- App-wide: `provideButtonCaretIcon(MyCaret)` (the `CNGX_BUTTON_CARET_ICON` token) in `providers` or `viewProviders`, for example a wrapper around a Material `arrow_drop_down` icon. A custom host reads it with `injectButtonCaretIcon()`.
 - Per button: project a `cngxButtonEnd` element; it replaces the caret on that button.
 
 ## Icon menu button
@@ -69,7 +69,7 @@ The name is yours: name the menu after what it acts on, not after the glyph. A h
 </div>
 ```
 
-- The caret needs no glyph, no name and no `[disabled]`: inside a split it renders the caret instead of any projected content (`CNGX_BUTTON_CARET_ICON` swaps it) and is named "More options" by visually hidden content from the language pack (`menuButton.splitToggle`, override per app with `provideMenuButtonI18n(withMenuButtonI18nLabels({ splitToggle }))`; an `aria-label` on the caret wins, the caret never writes one itself).
+- The caret needs no glyph, no name and no `[disabled]`: inside a split it renders the caret instead of any projected content (`provideButtonCaretIcon` swaps it) and is named "More options" by visually hidden content from the language pack (`menuButton.splitToggle`, override per app with `provideMenuButtonI18n(withMenuButtonI18nLabels({ splitToggle }))`; an `aria-label` on the caret wins, the caret never writes one itself).
 - The caret follows the main button's `blocked` signal: while the main button is disabled, running its `cngxAsyncClick` or refused by `[enabled]="false"`, the caret reads `aria-disabled`, opens on neither click nor key, and an open menu closes. Its `aria-describedby` then says why: the main button's reason while the main is disabled with one, and "The main action is running" (`menuButton.splitMainBusy`) while the main action runs. The main button keeps `aria-busy` and the announcement.
 - `[disabled]` on the caret blocks only the alternatives and reads the caret's `disabledReason`.
 - Both roles are direct children (an `ng-container` in between is fine): the caret is the `cngxIconMenuButton`, the main action the first other button, a `cngxButton` or a `cngxIconButton`. The split reads the main button through `CNGX_BUTTON_STATE`. Without a main button it warns `CNGX1073`; a `cngxActionButton` is not read as the main action yet. A button deeper inside the split, for example a kebab in a projected panel, takes neither role and keeps its own name and state.

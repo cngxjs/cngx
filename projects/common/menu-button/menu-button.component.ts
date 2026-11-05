@@ -12,11 +12,12 @@ import {
   CngxButtonStart,
   provideButtonHost,
 } from '@cngx/common/button';
-import { CngxIcon } from '@cngx/common/display';
+import { CngxIcon, CngxIconSvg } from '@cngx/common/display';
 import { CngxMenuTrigger } from '@cngx/common/interactive';
 import { CngxPopoverTrigger } from '@cngx/common/popover';
+import { CNGX_ICON_CHEVRON_DOWN } from '@cngx/utils';
 
-import { CNGX_BUTTON_CARET_ICON } from './caret-icon.token';
+import { injectButtonCaretIcon } from './caret-icon.token';
 import { injectMenuToggle } from './internal/menu-toggle';
 
 /**
@@ -38,8 +39,9 @@ import { injectMenuToggle } from './internal/menu-toggle';
  * and returns focus to the button; Tab or Shift+Tab closes it and leaves
  * focus where it went.
  *
- * The end of the button renders a caret that turns while the menu is open.
- * Swap the glyph app-wide with `CNGX_BUTTON_CARET_ICON`, or project your
+ * The end of the button renders a caret that turns while the menu is open:
+ * the chevron of the shared icon set (`CNGX_ICON_CHEVRON_DOWN`). Swap the
+ * glyph app-wide with `provideButtonCaretIcon`, or project your
  * own `cngxButtonEnd` content, which replaces the caret. The caret is
  * decorative and hidden from assistive technology.
  *
@@ -60,7 +62,7 @@ import { injectMenuToggle } from './internal/menu-toggle';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/menu-button.component.ts
  * @since 0.1.0
- * @relatedTo CngxButton, CngxButtonBrain, CngxMenuTrigger, CngxPopoverTrigger, CngxMenu, CNGX_BUTTON_CARET_ICON
+ * @relatedTo CngxButton, CngxButtonBrain, CngxMenuTrigger, CngxPopoverTrigger, CngxMenu, provideButtonCaretIcon
  * <example-url>/#/common/menu-button/menu-button/basic</example-url>
  * <example-url>/#/common/menu-button/menu-button/disabled-with-reason</example-url>
  * <example-url>/#/common/menu-button/menu-button/custom-caret</example-url>
@@ -71,7 +73,7 @@ import { injectMenuToggle } from './internal/menu-toggle';
   selector: 'button[cngxMenuButton]',
   standalone: true,
   exportAs: 'cngxMenuButton',
-  imports: [NgComponentOutlet, CngxIcon],
+  imports: [NgComponentOutlet, CngxIcon, CngxIconSvg],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
@@ -108,16 +110,7 @@ import { injectMenuToggle } from './internal/menu-toggle';
         @if (customCaret) {
           <ng-container *ngComponentOutlet="customCaret" />
         } @else {
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="m6 9 6 6 6-6" />
-          </svg>
+          <svg [cngxIconSvg]="caretIcon"></svg>
         }
       </cngx-icon>
     }
@@ -152,5 +145,8 @@ export class CngxMenuButton {
   protected readonly endSlot = contentChild(CngxButtonEnd);
 
   /** @internal - app-wide glyph from `CNGX_BUTTON_CARET_ICON`. */
-  protected readonly customCaret = inject(CNGX_BUTTON_CARET_ICON, { optional: true });
+  protected readonly customCaret = injectButtonCaretIcon();
+
+  /** @internal - default chevron from the shared icon set. */
+  protected readonly caretIcon = CNGX_ICON_CHEVRON_DOWN;
 }

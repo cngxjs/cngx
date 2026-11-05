@@ -5,7 +5,11 @@ export { CngxMenuButton } from './menu-button.component';
 export { CngxIconMenuButton } from './icon-menu-button.component';
 export { CngxSplitButton } from './split-button.directive';
 export { CNGX_SPLIT_BUTTON, type CngxSplitButtonContext } from './split-button.token';
-export { CNGX_BUTTON_CARET_ICON } from './caret-icon.token';
+export {
+  CNGX_BUTTON_CARET_ICON,
+  provideButtonCaretIcon,
+  injectButtonCaretIcon,
+} from './caret-icon.token';
 export {
   CNGX_MENU_BUTTON_I18N,
   type CngxMenuButtonI18n,
