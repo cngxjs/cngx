@@ -7,7 +7,13 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { projectSchemaV2 } from './schema-v2.js';
 import { projectSchemaV6 } from './schema-v6.js';
-import type { DocEntry, DocFunction, DocToken, DocumentationJson } from './types.js';
+import type { DocEntry, DocFunction, DocToken, DocumentationJson, ErrorCodeBlock } from './types.js';
+
+/** The projected error-code view: the block without its manifest `schemaVersion`. */
+export type ErrorCodeIndex = Omit<ErrorCodeBlock, 'schemaVersion'>;
+
+/** The manifest `schemaVersion` the bundled error-code block must carry to be read. */
+const ERROR_CODE_SCHEMA_VERSION = 3;
 
 /**
  * The `documentation.json` schema versions this server reads. Both are projected
@@ -40,6 +46,8 @@ export interface DocsIndex {
   injectables: DocEntry[];
   tokens: DocToken[];
   functions: DocFunction[];
+  /** The bundled error-code block, or `null` when absent/unreadable (a raw export). */
+  errorCodes: ErrorCodeIndex | null;
 }
 
 // Both the mcp server and the cli read this snapshot and show these messages to
@@ -101,6 +109,28 @@ function shapeDefect(raw: unknown): string | null {
 }
 
 /**
+ * Project the optional `cngxErrorCodes` block onto the tool-facing index.
+ * Returns `null` - never throws - for an absent block, a block carrying another
+ * manifest `schemaVersion`, or a malformed shape, so a bad block can never take
+ * the other commands down with it; the block sits outside the compodocx
+ * `SUPPORTED_SCHEMA_VERSIONS` guard.
+ */
+function projectErrorCodes(raw: DocumentationJson): ErrorCodeIndex | null {
+  const block = (raw as { cngxErrorCodes?: unknown }).cngxErrorCodes;
+  if (block === null || typeof block !== 'object') {
+    return null;
+  }
+  const { schemaVersion, docsBaseUrl, ranges, codes } = block as Record<string, unknown>;
+  if (schemaVersion !== ERROR_CODE_SCHEMA_VERSION) {
+    return null;
+  }
+  if (typeof docsBaseUrl !== 'string' || !Array.isArray(ranges) || !Array.isArray(codes)) {
+    return null;
+  }
+  return { docsBaseUrl, ranges, codes } as ErrorCodeIndex;
+}
+
+/**
  * Validate a parsed snapshot and project it to the tool-facing `DocsIndex`.
  * Throws {@link SchemaVersionError} on a schema mismatch - the guard the loader
  * spec pins in both directions - and {@link MalformedSnapshotError} on any other
@@ -132,6 +162,7 @@ export function createDocsIndex(raw: DocumentationJson): DocsIndex {
     injectables: doc.injectables ?? [],
     tokens: doc.tokens ?? [],
     functions: doc.miscellaneous?.functions ?? [],
+    errorCodes: projectErrorCodes(raw),
   };
 }
 

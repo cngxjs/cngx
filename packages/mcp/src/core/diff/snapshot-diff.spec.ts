@@ -63,6 +63,7 @@ describe('diffSnapshots rename inference is fingerprint-gated', () => {
     injectables: [],
     tokens,
     functions: [],
+    errorCodes: null,
   });
 
   it('reports a removed input as removed even when a same-typed input is added', () => {
@@ -182,6 +183,7 @@ describe('diffSnapshots over malformed slots', () => {
     injectables: [],
     tokens: [],
     functions: [],
+    errorCodes: null,
   });
   const broken = [null, { description: 'No name.' }, { name: 'cngxKept', description: 'Kept.' }] as unknown as DocEntry['slots'];
 
@@ -210,6 +212,7 @@ describe('diffSnapshots across a kind change', () => {
     injectables: [],
     tokens: [],
     functions: [],
+    errorCodes: null,
   });
 
   it('reports a component that became a directive as a kind change and diffs its members', () => {
@@ -245,6 +248,7 @@ describe('diffSnapshots keys inputs and outputs on their public name', () => {
     injectables: [],
     tokens: [],
     functions: [],
+    errorCodes: null,
   });
 
   it('reports a changed alias on an unchanged field as a rename of the public name', () => {
@@ -313,6 +317,7 @@ describe('diffSnapshots infers a slot rename only from a unique, non-empty key',
     injectables: [],
     tokens: [],
     functions: [],
+    errorCodes: null,
   });
 
   const a = { name: 'cngxA', description: 'The caret.' };
@@ -354,6 +359,7 @@ describe('diffSnapshots normalises slot names that carry their description', () 
     injectables: [],
     tokens: [],
     functions: [],
+    errorCodes: null,
   });
 
   it('reports a description edit as a signature change, not a removed slot', () => {
@@ -466,6 +472,7 @@ describe('diffSnapshots output order and labels', () => {
     injectables: [],
     tokens: [],
     functions: [],
+    errorCodes: null,
   });
 
   it('renders a typeless signal input without a leading space', () => {
