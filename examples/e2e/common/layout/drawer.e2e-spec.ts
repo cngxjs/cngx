@@ -112,9 +112,22 @@ test.describe('common/layout/drawer: filter panel', () => {
 
   test('over + page: the panel becomes a modal dialog', async ({ page }) => {
     await gotoDemo(page, route);
-    await page.getByRole('button', { name: 'over', exact: true }).click();
-    await page.getByRole('button', { name: 'page', exact: true }).click();
+    await page.getByRole('button', { name: 'Overlays the list (over)' }).click();
+    await page.getByRole('button', { name: 'Whole page blocked (page)' }).click();
     await page.getByRole('button', { name: 'Filters' }).click();
     await expect(page.locator('#order-filters')).toHaveAttribute('aria-modal', 'true');
+  });
+
+  test('push locks the modality chips and says why', async ({ page }) => {
+    await gotoDemo(page, route);
+    const contained = page.getByRole('button', { name: 'Only this area blocked (contained)' });
+    await expect(contained).toHaveAttribute('aria-disabled', 'true');
+    await expect(contained).toHaveAccessibleDescription(/push never blocks/);
+    await expect(page.getByText(/push is never blocking/)).toBeVisible();
+
+    await page.getByRole('button', { name: 'Overlays the list (over)' }).click();
+    await expect(contained).not.toHaveAttribute('aria-disabled', 'true');
+    await contained.click();
+    await expect(page.getByText(/Only this area blocked: the scrim/)).toBeVisible();
   });
 });
