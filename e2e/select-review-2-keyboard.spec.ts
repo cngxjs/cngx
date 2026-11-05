@@ -158,15 +158,17 @@ test.describe('I2: a sheet keeps focus inside across a presentation round trip',
 // with ArrowDown. ────────────────────────────────────────────────────────────
 test.describe('C1/I4: the shell search input moves aria-activedescendant', () => {
   test('ArrowDown on the focused search input updates aria-activedescendant', async ({ page }) => {
-    test.fail();
     await page.goto(ROUTES.shellSearch);
     await openByClick(page);
     const search = page.locator('.cngx-ex-artifact input').first();
     await expect(search).toBeVisible();
     await search.focus();
     await page.keyboard.press('ArrowDown');
+    // The option id space is render-born; the highlight (and so the attribute)
+    // lands on Angular's scheduled change detection, not synchronously with the
+    // key. Wait for the non-empty value instead of snapshotting it one-shot.
+    await expect(search).toHaveAttribute('aria-activedescendant', /\S/);
     const first = await search.getAttribute('aria-activedescendant');
-    expect(first).toBeTruthy();
     await page.keyboard.press('ArrowDown');
     await expect(search).not.toHaveAttribute('aria-activedescendant', first ?? '');
   });
