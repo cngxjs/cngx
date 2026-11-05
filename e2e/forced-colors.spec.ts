@@ -179,7 +179,7 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     expect(isOpaque(plain.borderTopColor)).toBe(true);
   });
 
-  test('a pressed button inverts the system pair, a disabled one never does', async ({ page }) => {
+  test('a pressed button fills with Highlight, a solid tone keeps its fill, a disabled one never presses', async ({ page }) => {
     await openForced(page, '/#/common/button/button/variants');
     const solidPrimary = page.locator('.cngx-ex-artifact .cngx-button[data-variant="solid"][data-tone="primary"]').first();
     const outline = page.locator('.cngx-ex-artifact .cngx-button[data-variant="outline"]').first();
@@ -195,8 +195,9 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     const plain = await press(outline);
     expect(plain.backgroundColor).toBe(plain.highlight);
     const solid = await press(solidPrimary);
-    expect(solid.backgroundColor).not.toBe(solid.highlight);
-    expect(solid.borderTopColor).toBe(solid.highlight);
+    expect(solid.backgroundColor).toBe(solid.highlight);
+    expect(solid.borderTopColor).not.toBe(solid.highlight);
+    expect(await solidPrimary.evaluate((el) => getComputedStyle(el).transitionDuration)).toBe('0s');
     await outline.evaluate((el) => el.setAttribute('aria-disabled', 'true'));
     const disabled = await press(outline);
     await outline.evaluate((el) => el.removeAttribute('aria-disabled'));

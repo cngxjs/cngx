@@ -1,10 +1,24 @@
-import { Component, computed, Directive, input, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  Directive,
+  ErrorHandler,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { CNGX_LOADING_DEFAULTS, provideLoadingConfigAt, withShowDelay } from '@cngx/core/utils';
 import { of, type Observable } from 'rxjs';
 import { provideInteractiveI18n, withInteractiveI18nLabels } from '../i18n/interactive-i18n';
-import { CngxAsyncClick, type AsyncAction } from './async-click.directive';
+import { createRetry } from '../retry/with-retry';
+import {
+  CNGX_ASYNC_CANCELLED,
+  CngxAsyncClick,
+  type AsyncAction,
+  type CngxAsyncSettle,
+} from './async-click.directive';
 import { CNGX_HOST_INTERACTION_STATE } from './host-interaction-state.token';
 
 // ── Deferred promise helper ─────────────────────────────────────────────
@@ -27,7 +41,9 @@ function deferred<T = void>() {
     [enabled]="enabled()"
     [busy]="busy()"
     [autoAnnounce]="autoAnnounce()"
-  >Go</button>`,
+  >
+    Go
+  </button>`,
   imports: [CngxAsyncClick],
 })
 class ButtonHost {
@@ -276,6 +292,96 @@ describe('CngxAsyncClick', () => {
     });
   });
 
+  it('emits (settled) once per run with a monotonic generation', async () => {
+    const { btn, directive, host } = setupButton();
+    const events: CngxAsyncSettle[] = [];
+    directive.settled.subscribe((e) => events.push(e));
+    const err = new Error('nope');
+
+    btn.click();
+    await vi.waitFor(() => expect(events).toHaveLength(1));
+    host.actionImpl = () => Promise.reject(err);
+    btn.click();
+    await vi.waitFor(() => expect(events).toHaveLength(2));
+
+    expect(events).toEqual([
+      { generation: 1, status: 'success', error: undefined },
+      { generation: 2, status: 'error', error: err },
+    ]);
+  });
+
+  it('a throwing (settled) listener does not produce a second, error settle', async () => {
+    const listenerError = new Error('listener');
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: ErrorHandler,
+          useValue: {
+            handleError: (err: unknown) => {
+              throw err;
+            },
+          },
+        },
+      ],
+    });
+    const { directive } = setupButton();
+    const events: CngxAsyncSettle[] = [];
+    directive.settled.subscribe((e) => {
+      events.push(e);
+      if (events.length === 1) {
+        throw listenerError;
+      }
+    });
+
+    const run = (directive as unknown as { handleClick(e: Event): Promise<void> }).handleClick(
+      new Event('click'),
+    );
+
+    await expect(run).rejects.toBe(listenerError);
+    expect(events).toEqual([{ generation: 1, status: 'success', error: undefined }]);
+    expect(directive.status()).toBe('success');
+  });
+
+  it('clears the region at the settle and writes it after the next render', async () => {
+    const { btn, fixture, host } = setupButton();
+    const region = btn.nextElementSibling as HTMLElement;
+    btn.click();
+    await vi.waitFor(() => {
+      flush(fixture);
+      expect(region.textContent).toBe('Action succeeded');
+    });
+
+    const run = deferred();
+    host.actionImpl = () => run.promise;
+    btn.click();
+    run.resolve();
+    await run.promise;
+    await Promise.resolve();
+    expect(region.textContent).toBe('');
+    flush(fixture);
+    expect(region.textContent).toBe('Action succeeded');
+  });
+
+  it('announce() speaks a host message once after the next render', () => {
+    const { btn, directive, fixture } = setupButton();
+    const region = btn.nextElementSibling as HTMLElement;
+    directive.announce('Saved elsewhere');
+    expect(region.textContent).toBe('');
+    flush(fixture);
+    expect(region.textContent).toBe('Saved elsewhere');
+  });
+
+  it('announce() is a no-op without the auto region', () => {
+    const fixture = TestBed.createComponent(ButtonHost);
+    fixture.componentInstance.autoAnnounce.set(false);
+    flush(fixture);
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    fixture.componentInstance.directive().announce('Saved elsewhere');
+    flush(fixture);
+    expect(btn.nextElementSibling).toBeNull();
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Saved elsewhere');
+  });
+
   it('removes the auto region when autoAnnounce is opted out', () => {
     const fixture = TestBed.createComponent(ButtonHost);
     fixture.componentInstance.autoAnnounce.set(false);
@@ -292,7 +398,9 @@ describe('CngxAsyncClick', () => {
     [showDelay]="showDelay()"
     [minDwell]="minDwell()"
     [feedbackDuration]="feedbackDuration()"
-  >Go</button>`,
+  >
+    Go
+  </button>`,
   imports: [CngxAsyncClick],
 })
 class GateHost {
@@ -488,6 +596,7 @@ describe('CngxAsyncClick language switch', () => {
 
     lang.set('de');
     flush(fixture);
+    flush(fixture);
     expect(region.textContent?.trim()).toBe('Action succeeded');
 
     host.actionImpl = () => Promise.reject(new Error('nope'));
@@ -511,7 +620,9 @@ class TestHostState {
   template: `
     <button id="state-first" [testHostState]="disabled()" [cngxAsyncClick]="action">A</button>
     <button id="click-first" [cngxAsyncClick]="action" [testHostState]="disabled()">B</button>
-    <span [testHostState]="disabled()"><button id="outside" [cngxAsyncClick]="action">C</button></span>
+    <span [testHostState]="disabled()"
+      ><button id="outside" [cngxAsyncClick]="action">C</button></span
+    >
   `,
   imports: [CngxAsyncClick, TestHostState],
 })
@@ -577,11 +688,9 @@ class TestHostBusy {
 @Component({
   template: `
     <div>
-      <button
-        [testHostBusy]="busy()"
-        [testHostAnnouncement]="text()"
-        [cngxAsyncClick]="action"
-      >Go</button>
+      <button [testHostBusy]="busy()" [testHostAnnouncement]="text()" [cngxAsyncClick]="action">
+        Go
+      </button>
     </div>
   `,
   imports: [CngxAsyncClick, TestHostBusy],
@@ -622,11 +731,17 @@ describe('CngxAsyncClick with a host-reflected run and announcement', () => {
     expect(region()!.textContent).toBe('');
     host.text.set('Saved by the host');
     flush(fixture);
-    expect(region()!.textContent).toBe('Saved by the host');
+    // Read per settle, not per change: no settle, nothing spoken.
+    expect(region()!.textContent).toBe('');
     button.click();
     await fixture.whenStable();
     flush(fixture);
-    expect(fixture.debugElement.query((de) => de.nativeElement === button).injector.get(CngxAsyncClick).succeeded()).toBe(true);
+    expect(
+      fixture.debugElement
+        .query((de) => de.nativeElement === button)
+        .injector.get(CngxAsyncClick)
+        .succeeded(),
+    ).toBe(true);
     expect(region()!.textContent).toBe('Saved by the host');
     expect(button.contains(region())).toBe(false);
   });
@@ -642,5 +757,103 @@ describe('CngxAsyncClick with a host-reflected run and announcement', () => {
     expect(directive.succeeded()).toBe(true);
     expect(directive.announcement()).not.toBe('');
     expect(region()!.textContent).toBe('');
+  });
+});
+
+@Component({
+  template: `<button [cngxAsyncClick]="action">Go</button>`,
+  imports: [CngxAsyncClick],
+})
+class LifecycleHost {
+  readonly directive = viewChild.required(CngxAsyncClick);
+  signal: AbortSignal | undefined;
+  actionImpl: AsyncAction = () => Promise.resolve();
+  readonly action: AsyncAction = (signal) => {
+    this.signal = signal;
+    return this.actionImpl(signal);
+  };
+}
+
+describe('CngxAsyncClick run end without an outcome', () => {
+  function setup() {
+    const fixture = TestBed.createComponent(LifecycleHost);
+    flush(fixture);
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    const region = btn.nextElementSibling as HTMLElement;
+    const host = fixture.componentInstance;
+    const directive = host.directive();
+    const events: CngxAsyncSettle[] = [];
+    directive.settled.subscribe((e) => events.push(e));
+    return { fixture, btn, region, host, directive, events };
+  }
+
+  it('maps a resolved CNGX_ASYNC_CANCELLED to idle with no settle and no write', async () => {
+    const { fixture, btn, region, host, directive, events } = setup();
+    host.actionImpl = () => Promise.resolve(CNGX_ASYNC_CANCELLED);
+    btn.click();
+    await fixture.whenStable();
+    flush(fixture);
+    expect(directive.status()).toBe('idle');
+    expect(events).toHaveLength(0);
+    expect(region.textContent).toBe('');
+  });
+
+  it('settles idle on a createRetry reset mid-run (A7)', async () => {
+    vi.useFakeTimers();
+    const { fixture, btn, region, host, directive, events } = setup();
+    const [retryable, retryState] = createRetry(() => Promise.reject(new Error('fail')), {
+      maxAttempts: 3,
+      delay: 100,
+    });
+    host.actionImpl = retryable;
+    btn.click();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(retryState.retrying()).toBe(true);
+
+    retryState.reset();
+    await vi.advanceTimersByTimeAsync(500);
+    flush(fixture);
+
+    expect(directive.status()).toBe('idle');
+    expect(directive.pending()).toBe(false);
+    expect(events).toHaveLength(0);
+    expect(region.textContent).toBe('');
+  });
+
+  it('destroyed mid-run: aborts the signal, no write, no emit, no timer (F2)', async () => {
+    vi.useFakeTimers();
+    const { fixture, btn, region, host, events } = setup();
+    const run = deferred();
+    host.actionImpl = () => run.promise;
+    btn.click();
+    flush(fixture);
+    expect(host.signal?.aborted).toBe(false);
+
+    fixture.destroy();
+    expect(host.signal?.aborted).toBe(true);
+    run.resolve();
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(events).toHaveLength(0);
+    expect(region.textContent).toBe('');
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('stops a createRetry backoff loop when the runner is destroyed', async () => {
+    vi.useFakeTimers();
+    const { fixture, btn, host, events } = setup();
+    const attempt = vi.fn(() => Promise.reject(new Error('fail')));
+    const [retryable, retryState] = createRetry(attempt, { maxAttempts: 5, delay: 1000 });
+    host.actionImpl = retryable;
+    btn.click();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(retryState.retrying()).toBe(true);
+
+    fixture.destroy();
+    await vi.advanceTimersByTimeAsync(60_000);
+
+    expect(attempt).toHaveBeenCalledTimes(1);
+    expect(events).toHaveLength(0);
+    expect(vi.getTimerCount()).toBe(0);
   });
 });

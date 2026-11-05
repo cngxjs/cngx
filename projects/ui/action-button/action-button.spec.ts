@@ -3,10 +3,12 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, vi } from 'vitest';
 import { CngxActionButton } from './action-button';
 import {
+  CngxAsyncClick,
   CngxFailed,
   CngxPending,
   CngxSucceeded,
   provideInteractiveI18n,
+  type CngxAsyncSettle,
   withInteractiveI18nLabels,
   type CngxInteractiveI18n,
 } from '@cngx/common/interactive';
@@ -54,7 +56,8 @@ function buildMockState(initial: AsyncStatus = 'idle'): {
 
 @Component({
   template: `
-    <button cngxActionButton
+    <button
+      cngxActionButton
       [action]="action"
       pendingLabel="Saving..."
       succeededLabel="Done!"
@@ -101,9 +104,7 @@ class VariantHost {
 // ── Enabled host ────────────────────────────────────────────────────────
 
 @Component({
-  template: `
-    <button cngxActionButton [action]="action" [disabled]="!enabled">Click</button>
-  `,
+  template: ` <button cngxActionButton [action]="action" [disabled]="!enabled">Click</button> `,
   imports: [CngxActionButton],
 })
 class EnabledHost {
@@ -119,7 +120,8 @@ class EnabledHost {
 
 @Component({
   template: `
-    <button cngxActionButton
+    <button
+      cngxActionButton
       [action]="action"
       [externalState]="mockState"
       pendingLabel="Ext pending"
@@ -191,7 +193,8 @@ class ExternalFailedTemplateHost {
 
 @Component({
   template: `
-    <button cngxActionButton
+    <button
+      cngxActionButton
       [action]="action"
       #btn="cngxActionButton"
       [cngxToastOn]="btn.state"
@@ -222,7 +225,8 @@ class BridgeOnlyHost {
 
 @Component({
   template: `
-    <button cngxActionButton
+    <button
+      cngxActionButton
       [action]="action"
       toastSuccess="Saved!"
       toastError="Save failed"
@@ -255,9 +259,7 @@ class ToastRebindHost {
 // ── State exposition host ───────────────────────────────────────────────
 
 @Component({
-  template: `
-    <button cngxActionButton [action]="action" #ab="cngxActionButton">Go</button>
-  `,
+  template: ` <button cngxActionButton [action]="action" #ab="cngxActionButton">Go</button> `,
   imports: [CngxActionButton],
 })
 class StateHost {
@@ -601,18 +603,25 @@ describe('CngxActionButton', () => {
       expect(fixture.componentInstance.callCount).toBe(0);
     });
 
+    // External state is state: it is spoken on an observed edge, so each
+    // case mounts idle first.
     it('announces an external success in the live region', () => {
       const fixture = TestBed.createComponent(ExternalStateHost);
+      flush(fixture);
       fixture.componentInstance.mock.status.set('success');
       flush(fixture);
+      // The region is written after the render that follows the edge.
+      fixture.detectChanges();
       const live = fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement;
       expect(live.textContent?.trim()).toBe('Ext done');
     });
 
     it('announces an external failure in the live region', () => {
       const fixture = TestBed.createComponent(ExternalStateHost);
+      flush(fixture);
       fixture.componentInstance.mock.status.set('error');
       flush(fixture);
+      fixture.detectChanges();
       const live = fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement;
       expect(live.textContent?.trim()).toBe('Ext error');
     });
@@ -761,7 +770,9 @@ describe('CngxActionButton', () => {
 
       const calls = warn.mock.calls.filter(([m]) => /^CNGX3008: /.test(String(m)));
       expect(calls).toHaveLength(1);
-      expect(calls[0][0]).toMatch(/^CNGX3008: \[cngxActionButton\] \[toastSuccess\]\/\[toastError\] inputs/);
+      expect(calls[0][0]).toMatch(
+        /^CNGX3008: \[cngxActionButton\] \[toastSuccess\]\/\[toastError\] inputs/,
+      );
     });
 
     it('stays silent for [cngxToastOn] without the button toast inputs', () => {
@@ -858,13 +869,18 @@ describe('CngxActionButton', () => {
       });
     });
 
-    const liveText = (fixture: ReturnType<typeof TestBed.createComponent>): string =>
-      (
+    // A render pass first: the region is written after the render that
+    // follows the settle.
+    const liveText = (fixture: ReturnType<typeof TestBed.createComponent>): string => {
+      fixture.detectChanges();
+      return (
         fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement
       ).textContent!.trim();
+    };
 
     it('announces the EN default without labels or a translation', () => {
       const fixture = TestBed.createComponent(UnlabelledExternalHost);
+      flush(fixture);
       fixture.componentInstance.mock.status.set('success');
       flush(fixture);
       expect(liveText(fixture)).toBe('Action succeeded');
@@ -872,6 +888,7 @@ describe('CngxActionButton', () => {
 
     it('keeps a shown announcement on a copy flip and speaks the new language next', () => {
       const fixture = TestBed.createComponent(UnlabelledExternalHost);
+      flush(fixture);
       const { status } = fixture.componentInstance.mock;
       status.set('success');
       flush(fixture);
@@ -891,10 +908,290 @@ describe('CngxActionButton', () => {
     it('falls back to the translated failure phrase', () => {
       i18nOverrides.set({ asyncClickFailed: 'Fehlgeschlagen' });
       const fixture = TestBed.createComponent(UnlabelledExternalHost);
+      flush(fixture);
       fixture.componentInstance.mock.status.set('error');
       flush(fixture);
       expect(liveText(fixture)).toBe('Fehlgeschlagen');
     });
+  });
+});
+
+// ── Settle lifecycle (H1 / C2 / I6 / A3 / F2) ──────────────────────────
+
+interface SettleModel {
+  readonly toastSuccess: ReturnType<typeof signal<string | undefined>>;
+  readonly toastError: ReturnType<typeof signal<string | undefined>>;
+  readonly events: CngxAsyncSettle[];
+  actionImpl: () => Promise<void>;
+}
+
+@Component({
+  template: `
+    <button
+      cngxActionButton
+      [action]="action"
+      [toastSuccess]="toastSuccess()"
+      [toastError]="toastError()"
+      (settled)="events.push($event)"
+    >
+      Save
+    </button>
+  `,
+  imports: [CngxActionButton],
+})
+class SettleHost implements SettleModel {
+  readonly toastSuccess = signal<string | undefined>(undefined);
+  readonly toastError = signal<string | undefined>(undefined);
+  readonly events: CngxAsyncSettle[] = [];
+  actionImpl: () => Promise<void> = () => Promise.resolve();
+  readonly action = () => this.actionImpl();
+}
+
+@Component({
+  template: `
+    <button
+      cngxActionButton
+      [action]="action"
+      [toastSuccess]="toastSuccess()"
+      [toastError]="toastError()"
+      [autoAnnounce]="true"
+      (settled)="events.push($event)"
+    >
+      Save
+    </button>
+  `,
+  imports: [CngxActionButton],
+})
+class SettleSpeakHost implements SettleModel {
+  readonly toastSuccess = signal<string | undefined>(undefined);
+  readonly toastError = signal<string | undefined>(undefined);
+  readonly events: CngxAsyncSettle[] = [];
+  actionImpl: () => Promise<void> = () => Promise.resolve();
+  readonly action = () => this.actionImpl();
+}
+
+@Component({
+  template: `
+    <button
+      cngxActionButton
+      [action]="action"
+      [toastSuccess]="toastSuccess()"
+      [toastError]="toastError()"
+      [autoAnnounce]="announce()"
+      (settled)="events.push($event)"
+    >
+      Save
+    </button>
+  `,
+  imports: [CngxActionButton],
+})
+class SettleSilentHost implements SettleModel {
+  readonly announce = signal<boolean | undefined>(false);
+  readonly toastSuccess = signal<string | undefined>(undefined);
+  readonly toastError = signal<string | undefined>(undefined);
+  readonly events: CngxAsyncSettle[] = [];
+  actionImpl: () => Promise<void> = () => Promise.resolve();
+  readonly action = () => this.actionImpl();
+}
+
+@Component({
+  template: `
+    <button cngxActionButton [action]="action" failedLabel="Failed">
+      Save
+      <ng-template cngxFailed> <span aria-hidden="true">!</span> Permission denied </ng-template>
+    </button>
+  `,
+  imports: [CngxActionButton, CngxFailed],
+})
+class FailedTemplateTextHost {
+  readonly action = () => Promise.reject(new Error('403'));
+}
+
+@Component({
+  template: `
+    <button cngxActionButton [action]="action" [externalState]="ext()" #ab="cngxActionButton">
+      Save
+    </button>
+  `,
+  imports: [CngxActionButton],
+})
+class LastUpdatedHost {
+  readonly stamp = signal<Date | undefined>(undefined);
+  readonly external = buildAsyncStateView<unknown>({
+    status: signal<AsyncStatus>('idle').asReadonly(),
+    data: signal(undefined).asReadonly(),
+    error: signal<unknown>(undefined).asReadonly(),
+    lastUpdated: this.stamp.asReadonly(),
+  });
+  readonly ext = signal<CngxAsyncState<unknown> | undefined>(this.external);
+  readonly action = () => Promise.resolve();
+}
+
+describe('CngxActionButton settle lifecycle', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  function setup(
+    configure?: (host: SettleModel) => void,
+    toaster = true,
+    hostType: new () => SettleModel = SettleHost,
+  ) {
+    const show = vi.fn();
+    if (toaster) {
+      TestBed.configureTestingModule({ providers: [{ provide: CngxToaster, useValue: { show } }] });
+    }
+    const fixture = TestBed.createComponent(hostType);
+    configure?.(fixture.componentInstance);
+    flush(fixture);
+    const root = fixture.nativeElement as HTMLElement;
+    const btn = root.querySelector('button') as HTMLButtonElement;
+    const region = (): HTMLElement | null => root.querySelector('[aria-live="polite"]');
+    const run = async (outcome: 'success' | 'error'): Promise<void> => {
+      fixture.componentInstance.actionImpl = () =>
+        outcome === 'success' ? Promise.resolve() : Promise.reject(new Error('nope'));
+      btn.click();
+      await vi.waitFor(() => expect(fixture.componentInstance.events.length).toBeGreaterThan(0));
+      fixture.componentInstance.events.length = 0;
+      flush(fixture);
+      fixture.detectChanges();
+    };
+    return { fixture, host: fixture.componentInstance, btn, region, run, show };
+  }
+
+  it('keeps the region silent under a bound [autoAnnounce] false', async () => {
+    const { region, run } = setup(undefined, true, SettleSilentHost);
+    expect(region()).not.toBeNull();
+    await run('success');
+    expect(region()!.textContent).toBe('');
+    await run('error');
+    expect(region()!.textContent).toBe('');
+  });
+
+  it('applies the toast rule when a bound [autoAnnounce] signal turns undefined', async () => {
+    const { fixture, region, run } = setup(
+      (h) => h.toastError.set('Save failed'),
+      true,
+      SettleSilentHost,
+    );
+    (fixture.componentInstance as SettleSilentHost).announce.set(undefined);
+    flush(fixture);
+    await run('success');
+    expect(region()!.textContent).toBe('Action succeeded');
+    await run('error');
+    expect(region()!.textContent).toBe('');
+  });
+
+  it('does not speak an outcome a shown toast covers', async () => {
+    const { region, run, show } = setup((h) => {
+      h.toastSuccess.set('Saved');
+      h.toastError.set('Save failed');
+    });
+    await run('success');
+    expect(region()!.textContent).toBe('');
+    await run('error');
+    expect(region()!.textContent).toBe('');
+    expect(show).toHaveBeenCalledTimes(2);
+  });
+
+  it('still speaks a success when only toastError is set', async () => {
+    const { region, run } = setup((h) => h.toastError.set('Save failed'));
+    await run('success');
+    expect(region()!.textContent).toBe('Action succeeded');
+    await run('error');
+    expect(region()!.textContent).toBe('');
+  });
+
+  it('speaks next to the toast with [autoAnnounce]="true"', async () => {
+    const { region, run, show } = setup(
+      (h) => h.toastError.set('Save failed'),
+      true,
+      SettleSpeakHost,
+    );
+    await run('error');
+    expect(region()!.textContent).toBe('Action failed');
+    expect(show).toHaveBeenCalledTimes(1);
+  });
+
+  it('speaks a toast-covered outcome when no toaster is provided', async () => {
+    const { region, run } = setup((h) => h.toastError.set('Save failed'), false);
+    await run('error');
+    expect(region()!.textContent).toBe('Action failed');
+  });
+
+  it('re-exports (settled) with the generation of each run', async () => {
+    const { btn, host } = setup();
+    const seen: number[] = [];
+    host.actionImpl = () => Promise.resolve();
+    btn.click();
+    await vi.waitFor(() => expect(host.events).toHaveLength(1));
+    seen.push(host.events[0].generation);
+    btn.click();
+    await vi.waitFor(() => expect(host.events).toHaveLength(2));
+    seen.push(host.events[1].generation);
+    expect(seen).toEqual([1, 2]);
+    expect(host.events[1].status).toBe('success');
+  });
+
+  it('speaks the rendered cngxFailed text, aria-hidden glyph excluded, over failedLabel', async () => {
+    const fixture = TestBed.createComponent(FailedTemplateTextHost);
+    flush(fixture);
+    const root = fixture.nativeElement as HTMLElement;
+    root.querySelector('button')!.click();
+    await vi.waitFor(() => {
+      flush(fixture);
+      expect((root.querySelector('[aria-live="polite"]') as HTMLElement).textContent).toBe(
+        'Permission denied',
+      );
+    });
+  });
+
+  it('lastUpdated follows [externalState] without falling through to own runs', async () => {
+    const fixture = TestBed.createComponent(LastUpdatedHost);
+    flush(fixture);
+    const host = fixture.componentInstance;
+    const ab = fixture.debugElement.children[0].references['ab'] as CngxActionButton;
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+
+    btn.click();
+    await vi.waitFor(() => {
+      flush(fixture);
+      expect(fixture.debugElement.children[0].injector.get(CngxAsyncClick).succeeded()).toBe(true);
+    });
+    expect(ab.state.lastUpdated()).toBeUndefined();
+
+    const stamp = new Date(2026, 0, 1);
+    host.stamp.set(stamp);
+    expect(ab.state.lastUpdated()).toBe(stamp);
+
+    host.ext.set(undefined);
+    flush(fixture);
+    expect(ab.state.lastUpdated()).toBeInstanceOf(Date);
+    expect(ab.state.lastUpdated()).not.toBe(stamp);
+  });
+
+  it('destroyed mid-run: no toast, no region write, no settle, no error', async () => {
+    const errors = vi.spyOn(console, 'error');
+    const pending = deferred();
+    const { fixture, host, btn, region, show } = setup(
+      (h) => h.toastError.set('Save failed'),
+      true,
+      SettleSpeakHost,
+    );
+    host.actionImpl = () => pending.promise;
+    btn.click();
+    flush(fixture);
+    const live = region()!;
+    fixture.destroy();
+
+    pending.reject(new Error('late'));
+    await Promise.resolve();
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(show).not.toHaveBeenCalled();
+    expect(host.events).toHaveLength(0);
+    expect(live.textContent).toBe('');
+    expect(errors).not.toHaveBeenCalled();
   });
 });
 

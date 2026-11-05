@@ -43,9 +43,11 @@ export class SaveButtonComponent {
   - `Space`: Activates the action if focused (native button behavior)
   - Disabled during action execution (pointer-events: none)
 - **Screen reader:**
-  - `announcement` signal updates an always-present aria-live region
-  - Status changes (pending, success, error) are announced via the live region
-  - For buttons, success/error states are announced immediately (no delay)
+  - An auto-rendered polite region (a sibling of the host, outside its accessible name) speaks every success and error settle once
+  - The region gets one write per settle: cleared at the settle, the text written after the next render, so a host can read content the settle rendered. Two runs that settle before change detection produce two writes in the same render pass; whether a screen reader voices both depends on the assistive technology. Specs that read the region need a render pass (`fixture.detectChanges()`) after the settle
+  - No effect reads the copy: a language switch never re-voices the region; the next settle speaks the new language
+  - `announce(message)` speaks a host message through the same region after the next render, for a settle the host reflects but the directive did not run (an external async state). It is a no-op with `[autoAnnounce]="false"`
+  - `[autoAnnounce]="false"` removes the region; drive your own region from `(settled)` then (clear it, write the copy for `settle.status`). The `announcement` signal is state and coalesces settles within one flush
 - **Focus management:**
   - Focus remains on the button throughout the action lifecycle
   - No focus trap or modal management (button stays focusable)
@@ -57,6 +59,7 @@ CngxAsyncClick composes naturally with the feedback system:
 - **Host directives:** None
 - **Combines with:** CngxAsyncState state consumers (CngxToastOn, CngxAlertOn, CngxAsyncContainer, CngxActionButton)
 - **Provides:** `state: CngxAsyncState<unknown>` for downstream feedback components
+- **Emits:** `(settled)` once per success or error settle, with a monotonic `generation` (`CngxAsyncSettle`). Never on cancel, reset or after destroy. Put per-run side effects (a toast, a close, a completion output) here: a status edge read in an effect coalesces two runs that settle before change detection into one
 
 ### Example: Composition Pattern
 
