@@ -1,13 +1,17 @@
 import {
   afterNextRender,
+  afterRenderEffect,
   computed,
   Directive,
   ElementRef,
   inject,
   input,
+  Renderer2,
   signal,
 } from '@angular/core';
+import { createIconSvgElement, type CngxIconSvgElement } from '@cngx/common/display';
 import { createActivationKeyHandler } from '@cngx/common/interactive';
+import { CNGX_ICON_MENU, CNGX_ICON_X } from '@cngx/utils';
 
 import { injectLayoutI18n } from '../i18n/layout-i18n';
 import { CNGX_PANEL_TARGET, type CngxPanelTarget } from './panel-target';
@@ -38,6 +42,11 @@ export type CngxPanelTriggerAction = 'toggle' | 'peek';
  * `CNGX_LAYOUT_I18N.panelTriggerOpen` while the panel is hidden,
  * `panelTriggerClose` while it is shown. A trigger with visible text keeps
  * its text as its name.
+ *
+ * A host with no content of its own (no element, no text) gets a default
+ * `aria-hidden` glyph: three bars while the panel is hidden, a cross while
+ * it is shown. Project an icon or text to replace it; a host with content
+ * is never touched. The glyph is written after render, never during SSR.
  *
  * ```html
  * <button type="button" [cngxPanelTrigger]="drawer">Menu</button>
@@ -100,6 +109,9 @@ export class CngxPanelTrigger {
   private readonly providedTarget = inject(CNGX_PANEL_TARGET, { optional: true });
   private readonly i18n = injectLayoutI18n();
   private readonly hasOwnName = signal(true);
+  private readonly hasOwnContent = signal(true);
+  private readonly renderer = inject(Renderer2);
+  private glyph: CngxIconSvgElement | null = null;
 
   protected readonly nativeButton = this.host.tagName === 'BUTTON';
 
@@ -127,11 +139,27 @@ export class CngxPanelTrigger {
   );
 
   constructor() {
-    afterNextRender(() =>
+    afterNextRender(() => {
       this.hasOwnName.set(
         (this.host.textContent ?? '').trim() !== '' || this.host.hasAttribute('aria-labelledby'),
-      ),
-    );
+      );
+      this.hasOwnContent.set(hasContent(this.host));
+    });
+
+    afterRenderEffect({
+      write: () => {
+        if (this.hasOwnContent()) {
+          return;
+        }
+        const icon = this.expanded() ? CNGX_ICON_X : CNGX_ICON_MENU;
+        if (this.glyph) {
+          this.glyph.setIcon(icon);
+          return;
+        }
+        this.glyph = createIconSvgElement(this.renderer, icon, 'cngx-panel-trigger__icon');
+        this.renderer.appendChild(this.host, this.glyph.element);
+      },
+    });
   }
 
   /** Runs the action on the target. */
@@ -146,4 +174,13 @@ export class CngxPanelTrigger {
     }
     target.toggle();
   }
+}
+
+/** Whether the host renders an element or non-blank text of its own. */
+function hasContent(host: HTMLElement): boolean {
+  return Array.from(host.childNodes).some(
+    (node) =>
+      node.nodeType === Node.ELEMENT_NODE ||
+      (node.nodeType === Node.TEXT_NODE && (node.textContent ?? '').trim() !== ''),
+  );
 }

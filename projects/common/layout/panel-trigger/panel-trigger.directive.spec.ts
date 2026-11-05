@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { CngxDrawer } from '../drawer/drawer.directive';
 import { CngxDrawerPanel } from '../drawer/drawer-panel.directive';
 import { type CngxLayoutI18n, provideLayoutI18n, withLayoutI18nLabels } from '../i18n/layout-i18n';
+import { CNGX_ICON_MENU, CNGX_ICON_X } from '@cngx/utils';
 import { CNGX_PANEL_TARGET, type CngxPanelTarget } from './panel-target';
 import { CngxPanelTrigger, type CngxPanelTriggerAction } from './panel-trigger.directive';
 
@@ -26,6 +27,7 @@ function createTarget(withPeek = true) {
     <button type="button" class="text" [cngxPanelTrigger]="target" [action]="action()">Menu</button>
     <button type="button" class="icon" [cngxPanelTrigger]="target" [label]="label()"></button>
     <span class="span" [cngxPanelTrigger]="target"></span>
+    <button type="button" class="own" [cngxPanelTrigger]="target" label="Menu"><svg class="mine"></svg></button>
   `,
   imports: [CngxPanelTrigger],
 })
@@ -135,6 +137,40 @@ describe('CngxPanelTrigger', () => {
     open.set(true);
     fixture.detectChanges();
     expect(q('.icon').getAttribute('aria-label')).toBe('Bereich schließen');
+  });
+
+  it('draws the menu glyph in an empty host and swaps it for the close glyph while open', () => {
+    const { fixture, open, q } = setup();
+    const glyphs = () => q('.icon').querySelectorAll('svg.cngx-panel-trigger__icon');
+    expect(glyphs().length).toBe(1);
+    expect(glyphs()[0].querySelector('path')?.getAttribute('d')).toBe(CNGX_ICON_MENU.d);
+    open.set(true);
+    fixture.detectChanges();
+    TestBed.tick();
+    expect(glyphs().length).toBe(1);
+    expect(glyphs()[0].querySelector('path')?.getAttribute('d')).toBe(CNGX_ICON_X.d);
+    open.set(false);
+    fixture.detectChanges();
+    TestBed.tick();
+    expect(glyphs()[0].querySelector('path')?.getAttribute('d')).toBe(CNGX_ICON_MENU.d);
+  });
+
+  it('hides the default glyph from assistive technology and keeps the state name', () => {
+    const { q } = setup();
+    const glyph = q('.icon').querySelector('svg.cngx-panel-trigger__icon');
+    expect(glyph?.getAttribute('aria-hidden')).toBe('true');
+    expect(q('.icon').getAttribute('aria-label')).toBe('Open panel');
+    expect(q('.span').querySelector('svg.cngx-panel-trigger__icon')).not.toBeNull();
+  });
+
+  it('leaves a host with its own content untouched', () => {
+    const { fixture, open, q } = setup();
+    open.set(true);
+    fixture.detectChanges();
+    TestBed.tick();
+    expect(q('.text').querySelector('svg')).toBeNull();
+    expect(q('.own').querySelectorAll('svg').length).toBe(1);
+    expect(q('.own').querySelector('svg.cngx-panel-trigger__icon')).toBeNull();
   });
 
   it('gives a non-button host button semantics and Enter / Space activation', () => {
