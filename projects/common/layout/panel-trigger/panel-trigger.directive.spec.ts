@@ -27,6 +27,7 @@ function createTarget(withPeek = true) {
     <button type="button" class="text" [cngxPanelTrigger]="target" [action]="action()">Menu</button>
     <button type="button" class="icon" [cngxPanelTrigger]="target" [label]="label()"></button>
     <span class="span" [cngxPanelTrigger]="target"></span>
+    <button type="button" class="hidden-text" [cngxPanelTrigger]="target"><span aria-hidden="true">menu</span><span hidden>Busy</span></button>
     <button type="button" class="own" [cngxPanelTrigger]="target" label="Menu"><svg class="mine"></svg></button>
   `,
   imports: [CngxPanelTrigger],
@@ -171,6 +172,14 @@ describe('CngxPanelTrigger', () => {
     expect(q('.text').querySelector('svg')).toBeNull();
     expect(q('.own').querySelectorAll('svg').length).toBe(1);
     expect(q('.own').querySelector('svg.cngx-panel-trigger__icon')).toBeNull();
+  });
+
+  it('does not take hidden or aria-hidden text as its name', () => {
+    const { fixture, open, q } = setup();
+    expect(q('.hidden-text').getAttribute('aria-label')).toBe('Open panel');
+    open.set(true);
+    fixture.detectChanges();
+    expect(q('.hidden-text').getAttribute('aria-label')).toBe('Close panel');
   });
 
   it('gives a non-button host button semantics and Enter / Space activation', () => {

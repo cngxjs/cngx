@@ -9,7 +9,11 @@ import {
 } from '@angular/core';
 import { cngxDevWarn } from '@cngx/utils';
 
-import { CngxDrawer, type DrawerPosition } from './drawer.directive';
+import {
+  CngxDrawer,
+  type CngxDrawerPanelPresentation,
+  type DrawerPosition,
+} from './drawer.directive';
 import {
   CNGX_DRAWER_SURFACE_DRIVER,
   type CngxDrawerModality,
@@ -197,10 +201,27 @@ export class CngxDrawerPanel implements CngxDrawerSurfaceDriver {
   );
   /** @internal Drives the composed `CngxDrawerSurface`. */
   readonly surfaceLandmarkRole = this.role;
+
+  private readonly presentation: CngxDrawerPanelPresentation = {
+    mode: this.mode,
+    modal: computed(() => this.surfaceModality() !== 'none'),
+    position: this.position,
+  };
   /** @internal Drives the composed `CngxDrawerSurface`. */
   readonly surfaceOutsideDismiss = this.closeOnClickOutside;
 
   constructor() {
+    // The drawer's panel target reads the presentation from here; follow a
+    // rebound drawer reference and leave the old drawer on the way out.
+    effect((onCleanup) => {
+      const drawer = this.drawerRef();
+      if (!drawer) {
+        return;
+      }
+      untracked(() => drawer.registerPanel(this.presentation));
+      onCleanup(() => drawer.unregisterPanel(this.presentation));
+    });
+
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       effect(() => {
         const requested = this.modality();

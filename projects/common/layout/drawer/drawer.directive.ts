@@ -1,11 +1,39 @@
-import { computed, Directive, ElementRef, inject, input, output, signal } from '@angular/core';
+import {
+  computed,
+  Directive,
+  ElementRef,
+  inject,
+  input,
+  output,
+  signal,
+  type Signal,
+} from '@angular/core';
+import { createSlotRegistry } from '@cngx/core/utils';
 
-import { CNGX_PANEL_TARGET, type CngxPanelTarget } from '../panel-trigger/panel-target';
+import {
+  CNGX_PANEL_TARGET,
+  type CngxPanelMode,
+  type CngxPanelSide,
+  type CngxPanelTarget,
+} from '../panel-trigger/panel-target';
+import type { DrawerMode } from './drawer-panel.directive';
 
 /**
  * Position from which the drawer panel slides in.
  */
 export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
+
+/**
+ * What a `CngxDrawerPanel` reports to its drawer, so the drawer's
+ * `CngxPanelTarget` view says how the panel is presented.
+ *
+ * @internal
+ */
+export interface CngxDrawerPanelPresentation {
+  readonly mode: Signal<DrawerMode>;
+  readonly modal: Signal<boolean>;
+  readonly position: Signal<DrawerPosition>;
+}
 
 /**
  * State owner for a drawer / sidebar system.
@@ -20,7 +48,9 @@ export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
  * The drawer is a `CngxPanelTarget`: a `[cngxPanelTrigger]="drawer"` button
  * mirrors `opened` as `aria-expanded` and points `aria-controls` at
  * `panelId`, which the panel takes as its `id`. Inside the drawer it provides
- * `CNGX_PANEL_TARGET` for a bare `cngxPanelTrigger`.
+ * `CNGX_PANEL_TARGET` for a bare `cngxPanelTrigger`. Its `mode`, `modal`
+ * and `side` follow the panel's `mode`, resolved modality and `position`,
+ * so a `CngxPanelToggle` draws the glyph of the current presentation.
  *
  * The drawer host is also the boundary of a `'contained'` panel and the
  * area its scrim covers: with the opt-in `cngx-drawer` class (stylesheet
@@ -102,6 +132,17 @@ export class CngxDrawer implements CngxPanelTarget {
   /** {@link CngxPanelTarget} view of {@link opened}. */
   readonly expanded = this.opened;
 
+  private readonly panelSlot = createSlotRegistry<CngxDrawerPanelPresentation>();
+
+  /** {@link CngxPanelTarget} view of the panel's `mode`; `over` until a panel registers. */
+  readonly mode = computed<CngxPanelMode>(() => this.panelSlot.current()?.mode() ?? 'over');
+
+  /** {@link CngxPanelTarget}: whether the panel's resolved modality blocks anything. */
+  readonly modal = computed(() => this.panelSlot.current()?.modal() ?? true);
+
+  /** {@link CngxPanelTarget} view of the panel's `position`; `left` until a panel registers. */
+  readonly side = computed<CngxPanelSide>(() => this.panelSlot.current()?.position() ?? 'left');
+
   /** Emitted when the opened state changes. Wire to a signal for two-way binding. */
   readonly openedChange = output<boolean>();
   /** Emitted when the drawer closes. Convenience shorthand for close-only listeners. */
@@ -124,6 +165,16 @@ export class CngxDrawer implements CngxPanelTarget {
     this.openedState.set(false);
     this.openedChange.emit(false);
     this.closed.emit();
+  }
+
+  /** @internal Called by `CngxDrawerPanel`; the latest panel wins. */
+  registerPanel(panel: CngxDrawerPanelPresentation): void {
+    this.panelSlot.register(panel);
+  }
+
+  /** @internal Called by `CngxDrawerPanel` when it leaves or switches drawers. */
+  unregisterPanel(panel: CngxDrawerPanelPresentation): void {
+    this.panelSlot.unregister(panel);
   }
 
   /** Toggles the drawer between open and closed. */

@@ -38,7 +38,8 @@ export type CngxPanelTriggerAction = 'toggle' | 'peek';
  * On a native `<button>` the browser turns Enter and Space into the click.
  * Any other host gets `role="button"`, `tabindex="0"` and its own
  * Enter / Space handling. An icon-only trigger (no text content) is named
- * by the panel state unless `label` is bound:
+ * by the panel state unless `label` is bound (text inside `hidden` or
+ * `aria-hidden` elements does not count as a name):
  * `CNGX_LAYOUT_I18N.panelTriggerOpen` while the panel is hidden,
  * `panelTriggerClose` while it is shown. A trigger with visible text keeps
  * its text as its name.
@@ -141,7 +142,7 @@ export class CngxPanelTrigger {
   constructor() {
     afterNextRender(() => {
       this.hasOwnName.set(
-        (this.host.textContent ?? '').trim() !== '' || this.host.hasAttribute('aria-labelledby'),
+        nameText(this.host).trim() !== '' || this.host.hasAttribute('aria-labelledby'),
       );
       this.hasOwnContent.set(hasContent(this.host));
     });
@@ -174,6 +175,25 @@ export class CngxPanelTrigger {
     }
     target.toggle();
   }
+}
+
+/**
+ * The text that names the host: its text content without `hidden` and
+ * `aria-hidden` subtrees, which the accessible name skips as well (a
+ * component's hidden disabled reason, an `aria-hidden` glyph slot).
+ */
+function nameText(node: Node): string {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return node.textContent ?? '';
+  }
+  return Array.from(node.childNodes)
+    .filter(
+      (child) =>
+        !(child instanceof Element) ||
+        !(child.hasAttribute('hidden') || child.getAttribute('aria-hidden') === 'true'),
+    )
+    .map(nameText)
+    .join('');
 }
 
 /** Whether the host renders an element or non-blank text of its own. */

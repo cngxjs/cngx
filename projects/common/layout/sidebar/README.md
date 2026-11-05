@@ -7,13 +7,13 @@ The directive owns state, ARIA and the reserved size. It knows no nav model and 
 ## Import
 
 ```typescript
-import { CngxPanelTrigger, CngxSidebar } from '@cngx/common/layout';
+import { CngxPanelToggle, CngxSidebar } from '@cngx/common/layout';
 ```
 
 ## Quick start
 
 ```html
-<button type="button" [cngxPanelTrigger]="sidebar">Navigation</button>
+<button type="button" [cngxPanelToggle]="sidebar" label="Navigation"></button>
 
 <div class="shell">
   <nav cngxSidebar #sidebar="cngxSidebar" [(collapsed)]="collapsed" [role]="null">
@@ -65,6 +65,8 @@ A collapsed rail stays operable: nothing in it is made `inert`.
 ## Panel trigger
 
 `CngxSidebar` implements `CngxPanelTarget` and provides `CNGX_PANEL_TARGET`. A `[cngxPanelTrigger]="sidebar"` gets `aria-controls` from the host id (a static `id`, else a generated one) and `aria-expanded` from `expanded()`; a click toggles `collapsed`. `action="peek"` peeks instead.
+
+`button[cngxPanelToggle]="sidebar"` is the icon-button form with its own glyph: a sidebar is an inline panel on the start side, so it shows the panel frame in both states (mirrored under RTL) and the state lives in the name and `aria-expanded`. Use `[cngxPanelTrigger]` on any element with its own content.
 
 ## Theming
 

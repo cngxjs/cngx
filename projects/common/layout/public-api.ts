@@ -28,7 +28,13 @@ export {
   createContainerSize,
   injectContainerSize,
 } from './observers/container-size';
-export { CNGX_PANEL_TARGET, type CngxPanelTarget } from './panel-trigger/panel-target';
+export {
+  CNGX_PANEL_TARGET,
+  type CngxPanelMode,
+  type CngxPanelSide,
+  type CngxPanelTarget,
+} from './panel-trigger/panel-target';
+export { CngxPanelToggle } from './panel-toggle/panel-toggle.component';
 export {
   CngxPanelTrigger,
   type CngxPanelTriggerAction,

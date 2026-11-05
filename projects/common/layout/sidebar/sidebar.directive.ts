@@ -13,7 +13,12 @@ import { CngxHoverIntent } from '@cngx/common/interactive';
 import { nextUid } from '@cngx/core/utils';
 
 import { injectLayoutI18n } from '../i18n/layout-i18n';
-import { CNGX_PANEL_TARGET, type CngxPanelTarget } from '../panel-trigger/panel-target';
+import {
+  CNGX_PANEL_TARGET,
+  type CngxPanelMode,
+  type CngxPanelSide,
+  type CngxPanelTarget,
+} from '../panel-trigger/panel-target';
 
 /**
  * How a collapsed `CngxSidebar` rests: as a narrow, operable `rail`, or
@@ -126,6 +131,12 @@ export class CngxSidebar implements CngxPanelTarget {
   readonly id = signal(
     inject(new HostAttributeToken('id'), { optional: true }) ?? nextUid('cngx-sidebar'),
   ).asReadonly();
+
+  /** {@link CngxPanelTarget}: a sidebar reserves inline space, it is never an overlay. */
+  readonly mode = signal<CngxPanelMode>('inline').asReadonly();
+
+  /** {@link CngxPanelTarget}: the sidebar sits on the start edge (its peek grows towards the end). */
+  readonly side = signal<CngxPanelSide>('start').asReadonly();
 
   /** Whether a collapsed sidebar currently shows at full size over the content. */
   readonly peeked = computed(() => {

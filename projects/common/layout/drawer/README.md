@@ -207,11 +207,11 @@ export class ResponsiveDrawerComponent {}
 
 ### Clipped Drawer Below a Live Header
 
-The header sits outside the `[cngxDrawer]` host, so the contained panel leaves it live; the hamburger stays the toggle.
+The header sits outside the `[cngxDrawer]` host, so the contained panel leaves it live; the hamburger stays the toggle. `button[cngxPanelToggle]` is the icon-button form of `cngxPanelTrigger` with its own glyph: three bars and a cross on a modal over-drawer like this one, a panel frame for a push or non-modal drawer. The glyph follows the panel's live `mode` and modality, so a breakpoint that switches `mode` switches it too.
 
 ```typescript
 <header>
-  <button type="button" [cngxPanelTrigger]="drawer">Menu</button>
+  <button type="button" [cngxPanelToggle]="drawer" label="Main navigation"></button>
 </header>
 <div cngxDrawer #drawer="cngxDrawer" panelId="app-nav" class="cngx-drawer">
   <nav [cngxDrawerPanel]="drawer" modality="contained" [role]="null" aria-label="Main">
