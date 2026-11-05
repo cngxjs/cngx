@@ -1,18 +1,16 @@
 name: E2E nightly
 
-# Cross-browser e2e coverage. The push/PR gate in ci.yml runs the e2e suites on
-# chromium only, to keep PR latency and cost down; this workflow runs the root
-# e2e suite and the examples e2e suite across chromium + firefox + webkit, once a
-# night and on demand. It is a diagnostic, not a required check (like the cli
-# rows in consumer-compat.yml), so a firefox- or webkit-only failure never blocks
-# a PR.
+# Cross-browser coverage for the root e2e suite. The push/PR gate in ci.yml runs
+# it on chromium only, to keep PR latency and cost down; this workflow runs the
+# root e2e suite across chromium + firefox + webkit, once a night and on demand.
+# It is a diagnostic, not a required check (like the cli rows in
+# consumer-compat.yml), so a firefox- or webkit-only failure never blocks a PR.
 #
-# Flake home: because this nightly is non-gating, a new firefox/webkit-only flake
-# it surfaces has no automatic tracker. Triage path for a reproducible
-# cross-browser failure: add a row under the `## 4. Cross-browser (e2e-nightly)`
-# section of .internal/architektur/examples-e2e-accepted-debt.md naming the owning
-# browser and spec, so the nightly's findings land in the same register as the
-# rest of the e2e debt.
+# Root suite only, deliberately: the examples suite is chromium-tuned (clipboard
+# grantPermissions, colour serialisation, geometry tolerances and console timing
+# all differ on firefox/webkit), so running it cross-browser needs a dedicated
+# hardening pass, tracked separately. ci.yml already covers the examples suite on
+# chromium.
 #
 # Build once (libs + docs:json + examples:generate), upload build-output, then fan
 # out per browser - mirrors the ci.yml build -> e2e-shard artifact pattern. Node
@@ -111,40 +109,3 @@ jobs:
           with-deps: 'true'
       - name: e2e suite
         run: npm run e2e -- --project=${{ matrix.browser }}
-
-  # The examples e2e suite, one job per browser. Same artifact + per-browser
-  # install path as the root suite above.
-  examples-e2e:
-    needs: build
-    runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        browser: [chromium, firefox, webkit]
-    name: examples-e2e (${{ matrix.browser }})
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: 'npm'
-      - name: Cache Angular build cache
-        uses: actions/cache@v4
-        with:
-          path: .angular/cache
-          key: ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-${{ github.ref_name }}
-          restore-keys: |
-            ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-
-      - name: Install dependencies
-        run: npm ci
-      - name: Download build output
-        uses: actions/download-artifact@v4
-        with:
-          name: build-output
-      - name: Set up Playwright
-        uses: ./.github/actions/setup-playwright
-        with:
-          browsers: ${{ matrix.browser }}
-          with-deps: 'true'
-      - name: examples-e2e suite
-        run: npm run test:e2e:examples -- --project=${{ matrix.browser }}
