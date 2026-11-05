@@ -243,35 +243,29 @@ export class CngxListboxTrigger<T = unknown> {
       afterNextRender(() => this.runOpenKey(key, null), { injector: this.injector });
       return;
     }
-    // A deferred-render panel (CngxSelect family, OD5) that was just opened by
-    // click or pointer holds no option rows yet, so a navigation key would
-    // resolve against an empty AD item space and no-op (lost highlight). Mirror
-    // highlightOnOpen: run the key after the first render once rows exist. A
-    // panel that already holds its rows runs synchronously, unchanged.
-    if (this.isNavOrActivate(key) && this.listbox().options().length === 0) {
-      event.preventDefault();
-      afterNextRender(() => this.runOpenKey(key, null), { injector: this.injector });
-      return;
-    }
+    // A deferred-render panel (CngxSelect family, OD5) just opened by click or
+    // pointer holds no option rows yet, so a navigation key resolves against an
+    // empty AD item space. CngxActiveDescendant remembers the gesture as intent
+    // and re-applies it once the rows render, so the key runs synchronously
+    // here and the highlight is never lost.
     this.runOpenKey(key, event);
   }
 
   /**
    * Highlight the first / last option when a key opens a closed panel. A
    * deferred-render panel (the `CngxSelect` family, OD5) renders no option
-   * rows until its first open, so the AD item space is empty at keydown and
-   * `highlightFirst` / `highlightLast` would no-op; there the highlight is
-   * applied after the first render. A panel that already holds its rows (menu,
-   * command palette) highlights synchronously, unchanged.
+   * rows until its first open, so the AD item space is empty at keydown;
+   * `CngxActiveDescendant` keeps the gesture as intent and re-applies it once
+   * the rows render. A panel that already holds its rows (menu, command
+   * palette) highlights synchronously. Either way the call is the same.
    */
   private highlightOnOpen(which: 'first' | 'last'): void {
-    const lb = this.listbox();
-    const apply = (): void => (which === 'first' ? lb.ad.highlightFirst() : lb.ad.highlightLast());
-    if (lb.options().length === 0) {
-      afterNextRender(apply, { injector: this.injector });
-      return;
+    const ad = this.listbox().ad;
+    if (which === 'first') {
+      ad.highlightFirst();
+    } else {
+      ad.highlightLast();
     }
-    apply();
   }
 
   /** Whether `key` navigates or activates the open listbox. */
