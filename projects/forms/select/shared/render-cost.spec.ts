@@ -67,7 +67,7 @@ describe('OD5: a large open panel renders a bounded row count without explicit v
 
 // ── A3: grouped options under virtualization fall back and warn CNGX2028. ────
 describe('A3: grouped options with virtualization render no spacer and warn once', () => {
-  it.fails('CngxSelect: no virtual spacer and a single CNGX2028 dev warning', () => {
+  it('CngxSelect: no virtual spacer and a single CNGX2028 dev warning', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const m = mount(KINDS['select'], {
       options: grouped(20, 50),

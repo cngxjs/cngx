@@ -32,7 +32,7 @@ import { sameArrayContents } from '../shared/internal/compare';
 import type { CngxTreeSelectNodeContext } from './tree-select.model';
 
 /** Stable empty slice returned while the tree panel has never opened. */
-const EMPTY_TREE_NODES: readonly never[] = [];
+const EMPTY_TREE_NODES: readonly unknown[] = [];
 
 /**
  * Tree-body sibling of `CngxSelectPanel`. Wraps the shared
@@ -154,7 +154,10 @@ export class CngxTreeSelectPanel<T = unknown> {
    * @internal
    */
   protected readonly renderNodes = computed<readonly FlatTreeNode<T>[]>(
-    () => (this.hasOpened() ? this.host.treeController.visibleNodes() : EMPTY_TREE_NODES),
+    () =>
+      this.hasOpened()
+        ? this.host.treeController.visibleNodes()
+        : (EMPTY_TREE_NODES as readonly FlatTreeNode<T>[]),
     { equal: (a, b) => sameArrayContents(a, b, Object.is) },
   );
 

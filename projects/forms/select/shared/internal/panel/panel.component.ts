@@ -4,11 +4,13 @@ import {
   Component,
   ViewEncapsulation,
   computed,
+  effect,
   inject,
   linkedSignal,
   viewChildren,
 } from '@angular/core';
 
+import { cngxDevWarn } from '@cngx/utils';
 import { CngxCheckboxIndicator, CngxRadioIndicator } from '@cngx/common/display';
 import { CngxRecyclerPlaceholder } from '@cngx/common/data';
 import { CngxOption } from '@cngx/common/interactive';
@@ -121,6 +123,30 @@ export class CngxSelectPanel<T = unknown> {
   });
 
   /**
+   * `true` once the open panel's rendered items contain a group. Read by
+   * the spacer gate and the CNGX2028 dev-warn - derived from the already
+   * computed `renderItems`, never recomputed inside a render body.
+   *
+   * @internal
+   */
+  protected readonly renderedHasGroup = computed(() =>
+    this.renderItems().some(isCngxSelectOptionGroupDef),
+  );
+
+  /**
+   * Virtualiser for the leading/trailing spacer divs only. Grouped lists
+   * render in full and bypass the renderer, so emitting recycler spacers
+   * around them would reserve scroll height for rows that are all already
+   * in the DOM (C2). A grouped render drops both spacers; the flat path
+   * keeps the windowed `virtualizer()`.
+   *
+   * @internal
+   */
+  protected readonly spacerVirtualizer = computed(() =>
+    this.renderedHasGroup() ? null : this.virtualizer(),
+  );
+
+  /**
    * Items iterated by the template. Grouped paths use
    * `effectiveOptions` verbatim (groups stay intact for correct
    * aria-setsize / aria-posinset per group); flat paths use the
@@ -169,6 +195,28 @@ export class CngxSelectPanel<T = unknown> {
     source: () => this.host.panelOpen(),
     computation: (open, previous) => open || previous?.value === true,
   });
+
+  /** Latches so the CNGX2028 dev-warn fires at most once per instance. */
+  private warnedGroupedVirtualization = false;
+
+  constructor() {
+    // Dev-only: a configured virtualising renderer plus grouped options is a
+    // contradiction - the group loop renders every option and the recycler
+    // window is dropped (spacerVirtualizer null). Warn once so the misconfig
+    // surfaces. The guard strips the message text and the effect in prod.
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      effect(() => {
+        const configured = this.renderer.virtualizer !== undefined;
+        if (configured && this.renderedHasGroup() && !this.warnedGroupedVirtualization) {
+          this.warnedGroupedVirtualization = true;
+          cngxDevWarn(
+            'CNGX2028',
+            'Grouped select options ignore the configured virtualization: every option renders and the recycler window is dropped. Flatten the options or drop the virtualization config for this select.',
+          );
+        }
+      });
+    }
+  }
 
   /**
    * `CngxOption` instances rendered in this panel's view. Forwarded

@@ -522,6 +522,10 @@
                 "file": "error-codes/cngx2027.md"
             },
             {
+                "title": "CNGX2028",
+                "file": "error-codes/cngx2028.md"
+            },
+            {
                 "title": "CNGX3001",
                 "file": "error-codes/cngx3001.md"
             },
