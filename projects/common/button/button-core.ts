@@ -1,16 +1,7 @@
-import {
-  computed,
-  DestroyRef,
-  ElementRef,
-  HostAttributeToken,
-  inject,
-  type Provider,
-  type Signal,
-} from '@angular/core';
+import { computed, DestroyRef, ElementRef, inject, type Signal } from '@angular/core';
 import { CNGX_ASYNC_RUN_STATE } from '@cngx/common/interactive';
 import {
   CNGX_DESCRIBED_BY,
-  createDescribedByRegistry,
   injectDescribedByContribution,
   injectLazySelf,
   nextUid,
@@ -116,25 +107,6 @@ export function resolveButtonSize(
 }
 
 /**
- * Element-level `aria-describedby` owner of a button host. Seeds the
- * registry with the consumer's static `aria-describedby`, so those ids
- * survive the host binding, and lets a co-hosted `[cngxTooltip]` contribute
- * its id instead of overwriting the attribute.
- *
- * @internal
- */
-export function provideButtonDescribedBy(name: string): Provider {
-  return {
-    provide: CNGX_DESCRIBED_BY,
-    useFactory: () =>
-      createDescribedByRegistry({
-        name,
-        seed: inject(new HostAttributeToken('aria-describedby'), { optional: true }),
-      }),
-  };
-}
-
-/**
  * Derivation behind `CngxButtonBrain`. Resolves the three visual axes
  * (`input ?? fixed ?? group ?? config ?? default`; tone skips the group),
  * renders `disabled` as `aria-disabled` so the element stays focusable, swallows activation while
@@ -193,11 +165,9 @@ export function injectButtonCore(
   // Contributed before the reason: the registry keeps registration order,
   // so the consumer's dynamic ids sit between the static seed and the reason.
   injectDescribedByContribution(describedByKey, inputs.describedBy);
-  // The host provides the registry (provideButtonDescribedBy), so the
-  // fallback only covers a class that forgot it.
-  const describedBy =
-    injectDescribedByContribution(reasonId, reasonIds)?.value ??
-    computed(() => [inputs.describedBy(), reasonIds()].filter(Boolean).join(' ') || null);
+  injectDescribedByContribution(reasonId, reasonIds);
+  // CngxButtonBrain provides the registry on its own element.
+  const describedBy = inject(CNGX_DESCRIBED_BY, { self: true }).value;
   const hostType = computed<CngxButtonType | null>(() =>
     isButtonHost ? (inputs.type() ?? 'button') : null,
   );
