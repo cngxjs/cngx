@@ -42,16 +42,3 @@ export {
 export { CngxButtonGroup, type CngxButtonGroupOrientation } from './button-group.directive';
 export { CngxButtonGroupAddon } from './button-group-addon.directive';
 export { CngxButtonGroupSeparator } from './button-group-separator.directive';
-// Cross-entry internal surface: the shared button brain, consumed by
-// `@cngx/ui/action-button` and `@cngx/common/menu-button` so they render on
-// the same core instead of a copy (ng-packagr has no cross-entry private
-// surface). Each declaration carries
-// its own `@internal` tag. Precedent: `@cngx/ui/mat-tabs`.
-export {
-  injectButtonCore,
-  provideButtonDescribedBy,
-  type CngxButtonCore,
-  type CngxButtonCoreDefaults,
-  type CngxButtonCoreInputs,
-} from './button-core';
-export { hasAccessibleName } from './accessible-name';
