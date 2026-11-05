@@ -1188,12 +1188,48 @@ describe('CngxActionButton with provideButtonSpinner', () => {
   });
 });
 
+@Component({
+  template: `
+    <button cngxActionButton [action]="action" [disabled]="disabled()" [disabledReason]="reason()">
+      Save
+    </button>
+  `,
+  imports: [CngxActionButton],
+})
+class ReasonHost {
+  readonly disabled = signal(false);
+  readonly reason = signal<string | undefined>(undefined);
+  readonly action = (): Promise<void> => Promise.resolve();
+}
+
 describe('CngxActionButton reason span', () => {
   it('renders only while a reason exists', () => {
     const fixture = TestBed.createComponent(SpinnerHost);
     fixture.detectChanges();
     const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
     expect(btn.querySelector('.cngx-button__reason')).toBeNull();
+  });
+
+  it('renders the reason and references it only while disabled', () => {
+    const fixture = TestBed.createComponent(ReasonHost);
+    fixture.detectChanges();
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    const span = () => btn.querySelector('.cngx-button__reason');
+
+    fixture.componentInstance.reason.set('Nothing to save');
+    fixture.detectChanges();
+    expect(span()?.textContent).toBe('Nothing to save');
+    expect(span()?.hasAttribute('hidden')).toBe(true);
+    expect(btn.hasAttribute('aria-describedby')).toBe(false);
+
+    fixture.componentInstance.disabled.set(true);
+    fixture.detectChanges();
+    expect(btn.getAttribute('aria-describedby')).toBe(span()?.id);
+    expect(btn.getAttribute('aria-disabled')).toBe('true');
+
+    fixture.componentInstance.disabled.set(false);
+    fixture.detectChanges();
+    expect(btn.hasAttribute('aria-describedby')).toBe(false);
   });
 });
 
