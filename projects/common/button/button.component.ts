@@ -1,3 +1,4 @@
+import { NgComponentOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -70,6 +71,7 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
   selector: 'button[cngxButton], a[cngxButton]',
   standalone: true,
   exportAs: 'cngxButton',
+  imports: [NgComponentOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
@@ -98,7 +100,11 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
     <ng-content select="[cngxButtonEnd]" />
     @if (brain.busyVisible()) {
       <span class="cngx-button__busy" aria-hidden="true">
-        <span class="cngx-button__spinner"></span>
+        @if (brain.spinner; as spinner) {
+          <ng-container *ngComponentOutlet="spinner" />
+        } @else {
+          <span class="cngx-button__spinner"></span>
+        }
       </span>
     }
     <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{

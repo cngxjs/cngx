@@ -1,3 +1,4 @@
+import { NgComponentOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, ViewEncapsulation } from '@angular/core';
 
 import { CngxButtonBrain } from './button-brain.directive';
@@ -47,6 +48,7 @@ import { provideButtonHost } from './button-host.token';
   selector: 'button[cngxIconButton], a[cngxIconButton]',
   standalone: true,
   exportAs: 'cngxIconButton',
+  imports: [NgComponentOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
@@ -71,7 +73,11 @@ import { provideButtonHost } from './button-host.token';
     /></span>
     @if (brain.busyVisible()) {
       <span class="cngx-button__busy" aria-hidden="true">
-        <span class="cngx-button__spinner"></span>
+        @if (brain.spinner; as spinner) {
+          <ng-container *ngComponentOutlet="spinner" />
+        } @else {
+          <span class="cngx-button__spinner"></span>
+        }
       </span>
     }
     <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{

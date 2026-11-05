@@ -19,6 +19,11 @@ export {
 } from './close-button.component';
 export { CngxButtonStart, CngxButtonEnd } from './slots';
 export {
+  CNGX_BUTTON_SPINNER,
+  provideButtonSpinner,
+  injectButtonSpinner,
+} from './button-spinner.token';
+export {
   CNGX_BUTTON_CONFIG,
   type CngxButtonConfig,
   type CngxButtonConfigFeature,

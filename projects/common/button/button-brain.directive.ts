@@ -20,6 +20,7 @@ import { cngxDevWarn } from '@cngx/utils';
 import { hasAccessibleName } from './accessible-name';
 import { injectButtonCore } from './button-core';
 import { CNGX_BUTTON_HOST, CNGX_BUTTON_HOST_STATE } from './button-host.token';
+import { injectButtonSpinner } from './button-spinner.token';
 import { CNGX_BUTTON_STATE, type CngxButtonState } from './button-state.token';
 import type {
   CngxButtonSize,
@@ -53,8 +54,10 @@ import type {
  * for an accessible name once the app is stable and warns `CNGX1071`
  * without one.
  *
- * The host template renders the busy layer from `busyVisible()` and the
- * reason span with `[id]="brain.reasonId"`.
+ * The host template renders the busy layer from `busyVisible()` (its glyph
+ * is `spinner`, the `provideButtonSpinner` component, or the built-in
+ * spinner when it is `null`) and the reason span with
+ * `[id]="brain.reasonId"`.
  *
  * ```ts
  * @Component({
@@ -189,6 +192,12 @@ export class CngxButtonBrain implements CngxButtonState {
   readonly busyVisible = this.core.busyVisible;
   /** `true` while the button refuses activation: refusing, busy or refused by the co-hosted runner. */
   readonly blocked = this.core.blocked;
+  /**
+   * Busy glyph from `provideButtonSpinner`, or `null` for the built-in
+   * spinner. The host renders it inside its busy layer.
+   */
+  readonly spinner = injectButtonSpinner();
+
   /** Id the host template puts on its reason span. */
   readonly reasonId = this.core.reasonId;
   /** `reasonId` while it describes the element (`disabled` with a reason), else `null`. */
