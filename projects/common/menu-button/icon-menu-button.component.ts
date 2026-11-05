@@ -28,12 +28,12 @@ import { CngxSplitCaret } from './split-caret.directive';
  * development mode.
  *
  * As the direct child of a `cngxSplitButton` it renders the caret (the
- * shared chevron; `provideButtonCaretIcon` swaps it) instead of the projected content, is named by content: the
- * `menuButton.splitToggle` copy ("More options") of the active language pack
- * as visually hidden text, so a consumer `aria-label` still wins and the
- * button never writes one itself. It is blocked
- * while the main action is: `aria-disabled`, no click, no key, an open menu
- * closes. Its `aria-describedby` then references the main's reason (main
+ * shared chevron; `provideButtonCaretIcon` swaps it) instead of the
+ * projected content, and is named by content: the `menuButton.splitToggle`
+ * copy ("More options") of the active language pack as visually hidden
+ * text, so a consumer `aria-label` still wins and the button never writes
+ * one itself. It is blocked while the main action is: `aria-disabled`, no
+ * click, no key, an open menu closes. Its `aria-describedby` then references the main's reason (main
  * disabled with one) or a hidden "The main action is running" note
  * (`menuButton.splitMainBusy`, main action pending); its own
  * `disabledReason` only describes its own `[disabled]`.
