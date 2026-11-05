@@ -176,6 +176,20 @@ class IconMainHost {
   readonly disabled = signal(false);
 }
 
+@Component({
+  template: `
+    <div cngxSplitButton aria-label="Publish">
+      <button id="caret" cngxIconMenuButton [menu]="menu" [popover]="pop"></button>
+      <button id="main" cngxButton [disabled]="disabled()">Publish</button>
+    </div>
+    ${MENU}
+  `,
+  imports: [CngxSplitButton, CngxButton, CngxIconMenuButton, CngxMenu, CngxMenuItem, CngxPopover],
+})
+class CaretFirstHost {
+  readonly disabled = signal(false);
+}
+
 function setup<T>(type: Type<T>) {
   const fixture = TestBed.createComponent(type);
   fixture.detectChanges();
@@ -343,6 +357,18 @@ describe('CngxSplitButton', () => {
     flush();
     expect(split.mainBlocked()).toBe(true);
     expect(q('#caret').getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('resolves the main action when the caret comes first in the DOM', () => {
+    const { fixture, host, q, split, flush } = setup(CaretFirstHost);
+    const caretState = fixture.debugElement.query(By.css('#caret')).injector.get(CNGX_BUTTON_STATE);
+    expect(split.caret()).toBe(caretState);
+    expect(split.mainBlocked()).toBe(false);
+    host.disabled.set(true);
+    flush();
+    expect(split.mainBlocked()).toBe(true);
+    expect(q('#caret').getAttribute('aria-disabled')).toBe('true');
+    expect(q('#caret').getAttribute('aria-label')).toBe('More options');
   });
 
   it('never takes the caret for the main action', async () => {

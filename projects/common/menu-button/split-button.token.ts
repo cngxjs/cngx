@@ -1,6 +1,5 @@
 import { InjectionToken, type Signal } from '@angular/core';
-
-import type { CngxIconMenuButton } from './icon-menu-button.component';
+import type { CngxButtonState } from '@cngx/common/button';
 
 /**
  * What a `cngxSplitButton` tells the icon menu button inside it.
@@ -16,11 +15,11 @@ export interface CngxSplitButtonContext {
    */
   readonly mainBlocked: Signal<boolean>;
   /**
-   * The icon menu button that is the split's caret: the direct child
+   * The button state of the split's caret: the direct child
    * `cngxIconMenuButton`. An icon menu button deeper inside the split (in a
    * projected panel, say) is not the caret and keeps its own state and name.
    */
-  readonly caret: Signal<CngxIconMenuButton | undefined>;
+  readonly caret: Signal<CngxButtonState | undefined>;
 }
 
 /**

@@ -10,7 +10,7 @@ import {
 import { CNGX_BUTTON_STATE, CngxButtonGroup } from '@cngx/common/button';
 import { cngxDevWarn } from '@cngx/utils';
 
-import { CngxIconMenuButton } from './icon-menu-button.component';
+import { CNGX_SPLIT_CARET } from './split-caret.token';
 import { CNGX_SPLIT_BUTTON, type CngxSplitButtonContext } from './split-button.token';
 
 /**
@@ -69,8 +69,8 @@ export class CngxSplitButton implements CngxSplitButtonContext {
   // is neither the main action nor the caret.
   private readonly buttons = contentChildren(CNGX_BUTTON_STATE, { descendants: false });
 
-  /** The caret: the direct child `cngxIconMenuButton`. */
-  readonly caret = contentChild(CngxIconMenuButton, { descendants: false });
+  /** The button state of the caret: the direct child `cngxIconMenuButton`. */
+  readonly caret = contentChild(CNGX_SPLIT_CARET, { descendants: false });
 
   private readonly main = computed(() => this.buttons().find((button) => button !== this.caret()));
 

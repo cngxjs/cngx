@@ -28,12 +28,14 @@ import {
   type CngxHostInteractionState,
 } from '@cngx/common/interactive';
 import { CngxPopoverTrigger } from '@cngx/common/popover';
+import { injectLazySelf } from '@cngx/core/utils';
 import { cngxDevWarn } from '@cngx/utils';
 
 import { CNGX_BUTTON_CARET_ICON } from './caret-icon.token';
 import { injectMenuButtonI18n } from './i18n/menu-button-i18n';
 import { injectLazyHostDirective } from './internal/inject-lazy-host-directive';
 import { CNGX_SPLIT_BUTTON } from './split-button.token';
+import { CNGX_SPLIT_CARET } from './split-caret.token';
 
 /**
  * A square, icon-only button that opens a menu: the kebab or "more" button
@@ -90,6 +92,8 @@ import { CNGX_SPLIT_BUTTON } from './split-button.token';
       useFactory: () => inject(CngxIconMenuButton).hostInteraction,
     },
     { provide: CNGX_BUTTON_STATE, useExisting: CngxIconMenuButton },
+    // Same instance as CNGX_BUTTON_STATE, so the split compares main and caret as states.
+    { provide: CNGX_SPLIT_CARET, useExisting: CNGX_BUTTON_STATE },
     provideButtonDescribedBy('CngxIconMenuButton'),
   ],
   host: {
@@ -151,8 +155,11 @@ export class CngxIconMenuButton implements CngxButtonState {
 
   private readonly split = inject(CNGX_SPLIT_BUTTON, { optional: true });
 
+  // Read on first use: CNGX_BUTTON_STATE resolves to this component.
+  private readonly ownState = injectLazySelf(CNGX_BUTTON_STATE);
+
   /** @internal - `true` when this button is the caret of a split (its direct child). */
-  protected readonly isSplitCaret = computed(() => this.split?.caret() === this);
+  protected readonly isSplitCaret = computed(() => this.split?.caret() === this.ownState());
   private readonly i18n = injectMenuButtonI18n();
 
   /**
