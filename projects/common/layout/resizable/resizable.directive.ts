@@ -141,6 +141,14 @@ export class CngxResizable {
     const view = this.doc.defaultView;
     let pending = startSize;
     let frame = 0;
+    // Destroying the handle mid-drag aborts the controller; the queued
+    // frame must not write the size of a gone handle.
+    controller.signal.addEventListener('abort', () => {
+      if (frame) {
+        view?.cancelAnimationFrame(frame);
+        frame = 0;
+      }
+    });
 
     const flush = (): void => {
       frame = 0;

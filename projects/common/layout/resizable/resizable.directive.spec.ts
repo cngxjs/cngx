@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideDirection } from '@cngx/core';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { provideLayoutI18n, withLayoutI18nLabels } from '../i18n/layout-i18n';
 import { CngxResizable, type CngxResizableEdge } from './resizable.directive';
@@ -189,6 +189,29 @@ describe('CngxResizable', () => {
       fixture.destroy();
       document.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: 80 }));
       document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, clientX: 80 }));
+      expect(host.size()).toBe(200);
+    });
+
+    it('drops the queued frame when the host is destroyed after a move', () => {
+      const frames = new Map<number, FrameRequestCallback>();
+      let nextFrame = 1;
+      vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+        frames.set(nextFrame, cb);
+        return nextFrame++;
+      });
+      vi.stubGlobal('cancelAnimationFrame', (id: number) => frames.delete(id));
+      const { fixture, host, handle } = setup();
+      handle.dispatchEvent(
+        new PointerEvent('pointerdown', { bubbles: true, clientX: 0, button: 0 }),
+      );
+      const before = new Set(frames.keys());
+      document.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: 80 }));
+      const dragFrames = [...frames.keys()].filter((id) => !before.has(id));
+      expect(dragFrames).toHaveLength(1);
+
+      fixture.destroy();
+
+      expect(frames.has(dragFrames[0])).toBe(false);
       expect(host.size()).toBe(200);
     });
   });
