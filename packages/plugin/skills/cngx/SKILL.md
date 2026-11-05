@@ -77,7 +77,9 @@ For the daily work, reach for the focused skill instead of this index:
   discover, `get_api` for inputs/outputs/signals, `get_slots` for template slots,
   `get_config` for a configuration cascade, `get_theme_tokens` for theming
   tokens, `get_di_tokens` for the DI-token list. The recipes teach *how*; the
-  MCP answers *what*.
+  MCP answers *what*. For a `CNGXnnnn` from a console or stack trace, ask
+  `get_error_code`, passing `version` when the app runs another release than the
+  server; without MCP, run `npx @cngx/cli explain <code>`.
 - **The published docs** - `https://cngxjs.github.io/cngx/llms.txt` (index) and
   `https://cngxjs.github.io/cngx/llms-full.txt` (full text) when you need more
   than a single symbol.
