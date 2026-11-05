@@ -1188,6 +1188,15 @@ describe('CngxActionButton with provideButtonSpinner', () => {
   });
 });
 
+describe('CngxActionButton reason span', () => {
+  it('renders only while a reason exists', () => {
+    const fixture = TestBed.createComponent(SpinnerHost);
+    fixture.detectChanges();
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    expect(btn.querySelector('.cngx-button__reason')).toBeNull();
+  });
+});
+
 describe('CngxActionButton settle lifecycle', () => {
   afterEach(() => {
     vi.restoreAllMocks();
