@@ -43,6 +43,8 @@ export class AppToolbar {
 
 `variant` and `size` resolve `input ?? group ?? config ?? default`; `tone` resolves `input ?? config ?? default`, because a group passes only variant and size. Set app defaults with `provideButtonConfig(withButtonVariant(...), withButtonTone(...), withButtonSize(...))`, a subtree with `provideButtonConfigAt(...)` in `viewProviders`.
 
+`provideCngxButton(...)` takes the same config features plus `withButtonCloseIcon(MyIcon)` and `withButtonSpinner(MySpinner)`, so the whole family is set up in one call at the root; `provideCngxButtonAt(...)` is its twin for `viewProviders` and merges the config over the parent scope. A feature without a `_target` is dropped with `CNGX1041` in development. The menu-button caret and labels go through `provideCngxMenuButton(...)` in `@cngx/common/menu-button`.
+
 Density, text scale, touch floor, motion and contrast are not inputs. They come from the preference axes in `@cngx/core`: padding is SET from `--cngx-space-*`, text from the font tokens, the hit area from `--cngx-target-min`. `md` is the form-control row, so an `md` button lines up with `cngxInput` and every select trigger.
 
 ## Accessibility
@@ -52,7 +54,7 @@ Density, text scale, touch floor, motion and contrast are not inputs. They come 
 - **Disabled links keep their `href`.** A disabled `<a cngxButton>` is marked with `aria-disabled` only, so the context menu can still open the link in a new tab; clicks and middle clicks are swallowed.
 - **`type="button"` by default** on a `<button>` host, so a button inside a `<form>` never submits by accident. `type="submit"` and `[type]` both work. An `<a>` host gets no `type`.
 - **Icon buttons need a name.** `cngxIconButton` warns `CNGX1071` in development when the host has no `aria-label`, `aria-labelledby` or `title`. A tooltip is optional and a per-icon decision; compose `[cngxTooltip]` where the glyph alone is ambiguous.
-- **Busy.** Co-host `cngxAsyncClick`: the label keeps its place under a spinner, `aria-busy` and the announcement stay with the directive. The spinner follows `CNGX_LOADING_CONFIG`: it appears after `showDelay` (120 ms by default, so a fast run shows none) and stays for at least `minDwell` (400 ms); `aria-busy`, `aria-disabled` and the announcement are immediate. Override per button with `[showDelay]` / `[minDwell]` next to `cngxAsyncClick`. Under reduced motion the ring stops turning.
+- **Busy.** Co-host `cngxAsyncClick`: the label keeps its place under a spinner, `aria-busy` and the announcement stay with the directive. The spinner follows `CNGX_LOADING_CONFIG`: it appears after `showDelay` (120 ms by default, so a fast run shows none) and stays for at least `minDwell` (400 ms); `aria-busy`, `aria-disabled` and the announcement are immediate. Override per button with `[showDelay]` / `[minDwell]` next to `cngxAsyncClick`. Under reduced motion the ring stops turning. Swap the ring for every button in a subtree with `provideButtonSpinner(MySpinner)` (`CNGX_BUTTON_SPINNER`); the layer stays (over the label, `aria-hidden`, same timing), only the glyph inside it changes. Without a provider the DOM is the built-in ring.
 - **Touch.** Every control size floors to 44px on a coarse pointer; an icon button grows its hit area through a pseudo-element and keeps its visual size. The `link` variant is the inline exception (WCAG 2.5.8).
 - **Forced colors.** Every variant re-signals with system colours; disabled is `GrayText`.
 
@@ -116,7 +118,9 @@ import { CngxButtonBrain, provideButtonHost } from '@cngx/common/button';
     @if (brain.busyVisible()) {
       <span class="app-chip-button__busy" aria-hidden="true"></span>
     }
-    <span [id]="brain.reasonId" hidden>{{ brain.disabledReason() }}</span>
+    @if (brain.disabledReason(); as reason) {
+      <span [id]="brain.reasonId" hidden>{{ reason }}</span>
+    }
   `,
   styleUrl: './chip-button.css',
 })
@@ -127,7 +131,7 @@ export class AppChipButton {
 
 - **Inputs.** `variant`, `tone`, `size`, `disabled`, `disabledReason`, `cngxDescribedBy` and `type` live on the brain. Forward only the ones the host should take; alias `variant` to the selector so `appChipButton="solid"` works.
 - **Descriptor.** `provideButtonHost(name, { defaultVariant, fixed, iconOnly })`: `name` is the public selector, printed in brackets in development diagnostics; `fixed` pins axes against the group and the config (the input still wins); `iconOnly: true` turns on the `CNGX1071` name check.
-- **What the host keeps.** Its template, its slots, its CSS, the busy layer (render it from `brain.busyVisible()`) and the reason span (`[id]="brain.reasonId"`, `hidden`, the text from `brain.disabledReason()`). The brain sets only attributes on the host element, so the skin reads `[data-variant]`, `[data-tone]`, `[data-size]`, `[aria-disabled='true']`, `[data-pending]` and `[data-busy]`.
+- **What the host keeps.** Its template, its slots, its CSS, the busy layer (render it from `brain.busyVisible()`, with `brain.spinner` as the glyph when it is set) and the reason span (`[id]="brain.reasonId"`, `hidden`, the text from `brain.disabledReason()`, rendered only while a reason is set). The brain sets only attributes on the host element, so the skin reads `[data-variant]`, `[data-tone]`, `[data-size]`, `[aria-disabled='true']`, `[data-pending]` and `[data-busy]`.
 - **Refusal or a run of its own.** Provide `CNGX_BUTTON_HOST_STATE` on the host with a `refusing` signal and an optional `busy` signal; the brain folds them into the guard, `aria-disabled`, `data-pending` and the state a co-hosted runner reads. The brain reads the token on first use, so a factory that injects the host component is safe.
 - **Co-hosted runners.** `cngxAsyncClick` on the host publishes its run through `CNGX_ASYNC_RUN_STATE` (`@cngx/common/interactive`); the brain reads it from there, so the busy layer, `data-pending` and `aria-disabled` follow the run without any wiring in the host.
 - **Reading the state.** `CNGX_BUTTON_STATE` on the element injector exposes `blocked`, `busy` and `activeReasonId`; `cngxSplitButton` reads its main action through it.

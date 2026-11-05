@@ -56,8 +56,8 @@ import type {
  *
  * The host template renders the busy layer from `busyVisible()` (its glyph
  * is `spinner`, the `provideButtonSpinner` component, or the built-in
- * spinner when it is `null`) and the reason span with
- * `[id]="brain.reasonId"`.
+ * spinner when it is `null`) and, while `disabledReason()` is set, the
+ * reason span with `[id]="brain.reasonId"`.
  *
  * ```ts
  * @Component({
@@ -69,7 +69,12 @@ import type {
  *     },
  *   ],
  *   providers: [provideButtonHost('appChipButton', { defaultVariant: 'outline' })],
- *   template: `<ng-content /><span [id]="brain.reasonId" hidden>{{ brain.disabledReason() }}</span>`,
+ *   template: `
+ *     <ng-content />
+ *     @if (brain.disabledReason(); as reason) {
+ *       <span [id]="brain.reasonId" hidden>{{ reason }}</span>
+ *     }
+ *   `,
  * })
  * class AppChipButton {
  *   protected readonly brain = inject(CngxButtonBrain);

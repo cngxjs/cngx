@@ -28,7 +28,9 @@ import { CngxButtonBrain, provideButtonHost } from '@cngx/common/button';
     @if (brain.busyVisible()) {
       <span class="demo-chip-button__busy" aria-hidden="true"></span>
     }
-    <span [id]="brain.reasonId" hidden>{{ brain.disabledReason() }}</span>
+    @if (brain.disabledReason(); as reason) {
+      <span [id]="brain.reasonId" hidden>{{ reason }}</span>
+    }
   `,
   styles: `
     .demo-chip-button {
