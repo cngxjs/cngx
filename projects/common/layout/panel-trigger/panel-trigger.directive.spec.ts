@@ -27,7 +27,9 @@ function createTarget(withPeek = true, label?: Signal<string | undefined>) {
     <button type="button" class="text" [cngxPanelTrigger]="target" [action]="action()">Menu</button>
     <button type="button" class="icon" [cngxPanelTrigger]="target" [label]="label()"></button>
     <span class="span" [cngxPanelTrigger]="target"></span>
-    <button type="button" class="hidden-text" [cngxPanelTrigger]="target"><span aria-hidden="true">menu</span><span hidden>Busy</span></button>
+    <button type="button" class="hidden-text" [cngxPanelTrigger]="target">
+      <span aria-hidden="true">menu</span><span hidden>Busy</span>
+    </button>
   `,
   imports: [CngxPanelTrigger],
 })

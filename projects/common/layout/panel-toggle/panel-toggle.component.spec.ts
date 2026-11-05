@@ -1,7 +1,12 @@
 import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideDirection } from '@cngx/core';
-import { CNGX_ICON_MENU, CNGX_ICON_PANEL_CLOSE, CNGX_ICON_PANEL_OPEN, CNGX_ICON_X } from '@cngx/utils';
+import {
+  CNGX_ICON_MENU,
+  CNGX_ICON_PANEL_CLOSE,
+  CNGX_ICON_PANEL_OPEN,
+  CNGX_ICON_X,
+} from '@cngx/utils';
 import { describe, expect, it, vi } from 'vitest';
 
 import { CngxDrawer } from '../drawer/drawer.directive';

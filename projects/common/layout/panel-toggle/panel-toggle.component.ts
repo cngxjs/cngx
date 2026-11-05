@@ -17,7 +17,12 @@ import type {
 import { CngxIconSvg } from '@cngx/common/display';
 import { CNGX_HOST_INTERACTION_STATE } from '@cngx/common/interactive';
 import { injectDirection } from '@cngx/core';
-import { CNGX_ICON_MENU, CNGX_ICON_PANEL_CLOSE, CNGX_ICON_PANEL_OPEN, CNGX_ICON_X } from '@cngx/utils';
+import {
+  CNGX_ICON_MENU,
+  CNGX_ICON_PANEL_CLOSE,
+  CNGX_ICON_PANEL_OPEN,
+  CNGX_ICON_X,
+} from '@cngx/utils';
 
 import { CngxPanelTrigger } from '../panel-trigger/panel-trigger.directive';
 
