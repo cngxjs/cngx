@@ -363,4 +363,19 @@ describe('CngxDrawerSurface', () => {
     expect(inertAtFocus).toEqual([false]);
     expect(document.activeElement).toBe(opener);
   });
+
+  it('restores focus to the opener when a page scope is released by an Escape dismissal', () => {
+    const { host, q, set } = setup();
+    host.dismissed.mockImplementation(() => host.active.set(false));
+    const opener = q('.opener');
+    opener.focus();
+    set((h) => h.active.set(true));
+    q('.inside').focus();
+
+    q('.inside').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    set(() => undefined);
+
+    expect(q('.sibling').hasAttribute('inert')).toBe(false);
+    expect(document.activeElement).toBe(opener);
+  });
 });

@@ -183,10 +183,6 @@ export class CngxDrawerSurface
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly doc = inject(DOCUMENT);
   private readonly domReady = signal(false);
-  // True while the modal scope (inert around the host, scroll lock) is
-  // applied. Focus restore waits for it: the opener sits outside the host,
-  // and focus() on an inert element is a no-op that leaves focus on <body>.
-  private readonly scopeHeld = signal(false);
   private readonly focusTrap = inject(CngxFocusTrap, { self: true });
   private destroyed = false;
 
@@ -223,10 +219,11 @@ export class CngxDrawerSurface
   /** @internal Drives the composed `CngxFocusTrap`. */
   readonly focusTrapAutoFocus = true;
   /**
-   * @internal Drives the composed `CngxFocusRestore`. Falls only once the
-   * modal scope is released, so the restore target is no longer inert.
+   * @internal Drives the composed `CngxFocusRestore`. The restore edge can
+   * run before the scope effect below releases `inert` around the host; the
+   * restore then focuses the opener after the render, once it is live.
    */
-  readonly focusRestoreActive = computed(() => this.isActive() || this.scopeHeld());
+  readonly focusRestoreActive = this.isActive;
   /** @internal Drives the composed `CngxClickOutside`. */
   readonly clickOutsideEnabled = computed(
     () => this.isActive() && (this.driver()?.surfaceOutsideDismiss?.() ?? true),
@@ -259,11 +256,7 @@ export class CngxDrawerSurface
       const release = untracked(() =>
         modality === 'page' ? this.holdPageScope() : this.holdContainedScope(),
       );
-      untracked(() => this.scopeHeld.set(true));
-      onCleanup(() => {
-        release();
-        this.scopeHeld.set(false);
-      });
+      onCleanup(release);
     });
   }
 
