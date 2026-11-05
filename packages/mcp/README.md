@@ -20,6 +20,14 @@ it, so the API snapshot the server answers from does not move under you. The
 server speaks MCP over stdio. Register it with any MCP-capable client (see
 Client setup below), then call the tools.
 
+## Versioning
+
+`@cngx/mcp` carries the same version as `@cngx/core` and is released together
+with the cngx libraries and `@cngx/cli`. The bundled snapshot is that release:
+`@cngx/mcp` X.Y.Z answers for cngx X.Y.Z unless a tool call names another
+`version`. Pin the `@cngx/mcp` version that equals your `@cngx/core` version;
+`ng add` writes that pin and `ng update` moves it.
+
 ## Tools
 
 |Tool|Input|Returns|

@@ -1,8 +1,10 @@
 # @cngx/cli changelog
 
 Hand-maintained, per package version. The root CHANGELOG.md tracks the cngx
-library releases; this file tracks the CLI package. The cngx release an answer
-grounds against is a property of the bundled snapshot, not this version.
+library releases; this file tracks the CLI package. It is released in lockstep
+with the cngx libraries: `@cngx/cli` X.Y.Z bundles the X.Y.Z snapshot, and
+`--cngx-version` or the installed release still grounds an answer against
+another release.
 
 ## Unreleased
 

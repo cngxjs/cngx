@@ -15,6 +15,13 @@ that uses another cngx release, the commands that take `--cngx-version` answer
 for that release instead (see Which release answers). It is read-only: it never
 mutates any source.
 
+## Versioning
+
+`@cngx/cli` carries the same version as `@cngx/core` and is released together
+with the cngx libraries and `@cngx/mcp`. The bundled snapshot is that release:
+`@cngx/cli` X.Y.Z answers for cngx X.Y.Z unless another release is detected or
+named.
+
 ## Usage
 
 Inside a project that has `@cngx/cli` installed:

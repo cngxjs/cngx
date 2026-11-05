@@ -1,9 +1,10 @@
 # @cngx/mcp changelog
 
 Hand-maintained, per package version. The root CHANGELOG.md tracks the cngx
-library releases; this file tracks the MCP server package. The cngx release an
-answer grounds against is a runtime property (`cngx://provenance`,
-`groundedVersion`), not this version.
+library releases; this file tracks the MCP server package. It is released in
+lockstep with the cngx libraries: `@cngx/mcp` X.Y.Z bundles the X.Y.Z snapshot,
+and a tool's `version` argument still grounds an answer against another
+release (`cngx://provenance` and `groundedVersion` name the one that answered).
 
 ## Unreleased
 
