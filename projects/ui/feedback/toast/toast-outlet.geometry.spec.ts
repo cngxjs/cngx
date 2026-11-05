@@ -14,8 +14,8 @@ import { CngxToastOutlet } from './toast-outlet';
 // fixed-position vertical flex column that stacks its toasts, and each toast is a
 // top-aligned flex row whose body grows and may shrink past its intrinsic width.
 // The toast draws on the overlay surface: a full 1px border instead of a
-// severity stripe, the popover-panel shadow, and the action on its own row
-// below the body. jsdom reports `''` for every one of these reads.
+// severity stripe, the popover-panel shadow, and the action in a trailing
+// column next to the text; a title-less toast centres on one line. jsdom reports `''` for every one of these reads.
 
 const SCHEMES = ['light', 'dark'] as const;
 const SIDES = ['top', 'right', 'bottom', 'left'] as const;
@@ -30,7 +30,7 @@ class ToastOutletHost {}
 
 let mountedRoot: HTMLElement | null = null;
 
-function mount(pushToast: boolean, withAction = false): HTMLElement {
+function mount(pushToast: boolean, withAction = false, title?: string): HTMLElement {
   const fixture = TestBed.createComponent(ToastOutletHost);
   mountedRoot = fixture.nativeElement as HTMLElement;
   document.body.appendChild(mountedRoot);
@@ -38,6 +38,7 @@ function mount(pushToast: boolean, withAction = false): HTMLElement {
   if (pushToast) {
     TestBed.inject(CngxToaster).show({
       message: 'Saved',
+      title,
       severity: 'success',
       action: withAction ? { label: 'Undo', handler: () => undefined } : undefined,
     });
@@ -79,11 +80,11 @@ describe('CngxToastOutlet geometry', () => {
     expect(computedValue(outlet, 'flex-direction')).toBe('column');
   });
 
-  it('lays a pushed toast out as a top-aligned flex row with a growing body', () => {
+  it('lays a pushed toast out as a flex row with a growing body', () => {
     const outlet = mount(true);
     const toast = query(outlet, '.cngx-toast');
     expect(computedValue(toast, 'display')).toBe('flex');
-    expect(computedValue(toast, 'align-items')).toBe('flex-start');
+    expect(computedValue(toast, 'align-items')).toBe('center');
     const body = query(outlet, '.cngx-toast__body');
     expect(computedValue(body, 'flex-grow')).toBe('1');
     expect(computedValue(body, 'min-width')).toBe('0px');
@@ -119,17 +120,37 @@ describe('CngxToastOutlet geometry', () => {
     expect(dark).toBe('oklch(1 0 0 / 0.12)');
   });
 
-  it('puts the action on its own row below the body text', () => {
+  it('puts the action in a trailing column, centred on the text line', () => {
     const outlet = mount(true, true);
     const message = query(outlet, '.cngx-toast__message');
     const action = query(outlet, '.cngx-toast__action');
-    expect(computedValue(action, 'display')).toBe('flex');
     const gap = parseFloat(computedValue(action, '--cngx-toast-actions-gap'));
     expect(gap).toBeGreaterThan(0);
-    const above = message.getBoundingClientRect();
+    const text = message.getBoundingClientRect();
     const box = action.getBoundingClientRect();
-    expect(box.top - above.bottom).toBeGreaterThanOrEqual(gap - 0.5);
-    expect(box.left).toBeCloseTo(above.left, 0);
+    expect(box.left - text.right).toBeGreaterThanOrEqual(gap - 0.5);
+    const middle = (r: DOMRect): number => r.top + r.height / 2;
+    expect(Math.abs(middle(box) - middle(text))).toBeLessThanOrEqual(1);
+  });
+
+  it('centres a title-less toast on one line', () => {
+    const outlet = mount(true, true);
+    const toast = query(outlet, '.cngx-toast');
+    expect(computedValue(toast, 'align-items')).toBe('center');
+    const middle = (el: HTMLElement): number => {
+      const r = el.getBoundingClientRect();
+      return r.top + r.height / 2;
+    };
+    const icon = middle(query(outlet, '.cngx-toast__icon'));
+    expect(Math.abs(icon - middle(query(outlet, '.cngx-toast__message')))).toBeLessThanOrEqual(1);
+  });
+
+  it('keeps the icon level with the title and spans the action over the text', () => {
+    const outlet = mount(true, true, 'Offline');
+    const toast = query(outlet, '.cngx-toast');
+    expect(computedValue(toast, 'align-items')).toBe('flex-start');
+    const action = query(outlet, '.cngx-toast__action');
+    expect(computedValue(action, 'grid-row-end')).toBe('span 2');
   });
 
   it('draws the action border in its label colour', () => {

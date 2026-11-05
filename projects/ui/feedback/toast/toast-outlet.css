@@ -38,10 +38,13 @@
  * - `.cngx-toast__description` - secondary copy, line-clamped via
  *   `--cngx-toast-description-max-lines` (default 3)
  * - `.cngx-toast__count` - trailing message-count badge (muted text colour)
- * - `.cngx-toast__action` - outlined action button on its own row below
- *   the body; label and border mix `--cngx-toast-accent` into the text
- *   colour for 4.5:1
+ * - `.cngx-toast__action` - outlined action button in the trailing column
+ *   of the body, centred on the text; label and border mix
+ *   `--cngx-toast-accent` into the text colour for 4.5:1
  * - `.cngx-toast__dismiss` - dismiss control
+ *
+ * A toast without a title centres icon, text, action and dismiss on one
+ * line; with a title the icon and dismiss stay level with the title.
  *
  * Toasts enter via 200ms `cngx-toast-enter`; the animation no-ops
  * under `prefers-reduced-motion`.
@@ -381,7 +384,7 @@
   }
 
   /**
-   * Gap between the body and the action row.
+   * Gap between the text column and the trailing action.
    * @group Layout
    */
   @property --cngx-toast-actions-gap {
@@ -587,6 +590,13 @@
         var(--cngx-toast-enter-easing, ease-out);
     }
 
+    /* A toast without a title is one text line (or a projected body): icon,
+       text, action and dismiss share one centre line. With a title the icon
+       and dismiss stay level with the title line. */
+    .cngx-toast:not(:has(.cngx-toast__title)) {
+      align-items: center;
+    }
+
     .cngx-toast--info {
       --cngx-toast-accent: var(--cngx-toast-info-accent, oklch(0.6 0.11 240));
     }
@@ -614,9 +624,19 @@
       display: block;
     }
 
+    /* Two columns: the text stacks in the first, the action sits in the
+       trailing one, centred on the text rows it spans. No template wrapper. */
     .cngx-toast__body {
       flex: 1;
       min-width: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      column-gap: var(--cngx-toast-actions-gap, 8px);
+      align-items: center;
+    }
+
+    .cngx-toast__body > * {
+      grid-column: 1;
     }
 
     .cngx-toast__message {
@@ -650,16 +670,15 @@
       font-size: var(--cngx-toast-description-font-size, 0.8125rem);
     }
 
-    /* Outlined action on its own row below the body: block-level flex
-     * with fit-content width gives the row without a template wrapper.
-     * Label and border track `--cngx-toast-accent` mixed 60% into the
+    /* Outlined action in the trailing column of the body, spanning every
+     * text row (title, text, count). Label and border track `--cngx-toast-accent` mixed 60% into the
      * text colour for 4.5:1, the alert action recipe. */
     .cngx-toast__action {
       appearance: none;
+      grid-column: 2;
+      grid-row: 1;
       display: flex;
       align-items: center;
-      inline-size: fit-content;
-      margin-block-start: var(--cngx-toast-actions-gap, 8px);
       background: transparent;
       border: 1px solid currentColor;
       border-radius: var(--cngx-toast-action-radius, 4px);
@@ -679,6 +698,14 @@
         )
       );
       white-space: nowrap;
+    }
+
+    .cngx-toast__body:has(> .cngx-toast__title, > .cngx-toast__count) > .cngx-toast__action {
+      grid-row: 1 / span 2;
+    }
+
+    .cngx-toast__body:has(> .cngx-toast__title):has(> .cngx-toast__count) > .cngx-toast__action {
+      grid-row: 1 / span 3;
     }
 
     .cngx-toast__action:hover {
