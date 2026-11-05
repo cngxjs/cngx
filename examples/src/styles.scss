@@ -2686,6 +2686,15 @@ button.chip.demo-chip--copied {
   padding: 0.75rem 1rem;
   white-space: nowrap;
 }
+// The head row has a fixed height, the same as .demo-app-header beside it:
+// the brand mark keeps its position whether the labels show, hide in the
+// rail or a peek adds the pin button.
+.demo-app-sidebar__head {
+  flex: none;
+  box-sizing: border-box;
+  block-size: 3rem;
+  padding-block: 0;
+}
 .demo-app-sidebar__foot {
   margin-top: auto;
   border-top: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
