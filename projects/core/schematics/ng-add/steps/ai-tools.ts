@@ -1,5 +1,3 @@
-import { type JsonValue } from '@angular-devkit/core';
-
 import {
   type AiTool,
   type Change,
@@ -11,7 +9,7 @@ import {
   skipChange,
   type StepResult,
 } from '../../engine';
-import { AGENTS_MARKER, type InstructionState, MCP_CONFIGS, type ProjectFacts } from '../detect/detect';
+import { AGENTS_MARKER, type InstructionState, MCP_CONFIGS, type ProjectFacts, serverEntry } from '../detect/detect';
 import { type OnboardingAnswers, type Versions } from './model';
 
 /** The editor names the plan and the AI tooling question show. */
@@ -21,15 +19,9 @@ export const EDITOR_NAMES: Readonly<Record<AiTool, string>> = {
   vscode: 'VS Code',
 };
 
-// Claude Code reads the `.mcp.json` shape of packages/plugin; Cursor and
-// VS Code name the transport explicitly.
-function serverEntry(tool: AiTool, mcpVersion: string): JsonValue {
-  const command = { command: 'npx', args: ['-y', `@cngx/mcp@${mcpVersion}`] };
-  return tool === 'claude' ? command : { type: 'stdio', ...command };
-}
-
-// An existing entry is never rewritten; a different pin is named, not hidden.
-function wiredReason(path: string, pin: string | undefined, mcpVersion: string): string {
+// `ng add` never rewrites an existing entry; a different pin is named, not
+// hidden. Only the `ng update` re-run moves the pin of an entry cngx wrote.
+export function wiredReason(path: string, pin: string | undefined, mcpVersion: string): string {
   if (pin === undefined || pin === mcpVersion) {
     return `${path} already declares a cngx server`;
   }

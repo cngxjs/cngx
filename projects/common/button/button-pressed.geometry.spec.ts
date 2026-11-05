@@ -1,7 +1,7 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { cdp, userEvent } from 'vitest/browser';
 
 import { CngxButton } from './button.component';
 import { CngxCloseButton } from './close-button.component';
@@ -50,7 +50,12 @@ const VARIANTS = ['solid', 'secondary', 'outline', 'ghost'] as const;
     }
     <button cngxIconButton class="icon" style="transition: none" aria-label="Add">+</button>
     <button cngxCloseButton class="close" style="transition: none" aria-label="Close"></button>
-    <button cngxCloseButton class="close-hooked" style="transition: none; --cngx-close-button-pressed-bg: rgb(0, 128, 0)" aria-label="Close"></button>
+    <button
+      cngxCloseButton
+      class="close-hooked"
+      style="transition: none; --cngx-close-button-pressed-bg: rgb(0, 128, 0)"
+      aria-label="Close"
+    ></button>
   `,
 })
 class PressedHost {
@@ -135,5 +140,46 @@ describe('CngxButton geometry: pressed state', () => {
       expect(pressed, selector).not.toBe(rest);
     }
     expect(pressedBackground(one(root, '.close-hooked')).pressed).toBe('rgb(0, 128, 0)');
+  });
+});
+
+describe('CngxButton geometry: pressed state under forced colors', () => {
+  async function forceColors(): Promise<void> {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'forced-colors', value: 'active' }],
+    });
+  }
+
+  afterEach(async () => {
+    await cdp().send('Emulation.setEmulatedMedia', { features: [] });
+  });
+
+  it('keeps the Highlight fill on a pressed solid primary and marks the press on the edge', async () => {
+    await forceColors();
+    const btn = one(mount(), '.b-solid-primary');
+    const rest = getComputedStyle(btn);
+    const restBorder = rest.borderTopColor;
+    const { rest: restFill, pressed } = pressedBackground(btn);
+    expect(pressed).toBe(restFill);
+    btn.classList.add('cngx-pressed');
+    const style = getComputedStyle(btn);
+    expect(style.borderTopColor).not.toBe(restBorder);
+    expect(style.outlineStyle).toBe('solid');
+    btn.classList.remove('cngx-pressed');
+  });
+
+  it('still fills a pressed ButtonFace variant with Highlight', async () => {
+    await forceColors();
+    const { rest, pressed } = pressedBackground(one(mount(), '.b-outline-neutral'));
+    expect(pressed).not.toBe(rest);
+  });
+
+  it('runs no colour transition', async () => {
+    await forceColors();
+    const btn = one(mount(), '.b-solid-primary');
+    btn.removeAttribute('style');
+    for (const duration of getComputedStyle(btn).transitionDuration.split(',')) {
+      expect(duration.trim()).toBe('0s');
+    }
   });
 });

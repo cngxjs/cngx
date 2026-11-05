@@ -315,7 +315,7 @@
     }
     .cngx-tree-select__trigger[aria-invalid='true']:focus-within {
       outline: 2px solid var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
-      outline-offset: 1px;
+      outline-offset: var(--cngx-select-focus-offset, 1px);
       box-shadow: var(--cngx-select-trigger-invalid-glow, 0 0 0 3px oklch(0.6 0.18 25 / 0.2));
     }
 

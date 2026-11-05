@@ -130,38 +130,40 @@ describe('createVisibilityGate', () => {
     vi.advanceTimersByTime(0);
     expect(visible()).toBe(true);
   });
+  it('does not restart the delay when delay changes while active', () => {
+    const { isActive, delay, visible } = setup({ delay: 200 });
+    isActive.set(true);
+    TestBed.flushEffects();
 
-  it('restarts the delay from the change when delay is raised mid-window (A-n1)', () => {
-    const { isActive, delay, visible } = setup({ delay: 200, minDwell: 500 });
+    vi.advanceTimersByTime(150);
+    delay.set(1000);
+    TestBed.flushEffects();
+
+    vi.advanceTimersByTime(50);
+    expect(visible()).toBe(true);
+  });
+
+  it('applies a changed delay to the next activation', () => {
+    const { isActive, delay, visible } = setup({ delay: 200, minDwell: 0 });
+    delay.set(400);
+    TestBed.flushEffects();
 
     isActive.set(true);
     TestBed.flushEffects();
-    vi.advanceTimersByTime(150);
-    expect(visible()).toBe(false);
-
-    delay.set(300);
-    TestBed.flushEffects();
-    // The new delay is counted from the change, not from the original start.
-    vi.advanceTimersByTime(299);
+    vi.advanceTimersByTime(399);
     expect(visible()).toBe(false);
     vi.advanceTimersByTime(1);
     expect(visible()).toBe(true);
   });
 
-  it('re-arms and restarts the dwell when minDwell changes while shown (A-n1)', () => {
-    const { isActive, minDwell, visible } = setup({ delay: 100, minDwell: 300 });
-
+  it('does not cut a running dwell short when minDwell changes', () => {
+    const { isActive, minDwell, visible } = setup({ delay: 0, minDwell: 500 });
     isActive.set(true);
     TestBed.flushEffects();
-    vi.advanceTimersByTime(100);
+    vi.advanceTimersByTime(0);
     expect(visible()).toBe(true);
 
-    vi.advanceTimersByTime(50);
-    minDwell.set(500);
-    TestBed.flushEffects();
-    // Re-arm: the delay re-fires, the visual stays shown, the dwell restarts.
-    vi.advanceTimersByTime(100);
-
+    minDwell.set(0);
     isActive.set(false);
     TestBed.flushEffects();
     vi.advanceTimersByTime(499);

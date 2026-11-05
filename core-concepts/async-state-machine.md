@@ -250,14 +250,14 @@ interface CngxLoadingConfig {
 Standard cascade shape:
 
 - `provideLoadingConfig(withShowDelay(200), withMinDwell(600))` - app-wide, in `bootstrapApplication` providers.
-- `provideLoadingConfigAt(withShowDelay(0))` - component scope, in `viewProviders`.
+- `provideLoadingConfigAt(withShowDelay(0))` - component scope, in `viewProviders`. It merges onto the ancestor scope: under an app-wide `provideLoadingConfig(withMinDwell(600))` it yields `{ showDelay: 0, minDwell: 600 }`, and nested scopes cascade the same way. Restate a feature to override an inherited field.
 - `injectLoadingConfig()` - read the resolved config in an injection context.
 - Features: `withShowDelay(ms)`, `withMinDwell(ms)`, `withSpinnerVsSkeletonCutoff(ms)`.
 
 Resolution priority for any one surface:
 
 1. Per-instance input (`[delay]` / `[minDwell]` on `cngx-loading-indicator` / `cngx-loading-overlay`; `[showDelay]` / `[minDwell]` on `cngxAsyncClick`; `skeletonDelay` / `skeletonMinDwell` on the recycler).
-2. `provideLoadingConfigAt(...)` in a component's `viewProviders`.
+2. `provideLoadingConfigAt(...)` in a component's `viewProviders`, per field: the nearest scope that names a feature wins, the fields it leaves out come from the ancestor scopes.
 3. `provideLoadingConfig(...)` at the app root.
 4. `CNGX_LOADING_DEFAULTS` (120 / 400 / 800).
 
@@ -286,7 +286,7 @@ What stays immediate (never behind a timer):
 - The status transition (`pending` -> `success` / `error`) and the SR announcement fire at settle. Assistive tech hears the result at once; the tint stays painted for the sighted user.
 - The settle **feedback window**: the success / error tint is shown for `feedbackDuration` counted from when the busy visual *releases*, not from settle, so the tint is always painted for its full duration even when `feedbackDuration` is shorter than the remaining dwell.
 
-Changing `[showDelay]` mid-run: a change during the delay window restarts the delay from the change; a change while the busy visual is shown re-arms and restarts the dwell.
+Changing `[showDelay]` or `[minDwell]` mid-run: only `isActive` is tracked, so the gate reads the timings once per activation (untracked). A change applies to the next activation and never restarts or cuts short a running delay or dwell.
 
 Testing it: advance the fake clock by `showDelay + minDwell + 1` to pass both timers (see the Loading timings recipe in `core-concepts/testing.md`). Do not `vi.waitFor` the real 120 ms gate; bind `[showDelay]="0"` or use fake timers.
 
@@ -312,6 +312,49 @@ const showSkeleton = computed(() => {
 The duration is a wall-clock sample taken at the busy edge through an injectable monotonic clock (default `performance.now()`), so it is a **measurement side effect**, not derived state. The probe writes `lastDuration` from an `effect` that tracks only the busy source, reads the clock in `untracked()`, and never reads its own output back. The Signal-First Internals chapter documents why this is a sanctioned write-in-effect.
 
 In `@cngx/common/data`, `injectLatencyProbe()` bridges the app-wide `CngxAsyncRegistry.isAnythingLoading` signal into a probe, so the whole app's busy-envelope drives the choice. When no registry is provided it returns a probe that is simply never busy. The selection stays a two-line consumer `@if`: CNGX ships the primitive, the bridge, and the cutoff; the consumer composes the indicator.
+
+---
+
+## Settle events
+
+Status is state. A settle is an event. The two differ when two runs settle before change detection: an effect that reads `status()` sees only the final value of the flush, so it fires once for two runs. That is correct for state consumers (a skeleton, an alert that shows the current outcome) and wrong for side effects that must happen per run: a toast, a completion output, a close-on-success, a live-region write.
+
+`cngxAsyncClick` therefore emits `(settled)` once per success or error settle, synchronously from the settle path, with a `CngxAsyncSettle` payload:
+
+```typescript
+interface CngxAsyncSettle {
+  readonly generation: number; // 1, 2, ... per directive instance
+  readonly status: 'success' | 'error';
+  readonly error: unknown; // the rejection value, undefined on success
+}
+```
+
+It never emits on a cancelled run, on reset or after destroy. The hosts that run their side effects on it:
+
+- `CngxActionButton` shows its toast per own settle and re-exports `(settled)`. A bound `[externalState]` stays state: one toast and one announcement per observed edge.
+- `CngxStepperComplete` emits `(completed)` once per successful finish run.
+- `CngxPopoverAction` re-arms close-on-success and speaks its result once per settle.
+
+The `cngxAsyncClick` live region follows the same rule: one write per settle, cleared at the settle and written after the next render (so a host can read the content the settle rendered). Two runs that settle before change detection produce two writes in the same render pass; whether a screen reader voices both depends on the assistive technology. No effect reads the copy, so a language switch never re-voices it. `announce(message)` speaks a settle the host reflects but the directive did not run.
+
+Keep `status()` / `state` for everything that shows the current outcome; put per-run side effects on `(settled)`. The consumer-placed bridges below (`[cngxToastOn]`, `[cngxAlertOn]`, `[cngxBannerOn]`) bind state and fire per observed transition.
+
+### Run lifetime and cancellation
+
+`AsyncAction` is `(signal?: AbortSignal) => Promise<unknown> | Observable<unknown>`. `cngxAsyncClick` passes a signal that aborts when the directive is destroyed:
+
+- The library never aborts the in-flight run. On destroy it stops listening: no state write, no `(settled)`, no announcement, the feedback timer cleared, and the signal aborts.
+- An action that wants cancellation owns it: pass the signal on to `fetch` or end an `HttpClient` call on its abort event.
+- `createRetry` forwards the signal to every attempt and stops on it: the backoff timer is cleared, no further attempt starts and an aborted run settles the retry state idle (`lastError` kept). It stays a pure factory (no injection context); a direct call without a signal has no destroy binding.
+- A run that ends without an outcome (superseded, `reset()`, aborted) resolves `CNGX_ASYNC_CANCELLED` instead of `undefined`. It is resolved, not rejected, so an `await` caller gets no surprise throw. `cngxAsyncClick` maps it to `idle`: no announcement, no `(settled)`.
+
+```typescript
+const [save, retryState] = createRetry((signal) => fetch('/api/save', { method: 'POST', signal }), {
+  maxAttempts: 3,
+});
+// <button [cngxAsyncClick]="save">Save</button>
+// Destroying the button aborts the signal: the fetch is cancelled and no retry starts.
+```
 
 ---
 

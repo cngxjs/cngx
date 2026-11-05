@@ -39,7 +39,7 @@
      */
     --cngx-select-optgroup-padding: var(--cngx-space-xs) var(--cngx-space-sm);
     padding: var(--cngx-select-optgroup-padding, 0.25rem 0.5rem);
-    font-size: 0.75rem;
+    font-size: var(--cngx-select-optgroup-font-size, 0.75rem);
     font-weight: 600;
     color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
     text-transform: uppercase;

@@ -1,12 +1,15 @@
 import { isPlatformBrowser } from '@angular/common';
 import {
+  afterNextRender,
   computed,
   DestroyRef,
   Directive,
   effect,
   ElementRef,
   inject,
+  Injector,
   input,
+  output,
   PLATFORM_ID,
   Renderer2,
   signal,
@@ -27,8 +30,49 @@ import { CNGX_HOST_INTERACTION_STATE } from './host-interaction-state.token';
 
 /**
  * Action function that returns a Promise or Observable.
+ *
+ * `cngxAsyncClick` passes an `AbortSignal` that aborts when the runner is
+ * destroyed. The library never aborts the run itself: a destroyed runner
+ * only stops listening. Pass the signal on (`fetch(url, { signal })`, an
+ * `HttpClient` call ended with `takeUntil(fromEvent(signal, 'abort'))`) to
+ * opt in to cancellation. Zero-argument actions stay assignable.
  */
-export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
+export type AsyncAction = (signal?: AbortSignal) => Promise<unknown> | Observable<unknown>;
+
+/**
+ * Resolve value of a run that ended without an outcome: superseded by a
+ * newer run, reset, or aborted through its `AbortSignal`. `createRetry`
+ * resolves it instead of `undefined`; `cngxAsyncClick` maps it to `idle`
+ * with no announcement and no `(settled)`. Resolved, not rejected, so an
+ * `await` caller outside the directive gets no surprise throw: compare the
+ * result with it where the result is used.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-click/async-click.directive.ts
+ * @since 0.1.0
+ * @relatedTo createRetry, CngxAsyncClick
+ */
+export const CNGX_ASYNC_CANCELLED: unique symbol = Symbol('CNGX_ASYNC_CANCELLED');
+
+/**
+ * One settle of a `cngxAsyncClick` run, emitted through `(settled)`.
+ *
+ * `generation` counts the settles of one directive instance (1, 2, ...), so
+ * two runs that settle before change detection still arrive as two events.
+ * `error` carries the rejection value of an `'error'` settle and is
+ * `undefined` for `'success'`.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-click/async-click.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxAsyncClick
+ */
+export interface CngxAsyncSettle {
+  /** Monotonic settle counter of the emitting directive, starting at 1. */
+  readonly generation: number;
+  /** Outcome of the run. */
+  readonly status: 'success' | 'error';
+  /** Rejection value of an `'error'` settle; `undefined` on success. */
+  readonly error: unknown;
+}
 
 /**
  * Async action handler with loading state, auto-disable, and success/error feedback.
@@ -44,7 +88,24 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
  * when it must not. Success and failure are announced through
  * an auto-rendered polite live region (sibling of the host - inside a
  * `<button>` the text would pollute the accessible name); opt out with
- * `[autoAnnounce]="false"` and bind `announcement` to your own region.
+ * `[autoAnnounce]="false"` and drive your own region from `(settled)`.
+ *
+ * Every settle is an event, not only a state: `(settled)` emits once per
+ * success or error with a monotonic `generation`, and the region gets one
+ * write per settle (cleared at the settle, the text written after the next
+ * render). Two runs that settle before change detection produce two writes
+ * in the same render pass; whether a screen reader voices both depends on
+ * the assistive technology. Side effects that must happen per run (a toast,
+ * a close, a completion output) belong on `(settled)`; `status` and `state`
+ * stay derived state.
+ *
+ * Destroy ends the lifecycle without aborting the run: the in-flight action
+ * keeps running (the library never cancels it), but no state is written, no
+ * `(settled)` is emitted, nothing is spoken and the feedback timer is
+ * cleared. The `AbortSignal` handed to the action aborts, so an action that
+ * forwards it (and `createRetry`, which stops its backoff loop on it) can
+ * end early. A run that resolves {@link CNGX_ASYNC_CANCELLED} returns to
+ * `idle` silently.
  *
  * The busy visual is gated, the truth is not: {@link busyVisible} (and with it
  * `cngx-async--pending` and the button-family spinner) turns on only after
@@ -157,11 +218,18 @@ export class CngxAsyncClick {
 
   /**
    * Auto-render the polite live region announcing success/failure.
-   * Opt out (`false`) to wire {@link announcement} to your own region -
-   * also when a toast/alert bridge (`cngxToastOn`, `cngxAlertOn`) on the
+   * Opt out (`false`) to drive your own region from `(settled)` - also when a toast/alert bridge (`cngxToastOn`, `cngxAlertOn`) on the
    * same element already announces the settle, or the user hears it twice.
    */
   readonly autoAnnounce = input<boolean>(true);
+
+  /**
+   * Emits once per success or error settle with a monotonic generation;
+   * never on cancel, reset or after destroy. Use it for side effects that
+   * must happen per run - a status edge read in an effect coalesces two runs
+   * that settle before change detection into one.
+   */
+  readonly settled = output<CngxAsyncSettle>();
 
   /**
    * `true` when clicks are refused outside a running action: `enabled` is
@@ -214,6 +282,10 @@ export class CngxAsyncClick {
   private readonly lastUpdatedState = signal<Date | undefined>(undefined);
   private feedbackTimer: ReturnType<typeof setTimeout> | null = null;
   private destroyed = false;
+  private generation = 0;
+  private readonly injector = inject(Injector);
+  private regionSpan: HTMLSpanElement | null = null;
+  private readonly abortController = new AbortController();
 
   constructor() {
     this.destroyRef.onDestroy(() => {
@@ -221,6 +293,7 @@ export class CngxAsyncClick {
       if (this.feedbackTimer != null) {
         clearTimeout(this.feedbackTimer);
       }
+      this.abortController.abort();
     });
 
     // Arm the feedback-reset window when the run has settled AND the busy
@@ -246,51 +319,100 @@ export class CngxAsyncClick {
   private installAnnounceRegion(): void {
     const renderer = inject(Renderer2);
     const hostEl = this.el.nativeElement;
-    let span: HTMLSpanElement | null = null;
 
+    // Owns only the region element. The text is written per settle by
+    // speak(), so no effect reads copy and a language switch never re-voices.
     effect(() => {
       const enabled = this.autoAnnounce();
-      const text = this.hostState?.announcement?.() ?? this.announcement();
 
       untracked(() => {
         if (!enabled) {
-          if (span?.parentNode) {
-            renderer.removeChild(span.parentNode, span);
-          }
-          span = null;
+          this.removeRegion(renderer);
           return;
         }
-
-        if (!span) {
-          const parent = renderer.parentNode(hostEl) as Node | null;
-          if (!parent) {
-            return;
-          }
-          const el = renderer.createElement('span') as HTMLSpanElement;
-          renderer.setStyle(el, 'position', 'var(--cngx-sr-only-position, absolute)');
-          renderer.setStyle(el, 'width', 'var(--cngx-sr-only-size, 1px)');
-          renderer.setStyle(el, 'height', 'var(--cngx-sr-only-size, 1px)');
-          renderer.setStyle(el, 'overflow', 'var(--cngx-sr-only-overflow, hidden)');
-          renderer.setStyle(el, 'clip', 'var(--cngx-sr-only-clip, rect(0, 0, 0, 0))');
-          renderer.setStyle(el, 'white-space', 'var(--cngx-sr-only-white-space, nowrap)');
-          renderer.setAttribute(el, 'aria-atomic', 'true');
-          renderer.setAttribute(el, 'role', 'status');
-          renderer.setAttribute(el, 'aria-live', 'polite');
-          // Sibling, not child: inside a <button> host the region's text
-          // would land in the control's accessible name.
-          renderer.insertBefore(parent, el, hostEl.nextSibling);
-          span = el;
+        if (this.regionSpan) {
+          return;
         }
-        span.textContent = text;
+        const parent = renderer.parentNode(hostEl) as Node | null;
+        if (!parent) {
+          return;
+        }
+        const el = renderer.createElement('span') as HTMLSpanElement;
+        renderer.setStyle(el, 'position', 'var(--cngx-sr-only-position, absolute)');
+        renderer.setStyle(el, 'width', 'var(--cngx-sr-only-size, 1px)');
+        renderer.setStyle(el, 'height', 'var(--cngx-sr-only-size, 1px)');
+        renderer.setStyle(el, 'overflow', 'var(--cngx-sr-only-overflow, hidden)');
+        renderer.setStyle(el, 'clip', 'var(--cngx-sr-only-clip, rect(0, 0, 0, 0))');
+        renderer.setStyle(el, 'white-space', 'var(--cngx-sr-only-white-space, nowrap)');
+        renderer.setAttribute(el, 'aria-atomic', 'true');
+        renderer.setAttribute(el, 'role', 'status');
+        renderer.setAttribute(el, 'aria-live', 'polite');
+        // Sibling, not child: inside a <button> host the region's text
+        // would land in the control's accessible name.
+        renderer.insertBefore(parent, el, hostEl.nextSibling);
+        this.regionSpan = el;
       });
     });
 
-    this.destroyRef.onDestroy(() => {
-      if (span?.parentNode) {
-        renderer.removeChild(span.parentNode, span);
+    // The spoken text lives as long as the feedback window it describes: when
+    // the run falls back to idle the region is emptied (silently), so a
+    // browse-mode reader never finds a stale outcome.
+    effect(() => {
+      if (this.status() !== 'idle') {
+        return;
       }
-      span = null;
+      untracked(() => {
+        if (this.regionSpan) {
+          this.regionSpan.textContent = '';
+        }
+      });
     });
+
+    this.destroyRef.onDestroy(() => this.removeRegion(renderer));
+  }
+
+  private removeRegion(renderer: Renderer2): void {
+    const span = this.regionSpan;
+    if (span?.parentNode) {
+      renderer.removeChild(span.parentNode, span);
+    }
+    this.regionSpan = null;
+  }
+
+  /**
+   * Clears the region at once, then writes `read()` after the next render,
+   * so a host can read content the settle rendered. Two settles before a
+   * render produce two writes in that one render pass.
+   */
+  private speak(read: () => string): void {
+    if (!untracked(this.autoAnnounce)) {
+      return;
+    }
+    // The region may not exist yet (a settle before the first render); the
+    // write resolves it then.
+    if (this.regionSpan) {
+      this.regionSpan.textContent = '';
+    }
+    afterNextRender(
+      {
+        write: () => {
+          const current = this.regionSpan;
+          if (!this.destroyed && current) {
+            current.textContent = read();
+          }
+        },
+      },
+      { injector: this.injector },
+    );
+  }
+
+  /**
+   * Speaks `message` once through the auto region after the next render, for
+   * a settle the host reflects but the directive did not run (an external
+   * async state). No-op with `[autoAnnounce]="false"` or outside the browser.
+   */
+  announce(message: string): void {
+    this.speak(() => message);
   }
 
   /** `true` while the action is executing. */
@@ -331,9 +453,13 @@ export class CngxAsyncClick {
   );
 
   /**
-   * Screen reader announcement for the current state. Rendered automatically
-   * into the auto polite region; only needs manual wiring when
-   * `autoAnnounce` is `false`.
+   * Announcement copy for the current state: the succeeded or failed text
+   * while that feedback window is open, else `''`. It is state, so two
+   * settles within one change-detection flush coalesce into the last one.
+   * The auto region does not bind it (it writes per settle). With
+   * `[autoAnnounce]="false"`, drive your own region from `(settled)`
+   * (clear it, then write the copy for `settle.status`) instead of binding
+   * this signal, or a second run that settles before the render is lost.
    */
   readonly announcement = computed(() => {
     // Copy is read untracked: only a settle re-derives the region, so a
@@ -370,27 +496,54 @@ export class CngxAsyncClick {
     this.clearFeedback();
     this.pendingState.set(true);
 
+    // Only the action is guarded: a throw inside settle() (a (settled)
+    // listener, say) must not turn into a second, error settle.
+    let outcome: { readonly status: 'success' | 'error'; readonly error: unknown };
     try {
       const actionFn = this.action();
-      const result$ = actionFn();
+      const result$ = actionFn(this.abortController.signal);
       const promise = isObservable(result$)
         ? firstValueFrom(result$, { defaultValue: undefined })
         : result$;
-      await promise;
-      if (this.destroyed) {
+      const result = await promise;
+      if (result === CNGX_ASYNC_CANCELLED) {
+        if (!this.destroyed) {
+          this.pendingState.set(false);
+        }
         return;
       }
-      this.pendingState.set(false);
+      outcome = { status: 'success', error: undefined };
+    } catch (err: unknown) {
+      outcome = { status: 'error', error: err };
+    }
+    if (this.destroyed) {
+      return;
+    }
+    this.settle(outcome.status, outcome.error);
+  }
+
+  /** Ends a run: writes the state, emits `(settled)` and speaks the outcome once. */
+  private settle(status: 'success' | 'error', err: unknown): void {
+    this.pendingState.set(false);
+    if (status === 'success') {
       this.succeededState.set(true);
       this.lastUpdatedState.set(new Date());
-    } catch (err: unknown) {
-      if (this.destroyed) {
-        return;
-      }
-      this.pendingState.set(false);
+    } else {
       this.failedState.set(true);
       this.errorState.set(err);
     }
+
+    this.generation += 1;
+    const settle: CngxAsyncSettle = { generation: this.generation, status, error: err };
+    this.settled.emit(settle);
+
+    // Own copy resolves now: a later language switch or a feedback reset
+    // inside the render gap cannot change what this settle speaks. The host
+    // gets this settle, not the status after the render, which may already
+    // show a later run.
+    const own = untracked(this.announcement);
+    const hostAnnouncement = this.hostState?.announcement;
+    this.speak(() => (hostAnnouncement ? untracked(() => hostAnnouncement(settle)) : own));
   }
 
   private scheduleFeedbackReset(): void {

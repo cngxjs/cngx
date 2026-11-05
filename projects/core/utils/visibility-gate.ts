@@ -1,4 +1,4 @@
-import { DestroyRef, effect, inject, type Signal, signal } from '@angular/core';
+import { DestroyRef, effect, inject, type Signal, signal, untracked } from '@angular/core';
 
 /**
  * Creates a debounced visibility signal from an active-state signal.
@@ -7,11 +7,9 @@ import { DestroyRef, effect, inject, type Signal, signal } from '@angular/core';
  * - `delay`: suppresses visibility for fast operations (no flash)
  * - `minDwell`: keeps visible for at least this long once shown (no jarring disappearance)
  *
- * Re-arm rule: a change to `delay` or `minDwell` while the run is active
- * re-runs the gate. A change in the delay window restarts the delay from the
- * change with the new value; a change while already shown re-arms the delay
- * and restarts the min-dwell, so the visual honours the new timing from that
- * point.
+ * Only `isActive` is tracked: `delay` and `minDwell` are read once per
+ * activation, untracked, so a timing change applies to the next activation
+ * and never restarts or cuts short a running delay or dwell.
  *
  * Must be called in an injection context (uses `inject(DestroyRef)` for cleanup).
  *
@@ -33,10 +31,10 @@ export function createVisibilityGate(
 
   effect(() => {
     const active = isActive();
-    const delayMs = delay();
-    const minMs = minDwell();
 
     if (active) {
+      const delayMs = untracked(delay);
+      const minMs = untracked(minDwell);
       clearTimer('delay');
       delayTimer = setTimeout(() => {
         delayTimer = undefined;

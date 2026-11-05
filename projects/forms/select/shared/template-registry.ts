@@ -101,23 +101,6 @@ export interface CngxSelectTemplateRegistry<T = unknown> {
 }
 
 /**
- * Resolves the shared template slots through the 3-stage cascade.
- * Injection context required (`injectResolvedTemplate` reads
- * `CNGX_SELECT_CONFIG`).
- *
- * ```ts
- * @Component({ … })
- * export class CngxSelect<T> {
- *   private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
- *
- *   protected readonly tpl = createTemplateRegistry<T>({
- *     check: this.checkDirective,
- *     // ...
- *   });
- * }
- * ```
- */
-/**
  * Resolution of an omitted optional query. A host without the outlet must
  * not resolve the `templates.<slot>` config default either: flat variants
  * wire no action query, so an app-wide `templates.action` would otherwise
@@ -133,11 +116,24 @@ const NO_SHEET_COUNT_DIRECTIVE: Signal<CngxSelectSheetCount | undefined> = signa
  * Build a resolved {@link CngxSelectTemplateRegistry} from raw
  * `contentChild` directive queries. Runs each slot through the
  * 3-stage cascade (instance directive → `CNGX_SELECT_CONFIG.templates`
- * default → `null`). Must be called in an injection context.
+ * default → `null`). Must be called in an injection context
+ * (`injectResolvedTemplate` reads `CNGX_SELECT_CONFIG`).
  *
- * Used by every select-family variant to replace ~13 inline
+ * Used by every select-family variant to replace the inline
  * `injectResolvedTemplate(...)` cascade blocks. See
  * {@link CngxSelectTemplateRegistryQueries} for the input shape.
+ *
+ * ```ts
+ * @Component({ … })
+ * export class CngxSelect<T> {
+ *   private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
+ *
+ *   protected readonly tpl = createTemplateRegistry<T>({
+ *     check: this.checkDirective,
+ *     // ...
+ *   });
+ * }
+ * ```
  */
 export function createTemplateRegistry<T = unknown>(
   queries: CngxSelectTemplateRegistryQueries<T>,

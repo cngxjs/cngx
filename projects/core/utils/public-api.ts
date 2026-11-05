@@ -45,6 +45,7 @@ export {
   type ValueTransition,
 } from './transition-tracker';
 export { createVisibilityGate } from './visibility-gate';
+export { resolveSpokenText } from './spoken-text';
 export { createLatencyProbe, type CngxLatencyProbe } from './latency-probe';
 export {
   type CngxLoadingConfig,

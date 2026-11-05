@@ -1,3 +1,4 @@
+import { type JsonValue } from '@angular-devkit/core';
 import { JSONFile } from '@schematics/angular/utility/json-file';
 
 import { type AiTool, hasProvenanceStamp, isRecord, type Tree } from '../../engine';
@@ -54,9 +55,22 @@ export interface ClaudeInstructions {
 /** Opens the block cngx writes into agent instruction files; a later run finds it. */
 export const AGENTS_MARKER = '<!-- cngx:agents -->';
 
+/**
+ * The `cngx` server entry the AI tooling step writes for `tool`. Claude Code
+ * reads the `.mcp.json` shape of packages/plugin; Cursor and VS Code name the
+ * transport explicitly. Detection compares an existing entry against it, so a
+ * re-run tells the entry cngx wrote from one the user edited.
+ */
+export function serverEntry(tool: AiTool, mcpVersion: string): JsonValue {
+  const command = { command: 'npx', args: ['-y', `@cngx/mcp@${mcpVersion}`] };
+  return tool === 'claude' ? command : { type: 'stdio', ...command };
+}
+
 export interface McpConfigFacts {
   readonly state: McpConfigState;
   readonly pin: string | undefined;
+  /** The `cngx` entry is exactly the one cngx writes for its own pin; a user's edit makes it `false`. */
+  readonly cngxShaped: boolean;
 }
 
 const MCP_PACKAGE = /^@cngx\/mcp@(.+)$/;
@@ -71,31 +85,61 @@ function mcpPinOf(entry: unknown): string | undefined {
   return match?.[1];
 }
 
+// Structural JSON equality: key order is not part of the shape, and the
+// objects JSONFile parses carry no plain prototype to compare.
+function jsonEqual(a: unknown, b: unknown): boolean {
+  if (Array.isArray(a) || Array.isArray(b)) {
+    return (
+      Array.isArray(a) &&
+      Array.isArray(b) &&
+      a.length === b.length &&
+      a.every((item, i) => jsonEqual(item, b[i]))
+    );
+  }
+  if (isRecord(a) && isRecord(b)) {
+    const keys = Object.keys(a);
+    return (
+      keys.length === Object.keys(b).length &&
+      keys.every((key) => key in b && jsonEqual(a[key], b[key]))
+    );
+  }
+  return a === b;
+}
+
+function wiredFacts(tool: AiTool, entry: unknown): McpConfigFacts {
+  const pin = mcpPinOf(entry);
+  const cngxShaped = pin !== undefined && jsonEqual(entry, serverEntry(tool, pin));
+  return { state: 'wired', pin, cngxShaped };
+}
+
 // JSONFile reads JSONC, so a commented `.vscode/mcp.json` still counts as editable.
-function mcpConfigOf(tree: Tree, path: string, key: string): McpConfigFacts {
+function mcpConfigOf(tree: Tree, tool: AiTool): McpConfigFacts {
+  const { path, key } = MCP_CONFIGS[tool];
   if (!tree.exists(path)) {
-    return { state: 'absent', pin: undefined };
+    return { state: 'absent', pin: undefined, cngxShaped: false };
   }
   let root: unknown;
   try {
     root = new JSONFile(tree, path).get([]);
   } catch {
-    return { state: 'invalid', pin: undefined };
+    return { state: 'invalid', pin: undefined, cngxShaped: false };
   }
   const servers = isRecord(root) ? root[key] : undefined;
   if (!isRecord(root) || (servers !== undefined && !isRecord(servers))) {
     // Not an object cngx can add an entry to: the JSON write would throw at apply time.
-    return { state: 'invalid', pin: undefined };
+    return { state: 'invalid', pin: undefined, cngxShaped: false };
   }
   const entry = servers?.['cngx'];
-  return entry === undefined ? { state: 'present', pin: undefined } : { state: 'wired', pin: mcpPinOf(entry) };
+  return entry === undefined
+    ? { state: 'present', pin: undefined, cngxShaped: false }
+    : wiredFacts(tool, entry);
 }
 
 export function mcpConfigsOf(tree: Tree): Readonly<Record<AiTool, McpConfigFacts>> {
   return {
-    claude: mcpConfigOf(tree, MCP_CONFIGS.claude.path, MCP_CONFIGS.claude.key),
-    cursor: mcpConfigOf(tree, MCP_CONFIGS.cursor.path, MCP_CONFIGS.cursor.key),
-    vscode: mcpConfigOf(tree, MCP_CONFIGS.vscode.path, MCP_CONFIGS.vscode.key),
+    claude: mcpConfigOf(tree, 'claude'),
+    cursor: mcpConfigOf(tree, 'cursor'),
+    vscode: mcpConfigOf(tree, 'vscode'),
   };
 }
 

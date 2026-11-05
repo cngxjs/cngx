@@ -161,7 +161,9 @@ describe('CngxPopoverSheet geometry', () => {
       const vp = viewport();
       expect(Math.round(rect.bottom)).toBe(vp.height);
       expect(Math.round(rect.left)).toBe(0);
-      expect(Math.round(rect.width)).toBe(vp.width);
+      // Full layout viewport width (100vw), the modal sheet covering the
+      // classic scrollbar gutter rather than insetting itself by it (I7).
+      expect(Math.round(rect.width)).toBe(window.innerWidth);
       expect(rect.height).toBeLessThan(vp.height * 0.8);
     },
   );
@@ -209,7 +211,8 @@ describe('CngxPopoverSheet geometry', () => {
     const vp = viewport();
     expect(Math.round(rect.top)).toBe(0);
     expect(Math.round(rect.height)).toBe(vp.height);
-    expect(Math.round(rect.width)).toBe(vp.width);
+    // Full layout viewport width (100vw), covering the scrollbar gutter (I7).
+    expect(Math.round(rect.width)).toBe(window.innerWidth);
   });
 
   it('renders nothing once a sheet or fullscreen panel is closed', async () => {

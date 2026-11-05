@@ -824,7 +824,10 @@ describe('CngxPopover', () => {
       // default placement bottom, offset 8 -> y shifted from the mock's base 100
       expect(popoverEl.style.top).toBe('108px');
       expect(popoverEl.style.left).toBe('100px');
+      // The floating-ui path writes no margin and no anchor-margin custom
+      // property; the anchor offset belongs to the CSS-anchor path only.
       expect(popoverEl.style.margin).toBe('');
+      expect(popoverEl.style.getPropertyValue('--cngx-popover-anchor-margin')).toBe('');
     });
 
     it('re-runs positioning on scroll and resize while open, stops after close', () => {

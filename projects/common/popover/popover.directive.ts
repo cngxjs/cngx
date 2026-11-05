@@ -269,7 +269,7 @@ function warnMissingFloatingMiddleware(doc: Document): void {
     '[class.cngx-popover--closing]': 'isClosing()',
     '[style.position-anchor]': 'cssAnchorRef()',
     '[style.position-try-fallbacks]': 'cssPositionTryFallbacks()',
-    '[style.margin]': 'cssMargin()',
+    '[style.--cngx-popover-anchor-margin]': 'cssMargin()',
     '[style.--cngx-popover-arrow-offset]': 'arrowOffset()',
     '(toggle)': 'handleToggle($event)',
   },

@@ -53,6 +53,7 @@ import { afterAll, afterEach, expect, vi } from 'vitest';
 import { cngxAnnouncementMatchers } from '@cngx/core/testing/vitest';
 
 import { cngxMatchers } from '../matchers/dom-matchers';
+import { installPopoverPolyfill, restorePopoverPolyfill } from '../helpers/popover-polyfill';
 
 // The matchers' `declare module 'vitest'` augmentation is program-wide, so
 // registration lives here as well: every target that type-checks
@@ -62,10 +63,16 @@ import { cngxMatchers } from '../matchers/dom-matchers';
 expect.extend(cngxMatchers);
 expect.extend(cngxAnnouncementMatchers);
 
+// jsdom has no Popover API; install once per file (this module re-evaluates per
+// spec file) so CngxPopover can toggle. A real browser keeps its native
+// implementation - the polyfill patches only when `showPopover` is absent.
+installPopoverPolyfill();
+
 afterEach(() => {
   vi.useRealTimers();
 });
 
 afterAll(() => {
+  restorePopoverPolyfill();
   vi.unstubAllGlobals();
 });

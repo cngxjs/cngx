@@ -53,6 +53,7 @@ export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts
     editors: { claude: false, cursor: false, vscode: false },
     mcpConfigs: { claude: 'absent', cursor: 'absent', vscode: 'absent' },
     mcpPins: { claude: undefined, cursor: undefined, vscode: undefined },
+    mcpCngxShaped: { claude: false, cursor: false, vscode: false },
     agentsMd: 'absent',
     claudeInstructions: undefined,
     helperReadme: undefined,

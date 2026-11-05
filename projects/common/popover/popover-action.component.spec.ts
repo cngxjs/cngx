@@ -113,6 +113,39 @@ class ForwardConfirmHost {
     });
 }
 
+@Component({
+  template: `
+    <div cngxPopover #pop="cngxPopover">
+      <cngx-popover-action role="confirm" [action]="saveAction">
+        Save
+        <ng-template cngxFailed><span aria-hidden="true">!</span> Permission denied</ng-template>
+      </cngx-popover-action>
+    </div>
+  `,
+  imports: [CngxPopover, CngxPopoverAction, CngxFailed],
+})
+class GlyphFailedHost {
+  readonly popover = viewChild.required(CngxPopover);
+  outcome: 'success' | 'error' = 'error';
+  readonly saveAction = () =>
+    this.outcome === 'success' ? Promise.resolve() : Promise.reject(new Error('403'));
+}
+
+@Component({
+  template: `
+    <div cngxPopover #pop="cngxPopover">
+      <cngx-popover-action role="confirm" [action]="saveAction">Save</cngx-popover-action>
+    </div>
+  `,
+  imports: [CngxPopover, CngxPopoverAction],
+})
+class PlainConfirmHost {
+  readonly popover = viewChild.required(CngxPopover);
+  outcome: 'success' | 'error' = 'error';
+  readonly saveAction = () =>
+    this.outcome === 'success' ? Promise.resolve() : Promise.reject(new Error('nope'));
+}
+
 function setup<T>(hostType: new () => T) {
   const fixture = TestBed.createComponent(hostType);
   fixture.detectChanges();
@@ -289,9 +322,7 @@ describe('CngxPopoverAction', () => {
       btn.click();
     }
 
-    async function settle(fixture: {
-      detectChanges(): void;
-    }): Promise<void> {
+    async function settle(fixture: { detectChanges(): void }): Promise<void> {
       await vi.advanceTimersByTimeAsync(0);
       fixture.detectChanges();
       TestBed.flushEffects();
@@ -538,5 +569,111 @@ describe('CngxPopoverAction', () => {
     fixture.detectChanges();
 
     expect(btn.textContent).toContain('Network error');
+  });
+  describe('settle announcement', () => {
+    const region = (fixture: { nativeElement: HTMLElement }): HTMLElement =>
+      fixture.nativeElement.querySelector('.cngx-popover-action__sr-only') as HTMLElement;
+    const button = (fixture: { nativeElement: HTMLElement }): HTMLButtonElement =>
+      fixture.nativeElement.querySelector('.cngx-popover-action') as HTMLButtonElement;
+
+    async function settleRender(fixture: { detectChanges(): void }): Promise<void> {
+      await vi.advanceTimersByTimeAsync(0);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+    }
+
+    it('speaks the rendered result template after success and after failure', async () => {
+      const { fixture } = setup(ConfirmHost);
+      const host = fixture.componentInstance;
+      button(fixture).click();
+      await settleRender(fixture);
+      host.resolveFn();
+      await settleRender(fixture);
+      expect(region(fixture).textContent).toBe('Saved!');
+
+      await vi.advanceTimersByTimeAsync(500);
+      button(fixture).click();
+      await settleRender(fixture);
+      host.rejectFn('Network error');
+      await settleRender(fixture);
+      expect(region(fixture).textContent).toBe('Failed: Network error');
+    });
+
+    it('skips an aria-hidden glyph in the failed template', async () => {
+      const { fixture } = setup(GlyphFailedHost);
+      button(fixture).click();
+      await settleRender(fixture);
+      expect(region(fixture).textContent).toBe('Permission denied');
+    });
+
+    it('speaks the cngxAsyncClick announcement without result templates', async () => {
+      const { fixture } = setup(PlainConfirmHost);
+      button(fixture).click();
+      await settleRender(fixture);
+      expect(region(fixture).textContent).toBe('Action failed');
+    });
+
+    it('writes the region once per settle', async () => {
+      const { fixture } = setup(PlainConfirmHost);
+      const writes: string[] = [];
+      const observer = new MutationObserver((records) => {
+        for (const r of records) {
+          const text = Array.from(r.addedNodes, (n) => n.textContent ?? '').join('');
+          if (text) {
+            writes.push(text);
+          }
+        }
+      });
+      observer.observe(region(fixture), { childList: true });
+      button(fixture).click();
+      await vi.advanceTimersByTimeAsync(0);
+      button(fixture).click();
+      await vi.advanceTimersByTimeAsync(0);
+      fixture.detectChanges();
+      await Promise.resolve();
+      observer.disconnect();
+      expect(writes).toEqual(['Action failed', 'Action failed']);
+    });
+
+    it('closes once per success under withCloseOnSuccess', async () => {
+      TestBed.configureTestingModule({
+        imports: [PlainConfirmHost],
+        providers: [providePopoverPanel(withCloseOnSuccess(100))],
+      });
+      const { fixture, popoverEl } = setup(PlainConfirmHost);
+      const host = fixture.componentInstance;
+      host.outcome = 'success';
+      for (let run = 1; run <= 2; run++) {
+        host.popover().show();
+        fixture.detectChanges();
+        button(fixture).click();
+        await settleRender(fixture);
+        await vi.advanceTimersByTimeAsync(100);
+        expect(popoverEl.hidePopover).toHaveBeenCalledTimes(run);
+      }
+    });
+
+    it('leaves no close timer and no write when destroyed mid-run', async () => {
+      TestBed.configureTestingModule({
+        imports: [ConfirmHost],
+        providers: [providePopoverPanel(withCloseOnSuccess(100))],
+      });
+      const { fixture, popoverEl } = setup(ConfirmHost);
+      const host = fixture.componentInstance;
+      host.popover().show();
+      fixture.detectChanges();
+      const live = region(fixture);
+      button(fixture).click();
+      await settleRender(fixture);
+      fixture.destroy();
+      // Destroying the popover itself may hide it; only later hides count.
+      const hidesAtDestroy = (popoverEl.hidePopover as ReturnType<typeof vi.fn>).mock.calls.length;
+      host.resolveFn();
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(vi.getTimerCount()).toBe(0);
+      expect(live.textContent).toBe('');
+      expect(popoverEl.hidePopover).toHaveBeenCalledTimes(hidesAtDestroy);
+    });
   });
 });
