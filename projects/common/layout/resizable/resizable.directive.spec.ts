@@ -1,10 +1,14 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideDirection } from '@cngx/core';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { provideLayoutI18n, withLayoutI18nLabels } from '../i18n/layout-i18n';
-import { CngxResizable, type CngxResizableEdge } from './resizable.directive';
+import {
+  CNGX_RESIZABLE_DEFAULTS,
+  CngxResizable,
+  type CngxResizableEdge,
+} from './resizable.directive';
 
 @Component({
   template: `
@@ -26,6 +30,15 @@ class Host {
   readonly edge = signal<CngxResizableEdge>('inline-end');
   readonly label = signal<string | undefined>(undefined);
   readonly valueText = signal<((size: number) => string) | undefined>(undefined);
+}
+
+@Component({
+  template: `<div cngxResizable [(size)]="size" [max]="max()"></div>`,
+  imports: [CngxResizable],
+})
+class UnboundHost {
+  readonly size = signal(200);
+  readonly max = signal(600);
 }
 
 function setup(providers: unknown[] = []) {
@@ -219,5 +232,42 @@ describe('CngxResizable', () => {
   it('sets touch-action none so a touch drag does not pan the page', () => {
     const { handle } = setup();
     expect(handle.style.touchAction).toBe('none');
+  });
+
+  describe('defaults', () => {
+    afterEach(() => TestBed.resetTestingModule());
+
+    function mountUnbound(providers: unknown[] = []) {
+      TestBed.configureTestingModule({
+        imports: [UnboundHost],
+        providers: providers as never[],
+      });
+      const fixture = TestBed.createComponent(UnboundHost);
+      fixture.detectChanges();
+      const handle = (fixture.nativeElement as HTMLElement).querySelector(
+        '[cngxResizable]',
+      ) as HTMLElement;
+      return { fixture, handle };
+    }
+
+    it('keeps the 120 / 600 / 16 literals without the token', () => {
+      const { fixture, handle } = mountUnbound();
+      expect(handle.getAttribute('aria-valuemin')).toBe('120');
+      expect(handle.getAttribute('aria-valuemax')).toBe('600');
+      handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+      fixture.detectChanges();
+      expect(fixture.componentInstance.size()).toBe(216);
+    });
+
+    it('reads unbound inputs from CNGX_RESIZABLE_DEFAULTS and lets a bound input win', () => {
+      const { fixture, handle } = mountUnbound([
+        { provide: CNGX_RESIZABLE_DEFAULTS, useValue: { min: 160, max: 320, step: 40 } },
+      ]);
+      expect(handle.getAttribute('aria-valuemin')).toBe('160');
+      expect(handle.getAttribute('aria-valuemax')).toBe('600');
+      handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+      fixture.detectChanges();
+      expect(fixture.componentInstance.size()).toBe(240);
+    });
   });
 });

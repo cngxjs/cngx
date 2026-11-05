@@ -44,7 +44,12 @@ export {
   CngxPanelTrigger,
   type CngxPanelTriggerAction,
 } from './panel-trigger/panel-trigger.directive';
-export { CngxResizable, type CngxResizableEdge } from './resizable/resizable.directive';
+export {
+  CNGX_RESIZABLE_DEFAULTS,
+  CngxResizable,
+  type CngxResizableDefaults,
+  type CngxResizableEdge,
+} from './resizable/resizable.directive';
 export { CngxScrollLock } from './scroll/scroll-lock.directive';
 export { createPinnedScrollLock, createScrollLock } from './scroll/scroll-lock-core';
 export { CngxScrollEdges } from './scroll/scroll-edges.directive';

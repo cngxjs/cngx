@@ -1,5 +1,14 @@
 import { DOCUMENT } from '@angular/common';
-import { computed, DestroyRef, Directive, inject, input, model, signal } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  Directive,
+  inject,
+  InjectionToken,
+  input,
+  model,
+  signal,
+} from '@angular/core';
 import { injectDirection } from '@cngx/core';
 import { clamp } from '@cngx/utils';
 
@@ -12,6 +21,39 @@ import { injectLayoutI18n } from '../i18n/layout-i18n';
  * @since 0.1.0
  */
 export type CngxResizableEdge = 'inline-start' | 'inline-end';
+
+/**
+ * Optional app-wide defaults for `CngxResizable`'s bounds and key step.
+ * Provide it to move the `min` / `max` / `step` fallbacks an organism
+ * composes the handle with, without touching the per-instance input surface.
+ * Every key is optional - an unset key keeps the atom's literal
+ * (120 / 600 / 16).
+ *
+ * @since 0.1.0
+ */
+export interface CngxResizableDefaults {
+  /** Fallback for `min` (px) when the input is not bound. */
+  readonly min?: number;
+  /** Fallback for `max` (px) when the input is not bound. */
+  readonly max?: number;
+  /** Fallback for `step` (px per arrow-key press) when the input is not bound. */
+  readonly step?: number;
+}
+
+/**
+ * Optional DI fallback for `CngxResizable`'s `min` / `max` / `step` input
+ * defaults. Resolution is `bound input -> injected default -> literal`
+ * (120 / 600 / 16). A hostDirective input default cannot be overridden by the
+ * host that composes it, so this token is the layered extension point a
+ * resizable organism uses to set app-wide bounds. `optional`, so standalone
+ * `[cngxResizable]` stays byte-identical when the token is absent.
+ *
+ * @relatedTo CngxResizable
+ * @since 0.1.0
+ */
+export const CNGX_RESIZABLE_DEFAULTS = new InjectionToken<CngxResizableDefaults>(
+  'CNGX_RESIZABLE_DEFAULTS',
+);
 
 /**
  * A resize handle for a side panel: the WAI-ARIA window-splitter pattern on
@@ -35,6 +77,9 @@ export type CngxResizableEdge = 'inline-start' | 'inline-end';
  * `aria-orientation="vertical"`, `aria-valuenow` / `-min` / `-max`,
  * `aria-valuetext` and `aria-label` (copy from `CNGX_LAYOUT_I18N` unless the
  * `label` / `valueText` inputs are bound).
+ *
+ * `min`, `max` and `step` fall back to `CNGX_RESIZABLE_DEFAULTS`, then to
+ * 120 / 600 / 16.
  *
  * ```html
  * <aside [style.inline-size.px]="width()">…</aside>
@@ -68,16 +113,23 @@ export type CngxResizableEdge = 'inline-start' | 'inline-end';
   },
 })
 export class CngxResizable {
+  /**
+   * Optional app-wide bounds. Declared first so the input initialisers below
+   * can source their fallback from it. Absent by default - standalone
+   * `[cngxResizable]` then keeps the 120 / 600 / 16 literals.
+   */
+  private readonly defaults = inject(CNGX_RESIZABLE_DEFAULTS, { optional: true });
+
   /** Size of the resized panel in px. Two-way: `[(size)]="width"`. */
   readonly size = model.required<number>();
   /** Smallest size in px a drag or key can reach. */
-  readonly min = input<number>(120);
+  readonly min = input<number>(this.defaults?.min ?? 120);
   /** Largest size in px a drag or key can reach. */
-  readonly max = input<number>(600);
+  readonly max = input<number>(this.defaults?.max ?? 600);
   /** The panel edge the handle sits on; sets the drag and arrow-key direction. */
   readonly edge = input<CngxResizableEdge>('inline-end');
   /** Size change in px per arrow-key press. */
-  readonly step = input<number>(16);
+  readonly step = input<number>(this.defaults?.step ?? 16);
   /** Accessible name of the handle. Falls back to `CNGX_LAYOUT_I18N.resizeHandle`. */
   readonly label = input<string | undefined>(undefined);
   /**
