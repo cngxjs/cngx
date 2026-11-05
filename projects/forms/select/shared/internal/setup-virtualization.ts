@@ -5,7 +5,11 @@ import type { CngxPopover, CngxPopoverPresentation } from '@cngx/common/popover'
 
 import { createAutoPanelRenderer } from './auto-virtualize';
 import type { CngxSelectVirtualizationConfig } from '../config';
-import { CNGX_PANEL_RENDERER_FACTORY, type PanelRenderer } from '../panel-renderer';
+import {
+  CNGX_PANEL_RENDERER_FACTORY,
+  createIdentityPanelRenderer,
+  type PanelRenderer,
+} from '../panel-renderer';
 import type { CngxSelectCore } from './select-core';
 
 /**
@@ -28,25 +32,42 @@ export function setupVirtualization<T, TCommit>(opts: {
   readonly virtualItemCount: Signal<number | undefined>;
   readonly virtualWindowStart: Signal<number>;
 } {
-  const injected = inject(CNGX_PANEL_RENDERER_FACTORY)<T>({
+  const factory = inject(CNGX_PANEL_RENDERER_FACTORY);
+  const injected = factory<T>({
     flatOptions: opts.core.flatOptions,
   });
 
-  const panelRenderer: PanelRenderer<T> = injected.virtualizer
-    ? injected
-    : opts.virtualization !== null
-      ? createAutoPanelRenderer<T>({
-          flatOptions: opts.core.flatOptions,
-          popoverRef: opts.popoverRef,
-          virtualization: opts.virtualization,
-          presentation: opts.presentation,
-          listboxElement: opts.listboxElement,
-        })
-      : injected;
+  // A consumer-provided factory override always wins: its renderer is used
+  // verbatim, even without a `virtualizer`, so a deliberate identity-shaped
+  // override is not re-wrapped by the config-default auto-virtualizer. Only
+  // the default identity factory falls through to config-driven windowing.
+  const consumerOverride = factory !== createIdentityPanelRenderer;
 
+  const panelRenderer: PanelRenderer<T> =
+    consumerOverride || injected.virtualizer
+      ? injected
+      : opts.virtualization !== null
+        ? createAutoPanelRenderer<T>({
+            flatOptions: opts.core.flatOptions,
+            popoverRef: opts.popoverRef,
+            virtualization: opts.virtualization,
+            presentation: opts.presentation,
+            listboxElement: opts.listboxElement,
+          })
+        : injected;
+
+  // Virtual only while the renderer windows the list. Below the
+  // auto-virtualize threshold the full list renders, so AD stays
+  // non-virtual (plain index space): the recycler is attached but inert,
+  // and a small list behaves byte-identically to the identity renderer.
   const virtualItemCount = computed<number | undefined>(() => {
-    const total = panelRenderer.totalCount?.();
-    return panelRenderer.virtualizer !== undefined ? total : undefined;
+    const v = panelRenderer.virtualizer;
+    if (v === undefined) {
+      return undefined;
+    }
+    const rendered = panelRenderer.renderOptions().length;
+    const total = panelRenderer.totalCount?.() ?? rendered;
+    return rendered >= total ? undefined : total;
   });
 
   // Absolute index of the first option the renderer actually rendered - the

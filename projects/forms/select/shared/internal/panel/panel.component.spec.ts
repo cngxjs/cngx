@@ -5,6 +5,7 @@ import { CngxListbox, CngxOption } from '@cngx/common/interactive';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxSelect } from '../../../single-select/select.component';
+import { provideSelectConfig, withVirtualization } from '../../config';
 import type { CngxSelectOptionDef } from '../../option.model';
 import { CngxSelectOptionLabel } from '../../template-slots';
 
@@ -52,7 +53,14 @@ function flush(fixture: { detectChanges: () => void }): void {
 describe('CngxSelectPanel - highlighted option in the label slot', () => {
   beforeEach(() => {
     polyfillPopover();
-    TestBed.configureTestingModule({ imports: [LabelSlotHost] });
+    // Identity render: this pass asserts the highlighted option is resolved
+    // once per change, not once per row, across all 200 rows. Default
+    // virtualization windows a 200-option list, so opt out to keep the full
+    // list in the DOM.
+    TestBed.configureTestingModule({
+      imports: [LabelSlotHost],
+      providers: [provideSelectConfig(withVirtualization(false))],
+    });
   });
 
   afterEach(() => vi.restoreAllMocks());

@@ -58,7 +58,7 @@ describe('H5: a large closed panel renders no option nodes', () => {
 
 // ── H5 / OD5: a large open panel auto-virtualises instead of rendering all. ──
 describe('OD5: a large open panel renders a bounded row count without explicit virtualization', () => {
-  it.fails('CngxSelect: 1000 options open render far fewer than 1000 rows', () => {
+  it('CngxSelect: 1000 options open render far fewer than 1000 rows', () => {
     const m = mount(KINDS['select'], { options: MID });
     m.open();
     expect(m.rows().length).toBeLessThanOrEqual(100);

@@ -543,7 +543,10 @@ export const CNGX_SELECT_DEFAULTS: Required<
   enterKeyHint: null as 'enter' | 'done' | 'go' | 'next' | 'previous' | 'search' | 'send' | null,
   chipOverflow: 'wrap' as 'wrap' | 'scroll-x' | 'truncate' | 'fit',
   maxVisibleChips: 3,
-  virtualization: null as CngxSelectVirtualizationConfig | null,
+  // Flat lists auto-virtualize above the threshold by default (OD5 / H5);
+  // `withVirtualization(false)` / `(null)` opts out. Grouped lists bypass
+  // the recycler regardless (CNGX2028).
+  virtualization: { threshold: 200 } as CngxSelectVirtualizationConfig | null,
   panelClass: '',
   typeaheadDebounceInterval: 300,
   searchDebounceMs: 300,
@@ -724,20 +727,25 @@ export function withMaxVisibleChips(count: number): CngxSelectConfigFeature {
 }
 
 /**
- * Opts in to recycler virtualisation. `{}` / `true` uses defaults;
- * `null` / `false` falls back to identity. Custom pipelines provide
- * `CNGX_PANEL_RENDERER_FACTORY` directly.
+ * Tunes or opts out of recycler virtualisation. Flat option lists
+ * virtualize above a default `threshold` of 200 with no configuration;
+ * this feature overrides that. `{}` / `true` uses the recycler defaults
+ * (threshold 0, i.e. always virtualize); a config object tunes
+ * `estimateSize` / `overscan` / `threshold`; `false` / `null` opts out to
+ * identity render. Custom pipelines provide `CNGX_PANEL_RENDERER_FACTORY`
+ * directly.
  *
  * ```ts
  * provideSelectConfig(
  *   withVirtualization({ estimateSize: 36, overscan: 8, threshold: 500 }),
  * )
+ * provideSelectConfig(withVirtualization(false)) // opt out
  * ```
  */
 export function withVirtualization(
-  config: CngxSelectVirtualizationConfig | boolean = true,
+  config: CngxSelectVirtualizationConfig | boolean | null = true,
 ): CngxSelectConfigFeature {
-  const resolved = config === false ? null : config === true ? {} : config;
+  const resolved = config === false || config === null ? null : config === true ? {} : config;
   return feature({ virtualization: resolved });
 }
 

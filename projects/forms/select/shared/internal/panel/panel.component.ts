@@ -106,7 +106,19 @@ export class CngxSelectPanel<T = unknown> {
    *
    * @internal
    */
-  protected readonly virtualizer = computed(() => this.renderer.virtualizer ?? null);
+  protected readonly virtualizer = computed(() => {
+    const v = this.renderer.virtualizer;
+    if (!v) {
+      return null;
+    }
+    // Spacers and virtual row indices only while the renderer windows the
+    // list. Below the auto-virtualize threshold the full list renders, so
+    // the panel stays identity-shaped: no spacer divs (which would shift
+    // `:nth-of-type`), no `data-cngx-recycle-index`, no `aria-posinset`.
+    const rendered = this.renderer.renderOptions().length;
+    const total = this.renderer.totalCount?.() ?? rendered;
+    return rendered >= total ? null : v;
+  });
 
   /**
    * Items iterated by the template. Grouped paths use
