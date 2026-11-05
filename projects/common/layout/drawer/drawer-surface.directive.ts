@@ -71,7 +71,7 @@ export interface CngxDrawerSurfaceDriver {
   readonly surfaceBoundary?: Signal<HTMLElement | null>;
   /**
    * Landmark role while the surface is not an engaged page modal. Without it
-   * the surface renders `complementary`.
+   * the surface renders its own `[role]`.
    */
   readonly surfaceLandmarkRole?: Signal<string | null>;
   /** Whether a press outside the host asks for dismissal. Without it, it does. */
@@ -116,7 +116,8 @@ const SCROLLING_OVERFLOW = new Set(['auto', 'scroll']);
  *   boundary is the host's parent element unless a composer names one
  *   (`CngxDrawerPanel` names its `[cngxDrawer]` host).
  * - `'none'` keeps the page around it operable: no trap, no lock, no
- *   inert, `role="complementary"`.
+ *   inert, the landmark `role` (default `complementary`, `null` keeps the
+ *   host's implicit role).
  *
  * In every modality focus-trap anchors, live regions, the CDK overlay
  * container, the toast and banner outlets and a visible `CngxBackdrop` stay
@@ -147,7 +148,11 @@ const SCROLLING_OVERFLOW = new Set(['auto', 'scroll']);
   selector: '[cngxDrawerSurface]',
   exportAs: 'cngxDrawerSurface',
   standalone: true,
-  hostDirectives: [CngxFocusTrap, CngxFocusRestore, CngxClickOutside],
+  hostDirectives: [
+    { directive: CngxFocusTrap, inputs: [], outputs: [] },
+    { directive: CngxFocusRestore, inputs: [], outputs: [] },
+    { directive: CngxClickOutside, inputs: [], outputs: [] },
+  ],
   providers: [
     { provide: CNGX_FOCUS_TRAP_DRIVER, useExisting: CngxDrawerSurface },
     { provide: CNGX_FOCUS_RESTORE_DRIVER, useExisting: CngxDrawerSurface },
@@ -173,6 +178,13 @@ export class CngxDrawerSurface
    * boundary only, no trap) or `'none'`. See {@link CngxDrawerModality}.
    */
   readonly modality = input<CngxDrawerModality>('page');
+  /**
+   * Landmark role while the surface is not an engaged page modal. Defaults
+   * to `complementary`; pass `navigation` for a nav surface, or `null` on a
+   * `<nav>` / `<aside>` host to keep its implicit role. A composer's driver
+   * wins over it.
+   */
+  readonly role = input<string | null>('complementary');
   /**
    * Emitted when the user asks to dismiss the engaged surface: Escape, the
    * back gesture, or a press outside the host. The owner closes it.
@@ -214,7 +226,7 @@ export class CngxDrawerSurface
       return 'dialog';
     }
     const landmark = this.driver()?.surfaceLandmarkRole;
-    return landmark ? landmark() : 'complementary';
+    return landmark ? landmark() : this.role();
   });
 
   /** @internal Drives the composed `CngxFocusTrap`. */

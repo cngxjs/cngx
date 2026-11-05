@@ -26,6 +26,7 @@ let mockTrap: {
         cngxDrawerSurface
         [active]="active()"
         [modality]="modality()"
+        [role]="role()"
         (dismiss)="dismissed()"
       >
         <button class="inside">Inside</button>
@@ -46,6 +47,7 @@ class TestHost {
   readonly active = signal(false);
   readonly modality = signal<CngxDrawerModality>('page');
   readonly scrolling = signal(false);
+  readonly role = signal<string | null>('complementary');
   dismissed = vi.fn();
 }
 
@@ -271,6 +273,22 @@ describe('CngxDrawerSurface', () => {
       expect(surface.hasAttribute('aria-modal')).toBe(false);
       expect(q('.sibling').hasAttribute('inert')).toBe(false);
       expect(document.documentElement.style.overflow).not.toBe('hidden');
+    });
+  });
+
+  describe('role', () => {
+    it('renders a consumer role and drops it on null outside an engaged page modal', () => {
+      const { surface, set } = setup((h) => h.role.set('navigation'));
+      expect(surface.getAttribute('role')).toBe('navigation');
+
+      set((h) => h.role.set(null));
+      expect(surface.hasAttribute('role')).toBe(false);
+
+      set((h) => h.active.set(true));
+      expect(surface.getAttribute('role')).toBe('dialog');
+
+      set((h) => h.modality.set('contained'));
+      expect(surface.hasAttribute('role')).toBe(false);
     });
   });
 
