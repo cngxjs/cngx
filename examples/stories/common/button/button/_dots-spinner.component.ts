@@ -13,7 +13,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   template: `<span class="demo-dots-spinner__dot"></span><span class="demo-dots-spinner__dot"></span><span class="demo-dots-spinner__dot"></span>`,
   host: { class: 'demo-dots-spinner' },
   styles: `
-    .demo-dots-spinner {
+    :host {
       display: inline-flex;
       gap: var(--demo-dots-gap, 0.2em);
       align-items: center;
