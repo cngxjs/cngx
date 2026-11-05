@@ -23,6 +23,9 @@ on:
   schedule:
     - cron: '0 4 * * *'
   workflow_dispatch:
+  # TEMP (reverted before merge): run on PR pushes once, to prove the Linux
+  # firefox/webkit legs before this workflow lands on the default branch.
+  pull_request:
 
 permissions:
   contents: read
