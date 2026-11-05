@@ -547,7 +547,8 @@ editor's project config, next to any server already there:
 
 The instruction file gets a block between `<!-- cngx:agents -->` and
 `<!-- /cngx:agents -->` that tells the agent to ask the server instead of
-guessing an API. An existing `cngx` server entry is never rewritten; when it
+guessing an API, and to ask `get_error_code` or run `npx @cngx/cli explain <code>`
+for a `CNGXnnnn` in a console. An existing `cngx` server entry is never rewritten; when it
 pins a different `@cngx/mcp` version, the plan list names both pins.
 
 `.cngx/README.md` documents the setup: the installed packages, where the
