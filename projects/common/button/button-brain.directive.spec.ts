@@ -211,6 +211,20 @@ class DemoReflect {
 })
 class ReflectHost {}
 
+// A host that forgets provideButtonHost.
+@Component({
+  selector: 'button[demoBare]',
+  hostDirectives: [CngxButtonBrain],
+  template: `<ng-content />`,
+})
+class DemoBare {}
+
+@Component({
+  template: `<button demoBare>Bare</button>`,
+  imports: [DemoBare],
+})
+class BareHost {}
+
 function render<T>(type: new () => T) {
   const fixture = TestBed.createComponent(type);
   fixture.detectChanges();
@@ -478,5 +492,15 @@ describe('CngxButtonBrain', () => {
       flush();
       expect(btn.hasAttribute('data-busy')).toBe(false);
     });
+  });
+
+  it('throws CNGX1075 when the host does not provide provideButtonHost', () => {
+    expect(() => TestBed.createComponent(BareHost)).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1075',
+        message: expect.stringMatching(/^CNGX1075: \[cngxButtonBrain\] on <button> /),
+      }),
+    );
   });
 });

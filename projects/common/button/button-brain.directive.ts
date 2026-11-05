@@ -16,11 +16,15 @@ import {
   type CngxHostInteractionState,
 } from '@cngx/common/interactive';
 import { CNGX_DESCRIBED_BY, createDescribedByRegistry, injectLazySelf } from '@cngx/core/utils';
-import { cngxDevWarn } from '@cngx/utils';
+import { cngxDevWarn, CngxRuntimeError } from '@cngx/utils';
 
 import { hasAccessibleName } from './accessible-name';
 import { injectButtonCore } from './button-core';
-import { CNGX_BUTTON_HOST, CNGX_BUTTON_HOST_STATE } from './button-host.token';
+import {
+  CNGX_BUTTON_HOST,
+  CNGX_BUTTON_HOST_STATE,
+  type CngxButtonHostDescriptor,
+} from './button-host.token';
 import { injectButtonSpinner } from './button-spinner.token';
 import { CNGX_BUTTON_STATE, type CngxButtonState } from './button-state.token';
 import type {
@@ -55,7 +59,8 @@ import type {
  * `CNGX_HOST_INTERACTION_STATE` (read by a co-hosted `cngxAsyncClick` or
  * `cngxMenuTrigger`) and `CNGX_DESCRIBED_BY`. An `iconOnly` host is checked
  * for an accessible name once the app is stable; a miss is confirmed on the
- * next stable cycle before it warns `CNGX1071`.
+ * next stable cycle before it warns `CNGX1071`. A host without
+ * `provideButtonHost` throws `CNGX1075`.
  *
  * The host template renders the busy layer from `busyVisible()` (the
  * co-hosted runner's gate, or the brain's own gate over a run the host
@@ -106,7 +111,7 @@ import type {
       provide: CNGX_DESCRIBED_BY,
       useFactory: () =>
         createDescribedByRegistry({
-          name: inject(CNGX_BUTTON_HOST).name,
+          name: injectButtonHostDescriptor().name,
           seed: inject(new HostAttributeToken('aria-describedby'), { optional: true }),
         }),
     },
@@ -160,7 +165,7 @@ export class CngxButtonBrain implements CngxButtonState {
   /** Native `type` on a `<button>` host. Defaults to `'button'`; ignored on `<a>`. */
   readonly type = input<CngxButtonType | undefined>(undefined);
 
-  private readonly descriptor = inject(CNGX_BUTTON_HOST);
+  private readonly descriptor = injectButtonHostDescriptor();
   // Read on first use: the host's factory injects the host component, which
   // injects this brain, so an eager read is a cycle.
   private readonly hostState = injectLazySelf(CNGX_BUTTON_HOST_STATE, { optional: true });
@@ -266,4 +271,22 @@ export class CngxButtonBrain implements CngxButtonState {
       });
     }
   }
+}
+
+/**
+ * The host's `CNGX_BUTTON_HOST` descriptor, or the coded error that names
+ * the missing `provideButtonHost`.
+ */
+function injectButtonHostDescriptor(): CngxButtonHostDescriptor {
+  const descriptor = inject(CNGX_BUTTON_HOST, { self: true, optional: true });
+  if (descriptor) {
+    return descriptor;
+  }
+  const tag = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement.tagName.toLowerCase();
+  throw new CngxRuntimeError(
+    'CNGX1075',
+    typeof ngDevMode !== 'undefined' &&
+      ngDevMode &&
+      `[cngxButtonBrain] on <${tag}> has no host descriptor. Add provideButtonHost(name, { defaultVariant }) to the providers of the component or directive that declares CngxButtonBrain in its hostDirectives.`,
+  );
 }

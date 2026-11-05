@@ -1491,6 +1491,23 @@
       ]
     },
     {
+      "code": "CNGX1075",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Button brain without a host descriptor",
+      "page": "core-concepts/error-codes/cngx1075.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1075.html",
+      "status": "active",
+      "files": ["projects/common/button/button-brain.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/button/button-brain.directive.ts",
+          "text": "[cngxButtonBrain] on <${...}> has no host descriptor. Add provideButtonHost(name, { defaultVariant }) to the providers of the component or directive that declares CngxButtonBrain in its hostDirectives."
+        }
+      ]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",
