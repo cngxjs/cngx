@@ -215,10 +215,11 @@ async function open(variant: Variant, configure?: (host: SheetVariantHost) => vo
   fixture.detectChanges();
   await frames(6);
   const panel = mountedRoot.querySelector<HTMLElement>('.cngx-select__panel')!;
-  // The direct child below the header scrolls: the listbox, or the tree
-  // panel host that wraps the tree.
+  // The scroll viewport below the fixed sheet header: the panel-shell wraps
+  // the listbox and the status/action regions and owns the overflow, or the
+  // tree panel host that wraps the tree.
   const scroller = panel.querySelector<HTMLElement>(
-    ':scope > [role="listbox"], :scope > cngx-tree-select-panel',
+    ':scope > cngx-select-panel-shell, :scope > cngx-tree-select-panel',
   )!;
   return { fixture, host, panel, scroller };
 }
