@@ -199,7 +199,7 @@
     {
       "class": "CngxResizable",
       "file": "projects/common/layout/resizable/resizable.directive.ts",
-      "line": 96,
+      "line": 151,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -210,7 +210,7 @@
     {
       "class": "CngxResizable",
       "file": "projects/common/layout/resizable/resizable.directive.ts",
-      "line": 98,
+      "line": 153,
       "member": "resolvedValueText",
       "enclosing": "computed",
       "tiers": [
@@ -226,7 +226,7 @@
     {
       "class": "CngxSidebar",
       "file": "projects/common/layout/sidebar/sidebar.directive.ts",
-      "line": 169,
+      "line": 191,
       "member": "label",
       "enclosing": "computed",
       "tiers": [
