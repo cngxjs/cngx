@@ -1237,6 +1237,17 @@
       flip-block flip-inline;
   }
 
+  /* The panel-shell groups the status / action regions and the listbox. As a
+     custom element it defaults to display:inline, whose inline box wraps the
+     block listbox and overlaps the option rows, so a pointer lands on the shell
+     instead of an option. Give it a block box so it stacks its children and
+     never overlaps them. In the sheet / fullscreen presentation the sheet rule
+     makes it a scrolling flex item (`> *`), which already blockifies it; this
+     only fixes the anchored panel, where the panel itself owns the scroll. */
+  .cngx-select-panel-shell {
+    display: block;
+  }
+
   /* Mobile sheet: the sheet caps the height (its max-block-size outranks the
      anchored max-height above) and owns the inline size, and only the
      listbox scrolls (cngx-popover-sheet.css). Lift the virtualized width
