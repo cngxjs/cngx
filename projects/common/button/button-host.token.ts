@@ -7,6 +7,10 @@ import type { CngxButtonSize, CngxButtonTone, CngxButtonVariant } from './button
  * selector name it reports in development diagnostics and in the `aria-describedby`
  * registry, the variant it falls back to, the axes it pins and whether it
  * is icon-only.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-host.token.ts
+ * @since 0.1.0
+ * @relatedTo provideButtonHost, CngxButtonBrain
  */
 export interface CngxButtonHostDescriptor {
   /**
@@ -70,6 +74,10 @@ export function provideButtonHost(
  * Refusal and a run a host adds on top of the brain's own inputs, e.g. the
  * caret of a split button blocked by its main action, or an action button
  * reflecting an external run.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-host.token.ts
+ * @since 0.1.0
+ * @relatedTo CNGX_BUTTON_HOST_STATE, CngxButtonBrain, CngxSplitCaret
  */
 export interface CngxButtonHostState {
   /**
