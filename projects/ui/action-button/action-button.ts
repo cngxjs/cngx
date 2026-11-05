@@ -1,7 +1,6 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
-  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -16,12 +15,12 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {
-  injectButtonCore,
-  provideButtonDescribedBy,
-  type CngxButtonSize,
-  type CngxButtonTone,
-  type CngxButtonType,
-  type CngxButtonVariant,
+  CNGX_BUTTON_HOST_STATE,
+  CngxButtonBrain,
+  CngxButtonEnd,
+  CngxButtonStart,
+  provideButtonHost,
+  type CngxButtonHostState,
 } from '@cngx/common/button';
 import {
   CNGX_ASYNC_RUN_STATE,
@@ -50,13 +49,17 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
 
 /**
  * Action button organism with built-in status communication, on the
- * cngx button core.
+ * cngx button brain.
  *
  * Sits on the native `<button>`: `cngxAsyncClick` runs as a host directive
  * on the same element, the visual axes (`variant`, `tone`, `size`) and
- * `disabled` / `disabledReason` come from the `CngxButton` brain, and every
- * attribute the consumer writes lands on the real button. The component
- * adds the status labels, the toast integration and the `state` view.
+ * `disabled` / `disabledReason` come from the `CngxButtonBrain` host
+ * directive, and every attribute the consumer writes lands on the real
+ * button. The component adds the status labels, the toast integration and
+ * the `state` view. `cngxButtonStart` / `cngxButtonEnd` content sits around
+ * the label cells, as on `cngxButton`, and the button publishes
+ * `CNGX_BUTTON_STATE`, so it works as the main action of a
+ * `cngxSplitButton`.
  *
  * The idle content and the pending, succeeded and failed labels (or
  * templates) render stacked in one grid cell; only the active one is
@@ -112,7 +115,7 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/action-button/action-button.ts
  * @since 0.1.0
- * @relatedTo CngxButton, CngxAsyncClick, CngxPending, CngxSucceeded, CngxFailed, CngxToaster
+ * @relatedTo CngxButton, CngxButtonBrain, CngxAsyncClick, CngxPending, CngxSucceeded, CngxFailed, CngxToaster
  * @slot cngxPending Replaces the label while the action runs, once the run outlasts the show delay.
  * @slot cngxSucceeded Replaces the label after the action succeeds.
  * @slot cngxFailed Replaces the label when the action fails; gets the error.
@@ -131,33 +134,45 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
   exportAs: 'cngxActionButton',
   hostDirectives: [
     {
+      directive: CngxButtonBrain,
+      inputs: [
+        'variant: cngxActionButton',
+        'tone',
+        'size',
+        'disabled',
+        'disabledReason',
+        'cngxDescribedBy',
+        'type',
+      ],
+    },
+    {
       directive: CngxAsyncClick,
       inputs: ['cngxAsyncClick: action', 'feedbackDuration', 'showDelay', 'minDwell'],
       outputs: ['settled'],
     },
   ],
   providers: [
+    provideButtonHost('CngxActionButton', { defaultVariant: 'solid' }),
+    {
+      provide: CNGX_BUTTON_HOST_STATE,
+      useFactory: (): CngxButtonHostState => inject(CngxActionButton).hostState,
+    },
+    // Wins over the brain's entry (host providers beat host-directive
+    // providers); only adds the announcement to the brain's state.
     {
       provide: CNGX_HOST_INTERACTION_STATE,
       useFactory: (): CngxHostInteractionState => inject(CngxActionButton).hostInteraction,
     },
-    provideButtonDescribedBy('CngxActionButton'),
   ],
   host: {
     class: 'cngx-button cngx-action-button',
-    '[attr.data-variant]': 'core.variant()',
-    '[attr.data-tone]': 'core.tone()',
-    '[attr.data-size]': 'core.size()',
-    '[attr.data-busy]': 'core.busyVisible() ? "true" : null',
-    '[attr.data-pending]': 'effectiveBusy() ? "true" : null',
+    '[attr.data-start]': 'startSlot() ? "" : null',
+    '[attr.data-end]': 'endSlot() ? "" : null',
     '[attr.data-status]': 'effectiveStatus()',
     '[attr.data-status-label]': 'activeCell() === "idle" ? null : ""',
-    '[attr.aria-disabled]': 'core.ariaDisabled()',
-    '[attr.aria-describedby]': 'core.describedBy()',
-    '[attr.type]': 'core.hostType()',
-    '[attr.disabled]': 'null',
   },
   template: `
+    <ng-content select="[cngxButtonStart]" />
     <span class="cngx-button__label cngx-action-button__labels">
       <span
         class="cngx-action-button__label"
@@ -208,12 +223,15 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
         </span>
       }
     </span>
-    @if (core.busyVisible() && activeCell() === 'idle') {
+    <ng-content select="[cngxButtonEnd]" />
+    @if (brain.busyVisible() && activeCell() === 'idle') {
       <span class="cngx-button__busy" aria-hidden="true">
         <span class="cngx-button__spinner"></span>
       </span>
     }
-    <span class="cngx-button__reason" [id]="core.reasonId" hidden>{{ disabledReason() }}</span>
+    <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{
+      brain.disabledReason()
+    }}</span>
   `,
   styleUrls: ['../../common/button/button.component.css', './action-button.css'],
 })
@@ -230,41 +248,11 @@ export class CngxActionButton {
   // so an eager inject here would be a cycle.
   private readonly runState = injectLazySelf(CNGX_ASYNC_RUN_STATE);
 
-  /**
-   * Emphasis, bound through the selector: `cngxActionButton="outline"`. The
-   * bare attribute falls through to the group, the config and `solid`.
-   */
-  readonly variant = input<CngxButtonVariant | undefined, CngxButtonVariant | '' | undefined>(
-    undefined,
-    { alias: 'cngxActionButton', transform: (v) => (v === '' ? undefined : v) },
-  );
+  /** @internal */
+  protected readonly brain = inject(CngxButtonBrain);
 
-  /** Intent. Falls through to the config and `neutral`. */
-  readonly tone = input<CngxButtonTone | undefined>(undefined);
-
-  /** Size. `md` matches the form-control row. Falls through to the group, the config and `md`. */
-  readonly size = input<CngxButtonSize | undefined>(undefined);
-
-  /**
-   * Rendered as `aria-disabled`; the button stays focusable and clicks are
-   * swallowed, so the action never starts.
-   */
-  readonly disabled = input(false, { transform: booleanAttribute });
-
-  /**
-   * Why the button is disabled, referenced through `aria-describedby` only
-   * while `[disabled]` is set.
-   */
-  readonly disabledReason = input<string | undefined>(undefined);
-
-  /**
-   * Ids of external description elements, joined into the button's
-   * `aria-describedby` before the disabled reason.
-   */
-  readonly describedBy = input<string | null>(null, { alias: 'cngxDescribedBy' });
-
-  /** Native `type`. Defaults to `'button'` so the button never submits a form by accident. */
-  readonly type = input<CngxButtonType | undefined>(undefined);
+  protected readonly startSlot = contentChild(CngxButtonStart);
+  protected readonly endSlot = contentChild(CngxButtonEnd);
 
   /**
    * SR announcement on success. Falls back to `succeededLabel`, then
@@ -363,7 +351,7 @@ export class CngxActionButton {
   });
 
   /** @internal - busy while the effective status (directive or external) is pending. */
-  protected readonly effectiveBusy = computed(() => this.effectiveStatus() === 'pending');
+  private readonly effectiveBusy = computed(() => this.effectiveStatus() === 'pending');
 
   /** @internal - an external run in flight; the directive does not know about it. */
   private readonly externalBusy = computed(
@@ -371,14 +359,15 @@ export class CngxActionButton {
   );
 
   /**
-   * @internal - what the button core and the directive refuse: the
-   * consumer's `[disabled]`, or an external run in flight, so a click cannot
-   * start a second run while an external state is pending.
+   * @internal - an external run in flight refuses clicks, so a click cannot
+   * start a second run while an external state is pending, and reads as
+   * busy (`data-pending`, `aria-disabled`). The brain folds both in; the
+   * reason stays gated on the consumer's `[disabled]`.
    */
-  private readonly blocked = computed(() => this.disabled() || this.externalBusy());
-
-  /** @internal - the reason applies to the consumer's `[disabled]` only. */
-  private readonly reason = computed(() => (this.disabled() ? this.disabledReason() : undefined));
+  readonly hostState: CngxButtonHostState = {
+    refusing: this.externalBusy,
+    busy: this.externalBusy,
+  };
 
   /** @internal - which status cells render: a label or a template for the state. */
   protected readonly hasCell = computed(
@@ -401,7 +390,7 @@ export class CngxActionButton {
   protected readonly activeCell = computed<LabelCell>(() => {
     const status = this.effectiveStatus();
     const cells = this.hasCell();
-    if (status === 'pending' && cells.pending && this.core.busyVisible()) {
+    if (status === 'pending' && cells.pending && this.brain.busyVisible()) {
       return 'pending';
     }
     if (status === 'success' && cells.success) {
@@ -414,32 +403,17 @@ export class CngxActionButton {
   });
 
   /**
-   * @internal - what the co-hosted `CngxAsyncClick` folds in: the blocked
-   * flag, the external busy bit and the announcement, read by the directive
-   * once per own settle after render with that settle's outcome. While
-   * `[externalState]` is bound the own runs speak nothing: the external
-   * edges own the region, like the toast.
+   * @internal - what the co-hosted `CngxAsyncClick` folds in: the brain's
+   * refusal and external busy bit, plus the announcement, read by the
+   * directive once per own settle after render with that settle's outcome.
+   * While `[externalState]` is bound the own runs speak nothing: the
+   * external edges own the region, like the toast.
    */
   readonly hostInteraction: CngxHostInteractionState = {
-    disabled: this.blocked,
-    busy: this.externalBusy,
+    ...this.brain.interaction,
     announcement: (settle) =>
       settle && !untracked(this.externalState) ? this.resolveAnnouncement(settle.status) : '',
   };
-
-  /** @internal */
-  protected readonly core = injectButtonCore(
-    {
-      variant: this.variant,
-      tone: this.tone,
-      size: this.size,
-      disabled: this.blocked,
-      disabledReason: this.reason,
-      describedBy: this.describedBy,
-      type: this.type,
-    },
-    { variant: 'solid' },
-  );
 
   /**
    * @internal - one source per mode: the external state's stamp while
