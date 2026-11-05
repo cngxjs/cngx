@@ -13,7 +13,12 @@ another release.
 - Package scaffold with a guarded copy of the shared query core from
   `@cngx/mcp` and the bundled API snapshot.
 - `cngx` subcommands generated from the shared command registry: `find`,
-  `list`, `api`, `slots`, `theme`, `di`, `config`, `example`, `migrate`.
+  `list`, `api`, `slots`, `theme`, `di`, `config`, `example`, `migrate`,
+  `explain`.
+- `cngx explain <code>` prints the doc entry of a CNGX error code from the
+  bundled snapshot: its title, lib, severity, production behaviour, messages and
+  docs URL. Accepts `CNGX0001`, `cngx0001`, `0001` or a pasted console line;
+  exits 1 for an unknown code, listing the nearest codes of its lib.
 - `--format md|json`, `--cngx-version`, `--version` / `-v`, `--help` / `-h`;
   exit codes 0 (answered), 1 (not found or unresolved), 2 (usage error),
   3 (internal error: a snapshot that cannot load, a throw, a failed write).

@@ -41,6 +41,7 @@ with the cngx libraries and `@cngx/cli`. The bundled snapshot is that release:
 |`get_config`|`{ name: string, version?: string }`|A configuration cascade by config token name (`CNGX_SELECT_CONFIG`), stem (`select`), or best-effort component name (`CngxCombobox`): the config token, its co-located provider functions, the `with*` feature functions, and the resolution-priority ordering. Returns null when the name maps to no config token.|
 |`get_story_example`|`{ name: string }`|`{ ok: true, groundedVersion, result }`, `groundedVersion` always the bundled release: the component's runnable example URLs (public documentation links) and a StackBlitz URL when one exists. Playground entries are labelled source references, not openable links.|
 |`migrate_usage`|`{ from: string, to?: string }`|A structured API delta between two cngx releases: removed / renamed / signature-changed components (injectable services included), inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version.|
+|`get_error_code`|`{ code: string }`|`{ ok: true, groundedVersion, result }`, `groundedVersion` always the bundled release: a CNGX error code's title, owning lib, severity, production behaviour, call-site messages and documentation page. `result` is null for an input that is not a code, and a not-found view (the matching lib and its nearest codes) for an unknown code.|
 
 Every read-only tool answers `null` (or an empty list) when a name resolves to
 nothing - inside the envelope, `result` is null - so an agent can tell "no such

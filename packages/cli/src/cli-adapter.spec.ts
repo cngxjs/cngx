@@ -24,7 +24,27 @@ const FIXTURE = fileURLToPath(new URL('../../mcp/test/fixtures/documentation.sam
 const PACKAGE_JSON = new URL('../package.json', import.meta.url);
 const CLI_VERSION = (JSON.parse(readFileSync(PACKAGE_JSON, 'utf8')) as { version: string }).version;
 
-const bundled = loadDocsFromFile(FIXTURE);
+// The sample fixture carries no error-code block; `explain` needs one, so the
+// cli's bundled index is augmented in memory (the shared fixture file stays
+// block-less, which loader.spec's absent-block case relies on).
+const ERROR_CODE_BLOCK = {
+  docsBaseUrl: 'https://cngxjs.github.io/cngx/additional-documentation/error-codes/',
+  ranges: [{ lib: 'core', from: 1, to: 899 }],
+  codes: [
+    {
+      code: 'CNGX0001',
+      lib: 'core',
+      severity: 'warn',
+      production: 'stripped',
+      title: 'Locale is not a BCP 47 tag',
+      status: 'active',
+      url: 'https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0001.html',
+      messages: ['formatMessage(): not a BCP 47 locale'],
+      body: '## Locale is not a BCP 47 tag\n\nUse a BCP 47 tag.',
+    },
+  ],
+};
+const bundled = { ...loadDocsFromFile(FIXTURE), errorCodes: ERROR_CODE_BLOCK };
 
 const DATA_DIR = new URL('../data/', import.meta.url);
 
@@ -73,6 +93,7 @@ const CASES: readonly { cli: string; known: string[]; unknown: string[]; md: str
   { cli: 'config', known: ['CNGX_SELECT_CONFIG'], unknown: ['NoSuchThing'], md: '# CNGX_SELECT_CONFIG' },
   { cli: 'example', known: ['CngxSelect'], unknown: ['NoSuchThing'], md: '# CngxSelect examples' },
   { cli: 'migrate', known: ['0.1.0-rc.6'], unknown: ['9.9.9'], md: '# Migrating 0.1.0-rc.6 -> 0.1.0-rc.6' },
+  { cli: 'explain', known: ['CNGX0001'], unknown: ['CNGX5999'], md: '## CNGX0001' },
 ];
 
 describe('cngx subcommands', () => {
@@ -151,7 +172,7 @@ describe('usage errors', () => {
     .filter(([cliName, flag]) => !adapterFlags(COMMANDS.find((def) => def.cliName === cliName)!).includes(flag));
 
   it('covers every positional of the registry that is not also an adapter flag', () => {
-    expect(POSITIONAL_FLAGS.map(([cliName]) => cliName).sort()).toEqual(['api', 'config', 'di', 'example', 'find', 'migrate', 'slots', 'theme']);
+    expect(POSITIONAL_FLAGS.map(([cliName]) => cliName).sort()).toEqual(['api', 'config', 'di', 'example', 'explain', 'find', 'migrate', 'slots', 'theme']);
   });
 
   it.each(POSITIONAL_FLAGS)('takes the positional of cngx %s only by position, never as %s', async (cliName, flag) => {
@@ -197,10 +218,10 @@ describe('usage errors', () => {
   });
 
   it('rejects an unknown command, listing the commands', async () => {
-    const run = await cli('explain', 'x');
+    const run = await cli('frobnicate', 'x');
 
     expect(run.code).toBe(EXIT_USAGE);
-    expect(run.stderr).toContain('unknown command "explain"');
+    expect(run.stderr).toContain('unknown command "frobnicate"');
     expect(run.stderr).toContain('api');
   });
 
@@ -216,6 +237,44 @@ describe('usage errors', () => {
     expect(run.code).toBe(EXIT_USAGE);
     expect(run.stdout).toBe('');
     expect(run.stderr).toContain('Commands:');
+  });
+});
+
+describe('cngx explain', () => {
+  it('prints one json document whose result carries the code', async () => {
+    const run = await cli('explain', 'CNGX0001', '--format=json');
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(JSON.parse(run.stdout)).toMatchObject({ cngxVersion: '0.1.0-rc.6', result: { code: 'CNGX0001', lib: 'core' } });
+  });
+
+  it('reads the code out of a pasted console line', async () => {
+    const run = await cli('explain', 'CNGX0001: formatMessage(): "de_AT" is not a BCP 47 locale');
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(run.stdout).toContain('## CNGX0001');
+  });
+
+  it('exits 1 for an unknown code, listing the nearest codes of its lib', async () => {
+    const run = await cli('explain', 'CNGX0002');
+
+    expect(run.code).toBe(EXIT_NOT_FOUND);
+    expect(run.stdout).toContain('Nearest core codes');
+    expect(run.stdout).toContain('CNGX0001');
+  });
+
+  it('rejects --cngx-version with exit 2', async () => {
+    const run = await cli('explain', 'CNGX0001', '--cngx-version=0.1.0');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stderr).toContain('explain does not take --cngx-version');
+  });
+
+  it('rejects --offline with exit 2', async () => {
+    const run = await cli('explain', 'CNGX0001', '--offline');
+
+    expect(run.code).toBe(EXIT_USAGE);
+    expect(run.stderr).toContain('explain does not take --offline');
   });
 });
 
@@ -289,6 +348,15 @@ describe('version and snapshot resolution', () => {
     config: { cngxVersion: '0.1.0-rc.6', result: null },
     example: { cngxVersion: '0.1.0-rc.6', result: null },
     migrate: { cngxVersion: null, result: null, error: { reason: 'asset-missing', message: 'no asset for v9.9.9' } },
+    explain: {
+      cngxVersion: '0.1.0-rc.6',
+      result: {
+        code: 'CNGX5999',
+        lib: null,
+        nearest: [],
+        url: 'https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx5999.html',
+      },
+    },
   };
 
   it('covers every command in the not-found json table', () => {

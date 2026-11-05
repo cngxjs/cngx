@@ -40,11 +40,12 @@ export function createServer({ docs, llmDump, resolverDeps }: CreateServerOption
         `(snapshot ${generatedAt ?? 'unknown'}, schemaVersion ${schemaVersion}). ` +
         `Confirm the consuming app runs a matching cngx release before relying on an answer, ` +
         `or pass an optional version argument to ground a query against another release. ` +
-        `The eight query tools are read-only and answer offline by default; find_component, get_api, ` +
+        `The nine query tools are read-only and answer offline by default; find_component, get_api, ` +
         `get_slots, get_theme_tokens, get_di_tokens, and get_config accept an optional version that - when it differs ` +
         `from the bundled snapshot - fetches that release snapshot via the gh CLI, or over HTTPS when gh is ` +
         `missing or fails (fail-safe: no network or an absent asset returns a typed { ok: false, reason }) and answers as ` +
         `{ ok: true, groundedVersion, result }. migrate_usage additionally answers cross-version deltas over the same fetch. ` +
+        `get_error_code explains a CNGX error code (e.g. CNGX0001) from the bundled snapshot only, like get_story_example. ` +
         `The server also serves resources (browse: cngx://catalog, cngx://tokens, cngx://provenance, ` +
         `the cngx://api/{name} template, the cngx://llms index and the cngx://llms-full API dump) ` +
         `and prompts (wire_component, theme_component, migrate_cngx) - ` +
