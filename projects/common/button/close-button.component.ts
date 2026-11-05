@@ -89,7 +89,7 @@ export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon'
     },
   ],
   providers: [
-    provideButtonHost('CngxCloseButton', {
+    provideButtonHost('cngxCloseButton', {
       defaultVariant: 'ghost',
       fixed: { variant: 'ghost', size: 'sm', tone: 'neutral' },
       iconOnly: true,

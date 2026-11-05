@@ -260,7 +260,7 @@ describe('CngxCloseButton', () => {
     await fixture.whenStable();
     await new Promise((resolve) => setTimeout(resolve));
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn.mock.calls[0][0]).toMatch(/^CNGX1071: CngxCloseButton has no accessible name\./);
+    expect(warn.mock.calls[0][0]).toMatch(/^CNGX1071: \[cngxCloseButton\] has no accessible name\./);
     expect(warn.mock.calls[0]).toContain(q('#unnamed'));
     warn.mockRestore();
   });

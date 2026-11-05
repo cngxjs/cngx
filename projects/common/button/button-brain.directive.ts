@@ -63,7 +63,7 @@ import type {
  *       inputs: ['variant: appChipButton', 'tone', 'size', 'disabled', 'disabledReason', 'cngxDescribedBy', 'type'],
  *     },
  *   ],
- *   providers: [provideButtonHost('AppChipButton', { defaultVariant: 'outline' })],
+ *   providers: [provideButtonHost('appChipButton', { defaultVariant: 'outline' })],
  *   template: `<ng-content /><span [id]="brain.reasonId" hidden>{{ brain.disabledReason() }}</span>`,
  * })
  * class AppChipButton {
@@ -215,7 +215,7 @@ export class CngxButtonBrain implements CngxButtonState {
           }
           cngxDevWarn(
             'CNGX1071',
-            `${this.descriptor.name} has no accessible name. Set aria-label, aria-labelledby or title on the host; the glyph alone is silent to assistive technology.`,
+            `[${this.descriptor.name}] has no accessible name. Set aria-label, aria-labelledby or title on the host; the glyph alone is silent to assistive technology.`,
             host,
           );
         });

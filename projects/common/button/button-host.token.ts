@@ -3,13 +3,16 @@ import { InjectionToken, type Provider, type Signal } from '@angular/core';
 import type { CngxButtonSize, CngxButtonTone, CngxButtonVariant } from './button.types';
 
 /**
- * Static facts about a button host that `CngxButtonBrain` reads: the name
- * it reports in development diagnostics and in the `aria-describedby`
+ * Static facts about a button host that `CngxButtonBrain` reads: the
+ * selector name it reports in development diagnostics and in the `aria-describedby`
  * registry, the variant it falls back to, the axes it pins and whether it
  * is icon-only.
  */
 export interface CngxButtonHostDescriptor {
-  /** Host name in development diagnostics, e.g. `'CngxIconButton'`. */
+  /**
+   * Public selector name of the host, e.g. `'cngxIconButton'`. Development
+   * diagnostics print it in brackets (`[cngxIconButton]`).
+   */
   readonly name: string;
   /** Variant after the input, the pinned axes, the group and the config. */
   readonly defaultVariant: CngxButtonVariant;
@@ -46,7 +49,7 @@ export const CNGX_BUTTON_HOST = new InjectionToken<CngxButtonHostDescriptor>('Cn
  * @Component({
  *   selector: 'button[appChipButton]',
  *   hostDirectives: [{ directive: CngxButtonBrain, inputs: ['variant: appChipButton', 'disabled'] }],
- *   providers: [provideButtonHost('AppChipButton', { defaultVariant: 'outline' })],
+ *   providers: [provideButtonHost('appChipButton', { defaultVariant: 'outline' })],
  *   template: '<ng-content />',
  * })
  * class AppChipButton {}

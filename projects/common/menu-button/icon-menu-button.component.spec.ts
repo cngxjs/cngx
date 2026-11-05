@@ -351,7 +351,7 @@ describe('CngxIconMenuButton', () => {
       await new Promise((resolve) => setTimeout(resolve));
       const calls = warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1071'));
       expect(calls).toHaveLength(1);
-      expect(calls[0][0]).toMatch(/^CNGX1071: CngxIconMenuButton has no accessible name\./);
+      expect(calls[0][0]).toMatch(/^CNGX1071: \[cngxIconMenuButton\] has no accessible name\./);
       expect(calls[0]).toContain(button);
       warn.mockRestore();
     });

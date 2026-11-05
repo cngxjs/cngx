@@ -152,7 +152,7 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
     },
   ],
   providers: [
-    provideButtonHost('CngxActionButton', { defaultVariant: 'solid' }),
+    provideButtonHost('cngxActionButton', { defaultVariant: 'solid' }),
     {
       provide: CNGX_BUTTON_HOST_STATE,
       useFactory: (): CngxButtonHostState => inject(CngxActionButton).hostState,

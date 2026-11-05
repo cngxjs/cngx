@@ -11,7 +11,7 @@ import { CngxIconButton } from './icon-button.component';
 @Component({
   selector: 'button[demoIcon]',
   hostDirectives: [{ directive: CngxButtonBrain, inputs: ['disabled', 'disabledReason'] }],
-  providers: [provideButtonHost('DemoIcon', { defaultVariant: 'ghost', iconOnly: true })],
+  providers: [provideButtonHost('demoIcon', { defaultVariant: 'ghost', iconOnly: true })],
   template: `
     <span aria-hidden="true"><ng-content /></span>
     @if (srLabel()) {
@@ -89,7 +89,7 @@ describe('CNGX1071 accessible-name check', () => {
   it('warns once for an unnamed icon-only host, naming the host', async () => {
     const calls = await warningsFor(UnnamedHost);
     expect(calls).toHaveLength(1);
-    expect(calls[0][0]).toMatch(/^CNGX1071: DemoIcon has no accessible name\./);
+    expect(calls[0][0]).toMatch(/^CNGX1071: \[demoIcon\] has no accessible name\./);
   });
 
   it('still warns when the only text is the hidden disabled reason', async () => {

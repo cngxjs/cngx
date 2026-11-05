@@ -29,7 +29,7 @@ const BRAIN_INPUTS = [
 @Component({
   selector: 'button[demoChip], a[demoChip]',
   hostDirectives: [{ directive: CngxButtonBrain, inputs: BRAIN_INPUTS }],
-  providers: [provideButtonHost('DemoChip', { defaultVariant: 'outline' })],
+  providers: [provideButtonHost('demoChip', { defaultVariant: 'outline' })],
   template: `<ng-content /><span [id]="brain.reasonId" hidden>{{ brain.disabledReason() }}</span>`,
 })
 class DemoChip {
@@ -40,7 +40,7 @@ class DemoChip {
   selector: 'button[demoPinned]',
   hostDirectives: [{ directive: CngxButtonBrain, inputs: ['variant: demoPinned', 'tone', 'size'] }],
   providers: [
-    provideButtonHost('DemoPinned', {
+    provideButtonHost('demoPinned', {
       defaultVariant: 'ghost',
       fixed: { variant: 'ghost', size: 'sm', tone: 'neutral' },
     }),
@@ -53,7 +53,7 @@ class DemoPinned {}
   selector: 'button[demoStateful]',
   hostDirectives: [{ directive: CngxButtonBrain, inputs: ['disabled', 'disabledReason'] }],
   providers: [
-    provideButtonHost('DemoStateful', { defaultVariant: 'solid' }),
+    provideButtonHost('demoStateful', { defaultVariant: 'solid' }),
     { provide: CNGX_BUTTON_HOST_STATE, useFactory: () => inject(DemoStateful).hostState },
   ],
   template: `<ng-content /><span [id]="brain.reasonId" hidden>{{ brain.disabledReason() }}</span>`,

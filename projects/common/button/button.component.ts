@@ -86,7 +86,7 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
       ],
     },
   ],
-  providers: [provideButtonHost('CngxButton', { defaultVariant: 'solid' })],
+  providers: [provideButtonHost('cngxButton', { defaultVariant: 'solid' })],
   host: {
     class: 'cngx-button',
     '[attr.data-start]': 'startSlot() ? "" : null',

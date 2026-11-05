@@ -1417,7 +1417,7 @@
       "messages": [
         {
           "file": "projects/common/button/button-brain.directive.ts",
-          "text": "${...} has no accessible name. Set aria-label, aria-labelledby or title on the host; the glyph alone is silent to assistive technology."
+          "text": "[${...}] has no accessible name. Set aria-label, aria-labelledby or title on the host; the glyph alone is silent to assistive technology."
         }
       ]
     },

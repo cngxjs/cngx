@@ -63,7 +63,7 @@ import { provideButtonHost } from './button-host.token';
       ],
     },
   ],
-  providers: [provideButtonHost('CngxIconButton', { defaultVariant: 'ghost', iconOnly: true })],
+  providers: [provideButtonHost('cngxIconButton', { defaultVariant: 'ghost', iconOnly: true })],
   host: { class: 'cngx-button cngx-icon-button' },
   template: `
     <span class="cngx-button__label cngx-icon-button__glyph" aria-hidden="true"

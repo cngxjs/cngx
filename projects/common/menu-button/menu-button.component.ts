@@ -90,7 +90,7 @@ import { injectMenuToggle } from './internal/menu-toggle';
     { directive: CngxMenuTrigger, inputs: ['cngxMenuTrigger: menu', 'popover'] },
     { directive: CngxPopoverTrigger, inputs: ['cngxPopoverTrigger: popover'] },
   ],
-  providers: [provideButtonHost('CngxMenuButton', { defaultVariant: 'solid' })],
+  providers: [provideButtonHost('cngxMenuButton', { defaultVariant: 'solid' })],
   host: {
     class: 'cngx-button cngx-menu-button',
     '[attr.data-start]': 'startSlot() ? "" : null',

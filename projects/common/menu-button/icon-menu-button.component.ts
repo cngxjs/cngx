@@ -86,7 +86,7 @@ import { CNGX_SPLIT_CARET } from './split-caret.token';
     { directive: CngxPopoverTrigger, inputs: ['cngxPopoverTrigger: popover'] },
   ],
   providers: [
-    provideButtonHost('CngxIconMenuButton', { defaultVariant: 'ghost', iconOnly: true }),
+    provideButtonHost('cngxIconMenuButton', { defaultVariant: 'ghost', iconOnly: true }),
     {
       provide: CNGX_BUTTON_HOST_STATE,
       useFactory: (): CngxButtonHostState => inject(CngxIconMenuButton).hostState,
