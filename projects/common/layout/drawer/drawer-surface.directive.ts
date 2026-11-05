@@ -142,6 +142,7 @@ const SCROLLING_OVERFLOW = new Set(['auto', 'scroll']);
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/drawer/drawer-surface.directive.ts
  * @since 0.1.0
  * @relatedTo CngxDrawerPanel, CngxFocusTrap, CngxFocusRestore, CngxClickOutside, createScrollLock
+ * <example-url>/#/common/layout/drawer/standalone-surface</example-url>
  * @axis level molecule
  */
 @Directive({
