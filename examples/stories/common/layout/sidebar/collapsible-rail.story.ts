@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxSidebar: Collapsible rail',
   subtitle:
-    '<code>[cngxSidebar]</code> collapses to an icon rail. Each entry shows its label as a tooltip on hover and focus; resting the pointer on the rail peeks the full sidebar over the content without reflow, and the pin button keeps it expanded.',
+    '<code>[cngxSidebar]</code> collapses to an icon rail. Each entry shows its label as a tooltip on hover and focus; resting the pointer on the rail peeks the full sidebar over the content without reflow, and the pin button toggles it between pinned and peeked.',
   description:
-    'A navigation sidebar that starts collapsed as a rail. The entries are CngxNavLink anchors with an icon and a label; in the rail the label is hidden visually but stays the accessible name, and a CngxTooltip shows it on hover and focus. Resting the pointer on the rail peeks the sidebar at full size over the content: the content column keeps its position because the reserved space stays at the rail size. While peeked, the pin button calls pin() and the sidebar stays expanded. Escape, moving focus out or leaving with the pointer ends the peek. The [cngxPanelTrigger] at the top of the content column toggles collapsed and carries aria-expanded and aria-controls. Collapsed as hidden, the sidebar reserves no space and is inert and aria-hidden until expanded.',
+    'A navigation sidebar that starts collapsed as a rail. The entries are CngxNavLink anchors with an icon and a label; in the rail the label is hidden visually but stays the accessible name, and a CngxTooltip shows it on hover and focus. Resting the pointer on the rail peeks the sidebar at full size over the content: the content column keeps its position because the reserved space stays at the rail size. While peeked, the pin button calls pin() and the sidebar stays expanded. The same button stays in place while expanded and reports aria-pressed; pressing it again collapses the sidebar back into a peek, so the focused button never disappears. Escape on it moves focus to the panel trigger before the peek ends. The head rows of the sidebar and the content column keep one fixed height in every state. Escape, moving focus out or leaving with the pointer ends the peek. The [cngxPanelTrigger] at the top of the content column toggles collapsed and carries aria-expanded and aria-controls. Collapsed as hidden, the sidebar reserves no space and is inert and aria-hidden until expanded.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -40,6 +40,27 @@ export const STORY: DemoSpec = {
   ];
   protected readonly current = signal('Dashboard');
 
+  // Pinned, the same button unpins: the sidebar collapses back into a peek,
+  // so the focused button stays rendered until focus leaves the sidebar.
+  protected togglePin(sidebar: CngxSidebar): void {
+    if (sidebar.collapsed()) {
+      sidebar.pin();
+      return;
+    }
+    sidebar.collapsed.set(true);
+    sidebar.peek();
+  }
+
+  // Escape ends a peek and with it the pin button. Hand focus to the panel
+  // trigger first so it never drops to the document body.
+  protected handlePinEscape(event: Event, sidebar: CngxSidebar): void {
+    if (!sidebar.peeked() || !(event.target instanceof HTMLElement)) {
+      return;
+    }
+    const frame = event.target.closest('.demo-app-frame');
+    frame?.querySelector<HTMLElement>('[aria-controls="' + sidebar.id() + '"]')?.focus();
+  }
+
   protected go(event: Event, label: string): void {
     event.preventDefault();
     this.current.set(label);
@@ -52,9 +73,11 @@ export const STORY: DemoSpec = {
       <div class="demo-app-sidebar__head">
         <cngx-avatar initials="A" shape="square" size="sm" />
         <span class="demo-app-brand demo-app-sidebar__label">Acme</span>
-        @if (sidebar.state() === 'peek') {
+        @if (sidebar.expanded()) {
           <span class="demo-app-spacer"></span>
-          <button type="button" cngxIconButton aria-label="Keep sidebar open" (click)="sidebar.pin()">
+          <button type="button" cngxIconButton aria-label="Keep sidebar open"
+                  [attr.aria-pressed]="!sidebar.collapsed()"
+                  (click)="togglePin(sidebar)" (keydown.escape)="handlePinEscape($event, sidebar)">
             <cngx-icon size="sm"><mat-icon>push_pin</mat-icon></cngx-icon>
           </button>
         }
