@@ -41,6 +41,12 @@ export function setupVirtualization<T, TCommit>(opts: {
   // verbatim, even without a `virtualizer`, so a deliberate identity-shaped
   // override is not re-wrapped by the config-default auto-virtualizer. Only
   // the default identity factory falls through to config-driven windowing.
+  //
+  // Detected by reference identity against the token's own default factory:
+  // this holds because `CNGX_PANEL_RENDERER_FACTORY` defaults to exactly
+  // `createIdentityPanelRenderer`. Providing that same function literal as a
+  // `useValue` reads as "no override" and still auto-virtualizes - the
+  // documented default behaviour, not a bug.
   const consumerOverride = factory !== createIdentityPanelRenderer;
 
   const panelRenderer: PanelRenderer<T> =
