@@ -2,6 +2,16 @@ import { describe, expect, it } from 'vitest';
 
 import * as api from './public-api';
 
+// Type-level half of the guard: the core types behind CngxButtonBrain were
+// public before the brain and stay internal now. A re-export makes the
+// directive unused and fails the build.
+// @ts-expect-error CngxButtonCore is internal to the brain
+export type RemovedButtonCore = import('./public-api').CngxButtonCore;
+// @ts-expect-error CngxButtonCoreDefaults is internal to the brain
+export type RemovedButtonCoreDefaults = import('./public-api').CngxButtonCoreDefaults;
+// @ts-expect-error CngxButtonCoreInputs is internal to the brain
+export type RemovedButtonCoreInputs = import('./public-api').CngxButtonCoreInputs;
+
 describe('@cngx/common/button public API shape', () => {
   // Snapshot of the runtime (value) export list. A new or removed export is a
   // deliberate public-surface change; update this list in the same commit so a
