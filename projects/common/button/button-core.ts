@@ -68,7 +68,11 @@ export interface CngxButtonCore {
    * stays the immediate truth.
    */
   readonly busyVisible: Signal<boolean>;
-  /** `true` while the button refuses activation: disabled, busy or refused by the co-hosted `CngxAsyncClick`. */
+  /**
+   * `true` while the button refuses activation: disabled, busy or refused by
+   * the co-hosted `CngxAsyncClick`. The activation guard keys on it, so
+   * `aria-disabled="true"` always means no activation.
+   */
   readonly blocked: Signal<boolean>;
   /** `aria-disabled` rendered from `blocked`. */
   readonly ariaDisabled: Signal<'true' | null>;
@@ -112,13 +116,15 @@ export function resolveButtonSize(
  * Derivation behind `CngxButtonBrain`. Resolves the three visual axes
  * (`input ?? fixed ?? group ?? config ?? default`; tone skips the group),
  * renders `disabled` as `aria-disabled` so the element stays focusable, swallows activation while
- * disabled and reads a co-hosted run through `CNGX_ASYNC_RUN_STATE`.
+ * blocked and reads a co-hosted run through `CNGX_ASYNC_RUN_STATE`.
  *
- * The activation guard is a capture-phase listener on the host: it runs
- * before any bubbling `(click)` handler on the same element (consumer
- * handlers, `RouterLink`, `CngxAsyncClick`), stops them and prevents the
- * default action (link navigation, form submission, including the implicit
- * submission a browser triggers through a click on the default button).
+ * The activation guard is a capture-phase listener on the host: while
+ * `blocked` it runs before any bubbling `(click)` handler on the same
+ * element (consumer handlers, `RouterLink`, `CngxAsyncClick`), stops them
+ * and prevents the default action (link navigation, form submission,
+ * including the implicit submission a browser triggers through a click on
+ * the default button). The one click it lets through is the one on an
+ * expanded popup trigger (`aria-expanded="true"`), which closes the popup.
  *
  * @internal
  */
@@ -174,8 +180,14 @@ export function injectButtonCore(
     isButtonHost ? (inputs.type() ?? 'button') : null,
   );
 
+  // Keyed on `blocked`, not on the own refusal: a runner that refuses or
+  // runs renders aria-disabled too, and a co-located listener (RouterLink, a
+  // consumer handler) must not act on an element that reads as disabled.
+  // A click on an expanded popup trigger only closes what it opened, so it
+  // passes: a run started by the opening click never leaves a menu that
+  // cannot be clicked shut.
   const guard = (event: Event): void => {
-    if (!inputs.disabled()) {
+    if (!blocked() || host.getAttribute('aria-expanded') === 'true') {
       return;
     }
     event.preventDefault();

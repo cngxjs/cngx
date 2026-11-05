@@ -137,8 +137,9 @@ export class CngxMenuButton {
    * @internal - refuses to open the menu while the button is blocked
    * (disabled, a pending co-hosted `cngxAsyncClick`, or its
    * `[enabled]="false"`); an open menu still closes on click. The brain's
-   * capture guard handles only refusal, so consumer `(click)` handlers
-   * still run.
+   * capture guard swallows every other click while blocked, consumer
+   * `(click)` handlers included; the closing click on the expanded
+   * trigger passes.
    */
   protected readonly toggle = injectMenuToggle(this.brain.blocked);
 

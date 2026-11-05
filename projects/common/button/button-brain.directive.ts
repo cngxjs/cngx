@@ -38,7 +38,9 @@ import type {
  * It resolves the axes (`input ?? fixed ?? group ?? config ?? default`;
  * tone skips the group) into `data-variant` / `data-tone` / `data-size`,
  * renders `disabled` as `aria-disabled` so the element stays focusable,
- * swallows activation in the capture phase while refusing, renders
+ * swallows activation in the capture phase while `blocked` (so
+ * `aria-disabled="true"` always means no activation, a co-located
+ * `RouterLink` included), renders
  * `aria-busy` while a run is in flight (the co-hosted runner's or the
  * host's, with the same value the runner writes), and owns
  * `aria-describedby` through `CNGX_DESCRIBED_BY` (static ids, the
@@ -195,7 +197,11 @@ export class CngxButtonBrain implements CngxButtonState {
   readonly busy = this.core.busy;
   /** `true` while the busy layer shows (the runner's show delay and min-dwell applied). */
   readonly busyVisible = this.core.busyVisible;
-  /** `true` while the button refuses activation: refusing, busy or refused by the co-hosted runner. */
+  /**
+   * `true` while the button refuses activation: refusing, busy or refused by
+   * the co-hosted runner. The capture guard swallows every click while it is
+   * set, except the one that closes an expanded popup.
+   */
   readonly blocked = this.core.blocked;
   /**
    * Busy glyph from `provideButtonSpinner`, or `null` for the built-in

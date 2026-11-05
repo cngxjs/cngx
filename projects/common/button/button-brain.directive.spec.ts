@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { CNGX_HOST_INTERACTION_STATE, CngxAsyncClick } from '@cngx/common/interactive';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { CngxButtonBrain } from './button-brain.directive';
 import {
@@ -144,6 +144,39 @@ class PinnedHost {}
 })
 class StatefulHost {
   clicks = 0;
+}
+
+// A runner that refuses on its own: the host is not disabled, only cngxAsyncClick says no.
+@Component({
+  template: `
+    <a
+      id="refused-link"
+      demoChip
+      href="#refused"
+      [cngxAsyncClick]="run"
+      [enabled]="false"
+      (click)="clicks = clicks + 1"
+      >Open</a
+    >
+    <button
+      id="refused-button"
+      demoChip
+      [cngxAsyncClick]="run"
+      [enabled]="false"
+      (click)="clicks = clicks + 1"
+    >
+      Run
+    </button>
+  `,
+  imports: [DemoChip, CngxAsyncClick],
+})
+class RunnerRefusalHost {
+  clicks = 0;
+  runs = 0;
+  readonly run = (): Promise<void> => {
+    this.runs += 1;
+    return Promise.resolve();
+  };
 }
 
 function render<T>(type: new () => T) {
@@ -329,5 +362,40 @@ describe('CngxButtonBrain', () => {
     expect(interaction.disabled()).toBe(false);
     expect(btn.hasAttribute('aria-disabled')).toBe(false);
     expect(btn.hasAttribute('aria-busy')).toBe(false);
+  });
+
+  describe('activation while aria-disabled', () => {
+    it('a runner-only refusal stops co-located click listeners and the link default', () => {
+      const { q, host } = render(RunnerRefusalHost);
+      for (const id of ['#refused-link', '#refused-button']) {
+        const el = q(id);
+        expect(el.getAttribute('aria-disabled')).toBe('true');
+        const ev = new MouseEvent('click', { bubbles: true, cancelable: true });
+        el.dispatchEvent(ev);
+        expect(ev.defaultPrevented).toBe(true);
+      }
+      expect(host.clicks).toBe(0);
+      expect(host.runs).toBe(0);
+    });
+
+    it('a pending run stops co-located click listeners until it settles', async () => {
+      const { q, host, fixture, flush } = render(Host);
+      const btn = q('#async');
+      const listener = vi.fn();
+      btn.addEventListener('click', listener);
+      btn.click();
+      flush();
+      expect(listener).toHaveBeenCalledTimes(1);
+      expect(btn.getAttribute('aria-disabled')).toBe('true');
+      btn.click();
+      expect(listener).toHaveBeenCalledTimes(1);
+      host.release();
+      await new Promise((resolve) => setTimeout(resolve));
+      await fixture.whenStable();
+      flush();
+      expect(btn.hasAttribute('aria-disabled')).toBe(false);
+      btn.click();
+      expect(listener).toHaveBeenCalledTimes(2);
+    });
   });
 });
