@@ -435,6 +435,75 @@ describe('CngxDrawerPanel', () => {
 })
 class BareHost {}
 
+@Component({
+  template: `
+    <div
+      cngxDrawer
+      #drawer="cngxDrawer"
+      [cngxDrawerOpened]="controlled() ? open() : undefined"
+      (openedChange)="changes.push($event)"
+      (closed)="closedCount = closedCount + 1"
+    >
+      <nav [cngxDrawerPanel]="drawer" modality="none"><a href="#">Link</a></nav>
+      <main class="content"><button type="button">Content</button></main>
+    </div>
+  `,
+  imports: [CngxDrawer, CngxDrawerPanel],
+})
+class EscapeHost {
+  readonly controlled = signal(true);
+  readonly open = signal(true);
+  readonly changes: boolean[] = [];
+  closedCount = 0;
+}
+
+describe('CngxDrawer Escape with a panel', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [EscapeHost] });
+  });
+
+  function escapeOn(target: Element) {
+    target.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  }
+
+  function setup(controlled: boolean) {
+    const fixture = TestBed.createComponent(EscapeHost);
+    fixture.componentInstance.controlled.set(controlled);
+    fixture.detectChanges();
+    const drawer = fixture.debugElement.query(By.directive(CngxDrawer)).injector.get(CngxDrawer);
+    if (!controlled) {
+      drawer.open();
+      fixture.componentInstance.changes.length = 0;
+    }
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const root = fixture.nativeElement as HTMLElement;
+    return { host: fixture.componentInstance, root };
+  }
+
+  for (const controlled of [true, false]) {
+    const label = controlled ? 'controlled' : 'uncontrolled';
+
+    it(`closes a ${label} drawer once for an Escape inside the panel`, () => {
+      const { host, root } = setup(controlled);
+
+      escapeOn(root.querySelector('nav a') as HTMLElement);
+
+      expect(host.changes).toEqual([false]);
+      expect(host.closedCount).toBe(1);
+    });
+
+    it(`closes a ${label} drawer once for an Escape outside the panel`, () => {
+      const { host, root } = setup(controlled);
+
+      escapeOn(root.querySelector('main button') as HTMLElement);
+
+      expect(host.changes).toEqual([false]);
+      expect(host.closedCount).toBe(1);
+    });
+  }
+});
+
 describe('CngxDrawerPanel on a CngxDrawer host', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({

@@ -33,6 +33,8 @@ export interface CngxDrawerPanelPresentation {
   readonly mode: Signal<DrawerMode>;
   readonly modal: Signal<boolean>;
   readonly position: Signal<DrawerPosition>;
+  /** The panel element; Escape inside it belongs to the panel's surface. */
+  readonly element: HTMLElement;
 }
 
 /**
@@ -104,7 +106,7 @@ export interface CngxDrawerPanelPresentation {
   providers: [{ provide: CNGX_PANEL_TARGET, useExisting: CngxDrawer }],
   host: {
     '[class.cngx-drawer--opened]': 'opened()',
-    '(keydown.escape)': 'close()',
+    '(keydown.escape)': 'handleEscape($event)',
   },
 })
 export class CngxDrawer implements CngxPanelTarget {
@@ -165,6 +167,17 @@ export class CngxDrawer implements CngxPanelTarget {
     this.openedState.set(false);
     this.openedChange.emit(false);
     this.closed.emit();
+  }
+
+  // The open panel's surface already closed the drawer for an Escape inside
+  // it. A controlled drawer still reads the bound input as open until the
+  // owner writes it back, so a second close() here would emit twice.
+  protected handleEscape(event: Event): void {
+    const panel = this.panelSlot.current()?.element;
+    if (panel && event.target instanceof Node && panel.contains(event.target)) {
+      return;
+    }
+    this.close();
   }
 
   /** @internal Called by `CngxDrawerPanel`; the latest panel wins. */

@@ -2,6 +2,7 @@ import {
   computed,
   Directive,
   effect,
+  ElementRef,
   HostAttributeToken,
   inject,
   input,
@@ -206,6 +207,7 @@ export class CngxDrawerPanel implements CngxDrawerSurfaceDriver {
     mode: this.mode,
     modal: computed(() => this.surfaceModality() !== 'none'),
     position: this.position,
+    element: inject<ElementRef<HTMLElement>>(ElementRef).nativeElement,
   };
   /** @internal Drives the composed `CngxDrawerSurface`. */
   readonly surfaceOutsideDismiss = this.closeOnClickOutside;
