@@ -89,5 +89,45 @@ Which trigger? Action button, menu button, split button, select, disclosure or t
 - The ripple wave stays opt-in decoration: co-host `cngxRipple` (`@cngx/common/interactive`) on a `cngxButton` or `cngxIconButton` where you want the wave, and add `[rippleCentered]="true"` on a square icon button. Material buttons ripple by default; a cngx button under the Material bridge ripples only with the directive. The wave is off under `prefers-reduced-motion: reduce`.
 - A `cngxButtonGroupAddon` sits on the row of the buttons beside it: it carries their `data-size` and reads their padding and type tokens. Media children (`img`, `svg`, `picture`, `video`, `canvas`, `cngx-icon`, `cngx-avatar`) are capped to `--cngx-button-group-addon-media-size`, SET to `1lh` of the addon, so a 24px avatar never stretches a 20px-line row. Set it on the addon for a different cap.
 - `CNGX_BUTTON_GROUP` is the contract a group provides so its children read variant and size without importing the group class.
-- `CNGX_HOST_INTERACTION_STATE` (`@cngx/common/interactive`) is how the button tells a co-hosted `cngxAsyncClick` it is disabled, so both directives render the same `aria-disabled`.
-- `CNGX_DESCRIBED_BY` (`@cngx/core/utils`) is the `aria-describedby` registry each button provides on its element: the static ids, the `[cngxDescribedBy]` ids, the disabled reason and a co-hosted `[cngxTooltip]` id all land in one attribute, in that order, instead of one binding overwriting the other.
+- `CNGX_HOST_INTERACTION_STATE` (`@cngx/common/interactive`) is how `CngxButtonBrain` tells a co-hosted `cngxAsyncClick` the button is disabled, so both directives render the same `aria-disabled`.
+- `CNGX_DESCRIBED_BY` (`@cngx/core/utils`) is the `aria-describedby` registry the brain provides on the button element: the static ids, the `[cngxDescribedBy]` ids, the disabled reason and a co-hosted `[cngxTooltip]` id all land in one attribute, in that order, instead of one binding overwriting the other.
+
+## Building a custom button host
+
+Every cngx button renders on one host directive, `CngxButtonBrain`. It owns the state and the ARIA: the axes, `data-variant` / `data-tone` / `data-size`, `disabled` as `aria-disabled`, the capture-phase activation guard, the `aria-describedby` registry, `data-pending` / `data-busy` from a co-hosted runner and the `CNGX1071` name check for icon-only hosts. A host of your own declares it in `hostDirectives`, forwards the inputs it wants to expose, and names itself with `provideButtonHost`:
+
+```typescript
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { CngxButtonBrain, provideButtonHost } from '@cngx/common/button';
+
+@Component({
+  selector: 'button[appChipButton]',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  hostDirectives: [
+    {
+      directive: CngxButtonBrain,
+      inputs: ['variant: appChipButton', 'tone', 'size', 'disabled', 'disabledReason', 'cngxDescribedBy', 'type'],
+    },
+  ],
+  providers: [provideButtonHost('appChipButton', { defaultVariant: 'outline' })],
+  host: { class: 'app-chip-button' },
+  template: `
+    <ng-content />
+    @if (brain.busyVisible()) {
+      <span class="app-chip-button__busy" aria-hidden="true"></span>
+    }
+    <span [id]="brain.reasonId" hidden>{{ brain.disabledReason() }}</span>
+  `,
+  styleUrl: './chip-button.css',
+})
+export class AppChipButton {
+  protected readonly brain = inject(CngxButtonBrain);
+}
+```
+
+- **Inputs.** `variant`, `tone`, `size`, `disabled`, `disabledReason`, `cngxDescribedBy` and `type` live on the brain. Forward only the ones the host should take; alias `variant` to the selector so `appChipButton="solid"` works.
+- **Descriptor.** `provideButtonHost(name, { defaultVariant, fixed, iconOnly })`: `name` is the public selector, printed in brackets in development diagnostics; `fixed` pins axes against the group and the config (the input still wins); `iconOnly: true` turns on the `CNGX1071` name check.
+- **What the host keeps.** Its template, its slots, its CSS, the busy layer (render it from `brain.busyVisible()`) and the reason span (`[id]="brain.reasonId"`, `hidden`, the text from `brain.disabledReason()`). The brain sets only attributes on the host element, so the skin reads `[data-variant]`, `[data-tone]`, `[data-size]`, `[aria-disabled='true']`, `[data-pending]` and `[data-busy]`.
+- **Refusal or a run of its own.** Provide `CNGX_BUTTON_HOST_STATE` on the host with a `refusing` signal and an optional `busy` signal; the brain folds them into the guard, `aria-disabled`, `data-pending` and the state a co-hosted runner reads. The brain reads the token on first use, so a factory that injects the host component is safe.
+- **Co-hosted runners.** `cngxAsyncClick` on the host publishes its run through `CNGX_ASYNC_RUN_STATE` (`@cngx/common/interactive`); the brain reads it from there, so the busy layer, `data-pending` and `aria-disabled` follow the run without any wiring in the host.
+- **Reading the state.** `CNGX_BUTTON_STATE` on the element injector exposes `blocked`, `busy` and `activeReasonId`; `cngxSplitButton` reads its main action through it.
