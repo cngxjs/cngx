@@ -8,7 +8,7 @@ import {
   makeEnvironmentProviders,
 } from '@angular/core';
 
-import { CNGX_CLOSE_ICON } from '@cngx/common/button';
+import { provideCloseIcon } from '@cngx/common/button';
 import { CNGX_LOADING_CONFIG, CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
 import { cngxDevWarn } from '@cngx/utils';
 
@@ -221,6 +221,8 @@ export function withLoadingDefaults(opts: {
  *
  * The component receives no inputs - it should render a single icon.
  * Per-instance override via content projection on `CngxCloseButton` takes precedence.
+ * Forwards to `provideCloseIcon` from `@cngx/common/button`, so a close
+ * button outside the feedback surfaces gets the same glyph.
  *
  * ```ts
  * provideFeedback(withCloseIcon(MyLucideXIcon))
@@ -229,7 +231,7 @@ export function withLoadingDefaults(opts: {
 export function withCloseIcon(component: Type<unknown>): FeedbackFeature {
   return {
     _apply: (c) => ({ ...c, closeIconComponent: component }),
-    _providers: [{ provide: CNGX_CLOSE_ICON, useValue: component }],
+    _providers: [provideCloseIcon(component)],
   };
 }
 
