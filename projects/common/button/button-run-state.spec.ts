@@ -17,6 +17,7 @@ class FakeRunner implements CngxAsyncRunState {
   readonly pendingState = signal(false);
   readonly busyVisibleState = signal(false);
   readonly enabledState = signal(true);
+  readonly busy = signal(false).asReadonly();
   readonly pending = this.pendingState.asReadonly();
   readonly busyVisible = this.busyVisibleState.asReadonly();
   readonly enabled = this.enabledState.asReadonly();

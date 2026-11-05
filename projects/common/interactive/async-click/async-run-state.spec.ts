@@ -23,6 +23,15 @@ class Host {
   );
 }
 
+@Component({
+  template: `<button [cngxAsyncClick]="action" [busy]="busy()">Run</button>`,
+  imports: [CngxAsyncClick],
+})
+class BusyHost {
+  readonly busy = signal(false);
+  readonly action: AsyncAction = () => Promise.resolve();
+}
+
 async function drainMicrotasks(): Promise<void> {
   for (let i = 0; i < 10; i++) {
     await Promise.resolve();
@@ -79,6 +88,21 @@ describe('CNGX_ASYNC_RUN_STATE', () => {
     host.enabled.set(false);
     fixture.detectChanges();
     expect(run.enabled()).toBe(false);
+  });
+
+  it('publishes the busy override without a run', () => {
+    const fixture = TestBed.createComponent(BusyHost);
+    fixture.detectChanges();
+    const run = fixture.debugElement
+      .query(By.directive(CngxAsyncClick))
+      .injector.get(CNGX_ASYNC_RUN_STATE, null, { self: true })!;
+
+    expect(run.busy()).toBe(false);
+    fixture.componentInstance.busy.set(true);
+    fixture.detectChanges();
+
+    expect(run.busy()).toBe(true);
+    expect(run.pending()).toBe(false);
   });
 
   it('carries the error through state', async () => {

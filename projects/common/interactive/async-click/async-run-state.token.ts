@@ -10,12 +10,22 @@ import type { CngxAsyncSettle } from './async-click.directive';
  *
  * Status, error and last-updated travel inside `state`; nothing is
  * flattened into separate signals.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-click/async-run-state.token.ts
+ * @since 0.1.0
+ * @relatedTo CNGX_ASYNC_RUN_STATE, CngxAsyncClick
  */
 export interface CngxAsyncRunState {
   /** `true` while the action executes; the immediate truth. */
   readonly pending: Signal<boolean>;
   /** `true` while the busy visual should show (show delay and min-dwell applied). */
   readonly busyVisible: Signal<boolean>;
+  /**
+   * The runner's own busy override (`CngxAsyncClick`'s `[busy]`): an ARIA
+   * hint for a run outside the click, folded into `aria-busy` next to
+   * `pending`. It neither refuses clicks nor opens `busyVisible`.
+   */
+  readonly busy: Signal<boolean>;
   /** `false` while the runner refuses clicks through its own `[enabled]`. */
   readonly enabled: Signal<boolean>;
   /** Full `CngxAsyncState` view of the run lifecycle. */
