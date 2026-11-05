@@ -1,6 +1,34 @@
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { defineConfig, devices } from '@playwright/test';
 
 const BASE_URL = process.env['EXAMPLES_E2E_BASE_URL'] ?? 'http://localhost:4200';
+
+/* Playwright's bundled Firefox probes the real macOS Firefox home folder on
+   startup even when it is handed a throwaway -profile. On macOS 27 that folder
+   is privacy-blocked, so the launch dies with the misleading
+   "Could not find profile folder". Pointing CFFIXED_USER_HOME at a fresh,
+   per-run temp dir gives CoreFoundation a home the test run owns and the
+   launch succeeds. macOS-only (undefined elsewhere, so Linux CI is unchanged);
+   removable once Playwright ships the Firefox 158 fix (>= 1.65). */
+const firefoxMacHome =
+  process.platform === 'darwin'
+    ? mkdtempSync(join(tmpdir(), 'cngx-pw-firefox-home-'))
+    : undefined;
+
+const firefoxUse = firefoxMacHome
+  ? {
+      ...devices['Desktop Firefox'],
+      launchOptions: {
+        env: { ...process.env, CFFIXED_USER_HOME: firefoxMacHome } as Record<
+          string,
+          string
+        >,
+      },
+    }
+  : { ...devices['Desktop Firefox'] };
 
 export default defineConfig({
   testDir: './e2e',
@@ -55,7 +83,7 @@ export default defineConfig({
 
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      use: firefoxUse,
     },
 
     {
