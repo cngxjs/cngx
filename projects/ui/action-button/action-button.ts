@@ -1,4 +1,4 @@
-import { NgTemplateOutlet } from '@angular/common';
+import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   ChangeDetectionStrategy,
@@ -128,7 +128,7 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
   // eslint-disable-next-line @angular-eslint/component-selector -- attribute selector by design (sits on the native button)
   selector: 'button[cngxActionButton]',
   standalone: true,
-  imports: [NgTemplateOutlet],
+  imports: [NgComponentOutlet, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxActionButton',
@@ -226,7 +226,11 @@ type LabelCell = 'idle' | 'pending' | 'success' | 'error';
     <ng-content select="[cngxButtonEnd]" />
     @if (brain.busyVisible() && activeCell() === 'idle') {
       <span class="cngx-button__busy" aria-hidden="true">
-        <span class="cngx-button__spinner"></span>
+        @if (brain.spinner; as spinner) {
+          <ng-container *ngComponentOutlet="spinner" />
+        } @else {
+          <span class="cngx-button__spinner"></span>
+        }
       </span>
     }
     <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{

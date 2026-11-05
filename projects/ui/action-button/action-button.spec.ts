@@ -7,6 +7,7 @@ import {
   CngxButtonBrain,
   CngxButtonEnd,
   CngxButtonStart,
+  provideButtonSpinner,
 } from '@cngx/common/button';
 import { CngxIcon } from '@cngx/common/display';
 import { CngxMenu, CngxMenuItem } from '@cngx/common/interactive';
@@ -1151,6 +1152,41 @@ class LastUpdatedHost {
   readonly ext = signal<CngxAsyncState<unknown> | undefined>(this.external);
   readonly action = () => Promise.resolve();
 }
+
+@Component({
+  selector: 'demo-dots',
+  template: `<span class="demo-dots">...</span>`,
+})
+class DemoDots {}
+
+@Component({
+  viewProviders: [provideButtonSpinner(DemoDots)],
+  template: `
+    <button cngxActionButton [action]="action" [showDelay]="0" [minDwell]="0">Save</button>
+  `,
+  imports: [CngxActionButton],
+})
+class SpinnerHost {
+  readonly action = () => new Promise<void>(() => undefined);
+}
+
+describe('CngxActionButton with provideButtonSpinner', () => {
+  it('renders the provided glyph in its busy layer', async () => {
+    const fixture = TestBed.createComponent(SpinnerHost);
+    fixture.detectChanges();
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    btn.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    await new Promise((resolve) => setTimeout(resolve));
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const layer = btn.querySelector('.cngx-button__busy');
+    expect(layer?.querySelector('.demo-dots')).not.toBeNull();
+    expect(layer?.querySelector('.cngx-button__spinner')).toBeNull();
+  });
+});
 
 describe('CngxActionButton settle lifecycle', () => {
   afterEach(() => {
