@@ -1415,17 +1415,12 @@
       "status": "active",
       "files": [
         "projects/common/button/button-brain.directive.ts",
-        "projects/common/button/close-button.component.ts",
         "projects/common/menu-button/icon-menu-button.component.ts"
       ],
       "messages": [
         {
           "file": "projects/common/button/button-brain.directive.ts",
           "text": "${...} has no accessible name. Set aria-label, aria-labelledby or title on the host; the glyph alone is silent to assistive technology."
-        },
-        {
-          "file": "projects/common/button/close-button.component.ts",
-          "text": "[cngxCloseButton] has no accessible name. Set aria-label, aria-labelledby or title on the host and name what it closes; the glyph alone is silent to assistive technology."
         },
         {
           "file": "projects/common/menu-button/icon-menu-button.component.ts",

@@ -1,12 +1,20 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { CngxAsyncClick } from '@cngx/common/interactive';
 import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
 import { CNGX_ICON_X } from '@cngx/utils';
 import { vi } from 'vitest';
 
+import { CngxButtonBrain } from './button-brain.directive';
 import { CngxButtonGroup } from './button-group.directive';
-import { provideButtonConfig, withButtonSize, withButtonVariant } from './button-config';
+import { CNGX_BUTTON_STATE } from './button-state.token';
+import {
+  provideButtonConfig,
+  withButtonSize,
+  withButtonTone,
+  withButtonVariant,
+} from './button-config';
 import { CNGX_CLOSE_ICON, CngxCloseButton } from './close-button.component';
 
 @Component({
@@ -122,6 +130,26 @@ describe('CngxCloseButton', () => {
     expect(q('#grouped').dataset['size']).toBe('sm');
   });
 
+  it('stays neutral under an app-wide tone; a per-instance tone still wins', () => {
+    TestBed.configureTestingModule({
+      providers: [provideButtonConfig(withButtonTone('danger'))],
+    });
+    const { q } = render(Host);
+    expect(q('#plain').dataset['tone']).toBe('neutral');
+    expect(q('#outline').dataset['tone']).toBe('danger');
+  });
+
+  it('publishes its blocked state through CNGX_BUTTON_STATE', () => {
+    const { fixture, host } = render(Host);
+    const de = fixture.debugElement.query(By.css('#blocked'));
+    const state = de.injector.get(CNGX_BUTTON_STATE);
+    expect(state).toBe(de.injector.get(CngxButtonBrain));
+    expect(state.blocked()).toBe(true);
+    host.blocked.set(false);
+    fixture.detectChanges();
+    expect(state.blocked()).toBe(false);
+  });
+
   it('takes its name from the consumer aria-label, reactively', () => {
     const { fixture, host, q } = render(Host);
     expect(q('#plain').getAttribute('aria-label')).toBe('Close session-expired alert');
@@ -221,6 +249,7 @@ describe('CngxCloseButton', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const { fixture } = render(Host);
     await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve));
     expect(warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1071'))).toEqual([]);
     warn.mockRestore();
   });
@@ -229,8 +258,9 @@ describe('CngxCloseButton', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const { fixture, q } = render(UnnamedHost);
     await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve));
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn.mock.calls[0][0]).toMatch(/^CNGX1071: \[cngxCloseButton\] has no accessible name\./);
+    expect(warn.mock.calls[0][0]).toMatch(/^CNGX1071: CngxCloseButton has no accessible name\./);
     expect(warn.mock.calls[0]).toContain(q('#unnamed'));
     warn.mockRestore();
   });
