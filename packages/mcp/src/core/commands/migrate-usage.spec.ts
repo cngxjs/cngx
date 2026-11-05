@@ -140,6 +140,7 @@ describe('migrateUsage', () => {
       injectables: [],
       tokens: [],
       functions: [],
+      errorCodes: null,
     };
     const deps: DocsResolverDeps = {
       fetchSnapshot: async () => ({ ok: true, path: '/tmp/raw-unstamped.json' }),

@@ -58,12 +58,19 @@ export function checkBundledSnapshot({ dataDir, expectedVersion, loadBundledDocs
       message: `bundle is stamped cngxVersion ${meta.cngxVersion}, expected ${expectedVersion}. Run npm run build:mcp.`,
     };
   }
-  const counts = { components: docs.components.length, functions: docs.functions.length };
+  const counts = {
+    components: docs.components.length,
+    functions: docs.functions.length,
+    errorCodes: docs.errorCodes?.codes.length ?? 0,
+  };
   if (counts.components === 0 || counts.functions === 0) {
     return {
       ok: false,
       message: `bundle loads but is empty: ${counts.components} components, ${counts.functions} functions.`,
     };
+  }
+  if (docs.errorCodes === null || counts.errorCodes === 0) {
+    return { ok: false, message: 'bundle has no readable error-code block. Run npm run build:mcp.' };
   }
   return { ok: true, meta, counts };
 }
@@ -132,7 +139,7 @@ async function main() {
   console.log(
     `mcp-bundle-check: ${args.label}/documentation.json loads ` +
       `(schemaVersion ${meta.schemaVersion}, cngxVersion ${meta.cngxVersion}, ` +
-      `${counts.components} components, ${counts.functions} functions).`,
+      `${counts.components} components, ${counts.functions} functions, ${counts.errorCodes} error codes).`,
   );
 }
 
