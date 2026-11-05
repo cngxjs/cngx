@@ -34,6 +34,7 @@ const MICRO_ICONS = [
   'CNGX_ICON_INFO',
   'CNGX_ICON_INFO_CIRCLE',
   'CNGX_ICON_MAXIMIZE',
+  'CNGX_ICON_MENU',
   'CNGX_ICON_MINUS',
   'CNGX_ICON_MORE_HORIZONTAL',
   'CNGX_ICON_MORE_VERTICAL',
@@ -56,10 +57,12 @@ const MICRO_ICONS = [
 // 20px box. Excluded (kept on the 24-grid path, small: null): CARET_DOWN (Q3,
 // bridge caret), and CHECK and BAN (1x smoke 2026-11-04 - the user chose the
 // 24-grid path for both; the hinted check read as a different icon, the hinted
-// ban rang a touch too thick).
+// ban rang a touch too thick). MENU is the panel-trigger default and still
+// waits for the joint 1x sign-off on the sheet.
 const SMALL_ICONS = [
   'CNGX_ICON_ALERT',
   'CNGX_ICON_CHEVRON_RIGHT',
+  'CNGX_ICON_MENU',
   'CNGX_ICON_MINUS',
   'CNGX_ICON_STOP',
   'CNGX_ICON_VOLUME',
@@ -185,6 +188,7 @@ describe('cngx default icon set', () => {
         'CNGX_ICON_ARCHIVE',
         'CNGX_ICON_VOLUME',
         'CNGX_ICON_STOP',
+        'CNGX_ICON_MENU',
       ].sort(),
     );
   });

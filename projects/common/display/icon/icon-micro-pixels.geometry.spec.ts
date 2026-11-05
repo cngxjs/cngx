@@ -29,6 +29,7 @@ const NO_MICRO_ICONS = Object.entries(utils)
 // worse than the 24-grid path in the same box".
 const RECTILINEAR = [
   'CNGX_ICON_PLUS',
+  'CNGX_ICON_MENU',
   'CNGX_ICON_MINUS',
   'CNGX_ICON_EXCLAMATION',
   'CNGX_ICON_EXCLAMATION_SOLID',
@@ -68,7 +69,7 @@ const SMALL_ICONS = Object.entries(utils)
 // Straight edges on whole units in the 16 box: nothing may anti-alias. MINUS is
 // the only rectilinear small drawing; every other band glyph has a diagonal or
 // an arc and is held to "not worse than the 24-grid path in the same box".
-const RECTILINEAR_SMALL = ['CNGX_ICON_MINUS'] as const;
+const RECTILINEAR_SMALL = ['CNGX_ICON_MINUS', 'CNGX_ICON_MENU'] as const;
 
 // Signed-off 16-grid drawings whose anti-aliased pixel count edges past their
 // 24-grid path in a 16px box: X is a 1-unit diagonal strip that straddles pixel

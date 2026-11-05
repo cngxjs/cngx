@@ -611,3 +611,18 @@ export const CNGX_ICON_STOP = {
     d: 'M5 4H11A1 1 0 0 1 12 5V11A1 1 0 0 1 11 12H5A1 1 0 0 1 4 11V5A1 1 0 0 1 5 4Z',
   },
 } as const satisfies CngxIconData;
+
+/** Three bars (menu / navigation panel trigger). @internal */
+export const CNGX_ICON_MENU = {
+  viewBox: '0 0 24 24',
+  d: 'M4 6h16M4 12h16M4 18h16',
+  paint: 'stroke',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M2 2H10V3H2ZM2 5H10V6H2ZM2 8H10V9H2Z',
+  },
+  small: {
+    viewBox: '0 0 16 16',
+    d: 'M2 3H14V4H2ZM2 7H14V8H2ZM2 11H14V12H2Z',
+  },
+} as const satisfies CngxIconData;
