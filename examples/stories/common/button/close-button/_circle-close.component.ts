@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 /**
- * Fixture for `provided-icon.story.ts`: a circled X used as the close glyph
- * through `provideButtonCloseIcon`. The close button wraps it in its
+ * Fixture for `provided-icon.story.ts` and `button/scoped-defaults.story.ts`:
+ * a circled X used as the close glyph through `provideButtonCloseIcon` or
+ * `withButtonCloseIcon`. The close button wraps it in its
  * `aria-hidden` glyph span, so it renders the glyph only.
  */
 @Component({
