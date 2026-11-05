@@ -234,6 +234,11 @@ async function settle(): Promise<void> {
   await Promise.resolve();
 }
 
+// A failed assertion must not leave console.warn mocked for later spec files (isolate: false).
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 describe('CngxIconMenuButton', () => {
   beforeEach(() => {
     polyfillPopover();
@@ -408,7 +413,6 @@ describe('CngxIconMenuButton', () => {
       expect(calls).toHaveLength(1);
       expect(calls[0][0]).toMatch(/^CNGX1071: \[cngxIconMenuButton\] has no accessible name\./);
       expect(calls[0]).toContain(button);
-      warn.mockRestore();
     });
 
     it('stays silent with an aria-label', async () => {
@@ -417,7 +421,6 @@ describe('CngxIconMenuButton', () => {
       await fixture.whenStable();
       await new Promise((resolve) => setTimeout(resolve));
       expect(warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1071'))).toEqual([]);
-      warn.mockRestore();
     });
   });
 
@@ -484,7 +487,6 @@ describe('CngxIconMenuButton', () => {
       await fixture.whenStable();
       await new Promise((resolve) => setTimeout(resolve));
       expect(warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1071'))).toEqual([]);
-      warn.mockRestore();
     });
   });
 });

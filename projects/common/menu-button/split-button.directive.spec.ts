@@ -326,6 +326,11 @@ function key(el: HTMLElement, k: string): void {
   el.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
 }
 
+// A failed assertion must not leave console.warn mocked for later spec files (isolate: false).
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 describe('CngxSplitButton', () => {
   beforeEach(() => {
     polyfillPopover();
@@ -565,12 +570,12 @@ describe('CngxSplitButton', () => {
   });
 
   it('never takes the caret for the main action', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    // Silences the CNGX1073 this host raises; the spy is restored after each test.
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const { fixture, split } = setup(WrappedMainHost);
     await fixture.whenStable();
     expect(split.caret()).toBeDefined();
     expect(split.mainBlocked()).toBe(false);
-    warn.mockRestore();
   });
 
   it('warns CNGX1073 when the main cngxButton is not a direct child', async () => {
@@ -582,7 +587,6 @@ describe('CngxSplitButton', () => {
     expect(calls[0][0]).toMatch(/^CNGX1073: \[cngxSplitButton\] has no main cngxButton\./);
     expect(calls[0]).toContain(group);
     expect(split.mainBlocked()).toBe(false);
-    warn.mockRestore();
   });
 
   it('stays silent about CNGX1073 with a main button', async () => {
@@ -590,7 +594,6 @@ describe('CngxSplitButton', () => {
     const { fixture } = setup(SplitHost);
     await fixture.whenStable();
     expect(warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1073'))).toEqual([]);
-    warn.mockRestore();
   });
 
   it('warns CNGX1072 through the button group without a group name', async () => {
@@ -598,6 +601,5 @@ describe('CngxSplitButton', () => {
     const { fixture } = setup(UnnamedGroupHost);
     await fixture.whenStable();
     expect(warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1072'))).toHaveLength(1);
-    warn.mockRestore();
   });
 });

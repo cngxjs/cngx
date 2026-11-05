@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { CngxAsyncClick } from '@cngx/common/interactive';
 import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
 import { CNGX_ICON_X } from '@cngx/utils';
-import { vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
 
 import { CngxButtonBrain } from './button-brain.directive';
 import { CngxButtonGroup } from './button-group.directive';
@@ -103,6 +103,11 @@ function render<T>(type: new () => T) {
     q: (s: string) => el.querySelector(s) as HTMLElement,
   };
 }
+
+// A failed assertion must not leave console.warn mocked for later spec files (isolate: false).
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('CngxCloseButton', () => {
   it('sits on the native button with the icon-button classes and type="button"', () => {
@@ -266,7 +271,6 @@ describe('CngxCloseButton', () => {
     await fixture.whenStable();
     await new Promise((resolve) => setTimeout(resolve));
     expect(warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1071'))).toEqual([]);
-    warn.mockRestore();
   });
 
   it('warns CNGX1071 when the host has no accessible name', async () => {
@@ -281,6 +285,5 @@ describe('CngxCloseButton', () => {
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn.mock.calls[0][0]).toMatch(/^CNGX1071: \[cngxCloseButton\] has no accessible name\./);
     expect(warn.mock.calls[0]).toContain(q('#unnamed'));
-    warn.mockRestore();
   });
 });
