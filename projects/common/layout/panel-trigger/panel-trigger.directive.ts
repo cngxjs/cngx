@@ -1,6 +1,7 @@
 import {
   afterNextRender,
   computed,
+  DestroyRef,
   Directive,
   ElementRef,
   inject,
@@ -38,7 +39,9 @@ export type CngxPanelTriggerAction = 'toggle' | 'peek';
  * the panel: a bound `label`, else the target's `label`, else
  * `CNGX_LAYOUT_I18N.panelTrigger`. The name stays the same while the panel
  * opens and closes; `aria-expanded` carries the state. A trigger with
- * visible text keeps its text as its name.
+ * visible text keeps its text as its name. The check follows the host
+ * content: text added to or removed from the trigger later (an
+ * interpolation, an `@if`) switches between the two.
  *
  * The trigger draws nothing: the host's content is the consumer's. For an
  * icon button with a glyph that follows the panel, use
@@ -104,7 +107,20 @@ export class CngxPanelTrigger {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly providedTarget = inject(CNGX_PANEL_TARGET, { optional: true });
   private readonly i18n = injectLayoutI18n();
-  private readonly hasOwnName = signal(true);
+  private readonly rendered = signal(false);
+  // Bumped by a MutationObserver on the host: the text and the attributes
+  // that decide the name are not signals, so hasOwnName reads the DOM and
+  // tracks this version instead of a written copy.
+  private readonly nameVersion = signal(0);
+  // Until the first render the projected content is not there yet; assume a
+  // named trigger so no fallback label flashes onto a text trigger.
+  private readonly hasOwnName = computed(() => {
+    if (!this.rendered()) {
+      return true;
+    }
+    this.nameVersion();
+    return nameText(this.host).trim() !== '' || this.host.hasAttribute('aria-labelledby');
+  });
 
   protected readonly nativeButton = this.host.tagName === 'BUTTON';
 
@@ -131,10 +147,21 @@ export class CngxPanelTrigger {
   );
 
   constructor() {
+    let observer: MutationObserver | null = null;
+    inject(DestroyRef).onDestroy(() => observer?.disconnect());
     afterNextRender(() => {
-      this.hasOwnName.set(
-        nameText(this.host).trim() !== '' || this.host.hasAttribute('aria-labelledby'),
-      );
+      this.rendered.set(true);
+      if (typeof MutationObserver === 'undefined') {
+        return;
+      }
+      observer = new MutationObserver(() => this.nameVersion.update((v) => v + 1));
+      observer.observe(this.host, {
+        characterData: true,
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['hidden', 'aria-hidden', 'aria-labelledby'],
+      });
     });
   }
 

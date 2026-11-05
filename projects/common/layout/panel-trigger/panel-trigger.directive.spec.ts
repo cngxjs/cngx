@@ -69,6 +69,21 @@ function setup(target = createTarget(), providers: unknown[] = []) {
   return { fixture, ...target, q };
 }
 
+@Component({
+  template: `
+    <button type="button" class="dynamic" [cngxPanelTrigger]="target">
+      @if (showText()) {
+        Menu
+      }
+    </button>
+  `,
+  imports: [CngxPanelTrigger],
+})
+class DynamicTextHost {
+  target: CngxPanelTarget = createTarget().target;
+  readonly showText = signal(false);
+}
+
 describe('CngxPanelTrigger', () => {
   it('mirrors expanded and points aria-controls at the target id', () => {
     const { fixture, open, q } = setup();
@@ -154,6 +169,28 @@ describe('CngxPanelTrigger', () => {
     lang.set({ panelTrigger: 'Seitenbereich' });
     fixture.detectChanges();
     expect(q('.icon').getAttribute('aria-label')).toBe('Seitenbereich');
+  });
+
+  it('follows text added to and removed from the host after the first render', async () => {
+    TestBed.configureTestingModule({ imports: [DynamicTextHost] });
+    const fixture = TestBed.createComponent(DynamicTextHost);
+    fixture.detectChanges();
+    const button = (fixture.nativeElement as HTMLElement).querySelector('.dynamic') as HTMLElement;
+    const settle = async () => {
+      await new Promise((resolve) => setTimeout(resolve));
+      fixture.detectChanges();
+    };
+    expect(button.getAttribute('aria-label')).toBe('Panel');
+
+    fixture.componentInstance.showText.set(true);
+    fixture.detectChanges();
+    await settle();
+    expect(button.hasAttribute('aria-label')).toBe(false);
+
+    fixture.componentInstance.showText.set(false);
+    fixture.detectChanges();
+    await settle();
+    expect(button.getAttribute('aria-label')).toBe('Panel');
   });
 
   it('writes nothing into the host', () => {
