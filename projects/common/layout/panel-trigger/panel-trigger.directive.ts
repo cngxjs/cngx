@@ -34,8 +34,10 @@ export type CngxPanelTriggerAction = 'toggle' | 'peek';
  * On a native `<button>` the browser turns Enter and Space into the click.
  * Any other host gets `role="button"`, `tabindex="0"` and its own
  * Enter / Space handling. An icon-only trigger (no text content) is named
- * from `CNGX_LAYOUT_I18N.panelTrigger` unless `label` is bound; a trigger
- * with visible text keeps its text as its name.
+ * by the panel state unless `label` is bound:
+ * `CNGX_LAYOUT_I18N.panelTriggerOpen` while the panel is hidden,
+ * `panelTriggerClose` while it is shown. A trigger with visible text keeps
+ * its text as its name.
  *
  * ```html
  * <button type="button" [cngxPanelTrigger]="drawer">Menu</button>
@@ -88,8 +90,9 @@ export class CngxPanelTrigger {
    */
   readonly action = input<CngxPanelTriggerAction>('toggle');
   /**
-   * Accessible name. Falls back to `CNGX_LAYOUT_I18N.panelTrigger` on a
-   * trigger without text content.
+   * Accessible name. On a trigger without text content it falls back to
+   * `CNGX_LAYOUT_I18N.panelTriggerOpen` or `panelTriggerClose`, following
+   * the panel state.
    */
   readonly label = input<string | undefined>(undefined);
 
@@ -110,13 +113,14 @@ export class CngxPanelTrigger {
     const id = this.target()?.id();
     return id === undefined || id === '' ? null : id;
   });
-  protected readonly resolvedLabel = computed(() => {
-    const label = this.label();
-    if (label !== undefined) {
-      return label;
+  private readonly stateLabel = computed(() => {
+    if (this.hasOwnName()) {
+      return null;
     }
-    return this.hasOwnName() ? null : this.i18n().panelTrigger;
+    const i18n = this.i18n();
+    return this.expanded() ? i18n.panelTriggerClose : i18n.panelTriggerOpen;
   });
+  protected readonly resolvedLabel = computed(() => this.label() ?? this.stateLabel());
 
   protected readonly handleActivationKey = createActivationKeyHandler(this.host, () =>
     this.activate(),

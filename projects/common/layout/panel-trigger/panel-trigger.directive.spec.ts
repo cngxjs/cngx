@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { CngxDrawer } from '../drawer/drawer.directive';
 import { CngxDrawerPanel } from '../drawer/drawer-panel.directive';
-import { provideLayoutI18n, withLayoutI18nLabels } from '../i18n/layout-i18n';
+import { type CngxLayoutI18n, provideLayoutI18n, withLayoutI18nLabels } from '../i18n/layout-i18n';
 import { CNGX_PANEL_TARGET, type CngxPanelTarget } from './panel-target';
 import { CngxPanelTrigger, type CngxPanelTriggerAction } from './panel-trigger.directive';
 
@@ -99,20 +99,42 @@ describe('CngxPanelTrigger', () => {
     expect(target.toggle).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps the text name of a trigger with text and names an icon trigger', () => {
-    const { q } = setup();
+  it('keeps the text name of a trigger with text and names an icon trigger by the panel state', () => {
+    const { fixture, open, q } = setup();
     expect(q('.text').hasAttribute('aria-label')).toBe(false);
-    expect(q('.icon').getAttribute('aria-label')).toBe('Toggle panel');
+    expect(q('.icon').getAttribute('aria-label')).toBe('Open panel');
+
+    open.set(true);
+    fixture.detectChanges();
+    expect(q('.icon').getAttribute('aria-label')).toBe('Close panel');
+    expect(q('.text').hasAttribute('aria-label')).toBe(false);
   });
 
-  it('lets a bound label win and reads overridden layout copy', () => {
-    const { fixture, q } = setup(createTarget(), [
-      provideLayoutI18n(withLayoutI18nLabels({ panelTrigger: 'Bereich umschalten' })),
-    ]);
-    expect(q('.icon').getAttribute('aria-label')).toBe('Bereich umschalten');
+  it('lets a bound label win over the state copy in both states', () => {
+    const { fixture, open, q } = setup();
     fixture.componentInstance.label.set('Filters');
     fixture.detectChanges();
     expect(q('.icon').getAttribute('aria-label')).toBe('Filters');
+
+    open.set(true);
+    fixture.detectChanges();
+    expect(q('.icon').getAttribute('aria-label')).toBe('Filters');
+  });
+
+  it('follows a language flip of the state copy', () => {
+    const lang = signal<Partial<CngxLayoutI18n>>({});
+    const { fixture, open, q } = setup(createTarget(), [
+      provideLayoutI18n(withLayoutI18nLabels(lang)),
+    ]);
+    expect(q('.icon').getAttribute('aria-label')).toBe('Open panel');
+
+    lang.set({ panelTriggerOpen: 'Bereich öffnen', panelTriggerClose: 'Bereich schließen' });
+    fixture.detectChanges();
+    expect(q('.icon').getAttribute('aria-label')).toBe('Bereich öffnen');
+
+    open.set(true);
+    fixture.detectChanges();
+    expect(q('.icon').getAttribute('aria-label')).toBe('Bereich schließen');
   });
 
   it('gives a non-button host button semantics and Enter / Space activation', () => {
