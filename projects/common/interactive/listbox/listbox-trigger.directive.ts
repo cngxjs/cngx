@@ -243,6 +243,16 @@ export class CngxListboxTrigger<T = unknown> {
       afterNextRender(() => this.runOpenKey(key, null), { injector: this.injector });
       return;
     }
+    // A deferred-render panel (CngxSelect family, OD5) that was just opened by
+    // click or pointer holds no option rows yet, so a navigation key would
+    // resolve against an empty AD item space and no-op (lost highlight). Mirror
+    // highlightOnOpen: run the key after the first render once rows exist. A
+    // panel that already holds its rows runs synchronously, unchanged.
+    if (this.isNavOrActivate(key) && this.listbox().options().length === 0) {
+      event.preventDefault();
+      afterNextRender(() => this.runOpenKey(key, null), { injector: this.injector });
+      return;
+    }
     this.runOpenKey(key, event);
   }
 

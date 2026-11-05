@@ -38,6 +38,27 @@ class TriggerHost {
   readonly escape = signal(true);
 }
 
+// A deferred-render listbox (the CngxSelect family, OD5): the option rows
+// render only once the panel opens, so a pointer/programmatic open leaves the
+// AD item space empty until the first render after that open.
+@Component({
+  template: `
+    <button type="button" [cngxListboxTrigger]="lb" [popover]="pop" #trigger="cngxListboxTrigger">
+      Select
+    </button>
+    <div cngxPopover #pop="cngxPopover">
+      <div cngxListbox [label]="'Colors'" tabindex="0" #lb="cngxListbox">
+        @if (pop.isVisible()) {
+          <div cngxOption value="red">Red</div>
+          <div cngxOption value="green">Green</div>
+        }
+      </div>
+    </div>
+  `,
+  imports: [CngxListbox, CngxOption, CngxListboxTrigger, CngxPopover],
+})
+class DeferredTriggerHost {}
+
 // jsdom does not implement the Popover API - polyfill minimally so CngxPopover
 // can toggle state without throwing.
 function polyfillPopover(): void {
@@ -159,6 +180,35 @@ describe('CngxListboxTrigger', () => {
     TestBed.flushEffects();
     expect(popover.isVisible()).toBe(true);
     expect(ad.activeValue()).toBe('blue');
+  });
+
+  it('defers an open-nav key on a deferred-render panel until its rows exist', async () => {
+    TestBed.configureTestingModule({ imports: [DeferredTriggerHost] });
+    const fixture = TestBed.createComponent(DeferredTriggerHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const listboxEntry = fixture.debugElement.query(By.directive(CngxListbox));
+    const ad = listboxEntry.injector.get(CngxActiveDescendant);
+    const triggerEl = fixture.debugElement.query(By.directive(CngxListboxTrigger))
+      .nativeElement as HTMLElement;
+    const popover = fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover);
+
+    // Open the panel but dispatch the nav key before change detection renders
+    // the rows (a pointer/click open on an OD5 panel): the AD item space is
+    // still empty at keydown.
+    popover.show();
+    const event = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true });
+    triggerEl.dispatchEvent(event);
+    // The key must not no-op against the empty item space: it prevents default
+    // and is held, instead of being lost.
+    expect(event.defaultPrevented).toBe(true);
+    expect(ad.activeItem()).toBeNull();
+
+    // The open renders the rows; the deferred key then applies to the first row.
+    await fixture.whenStable();
+    TestBed.flushEffects();
+    expect(ad.activeValue()).toBe('red');
   });
 
   it('leaves Escape alone while the popover reports closeOnEscape false', () => {
