@@ -215,4 +215,9 @@ describe('CngxResizable', () => {
       expect(host.size()).toBe(200);
     });
   });
+
+  it('sets touch-action none so a touch drag does not pan the page', () => {
+    const { handle } = setup();
+    expect(handle.style.touchAction).toBe('none');
+  });
 });

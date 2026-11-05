@@ -20,9 +20,11 @@ export type CngxResizableEdge = 'inline-start' | 'inline-end';
  * The handle owns no layout. It reads and writes `size` (px) through a
  * two-way binding; the consumer applies the size to the panel (an inline
  * size or a custom property). Pointer drag runs with pointer capture and
- * writes at most once per animation frame. The keyboard path makes the handle
- * operable without a pointer (WCAG 2.1.1): Arrow Left / Right move the handle
- * by `step`, Home / End jump to `min` / `max`. Modified keys pass through.
+ * writes at most once per animation frame; the handle sets
+ * `touch-action: none`, so a touch drag resizes instead of panning the page.
+ * The keyboard path makes the handle operable without a pointer (WCAG
+ * 2.1.1): Arrow Left / Right move the handle by `step`, Home / End jump to
+ * `min` / `max`. Modified keys pass through.
  *
  * `edge` names the panel edge the handle sits on: `inline-end` for a panel at
  * the start of the row (the handle grows the panel toward the end),
@@ -60,6 +62,7 @@ export type CngxResizableEdge = 'inline-start' | 'inline-end';
     '[attr.aria-valuetext]': 'resolvedValueText()',
     '[attr.aria-label]': 'resolvedLabel()',
     '[class.cngx-resizable--resizing]': 'resizing()',
+    '[style.touch-action]': "'none'",
     '(keydown)': 'handleKeydown($event)',
     '(pointerdown)': 'handlePointerDown($event)',
   },
