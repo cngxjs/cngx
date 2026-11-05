@@ -106,6 +106,9 @@ export function normalizeReleaseVersion(input: string): NormalizedVersion {
 /** The release asset a snapshot fetch downloads. */
 const SNAPSHOT_ASSET = 'documentation.json';
 
+/** The release asset an error-code fetch downloads: the error-code block alone. */
+export const ERROR_CODES_ASSET = 'error-codes.json';
+
 /**
  * The exact `gh` argv for one asset download. Exported so the spec pins the
  * `--repo` pin itself - the standalone `npx` contract lives in these args.
@@ -178,6 +181,10 @@ function describeGhFailure(error: unknown): string {
 
 export function fetchSnapshot(version: string, deps: SnapshotFetchDeps = defaultDeps): Promise<SnapshotFetchResult> {
   return fetchReleaseAsset(SNAPSHOT_ASSET, version, deps);
+}
+
+export function fetchErrorCodes(version: string, deps: SnapshotFetchDeps = defaultDeps): Promise<SnapshotFetchResult> {
+  return fetchReleaseAsset(ERROR_CODES_ASSET, version, deps);
 }
 
 async function fetchReleaseAsset(asset: string, version: string, deps: SnapshotFetchDeps): Promise<SnapshotFetchResult> {

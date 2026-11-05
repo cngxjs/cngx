@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { loadDocsFromFile } from '../data/loader.js';
 import type { DocsIndex } from '../data/loader.js';
 import type { DocsResolver, DocsResolverDeps } from '../data/docs-resolver.js';
-import { createDocsResolver } from '../data/docs-resolver.js';
+import { createDocsResolver, createErrorCodeResolver } from '../data/docs-resolver.js';
 import { migrateUsage, migrateUsageCommand, migrateUsageMarkdown } from './migrate-usage.js';
 import type { CategoryDelta, SignatureChangedEntry, UsageDelta } from '../diff/types.js';
 
@@ -190,7 +190,7 @@ describe('migrateUsage', () => {
       throw new Error('boom');
     };
 
-    const result = await migrateUsageCommand.run({ bundled: bundledNew, resolve }, { from: '0.1.0', to: undefined });
+    const result = await migrateUsageCommand.run({ bundled: bundledNew, resolve, resolveErrorCodes: createErrorCodeResolver(bundledNew) }, { from: '0.1.0', to: undefined });
 
     expect(result).toMatchObject({ ok: false, reason: 'asset-missing', message: 'internal: boom' });
   });

@@ -14,6 +14,7 @@ import {
   SnapshotLoadError,
   SUPPORTED_SCHEMA_VERSIONS,
 } from './loader.js';
+import { loadErrorCodesFromFile, parseErrorCodeBlock } from './loader.js';
 import type { DocumentationJson } from './types.js';
 
 const FIXTURE = fileURLToPath(new URL('../../../test/fixtures/documentation.sample.json', import.meta.url));
@@ -236,5 +237,48 @@ describe('a malformed snapshot', () => {
     writeFileSync(path, '{ "schemaVersion": 6,');
 
     expect(() => loadDocsFromFile(path)).toThrow(MalformedSnapshotError);
+  });
+});
+
+describe('loadErrorCodesFromFile', () => {
+  const block = {
+    schemaVersion: 3,
+    docsBaseUrl: 'https://example.test/',
+    ranges: [{ lib: 'core', from: 1, to: 899 }],
+    codes: [],
+  };
+
+  function assetFile(body: string): string {
+    const path = join(mkdtempSync(join(tmpdir(), 'cngx-error-codes-')), 'error-codes.json');
+    writeFileSync(path, body);
+    return path;
+  }
+
+  it('reads a valid block onto the index, without its manifest schemaVersion', () => {
+    expect(loadErrorCodesFromFile(assetFile(JSON.stringify(block)))).toEqual({
+      docsBaseUrl: block.docsBaseUrl,
+      ranges: block.ranges,
+      codes: block.codes,
+    });
+  });
+
+  it('throws naming the schemaVersion it reads for another manifest schema', () => {
+    const path = assetFile(JSON.stringify({ ...block, schemaVersion: 4 }));
+
+    expect(() => loadErrorCodesFromFile(path)).toThrow(SnapshotLoadError);
+    expect(() => loadErrorCodesFromFile(path)).toThrow(/this package reads manifest schemaVersion 3/);
+  });
+
+  it('throws for a file that is not JSON', () => {
+    expect(() => loadErrorCodesFromFile(assetFile('{ "schemaVersion":'))).toThrow(SnapshotLoadError);
+  });
+
+  it('throws for a missing file', () => {
+    expect(() => loadErrorCodesFromFile(join(tmpdir(), 'cngx-no-such-dir', 'error-codes.json'))).toThrow(SnapshotLoadError);
+  });
+
+  it('reads the same rules as the block inside a snapshot', () => {
+    expect(parseErrorCodeBlock(undefined)).toBeNull();
+    expect(parseErrorCodeBlock({ ...block, codes: 'nope' })).toBeNull();
   });
 });

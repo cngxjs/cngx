@@ -20,7 +20,7 @@ import type {
 /** The projected error-code view: the block without its manifest `schemaVersion`. */
 export type ErrorCodeIndex = Omit<ErrorCodeBlock, 'schemaVersion'>;
 
-/** The manifest `schemaVersion` the bundled error-code block must carry to be read. */
+/** The manifest `schemaVersion` an error-code block must carry to be read. */
 const ERROR_CODE_SCHEMA_VERSION = 3;
 
 /** Narrows to `unknown[]` rather than `Array.isArray`'s `any[]`, so the cast below stays type-safe. */
@@ -122,14 +122,13 @@ function shapeDefect(raw: unknown): string | null {
 }
 
 /**
- * Project the optional `cngxErrorCodes` block onto the tool-facing index.
- * Returns `null` - never throws - for an absent block, a block carrying another
- * manifest `schemaVersion`, or a malformed shape, so a bad block can never take
- * the other commands down with it; the block sits outside the compodocx
+ * Read an error-code block onto the tool-facing index. Returns `null` - never
+ * throws - for an absent block, a block carrying another manifest `schemaVersion`,
+ * or a malformed shape, so a bad block in a snapshot can never take the other
+ * commands down with it; the block sits outside the compodocx
  * `SUPPORTED_SCHEMA_VERSIONS` guard.
  */
-function projectErrorCodes(raw: DocumentationJson): ErrorCodeIndex | null {
-  const block = (raw as { cngxErrorCodes?: unknown }).cngxErrorCodes;
+export function parseErrorCodeBlock(block: unknown): ErrorCodeIndex | null {
   if (block === null || typeof block !== 'object') {
     return null;
   }
@@ -176,13 +175,32 @@ export function createDocsIndex(raw: DocumentationJson): DocsIndex {
     injectables: doc.injectables ?? [],
     tokens: doc.tokens ?? [],
     functions: doc.miscellaneous?.functions ?? [],
-    errorCodes: projectErrorCodes(raw),
+    errorCodes: parseErrorCodeBlock((raw as { cngxErrorCodes?: unknown }).cngxErrorCodes),
   };
 }
 
 /** Read and validate a snapshot from an explicit path (used by tests + loader). */
 export function loadDocsFromFile(path: string): DocsIndex {
   return parseDocs(readFileSync(path, 'utf8'));
+}
+
+/**
+ * Read a release's `error-codes.json` asset. Unlike the block inside a snapshot, the
+ * asset is the whole answer, so anything unreadable throws {@link SnapshotLoadError}
+ * for the resolver to map, and never reaches a cache.
+ */
+export function loadErrorCodesFromFile(path: string): ErrorCodeIndex {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(readFileSync(path, 'utf8'));
+  } catch (error) {
+    throw new SnapshotLoadError(`error-codes.json cannot be read: ${error instanceof Error ? error.message : String(error)}`);
+  }
+  const index = parseErrorCodeBlock(parsed);
+  if (index === null) {
+    throw new SnapshotLoadError(`error-codes.json is not a readable block; this package reads manifest schemaVersion ${ERROR_CODE_SCHEMA_VERSION}`);
+  }
+  return index;
 }
 
 function parseDocs(raw: string): DocsIndex {

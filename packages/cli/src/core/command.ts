@@ -7,7 +7,7 @@
 // command cannot ship without its CLI rendering.
 
 import type { z } from 'zod';
-import type { DocsResolver, VersionedAnswer } from './data/docs-resolver.js';
+import type { DocsResolver, ErrorCodeResolver, VersionedAnswer } from './data/docs-resolver.js';
 import type { DocsIndex } from './data/loader.js';
 import type { SnapshotFetchFailureReason } from './diff/types.js';
 import { defaultFound } from './found.js';
@@ -24,6 +24,8 @@ export interface CommandContext {
   readonly bundled: DocsIndex;
   /** Resolve a requested release. The adapter builds it, so the adapter decides how it fetches and caches. */
   readonly resolve: DocsResolver;
+  /** Resolve a requested release's error-code asset; only `get_error_code` reaches it. */
+  readonly resolveErrorCodes: ErrorCodeResolver;
 }
 
 /** A resolve failure a command answers with instead of throwing. */

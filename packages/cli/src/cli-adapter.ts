@@ -24,9 +24,9 @@ import type { ParseArgsConfig } from 'node:util';
 import { z } from 'zod';
 import type { CngxCommand, CommandContext, RenderOptions } from './core/registry.js';
 import { COMMANDS, isFound, unwrapAnswer } from './core/registry.js';
-import type { DocsResolver } from './core/data/docs-resolver.js';
-import { createDocsResolver } from './core/data/docs-resolver.js';
-import { fetchSnapshot, normalizeReleaseVersion, removeTempDir } from './core/diff/snapshot-fetch.js';
+import type { ReleaseResolver } from './core/data/docs-resolver.js';
+import { createDocsResolver, createErrorCodeResolver } from './core/data/docs-resolver.js';
+import { ERROR_CODES_ASSET, fetchErrorCodes, fetchSnapshot, normalizeReleaseVersion, removeTempDir } from './core/diff/snapshot-fetch.js';
 import { loadBundledDocs, loadDocsFromFile } from './core/data/loader.js';
 import { createSnapshotCache, resolveCacheDir } from './core/data/snapshot-cache.js';
 import type { InstalledVersion } from './core/installed-version.js';
@@ -558,27 +558,35 @@ function pinDetected(
   if (detected.source === 'installed') {
     io.stderr(`cngx: answering for the installed cngx ${version}; the bundled snapshot is ${bundledVersion ?? 'unstamped'}.\n`);
   }
-  const base = context.resolve;
-  // The resolver memoises successes only; several names would otherwise refetch
-  // and re-announce the failed release once per name.
-  let failed = false;
-  const resolve: DocsResolver = async (requested) => {
-    if (failed && requested === version) {
+  const withBundledFallback = <D>(base: ReleaseResolver<D>): ReleaseResolver<D> => {
+    // The resolver memoises successes only; several names would otherwise refetch
+    // and re-announce the failed release once per name.
+    let failed = false;
+    return async (requested) => {
+      if (failed && requested === version) {
+        return base(undefined);
+      }
+      const resolution = await base(requested);
+      if (resolution.ok || requested !== version) {
+        return resolution;
+      }
+      failed = true;
+      const skip = offline ? '' : ' Pass --offline to skip the fetch.';
+      io.stderr(
+        `cngx: cngx ${version} could not be resolved (${resolution.reason}: ${resolution.message}); ` +
+          `answering from the bundled snapshot ${bundledVersion ?? 'unstamped'}.${skip}\n`,
+      );
       return base(undefined);
-    }
-    const resolution = await base(requested);
-    if (resolution.ok || requested !== version) {
-      return resolution;
-    }
-    failed = true;
-    const skip = offline ? '' : ' Pass --offline to skip the fetch.';
-    io.stderr(
-      `cngx: cngx ${version} could not be resolved (${resolution.reason}: ${resolution.message}); ` +
-        `answering from the bundled snapshot ${bundledVersion ?? 'unstamped'}.${skip}\n`,
-    );
-    return base(undefined);
+    };
   };
-  return { version, context: { ...context, resolve } };
+  return {
+    version,
+    context: {
+      ...context,
+      resolve: withBundledFallback(context.resolve),
+      resolveErrorCodes: withBundledFallback(context.resolveErrorCodes),
+    },
+  };
 }
 
 /** Why a doctor `<projectDir>` cannot be scanned, or `null` when it can; doctor's own guard words it the same. */
@@ -806,6 +814,9 @@ export interface EntryPaths {
   readonly packageJson: URL;
 }
 
+/** The error-code asset's kind in the disk cache: its own directory, so it has its own bound. */
+const ERROR_CODE_CACHE_ENTRY = { dirName: 'error-codes', fileName: ERROR_CODES_ASSET, label: 'error-code asset' };
+
 /** The user's home directory, or null where `os.homedir()` throws (no HOME and no passwd entry). */
 function homeDir(): string | null {
   try {
@@ -828,7 +839,9 @@ export async function main(argv: readonly string[], paths: EntryPaths, io: CliIo
     const dir = resolveCacheDir(process.env, process.platform, homeDir);
     const cache = dir === null ? undefined : createSnapshotCache({ dir, warn });
     const resolve = createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile, removeDir: removeTempDir, cache, offline });
-    return { bundled, resolve };
+    const errorCodeCache = dir === null ? undefined : createSnapshotCache({ dir, warn, entry: ERROR_CODE_CACHE_ENTRY });
+    const resolveErrorCodes = createErrorCodeResolver(bundled, { fetchErrorCodes, removeDir: removeTempDir, cache: errorCodeCache, offline });
+    return { bundled, resolve, resolveErrorCodes };
   };
   const detectVersion = () => resolveInstalledCngxVersion(process.cwd());
   const loadDoctor = () => import('@cngx/doctor/cngx-doctor.mjs');

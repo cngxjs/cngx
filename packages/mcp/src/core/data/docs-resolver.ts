@@ -5,13 +5,15 @@
 // release's snapshot is fetched once through the fail-safe `fetchSnapshot` seam,
 // cached in memory for the resolver's lifetime, and read through
 // `loadDocsFromFile`. Every path stays inside the tools' don't-crash
-// contract: a fetch or schema failure is returned as data, never thrown.
+// contract: a fetch or schema failure is returned as data, never thrown. A second
+// resolver does the same for the separate `error-codes.json` asset, which only
+// `get_error_code` reaches.
 
 import { rebaseExampleUrls } from './example-urls.js';
-import type { DocsIndex } from './loader.js';
-import { loadDocsFromFile, SnapshotLoadError } from './loader.js';
+import type { DocsIndex, ErrorCodeIndex } from './loader.js';
+import { loadDocsFromFile, loadErrorCodesFromFile, SnapshotLoadError } from './loader.js';
 import type { FetchSnapshot } from '../diff/snapshot-fetch.js';
-import { fetchSnapshot, normalizeReleaseVersion, removeQuietly, removeTempDir } from '../diff/snapshot-fetch.js';
+import { fetchErrorCodes, fetchSnapshot, normalizeReleaseVersion, removeQuietly, removeTempDir } from '../diff/snapshot-fetch.js';
 import type { SnapshotFetchFailureReason } from '../diff/types.js';
 import type { SnapshotCache } from './snapshot-cache.js';
 
@@ -85,6 +87,40 @@ export function createDocsResolver(bundled: DocsIndex, deps: DocsResolverDeps = 
     // rebased at build time.
     load: (path) => rebaseExampleUrls(deps.loadDocs(path)),
     versionOf: (docs) => docs.meta.cngxVersion,
+    removeDir: deps.removeDir,
+    cache: deps.cache,
+    offline: deps.offline,
+  });
+}
+
+/** Injectable side-effect seam of {@link createErrorCodeResolver}; the same rules as {@link DocsResolverDeps}. */
+export interface ErrorCodeResolverDeps {
+  fetchErrorCodes: FetchSnapshot;
+  loadErrorCodes?: typeof loadErrorCodesFromFile;
+  removeDir?: (dir: string) => void;
+  cache?: SnapshotCache;
+  offline?: boolean;
+}
+
+/** Resolves a version against the bundled error-code block; `get_error_code` reaches it through its context. */
+export type ErrorCodeResolver = ReleaseResolver<ErrorCodeIndex | null>;
+
+/**
+ * Build a resolver over the error-code block of `bundled`, with the rules of
+ * {@link createDocsResolver}. The asset carries no release stamp, so a fetched answer
+ * grounds on the requested version.
+ */
+export function createErrorCodeResolver(
+  bundled: DocsIndex,
+  deps: ErrorCodeResolverDeps = { fetchErrorCodes, removeDir: removeTempDir },
+): ErrorCodeResolver {
+  return createReleaseResolver<ErrorCodeIndex | null>({
+    bundled: bundled.errorCodes,
+    bundledVersion: bundled.meta.cngxVersion,
+    label: 'error-code asset',
+    fetch: deps.fetchErrorCodes,
+    load: deps.loadErrorCodes ?? loadErrorCodesFromFile,
+    versionOf: () => null,
     removeDir: deps.removeDir,
     cache: deps.cache,
     offline: deps.offline,
