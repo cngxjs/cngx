@@ -4,15 +4,15 @@ import {
   ElementRef,
   HostAttributeToken,
   inject,
-  Injector,
   type Provider,
   type Signal,
 } from '@angular/core';
-import { CngxAsyncClick } from '@cngx/common/interactive';
+import { CNGX_ASYNC_RUN_STATE } from '@cngx/common/interactive';
 import {
   CNGX_DESCRIBED_BY,
   createDescribedByRegistry,
   injectDescribedByContribution,
+  injectLazySelf,
   nextUid,
 } from '@cngx/core/utils';
 
@@ -125,7 +125,7 @@ export function provideButtonDescribedBy(name: string): Provider {
  * Shared brain of the button family. Resolves the three visual axes
  * (`input ?? group ?? config ?? default`), renders `disabled` as
  * `aria-disabled` so the element stays focusable, swallows activation while
- * disabled and reads the busy bit of a co-hosted `CngxAsyncClick`.
+ * disabled and reads a co-hosted run through `CNGX_ASYNC_RUN_STATE`.
  *
  * The activation guard is a capture-phase listener on the host: it runs
  * before any bubbling `(click)` handler on the same element (consumer
@@ -142,13 +142,10 @@ export function injectButtonCore(
   const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   const group = inject(CNGX_BUTTON_GROUP, { optional: true });
   const config = injectButtonConfig();
-  // Resolved on first read, not at construction: CngxAsyncClick injects the
-  // CNGX_HOST_INTERACTION_STATE this button provides, so an eager inject in
-  // either direction is a cycle.
-  const injector = inject(Injector);
-  let asyncClick: CngxAsyncClick | null | undefined;
-  const coHostedAsyncClick = (): CngxAsyncClick | null =>
-    (asyncClick ??= injector.get(CngxAsyncClick, null, { self: true, optional: true }));
+  // Resolved on first read, not at construction: the co-hosted runner injects
+  // the CNGX_HOST_INTERACTION_STATE this button provides, so an eager inject
+  // in either direction is a cycle.
+  const runState = injectLazySelf(CNGX_ASYNC_RUN_STATE, { optional: true });
   const reasonId = nextUid('cngx-button-reason-');
   const describedByKey = nextUid('cngx-button-describedby-');
   const isButtonHost = host.tagName === 'BUTTON';
@@ -157,16 +154,14 @@ export function injectButtonCore(
     () => inputs.variant() ?? group?.variant() ?? config.variant ?? defaults.variant,
   );
   const tone = computed<CngxButtonTone>(() => inputs.tone() ?? config.tone ?? DEFAULT_TONE);
-  const size = computed<CngxButtonSize>(
-    () => resolveButtonSize(inputs.size(), group, config),
-  );
-  const busy = computed(() => coHostedAsyncClick()?.pending() ?? false);
-  const busyVisible = computed(() => coHostedAsyncClick()?.busyVisible() ?? false);
+  const size = computed<CngxButtonSize>(() => resolveButtonSize(inputs.size(), group, config));
+  const busy = computed(() => runState()?.pending() ?? false);
+  const busyVisible = computed(() => runState()?.busyVisible() ?? false);
   // CngxAsyncClick binds aria-disabled on the same host and only rewrites it
-  // when its own value changes, so the button folds the directive's
+  // when its own value changes, so the button folds the runner's
   // `[enabled]="false"` in; otherwise a disabled -> enabled flip here writes
-  // null while the directive still refuses clicks.
-  const asyncClickRefuses = computed(() => coHostedAsyncClick()?.enabled() === false);
+  // null while the runner still refuses clicks.
+  const asyncClickRefuses = computed(() => runState()?.enabled() === false);
   const blocked = computed(() => inputs.disabled() || busy() || asyncClickRefuses());
   const ariaDisabled = computed<'true' | null>(() => (blocked() ? 'true' : null));
   const reasonIds = computed(() =>
