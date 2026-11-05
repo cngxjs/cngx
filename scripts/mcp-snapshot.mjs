@@ -22,6 +22,10 @@
 // (scripts/mcp-bundle-check.mjs), so an unreadable bundle fails the build.
 // The llm-md dump goes to @cngx/mcp only: no cli command reads it.
 //
+// The cngxErrorCodes block is also written alone to .compodoc/error-codes.json,
+// which .github/workflows/snapshot-api.yml uploads as a release asset. It stays
+// out of packages/*/data, because both packages publish data/ whole.
+//
 // Usage:
 //   node scripts/mcp-snapshot.mjs                                        # GH Pages default
 //   node scripts/mcp-snapshot.mjs --base=https://example.com/examples    # explicit override
@@ -49,6 +53,7 @@ const LLM_DUMP_DEST = join(DEST_DIR, 'llm-context.md');
 // severity, production behaviour, title, url and call-site messages. Pages are
 // read relative to ROOT from the manifest `page` paths.
 const ERROR_CODES_MANIFEST = join(ROOT, 'scripts', 'manifests', 'error-codes.json');
+export const ERROR_CODE_ASSET = join(ROOT, '.compodoc', 'error-codes.json');
 
 // Swap the scheme+host(+port)+path prefix before the `/#/` hash route for
 // `base`. URLs without a `/#/` route are left untouched. Same rule as
@@ -224,9 +229,11 @@ function main() {
   writeFileSync(DEST, json);
   mkdirSync(CLI_DEST_DIR, { recursive: true });
   writeFileSync(CLI_DEST, json);
+  writeFileSync(ERROR_CODE_ASSET, JSON.stringify(doc.cngxErrorCodes));
 
   console.log(
-    `mcp-snapshot: wrote packages/mcp/data/documentation.json and packages/cli/data/documentation.json ` +
+    `mcp-snapshot: wrote packages/mcp/data/documentation.json, packages/cli/data/documentation.json ` +
+      `and .compodoc/error-codes.json ` +
       `(cngxVersion ${cngxVersion}, schemaVersion ${doc.schemaVersion}, ` +
       `${doc.cngxErrorCodes.codes.length} error code(s), ${rebased} example URL(s) rebased to ${BASE_URL}).`,
   );

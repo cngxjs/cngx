@@ -3,10 +3,14 @@ name: Snapshot API
 # Archives the compodocx API snapshots for every release tag as GitHub
 # Release assets, so later tooling can diff one released version against
 # another (`compodocx diff --old <documentation.json> --new <documentation.json>`)
-# without ever having kept the old build around. Two assets per tag:
+# without ever having kept the old build around. Three assets per tag:
 #
 #   documentation.json  - full compodocx JSON export (the diff substrate)
 #   llm-context.md      - llm-md dump (the grounding substrate)
+#   error-codes.json    - the CNGXnnnn block (the `cngx explain` substrate)
+#
+# A tag push fails without error-codes.json. A workflow_dispatch of an older
+# tag, whose checkout may not emit it, warns and uploads the other two.
 #
 # Triggered on release tag push (scripts/publish.mjs pushes `v<version>`),
 # and manually via workflow_dispatch to backfill an existing tag.
@@ -58,6 +62,16 @@ jobs:
           npm run docs:json
           npm run docs:llm
 
+      # Reads the raw .compodoc/documentation.json without changing it, so that
+      # upload stays unstamped. Its packages/*/data output ends with the runner.
+      - name: Generate the error-code asset
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            node scripts/mcp-snapshot.mjs
+          else
+            node scripts/mcp-snapshot.mjs || echo "::warning::$TAG predates the error-code asset; it is not uploaded."
+          fi
+
       - name: Upload snapshots as release assets
         run: |
           set -euo pipefail
@@ -70,6 +84,17 @@ jobs:
             exit 1
           fi
 
+          ASSETS=(.compodoc/documentation.json .compodoc-llm/llm-context.md)
+          if [ -f .compodoc/error-codes.json ]; then
+            ASSETS+=(.compodoc/error-codes.json)
+          elif [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            echo "::error::.compodoc/error-codes.json missing after mcp-snapshot"
+            exit 1
+          else
+            echo "::warning::$TAG has no error-codes.json; uploading the other assets."
+          fi
+          ASSET_NAMES="${ASSETS[*]##*/}"
+
           PRERELEASE_FLAG=""
           case "$TAG" in
             *-*) PRERELEASE_FLAG="--prerelease" ;;
@@ -81,13 +106,10 @@ jobs:
             echo "Creating release $TAG."
             gh release create "$TAG" \
               --title "$TAG" \
-              --notes "API snapshots for $TAG (documentation.json + llm-context.md)." \
+              --notes "API snapshots for $TAG ($ASSET_NAMES)." \
               $PRERELEASE_FLAG
           fi
 
-          gh release upload "$TAG" \
-            .compodoc/documentation.json \
-            .compodoc-llm/llm-context.md \
-            --clobber
+          gh release upload "$TAG" "${ASSETS[@]}" --clobber
 
-          echo "Snapshotted $TAG: documentation.json + llm-context.md."
+          echo "Snapshotted $TAG: $ASSET_NAMES."

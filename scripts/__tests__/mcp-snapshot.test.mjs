@@ -1,11 +1,12 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
+  ERROR_CODE_ASSET,
   buildErrorCodeBlock,
   dedupeMessageTexts,
   llmDumpPresent,
@@ -20,6 +21,14 @@ const DOCS_BASE = 'https://cngxjs.github.io/cngx/additional-documentation/error-
 
 const BASE = 'https://cngxjs.github.io/cngx/examples';
 const LOCAL = 'http://localhost:4200/#/ui/feedback/toast/basic';
+
+describe('ERROR_CODE_ASSET', () => {
+  it('sits under .compodoc and under neither published data directory', () => {
+    expect(relative(ROOT, ERROR_CODE_ASSET)).toBe(join('.compodoc', 'error-codes.json'));
+    expect(ERROR_CODE_ASSET.startsWith(join(ROOT, 'packages', 'mcp', 'data'))).toBe(false);
+    expect(ERROR_CODE_ASSET.startsWith(join(ROOT, 'packages', 'cli', 'data'))).toBe(false);
+  });
+});
 
 describe('rebaseUrl', () => {
   it('swaps everything before the hash route for the base', () => {
