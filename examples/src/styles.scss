@@ -2686,6 +2686,21 @@ button.chip.demo-chip--copied {
   gap: 0.75rem;
   white-space: nowrap;
 }
+// Sidebar entry icons sit on the 16px box (1rem, the dense icon tier) and
+// the projected mat-icon follows the cngx-icon box. Group triggers carry
+// the same transparent start border as the links, so every entry icon has
+// one x position in the rail and expanded.
+.demo-app-sidebar .demo-nav__link--icon cngx-icon {
+  --cngx-icon-size: 1rem;
+}
+.demo-app-sidebar .demo-nav__link--icon cngx-icon > .mat-icon {
+  inline-size: 1em;
+  block-size: 1em;
+  font-size: 1em;
+}
+.demo-app-sidebar .demo-nav__trigger {
+  border-inline-start: 3px solid transparent;
+}
 
 // Story chrome marks a mode or modality switch on its chip group for one
 // frame; the drawer snaps to the new layout instead of animating the panel
