@@ -1,4 +1,4 @@
-import type { ElementRef, Injector, Signal } from '@angular/core';
+import type { ElementRef, Signal } from '@angular/core';
 
 import type { CngxListbox } from '@cngx/common/interactive';
 import type { CngxPopover } from '@cngx/common/popover';
@@ -32,12 +32,6 @@ export interface ActionTriggerInputDeps<Prev, T = unknown> {
   readonly snapshotPrevious: () => Prev;
   /** Route into `CreateCommitHandler.dispatch`. */
   readonly dispatch: (draft: { readonly label: string }, term: string, previous: Prev) => void;
-  /**
-   * Composite injector; lets the page-jump handler defer the highlight to
-   * after the first open render under deferred-render panels. Optional so
-   * the factory's own unit tests construct it outside an injection context.
-   */
-  readonly injector?: Injector;
 }
 
 /**
@@ -123,7 +117,6 @@ export function createActionTriggerInput<Prev, T = unknown>(
       strategy: deps.strategy,
       flatOptions: deps.flatOptions,
       compareWith: deps.compareWith,
-      injector: deps.injector,
     });
   };
 

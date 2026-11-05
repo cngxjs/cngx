@@ -8,7 +8,6 @@ import {
   contentChild,
   DestroyRef,
   inject,
-  Injector,
   input,
   model,
   output,
@@ -765,7 +764,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
    * and typeahead-while-closed; variant only dispatches the action.
    */
   private readonly flatNavStrategy = inject(CNGX_FLAT_NAV_STRATEGY);
-  private readonly injector = inject(Injector);
 
   /** Read-only view of the commit lifecycle. */
   readonly commitState = this.core.commitState;
@@ -1139,7 +1137,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       compareWith: this.compareWith,
       disabled: this.disabled,
       typeaheadController: this.typeaheadController,
-      injector: this.injector,
     });
   }
 }

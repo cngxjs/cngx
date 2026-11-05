@@ -1,4 +1,4 @@
-import { afterNextRender, signal, type Injector } from '@angular/core';
+import { signal } from '@angular/core';
 import type { CngxListbox } from '@cngx/common/interactive';
 import type { CngxPopover } from '@cngx/common/popover';
 
@@ -30,27 +30,6 @@ export function resolvePageJumpSpace(
   const items = listbox.options();
   const currentId = ad.activeId();
   return { items, currentIndex: items.findIndex((o) => o.id === currentId) };
-}
-
-/**
- * Applies the resolved page-jump highlight. When the key opened a closed
- * panel, the option rows (and their generated ids, the AD's item space)
- * render one tick later under deferred render (OD5), so `highlightByIndex`
- * would no-op against an empty space; the highlight is then applied after
- * the first render via `afterNextRender`. An already-open panel applies it
- * synchronously, exactly as before.
- */
-function applyPageJumpHighlight(
-  listbox: CngxListbox<unknown>,
-  index: number,
-  justOpened: boolean,
-  injector: Injector | undefined,
-): void {
-  if (justOpened && injector) {
-    afterNextRender(() => listbox.ad.highlightByIndex(index), { injector });
-    return;
-  }
-  listbox.ad.highlightByIndex(index);
 }
 
 /**
@@ -87,13 +66,6 @@ export interface PageJumpDeps<T> {
    * never see the key; a focusable `aria-disabled` host passes this.
    */
   readonly disabled?: () => boolean;
-  /**
-   * Composite injector, used to defer the highlight to after the first
-   * open render when the key opened a closed (deferred-render) panel.
-   * Omitting it keeps the synchronous apply (correct only for an already
-   * rendered panel).
-   */
-  readonly injector?: Injector;
 }
 
 /**
@@ -118,7 +90,6 @@ export function handlePageJumpKey<T>(event: KeyboardEvent, deps: PageJumpDeps<T>
     compareWith: deps.compareWith,
     disabled: deps.disabled?.() ?? false,
     typeaheadController: NO_TYPEAHEAD as TypeaheadController<T>,
-    injector: deps.injector,
   });
 }
 
@@ -138,7 +109,6 @@ function runPageJump<T>(
     readonly compareWith: () => CngxSelectCompareFn<T>;
     readonly disabled: boolean;
     readonly typeaheadController: TypeaheadController<T>;
-    readonly injector?: Injector;
   },
 ): boolean {
   if (event.key !== 'PageDown' && event.key !== 'PageUp') {
@@ -180,7 +150,12 @@ function runPageJump<T>(
     direction,
   );
   if (action.kind === 'highlight') {
-    applyPageJumpHighlight(listbox, action.index, justOpened, deps.injector);
+    // A deferred-render panel (OD5) just opened holds no rows yet, so the AD
+    // item space is empty; CngxActiveDescendant keeps the resolved index as
+    // intent and re-applies it once the rows render. An already-open panel
+    // highlights synchronously. The index is resolved against the full flat
+    // list (resolvePageJumpSpace), so it is correct in both cases.
+    listbox.ad.highlightByIndex(action.index);
   }
   return true;
 }
@@ -206,11 +181,6 @@ export interface FlatNavPageJumpDeps<T> {
   readonly compareWith: () => CngxSelectCompareFn<T>;
   readonly disabled: () => boolean;
   readonly typeaheadController: TypeaheadController<T>;
-  /**
-   * Composite injector; defers the highlight to after the first open
-   * render when the key opened a deferred-render closed panel.
-   */
-  readonly injector?: Injector;
 }
 
 /**
@@ -243,6 +213,5 @@ export function handleFlatNavPageJumpKey<T>(
     compareWith: deps.compareWith,
     disabled: deps.disabled(),
     typeaheadController: deps.typeaheadController,
-    injector: deps.injector,
   });
 }
