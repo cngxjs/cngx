@@ -4,7 +4,6 @@ import {
   Component,
   computed,
   inject,
-  input,
   ViewEncapsulation,
 } from '@angular/core';
 import {
@@ -42,8 +41,10 @@ import { CNGX_SPLIT_CARET } from './split-caret.token';
  * development mode.
  *
  * As the direct child of a `cngxSplitButton` it renders the caret (`CNGX_BUTTON_CARET_ICON`
- * swaps it) instead of the projected content, is named "More options" from
- * the active language pack unless it has an `aria-label`, and is blocked
+ * swaps it) instead of the projected content, is named by content: the
+ * `menuButton.splitToggle` copy ("More options") of the active language pack
+ * as visually hidden text, so a consumer `aria-label` still wins and the
+ * button never writes one itself. It is blocked
  * while the main action is: `aria-disabled`, no click, no key, an open menu
  * closes. Its `disabledReason` only describes its own `[disabled]`.
  *
@@ -97,7 +98,6 @@ import { CNGX_SPLIT_CARET } from './split-caret.token';
   host: {
     class: 'cngx-button cngx-icon-button cngx-icon-menu-button',
     '[attr.data-expanded]': 'expanded() ? "true" : "false"',
-    '[attr.aria-label]': 'resolvedAriaLabel()',
     '(click)': 'toggle.handleClick()',
   },
   template: `
@@ -123,6 +123,9 @@ import { CNGX_SPLIT_CARET } from './split-caret.token';
         <ng-content />
       }
     </span>
+    @if (isSplitCaret()) {
+      <span class="cngx-sr-only">{{ i18n().splitToggle }}</span>
+    }
     @if (brain.busyVisible()) {
       <span class="cngx-button__busy" aria-hidden="true">
         <span class="cngx-button__spinner"></span>
@@ -141,7 +144,8 @@ export class CngxIconMenuButton {
   protected readonly brain = inject(CngxButtonBrain);
 
   private readonly split = inject(CNGX_SPLIT_BUTTON, { optional: true });
-  private readonly i18n = injectMenuButtonI18n();
+  /** @internal */
+  protected readonly i18n = injectMenuButtonI18n();
 
   /** @internal - `true` when this button is the caret of a split (its direct child). */
   protected readonly isSplitCaret = computed(() => this.split?.caret() === this.brain);
@@ -154,17 +158,6 @@ export class CngxIconMenuButton {
 
   /** `true` while the menu is open. Mirrors the popover's visibility. */
   readonly expanded = this.toggle.expanded;
-
-  /**
-   * Accessible name. As the caret of a split button it defaults to the
-   * `menuButton.splitToggle` copy of the active language pack.
-   */
-  readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
-
-  /** @internal */
-  protected readonly resolvedAriaLabel = computed(
-    () => this.ariaLabel() ?? (this.isSplitCaret() ? this.i18n().splitToggle : null),
-  );
 
   /**
    * @internal - the caret of a split refuses while the main action is

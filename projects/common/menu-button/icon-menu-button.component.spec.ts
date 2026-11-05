@@ -91,9 +91,22 @@ class UnnamedHost {}
 
 @Component({
   template: `
+    <button cngxIconMenuButton [attr.aria-label]="label()" [menu]="menu" [popover]="pop">
+      <span class="kebab">&#8942;</span>
+    </button>
+    ${MENU}
+  `,
+  imports: [CngxIconMenuButton, CngxMenu, CngxMenuItem, CngxPopover],
+})
+class BoundLabelHost {
+  readonly label = signal<string | null>('Row actions');
+}
+
+@Component({
+  template: `
     <div cngxSplitButton aria-label="Publish">
       <button cngxButton>Publish</button>
-      <button cngxIconMenuButton [aria-label]="label()" [menu]="menu" [popover]="pop">
+      <button cngxIconMenuButton [attr.aria-label]="label()" [menu]="menu" [popover]="pop">
         <span class="kebab">&#8942;</span>
       </button>
     </div>
@@ -102,7 +115,7 @@ class UnnamedHost {}
   imports: [CngxSplitButton, CngxButton, CngxIconMenuButton, CngxMenu, CngxMenuItem, CngxPopover],
 })
 class SplitHost {
-  readonly label = signal<string | undefined>(undefined);
+  readonly label = signal<string | null>(null);
 }
 
 @Component({
@@ -180,6 +193,33 @@ function setup<T>(type: Type<T>) {
     flush,
     popover: popDe.injector.get(CngxPopover),
   };
+}
+
+/**
+ * The name a button gets from its attributes or, without one, from its
+ * content: text outside every `aria-hidden="true"` and `hidden` subtree.
+ */
+function nameOf(el: Element): string {
+  const label = el.getAttribute('aria-label')?.trim();
+  if (label) {
+    return label;
+  }
+  const walk = (node: Node): string =>
+    Array.from(node.childNodes)
+      .map((child) => {
+        if (child.nodeType === Node.TEXT_NODE) {
+          return child.textContent ?? '';
+        }
+        if (child.nodeType !== Node.ELEMENT_NODE) {
+          return '';
+        }
+        const element = child as Element;
+        const hidden =
+          element.getAttribute('aria-hidden') === 'true' || element.hasAttribute('hidden');
+        return hidden ? '' : walk(element);
+      })
+      .join('');
+  return walk(el).replace(/\s+/g, ' ').trim();
 }
 
 function key(el: HTMLElement, k: string): void {
@@ -299,6 +339,15 @@ describe('CngxIconMenuButton', () => {
       expect(setup(UnnamedHost).button.hasAttribute('aria-label')).toBe(false);
     });
 
+    it('keeps a consumer [attr.aria-label] through change detection', () => {
+      const { button, host, flush } = setup(BoundLabelHost);
+      expect(button.getAttribute('aria-label')).toBe('Row actions');
+
+      host.label.set('Order actions');
+      flush();
+      expect(button.getAttribute('aria-label')).toBe('Order actions');
+    });
+
     it('toggles the popover on click and mirrors it in aria-expanded and data-expanded', () => {
       const { button, popover, flush } = setup(KebabHost);
       button.click();
@@ -380,17 +429,26 @@ describe('CngxIconMenuButton', () => {
       expect(button.querySelector('.cngx-menu-button__caret .custom-caret')).not.toBeNull();
     });
 
-    it('takes its name from the language pack and lets aria-label win', () => {
-      const { button, host, flush } = setup(SplitHost);
-      expect(button.getAttribute('aria-label')).toBe('More options');
+    it('is named by content from the language pack, with no aria-label of its own', () => {
+      const { button } = setup(SplitHost);
+      expect(button.hasAttribute('aria-label')).toBe(false);
+      const label = button.querySelector('.cngx-sr-only');
+      expect(label?.textContent?.trim()).toBe('More options');
+      expect(label?.closest('[aria-hidden="true"]')).toBeNull();
+      expect(nameOf(button)).toBe('More options');
+    });
 
+    it('lets a consumer aria-label win over the content name', () => {
+      const { button, host, flush } = setup(SplitHost);
       host.label.set('Publish options');
       flush();
       expect(button.getAttribute('aria-label')).toBe('Publish options');
+      expect(nameOf(button)).toBe('Publish options');
 
-      host.label.set(undefined);
+      host.label.set(null);
       flush();
-      expect(button.getAttribute('aria-label')).toBe('More options');
+      expect(button.hasAttribute('aria-label')).toBe(false);
+      expect(nameOf(button)).toBe('More options');
     });
 
     it('relabels when the active pack flips', () => {
@@ -399,11 +457,11 @@ describe('CngxIconMenuButton', () => {
         providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
       });
       const { button, flush } = setup(SplitHost);
-      expect(button.getAttribute('aria-label')).toBe('More options');
+      expect(nameOf(button)).toBe('More options');
 
       pack.set({ locale: 'de', menuButton: { splitToggle: 'Weitere Optionen' } });
       flush();
-      expect(button.getAttribute('aria-label')).toBe('Weitere Optionen');
+      expect(nameOf(button)).toBe('Weitere Optionen');
     });
 
     it('does not warn CNGX1071 for the unnamed caret', async () => {

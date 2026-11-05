@@ -343,9 +343,10 @@ describe('CngxSplitButton', () => {
     const nested = q('#nested');
     expect(split.caret()).toBeDefined();
     expect(q('#caret').getAttribute('aria-disabled')).toBe('true');
-    expect(q('#caret').getAttribute('aria-label')).toBe('More options');
+    expect(q('#caret').querySelector('.cngx-sr-only')?.textContent?.trim()).toBe('More options');
     expect(nested.hasAttribute('aria-disabled')).toBe(false);
     expect(nested.getAttribute('aria-label')).toBe('Row actions');
+    expect(nested.querySelector('.cngx-sr-only')).toBeNull();
     expect(nested.querySelector('.kebab')).not.toBeNull();
     expect(nested.querySelector('.cngx-menu-button__caret')).toBeNull();
   });
@@ -368,7 +369,7 @@ describe('CngxSplitButton', () => {
     flush();
     expect(split.mainBlocked()).toBe(true);
     expect(q('#caret').getAttribute('aria-disabled')).toBe('true');
-    expect(q('#caret').getAttribute('aria-label')).toBe('More options');
+    expect(q('#caret').querySelector('.cngx-sr-only')?.textContent?.trim()).toBe('More options');
   });
 
   it('never takes the caret for the main action', async () => {
