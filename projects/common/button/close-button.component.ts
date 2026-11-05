@@ -23,6 +23,7 @@ import { provideButtonHost } from './button-host.token';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/close-button.component.ts
  * @since 0.1.0
  * @relatedTo provideCloseIcon, injectCloseIcon, CngxCloseButton
+ * <example-url>/#/common/button/close-button/provided-icon</example-url>
  */
 export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon');
 
@@ -41,7 +42,7 @@ export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon'
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/close-button.component.ts
  * @since 0.1.0
  * @relatedTo CNGX_CLOSE_ICON, injectCloseIcon, CngxCloseButton
- * <example-url>/#/common/button/close-button/projected-icon</example-url>
+ * <example-url>/#/common/button/close-button/provided-icon</example-url>
  */
 export function provideCloseIcon(component: Type<unknown>): Provider {
   return { provide: CNGX_CLOSE_ICON, useValue: component };
@@ -97,6 +98,7 @@ export function injectCloseIcon(): Type<unknown> | null {
  * @relatedTo provideCloseIcon, CngxIconButton, CngxButtonBrain, CngxAlert, CngxToastOutlet, CngxPopoverPanel
  * <example-url>/#/common/button/close-button/basic</example-url>
  * <example-url>/#/common/button/close-button/projected-icon</example-url>
+ * <example-url>/#/common/button/close-button/provided-icon</example-url>
  * <example-url>/#/common/button/close-button/contextual-labels</example-url>
  * <example-url>/#/common/button/close-button/inside-a-dismissible-card</example-url>
  * @axis level molecule
