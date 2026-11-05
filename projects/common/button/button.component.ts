@@ -107,9 +107,9 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
         }
       </span>
     }
-    <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{
-      brain.disabledReason()
-    }}</span>
+    @if (brain.disabledReason(); as reason) {
+      <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
+    }
   `,
   styleUrl: './button.component.css',
 })

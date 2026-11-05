@@ -150,9 +150,9 @@ export function injectCloseIcon(): Type<unknown> | null {
         }
       </span>
     }
-    <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{
-      brain.disabledReason()
-    }}</span>
+    @if (brain.disabledReason(); as reason) {
+      <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
+    }
   `,
   styleUrls: [
     './button.component.css',

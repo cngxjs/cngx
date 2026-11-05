@@ -80,9 +80,9 @@ import { provideButtonHost } from './button-host.token';
         }
       </span>
     }
-    <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{
-      brain.disabledReason()
-    }}</span>
+    @if (brain.disabledReason(); as reason) {
+      <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
+    }
   `,
   styleUrls: ['./button.component.css', './icon-button.component.css'],
 })
