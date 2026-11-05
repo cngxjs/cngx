@@ -21,7 +21,7 @@ import { CNGX_ICON_CHEVRON_DOWN } from '@cngx/utils';
 
 import { injectButtonCaretIcon } from './caret-icon.token';
 import { injectMenuButtonI18n } from './i18n/menu-button-i18n';
-import { injectMenuToggle } from './internal/menu-toggle';
+import { injectMenuToggle } from './menu-toggle';
 import { CNGX_SPLIT_BUTTON } from './split-button.token';
 import { CNGX_SPLIT_CARET } from './split-caret.token';
 
