@@ -15,10 +15,13 @@ import { fetchSnapshot, normalizeReleaseVersion, removeQuietly, removeTempDir } 
 import type { SnapshotFetchFailureReason } from '../diff/types.js';
 import type { SnapshotCache } from './snapshot-cache.js';
 
-/** A resolved snapshot plus the version label it grounds against, or a typed failure. */
-export type DocsResolution =
-  | { ok: true; docs: DocsIndex; version: string | null }
+/** A resolved release asset plus the version label it grounds against, or a typed failure. */
+export type ReleaseResolution<D> =
+  | { ok: true; docs: D; version: string | null }
   | { ok: false; reason: SnapshotFetchFailureReason; message: string };
+
+/** A resolved snapshot plus the version label it grounds against, or a typed failure. */
+export type DocsResolution = ReleaseResolution<DocsIndex>;
 
 /** Injectable side-effect seam so the cache + short-circuit are testable without `gh`. */
 export interface DocsResolverDeps {
@@ -42,8 +45,26 @@ const defaultDeps: DocsResolverDeps = { fetchSnapshot, loadDocs: loadDocsFromFil
  */
 export const DOCS_CACHE_LIMIT = 16;
 
+/** Resolves a version against one bundled release asset. */
+export type ReleaseResolver<D> = (version?: string) => Promise<ReleaseResolution<D>>;
+
 /** Resolves a version against one bundled snapshot; what a command reaches through its context. */
-export type DocsResolver = (version?: string) => Promise<DocsResolution>;
+export type DocsResolver = ReleaseResolver<DocsIndex>;
+
+/** One kind of release asset: what answers without a fetch, and how a fetched file becomes `D`. */
+interface ReleaseAssetSource<D> {
+  readonly bundled: D;
+  readonly bundledVersion: string | null;
+  /** What the fetched-load failure calls the asset. */
+  readonly label: string;
+  readonly fetch: FetchSnapshot;
+  load(path: string): D;
+  /** The version a loaded asset says it is; null resolves to the requested version. */
+  versionOf(value: D): string | null;
+  readonly removeDir?: (dir: string) => void;
+  readonly cache?: SnapshotCache;
+  readonly offline?: boolean;
+}
 
 /**
  * Build a resolver over `bundled` and `deps`. Each adapter builds one, so a command
@@ -55,11 +76,27 @@ export type DocsResolver = (version?: string) => Promise<DocsResolution>;
  * `asset-missing`.
  */
 export function createDocsResolver(bundled: DocsIndex, deps: DocsResolverDeps = defaultDeps): DocsResolver {
-  // Fetched snapshots and fetches still in flight, keyed by requested version. Owned by
+  return createReleaseResolver<DocsIndex>({
+    bundled,
+    bundledVersion: bundled.meta.cngxVersion,
+    label: 'snapshot',
+    fetch: deps.fetchSnapshot,
+    // A release asset is the raw docs:json export; only the bundled snapshot is
+    // rebased at build time.
+    load: (path) => rebaseExampleUrls(deps.loadDocs(path)),
+    versionOf: (docs) => docs.meta.cngxVersion,
+    removeDir: deps.removeDir,
+    cache: deps.cache,
+    offline: deps.offline,
+  });
+}
+
+function createReleaseResolver<D>(source: ReleaseAssetSource<D>): ReleaseResolver<D> {
+  // Fetched assets and fetches still in flight, keyed by requested version. Owned by
   // this resolver alone, so resolvers built over different deps never share an answer.
-  const cache = new Map<string, DocsIndex>();
-  const pending = new Map<string, Promise<DocsResolution>>();
-  const bundledVersion = bundled.meta.cngxVersion;
+  const cache = new Map<string, D>();
+  const pending = new Map<string, Promise<ReleaseResolution<D>>>();
+  const { bundled, bundledVersion } = source;
 
   return async (version) => {
     // Only an absent version means "bundled"; a blank string is a caller error, not a default.
@@ -76,9 +113,10 @@ export function createDocsResolver(bundled: DocsIndex, deps: DocsResolverDeps = 
       return { ok: true, docs: bundled, version: bundledVersion };
     }
 
+    // `D` may include null, so a memo hit is anything but undefined.
     const cached = cache.get(requested);
-    if (cached) {
-      return { ok: true, docs: cached, version: cached.meta.cngxVersion ?? requested };
+    if (cached !== undefined) {
+      return { ok: true, docs: cached, version: source.versionOf(cached) ?? requested };
     }
 
     // A second request for the same version joins the first instead of downloading again.
@@ -86,14 +124,14 @@ export function createDocsResolver(bundled: DocsIndex, deps: DocsResolverDeps = 
     if (inFlight) {
       return inFlight;
     }
-    const resolution = fetchAndLoad(requested, deps, cache).finally(() => pending.delete(requested));
+    const resolution = fetchAndLoad(requested, source, cache).finally(() => pending.delete(requested));
     pending.set(requested, resolution);
     return resolution;
   };
 }
 
-/** Cache a fetched snapshot, evicting the oldest entry (insertion order) once at capacity. */
-function cacheDocs(cache: Map<string, DocsIndex>, version: string, docs: DocsIndex): void {
+/** Cache a fetched asset, evicting the oldest entry (insertion order) once at capacity. */
+function cacheDocs<D>(cache: Map<string, D>, version: string, docs: D): void {
   if (cache.size >= DOCS_CACHE_LIMIT) {
     const oldest = cache.keys().next().value;
     if (oldest !== undefined) {
@@ -103,58 +141,56 @@ function cacheDocs(cache: Map<string, DocsIndex>, version: string, docs: DocsInd
   cache.set(version, docs);
 }
 
-async function fetchAndLoad(
+async function fetchAndLoad<D>(
   requested: string,
-  deps: DocsResolverDeps,
-  cache: Map<string, DocsIndex>,
-): Promise<DocsResolution> {
-  const cached = readCached(requested, deps);
-  if (cached) {
+  source: ReleaseAssetSource<D>,
+  cache: Map<string, D>,
+): Promise<ReleaseResolution<D>> {
+  const cached = readCached(requested, source);
+  if (cached !== undefined) {
     cacheDocs(cache, requested, cached);
-    return { ok: true, docs: cached, version: cached.meta.cngxVersion ?? requested };
+    return { ok: true, docs: cached, version: source.versionOf(cached) ?? requested };
   }
-  if (deps.offline) {
+  if (source.offline) {
     return { ok: false, reason: 'asset-missing', message: `v${requested} is not cached and --offline forbids a fetch.` };
   }
-  const fetched = await deps.fetchSnapshot(requested);
+  const fetched = await source.fetch(requested);
   if (!fetched.ok) {
     return { ok: false, reason: fetched.reason, message: fetched.message };
   }
   try {
-    // A release asset is the raw docs:json export; only the bundled snapshot is
-    // rebased at build time.
-    const docs = rebaseExampleUrls(deps.loadDocs(fetched.path));
+    const docs = source.load(fetched.path);
     // Written only after the load succeeded, so a schema mismatch is never cached.
-    deps.cache?.write(requested, fetched.path);
+    source.cache?.write(requested, fetched.path);
     cacheDocs(cache, requested, docs);
     // A successful download of the `v<version>` asset means the asset IS that version,
     // so an unstamped raw export still resolves to the requested label.
-    return { ok: true, docs, version: docs.meta.cngxVersion ?? requested };
+    return { ok: true, docs, version: source.versionOf(docs) ?? requested };
   } catch (error) {
     return {
       ok: false,
       reason: 'asset-missing',
-      message: `Fetched snapshot for v${requested} could not be read: ${fetchedLoadProblem(error)}`,
+      message: `Fetched ${source.label} for v${requested} could not be read: ${fetchedLoadProblem(error)}`,
     };
   } finally {
     // The parsed index lives in memory from here on; the file on disk is never read again.
     if (fetched.dir !== undefined) {
-      removeQuietly(deps.removeDir ?? removeTempDir, fetched.dir);
+      removeQuietly(source.removeDir ?? removeTempDir, fetched.dir);
     }
   }
 }
 
-/** The disk-cached snapshot of `requested`, or null. An entry that fails to load is discarded, so the caller refetches once. */
-function readCached(requested: string, deps: DocsResolverDeps): DocsIndex | null {
-  const path = deps.cache?.read(requested);
-  if (!deps.cache || !path) {
-    return null;
+/** The disk-cached asset of `requested`, or undefined. An entry that fails to load is discarded, so the caller refetches once. */
+function readCached<D>(requested: string, source: ReleaseAssetSource<D>): D | undefined {
+  const path = source.cache?.read(requested);
+  if (!source.cache || !path) {
+    return undefined;
   }
   try {
-    return rebaseExampleUrls(deps.loadDocs(path));
+    return source.load(path);
   } catch (error) {
-    deps.cache.discard(requested, fetchedLoadProblem(error));
-    return null;
+    source.cache.discard(requested, fetchedLoadProblem(error));
+    return undefined;
   }
 }
 
@@ -173,10 +209,10 @@ export type VersionedAnswer<T> =
  * not inline per tool: `get_di_tokens` / `find_component` return arrays that cannot
  * carry the version otherwise, so every tool wraps identically.
  */
-export async function answerVersioned<T>(
-  resolve: DocsResolver,
+export async function answerVersioned<T, D = DocsIndex>(
+  resolve: ReleaseResolver<D>,
   version: string | undefined,
-  query: (docs: DocsIndex) => T,
+  query: (docs: D) => T,
 ): Promise<VersionedAnswer<T>> {
   try {
     const resolution = await resolve(version);

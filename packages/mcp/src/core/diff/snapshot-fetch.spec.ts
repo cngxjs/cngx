@@ -60,6 +60,26 @@ describe('ghDownloadArgs', () => {
   });
 });
 
+describe('asset parameter', () => {
+  it('downloads the named asset through gh', () => {
+    expect(ghDownloadArgs('0.2.0', '/tmp/snap', 'other.json')).toEqual([
+      'release',
+      'download',
+      'v0.2.0',
+      '--repo',
+      CNGX_REPO,
+      '--pattern',
+      'other.json',
+      '--dir',
+      '/tmp/snap',
+    ]);
+  });
+
+  it('builds the URL of the named asset', () => {
+    expect(releaseAssetUrl(RELEASE_BASE_URL, '0.2.0', 'other.json')).toBe(`${RELEASE_BASE_URL}/v0.2.0/other.json`);
+  });
+});
+
 describe('isReleaseVersion', () => {
   it('accepts release and prerelease versions, including hyphenated prerelease ids', () => {
     for (const version of ['0.2.0', '10.20.30', '0.1.0-rc.9', '0.2.0-rc-1', '1.0.0-alpha.beta-2']) {

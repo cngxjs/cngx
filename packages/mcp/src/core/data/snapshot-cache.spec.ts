@@ -172,6 +172,66 @@ describe('createSnapshotCache', () => {
   });
 });
 
+describe('createSnapshotCache with a custom entry', () => {
+  const entry = { dirName: 'things', fileName: 'thing.json', label: 'thing' };
+
+  function sourceFile(): string {
+    const source = join(root, 'source.json');
+    writeFileSync(source, '{}');
+    return source;
+  }
+
+  it('reads and writes under its own directory and file name', () => {
+    const cache = createSnapshotCache({ dir: join(root, 'cache'), entry });
+
+    expect(cache.read('0.2.0')).toBeNull();
+    cache.write('0.2.0', sourceFile());
+
+    expect(cache.read('0.2.0')).toBe(join(root, 'cache', 'things', '0.2.0', 'thing.json'));
+  });
+
+  it('evicts at its own bound', () => {
+    const cache = createSnapshotCache({ dir: join(root, 'cache'), entry, limit: 2 });
+    const source = sourceFile();
+
+    versions(3).forEach((version, i) => {
+      cache.write(version, source);
+      const at = new Date(Date.UTC(2026, 0, 1 + i));
+      utimesSync(join(root, 'cache', 'things', version, 'thing.json'), at, at);
+    });
+    cache.write('0.4.0', source);
+
+    expect(readdirSync(join(root, 'cache', 'things')).sort()).toEqual(['0.3.0', '0.4.0']);
+  });
+
+  it('names its label in a discard warning', () => {
+    const warn = vi.fn<(message: string) => void>();
+    const cache = createSnapshotCache({ dir: join(root, 'cache'), entry, warn });
+    cache.write('0.2.0', sourceFile());
+
+    cache.discard('0.2.0', 'bad');
+
+    expect(warn).toHaveBeenCalledExactlyOnceWith('cngx: removed the unreadable cached v0.2.0 thing (bad)');
+    expect(cache.read('0.2.0')).toBeNull();
+  });
+
+  it('neither evicts nor deletes the other kind in one root', () => {
+    const things = createSnapshotCache({ dir: join(root, 'cache'), entry, limit: 1 });
+    const snapshots = createSnapshotCache({ dir: join(root, 'cache'), limit: 1 });
+    const source = sourceFile();
+
+    snapshots.write('0.1.0', source);
+    things.write('0.1.0', source);
+    things.write('0.2.0', source);
+    things.discard('0.2.0', 'bad');
+
+    expect(snapshots.read('0.1.0')).toBe(join(root, 'cache', 'snapshots', '0.1.0', 'documentation.json'));
+    snapshots.write('0.2.0', source);
+    snapshots.discard('0.2.0', 'bad');
+    expect(existsSync(join(root, 'cache', 'things'))).toBe(true);
+  });
+});
+
 describe('createSnapshotCache concurrency', () => {
   it('interleaves two writers and evictors on one dir without a partial file or a throw', () => {
     const a = createSnapshotCache({ dir: root, limit: 4 });
