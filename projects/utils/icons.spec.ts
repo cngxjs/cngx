@@ -38,7 +38,8 @@ const MICRO_ICONS = [
   'CNGX_ICON_MINUS',
   'CNGX_ICON_MORE_HORIZONTAL',
   'CNGX_ICON_MORE_VERTICAL',
-  'CNGX_ICON_PANEL',
+  'CNGX_ICON_PANEL_CLOSE',
+  'CNGX_ICON_PANEL_OPEN',
   'CNGX_ICON_PENCIL',
   'CNGX_ICON_PLUS',
   'CNGX_ICON_REDO',
@@ -59,14 +60,15 @@ const MICRO_ICONS = [
 // bridge caret), and CHECK and BAN (1x smoke 2026-11-04 - the user chose the
 // 24-grid path for both; the hinted check read as a different icon, the hinted
 // ban rang a touch too thick). MENU is the panel-trigger default and still
-// waits for the joint 1x sign-off on the sheet, as does PANEL, the
-// panel-toggle default.
+// waits for the joint 1x sign-off on the sheet, as do PANEL_OPEN and
+// PANEL_CLOSE, the panel-toggle defaults.
 const SMALL_ICONS = [
   'CNGX_ICON_ALERT',
   'CNGX_ICON_CHEVRON_RIGHT',
   'CNGX_ICON_MENU',
   'CNGX_ICON_MINUS',
-  'CNGX_ICON_PANEL',
+  'CNGX_ICON_PANEL_CLOSE',
+  'CNGX_ICON_PANEL_OPEN',
   'CNGX_ICON_STOP',
   'CNGX_ICON_VOLUME',
   'CNGX_ICON_X',
@@ -192,7 +194,8 @@ describe('cngx default icon set', () => {
         'CNGX_ICON_VOLUME',
         'CNGX_ICON_STOP',
         'CNGX_ICON_MENU',
-        'CNGX_ICON_PANEL',
+        'CNGX_ICON_PANEL_OPEN',
+        'CNGX_ICON_PANEL_CLOSE',
       ].sort(),
     );
   });
@@ -293,6 +296,14 @@ describe('cngx default icon set', () => {
 
   it('keeps refused and failed visually distinct', () => {
     expect(icons.CNGX_ICON_BAN.d).not.toBe(icons.CNGX_ICON_ALERT.d);
+  });
+
+  // The panel glyphs draw what a press does: one frame and column, the chevron
+  // pointing away from the column (open) or toward it (close).
+  it('draws the panel open and close glyphs on one frame with opposite chevrons', () => {
+    const frame = 'M7 5h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM10 5v14';
+    expect(icons.CNGX_ICON_PANEL_OPEN.d).toBe(`${frame}M13 9l3 3-3 3`);
+    expect(icons.CNGX_ICON_PANEL_CLOSE.d).toBe(`${frame}M16 9l-3 3 3 3`);
   });
 
   // The severity glyphs share one circle, so info, success and error read as

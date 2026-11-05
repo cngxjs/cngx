@@ -17,7 +17,7 @@ import type {
 import { CngxIconSvg } from '@cngx/common/display';
 import { CNGX_HOST_INTERACTION_STATE } from '@cngx/common/interactive';
 import { injectDirection } from '@cngx/core';
-import { CNGX_ICON_MENU, CNGX_ICON_PANEL, CNGX_ICON_X } from '@cngx/utils';
+import { CNGX_ICON_MENU, CNGX_ICON_PANEL_CLOSE, CNGX_ICON_PANEL_OPEN, CNGX_ICON_X } from '@cngx/utils';
 
 import { CngxPanelTrigger } from '../panel-trigger/panel-trigger.directive';
 
@@ -36,9 +36,11 @@ import { CngxPanelTrigger } from '../panel-trigger/panel-trigger.directive';
  *   `contained` modality) shows three bars while closed and a cross while
  *   open;
  * - every other presentation (an inline sidebar or rail, a push drawer, a
- *   non-modal over-drawer) shows the panel glyph in both states, a frame
- *   with a column on the panel's side; the state is carried by the name
- *   and `aria-expanded`, not by the drawing. The glyph mirrors for a panel
+ *   non-modal over-drawer) shows a panel glyph that draws what a press
+ *   does: a frame with a column on the panel's side and a chevron pointing
+ *   away from the column while the panel is closed (open it), toward the
+ *   column while it is open (close it). The name and `aria-expanded` carry
+ *   the same state for assistive technology. The glyph mirrors for a panel
  *   on the right: `position="right"`, or the end side in LTR and the start
  *   side in RTL (`CNGX_DIRECTION`).
  *
@@ -163,10 +165,11 @@ export class CngxPanelToggle {
 
   /** @internal - the default glyph for the current presentation and state. */
   protected readonly icon = computed(() => {
-    if (!this.modalOverlay()) {
-      return CNGX_ICON_PANEL;
+    const expanded = this.trigger.expanded();
+    if (this.modalOverlay()) {
+      return expanded ? CNGX_ICON_X : CNGX_ICON_MENU;
     }
-    return this.trigger.expanded() ? CNGX_ICON_X : CNGX_ICON_MENU;
+    return expanded ? CNGX_ICON_PANEL_CLOSE : CNGX_ICON_PANEL_OPEN;
   });
 
   /** @internal - the panel glyph is drawn for a left panel; flip it for a right one. */

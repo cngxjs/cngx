@@ -1,7 +1,7 @@
 import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideDirection } from '@cngx/core';
-import { CNGX_ICON_MENU, CNGX_ICON_PANEL, CNGX_ICON_X } from '@cngx/utils';
+import { CNGX_ICON_MENU, CNGX_ICON_PANEL_CLOSE, CNGX_ICON_PANEL_OPEN, CNGX_ICON_X } from '@cngx/utils';
 import { describe, expect, it, vi } from 'vitest';
 
 import { CngxDrawer } from '../drawer/drawer.directive';
@@ -116,22 +116,25 @@ describe('CngxPanelToggle', () => {
     expect(path()).toBe(CNGX_ICON_MENU.d);
   });
 
-  it('shows the panel glyph in both states on a push drawer', () => {
+  it('shows the open glyph on a closed push drawer and the close glyph while it is open', () => {
     const { host, settle, toggle, path } = mount(DrawerHost);
     host.mode.set('push');
     settle();
-    expect(path()).toBe(CNGX_ICON_PANEL.d);
+    expect(path()).toBe(CNGX_ICON_PANEL_OPEN.d);
     toggle.click();
     settle();
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
-    expect(path()).toBe(CNGX_ICON_PANEL.d);
+    expect(path()).toBe(CNGX_ICON_PANEL_CLOSE.d);
+    toggle.click();
+    settle();
+    expect(path()).toBe(CNGX_ICON_PANEL_OPEN.d);
   });
 
   it('shows the panel glyph on a non-modal over-drawer', () => {
     const { host, settle, path } = mount(DrawerHost);
     host.modality.set('none');
     settle();
-    expect(path()).toBe(CNGX_ICON_PANEL.d);
+    expect(path()).toBe(CNGX_ICON_PANEL_OPEN.d);
   });
 
   it('follows a breakpoint that switches the live mode', () => {
@@ -140,24 +143,28 @@ describe('CngxPanelToggle', () => {
     settle();
     toggle.click();
     settle();
-    expect(path()).toBe(CNGX_ICON_PANEL.d);
+    expect(path()).toBe(CNGX_ICON_PANEL_CLOSE.d);
     // Narrow viewport: the same open drawer becomes the modal mobile nav.
     host.mode.set('over');
     settle();
     expect(path()).toBe(CNGX_ICON_X.d);
     host.mode.set('push');
     settle();
-    expect(path()).toBe(CNGX_ICON_PANEL.d);
+    expect(path()).toBe(CNGX_ICON_PANEL_CLOSE.d);
   });
 
-  it('mirrors the panel glyph for a drawer on the right', () => {
-    const { host, settle, path, mirrored } = mount(DrawerHost);
+  it('mirrors the panel glyph for a drawer on the right in both states', () => {
+    const { host, settle, toggle, path, mirrored } = mount(DrawerHost);
     host.mode.set('push');
     settle();
     expect(mirrored()).toBe(false);
     host.position.set('right');
     settle();
-    expect(path()).toBe(CNGX_ICON_PANEL.d);
+    expect(path()).toBe(CNGX_ICON_PANEL_OPEN.d);
+    expect(mirrored()).toBe(true);
+    toggle.click();
+    settle();
+    expect(path()).toBe(CNGX_ICON_PANEL_CLOSE.d);
     expect(mirrored()).toBe(true);
   });
 
@@ -168,18 +175,23 @@ describe('CngxPanelToggle', () => {
     expect(mirrored()).toBe(false);
   });
 
-  it('shows the unmirrored panel glyph on a sidebar in both states', () => {
+  it('shows the close glyph on an expanded sidebar and the open glyph once collapsed', () => {
     const { host, settle, path, mirrored } = mount(SidebarHost);
-    expect(path()).toBe(CNGX_ICON_PANEL.d);
+    expect(path()).toBe(CNGX_ICON_PANEL_CLOSE.d);
     expect(mirrored()).toBe(false);
     host.collapsed.set(true);
     settle();
-    expect(path()).toBe(CNGX_ICON_PANEL.d);
+    expect(path()).toBe(CNGX_ICON_PANEL_OPEN.d);
+    expect(mirrored()).toBe(false);
   });
 
-  it('mirrors the sidebar glyph under RTL', () => {
-    const { path, mirrored } = mount(SidebarHost, [provideDirection('rtl')]);
-    expect(path()).toBe(CNGX_ICON_PANEL.d);
+  it('mirrors the sidebar glyph under RTL in both states', () => {
+    const { host, settle, path, mirrored } = mount(SidebarHost, [provideDirection('rtl')]);
+    expect(path()).toBe(CNGX_ICON_PANEL_CLOSE.d);
+    expect(mirrored()).toBe(true);
+    host.collapsed.set(true);
+    settle();
+    expect(path()).toBe(CNGX_ICON_PANEL_OPEN.d);
     expect(mirrored()).toBe(true);
   });
 
@@ -198,7 +210,7 @@ describe('CngxPanelToggle', () => {
 
   it('reads a target without mode, modal or side as an inline start panel', () => {
     const { path, mirrored } = mount(TargetHost);
-    expect(path()).toBe(CNGX_ICON_PANEL.d);
+    expect(path()).toBe(CNGX_ICON_PANEL_OPEN.d);
     expect(mirrored()).toBe(false);
   });
 
