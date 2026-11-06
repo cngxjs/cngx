@@ -24,6 +24,8 @@ const NO_QUEUE: ReadonlySet<number> = new Set();
 interface QueueState {
   readonly hidden: ReadonlySet<number>;
   readonly held: boolean;
+  /** Hidden ids whose registry segment still runs while the queue should hold them. */
+  readonly running: ReadonlySet<number>;
 }
 
 /**
@@ -221,7 +223,10 @@ export class CngxToastOutlet {
   /**
    * @internal - ids kept out of view by `maxVisible`, and whether their timers
    * are held. Not held while no visible toast is timed: a held queue would
-   * never move.
+   * never move. `running` reads the hold back from the registry segments, so a
+   * hidden toast whose timer (re)starts without the queue hold - a dedup repeat
+   * turning a persistent toast timed, or a restart after `clear()` - is held
+   * again instead of expiring unseen.
    */
   private readonly queue = computed<QueueState>(
     () => {
@@ -232,12 +237,18 @@ export class CngxToastOutlet {
         .toasts()
         .filter((t) => !shown.has(t.id))
         .map((t) => t.id);
+      const held = visible.some((t) => segments.has(t.id));
+      const running = held ? queued.filter((id) => segments.get(id)?.running) : [];
       return {
         hidden: queued.length === 0 ? NO_QUEUE : new Set(queued),
-        held: visible.some((t) => segments.has(t.id)),
+        held,
+        running: running.length === 0 ? NO_QUEUE : new Set(running),
       };
     },
-    { equal: (a, b) => a.held === b.held && setEqual(a.hidden, b.hidden) },
+    {
+      equal: (a, b) =>
+        a.held === b.held && setEqual(a.hidden, b.hidden) && setEqual(a.running, b.running),
+    },
   );
 
   constructor() {
@@ -252,7 +263,8 @@ export class CngxToastOutlet {
             // The removed element fires no pointerleave and no reliable focusout.
             this.service.dropHolds(id, ['pointer', 'focus']);
           }
-          if (queue.held && !held.has(id)) {
+          // A running segment on a held id means the registry lost the hold.
+          if (queue.held && (!held.has(id) || queue.running.has(id))) {
             held.add(id);
             this.service.pauseTimer(id, 'queue');
           }

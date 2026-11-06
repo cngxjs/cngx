@@ -426,6 +426,48 @@ describe('CngxToastOutlet', () => {
       expect(has('Repeated')).toBe(false);
     });
 
+    it('holds a hidden persistent toast that a dedup repeat turns timed', async () => {
+      const { toaster, toastByText, has, idOf, settle } = queueSetup();
+      toaster.show({ message: 'Hidden', duration: 'persistent' });
+      toaster.show({ message: 'Newer A', duration: 30000 });
+      toaster.show({ message: 'Newer B', duration: 30000 });
+      await settle();
+      expect(toastByText('Hidden')).toBeUndefined();
+
+      toaster.show({ message: 'Hidden', duration: 5000 });
+      await settle();
+      await settle();
+
+      vi.advanceTimersByTime(10000);
+      expect(has('Hidden')).toBe(true);
+
+      toaster.dismiss(idOf('Newer A'));
+      await settle();
+      expect(toastByText('Hidden')!.getAttribute('data-timer')).toBe('running');
+      vi.advanceTimersByTime(4999);
+      expect(has('Hidden')).toBe(true);
+      vi.advanceTimersByTime(1);
+      expect(has('Hidden')).toBe(false);
+    });
+
+    // Both repeats land in one tick, so the registry flush coalesces them and
+    // the hidden id never leaves the segment map.
+    it('re-holds a hidden toast restarted timed -> persistent -> timed in one tick', async () => {
+      const { toaster, has, settle } = queueSetup();
+      toaster.show({ message: 'Hidden', duration: 5000 });
+      toaster.show({ message: 'Newer A', duration: 30000 });
+      toaster.show({ message: 'Newer B', duration: 30000 });
+      await settle();
+
+      toaster.show({ message: 'Hidden', duration: 'persistent' });
+      toaster.show({ message: 'Hidden', duration: 5000 });
+      await settle();
+      await settle();
+
+      vi.advanceTimersByTime(10000);
+      expect(has('Hidden')).toBe(true);
+    });
+
     it('issues each queue transition once', async () => {
       const { toaster, settle } = queueSetup();
       const pause = vi.spyOn(toaster, 'pauseTimer');
