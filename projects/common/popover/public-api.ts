@@ -58,6 +58,7 @@ export {
 } from './i18n/popover-language-section';
 export { CngxPopoverPanel } from './popover-panel.component';
 export { CngxPopoverAction, type PopoverActionVariant } from './popover-action.component';
+export { CngxPopoverDismiss } from './popover-dismiss.component';
 export { CNGX_POPOVER_ARROW_BOUNDS, type CngxPopoverArrowBounds } from './popover-arrow-bounds';
 export {
   CngxPopoverArrow,
