@@ -89,6 +89,9 @@ const KEY_NAMES = new Set([
   'Alt',
   'Meta',
   'Space',
+  // aria-keyshortcuts tokens (resolveAriaKeyShortcuts): spec values, not copy.
+  'Plus',
+  'Insert',
 ]);
 
 /** A single CamelCase word: an injection-token debug name, never a sentence. */
