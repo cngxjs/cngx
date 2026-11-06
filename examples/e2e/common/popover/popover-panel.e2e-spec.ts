@@ -232,4 +232,24 @@ test.describe('common/popover/popover-panel close-and-empty-slots', () => {
     await expect(errPanel).toBeVisible({ timeout: 5000 });
     await expect(errPanel.locator('.cngx-popover-panel__header')).toHaveText('User Details');
   });
+
+  test('state-copy: the config tier and the input tier each reach their panel', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/popover/popover-panel/state-copy');
+    await page.getByRole('radio', { name: 'Load error', exact: true }).check();
+    const cases = [
+      { trigger: 'Shared files', copy: 'Shared files are unavailable' },
+      { trigger: 'Team files', copy: 'Team files are unavailable' },
+    ];
+    for (const { trigger: name, copy } of cases) {
+      await page.getByRole('button', { name, exact: true }).click();
+      const statePanel = page.locator('cngx-popover-panel', { hasText: copy });
+      await expect(statePanel).toBeVisible();
+      const describedBy = await statePanel.getAttribute('aria-describedby');
+      await expect(page.locator(`[id="${describedBy}"]`)).toHaveText(copy);
+      await page.keyboard.press('Escape');
+      await expect(statePanel).toBeHidden();
+    }
+  });
 });
