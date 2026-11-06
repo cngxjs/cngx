@@ -12,7 +12,11 @@ const SCHEMES = ['light', 'dark'] as const;
 @Component({
   selector: 'cngx-error-text-contrast-host',
   standalone: true,
-  styleUrls: ['../core/theming/system-tokens.css', './stat-card/stat-card.component.css'],
+  styleUrls: [
+    '../core/theming/system-tokens.css',
+    './stat-card/stat-card.component.css',
+    './collection/incremental-list.component.css',
+  ],
   encapsulation: ViewEncapsulation.None,
   template: `
     @for (scheme of schemes; track scheme) {
@@ -23,6 +27,9 @@ const SCHEMES = ['light', 'dark'] as const;
             <span class="cngx-stat-card__error-icon stat-card-icon">!</span>
             <p class="cngx-empty-state__title stat-card-title">Could not load</p>
           </div>
+        </div>
+        <div class="cngx-incremental-list">
+          <p class="cngx-incremental-list__error-text list-error">Could not load</p>
         </div>
       </div>
     }
@@ -61,5 +68,12 @@ describe('error copy contrast', () => {
     const surface = computedValue(at(block, '.probe-surface'), 'color');
     const title = computedValue(at(block, '.stat-card-title'), 'color');
     expect(contrastRatio(title, surface)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it.each(SCHEMES)('paints the incremental-list error text at 4.5:1 or more in %s', (scheme) => {
+    const block = at(mount(), `.scheme-${scheme}`);
+    const surface = computedValue(at(block, '.probe-surface'), 'color');
+    const text = computedValue(at(block, '.list-error'), 'color');
+    expect(contrastRatio(text, surface)).toBeGreaterThanOrEqual(4.5);
   });
 });
