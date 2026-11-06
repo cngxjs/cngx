@@ -4,6 +4,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   effect,
   ElementRef,
   inject,
@@ -312,6 +313,28 @@ export class CngxAlertStack {
         );
       });
     }
+    // A removed item fires no pointerleave and no reliable focusout, so an
+    // alert that collapses into the overflow or outlives the stack drops its
+    // pointer and focus holds; otherwise it would never auto-dismiss.
+    let rendered: readonly StackEntry[] = [];
+    effect(() => {
+      const visible = this.visibleEntries();
+      untracked(() => {
+        const keys = new Set(visible.map((e) => e.key));
+        for (const entry of rendered) {
+          if (!keys.has(entry.key)) {
+            entry.owner.dropHolds(entry.state.id, ['pointer', 'focus']);
+          }
+        }
+        rendered = visible;
+      });
+    });
+    inject(DestroyRef).onDestroy(() => {
+      for (const entry of rendered) {
+        entry.owner.dropHolds(entry.state.id, ['pointer', 'focus']);
+      }
+      rendered = [];
+    });
     effect(() => {
       const { arrived } = this.arrivalTransition();
       if (arrived && untracked(this.autoScroll)) {

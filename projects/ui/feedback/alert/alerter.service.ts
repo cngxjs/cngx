@@ -177,6 +177,16 @@ export class CngxAlerter {
     this.timers.release(id, source);
   }
 
+  /**
+   * @internal - drops several hold sources of an alert in one transition.
+   * `CngxAlertStack` calls it for an alert that leaves the rendered set or
+   * when the stack unmounts: the removed element never fires `pointerleave`
+   * or a reliable `focusout`.
+   */
+  dropHolds(id: number, sources: readonly TimerHoldSource[]): void {
+    this.timers.dropHolds(id, sources);
+  }
+
   /** Dismiss a single alert by id. */
   dismiss(id: number): void {
     const alert = this.alerts().find((a) => a.id === id);
