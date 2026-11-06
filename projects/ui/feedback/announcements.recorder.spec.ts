@@ -168,6 +168,68 @@ describe('announcement recorder over ui/feedback', () => {
       ]);
     });
 
+    describe('timer node churn', () => {
+      const toastEl = (fixture: { nativeElement: HTMLElement }, text: string): HTMLElement =>
+        Array.from(fixture.nativeElement.querySelectorAll<HTMLElement>('.cngx-toast')).find((el) =>
+          el.textContent?.includes(text),
+        )!;
+
+      const regions = {
+        info: { role: 'status', politeness: 'polite' },
+        warning: { role: 'alert', politeness: 'assertive' },
+      } as const;
+
+      for (const severity of ['info', 'warning'] as const) {
+        it(`records nothing for a hover pause and release on a ${severity} toast`, async () => {
+          const fixture = await mount();
+          TestBed.inject(CngxToaster).show({ message: 'Synced', severity, duration: 5000 });
+          await settle(fixture);
+          const before = recorder.entries().length;
+
+          toastEl(fixture, 'Synced').dispatchEvent(new Event('pointerenter'));
+          await settle(fixture);
+          toastEl(fixture, 'Synced').dispatchEvent(new Event('pointerleave'));
+          await settle(fixture);
+
+          expect(recorder.entries().length).toBe(before);
+        });
+
+        it(`records only the repeat marker for a dedup restart on a ${severity} toast`, async () => {
+          const fixture = await mount();
+          const toaster = TestBed.inject(CngxToaster);
+          toaster.show({ message: 'Synced', severity, duration: 5000 });
+          await settle(fixture);
+          const before = recorder.entries().length;
+
+          toaster.show({ message: 'Synced', severity, duration: 5000 });
+          await settle(fixture);
+
+          expect(recorder.entries().slice(before).map(summary)).toEqual([
+            { text: 'Synced (x2)', ...regions[severity], origin: 'mutation', suppressedBy: null },
+          ]);
+        });
+
+        it(`records one insertion when a queued ${severity} toast is revealed`, async () => {
+          const fixture = await mount();
+          const toaster = TestBed.inject(CngxToaster);
+          toaster.show({ message: 'Queued', severity, duration: 5000 });
+          toaster.show({ message: 'Second', severity, duration: 5000 });
+          toaster.show({ message: 'Third', severity, duration: 5000 });
+          const fourth = toaster.show({ message: 'Fourth', severity, duration: 5000 });
+          await settle(fixture);
+          const before = recorder.entries().length;
+
+          fourth.dismiss();
+          await settle(fixture);
+          await settle(fixture);
+
+          expect(recorder.entries().slice(before).map(summary)).toEqual([
+            { text: 'Queued', ...regions[severity], origin: 'insertion', suppressedBy: null },
+          ]);
+        });
+      }
+    });
+
     it('records an info banner as a role=status insertion and a warning banner as role=alert', async () => {
       const fixture = await mount();
       const banner = TestBed.inject(CngxBanner);
