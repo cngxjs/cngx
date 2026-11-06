@@ -325,7 +325,9 @@ A press resolves from the focused element outwards through the hotkey scopes tha
 
 ### Text Entry
 
-Inside an `input` of type text, search, email, url, tel, password or number, a `textarea`, a `select` or `contenteditable`, only combos with `ctrl`, `meta` or `mod`, function keys (`f1`-`f24`) and `escape` fire, for every scope. Bare keys, Shift-only and Alt-only combos never fire there, so `'mod+k'` works while typing and `'/'` types a slash. Escape is exempt so "Escape cancels an inline edit" keeps working; note that an `<input type="search">` also clears itself on Escape.
+Inside an `input` of type text, search, email, url, tel, password or number, a `textarea`, a `select`, `contenteditable` or an element with `role="textbox"` / `role="searchbox"` (also inside shadow DOM), only combos with `ctrl`, `meta` or `mod`, function keys (`f1`-`f24`) and `escape` fire, for every scope. Bare keys, Shift-only and Alt-only combos never fire there, so `'mod+k'` works while typing and `'/'` types a slash. Escape is exempt so "Escape cancels an inline edit" keeps working; note that an `<input type="search">` also clears itself on Escape.
+
+The rule is fixed by design and has no per-binding switch: one rule keeps WCAG 2.1.4 behaviour the same for every shortcut. To keep a modifier combo quiet in a field, gate it with `enabled` or register it in a scope the field is not part of.
 
 ### Layout Pitfalls
 
