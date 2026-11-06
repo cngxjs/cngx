@@ -92,114 +92,114 @@
       </div>
     }
   }
-  @default {
-    @if (host.showInlineError()) {
-      @if (host.tpl.error(); as tpl) {
-        <ng-container *ngTemplateOutlet="tpl; context: host.errorContext()" />
+}
+@if (host.showInlineError()) {
+  @if (host.tpl.error(); as tpl) {
+    <ng-container *ngTemplateOutlet="tpl; context: host.errorContext()" />
+  } @else {
+    <div class="cngx-select__error cngx-select__error--inline" role="alert">
+      <span class="cngx-select__error-message">{{ inlineErrorCopy().message }}</span>
+      @if (host.tpl.retryButton(); as retryT) {
+        <ng-container
+          *ngTemplateOutlet="
+            retryT;
+            context: {
+              $implicit: host.handleRetry.bind(host),
+              retry: host.handleRetry.bind(host),
+              error: host.errorContext().error,
+              disabled: false,
+              label: inlineErrorCopy().retry,
+            }
+          "
+        />
       } @else {
-        <div class="cngx-select__error cngx-select__error--inline" role="alert">
-          <span class="cngx-select__error-message">{{ inlineErrorCopy().message }}</span>
-          @if (host.tpl.retryButton(); as retryT) {
-            <ng-container
-              *ngTemplateOutlet="
-                retryT;
-                context: {
-                  $implicit: host.handleRetry.bind(host),
-                  retry: host.handleRetry.bind(host),
-                  error: host.errorContext().error,
-                  disabled: false,
-                  label: inlineErrorCopy().retry,
-                }
-              "
-            />
-          } @else {
-            <button type="button" class="cngx-select__error-retry" (click)="host.handleRetry()">
-              {{ inlineErrorCopy().retry }}
-            </button>
-          }
-        </div>
+        <button type="button" class="cngx-select__error-retry" (click)="host.handleRetry()">
+          {{ inlineErrorCopy().retry }}
+        </button>
       }
-    }
-    @if (host.showCommitError() && host.commitErrorDisplay() === 'banner') {
-      @if (host.tpl.commitError(); as tpl) {
-        <ng-container *ngTemplateOutlet="tpl; context: host.commitErrorContext()" />
-      } @else {
-        <!-- The banner sits inside the listbox: without the stops, the
-             listbox takes Enter / Space on a focused Retry for its active
-             option and the button never clicks. -->
-        <div
-          class="cngx-select__commit-error"
-          role="alert"
-          (keydown.enter)="$event.stopPropagation()"
-          (keydown.space)="$event.stopPropagation()"
-        >
-          <span class="cngx-select__error-message">{{ commitErrorCopy().message }}</span>
-          @if (host.tpl.retryButton(); as retryT) {
-            <ng-container
-              *ngTemplateOutlet="
-                retryT;
-                context: {
-                  $implicit: host.commitErrorContext().retry,
-                  retry: host.commitErrorContext().retry,
-                  error: host.commitErrorContext().error,
-                  disabled: commitRetryDisabled(),
-                  label: commitErrorCopy().retry,
-                }
-              "
-            />
-          } @else {
-            <button
-              type="button"
-              class="cngx-select__error-retry"
-              (click)="host.commitErrorContext().retry()"
-            >
-              {{ commitErrorCopy().retry }}
-            </button>
-          }
-        </div>
-      }
-    }
-    @if (host.showRefreshIndicator()) {
-      @if (host.tpl.refreshing(); as tpl) {
-        <ng-container *ngTemplateOutlet="tpl; context: refreshingContext()" />
-      } @else {
-        @switch (host.refreshingVariant()) {
-          @case ('none') {
-            <!-- suppressed -->
-          }
-          @case ('spinner') {
-            <div class="cngx-select__refreshing-spinner" aria-hidden="true">
-              @if (host.tpl.loadingGlyph(); as glyph) {
-                <ng-container *ngTemplateOutlet="glyph" />
-              } @else {
-                <div aria-hidden="true" class="cngx-select__spinner"></div>
-              }
-            </div>
-          }
-          @case ('dots') {
-            <div class="cngx-select__refreshing-dots" aria-hidden="true">
-              @if (host.tpl.loadingGlyph(); as glyph) {
-                <ng-container *ngTemplateOutlet="glyph" />
-              } @else {
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-              }
-            </div>
-          }
-          @default {
-            <div class="cngx-select__refreshing" aria-hidden="true">
-              @if (host.tpl.loadingGlyph(); as glyph) {
-                <ng-container *ngTemplateOutlet="glyph" />
-              }
-            </div>
-          }
-        }
-      }
-    }
-    <ng-content />
+    </div>
   }
 }
+@if (host.showCommitError() && host.commitErrorDisplay() === 'banner') {
+  @if (host.tpl.commitError(); as tpl) {
+    <ng-container *ngTemplateOutlet="tpl; context: host.commitErrorContext()" />
+  } @else {
+    <!-- No role="alert": the commit failure is spoken once by the announcer
+         and referenced from the trigger via aria-errormessage / aria-describedby
+         (I8), so a live-region role here would double-speak it. The banner is a
+         sibling of the listbox, not a descendant (C4), so the listbox never
+         takes Enter / Space meant for a focused Retry; the stops below stay as a
+         cheap guard for consumers that nest it differently. -->
+    <div
+      class="cngx-select__commit-error"
+      (keydown.enter)="$event.stopPropagation()"
+      (keydown.space)="$event.stopPropagation()"
+    >
+      <span class="cngx-select__error-message">{{ commitErrorCopy().message }}</span>
+      @if (host.tpl.retryButton(); as retryT) {
+        <ng-container
+          *ngTemplateOutlet="
+            retryT;
+            context: {
+              $implicit: host.commitErrorContext().retry,
+              retry: host.commitErrorContext().retry,
+              error: host.commitErrorContext().error,
+              disabled: commitRetryDisabled(),
+              label: commitErrorCopy().retry,
+            }
+          "
+        />
+      } @else {
+        <button
+          type="button"
+          class="cngx-select__error-retry"
+          (click)="host.commitErrorContext().retry()"
+        >
+          {{ commitErrorCopy().retry }}
+        </button>
+      }
+    </div>
+  }
+}
+@if (host.showRefreshIndicator()) {
+  @if (host.tpl.refreshing(); as tpl) {
+    <ng-container *ngTemplateOutlet="tpl; context: refreshingContext()" />
+  } @else {
+    @switch (host.refreshingVariant()) {
+      @case ('none') {
+        <!-- suppressed -->
+      }
+      @case ('spinner') {
+        <div class="cngx-select__refreshing-spinner" aria-hidden="true">
+          @if (host.tpl.loadingGlyph(); as glyph) {
+            <ng-container *ngTemplateOutlet="glyph" />
+          } @else {
+            <div aria-hidden="true" class="cngx-select__spinner"></div>
+          }
+        </div>
+      }
+      @case ('dots') {
+        <div class="cngx-select__refreshing-dots" aria-hidden="true">
+          @if (host.tpl.loadingGlyph(); as glyph) {
+            <ng-container *ngTemplateOutlet="glyph" />
+          } @else {
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          }
+        </div>
+      }
+      @default {
+        <div class="cngx-select__refreshing" aria-hidden="true">
+          @if (host.tpl.loadingGlyph(); as glyph) {
+            <ng-container *ngTemplateOutlet="glyph" />
+          }
+        </div>
+      }
+    }
+  }
+}
+<ng-content />
 @if (showActionBottom()) {
   @if (host.tpl.action(); as tpl) {
     <div

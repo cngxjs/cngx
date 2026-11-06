@@ -1,5 +1,7 @@
 import {
   Component,
+  createEnvironmentInjector,
+  EnvironmentInjector,
   Injector,
   isSignal,
   runInInjectionContext,
@@ -311,20 +313,21 @@ describe('withTemplates', () => {
     expect(config.templates.empty).toBe(emptyTpl);
   });
 
-  it('At-scope config shadows a root config wholesale (nearest-wins, no cross-level merge)', () => {
+  it('At-scope config in a child injector merges over the parent scope', () => {
     TestBed.configureTestingModule({
-      providers: [
-        provideSelectConfig(withTemplates({ check: checkTpl, empty: emptyTpl })),
-        ...provideSelectConfigAt(withTemplates({ empty: otherEmptyTpl })),
-      ],
+      providers: [provideSelectConfig(withTemplates({ check: checkTpl, empty: emptyTpl }))],
     });
-    const injector = TestBed.inject(Injector);
-    const config = runInInjectionContext(injector, () => resolveSelectConfig());
-    // At scope wins for the slot it sets ...
+    const parent = TestBed.inject(EnvironmentInjector);
+    const child = createEnvironmentInjector(
+      [...provideSelectConfigAt(withTemplates({ empty: otherEmptyTpl }))],
+      parent,
+    );
+    const config = runInInjectionContext(child, () => resolveSelectConfig());
+    // Child wins for the slot it sets ...
     expect(config.templates.empty).toBe(otherEmptyTpl);
-    // ... but does NOT inherit root slots: the At token shadows the root
-    // token entirely, so unset slots fall back to the library default.
-    expect(config.templates.check).toBeNull();
+    // ... and inherits the parent slot it leaves unset (merge over the parent).
+    expect(config.templates.check).toBe(checkTpl);
+    child.destroy();
   });
 });
 

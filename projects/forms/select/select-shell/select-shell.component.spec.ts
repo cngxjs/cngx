@@ -244,6 +244,50 @@ class CommitHost {
   };
 }
 
+@Component({
+  template: `
+    <cngx-select-shell [label]="'Big'" [(value)]="value">
+      @for (i of indices; track i) {
+        <cngx-option [value]="i">Row {{ i }}</cngx-option>
+      }
+    </cngx-select-shell>
+  `,
+  imports: [CngxSelectShell, CngxSelectOption],
+})
+class ThousandProjectedHost {
+  readonly value = signal<number | undefined>(undefined);
+  readonly indices = Array.from({ length: 1000 }, (_, i) => i);
+}
+
+describe('CngxSelectShell - stays a plain list at any size', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({});
+  });
+
+  it('leaves virtualCount unbound with 1000 projected options, all rendered, End on the last', () => {
+    const fixture = TestBed.createComponent(ThousandProjectedHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const shell = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .componentInstance as CngxSelectShell<number>;
+    shell.open();
+    flush(fixture);
+
+    const listbox = fixture.debugElement.query(By.directive(CngxListbox));
+    const ad = listbox.injector.get(CngxListbox).ad;
+    expect(ad.virtualCount()).toBeUndefined();
+    expect((fixture.nativeElement as HTMLElement).querySelectorAll('cngx-option').length).toBe(1000);
+    expect(ad.resolvedItems().length).toBe(1000);
+
+    ad.highlightLast();
+    flush(fixture);
+    expect(ad.activeIndex()).toBe(999);
+    expect(ad.activeValue()).toBe(999);
+    expect(ad.pendingHighlight()).toBeNull();
+  });
+});
+
 describe('CngxSelectShell - Phase 5 scaffold', () => {
   beforeEach(() => {
     polyfillPopover();
@@ -1809,3 +1853,7 @@ describe('CngxSelectShell - searchDebounceMs', () => {
     expect(shell.value()).toBe('green');
   });
 });
+
+import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
+
+describeCommitControllerCascade('CngxSelectShell');

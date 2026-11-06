@@ -68,6 +68,22 @@ export interface CommitLedgerRequest<TCommit, V extends TCommit | undefined, TOp
    * external write during the pending window).
    */
   readonly announceError?: (err: unknown, rolledBack: boolean) => void;
+  /**
+   * Compose the settle against the LIVE model instead of the dispatch
+   * snapshot `next` / `previous`. Set by the member-toggle path so a commit
+   * that resolves while another commit changed the selection applies only its
+   * own membership delta, never a stale full-array snapshot. On success the
+   * ledger writes `apply(live, selected)`; on an optimistic error it writes
+   * `apply(live, !selected)` - the value's pre-toggle membership restored,
+   * every concurrent edit left in place. Absent (scalar, clear, reorder) the
+   * ledger keeps the snapshot reconcile and the `same(value, next)` rollback
+   * guard. With nothing else in flight `apply(live, selected)` equals `next`,
+   * so a lone commit is unchanged.
+   */
+  readonly composeOnLive?: {
+    readonly selected: boolean;
+    readonly apply: (live: V, selected: boolean) => V;
+  };
 }
 
 /** @internal */
@@ -206,7 +222,11 @@ export function createCommitLedger<TCommit, TOption = unknown>(
     const mode = req.commitMode();
     if (replay) {
       if (mode === 'optimistic') {
-        reconcile(next);
+        reconcile(
+          req.composeOnLive
+            ? req.composeOnLive.apply(untracked(req.value), req.composeOnLive.selected)
+            : next,
+        );
       }
       req.onReplay?.();
     }
@@ -236,10 +256,21 @@ export function createCommitLedger<TCommit, TOption = unknown>(
           last.set(null);
         }
         req.onStateChange?.('success');
-        // `null` is a legitimate server result (a `??` would drop it); only a
-        // missing one falls back to the intended value.
-        const hasResult = committed !== undefined;
-        const final = (hasResult ? committed : next) as V;
+        // `null` and `undefined` both mean "no result" (an HttpClient 204
+        // resolves `null`): keep the intended value. Only a concrete result
+        // reconciles over it.
+        const hasResult = committed != null;
+        let final: V;
+        if (hasResult) {
+          // A server-returned set is authoritative.
+          final = committed as V;
+        } else if (req.composeOnLive) {
+          // Compose this commit's membership delta onto the live model, so a
+          // concurrent commit's edit survives.
+          final = req.composeOnLive.apply(untracked(req.value), req.composeOnLive.selected);
+        } else {
+          final = next;
+        }
         reconcile(final);
         settle(final);
         req.onSuccess(final, previous);
@@ -247,16 +278,29 @@ export function createCommitLedger<TCommit, TOption = unknown>(
       onError: (err, rollbackTo) => {
         req.onStateChange?.('error');
         req.onError?.(err);
-        // An external write during the pending window wins over the stale
-        // rollback snapshot: roll back only while the model still holds the
-        // optimistic value this commit wrote.
-        const rollBack = mode === 'optimistic' && req.same(req.value(), next);
-        if (rollBack) {
-          const restored = (rollbackTo ?? previous) as V;
-          reconcile(restored);
-          req.onRollback?.(restored);
+        let rolledBack = false;
+        if (mode === 'optimistic') {
+          if (req.same(req.value(), next)) {
+            // The model still holds exactly this commit's optimistic write:
+            // restore the confirmed baseline (also the supersede-rollback path).
+            const restored = (rollbackTo ?? previous) as V;
+            reconcile(restored);
+            req.onRollback?.(restored);
+            rolledBack = true;
+          } else if (req.composeOnLive) {
+            // A concurrent commit changed the model since this one wrote: a
+            // full-snapshot restore would clobber it, so re-invert only this
+            // commit's membership delta and leave the concurrent edit in place.
+            const restored = req.composeOnLive.apply(
+              untracked(req.value),
+              !req.composeOnLive.selected,
+            );
+            reconcile(restored);
+            req.onRollback?.(restored);
+            rolledBack = true;
+          }
         }
-        req.announceError?.(err, rollBack);
+        req.announceError?.(err, rolledBack);
       },
     });
   };

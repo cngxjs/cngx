@@ -103,7 +103,8 @@ import {
 } from '../declarative/select-search-host';
 import { CngxSelectSearch } from '../declarative/select-search.component';
 import { resolveSearchMatch, resolveSelectConfig } from '../shared/internal/resolve-config';
-import { isEmptyScalar } from '../shared/internal/compare';
+import { coerceScalarFromField, isEmptyScalar } from '../shared/internal/compare';
+import { createOpenOnFocusGesture } from '../shared/internal/open-on-focus-gesture';
 import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
@@ -114,6 +115,7 @@ import { CNGX_SEARCH_EFFECTS_FACTORY, searchResultsFrom } from '../shared/search
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
+  unresolvedOptionLabel,
   type CngxSelectCompareFn,
   type CngxSelectCore,
 } from '../shared/internal/select-core';
@@ -264,6 +266,7 @@ export interface CngxSelectShellChange<T = unknown> {
           listboxRef: self.listboxRef,
           searchDebounceMs: self.searchDebounceMs,
           panelOpen: self.panelOpen,
+          listboxId: computed(() => self.listboxId),
           // Escape in the search: the sheet gate while modal, today's close
           // while anchored. The trigger is inert under a modal sheet, so the
           // refocus is left to the close path.
@@ -281,7 +284,7 @@ export interface CngxSelectShellChange<T = unknown> {
   hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
     class: 'cngx-select-shell',
-    '[id]': 'resolvedId()',
+    '[attr.id]': 'resolvedId() || null',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
   },
@@ -294,8 +297,7 @@ export class CngxSelectShell<T = unknown>
     CngxFormFieldControl,
     CngxOptionStatusHost,
     CngxOptionFilterHost,
-    CngxOptionInteractionHost,
-    CngxSelectShellSearchHost
+    CngxOptionInteractionHost
 {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = resolveSelectConfig();
@@ -325,9 +327,9 @@ export class CngxSelectShell<T = unknown>
   /** Host id. Unset, it takes the input id of an enclosing `cngx-form-field`. */
   readonly idInput = input<string | null>(null, { alias: 'id' });
   /**
-   * Accessible name of the trigger. Wins over `label`; inside a
-   * `cngx-form-field` the field label referenced through `aria-labelledby`
-   * takes precedence.
+   * Accessible name of the trigger. Wins over `label`, and inside a
+   * `cngx-form-field` over the field label too; only a consumer
+   * `aria-labelledby` outranks it.
    */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
   /**
@@ -867,24 +869,23 @@ export class CngxSelectShell<T = unknown>
   /** @internal */ protected readonly commitErrorId = this.core.commitErrorId;
   /** @internal */ protected readonly disabledReasonId = this.core.disabledReasonId;
   /** @internal */ protected readonly disabledReasonText = this.core.disabledReasonText;
-  /** @internal */ protected readonly listboxId = this.core.listboxId;
+  /** @internal */ readonly listboxId = this.core.listboxId;
   /** @internal */ protected readonly commitErrorText = this.core.commitErrorText;
   protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
   protected readonly externalActivation = this.core.externalActivation;
   protected readonly showCommitError = this.core.showCommitError;
 
   /**
-   * Virtualisation wire-up. Routes through `CNGX_PANEL_RENDERER_FACTORY`
-   * (override for recycler / custom virtualising renderers); the
-   * default identity renderer reads `core.flatOptions` and leaves
-   * `virtualItemCount()` `undefined` so AD's setsize falls back to
-   * projected-options length. AD↔recycler scroll bridge wired inside.
+   * Virtualisation wire-up. The options are consumer-projected, so no renderer
+   * slice can take a row out of the DOM and `virtualization` config does not
+   * apply: the shell never windows and AD sees a plain list at any size. A
+   * `CNGX_PANEL_RENDERER_FACTORY` override still routes through here.
    */
   private readonly virtualSetup = setupVirtualization<T, T>({
     core: this.core,
     popoverRef: this.popoverRef,
     listboxRef: this.listboxRef,
-    virtualization: this.config.virtualization,
+    virtualization: null,
     presentation: this.sheetWiring.presentation,
     listboxElement: computed(() => this.listboxEl()?.nativeElement),
   });
@@ -1021,11 +1022,18 @@ export class CngxSelectShell<T = unknown>
   });
 
   /** @internal */
-  protected readonly isEmpty = computed<boolean>(() => this.selectedOption() == null);
+  protected readonly isEmpty = computed<boolean>(() => isEmptyScalar(this.value()));
 
   /** @internal */
   protected readonly triggerText = computed<string>(() => {
-    return this.selectedOption()?.label ?? this.core.resolvedPlaceholder();
+    const option = this.selectedOption();
+    if (option) {
+      return option.label;
+    }
+    // A value whose option is not projected yet still reads as the value, never
+    // as the placeholder dressed up as a selection.
+    const v = this.value();
+    return isEmptyScalar(v) ? this.core.resolvedPlaceholder() : unresolvedOptionLabel(v);
   });
 
   /** @internal */
@@ -1180,7 +1188,7 @@ export class CngxSelectShell<T = unknown>
     createFieldSync<T | undefined>({
       componentValue: this.value,
       valueEquals: (a, b) => (this.compareWith() as CngxSelectCompareFn<unknown>)(a, b),
-      coerceFromField: (x) => x as T | undefined,
+      coerceFromField: (x) => coerceScalarFromField<T>(x),
     });
 
     inject(CNGX_SEARCH_EFFECTS_FACTORY)({
@@ -1227,6 +1235,9 @@ export class CngxSelectShell<T = unknown>
   /** @internal */
   protected handleTriggerClick(): void {
     if (this.disabled()) {
+      return;
+    }
+    if (this.openOnGesture.consumeClick()) {
       return;
     }
     this.toggle();
@@ -1276,7 +1287,7 @@ export class CngxSelectShell<T = unknown>
         const eq = this.compareWith();
         const flat = this.flatOptions();
         const v = this.value();
-        const currentFlatIndex = isEmptyScalar(v) ? -1 : flat.findIndex((o) => eq(o.value, v));
+        const currentFlatIndex = isEmptyScalar(v) ? -1 : this.typeaheadController.matchFromValue(v);
         const action = this.flatNavStrategy.onTypeaheadWhileClosed(
           {
             options: flat,
@@ -1377,12 +1388,21 @@ export class CngxSelectShell<T = unknown>
   // the programmatic refocus must not re-open under openOn: 'focus'.
   private suppressOpenOnFocus = false;
 
+  /** @internal openOn-focus gesture guard (`project-openon-focus-click-toggle`). */
+  private readonly openOnGesture = createOpenOnFocusGesture({
+    openOn: () => this.config.openOn,
+    open: () => this.open(),
+    suppress: () => this.suppressOpenOnFocus,
+  });
+
+  /** @internal */
+  protected handlePointerDown(): void {
+    this.openOnGesture.handlePointerDown();
+  }
+
   protected handleFocus(): void {
     this.focusState.markFocused();
-    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
-    if (openOnFocus && !this.suppressOpenOnFocus) {
-      this.open();
-    }
+    this.openOnGesture.handleFocus();
   }
 
   /** @internal */

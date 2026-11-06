@@ -52,6 +52,7 @@ import {
   unresolvedOptionLabel,
   type CngxSelectCore,
 } from '../shared/internal/select-core';
+import { createOpenOnFocusGesture } from '../shared/internal/open-on-focus-gesture';
 import { createOptionsStateView } from '../shared/internal/options-state-view';
 import {
   createSelectSheetWiring,
@@ -277,7 +278,7 @@ export interface CngxTreeSelectChange<T = unknown> {
   hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
     class: 'cngx-tree-select',
-    '[id]': 'resolvedId()',
+    '[attr.id]': 'resolvedId() || null',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
   },
@@ -406,9 +407,9 @@ export class CngxTreeSelect<T = unknown>
   /** Host id. Unset, it takes the input id of an enclosing `cngx-form-field`. */
   readonly idInput = input<string | null>(null, { alias: 'id' });
   /**
-   * Accessible name of the trigger. Wins over `label`; inside a
-   * `cngx-form-field` the field label referenced through `aria-labelledby`
-   * takes precedence.
+   * Accessible name of the trigger. Wins over `label`, and inside a
+   * `cngx-form-field` over the field label too; only a consumer
+   * `aria-labelledby` outranks it.
    */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
   /**
@@ -1090,6 +1091,10 @@ export class CngxTreeSelect<T = unknown>
     this.hostFocus.refocusOwnerBeforeClose();
     this.popoverRef()?.hide();
   }
+  /** @internal Dismiss-policy gate for the panel's Escape handler. */
+  readonly escapeEnabled = this.sheetWiring.escapeEnabled;
+  /** @internal Dismiss-policy close for the panel's Escape handler. */
+  readonly escapeClose = (): void => this.sheetWiring.escapeClose();
   /**
    * Opens the panel when it is closed and closes it when it is open. On a
    * disabled control an open is undone at once, as with `open()`.
@@ -1184,6 +1189,9 @@ export class CngxTreeSelect<T = unknown>
   /** @internal */
   protected handleTriggerClick(): void {
     if (this.disabled()) {
+      return;
+    }
+    if (this.openOnGesture.consumeClick()) {
       return;
     }
     this.toggle();
@@ -1307,12 +1315,21 @@ export class CngxTreeSelect<T = unknown>
   // the programmatic refocus must not re-open under openOn: 'focus'.
   private suppressOpenOnFocus = false;
 
+  /** @internal openOn-focus gesture guard (`project-openon-focus-click-toggle`). */
+  private readonly openOnGesture = createOpenOnFocusGesture({
+    openOn: () => this.config.openOn,
+    open: () => this.open(),
+    suppress: () => this.suppressOpenOnFocus,
+  });
+
+  /** @internal */
+  protected handlePointerDown(): void {
+    this.openOnGesture.handlePointerDown();
+  }
+
   protected handleFocus(): void {
     this.focusState.markFocused();
-    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
-    if (openOnFocus && !this.suppressOpenOnFocus) {
-      this.open();
-    }
+    this.openOnGesture.handleFocus();
   }
 
   /** @internal */

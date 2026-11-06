@@ -49,6 +49,7 @@ import {
 
 import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
+import { CngxSelectPanelShell } from '../shared/internal/panel-shell/panel-shell.component';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -79,6 +80,7 @@ import {
   type CngxChipRemovalHandler,
 } from '../shared/chip-removal-handler';
 import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
+import { createOpenOnFocusGesture } from '../shared/internal/open-on-focus-gesture';
 import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import { sameArrayContents } from '../shared/internal/compare';
 import { CngxSelectReorderList } from '../shared/internal/reorder-list/reorder-list.component';
@@ -244,6 +246,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
     CngxPopoverTrigger,
     CngxReorder,
     CngxSelectPanel,
+    CngxSelectPanelShell,
     CngxSelectReorderList,
     CngxSelectSummary,
     NgTemplateOutlet,
@@ -272,7 +275,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
   hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
     class: 'cngx-reorderable-multi-select',
-    '[id]': 'resolvedId()',
+    '[attr.id]': 'resolvedId() || null',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
   },
@@ -317,9 +320,9 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /** Host id. Unset, it takes the input id of an enclosing `cngx-form-field`. */
   readonly idInput = input<string | null>(null, { alias: 'id' });
   /**
-   * Accessible name of the trigger. Wins over `label`; inside a
-   * `cngx-form-field` the field label referenced through `aria-labelledby`
-   * takes precedence.
+   * Accessible name of the trigger. Wins over `label`, and inside a
+   * `cngx-form-field` over the field label too; only a consumer
+   * `aria-labelledby` outranks it.
    */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
   /**
@@ -518,10 +521,14 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * in so they understand they've entered a reorderable widget.
    */
   readonly reorderAriaLabel = input<string | undefined>(undefined);
-  /** @internal Bound value, else the config copy; follows a language switch. */
-  protected readonly resolvedReorderAriaLabel = computed<string>(
-    () => this.reorderAriaLabel() ?? this.reorderableConfig.ariaLabel(),
-  );
+  /**
+   * @internal Bound value, else a custom config label, else the default hint
+   * named for the effective `reorderKeyboardModifier`; follows a language switch.
+   */
+  protected readonly resolvedReorderAriaLabel = computed<string>(() => {
+    const custom = this.reorderAriaLabel() ?? this.reorderableConfig.ariaLabel();
+    return custom ?? this.reorderableConfig.reorderHint()(this.reorderKeyboardModifier());
+  });
 
   /**
    * Optional drag-handle template. By default no grip renders and the
@@ -560,7 +567,9 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /**
    * Dedicated channel for reorder events. Fires after
    * `selectionChange` with the same payload so consumers only caring
-   * about positional changes can bind `(reordered)` directly.
+   * about positional changes can bind `(reordered)` directly. With
+   * `commitAction` bound it fires on commit success only (both modes) - an
+   * optimistic reorder that the server rejects rolls back and emits nothing.
    */
   readonly reordered = output<CngxReorderableMultiSelectChange<T>>();
   /** Emits `true` when the panel opens and `false` when it closes. */
@@ -904,8 +913,11 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /** @internal */
   readonly panelRenderer = this.virtualSetup.panelRenderer;
   /** @internal */
+  readonly autoRecycler = this.virtualSetup.autoRecycler;
+  /** @internal */
   protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
   protected readonly virtualWindowStart = this.virtualSetup.virtualWindowStart;
+  protected readonly virtualTypeaheadItems = this.virtualSetup.virtualTypeaheadItems;
 
   readonly selected: Signal<readonly CngxSelectOptionDef<T>[]> = computed(
     () => this.selectedOptions(),
@@ -1152,6 +1164,9 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     if (this.disabled()) {
       return;
     }
+    if (this.openOnGesture.consumeClick()) {
+      return;
+    }
     this.toggle();
   }
 
@@ -1199,12 +1214,21 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   // the programmatic refocus must not re-open under openOn: 'focus'.
   private suppressOpenOnFocus = false;
 
+  /** @internal openOn-focus gesture guard (`project-openon-focus-click-toggle`). */
+  private readonly openOnGesture = createOpenOnFocusGesture({
+    openOn: () => this.config.openOn,
+    open: () => this.open(),
+    suppress: () => this.suppressOpenOnFocus,
+  });
+
+  /** @internal */
+  protected handlePointerDown(): void {
+    this.openOnGesture.handlePointerDown();
+  }
+
   protected handleFocus(): void {
     this.focusState.markFocused();
-    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
-    if (openOnFocus && !this.suppressOpenOnFocus) {
-      this.open();
-    }
+    this.openOnGesture.handleFocus();
   }
 
   /** @internal */
@@ -1282,14 +1306,15 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /**
    * Chip-strip keydown delegate. Two jobs:
    *
-   *   1. `stopPropagation()` for Enter/Space inside a chip wrap. Without
-   *      it, Enter/Space on the focused remove button bubbles to
-   *      `CngxListboxTrigger.handleKeyDown`, which opens the popover
-   *      AND swallows the native Enter→click - chip stays, popover
-   *      opens. Scoped to the two activation keys so everything else
-   *      keeps bubbling - notably Escape, which must reach the
-   *      document-level popover dismiss listener to close an open panel
-   *      from a focused chip.
+   *   1. `stopPropagation()` for the keys a focused chip owns: Enter/Space
+   *      (activate the chip's remove button) and the paired `CngxReorder`
+   *      move gesture (the configured modifier + arrow / Home / End).
+   *      `CngxListboxTrigger` opens the popover on Enter/Space and - as an
+   *      ARIA combobox - on Alt+ArrowDown, so without this a chip activation
+   *      or a reorder would also open the panel. Scoped to those keys so
+   *      everything else keeps bubbling - notably Escape, which must reach the
+   *      document-level popover dismiss listener to close an open panel from a
+   *      focused chip.
    *   2. Forward plain arrow / Home / End to the roving controller.
    *      Modifier-pressed events are ignored so the paired
    *      `CngxReorder` owns that gesture.
@@ -1298,11 +1323,40 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    */
   protected handleStripKeydown(event: KeyboardEvent): void {
     const target = event.target as Element | null;
+    const onChip = !!target?.closest('[data-reorder-index]');
     const isActivationKey = event.key === 'Enter' || event.key === ' ';
-    if (isActivationKey && target?.closest('[data-reorder-index]')) {
+    if (onChip && (isActivationKey || this.isReorderGesture(event))) {
       event.stopPropagation();
     }
     this.chipStripRoving.handleKeydown(event);
+  }
+
+  /** The modifier + arrow / Home / End gesture the paired `CngxReorder` consumes. */
+  private isReorderGesture(event: KeyboardEvent): boolean {
+    if (!this.reorderModifierDown(event)) {
+      return false;
+    }
+    const key = event.key;
+    return (
+      key === 'ArrowUp' ||
+      key === 'ArrowDown' ||
+      key === 'ArrowLeft' ||
+      key === 'ArrowRight' ||
+      key === 'Home' ||
+      key === 'End'
+    );
+  }
+
+  /** Whether the event carries the configured reorder modifier. */
+  private reorderModifierDown(event: KeyboardEvent): boolean {
+    switch (this.reorderKeyboardModifier()) {
+      case 'ctrl':
+        return event.ctrlKey;
+      case 'alt':
+        return event.altKey;
+      case 'meta':
+        return event.metaKey;
+    }
   }
 
   /** @internal */

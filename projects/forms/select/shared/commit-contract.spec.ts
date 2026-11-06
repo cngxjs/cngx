@@ -1,4 +1,5 @@
-import { it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { Subject } from 'rxjs';
 
 import { CngxActionMultiSelect } from '../action-multi-select/action-multi-select.component';
 import { CngxActionSelect } from '../action-select/action-select.component';
@@ -12,6 +13,7 @@ import { CngxTreeSelect } from '../tree-select/tree-select.component';
 import { CngxTypeahead } from '../typeahead/typeahead.component';
 
 import { describeCommitContract, type CommitContractHost } from './__test-helpers/commit-contract';
+import { KINDS, cleanupRoots, mount, type Mount } from './__test-helpers/review-probe-host';
 
 const FLAT = { inputs: '[options]="options"', optionSelector: '[cngxOption]' } as const;
 
@@ -310,4 +312,45 @@ describeCommitContract(TREE_SELECT, (c) => {
     c.secondCommitRollsBackToConfirmed,
   );
   it('B-A1: a keyboard Retry leaves focus on the trigger', c.retryFocusesTrigger);
+});
+
+// F3 (second half): a commit that resolves after the component is destroyed
+// settles without reaching into the torn-down view - no throw, no error handler
+// call. Supersede semantics already null out the destroyed instance.
+describe('a commit settling after destroy is inert', () => {
+  afterEach(() => {
+    cleanupRoots();
+    vi.restoreAllMocks();
+  });
+
+  const altRight = (m: Mount) => {
+    const chip = m.el.querySelector<HTMLElement>('[data-reorder-index="0"]')!;
+    chip.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true, cancelable: true }));
+    m.settle();
+  };
+
+  const SCENARIOS: readonly { label: string; key: string; initial?: unknown; act: (m: Mount) => void }[] = [
+    { label: 'select', key: 'select', act: (m) => m.pickAt(1) },
+    { label: 'toggle', key: 'multi', act: (m) => m.pickAt(1) },
+    { label: 'clear', key: 'select', initial: 'red', act: (m) => m.clear() },
+    { label: 'reorder', key: 'reorder', initial: ['red', 'green', 'blue'], act: altRight },
+  ];
+
+  for (const scenario of SCENARIOS) {
+    it(`${scenario.label}: resolving after destroy throws nothing`, () => {
+      const pend: Subject<unknown>[] = [];
+      const m = mount(KINDS[scenario.key], {
+        initial: scenario.initial,
+        commit: () => { const s = new Subject<unknown>(); pend.push(s); return s; },
+      });
+      scenario.act(m);
+      m.destroy();
+      const intended = m.h.calls[m.h.calls.length - 1];
+      expect(() => {
+        pend[0]?.next(intended);
+        pend[0]?.complete();
+      }).not.toThrow();
+      expect(m.errors.length).toBe(0);
+    });
+  }
 });

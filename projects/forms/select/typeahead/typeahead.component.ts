@@ -10,6 +10,7 @@ import {
   input,
   model,
   output,
+  signal,
   untracked,
   viewChild,
   ElementRef,
@@ -20,9 +21,12 @@ import {
 import {
   CNGX_STATEFUL,
   injectLocale,
+  nextUid,
   type CngxAsyncState,
   type AsyncStatus,
 } from '@cngx/core/utils';
+
+import { type AsyncView } from '@cngx/common/data';
 
 import {
   CngxClickOutside,
@@ -45,6 +49,7 @@ import {
 
 import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
+import { CngxSelectPanelShell } from '../shared/internal/panel-shell/panel-shell.component';
 import { toListboxMatchFn } from '../shared/internal/listbox-match';
 
 import {
@@ -79,7 +84,7 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { resolveSearchMatch, resolveSelectConfig } from '../shared/internal/resolve-config';
-import { isEmptyScalar } from '../shared/internal/compare';
+import { coerceScalarFromField, isEmptyScalar } from '../shared/internal/compare';
 import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
 import { handlePageJumpKey } from '../shared/internal/page-jump-handler';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
@@ -219,6 +224,7 @@ export interface CngxTypeaheadChange<T = unknown> {
     CngxPopoverAnchor,
     CngxPopoverTrigger,
     CngxSelectPanel,
+    CngxSelectPanelShell,
     NgTemplateOutlet,
   ],
   providers: [
@@ -283,9 +289,9 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** Host id. Unset, it takes the input id of an enclosing `cngx-form-field`. */
   readonly idInput = input<string | null>(null, { alias: 'id' });
   /**
-   * Accessible name of the trigger. Wins over `label`; inside a
-   * `cngx-form-field` the field label referenced through `aria-labelledby`
-   * takes precedence.
+   * Accessible name of the trigger. Wins over `label`, and inside a
+   * `cngx-form-field` over the field label too; only a consumer
+   * `aria-labelledby` outranks it.
    */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
   /**
@@ -697,12 +703,46 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   protected readonly effectiveOptions = this.core.effectiveOptions;
   /** @internal */
   protected readonly flatOptions = this.core.flatOptions;
-  /** @internal */
-  protected readonly activeView = this.core.activeView;
+  /**
+   * @internal I9: a first-load error on a CLOSED typeahead surfaces on the
+   * input (aria-invalid + aria-describedby), never as a `role="alert"` inside
+   * the hidden popover. The panel error view renders only once the panel opens.
+   */
+  protected readonly activeView = computed<AsyncView>(() => {
+    const view = this.core.activeView();
+    if (!this.panelOpen() && view === 'error') {
+      return 'content';
+    }
+    return view;
+  });
   /** @internal */
   protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
-  /** @internal */
-  protected readonly showInlineError = this.core.showInlineError;
+  /** @internal The inline refresh error stays inside the panel, so a closed panel never carries a `role="alert"` (I9). */
+  protected readonly showInlineError = computed<boolean>(
+    () => this.panelOpen() && this.core.showInlineError(),
+  );
+  /** @internal True while a closed typeahead carries a first-load error (I9). */
+  protected readonly closedLoadError = computed<boolean>(
+    () => !this.panelOpen() && this.core.activeView() === 'error',
+  );
+  /** @internal Id of the load-error node the input references while closed (I9). */
+  protected readonly loadErrorId = nextUid('cngx-typeahead-load-error');
+  /** @internal Load-error copy, `''` unless a closed typeahead carries one (I9). */
+  protected readonly loadErrorText = computed<string>(() =>
+    this.closedLoadError() ? this.fallbackLabels().loadFailed : '',
+  );
+  /** @internal aria-invalid folds in the closed load error (I9). */
+  protected readonly resolvedAriaInvalid = computed<boolean | null>(() =>
+    this.closedLoadError() ? true : this.triggerAria().invalid,
+  );
+  /** @internal aria-describedby references the load-error node while closed (I9). */
+  protected readonly resolvedAriaDescribedBy = computed<string | null>(() => {
+    const base = this.triggerAria().describedBy;
+    if (!this.closedLoadError()) {
+      return base;
+    }
+    return [base, this.loadErrorId].filter(Boolean).join(' ') || null;
+  });
   /** @internal */
   protected readonly skeletonIndices = this.core.skeletonIndices;
   /** @internal */
@@ -785,8 +825,11 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   readonly panelRenderer = this.virtualSetup.panelRenderer;
   /** @internal */
+  readonly autoRecycler = this.virtualSetup.autoRecycler;
+  /** @internal */
   protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
   protected readonly virtualWindowStart = this.virtualSetup.virtualWindowStart;
+  protected readonly virtualTypeaheadItems = this.virtualSetup.virtualTypeaheadItems;
 
   /**
    * Currently selected option, resolved against `options`. Structural
@@ -848,9 +891,10 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
    * Scalar commit handler. Typeahead wrinkles:
    *   - `onValueWrite` mirrors the value into the `<input>` via the
    *     display binding.
-   *   - `onCommitFinalize` emits only when the option resolved; an
-   *     unresolved value can't be described to AT, so the change event
-   *     is dropped.
+   *   - `onCommitFinalize` emits `selectionChange` for every committed
+   *     value, with `option: null` when the value resolved to no option
+   *     (a free-typed commit), and announces it through the core, like
+   *     action-select; only a `finalValue === undefined` returns early.
    *
    * @internal
    */
@@ -863,7 +907,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     core: this.core,
     commitAction: this.commitAction,
     onCommitFinalize: (option, finalValue, previousValue) => {
-      if (option === null || finalValue === undefined) {
+      if (finalValue === undefined) {
         return;
       }
       this.selectionChange.emit({
@@ -872,7 +916,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
         previousValue,
         option,
       });
-      this.core.announce(option, 'added', 1, false);
+      this.core.announce(option, 'added', option ? 1 : 0, false);
     },
     onClearFinalize: (previousValue) => this.finalizeClear(previousValue),
     onCommitError: this.announceCommitError,
@@ -933,7 +977,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     createFieldSync<T | undefined>({
       componentValue: this.value,
       valueEquals: (a, b) => (this.compareWith() as CngxSelectCompareFn<unknown>)(a, b),
-      coerceFromField: (x) => (isEmptyScalar(x) ? undefined : (x as T)),
+      coerceFromField: (x) => coerceScalarFromField<T>(x),
     });
 
     // Auto-open on typing. `autoOpenGate` blocks during library-authored
@@ -945,7 +989,9 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       searchTerm: this.searchTerm,
       panelOpen: this.panelOpen,
       disabled: this.disabled,
+      readonly: this.core.readonly,
       focused: this.focusState.focused,
+      dismissedTerm: this.dismissedTerm.asReadonly(),
       open: () => this.open(),
       autoOpenGate: () => !this.display.isWritingFromValue(),
       results: searchResultsFrom({
@@ -1049,6 +1095,10 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   // the programmatic refocus must not re-open under openOn: 'focus'.
   private suppressOpenOnFocus = false;
 
+  // Raw input value the user dismissed with Escape or blur while its debounce
+  // was still pending; a term that settles equal to it must not auto-open.
+  private readonly dismissedTerm = signal<string | null>(null);
+
   protected handleFocus(): void {
     this.focusState.markFocused();
     const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
@@ -1057,13 +1107,26 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     }
   }
 
-  protected handleBlur(): void {
+  private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  protected handleBlur(event?: FocusEvent): void {
     this.focusState.markBlurred();
+    // A term still inside its debounce when focus leaves must not reopen the
+    // panel once it settles: mark the raw draft as dismissed.
+    this.dismissedTerm.set(this.inputEl()?.nativeElement.value ?? null);
     // Snap input back to `displayWith(value)` when text drifted from
     // the committed value. Disable via `[clearOnBlur]="false"`.
-    if (this.clearOnBlur()) {
-      this.display.writeFromValue(this.value());
+    if (!this.clearOnBlur()) {
+      return;
     }
+    // Focus moving INSIDE the component (a panel Retry button, an option row)
+    // must keep the typed term: the blur races the click, and snapping back
+    // to `displayWith(value)` here would drop the draft before the click runs.
+    const related = event?.relatedTarget as HTMLElement | null;
+    if (related && this.hostEl.nativeElement.contains(related)) {
+      return;
+    }
+    this.display.writeFromValue(this.value());
   }
 
   /**
@@ -1074,6 +1137,14 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   /** @internal - PageUp/PageDown through the flat-nav strategy (default ±10). */
   protected handleInputKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      // Escape closes an open panel and must also cancel a still-pending
+      // debounced open: mark the raw draft as dismissed.
+      this.dismissedTerm.set(this.inputEl()?.nativeElement.value ?? null);
+    } else {
+      // Any other keystroke is fresh intent; let the next settled term open.
+      this.dismissedTerm.set(null);
+    }
     handlePageJumpKey(event, {
       listbox: this.listboxRef(),
       popover: this.popoverRef(),

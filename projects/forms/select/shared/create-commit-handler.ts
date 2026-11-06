@@ -19,13 +19,16 @@ import type { CngxSelectOptionDef } from './option.model';
  * primary value slot. The consumer's
  * {@link CreateCommitHandlerOptions.onCreated} callback performs the
  * semantic write (single: `value.set(option.value)`; multi: append to
- * `values`) plus `selectionChange` + `created` emissions, so
+ * the live `values`) plus `selectionChange` + `created` emissions, so
  * CngxActionSelect and CngxActionMultiSelect share the same factory
  * unchanged.
  *
  * `Prev` carries the previous-snapshot shape (single: `T | undefined`;
- * multi: `readonly T[]`) so `onCreated` receives a typed payload ready
- * to splat into `previousValue(s)`.
+ * multi: `readonly T[]`), captured at dispatch and forwarded to
+ * `onCreated` unchanged - including on a `retryLast()`. It is the event
+ * payload's `previousValue(s)` only; the model write must read the live
+ * value slot, never splice onto this snapshot, so edits made while the
+ * create was in flight survive.
  */
 export interface CreateCommitHandlerOptions<T, Prev = unknown> {
   /**
@@ -56,7 +59,9 @@ export interface CreateCommitHandlerOptions<T, Prev = unknown> {
    * Emit the `'create'` change-event payload and write the primary
    * value slot. Fires after `localItemsBuffer` patch and dirty-flag
    * reset, so consumer callbacks can `selectionChange.emit(...)`
-   * without racing downstream state.
+   * without racing downstream state. `previousSnapshot` is the dispatch
+   * snapshot for the event payload only - derive the model write from the
+   * live value slot, never from this argument, or a mid-flight edit is lost.
    */
   readonly onCreated: (created: CngxSelectOptionDef<T>, previousSnapshot: Prev) => void;
   /** Announce the `'created'` delta through the live-region. */

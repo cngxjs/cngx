@@ -24,8 +24,8 @@ export interface CngxReorderableSelectConfig {
   readonly keyboardModifier?: CngxReorderModifier;
   /**
    * ARIA label on the chip-strip `role="group"`, value or `Signal`. Unset, it
-   * reads `reorderHint` of the `select` language section (English
-   * `'Reorder with Alt + arrow keys'`).
+   * reads `reorderHint` of the `select` language section named for the active
+   * `keyboardModifier` (English `'Reorder with Alt + arrow keys'`).
    */
   readonly ariaLabel?: string | Signal<string>;
   /**
@@ -109,8 +109,9 @@ export const CNGX_REORDERABLE_SELECT_DEFAULTS: Required<
  * Compose from the `with*` features (`withReorderKeyboardModifier`,
  * `withReorderAriaLabel`, `withReorderListLabels`, `withDefaultDragHandle`,
  * `withDefaultMoveGlyph`, `withReorderStripFreeze`).
- * Resolution is nearest-wins: a nested provider replaces an ancestor config for
- * its subtree, it does not deep-merge.
+ * `provideReorderableSelectConfig` at the root replaces the whole config;
+ * `provideReorderableSelectConfigAt` merges over the parent scope, key by key -
+ * the keys it sets win, unset keys inherit.
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/reorderable-select-config.ts
@@ -263,7 +264,10 @@ export function resolveReorderableSelectConfig(): Required<
 > & {
   readonly dragHandle: TemplateRef<void> | null;
   readonly moveGlyph: TemplateRef<CngxMultiSelectMoveGlyphContext> | null;
-  readonly ariaLabel: Signal<string>;
+  /** A custom chip-strip label, or a signal of `undefined` to let `reorderHint` name the modifier. */
+  readonly ariaLabel: Signal<string | undefined>;
+  /** Formats the default chip-strip hint for a keyboard modifier. */
+  readonly reorderHint: Signal<(modifier: CngxReorderModifier) => string>;
   readonly listLabel: Signal<string>;
   readonly moveUp: Signal<CngxReorderMoveLabel>;
   readonly moveDown: Signal<CngxReorderMoveLabel>;
@@ -273,7 +277,8 @@ export function resolveReorderableSelectConfig(): Required<
   const user = inject(CNGX_REORDERABLE_SELECT_CONFIG, { optional: true }) ?? {};
   return {
     keyboardModifier: user.keyboardModifier ?? CNGX_REORDERABLE_SELECT_DEFAULTS.keyboardModifier,
-    ariaLabel: coerceSignal(user.ariaLabel ?? injectSelectWord('reorderHint')),
+    ariaLabel: coerceSignal(user.ariaLabel),
+    reorderHint: injectSelectWord('reorderHint'),
     listLabel: coerceSignal(user.listLabel ?? injectSelectWord('reorderListLabel')),
     moveUp: coerceSignal(user.moveUp ?? injectSelectWord('reorderMoveUp')),
     moveDown: coerceSignal(user.moveDown ?? injectSelectWord('reorderMoveDown')),

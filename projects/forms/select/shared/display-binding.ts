@@ -79,6 +79,9 @@ export function createDisplayBinding<T>(opts: DisplayBindingOptions<T>): Display
 
   effect(() => {
     const v = opts.value();
+    // Track the formatter too: a displayWith swap while the input is unfocused
+    // and the value is unchanged must still rewrite the displayed text.
+    opts.displayWith();
     untracked(() => {
       if (!opts.focused()) {
         writeFromValue(v);

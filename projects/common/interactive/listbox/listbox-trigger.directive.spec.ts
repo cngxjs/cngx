@@ -1,7 +1,7 @@
 import { Component, Directive, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxActiveDescendant } from '@cngx/common/a11y';
 import { CngxPopover } from '@cngx/common/popover';
@@ -37,6 +37,27 @@ class TriggerHost {
   readonly dummy = signal(0);
   readonly escape = signal(true);
 }
+
+// A deferred-render listbox (the CngxSelect family, OD5): the option rows
+// render only once the panel opens, so a pointer/programmatic open leaves the
+// AD item space empty until the first render after that open.
+@Component({
+  template: `
+    <button type="button" [cngxListboxTrigger]="lb" [popover]="pop" #trigger="cngxListboxTrigger">
+      Select
+    </button>
+    <div cngxPopover #pop="cngxPopover">
+      <div cngxListbox [label]="'Colors'" tabindex="0" #lb="cngxListbox">
+        @if (pop.isVisible()) {
+          <div cngxOption value="red">Red</div>
+          <div cngxOption value="green">Green</div>
+        }
+      </div>
+    </div>
+  `,
+  imports: [CngxListbox, CngxOption, CngxListboxTrigger, CngxPopover],
+})
+class DeferredTriggerHost {}
 
 // jsdom does not implement the Popover API - polyfill minimally so CngxPopover
 // can toggle state without throwing.
@@ -107,10 +128,10 @@ describe('CngxListboxTrigger', () => {
     expect(triggerEl.hasAttribute('aria-expanded')).toBe(false);
   });
 
-  it('ignores keys with ctrl/meta/alt held (browser shortcuts pass through)', () => {
+  it('ignores Ctrl/Meta + ArrowDown (browser shortcuts pass through)', () => {
     const { popover, triggerEl, ad } = setup();
     triggerEl.focus();
-    for (const modifier of [{ ctrlKey: true }, { metaKey: true }, { altKey: true }]) {
+    for (const modifier of [{ ctrlKey: true }, { metaKey: true }]) {
       const event = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, ...modifier });
       triggerEl.dispatchEvent(event);
       TestBed.flushEffects();
@@ -118,6 +139,18 @@ describe('CngxListboxTrigger', () => {
       expect(ad.activeItem()).toBeNull();
       expect(event.defaultPrevented).toBe(false);
     }
+  });
+
+  // Alt owns ArrowDown/ArrowUp (open/close); every other Alt combo is an app
+  // shortcut and still passes through untouched.
+  it('ignores Alt held on a non-navigation key', () => {
+    const { popover, triggerEl } = setup();
+    triggerEl.focus();
+    const event = new KeyboardEvent('keydown', { key: 'a', bubbles: true, altKey: true });
+    triggerEl.dispatchEvent(event);
+    TestBed.flushEffects();
+    expect(popover.isVisible()).toBe(false);
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it('ignores navigation with modifiers while open', () => {
@@ -147,6 +180,35 @@ describe('CngxListboxTrigger', () => {
     TestBed.flushEffects();
     expect(popover.isVisible()).toBe(true);
     expect(ad.activeValue()).toBe('blue');
+  });
+
+  it('defers an open-nav key on a deferred-render panel until its rows exist', async () => {
+    TestBed.configureTestingModule({ imports: [DeferredTriggerHost] });
+    const fixture = TestBed.createComponent(DeferredTriggerHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const listboxEntry = fixture.debugElement.query(By.directive(CngxListbox));
+    const ad = listboxEntry.injector.get(CngxActiveDescendant);
+    const triggerEl = fixture.debugElement.query(By.directive(CngxListboxTrigger))
+      .nativeElement as HTMLElement;
+    const popover = fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover);
+
+    // Open the panel but dispatch the nav key before change detection renders
+    // the rows (a pointer/click open on an OD5 panel): the AD item space is
+    // still empty at keydown.
+    popover.show();
+    const event = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true });
+    triggerEl.dispatchEvent(event);
+    // The key must not no-op against the empty item space: it prevents default
+    // and is held, instead of being lost.
+    expect(event.defaultPrevented).toBe(true);
+    expect(ad.activeItem()).toBeNull();
+
+    // The open renders the rows; the deferred key then applies to the first row.
+    await fixture.whenStable();
+    TestBed.flushEffects();
+    expect(ad.activeValue()).toBe('red');
   });
 
   it('leaves Escape alone while the popover reports closeOnEscape false', () => {
@@ -516,5 +578,173 @@ describe('CngxListboxTrigger on a blocked host', () => {
     stateDisabled.set(true);
     TestBed.flushEffects();
     expect(popover.isVisible()).toBe(false);
+  });
+});
+
+// ── Review 2 (commit 6) verify-first: editable-combobox Enter, Alt open/close,
+// and aria-activedescendant clearing. Red cases flip in a later phase. ────────
+@Component({
+  template: `
+    <form (submit)="submitted.set(true)">
+      <input
+        type="text"
+        [cngxListboxTrigger]="lb"
+        cngxListboxSearch
+        [popover]="pop"
+        #inputTrigger="cngxListboxTrigger"
+      />
+    </form>
+    <div cngxPopover #pop="cngxPopover">
+      <div cngxListbox [label]="'Colors'" tabindex="0" #lb="cngxListbox">
+        <div cngxOption value="red">Red</div>
+        <div cngxOption value="green">Green</div>
+        <div cngxOption value="blue">Blue</div>
+      </div>
+    </div>
+  `,
+  imports: [CngxListbox, CngxOption, CngxListboxTrigger, CngxListboxSearch, CngxPopover],
+})
+class InputComboHost {
+  readonly submitted = signal(false);
+}
+
+describe('CngxListboxTrigger - review 2 editable combobox and Alt shortcuts', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [TriggerHost, InputComboHost] });
+  });
+
+  function setupButton(): { triggerEl: HTMLElement; popover: CngxPopover; ad: CngxActiveDescendant } {
+    const fixture = TestBed.createComponent(TriggerHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const triggerEntry = fixture.debugElement.query(By.directive(CngxListboxTrigger));
+    const popoverEntry = fixture.debugElement.query(By.directive(CngxPopover));
+    const listboxEntry = fixture.debugElement.query(By.directive(CngxListbox));
+    return {
+      triggerEl: triggerEntry.nativeElement as HTMLElement,
+      popover: popoverEntry.injector.get(CngxPopover),
+      ad: listboxEntry.injector.get(CngxActiveDescendant),
+    };
+  }
+
+  // A closed editable combobox inside a form must leave Enter to the form so
+  // the native submit still runs; opening belongs to Alt+ArrowDown.
+  it('Enter on a closed editable combobox does not preventDefault', () => {
+    const fixture = TestBed.createComponent(InputComboHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+    input.focus();
+    const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    input.dispatchEvent(enter);
+    TestBed.flushEffects();
+    expect(enter.defaultPrevented).toBe(false);
+  });
+
+  // ARIA combobox: Alt+ArrowDown opens the popup without moving the highlight.
+  it('Alt+ArrowDown opens the panel without moving the highlight', () => {
+    const { triggerEl, popover, ad } = setupButton();
+    triggerEl.focus();
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, altKey: true }));
+    TestBed.flushEffects();
+    expect(popover.isVisible()).toBe(true);
+    expect(ad.activeItem()).toBeNull();
+  });
+
+  // ARIA combobox: Alt+ArrowUp closes an open popup.
+  it('Alt+ArrowUp closes an open panel', () => {
+    const { triggerEl, popover } = setupButton();
+    popover.show();
+    TestBed.flushEffects();
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, altKey: true }));
+    TestBed.flushEffects();
+    expect(popover.isVisible()).toBe(false);
+  });
+
+  // I10 (verify first): closing clears aria-activedescendant.
+  it('clears aria-activedescendant when the panel closes', () => {
+    const { triggerEl, popover } = setupButton();
+    triggerEl.focus();
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    TestBed.flushEffects();
+    expect(triggerEl.getAttribute('aria-activedescendant')).toBeTruthy();
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    TestBed.flushEffects();
+    expect(popover.isVisible()).toBe(false);
+    expect(triggerEl.hasAttribute('aria-activedescendant')).toBe(false);
+  });
+});
+
+@Component({
+  template: `
+    <input
+      role="combobox"
+      cngxListboxSearch
+      #search="cngxListboxSearch"
+      [debounceMs]="300"
+      [cngxListboxTrigger]="lb"
+      [popover]="pop"
+      [closeOnSelect]="false"
+    />
+    <div cngxPopover #pop="cngxPopover">
+      <div cngxListbox [label]="'Colors'" #lb="cngxListbox">
+        <div cngxOption value="red">Red</div>
+        <div cngxOption value="green">Green</div>
+      </div>
+    </div>
+  `,
+  imports: [CngxListbox, CngxOption, CngxListboxTrigger, CngxListboxSearch, CngxPopover],
+})
+class DebouncedSearchInputHost {}
+
+describe('CngxListboxTrigger - settles a pending search term before listbox keys', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [DebouncedSearchInputHost] });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function setup() {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(DebouncedSearchInputHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const de = fixture.debugElement.query(By.directive(CngxListboxTrigger));
+    const input = de.nativeElement as HTMLInputElement;
+    const search = fixture.debugElement
+      .query(By.directive(CngxListboxSearch))
+      .injector.get(CngxListboxSearch);
+    const type = (value: string): void => {
+      input.value = value;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    const press = (key: string): void => {
+      input.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+      TestBed.flushEffects();
+    };
+    return { fixture, input, search, type, press };
+  }
+
+  it('flushes the pending term on an ArrowDown inside the debounce window', () => {
+    const { type, press, search } = setup();
+    press('ArrowDown');
+    type('gr');
+    expect(search.term()).toBe('');
+    press('ArrowDown');
+    expect(search.term()).toBe('gr');
+  });
+
+  it('flushes the pending term on blur', () => {
+    const { input, type, search } = setup();
+    type('gr');
+    expect(search.term()).toBe('');
+    input.dispatchEvent(new FocusEvent('blur'));
+    expect(search.term()).toBe('gr');
   });
 });

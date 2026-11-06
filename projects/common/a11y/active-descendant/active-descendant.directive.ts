@@ -114,6 +114,14 @@ export class CngxActiveDescendant {
    */
   readonly windowStart = input<number>(0);
   /**
+   * The full list in absolute index space, for a windowed list whose rendered
+   * rows are only part of it. When bound, typeahead searches this list and a
+   * match anywhere in it becomes the highlight; `typeaheadMissed` then means no
+   * match in the whole list. Unbound, the rendered window stays the search
+   * space. Items are read for `label` and `disabled` only, so `id` may be empty.
+   */
+  readonly typeaheadItems = input<readonly ActiveDescendantItem[] | undefined>(undefined);
+  /**
    * Equality used to find the previously active value again after the item
    * list changes. Defaults to `Object.is`; pass the same comparator as the
    * surrounding listbox / select when options are re-fetched as new objects
@@ -147,9 +155,14 @@ export class CngxActiveDescendant {
   /** Guards host attribute writes until after first render. */
   private readonly initialized = signal(false);
 
-  /** Index of an item that should be highlighted but is not in the DOM. */
-  private readonly pendingHighlightState = signal<number | null>(null);
-  readonly pendingHighlight = this.pendingHighlightState.asReadonly();
+  /**
+   * A highlight gesture that fired while the option rows were not in the DOM
+   * (a deferred-render panel just opened, OD5): the id space does not exist
+   * yet, so the gesture is kept as INTENT - not a resolved index, which an
+   * empty item space resolves to nothing - and re-applied once the rows
+   * render. Non-virtual path only; the virtual path uses `pendingHighlight`.
+   */
+  private readonly pendingIntentState = signal<PendingIntent | null>(null);
 
   /**
    * Resolved item list. Input `items` wins; otherwise the contentChildren
@@ -164,36 +177,20 @@ export class CngxActiveDescendant {
   });
 
   /**
-   * Rendered items paired with the window start they were rendered for. A
-   * recycler moves `windowStart` first and the content-child items follow
-   * one render later, so the offset is captured when the items change, not
-   * read live: re-resolving the old items against the new offset would shift
-   * the active index by the window delta.
-   */
-  private readonly renderedWindow = computed<{
-    readonly items: readonly ActiveDescendantItem[];
-    readonly offset: number;
-  }>(() => {
-    const items = this.resolvedItems();
-    return { items, offset: untracked(() => this.windowOffset()) };
-  });
-
-  /**
    * -1 means "no active item". Range is `[0, totalCount())`.
    *
    * Navigation writes the index; a change of the item space re-derives it.
-   * The highlight follows its value, not its index: after the item list
-   * changes, the previously active value is looked up again with
-   * `compareWith`. Gone from a plain list means no highlight; in a virtual
-   * window a value that merely scrolled out keeps its absolute index. The result is clamped to the new
-   * item space, so the next arrow press never starts from a ghost index.
+   * In a plain list the highlight follows its value: after the item list
+   * changes, the previously active value is looked up again with `compareWith`,
+   * and gone means no highlight. In a virtual window it holds its absolute
+   * index, because the rendered rows trail `windowStart` and cannot say where a
+   * value sits; a window turning plain drops it. The result is clamped to the
+   * new item space, so the next arrow press never starts from a ghost index.
    */
   private readonly activeIndexState = linkedSignal<ActiveIndexSource, number>({
     source: () => ({
-      items: this.renderedWindow().items,
-      itemsOffset: this.renderedWindow().offset,
+      items: this.resolvedItems(),
       total: this.totalCount(),
-      offset: this.windowOffset(),
       virtual: this.virtualCount() != null,
       compareWith: this.compareWith() as (a: unknown, b: unknown) => boolean,
     }),
@@ -214,6 +211,42 @@ export class CngxActiveDescendant {
     }
     return idx;
   });
+
+  /**
+   * The highlight plus whether its row is rendered. Structural equal: a window
+   * move that leaves both unchanged notifies nobody.
+   */
+  private readonly highlightPlacement = computed<HighlightPlacement>(
+    () => {
+      const index = this.activeIndex();
+      return {
+        index,
+        rendered: index >= 0 && this.isRendered(index),
+        virtual: this.virtualCount() != null,
+      };
+    },
+    {
+      equal: (a, b) => a.index === b.index && a.rendered === b.rendered && a.virtual === b.virtual,
+    },
+  );
+
+  /**
+   * Index the highlight moved to while its row is not rendered. Armed by the
+   * highlight change alone and cleared when the row renders; the same highlight
+   * leaving the window later stays cleared, so scrolling a virtual list away
+   * never asks to be scrolled back.
+   */
+  private readonly pendingHighlightState = linkedSignal<HighlightPlacement, number | null>({
+    source: this.highlightPlacement,
+    computation: (placement, previous) => {
+      if (!placement.virtual || placement.index < 0 || placement.rendered) {
+        return null;
+      }
+      return previous?.source.index === placement.index ? previous.value : placement.index;
+    },
+  });
+  /** Index of an item that should be highlighted but is not in the DOM. */
+  readonly pendingHighlight = this.pendingHighlightState.asReadonly();
 
   /**
    * `activeIndex` always mapped back to an item. `null` when no active index
@@ -270,22 +303,84 @@ export class CngxActiveDescendant {
       this.highlighted.emit(item);
     });
 
+    // One DOM scroll per highlight change, delayed until the row renders. A
+    // window move alone never scrolls: the row of an unchanged highlight
+    // re-entering the window must not pull the list back to it.
+    let lastIndex = -1;
+    let scrollDue = false;
     effect(() => {
-      const idx = this.activeIndex();
-      if (idx < 0) {
+      const { index, rendered } = this.highlightPlacement();
+      if (index !== lastIndex) {
+        lastIndex = index;
+        scrollDue = index >= 0;
+      }
+      if (!scrollDue || !rendered) {
         return;
       }
-      if (this.virtualCount() != null) {
-        if (!this.isRendered(idx)) {
-          this.pendingHighlightState.set(idx);
-          return;
-        }
-        this.pendingHighlightState.set(null);
-      }
+      scrollDue = false;
       queueMicrotask(() => this.scrollActiveIntoView());
     });
 
+    // Deferred-render re-apply (non-virtual path): when the option rows arrive
+    // after a highlight gesture was remembered as intent (empty item space at
+    // the time), re-run the gesture against the now-populated space and drop
+    // the intent. Tracks only `resolvedItems`; the intent is read and cleared
+    // untracked so storing or clearing it never re-triggers this effect.
+    effect(() => {
+      if (this.resolvedItems().length === 0) {
+        return;
+      }
+      const intent = untracked(() => this.pendingIntentState());
+      if (intent === null) {
+        return;
+      }
+      untracked(() => {
+        this.pendingIntentState.set(null);
+        this.applyIntent(intent);
+      });
+    });
+
     inject(DestroyRef).onDestroy(() => this.typeaheadWalker.clear());
+  }
+
+  /**
+   * Non-virtual path with no rendered rows yet (a deferred-render panel just
+   * opened, OD5): the option id space does not exist, so a highlight resolves
+   * against nothing and is lost. Remember the gesture as intent - the
+   * constructor effect re-applies it once the rows render - and report that it
+   * was deferred. The virtual path never defers here; its out-of-window
+   * targets surface through `pendingHighlight` instead.
+   */
+  private deferIfUnrendered(intent: PendingIntent): boolean {
+    if (this.virtualCount() == null && this.resolvedItems().length === 0) {
+      this.pendingIntentState.set(intent);
+      return true;
+    }
+    return false;
+  }
+
+  /** Re-run a remembered highlight gesture now the rows exist. */
+  private applyIntent(intent: PendingIntent): void {
+    switch (intent.kind) {
+      case 'first':
+        this.highlightFirst();
+        return;
+      case 'last':
+        this.highlightLast();
+        return;
+      case 'next':
+        this.highlightNext();
+        return;
+      case 'prev':
+        this.highlightPrev();
+        return;
+      case 'byIndex':
+        this.highlightByIndex(intent.index);
+        return;
+      case 'byValue':
+        this.highlightByValue(intent.value);
+        return;
+    }
   }
 
   /**
@@ -294,6 +389,9 @@ export class CngxActiveDescendant {
    * first when `loop` is true and stays put otherwise.
    */
   highlightNext(): void {
+    if (this.deferIfUnrendered({ kind: 'next' })) {
+      return;
+    }
     const next = this.findFrom(this.activeIndexState(), 1);
     if (next !== null) {
       this.activeIndexState.set(next);
@@ -306,6 +404,9 @@ export class CngxActiveDescendant {
    * last when `loop` is true and stays put otherwise.
    */
   highlightPrev(): void {
+    if (this.deferIfUnrendered({ kind: 'prev' })) {
+      return;
+    }
     const next = this.findFrom(this.activeIndexState(), -1);
     if (next !== null) {
       this.activeIndexState.set(next);
@@ -317,6 +418,9 @@ export class CngxActiveDescendant {
    * `skipDisabled` is false). Does nothing when no item qualifies.
    */
   highlightFirst(): void {
+    if (this.deferIfUnrendered({ kind: 'first' })) {
+      return;
+    }
     const first = this.findBoundary(1);
     if (first !== null) {
       this.activeIndexState.set(first);
@@ -330,6 +434,9 @@ export class CngxActiveDescendant {
    * qualifies.
    */
   highlightLast(): void {
+    if (this.deferIfUnrendered({ kind: 'last' })) {
+      return;
+    }
     const last = this.findBoundary(-1);
     if (last !== null) {
       this.activeIndexState.set(last);
@@ -341,6 +448,9 @@ export class CngxActiveDescendant {
    * Disabled items are rejected when `skipDisabled()` is true.
    */
   highlightByIndex(index: number): void {
+    if (this.deferIfUnrendered({ kind: 'byIndex', index })) {
+      return;
+    }
     const total = this.totalCount();
     if (index < 0 || index >= total) {
       return;
@@ -358,6 +468,9 @@ export class CngxActiveDescendant {
    * index is absolute.
    */
   highlightByValue(value: unknown): void {
+    if (this.deferIfUnrendered({ kind: 'byValue', value })) {
+      return;
+    }
     const items = this.resolvedItems();
     const idx = items.findIndex((it) => Object.is(it.value, value));
     if (idx < 0) {
@@ -369,8 +482,9 @@ export class CngxActiveDescendant {
     this.activeIndexState.set(idx + this.windowOffset());
   }
 
-  /** Clear the highlight. */
+  /** Clear the highlight, including a gesture still pending a deferred render. */
   resetHighlight(): void {
+    this.pendingIntentState.set(null);
     this.activeIndexState.set(-1);
   }
 
@@ -534,21 +648,23 @@ export class CngxActiveDescendant {
 
   private handleTypeahead(ch: string): void {
     const term = this.typeaheadWalker.type(ch);
-    // Labels exist only for rendered items, so the search space is the
-    // rendered window; matches map back to absolute indices in virtual mode.
-    const items = this.resolvedItems();
+    // Labels exist only for rendered items unless the host hands the full list
+    // over, so the search space is the rendered window by default; matches map
+    // back to absolute indices in virtual mode.
+    const fullList = this.typeaheadItems();
+    const items = fullList ?? this.resolvedItems();
     if (items.length === 0) {
       this.typeaheadMissed.emit(term);
       return;
     }
-    const windowOffset = this.windowOffset();
-    const activeRel = this.activeIndexState() < 0 ? -1 : this.activeIndexState() - windowOffset;
+    const offset = fullList ? 0 : this.windowOffset();
+    const activeRel = this.activeIndexState() < 0 ? -1 : this.activeIndexState() - offset;
     const rel = this.typeaheadWalker.find(items, term, activeRel, this.skipDisabled());
     if (rel < 0) {
       this.typeaheadMissed.emit(term);
       return;
     }
-    this.activeIndexState.set(rel + windowOffset);
+    this.activeIndexState.set(rel + offset);
   }
 
   private findFrom(current: number, direction: 1 | -1): number | null {
@@ -618,40 +734,61 @@ export class CngxActiveDescendant {
   }
 }
 
+/**
+ * @internal A highlight gesture remembered while the option rows are absent,
+ * re-applied once they render. Captured as the gesture, not a resolved index:
+ * an empty item space resolves to nothing, so the index must be computed
+ * against the populated space at re-apply time.
+ */
+type PendingIntent =
+  | { readonly kind: 'first' }
+  | { readonly kind: 'last' }
+  | { readonly kind: 'next' }
+  | { readonly kind: 'prev' }
+  | { readonly kind: 'byIndex'; readonly index: number }
+  | { readonly kind: 'byValue'; readonly value: unknown };
+
+/** @internal Where the highlight sits relative to the rendered rows. */
+interface HighlightPlacement {
+  readonly index: number;
+  readonly rendered: boolean;
+  readonly virtual: boolean;
+}
+
 /** @internal Item space the active index is derived against. */
 interface ActiveIndexSource {
   readonly items: readonly ActiveDescendantItem[];
-  /** Window start `items` were rendered for (may trail `offset` by one render). */
-  readonly itemsOffset: number;
   readonly total: number;
-  readonly offset: number;
   readonly virtual: boolean;
   readonly compareWith: (a: unknown, b: unknown) => boolean;
 }
 
 /**
  * @internal
- * Looks the previously active value up in the new item list. Unchanged items,
- * no previous highlight, or a previous index outside the old rendered window
- * keep the index as it is.
+ * Re-derives the index for a new item space. A virtual window keeps its
+ * absolute index, and that index means nothing once the list turns plain. In a
+ * plain list the previously active value is looked up again; unchanged items,
+ * no previous highlight, or an index past the old items keep the index.
  */
 function reResolveIndex(
   source: ActiveIndexSource,
   previousSource: ActiveIndexSource,
   previousIndex: number,
 ): number {
+  if (source.virtual) {
+    return previousIndex;
+  }
+  if (previousSource.virtual) {
+    return -1;
+  }
   if (previousSource.items === source.items || previousIndex < 0) {
     return previousIndex;
   }
-  const previous = previousSource.items[previousIndex - previousSource.itemsOffset];
+  const previous = previousSource.items[previousIndex];
   if (!previous) {
     return previousIndex;
   }
-  const match = source.items.findIndex((it) => source.compareWith(it.value, previous.value));
-  if (match >= 0) {
-    return match + source.itemsOffset;
-  }
-  return source.virtual ? previousIndex : -1;
+  return source.items.findIndex((it) => source.compareWith(it.value, previous.value));
 }
 
 /** @internal Pulls an index that ran past the item space back onto its last item. */

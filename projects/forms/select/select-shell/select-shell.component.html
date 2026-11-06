@@ -26,6 +26,7 @@
     [attr.aria-required]="aria.required"
     [attr.aria-busy]="aria.busy"
     [attr.aria-readonly]="aria.readonly"
+    (pointerdown)="handlePointerDown()"
     (click)="handleTriggerClick()"
     (focus)="handleFocus()"
     (blur)="handleBlur()"
@@ -110,27 +111,30 @@
   >
     <cngx-select-sheet-header />
     <ng-content select="cngx-select-search" />
-    <div
-      cngxListbox
-      [attr.id]="listboxId"
-      cngxPopoverSheetInitialFocus
-      [attr.tabindex]="sheetWiring.sheetModal() ? 0 : null"
-      #lb="cngxListbox"
-      [label]="resolvedListboxLabel()"
-      [compareWith]="listboxCompareWith()"
-      [externalActivation]="externalActivation()"
-      [explicitOptions]="visibleProjectedOptions()"
-      [items]="adItems()"
-      [virtualCount]="virtualItemCount()"
-      [windowStart]="virtualWindowStart()"
-      [value]="listboxValue()"
-      (valueChange)="handleListboxValueChange($event, lb)"
-    >
-      <cngx-select-panel-shell>
+    <cngx-select-panel-shell>
+      <div
+        cngxListbox
+        [attr.id]="listboxId"
+        cngxPopoverSheetInitialFocus
+        [attr.tabindex]="sheetWiring.sheetModal() ? 0 : null"
+        #lb="cngxListbox"
+        [label]="resolvedListboxLabel()"
+        [compareWith]="listboxCompareWith()"
+        [externalActivation]="externalActivation()"
+        [explicitOptions]="visibleProjectedOptions()"
+        [items]="adItems()"
+        [virtualCount]="virtualItemCount()"
+        [windowStart]="virtualWindowStart()"
+        [value]="listboxValue()"
+        (valueChange)="handleListboxValueChange($event, lb)"
+      >
         <ng-content />
-      </cngx-select-panel-shell>
-    </div>
+      </div>
+    </cngx-select-panel-shell>
   </div>
   <span class="cngx-sr-only" [id]="commitErrorId">{{ commitErrorText() }}</span>
+  @if (!panelOpen() && commitErrorText()) {
+    <span class="cngx-select__commit-error-hint" aria-hidden="true">{{ commitErrorText() }}</span>
+  }
   <span class="cngx-sr-only" [id]="disabledReasonId">{{ disabledReasonText() }}</span>
 </div>

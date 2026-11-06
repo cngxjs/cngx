@@ -5,6 +5,7 @@
   <div
     #treeContainer
     role="tree"
+    aria-multiselectable="true"
     [attr.id]="host.listboxId"
     [attr.aria-label]="host.resolvedListboxLabel()"
     cngxActiveDescendant
@@ -17,12 +18,14 @@
     (keydown.enter)="handleActivate($event, ad)"
     (keydown.space)="handleActivate($event, ad)"
     (keydown.escape)="handleEscape($event)"
+    (keydown.pageDown)="handlePageJump($event, ad, 1)"
+    (keydown.pageUp)="handlePageJump($event, ad, -1)"
     (typeaheadMissed)="handleTypeaheadMiss($event, ad)"
     (mousedown)="handleTreeMouseDown($event)"
     tabindex="0"
     class="cngx-tree-select__tree"
   >
-    @for (node of host.treeController.visibleNodes(); track node.id) {
+    @for (node of renderNodes(); track node.id) {
       @if (host.nodeTpl(); as slot) {
         <ng-container *ngTemplateOutlet="slot; context: nodeContext(node)" />
       } @else {

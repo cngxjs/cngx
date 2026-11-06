@@ -271,12 +271,17 @@ describe('CngxSelect - standalone', () => {
   });
 
   it('renders one option per entry in options[]', () => {
-    const { listbox } = setup();
+    const { select, listbox, fixture } = setup();
+    // Deferred render (OD5): option rows exist only once the panel opens.
+    select.open();
+    flush(fixture);
     expect(listbox.options().length).toBe(3);
   });
 
   it('renders the selection indicator after the label, at the row end, by default', () => {
-    const { fixture } = setup();
+    const { select, fixture } = setup();
+    select.open();
+    flush(fixture);
     const option = (fixture.nativeElement as HTMLElement).ownerDocument.querySelector<HTMLElement>(
       '.cngx-select__option',
     );
@@ -501,6 +506,11 @@ describe('CngxSelect - grouped options', () => {
   it('renders optgroup headers and nested options', () => {
     const fixture = TestBed.createComponent(GroupedHost);
     fixture.detectChanges();
+    flush(fixture);
+    // Deferred render (OD5): the option loop renders once the panel opens.
+    const select = fixture.debugElement.query(By.directive(CngxSelect))
+      .componentInstance as CngxSelect<string>;
+    select.open();
     flush(fixture);
     const groupHeaders = fixture.debugElement.nativeElement.querySelectorAll(
       '.cngx-select__group-header',
@@ -976,6 +986,11 @@ describe('CngxSelect - async state consumer', () => {
     TestBed.configureTestingModule({ imports: [StaticOptionsHost] });
     const fixture = TestBed.createComponent(StaticOptionsHost);
     fixture.detectChanges();
+    flush(fixture);
+    // Deferred render (OD5): open before counting the rendered option rows.
+    const select = fixture.debugElement.query(By.directive(CngxSelect))
+      .componentInstance as CngxSelect<string>;
+    select.open();
     flush(fixture);
     const listboxDe = fixture.debugElement.query(By.directive(CngxListbox));
     const lb = listboxDe.injector.get(CngxListbox);

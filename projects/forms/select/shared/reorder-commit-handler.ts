@@ -27,8 +27,8 @@ export interface ReorderCommitHandlerOptions<T> {
   readonly commitController: CngxCommitController<T[]>;
   /**
    * Emit `selectionChange` + `reordered` payload. Consumer controls the
-   * shape; signature covers optimistic / pessimistic / no-commit
-   * branches.
+   * shape. With a bound commit it fires on success only (both modes), so a
+   * rejected reorder never emits; the no-commit branch fires it inline.
    */
   readonly onReorder: (
     values: readonly T[],
@@ -39,7 +39,9 @@ export interface ReorderCommitHandlerOptions<T> {
   ) => void;
   /**
    * Announce the reorder. Pulled out so consumers can route to a
-   * custom announcer without forking.
+   * custom announcer without forking. With a bound commit it speaks on
+   * success only (both modes); a rejected reorder stays silent here and
+   * `announceError` speaks the failure instead.
    */
   readonly onAnnounce: (
     option: CngxSelectOptionDef<T> | null,
@@ -68,11 +70,14 @@ export interface ReorderCommitHandler<T> {
   /**
    * Run a reorder through the commit flow.
    * - No commit: write `values`, fire `onReorder` + `onAnnounce`.
-   * - Optimistic: write, emit, begin commit. Success reconciles with
-   *   the server's canonicalised value; error rolls back.
-   * - Pessimistic: hold `values`, emit `'pending'`, begin commit.
-   *   Success writes + emits; error leaves `values` untouched.
+   * - Optimistic: write `values` for instant UI, begin commit. `onReorder`
+   *   + `onAnnounce` fire on success only; error rolls the order back and
+   *   nothing was emitted.
+   * - Pessimistic: hold `values`, emit `'pending'`, begin commit. Success
+   *   writes + emits; error leaves `values` untouched.
    *
+   * With a bound commit, `onReorder` / `onAnnounce` fire only after the
+   * commit confirms - a rejected reorder emits neither, in both modes.
    * Always writes on success regardless of same-membership - the point
    * of this factory is to bypass `sameArrayContents`.
    */
@@ -126,9 +131,10 @@ export function createReorderCommitHandler<T>(
     }
 
     if (opts.commitMode() === 'optimistic') {
+      // Optimistic UI only: write the order so the drag lands instantly. The
+      // `reordered` / `selectionChange` emit and the announce wait for the
+      // commit to succeed (both modes), so a rejected reorder never emits.
       opts.values.set(next);
-      opts.onReorder(next, previous, option, fromIndex, toIndex);
-      opts.onAnnounce(option, fromIndex, toIndex, next.length);
     }
     ledger.beginMembers<T[]>({
       kind: 'reorder',
@@ -145,10 +151,9 @@ export function createReorderCommitHandler<T>(
       commitMode: opts.commitMode,
       onStateChange: opts.onStateChange,
       onSuccess: (final, confirmedPrevious) => {
-        if (opts.commitMode() === 'pessimistic') {
-          opts.onReorder(final, confirmedPrevious, option, fromIndex, toIndex);
-          opts.onAnnounce(option, fromIndex, toIndex, final.length);
-        }
+        // Emit and announce only once the commit confirms, both modes.
+        opts.onReorder(final, confirmedPrevious, option, fromIndex, toIndex);
+        opts.onAnnounce(option, fromIndex, toIndex, final.length);
       },
       onError: opts.onError,
       announceError: opts.announceError,

@@ -1,6 +1,16 @@
-import { computed, Directive, ElementRef, inject, input, output } from '@angular/core';
+import {
+  afterNextRender,
+  computed,
+  Directive,
+  ElementRef,
+  inject,
+  Injector,
+  input,
+  output,
+} from '@angular/core';
 import { CNGX_NESTED_INTERACTIVE_SELECTOR } from '@cngx/core/utils';
 
+import { CngxSearch } from '../keyboard/search.directive';
 import { injectHostInteractionBlocked } from '../trigger-guard/host-interaction-blocked';
 
 import type { CngxListbox } from './listbox.directive';
@@ -81,6 +91,7 @@ interface PopoverController {
   host: {
     '[attr.aria-activedescendant]': 'activeDescendant()',
     '(keydown)': 'handleKeydown($event)',
+    '(blur)': 'handleBlur()',
   },
 })
 export class CngxListboxTrigger<T = unknown> {
@@ -122,6 +133,9 @@ export class CngxListboxTrigger<T = unknown> {
    * automatically; classic button triggers keep native-`<select>` parity.
    */
   private readonly search = inject(CngxListboxSearch, { optional: true, self: true });
+  /** The co-located debounce owner, present whenever `search` is. Used to settle a pending term. */
+  private readonly searchCtrl = inject(CngxSearch, { optional: true, self: true });
+  private readonly injector = inject(Injector);
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
   /** A disabled `cngxButton` stays focusable, so keydown still reaches the trigger. */
@@ -134,9 +148,22 @@ export class CngxListboxTrigger<T = unknown> {
   private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
 
   protected handleKeydown(event: KeyboardEvent): void {
-    // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
-    // untouched - the same guard the nav strategies apply. Without it,
-    // Ctrl+ArrowDown on a trigger would navigate and swallow the event.
+    // ARIA combobox Alt shortcuts: Alt+ArrowDown opens the panel without moving
+    // the highlight, Alt+ArrowUp closes it. Every other Ctrl/Meta/Alt combo is a
+    // browser or app shortcut and passes through untouched - the same guard the
+    // nav strategies apply.
+    if (event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+      if (event.key === 'ArrowDown' && !this.isOpen() && !this.hostGuard.isBlockedNow()) {
+        event.preventDefault();
+        this.popover().show();
+        return;
+      }
+      if (event.key === 'ArrowUp' && this.isOpen()) {
+        event.preventDefault();
+        this.closePanel();
+        return;
+      }
+    }
     if (event.ctrlKey || event.metaKey || event.altKey) {
       return;
     }
@@ -160,7 +187,6 @@ export class CngxListboxTrigger<T = unknown> {
     }
 
     const key = event.key;
-    const ad = this.listbox().ad;
 
     // Tag-input convention: Backspace on an empty co-located search input
     // emits backspaceOnEmpty for the parent composite (CngxCombobox, …)
@@ -187,43 +213,114 @@ export class CngxListboxTrigger<T = unknown> {
       if (this.hostGuard.isBlockedNow()) {
         return;
       }
-      if (key === 'ArrowDown' || key === 'Enter' || key === ' ') {
+      // An editable combobox (co-located search) leaves a closed Enter to the
+      // form: the native implicit submit must run, opening belongs to
+      // Alt+ArrowDown. Space already reached the input as an editing key above.
+      const openKeys =
+        key === 'ArrowDown' || (!this.search && (key === 'Enter' || key === ' '));
+      if (openKeys) {
         event.preventDefault();
         this.popover().show();
-        ad.highlightFirst();
+        this.highlightOnOpen('first');
         return;
       }
       if (key === 'ArrowUp') {
         event.preventDefault();
         this.popover().show();
-        ad.highlightLast();
+        this.highlightOnOpen('last');
         return;
       }
       return;
     }
 
+    // A combobox input with a debounced term still pending settles it before a
+    // navigation or activation key, then runs the key after the next render so
+    // the listbox reflects the filtered options - the stale-filter rule the
+    // declarative search already applies. A button trigger has no co-located
+    // search, so this never fires for it.
+    if (this.searchCtrl && this.isNavOrActivate(key) && this.searchCtrl.flush()) {
+      event.preventDefault();
+      afterNextRender(() => this.runOpenKey(key, null), { injector: this.injector });
+      return;
+    }
+    // A deferred-render panel (CngxSelect family, OD5) just opened by click or
+    // pointer holds no option rows yet, so a navigation key resolves against an
+    // empty AD item space. CngxActiveDescendant remembers the gesture as intent
+    // and re-applies it once the rows render, so the key runs synchronously
+    // here and the highlight is never lost.
+    this.runOpenKey(key, event);
+  }
+
+  /**
+   * Highlight the first / last option when a key opens a closed panel. A
+   * deferred-render panel (the `CngxSelect` family, OD5) renders no option
+   * rows until its first open, so the AD item space is empty at keydown;
+   * `CngxActiveDescendant` keeps the gesture as intent and re-applies it once
+   * the rows render. A panel that already holds its rows (menu, command
+   * palette) highlights synchronously. Either way the call is the same.
+   */
+  private highlightOnOpen(which: 'first' | 'last'): void {
+    const ad = this.listbox().ad;
+    if (which === 'first') {
+      ad.highlightFirst();
+    } else {
+      ad.highlightLast();
+    }
+  }
+
+  /** Whether `key` navigates or activates the open listbox. */
+  private isNavOrActivate(key: string): boolean {
+    return (
+      key === 'ArrowDown' ||
+      key === 'ArrowUp' ||
+      key === 'Home' ||
+      key === 'End' ||
+      key === 'Enter' ||
+      key === ' '
+    );
+  }
+
+  /** Flush a pending debounced term when focus leaves the trigger. */
+  protected handleBlur(): void {
+    this.searchCtrl?.flush();
+  }
+
+  /**
+   * Close the panel and reset the active-descendant highlight, so the closed
+   * listbox element carries no stale `aria-activedescendant` and a reopen
+   * starts fresh (ARIA 1.2 combobox, I10). The listbox is popover-free and
+   * cannot observe the close itself, so the trigger owns the reset.
+   */
+  private closePanel(): void {
+    this.popover().hide();
+    this.listbox().ad.resetHighlight();
+  }
+
+  /** The open-panel key actions. `event` is `null` when run deferred after a flush. */
+  private runOpenKey(key: string, event: KeyboardEvent | null): void {
+    const ad = this.listbox().ad;
     switch (key) {
       case 'Escape':
         if (this.popover().closeOnEscape?.() === false) {
           return;
         }
-        event.preventDefault();
-        this.popover().hide();
+        event?.preventDefault();
+        this.closePanel();
         return;
       case 'ArrowDown':
-        event.preventDefault();
+        event?.preventDefault();
         ad.highlightNext();
         return;
       case 'ArrowUp':
-        event.preventDefault();
+        event?.preventDefault();
         ad.highlightPrev();
         return;
       case 'Home':
-        event.preventDefault();
+        event?.preventDefault();
         ad.highlightFirst();
         return;
       case 'End':
-        event.preventDefault();
+        event?.preventDefault();
         ad.highlightLast();
         return;
       case 'Enter':
@@ -233,14 +330,14 @@ export class CngxListboxTrigger<T = unknown> {
           // panel open it belongs to the listbox even when nothing is active.
           // Enter stays untouched so a consumer's own Enter handler still runs.
           if (key === ' ') {
-            event.preventDefault();
+            event?.preventDefault();
           }
           return;
         }
-        event.preventDefault();
+        event?.preventDefault();
         ad.activateCurrent();
         if (this.closeOnSelect()) {
-          this.popover().hide();
+          this.closePanel();
         }
         return;
     }
@@ -252,7 +349,7 @@ export class CngxListboxTrigger<T = unknown> {
     if (key.length === 1 && /\S/.exec(key) !== null) {
       // Native <select> parity: printable chars drive AD typeahead while
       // focus stays on the trigger.
-      event.preventDefault();
+      event?.preventDefault();
       ad.typeaheadChar(key);
     }
   }
