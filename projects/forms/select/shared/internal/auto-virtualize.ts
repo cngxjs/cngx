@@ -31,8 +31,6 @@ export interface CngxSelectAutoRecyclerHandle {
   readonly slot: SlotRegistry<CngxRecycler>;
 }
 
-const EMPTY_SLICE: readonly never[] = [];
-
 /**
  * The config-driven {@link PanelRenderer} plus the handle of the recycler
  * behind it. Creates no recycler itself and needs no injection context: below
@@ -118,7 +116,7 @@ export function createAutoPanelRenderer<T>(opts: {
           if (all.length < threshold || opts.hasGroup()) {
             return all;
           }
-          return recyclerRenderer()?.renderOptions() ?? EMPTY_SLICE;
+          return recyclerRenderer()?.renderOptions() ?? [];
         },
         // Structural equal - length + per-entry identity. Matches the
         // recycler renderer's equal so the wrapper doesn't cascade.
