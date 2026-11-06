@@ -33,6 +33,14 @@ class Host {
 }
 
 @Component({
+  template: `<div cngxResizable [(size)]="size" style="inline-size: 8px"></div>`,
+  imports: [CngxResizable],
+})
+class StyledHost {
+  readonly size = signal(200);
+}
+
+@Component({
   template: `<div cngxResizable [(size)]="size" [max]="max()"></div>`,
   imports: [CngxResizable],
 })
@@ -232,6 +240,17 @@ describe('CngxResizable', () => {
   it('sets touch-action none so a touch drag does not pan the page', () => {
     const { handle } = setup();
     expect(handle.style.touchAction).toBe('none');
+  });
+
+  it('keeps touch-action none next to a static consumer style', () => {
+    TestBed.configureTestingModule({ imports: [StyledHost] });
+    const fixture = TestBed.createComponent(StyledHost);
+    fixture.detectChanges();
+    const handle = (fixture.nativeElement as HTMLElement).querySelector(
+      '[cngxResizable]',
+    ) as HTMLElement;
+    expect(handle.style.touchAction).toBe('none');
+    expect(handle.style.inlineSize).toBe('8px');
   });
 
   describe('defaults', () => {
