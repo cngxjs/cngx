@@ -1,7 +1,7 @@
 // Structural types for the slices of compodocx's `documentation.json` the tools
 // read. This is a minimal projection - not the full compodocx schema - covering
 // only the component/directive/token keys the five query tools ground against.
-// Grounded on the shape emitted by `compodocx -e json`, schemaVersion 2 and 6.
+// Grounded on the shape emitted by `compodocx -e json`, schemaVersion 2, 6 and 7.
 // Schema 6 drops `category` and `factoryKind`; `schema-v6.ts` derives both from
 // the schema-6 `feature` and `di` fields at load time.
 

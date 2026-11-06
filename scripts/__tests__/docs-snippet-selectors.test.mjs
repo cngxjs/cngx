@@ -51,7 +51,7 @@ const NATIVE_BINDINGS = new Set([
 function loadExport() {
   if (!existsSync(DOC_PATH)) throw new Error('run npm run docs:json first');
   const exported = JSON.parse(readFileSync(DOC_PATH, 'utf8'));
-  if (exported.schemaVersion !== 6) throw new Error('schemaVersion 6 expected');
+  if (exported.schemaVersion !== 7) throw new Error('schemaVersion 7 expected');
   const installed = JSON.parse(
     readFileSync(resolve(REPO_ROOT, 'node_modules/@cngxjs/compodocx/package.json'), 'utf8'),
   ).version;
