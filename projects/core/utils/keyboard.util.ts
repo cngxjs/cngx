@@ -220,7 +220,6 @@ const ARIA_NAMED_KEYS: Readonly<Record<string, string>> = {
   numlock: 'NumLock',
   scrolllock: 'ScrollLock',
   printscreen: 'PrintScreen',
-  pause: 'Pause',
 };
 
 function ariaKeyToken(key: string): string {
