@@ -98,6 +98,11 @@ export function parseKeyCombo(combo: string): KeyCombo {
  *   `event.key` only, so `'@'` matches AltGr+Q on a German layout and `'q'`
  *   never does. macOS has no AltGr key (Option is `alt`), so the guard is
  *   off there.
+ * - **Option types punctuation on macOS.** Layouts such as German reach
+ *   `@ [ ] { } | \ ~` through Option (`'@'` is Option+L). On macOS a
+ *   single punctuation combo that does not name `alt` is Alt-agnostic, the
+ *   same rule as the Shift case above: `'@'` matches Option+L while
+ *   `'alt+@'` still requires Option and ctrl/meta stay strict.
  *
  * @param event The keyboard event to test.
  * @param combo The parsed combo to match against.
@@ -122,8 +127,11 @@ export function matchesKeyCombo(event: KeyboardEvent, combo: KeyCombo, isMac: bo
     return false;
   }
   // Alt is strict: a combo that does not name it rejects an Alt press. The
-  // Alt (and Ctrl) an AltGr press reports belong to the typed character.
-  if (!altGr && combo.alt !== event.altKey) {
+  // Alt (and Ctrl) an AltGr press reports belong to the typed character, and
+  // so does the Option a macOS layout needs for punctuation.
+  const punctuation = combo.key.length === 1 && !/[a-z0-9]/.test(combo.key);
+  const optionTypesKey = isMac && punctuation && !combo.alt;
+  if (!altGr && !optionTypesKey && combo.alt !== event.altKey) {
     return false;
   }
   // `mod` requires the platform primary and leaves the other one free;
@@ -139,7 +147,7 @@ export function matchesKeyCombo(event: KeyboardEvent, combo: KeyCombo, isMac: bo
   // Strict shift for letters, digits and named keys (so bare `b` rejects
   // `Shift+B`); shift-agnostic for a single punctuation char whose glyph
   // already encodes Shift, unless the combo names `shift` explicitly.
-  const shiftAgnostic = combo.key.length === 1 && !/[a-z0-9]/.test(combo.key) && !combo.shift;
+  const shiftAgnostic = punctuation && !combo.shift;
   if (!shiftAgnostic && combo.shift !== event.shiftKey) {
     return false;
   }

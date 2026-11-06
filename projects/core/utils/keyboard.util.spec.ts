@@ -155,6 +155,25 @@ describe('matchesKeyCombo AltGr guard', () => {
     expect(matchesKeyCombo(withMeta, parseKeyCombo('@'), false)).toBe(false);
   });
 
+  it('matches a bare punctuation combo typed through Option on macOS', () => {
+    // German Mac layout: Option+L types '@' (checked in Safari and Firefox).
+    const at = press('@', { code: 'KeyL', alt: true });
+    expect(matchesKeyCombo(at, parseKeyCombo('@'), true)).toBe(true);
+    expect(matchesKeyCombo(at, parseKeyCombo('alt+@'), true)).toBe(true);
+    expect(matchesKeyCombo(at, parseKeyCombo('l'), true)).toBe(false);
+    expect(
+      matchesKeyCombo(
+        press('@', { code: 'KeyL', alt: true, meta: true }),
+        parseKeyCombo('@'),
+        true,
+      ),
+    ).toBe(false);
+    // Off macOS a plain Alt (no AltGraph) stays strict.
+    expect(matchesKeyCombo(at, parseKeyCombo('@'), false)).toBe(false);
+    // 'alt+@' still requires Option.
+    expect(matchesKeyCombo(press('@'), parseKeyCombo('alt+@'), true)).toBe(false);
+  });
+
   it('is off on macOS, where Option is alt and there is no AltGr key', () => {
     const combo = parseKeyCombo('alt+b');
     expect(matchesKeyCombo(press('∫', { code: 'KeyB', alt: true }), combo, true)).toBe(true);
