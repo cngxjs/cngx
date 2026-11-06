@@ -67,6 +67,18 @@ The explicit anchor wins over the trigger. When the anchor unmounts, the trigger
 </div>
 ```
 
+### Focus return
+
+On close, `CngxPopoverTrigger` can return focus to the element that was focused before the popover opened. It only does so when focus would otherwise be lost (on `body` or inside the panel); a close that moved focus to another control leaves it there. The decision resolves in this order:
+
+1. `[restoreFocus]` on the trigger, when bound.
+2. The composer claim on the popover (`restoreFocusHint()`). `CngxPopoverPanel` claims `true`, so a panel returns focus to its trigger by default. A menu trigger claims `false`, because the menu focus stack restores.
+3. `false`. A bare `[cngxPopover]` stays opt-in.
+
+Bind `[restoreFocus]="false"` on a panel's trigger to keep focus where the browser leaves it. In a sheet or fullscreen presentation the claim is ignored and `CngxPopoverSheet` restores.
+
+Composers hint the trigger through owner-keyed claims on `CngxPopover`: `claimHaspopup(owner, value)`, `claimControls(owner, idSignal)` and `claimRestoreFocus(owner, value)`, each with a `release*(owner)` partner called on destroy. With several composers on one popover (a panel around a menu), the last live claim wins and a release removes only that owner's claim.
+
 ## Popover Panel
 
 Rich popover molecule with header/body/footer slots, variant styling, arrow, close button, and async action buttons.

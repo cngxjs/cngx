@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxPopover } from './popover.directive';
+import { CngxPopoverPanel } from './popover-panel.component';
+import { CngxPopoverBody, CngxPopoverHeader } from './popover-panel-slots';
 import { CngxPopoverAnchor } from './popover-anchor.directive';
 import { CngxPopoverSheet } from './popover-sheet.directive';
 import { CngxPopoverTrigger } from './popover-trigger.directive';
@@ -114,6 +116,25 @@ class RestoreFocusHost {
 class RestoreClaimHost {
   readonly popover = viewChild.required(CngxPopover);
   readonly restore = signal<boolean | undefined>(undefined);
+}
+
+@Component({
+  template: `
+    <button [cngxPopoverTrigger]="panel.popover" [restoreFocus]="restore()" id="trigger">
+      Open
+    </button>
+    <button id="outside" type="button">Outside</button>
+    <cngx-popover-panel #panel [showClose]="true" [empty]="empty()">
+      <span cngxPopoverHeader>Recent activity</span>
+      <div cngxPopoverBody><button id="inside" type="button">Done</button></div>
+    </cngx-popover-panel>
+  `,
+  imports: [CngxPopoverTrigger, CngxPopoverPanel, CngxPopoverHeader, CngxPopoverBody],
+})
+class PanelTriggerHost {
+  readonly panel = viewChild.required(CngxPopoverPanel);
+  readonly restore = signal<boolean | undefined>(undefined);
+  readonly empty = signal(false);
 }
 
 @Component({
@@ -355,6 +376,75 @@ describe('CngxPopoverTrigger', () => {
     it('lets [restoreFocus]="false" beat a composer claim', () => {
       const { active, triggerEl } = closeFromInsidePanel(false);
       expect(active).not.toBe(triggerEl);
+    });
+
+    describe('bound to a CngxPopoverPanel', () => {
+      function mountPanel(configure?: (host: PanelTriggerHost) => void) {
+        const fixture = TestBed.createComponent(PanelTriggerHost);
+        configure?.(fixture.componentInstance);
+        testRoot.appendChild(fixture.nativeElement);
+        fixture.detectChanges();
+        TestBed.flushEffects();
+        const root = fixture.nativeElement as HTMLElement;
+        const popoverEl = root.querySelector('cngx-popover-panel') as HTMLElement;
+        stubPopoverElement(popoverEl);
+        const triggerEl = root.querySelector('#trigger') as HTMLElement;
+        const popover = fixture.componentInstance.panel().popover;
+        const flush = () => {
+          fixture.detectChanges();
+          TestBed.flushEffects();
+        };
+        const open = () => {
+          triggerEl.focus();
+          popover.show();
+          flush();
+        };
+        return { fixture, root, triggerEl, popover, flush, open };
+      }
+
+      it('returns focus to the trigger when the panel hides with focus inside', () => {
+        const { fixture, root, triggerEl, popover, flush, open } = mountPanel();
+        open();
+        root.querySelector<HTMLButtonElement>('#inside')!.focus();
+        popover.hide();
+        flush();
+        expect(document.activeElement).toBe(triggerEl);
+        fixture.destroy();
+      });
+
+      it('returns focus to the trigger from the built-in close, also in the empty view', () => {
+        for (const empty of [false, true]) {
+          const { fixture, root, triggerEl, flush, open } = mountPanel((h) => h.empty.set(empty));
+          open();
+          const close = root.querySelector<HTMLButtonElement>('button.cngx-popover-panel__close')!;
+          close.focus();
+          close.click();
+          flush();
+          expect(document.activeElement, `empty=${empty}`).toBe(triggerEl);
+          fixture.destroy();
+        }
+      });
+
+      it('leaves focus on body with [restoreFocus]="false"', () => {
+        const { fixture, root, popover, flush, open } = mountPanel((h) => h.restore.set(false));
+        open();
+        root.querySelector<HTMLButtonElement>('#inside')!.focus();
+        popover.hide();
+        flush();
+        expect(document.activeElement).toBe(document.body);
+        fixture.destroy();
+      });
+
+      it('leaves focus on an outside control the user moved to', () => {
+        const { fixture, root, popover, flush, open } = mountPanel();
+        open();
+        const outside = root.querySelector<HTMLButtonElement>('#outside')!;
+        outside.focus();
+        popover.hide();
+        flush();
+        expect(document.activeElement).toBe(outside);
+        fixture.destroy();
+      });
     });
 
     it('should restore focus on close when restoreFocus is true', () => {

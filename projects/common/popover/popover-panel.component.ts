@@ -50,6 +50,13 @@ const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER
  * `closeOnOutsideClick`, `mode`, `exclusive`, `cngxPopoverOpen`) are
  * forwarded.
  *
+ * ### Focus return
+ * On by default: when the panel closes and focus would otherwise be lost
+ * (on `body` or inside the panel), its `CngxPopoverTrigger` returns focus
+ * to the element focused before open. Opt out with `[restoreFocus]="false"`
+ * on the trigger. A close that moves focus to another control leaves it
+ * there.
+ *
  * The `variant` input is a free-form string mapped to a CSS class
  * (`cngx-popover-panel--{variant}`). Five variants are pre-themed
  * in `popover-panel-theme.scss`: `default`, `info`, `warning`,
@@ -438,6 +445,11 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
     // `aria-haspopup="dialog"`. Consumer override on the trigger wins, and a
     // co-composer's later claim (a menu trigger) wins while it lives.
     this.popover.claimHaspopup(this, 'dialog');
+    // Dialog pattern: focus returns to the opener when the panel closes and
+    // focus would otherwise be lost. `[restoreFocus]="false"` on the trigger
+    // opts out, and a menu trigger inside claims `false` (its focus stack
+    // restores).
+    this.popover.claimRestoreFocus(this, true);
 
     effect(() => {
       const isVisible = this.popover.isVisible();
@@ -455,6 +467,7 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
 
     this.destroyRef.onDestroy(() => {
       this.popover.releaseHaspopup(this);
+      this.popover.releaseRestoreFocus(this);
       if (this.autoDismissTimer) {
         clearTimeout(this.autoDismissTimer);
       }
