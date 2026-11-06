@@ -291,9 +291,13 @@ jobs:
           SHARDS: ${{ needs.examples-e2e-shard.result }}
         run: node scripts/e2e-gate.mjs "$SCOPE" "$MODE" "$SHARDS"
 
+  # Main pushes only: the sweep is the slowest PR job (every route, about 8
+  # minutes) and a console warning it finds is cheap to fix after the merge.
+  # On a pull request the shards skip and the console-sweep gate passes as
+  # `deferred`.
   console-sweep-shard:
     needs: [build, e2e-scope]
-    if: needs.e2e-scope.outputs.mode != 'none'
+    if: github.event_name != 'pull_request' && needs.e2e-scope.outputs.mode != 'none'
     runs-on: ubuntu-24.04
     # 8.5 minutes locally for every route; the cap stops a hung server or page
     # long before the 6-hour default.
@@ -342,7 +346,7 @@ jobs:
       - name: Collect the shards
         env:
           SCOPE: ${{ needs.e2e-scope.result }}
-          MODE: ${{ needs.e2e-scope.outputs.mode }}
+          MODE: ${{ github.event_name == 'pull_request' && 'deferred' || needs.e2e-scope.outputs.mode }}
           SHARDS: ${{ needs.console-sweep-shard.result }}
         run: node scripts/e2e-gate.mjs "$SCOPE" "$MODE" "$SHARDS"
 
