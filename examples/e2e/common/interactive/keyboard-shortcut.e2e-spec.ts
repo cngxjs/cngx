@@ -40,12 +40,13 @@ test.describe('common/interactive/keyboard-shortcut', () => {
 
     await page.keyboard.press(`${mod}+k`);
     await expect(counter).toHaveText('1');
+    const input = page.getByRole('textbox');
     await page.keyboard.press('/');
     await expect(counter).toHaveText('2');
     await expect(last).toHaveText('/');
+    await expect(input).toBeFocused();
+    await expect(input).toHaveValue('');
 
-    const input = page.getByRole('textbox');
-    await input.focus();
     await page.keyboard.press(`${mod}+k`);
     await expect(counter).toHaveText('3');
     await expect(last).toHaveText('Ctrl+K / Cmd+K');
