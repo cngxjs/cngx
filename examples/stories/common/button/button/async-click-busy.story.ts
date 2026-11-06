@@ -39,14 +39,14 @@ export const STORY: DemoSpec = {
         this.latencyMs(),
       ),
     );
-  }`,
-  template: `
-  <button cngxButton tone="primary" [cngxAsyncClick]="save" #btn="cngxAsyncClick">Save changes</button>`,
-  setupChrome: `
+  }
+
   // Mirrors the accessibility layer of the button into the box below.
   protected readonly sr = mirrorScreenReader([
     { label: 'save', selector: 'button[cngxbutton]' },
   ]);`,
+  template: `
+  <button cngxButton tone="primary" [cngxAsyncClick]="save" #btn="cngxAsyncClick">Save changes</button>`,
   templateChrome: `
   <div class="button-row" style="margin-top:12px">
     <div role="radiogroup" aria-label="Save latency" style="display:inline-flex;gap:12px">
@@ -86,9 +86,9 @@ export const STORY: DemoSpec = {
         <dd>{{ row.description }}</dd>
         <dt>{{ row.label }} aria-disabled</dt>
         <dd>{{ row.disabled }}</dd>
+        <dt>{{ row.label }} aria-busy</dt>
+        <dd>{{ row.busy }}</dd>
       }
-      <dt>aria-busy</dt>
-      <dd>{{ btn.pending() ? 'true' : '-' }}</dd>
       <dt>announced</dt>
       <dd>{{ btn.announcement() ? '"' + btn.announcement() + '"' : '-' }}</dd>
     </dl>
