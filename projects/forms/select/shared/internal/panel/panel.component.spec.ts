@@ -96,3 +96,42 @@ describe('CngxSelectPanel - highlighted option in the label slot', () => {
     expect(optionScans).toBeLessThanOrEqual(2);
   });
 });
+
+const GROUPED_OPTIONS = [
+  { label: 'First', children: OPTIONS.slice(0, 100) },
+  { label: 'Second', children: OPTIONS.slice(100) },
+];
+
+@Component({
+  template: `<cngx-select [label]="'Pick'" [options]="options" />`,
+  imports: [CngxSelect],
+})
+class GroupedHost {
+  readonly options = GROUPED_OPTIONS;
+}
+
+describe('CngxSelectPanel - CNGX2028 on open', () => {
+  beforeEach(() => polyfillPopover());
+  afterEach(() => vi.restoreAllMocks());
+
+  function openGrouped(): unknown[][] {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fixture = TestBed.createComponent(GroupedHost);
+    flush(fixture);
+    (fixture.debugElement.query(By.directive(CngxSelect)).componentInstance as CngxSelect<number>).open();
+    flush(fixture);
+    expect((fixture.nativeElement as HTMLElement).querySelectorAll('.cngx-select__option').length).toBe(200);
+    return warn.mock.calls.filter((c) => /^CNGX2028: /.test(String(c[0])));
+  }
+
+  it('does not warn on a grouped list without a virtualization config', () => {
+    expect(openGrouped().length).toBe(0);
+  });
+
+  it('warns once on a grouped list under an explicit withVirtualization', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSelectConfig(withVirtualization({ threshold: 200 }))],
+    });
+    expect(openGrouped().length).toBe(1);
+  });
+});

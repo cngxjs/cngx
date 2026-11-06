@@ -4,13 +4,11 @@ import {
   Component,
   ViewEncapsulation,
   computed,
-  effect,
   inject,
   linkedSignal,
   viewChildren,
 } from '@angular/core';
 
-import { cngxDevWarn } from '@cngx/utils';
 import { CngxCheckboxIndicator, CngxRadioIndicator } from '@cngx/common/display';
 import { CngxRecyclerPlaceholder } from '@cngx/common/data';
 import { CngxOption } from '@cngx/common/interactive';
@@ -126,8 +124,8 @@ export class CngxSelectPanel<T = unknown> {
 
   /**
    * `true` once the open panel's rendered items contain a group. Read by
-   * the spacer gate and the CNGX2028 dev-warn - derived from the already
-   * computed `renderItems`, never recomputed inside a render body.
+   * the spacer gate - derived from the already computed `renderItems`, never
+   * recomputed inside a render body.
    *
    * @internal
    */
@@ -197,28 +195,6 @@ export class CngxSelectPanel<T = unknown> {
     source: () => this.host.panelOpen(),
     computation: (open, previous) => open || previous?.value === true,
   });
-
-  /** Latches so the CNGX2028 dev-warn fires at most once per instance. */
-  private warnedGroupedVirtualization = false;
-
-  constructor() {
-    // Dev-only: a configured virtualising renderer plus grouped options is a
-    // contradiction - the group loop renders every option and the recycler
-    // window is dropped (spacerVirtualizer null). Warn once so the misconfig
-    // surfaces. The guard strips the message text and the effect in prod.
-    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-      effect(() => {
-        const configured = this.renderer.virtualizer !== undefined;
-        if (configured && this.renderedHasGroup() && !this.warnedGroupedVirtualization) {
-          this.warnedGroupedVirtualization = true;
-          cngxDevWarn(
-            'CNGX2028',
-            'withVirtualization(): grouped select options ignore the configured virtualization; every option renders and the recycler window is dropped. Flatten the options or drop withVirtualization() for this select.',
-          );
-        }
-      });
-    }
-  }
 
   /**
    * `CngxOption` instances rendered in this panel's view. Forwarded

@@ -1,7 +1,10 @@
 import { Injector, computed, runInInjectionContext, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import type { CngxPopover } from '@cngx/common/popover';
+
+import { CNGX_SELECT_DEFAULTS, type CngxSelectVirtualizationConfig } from '../config';
 import { CNGX_PANEL_RENDERER_FACTORY, type PanelRenderer } from '../panel-renderer';
 import type { CngxSelectOptionDef, CngxSelectOptionsInput } from '../option.model';
 import { setupVirtualization } from './setup-virtualization';
@@ -112,6 +115,100 @@ describe('setupVirtualization - grouped lists', () => {
     const setup = run(renderer, [{ label: 'Group', children: makeOptions(50) }]);
     expect(setup.virtualItemCount()).toBeUndefined();
     expect(setup.virtualWindowStart()).toBe(0);
+  });
+});
+
+describe('setupVirtualization - CNGX2028', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  function warnings(
+    virtualization: CngxSelectVirtualizationConfig | null,
+    effective: CngxSelectOptionsInput<number>,
+    renderer?: PanelRenderer<number>,
+  ): { coded: () => unknown[]; open: () => void; close: () => void } {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    if (renderer) {
+      TestBed.configureTestingModule({
+        providers: [{ provide: CNGX_PANEL_RENDERER_FACTORY, useValue: () => renderer }],
+      });
+    }
+    const visible = signal(false);
+    const core = {
+      flatOptions: signal(makeOptions(50)),
+      effectiveOptions: signal(effective),
+    } as unknown as CngxSelectCore<number, number>;
+    runInInjectionContext(TestBed.inject(Injector), () =>
+      setupVirtualization<number, number>({
+        core,
+        popoverRef: signal({ isVisible: visible } as unknown as CngxPopover),
+        listboxRef: signal(undefined),
+        virtualization,
+      }),
+    );
+    TestBed.flushEffects();
+    const setOpen = (open: boolean): void => {
+      visible.set(open);
+      TestBed.flushEffects();
+    };
+    return {
+      coded: () => warn.mock.calls.filter((c) => /^CNGX2028: /.test(String(c[0]))),
+      open: () => setOpen(true),
+      close: () => setOpen(false),
+    };
+  }
+
+  const GROUPED: CngxSelectOptionsInput<number> = [{ label: 'Group', children: makeOptions(50) }];
+
+  it('stays silent for grouped options under the default config', () => {
+    const { coded, open } = warnings(CNGX_SELECT_DEFAULTS.virtualization, GROUPED);
+    open();
+    expect(coded().length).toBe(0);
+  });
+
+  it('warns once, on the first open, for grouped options under an explicit config', () => {
+    const { coded, open, close } = warnings({ threshold: 200 }, GROUPED);
+    expect(coded().length).toBe(0);
+    open();
+    expect(coded().length).toBe(1);
+    close();
+    open();
+    expect(coded().length).toBe(1);
+  });
+
+  it('stays silent for a flat list under an explicit config', () => {
+    const { coded, open } = warnings({ threshold: 200 }, makeOptions(50));
+    open();
+    expect(coded().length).toBe(0);
+  });
+
+  it('stays silent with virtualization off', () => {
+    const { coded, open } = warnings(null, GROUPED);
+    open();
+    expect(coded().length).toBe(0);
+  });
+
+  it('warns for a virtualizing consumer renderer, not for an identity-shaped one', () => {
+    const virtualizing: PanelRenderer<number> = {
+      renderOptions: signal(makeOptions(10)),
+      virtualizer: {
+        startIndex: signal(0),
+        offsetBefore: signal(0),
+        offsetAfter: signal(0),
+        setsize: signal(50),
+        rowSizeHint: signal(32),
+        scrollToIndex: () => undefined,
+      },
+    };
+    const { coded, open } = warnings(null, GROUPED, virtualizing);
+    open();
+    expect(coded().length).toBe(1);
+  });
+
+  it('stays silent for an identity-shaped consumer renderer under an explicit config', () => {
+    const identity: PanelRenderer<number> = { renderOptions: signal(makeOptions(50)) };
+    const { coded, open } = warnings({ threshold: 200 }, GROUPED, identity);
+    open();
+    expect(coded().length).toBe(0);
   });
 });
 

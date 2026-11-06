@@ -3,8 +3,10 @@ import { computed, effect, inject, untracked, type Signal } from '@angular/core'
 import type { CngxListbox } from '@cngx/common/interactive';
 import type { CngxPopover, CngxPopoverPresentation } from '@cngx/common/popover';
 
+import { cngxDevWarn } from '@cngx/utils';
+
 import { createAutoPanelRenderer, type CngxSelectAutoRecyclerHandle } from './auto-virtualize';
-import type { CngxSelectVirtualizationConfig } from '../config';
+import { CNGX_SELECT_DEFAULTS, type CngxSelectVirtualizationConfig } from '../config';
 import { isCngxSelectOptionGroupDef } from '../option.model';
 import {
   CNGX_PANEL_RENDERER_FACTORY,
@@ -113,6 +115,28 @@ export function setupVirtualization<T, TCommit>(opts: {
         untracked(() => consumerVirtualizer.scrollToIndex(target));
       }
     });
+  }
+
+  // Dev-only: a grouped list renders in full, so virtualization somebody asked
+  // for does nothing there. The default threshold nobody asked for stays quiet:
+  // the config reads as explicit when it is not the default object by reference.
+  if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+    const requested = auto
+      ? opts.virtualization !== CNGX_SELECT_DEFAULTS.virtualization
+      : panelRenderer.virtualizer !== undefined;
+    if (requested) {
+      let warned = false;
+      effect(() => {
+        if (warned || !opts.popoverRef()?.isVisible() || !hasGroup()) {
+          return;
+        }
+        warned = true;
+        cngxDevWarn(
+          'CNGX2028',
+          'withVirtualization(): grouped select options ignore the configured virtualization; every option renders and the recycler window is dropped. Flatten the options or drop withVirtualization() for this select.',
+        );
+      });
+    }
   }
 
   return {
