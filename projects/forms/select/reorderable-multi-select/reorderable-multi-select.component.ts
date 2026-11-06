@@ -1303,14 +1303,15 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /**
    * Chip-strip keydown delegate. Two jobs:
    *
-   *   1. `stopPropagation()` for Enter/Space inside a chip wrap. Without
-   *      it, Enter/Space on the focused remove button bubbles to
-   *      `CngxListboxTrigger.handleKeyDown`, which opens the popover
-   *      AND swallows the native Enter→click - chip stays, popover
-   *      opens. Scoped to the two activation keys so everything else
-   *      keeps bubbling - notably Escape, which must reach the
-   *      document-level popover dismiss listener to close an open panel
-   *      from a focused chip.
+   *   1. `stopPropagation()` for the keys a focused chip owns: Enter/Space
+   *      (activate the chip's remove button) and the paired `CngxReorder`
+   *      move gesture (the configured modifier + arrow / Home / End).
+   *      `CngxListboxTrigger` opens the popover on Enter/Space and - as an
+   *      ARIA combobox - on Alt+ArrowDown, so without this a chip activation
+   *      or a reorder would also open the panel. Scoped to those keys so
+   *      everything else keeps bubbling - notably Escape, which must reach the
+   *      document-level popover dismiss listener to close an open panel from a
+   *      focused chip.
    *   2. Forward plain arrow / Home / End to the roving controller.
    *      Modifier-pressed events are ignored so the paired
    *      `CngxReorder` owns that gesture.
@@ -1319,11 +1320,40 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    */
   protected handleStripKeydown(event: KeyboardEvent): void {
     const target = event.target as Element | null;
+    const onChip = !!target?.closest('[data-reorder-index]');
     const isActivationKey = event.key === 'Enter' || event.key === ' ';
-    if (isActivationKey && target?.closest('[data-reorder-index]')) {
+    if (onChip && (isActivationKey || this.isReorderGesture(event))) {
       event.stopPropagation();
     }
     this.chipStripRoving.handleKeydown(event);
+  }
+
+  /** The modifier + arrow / Home / End gesture the paired `CngxReorder` consumes. */
+  private isReorderGesture(event: KeyboardEvent): boolean {
+    if (!this.reorderModifierDown(event)) {
+      return false;
+    }
+    const key = event.key;
+    return (
+      key === 'ArrowUp' ||
+      key === 'ArrowDown' ||
+      key === 'ArrowLeft' ||
+      key === 'ArrowRight' ||
+      key === 'Home' ||
+      key === 'End'
+    );
+  }
+
+  /** Whether the event carries the configured reorder modifier. */
+  private reorderModifierDown(event: KeyboardEvent): boolean {
+    switch (this.reorderKeyboardModifier()) {
+      case 'ctrl':
+        return event.ctrlKey;
+      case 'alt':
+        return event.altKey;
+      case 'meta':
+        return event.metaKey;
+    }
   }
 
   /** @internal */
