@@ -44,6 +44,11 @@ const EMPTY_RANGE: RangeResult = {
  * @param overscanAfter Extra items to render below the viewport (leading edge when
  *   scrolling down). Defaults to `overscanBefore` for a symmetric range. Callers pass
  *   an asymmetric pair to pre-render into the scroll direction.
+ * @param maxLead Largest lead the caller ever adds to one overscan side. When set,
+ *   a list-mode window that reaches the last item holds the largest window the list
+ *   renders anywhere, so the scroll extent never shrinks on the way to the end.
+ *   Without it the window loses its trailing rows there, and WebKit pulls `scrollTop`
+ *   back by the height they took, on every step, so the last row stays out of reach.
  * @returns The computed range with spacer offsets.
  * @internal
  */
@@ -55,6 +60,7 @@ export function computeRange(
   overscanBefore: number,
   columns = 1,
   overscanAfter = overscanBefore,
+  maxLead?: number,
 ): RangeResult {
   if (totalCount <= 0) {
     return EMPTY_RANGE;
@@ -91,6 +97,7 @@ export function computeRange(
     estimateSize,
     overscanBefore,
     overscanAfter,
+    maxLead,
   );
 }
 
@@ -199,6 +206,7 @@ function computeVariableRange(
   estimateSize: (index: number) => number,
   overscanBefore: number,
   overscanAfter: number,
+  maxLead: number | undefined,
 ): RangeResult {
   let totalSize = 0;
   const offsets = new Array<number>(totalCount + 1);
@@ -213,8 +221,15 @@ function computeVariableRange(
   const rawStart = binarySearch(offsets, scrollTop, totalCount);
   const rawEnd = binarySearch(offsets, scrollTop + clientHeight, totalCount);
 
-  const start = Math.max(0, rawStart - overscanBefore);
   const end = Math.min(totalCount, rawEnd + 1 + overscanAfter);
+  const leadingStart = rawStart - overscanBefore;
+  const endWindowStart = () => {
+    const rowsInView = totalCount - binarySearch(offsets, totalSize - clientHeight, totalCount);
+    const overscan = 2 * Math.min(overscanBefore, overscanAfter);
+    return totalCount - (rowsInView + 1 + overscan + (maxLead ?? 0));
+  };
+  const holdsEndWindow = maxLead !== undefined && end === totalCount;
+  const start = Math.max(0, holdsEndWindow ? Math.min(leadingStart, endWindowStart()) : leadingStart);
 
   return {
     start,

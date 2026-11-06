@@ -39,13 +39,95 @@ async function openPanel(page: Page, host: Host, gesture: 'click' | 'tap' = 'cli
   return panel;
 }
 
-/** The popover scrolls while anchored, the panel shell in a sheet. */
-async function setScrollTop(panel: Locator, top: number): Promise<void> {
-  await panel.evaluate((el, value) => {
-    const shell = el.querySelector(':scope > cngx-select-panel-shell');
-    const scroller = shell && getComputedStyle(el).overflowY === 'hidden' ? shell : el;
-    scroller.scrollTop = value;
-  }, top);
+interface SettledScroll {
+  readonly scrollTop: number;
+  readonly clientHeight: number;
+  readonly scrollHeight: number;
+  readonly firstRow: string;
+  readonly lastRow: string;
+  readonly rowsInView: number;
+}
+
+/**
+ * Sets the position, then waits until position, extent and rendered window have
+ * not moved for 400 ms. A one-shot read after the jump can catch the short lived
+ * window between the jump and a bounce, so every assertion reads this end state.
+ * The popover scrolls while anchored, the panel shell in a sheet.
+ */
+async function jumpAndSettle(panel: Locator, top: number): Promise<SettledScroll> {
+  return panel.evaluate(
+    (el, value) =>
+      new Promise<SettledScroll>((resolve, reject) => {
+        const shell = el.querySelector(':scope > cngx-select-panel-shell');
+        const scroller = shell && getComputedStyle(el).overflowY === 'hidden' ? shell : el;
+        const read = (): SettledScroll => {
+          const rows = [...el.querySelectorAll('[role="option"]')];
+          const view = scroller.getBoundingClientRect();
+          return {
+            scrollTop: scroller.scrollTop,
+            clientHeight: scroller.clientHeight,
+            scrollHeight: scroller.scrollHeight,
+            firstRow: rows[0]?.textContent?.trim() ?? '',
+            lastRow: rows[rows.length - 1]?.textContent?.trim() ?? '',
+            rowsInView: rows.filter((row) => {
+              const box = row.getBoundingClientRect();
+              return box.bottom > view.top && box.top < view.bottom;
+            }).length,
+          };
+        };
+        scroller.scrollTop = value;
+        const start = performance.now();
+        let last = JSON.stringify(read());
+        let lastChange = start;
+        const sample = (): void => {
+          const now = performance.now();
+          const current = JSON.stringify(read());
+          if (current !== last) {
+            last = current;
+            lastChange = now;
+          }
+          if (now - lastChange >= 400) {
+            resolve(read());
+          } else if (now - start > 5000) {
+            reject(new Error(`scroll did not settle within 5 s: ${current}`));
+          } else {
+            requestAnimationFrame(sample);
+          }
+        };
+        requestAnimationFrame(sample);
+      }),
+    top,
+  );
+}
+
+/**
+ * A sheet row is taller than the recycler's estimate, so the first jump can land
+ * short once the window has grown: the last row is there, no bounce, and the
+ * second jump arrives. Anchored rows match the estimate and arrive at once.
+ */
+async function expectJumpReachesEnd(panel: Locator, jumps: 1 | 2): Promise<void> {
+  const first = await jumpAndSettle(panel, 1_000_000);
+  expect(first.lastRow).toContain('Item 999');
+  const settled = jumps === 2 ? await jumpAndSettle(panel, 1_000_000) : first;
+  expect(settled.lastRow).toContain('Item 999');
+  expect(settled.rowsInView).toBeGreaterThan(0);
+  expect(
+    Math.abs(settled.scrollTop + settled.clientHeight - settled.scrollHeight),
+  ).toBeLessThanOrEqual(1);
+}
+
+async function expectJumpsBackFromEnd(panel: Locator, jumps: 1 | 2): Promise<void> {
+  await expectJumpReachesEnd(panel, jumps);
+  const atStart = await jumpAndSettle(panel, 0);
+  expect(atStart.scrollTop).toBe(0);
+  expect(atStart.firstRow).toContain('Item 0');
+  expect(atStart.rowsInView).toBeGreaterThan(0);
+
+  await expectJumpReachesEnd(panel, jumps);
+  const middle = Math.floor(atStart.scrollHeight / 2);
+  const atMiddle = await jumpAndSettle(panel, middle);
+  expect(Math.abs(atMiddle.scrollTop - middle)).toBeLessThan(2);
+  expect(atMiddle.rowsInView).toBeGreaterThan(0);
 }
 
 /**
@@ -113,6 +195,13 @@ test.describe('select family at the default threshold, desktop', () => {
         await page.keyboard.press('ArrowDown');
         await expect(highlightOf(panel)).toHaveCount(1);
         await expectScrollHolds(panel, 3000);
+      });
+
+      test('a jump to the end stays there and jumps back hold', async ({ page }) => {
+        await page.goto(ALL);
+        const panel = await openPanel(page, host);
+        await expectScrollHolds(panel, 3000);
+        await expectJumpsBackFromEnd(panel, 1);
       });
     });
   }
@@ -187,8 +276,13 @@ test.describe('select family at the default threshold, phone', () => {
         await expectScrollHolds(panel, 3000);
         await expect(rowsOf(panel).first()).not.toContainText('Item 0');
 
-        await setScrollTop(panel, 1_000_000);
-        await expect(panel.locator('.cngx-select__option', { hasText: 'Item 999' })).toBeVisible();
+        await expectJumpReachesEnd(panel, 2);
+      });
+
+      test('jumps back from the end to the start and the middle hold', async ({ page }) => {
+        await page.goto(ALL);
+        const panel = await openPanel(page, host, 'tap');
+        await expectJumpsBackFromEnd(panel, 2);
       });
 
       test('survives a sheet rotation without a console error', async ({ page }) => {

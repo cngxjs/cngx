@@ -104,4 +104,23 @@ describe('select auto virtualization, default config', () => {
     expect(error).not.toHaveBeenCalled();
     expect(warn).not.toHaveBeenCalled();
   });
+
+  it('keeps the window size on a jump to the end, so the extent does not shrink', async () => {
+    const { host, settle, rows } = await mountOpen();
+    host.options.set(optionsOf(1000));
+    await settle();
+
+    const scroller = root!.querySelector<HTMLElement>('.cngx-select__panel')!;
+    scroller.scrollTop = 3000;
+    await settle();
+    const inMiddle = rows();
+
+    scroller.scrollTop = scroller.scrollHeight;
+    await settle();
+
+    expect(rows()).toBeGreaterThanOrEqual(inMiddle);
+    const rendered = root!.querySelectorAll('.cngx-select__option');
+    expect(rendered[rendered.length - 1].textContent).toContain('Option 999');
+    expect(scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop).toBeLessThanOrEqual(1);
+  });
 });

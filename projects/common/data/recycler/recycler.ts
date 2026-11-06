@@ -436,7 +436,16 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     const overscanBefore = overscan + (scrollingDown ? 0 : leadItems);
     const overscanAfter = overscan + (scrollingDown ? leadItems : 0);
 
-    return computeRange(scrollTop, clientHeight, total, size, overscanBefore, cols, overscanAfter);
+    return computeRange(
+      scrollTop,
+      clientHeight,
+      total,
+      size,
+      overscanBefore,
+      cols,
+      overscanAfter,
+      itemsPerViewport,
+    );
   });
 
   const start = computed(() => range().start);
