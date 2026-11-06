@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
-import { CngxPending, CngxSucceeded } from '@cngx/common/interactive';
+import { CngxFailed, CngxPending, CngxSucceeded } from '@cngx/common/interactive';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -71,6 +71,37 @@ class DwellHost {
     });
 }
 
+// Labels of different lengths in every status: the stacked cells keep the
+// button as wide as the widest one, so a right-aligned footer never shifts.
+@Component({
+  standalone: true,
+  imports: [CngxPopoverAction, CngxPending, CngxSucceeded, CngxFailed],
+  template: `
+    <button
+      cngxPopoverAction="solid"
+      tone="primary"
+      [action]="save"
+      [showDelay]="0"
+      [minDwell]="0"
+      [feedbackDuration]="10000"
+    >
+      Publish
+      <ng-template cngxPending>Publishing...</ng-template>
+      <ng-template cngxSucceeded>Published</ng-template>
+      <ng-template cngxFailed>Could not publish</ng-template>
+    </button>
+  `,
+})
+class WidthHost {
+  resolveFn: () => void = () => undefined;
+  rejectFn: (err: unknown) => void = () => undefined;
+  readonly save = (): Promise<void> =>
+    new Promise<void>((resolve, reject) => {
+      this.resolveFn = resolve;
+      this.rejectFn = reject;
+    });
+}
+
 @Component({
   standalone: true,
   imports: [CngxPopoverAction],
@@ -114,6 +145,20 @@ function query(root: HTMLElement, selector: string): HTMLElement {
   return el as HTMLElement;
 }
 
+/** The `aria-hidden` label cell that holds `text`. */
+function hiddenCell(button: HTMLElement, text: string): HTMLElement {
+  const cell = Array.from(
+    button.querySelectorAll<HTMLElement>('.cngx-popover-action__label[aria-hidden="true"]'),
+  ).find((el) => (el.textContent ?? '').trim() === text);
+  if (!cell) {
+    throw new Error(`no hidden label cell holds ${text}`);
+  }
+  return cell;
+}
+
+const activeText = (button: HTMLElement): string =>
+  (query(button, '.cngx-popover-action__label[data-active]').textContent ?? '').trim();
+
 /** Re-renders the mounted fixture until `done()` holds (real timers). */
 async function waitFor(done: () => boolean): Promise<void> {
   for (let i = 0; i < 50; i++) {
@@ -148,7 +193,7 @@ describe('CngxPopoverAction geometry', () => {
     button.click();
     await waitFor(() => button.hasAttribute('data-busy'));
     const label = query(button, '.cngx-button__label');
-    expect(label.textContent).toContain('Saving...');
+    expect(activeText(button)).toBe('Saving...');
     expect(computedValue(label, 'opacity')).toBe('1');
     expect(button.querySelector('.cngx-button__busy')).toBeNull();
   });
@@ -158,10 +203,11 @@ describe('CngxPopoverAction geometry', () => {
     button.click();
     await waitFor(() => button.hasAttribute('data-busy'));
     (mountedFixture?.componentInstance as DwellHost).resolveFn();
-    await waitFor(() => button.querySelector('.cngx-popover-action__label[aria-hidden]') !== null);
+    // data-pending clears at the settle; the dwell still holds data-busy.
+    await waitFor(() => !button.hasAttribute('data-pending'));
     expect(button.hasAttribute('data-busy')).toBe(true);
     const active = query(button, '.cngx-popover-action__label[data-active]');
-    const result = query(button, '.cngx-popover-action__label[aria-hidden]');
+    const result = hiddenCell(button, 'Saved!');
     expect(active.textContent).toContain('Saving...');
     expect(computedValue(active, 'visibility')).toBe('visible');
     expect(result.textContent).toContain('Saved!');
@@ -169,6 +215,39 @@ describe('CngxPopoverAction geometry', () => {
     expect(computedValue(query(button, '.cngx-button__label'), 'opacity')).toBe('1');
     // Stacked in one grid cell: the active and the waiting cell share a row.
     expect(active.getBoundingClientRect().top).toBe(result.getBoundingClientRect().top);
+  });
+
+  it('keeps the button width identical in the idle, busy and success states', async () => {
+    const button = mount(WidthHost, 'button.cngx-popover-action');
+    const idle = button.getBoundingClientRect().width;
+    expect(activeText(button)).toBe('Publish');
+
+    button.click();
+    await waitFor(() => button.hasAttribute('data-busy'));
+    expect(activeText(button)).toBe('Publishing...');
+    const busy = button.getBoundingClientRect().width;
+
+    (mountedFixture?.componentInstance as WidthHost).resolveFn();
+    await waitFor(() => activeText(button) === 'Published');
+    const success = button.getBoundingClientRect().width;
+
+    expect(idle).toBeGreaterThan(0);
+    expect(busy).toBe(idle);
+    expect(success).toBe(idle);
+  });
+
+  it('keeps the button width identical in the idle and error states', async () => {
+    const button = mount(WidthHost, 'button.cngx-popover-action');
+    const idle = button.getBoundingClientRect().width;
+
+    button.click();
+    await waitFor(() => button.hasAttribute('data-busy'));
+    (mountedFixture?.componentInstance as WidthHost).rejectFn(new Error('offline'));
+    await waitFor(() => activeText(button) === 'Could not publish');
+    const error = button.getBoundingClientRect().width;
+
+    expect(idle).toBeGreaterThan(0);
+    expect(error).toBe(idle);
   });
 
   it('fades the label under the spinner without a cngxPending template', async () => {

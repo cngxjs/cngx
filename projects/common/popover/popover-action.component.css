@@ -24,11 +24,13 @@
  *
  * **Status labels**
  *
- * - `.cngx-popover-action__labels` - the label as one grid cell holding the
- *   visible label cell and, from the settle on, the result cell
- * - `.cngx-popover-action__label[data-active]` - the visible, named cell; a
- *   result cell waiting out the post-settle dwell is `visibility: hidden`
- *   and `aria-hidden`, and already sizes the button
+ * - `.cngx-popover-action__labels` - one grid cell holding the idle content
+ *   and the projected `cngxPending`, `cngxSucceeded` and `cngxFailed` cells;
+ *   the button is as wide as the widest label, so a right-aligned footer
+ *   never shifts while the run swaps them
+ * - `.cngx-popover-action__label[data-active]` - the visible, named cell; the
+ *   others (a result cell waiting out the post-settle dwell among them) are
+ *   `visibility: hidden` and `aria-hidden`
  * - `data-status-label` - set while a projected `cngxPending` template
  *   shows instead of the spinner (through the run and its dwell); the
  *   button sheet's `[data-busy][data-status-label]` host hook keeps the

@@ -65,7 +65,10 @@ import { CngxPopover } from './popover.directive';
  * visual shows, through the run and its dwell after the settle, the pending
  * template stays visible with no spinner, and without one the spinner covers
  * the idle label. The result templates show once the busy visual releases, so
- * a fast run goes from the idle label straight to the result. `status()`
+ * a fast run goes from the idle label straight to the result. Every label
+ * cell stays mounted in one grid cell (the inactive ones `visibility: hidden`
+ * and `aria-hidden`), so the button keeps the width of its widest label and a
+ * right-aligned footer never shifts; the active cell alone names it. `status()`
  * stays immediate; branch a hand-rolled `@switch` on {@link busyVisible} for
  * the same timing.
  *
@@ -163,20 +166,24 @@ import { CngxPopover } from './popover.directive';
     '[attr.data-status-label]': 'activeCell() === "idle" ? null : ""',
   },
   template: `
-    <ng-template #idle><ng-content /></ng-template>
     <ng-content select="[cngxButtonStart]" />
     <span class="cngx-button__label cngx-popover-action__labels">
-      @if (activeCell() === 'idle') {
-        <span class="cngx-popover-action__label" data-active>
-          <ng-container *ngTemplateOutlet="idle" />
-        </span>
-      }
-      @if (activeCell() === 'pending' && pendingTpl(); as tpl) {
-        <span class="cngx-popover-action__label" data-active>
+      <span
+        class="cngx-popover-action__label"
+        [attr.data-active]="activeCell() === 'idle' ? '' : null"
+        [attr.aria-hidden]="activeCell() === 'idle' ? null : 'true'"
+        ><ng-content
+      /></span>
+      @if (pendingTpl(); as tpl) {
+        <span
+          class="cngx-popover-action__label"
+          [attr.data-active]="activeCell() === 'pending' ? '' : null"
+          [attr.aria-hidden]="activeCell() === 'pending' ? null : 'true'"
+        >
           <ng-container *ngTemplateOutlet="tpl.templateRef" />
         </span>
       }
-      @if (resultCell() === 'success' && succeededTpl(); as tpl) {
+      @if (succeededTpl(); as tpl) {
         <span
           #succeededCell
           class="cngx-popover-action__label"
@@ -186,7 +193,7 @@ import { CngxPopover } from './popover.directive';
           <ng-container *ngTemplateOutlet="tpl.templateRef" />
         </span>
       }
-      @if (resultCell() === 'error' && failedTpl(); as tpl) {
+      @if (failedTpl(); as tpl) {
         <span
           #failedCell
           class="cngx-popover-action__label"
@@ -240,7 +247,7 @@ export class CngxPopoverAction {
   /**
    * @internal - the result cell the run's status asks for: `'success'` /
    * `'error'` while that status holds and its template is projected, else
-   * `null`. It is rendered from the settle on, `aria-hidden` until it is the
+   * `null`. Every projected cell stays mounted, `aria-hidden` until it is the
    * {@link activeCell}, so the settle announcement reads the result text
    * while the busy visual still holds the pending or idle cell.
    */
@@ -262,7 +269,8 @@ export class CngxPopoverAction {
    * under the spinner; result cells show only once it releases. A run faster
    * than the show delay goes from idle to the result with no pending flash.
    * Any cell but `'idle'` sets `data-status-label`, which keeps the label
-   * visible under `data-busy` and drops the spinner.
+   * visible under `data-busy` and drops the spinner. All cells share one grid
+   * cell, so the button is as wide as its widest label in every state.
    */
   protected readonly activeCell = computed<'idle' | 'pending' | 'success' | 'error'>(() => {
     if (this.brain.busyVisible()) {
@@ -408,8 +416,8 @@ export class CngxPopoverAction {
       if (explicit !== undefined) {
         return explicit;
       }
-      // The settle's own result cell, rendered (and aria-hidden while the
-      // busy visual holds) since the settle; never the pending cell.
+      // The settle's own result cell, always mounted (and aria-hidden while
+      // the busy visual holds); never the pending cell.
       const cell = success ? this.succeededCell() : this.failedCell();
       const rendered = cell ? resolveSpokenText(cell.nativeElement as Element) : '';
       if (rendered !== '') {

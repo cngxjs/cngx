@@ -290,6 +290,18 @@ function setup<T>(hostType: new () => T) {
   return { fixture, popoverEl };
 }
 
+// The label stack: one cell per status, the inactive ones aria-hidden.
+const label = (btn: HTMLElement): HTMLElement =>
+  btn.querySelector('.cngx-button__label') as HTMLElement;
+// resolveSpokenText skips aria-hidden subtrees: what AT reads of the
+// label, and of the whole button (its accessible name in jsdom).
+const shownLabel = (btn: HTMLElement): string => resolveSpokenText(label(btn));
+const accessibleName = (btn: HTMLElement): string => resolveSpokenText(btn);
+const hiddenCellText = (btn: HTMLElement): string[] =>
+  Array.from(label(btn).querySelectorAll(':scope > [aria-hidden="true"]'), (el) =>
+    (el.textContent ?? '').trim(),
+  );
+
 // ── Tests ───────────────────────────────────────────────────────────────
 
 describe('CngxPopoverAction', () => {
@@ -315,7 +327,7 @@ describe('CngxPopoverAction', () => {
     await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay);
     fixture.detectChanges();
 
-    expect(btn.textContent).toContain('Saving...');
+    expect(accessibleName(btn)).toBe('Saving...');
   });
 
   it('should show pending template during async action', async () => {
@@ -330,8 +342,8 @@ describe('CngxPopoverAction', () => {
     await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay);
     fixture.detectChanges();
 
-    expect(btn.textContent).toContain('Saving...');
-    expect(btn.textContent).not.toContain('Save');
+    expect(accessibleName(btn)).toBe('Saving...');
+    expect(accessibleName(btn)).not.toContain('Save');
   });
 
   it('keeps the idle label for a run that settles before the show delay', async () => {
@@ -347,12 +359,12 @@ describe('CngxPopoverAction', () => {
     fixture.detectChanges();
     expect(host.action().busyVisible()).toBe(false);
     expect(btn.getAttribute('aria-busy')).toBe('true');
-    expect(btn.textContent).not.toContain('Saving...');
+    expect(accessibleName(btn)).not.toContain('Saving...');
 
     host.resolveFn();
     await vi.advanceTimersByTimeAsync(0);
     fixture.detectChanges();
-    expect(btn.textContent).toContain('Saved!');
+    expect(accessibleName(btn)).toBe('Saved!');
   });
 
   it('should show succeeded template after success', async () => {
@@ -371,7 +383,7 @@ describe('CngxPopoverAction', () => {
     await vi.advanceTimersByTimeAsync(0);
     fixture.detectChanges();
 
-    expect(btn.textContent).toContain('Saved!');
+    expect(accessibleName(btn)).toBe('Saved!');
   });
 
   describe('status passthrough', () => {
@@ -677,19 +689,59 @@ describe('CngxPopoverAction', () => {
       expect(btn.hasAttribute('data-busy')).toBe(false);
     });
 
+    describe('stacked label cells', () => {
+      async function render(fixture: { detectChanges(): void }): Promise<void> {
+        await vi.advanceTimersByTimeAsync(0);
+        fixture.detectChanges();
+        TestBed.flushEffects();
+        fixture.detectChanges();
+      }
+
+      it('names the button by the active cell and keeps every other cell mounted aria-hidden', async () => {
+        const { fixture } = setup(ConfirmHost);
+        const host = fixture.componentInstance;
+        const btn = confirmButton(fixture);
+
+        expect(accessibleName(btn)).toBe('Save');
+        expect(shownLabel(btn)).toBe('Save');
+        expect(hiddenCellText(btn)).toEqual(['Saving...', 'Saved!', 'Failed:']);
+
+        btn.click();
+        fixture.detectChanges();
+        await vi.advanceTimersByTimeAsync(SHOW);
+        fixture.detectChanges();
+        expect(btn.getAttribute('data-busy')).toBe('true');
+        expect(accessibleName(btn)).toBe('Saving...');
+        expect(hiddenCellText(btn)).toEqual(['Save', 'Saved!', 'Failed:']);
+
+        host.resolveFn();
+        await render(fixture);
+        await vi.advanceTimersByTimeAsync(DWELL);
+        fixture.detectChanges();
+        expect(btn.hasAttribute('data-busy')).toBe(false);
+        expect(accessibleName(btn)).toBe('Saved!');
+        expect(hiddenCellText(btn)).toEqual(['Save', 'Saving...', 'Failed:']);
+
+        await vi.advanceTimersByTimeAsync(500);
+        fixture.detectChanges();
+        expect(accessibleName(btn)).toBe('Save');
+
+        btn.click();
+        fixture.detectChanges();
+        await vi.advanceTimersByTimeAsync(SHOW);
+        fixture.detectChanges();
+        host.rejectFn('Network error');
+        await render(fixture);
+        await vi.advanceTimersByTimeAsync(DWELL);
+        fixture.detectChanges();
+        expect(accessibleName(btn)).toBe('Failed: Network error');
+        expect(hiddenCellText(btn)).toEqual(['Save', 'Saving...', 'Saved!']);
+      });
+    });
+
     describe('label in the post-settle dwell', () => {
       const liveRegion = (btn: HTMLElement): HTMLElement =>
         btn.nextElementSibling as HTMLElement;
-      const label = (btn: HTMLElement): HTMLElement =>
-        btn.querySelector('.cngx-button__label') as HTMLElement;
-      // resolveSpokenText skips aria-hidden subtrees: what AT reads of the
-      // label, and of the whole button (its accessible name in jsdom).
-      const shownLabel = (btn: HTMLElement): string => resolveSpokenText(label(btn));
-      const accessibleName = (btn: HTMLElement): string => resolveSpokenText(btn);
-      const hiddenCellText = (btn: HTMLElement): string[] =>
-        Array.from(label(btn).querySelectorAll(':scope > [aria-hidden="true"]'), (el) =>
-          (el.textContent ?? '').trim(),
-        );
 
       async function render(fixture: { detectChanges(): void }): Promise<void> {
         await vi.advanceTimersByTimeAsync(0);
@@ -788,7 +840,7 @@ describe('CngxPopoverAction', () => {
       expect(btn.getAttribute('data-busy')).toBe('true');
       expect(btn.hasAttribute('data-status-label')).toBe(true);
       expect(btn.querySelector('.cngx-button__busy')).toBeNull();
-      expect(btn.querySelector('.cngx-button__label')?.textContent).toContain('Saving...');
+      expect(shownLabel(btn)).toBe('Saving...');
     });
 
     it('shows the spinner and no status label without a cngxPending template', async () => {
@@ -867,7 +919,7 @@ describe('CngxPopoverAction', () => {
     await vi.advanceTimersByTimeAsync(0);
     fixture.detectChanges();
 
-    expect(btn.textContent).toContain('Network error');
+    expect(accessibleName(btn)).toBe('Failed: Network error');
   });
   describe('settle announcement', () => {
     // The co-hosted CngxAsyncClick region, rendered as the host's sibling.
@@ -1078,14 +1130,14 @@ describe('CngxPopoverAction', () => {
 
       button(fixture).click();
       await settleRender(fixture);
-      expect(button(fixture).textContent).toContain('Saved!');
+      expect(accessibleName(button(fixture))).toBe('Saved!');
       expect(region(fixture).textContent).toBe('Draft stored');
 
       await vi.advanceTimersByTimeAsync(100);
       host.outcome = 'error';
       button(fixture).click();
       await settleRender(fixture);
-      expect(button(fixture).textContent).toContain('Could not save');
+      expect(accessibleName(button(fixture))).toBe('Could not save');
       expect(region(fixture).textContent).toBe('Draft not stored');
     });
 

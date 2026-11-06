@@ -61,7 +61,7 @@ test.describe('common/popover/popover-panel', () => {
     const confirm = panel.locator('button.cngx-popover-action');
     await confirm.focus();
     await page.keyboard.press('Enter');
-    await expect(confirm).toContainText('Saved!');
+    await expect(confirm).toHaveAccessibleName('Saved!');
     // The story installs no withCloseOnSuccess(); Escape closes after the run.
     await page.keyboard.press('Escape');
     await expect(panel).toBeHidden();
