@@ -10,10 +10,20 @@ import {
 
 function press(
   key: string,
-  mods: Partial<{ ctrl: boolean; meta: boolean; shift: boolean; alt: boolean; composing: boolean }> = {},
+  mods: Partial<{
+    ctrl: boolean;
+    meta: boolean;
+    shift: boolean;
+    alt: boolean;
+    composing: boolean;
+    code: string;
+    altGraph: boolean;
+  }> = {},
 ): KeyboardEvent {
   return new KeyboardEvent('keydown', {
     key,
+    code: mods.code ?? '',
+    modifierAltGraph: mods.altGraph ?? false,
     ctrlKey: mods.ctrl ?? false,
     metaKey: mods.meta ?? false,
     shiftKey: mods.shift ?? false,
@@ -99,7 +109,7 @@ describe('matchesKeyCombo IME composition', () => {
     expect(matchesKeyCombo(press('b', { meta: true }), combo, true)).toBe(true);
   });
 
-  it("rejects a composing bare-key press even when the key text matches", () => {
+  it('rejects a composing bare-key press even when the key text matches', () => {
     const combo = parseKeyCombo('k');
     expect(matchesKeyCombo(press('k', { composing: true }), combo, false)).toBe(false);
   });
@@ -113,6 +123,57 @@ describe("matchesKeyCombo literal '+' key", () => {
     expect(matchesKeyCombo(press('+', { meta: true, shift: true }), combo, true)).toBe(true);
     expect(matchesKeyCombo(press('+', { ctrl: true }), combo, false)).toBe(true);
     expect(matchesKeyCombo(press('+'), combo, true)).toBe(false);
+  });
+});
+
+describe('matchesKeyCombo AltGr guard', () => {
+  it('rejects AltGr character input off macOS even though the physical key matches', () => {
+    const combo = parseKeyCombo('ctrl+alt+e');
+    // Windows reports AltGr as Ctrl+Alt; the code fallback alone would accept KeyE.
+    const altGr = press('€', { code: 'KeyE', ctrl: true, alt: true, altGraph: true });
+    expect(matchesKeyCombo(altGr, combo, false)).toBe(false);
+    const chord = press('€', { code: 'KeyE', ctrl: true, alt: true });
+    expect(matchesKeyCombo(chord, combo, false)).toBe(true);
+  });
+
+  it('is off on macOS, where Option is alt and there is no AltGr key', () => {
+    const combo = parseKeyCombo('alt+b');
+    expect(matchesKeyCombo(press('∫', { code: 'KeyB', alt: true }), combo, true)).toBe(true);
+    expect(
+      matchesKeyCombo(press('∫', { code: 'KeyB', alt: true, altGraph: true }), combo, true),
+    ).toBe(true);
+  });
+});
+
+describe('matchesKeyCombo physical-key fallback', () => {
+  it('matches a Shift+digit press whose key is the shifted glyph', () => {
+    const combo = parseKeyCombo('shift+1');
+    expect(matchesKeyCombo(press('!', { code: 'Digit1', shift: true }), combo, false)).toBe(true);
+  });
+
+  it('a bare digit combo still rejects the shifted press', () => {
+    const combo = parseKeyCombo('1');
+    expect(matchesKeyCombo(press('!', { code: 'Digit1', shift: true }), combo, false)).toBe(false);
+  });
+
+  it('never trusts the code when the layout still produces a Latin letter (QWERTZ)', () => {
+    // QWERTZ: the key labelled Y sits on the US Z position.
+    const shiftY = press('Y', { code: 'KeyZ', shift: true });
+    expect(matchesKeyCombo(shiftY, parseKeyCombo('shift+z'), false)).toBe(false);
+    expect(matchesKeyCombo(shiftY, parseKeyCombo('shift+y'), false)).toBe(true);
+    expect(
+      matchesKeyCombo(press('y', { code: 'KeyZ', alt: true }), parseKeyCombo('alt+z'), false),
+    ).toBe(false);
+  });
+
+  it('falls back to the physical US position on a non-Latin layout', () => {
+    const combo = parseKeyCombo('alt+z');
+    expect(matchesKeyCombo(press('я', { code: 'KeyZ', alt: true }), combo, false)).toBe(true);
+  });
+
+  it('does not fall back without Alt or Shift', () => {
+    const combo = parseKeyCombo('mod+z');
+    expect(matchesKeyCombo(press('я', { code: 'KeyZ', ctrl: true }), combo, false)).toBe(false);
   });
 });
 
@@ -139,7 +200,11 @@ describe('CNGX_NESTED_INTERACTIVE_SELECTOR', () => {
     ]) {
       expect(matches(selector, html), html).toBe(true);
     }
-    for (const html of ['<a></a>', '<span contenteditable="false"></span>', '<span role="option"></span>']) {
+    for (const html of [
+      '<a></a>',
+      '<span contenteditable="false"></span>',
+      '<span role="option"></span>',
+    ]) {
       expect(matches(selector, html), html).toBe(false);
     }
   });
