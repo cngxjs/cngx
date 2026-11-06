@@ -42,27 +42,39 @@ async function openPanel(page: Page, host: Host, gesture: 'click' | 'tap' = 'cli
 /** The popover scrolls while anchored, the panel shell in a sheet. */
 async function setScrollTop(panel: Locator, top: number): Promise<void> {
   await panel.evaluate((el, value) => {
-    scrollerOf(el).scrollTop = value;
-
-    function scrollerOf(p: Element): Element {
-      const shell = p.querySelector(':scope > cngx-select-panel-shell');
-      return shell && getComputedStyle(p).overflowY === 'hidden' ? shell : p;
-    }
+    const shell = el.querySelector(':scope > cngx-select-panel-shell');
+    const scroller = shell && getComputedStyle(el).overflowY === 'hidden' ? shell : el;
+    scroller.scrollTop = value;
   }, top);
 }
 
-async function getScrollTop(panel: Locator): Promise<number> {
-  return panel.evaluate((el) => {
-    const shell = el.querySelector(':scope > cngx-select-panel-shell');
-    const scroller = shell && getComputedStyle(el).overflowY === 'hidden' ? shell : el;
-    return scroller.scrollTop;
-  });
-}
-
-async function expectScrollHolds(page: Page, panel: Locator, top: number): Promise<void> {
-  await setScrollTop(panel, top);
-  await page.waitForTimeout(400);
-  expect(Math.abs((await getScrollTop(panel)) - top)).toBeLessThan(2);
+/**
+ * Sets the position, then samples it on every frame for 400 ms, so a pull-back
+ * that settles again inside the span still fails.
+ */
+async function expectScrollHolds(panel: Locator, top: number): Promise<void> {
+  const samples = await panel.evaluate(
+    (el, value) =>
+      new Promise<number[]>((resolve) => {
+        const shell = el.querySelector(':scope > cngx-select-panel-shell');
+        const scroller = shell && getComputedStyle(el).overflowY === 'hidden' ? shell : el;
+        scroller.scrollTop = value;
+        const seen: number[] = [];
+        const start = performance.now();
+        const sample = (): void => {
+          seen.push(scroller.scrollTop);
+          if (performance.now() - start < 400) {
+            requestAnimationFrame(sample);
+          } else {
+            resolve(seen);
+          }
+        };
+        requestAnimationFrame(sample);
+      }),
+    top,
+  );
+  expect(samples.length).toBeGreaterThan(1);
+  expect(samples.filter((seen) => Math.abs(seen - top) >= 2)).toEqual([]);
 }
 
 function reachLastKey(host: Host): string {
@@ -100,7 +112,7 @@ test.describe('select family at the default threshold, desktop', () => {
         const panel = await openPanel(page, host);
         await page.keyboard.press('ArrowDown');
         await expect(highlightOf(panel)).toHaveCount(1);
-        await expectScrollHolds(page, panel, 3000);
+        await expectScrollHolds(panel, 3000);
       });
     });
   }
@@ -119,7 +131,7 @@ test.describe('select family at the default threshold, desktop', () => {
     test('keeps a scrolled position', async ({ page }) => {
       await page.goto(ALL);
       const panel = await openPanel(page, SHELL);
-      await expectScrollHolds(page, panel, 3000);
+      await expectScrollHolds(panel, 3000);
     });
   });
 
@@ -154,7 +166,7 @@ test.describe('select family at the default threshold, desktop', () => {
     await expect(rowsOf(panel)).toHaveCount(500);
 
     await page.keyboard.press('ArrowDown');
-    await expectScrollHolds(page, panel, 5000);
+    await expectScrollHolds(panel, 5000);
     expect(problems.filter((text) => text.includes('CNGX2028'))).toEqual([]);
   });
 });
@@ -172,7 +184,7 @@ test.describe('select family at the default threshold, phone', () => {
         expect(count).toBeGreaterThan(0);
         expect(count).toBeLessThan(100);
 
-        await expectScrollHolds(page, panel, 3000);
+        await expectScrollHolds(panel, 3000);
         await expect(rowsOf(panel).first()).not.toContainText('Item 0');
 
         await setScrollTop(panel, 1_000_000);
