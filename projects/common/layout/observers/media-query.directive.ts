@@ -13,7 +13,7 @@ import { observeMediaQuery } from '@cngx/core/utils';
  * ```html
  * <div cngxMediaQuery="(min-width: 1024px)" #mq="cngxMediaQuery">
  *   <nav [cngxDrawerPanel]="drawer"
- *        [mode]="mq.matches() ? 'side' : 'over'">
+ *        [mode]="mq.matches() ? 'push' : 'over'">
  *     …
  *   </nav>
  * </div>

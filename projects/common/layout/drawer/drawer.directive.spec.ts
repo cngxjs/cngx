@@ -131,4 +131,11 @@ describe('CngxDrawer', () => {
     fixture.detectChanges();
     expect(dir.opened()).toBe(false);
   });
+
+  it('reads the panel-target presentation defaults before a panel connects', () => {
+    const { dir } = setupUncontrolled();
+    expect(dir.modal()).toBe(false);
+    expect(dir.mode()).toBe('over');
+    expect(dir.side()).toBe('left');
+  });
 });

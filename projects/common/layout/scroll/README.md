@@ -91,11 +91,11 @@ Tracks which section is currently most visible in the viewport using `Intersecti
 
 ## CngxScrollLock
 
-Prevents scrolling on the document body by setting `overflow: hidden` and `scrollbar-gutter: stable` on `<html>`. Multiple instances are ref-counted - original styles are only restored when the last lock is released.
+Prevents scrolling on the document by setting `overflow: hidden` and `scrollbar-gutter: stable` on `<html>`, or on the element passed to `[cngxScrollLockTarget]` (a scroll container). Instances are ref-counted per target - original styles are only restored when the last lock on that element is released.
 
 ### Behavior
 
-- Sets `overflow: hidden` and `scrollbar-gutter: stable` on `<html>` when enabled.
+- Sets `overflow: hidden` and `scrollbar-gutter: stable` on the target (`<html>` by default) when enabled.
 - Prevents layout shift from scrollbar disappearance via `scrollbar-gutter: stable`.
 - Restores original styles when disabled.
 - Ref-counts instances: last lock to release restores styles.
@@ -112,6 +112,11 @@ Prevents scrolling on the document body by setting `overflow: hidden` and `scrol
 <div [cngxScrollLock]="isModalOpen()">
   <!-- Modal content -->
 </div>
+
+<!-- Inside a scroll container -->
+<section #pane class="pane">
+  <aside [cngxScrollLock]="open()" [cngxScrollLockTarget]="pane"></aside>
+</section>
 ```
 
 ## CngxStickyHeader

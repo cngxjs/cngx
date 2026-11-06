@@ -1,5 +1,5 @@
 import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { createLanguageSection } from '@cngx/core/i18n';
+import { createLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
 import { createOverrideMerge } from '@cngx/core/utils';
 
 import { CNGX_LAYOUT_LANGUAGE_EN, type CngxLayoutLanguageSection } from './layout-language-section';
@@ -10,18 +10,59 @@ import { CNGX_LAYOUT_LANGUAGE_EN, type CngxLayoutLanguageSection } from './layou
  * `Signal`, and {@link withLayoutI18nLabels} accepts a `Signal` of a partial
  * bundle.
  *
- * Both keys are the fallback of the `CngxExpandableText` `moreLabel` /
- * `lessLabel` inputs, resolved in a `computed()`: a bound input wins, and an
- * unbound one follows a language switch. The same shape as the layout
- * section of a language pack, declared once as
- * {@link CngxLayoutLanguageSection}.
+ * Every key is the fallback of a copy input on a layout atom, resolved in a
+ * `computed()`: a bound input wins, and an unbound one follows a language
+ * switch. The keys mirror the layout section of a language pack
+ * ({@link CngxLayoutLanguageSection}); composed copy is a function of its
+ * parameters, formatted for the reading locale.
  *
  * @since 0.1.0
  */
-export type CngxLayoutI18n = CngxLayoutLanguageSection;
+export interface CngxLayoutI18n {
+  /** Fallback of `CngxExpandableText.moreLabel`. */
+  readonly expandableTextMore: string;
+  /** Fallback of `CngxExpandableText.lessLabel`. */
+  readonly expandableTextLess: string;
+  /** Fallback of `CngxResizable.label`, the handle's accessible name. */
+  readonly resizeHandle: string;
+  /** Fallback of `CngxResizable.valueText`: the handle's `aria-valuetext` for a px size. */
+  readonly resizeValueText: (size: number) => string;
+  /**
+   * Fallback of `CngxPanelTrigger.label` on a trigger without text content
+   * whose panel has no `label`. Stable: the panel state is `aria-expanded`.
+   */
+  readonly panelTrigger: string;
+  /** Fallback of `CngxSidebar.label`, the region's accessible name. */
+  readonly sidebarRegion: string;
+  /**
+   * Fallback of `CngxDrawerPanel.label` and `CngxDrawerSurface.label`: the
+   * name of an engaged page modal (a `dialog`) without a bound label or a
+   * static `aria-label` / `aria-labelledby`.
+   */
+  readonly drawerDialog: string;
+}
 
 /** @internal The English section with the active pack's layout section on top. */
-const layoutBundleFromPack = createLanguageSection('layout', CNGX_LAYOUT_LANGUAGE_EN);
+const injectLayoutSection = createLanguageSection('layout', CNGX_LAYOUT_LANGUAGE_EN);
+
+/** @internal Turns a layout section into the token's keys for a locale. */
+function layoutBundleFrom(section: CngxLayoutLanguageSection, locale: string): CngxLayoutI18n {
+  return {
+    expandableTextMore: section.expandableTextMore,
+    expandableTextLess: section.expandableTextLess,
+    resizeHandle: section.resizeHandle,
+    resizeValueText: (size) => formatMessage(section.resizeValueText, { size }, locale),
+    panelTrigger: section.panelTrigger,
+    sidebarRegion: section.sidebarRegion,
+    drawerDialog: section.drawerDialog,
+  };
+}
+
+/** @internal Builds and reads the token, formatted for the reading locale. */
+const layoutBundle = createSectionBundle<CngxLayoutLanguageSection, CngxLayoutI18n>({
+  section: injectLayoutSection,
+  toBundle: layoutBundleFrom,
+});
 
 /**
  * DI token for the layout i18n bundle. `providedIn: 'root'`: the layout
@@ -31,11 +72,11 @@ const layoutBundleFromPack = createLanguageSection('layout', CNGX_LAYOUT_LANGUAG
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/i18n/layout-i18n.ts
  * @since 0.1.0
- * @relatedTo CngxExpandableText
+ * @relatedTo CngxExpandableText, CngxResizable, CngxPanelTrigger, CngxSidebar, CngxDrawerPanel
  */
 export const CNGX_LAYOUT_I18N = new InjectionToken<Signal<CngxLayoutI18n>>('CngxLayoutI18n', {
   providedIn: 'root',
-  factory: layoutBundleFromPack,
+  factory: () => layoutBundle.build(),
 });
 
 /**
@@ -87,11 +128,7 @@ export function withLayoutI18nLabels(
 export function provideLayoutI18n(...features: readonly CngxLayoutI18nFeature[]): Provider {
   return {
     provide: CNGX_LAYOUT_I18N,
-    useFactory: () =>
-      features.reduce<Signal<CngxLayoutI18n>>(
-        (bundle, feat) => feat(bundle),
-        layoutBundleFromPack(),
-      ),
+    useFactory: () => layoutBundle.build(features),
   };
 }
 
@@ -102,5 +139,5 @@ export function provideLayoutI18n(...features: readonly CngxLayoutI18nFeature[])
  * @since 0.1.0
  */
 export function injectLayoutI18n(): Signal<CngxLayoutI18n> {
-  return inject(CNGX_LAYOUT_I18N);
+  return layoutBundle.resolve(inject(CNGX_LAYOUT_I18N));
 }

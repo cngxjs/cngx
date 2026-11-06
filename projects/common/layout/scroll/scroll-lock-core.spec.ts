@@ -52,6 +52,56 @@ describe('createScrollLock', () => {
   });
 });
 
+describe('createScrollLock on scroll containers', () => {
+  function container(): HTMLElement {
+    const el = document.createElement('div');
+    el.style.overflow = 'auto';
+    document.body.appendChild(el);
+    return el;
+  }
+
+  it('locks two targets independently', () => {
+    const a = container();
+    const b = container();
+    const releaseA = createScrollLock(a);
+    const releaseB = createScrollLock(b);
+    expect(a.style.overflow).toBe('hidden');
+    expect(b.style.overflow).toBe('hidden');
+
+    releaseA();
+    expect(a.style.overflow).toBe('auto');
+    expect(b.style.overflow).toBe('hidden');
+
+    releaseB();
+    expect(b.style.overflow).toBe('auto');
+    a.remove();
+    b.remove();
+  });
+
+  it('keeps nested acquisitions on one target until the last release', () => {
+    const el = container();
+    const outer = createScrollLock(el);
+    const inner = createScrollLock(el);
+
+    inner();
+    expect(el.style.overflow).toBe('hidden');
+    expect(el.style.scrollbarGutter).toBe('stable');
+
+    outer();
+    expect(el.style.overflow).toBe('auto');
+    expect(el.dataset['cngxPrevOverflow']).toBeUndefined();
+    el.remove();
+  });
+
+  it('leaves the document root alone while a container is locked', () => {
+    const el = container();
+    const release = createScrollLock(el);
+    expect(document.documentElement.style.overflow).not.toBe('hidden');
+    release();
+    el.remove();
+  });
+});
+
 describe('createPinnedScrollLock', () => {
   const html = document.documentElement;
   const body = document.body;

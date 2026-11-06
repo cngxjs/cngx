@@ -1,5 +1,5 @@
 /**
- * Ref-count per document root. Module-private on purpose: this file is the
+ * Ref-count per locked element. Module-private on purpose: this file is the
  * single owner of the lock state. A second copy of this map (the pre-extraction
  * state: one in `CngxScrollLock`, one in `CngxDialog`) shares the dataset keys
  * below without sharing the count, so interleaved acquire/release across the
@@ -10,14 +10,20 @@
 const lockCounts = new WeakMap<HTMLElement, number>();
 
 /**
- * Acquire a ref-counted scroll lock on a document root and get back the
- * matching release function.
+ * Acquire a ref-counted scroll lock on an element and get back the matching
+ * release function.
  *
- * The first active lock saves the current `overflow` / `scrollbar-gutter`
- * inline styles and sets `overflow: hidden` + `scrollbar-gutter: stable`
+ * The target is the element that scrolls: the document root
+ * (`document.documentElement`) for the page, or any scroll container (a
+ * panel with `overflow-y: auto`) for a surface that overlays only that
+ * container. Each element keeps its own count, so locks on two containers
+ * never interfere.
+ *
+ * The first active lock on a target saves its inline `overflow` /
+ * `scrollbar-gutter` and sets `overflow: hidden` + `scrollbar-gutter: stable`
  * (no layout shift when the scrollbar disappears). Releasing the last active
- * lock restores the saved values. The returned release function is
- * idempotent - calling it twice cannot over-decrement the count.
+ * lock on that target restores the saved values. The returned release
+ * function is idempotent - calling it twice cannot over-decrement the count.
  *
  * Shared engine behind `CngxScrollLock` and `CngxDialog`'s modal scroll lock;
  * consumers composing their own overlay primitives can use it directly.
@@ -28,22 +34,22 @@ const lockCounts = new WeakMap<HTMLElement, number>();
  * release();
  * ```
  *
- * @param html - The document root (`document.documentElement`) to lock.
+ * @param target - The scrolling element to lock.
  * @returns Release function for this acquisition. Idempotent.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/scroll/scroll-lock-core.ts
  * @since 0.1.0
  * @relatedTo CngxScrollLock, CngxDialog
  */
-export function createScrollLock(html: HTMLElement): () => void {
-  const count = lockCounts.get(html) ?? 0;
+export function createScrollLock(target: HTMLElement): () => void {
+  const count = lockCounts.get(target) ?? 0;
   if (count === 0) {
-    html.dataset['cngxPrevOverflow'] = html.style.overflow;
-    html.dataset['cngxPrevScrollbarGutter'] = html.style.scrollbarGutter;
-    html.style.overflow = 'hidden';
-    html.style.scrollbarGutter = 'stable';
+    target.dataset['cngxPrevOverflow'] = target.style.overflow;
+    target.dataset['cngxPrevScrollbarGutter'] = target.style.scrollbarGutter;
+    target.style.overflow = 'hidden';
+    target.style.scrollbarGutter = 'stable';
   }
-  lockCounts.set(html, count + 1);
+  lockCounts.set(target, count + 1);
 
   let released = false;
   return () => {
@@ -51,15 +57,15 @@ export function createScrollLock(html: HTMLElement): () => void {
       return;
     }
     released = true;
-    const current = lockCounts.get(html) ?? 0;
+    const current = lockCounts.get(target) ?? 0;
     if (current <= 1) {
-      html.style.overflow = html.dataset['cngxPrevOverflow'] ?? '';
-      html.style.scrollbarGutter = html.dataset['cngxPrevScrollbarGutter'] ?? '';
-      delete html.dataset['cngxPrevOverflow'];
-      delete html.dataset['cngxPrevScrollbarGutter'];
-      lockCounts.set(html, 0);
+      target.style.overflow = target.dataset['cngxPrevOverflow'] ?? '';
+      target.style.scrollbarGutter = target.dataset['cngxPrevScrollbarGutter'] ?? '';
+      delete target.dataset['cngxPrevOverflow'];
+      delete target.dataset['cngxPrevScrollbarGutter'];
+      lockCounts.set(target, 0);
     } else {
-      lockCounts.set(html, current - 1);
+      lockCounts.set(target, current - 1);
     }
   };
 }

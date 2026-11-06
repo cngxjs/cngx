@@ -48,9 +48,10 @@ describe('CNGX_LAYOUT_I18N', () => {
     });
     const bundle = TestBed.inject(CNGX_LAYOUT_I18N);
     pack.set({ locale: 'de', layout: { expandableTextMore: 'Mehr anzeigen' } });
-    expect(bundle()).toEqual({
+    expect(bundle()).toMatchObject({
       expandableTextMore: 'Mehr anzeigen',
       expandableTextLess: 'Show less',
+      resizeHandle: 'Resize',
     });
   });
 
@@ -67,17 +68,33 @@ describe('CNGX_LAYOUT_I18N', () => {
         provideLayoutI18n(withLayoutI18nLabels({ expandableTextLess: 'Einklappen' })),
       ],
     });
-    expect(TestBed.inject(CNGX_LAYOUT_I18N)()).toEqual({
+    expect(TestBed.inject(CNGX_LAYOUT_I18N)()).toMatchObject({
       expandableTextMore: 'Mehr anzeigen',
       expandableTextLess: 'Einklappen',
     });
   });
 
   it('ships the English labels without a provider', () => {
-    expect(TestBed.inject(CNGX_LAYOUT_I18N)()).toEqual({
+    const bundle = TestBed.inject(CNGX_LAYOUT_I18N)();
+    expect(bundle).toMatchObject({
       expandableTextMore: 'Show more',
       expandableTextLess: 'Show less',
+      resizeHandle: 'Resize',
     });
+    expect(bundle.resizeValueText(1200)).toBe('1,200 pixels');
+  });
+
+  it('formats the resize value text from the active pack', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxI18n(
+          withPartialPack({ locale: 'de', layout: { resizeValueText: '{size} Pixel' } }),
+          withDocumentLanguage('off'),
+        ),
+      ],
+    });
+    const bundle = TestBed.runInInjectionContext(() => injectLayoutI18n());
+    expect(bundle().resizeValueText(240)).toBe('240 Pixel');
   });
 
   it('defaults the expandable-text labels from a partial override', () => {

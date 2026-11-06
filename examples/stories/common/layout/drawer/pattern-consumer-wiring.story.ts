@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxDrawer: Pattern consumer wiring',
   subtitle:
-    'The drawer is headless. The consumer wires <code>CngxAriaExpanded</code> on the trigger and binds <code>[enabled]</code> / <code>[autoFocus]</code> on the panel - both come from <code>CngxDrawerPanel</code> as <code>hostDirectives</code> pass-through inputs to <code>CngxFocusTrap</code>.',
+    'The drawer is headless. The consumer wires <code>CngxAriaExpanded</code> on the trigger; the over panel is modal by default, so it traps focus and restores it to the trigger on close without further bindings.',
   description:
-    'Live drawer wired through the three consumer-owned a11y seams: CngxAriaExpanded on the <button type="button"> trigger, the panel forwarding [enabled] + [autoFocus] to its hostDirective CngxFocusTrap, and a single drawer.opened() signal everything reads from. The readout below shows the live aria-expanded attribute, the opened model, and the currently focused element id so the keyboard semantics are observable.',
+    'Live drawer wired through the consumer-owned a11y seams: CngxAriaExpanded with aria-controls on the <button type="button"> trigger, the panel id it points at, and a single drawer.opened() signal everything reads from. The modal over panel traps focus while open and hands it back to the trigger on close. The readout below shows the live aria-expanded attribute, the opened model, and the currently focused element id so the keyboard semantics are observable.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
@@ -53,7 +53,6 @@ export const STORY: DemoSpec = {
 
     <div class="demo-drawer-layout">
       <nav id="pcw-panel" [cngxDrawerPanel]="drawer" position="left"
-           [enabled]="drawer.opened()" [autoFocus]="true"
            role="navigation" aria-label="Primary"
            class="demo-drawer-panel">
         <div class="demo-drawer-panel-content">

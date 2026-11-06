@@ -20,7 +20,9 @@ import type { CngxDrawer } from './drawer.directive';
  * <example-url>/#/common/layout/drawer/controlled-mode</example-url>
  * <example-url>/#/common/layout/drawer/direction-all-four-sides</example-url>
  * <example-url>/#/common/layout/drawer/events-openedchange-closed</example-url>
- * <example-url>/#/common/layout/drawer/mode-over-push-side</example-url>
+ * <example-url>/#/common/layout/drawer/app-header-clipped</example-url>
+ * <example-url>/#/common/layout/drawer/full-height-modal</example-url>
+ * <example-url>/#/common/layout/drawer/filter-panel-push</example-url>
  * <example-url>/#/common/layout/drawer/pattern-consumer-wiring</example-url>
  */
 @Directive({
