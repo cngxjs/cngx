@@ -187,7 +187,7 @@ describe('createHeldTimerRegistry', () => {
       registry.start(1, 1000, done);
       registry.hold(1, 'pointer');
       registry.hold(1, 'focus');
-      registry.releaseAll(1, ['pointer', 'focus']);
+      registry.dropHolds(1, ['pointer', 'focus']);
       await flushMicrotasks();
       expect(registry.segments().get(1)?.running).toBe(true);
 
@@ -201,7 +201,7 @@ describe('createHeldTimerRegistry', () => {
       registry.clear(1);
       registry.release(1, 'focus');
       registry.hold(1, 'pointer');
-      registry.releaseAll(1, ['pointer']);
+      registry.dropHolds(1, ['pointer']);
       await flushMicrotasks();
       expect(registry.segments().has(1)).toBe(false);
 

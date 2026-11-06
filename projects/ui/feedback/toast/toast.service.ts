@@ -255,7 +255,7 @@ export class CngxToaster {
    * element never fires `pointerleave` or a reliable `focusout`.
    */
   dropHolds(id: number, sources: readonly TimerHoldSource[]): void {
-    this.timers.releaseAll(id, sources);
+    this.timers.dropHolds(id, sources);
   }
 
   /** Dismiss a toast by id. */

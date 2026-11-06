@@ -124,7 +124,7 @@ export interface HeldTimerRegistry {
   hold(id: number, source: TimerHoldSource): void;
   release(id: number, source: TimerHoldSource): void;
   /** Drops several sources in one transition. */
-  releaseAll(id: number, sources: readonly TimerHoldSource[]): void;
+  dropHolds(id: number, sources: readonly TimerHoldSource[]): void;
   clear(id: number): void;
   clearAll(): void;
   /** Current segment per live timer id, written in a microtask flush. */
@@ -233,7 +233,7 @@ export function createHeldTimerRegistry(): HeldTimerRegistry {
       sources.delete(source);
       resumeIfFree(id, timer, true);
     },
-    releaseAll: (id, sourcesToDrop) => {
+    dropHolds: (id, sourcesToDrop) => {
       const timer = timers.get(id);
       const sources = holds.get(id);
       if (!timer || !sources) {
