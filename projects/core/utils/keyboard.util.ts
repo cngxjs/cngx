@@ -271,6 +271,8 @@ export function resolveAriaKeyShortcuts(combo: KeyCombo, isMac: boolean): string
   return [...modifiers, ariaKeyToken(combo.key)].join('+');
 }
 
+const APPLE_PLATFORM = /mac|iphone|ipad|ipod/i;
+
 // `userAgentData` (UA Client Hints) is not in lib.dom yet.
 interface NavigatorWithUaData {
   readonly platform?: string;
@@ -282,8 +284,11 @@ interface NavigatorWithUaData {
  * consumer shares: `mod` resolves to Cmd there, the AltGr guard of
  * {@link matchesKeyCombo} is off, and key labels switch to the macOS glyphs.
  * Reads `navigator.userAgentData.platform` where the browser ships UA
- * Client Hints and falls back to `navigator.platform`. Returns `false` for
- * `undefined`, so a server render resolves to the non-mac labels.
+ * Client Hints and falls back to `navigator.platform` when the hint is
+ * missing or empty. iOS and iPadOS count as macOS: a hardware keyboard there
+ * uses Cmd as the primary modifier and shows the same glyphs. Returns
+ * `false` for `undefined`, so a server render resolves to the non-mac
+ * labels.
  *
  * ```ts
  * const isMac = resolveMacPlatform(injectWindow()?.navigator);
@@ -300,7 +305,10 @@ export function resolveMacPlatform(nav: Navigator | undefined): boolean {
     return false;
   }
   const source = nav as NavigatorWithUaData;
-  return /mac/i.test(source.userAgentData?.platform ?? source.platform ?? '');
+  // An empty hint (some engines ship the API without the value) falls through.
+  const hint = source.userAgentData?.platform;
+  const platform = hint !== undefined && hint !== '' ? hint : (source.platform ?? '');
+  return APPLE_PLATFORM.test(platform);
 }
 
 const LATIN_LETTER_OR_DIGIT = /^[a-z0-9]$/;

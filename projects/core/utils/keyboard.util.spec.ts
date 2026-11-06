@@ -327,6 +327,18 @@ describe('resolveMacPlatform', () => {
     ).toBe(false);
   });
 
+  it('falls back to navigator.platform when the client hint is empty', () => {
+    expect(resolveMacPlatform(nav({ platform: 'MacIntel', userAgentData: { platform: '' } }))).toBe(
+      true,
+    );
+  });
+
+  it('resolves iOS and iPadOS as Apple platforms', () => {
+    expect(resolveMacPlatform(nav({ platform: 'iPad' }))).toBe(true);
+    expect(resolveMacPlatform(nav({ platform: 'iPhone' }))).toBe(true);
+    expect(resolveMacPlatform(nav({ platform: 'Linux armv8l' }))).toBe(false);
+  });
+
   it('resolves an absent navigator to false', () => {
     expect(resolveMacPlatform(undefined)).toBe(false);
   });
