@@ -5,8 +5,9 @@
 //   node scripts/schematics-consumer-inputs.mjs --base origin/main --workflow consumer-compat
 //   node scripts/schematics-consumer-inputs.mjs --base origin/main --workflow consumer-compat-cli
 //
-// Both workflows carry required checks, so they run on every pull request
-// and decide inside the job whether the fixture has to run. This file is the
+// Both workflows start on every pull request and decide inside the job
+// whether the fixture has to run (schematics-consumer is a required check, and
+// the consumer-compat rows report under their matrix names either way). This file is the
 // one list of what the fixture reads: the schematics, the lib manifests, the
 // release scripts, the workspace config and every library source the
 // onboarded app compiles against (renaming an export the onboarding writes,
@@ -18,6 +19,13 @@
 import { execFileSync } from 'node:child_process';
 import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
+
+/**
+ * Every library source the onboarded app compiles against. schematics-consumer
+ * reads it on each pull request; the consumer-compat rows leave it out (see
+ * `SOURCE_FREE_WORKFLOWS`).
+ */
+const LIB_SOURCE = { include: 'projects/**', exclude: ['**/*.spec.ts', '**/*.md', 'projects/testing/**'] };
 
 /** `include` globs (`**` crosses folders, `*` does not); a match on `exclude` drops the file. */
 export const INPUTS = [
@@ -36,7 +44,7 @@ export const INPUTS = [
   { include: 'package-lock.json' },
   { include: 'angular.json' },
   { include: 'tsconfig*.json' },
-  { include: 'projects/**', exclude: ['**/*.spec.ts', '**/*.md', 'projects/testing/**'] },
+  LIB_SOURCE,
 ];
 
 /**
@@ -83,13 +91,24 @@ function globToRegExp(glob) {
   return new RegExp(`^${source}$`);
 }
 
+/**
+ * Workflows that skip library source on a pull request. The consumer-compat
+ * rows take up to a quarter of an hour each, and schematics-consumer already
+ * builds an onboarded app against every source change in the same PR, so a
+ * source-only change runs these rows in the nightly only. A
+ * change to the schematics, a lib manifest, the themes, the release scripts
+ * or the workspace config still runs them on the PR.
+ */
+export const SOURCE_FREE_WORKFLOWS = new Set(['consumer-compat', 'consumer-compat-cli']);
+
 /** The input entries of `workflow`: the shared list plus its own. */
 export function workflowInputs(workflow = DEFAULT_WORKFLOW) {
   const own = Object.hasOwn(WORKFLOW_INPUTS, workflow) ? WORKFLOW_INPUTS[workflow] : undefined;
   if (own === undefined) {
     throw new Error(`Unknown workflow "${workflow}". Available: ${Object.keys(WORKFLOW_INPUTS).join(', ')}`);
   }
-  return [...INPUTS, ...own];
+  const shared = SOURCE_FREE_WORKFLOWS.has(workflow) ? INPUTS.filter((entry) => entry !== LIB_SOURCE) : INPUTS;
+  return [...shared, ...own];
 }
 
 const COMPILED = new Map();
