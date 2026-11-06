@@ -266,6 +266,11 @@ describe('combo key vocabulary', () => {
     ['arrowleft', 'ArrowLeft', 'ArrowLeft'],
     ['arrowright', 'ArrowRight', 'ArrowRight'],
     ['contextmenu', 'ContextMenu', 'ContextMenu'],
+    ['capslock', 'CapsLock', 'CapsLock'],
+    ['numlock', 'NumLock', 'NumLock'],
+    ['scrolllock', 'ScrollLock', 'ScrollLock'],
+    ['printscreen', 'PrintScreen', 'PrintScreen'],
+    ['pause', 'Pause', 'Pause'],
     ['f2', 'F2', 'F2'],
     ['+', '+', 'Plus'],
   ];
@@ -276,6 +281,11 @@ describe('combo key vocabulary', () => {
       expect(resolveAriaKeyShortcuts(combo, false), comboKey).toBe(token);
       expect(matchesKeyCombo(press(eventKey), combo, false), comboKey).toBe(true);
     }
+  });
+
+  it('keeps a single character whose upper case is two characters', () => {
+    expect(resolveAriaKeyShortcuts(parseKeyCombo('alt+ß'), false)).toBe('Alt+ß');
+    expect(resolveAriaKeyShortcuts(parseKeyCombo('ä'), false)).toBe('Ä');
   });
 
   it("parses the 'esc' alias to the UI Events value 'escape'", () => {

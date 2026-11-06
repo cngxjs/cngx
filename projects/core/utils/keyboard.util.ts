@@ -216,6 +216,11 @@ const ARIA_NAMED_KEYS: Readonly<Record<string, string>> = {
   arrowleft: 'ArrowLeft',
   arrowright: 'ArrowRight',
   contextmenu: 'ContextMenu',
+  capslock: 'CapsLock',
+  numlock: 'NumLock',
+  scrolllock: 'ScrollLock',
+  printscreen: 'PrintScreen',
+  pause: 'Pause',
 };
 
 function ariaKeyToken(key: string): string {
@@ -223,9 +228,15 @@ function ariaKeyToken(key: string): string {
   if (named !== undefined) {
     return named;
   }
-  if (key.length === 1 || /^f\d{1,2}$/.test(key)) {
+  if (/^f\d{1,2}$/.test(key)) {
     return key.toUpperCase();
   }
+  if (key.length === 1) {
+    // 'ß'.toUpperCase() is 'SS': two characters would name a different key.
+    const upper = key.toUpperCase();
+    return upper.length === 1 ? upper : key;
+  }
+  // A name outside the table: the UI Events value of a one-word key.
   return key.charAt(0).toUpperCase() + key.slice(1);
 }
 
