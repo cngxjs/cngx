@@ -614,8 +614,9 @@ test.describe('forms/select — shared option padding derives from the density s
     // the read-site rule SETs --cngx-select-option-padding from
     // --cngx-space-xs/--cngx-space-sm. The block half is the shifted xs (6->4),
     // so compact reads 2px 4px, NOT the old literal 0.375rem 0.5rem.
+    // resolveVar builds its own probe element; a closed panel renders no rows.
     await gotoDemo(page, 'forms/select/single-select/clearable');
-    await page.locator('.cngx-select__option').first().waitFor({ state: 'attached' });
+    await page.locator('cngx-select').first().waitFor({ state: 'attached' });
     expect(await resolveVar(page, 'cngx-select__option', '--cngx-select-option-padding')).toBe(
       '4px 8px',
     );
