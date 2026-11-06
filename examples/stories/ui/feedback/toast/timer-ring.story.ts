@@ -30,6 +30,9 @@ export const STORY: DemoSpec = {
   protected showPersistent(): void {
     this.toaster.show({ message: 'Sync paused until you reconnect', severity: 'warning', duration: 'persistent' });
   }
+  protected showTitled(): void {
+    this.toaster.show({ title: 'Upload complete', message: 'report.pdf is ready to share', severity: 'success' });
+  }
   protected showRepeated(): void {
     this.toaster.show({ message: 'New comment on your post', severity: 'info' });
   }`,
@@ -39,6 +42,7 @@ export const STORY: DemoSpec = {
     <button (click)="showTimed()" class="chip" type="button">Timed (5s)</button>
     <button (click)="showWithAction()" class="chip" type="button">With Undo (10s)</button>
     <button (click)="showPersistent()" class="chip" type="button">Persistent</button>
+    <button (click)="showTitled()" class="chip" type="button">With title</button>
     <button (click)="showRepeated()" class="chip" type="button">Repeat same message</button>
   </div>`,
   templateChrome: `<div class="button-row" style="margin-bottom:12px">
@@ -53,12 +57,20 @@ export const STORY: DemoSpec = {
   initial-value: 1;
 }
 
+.cngx-ex-toast-ring {
+  /* Space between the icon and the ring, and the ring stroke. */
+  --cngx-ex-toast-ring-gap: 4px;
+  --cngx-ex-toast-ring-stroke: 2px;
+}
+
 .cngx-ex-toast-ring .cngx-toast__timer {
-  --cngx-ex-toast-ring-size: calc(var(--cngx-toast-icon-size, 20px) + 8px);
+  --cngx-ex-toast-ring-size: calc(
+    var(--cngx-toast-icon-size, 20px) + 2 * var(--cngx-ex-toast-ring-gap, 4px)
+  );
   /* Drop the default bar and sit over the icon cell. */
   border: 0;
   inset: auto;
-  inset-inline-start: calc(var(--cngx-space-md, 16px) - 4px);
+  inset-inline-start: calc(var(--cngx-space-md, 16px) - var(--cngx-ex-toast-ring-gap, 4px));
   inset-block-start: 50%;
   inline-size: var(--cngx-ex-toast-ring-size);
   block-size: var(--cngx-ex-toast-ring-size);
@@ -69,7 +81,11 @@ export const STORY: DemoSpec = {
     transparent 0
   );
   /* Keep a 2px stroke of the disc. */
-  mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - var(--cngx-ex-toast-ring-stroke, 2px)),
+    #000 calc(100% - var(--cngx-ex-toast-ring-stroke, 2px))
+  );
   transform: none;
   /* The two runtime tokens start the ring at the exact remaining time. */
   animation: cngx-ex-toast-ring var(--cngx-toast-timer-duration, 0s) linear
@@ -78,6 +94,13 @@ export const STORY: DemoSpec = {
 
 .cngx-ex-toast-ring .cngx-toast[data-timer='paused'] .cngx-toast__timer {
   animation-play-state: paused;
+}
+
+/* A titled toast keeps its icon level with the title, at the top of the row.
+   The default glyph box is 22/21 of the icon size, so its centre sits 11/21
+   of the icon size below the top padding. */
+.cngx-ex-toast-ring .cngx-toast:has(.cngx-toast__title) .cngx-toast__timer {
+  inset-block-start: calc(var(--cngx-space-sm, 8px) + var(--cngx-toast-icon-size, 20px) * 11 / 21);
 }
 
 @keyframes cngx-ex-toast-ring {
