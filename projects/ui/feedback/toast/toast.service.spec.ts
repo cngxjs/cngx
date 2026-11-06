@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { provideFeedback, withToasts } from '../config/feedback-config';
+import type { TimerHoldSource, TimerSegment } from '../public-api';
 import { CngxToaster } from './toast.service';
 
 describe('CngxToaster', () => {
@@ -187,6 +188,16 @@ describe('CngxToaster', () => {
   });
 
   // --- Pause / Resume ---
+
+  it('names its timer member types through the public entry', async () => {
+    toaster.show({ message: 'Named', duration: 5000 });
+    const id = toaster.toasts()[0].id;
+    const source: TimerHoldSource = 'pointer';
+    toaster.pauseTimer(id, source);
+    await Promise.resolve();
+    const segment: TimerSegment | undefined = toaster.timerSegments().get(id);
+    expect(segment).toMatchObject({ total: 5000, remaining: 5000, running: false });
+  });
 
   it('pauseTimer() pauses auto-dismiss', () => {
     toaster.show({ message: 'Pause me', duration: 3000 });

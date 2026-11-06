@@ -66,6 +66,10 @@ export {
   type ToastRef,
   type ToastState,
 } from './toast/toast.service';
+// The hold-source and segment types of the `@internal` timer members on
+// `CngxToaster` / `CngxAlerter`, exported so the shipped d.ts can name them.
+// Each declaration carries its own `@internal` tag.
+export { type TimerHoldSource, type TimerSegment } from './internal/pausable-timer';
 export { CngxToastOutlet, type ToastPosition } from './toast/toast-outlet';
 export { CngxToastOn } from './toast/toast-on.directive';
 export { CngxToast } from './toast/toast.component';
