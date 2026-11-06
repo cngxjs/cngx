@@ -411,6 +411,10 @@ describe('CngxIconMenuButton', () => {
       const { fixture, button } = setup(UnnamedHost);
       await fixture.whenStable();
       await new Promise((resolve) => setTimeout(resolve));
+      // The miss is confirmed on the next stable cycle before it warns.
+      fixture.detectChanges();
+      await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve));
       const calls = warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1071'));
       expect(calls).toHaveLength(1);
       expect(calls[0][0]).toMatch(/^CNGX1071: \[cngxIconMenuButton\] has no accessible name\./);
