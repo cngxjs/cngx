@@ -190,6 +190,13 @@ describe('matchesKeyCombo physical-key fallback', () => {
     expect(matchesKeyCombo(press('я', { code: 'KeyZ', alt: true }), combo, false)).toBe(true);
   });
 
+  it('matches an Option dead key on macOS by its physical key', () => {
+    // Option+E starts an accent composition: event.key is 'Dead', not a character.
+    const combo = parseKeyCombo('alt+e');
+    expect(matchesKeyCombo(press('Dead', { code: 'KeyE', alt: true }), combo, true)).toBe(true);
+    expect(matchesKeyCombo(press('Dead', { code: 'KeyU', alt: true }), combo, true)).toBe(false);
+  });
+
   it('does not fall back without Alt or Shift', () => {
     const combo = parseKeyCombo('mod+z');
     expect(matchesKeyCombo(press('я', { code: 'KeyZ', ctrl: true }), combo, false)).toBe(false);
