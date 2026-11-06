@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import type { VersionedAnswer } from '../data/docs-resolver.js';
-import { createDocsResolver } from '../data/docs-resolver.js';
+import { createDocsResolver, createErrorCodeResolver } from '../data/docs-resolver.js';
 import { loadBundledDocs, loadDocsFromFile } from '../data/loader.js';
 import type { StoryExampleResult } from './get-story-example.js';
 import { getStoryExample as getStoryExampleAnswer, getStoryExampleCommand } from './get-story-example.js';
@@ -45,7 +45,7 @@ describe('getStoryExample', () => {
 
 describe('get_story_example run', () => {
   const bundled = loadBundledDocs(fileURLToPath(new URL('../../../data/', import.meta.url)));
-  const run = (name: string) => getStoryExampleCommand.run({ bundled, resolve: createDocsResolver(bundled) }, { name });
+  const run = (name: string) => getStoryExampleCommand.run({ bundled, resolve: createDocsResolver(bundled), resolveErrorCodes: createErrorCodeResolver(bundled) }, { name });
 
   it('answers an ambiguous selector inside the versioned envelope', async () => {
     expect(await run('cngxRouterSync')).toEqual({

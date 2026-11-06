@@ -168,6 +168,40 @@ describe('the built entry', () => {
     }
   });
 
+  describe('explain for another release', () => {
+    const caches: string[] = [];
+    afterAll(() => caches.forEach((dir) => rmSync(dir, { recursive: true, force: true })));
+
+    function explainWithCache(seed: boolean) {
+      const cache = mkdtempSync(join(tmpdir(), 'cngx-entry-cache-'));
+      caches.push(cache);
+      if (seed) {
+        const { cngxErrorCodes } = JSON.parse(readFileSync(DATA, 'utf8')) as { cngxErrorCodes: unknown };
+        mkdirSync(join(cache, 'error-codes', '9.9.9'), { recursive: true });
+        writeFileSync(join(cache, 'error-codes', '9.9.9', 'error-codes.json'), JSON.stringify(cngxErrorCodes));
+      }
+      return spawnSync(process.execPath, [ENTRY, 'explain', 'CNGX0001', '--cngx-version', '9.9.9', '--offline', '--format', 'json'], {
+        cwd: PROJECT,
+        encoding: 'utf8',
+        env: { ...process.env, CNGX_CACHE_DIR: cache },
+      });
+    }
+
+    it('exits 1 offline with an empty cache', () => {
+      const result = explainWithCache(false);
+
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain('v9.9.9 is not cached and --offline forbids a fetch.');
+    });
+
+    it('answers offline from an asset in the cache, grounded on that release', () => {
+      const result = explainWithCache(true);
+
+      expect(result.status).toBe(0);
+      expect(JSON.parse(result.stdout)).toMatchObject({ cngxVersion: '9.9.9', result: { code: 'CNGX0001' } });
+    });
+  });
+
   describe('a corrupt bundled snapshot', () => {
     const root = mkdtempSync(join(tmpdir(), 'cngx-cli-corrupt-'));
     cpSync(dirname(ENTRY), join(root, 'dist'), { recursive: true });

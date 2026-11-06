@@ -41,7 +41,7 @@ with the cngx libraries and `@cngx/cli`. The bundled snapshot is that release:
 |`get_config`|`{ name: string, version?: string }`|A configuration cascade by config token name (`CNGX_SELECT_CONFIG`), stem (`select`), or best-effort component name (`CngxCombobox`): the config token, its co-located provider functions, the `with*` feature functions, and the resolution-priority ordering. Returns null when the name maps to no config token.|
 |`get_story_example`|`{ name: string }`|`{ ok: true, groundedVersion, result }`, `groundedVersion` always the bundled release: the component's runnable example URLs (public documentation links) and a StackBlitz URL when one exists. Playground entries are labelled source references, not openable links.|
 |`migrate_usage`|`{ from: string, to?: string }`|A structured API delta between two cngx releases: removed / renamed / signature-changed components (injectable services included), inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version.|
-|`get_error_code`|`{ code: string }`|`{ ok: true, groundedVersion, result }`, `groundedVersion` always the bundled release: a CNGX error code's title, owning lib, severity, production behaviour, call-site messages and documentation page. `result` is null for an input that is not a code, and a not-found view (the matching lib and its nearest codes) for an unknown code.|
+|`get_error_code`|`{ code: string, version?: string }`|`{ ok: true, groundedVersion, result }`: a CNGX error code's title, owning lib, severity, production behaviour, call-site messages and documentation page. `result` is null for an input that is not a code, and a not-found view (the matching lib and its nearest codes) for an unknown code.|
 
 Every read-only tool answers `null` (or an empty list) when a name resolves to
 nothing - inside the envelope, `result` is null - so an agent can tell "no such
@@ -52,8 +52,8 @@ five name tools (`get_api`, `get_slots`, `get_theme_tokens`, `get_config`,
 Every tool is read-only, and read-only tools answer offline against the bundled
 snapshot by default. The network is reached only when a caller asks for another
 release: `migrate_usage` always spans two versions, and `find_component`,
-`get_api`, `get_slots`, `get_theme_tokens`, `get_di_tokens`, and `get_config` reach
-it only when their optional `version` differs from the bundled one. Every such fetch
+`get_api`, `get_slots`, `get_theme_tokens`, `get_di_tokens`, `get_config`, and
+`get_error_code` reach it only when their optional `version` differs from the bundled one. Every such fetch
 tries `gh` first and falls back to a plain HTTPS download of the public release asset
 when `gh` is missing, unauthenticated or fails; both paths time out after 15 seconds.
 The fetch is fail-safe - no network or an absent asset returns a typed error result
@@ -81,6 +81,12 @@ offline default, and `ok` discriminates success from failure. A fetch that fails
 returns the same typed `{ ok: false, reason }` shape `migrate_usage` uses - the
 query never throws. Only
 tagged releases (`v<version>`) are fetchable; branches and SHAs are not.
+
+`get_error_code` takes the same `version` with the same rules, for a code from another
+release than the bundled one. It fetches that release's `error-codes.json` instead of its
+snapshot, via `gh` or from
+`https://github.com/cngxjs/cngx/releases/download/v<version>/error-codes.json`. A release
+before the first such asset answers `asset-missing`.
 
 ## Resources
 

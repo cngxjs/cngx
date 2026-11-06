@@ -15,10 +15,11 @@ another release.
 - `cngx` subcommands generated from the shared command registry: `find`,
   `list`, `api`, `slots`, `theme`, `di`, `config`, `example`, `migrate`,
   `explain`.
-- `cngx explain <code>` prints the doc entry of a CNGX error code from the
-  bundled snapshot: its title, lib, severity, production behaviour, messages and
-  docs URL. Accepts `CNGX0001`, `cngx0001`, `0001` or a pasted console line;
-  exits 1 for an unknown code, listing the nearest codes of its lib.
+- `cngx explain <code>` prints the doc entry of a CNGX error code: its title,
+  lib, severity, production behaviour, messages and docs URL. Accepts `CNGX0001`,
+  `cngx0001`, `0001` or a pasted console line; exits 1 for an unknown code, listing
+  the nearest codes of its lib. Takes `--cngx-version` and `--offline`; another
+  release answers from its `error-codes.json` asset.
 - `--format md|json`, `--cngx-version`, `--version` / `-v`, `--help` / `-h`;
   exit codes 0 (answered), 1 (not found or unresolved), 2 (usage error),
   3 (internal error: a snapshot that cannot load, a throw, a failed write).

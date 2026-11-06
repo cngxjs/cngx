@@ -1,16 +1,17 @@
-// get_error_code - explain a CNGX error code from the bundled snapshot. The
-// snapshot step derives the `cngxErrorCodes` block from the error-code manifest
-// (one source, Pillar 1), so this command only reads it; it never lists a code
-// itself. Like get_story_example it answers from the bundled release only -
-// release assets carry no block - so there is no version input.
+// get_error_code - explain a CNGX error code. The snapshot step derives the
+// `cngxErrorCodes` block from the error-code manifest (one source, Pillar 1), so
+// this command only reads it; it never lists a code itself. No version, or the
+// bundled one, answers from the bundled block offline; another version answers from
+// that release's `error-codes.json` asset.
 
 import { z } from 'zod';
 import { defineCommand } from '../command.js';
 import { defaultFound } from '../found.js';
 import { answerVersioned } from '../data/docs-resolver.js';
-import type { DocsIndex, ErrorCodeIndex } from '../data/loader.js';
+import type { ErrorCodeIndex } from '../data/loader.js';
 import type { ErrorCodeEntry } from '../data/types.js';
 import { blocks, bullets, cell, section, table } from './markdown.js';
+import { errorCodeVersionInput } from './version-input.js';
 
 /** A parseable-but-unknown code: the lib its number falls in, the nearest codes, the doc URL it would have. */
 export interface ExplainNotFound {
@@ -61,17 +62,16 @@ function nearestCodes(codes: readonly ErrorCodeEntry[], lib: string, n: number):
 }
 
 /**
- * Explain `input` against the bundled block: the entry when the code is known, a
- * not-found view when it is a parseable code the snapshot does not carry, `null`
- * when the input is not a code at all. A snapshot with no readable block answers
- * a not-found view with a `null` url (nothing to link).
+ * Explain `input` against `block`: the entry when the code is known, a not-found
+ * view when it is a parseable code the block does not carry, `null` when the input
+ * is not a code at all. No readable block answers a not-found view with a `null`
+ * url (nothing to link).
  */
-export function explainError(docs: DocsIndex, input: string): ExplainErrorPayload {
+export function explainError(block: ErrorCodeIndex | null, input: string): ExplainErrorPayload {
   const code = parseErrorCode(input);
   if (code === null) {
     return null;
   }
-  const block = docs.errorCodes;
   if (block === null) {
     return { code, lib: null, nearest: [], url: null };
   }
@@ -126,7 +126,7 @@ function notFoundMarkdown(view: ExplainNotFound): string {
     `## ${view.code} not found`,
     where,
     view.nearest.length > 0 && view.lib !== null && section(`Nearest ${view.lib} codes`, bullets(view.nearest), ''),
-    'It may come from a newer cngx release than the one bundled here.',
+    'It may come from another cngx release; pass --cngx-version to ask that release.',
     `Docs: ${view.url}`,
   );
 }
@@ -149,20 +149,24 @@ export const explainErrorCommand = defineCommand({
   name: 'get_error_code',
   title: 'Explain a cngx error code',
   description:
-    'Explain a CNGX error code (e.g. CNGX0001) from the bundled snapshot: its title, owning lib, severity, ' +
-    'production behaviour, the messages its call sites print, and its documentation page. Accepts a bare code, a ' +
-    'zero-padded four-digit number, or a pasted console line that contains one. `result` is null when the input is ' +
-    'not a code, and a not-found view (the matching lib and its nearest codes) when the code is unknown.',
+    'Explain a CNGX error code (e.g. CNGX0001): its title, owning lib, severity, production behaviour, the messages ' +
+    'its call sites print, and its documentation page. Accepts a bare code, a zero-padded four-digit number, or a ' +
+    'pasted console line that contains one. Pass `version` when the code comes from another release than the bundled ' +
+    'one. `result` is null when the input is not a code, and a not-found view (the matching lib and its nearest codes) ' +
+    'when the code is unknown.',
   cliSummary:
-    "Print a CNGX error code's title, lib, severity, production behaviour, messages and doc page from the bundled " +
-    'snapshot. Accepts CNGX0001, cngx0001, 0001 or a pasted console line. Exits 1 for an unknown code, listing the nearest codes.',
+    "Print a CNGX error code's title, lib, severity, production behaviour, messages and doc page. " +
+    'Accepts CNGX0001, cngx0001, 0001 or a pasted console line. Exits 1 for an unknown code, listing the nearest codes.',
   cliName: 'explain',
   input: {
     code: z.string().describe('A CNGX error code or a console line containing one, e.g. "CNGX0001".'),
+    version: errorCodeVersionInput,
   },
   positional: 'code',
-  // No `version` input: release assets carry no error-code block, so the answer always grounds on the bundled release.
-  run: (ctx, { code }) => answerVersioned(ctx.resolve, undefined, (docs) => explainError(docs, code)),
+  cliFlags: { version: 'cngx-version' },
+  // An input that is not a code has nothing to look up in any release, so it never pays for a fetch.
+  run: (ctx, { code, version }) =>
+    answerVersioned(ctx.resolveErrorCodes, parseErrorCode(code) === null ? undefined : version, (block) => explainError(block, code)),
   // Found only for a real entry: the not-found view and the null (not-a-code) payload both exit 1.
   found: (payload: ExplainErrorPayload) => defaultFound(payload) && !isNotFound(payload),
   toMarkdown: (payload: ExplainErrorPayload) => explainErrorMarkdown(payload),

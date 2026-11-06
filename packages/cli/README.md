@@ -57,7 +57,7 @@ Each command is generated from the same definition as its `@cngx/mcp` tool.
 |`cngx config <name>`|`get_config`|A configuration cascade: config token, providers, `with*` features and resolution order.|
 |`cngx example <name>`|`get_story_example`|Runnable example links for a component.|
 |`cngx migrate <from> [--to <version>]`|`migrate_usage`|Removed, renamed and signature-changed API between two releases. `--to` defaults to the bundled release.|
-|`cngx explain <code>`|`get_error_code`|A CNGX error code's doc page from the bundled snapshot: title, lib, severity, production behaviour, messages and docs URL. Accepts `CNGX0001`, `cngx0001`, `0001` or a pasted console line. Exits 1 for an unknown code, listing the nearest codes of its lib.|
+|`cngx explain <code>`|`get_error_code`|A CNGX error code's doc page: title, lib, severity, production behaviour, messages and docs URL. Accepts `CNGX0001`, `cngx0001`, `0001` or a pasted console line. Exits 1 for an unknown code, listing the nearest codes of its lib.|
 |`cngx doctor [<projectDir>]`|-|The project-wiring scan of `@cngx/doctor`, the same as `npx cngx-doctor`. `--format json` prints doctor's findings array. Exit 1 means at least one error-severity finding. A `<projectDir>` that is not a readable directory, a second `<projectDir>`, `cngx-doctor`'s own json switch (use `--format json`), an unknown flag, `--cngx-version` or `--offline` is a usage error before any scan. `--version` and `--help` are the CLI's, as for every other command.|
 
 ## Flags
@@ -65,16 +65,16 @@ Each command is generated from the same definition as its `@cngx/mcp` tool.
 |Flag|Meaning|
 |-|-|
 |`--format md\|json`|Output format. `md` (default) is markdown for people and agents; `json` is `{ "cngxVersion": "<version>", "result": <answer> }`, and a failure prints a failure document (see Failures). It has no short form.|
-|`--cngx-version <version>`|Answer against this cngx release (`find`, `api`, `slots`, `theme`, `di`, `config`); a leading `v` or `V` is accepted. Without it these commands answer for the release installed in the project (see Which release answers). The snapshot of a non-bundled release is fetched through `gh`, or over HTTPS when `gh` is missing or fails, and cached on disk. Other commands reject it.|
+|`--cngx-version <version>`|Answer against this cngx release (`find`, `api`, `slots`, `theme`, `di`, `config`, `explain`); a leading `v` or `V` is accepted. Without it these commands answer for the release installed in the project (see Which release answers). The snapshot of a non-bundled release is fetched through `gh`, or over HTTPS when `gh` is missing or fails, and cached on disk. Other commands reject it.|
 |`--from <file>`|Also answer for every name the file imports from `@cngx/*` (`api`, `slots`, `theme`, `config`, `example`): named imports (also beside a default import), `import type` and `as` aliases, LF or CRLF; comments, and imports inside them, are ignored. An unreadable file is a usage error; a file with no such import exits 1, also beside positional names, and under `--format json` prints `{ "cngxVersion": null, "result": [] }`. A name from the file that is a token or function of the release (a `provide*` function, an injection token) or that the file imports type-only (`import type`, `type X`) is skipped and named on one stderr line; it is not in `result`. Any other name that does not resolve, an ambiguous one included, counts as not found. When every name is skipped, the run exits 1 with an empty `result`.|
 |`--compact`|Shorter markdown (`api`, `slots`, `theme`, `config`, `example`): names and types without descriptions, no resolution-priority list, no repo-internal source references. JSON is unchanged.|
-|`--offline`|Never fetch (`find`, `api`, `slots`, `theme`, `di`, `config`): answer from the disk cache, else the bundled snapshot. An explicit `--cngx-version` that is not cached fails with exit 1 instead of answering for another release. Other commands reject it.|
+|`--offline`|Never fetch (`find`, `api`, `slots`, `theme`, `di`, `config`, `explain`): answer from the disk cache, else the bundled snapshot. An explicit `--cngx-version` that is not cached fails with exit 1 instead of answering for another release. Other commands reject it.|
 |`--version`, `-v`|Print the `@cngx/cli` version.|
 |`--help`, `-h`|Print the command list, or a command's help after the command name.|
 
 ## Which release answers
 
-`find`, `api`, `slots`, `theme`, `di` and `config` answer for, in this order:
+`find`, `api`, `slots`, `theme`, `di`, `config` and `explain` answer for, in this order:
 
 1. the release given with `--cngx-version`;
 2. the `@cngx/core` version installed in the current project, resolved the way
@@ -98,12 +98,18 @@ bundled snapshot. `migrate` resolves `<from>` and `--to` like `--cngx-version`:
 a non-bundled release is fetched and cached, and `migrate` takes no
 `--offline`.
 
+`explain` fetches a release's `error-codes.json` instead of its snapshot. A release
+before the first such asset has none: as a detected release it falls back to the
+bundled snapshot like any other, at the cost of a failed `gh` call and an HTTPS 404
+on every run unless `--offline` is passed; with an explicit `--cngx-version` it exits 1.
+
 A fetched release snapshot is cached on disk and never fetched again: in
 `$CNGX_CACHE_DIR`, else `$XDG_CACHE_HOME/cngx`, else `~/Library/Caches/cngx`
 (macOS), `%LOCALAPPDATA%\cngx\Cache` (Windows) or `~/.cache/cngx`; an empty or
 relative variable is ignored, and without a home directory and without these
 variables there is no disk cache. The cache keeps the 16 most recently read
-releases. An unreadable entry is removed and fetched again; a cache directory
+releases, and `explain` keeps its assets beside them in `error-codes/` under
+their own bound of 16. An unreadable entry is removed and fetched again; a cache directory
 that cannot be written answers without caching and says so on stderr. Without a
 network, a detected release costs one fetch timeout per run before the
 fallback; pass `--offline` to skip it.
