@@ -42,6 +42,7 @@ import { CngxPopover } from './popover.directive';
  * @since 0.1.0
  * @relatedTo CngxPopoverAction, CngxPopoverPanel, CngxPopoverFooter, CngxButtonBrain
  * <example-url>/#/common/popover/popover-panel/with-footer-actions</example-url>
+ * <example-url>/#/common/popover/popover-panel/with-dividers</example-url>
  * <example-url>/#/common/popover/popover-panel/footer-actions-plain</example-url>
  * @axis level molecule
  */
