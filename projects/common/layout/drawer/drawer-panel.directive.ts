@@ -1,11 +1,14 @@
 import {
   computed,
+  DestroyRef,
   Directive,
   effect,
   ElementRef,
   HostAttributeToken,
   inject,
   input,
+  type OnChanges,
+  type OnInit,
   untracked,
 } from '@angular/core';
 import { cngxDevWarn } from '@cngx/utils';
@@ -124,7 +127,7 @@ export type DrawerMode = 'over' | 'push';
     '[attr.inert]': "isOpen() ? null : ''",
   },
 })
-export class CngxDrawerPanel implements CngxDrawerSurfaceDriver {
+export class CngxDrawerPanel implements CngxDrawerSurfaceDriver, OnInit, OnChanges {
   /**
    * The drawer state owner (a `CngxDrawer`, or anything implementing
    * `CngxDrawerHost`). Bind it explicitly (`[cngxDrawerPanel]="drawer"`), or
@@ -220,16 +223,11 @@ export class CngxDrawerPanel implements CngxDrawerSurfaceDriver {
   /** @internal Drives the composed `CngxDrawerSurface`. */
   readonly surfaceOutsideDismiss = this.closeOnClickOutside;
 
+  private connection: { readonly drawer: CngxDrawerHost; readonly disconnect: () => void } | null =
+    null;
+
   constructor() {
-    // The drawer's panel target reads the presentation from here; follow a
-    // rebound drawer reference and leave the old drawer on the way out.
-    effect((onCleanup) => {
-      const drawer = this.drawerRef();
-      if (!drawer) {
-        return;
-      }
-      onCleanup(untracked(() => drawer.connectPanel(this.presentation)));
-    });
+    inject(DestroyRef).onDestroy(() => this.disconnect());
 
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       effect(() => {
@@ -248,6 +246,34 @@ export class CngxDrawerPanel implements CngxDrawerSurfaceDriver {
         );
       });
     }
+  }
+
+  // Connecting registers the presentation in the drawer's slot, a signal
+  // write; lifecycle hooks are no reactive context. ngOnChanges follows a
+  // rebound reference, ngOnInit covers a panel without bound inputs.
+  ngOnChanges(): void {
+    this.syncConnection();
+  }
+
+  ngOnInit(): void {
+    this.syncConnection();
+  }
+
+  private syncConnection(): void {
+    const drawer = untracked(this.drawerRef);
+    if (this.connection?.drawer === drawer) {
+      return;
+    }
+    this.disconnect();
+    if (drawer) {
+      this.connection = { drawer, disconnect: drawer.connectPanel(this.presentation) };
+    }
+  }
+
+  private disconnect(): void {
+    const connection = this.connection;
+    this.connection = null;
+    connection?.disconnect();
   }
 
   /** @internal Drives the composed `CngxDrawerSurface`. */

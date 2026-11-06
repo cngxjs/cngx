@@ -616,6 +616,33 @@ class CustomHostHost {
   };
 }
 
+@Component({
+  template: `<nav [cngxDrawerPanel]="useFirst() ? first : second" modality="none">
+    <a href="#">Link</a>
+  </nav>`,
+  imports: [CngxDrawerPanel],
+})
+class ReboundHost {
+  private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  readonly useFirst = signal(true);
+  readonly log: string[] = [];
+  readonly first = this.recordingHost('first');
+  readonly second = this.recordingHost('second');
+
+  private recordingHost(name: string): CngxDrawerHost {
+    return {
+      opened: signal(false),
+      panelId: signal<string | undefined>(undefined),
+      elementRef: this.elementRef,
+      close: vi.fn(),
+      connectPanel: () => {
+        this.log.push(`connect ${name}`);
+        return () => this.log.push(`disconnect ${name}`);
+      },
+    };
+  }
+}
+
 describe('CngxDrawerPanel with a custom CngxDrawerHost', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({ imports: [CustomHostHost] });
@@ -640,6 +667,26 @@ describe('CngxDrawerPanel with a custom CngxDrawerHost', () => {
 
     fixture.destroy();
     expect(host.disconnected).toEqual(host.connected);
+  });
+
+  it('connects once, follows a rebound host and disconnects on destroy', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ imports: [ReboundHost] });
+    const fixture = TestBed.createComponent(ReboundHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const host = fixture.componentInstance;
+    expect(host.log).toEqual(['connect first']);
+
+    fixture.detectChanges();
+    expect(host.log).toEqual(['connect first']);
+
+    host.useFirst.set(false);
+    fixture.detectChanges();
+    expect(host.log).toEqual(['connect first', 'disconnect first', 'connect second']);
+
+    fixture.destroy();
+    expect(host.log.at(-1)).toBe('disconnect second');
   });
 
   it('is what CngxDrawer provides as CNGX_DRAWER_HOST', () => {
