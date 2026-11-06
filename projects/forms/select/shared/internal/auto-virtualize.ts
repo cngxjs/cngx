@@ -27,7 +27,7 @@ export function createAutoPanelRenderer<T>(opts: {
   readonly flatOptions: Signal<readonly CngxSelectOptionDef<T>[]>;
   readonly popoverRef: Signal<CngxPopover | undefined>;
   readonly virtualization: CngxSelectVirtualizationConfig | null;
-  /** Sheet presentation; outside `'anchored'` the listbox is the scroller. */
+  /** Sheet presentation; outside `'anchored'` the panel shell is the scroller. */
   readonly presentation?: Signal<CngxPopoverPresentation>;
   readonly listboxElement?: Signal<HTMLElement | undefined>;
 }): PanelRenderer<T> {
@@ -38,12 +38,14 @@ export function createAutoPanelRenderer<T>(opts: {
   // Popover viewChild resolves on first CD; scroll-observer retries via
   // afterNextRender, so a null nativeElement on first call is fine. The
   // observer reads the getter inside its effect, so a presentation flip
-  // re-attaches it: the popover scrolls while anchored, the listbox in a
-  // sheet (the sheet host itself does not scroll).
+  // re-attaches it: the popover scrolls while anchored, the panel shell around
+  // the listbox in a sheet (neither the sheet host nor the listbox scrolls).
   const scrollElement: ElementRef<HTMLElement> = {
     get nativeElement(): HTMLElement {
       const inSheet = (opts.presentation?.() ?? 'anchored') !== 'anchored';
-      const el = inSheet ? opts.listboxElement?.() : opts.popoverRef()?.elementRef.nativeElement;
+      const el = inSheet
+        ? opts.listboxElement?.()?.closest<HTMLElement>('.cngx-select-panel-shell')
+        : opts.popoverRef()?.elementRef.nativeElement;
       return (el ?? null) as unknown as HTMLElement;
     },
   };

@@ -294,6 +294,34 @@ describe('select mobile sheet geometry', () => {
     });
   }
 
+  it('windows a 1000-option sheet over the panel shell and reaches the last option', async () => {
+    const { fixture, panel, scroller } = await open('select', (h) => h.count.set(1000));
+    const rows = () => panel.querySelectorAll<HTMLElement>('.cngx-select__option');
+    const settle = async () => {
+      await frames(3);
+      fixture.detectChanges();
+      await frames(3);
+    };
+
+    expect(rows().length).toBeGreaterThan(0);
+    expect(rows().length).toBeLessThan(100);
+    expect(rows()[0].textContent).toContain('Option 0');
+
+    scroller.scrollTop = 6400;
+    await settle();
+    expect(scroller.scrollTop).toBeGreaterThan(0);
+    expect(rows().length).toBeLessThan(100);
+    expect(rows()[0].textContent).not.toContain('Option 0');
+
+    scroller.scrollTop = scroller.scrollHeight;
+    await settle();
+    // Row heights differ from the estimate, so the first jump can land short.
+    scroller.scrollTop = scroller.scrollHeight;
+    await settle();
+    expect(rows().length).toBeLessThan(100);
+    expect(rows()[rows().length - 1].textContent).toContain('Option 999');
+  });
+
   it('paints a CanvasText top edge under forced colors', async () => {
     await emulate([{ name: 'forced-colors', value: 'active' }]);
     const { panel } = await open('select');

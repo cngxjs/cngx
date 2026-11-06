@@ -105,12 +105,16 @@ describe('createAutoPanelRenderer - scroll element follows the sheet presentatio
     vi.unstubAllGlobals();
   });
 
-  it('scrolls the popover while anchored and the listbox in a sheet', () => {
+  it('scrolls the popover while anchored and the panel shell in a sheet', () => {
     const panel = document.createElement('div');
+    const shell = document.createElement('div');
+    shell.className = 'cngx-select-panel-shell';
     const listbox = document.createElement('div');
-    document.body.append(panel, listbox);
+    shell.append(listbox);
+    document.body.append(panel, shell);
     const panelAdd = vi.spyOn(panel, 'addEventListener');
     const panelRemove = vi.spyOn(panel, 'removeEventListener');
+    const shellAdd = vi.spyOn(shell, 'addEventListener');
     const listboxAdd = vi.spyOn(listbox, 'addEventListener');
     const presentation = signal<CngxPopoverPresentation>('anchored');
     const popover = { elementRef: { nativeElement: panel } } as unknown as CngxPopover;
@@ -126,14 +130,15 @@ describe('createAutoPanelRenderer - scroll element follows the sheet presentatio
     });
     TestBed.flushEffects();
     expect(panelAdd).toHaveBeenCalledWith('scroll', expect.any(Function), { passive: true });
-    expect(listboxAdd).not.toHaveBeenCalledWith('scroll', expect.any(Function), expect.anything());
+    expect(shellAdd).not.toHaveBeenCalledWith('scroll', expect.any(Function), expect.anything());
 
     presentation.set('sheet');
     TestBed.flushEffects();
     expect(panelRemove).toHaveBeenCalledWith('scroll', expect.any(Function));
-    expect(listboxAdd).toHaveBeenCalledWith('scroll', expect.any(Function), { passive: true });
+    expect(shellAdd).toHaveBeenCalledWith('scroll', expect.any(Function), { passive: true });
+    expect(listboxAdd).not.toHaveBeenCalledWith('scroll', expect.any(Function), expect.anything());
 
     panel.remove();
-    listbox.remove();
+    shell.remove();
   });
 });
