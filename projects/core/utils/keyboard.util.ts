@@ -132,6 +132,123 @@ export function matchesKeyCombo(event: KeyboardEvent, combo: KeyCombo, isMac: bo
   return true;
 }
 
+/**
+ * One part of a resolved key combo: a modifier name, or the combo's single
+ * non-modifier key (lower-case, as {@link parseKeyCombo} stores it).
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/keyboard.util.ts
+ * @since 0.1.0
+ * @relatedTo resolveKeyComboParts, KeyCombo
+ */
+export type KeyComboPart = 'ctrl' | 'meta' | 'alt' | 'shift' | { readonly key: string };
+
+type KeyComboModifier = Exclude<KeyComboPart, { readonly key: string }>;
+
+const CANONICAL_MODIFIER_ORDER: readonly KeyComboModifier[] = ['ctrl', 'alt', 'shift', 'meta'];
+
+function resolvedModifiers(combo: KeyCombo, isMac: boolean): readonly KeyComboModifier[] {
+  const held: Record<KeyComboModifier, boolean> = {
+    ctrl: combo.ctrl || (combo.mod && !isMac),
+    alt: combo.alt,
+    shift: combo.shift,
+    meta: combo.meta || (combo.mod && isMac),
+  };
+  return CANONICAL_MODIFIER_ORDER.filter((m) => held[m]);
+}
+
+/**
+ * Resolves a parsed {@link KeyCombo} into its display parts: the held
+ * modifiers in canonical order (`ctrl alt shift meta` on every platform, the
+ * Apple HIG order of the macOS glyphs), then the key. `mod` resolves to
+ * `meta` on macOS and `ctrl` elsewhere; a combo naming both `mod` and the
+ * modifier it resolves to lists that modifier once.
+ *
+ * Pure derivation for a renderer: localized labels, glyphs and spoken text
+ * are the renderer's job, the parts only fix what is held and in which order.
+ *
+ * ```ts
+ * resolveKeyComboParts(parseKeyCombo('mod+shift+k'), true);
+ * // ['shift', 'meta', { key: 'k' }]
+ * ```
+ *
+ * @param combo The parsed combo.
+ * @param isMac Whether the current platform is macOS (resolves `mod`).
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/keyboard.util.ts
+ * @since 0.1.0
+ * @relatedTo parseKeyCombo, resolveAriaKeyShortcuts, KeyComboPart
+ */
+export function resolveKeyComboParts(combo: KeyCombo, isMac: boolean): readonly KeyComboPart[] {
+  return [...resolvedModifiers(combo, isMac), { key: combo.key }];
+}
+
+const ARIA_MODIFIER_TOKENS: Readonly<Record<KeyComboModifier, string>> = {
+  ctrl: 'Control',
+  alt: 'Alt',
+  shift: 'Shift',
+  meta: 'Meta',
+};
+
+// UI Events `key` values for the named keys a lower-cased combo can carry.
+const ARIA_NAMED_KEYS: Readonly<Record<string, string>> = {
+  '+': 'Plus',
+  ' ': 'Space',
+  space: 'Space',
+  enter: 'Enter',
+  escape: 'Escape',
+  esc: 'Escape',
+  tab: 'Tab',
+  backspace: 'Backspace',
+  delete: 'Delete',
+  insert: 'Insert',
+  home: 'Home',
+  end: 'End',
+  pageup: 'PageUp',
+  pagedown: 'PageDown',
+  arrowup: 'ArrowUp',
+  arrowdown: 'ArrowDown',
+  arrowleft: 'ArrowLeft',
+  arrowright: 'ArrowRight',
+  contextmenu: 'ContextMenu',
+};
+
+function ariaKeyToken(key: string): string {
+  const named = ARIA_NAMED_KEYS[key];
+  if (named !== undefined) {
+    return named;
+  }
+  if (key.length === 1 || /^f\d{1,2}$/.test(key)) {
+    return key.toUpperCase();
+  }
+  return key.charAt(0).toUpperCase() + key.slice(1);
+}
+
+/**
+ * Serialises a parsed {@link KeyCombo} into an `aria-keyshortcuts` value
+ * (WAI-ARIA 1.2): the modifiers `Control`, `Alt`, `Shift`, `Meta` in
+ * canonical order, then exactly one non-modifier key. Letters are upper-case,
+ * the literal `+` key is `Plus`, space is `Space`, and named keys use their
+ * UI Events key value (`Escape`, `ArrowUp`, `PageDown`). `mod` resolves per
+ * platform. The tokens are spec tokens, not user-facing copy: never
+ * translate them.
+ *
+ * ```ts
+ * resolveAriaKeyShortcuts(parseKeyCombo('mod+k'), false); // 'Control+K'
+ * resolveAriaKeyShortcuts(parseKeyCombo('mod++'), true);  // 'Meta+Plus'
+ * ```
+ *
+ * @param combo The parsed combo.
+ * @param isMac Whether the current platform is macOS (resolves `mod`).
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/keyboard.util.ts
+ * @since 0.1.0
+ * @relatedTo parseKeyCombo, resolveKeyComboParts
+ */
+export function resolveAriaKeyShortcuts(combo: KeyCombo, isMac: boolean): string {
+  const modifiers = resolvedModifiers(combo, isMac).map((m) => ARIA_MODIFIER_TOKENS[m]);
+  return [...modifiers, ariaKeyToken(combo.key)].join('+');
+}
+
 const LATIN_LETTER_OR_DIGIT = /^[a-z0-9]$/;
 
 function matchesComboKey(event: KeyboardEvent, comboKey: string): boolean {

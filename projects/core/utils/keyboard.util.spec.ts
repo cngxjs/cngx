@@ -6,6 +6,8 @@ import {
   matchesKeyCombo,
   parseKeyCombo,
   provideNestedInteractiveSelector,
+  resolveAriaKeyShortcuts,
+  resolveKeyComboParts,
 } from './keyboard.util';
 
 function press(
@@ -174,6 +176,72 @@ describe('matchesKeyCombo physical-key fallback', () => {
   it('does not fall back without Alt or Shift', () => {
     const combo = parseKeyCombo('mod+z');
     expect(matchesKeyCombo(press('я', { code: 'KeyZ', ctrl: true }), combo, false)).toBe(false);
+  });
+});
+
+describe('resolveKeyComboParts', () => {
+  it('orders modifiers ctrl alt shift meta on every platform', () => {
+    const combo = parseKeyCombo('meta+shift+alt+ctrl+k');
+    expect(resolveKeyComboParts(combo, true)).toEqual([
+      'ctrl',
+      'alt',
+      'shift',
+      'meta',
+      { key: 'k' },
+    ]);
+    expect(resolveKeyComboParts(combo, false)).toEqual([
+      'ctrl',
+      'alt',
+      'shift',
+      'meta',
+      { key: 'k' },
+    ]);
+  });
+
+  it('resolves mod per platform', () => {
+    const combo = parseKeyCombo('mod+shift+k');
+    expect(resolveKeyComboParts(combo, true)).toEqual(['shift', 'meta', { key: 'k' }]);
+    expect(resolveKeyComboParts(combo, false)).toEqual(['ctrl', 'shift', { key: 'k' }]);
+  });
+
+  it('lists a modifier once when mod resolves to a modifier the combo also names', () => {
+    expect(resolveKeyComboParts(parseKeyCombo('mod+ctrl+k'), false)).toEqual([
+      'ctrl',
+      { key: 'k' },
+    ]);
+  });
+
+  it('returns only the key for a bare combo', () => {
+    expect(resolveKeyComboParts(parseKeyCombo('?'), false)).toEqual([{ key: '?' }]);
+  });
+});
+
+describe('resolveAriaKeyShortcuts', () => {
+  const aria = (combo: string, isMac: boolean): string =>
+    resolveAriaKeyShortcuts(parseKeyCombo(combo), isMac);
+
+  it('serialises mod per platform with an upper-case letter', () => {
+    expect(aria('mod+k', false)).toBe('Control+K');
+    expect(aria('mod+k', true)).toBe('Meta+K');
+  });
+
+  it("serialises the literal '+' key as Plus", () => {
+    expect(aria('mod++', false)).toBe('Control+Plus');
+    expect(aria('mod++', true)).toBe('Meta+Plus');
+  });
+
+  it('puts modifiers in canonical order before the key', () => {
+    expect(aria('mod+shift+?', false)).toBe('Control+Shift+?');
+    expect(aria('mod+shift+?', true)).toBe('Shift+Meta+?');
+  });
+
+  it('serialises bare and named keys as UI Events key values', () => {
+    expect(aria('?', false)).toBe('?');
+    expect(aria('escape', false)).toBe('Escape');
+    expect(aria('alt+arrowup', false)).toBe('Alt+ArrowUp');
+    expect(aria('space', false)).toBe('Space');
+    expect(aria('ctrl+pagedown', false)).toBe('Control+PageDown');
+    expect(aria('f2', false)).toBe('F2');
   });
 });
 

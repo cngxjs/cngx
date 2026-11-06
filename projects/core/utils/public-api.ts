@@ -18,7 +18,14 @@ export {
   type CngxDisplayFormatters,
 } from './intl-format.util';
 export { CNGX_LOCALE, injectLocale, provideLocale, provideLocaleAt } from './locale';
-export { parseKeyCombo, matchesKeyCombo, type KeyCombo } from './keyboard.util';
+export {
+  parseKeyCombo,
+  matchesKeyCombo,
+  resolveAriaKeyShortcuts,
+  resolveKeyComboParts,
+  type KeyCombo,
+  type KeyComboPart,
+} from './keyboard.util';
 export {
   CNGX_NESTED_INTERACTIVE_SELECTOR,
   provideNestedInteractiveSelector,
