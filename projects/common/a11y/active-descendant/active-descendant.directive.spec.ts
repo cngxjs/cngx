@@ -886,6 +886,100 @@ describe('CngxActiveDescendant - virtual window offset', () => {
   });
 });
 
+/* --- Typeahead over the full list of a windowed host -------------------- */
+
+const LETTERS_FULL: ActiveDescendantItem[] = Array.from({ length: 100 }, (_, i) => ({
+  id: '',
+  value: i,
+  // One far-down match for "z", and "m" rows both inside and far past the window.
+  label: i === 90 ? 'Zebra' : i === 41 || i === 70 ? `Mango ${i}` : `Item ${i}`,
+  disabled: i === 70 ? false : undefined,
+}));
+
+@Component({
+  template: `
+    <div
+      cngxActiveDescendant
+      [items]="windowItems()"
+      [virtualCount]="100"
+      [windowStart]="40"
+      [typeaheadItems]="full()"
+      (typeaheadMissed)="missed.push($event)"
+      tabindex="0"
+    ></div>
+  `,
+  imports: [CngxActiveDescendant],
+})
+class WindowTypeaheadHost {
+  readonly full = signal<readonly ActiveDescendantItem[] | undefined>(LETTERS_FULL);
+  readonly missed: string[] = [];
+  readonly windowItems = computed<ActiveDescendantItem[]>(() =>
+    LETTERS_FULL.slice(40, 50).map((item, i) => ({ ...item, id: `opt-${40 + i}` })),
+  );
+}
+
+describe('CngxActiveDescendant - typeaheadItems', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({ imports: [WindowTypeaheadHost] });
+  });
+
+  function setupFull(bound = true) {
+    const fixture = TestBed.createComponent(WindowTypeaheadHost);
+    if (!bound) {
+      fixture.componentInstance.full.set(undefined);
+    }
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    const dir = container.injector.get(CngxActiveDescendant);
+    const press = (k: string): void => {
+      container.triggerEventHandler('keydown', new KeyboardEvent('keydown', { key: k }));
+      TestBed.flushEffects();
+    };
+    return { host: fixture.componentInstance, dir, press };
+  }
+
+  it('finds a match outside the rendered window and arms pendingHighlight', () => {
+    const { dir, press } = setupFull();
+    press('z');
+    expect(dir.activeIndex()).toBe(90);
+    expect(dir.activeId()).toBeNull();
+    expect(dir.pendingHighlight()).toBe(90);
+  });
+
+  it('cycles a repeated letter past the window instead of staying inside it', () => {
+    const { dir, press } = setupFull();
+    press('m');
+    expect(dir.activeIndex()).toBe(41);
+    press('m');
+    expect(dir.activeIndex()).toBe(70);
+  });
+
+  it('skips a disabled match of the full list', () => {
+    const { host, dir, press } = setupFull();
+    host.full.set(
+      LETTERS_FULL.map((item) => (item.value === 90 ? { ...item, disabled: true } : item)),
+    );
+    TestBed.flushEffects();
+    press('z');
+    expect(dir.activeIndex()).toBe(-1);
+  });
+
+  it('reports a miss in the full list through typeaheadMissed', () => {
+    const { host, press } = setupFull();
+    press('q');
+    expect(host.missed).toEqual(['q']);
+  });
+
+  it('keeps the rendered window as the search space while unbound', () => {
+    const { host, dir, press } = setupFull(false);
+    press('z');
+    expect(dir.activeIndex()).toBe(-1);
+    expect(host.missed).toEqual(['z']);
+  });
+});
+
 /* --- Virtual window whose rendered items lag the window start ----------- */
 
 @Component({

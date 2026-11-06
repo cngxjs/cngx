@@ -72,6 +72,7 @@ import { CngxOption } from './option.directive';
         'autoHighlightFirst',
         'virtualCount',
         'windowStart',
+        'typeaheadItems',
         // Same name as the listbox input: one binding feeds selection matching
         // and the AD's value lookup after an items change.
         'compareWith',

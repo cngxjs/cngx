@@ -1,7 +1,8 @@
-import { Injector, computed, runInInjectionContext, signal } from '@angular/core';
+import { Injector, computed, runInInjectionContext, signal, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import type { ActiveDescendantItem } from '@cngx/common/a11y';
 import type { CngxPopover } from '@cngx/common/popover';
 
 import { CNGX_SELECT_DEFAULTS, type CngxSelectVirtualizationConfig } from '../config';
@@ -20,6 +21,7 @@ function run(
 ): {
   virtualItemCount: () => number | undefined;
   virtualWindowStart: () => number;
+  virtualTypeaheadItems: () => readonly ActiveDescendantItem[] | undefined;
 } {
   TestBed.configureTestingModule({
     providers: [{ provide: CNGX_PANEL_RENDERER_FACTORY, useValue: () => renderer }],
@@ -115,6 +117,45 @@ describe('setupVirtualization - grouped lists', () => {
     const setup = run(renderer, [{ label: 'Group', children: makeOptions(50) }]);
     expect(setup.virtualItemCount()).toBeUndefined();
     expect(setup.virtualWindowStart()).toBe(0);
+  });
+});
+
+describe('setupVirtualization - virtualTypeaheadItems', () => {
+  function windowing(start: Signal<number>): PanelRenderer<number> {
+    const all = makeOptions(50);
+    return {
+      renderOptions: computed(() => all.slice(start(), start() + 10)),
+      totalCount: signal(all.length),
+      virtualizer: {
+        startIndex: start,
+        offsetBefore: signal(0),
+        offsetAfter: signal(0),
+        setsize: signal(all.length),
+        rowSizeHint: signal(32),
+        scrollToIndex: () => undefined,
+      },
+    };
+  }
+
+  it('hands AD the whole list while windowed and keeps one reference across window moves', () => {
+    const start = signal(0);
+    const setup = run(windowing(start));
+    const first = setup.virtualTypeaheadItems();
+    expect(first?.length).toBe(50);
+    expect(first?.[49]).toMatchObject({ value: 49, label: 'Item 49' });
+
+    start.set(20);
+    expect(setup.virtualTypeaheadItems()).toBe(first);
+  });
+
+  it('is undefined while the full list renders', () => {
+    const setup = run({ renderOptions: signal(makeOptions(50)), totalCount: signal(50) });
+    expect(setup.virtualTypeaheadItems()).toBeUndefined();
+  });
+
+  it('is undefined for a grouped list', () => {
+    const setup = run(windowing(signal(0)), [{ label: 'Group', children: makeOptions(50) }]);
+    expect(setup.virtualTypeaheadItems()).toBeUndefined();
   });
 });
 

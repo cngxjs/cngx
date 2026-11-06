@@ -1,11 +1,13 @@
 import { computed, effect, inject, untracked, type Signal } from '@angular/core';
 
+import type { ActiveDescendantItem } from '@cngx/common/a11y';
 import type { CngxListbox } from '@cngx/common/interactive';
 import type { CngxPopover, CngxPopoverPresentation } from '@cngx/common/popover';
 
 import { cngxDevWarn } from '@cngx/utils';
 
 import { createAutoPanelRenderer, type CngxSelectAutoRecyclerHandle } from './auto-virtualize';
+import { sameArrayContents } from './compare';
 import { CNGX_SELECT_DEFAULTS, type CngxSelectVirtualizationConfig } from '../config';
 import { isCngxSelectOptionGroupDef } from '../option.model';
 import {
@@ -36,6 +38,7 @@ export function setupVirtualization<T, TCommit>(opts: {
   readonly autoRecycler: CngxSelectAutoRecyclerHandle | undefined;
   readonly virtualItemCount: Signal<number | undefined>;
   readonly virtualWindowStart: Signal<number>;
+  readonly virtualTypeaheadItems: Signal<readonly ActiveDescendantItem[] | undefined>;
 } {
   const factory = inject(CNGX_PANEL_RENDERER_FACTORY);
   const injected = factory<T>({
@@ -103,6 +106,28 @@ export function setupVirtualization<T, TCommit>(opts: {
     return rendered >= total ? 0 : v.startIndex();
   });
 
+  // The full list for AD's typeahead while only a window of it has labels in
+  // the DOM. The mapped objects are fresh, so equality goes by their content;
+  // a window move changes nothing here.
+  const virtualTypeaheadItems = computed<readonly ActiveDescendantItem[] | undefined>(
+    () => {
+      if (virtualItemCount() === undefined) {
+        return undefined;
+      }
+      return opts.core.flatOptions().map((option) => ({
+        id: '',
+        value: option.value,
+        label: option.label,
+        disabled: option.disabled,
+      }));
+    },
+    {
+      equal: (a, b) =>
+        a === b ||
+        (a !== undefined && b !== undefined && sameArrayContents(a, b, sameTypeaheadItem)),
+    },
+  );
+
   // AD -> renderer scroll bridge for a consumer renderer, which exposes
   // `scrollToIndex` but no recycler. The auto path connects its recycler from
   // the panel template instead: on a first open its spacers do not exist yet,
@@ -144,5 +169,10 @@ export function setupVirtualization<T, TCommit>(opts: {
     autoRecycler: auto?.autoRecycler,
     virtualItemCount,
     virtualWindowStart,
+    virtualTypeaheadItems,
   };
+}
+
+function sameTypeaheadItem(a: ActiveDescendantItem, b: ActiveDescendantItem): boolean {
+  return Object.is(a.value, b.value) && a.label === b.label && a.disabled === b.disabled;
 }

@@ -114,6 +114,14 @@ export class CngxActiveDescendant {
    */
   readonly windowStart = input<number>(0);
   /**
+   * The full list in absolute index space, for a windowed list whose rendered
+   * rows are only part of it. When bound, typeahead searches this list and a
+   * match anywhere in it becomes the highlight; `typeaheadMissed` then means no
+   * match in the whole list. Unbound, the rendered window stays the search
+   * space. Items are read for `label` and `disabled` only, so `id` may be empty.
+   */
+  readonly typeaheadItems = input<readonly ActiveDescendantItem[] | undefined>(undefined);
+  /**
    * Equality used to find the previously active value again after the item
    * list changes. Defaults to `Object.is`; pass the same comparator as the
    * surrounding listbox / select when options are re-fetched as new objects
@@ -656,21 +664,23 @@ export class CngxActiveDescendant {
 
   private handleTypeahead(ch: string): void {
     const term = this.typeaheadWalker.type(ch);
-    // Labels exist only for rendered items, so the search space is the
-    // rendered window; matches map back to absolute indices in virtual mode.
-    const items = this.resolvedItems();
+    // Labels exist only for rendered items unless the host hands the full list
+    // over, so the search space is the rendered window by default; matches map
+    // back to absolute indices in virtual mode.
+    const fullList = this.typeaheadItems();
+    const items = fullList ?? this.resolvedItems();
     if (items.length === 0) {
       this.typeaheadMissed.emit(term);
       return;
     }
-    const windowOffset = this.windowOffset();
-    const activeRel = this.activeIndexState() < 0 ? -1 : this.activeIndexState() - windowOffset;
+    const offset = fullList ? 0 : this.windowOffset();
+    const activeRel = this.activeIndexState() < 0 ? -1 : this.activeIndexState() - offset;
     const rel = this.typeaheadWalker.find(items, term, activeRel, this.skipDisabled());
     if (rel < 0) {
       this.typeaheadMissed.emit(term);
       return;
     }
-    this.activeIndexState.set(rel + windowOffset);
+    this.activeIndexState.set(rel + offset);
   }
 
   private findFrom(current: number, direction: 1 | -1): number | null {
