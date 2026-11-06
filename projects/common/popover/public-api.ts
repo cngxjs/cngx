@@ -69,5 +69,7 @@ export {
   CngxPopoverLoading,
   CngxPopoverEmpty,
   CngxPopoverError,
+  type CngxPopoverStateCopyContext,
+  type CngxPopoverErrorContext,
 } from './popover-panel-slots';
 export { CngxPopoverDivider } from './popover-divider.directive';

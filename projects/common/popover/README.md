@@ -138,7 +138,7 @@ The confirm action times its busy visual through the loading gate. The `cngxPend
 </cngx-popover-panel>
 ```
 
-**State copy.** Without a slot template, the loading, error and empty views still say something. The text resolves in this order: the projected `*cngxPopoverLoading` / `*cngxPopoverError` / `*cngxPopoverEmpty` template (it replaces the whole node), then `[loadingText]` / `[errorText]` / `[emptyText]`, then `providePopoverPanel(withPopoverPanelLabels({ loading, error, empty }))`, then the `popover` section of the language pack ("Loading", "Could not load", "Nothing to show"). The header row and its close button stay in every view. In the error and empty views `aria-describedby` points at that surface; loading speaks through `aria-busy` and the visible text.
+**State copy.** Without a slot template, the loading, error and empty views still say something. The text resolves in this order: the projected `*cngxPopoverLoading` / `*cngxPopoverError` / `*cngxPopoverEmpty` template (it replaces the whole node), then `[loadingText]` / `[errorText]` / `[emptyText]`, then `providePopoverPanel(withPopoverPanelLabels({ loading, error, empty }))`, then the `popover` section of the language pack ("Loading", "Could not load", "Nothing to show"). The header row and its close button stay in every view. In the error and empty views `aria-describedby` points at that surface; loading speaks through `aria-busy` and the visible text. A slot template still gets the resolved copy: `let-text` on `*cngxPopoverLoading` / `*cngxPopoverEmpty`, and `let-text="text"` next to the raw error (`let-err`) on `*cngxPopoverError`, so a template that only restyles a state can print the default text.
 
 ### Custom Close Button
 

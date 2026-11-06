@@ -73,7 +73,49 @@ export class CngxPopoverClose {
 }
 
 /**
- * Template shown while panel content is loading.
+ * Context passed to a `*cngxPopoverLoading` or `*cngxPopoverEmpty` template:
+ * the copy the panel would render without the template, resolved from the
+ * `[loadingText]` / `[emptyText]` input, then `withPopoverPanelLabels(...)`,
+ * then the `popover` section of the active language pack. A template that
+ * only restyles the state can print it instead of carrying its own string.
+ *
+ * @since 0.1.0
+ */
+export interface CngxPopoverStateCopyContext {
+  /** The resolved default copy of the state view. */
+  readonly $implicit: string;
+  /** Same value as `$implicit`, for a named `let-text="text"`. */
+  readonly text: string;
+}
+
+/**
+ * Context passed to a `*cngxPopoverError` template.
+ *
+ * `$implicit` stays the raw error (from `[error]` or the bound `[state]`),
+ * `text` is the copy the panel would render without the template, resolved
+ * from `[errorText]`, then `withPopoverPanelLabels(...)`, then the language
+ * pack.
+ *
+ * @since 0.1.0
+ */
+export interface CngxPopoverErrorContext {
+  /** The raw error behind the error view. */
+  readonly $implicit: unknown;
+  /** Same value as `$implicit`, for a named `let-error="error"`. */
+  readonly error: unknown;
+  /** The resolved default error copy. */
+  readonly text: string;
+}
+
+/**
+ * Template shown while panel content is loading. Context:
+ * `CngxPopoverStateCopyContext` (`$implicit` / `text` = resolved loading copy).
+ *
+ * ```html
+ * <ng-template cngxPopoverLoading let-text>
+ *   <span class="brand-spinner" aria-hidden="true"></span> {{ text }}
+ * </ng-template>
+ * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel-slots.ts
  * @since 0.1.0
@@ -81,11 +123,19 @@ export class CngxPopoverClose {
  */
 @Directive({ selector: 'ng-template[cngxPopoverLoading]', standalone: true })
 export class CngxPopoverLoading {
-  readonly templateRef = inject(TemplateRef);
+  readonly templateRef = inject<TemplateRef<CngxPopoverStateCopyContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: CngxPopoverLoading,
+    ctx: unknown,
+  ): ctx is CngxPopoverStateCopyContext {
+    return true;
+  }
 }
 
 /**
- * Template shown when panel content is empty.
+ * Template shown when panel content is empty. Context:
+ * `CngxPopoverStateCopyContext` (`$implicit` / `text` = resolved empty copy).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel-slots.ts
  * @since 0.1.0
@@ -93,11 +143,20 @@ export class CngxPopoverLoading {
  */
 @Directive({ selector: 'ng-template[cngxPopoverEmpty]', standalone: true })
 export class CngxPopoverEmpty {
-  readonly templateRef = inject(TemplateRef);
+  readonly templateRef = inject<TemplateRef<CngxPopoverStateCopyContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: CngxPopoverEmpty,
+    ctx: unknown,
+  ): ctx is CngxPopoverStateCopyContext {
+    return true;
+  }
 }
 
 /**
- * Template shown when panel content failed to load. Context: `$implicit` = error.
+ * Template shown when panel content failed to load. Context:
+ * `CngxPopoverErrorContext` (`$implicit` / `error` = the raw error, `text` =
+ * resolved error copy).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel-slots.ts
  * @since 0.1.0
@@ -105,7 +164,14 @@ export class CngxPopoverEmpty {
  */
 @Directive({ selector: 'ng-template[cngxPopoverError]', standalone: true })
 export class CngxPopoverError {
-  readonly templateRef = inject(TemplateRef);
+  readonly templateRef = inject<TemplateRef<CngxPopoverErrorContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: CngxPopoverError,
+    ctx: unknown,
+  ): ctx is CngxPopoverErrorContext {
+    return true;
+  }
 }
 
 /**

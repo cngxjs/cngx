@@ -171,7 +171,12 @@ const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER
     @if (view() === 'skeleton') {
       <div class="cngx-popover-panel__loading">
         @if (loadingTpl(); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl.templateRef" />
+          <ng-container
+            *ngTemplateOutlet="
+              tpl.templateRef;
+              context: { $implicit: resolvedLoadingText(), text: resolvedLoadingText() }
+            "
+          />
         } @else {
           {{ resolvedLoadingText() }}
         }
@@ -179,7 +184,12 @@ const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER
     } @else if (view() === 'error' || view() === 'content+error') {
       <div class="cngx-popover-panel__error" [id]="errorId">
         @if (errorTpl(); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl.templateRef; context: { $implicit: viewError() }" />
+          <ng-container
+            *ngTemplateOutlet="
+              tpl.templateRef;
+              context: { $implicit: viewError(), error: viewError(), text: resolvedErrorText() }
+            "
+          />
         } @else {
           {{ resolvedErrorText() }}
         }
@@ -187,7 +197,12 @@ const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER
     } @else if (view() === 'empty') {
       <div class="cngx-popover-panel__empty" [id]="emptyId">
         @if (emptyTpl(); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl.templateRef" />
+          <ng-container
+            *ngTemplateOutlet="
+              tpl.templateRef;
+              context: { $implicit: resolvedEmptyText(), text: resolvedEmptyText() }
+            "
+          />
         } @else {
           {{ resolvedEmptyText() }}
         }
@@ -269,9 +284,10 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
   protected readonly closeLabel = computed(() => this.labels().close);
 
   /**
-   * Copy of the state views without a slot template: input, then config,
-   * then pack. Read tracked on purpose - the panel has no live region, so a
-   * language flip only updates the visible text in place.
+   * Copy of the state views: rendered without a slot template, handed to a
+   * slot template as its `text` context. Input, then config, then pack.
+   * Read tracked on purpose - the panel has no live region, so a language
+   * flip only updates the visible text in place.
    */
   protected readonly resolvedLoadingText = computed(
     () => this.loadingText() ?? this.labels().loading,

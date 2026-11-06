@@ -311,6 +311,36 @@ class SlotBeatsInputHost {}
 
 @Component({
   template: `
+    <cngx-popover-panel
+      [loading]="loading()"
+      [error]="error()"
+      [empty]="empty()"
+      [loadingText]="'Bitte warten'"
+    >
+      <p cngxPopoverBody>Body content</p>
+      <ng-template cngxPopoverLoading let-copy let-text="text">[{{ copy }}|{{ text }}]</ng-template>
+      <ng-template cngxPopoverError let-err let-error="error" let-text="text">
+        [{{ err }}|{{ error }}|{{ text }}]
+      </ng-template>
+      <ng-template cngxPopoverEmpty let-copy let-text="text">[{{ copy }}|{{ text }}]</ng-template>
+    </cngx-popover-panel>
+  `,
+  imports: [
+    CngxPopoverPanel,
+    CngxPopoverBody,
+    CngxPopoverLoading,
+    CngxPopoverError,
+    CngxPopoverEmpty,
+  ],
+})
+class SlotContextHost {
+  readonly loading = signal(false);
+  readonly error = signal<unknown>(undefined);
+  readonly empty = signal(false);
+}
+
+@Component({
+  template: `
     <cngx-popover-panel [state]="state">
       <p cngxPopoverBody>Body content</p>
     </cngx-popover-panel>
@@ -612,6 +642,27 @@ describe('CngxPopoverPanel', () => {
     it('lets a projected slot template win over the per-instance input', () => {
       const { panelEl } = setup(SlotBeatsInputHost);
       expect(surfaceText(panelEl, 'empty')).toBe('Slot wins');
+    });
+
+    it('hands each state template the resolved copy as $implicit and text', () => {
+      const { fixture, panelEl } = setup(SlotContextHost, [
+        providePopoverPanel(withPopoverPanelLabels({ empty: 'Leer' })),
+      ]);
+      const host = fixture.componentInstance;
+
+      host.loading.set(true);
+      fixture.detectChanges();
+      expect(surfaceText(panelEl, 'loading')).toBe('[Bitte warten|Bitte warten]');
+
+      host.loading.set(false);
+      host.error.set('boom');
+      fixture.detectChanges();
+      expect(surfaceText(panelEl, 'error')).toBe('[boom|boom|Could not load]');
+
+      host.error.set(undefined);
+      host.empty.set(true);
+      fixture.detectChanges();
+      expect(surfaceText(panelEl, 'empty')).toBe('[Leer|Leer]');
     });
 
     it('flips the visible copy in place on a language switch, with no live region', () => {
