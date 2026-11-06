@@ -10,6 +10,8 @@ another release.
 
 ### Added
 
+- Reads `documentation.json` schema 7 (compodocx 0.16) next to schema 2 and 6,
+  from the bundled snapshot and from a fetched release.
 - Package scaffold with a guarded copy of the shared query core from
   `@cngx/mcp` and the bundled API snapshot.
 - `cngx` subcommands generated from the shared command registry: `find`,

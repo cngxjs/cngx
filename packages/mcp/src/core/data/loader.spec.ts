@@ -73,8 +73,8 @@ describe('bundled loaders', () => {
 });
 
 describe('createDocsIndex schema guard', () => {
-  it('supports schema 2 and 6', () => {
-    expect(SUPPORTED_SCHEMA_VERSIONS).toEqual([2, 6]);
+  it('supports schema 2, 6 and 7', () => {
+    expect(SUPPORTED_SCHEMA_VERSIONS).toEqual([2, 6, 7]);
   });
 
   it('accepts a schema-2 snapshot', () => {
@@ -89,12 +89,21 @@ describe('createDocsIndex schema guard', () => {
     expect(index.functions.find((fn) => fn.name === 'provideSelectConfig')?.factoryKind).toBe('provider');
   });
 
-  it('rejects a snapshot whose schemaVersion the server does not support, naming both supported versions', () => {
+  it('accepts a schema-7 snapshot and projects it like schema 6', () => {
+    const v6 = JSON.parse(readFileSync(V6_FIXTURE, 'utf8')) as DocumentationJson;
+    const index = createDocsIndex({ ...v6, schemaVersion: 7 });
+
+    expect(index.meta).toMatchObject({ schemaVersion: 7, cngxVersion: '0.1.0-rc.9' });
+    expect(index.components.find((entry) => entry.name === 'CngxSelect')?.category).toBe('forms/select');
+    expect(index.functions.find((fn) => fn.name === 'provideSelectConfig')?.factoryKind).toBe('provider');
+  });
+
+  it('rejects a snapshot whose schemaVersion the server does not support, naming every supported version', () => {
     const mismatched: DocumentationJson = { ...readFixture(), schemaVersion: 3 };
 
     expect(() => createDocsIndex(mismatched)).toThrow(SchemaVersionError);
     expect(() => createDocsIndex(mismatched)).toThrow(MalformedSnapshotError);
-    expect(() => createDocsIndex(mismatched)).toThrow(/schemaVersion 3; this package reads 2 and 6/);
+    expect(() => createDocsIndex(mismatched)).toThrow(/schemaVersion 3; this package reads 2, 6 and 7/);
   });
 
   it('normalises a missing cngxVersion to null', () => {
