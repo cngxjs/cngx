@@ -29,11 +29,19 @@ function isUnknownArray(value: unknown): value is readonly unknown[] {
 }
 
 /**
- * The `documentation.json` schema versions this server reads. Both are projected
+ * The `documentation.json` schema versions this server reads. All are projected
  * onto one shape at load time: schema 2 gains the input `alias` (`schema-v2.ts`),
- * schema 6 the schema-2 `category` and `factoryKind` (`schema-v6.ts`).
+ * schema 6 and 7 the schema-2 `category` and `factoryKind` (`schema-v6.ts`).
+ * Schema 7 only drops fields the core does not read (the entry `signal` flag and
+ * the TypeScript node fields in `jsdoctags`), so it shares the schema-6 projection.
  */
-export const SUPPORTED_SCHEMA_VERSIONS = [2, 6] as const;
+export const SUPPORTED_SCHEMA_VERSIONS = [2, 6, 7] as const;
+
+/** `2, 6 and 7`: every supported version, the last one joined with `and`. */
+function listVersions(versions: readonly number[]): string {
+  const head = versions.slice(0, -1);
+  return head.length === 0 ? String(versions[0]) : `${head.join(', ')} and ${versions[versions.length - 1]}`;
+}
 
 function isSupportedSchemaVersion(version: number): boolean {
   return (SUPPORTED_SCHEMA_VERSIONS as readonly number[]).includes(version);
@@ -93,7 +101,7 @@ export class SchemaVersionError extends MalformedSnapshotError {
     readonly found: number,
     readonly supported: readonly number[] = SUPPORTED_SCHEMA_VERSIONS,
   ) {
-    super(`schemaVersion ${found}; this package reads ${supported.join(' and ')}`);
+    super(`schemaVersion ${found}; this package reads ${listVersions(supported)}`);
     this.name = 'SchemaVersionError';
   }
 }
@@ -159,7 +167,7 @@ export function createDocsIndex(raw: DocumentationJson): DocsIndex {
   }
   let doc: DocumentationJson;
   try {
-    doc = raw.schemaVersion === 6 ? projectSchemaV6(raw) : projectSchemaV2(raw);
+    doc = raw.schemaVersion === 2 ? projectSchemaV2(raw) : projectSchemaV6(raw);
   } catch (error) {
     throw new MalformedSnapshotError(error instanceof Error ? error.message : String(error));
   }
