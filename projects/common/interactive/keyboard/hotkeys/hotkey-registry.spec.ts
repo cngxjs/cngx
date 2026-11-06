@@ -314,6 +314,39 @@ describe('createHotkeyRegistry', () => {
       },
     );
 
+    it('applies the rule to a field inside a shadow root and to text roles', () => {
+      const registry = makeRegistry();
+      const search = bind('search', '/');
+      const save = bind('save', 'mod+s');
+      registry.register(source(search, save), null);
+      const host = el('my-field');
+      const field = document.createElement('input');
+      host.attachShadow({ mode: 'open' }).appendChild(field);
+      const textbox = el('div');
+      textbox.setAttribute('role', 'textbox');
+
+      press(field, '/', { composed: true });
+      press(textbox, '/');
+      expect(search.run).not.toHaveBeenCalled();
+
+      press(field, 's', { ctrlKey: true, composed: true });
+      expect(save.run).toHaveBeenCalledOnce();
+    });
+
+    it('resolves a shadow-DOM press against the scopes around its host', () => {
+      const registry = makeRegistry();
+      const list = el('ul');
+      const host = el('my-item', list);
+      const inner = document.createElement('button');
+      host.attachShadow({ mode: 'open' }).appendChild(inner);
+      const next = bind('next', 'n', { reach: 'focus' });
+      registry.register(source(next), scopeOn(list));
+
+      press(inner, 'n', { composed: true });
+
+      expect(next.run).toHaveBeenCalledOnce();
+    });
+
     it('fires bare keys on a non-text input', () => {
       const registry = makeRegistry();
       const search = bind('search', '/');
@@ -489,6 +522,30 @@ describe('createHotkeyRegistry', () => {
       registry.register(source(bind('save', 'mod+s')), null);
 
       expect(keydownCalls(add)).toBe(0);
+    });
+  });
+
+  describe('reactive isolation', () => {
+    it('does not track registry signals when a press is dispatched inside a computed', () => {
+      const registry = makeRegistry();
+      const enabled = signal(true);
+      const list: WritableSignal<readonly CngxHotkeyBinding[]> = signal([
+        bind('save', 'mod+s', { enabled }),
+      ]);
+      registry.register(list.asReadonly(), null);
+      let runs = 0;
+      const probe = computed(() => {
+        runs++;
+        press(document, 's', { ctrlKey: true });
+        return runs;
+      });
+
+      probe();
+      enabled.set(false);
+      list.set([bind('other', 'mod+o')]);
+      probe();
+
+      expect(runs).toBe(1);
     });
   });
 

@@ -140,6 +140,7 @@ const MODIFIERS = new Set(['ctrl', 'meta', 'mod', 'shift', 'alt']);
 const TEXT_INPUT_TYPES = new Set(['text', 'search', 'email', 'url', 'tel', 'password', 'number']);
 const FUNCTION_KEY = /^f([1-9]|1\d|2[0-4])$/;
 const EDITABLE = '[contenteditable]:not([contenteditable="false"])';
+const TEXT_ROLES = '[role="textbox"], [role="searchbox"]';
 
 function read<T>(value: T | Signal<T>): T {
   return isSignal(value) ? value() : value;
@@ -175,7 +176,21 @@ function isTextEntry(target: EventTarget | null): boolean {
   if (tag === 'INPUT') {
     return TEXT_INPUT_TYPES.has((target as HTMLInputElement).type);
   }
-  return (target as HTMLElement).isContentEditable === true || target.closest(EDITABLE) !== null;
+  return (
+    (target as HTMLElement).isContentEditable === true ||
+    target.matches(TEXT_ROLES) ||
+    target.closest(EDITABLE) !== null
+  );
+}
+
+/** Cheap pre-check on the press: nothing else can pass `firesInTextEntry`. */
+function mayFireInTextEntry(event: KeyboardEvent): boolean {
+  return (
+    event.ctrlKey ||
+    event.metaKey ||
+    event.key === 'Escape' ||
+    FUNCTION_KEY.test(event.key.toLowerCase())
+  );
 }
 
 /** Keys that edit no text, plus every primary-modifier combo, fire in a field. */
@@ -245,7 +260,8 @@ function sameGroups(a: readonly CngxHotkeyGroup[], b: readonly CngxHotkeyGroup[]
  * 4. The deeper scope on the chain wins; among equals the last registration.
  *
  * Inside a text field (text-like `input`, `textarea`, `select`,
- * `contenteditable`) only combos with `ctrl`, `meta` or `mod`, function keys
+ * `contenteditable`, `role="textbox"` / `"searchbox"`, also inside a shadow
+ * root) only combos with `ctrl`, `meta` or `mod`, function keys
  * and `escape` fire. Events the page already handled (`defaultPrevented`),
  * IME composition and auto-repeat (unless `allowRepeat`) are skipped. A
  * fired binding gets a `preventDefault()`ed event.
@@ -352,13 +368,25 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
   }
 
   function handleKeydown(event: KeyboardEvent): void {
+    // A keydown dispatched from inside an effect or computed must not make
+    // the registry's signals (or `run`'s reads) its dependencies.
+    untracked(() => resolveKeydown(event));
+  }
+
+  function resolveKeydown(event: KeyboardEvent): void {
     if (event.defaultPrevented || event.isComposing) {
       return;
     }
-    const inText = isTextEntry(event.target);
+    // At the document a shadow-DOM press is retargeted to its host; the
+    // composed path still starts at the field the user types in.
+    const target = event.composedPath()[0] ?? event.target;
+    const inText = isTextEntry(target);
+    if (inText && !mayFireInTextEntry(event)) {
+      return;
+    }
     let winner: Candidate | null = null;
     let tied: CngxHotkeyBinding[] = [];
-    for (const candidate of candidates(contextOf(event.target))) {
+    for (const candidate of candidates(contextOf(target))) {
       const { binding } = candidate;
       if (event.repeat && !binding.allowRepeat) {
         continue;
