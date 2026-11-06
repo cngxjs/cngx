@@ -25,7 +25,7 @@ test.describe('common/interactive/keyboard-shortcut', () => {
     // first, then navigator.platform.
     const isMac = await page.evaluate(() => {
       const hint = (navigator as { userAgentData?: { platform?: string } }).userAgentData?.platform;
-      return /mac|iphone|ipad|ipod/i.test(hint ? hint : navigator.platform);
+      return /mac|iphone|ipad|ipod/i.test(hint !== undefined && hint !== '' ? hint : navigator.platform);
     });
     const mod = isMac ? 'Meta' : 'Control';
 
