@@ -35,6 +35,40 @@ test.describe('common/popover/popover-panel', () => {
     await expect(panel.locator('[cngxpopoverfooter] button')).not.toHaveCount(0);
   });
 
+  // The footer hosts own no focus restore: the panel's restore claim returns
+  // focus to the trigger after a dismiss and after a confirm run.
+  test('with-footer-actions: dismiss and confirm return focus to the trigger', async ({ page }) => {
+    await gotoDemo(page, 'common/popover/popover-panel/with-footer-actions');
+    const trigger = page.locator('.cngx-ex-artifact button.chip', { hasText: 'Save Confirm' });
+    const panel = page.locator('cngx-popover-panel', { hasText: 'Save Changes?' });
+    const open = async (): Promise<void> => {
+      await trigger.focus();
+      await page.keyboard.press('Enter');
+      await expect(panel).toBeVisible();
+      await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    };
+
+    await open();
+    // focus() rather than Tab: WebKit skips buttons in the Tab order by default.
+    const cancel = panel.locator('button.cngx-popover-dismiss', { hasText: 'Cancel' });
+    await cancel.focus();
+    await page.keyboard.press('Enter');
+    await expect(panel).toBeHidden();
+    await expect(trigger).toBeFocused();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    await open();
+    const confirm = panel.locator('button.cngx-popover-action');
+    await confirm.focus();
+    await page.keyboard.press('Enter');
+    await expect(confirm).toContainText('Saved!');
+    // The story installs no withCloseOnSuccess(); Escape closes after the run.
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeHidden();
+    await expect(trigger).toBeFocused();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+
   // Regression: the arrow ornament must track the trigger horizontally even
   // when the browser shifts the panel for viewport-fit recovery. The `info`
   // chip in the variants story sits close to the viewport's left edge so a
