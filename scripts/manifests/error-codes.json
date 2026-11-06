@@ -1537,7 +1537,7 @@
       "messages": [
         {
           "file": "projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts",
-          "text": "[CngxHotkeyRegistry] hotkeys \"${...}\" and \"${...}\" both matched one press at the same scope depth; \"${...}\" (registered last) runs."
+          "text": "createHotkeyRegistry(): hotkeys \"${...}\" and \"${...}\" both matched one press at the same scope depth; \"${...}\" (registered last) runs."
         }
       ]
     },
@@ -1554,7 +1554,7 @@
       "messages": [
         {
           "file": "projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts",
-          "text": "[CngxHotkeyRegistry] hotkey \"${...}\" uses \"${...}\", which the browser handles before the page."
+          "text": "createHotkeyRegistry(): hotkey \"${...}\" uses \"${...}\", which the browser handles before the page."
         }
       ]
     },
@@ -1571,7 +1571,7 @@
       "messages": [
         {
           "file": "projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts",
-          "text": "[CngxHotkeyRegistry] hotkey \"${...}\" uses \"${...}\"; Ctrl+Alt is AltGr on Windows and Linux, so it never fires on layouts that type characters with AltGr."
+          "text": "createHotkeyRegistry(): hotkey \"${...}\" uses \"${...}\"; Ctrl+Alt is AltGr on Windows and Linux, so it never fires on layouts that type characters with AltGr."
         }
       ]
     },
@@ -1588,7 +1588,7 @@
       "messages": [
         {
           "file": "projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts",
-          "text": "[CngxHotkeyRegistry] hotkey \"${...}\" has the unparseable combo \"${...}\"; it never fires."
+          "text": "createHotkeyRegistry(): hotkey \"${...}\" has the unparseable combo \"${...}\"; it never fires."
         }
       ]
     },

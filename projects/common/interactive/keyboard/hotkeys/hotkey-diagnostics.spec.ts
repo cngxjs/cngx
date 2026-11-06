@@ -46,6 +46,10 @@ describe('hotkey registry diagnostics', () => {
     pressCtrlS();
 
     expect(codes(warn)).toEqual(['CNGX1077']);
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringMatching(/^CNGX1077: createHotkeyRegistry\(\): /),
+      expect.anything(),
+    );
     expect(String(warn.mock.calls[0][0])).toContain('"b.save" (registered last) runs');
   });
 
@@ -55,6 +59,10 @@ describe('hotkey registry diagnostics', () => {
     makeRegistry(true).register(source(['quit', 'meta+q'], ['fine', 'ctrl+w']), null);
 
     expect(codes(warn)).toEqual(['CNGX1078', 'CNGX1078', 'CNGX1078']);
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringMatching(/^CNGX1078: createHotkeyRegistry\(\): /),
+      expect.anything(),
+    );
   });
 
   it('warns CNGX1079 for ctrl+alt and mod+alt combos', () => {
@@ -65,6 +73,10 @@ describe('hotkey registry diagnostics', () => {
     );
 
     expect(codes(warn)).toEqual(['CNGX1079', 'CNGX1079']);
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringMatching(/^CNGX1079: createHotkeyRegistry\(\): /),
+      expect.anything(),
+    );
   });
 
   it('warns CNGX1080 for unparseable combos', () => {
@@ -75,6 +87,10 @@ describe('hotkey registry diagnostics', () => {
     );
 
     expect(codes(warn)).toEqual(['CNGX1080', 'CNGX1080']);
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringMatching(/^CNGX1080: createHotkeyRegistry\(\): /),
+      expect.anything(),
+    );
   });
 
   it('stays silent when ngDevMode is off, as in a production build', () => {

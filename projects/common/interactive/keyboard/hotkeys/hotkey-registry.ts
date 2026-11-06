@@ -291,7 +291,7 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
     if (combo === null) {
       cngxDevWarn(
         'CNGX1080',
-        `[CngxHotkeyRegistry] hotkey "${binding.id}" has the unparseable combo "${raw}"; it never fires.`,
+        `createHotkeyRegistry(): hotkey "${binding.id}" has the unparseable combo "${raw}"; it never fires.`,
         { id: binding.id, combo: raw },
       );
       return;
@@ -299,14 +299,14 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
     if (isReservedHotkey(combo, isMac)) {
       cngxDevWarn(
         'CNGX1078',
-        `[CngxHotkeyRegistry] hotkey "${binding.id}" uses "${raw}", which the browser handles before the page.`,
+        `createHotkeyRegistry(): hotkey "${binding.id}" uses "${raw}", which the browser handles before the page.`,
         { id: binding.id, combo: raw },
       );
     }
     if (isAltGrRiskHotkey(combo)) {
       cngxDevWarn(
         'CNGX1079',
-        `[CngxHotkeyRegistry] hotkey "${binding.id}" uses "${raw}"; Ctrl+Alt is AltGr on Windows and Linux, so it never fires on layouts that type characters with AltGr.`,
+        `createHotkeyRegistry(): hotkey "${binding.id}" uses "${raw}"; Ctrl+Alt is AltGr on Windows and Linux, so it never fires on layouts that type characters with AltGr.`,
         { id: binding.id, combo: raw },
       );
     }
@@ -325,7 +325,7 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
       warnedTies.add(pair);
       cngxDevWarn(
         'CNGX1077',
-        `[CngxHotkeyRegistry] hotkeys "${other.id}" and "${winner.id}" both matched one press at the same scope depth; "${winner.id}" (registered last) runs.`,
+        `createHotkeyRegistry(): hotkeys "${other.id}" and "${winner.id}" both matched one press at the same scope depth; "${winner.id}" (registered last) runs.`,
         { winner: winner.id, shadowed: other.id },
       );
     }
