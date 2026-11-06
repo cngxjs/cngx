@@ -177,36 +177,20 @@ export class CngxActiveDescendant {
   });
 
   /**
-   * Rendered items paired with the window start they were rendered for. A
-   * recycler moves `windowStart` first and the content-child items follow
-   * one render later, so the offset is captured when the items change, not
-   * read live: re-resolving the old items against the new offset would shift
-   * the active index by the window delta.
-   */
-  private readonly renderedWindow = computed<{
-    readonly items: readonly ActiveDescendantItem[];
-    readonly offset: number;
-  }>(() => {
-    const items = this.resolvedItems();
-    return { items, offset: untracked(() => this.windowOffset()) };
-  });
-
-  /**
    * -1 means "no active item". Range is `[0, totalCount())`.
    *
    * Navigation writes the index; a change of the item space re-derives it.
-   * The highlight follows its value, not its index: after the item list
-   * changes, the previously active value is looked up again with
-   * `compareWith`. Gone from a plain list means no highlight; in a virtual
-   * window a value that merely scrolled out keeps its absolute index. The result is clamped to the new
-   * item space, so the next arrow press never starts from a ghost index.
+   * In a plain list the highlight follows its value: after the item list
+   * changes, the previously active value is looked up again with `compareWith`,
+   * and gone means no highlight. In a virtual window it holds its absolute
+   * index, because the rendered rows trail `windowStart` and cannot say where a
+   * value sits; a window turning plain drops it. The result is clamped to the
+   * new item space, so the next arrow press never starts from a ghost index.
    */
   private readonly activeIndexState = linkedSignal<ActiveIndexSource, number>({
     source: () => ({
-      items: this.renderedWindow().items,
-      itemsOffset: this.renderedWindow().offset,
+      items: this.resolvedItems(),
       total: this.totalCount(),
-      offset: this.windowOffset(),
       virtual: this.virtualCount() != null,
       compareWith: this.compareWith() as (a: unknown, b: unknown) => boolean,
     }),
@@ -774,37 +758,37 @@ interface HighlightPlacement {
 /** @internal Item space the active index is derived against. */
 interface ActiveIndexSource {
   readonly items: readonly ActiveDescendantItem[];
-  /** Window start `items` were rendered for (may trail `offset` by one render). */
-  readonly itemsOffset: number;
   readonly total: number;
-  readonly offset: number;
   readonly virtual: boolean;
   readonly compareWith: (a: unknown, b: unknown) => boolean;
 }
 
 /**
  * @internal
- * Looks the previously active value up in the new item list. Unchanged items,
- * no previous highlight, or a previous index outside the old rendered window
- * keep the index as it is.
+ * Re-derives the index for a new item space. A virtual window keeps its
+ * absolute index, and that index means nothing once the list turns plain. In a
+ * plain list the previously active value is looked up again; unchanged items,
+ * no previous highlight, or an index past the old items keep the index.
  */
 function reResolveIndex(
   source: ActiveIndexSource,
   previousSource: ActiveIndexSource,
   previousIndex: number,
 ): number {
+  if (source.virtual) {
+    return previousIndex;
+  }
+  if (previousSource.virtual) {
+    return -1;
+  }
   if (previousSource.items === source.items || previousIndex < 0) {
     return previousIndex;
   }
-  const previous = previousSource.items[previousIndex - previousSource.itemsOffset];
+  const previous = previousSource.items[previousIndex];
   if (!previous) {
     return previousIndex;
   }
-  const match = source.items.findIndex((it) => source.compareWith(it.value, previous.value));
-  if (match >= 0) {
-    return match + source.itemsOffset;
-  }
-  return source.virtual ? previousIndex : -1;
+  return source.items.findIndex((it) => source.compareWith(it.value, previous.value));
 }
 
 /** @internal Pulls an index that ran past the item space back onto its last item. */

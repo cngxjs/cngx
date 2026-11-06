@@ -987,7 +987,7 @@ describe('CngxActiveDescendant - typeaheadItems', () => {
     <div
       cngxActiveDescendant
       [items]="windowItems()"
-      [virtualCount]="100"
+      [virtualCount]="virtualCount()"
       [windowStart]="start()"
       tabindex="0"
     ></div>
@@ -995,6 +995,7 @@ describe('CngxActiveDescendant - typeaheadItems', () => {
   imports: [CngxActiveDescendant],
 })
 class LaggingWindowHost {
+  readonly virtualCount = signal<number | undefined>(100);
   // A recycler moves windowStart first; the rendered items (content
   // children) follow one render later.
   readonly start = signal(40);
@@ -1053,6 +1054,55 @@ describe('CngxActiveDescendant - window start leading the rendered items', () =>
       expect(dir.activeIndex()).toBe(next);
       expect(dir.activeId()).toBe(`opt-${next}`);
     }
+  });
+
+  it('keeps the absolute active index when the window moves again while the rows lag', () => {
+    const fixture = TestBed.createComponent(LaggingWindowHost);
+    settle(fixture);
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    const dir = container.injector.get(CngxActiveDescendant);
+    dir.highlightByIndex(45);
+    TestBed.flushEffects();
+
+    fixture.componentInstance.start.set(43);
+    settle(fixture);
+    fixture.componentInstance.itemsStart.set(41);
+    settle(fixture);
+    expect(dir.activeIndex()).toBe(45);
+
+    fixture.componentInstance.start.set(60);
+    fixture.componentInstance.itemsStart.set(60);
+    settle(fixture);
+    expect(dir.activeIndex()).toBe(45);
+  });
+
+  it('holds the absolute index, not the value, when the window content changes', () => {
+    const fixture = TestBed.createComponent(LaggingWindowHost);
+    settle(fixture);
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    const dir = container.injector.get(CngxActiveDescendant);
+    dir.highlightByIndex(45);
+    TestBed.flushEffects();
+
+    fixture.componentInstance.itemsStart.set(41);
+    settle(fixture);
+
+    expect(dir.activeIndex()).toBe(45);
+    expect(dir.activeId()).toBe('opt-46');
+  });
+
+  it('drops the highlight when a windowed list turns into a plain one', () => {
+    const fixture = TestBed.createComponent(LaggingWindowHost);
+    settle(fixture);
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    const dir = container.injector.get(CngxActiveDescendant);
+    dir.highlightByIndex(45);
+    TestBed.flushEffects();
+
+    fixture.componentInstance.virtualCount.set(undefined);
+    settle(fixture);
+
+    expect(dir.activeIndex()).toBe(-1);
   });
 });
 
