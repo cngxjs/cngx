@@ -14,6 +14,7 @@ import {
   viewChild,
   ViewEncapsulation,
 } from '@angular/core';
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import {
   CngxButtonBrain,
   CngxButtonEnd,
@@ -75,7 +76,9 @@ import { CngxPopover } from './popover.directive';
  * `CNGX_INTERACTIVE_I18N.asyncClickSucceeded` / `asyncClickFailed`.
  * `[autoAnnounce]="false"` keeps the region empty. Under
  * `withCloseOnSuccess()` the panel closes once per success; focus returns
- * to the trigger through the panel's restore claim.
+ * to the trigger through the panel's restore claim. A success that closes
+ * the panel is spoken through `CngxLiveAnnouncer` outside it instead (the
+ * sibling region hides with the panel), still once.
  *
  * Migration from `cngx-popover-action`: `variant="primary"` is
  * `cngxPopoverAction="solid" tone="primary"`, `variant="danger"` is
@@ -215,6 +218,7 @@ export class CngxPopoverAction {
   private readonly popover = inject(CngxPopover, { optional: true });
   private readonly config = inject(CNGX_POPOVER_PANEL_CONFIG);
   private readonly i18n = injectInteractiveI18n();
+  private readonly announcer = inject(CngxLiveAnnouncer);
   // The co-hosted run is resolved on first read: the runner is created before
   // this component and injects the CNGX_HOST_INTERACTION_STATE it provides,
   // so an eager inject here would be a cycle.
@@ -314,7 +318,7 @@ export class CngxPopoverAction {
    */
   readonly hostInteraction: CngxHostInteractionState = {
     ...this.brain.interaction,
-    announcement: (settle) => (settle ? this.resolveAnnouncement(settle.status) : ''),
+    announcement: (settle) => (settle ? this.routeAnnouncement(settle) : ''),
   };
 
   private closeOnSuccessTimer: ReturnType<typeof setTimeout> | null = null;
@@ -341,14 +345,39 @@ export class CngxPopoverAction {
   /** One settle: re-arms close-on-success (`withCloseOnSuccess()`). */
   private handleSettled(settle: CngxAsyncSettle): void {
     this.clearCloseOnSuccessTimer();
-    const delay = this.config.closeOnSuccessDelay;
-    if (settle.status !== 'success' || delay === undefined || !this.popover) {
+    const delay = this.closeDelayFor(settle);
+    if (delay === undefined) {
       return;
     }
     this.closeOnSuccessTimer = setTimeout(() => {
       this.closeOnSuccessTimer = null;
       this.popover?.hide();
     }, delay);
+  }
+
+  /** The close delay a settle arms, or `undefined` when it closes nothing. */
+  private closeDelayFor(settle: CngxAsyncSettle): number | undefined {
+    if (settle.status !== 'success' || !this.popover) {
+      return undefined;
+    }
+    return this.config.closeOnSuccessDelay;
+  }
+
+  /**
+   * Where a settle is spoken. A success that closes the panel goes through
+   * `CngxLiveAnnouncer`, scoped to the popover's parent: the `cngxAsyncClick`
+   * region sits inside the panel, which hides after the close delay (maybe
+   * 0 ms) and can take the text with it before AT reads it. That region gets
+   * `''` for the settle, so it is spoken once.
+   */
+  private routeAnnouncement(settle: CngxAsyncSettle): string {
+    const text = this.resolveAnnouncement(settle.status);
+    if (text === '' || this.closeDelayFor(settle) === undefined) {
+      return text;
+    }
+    const scope = this.popover?.elementRef.nativeElement.parentElement ?? null;
+    untracked(() => this.announcer.announce(text, 'polite', scope));
+    return '';
   }
 
   /**

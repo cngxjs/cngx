@@ -1080,5 +1080,73 @@ describe('CngxPopoverAction', () => {
       expect(document.activeElement).toBe(trigger);
       fixture.destroy();
     });
+
+    it('speaks a closing success through a region outside the panel, once', async () => {
+      TestBed.configureTestingModule({
+        imports: [PanelConfirmHost],
+        providers: [providePopoverPanel(withCloseOnSuccess(0))],
+      });
+      const fixture = TestBed.createComponent(PanelConfirmHost);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const root = fixture.nativeElement as HTMLElement;
+      const panelEl = root.querySelector('cngx-popover-panel') as HTMLElement;
+      stubPopoverElement(panelEl);
+      const popover = fixture.componentInstance.panel().popover;
+      const flush = () => {
+        fixture.detectChanges();
+        TestBed.flushEffects();
+      };
+
+      popover.show();
+      flush();
+      const confirm = root.querySelector('.cngx-popover-action') as HTMLButtonElement;
+      const sibling = confirm.nextElementSibling as HTMLElement;
+      confirm.click();
+      await vi.advanceTimersByTimeAsync(0);
+      flush();
+      await vi.advanceTimersByTimeAsync(100);
+      flush();
+
+      expect(popover.state()).toBe('closed');
+      const spoken = Array.from(document.querySelectorAll<HTMLElement>('[aria-live]')).filter(
+        (el) => el.textContent === CNGX_INTERACTIVE_LANGUAGE_EN.asyncClickSucceeded,
+      );
+      expect(spoken).toHaveLength(1);
+      expect(spoken[0].isConnected).toBe(true);
+      expect(panelEl.contains(spoken[0])).toBe(false);
+      expect(sibling.getAttribute('aria-live')).toBe('polite');
+      expect(sibling.textContent).toBe('');
+      fixture.destroy();
+    });
+
+    it('keeps the settle in the sibling region when the panel stays open', async () => {
+      TestBed.configureTestingModule({ imports: [PanelConfirmHost] });
+      const fixture = TestBed.createComponent(PanelConfirmHost);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const root = fixture.nativeElement as HTMLElement;
+      const panelEl = root.querySelector('cngx-popover-panel') as HTMLElement;
+      stubPopoverElement(panelEl);
+      const popover = fixture.componentInstance.panel().popover;
+
+      popover.show();
+      fixture.detectChanges();
+      const confirm = root.querySelector('.cngx-popover-action') as HTMLButtonElement;
+      confirm.click();
+      await vi.advanceTimersByTimeAsync(0);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      await vi.advanceTimersByTimeAsync(100);
+
+      const spoken = Array.from(document.querySelectorAll<HTMLElement>('[aria-live]')).filter(
+        (el) => el.textContent === CNGX_INTERACTIVE_LANGUAGE_EN.asyncClickSucceeded,
+      );
+      expect(spoken).toEqual([confirm.nextElementSibling]);
+      fixture.destroy();
+    });
   });
 });
