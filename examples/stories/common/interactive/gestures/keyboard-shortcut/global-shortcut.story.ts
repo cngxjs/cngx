@@ -31,12 +31,12 @@ export const STORY: DemoSpec = {
       (shortcutTriggered)="handleShortcut('Ctrl+K / Cmd+K')"
       class="sort-btn"
     >
-      Run command (<kbd>Ctrl</kbd>+<kbd>K</kbd>)
+      Run command (<kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>K</kbd>)
     </button>
     <button
       type="button"
       [cngxKeyboardShortcut]="'/'"
-      (shortcutTriggered)="handleShortcut('/')"
+      (shortcutTriggered)="handleShortcut('/'); field.focus()"
       class="sort-btn"
     >
       Focus search (<kbd>/</kbd>)
@@ -44,11 +44,11 @@ export const STORY: DemoSpec = {
   </div>
 
   <p class="demo-gesture-hint" style="margin-top:12px">
-    Press <kbd>Ctrl</kbd>+<kbd>K</kbd> or <kbd>/</kbd> anywhere on the page. Then focus the field and try again: Ctrl/Cmd+K fires in the text field too; / does not.
+    Press <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>K</kbd> anywhere on the page, or <kbd>/</kbd> to jump into the field. In the field Ctrl/Cmd+K still fires; / types a slash.
   </p>
   <label class="demo-gesture-hint" style="display:block">
     <span style="display:block;margin-bottom:4px">Type here (Ctrl/Cmd+K fires, / types)</span>
-    <input type="text" placeholder="Ctrl+K fires, / types a slash" style="width:260px" />
+    <input #field type="text" placeholder="Ctrl/Cmd+K fires, / types a slash" style="width:260px" />
   </label>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
