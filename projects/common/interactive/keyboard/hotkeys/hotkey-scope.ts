@@ -1,4 +1,4 @@
-import { type DestroyRef, InjectionToken, signal, type Signal } from '@angular/core';
+import { computed, type DestroyRef, InjectionToken, signal, type Signal } from '@angular/core';
 
 /**
  * One node of the hotkey scope tree: an element region with a modal and an
@@ -22,6 +22,8 @@ export interface CngxHotkeyScopeNode {
   readonly modal: Signal<boolean>;
   /** `false` mutes every binding in the scope and its descendants. */
   readonly active: Signal<boolean>;
+  /** `true` while this scope or an ancestor scope is inactive. */
+  readonly muted: Signal<boolean>;
   /** The enclosing scope, `null` under the app scope. */
   readonly parent: CngxHotkeyScopeNode | null;
 }
@@ -93,34 +95,77 @@ const scopesVersion = signal(0);
  * @relatedTo CNGX_HOTKEY_SCOPE, CngxHotkeyScope
  */
 export function createHotkeyScope(options: CngxHotkeyScopeOptions): CngxHotkeyScopeNode {
+  const { parent } = options;
+  const active = options.active ?? ALWAYS;
   const node: CngxHotkeyScopeNode = {
     element: options.element,
     modal: options.modal ?? NEVER,
-    active: options.active ?? ALWAYS,
-    parent: options.parent,
+    active,
+    muted: computed(() => !active() || (parent?.muted() ?? false)),
+    parent,
   };
-  SCOPES_BY_ELEMENT.set(node.element, [...hotkeyScopesOf(node.element), node]);
+  // Raw index reads: a scope created during a view's render must not track the version it bumps.
+  SCOPES_BY_ELEMENT.set(node.element, [...(SCOPES_BY_ELEMENT.get(node.element) ?? []), node]);
   scopesVersion.update((v) => v + 1);
   options.destroyRef?.onDestroy(() => {
-    const rest = hotkeyScopesOf(node.element).filter((s) => s !== node);
+    const rest = (SCOPES_BY_ELEMENT.get(node.element) ?? []).filter((s) => s !== node);
     SCOPES_BY_ELEMENT.set(node.element, rest);
     scopesVersion.update((v) => v + 1);
   });
   return node;
 }
 
-/** @internal Live scopes of an element, in creation order; reactive to scope churn. */
-export function hotkeyScopesOf(element: Element): readonly CngxHotkeyScopeNode[] {
+/** Live scopes of an element, in creation order; reactive to scope churn. */
+function hotkeyScopesOf(element: Element): readonly CngxHotkeyScopeNode[] {
   scopesVersion();
   return SCOPES_BY_ELEMENT.get(element) ?? [];
 }
 
-/** @internal `true` when the scope or an ancestor scope is inactive. */
-export function isHotkeyScopeMuted(scope: CngxHotkeyScopeNode | null): boolean {
-  for (let s = scope; s !== null; s = s.parent) {
-    if (!s.active()) {
-      return true;
+function depthOf(scope: CngxHotkeyScopeNode): number {
+  let depth = 0;
+  for (let s = scope.parent; s !== null; s = s.parent) {
+    depth++;
+  }
+  return depth;
+}
+
+// Creation order says nothing on one element: a child that injects
+// `CNGX_HOTKEY_SCOPE` creates its parent scope first.
+function scopesInnermostFirst(element: Element): readonly CngxHotkeyScopeNode[] {
+  const scopes = hotkeyScopesOf(element);
+  return scopes.length < 2 ? scopes : [...scopes].sort((a, b) => depthOf(b) - depthOf(a));
+}
+
+function parentOf(node: Node): Node | null {
+  return node.parentNode instanceof ShadowRoot ? node.parentNode.host : node.parentNode;
+}
+
+/**
+ * The hotkey scopes containing an element, innermost first, cut after the
+ * first modal one: the chain a key press on `target` resolves against. Walks
+ * out of shadow roots through their hosts. Reactive when read inside a
+ * `computed()` (scope flags and scopes created or released on the path).
+ * A replacement registry behind `CNGX_HOTKEY_REGISTRY` reads it to apply the
+ * same modal cut as the default one.
+ *
+ * @param target The element a key press or a listing starts from.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-scope.ts
+ * @since 0.1.0
+ * @relatedTo createHotkeyScope, createHotkeyRegistry
+ */
+export function resolveHotkeyScopeChain(target: Element): readonly CngxHotkeyScopeNode[] {
+  const chain: CngxHotkeyScopeNode[] = [];
+  for (let node: Node | null = target; node !== null; node = parentOf(node)) {
+    if (!(node instanceof Element)) {
+      continue;
+    }
+    for (const scope of scopesInnermostFirst(node)) {
+      chain.push(scope);
+      if (scope.modal()) {
+        return chain;
+      }
     }
   }
-  return false;
+  return chain;
 }

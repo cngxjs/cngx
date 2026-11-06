@@ -12,7 +12,7 @@ import { nextUid, parseKeyCombo, resolveAriaKeyShortcuts } from '@cngx/core/util
 
 import type { CngxHotkeyBinding } from './hotkeys/hotkey-binding';
 import { injectHotkeyRegistry } from './hotkeys/hotkey-registry';
-import { CNGX_HOTKEY_SCOPE, createHotkeyScope, isHotkeyScopeMuted } from './hotkeys/hotkey-scope';
+import { CNGX_HOTKEY_SCOPE, createHotkeyScope } from './hotkeys/hotkey-scope';
 
 /**
  * Declarative keyboard shortcut on the app's hotkey registry.
@@ -109,7 +109,7 @@ export class CngxKeyboardShortcut implements OnInit {
   });
 
   protected readonly ariaKeyShortcuts = computed(() =>
-    this.enabled() && !isHotkeyScopeMuted(this.hostScope)
+    this.enabled() && !this.hostScope.muted()
       ? resolveAriaKeyShortcuts(parseKeyCombo(this.shortcut()), this.registry.isMac)
       : null,
   );

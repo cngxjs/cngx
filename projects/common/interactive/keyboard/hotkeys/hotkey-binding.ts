@@ -78,8 +78,8 @@ export interface CngxHotkeyRegistration {
 export interface CngxHotkeyRef extends CngxHotkeyRegistration {
   /** The binding's remap identity. */
   readonly id: string;
-  /** The combo the binding currently fires on; `null` while it is turned off. */
-  readonly effectiveCombo: Signal<string | null>;
+  /** The combo the binding currently fires on. */
+  readonly effectiveCombo: Signal<string>;
   /** `true` while the binding's scope or one of its ancestors is inactive. */
   readonly muted: Signal<boolean>;
 }

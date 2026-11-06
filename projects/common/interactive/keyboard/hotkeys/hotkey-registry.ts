@@ -23,8 +23,7 @@ import {
 import type { CngxHotkeyBinding, CngxHotkeyRef, CngxHotkeyRegistration } from './hotkey-binding';
 import {
   CNGX_HOTKEY_SCOPE,
-  hotkeyScopesOf,
-  isHotkeyScopeMuted,
+  resolveHotkeyScopeChain,
   type CngxHotkeyScopeNode,
 } from './hotkey-scope';
 import { isAltGrRiskHotkey, isReservedHotkey } from './reserved-combos';
@@ -108,8 +107,18 @@ export interface CngxHotkeyRegistryDeps {
  * Factory shape for a replacement registry behind {@link CNGX_HOTKEY_REGISTRY}.
  *
  * ```ts
- * { provide: CNGX_HOTKEY_REGISTRY, useFactory: () => myRegistry(injectHotkeyRegistryDeps()) }
+ * {
+ *   provide: CNGX_HOTKEY_REGISTRY,
+ *   useFactory: () => {
+ *     const registry = myRegistry(injectHotkeyRegistryDeps());
+ *     inject(DestroyRef).onDestroy(() => registry.destroy());
+ *     return registry;
+ *   },
+ * }
  * ```
+ *
+ * A replacement resolves scopes through `resolveHotkeyScopeChain`, and must
+ * call `destroy()` on teardown so the document listener does not outlive it.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts
  * @since 0.1.0
@@ -174,44 +183,6 @@ function firesInTextEntry(combo: KeyCombo): boolean {
   return (
     combo.ctrl || combo.meta || combo.mod || combo.key === 'escape' || FUNCTION_KEY.test(combo.key)
   );
-}
-
-function parentOf(node: Node): Node | null {
-  return node.parentNode instanceof ShadowRoot ? node.parentNode.host : node.parentNode;
-}
-
-function depthOf(scope: CngxHotkeyScopeNode): number {
-  let depth = 0;
-  for (let s = scope.parent; s !== null; s = s.parent) {
-    depth++;
-  }
-  return depth;
-}
-
-/**
- * Scopes on one element, innermost first. Creation order says nothing here:
- * a child that injects `CNGX_HOTKEY_SCOPE` creates its parent scope first.
- */
-function scopesInnermostFirst(element: Element): readonly CngxHotkeyScopeNode[] {
-  const scopes = hotkeyScopesOf(element);
-  return scopes.length < 2 ? scopes : [...scopes].sort((a, b) => depthOf(b) - depthOf(a));
-}
-
-/** Scopes containing `start`, innermost first, cut after the first modal one. */
-function scopeChain(start: Element): readonly CngxHotkeyScopeNode[] {
-  const chain: CngxHotkeyScopeNode[] = [];
-  for (let node: Node | null = start; node !== null; node = parentOf(node)) {
-    if (!(node instanceof Element)) {
-      continue;
-    }
-    for (const scope of scopesInnermostFirst(node)) {
-      chain.push(scope);
-      if (scope.modal()) {
-        return chain;
-      }
-    }
-  }
-  return chain;
 }
 
 function innermostModal(chain: readonly CngxHotkeyScopeNode[]): CngxHotkeyScopeNode | null {
@@ -362,11 +333,11 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
 
   /** Every live candidate for a context, with its precedence rank. */
   function candidates(context: Element): Candidate[] {
-    const chain = scopeChain(context);
+    const chain = resolveHotkeyScopeChain(context);
     const modal = innermostModal(chain);
     const out: Candidate[] = [];
     for (const entry of registrations.values()) {
-      if (isHotkeyScopeMuted(entry.scope)) {
+      if (entry.scope?.muted()) {
         continue;
       }
       const rank = rankOf(entry.scope, chain);
@@ -530,7 +501,14 @@ export function injectHotkeyRegistryDeps(): CngxHotkeyRegistryDeps {
  *
  * ```ts
  * providers: [
- *   { provide: CNGX_HOTKEY_REGISTRY, useFactory: () => myRegistry(injectHotkeyRegistryDeps()) },
+ *   {
+ *     provide: CNGX_HOTKEY_REGISTRY,
+ *     useFactory: () => {
+ *       const registry = myRegistry(injectHotkeyRegistryDeps());
+ *       inject(DestroyRef).onDestroy(() => registry.destroy());
+ *       return registry;
+ *     },
+ *   },
  * ]
  * ```
  *
@@ -578,7 +556,7 @@ export function injectHotkey(binding: CngxHotkeyBinding): CngxHotkeyRef {
   return {
     id: binding.id,
     effectiveCombo: computed(() => read(binding.combo)),
-    muted: computed(() => isHotkeyScopeMuted(scope)),
+    muted: computed(() => scope?.muted() ?? false),
     unregister: () => registration.unregister(),
   };
 }

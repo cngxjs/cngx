@@ -198,6 +198,7 @@ export {
 export {
   CNGX_HOTKEY_SCOPE,
   createHotkeyScope,
+  resolveHotkeyScopeChain,
   type CngxHotkeyScopeNode,
   type CngxHotkeyScopeOptions,
 } from './keyboard/hotkeys/hotkey-scope';

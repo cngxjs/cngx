@@ -328,6 +328,17 @@ describe('createHotkeyRegistry', () => {
   });
 
   describe('muted scopes', () => {
+    it("derives muted on every node from its own and its ancestors' active flags", () => {
+      const active = signal(true);
+      const outer = scopeOn(el(), null, { active });
+      const inner = scopeOn(el(), outer);
+      expect(inner.muted()).toBe(false);
+
+      active.set(false);
+      expect(outer.muted()).toBe(true);
+      expect(inner.muted()).toBe(true);
+    });
+
     it('mutes bindings in an inactive scope and its descendants until it turns active', () => {
       const registry = makeRegistry();
       const active = signal(false);
