@@ -323,6 +323,19 @@ describe('CngxDrawerSurface', () => {
     });
   });
 
+  describe('focus host', () => {
+    it('takes tabindex="-1" while engaged so a press inside keeps focus on the host', () => {
+      const { surface, set } = setup((h) => h.modality.set('none'));
+      expect(surface.hasAttribute('tabindex')).toBe(false);
+
+      set((h) => h.active.set(true));
+      expect(surface.getAttribute('tabindex')).toBe('-1');
+
+      set((h) => h.active.set(false));
+      expect(surface.hasAttribute('tabindex')).toBe(false);
+    });
+  });
+
   describe('name', () => {
     it('names an engaged page modal with the layout i18n fallback only', () => {
       const { surface, set } = setup();

@@ -170,6 +170,7 @@ const SCROLLING_OVERFLOW = new Set(['auto', 'scroll']);
     '[attr.role]': 'surfaceRole()',
     '[attr.aria-modal]': "engagedPage() ? 'true' : null",
     '[attr.aria-label]': 'ariaLabel()',
+    '[attr.tabindex]': 'hostTabindex()',
     '(keydown.escape)': 'handleEscape($event)',
   },
 })
@@ -218,6 +219,7 @@ export class CngxDrawerSurface
   private readonly staticLabelledBy = inject(new HostAttributeToken('aria-labelledby'), {
     optional: true,
   });
+  private readonly staticTabindex = inject(new HostAttributeToken('tabindex'), { optional: true });
   private destroyed = false;
   // Chromium also turns an unhandled Escape keydown, wherever focus is, into
   // a CloseWatcher close. Escape belongs to the keydown path (focus inside
@@ -289,6 +291,13 @@ export class CngxDrawerSurface
    * restore then focuses the opener after the render, once it is live.
    */
   readonly focusRestoreActive = this.isActive;
+  // A press on a non-focusable spot inside an engaged surface would drop
+  // focus to <body>, out of reach of the host Escape listener (and of the
+  // page modal's own boundary). tabindex="-1" keeps focus on the host there,
+  // like a native <dialog>; it adds no Tab stop. A consumer tabindex wins.
+  protected readonly hostTabindex = computed(
+    () => this.staticTabindex ?? (this.isActive() ? '-1' : null),
+  );
   /** @internal Drives the composed `CngxClickOutside`. */
   readonly clickOutsideEnabled = computed(
     () => this.isActive() && (this.driver()?.surfaceOutsideDismiss?.() ?? true),
