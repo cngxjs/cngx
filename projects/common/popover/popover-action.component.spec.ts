@@ -1,10 +1,16 @@
 import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CngxFailed, CngxPending, CngxSucceeded } from '@cngx/common/interactive';
+import {
+  CNGX_INTERACTIVE_LANGUAGE_EN,
+  CngxFailed,
+  CngxPending,
+  CngxSucceeded,
+} from '@cngx/common/interactive';
 import {
   CNGX_LOADING_DEFAULTS,
   provideLoadingConfig,
+  resolveSpokenText,
   withMinDwell,
   withShowDelay,
 } from '@cngx/core/utils';
@@ -113,6 +119,48 @@ class ForwardConfirmHost {
 
   resolveFn!: () => void;
 
+  readonly saveAction = () =>
+    new Promise<void>((resolve) => {
+      this.resolveFn = resolve;
+    });
+}
+
+// Post-settle dwell hosts: one status template each, so every combination of
+// pending and result template is covered while the busy visual is held.
+@Component({
+  template: `
+    <div cngxPopover #pop="cngxPopover">
+      <button cngxPopoverAction [action]="saveAction" #act="cngxPopoverAction">
+        Save
+        <ng-template cngxPending>Saving...</ng-template>
+      </button>
+    </div>
+  `,
+  imports: [CngxPopover, CngxPopoverAction, CngxPending],
+})
+class PendingOnlyHost {
+  readonly action = viewChild.required(CngxPopoverAction);
+  resolveFn!: () => void;
+  readonly saveAction = () =>
+    new Promise<void>((resolve) => {
+      this.resolveFn = resolve;
+    });
+}
+
+@Component({
+  template: `
+    <div cngxPopover #pop="cngxPopover">
+      <button cngxPopoverAction [action]="saveAction" #act="cngxPopoverAction">
+        Save
+        <ng-template cngxSucceeded>Saved!</ng-template>
+      </button>
+    </div>
+  `,
+  imports: [CngxPopover, CngxPopoverAction, CngxSucceeded],
+})
+class SucceededOnlyHost {
+  readonly action = viewChild.required(CngxPopoverAction);
+  resolveFn!: () => void;
   readonly saveAction = () =>
     new Promise<void>((resolve) => {
       this.resolveFn = resolve;
@@ -559,6 +607,104 @@ describe('CngxPopoverAction', () => {
       await vi.advanceTimersByTimeAsync(DWELL);
       fixture.detectChanges();
       expect(btn.hasAttribute('data-busy')).toBe(false);
+    });
+
+    describe('label in the post-settle dwell', () => {
+      const liveRegion = (btn: HTMLElement): HTMLElement =>
+        btn.nextElementSibling as HTMLElement;
+      const label = (btn: HTMLElement): HTMLElement =>
+        btn.querySelector('.cngx-button__label') as HTMLElement;
+      // resolveSpokenText skips aria-hidden subtrees: what AT reads of the
+      // label, and of the whole button (its accessible name in jsdom).
+      const shownLabel = (btn: HTMLElement): string => resolveSpokenText(label(btn));
+      const accessibleName = (btn: HTMLElement): string => resolveSpokenText(btn);
+      const hiddenCellText = (btn: HTMLElement): string[] =>
+        Array.from(label(btn).querySelectorAll(':scope > [aria-hidden="true"]'), (el) =>
+          (el.textContent ?? '').trim(),
+        );
+
+      async function render(fixture: { detectChanges(): void }): Promise<void> {
+        await vi.advanceTimersByTimeAsync(0);
+        fixture.detectChanges();
+        TestBed.flushEffects();
+        fixture.detectChanges();
+      }
+
+      /** Runs past the show delay and settles successfully: inside the held dwell. */
+      async function intoDwell<T extends { resolveFn: () => void }>(
+        fixture: { componentInstance: T; nativeElement: HTMLElement; detectChanges(): void },
+      ): Promise<HTMLButtonElement> {
+        const btn = confirmButton(fixture);
+        btn.click();
+        fixture.detectChanges();
+        await vi.advanceTimersByTimeAsync(SHOW);
+        fixture.detectChanges();
+        fixture.componentInstance.resolveFn();
+        await render(fixture);
+        expect(btn.getAttribute('data-busy')).toBe('true');
+        return btn;
+      }
+
+      it('keeps cngxPending under the dwell and shows cngxSucceeded only after release', async () => {
+        const { fixture } = setup(ConfirmHost);
+        const btn = await intoDwell(fixture);
+
+        expect(fixture.componentInstance.action().status()).toBe('success');
+        expect(shownLabel(btn)).toBe('Saving...');
+        expect(accessibleName(btn)).toBe('Saving...');
+        expect(hiddenCellText(btn)).toContain('Saved!');
+        expect(btn.hasAttribute('data-status-label')).toBe(true);
+        expect(btn.querySelector('.cngx-button__busy')).toBeNull();
+        expect(liveRegion(btn).textContent).toBe('Saved!');
+
+        await vi.advanceTimersByTimeAsync(DWELL);
+        fixture.detectChanges();
+        expect(btn.hasAttribute('data-busy')).toBe(false);
+        expect(shownLabel(btn)).toBe('Saved!');
+        expect(accessibleName(btn)).toBe('Saved!');
+        expect(hiddenCellText(btn)).not.toContain('Saved!');
+        expect(btn.querySelector('.cngx-button__busy')).toBeNull();
+        expect(liveRegion(btn).textContent).toBe('Saved!');
+      });
+
+      it('keeps cngxPending under the dwell without a result template', async () => {
+        const { fixture } = setup(PendingOnlyHost);
+        const btn = await intoDwell(fixture);
+
+        expect(shownLabel(btn)).toBe('Saving...');
+        expect(accessibleName(btn)).toBe('Saving...');
+        expect(hiddenCellText(btn)).not.toContain('Saving...');
+        expect(btn.hasAttribute('data-status-label')).toBe(true);
+        expect(btn.querySelector('.cngx-button__busy')).toBeNull();
+        expect(liveRegion(btn).textContent).toBe(CNGX_INTERACTIVE_LANGUAGE_EN.asyncClickSucceeded);
+
+        await vi.advanceTimersByTimeAsync(DWELL);
+        fixture.detectChanges();
+        expect(shownLabel(btn)).toBe('Save');
+        expect(accessibleName(btn)).toBe('Save');
+        expect(btn.hasAttribute('data-status-label')).toBe(false);
+        expect(btn.querySelector('.cngx-button__busy')).toBeNull();
+      });
+
+      it('keeps the idle label under the spinner and names the result only after release', async () => {
+        const { fixture } = setup(SucceededOnlyHost);
+        const btn = await intoDwell(fixture);
+
+        expect(shownLabel(btn)).toBe('Save');
+        expect(accessibleName(btn)).toBe('Save');
+        expect(hiddenCellText(btn)).toContain('Saved!');
+        expect(btn.hasAttribute('data-status-label')).toBe(false);
+        expect(btn.querySelector('.cngx-button__busy')).not.toBeNull();
+        // The region speaks the settle's result, read from the hidden cell.
+        expect(liveRegion(btn).textContent).toBe('Saved!');
+
+        await vi.advanceTimersByTimeAsync(DWELL);
+        fixture.detectChanges();
+        expect(shownLabel(btn)).toBe('Saved!');
+        expect(accessibleName(btn)).toBe('Saved!');
+        expect(btn.querySelector('.cngx-button__busy')).toBeNull();
+        expect(liveRegion(btn).textContent).toBe('Saved!');
+      });
     });
 
     it('shows the cngxPending template instead of the spinner once busy', async () => {

@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'A plain panel (no <code>variant</code>) with <code>button[cngxPopoverDismiss]</code>, a confirm disabled with a reason, and a solid primary <code>button[cngxPopoverAction]</code> with <code>cngxPending</code> / <code>cngxSucceeded</code> / <code>cngxFailed</code> templates.',
   description:
-    'The footer actions are button-family hosts pinned to <code>sm</code>; their tone comes from the button, not from the panel, so a plain panel paints them the same as a tinted one. "Schedule" is a confirm with <code>[disabled]</code> and a <code>disabledReason</code>: it stays focusable, renders <code>aria-disabled="true"</code>, refuses the run and names the reason through <code>aria-describedby</code>. Untick "No publish date yet" to enable it. "Publish" runs its <code>[action]</code>: past the show delay the pending template replaces the label, then the result template shows; tick "Fail the next publish" to reach <code>cngxFailed</code>. Cancel and every close return focus to the trigger. The readout below shows <code>status()</code> of both confirms through their <code>exportAs</code>.',
+    'The footer actions are button-family hosts pinned to <code>sm</code>; their tone comes from the button, not from the panel, so a plain panel paints them the same as a tinted one. "Schedule" is a confirm with <code>[disabled]</code> and a <code>disabledReason</code>: it stays focusable, renders <code>aria-disabled="true"</code>, refuses the run and names the reason through <code>aria-describedby</code>. Untick "No publish date yet" to enable it. "Publish" runs its <code>[action]</code>: past the show delay the pending template replaces the label and stays through the dwell after the settle, then the result template shows once the busy visual releases; tick "Fail the next publish" to reach <code>cngxFailed</code>. Cancel and every close return focus to the trigger. The readout below shows <code>status()</code> of both confirms through their <code>exportAs</code>.',
   level: 'molecule',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -87,7 +87,7 @@ export const STORY: DemoSpec = {
       <dd>{{ noDate() ? 'Pick a publish date first' : '-' }}</dd>
     </dl>
     <p class="cngx-ex-sr-output__note">
-      status() follows the run at once; the pending template waits for busyVisible(). Tab to Schedule while it is disabled: the reason is its accessible description.
+      status() follows the run at once; the label follows busyVisible(): the pending template while it holds, the result template once it releases. Tab to Schedule while it is disabled: the reason is its accessible description.
     </p>
   </div>`,
 };

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
-import { CngxPending } from '@cngx/common/interactive';
+import { CngxPending, CngxSucceeded } from '@cngx/common/interactive';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -48,6 +48,27 @@ class ActionHost {
 })
 class PendingHost {
   readonly save = (): Promise<void> => new Promise<void>(() => undefined);
+}
+
+// Settles on demand under a long dwell: the result cell renders at the settle
+// but stays hidden while the dwell holds the pending cell.
+@Component({
+  standalone: true,
+  imports: [CngxPopoverAction, CngxPending, CngxSucceeded],
+  template: `
+    <button cngxPopoverAction [action]="save" [showDelay]="0" [minDwell]="10000">
+      Save
+      <ng-template cngxPending>Saving...</ng-template>
+      <ng-template cngxSucceeded>Saved!</ng-template>
+    </button>
+  `,
+})
+class DwellHost {
+  resolveFn: () => void = () => undefined;
+  readonly save = (): Promise<void> =>
+    new Promise<void>((resolve) => {
+      this.resolveFn = resolve;
+    });
 }
 
 @Component({
@@ -130,6 +151,24 @@ describe('CngxPopoverAction geometry', () => {
     expect(label.textContent).toContain('Saving...');
     expect(computedValue(label, 'opacity')).toBe('1');
     expect(button.querySelector('.cngx-button__busy')).toBeNull();
+  });
+
+  it('hides the settled result cell while the dwell holds the pending label', async () => {
+    const button = mount(DwellHost, 'button.cngx-popover-action');
+    button.click();
+    await waitFor(() => button.hasAttribute('data-busy'));
+    (mountedFixture?.componentInstance as DwellHost).resolveFn();
+    await waitFor(() => button.querySelector('.cngx-popover-action__label[aria-hidden]') !== null);
+    expect(button.hasAttribute('data-busy')).toBe(true);
+    const active = query(button, '.cngx-popover-action__label[data-active]');
+    const result = query(button, '.cngx-popover-action__label[aria-hidden]');
+    expect(active.textContent).toContain('Saving...');
+    expect(computedValue(active, 'visibility')).toBe('visible');
+    expect(result.textContent).toContain('Saved!');
+    expect(computedValue(result, 'visibility')).toBe('hidden');
+    expect(computedValue(query(button, '.cngx-button__label'), 'opacity')).toBe('1');
+    // Stacked in one grid cell: the active and the waiting cell share a row.
+    expect(active.getBoundingClientRect().top).toBe(result.getBoundingClientRect().top);
   });
 
   it('fades the label under the spinner without a cngxPending template', async () => {

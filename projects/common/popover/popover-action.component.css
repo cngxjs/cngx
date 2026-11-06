@@ -22,12 +22,18 @@
  *   variant no longer tints the actions: a `tone="primary"` action paints
  *   `--cngx-color-primary` in every panel variant.
  *
- * **Pending label**
+ * **Status labels**
  *
+ * - `.cngx-popover-action__labels` - the label as one grid cell holding the
+ *   visible label cell and, from the settle on, the result cell
+ * - `.cngx-popover-action__label[data-active]` - the visible, named cell; a
+ *   result cell waiting out the post-settle dwell is `visibility: hidden`
+ *   and `aria-hidden`, and already sizes the button
  * - `[data-busy][data-status-label]` - a projected `cngxPending` template
- *   shows instead of the spinner, so the label is lifted back to
- *   `opacity: 1` while busy (the button sheet fades it under the ring).
- *   Without the template the spinner covers the idle label.
+ *   shows instead of the spinner (through the run and its dwell), so the
+ *   label is lifted back to `opacity: 1` while busy (the button sheet fades
+ *   it under the ring). Without the template the spinner covers the idle
+ *   label.
  *
  * **Live region**
  *
@@ -42,6 +48,22 @@
 
 @layer cngx.components {
   @scope (.cngx-popover-action) {
+    .cngx-popover-action__labels {
+      display: inline-grid;
+      justify-items: center;
+      align-items: center;
+    }
+
+    .cngx-popover-action__label {
+      grid-area: 1 / 1;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .cngx-popover-action__label:not([data-active]) {
+      visibility: hidden;
+    }
+
     /* The pending template replaces the spinner: the button sheet fades the
        label out while busy, so it is lifted back for that case. */
     :scope.cngx-button[data-busy][data-status-label] > .cngx-button__label {
