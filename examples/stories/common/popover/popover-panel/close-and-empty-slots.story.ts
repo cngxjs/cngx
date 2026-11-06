@@ -42,8 +42,22 @@ export const STORY: DemoSpec = {
   protected readonly srBusy = signal('-');
   protected readonly focusAfterClose = signal('-');
 
+  // Joins text nodes with a space, the way the accessible-name computation
+  // separates list items; a plain textContent runs them together.
   private textOf(id: string | null): string {
-    const text = id ? document.getElementById(id)?.textContent?.trim() : '';
+    const el = id ? document.getElementById(id) : null;
+    if (!el) {
+      return '-';
+    }
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    const parts: string[] = [];
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const part = node.textContent?.trim();
+      if (part) {
+        parts.push(part);
+      }
+    }
+    const text = parts.join(' ');
     return text ? '"' + text + '"' : '-';
   }
 
