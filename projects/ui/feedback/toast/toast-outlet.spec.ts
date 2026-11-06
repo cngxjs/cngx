@@ -2,6 +2,8 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { CNGX_LIVE_SURFACE_ATTR, CNGX_LIVE_SURFACE_SELECTOR } from '@cngx/core/utils';
+
 import { CNGX_FEEDBACK_I18N, type CngxFeedbackI18n } from '../config/feedback-i18n';
 import { CngxToaster, provideToasts } from './toast.service';
 import { CngxToastOutlet } from './toast-outlet';
@@ -32,6 +34,12 @@ describe('CngxToastOutlet', () => {
     expect(outletEl.classList.contains('cngx-toast-outlet')).toBe(true);
     expect(outletEl.getAttribute('role')).toBe('region');
     expect(outletEl.getAttribute('aria-label')).toBe('Notifications');
+  });
+
+  it('marks the host as a live surface so a modal inert scope leaves it live', () => {
+    const { outletEl } = setup();
+    expect(outletEl.hasAttribute(CNGX_LIVE_SURFACE_ATTR)).toBe(true);
+    expect(outletEl.matches(CNGX_LIVE_SURFACE_SELECTOR)).toBe(true);
   });
 
   it('pins the dismiss close-button with flex-shrink: 0 to survive narrow widths', () => {

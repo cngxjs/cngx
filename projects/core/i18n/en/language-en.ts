@@ -332,6 +332,11 @@ export const CNGX_LANGUAGE_EN = {
   layout: {
     expandableTextMore: 'Show more',
     expandableTextLess: 'Show less',
+    resizeHandle: 'Resize',
+    resizeValueText: '{size} pixels',
+    panelTrigger: 'Panel',
+    sidebarRegion: 'Sidebar',
+    drawerDialog: 'Drawer',
   },
   menu: {
     submenuOpened: 'Submenu opened',

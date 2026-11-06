@@ -1,0 +1,55 @@
+/**
+ * @overview
+ * Theming bridge for the `CngxDrawer` scrim. Opt-in: add the
+ * `.cngx-drawer` class alongside `[cngxDrawer]` and the host paints a
+ * scrim over itself while a modal `CngxDrawerPanel` inside it is open
+ * (`modality` `page` or `contained`; the panel renders
+ * `.cngx-drawer-panel--modal` + `.cngx-drawer-panel--open`). The scrim is
+ * a pseudo-element of the host: a press on it lands on the host, outside
+ * the panel, and closes the drawer. Inert, focus and scroll lock stay with
+ * the panel; this stylesheet only paints.
+ *
+ * For a clipped drawer below a live app header, keep the header outside
+ * the `[cngxDrawer]` host: the scrim covers the host only.
+ *
+ * The host becomes the containing block (`position: relative`) so the
+ * scrim covers exactly the host. The panel sits above the scrim when it is
+ * positioned with a `z-index` above `--cngx-drawer-scrim-z-index`.
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-drawer-scrim-bg` -> `--cngx-backdrop-bg` (the same scrim
+ *   colour as `CngxBackdrop`, including its Material bridge)
+ * - `--cngx-drawer-scrim-duration` -> `--cngx-duration-base`
+ *
+ * @themes CngxDrawer
+ */
+
+@layer cngx.components {
+  @scope (.cngx-drawer) {
+    :scope {
+      /* Functional - the scrim covers the host box */
+      position: relative;
+    }
+
+    :scope::after {
+      /* Functional - hardcoded, not part of theming surface */
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+
+      /* Themable - token-driven */
+      z-index: var(--cngx-drawer-scrim-z-index, 1);
+      background: var(--cngx-drawer-scrim-bg, var(--cngx-backdrop-bg, oklch(0 0 0 / 0.5)));
+      transition: opacity var(--cngx-drawer-scrim-duration, var(--cngx-duration-base, 200ms));
+    }
+
+    /* Shown while a modal panel inside the host is open. */
+    :scope:has(.cngx-drawer-panel--modal.cngx-drawer-panel--open)::after {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+}

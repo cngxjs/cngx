@@ -29,6 +29,9 @@ const NO_MICRO_ICONS = Object.entries(utils)
 // worse than the 24-grid path in the same box".
 const RECTILINEAR = [
   'CNGX_ICON_PLUS',
+  'CNGX_ICON_MENU',
+  'CNGX_ICON_PANEL_OPEN',
+  'CNGX_ICON_PANEL_CLOSE',
   'CNGX_ICON_MINUS',
   'CNGX_ICON_EXCLAMATION',
   'CNGX_ICON_EXCLAMATION_SOLID',
@@ -65,10 +68,25 @@ const SMALL_ICONS = Object.entries(utils)
   .map(([name, icon]) => [name, icon as CngxIconData] as const)
   .filter(([, icon]) => icon.small !== null);
 
-// Straight edges on whole units in the 16 box: nothing may anti-alias. MINUS is
-// the only rectilinear small drawing; every other band glyph has a diagonal or
-// an arc and is held to "not worse than the 24-grid path in the same box".
-const RECTILINEAR_SMALL = ['CNGX_ICON_MINUS'] as const;
+// Straight edges on whole units in the 16 box: nothing may anti-alias. MINUS,
+// MENU and the two panel glyphs (chevron drawn as a pixel staircase) are the
+// rectilinear small drawings; every other band glyph has a diagonal or an arc
+// and is held to "not worse than the 24-grid path in the same box".
+const RECTILINEAR_SMALL = [
+  'CNGX_ICON_MINUS',
+  'CNGX_ICON_MENU',
+  'CNGX_ICON_PANEL_OPEN',
+  'CNGX_ICON_PANEL_CLOSE',
+] as const;
+
+// Above the small band only the 24-grid path shows, and a 2-unit stroke is
+// 1.67px at 20px and 2.67px at 32px, so no line there lands on whole pixels.
+// The panel glyphs place their frame and column off the multiples of 3 that
+// smear into a third-full-third triplet at 20px; MENU, whose bars sit on
+// multiples of 6, is the reference the frame and column may not exceed in the
+// same box. The chevron is left out: a diagonal anti-aliases on any grid.
+const PANEL_GLYPHS = ['CNGX_ICON_PANEL_OPEN', 'CNGX_ICON_PANEL_CLOSE'] as const;
+const PANEL_BOXES = [20, 32] as const;
 
 // Signed-off 16-grid drawings whose anti-aliased pixel count edges past their
 // 24-grid path in a 16px box: X is a 1-unit diagonal strip that straddles pixel
@@ -229,4 +247,17 @@ describe('small icon pixels in a 16px box', () => {
     const icon = (utils as unknown as Record<string, CngxIconData>)[name];
     expect(await antiAliasedPixels(smallMarkup(icon), BOX16)).toBe(0);
   });
+});
+
+describe('panel glyph 24-grid path above the small band', () => {
+  it.each(PANEL_GLYPHS.flatMap((name) => PANEL_BOXES.map((box) => [name, box] as const)))(
+    '%s keeps its frame and column within the menu glyph anti-aliasing in a %ipx box',
+    async (name, box) => {
+      const icon = (utils as unknown as Record<string, CngxIconData>)[name];
+      const frame = { ...icon, d: icon.d.slice(0, icon.d.lastIndexOf('M')) };
+      const panelCount = await antiAliasedPixels(path24Markup(frame, box), box);
+      const menuCount = await antiAliasedPixels(path24Markup(utils.CNGX_ICON_MENU, box), box);
+      expect(panelCount, `${name} vs menu at ${box}px`).toBeLessThanOrEqual(menuCount);
+    },
+  );
 });

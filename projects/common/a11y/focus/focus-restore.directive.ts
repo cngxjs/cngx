@@ -1,5 +1,19 @@
 import { DOCUMENT } from '@angular/common';
-import { DestroyRef, Directive, ElementRef, inject, input, signal } from '@angular/core';
+import {
+  afterNextRender,
+  computed,
+  DestroyRef,
+  Directive,
+  effect,
+  ElementRef,
+  inject,
+  InjectionToken,
+  Injector,
+  input,
+  type Signal,
+  untracked,
+} from '@angular/core';
+import { createTransitionTracker } from '@cngx/core/utils';
 
 /**
  * CSS selector matching natively-focusable elements: links with an
@@ -19,7 +33,26 @@ export const CNGX_FOCUSABLE_SELECTOR =
   'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])';
 
 /**
- * Stores the previously focused element and restores focus on destroy.
+ * @internal Lets a directive that composes `CngxFocusRestore` as a host
+ * directive drive its capture / restore edges from its own state instead of
+ * `[cngxFocusRestoreWhile]`. Provided by the composer on the same element
+ * (`useExisting`); the restore directive resolves it lazily with
+ * `self: true`, because the composer constructs after its host directives.
+ */
+export interface CngxFocusRestoreDriver {
+  /** Whether the surface is engaged; wins over `[cngxFocusRestoreWhile]`. */
+  readonly focusRestoreActive: Signal<boolean>;
+}
+
+/** @internal See {@link CngxFocusRestoreDriver}. */
+export const CNGX_FOCUS_RESTORE_DRIVER = new InjectionToken<CngxFocusRestoreDriver>(
+  'CngxFocusRestoreDriver',
+);
+
+/**
+ * Stores the previously focused element and restores focus on destroy, or on
+ * the falling edge of `[cngxFocusRestoreWhile]` for a surface that stays in
+ * the DOM while closed.
  *
  * Prevents focus from falling to `<body>` when dynamic content is removed
  * (dialogs closing, panels collapsing, tabs switching). The directive captures
@@ -39,6 +72,16 @@ export const CNGX_FOCUSABLE_SELECTOR =
  *   </div>
  * }
  * ```
+ *
+ * ### Persistent surface (drawer, sidebar overlay)
+ * ```html
+ * <aside cngxFocusRestore [cngxFocusRestoreWhile]="open()">…</aside>
+ * ```
+ * `true` captures the focused element, `false` restores it when focus is
+ * still inside the host or has dropped to `<body>`. Focus the user moved
+ * elsewhere in the meantime stays where it is. A target that is still
+ * `inert` at the falling edge (a backdrop released in the same pass) is
+ * focused after the next render instead.
  *
  * ### With explicit fallback
  * ```html
@@ -66,19 +109,59 @@ export class CngxFocusRestore {
   readonly restoreOnDestroy = input<boolean>(true);
   /** Explicit fallback element if the stored element is no longer in the DOM. */
   readonly fallback = input<HTMLElement | null>(null);
+  /**
+   * Bind to the open state of a surface that stays in the DOM while closed.
+   * The `false -> true` edge captures the focused element, the
+   * `true -> false` edge restores it when focus is inside the host or on
+   * `<body>`. While bound, destroying the host restores only when it is
+   * engaged. Unbound (`undefined`), only destroy and the manual
+   * `capture()` / `restore()` apply.
+   */
+  readonly whileActive = input<boolean | undefined>(undefined, {
+    alias: 'cngxFocusRestoreWhile',
+  });
 
   private readonly doc = inject(DOCUMENT);
   private readonly el = inject(ElementRef<HTMLElement>);
-  private readonly storedElement = signal<HTMLElement | null>(null);
+  private readonly injector = inject(Injector);
+  // Read only inside the restore paths (untracked edge, destroy, manual
+  // restore()); nothing derives from it, so it is not a signal.
+  private storedElement: HTMLElement | null = null;
+
+  private resolvedDriver: CngxFocusRestoreDriver | null | undefined = undefined;
+  private driver(): CngxFocusRestoreDriver | null {
+    if (this.resolvedDriver === undefined) {
+      this.resolvedDriver = this.injector.get(CNGX_FOCUS_RESTORE_DRIVER, null, { self: true });
+    }
+    return this.resolvedDriver;
+  }
+
+  private readonly engaged = computed(
+    () => this.driver()?.focusRestoreActive() ?? this.whileActive() === true,
+  );
+  private readonly engagement = createTransitionTracker(() => this.engaged());
 
   constructor() {
     const activeEl = this.doc.activeElement;
     if (activeEl instanceof HTMLElement) {
-      this.storedElement.set(activeEl);
+      this.storedElement = activeEl;
     }
+
+    effect(() => {
+      const current = this.engagement.current();
+      if (current === this.engagement.previous()) {
+        return;
+      }
+      untracked(() => (current ? this.captureOutside() : this.restoreIfFocusInside()));
+    });
 
     inject(DestroyRef).onDestroy(() => {
       if (!this.restoreOnDestroy()) {
+        return;
+      }
+      // A closed edge-driven surface already restored (or never captured);
+      // tearing it down must not pull focus from wherever the user is.
+      if (this.edgeDriven() && !untracked(this.engaged)) {
         return;
       }
 
@@ -93,7 +176,7 @@ export class CngxFocusRestore {
   capture(): void {
     const activeEl = this.doc.activeElement;
     if (activeEl instanceof HTMLElement) {
-      this.storedElement.set(activeEl);
+      this.storedElement = activeEl;
     }
   }
 
@@ -105,6 +188,53 @@ export class CngxFocusRestore {
     }
   }
 
+  private edgeDriven(): boolean {
+    return this.driver() !== null || untracked(this.whileActive) !== undefined;
+  }
+
+  // A composer's trap can move focus inside before this edge runs; the
+  // element inside is never the one to return to.
+  private captureOutside(): void {
+    const activeEl = this.doc.activeElement;
+    if (activeEl instanceof HTMLElement && !this.host().contains(activeEl)) {
+      this.storedElement = activeEl;
+    }
+  }
+
+  private restoreIfFocusInside(): void {
+    if (!this.focusLost()) {
+      return;
+    }
+    const target = this.resolveTarget();
+    if (!target) {
+      return;
+    }
+    if (!target.closest('[inert]')) {
+      target.focus();
+      return;
+    }
+    // Another owner (a backdrop) can still hold `inert` on the target in
+    // this pass; focus() on an inert element is a no-op. Its release runs in
+    // the same change detection, so retry once after the render.
+    afterNextRender(
+      () => {
+        if (this.focusLost() && !target.closest('[inert]')) {
+          target.focus();
+        }
+      },
+      { injector: this.injector },
+    );
+  }
+
+  private focusLost(): boolean {
+    const activeEl = this.doc.activeElement;
+    return !activeEl || activeEl === this.doc.body || this.host().contains(activeEl);
+  }
+
+  private host(): HTMLElement {
+    return this.el.nativeElement as HTMLElement;
+  }
+
   /**
    * Walks the fallback chain:
    * 1. Stored element (if still in DOM and not body/self)
@@ -112,7 +242,7 @@ export class CngxFocusRestore {
    * 3. Nearest focusable ancestor
    */
   private resolveTarget(): HTMLElement | null {
-    const stored = this.storedElement();
+    const stored = this.storedElement;
     // Skip body - it signals "nothing meaningful was focused", not a real restore target.
     if (
       stored &&

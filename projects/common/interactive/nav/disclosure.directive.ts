@@ -1,5 +1,7 @@
 import { computed, Directive, ElementRef, inject, input, output, signal } from '@angular/core';
 
+import { createActivationKeyHandler } from '../keyboard/activation-key';
+
 /**
  * Generic expand/collapse (disclosure) behavior.
  *
@@ -79,9 +81,6 @@ export class CngxDisclosure {
 
   private readonly openedState = signal(false);
 
-  private readonly nativeButtonHost =
-    (inject(ElementRef).nativeElement as HTMLElement).tagName === 'BUTTON';
-
   /** Resolved opened state - controlled input wins over internal state. */
   readonly opened = computed(() => this.openedInput() ?? this.openedState());
 
@@ -107,13 +106,10 @@ export class CngxDisclosure {
   }
 
   /** @internal Enter/Space on a non-button host; a native button activates through its click. */
-  protected handleActivationKey(event: Event): void {
-    if (this.nativeButtonHost) {
-      return;
-    }
-    event.preventDefault();
-    this.toggle();
-  }
+  protected readonly handleActivationKey = createActivationKeyHandler(
+    inject(ElementRef).nativeElement as HTMLElement,
+    () => this.toggle(),
+  );
 
   /** Toggles the disclosure between open and closed. */
   toggle(): void {

@@ -9,6 +9,8 @@ import {
   signal,
 } from '@angular/core';
 
+import { createInertSiblings } from './inert-siblings';
+
 /**
  * Manages backdrop overlay behavior: visibility, click-to-close, and
  * `inert` toggling on sibling elements.
@@ -17,7 +19,10 @@ import {
  * attribute, preventing focus and interaction behind the backdrop.
  * This is critical for a11y in modal/drawer overlays. A sibling drawer
  * panel (`.cngx-drawer-panel`) is excluded - it is the surface the
- * backdrop guards, not content behind it. Siblings that already carry
+ * backdrop guards, not content behind it. Focus-trap anchors (the
+ * panel's trap would stop wrapping) and live regions (announcements would
+ * go silent) stay live too; a sibling that only contains a live region has
+ * its other children inerted instead. Siblings that already carry
  * `inert` are left alone, so a consumer-set `inert` survives the
  * show/hide cycle. The sibling set is re-queried on every show, so
  * siblings rendered after init are covered too.
@@ -105,21 +110,11 @@ export class CngxBackdrop {
       // Re-queried on every show: siblings rendered after init (@if/@defer)
       // must be inerted too. The drawer panel keeps working - it is the
       // surface the backdrop guards, not content behind it.
-      const el = this.el.nativeElement as HTMLElement;
-      const parent = el.parentElement;
-      // skip siblings that are already inert - removing it on cleanup
-      // would clobber a consumer-set attribute that predated the show
-      const targets = parent
-        ? Array.from(parent.children).filter(
-            (child): child is HTMLElement =>
-              child !== el &&
-              child instanceof HTMLElement &&
-              !child.classList.contains('cngx-drawer-panel') &&
-              !child.hasAttribute('inert'),
-          )
-        : [];
-      targets.forEach((target) => target.setAttribute('inert', ''));
-      onCleanup(() => targets.forEach((target) => target.removeAttribute('inert')));
+      const release = createInertSiblings(this.el.nativeElement as HTMLElement, {
+        scope: 'siblings',
+        exclude: (sibling) => sibling.classList.contains('cngx-drawer-panel'),
+      });
+      onCleanup(release);
     });
   }
 

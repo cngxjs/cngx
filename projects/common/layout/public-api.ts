@@ -3,8 +3,19 @@
  */
 export { CngxBackdrop } from './drawer/backdrop.directive';
 export { CngxDrawer, type DrawerPosition } from './drawer/drawer.directive';
+export {
+  CNGX_DRAWER_HOST,
+  type CngxDrawerHost,
+  type CngxDrawerPanelPresentation,
+} from './drawer/drawer-host';
 export { CngxDrawerPanel, type DrawerMode } from './drawer/drawer-panel.directive';
 export { CngxDrawerContent } from './drawer/drawer-content.directive';
+export {
+  CngxDrawerSurface,
+  CNGX_DRAWER_SURFACE_DRIVER,
+  type CngxDrawerModality,
+  type CngxDrawerSurfaceDriver,
+} from './drawer/drawer-surface.directive';
 export { CngxIntersectionObserver } from './observers/intersection-observer.directive';
 export { CngxMediaQuery } from './observers/media-query.directive';
 export { injectMediaQuery } from './observers/inject-media-query';
@@ -22,6 +33,23 @@ export {
   createContainerSize,
   injectContainerSize,
 } from './observers/container-size';
+export {
+  CNGX_PANEL_TARGET,
+  type CngxPanelMode,
+  type CngxPanelSide,
+  type CngxPanelTarget,
+} from './panel-trigger/panel-target';
+export { CngxPanelToggle } from './panel-toggle/panel-toggle.component';
+export {
+  CngxPanelTrigger,
+  type CngxPanelTriggerAction,
+} from './panel-trigger/panel-trigger.directive';
+export {
+  CNGX_RESIZABLE_DEFAULTS,
+  CngxResizable,
+  type CngxResizableDefaults,
+  type CngxResizableEdge,
+} from './resizable/resizable.directive';
 export { CngxScrollLock } from './scroll/scroll-lock.directive';
 export { createPinnedScrollLock, createScrollLock } from './scroll/scroll-lock-core';
 export { CngxScrollEdges } from './scroll/scroll-edges.directive';
@@ -30,6 +58,12 @@ export {
   type CngxScrollEdgesState,
   type ScrollEdgesHost,
 } from './scroll/scroll-edges-core';
+export {
+  CngxSidebar,
+  type CngxSidebarCollapsedAs,
+  type CngxSidebarSide,
+  type CngxSidebarState,
+} from './sidebar/sidebar.directive';
 export { CngxSkeleton } from './text/skeleton.directive';
 export { CngxInfiniteScroll } from './scroll/infinite-scroll.directive';
 export { CngxStickyHeader } from './scroll/sticky-header.directive';

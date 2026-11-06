@@ -2,6 +2,7 @@ import { computed, Directive, effect, ElementRef, inject, input, Renderer2 } fro
 
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { createSortHeaderState } from '@cngx/common/data';
+import { createActivationKeyHandler } from '@cngx/common/interactive';
 import { formatMessage } from '@cngx/core/i18n';
 import { injectLocale, nextUid } from '@cngx/core/utils';
 
@@ -212,17 +213,11 @@ export class CngxDgaSortHeader {
     return readableText(this.host).replace(/\s+/g, ' ').trim();
   }
 
-  protected handleActivateKey(event: Event): void {
-    // A native <button> turns Enter and Space into a click, which already sorts;
-    // handling the key too would sort twice, cancelling it would starve a
-    // consumer (click). Any other host gets no click: sort here and cancel the
-    // default so Space does not scroll the grid's overflow container.
-    if (this.host.tagName === 'BUTTON') {
-      return;
-    }
-    event.preventDefault();
-    this.handleSort(event);
-  }
+  // Any host but a native <button> gets no click from Enter / Space: sort here
+  // and cancel the default so Space does not scroll the grid's overflow container.
+  protected readonly handleActivateKey = createActivationKeyHandler(this.host, (event) =>
+    this.handleSort(event),
+  );
 }
 
 /** @internal Text content of `node`, skipping every `aria-hidden="true"` subtree. */

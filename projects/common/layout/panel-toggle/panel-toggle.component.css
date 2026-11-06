@@ -1,0 +1,25 @@
+/**
+ * @overview
+ * Panel-toggle layer over the icon-button geometry. The host is the native
+ * `<button>` and carries `.cngx-button.cngx-icon-button.cngx-panel-toggle`;
+ * paint (variant x tone, disabled, busy, contrast, forced colors) comes from
+ * the shared `.cngx-button` sheet, the square box, the `::before` hit area
+ * and the `1.25em` glyph box from `.cngx-icon-button`. This sheet only adds
+ * the mirrored panel glyph.
+ *
+ * **Slots**
+ *
+ * - `.cngx-icon-button__glyph` - the projected glyph, `aria-hidden`
+ * - `.cngx-panel-toggle__icon` - the default glyph: the panel frame, or the
+ *   menu bars and the cross on a modal over-drawer
+ * - `.cngx-panel-toggle__icon--mirrored` - the panel frame flipped for a
+ *   panel on the right
+ */
+
+@layer cngx.components {
+  @scope (.cngx-panel-toggle) {
+    .cngx-panel-toggle__icon--mirrored {
+      transform: scaleX(-1);
+    }
+  }
+}

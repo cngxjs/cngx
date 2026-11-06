@@ -2546,6 +2546,170 @@ button.chip.demo-chip--copied {
   min-height: 220px;
 }
 
+// App layout frame for the drawer and sidebar layout stories: a bordered
+// box with a header row and a body row. Layout only; colours and borders
+// read the same tokens as the drawer helpers above. The drawer panel sits
+// above the cngx-drawer scrim through its own z-index.
+.demo-app-frame {
+  display: flex;
+  flex-direction: column;
+  height: var(--demo-app-frame-height, 340px);
+}
+.demo-app-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+  min-height: 3rem;
+  padding: 0 0.75rem;
+  box-sizing: border-box;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #ffffff));
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+}
+.demo-app-brand {
+  font-weight: 600;
+  white-space: nowrap;
+}
+.demo-app-spacer {
+  flex: 1 1 auto;
+}
+.demo-app-body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+.demo-app-main {
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+.demo-app-title {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+.demo-app-frame .demo-drawer-panel {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.demo-app-frame .demo-drawer-panel fieldset {
+  border: 0;
+  margin: 0;
+}
+// Sidebar layout stories: a sidebar next to a content column. In the rail
+// state the labels keep their place in the accessible name but are hidden
+// visually (same rules as .demo-sr-only); the sidebar paints its own
+// surface so a peek covers the content.
+.demo-app-frame--row {
+  flex-direction: row;
+}
+.demo-app-column {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.demo-app-sidebar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f9fafb));
+  border-inline-end: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+}
+.demo-app-sidebar__head,
+.demo-app-sidebar__foot {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  white-space: nowrap;
+}
+// The head row has a fixed height, the same as .demo-app-header beside it:
+// the brand mark keeps its position whether the labels show, hide in the
+// rail or a peek adds the pin button.
+.demo-app-sidebar__head {
+  flex: none;
+  box-sizing: border-box;
+  block-size: 3rem;
+  padding-block: 0;
+}
+.demo-app-sidebar__foot {
+  margin-top: auto;
+  border-top: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+}
+.demo-app-sidebar__foot--links {
+  display: block;
+  padding: 0;
+}
+.demo-app-sidebar__nav {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.demo-app-sidebar__meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.demo-app-sidebar__meta small {
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-app-sidebar[data-sidebar-state='rail'] :is(.demo-app-sidebar__label, .demo-nav__label, .demo-nav__caret) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  padding: 0;
+  margin: -1px;
+}
+.demo-app-sidebar[data-sidebar-state='peek'] {
+  box-shadow: var(--cngx-shadow-md, 0 4px 16px rgb(0 0 0 / 0.12));
+}
+.demo-nav__trigger.demo-nav__link--icon {
+  justify-content: flex-start;
+}
+.demo-nav__trigger .demo-nav__caret {
+  margin-inline-start: auto;
+}
+
+.demo-nav__link--icon {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  white-space: nowrap;
+}
+// Sidebar entry icons sit on the 16px box (1rem, the dense icon tier) and
+// the projected mat-icon follows the cngx-icon box. Group triggers carry
+// the same transparent start border as the links, so every entry icon has
+// one x position in the rail and expanded.
+.demo-app-sidebar .demo-nav__link--icon cngx-icon {
+  --cngx-icon-size: 1rem;
+}
+.demo-app-sidebar .demo-nav__link--icon cngx-icon > .mat-icon {
+  inline-size: 1em;
+  block-size: 1em;
+  font-size: 1em;
+}
+.demo-app-sidebar .demo-nav__trigger {
+  border-inline-start: 3px solid transparent;
+}
+
+// Story chrome marks a mode or modality switch on its chip group for one
+// frame; the drawer snaps to the new layout instead of animating the panel
+// from the old one (absolute overlay vs. in-flow width).
+.cngx-ex-chrome:has(.demo-drawer-switching) ~ .cngx-ex-artifact .demo-drawer-panel,
+.cngx-ex-chrome:has(.demo-drawer-switching) ~ .cngx-ex-artifact .demo-drawer-main {
+  transition: none;
+}
+
 // CngxExpandableText custom-toggle-template story. The library default
 // toggle ships its own `.cngx-expandable-text__toggle` skin, but the
 // custom-template demo intentionally renders a different button shape;
