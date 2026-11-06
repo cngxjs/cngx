@@ -10,6 +10,7 @@ import {
   INPUTS,
   matchesEntry,
   matchesInput,
+  SOURCE_FREE_WORKFLOWS,
   WORKFLOW_INPUTS,
   workflowInputs,
 } from '../schematics-consumer-inputs.mjs';
@@ -102,13 +103,33 @@ describe('consumer-compat inputs', () => {
     'scripts/build-schematics.mjs',
     'scripts/publish.mjs',
     'scripts/schematics-externals.mjs',
-    'projects/common/a11y/live-region.ts',
     'package.json',
     'package-lock.json',
   ];
 
   it.each([...EARLIER_PATTERN, ...BUILD_ONLY])('runs the fixture rows on a change to %s', (file) => {
     expect(changedInputs([file], 'consumer-compat')).toEqual([file]);
+  });
+
+  // A source-only PR leaves the slow rows to the nightly; the
+  // required schematics-consumer job still builds an app against it.
+  it('leaves library source to the nightly and to schematics-consumer', () => {
+    const source = ['projects/common/a11y/live-region.ts', 'projects/ui/feedback/toast/toast-outlet.ts'];
+
+    expect(changedInputs(source, 'consumer-compat')).toEqual([]);
+    expect(changedInputs(source, 'consumer-compat-cli')).toEqual([]);
+    expect(changedInputs(source)).toEqual(source);
+    expect([...SOURCE_FREE_WORKFLOWS]).toEqual(['consumer-compat', 'consumer-compat-cli']);
+  });
+
+  it('keeps the schematics, manifests and themes of every lib on the pull request', () => {
+    const consumerFacing = [
+      'projects/ui/schematics/ng-add/index.ts',
+      'projects/ui/package.json',
+      'projects/themes/material/theme.scss',
+    ];
+
+    expect(changedInputs(consumerFacing, 'consumer-compat')).toEqual(consumerFacing);
   });
 
   it('is what the changes job reads, in place of a pattern of its own', () => {
@@ -146,9 +167,9 @@ describe('consumer-compat cli inputs', () => {
     expect(changedInputs([file], 'schematics-consumer')).toEqual([]);
   });
 
-  it('runs the cli row on its workflow file and on every lib input', () => {
+  it('runs the cli row on its workflow file and on every lib input but library source', () => {
     expect(changedInputs(['.github/workflows/consumer-compat.yml'], 'consumer-compat-cli')).toHaveLength(1);
-    expect(changedInputs(['projects/common/a11y/live-region.ts', 'package.json'], 'consumer-compat-cli')).toHaveLength(2);
+    expect(changedInputs(['projects/core/package.json', 'package.json'], 'consumer-compat-cli')).toHaveLength(2);
   });
 
   it('leaves mcp code outside the shared core out', () => {
