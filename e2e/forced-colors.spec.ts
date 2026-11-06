@@ -161,10 +161,9 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     await openForced(page, '/#/common/interactive/button-toggle/group/basic-view-switcher');
     const checked = page.locator('.cngx-ex-artifact .cngx-button-toggle--checked').first();
     await expect(checked).toBeVisible();
-    // Colours transition over 150ms; settle before reading.
-    await page.waitForTimeout(300);
-    const s = await readAffordance(checked);
-    expect(s.backgroundColor).toBe(s.highlight);
+    // The fill transitions over 150ms; poll until it lands on Highlight.
+    const { highlight } = await readAffordance(checked);
+    await expect.poll(async () => (await readAffordance(checked)).backgroundColor).toBe(highlight);
   });
 
   test('solid primary button fills with Highlight, the other variants stay ButtonFace', async ({ page }) => {
