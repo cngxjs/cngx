@@ -1246,6 +1246,9 @@
      only fixes the anchored panel, where the panel itself owns the scroll. */
   .cngx-select-panel-shell {
     display: block;
+    /* The sheet scrolls here, not on the panel, so it needs the panel's opt-out:
+       with anchoring on, Chromium walked a windowed list back to its start. */
+    overflow-anchor: none;
   }
 
   /* Mobile sheet: the sheet caps the height (its max-block-size outranks the

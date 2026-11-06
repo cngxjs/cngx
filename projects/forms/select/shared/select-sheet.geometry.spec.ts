@@ -262,6 +262,12 @@ describe('select mobile sheet geometry', () => {
         expect(scroller.scrollHeight).toBeGreaterThan(scroller.clientHeight);
       });
 
+      it('opts the windowed scroller out of scroll anchoring', async () => {
+        const { scroller } = await open(variant, (h) => h.count.set(60));
+        const expected = scroller.matches('.cngx-select-panel-shell') ? 'none' : 'auto';
+        expect(computedValue(scroller, 'overflow-anchor')).toBe(expected);
+      });
+
       it('shows the header with the label, X and the variant Done', async () => {
         const { panel } = await open(variant);
         const header = panel.querySelector<HTMLElement>('cngx-select-sheet-header')!;
