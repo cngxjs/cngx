@@ -561,6 +561,35 @@ describe('CngxPopoverAction', () => {
       expect(btn.hasAttribute('data-busy')).toBe(false);
     });
 
+    it('shows the cngxPending template instead of the spinner once busy', async () => {
+      const { fixture } = setup(ConfirmHost);
+      const btn = confirmButton(fixture);
+
+      btn.click();
+      fixture.detectChanges();
+      expect(btn.hasAttribute('data-status-label')).toBe(false);
+
+      await vi.advanceTimersByTimeAsync(SHOW);
+      fixture.detectChanges();
+      expect(btn.getAttribute('data-busy')).toBe('true');
+      expect(btn.hasAttribute('data-status-label')).toBe(true);
+      expect(btn.querySelector('.cngx-button__busy')).toBeNull();
+      expect(btn.querySelector('.cngx-button__label')?.textContent).toContain('Saving...');
+    });
+
+    it('shows the spinner and no status label without a cngxPending template', async () => {
+      const { fixture } = setup(ForwardConfirmHost);
+      const btn = confirmButton(fixture);
+
+      btn.click();
+      fixture.detectChanges();
+      await vi.advanceTimersByTimeAsync(0);
+      fixture.detectChanges();
+      expect(btn.getAttribute('data-busy')).toBe('true');
+      expect(btn.hasAttribute('data-status-label')).toBe(false);
+      expect(btn.querySelector('.cngx-button__busy')).not.toBeNull();
+    });
+
     it('forwards [showDelay] / [minDwell] to the co-hosted CngxAsyncClick', async () => {
       const { fixture } = setup(ForwardConfirmHost);
       const host = fixture.componentInstance;

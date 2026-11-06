@@ -1,8 +1,9 @@
 /**
  * @overview
  * `button[cngxPopoverAction]` (async confirm) and `button[cngxPopoverDismiss]`
- * (close) carry no paint of their own. Both are `CngxButtonBrain` hosts with
- * the `.cngx-button` class, so `button.component.css` paints them: variants
+ * (close) carry no paint of their own beyond the pending-label rule below.
+ * Both are `CngxButtonBrain` hosts with the `.cngx-button` class, so
+ * `button.component.css` paints them: variants
  * (`data-variant`, default `outline`), tones (`data-tone`), disabled by
  * colour (`[aria-disabled='true']:not([data-busy], [data-pending])`), the
  * gated busy layer (`data-pending` at click, `data-busy` after the show delay
@@ -21,6 +22,13 @@
  *   variant no longer tints the actions: a `tone="primary"` action paints
  *   `--cngx-color-primary` in every panel variant.
  *
+ * **Pending label**
+ *
+ * - `[data-busy][data-status-label]` - a projected `cngxPending` template
+ *   shows instead of the spinner, so the label is lifted back to
+ *   `opacity: 1` while busy (the button sheet fades it under the ring).
+ *   Without the template the spinner covers the idle label.
+ *
  * **Live region**
  *
  * - The settle announcement is the `cngxAsyncClick` live region, rendered as
@@ -31,3 +39,13 @@
  * - `@cngx/themes/material/button-theme` - Material 3 button palette and
  *   metrics for both hosts.
  */
+
+@layer cngx.components {
+  @scope (.cngx-popover-action) {
+    /* The pending template replaces the spinner: the button sheet fades the
+       label out while busy, so it is lifted back for that case. */
+    :scope.cngx-button[data-busy][data-status-label] > .cngx-button__label {
+      opacity: 1;
+    }
+  }
+}

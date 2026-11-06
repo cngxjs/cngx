@@ -61,7 +61,9 @@ import { CngxPopover } from './popover.directive';
  * `CngxActionButton`, or use `status()` + `@switch` for full control. The
  * pending template waits for the busy gate (`CNGX_LOADING_CONFIG.showDelay`,
  * held for `minDwell`; `[showDelay]` / `[minDwell]` per button), so a fast
- * run goes from the idle label straight to the result; the result templates
+ * run goes from the idle label straight to the result. While it shows, the
+ * label stays visible and no spinner renders; without one the spinner covers
+ * the idle label. The result templates
  * follow the run at once. `status()` stays immediate; branch a hand-rolled
  * `@switch` on {@link busyVisible} for the same timing.
  *
@@ -152,6 +154,7 @@ import { CngxPopover } from './popover.directive';
     class: 'cngx-button cngx-popover-action',
     '[attr.data-start]': 'startSlot() ? "" : null',
     '[attr.data-end]': 'endSlot() ? "" : null',
+    '[attr.data-status-label]': 'statusLabel() ? "" : null',
   },
   template: `
     <ng-template #idle><ng-content /></ng-template>
@@ -187,7 +190,7 @@ import { CngxPopover } from './popover.directive';
       }
     </span>
     <ng-content select="[cngxButtonEnd]" />
-    @if (brain.busyVisible()) {
+    @if (brain.busyVisible() && !statusLabel()) {
       <span class="cngx-button__busy" aria-hidden="true">
         @if (brain.spinner; as spinner) {
           <ng-container *ngComponentOutlet="spinner" />
@@ -221,6 +224,13 @@ export class CngxPopoverAction {
   protected readonly failedTpl = contentChild(CngxFailed);
 
   private readonly label = viewChild.required('label', { read: ElementRef });
+
+  /**
+   * `true` while the busy visual shows and a `cngxPending` template is
+   * projected: the label stays visible in place of the spinner, as on
+   * `CngxActionButton`.
+   */
+  protected readonly statusLabel = computed(() => this.brain.busyVisible() && !!this.pendingTpl());
 
   /**
    * SR announcement on success. Falls back to the text of a projected
