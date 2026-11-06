@@ -33,6 +33,10 @@
  *   painted at opacity 0 (width stable), spinner ring centred over it; the
  *   ring stops rotating under reduced motion. The fade sits on every direct
  *   child, so projected content cannot opt back in with its own rule
+ * - `[data-busy][data-status-label]` - host hook: a host that shows a status
+ *   label instead of the spinner (`CngxActionButton`, `CngxPopoverAction`)
+ *   sets `data-status-label`, and `.cngx-button__label` stays at
+ *   `opacity: 1` while the other children keep the busy fade
  * - `[data-start]` / `[data-end]` - a filled slot trims the padding on its
  *   side
  *
@@ -625,6 +629,11 @@
     }
     :scope[data-busy] > :not(.cngx-button__busy) {
       opacity: 0;
+    }
+    /* Host hook: a host that renders a status label instead of the spinner
+       sets data-status-label, and only the label is lifted back. */
+    :scope[data-busy][data-status-label] > .cngx-button__label {
+      opacity: 1;
     }
     .cngx-button__busy {
       position: absolute;
