@@ -371,6 +371,9 @@ export const CNGX_LANGUAGE_EN = {
   },
   popover: {
     close: 'Close',
+    loading: 'Loading',
+    error: 'Could not load',
+    empty: 'Nothing to show',
   },
   recycler: {
     loaded: {

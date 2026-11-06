@@ -229,6 +229,54 @@
       ]
     },
     {
+      "class": "CngxPopoverPanel",
+      "file": "projects/common/popover/popover-panel.component.ts",
+      "line": 270,
+      "member": "resolvedLoadingText",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "loadingText" },
+        {
+          "kind": "bundle",
+          "field": "labels",
+          "path": ["loading"],
+          "token": "CNGX_POPOVER_PANEL_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxPopoverPanel",
+      "file": "projects/common/popover/popover-panel.component.ts",
+      "line": 272,
+      "member": "resolvedErrorText",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "errorText" },
+        {
+          "kind": "bundle",
+          "field": "labels",
+          "path": ["error"],
+          "token": "CNGX_POPOVER_PANEL_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxPopoverPanel",
+      "file": "projects/common/popover/popover-panel.component.ts",
+      "line": 273,
+      "member": "resolvedEmptyText",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "emptyText" },
+        {
+          "kind": "bundle",
+          "field": "labels",
+          "path": ["empty"],
+          "token": "CNGX_POPOVER_PANEL_CONFIG"
+        }
+      ]
+    },
+    {
       "class": "CngxStepperCount",
       "file": "projects/common/stepper/stepper-count.ts",
       "line": 150,

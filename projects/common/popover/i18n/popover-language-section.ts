@@ -12,6 +12,21 @@ import type {} from '@cngx/core/i18n';
 export interface CngxPopoverLanguageSection {
   /** Accessible name of the built-in close button. */
   readonly close: string;
+  /**
+   * Text of the loading view. A projected `*cngxPopoverLoading` template
+   * replaces it.
+   */
+  readonly loading: string;
+  /**
+   * Text of the error view, and the panel's description there. A projected
+   * `*cngxPopoverError` template replaces it.
+   */
+  readonly error: string;
+  /**
+   * Text of the empty view, and the panel's description there. A projected
+   * `*cngxPopoverEmpty` template replaces it.
+   */
+  readonly empty: string;
 }
 
 /**
@@ -23,6 +38,9 @@ export interface CngxPopoverLanguageSection {
  */
 export const CNGX_POPOVER_LANGUAGE_EN: CngxPopoverLanguageSection = {
   close: 'Close',
+  loading: 'Loading',
+  error: 'Could not load',
+  empty: 'Nothing to show',
 };
 
 declare module '@cngx/core/i18n' {

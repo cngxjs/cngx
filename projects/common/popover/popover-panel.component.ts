@@ -79,6 +79,15 @@ const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER
  * </cngx-popover-panel>
  * ```
  *
+ * ### State copy
+ * The loading, error and empty views never render an empty box. Without a
+ * slot template each shows default copy, resolved in this order: the
+ * projected `*cngxPopoverLoading` / `*cngxPopoverError` / `*cngxPopoverEmpty`
+ * template (replaces the whole node), then `[loadingText]` / `[errorText]` /
+ * `[emptyText]`, then `withPopoverPanelLabels(...)`, then the `popover`
+ * section of the language pack. The header row (title and close button)
+ * stays in every view.
+ *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel.component.ts
  * @since 0.1.0
@@ -153,23 +162,29 @@ const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER
     }
 
     @if (view() === 'skeleton') {
-      @if (loadingTpl(); as tpl) {
-        <div class="cngx-popover-panel__loading">
+      <div class="cngx-popover-panel__loading">
+        @if (loadingTpl(); as tpl) {
           <ng-container *ngTemplateOutlet="tpl.templateRef" />
-        </div>
-      }
+        } @else {
+          {{ resolvedLoadingText() }}
+        }
+      </div>
     } @else if (view() === 'error' || view() === 'content+error') {
-      @if (errorTpl(); as tpl) {
-        <div class="cngx-popover-panel__error">
+      <div class="cngx-popover-panel__error" [id]="errorId">
+        @if (errorTpl(); as tpl) {
           <ng-container *ngTemplateOutlet="tpl.templateRef; context: { $implicit: viewError() }" />
-        </div>
-      }
+        } @else {
+          {{ resolvedErrorText() }}
+        }
+      </div>
     } @else if (view() === 'empty') {
-      @if (emptyTpl(); as tpl) {
-        <div class="cngx-popover-panel__empty">
+      <div class="cngx-popover-panel__empty" [id]="emptyId">
+        @if (emptyTpl(); as tpl) {
           <ng-container *ngTemplateOutlet="tpl.templateRef" />
-        </div>
-      }
+        } @else {
+          {{ resolvedEmptyText() }}
+        }
+      </div>
     } @else if (view() === 'content') {
       <div class="cngx-popover-panel__body" [id]="bodyId">
         <ng-content select="[cngxPopoverBody]" />
@@ -246,6 +261,17 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
   /** Accessible name of the built-in close button. */
   protected readonly closeLabel = computed(() => this.labels().close);
 
+  /**
+   * Copy of the state views without a slot template: input, then config,
+   * then pack. Read tracked on purpose - the panel has no live region, so a
+   * language flip only updates the visible text in place.
+   */
+  protected readonly resolvedLoadingText = computed(
+    () => this.loadingText() ?? this.labels().loading,
+  );
+  protected readonly resolvedErrorText = computed(() => this.errorText() ?? this.labels().error);
+  protected readonly resolvedEmptyText = computed(() => this.emptyText() ?? this.labels().empty);
+
   /** Resolved showClose - input takes precedence over config. */
   readonly showClose = computed(() => this.showCloseInput() ?? this.config.showClose ?? false);
 
@@ -266,6 +292,27 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
 
   /** Whether the panel content is empty. Fallback when `[state]` is not set. */
   readonly empty = input(false);
+
+  /**
+   * Text shown in the loading view when no `*cngxPopoverLoading` template is
+   * projected. Unbound, it falls back to `withPopoverPanelLabels` and the
+   * `popover` section of the language pack.
+   */
+  readonly loadingText = input<string | undefined>(undefined);
+
+  /**
+   * Text shown in the error view when no `*cngxPopoverError` template is
+   * projected. Unbound, it falls back to `withPopoverPanelLabels` and the
+   * `popover` section of the language pack.
+   */
+  readonly errorText = input<string | undefined>(undefined);
+
+  /**
+   * Text shown in the empty view when no `*cngxPopoverEmpty` template is
+   * projected. Unbound, it falls back to `withPopoverPanelLabels` and the
+   * `popover` section of the language pack.
+   */
+  readonly emptyText = input<string | undefined>(undefined);
 
   /**
    * @internal The one view the panel body renders. A bound `[state]` goes
@@ -343,6 +390,8 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
   private readonly uid = nextUid('cngx-pp');
   protected readonly headerId = `${this.uid}-header`;
   protected readonly bodyId = `${this.uid}-body`;
+  protected readonly errorId = `${this.uid}-error`;
+  protected readonly emptyId = `${this.uid}-empty`;
 
   /**
    * Only point to the header when one is projected. The header row renders
@@ -352,10 +401,26 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
    */
   protected readonly ariaLabelledBy = computed(() => (this.hasHeader() ? this.headerId : null));
 
-  /** Only point to body when default content is showing (not loading/error/empty/none). */
-  protected readonly ariaDescribedBy = computed(() =>
-    this.view() === 'content' ? this.bodyId : null,
-  );
+  /**
+   * The surface that describes the current view: the body in `content`, the
+   * error surface in `error` / `content+error`, the empty surface in `empty`.
+   * Loading speaks through `aria-busy` and its visible text, and `none`
+   * renders nothing, so both emit no reference. Every emitted id resolves
+   * because each surface always renders in its view.
+   */
+  protected readonly ariaDescribedBy = computed(() => {
+    switch (this.view()) {
+      case 'content':
+        return this.bodyId;
+      case 'error':
+      case 'content+error':
+        return this.errorId;
+      case 'empty':
+        return this.emptyId;
+      default:
+        return null;
+    }
+  });
 
   protected readonly hostClass = computed(() => {
     const v = this.variant() ?? this.config.defaultVariant ?? 'default';
