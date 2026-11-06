@@ -99,6 +99,42 @@ test.describe('common/popover/popover-panel', () => {
     await expect(publish.locator('.cngx-button__busy')).toHaveCount(0);
   });
 
+  test('close-on-success: the confirm closes the panel, returns focus and speaks outside it', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/popover/popover-panel/close-on-success');
+    const trigger = page.locator('.cngx-ex-artifact button.chip', { hasText: 'Archive project' });
+    const panel = page.locator('cngx-popover-panel', { hasText: 'Archive "Atlas"?' });
+
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    await expect(panel).toBeVisible();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+
+    // focus() rather than Tab: WebKit skips buttons in the Tab order by default.
+    const confirm = panel.locator('button.cngx-popover-action');
+    await expect(confirm).toHaveAccessibleName('Archive');
+    await confirm.focus();
+    await page.keyboard.press('Enter');
+    await expect(confirm).toHaveAccessibleName('Archived');
+
+    await expect(panel).toBeHidden();
+    await expect(trigger).toBeFocused();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    // CngxLiveAnnouncer's body region, not the confirm's region inside the panel.
+    const spoken = page.locator('body > [aria-live="polite"]', { hasText: 'Archived' });
+    await expect(spoken).toHaveCount(1);
+    expect(
+      await spoken.evaluate(
+        (region) => region.closest('cngx-popover-panel, [cngxpopover]') === null,
+      ),
+    ).toBe(true);
+    await expect(
+      page.locator('.cngx-popover-action + [role="status"]', { hasText: 'Archived' }),
+    ).toHaveCount(0);
+  });
+
   // Regression: the arrow ornament must track the trigger horizontally even
   // when the browser shifts the panel for viewport-fit recovery. The `info`
   // chip in the variants story sits close to the viewport's left edge so a
