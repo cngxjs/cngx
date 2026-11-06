@@ -1,4 +1,4 @@
-import { Component, signal, viewChild } from '@angular/core';
+import { Component, Directive, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -8,6 +8,11 @@ import { CngxPopoverBody, CngxPopoverHeader } from './popover-panel-slots';
 import { CngxPopoverAnchor } from './popover-anchor.directive';
 import { CngxPopoverSheet } from './popover-sheet.directive';
 import { CngxPopoverTrigger } from './popover-trigger.directive';
+import {
+  CNGX_POPOVER_PRESENTATION,
+  type CngxPopoverPresentation,
+  type CngxPopoverPresentationSeam,
+} from './popover-presentation';
 
 // ── Test helpers ────────────────────────────────────────────────────────
 
@@ -135,6 +140,33 @@ class PanelTriggerHost {
   readonly panel = viewChild.required(CngxPopoverPanel);
   readonly restore = signal<boolean | undefined>(undefined);
   readonly empty = signal(false);
+}
+
+/** Presentation modifier whose layout a spec flips directly. */
+@Directive({
+  selector: '[testPresentation]',
+  providers: [{ provide: CNGX_POPOVER_PRESENTATION, useExisting: TestPresentation }],
+})
+class TestPresentation implements CngxPopoverPresentationSeam {
+  readonly presentation = signal<CngxPopoverPresentation>('anchored');
+  onShown(): void {
+    /* no-op */
+  }
+  onHide(): void {
+    /* no-op */
+  }
+}
+
+@Component({
+  template: `
+    <button [cngxPopoverTrigger]="pop" id="trigger">Open</button>
+    <div cngxPopover testPresentation #pop="cngxPopover">Flippable</div>
+  `,
+  imports: [CngxPopover, CngxPopoverTrigger, TestPresentation],
+})
+class FlippingPresentationHost {
+  readonly popover = viewChild.required(CngxPopover);
+  readonly presentation = viewChild.required(TestPresentation);
 }
 
 @Component({
@@ -445,6 +477,38 @@ describe('CngxPopoverTrigger', () => {
         expect(document.activeElement).toBe(outside);
         fixture.destroy();
       });
+    });
+
+    it('drops its snapshot when restore turns off mid-open, so a later flip moves no focus', () => {
+      const fixture = TestBed.createComponent(FlippingPresentationHost);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      stubPopoverElement(popoverEl);
+      const host = fixture.componentInstance;
+      const flush = () => {
+        fixture.detectChanges();
+        TestBed.flushEffects();
+      };
+      host.popover().claimRestoreFocus(host, true);
+      flush();
+
+      triggerEl.focus();
+      host.popover().show();
+      flush();
+      host.presentation().presentation.set('sheet');
+      flush();
+      host.popover().hide();
+      flush();
+      triggerEl.blur();
+      expect(document.activeElement).toBe(document.body);
+
+      host.presentation().presentation.set('anchored');
+      flush();
+      expect(document.activeElement).not.toBe(triggerEl);
+      fixture.destroy();
     });
 
     it('should restore focus on close when restoreFocus is true', () => {

@@ -173,9 +173,12 @@ export class CngxPopoverTrigger {
     });
 
     // Focus restoration: adopt the popover's pre-show focus snapshot on
-    // open, restore on close. Inert while the resolved `restoreFocus` is false.
+    // open, restore on close. Turning restore off drops the snapshot: the
+    // resolved value flips with the presentation, and a snapshot kept across
+    // a sheet close would otherwise focus the trigger on the flip back.
     effect(() => {
       if (!this.restoreFocus()) {
+        this.savedFocus = null;
         return;
       }
       const visible = this.popoverRef().isVisible();
