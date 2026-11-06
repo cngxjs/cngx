@@ -287,6 +287,36 @@ describe('CngxSidebar', () => {
       removed.mockRestore();
     });
 
+    it('keeps an explicit peek from an outside trigger until a press outside the host', () => {
+      const { q, sidebar, set, fixture } = setup();
+      set((h) => h.collapsed.set(true));
+      sidebar.peek();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      q('.trigger').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      q('.inside').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      expect(sidebar.peeked()).toBe(true);
+
+      q('.outside').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      expect(sidebar.peeked()).toBe(false);
+    });
+
+    it('ends an explicit peek when the pointer leaves the host after resting on it', () => {
+      const { el, sidebar, set, fixture } = setup();
+      set((h) => h.collapsed.set(true));
+      sidebar.peek();
+      fixture.detectChanges();
+
+      hover(el, true);
+      vi.advanceTimersByTime(50);
+      expect(sidebar.peeked()).toBe(true);
+
+      hover(el, false);
+      vi.advanceTimersByTime(0);
+      expect(sidebar.peeked()).toBe(false);
+    });
+
     it('ends an explicit peek when focus leaves the host, not when it moves inside', () => {
       const { q, sidebar, set } = setup();
       set((h) => h.collapsed.set(true));

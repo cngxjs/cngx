@@ -56,8 +56,12 @@ export type CngxSidebarState = 'expanded' | 'rail' | 'hidden' | 'peek';
  * rest size). Peek comes from the pointer resting on the host
  * (`CngxHoverIntent`, gated by `expandOnHover`) or from `peek()`, and ends
  * on Escape (wherever focus is, so a hover peek over the page is
- * dismissible without moving focus, WCAG 1.4.13), when focus leaves the
- * host, or when the pointer leaves.
+ * dismissible without moving focus, WCAG 1.4.13), on a press outside the
+ * host (a press on the trigger whose `aria-controls` names the sidebar is
+ * left to the trigger), when focus leaves the host, or when the pointer
+ * leaves the host after resting on it. A `peek()` from a trigger outside the
+ * host therefore stays until one of these happens, even if the pointer never
+ * enters.
  * `pin()` turns a peek into the expanded state.
  *
  * `side` names the edge the sidebar sits on (`start`, default, or `end` for
@@ -141,7 +145,13 @@ export class CngxSidebar implements CngxPanelTarget {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly doc = inject(DOCUMENT);
   private readonly i18n = injectLayoutI18n();
-  private readonly peekState = signal(false);
+  // An explicit peek ends when the pointer leaves the host after resting on
+  // it; a pointer that never entered (a peek from an outside trigger) keeps
+  // it until a press outside, Escape or focus leaving.
+  private readonly peekState = linkedSignal<boolean, boolean>({
+    source: this.hover.active,
+    computation: (active, previous) => active && (previous?.value ?? false),
+  });
   // Escape ends a hover peek while the pointer still rests on the host; the
   // next hover edge lifts the suppression.
   private readonly hoverSuppressed = linkedSignal({
@@ -228,8 +238,24 @@ export class CngxSidebar implements CngxPanelTarget {
         }
         this.unpeek();
       };
+      // A press on the page beside the peek ends it; the trigger that names
+      // the sidebar in aria-controls handles its own press.
+      const onPointerDown = (event: PointerEvent): void => {
+        const target = event.target;
+        if (!(target instanceof Element) || this.host.contains(target)) {
+          return;
+        }
+        if (this.isController(target)) {
+          return;
+        }
+        this.unpeek();
+      };
       this.doc.addEventListener('keydown', onKeydown);
-      onCleanup(() => this.doc.removeEventListener('keydown', onKeydown));
+      this.doc.addEventListener('pointerdown', onPointerDown, true);
+      onCleanup(() => {
+        this.doc.removeEventListener('keydown', onKeydown);
+        this.doc.removeEventListener('pointerdown', onPointerDown, true);
+      });
     });
   }
 
@@ -258,6 +284,12 @@ export class CngxSidebar implements CngxPanelTarget {
   pin(): void {
     this.peekState.set(false);
     this.collapsed.set(false);
+  }
+
+  private isController(target: Element): boolean {
+    const controller = target.closest('[aria-controls]');
+    const ids = controller?.getAttribute('aria-controls')?.split(/\s+/) ?? [];
+    return ids.includes(this.id());
   }
 
   protected handleEscape(): void {
