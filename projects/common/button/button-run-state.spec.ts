@@ -21,8 +21,11 @@ class FakeRunner implements CngxAsyncRunState {
   readonly pending = this.pendingState.asReadonly();
   readonly busyVisible = this.busyVisibleState.asReadonly();
   readonly enabled = this.enabledState.asReadonly();
+  readonly refusesState = signal(false);
   readonly ariaDisabledAttr = computed<'true' | null>(() =>
-    this.pending() || this.busyVisible() || !this.enabled() ? 'true' : null,
+    this.pending() || this.busyVisible() || !this.enabled() || this.refusesState()
+      ? 'true'
+      : null,
   );
   readonly state = buildAsyncStateView<unknown>({
     status: signal<AsyncStatus>('idle'),
@@ -59,6 +62,16 @@ function setup() {
 }
 
 describe('CngxButton run-state seam', () => {
+  it('renders the aria-disabled value of the runner, the single source on the shared host', () => {
+    const { runner, button, flush } = setup();
+    runner.refusesState.set(true);
+    flush();
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    runner.refusesState.set(false);
+    flush();
+    expect(button.getAttribute('aria-disabled')).toBeNull();
+  });
+
   it('a provider-only runner drives data-pending and aria-disabled', () => {
     const { runner, button, flush } = setup();
     expect(button.getAttribute('data-pending')).toBeNull();
