@@ -271,6 +271,10 @@ export class CngxToastOutlet {
       });
     });
     inject(DestroyRef).onDestroy(() => {
+      // The toaster outlives the outlet; unmounted rows fire no pointerleave.
+      for (const toast of untracked(this.visibleToasts)) {
+        this.service.dropHolds(toast.id, ['pointer', 'focus']);
+      }
       for (const id of held) {
         this.service.resumeTimer(id, 'queue');
       }

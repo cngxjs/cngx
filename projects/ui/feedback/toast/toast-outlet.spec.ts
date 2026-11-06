@@ -440,6 +440,21 @@ describe('CngxToastOutlet', () => {
       expect(pause).toHaveBeenCalledTimes(1);
     });
 
+    it('releases the pointer and focus holds of visible toasts when the outlet is destroyed', async () => {
+      const { fixture, toaster, toastByText, has, settle } = queueSetup();
+      toaster.show({ message: 'Hovered', duration: 5000 });
+      toaster.show({ message: 'Focused', duration: 5000 });
+      await settle();
+      toastByText('Hovered')!.dispatchEvent(new Event('pointerenter'));
+      toastByText('Focused')!.dispatchEvent(new FocusEvent('focusin'));
+
+      fixture.componentInstance.shown.set(false);
+      await settle();
+      vi.advanceTimersByTime(5000);
+      expect(has('Hovered')).toBe(false);
+      expect(has('Focused')).toBe(false);
+    });
+
     it('releases the queue holds when the outlet is destroyed', async () => {
       const { fixture, toaster, has, settle } = queueSetup();
       toaster.show({ message: 'Queued', duration: 5000 });
