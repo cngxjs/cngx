@@ -77,13 +77,17 @@ export const CNGX_RESIZABLE_DEFAULTS = new InjectionToken<CngxResizableDefaults>
  * `aria-orientation="vertical"`, `aria-valuenow` / `-min` / `-max`,
  * `aria-valuetext` and `aria-label` (copy from `CNGX_LAYOUT_I18N` unless the
  * `label` / `valueText` inputs are bound).
+ * The pattern also refers the handle to the resized panel through
+ * `aria-controls`; the handle does not know the panel, so set it on the host
+ * (`aria-controls="filters"`) next to the panel's `id`. The handle never binds
+ * it, so a static attribute stays.
  *
  * `min`, `max` and `step` fall back to `CNGX_RESIZABLE_DEFAULTS`, then to
  * 120 / 600 / 16.
  *
  * ```html
- * <aside [style.inline-size.px]="width()">…</aside>
- * <div cngxResizable [(size)]="width" [min]="200" [max]="480"></div>
+ * <aside id="side" [style.inline-size.px]="width()">…</aside>
+ * <div cngxResizable [(size)]="width" [min]="200" [max]="480" aria-controls="side"></div>
  * ```
  *
  * @wcag AA
