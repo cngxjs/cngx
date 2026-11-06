@@ -194,13 +194,19 @@ test.describe('common/popover/popover-panel', () => {
     // not be tucked inside the padding (the visual bug we were fixing).
     const arrowCentreY = arrowBox!.y + arrowBox!.height / 2;
     const panelTop = panelBox!.y;
-    expect(Math.abs(arrowCentreY - panelTop), 'arrow centre should sit on panel top edge').toBeLessThan(6);
+    expect(
+      Math.abs(arrowCentreY - panelTop),
+      'arrow centre should sit on panel top edge',
+    ).toBeLessThan(6);
 
     // Horizontal pin: trigger centre vs arrow centre within the clamp.
     const triggerBox = await trigger.boundingBox();
     const triggerCentreX = triggerBox!.x + triggerBox!.width / 2;
     const arrowCentreX = arrowBox!.x + arrowBox!.width / 2;
-    expect(Math.abs(arrowCentreX - triggerCentreX), 'arrow should pin to trigger centre').toBeLessThan(5);
+    expect(
+      Math.abs(arrowCentreX - triggerCentreX),
+      'arrow should pin to trigger centre',
+    ).toBeLessThan(5);
   });
 
   // Regression: when positionTryFallbacks lets the browser flip the panel
@@ -234,7 +240,10 @@ test.describe('common/popover/popover-panel', () => {
 
     const arrowCentreY = arrowBox!.y + arrowBox!.height / 2;
     const panelBottom = panelBox!.y + panelBox!.height;
-    expect(Math.abs(arrowCentreY - panelBottom), 'arrow should sit on panel bottom edge after flip').toBeLessThan(6);
+    expect(
+      Math.abs(arrowCentreY - panelBottom),
+      'arrow should sit on panel bottom edge after flip',
+    ).toBeLessThan(6);
   });
 });
 
