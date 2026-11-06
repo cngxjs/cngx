@@ -6,7 +6,7 @@ import { createPopoverHintClaims } from './popover-hint-claims';
 
 describe('createPopoverHintClaims', () => {
   it('lets the last live claim win and falls back on release', () => {
-    const claims = createPopoverHintClaims<string>('test');
+    const claims = createPopoverHintClaims<string>();
     const a = {};
     const b = {};
 
@@ -22,7 +22,7 @@ describe('createPopoverHintClaims', () => {
   });
 
   it('moves a re-claim to the end', () => {
-    const claims = createPopoverHintClaims<string>('test');
+    const claims = createPopoverHintClaims<string>();
     const a = {};
     const b = {};
 
@@ -36,7 +36,7 @@ describe('createPopoverHintClaims', () => {
   });
 
   it('ignores a release by an owner that holds no claim', () => {
-    const claims = createPopoverHintClaims<string>('test');
+    const claims = createPopoverHintClaims<string>();
     const a = {};
     claims.claim(a, 'x');
 
@@ -45,7 +45,7 @@ describe('createPopoverHintClaims', () => {
   });
 
   it('replaces the owner claim on a new value instead of duplicating it', () => {
-    const claims = createPopoverHintClaims<string>('test');
+    const claims = createPopoverHintClaims<string>();
     const a = {};
 
     claims.claim(a, 'x');
@@ -57,7 +57,7 @@ describe('createPopoverHintClaims', () => {
   });
 
   it('can be claimed from an effect without re-running it', () => {
-    const claims = createPopoverHintClaims<string>('test');
+    const claims = createPopoverHintClaims<string>();
     const owner = {};
     const source = signal('x');
     let runs = 0;

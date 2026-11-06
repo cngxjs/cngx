@@ -29,10 +29,12 @@ export interface PopoverHintClaims<T> {
  * unregister path.
  *
  * `claim` and `release` run untracked: composers call them from effects, and
- * the registry reads its own state on write.
+ * the registry reads its own state on write. The registry stays unnamed: its
+ * name only labels the collision warning, and `claim` releases the owner's
+ * previous entry first, so a key never collides.
  */
-export function createPopoverHintClaims<T>(name: string): PopoverHintClaims<T> {
-  const registry = createKeyedRegistry<PopoverHintClaim<T>>({ name });
+export function createPopoverHintClaims<T>(): PopoverHintClaims<T> {
+  const registry = createKeyedRegistry<PopoverHintClaim<T>>();
   const keys = new WeakMap<object, string>();
 
   const keyFor = (owner: object): string => {
