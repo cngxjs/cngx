@@ -51,6 +51,20 @@ class TestHost {
   dismissed = vi.fn();
 }
 
+@Component({
+  template: `
+    <h2 id="surface-title">Filters</h2>
+    <aside cngxDrawerSurface [active]="true" aria-labelledby="surface-title">
+      <button>Inside</button>
+    </aside>
+    <aside cngxDrawerSurface [active]="true" aria-label="Static name" class="static-label">
+      <button>Inside</button>
+    </aside>
+  `,
+  imports: [CngxDrawerSurface],
+})
+class StaticNameHost {}
+
 describe('CngxDrawerSurface', () => {
   let watchers: FakeWatcher[];
 
@@ -74,7 +88,7 @@ describe('CngxDrawerSurface', () => {
       destroy: vi.fn(),
     };
     TestBed.configureTestingModule({
-      imports: [TestHost],
+      imports: [TestHost, StaticNameHost],
       providers: [{ provide: FocusTrapFactory, useValue: { create: vi.fn(() => mockTrap) } }],
     });
   });
@@ -289,6 +303,33 @@ describe('CngxDrawerSurface', () => {
 
       set((h) => h.modality.set('contained'));
       expect(surface.hasAttribute('role')).toBe(false);
+    });
+  });
+
+  describe('name', () => {
+    it('names an engaged page modal with the layout i18n fallback only', () => {
+      const { surface, set } = setup();
+      expect(surface.hasAttribute('aria-label')).toBe(false);
+
+      set((h) => h.active.set(true));
+      expect(surface.getAttribute('role')).toBe('dialog');
+      expect(surface.getAttribute('aria-label')).toBe('Drawer');
+
+      set((h) => h.modality.set('none'));
+      expect(surface.hasAttribute('aria-label')).toBe(false);
+    });
+
+    it('keeps a static aria-labelledby and a static aria-label', () => {
+      const fixture = TestBed.createComponent(StaticNameHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const root = fixture.nativeElement as HTMLElement;
+      const labelledBy = root.querySelector('aside[aria-labelledby]') as HTMLElement;
+      const labelled = root.querySelector('aside.static-label') as HTMLElement;
+
+      expect(labelledBy.getAttribute('role')).toBe('dialog');
+      expect(labelledBy.hasAttribute('aria-label')).toBe(false);
+      expect(labelled.getAttribute('aria-label')).toBe('Static name');
     });
   });
 

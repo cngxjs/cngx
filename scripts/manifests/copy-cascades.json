@@ -197,6 +197,17 @@
       ]
     },
     {
+      "class": "CngxDrawerSurface",
+      "file": "projects/common/layout/drawer/drawer-surface.directive.ts",
+      "line": 261,
+      "member": "label",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "labelInput" },
+        { "kind": "bundle", "field": "i18n", "path": ["drawerDialog"], "token": "CNGX_LAYOUT_I18N" }
+      ]
+    },
+    {
       "class": "CngxResizable",
       "file": "projects/common/layout/resizable/resizable.directive.ts",
       "line": 151,

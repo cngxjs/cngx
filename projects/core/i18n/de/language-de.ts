@@ -332,6 +332,7 @@ export const CNGX_LANGUAGE_DE = {
     resizeValueText: '{size} Pixel',
     panelTrigger: 'Seitenbereich',
     sidebarRegion: 'Seitenleiste',
+    drawerDialog: 'Seitenbereich',
   },
   menu: {
     submenuOpened: 'Untermenü geöffnet',

@@ -34,6 +34,12 @@ export interface CngxLayoutI18n {
   readonly panelTrigger: string;
   /** Fallback of `CngxSidebar.label`, the region's accessible name. */
   readonly sidebarRegion: string;
+  /**
+   * Fallback of `CngxDrawerPanel.label` and `CngxDrawerSurface.label`: the
+   * name of an engaged page modal (a `dialog`) without a bound label or a
+   * static `aria-label` / `aria-labelledby`.
+   */
+  readonly drawerDialog: string;
 }
 
 /** @internal The English section with the active pack's layout section on top. */
@@ -48,6 +54,7 @@ function layoutBundleFrom(section: CngxLayoutLanguageSection, locale: string): C
     resizeValueText: (size) => formatMessage(section.resizeValueText, { size }, locale),
     panelTrigger: section.panelTrigger,
     sidebarRegion: section.sidebarRegion,
+    drawerDialog: section.drawerDialog,
   };
 }
 
@@ -65,7 +72,7 @@ const layoutBundle = createSectionBundle<CngxLayoutLanguageSection, CngxLayoutI1
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/i18n/layout-i18n.ts
  * @since 0.1.0
- * @relatedTo CngxExpandableText, CngxResizable, CngxPanelTrigger, CngxSidebar
+ * @relatedTo CngxExpandableText, CngxResizable, CngxPanelTrigger, CngxSidebar, CngxDrawerPanel
  */
 export const CNGX_LAYOUT_I18N = new InjectionToken<Signal<CngxLayoutI18n>>('CngxLayoutI18n', {
   providedIn: 'root',

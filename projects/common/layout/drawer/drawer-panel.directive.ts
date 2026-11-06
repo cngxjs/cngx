@@ -48,7 +48,9 @@ export type DrawerMode = 'over' | 'push';
  * `push`:
  *
  * - `'page'`: the open panel traps focus, renders `role="dialog"` +
- *   `aria-modal="true"`, makes everything outside it `inert` up to `<body>`
+ *   `aria-modal="true"` (named by `label`, else a static `aria-label` /
+ *   `aria-labelledby`, else `CNGX_LAYOUT_I18N.drawerDialog`), makes
+ *   everything outside it `inert` up to `<body>`
  *   (focus-trap anchors, live regions and a visible backdrop stay live) and
  *   locks scrolling on the nearest scroll container above it (else the
  *   document root). The full-height drawer that covers the app header.
@@ -104,7 +106,7 @@ export type DrawerMode = 'over' | 'push';
   selector: '[cngxDrawerPanel]',
   exportAs: 'cngxDrawerPanel',
   standalone: true,
-  hostDirectives: [{ directive: CngxDrawerSurface, inputs: [], outputs: [] }],
+  hostDirectives: [{ directive: CngxDrawerSurface, inputs: ['label'], outputs: [] }],
   providers: [{ provide: CNGX_DRAWER_SURFACE_DRIVER, useExisting: CngxDrawerPanel }],
   host: {
     '[class.cngx-drawer-panel]': 'true',

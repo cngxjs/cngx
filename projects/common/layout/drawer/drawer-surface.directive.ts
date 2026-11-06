@@ -6,6 +6,7 @@ import {
   Directive,
   effect,
   ElementRef,
+  HostAttributeToken,
   inject,
   InjectionToken,
   Injector,
@@ -31,6 +32,7 @@ import {
 import { injectWindow } from '@cngx/core/tokens';
 import { createCloseWatcher } from '@cngx/core/utils';
 
+import { injectLayoutI18n } from '../i18n/layout-i18n';
 import { createScrollLock } from '../scroll/scroll-lock-core';
 import { createInertSiblings } from './inert-siblings';
 
@@ -162,6 +164,7 @@ const SCROLLING_OVERFLOW = new Set(['auto', 'scroll']);
   host: {
     '[attr.role]': 'surfaceRole()',
     '[attr.aria-modal]': "engagedPage() ? 'true' : null",
+    '[attr.aria-label]': 'ariaLabel()',
     '(keydown.escape)': 'handleEscape()',
   },
 })
@@ -187,6 +190,14 @@ export class CngxDrawerSurface
    */
   readonly role = input<string | null>('complementary');
   /**
+   * Accessible name of the surface. An engaged page modal (a `dialog`)
+   * without one falls back to a static `aria-label` on the host, then to
+   * `CNGX_LAYOUT_I18N.drawerDialog`; a host with a static `aria-labelledby`
+   * keeps that name. Outside an engaged page modal only a bound label or a
+   * static `aria-label` names the landmark.
+   */
+  readonly labelInput = input<string | undefined>(undefined, { alias: 'label' });
+  /**
    * Emitted when the user asks to dismiss the engaged surface: Escape, the
    * back gesture, or a press outside the host. The owner closes it.
    */
@@ -197,6 +208,11 @@ export class CngxDrawerSurface
   private readonly doc = inject(DOCUMENT);
   private readonly domReady = signal(false);
   private readonly focusTrap = inject(CngxFocusTrap, { self: true });
+  private readonly i18n = injectLayoutI18n();
+  private readonly staticLabel = inject(new HostAttributeToken('aria-label'), { optional: true });
+  private readonly staticLabelledBy = inject(new HostAttributeToken('aria-labelledby'), {
+    optional: true,
+  });
   private destroyed = false;
   // Chromium also turns an unhandled Escape into a CloseWatcher close; the
   // watcher stays disarmed until this keydown task is over.
@@ -229,6 +245,23 @@ export class CngxDrawerSurface
     const landmark = this.driver()?.surfaceLandmarkRole;
     return landmark ? landmark() : this.role();
   });
+
+  // A static aria-label or aria-labelledby names the host already; the
+  // fallback only fills a nameless engaged dialog.
+  private readonly namesWithFallback = computed(
+    () => this.engagedPage() && this.staticLabel === null && this.staticLabelledBy === null,
+  );
+  /**
+   * The resolved accessible name: the bound `label`, else a static
+   * `aria-label`, else (engaged page modal without a static name)
+   * `CNGX_LAYOUT_I18N.drawerDialog`.
+   */
+  readonly label = computed<string | undefined>(() =>
+    this.namesWithFallback()
+      ? (this.labelInput() ?? this.i18n().drawerDialog)
+      : (this.labelInput() ?? this.staticLabel ?? undefined),
+  );
+  protected readonly ariaLabel = computed(() => this.label() ?? null);
 
   /** @internal Drives the composed `CngxFocusTrap`. */
   readonly focusTrapEnabled = this.engagedPage;

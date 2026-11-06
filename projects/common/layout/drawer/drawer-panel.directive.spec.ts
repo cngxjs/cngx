@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { FocusTrapFactory } from '@angular/cdk/a11y';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { provideLayoutI18n, withLayoutI18nLabels } from '../i18n/layout-i18n';
 import { CngxDrawer } from './drawer.directive';
 import {
   CNGX_DRAWER_HOST,
@@ -35,6 +36,7 @@ let mockTrap: {
         [mode]="mode()"
         [modality]="modality()"
         [role]="role()"
+        [label]="label()"
         [closeOnClickOutside]="closeOnClickOutside()"
       >
         <a href="#">Link</a>
@@ -49,6 +51,7 @@ class TestHost {
   mode = signal<DrawerMode>('over');
   modality = signal<CngxDrawerModality | undefined>(undefined);
   role = signal<string | null>('complementary');
+  label = signal<string | undefined>(undefined);
   closeOnClickOutside = signal(true);
   drawerDir!: CngxDrawer;
 }
@@ -279,6 +282,48 @@ describe('CngxDrawerPanel', () => {
     expect(drawer.opened()).toBe(true);
     controller.click();
     expect(drawer.opened()).toBe(false);
+  });
+
+  describe('name', () => {
+    function open(ctx: ReturnType<typeof setup>) {
+      ctx.drawer.open();
+      ctx.fixture.detectChanges();
+      TestBed.flushEffects();
+    }
+
+    it('names an open page-modal panel with the layout i18n fallback', () => {
+      const ctx = setup();
+      expect(ctx.panelEl.hasAttribute('aria-label')).toBe(false);
+
+      open(ctx);
+
+      expect(ctx.panelEl.getAttribute('role')).toBe('dialog');
+      expect(ctx.panelEl.getAttribute('aria-label')).toBe('Drawer');
+    });
+
+    it('lets a bound label win over the fallback', () => {
+      const ctx = setup();
+      ctx.host.label.set('Main navigation');
+      open(ctx);
+      expect(ctx.panelEl.getAttribute('aria-label')).toBe('Main navigation');
+    });
+
+    it('renders no fallback name on a non-modal landmark', () => {
+      const ctx = setup();
+      ctx.host.modality.set('none');
+      open(ctx);
+      expect(ctx.panelEl.getAttribute('role')).toBe('complementary');
+      expect(ctx.panelEl.hasAttribute('aria-label')).toBe(false);
+    });
+
+    it('follows a provideLayoutI18n override', () => {
+      TestBed.configureTestingModule({
+        providers: [provideLayoutI18n(withLayoutI18nLabels({ drawerDialog: 'Navigation' }))],
+      });
+      const ctx = setup();
+      open(ctx);
+      expect(ctx.panelEl.getAttribute('aria-label')).toBe('Navigation');
+    });
   });
 
   describe('modality', () => {

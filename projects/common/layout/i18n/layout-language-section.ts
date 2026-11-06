@@ -21,6 +21,8 @@ export interface CngxLayoutLanguageSection {
   readonly panelTrigger: string;
   /** Accessible name of a `CngxSidebar` region without a bound label. */
   readonly sidebarRegion: string;
+  /** Accessible name of an open page-modal drawer panel or surface without a bound label. */
+  readonly drawerDialog: string;
 }
 
 /**
@@ -37,6 +39,7 @@ export const CNGX_LAYOUT_LANGUAGE_EN: CngxLayoutLanguageSection = {
   resizeValueText: '{size} pixels',
   panelTrigger: 'Panel',
   sidebarRegion: 'Sidebar',
+  drawerDialog: 'Drawer',
 };
 
 declare module '@cngx/core/i18n' {
