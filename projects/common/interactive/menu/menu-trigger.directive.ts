@@ -29,8 +29,9 @@ import { CNGX_MENU_NAV_STRATEGY } from './menu-nav-strategy';
 import { createMenuTriggerLifecycle, isMenuShortcutCombo } from './menu-trigger-lifecycle';
 
 /**
- * See `CngxListboxTrigger` - same structural contract, plus the two composer
- * hints the popover trigger reads for `aria-haspopup` and `aria-controls`.
+ * See `CngxListboxTrigger` - same structural contract, plus the composer
+ * hints the popover trigger reads for `aria-haspopup`, `aria-controls` and
+ * its focus return.
  */
 interface PopoverController extends CngxMenuDismissPopoverRef {
   show(): void;
@@ -38,6 +39,8 @@ interface PopoverController extends CngxMenuDismissPopoverRef {
   releaseHaspopup(owner: object): void;
   claimControls(owner: object, source: Signal<string>): void;
   releaseControls(owner: object): void;
+  claimRestoreFocus(owner: object, value: boolean): void;
+  releaseRestoreFocus(owner: object): void;
 }
 
 /**
@@ -190,17 +193,21 @@ export class CngxMenuTrigger {
     // references; the menu id Signal itself is claimed, so an id change
     // reaches aria-controls without re-running this effect. Claims are keyed
     // by this trigger, so releasing them leaves a co-composer's hint (a
-    // popover panel around the menu) in place.
+    // popover panel around the menu) in place. The restore claim is `false`:
+    // the menu focus stack is the only restorer and decides per dismiss
+    // source, so the popover trigger must not restore a second time.
     effect((onCleanup) => {
       const pop = this.popover();
       const menu = this.menu();
       untracked(() => {
         pop.claimHaspopup(this, 'menu');
         pop.claimControls(this, menu.id);
+        pop.claimRestoreFocus(this, false);
       });
       onCleanup(() => {
         pop.releaseHaspopup(this);
         pop.releaseControls(this);
+        pop.releaseRestoreFocus(this);
       });
     });
     effect(() => {
