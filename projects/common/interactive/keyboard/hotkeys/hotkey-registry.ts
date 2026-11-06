@@ -7,7 +7,9 @@ import {
   isSignal,
   signal,
   type Signal,
+  untracked,
 } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
 import { injectWindow } from '@cngx/core/tokens';
 import {
   createKeyedRegistry,
@@ -25,6 +27,7 @@ import {
   isHotkeyScopeMuted,
   type CngxHotkeyScopeNode,
 } from './hotkey-scope';
+import { isAltGrRiskHotkey, isReservedHotkey } from './reserved-combos';
 
 /**
  * One listed binding: what the help list renders for a live binding.
@@ -274,8 +277,59 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
   const registrations = createKeyedRegistry<HotkeyEntry>({ name: 'CngxHotkeyRegistry' });
   const parsed = new Map<string, KeyCombo | null>();
   const lastGroups = new WeakMap<Element, readonly CngxHotkeyGroup[]>();
+  const warnedTies = new Set<string>();
   let listening = false;
   let destroyed = false;
+
+  /** Dev-only checks of a binding's current combo at registration. */
+  function warnRegistration(binding: CngxHotkeyBinding): void {
+    if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
+      return;
+    }
+    const raw = read(binding.combo);
+    const combo = comboOf(binding);
+    if (combo === null) {
+      cngxDevWarn(
+        'CNGX1080',
+        `[CngxHotkeyRegistry] hotkey "${binding.id}" has the unparseable combo "${raw}"; it never fires.`,
+        { id: binding.id, combo: raw },
+      );
+      return;
+    }
+    if (isReservedHotkey(combo, isMac)) {
+      cngxDevWarn(
+        'CNGX1078',
+        `[CngxHotkeyRegistry] hotkey "${binding.id}" uses "${raw}", which the browser handles before the page.`,
+        { id: binding.id, combo: raw },
+      );
+    }
+    if (isAltGrRiskHotkey(combo)) {
+      cngxDevWarn(
+        'CNGX1079',
+        `[CngxHotkeyRegistry] hotkey "${binding.id}" uses "${raw}"; Ctrl+Alt is AltGr on Windows and Linux, so it never fires on layouts that type characters with AltGr.`,
+        { id: binding.id, combo: raw },
+      );
+    }
+  }
+
+  /** Dev-only, once per id pair: two live bindings matched one press at the same depth. */
+  function warnTie(winner: CngxHotkeyBinding, others: readonly CngxHotkeyBinding[]): void {
+    if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
+      return;
+    }
+    for (const other of others) {
+      const pair = [winner.id, other.id].sort().join('\u0000');
+      if (warnedTies.has(pair)) {
+        continue;
+      }
+      warnedTies.add(pair);
+      cngxDevWarn(
+        'CNGX1077',
+        `[CngxHotkeyRegistry] hotkeys "${other.id}" and "${winner.id}" both matched one press at the same scope depth; "${winner.id}" (registered last) runs.`,
+        { winner: winner.id, shadowed: other.id },
+      );
+    }
+  }
 
   function comboOf(binding: CngxHotkeyBinding): KeyCombo | null {
     const combo = read(binding.combo);
@@ -315,6 +369,7 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
     }
     const inText = isTextEntry(event.target);
     let winner: Candidate | null = null;
+    let tied: CngxHotkeyBinding[] = [];
     for (const candidate of candidates(contextOf(event.target))) {
       const { binding } = candidate;
       if (event.repeat && !binding.allowRepeat) {
@@ -327,12 +382,19 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
       if (!matchesKeyCombo(event, combo, isMac)) {
         continue;
       }
-      // `<=` keeps the later registration among equal ranks.
-      if (winner === null || candidate.rank <= winner.rank) {
+      if (winner === null || candidate.rank < winner.rank) {
+        winner = candidate;
+        tied = [];
+      } else if (candidate.rank === winner.rank) {
+        // The later registration wins among equal ranks.
+        tied.push(winner.binding);
         winner = candidate;
       }
     }
     if (winner !== null) {
+      if (typeof ngDevMode !== 'undefined' && ngDevMode && tied.length > 0) {
+        warnTie(winner.binding, tied);
+      }
       event.preventDefault();
       winner.binding.run(event);
     }
@@ -362,6 +424,9 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
     const entry: HotkeyEntry = { source, scope };
     registrations.register(key, entry);
     syncListener();
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      untracked(source).forEach((binding) => warnRegistration(binding));
+    }
     return {
       unregister: () => {
         registrations.unregister(key, entry);
