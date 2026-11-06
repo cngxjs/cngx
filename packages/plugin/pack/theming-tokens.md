@@ -1,6 +1,6 @@
 # cngx theming tokens
 
-Every cngx component themes through `--cngx-*` CSS custom properties with literal fallbacks. Set any token in your own stylesheet to override it; leave it unset to keep the default below. 2558 tokens across 155 components.
+Every cngx component themes through `--cngx-*` CSS custom properties with literal fallbacks. Set any token in your own stylesheet to override it; leave it unset to keep the default below. 2562 tokens across 155 components.
 
 ## CngxA11yPanel
 
@@ -3206,6 +3206,10 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-toast-action-hover-bg`|`oklch(0 0 0 / 0.04)`|State / Action|Background tint applied on hover of the action button.|
 |`--cngx-toast-action-weight`|`600`|Typography|Font-weight of the action button.|
 |`--cngx-toast-action-size`|`0.8125rem`|Typography|Font-size of the action button.|
+|`--cngx-toast-timer-height`|`2px`|Timer|Thickness of the countdown bar along the bottom inner edge of a timed toast. `0` turns the bar off.|
+|`--cngx-toast-timer-color`|`var(--cngx-toast-accent)`|Timer|Colour of the countdown bar. Unregistered initial, so the use site falls back to the severity accent.|
+|`--cngx-toast-timer-duration`|`0s`|Timer|Total run time of the current timer segment. Runtime value, set inline on each timed `.cngx-toast` by the outlet; read it, do not set it.|
+|`--cngx-toast-timer-offset`|`0s`|Timer|Negative elapsed time of the current timer segment, used as `animation-delay` so a re-created timer element resumes where the clock stands. Runtime value, set inline on each timed `.cngx-toast` by the outlet; read it, do not set it.|
 
 ## CngxToc
 

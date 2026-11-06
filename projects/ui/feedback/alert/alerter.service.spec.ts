@@ -182,21 +182,21 @@ describe('CngxAlerter', () => {
     alerter.show({ message: 'Pause me', duration: 3000 });
     const id = alerter.alerts()[0].id;
     vi.advanceTimersByTime(1000);
-    alerter.pauseTimer(id);
+    alerter.pauseTimer(id, 'pointer');
     vi.advanceTimersByTime(60000);
     expect(alerter.alerts().length).toBe(1);
   });
 
-  it('holds the pause until every source releases (hover + focus refcount)', () => {
+  it('holds the pause until every source releases (pointer leaves, focus still inside)', () => {
     alerter.show({ message: 'Held', duration: 3000 });
     const id = alerter.alerts()[0].id;
-    alerter.pauseTimer(id); // pointer enters
-    alerter.pauseTimer(id); // focus moves in
-    alerter.resumeTimer(id); // pointer leaves - focus still inside
+    alerter.pauseTimer(id, 'pointer');
+    alerter.pauseTimer(id, 'focus');
+    alerter.resumeTimer(id, 'pointer');
     vi.advanceTimersByTime(60000);
     expect(alerter.alerts().length).toBe(1);
 
-    alerter.resumeTimer(id); // focus leaves - last hold released
+    alerter.resumeTimer(id, 'focus');
     vi.advanceTimersByTime(3000);
     expect(alerter.alerts().length).toBe(0);
   });
@@ -205,8 +205,8 @@ describe('CngxAlerter', () => {
     alerter.show({ message: 'Resume me', duration: 3000 });
     const id = alerter.alerts()[0].id;
     vi.advanceTimersByTime(1000);
-    alerter.pauseTimer(id);
-    alerter.resumeTimer(id);
+    alerter.pauseTimer(id, 'pointer');
+    alerter.resumeTimer(id, 'pointer');
     vi.advanceTimersByTime(1999);
     expect(alerter.alerts().length).toBe(1);
     vi.advanceTimersByTime(1);

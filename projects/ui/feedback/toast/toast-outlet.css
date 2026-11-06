@@ -44,12 +44,28 @@
  *   block, centred on it; label and border mix
  *   `--cngx-toast-accent` into the text colour for 4.5:1
  * - `.cngx-toast__dismiss` - dismiss control
+ * - `.cngx-toast__timer` - `aria-hidden` countdown bar of a timed toast,
+ *   absent on a persistent one
  *
  * A toast without a title centres icon, text, action and dismiss on one
  * line; with a title the icon and dismiss stay level with the title.
  *
  * Toasts enter via 200ms `cngx-toast-enter`; the animation no-ops
  * under `prefers-reduced-motion`.
+ *
+ * **Timer**
+ *
+ * A timed toast carries `data-timer="running"` or `"paused"` (hover,
+ * focus inside, or waiting behind `maxVisible`) plus the runtime
+ * `--cngx-toast-timer-duration` and `--cngx-toast-timer-offset`. The
+ * `.cngx-toast__timer` element is re-created on every timer segment
+ * (start, pause, resume, repeated message), so an animation built on the
+ * two tokens always starts at the exact remaining time. The default skin
+ * draws a 2px bar in the severity accent that drains toward the inline
+ * start and stops while paused; `--cngx-toast-timer-height: 0` turns it
+ * off. The bar does not render under reduced motion (`[data-motion='reduced']`
+ * or the OS preference without `:root[data-motion='full']`). It is a
+ * border, so forced colors draw it in the system text colour.
  *
  * **Inheritance**
  *
@@ -461,6 +477,54 @@
     initial-value: 0.8125rem;
   }
 
+  /**
+   * Thickness of the countdown bar along the bottom inner edge of a
+   * timed toast. `0` turns the bar off.
+   * @group Timer
+   */
+  @property --cngx-toast-timer-height {
+    syntax: '<length>';
+    /* Read on the .cngx-toast__timer descendant; inherits so a toast or outlet SET reaches it. */
+    inherits: true;
+    initial-value: 2px;
+  }
+
+  /**
+   * Colour of the countdown bar. Unregistered initial, so the use site
+   * falls back to the severity accent.
+   * @group Timer
+   * @default var(--cngx-toast-accent)
+   */
+  @property --cngx-toast-timer-color {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Total run time of the current timer segment. Runtime value, set
+   * inline on each timed `.cngx-toast` by the outlet; read it, do not
+   * set it.
+   * @group Timer
+   */
+  @property --cngx-toast-timer-duration {
+    syntax: '<time>';
+    inherits: true;
+    initial-value: 0s;
+  }
+
+  /**
+   * Negative elapsed time of the current timer segment, used as
+   * `animation-delay` so a re-created timer element resumes where the
+   * clock stands. Runtime value, set inline on each timed `.cngx-toast`
+   * by the outlet; read it, do not set it.
+   * @group Timer
+   */
+  @property --cngx-toast-timer-offset {
+    syntax: '<time>';
+    inherits: true;
+    initial-value: 0s;
+  }
+
   /* Color-scheme defaults. Toast bg + text delegate to foundation
    * surface/text so a brand swap cascades. Border and shadow are the
    * popover-panel overlay pair: the border flips to alpha-on-white and
@@ -587,6 +651,7 @@
       background: var(--cngx-toast-bg, oklch(1 0 0));
       color: var(--cngx-toast-color, oklch(0.25 0.015 250));
       box-shadow: var(--cngx-toast-shadow, 0 8px 24px oklch(0 0 0 / 0.12));
+      position: relative;
       pointer-events: auto;
       animation: cngx-toast-enter var(--cngx-toast-enter-duration, 200ms)
         var(--cngx-toast-enter-easing, ease-out);
@@ -716,11 +781,59 @@
          pointer; the visual box keeps its size. */
     }
 
+    /* Countdown bar. A border, not a background, so forced colors map it to
+       CanvasText with no extra block. The outlet re-creates the element on
+       every timer segment, so the negative delay starts it at the exact
+       remaining time. Inset by the radius so it never crosses the rounded
+       corners. */
+    .cngx-toast__timer {
+      position: absolute;
+      inset-inline: var(--cngx-toast-border-radius, 8px);
+      inset-block-end: 0;
+      border-block-end: var(--cngx-toast-timer-height, 2px) solid
+        var(--cngx-toast-timer-color, var(--cngx-toast-accent, currentColor));
+      transform-origin: left;
+      pointer-events: none;
+      animation: cngx-toast-timer var(--cngx-toast-timer-duration, 0s) linear
+        var(--cngx-toast-timer-offset, 0s) forwards;
+    }
+
+    .cngx-toast__timer:dir(rtl) {
+      transform-origin: right;
+    }
+
+    .cngx-toast[data-timer='paused'] .cngx-toast__timer {
+      animation-play-state: paused;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .cngx-toast {
         animation: none;
       }
     }
+  }
+
+  /* No bar under reduced motion: a frozen bar would claim progress that is
+     not moving. Outside the @scope block because the motion attribute sits on
+     an ancestor of the outlet. */
+  [data-motion='reduced'] .cngx-toast-outlet .cngx-toast__timer,
+  .cngx-toast-outlet[data-motion='reduced'] .cngx-toast__timer {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root:not([data-motion='full']) .cngx-toast-outlet .cngx-toast__timer {
+      display: none;
+    }
+  }
+}
+
+@keyframes cngx-toast-timer {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
   }
 }
 

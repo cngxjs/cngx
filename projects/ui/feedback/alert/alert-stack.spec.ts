@@ -338,6 +338,40 @@ describe('CngxAlertStack', () => {
     expect(alerter.alerts().length).toBe(0);
   });
 
+  it('drops the pointer hold of an alert pushed into the overflow', () => {
+    vi.useFakeTimers();
+    const { fixture, stackEl, alerter } = setup();
+    alerter.show({ message: 'Hovered', scope: 'test', duration: 3000 });
+    fixture.detectChanges();
+    (stackEl.querySelector('.cngx-alert-stack__item') as HTMLElement).dispatchEvent(
+      new Event('pointerenter'),
+    );
+
+    for (let i = 0; i < 3; i++) {
+      alerter.show({ message: `Newer ${i}`, scope: 'test', duration: 60000 });
+    }
+    fixture.detectChanges();
+    expect(stackEl.textContent).not.toContain('Hovered');
+
+    vi.advanceTimersByTime(3000);
+    expect(alerter.alerts().some((a) => a.config.message === 'Hovered')).toBe(false);
+  });
+
+  it('drops the pointer and focus holds of environment alerts when the stack is destroyed', () => {
+    vi.useFakeTimers();
+    const { fixture, stackEl, envAlerter } = setupWithEnvAlerter();
+    envAlerter.show({ message: 'Hovered', duration: 3000 });
+    envAlerter.show({ message: 'Focused', duration: 3000 });
+    fixture.detectChanges();
+    const items = stackEl.querySelectorAll<HTMLElement>('.cngx-alert-stack__item');
+    items[0].dispatchEvent(new Event('pointerenter'));
+    items[1].dispatchEvent(new FocusEvent('focusin'));
+
+    fixture.destroy();
+    vi.advanceTimersByTime(3000);
+    expect(envAlerter.alerts().length).toBe(0);
+  });
+
   it('pins the dismiss close-button with flex-shrink: 0 to survive narrow widths', () => {
     setup();
 

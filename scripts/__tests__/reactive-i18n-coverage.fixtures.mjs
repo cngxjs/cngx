@@ -840,7 +840,7 @@ export const LIVE_REGIONS = [
   {
     file: 'projects/ui/feedback/toast/toast-outlet.ts',
     region:
-      'CngxToastOutlet.div(dismissLabel,iconFor,repeatCount,service.dismiss,service.pauseTimer,service.resumeTimer)',
+      'CngxToastOutlet.div(dismissLabel,iconFor,repeatCount,service.dismiss,service.pauseTimer,service.resumeTimer,timerOffset,timerState)',
     spec: 'projects/ui/feedback/toast/toast-outlet.spec.ts',
     testName: 'does not re-announce on a language flip',
   },
