@@ -210,7 +210,7 @@
     {
       "class": "CngxResizable",
       "file": "projects/common/layout/resizable/resizable.directive.ts",
-      "line": 151,
+      "line": 155,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -221,7 +221,7 @@
     {
       "class": "CngxResizable",
       "file": "projects/common/layout/resizable/resizable.directive.ts",
-      "line": 153,
+      "line": 157,
       "member": "resolvedValueText",
       "enclosing": "computed",
       "tiers": [
