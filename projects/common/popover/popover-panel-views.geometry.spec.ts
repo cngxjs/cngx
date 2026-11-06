@@ -90,11 +90,37 @@ async function enter(view: PanelView): Promise<void> {
   await nextFrame();
 }
 
+function toRgb(color: string): [number, number, number] {
+  const ctx = document.createElement('canvas').getContext('2d');
+  if (!ctx) {
+    throw new Error('2d canvas unavailable');
+  }
+  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, 1, 1);
+  const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+  return [r, g, b];
+}
+
+function luminance([r, g, b]: [number, number, number]): number {
+  const channel = (v: number): number => {
+    const s = v / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+}
+
+function contrast(fg: string, bg: string): number {
+  const a = luminance(toRgb(fg));
+  const b = luminance(toRgb(bg));
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+}
+
 afterEach(() => {
   const root = fixture?.nativeElement as HTMLElement | undefined;
   fixture?.destroy();
   root?.remove();
   fixture = null;
+  document.documentElement.removeAttribute('data-color-scheme');
 });
 
 describe('CngxPopoverPanel header row across views', () => {
@@ -133,4 +159,21 @@ describe('CngxPopoverPanel header row across views', () => {
       expect(Number.parseFloat(hit.blockSize), `${view} hit block size`).toBeGreaterThanOrEqual(44);
     }
   });
+});
+
+describe('CngxPopoverPanel state copy contrast', () => {
+  it.each(['light', 'dark'] as const)(
+    'paints the error copy at 4.5:1 or more against the %s panel surface',
+    async (scheme) => {
+      document.documentElement.setAttribute('data-color-scheme', scheme);
+      const panel = await mountOpen();
+      await enter('error');
+      const error = one(panel, '.cngx-popover-panel__error');
+      const ratio = contrast(
+        getComputedStyle(error).color,
+        getComputedStyle(panel).backgroundColor,
+      );
+      expect(ratio).toBeGreaterThanOrEqual(4.5);
+    },
+  );
 });

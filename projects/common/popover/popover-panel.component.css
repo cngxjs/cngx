@@ -44,7 +44,7 @@
  * - `__close` - circular dismiss button (`button[cngxCloseButton]`), hover wash
  * - `__arrow` - 45-degree square positioned by arrow-placement
  * - `__loading` / `__error` / `__empty` - async-state surfaces;
- *   `__error` picks up `--cngx-color-danger`, `__empty` dims to 0.6
+ *   `__error` picks up `--cngx-color-danger-text`, `__empty` the muted text colour
  *
  * **Inheritance**
  *
@@ -552,8 +552,13 @@
       padding: 8px 0;
     }
 
+    /* The text rung of danger: the raw danger is a fill colour and misses
+       4.5:1 on the light surface at this size. */
     .cngx-popover-panel__error {
-      color: var(--cngx-color-danger, oklch(0.6 0.22 25));
+      color: var(
+        --cngx-color-danger-text,
+        oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)
+      );
     }
 
     /* Quieter than the panel copy by colour (the hint colour), not opacity. */
