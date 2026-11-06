@@ -1251,6 +1251,23 @@ describe('CngxPopover', () => {
       expect(popover.controlsHint()).toBeNull();
     });
 
+    it('resolves the restore-focus hint from the last live claim', () => {
+      const { popover } = seamSetup();
+      const a = {};
+      const b = {};
+      expect(popover.restoreFocusHint()).toBeUndefined();
+
+      popover.claimRestoreFocus(a, true);
+      popover.claimRestoreFocus(b, false);
+      expect(popover.restoreFocusHint()).toBe(false);
+
+      popover.releaseRestoreFocus(b);
+      expect(popover.restoreFocusHint()).toBe(true);
+
+      popover.releaseRestoreFocus(a);
+      expect(popover.restoreFocusHint()).toBeUndefined();
+    });
+
     it('keeps the non-anchored haspopup and controls gates over live claims', () => {
       const { fixture, popover, seam } = seamSetup();
       const owner = {};

@@ -106,6 +106,18 @@ class RestoreFocusHost {
 
 @Component({
   template: `
+    <button [cngxPopoverTrigger]="pop" [restoreFocus]="restore()" id="trigger">Open</button>
+    <div cngxPopover #pop="cngxPopover">Claimed</div>
+  `,
+  imports: [CngxPopover, CngxPopoverTrigger],
+})
+class RestoreClaimHost {
+  readonly popover = viewChild.required(CngxPopover);
+  readonly restore = signal<boolean | undefined>(undefined);
+}
+
+@Component({
+  template: `
     @if (showTrigger()) {
       <button [cngxPopoverTrigger]="pop" id="trigger">Open</button>
     }
@@ -304,6 +316,45 @@ describe('CngxPopoverTrigger', () => {
       fixture.detectChanges();
       expect(document.activeElement).not.toBe(triggerEl);
       fixture.destroy();
+    });
+
+    function closeFromInsidePanel(restore: boolean | undefined) {
+      const fixture = TestBed.createComponent(RestoreClaimHost);
+      fixture.componentInstance.restore.set(restore);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      stubPopoverElement(popoverEl);
+      const host = fixture.componentInstance;
+      host.popover().claimRestoreFocus(host, true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      triggerEl.focus();
+      host.popover().show();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const panelItem = document.createElement('button');
+      popoverEl.appendChild(panelItem);
+      panelItem.focus();
+      host.popover().hide();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const active = document.activeElement;
+      fixture.destroy();
+      return { active, triggerEl };
+    }
+
+    it('restores focus through a composer claim when no input is bound', () => {
+      const { active, triggerEl } = closeFromInsidePanel(undefined);
+      expect(active).toBe(triggerEl);
+    });
+
+    it('lets [restoreFocus]="false" beat a composer claim', () => {
+      const { active, triggerEl } = closeFromInsidePanel(false);
+      expect(active).not.toBe(triggerEl);
     });
 
     it('should restore focus on close when restoreFocus is true', () => {

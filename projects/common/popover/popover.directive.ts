@@ -582,6 +582,23 @@ export class CngxPopover {
     this.anchored() ? (this.controlsClaims.current()?.() ?? null) : null,
   );
 
+  /** Owner-keyed claims behind {@link restoreFocusHint}. */
+  private readonly restoreFocusClaims = createPopoverHintClaims<boolean>(
+    'CngxPopover restoreFocus',
+  );
+
+  /**
+   * Hint for the `CngxPopoverTrigger`'s focus return on close, used when the
+   * trigger binds no `[restoreFocus]`. Composers claim it via
+   * {@link claimRestoreFocus}: `CngxPopoverPanel` claims `true` (dialog
+   * pattern), a menu trigger claims `false` because its focus stack restores.
+   * The last live claim wins. `false` in a sheet or fullscreen presentation,
+   * where `CngxPopoverSheet` restores focus itself.
+   */
+  readonly restoreFocusHint = computed<boolean | undefined>(() =>
+    this.anchored() ? this.restoreFocusClaims.current() : false,
+  );
+
   protected readonly isOpening = computed(() => this.stateSignal() === 'opening');
   protected readonly isOpen = computed(() => this.stateSignal() === 'open');
   protected readonly isClosing = computed(() => this.stateSignal() === 'closing');
@@ -867,6 +884,23 @@ export class CngxPopover {
   }
 
   /**
+   * Claim the focus-return hint triggers fall back to when the consumer
+   * binds no `[restoreFocus]`. The last live claim wins; a re-claim by the
+   * same owner replaces its earlier one.
+   */
+  claimRestoreFocus(owner: object, value: boolean): void {
+    this.restoreFocusClaims.claim(owner, value);
+  }
+
+  /**
+   * Release `owner`'s focus-return claim. Release removes only this owner's
+   * claim, so a co-composer's hint survives it.
+   */
+  releaseRestoreFocus(owner: object): void {
+    this.restoreFocusClaims.release(owner);
+  }
+
+  /**
    * @internal Install or clear the programmatic {@link exclusive} override.
    * `null` defers back to the `[exclusive]` input.
    */
@@ -1060,8 +1094,8 @@ export class CngxPopover {
     // control reached by keyboard) still holds focus would trap that focus
     // under aria-hidden - the browser blocks it and warns. Blurring here
     // relocates to the document synchronously, matching the eventual
-    // display:none end state; opt-in `restoreFocus` still returns focus to
-    // the trigger afterwards.
+    // display:none end state; the trigger's restore, by input or claim,
+    // returns focus afterwards.
     const active = this.doc.activeElement as HTMLElement | null;
     if (active && el.contains(active) && typeof active.blur === 'function') {
       active.blur();

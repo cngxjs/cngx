@@ -33,11 +33,13 @@ import type { PopoverHaspopup } from './popover.types';
  * ```
  *
  * ### Focus restoration
- * Opt in with `[restoreFocus]="true"` to restore focus on close to the
- * element that was focused before the popover opened (the popover
- * snapshots it synchronously in `show()`, so content autofocus cannot
- * displace the restore target). Useful for menus, confirm panels, and
- * dialogs that steal focus from the trigger.
+ * On close, the trigger can return focus to the element that was focused
+ * before the popover opened (the popover snapshots it synchronously in
+ * `show()`, so content autofocus cannot displace the restore target). The
+ * decision resolves in this order: the `[restoreFocus]` input, then the
+ * composer claim on the popover (`CngxPopoverPanel` claims `true`, a menu
+ * trigger claims `false` because its focus stack restores), then `false`.
+ * A bare popover therefore stays opt-in.
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-trigger.directive.ts
@@ -109,11 +111,21 @@ export class CngxPopoverTrigger {
    * falls back to this trigger. The restore runs only when focus is
    * lost at close time - on `body` or inside the panel - so a close
    * caused by a click or Escape in another control leaves focus there.
-   * Defaults to `false` so the trigger stays a passive ARIA atom; opt in
-   * for menus, confirm panels, and dialogs that move focus away from
-   * the trigger.
+   * Unbound, the popover's composer claim decides
+   * (`popoverRef().restoreFocusHint()`: `CngxPopoverPanel` claims `true`, a
+   * menu trigger `false`), and without a claim it stays `false`, so a bare
+   * popover trigger is a passive ARIA atom. Bind `true` or `false` to
+   * override the composer.
    */
-  readonly restoreFocus = input(false);
+  readonly restoreFocusInput = input<boolean | undefined>(undefined, { alias: 'restoreFocus' });
+
+  /**
+   * @internal Resolved focus return: the `[restoreFocus]` input, then the
+   * popover's composer claim, then `false`.
+   */
+  protected readonly restoreFocus = computed(
+    () => this.restoreFocusInput() ?? this.popoverRef().restoreFocusHint() ?? false,
+  );
 
   /**
    * Resolved `aria-haspopup`. Consumer override (`haspopup` on the
@@ -161,7 +173,7 @@ export class CngxPopoverTrigger {
     });
 
     // Focus restoration: adopt the popover's pre-show focus snapshot on
-    // open, restore on close. Inert until `restoreFocus` is opted into.
+    // open, restore on close. Inert while the resolved `restoreFocus` is false.
     effect(() => {
       if (!this.restoreFocus()) {
         return;
