@@ -195,6 +195,129 @@ describe('CngxToastOutlet geometry', () => {
   });
 });
 
+// The countdown bar the default skin draws from the outlet's timer hooks: a
+// border along the bottom inner edge in the severity accent, scaled from the
+// inline start.
+describe('CngxToastOutlet countdown bar geometry', () => {
+  function showTimed(
+    config: {
+      severity?: 'info' | 'success' | 'warning' | 'error';
+      duration?: number | 'persistent';
+    } = {},
+  ): HTMLElement {
+    const fixture = TestBed.createComponent(ToastOutletHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    TestBed.inject(CngxToaster).show({ message: 'Saved', duration: 5000, ...config });
+    fixture.detectChanges();
+    return mountedRoot;
+  }
+
+  // The registry publishes timer segments in a microtask, so the timer node
+  // renders one change-detection pass after show().
+  async function settle(): Promise<void> {
+    await Promise.resolve();
+    TestBed.tick();
+  }
+
+  afterEach(() => {
+    document.documentElement.removeAttribute('data-motion');
+    document.documentElement.removeAttribute('dir');
+  });
+
+  for (const severity of ['info', 'success', 'warning', 'error'] as const) {
+    it(`draws a 2px bottom bar in the ${severity} accent`, async () => {
+      const root = showTimed({ severity, duration: 5000 });
+      await settle();
+      const timer = query(root, '.cngx-toast__timer');
+      const icon = query(root, '.cngx-toast__icon');
+      expect(computedValue(timer, 'position')).toBe('absolute');
+      expect(computedValue(timer, 'bottom')).toBe('0px');
+      expect(computedValue(timer, 'border-bottom-style')).toBe('solid');
+      expect(computedValue(timer, 'border-bottom-width')).toBe('2px');
+      expect(computedValue(timer, 'border-bottom-color')).toBe(computedValue(icon, 'color'));
+      expect(computedValue(timer, 'animation-name')).toBe('cngx-toast-timer');
+      expect(computedValue(timer, 'animation-duration')).toBe('5s');
+    });
+  }
+
+  it('renders no timer node on a persistent toast', async () => {
+    const root = showTimed({ duration: 'persistent' });
+    await settle();
+    expect(root.querySelector('.cngx-toast__timer')).toBeNull();
+  });
+
+  it('pauses the bar animation while the timer is paused', async () => {
+    const root = showTimed();
+    await settle();
+    query(root, '.cngx-toast').dispatchEvent(new PointerEvent('pointerenter'));
+    await settle();
+    expect(query(root, '.cngx-toast').getAttribute('data-timer')).toBe('paused');
+    expect(computedValue(query(root, '.cngx-toast__timer'), 'animation-play-state')).toBe('paused');
+  });
+
+  it('turns the bar off with a zero height token', async () => {
+    const root = showTimed();
+    await settle();
+    query(root, '.cngx-toast').style.setProperty('--cngx-toast-timer-height', '0px');
+    const timer = query(root, '.cngx-toast__timer');
+    expect(computedValue(timer, 'border-bottom-width')).toBe('0px');
+    expect(timer.getBoundingClientRect().height).toBe(0);
+  });
+
+  it('hides the bar under the data-motion reduced axis', async () => {
+    document.documentElement.setAttribute('data-motion', 'reduced');
+    const root = showTimed();
+    await settle();
+    expect(computedValue(query(root, '.cngx-toast__timer'), 'display')).toBe('none');
+  });
+
+  it('hides the bar under the OS preference unless the root opts back into full motion', async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'prefers-reduced-motion', value: 'reduce' }],
+    });
+    const root = showTimed();
+    await settle();
+    const timer = query(root, '.cngx-toast__timer');
+    expect(computedValue(timer, 'display')).toBe('none');
+    document.documentElement.setAttribute('data-motion', 'full');
+    expect(computedValue(timer, 'display')).not.toBe('none');
+  });
+
+  it('scales from the left edge in LTR and from the right edge in RTL', async () => {
+    const ltr = query(showTimed(), '.cngx-toast');
+    await settle();
+    const ltrTimer = query(ltr, '.cngx-toast__timer');
+    expect(computedValue(ltrTimer, 'transform-origin').split(' ')[0]).toBe('0px');
+    mountedRoot?.remove();
+    document.documentElement.setAttribute('dir', 'rtl');
+    const rtl = query(showTimed(), '.cngx-toast');
+    await settle();
+    const rtlTimer = query(rtl, '.cngx-toast__timer');
+    const width = rtlTimer.getBoundingClientRect().width;
+    expect(parseFloat(computedValue(rtlTimer, 'transform-origin').split(' ')[0])).toBeCloseTo(
+      width,
+      0,
+    );
+  });
+
+  it('keeps a visible border in the system text colour under forced colors', async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'forced-colors', value: 'active' }],
+    });
+    const root = showTimed();
+    await settle();
+    const timer = query(root, '.cngx-toast__timer');
+    expect(computedValue(timer, 'border-bottom-style')).toBe('solid');
+    expect(parseFloat(computedValue(timer, 'border-bottom-width'))).toBeGreaterThan(0);
+    expect(computedValue(timer, 'border-bottom-color')).not.toBe('rgba(0, 0, 0, 0)');
+    expect(computedValue(timer, 'border-bottom-color')).toBe(
+      computedValue(query(root, '.cngx-toast__message'), 'color'),
+    );
+  });
+});
+
 // Without a forced-colors block the toast relies on its real border: the UA
 // drops the shadow, and the border must still draw a visible edge.
 describe.each(SCHEMES)('CngxToastOutlet geometry under forced colors, %s', (scheme) => {

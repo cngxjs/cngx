@@ -205,6 +205,7 @@ const DURATION_EXCLUDED: ReadonlyArray<{ token: string; reason: string }> = [
   { token: '--cngx-skeleton-shimmer-duration', reason: 'skeleton shimmer loop (1.5s)' },
   { token: '--cngx-recycler-placeholder-shimmer-duration', reason: 'fast-fling placeholder shimmer loop (1.6s)' },
   { token: '--cngx-dialog-backdrop-transition', reason: 'opt-in hook, initial-value: none (no default transition to derive)' },
+  { token: '--cngx-toast-timer-duration', reason: 'per-toast runtime value set inline by the outlet, not a scale-timed interaction' },
 ];
 
 // The scale itself - the source every SET derives from, not a consumer.
