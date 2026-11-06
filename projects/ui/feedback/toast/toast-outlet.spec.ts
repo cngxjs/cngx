@@ -12,10 +12,20 @@ import { CngxToastOutlet } from './toast-outlet';
 })
 class TestHost {}
 
+@Component({
+  template: `@if (shown()) {
+    <cngx-toast-outlet [maxVisible]="2" />
+  }`,
+  imports: [CngxToastOutlet],
+})
+class QueueHost {
+  readonly shown = signal(true);
+}
+
 describe('CngxToastOutlet', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [TestHost],
+      imports: [TestHost, QueueHost],
       providers: [provideToasts()],
     });
   });
@@ -235,6 +245,182 @@ describe('CngxToastOutlet', () => {
       expect(() => fixture.detectChanges()).not.toThrow();
       await render(fixture);
       expect(evicted.isConnected).toBe(false);
+    });
+  });
+
+  describe('queue hold', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    function queueSetup() {
+      const fixture = TestBed.createComponent(QueueHost);
+      fixture.detectChanges();
+      const toaster = TestBed.inject(CngxToaster);
+      const outletEl = (): HTMLElement => fixture.nativeElement.querySelector('cngx-toast-outlet');
+      const toastByText = (text: string): HTMLElement | undefined =>
+        Array.from(outletEl()?.querySelectorAll<HTMLElement>('.cngx-toast') ?? []).find((el) =>
+          el.textContent?.includes(text),
+        );
+      const has = (message: string): boolean =>
+        toaster.toasts().some((t) => t.config.message === message);
+      const idOf = (message: string): number =>
+        toaster.toasts().find((t) => t.config.message === message)!.id;
+      const settle = async (): Promise<void> => {
+        fixture.detectChanges();
+        await Promise.resolve();
+        fixture.detectChanges();
+      };
+      return { fixture, toaster, toastByText, has, idOf, settle };
+    }
+
+    it('holds a hidden toast until it is shown, then runs its full duration', async () => {
+      const { toaster, toastByText, has, settle } = queueSetup();
+      toaster.show({ message: 'First', duration: 5000 });
+      toaster.show({ message: 'Second', duration: 5000 });
+      toaster.show({ message: 'Third', duration: 5000 });
+      await settle();
+      expect(toastByText('First')).toBeUndefined();
+
+      vi.advanceTimersByTime(5000);
+      expect(has('Second')).toBe(false);
+      expect(has('Third')).toBe(false);
+      expect(has('First')).toBe(true);
+
+      await settle();
+      const first = toastByText('First')!;
+      expect(first.getAttribute('data-timer')).toBe('running');
+      expect(first.style.getPropertyValue('--cngx-toast-timer-offset')).toBe('0ms');
+
+      vi.advanceTimersByTime(4999);
+      expect(has('First')).toBe(true);
+      vi.advanceTimersByTime(1);
+      expect(has('First')).toBe(false);
+    });
+
+    it('keeps a hidden toast in the toaster after twice its duration', async () => {
+      const { toaster, has, settle } = queueSetup();
+      toaster.show({ message: 'Queued', duration: 2000 });
+      toaster.show({ message: 'Long A', duration: 60000 });
+      toaster.show({ message: 'Long B', duration: 60000 });
+      await settle();
+
+      vi.advanceTimersByTime(4000);
+      expect(has('Queued')).toBe(true);
+    });
+
+    it('resumes a pushed-out toast with the remaining time of its pause', async () => {
+      const { toaster, toastByText, has, idOf, settle } = queueSetup();
+      toaster.show({ message: 'Paused', duration: 5000 });
+      await settle();
+      vi.advanceTimersByTime(3000);
+      toastByText('Paused')!.dispatchEvent(new Event('pointerenter'));
+
+      toaster.show({ message: 'Newer A', duration: 30000 });
+      toaster.show({ message: 'Newer B', duration: 30000 });
+      await settle();
+      expect(toastByText('Paused')).toBeUndefined();
+
+      vi.advanceTimersByTime(10000);
+      toaster.dismiss(idOf('Newer A'));
+      await settle();
+      expect(toastByText('Paused')).toBeDefined();
+
+      vi.advanceTimersByTime(1999);
+      expect(has('Paused')).toBe(true);
+      vi.advanceTimersByTime(1);
+      expect(has('Paused')).toBe(false);
+    });
+
+    it('expires a toast evicted under the pointer once it is shown again', async () => {
+      const { toaster, toastByText, has, idOf, settle } = queueSetup();
+      toaster.show({ message: 'Hovered', duration: 5000 });
+      await settle();
+      toastByText('Hovered')!.dispatchEvent(new Event('pointerenter'));
+
+      toaster.show({ message: 'Newer A', duration: 30000 });
+      toaster.show({ message: 'Newer B', duration: 30000 });
+      await settle();
+      toaster.dismiss(idOf('Newer A'));
+      await settle();
+
+      vi.advanceTimersByTime(5000);
+      expect(has('Hovered')).toBe(false);
+    });
+
+    it('expires a toast evicted under the pointer by persistent toasts', async () => {
+      const { toaster, toastByText, has, settle } = queueSetup();
+      toaster.show({ message: 'Hovered', duration: 5000 });
+      await settle();
+      toastByText('Hovered')!.dispatchEvent(new Event('pointerenter'));
+
+      toaster.show({ message: 'Pinned A', duration: 'persistent' });
+      toaster.show({ message: 'Pinned B', duration: 'persistent' });
+      await settle();
+
+      vi.advanceTimersByTime(5000);
+      expect(has('Hovered')).toBe(false);
+    });
+
+    it('keeps the queue hold through a late focusout of an evicted toast', async () => {
+      const { toaster, toastByText, has, idOf, settle } = queueSetup();
+      toaster.show({ message: 'Focused', duration: 5000 });
+      await settle();
+      const evicted = toastByText('Focused')!;
+      evicted.dispatchEvent(new FocusEvent('focusin'));
+
+      toaster.show({ message: 'Newer A', duration: 30000 });
+      toaster.show({ message: 'Newer B', duration: 30000 });
+      await settle();
+      evicted.dispatchEvent(new FocusEvent('focusout'));
+      toaster.resumeTimer(idOf('Focused'), 'focus');
+
+      vi.advanceTimersByTime(20000);
+      expect(has('Focused')).toBe(true);
+    });
+
+    it('lets queued toasts run when every visible toast is persistent', async () => {
+      const { toaster, has, settle } = queueSetup();
+      toaster.show({ message: 'Queued', duration: 5000 });
+      toaster.show({ message: 'Pinned A', duration: 'persistent' });
+      toaster.show({ message: 'Pinned B', duration: 'persistent' });
+      await settle();
+
+      vi.advanceTimersByTime(4999);
+      expect(has('Queued')).toBe(true);
+      vi.advanceTimersByTime(1);
+      expect(has('Queued')).toBe(false);
+    });
+
+    it('issues each queue transition once', async () => {
+      const { toaster, settle } = queueSetup();
+      const pause = vi.spyOn(toaster, 'pauseTimer');
+      toaster.show({ message: 'Queued', duration: 5000 });
+      toaster.show({ message: 'Newer A', duration: 5000 });
+      toaster.show({ message: 'Newer B', duration: 5000 });
+      await settle();
+      expect(pause).toHaveBeenCalledTimes(1);
+
+      await settle();
+      await settle();
+      expect(pause).toHaveBeenCalledTimes(1);
+    });
+
+    it('releases the queue holds when the outlet is destroyed', async () => {
+      const { fixture, toaster, has, settle } = queueSetup();
+      toaster.show({ message: 'Queued', duration: 5000 });
+      toaster.show({ message: 'Newer A', duration: 60000 });
+      toaster.show({ message: 'Newer B', duration: 60000 });
+      await settle();
+
+      fixture.componentInstance.shown.set(false);
+      await settle();
+      vi.advanceTimersByTime(5000);
+      expect(has('Queued')).toBe(false);
     });
   });
 });

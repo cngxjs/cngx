@@ -4,17 +4,27 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
+  effect,
   inject,
   input,
   untracked,
   ViewEncapsulation,
 } from '@angular/core';
+import { setEqual } from '@cngx/utils';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 import { injectFeedbackI18n } from '../config/feedback-i18n';
 import { CngxSeverityIcon } from '../config/severity-icon';
 import type { TimerSegment } from '../internal/pausable-timer';
 import { CngxToaster, type ToastState } from './toast.service';
+
+const NO_QUEUE: ReadonlySet<number> = new Set();
+
+interface QueueState {
+  readonly hidden: ReadonlySet<number>;
+  readonly held: boolean;
+}
 
 /**
  * Position for the toast stack.
@@ -176,7 +186,11 @@ export class CngxToastOutlet {
   /** Stack position. */
   readonly position = input<ToastPosition>('bottom-end');
 
-  /** Maximum visible toasts - oldest are evicted. */
+  /**
+   * Maximum visible toasts. Toasts beyond it wait, with their timer held,
+   * until a visible one leaves; when every visible toast is persistent,
+   * queued toasts keep their timer running.
+   */
   readonly maxVisible = input<number>(3);
 
   /** Insert new toasts at start or end of the stack. */
@@ -195,6 +209,66 @@ export class CngxToastOutlet {
     },
     { equal: (a, b) => a.length === b.length && a.every((t, i) => t === b[i]) },
   );
+
+  /**
+   * @internal - ids kept out of view by `maxVisible`, and whether their timers
+   * are held. Not held while every visible toast is persistent: a held queue
+   * would never move.
+   */
+  private readonly queue = computed<QueueState>(
+    () => {
+      const visible = this.visibleToasts();
+      const shown = new Set(visible.map((t) => t.id));
+      const queued = this.service
+        .toasts()
+        .filter((t) => !shown.has(t.id))
+        .map((t) => t.id);
+      return {
+        hidden: queued.length === 0 ? NO_QUEUE : new Set(queued),
+        held: visible.some((t) => t.config.duration !== 'persistent'),
+      };
+    },
+    { equal: (a, b) => a.held === b.held && setEqual(a.hidden, b.hidden) },
+  );
+
+  constructor() {
+    const hidden = new Set<number>();
+    const held = new Set<number>();
+    effect(() => {
+      const queue = this.queue();
+      untracked(() => {
+        for (const id of queue.hidden) {
+          if (!hidden.has(id)) {
+            hidden.add(id);
+            // The removed element fires no pointerleave and no reliable focusout.
+            this.service.dropHolds(id, ['pointer', 'focus']);
+          }
+          if (queue.held && !held.has(id)) {
+            held.add(id);
+            this.service.pauseTimer(id, 'queue');
+          }
+        }
+        for (const id of hidden) {
+          if (!queue.hidden.has(id)) {
+            hidden.delete(id);
+          }
+        }
+        for (const id of held) {
+          if (!queue.held || !queue.hidden.has(id)) {
+            held.delete(id);
+            this.service.resumeTimer(id, 'queue');
+          }
+        }
+      });
+    });
+    inject(DestroyRef).onDestroy(() => {
+      for (const id of held) {
+        this.service.resumeTimer(id, 'queue');
+      }
+      held.clear();
+      hidden.clear();
+    });
+  }
 
   /** @internal - the toaster's countdown segments, the only timer source of the view. */
   protected readonly segments = this.service.timerSegments;
