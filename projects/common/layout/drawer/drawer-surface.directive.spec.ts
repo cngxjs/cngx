@@ -65,6 +65,23 @@ class TestHost {
 })
 class StaticNameHost {}
 
+@Component({
+  template: `
+    <aside cngxDrawerSurface [active]="true" modality="none" (dismiss)="outer()">
+      <button class="outer-inside">Outer</button>
+      <div popover="manual" class="menu"><button class="menu-item">Item</button></div>
+      <section cngxDrawerSurface [active]="true" modality="none" (dismiss)="inner()">
+        <button class="inner-inside">Inner</button>
+      </section>
+    </aside>
+  `,
+  imports: [CngxDrawerSurface],
+})
+class LayeredHost {
+  outer = vi.fn();
+  inner = vi.fn();
+}
+
 describe('CngxDrawerSurface', () => {
   let watchers: FakeWatcher[];
 
@@ -88,7 +105,7 @@ describe('CngxDrawerSurface', () => {
       destroy: vi.fn(),
     };
     TestBed.configureTestingModule({
-      imports: [TestHost, StaticNameHost],
+      imports: [TestHost, StaticNameHost, LayeredHost],
       providers: [{ provide: FocusTrapFactory, useValue: { create: vi.fn(() => mockTrap) } }],
     });
   });
@@ -330,6 +347,42 @@ describe('CngxDrawerSurface', () => {
       expect(labelledBy.getAttribute('role')).toBe('dialog');
       expect(labelledBy.hasAttribute('aria-label')).toBe(false);
       expect(labelled.getAttribute('aria-label')).toBe('Static name');
+    });
+  });
+
+  describe('Escape layers', () => {
+    function layered() {
+      const fixture = TestBed.createComponent(LayeredHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const root = fixture.nativeElement as HTMLElement;
+      const escapeOn = (sel: string) =>
+        (root.querySelector(sel) as HTMLElement).dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+        );
+      const menu = root.querySelector('.menu') as HTMLElement;
+      return { host: fixture.componentInstance, escapeOn, menu };
+    }
+
+    it('dismisses only the innermost surface', () => {
+      const { host, escapeOn } = layered();
+      escapeOn('.inner-inside');
+      expect(host.inner).toHaveBeenCalledTimes(1);
+      expect(host.outer).not.toHaveBeenCalled();
+    });
+
+    it('leaves the Escape to an open popover inside the host', () => {
+      const { host, escapeOn, menu } = layered();
+      const open = vi
+        .spyOn(menu, 'matches')
+        .mockImplementation((selector) => selector === ':popover-open');
+
+      escapeOn('.menu-item');
+      expect(host.outer).not.toHaveBeenCalled();
+
+      open.mockReturnValue(false);
+      escapeOn('.outer-inside');
+      expect(host.outer).toHaveBeenCalledTimes(1);
     });
   });
 

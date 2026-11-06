@@ -495,7 +495,10 @@ class BareHost {}
       (closed)="closedCount = closedCount + 1"
     >
       <nav [cngxDrawerPanel]="drawer" modality="none"><a href="#">Link</a></nav>
-      <main class="content"><button type="button">Content</button></main>
+      <main class="content">
+        <button type="button">Content</button>
+        <div popover="manual" class="menu"><button type="button">Item</button></div>
+      </main>
     </div>
   `,
   imports: [CngxDrawer, CngxDrawerPanel],
@@ -587,6 +590,18 @@ describe('CngxDrawer Escape with a panel', () => {
         expect(host.closedCount).toBe(1);
       });
     }
+
+    it(`keeps a ${label} drawer open while an open popover in the content takes Escape`, () => {
+      const { host, root } = setup(controlled);
+      const menu = root.querySelector('.menu') as HTMLElement;
+      vi.spyOn(menu, 'matches').mockImplementation((selector) => selector === ':popover-open');
+
+      escapeOn(menu.querySelector('button') as HTMLElement);
+      chromiumCloseRequest();
+
+      expect(host.changes).toEqual([]);
+      expect(host.closedCount).toBe(0);
+    });
 
     it(`closes a ${label} drawer on a back gesture`, () => {
       const { host } = setup(controlled);

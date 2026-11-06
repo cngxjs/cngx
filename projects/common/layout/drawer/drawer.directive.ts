@@ -12,6 +12,7 @@ import {
   type CngxDrawerHost,
   type CngxDrawerPanelPresentation,
 } from './drawer-host';
+import { claimEscape, escapeOwnedAbove } from './escape-layer';
 
 /**
  * Position from which the drawer panel slides in.
@@ -98,6 +99,7 @@ export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
 export class CngxDrawer implements CngxPanelTarget, CngxDrawerHost {
   /** @internal Host element ref. */
   readonly elementRef = inject(ElementRef<HTMLElement>);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
   /**
    * The `id` of the drawer's panel element. `CngxDrawerPanel` renders it as
@@ -160,12 +162,18 @@ export class CngxDrawer implements CngxPanelTarget, CngxDrawerHost {
 
   // The open panel's surface already closed the drawer for an Escape inside
   // it. A controlled drawer still reads the bound input as open until the
-  // owner writes it back, so a second close() here would emit twice.
+  // owner writes it back, so a second close() here would emit twice. An open
+  // popover inside the drawer (a menu in the content) takes the keypress
+  // first.
   protected handleEscape(event: Event): void {
+    if (!this.opened() || escapeOwnedAbove(event, this.host)) {
+      return;
+    }
     const panel = this.panelSlot.current()?.element;
     if (panel && event.target instanceof Node && panel.contains(event.target)) {
       return;
     }
+    claimEscape(event);
     this.close();
   }
 

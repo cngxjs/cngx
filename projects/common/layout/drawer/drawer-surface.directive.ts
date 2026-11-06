@@ -34,6 +34,7 @@ import { createCloseWatcher } from '@cngx/core/utils';
 
 import { injectLayoutI18n } from '../i18n/layout-i18n';
 import { createScrollLock } from '../scroll/scroll-lock-core';
+import { claimEscape, escapeOwnedAbove } from './escape-layer';
 import { createInertSiblings } from './inert-siblings';
 
 /**
@@ -93,12 +94,14 @@ const SCROLLING_OVERFLOW = new Set(['auto', 'scroll']);
  * The transient-surface behaviour of a drawer or an overlay rail, with an
  * explicit modality.
  *
- * While `active`, the surface asks to be dismissed on Escape (focus inside,
- * in every browser: the close Chromium derives from an Escape keypress is not
- * a back gesture and is dropped), on the platform back gesture
- * (`CloseWatcher`) and on a press outside the
+ * While `active`, the surface asks to be dismissed on Escape with focus
+ * inside (in every browser: the close Chromium derives from an Escape
+ * keypress is not a back gesture and is dropped), on the platform back
+ * gesture (`CloseWatcher`) and on a press outside the
  * host. A press on the element whose `aria-controls` names the host `id` is
- * not outside, so the trigger can toggle the surface itself. Focus returns
+ * not outside, so the trigger can toggle the surface itself. One Escape
+ * dismisses one layer: an inner surface or an open popover inside the host
+ * (a menu, a select panel) takes the keypress first. Focus returns
  * to the element focused at activation when the surface deactivates.
  *
  * `modality` decides how far the engaged surface takes over the page:
@@ -167,7 +170,7 @@ const SCROLLING_OVERFLOW = new Set(['auto', 'scroll']);
     '[attr.role]': 'surfaceRole()',
     '[attr.aria-modal]': "engagedPage() ? 'true' : null",
     '[attr.aria-label]': 'ariaLabel()',
-    '(keydown.escape)': 'handleEscape()',
+    '(keydown.escape)': 'handleEscape($event)',
   },
 })
 export class CngxDrawerSurface
@@ -370,10 +373,13 @@ export class CngxDrawerSurface
     return this.host.parentElement ?? this.doc.body;
   }
 
-  protected handleEscape(): void {
-    if (!this.isActive()) {
+  // An inner surface or an open popover inside the host takes the keypress
+  // first; one Escape dismisses one layer.
+  protected handleEscape(event: Event): void {
+    if (!this.isActive() || escapeOwnedAbove(event, this.host)) {
       return;
     }
+    claimEscape(event);
     this.emitDismiss();
   }
 
