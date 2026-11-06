@@ -6,9 +6,6 @@ import { gotoDemo } from '../../_helpers';
 // while typing and a bare / does not. Self scope only fires when focus is
 // inside the host.
 
-// `mod` resolves per platform: Cmd on a macOS runner, Ctrl on the Linux CI.
-const MOD_K = process.platform === 'darwin' ? 'Meta+K' : 'Control+K';
-
 test.describe('common/interactive/keyboard-shortcut', () => {
   test('global: Ctrl+K fires everywhere, / only outside the text field', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/gestures/keyboard-shortcut/global-shortcut');
@@ -23,16 +20,25 @@ test.describe('common/interactive/keyboard-shortcut', () => {
       .locator('.event-value');
     await expect(counter).toHaveText('0');
 
+    // `mod` follows the page's navigator (the device profile emulates it, not
+    // the host OS), read the way resolveMacPlatform reads it: UA Client Hints
+    // first, then navigator.platform.
+    const isMac = await page.evaluate(() => {
+      const hint = (navigator as { userAgentData?: { platform?: string } }).userAgentData?.platform;
+      return /mac|iphone|ipad|ipod/i.test(hint ? hint : navigator.platform);
+    });
+    const mod = isMac ? 'Meta' : 'Control';
+
     await expect(page.getByRole('button', { name: /Run command/ })).toHaveAttribute(
       'aria-keyshortcuts',
-      MOD_K,
+      `${mod}+K`,
     );
     await expect(page.getByRole('button', { name: /Focus search/ })).toHaveAttribute(
       'aria-keyshortcuts',
       '/',
     );
 
-    await page.keyboard.press('ControlOrMeta+k');
+    await page.keyboard.press(`${mod}+k`);
     await expect(counter).toHaveText('1');
     await page.keyboard.press('/');
     await expect(counter).toHaveText('2');
@@ -40,7 +46,7 @@ test.describe('common/interactive/keyboard-shortcut', () => {
 
     const input = page.getByRole('textbox');
     await input.focus();
-    await page.keyboard.press('ControlOrMeta+k');
+    await page.keyboard.press(`${mod}+k`);
     await expect(counter).toHaveText('3');
     await expect(last).toHaveText('Ctrl+K / Cmd+K');
 
