@@ -876,17 +876,16 @@ export class CngxSelectShell<T = unknown>
   protected readonly showCommitError = this.core.showCommitError;
 
   /**
-   * Virtualisation wire-up. Routes through `CNGX_PANEL_RENDERER_FACTORY`
-   * (override for recycler / custom virtualising renderers); the
-   * default identity renderer reads `core.flatOptions` and leaves
-   * `virtualItemCount()` `undefined` so AD's setsize falls back to
-   * projected-options length. AD↔recycler scroll bridge wired inside.
+   * Virtualisation wire-up. The options are consumer-projected, so no renderer
+   * slice can take a row out of the DOM and `virtualization` config does not
+   * apply: the shell never windows and AD sees a plain list at any size. A
+   * `CNGX_PANEL_RENDERER_FACTORY` override still routes through here.
    */
   private readonly virtualSetup = setupVirtualization<T, T>({
     core: this.core,
     popoverRef: this.popoverRef,
     listboxRef: this.listboxRef,
-    virtualization: this.config.virtualization,
+    virtualization: null,
     presentation: this.sheetWiring.presentation,
     listboxElement: computed(() => this.listboxEl()?.nativeElement),
   });

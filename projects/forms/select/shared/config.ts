@@ -741,6 +741,9 @@ export function withMaxVisibleChips(count: number): CngxSelectConfigFeature {
  * )
  * provideSelectConfig(withVirtualization(false)) // opt out
  * ```
+ *
+ * Does not apply to `CngxSelectShell`: its options are projected, so every row
+ * stays in the DOM whatever the config says.
  */
 export function withVirtualization(
   config: CngxSelectVirtualizationConfig | boolean | null = true,
