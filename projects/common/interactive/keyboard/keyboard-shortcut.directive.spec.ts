@@ -2,6 +2,8 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { CNGX_HOTKEY_REGISTRY } from './hotkeys/hotkey-registry';
+import { CngxHotkeyScope } from './hotkeys/hotkey-scope.directive';
 import { CngxKeyboardShortcut } from './keyboard-shortcut.directive';
 
 @Component({
@@ -10,6 +12,9 @@ import { CngxKeyboardShortcut } from './keyboard-shortcut.directive';
       [cngxKeyboardShortcut]="shortcut()"
       [shortcutScope]="scope()"
       [enabled]="enabled()"
+      [shortcutId]="id()"
+      [shortcutDescription]="description()"
+      [shortcutGroup]="group()"
       (shortcutTriggered)="handleShortcut($event)"
     >
       Action
@@ -21,6 +26,9 @@ class TestHost {
   readonly shortcut = signal('mod+s');
   readonly scope = signal<'global' | 'self'>('global');
   readonly enabled = signal(true);
+  readonly id = signal<string | undefined>(undefined);
+  readonly description = signal<string | undefined>(undefined);
+  readonly group = signal<string | undefined>(undefined);
   triggerCount = 0;
   lastEvent: KeyboardEvent | null = null;
 
@@ -30,8 +38,33 @@ class TestHost {
   }
 }
 
+@Component({
+  template: `
+    <section cngxHotkeyScope [cngxHotkeyScopeActive]="active()">
+      <button [cngxKeyboardShortcut]="'mod+s'" (shortcutTriggered)="count = count + 1">Save</button>
+    </section>
+  `,
+  imports: [CngxKeyboardShortcut, CngxHotkeyScope],
+})
+class ScopedHost {
+  readonly active = signal(true);
+  count = 0;
+}
+
+@Component({
+  template: `
+    <button [cngxKeyboardShortcut]="'mod+j'" (shortcutTriggered)="fired.push('j')">J</button>
+    <button [cngxKeyboardShortcut]="'mod+k'" (shortcutTriggered)="fired.push('k')">K</button>
+    <button [cngxKeyboardShortcut]="'mod+l'" (shortcutTriggered)="fired.push('l')">L</button>
+  `,
+  imports: [CngxKeyboardShortcut],
+})
+class TripleHost {
+  readonly fired: string[] = [];
+}
+
 describe('CngxKeyboardShortcut', () => {
-  beforeEach(() => TestBed.configureTestingModule({ imports: [TestHost] }));
+  beforeEach(() => TestBed.configureTestingModule({ imports: [TestHost, ScopedHost, TripleHost] }));
 
   function setup() {
     const fixture = TestBed.createComponent(TestHost);
@@ -73,14 +106,104 @@ describe('CngxKeyboardShortcut', () => {
     expect(fixture.componentInstance.triggerCount).toBe(0);
   });
 
-  it('does not fire global shortcut when focus is in input element', () => {
+  it('fires a modifier combo while focus is in a text field', () => {
     const { fixture } = setup();
     const input = document.createElement('input');
     document.body.appendChild(input);
     input.focus();
     dispatchKeydown(input, 's', { ctrlKey: true });
-    expect(fixture.componentInstance.triggerCount).toBe(0);
+    expect(fixture.componentInstance.triggerCount).toBe(1);
     document.body.removeChild(input);
+  });
+
+  it('keeps a bare key silent while focus is in a text field', () => {
+    const { fixture } = setup();
+    fixture.componentInstance.shortcut.set('/');
+    fixture.detectChanges();
+    const input = document.createElement('input');
+    document.body.appendChild(input);
+    dispatchKeydown(input, '/');
+    expect(fixture.componentInstance.triggerCount).toBe(0);
+    dispatchKeydown(document, '/');
+    expect(fixture.componentInstance.triggerCount).toBe(1);
+    document.body.removeChild(input);
+  });
+
+  it('fires a self-scoped escape from a text field inside the host', () => {
+    const { fixture, button } = setup();
+    fixture.componentInstance.shortcut.set('escape');
+    fixture.componentInstance.scope.set('self');
+    fixture.detectChanges();
+    const input = document.createElement('input');
+    (button.nativeElement as HTMLElement).appendChild(input);
+    dispatchKeydown(input, 'Escape');
+    expect(fixture.componentInstance.triggerCount).toBe(1);
+  });
+
+  it('keeps a self-scoped bare key silent in a text field inside the host', () => {
+    const { fixture, button } = setup();
+    fixture.componentInstance.shortcut.set('x');
+    fixture.componentInstance.scope.set('self');
+    fixture.detectChanges();
+    const host = button.nativeElement as HTMLElement;
+    const input = document.createElement('input');
+    host.appendChild(input);
+    dispatchKeydown(input, 'x');
+    expect(fixture.componentInstance.triggerCount).toBe(0);
+    dispatchKeydown(host, 'x');
+    expect(fixture.componentInstance.triggerCount).toBe(1);
+  });
+
+  it('sets aria-keyshortcuts while enabled and drops it while disabled', () => {
+    const { fixture, button } = setup();
+    const host = button.nativeElement as HTMLElement;
+    expect(host.getAttribute('aria-keyshortcuts')).toBe('Control+S');
+
+    fixture.componentInstance.shortcut.set('mod+shift+?');
+    fixture.detectChanges();
+    expect(host.getAttribute('aria-keyshortcuts')).toBe('Control+Shift+?');
+
+    fixture.componentInstance.enabled.set(false);
+    fixture.detectChanges();
+    expect(host.hasAttribute('aria-keyshortcuts')).toBe(false);
+  });
+
+  it('drops aria-keyshortcuts and stays silent inside an inactive hotkey scope', () => {
+    const fixture = TestBed.createComponent(ScopedHost);
+    fixture.detectChanges();
+    const button = (fixture.nativeElement as HTMLElement).querySelector('button') as HTMLElement;
+    expect(button.getAttribute('aria-keyshortcuts')).toBe('Control+S');
+
+    fixture.componentInstance.active.set(false);
+    fixture.detectChanges();
+    dispatchKeydown(document, 's', { ctrlKey: true });
+    expect(button.hasAttribute('aria-keyshortcuts')).toBe(false);
+    expect(fixture.componentInstance.count).toBe(0);
+  });
+
+  it('shares one document listener between directive instances', () => {
+    const add = vi.spyOn(document, 'addEventListener');
+    const fixture = TestBed.createComponent(TripleHost);
+    fixture.detectChanges();
+    expect(add.mock.calls.filter((call) => call[0] === 'keydown')).toHaveLength(1);
+
+    dispatchKeydown(document, 'k', { ctrlKey: true });
+    expect(fixture.componentInstance.fired).toEqual(['k']);
+    add.mockRestore();
+  });
+
+  it('lists a described shortcut under its id and group', () => {
+    const { fixture } = setup();
+    fixture.componentInstance.id.set('editor.save');
+    fixture.componentInstance.description.set('Save');
+    fixture.componentInstance.group.set('Editing');
+    fixture.detectChanges();
+    expect(TestBed.inject(CNGX_HOTKEY_REGISTRY).liveGroupsFor(null)).toEqual([
+      {
+        group: 'Editing',
+        bindings: [{ id: 'editor.save', combo: 'mod+s', description: 'Save', group: 'Editing' }],
+      },
+    ]);
   });
 
   it('fires escape shortcut', () => {
