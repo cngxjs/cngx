@@ -224,6 +224,65 @@ function sameGroups(a: readonly CngxHotkeyGroup[], b: readonly CngxHotkeyGroup[]
   );
 }
 
+// Module scope on purpose: the production build drops an unused top-level
+// function with its cngxDevWarn import, but not one nested in a closure.
+/** Dev-only checks of a binding's current combo at registration. */
+function warnRegistration(
+  binding: CngxHotkeyBinding,
+  combo: KeyCombo | null,
+  isMac: boolean,
+): void {
+  if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
+    return;
+  }
+  const raw = read(binding.combo);
+  if (combo === null) {
+    cngxDevWarn(
+      'CNGX1080',
+      `createHotkeyRegistry(): hotkey "${binding.id}" has the unparseable combo "${raw}"; it never fires.`,
+      { id: binding.id, combo: raw },
+    );
+    return;
+  }
+  if (isReservedHotkey(combo, isMac)) {
+    cngxDevWarn(
+      'CNGX1078',
+      `createHotkeyRegistry(): hotkey "${binding.id}" uses "${raw}", which the browser handles before the page.`,
+      { id: binding.id, combo: raw },
+    );
+  }
+  if (isAltGrRiskHotkey(combo)) {
+    cngxDevWarn(
+      'CNGX1079',
+      `createHotkeyRegistry(): hotkey "${binding.id}" uses "${raw}"; Ctrl+Alt is AltGr on Windows and Linux, so it never fires on layouts that type characters with AltGr.`,
+      { id: binding.id, combo: raw },
+    );
+  }
+}
+
+/** Dev-only, once per id pair: two live bindings matched one press at the same depth. */
+function warnTie(
+  winner: CngxHotkeyBinding,
+  others: readonly CngxHotkeyBinding[],
+  warnedTies: Set<string>,
+): void {
+  if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
+    return;
+  }
+  for (const other of others) {
+    const pair = [winner.id, other.id].sort().join('\u0000');
+    if (warnedTies.has(pair)) {
+      continue;
+    }
+    warnedTies.add(pair);
+    cngxDevWarn(
+      'CNGX1077',
+      `createHotkeyRegistry(): hotkeys "${other.id}" and "${winner.id}" both matched one press at the same scope depth; "${winner.id}" (registered last) runs.`,
+      { winner: winner.id, shadowed: other.id },
+    );
+  }
+}
+
 /**
  * Creates the document keymap. Pure and DI-agnostic: every input arrives
  * through `deps`, so a spec or a replacement registry builds one without an
@@ -264,56 +323,6 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
   const warnedTies = new Set<string>();
   let listening = false;
   let destroyed = false;
-
-  /** Dev-only checks of a binding's current combo at registration. */
-  function warnRegistration(binding: CngxHotkeyBinding): void {
-    if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
-      return;
-    }
-    const raw = read(binding.combo);
-    const combo = comboOf(binding);
-    if (combo === null) {
-      cngxDevWarn(
-        'CNGX1080',
-        `createHotkeyRegistry(): hotkey "${binding.id}" has the unparseable combo "${raw}"; it never fires.`,
-        { id: binding.id, combo: raw },
-      );
-      return;
-    }
-    if (isReservedHotkey(combo, isMac)) {
-      cngxDevWarn(
-        'CNGX1078',
-        `createHotkeyRegistry(): hotkey "${binding.id}" uses "${raw}", which the browser handles before the page.`,
-        { id: binding.id, combo: raw },
-      );
-    }
-    if (isAltGrRiskHotkey(combo)) {
-      cngxDevWarn(
-        'CNGX1079',
-        `createHotkeyRegistry(): hotkey "${binding.id}" uses "${raw}"; Ctrl+Alt is AltGr on Windows and Linux, so it never fires on layouts that type characters with AltGr.`,
-        { id: binding.id, combo: raw },
-      );
-    }
-  }
-
-  /** Dev-only, once per id pair: two live bindings matched one press at the same depth. */
-  function warnTie(winner: CngxHotkeyBinding, others: readonly CngxHotkeyBinding[]): void {
-    if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
-      return;
-    }
-    for (const other of others) {
-      const pair = [winner.id, other.id].sort().join('\u0000');
-      if (warnedTies.has(pair)) {
-        continue;
-      }
-      warnedTies.add(pair);
-      cngxDevWarn(
-        'CNGX1077',
-        `createHotkeyRegistry(): hotkeys "${other.id}" and "${winner.id}" both matched one press at the same scope depth; "${winner.id}" (registered last) runs.`,
-        { winner: winner.id, shadowed: other.id },
-      );
-    }
-  }
 
   function comboOf(binding: CngxHotkeyBinding): KeyCombo | null {
     const combo = read(binding.combo);
@@ -389,7 +398,7 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
     }
     if (winner !== null) {
       if (typeof ngDevMode !== 'undefined' && ngDevMode && tied.length > 0) {
-        warnTie(winner.binding, tied);
+        warnTie(winner.binding, tied, warnedTies);
       }
       event.preventDefault();
       winner.binding.run(event);
@@ -421,7 +430,7 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
     registrations.register(key, entry);
     syncListener();
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-      untracked(source).forEach((binding) => warnRegistration(binding));
+      untracked(source).forEach((binding) => warnRegistration(binding, comboOf(binding), isMac));
     }
     return {
       unregister: () => {
