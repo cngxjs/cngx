@@ -8,11 +8,25 @@ import {
   type OnInit,
   output,
 } from '@angular/core';
-import { nextUid, parseKeyCombo, resolveAriaKeyShortcuts } from '@cngx/core/utils';
+import { nextUid, resolveAriaKeyShortcuts } from '@cngx/core/utils';
 
 import type { CngxHotkeyBinding } from './hotkeys/hotkey-binding';
+import { parseHotkeyCombo } from './hotkeys/hotkey-combo';
 import { injectHotkeyRegistry } from './hotkeys/hotkey-registry';
 import { CNGX_HOTKEY_SCOPE, createHotkeyScope } from './hotkeys/hotkey-scope';
+
+function sameBinding(
+  [a]: readonly CngxHotkeyBinding[],
+  [b]: readonly CngxHotkeyBinding[],
+): boolean {
+  return (
+    a.id === b.id &&
+    a.combo === b.combo &&
+    a.reach === b.reach &&
+    a.description === b.description &&
+    a.group === b.group
+  );
+}
 
 /**
  * Declarative keyboard shortcut on the app's hotkey registry.
@@ -92,27 +106,33 @@ export class CngxKeyboardShortcut implements OnInit {
     destroyRef: this.destroyRef,
   });
 
-  private readonly bindings = computed<readonly CngxHotkeyBinding[]>(() => {
-    const description = this.description();
-    const group = this.group();
-    return [
-      {
-        id: this.bindingId() ?? this.defaultId,
-        combo: this.shortcut(),
-        enabled: this.enabled,
-        reach: this.scope() === 'self' ? 'focus' : 'global',
-        run: (event: KeyboardEvent) => this.shortcutTriggered.emit(event),
-        ...(description === undefined ? {} : { description }),
-        ...(group === undefined ? {} : { group }),
-      },
-    ];
-  });
+  private readonly emit = (event: KeyboardEvent): void => this.shortcutTriggered.emit(event);
 
-  protected readonly ariaKeyShortcuts = computed(() =>
-    this.enabled() && !this.hostScope.muted()
-      ? resolveAriaKeyShortcuts(parseKeyCombo(this.shortcut()), this.registry.isMac)
-      : null,
+  private readonly bindings = computed<readonly CngxHotkeyBinding[]>(
+    () => {
+      const description = this.description();
+      const group = this.group();
+      return [
+        {
+          id: this.bindingId() ?? this.defaultId,
+          combo: this.shortcut(),
+          enabled: this.enabled,
+          reach: this.scope() === 'self' ? 'focus' : 'global',
+          run: this.emit,
+          ...(description === undefined ? {} : { description }),
+          ...(group === undefined ? {} : { group }),
+        },
+      ];
+    },
+    { equal: sameBinding },
   );
+
+  protected readonly ariaKeyShortcuts = computed(() => {
+    const combo = parseHotkeyCombo(this.shortcut());
+    return combo !== null && this.enabled() && !this.hostScope.muted()
+      ? resolveAriaKeyShortcuts(combo, this.registry.isMac)
+      : null;
+  });
 
   ngOnInit(): void {
     // Registered once the inputs are bound: the registry reads the source at

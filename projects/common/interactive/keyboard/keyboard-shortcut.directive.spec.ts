@@ -191,6 +191,29 @@ describe('CngxKeyboardShortcut', () => {
     expect(host.hasAttribute('aria-keyshortcuts')).toBe(false);
   });
 
+  it('advertises no aria-keyshortcuts for a combo the registry rejects', () => {
+    const { fixture, button } = setup();
+    fixture.componentInstance.shortcut.set('hyper+k');
+    fixture.detectChanges();
+    expect((button.nativeElement as HTMLElement).hasAttribute('aria-keyshortcuts')).toBe(false);
+    dispatchKeydown(document, 'k');
+    expect(fixture.componentInstance.triggerCount).toBe(0);
+  });
+
+  it('keeps the listed entry stable when an input is re-bound to the same value', () => {
+    const { fixture } = setup();
+    fixture.componentInstance.description.set('Save');
+    fixture.detectChanges();
+    const registry = TestBed.inject(CNGX_HOTKEY_REGISTRY);
+    const first = registry.liveGroupsFor(null);
+
+    fixture.componentInstance.description.set('Save');
+    fixture.componentInstance.enabled.set(true);
+    fixture.detectChanges();
+
+    expect(registry.liveGroupsFor(null)).toBe(first);
+  });
+
   it('drops aria-keyshortcuts and stays silent inside an inactive hotkey scope', () => {
     const fixture = TestBed.createComponent(ScopedHost);
     fixture.detectChanges();

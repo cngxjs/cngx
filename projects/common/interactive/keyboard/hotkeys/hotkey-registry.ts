@@ -16,11 +16,11 @@ import {
   type KeyCombo,
   matchesKeyCombo,
   nextUid,
-  parseKeyCombo,
   resolveMacPlatform,
 } from '@cngx/core/utils';
 
 import type { CngxHotkeyBinding, CngxHotkeyRef, CngxHotkeyRegistration } from './hotkey-binding';
+import { parseHotkeyCombo } from './hotkey-combo';
 import {
   CNGX_HOTKEY_SCOPE,
   resolveHotkeyScopeChain,
@@ -136,7 +136,6 @@ interface Candidate {
   readonly rank: number;
 }
 
-const MODIFIERS = new Set(['ctrl', 'meta', 'mod', 'shift', 'alt']);
 const TEXT_INPUT_TYPES = new Set(['text', 'search', 'email', 'url', 'tel', 'password', 'number']);
 const FUNCTION_KEY = /^f([1-9]|1\d|2[0-4])$/;
 const EDITABLE = '[contenteditable]:not([contenteditable="false"])';
@@ -144,25 +143,6 @@ const TEXT_ROLES = '[role="textbox"], [role="searchbox"]';
 
 function read<T>(value: T | Signal<T>): T {
   return isSignal(value) ? value() : value;
-}
-
-/**
- * `parseKeyCombo` reads anything; the registry only accepts well-formed
- * combos, so a typo like `'hyper+k'` never fires on a bare `k`.
- */
-function parseHotkeyCombo(combo: string): KeyCombo | null {
-  const segments = combo
-    .toLowerCase()
-    .split('+')
-    .map((s) => s.trim());
-  // 'mod++' -> ['mod', '', '']: the last two empty segments are the plus key.
-  const plusKey = segments.length >= 2 && segments.at(-1) === '' && segments.at(-2) === '';
-  const modifiers = plusKey ? segments.slice(0, -2) : segments.slice(0, -1);
-  const key = plusKey ? '+' : (segments.at(-1) ?? '');
-  if (key === '' || MODIFIERS.has(key) || modifiers.some((m) => !MODIFIERS.has(m))) {
-    return null;
-  }
-  return parseKeyCombo(combo);
 }
 
 function isTextEntry(target: EventTarget | null): boolean {
