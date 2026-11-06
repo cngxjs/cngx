@@ -361,7 +361,7 @@ describe('CngxDrawerPanel', () => {
     });
 
     for (const requested of ['page', 'contained'] as const) {
-      it(`resolves push with modality="${requested}" to none and warns CNGX1075`, () => {
+      it(`resolves push with modality="${requested}" to none and warns CNGX1076`, () => {
         const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
         const ctx = setup();
         ctx.host.mode.set('push');
@@ -374,7 +374,7 @@ describe('CngxDrawerPanel', () => {
         expect(ctx.fixture.nativeElement.querySelector('.content').hasAttribute('inert')).toBe(
           false,
         );
-        const calls = warn.mock.calls.filter(([msg]) => /^CNGX1075: /.test(String(msg)));
+        const calls = warn.mock.calls.filter(([msg]) => /^CNGX1076: /.test(String(msg)));
         expect(calls).toHaveLength(1);
       });
     }
@@ -385,7 +385,7 @@ describe('CngxDrawerPanel', () => {
       ctx.host.mode.set('push');
       ctx.host.modality.set('none');
       open(ctx);
-      const calls = warn.mock.calls.filter(([msg]) => /^CNGX1075: /.test(String(msg)));
+      const calls = warn.mock.calls.filter(([msg]) => /^CNGX1076: /.test(String(msg)));
       expect(calls).toHaveLength(0);
     });
 

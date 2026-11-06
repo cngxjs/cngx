@@ -3,7 +3,7 @@
  * Default visuals for `CngxToastOutlet`. The host carries
  * `.cngx-toast-outlet` and is fixed-positioned with `z-index: 9999`
  * so toasts overlay dialogs and popovers. Each toast renders as
- * `.cngx-toast` with `__icon`, `__body`, `__message`, `__title`,
+ * `.cngx-toast` with `__icon`, `__body`, `__text`, `__message`, `__title`,
  * `__description`, `__count`, `__action`, and `__dismiss` children.
  * Toasts use their own `--cngx-toast-*` namespace, separate from
  * alert and banner so the three feedback channels can be themed
@@ -19,7 +19,9 @@
  *
  * **Variants**
  *
- * Severity classes paint the leading-edge stripe and the icon color:
+ * The toast draws on the overlay surface (a 1px alpha border plus the
+ * popover-panel shadow) and carries no severity stripe. Each severity
+ * class sets `--cngx-toast-accent`, which the glyph and the action read:
  *
  * - `.cngx-toast--info` - info accent
  * - `.cngx-toast--success` - success accent
@@ -36,8 +38,15 @@
  * - `.cngx-toast__description` - secondary copy, line-clamped via
  *   `--cngx-toast-description-max-lines` (default 3)
  * - `.cngx-toast__count` - trailing message-count badge (muted text colour)
- * - `.cngx-toast__action` - underlined inline action button
+ * - `.cngx-toast__text` - text block (title, message or projected body,
+ *   count) next to the action
+ * - `.cngx-toast__action` - outlined action button trailing the text
+ *   block, centred on it; label and border mix
+ *   `--cngx-toast-accent` into the text colour for 4.5:1
  * - `.cngx-toast__dismiss` - dismiss control
+ *
+ * A toast without a title centres icon, text, action and dismiss on one
+ * line; with a title the icon and dismiss stay level with the title.
  *
  * Toasts enter via 200ms `cngx-toast-enter`; the animation no-ops
  * under `prefers-reduced-motion`.
@@ -46,14 +55,20 @@
  *
  * - `--cngx-toast-bg` -> `--cngx-color-surface`
  * - `--cngx-toast-color` -> `--cngx-color-text`
+ * - `--cngx-toast-accent` -> `--cngx-toast-{severity}-accent`
+ * - `--cngx-toast-action-color` -> `--cngx-toast-accent` mixed 60%
+ *   into `--cngx-color-text`
+ * - `--cngx-toast-actions-gap` -> `--cngx-space-sm`
+ * - `--cngx-toast-action-padding` -> `--cngx-space-xs` / `--cngx-space-sm`
  *
  * **Dark mode**
  *
- * Three hooks deepen the drop shadow, re-resolve every severity
- * accent from the shared `--cngx-feedback-{severity}-icon` (the core
- * `--cngx-color-{info,success,warning,danger}` mixed 90% into the text
- * colour, the same glyph colour as the alert and banner), and lift the
- * description text to the cool muted ramp:
+ * Three hooks flip the border to alpha-on-white, deepen the drop
+ * shadow, flip the action hover overlay to alpha-on-white, re-resolve
+ * every severity accent from the shared `--cngx-feedback-{severity}-icon`
+ * (the core `--cngx-color-{info,success,warning,danger}` mixed 90% into
+ * the text colour, the same glyph colour as the alert and banner), and
+ * lift the description text to the cool muted ramp:
  *
  * - `prefers-color-scheme: dark`
  * - `[data-color-scheme="dark"]`
@@ -160,7 +175,19 @@
   @property --cngx-toast-shadow {
     syntax: '*';
     inherits: true;
-    initial-value: 0 4px 12px oklch(0 0 0 / 0.15);
+    initial-value: 0 8px 24px oklch(0 0 0 / 0.12);
+  }
+
+  /**
+   * Border shorthand of each toast. The real border keeps the overlay
+   * edge visible under forced colors, where the shadow is dropped.
+   * @group Surface
+   */
+  @property --cngx-toast-border {
+    syntax: '*';
+    /* Set on :root and the scheme hooks, read on the .cngx-toast descendant. */
+    inherits: true;
+    initial-value: 1px solid oklch(0 0 0 / 0.08);
   }
 
   /**
@@ -198,17 +225,19 @@
   }
 
   /**
-   * Width of the leading-edge severity stripe.
+   * Severity accent the glyph and the action derive from. Set by each
+   * `.cngx-toast--{severity}` rule from `--cngx-toast-{severity}-accent`;
+   * theme the per-severity tokens, not this hook.
    * @group Surface
    */
-  @property --cngx-toast-accent-width {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 3px;
+  @property --cngx-toast-accent {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
   }
 
   /**
-   * Severity stripe and icon of the info variant. Delegates to the
+   * Glyph and action accent of the info variant. Delegates to the
    * shared `--cngx-feedback-info-icon` (`--cngx-color-info` mixed
    * 90% into the text colour), the alert and banner glyph colour.
    * @group Variant / Info
@@ -220,7 +249,7 @@
   }
 
   /**
-   * Severity stripe and icon of the success variant. Delegates to the
+   * Glyph and action accent of the success variant. Delegates to the
    * shared `--cngx-feedback-success-icon` (`--cngx-color-success` mixed
    * 90% into the text colour), the alert and banner glyph colour.
    * @group Variant / Success
@@ -232,7 +261,7 @@
   }
 
   /**
-   * Severity stripe and icon of the warning variant. Delegates to the
+   * Glyph and action accent of the warning variant. Delegates to the
    * shared `--cngx-feedback-warning-icon` (`--cngx-color-warning` mixed
    * 90% into the text colour), the alert and banner glyph colour.
    * @group Variant / Warning
@@ -244,7 +273,7 @@
   }
 
   /**
-   * Severity stripe and icon of the error variant. Delegates to the
+   * Glyph and action accent of the error variant. Delegates to the
    * shared `--cngx-feedback-error-icon` (`--cngx-color-danger` mixed
    * 90% into the text colour), the alert and banner glyph colour.
    * @group Variant / Error
@@ -357,18 +386,63 @@
   }
 
   /**
-   * Padding shorthand of the inline action button.
+   * Gap between the text block and the trailing action.
    * @group Layout
+   */
+  @property --cngx-toast-actions-gap {
+    syntax: '<length>';
+    /* Read on the __action descendant; inherits so the outlet :scope SET reaches it. */
+    inherits: true;
+    initial-value: 8px;
+  }
+
+  /**
+   * Padding shorthand of the action button.
+   * @group State / Action
    */
   @property --cngx-toast-action-padding {
     syntax: '*';
     /* Read on the __action descendant; inherits so the outlet :scope SET reaches it. */
     inherits: true;
-    initial-value: 4px 0;
+    initial-value: 4px 8px;
   }
 
   /**
-   * Font-weight of the inline action button.
+   * Corner radius of the action button.
+   * @group State / Action
+   */
+  @property --cngx-toast-action-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Label and border color of the action button. Unset by default, so
+   * the use site derives it from `--cngx-toast-accent` mixed 60% into
+   * the text color: the pure accent misses 4.5:1 on the light surface.
+   * Pin it to `--cngx-toast-accent` to paint the action in the pure
+   * accent again (the Material 3 bridge does).
+   * @group State / Action
+   * @default color-mix(in oklab, var(--cngx-toast-accent) 60%, var(--cngx-color-text))
+   */
+  @property --cngx-toast-action-color {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Background tint applied on hover of the action button.
+   * @group State / Action
+   */
+  @property --cngx-toast-action-hover-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.04);
+  }
+
+  /**
+   * Font-weight of the action button.
    * @group Typography
    */
   @property --cngx-toast-action-weight {
@@ -378,7 +452,7 @@
   }
 
   /**
-   * Font-size of the inline action button.
+   * Font-size of the action button.
    * @group Typography
    */
   @property --cngx-toast-action-size {
@@ -388,9 +462,11 @@
   }
 
   /* Color-scheme defaults. Toast bg + text delegate to foundation
-   * surface/text so a brand swap cascades. Shadow flips to a darker
-   * drop on dark surfaces (oklch alpha 0.15 → 0.5 reads as a deeper
-   * cast that survives the lower-contrast surface). Severity accents
+   * surface/text so a brand swap cascades. Border and shadow are the
+   * popover-panel overlay pair: the border flips to alpha-on-white and
+   * the shadow to a darker drop on dark surfaces (oklch alpha 0.12 → 0.5
+   * reads as a deeper cast that survives the lower-contrast surface); the
+   * action hover overlay flips the same way. Severity accents
    * delegate to the shared `--cngx-feedback-{severity}-icon` so a
    * severity paints the same glyph colour as the alert and banner,
    * declared per block because the registered colour resolves where it
@@ -399,7 +475,9 @@
   :root {
     --cngx-toast-bg: var(--cngx-color-surface);
     --cngx-toast-color: var(--cngx-color-text);
-    --cngx-toast-shadow: 0 4px 12px oklch(0 0 0 / 0.15);
+    --cngx-toast-border: 1px solid oklch(0 0 0 / 0.08);
+    --cngx-toast-shadow: 0 8px 24px oklch(0 0 0 / 0.12);
+    --cngx-toast-action-hover-bg: oklch(0 0 0 / 0.04);
     --cngx-toast-info-accent: var(--cngx-feedback-info-icon, oklch(0.6 0.11 240));
     --cngx-toast-success-accent: var(--cngx-feedback-success-icon, oklch(0.56 0.135 145));
     --cngx-toast-warning-accent: var(--cngx-feedback-warning-icon, oklch(0.67 0.135 75));
@@ -409,7 +487,9 @@
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-toast-border: 1px solid oklch(1 0 0 / 0.12);
       --cngx-toast-shadow: 0 8px 24px oklch(0 0 0 / 0.5);
+      --cngx-toast-action-hover-bg: oklch(1 0 0 / 0.06);
       --cngx-toast-info-accent: var(--cngx-feedback-info-icon, oklch(0.74 0.1 240));
       --cngx-toast-success-accent: var(--cngx-feedback-success-icon, oklch(0.71 0.126 145));
       --cngx-toast-warning-accent: var(--cngx-feedback-warning-icon, oklch(0.8 0.125 75));
@@ -420,7 +500,9 @@
 
   [data-color-scheme='dark'],
   .dark {
+    --cngx-toast-border: 1px solid oklch(1 0 0 / 0.12);
     --cngx-toast-shadow: 0 8px 24px oklch(0 0 0 / 0.5);
+    --cngx-toast-action-hover-bg: oklch(1 0 0 / 0.06);
     --cngx-toast-info-accent: var(--cngx-feedback-info-icon, oklch(0.74 0.1 240));
     --cngx-toast-success-accent: var(--cngx-feedback-success-icon, oklch(0.71 0.126 145));
     --cngx-toast-warning-accent: var(--cngx-feedback-warning-icon, oklch(0.8 0.125 75));
@@ -430,7 +512,9 @@
 
   [data-color-scheme='light'],
   .light {
-    --cngx-toast-shadow: 0 4px 12px oklch(0 0 0 / 0.15);
+    --cngx-toast-border: 1px solid oklch(0 0 0 / 0.08);
+    --cngx-toast-shadow: 0 8px 24px oklch(0 0 0 / 0.12);
+    --cngx-toast-action-hover-bg: oklch(0 0 0 / 0.04);
     --cngx-toast-info-accent: var(--cngx-feedback-info-icon, oklch(0.6 0.11 240));
     --cngx-toast-success-accent: var(--cngx-feedback-success-icon, oklch(0.56 0.135 145));
     --cngx-toast-warning-accent: var(--cngx-feedback-warning-icon, oklch(0.67 0.135 75));
@@ -445,15 +529,16 @@
       /* Derive toast spacing from the global scale (SET-from-scale rule; the
          registered pixel initial defeats a use-site fallback). gap and
          outlet-padding are read on the host; inner-gap / padding /
-         action-padding are read on the .cngx-toast descendant and are
+         actions-gap / action-padding are read on descendants and are
          inherits:true so the SET cascades from the outlet. Rungs per the audit:
          gap 8 -> sm; outlet-padding 16 -> md; inner-gap 10 -> sm (10 -> 8);
-         padding 12/16 -> sm/md; action-padding 4/0 -> xs/0 (0 kept literal). */
+         padding 12/16 -> sm/md; actions-gap 8 -> sm; action-padding 4/8 -> xs/sm. */
       --cngx-toast-gap: var(--cngx-space-sm);
       --cngx-toast-outlet-padding: var(--cngx-space-md);
       --cngx-toast-inner-gap: var(--cngx-space-sm);
       --cngx-toast-padding: var(--cngx-space-sm) var(--cngx-space-md);
-      --cngx-toast-action-padding: var(--cngx-space-xs) 0;
+      --cngx-toast-actions-gap: var(--cngx-space-sm);
+      --cngx-toast-action-padding: var(--cngx-space-xs) var(--cngx-space-sm);
       position: fixed;
       z-index: var(--cngx-toast-z-index, 9999);
       display: flex;
@@ -497,47 +582,39 @@
       align-items: flex-start;
       gap: var(--cngx-toast-inner-gap, 10px);
       padding: var(--cngx-toast-padding, 12px 16px);
+      border: var(--cngx-toast-border, 1px solid oklch(0 0 0 / 0.08));
       border-radius: var(--cngx-toast-border-radius, 8px);
       background: var(--cngx-toast-bg, oklch(1 0 0));
       color: var(--cngx-toast-color, oklch(0.25 0.015 250));
-      box-shadow: var(--cngx-toast-shadow, 0 4px 12px oklch(0 0 0 / 0.15));
+      box-shadow: var(--cngx-toast-shadow, 0 8px 24px oklch(0 0 0 / 0.12));
       pointer-events: auto;
       animation: cngx-toast-enter var(--cngx-toast-enter-duration, 200ms)
         var(--cngx-toast-enter-easing, ease-out);
     }
 
+    /* A toast without a title is one text line (or a projected body): icon,
+       text, action and dismiss share one centre line. With a title the icon
+       and dismiss stay level with the title line. */
+    .cngx-toast:not(:has(.cngx-toast__title)) {
+      align-items: center;
+    }
+
     .cngx-toast--info {
-      border-inline-start: var(--cngx-toast-accent-width, 3px) solid
-        var(--cngx-toast-info-accent, oklch(0.6 0.11 240));
+      --cngx-toast-accent: var(--cngx-toast-info-accent, oklch(0.6 0.11 240));
     }
     .cngx-toast--success {
-      border-inline-start: var(--cngx-toast-accent-width, 3px) solid
-        var(--cngx-toast-success-accent, oklch(0.56 0.135 145));
+      --cngx-toast-accent: var(--cngx-toast-success-accent, oklch(0.56 0.135 145));
     }
     .cngx-toast--warning {
-      border-inline-start: var(--cngx-toast-accent-width, 3px) solid
-        var(--cngx-toast-warning-accent, oklch(0.67 0.135 75));
+      --cngx-toast-accent: var(--cngx-toast-warning-accent, oklch(0.67 0.135 75));
     }
     .cngx-toast--error {
-      border-inline-start: var(--cngx-toast-accent-width, 3px) solid
-        var(--cngx-toast-error-accent, oklch(0.56 0.16 25));
+      --cngx-toast-accent: var(--cngx-toast-error-accent, oklch(0.56 0.16 25));
     }
 
     .cngx-toast__icon {
       flex-shrink: 0;
-    }
-
-    .cngx-toast--info .cngx-toast__icon {
-      color: var(--cngx-toast-info-accent, oklch(0.6 0.11 240));
-    }
-    .cngx-toast--success .cngx-toast__icon {
-      color: var(--cngx-toast-success-accent, oklch(0.56 0.135 145));
-    }
-    .cngx-toast--warning .cngx-toast__icon {
-      color: var(--cngx-toast-warning-accent, oklch(0.67 0.135 75));
-    }
-    .cngx-toast--error .cngx-toast__icon {
-      color: var(--cngx-toast-error-accent, oklch(0.56 0.16 25));
+      color: var(--cngx-toast-accent, currentColor);
     }
 
     /* The severity circles span 21 grid units with stroke; scaling the box
@@ -549,7 +626,17 @@
       display: block;
     }
 
+    /* Text block and trailing action side by side; the action centres on
+       the whole text block, whatever the text or a projected body holds. */
     .cngx-toast__body {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: var(--cngx-toast-actions-gap, 8px);
+    }
+
+    .cngx-toast__text {
       flex: 1;
       min-width: 0;
     }
@@ -585,19 +672,42 @@
       font-size: var(--cngx-toast-description-font-size, 0.8125rem);
     }
 
+    /* Outlined action trailing the text block. Label and border track
+     * `--cngx-toast-accent` mixed 60% into the text colour for 4.5:1, the
+     * alert action recipe. */
     .cngx-toast__action {
       appearance: none;
-      background: none;
-      border: none;
-      padding: var(--cngx-toast-action-padding, 4px 0);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      background: transparent;
+      border: 1px solid currentColor;
+      border-radius: var(--cngx-toast-action-radius, 4px);
+      padding: var(--cngx-toast-action-padding, 4px 8px);
       /* Floor the action-row height to the pointer-derived target on a coarse
          pointer; inert (0px) on a fine pointer. */
       min-block-size: var(--cngx-target-min, 0px);
       cursor: pointer;
       font-weight: var(--cngx-toast-action-weight, 600);
       font-size: var(--cngx-toast-action-size, 0.8125rem);
-      color: inherit;
-      text-decoration: underline;
+      color: var(
+        --cngx-toast-action-color,
+        color-mix(
+          in oklab,
+          var(--cngx-toast-accent, currentColor) 60%,
+          var(--cngx-color-text, oklch(0.25 0.015 250))
+        )
+      );
+      white-space: nowrap;
+    }
+
+    .cngx-toast__action:hover {
+      background: var(--cngx-toast-action-hover-bg, oklch(0 0 0 / 0.04));
+    }
+
+    .cngx-toast__action:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
     }
 
     .cngx-toast__dismiss {
@@ -622,17 +732,5 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-/* Forced-colors (WHCM): the toast is an overlay whose only edge is the
-   box-shadow elevation - forced to `none` - plus a one-sided colour accent, so
-   it merges into Canvas on the other three sides. Re-draw a full boundary with
-   ButtonBorder. Additive (the base has no full border), so no `!important` and
-   no forced-color-adjust: `.cngx-toast` is a <div>, not a form control.
-   Unlayered + outside @scope per the cngx WHCM placement rule. */
-@media (forced-colors: active) {
-  .cngx-toast {
-    border: 1px solid ButtonBorder;
   }
 }

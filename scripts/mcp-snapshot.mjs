@@ -22,6 +22,10 @@
 // (scripts/mcp-bundle-check.mjs), so an unreadable bundle fails the build.
 // The llm-md dump goes to @cngx/mcp only: no cli command reads it.
 //
+// The cngxErrorCodes block is also written alone to .compodoc/error-codes.json,
+// which .github/workflows/snapshot-api.yml uploads as a release asset. It stays
+// out of packages/*/data, because both packages publish data/ whole.
+//
 // Usage:
 //   node scripts/mcp-snapshot.mjs                                        # GH Pages default
 //   node scripts/mcp-snapshot.mjs --base=https://example.com/examples    # explicit override
@@ -44,6 +48,12 @@ const CLI_DEST = join(CLI_DEST_DIR, 'documentation.json');
 // read. The release run passes --require-llm-dump, which makes it mandatory.
 const LLM_DUMP_SOURCE = join(ROOT, '.compodoc-llm', 'llm-context.md');
 const LLM_DUMP_DEST = join(DEST_DIR, 'llm-context.md');
+// The error-code manifest (npm run manifest:error-codes) is the single source
+// for the bundled cngxErrorCodes block: the page prose plus each code's lib,
+// severity, production behaviour, title, url and call-site messages. Pages are
+// read relative to ROOT from the manifest `page` paths.
+const ERROR_CODES_MANIFEST = join(ROOT, 'scripts', 'manifests', 'error-codes.json');
+export const ERROR_CODE_ASSET = join(ROOT, '.compodoc', 'error-codes.json');
 
 // Swap the scheme+host(+port)+path prefix before the `/#/` hash route for
 // `base`. URLs without a `/#/` route are left untouched. Same rule as
@@ -71,6 +81,63 @@ export function rebaseExampleUrls(doc, base) {
     });
   }
   return rebased;
+}
+
+/**
+ * Deduplicate the call-site message texts of one code in first-seen order.
+ * Several call sites can print the same text, so the block carries each distinct
+ * text once and drops the per-site `file`.
+ */
+export function dedupeMessageTexts(messages) {
+  const seen = new Set();
+  const texts = [];
+  for (const message of messages ?? []) {
+    if (!seen.has(message.text)) {
+      seen.add(message.text);
+      texts.push(message.text);
+    }
+  }
+  return texts;
+}
+
+/**
+ * The page markdown as the snapshot carries it: without the `@aiGenerated`
+ * marker line and the `# CNGXnnnn` heading, with relative `cngxNNNN.html` links
+ * rewritten to absolute `docsBaseUrl` links. An already-absolute link is left
+ * untouched - its `(` is followed by the scheme, not by `cngx`.
+ */
+export function stripPageBody(raw, docsBaseUrl) {
+  return raw
+    .replace(/^<!--\s*@aiGenerated\b[^\n]*-->[ \t]*\n?/m, '')
+    .replace(/^#[ \t]+CNGX\d{4}[ \t]*\n?/m, '')
+    .replace(/\]\((cngx\d{4}\.html)\)/g, `](${docsBaseUrl}$1)`)
+    .trim();
+}
+
+/**
+ * Build the `cngxErrorCodes` block from the error-codes manifest and the page
+ * bodies. `schemaVersion`, `docsBaseUrl` and `ranges` are copied verbatim; each
+ * code keeps the answer-relevant fields, drops `files` and `page`, deduplicates
+ * its message texts and carries its stripped page body. `readPage(page)` returns
+ * the raw markdown for a manifest `page` path.
+ */
+export function buildErrorCodeBlock(manifest, readPage) {
+  return {
+    schemaVersion: manifest.schemaVersion,
+    docsBaseUrl: manifest.docsBaseUrl,
+    ranges: manifest.ranges,
+    codes: manifest.codes.map((code) => ({
+      code: code.code,
+      lib: code.lib,
+      severity: code.severity,
+      production: code.production,
+      title: code.title,
+      status: code.status,
+      url: code.url,
+      messages: dedupeMessageTexts(code.messages),
+      body: stripPageBody(readPage(code.page), manifest.docsBaseUrl),
+    })),
+  };
 }
 
 const SEMVER = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
@@ -141,9 +208,19 @@ function main() {
     process.exit(1);
   }
 
+  if (!existsSync(ERROR_CODES_MANIFEST)) {
+    console.error(
+      `mcp-snapshot: ${ERROR_CODES_MANIFEST} not found. Run \`npm run manifest:error-codes\` first.`,
+    );
+    process.exit(1);
+  }
+
   const doc = JSON.parse(readFileSync(SOURCE, 'utf8'));
 
   doc.cngxVersion = cngxVersion;
+
+  const errorCodeManifest = JSON.parse(readFileSync(ERROR_CODES_MANIFEST, 'utf8'));
+  doc.cngxErrorCodes = buildErrorCodeBlock(errorCodeManifest, (page) => readFileSync(join(ROOT, page), 'utf8'));
 
   const rebased = rebaseExampleUrls(doc, BASE_URL);
 
@@ -152,10 +229,13 @@ function main() {
   writeFileSync(DEST, json);
   mkdirSync(CLI_DEST_DIR, { recursive: true });
   writeFileSync(CLI_DEST, json);
+  writeFileSync(ERROR_CODE_ASSET, JSON.stringify(doc.cngxErrorCodes));
 
   console.log(
-    `mcp-snapshot: wrote packages/mcp/data/documentation.json and packages/cli/data/documentation.json ` +
-      `(cngxVersion ${cngxVersion}, schemaVersion ${doc.schemaVersion}, ${rebased} example URL(s) rebased to ${BASE_URL}).`,
+    `mcp-snapshot: wrote packages/mcp/data/documentation.json, packages/cli/data/documentation.json ` +
+      `and .compodoc/error-codes.json ` +
+      `(cngxVersion ${cngxVersion}, schemaVersion ${doc.schemaVersion}, ` +
+      `${doc.cngxErrorCodes.codes.length} error code(s), ${rebased} example URL(s) rebased to ${BASE_URL}).`,
   );
 
   if (dumpPresent) {

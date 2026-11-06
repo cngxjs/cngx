@@ -1,8 +1,10 @@
 # @cngx/cli changelog
 
 Hand-maintained, per package version. The root CHANGELOG.md tracks the cngx
-library releases; this file tracks the CLI package. The cngx release an answer
-grounds against is a property of the bundled snapshot, not this version.
+library releases; this file tracks the CLI package. It is released in lockstep
+with the cngx libraries: `@cngx/cli` X.Y.Z bundles the X.Y.Z snapshot, and
+`--cngx-version` or the installed release still grounds an answer against
+another release.
 
 ## Unreleased
 
@@ -11,7 +13,13 @@ grounds against is a property of the bundled snapshot, not this version.
 - Package scaffold with a guarded copy of the shared query core from
   `@cngx/mcp` and the bundled API snapshot.
 - `cngx` subcommands generated from the shared command registry: `find`,
-  `list`, `api`, `slots`, `theme`, `di`, `config`, `example`, `migrate`.
+  `list`, `api`, `slots`, `theme`, `di`, `config`, `example`, `migrate`,
+  `explain`.
+- `cngx explain <code>` prints the doc entry of a CNGX error code: its title,
+  lib, severity, production behaviour, messages and docs URL. Accepts `CNGX0001`,
+  `cngx0001`, `0001` or a pasted console line; exits 1 for an unknown code, listing
+  the nearest codes of its lib. Takes `--cngx-version` and `--offline`; another
+  release answers from its `error-codes.json` asset.
 - `--format md|json`, `--cngx-version`, `--version` / `-v`, `--help` / `-h`;
   exit codes 0 (answered), 1 (not found or unresolved), 2 (usage error),
   3 (internal error: a snapshot that cannot load, a throw, a failed write).

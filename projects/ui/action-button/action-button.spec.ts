@@ -1,9 +1,21 @@
 import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, vi } from 'vitest';
+import { By } from '@angular/platform-browser';
+import {
+  CNGX_BUTTON_STATE,
+  CngxButtonBrain,
+  CngxButtonEnd,
+  CngxButtonStart,
+  provideButtonSpinner,
+} from '@cngx/common/button';
+import { CngxIcon } from '@cngx/common/display';
+import { CngxMenu, CngxMenuItem } from '@cngx/common/interactive';
+import { CngxIconMenuButton, CngxSplitButton } from '@cngx/common/menu-button';
+import { CngxPopover } from '@cngx/common/popover';
 import { CngxActionButton } from './action-button';
 import {
-  CngxAsyncClick,
+  CNGX_ASYNC_RUN_STATE,
   CngxFailed,
   CngxPending,
   CngxSucceeded,
@@ -142,6 +154,49 @@ class ExternalStateHost {
     this.callCount++;
     return Promise.resolve();
   };
+}
+
+// ── Slots and split-button main ─────────────────────────────────────────
+
+@Component({
+  template: `
+    <button cngxActionButton [action]="action">
+      <cngx-icon cngxButtonStart class="start-glyph" />
+      Save
+      <cngx-icon cngxButtonEnd class="end-glyph" />
+    </button>
+    <button id="plain" cngxActionButton [action]="action">Plain</button>
+  `,
+  imports: [CngxActionButton, CngxButtonStart, CngxButtonEnd, CngxIcon],
+})
+class SlotHost {
+  readonly action = () => Promise.resolve();
+}
+
+@Component({
+  template: `
+    <div cngxSplitButton aria-label="Publish">
+      <button id="main" cngxActionButton [action]="publish">Publish</button>
+      <button id="caret" cngxIconMenuButton [menu]="menu" [popover]="pop"></button>
+    </div>
+    <div cngxPopover #pop="cngxPopover">
+      <ul cngxMenu [label]="'Publish options'" tabindex="0" #menu="cngxMenu">
+        <li cngxMenuItem value="draft">Save as draft</li>
+      </ul>
+    </div>
+  `,
+  imports: [
+    CngxActionButton,
+    CngxSplitButton,
+    CngxIconMenuButton,
+    CngxMenu,
+    CngxMenuItem,
+    CngxPopover,
+  ],
+})
+class SplitMainHost {
+  release: () => void = () => undefined;
+  readonly publish = (): Promise<void> => new Promise<void>((resolve) => (this.release = resolve));
 }
 
 // ── Unlabelled external-state host (i18n fallback) ───────────────────────
@@ -715,6 +770,26 @@ describe('CngxActionButton', () => {
       expect(btn.getAttribute('aria-disabled')).toBe('true');
     });
 
+    it('renders data-pending from the brain for an external run, and clears it after', () => {
+      const fixture = TestBed.createComponent(ExternalStateHost);
+      flush(fixture);
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+      const brain = fixture.debugElement.query(By.css('button')).injector.get(CngxButtonBrain);
+      expect(btn.hasAttribute('data-pending')).toBe(false);
+
+      fixture.componentInstance.mock.status.set('pending');
+      flush(fixture);
+      expect(btn.getAttribute('data-pending')).toBe('true');
+      expect(btn.getAttribute('aria-disabled')).toBe('true');
+      expect(brain.busy()).toBe(true);
+      expect(brain.blocked()).toBe(true);
+
+      fixture.componentInstance.mock.status.set('success');
+      flush(fixture);
+      expect(btn.hasAttribute('data-pending')).toBe(false);
+      expect(btn.hasAttribute('aria-disabled')).toBe(false);
+    });
+
     it('gates data-busy and the pending label of an external run behind the show delay', () => {
       vi.useFakeTimers();
       const fixture = TestBed.createComponent(ExternalStateHost);
@@ -785,6 +860,57 @@ describe('CngxActionButton', () => {
       fixture.detectChanges();
       const live = fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement;
       expect(live.textContent?.trim()).toBe('Ext error');
+    });
+  });
+
+  describe('slots and composition', () => {
+    it('projects cngxButtonStart and cngxButtonEnd around the label cells', () => {
+      const fixture = TestBed.createComponent(SlotHost);
+      flush(fixture);
+      const [btn, plain] = Array.from(
+        (fixture.nativeElement as HTMLElement).querySelectorAll('button'),
+      ) as HTMLButtonElement[];
+      const labels = btn.querySelector('.cngx-action-button__labels') as HTMLElement;
+      const start = btn.querySelector('.start-glyph') as HTMLElement;
+      const end = btn.querySelector('.end-glyph') as HTMLElement;
+      expect(start.parentElement).toBe(btn);
+      expect(end.parentElement).toBe(btn);
+      expect(labels.contains(start)).toBe(false);
+      expect(start.compareDocumentPosition(labels) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(end.compareDocumentPosition(labels) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
+      expect(btn.hasAttribute('data-start')).toBe(true);
+      expect(btn.hasAttribute('data-end')).toBe(true);
+      expect(plain.hasAttribute('data-start')).toBe(false);
+      expect(plain.hasAttribute('data-end')).toBe(false);
+    });
+
+    it('publishes CNGX_BUTTON_STATE through the brain', () => {
+      const fixture = TestBed.createComponent(SlotHost);
+      flush(fixture);
+      const de = fixture.debugElement.query(By.css('#plain'));
+      expect(de.injector.get(CNGX_BUTTON_STATE)).toBe(de.injector.get(CngxButtonBrain));
+    });
+
+    it('works as a split-button main: no CNGX1073, the caret blocks while it runs', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const fixture = TestBed.createComponent(SplitMainHost);
+      flush(fixture);
+      await fixture.whenStable();
+      expect(warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1073'))).toEqual([]);
+      warn.mockRestore();
+
+      const root = fixture.nativeElement as HTMLElement;
+      const main = root.querySelector('#main') as HTMLButtonElement;
+      const caret = root.querySelector('#caret') as HTMLButtonElement;
+      expect(caret.hasAttribute('aria-disabled')).toBe(false);
+      main.click();
+      flush(fixture);
+      expect(caret.getAttribute('aria-disabled')).toBe('true');
+
+      fixture.componentInstance.release();
+      await fixture.whenStable();
+      flush(fixture);
+      expect(caret.hasAttribute('aria-disabled')).toBe(false);
     });
   });
 
@@ -1188,6 +1314,86 @@ class LastUpdatedHost {
   readonly action = () => Promise.resolve();
 }
 
+@Component({
+  selector: 'demo-dots',
+  template: `<span class="demo-dots">...</span>`,
+})
+class DemoDots {}
+
+@Component({
+  viewProviders: [provideButtonSpinner(DemoDots)],
+  template: `
+    <button cngxActionButton [action]="action" [showDelay]="0" [minDwell]="0">Save</button>
+  `,
+  imports: [CngxActionButton],
+})
+class SpinnerHost {
+  readonly action = () => new Promise<void>(() => undefined);
+}
+
+describe('CngxActionButton with provideButtonSpinner', () => {
+  it('renders the provided glyph in its busy layer', async () => {
+    const fixture = TestBed.createComponent(SpinnerHost);
+    fixture.detectChanges();
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    btn.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    await new Promise((resolve) => setTimeout(resolve));
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const layer = btn.querySelector('.cngx-button__busy');
+    expect(layer?.querySelector('.demo-dots')).not.toBeNull();
+    expect(layer?.querySelector('.cngx-button__spinner')).toBeNull();
+  });
+});
+
+@Component({
+  template: `
+    <button cngxActionButton [action]="action" [disabled]="disabled()" [disabledReason]="reason()">
+      Save
+    </button>
+  `,
+  imports: [CngxActionButton],
+})
+class ReasonHost {
+  readonly disabled = signal(false);
+  readonly reason = signal<string | undefined>(undefined);
+  readonly action = (): Promise<void> => Promise.resolve();
+}
+
+describe('CngxActionButton reason span', () => {
+  it('renders only while a reason exists', () => {
+    const fixture = TestBed.createComponent(SpinnerHost);
+    fixture.detectChanges();
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    expect(btn.querySelector('.cngx-button__reason')).toBeNull();
+  });
+
+  it('renders the reason and references it only while disabled', () => {
+    const fixture = TestBed.createComponent(ReasonHost);
+    fixture.detectChanges();
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    const span = () => btn.querySelector('.cngx-button__reason');
+
+    fixture.componentInstance.reason.set('Nothing to save');
+    fixture.detectChanges();
+    expect(span()?.textContent).toBe('Nothing to save');
+    expect(span()?.hasAttribute('hidden')).toBe(true);
+    expect(btn.hasAttribute('aria-describedby')).toBe(false);
+
+    fixture.componentInstance.disabled.set(true);
+    fixture.detectChanges();
+    expect(btn.getAttribute('aria-describedby')).toBe(span()?.id);
+    expect(btn.getAttribute('aria-disabled')).toBe('true');
+
+    fixture.componentInstance.disabled.set(false);
+    fixture.detectChanges();
+    expect(btn.hasAttribute('aria-describedby')).toBe(false);
+  });
+});
+
 describe('CngxActionButton settle lifecycle', () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -1317,7 +1523,9 @@ describe('CngxActionButton settle lifecycle', () => {
     btn.click();
     await vi.waitFor(() => {
       flush(fixture);
-      expect(fixture.debugElement.children[0].injector.get(CngxAsyncClick).succeeded()).toBe(true);
+      expect(
+        fixture.debugElement.children[0].injector.get(CNGX_ASYNC_RUN_STATE).state.status(),
+      ).toBe('success');
     });
     expect(ab.state.lastUpdated()).toBeUndefined();
 

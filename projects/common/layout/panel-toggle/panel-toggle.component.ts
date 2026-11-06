@@ -1,21 +1,13 @@
+import { NgComponentOutlet } from '@angular/common';
 import {
-  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
   inject,
-  input,
   ViewEncapsulation,
 } from '@angular/core';
-import { injectButtonCore, provideButtonDescribedBy } from '@cngx/common/button';
-import type {
-  CngxButtonSize,
-  CngxButtonTone,
-  CngxButtonType,
-  CngxButtonVariant,
-} from '@cngx/common/button';
+import { CngxButtonBrain, provideButtonHost } from '@cngx/common/button';
 import { CngxIconSvg } from '@cngx/common/display';
-import { CNGX_HOST_INTERACTION_STATE } from '@cngx/common/interactive';
 import { injectDirection } from '@cngx/core';
 import {
   CNGX_ICON_MENU,
@@ -94,7 +86,7 @@ import { CngxPanelTrigger } from '../panel-trigger/panel-trigger.directive';
   selector: 'button[cngxPanelToggle]',
   standalone: true,
   exportAs: 'cngxPanelToggle',
-  imports: [CngxIconSvg],
+  imports: [NgComponentOutlet, CngxIconSvg],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
@@ -102,23 +94,13 @@ import { CngxPanelTrigger } from '../panel-trigger/panel-trigger.directive';
       directive: CngxPanelTrigger,
       inputs: ['cngxPanelTrigger: cngxPanelToggle', 'action', 'label'],
     },
+    {
+      directive: CngxButtonBrain,
+      inputs: ['variant', 'tone', 'size', 'disabled', 'disabledReason', 'cngxDescribedBy', 'type'],
+    },
   ],
-  providers: [
-    { provide: CNGX_HOST_INTERACTION_STATE, useExisting: CngxPanelToggle },
-    provideButtonDescribedBy('CngxPanelToggle'),
-  ],
-  host: {
-    class: 'cngx-button cngx-icon-button cngx-panel-toggle',
-    '[attr.data-variant]': 'core.variant()',
-    '[attr.data-tone]': 'core.tone()',
-    '[attr.data-size]': 'core.size()',
-    '[attr.data-busy]': 'core.busyAttr()',
-    '[attr.data-pending]': 'core.pendingAttr()',
-    '[attr.aria-disabled]': 'core.ariaDisabled()',
-    '[attr.aria-describedby]': 'core.describedBy()',
-    '[attr.type]': 'core.hostType()',
-    '[attr.disabled]': 'null',
-  },
+  providers: [provideButtonHost('cngxPanelToggle', { defaultVariant: 'ghost', iconOnly: true })],
+  host: { class: 'cngx-button cngx-icon-button cngx-panel-toggle' },
   template: `
     <span class="cngx-button__label cngx-icon-button__glyph" aria-hidden="true">
       <ng-content>
@@ -129,12 +111,18 @@ import { CngxPanelTrigger } from '../panel-trigger/panel-trigger.directive';
         ></svg>
       </ng-content>
     </span>
-    @if (core.busyVisible()) {
+    @if (brain.busyVisible()) {
       <span class="cngx-button__busy" aria-hidden="true">
-        <span class="cngx-button__spinner"></span>
+        @if (brain.spinner; as spinner) {
+          <ng-container *ngComponentOutlet="spinner" />
+        } @else {
+          <span class="cngx-button__spinner"></span>
+        }
       </span>
     }
-    <span class="cngx-button__reason" [id]="core.reasonId" hidden>{{ disabledReason() }}</span>
+    @if (brain.disabledReason(); as reason) {
+      <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
+    }
   `,
   styleUrls: [
     '../../button/button.component.css',
@@ -143,32 +131,8 @@ import { CngxPanelTrigger } from '../panel-trigger/panel-trigger.directive';
   ],
 })
 export class CngxPanelToggle {
-  /** Emphasis. Defaults to `ghost`. */
-  readonly variant = input<CngxButtonVariant | undefined>(undefined);
-
-  /** Intent. Falls through to the config and `neutral`. */
-  readonly tone = input<CngxButtonTone | undefined>(undefined);
-
-  /** Visual size of the square box. Falls through to the group, the config and `md`. */
-  readonly size = input<CngxButtonSize | undefined>(undefined);
-
-  /** Rendered as `aria-disabled`; the element stays focusable and activation is swallowed. */
-  readonly disabled = input(false, { transform: booleanAttribute });
-
-  /** Why the button is disabled; referenced through `aria-describedby` while disabled. */
-  readonly disabledReason = input<string | undefined>(undefined);
-
-  /**
-   * Ids of external description elements, space-separated, joined into the
-   * button's `aria-describedby` after a static `aria-describedby` and before
-   * the disabled reason.
-   */
-  readonly describedBy = input<string | null>(null, {
-    alias: 'cngxDescribedBy',
-  });
-
-  /** Native `type`. Defaults to `'button'`. */
-  readonly type = input<CngxButtonType | undefined>(undefined);
+  /** @internal */
+  protected readonly brain = inject(CngxButtonBrain);
 
   private readonly trigger = inject(CngxPanelTrigger, { host: true });
   private readonly direction = injectDirection();
@@ -221,18 +185,4 @@ export class CngxPanelToggle {
     }
     return expanded ? CNGX_ICON_PANEL_CLOSE : CNGX_ICON_PANEL_OPEN;
   });
-
-  /** @internal */
-  protected readonly core = injectButtonCore(
-    {
-      variant: this.variant,
-      tone: this.tone,
-      size: this.size,
-      disabled: this.disabled,
-      disabledReason: this.disabledReason,
-      describedBy: this.describedBy,
-      type: this.type,
-    },
-    { variant: 'ghost' },
-  );
 }

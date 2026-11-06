@@ -1,9 +1,10 @@
 # @cngx/mcp changelog
 
 Hand-maintained, per package version. The root CHANGELOG.md tracks the cngx
-library releases; this file tracks the MCP server package. The cngx release an
-answer grounds against is a runtime property (`cngx://provenance`,
-`groundedVersion`), not this version.
+library releases; this file tracks the MCP server package. It is released in
+lockstep with the cngx libraries: `@cngx/mcp` X.Y.Z bundles the X.Y.Z snapshot,
+and a tool's `version` argument still grounds an answer against another
+release (`cngx://provenance` and `groundedVersion` name the one that answered).
 
 ## Unreleased
 
@@ -35,6 +36,9 @@ answer grounds against is a runtime property (`cngx://provenance`,
 
 ### Added
 
+- `get_error_code` returns a CNGX error code's title, lib, severity, production
+  behaviour, messages and doc page from the bundled snapshot. It takes an optional
+  `version`, resolved from the release's `error-codes.json` asset.
 - A `migrate_usage` `signatureChanged` row of an input carries `changed`, the
   parts of its binding contract that moved (`type`, `required`,
   `binding kind`). Rows of the other categories have no `changed` field.

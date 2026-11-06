@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxCloseButton: Contextual labels',
   subtitle: 'The <code>aria-label</code> describes WHAT closes, not just THAT it closes. Screen readers announce it as the button\'s accessible name.',
-  description: 'The close button has no built-in idea of what it dismisses, so it cannot infer a label. A generic "Close" reads identically across a dialog, a toast, and a sidebar drawer, leaving screen-reader users with three indistinguishable buttons on the page. Name the dismissable artifact (e.g. "Close session-expired alert", "Dismiss save-failed toast", "Close settings dialog") so the announcement is unambiguous. The label is your copy: bind it from your own translations with <code>[attr.aria-label]</code>. WAI-ARIA Authoring Practices Guide recommends button names that describe the resulting action.',
+  description: 'The close button has no built-in idea of what it dismisses, so it cannot infer a label. A generic "Close" reads identically across a dialog, a toast, and a sidebar drawer, leaving screen-reader users with three indistinguishable buttons on the page. Name the dismissable artifact (e.g. "Close session-expired alert", "Dismiss save-failed toast", "Close settings dialog") so the announcement is unambiguous. The label is your copy: bind it from your own translations with <code>[attr.aria-label]</code>. WAI-ARIA Authoring Practices Guide recommends button names that describe the resulting action. The dashed box below mirrors the role and name a screen reader gets for each X: the names are exposed, not painted.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
@@ -15,6 +15,7 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxCloseButton'],
   moduleImports: [
     "import { CngxCloseButton } from '@cngx/common/button';",
+    "import { mirrorScreenReader } from '../../../../fixtures';",
   ],
   imports: ['CngxCloseButton'],
   template: `
@@ -30,5 +31,28 @@ export const STORY: DemoSpec = {
 
     <button cngxCloseButton aria-label="Collapse filter sidebar"></button>
     <span>Filter sidebar</span>
+  </div>`,
+  setupChrome: `
+  // Mirrors the accessibility layer of the buttons into the box below.
+  protected readonly sr = mirrorScreenReader([
+    { label: 'alert', selector: 'button[cngxclosebutton]:nth-of-type(1)' },
+    { label: 'toast', selector: 'button[cngxclosebutton]:nth-of-type(2)' },
+    { label: 'dialog', selector: 'button[cngxclosebutton]:nth-of-type(3)' },
+    { label: 'sidebar', selector: 'button[cngxclosebutton]:nth-of-type(4)' },
+  ]);`,
+  templateChrome: `
+  <div class="cngx-ex-sr-output">
+    <p class="cngx-ex-sr-output__title">Screen reader hears</p>
+    <dl class="cngx-ex-sr-output__list">
+      @for (row of sr.rows(); track row.label) {
+        <dt>{{ row.label }} role</dt>
+        <dd>{{ row.role }}</dd>
+        <dt>{{ row.label }} name</dt>
+        <dd>"{{ row.name }}"</dd>
+      }
+    </dl>
+    <p class="cngx-ex-sr-output__note">
+      Read live from the DOM attributes the accessibility layer exposes; the names are not painted, each X glyph is aria-hidden. The name approximates accname: aria-labelledby, then aria-label, then the text without aria-hidden or hidden parts; the browser accessibility tree stays the reference.
+    </p>
   </div>`,
 };

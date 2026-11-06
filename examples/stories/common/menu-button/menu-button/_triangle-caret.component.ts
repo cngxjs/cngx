@@ -10,7 +10,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z" /></svg>
+    <svg viewBox="4 4 16 16" fill="currentColor"><path d="M7 10l5 5 5-5z" /></svg>
   `,
   host: { style: 'display: contents' },
 })

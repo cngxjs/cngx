@@ -10,7 +10,7 @@ import {
 import { CNGX_BUTTON_STATE, CngxButtonGroup } from '@cngx/common/button';
 import { cngxDevWarn } from '@cngx/utils';
 
-import { CngxIconMenuButton } from './icon-menu-button.component';
+import { CNGX_SPLIT_CARET } from './split-caret.token';
 import { CNGX_SPLIT_BUTTON, type CngxSplitButtonContext } from './split-button.token';
 
 /**
@@ -23,15 +23,18 @@ import { CNGX_SPLIT_BUTTON, type CngxSplitButtonContext } from './split-button.t
  * The caret derives its state from the main button: while the main action
  * is disabled, running its `cngxAsyncClick` or refused by
  * `[enabled]="false"`, the caret renders `aria-disabled`, opens on neither
- * click nor key, and an open menu closes. The caret carries no reason of its
- * own in that state: the main button already owns `aria-busy` and the
- * announcement. Inside the split the caret renders the caret glyph and is
- * named "More options" from the active language pack
- * (`CNGX_MENU_BUTTON_I18N`) unless it has an `aria-label`.
+ * click nor key, and an open menu closes. Its `aria-describedby` says why:
+ * the main button's reason while the main is disabled with one, and "The
+ * main action is running" (`menuButton.splitMainBusy`) while the main
+ * action runs; the main button keeps `aria-busy` and the announcement.
+ * Inside the split the caret renders the caret glyph and is named "More
+ * options" from the active language pack (`CNGX_MENU_BUTTON_I18N`) unless it
+ * has an `aria-label`.
  *
  * Both roles are direct children (an `ng-container` in between is fine): the
- * caret is the `cngxIconMenuButton`, the main action the first other button
- * (`cngxButton` or `cngxIconButton`). Without a main button the directive
+ * caret is the `cngxIconMenuButton` (or any host on `CngxSplitCaret`), the
+ * main action the first other cngx button (`cngxButton`, `cngxIconButton`,
+ * `cngxActionButton` or a custom host on `CngxButtonBrain`). Without a main button the directive
  * warns `CNGX1073`. Buttons deeper inside the split, for example in a
  * projected panel, take neither role.
  *
@@ -51,7 +54,7 @@ import { CNGX_SPLIT_BUTTON, type CngxSplitButtonContext } from './split-button.t
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/split-button.directive.ts
  * @since 0.1.0
- * @relatedTo CngxIconMenuButton, CngxButton, CngxButtonGroup, CNGX_BUTTON_STATE, CngxAsyncClick, CNGX_MENU_BUTTON_I18N
+ * @relatedTo CngxIconMenuButton, CngxSplitCaret, CngxButton, CngxButtonGroup, CNGX_BUTTON_STATE, CngxAsyncClick, CNGX_MENU_BUTTON_I18N
  * <example-url>/#/common/menu-button/split-button/basic</example-url>
  * <example-url>/#/common/menu-button/split-button/busy-and-disabled</example-url>
  * @axis level molecule
@@ -69,13 +72,19 @@ export class CngxSplitButton implements CngxSplitButtonContext {
   // is neither the main action nor the caret.
   private readonly buttons = contentChildren(CNGX_BUTTON_STATE, { descendants: false });
 
-  /** The caret: the direct child `cngxIconMenuButton`. */
-  readonly caret = contentChild(CngxIconMenuButton, { descendants: false });
+  /** The button state of the caret: the direct child host of `CngxSplitCaret`. */
+  readonly caret = contentChild(CNGX_SPLIT_CARET, { descendants: false });
 
   private readonly main = computed(() => this.buttons().find((button) => button !== this.caret()));
 
   /** `true` while the main button refuses activation; `false` without one. */
   readonly mainBlocked = computed(() => this.main()?.blocked() ?? false);
+
+  /** `true` while the main button runs; `false` without one. */
+  readonly mainBusy = computed(() => this.main()?.busy() ?? false);
+
+  /** Id of the main button's reason while it is disabled with one, else `null`. */
+  readonly mainReasonId = computed(() => this.main()?.activeReasonId() ?? null);
 
   constructor() {
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {

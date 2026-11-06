@@ -105,7 +105,8 @@ const AGENTS_BLOCK = [
   '',
   'This app uses cngx (`@cngx/*`). Before writing cngx code, ask the `cngx` MCP',
   'server for the component, its inputs, slots, theme tokens and DI tokens',
-  'instead of guessing an API. Docs: https://cngxjs.github.io/cngx/',
+  'instead of guessing an API. For a `CNGXnnnn` in a console, ask `get_error_code`',
+  'or run `npx @cngx/cli explain <code>`. Docs: https://cngxjs.github.io/cngx/',
   '<!-- /cngx:agents -->',
   '',
 ].join('\n');

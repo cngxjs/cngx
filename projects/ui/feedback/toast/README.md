@@ -101,6 +101,19 @@ import { CngxToastOutlet } from '@cngx/ui/feedback';
 export class AppComponent {}
 ```
 
+#### CSS Custom Properties
+
+Each toast draws on the overlay surface (a 1px border plus the popover-panel shadow) with no severity stripe. Severity shows on the glyph and on the outlined action, which trails the text block and centres on it (also for a projected `contentTemplate` or `content` body). A toast without a title centres icon, text, action and dismiss on one line.
+
+- `--cngx-toast-border` (default `1px solid oklch(0 0 0 / 0.08)`, dark `oklch(1 0 0 / 0.12)`) - Toast border; it keeps the edge visible under forced colors, where the shadow is dropped
+- `--cngx-toast-shadow` (default `0 8px 24px oklch(0 0 0 / 0.12)`, dark alpha `0.5`) - Toast elevation
+- `--cngx-toast-{severity}-accent` (default `--cngx-feedback-{severity}-icon`: the core `--cngx-color-{info,success,warning,danger}` mixed 90% into `--cngx-color-text`) - Per-severity glyph and action accent
+- `--cngx-toast-accent` - Accent of the current toast, set by each `.cngx-toast--{severity}` rule; theme the per-severity tokens instead
+- `--cngx-toast-actions-gap` (default `--cngx-space-sm`) - Gap between the text block and the action
+- `--cngx-toast-action-padding` (default `--cngx-space-xs` / `--cngx-space-sm`) - Action padding
+- `--cngx-toast-action-radius` (default `4px`) - Action corner radius
+- `--cngx-toast-action-color` (default the severity accent mixed 60% into `--cngx-color-text`) - Action label and border color; pin it to `--cngx-toast-accent` for the pure accent
+- `--cngx-toast-action-hover-bg` (default `oklch(0 0 0 / 0.04)`, dark `oklch(1 0 0 / 0.06)`) - Action hover overlay
 
 ### CngxToastOn
 

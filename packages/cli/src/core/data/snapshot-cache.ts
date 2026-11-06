@@ -1,10 +1,11 @@
-// Disk cache for fetched release snapshots. A one-shot process (the CLI) would
-// otherwise download the same release asset on every call; the resolver reads
-// this cache before it fetches and writes a snapshot only after it loaded.
+// Disk cache for one kind of fetched release asset, the snapshot by default. A
+// one-shot process (the CLI) would otherwise download the same release asset on
+// every call; the resolver reads this cache before it fetches and writes an asset
+// only after it loaded.
 // Release tags are immutable, so an entry never goes stale; the bound evicts the
 // least recently read entries by mtime. A version reaches a path only after
 // `isReleaseVersion`, every path is built through the injected `path`, and the
-// cache only ever deletes inside its own `snapshots/` directory. Nothing here
+// cache only ever deletes inside its own entry directory. Nothing here
 // throws: a cache that cannot write answers without caching and says so once.
 
 import * as nodeFs from 'node:fs';
@@ -19,9 +20,20 @@ export type SnapshotCacheFs = Pick<
   'existsSync' | 'mkdirSync' | 'copyFileSync' | 'renameSync' | 'rmSync' | 'rmdirSync' | 'readdirSync' | 'statSync' | 'utimesSync'
 >;
 
+/** Where one kind of asset lives under the cache root, and what its warnings call it. */
+export interface SnapshotCacheEntry {
+  readonly dirName: string;
+  readonly fileName: string;
+  readonly label: string;
+}
+
+const SNAPSHOT_ENTRY: SnapshotCacheEntry = { dirName: 'snapshots', fileName: 'documentation.json', label: 'snapshot' };
+
 export interface SnapshotCacheOptions {
-  /** The cache root; entries live under `<dir>/snapshots/<version>/documentation.json`. */
+  /** The cache root; entries live under `<dir>/<entry.dirName>/<version>/<entry.fileName>`. */
   readonly dir: string;
+  /** The kind of asset this instance holds. Defaults to the snapshot. */
+  readonly entry?: SnapshotCacheEntry;
   readonly fs?: SnapshotCacheFs;
   readonly path?: PlatformPath;
   readonly now?: () => Date;
@@ -49,14 +61,15 @@ const isEnoent = (error: unknown) => (error as NodeJS.ErrnoException | null)?.co
 
 export function createSnapshotCache({
   dir,
+  entry = SNAPSHOT_ENTRY,
   fs = nodeFs,
   path = nodePath,
   now = () => new Date(),
   warn = () => undefined,
   limit = DOCS_CACHE_LIMIT,
 }: SnapshotCacheOptions): SnapshotCache {
-  const snapshots = path.join(dir, 'snapshots');
-  const fileOf = (version: string) => path.join(snapshots, version, 'documentation.json');
+  const snapshots = path.join(dir, entry.dirName);
+  const fileOf = (version: string) => path.join(snapshots, version, entry.fileName);
 
   const removeEntry = (version: string) => fs.rmSync(path.join(snapshots, version), { recursive: true, force: true });
 
@@ -134,7 +147,7 @@ export function createSnapshotCache({
       const versionDir = path.join(snapshots, version);
       // A unique temp name per writer, renamed into place, so a concurrent reader
       // sees either no file or a whole one.
-      const temp = path.join(versionDir, `documentation.json.${process.pid}-${Math.random().toString(36).slice(2)}.tmp`);
+      const temp = path.join(versionDir, `${entry.fileName}.${process.pid}-${Math.random().toString(36).slice(2)}.tmp`);
       try {
         fs.mkdirSync(versionDir, { recursive: true });
         fs.copyFileSync(sourcePath, temp);
@@ -145,14 +158,14 @@ export function createSnapshotCache({
         } catch {
           // Nothing left to report beyond the warning below.
         }
-        warn(`cngx: could not cache the v${version} snapshot in ${dir}: ${errorMessage(error)}`);
+        warn(`cngx: could not cache the v${version} ${entry.label} in ${dir}: ${errorMessage(error)}`);
         return;
       }
       // The entry is in place; a failed eviction only lets the cache grow past its bound.
       try {
         evict();
       } catch (error) {
-        warn(`cngx: cached the v${version} snapshot but could not evict old entries in ${dir}: ${errorMessage(error)}`);
+        warn(`cngx: cached the v${version} ${entry.label} but could not evict old entries in ${dir}: ${errorMessage(error)}`);
       }
     },
 
@@ -162,9 +175,9 @@ export function createSnapshotCache({
       }
       try {
         removeEntry(version);
-        warn(`cngx: removed the unreadable cached v${version} snapshot (${problem})`);
+        warn(`cngx: removed the unreadable cached v${version} ${entry.label} (${problem})`);
       } catch (error) {
-        warn(`cngx: could not remove the unreadable cached v${version} snapshot: ${errorMessage(error)}`);
+        warn(`cngx: could not remove the unreadable cached v${version} ${entry.label}: ${errorMessage(error)}`);
       }
     },
   };

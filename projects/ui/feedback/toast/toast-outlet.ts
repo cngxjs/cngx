@@ -96,27 +96,29 @@ export type ToastPosition =
           }
         </div>
         <div class="cngx-toast__body">
-          @if (toast.config.title) {
-            <span class="cngx-toast__title">{{ toast.config.title }}</span>
-          }
-          @if (toast.config.contentTemplate) {
-            <ng-container *ngTemplateOutlet="toast.config.contentTemplate" />
-          } @else if (toast.config.content) {
-            <ng-container
-              *ngComponentOutlet="toast.config.content; inputs: toast.config.contentInputs"
-            />
-          } @else if (toast.config.title) {
-            <span class="cngx-toast__description">
-              {{ toast.config.description ?? toast.config.message }}
-            </span>
-          } @else {
-            <span class="cngx-toast__message">
-              {{ toast.config.message }}
-            </span>
-          }
-          @if (toast.count > 1) {
-            <span class="cngx-toast__count">{{ repeatCount()(toast.count) }}</span>
-          }
+          <div class="cngx-toast__text">
+            @if (toast.config.title) {
+              <span class="cngx-toast__title">{{ toast.config.title }}</span>
+            }
+            @if (toast.config.contentTemplate) {
+              <ng-container *ngTemplateOutlet="toast.config.contentTemplate" />
+            } @else if (toast.config.content) {
+              <ng-container
+                *ngComponentOutlet="toast.config.content; inputs: toast.config.contentInputs"
+              />
+            } @else if (toast.config.title) {
+              <span class="cngx-toast__description">
+                {{ toast.config.description ?? toast.config.message }}
+              </span>
+            } @else {
+              <span class="cngx-toast__message">
+                {{ toast.config.message }}
+              </span>
+            }
+            @if (toast.count > 1) {
+              <span class="cngx-toast__count">{{ repeatCount()(toast.count) }}</span>
+            }
+          </div>
           @if (toast.config.action; as action) {
             <button type="button" class="cngx-toast__action" (click)="action.handler()">
               {{ action.label }}

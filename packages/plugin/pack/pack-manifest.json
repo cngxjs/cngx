@@ -239,18 +239,23 @@
     {
       "artifact": "pack/recipes/common-button-button.md",
       "source": "examples/stories/common/button/button/async-click-busy.story.ts",
-      "contentHash": "sha256:234c67b71e334301168aefd4230c980f686691b63310692958abf402b9d6e468"
+      "contentHash": "sha256:ed2df1d57c3eb294fbc7b9c88651309d3d2729a2ded9bbd9525538c5f96eedef"
     },
     {
       "artifact": "pack/recipes/common-menu-button-split-button.md",
       "source": "examples/stories/common/menu-button/split-button/basic.story.ts",
-      "contentHash": "sha256:886541b8a62b96c11a9f630ff0082014a1055dd90db317e3238cd090ca98ea5f"
+      "contentHash": "sha256:f73813a90c267d0cffdc88d421eab6c8baf9536cf1730c07e13652c51999712c"
+    },
+    {
+      "artifact": "pack/recipes/common-button-composition.md",
+      "source": "examples/stories/common/button/composition/custom-host.story.ts",
+      "contentHash": "sha256:5a6e2358d1b5280e07b03bf3ebf212d08a6b63cac48f51f393da4d9d48a07d19"
     }
   ],
   "theming": {
     "artifact": "pack/theming-tokens.md",
     "source": "packages/mcp/data/documentation.json",
-    "contentHash": "sha256:9a9836b258b41b79f61f1bc39cf3c16aba293c1f94b6de8ce3c5eeaa60a1923c",
-    "tokenCount": 2490
+    "contentHash": "sha256:f53e57841712be5e725b594060fd1bdab0b4fbacae5b6b454cf38a0d93f3a985",
+    "tokenCount": 2558
   }
 }

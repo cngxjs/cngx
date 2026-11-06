@@ -1,5 +1,4 @@
-// Fail-safe fetch of a non-bundled `documentation.json` from the GitHub Release
-// assets. `gh release download` is tried first (it honours the user's auth and
+// Fail-safe fetch of one non-bundled file from the GitHub Release assets. `gh release download` is tried first (it honours the user's auth and
 // proxy setup); any `gh` failure - not installed, not authenticated, or anything
 // else - falls through to a plain HTTPS GET of the public asset URL. This is the
 // server's only network/shell touch. It never throws across its boundary: every
@@ -104,17 +103,23 @@ export function normalizeReleaseVersion(input: string): NormalizedVersion {
   return { ok: true, version };
 }
 
+/** The release asset a snapshot fetch downloads. */
+const SNAPSHOT_ASSET = 'documentation.json';
+
+/** The release asset an error-code fetch downloads: the error-code block alone. */
+export const ERROR_CODES_ASSET = 'error-codes.json';
+
 /**
- * The exact `gh` argv for one snapshot download. Exported so the spec pins the
+ * The exact `gh` argv for one asset download. Exported so the spec pins the
  * `--repo` pin itself - the standalone `npx` contract lives in these args.
  */
-export function ghDownloadArgs(version: string, dir: string): string[] {
-  return ['release', 'download', `v${version}`, '--repo', CNGX_REPO, '--pattern', 'documentation.json', '--dir', dir];
+export function ghDownloadArgs(version: string, dir: string, asset: string = SNAPSHOT_ASSET): string[] {
+  return ['release', 'download', `v${version}`, '--repo', CNGX_REPO, '--pattern', asset, '--dir', dir];
 }
 
-/** The public asset URL of `documentation.json` for release `v<version>`. */
-export function releaseAssetUrl(baseUrl: string, version: string): string {
-  return `${baseUrl}/v${version}/documentation.json`;
+/** The public URL of `asset` for release `v<version>`. */
+export function releaseAssetUrl(baseUrl: string, version: string, asset: string = SNAPSHOT_ASSET): string {
+  return `${baseUrl}/v${version}/${asset}`;
 }
 
 export interface DefaultDepsOptions {
@@ -174,7 +179,15 @@ function describeGhFailure(error: unknown): string {
   return extractMessage(error);
 }
 
-export async function fetchSnapshot(version: string, deps: SnapshotFetchDeps = defaultDeps): Promise<SnapshotFetchResult> {
+export function fetchSnapshot(version: string, deps: SnapshotFetchDeps = defaultDeps): Promise<SnapshotFetchResult> {
+  return fetchReleaseAsset(SNAPSHOT_ASSET, version, deps);
+}
+
+export function fetchErrorCodes(version: string, deps: SnapshotFetchDeps = defaultDeps): Promise<SnapshotFetchResult> {
+  return fetchReleaseAsset(ERROR_CODES_ASSET, version, deps);
+}
+
+async function fetchReleaseAsset(asset: string, version: string, deps: SnapshotFetchDeps): Promise<SnapshotFetchResult> {
   if (!isReleaseVersion(version)) {
     return { ok: false, reason: 'invalid-version', message: notReleaseVersion(version) };
   }
@@ -184,24 +197,24 @@ export async function fetchSnapshot(version: string, deps: SnapshotFetchDeps = d
   } catch (error) {
     return { ok: false, reason: 'asset-missing', message: `No temp directory for the snapshot: ${extractMessage(error)}` };
   }
-  const result = await download(version, dir, deps);
+  const result = await download(asset, version, dir, deps);
   if (!result.ok) {
     removeQuietly(deps.removeDir, dir);
   }
   return result;
 }
 
-async function download(version: string, dir: string, deps: SnapshotFetchDeps): Promise<SnapshotFetchResult> {
-  const path = join(dir, 'documentation.json');
+async function download(asset: string, version: string, dir: string, deps: SnapshotFetchDeps): Promise<SnapshotFetchResult> {
+  const path = join(dir, asset);
   let ghMessage: string;
   try {
-    await deps.runGh(ghDownloadArgs(version, dir));
+    await deps.runGh(ghDownloadArgs(version, dir, asset));
     return { ok: true, path, dir };
   } catch (error) {
     ghMessage = describeGhFailure(error);
   }
 
-  const url = releaseAssetUrl(deps.releaseBaseUrl, version);
+  const url = releaseAssetUrl(deps.releaseBaseUrl, version, asset);
   let body: string;
   try {
     const response = await deps.httpGet(url);

@@ -209,7 +209,7 @@ Replace the built-in X icon in all close/dismiss buttons globally.
 withCloseIcon(CustomCloseIconComponent)
 ```
 
-The close button receives the `CNGX_CLOSE_ICON` token for custom styling.
+The close button receives the `CNGX_BUTTON_CLOSE_ICON` token for custom styling.
 
 #### Example
 

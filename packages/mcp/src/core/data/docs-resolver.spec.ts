@@ -1,8 +1,14 @@
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
 import { createDocsIndex, loadDocsFromFile, SchemaVersionError } from './loader.js';
 import type { DocsResolverDeps } from './docs-resolver.js';
 import { answerVersioned, createDocsResolver, DOCS_CACHE_LIMIT } from './docs-resolver.js';
+import type { ErrorCodeResolverDeps } from './docs-resolver.js';
+import { createErrorCodeResolver } from './docs-resolver.js';
+import type { ErrorCodeIndex } from './loader.js';
 import { fetchSnapshot } from '../diff/snapshot-fetch.js';
 import type { SnapshotFetchFailureReason } from '../diff/types.js';
 
@@ -384,5 +390,121 @@ describe('answerVersioned', () => {
 
     expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'internal: EACCES: temp dir' });
     expect(query).not.toHaveBeenCalled();
+  });
+});
+
+describe('createErrorCodeResolver', () => {
+  const bundledBlock: ErrorCodeIndex = { docsBaseUrl: 'https://bundled.test/', ranges: [], codes: [] };
+  const fetchedBlock: ErrorCodeIndex = { docsBaseUrl: 'https://fetched.test/', ranges: [], codes: [] };
+  const withBlock = { ...bundled, errorCodes: bundledBlock };
+
+  const stubbed = (overrides: Partial<ErrorCodeResolverDeps> = {}) => {
+    const fetchErrorCodes = vi.fn<ErrorCodeResolverDeps['fetchErrorCodes']>(async () => ({ ok: true, path: '/asset.json' }));
+    return { fetchErrorCodes, loadErrorCodes: vi.fn(() => fetchedBlock), ...overrides };
+  };
+  const cacheOf = (path: string | null): NonNullable<ErrorCodeResolverDeps['cache']> => ({
+    read: vi.fn(() => path),
+    write: vi.fn(),
+    discard: vi.fn(),
+  });
+
+  it('answers the bundled block with no fetch for an absent version', async () => {
+    const deps = stubbed();
+
+    expect(await createErrorCodeResolver(withBlock, deps)(undefined)).toEqual({ ok: true, docs: bundledBlock, version: '0.1.0-rc.6' });
+    expect(deps.fetchErrorCodes).not.toHaveBeenCalled();
+  });
+
+  it('answers the bundled block with no fetch and no cache read for the bundled version', async () => {
+    const cache = cacheOf(null);
+    const deps = stubbed({ cache });
+
+    expect(await createErrorCodeResolver(withBlock, deps)('v0.1.0-rc.6')).toEqual({ ok: true, docs: bundledBlock, version: '0.1.0-rc.6' });
+    expect(deps.fetchErrorCodes).not.toHaveBeenCalled();
+    expect(cache.read).not.toHaveBeenCalled();
+  });
+
+  it('answers a bundled snapshot with no block as a null block, not a failure', async () => {
+    expect(await createErrorCodeResolver({ ...bundled, errorCodes: null }, stubbed())(undefined)).toEqual({
+      ok: true,
+      docs: null,
+      version: '0.1.0-rc.6',
+    });
+  });
+
+  it('fetches another version once, grounds on it, and memoises', async () => {
+    const deps = stubbed();
+    const resolve = createErrorCodeResolver(withBlock, deps);
+
+    expect(await resolve('0.2.0')).toEqual({ ok: true, docs: fetchedBlock, version: '0.2.0' });
+    expect(await resolve('v0.2.0')).toEqual({ ok: true, docs: fetchedBlock, version: '0.2.0' });
+    expect(deps.fetchErrorCodes).toHaveBeenCalledTimes(1);
+    expect(deps.fetchErrorCodes).toHaveBeenCalledWith('0.2.0');
+  });
+
+  it('joins concurrent requests for one version', async () => {
+    const deps = stubbed();
+    const resolve = createErrorCodeResolver(withBlock, deps);
+
+    await Promise.all([resolve('0.2.0'), resolve('0.2.0')]);
+
+    expect(deps.fetchErrorCodes).toHaveBeenCalledTimes(1);
+  });
+
+  it('passes an asset-missing fetch through', async () => {
+    const failure = { ok: false as const, reason: 'asset-missing' as const, message: 'no asset' };
+    const deps = stubbed({ fetchErrorCodes: vi.fn(async () => failure) });
+
+    expect(await createErrorCodeResolver(withBlock, deps)('0.2.0')).toEqual(failure);
+  });
+
+  it('fails a schema-4 asset naming the asset, and never writes it to the cache', async () => {
+    const path = join(mkdtempSync(join(tmpdir(), 'cngx-error-resolver-')), 'error-codes.json');
+    writeFileSync(path, JSON.stringify({ schemaVersion: 4, docsBaseUrl: 'x', ranges: [], codes: [] }));
+    const cache = cacheOf(null);
+    const resolve = createErrorCodeResolver(withBlock, { fetchErrorCodes: async () => ({ ok: true, path }), cache });
+
+    const resolution = await resolve('0.2.0');
+
+    expect(resolution).toMatchObject({ ok: false, reason: 'asset-missing' });
+    expect(!resolution.ok && resolution.message).toMatch(/^Fetched error-code asset for v0\.2\.0 could not be read: .*schemaVersion 3/);
+    expect(cache.write).not.toHaveBeenCalled();
+  });
+
+  it('answers offline from a cache hit with no fetch', async () => {
+    const deps = stubbed({ cache: cacheOf('/cached.json'), offline: true });
+
+    expect(await createErrorCodeResolver(withBlock, deps)('0.2.0')).toEqual({ ok: true, docs: fetchedBlock, version: '0.2.0' });
+    expect(deps.loadErrorCodes).toHaveBeenCalledWith('/cached.json');
+    expect(deps.fetchErrorCodes).not.toHaveBeenCalled();
+  });
+
+  it('answers an offline miss with the offline message and no fetch', async () => {
+    const deps = stubbed({ cache: cacheOf(null), offline: true });
+
+    expect(await createErrorCodeResolver(withBlock, deps)('0.2.0')).toEqual({
+      ok: false,
+      reason: 'asset-missing',
+      message: 'v0.2.0 is not cached and --offline forbids a fetch.',
+    });
+    expect(deps.fetchErrorCodes).not.toHaveBeenCalled();
+  });
+
+  it('keeps the two fetches apart: each resolver reaches only its own', async () => {
+    const both = {
+      fetchSnapshot: vi.fn<DocsResolverDeps['fetchSnapshot']>(async () => ({ ok: true, path: NEW })),
+      fetchErrorCodes: vi.fn<ErrorCodeResolverDeps['fetchErrorCodes']>(async () => ({ ok: true, path: '/asset.json' })),
+      loadDocs: loadDocsFromFile,
+      loadErrorCodes: () => fetchedBlock,
+    };
+
+    await createErrorCodeResolver(withBlock, both)('0.2.0');
+    expect(both.fetchSnapshot).not.toHaveBeenCalled();
+    expect(both.fetchErrorCodes).toHaveBeenCalledTimes(1);
+
+    both.fetchErrorCodes.mockClear();
+    await createDocsResolver(bundled, both)('0.2.0');
+    expect(both.fetchSnapshot).toHaveBeenCalledTimes(1);
+    expect(both.fetchErrorCodes).not.toHaveBeenCalled();
   });
 });
