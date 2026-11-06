@@ -550,7 +550,7 @@ export class CngxPopover {
 
   /** Owner-keyed claims behind {@link haspopup}. */
   private readonly haspopupClaims =
-    createPopoverHintClaims<PopoverHaspopup>('CngxPopover haspopup');
+    createPopoverHintClaims<PopoverHaspopup>('cngxPopover haspopup');
 
   /**
    * Hint for the `CngxPopoverTrigger`'s `aria-haspopup` value. Composers
@@ -567,7 +567,7 @@ export class CngxPopover {
   );
 
   /** Owner-keyed claims behind {@link controlsHint}: each holds an id source. */
-  private readonly controlsClaims = createPopoverHintClaims<Signal<string>>('CngxPopover controls');
+  private readonly controlsClaims = createPopoverHintClaims<Signal<string>>('cngxPopover controls');
 
   /**
    * Hint for the `CngxPopoverTrigger`'s `aria-controls` value: the id of the
@@ -584,7 +584,7 @@ export class CngxPopover {
 
   /** Owner-keyed claims behind {@link restoreFocusHint}. */
   private readonly restoreFocusClaims = createPopoverHintClaims<boolean>(
-    'CngxPopover restoreFocus',
+    'cngxPopover restoreFocus',
   );
 
   /**
