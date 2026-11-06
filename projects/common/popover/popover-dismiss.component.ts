@@ -41,8 +41,6 @@ import { CngxPopover } from './popover.directive';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-dismiss.component.ts
  * @since 0.1.0
  * @relatedTo CngxPopoverAction, CngxPopoverPanel, CngxPopoverFooter, CngxButtonBrain
- * @slot cngxButtonStart Content before the label, such as an icon.
- * @slot cngxButtonEnd Content after the label.
  * <example-url>/#/common/popover/popover-panel/with-footer-actions</example-url>
  * <example-url>/#/common/popover/popover-panel/footer-actions-plain</example-url>
  * @axis level molecule

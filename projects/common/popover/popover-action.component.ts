@@ -107,8 +107,6 @@ import { CngxPopover } from './popover.directive';
  * @slot cngxPending Replaces the label while the action runs, once the run outlasts the show delay.
  * @slot cngxSucceeded Replaces the label after the action succeeds.
  * @slot cngxFailed Replaces the label when the action fails; gets the error.
- * @slot cngxButtonStart Content before the label, such as an icon.
- * @slot cngxButtonEnd Content after the label.
  * <example-url>/#/common/popover/popover-panel/content-states</example-url>
  * <example-url>/#/common/popover/popover-panel/variants</example-url>
  * <example-url>/#/common/popover/popover-panel/with-footer-actions</example-url>
