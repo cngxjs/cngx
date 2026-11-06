@@ -38,11 +38,15 @@ function stubPopoverElement(el: HTMLElement): void {
 
 // ── Test hosts ──────────────────────────────────────────────────────────
 
-
 @Component({
   template: `
     <div cngxPopover #pop="cngxPopover">
-      <button cngxPopoverAction [action]="saveAction" [feedbackDuration]="500" #act="cngxPopoverAction">
+      <button
+        cngxPopoverAction
+        [action]="saveAction"
+        [feedbackDuration]="500"
+        #act="cngxPopoverAction"
+      >
         Save
         <ng-template cngxPending>Saving...</ng-template>
         <ng-template cngxSucceeded>Saved!</ng-template>
@@ -587,7 +591,9 @@ describe('CngxPopoverAction', () => {
       const host = fixture.componentInstance;
       host.popover().show();
       fixture.detectChanges();
-      const button = fixture.nativeElement.querySelector('.cngx-popover-action') as HTMLButtonElement;
+      const button = fixture.nativeElement.querySelector(
+        '.cngx-popover-action',
+      ) as HTMLButtonElement;
       button.click();
       await vi.advanceTimersByTimeAsync(0);
       fixture.detectChanges();
@@ -603,7 +609,9 @@ describe('CngxPopoverAction', () => {
       const host = fixture.componentInstance;
       host.popover().show();
       fixture.detectChanges();
-      const dismiss = fixture.nativeElement.querySelector('.cngx-popover-dismiss') as HTMLButtonElement;
+      const dismiss = fixture.nativeElement.querySelector(
+        '.cngx-popover-dismiss',
+      ) as HTMLButtonElement;
       dismiss.click();
       fixture.detectChanges();
       expect(host.runs).toBe(0);
@@ -740,8 +748,7 @@ describe('CngxPopoverAction', () => {
     });
 
     describe('label in the post-settle dwell', () => {
-      const liveRegion = (btn: HTMLElement): HTMLElement =>
-        btn.nextElementSibling as HTMLElement;
+      const liveRegion = (btn: HTMLElement): HTMLElement => btn.nextElementSibling as HTMLElement;
 
       async function render(fixture: { detectChanges(): void }): Promise<void> {
         await vi.advanceTimersByTimeAsync(0);
@@ -751,9 +758,11 @@ describe('CngxPopoverAction', () => {
       }
 
       /** Runs past the show delay and settles successfully: inside the held dwell. */
-      async function intoDwell<T extends { resolveFn: () => void }>(
-        fixture: { componentInstance: T; nativeElement: HTMLElement; detectChanges(): void },
-      ): Promise<HTMLButtonElement> {
+      async function intoDwell<T extends { resolveFn: () => void }>(fixture: {
+        componentInstance: T;
+        nativeElement: HTMLElement;
+        detectChanges(): void;
+      }): Promise<HTMLButtonElement> {
         const btn = confirmButton(fixture);
         btn.click();
         fixture.detectChanges();
