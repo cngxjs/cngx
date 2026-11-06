@@ -1,6 +1,6 @@
 import { computed, Directive, inject, input, output, type Signal } from '@angular/core';
 
-import { CngxAsyncClick } from '@cngx/common/interactive';
+import { CNGX_ASYNC_RUN_STATE, CngxAsyncClick } from '@cngx/common/interactive';
 
 import { CNGX_STEPPER_HOST, type CngxStepperHost } from '../stepper-host.token';
 import { warnStepperControlUnhosted } from '../warn-stepper-unhosted';
@@ -69,7 +69,7 @@ export class CngxStepperComplete {
   private readonly resolvedHost = computed<CngxStepperHost | null>(
     () => this.host() ?? this.injectedHost,
   );
-  private readonly runner = inject(CngxAsyncClick, { host: true });
+  private readonly runner = inject(CNGX_ASYNC_RUN_STATE, { host: true });
 
   /** `true` when the active step is the last one - the finish step. */
   readonly isActive: Signal<boolean> = computed(() => this.resolvedHost()?.isLastStep() ?? false);

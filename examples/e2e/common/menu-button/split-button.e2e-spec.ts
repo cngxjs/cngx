@@ -133,7 +133,7 @@ for (const dir of ['ltr', 'rtl'] as const) {
       );
     });
 
-    test('a disabled main button blocks the caret without lending it a reason', async ({
+    test('a disabled main button blocks the caret and describes it with the main reason', async ({
       page,
     }) => {
       await gotoDemo(page, BUSY);
@@ -146,7 +146,7 @@ for (const dir of ['ltr', 'rtl'] as const) {
       await page.getByRole('button', { name: 'Revoke analyst role' }).click();
       await expect(main).toHaveAccessibleDescription('Exporting needs the analyst role.');
       await expect(caret).toHaveAttribute('aria-disabled', 'true');
-      await expect(caret).toHaveAccessibleDescription('');
+      await expect(caret).toHaveAccessibleDescription('Exporting needs the analyst role.');
       await caret.click({ force: true });
       await expect(menu).toBeHidden();
 

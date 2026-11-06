@@ -1,7 +1,7 @@
 import { Component, signal, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { CNGX_BUTTON_STATE, CngxButton } from '@cngx/common/button';
+import { CNGX_BUTTON_STATE, CngxButton, CngxButtonBrain } from '@cngx/common/button';
 import {
   CNGX_HOST_INTERACTION_STATE,
   CngxAsyncClick,
@@ -16,10 +16,13 @@ import {
   withPartialPack,
   type CngxActiveLanguagePack,
 } from '@cngx/core/i18n';
+import { CNGX_LANGUAGE_DE } from '@cngx/core/i18n/de';
 import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
+import { CNGX_ICON_CHEVRON_DOWN } from '@cngx/utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CNGX_BUTTON_CARET_ICON } from './caret-icon.token';
+import { provideButtonCaretIcon } from './caret-icon.token';
+import { provideMenuButtonI18n, withMenuButtonI18nLabels } from './i18n/menu-button-i18n';
 import { CngxIconMenuButton } from './icon-menu-button.component';
 import { CngxSplitButton } from './split-button.directive';
 
@@ -91,9 +94,22 @@ class UnnamedHost {}
 
 @Component({
   template: `
+    <button cngxIconMenuButton [attr.aria-label]="label()" [menu]="menu" [popover]="pop">
+      <span class="kebab">&#8942;</span>
+    </button>
+    ${MENU}
+  `,
+  imports: [CngxIconMenuButton, CngxMenu, CngxMenuItem, CngxPopover],
+})
+class BoundLabelHost {
+  readonly label = signal<string | null>('Row actions');
+}
+
+@Component({
+  template: `
     <div cngxSplitButton aria-label="Publish">
       <button cngxButton>Publish</button>
-      <button cngxIconMenuButton [aria-label]="label()" [menu]="menu" [popover]="pop">
+      <button cngxIconMenuButton [attr.aria-label]="label()" [menu]="menu" [popover]="pop">
         <span class="kebab">&#8942;</span>
       </button>
     </div>
@@ -102,7 +118,7 @@ class UnnamedHost {}
   imports: [CngxSplitButton, CngxButton, CngxIconMenuButton, CngxMenu, CngxMenuItem, CngxPopover],
 })
 class SplitHost {
-  readonly label = signal<string | undefined>(undefined);
+  readonly label = signal<string | null>(null);
 }
 
 @Component({
@@ -158,7 +174,7 @@ class CustomCaret {}
     ${MENU}
   `,
   imports: [CngxSplitButton, CngxButton, CngxIconMenuButton, CngxMenu, CngxMenuItem, CngxPopover],
-  providers: [{ provide: CNGX_BUTTON_CARET_ICON, useValue: CustomCaret }],
+  providers: [provideButtonCaretIcon(CustomCaret)],
 })
 class CustomCaretSplitHost {}
 
@@ -182,6 +198,33 @@ function setup<T>(type: Type<T>) {
   };
 }
 
+/**
+ * The name a button gets from its attributes or, without one, from its
+ * content: text outside every `aria-hidden="true"` and `hidden` subtree.
+ */
+function nameOf(el: Element): string {
+  const label = el.getAttribute('aria-label')?.trim();
+  if (label) {
+    return label;
+  }
+  const walk = (node: Node): string =>
+    Array.from(node.childNodes)
+      .map((child) => {
+        if (child.nodeType === Node.TEXT_NODE) {
+          return child.textContent ?? '';
+        }
+        if (child.nodeType !== Node.ELEMENT_NODE) {
+          return '';
+        }
+        const element = child as Element;
+        const hidden =
+          element.getAttribute('aria-hidden') === 'true' || element.hasAttribute('hidden');
+        return hidden ? '' : walk(element);
+      })
+      .join('');
+  return walk(el).replace(/\s+/g, ' ').trim();
+}
+
 function key(el: HTMLElement, k: string): void {
   el.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
 }
@@ -192,6 +235,11 @@ async function settle(): Promise<void> {
   await Promise.resolve();
   await Promise.resolve();
 }
+
+// A failed assertion must not leave console.warn mocked for later spec files (isolate: false).
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('CngxIconMenuButton', () => {
   beforeEach(() => {
@@ -217,7 +265,8 @@ describe('CngxIconMenuButton', () => {
       const de = fixture.debugElement.query(By.directive(CngxIconMenuButton));
       const interaction = de.injector.get(CNGX_HOST_INTERACTION_STATE);
       const state = de.injector.get(CNGX_BUTTON_STATE);
-      expect(state).toBe(de.injector.get(CngxIconMenuButton));
+      expect(state).toBe(de.injector.get(CngxButtonBrain));
+      expect(interaction).toBe(de.injector.get(CngxButtonBrain).interaction);
       expect([interaction.disabled(), state.blocked()]).toEqual([false, false]);
       host.disabled.set(true);
       flush();
@@ -293,9 +342,23 @@ describe('CngxIconMenuButton', () => {
       expect(button.querySelector('.cngx-menu-button__caret')).toBeNull();
     });
 
+    it('renders no reason span without a reason', () => {
+      const { button } = setup(KebabHost);
+      expect(button.querySelector('.cngx-button__reason')).toBeNull();
+    });
+
     it('carries the consumer name and no default name', () => {
       expect(setup(KebabHost).button.getAttribute('aria-label')).toBe('Row actions');
       expect(setup(UnnamedHost).button.hasAttribute('aria-label')).toBe(false);
+    });
+
+    it('keeps a consumer [attr.aria-label] through change detection', () => {
+      const { button, host, flush } = setup(BoundLabelHost);
+      expect(button.getAttribute('aria-label')).toBe('Row actions');
+
+      host.label.set('Order actions');
+      flush();
+      expect(button.getAttribute('aria-label')).toBe('Order actions');
     });
 
     it('toggles the popover on click and mirrors it in aria-expanded and data-expanded', () => {
@@ -347,19 +410,23 @@ describe('CngxIconMenuButton', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
       const { fixture, button } = setup(UnnamedHost);
       await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve));
+      // The miss is confirmed on the next stable cycle before it warns.
+      fixture.detectChanges();
+      await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve));
       const calls = warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1071'));
       expect(calls).toHaveLength(1);
       expect(calls[0][0]).toMatch(/^CNGX1071: \[cngxIconMenuButton\] has no accessible name\./);
       expect(calls[0]).toContain(button);
-      warn.mockRestore();
     });
 
     it('stays silent with an aria-label', async () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
       const { fixture } = setup(KebabHost);
       await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve));
       expect(warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1071'))).toEqual([]);
-      warn.mockRestore();
     });
   });
 
@@ -372,22 +439,39 @@ describe('CngxIconMenuButton', () => {
       expect(caret?.closest('[aria-hidden="true"]')).not.toBeNull();
     });
 
-    it('renders the CNGX_BUTTON_CARET_ICON component', () => {
+    it('draws the default caret from CNGX_ICON_CHEVRON_DOWN', () => {
+      const { button } = setup(SplitHost);
+      const svg = button.querySelector('.cngx-menu-button__caret svg.cngx-icon-svg');
+      expect(svg?.querySelector('.cngx-icon-svg__path')?.getAttribute('d')).toBe(
+        CNGX_ICON_CHEVRON_DOWN.d,
+      );
+    });
+
+    it('renders the provideButtonCaretIcon component', () => {
       const { button } = setup(CustomCaretSplitHost);
       expect(button.querySelector('.cngx-menu-button__caret .custom-caret')).not.toBeNull();
     });
 
-    it('takes its name from the language pack and lets aria-label win', () => {
-      const { button, host, flush } = setup(SplitHost);
-      expect(button.getAttribute('aria-label')).toBe('More options');
+    it('is named by content from the language pack, with no aria-label of its own', () => {
+      const { button } = setup(SplitHost);
+      expect(button.hasAttribute('aria-label')).toBe(false);
+      const label = button.querySelector('.cngx-sr-only');
+      expect(label?.textContent?.trim()).toBe('More options');
+      expect(label?.closest('[aria-hidden="true"]')).toBeNull();
+      expect(nameOf(button)).toBe('More options');
+    });
 
+    it('lets a consumer aria-label win over the content name', () => {
+      const { button, host, flush } = setup(SplitHost);
       host.label.set('Publish options');
       flush();
       expect(button.getAttribute('aria-label')).toBe('Publish options');
+      expect(nameOf(button)).toBe('Publish options');
 
-      host.label.set(undefined);
+      host.label.set(null);
       flush();
-      expect(button.getAttribute('aria-label')).toBe('More options');
+      expect(button.hasAttribute('aria-label')).toBe(false);
+      expect(nameOf(button)).toBe('More options');
     });
 
     it('relabels when the active pack flips', () => {
@@ -396,19 +480,51 @@ describe('CngxIconMenuButton', () => {
         providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
       });
       const { button, flush } = setup(SplitHost);
-      expect(button.getAttribute('aria-label')).toBe('More options');
+      expect(nameOf(button)).toBe('More options');
 
       pack.set({ locale: 'de', menuButton: { splitToggle: 'Weitere Optionen' } });
       flush();
-      expect(button.getAttribute('aria-label')).toBe('Weitere Optionen');
+      expect(nameOf(button)).toBe('Weitere Optionen');
+    });
+
+    it('reads the busy note from the active pack and follows a flip to German', () => {
+      const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+      TestBed.configureTestingModule({
+        providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
+      });
+      const { button, flush } = setup(SplitHost);
+      const note = () => button.querySelector('[id^="cngx-split-caret-busy-"]');
+      expect(note()?.textContent).toBe('The main action is running');
+
+      pack.set(CNGX_LANGUAGE_DE);
+      flush();
+      expect(note()?.textContent).toBe('Die Hauptaktion läuft');
+      expect(nameOf(button)).toBe('Weitere Optionen');
+
+      pack.set(undefined);
+      flush();
+      expect(note()?.textContent).toBe('The main action is running');
+    });
+
+    it('takes the busy note from a withMenuButtonI18nLabels override over the pack', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideCngxI18n(withPartialPack(CNGX_LANGUAGE_DE), withDocumentLanguage('off')),
+          provideMenuButtonI18n(withMenuButtonI18nLabels({ splitMainBusy: 'Publishing' })),
+        ],
+      });
+      const { button } = setup(SplitHost);
+      const note = button.querySelector('[id^="cngx-split-caret-busy-"]');
+      expect(note?.textContent).toBe('Publishing');
+      expect(nameOf(button)).toBe('Weitere Optionen');
     });
 
     it('does not warn CNGX1071 for the unnamed caret', async () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
       const { fixture } = setup(CustomCaretSplitHost);
       await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve));
       expect(warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1071'))).toEqual([]);
-      warn.mockRestore();
     });
   });
 });

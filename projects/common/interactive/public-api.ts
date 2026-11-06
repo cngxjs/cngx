@@ -7,6 +7,7 @@ export {
   type AsyncAction,
   type CngxAsyncSettle,
 } from './async-click/async-click.directive';
+export { CNGX_ASYNC_RUN_STATE, type CngxAsyncRunState } from './async-click/async-run-state.token';
 export {
   CNGX_HOST_INTERACTION_STATE,
   type CngxHostInteractionState,

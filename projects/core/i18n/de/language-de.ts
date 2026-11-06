@@ -338,6 +338,7 @@ export const CNGX_LANGUAGE_DE = {
   },
   menuButton: {
     splitToggle: 'Weitere Optionen',
+    splitMainBusy: 'Die Hauptaktion läuft',
   },
   paginator: {
     label: 'Seitennavigation',

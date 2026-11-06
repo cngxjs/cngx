@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxIconMenuButton: Kebab',
   subtitle: 'A square <code>cngxIconMenuButton</code> that opens a row menu; the glyph is yours, so is the name.',
-  description: 'Outside a split button the icon menu button renders whatever you project, here a vertical ellipsis, hidden from assistive technology. The name is the consumer\'s job: name the menu after what it acts on ("Actions for Q3 report"), not after the glyph; without a name it warns <code>CNGX1071</code> in development. Everything else matches <code>cngxMenuButton</code>: <code>[menu]</code> and <code>[popover]</code> wire it, it reads <code>aria-haspopup="menu"</code> and <code>aria-expanded</code>, toggles on click, opens on ArrowDown, Enter or Space and moves focus into the menu, which carries <code>aria-activedescendant</code>. Escape returns focus to the button, Tab closes the menu. It is <code>ghost</code> by default, like <code>cngxIconButton</code>.',
+  description: 'Outside a split button the icon menu button renders whatever you project, here a vertical ellipsis, hidden from assistive technology. The name is the consumer\'s job: name the menu after what it acts on ("Actions for Q3 report"), not after the glyph; without a name it warns <code>CNGX1071</code> in development. Everything else matches <code>cngxMenuButton</code>: <code>[menu]</code> and <code>[popover]</code> wire it, it reads <code>aria-haspopup="menu"</code> and <code>aria-expanded</code>, toggles on click, opens on ArrowDown, Enter or Space and moves focus into the menu, which carries <code>aria-activedescendant</code>. Escape returns focus to the button, Tab closes the menu. It is <code>ghost</code> by default, like <code>cngxIconButton</code>. The dashed box below mirrors what a screen reader gets for the kebab button: role, name, description and state are exposed, not painted.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -20,6 +20,7 @@ export const STORY: DemoSpec = {
     "import { CngxMenu, CngxMenuItem } from '@cngx/common/interactive';",
     "import { CngxIconMenuButton } from '@cngx/common/menu-button';",
     "import { CngxPopover } from '@cngx/common/popover';",
+    "import { mirrorScreenReader } from '../../../../fixtures';",
   ],
   imports: ['CngxIcon', 'CngxMenu', 'CngxMenuItem', 'CngxIconMenuButton', 'CngxPopover'],
   setup: `protected readonly lastAction = signal<string | null>(null);`,
@@ -45,10 +46,33 @@ export const STORY: DemoSpec = {
       <li cngxMenuItem value="archive">Archive</li>
     </ul>
   </div>`,
+  setupChrome: `
+  // Mirrors the accessibility layer of the buttons into the box below.
+  protected readonly sr = mirrorScreenReader([
+    { label: 'kebab', selector: 'button[cngxiconmenubutton]' },
+  ]);`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Last action</span>
       <span class="event-value">{{ lastAction() ?? '-' }}</span>
     </div>
+  </div>
+  <div class="cngx-ex-sr-output">
+    <p class="cngx-ex-sr-output__title">Screen reader hears</p>
+    <dl class="cngx-ex-sr-output__list">
+      @for (row of sr.rows(); track row.label) {
+        <dt>{{ row.label }} role</dt>
+        <dd>{{ row.role }}{{ row.popup ? ', ' + row.popup : '' }}</dd>
+        <dt>{{ row.label }} name</dt>
+        <dd>"{{ row.name }}"</dd>
+        <dt>{{ row.label }} description</dt>
+        <dd>{{ row.description }}</dd>
+        <dt>{{ row.label }} state</dt>
+        <dd>aria-disabled {{ row.disabled }}, aria-busy {{ row.busy }}</dd>
+      }
+    </dl>
+    <p class="cngx-ex-sr-output__note">
+      Read live from the DOM attributes the accessibility layer exposes; none of it is painted. The name approximates accname: aria-labelledby, then aria-label, then the text without aria-hidden or hidden parts; the browser accessibility tree stays the reference.
+    </p>
   </div>`,
 };

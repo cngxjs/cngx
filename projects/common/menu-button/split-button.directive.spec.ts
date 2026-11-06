@@ -1,14 +1,28 @@
-import { Component, signal, type Type } from '@angular/core';
+import { Component, inject, signal, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { CngxButton, CngxIconButton } from '@cngx/common/button';
-import { CngxAsyncClick, CngxMenu, CngxMenuItem, type AsyncAction } from '@cngx/common/interactive';
-import { CngxPopover } from '@cngx/common/popover';
+import {
+  CNGX_BUTTON_STATE,
+  CngxButton,
+  CngxButtonBrain,
+  CngxIconButton,
+  provideButtonHost,
+} from '@cngx/common/button';
+import {
+  CngxAsyncClick,
+  CngxMenu,
+  CngxMenuItem,
+  CngxMenuTrigger,
+  type AsyncAction,
+} from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxIconMenuButton } from './icon-menu-button.component';
+import { injectMenuToggle } from './internal/menu-toggle';
 import { CngxSplitButton } from './split-button.directive';
+import { CngxSplitCaret } from './split-caret.directive';
 
 function polyfillPopover(): void {
   const proto = HTMLElement.prototype as unknown as {
@@ -49,7 +63,13 @@ const MENU = `
 @Component({
   template: `
     <div cngxSplitButton variant="outline" size="sm" aria-label="Publish">
-      <button id="main" cngxButton [cngxAsyncClick]="publish" [disabled]="mainDisabled()">
+      <button
+        id="main"
+        cngxButton
+        [cngxAsyncClick]="publish"
+        [disabled]="mainDisabled()"
+        [disabledReason]="mainReason()"
+      >
         Publish
       </button>
       <button
@@ -75,6 +95,7 @@ const MENU = `
 })
 class SplitHost {
   readonly mainDisabled = signal(false);
+  readonly mainReason = signal<string | undefined>(undefined);
   readonly caretDisabled = signal(false);
   readonly caretReason = signal<string | undefined>('Nothing else to publish');
   release: () => void = () => undefined;
@@ -177,6 +198,75 @@ class IconMainHost {
   readonly disabled = signal(false);
 }
 
+@Component({
+  template: `
+    <div cngxSplitButton aria-label="Publish">
+      <button id="caret" cngxIconMenuButton [menu]="menu" [popover]="pop"></button>
+      <button id="main" cngxButton [disabled]="disabled()">Publish</button>
+    </div>
+    ${MENU}
+  `,
+  imports: [CngxSplitButton, CngxButton, CngxIconMenuButton, CngxMenu, CngxMenuItem, CngxPopover],
+})
+class CaretFirstHost {
+  readonly disabled = signal(false);
+}
+
+// A caret written in the app on the public contract: brain, triggers, CngxSplitCaret.
+@Component({
+  selector: 'button[demoCaret]',
+  hostDirectives: [
+    { directive: CngxButtonBrain, inputs: ['variant: demoCaret', 'disabled', 'disabledReason'] },
+    { directive: CngxMenuTrigger, inputs: ['cngxMenuTrigger: menu', 'popover'] },
+    { directive: CngxPopoverTrigger, inputs: ['cngxPopoverTrigger: popover'] },
+    CngxSplitCaret,
+  ],
+  providers: [provideButtonHost('demoCaret', { defaultVariant: 'solid', iconOnly: true })],
+  host: { '(click)': 'toggle.handleClick()' },
+  template: `<span aria-hidden="true">v</span>
+    @if (caret.isCaret()) {
+      <span class="cngx-sr-only">{{ caret.label() }}</span>
+      <span [id]="caret.busyNoteId" hidden>{{ caret.busyNote() }}</span>
+    }`,
+})
+class DemoCaret {
+  protected readonly caret = inject(CngxSplitCaret);
+  protected readonly toggle = injectMenuToggle(inject(CngxButtonBrain).blocked);
+}
+
+@Component({
+  template: `
+    <div cngxSplitButton aria-label="Publish">
+      <button
+        id="main"
+        cngxButton
+        [cngxAsyncClick]="publish"
+        [disabled]="mainDisabled()"
+        [disabledReason]="mainReason()"
+      >
+        Publish
+      </button>
+      <button id="caret" demoCaret [menu]="menu" [popover]="pop"></button>
+    </div>
+    ${MENU}
+  `,
+  imports: [
+    CngxSplitButton,
+    CngxButton,
+    CngxAsyncClick,
+    DemoCaret,
+    CngxMenu,
+    CngxMenuItem,
+    CngxPopover,
+  ],
+})
+class CustomCaretHost {
+  readonly mainDisabled = signal(false);
+  readonly mainReason = signal<string | undefined>(undefined);
+  release: () => void = () => undefined;
+  readonly publish: AsyncAction = () => new Promise<void>((resolve) => (this.release = resolve));
+}
+
 function setup<T>(type: Type<T>) {
   const fixture = TestBed.createComponent(type);
   fixture.detectChanges();
@@ -201,9 +291,46 @@ function setup<T>(type: Type<T>) {
   };
 }
 
+/** The id list of `aria-describedby`, empty without one. */
+function describedIds(el: HTMLElement): string[] {
+  return (el.getAttribute('aria-describedby') ?? '').split(/\s+/).filter(Boolean);
+}
+
+/**
+ * The name a button gets from its attributes or, without one, from its
+ * content: text outside every `aria-hidden="true"` and `hidden` subtree.
+ */
+function nameOf(el: Element): string {
+  const label = el.getAttribute('aria-label')?.trim();
+  if (label) {
+    return label;
+  }
+  const walk = (node: Node): string =>
+    Array.from(node.childNodes)
+      .map((child) => {
+        if (child.nodeType === Node.TEXT_NODE) {
+          return child.textContent ?? '';
+        }
+        if (child.nodeType !== Node.ELEMENT_NODE) {
+          return '';
+        }
+        const element = child as Element;
+        const hidden =
+          element.getAttribute('aria-hidden') === 'true' || element.hasAttribute('hidden');
+        return hidden ? '' : walk(element);
+      })
+      .join('');
+  return walk(el).replace(/\s+/g, ' ').trim();
+}
+
 function key(el: HTMLElement, k: string): void {
   el.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
 }
+
+// A failed assertion must not leave console.warn mocked for later spec files (isolate: false).
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('CngxSplitButton', () => {
   beforeEach(() => {
@@ -246,15 +373,43 @@ describe('CngxSplitButton', () => {
   });
 
   describe('main action running', () => {
-    it('blocks the caret without a reason of its own', () => {
+    it('blocks the caret and describes it as busy, without a reason of its own', () => {
       const { q, flush } = setup(SplitHost);
       const caret = q('#caret');
       expect(caret.hasAttribute('aria-disabled')).toBe(false);
+      expect(caret.getAttribute('aria-describedby')).toBeNull();
 
       q('#main').click();
       flush();
       expect(caret.getAttribute('aria-disabled')).toBe('true');
-      expect(caret.getAttribute('aria-describedby')).toBeNull();
+      const ids = describedIds(caret);
+      expect(ids).toHaveLength(1);
+      const busy = document.getElementById(ids[0]);
+      expect(busy?.textContent?.trim()).toBe('The main action is running');
+      expect(caret.contains(busy)).toBe(true);
+      expect(busy?.hasAttribute('hidden')).toBe(true);
+    });
+
+    it('keeps the caret name exactly "More options" while the main action is pending', () => {
+      const { q, flush } = setup(SplitHost);
+      const caret = q('#caret');
+      expect(nameOf(caret)).toBe('More options');
+      q('#main').click();
+      flush();
+      expect(caret.getAttribute('aria-disabled')).toBe('true');
+      expect(nameOf(caret)).toBe('More options');
+    });
+
+    it('drops the busy description once the action settles', async () => {
+      const { fixture, host, q, flush } = setup(SplitHost);
+      q('#main').click();
+      flush();
+      expect(describedIds(q('#caret'))).toHaveLength(1);
+
+      host.release();
+      await fixture.whenStable();
+      flush();
+      expect(q('#caret').getAttribute('aria-describedby')).toBeNull();
     });
 
     it('swallows click and ArrowDown on the caret', () => {
@@ -365,6 +520,62 @@ describe('CngxSplitButton', () => {
     expect(q('#caret').getAttribute('aria-describedby')).toBeNull();
   });
 
+  it("references the main's reason while the main is disabled with one", () => {
+    const { fixture, host, q, flush } = setup(SplitHost);
+    host.mainReason.set('Fix the errors first');
+    host.mainDisabled.set(true);
+    flush();
+    const caret = q('#caret');
+    const main = fixture.debugElement.query(By.css('#main')).injector.get(CNGX_BUTTON_STATE);
+    const mainReasonId = main.activeReasonId();
+    expect(mainReasonId).not.toBeNull();
+    expect(caret.getAttribute('aria-disabled')).toBe('true');
+    expect(describedIds(caret)).toEqual([mainReasonId]);
+    expect(document.getElementById(mainReasonId ?? '')?.textContent).toBe('Fix the errors first');
+    expect(nameOf(caret)).toBe('More options');
+
+    host.mainDisabled.set(false);
+    flush();
+    expect(caret.hasAttribute('aria-disabled')).toBe(false);
+    expect(caret.getAttribute('aria-describedby')).toBeNull();
+  });
+
+  it('gives a custom host on CngxSplitCaret the caret role, refusal and description', async () => {
+    const { fixture, host, q, split, popover, flush } = setup(CustomCaretHost);
+    const caret = q('#caret');
+    const main = fixture.debugElement.query(By.css('#main')).injector.get(CNGX_BUTTON_STATE);
+    expect(split.caret()).toBe(
+      fixture.debugElement.query(By.css('#caret')).injector.get(CNGX_BUTTON_STATE),
+    );
+    expect(nameOf(caret)).toBe('More options');
+
+    host.mainReason.set('Fix the errors first');
+    host.mainDisabled.set(true);
+    flush();
+    expect(caret.getAttribute('aria-disabled')).toBe('true');
+    expect(describedIds(caret)).toEqual([main.activeReasonId()]);
+    caret.click();
+    flush();
+    expect(popover.isVisible()).toBe(false);
+
+    host.mainDisabled.set(false);
+    flush();
+    q('#main').click();
+    flush();
+    await Promise.resolve();
+    flush();
+    const [busyId] = describedIds(caret);
+    expect(document.getElementById(busyId)?.textContent).toBe('The main action is running');
+    expect(nameOf(caret)).toBe('More options');
+
+    host.release();
+    await Promise.resolve();
+    await Promise.resolve();
+    flush();
+    expect(caret.hasAttribute('aria-describedby')).toBe(false);
+    expect(caret.hasAttribute('aria-disabled')).toBe(false);
+  });
+
   it("references the caret's reason while its own disabled is set", () => {
     const { host, q, flush } = setup(SplitHost);
     host.caretDisabled.set(true);
@@ -378,7 +589,7 @@ describe('CngxSplitButton', () => {
 
   it('ignores a cngxAsyncClick button inside the projected menu', () => {
     const { fixture, q, split, flush } = setup(NestedAsyncHost);
-    const nested = fixture.debugElement.query(By.css('#nested')).injector.get(CngxButton);
+    const nested = fixture.debugElement.query(By.css('#nested')).injector.get(CNGX_BUTTON_STATE);
     q('#nested').click();
     flush();
     expect(nested.blocked()).toBe(true);
@@ -391,9 +602,10 @@ describe('CngxSplitButton', () => {
     const nested = q('#nested');
     expect(split.caret()).toBeDefined();
     expect(q('#caret').getAttribute('aria-disabled')).toBe('true');
-    expect(q('#caret').getAttribute('aria-label')).toBe('More options');
+    expect(q('#caret').querySelector('.cngx-sr-only')?.textContent?.trim()).toBe('More options');
     expect(nested.hasAttribute('aria-disabled')).toBe(false);
     expect(nested.getAttribute('aria-label')).toBe('Row actions');
+    expect(nested.querySelector('.cngx-sr-only')).toBeNull();
     expect(nested.querySelector('.kebab')).not.toBeNull();
     expect(nested.querySelector('.cngx-menu-button__caret')).toBeNull();
   });
@@ -407,13 +619,25 @@ describe('CngxSplitButton', () => {
     expect(q('#caret').getAttribute('aria-disabled')).toBe('true');
   });
 
+  it('resolves the main action when the caret comes first in the DOM', () => {
+    const { fixture, host, q, split, flush } = setup(CaretFirstHost);
+    const caretState = fixture.debugElement.query(By.css('#caret')).injector.get(CNGX_BUTTON_STATE);
+    expect(split.caret()).toBe(caretState);
+    expect(split.mainBlocked()).toBe(false);
+    host.disabled.set(true);
+    flush();
+    expect(split.mainBlocked()).toBe(true);
+    expect(q('#caret').getAttribute('aria-disabled')).toBe('true');
+    expect(q('#caret').querySelector('.cngx-sr-only')?.textContent?.trim()).toBe('More options');
+  });
+
   it('never takes the caret for the main action', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    // Silences the CNGX1073 this host raises; the spy is restored after each test.
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const { fixture, split } = setup(WrappedMainHost);
     await fixture.whenStable();
     expect(split.caret()).toBeDefined();
     expect(split.mainBlocked()).toBe(false);
-    warn.mockRestore();
   });
 
   it('warns CNGX1073 when the main cngxButton is not a direct child', async () => {
@@ -425,7 +649,6 @@ describe('CngxSplitButton', () => {
     expect(calls[0][0]).toMatch(/^CNGX1073: \[cngxSplitButton\] has no main cngxButton\./);
     expect(calls[0]).toContain(group);
     expect(split.mainBlocked()).toBe(false);
-    warn.mockRestore();
   });
 
   it('stays silent about CNGX1073 with a main button', async () => {
@@ -433,7 +656,6 @@ describe('CngxSplitButton', () => {
     const { fixture } = setup(SplitHost);
     await fixture.whenStable();
     expect(warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1073'))).toEqual([]);
-    warn.mockRestore();
   });
 
   it('warns CNGX1072 through the button group without a group name', async () => {
@@ -441,6 +663,5 @@ describe('CngxSplitButton', () => {
     const { fixture } = setup(UnnamedGroupHost);
     await fixture.whenStable();
     expect(warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1072'))).toHaveLength(1);
-    warn.mockRestore();
   });
 });

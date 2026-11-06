@@ -11,6 +11,7 @@
  *   `--cngx-button-transition` (the button's derived `--cngx-duration-fast`
  *   rung), so a brand motion override re-times it with the colour change.
  * - Under reduced motion the turn is instant.
+ * - A local `.cngx-sr-only` hides the split caret's content name.
  */
 
 @layer cngx.components {
@@ -48,6 +49,22 @@
     :scope > :not(svg) {
       display: contents;
     }
+  }
+
+  /* .cngx-sr-only duplicated locally so the file is self-contained when used standalone
+   * (the split caret's name). Canonical declaration lives in
+   * @cngx/core/theming/utilities.css; identical body so the cascade is benign
+   * whether one or both load. */
+  .cngx-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .cngx-menu-button[data-expanded='true'] > .cngx-menu-button__caret,

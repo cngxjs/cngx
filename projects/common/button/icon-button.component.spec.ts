@@ -3,8 +3,9 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { CngxAsyncClick } from '@cngx/common/interactive';
 import { CNGX_LOADING_DEFAULTS, provideLoadingConfigAt, withShowDelay } from '@cngx/core/utils';
-import { vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
 
+import { CngxButtonBrain } from './button-brain.directive';
 import { provideButtonConfig, withButtonVariant } from './button-config';
 import { CNGX_BUTTON_STATE } from './button-state.token';
 import { CngxIconButton } from './icon-button.component';
@@ -74,6 +75,11 @@ function render<T>(type: new () => T) {
   const el = fixture.nativeElement as HTMLElement;
   return { fixture, host: fixture.componentInstance, q: (s: string) => el.querySelector(s) as HTMLElement };
 }
+
+// A failed assertion must not leave console.warn mocked for later spec files (isolate: false).
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('CngxIconButton', () => {
   it('gates the busy layer of a co-hosted cngxAsyncClick behind the loading config', async () => {
@@ -177,7 +183,7 @@ describe('CngxIconButton', () => {
     const { fixture, host } = render(NamedHost);
     const de = fixture.debugElement.query(By.css('#disabled'));
     const state = de.injector.get(CNGX_BUTTON_STATE);
-    expect(state).toBe(de.injector.get(CngxIconButton));
+    expect(state).toBe(de.injector.get(CngxButtonBrain));
     expect(state.blocked()).toBe(true);
 
     host.disabled.set(false);
@@ -200,17 +206,21 @@ describe('CngxIconButton', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const { fixture } = render(NamedHost);
     await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve));
     expect(warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1071'))).toEqual([]);
-    warn.mockRestore();
   });
 
   it('warns CNGX1071 when the host has no accessible name', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const { fixture, q } = render(UnnamedHost);
     await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve));
+    // The miss is confirmed on the next stable cycle before it warns.
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve));
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn.mock.calls[0][0]).toMatch(/^CNGX1071: \[cngxIconButton\] has no accessible name\./);
     expect(warn.mock.calls[0]).toContain(q('#unnamed'));
-    warn.mockRestore();
   });
 });

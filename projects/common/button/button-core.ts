@@ -1,23 +1,17 @@
-import {
-  computed,
-  DestroyRef,
-  ElementRef,
-  HostAttributeToken,
-  inject,
-  Injector,
-  type Provider,
-  type Signal,
-} from '@angular/core';
-import { CngxAsyncClick } from '@cngx/common/interactive';
+import { computed, DestroyRef, ElementRef, inject, type Signal } from '@angular/core';
+import { CNGX_ASYNC_RUN_STATE } from '@cngx/common/interactive';
 import {
   CNGX_DESCRIBED_BY,
-  createDescribedByRegistry,
+  createVisibilityGate,
   injectDescribedByContribution,
+  injectLazySelf,
+  injectLoadingConfig,
   nextUid,
 } from '@cngx/core/utils';
 
 import { injectButtonConfig, type CngxButtonConfig } from './button-config';
 import { CNGX_BUTTON_GROUP, type CngxButtonGroupContext } from './button-group.token';
+import type { CngxButtonHostDescriptor } from './button-host.token';
 import type {
   CngxButtonSize,
   CngxButtonTone,
@@ -40,6 +34,11 @@ export interface CngxButtonCoreInputs {
   readonly disabledReason: Signal<string | undefined>;
   readonly describedBy: Signal<string | null>;
   readonly type: Signal<CngxButtonType | undefined>;
+  /**
+   * A run the host reflects that the co-hosted runner does not own; folded
+   * into `busy`. `CngxButtonBrain` passes `CNGX_BUTTON_HOST_STATE.busy`.
+   */
+  readonly hostBusy?: Signal<boolean>;
 }
 
 /**
@@ -50,6 +49,8 @@ export interface CngxButtonCoreInputs {
  */
 export interface CngxButtonCoreDefaults {
   readonly variant: CngxButtonVariant;
+  /** Axes pinned right after the input, ahead of the group and the config. */
+  readonly fixed?: CngxButtonHostDescriptor['fixed'];
 }
 
 /**
@@ -61,22 +62,36 @@ export interface CngxButtonCore {
   readonly variant: Signal<CngxButtonVariant>;
   readonly tone: Signal<CngxButtonTone>;
   readonly size: Signal<CngxButtonSize>;
-  /** `true` while a co-hosted `CngxAsyncClick` runs its action. */
+  /** `true` while a co-hosted runner runs its action or the host reflects a run. */
   readonly busy: Signal<boolean>;
   /**
-   * `true` while the busy layer is showing: the co-hosted run after the show
-   * delay and held for the min-dwell (`CngxAsyncClick.busyVisible`). `busy`
-   * stays the immediate truth.
+   * `true` while the busy layer is showing: the run after the show delay,
+   * held for the min-dwell. With a co-hosted runner its gate decides
+   * (`CngxAsyncClick.busyVisible`); without one, a gate over `hostBusy` on
+   * the `CNGX_LOADING_CONFIG` timing. `busy` stays the immediate truth.
    */
   readonly busyVisible: Signal<boolean>;
-  /** `true` while the button refuses activation: disabled, busy or refused by the co-hosted `CngxAsyncClick`. */
+  /**
+   * `true` while the button refuses activation: disabled, busy or refused by
+   * the co-hosted `CngxAsyncClick`. The activation guard keys on it, so
+   * `aria-disabled="true"` always means no activation.
+   */
   readonly blocked: Signal<boolean>;
   /** `data-busy` attribute value, rendered from `busyVisible` (gated). */
   readonly busyAttr: Signal<'true' | null>;
   /** `data-pending` attribute value, rendered from `busy` (immediate). */
   readonly pendingAttr: Signal<'true' | null>;
-  /** `aria-disabled` rendered from `blocked`. */
+  /**
+   * `aria-disabled`: the co-hosted runner's own value (its single source), or
+   * `blocked` without a runner or while the runner leaves it unset.
+   */
   readonly ariaDisabled: Signal<'true' | null>;
+  /**
+   * `aria-busy`: the co-hosted run, the runner's own busy override, the
+   * host's run, and the busy visual while it is held through its dwell. With
+   * a runner the same value the runner renders, so the two writers agree.
+   */
+  readonly ariaBusy: Signal<'true' | null>;
   /**
    * The element's merged `aria-describedby`: the consumer's static ids, the
    * `cngxDescribedBy` ids, the reason id while disabled with a reason, and
@@ -84,6 +99,8 @@ export interface CngxButtonCore {
    */
   readonly describedBy: Signal<string | null>;
   readonly reasonId: string;
+  /** `reasonId` while it describes the element (`disabled` with a reason), else `null`. */
+  readonly activeReasonId: Signal<string | null>;
   /** `type` attribute value: the input or `'button'` on a `<button>`, `null` on an `<a>`. */
   readonly hostType: Signal<CngxButtonType | null>;
 }
@@ -107,35 +124,18 @@ export function resolveButtonSize(
 }
 
 /**
- * Element-level `aria-describedby` owner of a button host. Seeds the
- * registry with the consumer's static `aria-describedby`, so those ids
- * survive the host binding, and lets a co-hosted `[cngxTooltip]` contribute
- * its id instead of overwriting the attribute.
+ * Derivation behind `CngxButtonBrain`. Resolves the three visual axes
+ * (`input ?? fixed ?? group ?? config ?? default`; tone skips the group),
+ * renders `disabled` as `aria-disabled` so the element stays focusable, swallows activation while
+ * blocked and reads a co-hosted run through `CNGX_ASYNC_RUN_STATE`.
  *
- * @internal
- */
-export function provideButtonDescribedBy(name: string): Provider {
-  return {
-    provide: CNGX_DESCRIBED_BY,
-    useFactory: () =>
-      createDescribedByRegistry({
-        name,
-        seed: inject(new HostAttributeToken('aria-describedby'), { optional: true }),
-      }),
-  };
-}
-
-/**
- * Shared brain of the button family. Resolves the three visual axes
- * (`input ?? group ?? config ?? default`), renders `disabled` as
- * `aria-disabled` so the element stays focusable, swallows activation while
- * disabled and reads the busy bit of a co-hosted `CngxAsyncClick`.
- *
- * The activation guard is a capture-phase listener on the host: it runs
- * before any bubbling `(click)` handler on the same element (consumer
- * handlers, `RouterLink`, `CngxAsyncClick`), stops them and prevents the
- * default action (link navigation, form submission, including the implicit
- * submission a browser triggers through a click on the default button).
+ * The activation guard is a capture-phase listener on the host: while
+ * `blocked` it runs before any bubbling `(click)` handler on the same
+ * element (consumer handlers, `RouterLink`, `CngxAsyncClick`), stops them
+ * and prevents the default action (link navigation, form submission,
+ * including the implicit submission a browser triggers through a click on
+ * the default button). The one click it lets through is the one on an
+ * expanded popup trigger (`aria-expanded="true"`), which closes the popup.
  *
  * @internal
  */
@@ -146,58 +146,87 @@ export function injectButtonCore(
   const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   const group = inject(CNGX_BUTTON_GROUP, { optional: true });
   const config = injectButtonConfig();
-  // Resolved on first read, not at construction: CngxAsyncClick injects the
-  // CNGX_HOST_INTERACTION_STATE this button provides, so an eager inject in
-  // either direction is a cycle.
-  const injector = inject(Injector);
-  let asyncClick: CngxAsyncClick | null | undefined;
-  const coHostedAsyncClick = (): CngxAsyncClick | null =>
-    (asyncClick ??= injector.get(CngxAsyncClick, null, { self: true, optional: true }));
+  // Resolved on first read, not at construction: the co-hosted runner injects
+  // the CNGX_HOST_INTERACTION_STATE this button provides, so an eager inject
+  // in either direction is a cycle.
+  const runState = injectLazySelf(CNGX_ASYNC_RUN_STATE, { optional: true });
   const reasonId = nextUid('cngx-button-reason-');
   const describedByKey = nextUid('cngx-button-describedby-');
   const isButtonHost = host.tagName === 'BUTTON';
 
+  const fixed = defaults.fixed;
   const variant = computed<CngxButtonVariant>(
-    () => inputs.variant() ?? group?.variant() ?? config.variant ?? defaults.variant,
+    () =>
+      inputs.variant() ?? fixed?.variant ?? group?.variant() ?? config.variant ?? defaults.variant,
   );
-  const tone = computed<CngxButtonTone>(() => inputs.tone() ?? config.tone ?? DEFAULT_TONE);
-  const size = computed<CngxButtonSize>(
-    () => resolveButtonSize(inputs.size(), group, config),
+  const tone = computed<CngxButtonTone>(
+    () => inputs.tone() ?? fixed?.tone ?? config.tone ?? DEFAULT_TONE,
   );
-  const busy = computed(() => coHostedAsyncClick()?.pending() ?? false);
-  const busyVisible = computed(() => coHostedAsyncClick()?.busyVisible() ?? false);
-  const asyncClickRefuses = computed(() => coHostedAsyncClick()?.enabled() === false);
+  const size = computed<CngxButtonSize>(() =>
+    resolveButtonSize(inputs.size() ?? fixed?.size, group, config),
+  );
+  const hostBusy = inputs.hostBusy;
+  const busy = computed(() => (runState()?.pending() ?? false) || (hostBusy?.() ?? false));
+  // Without a co-hosted runner nothing gates a run the host reflects, so the
+  // core opens its own gate on the loading-config timing. With a runner its
+  // gate stays the source (it already folds the host's run in).
+  const loadingConfig = injectLoadingConfig();
+  const ownBusyVisible = createVisibilityGate(
+    computed(() => runState() === null && (hostBusy?.() ?? false)),
+    computed(() => loadingConfig.showDelay),
+    computed(() => loadingConfig.minDwell),
+  );
+  const busyVisible = computed(() => {
+    const run = runState();
+    return run ? run.busyVisible() : ownBusyVisible();
+  });
+  const asyncClickRefuses = computed(() => runState()?.enabled() === false);
+  // What is painted busy refuses activation: the busy visual holds the block
+  // through its dwell, after the run itself has settled.
   const blocked = computed(
     () => inputs.disabled() || busy() || busyVisible() || asyncClickRefuses(),
   );
   const busyAttr = computed<'true' | null>(() => (busyVisible() ? 'true' : null));
   const pendingAttr = computed<'true' | null>(() => (busy() ? 'true' : null));
-  // CngxAsyncClick binds aria-disabled on the same host. When one is co-hosted
-  // the button renders the directive's own value rather than an independently
-  // computed equal one, so the two host bindings share a single source and can
-  // never diverge whatever the write order. Without a co-hosted directive the
-  // button is the sole writer and uses its own blocked state.
-  const ariaDisabled = computed<'true' | null>(() => {
-    const asyncClickHost = coHostedAsyncClick();
-    return asyncClickHost ? asyncClickHost.ariaDisabledAttr() : blocked() ? 'true' : null;
-  });
+  // The runner binds aria-disabled on the same host. When one is co-hosted
+  // the button renders the runner's own value rather than an independently
+  // computed equal one, so the two host bindings share a single source and
+  // can never diverge whatever the write order. Without a runner the button
+  // is the sole writer and uses its own blocked state. The fallback also
+  // covers a runner that does not fold the host's refusal in (CngxAsyncClick
+  // does, so for it the fallback never fires): blocked always reads disabled.
+  const ownAriaDisabled = computed<'true' | null>(() => (blocked() ? 'true' : null));
+  const ariaDisabled = computed<'true' | null>(
+    () => runState()?.ariaDisabledAttr() ?? ownAriaDisabled(),
+  );
+  // Held with the busy visual, so what is painted busy reads busy and never
+  // as a bare disabled through the dwell. With a runner it is the value the
+  // runner renders on the same host (its run, its held busy visual, its
+  // `[busy]` override and the host's run), so the two writers agree.
+  const ariaBusy = computed<'true' | null>(() =>
+    busy() || busyVisible() || (runState()?.busy() ?? false) ? 'true' : null,
+  );
   const reasonIds = computed(() =>
     inputs.disabled() && inputs.disabledReason() ? reasonId : null,
   );
   // Contributed before the reason: the registry keeps registration order,
   // so the consumer's dynamic ids sit between the static seed and the reason.
   injectDescribedByContribution(describedByKey, inputs.describedBy);
-  // The host provides the registry (provideButtonDescribedBy), so the
-  // fallback only covers a class that forgot it.
-  const describedBy =
-    injectDescribedByContribution(reasonId, reasonIds)?.value ??
-    computed(() => [inputs.describedBy(), reasonIds()].filter(Boolean).join(' ') || null);
+  injectDescribedByContribution(reasonId, reasonIds);
+  // CngxButtonBrain provides the registry on its own element.
+  const describedBy = inject(CNGX_DESCRIBED_BY, { self: true }).value;
   const hostType = computed<CngxButtonType | null>(() =>
     isButtonHost ? (inputs.type() ?? 'button') : null,
   );
 
+  // Keyed on `blocked`, not on the own refusal: a runner that refuses or
+  // runs renders aria-disabled too, and a co-located listener (RouterLink, a
+  // consumer handler) must not act on an element that reads as disabled.
+  // A click on an expanded popup trigger only closes what it opened, so it
+  // passes: a run started by the opening click never leaves a menu that
+  // cannot be clicked shut.
   const guard = (event: Event): void => {
-    if (!inputs.disabled()) {
+    if (!blocked() || host.getAttribute('aria-expanded') === 'true') {
       return;
     }
     event.preventDefault();
@@ -220,8 +249,10 @@ export function injectButtonCore(
     busyAttr,
     pendingAttr,
     ariaDisabled,
+    ariaBusy,
     describedBy,
     reasonId,
+    activeReasonId: reasonIds,
     hostType,
   };
 }

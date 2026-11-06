@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cdp, userEvent } from 'vitest/browser';
 
 import { CngxButton } from './button.component';
+import { provideButtonSpinner } from './button-spinner.token';
 import type { CngxButtonSize } from './button.types';
 import { CngxButtonStart } from './slots';
 
@@ -86,6 +87,34 @@ class GeometryHost {
   readonly sizes: readonly CngxButtonSize[] = ['xs', 'sm', 'md', 'lg'];
   readonly density = signal<Density>('comfortable');
   readonly touch = signal<'on' | null>(null);
+  readonly action: AsyncAction = () => new Promise<void>(() => undefined);
+}
+
+// A provided busy glyph renders its svg inside its own host, one level below
+// the busy layer, with no size of its own.
+@Component({
+  selector: 'cngx-geometry-provided-spinner',
+  standalone: true,
+  template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9" /></svg>`,
+})
+class ProvidedSpinner {}
+
+@Component({
+  selector: 'cngx-button-provided-spinner-host',
+  standalone: true,
+  imports: [CngxButton, CngxAsyncClick],
+  viewProviders: [provideButtonSpinner(ProvidedSpinner)],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../core/theming/system-tokens.css',
+    '../../core/theming/reset.css',
+    '../../core/theming/base.css',
+    './button.component.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `<button cngxButton class="b-provided-busy" [cngxAsyncClick]="action">Save changes</button>`,
+})
+class ProvidedSpinnerHost {
   readonly action: AsyncAction = () => new Promise<void>(() => undefined);
 }
 
@@ -274,6 +303,23 @@ describe('CngxButton geometry: busy', () => {
     const busy = query(btn, '.cngx-button__busy');
     // inset: 0 spans the padding box, so it misses only the two border pixels.
     expect(busy.getBoundingClientRect().width).toBeGreaterThanOrEqual(width - 2.5);
+  });
+});
+
+describe('CngxButton geometry: provided spinner', () => {
+  it('sizes a provided spinner with a bare svg to the ring box and centres it', async () => {
+    const fixture = TestBed.createComponent(ProvidedSpinnerHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const btn = query(mountedRoot, '.b-provided-busy');
+    await startRun(fixture, btn);
+    const svg = query(btn, '.cngx-button__busy svg').getBoundingClientRect();
+    const font = px(btn, 'font-size');
+    expect(svg.width).toBeCloseTo(font, 0);
+    expect(svg.height).toBeCloseTo(font, 0);
+    const box = btn.getBoundingClientRect();
+    expect(svg.top + svg.height / 2).toBeCloseTo(box.top + box.height / 2, 0);
   });
 });
 
