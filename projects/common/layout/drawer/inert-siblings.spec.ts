@@ -1,6 +1,17 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { CNGX_LIVE_SURFACE_ATTR } from '@cngx/core/utils';
-import { createInertSiblings } from './inert-siblings';
+import { createInertSiblings as create } from './inert-siblings';
+
+// Each call follows the scope until released; release every one so no
+// observer outlives its test.
+const releases: (() => void)[] = [];
+function createInertSiblings(...args: Parameters<typeof create>): () => void {
+  const release = create(...args);
+  releases.push(release);
+  return release;
+}
+
+const mutationsDelivered = () => new Promise<void>((resolve) => setTimeout(resolve));
 
 function mount(html: string): HTMLElement {
   const root = document.createElement('div');
@@ -14,6 +25,7 @@ describe('createInertSiblings', () => {
   let root: HTMLElement | null = null;
 
   afterEach(() => {
+    releases.splice(0).forEach((release) => release());
     root?.remove();
     root = null;
   });
@@ -154,6 +166,52 @@ describe('createInertSiblings', () => {
       q('.content').setAttribute('inert', '');
       release();
       expect(q('.content').hasAttribute('inert')).toBe(true);
+    });
+
+    it('inerts an element rendered next to an ancestor after engagement', async () => {
+      root = mount(layout);
+      const release = createInertSiblings(q('.host'), { scope: 'outside' });
+      const late = document.createElement('div');
+      const lateInLayout = document.createElement('p');
+      root.appendChild(late);
+      q('.layout').appendChild(lateInLayout);
+      await mutationsDelivered();
+
+      expect(late.hasAttribute('inert')).toBe(true);
+      expect(lateInLayout.hasAttribute('inert')).toBe(true);
+
+      release();
+      expect(late.hasAttribute('inert')).toBe(false);
+      expect(lateInLayout.hasAttribute('inert')).toBe(false);
+    });
+
+    it('keeps a late dialog, popover or live region live', async () => {
+      root = mount(layout);
+      createInertSiblings(q('.host'), { scope: 'outside' });
+      const dialogHost = document.createElement('div');
+      dialogHost.innerHTML = '<dialog open>Confirm</dialog><span class="sibling">x</span>';
+      const popover = document.createElement('div');
+      popover.setAttribute('popover', 'manual');
+      const region = document.createElement('div');
+      region.setAttribute('aria-live', 'polite');
+      root.append(dialogHost, popover, region);
+      await mutationsDelivered();
+
+      expect(dialogHost.hasAttribute('inert')).toBe(false);
+      expect(dialogHost.querySelector('dialog')?.hasAttribute('inert')).toBe(false);
+      expect(dialogHost.querySelector('.sibling')?.hasAttribute('inert')).toBe(true);
+      expect(popover.hasAttribute('inert')).toBe(false);
+      expect(region.hasAttribute('inert')).toBe(false);
+    });
+
+    it('stops following the scope once released', async () => {
+      root = mount(layout);
+      const release = createInertSiblings(q('.host'), { scope: 'outside' });
+      release();
+      const late = document.createElement('div');
+      root.appendChild(late);
+      await mutationsDelivered();
+      expect(late.hasAttribute('inert')).toBe(false);
     });
 
     it('does nothing for a host outside the document', () => {

@@ -58,18 +58,29 @@ export interface CngxInertSiblingsOptions {
 }
 
 /**
+ * @internal Top-layer surfaces that render outside the host after it engaged
+ * (a dialog the service appends to `<body>`, a tooltip placed next to its
+ * trigger) were opened from inside the modal and stay live. Only late
+ * additions get this exemption.
+ */
+const LATE_LIVE_SELECTOR = 'dialog, [popover]';
+
+/**
  * @internal Marks the elements around `host` as `inert` and returns the
  * release function. Shared by `CngxBackdrop` (`'siblings'`) and
  * `CngxDrawerSurface` (`'outside'`).
  *
- * The set is queried at call time, so elements rendered after init (`@if`,
- * `@defer`) are covered by the next call. Elements that already carry
+ * The set is queried at call time and then followed: an element rendered
+ * later next to the host or next to one of its ancestors inside the scope
+ * (`@if`, `@defer`, a routed view) is inerted as it arrives, unless it is or
+ * holds a `<dialog>` or `[popover]`, which a late addition only is when the
+ * modal opened it. Elements that already carry
  * `inert` are skipped and never touched on release, so a consumer-set or
  * other-owner `inert` survives. Focus-trap anchors, live regions, the CDK
  * overlay container, marked live surfaces and a visible backdrop
  * stay live; an element that only contains one of them is not inerted as a
  * whole, its other children are.
- * Release is idempotent.
+ * Release is idempotent and stops following the scope.
  */
 export function createInertSiblings(
   host: HTMLElement,
@@ -78,37 +89,51 @@ export function createInertSiblings(
   const { scope = 'siblings', exclude = () => false, within, keepLive } = options;
   const root = scope === 'outside' ? (within ?? host.ownerDocument.body) : host.parentElement;
   const liveSelector = keepLive ? `${KEEP_LIVE_SELECTOR}, ${keepLive}` : KEEP_LIVE_SELECTOR;
+  const lateLiveSelector = `${liveSelector}, ${LATE_LIVE_SELECTOR}`;
   const targets: HTMLElement[] = [];
+  const Observer = host.ownerDocument.defaultView?.MutationObserver;
+  const observer = Observer
+    ? new Observer((records) => {
+        for (const record of records) {
+          record.addedNodes.forEach((node) => visit(node, lateLiveSelector));
+        }
+      })
+    : null;
 
-  const keepsLive = (element: HTMLElement): boolean =>
-    element.matches(liveSelector) || exclude(element);
+  const keepsLive = (element: HTMLElement, selector: string): boolean =>
+    element.matches(selector) || exclude(element);
 
-  const containsLive = (element: HTMLElement): boolean =>
+  const containsLive = (element: HTMLElement, selector: string): boolean =>
     element.contains(host) ||
-    Array.from(element.querySelectorAll<HTMLElement>(liveSelector)).some(
+    Array.from(element.querySelectorAll<HTMLElement>(selector)).some(
       (node) => !host.contains(node),
     );
 
-  const collect = (container: Element): void => {
+  const visit = (child: Node, selector: string): void => {
+    if (child === host || !(child instanceof HTMLElement) || child.hasAttribute('inert')) {
+      return;
+    }
+    if (keepsLive(child, selector)) {
+      return;
+    }
+    if (containsLive(child, selector)) {
+      collect(child, selector);
+      return;
+    }
+    child.setAttribute('inert', '');
+    targets.push(child);
+  };
+
+  const collect = (container: Element, selector: string): void => {
+    observer?.observe(container, { childList: true });
     for (const child of Array.from(container.children)) {
-      if (child === host || !(child instanceof HTMLElement) || child.hasAttribute('inert')) {
-        continue;
-      }
-      if (keepsLive(child)) {
-        continue;
-      }
-      if (containsLive(child)) {
-        collect(child);
-        continue;
-      }
-      targets.push(child);
+      visit(child, selector);
     }
   };
 
   if (root && root !== host && root.contains(host)) {
-    collect(root);
+    collect(root, liveSelector);
   }
-  targets.forEach((target) => target.setAttribute('inert', ''));
 
   let released = false;
   return () => {
@@ -116,6 +141,7 @@ export function createInertSiblings(
       return;
     }
     released = true;
+    observer?.disconnect();
     targets.forEach((target) => target.removeAttribute('inert'));
   };
 }
