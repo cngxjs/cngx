@@ -131,3 +131,11 @@ test.describe('common/layout/drawer: filter panel', () => {
     await expect(page.getByText(/Only this area blocked: the scrim/)).toBeVisible();
   });
 });
+
+test.describe('common/layout/drawer: modal panel name', () => {
+  test('an open page-modal panel is a dialog named by its label', async ({ page }) => {
+    await gotoDemo(page, 'common/layout/drawer/basic-scroll-lock-backdrop');
+    await page.getByRole('button', { name: 'Open Drawer' }).click();
+    await expect(page.getByRole('dialog', { name: 'Navigation' })).toBeVisible();
+  });
+});
