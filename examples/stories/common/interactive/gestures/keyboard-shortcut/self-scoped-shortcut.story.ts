@@ -2,7 +2,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxKeyboardShortcut: self-scoped shortcut',
-  subtitle: 'With <code>[shortcutScope]="\'self\'"</code> the listener binds to the host element instead of <code>document</code>. The target is a focusable region (<code>tabindex="0"</code>, <code>role="group"</code>, <code>aria-keyshortcuts</code>) so screen readers announce the combo and Escape only fires while focus is inside.',
+  subtitle: 'With <code>[shortcutScope]="\'self\'"</code> the shortcut fires only while focus is inside the host element. The target is a focusable region (<code>tabindex="0"</code>, <code>role="group"</code>) and the directive sets <code>aria-keyshortcuts</code> so screen readers announce the combo and Escape only fires while focus is inside.',
   description: 'Self-scoped shortcuts compose with focus management; only the focused widget reacts. Used by dialogs, comboboxes, and inline editors that need a local Escape handler without colliding with document-level shortcuts.',
   level: 'atom',
   audience: ['dev', 'a11y'],
@@ -30,7 +30,6 @@ export const STORY: DemoSpec = {
     (shortcutTriggered)="handleEscape()"
     role="group"
     aria-label="Press Escape to dismiss"
-    aria-keyshortcuts="Escape"
     tabindex="0"
     class="demo-gesture-target"
     [class.demo-gesture-target--accent]="escapeCount() > 0"
