@@ -1,4 +1,11 @@
-import { Component, computed, signal, type Signal, type WritableSignal } from '@angular/core';
+import {
+  Component,
+  computed,
+  type DestroyRef,
+  signal,
+  type Signal,
+  type WritableSignal,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -349,6 +356,64 @@ describe('createHotkeyRegistry', () => {
         'own',
         'nested',
       ]);
+    });
+  });
+
+  describe('scope lifetime', () => {
+    function fakeDestroyRef(): { ref: DestroyRef; destroy: () => void } {
+      const callbacks: Array<() => void> = [];
+      const ref = {
+        onDestroy: (fn: () => void) => {
+          callbacks.push(fn);
+          return () => undefined;
+        },
+      } as unknown as DestroyRef;
+      return { ref, destroy: () => callbacks.forEach((fn) => fn()) };
+    }
+
+    it('drops a released modal scope from resolution while its element lives on', () => {
+      const registry = makeRegistry();
+      const container = el();
+      const owner = fakeDestroyRef();
+      createHotkeyScope({
+        element: container,
+        modal: signal(true),
+        parent: null,
+        destroyRef: owner.ref,
+      });
+      const save = bind('save', 'mod+s');
+      registry.register(source(save), null);
+      const target = el('button', container);
+
+      press(target, 's', { ctrlKey: true });
+      expect(save.run).not.toHaveBeenCalled();
+
+      owner.destroy();
+      press(target, 's', { ctrlKey: true });
+      expect(save.run).toHaveBeenCalledOnce();
+    });
+
+    it('re-derives the listing when a scope is created or released on the context path', () => {
+      const registry = makeRegistry();
+      const region = el();
+      const ctx = el('button', region);
+      registry.register(source(bind('save', 'mod+s', { description: 'Save' })), null);
+      const ids = computed(() =>
+        registry.liveGroupsFor(ctx).flatMap((g) => g.bindings.map((b) => b.id)),
+      );
+      expect(ids()).toEqual(['save']);
+
+      const owner = fakeDestroyRef();
+      createHotkeyScope({
+        element: region,
+        modal: signal(true),
+        parent: null,
+        destroyRef: owner.ref,
+      });
+      expect(ids()).toEqual([]);
+
+      owner.destroy();
+      expect(ids()).toEqual(['save']);
     });
   });
 

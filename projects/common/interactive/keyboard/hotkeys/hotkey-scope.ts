@@ -1,4 +1,4 @@
-import { InjectionToken, signal, type Signal } from '@angular/core';
+import { type DestroyRef, InjectionToken, signal, type Signal } from '@angular/core';
 
 /**
  * One node of the hotkey scope tree: an element region with a modal and an
@@ -42,6 +42,12 @@ export interface CngxHotkeyScopeOptions {
   readonly active?: Signal<boolean>;
   /** The enclosing scope, usually `inject(CNGX_HOTKEY_SCOPE, { optional: true, skipSelf: true })`. */
   readonly parent: CngxHotkeyScopeNode | null;
+  /**
+   * The owner's lifetime. Pass it whenever the element can outlive the owner
+   * (a reused overlay container): on destroy the scope leaves keypress
+   * resolution, so a dead modal scope never blocks bindings again.
+   */
+  readonly destroyRef?: DestroyRef;
 }
 
 /**
@@ -61,8 +67,11 @@ const ALWAYS = signal(true).asReadonly();
 // Keypress resolution starts at a DOM target, so the registry needs the
 // scopes on the target's ancestor path, including scopes that hold no
 // registration (an open modal dialog without hotkeys still blocks the app's).
-// Keyed weakly by element: a scope lives exactly as long as its region.
+// Keyed weakly by element; an owner's `destroyRef` removes its scope early.
 const SCOPES_BY_ELEMENT = new WeakMap<Element, CngxHotkeyScopeNode[]>();
+// The index is not a signal; reading this makes a scope created or released
+// later invalidate a computed that walked the chain (the help listing).
+const scopesVersion = signal(0);
 
 /**
  * Creates a hotkey scope node for a region and makes it visible to keypress
@@ -90,17 +99,19 @@ export function createHotkeyScope(options: CngxHotkeyScopeOptions): CngxHotkeySc
     active: options.active ?? ALWAYS,
     parent: options.parent,
   };
-  const existing = SCOPES_BY_ELEMENT.get(node.element);
-  if (existing) {
-    existing.push(node);
-  } else {
-    SCOPES_BY_ELEMENT.set(node.element, [node]);
-  }
+  SCOPES_BY_ELEMENT.set(node.element, [...hotkeyScopesOf(node.element), node]);
+  scopesVersion.update((v) => v + 1);
+  options.destroyRef?.onDestroy(() => {
+    const rest = hotkeyScopesOf(node.element).filter((s) => s !== node);
+    SCOPES_BY_ELEMENT.set(node.element, rest);
+    scopesVersion.update((v) => v + 1);
+  });
   return node;
 }
 
-/** @internal Scopes created for an element, in creation order. */
+/** @internal Live scopes of an element, in creation order; reactive to scope churn. */
 export function hotkeyScopesOf(element: Element): readonly CngxHotkeyScopeNode[] {
+  scopesVersion();
   return SCOPES_BY_ELEMENT.get(element) ?? [];
 }
 

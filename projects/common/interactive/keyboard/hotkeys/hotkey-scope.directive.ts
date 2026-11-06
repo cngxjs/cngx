@@ -1,4 +1,4 @@
-import { booleanAttribute, Directive, ElementRef, inject, input } from '@angular/core';
+import { booleanAttribute, DestroyRef, Directive, ElementRef, inject, input } from '@angular/core';
 
 import { CNGX_HOTKEY_SCOPE, createHotkeyScope, type CngxHotkeyScopeNode } from './hotkey-scope';
 
@@ -47,5 +47,6 @@ export class CngxHotkeyScope {
     modal: this.modal,
     active: this.active,
     parent: inject(CNGX_HOTKEY_SCOPE, { optional: true, skipSelf: true }),
+    destroyRef: inject(DestroyRef),
   });
 }

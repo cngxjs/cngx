@@ -89,6 +89,7 @@ export class CngxKeyboardShortcut implements OnInit {
   private readonly hostScope = createHotkeyScope({
     element: inject<ElementRef<Element>>(ElementRef).nativeElement,
     parent: inject(CNGX_HOTKEY_SCOPE, { optional: true }),
+    destroyRef: this.destroyRef,
   });
 
   private readonly bindings = computed<readonly CngxHotkeyBinding[]>(() => {
