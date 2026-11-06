@@ -92,8 +92,12 @@ export function parseKeyCombo(combo: string): KeyCombo {
  * - **AltGr is character input, not a chord.** Windows and Linux report
  *   AltGr as `ctrlKey + altKey`, so AltGr+E (`€`) would otherwise match
  *   `'ctrl+alt+e'`. Off macOS, a combo naming `ctrl`, `alt` or `mod` never
- *   matches while `event.getModifierState('AltGraph')` is set. macOS has no
- *   AltGr key (Option is `alt`), so the guard is off there.
+ *   matches while `event.getModifierState('AltGraph')` is set. A combo
+ *   naming none of them reads the AltGr press as the character it types:
+ *   the reported Ctrl and Alt are ignored and the key is compared by
+ *   `event.key` only, so `'@'` matches AltGr+Q on a German layout and `'q'`
+ *   never does. macOS has no AltGr key (Option is `alt`), so the guard is
+ *   off there.
  *
  * @param event The keyboard event to test.
  * @param combo The parsed combo to match against.
@@ -109,15 +113,17 @@ export function matchesKeyCombo(event: KeyboardEvent, combo: KeyCombo, isMac: bo
   if (event.isComposing) {
     return false;
   }
+  const altGr = !isMac && event.getModifierState?.('AltGraph') === true;
   const namesAltGrModifier = combo.ctrl || combo.alt || combo.mod;
-  if (!isMac && namesAltGrModifier && event.getModifierState?.('AltGraph')) {
+  if (altGr && namesAltGrModifier) {
     return false;
   }
-  if (!matchesComboKey(event, combo.key)) {
+  if (!matchesComboKey(event, combo.key, altGr)) {
     return false;
   }
-  // Alt is always strict: a combo that does not name it rejects an Alt press.
-  if (combo.alt !== event.altKey) {
+  // Alt is strict: a combo that does not name it rejects an Alt press. The
+  // Alt (and Ctrl) an AltGr press reports belong to the typed character.
+  if (!altGr && combo.alt !== event.altKey) {
     return false;
   }
   // `mod` requires the platform primary and leaves the other one free;
@@ -126,7 +132,7 @@ export function matchesKeyCombo(event: KeyboardEvent, combo: KeyCombo, isMac: bo
     ? isMac
       ? event.metaKey
       : event.ctrlKey
-    : combo.ctrl === event.ctrlKey && combo.meta === event.metaKey;
+    : (altGr || combo.ctrl === event.ctrlKey) && combo.meta === event.metaKey;
   if (!primaryOk) {
     return false;
   }
@@ -299,13 +305,15 @@ export function resolveMacPlatform(nav: Navigator | undefined): boolean {
 
 const LATIN_LETTER_OR_DIGIT = /^[a-z0-9]$/;
 
-function matchesComboKey(event: KeyboardEvent, comboKey: string): boolean {
+function matchesComboKey(event: KeyboardEvent, comboKey: string, altGr: boolean): boolean {
   // The space bar reports `' '`; combos spell it `'space'`.
   const key = event.key === ' ' ? 'space' : event.key.toLowerCase();
   if (key === comboKey) {
     return true;
   }
-  const transformable = LATIN_LETTER_OR_DIGIT.test(comboKey) && (event.altKey || event.shiftKey);
+  // AltGr output is the character itself; its physical key names another one.
+  const transformable =
+    !altGr && LATIN_LETTER_OR_DIGIT.test(comboKey) && (event.altKey || event.shiftKey);
   // A key that is still a Latin letter or digit was not transformed by the
   // modifier, only remapped by the layout: trusting `code` there would match
   // the wrong letter (QWERTZ Y sits on US Z).

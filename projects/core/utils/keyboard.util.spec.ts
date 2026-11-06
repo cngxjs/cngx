@@ -139,6 +139,22 @@ describe('matchesKeyCombo AltGr guard', () => {
     expect(matchesKeyCombo(chord, combo, false)).toBe(true);
   });
 
+  it('matches a bare punctuation combo typed through AltGr', () => {
+    // German layout: AltGr+Q types '@', reported as Ctrl+Alt with AltGraph.
+    const at = press('@', { code: 'KeyQ', ctrl: true, alt: true, altGraph: true });
+    expect(matchesKeyCombo(at, parseKeyCombo('@'), false)).toBe(true);
+    expect(matchesKeyCombo(at, parseKeyCombo('q'), false)).toBe(false);
+    expect(matchesKeyCombo(at, parseKeyCombo('mod+@'), false)).toBe(false);
+    const withMeta = press('@', {
+      code: 'KeyQ',
+      ctrl: true,
+      alt: true,
+      meta: true,
+      altGraph: true,
+    });
+    expect(matchesKeyCombo(withMeta, parseKeyCombo('@'), false)).toBe(false);
+  });
+
   it('is off on macOS, where Option is alt and there is no AltGr key', () => {
     const combo = parseKeyCombo('alt+b');
     expect(matchesKeyCombo(press('∫', { code: 'KeyB', alt: true }), combo, true)).toBe(true);
