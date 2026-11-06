@@ -47,7 +47,7 @@ export const STORY: DemoSpec = {
            class="demo-drawer-backdrop"></div>
 
       <nav [cngxDrawerPanel]="drawer" position="left"
-           id="basic-panel" role="navigation"
+           id="basic-panel" role="navigation" label="Navigation"
            class="demo-drawer-panel">
         <div class="demo-drawer-panel-content">
           <strong>Navigation</strong>

@@ -27,7 +27,7 @@ export const STORY: DemoSpec = {
     </div>
 
     <div class="demo-drawer-layout">
-      <aside id="ev-panel" [cngxDrawerPanel]="evDrawer" position="right"
+      <aside id="ev-panel" [cngxDrawerPanel]="evDrawer" position="right" label="Right panel"
              class="demo-drawer-panel">
         <div class="demo-drawer-panel-content">
           <strong>Right panel</strong>

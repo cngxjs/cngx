@@ -19,7 +19,7 @@ export const STORY: DemoSpec = {
        (openedChange)="controlledOpen.set($event)"
        class="demo-drawer-container demo-drawer-container--bordered">
     <div class="demo-drawer-layout">
-      <nav id="ctrl-panel" [cngxDrawerPanel]="ctrlDrawer" position="left"
+      <nav id="ctrl-panel" [cngxDrawerPanel]="ctrlDrawer" position="left" label="Controlled panel"
            class="demo-drawer-panel">
         <div class="demo-drawer-panel-content">
           <strong>Controlled</strong>

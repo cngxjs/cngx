@@ -32,7 +32,7 @@ export const STORY: DemoSpec = {
     </div>
 
     <div class="demo-drawer-layout demo-drawer-layout--relative">
-      <aside id="dir-panel" [cngxDrawerPanel]="dirDrawer" [position]="direction()"
+      <aside id="dir-panel" [cngxDrawerPanel]="dirDrawer" [position]="direction()" label="Sliding panel"
              class="demo-drawer-panel">
         <div class="demo-drawer-panel-content">
           <strong>{{ direction() }} panel</strong>
