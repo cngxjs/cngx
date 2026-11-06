@@ -69,6 +69,36 @@ test.describe('common/popover/popover-panel', () => {
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 
+  test('footer-actions-plain: slotted icons, a ghost dismiss and the pending label through the dwell', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/popover/popover-panel/footer-actions-plain');
+    await page.locator('.cngx-ex-artifact button.chip', { hasText: 'Publish draft' }).click();
+    const panel = page.locator('cngx-popover-panel', { hasText: 'Release notes 0.3' });
+    await expect(panel).toBeVisible();
+
+    const cancel = panel.locator('button.cngx-popover-dismiss');
+    await expect(cancel).toHaveAttribute('data-variant', 'ghost');
+    await expect(cancel).toHaveAttribute('data-start', '');
+    await expect(cancel.locator('svg[cngxbuttonstart]')).toHaveAttribute('aria-hidden', 'true');
+    await expect(cancel).toHaveAccessibleName('Cancel');
+
+    const schedule = panel.locator('button.cngx-popover-action', { hasText: 'Schedule' });
+    await expect(schedule).toHaveAccessibleDescription('Pick a publish date first');
+    await expect(page.locator('.cngx-ex-sr-output')).toContainText('Pick a publish date first');
+
+    const publish = panel.locator('button.cngx-popover-action[data-tone="primary"]');
+    await expect(publish).toHaveAttribute('data-start', '');
+    await expect(publish.locator('svg[cngxbuttonstart]')).toHaveAttribute('aria-hidden', 'true');
+    await expect(publish).toHaveAccessibleName('Publish');
+    await publish.click();
+    await expect(publish).toHaveAccessibleName('Publishing...');
+    // The pending label holds until the busy visual releases, then the result.
+    await expect(publish).toHaveAccessibleName('Published');
+    await expect(publish).not.toHaveAttribute('data-busy', /.*/);
+    await expect(publish.locator('.cngx-button__busy')).toHaveCount(0);
+  });
+
   // Regression: the arrow ornament must track the trigger horizontally even
   // when the browser shifts the panel for viewport-fit recovery. The `info`
   // chip in the variants story sits close to the viewport's left edge so a
