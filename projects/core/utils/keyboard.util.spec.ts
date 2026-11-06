@@ -8,6 +8,7 @@ import {
   provideNestedInteractiveSelector,
   resolveAriaKeyShortcuts,
   resolveKeyComboParts,
+  resolveMacPlatform,
 } from './keyboard.util';
 
 function press(
@@ -242,6 +243,29 @@ describe('resolveAriaKeyShortcuts', () => {
     expect(aria('space', false)).toBe('Space');
     expect(aria('ctrl+pagedown', false)).toBe('Control+PageDown');
     expect(aria('f2', false)).toBe('F2');
+  });
+});
+
+describe('resolveMacPlatform', () => {
+  const nav = (fields: { platform?: string; userAgentData?: { platform?: string } }): Navigator =>
+    fields as unknown as Navigator;
+
+  it('reads navigator.platform', () => {
+    expect(resolveMacPlatform(nav({ platform: 'MacIntel' }))).toBe(true);
+    expect(resolveMacPlatform(nav({ platform: 'Win32' }))).toBe(false);
+  });
+
+  it('prefers userAgentData.platform over navigator.platform', () => {
+    expect(
+      resolveMacPlatform(nav({ platform: 'Win32', userAgentData: { platform: 'macOS' } })),
+    ).toBe(true);
+    expect(
+      resolveMacPlatform(nav({ platform: 'MacIntel', userAgentData: { platform: 'Windows' } })),
+    ).toBe(false);
+  });
+
+  it('resolves an absent navigator to false', () => {
+    expect(resolveMacPlatform(undefined)).toBe(false);
   });
 });
 

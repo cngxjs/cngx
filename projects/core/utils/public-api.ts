@@ -23,6 +23,7 @@ export {
   matchesKeyCombo,
   resolveAriaKeyShortcuts,
   resolveKeyComboParts,
+  resolveMacPlatform,
   type KeyCombo,
   type KeyComboPart,
 } from './keyboard.util';

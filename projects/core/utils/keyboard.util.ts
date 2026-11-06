@@ -90,7 +90,7 @@ export function parseKeyCombo(combo: string): KeyCombo {
  * @param event The keyboard event to test.
  * @param combo The parsed combo to match against.
  * @param isMac Whether the current platform is macOS (affects `mod` resolution
- *   and the AltGr guard).
+ *   and the AltGr guard). Resolve it once with {@link resolveMacPlatform}.
  *
  * @since 0.1.0
  */
@@ -247,6 +247,38 @@ function ariaKeyToken(key: string): string {
 export function resolveAriaKeyShortcuts(combo: KeyCombo, isMac: boolean): string {
   const modifiers = resolvedModifiers(combo, isMac).map((m) => ARIA_MODIFIER_TOKENS[m]);
   return [...modifiers, ariaKeyToken(combo.key)].join('+');
+}
+
+// `userAgentData` (UA Client Hints) is not in lib.dom yet.
+interface NavigatorWithUaData {
+  readonly platform?: string;
+  readonly userAgentData?: { readonly platform?: string };
+}
+
+/**
+ * Detects macOS from a `Navigator`, the one platform rule every shortcut
+ * consumer shares: `mod` resolves to Cmd there, the AltGr guard of
+ * {@link matchesKeyCombo} is off, and key labels switch to the macOS glyphs.
+ * Reads `navigator.userAgentData.platform` where the browser ships UA
+ * Client Hints and falls back to `navigator.platform`. Returns `false` for
+ * `undefined`, so a server render resolves to the non-mac labels.
+ *
+ * ```ts
+ * const isMac = resolveMacPlatform(injectWindow()?.navigator);
+ * ```
+ *
+ * @param nav The navigator to read, `undefined` on the server.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/keyboard.util.ts
+ * @since 0.1.0
+ * @relatedTo matchesKeyCombo, resolveKeyComboParts
+ */
+export function resolveMacPlatform(nav: Navigator | undefined): boolean {
+  if (nav === undefined) {
+    return false;
+  }
+  const source = nav as NavigatorWithUaData;
+  return /mac/i.test(source.userAgentData?.platform ?? source.platform ?? '');
 }
 
 const LATIN_LETTER_OR_DIGIT = /^[a-z0-9]$/;
