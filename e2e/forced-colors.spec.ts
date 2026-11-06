@@ -265,6 +265,29 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     expect(paint.borderTopColor).not.toBe(paint.grayText);
   });
 
+  test('default popover state copy stays readable (muted and danger colours forced to system colours)', async ({ page }) => {
+    await openForced(page, '/#/common/popover/popover-panel/close-and-empty-slots');
+    await page.getByLabel('Use custom slot templates').uncheck();
+    const trigger = page.getByRole('button', { name: 'Recent activity', exact: true });
+
+    for (const [label, surface] of [
+      ['Load error', '.cngx-popover-panel__error'],
+      ['No activity (empty state)', '.cngx-popover-panel__empty'],
+    ] as const) {
+      const toggle = page.getByLabel(label, { exact: true });
+      await toggle.check();
+      await trigger.click();
+      const copy = page.locator(`cngx-popover-panel ${surface}`);
+      await expect(copy).toBeVisible();
+      const a = await readAffordance(copy);
+      const color = await copy.evaluate((el) => getComputedStyle(el).color);
+      expect(color, `${surface} text colour`).not.toBe(a.canvas);
+      await page.keyboard.press('Escape');
+      await expect(copy).toBeHidden();
+      await toggle.uncheck();
+    }
+  });
+
   test('a busy cngx-button never computes GrayText (the extended aria-disabled excludes data-busy)', async ({ page }) => {
     await openForced(page, '/#/common/button/button/async-click-busy');
     const button = page.locator('.cngx-ex-artifact .cngx-button').first();

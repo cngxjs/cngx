@@ -1,14 +1,16 @@
 import { Component, computed, provideZonelessChangeDetection, signal, type WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   CNGX_BREADCRUMB,
   CngxBreadcrumb,
   type CngxBreadcrumbHost,
   type CngxBreadcrumbItem,
+  CngxMenuTrigger,
 } from '@cngx/common/interactive';
+import { CngxPopover } from '@cngx/common/popover';
 
 import { CngxBreadcrumbOverflow } from './breadcrumb-overflow.component';
 import { CngxBreadcrumbOverflowItem } from './breadcrumb-overflow-item.directive';
@@ -218,6 +220,46 @@ describe('CngxBreadcrumbOverflow', () => {
 
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
     expect(document.activeElement).toBe(sibling);
+  });
+
+  it('restores focus once on Escape and keeps the panel claims when the menu trigger releases', async () => {
+    const { host } = makeHost(['Catalog', 'Books']);
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), { provide: CNGX_BREADCRUMB, useValue: host }],
+    });
+    const fixture = TestBed.createComponent(OvHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const rootEl = fixture.nativeElement as HTMLElement;
+    const trigger = rootEl.querySelector('button.cngx-breadcrumb__overflow-trigger') as HTMLButtonElement;
+    const popover = fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover);
+    const menuTrigger = fixture.debugElement
+      .query(By.directive(CngxMenuTrigger))
+      .injector.get(CngxMenuTrigger);
+    expect(popover.haspopup()).toBe('menu');
+    expect(popover.restoreFocusHint()).toBe(false);
+
+    trigger.focus();
+    trigger.click();
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const focusSpy = vi.spyOn(trigger, 'focus');
+
+    (document.activeElement as HTMLElement).dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    );
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    await flushMicrotasks();
+
+    expect(document.activeElement).toBe(trigger);
+    expect(focusSpy).toHaveBeenCalledTimes(1);
+
+    popover.releaseHaspopup(menuTrigger);
+    popover.releaseRestoreFocus(menuTrigger);
+    expect(popover.haspopup()).toBe('dialog');
+    expect(popover.restoreFocusHint()).toBe(true);
   });
 
   it('renders nothing when no crumb is collapsed', () => {

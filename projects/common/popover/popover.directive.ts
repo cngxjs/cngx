@@ -34,6 +34,7 @@ import {
   SUPPORTS_ANCHOR,
 } from './anchor-positioning';
 import { CNGX_POPOVER_ARROW_BOUNDS, type CngxPopoverArrowBounds } from './popover-arrow-bounds';
+import { createPopoverHintClaims } from './popover-hint-claims';
 import {
   CNGX_POPOVER_PRESENTATION,
   type CngxPopoverPresentationSeam,
@@ -547,36 +548,52 @@ export class CngxPopover {
    */
   readonly arrowOffset = computed(() => (this.anchored() ? this._arrowOffset() : null));
 
-  /** Backing state for {@link haspopup}. */
-  private readonly haspopupState = signal<PopoverHaspopup | undefined>(undefined);
+  /** Owner-keyed claims behind {@link haspopup}. */
+  private readonly haspopupClaims = createPopoverHintClaims<PopoverHaspopup>();
 
   /**
    * Hint for the `CngxPopoverTrigger`'s `aria-haspopup` value. Composers
-   * such as `CngxPopoverPanel` install it via {@link setHaspopup} so any
+   * such as `CngxPopoverPanel` claim it via {@link claimHaspopup} so any
    * trigger pointing at the popover defaults to the right role without
-   * the consumer having to set `haspopup` on every trigger element.
-   * Consumer-supplied `haspopup` on the trigger still wins.
+   * the consumer having to set `haspopup` on every trigger element. With
+   * several composers the last live claim wins, and a release keeps the
+   * others. Consumer-supplied `haspopup` on the trigger still wins.
    */
   readonly haspopup = computed<PopoverHaspopup | undefined>(() =>
     // A sheet or fullscreen presentation is a modal dialog, whatever a
-    // composer installed for the anchored layout.
-    this.anchored() ? this.haspopupState() : 'dialog',
+    // composer claimed for the anchored layout.
+    this.anchored() ? this.haspopupClaims.current() : 'dialog',
   );
 
-  /** Backing state for {@link controlsHint}: the registered id source. */
-  private readonly controlsSourceState = signal<Signal<string> | null>(null);
+  /** Owner-keyed claims behind {@link controlsHint}: each holds an id source. */
+  private readonly controlsClaims = createPopoverHintClaims<Signal<string>>();
 
   /**
    * Hint for the `CngxPopoverTrigger`'s `aria-controls` value: the id of the
    * popup element inside the popover (a `role="menu"`), read from the source
-   * a composer registers via {@link setControls}. Derived, so a change of
-   * that source id reaches every trigger without another registration.
-   * `null` in a sheet or fullscreen presentation, where the popup is the
-   * dialog itself, so the trigger names the popover. A `controls` bound on
-   * the trigger still wins.
+   * a composer claims via {@link claimControls}. Derived, so a change of
+   * that source id reaches every trigger without another claim. The last
+   * live claim wins. `null` in a sheet or fullscreen presentation, where the
+   * popup is the dialog itself, so the trigger names the popover. A
+   * `controls` bound on the trigger still wins.
    */
   readonly controlsHint = computed<string | null>(() =>
-    this.anchored() ? (this.controlsSourceState()?.() ?? null) : null,
+    this.anchored() ? (this.controlsClaims.current()?.() ?? null) : null,
+  );
+
+  /** Owner-keyed claims behind {@link restoreFocusHint}. */
+  private readonly restoreFocusClaims = createPopoverHintClaims<boolean>();
+
+  /**
+   * Hint for the `CngxPopoverTrigger`'s focus return on close, used when the
+   * trigger binds no `[restoreFocus]`. Composers claim it via
+   * {@link claimRestoreFocus}: `CngxPopoverPanel` claims `true` (dialog
+   * pattern), a menu trigger claims `false` because its focus stack restores.
+   * The last live claim wins. `false` in a sheet or fullscreen presentation,
+   * where `CngxPopoverSheet` restores focus itself.
+   */
+  readonly restoreFocusHint = computed<boolean | undefined>(() =>
+    this.anchored() ? this.restoreFocusClaims.current() : false,
   );
 
   protected readonly isOpening = computed(() => this.stateSignal() === 'opening');
@@ -828,21 +845,56 @@ export class CngxPopover {
   }
 
   /**
-   * Install the `aria-haspopup` hint triggers fall back to when the
-   * consumer sets none. Composers (`CngxPopoverPanel`, menu wirings)
-   * call this once at construction; `undefined` clears the hint.
+   * Claim the `aria-haspopup` hint triggers fall back to when the consumer
+   * sets none. Composers (`CngxPopoverPanel`, menu wirings) claim with
+   * themselves as `owner` and release on destroy. The last live claim wins;
+   * a re-claim by the same owner replaces its earlier one.
    */
-  setHaspopup(value: PopoverHaspopup | undefined): void {
-    this.haspopupState.set(value);
+  claimHaspopup(owner: object, value: PopoverHaspopup): void {
+    this.haspopupClaims.claim(owner, value);
   }
 
   /**
-   * Register the id source triggers name in `aria-controls` when the
-   * consumer sets none. Composers (menu wirings) pass the popup element's id
-   * Signal, not its value, on register and swap; `null` clears the hint.
+   * Release `owner`'s `aria-haspopup` claim. Release removes only this
+   * owner's claim, so a co-composer's hint survives it.
    */
-  setControls(source: Signal<string> | null): void {
-    this.controlsSourceState.set(source);
+  releaseHaspopup(owner: object): void {
+    this.haspopupClaims.release(owner);
+  }
+
+  /**
+   * Claim the id source triggers name in `aria-controls` when the consumer
+   * sets none. Composers (menu wirings) pass the popup element's id Signal,
+   * not its value. The last live claim wins; a re-claim by the same owner
+   * replaces its earlier one.
+   */
+  claimControls(owner: object, source: Signal<string>): void {
+    this.controlsClaims.claim(owner, source);
+  }
+
+  /**
+   * Release `owner`'s `aria-controls` claim. Release removes only this
+   * owner's claim, so a co-composer's hint survives it.
+   */
+  releaseControls(owner: object): void {
+    this.controlsClaims.release(owner);
+  }
+
+  /**
+   * Claim the focus-return hint triggers fall back to when the consumer
+   * binds no `[restoreFocus]`. The last live claim wins; a re-claim by the
+   * same owner replaces its earlier one.
+   */
+  claimRestoreFocus(owner: object, value: boolean): void {
+    this.restoreFocusClaims.claim(owner, value);
+  }
+
+  /**
+   * Release `owner`'s focus-return claim. Release removes only this owner's
+   * claim, so a co-composer's hint survives it.
+   */
+  releaseRestoreFocus(owner: object): void {
+    this.restoreFocusClaims.release(owner);
   }
 
   /**
@@ -1039,8 +1091,8 @@ export class CngxPopover {
     // control reached by keyboard) still holds focus would trap that focus
     // under aria-hidden - the browser blocks it and warns. Blurring here
     // relocates to the document synchronously, matching the eventual
-    // display:none end state; opt-in `restoreFocus` still returns focus to
-    // the trigger afterwards.
+    // display:none end state; the trigger's restore, by input or claim,
+    // returns focus afterwards.
     const active = this.doc.activeElement as HTMLElement | null;
     if (active && el.contains(active) && typeof active.blur === 'function') {
       active.blur();

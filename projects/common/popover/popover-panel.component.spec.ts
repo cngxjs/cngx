@@ -249,6 +249,108 @@ class ConfigArrowTplSource {
   readonly t = viewChild.required<TemplateRef<CngxPopoverArrowContext>>('t');
 }
 
+@Component({
+  template: `
+    <cngx-popover-panel
+      #panel="cngxPopoverPanel"
+      [showClose]="true"
+      [loading]="loading()"
+      [error]="error()"
+      [empty]="empty()"
+    >
+      <span cngxPopoverHeader>Recent activity</span>
+      <p cngxPopoverBody>Body content</p>
+    </cngx-popover-panel>
+  `,
+  imports: [CngxPopoverPanel, CngxPopoverHeader, CngxPopoverBody],
+})
+class HeaderViewsHost {
+  readonly panel = viewChild.required(CngxPopoverPanel);
+  readonly loading = signal(false);
+  readonly error = signal<unknown>(undefined);
+  readonly empty = signal(false);
+}
+
+@Component({
+  template: `
+    <cngx-popover-panel
+      #panel="cngxPopoverPanel"
+      [loading]="loading()"
+      [error]="error()"
+      [empty]="empty()"
+      [loadingText]="loadingText()"
+      [errorText]="errorText()"
+      [emptyText]="emptyText()"
+    >
+      <span cngxPopoverHeader>Title</span>
+      <p cngxPopoverBody>Body content</p>
+    </cngx-popover-panel>
+  `,
+  imports: [CngxPopoverPanel, CngxPopoverHeader, CngxPopoverBody],
+})
+class DefaultCopyHost {
+  readonly panel = viewChild.required(CngxPopoverPanel);
+  readonly loading = signal(false);
+  readonly error = signal<unknown>(undefined);
+  readonly empty = signal(false);
+  readonly loadingText = signal<string | undefined>(undefined);
+  readonly errorText = signal<string | undefined>(undefined);
+  readonly emptyText = signal<string | undefined>(undefined);
+}
+
+@Component({
+  template: `
+    <cngx-popover-panel [empty]="true" [emptyText]="'Keine Daten'">
+      <p cngxPopoverBody>Body content</p>
+      <ng-template cngxPopoverEmpty>Slot wins</ng-template>
+    </cngx-popover-panel>
+  `,
+  imports: [CngxPopoverPanel, CngxPopoverBody, CngxPopoverEmpty],
+})
+class SlotBeatsInputHost {}
+
+@Component({
+  template: `
+    <cngx-popover-panel
+      [loading]="loading()"
+      [error]="error()"
+      [empty]="empty()"
+      [loadingText]="'Bitte warten'"
+    >
+      <p cngxPopoverBody>Body content</p>
+      <ng-template cngxPopoverLoading let-copy let-text="text">[{{ copy }}|{{ text }}]</ng-template>
+      <ng-template cngxPopoverError let-err let-error="error" let-text="text">
+        [{{ err }}|{{ error }}|{{ text }}]
+      </ng-template>
+      <ng-template cngxPopoverEmpty let-copy let-text="text">[{{ copy }}|{{ text }}]</ng-template>
+    </cngx-popover-panel>
+  `,
+  imports: [
+    CngxPopoverPanel,
+    CngxPopoverBody,
+    CngxPopoverLoading,
+    CngxPopoverError,
+    CngxPopoverEmpty,
+  ],
+})
+class SlotContextHost {
+  readonly loading = signal(false);
+  readonly error = signal<unknown>(undefined);
+  readonly empty = signal(false);
+}
+
+@Component({
+  template: `
+    <cngx-popover-panel [state]="state">
+      <p cngxPopoverBody>Body content</p>
+    </cngx-popover-panel>
+  `,
+  imports: [CngxPopoverPanel, CngxPopoverBody],
+})
+class DefaultCopyStateHost {
+  readonly state = createManualState<string[]>();
+}
+
 function setup<T>(hostType: new () => T, providers: unknown[] = []) {
   TestBed.configureTestingModule({ providers: providers as never[] });
   const fixture = TestBed.createComponent(hostType);
@@ -404,7 +506,7 @@ describe('CngxPopoverPanel', () => {
     expect(panelEl.querySelector('.cngx-popover-panel__loading')).toBeNull();
     expect(panelEl.querySelector('.cngx-popover-panel__body')).toBeNull();
     expect(panelEl.getAttribute('aria-busy')).toBeNull();
-    expect(panelEl.getAttribute('aria-describedby')).toBeNull();
+    expect(panelEl.getAttribute('aria-describedby')).toBe(error?.id);
   });
 
   it('should render the body for [state] success data and the empty slot for empty data', () => {
@@ -444,6 +546,186 @@ describe('CngxPopoverPanel', () => {
     const headerEl = panelEl.querySelector('.cngx-popover-panel__header');
     const headerId = headerEl!.getAttribute('id');
     expect(panelEl.getAttribute('aria-labelledby')).toBe(headerId);
+  });
+
+  describe('header row in every view', () => {
+    const views: [string, (host: HeaderViewsHost) => void][] = [
+      ['loading', (host) => host.loading.set(true)],
+      ['error', (host) => host.error.set('x')],
+      ['empty', (host) => host.empty.set(true)],
+      ['content', () => undefined],
+    ];
+
+    for (const [name, enter] of views) {
+      it(`keeps the header, its name and the close button in the ${name} view`, () => {
+        const { fixture, panelEl } = setup(HeaderViewsHost);
+        enter(fixture.componentInstance);
+        fixture.detectChanges();
+
+        expect(panelEl.querySelector('.cngx-popover-panel__header')).not.toBeNull();
+        const labelledBy = panelEl.getAttribute('aria-labelledby');
+        expect(labelledBy).not.toBeNull();
+        expect(document.getElementById(labelledBy!)?.textContent).toContain('Recent activity');
+
+        const popover = fixture.componentInstance.panel().popover;
+        const hide = vi.spyOn(popover, 'hide');
+        const close = panelEl.querySelector<HTMLButtonElement>('button.cngx-popover-panel__close');
+        expect(close).not.toBeNull();
+        close!.click();
+        expect(hide).toHaveBeenCalledTimes(1);
+      });
+    }
+  });
+
+  describe('default state copy', () => {
+    const surfaceText = (panelEl: HTMLElement, cls: string): string | undefined =>
+      panelEl.querySelector(`.cngx-popover-panel__${cls}`)?.textContent?.trim();
+
+    it('renders the English copy in each state view without a template', () => {
+      const { fixture, panelEl } = setup(DefaultCopyHost);
+      const host = fixture.componentInstance;
+
+      host.loading.set(true);
+      fixture.detectChanges();
+      expect(surfaceText(panelEl, 'loading')).toBe('Loading');
+
+      host.loading.set(false);
+      host.error.set('boom');
+      fixture.detectChanges();
+      expect(surfaceText(panelEl, 'error')).toBe('Could not load');
+
+      host.error.set(undefined);
+      host.empty.set(true);
+      fixture.detectChanges();
+      expect(surfaceText(panelEl, 'empty')).toBe('Nothing to show');
+    });
+
+    it('takes withPopoverPanelLabels over the default', () => {
+      const { fixture, panelEl } = setup(DefaultCopyHost, [
+        providePopoverPanel(withPopoverPanelLabels({ empty: 'Leer' })),
+      ]);
+      fixture.componentInstance.empty.set(true);
+      fixture.detectChanges();
+      expect(surfaceText(panelEl, 'empty')).toBe('Leer');
+    });
+
+    it('takes the per-instance inputs over config and falls back when unbound', () => {
+      const { fixture, panelEl } = setup(DefaultCopyHost, [
+        providePopoverPanel(
+          withPopoverPanelLabels({ loading: 'Lädt', error: 'Fehler', empty: 'Leer' }),
+        ),
+      ]);
+      const host = fixture.componentInstance;
+      host.loadingText.set('Bitte warten');
+      host.errorText.set('Kaputt');
+      host.emptyText.set('Keine Daten');
+
+      host.loading.set(true);
+      fixture.detectChanges();
+      expect(surfaceText(panelEl, 'loading')).toBe('Bitte warten');
+
+      host.loading.set(false);
+      host.error.set('boom');
+      fixture.detectChanges();
+      expect(surfaceText(panelEl, 'error')).toBe('Kaputt');
+
+      host.error.set(undefined);
+      host.empty.set(true);
+      fixture.detectChanges();
+      expect(surfaceText(panelEl, 'empty')).toBe('Keine Daten');
+
+      host.emptyText.set(undefined);
+      fixture.detectChanges();
+      expect(surfaceText(panelEl, 'empty')).toBe('Leer');
+    });
+
+    it('lets a projected slot template win over the per-instance input', () => {
+      const { panelEl } = setup(SlotBeatsInputHost);
+      expect(surfaceText(panelEl, 'empty')).toBe('Slot wins');
+    });
+
+    it('hands each state template the resolved copy as $implicit and text', () => {
+      const { fixture, panelEl } = setup(SlotContextHost, [
+        providePopoverPanel(withPopoverPanelLabels({ empty: 'Leer' })),
+      ]);
+      const host = fixture.componentInstance;
+
+      host.loading.set(true);
+      fixture.detectChanges();
+      expect(surfaceText(panelEl, 'loading')).toBe('[Bitte warten|Bitte warten]');
+
+      host.loading.set(false);
+      host.error.set('boom');
+      fixture.detectChanges();
+      expect(surfaceText(panelEl, 'error')).toBe('[boom|boom|Could not load]');
+
+      host.error.set(undefined);
+      host.empty.set(true);
+      fixture.detectChanges();
+      expect(surfaceText(panelEl, 'empty')).toBe('[Leer|Leer]');
+    });
+
+    it('flips the visible copy in place on a language switch, with no live region', () => {
+      const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+      const { fixture, panelEl } = setup(DefaultCopyHost, [
+        provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
+      ]);
+      fixture.componentInstance.empty.set(true);
+      fixture.detectChanges();
+      const surface = panelEl.querySelector('.cngx-popover-panel__empty');
+      expect(surface?.textContent?.trim()).toBe('Nothing to show');
+
+      pack.set({ locale: 'de', popover: { empty: 'Nichts anzuzeigen' } });
+      fixture.detectChanges();
+      expect(panelEl.querySelector('.cngx-popover-panel__empty')).toBe(surface);
+      expect(surface?.textContent?.trim()).toBe('Nichts anzuzeigen');
+      expect(panelEl.querySelector('[aria-live]')).toBeNull();
+      expect(panelEl.hasAttribute('aria-live')).toBe(false);
+    });
+
+    it('points aria-describedby at the surface that describes the view', () => {
+      const { fixture, panelEl } = setup(DefaultCopyHost);
+      const host = fixture.componentInstance;
+      const describedText = (): string | undefined => {
+        const id = panelEl.getAttribute('aria-describedby');
+        return id ? document.getElementById(id)?.textContent?.trim() : undefined;
+      };
+
+      expect(describedText()).toBe('Body content');
+
+      host.loading.set(true);
+      fixture.detectChanges();
+      expect(panelEl.getAttribute('aria-describedby')).toBeNull();
+      expect(panelEl.getAttribute('aria-busy')).toBe('true');
+
+      host.loading.set(false);
+      host.error.set('boom');
+      fixture.detectChanges();
+      expect(describedText()).toBe('Could not load');
+
+      host.error.set(undefined);
+      host.empty.set(true);
+      fixture.detectChanges();
+      expect(describedText()).toBe('Nothing to show');
+    });
+
+    it('describes a [state] refresh error by the error surface and renders empty data as default copy', () => {
+      const { fixture, panelEl } = setup(DefaultCopyStateHost);
+      const state = fixture.componentInstance.state;
+
+      state.setSuccess([]);
+      fixture.detectChanges();
+      expect(panelEl.querySelector('.cngx-popover-panel__empty')?.textContent?.trim()).toBe(
+        'Nothing to show',
+      );
+
+      state.setSuccess(['a']);
+      state.setError('Network down');
+      fixture.detectChanges();
+      const error = panelEl.querySelector('.cngx-popover-panel__error');
+      expect(error?.textContent?.trim()).toBe('Could not load');
+      expect(panelEl.getAttribute('aria-describedby')).toBe(error?.id);
+    });
   });
 
   it('should not emit aria-labelledby without a projected header', () => {

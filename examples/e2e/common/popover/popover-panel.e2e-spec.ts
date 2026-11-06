@@ -1,3 +1,5 @@
+import type { Locator, Page } from '@playwright/test';
+
 import { expect, test } from '../../_test';
 import { gotoDemo } from '../../_helpers';
 
@@ -133,5 +135,121 @@ test.describe('common/popover/popover-panel', () => {
     const arrowCentreY = arrowBox!.y + arrowBox!.height / 2;
     const panelBottom = panelBox!.y + panelBox!.height;
     expect(Math.abs(arrowCentreY - panelBottom), 'arrow should sit on panel bottom edge after flip').toBeLessThan(6);
+  });
+});
+
+test.describe('common/popover/popover-panel close-and-empty-slots', () => {
+  const ROUTE = 'common/popover/popover-panel/close-and-empty-slots';
+
+  function trigger(page: Page): Locator {
+    return page.getByRole('button', { name: 'Recent activity', exact: true });
+  }
+
+  function panel(page: Page): Locator {
+    return page.locator('cngx-popover-panel');
+  }
+
+  async function idText(page: Page, attr: string): Promise<string | null> {
+    return panel(page).evaluate((el, name) => {
+      const id = el.getAttribute(name);
+      return id ? (document.getElementById(id)?.textContent?.trim() ?? null) : null;
+    }, attr);
+  }
+
+  async function open(page: Page): Promise<void> {
+    await trigger(page).click();
+    await expect(panel(page)).toBeVisible();
+  }
+
+  test('Done returns focus to the trigger', async ({ page }) => {
+    await gotoDemo(page, ROUTE);
+    await open(page);
+    // focus() rather than Tab: WebKit skips buttons in the Tab order by default.
+    const done = page.getByRole('button', { name: 'Done' });
+    await done.focus();
+    await expect(done).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(panel(page)).toBeHidden();
+    await expect(trigger(page)).toBeFocused();
+    await expect(
+      page.locator('.cngx-ex-sr-output__list dt', { hasText: 'focus after close' }).locator('+ dd'),
+    ).toHaveText('Recent activity');
+  });
+
+  test('Escape from inside the panel returns focus to the trigger', async ({ page }) => {
+    await gotoDemo(page, ROUTE);
+    await open(page);
+    // focus() rather than Tab: WebKit skips buttons in the Tab order by default.
+    const done = page.getByRole('button', { name: 'Done' });
+    await done.focus();
+    await expect(done).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(panel(page)).toBeHidden();
+    await expect(trigger(page)).toBeFocused();
+  });
+
+  const views = [
+    { label: 'Loading', copy: 'Loading', describes: false },
+    { label: 'Load error', copy: 'Could not load', describes: true },
+    { label: 'No activity (empty state)', copy: 'Nothing to show', describes: true },
+  ] as const;
+
+  for (const view of views) {
+    test(`default copy and header in the ${view.copy} view`, async ({ page }) => {
+      await gotoDemo(page, ROUTE);
+      await page.getByLabel('Use custom slot templates').uncheck();
+      await page.getByLabel(view.label, { exact: true }).check();
+      await open(page);
+
+      await expect(panel(page).locator('.cngx-popover-panel__header')).toHaveText(
+        'Recent activity',
+      );
+      expect(await idText(page, 'aria-labelledby')).toBe('Recent activity');
+      await expect(panel(page)).toContainText(view.copy);
+      if (view.describes) {
+        expect(await idText(page, 'aria-describedby')).toBe(view.copy);
+      } else {
+        await expect(panel(page)).toHaveAttribute('aria-busy', 'true');
+        await expect(panel(page)).not.toHaveAttribute('aria-describedby', /.+/);
+      }
+    });
+  }
+
+  test('the built-in close in the empty view closes and returns focus', async ({ page }) => {
+    await gotoDemo(page, ROUTE);
+    await page.getByLabel('Use custom slot templates').uncheck();
+    await page.getByLabel('No activity (empty state)').check();
+    await open(page);
+    await panel(page).locator('button.cngx-popover-panel__close').click();
+    await expect(panel(page)).toBeHidden();
+    await expect(trigger(page)).toBeFocused();
+  });
+
+  test('content-states: the error view keeps the header', async ({ page }) => {
+    await gotoDemo(page, 'common/popover/popover-panel/content-states');
+    await page.getByRole('button', { name: /Load with Error/ }).click();
+    const errPanel = page.locator('cngx-popover-panel', { hasText: 'Network timeout' });
+    await expect(errPanel).toBeVisible({ timeout: 5000 });
+    await expect(errPanel.locator('.cngx-popover-panel__header')).toHaveText('User Details');
+  });
+
+  test('state-copy: the config tier and the input tier each reach their panel', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/popover/popover-panel/state-copy');
+    await page.getByRole('radio', { name: 'Load error', exact: true }).check();
+    const cases = [
+      { trigger: 'Shared files', copy: 'Shared files are unavailable' },
+      { trigger: 'Team files', copy: 'Team files are unavailable' },
+    ];
+    for (const { trigger: name, copy } of cases) {
+      await page.getByRole('button', { name, exact: true }).click();
+      const statePanel = page.locator('cngx-popover-panel', { hasText: copy });
+      await expect(statePanel).toBeVisible();
+      const describedBy = await statePanel.getAttribute('aria-describedby');
+      await expect(page.locator(`[id="${describedBy}"]`)).toHaveText(copy);
+      await page.keyboard.press('Escape');
+      await expect(statePanel).toBeHidden();
+    }
   });
 });
