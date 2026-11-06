@@ -60,12 +60,14 @@ export const STORY: DemoSpec = {
   private readonly listen = afterNextRender(() => {
     const host = this.panelHost()?.nativeElement as HTMLElement | undefined;
     const onFocusIn = () => this.refreshSr();
+    let readFocusTimer: ReturnType<typeof setTimeout> | undefined;
     const onToggle = (event: Event) => {
       this.refreshSr();
       if ((event as ToggleEvent).newState !== 'closed') {
         return;
       }
-      setTimeout(() => {
+      clearTimeout(readFocusTimer);
+      readFocusTimer = setTimeout(() => {
         const active = document.activeElement as HTMLElement | null;
         const label = active && active !== document.body ? active.textContent?.trim() : '';
         this.focusAfterClose.set(label ? label : 'body (focus lost)');
@@ -79,6 +81,7 @@ export const STORY: DemoSpec = {
     document.addEventListener('focusin', onFocusIn);
     this.refreshSr();
     this.destroyRef.onDestroy(() => {
+      clearTimeout(readFocusTimer);
       observer.disconnect();
       host?.removeEventListener('toggle', onToggle);
       document.removeEventListener('focusin', onFocusIn);
