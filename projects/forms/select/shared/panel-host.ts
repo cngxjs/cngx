@@ -36,6 +36,7 @@ import type {
   CngxSelectLoadingVariant,
   CngxSelectRefreshingVariant,
 } from './config';
+import type { CngxSelectAutoRecyclerHandle } from './internal/auto-virtualize';
 import type { PanelRenderer as PanelRendererForHost } from './panel-renderer';
 import type {
   CngxSelectOptionDef,
@@ -155,6 +156,14 @@ export interface CngxSelectPanelHost<T = unknown> extends CngxSelectPanelViewHos
    * @internal
    */
   readonly panelRenderer?: PanelRendererForHost<T>;
+  /**
+   * Handle of the config-driven recycler; the panel template mounts its owner
+   * once a list crosses the threshold. Absent for a consumer renderer and for
+   * `withVirtualization(false)`.
+   *
+   * @internal
+   */
+  readonly autoRecycler?: CngxSelectAutoRecyclerHandle;
   readonly effectiveOptions: Signal<CngxSelectOptionsInput<T>>;
   readonly flatOptions: Signal<CngxSelectOptionDef<T>[]>;
   readonly panelClassList: Signal<string | readonly string[] | null>;

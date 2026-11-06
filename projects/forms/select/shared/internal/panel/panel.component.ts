@@ -23,6 +23,7 @@ import {
   type PanelRenderer,
 } from '../../panel-renderer';
 import { isCngxSelectOptionGroupDef } from '../../option.model';
+import { CngxSelectAutoRecycler } from '../auto-recycler.directive';
 import { sameArrayContents } from '../compare';
 
 /**
@@ -65,6 +66,7 @@ const EMPTY_RENDER_ITEMS: readonly unknown[] = [];
     CngxCheckboxIndicator,
     CngxRadioIndicator,
     CngxRecyclerPlaceholder,
+    CngxSelectAutoRecycler,
     NgTemplateOutlet,
   ],
   host: {
