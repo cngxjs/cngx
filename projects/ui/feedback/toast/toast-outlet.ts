@@ -13,6 +13,7 @@ import {
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 import { injectFeedbackI18n } from '../config/feedback-i18n';
 import { CngxSeverityIcon } from '../config/severity-icon';
+import type { TimerSegment } from '../internal/pausable-timer';
 import { CngxToaster, type ToastState } from './toast.service';
 
 /**
@@ -82,6 +83,9 @@ export type ToastPosition =
         (pointerleave)="service.resumeTimer(toast.id, 'pointer')"
         (focusin)="service.pauseTimer(toast.id, 'focus')"
         (focusout)="service.resumeTimer(toast.id, 'focus')"
+        [attr.data-timer]="timerState(toast)"
+        [style.--cngx-toast-timer-duration.ms]="timerFor(toast)?.total ?? null"
+        [style.--cngx-toast-timer-offset.ms]="timerOffset(toast)"
       >
         <div class="cngx-toast__icon">
           @if (iconFor(toast); as iconCmp) {
@@ -130,6 +134,11 @@ export type ToastPosition =
             class="cngx-toast__dismiss"
             (click)="service.dismiss(toast.id)"
           ></button>
+        }
+        @if (timerFor(toast); as segment) {
+          @for (s of [segment]; track s.serial) {
+            <span class="cngx-toast__timer" aria-hidden="true"></span>
+          }
         }
       </div>
     }
@@ -186,6 +195,32 @@ export class CngxToastOutlet {
     },
     { equal: (a, b) => a.length === b.length && a.every((t, i) => t === b[i]) },
   );
+
+  /** @internal - the toaster's countdown segments, the only timer source of the view. */
+  protected readonly segments = this.service.timerSegments;
+
+  /** @internal - current segment of a timed toast, `null` for a persistent one. */
+  protected timerFor(toast: ToastState): TimerSegment | null {
+    if (toast.config.duration === 'persistent') {
+      return null;
+    }
+    return this.segments().get(toast.id) ?? null;
+  }
+
+  /** @internal - `data-timer` value: absent without a segment. */
+  protected timerState(toast: ToastState): 'running' | 'paused' | null {
+    const segment = this.timerFor(toast);
+    if (!segment) {
+      return null;
+    }
+    return segment.running ? 'running' : 'paused';
+  }
+
+  /** @internal - negative elapsed time of the segment, the animation start offset. */
+  protected timerOffset(toast: ToastState): number | null {
+    const segment = this.timerFor(toast);
+    return segment ? segment.remaining - segment.total : null;
+  }
 
   /** @internal - resolve icon component from global config or null. */
   protected iconFor(toast: ToastState) {

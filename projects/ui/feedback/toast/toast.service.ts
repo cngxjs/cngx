@@ -236,6 +236,14 @@ export class CngxToaster {
     this.timers.hold(id, source);
   }
 
+  /**
+   * @internal - current countdown segment per timed toast id. `CngxToastOutlet`
+   * is the only reader: it derives the `data-timer` state, the timer custom
+   * properties and the serial-keyed timer element from it. Written in a
+   * microtask flush, never inside a timer call.
+   */
+  readonly timerSegments = this.timers.segments;
+
   /** @internal - called by toast-outlet on mouse-leave/focus-out and on reveal. */
   resumeTimer(id: number, source: TimerHoldSource): void {
     this.timers.release(id, source);
