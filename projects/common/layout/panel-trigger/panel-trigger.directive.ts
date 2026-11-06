@@ -4,6 +4,7 @@ import {
   DestroyRef,
   Directive,
   ElementRef,
+  HostAttributeToken,
   inject,
   input,
   signal,
@@ -36,7 +37,8 @@ export type CngxPanelTriggerAction = 'toggle' | 'peek';
  * Any other host gets `role="button"`, `tabindex="0"` and its own
  * Enter / Space handling. An icon-only trigger (no text content; text
  * inside `hidden` or `aria-hidden` elements does not count) is named after
- * the panel: a bound `label`, else the target's `label`, else
+ * the panel: a bound `label`, else a static `aria-label`, else the
+ * target's `label`, else
  * `CNGX_LAYOUT_I18N.panelTrigger`. The name stays the same while the panel
  * opens and closes; `aria-expanded` carries the state. A trigger with
  * visible text keeps its text as its name. The check follows the host
@@ -98,7 +100,8 @@ export class CngxPanelTrigger {
    */
   readonly action = input<CngxPanelTriggerAction>('toggle');
   /**
-   * Accessible name. On a trigger without text content it falls back to
+   * Accessible name. Unbound, a static `aria-label` on the host stays; on a
+   * trigger without text content or a static `aria-label` it falls back to
    * the target's `label`, then to `CNGX_LAYOUT_I18N.panelTrigger`. It does
    * not follow the panel state; `aria-expanded` does.
    */
@@ -107,6 +110,8 @@ export class CngxPanelTrigger {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly providedTarget = inject(CNGX_PANEL_TARGET, { optional: true });
   private readonly i18n = injectLayoutI18n();
+  // The aria-label binding would drop a static aria-label, so it renders it.
+  private readonly staticLabel = inject(new HostAttributeToken('aria-label'), { optional: true });
   private readonly rendered = signal(false);
   // Bumped by a MutationObserver on the host: the text and the attributes
   // that decide the name are not signals, so hasOwnName reads the DOM and
@@ -140,7 +145,9 @@ export class CngxPanelTrigger {
     }
     return this.target()?.label?.() ?? this.i18n().panelTrigger;
   });
-  protected readonly resolvedLabel = computed(() => this.label() ?? this.fallbackLabel());
+  protected readonly resolvedLabel = computed(
+    () => this.label() ?? this.staticLabel ?? this.fallbackLabel(),
+  );
 
   protected readonly handleActivationKey = createActivationKeyHandler(this.host, () =>
     this.activate(),

@@ -27,6 +27,12 @@ function createTarget(withPeek = true, label?: Signal<string | undefined>) {
     <button type="button" class="text" [cngxPanelTrigger]="target" [action]="action()">Menu</button>
     <button type="button" class="icon" [cngxPanelTrigger]="target" [label]="label()"></button>
     <span class="span" [cngxPanelTrigger]="target"></span>
+    <button
+      type="button"
+      class="static-name"
+      [cngxPanelTrigger]="target"
+      aria-label="Open filters"
+    ></button>
     <button type="button" class="hidden-text" [cngxPanelTrigger]="target">
       <span aria-hidden="true">menu</span><span hidden>Busy</span>
     </button>
@@ -134,6 +140,15 @@ describe('CngxPanelTrigger', () => {
     expect(q('.icon').getAttribute('aria-label')).toBe('Panel');
     expect(q('.icon').getAttribute('aria-expanded')).toBe('true');
     expect(q('.text').hasAttribute('aria-label')).toBe(false);
+  });
+
+  it('keeps a static aria-label over the target label and the default', () => {
+    const { fixture, open, q } = setup(createTarget(true, signal('Navigation')));
+    expect(q('.static-name').getAttribute('aria-label')).toBe('Open filters');
+
+    open.set(true);
+    fixture.detectChanges();
+    expect(q('.static-name').getAttribute('aria-label')).toBe('Open filters');
   });
 
   it('takes the target label when no label is bound', () => {
