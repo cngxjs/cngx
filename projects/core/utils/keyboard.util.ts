@@ -14,6 +14,8 @@ export interface KeyCombo {
   readonly alt: boolean;
 }
 
+const KEY_ALIASES: Readonly<Record<string, string>> = { esc: 'escape' };
+
 /**
  * Parses a keyboard shortcut string like `'ctrl+shift+k'` or `'mod+b'` into
  * a structured {@link KeyCombo}.
@@ -24,6 +26,11 @@ export interface KeyCombo {
  * A trailing `+` names the literal plus key: `'mod++'` parses as
  * `mod` + `'+'` (the split's trailing empty segment is the key, not a
  * dangling separator).
+ *
+ * The space bar is spelled `'space'` (a combo segment is trimmed, so `' '`
+ * cannot name it) and `'esc'` is an alias that parses to `'escape'`, the
+ * UI Events key value, so the matcher and {@link resolveAriaKeyShortcuts}
+ * read one vocabulary.
  *
  * ```typescript
  * const combo = parseKeyCombo('mod+b');
@@ -40,7 +47,8 @@ export function parseKeyCombo(combo: string): KeyCombo {
   // 'mod++' splits into ['mod', '', ''] - a trailing empty segment means the
   // combo ends in '+', so the key IS the literal plus character.
   const last = parts.pop() ?? '';
-  const key = last === '' && combo.trimEnd().endsWith('+') ? '+' : last;
+  const literal = last === '' && combo.trimEnd().endsWith('+') ? '+' : last;
+  const key = KEY_ALIASES[literal] ?? literal;
   return {
     key,
     ctrl: parts.includes('ctrl'),
@@ -192,11 +200,9 @@ const ARIA_MODIFIER_TOKENS: Readonly<Record<KeyComboModifier, string>> = {
 // UI Events `key` values for the named keys a lower-cased combo can carry.
 const ARIA_NAMED_KEYS: Readonly<Record<string, string>> = {
   '+': 'Plus',
-  ' ': 'Space',
   space: 'Space',
   enter: 'Enter',
   escape: 'Escape',
-  esc: 'Escape',
   tab: 'Tab',
   backspace: 'Backspace',
   delete: 'Delete',
@@ -284,7 +290,8 @@ export function resolveMacPlatform(nav: Navigator | undefined): boolean {
 const LATIN_LETTER_OR_DIGIT = /^[a-z0-9]$/;
 
 function matchesComboKey(event: KeyboardEvent, comboKey: string): boolean {
-  const key = event.key.toLowerCase();
+  // The space bar reports `' '`; combos spell it `'space'`.
+  const key = event.key === ' ' ? 'space' : event.key.toLowerCase();
   if (key === comboKey) {
     return true;
   }

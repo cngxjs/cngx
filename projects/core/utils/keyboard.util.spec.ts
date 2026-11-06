@@ -246,6 +246,43 @@ describe('resolveAriaKeyShortcuts', () => {
   });
 });
 
+describe('combo key vocabulary', () => {
+  // [combo key, event.key the browser reports, aria-keyshortcuts token]
+  const NAMED_KEYS: readonly (readonly [string, string, string])[] = [
+    ['space', ' ', 'Space'],
+    ['esc', 'Escape', 'Escape'],
+    ['escape', 'Escape', 'Escape'],
+    ['enter', 'Enter', 'Enter'],
+    ['tab', 'Tab', 'Tab'],
+    ['backspace', 'Backspace', 'Backspace'],
+    ['delete', 'Delete', 'Delete'],
+    ['insert', 'Insert', 'Insert'],
+    ['home', 'Home', 'Home'],
+    ['end', 'End', 'End'],
+    ['pageup', 'PageUp', 'PageUp'],
+    ['pagedown', 'PageDown', 'PageDown'],
+    ['arrowup', 'ArrowUp', 'ArrowUp'],
+    ['arrowdown', 'ArrowDown', 'ArrowDown'],
+    ['arrowleft', 'ArrowLeft', 'ArrowLeft'],
+    ['arrowright', 'ArrowRight', 'ArrowRight'],
+    ['contextmenu', 'ContextMenu', 'ContextMenu'],
+    ['f2', 'F2', 'F2'],
+    ['+', '+', 'Plus'],
+  ];
+
+  it('every key the serialiser names also matches the press it advertises', () => {
+    for (const [comboKey, eventKey, token] of NAMED_KEYS) {
+      const combo = parseKeyCombo(comboKey);
+      expect(resolveAriaKeyShortcuts(combo, false), comboKey).toBe(token);
+      expect(matchesKeyCombo(press(eventKey), combo, false), comboKey).toBe(true);
+    }
+  });
+
+  it("parses the 'esc' alias to the UI Events value 'escape'", () => {
+    expect(parseKeyCombo('mod+esc').key).toBe('escape');
+  });
+});
+
 describe('resolveMacPlatform', () => {
   const nav = (fields: { platform?: string; userAgentData?: { platform?: string } }): Navigator =>
     fields as unknown as Navigator;
