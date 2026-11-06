@@ -508,9 +508,30 @@ class EscapeHost {
 }
 
 describe('CngxDrawer Escape with a panel', () => {
+  let watchers: { onclose: (() => void) | null; destroy: () => void }[];
+
   beforeEach(() => {
+    watchers = [];
+    vi.stubGlobal(
+      'CloseWatcher',
+      class {
+        onclose: (() => void) | null = null;
+        destroy = vi.fn();
+        constructor() {
+          watchers.push(this);
+        }
+      },
+    );
     TestBed.configureTestingModule({ imports: [EscapeHost] });
   });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  // Chromium turns an Escape keydown nobody cancelled into a close request
+  // on the newest watcher, in the same task.
+  function chromiumCloseRequest() {
+    watchers.at(-1)?.onclose?.();
+  }
 
   function escapeOn(target: Element) {
     target.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
@@ -550,6 +571,29 @@ describe('CngxDrawer Escape with a panel', () => {
 
       expect(host.changes).toEqual([false]);
       expect(host.closedCount).toBe(1);
+    });
+
+    for (const [where, selector] of [
+      ['in the content area', 'main button'],
+      ['inside the panel', 'nav a'],
+    ]) {
+      it(`closes a ${label} drawer once for an Escape ${where} that Chromium also turns into a close request`, () => {
+        const { host, root } = setup(controlled);
+
+        escapeOn(root.querySelector(selector) as HTMLElement);
+        chromiumCloseRequest();
+
+        expect(host.changes).toEqual([false]);
+        expect(host.closedCount).toBe(1);
+      });
+    }
+
+    it(`closes a ${label} drawer on a back gesture`, () => {
+      const { host } = setup(controlled);
+
+      chromiumCloseRequest();
+
+      expect(host.changes).toEqual([false]);
     });
   }
 });

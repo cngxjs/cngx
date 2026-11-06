@@ -367,19 +367,29 @@ describe('CngxDrawerSurface', () => {
       expect(host.dismissed).toHaveBeenCalledTimes(1);
     });
 
-    it('re-arms the watcher after the Escape task while still engaged', () => {
-      vi.useFakeTimers();
-      const { set, q } = setup();
+    it('drops the close Chromium derives from an Escape outside the host', () => {
+      const { host, set, q } = setup((h) => h.modality.set('none'));
       set((h) => h.active.set(true));
-      q('.inside').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-      expect(watchers[0].destroy).toHaveBeenCalledTimes(1);
-
-      vi.runAllTimers();
-
-      expect(watchers).toHaveLength(2);
+      q('.outside').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      watchers[0].onclose?.();
+      expect(host.dismissed).not.toHaveBeenCalled();
     });
 
-    it('clears the pending Escape re-arm when destroyed', () => {
+    it('keeps a watcher armed for the back gesture after an Escape close', () => {
+      vi.useFakeTimers();
+      const { host, set, q } = setup();
+      set((h) => h.active.set(true));
+      q('.inside').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      watchers[0].onclose?.();
+      expect(watchers).toHaveLength(2);
+
+      vi.runAllTimers();
+      watchers[1].onclose?.();
+
+      expect(host.dismissed).toHaveBeenCalledTimes(2);
+    });
+
+    it('clears the pending Escape flag and the listener when destroyed', () => {
       const { fixture, set, q } = setup();
       set((h) => h.active.set(true));
       const scheduled = vi.spyOn(globalThis, 'setTimeout');
@@ -387,13 +397,17 @@ describe('CngxDrawerSurface', () => {
       const ids = scheduled.mock.results.map((r) => r.value as unknown);
       scheduled.mockRestore();
       const cleared = vi.spyOn(globalThis, 'clearTimeout');
+      const removed = vi.spyOn(document, 'removeEventListener');
 
       fixture.destroy();
 
       const clearedIds = cleared.mock.calls.map(([id]) => id as unknown);
+      const removedKeydown = removed.mock.calls.some(([type]) => type === 'keydown');
       cleared.mockRestore();
+      removed.mockRestore();
       expect(ids.some((id) => clearedIds.includes(id))).toBe(true);
-      expect(watchers).toHaveLength(1);
+      expect(removedKeydown).toBe(true);
+      expect(watchers[0].destroy).toHaveBeenCalledTimes(1);
     });
 
     it('asks on a press outside the host', () => {

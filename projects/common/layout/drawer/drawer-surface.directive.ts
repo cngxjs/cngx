@@ -93,8 +93,10 @@ const SCROLLING_OVERFLOW = new Set(['auto', 'scroll']);
  * The transient-surface behaviour of a drawer or an overlay rail, with an
  * explicit modality.
  *
- * While `active`, the surface asks to be dismissed on Escape (focus inside),
- * on the platform back gesture (`CloseWatcher`) and on a press outside the
+ * While `active`, the surface asks to be dismissed on Escape (focus inside,
+ * in every browser: the close Chromium derives from an Escape keypress is not
+ * a back gesture and is dropped), on the platform back gesture
+ * (`CloseWatcher`) and on a press outside the
  * host. A press on the element whose `aria-controls` names the host `id` is
  * not outside, so the trigger can toggle the surface itself. Focus returns
  * to the element focused at activation when the surface deactivates.
@@ -214,9 +216,20 @@ export class CngxDrawerSurface
     optional: true,
   });
   private destroyed = false;
-  // Chromium also turns an unhandled Escape into a CloseWatcher close; the
-  // watcher stays disarmed until this keydown task is over.
-  private escapeRearmTimer: ReturnType<typeof setTimeout> | null = null;
+  // Chromium also turns an unhandled Escape keydown, wherever focus is, into
+  // a CloseWatcher close. Escape belongs to the keydown path (focus inside
+  // the host, the drawer for its content), so a watcher close from the same
+  // keypress is not a back gesture. The flag lives for the keydown task only.
+  private escapeKeyTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly escapeKeydown = (event: KeyboardEvent): void => {
+    if (event.key !== 'Escape') {
+      return;
+    }
+    this.clearEscapeKey();
+    this.escapeKeyTimer = setTimeout(() => {
+      this.escapeKeyTimer = null;
+    });
+  };
 
   private resolvedDriver: CngxDrawerSurfaceDriver | null | undefined = undefined;
   private driver(): CngxDrawerSurfaceDriver | null {
@@ -278,13 +291,16 @@ export class CngxDrawerSurface
     () => this.isActive() && (this.driver()?.surfaceOutsideDismiss?.() ?? true),
   );
 
-  private readonly closeWatcher = createCloseWatcher(() => this.requestDismiss(), injectWindow());
+  private readonly closeWatcher = createCloseWatcher(
+    () => this.handleCloseRequest(),
+    injectWindow(),
+  );
 
   constructor() {
     afterNextRender(() => this.domReady.set(true));
     inject(DestroyRef).onDestroy(() => {
       this.destroyed = true;
-      this.clearEscapeRearm();
+      this.clearEscapeKey();
       this.closeWatcher.disarm();
     });
 
@@ -294,9 +310,13 @@ export class CngxDrawerSurface
       if (!this.isActive()) {
         return;
       }
-      untracked(() => this.closeWatcher.arm());
+      untracked(() => {
+        this.doc.addEventListener('keydown', this.escapeKeydown, true);
+        this.closeWatcher.arm();
+      });
       onCleanup(() => {
-        this.clearEscapeRearm();
+        this.doc.removeEventListener('keydown', this.escapeKeydown, true);
+        this.clearEscapeKey();
         this.closeWatcher.disarm();
       });
     });
@@ -354,22 +374,21 @@ export class CngxDrawerSurface
     if (!this.isActive()) {
       return;
     }
-    // One keypress must reach the owner once, so no watcher exists until
-    // the keydown task is over.
-    this.closeWatcher.disarm();
     this.emitDismiss();
-    this.clearEscapeRearm();
-    this.escapeRearmTimer = setTimeout(() => {
-      this.escapeRearmTimer = null;
-      this.rearmIfEngaged();
-    });
   }
 
-  private clearEscapeRearm(): void {
-    if (this.escapeRearmTimer !== null) {
-      clearTimeout(this.escapeRearmTimer);
-      this.escapeRearmTimer = null;
+  private clearEscapeKey(): void {
+    if (this.escapeKeyTimer !== null) {
+      clearTimeout(this.escapeKeyTimer);
+      this.escapeKeyTimer = null;
     }
+  }
+
+  private handleCloseRequest(): void {
+    if (this.escapeKeyTimer === null) {
+      this.emitDismiss();
+    }
+    this.rearmIfEngaged();
   }
 
   private requestDismiss(): void {
