@@ -489,13 +489,18 @@ describe('CngxButtonBrain', () => {
       expect(brain.busyVisible()).toBe(true);
       expect(btn.getAttribute('data-busy')).toBe('true');
 
+      // Painted busy reads busy, never as a bare disabled: aria-busy and
+      // aria-disabled hold with the layer through its dwell.
       de.injector.get(DemoReflect).running.set(false);
       flush();
-      expect(btn.hasAttribute('aria-busy')).toBe(false);
       expect(btn.getAttribute('data-busy')).toBe('true');
+      expect(btn.getAttribute('aria-busy')).toBe('true');
+      expect(btn.getAttribute('aria-disabled')).toBe('true');
       await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.minDwell);
       flush();
       expect(btn.hasAttribute('data-busy')).toBe(false);
+      expect(btn.hasAttribute('aria-busy')).toBe(false);
+      expect(btn.hasAttribute('aria-disabled')).toBe(false);
     });
   });
 

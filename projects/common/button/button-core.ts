@@ -87,8 +87,9 @@ export interface CngxButtonCore {
    */
   readonly ariaDisabled: Signal<'true' | null>;
   /**
-   * `aria-busy`: the co-hosted run, the runner's own busy override or the
-   * host's run. The same value the runner renders, so the two writers agree.
+   * `aria-busy`: the co-hosted run, the runner's own busy override, the
+   * host's run, and the busy visual while it is held through its dwell. With
+   * a runner the same value the runner renders, so the two writers agree.
    */
   readonly ariaBusy: Signal<'true' | null>;
   /**
@@ -198,13 +199,13 @@ export function injectButtonCore(
   const ariaDisabled = computed<'true' | null>(
     () => runState()?.ariaDisabledAttr() ?? ownAriaDisabled(),
   );
-  // The value the runner renders on the same host (its run, its held busy
-  // visual, its `[busy]` override and the host's run), so the two writers agree.
-  const ariaBusy = computed<'true' | null>(() => {
-    const run = runState();
-    const runBusy = run ? run.busyVisible() || run.busy() : false;
-    return busy() || runBusy ? 'true' : null;
-  });
+  // Held with the busy visual, so what is painted busy reads busy and never
+  // as a bare disabled through the dwell. With a runner it is the value the
+  // runner renders on the same host (its run, its held busy visual, its
+  // `[busy]` override and the host's run), so the two writers agree.
+  const ariaBusy = computed<'true' | null>(() =>
+    busy() || busyVisible() || (runState()?.busy() ?? false) ? 'true' : null,
+  );
   const reasonIds = computed(() =>
     inputs.disabled() && inputs.disabledReason() ? reasonId : null,
   );

@@ -46,8 +46,9 @@ import type {
  * swallows activation in the capture phase while `blocked` (so
  * `aria-disabled="true"` always means no activation, a co-located
  * `RouterLink` included), renders
- * `aria-busy` while a run is in flight (the co-hosted runner's or the
- * host's, with the same value the runner writes), and owns
+ * `aria-busy` while a run is in flight or its busy layer is held through
+ * the dwell (the co-hosted runner's or the host's, with the same value the
+ * runner writes), and owns
  * `aria-describedby` through `CNGX_DESCRIBED_BY` (static ids, the
  * `cngxDescribedBy` ids, the reason while disabled, co-hosted contributors
  * such as `[cngxTooltip]`). A co-hosted runner is read through
