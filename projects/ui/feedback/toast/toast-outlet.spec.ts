@@ -396,6 +396,36 @@ describe('CngxToastOutlet', () => {
       expect(has('Queued')).toBe(false);
     });
 
+    it('releases the queue when a dedup repeat turns the last timed visible toast persistent', async () => {
+      const { toaster, has, settle } = queueSetup();
+      toaster.show({ message: 'Queued', duration: 5000 });
+      toaster.show({ message: 'Repeated', duration: 5000 });
+      toaster.show({ message: 'Pinned', duration: 'persistent' });
+      await settle();
+
+      toaster.show({ message: 'Repeated', duration: 'persistent' });
+      await settle();
+      await settle();
+
+      vi.advanceTimersByTime(5000);
+      expect(has('Queued')).toBe(false);
+      expect(has('Repeated')).toBe(true);
+    });
+
+    it('marks a persistent toast timed after a timed dedup repeat', async () => {
+      const { toaster, toastByText, has, settle } = queueSetup();
+      toaster.show({ message: 'Repeated', duration: 'persistent' });
+      await settle();
+      expect(toastByText('Repeated')!.hasAttribute('data-timer')).toBe(false);
+
+      toaster.show({ message: 'Repeated', duration: 5000 });
+      await settle();
+      expect(toastByText('Repeated')!.getAttribute('data-timer')).toBe('running');
+
+      vi.advanceTimersByTime(5000);
+      expect(has('Repeated')).toBe(false);
+    });
+
     it('issues each queue transition once', async () => {
       const { toaster, settle } = queueSetup();
       const pause = vi.spyOn(toaster, 'pauseTimer');

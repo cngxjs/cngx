@@ -78,6 +78,7 @@ export type ToastPosition =
   },
   template: `
     @for (toast of visibleToasts(); track toast.id) {
+      @let timer = segments().get(toast.id) ?? null;
       <div
         class="cngx-toast"
         [class.cngx-toast--info]="toast.config.severity === 'info'"
@@ -93,9 +94,9 @@ export type ToastPosition =
         (pointerleave)="service.resumeTimer(toast.id, 'pointer')"
         (focusin)="service.pauseTimer(toast.id, 'focus')"
         (focusout)="service.resumeTimer(toast.id, 'focus')"
-        [attr.data-timer]="timerState(toast)"
-        [style.--cngx-toast-timer-duration.ms]="timerFor(toast)?.total ?? null"
-        [style.--cngx-toast-timer-offset.ms]="timerOffset(toast)"
+        [attr.data-timer]="timerState(timer)"
+        [style.--cngx-toast-timer-duration.ms]="timer?.total ?? null"
+        [style.--cngx-toast-timer-offset.ms]="timerOffset(timer)"
       >
         <div class="cngx-toast__icon">
           @if (iconFor(toast); as iconCmp) {
@@ -145,8 +146,8 @@ export type ToastPosition =
             (click)="service.dismiss(toast.id)"
           ></button>
         }
-        @if (timerFor(toast); as segment) {
-          @for (s of [segment]; track s.serial) {
+        @if (timer) {
+          @for (s of [timer]; track s.serial) {
             <span class="cngx-toast__timer" aria-hidden="true"></span>
           }
         }
@@ -211,13 +212,21 @@ export class CngxToastOutlet {
   );
 
   /**
+   * @internal - the toaster's countdown segments, the only timer source of the
+   * view. A toast is timed exactly when it has a segment: a dedup restart that
+   * switches between timed and persistent never leaves a stale config behind.
+   */
+  protected readonly segments = this.service.timerSegments;
+
+  /**
    * @internal - ids kept out of view by `maxVisible`, and whether their timers
-   * are held. Not held while every visible toast is persistent: a held queue
-   * would never move.
+   * are held. Not held while no visible toast is timed: a held queue would
+   * never move.
    */
   private readonly queue = computed<QueueState>(
     () => {
       const visible = this.visibleToasts();
+      const segments = this.segments();
       const shown = new Set(visible.map((t) => t.id));
       const queued = this.service
         .toasts()
@@ -225,7 +234,7 @@ export class CngxToastOutlet {
         .map((t) => t.id);
       return {
         hidden: queued.length === 0 ? NO_QUEUE : new Set(queued),
-        held: visible.some((t) => t.config.duration !== 'persistent'),
+        held: visible.some((t) => segments.has(t.id)),
       };
     },
     { equal: (a, b) => a.held === b.held && setEqual(a.hidden, b.hidden) },
@@ -270,20 +279,8 @@ export class CngxToastOutlet {
     });
   }
 
-  /** @internal - the toaster's countdown segments, the only timer source of the view. */
-  protected readonly segments = this.service.timerSegments;
-
-  /** @internal - current segment of a timed toast, `null` for a persistent one. */
-  protected timerFor(toast: ToastState): TimerSegment | null {
-    if (toast.config.duration === 'persistent') {
-      return null;
-    }
-    return this.segments().get(toast.id) ?? null;
-  }
-
   /** @internal - `data-timer` value: absent without a segment. */
-  protected timerState(toast: ToastState): 'running' | 'paused' | null {
-    const segment = this.timerFor(toast);
+  protected timerState(segment: TimerSegment | null): 'running' | 'paused' | null {
     if (!segment) {
       return null;
     }
@@ -291,8 +288,7 @@ export class CngxToastOutlet {
   }
 
   /** @internal - negative elapsed time of the segment, the animation start offset. */
-  protected timerOffset(toast: ToastState): number | null {
-    const segment = this.timerFor(toast);
+  protected timerOffset(segment: TimerSegment | null): number | null {
     return segment ? segment.remaining - segment.total : null;
   }
 
