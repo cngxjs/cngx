@@ -189,6 +189,32 @@ export {
   type CngxChipStripRovingOptions,
 } from './reorder/chip-strip-roving';
 export { CngxKeyboardShortcut } from './keyboard/keyboard-shortcut.directive';
+export {
+  type CngxHotkeyBinding,
+  type CngxHotkeyReach,
+  type CngxHotkeyRef,
+  type CngxHotkeyRegistration,
+} from './keyboard/hotkeys/hotkey-binding';
+export {
+  CNGX_HOTKEY_SCOPE,
+  createHotkeyScope,
+  type CngxHotkeyScopeNode,
+  type CngxHotkeyScopeOptions,
+} from './keyboard/hotkeys/hotkey-scope';
+export { CngxHotkeyScope } from './keyboard/hotkeys/hotkey-scope.directive';
+export {
+  CNGX_HOTKEY_REGISTRY,
+  createHotkeyRegistry,
+  injectHotkey,
+  injectHotkeyRegistry,
+  injectHotkeyRegistryDeps,
+  injectHotkeys,
+  type CngxHotkeyGroup,
+  type CngxHotkeyListing,
+  type CngxHotkeyRegistry,
+  type CngxHotkeyRegistryDeps,
+  type CngxHotkeyRegistryFactory,
+} from './keyboard/hotkeys/hotkey-registry';
 export { CngxSearch } from './keyboard/search.directive';
 export { createActivationKeyHandler } from './keyboard/activation-key';
 export {
