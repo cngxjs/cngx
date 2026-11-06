@@ -60,6 +60,12 @@ const QUOTE_EXEMPT = [
     quote: 'contentTemplate',
     reason: 'names the value of a part of the message, not its start',
   },
+  {
+    code: 'CNGX1035',
+    quote:
+      'CNGX1035: [cngx-popover-action] role="confirm" without an [action] renders a button whose click runs nothing',
+    reason: 'retired in 0.3.0; quotes the message of the removed call site for older releases',
+  },
 ];
 
 /**

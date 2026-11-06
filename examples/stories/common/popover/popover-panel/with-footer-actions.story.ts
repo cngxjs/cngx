@@ -3,17 +3,17 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxPopoverPanel: With footer actions',
   subtitle:
-    'Compose <code>cngx-popover-action</code> inside <code>cngxPopoverFooter</code>. <code>role="dismiss"</code> closes the panel; <code>role="confirm"</code> runs an async action with <code>cngxPending</code> / <code>cngxSucceeded</code> / <code>cngxFailed</code> templates.',
+    'Compose <code>button[cngxPopoverDismiss]</code> and <code>button[cngxPopoverAction]</code> inside <code>cngxPopoverFooter</code>. The dismiss button closes the panel; the action runs an async <code>[action]</code> with <code>cngxPending</code> / <code>cngxSucceeded</code> / <code>cngxFailed</code> templates.',
   description:
-    'A confirm panel pairs a dismiss button with an async confirm. The confirm button drives <code>CngxAsyncClick</code> under the hood, so the projected templates swap based on the returned promise. The first popover resolves and renders the success template; the second rejects and surfaces the rejection value via <code>cngxFailed</code> with <code>$implicit</code>. Pick fast (80 ms) to see a confirm settle with no busy template, medium (200 ms) to watch the pending template held through its dwell while the action refuses a second click, or slow (1.5 s) for a long run. Each settle is spoken once through the polite live region of the action itself, with the text the button shows; the dashed box below logs both panels.',
+    'A confirm panel pairs a dismiss button with an async confirm. Both are button-family hosts pinned to <code>sm</code>; the confirm sets <code>cngxPopoverAction="solid"</code> plus a <code>tone</code> and co-hosts <code>CngxAsyncClick</code>, so the projected templates swap based on the returned promise. The first popover resolves and renders the success template; the second rejects and surfaces the rejection value via <code>cngxFailed</code> with <code>$implicit</code>. Pick fast (80 ms) to see a confirm settle with no busy template, medium (200 ms) to watch the pending template held through its dwell while the action refuses a second click, or slow (1.5 s) for a long run. Each settle is spoken once through the polite live region of the action itself, with the text the button shows; the dashed box below logs both panels.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['async-state', 'composition'],
-  apiComponents: ['CngxPopoverPanel', 'CngxPopoverAction'],
+  apiComponents: ['CngxPopoverPanel', 'CngxPopoverAction', 'CngxPopoverDismiss'],
   moduleImports: [
     "import { signal } from '@angular/core';",
-    "import { CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody, CngxPopoverFooter, CngxPopoverAction } from '@cngx/common/popover';",
+    "import { CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody, CngxPopoverFooter, CngxPopoverAction, CngxPopoverDismiss } from '@cngx/common/popover';",
     "import { CngxPending, CngxSucceeded, CngxFailed } from '@cngx/common/interactive';",
   ],
   imports: [
@@ -23,6 +23,7 @@ export const STORY: DemoSpec = {
     'CngxPopoverBody',
     'CngxPopoverFooter',
     'CngxPopoverAction',
+    'CngxPopoverDismiss',
     'CngxPending',
     'CngxSucceeded',
     'CngxFailed',
@@ -105,12 +106,12 @@ export const STORY: DemoSpec = {
         <span cngxPopoverHeader>Save Changes?</span>
         <p cngxPopoverBody>Your unsaved changes will be saved to the server.</p>
         <div cngxPopoverFooter>
-          <cngx-popover-action role="dismiss">Cancel</cngx-popover-action>
-          <cngx-popover-action role="confirm" [action]="simulateSave" variant="primary">
+          <button cngxPopoverDismiss>Cancel</button>
+          <button cngxPopoverAction="solid" tone="primary" [action]="simulateSave">
             Save
             <ng-template cngxPending>Saving...</ng-template>
             <ng-template cngxSucceeded>Saved!</ng-template>
-          </cngx-popover-action>
+          </button>
         </div>
       </cngx-popover-panel>
     </div>
@@ -123,12 +124,12 @@ export const STORY: DemoSpec = {
         <span cngxPopoverHeader>Delete Item?</span>
         <p cngxPopoverBody>This action cannot be undone.</p>
         <div cngxPopoverFooter>
-          <cngx-popover-action role="dismiss">Cancel</cngx-popover-action>
-          <cngx-popover-action role="confirm" [action]="simulateDelete" variant="danger">
+          <button cngxPopoverDismiss>Cancel</button>
+          <button cngxPopoverAction="solid" tone="danger" [action]="simulateDelete">
             Delete
             <ng-template cngxPending>Deleting...</ng-template>
             <ng-template cngxFailed let-err>{{ err }}</ng-template>
-          </cngx-popover-action>
+          </button>
         </div>
       </cngx-popover-panel>
     </div>

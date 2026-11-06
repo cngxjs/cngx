@@ -35,6 +35,106 @@ test.describe('common/popover/popover-panel', () => {
     await expect(panel.locator('[cngxpopoverfooter] button')).not.toHaveCount(0);
   });
 
+  // The footer hosts own no focus restore: the panel's restore claim returns
+  // focus to the trigger after a dismiss and after a confirm run.
+  test('with-footer-actions: dismiss and confirm return focus to the trigger', async ({ page }) => {
+    await gotoDemo(page, 'common/popover/popover-panel/with-footer-actions');
+    const trigger = page.locator('.cngx-ex-artifact button.chip', { hasText: 'Save Confirm' });
+    const panel = page.locator('cngx-popover-panel', { hasText: 'Save Changes?' });
+    const open = async (): Promise<void> => {
+      await trigger.focus();
+      await page.keyboard.press('Enter');
+      await expect(panel).toBeVisible();
+      await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    };
+
+    await open();
+    // focus() rather than Tab: WebKit skips buttons in the Tab order by default.
+    const cancel = panel.locator('button.cngx-popover-dismiss', { hasText: 'Cancel' });
+    await cancel.focus();
+    await page.keyboard.press('Enter');
+    await expect(panel).toBeHidden();
+    await expect(trigger).toBeFocused();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    await open();
+    const confirm = panel.locator('button.cngx-popover-action');
+    await confirm.focus();
+    await page.keyboard.press('Enter');
+    await expect(confirm).toHaveAccessibleName('Saved!');
+    // The story installs no withCloseOnSuccess(); Escape closes after the run.
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeHidden();
+    await expect(trigger).toBeFocused();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('footer-actions-plain: slotted icons, a ghost dismiss and the pending label through the dwell', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/popover/popover-panel/footer-actions-plain');
+    await page.locator('.cngx-ex-artifact button.chip', { hasText: 'Publish draft' }).click();
+    const panel = page.locator('cngx-popover-panel', { hasText: 'Release notes 0.3' });
+    await expect(panel).toBeVisible();
+
+    const cancel = panel.locator('button.cngx-popover-dismiss');
+    await expect(cancel).toHaveAttribute('data-variant', 'ghost');
+    await expect(cancel).toHaveAttribute('data-start', '');
+    await expect(cancel.locator('svg[cngxbuttonstart]')).toHaveAttribute('aria-hidden', 'true');
+    await expect(cancel).toHaveAccessibleName('Cancel');
+
+    const schedule = panel.locator('button.cngx-popover-action', { hasText: 'Schedule' });
+    await expect(schedule).toHaveAccessibleDescription('Pick a publish date first');
+    await expect(page.locator('.cngx-ex-sr-output')).toContainText('Pick a publish date first');
+
+    const publish = panel.locator('button.cngx-popover-action[data-tone="primary"]');
+    await expect(publish).toHaveAttribute('data-start', '');
+    await expect(publish.locator('svg[cngxbuttonstart]')).toHaveAttribute('aria-hidden', 'true');
+    await expect(publish).toHaveAccessibleName('Publish');
+    await publish.click();
+    await expect(publish).toHaveAccessibleName('Publishing...');
+    // The pending label holds until the busy visual releases, then the result.
+    await expect(publish).toHaveAccessibleName('Published');
+    await expect(publish).not.toHaveAttribute('data-busy', /.*/);
+    await expect(publish.locator('.cngx-button__busy')).toHaveCount(0);
+  });
+
+  test('close-on-success: the confirm closes the panel, returns focus and speaks outside it', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/popover/popover-panel/close-on-success');
+    const trigger = page.locator('.cngx-ex-artifact button.chip', { hasText: 'Archive project' });
+    const panel = page.locator('cngx-popover-panel', { hasText: 'Archive "Atlas"?' });
+
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    await expect(panel).toBeVisible();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+
+    // focus() rather than Tab: WebKit skips buttons in the Tab order by default.
+    const confirm = panel.locator('button.cngx-popover-action');
+    await expect(confirm).toHaveAccessibleName('Archive');
+    await confirm.focus();
+    await page.keyboard.press('Enter');
+    await expect(confirm).toHaveAccessibleName('Archived');
+
+    await expect(panel).toBeHidden();
+    await expect(trigger).toBeFocused();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    // CngxLiveAnnouncer's body region, not the confirm's region inside the panel.
+    const spoken = page.locator('body > [aria-live="polite"]', { hasText: 'Archived' });
+    await expect(spoken).toHaveCount(1);
+    expect(
+      await spoken.evaluate(
+        (region) => region.closest('cngx-popover-panel, [cngxpopover]') === null,
+      ),
+    ).toBe(true);
+    await expect(
+      page.locator('.cngx-popover-action + [role="status"]', { hasText: 'Archived' }),
+    ).toHaveCount(0);
+  });
+
   // Regression: the arrow ornament must track the trigger horizontally even
   // when the browser shifts the panel for viewport-fit recovery. The `info`
   // chip in the variants story sits close to the viewport's left edge so a
@@ -94,13 +194,19 @@ test.describe('common/popover/popover-panel', () => {
     // not be tucked inside the padding (the visual bug we were fixing).
     const arrowCentreY = arrowBox!.y + arrowBox!.height / 2;
     const panelTop = panelBox!.y;
-    expect(Math.abs(arrowCentreY - panelTop), 'arrow centre should sit on panel top edge').toBeLessThan(6);
+    expect(
+      Math.abs(arrowCentreY - panelTop),
+      'arrow centre should sit on panel top edge',
+    ).toBeLessThan(6);
 
     // Horizontal pin: trigger centre vs arrow centre within the clamp.
     const triggerBox = await trigger.boundingBox();
     const triggerCentreX = triggerBox!.x + triggerBox!.width / 2;
     const arrowCentreX = arrowBox!.x + arrowBox!.width / 2;
-    expect(Math.abs(arrowCentreX - triggerCentreX), 'arrow should pin to trigger centre').toBeLessThan(5);
+    expect(
+      Math.abs(arrowCentreX - triggerCentreX),
+      'arrow should pin to trigger centre',
+    ).toBeLessThan(5);
   });
 
   // Regression: when positionTryFallbacks lets the browser flip the panel
@@ -134,7 +240,10 @@ test.describe('common/popover/popover-panel', () => {
 
     const arrowCentreY = arrowBox!.y + arrowBox!.height / 2;
     const panelBottom = panelBox!.y + panelBox!.height;
-    expect(Math.abs(arrowCentreY - panelBottom), 'arrow should sit on panel bottom edge after flip').toBeLessThan(6);
+    expect(
+      Math.abs(arrowCentreY - panelBottom),
+      'arrow should sit on panel bottom edge after flip',
+    ).toBeLessThan(6);
   });
 });
 

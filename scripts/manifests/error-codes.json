@@ -752,19 +752,14 @@
     {
       "code": "CNGX1035",
       "lib": "common",
-      "severity": "warn",
-      "production": "stripped",
+      "severity": null,
+      "production": null,
       "title": "Confirm popover action without an action",
       "page": "core-concepts/error-codes/cngx1035.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1035.html",
-      "status": "active",
-      "files": ["projects/common/popover/popover-action.component.ts"],
-      "messages": [
-        {
-          "file": "projects/common/popover/popover-action.component.ts",
-          "text": "[cngx-popover-action] role=\"confirm\" without an [action] renders a button whose click runs nothing and leaves the popover open. Bind [action] or use role=\"dismiss\"."
-        }
-      ]
+      "status": "retired",
+      "files": [],
+      "messages": []
     },
     {
       "code": "CNGX1036",

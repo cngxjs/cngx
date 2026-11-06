@@ -118,6 +118,26 @@ class ProvidedSpinnerHost {
   readonly action: AsyncAction = () => new Promise<void>(() => undefined);
 }
 
+// The brain contract alone: a host that renders a status label in place of the
+// spinner sets data-status-label next to data-busy (CngxActionButton,
+// CngxPopoverAction). Static markup, only button.component.css loaded, so the
+// rule is proven to live in the button sheet and not in a host's own sheet.
+@Component({
+  selector: 'cngx-button-status-label-host',
+  standalone: true,
+  styleUrls: ['../../core/theming/layers.css', './button.component.css'],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <button type="button" class="cngx-button b-status-label" data-busy="true" data-status-label>
+      <span class="cngx-button__slot">+</span><span class="cngx-button__label">Saving...</span>
+    </button>
+    <button type="button" class="cngx-button b-no-status-label" data-busy="true">
+      <span class="cngx-button__label">Save</span>
+    </button>
+  `,
+})
+class StatusLabelHost {}
+
 let mountedRoot: HTMLElement | null = null;
 
 function mount(density: Density = 'comfortable', touch = false) {
@@ -303,6 +323,21 @@ describe('CngxButton geometry: busy', () => {
     const busy = query(btn, '.cngx-button__busy');
     // inset: 0 spans the padding box, so it misses only the two border pixels.
     expect(busy.getBoundingClientRect().width).toBeGreaterThanOrEqual(width - 2.5);
+  });
+});
+
+describe('CngxButton geometry: busy status label', () => {
+  it('keeps the label visible under data-busy when the host sets data-status-label', () => {
+    const fixture = TestBed.createComponent(StatusLabelHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const labelled = query(mountedRoot, '.b-status-label');
+    expect(computedValue(query(labelled, '.cngx-button__label'), 'opacity')).toBe('1');
+    // Only the label is lifted: the other children keep the busy fade.
+    expect(computedValue(query(labelled, '.cngx-button__slot'), 'opacity')).toBe('0');
+    const plain = query(mountedRoot, '.b-no-status-label');
+    expect(computedValue(query(plain, '.cngx-button__label'), 'opacity')).toBe('0');
   });
 });
 

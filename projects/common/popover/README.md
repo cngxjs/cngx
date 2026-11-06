@@ -91,6 +91,7 @@ import {
   CngxPopoverBody,
   CngxPopoverFooter,
   CngxPopoverAction,
+  CngxPopoverDismiss,
   providePopoverPanel,
   withCloseButton,
   withArrow,
@@ -114,16 +115,30 @@ import { CngxPending, CngxSucceeded, CngxFailed } from '@cngx/common/interactive
   <p cngxPopoverBody>This action cannot be undone.</p>
   
   <div cngxPopoverFooter>
-    <cngx-popover-action role="dismiss">Cancel</cngx-popover-action>
-    <cngx-popover-action role="confirm" [action]="deleteItem" variant="danger" [showDelay]="120">
+    <button cngxPopoverDismiss>Cancel</button>
+    <button cngxPopoverAction="solid" tone="danger" [action]="deleteItem" [showDelay]="120">
       Delete
       <ng-template cngxPending>Deleting...</ng-template>
       <ng-template cngxSucceeded>Deleted!</ng-template>
       <ng-template cngxFailed let-err>{{ err }}</ng-template>
-    </cngx-popover-action>
+    </button>
   </div>
 </cngx-popover-panel>
 ```
+
+Both footer hosts are button-family hosts on the native `<button>`: `button.component.css` paints them, the size is pinned to `sm` (a bound `size` wins), the default variant is `outline` and the tone comes from `tone`, not from the panel variant. `button[cngxPopoverDismiss]` closes the panel; `button[cngxPopoverAction]` requires `[action]`. Focus returns to the trigger through the panel's restore claim.
+
+#### Migration
+
+| Old markup | New markup |
+|-|-|
+| `<cngx-popover-action role="dismiss">` | `<button cngxPopoverDismiss>` |
+| `<cngx-popover-action role="confirm" [action]="a">` | `<button cngxPopoverAction [action]="a">` |
+| `variant="primary"` | `cngxPopoverAction="solid" tone="primary"` |
+| `variant="danger"` | `cngxPopoverAction="solid" tone="danger"` |
+| `variant="ghost"` | `cngxPopoverAction="ghost"` |
+| `variant="secondary"` | default (`outline`) |
+| `--cngx-popover-action-*` tokens | `--cngx-button-*` tokens |
 
 The confirm action times its busy visual through the loading gate. The `cngxPending` template shows only after `showDelay` (unbound, `CNGX_LOADING_CONFIG.showDelay`), so a run that settles before the delay never flashes "Deleting..."; once shown it is held for `minDwell` past the run, and for that whole window the action is painted busy (not disabled) and refuses a second click. Bind `[showDelay]` / `[minDwell]` to override per instance, or leave them unbound to inherit the config.
 

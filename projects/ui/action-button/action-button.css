@@ -15,8 +15,9 @@
  *   the others are `visibility: hidden` and `aria-hidden`
  * - `[data-busy][data-status-label]` - a status label shows instead of the
  *   spinner (the pending label, or the result label while the busy layer
- *   holds for its min-dwell after the run), so the stack is lifted back to
- *   `opacity: 1` while busy
+ *   holds for its min-dwell after the run); the stack carries
+ *   `.cngx-button__label`, so the shared button sheet's status-label hook
+ *   keeps it at `opacity: 1` while busy
  *
  * **State modifiers**
  *
@@ -43,12 +44,6 @@
 
     .cngx-action-button__label:not([data-active]) {
       visibility: hidden;
-    }
-
-    /* A status label replaces the spinner: the button sheet fades the label
-       stack out while busy, so it is lifted back for that case. */
-    :scope.cngx-button[data-busy][data-status-label] > .cngx-action-button__labels {
-      opacity: 1;
     }
   }
 }

@@ -7,9 +7,10 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cdp } from 'vitest/browser';
 
 // Runs in a real Chromium (the `test-geometry` target). Disabled tabs, cards,
-// paginator buttons and dots, and pending popover actions fade by colour, never
-// opacity: 38% text (the disabled field recipe), a dashed card border, a filled
-// popover action filled with the disabled colour. Quiet copy (paginator caret,
+// paginator buttons and dots, and disabled popover footer actions fade by
+// colour, never opacity: 38% text (the disabled field recipe), a dashed card
+// border, a solid popover action on the button family's disabled wash (the
+// footer actions are button hosts, painted by button.component.css). Quiet copy (paginator caret,
 // popover empty state) takes the hint colour instead of opacity. Under forced
 // colors the disabled ones read GrayText.
 
@@ -23,7 +24,7 @@ const SCHEMES = ['light', 'dark'] as const;
     './tabs/styles/tabs-base.css',
     './card/card.component.css',
     './data/paginate/styles/paginator-base.css',
-    './popover/popover-action.component.css',
+    './button/button.component.css',
     './popover/popover-panel.component.css',
   ],
   encapsulation: ViewEncapsulation.None,
@@ -39,10 +40,23 @@ const SCHEMES = ['light', 'dark'] as const;
         <button type="button" class="cngx-paginator__button pgn-off" aria-disabled="true">Prev</button>
         <span class="cngx-paginator__dot dot-off" aria-disabled="true"></span>
         <span class="cngx-paginator__select-caret pgn-caret">v</span>
-        <button type="button" class="cngx-popover-action cngx-popover-action--secondary pa-off" aria-disabled="true">
+        <button
+          type="button"
+          class="cngx-button cngx-popover-action pa-off"
+          data-variant="outline"
+          data-size="sm"
+          aria-disabled="true"
+        >
           Cancel
         </button>
-        <button type="button" class="cngx-popover-action cngx-popover-action--primary pa-primary-off" aria-disabled="true">
+        <button
+          type="button"
+          class="cngx-button cngx-popover-action pa-primary-off"
+          data-variant="solid"
+          data-tone="primary"
+          data-size="sm"
+          aria-disabled="true"
+        >
           Save
         </button>
         <div class="cngx-popover-panel"><p class="cngx-popover-panel__empty panel-empty">Nothing here</p></div>
@@ -52,6 +66,10 @@ const SCHEMES = ['light', 'dark'] as const;
         ></span>
         <span class="probe-muted" style="color: var(--cngx-color-text-muted)"></span>
         <span class="probe-surface" style="color: var(--cngx-color-surface)"></span>
+        <span
+          class="probe-disabled-wash"
+          style="color: color-mix(in oklab, var(--cngx-color-text) 8%, transparent)"
+        ></span>
       </div>
     }
     <span class="probe-gray" style="color: GrayText"></span>
@@ -132,12 +150,14 @@ describe.each(SCHEMES)('disabled surfaces, %s', (scheme) => {
     expect(computedValue(at(root, '.card-off'), 'border-top-style')).toBe('dashed');
   });
 
-  it('paints a pending popover action by colour and fills a primary one', () => {
+  it('paints a disabled popover action by colour and a solid primary one on the disabled wash', () => {
     const root = mount();
     expect(computedValue(at(root, '.pa-off'), 'color')).toBe(disabledColour(root));
     const primary = at(root, '.pa-primary-off');
-    expect(computedValue(primary, 'background-color')).toBe(disabledColour(root));
-    expect(computedValue(primary, 'color')).toBe(computedValue(at(root, '.probe-surface'), 'color'));
+    expect(computedValue(primary, 'background-color')).toBe(
+      computedValue(at(root, '.probe-disabled-wash'), 'color'),
+    );
+    expect(computedValue(primary, 'color')).toBe(disabledColour(root));
   });
 
   it('quiets the paginator caret and the popover empty state with the hint colour', () => {

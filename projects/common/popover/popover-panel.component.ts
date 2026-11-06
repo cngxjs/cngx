@@ -69,10 +69,8 @@ const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER
  *   <span cngxPopoverHeader>Delete Item?</span>
  *   <p cngxPopoverBody>This action cannot be undone.</p>
  *   <div cngxPopoverFooter>
- *     <cngx-popover-action role="dismiss">Cancel</cngx-popover-action>
- *     <cngx-popover-action role="confirm" [action]="delete" variant="danger">
- *       Delete
- *     </cngx-popover-action>
+ *     <button cngxPopoverDismiss>Cancel</button>
+ *     <button cngxPopoverAction="solid" tone="danger" [action]="delete">Delete</button>
  *   </div>
  * </cngx-popover-panel>
  * ```
@@ -98,7 +96,7 @@ const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel.component.ts
  * @since 0.1.0
- * @relatedTo CngxPopover, CngxPopoverAction, CngxPopoverHeader, CngxPopoverBody, CngxPopoverFooter
+ * @relatedTo CngxPopover, CngxPopoverAction, CngxPopoverDismiss, CngxPopoverHeader, CngxPopoverBody, CngxPopoverFooter
  * @slot cngxPopoverArrow Replaces the pointer that ties the panel to its trigger.
  * @slot cngxPopoverClose Replaces the dismiss control.
  * @slot cngxPopoverLoading Rendered while the panel's content is loading.
