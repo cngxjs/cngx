@@ -2,6 +2,7 @@ import {
   Component,
   Directive,
   computed,
+  effect,
   inject,
   input,
   signal,
@@ -793,6 +794,82 @@ describe('CngxActiveDescendant - virtual window offset', () => {
     expect(dir.pendingHighlight()).toBeNull();
     expect(dir.activeId()).toBe('opt-99');
     expect(host.getAttribute('aria-activedescendant')).toBe('opt-99');
+  });
+
+  it('does not re-arm pendingHighlight when the window moves away from the highlight', () => {
+    const { fixture, dir } = setupWindow();
+    dir.highlightByIndex(45);
+    TestBed.flushEffects();
+    expect(dir.pendingHighlight()).toBeNull();
+
+    for (const start of [60, 80, 20]) {
+      fixture.componentInstance.start.set(start);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(dir.activeIndex()).toBe(45);
+      expect(dir.activeId()).toBeNull();
+      expect(dir.pendingHighlight()).toBeNull();
+    }
+  });
+
+  it('arms pendingHighlight once for End on an unrendered index and clears it on arrival', () => {
+    const { fixture, dir } = setupWindow();
+    const seen: (number | null)[] = [];
+    const watcher = TestBed.runInInjectionContext(() =>
+      effect(() => {
+        seen.push(dir.pendingHighlight());
+      }),
+    );
+    TestBed.flushEffects();
+
+    dir.highlightLast();
+    TestBed.flushEffects();
+    fixture.componentInstance.start.set(50);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.componentInstance.start.set(90);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.componentInstance.start.set(20);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(seen).toEqual([null, 99, null]);
+    watcher.destroy();
+  });
+
+  it('scrolls the row once on arrival and not again when the window moves on', async () => {
+    const { fixture, dir } = setupWindow();
+    const scroll = vi.fn();
+    const original = HTMLElement.prototype.scrollIntoView;
+    HTMLElement.prototype.scrollIntoView = scroll;
+    const rendered = document.createElement('div');
+    rendered.id = 'opt-99';
+    document.body.appendChild(rendered);
+    try {
+      dir.highlightLast();
+      TestBed.flushEffects();
+      await Promise.resolve();
+      expect(scroll).not.toHaveBeenCalled();
+
+      fixture.componentInstance.start.set(90);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      await Promise.resolve();
+      expect(scroll).toHaveBeenCalledTimes(1);
+
+      fixture.componentInstance.start.set(40);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.componentInstance.start.set(90);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      await Promise.resolve();
+      expect(scroll).toHaveBeenCalledTimes(1);
+    } finally {
+      HTMLElement.prototype.scrollIntoView = original;
+      rendered.remove();
+    }
   });
 
   it('typeahead matches rendered labels and sets the absolute index', () => {

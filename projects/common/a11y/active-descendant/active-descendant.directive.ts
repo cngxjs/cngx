@@ -147,10 +147,6 @@ export class CngxActiveDescendant {
   /** Guards host attribute writes until after first render. */
   private readonly initialized = signal(false);
 
-  /** Index of an item that should be highlighted but is not in the DOM. */
-  private readonly pendingHighlightState = signal<number | null>(null);
-  readonly pendingHighlight = this.pendingHighlightState.asReadonly();
-
   /**
    * A highlight gesture that fired while the option rows were not in the DOM
    * (a deferred-render panel just opened, OD5): the id space does not exist
@@ -225,6 +221,42 @@ export class CngxActiveDescendant {
   });
 
   /**
+   * The highlight plus whether its row is rendered. Structural equal: a window
+   * move that leaves both unchanged notifies nobody.
+   */
+  private readonly highlightPlacement = computed<HighlightPlacement>(
+    () => {
+      const index = this.activeIndex();
+      return {
+        index,
+        rendered: index >= 0 && this.isRendered(index),
+        virtual: this.virtualCount() != null,
+      };
+    },
+    {
+      equal: (a, b) => a.index === b.index && a.rendered === b.rendered && a.virtual === b.virtual,
+    },
+  );
+
+  /**
+   * Index the highlight moved to while its row is not rendered. Armed by the
+   * highlight change alone and cleared when the row renders; the same highlight
+   * leaving the window later stays cleared, so scrolling a virtual list away
+   * never asks to be scrolled back.
+   */
+  private readonly pendingHighlightState = linkedSignal<HighlightPlacement, number | null>({
+    source: this.highlightPlacement,
+    computation: (placement, previous) => {
+      if (!placement.virtual || placement.index < 0 || placement.rendered) {
+        return null;
+      }
+      return previous?.source.index === placement.index ? previous.value : placement.index;
+    },
+  });
+  /** Index of an item that should be highlighted but is not in the DOM. */
+  readonly pendingHighlight = this.pendingHighlightState.asReadonly();
+
+  /**
    * `activeIndex` always mapped back to an item. `null` when no active index
    * or the item is out of rendered range (virtual mode).
    */
@@ -279,18 +311,21 @@ export class CngxActiveDescendant {
       this.highlighted.emit(item);
     });
 
+    // One DOM scroll per highlight change, delayed until the row renders. A
+    // window move alone never scrolls: the row of an unchanged highlight
+    // re-entering the window must not pull the list back to it.
+    let lastIndex = -1;
+    let scrollDue = false;
     effect(() => {
-      const idx = this.activeIndex();
-      if (idx < 0) {
+      const { index, rendered } = this.highlightPlacement();
+      if (index !== lastIndex) {
+        lastIndex = index;
+        scrollDue = index >= 0;
+      }
+      if (!scrollDue || !rendered) {
         return;
       }
-      if (this.virtualCount() != null) {
-        if (!this.isRendered(idx)) {
-          this.pendingHighlightState.set(idx);
-          return;
-        }
-        this.pendingHighlightState.set(null);
-      }
+      scrollDue = false;
       queueMicrotask(() => this.scrollActiveIntoView());
     });
 
@@ -718,6 +753,13 @@ type PendingIntent =
   | { readonly kind: 'prev' }
   | { readonly kind: 'byIndex'; readonly index: number }
   | { readonly kind: 'byValue'; readonly value: unknown };
+
+/** @internal Where the highlight sits relative to the rendered rows. */
+interface HighlightPlacement {
+  readonly index: number;
+  readonly rendered: boolean;
+  readonly virtual: boolean;
+}
 
 /** @internal Item space the active index is derived against. */
 interface ActiveIndexSource {
