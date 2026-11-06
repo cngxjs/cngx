@@ -34,7 +34,6 @@ export interface PopoverHintClaims<T> {
 export function createPopoverHintClaims<T>(name: string): PopoverHintClaims<T> {
   const registry = createKeyedRegistry<PopoverHintClaim<T>>({ name });
   const keys = new WeakMap<object, string>();
-  const live = new WeakMap<object, PopoverHintClaim<T>>();
 
   const keyFor = (owner: object): string => {
     let key = keys.get(owner);
@@ -46,19 +45,21 @@ export function createPopoverHintClaims<T>(name: string): PopoverHintClaims<T> {
   };
 
   const release = (owner: object): void => {
-    const held = live.get(owner);
-    if (!held) {
+    const key = keys.get(owner);
+    if (key === undefined) {
       return;
     }
-    live.delete(owner);
-    untracked(() => registry.unregister(keyFor(owner), held));
+    untracked(() => {
+      const held = registry.get(key);
+      if (held) {
+        registry.unregister(key, held);
+      }
+    });
   };
 
   const claim = (owner: object, value: T): void => {
     release(owner);
-    const entry: PopoverHintClaim<T> = { value };
-    live.set(owner, entry);
-    untracked(() => registry.register(keyFor(owner), entry));
+    untracked(() => registry.register(keyFor(owner), { value }));
   };
 
   const current = computed<T | undefined>(() => registry.values().at(-1)?.value);
