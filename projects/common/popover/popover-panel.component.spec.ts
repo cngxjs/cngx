@@ -249,6 +249,28 @@ class ConfigArrowTplSource {
   readonly t = viewChild.required<TemplateRef<CngxPopoverArrowContext>>('t');
 }
 
+@Component({
+  template: `
+    <cngx-popover-panel
+      #panel="cngxPopoverPanel"
+      [showClose]="true"
+      [loading]="loading()"
+      [error]="error()"
+      [empty]="empty()"
+    >
+      <span cngxPopoverHeader>Recent activity</span>
+      <p cngxPopoverBody>Body content</p>
+    </cngx-popover-panel>
+  `,
+  imports: [CngxPopoverPanel, CngxPopoverHeader, CngxPopoverBody],
+})
+class HeaderViewsHost {
+  readonly panel = viewChild.required(CngxPopoverPanel);
+  readonly loading = signal(false);
+  readonly error = signal<unknown>(undefined);
+  readonly empty = signal(false);
+}
+
 function setup<T>(hostType: new () => T, providers: unknown[] = []) {
   TestBed.configureTestingModule({ providers: providers as never[] });
   const fixture = TestBed.createComponent(hostType);
@@ -444,6 +466,35 @@ describe('CngxPopoverPanel', () => {
     const headerEl = panelEl.querySelector('.cngx-popover-panel__header');
     const headerId = headerEl!.getAttribute('id');
     expect(panelEl.getAttribute('aria-labelledby')).toBe(headerId);
+  });
+
+  describe('header row in every view', () => {
+    const views: [string, (host: HeaderViewsHost) => void][] = [
+      ['loading', (host) => host.loading.set(true)],
+      ['error', (host) => host.error.set('x')],
+      ['empty', (host) => host.empty.set(true)],
+      ['content', () => undefined],
+    ];
+
+    for (const [name, enter] of views) {
+      it(`keeps the header, its name and the close button in the ${name} view`, () => {
+        const { fixture, panelEl } = setup(HeaderViewsHost);
+        enter(fixture.componentInstance);
+        fixture.detectChanges();
+
+        expect(panelEl.querySelector('.cngx-popover-panel__header')).not.toBeNull();
+        const labelledBy = panelEl.getAttribute('aria-labelledby');
+        expect(labelledBy).not.toBeNull();
+        expect(document.getElementById(labelledBy!)?.textContent).toContain('Recent activity');
+
+        const popover = fixture.componentInstance.panel().popover;
+        const hide = vi.spyOn(popover, 'hide');
+        const close = panelEl.querySelector<HTMLButtonElement>('button.cngx-popover-panel__close');
+        expect(close).not.toBeNull();
+        close!.click();
+        expect(hide).toHaveBeenCalledTimes(1);
+      });
+    }
   });
 
   it('should not emit aria-labelledby without a projected header', () => {

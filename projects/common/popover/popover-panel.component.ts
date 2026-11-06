@@ -132,6 +132,26 @@ const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER
       }
     }
 
+    @if (hasHeader() || showClose()) {
+      <div class="cngx-popover-panel__header-row">
+        <div class="cngx-popover-panel__header" [id]="headerId">
+          <ng-content select="[cngxPopoverHeader]" />
+        </div>
+        @if (showClose()) {
+          @if (closeTpl(); as tpl) {
+            <ng-container *ngTemplateOutlet="tpl.templateRef" />
+          } @else {
+            <button
+              cngxCloseButton
+              [attr.aria-label]="closeLabel()"
+              class="cngx-popover-panel__close"
+              (click)="popover.hide()"
+            ></button>
+          }
+        }
+      </div>
+    }
+
     @if (view() === 'skeleton') {
       @if (loadingTpl(); as tpl) {
         <div class="cngx-popover-panel__loading">
@@ -151,25 +171,6 @@ const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER
         </div>
       }
     } @else if (view() === 'content') {
-      @if (hasHeader() || showClose()) {
-        <div class="cngx-popover-panel__header-row">
-          <div class="cngx-popover-panel__header" [id]="headerId">
-            <ng-content select="[cngxPopoverHeader]" />
-          </div>
-          @if (showClose()) {
-            @if (closeTpl(); as tpl) {
-              <ng-container *ngTemplateOutlet="tpl.templateRef" />
-            } @else {
-              <button
-                cngxCloseButton
-                [attr.aria-label]="closeLabel()"
-                class="cngx-popover-panel__close"
-                (click)="popover.hide()"
-              ></button>
-            }
-          }
-        </div>
-      }
       <div class="cngx-popover-panel__body" [id]="bodyId">
         <ng-content select="[cngxPopoverBody]" />
         <ng-content />
@@ -344,9 +345,10 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
   protected readonly bodyId = `${this.uid}-body`;
 
   /**
-   * Only point to the header when one is projected - a bare id reference
-   * resolves even against an element that never renders (the header row is
-   * gated on `hasHeader()`), leaving AT with an empty accessible name.
+   * Only point to the header when one is projected. The header row renders
+   * in every view (loading, error, empty, content), so `hasHeader()` alone is
+   * the gate: with a header the reference always resolves, and without one a
+   * bare id would leave AT with an empty accessible name.
    */
   protected readonly ariaLabelledBy = computed(() => (this.hasHeader() ? this.headerId : null));
 
