@@ -76,7 +76,8 @@ import { CngxPopover } from './popover.directive';
  * `CNGX_INTERACTIVE_I18N.asyncClickSucceeded` / `asyncClickFailed`.
  * `[autoAnnounce]="false"` keeps the region empty. Under
  * `withCloseOnSuccess()` the panel closes once per success; focus returns
- * to the trigger through the panel's restore claim. A success that closes
+ * to the trigger through the panel's restore claim; `[closeOnSuccessDelay]`
+ * overrides the config per confirm (`null` turns it off). A success that closes
  * the panel is spoken through `CngxLiveAnnouncer` outside it instead (the
  * sibling region hides with the panel), still once.
  *
@@ -290,6 +291,15 @@ export class CngxPopoverAction {
   readonly autoAnnounce = input<boolean | undefined>(undefined);
 
   /**
+   * Per-instance close-on-success, named after the
+   * `CNGX_POPOVER_PANEL_CONFIG.closeOnSuccessDelay` it overrides. A number
+   * closes the composing popover that many ms after each success, also
+   * without `withCloseOnSuccess()`; `null` keeps this confirm's popover open
+   * although the config closes it; unbound (`undefined`) uses the config.
+   */
+  readonly closeOnSuccessDelay = input<number | null | undefined>(undefined);
+
+  /**
    * Lifecycle status of the run - `'idle' | 'pending' | 'success' |
    * 'error'`, from the co-hosted `cngxAsyncClick`. Immediate, not gated.
    */
@@ -360,7 +370,11 @@ export class CngxPopoverAction {
     if (settle.status !== 'success' || !this.popover) {
       return undefined;
     }
-    return this.config.closeOnSuccessDelay;
+    const delay = untracked(this.closeOnSuccessDelay);
+    if (delay === null) {
+      return undefined;
+    }
+    return delay ?? this.config.closeOnSuccessDelay;
   }
 
   /**

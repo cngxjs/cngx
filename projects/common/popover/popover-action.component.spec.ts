@@ -125,6 +125,20 @@ class ForwardConfirmHost {
     });
 }
 
+@Component({
+  template: `
+    <div cngxPopover #pop="cngxPopover">
+      <button cngxPopoverAction [action]="saveAction" [closeOnSuccessDelay]="delay()">Save</button>
+    </div>
+  `,
+  imports: [CngxPopover, CngxPopoverAction],
+})
+class CloseDelayHost {
+  readonly popover = viewChild.required(CngxPopover);
+  readonly delay = signal<number | null | undefined>(undefined);
+  readonly saveAction = () => Promise.resolve();
+}
+
 // Post-settle dwell hosts: one status template each, so every combination of
 // pending and result template is covered while the busy visual is held.
 @Component({
@@ -464,6 +478,60 @@ describe('CngxPopoverAction', () => {
       await vi.advanceTimersByTimeAsync(5000);
       expect(popoverEl.hidePopover).not.toHaveBeenCalled();
       expect(host.popover().state()).not.toBe('closed');
+    });
+
+    describe('[closeOnSuccessDelay] per instance', () => {
+      function delaySetup(config: number | undefined, delay: number | null | undefined) {
+        if (config !== undefined) {
+          TestBed.configureTestingModule({
+            imports: [CloseDelayHost],
+            providers: [providePopoverPanel(withCloseOnSuccess(config))],
+          });
+        }
+        const { fixture, popoverEl } = setup(CloseDelayHost);
+        fixture.componentInstance.delay.set(delay);
+        fixture.componentInstance.popover().show();
+        fixture.detectChanges();
+        return { fixture, popoverEl, popover: fixture.componentInstance.popover() };
+      }
+
+      it('wins over the config delay', async () => {
+        const { fixture, popoverEl, popover } = delaySetup(300, 50);
+        clickConfirm(fixture);
+        await settle(fixture);
+        await vi.advanceTimersByTimeAsync(49);
+        expect(popoverEl.hidePopover).not.toHaveBeenCalled();
+        await vi.advanceTimersByTimeAsync(1);
+        expect(popoverEl.hidePopover).toHaveBeenCalled();
+        expect(popover.state()).toBe('closed');
+      });
+
+      it('enables the close without the config feature', async () => {
+        const { fixture, popoverEl } = delaySetup(undefined, 0);
+        clickConfirm(fixture);
+        await settle(fixture);
+        await vi.runOnlyPendingTimersAsync();
+        expect(popoverEl.hidePopover).toHaveBeenCalled();
+      });
+
+      it('null disables the close for the instance although the config enables it', async () => {
+        const { fixture, popoverEl, popover } = delaySetup(100, null);
+        clickConfirm(fixture);
+        await settle(fixture);
+        await vi.advanceTimersByTimeAsync(5000);
+        expect(popoverEl.hidePopover).not.toHaveBeenCalled();
+        expect(popover.state()).not.toBe('closed');
+      });
+
+      it('falls through to the config while unbound (undefined)', async () => {
+        const { fixture, popoverEl } = delaySetup(100, undefined);
+        clickConfirm(fixture);
+        await settle(fixture);
+        await vi.advanceTimersByTimeAsync(99);
+        expect(popoverEl.hidePopover).not.toHaveBeenCalled();
+        await vi.advanceTimersByTimeAsync(1);
+        expect(popoverEl.hidePopover).toHaveBeenCalled();
+      });
     });
 
     it('cancels the scheduled close when the action is re-triggered', async () => {
