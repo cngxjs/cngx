@@ -78,10 +78,10 @@ export type ToastPosition =
             ? 'alert'
             : 'status'
         "
-        (pointerenter)="service.pauseTimer(toast.id)"
-        (pointerleave)="service.resumeTimer(toast.id)"
-        (focusin)="service.pauseTimer(toast.id)"
-        (focusout)="service.resumeTimer(toast.id)"
+        (pointerenter)="service.pauseTimer(toast.id, 'pointer')"
+        (pointerleave)="service.resumeTimer(toast.id, 'pointer')"
+        (focusin)="service.pauseTimer(toast.id, 'focus')"
+        (focusout)="service.resumeTimer(toast.id, 'focus')"
       >
         <div class="cngx-toast__icon">
           @if (iconFor(toast); as iconCmp) {

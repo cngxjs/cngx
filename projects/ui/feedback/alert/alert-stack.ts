@@ -114,10 +114,10 @@ function entriesEqual(a: readonly StackEntry[], b: readonly StackEntry[]): boole
             ? 'alert'
             : 'status'
         "
-        (pointerenter)="entry.owner.pauseTimer(entry.state.id)"
-        (pointerleave)="entry.owner.resumeTimer(entry.state.id)"
-        (focusin)="entry.owner.pauseTimer(entry.state.id)"
-        (focusout)="entry.owner.resumeTimer(entry.state.id)"
+        (pointerenter)="entry.owner.pauseTimer(entry.state.id, 'pointer')"
+        (pointerleave)="entry.owner.resumeTimer(entry.state.id, 'pointer')"
+        (focusin)="entry.owner.pauseTimer(entry.state.id, 'focus')"
+        (focusout)="entry.owner.resumeTimer(entry.state.id, 'focus')"
       >
         <div class="cngx-alert-stack__icon">
           @if (iconFor(entry.state); as iconCmp) {

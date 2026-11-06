@@ -192,7 +192,7 @@ describe('CngxToaster', () => {
     toaster.show({ message: 'Pause me', duration: 3000 });
     const id = toaster.toasts()[0].id;
     vi.advanceTimersByTime(1000);
-    toaster.pauseTimer(id);
+    toaster.pauseTimer(id, 'pointer');
     vi.advanceTimersByTime(5000);
     expect(toaster.toasts().length).toBe(1);
   });
@@ -201,24 +201,24 @@ describe('CngxToaster', () => {
     toaster.show({ message: 'Resume me', duration: 3000 });
     const id = toaster.toasts()[0].id;
     vi.advanceTimersByTime(1000);
-    toaster.pauseTimer(id);
-    toaster.resumeTimer(id);
+    toaster.pauseTimer(id, 'pointer');
+    toaster.resumeTimer(id, 'pointer');
     vi.advanceTimersByTime(1999);
     expect(toaster.toasts().length).toBe(1);
     vi.advanceTimersByTime(1);
     expect(toaster.toasts().length).toBe(0);
   });
 
-  it('holds the pause until every source releases (hover + focus refcount)', () => {
+  it('holds the pause until every source releases (pointer leaves, focus still inside)', () => {
     toaster.show({ message: 'Held', duration: 3000 });
     const id = toaster.toasts()[0].id;
-    toaster.pauseTimer(id); // pointer enters
-    toaster.pauseTimer(id); // focus moves in
-    toaster.resumeTimer(id); // pointer leaves - focus still inside
+    toaster.pauseTimer(id, 'pointer');
+    toaster.pauseTimer(id, 'focus');
+    toaster.resumeTimer(id, 'pointer');
     vi.advanceTimersByTime(60000);
     expect(toaster.toasts().length).toBe(1);
 
-    toaster.resumeTimer(id); // focus leaves - last hold released
+    toaster.resumeTimer(id, 'focus');
     vi.advanceTimersByTime(3000);
     expect(toaster.toasts().length).toBe(0);
   });
@@ -226,13 +226,13 @@ describe('CngxToaster', () => {
   it('keeps a dedup restart paused while a hold is active', () => {
     toaster.show({ message: 'Held dup', duration: 3000 });
     const id = toaster.toasts()[0].id;
-    toaster.pauseTimer(id);
+    toaster.pauseTimer(id, 'pointer');
     vi.advanceTimersByTime(500);
     toaster.show({ message: 'Held dup', duration: 3000 });
     vi.advanceTimersByTime(60000);
     expect(toaster.toasts().length).toBe(1);
 
-    toaster.resumeTimer(id);
+    toaster.resumeTimer(id, 'pointer');
     vi.advanceTimersByTime(3000);
     expect(toaster.toasts().length).toBe(0);
   });
@@ -244,11 +244,11 @@ describe('CngxToaster', () => {
     toaster.show({ message: 'Cycle', duration: 5000 });
     const id = toaster.toasts()[0].id;
     vi.advanceTimersByTime(2000);
-    toaster.pauseTimer(id);
-    toaster.resumeTimer(id);
+    toaster.pauseTimer(id, 'pointer');
+    toaster.resumeTimer(id, 'pointer');
     vi.advanceTimersByTime(1000);
-    toaster.pauseTimer(id);
-    toaster.resumeTimer(id);
+    toaster.pauseTimer(id, 'pointer');
+    toaster.resumeTimer(id, 'pointer');
     vi.advanceTimersByTime(1999);
     expect(toaster.toasts().length).toBe(1);
     vi.advanceTimersByTime(1);
