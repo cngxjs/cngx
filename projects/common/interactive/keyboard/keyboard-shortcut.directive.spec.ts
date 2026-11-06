@@ -105,6 +105,68 @@ describe('CngxKeyboardShortcut', () => {
     expect(fixture.componentInstance.triggerCount).toBe(1);
   });
 
+  it('emits the matching keyboard event through shortcutTriggered', () => {
+    const { fixture } = setup();
+    const event = new KeyboardEvent('keydown', {
+      key: 's',
+      ctrlKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    document.dispatchEvent(event);
+    expect(fixture.componentInstance.lastEvent).toBe(event);
+  });
+
+  it('self scope fires for a keydown from inside the host and not from outside it', () => {
+    const { fixture, button } = setup();
+    fixture.componentInstance.scope.set('self');
+    fixture.detectChanges();
+    const host = button.nativeElement as HTMLElement;
+    const inside = document.createElement('span');
+    host.appendChild(inside);
+    const outside = document.createElement('div');
+    document.body.appendChild(outside);
+
+    dispatchKeydown(outside, 's', { ctrlKey: true });
+    expect(fixture.componentInstance.triggerCount).toBe(0);
+
+    dispatchKeydown(inside, 's', { ctrlKey: true });
+    expect(fixture.componentInstance.triggerCount).toBe(1);
+    document.body.removeChild(outside);
+  });
+
+  it('follows a runtime switch from self back to global scope', () => {
+    const { fixture } = setup();
+    fixture.componentInstance.scope.set('self');
+    fixture.detectChanges();
+    dispatchKeydown(document, 's', { ctrlKey: true });
+    expect(fixture.componentInstance.triggerCount).toBe(0);
+
+    fixture.componentInstance.scope.set('global');
+    fixture.detectChanges();
+    dispatchKeydown(document, 's', { ctrlKey: true });
+    expect(fixture.componentInstance.triggerCount).toBe(1);
+  });
+
+  it('follows a runtime change of the combo', () => {
+    const { fixture } = setup();
+    fixture.componentInstance.shortcut.set('mod+k');
+    fixture.detectChanges();
+    dispatchKeydown(document, 's', { ctrlKey: true });
+    dispatchKeydown(document, 'k', { ctrlKey: true });
+    expect(fixture.componentInstance.triggerCount).toBe(1);
+  });
+
+  it('fires again after being re-enabled', () => {
+    const { fixture } = setup();
+    fixture.componentInstance.enabled.set(false);
+    fixture.detectChanges();
+    fixture.componentInstance.enabled.set(true);
+    fixture.detectChanges();
+    dispatchKeydown(document, 's', { ctrlKey: true });
+    expect(fixture.componentInstance.triggerCount).toBe(1);
+  });
+
   it('prevents default on matching shortcut', () => {
     setup();
     const event = new KeyboardEvent('keydown', {
