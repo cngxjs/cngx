@@ -333,7 +333,7 @@ It never emits on a cancelled run, on reset or after destroy. The hosts that run
 
 - `CngxActionButton` shows its toast per own settle and re-exports `(settled)`. A bound `[externalState]` stays state: one toast and one announcement per observed edge.
 - `CngxStepperComplete` emits `(completed)` once per successful finish run.
-- `CngxPopoverAction` re-arms close-on-success and speaks its result once per settle.
+- `CngxPopoverAction` (`button[cngxPopoverAction]`) re-arms close-on-success per settle; its result is spoken through the co-hosted `cngxAsyncClick` region via `CNGX_HOST_INTERACTION_STATE.announcement`.
 
 The `cngxAsyncClick` live region follows the same rule: one write per settle, cleared at the settle and written after the next render (so a host can read the content the settle rendered). Two runs that settle before change detection produce two writes in the same render pass; whether a screen reader voices both depends on the assistive technology. No effect reads the copy, so a language switch never re-voices it. `announce(message)` speaks a settle the host reflects but the directive did not run.
 

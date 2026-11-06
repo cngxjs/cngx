@@ -8,11 +8,11 @@ import { CngxPopoverPanel } from './popover-panel.component';
 import { CngxPopoverBody, CngxPopoverFooter, CngxPopoverHeader } from './popover-panel-slots';
 
 // Runs in a real Chromium (the `test-geometry` target). One geometry spec in
-// the popover folder guards both co-located `@scope` stylesheets:
+// the popover folder guards the footer action and the panel:
 //
-//   1. `.cngx-popover-action` (popover-action.component.css:158) - the action
-//      button is a centred inline-flex row, derives padding from the
-//      `--cngx-space-*` scale, and floors its block axis to `--cngx-target-min`.
+//   1. `button[cngxPopoverAction]` - painted by button.component.css at the
+//      pinned `data-size="sm"`: a centred inline-flex row whose inline padding
+//      is SET from `--cngx-space-sm`, floored to `--cngx-target-min`.
 //   2. `.cngx-popover-panel` (popover-panel.component.css:344) - the panel is
 //      a fixed floater; its footer is a right-aligned flex action row and its
 //      header-row is a centred flex row.
@@ -26,10 +26,11 @@ let mountedRoot: HTMLElement | null = null;
 @Component({
   standalone: true,
   imports: [CngxPopoverAction],
-  // role="dismiss" renders a plain button - no async action wiring needed.
-  template: `<cngx-popover-action [role]="'dismiss'" [variant]="'primary'">OK</cngx-popover-action>`,
+  template: `<button cngxPopoverAction="solid" tone="primary" [action]="save">OK</button>`,
 })
-class ActionHost {}
+class ActionHost {
+  readonly save = (): Promise<void> => Promise.resolve();
+}
 
 @Component({
   standalone: true,
@@ -71,16 +72,17 @@ afterEach(() => {
 
 describe('CngxPopoverAction geometry', () => {
   it('is a centred inline-flex action row with scale-derived padding', () => {
-    const button = mount(ActionHost, '.cngx-popover-action');
+    const button = mount(ActionHost, 'button.cngx-popover-action');
+    expect(button.getAttribute('data-size')).toBe('sm');
     expect(computedValue(button, 'display')).toBe('inline-flex');
     expect(computedValue(button, 'align-items')).toBe('center');
-    // :scope SETs the inline padding from var(--cngx-space-md).
-    button.style.setProperty('--cngx-space-md', '20px');
+    // The sm row SETs the inline padding from var(--cngx-space-sm).
+    button.style.setProperty('--cngx-space-sm', '20px');
     expect(computedValue(button, 'padding-left')).toBe('20px');
   });
 
   it('floors the action-row height to the pointer-derived target', () => {
-    const button = mount(ActionHost, '.cngx-popover-action');
+    const button = mount(ActionHost, 'button.cngx-popover-action');
     button.style.setProperty('--cngx-target-min', '40px');
     expect(computedValue(button, 'min-block-size')).toBe('40px');
   });

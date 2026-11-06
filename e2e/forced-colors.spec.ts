@@ -237,7 +237,7 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
   test('a pending popover confirm keeps its busy paint and never computes GrayText', async ({ page }) => {
     await openForced(page, '/#/common/popover/popover-panel/with-footer-actions');
     await page.locator('.cngx-ex-artifact button.chip', { hasText: 'Save Confirm' }).click();
-    const confirm = page.locator('.cngx-popover-action--primary').first();
+    const confirm = page.locator('button.cngx-popover-action[data-tone="primary"]').first();
     await expect(confirm).toBeVisible();
     await confirm.click();
     // Wait for the gated busy flag rather than a fixed sleep: once data-busy is

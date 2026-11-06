@@ -1,4 +1,4 @@
-import { Component, viewChild } from '@angular/core';
+import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxFailed, CngxPending, CngxSucceeded } from '@cngx/common/interactive';
@@ -10,7 +10,11 @@ import {
 } from '@cngx/core/utils';
 
 import { CngxPopoverAction } from './popover-action.component';
+import { CngxPopoverDismiss } from './popover-dismiss.component';
+import { CngxPopoverPanel } from './popover-panel.component';
 import { providePopoverPanel, withCloseOnSuccess } from './popover-panel.config';
+import { CngxPopoverBody, CngxPopoverFooter } from './popover-panel-slots';
+import { CngxPopoverTrigger } from './popover-trigger.directive';
 import { CngxPopover } from './popover.directive';
 
 // ── Test helpers ────────────────────────────────────────────────────────
@@ -28,33 +32,16 @@ function stubPopoverElement(el: HTMLElement): void {
 
 // ── Test hosts ──────────────────────────────────────────────────────────
 
-@Component({
-  template: `
-    <div cngxPopover #pop="cngxPopover">
-      <cngx-popover-action role="dismiss" #act="cngxPopoverAction">Cancel</cngx-popover-action>
-    </div>
-  `,
-  imports: [CngxPopover, CngxPopoverAction],
-})
-class DismissHost {
-  readonly popover = viewChild.required(CngxPopover);
-  readonly action = viewChild.required(CngxPopoverAction);
-}
 
 @Component({
   template: `
     <div cngxPopover #pop="cngxPopover">
-      <cngx-popover-action
-        role="confirm"
-        [action]="saveAction"
-        [feedbackDuration]="500"
-        #act="cngxPopoverAction"
-      >
+      <button cngxPopoverAction [action]="saveAction" [feedbackDuration]="500" #act="cngxPopoverAction">
         Save
         <ng-template cngxPending>Saving...</ng-template>
         <ng-template cngxSucceeded>Saved!</ng-template>
         <ng-template cngxFailed let-err>Failed: {{ err }}</ng-template>
-      </cngx-popover-action>
+      </button>
     </div>
   `,
   imports: [CngxPopover, CngxPopoverAction, CngxPending, CngxSucceeded, CngxFailed],
@@ -73,23 +60,42 @@ class ConfirmHost {
     });
 }
 
+// A confirm without [action] no longer compiles (`[action]` is the required
+// input of the co-hosted CngxAsyncClick), so CNGX1035 is retired. Closing
+// without a run is the dismiss host's job; a confirm that must not run yet is
+// disabled with a reason.
 @Component({
   template: `
     <div cngxPopover #pop="cngxPopover">
-      <cngx-popover-action role="confirm" #act="cngxPopoverAction">Broken</cngx-popover-action>
+      <button cngxPopoverDismiss>Not now</button>
+      <button
+        cngxPopoverAction
+        [action]="saveAction"
+        [disabled]="true"
+        disabledReason="Fill in the name first"
+        #act="cngxPopoverAction"
+      >
+        Broken
+      </button>
     </div>
   `,
-  imports: [CngxPopover, CngxPopoverAction],
+  imports: [CngxPopover, CngxPopoverAction, CngxPopoverDismiss],
 })
 class ActionlessConfirmHost {
+  readonly popover = viewChild.required(CngxPopover);
   readonly action = viewChild.required(CngxPopoverAction);
+  runs = 0;
+  readonly saveAction = () => {
+    this.runs += 1;
+    return Promise.resolve();
+  };
 }
 
 @Component({
   template: `
     <div cngxPopover #pop="cngxPopover">
-      <cngx-popover-action
-        role="confirm"
+      <button
+        cngxPopoverAction
         [action]="saveAction"
         [feedbackDuration]="500"
         [showDelay]="0"
@@ -97,7 +103,7 @@ class ActionlessConfirmHost {
         #act="cngxPopoverAction"
       >
         Save
-      </cngx-popover-action>
+      </button>
     </div>
   `,
   imports: [CngxPopover, CngxPopoverAction],
@@ -116,10 +122,10 @@ class ForwardConfirmHost {
 @Component({
   template: `
     <div cngxPopover #pop="cngxPopover">
-      <cngx-popover-action role="confirm" [action]="saveAction">
+      <button cngxPopoverAction [action]="saveAction">
         Save
         <ng-template cngxFailed><span aria-hidden="true">!</span> Permission denied</ng-template>
-      </cngx-popover-action>
+      </button>
     </div>
   `,
   imports: [CngxPopover, CngxPopoverAction, CngxFailed],
@@ -134,7 +140,7 @@ class GlyphFailedHost {
 @Component({
   template: `
     <div cngxPopover #pop="cngxPopover">
-      <cngx-popover-action role="confirm" [action]="saveAction">Save</cngx-popover-action>
+      <button cngxPopoverAction [action]="saveAction">Save</button>
     </div>
   `,
   imports: [CngxPopover, CngxPopoverAction],
@@ -144,6 +150,73 @@ class PlainConfirmHost {
   outcome: 'success' | 'error' = 'error';
   readonly saveAction = () =>
     this.outcome === 'success' ? Promise.resolve() : Promise.reject(new Error('nope'));
+}
+
+@Component({
+  template: `
+    <div cngxPopover #pop="cngxPopover">
+      <button
+        [cngxPopoverAction]="variant()"
+        [tone]="tone()"
+        [action]="saveAction"
+        [feedbackDuration]="feedback()"
+        [disabled]="disabled()"
+        [disabledReason]="reason()"
+        [succeededAnnouncement]="succeeded()"
+        [failedAnnouncement]="failed()"
+        [autoAnnounce]="auto()"
+        #act="cngxPopoverAction"
+      >
+        Save
+        <ng-template cngxSucceeded>Saved!</ng-template>
+        <ng-template cngxFailed>Could not save</ng-template>
+      </button>
+    </div>
+  `,
+  imports: [CngxPopover, CngxPopoverAction, CngxSucceeded, CngxFailed],
+})
+class ConfigurableHost {
+  readonly popover = viewChild.required(CngxPopover);
+  readonly action = viewChild.required(CngxPopoverAction);
+  readonly variant = signal<'solid' | undefined>(undefined);
+  readonly tone = signal<'primary' | undefined>(undefined);
+  readonly feedback = signal(2000);
+  readonly disabled = signal(false);
+  readonly reason = signal<string | undefined>(undefined);
+  readonly succeeded = signal<string | undefined>(undefined);
+  readonly failed = signal<string | undefined>(undefined);
+  readonly auto = signal<boolean | undefined>(undefined);
+  outcome: 'success' | 'error' = 'success';
+  runs = 0;
+  readonly saveAction = () => {
+    this.runs += 1;
+    return this.outcome === 'success' ? Promise.resolve() : Promise.reject(new Error('nope'));
+  };
+}
+
+@Component({
+  template: `
+    <button [cngxPopoverTrigger]="panel.popover" id="trigger">Open</button>
+    <cngx-popover-panel #panel>
+      <p cngxPopoverBody>Save the draft?</p>
+      <div cngxPopoverFooter>
+        <button cngxPopoverDismiss>Cancel</button>
+        <button cngxPopoverAction [action]="saveAction">Save</button>
+      </div>
+    </cngx-popover-panel>
+  `,
+  imports: [
+    CngxPopoverTrigger,
+    CngxPopoverPanel,
+    CngxPopoverBody,
+    CngxPopoverFooter,
+    CngxPopoverDismiss,
+    CngxPopoverAction,
+  ],
+})
+class PanelConfirmHost {
+  readonly panel = viewChild.required(CngxPopoverPanel);
+  readonly saveAction = () => Promise.resolve();
 }
 
 function setup<T>(hostType: new () => T) {
@@ -165,23 +238,6 @@ describe('CngxPopoverAction', () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
-  });
-
-  it('should render dismiss button that closes popover on click', () => {
-    const { fixture, popoverEl } = setup(DismissHost);
-
-    fixture.componentInstance.popover().show();
-
-    const btn = (fixture.nativeElement as HTMLElement).querySelector(
-      '.cngx-popover-action',
-    ) as HTMLButtonElement;
-    expect(btn).toBeTruthy();
-    expect(btn.textContent).toContain('Cancel');
-
-    btn.click();
-    fixture.detectChanges();
-
-    expect(popoverEl.hidePopover).toHaveBeenCalled();
   });
 
   it('should render confirm button with async click', async () => {
@@ -295,11 +351,6 @@ describe('CngxPopoverAction', () => {
       await vi.advanceTimersByTimeAsync(0);
       expect(host.action().status()).toBe('error');
     });
-
-    it('stays idle for role="dismiss"', () => {
-      const { fixture } = setup(DismissHost);
-      expect(fixture.componentInstance.action().status()).toBe('idle');
-    });
   });
 
   describe('withCloseOnSuccess', () => {
@@ -385,47 +436,50 @@ describe('CngxPopoverAction', () => {
     });
   });
 
-  describe('confirm without [action] dev warning', () => {
-    it('warns when role="confirm" has no bound action', () => {
+  describe('confirm without [action] (CNGX1035 retired)', () => {
+    it('never warns CNGX1035: a confirm always has a bound action', () => {
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
       try {
+        setup(ConfirmHost);
         setup(ActionlessConfirmHost);
         const actionWarns = warnSpy.mock.calls.filter((call) =>
           /^CNGX1035: /.test(String(call[0])),
         );
-        expect(actionWarns).toHaveLength(1);
-        expect(actionWarns[0][0]).toMatch(
-          /^CNGX1035: \[cngx-popover-action\] role="confirm" without an \[action\] renders a button/,
-        );
+        expect(actionWarns).toHaveLength(0);
+        expect(
+          warnSpy.mock.calls.find((call) => /cngx-popover-action/.test(String(call[0]))),
+        ).toBeUndefined();
       } finally {
         warnSpy.mockRestore();
       }
     });
 
-    it('makes the click of an actionless confirm a no-op: no failed state, popover open', async () => {
-      vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    it('makes the click of a disabled confirm a no-op: no run, no failed state, popover open', async () => {
       const { fixture, popoverEl } = setup(ActionlessConfirmHost);
-      const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+      const host = fixture.componentInstance;
+      host.popover().show();
+      fixture.detectChanges();
+      const button = fixture.nativeElement.querySelector('.cngx-popover-action') as HTMLButtonElement;
       button.click();
       await vi.advanceTimersByTimeAsync(0);
       fixture.detectChanges();
-      expect(fixture.componentInstance.action().status()).toBe('idle');
-      expect(button.textContent?.trim()).toBe('Broken');
+      expect(host.runs).toBe(0);
+      expect(host.action().status()).toBe('idle');
+      expect(button.querySelector('.cngx-button__label')?.textContent?.trim()).toBe('Broken');
       expect(button.getAttribute('aria-disabled')).toBe('true');
       expect(popoverEl.hidePopover).not.toHaveBeenCalled();
     });
 
-    it('does not warn when [action] is bound', () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-      try {
-        setup(ConfirmHost);
-        const actionWarn = warnSpy.mock.calls.find((call) =>
-          String(call[0]).includes('CngxPopoverAction'),
-        );
-        expect(actionWarn).toBeUndefined();
-      } finally {
-        warnSpy.mockRestore();
-      }
+    it('closes through the dismiss host, the replacement for an actionless confirm', () => {
+      const { fixture, popoverEl } = setup(ActionlessConfirmHost);
+      const host = fixture.componentInstance;
+      host.popover().show();
+      fixture.detectChanges();
+      const dismiss = fixture.nativeElement.querySelector('.cngx-popover-dismiss') as HTMLButtonElement;
+      dismiss.click();
+      fixture.detectChanges();
+      expect(host.runs).toBe(0);
+      expect(popoverEl.hidePopover).toHaveBeenCalled();
     });
   });
 
@@ -433,14 +487,16 @@ describe('CngxPopoverAction', () => {
     const SHOW = CNGX_LOADING_DEFAULTS.showDelay;
     const DWELL = CNGX_LOADING_DEFAULTS.minDwell;
 
-    // The confirm button never paints as the disabled field (aria-disabled
-    // true with neither run flag set) during a run: the gated busy flags keep
-    // it out of the :not([data-busy], [data-pending]) disabled rules.
+    // The confirm button never paints as the disabled field during a run: the
+    // gated busy flags keep the host out of the disabled rules of
+    // button.component.css, keyed on this selector.
+    const DISABLED_PAINT = "[aria-disabled='true']:not([data-busy], [data-pending])";
     function paintsDisabled(btn: HTMLElement): boolean {
       return (
         btn.getAttribute('aria-disabled') === 'true' &&
         !btn.hasAttribute('data-busy') &&
-        !btn.hasAttribute('data-pending')
+        !btn.hasAttribute('data-pending') &&
+        btn.matches(DISABLED_PAINT)
       );
     }
 
@@ -492,7 +548,7 @@ describe('CngxPopoverAction', () => {
 
       // Inside the held dwell: the run settled (pending() false) but the busy
       // visual is still held, so data-busy is set, data-pending is cleared, and
-      // the inner CngxAsyncClick still refuses with aria-disabled - which the
+      // the co-hosted CngxAsyncClick still refuses with aria-disabled - which the
       // data-busy flag keeps out of the disabled paint.
       expect(host.action().busyVisible()).toBe(true);
       expect(btn.hasAttribute('data-pending')).toBe(false);
@@ -505,7 +561,7 @@ describe('CngxPopoverAction', () => {
       expect(btn.hasAttribute('data-busy')).toBe(false);
     });
 
-    it('forwards [showDelay] / [minDwell] to the inner CngxAsyncClick', async () => {
+    it('forwards [showDelay] / [minDwell] to the co-hosted CngxAsyncClick', async () => {
       const { fixture } = setup(ForwardConfirmHost);
       const host = fixture.componentInstance;
       const btn = confirmButton(fixture);
@@ -571,8 +627,11 @@ describe('CngxPopoverAction', () => {
     expect(btn.textContent).toContain('Network error');
   });
   describe('settle announcement', () => {
+    // The co-hosted CngxAsyncClick region, rendered as the host's sibling.
     const region = (fixture: { nativeElement: HTMLElement }): HTMLElement =>
-      fixture.nativeElement.querySelector('.cngx-popover-action__sr-only') as HTMLElement;
+      fixture.nativeElement.querySelector(
+        '.cngx-popover-action + [role="status"][aria-live="polite"]',
+      ) as HTMLElement;
     const button = (fixture: { nativeElement: HTMLElement }): HTMLButtonElement =>
       fixture.nativeElement.querySelector('.cngx-popover-action') as HTMLButtonElement;
 
@@ -674,6 +733,177 @@ describe('CngxPopoverAction', () => {
       expect(vi.getTimerCount()).toBe(0);
       expect(live.textContent).toBe('');
       expect(popoverEl.hidePopover).toHaveBeenCalledTimes(hidesAtDestroy);
+    });
+  });
+
+  describe('button host contract', () => {
+    const button = (fixture: { nativeElement: HTMLElement }): HTMLButtonElement =>
+      fixture.nativeElement.querySelector('.cngx-popover-action') as HTMLButtonElement;
+
+    it('renders outline, sm and type="button" on the host, painted by the button sheet', () => {
+      const { fixture } = setup(ConfigurableHost);
+      const btn = button(fixture);
+      expect(btn.tagName).toBe('BUTTON');
+      expect(btn.classList).toContain('cngx-button');
+      expect(btn.getAttribute('data-variant')).toBe('outline');
+      expect(btn.getAttribute('data-size')).toBe('sm');
+      expect(btn.getAttribute('type')).toBe('button');
+      expect(btn.querySelector('button')).toBeNull();
+    });
+
+    it('lands the selector variant and tone="primary" on data-variant / data-tone', () => {
+      const { fixture } = setup(ConfigurableHost);
+      fixture.componentInstance.variant.set('solid');
+      fixture.componentInstance.tone.set('primary');
+      fixture.detectChanges();
+      expect(button(fixture).getAttribute('data-variant')).toBe('solid');
+      expect(button(fixture).getAttribute('data-tone')).toBe('primary');
+    });
+
+    it('blocks the run while disabled and references the reason only then', async () => {
+      const { fixture } = setup(ConfigurableHost);
+      const host = fixture.componentInstance;
+      host.reason.set('Fill in the name first');
+      fixture.detectChanges();
+      expect(button(fixture).hasAttribute('aria-describedby')).toBe(false);
+
+      host.disabled.set(true);
+      fixture.detectChanges();
+      const btn = button(fixture);
+      const reason = btn.querySelector('.cngx-button__reason') as HTMLElement;
+      expect(btn.getAttribute('aria-disabled')).toBe('true');
+      expect(reason.textContent).toBe('Fill in the name first');
+      expect((btn.getAttribute('aria-describedby') ?? '').split(' ')).toContain(reason.id);
+
+      btn.click();
+      await vi.advanceTimersByTimeAsync(0);
+      fixture.detectChanges();
+      expect(host.runs).toBe(0);
+      expect(host.action().status()).toBe('idle');
+    });
+
+    it('forwards [feedbackDuration] to the co-hosted runner', async () => {
+      const { fixture } = setup(ConfigurableHost);
+      const host = fixture.componentInstance;
+      host.feedback.set(700);
+      fixture.detectChanges();
+      button(fixture).click();
+      await vi.advanceTimersByTimeAsync(0);
+      fixture.detectChanges();
+      expect(host.action().status()).toBe('success');
+
+      await vi.advanceTimersByTimeAsync(699);
+      expect(host.action().status()).toBe('success');
+      await vi.advanceTimersByTimeAsync(1);
+      expect(host.action().status()).toBe('idle');
+    });
+
+    it('re-exposes the run as a CngxAsyncState view', async () => {
+      const { fixture } = setup(ConfigurableHost);
+      const host = fixture.componentInstance;
+      expect(host.action().state.status()).toBe('idle');
+      host.outcome = 'error';
+      button(fixture).click();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(host.action().state.status()).toBe('error');
+      expect(host.action().state.error()).toBeInstanceOf(Error);
+    });
+  });
+
+  describe('announcement overrides', () => {
+    const region = (fixture: { nativeElement: HTMLElement }): HTMLElement =>
+      fixture.nativeElement.querySelector(
+        '.cngx-popover-action + [role="status"][aria-live="polite"]',
+      ) as HTMLElement;
+    const button = (fixture: { nativeElement: HTMLElement }): HTMLButtonElement =>
+      fixture.nativeElement.querySelector('.cngx-popover-action') as HTMLButtonElement;
+
+    async function settleRender(fixture: { detectChanges(): void }): Promise<void> {
+      await vi.advanceTimersByTimeAsync(0);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+    }
+
+    it('lets [succeededAnnouncement] / [failedAnnouncement] win over the rendered template', async () => {
+      const { fixture } = setup(ConfigurableHost);
+      const host = fixture.componentInstance;
+      host.succeeded.set('Draft stored');
+      host.failed.set('Draft not stored');
+      host.feedback.set(100);
+      fixture.detectChanges();
+
+      button(fixture).click();
+      await settleRender(fixture);
+      expect(button(fixture).textContent).toContain('Saved!');
+      expect(region(fixture).textContent).toBe('Draft stored');
+
+      await vi.advanceTimersByTimeAsync(100);
+      host.outcome = 'error';
+      button(fixture).click();
+      await settleRender(fixture);
+      expect(button(fixture).textContent).toContain('Could not save');
+      expect(region(fixture).textContent).toBe('Draft not stored');
+    });
+
+    it('keeps the region empty with [autoAnnounce]="false"', async () => {
+      const { fixture } = setup(ConfigurableHost);
+      fixture.componentInstance.auto.set(false);
+      fixture.detectChanges();
+      const live = region(fixture);
+      expect(live).toBeTruthy();
+
+      button(fixture).click();
+      await settleRender(fixture);
+      expect(fixture.componentInstance.action().status()).toBe('success');
+      expect(live.textContent).toBe('');
+    });
+  });
+
+  describe('inside a CngxPopoverPanel', () => {
+    let testRoot: HTMLElement;
+
+    beforeEach(() => {
+      testRoot = document.createElement('div');
+      document.body.appendChild(testRoot);
+    });
+
+    afterEach(() => {
+      testRoot.remove();
+    });
+
+    it('returns focus to the trigger after close-on-success through the panel claim', async () => {
+      TestBed.configureTestingModule({
+        imports: [PanelConfirmHost],
+        providers: [providePopoverPanel(withCloseOnSuccess(100))],
+      });
+      const fixture = TestBed.createComponent(PanelConfirmHost);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const root = fixture.nativeElement as HTMLElement;
+      stubPopoverElement(root.querySelector('cngx-popover-panel') as HTMLElement);
+      const trigger = root.querySelector('#trigger') as HTMLButtonElement;
+      const popover = fixture.componentInstance.panel().popover;
+      const flush = () => {
+        fixture.detectChanges();
+        TestBed.flushEffects();
+      };
+
+      trigger.focus();
+      popover.show();
+      flush();
+      const confirm = root.querySelector('.cngx-popover-action') as HTMLButtonElement;
+      confirm.focus();
+      confirm.click();
+      await vi.advanceTimersByTimeAsync(0);
+      flush();
+      await vi.advanceTimersByTimeAsync(100);
+      flush();
+
+      expect(popover.state()).toBe('closed');
+      expect(document.activeElement).toBe(trigger);
+      fixture.destroy();
     });
   });
 });

@@ -98,6 +98,17 @@ describe('CngxPopoverDismiss', () => {
     expect(fixture.componentInstance.popover().state()).toBe('closed');
   });
 
+  it('carries no run state: no aria-busy, data-pending or data-busy after a click', () => {
+    const { fixture, button, flush } = setup();
+    fixture.componentInstance.popover().show();
+    flush();
+    button.click();
+    flush();
+    expect(button.hasAttribute('aria-busy')).toBe(false);
+    expect(button.hasAttribute('data-pending')).toBe(false);
+    expect(button.hasAttribute('data-busy')).toBe(false);
+  });
+
   it('renders the button host contract: outline, sm, type="button"', () => {
     const { button } = setup();
     expect(button.classList).toContain('cngx-button');

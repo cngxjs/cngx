@@ -3,7 +3,9 @@
 @use '@angular/material' as mat;
 @use './bridge' as bridge;
 
-// Material bridge for CngxPopoverPanel (+ CngxPopoverAction variants).
+// Material bridge for CngxPopoverPanel. The footer actions
+// (button[cngxPopoverAction], button[cngxPopoverDismiss]) are button-family
+// hosts and take their Material paint from button-theme.scss.
 // Default visuals ship with the component (popover-panel.component.css);
 // this file aligns colour, typography, density, and the per-variant
 // accent palette (info/success/warning/danger) with Material.

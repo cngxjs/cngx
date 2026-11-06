@@ -12,7 +12,7 @@ export const STORY: DemoSpec = {
   focus: ['composition', 'visual-variants'],
   apiComponents: ['CngxPopoverPanel', 'CngxPopoverDivider'],
   moduleImports: [
-    "import { CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody, CngxPopoverFooter, CngxPopoverAction, CngxPopoverDivider } from '@cngx/common/popover';",
+    "import { CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody, CngxPopoverFooter, CngxPopoverAction, CngxPopoverDismiss, CngxPopoverDivider } from '@cngx/common/popover';",
     "import { CngxPending, CngxSucceeded } from '@cngx/common/interactive';",
   ],
   imports: [
@@ -22,6 +22,7 @@ export const STORY: DemoSpec = {
     'CngxPopoverBody',
     'CngxPopoverFooter',
     'CngxPopoverAction',
+    'CngxPopoverDismiss',
     'CngxPopoverDivider',
     'CngxPending',
     'CngxSucceeded',
@@ -93,14 +94,14 @@ export const STORY: DemoSpec = {
 
       <div cngxPopoverFooter>
         <div class="demo-flight-footer">
-          <cngx-popover-action role="dismiss">Not now</cngx-popover-action>
+          <button cngxPopoverDismiss>Not now</button>
           <span class="demo-flight-footer-spacer"></span>
           <span cngxPopoverDivider orientation="vertical" [inset]="true"></span>
-          <cngx-popover-action role="confirm" [action]="checkIn" variant="primary">
+          <button cngxPopoverAction="solid" tone="primary" [action]="checkIn">
             Check in
             <ng-template cngxPending>Checking in...</ng-template>
             <ng-template cngxSucceeded>Seat 14A confirmed</ng-template>
-          </cngx-popover-action>
+          </button>
         </div>
       </div>
     </cngx-popover-panel>

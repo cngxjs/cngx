@@ -383,12 +383,6 @@ const ALLOWLIST = [
   },
   {
     rule: 'B',
-    token: '--cngx-popover-panel-accent',
-    file: 'projects/common/popover/popover-action.component.css',
-    reason: 'roadmap PR 4, T18 / OD4',
-  },
-  {
-    rule: 'B',
     token: '--cngx-tab-overflow-bg',
     file: 'projects/ui/tabs/tab-overflow.component.css',
     reason:

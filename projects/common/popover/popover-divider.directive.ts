@@ -28,9 +28,9 @@ import { CngxDivider } from '@cngx/common/display';
  * ### Vertical separator between footer action groups
  * ```html
  * <div cngxPopoverFooter>
- *   <cngx-popover-action role="dismiss">Cancel</cngx-popover-action>
+ *   <button cngxPopoverDismiss>Cancel</button>
  *   <span cngxPopoverDivider orientation="vertical"></span>
- *   <cngx-popover-action role="confirm" [action]="save">Save</cngx-popover-action>
+ *   <button cngxPopoverAction [action]="save">Save</button>
  * </div>
  * ```
  *

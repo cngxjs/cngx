@@ -87,7 +87,7 @@ class StepperCompleteHost {
 }
 
 @Component({
-  template: `<cngx-popover-action role="confirm" [action]="action">Save</cngx-popover-action>`,
+  template: `<button cngxPopoverAction [action]="action">Save</button>`,
   imports: [CngxPopoverAction],
 })
 class PopoverActionHost {
@@ -157,7 +157,9 @@ describe('cngxAsyncClick settle side effects across two runs without change dete
     flush(fixture);
     const root = fixture.nativeElement as HTMLElement;
     const button = root.querySelector('button') as HTMLButtonElement;
-    const region = root.querySelector('.cngx-popover-action__sr-only') as HTMLElement;
+    const region = root.querySelector(
+      '.cngx-popover-action + [role="status"][aria-live="polite"]',
+    ) as HTMLElement;
     const writes = recordWrites(region);
 
     await clickTwiceWithoutChangeDetection(button);

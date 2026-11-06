@@ -134,9 +134,6 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // with box-shadow, which WHCM strips; redrawn as ButtonBorder borders.
   'projects/forms/filter-builder/filter-builder-expression-row.component.css',
   'projects/forms/filter-builder/filter-builder-row.component.css',
-  // Disabled painted by colour, re-signalled with GrayText (an aria-disabled
-  // control gets no UA GrayText).
-  'projects/common/popover/popover-action.component.css',
   // Slider track + fill are background-only (range: a gradient) and flatten.
   'projects/common/interactive/slider/slider.component.css',
   'projects/common/interactive/slider/range-slider.component.css',
@@ -331,7 +328,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(54);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(53);
   });
 });
 
