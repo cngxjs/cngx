@@ -5,6 +5,7 @@ import type { CngxPopover, CngxPopoverPresentation } from '@cngx/common/popover'
 
 import { createAutoPanelRenderer } from './auto-virtualize';
 import type { CngxSelectVirtualizationConfig } from '../config';
+import { isCngxSelectOptionGroupDef } from '../option.model';
 import {
   CNGX_PANEL_RENDERER_FACTORY,
   createIdentityPanelRenderer,
@@ -62,13 +63,19 @@ export function setupVirtualization<T, TCommit>(opts: {
           })
         : injected;
 
+  // A grouped list bypasses the renderer and renders every row, whatever the
+  // renderer's slice says, so AD must not see a window for it.
+  const hasGroup = computed<boolean>(() =>
+    opts.core.effectiveOptions().some(isCngxSelectOptionGroupDef),
+  );
+
   // Virtual only while the renderer windows the list. Below the
   // auto-virtualize threshold the full list renders, so AD stays
   // non-virtual (plain index space): the recycler is attached but inert,
   // and a small list behaves byte-identically to the identity renderer.
   const virtualItemCount = computed<number | undefined>(() => {
     const v = panelRenderer.virtualizer;
-    if (v === undefined) {
+    if (v === undefined || hasGroup()) {
       return undefined;
     }
     const rendered = panelRenderer.renderOptions().length;
@@ -83,7 +90,7 @@ export function setupVirtualization<T, TCommit>(opts: {
   // scrolling, so a full render always reports 0.
   const virtualWindowStart = computed<number>(() => {
     const v = panelRenderer.virtualizer;
-    if (v === undefined) {
+    if (v === undefined || hasGroup()) {
       return 0;
     }
     const rendered = panelRenderer.renderOptions().length;

@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import { CNGX_PANEL_RENDERER_FACTORY, type PanelRenderer } from '../panel-renderer';
-import type { CngxSelectOptionDef } from '../option.model';
+import type { CngxSelectOptionDef, CngxSelectOptionsInput } from '../option.model';
 import { setupVirtualization } from './setup-virtualization';
 import type { CngxSelectCore } from './select-core';
 
@@ -11,7 +11,10 @@ function makeOptions(count: number): readonly CngxSelectOptionDef<number>[] {
   return Array.from({ length: count }, (_, i) => ({ value: i, label: `Item ${i}` }));
 }
 
-function run(renderer: PanelRenderer<number>): {
+function run(
+  renderer: PanelRenderer<number>,
+  effective: CngxSelectOptionsInput<number> = makeOptions(50),
+): {
   virtualItemCount: () => number | undefined;
   virtualWindowStart: () => number;
 } {
@@ -19,7 +22,10 @@ function run(renderer: PanelRenderer<number>): {
     providers: [{ provide: CNGX_PANEL_RENDERER_FACTORY, useValue: () => renderer }],
   });
   const flatOptions = signal(makeOptions(50));
-  const core = { flatOptions } as unknown as CngxSelectCore<number, number>;
+  const core = {
+    flatOptions,
+    effectiveOptions: signal(effective),
+  } as unknown as CngxSelectCore<number, number>;
   return runInInjectionContext(TestBed.inject(Injector), () =>
     setupVirtualization<number, number>({
       core,
@@ -82,6 +88,28 @@ describe('setupVirtualization - virtualWindowStart', () => {
       totalCount: computed(() => all().length),
     };
     const setup = run(renderer);
+    expect(setup.virtualItemCount()).toBeUndefined();
+    expect(setup.virtualWindowStart()).toBe(0);
+  });
+});
+
+describe('setupVirtualization - grouped lists', () => {
+  it('reports a grouped list as non-virtual while the renderer holds a window', () => {
+    const all = signal(makeOptions(50));
+    const start = signal(20);
+    const renderer: PanelRenderer<number> = {
+      renderOptions: computed(() => all().slice(start(), start() + 10)),
+      totalCount: computed(() => all().length),
+      virtualizer: {
+        startIndex: start,
+        offsetBefore: signal(0),
+        offsetAfter: signal(0),
+        setsize: computed(() => all().length),
+        rowSizeHint: signal(32),
+        scrollToIndex: () => undefined,
+      },
+    };
+    const setup = run(renderer, [{ label: 'Group', children: makeOptions(50) }]);
     expect(setup.virtualItemCount()).toBeUndefined();
     expect(setup.virtualWindowStart()).toBe(0);
   });
