@@ -24,7 +24,7 @@ export const STORY: DemoSpec = {
     this.globalCount.update(n => n + 1);
     this.lastShortcut.set(name);
   }`,
-  template: `  <div class="button-row">
+  template: `  <div style="display:flex;flex-wrap:wrap;gap:8px">
     <button
       type="button"
       [cngxKeyboardShortcut]="'mod+k'"
