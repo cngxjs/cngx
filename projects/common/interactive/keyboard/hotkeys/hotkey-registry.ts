@@ -180,6 +180,23 @@ function parentOf(node: Node): Node | null {
   return node.parentNode instanceof ShadowRoot ? node.parentNode.host : node.parentNode;
 }
 
+function depthOf(scope: CngxHotkeyScopeNode): number {
+  let depth = 0;
+  for (let s = scope.parent; s !== null; s = s.parent) {
+    depth++;
+  }
+  return depth;
+}
+
+/**
+ * Scopes on one element, innermost first. Creation order says nothing here:
+ * a child that injects `CNGX_HOTKEY_SCOPE` creates its parent scope first.
+ */
+function scopesInnermostFirst(element: Element): readonly CngxHotkeyScopeNode[] {
+  const scopes = hotkeyScopesOf(element);
+  return scopes.length < 2 ? scopes : [...scopes].sort((a, b) => depthOf(b) - depthOf(a));
+}
+
 /** Scopes containing `start`, innermost first, cut after the first modal one. */
 function scopeChain(start: Element): readonly CngxHotkeyScopeNode[] {
   const chain: CngxHotkeyScopeNode[] = [];
@@ -187,7 +204,7 @@ function scopeChain(start: Element): readonly CngxHotkeyScopeNode[] {
     if (!(node instanceof Element)) {
       continue;
     }
-    for (const scope of hotkeyScopesOf(node)) {
+    for (const scope of scopesInnermostFirst(node)) {
       chain.push(scope);
       if (scope.modal()) {
         return chain;

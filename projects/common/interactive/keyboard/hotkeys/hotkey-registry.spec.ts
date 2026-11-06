@@ -151,6 +151,27 @@ describe('createHotkeyRegistry', () => {
       expect(next.run).toHaveBeenCalledOnce();
     });
 
+    it('orders scopes sharing one element innermost first, whatever their creation order', () => {
+      const registry = makeRegistry();
+      const host = el();
+      const outer = scopeOn(host, null, { modal: signal(true) });
+      const inner = scopeOn(host, outer);
+      const own = bind('own.escape', 'escape', { reach: 'focus' });
+      const outerKey = bind('outer.save', 'mod+s');
+      const innerKey = bind('inner.save', 'mod+s');
+      registry.register(source(own), inner);
+      registry.register(source(innerKey), inner);
+      registry.register(source(outerKey), outer);
+
+      const target = el('button', host);
+      press(target, 'Escape');
+      press(target, 's', { ctrlKey: true });
+
+      expect(own.run).toHaveBeenCalledOnce();
+      expect(innerKey.run).toHaveBeenCalledOnce();
+      expect(outerKey.run).not.toHaveBeenCalled();
+    });
+
     it('treats the app scope as focused until a modal cuts it', () => {
       const registry = makeRegistry();
       const dialogEl = el();

@@ -53,6 +53,27 @@ class ScopedHost {
 
 @Component({
   template: `
+    <button type="button" (click)="outside = outside + 1">Outside</button>
+    <div
+      cngxHotkeyScope
+      cngxHotkeyScopeModal
+      [cngxKeyboardShortcut]="'escape'"
+      shortcutScope="self"
+      (shortcutTriggered)="count = count + 1"
+      tabindex="0"
+    >
+      <button type="button">Inside</button>
+    </div>
+  `,
+  imports: [CngxKeyboardShortcut, CngxHotkeyScope],
+})
+class ModalSelfHost {
+  count = 0;
+  outside = 0;
+}
+
+@Component({
+  template: `
     <button [cngxKeyboardShortcut]="'mod+j'" (shortcutTriggered)="fired.push('j')">J</button>
     <button [cngxKeyboardShortcut]="'mod+k'" (shortcutTriggered)="fired.push('k')">K</button>
     <button [cngxKeyboardShortcut]="'mod+l'" (shortcutTriggered)="fired.push('l')">L</button>
@@ -64,7 +85,9 @@ class TripleHost {
 }
 
 describe('CngxKeyboardShortcut', () => {
-  beforeEach(() => TestBed.configureTestingModule({ imports: [TestHost, ScopedHost, TripleHost] }));
+  beforeEach(() =>
+    TestBed.configureTestingModule({ imports: [TestHost, ScopedHost, ModalSelfHost, TripleHost] }),
+  );
 
   function setup() {
     const fixture = TestBed.createComponent(TestHost);
@@ -179,6 +202,14 @@ describe('CngxKeyboardShortcut', () => {
     dispatchKeydown(document, 's', { ctrlKey: true });
     expect(button.hasAttribute('aria-keyshortcuts')).toBe(false);
     expect(fixture.componentInstance.count).toBe(0);
+  });
+
+  it('fires a self-scoped shortcut on a host that is also a modal hotkey scope', () => {
+    const fixture = TestBed.createComponent(ModalSelfHost);
+    fixture.detectChanges();
+    const inside = (fixture.nativeElement as HTMLElement).querySelectorAll('button')[1];
+    dispatchKeydown(inside, 'Escape');
+    expect(fixture.componentInstance.count).toBe(1);
   });
 
   it('shares one document listener between directive instances', () => {
