@@ -188,29 +188,29 @@ describe('CngxPopoverTrigger', () => {
     it('names the element a composer registers through the controls hint', () => {
       const { fixture, triggerEl } = setup(ControlsHintHost);
       const host = fixture.componentInstance as ControlsHintHost;
-      host.popover().setControls(signal('inner-menu'));
+      host.popover().claimControls(host, signal('inner-menu'));
       fixture.detectChanges();
       expect(host.popover().controlsHint()).toBe('inner-menu');
       expect(triggerEl.getAttribute('aria-controls')).toBe('inner-menu');
     });
 
-    it('follows a change of the registered source without another setControls', () => {
+    it('follows a change of the registered source without another claim', () => {
       const { fixture, triggerEl } = setup(ControlsHintHost);
       const host = fixture.componentInstance as ControlsHintHost;
       const source = signal('inner-menu');
-      host.popover().setControls(source);
+      host.popover().claimControls(host, source);
       fixture.detectChanges();
       source.set('renamed-menu');
       fixture.detectChanges();
       expect(triggerEl.getAttribute('aria-controls')).toBe('renamed-menu');
     });
 
-    it('clears the hint with setControls(null)', () => {
+    it('clears the hint when the owner releases its claim', () => {
       const { fixture, triggerEl } = setup(ControlsHintHost);
       const host = fixture.componentInstance as ControlsHintHost;
-      host.popover().setControls(signal('inner-menu'));
+      host.popover().claimControls(host, signal('inner-menu'));
       fixture.detectChanges();
-      host.popover().setControls(null);
+      host.popover().releaseControls(host);
       fixture.detectChanges();
       expect(host.popover().controlsHint()).toBeNull();
       expect(triggerEl.getAttribute('aria-controls')).toBe(host.popover().id());
@@ -219,7 +219,7 @@ describe('CngxPopoverTrigger', () => {
     it('lets a bound controls win over the hint', () => {
       const { fixture, triggerEl } = setup(ControlsTriggerHost);
       const host = fixture.componentInstance as ControlsTriggerHost;
-      host.popover().setControls(signal('hinted'));
+      host.popover().claimControls(host, signal('hinted'));
       fixture.detectChanges();
       expect(triggerEl.getAttribute('aria-controls')).toBe('inner-list');
     });
@@ -227,7 +227,7 @@ describe('CngxPopoverTrigger', () => {
     it('ignores the hint in a sheet presentation and names the popover', () => {
       const { fixture, triggerEl } = setup(SheetControlsHintHost);
       const host = fixture.componentInstance as SheetControlsHintHost;
-      host.popover().setControls(signal('inner-menu'));
+      host.popover().claimControls(host, signal('inner-menu'));
       fixture.detectChanges();
       expect(host.popover().controlsHint()).toBeNull();
       expect(triggerEl.getAttribute('aria-controls')).toBe(host.popover().id());
@@ -246,7 +246,7 @@ describe('CngxPopoverTrigger', () => {
     it('should pick up the popover haspopup signal as default', () => {
       const { fixture, triggerEl } = setup(BasicTriggerHost);
       const host = fixture.componentInstance as BasicTriggerHost;
-      host.popover().setHaspopup('dialog');
+      host.popover().claimHaspopup(host, 'dialog');
       fixture.detectChanges();
       expect(triggerEl.getAttribute('aria-haspopup')).toBe('dialog');
     });
@@ -254,7 +254,7 @@ describe('CngxPopoverTrigger', () => {
     it('should let consumer haspopup override the popover hint', () => {
       const { fixture, triggerEl } = setup(MenuTriggerHost);
       const host = fixture.componentInstance as MenuTriggerHost;
-      host.popover().setHaspopup('dialog');
+      host.popover().claimHaspopup(host, 'dialog');
       fixture.detectChanges();
       expect(triggerEl.getAttribute('aria-haspopup')).toBe('menu');
     });
@@ -267,7 +267,7 @@ describe('CngxPopoverTrigger', () => {
     it('should let none cancel the popover haspopup hint', () => {
       const { fixture, triggerEl } = setup(NoneHaspopupHost);
       const host = fixture.componentInstance as NoneHaspopupHost;
-      host.popover().setHaspopup('dialog');
+      host.popover().claimHaspopup(host, 'dialog');
       fixture.detectChanges();
       expect(triggerEl.hasAttribute('aria-haspopup')).toBe(false);
     });

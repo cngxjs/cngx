@@ -435,8 +435,9 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
 
   constructor() {
     // Hint any CngxPopoverTrigger pointing at this popover to default
-    // `aria-haspopup="dialog"`. Consumer override on the trigger wins.
-    this.popover.setHaspopup('dialog');
+    // `aria-haspopup="dialog"`. Consumer override on the trigger wins, and a
+    // co-composer's later claim (a menu trigger) wins while it lives.
+    this.popover.claimHaspopup(this, 'dialog');
 
     effect(() => {
       const isVisible = this.popover.isVisible();
@@ -453,6 +454,7 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
     });
 
     this.destroyRef.onDestroy(() => {
+      this.popover.releaseHaspopup(this);
       if (this.autoDismissTimer) {
         clearTimeout(this.autoDismissTimer);
       }

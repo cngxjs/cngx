@@ -34,8 +34,10 @@ import { createMenuTriggerLifecycle, isMenuShortcutCombo } from './menu-trigger-
  */
 interface PopoverController extends CngxMenuDismissPopoverRef {
   show(): void;
-  setHaspopup(value: 'menu' | undefined): void;
-  setControls(source: Signal<string> | null): void;
+  claimHaspopup(owner: object, value: 'menu'): void;
+  releaseHaspopup(owner: object): void;
+  claimControls(owner: object, source: Signal<string>): void;
+  releaseControls(owner: object): void;
 }
 
 /**
@@ -185,18 +187,20 @@ export class CngxMenuTrigger {
     inject(DestroyRef).onDestroy(() => this.lifecycle.destroy());
     // Composer hints for the co-hosted CngxPopoverTrigger, the single writer
     // of aria-haspopup / aria-expanded / aria-controls. Tracks only the two
-    // references; the menu id Signal itself is registered, so an id change
-    // reaches aria-controls without re-running this effect.
+    // references; the menu id Signal itself is claimed, so an id change
+    // reaches aria-controls without re-running this effect. Claims are keyed
+    // by this trigger, so releasing them leaves a co-composer's hint (a
+    // popover panel around the menu) in place.
     effect((onCleanup) => {
       const pop = this.popover();
       const menu = this.menu();
       untracked(() => {
-        pop.setHaspopup('menu');
-        pop.setControls(menu.id);
+        pop.claimHaspopup(this, 'menu');
+        pop.claimControls(this, menu.id);
       });
       onCleanup(() => {
-        pop.setHaspopup(undefined);
-        pop.setControls(null);
+        pop.releaseHaspopup(this);
+        pop.releaseControls(this);
       });
     });
     effect(() => {
