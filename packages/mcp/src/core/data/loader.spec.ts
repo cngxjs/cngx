@@ -136,6 +136,52 @@ describe('createDocsIndex functions projection', () => {
   });
 });
 
+describe('createDocsIndex error-code projection', () => {
+  const validBlock = () => ({
+    schemaVersion: 3,
+    docsBaseUrl: 'https://cngxjs.github.io/cngx/additional-documentation/error-codes/',
+    ranges: [{ lib: 'core', from: 1, to: 899 }],
+    codes: [
+      {
+        code: 'CNGX0001',
+        lib: 'core',
+        severity: 'warn',
+        production: 'stripped',
+        title: 'Locale is not a BCP 47 tag',
+        status: 'active',
+        url: 'https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0001.html',
+        messages: ['formatMessage(): not a BCP 47 locale'],
+        body: '## Locale is not a BCP 47 tag',
+      },
+    ],
+  });
+
+  it('projects a valid block onto errorCodes, without its manifest schemaVersion', () => {
+    const block = validBlock();
+    const index = createDocsIndex({ ...readFixture(), cngxErrorCodes: block } as DocumentationJson);
+
+    expect(index.errorCodes).toEqual({ docsBaseUrl: block.docsBaseUrl, ranges: block.ranges, codes: block.codes });
+  });
+
+  it('gives errorCodes null for an absent block', () => {
+    expect(createDocsIndex(readFixture()).errorCodes).toBeNull();
+  });
+
+  it('gives errorCodes null for another manifest schemaVersion, and still loads components', () => {
+    const raw = { ...readFixture(), cngxErrorCodes: { ...validBlock(), schemaVersion: 4 } } as DocumentationJson;
+    const index = createDocsIndex(raw);
+
+    expect(index.errorCodes).toBeNull();
+    expect(index.components.length).toBeGreaterThan(0);
+  });
+
+  it('gives errorCodes null for a non-list codes', () => {
+    const raw = { ...readFixture(), cngxErrorCodes: { ...validBlock(), codes: 'nope' } } as unknown as DocumentationJson;
+
+    expect(createDocsIndex(raw).errorCodes).toBeNull();
+  });
+});
+
 describe('a malformed snapshot', () => {
   const v6 = (patch: Record<string, unknown>) => ({ schemaVersion: 6, ...patch }) as unknown as DocumentationJson;
   const v2 = (patch: Record<string, unknown>) => ({ schemaVersion: 2, ...patch }) as unknown as DocumentationJson;

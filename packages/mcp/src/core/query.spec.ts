@@ -31,6 +31,7 @@ function docsOf(components: DocEntry[], directives: DocEntry[] = []): DocsIndex 
     injectables: [],
     tokens: [],
     functions: [],
+    errorCodes: null,
   };
 }
 

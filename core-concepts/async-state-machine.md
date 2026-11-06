@@ -261,13 +261,36 @@ Resolution priority for any one surface:
 3. `provideLoadingConfig(...)` at the app root.
 4. `CNGX_LOADING_DEFAULTS` (120 / 400 / 800).
 
-Surfaces that gate through it: `cngx-skeleton`, `cngx-loading-indicator`, `cngx-loading-overlay`, the `cngx-async-container` skeleton view and refresh bar, the recycler skeleton (`injectRecycler`), and the busy visual of `cngxAsyncClick` (`cngx-async--pending` and the button-family spinner; `aria-busy` and the announcement stay immediate).
+Surfaces that gate through it: `cngx-skeleton`, `cngx-loading-indicator`, `cngx-loading-overlay`, the `cngx-async-container` skeleton view and refresh bar, the recycler skeleton (`injectRecycler`), and the busy visual of `cngxAsyncClick` (`cngx-async--pending` and the button-family spinner). See **Gated surfaces** below for exactly what the gate holds and what stays immediate.
 
 <aside class="cc-note">
 
 **Note.** `provideFeedback(withLoadingDefaults({ delay, minDuration }))` from `@cngx/ui/feedback` writes the same `CNGX_LOADING_CONFIG` token as a back-compat wrapper (`delay` maps to `showDelay`, `minDuration` to `minDwell`). It provides a whole config value, so it also resets `spinnerVsSkeletonCutoff` to its default. Prefer `provideLoadingConfig(...)` from `@cngx/core/utils` for new apps, and set the cutoff there rather than combining the two.
 
 </aside>
+
+### Gated surfaces
+
+The gate keys two things off a run: a **pending** phase (the operation is in flight) and a **busy visual** (the pending phase has lasted past `showDelay` and is now painted). They are separate on purpose, and different surfaces read different ones.
+
+What the gate holds:
+
+- The **recycler skeleton** (`injectRecycler`) uses the gate defaults 120 / 400 ms. Its old `skeletonDelay` / `skeletonMinDwell` select-virtualization inputs are gone; set its timing with `provideLoadingConfigAt(withShowDelay(...), withMinDwell(...))` in the recycler's `viewProviders` instead.
+- The busy visual - `.cngx-async--pending`, the button-family spinner, the action-button pending cell, the popover confirm `cngxPending` template - appears only after `showDelay` and is held for `minDwell` past the run. A run that settles before the delay shows no busy visual at all.
+- `data-busy` (`'true' | null`) tracks that painted busy visual: set after the delay, cleared when the dwell releases. Skins paint the shown-busy state off it.
+- `aria-busy`, `aria-disabled` and the click guard are set at the click and held until the busy visual releases, so for the whole dwell the host reads busy and refuses a second run. On a host that paints busy, a click inside the dwell is swallowed - a finish or submit action cannot double-submit under its own spinner. The refusal is `aria-disabled` plus the guard only, never the native `disabled` attribute, so the host keeps focus.
+
+What stays immediate (never behind a timer):
+
+- `data-pending` (`'true' | null`) is set at the click from `pending()` and cleared at settle. Skins paint the pre-delay window off it.
+- The status transition (`pending` -> `success` / `error`) and the SR announcement fire at settle. Assistive tech hears the result at once; the tint stays painted for the sighted user.
+- The settle **feedback window**: the success / error tint is shown for `feedbackDuration` counted from when the busy visual *releases*, not from settle, so the tint is always painted for its full duration even when `feedbackDuration` is shorter than the remaining dwell.
+
+Changing `[showDelay]` or `[minDwell]` mid-run: only `isActive` is tracked, so the gate reads the timings once per activation (untracked). A change applies to the next activation and never restarts or cuts short a running delay or dwell.
+
+Testing it: advance the fake clock by `showDelay + minDwell + 1` to pass both timers (see the Loading timings recipe in `core-concepts/testing.md`). Do not `vi.waitFor` the real 120 ms gate; bind `[showDelay]="0"` or use fake timers.
+
+The internal `CngxButtonCore.busyVisible` member (`@internal`, `projects/common/button/button-core.ts`) is the signal every button host reads for its gated `data-busy` / spinner; it is not part of the public API.
 
 ### Measured latency: createLatencyProbe
 

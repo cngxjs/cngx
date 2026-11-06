@@ -16,6 +16,7 @@ import {
   type AsyncAction,
 } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxIconMenuButton } from './icon-menu-button.component';
@@ -446,6 +447,67 @@ describe('CngxSplitButton', () => {
       await fixture.whenStable();
       flush();
       expect(q('#caret').hasAttribute('aria-disabled')).toBe(false);
+    });
+
+    it('keeps the caret refusing through the main dwell and opens it after release (E4)', async () => {
+      vi.useFakeTimers();
+      const { host, q, popover, flush } = setup(SplitHost);
+      const advance = async (ms: number): Promise<void> => {
+        await vi.advanceTimersByTimeAsync(ms);
+        flush();
+      };
+      const caret = q('#caret');
+
+      q('#main').click();
+      flush();
+      await advance(CNGX_LOADING_DEFAULTS.showDelay);
+      expect(caret.getAttribute('aria-disabled')).toBe('true');
+
+      host.release();
+      await advance(0);
+      // The main action settled but still holds its busy visual: the caret
+      // follows mainBlocked and refuses to open for the whole dwell.
+      expect(caret.getAttribute('aria-disabled')).toBe('true');
+      caret.click();
+      flush();
+      expect(popover.isVisible()).toBe(false);
+
+      await advance(CNGX_LOADING_DEFAULTS.minDwell);
+      expect(caret.hasAttribute('aria-disabled')).toBe(false);
+      caret.click();
+      flush();
+      expect(popover.isVisible()).toBe(true);
+      vi.useRealTimers();
+    });
+
+    it('closes a menu opened before the run and refuses to reopen until the dwell ends', async () => {
+      vi.useFakeTimers();
+      const { host, q, popover, flush } = setup(SplitHost);
+      const advance = async (ms: number): Promise<void> => {
+        await vi.advanceTimersByTimeAsync(ms);
+        flush();
+      };
+
+      q('#caret').click();
+      flush();
+      expect(popover.isVisible()).toBe(true);
+
+      q('#main').click();
+      flush();
+      expect(popover.isVisible()).toBe(false);
+
+      await advance(CNGX_LOADING_DEFAULTS.showDelay);
+      host.release();
+      await advance(0);
+      q('#caret').click();
+      flush();
+      expect(popover.isVisible()).toBe(false);
+
+      await advance(CNGX_LOADING_DEFAULTS.minDwell);
+      q('#caret').click();
+      flush();
+      expect(popover.isVisible()).toBe(true);
+      vi.useRealTimers();
     });
   });
 

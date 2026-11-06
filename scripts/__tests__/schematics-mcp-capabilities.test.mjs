@@ -69,7 +69,7 @@ describe('schematics mcp capabilities', () => {
     const tools = collectTools(commandFiles);
 
     expect(registryCoverage(registry, commandFiles)).toEqual([]);
-    expect(tools).toHaveLength(9);
+    expect(tools).toHaveLength(10);
     expect(tools.every((tool) => tool.example.endsWith('?') || tool.example.endsWith('.'))).toBe(
       true,
     );

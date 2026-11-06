@@ -21,6 +21,11 @@ const BIG = ['list', '--format=json'];
 // says nothing: stderr carries only what a spec asserts.
 const PROJECT = mkdtempSync(join(tmpdir(), 'cngx-entry-project-'));
 const BUNDLED_VERSION = existsSync(DATA) ? (JSON.parse(readFileSync(DATA, 'utf8')) as { cngxVersion?: string }).cngxVersion : undefined;
+const CNGX0001_TITLE = existsSync(DATA)
+  ? (JSON.parse(readFileSync(DATA, 'utf8')) as { cngxErrorCodes?: { codes?: { code: string; title: string }[] } }).cngxErrorCodes?.codes?.find(
+      (entry) => entry.code === 'CNGX0001',
+    )?.title
+  : undefined;
 mkdirSync(join(PROJECT, 'node_modules', '@cngx', 'core'), { recursive: true });
 writeFileSync(join(PROJECT, 'node_modules', '@cngx', 'core', 'package.json'), JSON.stringify({ name: '@cngx/core', version: BUNDLED_VERSION }));
 afterAll(() => rmSync(PROJECT, { recursive: true, force: true }));
@@ -40,6 +45,16 @@ describe('the built entry', () => {
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain('# CngxSelect');
+    expect(result.stderr).toBe('');
+    assertNoAnsi(result.stdout);
+  });
+
+  it('explains a CNGX error code from the bundled snapshot', () => {
+    const result = run('explain', 'cngx0001');
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('## CNGX0001');
+    expect(result.stdout).toContain(CNGX0001_TITLE ?? 'Locale is not a BCP 47 tag');
     expect(result.stderr).toBe('');
     assertNoAnsi(result.stdout);
   });

@@ -1,12 +1,12 @@
 ---
 title: "CngxAsyncClick: Basic happy path"
-whenToUse: "Wraps a click handler in an async-state machine. The action factory you bind to [cngxAsyncClick] can return a Promise or an Observable; the directive runs it on click, flips its pending() signal while in flight, then settles to succeeded() or failed() for feedbackDuration ms (default 2000) before returning to idle. The host class .cngx-async--pending / --success / --error mirrors the lifecycle; --pending follows the show delay of the loading config (a run faster than 120 ms never gets it), while aria-busy is set on the first tick. ARIA aria-busy / aria-disabled + the native disabled attribute (on form controls) prevent double-clicks. Template branches via @switch (btn.status())."
+whenToUse: "Wraps a click handler in an async-state machine. The action factory you bind to [cngxAsyncClick] can return a Promise or an Observable; the directive runs it on click, flips its pending() signal while in flight, then settles to succeeded() or failed() for feedbackDuration ms (default 2000) before returning to idle. The host class .cngx-async--pending / --success / --error mirrors the lifecycle; --pending follows the show delay of the loading config (a run faster than 120 ms never gets it) and is held for the min-dwell once shown. pending() and the settle announcement are immediate; aria-busy and aria-disabled are set at the click and held until the busy visual releases, so the host refuses a double-click for the whole dwell, through aria-disabled and a click guard, never the native disabled attribute, so it keeps focus. Pick fast / medium / slow to see the pending phase with no visual, the visual held through its dwell, and a long run; the readout shows busyVisible() next to pending(). Template branches via @switch (btn.status())."
 symbols: [CngxAsyncClick]
 ---
 
 # CngxAsyncClick: Basic happy path
 
-Wraps a click handler in an async-state machine. The action factory you bind to [cngxAsyncClick] can return a Promise or an Observable; the directive runs it on click, flips its pending() signal while in flight, then settles to succeeded() or failed() for feedbackDuration ms (default 2000) before returning to idle. The host class .cngx-async--pending / --success / --error mirrors the lifecycle; --pending follows the show delay of the loading config (a run faster than 120 ms never gets it), while aria-busy is set on the first tick. ARIA aria-busy / aria-disabled + the native disabled attribute (on form controls) prevent double-clicks. Template branches via @switch (btn.status()).
+Wraps a click handler in an async-state machine. The action factory you bind to [cngxAsyncClick] can return a Promise or an Observable; the directive runs it on click, flips its pending() signal while in flight, then settles to succeeded() or failed() for feedbackDuration ms (default 2000) before returning to idle. The host class .cngx-async--pending / --success / --error mirrors the lifecycle; --pending follows the show delay of the loading config (a run faster than 120 ms never gets it) and is held for the min-dwell once shown. pending() and the settle announcement are immediate; aria-busy and aria-disabled are set at the click and held until the busy visual releases, so the host refuses a double-click for the whole dwell, through aria-disabled and a click guard, never the native disabled attribute, so it keeps focus. Pick fast / medium / slow to see the pending phase with no visual, the visual held through its dwell, and a long run; the readout shows busyVisible() next to pending(). Template branches via @switch (btn.status()).
 
 ## Symbols
 
@@ -15,7 +15,7 @@ Wraps a click handler in an async-state machine. The action factory you bind to 
 ## Setup
 
 ```ts
-protected readonly saveAction = () => of(undefined).pipe(delay(800));
+protected readonly saveAction = () => of(undefined).pipe(delay(this.latencyMs()));
 ```
 
 ## Wiring

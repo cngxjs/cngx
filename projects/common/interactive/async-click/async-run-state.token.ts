@@ -28,6 +28,13 @@ export interface CngxAsyncRunState {
   readonly busy: Signal<boolean>;
   /** `false` while the runner refuses clicks through its own `[enabled]`. */
   readonly enabled: Signal<boolean>;
+  /**
+   * `aria-disabled` value the runner renders on its element (`'true' | null`):
+   * its run, its held busy visual or its refusal. A co-hosting unit that also
+   * binds `aria-disabled` renders this value instead of recomputing an equal
+   * one, so the two bindings on the shared host can never diverge.
+   */
+  readonly ariaDisabledAttr: Signal<'true' | null>;
   /** Full `CngxAsyncState` view of the run lifecycle. */
   readonly state: CngxAsyncState<unknown>;
   /** Emits once per success or error settle. */

@@ -77,7 +77,14 @@ export interface CngxButtonCore {
    * `aria-disabled="true"` always means no activation.
    */
   readonly blocked: Signal<boolean>;
-  /** `aria-disabled` rendered from `blocked`. */
+  /** `data-busy` attribute value, rendered from `busyVisible` (gated). */
+  readonly busyAttr: Signal<'true' | null>;
+  /** `data-pending` attribute value, rendered from `busy` (immediate). */
+  readonly pendingAttr: Signal<'true' | null>;
+  /**
+   * `aria-disabled`: the co-hosted runner's own value (its single source), or
+   * `blocked` without a runner or while the runner leaves it unset.
+   */
   readonly ariaDisabled: Signal<'true' | null>;
   /**
    * `aria-busy`: the co-hosted run, the runner's own busy override or the
@@ -172,16 +179,32 @@ export function injectButtonCore(
     const run = runState();
     return run ? run.busyVisible() : ownBusyVisible();
   });
-  // CngxAsyncClick binds aria-disabled on the same host and only rewrites it
-  // when its own value changes, so the button folds the runner's
-  // `[enabled]="false"` in; otherwise a disabled -> enabled flip here writes
-  // null while the runner still refuses clicks.
   const asyncClickRefuses = computed(() => runState()?.enabled() === false);
-  const blocked = computed(() => inputs.disabled() || busy() || asyncClickRefuses());
-  const ariaDisabled = computed<'true' | null>(() => (blocked() ? 'true' : null));
-  const ariaBusy = computed<'true' | null>(() =>
-    busy() || (runState()?.busy() ?? false) ? 'true' : null,
+  // What is painted busy refuses activation: the busy visual holds the block
+  // through its dwell, after the run itself has settled.
+  const blocked = computed(
+    () => inputs.disabled() || busy() || busyVisible() || asyncClickRefuses(),
   );
+  const busyAttr = computed<'true' | null>(() => (busyVisible() ? 'true' : null));
+  const pendingAttr = computed<'true' | null>(() => (busy() ? 'true' : null));
+  // The runner binds aria-disabled on the same host. When one is co-hosted
+  // the button renders the runner's own value rather than an independently
+  // computed equal one, so the two host bindings share a single source and
+  // can never diverge whatever the write order. Without a runner the button
+  // is the sole writer and uses its own blocked state. The fallback also
+  // covers a runner that does not fold the host's refusal in (CngxAsyncClick
+  // does, so for it the fallback never fires): blocked always reads disabled.
+  const ownAriaDisabled = computed<'true' | null>(() => (blocked() ? 'true' : null));
+  const ariaDisabled = computed<'true' | null>(
+    () => runState()?.ariaDisabledAttr() ?? ownAriaDisabled(),
+  );
+  // The value the runner renders on the same host (its run, its held busy
+  // visual, its `[busy]` override and the host's run), so the two writers agree.
+  const ariaBusy = computed<'true' | null>(() => {
+    const run = runState();
+    const runBusy = run ? run.busyVisible() || run.busy() : false;
+    return busy() || runBusy ? 'true' : null;
+  });
   const reasonIds = computed(() =>
     inputs.disabled() && inputs.disabledReason() ? reasonId : null,
   );
@@ -222,6 +245,8 @@ export function injectButtonCore(
     busy,
     busyVisible,
     blocked,
+    busyAttr,
+    pendingAttr,
     ariaDisabled,
     ariaBusy,
     describedBy,

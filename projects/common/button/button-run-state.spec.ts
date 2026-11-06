@@ -1,4 +1,4 @@
-import { Component, Directive, EventEmitter, signal } from '@angular/core';
+import { Component, computed, Directive, EventEmitter, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { CNGX_ASYNC_RUN_STATE, type CngxAsyncRunState } from '@cngx/common/interactive';
@@ -21,6 +21,9 @@ class FakeRunner implements CngxAsyncRunState {
   readonly pending = this.pendingState.asReadonly();
   readonly busyVisible = this.busyVisibleState.asReadonly();
   readonly enabled = this.enabledState.asReadonly();
+  readonly ariaDisabledAttr = computed<'true' | null>(() =>
+    this.pending() || this.busyVisible() || !this.enabled() ? 'true' : null,
+  );
   readonly state = buildAsyncStateView<unknown>({
     status: signal<AsyncStatus>('idle'),
     data: signal(undefined),

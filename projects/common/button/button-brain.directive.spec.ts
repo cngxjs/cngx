@@ -439,6 +439,11 @@ describe('CngxButtonBrain', () => {
       await new Promise((resolve) => setTimeout(resolve));
       await fixture.whenStable();
       flush();
+      // The block holds until the busy visual releases: its (zero) dwell
+      // timer runs one task after the visual showed.
+      await new Promise((resolve) => setTimeout(resolve));
+      flush();
+      flush();
       expect(btn.hasAttribute('aria-disabled')).toBe(false);
       btn.click();
       expect(listener).toHaveBeenCalledTimes(2);

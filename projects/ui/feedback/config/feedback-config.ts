@@ -176,9 +176,12 @@ export function withAlertIcons(
 /**
  * Set default timing for all loading indicators and overlays.
  *
- * Forwards into the Level-1 `CNGX_LOADING_CONFIG` cascade so the gated
- * surfaces (indicator, overlay, async-container, skeleton) all read the same
- * defaults. Prefer `provideLoadingConfig(withShowDelay(...), withMinDwell(...))`
+ * Forwards into the Level-1 `CNGX_LOADING_CONFIG` cascade so every gated
+ * surface reads the same defaults: the loading indicator and overlay, the
+ * async container and the recycler skeleton, and every async button (the
+ * button family, action-button, popover confirm and stepper complete) whose
+ * busy visual and post-run dwell are timed by the same `showDelay` / `minDwell`.
+ * Prefer `provideLoadingConfig(withShowDelay(...), withMinDwell(...))`
  * from `@cngx/core/utils` directly; this feature is kept for back-compat.
  *
  * Note: this forwarder provides a full `CNGX_LOADING_CONFIG` value, so under

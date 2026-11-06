@@ -54,7 +54,7 @@ type Density = 'comfortable' | 'compact' | 'spacious';
       <p data-color-scheme="light"><button cngxButton="secondary" class="b-secondary-light">Save</button></p>
       <p data-color-scheme="dark"><button cngxButton="secondary" class="b-secondary-dark">Save</button></p>
       <p>
-        <button cngxButton class="b-busy" [cngxAsyncClick]="action">Save changes</button>
+        <button cngxButton class="b-busy" [cngxAsyncClick]="action" [showDelay]="0">Save changes</button>
       </p>
       <!-- A show delay no test outlives: the run stays inside the delay window. -->
       <p>
@@ -130,8 +130,8 @@ function mount(density: Density = 'comfortable', touch = false) {
   return { fixture, root: mountedRoot };
 }
 
-// data-busy follows the loading config's show delay, so a run paints its busy
-// layer a beat after the click; data-pending and aria-busy are immediate.
+// The .b-busy button sets [showDelay]="0", so its busy layer paints on the
+// next task instead of waiting the real 120 ms config delay (no slow poll).
 async function startRun(fixture: { detectChanges(): void }, btn: HTMLElement): Promise<void> {
   btn.click();
   fixture.detectChanges();

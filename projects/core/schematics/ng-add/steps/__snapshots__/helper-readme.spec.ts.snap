@@ -3,7 +3,7 @@
 exports[`renderHelperReadme > renders the stamped readme for the chosen editors 1`] = `
 "<!-- cngx:generated 1b842b43 -->
 <!-- ng-add, @cngx 0.1.0 -->
-<!-- cngx:fingerprint 8a0e3cc6 -->
+<!-- cngx:fingerprint b06ec61d -->
 
 # cngx in this project
 
@@ -44,6 +44,7 @@ A marked cngx block in \`AGENTS.md\` tells the agent to ask the server.
 |\`get_api\`|Get cngx component API|What inputs and outputs does CngxSelect take?|
 |\`get_config\`|Get a cngx configuration cascade|How do I set app-wide defaults for CngxSelect?|
 |\`get_di_tokens\`|Get cngx DI tokens|Which DI tokens configure the select family?|
+|\`get_error_code\`|Explain a cngx error code|What does CNGX0001 mean and how do I fix it?|
 |\`get_slots\`|Get cngx component template slots|Which template slots can I override on CngxSelect?|
 |\`get_story_example\`|Get cngx example URLs|Show me a working example of CngxTreeSelect.|
 |\`get_theme_tokens\`|Get cngx component theming tokens|Which custom properties theme CngxChip?|

@@ -13,9 +13,11 @@ export interface CngxMenuToggle {
   /** `true` while the menu is open. Mirrors the popover's visibility. */
   readonly expanded: Signal<boolean>;
   /**
-   * Toggles the popover, but refuses to open it while `blocked`; an open
-   * menu still closes, so a run that started with the opening click never
-   * leaves a menu that cannot be clicked shut.
+   * Toggles the popover, but refuses to open it while `blocked` (which holds
+   * through a co-hosted run and its busy dwell, and for a split caret through
+   * the main action's run and dwell); an open menu still closes, so a run
+   * that started with the opening click never leaves a menu that cannot be
+   * clicked shut.
    */
   readonly handleClick: () => void;
 }

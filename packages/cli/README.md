@@ -15,6 +15,13 @@ that uses another cngx release, the commands that take `--cngx-version` answer
 for that release instead (see Which release answers). It is read-only: it never
 mutates any source.
 
+## Versioning
+
+`@cngx/cli` carries the same version as `@cngx/core` and is released together
+with the cngx libraries and `@cngx/mcp`. The bundled snapshot is that release:
+`@cngx/cli` X.Y.Z answers for cngx X.Y.Z unless another release is detected or
+named.
+
 ## Usage
 
 Inside a project that has `@cngx/cli` installed:
@@ -50,6 +57,7 @@ Each command is generated from the same definition as its `@cngx/mcp` tool.
 |`cngx config <name>`|`get_config`|A configuration cascade: config token, providers, `with*` features and resolution order.|
 |`cngx example <name>`|`get_story_example`|Runnable example links for a component.|
 |`cngx migrate <from> [--to <version>]`|`migrate_usage`|Removed, renamed and signature-changed API between two releases. `--to` defaults to the bundled release.|
+|`cngx explain <code>`|`get_error_code`|A CNGX error code's doc page from the bundled snapshot: title, lib, severity, production behaviour, messages and docs URL. Accepts `CNGX0001`, `cngx0001`, `0001` or a pasted console line. Exits 1 for an unknown code, listing the nearest codes of its lib.|
 |`cngx doctor [<projectDir>]`|-|The project-wiring scan of `@cngx/doctor`, the same as `npx cngx-doctor`. `--format json` prints doctor's findings array. Exit 1 means at least one error-severity finding. A `<projectDir>` that is not a readable directory, a second `<projectDir>`, `cngx-doctor`'s own json switch (use `--format json`), an unknown flag, `--cngx-version` or `--offline` is a usage error before any scan. `--version` and `--help` are the CLI's, as for every other command.|
 
 ## Flags

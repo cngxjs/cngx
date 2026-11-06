@@ -171,7 +171,7 @@ readonly visible = this.recycler.sliced(computed(() => this.state.data() ?? []))
 The skeleton is gated through `createVisibilityGate` from `@cngx/core/utils` and reads `CNGX_LOADING_CONFIG`. `skeletonDelay` is the recycler's per-instance override of `showDelay`; omit it and the app-wide `provideLoadingConfig(withShowDelay(...))` value applies (120 ms by default). Once shown, the skeleton stays for at least `minDwell` (400 ms by default); `skeletonMinDwell` overrides it per instance. `skeletonDelay: 0` shows the skeleton at once and still holds it for the min-dwell; `skeletonMinDwell: 0` swaps it for the rows as soon as the first load ends. For a whole subtree, retime both through `provideLoadingConfigAt(withShowDelay(...), withMinDwell(...))`.
 
 ```html
-<div class="scroll" [attr.aria-busy]="recycler.isLoading() || recycler.isRefreshing() || null">
+<div class="scroll" [attr.aria-busy]="recycler.isLoading() || recycler.showSkeleton() || recycler.isRefreshing() || null">
   <div [style.paddingTop.px]="recycler.offsetBefore()"
        [style.paddingBottom.px]="recycler.offsetAfter()">
     @if (recycler.showSkeleton()) {
@@ -186,6 +186,8 @@ The skeleton is gated through `createVisibilityGate` from `@cngx/core/utils` and
   </div>
 </div>
 ```
+
+`aria-busy` includes `showSkeleton()` so it covers the whole time the skeleton is painted (its show delay plus min-dwell), not just the first-load flag; the settle announcement still fires at the load end.
 
 ## Pattern 5: Grid Layout
 

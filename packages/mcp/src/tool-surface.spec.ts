@@ -64,8 +64,8 @@ describe('MCP tool surface pin', () => {
     expect(diffSurface(live, pinned)).toEqual([]);
   });
 
-  it('pins nine tools', () => {
-    expect(pinned.tools).toHaveLength(9);
+  it('pins ten tools', () => {
+    expect(pinned.tools).toHaveLength(10);
   });
 
   it('reports a renamed tool', () => {

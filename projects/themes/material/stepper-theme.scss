@@ -246,11 +246,12 @@
 }
 
 @mixin theme($theme) {
-  // Host + descendants broadcast (select-theme precedent): the
-  // indicator typography tokens and the density indicator size are
-  // registered inherits:false and are read on inner elements
-  // (.cngx-stepper__indicator) - a host-only set resolves to the
-  // initial-value there.
+  // Host + descendants broadcast (select-theme precedent): the indicator
+  // font-weight (--cngx-step-indicator-font-weight) and the density
+  // indicator size are registered inherits:false and are read on inner
+  // elements (.cngx-stepper__indicator) - a host-only set resolves to the
+  // initial-value there. (--cngx-step-indicator-font-size now inherits, so
+  // it reaches the indicator on its own and no longer needs the broadcast.)
   @include bridge.on(bridge.broadcast(cngx-stepper)) {
     @include color($theme);
     @include typography($theme);

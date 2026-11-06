@@ -111,9 +111,11 @@ export interface CngxAsyncSettle {
  * The busy visual is gated, the truth is not: {@link busyVisible} (and with it
  * `cngx-async--pending` and the button-family spinner) turns on only after
  * `CNGX_LOADING_CONFIG.showDelay` and, once shown, stays for at least
- * `minDwell`, so a fast run never flashes a spinner. `pending()`, `status`,
- * `aria-busy`, `aria-disabled`, the double-click guard and the settle
- * announcement stay immediate. Override the timing per instance with
+ * `minDwell`, so a fast run never flashes a spinner. `pending()`, `status` and
+ * the settle announcement stay immediate; `aria-busy`, `aria-disabled` and the
+ * double-click guard are set at click and held until the busy visual releases,
+ * so a control that looks busy refuses activation and reads as busy for the
+ * whole dwell - never as a bare disabled. Override the timing per instance with
  * `[showDelay]` / `[minDwell]`.
  *
  * ### Basic usage
@@ -163,8 +165,8 @@ export interface CngxAsyncSettle {
     '[class.cngx-async--pending]': 'busyVisible()',
     '[class.cngx-async--success]': 'succeeded() && !busyVisible()',
     '[class.cngx-async--error]': 'failed() && !busyVisible()',
-    '[attr.aria-busy]': 'pending() || busy() || hostBusy() || null',
-    '[attr.aria-disabled]': 'pending() || blocked() || null',
+    '[attr.aria-busy]': 'pending() || busyVisible() || busy() || hostBusy() || null',
+    '[attr.aria-disabled]': 'ariaDisabledAttr()',
   },
 })
 export class CngxAsyncClick implements CngxAsyncRunState {
@@ -178,7 +180,12 @@ export class CngxAsyncClick implements CngxAsyncRunState {
   /** The async action to execute on click. */
   readonly action = input.required<AsyncAction>({ alias: 'cngxAsyncClick' });
 
-  /** Duration in ms to show success/error state before reset. */
+  /**
+   * Duration in ms to show the success/error state before reset. Counted from
+   * the release of the busy visual (its show delay plus min-dwell), not from
+   * the moment the run settles, so the tint is always painted for the full
+   * duration even when the dwell outlasts it.
+   */
   readonly feedbackDuration = input<number>(2000);
 
   /**
@@ -245,7 +252,8 @@ export class CngxAsyncClick implements CngxAsyncRunState {
   /**
    * Show delay (ms) of the busy visual, bound as `[showDelay]` next to the
    * directive. Unbound, it resolves to `CNGX_LOADING_CONFIG.showDelay`.
-   * `0` shows the busy visual on the first tick of a run.
+   * `0` shows the busy visual one task later (the gate arms through
+   * `setTimeout(0)`), not on the first tick of a run.
    */
   readonly showDelay = input<number | undefined>(undefined);
 
@@ -288,6 +296,21 @@ export class CngxAsyncClick implements CngxAsyncRunState {
         clearTimeout(this.feedbackTimer);
       }
       this.abortController.abort();
+    });
+
+    // Arm the feedback-reset window when the run has settled AND the busy
+    // visual has released, so the success/error tint gets its full
+    // feedbackDuration after the dwell instead of being cut short by it. A
+    // side effect only: scheduleFeedbackReset arms a timer and clears any
+    // previous one, so a reopened-then-released busy visual (hostBusy) restarts
+    // the window and never leaves two timers pending. The state writes stay in
+    // the timer, not in the effect.
+    effect(() => {
+      const settled = this.succeededState() || this.failedState();
+      const released = !this.busyVisible();
+      if (settled && released) {
+        untracked(() => this.scheduleFeedbackReset());
+      }
     });
 
     if (isPlatformBrowser(inject(PLATFORM_ID))) {
@@ -421,6 +444,17 @@ export class CngxAsyncClick implements CngxAsyncRunState {
   });
 
   /**
+   * `aria-disabled` attribute value (`'true' | null`). This is the single
+   * source the host renders; a co-hosting button core reads it instead of
+   * recomputing an equal value, so the two bindings on a shared host can never
+   * diverge regardless of directive write order. Published through
+   * `CNGX_ASYNC_RUN_STATE`.
+   */
+  readonly ariaDisabledAttr = computed<'true' | null>(() =>
+    this.pending() || this.busyVisible() || this.blocked() ? 'true' : null,
+  );
+
+  /**
    * Announcement copy for the current state: the succeeded or failed text
    * while that feedback window is open, else `''`. It is state, so two
    * settles within one change-detection flush coalesce into the last one.
@@ -456,7 +490,7 @@ export class CngxAsyncClick implements CngxAsyncRunState {
 
   /** @internal */
   protected async handleClick(event: Event): Promise<void> {
-    if (this.blocked() || this.pendingState()) {
+    if (this.blocked() || this.pendingState() || this.busyVisible()) {
       event.preventDefault();
       return;
     }
@@ -500,7 +534,6 @@ export class CngxAsyncClick implements CngxAsyncRunState {
       this.failedState.set(true);
       this.errorState.set(err);
     }
-    this.scheduleFeedbackReset();
 
     this.generation += 1;
     const settle: CngxAsyncSettle = { generation: this.generation, status, error: err };

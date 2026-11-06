@@ -120,8 +120,8 @@ import type {
     '[attr.data-variant]': 'variantValue()',
     '[attr.data-tone]': 'toneValue()',
     '[attr.data-size]': 'sizeValue()',
-    '[attr.data-busy]': 'busyVisible() ? "true" : null',
-    '[attr.data-pending]': 'busy() ? "true" : null',
+    '[attr.data-busy]': 'busyAttr()',
+    '[attr.data-pending]': 'pendingAttr()',
     '[attr.aria-disabled]': 'ariaDisabled()',
     '[attr.aria-busy]': 'ariaBusy()',
     '[attr.aria-describedby]': 'describedByValue()',
@@ -235,6 +235,8 @@ export class CngxButtonBrain implements CngxButtonState {
     busy: this.hostBusy,
   };
 
+  protected readonly busyAttr = this.core.busyAttr;
+  protected readonly pendingAttr = this.core.pendingAttr;
   protected readonly ariaDisabled = this.core.ariaDisabled;
   protected readonly ariaBusy = this.core.ariaBusy;
   protected readonly describedByValue = this.core.describedBy;

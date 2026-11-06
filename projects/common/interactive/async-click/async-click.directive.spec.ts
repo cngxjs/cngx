@@ -484,7 +484,9 @@ describe('CngxAsyncClick busy visibility gate', () => {
     expect(directive.pending()).toBe(false);
     expect(directive.succeeded()).toBe(true);
     expect(directive.announcement()).not.toBe('');
-    expect(btn.hasAttribute('aria-busy')).toBe(false);
+    // pending() cleared, but aria-busy is held until the busy visual releases
+    // (E4): the control reads as busy for the whole dwell.
+    expect(btn.getAttribute('aria-busy')).toBe('true');
     expect(directive.busyVisible()).toBe(true);
     expect(btn.classList.contains('cngx-async--pending')).toBe(true);
     expect(btn.classList.contains('cngx-async--success')).toBe(false);
@@ -493,8 +495,33 @@ describe('CngxAsyncClick busy visibility gate', () => {
     expect(directive.busyVisible()).toBe(true);
     await advance(1);
     expect(directive.busyVisible()).toBe(false);
+    expect(btn.hasAttribute('aria-busy')).toBe(false);
     expect(btn.classList.contains('cngx-async--pending')).toBe(false);
     expect(btn.classList.contains('cngx-async--success')).toBe(true);
+  });
+
+  it('refuses a second run and stays busy for the whole dwell after settle (E4)', async () => {
+    const { btn, run, advance, click, host, directive } = setup();
+    click();
+    await advance(showDelay + 10);
+    run.resolve();
+    await advance(0);
+    // Settled, but the busy visual is still held.
+    expect(directive.pending()).toBe(false);
+    expect(directive.busyVisible()).toBe(true);
+    expect(btn.getAttribute('aria-disabled')).toBe('true');
+    expect(btn.getAttribute('aria-busy')).toBe('true');
+
+    // A click inside the dwell starts no second run.
+    click();
+    expect(host.callCount).toBe(1);
+
+    // On release both attributes clear on the same tick as the pending class.
+    await advance(minDwell);
+    expect(directive.busyVisible()).toBe(false);
+    expect(btn.classList.contains('cngx-async--pending')).toBe(false);
+    expect(btn.hasAttribute('aria-disabled')).toBe(false);
+    expect(btn.hasAttribute('aria-busy')).toBe(false);
   });
 
   it('honours [showDelay]="0" and [minDwell]="0"', async () => {
@@ -527,7 +554,7 @@ describe('CngxAsyncClick busy visibility gate', () => {
     expect(directive.busyVisible()).toBe(true);
   });
 
-  it('keeps the layer when a new run starts inside the dwell tail', async () => {
+  it('refuses a click in the dwell tail, so no second run extends the layer (E4)', async () => {
     const { run, advance, click, host, directive } = setup();
     click();
     await advance(showDelay + 10);
@@ -535,37 +562,122 @@ describe('CngxAsyncClick busy visibility gate', () => {
     await advance(0);
     expect(directive.busyVisible()).toBe(true);
 
+    // A click deep in the dwell tail is refused: no second run starts, so the
+    // held layer is not re-extended and releases on the original schedule.
     const second = deferred();
     host.actionImpl = () => second.promise;
     await advance(100);
     click();
-    expect(host.callCount).toBe(2);
-    expect(directive.pending()).toBe(true);
+    expect(host.callCount).toBe(1);
+    expect(directive.pending()).toBe(false);
 
-    for (let t = 0; t < minDwell + showDelay; t += 50) {
-      await advance(50);
-      expect(directive.busyVisible()).toBe(true);
-    }
-    second.resolve();
     await advance(minDwell);
     expect(directive.busyVisible()).toBe(false);
   });
 
-  it('skips the success tint when feedbackDuration ends inside the dwell tail', async () => {
-    const { btn, run, advance, click, directive } = setup((h) => h.feedbackDuration.set(300));
+  it('paints the success tint for feedbackDuration after the busy visual releases (C2)', async () => {
+    const { btn, run, advance, click, directive } = setup((h) => h.feedbackDuration.set(100));
     click();
     await advance(showDelay + 10);
     run.resolve();
     await advance(0);
     expect(directive.succeeded()).toBe(true);
     expect(directive.announcement()).not.toBe('');
+    // Held dwell: the tint is suppressed behind the still-shown busy visual.
+    expect(btn.classList.contains('cngx-async--success')).toBe(false);
 
-    for (let t = 0; t < minDwell; t += 25) {
-      await advance(25);
-      expect(btn.classList.contains('cngx-async--success')).toBe(false);
-    }
+    // Release edge: shown at showDelay, held for minDwell past the settle.
+    await advance(minDwell - 10);
     expect(directive.busyVisible()).toBe(false);
+    expect(directive.succeeded()).toBe(true);
+    expect(btn.classList.contains('cngx-async--success')).toBe(true);
+
+    // The window runs for the full feedbackDuration from the release, not from
+    // the earlier settle (which under the old timing reset it mid-dwell, so the
+    // tint was never painted when feedbackDuration < the remaining dwell).
+    await advance(99);
+    expect(btn.classList.contains('cngx-async--success')).toBe(true);
+    await advance(2);
     expect(directive.succeeded()).toBe(false);
+    expect(btn.classList.contains('cngx-async--success')).toBe(false);
+  });
+
+  it('leaves no timer and writes no state when destroyed mid-run', async () => {
+    const { fixture, run, advance, click, directive } = setup();
+    click();
+    await advance(showDelay + 10);
+    expect(directive.pending()).toBe(true);
+    expect(directive.busyVisible()).toBe(true);
+
+    fixture.destroy();
+    // The gate's delay/minDwell timers are cleared on destroy; the pending run
+    // has armed no feedback timer yet (it arms only after settle + release).
+    expect(vi.getTimerCount()).toBe(0);
+
+    run.resolve();
+    await vi.advanceTimersByTimeAsync(showDelay + minDwell + 2000);
+    // The destroyed guard drops the resolve: the state is frozen as it was at
+    // destroy (pending, never settled), no late success write, no new timer.
+    expect(directive.succeeded()).toBe(false);
+    expect(directive.pending()).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('clears the first error when a second run starts', async () => {
+    const { advance, click, host, directive } = setup();
+    const first = deferred();
+    host.actionImpl = () => first.promise;
+    click();
+    await advance(showDelay + 10);
+    first.reject('first');
+    await advance(minDwell + 1);
+    expect(directive.failed()).toBe(true);
+    expect(directive.error()).toBe('first');
+
+    const second = deferred();
+    host.actionImpl = () => second.promise;
+    click();
+    // The new run clears the prior feedback at click.
+    expect(directive.failed()).toBe(false);
+    expect(directive.error()).toBeUndefined();
+    expect(directive.pending()).toBe(true);
+
+    await advance(showDelay + 10);
+    second.reject('second');
+    await advance(minDwell + 1);
+    expect(directive.failed()).toBe(true);
+    expect(directive.error()).toBe('second');
+  });
+
+  it('keeps separate gates for two instances', async () => {
+    const one = setup();
+    const two = setup();
+    one.click();
+    await one.advance(showDelay + 1);
+    // Only the clicked instance opens its gate; the idle one stays closed.
+    expect(one.directive.busyVisible()).toBe(true);
+    expect(two.directive.busyVisible()).toBe(false);
+
+    one.run.resolve();
+    await one.advance(minDwell);
+    expect(one.directive.busyVisible()).toBe(false);
+    expect(two.directive.busyVisible()).toBe(false);
+  });
+
+  it('never opens the busy visual from the [busy] ARIA hint (negative)', async () => {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(ButtonHost);
+    fixture.componentInstance.busy.set(true);
+    flush(fixture);
+    const directive = fixture.componentInstance.directive();
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+
+    await vi.advanceTimersByTimeAsync(showDelay + minDwell + 1);
+    flush(fixture);
+    // [busy] is an ARIA hint only: aria-busy reflects it, but no gate opens.
+    expect(btn.getAttribute('aria-busy')).toBe('true');
+    expect(directive.busyVisible()).toBe(false);
+    expect(btn.classList.contains('cngx-async--pending')).toBe(false);
   });
 });
 
@@ -757,6 +869,83 @@ describe('CngxAsyncClick with a host-reflected run and announcement', () => {
     expect(directive.succeeded()).toBe(true);
     expect(directive.announcement()).not.toBe('');
     expect(region()!.textContent).toBe('');
+  });
+});
+
+@Component({
+  template: `<button
+    [testHostBusy]="hostBusy()"
+    [cngxAsyncClick]="action"
+    [showDelay]="0"
+    [minDwell]="50"
+    [feedbackDuration]="100"
+  >Go</button>`,
+  imports: [CngxAsyncClick, TestHostBusy],
+})
+class ReArmHost {
+  readonly hostBusy = signal(false);
+  readonly directive = viewChild.required(CngxAsyncClick);
+  actionImpl: () => Promise<unknown> = () => Promise.resolve();
+  readonly action: AsyncAction = () => this.actionImpl();
+}
+
+describe('CngxAsyncClick feedback window re-arm (C2)', () => {
+  it('restarts the window on a host-busy reopen and keeps exactly one timer', async () => {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(ReArmHost);
+    flush(fixture);
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    const host = fixture.componentInstance;
+    const directive = host.directive();
+    const run = deferred();
+    host.actionImpl = () => run.promise;
+    const advance = async (ms: number): Promise<void> => {
+      await vi.advanceTimersByTimeAsync(ms);
+      flush(fixture);
+    };
+
+    btn.click();
+    flush(fixture);
+    await advance(0);
+    expect(directive.busyVisible()).toBe(true);
+
+    run.resolve();
+    await advance(0);
+    expect(directive.succeeded()).toBe(true);
+    expect(directive.busyVisible()).toBe(true);
+
+    // First release at minDwell (t=50): the feedback window arms here.
+    await advance(50);
+    expect(directive.busyVisible()).toBe(false);
+    expect(btn.classList.contains('cngx-async--success')).toBe(true);
+
+    // Reopen the busy visual inside the window (hostBusy): the tint hides
+    // while it shows, and the first timer is still pending.
+    host.hostBusy.set(true);
+    flush(fixture);
+    await advance(0);
+    expect(directive.busyVisible()).toBe(true);
+    expect(btn.classList.contains('cngx-async--success')).toBe(false);
+
+    // Let the reopen settle; its own minDwell (50) brings the second release
+    // at t=100, which re-arms the window (clearing the first timer).
+    host.hostBusy.set(false);
+    await advance(50);
+    expect(directive.busyVisible()).toBe(false);
+    expect(directive.succeeded()).toBe(true);
+    expect(btn.classList.contains('cngx-async--success')).toBe(true);
+
+    // Past the FIRST window's end (t=50+100=150) the tint still stands: the
+    // original timer was cleared, so only the re-armed one is pending.
+    await advance(60);
+    expect(directive.succeeded()).toBe(true);
+    expect(vi.getTimerCount()).toBe(1);
+
+    // The re-armed window ends at the second release + feedbackDuration (t=200).
+    await advance(45);
+    expect(directive.succeeded()).toBe(false);
+    expect(btn.classList.contains('cngx-async--success')).toBe(false);
+    vi.useRealTimers();
   });
 });
 

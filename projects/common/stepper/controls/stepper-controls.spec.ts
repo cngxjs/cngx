@@ -95,6 +95,21 @@ class ImmediateBusyCompleteHost {
   readonly action = (): Promise<void> => new Promise<void>(() => undefined);
 }
 
+@Component({
+  standalone: true,
+  imports: [CngxStepperComplete],
+  hostDirectives: [CngxStepperPresenter],
+  template: `<button [cngxStepperComplete]="action" [showDelay]="0" [minDwell]="50">Finish</button>`,
+})
+class DwellCompleteHost {
+  ran = 0;
+  release: () => void = () => undefined;
+  readonly action = (): Promise<void> => {
+    this.ran++;
+    return new Promise<void>((resolve) => (this.release = resolve));
+  };
+}
+
 function navSetup(): {
   fixture: ReturnType<typeof TestBed.createComponent<NavHost>>;
   presenter: CngxStepperPresenter;
@@ -335,6 +350,84 @@ describe('stepper nav controls', () => {
 
     await vi.advanceTimersByTimeAsync(0);
     expect(asyncClick.busyVisible()).toBe(true);
+  });
+
+  it('forwards [minDwell] to the composed CngxAsyncClick', async () => {
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(DwellCompleteHost);
+    fixture.detectChanges();
+    const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
+    presenter.register(reg('a'));
+    presenter.register(reg('b'));
+    presenter.select(1);
+    fixture.detectChanges();
+    const host = fixture.componentInstance;
+    const asyncClick = fixture.debugElement.children[0].injector.get(CngxAsyncClick);
+    const advance = async (ms: number): Promise<void> => {
+      await vi.advanceTimersByTimeAsync(ms);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+    };
+
+    (fixture.nativeElement.querySelector('button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    await advance(0);
+    expect(asyncClick.busyVisible()).toBe(true);
+
+    host.release();
+    // The forwarded 50 ms dwell holds the visual, not the 400 ms default.
+    await advance(49);
+    expect(asyncClick.busyVisible()).toBe(true);
+    await advance(1);
+    expect(asyncClick.busyVisible()).toBe(false);
+    vi.useRealTimers();
+  });
+
+  it('refuses a second finish run through the dwell and clears aria-busy on release (E4)', async () => {
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(DwellCompleteHost);
+    fixture.detectChanges();
+    const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
+    presenter.register(reg('a'));
+    presenter.register(reg('b'));
+    presenter.select(1);
+    fixture.detectChanges();
+    const host = fixture.componentInstance;
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    const asyncClick = fixture.debugElement.children[0].injector.get(CngxAsyncClick);
+    const advance = async (ms: number): Promise<void> => {
+      await vi.advanceTimersByTimeAsync(ms);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+    };
+
+    btn.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(host.ran).toBe(1);
+    await advance(0);
+    expect(asyncClick.busyVisible()).toBe(true);
+
+    host.release();
+    await advance(0);
+    expect(asyncClick.pending()).toBe(false);
+    // The finish action settled but its busy visual is held: it must not
+    // submit a second time, and aria-busy stands for the whole dwell.
+    expect(asyncClick.busyVisible()).toBe(true);
+    expect(btn.getAttribute('aria-busy')).toBe('true');
+
+    btn.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(host.ran).toBe(1);
+
+    await advance(50);
+    expect(asyncClick.busyVisible()).toBe(false);
+    expect(btn.hasAttribute('aria-busy')).toBe(false);
+    vi.useRealTimers();
   });
 
   describe('dev-mode co-placement guard', () => {

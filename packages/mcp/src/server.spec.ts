@@ -24,7 +24,7 @@ describe('createServer', () => {
     const { tools } = await client.listTools();
 
     expect(client.getInstructions()).toContain('cngx 0.1.0-rc.6');
-    expect(tools).toHaveLength(9);
+    expect(tools).toHaveLength(10);
     await client.close();
   });
 

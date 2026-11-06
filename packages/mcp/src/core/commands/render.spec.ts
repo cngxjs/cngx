@@ -39,7 +39,7 @@ async function render(cliName: string, input: Record<string, unknown>, context: 
 const VERSIONED = ['find', 'api', 'slots', 'theme', 'di', 'config'];
 
 describe('command definitions carry their CLI surface', () => {
-  it('names the nine CLI subcommands, each once', () => {
+  it('names the ten CLI subcommands, each once', () => {
     expect(COMMANDS.map((def) => def.cliName)).toEqual([
       'find',
       'list',
@@ -50,6 +50,7 @@ describe('command definitions carry their CLI surface', () => {
       'config',
       'example',
       'migrate',
+      'explain',
     ]);
   });
 

@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxButton: Busy with cngxAsyncClick',
   subtitle: 'Co-host <code>cngxAsyncClick</code>: the label stays in place under a spinner while the action runs.',
-  description: 'The button does not own async state; <code>cngxAsyncClick</code> on the same element does. While its action is pending the button keeps the label in the layout (invisible), so the width never jumps, and draws a spinner ring over it. <code>aria-busy</code>, the double-click guard and the success or failure announcement all stay with <code>cngxAsyncClick</code>. Under reduced motion the ring stops turning. The label stays fixed on purpose: swapping it per status would change the accessible name under focus and the width after the run. Per-status labels belong to <code>CngxActionButton</code>. So the result of a run is not painted on the button at all: success and failure are spoken through the polite live region <code>cngxAsyncClick</code> renders next to the host. The spinner follows the loading config: a run faster than the show delay (120 ms by default) never shows the ring, and a ring that did appear stays for at least the min-dwell (400 ms) so it never flickers. <code>aria-busy</code>, the click guard and the spoken result never wait for it. Pick the fast run to see a save with no ring at all, the slow run to see the ring hold. Toggle the failure switch to run the error path; the button looks the same either way, and the dashed box below mirrors what a screen reader gets.',
+  description: 'The button does not own async state; <code>cngxAsyncClick</code> on the same element does. While its action is pending the button keeps the label in the layout (invisible), so the width never jumps, and draws a spinner ring over it. <code>aria-busy</code>, the double-click guard and the success or failure announcement all stay with <code>cngxAsyncClick</code>. Under reduced motion the ring stops turning. The label stays fixed on purpose: swapping it per status would change the accessible name under focus and the width after the run. Per-status labels belong to <code>CngxActionButton</code>. So the result of a run is not painted on the button at all: success and failure are spoken through the polite live region <code>cngxAsyncClick</code> renders next to the host. The spinner follows the loading config: a run faster than the show delay (120 ms by default) never shows the ring, and a ring that did appear stays for at least the min-dwell (400 ms) so it never flickers, and the button keeps refusing clicks for that whole held window. <code>aria-busy</code> and the click guard are set at the click and held until the ring releases; the spoken result fires at settle. Pick the fast run (80 ms) to see a save with no ring at all, the medium run (200 ms) to watch the ring appear and then hold through its dwell, or the slow run (1.5 s) to see the ring held through a long save. Toggle the failure switch to run the error path; the button looks the same either way, and the dashed box below mirrors what a screen reader gets.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
@@ -16,16 +16,30 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxButton', 'CngxAsyncClick'],
   setup: `
+  protected readonly save = (): Promise<void> => this.simulateSave();`,
+  setupChrome: `
   protected readonly fail = signal(false);
-  protected readonly latency = signal<'fast' | 'slow'>('slow');
+  protected readonly latency = signal<'fast' | 'medium' | 'slow'>('medium');
 
-  protected readonly save = (): Promise<void> =>
-    new Promise((resolve, reject) =>
+  private latencyMs(): number {
+    switch (this.latency()) {
+      case 'fast':
+        return 80;
+      case 'medium':
+        return 200;
+      default:
+        return 1500;
+    }
+  }
+
+  protected simulateSave(): Promise<void> {
+    return new Promise((resolve, reject) =>
       setTimeout(
         () => (this.fail() ? reject(new Error('Save failed')) : resolve()),
-        this.latency() === 'fast' ? 80 : 1500,
+        this.latencyMs(),
       ),
-    );`,
+    );
+  }`,
   template: `
   <button cngxButton tone="primary" [cngxAsyncClick]="save" #btn="cngxAsyncClick">Save changes</button>`,
   setupChrome: `
@@ -41,6 +55,12 @@ export const STORY: DemoSpec = {
                [checked]="latency() === 'fast'"
                (change)="latency.set('fast')" />
         fast run (80 ms)
+      </label>
+      <label style="display:inline-flex;gap:4px;align-items:center">
+        <input type="radio" name="cngx-button-busy-latency"
+               [checked]="latency() === 'medium'"
+               (change)="latency.set('medium')" />
+        medium run (200 ms)
       </label>
       <label style="display:inline-flex;gap:4px;align-items:center">
         <input type="radio" name="cngx-button-busy-latency"
