@@ -199,7 +199,7 @@
     {
       "class": "CngxDrawerSurface",
       "file": "projects/common/layout/drawer/drawer-surface.directive.ts",
-      "line": 277,
+      "line": 279,
       "member": "label",
       "enclosing": "computed",
       "tiers": [
