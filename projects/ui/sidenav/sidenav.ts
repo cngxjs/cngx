@@ -6,6 +6,7 @@ import {
   computed,
   effect,
   ElementRef,
+  HostAttributeToken,
   inject,
   input,
   model,
@@ -19,10 +20,13 @@ import { CNGX_HOVER_INTENT_DEFAULTS, injectHotkey } from '@cngx/common/interacti
 import {
   CNGX_CONTAINER_SIZE,
   CNGX_DRAWER_SURFACE_DRIVER,
+  CNGX_PANEL_TARGET,
   CNGX_SIDEBAR_DRIVER,
   type CngxDrawerModality,
   CngxDrawerSurface,
   type CngxDrawerSurfaceDriver,
+  type CngxPanelMode,
+  type CngxPanelTarget,
   CngxResizable,
   CngxSidebar,
   type CngxSidebarCollapsedAs,
@@ -31,6 +35,7 @@ import {
 import { clamp, cngxDevWarn } from '@cngx/utils';
 
 import { injectSidenavConfig, injectSidenavLabels } from './config/inject-sidenav-config';
+import { CNGX_SIDENAV_STORAGE } from './config/sidenav.config.defaults';
 import { CNGX_SIDENAV_ANNOUNCER_FACTORY } from './sidenav-announcer';
 import { CNGX_SIDENAV, CNGX_SIDENAV_LAYOUT, type CngxSidenavContract } from './sidenav-token';
 
@@ -162,6 +167,9 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
     { provide: CNGX_SIDENAV, useExisting: CngxSidenav },
     { provide: CNGX_SIDEBAR_DRIVER, useExisting: CngxSidenav },
     { provide: CNGX_DRAWER_SURFACE_DRIVER, useExisting: CngxSidenav },
+    // Over the composed sidebar's: an in-rail trigger (a pin or close button)
+    // follows the sidenav's per-width-class toggle, not the bare sidebar's.
+    { provide: CNGX_PANEL_TARGET, useFactory: () => inject(CngxSidenav).panelTarget },
   ],
   host: {
     '[class.cngx-sidenav]': 'true',
@@ -430,6 +438,34 @@ export class CngxSidenav
     this.close();
   }
 
+  /**
+   * The rail as a {@link CngxPanelTarget}, for `[cngxPanelTrigger]="nav.panelTarget"`
+   * (and `CNGX_PANEL_TARGET` inside the rail). One trigger works in every
+   * width class: `toggle()` flips `collapsed` on the docked rail and opens or
+   * closes the overlay over the `medium` rail and the `compact` drawer;
+   * `expanded` is what the trigger's `aria-expanded` mirrors. `mode` reads
+   * `over` while `opened` shows the rail as an overlay, else `inline`.
+   */
+  readonly panelTarget: CngxPanelTarget = {
+    id: this.id,
+    expanded: this.expanded,
+    toggle: () => this.toggle(),
+    peek: () => this.peek(),
+    mode: computed<CngxPanelMode>(() => (this.isOverlay() ? 'over' : 'inline')),
+    modal: computed(() => this.isOverlay() && this.modality() !== 'none'),
+    side: this.position,
+    label: this.sidebarLabel,
+  };
+
+  /** Peeks a collapsed docked rail without changing `collapsed`; elsewhere it toggles. */
+  peek(): void {
+    if (this.dockedRail()) {
+      this.sidebar.peek();
+      return;
+    }
+    this.toggle();
+  }
+
   private readonly doc = inject(DOCUMENT);
   private readonly layoutCoordinator = inject(CNGX_SIDENAV_LAYOUT, { optional: true });
   private readonly announcer = inject(CNGX_SIDENAV_ANNOUNCER_FACTORY)();
@@ -477,6 +513,8 @@ export class CngxSidenav
         this.announcer.announce(this.expanded());
       },
     });
+
+    this.persistCollapsed();
 
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       effect(() => {
@@ -579,6 +617,33 @@ export class CngxSidenav
     this.opened.set(true);
   }
 
+  // withSidenavPersistence(): the stored value seeds an unbound collapsed now
+  // (a bound [(collapsed)] overwrites it on the first check and stays the
+  // consumer's); the storage write is the only effect, and skips its first
+  // run so an untouched default is never written.
+  private persistCollapsed(): void {
+    const storageKey = this.cfg.persistence?.storageKey;
+    const storage = storageKey ? inject(CNGX_SIDENAV_STORAGE) : null;
+    if (!storageKey || !storage) {
+      return;
+    }
+    const position = inject(new HostAttributeToken('position'), { optional: true }) ?? 'start';
+    const key = `${storageKey}:${position}`;
+    const stored = readStoredFlag(storage, key);
+    if (stored !== null) {
+      this.sidebar.collapsed.set(stored);
+    }
+    let first = true;
+    effect(() => {
+      const collapsed = this.sidebar.collapsed();
+      if (first) {
+        first = false;
+        return;
+      }
+      untracked(() => writeStoredFlag(storage, key, collapsed));
+    });
+  }
+
   /** Whether `collapsed` (not `opened`) is the state `toggle()` and `close()` change. */
   private dockedRail(): boolean {
     return this.effectiveMode() === 'side' && !this.railBase();
@@ -644,6 +709,25 @@ function warnUnknownWidthClass(value: string): void {
     `[cngx-sidenav] unknown --cngx-sidenav-width-class "${value}"; expected compact, medium or expanded. Rendering as compact.`,
     { value },
   );
+}
+
+/** A stored `true` / `false`, `null` when absent, unreadable or anything else. */
+function readStoredFlag(storage: Storage, key: string): boolean | null {
+  try {
+    const value = storage.getItem(key);
+    return value === 'true' ? true : value === 'false' ? false : null;
+  } catch {
+    return null;
+  }
+}
+
+// A full or blocked storage (private mode, quota) must not break the toggle.
+function writeStoredFlag(storage: Storage, key: string, value: boolean): void {
+  try {
+    storage.setItem(key, String(value));
+  } catch {
+    // Persistence is best effort.
+  }
 }
 
 /**

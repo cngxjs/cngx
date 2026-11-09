@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxSidenav: auto mode',
   subtitle:
-    'Nothing is bound. <code>mode</code> defaults to <code>auto</code>, so the rail follows the width class of the layout: an overlay below <code>48rem</code>, docked beside the content from there. Drag the right edge of the dashed frame across the thresholds, or use the width presets.',
+    'Nothing is bound. <code>mode</code> defaults to <code>auto</code>, so the rail follows the width class of the layout: an overlay below <code>48rem</code>, docked beside the content from there. Drag the right edge of the dashed frame across the thresholds, or use the width presets. One <code>[cngxPanelTrigger]="nav.panelTarget"</code> drives every width class: it collapses the docked rail in <code>expanded</code>, opens the full nav over the rail in <code>medium</code> and the drawer in <code>compact</code>.',
   description:
     'The thresholds live in one place: a <code>@container cngx-sidenav-layout</code> rule block in <code>sidenav-layout.css</code> that writes <code>--cngx-sidenav-width-class</code> (<code>compact</code> below 48rem, <code>medium</code> from 48rem, <code>expanded</code> from 64rem) on the rail. The component reads that resolved value through <code>CngxContainer.property()</code> and derives <code>widthClass()</code> and <code>effectiveMode()</code> from it in <code>computed()</code>s - it never re-evaluates a condition in TypeScript, so overriding the CSS rules moves the thresholds for both. The rule targets the rail rather than the layout because a container query resolves against an ancestor container, never against the container itself. The switch needs no announcement: it flips aria-modal, the focus trap and the backdrop, and every width-class change starts the new presentation closed, unless focus is inside the rail: then it stays open, so the focused element is never orphaned.',
   level: 'organism',
@@ -14,8 +14,9 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent } from '@cngx/ui';",
     "import { CngxNavLink } from '@cngx/common';",
+    "import { CngxPanelTrigger } from '@cngx/common/layout';",
   ],
-  imports: ['CngxSidenavLayout', 'CngxSidenav', 'CngxSidenavContent', 'CngxNavLink'],
+  imports: ['CngxSidenavLayout', 'CngxSidenav', 'CngxSidenavContent', 'CngxNavLink', 'CngxPanelTrigger'],
   setup: `protected readonly navOpen = signal(true);
   protected readonly nav = viewChild(CngxSidenav);`,
   setupChrome: `protected readonly pinned = signal(false);
@@ -34,7 +35,8 @@ export const STORY: DemoSpec = {
       el.style.width = width;
     }
   }`,
-  template: `  <div #frame class="demo-sidenav-resizable">
+  template: `  <button class="sort-btn" type="button" [cngxPanelTrigger]="nav()?.panelTarget">Toggle navigation</button>
+  <div #frame class="demo-sidenav-resizable">
     <cngx-sidenav-layout class="demo-sidenav__container demo-sidenav__container--short">
       <cngx-sidenav position="start" [(opened)]="navOpen" [mode]="pinned() ? 'over' : 'auto'" width="180px">
         <a cngxNavLink class="demo-sidenav__link demo-sidenav__link--plain">Dashboard</a>
@@ -58,12 +60,6 @@ export const STORY: DemoSpec = {
     <button class="sort-btn" type="button" (click)="setFrameWidth('40rem')">Width 40rem</button>
     <button class="sort-btn" type="button" (click)="setFrameWidth('56rem')">Width 56rem</button>
     <button class="sort-btn" type="button" (click)="setFrameWidth('72rem')">Width 72rem</button>
-    <button class="sort-btn" type="button"
-            [attr.aria-controls]="nav()?.id()"
-            [attr.aria-expanded]="navOpen()"
-            (click)="navOpen.set(!navOpen())">
-      {{ navOpen() ? 'Close' : 'Open' }}
-    </button>
     <button class="sort-btn" type="button" (click)="togglePinned()">
       {{ pinned() ? 'Back to auto' : 'Pin mode="over"' }}
     </button>
@@ -73,5 +69,6 @@ export const STORY: DemoSpec = {
     <span class="status-badge active">widthClass: {{ nav()?.widthClass() }}</span>
     <span class="status-badge active">effectiveMode: {{ nav()?.effectiveMode() }}</span>
     <span class="status-badge" [class.active]="navOpen()">{{ navOpen() ? 'opened' : 'closed' }}</span>
+    <span class="status-badge" [class.active]="nav()?.expanded()">{{ nav()?.expanded() ? 'full nav shown' : 'full nav hidden' }}</span>
   </div>`,
 };

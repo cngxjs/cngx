@@ -67,6 +67,16 @@ export interface CngxSidenavConfig {
   };
 
   /**
+   * Persist each rail's `collapsed` under `storageKey` in
+   * `CNGX_SIDENAV_STORAGE`. Unset: nothing is persisted. Set through
+   * `withSidenavPersistence(...)`.
+   */
+  readonly persistence?: {
+    /** Storage key prefix; the rail's `position` is appended. */
+    readonly storageKey: string;
+  };
+
+  /**
    * Default keyboard shortcut to toggle the sidenav (e.g. `'mod+b'`).
    * Per-instance `[shortcut]` still wins. A flat top-level scalar.
    */

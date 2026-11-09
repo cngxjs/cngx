@@ -346,7 +346,7 @@ export const COPY_TOKENS = [
     token: 'CNGX_SIDENAV_CONFIG',
     kind: 'config',
     copyKeys: ['labels'],
-    settingsKeys: ['dimensions', 'hover', 'routerSync', 'shortcut'],
+    settingsKeys: ['dimensions', 'hover', 'persistence', 'routerSync', 'shortcut'],
   },
   {
     token: 'CNGX_SPEAK_I18N',
@@ -576,6 +576,7 @@ export const SETTINGS_TOKENS = [
   'CNGX_SIDENAV',
   'CNGX_SIDENAV_ANNOUNCER_FACTORY',
   'CNGX_SIDENAV_LAYOUT',
+  'CNGX_SIDENAV_STORAGE',
   'CNGX_SLIDER_RANGE',
   'CNGX_SPLIT_BUTTON',
   'CNGX_SPLIT_CARET',

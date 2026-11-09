@@ -92,3 +92,22 @@ export function withSidenavLabels(
 ): CngxSidenavConfigFeature {
   return { kind: 'labels', payload: { labels } };
 }
+
+/**
+ * Persist each rail's `collapsed` across reloads, in `CNGX_SIDENAV_STORAGE`
+ * (the browser `localStorage` by default) under `<storageKey>:<position>`.
+ * `collapsed` only means something on the docked rail of the `expanded` width
+ * class, so one value per rail is stored, and it survives a pass through
+ * `medium` and `compact`. The stored value seeds an unbound `collapsed` at
+ * construction; a bound `[(collapsed)]` stays the consumer's. The position
+ * is read from the static `position` attribute (`start` when absent).
+ *
+ * ```ts
+ * provideSidenavConfig(withSidenavPersistence());
+ * ```
+ *
+ * @since 0.1.0
+ */
+export function withSidenavPersistence(storageKey = 'cngx-sidenav'): CngxSidenavConfigFeature {
+  return { kind: 'persistence', payload: { storageKey } };
+}

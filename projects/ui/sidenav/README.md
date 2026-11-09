@@ -104,25 +104,18 @@ See `core-concepts/responsive-by-default.md` for the library-wide contract.
 
 ## External toggle
 
-A hamburger outside the rail toggles it with one button. Name the rail in the button's `aria-controls` and reflect the state in `aria-expanded`:
+A hamburger outside the rail toggles it with one `CngxPanelTrigger` (`@cngx/common/layout`) bound to the rail's `panelTarget`. The trigger sets `aria-controls` and mirrors `expanded` as `aria-expanded`, and `toggle()` follows the width class: it collapses the docked rail in `expanded`, opens the full nav over the rail in `medium` and the drawer in `compact`. A bare `cngxPanelTrigger` inside the rail (a pin or close button) resolves the same target through `CNGX_PANEL_TARGET`.
 
 ```html
-<button
-  type="button"
-  [attr.aria-controls]="nav.id()"
-  [attr.aria-expanded]="nav.opened()"
-  (click)="navOpen.set(!navOpen())"
->
-  Menu
-</button>
+<button type="button" [cngxPanelTrigger]="nav.panelTarget">Menu</button>
 
 <cngx-sidenav-layout>
-  <cngx-sidenav #nav [(opened)]="navOpen">…</cngx-sidenav>
+  <cngx-sidenav #nav="cngxSidenav">…</cngx-sidenav>
   <cngx-sidenav-content>…</cngx-sidenav-content>
 </cngx-sidenav-layout>
 ```
 
-An open overlay closes on any press outside the rail, except inside an element whose `aria-controls` lists the rail's id. Without that attribute the toggle cannot close the overlay: its press dismisses the rail and its `click` reopens it. Every rail has an id: a generated one by default, or the static `id="..."` you set on the host (read it back via `nav.id()`).
+An open overlay closes on any press outside the rail, except inside an element whose `aria-controls` lists the rail's id. A hand-rolled toggle needs that attribute: without it its press dismisses the rail and its `click` reopens it. Every rail has an id: a generated one by default, or the static `id="..."` you set on the host (read it back via `nav.id()`).
 
 ## Configuration
 
@@ -160,6 +153,7 @@ bootstrapApplication(AppComponent, {
 | `withSidenavShortcut(combo)` | Default toggle shortcut |
 | `withSidenavHoverDwell({ enterDelay?, leaveDelay? })` | Collapsed-rail peek dwell (ms) |
 | `withSidenavRouterSync({ param })` | Default deep-link query-param key |
+| `withSidenavPersistence(storageKey?)` | Persist each rail's `collapsed` in `CNGX_SIDENAV_STORAGE` under `<storageKey>:<position>`; seeds an unbound `collapsed` |
 
 Read the resolved config in an injection context with `injectSidenavConfig()`. Scope overrides to a sub-tree with `provideSidenavConfigAt(...)` in a component's `viewProviders`.
 

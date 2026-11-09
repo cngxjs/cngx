@@ -1,5 +1,6 @@
 import { Component, signal, type DebugElement, type Signal, type Type } from '@angular/core';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
+import { CngxPanelTrigger } from '@cngx/common/layout';
 import {
   CNGX_HOTKEY_REGISTRY,
   type CngxHotkeyBinding,
@@ -23,7 +24,13 @@ import { CngxSidenavLayout } from './sidenav-layout';
 import { CngxSidenavContent } from './sidenav-content';
 import { CNGX_SIDENAV_ANNOUNCER_FACTORY } from './sidenav-announcer';
 import { provideSidenavConfig } from './config/provide-sidenav-config';
-import { withSidenavDimensions, withSidenavHoverDwell, withSidenavLabels } from './config/features';
+import {
+  withSidenavDimensions,
+  withSidenavHoverDwell,
+  withSidenavLabels,
+  withSidenavPersistence,
+} from './config/features';
+import { CNGX_SIDENAV_STORAGE } from './config/sidenav.config.defaults';
 import type { CngxSidenavLabels } from './config/sidenav.config';
 import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/core/i18n';
 
@@ -1451,3 +1458,168 @@ describe('CngxSidenav tunable dwell', () => {
     expect(nav.expanded()).toBe(true);
   });
 });
+
+@Component({
+  template: `
+    <button type="button" class="outer-trigger" [cngxPanelTrigger]="nav.panelTarget">Menu</button>
+    <cngx-sidenav-layout>
+      <cngx-sidenav #nav="cngxSidenav" [mode]="mode()" [(opened)]="open">
+        <button type="button" class="pin" cngxPanelTrigger>Pin</button>
+      </cngx-sidenav>
+      <cngx-sidenav-content>Main</cngx-sidenav-content>
+    </cngx-sidenav-layout>
+  `,
+  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxPanelTrigger],
+})
+class PanelTriggerHost {
+  mode = signal<SidenavMode>('side');
+  open = signal(false);
+}
+
+describe('CngxSidenav panel target', () => {
+  function setup() {
+    const fixture = TestBed.createComponent(PanelTriggerHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const navDe = fixture.debugElement.query(By.directive(CngxSidenav));
+    return {
+      fixture,
+      host: fixture.componentInstance,
+      nav: navDe.injector.get(CngxSidenav),
+      rail: navDe.nativeElement as HTMLElement,
+      outer: root.querySelector('.outer-trigger') as HTMLButtonElement,
+      pin: root.querySelector('.pin') as HTMLButtonElement,
+    };
+  }
+
+  it('drives a docked rail from an outside trigger: collapsed flips, aria mirrors expanded', () => {
+    const { fixture, nav, rail, outer } = setup();
+    expect(outer.getAttribute('aria-controls')).toBe(rail.id);
+    expect(outer.getAttribute('aria-expanded')).toBe('true');
+
+    outer.click();
+    fixture.detectChanges();
+    expect(rail.getAttribute('data-sidebar-state')).toBe('rail');
+    expect(outer.getAttribute('aria-expanded')).toBe('false');
+    expect(nav.panelTarget.mode?.()).toBe('inline');
+  });
+
+  it('opens the overlay from the same trigger once the rail is an overlay', () => {
+    const { fixture, host, nav, outer } = setup();
+    host.mode.set('over');
+    fixture.detectChanges();
+    expect(nav.panelTarget.mode?.()).toBe('over');
+    expect(nav.panelTarget.modal?.()).toBe(true);
+
+    outer.click();
+    fixture.detectChanges();
+    expect(host.open()).toBe(true);
+    expect(outer.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('resolves CNGX_PANEL_TARGET inside the rail to the sidenav, not the bare sidebar', () => {
+    const { fixture, host, pin } = setup();
+    host.mode.set('over');
+    fixture.detectChanges();
+    host.open.set(true);
+    fixture.detectChanges();
+
+    // The sidebar's own toggle would flip collapsed; the sidenav's closes the overlay.
+    pin.click();
+    fixture.detectChanges();
+    expect(host.open()).toBe(false);
+  });
+});
+
+describe('CngxSidenav persistence', () => {
+  function memoryStorage(seed: Record<string, string> = {}): Storage & { data: Map<string, string> } {
+    const data = new Map(Object.entries(seed));
+    return {
+      data,
+      get length() {
+        return data.size;
+      },
+      clear: () => data.clear(),
+      getItem: (k: string) => data.get(k) ?? null,
+      key: (i: number) => [...data.keys()][i] ?? null,
+      removeItem: (k: string) => void data.delete(k),
+      setItem: (k: string, v: string) => void data.set(k, v),
+    };
+  }
+
+  function mount(storage: Storage | null) {
+    TestBed.configureTestingModule({
+      providers: [
+        provideSidenavConfig(withSidenavPersistence()),
+        { provide: CNGX_SIDENAV_STORAGE, useValue: storage },
+      ],
+    });
+    const fixture = TestBed.createComponent(RailUnboundPersistHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const navDe = fixture.debugElement.query(By.directive(CngxSidenav));
+    return { fixture, nav: navDe.injector.get(CngxSidenav), rail: navDe.nativeElement as HTMLElement };
+  }
+
+  it('seeds an unbound collapsed from storage', () => {
+    const storage = memoryStorage({ 'cngx-sidenav:start': 'true' });
+    const { rail } = mount(storage);
+    expect(rail.getAttribute('data-sidebar-state')).toBe('rail');
+  });
+
+  it('writes a change, never the untouched default', () => {
+    const storage = memoryStorage();
+    const { fixture, nav } = mount(storage);
+    expect(storage.data.size).toBe(0);
+
+    nav.toggle();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(storage.data.get('cngx-sidenav:start')).toBe('true');
+  });
+
+  it('keys each rail by its static position', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideSidenavConfig(withSidenavPersistence('app-nav')),
+        { provide: CNGX_SIDENAV_STORAGE, useValue: memoryStorage({ 'app-nav:end': 'true' }) },
+      ],
+    });
+    const fixture = TestBed.createComponent(EndPersistHost);
+    fixture.detectChanges();
+    const rail = fixture.debugElement.query(By.directive(CngxSidenav)).nativeElement as HTMLElement;
+    expect(rail.getAttribute('data-sidebar-state')).toBe('rail');
+  });
+
+  it('survives a storage that throws and a missing storage', () => {
+    const throwing = memoryStorage();
+    throwing.getItem = () => {
+      throw new Error('blocked');
+    };
+    throwing.setItem = () => {
+      throw new Error('quota');
+    };
+    const { fixture, nav, rail } = mount(throwing);
+    expect(rail.getAttribute('data-sidebar-state')).toBe('expanded');
+    nav.toggle();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(rail.getAttribute('data-sidebar-state')).toBe('rail');
+    TestBed.resetTestingModule();
+
+    const { rail: plain } = mount(null);
+    expect(plain.getAttribute('data-sidebar-state')).toBe('expanded');
+  });
+});
+
+@Component({
+  template: `<cngx-sidenav mode="side">Nav</cngx-sidenav>`,
+  imports: [CngxSidenav],
+})
+class RailUnboundPersistHost {}
+
+@Component({
+  template: `<cngx-sidenav mode="side" position="end">Nav</cngx-sidenav>`,
+  imports: [CngxSidenav],
+})
+class EndPersistHost {}

@@ -39,6 +39,10 @@ export type CngxSidenavConfigFeature =
       readonly payload: { readonly shortcut: string };
     }
   | {
+      readonly kind: 'persistence';
+      readonly payload: NonNullable<CngxSidenavConfig['persistence']>;
+    }
+  | {
       readonly kind: 'labels';
       readonly payload: {
         readonly labels: Partial<CngxSidenavLabels> | Signal<Partial<CngxSidenavLabels>>;
@@ -59,6 +63,7 @@ function reduceFeatures(features: readonly CngxSidenavConfigFeature[]): Partial<
     routerSync?: NonNullable<CngxSidenavConfig['routerSync']>;
     shortcut?: string;
     labels?: CngxSidenavConfig['labels'];
+    persistence?: CngxSidenavConfig['persistence'];
   } = {};
   for (const f of features) {
     switch (f.kind) {
@@ -76,6 +81,9 @@ function reduceFeatures(features: readonly CngxSidenavConfigFeature[]): Partial<
         break;
       case 'labels':
         out.labels = f.payload.labels;
+        break;
+      case 'persistence':
+        out.persistence = f.payload;
         break;
     }
   }
@@ -104,6 +112,7 @@ function mergeConfig(
     routerSync: { ...base.routerSync, ...partial.routerSync },
     shortcut: partial.shortcut ?? base.shortcut,
     labels: partial.labels ?? base.labels,
+    persistence: partial.persistence ?? base.persistence,
   };
 }
 

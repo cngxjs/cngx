@@ -22,7 +22,11 @@ export { CngxSidenavHeader } from './sidenav-header';
 export { CngxSidenavFooter } from './sidenav-footer';
 
 export type { CngxSidenavConfig, CngxSidenavLabels } from './config/sidenav.config';
-export { CNGX_SIDENAV_CONFIG, CNGX_SIDENAV_DEFAULTS } from './config/sidenav.config.defaults';
+export {
+  CNGX_SIDENAV_CONFIG,
+  CNGX_SIDENAV_DEFAULTS,
+  CNGX_SIDENAV_STORAGE,
+} from './config/sidenav.config.defaults';
 export {
   provideSidenavConfig,
   provideSidenavConfigAt,
@@ -34,6 +38,7 @@ export {
   withSidenavHoverDwell,
   withSidenavRouterSync,
   withSidenavLabels,
+  withSidenavPersistence,
 } from './config/features';
 export { injectSidenavConfig, injectSidenavLabels } from './config/inject-sidenav-config';
 export {
