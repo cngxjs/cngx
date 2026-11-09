@@ -45,11 +45,10 @@ export type SidenavPosition = 'start' | 'end';
  * How the sidenav interacts with the content area.
  *
  * - `'over'` - floats above content (overlay + backdrop)
- * - `'push'` - pushes content aside when open
  * - `'side'` - docked beside the content; `collapsed` rests it as a rail or
- *   hides it
+ *   hides it (`collapsedAs="hidden"`, the former push mode)
  */
-export type SidenavMode = 'auto' | 'over' | 'push' | 'side';
+export type SidenavMode = 'auto' | 'over' | 'side';
 
 /**
  * A resolved mode - what `'auto'` settles on plus every pinnable value.
@@ -70,8 +69,7 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
 ]);
 
 /**
- * Declarative sidebar component for the drawer modes (`over`, `push`,
- * `side`) plus an `auto` default, two-way `[(opened)]` and `[(collapsed)]`
+ * Declarative sidebar component for the drawer modes (`over`, `side`) plus an `auto` default, two-way `[(opened)]` and `[(collapsed)]`
  * bindings, and content projection via header/footer slots.
  *
  * The rail is a composed `CngxSidebar`: docked, `[(collapsed)]` rests it as a
@@ -166,7 +164,6 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
     '[class.cngx-sidenav--end]': "position() === 'end'",
     '[class.cngx-sidenav--open]': 'opened()',
     '[class.cngx-sidenav--over]': "effectiveMode() === 'over'",
-    '[class.cngx-sidenav--push]': "effectiveMode() === 'push'",
     '[class.cngx-sidenav--side]': "effectiveMode() === 'side'",
     '[class.cngx-sidenav--resizable]': 'resizable()',
     '[class.cngx-sidenav--resizing]': 'resizing()',
@@ -378,12 +375,12 @@ export class CngxSidenav implements CngxSidebarDriver {
   readonly overlayActive = computed(() => this.isOverlay() && this.opened());
 
   /**
-   * Whether the full nav is shown: the overlay or push rail while `opened`, a
+   * Whether the full nav is shown: the overlay while `opened`, a
    * docked rail while not `collapsed` or while it peeks. What a trigger's
    * `aria-expanded` mirrors.
    */
   readonly expanded = computed(() => {
-    if (this.isOverlay() || this.effectiveMode() === 'push') {
+    if (this.isOverlay()) {
       return this.opened();
     }
     return this.sidebar.expanded();
@@ -394,14 +391,7 @@ export class CngxSidenav implements CngxSidebarDriver {
     if (this.railBase()) {
       return true;
     }
-    switch (this.effectiveMode()) {
-      case 'over':
-        return false;
-      case 'push':
-        return !this.opened();
-      default:
-        return this.sidebar.collapsed();
-    }
+    return this.effectiveMode() === 'over' ? false : this.sidebar.collapsed();
   });
 
   /** @internal Drives the composed `CngxSidebar`: `medium` always rests as a rail. */
@@ -409,7 +399,7 @@ export class CngxSidenav implements CngxSidebarDriver {
     if (this.railBase()) {
       return 'rail';
     }
-    return this.effectiveMode() === 'push' ? 'hidden' : this.sidebar.collapsedAs();
+    return this.sidebar.collapsedAs();
   });
 
   /** @internal Drives the composed `CngxSidebar`: the `medium` overlay shows over the rail. */
@@ -565,9 +555,7 @@ export class CngxSidenav implements CngxSidebarDriver {
       }
       const alwaysVisible = (m: ResolvedSidenavMode) => m === 'side';
       if (alwaysVisible(previous) && !alwaysVisible(current)) {
-        // Flag only overlay auto-opens so the focus effect skips the focus-move.
-        // A `push` auto-open never raises overlayActive, so it must not leave
-        // the flag stuck for a later open.
+        // Flag the auto-open so the focus effect skips the focus-move.
         this.autoOpenInFlight = current === 'over';
         this.opened.set(true);
       }
@@ -575,7 +563,7 @@ export class CngxSidenav implements CngxSidebarDriver {
   }
 
   /**
-   * Shows the full nav: opens the overlay or push rail, expands a docked
+   * Shows the full nav: opens the overlay, expands a docked
    * rail (`collapsed = false`).
    */
   open(): void {
@@ -587,7 +575,7 @@ export class CngxSidenav implements CngxSidebarDriver {
   }
 
   /**
-   * Hides the full nav: closes the overlay or push rail, collapses a docked
+   * Hides the full nav: closes the overlay, collapses a docked
    * rail (`collapsed = true`). On a collapsed docked rail it ends a peek.
    */
   close(): void {

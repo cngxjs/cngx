@@ -62,7 +62,7 @@ export class ExampleComponent {
 Key features:
 
 - **Responsive by default:** `mode` is `auto` unless you say otherwise - it follows the width class of the surrounding layout: a drawer (`over`) below `48rem`, a collapsed rail with the full nav as an overlay from `48rem`, docked (`side`) from `64rem`
-- **Mode switching:** bind `mode` to pin one of `over` (overlay), `push` (nudges content), `side` (docked)
+- **Mode switching:** bind `mode` to pin `over` (overlay) or `side` (docked); the former push is `side` with `collapsedAs="hidden"`
 - **Collapsed rail:** `[(collapsed)]` rests a docked rail as an icon rail (`collapsedAs="rail"`, `miniWidth` wide) or hides it (`collapsedAs="hidden"`); a collapsed rail peeks at full width over the content after a tunable hover dwell (`[expandDelay]` / `[collapseDelay]`). The rail is a composed `CngxSidebar` from `@cngx/common/layout`
 - **Two-way binding:** `[(opened)]` synchronizes with external state
 - **Resize:** Optional drag handle with min/max constraints; the separator speaks its position as a percent of the min-max range (`aria-valuetext`, `sidenav` language section)

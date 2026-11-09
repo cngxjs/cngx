@@ -6,7 +6,7 @@ import { CngxSidenavLayout } from './sidenav-layout';
 /**
  * Main content area within a `CngxSidenavLayout`.
  *
- * Auto-adjusts margins when sibling sidenavs are in `push` or `side`
+ * Sits in flex flow beside sibling sidenavs docked in `side`
  * mode. Must be a direct child of `CngxSidenavLayout`.
  *
  * ```html

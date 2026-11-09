@@ -251,7 +251,7 @@ switching, a collapsible rail (composed `CngxSidebar`), resize handle, and keybo
 </cngx-sidenav-layout>
 ```
 
-**Modes:** `'auto'` (default; follows the layout width class), `'over'` (overlay + backdrop), `'push'` (pushes content), `'side'` (docked; `[(collapsed)]` rests it as a rail that peeks on hover)
+**Modes:** `'auto'` (default; follows the layout width class), `'over'` (overlay + backdrop), `'side'` (docked; `[(collapsed)]` rests it as a rail that peeks on hover, or hides it with `collapsedAs="hidden"`)
 
 **CngxSidenav inputs:**
 

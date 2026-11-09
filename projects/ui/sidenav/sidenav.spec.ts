@@ -227,10 +227,6 @@ describe('CngxSidenav', () => {
     expect(content.marginStart).toBe('0');
     expect(content.marginEnd).toBe('0');
 
-    host.mode.set('push');
-    fixture.detectChanges();
-    expect(content.marginStart).toBe('0');
-
     host.mode.set('over');
     fixture.detectChanges();
     expect(content.marginStart).toBe('0');
@@ -252,9 +248,10 @@ describe('CngxSidenav', () => {
     const leftEl = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0]
       .nativeElement as HTMLElement;
     expect(leftEl.classList.contains('cngx-sidenav--over')).toBe(true);
-    host.mode.set('push');
+    host.mode.set('side');
     fixture.detectChanges();
-    expect(leftEl.classList.contains('cngx-sidenav--push')).toBe(true);
+    expect(leftEl.classList.contains('cngx-sidenav--side')).toBe(true);
+    expect(leftEl.classList.contains('cngx-sidenav--over')).toBe(false);
   });
 
   it('closeAllOverlays closes all open overlay sidenavs', () => {
@@ -423,20 +420,27 @@ describe('CngxSidenav', () => {
     expect(leftEl.getAttribute('aria-hidden')).toBeNull();
   });
 
-  it('preserves opened state when switching from side to push', () => {
+  it('runs the former push as side with collapsedAs="hidden"', () => {
     const { fixture, left, host } = setupDual();
     host.mode.set('side');
-    host.leftOpen.set(true);
+    host.collapsedAs.set('hidden');
     fixture.detectChanges();
-    TestBed.flushEffects();
-    expect(left.effectiveMode()).toBe('side');
-    expect(left.opened()).toBe(true);
+    const leftEl = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0]
+      .nativeElement as HTMLElement;
+    expect(leftEl.getAttribute('data-sidebar-state')).toBe('expanded');
 
-    host.mode.set('push');
+    left.toggle();
     fixture.detectChanges();
-    TestBed.flushEffects();
-    expect(left.effectiveMode()).toBe('push');
-    expect(left.opened()).toBe(true);
+    expect(host.leftCollapsed()).toBe(true);
+    expect(leftEl.getAttribute('data-sidebar-state')).toBe('hidden');
+    expect(leftEl.style.inlineSize).toBe('0px');
+    expect(left.expanded()).toBe(false);
+
+    left.toggle();
+    fixture.detectChanges();
+    expect(host.leftCollapsed()).toBe(false);
+    expect(leftEl.getAttribute('data-sidebar-state')).toBe('expanded');
+    expect(left.expanded()).toBe(true);
   });
 
   it('auto-opens when leaving side mode with opened=false', () => {
@@ -447,10 +451,10 @@ describe('CngxSidenav', () => {
     TestBed.flushEffects();
     expect(left.effectiveMode()).toBe('side');
 
-    host.mode.set('push');
+    host.mode.set('over');
     fixture.detectChanges();
     TestBed.flushEffects();
-    expect(left.effectiveMode()).toBe('push');
+    expect(left.effectiveMode()).toBe('over');
     expect(host.leftOpen()).toBe(true);
   });
 });
@@ -872,15 +876,6 @@ describe('CngxSidenav auto mode', () => {
     flushResize();
     fixture.detectChanges();
     expect(nav.effectiveMode()).toBe('side');
-  });
-
-  it('pins push when mode is bound explicitly', () => {
-    stubWide('expanded');
-    const { fixture, nav } = mount();
-    fixture.componentInstance.mode.set('push');
-    flushResize();
-    fixture.detectChanges();
-    expect(nav.effectiveMode()).toBe('push');
   });
 
   it('falls back to over and warns when no layout provides a container', () => {

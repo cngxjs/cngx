@@ -35,8 +35,7 @@
  *
  * Mode classes on `cngx-sidenav`:
  *
- * - `--push` - in flex flow, push content sideways
- * - `--side` - in flex flow, stays visible (no width collapse)
+ * - `--side` - in flex flow; `collapsedAs="hidden"` collapses it to 0 width
  * - `--over` - absolute-positioned, doesn't push content
  *
  * **Slots**
@@ -557,11 +556,10 @@
       visibility 0s var(--cngx-sidenav-transition-duration, 0.25s);
   }
 
-  /* Closed state: collapse to 0 width. Excludes side (always visible) and
-     over (slides via transform below, keeps full width so the backdrop sits
-     beside the rail instead of over its footprint during the animation). */
-  cngx-sidenav:not(.cngx-sidenav--open):not(.cngx-sidenav--side):not(.cngx-sidenav--over) {
-    width: 0;
+  /* Hidden rest (`collapsedAs="hidden"`): the composed CngxSidebar writes
+     the 0 inline size, this drops the rail out of view once the width
+     transition ends. The over drawer slides via transform below instead. */
+  cngx-sidenav[data-sidebar-state='hidden'] {
     visibility: hidden;
   }
 
@@ -627,8 +625,7 @@
       visibility 0s 0s;
   }
 
-  /* Push/side mode: in flex flow */
-  cngx-sidenav.cngx-sidenav--push,
+  /* Side mode: in flex flow */
   cngx-sidenav.cngx-sidenav--side {
     position: relative;
   }

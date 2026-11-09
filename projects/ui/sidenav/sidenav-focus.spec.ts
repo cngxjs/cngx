@@ -153,7 +153,7 @@ describe('CngxSidenav focus management', () => {
   it('stays complementary while docked, open or not', () => {
     const { fixture, host, sidenavEl } = setup();
     host.open.set(true);
-    for (const mode of ['side', 'push'] as const) {
+    for (const mode of ['side'] as const) {
       host.mode.set(mode);
       fixture.detectChanges();
       expect(sidenavEl.getAttribute('role')).toBe('complementary');
@@ -162,7 +162,7 @@ describe('CngxSidenav focus management', () => {
 
   it('never sets aria-modal without role="dialog"', () => {
     const { fixture, host, sidenavEl } = setup();
-    for (const mode of ['over', 'push', 'side'] as const) {
+    for (const mode of ['over', 'side'] as const) {
       for (const open of [false, true]) {
         host.mode.set(mode);
         host.open.set(open);

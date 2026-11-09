@@ -2,8 +2,8 @@ import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxSidenav: dual sidebar master detail',
-  subtitle: 'Left sidebar with permanent navigation (<code>push</code> mode). Right sidebar as an overlay detail panel that opens when clicking an item in the content area. Shared backdrop managed by <code>CngxSidenavLayout</code>.',
-  description: 'Two <code>cngx-sidenav</code> instances scoped to one <code>cngx-sidenav-layout</code>: a left push-mode nav and a right over-mode detail drawer. Clicking an order opens the detail; closing it leaves the left nav intact.',
+  subtitle: 'Left sidebar docked as permanent navigation (<code>side</code> mode, <code>collapsedAs="hidden"</code>). Right sidebar as an overlay detail panel that opens when clicking an item in the content area. Shared backdrop managed by <code>CngxSidenavLayout</code>.',
+  description: 'Two <code>cngx-sidenav</code> instances scoped to one <code>cngx-sidenav-layout</code>: a left docked nav that hides to zero width and a right over-mode detail drawer. Clicking an order opens the detail; closing it leaves the left nav intact.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -21,7 +21,7 @@ export const STORY: DemoSpec = {
     'import { CngxNavLink } from \'@cngx/common\';',
   ],
   imports: ['CngxSidenavLayout', 'CngxSidenav', 'CngxSidenavContent', 'CngxNavLink'],
-  setup: `protected readonly leftOpen = signal(true);
+  setup: `protected readonly leftCollapsed = signal(false);
   protected readonly rightOpen = signal(false);
   protected readonly selectedItem = signal<string | null>(null);
   protected readonly items = ['Order #1042', 'Order #1043', 'Order #1044', 'Order #1045'];
@@ -30,7 +30,7 @@ export const STORY: DemoSpec = {
     this.rightOpen.set(true);
   }`,
   template: `  <cngx-sidenav-layout class="demo-sidenav__container demo-sidenav__container--short">
-    <cngx-sidenav position="start" [(opened)]="leftOpen" mode="push" width="160px">
+    <cngx-sidenav position="start" [(collapsed)]="leftCollapsed" mode="side" collapsedAs="hidden" width="160px">
       @for (item of ['Orders', 'Products', 'Customers', 'Reports']; track item) {
         <a cngxNavLink class="demo-sidenav__link demo-sidenav__link--plain">
           {{ item }}
@@ -67,8 +67,8 @@ export const STORY: DemoSpec = {
     </cngx-sidenav>
   </cngx-sidenav-layout>`,
   templateChrome: `<div class="button-row">
-    <button class="sort-btn" type="button" (click)="leftOpen.set(!leftOpen())">
-      Left: {{ leftOpen() ? 'open' : 'closed' }}
+    <button class="sort-btn" type="button" (click)="leftCollapsed.set(!leftCollapsed())">
+      Left: {{ leftCollapsed() ? 'hidden' : 'shown' }}
     </button>
     <button class="sort-btn" type="button"
             [attr.aria-controls]="detailNav.id()"
@@ -78,7 +78,7 @@ export const STORY: DemoSpec = {
     </button>
   </div>
 <div class="status-row" style="margin-top: 0.5rem;">
-    <span class="status-badge" [class.active]="leftOpen()">left: {{ leftOpen() ? 'open' : 'closed' }}</span>
+    <span class="status-badge" [class.active]="!leftCollapsed()">left: {{ leftCollapsed() ? 'hidden' : 'shown' }}</span>
     <span class="status-badge" [class.active]="rightOpen()">right: {{ rightOpen() ? 'open' : 'closed' }}</span>
     @if (selectedItem()) {
       <span class="status-badge active">selected: {{ selectedItem() }}</span>

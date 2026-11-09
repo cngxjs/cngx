@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxSidenav: full navigation sidebar',
   subtitle: 'Composing all nav atoms inside <code>cngx-sidenav</code>: <code>CngxNavLabel</code> for section headers, <code>CngxNavLink</code> with active state and badges, <code>CngxNavGroup</code> for collapsible accordion sections. Material theming via <code>sidenav-theme.scss</code> provides surface colors, borders, and density.',
-  description: 'Full nav surface: section labels, active-state links with numeric and dot badges, two collapsible nav groups, and a footer. Mode toggle covers <code>over</code>, <code>push</code>, <code>side</code>; in <code>side</code> the toggle button and <code>shortcut="mod+b"</code> collapse the docked rail to an icon rail that peeks on hover, in the overlay modes they open and close it.',
+  description: 'Full nav surface: section labels, active-state links with numeric and dot badges, two collapsible nav groups, and a footer. Mode toggle covers <code>over</code> and <code>side</code>; in <code>side</code> the toggle button and <code>shortcut="mod+b"</code> collapse the docked rail to an icon rail that peeks on hover, in the overlay modes they open and close it.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -23,8 +23,8 @@ export const STORY: DemoSpec = {
   imports: ['CngxSidenavLayout', 'CngxSidenav', 'CngxSidenavContent', 'CngxSidenavHeader', 'CngxSidenavFooter', 'CngxNavLink', 'CngxNavLabel', 'CngxNavGroup', 'CngxNavGroupContent', 'CngxNavBadge'],
   setup: `protected readonly navOpen = signal(true);
   protected readonly navCollapsed = signal(false);
-  protected readonly navMode = signal<'over' | 'push' | 'side'>('side');
-  protected readonly modes: ('over' | 'push' | 'side')[] = ['over', 'push', 'side'];
+  protected readonly navMode = signal<'over' | 'side'>('side');
+  protected readonly modes: ('over' | 'side')[] = ['over', 'side'];
   protected readonly activeLink = signal('/dashboard');
   protected readonly items = ['Order #1042', 'Order #1043', 'Order #1044', 'Order #1045'];`,
   template: `
