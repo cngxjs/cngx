@@ -33,7 +33,8 @@ import { CngxPopover } from './popover.directive';
  * a success that arms a close is covered (`CNGX_ANNOUNCEMENT_COVER`, the
  * region gets `''`) and spoken through `CngxLiveAnnouncer` outside, scoped
  * to the popover's parent, once, with the text `CNGX_ACTION_STATUS` resolves
- * for it. A selector-less host directive; `CngxPopoverAction` co-hosts it
+ * for it, unless another co-hosted cover (a toast) voices it already. A
+ * selector-less host directive; `CngxPopoverAction` co-hosts it
  * next to `CngxActionStatusBrain`.
  *
  * @wcag AA
@@ -46,7 +47,9 @@ import { CngxPopover } from './popover.directive';
 @Directive({
   standalone: true,
   exportAs: 'cngxPopoverCloseOnSuccess',
-  providers: [{ provide: CNGX_ANNOUNCEMENT_COVER, useExisting: CngxPopoverCloseOnSuccess }],
+  providers: [
+    { provide: CNGX_ANNOUNCEMENT_COVER, useExisting: CngxPopoverCloseOnSuccess, multi: true },
+  ],
 })
 export class CngxPopoverCloseOnSuccess implements CngxAnnouncementCover {
   private readonly popover = inject(CngxPopover, { optional: true });
@@ -55,6 +58,7 @@ export class CngxPopoverCloseOnSuccess implements CngxAnnouncementCover {
   private readonly status = inject(CNGX_ACTION_STATUS);
   private readonly injector = inject(Injector);
   private readonly runState = injectLazySelf(CNGX_ASYNC_RUN_STATE);
+  private readonly coverUnits = injectLazySelf(CNGX_ANNOUNCEMENT_COVER, { optional: true });
 
   /**
    * Per-instance close-on-success, named after the
@@ -108,11 +112,18 @@ export class CngxPopoverCloseOnSuccess implements CngxAnnouncementCover {
 
   private announceOutside(): void {
     const text = this.status.outcomeText('success');
-    if (text === '') {
+    if (text === '' || this.coveredElsewhere()) {
       return;
     }
     const scope = this.popover?.elementRef.nativeElement.parentElement ?? null;
     untracked(() => this.announcer.announce(text, 'polite', scope));
+  }
+
+  /** `true` when another co-hosted cover (a toast) already voices the success. */
+  private coveredElsewhere(): boolean {
+    return untracked(
+      () => this.coverUnits()?.some((c) => c !== this && c.covers('success')) ?? false,
+    );
   }
 
   /** The close delay an outcome arms, or `undefined` when it closes nothing. */

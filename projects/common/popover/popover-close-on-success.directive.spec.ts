@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import {
   CNGX_ACTION_STATUS,
+  CNGX_ANNOUNCEMENT_COVER,
   CNGX_HOST_INTERACTION_STATE,
   CngxActionStatusBrain,
   CngxAsyncClick,
@@ -34,6 +35,50 @@ import { CngxPopover } from './popover.directive';
   template: `<ng-content />`,
 })
 class TestCloseHost {}
+
+/** A close host with a second cover (a toast stand-in) that voices every success. */
+@Component({
+  // eslint-disable-next-line @angular-eslint/component-selector
+  selector: 'button[testToastedCloseHost]',
+  hostDirectives: [
+    { directive: CngxAsyncClick, inputs: ['cngxAsyncClick: action'] },
+    { directive: CngxActionStatusBrain, inputs: ['succeededAnnouncement'] },
+    { directive: CngxPopoverCloseOnSuccess, inputs: ['closeOnSuccessDelay'] },
+  ],
+  providers: [
+    {
+      provide: CNGX_HOST_INTERACTION_STATE,
+      useFactory: (): CngxHostInteractionState => ({
+        disabled: signal(false),
+        announcement: inject(CNGX_ACTION_STATUS).announcement,
+      }),
+    },
+    {
+      provide: CNGX_ANNOUNCEMENT_COVER,
+      useValue: { covers: (s: string) => s === 'success' },
+      multi: true,
+    },
+  ],
+  template: `<ng-content />`,
+})
+class TestToastedCloseHost {}
+
+@Component({
+  imports: [CngxPopover, TestToastedCloseHost],
+  template: `
+    <div cngxPopover>
+      <button testToastedCloseHost [action]="action" succeededAnnouncement="Saved">Save</button>
+    </div>
+  `,
+})
+class ToastedHost {
+  readonly popover = viewChild.required(CngxPopover);
+  resolveFn: (() => void) | null = null;
+  readonly action = (): Promise<void> =>
+    new Promise<void>((resolve) => {
+      this.resolveFn = resolve;
+    });
+}
 
 @Component({
   imports: [CngxPopover, TestCloseHost],
@@ -75,7 +120,9 @@ function stubPopoverElement(el: HTMLElement): void {
 
 function setup(config?: number, delay?: number | null) {
   if (config !== undefined) {
-    TestBed.configureTestingModule({ providers: [providePopoverPanel(withCloseOnSuccess(config))] });
+    TestBed.configureTestingModule({
+      providers: [providePopoverPanel(withCloseOnSuccess(config))],
+    });
   }
   const announce = vi.spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce');
   const fixture = TestBed.createComponent(Host);
@@ -182,5 +229,34 @@ describe('CngxPopoverCloseOnSuccess', () => {
     expect(announce.mock.calls[0][0]).toBe('Saved');
     expect(announce.mock.calls[0][1]).toBe('polite');
     expect(region()).toBe('');
+  });
+
+  it('speaks nothing outside when another co-hosted cover voices the success', async () => {
+    TestBed.configureTestingModule({ providers: [providePopoverPanel(withCloseOnSuccess(300))] });
+    const announce = vi.spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce');
+    const fixture = TestBed.createComponent(ToastedHost);
+    const root = fixture.nativeElement as HTMLElement;
+    const popoverEl = root.querySelector('[cngxPopover]') as HTMLElement & {
+      hidePopover: ReturnType<typeof vi.fn>;
+    };
+    stubPopoverElement(popoverEl);
+    const render = (): void => {
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+    };
+    render();
+    fixture.componentInstance.popover().show();
+    render();
+    (root.querySelector('button') as HTMLButtonElement).click();
+    await vi.advanceTimersByTimeAsync(0);
+    render();
+    fixture.componentInstance.resolveFn?.();
+    await vi.advanceTimersByTimeAsync(0);
+    render();
+    expect(announce).not.toHaveBeenCalled();
+    expect(root.querySelector('[aria-live="polite"]')?.textContent ?? '').toBe('');
+    await vi.advanceTimersByTimeAsync(300);
+    expect(popoverEl.hidePopover).toHaveBeenCalled();
   });
 });

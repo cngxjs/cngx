@@ -134,9 +134,12 @@ export interface CngxAnnouncementCover {
 }
 
 /**
- * DI token a co-hosted unit provides on the action host element with its
- * {@link CngxAnnouncementCover}. `CngxActionStatusBrain` reads it lazily
- * with `{ self: true, optional: true }`.
+ * Multi DI token each co-hosted unit provides on the action host element
+ * with its {@link CngxAnnouncementCover}
+ * (`{ provide: CNGX_ANNOUNCEMENT_COVER, useExisting: X, multi: true }`).
+ * `CngxActionStatusBrain` reads it lazily with `{ self: true, optional: true }`
+ * and keeps the region empty for an outcome any cover voices, so a toast and
+ * a close-on-success on one host never shadow each other.
  *
  * No `providedIn`, no default: without a cover every outcome is spoken in the region.
  *
@@ -144,6 +147,6 @@ export interface CngxAnnouncementCover {
  * @since 0.1.0
  * @relatedTo CngxActionStatusBrain
  */
-export const CNGX_ANNOUNCEMENT_COVER = new InjectionToken<CngxAnnouncementCover>(
+export const CNGX_ANNOUNCEMENT_COVER = new InjectionToken<readonly CngxAnnouncementCover[]>(
   'CngxAnnouncementCover',
 );

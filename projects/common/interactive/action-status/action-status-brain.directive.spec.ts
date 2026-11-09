@@ -62,7 +62,12 @@ const covered = new Set<'success' | 'error'>();
         };
       },
     },
-    { provide: CNGX_ANNOUNCEMENT_COVER, useValue: { covers: (s: 'success' | 'error') => covered.has(s) } },
+    {
+      provide: CNGX_ANNOUNCEMENT_COVER,
+      useValue: { covers: (s: 'success' | 'error') => covered.has(s) },
+      multi: true,
+    },
+    { provide: CNGX_ANNOUNCEMENT_COVER, useValue: { covers: () => false }, multi: true },
   ],
   template: `
     <span cngxActionStatusCell="idle" class="cell"><ng-content /></span>
@@ -87,7 +92,9 @@ const covered = new Set<'success' | 'error'>();
     @if (status.hasCell().error) {
       <span cngxActionStatusCell="error" class="cell">
         @if (status.failedTemplate(); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl.templateRef; context: { $implicit: status.error() }" />
+          <ng-container
+            *ngTemplateOutlet="tpl.templateRef; context: { $implicit: status.error() }"
+          />
         } @else {
           {{ status.failedLabel() }}
         }
@@ -172,7 +179,8 @@ function setup(configure?: (host: Host) => void) {
   render();
   const root = fixture.nativeElement as HTMLElement;
   const btn = root.querySelector('button') as HTMLButtonElement;
-  const status: CngxActionStatus = fixture.debugElement.children[0].injector.get(CNGX_ACTION_STATUS);
+  const status: CngxActionStatus =
+    fixture.debugElement.children[0].injector.get(CNGX_ACTION_STATUS);
   const outcomes: CngxActionOutcome[] = [];
   status.outcome.subscribe((o) => outcomes.push(o));
   const region = (): string => root.querySelector('[aria-live="polite"]')?.textContent ?? '';
@@ -188,7 +196,17 @@ function setup(configure?: (host: Host) => void) {
     });
     render();
   };
-  return { fixture, host: fixture.componentInstance, btn, status, outcomes, region, active, run, render };
+  return {
+    fixture,
+    host: fixture.componentInstance,
+    btn,
+    status,
+    outcomes,
+    region,
+    active,
+    run,
+    render,
+  };
 }
 
 describe('CngxActionStatusBrain', () => {
@@ -324,7 +342,7 @@ describe('CngxActionStatusBrain', () => {
   });
 
   describe('cover', () => {
-    it('keeps the region empty for a covered outcome and speaks the uncovered one', async () => {
+    it('keeps the region empty for an outcome any co-hosted cover voices and speaks the uncovered one', async () => {
       covered.add('success');
       const { region, run, status } = setup((h) => {
         h.succeededLabel.set('Done');

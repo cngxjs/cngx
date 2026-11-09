@@ -39,7 +39,7 @@ import { cngxDevWarn } from '@cngx/utils';
 @Directive({
   standalone: true,
   exportAs: 'cngxActionToast',
-  providers: [{ provide: CNGX_ANNOUNCEMENT_COVER, useExisting: CngxActionToast }],
+  providers: [{ provide: CNGX_ANNOUNCEMENT_COVER, useExisting: CngxActionToast, multi: true }],
 })
 export class CngxActionToast implements CngxAnnouncementCover {
   private readonly status = inject(CNGX_ACTION_STATUS);

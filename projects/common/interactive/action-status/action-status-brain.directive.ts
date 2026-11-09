@@ -49,7 +49,7 @@ import {
  * contract, so the runner's live region speaks what the host shows, once
  * per settle: the explicit announcement, then the rendered result cell,
  * then the label, then `CNGX_INTERACTIVE_I18N.asyncClickSucceeded` /
- * `asyncClickFailed`. A co-hosted `CNGX_ANNOUNCEMENT_COVER` (a toast, a
+ * `asyncClickFailed`. Every co-hosted `CNGX_ANNOUNCEMENT_COVER` (a toast, a
  * close-on-success) keeps the region empty for an outcome it voices itself.
  *
  * With `[externalState]` bound the status, `state`, `outcome` and the
@@ -97,7 +97,7 @@ export class CngxActionStatusBrain implements CngxActionStatus {
   private readonly i18n = injectInteractiveI18n();
   private readonly injector = inject(Injector);
   private readonly runState = injectLazySelf(CNGX_ASYNC_RUN_STATE);
-  private readonly cover = injectLazySelf(CNGX_ANNOUNCEMENT_COVER, { optional: true });
+  private readonly covers = injectLazySelf(CNGX_ANNOUNCEMENT_COVER, { optional: true });
   private readonly cells = createKeyedRegistry<Element>({ name: 'CngxActionStatusBrain' });
 
   /** SR announcement on success. Falls back to the rendered result cell, the label, the i18n copy. */
@@ -269,7 +269,7 @@ export class CngxActionStatusBrain implements CngxActionStatus {
 
   private resolveAnnouncement(status: 'success' | 'error'): string {
     const text = this.outcomeText(status);
-    if (text === '' || untracked(() => this.cover()?.covers(status))) {
+    if (text === '' || untracked(() => this.covers()?.some((c) => c.covers(status)))) {
       return '';
     }
     return text;
