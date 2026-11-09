@@ -65,13 +65,8 @@ import {
  *   { directive: CngxAsyncClick, inputs: ['cngxAsyncClick: action'] },
  *   { directive: CngxActionStatusBrain, inputs: ['succeededLabel', 'failedLabel'] },
  * ],
- * providers: [{
- *   provide: CNGX_HOST_INTERACTION_STATE,
- *   useFactory: () => ({
- *     ...inject(CngxButtonBrain).interaction,
- *     announcement: inject(CNGX_ACTION_STATUS).announcement,
- *   }),
- * }],
+ * // A button host gets both host providers from @cngx/common/button.
+ * providers: [provideButtonHost('appSave', { defaultVariant: 'solid' }), provideActionStatusHost()],
  * ```
  *
  * @wcag AA

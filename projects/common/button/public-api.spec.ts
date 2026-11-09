@@ -37,6 +37,7 @@ describe('@cngx/common/button public API shape', () => {
       'injectButtonCloseIcon',
       'injectButtonConfig',
       'injectButtonSpinner',
+      'provideActionStatusHost',
       'provideButtonCloseIcon',
       'provideButtonConfig',
       'provideButtonConfigAt',

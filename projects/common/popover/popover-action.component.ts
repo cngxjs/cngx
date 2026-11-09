@@ -11,15 +11,14 @@ import {
   CngxButtonBrain,
   CngxButtonEnd,
   CngxButtonStart,
+  provideActionStatusHost,
   provideButtonHost,
 } from '@cngx/common/button';
 import {
   CNGX_ACTION_STATUS,
-  CNGX_HOST_INTERACTION_STATE,
   CngxActionStatusBrain,
   CngxActionStatusCell,
   CngxAsyncClick,
-  type CngxHostInteractionState,
 } from '@cngx/common/interactive';
 import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
 
@@ -143,14 +142,7 @@ import { CngxPopoverCloseOnSuccess } from './popover-close-on-success.directive'
   ],
   providers: [
     provideButtonHost('cngxPopoverAction', { defaultVariant: 'outline', fixed: { size: 'sm' } }),
-    // Beats the brain's entry (host providers win); adds the announcement.
-    {
-      provide: CNGX_HOST_INTERACTION_STATE,
-      useFactory: (): CngxHostInteractionState => ({
-        ...inject(CngxButtonBrain).interaction,
-        announcement: inject(CNGX_ACTION_STATUS).announcement,
-      }),
-    },
+    provideActionStatusHost(),
   ],
   host: {
     class: 'cngx-button cngx-popover-action',

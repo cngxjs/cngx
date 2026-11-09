@@ -83,14 +83,14 @@ The idle content and the status labels render stacked in one cell; only the acti
 
 ## Composition
 
-The component is skin: template, CSS and two providers. Four host directives do the work:
+The component is skin: template, CSS, `provideButtonHost()` and `provideActionStatusHost()`. Four host directives do the work:
 
 - **`CngxButtonBrain`** (`@cngx/common/button`): `variant`, `tone`, `size`, `disabled`, `disabledReason`, `cngxDescribedBy`, `type`. The same brain every cngx button renders on.
 - **`CngxAsyncClick`** (`@cngx/common/interactive`): `action`, `feedbackDuration`, `showDelay`, `minDwell`; `(settled)` re-exported, once per own run with a monotonic `generation`. Owns the live region next to the button.
 - **`CngxActionStatusBrain`** (`@cngx/common/interactive`): `pendingLabel`, `succeededLabel`, `failedLabel`, `succeededAnnouncement`, `failedAnnouncement`, `autoAnnounce`, `externalState`. Status, label cells and the announcement, read through `CNGX_ACTION_STATUS`; each label span carries `[cngxActionStatusCell]`.
 - **`CngxActionToast`** (`@cngx/ui/action-button`): `toastSuccess`, `toastError`, `toastErrorDetail`, `toastSuccessDuration`, `toastErrorDuration`. One toast per outcome; covers a toasted outcome through `CNGX_ANNOUNCEMENT_COVER`.
 
-The two providers read tokens, not the class: `CNGX_HOST_INTERACTION_STATE` spreads `CngxButtonBrain.interaction` and adds `CNGX_ACTION_STATUS.announcement`; `CNGX_BUTTON_HOST_STATE` refuses clicks while `CNGX_ACTION_STATUS.externalBusy`. An ejected template on the same four host directives and providers renders every state the component does.
+`provideActionStatusHost()` (`@cngx/common/button`) returns two providers that read tokens, not the class: `CNGX_HOST_INTERACTION_STATE` spreads `CngxButtonBrain.interaction` and adds `CNGX_ACTION_STATUS.announcement`; `CNGX_BUTTON_HOST_STATE` refuses clicks while `CNGX_ACTION_STATUS.externalBusy`. An ejected template on the same four host directives and the two helpers renders every state the component does.
 
 - **Own run or external state:** bind `[action]` (the button runs it) or `[externalState]` (the button reflects a run it does not own). `state.lastUpdated` follows the bound source only, with no fall-through to the own runs.
 - **Combines with:** `CngxPending`, `CngxSucceeded`, `CngxFailed`; `CngxToaster` for toast integration; `[cngxToastOn]` on the same element as an alternative to the toast inputs (not both, `CNGX3008`).

@@ -2,20 +2,13 @@ import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  CNGX_BUTTON_HOST_STATE,
-  CngxButtonBrain,
-  provideButtonHost,
-  type CngxButtonHostState,
-} from '@cngx/common/button';
+import { CngxButtonBrain, provideActionStatusHost, provideButtonHost } from '@cngx/common/button';
 import {
   CNGX_ACTION_STATUS,
-  CNGX_HOST_INTERACTION_STATE,
   CngxActionStatusBrain,
   CngxActionStatusCell,
   CngxAsyncClick,
   CngxFailed,
-  type CngxHostInteractionState,
 } from '@cngx/common/interactive';
 import {
   buildAsyncStateView,
@@ -29,7 +22,7 @@ import { CngxActionToast } from './action-toast.directive';
 
 /**
  * The ejected action button: the four host directives, the two
- * token-reading providers and a verbatim copy of the template, with no
+ * provider helpers and a verbatim copy of the template, with no
  * class body beyond `brain` and `status`.
  */
 @Component({
@@ -61,20 +54,7 @@ import { CngxActionToast } from './action-toast.directive';
   ],
   providers: [
     provideButtonHost('testEjectedAction', { defaultVariant: 'solid' }),
-    {
-      provide: CNGX_BUTTON_HOST_STATE,
-      useFactory: (): CngxButtonHostState => {
-        const status = inject(CNGX_ACTION_STATUS);
-        return { refusing: status.externalBusy, busy: status.externalBusy };
-      },
-    },
-    {
-      provide: CNGX_HOST_INTERACTION_STATE,
-      useFactory: (): CngxHostInteractionState => ({
-        ...inject(CngxButtonBrain).interaction,
-        announcement: inject(CNGX_ACTION_STATUS).announcement,
-      }),
-    },
+    provideActionStatusHost(),
   ],
   host: { class: 'cngx-button cngx-action-button' },
   template: `
@@ -199,8 +179,7 @@ function snapshot(wrapper: HTMLElement): Snapshot {
   const cells = Array.from(btn.querySelectorAll('.cngx-action-button__label'));
   return {
     attrs: Object.fromEntries(ATTRS.map((a) => [a, btn.getAttribute(a)])),
-    active:
-      btn.querySelector('.cngx-action-button__label[data-active]')?.textContent?.trim() ?? '',
+    active: btn.querySelector('.cngx-action-button__label[data-active]')?.textContent?.trim() ?? '',
     hidden: cells.map((c) => c.getAttribute('aria-hidden')),
     spinner: !!btn.querySelector('.cngx-button__busy'),
     region: wrapper.querySelector('[aria-live="polite"]')?.textContent ?? '',

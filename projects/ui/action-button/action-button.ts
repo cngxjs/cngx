@@ -7,20 +7,17 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {
-  CNGX_BUTTON_HOST_STATE,
   CngxButtonBrain,
   CngxButtonEnd,
   CngxButtonStart,
+  provideActionStatusHost,
   provideButtonHost,
-  type CngxButtonHostState,
 } from '@cngx/common/button';
 import {
   CNGX_ACTION_STATUS,
-  CNGX_HOST_INTERACTION_STATE,
   CngxActionStatusBrain,
   CngxActionStatusCell,
   CngxAsyncClick,
-  type CngxHostInteractionState,
 } from '@cngx/common/interactive';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
@@ -34,8 +31,8 @@ import { CngxActionToast } from './action-toast.directive';
  * (`variant`, `tone`, `size`, `disabled` / `disabledReason`), `cngxAsyncClick`
  * (the run, the busy gate, the live region), `CngxActionStatusBrain` (labels,
  * announcement, `[externalState]`) and `CngxActionToast` (toasts). The
- * component is the skin: template, CSS and two providers that read
- * `CngxButtonBrain` and `CNGX_ACTION_STATUS`. `cngxButtonStart` /
+ * component is the skin: template, CSS, `provideButtonHost()` and
+ * `provideActionStatusHost()`. `cngxButtonStart` /
  * `cngxButtonEnd` content sits around the label cells, and the button
  * publishes `CNGX_BUTTON_STATE`, so it works as the main action of a
  * `cngxSplitButton`.
@@ -132,22 +129,7 @@ import { CngxActionToast } from './action-toast.directive';
   ],
   providers: [
     provideButtonHost('cngxActionButton', { defaultVariant: 'solid' }),
-    // An external run in flight refuses clicks and reads as busy.
-    {
-      provide: CNGX_BUTTON_HOST_STATE,
-      useFactory: (): CngxButtonHostState => {
-        const status = inject(CNGX_ACTION_STATUS);
-        return { refusing: status.externalBusy, busy: status.externalBusy };
-      },
-    },
-    // Beats the brain's entry (host providers win); adds the announcement.
-    {
-      provide: CNGX_HOST_INTERACTION_STATE,
-      useFactory: (): CngxHostInteractionState => ({
-        ...inject(CngxButtonBrain).interaction,
-        announcement: inject(CNGX_ACTION_STATUS).announcement,
-      }),
-    },
+    provideActionStatusHost(),
   ],
   host: {
     class: 'cngx-button cngx-action-button',
