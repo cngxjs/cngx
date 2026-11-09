@@ -14,7 +14,7 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxSelect'],
   moduleImports: [
     "import { CngxSelect, provideSelectConfigAt, withCommitErrorAnnouncePolicy, type CngxSelectCommitAction, type CngxSelectOptionDef } from '@cngx/forms/select';",
-    "import { delay, of, throwError } from 'rxjs';",
+    "import { delay, of, switchMap, throwError, timer } from 'rxjs';",
   ],
   imports: ['CngxSelect'],
   viewProviders: [
@@ -28,7 +28,7 @@ export const STORY: DemoSpec = {
   protected readonly value = signal<string | undefined>('red');
   protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
     if (this.failNext()) {
-      return throwError(() => new Error('Could not save the colour')).pipe(delay(600));
+      return timer(600).pipe(switchMap(() => throwError(() => new Error('Could not save the colour'))));
     }
     return of(intended).pipe(delay(600));
   };`,

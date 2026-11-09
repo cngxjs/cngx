@@ -13,7 +13,7 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     'import { createOptimistic } from \'@cngx/common/interactive\';',
-    'import { of, throwError } from \'rxjs\';',
+    'import { of, switchMap, throwError, timer } from \'rxjs\';',
     'import { delay } from \'rxjs/operators\';',
   ],
   imports: [],
@@ -23,7 +23,7 @@ export const STORY: DemoSpec = {
   private readonly nameTuple = createOptimistic<string>(
     this.name,
     (value) => this.shouldFail()
-      ? throwError(() => new Error('Server rejected the update')).pipe(delay(700))
+      ? timer(700).pipe(switchMap(() => throwError(() => new Error('Server rejected the update'))))
       : of(value).pipe(delay(700)),
   );
 

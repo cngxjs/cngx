@@ -13,13 +13,13 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     'import { CngxAsyncClick } from \'@cngx/common/interactive\';',
-    'import { of, throwError } from \'rxjs\';',
+    'import { of, switchMap, throwError, timer } from \'rxjs\';',
     'import { delay } from \'rxjs/operators\';',
   ],
   imports: ['CngxAsyncClick'],
   setup: `
   protected readonly submitAction = () => this.shouldFail()
-    ? throwError(() => new Error('Server rejected the request')).pipe(delay(700))
+    ? timer(700).pipe(switchMap(() => throwError(() => new Error('Server rejected the request'))))
     : of(undefined).pipe(delay(700));`,
   setupChrome: `
   protected readonly shouldFail = signal<boolean>(false);

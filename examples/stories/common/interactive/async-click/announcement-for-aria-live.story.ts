@@ -14,7 +14,7 @@ export const STORY: DemoSpec = {
   moduleImports: [
     'import { Injector } from \'@angular/core\';',
     'import { CngxAsyncClick, type CngxAsyncSettle } from \'@cngx/common/interactive\';',
-    'import { of, throwError } from \'rxjs\';',
+    'import { of, switchMap, throwError, timer } from \'rxjs\';',
     'import { delay } from \'rxjs/operators\';',
   ],
   imports: ['CngxAsyncClick'],
@@ -27,7 +27,7 @@ export const STORY: DemoSpec = {
   protected readonly spoken = signal('');
 
   protected readonly saveAction = () => this.shouldFail()
-    ? throwError(() => new Error('save failed')).pipe(delay(700))
+    ? timer(700).pipe(switchMap(() => throwError(() => new Error('save failed'))))
     : of(undefined).pipe(delay(700));
 
   protected handleSettled(settle: CngxAsyncSettle): void {
