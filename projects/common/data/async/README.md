@@ -1,4 +1,4 @@
-# CngxAsync - Async Structural Directive
+# CngxAsync
 
 Template-level async state rendering with microsyntax. Renders different views based on `CngxAsyncState` status: skeleton (loading), content (success), empty, or error.
 
