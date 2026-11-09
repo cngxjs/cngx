@@ -91,13 +91,16 @@ test.describe('CngxSidenav layout regressions', () => {
   });
 
   test('a non-modal end inspector keeps the list and the start rail operable', async ({ page }) => {
+    // The inspector overlays the end of each row, so press the visible start
+    // of a row: the list stays operable where the inspector does not cover it.
+    const LIST_EDGE = { x: 16, y: 8 };
     await page.goto('/#/ui/sidenav/dual-sidebar-master-detail');
     const layout = page.locator('cngx-sidenav-layout').first();
     const inspector = layout.locator('cngx-sidenav.cngx-sidenav--end');
     const content = layout.locator('cngx-sidenav-content');
     const startRail = layout.locator('cngx-sidenav.cngx-sidenav--start');
 
-    await content.getByRole('button', { name: 'Order #1042' }).click();
+    await content.getByRole('button', { name: 'Order #1042' }).click({ position: LIST_EDGE });
     await expect(inspector).toHaveClass(/cngx-sidenav--open/);
     await expect(inspector.getByRole('heading', { name: 'Order #1042' })).toBeVisible();
 
@@ -109,7 +112,7 @@ test.describe('CngxSidenav layout regressions', () => {
     await expect(startRail).not.toHaveAttribute('inert', '');
 
     // The list stays clickable: another order swaps the detail in place.
-    await content.getByRole('button', { name: 'Order #1044' }).click();
+    await content.getByRole('button', { name: 'Order #1044' }).click({ position: LIST_EDGE });
     await expect(inspector).toHaveClass(/cngx-sidenav--open/);
     await expect(inspector.getByRole('heading', { name: 'Order #1044' })).toBeVisible();
 
@@ -119,7 +122,7 @@ test.describe('CngxSidenav layout regressions', () => {
     await expect(inspector).not.toHaveClass(/cngx-sidenav--open/);
 
     // Escape with focus inside the inspector dismisses it.
-    await content.getByRole('button', { name: 'Order #1043' }).click();
+    await content.getByRole('button', { name: 'Order #1043' }).click({ position: LIST_EDGE });
     await expect(inspector).toHaveClass(/cngx-sidenav--open/);
     await inspector.getByRole('button', { name: 'Close' }).focus();
     await page.keyboard.press('Escape');
