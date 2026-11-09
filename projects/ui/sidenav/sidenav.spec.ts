@@ -57,8 +57,10 @@ class DualHost {
 @Component({
   template: `
     <cngx-sidenav-layout>
-      <cngx-sidenav position="start" [(opened)]="open" [mode]="mode()">Nav</cngx-sidenav>
-      <cngx-sidenav-content>Content</cngx-sidenav-content>
+      <cngx-sidenav position="start" [(opened)]="open" [mode]="mode()">
+        <button type="button" class="nav-item">Nav</button>
+      </cngx-sidenav>
+      <cngx-sidenav-content><button type="button" class="content-item">Content</button></cngx-sidenav-content>
     </cngx-sidenav-layout>
   `,
   imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
@@ -443,7 +445,7 @@ describe('CngxSidenav', () => {
     expect(left.expanded()).toBe(true);
   });
 
-  it('auto-opens when leaving side mode with opened=false', () => {
+  it('leaves opened alone when a pinned mode switches from side to over', () => {
     const { fixture, left, host } = setupDual();
     host.mode.set('side');
     host.leftOpen.set(false);
@@ -455,7 +457,7 @@ describe('CngxSidenav', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(left.effectiveMode()).toBe('over');
-    expect(host.leftOpen()).toBe(true);
+    expect(host.leftOpen()).toBe(false);
   });
 });
 
@@ -895,20 +897,85 @@ describe('CngxSidenav auto mode', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(nav.effectiveMode()).toBe('side');
+    const host = fixture.debugElement.query(By.directive(CngxSidenav)).nativeElement as HTMLElement;
+    (host.querySelector('.nav-item') as HTMLElement).focus();
 
     stubWide('compact');
     flushResize();
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    // side -> over auto-opens the rail, so the focus the user had inside it
-    // is never orphaned behind aria-hidden.
+    // Focus inside the rail keeps it open as the drawer, so the focused
+    // element is never orphaned behind inert / aria-hidden.
     expect(nav.effectiveMode()).toBe('over');
     expect(nav.opened()).toBe(true);
-    // over + opened renders aria-hidden="false", never "true": the rail the
-    // user had focus in is still exposed after the flip.
-    const host = fixture.debugElement.query(By.directive(CngxSidenav)).nativeElement as HTMLElement;
     expect(host.getAttribute('aria-hidden')).not.toBe('true');
+    expect(host.hasAttribute('inert')).toBe(false);
+  });
+
+  it('starts every width class closed: an overlay opened at one width never reopens stale', () => {
+    stubWide('compact');
+    const { fixture, nav } = mount();
+    flushResize();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    nav.open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(nav.opened()).toBe(true);
+    const content = fixture.nativeElement.querySelector('.content-item') as HTMLElement;
+    content.focus();
+
+    stubWide('expanded');
+    flushResize();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(nav.effectiveMode()).toBe('side');
+    expect(nav.opened()).toBe(false);
+
+    stubWide('compact');
+    flushResize();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(nav.effectiveMode()).toBe('over');
+    expect(nav.opened()).toBe(false);
+  });
+
+  it('closes the medium overlay when the layout widens to expanded', () => {
+    stubWide('medium');
+    const { fixture, nav } = mount();
+    flushResize();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    nav.toggle();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(nav.overlayActive()).toBe(true);
+    (fixture.nativeElement.querySelector('.content-item') as HTMLElement).focus();
+
+    stubWide('expanded');
+    flushResize();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(nav.opened()).toBe(false);
+    expect(nav.expanded()).toBe(true);
+  });
+
+  it('does not reset opened in a pinned mode when the width class changes', () => {
+    stubWide('compact');
+    const { fixture, nav } = mount();
+    fixture.componentInstance.mode.set('over');
+    flushResize();
+    fixture.detectChanges();
+    nav.open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    stubWide('expanded');
+    flushResize();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(nav.opened()).toBe(true);
   });
 });
 

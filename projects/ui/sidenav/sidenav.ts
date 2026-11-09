@@ -417,14 +417,12 @@ export class CngxSidenav implements CngxSidebarDriver {
   private readonly win = this.doc.defaultView;
 
   /**
-   * Current/previous effective-mode pair for transition detection. The shared
-   * `createTransitionTracker` is generic since it stopped being `AsyncStatus`-
-   * typed, so the hand-rolled `linkedSignal` twin this class used to carry is
-   * gone. `previous` seeds to `current` on the first run, which the consumer
-   * effect's equality guard already treats as "no transition".
+   * Current/previous width-class pair for the open-flag reset. `null` until the
+   * layout's first `ResizeObserver` entry resolves the class, so settling from
+   * the unresolved first frame is not a class change.
    */
-  private readonly modeTransition = createTransitionTracker<ResolvedSidenavMode>(() =>
-    this.effectiveMode(),
+  private readonly classTransition = createTransitionTracker<SidenavWidthClass | null>(() =>
+    this.rawWidthClass().trim() === '' ? null : this.widthClass(),
   );
 
   /** CDK focus trap over the host; enabled only while a modal overlay is open. */
@@ -434,9 +432,9 @@ export class CngxSidenav implements CngxSidebarDriver {
   private restoreTarget: HTMLElement | null = null;
 
   /**
-   * Set when the mode-transition effect auto-opens an overlay (a viewport-driven
-   * `side` -> `over` switch). The focus effect reads it to enable the trap
-   * without pulling focus into the rail, since that open was not user-initiated.
+   * Set when a width-class change keeps the overlay open because focus is
+   * inside the rail. The focus effect reads it to enable the trap without
+   * moving focus, since it is already inside.
    */
   private autoOpenInFlight = false;
 
@@ -484,9 +482,9 @@ export class CngxSidenav implements CngxSidebarDriver {
       const active = this.overlayActive();
       this.focusTrap.enabled = active;
       if (active && !wasOverlayActive) {
-        // Only pull focus into the rail when the open was user-initiated. An
-        // auto-open driven by an auto-mode switch (container resize) engages
-        // the trap - the rail is now modal - but must not steal focus.
+        // Only pull focus into the rail when the open was user-initiated. A
+        // width-class change that keeps the rail open (focus inside) engages
+        // the trap - the rail is now modal - and leaves focus where it is.
         const viaAutoOpen = this.autoOpenInFlight;
         this.autoOpenInFlight = false;
         if (!viaAutoOpen) {
@@ -543,22 +541,29 @@ export class CngxSidenav implements CngxSidebarDriver {
       onCleanup(() => this.doc.removeEventListener('keydown', handler));
     });
 
-    // Residual transition side-effect, not a derivation: opened is a consumer
-    // model() the user can still toggle, so leaving an always-visible mode for an
-    // overlay mode auto-opens the rail once. Guarded by the current/previous
-    // compare so it fires only on the transition edge.
+    // Open-flag reset on a width-class change, the one write in an effect here
+    // (sidenav-accepted-debt §1): opened is a consumer model(), which cannot be
+    // a linkedSignal keyed on the class. In auto, every class change starts the
+    // new presentation closed, so a drawer opened at one width never reopens
+    // stale at another. Focus inside the rail keeps it open instead, so the
+    // focused element is not orphaned behind inert. Pinned modes never reset.
     effect(() => {
-      const current = this.modeTransition.current();
-      const previous = this.modeTransition.previous();
-      if (current === previous) {
+      const current = this.classTransition.current();
+      const previous = this.classTransition.previous();
+      if (previous === null || current === previous) {
         return;
       }
-      const alwaysVisible = (m: ResolvedSidenavMode) => m === 'side';
-      if (alwaysVisible(previous) && !alwaysVisible(current)) {
-        // Flag the auto-open so the focus effect skips the focus-move.
-        this.autoOpenInFlight = current === 'over';
-        this.opened.set(true);
-      }
+      untracked(() => {
+        if (this.mode() !== 'auto') {
+          return;
+        }
+        const host = this.elementRef.nativeElement as HTMLElement;
+        const focusInside = host.contains(this.doc.activeElement);
+        // Only an actual open edge is flagged; a stale flag would skip the
+        // focus move of the next user open.
+        this.autoOpenInFlight = focusInside && !this.opened() && this.isOverlay();
+        this.opened.set(focusInside);
+      });
     });
   }
 
