@@ -1208,10 +1208,13 @@ export class CngxTreeSelect<T = unknown>
    * @internal
    */
   protected handleTriggerKeydown(event: KeyboardEvent): void {
-    // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
-    // untouched - the same guard the nav strategies and CngxListboxTrigger
-    // apply. Shift stays allowed.
-    if (event.ctrlKey || event.metaKey || event.altKey) {
+    // ARIA combobox Alt shortcuts: Alt+ArrowDown opens, Alt+ArrowUp closes.
+    // Every other Ctrl/Cmd/Alt combo is a browser or app shortcut and passes
+    // through untouched - the same guard CngxListboxTrigger applies. Shift
+    // stays allowed.
+    const altOnly = event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey;
+    const altArrow = altOnly && (event.key === 'ArrowDown' || event.key === 'ArrowUp');
+    if ((event.ctrlKey || event.metaKey || event.altKey) && !altArrow) {
       return;
     }
     // Keys from a chip remove button belong to that button: no
@@ -1227,9 +1230,18 @@ export class CngxTreeSelect<T = unknown>
     }
     const key = event.key;
     if (this.panelOpen()) {
-      if (key === 'Escape' && this.sheetWiring.escapeEnabled()) {
+      const closeKey =
+        (altArrow && key === 'ArrowUp') || (key === 'Escape' && this.sheetWiring.escapeEnabled());
+      if (closeKey) {
         event.preventDefault();
         this.close();
+      }
+      return;
+    }
+    if (altArrow) {
+      if (key === 'ArrowDown') {
+        event.preventDefault();
+        this.open();
       }
       return;
     }

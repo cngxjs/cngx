@@ -427,6 +427,27 @@ describe('CngxTreeSelect', () => {
     });
   }
 
+  it('Alt+ArrowDown opens and Alt+ArrowUp closes the panel; other modified keys pass through', () => {
+    const trigger = f.root.querySelector<HTMLElement>('[role="combobox"]')!;
+    const press = (init: KeyboardEventInit): KeyboardEvent => {
+      const event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...init });
+      trigger.dispatchEvent(event);
+      f.fixture.detectChanges();
+      return event;
+    };
+
+    expect(press({ key: 'ArrowUp', altKey: true }).defaultPrevented).toBe(false);
+    expect(f.tree.panelOpen()).toBe(false);
+    expect(press({ key: 'ArrowDown', altKey: true, ctrlKey: true }).defaultPrevented).toBe(false);
+    expect(f.tree.panelOpen()).toBe(false);
+
+    expect(press({ key: 'ArrowDown', altKey: true }).defaultPrevented).toBe(true);
+    expect(f.tree.panelOpen()).toBe(true);
+
+    expect(press({ key: 'ArrowUp', altKey: true }).defaultPrevented).toBe(true);
+    expect(f.tree.panelOpen()).toBe(false);
+  });
+
   it('Escape on the trigger closes the panel when open', () => {
     f.tree.open();
     f.fixture.detectChanges();
