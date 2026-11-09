@@ -81,7 +81,7 @@
     {
       "class": "CngxActionStatusBrain",
       "file": "projects/common/interactive/action-status/action-status-brain.directive.ts",
-      "line": 254,
+      "line": 267,
       "member": "outcomeText",
       "enclosing": "untracked",
       "tiers": [
@@ -97,7 +97,7 @@
     {
       "class": "CngxActionStatusBrain",
       "file": "projects/common/interactive/action-status/action-status-brain.directive.ts",
-      "line": 256,
+      "line": 269,
       "member": "outcomeText",
       "enclosing": "untracked",
       "tiers": [

@@ -697,6 +697,12 @@ export const LIVE_REGIONS = [
     testName: 'does not re-announce on a language flip',
   },
   {
+    file: 'projects/common/interactive/action-status/action-status-brain.directive.ts',
+    region: 'CngxActionStatusBrain.constructor:effect#1',
+    spec: 'projects/common/interactive/action-status/action-status-brain.directive.spec.ts',
+    testName: 'never re-voices the region on a language flip',
+  },
+  {
     file: 'projects/common/interactive/copy/copy-block.ts',
     region: 'CngxCopyBlock.span(liveAnnouncement)',
     spec: 'projects/common/interactive/copy/copy-block.spec.ts',
