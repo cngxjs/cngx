@@ -72,8 +72,8 @@ import { CngxActionToast } from './action-toast.directive';
  * @since 0.1.0
  * @relatedTo CngxButton, CngxButtonBrain, CngxAsyncClick, CngxActionStatusBrain, CngxActionToast, CngxPending, CngxSucceeded, CngxFailed, CngxToaster
  * @slot cngxPending Replaces the label while the action runs, once the run outlasts the show delay.
- * @slot cngxSucceeded Replaces the label after the action succeeds.
- * @slot cngxFailed Replaces the label when the action fails; gets the error.
+ * @slot cngxSucceeded Replaces the label after the action succeeds, once the busy visual releases.
+ * @slot cngxFailed Replaces the label when the action fails, once the busy visual releases; gets the error.
  * <example-url>/#/ui/action-button/async-button/random-outcome</example-url>
  * <example-url>/#/ui/action-button/async-button/string-labels</example-url>
  * <example-url>/#/ui/action-button/async-button/template-slots</example-url>

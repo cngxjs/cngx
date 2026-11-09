@@ -207,6 +207,6 @@ describe('CngxActionToast', () => {
     TestBed.tick();
     const calls = warn.mock.calls.filter(([m]) => /^CNGX3008: /.test(String(m)));
     expect(calls).toHaveLength(1);
-    expect(calls[0][0]).toMatch(/^CNGX3008: \[cngxActionButton\] \[toastSuccess\]\/\[toastError\] inputs/);
+    expect(calls[0][0]).toMatch(/^CNGX3008: \[cngxActionToast\] \[toastSuccess\]\/\[toastError\] inputs/);
   });
 });

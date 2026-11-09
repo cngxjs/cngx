@@ -81,7 +81,7 @@ export class CngxActionToast implements CngxAnnouncementCover {
         if (this.toastSuccess() || this.toastError()) {
           cngxDevWarn(
             'CNGX3008',
-            '[cngxActionButton] [toastSuccess]/[toastError] inputs and [cngxToastOn] ' +
+            '[cngxActionToast] [toastSuccess]/[toastError] inputs and [cngxToastOn] ' +
               'on the same element will fire duplicate toasts. Use one or the other.',
           );
         }
