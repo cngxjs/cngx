@@ -15,7 +15,7 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     'import { CngxSelectShell, CngxSelectOption, CngxSelectOptionError, CngxSelectOptionPending, type CngxSelectCommitAction, type CngxSelectCommitMode } from \'@cngx/forms/select\';',
-    'import { delay, of, throwError } from \'rxjs\';',
+    'import { delay, of, switchMap, throwError, timer } from \'rxjs\';',
   ],
   imports: ['CngxSelectShell', 'CngxSelectOption', 'CngxSelectOptionError', 'CngxSelectOptionPending'],
   setup: `protected readonly commitValue = signal<string | undefined>('red');
@@ -25,7 +25,7 @@ export const STORY: DemoSpec = {
   protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
     void intended;
     if (this.commitShouldFail()) {
-      return throwError(() => new Error('Server rejected the commit')).pipe(delay(1500));
+      return timer(1500).pipe(switchMap(() => throwError(() => new Error('Server rejected the commit'))));
     }
     return of(intended).pipe(delay(1500));
   };

@@ -13,7 +13,7 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { CngxTreeSelect, type CngxSelectCommitAction } from '@cngx/forms/select';",
     "import type { CngxTreeNode } from '@cngx/utils';",
-    "import { delay, of, throwError } from 'rxjs';",
+    "import { delay, of, switchMap, throwError, timer } from 'rxjs';",
   ],
   imports: ['CngxTreeSelect'],
   setup: `protected readonly nodes: CngxTreeNode<string>[] = [
@@ -44,7 +44,7 @@ export const STORY: DemoSpec = {
     const ts = new Date().toLocaleTimeString();
     this.commitLog.update((l) => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.commitShouldFail()) {
-      return throwError(() => new Error('Server offline')).pipe(delay(800));
+      return timer(800).pipe(switchMap(() => throwError(() => new Error('Server offline'))));
     }
     return of(intended).pipe(delay(800));
   };`,

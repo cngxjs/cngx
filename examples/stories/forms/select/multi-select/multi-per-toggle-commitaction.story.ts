@@ -13,7 +13,7 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     'import { CngxMultiSelect, type CngxSelectCommitAction, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
-    'import { delay, of, throwError } from \'rxjs\';',
+    'import { delay, of, switchMap, throwError, timer } from \'rxjs\';',
   ],
   imports: ['CngxMultiSelect'],
   setup: `protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
@@ -23,7 +23,7 @@ export const STORY: DemoSpec = {
     const ts = new Date().toLocaleTimeString();
     this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
     if (this.commitShouldFail()) {
-      return throwError(() => new Error('Server offline')).pipe(delay(800));
+      return timer(800).pipe(switchMap(() => throwError(() => new Error('Server offline'))));
     }
     return of(intended).pipe(delay(800));
   };
@@ -43,7 +43,7 @@ export const STORY: DemoSpec = {
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
-      return throwError(() => new Error('Server offline')).pipe(delay(800));
+      return timer(800).pipe(switchMap(() => throwError(() => new Error('Server offline'))));
     }
     return of(intended).pipe(delay(800));
   };`,
