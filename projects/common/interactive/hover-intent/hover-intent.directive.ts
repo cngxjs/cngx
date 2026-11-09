@@ -36,6 +36,10 @@ export interface CngxHoverIntentDefaults {
  * @relatedTo CngxHoverIntent
  * @since 0.1.0
  */
+export const CNGX_HOVER_INTENT_DEFAULTS = new InjectionToken<CngxHoverIntentDefaults>(
+  'CNGX_HOVER_INTENT_DEFAULTS',
+);
+
 /**
  * @internal Lets a directive that composes `CngxHoverIntent` as a host
  * directive feed the dwell from its own inputs instead of re-exposing
@@ -54,10 +58,6 @@ export interface CngxHoverIntentDriver {
 /** @internal See {@link CngxHoverIntentDriver}. */
 export const CNGX_HOVER_INTENT_DRIVER = new InjectionToken<CngxHoverIntentDriver>(
   'CngxHoverIntentDriver',
-);
-
-export const CNGX_HOVER_INTENT_DEFAULTS = new InjectionToken<CngxHoverIntentDefaults>(
-  'CNGX_HOVER_INTENT_DEFAULTS',
 );
 
 /**

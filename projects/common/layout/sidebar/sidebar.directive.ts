@@ -260,9 +260,15 @@ export class CngxSidebar implements CngxPanelTarget, CngxHoverIntentDriver {
    * `label` or `CNGX_LAYOUT_I18N.sidebarRegion`. An icon-only trigger takes
    * it as its name.
    */
-  readonly label = computed(
-    () => this.driver()?.sidebarLabel?.() ?? this.labelInput() ?? this.i18n().sidebarRegion,
-  );
+  readonly label = computed(() => {
+    // A composer that names the region itself wins outright; its own
+    // cascade already resolved input, config and copy.
+    const driven = this.driver()?.sidebarLabel;
+    if (driven) {
+      return driven();
+    }
+    return this.labelInput() ?? this.i18n().sidebarRegion;
+  });
 
   protected readonly inlineSize = computed(() => {
     switch (this.state()) {
