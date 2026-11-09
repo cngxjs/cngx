@@ -1,4 +1,4 @@
-# CngxOverlay
+# Overlay
 
 Typed wrapper service over Angular CDK Overlay with typed result streams.
 

@@ -1,4 +1,4 @@
-# CngxToc
+# Table of Contents
 
 "On this page" navigation rail. Renders a labeled `<nav>` of anchor links from
 a tree of items, tracks the most-visible section as you scroll, and reflects it

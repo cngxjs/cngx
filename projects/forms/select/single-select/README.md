@@ -1,4 +1,4 @@
-# CngxSelect
+# Single Select
 
 Native-feeling single-select dropdown - the closest replacement for `<select>` with the cngx Signal-first toolkit, full ARIA combobox semantics, async-state support, and a pluggable commit lifecycle.
 

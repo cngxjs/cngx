@@ -1,4 +1,4 @@
-# CngxTreeSelect
+# Tree Select
 
 Multi-value select backed by a hierarchical tree. Same chip-summary trigger as [`CngxMultiSelect`](../multi-select/README.md), but the panel renders a `role="tree"` body with W3C-APG keyboard navigation.
 Optional cascade-toggle for select-all-descendants.

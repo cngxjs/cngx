@@ -1,4 +1,4 @@
-# CngxBreadcrumbBar
+# Breadcrumb
 
 Breadcrumb bar organism. `<cngx-breadcrumb [items]="...">` renders a trail
 through the headless `@cngx/common/interactive` trio (`CngxBreadcrumb` /

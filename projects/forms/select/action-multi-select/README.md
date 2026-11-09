@@ -1,4 +1,4 @@
-# CngxActionMultiSelect
+# Action Multi Select
 
 Multi-value variant of [`CngxActionSelect`](../action-select/README.md) - the same inline `*cngxSelectAction` workflow, but with a chip strip + inline `<input>` like [`CngxCombobox`](../combobox/README.md).
 Pick multiple values, create new ones inline, all without leaving the panel.

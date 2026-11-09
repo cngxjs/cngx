@@ -1,4 +1,4 @@
-# CngxCommandPalette
+# Command Palette
 
 The opinionated Cmd/Ctrl+K palette preset. Renders a search-driven command list
 inside a native modal `<dialog cngxDialog>`, so focus trapping, trigger storage

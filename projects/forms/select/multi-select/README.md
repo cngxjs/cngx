@@ -1,4 +1,4 @@
-# CngxMultiSelect
+# Multi Select
 
 Multi-value select with the same button-style trigger as [`CngxSelect`](../single-select/README.md), plus a chip strip showing the selected options. Same async-state, slot, and commit machinery - the value is `T[]` instead of `T | undefined`.
 

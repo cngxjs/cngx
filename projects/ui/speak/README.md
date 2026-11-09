@@ -1,4 +1,4 @@
-# CngxSpeakButton
+# Speak Button
 
 Cognitive accessibility component connecting to a CngxSpeak directive to control text-to-speech playback.
 

@@ -1,4 +1,4 @@
-# CngxActionButton
+# Action Button
 
 Async action button on the cngx button core: status labels, visual feedback and optional toast notifications on the native `<button>`.
 

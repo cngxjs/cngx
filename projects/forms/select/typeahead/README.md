@@ -1,4 +1,4 @@
-# CngxTypeahead
+# Typeahead
 
 Single-value autocomplete with an inline `<input role="combobox">` and `displayWith` formatter - the inline-input twin of [`CngxSelect`](../single-select/README.md).
 Type to filter, pick to commit; the input shows the formatted selection after the pick so it survives blur/refocus.

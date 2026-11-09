@@ -1,4 +1,4 @@
-# CngxReorderableMultiSelect
+# Reorderable Multi Select
 
 Multi-value select where the chip strip is reorderable.
 Same surface as [`CngxMultiSelect`](../multi-select/README.md) plus pointer-drag and keyboard reorder (modifier + arrow keys).

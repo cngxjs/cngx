@@ -1,4 +1,4 @@
-# CngxSkeletonContainer
+# Skeleton
 
 Skeleton loading container with built-in placeholder repetition and async state integration.
 

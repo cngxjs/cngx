@@ -1,4 +1,4 @@
-# CngxIncrementalList
+# Collection
 
 Append-style collection organism for load-more and infinite-scroll surfaces.
 

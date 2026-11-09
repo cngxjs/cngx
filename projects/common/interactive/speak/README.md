@@ -1,4 +1,4 @@
-# Speak: Text-to-Speech
+# Speak
 
 Headless text-to-speech directive using the browser's SpeechSynthesis API.
 
