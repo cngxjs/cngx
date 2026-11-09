@@ -1,4 +1,4 @@
-import { InjectionToken, signal, type Signal } from '@angular/core';
+import { InjectionToken, signal, type OutputRef, type Signal } from '@angular/core';
 
 import type { CngxMenuConfig } from './menu-config';
 
@@ -14,6 +14,12 @@ export interface CngxMenuDismissPopoverRef {
   readonly isVisible: () => boolean;
   hide(): void;
   readonly elementRef: { readonly nativeElement: HTMLElement };
+  /**
+   * Close event of the popover (`CngxPopover.closed`). Optional: when present,
+   * every close drops the menu's highlight, also an open gesture still
+   * waiting for items.
+   */
+  readonly closed?: OutputRef<void>;
 }
 
 /**
