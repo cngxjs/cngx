@@ -713,7 +713,7 @@ export class CngxSidenav
  * in an overridden rule block). The rail renders as `compact`.
  */
 function warnUnknownWidthClass(value: string): void {
-  if (typeof ngDevMode === 'undefined' || !ngDevMode) {
+  if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
     return;
   }
   cngxDevWarn(
