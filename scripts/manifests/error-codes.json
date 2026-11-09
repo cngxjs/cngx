@@ -1588,6 +1588,23 @@
       ]
     },
     {
+      "code": "CNGX1081",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Second popover trigger takes the close listener",
+      "page": "core-concepts/error-codes/cngx1081.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1081.html",
+      "status": "active",
+      "files": ["projects/common/popover/popover.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/popover/popover.directive.ts",
+          "text": "[cngxPopover] a second CngxPopoverTrigger registered on this popover and replaced the first one. Only the last-registered trigger restores focus on close, so bind one CngxPopoverTrigger per popover."
+        }
+      ]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",

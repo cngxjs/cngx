@@ -185,6 +185,33 @@ class ConditionalTriggerHost {
 
 @Component({
   template: `
+    <button [cngxPopoverTrigger]="pop" id="first">First</button>
+    <button [cngxPopoverTrigger]="pop" id="second">Second</button>
+    <div cngxPopover #pop="cngxPopover">Content</div>
+  `,
+  imports: [CngxPopover, CngxPopoverTrigger],
+})
+class TwoTriggersHost {
+  readonly popover = viewChild.required(CngxPopover);
+}
+
+@Component({
+  template: `
+    @if (showTrigger()) {
+      <button [cngxPopoverTrigger]="pop" [restoreFocus]="true" id="trigger">Open</button>
+    }
+    <button id="outside" type="button">Outside</button>
+    <div cngxPopover #pop="cngxPopover">Content</div>
+  `,
+  imports: [CngxPopover, CngxPopoverTrigger],
+})
+class ConditionalRestoreTriggerHost {
+  readonly popover = viewChild.required(CngxPopover);
+  readonly showTrigger = signal(true);
+}
+
+@Component({
+  template: `
     @if (showTrigger()) {
       <button [cngxPopoverTrigger]="pop" id="trigger">Open</button>
     }
@@ -533,6 +560,30 @@ describe('CngxPopoverTrigger', () => {
       fixture.destroy();
     });
 
+    it('restores focus when show() and hide() run before change detection', () => {
+      const fixture = TestBed.createComponent(RestoreFocusHost);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      stubPopoverElement(popoverEl);
+
+      triggerEl.focus();
+      const host = fixture.componentInstance as RestoreFocusHost;
+      // A fast keyboard user (Enter, then Escape) opens and closes inside
+      // one tick: no change detection runs between show() and hide().
+      host.popover().show();
+      const panelItem = document.createElement('button');
+      popoverEl.appendChild(panelItem);
+      panelItem.focus();
+      host.popover().hide();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(document.activeElement).toBe(triggerEl);
+      fixture.destroy();
+    });
+
     it('should leave focus on a control outside the panel when the popover closes', () => {
       const fixture = TestBed.createComponent(RestoreFocusHost);
       testRoot.appendChild(fixture.nativeElement);
@@ -625,6 +676,104 @@ describe('CngxPopoverTrigger', () => {
       fixture.detectChanges();
       expect(document.activeElement).toBe(triggerEl);
       fixture.destroy();
+    });
+
+    it('releases the close listener on trigger destroy, so a later close moves no focus', () => {
+      const fixture = TestBed.createComponent(ConditionalRestoreTriggerHost);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const outsideEl = fixture.nativeElement.querySelector('#outside') as HTMLElement;
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      stubPopoverElement(popoverEl);
+      const host = fixture.componentInstance as ConditionalRestoreTriggerHost;
+
+      host.showTrigger.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(triggerEl.isConnected).toBe(false);
+
+      // The pre-open origin is a live element, so a listener left behind by
+      // the destroyed trigger would move focus onto it.
+      outsideEl.focus();
+      host.popover().show();
+      const panelItem = document.createElement('button');
+      popoverEl.appendChild(panelItem);
+      panelItem.focus();
+      host.popover().hide();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(document.activeElement).not.toBe(triggerEl);
+      expect(document.activeElement).toBe(document.body);
+      fixture.destroy();
+    });
+  });
+
+  describe('close listener', () => {
+    it('does not throw or focus a disconnected element when the host is destroyed while open', () => {
+      const testRoot = document.createElement('div');
+      document.body.appendChild(testRoot);
+      const fixture = TestBed.createComponent(RestoreFocusHost);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      stubPopoverElement(popoverEl);
+      const host = fixture.componentInstance as RestoreFocusHost;
+
+      triggerEl.focus();
+      host.popover().show();
+      fixture.detectChanges();
+      const panelItem = document.createElement('button');
+      popoverEl.appendChild(panelItem);
+      panelItem.focus();
+      expect(host.popover().state()).not.toBe('closed');
+
+      // Record every focus() call with the target's connection state at
+      // call time: the popover's destroy runs finalize() and the close
+      // listener while the trigger is torn down in the same pass.
+      const focusCalls: { el: HTMLElement; connected: boolean }[] = [];
+      const realFocus = HTMLElement.prototype.focus;
+      const focusSpy = vi
+        .spyOn(HTMLElement.prototype, 'focus')
+        .mockImplementation(function (this: HTMLElement, options?: FocusOptions) {
+          focusCalls.push({ el: this, connected: this.isConnected });
+          realFocus.call(this, options);
+        });
+
+      expect(() => fixture.destroy()).not.toThrow();
+      focusSpy.mockRestore();
+
+      expect(focusCalls.filter((call) => !call.connected)).toEqual([]);
+      const active = document.activeElement;
+      expect(active === null || active.isConnected).toBe(true);
+      testRoot.remove();
+    });
+
+    it('warns once when a second trigger takes the close listener of one popover', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const fixture = TestBed.createComponent(TwoTriggersHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const takeovers = warnSpy.mock.calls.filter((call) => /^CNGX1081: /.test(String(call[0])));
+      expect(takeovers).toHaveLength(1);
+      expect(String(takeovers[0][0])).toMatch(/Only the last-registered trigger restores focus/);
+      fixture.destroy();
+    });
+
+    it('does not warn for a single trigger', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const { fixture } = setup(BasicTriggerHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const takeovers = warnSpy.mock.calls.filter((call) => /^CNGX1081: /.test(String(call[0])));
+      expect(takeovers).toHaveLength(0);
     });
   });
 
