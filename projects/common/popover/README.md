@@ -128,6 +128,8 @@ import { CngxPending, CngxSucceeded, CngxFailed } from '@cngx/common/interactive
 
 Both footer hosts are button-family hosts on the native `<button>`: `button.component.css` paints them, the size is pinned to `sm` (a bound `size` wins), the default variant is `outline` and the tone comes from `tone`, not from the panel variant. `button[cngxPopoverDismiss]` closes the panel; `button[cngxPopoverAction]` requires `[action]`. Focus returns to the trigger through the panel's restore claim.
 
+`button[cngxPopoverAction]` is skin over four host directives: `CngxButtonBrain`, `CngxAsyncClick` (the run and its live region), `CngxActionStatusBrain` from `@cngx/common/interactive` (`succeededAnnouncement`, `failedAnnouncement`, `autoAnnounce`; the label cells and the settle announcement, read through `CNGX_ACTION_STATUS`) and `CngxPopoverCloseOnSuccess` (`closeOnSuccessDelay`). The close directive closes the composing `CngxPopover` after each success (`withCloseOnSuccess()` or the per-instance delay, `null` turns it off), cancels the close when a follow-up run starts, and speaks a closing success through `CngxLiveAnnouncer` outside the panel; it covers that outcome through `CNGX_ANNOUNCEMENT_COVER`, so the region inside the panel stays empty and the success is heard once.
+
 #### Migration
 
 | Old markup | New markup |

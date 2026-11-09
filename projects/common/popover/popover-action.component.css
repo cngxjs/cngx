@@ -30,7 +30,8 @@
  *   never shifts while the run swaps them
  * - `.cngx-popover-action__label[data-active]` - the visible, named cell; the
  *   others (a result cell waiting out the post-settle dwell among them) are
- *   `visibility: hidden` and `aria-hidden`
+ *   `visibility: hidden` and `aria-hidden`. `[cngxActionStatusCell]` binds
+ *   `data-active` and `aria-hidden` from `CNGX_ACTION_STATUS.activeCell`
  * - `data-status-label` - set while a projected `cngxPending` template
  *   shows instead of the spinner (through the run and its dwell); the
  *   button sheet's `[data-busy][data-status-label]` host hook keeps the
