@@ -285,7 +285,7 @@
     {
       "class": "CngxPopoverPanel",
       "file": "projects/common/popover/popover-panel.component.ts",
-      "line": 291,
+      "line": 292,
       "member": "resolvedLoadingText",
       "enclosing": "computed",
       "tiers": [
@@ -301,7 +301,7 @@
     {
       "class": "CngxPopoverPanel",
       "file": "projects/common/popover/popover-panel.component.ts",
-      "line": 293,
+      "line": 294,
       "member": "resolvedErrorText",
       "enclosing": "computed",
       "tiers": [
@@ -317,7 +317,7 @@
     {
       "class": "CngxPopoverPanel",
       "file": "projects/common/popover/popover-panel.component.ts",
-      "line": 294,
+      "line": 295,
       "member": "resolvedEmptyText",
       "enclosing": "computed",
       "tiers": [
