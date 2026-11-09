@@ -723,6 +723,11 @@ describe('CngxListboxTrigger - review 2 editable combobox and Alt shortcuts', ()
 })
 class DebouncedSearchInputHost {}
 
+// Dispatches without a tick, so a key can land before the next render.
+function keydownRaw(target: HTMLElement, key: string): void {
+  target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+}
+
 describe('CngxListboxTrigger - settles a pending search term before listbox keys', () => {
   beforeEach(() => {
     polyfillPopover();
@@ -762,6 +767,21 @@ describe('CngxListboxTrigger - settles a pending search term before listbox keys
     expect(search.term()).toBe('');
     press('ArrowDown');
     expect(search.term()).toBe('gr');
+  });
+
+  it('runs no deferred key into a panel closed inside the debounce window', () => {
+    const { fixture, input, type, press } = setup();
+    const popover = fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover);
+    const listbox = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox);
+    press('ArrowDown');
+    type('gr');
+    // Both keys land before the next render.
+    keydownRaw(input, 'ArrowDown');
+    keydownRaw(input, 'Escape');
+    TestBed.tick();
+
+    expect(popover.isVisible()).toBe(false);
+    expect(listbox.ad.activeIndex()).toBe(-1);
   });
 
   it('flushes the pending term on blur', () => {

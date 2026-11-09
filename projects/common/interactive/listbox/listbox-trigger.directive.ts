@@ -269,10 +269,18 @@ export class CngxListboxTrigger<T = unknown> {
     // navigation or activation key, then runs the key after the next render so
     // the listbox reflects the filtered options - the stale-filter rule the
     // declarative search already applies. A button trigger has no co-located
-    // search, so this never fires for it.
+    // search, so this never fires for it. A panel closed before that render
+    // (Escape inside the debounce window) gets no deferred key.
     if (this.searchCtrl && this.isNavOrActivate(key) && this.searchCtrl.flush()) {
       event.preventDefault();
-      afterNextRender(() => this.runOpenKey(key, null), { injector: this.injector });
+      afterNextRender(
+        () => {
+          if (this.isOpen()) {
+            this.runOpenKey(key, null);
+          }
+        },
+        { injector: this.injector },
+      );
       return;
     }
     this.runOpenKey(key, event);
