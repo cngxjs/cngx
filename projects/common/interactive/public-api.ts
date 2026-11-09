@@ -31,6 +31,17 @@ export {
   reflectAsyncDisplayStatus,
   type CngxAsyncDisplayStatus,
 } from './async-status/async-status.directive';
+export { CngxActionStatusBrain } from './action-status/action-status-brain.directive';
+export { CngxActionStatusCell } from './action-status/action-status-cell.directive';
+export {
+  CNGX_ACTION_STATUS,
+  CNGX_ANNOUNCEMENT_COVER,
+  type CngxActionOutcome,
+  type CngxActionStatus,
+  type CngxActionStatusCellKind,
+  type CngxActionStatusCells,
+  type CngxAnnouncementCover,
+} from './action-status/action-status.token';
 export { type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 export { CngxCopyText } from './copy/copy-text.directive';
 export { CngxCopyBlock } from './copy/copy-block';
