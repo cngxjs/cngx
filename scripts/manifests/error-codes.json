@@ -2266,15 +2266,8 @@
       "page": "core-concepts/error-codes/cngx3008.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3008.html",
       "status": "active",
-      "files": [
-        "projects/ui/action-button/action-button.ts",
-        "projects/ui/action-button/action-toast.directive.ts"
-      ],
+      "files": ["projects/ui/action-button/action-toast.directive.ts"],
       "messages": [
-        {
-          "file": "projects/ui/action-button/action-button.ts",
-          "text": "[cngxActionButton] [toastSuccess]/[toastError] inputs and [cngxToastOn] on the same element will fire duplicate toasts. Use one or the other."
-        },
         {
           "file": "projects/ui/action-button/action-toast.directive.ts",
           "text": "[cngxActionButton] [toastSuccess]/[toastError] inputs and [cngxToastOn] on the same element will fire duplicate toasts. Use one or the other."

@@ -445,6 +445,17 @@ describe('CngxActionButton', () => {
         expect(activeText(btn)).toContain('Err: boom');
       });
     });
+
+    it('speaks the rendered cngxSucceeded text on success', async () => {
+      const fixture = TestBed.createComponent(TemplateHost);
+      flush(fixture);
+      const root = fixture.nativeElement as HTMLElement;
+      root.querySelector('button')!.click();
+      await vi.waitFor(() => {
+        flush(fixture);
+        expect((root.querySelector('[aria-live="polite"]') as HTMLElement).textContent).toBe('OK');
+      });
+    });
   });
 
   describe('variant', () => {

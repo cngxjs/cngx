@@ -88,9 +88,10 @@ export interface CngxActionStatus {
    * What the co-hosted runner's live region speaks for one own settle (the
    * `CngxHostInteractionState.announcement` signature). `''` without a
    * settle, while an external state is bound, under `autoAnnounce` `false`
-   * and for an outcome a {@link CNGX_ANNOUNCEMENT_COVER} covers.
+   * and for an outcome a {@link CNGX_ANNOUNCEMENT_COVER} covers. A function
+   * property, so a provider passes it on detached.
    */
-  announcement(settle?: CngxAsyncSettle): string;
+  readonly announcement: (settle?: CngxAsyncSettle) => string;
   /**
    * The text an outcome speaks before any cover: the explicit announcement,
    * the rendered result cell, the label, the i18n copy. `''` under
