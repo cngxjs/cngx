@@ -1327,8 +1327,17 @@ describe('CngxSidenav toggle hotkey', () => {
     expect(fixture.componentInstance.open()).toBe(true);
   });
 
+  it('warns nothing for an unset shortcut (no empty combo reaches the registry)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fixture = TestBed.createComponent(ShortcutHost);
+    fixture.componentInstance.shortcut.set(undefined);
+    fixture.detectChanges();
+    expect(warn.mock.calls.some((args) => String(args[0]).startsWith('CNGX1080'))).toBe(false);
+    warn.mockRestore();
+  });
+
   it('registers under the remap id sidenav.toggle, unlisted', () => {
-    const registered: CngxHotkeyBinding[] = [];
+    const sources: Signal<readonly CngxHotkeyBinding[]>[] = [];
     TestBed.configureTestingModule({
       providers: [
         {
@@ -1341,7 +1350,7 @@ describe('CngxSidenav toggle hotkey', () => {
                 source: Signal<readonly CngxHotkeyBinding[]>,
                 scope: CngxHotkeyScopeNode | null,
               ) => {
-                registered.push(...source());
+                sources.push(source);
                 return real.register(source, scope);
               },
             };
@@ -1351,7 +1360,8 @@ describe('CngxSidenav toggle hotkey', () => {
     });
     const fixture = TestBed.createComponent(ShortcutHost);
     fixture.detectChanges();
-    const binding = registered.find((b) => b.id === 'sidenav.toggle');
+    // The source is live: read it once the shortcut input has bound.
+    const binding = sources.flatMap((source) => source()).find((b) => b.id === 'sidenav.toggle');
     expect(binding).toBeDefined();
     expect(binding?.description).toBeUndefined();
   });

@@ -16,7 +16,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { createTransitionTracker, injectLocale, numberFormatterFor } from '@cngx/core/utils';
-import { CNGX_HOVER_INTENT_DEFAULTS, injectHotkey } from '@cngx/common/interactive';
+import { CNGX_HOVER_INTENT_DEFAULTS, injectHotkeys } from '@cngx/common/interactive';
 import {
   CNGX_CONTAINER_SIZE,
   CNGX_DRAWER_SURFACE_DRIVER,
@@ -503,16 +503,18 @@ export class CngxSidenav
     // registry, under the remap id `sidenav.toggle`. It sits in the rail's own
     // scope, so while another modal overlay holds focus it stays quiet. It runs
     // toggle() (never a raw opened flip) and announces the new state, since no
-    // focused trigger conveys aria-expanded.
-    injectHotkey({
-      id: 'sidenav.toggle',
-      combo: computed(() => this.shortcut() ?? ''),
-      enabled: computed(() => !!this.shortcut()),
-      run: () => {
-        this.toggle();
-        this.announcer.announce(this.expanded());
-      },
-    });
+    // focused trigger conveys aria-expanded. An unset shortcut lists no
+    // binding at all: an empty combo would warn CNGX1080 as unparseable.
+    const runToggle = (): void => {
+      this.toggle();
+      this.announcer.announce(this.expanded());
+    };
+    injectHotkeys(
+      computed(() => {
+        const combo = this.shortcut();
+        return combo ? [{ id: 'sidenav.toggle', combo, run: runToggle }] : [];
+      }),
+    );
 
     this.persistCollapsed();
 
