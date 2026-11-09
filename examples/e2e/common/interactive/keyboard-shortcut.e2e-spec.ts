@@ -1,3 +1,5 @@
+import type { Page } from '@playwright/test';
+
 import { expect, test } from '../../_test';
 import { gotoDemo } from '../../_helpers';
 
@@ -5,6 +7,17 @@ import { gotoDemo } from '../../_helpers';
 // text field only modifier combos (and Escape / F-keys) fire, so Ctrl+K fires
 // while typing and a bare / does not. Self scope only fires when focus is
 // inside the host.
+
+// `mod` follows the page's navigator (the device profile emulates it, not the
+// host OS), read the way resolveMacPlatform reads it: UA Client Hints first,
+// then navigator.platform.
+async function modKey(page: Page): Promise<'Meta' | 'Control'> {
+  const isMac = await page.evaluate(() => {
+    const hint = (navigator as { userAgentData?: { platform?: string } }).userAgentData?.platform;
+    return /mac|iphone|ipad|ipod/i.test(hint !== undefined && hint !== '' ? hint : navigator.platform);
+  });
+  return isMac ? 'Meta' : 'Control';
+}
 
 test.describe('common/interactive/keyboard-shortcut', () => {
   test('global: Ctrl+K fires everywhere, / only outside the text field', async ({ page }) => {
@@ -20,14 +33,7 @@ test.describe('common/interactive/keyboard-shortcut', () => {
       .locator('.event-value');
     await expect(counter).toHaveText('0');
 
-    // `mod` follows the page's navigator (the device profile emulates it, not
-    // the host OS), read the way resolveMacPlatform reads it: UA Client Hints
-    // first, then navigator.platform.
-    const isMac = await page.evaluate(() => {
-      const hint = (navigator as { userAgentData?: { platform?: string } }).userAgentData?.platform;
-      return /mac|iphone|ipad|ipod/i.test(hint !== undefined && hint !== '' ? hint : navigator.platform);
-    });
-    const mod = isMac ? 'Meta' : 'Control';
+    const mod = await modKey(page);
 
     await expect(page.getByRole('button', { name: /Run command/ })).toHaveAttribute(
       'aria-keyshortcuts',
@@ -76,5 +82,43 @@ test.describe('common/interactive/keyboard-shortcut', () => {
     await page.keyboard.press('Escape');
     await expect(counter).toHaveText('1');
 
+  });
+
+  test('scopes: an open modal dialog blocks the app binding, its own fires only while open', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/interactive/gestures/keyboard-shortcut/registry-scopes');
+    const mod = await modKey(page);
+    const saves = page.getByTestId('save-count');
+    const submits = page.getByTestId('submit-count');
+    const last = page.getByTestId('last-fired');
+
+    const notes = page.getByRole('textbox', { name: /Notes/ });
+    await notes.focus();
+    await page.keyboard.press(`${mod}+s`);
+    await expect(saves).toHaveText('1');
+    await page.keyboard.press('n');
+    await expect(notes).toHaveValue('n');
+    await expect(last).toHaveText('app.save');
+
+    await page.getByRole('button', { name: 'Invoice 1042' }).focus();
+    await page.keyboard.press('n');
+    await expect(page.getByRole('button', { name: 'Invoice 1043' })).toBeFocused();
+    await expect(last).toHaveText('results.next');
+
+    await page.getByRole('button', { name: 'Open dialog' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Submit changes' });
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press(`${mod}+s`);
+    await expect(saves).toHaveText('1');
+
+    await page.keyboard.press(`${mod}+Enter`);
+    await expect(submits).toHaveText('1');
+    await expect(dialog).toBeHidden();
+
+    await page.keyboard.press(`${mod}+Enter`);
+    await expect(submits).toHaveText('1');
+    await page.keyboard.press(`${mod}+s`);
+    await expect(saves).toHaveText('2');
   });
 });
