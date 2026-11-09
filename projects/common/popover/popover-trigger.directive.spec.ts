@@ -186,6 +186,21 @@ class ConditionalTriggerHost {
 @Component({
   template: `
     @if (showTrigger()) {
+      <button [cngxPopoverTrigger]="pop" [restoreFocus]="true" id="trigger">Open</button>
+    }
+    <button id="outside" type="button">Outside</button>
+    <div cngxPopover #pop="cngxPopover">Content</div>
+  `,
+  imports: [CngxPopover, CngxPopoverTrigger],
+})
+class ConditionalRestoreTriggerHost {
+  readonly popover = viewChild.required(CngxPopover);
+  readonly showTrigger = signal(true);
+}
+
+@Component({
+  template: `
+    @if (showTrigger()) {
       <button [cngxPopoverTrigger]="pop" id="trigger">Open</button>
     }
     @if (showAnchor()) {
@@ -648,6 +663,37 @@ describe('CngxPopoverTrigger', () => {
       host.popover().hide();
       fixture.detectChanges();
       expect(document.activeElement).toBe(triggerEl);
+      fixture.destroy();
+    });
+
+    it('releases the close listener on trigger destroy, so a later close moves no focus', () => {
+      const fixture = TestBed.createComponent(ConditionalRestoreTriggerHost);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const outsideEl = fixture.nativeElement.querySelector('#outside') as HTMLElement;
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      stubPopoverElement(popoverEl);
+      const host = fixture.componentInstance as ConditionalRestoreTriggerHost;
+
+      host.showTrigger.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(triggerEl.isConnected).toBe(false);
+
+      // The pre-open origin is a live element, so a listener left behind by
+      // the destroyed trigger would move focus onto it.
+      outsideEl.focus();
+      host.popover().show();
+      const panelItem = document.createElement('button');
+      popoverEl.appendChild(panelItem);
+      panelItem.focus();
+      host.popover().hide();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(document.activeElement).not.toBe(triggerEl);
+      expect(document.activeElement).toBe(document.body);
       fixture.destroy();
     });
   });

@@ -195,14 +195,12 @@ export class CngxPopoverTrigger {
 
     // Close listener per popover: the popover calls it synchronously from
     // its close, so an open and close inside one tick cannot skip the
-    // restore. The release is identity-guarded like the anchor slot.
+    // restore. onCleanup also runs on destroy; the release is
+    // identity-guarded like the anchor slot.
     effect((onCleanup) => {
       const pop = this.popoverRef();
       untracked(() => pop.registerCloseListener(this.handleClose));
       onCleanup(() => pop.releaseCloseListener(this.handleClose));
-    });
-    this.destroyRef.onDestroy(() => {
-      this.popoverRef().releaseCloseListener(this.handleClose);
     });
   }
 
