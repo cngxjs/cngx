@@ -11,7 +11,6 @@ import {
   linkedSignal,
   output,
   signal,
-  untracked,
 } from '@angular/core';
 import {
   injectDirection,
@@ -159,8 +158,10 @@ export class CngxActiveDescendant {
    * A highlight gesture that fired while the option rows were not in the DOM
    * (a deferred-render panel just opened, OD5): the id space does not exist
    * yet, so the gesture is kept as INTENT - not a resolved index, which an
-   * empty item space resolves to nothing - and re-applied once the rows
-   * render. Non-virtual path only; the virtual path uses `pendingHighlight`.
+   * empty item space resolves to nothing. It is a source of
+   * `activeIndexState` and resolves there once the rows render. Written only
+   * by the imperative highlight methods; every index write clears it.
+   * Non-virtual path only; the virtual path uses `pendingHighlight`.
    */
   private readonly pendingIntentState = signal<PendingIntent | null>(null);
 
@@ -186,15 +187,26 @@ export class CngxActiveDescendant {
    * index, because the rendered rows trail `windowStart` and cannot say where a
    * value sits; a window turning plain drops it. The result is clamped to the
    * new item space, so the next arrow press never starts from a ghost index.
+   *
+   * A pending open gesture (`pendingIntentState`) resolves here against every
+   * populated item space until an index write clears it, so rows that arrive
+   * in several passes settle on the gesture's target.
    */
   private readonly activeIndexState = linkedSignal<ActiveIndexSource, number>({
     source: () => ({
       items: this.resolvedItems(),
       total: this.totalCount(),
       virtual: this.virtualCount() != null,
+      offset: this.windowOffset(),
       compareWith: this.compareWith() as (a: unknown, b: unknown) => boolean,
+      skipDisabled: this.skipDisabled(),
+      intent: this.pendingIntentState(),
     }),
     computation: (source, previous) => {
+      const { intent } = source;
+      if (intent !== null && source.items.length > 0) {
+        return resolveIntent({ ...source, intent });
+      }
       if (!previous) {
         return -1;
       }
@@ -321,33 +333,14 @@ export class CngxActiveDescendant {
       queueMicrotask(() => this.scrollActiveIntoView());
     });
 
-    // Deferred-render re-apply (non-virtual path): when the option rows arrive
-    // after a highlight gesture was remembered as intent (empty item space at
-    // the time), re-run the gesture against the now-populated space and drop
-    // the intent. Tracks only `resolvedItems`; the intent is read and cleared
-    // untracked so storing or clearing it never re-triggers this effect.
-    effect(() => {
-      if (this.resolvedItems().length === 0) {
-        return;
-      }
-      const intent = untracked(() => this.pendingIntentState());
-      if (intent === null) {
-        return;
-      }
-      untracked(() => {
-        this.pendingIntentState.set(null);
-        this.applyIntent(intent);
-      });
-    });
-
     inject(DestroyRef).onDestroy(() => this.typeaheadWalker.clear());
   }
 
   /**
    * Non-virtual path with no rendered rows yet (a deferred-render panel just
    * opened, OD5): the option id space does not exist, so a highlight resolves
-   * against nothing and is lost. Remember the gesture as intent - the
-   * constructor effect re-applies it once the rows render - and report that it
+   * against nothing and is lost. Remember the gesture as intent -
+   * `activeIndexState` resolves it once the rows render - and report that it
    * was deferred. The virtual path never defers here; its out-of-window
    * targets surface through `pendingHighlight` instead.
    */
@@ -359,57 +352,35 @@ export class CngxActiveDescendant {
     return false;
   }
 
-  /** Re-run a remembered highlight gesture now the rows exist. */
-  private applyIntent(intent: PendingIntent): void {
-    switch (intent.kind) {
-      case 'first':
-        this.highlightFirst();
-        return;
-      case 'last':
-        this.highlightLast();
-        return;
-      case 'next':
-        this.highlightNext();
-        return;
-      case 'prev':
-        this.highlightPrev();
-        return;
-      case 'byIndex':
-        this.highlightByIndex(intent.index);
-        return;
-      case 'byValue':
-        this.highlightByValue(intent.value);
-        return;
-    }
+  /** Index write of a navigation step; a resolved intent never re-applies after it. */
+  private writeIndex(index: number): void {
+    this.pendingIntentState.set(null);
+    this.activeIndexState.set(index);
   }
 
   /**
    * Moves the highlight to the next item after the active one. Disabled items
    * are skipped while `skipDisabled` is true; past the last item it wraps to the
-   * first when `loop` is true and stays put otherwise.
+   * first when `loop` is true and stays put otherwise. With no rows it does
+   * nothing: a step inside an empty list is not an open gesture to keep.
    */
   highlightNext(): void {
-    if (this.deferIfUnrendered({ kind: 'next' })) {
-      return;
-    }
     const next = this.findFrom(this.activeIndexState(), 1);
     if (next !== null) {
-      this.activeIndexState.set(next);
+      this.writeIndex(next);
     }
   }
 
   /**
    * Moves the highlight to the item before the active one. Disabled items are
    * skipped while `skipDisabled` is true; before the first item it wraps to the
-   * last when `loop` is true and stays put otherwise.
+   * last when `loop` is true and stays put otherwise. With no rows it does
+   * nothing.
    */
   highlightPrev(): void {
-    if (this.deferIfUnrendered({ kind: 'prev' })) {
-      return;
-    }
     const next = this.findFrom(this.activeIndexState(), -1);
     if (next !== null) {
-      this.activeIndexState.set(next);
+      this.writeIndex(next);
     }
   }
 
@@ -423,7 +394,7 @@ export class CngxActiveDescendant {
     }
     const first = this.findBoundary(1);
     if (first !== null) {
-      this.activeIndexState.set(first);
+      this.writeIndex(first);
     }
   }
 
@@ -439,7 +410,7 @@ export class CngxActiveDescendant {
     }
     const last = this.findBoundary(-1);
     if (last !== null) {
-      this.activeIndexState.set(last);
+      this.writeIndex(last);
     }
   }
 
@@ -458,7 +429,7 @@ export class CngxActiveDescendant {
     if (this.skipDisabled() && this.isDisabledAt(index)) {
       return;
     }
-    this.activeIndexState.set(index);
+    this.writeIndex(index);
   }
 
   /**
@@ -479,7 +450,7 @@ export class CngxActiveDescendant {
     if (this.skipDisabled() && items[idx].disabled) {
       return;
     }
-    this.activeIndexState.set(idx + this.windowOffset());
+    this.writeIndex(idx + this.windowOffset());
   }
 
   /** Clear the highlight, including a gesture still pending a deferred render. */
@@ -664,7 +635,7 @@ export class CngxActiveDescendant {
       this.typeaheadMissed.emit(term);
       return;
     }
-    this.activeIndexState.set(rel + offset);
+    this.writeIndex(rel + offset);
   }
 
   private findFrom(current: number, direction: 1 | -1): number | null {
@@ -735,16 +706,14 @@ export class CngxActiveDescendant {
 }
 
 /**
- * @internal A highlight gesture remembered while the option rows are absent,
- * re-applied once they render. Captured as the gesture, not a resolved index:
+ * @internal An open gesture remembered while the option rows are absent,
+ * resolved once they render. Captured as the gesture, not a resolved index:
  * an empty item space resolves to nothing, so the index must be computed
- * against the populated space at re-apply time.
+ * against the populated space.
  */
 type PendingIntent =
   | { readonly kind: 'first' }
   | { readonly kind: 'last' }
-  | { readonly kind: 'next' }
-  | { readonly kind: 'prev' }
   | { readonly kind: 'byIndex'; readonly index: number }
   | { readonly kind: 'byValue'; readonly value: unknown };
 
@@ -760,7 +729,33 @@ interface ActiveIndexSource {
   readonly items: readonly ActiveDescendantItem[];
   readonly total: number;
   readonly virtual: boolean;
+  /** Absolute index of the first rendered item (`windowStart`, 0 when plain). */
+  readonly offset: number;
   readonly compareWith: (a: unknown, b: unknown) => boolean;
+  readonly skipDisabled: boolean;
+  readonly intent: PendingIntent | null;
+}
+
+/** @internal Resolves an open gesture against a populated item space; -1 when nothing qualifies. */
+function resolveIntent(source: ActiveIndexSource & { readonly intent: PendingIntent }): number {
+  const { items, offset, total, intent } = source;
+  const isDisabledAt = source.skipDisabled
+    ? (i: number): boolean => !!items[i - offset]?.disabled
+    : undefined;
+  switch (intent.kind) {
+    case 'first':
+      return resolveBoundaryStep(1, { count: total, isDisabledAt }) ?? -1;
+    case 'last':
+      return resolveBoundaryStep(-1, { count: total, isDisabledAt }) ?? -1;
+    case 'byIndex': {
+      const outside = intent.index < 0 || intent.index >= total;
+      return outside || isDisabledAt?.(intent.index) ? -1 : intent.index;
+    }
+    case 'byValue': {
+      const idx = items.findIndex((it) => Object.is(it.value, intent.value));
+      return idx < 0 || (source.skipDisabled && items[idx].disabled) ? -1 : idx + offset;
+    }
+  }
 }
 
 /**

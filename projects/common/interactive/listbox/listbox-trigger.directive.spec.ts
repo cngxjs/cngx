@@ -182,7 +182,7 @@ describe('CngxListboxTrigger', () => {
     expect(ad.activeValue()).toBe('blue');
   });
 
-  it('defers an open-nav key on a deferred-render panel until its rows exist', async () => {
+  it('stores no highlight for an arrow key on an open panel whose rows have not rendered', async () => {
     TestBed.configureTestingModule({ imports: [DeferredTriggerHost] });
     const fixture = TestBed.createComponent(DeferredTriggerHost);
     fixture.detectChanges();
@@ -194,21 +194,16 @@ describe('CngxListboxTrigger', () => {
       .nativeElement as HTMLElement;
     const popover = fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover);
 
-    // Open the panel but dispatch the nav key before change detection renders
-    // the rows (a pointer/click open on an OD5 panel): the AD item space is
-    // still empty at keydown.
+    // An arrow key inside an open panel is a step, not an open gesture: with no
+    // rows there is nothing to step to, and nothing is kept for later rows.
     popover.show();
     const event = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true });
     triggerEl.dispatchEvent(event);
-    // The key must not no-op against the empty item space: it prevents default
-    // and is held, instead of being lost.
-    expect(event.defaultPrevented).toBe(true);
     expect(ad.activeItem()).toBeNull();
 
-    // The open renders the rows; the deferred key then applies to the first row.
     await fixture.whenStable();
     TestBed.flushEffects();
-    expect(ad.activeValue()).toBe('red');
+    expect(ad.activeItem()).toBeNull();
   });
 
   it('leaves Escape alone while the popover reports closeOnEscape false', () => {

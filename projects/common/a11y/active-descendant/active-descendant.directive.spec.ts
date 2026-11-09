@@ -537,19 +537,45 @@ describe('CngxActiveDescendant - deferred-render re-apply', () => {
     TestBed.flushEffects();
   }
 
-  it('holds a nav key fired before the rows render, then applies it', async () => {
+  it('stores nothing for an arrow key in an empty list, so later rows carry no highlight', () => {
     const { fixture, container, dir } = setupDeferred();
-    // Nav key before the rows exist: empty item space, so it cannot resolve.
     container.triggerEventHandler('keydown', new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+    container.triggerEventHandler('keydown', new KeyboardEvent('keydown', { key: 'ArrowUp' }));
     TestBed.flushEffects();
     expect(dir.activeItem()).toBeNull();
 
-    // Rows render; the held gesture applies to the first option.
-    fixture.componentInstance.visible.set(true);
+    render(fixture);
+    expect(dir.activeItem()).toBeNull();
+    expect(dir.activeIndex()).toBe(-1);
+  });
+
+  it('drops a stored open gesture once an arrow key moves the highlight', () => {
+    const { fixture, container, dir } = setupDeferred();
+    dir.highlightLast();
+    render(fixture);
+    expect(dir.activeValue()).toBe('c');
+
+    container.triggerEventHandler('keydown', new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+    expect(dir.activeValue()).toBe('b');
+    // The rows going away and coming back no longer re-apply the gesture.
+    fixture.componentInstance.visible.set(false);
     fixture.detectChanges();
-    await fixture.whenStable();
     TestBed.flushEffects();
-    expect(dir.activeValue()).toBe('a');
+    render(fixture);
+    expect(dir.activeValue()).not.toBe('c');
+  });
+
+  it('re-resolves an untouched open gesture when the item space empties and refills', () => {
+    const { fixture, dir } = setupDeferred();
+    dir.highlightLast();
+    render(fixture);
+    expect(dir.activeValue()).toBe('c');
+
+    fixture.componentInstance.visible.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    render(fixture);
+    expect(dir.activeValue()).toBe('c');
   });
 
   it('re-applies highlightFirst once the rows arrive', () => {
