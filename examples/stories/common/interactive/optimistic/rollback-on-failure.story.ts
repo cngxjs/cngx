@@ -13,8 +13,7 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     'import { createOptimistic } from \'@cngx/common/interactive\';',
-    'import { of, switchMap, throwError, timer } from \'rxjs\';',
-    'import { delay } from \'rxjs/operators\';',
+    'import { delay, of, switchMap, throwError, timer } from \'rxjs\';',
   ],
   imports: [],
   setup: `

@@ -14,8 +14,7 @@ export const STORY: DemoSpec = {
   moduleImports: [
     'import { Injector } from \'@angular/core\';',
     'import { CngxAsyncClick, type CngxAsyncSettle } from \'@cngx/common/interactive\';',
-    'import { of, switchMap, throwError, timer } from \'rxjs\';',
-    'import { delay } from \'rxjs/operators\';',
+    'import { delay, of, switchMap, throwError, timer } from \'rxjs\';',
   ],
   imports: ['CngxAsyncClick'],
   references: [
