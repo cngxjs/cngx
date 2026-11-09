@@ -337,6 +337,34 @@ class ToastRebindHost {
   readonly toastMsg = signal('Saved!');
 }
 
+// ── Forwarded binding hosts (T22) ─────────────────────────────────────
+
+@Component({
+  template: `
+    <span id="extra-hint">Extra</span>
+    <button
+      cngxActionButton
+      [action]="action"
+      [showDelay]="300"
+      [type]="'submit'"
+      [cngxDescribedBy]="'extra-hint'"
+      [succeededAnnouncement]="succeeded"
+      [failedAnnouncement]="failed"
+      succeededLabel="Done"
+      failedLabel="Failed"
+    >
+      Save
+    </button>
+  `,
+  imports: [CngxActionButton],
+})
+class ForwardedBindingsHost {
+  actionImpl: () => Promise<unknown> = () => Promise.resolve();
+  readonly action = () => this.actionImpl();
+  readonly succeeded = 'Saved, said explicitly';
+  readonly failed = 'Failed, said explicitly';
+}
+
 // ── State exposition host ───────────────────────────────────────────────
 
 @Component({
@@ -1089,12 +1117,16 @@ describe('CngxActionButton', () => {
       const fixture = TestBed.createComponent(ToastHost);
       fixture.detectChanges();
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
-      // Should not throw - toaster is optional
       btn.click();
       await vi.waitFor(() => {
         flush(fixture);
-        expect(btn.textContent).toBeDefined();
+        expect(btn.getAttribute('data-status')).toBe('success');
       });
+      // No toaster, no cover: the region speaks the succeeded copy itself.
+      flush(fixture);
+      expect(
+        (fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement).textContent,
+      ).toBe('Action succeeded');
     });
   });
 
@@ -1572,6 +1604,64 @@ describe('CngxActionButton settle lifecycle', () => {
     expect(host.events).toHaveLength(0);
     expect(live.textContent).toBe('');
     expect(errors).not.toHaveBeenCalled();
+  });
+});
+
+describe('CngxActionButton forwarded bindings', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('gates data-busy on a bound [showDelay]', async () => {
+    vi.useFakeTimers();
+    const d = deferred();
+    const fixture = TestBed.createComponent(ForwardedBindingsHost);
+    fixture.componentInstance.actionImpl = () => d.promise;
+    flush(fixture);
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    btn.click();
+    flush(fixture);
+    await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay);
+    flush(fixture);
+    expect(btn.hasAttribute('data-busy')).toBe(false);
+    await vi.advanceTimersByTimeAsync(300 - CNGX_LOADING_DEFAULTS.showDelay);
+    flush(fixture);
+    expect(btn.getAttribute('data-busy')).toBe('true');
+    d.resolve();
+    await vi.advanceTimersByTimeAsync(0);
+  });
+
+  it('renders a bound [type]', () => {
+    const fixture = TestBed.createComponent(ForwardedBindingsHost);
+    flush(fixture);
+    expect(fixture.nativeElement.querySelector('button').getAttribute('type')).toBe('submit');
+  });
+
+  it('joins a bound [cngxDescribedBy] id into aria-describedby', () => {
+    const fixture = TestBed.createComponent(ForwardedBindingsHost);
+    flush(fixture);
+    const ids = (fixture.nativeElement.querySelector('button').getAttribute('aria-describedby') ?? '')
+      .split(/\s+/)
+      .filter(Boolean);
+    expect(ids).toContain('extra-hint');
+  });
+
+  it.each([
+    ['success', 'Saved, said explicitly'],
+    ['error', 'Failed, said explicitly'],
+  ] as const)('speaks the bound %s announcement over the label', async (outcome, expected) => {
+    const fixture = TestBed.createComponent(ForwardedBindingsHost);
+    fixture.componentInstance.actionImpl = () =>
+      outcome === 'success' ? Promise.resolve() : Promise.reject(new Error('nope'));
+    flush(fixture);
+    const root = fixture.nativeElement as HTMLElement;
+    root.querySelector('button')!.click();
+    await vi.waitFor(() => {
+      flush(fixture);
+      expect((root.querySelector('[aria-live="polite"]') as HTMLElement).textContent).toBe(
+        expected,
+      );
+    });
   });
 });
 
