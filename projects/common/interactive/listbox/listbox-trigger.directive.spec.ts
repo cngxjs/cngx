@@ -182,6 +182,35 @@ describe('CngxListboxTrigger', () => {
     expect(ad.activeValue()).toBe('blue');
   });
 
+  it('sets the key highlight before the popover emits opened, so an opened handler can replace it', () => {
+    const { triggerEl, popover, ad } = setup();
+    let atOpen: unknown = 'unset';
+    popover.opened.subscribe(() => {
+      atOpen = ad.activeValue();
+      ad.highlightByIndex(1);
+    });
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
+    TestBed.flushEffects();
+    expect(atOpen).toBe('blue');
+    expect(ad.activeValue()).toBe('green');
+  });
+
+  it('applies a key-open highlight to a deferred-render panel once its rows render', async () => {
+    TestBed.configureTestingModule({ imports: [DeferredTriggerHost] });
+    const fixture = TestBed.createComponent(DeferredTriggerHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const ad = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxActiveDescendant);
+    const triggerEl = fixture.debugElement.query(By.directive(CngxListboxTrigger))
+      .nativeElement as HTMLElement;
+
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
+    expect(ad.activeItem()).toBeNull();
+    await fixture.whenStable();
+    TestBed.flushEffects();
+    expect(ad.activeValue()).toBe('green');
+  });
+
   it('stores no highlight for an arrow key on an open panel whose rows have not rendered', async () => {
     TestBed.configureTestingModule({ imports: [DeferredTriggerHost] });
     const fixture = TestBed.createComponent(DeferredTriggerHost);

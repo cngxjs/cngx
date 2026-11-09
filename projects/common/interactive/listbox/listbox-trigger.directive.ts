@@ -232,18 +232,22 @@ export class CngxListboxTrigger<T = unknown> {
       // An editable combobox (co-located search) leaves a closed Enter to the
       // form: the native implicit submit must run, opening belongs to
       // Alt+ArrowDown. Space already reached the input as an editing key above.
+      // The highlight goes first, so a handler of the popover's `opened`
+      // output (a host opening on its selected option) can replace it in the
+      // same task. A deferred-render panel holds no rows yet; the active
+      // descendant keeps the gesture until they render.
       const openKeys =
         key === 'ArrowDown' || (!this.search && (key === 'Enter' || key === ' '));
       if (openKeys) {
         event.preventDefault();
+        this.listbox().ad.highlightFirst();
         this.popover().show();
-        this.highlightOnOpen('first');
         return;
       }
       if (key === 'ArrowUp') {
         event.preventDefault();
+        this.listbox().ad.highlightLast();
         this.popover().show();
-        this.highlightOnOpen('last');
         return;
       }
       return;
@@ -259,29 +263,7 @@ export class CngxListboxTrigger<T = unknown> {
       afterNextRender(() => this.runOpenKey(key, null), { injector: this.injector });
       return;
     }
-    // A deferred-render panel (CngxSelect family, OD5) just opened by click or
-    // pointer holds no option rows yet, so a navigation key resolves against an
-    // empty AD item space. CngxActiveDescendant remembers the gesture as intent
-    // and re-applies it once the rows render, so the key runs synchronously
-    // here and the highlight is never lost.
     this.runOpenKey(key, event);
-  }
-
-  /**
-   * Highlight the first / last option when a key opens a closed panel. A
-   * deferred-render panel (the `CngxSelect` family, OD5) renders no option
-   * rows until its first open, so the AD item space is empty at keydown;
-   * `CngxActiveDescendant` keeps the gesture as intent and re-applies it once
-   * the rows render. A panel that already holds its rows (menu, command
-   * palette) highlights synchronously. Either way the call is the same.
-   */
-  private highlightOnOpen(which: 'first' | 'last'): void {
-    const ad = this.listbox().ad;
-    if (which === 'first') {
-      ad.highlightFirst();
-    } else {
-      ad.highlightLast();
-    }
   }
 
   /** Whether `key` navigates or activates the open listbox. */
