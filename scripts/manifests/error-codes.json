@@ -2592,6 +2592,23 @@
       ]
     },
     {
+      "code": "CNGX3026",
+      "lib": "ui",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Unknown sidenav width class",
+      "page": "core-concepts/error-codes/cngx3026.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3026.html",
+      "status": "active",
+      "files": ["projects/ui/sidenav/sidenav.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/sidenav/sidenav.ts",
+          "text": "[cngx-sidenav] unknown --cngx-sidenav-width-class \"${...}\"; expected compact, medium or expanded. Rendering as compact."
+        }
+      ]
+    },
+    {
       "code": "CNGX4001",
       "lib": "data-display",
       "severity": "warn",

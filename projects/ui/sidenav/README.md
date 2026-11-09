@@ -74,17 +74,23 @@ Key features:
 
 The docking decision reads the width of the surrounding `CngxSidenavLayout`, not the width of the window. A rail inside a dashboard pane collapses when that pane is narrow, whatever the browser window is doing.
 
-The threshold lives in exactly one place - a `@container` rule in `sidenav-layout.css` that writes `--cngx-sidenav-layout-wide` on the rail:
+The thresholds live in exactly one place - a `@container` rule block in `sidenav-layout.css` that writes `--cngx-sidenav-width-class` on the rail. Below 48rem the class is `compact` (the rail is a drawer), from 48rem `medium`, from 64rem `expanded` (both dock the rail). Override both rules to move the thresholds:
 
 ```css
-@container cngx-sidenav-layout (min-inline-size: 64rem) {
+@container cngx-sidenav-layout (min-inline-size: 40rem) {
   cngx-sidenav-layout > cngx-sidenav {
-    --cngx-sidenav-layout-wide: 1;
+    --cngx-sidenav-width-class: medium;
+  }
+}
+
+@container cngx-sidenav-layout (min-inline-size: 72rem) {
+  cngx-sidenav-layout > cngx-sidenav {
+    --cngx-sidenav-width-class: expanded;
   }
 }
 ```
 
-`CngxSidenav` reads the resolved value; it never evaluates the condition itself. Override that rule to move the breakpoint. To opt out of auto entirely, bind `mode`:
+`CngxSidenav` reads the resolved value as `widthClass()`; it never evaluates a condition itself. A value outside the three classes renders as `compact` and warns `CNGX3026` in dev mode. To opt out of auto entirely, bind `mode`:
 
 ```html
 <!-- always an overlay, whatever the layout width -->

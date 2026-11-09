@@ -820,8 +820,8 @@ describe('CngxSidenav resizable', () => {
 describe('CngxSidenav auto mode', () => {
   let roMock: ResizeObserverMock;
 
-  // The docking decision reads --cngx-sidenav-layout-wide, which the layout's
-  // @container rule resolves. jsdom evaluates no container query, so the
+  // The docking decision reads --cngx-sidenav-width-class, which the layout's
+  // @container rule block resolves. jsdom evaluates no container query, so the
   // property read is stubbed here and the real CSS path is covered by
   // sidenav.geometry.spec.ts in Chromium.
   function stubWide(value: string): void {
@@ -854,13 +854,13 @@ describe('CngxSidenav auto mode', () => {
   });
 
   it('renders as over before the first resize entry arrives', () => {
-    stubWide('1');
+    stubWide('expanded');
     const { nav } = mount();
     expect(nav.effectiveMode()).toBe('over');
   });
 
   it('docks beside the content when the layout reports wide', () => {
-    stubWide('1');
+    stubWide('expanded');
     const { fixture, nav } = mount();
     flushResize();
     fixture.detectChanges();
@@ -868,15 +868,50 @@ describe('CngxSidenav auto mode', () => {
   });
 
   it('overlays when the layout reports narrow', () => {
-    stubWide('0');
+    stubWide('compact');
     const { fixture, nav } = mount();
     flushResize();
     fixture.detectChanges();
     expect(nav.effectiveMode()).toBe('over');
   });
 
+  it('docks in the medium width class', () => {
+    stubWide('medium');
+    const { fixture, nav } = mount();
+    flushResize();
+    fixture.detectChanges();
+    expect(nav.widthClass()).toBe('medium');
+    expect(nav.effectiveMode()).toBe('side');
+  });
+
+  it('resolves an unknown width class to compact and warns CNGX3026', () => {
+    stubWide('wide');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { fixture, nav } = mount();
+    flushResize();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(nav.widthClass()).toBe('compact');
+    expect(nav.effectiveMode()).toBe('over');
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringMatching(/^CNGX3026: \[cngx-sidenav\] unknown --cngx-sidenav-width-class "wide"/),
+      expect.anything(),
+    );
+  });
+
+  it('resolves an empty width class to compact without a warning', () => {
+    stubWide('');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { fixture, nav } = mount();
+    flushResize();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(nav.widthClass()).toBe('compact');
+    expect(warn).not.toHaveBeenCalledWith(expect.stringMatching(/CNGX3026/), expect.anything());
+  });
+
   it('pins over when mode is bound explicitly, even on a wide layout', () => {
-    stubWide('1');
+    stubWide('expanded');
     const { fixture, nav } = mount();
     fixture.componentInstance.mode.set('over');
     flushResize();
@@ -885,7 +920,7 @@ describe('CngxSidenav auto mode', () => {
   });
 
   it('pins side when mode is bound explicitly, even on a narrow layout', () => {
-    stubWide('0');
+    stubWide('compact');
     const { fixture, nav } = mount();
     fixture.componentInstance.mode.set('side');
     flushResize();
@@ -894,7 +929,7 @@ describe('CngxSidenav auto mode', () => {
   });
 
   it('pins push when mode is bound explicitly', () => {
-    stubWide('1');
+    stubWide('expanded');
     const { fixture, nav } = mount();
     fixture.componentInstance.mode.set('push');
     flushResize();
@@ -903,7 +938,7 @@ describe('CngxSidenav auto mode', () => {
   });
 
   it('falls back to over and warns when no layout provides a container', () => {
-    stubWide('1');
+    stubWide('expanded');
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const { nav } = mount(StandaloneRailHost);
     expect(nav.effectiveMode()).toBe('over');
@@ -913,14 +948,14 @@ describe('CngxSidenav auto mode', () => {
   });
 
   it('keeps the rail open and unhidden when a wide layout narrows under focus', () => {
-    stubWide('1');
+    stubWide('expanded');
     const { fixture, nav } = mount();
     flushResize();
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(nav.effectiveMode()).toBe('side');
 
-    stubWide('0');
+    stubWide('compact');
     flushResize();
     fixture.detectChanges();
     TestBed.flushEffects();

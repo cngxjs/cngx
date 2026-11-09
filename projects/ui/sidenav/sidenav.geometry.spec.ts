@@ -128,7 +128,7 @@ describe('CngxSidenav RTL geometry (:dir scoping)', () => {
 // This is the suite that proves the plan's central claim, and it can only live
 // here: jsdom evaluates no container query, so every jsdom test of auto mode
 // has to stub the property read. Here the real cascade runs - the layout's
-// @container rule resolves `--cngx-sidenav-layout-wide` on the rail, the
+// @container rule block resolves `--cngx-sidenav-width-class` on the rail, the
 // component reads that value back through CngxContainer.property(), and the
 // resolved mode lands on the host as a class.
 
@@ -189,21 +189,30 @@ describe('CngxSidenav auto mode geometry', () => {
     expect(state.name).toBe('cngx-sidenav-layout');
   });
 
-  it('resolves the docking property on the rail, not on the layout', () => {
+  it('resolves the width class on the rail, switching at exactly 48rem and 64rem', () => {
     const { rail, setWidth } = mountAuto();
-    setWidth('40rem');
-    expect(computedValue(rail, '--cngx-sidenav-layout-wide')).toBe('0');
-    setWidth('80rem');
-    expect(computedValue(rail, '--cngx-sidenav-layout-wide')).toBe('1');
+    setWidth('47.9rem');
+    expect(computedValue(rail, '--cngx-sidenav-width-class')).toBe('compact');
+    setWidth('48rem');
+    expect(computedValue(rail, '--cngx-sidenav-width-class')).toBe('medium');
+    setWidth('63.9rem');
+    expect(computedValue(rail, '--cngx-sidenav-width-class')).toBe('medium');
+    setWidth('64rem');
+    expect(computedValue(rail, '--cngx-sidenav-width-class')).toBe('expanded');
   });
 
-  it('overlays below the threshold and docks at or above it', async () => {
+  it('overlays in compact and docks in medium and expanded', async () => {
     const { rail, setWidth } = mountAuto();
 
     setWidth('40rem');
     await nextFrame();
     expect(rail.classList.contains('cngx-sidenav--over')).toBe(true);
     expect(rail.classList.contains('cngx-sidenav--side')).toBe(false);
+
+    setWidth('56rem');
+    await nextFrame();
+    expect(rail.classList.contains('cngx-sidenav--side')).toBe(true);
+    expect(rail.classList.contains('cngx-sidenav--over')).toBe(false);
 
     setWidth('80rem');
     await nextFrame();

@@ -13,6 +13,7 @@ import {
   linkedSignal,
   model,
   signal,
+  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 import {
@@ -52,18 +53,32 @@ export type SidenavMode = 'auto' | 'over' | 'push' | 'side' | 'mini';
 export type ResolvedSidenavMode = Exclude<SidenavMode, 'auto'>;
 
 /**
+ * The width class of the surrounding `CngxSidenavLayout`, resolved by the
+ * `@container` rule block in `sidenav-layout.css`: `compact` below 48rem,
+ * `medium` from 48rem, `expanded` from 64rem.
+ */
+export type SidenavWidthClass = 'compact' | 'medium' | 'expanded';
+
+const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
+  'compact',
+  'medium',
+  'expanded',
+]);
+
+/**
  * Declarative sidebar component for the four drawer modes (`over`,
  * `push`, `side`, `mini`) plus an `auto` default, two-way
  * `[(opened)]` binding, and content projection via header/footer
  * slots.
  *
- * Responsive out of the box: `mode` defaults to `'auto'`, which docks the
- * rail beside the content once the surrounding `CngxSidenavLayout` is
- * `64rem` or wider and overlays it below that. Nothing needs to be bound.
- * The threshold lives in `sidenav-layout.css` and nowhere else - a
- * `@container` rule writes `--cngx-sidenav-layout-wide` on the rail and
- * this component reads the resolved value, so ejecting the skin moves the
- * breakpoint with it. Any explicit `mode` pins that mode at every width.
+ * Responsive out of the box: `mode` defaults to `'auto'`, which follows the
+ * width class of the surrounding `CngxSidenavLayout` (`widthClass`): it
+ * overlays the content below `48rem` (`compact`) and docks beside it from
+ * `48rem` (`medium`, `expanded`). Nothing needs to be bound. The thresholds
+ * live in `sidenav-layout.css` and nowhere else - a `@container` rule block
+ * writes `--cngx-sidenav-width-class` on the rail and this component reads
+ * the resolved value, so ejecting the skin moves the thresholds with it. Any
+ * explicit `mode` pins that mode at every width.
  *
  * In overlay (`over`) mode it drives a CDK focus trap directly via
  * `FocusTrapFactory` (the same primitive `CngxFocusTrap` wraps): focus
@@ -213,9 +228,9 @@ export class CngxSidenav {
   readonly id = input<string>(nextUid('cngx-sidenav-'));
 
   /**
-   * Drawer mode. `'auto'` (the default) resolves to `'side'` once the
-   * surrounding layout is `64rem` or wider and to `'over'` below that; any
-   * other value pins that mode at every width.
+   * Drawer mode. `'auto'` (the default) resolves from `widthClass`: `'over'`
+   * in `compact`, `'side'` in `medium` and `expanded`. Any other value pins
+   * that mode at every width.
    */
   readonly mode = input<SidenavMode>('auto');
 
@@ -347,31 +362,40 @@ export class CngxSidenav {
   private readonly container = inject(CNGX_CONTAINER_SIZE, { optional: true });
 
   /**
-   * `'1'` while the layout is at or above the docking threshold, set by the
-   * `@container` rule in `sidenav-layout.css` on this rail. The rule styles
-   * the rail rather than the layout because a container query resolves
-   * against an *ancestor* container - a rule whose subject is the container
-   * itself would never match.
+   * The raw `--cngx-sidenav-width-class` the `@container` rule block in
+   * `sidenav-layout.css` writes on this rail. The rule styles the rail rather
+   * than the layout because a container query resolves against an *ancestor*
+   * container - a rule whose subject is the container itself would never match.
    *
    * Empty until the layout's first `ResizeObserver` entry arrives, so `auto`
-   * resolves to `over` for that first frame. The observer's initial callback
+   * resolves to `compact` for that first frame. The observer's initial callback
    * runs after layout and before paint, so nothing flashes; do NOT seed this
    * with a constructor-time `getComputedStyle`, which would read before the
-   * first layout and report `'0'` regardless of the real width.
+   * first layout.
    */
-  private readonly layoutWide =
+  private readonly rawWidthClass =
     this.container?.property(
-      '--cngx-sidenav-layout-wide',
+      '--cngx-sidenav-width-class',
       this.elementRef.nativeElement as Element,
     ) ?? signal('').asReadonly();
 
-  /** Resolved mode - `'auto'` derives from the layout width, anything else pins. */
+  /**
+   * The width class of the surrounding layout: `compact` below 48rem, `medium`
+   * from 48rem, `expanded` from 64rem. Outside a layout, and for a value the
+   * rule block does not define, it is `compact`.
+   */
+  readonly widthClass = computed<SidenavWidthClass>(() => {
+    const raw = this.rawWidthClass().trim();
+    return WIDTH_CLASSES.has(raw) ? (raw as SidenavWidthClass) : 'compact';
+  });
+
+  /** Resolved mode - `'auto'` derives from the width class, anything else pins. */
   readonly effectiveMode = computed<ResolvedSidenavMode>(() => {
     const mode = this.mode();
     if (mode !== 'auto') {
       return mode;
     }
-    return this.layoutWide() === '1' ? 'side' : 'over';
+    return this.widthClass() === 'compact' ? 'over' : 'side';
   });
 
   /** Whether this sidenav is in overlay mode (over). */
@@ -439,6 +463,15 @@ export class CngxSidenav {
         );
       }
     });
+
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      effect(() => {
+        const raw = this.rawWidthClass().trim();
+        if (raw !== '' && !WIDTH_CLASSES.has(raw)) {
+          untracked(() => warnUnknownWidthClass(raw));
+        }
+      });
+    }
 
     // Modal-overlay focus contract: on the open edge move focus into the rail
     // and trap it; on the close edge restore focus to whatever opened it, after
@@ -716,6 +749,21 @@ export class CngxSidenav {
     this.doc.addEventListener('pointermove', onMove, { signal: controller.signal });
     this.doc.addEventListener('pointerup', onUp, { signal: controller.signal });
   }
+}
+
+/**
+ * Dev-only: the layout wrote a width class the sidenav does not know (a typo
+ * in an overridden rule block). The rail renders as `compact`.
+ */
+function warnUnknownWidthClass(value: string): void {
+  if (typeof ngDevMode === 'undefined' || !ngDevMode) {
+    return;
+  }
+  cngxDevWarn(
+    'CNGX3026',
+    `[cngx-sidenav] unknown --cngx-sidenav-width-class "${value}"; expected compact, medium or expanded. Rendering as compact.`,
+    { value },
+  );
 }
 
 /** Per-keypress width change of the arrow-key resize, in px. */

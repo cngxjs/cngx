@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxSidenav: auto mode',
   subtitle:
-    'Nothing is bound. <code>mode</code> defaults to <code>auto</code>, so the rail docks beside the content once the layout reaches <code>64rem</code> and overlays it below. Drag the right edge of the dashed frame across the threshold, or use the width presets.',
+    'Nothing is bound. <code>mode</code> defaults to <code>auto</code>, so the rail follows the width class of the layout: an overlay below <code>48rem</code>, docked beside the content from there. Drag the right edge of the dashed frame across the thresholds, or use the width presets.',
   description:
-    'The docking threshold lives in one place: a <code>@container cngx-sidenav-layout</code> rule in <code>sidenav-layout.css</code> that writes <code>--cngx-sidenav-layout-wide</code> on the rail. The component reads that resolved value through <code>CngxContainer.property()</code> and derives <code>effectiveMode()</code> from it in a single <code>computed()</code> - it never re-evaluates the condition in TypeScript, so overriding the CSS rule moves the breakpoint for both. The rule targets the rail rather than the layout because a container query resolves against an ancestor container, never against the container itself. The switch needs no announcement: it flips aria-modal, the focus trap and the backdrop, and the side-to-over transition auto-opens the rail so focus inside it is never orphaned.',
+    'The thresholds live in one place: a <code>@container cngx-sidenav-layout</code> rule block in <code>sidenav-layout.css</code> that writes <code>--cngx-sidenav-width-class</code> (<code>compact</code> below 48rem, <code>medium</code> from 48rem, <code>expanded</code> from 64rem) on the rail. The component reads that resolved value through <code>CngxContainer.property()</code> and derives <code>widthClass()</code> and <code>effectiveMode()</code> from it in <code>computed()</code>s - it never re-evaluates a condition in TypeScript, so overriding the CSS rules moves the thresholds for both. The rule targets the rail rather than the layout because a container query resolves against an ancestor container, never against the container itself. The switch needs no announcement: it flips aria-modal, the focus trap and the backdrop, and the side-to-over transition auto-opens the rail so focus inside it is never orphaned.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
@@ -45,17 +45,18 @@ export const STORY: DemoSpec = {
       <cngx-sidenav-content class="demo-sidenav__content--compact">
         <h3 class="demo-sidenav__content-title demo-sidenav__content-title--small">Content</h3>
         <p class="demo-sidenav__content-hint">
-          Drag the right edge of the frame. Past 64rem of layout width the rail docks
+          Drag the right edge of the frame. From 48rem of layout width the rail docks
           beside this text; below it the rail becomes an overlay with a backdrop.
         </p>
       </cngx-sidenav-content>
     </cngx-sidenav-layout>
   </div>`,
   templateChromeBefore: `<p class="demo-sidenav__content-hint" style="margin: 0 0 12px">
-    The dashed frame is the layout's width. Drag its right edge or pick a preset to cross 64rem.
+    The dashed frame is the layout's width. Drag its right edge or pick a preset to cross 48rem and 64rem.
   </p>`,
   templateChrome: `<div class="button-row" style="margin-top: 12px">
     <button class="sort-btn" type="button" (click)="setFrameWidth('40rem')">Width 40rem</button>
+    <button class="sort-btn" type="button" (click)="setFrameWidth('56rem')">Width 56rem</button>
     <button class="sort-btn" type="button" (click)="setFrameWidth('72rem')">Width 72rem</button>
     <button class="sort-btn" type="button"
             [attr.aria-controls]="nav()?.id()"
@@ -69,6 +70,7 @@ export const STORY: DemoSpec = {
   </div>
 <div class="status-row" style="margin-top: 0.5rem;">
     <span class="status-badge active">mode: {{ pinned() ? 'over (pinned)' : 'auto' }}</span>
+    <span class="status-badge active">widthClass: {{ nav()?.widthClass() }}</span>
     <span class="status-badge active">effectiveMode: {{ nav()?.effectiveMode() }}</span>
     <span class="status-badge" [class.active]="navOpen()">{{ navOpen() ? 'opened' : 'closed' }}</span>
   </div>`,

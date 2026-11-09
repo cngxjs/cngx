@@ -54,27 +54,35 @@
     container-name: cngx-sidenav-layout;
   }
 
-  /* The docking threshold. It exists exactly once, here: `<cngx-sidenav>`
-     reads the resolved value of this property and never re-evaluates the
-     condition, so ejecting this stylesheet moves the breakpoint with it.
+  /* The width scale. It exists exactly once, here: `<cngx-sidenav>` reads
+     the resolved value of this property and never re-evaluates a condition,
+     so ejecting this stylesheet moves the thresholds with it. The two rules
+     sit on the shared tier rungs (48rem, 64rem); override both to move them.
 
-     The rule styles the RAIL, not the layout: a @container rule resolves
+     The rules style the RAIL, not the layout: a @container rule resolves
      against an *ancestor* query container of the element it styles, so a
      rule whose subject is the container itself matches nothing. */
   cngx-sidenav-layout > cngx-sidenav {
     /**
-     * Docking flag written on the rail: `1` when the layout is at least 64rem
-     * wide, else `0`. In `auto` mode the sidenav docks (`side`) on `1` and
-     * overlays (`over`) on `0`.
-     * @type <number>
+     * Width class written on the rail: `compact` below 48rem, `medium` from
+     * 48rem, `expanded` from 64rem. In `auto` mode the sidenav is a drawer
+     * in `compact`, a rail with an overlay in `medium` and docked in
+     * `expanded`.
+     * @type <custom-ident>
      * @group Layout
      */
-    --cngx-sidenav-layout-wide: 0;
+    --cngx-sidenav-width-class: compact;
+  }
+
+  @container cngx-sidenav-layout (min-inline-size: 48rem) {
+    cngx-sidenav-layout > cngx-sidenav {
+      --cngx-sidenav-width-class: medium;
+    }
   }
 
   @container cngx-sidenav-layout (min-inline-size: 64rem) {
     cngx-sidenav-layout > cngx-sidenav {
-      --cngx-sidenav-layout-wide: 1;
+      --cngx-sidenav-width-class: expanded;
     }
   }
 
