@@ -1,4 +1,4 @@
-# Empty State
+# CngxEmptyState
 
 Empty-state display atom for grids, tables, lists, and dashboards.
 

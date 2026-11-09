@@ -1,4 +1,4 @@
-# Sidenav
+# CngxSidenav
 
 Declarative sidebar component. Responsive out of the box: the rail docks beside the content on a wide layout and overlays it on a narrow one, with nothing bound.
 

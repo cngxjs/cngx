@@ -1,4 +1,4 @@
-# Action Select
+# CngxActionSelect
 
 Single-value variant of [`CngxTypeahead`](../typeahead/README.md) that hosts an inline action workflow inside the panel.
 The `*cngxSelectAction` slot lets consumers render a quick-create form, a filter bar, or a "manage tags" pop-out without closing the panel - the slot context exposes `commit()` / `close()` / `isPending` / `dirty` / `retry()` / `error` so consumer markup orchestrates the inline workflow declaratively.

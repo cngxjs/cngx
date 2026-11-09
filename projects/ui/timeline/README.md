@@ -1,4 +1,4 @@
-# Timeline
+# CngxTimeline
 
 Chronological event feed. Groups a flat list into date bands and switches its
 body on a bound async state.

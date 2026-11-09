@@ -1,4 +1,4 @@
-# Card
+# CngxCard
 
 Semantic card component that adapts its host element role based on the archetype (article/button/link). The host element **is** the semantic element - no inner wrapper, no double focus rings.
 

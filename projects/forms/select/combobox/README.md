@@ -1,4 +1,4 @@
-# Combobox
+# CngxCombobox
 
 Multi-value tag picker with an inline `<input role="combobox">` -type to filter, pick to commit.
 Same chip strip as [`CngxMultiSelect`](../multi-select/README.md), but the trigger lets users narrow the option list with live search.

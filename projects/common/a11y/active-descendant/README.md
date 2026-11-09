@@ -1,4 +1,4 @@
-# Active Descendant
+# CngxActiveDescendant
 
 WAI-ARIA active-descendant keyboard model for composite widgets where focus stays on a single container (listbox, menu, combobox) and the currently active option is communicated via `aria-activedescendant`.
 
