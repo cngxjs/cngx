@@ -49,6 +49,7 @@ class TestToastHost {}
       toastSuccess="Saved"
       toastError="Save failed"
       [toastErrorDetail]="detail()"
+      [toastErrorDuration]="errorDuration()"
     >
       Save
     </button>
@@ -59,6 +60,7 @@ class Host {
   readonly action = () => this.actionImpl();
   readonly autoAnnounce = signal<boolean | undefined>(undefined);
   readonly detail = signal(false);
+  readonly errorDuration = signal<number | 'persistent' | undefined>(undefined);
   readonly ext = signal<CngxAsyncState<unknown> | undefined>(undefined);
 }
 
@@ -135,8 +137,18 @@ describe('CngxActionToast', () => {
       ['Saved', 'success'],
       ['Save failed', 'error'],
     ]);
-    expect(show.mock.calls[0][0].duration).toBe(3000);
-    expect(show.mock.calls[2][0].duration).toBe('persistent');
+  });
+
+  it('leaves unbound durations to the toaster and forwards a bound one', async () => {
+    const { show, run, host, render } = setup();
+    await run('success');
+    await run('error');
+    // undefined lets CngxToaster resolve withToasts({ defaultDuration }) / 'persistent'.
+    expect(show.mock.calls.map(([t]) => t.duration)).toEqual([undefined, undefined]);
+    host.errorDuration.set(4000);
+    render();
+    await run('error');
+    expect(show.mock.calls[2][0].duration).toBe(4000);
   });
 
   it('shows one toast per external edge, and none for the own runs while bound', async () => {

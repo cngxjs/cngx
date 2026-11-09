@@ -61,11 +61,17 @@ export class CngxActionToast implements CngxAnnouncementCover {
   /** Include the error detail message in the error toast body. */
   readonly toastErrorDetail = input<boolean>(false);
 
-  /** Duration for success toasts in ms. */
-  readonly toastSuccessDuration = input<number>(3000);
+  /**
+   * Duration for success toasts in ms. Unbound, `CngxToaster` resolves it:
+   * `withToasts({ defaultDuration })`, else 5000 ms.
+   */
+  readonly toastSuccessDuration = input<number | undefined>(undefined);
 
-  /** Duration for error toasts - `'persistent'` means manual dismiss only. */
-  readonly toastErrorDuration = input<number | 'persistent'>('persistent');
+  /**
+   * Duration for error toasts; `'persistent'` means manual dismiss only.
+   * Unbound, `CngxToaster` resolves it (an error toast stays until dismissed).
+   */
+  readonly toastErrorDuration = input<number | 'persistent' | undefined>(undefined);
 
   constructor() {
     // Double-toast guard, consumer placed [cngxToastOn] on the same element.

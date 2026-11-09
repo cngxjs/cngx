@@ -55,8 +55,8 @@ Every input is forwarded to one of the four host directives; the button itself d
 |`toastSuccess`|`CngxActionToast`|`undefined`|
 |`toastError`|`CngxActionToast`|`undefined`|
 |`toastErrorDetail`|`CngxActionToast`|`false`|
-|`toastSuccessDuration`|`CngxActionToast`|`3000` ms|
-|`toastErrorDuration`|`CngxActionToast`|`'persistent'`|
+|`toastSuccessDuration`|`CngxActionToast`|`withToasts({ defaultDuration })`, else `5000` ms|
+|`toastErrorDuration`|`CngxActionToast`|toaster default: `'persistent'`|
 
 `(settled)` is re-exported from `CngxAsyncClick`. Read the status layer programmatically through `inject(CNGX_ACTION_STATUS)` on the button's injector; `btn.state` stays on the class.
 
