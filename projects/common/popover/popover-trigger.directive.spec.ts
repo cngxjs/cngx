@@ -533,6 +533,30 @@ describe('CngxPopoverTrigger', () => {
       fixture.destroy();
     });
 
+    it('restores focus when show() and hide() run before change detection', () => {
+      const fixture = TestBed.createComponent(RestoreFocusHost);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      stubPopoverElement(popoverEl);
+
+      triggerEl.focus();
+      const host = fixture.componentInstance as RestoreFocusHost;
+      // A fast keyboard user (Enter, then Escape) opens and closes inside
+      // one tick: no change detection runs between show() and hide().
+      host.popover().show();
+      const panelItem = document.createElement('button');
+      popoverEl.appendChild(panelItem);
+      panelItem.focus();
+      host.popover().hide();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(document.activeElement).toBe(triggerEl);
+      fixture.destroy();
+    });
+
     it('should leave focus on a control outside the panel when the popover closes', () => {
       const fixture = TestBed.createComponent(RestoreFocusHost);
       testRoot.appendChild(fixture.nativeElement);

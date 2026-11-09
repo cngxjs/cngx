@@ -497,6 +497,13 @@ export class CngxPopover {
   readonly focusOrigin = this.focusOriginState.asReadonly();
 
   /**
+   * @internal Single close-listener slot, claimed by `CngxPopoverTrigger`
+   * through {@link registerCloseListener}. Last registration wins, like the
+   * implicit anchor slot: one trigger per popover.
+   */
+  private readonly closeListenerSlot = createSlotRegistry<(origin: HTMLElement | null) => void>();
+
+  /**
    * Implicit anchor slot, written by `CngxPopoverTrigger` and composing
    * organisms via {@link setAnchorElement}.
    */
@@ -898,6 +905,24 @@ export class CngxPopover {
   }
 
   /**
+   * @internal Install the listener `finalize()` calls synchronously at the
+   * end of every close, with the {@link focusOrigin} captured before it is
+   * cleared. Runs on every close path (`hide()`, light dismiss), so a close
+   * that lands before the next change detection pass still reaches it.
+   */
+  registerCloseListener(fn: (origin: HTMLElement | null) => void): void {
+    this.closeListenerSlot.register(fn);
+  }
+
+  /**
+   * @internal Release `fn`. Clears the slot only while `fn` still holds it,
+   * so a stale trigger's teardown leaves a successor registered.
+   */
+  releaseCloseListener(fn: (origin: HTMLElement | null) => void): void {
+    this.closeListenerSlot.unregister(fn);
+  }
+
+  /**
    * @internal Install or clear the programmatic {@link exclusive} override.
    * `null` defers back to the `[exclusive]` input.
    */
@@ -1084,6 +1109,7 @@ export class CngxPopover {
     openPopovers.delete(this);
     this._arrowOffset.set(null);
     this.resolvedEdgeSignal.set(null);
+    const origin = untracked(() => this.focusOriginState());
     this.focusOriginState.set(null);
     const el = this.popoverElement;
     // Move focus out of the panel BEFORE it flips to aria-hidden (state ->
@@ -1103,5 +1129,6 @@ export class CngxPopover {
       // Element may already be hidden or disconnected
     }
     this.stateSignal.set('closed');
+    untracked(() => this.closeListenerSlot.current()?.(origin));
   }
 }
