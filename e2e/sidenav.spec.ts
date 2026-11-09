@@ -31,11 +31,11 @@ test.describe('CngxSidenav layout regressions', () => {
     await nav.hover();
     await expect(nav).toHaveAttribute('data-sidebar-state', 'peek', { timeout: 2000 });
 
-    const navBox = await nav.boundingBox();
+    // The rail actually grows past the 56px rail width (the state flips at
+    // the start of the width transition, so wait for the box)...
+    await expect.poll(async () => (await nav.boundingBox())!.width).toBeGreaterThan(100);
     const contentLeftAfter = (await content.boundingBox())!.x;
 
-    // The rail actually grew past the 56px rail width...
-    expect(navBox!.width).toBeGreaterThan(100);
     // ...but the sidebar's negative margin means content is not pushed right.
     expect(Math.abs(contentLeftAfter - contentLeftBefore)).toBeLessThanOrEqual(1);
   });
