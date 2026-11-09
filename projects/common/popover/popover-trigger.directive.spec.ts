@@ -711,6 +711,47 @@ describe('CngxPopoverTrigger', () => {
   });
 
   describe('close listener', () => {
+    it('does not throw or focus a disconnected element when the host is destroyed while open', () => {
+      const testRoot = document.createElement('div');
+      document.body.appendChild(testRoot);
+      const fixture = TestBed.createComponent(RestoreFocusHost);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      stubPopoverElement(popoverEl);
+      const host = fixture.componentInstance as RestoreFocusHost;
+
+      triggerEl.focus();
+      host.popover().show();
+      fixture.detectChanges();
+      const panelItem = document.createElement('button');
+      popoverEl.appendChild(panelItem);
+      panelItem.focus();
+      expect(host.popover().state()).not.toBe('closed');
+
+      // Record every focus() call with the target's connection state at
+      // call time: the popover's destroy runs finalize() and the close
+      // listener while the trigger is torn down in the same pass.
+      const focusCalls: { el: HTMLElement; connected: boolean }[] = [];
+      const realFocus = HTMLElement.prototype.focus;
+      const focusSpy = vi
+        .spyOn(HTMLElement.prototype, 'focus')
+        .mockImplementation(function (this: HTMLElement, options?: FocusOptions) {
+          focusCalls.push({ el: this, connected: this.isConnected });
+          realFocus.call(this, options);
+        });
+
+      expect(() => fixture.destroy()).not.toThrow();
+      focusSpy.mockRestore();
+
+      expect(focusCalls.filter((call) => !call.connected)).toEqual([]);
+      const active = document.activeElement;
+      expect(active === null || active.isConnected).toBe(true);
+      testRoot.remove();
+    });
+
     it('warns once when a second trigger takes the close listener of one popover', () => {
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
       const fixture = TestBed.createComponent(TwoTriggersHost);
