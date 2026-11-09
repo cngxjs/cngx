@@ -339,3 +339,68 @@ describe('CngxSidenav overlay visuals (F11)', () => {
     fixture.destroy();
   });
 });
+
+// A docked rail that narrows into a page-modal drawer while focus is inside
+// stays open (the width-class reset keeps it); the surface engaged with focus
+// already inside, so there is no opener. Close lands on the trigger.
+@Component({
+  selector: 'cngx-sidenav-narrow-under-focus-host',
+  standalone: true,
+  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
+  template: `
+    <button class="trigger" type="button" [attr.aria-controls]="nav.id()" (click)="nav.toggle()">
+      Toggle navigation
+    </button>
+    <div class="frame" style="inline-size: 70rem">
+      <cngx-sidenav-layout style="block-size: 20rem">
+        <cngx-sidenav #nav [(opened)]="open" ariaLabel="Nav">
+          <button class="link" type="button">Dashboard</button>
+        </cngx-sidenav>
+        <cngx-sidenav-content>Main</cngx-sidenav-content>
+      </cngx-sidenav-layout>
+    </div>
+  `,
+})
+class SidenavNarrowUnderFocusHost {
+  open = false;
+}
+
+describe('CngxSidenav focus after an expanded to compact change under focus', () => {
+  it('restores focus to the trigger on Escape', async () => {
+    const fixture = TestBed.createComponent(SidenavNarrowUnderFocusHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const root = mountedRoot;
+    const rail = root.querySelector('cngx-sidenav') as HTMLElement;
+    const link = root.querySelector('.link') as HTMLElement;
+    const trigger = root.querySelector('.trigger') as HTMLElement;
+    for (let i = 0; i < 10 && rail.classList.contains('cngx-sidenav--over'); i++) {
+      await nextFrame();
+      fixture.detectChanges();
+    }
+    expect(rail.classList.contains('cngx-sidenav--side')).toBe(true);
+    for (let i = 0; i < 30 && document.activeElement !== link; i++) {
+      link.focus();
+      await nextFrame();
+    }
+    expect(document.activeElement).toBe(link);
+
+    (root.querySelector('.frame') as HTMLElement).style.inlineSize = '30rem';
+    for (let i = 0; i < 20 && rail.getAttribute('aria-modal') !== 'true'; i++) {
+      await nextFrame();
+      fixture.detectChanges();
+    }
+    expect(rail.getAttribute('aria-modal')).toBe('true');
+    expect(rail.contains(document.activeElement)).toBe(true);
+
+    link.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    fixture.detectChanges();
+    await nextFrame();
+    fixture.detectChanges();
+
+    expect(rail.getAttribute('aria-modal')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+    fixture.destroy();
+  });
+});

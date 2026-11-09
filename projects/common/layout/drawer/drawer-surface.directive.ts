@@ -318,6 +318,22 @@ export class CngxDrawerSurface
    * restore then focuses the opener after the render, once it is live.
    */
   readonly focusRestoreActive = this.isActive;
+
+  /**
+   * @internal Drives the composed `CngxFocusRestore`: when the surface was
+   * engaged with focus already inside it (a docked rail that turned into a
+   * drawer), there is no opener to return to, so focus goes to the element
+   * whose `aria-controls` names the host, the same relation an outside press
+   * is exempted by.
+   */
+  focusRestoreFallback(): HTMLElement | null {
+    const id = this.host.id;
+    if (!id) {
+      return null;
+    }
+    const trigger = this.doc.querySelector(`[aria-controls~="${id.replace(/["\\]/g, '\\$&')}"]`);
+    return trigger instanceof HTMLElement && !this.host.contains(trigger) ? trigger : null;
+  }
   // A press on a non-focusable spot inside an engaged surface would drop
   // focus to <body>, out of reach of the host Escape listener (and of the
   // page modal's own boundary). tabindex="-1" keeps focus on the host there,

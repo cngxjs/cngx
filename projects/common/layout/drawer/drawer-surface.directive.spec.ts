@@ -582,6 +582,20 @@ describe('CngxDrawerSurface', () => {
     expect(document.activeElement).toBe(opener);
   });
 
+  it('restores focus to the controlling element when it engaged with focus already inside', () => {
+    const { host, q, set } = setup();
+    host.dismissed.mockImplementation(() => host.active.set(false));
+    // A docked region that turned modal under focus: no opener outside.
+    q('.inside').focus();
+    set((h) => h.active.set(true));
+
+    q('.inside').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    set(() => undefined);
+
+    // The first element whose aria-controls names the host, in DOM order.
+    expect(document.activeElement).toBe(q('.inner-controller'));
+  });
+
   it('restores focus to the opener when a page scope is released by an Escape dismissal', () => {
     const { host, q, set } = setup();
     host.dismissed.mockImplementation(() => host.active.set(false));
