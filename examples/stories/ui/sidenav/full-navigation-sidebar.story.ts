@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxSidenav: full navigation sidebar',
   subtitle: 'Composing all nav atoms inside <code>cngx-sidenav</code>: <code>CngxNavLabel</code> for section headers, <code>CngxNavLink</code> with active state and badges, <code>CngxNavGroup</code> for collapsible accordion sections. Material theming via <code>sidenav-theme.scss</code> provides surface colors, borders, and density.',
-  description: 'Full nav surface: section labels, active-state links with numeric and dot badges, two collapsible nav groups, and a footer. Mode toggle covers <code>over</code>, <code>push</code>, <code>side</code>, <code>mini</code>; <code>shortcut="mod+b"</code> wires the open toggle.',
+  description: 'Full nav surface: section labels, active-state links with numeric and dot badges, two collapsible nav groups, and a footer. Mode toggle covers <code>over</code>, <code>push</code>, <code>side</code>; in <code>side</code> the toggle button and <code>shortcut="mod+b"</code> collapse the docked rail to an icon rail that peeks on hover, in the overlay modes they open and close it.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -22,8 +22,9 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxSidenavLayout', 'CngxSidenav', 'CngxSidenavContent', 'CngxSidenavHeader', 'CngxSidenavFooter', 'CngxNavLink', 'CngxNavLabel', 'CngxNavGroup', 'CngxNavGroupContent', 'CngxNavBadge'],
   setup: `protected readonly navOpen = signal(true);
-  protected readonly navMode = signal<'over' | 'push' | 'side' | 'mini'>('side');
-  protected readonly modes: ('over' | 'push' | 'side' | 'mini')[] = ['over', 'push', 'side', 'mini'];
+  protected readonly navCollapsed = signal(false);
+  protected readonly navMode = signal<'over' | 'push' | 'side'>('side');
+  protected readonly modes: ('over' | 'push' | 'side')[] = ['over', 'push', 'side'];
   protected readonly activeLink = signal('/dashboard');
   protected readonly items = ['Order #1042', 'Order #1043', 'Order #1044', 'Order #1045'];`,
   template: `
@@ -33,13 +34,15 @@ export const STORY: DemoSpec = {
       <button type="button" class="chip" [attr.aria-pressed]="navMode() === m"
               (click)="navMode.set(m)">{{ m }}</button>
     }
-    <button class="sort-btn" type="button" (click)="navOpen.set(!navOpen())">
-      {{ navOpen() ? 'Close' : 'Open' }}
+    <button class="sort-btn" type="button" (click)="nav.toggle()"
+            [attr.aria-controls]="nav.id()" [attr.aria-expanded]="nav.expanded()">
+      Toggle navigation
     </button>
   </div>
 
   <cngx-sidenav-layout class="demo-sidenav__container">
-    <cngx-sidenav position="start" [(opened)]="navOpen" [mode]="navMode()" width="240px" [resizable]="true" shortcut="mod+b">
+    <cngx-sidenav #nav="cngxSidenav" position="start" [(opened)]="navOpen" [(collapsed)]="navCollapsed"
+                  [mode]="navMode()" width="240px" [resizable]="true" shortcut="mod+b">
       <cngx-sidenav-header class="demo-sidenav__header">
         Workspace
       </cngx-sidenav-header>

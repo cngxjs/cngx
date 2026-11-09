@@ -18,26 +18,25 @@ test.describe('CngxSidenav layout regressions', () => {
     expect(bodyBox!.width).toBeLessThanOrEqual(navBox!.width + 1);
   });
 
-  test('mini rail expands over content without shifting it', async ({ page }) => {
+  test('a collapsed rail peeks over content without shifting it', async ({ page }) => {
     await page.goto('/#/ui/sidenav/config-hover-dwell');
     const nav = page.locator('cngx-sidenav', { hasText: 'Config' }).first();
     const content = page.locator('cngx-sidenav-content').first();
     await expect(nav).toBeVisible();
+    await expect(nav).toHaveAttribute('data-sidebar-state', 'rail');
 
     const contentLeftBefore = (await content.boundingBox())!.x;
 
-    // Rest on the rail past the ~250ms scoped dwell so it expands.
+    // Rest on the rail past the ~250ms scoped dwell so it peeks.
     await nav.hover();
-    await expect(nav).toHaveClass(/cngx-sidenav--expanded/, { timeout: 2000 });
+    await expect(nav).toHaveAttribute('data-sidebar-state', 'peek', { timeout: 2000 });
 
     const navBox = await nav.boundingBox();
     const contentLeftAfter = (await content.boundingBox())!.x;
 
-    // The rail actually grew past the 56px mini width...
+    // The rail actually grew past the 56px rail width...
     expect(navBox!.width).toBeGreaterThan(100);
-    // ...but the negative-margin overlay means content is not pushed right.
-    // Regression guard: cngx gated the overlay margin on `.--mini.--open`, but a
-    // mini rail has no `--open`, so it pushed content instead of overlaying.
+    // ...but the sidebar's negative margin means content is not pushed right.
     expect(Math.abs(contentLeftAfter - contentLeftBefore)).toBeLessThanOrEqual(1);
   });
 

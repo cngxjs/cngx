@@ -234,7 +234,7 @@ element -- a dev-mode warning is emitted if both are active.
 ### CngxSidenav
 
 Declarative sidebar organism with dual-sidebar support, responsive mode
-switching, mini/rail mode, resize handle, and keyboard shortcut toggle.
+switching, a collapsible rail (composed `CngxSidebar`), resize handle, and keyboard shortcut toggle.
 
 ```html
 <cngx-sidenav-layout>
@@ -251,7 +251,7 @@ switching, mini/rail mode, resize handle, and keyboard shortcut toggle.
 </cngx-sidenav-layout>
 ```
 
-**Modes:** `'over'` (overlay + backdrop), `'push'` (pushes content), `'side'` (permanent), `'mini'` (collapsed rail, expands on hover)
+**Modes:** `'auto'` (default; follows the layout width class), `'over'` (overlay + backdrop), `'push'` (pushes content), `'side'` (docked; `[(collapsed)]` rests it as a rail that peeks on hover)
 
 **CngxSidenav inputs:**
 
@@ -259,18 +259,19 @@ switching, mini/rail mode, resize handle, and keyboard shortcut toggle.
 |-|-|-|-|
 | `ariaLabel` | `string` | - | Accessible label for the complementary landmark |
 | `position` | `'start' \| 'end'` | `'start'` | Logical position (flips in RTL) |
-| `mode` | `SidenavMode` | `'over'` | Interaction mode |
-| `responsive` | `string` | - | CSS media query; matches = `'side'`, else falls back to `mode` |
+| `mode` | `SidenavMode` | `'auto'` | Interaction mode |
 | `width` | `string` (model) | `'280px'` | Panel width, two-way `[(width)]` for resize |
-| `miniWidth` | `string` | `'56px'` | Collapsed rail width in mini mode |
-| `expandOnHover` | `boolean` | `true` | Expand mini rail on mouse hover |
+| `miniWidth` | `string` | `'56px'` | Width of the collapsed rail |
+| `collapsed` | `boolean` (model) | `false` | Rest a docked rail collapsed, two-way `[(collapsed)]` |
+| `collapsedAs` | `'rail' \| 'hidden'` | `'rail'` | How a collapsed rail rests |
+| `expandOnHover` | `boolean` | `true` | Peek a collapsed rail on hover |
 | `resizable` | `boolean` | `false` | Show drag handle for user resize |
 | `minWidth` | `string` | `'120px'` | Min width constraint during resize |
 | `maxWidth` | `string` | `'600px'` | Max width constraint during resize |
 | `shortcut` | `string` | - | Keyboard shortcut, e.g. `'mod+b'` (`mod` = Cmd on Mac, Ctrl elsewhere) |
 
-**CngxSidenav signals:** `opened` (model), `expanded` (mini hover state), `effectiveMode`, `effectiveWidth`, `resizing`, `isOverlay`
-**Methods:** `open()`, `close()`, `toggle()`, `expand()`, `collapse()`
+**CngxSidenav signals:** `opened` (model), `expanded` (full nav shown), `widthClass`, `effectiveMode`, `resizing`, `isOverlay`
+**Methods:** `open()`, `close()`, `toggle()`
 
 **Slot components:** `CngxSidenavHeader`, `CngxSidenavFooter` (projected into named slots)
 **Layout:** `CngxSidenavLayout` (container, manages backdrop + scroll lock), `CngxSidenavContent` (main area)

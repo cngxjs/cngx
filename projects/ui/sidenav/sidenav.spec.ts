@@ -30,6 +30,8 @@ import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/co
         [ariaLabel]="ariaLabel()"
         [miniWidth]="miniWidth()"
         [expandOnHover]="expandOnHover()"
+        [(collapsed)]="leftCollapsed"
+        [collapsedAs]="collapsedAs()"
       >
         Left content
       </cngx-sidenav>
@@ -48,6 +50,8 @@ class DualHost {
   ariaLabel = signal<string | undefined>(undefined);
   miniWidth = signal('56px');
   expandOnHover = signal(true);
+  leftCollapsed = signal(false);
+  collapsedAs = signal<'rail' | 'hidden'>('rail');
 }
 
 @Component({
@@ -115,18 +119,20 @@ class UnboundHost {}
 class BoundWidthHost {}
 
 @Component({
-  template: `<cngx-sidenav mode="mini" [expandDelay]="expandDelay()">Nav</cngx-sidenav>`,
+  template: `<cngx-sidenav mode="side" [collapsed]="true" [expandDelay]="expandDelay()"
+    >Nav</cngx-sidenav
+  >`,
   imports: [CngxSidenav],
 })
-class MiniDwellHost {
+class RailDwellHost {
   expandDelay = signal(200);
 }
 
 @Component({
-  template: `<cngx-sidenav mode="mini">Nav</cngx-sidenav>`,
+  template: `<cngx-sidenav mode="side" [collapsed]="true">Nav</cngx-sidenav>`,
   imports: [CngxSidenav],
 })
-class MiniUnboundHost {}
+class RailUnboundHost {}
 
 describe('CngxSidenav', () => {
   afterEach(() => vi.restoreAllMocks());
@@ -187,13 +193,30 @@ describe('CngxSidenav', () => {
     expect(left.opened()).toBe(true);
   });
 
-  it('close() does nothing in side mode', () => {
+  it('close() collapses a docked rail instead of no-op-ing (F2)', () => {
     const { fixture, left, host } = setupDual();
     host.mode.set('side');
     fixture.detectChanges();
-    left.open();
     left.close();
-    expect(left.opened()).toBe(true); // side mode doesn't close
+    fixture.detectChanges();
+    expect(host.leftCollapsed()).toBe(true);
+    expect(left.expanded()).toBe(false);
+    left.open();
+    fixture.detectChanges();
+    expect(host.leftCollapsed()).toBe(false);
+  });
+
+  it('toggle() flips collapsed on a docked rail and leaves opened alone', () => {
+    const { fixture, left, host } = setupDual();
+    host.mode.set('side');
+    fixture.detectChanges();
+    left.toggle();
+    fixture.detectChanges();
+    expect(host.leftCollapsed()).toBe(true);
+    expect(host.leftOpen()).toBe(false);
+    left.toggle();
+    fixture.detectChanges();
+    expect(host.leftCollapsed()).toBe(false);
   });
 
   it('content never applies margins (flex handles layout)', () => {
@@ -335,7 +358,7 @@ describe('CngxSidenav', () => {
     const [leftEl, rightEl] = fixture.debugElement
       .queryAll(By.directive(CngxSidenav))
       .map((d) => d.nativeElement as HTMLElement);
-    expect(left.id()).toMatch(/^cngx-sidenav-/);
+    expect(left.id()).toMatch(/^cngx-sidebar/);
     expect(leftEl.id).toBe(left.id());
     expect(rightEl.id).toBe(right.id());
     expect(left.id()).not.toBe(right.id());
@@ -349,15 +372,17 @@ describe('CngxSidenav', () => {
     expect((de.nativeElement as HTMLElement).id).toBe('main-nav');
   });
 
-  it('sets aria-hidden on overlay sidenavs', () => {
+  it('conceals a closed overlay sidenav (aria-hidden + inert)', () => {
     const { fixture, host } = setupDual();
     fixture.detectChanges();
     const leftEl = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0]
       .nativeElement as HTMLElement;
     expect(leftEl.getAttribute('aria-hidden')).toBe('true');
+    expect(leftEl.hasAttribute('inert')).toBe(true);
     host.leftOpen.set(true);
     fixture.detectChanges();
-    expect(leftEl.getAttribute('aria-hidden')).toBe('false');
+    expect(leftEl.getAttribute('aria-hidden')).toBeNull();
+    expect(leftEl.hasAttribute('inert')).toBe(false);
   });
 
   it('blurs focus held inside an overlay rail on close, before it flips to aria-hidden', () => {
@@ -414,21 +439,6 @@ describe('CngxSidenav', () => {
     expect(left.opened()).toBe(true);
   });
 
-  it('auto-opens when switching from mini to an overlay mode', () => {
-    const { fixture, left, host } = setupDual();
-    host.mode.set('mini');
-    host.leftOpen.set(false);
-    fixture.detectChanges();
-    TestBed.flushEffects();
-    expect(left.effectiveMode()).toBe('mini');
-
-    host.mode.set('over');
-    fixture.detectChanges();
-    TestBed.flushEffects();
-    expect(left.effectiveMode()).toBe('over');
-    expect(host.leftOpen()).toBe(true);
-  });
-
   it('auto-opens when leaving side mode with opened=false', () => {
     const { fixture, left, host } = setupDual();
     host.mode.set('side');
@@ -445,17 +455,16 @@ describe('CngxSidenav', () => {
   });
 });
 
-describe('CngxSidenav mini mode', () => {
+describe('CngxSidenav collapsed rail', () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
-  // Debounced expand-on-hover routes through the CngxHoverIntent hostDirective,
-  // whose pointerenter/pointerleave listeners settle `active` after enterDelay
-  // (120ms) / leaveDelay (0ms). Drive it with real pointer events under fake
-  // timers, mirroring the hover-intent directive's own specs.
+  // The hover peek routes through the composed CngxSidebar's CngxHoverIntent,
+  // whose pointerenter/pointerleave listeners settle `active` after
+  // expandDelay (120ms) / collapseDelay (0ms).
   const ENTER_DELAY = 120;
 
   function enter(el: HTMLElement): void {
@@ -465,65 +474,40 @@ describe('CngxSidenav mini mode', () => {
     el.dispatchEvent(new PointerEvent('pointerleave'));
   }
 
-  function setupDual() {
+  function setupRail() {
     const fixture = TestBed.createComponent(DualHost);
+    fixture.componentInstance.mode.set('side');
+    fixture.componentInstance.leftCollapsed.set(true);
     fixture.detectChanges();
-    const layout = fixture.debugElement
-      .query(By.directive(CngxSidenavLayout))
-      .injector.get(CngxSidenavLayout);
-    const sidenavs = fixture.debugElement.queryAll(By.directive(CngxSidenav));
-    const left = sidenavs
-      .find((d) => d.injector.get(CngxSidenav).position() === 'start')!
-      .injector.get(CngxSidenav);
-    const right = sidenavs
-      .find((d) => d.injector.get(CngxSidenav).position() === 'end')!
-      .injector.get(CngxSidenav);
-    const content = fixture.debugElement
-      .query(By.directive(CngxSidenavContent))
-      .injector.get(CngxSidenavContent);
-    return { fixture, layout, left, right, content, host: fixture.componentInstance };
+    const de = fixture.debugElement
+      .queryAll(By.directive(CngxSidenav))
+      .find((d) => d.injector.get(CngxSidenav).position() === 'start')!;
+    const left = de.injector.get(CngxSidenav);
+    const el = de.nativeElement as HTMLElement;
+    return { fixture, left, el, host: fixture.componentInstance };
   }
 
-  it('effectiveMode() returns mini when mode is mini', () => {
-    const { fixture, left, host } = setupDual();
-    host.mode.set('mini');
-    fixture.detectChanges();
-    expect(left.effectiveMode()).toBe('mini');
-  });
-
-  it('close() is a no-op in mini mode', () => {
-    const { fixture, left, host } = setupDual();
-    host.mode.set('mini');
-    fixture.detectChanges();
-    left.open();
-    left.close();
-    expect(left.opened()).toBe(true);
-  });
-
-  it('expanded signal starts false', () => {
-    const { fixture, left, host } = setupDual();
-    host.mode.set('mini');
-    fixture.detectChanges();
+  it('rests as a rail with the miniWidth reserved', () => {
+    const { el, left } = setupRail();
+    expect(el.getAttribute('data-sidebar-state')).toBe('rail');
+    expect(el.style.inlineSize).toBe('var(--cngx-sidebar-rail-size, 3.5rem)');
+    expect(el.style.getPropertyValue('--cngx-sidebar-rail-size')).toBe('56px');
     expect(left.expanded()).toBe(false);
   });
 
-  it('expands only after a deliberate hover dwell in mini mode', () => {
-    const { fixture, left, host } = setupDual();
-    host.mode.set('mini');
-    fixture.detectChanges();
-    const el = left.elementRef.nativeElement;
+  it('peeks only after a deliberate hover dwell', () => {
+    const { fixture, left, el } = setupRail();
     enter(el);
     vi.advanceTimersByTime(ENTER_DELAY - 1);
     expect(left.expanded()).toBe(false);
     vi.advanceTimersByTime(1);
+    fixture.detectChanges();
     expect(left.expanded()).toBe(true);
+    expect(el.getAttribute('data-sidebar-state')).toBe('peek');
   });
 
-  it('collapses on a debounced pointer leave in mini mode', () => {
-    const { fixture, left, host } = setupDual();
-    host.mode.set('mini');
-    fixture.detectChanges();
-    const el = left.elementRef.nativeElement;
+  it('ends the peek on a debounced pointer leave', () => {
+    const { left, el } = setupRail();
     enter(el);
     vi.advanceTimersByTime(ENTER_DELAY);
     expect(left.expanded()).toBe(true);
@@ -532,11 +516,8 @@ describe('CngxSidenav mini mode', () => {
     expect(left.expanded()).toBe(false);
   });
 
-  it('does not expand on a sweep-through (leave before enterDelay)', () => {
-    const { fixture, left, host } = setupDual();
-    host.mode.set('mini');
-    fixture.detectChanges();
-    const el = left.elementRef.nativeElement;
+  it('does not peek on a sweep-through (leave before expandDelay)', () => {
+    const { left, el } = setupRail();
     enter(el);
     vi.advanceTimersByTime(80);
     leave(el);
@@ -544,24 +525,17 @@ describe('CngxSidenav mini mode', () => {
     expect(left.expanded()).toBe(false);
   });
 
-  it('ignores hover when expandOnHover=false, but expand() still works', () => {
-    const { fixture, left, host } = setupDual();
-    host.mode.set('mini');
+  it('ignores hover when expandOnHover=false', () => {
+    const { fixture, left, el, host } = setupRail();
     host.expandOnHover.set(false);
     fixture.detectChanges();
-    const el = left.elementRef.nativeElement;
     enter(el);
     vi.advanceTimersByTime(500);
     expect(left.expanded()).toBe(false);
-    left.expand();
-    expect(left.expanded()).toBe(true);
   });
 
-  it('clears the pending hover timer on destroy (no late expand)', () => {
-    const { fixture, left, host } = setupDual();
-    host.mode.set('mini');
-    fixture.detectChanges();
-    const el = left.elementRef.nativeElement;
+  it('clears the pending hover timer on destroy (no late peek)', () => {
+    const { fixture, left, el } = setupRail();
     enter(el);
     vi.advanceTimersByTime(80);
     fixture.destroy();
@@ -569,89 +543,38 @@ describe('CngxSidenav mini mode', () => {
     expect(left.expanded()).toBe(false);
   });
 
-  it('lets a pointer edge override a prior programmatic expand when expandOnHover=true', () => {
-    const { fixture, left, host } = setupDual();
-    host.mode.set('mini');
-    fixture.detectChanges();
-    const el = left.elementRef.nativeElement;
-
-    // Programmatic expand holds while the debounced hover has not changed.
-    left.expand();
-    expect(left.expanded()).toBe(true);
-
-    // A hover dwell then a leave re-derive expanded from the debounced hover,
-    // overriding the prior programmatic set - hover is the source of truth.
+  it('close() ends a peek on a collapsed rail and keeps it collapsed', () => {
+    const { left, el, host } = setupRail();
     enter(el);
     vi.advanceTimersByTime(ENTER_DELAY);
     expect(left.expanded()).toBe(true);
-    leave(el);
-    vi.advanceTimersByTime(1);
+    left.close();
     expect(left.expanded()).toBe(false);
+    expect(host.leftCollapsed()).toBe(true);
   });
 
-  it('resets expanded to false automatically when leaving mini mode', () => {
-    const { fixture, left, host } = setupDual();
-    host.mode.set('mini');
+  it('a hidden rest reserves nothing and is concealed', () => {
+    const { fixture, el, host } = setupRail();
+    host.collapsedAs.set('hidden');
     fixture.detectChanges();
-    const el = left.elementRef.nativeElement;
-    enter(el);
-    vi.advanceTimersByTime(ENTER_DELAY);
-    expect(left.expanded()).toBe(true);
-
-    // Leaving mini derives expanded back to false via linkedSignal, with no
-    // imperative reset in the mode effect.
-    host.mode.set('side');
-    fixture.detectChanges();
-    expect(left.expanded()).toBe(false);
+    expect(el.getAttribute('data-sidebar-state')).toBe('hidden');
+    expect(el.style.inlineSize).toBe('0px');
+    expect(el.hasAttribute('inert')).toBe(true);
+    expect(el.getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('effectiveWidth returns miniWidth when collapsed', () => {
-    const { fixture, left, host } = setupDual();
-    host.mode.set('mini');
-    host.miniWidth.set('64px');
-    fixture.detectChanges();
-    expect(left.effectiveWidth()).toBe('64px');
+  it('does not set aria-hidden on a rail', () => {
+    const { el } = setupRail();
+    expect(el.getAttribute('aria-hidden')).toBeNull();
   });
 
-  it('effectiveWidth returns width when expanded', () => {
-    const { fixture, left, host } = setupDual();
-    host.mode.set('mini');
-    host.width.set('300px');
+  it('renders no collapsed rail in over mode, whatever collapsed holds', () => {
+    const { fixture, el, host } = setupRail();
+    host.mode.set('over');
+    host.leftOpen.set(true);
     fixture.detectChanges();
-    enter(left.elementRef.nativeElement);
-    vi.advanceTimersByTime(ENTER_DELAY);
-    expect(left.effectiveWidth()).toBe('300px');
-  });
-
-  it('adds cngx-sidenav--mini class', () => {
-    const { fixture, host } = setupDual();
-    host.mode.set('mini');
-    fixture.detectChanges();
-    const leftEl = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0]
-      .nativeElement as HTMLElement;
-    expect(leftEl.classList.contains('cngx-sidenav--mini')).toBe(true);
-  });
-
-  it('adds cngx-sidenav--expanded class when expanded', () => {
-    const { fixture, host } = setupDual();
-    host.mode.set('mini');
-    fixture.detectChanges();
-    const leftEl = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0]
-      .nativeElement as HTMLElement;
-    expect(leftEl.classList.contains('cngx-sidenav--expanded')).toBe(false);
-    enter(leftEl);
-    vi.advanceTimersByTime(ENTER_DELAY);
-    fixture.detectChanges();
-    expect(leftEl.classList.contains('cngx-sidenav--expanded')).toBe(true);
-  });
-
-  it('does not set aria-hidden in mini mode', () => {
-    const { fixture, host } = setupDual();
-    host.mode.set('mini');
-    fixture.detectChanges();
-    const leftEl = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0]
-      .nativeElement as HTMLElement;
-    expect(leftEl.getAttribute('aria-hidden')).toBeNull();
+    expect(el.getAttribute('data-sidebar-state')).toBe('expanded');
+    expect(host.leftCollapsed()).toBe(true);
   });
 });
 
@@ -882,6 +805,29 @@ describe('CngxSidenav auto mode', () => {
     fixture.detectChanges();
     expect(nav.widthClass()).toBe('medium');
     expect(nav.effectiveMode()).toBe('side');
+  });
+
+  it('rests as a rail in medium and opens the full nav as an overlay over it', () => {
+    stubWide('medium');
+    const { fixture, nav } = mount();
+    flushResize();
+    fixture.detectChanges();
+    const el = nav.elementRef.nativeElement as HTMLElement;
+    expect(el.getAttribute('data-sidebar-state')).toBe('rail');
+    expect(nav.expanded()).toBe(false);
+
+    nav.toggle();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.open()).toBe(true);
+    expect(nav.overlayActive()).toBe(true);
+    expect(nav.expanded()).toBe(true);
+    expect(el.getAttribute('data-sidebar-state')).toBe('peek');
+    expect(el.getAttribute('aria-modal')).toBe('true');
+
+    nav.close();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.open()).toBe(false);
+    expect(el.getAttribute('data-sidebar-state')).toBe('rail');
   });
 
   it('resolves an unknown width class to compact and warns CNGX3026', () => {
@@ -1132,10 +1078,11 @@ describe('CngxSidenav resize math and shortcut', () => {
     expect(handle.getAttribute('aria-valuenow')).toBe('280');
   });
 
-  it('renders no resize handle in mini mode (fixed-width rail)', () => {
+  it('renders no resize handle on a collapsed rail (fixed width)', () => {
     const fixture = TestBed.createComponent(DualHost);
     fixture.componentInstance.resizable.set(true);
-    fixture.componentInstance.mode.set('mini');
+    fixture.componentInstance.mode.set('side');
+    fixture.componentInstance.leftCollapsed.set(true);
     fixture.detectChanges();
     const leftEl = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0]
       .nativeElement as HTMLElement;
@@ -1166,7 +1113,7 @@ describe('CngxSidenav resize math and shortcut', () => {
     expect(host.open()).toBe(false);
   });
 
-  it('routes the shortcut through toggle() so side/mini mode cannot desync the model', () => {
+  it('routes the shortcut through toggle(): on a docked rail it flips collapsed, not opened', () => {
     const fixture = TestBed.createComponent(ShortcutHost);
     fixture.componentInstance.mode.set('side');
     fixture.componentInstance.open.set(true);
@@ -1174,14 +1121,15 @@ describe('CngxSidenav resize math and shortcut', () => {
     TestBed.flushEffects();
     const host = fixture.componentInstance;
 
-    // close() no-ops in the always-visible modes; a raw opened flip would set
-    // the model false while the rail stays visually open (and a router sync
-    // would write ?nav=closed).
+    // A raw opened flip would set the model false while the docked rail stays
+    // visible (and a router sync would write ?nav=closed).
+    const nav = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
     document.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'b', ctrlKey: true, metaKey: true }),
     );
     fixture.detectChanges();
     expect(host.open()).toBe(true);
+    expect(nav.expanded()).toBe(false);
   });
 });
 
@@ -1247,15 +1195,15 @@ describe('CngxSidenav tunable dwell', () => {
     vi.restoreAllMocks();
   });
 
-  function miniNav<T>(host: Type<T>): { nav: CngxSidenav; el: HTMLElement } {
+  function railNav<T>(host: Type<T>): { nav: CngxSidenav; el: HTMLElement } {
     const fixture = TestBed.createComponent(host);
     fixture.detectChanges();
     const nav = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
     return { nav, el: nav.elementRef.nativeElement };
   }
 
-  it('per-instance [expandDelay] tunes the mini expand dwell', () => {
-    const { nav, el } = miniNav(MiniDwellHost);
+  it('per-instance [expandDelay] tunes the rail peek dwell', () => {
+    const { nav, el } = railNav(RailDwellHost);
 
     el.dispatchEvent(new PointerEvent('pointerenter'));
     vi.advanceTimersByTime(199);
@@ -1264,13 +1212,13 @@ describe('CngxSidenav tunable dwell', () => {
     expect(nav.expanded()).toBe(true);
   });
 
-  it('withSidenavHoverDwell drives the app-wide mini dwell (enter and leave)', () => {
+  it('withSidenavHoverDwell drives the app-wide rail peek dwell (enter and leave)', () => {
     TestBed.configureTestingModule({
       providers: [
         provideSidenavConfig(withSidenavHoverDwell({ enterDelay: 250, leaveDelay: 150 })),
       ],
     });
-    const { nav, el } = miniNav(MiniUnboundHost);
+    const { nav, el } = railNav(RailUnboundHost);
 
     el.dispatchEvent(new PointerEvent('pointerenter'));
     vi.advanceTimersByTime(249);
@@ -1289,8 +1237,8 @@ describe('CngxSidenav tunable dwell', () => {
     TestBed.configureTestingModule({
       providers: [provideSidenavConfig(withSidenavHoverDwell({ enterDelay: 250 }))],
     });
-    // MiniDwellHost binds [expandDelay]=200, which must beat the config's 250.
-    const { nav, el } = miniNav(MiniDwellHost);
+    // RailDwellHost binds [expandDelay]=200, which must beat the config's 250.
+    const { nav, el } = railNav(RailDwellHost);
 
     el.dispatchEvent(new PointerEvent('pointerenter'));
     vi.advanceTimersByTime(199);

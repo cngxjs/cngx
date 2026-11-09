@@ -6,12 +6,19 @@ import {
   ElementRef,
   HostAttributeToken,
   inject,
+  InjectionToken,
+  Injector,
   input,
   linkedSignal,
   model,
+  type Signal,
   signal,
 } from '@angular/core';
-import { CngxHoverIntent } from '@cngx/common/interactive';
+import {
+  CNGX_HOVER_INTENT_DRIVER,
+  CngxHoverIntent,
+  type CngxHoverIntentDriver,
+} from '@cngx/common/interactive';
 import { nextUid } from '@cngx/core/utils';
 
 import { injectLayoutI18n } from '../i18n/layout-i18n';
@@ -43,6 +50,31 @@ export type CngxSidebarSide = 'start' | 'end';
  * @since 0.1.0
  */
 export type CngxSidebarState = 'expanded' | 'rail' | 'hidden' | 'peek';
+
+/**
+ * @internal Lets a component that composes `CngxSidebar` as a host directive
+ * decide what the sidebar renders from its own state (a sidenav maps its
+ * width class onto the sidebar). Provided by the composer on the same
+ * element (`useExisting`); the sidebar resolves it lazily with `self: true`,
+ * because the composer constructs after its host directives. The consumer's
+ * `[(collapsed)]` stays the persisted user decision; the driver only decides
+ * what is rendered.
+ */
+export interface CngxSidebarDriver {
+  /** The collapsed state the sidebar renders; wins over `[(collapsed)]`. */
+  readonly sidebarCollapsed: Signal<boolean>;
+  /** The collapsed rest the sidebar renders; wins over `[collapsedAs]`. */
+  readonly sidebarCollapsedAs?: Signal<CngxSidebarCollapsedAs>;
+  /** Shows a collapsed sidebar at full size over the content while `true`. */
+  readonly sidebarPeek?: Signal<boolean>;
+  /** Conceals the sidebar (`inert` + `aria-hidden`) while `true`, in any state. */
+  readonly sidebarConcealed?: Signal<boolean>;
+  /** Accessible name; wins over `[label]` and the i18n fallback. */
+  readonly sidebarLabel?: Signal<string>;
+}
+
+/** @internal See {@link CngxSidebarDriver}. */
+export const CNGX_SIDEBAR_DRIVER = new InjectionToken<CngxSidebarDriver>('CngxSidebarDriver');
 
 /**
  * The brain of a persistent side region: a sidebar that stays in the layout
@@ -99,13 +131,11 @@ export type CngxSidebarState = 'expanded' | 'rail' | 'hidden' | 'peek';
   selector: '[cngxSidebar]',
   exportAs: 'cngxSidebar',
   standalone: true,
-  hostDirectives: [
-    {
-      directive: CngxHoverIntent,
-      inputs: ['enterDelay: expandDelay', 'leaveDelay: collapseDelay'],
-    },
+  hostDirectives: [CngxHoverIntent],
+  providers: [
+    { provide: CNGX_PANEL_TARGET, useExisting: CngxSidebar },
+    { provide: CNGX_HOVER_INTENT_DRIVER, useExisting: CngxSidebar },
   ],
-  providers: [{ provide: CNGX_PANEL_TARGET, useExisting: CngxSidebar }],
   host: {
     '[attr.id]': 'id()',
     '[attr.role]': 'role()',
@@ -121,7 +151,7 @@ export type CngxSidebarState = 'expanded' | 'rail' | 'hidden' | 'peek';
     '(focusout)': 'handleFocusOut($event)',
   },
 })
-export class CngxSidebar implements CngxPanelTarget {
+export class CngxSidebar implements CngxPanelTarget, CngxHoverIntentDriver {
   /** Whether the sidebar rests collapsed. Two-way: `[(collapsed)]`. */
   readonly collapsed = model<boolean>(false);
   /** How a collapsed sidebar rests: an operable `rail` or `hidden`. */
@@ -134,6 +164,20 @@ export class CngxSidebar implements CngxPanelTarget {
   /** Whether the pointer resting on a collapsed sidebar peeks it. */
   readonly expandOnHover = input<boolean>(true);
   /**
+   * ms the pointer rests on a collapsed sidebar before it peeks. Unbound,
+   * `CNGX_HOVER_INTENT_DEFAULTS` applies, then 120.
+   */
+  readonly expandDelay = input<number | undefined>(undefined);
+  /**
+   * ms after the pointer leaves before a hover peek ends. Unbound,
+   * `CNGX_HOVER_INTENT_DEFAULTS` applies, then 0.
+   */
+  readonly collapseDelay = input<number | undefined>(undefined);
+  /** @internal Drives the composed `CngxHoverIntent`. */
+  readonly hoverEnterDelay = this.expandDelay;
+  /** @internal Drives the composed `CngxHoverIntent`. */
+  readonly hoverLeaveDelay = this.collapseDelay;
+  /**
    * Landmark role. Defaults to `complementary`; pass `navigation` for a nav
    * sidebar, or `null` on a `<nav>` / `<aside>` host to keep its implicit role.
    */
@@ -142,6 +186,21 @@ export class CngxSidebar implements CngxPanelTarget {
   readonly labelInput = input<string | undefined>(undefined, { alias: 'label' });
 
   private readonly hover = inject(CngxHoverIntent, { self: true });
+  private readonly injector = inject(Injector);
+  private resolvedDriver: CngxSidebarDriver | null | undefined = undefined;
+  private driver(): CngxSidebarDriver | null {
+    if (this.resolvedDriver === undefined) {
+      this.resolvedDriver = this.injector.get(CNGX_SIDEBAR_DRIVER, null, { self: true });
+    }
+    return this.resolvedDriver;
+  }
+  // What the sidebar renders: the driver wins over the inputs.
+  private readonly restCollapsed = computed(
+    () => this.driver()?.sidebarCollapsed() ?? this.collapsed(),
+  );
+  private readonly restAs = computed(
+    () => this.driver()?.sidebarCollapsedAs?.() ?? this.collapsedAs(),
+  );
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly doc = inject(DOCUMENT);
   private readonly i18n = injectLayoutI18n();
@@ -172,33 +231,37 @@ export class CngxSidebar implements CngxPanelTarget {
 
   /** Whether a collapsed sidebar currently shows at full size over the content. */
   readonly peeked = computed(() => {
-    if (!this.collapsed()) {
+    if (!this.restCollapsed()) {
       return false;
     }
-    if (this.peekState()) {
+    if (this.peekState() || (this.driver()?.sidebarPeek?.() ?? false)) {
       return true;
     }
     return this.expandOnHover() && this.hover.active() && !this.hoverSuppressed();
   });
 
   /** Whether the sidebar shows at full size: expanded, or collapsed and peeked. */
-  readonly expanded = computed(() => !this.collapsed() || this.peeked());
+  readonly expanded = computed(() => !this.restCollapsed() || this.peeked());
 
   /** The rendered state: `expanded`, `peek`, or the collapsed rest. */
   readonly state = computed<CngxSidebarState>(() => {
-    if (!this.collapsed()) {
+    if (!this.restCollapsed()) {
       return 'expanded';
     }
-    return this.peeked() ? 'peek' : this.collapsedAs();
+    return this.peeked() ? 'peek' : this.restAs();
   });
 
-  protected readonly concealed = computed(() => this.state() === 'hidden');
+  protected readonly concealed = computed(
+    () => this.state() === 'hidden' || (this.driver()?.sidebarConcealed?.() ?? false),
+  );
   /**
    * {@link CngxPanelTarget}: the region's resolved accessible name, the bound
    * `label` or `CNGX_LAYOUT_I18N.sidebarRegion`. An icon-only trigger takes
    * it as its name.
    */
-  readonly label = computed(() => this.labelInput() ?? this.i18n().sidebarRegion);
+  readonly label = computed(
+    () => this.driver()?.sidebarLabel?.() ?? this.labelInput() ?? this.i18n().sidebarRegion,
+  );
 
   protected readonly inlineSize = computed(() => {
     switch (this.state()) {
@@ -217,7 +280,7 @@ export class CngxSidebar implements CngxPanelTarget {
     if (!this.peeked()) {
       return null;
     }
-    const rest = this.collapsedAs() === 'rail' ? 'var(--cngx-sidebar-rail-size, 3.5rem)' : '0px';
+    const rest = this.restAs() === 'rail' ? 'var(--cngx-sidebar-rail-size, 3.5rem)' : '0px';
     return `calc(${rest} - var(--cngx-sidebar-size, 16rem))`;
   });
 
@@ -267,7 +330,7 @@ export class CngxSidebar implements CngxPanelTarget {
 
   /** Shows a collapsed sidebar at full size over the content until dismissed. */
   peek(): void {
-    if (this.collapsed()) {
+    if (this.restCollapsed()) {
       this.peekState.set(true);
     }
   }

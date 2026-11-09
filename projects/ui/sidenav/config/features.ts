@@ -38,10 +38,11 @@ export function withSidenavShortcut(combo: string): CngxSidenavConfigFeature {
 }
 
 /**
- * Set the app-wide default mini expand-on-hover dwell - `enterDelay` (ms before
- * the rail expands) and `leaveDelay` (ms before it collapses). Flows into the
- * composed `CngxHoverIntent` via `CNGX_HOVER_INTENT_DEFAULTS`. Per-instance
- * `[enterDelay]` / `[leaveDelay]` still win; the shipped literals (120 / 0)
+ * Set the app-wide default hover dwell of the collapsed rail's peek -
+ * `enterDelay` (ms of hover before the rail peeks) and `leaveDelay` (ms before
+ * the peek ends). Flows into the `CngxHoverIntent` of the composed
+ * `CngxSidebar` via `CNGX_HOVER_INTENT_DEFAULTS`. Per-instance
+ * `[expandDelay]` / `[collapseDelay]` still win; the shipped literals (120 / 0)
  * apply when neither is set. Partial payloads deep-merge, so pass only the key
  * you want to change.
  *

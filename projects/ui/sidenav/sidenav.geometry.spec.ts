@@ -20,7 +20,13 @@ import { CngxSidenavLayout } from './sidenav-layout';
   imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
   template: `
     <cngx-sidenav-layout>
-      <cngx-sidenav mode="mini" [miniWidth]="'72px'" [expandOnHover]="false" ariaLabel="Nav">
+      <cngx-sidenav
+        mode="side"
+        [collapsed]="true"
+        [miniWidth]="'72px'"
+        [expandOnHover]="false"
+        ariaLabel="Nav"
+      >
         Nav
       </cngx-sidenav>
       <cngx-sidenav-content>Main</cngx-sidenav-content>
@@ -36,7 +42,7 @@ function mount(): { host: HTMLElement; body: HTMLElement } {
   mountedRoot = fixture.nativeElement as HTMLElement;
   document.body.appendChild(mountedRoot);
   fixture.detectChanges();
-  const host = mountedRoot.querySelector('cngx-sidenav.cngx-sidenav--mini');
+  const host = mountedRoot.querySelector('cngx-sidenav[data-sidebar-state="rail"]');
   const body = host?.querySelector('.cngx-sidenav__body');
   if (!host || !body) {
     throw new Error('mini cngx-sidenav did not render a body');
@@ -55,8 +61,9 @@ afterEach(() => {
 describe('CngxSidenav mini-rail geometry', () => {
   it('collapses to the mini rail without expanding', () => {
     const { host } = mount();
-    expect(host.classList.contains('cngx-sidenav--mini')).toBe(true);
-    expect(host.classList.contains('cngx-sidenav--expanded')).toBe(false);
+    expect(host.getAttribute('data-sidebar-state')).toBe('rail');
+    // 72px rail plus the 1px edge border (content-box sizing).
+    expect(host.getBoundingClientRect().width).toBeCloseTo(73, 0);
   });
 
   it('inherits the configured mini-width down to the collapsed body', () => {

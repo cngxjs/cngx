@@ -60,7 +60,9 @@ export { CngxExpandable } from './expandable/expandable.directive';
 export {
   CngxHoverIntent,
   CNGX_HOVER_INTENT_DEFAULTS,
+  CNGX_HOVER_INTENT_DRIVER,
   type CngxHoverIntentDefaults,
+  type CngxHoverIntentDriver,
 } from './hover-intent/hover-intent.directive';
 export {
   CNGX_CONTROL_VALUE,

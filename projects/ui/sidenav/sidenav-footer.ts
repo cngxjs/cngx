@@ -15,7 +15,7 @@ import { Directive } from '@angular/core';
  * `--cngx-sidenav-footer-bg`, `--cngx-sidenav-footer-border-color`,
  * and `--cngx-sidenav-footer-font-size`.
  *
- * In `mini` mode (collapsed rail, not expanded) the region clips to
+ * On the collapsed rail (not peeked) the region clips to
  * `miniWidth` with `overflow: hidden` and centred text - same
  * caveat as the header. An icon + tooltip pattern survives the
  * rail; a multi-line copyright line does not.

@@ -1,8 +1,8 @@
 import type { Signal } from '@angular/core';
 
 /**
- * App-wide cascade for the sidenav family's dimension defaults, the mini
- * expand-on-hover dwell, and the `shortcut` behaviour knob.
+ * App-wide cascade for the sidenav family's dimension defaults, the rail
+ * peek hover dwell, and the `shortcut` behaviour knob.
  *
  * Resolution priority (high -> low):
  *   1. Per-instance Input binding (e.g. `[width]="'320px'"`, `[shortcut]="'mod+b'"`).
@@ -16,7 +16,7 @@ import type { Signal } from '@angular/core';
  * `dimensions`, `hover`, and `routerSync` sub-trees are one level deep
  * (spread-merged per key); `shortcut` is a flat top-level scalar.
  *
- * The cascaded keys are the dimension inputs, the mini hover dwell, the
+ * The cascaded keys are the dimension inputs, the rail hover dwell, the
  * `shortcut` default, and the router-sync `param`. `ariaLabel`, `position`,
  * and `mode` stay per-instance only, since they describe an individual rail
  * rather than an app-wide default. The docking threshold behind `mode="auto"`
@@ -34,7 +34,7 @@ export interface CngxSidenavConfig {
   readonly dimensions?: {
     /** Width of the expanded panel. Seeds the two-way `[(width)]` model. */
     readonly width?: string;
-    /** Width of the collapsed rail in `mini` mode. */
+    /** Width of the collapsed rail (`collapsed` with `collapsedAs="rail"`). */
     readonly miniWidth?: string;
     /** Minimum width constraint during resize. */
     readonly minWidth?: string;
@@ -43,14 +43,14 @@ export interface CngxSidenavConfig {
   };
 
   /**
-   * Mini expand-on-hover dwell, forwarded to the composed `CngxHoverIntent`
-   * hostDirective. A one-level nested sub-tree. Wired via
+   * Hover dwell of the collapsed rail's peek, forwarded to the `CngxHoverIntent`
+   * of the composed `CngxSidebar`. A one-level nested sub-tree. Wired via
    * `withSidenavHoverDwell(...)`.
    */
   readonly hover?: {
-    /** Delay in ms before the mini rail expands on pointer enter. */
+    /** Delay in ms before the collapsed rail peeks on pointer enter. */
     readonly enterDelay?: number;
-    /** Delay in ms before the mini rail collapses on pointer leave. */
+    /** Delay in ms before the peek ends on pointer leave. */
     readonly leaveDelay?: number;
   };
 

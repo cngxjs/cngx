@@ -10,7 +10,6 @@ import {
   ElementRef,
   inject,
   input,
-  linkedSignal,
   model,
   signal,
   untracked,
@@ -20,12 +19,17 @@ import {
   createTransitionTracker,
   injectLocale,
   matchesKeyCombo,
-  nextUid,
   numberFormatterFor,
   parseKeyCombo,
 } from '@cngx/core/utils';
-import { CNGX_HOVER_INTENT_DEFAULTS, CngxHoverIntent } from '@cngx/common/interactive';
-import { CNGX_CONTAINER_SIZE } from '@cngx/common/layout';
+import { CNGX_HOVER_INTENT_DEFAULTS } from '@cngx/common/interactive';
+import {
+  CNGX_CONTAINER_SIZE,
+  CNGX_SIDEBAR_DRIVER,
+  CngxSidebar,
+  type CngxSidebarCollapsedAs,
+  type CngxSidebarDriver,
+} from '@cngx/common/layout';
 import { clamp, cngxDevWarn } from '@cngx/utils';
 
 import { injectSidenavConfig, injectSidenavLabels } from './config/inject-sidenav-config';
@@ -42,10 +46,10 @@ export type SidenavPosition = 'start' | 'end';
  *
  * - `'over'` - floats above content (overlay + backdrop)
  * - `'push'` - pushes content aside when open
- * - `'side'` - always visible, content permanently offset
- * - `'mini'` - collapsed icon rail (miniWidth), expands to full width on hover
+ * - `'side'` - docked beside the content; `collapsed` rests it as a rail or
+ *   hides it
  */
-export type SidenavMode = 'auto' | 'over' | 'push' | 'side' | 'mini';
+export type SidenavMode = 'auto' | 'over' | 'push' | 'side';
 
 /**
  * A resolved mode - what `'auto'` settles on plus every pinnable value.
@@ -66,10 +70,17 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
 ]);
 
 /**
- * Declarative sidebar component for the four drawer modes (`over`,
- * `push`, `side`, `mini`) plus an `auto` default, two-way
- * `[(opened)]` binding, and content projection via header/footer
- * slots.
+ * Declarative sidebar component for the drawer modes (`over`, `push`,
+ * `side`) plus an `auto` default, two-way `[(opened)]` and `[(collapsed)]`
+ * bindings, and content projection via header/footer slots.
+ *
+ * The rail is a composed `CngxSidebar`: docked, `[(collapsed)]` rests it as a
+ * rail (`collapsedAs="rail"`, `miniWidth` wide) or hides it
+ * (`collapsedAs="hidden"`), and a collapsed rail peeks at full width over the
+ * content on a hover dwell (`expandOnHover`, `expandDelay`, `collapseDelay`).
+ * `toggle()` follows the width class: `expanded` flips `collapsed`, `medium`
+ * keeps the rail and opens the full nav as an overlay over it, `compact` opens
+ * the drawer. `close()` collapses a docked rail.
  *
  * Responsive out of the box: `mode` defaults to `'auto'`, which follows the
  * width class of the surrounding `CngxSidenavLayout` (`widthClass`): it
@@ -120,50 +131,51 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./sidenav.css'],
-  // Debounced expand-on-hover: CngxHoverIntent's pointerenter/pointerleave
-  // listeners replace the sidenav's instant ones so a sweep-through never
-  // expands. The directive is composed unconditionally - its listeners arm in
-  // every mode - but only `mini` reads its `active()` signal (see hoverSource);
-  // non-mini modes gate the debounced result to false downstream. The mini dwell
-  // is tunable per instance via [expandDelay]/[collapseDelay] - rail-scoped
-  // aliases of the atom's enterDelay/leaveDelay, named for what they do on a rail
-  // ("expand after N ms of hover", "collapse after N ms off") - and app-wide via
-  // CNGX_HOVER_INTENT_DEFAULTS (provided from the config below); un-set, the
-  // atom's 120/0 literals apply so behaviour stays unchanged.
+  // The rail is a composed CngxSidebar: collapsed / collapsedAs / the hover
+  // peek and its dwell (expandDelay / collapseDelay, app-wide through
+  // CNGX_HOVER_INTENT_DEFAULTS below) come from the brain. `position` doubles
+  // as the sidebar's `side`, so a peek grows away from the rail's edge. The
+  // sidenav drives what the brain renders per width class through
+  // CNGX_SIDEBAR_DRIVER; the consumer's [(collapsed)] stays the user decision.
   hostDirectives: [
     {
-      directive: CngxHoverIntent,
-      inputs: ['enterDelay: expandDelay', 'leaveDelay: collapseDelay'],
+      directive: CngxSidebar,
+      inputs: [
+        'collapsed',
+        'collapsedAs',
+        'expandOnHover',
+        'expandDelay',
+        'collapseDelay',
+        'side: position',
+      ],
+      outputs: ['collapsedChange'],
     },
   ],
-  // Element-injector provider (not viewProviders): the composed CngxHoverIntent
-  // resolves CNGX_HOVER_INTENT_DEFAULTS from the host element injector, so the
-  // config-resolved dwell reaches the atom. Un-configured, cfg.hover is the
-  // 120/0 default, byte-identical to the atom's own literals.
+  // Element-injector provider (not viewProviders): the sidebar's composed
+  // CngxHoverIntent resolves CNGX_HOVER_INTENT_DEFAULTS from the host element
+  // injector, so the config-resolved dwell reaches the atom. Un-configured,
+  // cfg.hover is the 120/0 default, byte-identical to the atom's own literals.
   providers: [
     { provide: CNGX_HOVER_INTENT_DEFAULTS, useFactory: () => injectSidenavConfig().hover ?? {} },
     { provide: CNGX_SIDENAV, useExisting: CngxSidenav },
+    { provide: CNGX_SIDEBAR_DRIVER, useExisting: CngxSidenav },
   ],
   host: {
     '[class.cngx-sidenav]': 'true',
-    '[attr.id]': 'id()',
     '[class.cngx-sidenav--start]': "position() === 'start'",
     '[class.cngx-sidenav--end]': "position() === 'end'",
     '[class.cngx-sidenav--open]': 'opened()',
     '[class.cngx-sidenav--over]': "effectiveMode() === 'over'",
     '[class.cngx-sidenav--push]': "effectiveMode() === 'push'",
     '[class.cngx-sidenav--side]': "effectiveMode() === 'side'",
-    '[class.cngx-sidenav--mini]': "effectiveMode() === 'mini'",
-    '[class.cngx-sidenav--expanded]': 'expanded()',
     '[class.cngx-sidenav--resizable]': 'resizable()',
     '[class.cngx-sidenav--resizing]': 'resizing()',
-    '[attr.aria-hidden]':
-      "effectiveMode() === 'side' || effectiveMode() === 'mini' ? null : !opened()",
     '[attr.role]': 'hostRole()',
     '[attr.aria-modal]': "overlayActive() ? 'true' : null",
-    '[style.--cngx-sidenav-width]': 'effectiveWidth()',
+    '[style.--cngx-sidenav-width]': 'width()',
     '[style.--cngx-sidenav-mini-width]': 'miniWidth()',
-    '[attr.aria-label]': 'resolvedAriaLabel()',
+    '[style.--cngx-sidebar-size]': 'width()',
+    '[style.--cngx-sidebar-rail-size]': 'miniWidth()',
     '(keydown.escape)': 'closeIfOverlay()',
   },
   template: `
@@ -172,9 +184,9 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
       <ng-content />
     </div>
     <ng-content select="cngx-sidenav-footer, [cngxSidenavFooter]" />
-    <!-- No handle in mini mode: the collapsed rail has a fixed width, and a
-         drag there would leave a stale inline width var on the rail. -->
-    @if (resizable() && effectiveMode() !== 'mini') {
+    <!-- Only at full width: a collapsed rail or peek has a fixed width, and a
+         drag there would leave a stale width on the rail. -->
+    @if (resizable() && sidebar.state() === 'expanded') {
       <div
         class="cngx-sidenav__resize-handle"
         (pointerdown)="handleResizeStart($event)"
@@ -192,7 +204,7 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
     }
   `,
 })
-export class CngxSidenav {
+export class CngxSidenav implements CngxSidebarDriver {
   /**
    * Resolved sidenav configuration cascade. Seeds the dimension and
    * `shortcut` input defaults below so a per-instance binding still wins
@@ -216,16 +228,19 @@ export class CngxSidenav {
     transform: (value) => (value?.trim() ? value : undefined),
   });
 
+  /** @internal The composed sidebar brain. */
+  protected readonly sidebar = inject(CngxSidebar, { self: true });
+
   /**
-   * Element id of the rail. Defaults to a generated id; a static `id="..."`
-   * attribute on the host is captured here and kept.
+   * Element id of the rail: a static `id="..."` attribute on the host, else a
+   * generated one (the composed sidebar owns it).
    *
    * An external toggle names this id in its `aria-controls`
    * (`[attr.aria-controls]="nav.id()"`). `CngxSidenavLayout` ignores a
    * `pointerdown` inside such a control when it dismisses open overlays, so
    * the toggle's own click can close the rail instead of reopening it.
    */
-  readonly id = input<string>(nextUid('cngx-sidenav-'));
+  readonly id = this.sidebar.id;
 
   /**
    * Drawer mode. `'auto'` (the default) resolves from `widthClass`: `'over'`
@@ -237,11 +252,8 @@ export class CngxSidenav {
   /** Width of the sidenav panel. Supports two-way `[(width)]` for resize. */
   readonly width = model<string>(this.cfg.dimensions?.width ?? '280px');
 
-  /** Width of the collapsed rail in `mini` mode. Any CSS value. */
+  /** Width of the collapsed rail (`collapsed` with `collapsedAs="rail"`). Any CSS value. */
   readonly miniWidth = input<string>(this.cfg.dimensions?.miniWidth ?? '56px');
-
-  /** Whether hovering the mini rail expands the sidenav to full width. */
-  readonly expandOnHover = input<boolean>(true);
 
   /** Whether the sidebar is user-resizable via a drag handle. */
   readonly resizable = input<boolean>(false);
@@ -305,56 +317,6 @@ export class CngxSidenav {
   /** Two-way opened state. Supports `[(opened)]="signal"`. */
   readonly opened = model<boolean>(false);
 
-  /** Debounced mini expand-on-hover, composed as a hostDirective (its own pointer listeners drive it). */
-  private readonly hoverIntent = inject(CngxHoverIntent, { host: true });
-
-  /**
-   * Composed source for `expandedState`: the effective mode, the debounced
-   * hover-intent signal, and the on/off switch. Carries an explicit `equal` so
-   * the object literal never churns identity and re-runs the computation when
-   * none of the three fields actually changed.
-   */
-  private readonly hoverSource = computed<{
-    mode: ResolvedSidenavMode;
-    hover: boolean;
-    enabled: boolean;
-  }>(
-    () => ({
-      mode: this.effectiveMode(),
-      hover: this.hoverIntent.active(),
-      enabled: this.expandOnHover(),
-    }),
-    { equal: (a, b) => a.mode === b.mode && a.hover === b.hover && a.enabled === b.enabled },
-  );
-
-  /**
-   * Whether the mini-mode rail is currently expanded. A pure derivation of
-   * `(effectiveMode, hoverIntent.active, expandOnHover)`, not two imperative
-   * event-handler writes:
-   *
-   * - outside `mini` it is always `false`;
-   * - with `expandOnHover=true` the debounced hover is the source of truth, so a
-   *   pointer edge overrides a prior `expand()`/`collapse()` (see `expand()`);
-   * - with `expandOnHover=false` hover is ignored and the prior value is kept, so
-   *   `expand()`/`collapse()` retain full programmatic authority.
-   *
-   * It stays a writable `linkedSignal` so `expand()`/`collapse()` can `set()` it;
-   * the next source change re-derives from the debounced hover.
-   */
-  private readonly expandedState = linkedSignal<
-    { mode: ResolvedSidenavMode; hover: boolean; enabled: boolean },
-    boolean
-  >({
-    source: this.hoverSource,
-    computation: ({ mode, hover, enabled }, prev) => {
-      if (mode !== 'mini') {
-        return false;
-      }
-      return enabled ? hover : (prev?.value ?? false);
-    },
-  });
-  readonly expanded = this.expandedState.asReadonly();
-
   /** @internal Reference to host element for layout positioning. */
   readonly elementRef = inject(ElementRef<HTMLElement>);
 
@@ -398,19 +360,68 @@ export class CngxSidenav {
     return this.widthClass() === 'compact' ? 'over' : 'side';
   });
 
-  /** Whether this sidenav is in overlay mode (over). */
-  readonly isOverlay = computed(() => this.effectiveMode() === 'over');
+  /**
+   * `auto` in the `medium` width class: the rail is the resting state and
+   * `toggle()` opens the full nav as an overlay over it (no reflow).
+   */
+  private readonly railBase = computed(
+    () => this.mode() === 'auto' && this.widthClass() === 'medium',
+  );
 
-  /** Whether the sidenav is currently a modal overlay: overlay mode and open. */
+  /**
+   * Whether `opened` shows the rail as an overlay: the `over` drawer, or the
+   * full nav over the `medium` rail.
+   */
+  readonly isOverlay = computed(() => this.effectiveMode() === 'over' || this.railBase());
+
+  /** Whether the sidenav is currently a modal overlay: overlay presentation and open. */
   readonly overlayActive = computed(() => this.isOverlay() && this.opened());
 
-  /** Resolved width - mini mode uses miniWidth unless expanded. */
-  readonly effectiveWidth = computed(() => {
-    if (this.effectiveMode() === 'mini' && !this.expandedState()) {
-      return this.miniWidth();
+  /**
+   * Whether the full nav is shown: the overlay or push rail while `opened`, a
+   * docked rail while not `collapsed` or while it peeks. What a trigger's
+   * `aria-expanded` mirrors.
+   */
+  readonly expanded = computed(() => {
+    if (this.isOverlay() || this.effectiveMode() === 'push') {
+      return this.opened();
     }
-    return this.width();
+    return this.sidebar.expanded();
   });
+
+  /** @internal Drives the composed `CngxSidebar`: the collapsed state per presentation. */
+  readonly sidebarCollapsed = computed(() => {
+    if (this.railBase()) {
+      return true;
+    }
+    switch (this.effectiveMode()) {
+      case 'over':
+        return false;
+      case 'push':
+        return !this.opened();
+      default:
+        return this.sidebar.collapsed();
+    }
+  });
+
+  /** @internal Drives the composed `CngxSidebar`: `medium` always rests as a rail. */
+  readonly sidebarCollapsedAs = computed<CngxSidebarCollapsedAs>(() => {
+    if (this.railBase()) {
+      return 'rail';
+    }
+    return this.effectiveMode() === 'push' ? 'hidden' : this.sidebar.collapsedAs();
+  });
+
+  /** @internal Drives the composed `CngxSidebar`: the `medium` overlay shows over the rail. */
+  readonly sidebarPeek = computed(() => this.railBase() && this.opened());
+
+  /** @internal Drives the composed `CngxSidebar`: a closed drawer leaves the a11y tree. */
+  readonly sidebarConcealed = computed(
+    () => this.effectiveMode() === 'over' && !this.opened(),
+  );
+
+  /** @internal Drives the composed `CngxSidebar`: the rail's accessible name. */
+  readonly sidebarLabel = computed(() => this.resolvedAriaLabel());
 
   private readonly doc = inject(DOCUMENT);
   private readonly win = this.doc.defaultView;
@@ -434,7 +445,7 @@ export class CngxSidenav {
 
   /**
    * Set when the mode-transition effect auto-opens an overlay (a viewport-driven
-   * `side`/`mini` -> `over` switch). The focus effect reads it to enable the trap
+   * `side` -> `over` switch). The focus effect reads it to enable the trap
    * without pulling focus into the rail, since that open was not user-initiated.
    */
   private autoOpenInFlight = false;
@@ -552,37 +563,61 @@ export class CngxSidenav {
       if (current === previous) {
         return;
       }
-      const alwaysVisible = (m: ResolvedSidenavMode) => m === 'side' || m === 'mini';
+      const alwaysVisible = (m: ResolvedSidenavMode) => m === 'side';
       if (alwaysVisible(previous) && !alwaysVisible(current)) {
         // Flag only overlay auto-opens so the focus effect skips the focus-move.
-        // `over` is the only overlay mode; a `push` auto-open never raises
-        // overlayActive, so it must not leave the flag stuck for a later open.
+        // A `push` auto-open never raises overlayActive, so it must not leave
+        // the flag stuck for a later open.
         this.autoOpenInFlight = current === 'over';
         this.opened.set(true);
       }
     });
   }
 
-  /** Opens the sidenav. */
+  /**
+   * Shows the full nav: opens the overlay or push rail, expands a docked
+   * rail (`collapsed = false`).
+   */
   open(): void {
+    if (this.dockedRail()) {
+      this.sidebar.pin();
+      return;
+    }
     this.opened.set(true);
   }
 
-  /** Closes the sidenav (only in over/push mode). No-op in side/mini mode. */
+  /**
+   * Hides the full nav: closes the overlay or push rail, collapses a docked
+   * rail (`collapsed = true`). On a collapsed docked rail it ends a peek.
+   */
   close(): void {
-    const mode = this.effectiveMode();
-    if (mode !== 'side' && mode !== 'mini') {
+    if (!this.dockedRail()) {
       this.opened.set(false);
+      return;
     }
+    if (!this.sidebar.collapsed()) {
+      this.sidebar.collapsed.set(true);
+      return;
+    }
+    this.sidebar.unpeek();
   }
 
-  /** Toggles the sidenav. */
+  /**
+   * Toggles the full nav per width class: flips `collapsed` on a docked rail
+   * (the content reflows), opens or closes the overlay over the `medium` rail
+   * or the `compact` drawer.
+   */
   toggle(): void {
-    if (this.opened()) {
-      this.close();
-    } else {
-      this.open();
+    if (this.dockedRail()) {
+      this.sidebar.toggle();
+      return;
     }
+    this.opened.update((opened) => !opened);
+  }
+
+  /** Whether `collapsed` (not `opened`) is the state `toggle()` and `close()` change. */
+  private dockedRail(): boolean {
+    return this.effectiveMode() === 'side' && !this.railBase();
   }
 
   /** @internal Close only if in overlay mode (for Escape key, click-outside). */
@@ -590,28 +625,6 @@ export class CngxSidenav {
     if (this.isOverlay()) {
       this.close();
     }
-  }
-
-  /**
-   * Expand the mini rail to full width.
-   *
-   * When `expandOnHover=true` (the default) the debounced hover is the source of
-   * truth for `expanded`, so a programmatic `expand()` is transient: the next
-   * pointer edge overrides it. For authoritative programmatic control set
-   * `expandOnHover=false`, which hands `expand()`/`collapse()` full authority.
-   */
-  expand(): void {
-    this.expandedState.set(true);
-  }
-
-  /**
-   * Collapse the expanded mini rail back to miniWidth.
-   *
-   * Same reconciliation as `expand()`: transient while `expandOnHover=true`,
-   * authoritative while `expandOnHover=false`.
-   */
-  collapse(): void {
-    this.expandedState.set(false);
   }
 
   // px-strict: a rem/ch width must not leak a lying aria-valuenow (parseInt
@@ -703,7 +716,7 @@ export class CngxSidenav {
 
   /** @internal */
   protected handleResizeStart(e: PointerEvent): void {
-    if (!this.resizable() || this.effectiveMode() === 'mini') {
+    if (!this.resizable() || this.sidebar.state() !== 'expanded') {
       return;
     }
     e.preventDefault();

@@ -61,8 +61,9 @@ export class ExampleComponent {
 
 Key features:
 
-- **Responsive by default:** `mode` is `auto` unless you say otherwise - `side` once the surrounding layout is `64rem` or wider, `over` below that
-- **Mode switching:** bind `mode` to pin one of `over` (overlay), `push` (nudges content), `side` (permanent), `mini` (collapsed icon rail; hover expands after a tunable dwell via `[expandDelay]` / `[collapseDelay]`)
+- **Responsive by default:** `mode` is `auto` unless you say otherwise - it follows the width class of the surrounding layout: a drawer (`over`) below `48rem`, a collapsed rail with the full nav as an overlay from `48rem`, docked (`side`) from `64rem`
+- **Mode switching:** bind `mode` to pin one of `over` (overlay), `push` (nudges content), `side` (docked)
+- **Collapsed rail:** `[(collapsed)]` rests a docked rail as an icon rail (`collapsedAs="rail"`, `miniWidth` wide) or hides it (`collapsedAs="hidden"`); a collapsed rail peeks at full width over the content after a tunable hover dwell (`[expandDelay]` / `[collapseDelay]`). The rail is a composed `CngxSidebar` from `@cngx/common/layout`
 - **Two-way binding:** `[(opened)]` synchronizes with external state
 - **Resize:** Optional drag handle with min/max constraints; the separator speaks its position as a percent of the min-max range (`aria-valuetext`, `sidenav` language section)
 - **Keyboard:** Escape closes overlay, configurable global shortcut via `[shortcut]`
@@ -125,7 +126,7 @@ A hamburger outside the rail toggles it with one button. Name the rail in the bu
 
 ## Configuration
 
-Every dimension default, the toggle shortcut, and the mini hover dwell resolve through a standard cascade. The docking threshold is deliberately not in the cascade - it is a CSS rule (see above), so it travels with the skin. Per-instance bindings always win; unset keys fall back to the library defaults, so an unconfigured `<cngx-sidenav>` behaves exactly as before.
+Every dimension default, the toggle shortcut, and the rail hover dwell resolve through a standard cascade. The docking threshold is deliberately not in the cascade - it is a CSS rule (see above), so it travels with the skin. Per-instance bindings always win; unset keys fall back to the library defaults, so an unconfigured `<cngx-sidenav>` behaves exactly as before.
 
 Resolution priority (high to low):
 
@@ -157,17 +158,17 @@ bootstrapApplication(AppComponent, {
 |-|-|
 | `withSidenavDimensions({ width?, miniWidth?, minWidth?, maxWidth? })` | Panel dimensions |
 | `withSidenavShortcut(combo)` | Default toggle shortcut |
-| `withSidenavHoverDwell({ enterDelay?, leaveDelay? })` | Mini expand/collapse dwell (ms) |
+| `withSidenavHoverDwell({ enterDelay?, leaveDelay? })` | Collapsed-rail peek dwell (ms) |
 | `withSidenavRouterSync({ param })` | Default deep-link query-param key |
 
 Read the resolved config in an injection context with `injectSidenavConfig()`. Scope overrides to a sub-tree with `provideSidenavConfigAt(...)` in a component's `viewProviders`.
 
-### Mini hover dwell
+### Rail hover dwell
 
-In `mini` mode the rail expands only after the pointer rests for `expandDelay` ms and collapses after `collapseDelay` ms, so a sweep across the rail never expands it. Both are tunable per instance and app-wide:
+A collapsed rail peeks only after the pointer rests for `expandDelay` ms and the peek ends `collapseDelay` ms after it leaves, so a sweep across the rail never peeks it. Both are tunable per instance and app-wide:
 
 ```html
-<cngx-sidenav mode="mini" [expandDelay]="250" [collapseDelay]="150">...</cngx-sidenav>
+<cngx-sidenav mode="side" [collapsed]="true" [expandDelay]="250" [collapseDelay]="150">...</cngx-sidenav>
 ```
 
 Defaults are `expandDelay` 120ms and `collapseDelay` 0ms (instant collapse). The app-wide default is `withSidenavHoverDwell({ enterDelay, leaveDelay })`; per-instance `[expandDelay]` / `[collapseDelay]` win over it.
