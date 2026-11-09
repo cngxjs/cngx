@@ -91,562 +91,702 @@
         "children": [
             {
                 "title": "CNGX0001",
+                "label": "CNGX0001: Locale is not a BCP 47 tag",
                 "file": "error-codes/cngx0001.md"
             },
             {
                 "title": "CNGX0002",
+                "label": "CNGX0002: Plural message without a numeric count",
                 "file": "error-codes/cngx0002.md"
             },
             {
                 "title": "CNGX0003",
+                "label": "CNGX0003: No argument for a placeholder",
                 "file": "error-codes/cngx0003.md"
             },
             {
                 "title": "CNGX0004",
+                "label": "CNGX0004: Registry key already registered",
                 "file": "error-codes/cngx0004.md"
             },
             {
                 "title": "CNGX0005",
+                "label": "CNGX0005: Language pack provided below the root injector",
                 "file": "error-codes/cngx0005.md"
             },
             {
                 "title": "CNGX0006",
+                "label": "CNGX0006: Invalid dir on the document root",
                 "file": "error-codes/cngx0006.md"
             },
             {
                 "title": "CNGX0901",
+                "label": "CNGX0901: Duplicate node id in a tree",
                 "file": "error-codes/cngx0901.md"
             },
             {
                 "title": "CNGX1001",
+                "label": "CNGX1001: Unknown earcon",
                 "file": "error-codes/cngx1001.md"
             },
             {
                 "title": "CNGX1002",
+                "label": "CNGX1002: Lifecycle key bound on [cngxAudio]",
                 "file": "error-codes/cngx1002.md"
             },
             {
                 "title": "CNGX1003",
+                "label": "CNGX1003: Unrecognised event key on [cngxAudio]",
                 "file": "error-codes/cngx1003.md"
             },
             {
                 "title": "CNGX1004",
+                "label": "CNGX1004: DOM-event key bound on [cngxAudioStatus]",
                 "file": "error-codes/cngx1004.md"
             },
             {
                 "title": "CNGX1005",
+                "label": "CNGX1005: No state source for [cngxAudioStatus]",
                 "file": "error-codes/cngx1005.md"
             },
             {
                 "title": "CNGX1006",
+                "label": "CNGX1006: Invalid Date bound to a timestamp",
                 "file": "error-codes/cngx1006.md"
             },
             {
                 "title": "CNGX1007",
+                "label": "CNGX1007: Non-numeric chart data without a summary accessor",
                 "file": "error-codes/cngx1007.md"
             },
             {
                 "title": "CNGX1008",
+                "label": "CNGX1008: More than one chart overlay",
                 "file": "error-codes/cngx1008.md"
             },
             {
                 "title": "CNGX1009",
+                "label": "CNGX1009: Two chart axes share one orientation",
                 "file": "error-codes/cngx1009.md"
             },
             {
                 "title": "CNGX1010",
+                "label": "CNGX1010: Chart preset without an accessible name",
                 "file": "error-codes/cngx1010.md"
             },
             {
                 "title": "CNGX1011",
+                "label": "CNGX1011: Grid recycler without columns",
                 "file": "error-codes/cngx1011.md"
             },
             {
                 "title": "CNGX1012",
+                "label": "CNGX1012: Per-index size estimate on a large recycler",
                 "file": "error-codes/cngx1012.md"
             },
             {
                 "title": "CNGX1013",
+                "label": "CNGX1013: Recycler scroll element not found on first render",
                 "file": "error-codes/cngx1013.md"
             },
             {
                 "title": "CNGX1014",
+                "label": "CNGX1014: Second dialog title or description registered",
                 "file": "error-codes/cngx1014.md"
             },
             {
                 "title": "CNGX1015",
+                "label": "CNGX1015: Non-modal dialog without a title",
                 "file": "error-codes/cngx1015.md"
             },
             {
                 "title": "CNGX1016",
+                "label": "CNGX1016: Status without an accessible name",
                 "file": "error-codes/cngx1016.md"
             },
             {
                 "title": "CNGX1017",
+                "label": "CNGX1017: Status reduced to a bare coloured dot",
                 "file": "error-codes/cngx1017.md"
             },
             {
                 "title": "CNGX1018",
+                "label": "CNGX1018: Tag group label without a semantic list",
                 "file": "error-codes/cngx1018.md"
             },
             {
                 "title": "CNGX1019",
+                "label": "CNGX1019: Two directives bind aria-busy on one element",
                 "file": "error-codes/cngx1019.md"
             },
             {
                 "title": "CNGX1020",
+                "label": "CNGX1020: Duplicate error source key",
                 "file": "error-codes/cngx1020.md"
             },
             {
                 "title": "CNGX1021",
+                "label": "CNGX1021: Duplicate name in the error registry",
                 "file": "error-codes/cngx1021.md"
             },
             {
                 "title": "CNGX1022",
+                "label": "CNGX1022: Nested option groups",
                 "file": "error-codes/cngx1022.md"
             },
             {
                 "title": "CNGX1023",
+                "label": "CNGX1023: Option without a label",
                 "file": "error-codes/cngx1023.md"
             },
             {
                 "title": "CNGX1024",
+                "label": "CNGX1024: Submenu directive without a menu item",
                 "file": "error-codes/cngx1024.md"
             },
             {
                 "title": "CNGX1025",
+                "label": "CNGX1025: Submenu without a popover or menu",
                 "file": "error-codes/cngx1025.md"
             },
             {
                 "title": "CNGX1026",
+                "label": "CNGX1026: Submenu popover without position fallbacks",
                 "file": "error-codes/cngx1026.md"
             },
             {
                 "title": "CNGX1027",
+                "label": "CNGX1027: Menu host is not focusable",
                 "file": "error-codes/cngx1027.md"
             },
             {
                 "title": "CNGX1028",
+                "label": "CNGX1028: Reorder items without an index",
                 "file": "error-codes/cngx1028.md"
             },
             {
                 "title": "CNGX1029",
+                "label": "CNGX1029: Duplicate tree node id",
                 "file": "error-codes/cngx1029.md"
             },
             {
                 "title": "CNGX1030",
+                "label": "CNGX1030: Duplicate tree selection key",
                 "file": "error-codes/cngx1030.md"
             },
             {
                 "title": "CNGX1031",
+                "label": "CNGX1031: Router not set up for a router-sync directive",
                 "file": "error-codes/cngx1031.md"
             },
             {
                 "title": "CNGX1032",
+                "label": "CNGX1032: Root selector matched no element",
                 "file": "error-codes/cngx1032.md"
             },
             {
                 "title": "CNGX1033",
+                "label": "CNGX1033: Scroll-spy section not found",
                 "file": "error-codes/cngx1033.md"
             },
             {
                 "title": "CNGX1034",
+                "label": "CNGX1034: Sticky header in a container that cannot scroll",
                 "file": "error-codes/cngx1034.md"
             },
             {
                 "title": "CNGX1035",
+                "label": "CNGX1035: Confirm popover action without an action",
                 "file": "error-codes/cngx1035.md"
             },
             {
                 "title": "CNGX1036",
+                "label": "CNGX1036: Native Popover API not available",
                 "file": "error-codes/cngx1036.md"
             },
             {
                 "title": "CNGX1037",
+                "label": "CNGX1037: Floating fallback registered without middleware",
                 "file": "error-codes/cngx1037.md"
             },
             {
                 "title": "CNGX1038",
+                "label": "CNGX1038: Stepper control and async click on one element",
                 "file": "error-codes/cngx1038.md"
             },
             {
                 "title": "CNGX1039",
+                "label": "CNGX1039: More than six steps at one level",
                 "file": "error-codes/cngx1039.md"
             },
             {
                 "title": "CNGX1040",
+                "label": "CNGX1040: Commit controller ignored the settle option",
                 "file": "error-codes/cngx1040.md"
             },
             {
                 "title": "CNGX1041",
+                "label": "CNGX1041: Feature dropped for a missing _target",
                 "file": "error-codes/cngx1041.md"
             },
             {
                 "title": "CNGX1042",
+                "label": "CNGX1042: Timeline date accessor produced an invalid date",
                 "file": "error-codes/cngx1042.md"
             },
             {
                 "title": "CNGX1043",
+                "label": "CNGX1043: Focusable content in a timeline opposite slot",
                 "file": "error-codes/cngx1043.md"
             },
             {
                 "title": "CNGX1044",
+                "label": "CNGX1044: Standalone chip inside a chip group",
                 "file": "error-codes/cngx1044.md"
             },
             {
                 "title": "CNGX1045",
+                "label": "CNGX1045: Tab or tab link outside a tab group",
                 "file": "error-codes/cngx1045.md"
             },
             {
                 "title": "CNGX1046",
+                "label": "CNGX1046: Step outside a stepper",
                 "file": "error-codes/cngx1046.md"
             },
             {
                 "title": "CNGX1047",
+                "label": "CNGX1047: Step group outside a stepper",
                 "file": "error-codes/cngx1047.md"
             },
             {
                 "title": "CNGX1048",
+                "label": "CNGX1048: Chart layer outside a chart",
                 "file": "error-codes/cngx1048.md"
             },
             {
                 "title": "CNGX1049",
+                "label": "CNGX1049: Ordinal scale with an empty palette",
                 "file": "error-codes/cngx1049.md"
             },
             {
                 "title": "CNGX1050",
+                "label": "CNGX1050: Chart buffer capacity is not a positive integer",
                 "file": "error-codes/cngx1050.md"
             },
             {
                 "title": "CNGX1051",
+                "label": "CNGX1051: Tree controller without a node id function",
                 "file": "error-codes/cngx1051.md"
             },
             {
                 "title": "CNGX1052",
+                "label": "CNGX1052: Button toggle under both a single and a multi group",
                 "file": "error-codes/cngx1052.md"
             },
             {
                 "title": "CNGX1053",
+                "label": "CNGX1053: Button toggle without a group",
                 "file": "error-codes/cngx1053.md"
             },
             {
                 "title": "CNGX1054",
+                "label": "CNGX1054: HTTP response without a body",
                 "file": "error-codes/cngx1054.md"
             },
             {
                 "title": "CNGX1055",
+                "label": "CNGX1055: Stepper or tab add-on without its presenter",
                 "file": "error-codes/cngx1055.md"
             },
             {
                 "title": "CNGX1056",
+                "label": "CNGX1056: Stepper control without a stepper",
                 "file": "error-codes/cngx1056.md"
             },
             {
                 "title": "CNGX1057",
+                "label": "CNGX1057: Menu radio item outside a menu group",
                 "file": "error-codes/cngx1057.md"
             },
             {
                 "title": "CNGX1058",
+                "label": "CNGX1058: Menu item outside a menu",
                 "file": "error-codes/cngx1058.md"
             },
             {
                 "title": "CNGX1059",
+                "label": "CNGX1059: Commit action completed without a decision",
                 "file": "error-codes/cngx1059.md"
             },
             {
                 "title": "CNGX1060",
+                "label": "CNGX1060: Accordion panel outside an accordion",
                 "file": "error-codes/cngx1060.md"
             },
             {
                 "title": "CNGX1061",
+                "label": "CNGX1061: Breadcrumb item outside a breadcrumb",
                 "file": "error-codes/cngx1061.md"
             },
             {
                 "title": "CNGX1062",
+                "label": "CNGX1062: Slider thumb outside a range track",
                 "file": "error-codes/cngx1062.md"
             },
             {
                 "title": "CNGX1063",
+                "label": "CNGX1063: Paginate add-on without a paginate directive",
                 "file": "error-codes/cngx1063.md"
             },
             {
                 "title": "CNGX1064",
+                "label": "CNGX1064: Popover sheet without a name",
                 "file": "error-codes/cngx1064.md"
             },
             {
                 "title": "CNGX1065",
+                "label": "CNGX1065: Popover sheet on an auto popover",
                 "file": "error-codes/cngx1065.md"
             },
             {
                 "title": "CNGX1066",
+                "label": "CNGX1066: Sheet part outside a popover sheet",
                 "file": "error-codes/cngx1066.md"
             },
             {
                 "title": "CNGX1067",
+                "label": "CNGX1067: Popover sheet without a popover",
                 "file": "error-codes/cngx1067.md"
             },
             {
                 "title": "CNGX1068",
+                "label": "CNGX1068: Group chip outside a chip group",
                 "file": "error-codes/cngx1068.md"
             },
             {
                 "title": "CNGX1069",
+                "label": "CNGX1069: Empty or non-finite pitch domain",
                 "file": "error-codes/cngx1069.md"
             },
             {
                 "title": "CNGX1070",
+                "label": "CNGX1070: Command source factory returned no source",
                 "file": "error-codes/cngx1070.md"
             },
             {
                 "title": "CNGX1071",
+                "label": "CNGX1071: Icon button without an accessible name",
                 "file": "error-codes/cngx1071.md"
             },
             {
                 "title": "CNGX1072",
+                "label": "CNGX1072: Button group without an accessible name",
                 "file": "error-codes/cngx1072.md"
             },
             {
                 "title": "CNGX1073",
+                "label": "CNGX1073: Split button without a main cngxButton",
                 "file": "error-codes/cngx1073.md"
             },
             {
                 "title": "CNGX1074",
+                "label": "CNGX1074: Menu trigger without an ARIA writer",
                 "file": "error-codes/cngx1074.md"
             },
             {
                 "title": "CNGX1075",
+                "label": "CNGX1075: Button brain without a host descriptor",
                 "file": "error-codes/cngx1075.md"
             },
             {
                 "title": "CNGX1076",
+                "label": "CNGX1076: Push drawer requested as modal",
                 "file": "error-codes/cngx1076.md"
             },
             {
                 "title": "CNGX1077",
+                "label": "CNGX1077: Two hotkeys tie on one press",
                 "file": "error-codes/cngx1077.md"
             },
             {
                 "title": "CNGX1078",
+                "label": "CNGX1078: Hotkey on a browser-reserved combo",
                 "file": "error-codes/cngx1078.md"
             },
             {
                 "title": "CNGX1079",
+                "label": "CNGX1079: Hotkey on Ctrl+Alt collides with AltGr",
                 "file": "error-codes/cngx1079.md"
             },
             {
                 "title": "CNGX1080",
+                "label": "CNGX1080: Unparseable hotkey combo",
                 "file": "error-codes/cngx1080.md"
             },
             {
                 "title": "CNGX2001",
+                "label": "CNGX2001: Unknown filter operator",
                 "file": "error-codes/cngx2001.md"
             },
             {
                 "title": "CNGX2002",
+                "label": "CNGX2002: Filter builder has no fields",
                 "file": "error-codes/cngx2002.md"
             },
             {
                 "title": "CNGX2003",
+                "label": "CNGX2003: Filter value references an unknown field",
                 "file": "error-codes/cngx2003.md"
             },
             {
                 "title": "CNGX2004",
+                "label": "CNGX2004: Filter group exceeds the maximum nesting depth",
                 "file": "error-codes/cngx2004.md"
             },
             {
                 "title": "CNGX2005",
+                "label": "CNGX2005: cngxPasteTransform stacked on cngxInputMask",
                 "file": "error-codes/cngx2005.md"
             },
             {
                 "title": "CNGX2006",
+                "label": "CNGX2006: Input bound through DefaultValueAccessor",
                 "file": "error-codes/cngx2006.md"
             },
             {
                 "title": "CNGX2007",
+                "label": "CNGX2007: Typed control name not found in the form group",
                 "file": "error-codes/cngx2007.md"
             },
             {
                 "title": "CNGX2008",
+                "label": "CNGX2008: Chip removal handler without its standard fields",
                 "file": "error-codes/cngx2008.md"
             },
             {
                 "title": "CNGX2009",
+                "label": "CNGX2009: Filter tree root replaced by an expression",
                 "file": "error-codes/cngx2009.md"
             },
             {
                 "title": "CNGX2010",
+                "label": "CNGX2010: Filter path index out of range",
                 "file": "error-codes/cngx2010.md"
             },
             {
                 "title": "CNGX2011",
+                "label": "CNGX2011: Filter path runs through an expression",
                 "file": "error-codes/cngx2011.md"
             },
             {
                 "title": "CNGX2012",
+                "label": "CNGX2012: Filter tree root removed",
                 "file": "error-codes/cngx2012.md"
             },
             {
                 "title": "CNGX2013",
+                "label": "CNGX2013: Unknown filter logic",
                 "file": "error-codes/cngx2013.md"
             },
             {
                 "title": "CNGX2014",
+                "label": "CNGX2014: Filter group, expression or expression row outside a filter builder",
                 "file": "error-codes/cngx2014.md"
             },
             {
                 "title": "CNGX2015",
+                "label": "CNGX2015: Field bridge without a form field",
                 "file": "error-codes/cngx2015.md"
             },
             {
                 "title": "CNGX2016",
+                "label": "CNGX2016: OTP slot outside an OTP input",
                 "file": "error-codes/cngx2016.md"
             },
             {
                 "title": "CNGX2017",
+                "label": "CNGX2017: Form-field part outside a form field",
                 "file": "error-codes/cngx2017.md"
             },
             {
                 "title": "CNGX2018",
+                "label": "CNGX2018: Select search outside a select shell",
                 "file": "error-codes/cngx2018.md"
             },
             {
                 "title": "CNGX2019",
+                "label": "CNGX2019: Filter-builder form-field control without a filter builder",
                 "file": "error-codes/cngx2019.md"
             },
             {
                 "title": "CNGX2020",
+                "label": "CNGX2020: More than one main control in a field box",
                 "file": "error-codes/cngx2020.md"
             },
             {
                 "title": "CNGX2021",
+                "label": "CNGX2021: Field-box control is not a direct child",
                 "file": "error-codes/cngx2021.md"
             },
             {
                 "title": "CNGX2022",
+                "label": "CNGX2022: Display-shaped value written to a raw value channel",
                 "file": "error-codes/cngx2022.md"
             },
             {
                 "title": "CNGX2023",
+                "label": "CNGX2023: Array operator received a non-array value",
                 "file": "error-codes/cngx2023.md"
             },
             {
                 "title": "CNGX2024",
+                "label": "CNGX2024: patchData or clearLocalItems called on the select shell",
                 "file": "error-codes/cngx2024.md"
             },
             {
                 "title": "CNGX2025",
+                "label": "CNGX2025: commitAction completed without emitting a value",
                 "file": "error-codes/cngx2025.md"
             },
             {
                 "title": "CNGX2026",
+                "label": "CNGX2026: Tree select compareWith set without keyFn",
                 "file": "error-codes/cngx2026.md"
             },
             {
                 "title": "CNGX2027",
+                "label": "CNGX2027: quickCreateAction settled without the created item",
                 "file": "error-codes/cngx2027.md"
             },
             {
                 "title": "CNGX3001",
+                "label": "CNGX3001: Router not set up for a router-sync directive",
                 "file": "error-codes/cngx3001.md"
             },
             {
                 "title": "CNGX3002",
+                "label": "CNGX3002: No state source for a feedback bridge",
                 "file": "error-codes/cngx3002.md"
             },
             {
                 "title": "CNGX3003",
+                "label": "CNGX3003: Alert overflow label does not contain its visible text",
                 "file": "error-codes/cngx3003.md"
             },
             {
                 "title": "CNGX3004",
+                "label": "CNGX3004: Raw error text shown as error detail",
                 "file": "error-codes/cngx3004.md"
             },
             {
                 "title": "CNGX3005",
+                "label": "CNGX3005: Mat-tabs decoration retry ceiling reached",
                 "file": "error-codes/cngx3005.md"
             },
             {
                 "title": "CNGX3006",
+                "label": "CNGX3006: Mat-tabs aggregator slot half-wired",
                 "file": "error-codes/cngx3006.md"
             },
             {
                 "title": "CNGX3007",
+                "label": "CNGX3007: Mat-tabs overflow could not anchor",
                 "file": "error-codes/cngx3007.md"
             },
             {
                 "title": "CNGX3008",
+                "label": "CNGX3008: Action button toasts configured twice",
                 "file": "error-codes/cngx3008.md"
             },
             {
                 "title": "CNGX3009",
+                "label": "CNGX3009: Data-grid-accordion row has more cells than columns",
                 "file": "error-codes/cngx3009.md"
             },
             {
                 "title": "CNGX3010",
+                "label": "CNGX3010: Sidenav auto mode without a layout",
                 "file": "error-codes/cngx3010.md"
             },
             {
                 "title": "CNGX3011",
+                "label": "CNGX3011: Icon-only tabs without an icon template",
                 "file": "error-codes/cngx3011.md"
             },
             {
                 "title": "CNGX3012",
+                "label": "CNGX3012: Tab overflow could not find the tab strip",
                 "file": "error-codes/cngx3012.md"
             },
             {
                 "title": "CNGX3013",
+                "label": "CNGX3013: Alternate placement ignored in an activity timeline",
                 "file": "error-codes/cngx3013.md"
             },
             {
                 "title": "CNGX3014",
+                "label": "CNGX3014: Sidenav content outside a sidenav layout",
                 "file": "error-codes/cngx3014.md"
             },
             {
                 "title": "CNGX3015",
+                "label": "CNGX3015: Alert bridge without a CngxAlerter",
                 "file": "error-codes/cngx3015.md"
             },
             {
                 "title": "CNGX3016",
+                "label": "CNGX3016: Toast without a CngxToaster",
                 "file": "error-codes/cngx3016.md"
             },
             {
                 "title": "CNGX3017",
+                "label": "CNGX3017: Banner without a CngxBanner",
                 "file": "error-codes/cngx3017.md"
             },
             {
                 "title": "CNGX3018",
+                "label": "CNGX3018: Paginator segment outside a paginator",
                 "file": "error-codes/cngx3018.md"
             },
             {
                 "title": "CNGX3019",
+                "label": "CNGX3019: Accordion item outside an accordion group",
                 "file": "error-codes/cngx3019.md"
             },
             {
                 "title": "CNGX3020",
+                "label": "CNGX3020: Tab error directive outside a cngxMatTabs group",
                 "file": "error-codes/cngx3020.md"
             },
             {
                 "title": "CNGX3021",
+                "label": "CNGX3021: Router sync outside its sidenav or table of contents",
                 "file": "error-codes/cngx3021.md"
             },
             {
                 "title": "CNGX3022",
+                "label": "CNGX3022: Data-grid part outside a data grid",
                 "file": "error-codes/cngx3022.md"
             },
             {
                 "title": "CNGX3023",
+                "label": "CNGX3023: Tab overflow outside a tab group",
                 "file": "error-codes/cngx3023.md"
             },
             {
                 "title": "CNGX3024",
+                "label": "CNGX3024: Breadcrumb overflow menu outside a breadcrumb",
                 "file": "error-codes/cngx3024.md"
             },
             {
                 "title": "CNGX3025",
+                "label": "CNGX3025: Tab without a label string",
                 "file": "error-codes/cngx3025.md"
             },
             {
                 "title": "CNGX4001",
+                "label": "CNGX4001: Treetable column has no header label",
                 "file": "error-codes/cngx4001.md"
             }
         ]
