@@ -5,6 +5,7 @@ import {
   contentChild,
   inject,
   ViewEncapsulation,
+  type Signal,
 } from '@angular/core';
 import {
   CngxButtonBrain,
@@ -19,7 +20,7 @@ import {
   CngxActionStatusCell,
   CngxAsyncClick,
 } from '@cngx/common/interactive';
-import type { CngxAsyncState } from '@cngx/core/utils';
+import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
 
 import { CngxActionToast } from './action-toast.directive';
 
@@ -106,6 +107,7 @@ import { CngxActionToast } from './action-toast.directive';
     },
     {
       directive: CngxActionStatusBrain,
+      outputs: ['outcome'],
       inputs: [
         'succeededAnnouncement',
         'failedAnnouncement',
@@ -140,38 +142,38 @@ import { CngxActionToast } from './action-toast.directive';
     <ng-content select="[cngxButtonStart]" />
     <span class="cngx-button__label cngx-action-button__labels">
       <span class="cngx-action-button__label" cngxActionStatusCell="idle"><ng-content /></span>
-      @if (status.hasCell().pending) {
+      @if (actionStatus.hasCell().pending) {
         <span class="cngx-action-button__label" cngxActionStatusCell="pending">
-          @if (status.pendingTemplate(); as tpl) {
+          @if (actionStatus.pendingTemplate(); as tpl) {
             <ng-container *ngTemplateOutlet="tpl.templateRef" />
           } @else {
-            {{ status.pendingLabel() }}
+            {{ actionStatus.pendingLabel() }}
           }
         </span>
       }
-      @if (status.hasCell().success) {
+      @if (actionStatus.hasCell().success) {
         <span class="cngx-action-button__label" cngxActionStatusCell="success">
-          @if (status.succeededTemplate(); as tpl) {
+          @if (actionStatus.succeededTemplate(); as tpl) {
             <ng-container *ngTemplateOutlet="tpl.templateRef" />
           } @else {
-            {{ status.succeededLabel() }}
+            {{ actionStatus.succeededLabel() }}
           }
         </span>
       }
-      @if (status.hasCell().error) {
+      @if (actionStatus.hasCell().error) {
         <span class="cngx-action-button__label" cngxActionStatusCell="error">
-          @if (status.failedTemplate(); as tpl) {
+          @if (actionStatus.failedTemplate(); as tpl) {
             <ng-container
-              *ngTemplateOutlet="tpl.templateRef; context: { $implicit: status.error() }"
+              *ngTemplateOutlet="tpl.templateRef; context: { $implicit: actionStatus.error() }"
             />
           } @else {
-            {{ status.failedLabel() }}
+            {{ actionStatus.failedLabel() }}
           }
         </span>
       }
     </span>
     <ng-content select="[cngxButtonEnd]" />
-    @if (brain.busyVisible() && status.activeCell() === 'idle') {
+    @if (brain.busyVisible() && actionStatus.activeCell() === 'idle') {
       <span class="cngx-button__busy" aria-hidden="true">
         @if (brain.spinner; as spinner) {
           <ng-container *ngComponentOutlet="spinner" />
@@ -188,14 +190,20 @@ import { CngxActionToast } from './action-toast.directive';
 })
 export class CngxActionButton {
   protected readonly brain = inject(CngxButtonBrain);
-  protected readonly status = inject(CNGX_ACTION_STATUS);
+  protected readonly actionStatus = inject(CNGX_ACTION_STATUS);
 
   protected readonly startSlot = contentChild(CngxButtonStart);
   protected readonly endSlot = contentChild(CngxButtonEnd);
+
+  /** Effective status: `[externalState]` when bound, else the run. Immediate, not gated. */
+  readonly status: Signal<AsyncStatus> = this.actionStatus.status;
+
+  /** `true` while the busy visual shows (the run after the show delay, held for its min-dwell). */
+  readonly busyVisible: Signal<boolean> = this.brain.busyVisible;
 
   /**
    * `CngxAsyncState` view of the effective lifecycle (`[externalState]` when
    * bound, else the run). Bind it to a state consumer: `[state]="btn.state"`.
    */
-  readonly state: CngxAsyncState<unknown> = this.status.state;
+  readonly state: CngxAsyncState<unknown> = this.actionStatus.state;
 }

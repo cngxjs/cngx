@@ -58,7 +58,7 @@ Every input is forwarded to one of the four host directives; the button itself d
 |`toastSuccessDuration`|`CngxActionToast`|`withToasts({ defaultDuration })`, else `5000` ms|
 |`toastErrorDuration`|`CngxActionToast`|toaster default: `'persistent'`|
 
-`(settled)` is re-exported from `CngxAsyncClick`. Read the status layer programmatically through `inject(CNGX_ACTION_STATUS)` on the button's injector; `btn.state` stays on the class.
+`(settled)` is re-exported from `CngxAsyncClick` (own runs only); `(outcome)` from `CngxActionStatusBrain` emits once per own settle and once per `[externalState]` `success` / `error` edge. The class exposes `status()`, `busyVisible()` and `state` (same surface as `CngxPopoverAction`); the full status layer is `inject(CNGX_ACTION_STATUS)` on the button's injector.
 
 ## Overview
 
@@ -87,7 +87,7 @@ The component is skin: template, CSS, `provideButtonHost()` and `provideActionSt
 
 - **`CngxButtonBrain`** (`@cngx/common/button`): `variant`, `tone`, `size`, `disabled`, `disabledReason`, `cngxDescribedBy`, `type`. The same brain every cngx button renders on.
 - **`CngxAsyncClick`** (`@cngx/common/interactive`): `action`, `feedbackDuration`, `showDelay`, `minDwell`; `(settled)` re-exported, once per own run with a monotonic `generation`. Owns the live region next to the button.
-- **`CngxActionStatusBrain`** (`@cngx/common/interactive`): `pendingLabel`, `succeededLabel`, `failedLabel`, `succeededAnnouncement`, `failedAnnouncement`, `autoAnnounce`, `externalState`. Status, label cells and the announcement, read through `CNGX_ACTION_STATUS`; each label span carries `[cngxActionStatusCell]`.
+- **`CngxActionStatusBrain`** (`@cngx/common/interactive`): `pendingLabel`, `succeededLabel`, `failedLabel`, `succeededAnnouncement`, `failedAnnouncement`, `autoAnnounce`, `externalState`; `(outcome)` re-exported. Status, label cells and the announcement, read through `CNGX_ACTION_STATUS`; each label span carries `[cngxActionStatusCell]`.
 - **`CngxActionToast`** (`@cngx/ui/action-button`): `toastSuccess`, `toastError`, `toastErrorDetail`, `toastSuccessDuration`, `toastErrorDuration`. One toast per outcome; covers a toasted outcome through `CNGX_ANNOUNCEMENT_COVER`.
 
 `provideActionStatusHost()` (`@cngx/common/button`) returns two providers that read tokens, not the class: `CNGX_HOST_INTERACTION_STATE` spreads `CngxButtonBrain.interaction` and adds `CNGX_ACTION_STATUS.announcement`; `CNGX_BUTTON_HOST_STATE` refuses clicks while `CNGX_ACTION_STATUS.externalBusy`. An ejected template on the same four host directives and the two helpers renders every state the component does.

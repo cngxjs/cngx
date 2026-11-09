@@ -39,8 +39,11 @@ import { CngxPopoverCloseOnSuccess } from './popover-close-on-success.directive'
  * `aria-describedby`. `aria-busy`, `data-pending` and `data-busy` come from
  * the brain over the co-hosted run.
  *
- * Supports the `cngxPending` / `cngxSucceeded` / `cngxFailed` templates of
- * `CngxActionButton`, or use `status()` + `@switch` for full control. The
+ * Supports the `cngxPending` / `cngxSucceeded` / `cngxFailed` templates and
+ * the `pendingLabel` / `succeededLabel` / `failedLabel` strings of
+ * `CngxActionButton`, or use `status()` + `@switch` for full control.
+ * `[externalState]` reflects a run started elsewhere, `(outcome)` emits once
+ * per own settle and per external `success` / `error` edge. The
  * label follows the busy gate (`CNGX_LOADING_CONFIG.showDelay`, held for
  * `minDwell`; `[showDelay]` / `[minDwell]` per button): while the busy
  * visual shows, through the run and its dwell after the settle, the pending
@@ -136,7 +139,16 @@ import { CngxPopoverCloseOnSuccess } from './popover-close-on-success.directive'
     },
     {
       directive: CngxActionStatusBrain,
-      inputs: ['succeededAnnouncement', 'failedAnnouncement', 'autoAnnounce'],
+      outputs: ['outcome'],
+      inputs: [
+        'succeededAnnouncement',
+        'failedAnnouncement',
+        'autoAnnounce',
+        'pendingLabel',
+        'succeededLabel',
+        'failedLabel',
+        'externalState',
+      ],
     },
     { directive: CngxPopoverCloseOnSuccess, inputs: ['closeOnSuccessDelay'] },
   ],
@@ -153,21 +165,33 @@ import { CngxPopoverCloseOnSuccess } from './popover-close-on-success.directive'
     <ng-content select="[cngxButtonStart]" />
     <span class="cngx-button__label cngx-popover-action__labels">
       <span class="cngx-popover-action__label" cngxActionStatusCell="idle"><ng-content /></span>
-      @if (actionStatus.pendingTemplate(); as tpl) {
+      @if (actionStatus.hasCell().pending) {
         <span class="cngx-popover-action__label" cngxActionStatusCell="pending">
-          <ng-container *ngTemplateOutlet="tpl.templateRef" />
+          @if (actionStatus.pendingTemplate(); as tpl) {
+            <ng-container *ngTemplateOutlet="tpl.templateRef" />
+          } @else {
+            {{ actionStatus.pendingLabel() }}
+          }
         </span>
       }
-      @if (actionStatus.succeededTemplate(); as tpl) {
+      @if (actionStatus.hasCell().success) {
         <span class="cngx-popover-action__label" cngxActionStatusCell="success">
-          <ng-container *ngTemplateOutlet="tpl.templateRef" />
+          @if (actionStatus.succeededTemplate(); as tpl) {
+            <ng-container *ngTemplateOutlet="tpl.templateRef" />
+          } @else {
+            {{ actionStatus.succeededLabel() }}
+          }
         </span>
       }
-      @if (actionStatus.failedTemplate(); as tpl) {
+      @if (actionStatus.hasCell().error) {
         <span class="cngx-popover-action__label" cngxActionStatusCell="error">
-          <ng-container
-            *ngTemplateOutlet="tpl.templateRef; context: { $implicit: actionStatus.error() }"
-          />
+          @if (actionStatus.failedTemplate(); as tpl) {
+            <ng-container
+              *ngTemplateOutlet="tpl.templateRef; context: { $implicit: actionStatus.error() }"
+            />
+          } @else {
+            {{ actionStatus.failedLabel() }}
+          }
         </span>
       }
     </span>

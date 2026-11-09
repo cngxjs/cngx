@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, vi } from 'vitest';
 import { By } from '@angular/platform-browser';
@@ -264,7 +264,9 @@ class SuccessOnlyHost {
     [minDwell]="600"
     pendingLabel="Saving..."
     succeededLabel="Done!"
-  >Save</button>`,
+  >
+    Save
+  </button>`,
   imports: [CngxActionButton],
 })
 class MinDwellHost {
@@ -352,6 +354,7 @@ class ToastRebindHost {
       [failedAnnouncement]="failed"
       succeededLabel="Done"
       failedLabel="Failed"
+      (outcome)="outcomes.push($event.status)"
     >
       Save
     </button>
@@ -359,6 +362,8 @@ class ToastRebindHost {
   imports: [CngxActionButton],
 })
 class ForwardedBindingsHost {
+  readonly button = viewChild.required(CngxActionButton);
+  readonly outcomes: string[] = [];
   actionImpl: () => Promise<unknown> = () => Promise.resolve();
   readonly action = () => this.actionImpl();
   readonly succeeded = 'Saved, said explicitly';
@@ -1631,6 +1636,20 @@ describe('CngxActionButton forwarded bindings', () => {
     await vi.advanceTimersByTimeAsync(0);
   });
 
+  it('re-exports (outcome) and exposes status / busyVisible like CngxPopoverAction', async () => {
+    const fixture = TestBed.createComponent(ForwardedBindingsHost);
+    flush(fixture);
+    const host = fixture.componentInstance;
+    expect(host.button().status()).toBe('idle');
+    expect(host.button().busyVisible()).toBe(false);
+    (fixture.nativeElement.querySelector('button') as HTMLButtonElement).click();
+    await vi.waitFor(() => {
+      flush(fixture);
+      expect(host.outcomes).toEqual(['success']);
+    });
+    expect(host.button().status()).toBe('success');
+  });
+
   it('renders a bound [type]', () => {
     const fixture = TestBed.createComponent(ForwardedBindingsHost);
     flush(fixture);
@@ -1640,7 +1659,9 @@ describe('CngxActionButton forwarded bindings', () => {
   it('joins a bound [cngxDescribedBy] id into aria-describedby', () => {
     const fixture = TestBed.createComponent(ForwardedBindingsHost);
     flush(fixture);
-    const ids = (fixture.nativeElement.querySelector('button').getAttribute('aria-describedby') ?? '')
+    const ids = (
+      fixture.nativeElement.querySelector('button').getAttribute('aria-describedby') ?? ''
+    )
       .split(/\s+/)
       .filter(Boolean);
     expect(ids).toContain('extra-hint');

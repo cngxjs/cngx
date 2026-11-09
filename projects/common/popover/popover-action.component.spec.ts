@@ -1,18 +1,22 @@
-import { Component, signal, viewChild } from '@angular/core';
+import { Component, computed, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  type CngxActionOutcome,
   CNGX_INTERACTIVE_LANGUAGE_EN,
   CngxFailed,
   CngxPending,
   CngxSucceeded,
 } from '@cngx/common/interactive';
 import {
+  buildAsyncStateView,
   CNGX_LOADING_DEFAULTS,
   provideLoadingConfig,
   resolveSpokenText,
   withMinDwell,
   withShowDelay,
+  type AsyncStatus,
+  type CngxAsyncState,
 } from '@cngx/core/utils';
 
 import { CngxPopoverAction } from './popover-action.component';
@@ -283,6 +287,30 @@ class ConfigurableHost {
 class PanelConfirmHost {
   readonly panel = viewChild.required(CngxPopoverPanel);
   readonly saveAction = () => Promise.resolve();
+}
+
+@Component({
+  template: `
+    <div cngxPopover>
+      <button
+        cngxPopoverAction
+        [action]="saveAction"
+        [showDelay]="0"
+        [minDwell]="0"
+        succeededLabel="Saved"
+        [externalState]="ext()"
+        (outcome)="outcomes.push($event)"
+      >
+        Save
+      </button>
+    </div>
+  `,
+  imports: [CngxPopover, CngxPopoverAction],
+})
+class LabelsExternalHost {
+  readonly ext = signal<CngxAsyncState<unknown> | undefined>(undefined);
+  readonly outcomes: CngxActionOutcome[] = [];
+  readonly saveAction = (): Promise<void> => Promise.resolve();
 }
 
 function setup<T>(hostType: new () => T) {
@@ -1276,6 +1304,48 @@ describe('CngxPopoverAction', () => {
       );
       expect(spoken).toEqual([confirm.nextElementSibling]);
       fixture.destroy();
+    });
+  });
+
+  describe('forwarded status inputs', () => {
+    it('renders a succeededLabel string, speaks it and emits (outcome)', async () => {
+      const { fixture } = setup(LabelsExternalHost);
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+      btn.click();
+      await vi.advanceTimersByTimeAsync(10);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      expect(shownLabel(btn)).toBe('Saved');
+      expect(btn.nextElementSibling?.textContent).toBe('Saved');
+      expect(fixture.componentInstance.outcomes).toEqual([{ status: 'success', error: undefined }]);
+    });
+
+    it('reflects a bound [externalState]: busy while pending, one outcome per edge', () => {
+      const status = signal<AsyncStatus>('idle');
+      const { fixture } = setup(LabelsExternalHost);
+      const host = fixture.componentInstance;
+      host.ext.set(
+        buildAsyncStateView<unknown>({
+          status: status.asReadonly(),
+          data: computed(() => undefined),
+          error: computed(() => undefined),
+          lastUpdated: computed(() => undefined),
+        }),
+      );
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+      status.set('pending');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(btn.getAttribute('aria-busy')).toBe('true');
+      expect(btn.getAttribute('aria-disabled')).toBe('true');
+      status.set('success');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      expect(host.outcomes).toEqual([{ status: 'success', error: undefined }]);
     });
   });
 });
