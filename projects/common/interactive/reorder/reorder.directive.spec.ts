@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { provideDirection } from '@cngx/core';
 
-import { CngxReorder, type CngxReorderEvent } from './reorder.directive';
+import { CngxReorder, matchesReorderGesture, type CngxReorderEvent } from './reorder.directive';
 
 interface Item {
   readonly id: string;
@@ -485,5 +485,25 @@ describe('CngxReorder dev-mode check', () => {
     const calls = warn.mock.calls.filter(([m]) => /^CNGX1028: /.test(String(m)));
     expect(calls).toHaveLength(1);
     expect(calls[0][0]).toMatch(/^CNGX1028: \[cngxReorder\] 2 element\(s\) match itemSelector "\.row"/);
+  });
+});
+
+describe('matchesReorderGesture', () => {
+  const press = (key: string, init: KeyboardEventInit = {}): KeyboardEvent =>
+    new KeyboardEvent('keydown', { key, ...init });
+
+  it('matches the configured modifier with an arrow, Home or End', () => {
+    for (const key of ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End']) {
+      expect(matchesReorderGesture(press(key, { altKey: true }), 'alt')).toBe(true);
+    }
+    expect(matchesReorderGesture(press('ArrowUp', { ctrlKey: true }), 'ctrl')).toBe(true);
+    expect(matchesReorderGesture(press('End', { metaKey: true }), 'meta')).toBe(true);
+  });
+
+  it('rejects a plain key, another modifier and a non-move key', () => {
+    expect(matchesReorderGesture(press('ArrowUp'), 'alt')).toBe(false);
+    expect(matchesReorderGesture(press('ArrowUp', { ctrlKey: true }), 'alt')).toBe(false);
+    expect(matchesReorderGesture(press('Enter', { altKey: true }), 'alt')).toBe(false);
+    expect(matchesReorderGesture(press('PageDown', { altKey: true }), 'alt')).toBe(false);
   });
 });

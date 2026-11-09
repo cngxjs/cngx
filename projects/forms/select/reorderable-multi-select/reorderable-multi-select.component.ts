@@ -34,6 +34,7 @@ import {
   CngxListbox,
   CngxListboxTrigger,
   CngxReorder,
+  matchesReorderGesture,
   type CngxReorderEvent,
   type CngxReorderModifier,
 } from '@cngx/common/interactive';
@@ -1356,38 +1357,13 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     const target = event.target as Element | null;
     const onChip = !!target?.closest('[data-reorder-index]');
     const isActivationKey = event.key === 'Enter' || event.key === ' ';
-    if (onChip && (isActivationKey || this.isReorderGesture(event))) {
+    if (
+      onChip &&
+      (isActivationKey || matchesReorderGesture(event, this.reorderKeyboardModifier()))
+    ) {
       event.stopPropagation();
     }
     this.chipStripRoving.handleKeydown(event);
-  }
-
-  /** The modifier + arrow / Home / End gesture the paired `CngxReorder` consumes. */
-  private isReorderGesture(event: KeyboardEvent): boolean {
-    if (!this.reorderModifierDown(event)) {
-      return false;
-    }
-    const key = event.key;
-    return (
-      key === 'ArrowUp' ||
-      key === 'ArrowDown' ||
-      key === 'ArrowLeft' ||
-      key === 'ArrowRight' ||
-      key === 'Home' ||
-      key === 'End'
-    );
-  }
-
-  /** Whether the event carries the configured reorder modifier. */
-  private reorderModifierDown(event: KeyboardEvent): boolean {
-    switch (this.reorderKeyboardModifier()) {
-      case 'ctrl':
-        return event.ctrlKey;
-      case 'alt':
-        return event.altKey;
-      case 'meta':
-        return event.metaKey;
-    }
   }
 
   /** @internal */
