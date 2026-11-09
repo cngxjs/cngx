@@ -1,7 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FocusTrapFactory } from '@angular/cdk/a11y';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { CNGX_HOTKEY_SCOPE, CngxHotkeyScope, injectHotkey } from '@cngx/common/interactive';
+
 import { type CngxDrawerModality, CngxDrawerSurface } from './drawer-surface.directive';
 
 interface FakeWatcher {
@@ -545,5 +547,152 @@ describe('CngxDrawerSurface', () => {
 
     expect(q('.sibling').hasAttribute('inert')).toBe(false);
     expect(document.activeElement).toBe(opener);
+  });
+});
+
+// ── Hotkey scope ────────────────────────────────────────────────────────
+
+@Component({
+  selector: 'cngx-test-drawer-hotkey-body',
+  template: `<button type="button" class="drawer-inside">Inside</button>`,
+})
+class DrawerHotkeyBody {
+  readonly scope = inject(CNGX_HOTKEY_SCOPE);
+  readonly fired = signal(0);
+  readonly ref = injectHotkey({
+    id: 'test.drawer.toggle',
+    combo: 'ctrl+b',
+    run: () => this.fired.update((n) => n + 1),
+  });
+}
+
+@Component({
+  selector: 'cngx-test-drawer-muted-body',
+  template: `<button type="button" class="muted-inside">Muted</button>`,
+})
+class DrawerMutedBody {
+  readonly fired = signal(0);
+  readonly ref = injectHotkey({
+    id: 'test.drawer.muted',
+    combo: 'ctrl+m',
+    run: () => this.fired.update((n) => n + 1),
+  });
+}
+
+@Component({
+  template: `
+    <div cngxHotkeyScope #outer="cngxHotkeyScope">
+      <button type="button" class="page-outside">Outside</button>
+      <aside cngxDrawerSurface [active]="active()" [modality]="modality()">
+        <cngx-test-drawer-hotkey-body />
+        <div cngxHotkeyScope [cngxHotkeyScopeActive]="false">
+          <cngx-test-drawer-muted-body />
+        </div>
+      </aside>
+    </div>
+  `,
+  imports: [CngxDrawerSurface, CngxHotkeyScope, DrawerHotkeyBody, DrawerMutedBody],
+})
+class HotkeyDrawerHost {
+  readonly active = signal(false);
+  readonly modality = signal<CngxDrawerModality>('page');
+  readonly outer = viewChild.required(CngxHotkeyScope);
+  readonly surface = viewChild.required(CngxDrawerSurface);
+  readonly body = viewChild.required(DrawerHotkeyBody);
+  readonly muted = viewChild.required(DrawerMutedBody);
+  readonly appFired = signal(0);
+  readonly appRef = injectHotkey({
+    id: 'test.app.save',
+    combo: 'ctrl+s',
+    run: () => this.appFired.update((n) => n + 1),
+  });
+}
+
+describe('CngxDrawerSurface hotkey scope', () => {
+  beforeEach(() => {
+    vi.stubGlobal(
+      'CloseWatcher',
+      class {
+        onclose: (() => void) | null = null;
+        destroy = vi.fn();
+      },
+    );
+    mockTrap = {
+      enabled: false,
+      hasAttached: () => true,
+      attachAnchors: vi.fn(),
+      focusFirstTabbableElementWhenReady: vi.fn(),
+      destroy: vi.fn(),
+    };
+    TestBed.configureTestingModule({
+      providers: [{ provide: FocusTrapFactory, useValue: { create: vi.fn(() => mockTrap) } }],
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    document.documentElement.style.overflow = '';
+    document.documentElement.style.scrollbarGutter = '';
+  });
+
+  function setupHotkeys() {
+    const fixture = TestBed.createComponent(HotkeyDrawerHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const root = fixture.nativeElement as HTMLElement;
+    const q = (sel: string) => root.querySelector(sel) as HTMLElement;
+    const set = (fn: (host: HotkeyDrawerHost) => void) => {
+      fn(fixture.componentInstance);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+    };
+    return { host: fixture.componentInstance, q, set };
+  }
+
+  function pressCombo(target: Element, key: string): void {
+    target.dispatchEvent(
+      new KeyboardEvent('keydown', { key, ctrlKey: true, bubbles: true, cancelable: true }),
+    );
+  }
+
+  it('hands its children the surface scope, parented to the outer scope', () => {
+    const { host } = setupHotkeys();
+    const scope = host.body().scope;
+
+    expect(scope).toBe(host.surface().hotkeyScope);
+    expect(scope.parent).toBe(host.outer().node);
+  });
+
+  it('an engaged page surface blocks app bindings and fires its own inside', () => {
+    const { host, q, set } = setupHotkeys();
+    set((h) => h.active.set(true));
+
+    pressCombo(q('.drawer-inside'), 's');
+    expect(host.appFired()).toBe(0);
+    pressCombo(q('.drawer-inside'), 'b');
+    expect(host.body().fired()).toBe(1);
+  });
+
+  it('fires the drawer binding from outside while the modality is none', () => {
+    const { host, q, set } = setupHotkeys();
+    set((h) => h.modality.set('none'));
+
+    pressCombo(q('.page-outside'), 'b');
+    expect(host.body().fired()).toBe(1);
+
+    set((h) => h.active.set(true));
+    pressCombo(q('.page-outside'), 'b');
+    pressCombo(q('.drawer-inside'), 's');
+    expect(host.body().fired()).toBe(2);
+    expect(host.appFired()).toBe(1);
+  });
+
+  it('mutes content in an inactive scope inside the surface', () => {
+    const { host, q, set } = setupHotkeys();
+    set((h) => h.active.set(true));
+
+    expect(host.muted().ref.muted()).toBe(true);
+    pressCombo(q('.muted-inside'), 'm');
+    expect(host.muted().fired()).toBe(0);
   });
 });
