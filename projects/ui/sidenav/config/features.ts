@@ -99,8 +99,9 @@ export function withSidenavLabels(
  * `collapsed` only means something on the docked rail of the `expanded` width
  * class, so one value per rail is stored, and it survives a pass through
  * `medium` and `compact`. The stored value seeds an unbound `collapsed` at
- * construction; a bound `[(collapsed)]` stays the consumer's. The position
- * is read from the static `position` attribute (`start` when absent).
+ * construction. A bound `[(collapsed)]` is the consumer's source and is never
+ * overwritten; persist it yourself. The position is read from the static
+ * `position` attribute (`start` when absent).
  *
  * ```ts
  * provideSidenavConfig(withSidenavPersistence());
