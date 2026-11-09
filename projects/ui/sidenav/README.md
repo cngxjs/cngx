@@ -150,7 +150,7 @@ bootstrapApplication(AppComponent, {
 | Feature | Overrides |
 |-|-|
 | `withSidenavDimensions({ width?, miniWidth?, minWidth?, maxWidth? })` | Panel dimensions |
-| `withSidenavShortcut(combo)` | Default toggle shortcut |
+| `withSidenavShortcut(combo)` | Default toggle shortcut for `position="start"` rails; an `end` rail needs its own `[shortcut]` |
 | `withSidenavHoverDwell({ enterDelay?, leaveDelay? })` | Collapsed-rail peek dwell (ms) |
 | `withSidenavRouterSync({ param })` | Default deep-link query-param key |
 | `withSidenavPersistence(storageKey?)` | Persist each rail's `collapsed` in `CNGX_SIDENAV_STORAGE` under `<storageKey>:<position>`; seeds an unbound `collapsed` |
@@ -211,7 +211,7 @@ Resolution order for the key: per-instance `[param]` beats `withSidenavRouterSyn
 `CngxSidenav` composes these atoms internally:
 
 - **Width class:** the layout's `CngxContainer` publishes `--cngx-sidenav-width-class`
-- **Keyboard shortcut:** `injectHotkey` binding `sidenav.toggle` in the rail's hotkey scope (`@cngx/common/interactive`)
+- **Keyboard shortcut:** `injectHotkeys` binding `sidenav.toggle` in the rail's hotkey scope (`@cngx/common/interactive`)
 - **Overlay:** `CngxDrawerSurface` host directive (focus trap, focus restore, `inert`, scroll lock, Escape / back gesture / outside press), driven per `modality`
 - **Resize:** `CngxResizable` (`@cngx/common/layout`) on the handle: window-splitter ARIA, pointer drag, arrow keys
 - **Mini hover intent:** Debounced expand-on-hover via the composed `CngxHoverIntent` host directive (`@cngx/common/interactive`), reading `CNGX_HOVER_INTENT_DEFAULTS` from the resolved config

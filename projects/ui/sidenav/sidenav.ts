@@ -306,9 +306,16 @@ export class CngxSidenav
   /**
    * Keyboard shortcut to toggle the sidenav, e.g. `'ctrl+b'` or `'meta+b'`.
    * Uses `ctrl` on Windows/Linux and `meta` (Cmd) on macOS automatically
-   * when `'mod+<key>'` syntax is used.
+   * when `'mod+<key>'` syntax is used. Unbound, a `start` rail takes the
+   * app-wide `withSidenavShortcut` default; an `end` rail registers only a
+   * combo bound here, so a dual layout never binds one press to both rails.
    */
-  readonly shortcut = input<string | undefined>(this.cfg.shortcut);
+  readonly shortcut = input<string | undefined>(undefined);
+
+  /** The toggle combo: the bound `[shortcut]`, else the app default on a `start` rail. */
+  private readonly toggleCombo = computed(
+    () => this.shortcut() ?? (this.position() === 'start' ? this.cfg.shortcut : undefined),
+  );
 
   /** The resize handle, present while `resizable` and at full width. */
   private readonly resizeHandle = viewChild(CngxResizable);
@@ -521,7 +528,7 @@ export class CngxSidenav
     };
     injectHotkeys(
       computed(() => {
-        const combo = this.shortcut();
+        const combo = this.toggleCombo();
         return combo ? [{ id: 'sidenav.toggle', combo, run: runToggle }] : [];
       }),
     );

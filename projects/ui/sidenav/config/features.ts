@@ -25,7 +25,8 @@ export function withSidenavDimensions(
 /**
  * Set the app-wide default keyboard shortcut to toggle the sidenav (e.g.
  * `'mod+b'`, which resolves to `ctrl` on Windows/Linux and `meta` on macOS).
- * Per-instance `[shortcut]` still wins.
+ * The default applies to `position="start"` rails only; an `end` rail toggles
+ * by key only with its own `[shortcut]`. Per-instance `[shortcut]` still wins.
  *
  * ```ts
  * provideSidenavConfig(withSidenavShortcut('mod+b'));

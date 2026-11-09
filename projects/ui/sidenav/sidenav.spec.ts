@@ -24,6 +24,7 @@ import { CngxSidenavLayout } from './sidenav-layout';
 import { CngxSidenavContent } from './sidenav-content';
 import { CNGX_SIDENAV_ANNOUNCER_FACTORY } from './sidenav-announcer';
 import { provideSidenavConfig } from './config/provide-sidenav-config';
+import { withSidenavShortcut } from './config/features';
 import {
   withSidenavDimensions,
   withSidenavHoverDwell,
@@ -1258,6 +1259,25 @@ describe('CngxSidenav resize math and shortcut', () => {
   });
 });
 
+
+@Component({
+  template: `
+    <cngx-sidenav-layout>
+      <cngx-sidenav position="start" mode="over" [(opened)]="startOpen">Start</cngx-sidenav>
+      <cngx-sidenav-content>Main</cngx-sidenav-content>
+      <cngx-sidenav position="end" mode="over" [(opened)]="endOpen" [shortcut]="endShortcut()">
+        End
+      </cngx-sidenav>
+    </cngx-sidenav-layout>
+  `,
+  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
+})
+class DualShortcutHost {
+  startOpen = signal(false);
+  endOpen = signal(false);
+  endShortcut = signal<string | undefined>(undefined);
+}
+
 describe('CngxSidenav toggle hotkey', () => {
   const pressModB = (): void => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'b', ctrlKey: true, metaKey: true }));
@@ -1334,6 +1354,38 @@ describe('CngxSidenav toggle hotkey', () => {
     fixture.detectChanges();
     expect(warn.mock.calls.some((args) => String(args[0]).startsWith('CNGX1080'))).toBe(false);
     warn.mockRestore();
+  });
+
+  it('applies the app-wide shortcut to the start rail only, so a dual layout has one binding', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSidenavConfig(withSidenavShortcut('mod+b'))],
+    });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fixture = TestBed.createComponent(DualShortcutHost);
+    fixture.detectChanges();
+
+    pressModB();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.startOpen()).toBe(true);
+    expect(fixture.componentInstance.endOpen()).toBe(false);
+    expect(warn.mock.calls.some((args) => String(args[0]).startsWith('CNGX1077'))).toBe(false);
+    warn.mockRestore();
+  });
+
+  it('registers an end rail binding only for an explicit [shortcut]', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSidenavConfig(withSidenavShortcut('mod+b'))],
+    });
+    const fixture = TestBed.createComponent(DualShortcutHost);
+    fixture.componentInstance.endShortcut.set('mod+k');
+    fixture.detectChanges();
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, metaKey: true }));
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.endOpen()).toBe(true);
+    expect(fixture.componentInstance.startOpen()).toBe(false);
   });
 
   it('registers under the remap id sidenav.toggle, unlisted', () => {
