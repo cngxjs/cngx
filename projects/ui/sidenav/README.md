@@ -57,7 +57,7 @@ export class ExampleComponent {
 
 ## Overview
 
-`CngxSidenav` is a composable sidebar component that handles drawer behavior, keyboard shortcuts, width-driven mode switching, and optional resize functionality. It coordinates with `CngxSidenavLayout` for backdrop and scroll-lock management.
+`CngxSidenav` is a composable sidebar component that handles drawer behavior, keyboard shortcuts, width-driven mode switching, and optional resize functionality. An open overlay runs on a composed `CngxDrawerSurface` (focus trap, `inert`, scroll lock, dismissal); `CngxSidenavLayout` draws the backdrop.
 
 Key features:
 
@@ -122,7 +122,7 @@ A hamburger outside the rail toggles it with one button. Name the rail in the bu
 </cngx-sidenav-layout>
 ```
 
-`CngxSidenavLayout` closes an open overlay on any `pointerdown` outside the rail, except inside an element whose `aria-controls` lists the rail's id. Without that attribute the toggle cannot close the overlay: its `pointerdown` dismisses the rail and its `click` reopens it. Every rail has an id: a generated one by default, or the static `id="..."` you set on the host (read it back via `nav.id()`).
+An open overlay closes on any press outside the rail, except inside an element whose `aria-controls` lists the rail's id. Without that attribute the toggle cannot close the overlay: its press dismisses the rail and its `click` reopens it. Every rail has an id: a generated one by default, or the static `id="..."` you set on the host (read it back via `nav.id()`).
 
 ## Configuration
 
@@ -204,13 +204,13 @@ Resolution order for the key: per-instance `[param]` beats `withSidenavRouterSyn
 
 ## Accessibility
 
-- **ARIA roles:** The rail is a `role="complementary"` landmark while docked or closed. An open overlay (`over`, including `auto` below the threshold) is a modal dialog instead: `role="dialog"` with `aria-modal="true"`, matching its focus trap, Escape and backdrop. `aria-modal` never appears without `role="dialog"`. In overlay mode, `aria-hidden="true"` when closed.
+- **ARIA roles:** The rail is a `role="complementary"` landmark while docked or closed. An open overlay (`over`, including `auto` below the threshold) is a modal dialog instead: `role="dialog"` with `aria-modal="true"`, matching its focus trap, Escape and backdrop. `aria-modal` never appears without `role="dialog"`. In overlay mode, `aria-hidden="true"` and `inert` when closed. `modality="contained"` keeps the modal inside the layout and `modality="none"` keeps the page operable (no trap, no backdrop, the rail stays a landmark).
 - **Accessible name:** Every rail is named. Resolution: `[ariaLabel]`, then `withSidenavLabels({ startRegion, endRegion })`, then the `sidenav` language section. The default depends on `position`: `Navigation` for `start`, `Side panel` for `end`, so two rails never share one name.
 - **Keyboard interaction:**
   - `Escape` - Closes overlay mode sidenav
   - Custom shortcut (if configured) - Toggles opened state globally
-- **Screen reader:** The landmark or dialog announces the rail's name; scroll lock prevents reading body content when sidebar is open in overlay.
-- **Focus management:** In overlay (`over`) mode a CDK focus trap keeps Tab within the rail while open, moves focus into the rail on open, and restores focus to the element that opened it on close.
+- **Screen reader:** The landmark or dialog announces the rail's name; while a page-modal overlay is open everything outside it is `inert`, so the body content is not reachable.
+- **Focus management:** An open overlay (`modality="page"`) traps Tab within the rail, moves focus into the rail on open, and restores focus to the element that opened it on close. Focus inside a closing drawer is moved out before it turns `aria-hidden`.
 
 ## Composition
 
@@ -218,7 +218,7 @@ Resolution order for the key: per-instance `[param]` beats `withSidenavRouterSyn
 
 - **Responsive media query:** Inline `matchMedia` listener wired to `mediaMatches` signal
 - **Keyboard shortcut:** Global document listener via `effect(onCleanup)`
-- **Scroll lock:** Coordinate with `CngxSidenavLayout` via `hasOverlay` computed
+- **Overlay:** `CngxDrawerSurface` host directive (focus trap, focus restore, `inert`, scroll lock, Escape / back gesture / outside press), driven per `modality`
 - **Resize:** Pointer-capture drag with RAFed position updates
 - **Mini hover intent:** Debounced expand-on-hover via the composed `CngxHoverIntent` host directive (`@cngx/common/interactive`), reading `CNGX_HOVER_INTENT_DEFAULTS` from the resolved config
 

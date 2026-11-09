@@ -265,6 +265,7 @@ switching, a collapsible rail (composed `CngxSidebar`), resize handle, and keybo
 | `collapsed` | `boolean` (model) | `false` | Rest a docked rail collapsed, two-way `[(collapsed)]` |
 | `collapsedAs` | `'rail' \| 'hidden'` | `'rail'` | How a collapsed rail rests |
 | `expandOnHover` | `boolean` | `true` | Peek a collapsed rail on hover |
+| `modality` | `'page' \| 'contained' \| 'none'` | `'page'` | How far an open overlay takes over the page |
 | `resizable` | `boolean` | `false` | Show drag handle for user resize |
 | `minWidth` | `string` | `'120px'` | Min width constraint during resize |
 | `maxWidth` | `string` | `'600px'` | Max width constraint during resize |
@@ -274,7 +275,7 @@ switching, a collapsible rail (composed `CngxSidebar`), resize handle, and keybo
 **Methods:** `open()`, `close()`, `toggle()`
 
 **Slot components:** `CngxSidenavHeader`, `CngxSidenavFooter` (projected into named slots)
-**Layout:** `CngxSidenavLayout` (container, manages backdrop + scroll lock), `CngxSidenavContent` (main area)
+**Layout:** `CngxSidenavLayout` (container, width class, backdrop), `CngxSidenavContent` (main area)
 
 **CSS Custom Properties:**
 

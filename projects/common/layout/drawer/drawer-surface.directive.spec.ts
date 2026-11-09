@@ -1,10 +1,15 @@
-import { Component, inject, signal, viewChild } from '@angular/core';
+import { Component, Directive, inject, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FocusTrapFactory } from '@angular/cdk/a11y';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CNGX_HOTKEY_SCOPE, CngxHotkeyScope, injectHotkey } from '@cngx/common/interactive';
 
-import { type CngxDrawerModality, CngxDrawerSurface } from './drawer-surface.directive';
+import {
+  CNGX_DRAWER_SURFACE_DRIVER,
+  type CngxDrawerModality,
+  CngxDrawerSurface,
+  type CngxDrawerSurfaceDriver,
+} from './drawer-surface.directive';
 
 interface FakeWatcher {
   onclose: (() => void) | null;
@@ -84,6 +89,28 @@ class LayeredHost {
   inner = vi.fn();
 }
 
+@Directive({
+  selector: '[drivenSurface]',
+  hostDirectives: [CngxDrawerSurface],
+  providers: [{ provide: CNGX_DRAWER_SURFACE_DRIVER, useExisting: DrivenSurface }],
+})
+class DrivenSurface implements CngxDrawerSurfaceDriver {
+  readonly surfaceActive = signal(false);
+  readonly surfaceModality = signal<CngxDrawerModality>('page');
+  readonly surfaceLabel = signal('Main navigation');
+  surfaceDismiss(): void {
+    this.surfaceActive.set(false);
+  }
+}
+
+@Component({
+  template: `<aside drivenSurface><button>Inside</button></aside>`,
+  imports: [DrivenSurface],
+})
+class DrivenLabelHost {
+  readonly driven = viewChild.required(DrivenSurface);
+}
+
 describe('CngxDrawerSurface', () => {
   let watchers: FakeWatcher[];
 
@@ -107,7 +134,7 @@ describe('CngxDrawerSurface', () => {
       destroy: vi.fn(),
     };
     TestBed.configureTestingModule({
-      imports: [TestHost, StaticNameHost, LayeredHost],
+      imports: [TestHost, StaticNameHost, LayeredHost, DrivenLabelHost],
       providers: [{ provide: FocusTrapFactory, useValue: { create: vi.fn(() => mockTrap) } }],
     });
   });
@@ -349,6 +376,27 @@ describe('CngxDrawerSurface', () => {
 
       set((h) => h.modality.set('none'));
       expect(surface.hasAttribute('aria-label')).toBe(false);
+    });
+
+    it('takes a driven label in every state instead of the dialog fallback', () => {
+      const fixture = TestBed.createComponent(DrivenLabelHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const aside = (fixture.nativeElement as HTMLElement).querySelector('aside') as HTMLElement;
+      const driven = fixture.componentInstance.driven();
+      expect(aside.getAttribute('aria-label')).toBe('Main navigation');
+
+      driven.surfaceActive.set(true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(aside.getAttribute('role')).toBe('dialog');
+      expect(aside.getAttribute('aria-label')).toBe('Main navigation');
+
+      driven.surfaceLabel.set('Hauptnavigation');
+      driven.surfaceActive.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(aside.getAttribute('aria-label')).toBe('Hauptnavigation');
     });
 
     it('keeps a static aria-labelledby and a static aria-label', () => {

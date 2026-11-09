@@ -82,6 +82,12 @@ export interface CngxDrawerSurfaceDriver {
   readonly surfaceLandmarkRole?: Signal<string | null>;
   /** Whether a press outside the host asks for dismissal. Without it, it does. */
   readonly surfaceOutsideDismiss?: Signal<boolean>;
+  /**
+   * Accessible name of the host in every state; wins over `[label]`, the
+   * static `aria-label` and the dialog fallback. For a composer that names
+   * the host itself, so the surface never writes a different name.
+   */
+  readonly surfaceLabel?: Signal<string>;
   /** Called for every dismissal request (Escape, back gesture, outside press). */
   surfaceDismiss(): void;
 }
@@ -291,11 +297,15 @@ export class CngxDrawerSurface
    * `aria-label`, else (engaged page modal without a static name)
    * `CNGX_LAYOUT_I18N.drawerDialog`.
    */
-  readonly label = computed<string | undefined>(() =>
-    this.namesWithFallback()
+  readonly label = computed<string | undefined>(() => {
+    const driven = this.driver()?.surfaceLabel;
+    if (driven) {
+      return driven();
+    }
+    return this.namesWithFallback()
       ? (this.labelInput() ?? this.i18n().drawerDialog)
-      : (this.labelInput() ?? this.staticLabel ?? undefined),
-  );
+      : (this.labelInput() ?? this.staticLabel ?? undefined);
+  });
   protected readonly ariaLabel = computed(() => this.label() ?? null);
 
   /** @internal Drives the composed `CngxFocusTrap`. */

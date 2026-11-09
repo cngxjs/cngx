@@ -39,7 +39,10 @@
     position: relative;
     width: 100%;
     min-height: inherit;
-    overflow: hidden;
+    /* clip, not hidden: a hidden box is still script-scrollable, so the
+       surface's focus move into a rail translated off-canvas would scroll
+       the whole layout by the rail width. clip is never a scroll container. */
+    overflow: clip;
 
     /* Both container properties live here, next to the rule that queries
        them: the NAME is API - an unnamed @container would match the nearest

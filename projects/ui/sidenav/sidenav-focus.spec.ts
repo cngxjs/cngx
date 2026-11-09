@@ -14,6 +14,8 @@ import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/co
 
 let mockTrap: {
   enabled: boolean;
+  hasAttached: () => boolean;
+  attachAnchors: ReturnType<typeof vi.fn>;
   focusFirstTabbableElementWhenReady: ReturnType<typeof vi.fn>;
   focusLastTabbableElementWhenReady: ReturnType<typeof vi.fn>;
   destroy: ReturnType<typeof vi.fn>;
@@ -40,7 +42,7 @@ class FocusHost {
 @Component({
   template: `
     <cngx-sidenav-layout>
-      <cngx-sidenav position="start" [ariaLabel]="startLabel()">Start</cngx-sidenav>
+      <cngx-sidenav position="start" mode="side" [ariaLabel]="startLabel()">Start</cngx-sidenav>
       <cngx-sidenav-content>Main</cngx-sidenav-content>
       <cngx-sidenav position="end" mode="over">End</cngx-sidenav>
     </cngx-sidenav-layout>
@@ -63,6 +65,8 @@ describe('CngxSidenav focus management', () => {
   beforeEach(() => {
     mockTrap = {
       enabled: false,
+      hasAttached: () => true,
+      attachAnchors: vi.fn(),
       focusFirstTabbableElementWhenReady: vi.fn(),
       focusLastTabbableElementWhenReady: vi.fn(),
       destroy: vi.fn(),
@@ -99,17 +103,33 @@ describe('CngxSidenav focus management', () => {
     expect(mockTrap.focusFirstTabbableElementWhenReady).toHaveBeenCalled();
   });
 
-  it('moves focus into the rail without scrolling the layout', () => {
-    // The rail is still translated off-canvas when focus lands; a scrolling
-    // focus() would shift the layout (overflow: hidden is script-scrollable)
-    // by the rail width and drag the content out of the viewport.
+  it('makes the page outside an open overlay inert and releases it on close', () => {
     const { fixture, host } = setup();
+    const outside = fixture.nativeElement.querySelector('.external-trigger') as HTMLElement;
+    const content = fixture.nativeElement.querySelector('cngx-sidenav-content') as HTMLElement;
     host.open.set(true);
     fixture.detectChanges();
     TestBed.flushEffects();
-    expect(mockTrap.focusFirstTabbableElementWhenReady).toHaveBeenCalledWith({
-      preventScroll: true,
-    });
+    expect(content.hasAttribute('inert')).toBe(true);
+    expect(outside.hasAttribute('inert')).toBe(true);
+
+    host.open.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(content.hasAttribute('inert')).toBe(false);
+    expect(outside.hasAttribute('inert')).toBe(false);
+  });
+
+  it('closes the overlay on Escape inside it', () => {
+    const { fixture, host, sidenavEl } = setup();
+    host.open.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    sidenavEl
+      .querySelector('.nav-first')!
+      .dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    fixture.detectChanges();
+    expect(host.open()).toBe(false);
   });
 
   it('does not enable the trap in side mode even when open', () => {
@@ -214,7 +234,10 @@ describe('CngxSidenav focus management', () => {
   });
 
   it('destroys the trap on teardown', () => {
-    const { fixture } = setup();
+    const { fixture, host } = setup();
+    host.open.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
     fixture.destroy();
     expect(mockTrap.destroy).toHaveBeenCalled();
   });
@@ -244,8 +267,8 @@ describe('CngxSidenav focus management', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    // Restore is deferred to a microtask so it runs after the close DOM settles.
-    await Promise.resolve();
+    // The surface's CngxFocusRestore returns focus once the close renders.
+    await fixture.whenStable();
     expect(document.activeElement).toBe(trigger);
 
     fixture.nativeElement.remove();
@@ -307,6 +330,24 @@ describe('CngxSidenav accessible name', () => {
     labels.set({ startRegion: 'Navigation', endRegion: 'Seitenbereich' });
     fixture.detectChanges();
     expect(end.getAttribute('aria-label')).toBe('Seitenbereich');
+  });
+
+  it('makes the other rail inert while a modal overlay is open (F9)', () => {
+    const { fixture, start, end } = setup();
+    const rail = fixture.debugElement
+      .queryAll(By.directive(CngxSidenav))
+      .map((d) => d.injector.get(CngxSidenav))
+      .find((nav) => nav.position() === 'end')!;
+    rail.open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(end.getAttribute('aria-modal')).toBe('true');
+    expect(start.hasAttribute('inert')).toBe(true);
+
+    rail.close();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(start.hasAttribute('inert')).toBe(false);
   });
 
   it('names the open overlay dialog with the same resolved label', () => {

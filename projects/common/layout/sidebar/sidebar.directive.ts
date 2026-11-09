@@ -13,6 +13,7 @@ import {
   model,
   type Signal,
   signal,
+  untracked,
 } from '@angular/core';
 import {
   CNGX_HOVER_INTENT_DRIVER,
@@ -285,6 +286,23 @@ export class CngxSidebar implements CngxPanelTarget, CngxHoverIntentDriver {
   });
 
   constructor() {
+    // The hidden rest moves focus out first: aria-hidden on an element that
+    // holds focus is blocked (and warned about) by the browser, and inert
+    // alone would only drop focus on the next rendering step. A composer that
+    // conceals through the driver owns that move, since it may keep focus
+    // inside by changing its own state in the same pass.
+    effect(() => {
+      if (this.state() !== 'hidden') {
+        return;
+      }
+      untracked(() => {
+        const active = this.doc.activeElement;
+        if (active instanceof HTMLElement && this.host.contains(active)) {
+          active.blur();
+        }
+      });
+    });
+
     // A peek is content shown on hover: Escape must dismiss it even while
     // focus sits elsewhere on the page. Listen on the document only while
     // peeked; an Escape inside the host is the host binding's.

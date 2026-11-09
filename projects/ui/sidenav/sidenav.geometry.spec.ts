@@ -227,3 +227,40 @@ describe('CngxSidenav auto mode geometry', () => {
     expect(rail.classList.contains('cngx-sidenav--over')).toBe(false);
   });
 });
+
+// F7: the surface moves focus into the drawer while it is still translated
+// off-canvas. A script-scrollable layout (overflow: hidden) would scroll by
+// the rail width; overflow: clip is never a scroll container.
+@Component({
+  selector: 'cngx-sidenav-focus-scroll-host',
+  standalone: true,
+  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
+  template: `
+    <cngx-sidenav-layout style="inline-size: 30rem; block-size: 20rem">
+      <cngx-sidenav #nav="cngxSidenav" mode="over" ariaLabel="Nav">
+        <a href="#a" class="first">First</a>
+      </cngx-sidenav>
+      <cngx-sidenav-content>Main</cngx-sidenav-content>
+    </cngx-sidenav-layout>
+  `,
+})
+class SidenavFocusScrollHost {}
+
+describe('CngxSidenav overlay focus geometry', () => {
+  it('clips the layout, so focusing into the off-canvas drawer cannot scroll it', () => {
+    const fixture = TestBed.createComponent(SidenavFocusScrollHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const layout = mountedRoot.querySelector('cngx-sidenav-layout') as HTMLElement;
+    const rail = mountedRoot.querySelector('cngx-sidenav') as HTMLElement;
+    expect(getComputedStyle(layout).overflowX).toBe('clip');
+
+    // The closed drawer sits translated off the inline-start edge; focusing
+    // into it, or a script scroll, must leave the layout where it is.
+    (rail.querySelector('.first') as HTMLElement).focus({ preventScroll: false });
+    layout.scrollLeft = 200;
+    expect(layout.scrollLeft).toBe(0);
+    fixture.destroy();
+  });
+});

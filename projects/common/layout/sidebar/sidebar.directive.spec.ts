@@ -113,6 +113,23 @@ describe('CngxSidebar', () => {
       expect(el.hasAttribute('inert')).toBe(false);
       expect(el.hasAttribute('aria-hidden')).toBe(false);
     });
+
+    it('moves focus out before it conceals the host', () => {
+      const { fixture, el, q, set } = setup();
+      document.body.appendChild(fixture.nativeElement);
+      try {
+        set((h) => h.collapsedAs.set('hidden'));
+        q('.inside').focus();
+        expect(el.contains(document.activeElement)).toBe(true);
+
+        set((h) => h.collapsed.set(true));
+        TestBed.flushEffects();
+        expect(el.getAttribute('aria-hidden')).toBe('true');
+        expect(el.contains(document.activeElement)).toBe(false);
+      } finally {
+        fixture.nativeElement.remove();
+      }
+    });
   });
 
   describe('reserved size', () => {

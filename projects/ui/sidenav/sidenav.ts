@@ -1,4 +1,3 @@
-import { type FocusTrap, FocusTrapFactory } from '@angular/cdk/a11y';
 import { DOCUMENT } from '@angular/common';
 import {
   afterNextRender,
@@ -25,7 +24,11 @@ import {
 import { CNGX_HOVER_INTENT_DEFAULTS } from '@cngx/common/interactive';
 import {
   CNGX_CONTAINER_SIZE,
+  CNGX_DRAWER_SURFACE_DRIVER,
   CNGX_SIDEBAR_DRIVER,
+  type CngxDrawerModality,
+  CngxDrawerSurface,
+  type CngxDrawerSurfaceDriver,
   CngxSidebar,
   type CngxSidebarCollapsedAs,
   type CngxSidebarDriver,
@@ -89,15 +92,15 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
  * the resolved value, so ejecting the skin moves the thresholds with it. Any
  * explicit `mode` pins that mode at every width.
  *
- * In overlay (`over`) mode it drives a CDK focus trap directly via
- * `FocusTrapFactory` (the same primitive `CngxFocusTrap` wraps): focus
- * moves into the rail on open and is restored to the opener on close.
- * The shared backdrop and document scroll lock are coordinated by
- * `CngxSidenavLayout`. It does not compose `CngxDrawer` and has no
- * swipe-to-dismiss.
+ * An open overlay runs on a composed `CngxDrawerSurface` (`@cngx/common/layout`)
+ * with the `modality` input (`'page'` by default): focus moves into the rail
+ * and is trapped, the page outside is `inert` and scroll-locked, Escape, the
+ * back gesture and a press outside close it, and focus returns to the opener.
+ * `CngxSidenavLayout` only draws the backdrop. It does not compose
+ * `CngxDrawer` and has no swipe-to-dismiss.
  *
- * Use inside `CngxSidenavLayout` for dual-sidebar support and
- * shared backdrop coordination.
+ * Use inside `CngxSidenavLayout` for dual-sidebar support and the width
+ * class.
  *
  * ```html
  * <cngx-sidenav-layout>
@@ -148,6 +151,11 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
       ],
       outputs: ['collapsedChange'],
     },
+    // The overlay engine: while the rail is an open overlay the surface traps
+    // focus (modality page), restores it on close, makes the page outside
+    // inert, locks scrolling and asks for dismissal on Escape, the back
+    // gesture and an outside press. Driven through CNGX_DRAWER_SURFACE_DRIVER.
+    { directive: CngxDrawerSurface, inputs: [], outputs: [] },
   ],
   // Element-injector provider (not viewProviders): the sidebar's composed
   // CngxHoverIntent resolves CNGX_HOVER_INTENT_DEFAULTS from the host element
@@ -157,6 +165,7 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
     { provide: CNGX_HOVER_INTENT_DEFAULTS, useFactory: () => injectSidenavConfig().hover ?? {} },
     { provide: CNGX_SIDENAV, useExisting: CngxSidenav },
     { provide: CNGX_SIDEBAR_DRIVER, useExisting: CngxSidenav },
+    { provide: CNGX_DRAWER_SURFACE_DRIVER, useExisting: CngxSidenav },
   ],
   host: {
     '[class.cngx-sidenav]': 'true',
@@ -167,13 +176,10 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
     '[class.cngx-sidenav--side]': "effectiveMode() === 'side'",
     '[class.cngx-sidenav--resizable]': 'resizable()',
     '[class.cngx-sidenav--resizing]': 'resizing()',
-    '[attr.role]': 'hostRole()',
-    '[attr.aria-modal]': "overlayActive() ? 'true' : null",
     '[style.--cngx-sidenav-width]': 'width()',
     '[style.--cngx-sidenav-mini-width]': 'miniWidth()',
     '[style.--cngx-sidebar-size]': 'width()',
     '[style.--cngx-sidebar-rail-size]': 'miniWidth()',
-    '(keydown.escape)': 'closeIfOverlay()',
   },
   template: `
     <ng-content select="cngx-sidenav-header, [cngxSidenavHeader]" />
@@ -201,7 +207,7 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
     }
   `,
 })
-export class CngxSidenav implements CngxSidebarDriver {
+export class CngxSidenav implements CngxSidebarDriver, CngxDrawerSurfaceDriver {
   /**
    * Resolved sidenav configuration cascade. Seeds the dimension and
    * `shortcut` input defaults below so a per-instance binding still wins
@@ -233,9 +239,9 @@ export class CngxSidenav implements CngxSidebarDriver {
    * generated one (the composed sidebar owns it).
    *
    * An external toggle names this id in its `aria-controls`
-   * (`[attr.aria-controls]="nav.id()"`). `CngxSidenavLayout` ignores a
-   * `pointerdown` inside such a control when it dismisses open overlays, so
-   * the toggle's own click can close the rail instead of reopening it.
+   * (`[attr.aria-controls]="nav.id()"`). A press inside such a control is not
+   * outside the open overlay, so the toggle's own click can close the rail
+   * instead of reopening it.
    */
   readonly id = this.sidebar.id;
 
@@ -264,15 +270,6 @@ export class CngxSidenav implements CngxSidebarDriver {
 
   private readonly labels = injectSidenavLabels();
   private readonly locale = injectLocale();
-
-  /**
-   * @internal An open overlay is a modal dialog (focus trap, Escape, backdrop);
-   * every other state is a complementary landmark. `aria-modal` follows the
-   * same `overlayActive()`, so it never sits on a non-dialog role.
-   */
-  protected readonly hostRole = computed(() =>
-    this.overlayActive() ? 'dialog' : 'complementary',
-  );
 
   /** @internal */
   protected readonly resolvedAriaLabel = computed(() => {
@@ -313,6 +310,15 @@ export class CngxSidenav implements CngxSidebarDriver {
 
   /** Two-way opened state. Supports `[(opened)]="signal"`. */
   readonly opened = model<boolean>(false);
+
+  /**
+   * How far an open overlay takes over the page: `'page'` (default, a modal
+   * dialog: focus trap, `aria-modal`, everything outside `inert`, scroll lock,
+   * backdrop), `'contained'` (inert and lock inside the layout only) or
+   * `'none'` (the page stays operable, no backdrop). Docked, the rail is a
+   * `complementary` landmark in every modality.
+   */
+  readonly modality = input<CngxDrawerModality>('page');
 
   /** @internal Reference to host element for layout positioning. */
   readonly elementRef = inject(ElementRef<HTMLElement>);
@@ -413,6 +419,17 @@ export class CngxSidenav implements CngxSidebarDriver {
   /** @internal Drives the composed `CngxSidebar`: the rail's accessible name. */
   readonly sidebarLabel = computed(() => this.resolvedAriaLabel());
 
+  /** @internal Drives the composed `CngxDrawerSurface`: engaged while an open overlay. */
+  readonly surfaceActive = this.overlayActive;
+  /** @internal Drives the composed `CngxDrawerSurface`. */
+  readonly surfaceModality = this.modality;
+  /** @internal Drives the composed `CngxDrawerSurface`: one name in every state. */
+  readonly surfaceLabel = this.sidebarLabel;
+  /** @internal Escape, the back gesture or an outside press closes the overlay. */
+  surfaceDismiss(): void {
+    this.close();
+  }
+
   private readonly doc = inject(DOCUMENT);
   private readonly win = this.doc.defaultView;
 
@@ -425,25 +442,10 @@ export class CngxSidenav implements CngxSidebarDriver {
     this.rawWidthClass().trim() === '' ? null : this.widthClass(),
   );
 
-  /** CDK focus trap over the host; enabled only while a modal overlay is open. */
-  private readonly focusTrap: FocusTrap;
-
-  /** Element that held focus when the overlay opened, restored to it on close. */
-  private restoreTarget: HTMLElement | null = null;
-
-  /**
-   * Set when a width-class change keeps the overlay open because focus is
-   * inside the rail. The focus effect reads it to enable the trap without
-   * moving focus, since it is already inside.
-   */
-  private autoOpenInFlight = false;
-
   /** Aborts the in-flight resize drag's document listeners (pointerup or teardown). */
   private resizeAbort: AbortController | null = null;
 
   constructor() {
-    this.focusTrap = inject(FocusTrapFactory).create(this.elementRef.nativeElement as HTMLElement);
-
     // Seed the separator's aria-valuenow for non-px rails: the attribute must
     // exist before the first focus, and only layout can resolve a rem width.
     afterNextRender(() => {
@@ -472,51 +474,7 @@ export class CngxSidenav implements CngxSidebarDriver {
       });
     }
 
-    // Modal-overlay focus contract: on the open edge move focus into the rail
-    // and trap it; on the close edge restore focus to whatever opened it, after
-    // the DOM settles. overlayActive is the single tracked trigger; restoreTarget
-    // is a plain field, not a signal, so this stays a pure side-effect and never
-    // feeds a write back into the reactive graph.
-    let wasOverlayActive = false;
-    effect(() => {
-      const active = this.overlayActive();
-      this.focusTrap.enabled = active;
-      if (active && !wasOverlayActive) {
-        // Only pull focus into the rail when the open was user-initiated. A
-        // width-class change that keeps the rail open (focus inside) engages
-        // the trap - the rail is now modal - and leaves focus where it is.
-        const viaAutoOpen = this.autoOpenInFlight;
-        this.autoOpenInFlight = false;
-        if (!viaAutoOpen) {
-          const activeEl = this.doc.activeElement;
-          this.restoreTarget = activeEl instanceof HTMLElement ? activeEl : null;
-          // preventScroll: the rail is still translated off-canvas when focus
-          // lands, and the layout (overflow: hidden) is script-scrollable, so a
-          // scrolling focus() shifts the whole layout by the rail width.
-          void this.focusTrap.focusFirstTabbableElementWhenReady({ preventScroll: true });
-        }
-      } else if (!active && wasOverlayActive) {
-        const target = this.restoreTarget;
-        this.restoreTarget = null;
-        // Move focus out of the rail synchronously, before aria-hidden flips
-        // true in this same flush (host binding: !opened()). The queued restore
-        // alone would leave the trapped focus under aria-hidden for a microtask,
-        // which the browser blocks and warns about; the deferred restore still
-        // returns focus to the opener afterwards.
-        const activeEl = this.doc.activeElement;
-        const host = this.elementRef.nativeElement as HTMLElement;
-        if (activeEl instanceof HTMLElement && host.contains(activeEl)) {
-          activeEl.blur();
-        }
-        queueMicrotask(() => target?.focus());
-      }
-      wasOverlayActive = active;
-    });
-
-    inject(DestroyRef).onDestroy(() => {
-      this.focusTrap.destroy();
-      this.resizeAbort?.abort();
-    });
+    inject(DestroyRef).onDestroy(() => this.resizeAbort?.abort());
 
     // Global hotkey: document listener inside effect(onCleanup) so the combo
     // signal can re-register at runtime. Host listeners cannot rebind.
@@ -558,11 +516,23 @@ export class CngxSidenav implements CngxSidebarDriver {
           return;
         }
         const host = this.elementRef.nativeElement as HTMLElement;
-        const focusInside = host.contains(this.doc.activeElement);
-        // Only an actual open edge is flagged; a stale flag would skip the
-        // focus move of the next user open.
-        this.autoOpenInFlight = focusInside && !this.opened() && this.isOverlay();
-        this.opened.set(focusInside);
+        this.opened.set(host.contains(this.doc.activeElement));
+      });
+    });
+
+    // A closing drawer moves focus out before it turns aria-hidden (blocked
+    // and warned about on a focused element). Declared after the reset above,
+    // so a class change that keeps the drawer open is seen first.
+    effect(() => {
+      if (!this.sidebarConcealed()) {
+        return;
+      }
+      untracked(() => {
+        const host = this.elementRef.nativeElement as HTMLElement;
+        const active = this.doc.activeElement;
+        if (active instanceof HTMLElement && host.contains(active)) {
+          active.blur();
+        }
       });
     });
   }
@@ -611,13 +581,6 @@ export class CngxSidenav implements CngxSidebarDriver {
   /** Whether `collapsed` (not `opened`) is the state `toggle()` and `close()` change. */
   private dockedRail(): boolean {
     return this.effectiveMode() === 'side' && !this.railBase();
-  }
-
-  /** @internal Close only if in overlay mode (for Escape key, click-outside). */
-  protected closeIfOverlay(): void {
-    if (this.isOverlay()) {
-      this.close();
-    }
   }
 
   // px-strict: a rem/ch width must not leak a lying aria-valuenow (parseInt
