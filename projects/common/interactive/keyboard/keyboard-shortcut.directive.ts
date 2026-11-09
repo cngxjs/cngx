@@ -1,23 +1,54 @@
-import { DOCUMENT } from '@angular/common';
-import { Directive, ElementRef, inject, input, output } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { fromEvent, filter } from 'rxjs';
-import { type KeyCombo, matchesKeyCombo, parseKeyCombo } from '@cngx/core/utils';
+import {
+  computed,
+  DestroyRef,
+  Directive,
+  ElementRef,
+  inject,
+  input,
+  type OnInit,
+  output,
+} from '@angular/core';
+import { nextUid, resolveAriaKeyShortcuts } from '@cngx/core/utils';
 
-/** @internal Input element tag names where global shortcuts should not fire. */
-const INPUT_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
+import type { CngxHotkeyBinding } from './hotkeys/hotkey-binding';
+import { parseHotkeyCombo } from './hotkeys/hotkey-combo';
+import { injectHotkeyRegistry } from './hotkeys/hotkey-registry';
+import { CNGX_HOTKEY_SCOPE, createHotkeyScope } from './hotkeys/hotkey-scope';
+
+function sameBinding(
+  [a]: readonly CngxHotkeyBinding[],
+  [b]: readonly CngxHotkeyBinding[],
+): boolean {
+  return (
+    a.id === b.id &&
+    a.combo === b.combo &&
+    a.reach === b.reach &&
+    a.description === b.description &&
+    a.group === b.group
+  );
+}
 
 /**
- * Declarative keyboard shortcut handler.
+ * Declarative keyboard shortcut on the app's hotkey registry.
  *
- * Binds a keyboard shortcut to the host element without global event listeners
- * in a service. Supports `mod` as a platform-aware modifier (`Meta` on macOS,
- * `Ctrl` elsewhere).
+ * Registers the combo in `CNGX_HOTKEY_REGISTRY` (one document listener for
+ * every shortcut in the app) and emits `shortcutTriggered` when it fires.
+ * `mod` is the platform's primary modifier (`Meta` on macOS, `Ctrl`
+ * elsewhere). The host carries `aria-keyshortcuts` for the combo while the
+ * shortcut is enabled, so assistive technology announces it.
  *
- * Two scopes: `'global'` (default) listens on `document` and ignores events
- * from input elements; `'self'` listens only on the host element.
+ * Two scopes: `'global'` (default) fires anywhere in the document unless a
+ * modal scope (an open modal dialog) sits between focus and the host;
+ * `'self'` fires only while focus is inside the host.
  *
- * Uses `parseKeyCombo` and `matchesKeyCombo` from `@cngx/core/utils`.
+ * Inside a text field (`input` of a text type, `textarea`, `select`,
+ * `contenteditable`) only combos with `ctrl`, `meta` or `mod`, function keys
+ * and `escape` fire, in both scopes: `'mod+k'` works while typing, a bare
+ * `'/'` does not.
+ *
+ * Name the shortcut with `shortcutId` to make it remappable, and give it a
+ * `shortcutDescription` (and optionally a `shortcutGroup`) to list it in the
+ * hotkey help.
  *
  * ### Global save shortcut
  * ```html
@@ -36,7 +67,7 @@ const INPUT_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/keyboard-shortcut.directive.ts
  * @since 0.1.0
- * @relatedTo CngxClickOutside, CngxSearch
+ * @relatedTo CngxClickOutside, CngxSearch, CngxHotkeyScope, injectHotkey
  * <example-url>/#/common/interactive/gestures/keyboard-shortcut/global-shortcut</example-url>
  * <example-url>/#/common/interactive/gestures/keyboard-shortcut/self-scoped-shortcut</example-url>
  * @axis level atom
@@ -45,80 +76,68 @@ const INPUT_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
   selector: '[cngxKeyboardShortcut]',
   exportAs: 'cngxKeyboardShortcut',
   standalone: true,
+  host: { '[attr.aria-keyshortcuts]': 'ariaKeyShortcuts()' },
 })
-export class CngxKeyboardShortcut {
+export class CngxKeyboardShortcut implements OnInit {
   /** Shortcut combo string, e.g. `'mod+s'`, `'ctrl+shift+k'`, `'escape'`. */
   readonly shortcut = input.required<string>({ alias: 'cngxKeyboardShortcut' });
-  /** `'global'` listens on document; `'self'` listens only on the host element. */
+  /** `'global'` fires anywhere outside a modal; `'self'` only while focus is inside the host. */
   readonly scope = input<'global' | 'self'>('global', { alias: 'shortcutScope' });
   /** Whether the shortcut is active. */
   readonly enabled = input<boolean>(true);
+  /** Stable binding id for remapping; defaults to a generated `keyboard-shortcut-<n>` id. */
+  readonly bindingId = input<string | undefined>(undefined, { alias: 'shortcutId' });
+  /** Description listed in the hotkey help; without it the shortcut fires but is not listed. */
+  readonly description = input<string | undefined>(undefined, { alias: 'shortcutDescription' });
+  /** Group the hotkey help lists the shortcut under. */
+  readonly group = input<string | undefined>(undefined, { alias: 'shortcutGroup' });
 
-  /** Emitted when the shortcut fires. */
+  /** Emitted when the shortcut fires; the event is already `preventDefault()`ed. */
   readonly shortcutTriggered = output<KeyboardEvent>();
 
-  constructor() {
-    const el = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
-    const doc = inject(DOCUMENT);
-    const isMac = doc.defaultView ? /mac/i.test(doc.defaultView.navigator.platform) : false;
+  private readonly registry = injectHotkeyRegistry();
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly defaultId = nextUid('keyboard-shortcut');
+  // The host is the region `'self'` resolves against; `'global'` sits in it
+  // too, so a shortcut inside a muted scope stays muted in both modes.
+  private readonly hostScope = createHotkeyScope({
+    element: inject<ElementRef<Element>>(ElementRef).nativeElement,
+    parent: inject(CNGX_HOTKEY_SCOPE, { optional: true }),
+    destroyRef: this.destroyRef,
+  });
 
-    // Both streams stay subscribed; scope() gates inside the filter so
-    // toggling scope at runtime doesn't churn subscriptions.
-    const globalKeydown$ = fromEvent<KeyboardEvent>(doc, 'keydown');
-    const selfKeydown$ = fromEvent<KeyboardEvent>(el, 'keydown');
+  private readonly emit = (event: KeyboardEvent): void => this.shortcutTriggered.emit(event);
 
-    globalKeydown$
-      .pipe(
-        filter(() => this.enabled() && this.scope() === 'global'),
-        filter((event) => !this.isInputElement(event.target)),
-        filter((event) => this.matchesShortcut(event, isMac)),
-        takeUntilDestroyed(),
-      )
-      .subscribe((event) => {
-        event.preventDefault();
-        this.shortcutTriggered.emit(event);
-      });
+  private readonly bindings = computed<readonly CngxHotkeyBinding[]>(
+    () => {
+      const description = this.description();
+      const group = this.group();
+      return [
+        {
+          id: this.bindingId() ?? this.defaultId,
+          combo: this.shortcut(),
+          enabled: this.enabled,
+          reach: this.scope() === 'self' ? 'focus' : 'global',
+          run: this.emit,
+          ...(description === undefined ? {} : { description }),
+          ...(group === undefined ? {} : { group }),
+        },
+      ];
+    },
+    { equal: sameBinding },
+  );
 
-    selfKeydown$
-      .pipe(
-        filter(() => this.enabled() && this.scope() === 'self'),
-        filter((event) => this.matchesShortcut(event, isMac)),
-        takeUntilDestroyed(),
-      )
-      .subscribe((event) => {
-        event.preventDefault();
-        this.shortcutTriggered.emit(event);
-      });
-  }
+  protected readonly ariaKeyShortcuts = computed(() => {
+    const combo = parseHotkeyCombo(this.shortcut());
+    return combo !== null && this.enabled() && !this.hostScope.muted()
+      ? resolveAriaKeyShortcuts(combo, this.registry.isMac)
+      : null;
+  });
 
-  /** Tests the keyboard event against the current shortcut combo. */
-  private matchesShortcut(event: KeyboardEvent, isMac: boolean): boolean {
-    const combo = this.parseCurrentCombo();
-    return combo !== null && matchesKeyCombo(event, combo, isMac);
-  }
-
-  private parsedCombo: KeyCombo | null = null;
-  private parsedComboStr = '';
-
-  /** Parses the shortcut string, memoising the result to avoid re-parsing on every keystroke. */
-  private parseCurrentCombo(): KeyCombo | null {
-    const str = this.shortcut();
-    if (str !== this.parsedComboStr) {
-      this.parsedComboStr = str;
-
-      this.parsedCombo = parseKeyCombo(str);
-    }
-    return this.parsedCombo;
-  }
-
-  /**
-   * Guards global shortcuts from firing when the user is typing in a form field
-   * or contenteditable region. Self-scoped shortcuts skip this check.
-   */
-  private isInputElement(target: EventTarget | null): boolean {
-    if (!target || !(target instanceof HTMLElement)) {
-      return false;
-    }
-    return INPUT_TAGS.has(target.tagName) || target.isContentEditable;
+  ngOnInit(): void {
+    // Registered once the inputs are bound: the registry reads the source at
+    // registration for its dev checks, and a required input throws before.
+    const registration = this.registry.register(this.bindings, this.hostScope);
+    this.destroyRef.onDestroy(() => registration.unregister());
   }
 }

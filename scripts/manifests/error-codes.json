@@ -1520,6 +1520,74 @@
       ]
     },
     {
+      "code": "CNGX1077",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Two hotkeys tie on one press",
+      "page": "core-concepts/error-codes/cngx1077.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1077.html",
+      "status": "active",
+      "files": ["projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts",
+          "text": "createHotkeyRegistry(): hotkeys \"${...}\" and \"${...}\" both matched one press at the same scope depth; \"${...}\" (registered last) runs."
+        }
+      ]
+    },
+    {
+      "code": "CNGX1078",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Hotkey on a browser-reserved combo",
+      "page": "core-concepts/error-codes/cngx1078.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1078.html",
+      "status": "active",
+      "files": ["projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts",
+          "text": "createHotkeyRegistry(): hotkey \"${...}\" uses \"${...}\", which the browser handles before the page."
+        }
+      ]
+    },
+    {
+      "code": "CNGX1079",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Hotkey on Ctrl+Alt collides with AltGr",
+      "page": "core-concepts/error-codes/cngx1079.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1079.html",
+      "status": "active",
+      "files": ["projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts",
+          "text": "createHotkeyRegistry(): hotkey \"${...}\" uses \"${...}\"; Ctrl+Alt is AltGr on Windows and Linux, so it never fires on layouts that type characters with AltGr."
+        }
+      ]
+    },
+    {
+      "code": "CNGX1080",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Unparseable hotkey combo",
+      "page": "core-concepts/error-codes/cngx1080.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1080.html",
+      "status": "active",
+      "files": ["projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts",
+          "text": "createHotkeyRegistry(): hotkey \"${...}\" has the unparseable combo \"${...}\"; it never fires."
+        }
+      ]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",

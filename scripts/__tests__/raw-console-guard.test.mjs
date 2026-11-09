@@ -100,6 +100,8 @@ const EXPECTED_DEV_WRAPPERS = [
   'projects/common/chart/presets/preset-state.ts#warnIfUnnamedPreset',
   'projects/common/dialog/dialog/dialog.directive.ts#warnDoubleRegistration',
   'projects/common/dialog/dialog/dialog.directive.ts#warnNonModalA11y',
+  'projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts#warnRegistration',
+  'projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts#warnTie',
   'projects/common/interactive/menu/menu-item-submenu.directive.ts#warnMissingSubmenuFallbacks',
   'projects/common/interactive/reorder/reorder.directive.ts#wireDevModeCheck',
   'projects/common/layout/router/warn-router-absent.ts#warnRouterAbsent',
