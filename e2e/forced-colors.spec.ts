@@ -396,6 +396,9 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     const trigger = page.locator('.cngx-ex-artifact .cngx-select__trigger').first();
     await expect(trigger).toBeVisible();
     await trigger.click();
+    // The first open renders its rows one frame later; an arrow pressed in
+    // that frame has no row to move to. Wait for the rows before driving keys.
+    await expect(page.getByRole('option').first()).toBeVisible();
     await page.keyboard.press('ArrowDown');
     const active = page.locator('.cngx-option--highlighted').first();
     await expect(active).toBeVisible();
