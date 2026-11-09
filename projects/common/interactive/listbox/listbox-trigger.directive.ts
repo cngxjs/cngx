@@ -8,6 +8,7 @@ import {
   input,
   output,
   type OutputRef,
+  type Signal,
 } from '@angular/core';
 import { CNGX_NESTED_INTERACTIVE_SELECTOR } from '@cngx/core/utils';
 
@@ -108,6 +109,14 @@ export class CngxListboxTrigger<T = unknown> {
   readonly popover = input.required<PopoverController>();
   /** Whether activating an option closes the popover. */
   readonly closeOnSelect = input<boolean>(true);
+  /**
+   * The buffer of a typeahead the host runs itself while the panel is closed.
+   * While it holds a term, a closed Space is no open key: the trigger leaves it
+   * to the host, so "new y" reaches "New York". Bind the signal itself, not its
+   * value; the trigger reads it at keydown time, so a key typed before the next
+   * change detection pass still sees the current buffer.
+   */
+  readonly typeaheadBuffer = input<Signal<string> | undefined>(undefined);
 
   /** Mirrors `CngxPopover.isVisible()` for external read. */
   readonly isOpen = computed<boolean>(() => this.popover().isVisible());
@@ -236,8 +245,11 @@ export class CngxListboxTrigger<T = unknown> {
       // output (a host opening on its selected option) can replace it in the
       // same task. A deferred-render panel holds no rows yet; the active
       // descendant keeps the gesture until they render.
+      const buffer = this.typeaheadBuffer();
+      const termRunning = key === ' ' && buffer !== undefined && buffer() !== '';
       const openKeys =
-        key === 'ArrowDown' || (!this.search && (key === 'Enter' || key === ' '));
+        key === 'ArrowDown' ||
+        (!this.search && (key === 'Enter' || (key === ' ' && !termRunning)));
       if (openKeys) {
         event.preventDefault();
         this.listbox().ad.highlightFirst();
@@ -297,6 +309,13 @@ export class CngxListboxTrigger<T = unknown> {
   /** The open-panel key actions. `event` is `null` when run deferred after a flush. */
   private runOpenKey(key: string, event: KeyboardEvent | null): void {
     const ad = this.listbox().ad;
+    // A space inside a running typeahead term is part of the term, not an
+    // activation. A co-located search input types its own spaces.
+    if (key === ' ' && !this.search && ad.typeaheadActive()) {
+      event?.preventDefault();
+      ad.typeaheadChar(key);
+      return;
+    }
     switch (key) {
       case 'Escape':
         if (this.popover().closeOnEscape?.() === false) {

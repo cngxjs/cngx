@@ -116,6 +116,20 @@ export function createTypeaheadController<T>(
 }
 
 /**
+ * Whether a key feeds the select typeahead: a printable character, or a space
+ * while a buffer is running, so "new y" reaches "New York". A leading space
+ * stays an open key.
+ *
+ * @internal
+ */
+export function typeaheadAcceptsKey(key: string, buffer: string): boolean {
+  if (key.length !== 1) {
+    return false;
+  }
+  return /\S/.test(key) || buffer !== '';
+}
+
+/**
  * PageUp/PageDown helper. Disabled-aware, clamped `±step` jump with
  * back-probe fallback. Returns target index or `null`.
  */

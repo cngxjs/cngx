@@ -91,7 +91,7 @@ import { injectTouchFloorSignal } from '../shared/internal/touch-floor';
 import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createFieldSync } from '../shared/field-sync';
 import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
-import { createTypeaheadController } from '../shared/typeahead-controller';
+import { createTypeaheadController, typeaheadAcceptsKey } from '../shared/typeahead-controller';
 import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import type {
@@ -875,7 +875,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   protected readonly writeBlocked = this.core.writeBlocked;
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');
 
-  private readonly typeaheadController = createTypeaheadController<T>({
+  protected readonly typeaheadController = createTypeaheadController<T>({
     options: this.flatOptions,
     compareWith: this.compareWith,
     debounceMs: this.typeaheadDebounceInterval,
@@ -1291,7 +1291,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
 
     if (!this.panelOpen() && this.config.typeaheadWhileClosed) {
       const key = event.key;
-      if (key.length === 1 && /\S/.exec(key)) {
+      if (typeaheadAcceptsKey(key, this.typeaheadController.buffer())) {
         const action = this.flatNavStrategy.onTypeaheadWhileClosed(
           {
             options: this.flatOptions(),
@@ -1308,6 +1308,12 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
           event.preventDefault();
           this.toggleDispatch.toggleByUser(action.option);
           this.typeaheadController.clearBuffer();
+          return;
+        }
+        if (key === ' ') {
+          // A space inside a running buffer is part of the term, also when it
+          // matches nothing: it must not reach the trigger as an open key.
+          event.preventDefault();
           return;
         }
       }

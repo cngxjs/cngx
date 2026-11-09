@@ -773,6 +773,71 @@ describe('CngxListboxTrigger - settles a pending search term before listbox keys
   });
 });
 
+const hostBuffer = signal('');
+
+@Component({
+  template: `
+    <button type="button" id="bound" [cngxListboxTrigger]="lb" [popover]="pop" [typeaheadBuffer]="buffer">
+      A
+    </button>
+    <button type="button" id="unbound" [cngxListboxTrigger]="lb" [popover]="pop">B</button>
+    <div cngxPopover #pop="cngxPopover">
+      <div cngxListbox [label]="'Colors'" tabindex="0" #lb="cngxListbox">
+        <div cngxOption value="red">Red</div>
+        <div cngxOption value="green">Green</div>
+      </div>
+    </div>
+  `,
+  imports: [CngxListbox, CngxOption, CngxListboxTrigger, CngxPopover],
+})
+class TypeaheadBufferHost {
+  readonly buffer = hostBuffer;
+}
+
+describe('CngxListboxTrigger - a host typeahead buffer on a closed panel', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    hostBuffer.set('');
+    TestBed.configureTestingModule({ imports: [TypeaheadBufferHost] });
+  });
+
+  function setup() {
+    const fixture = TestBed.createComponent(TypeaheadBufferHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const root = fixture.nativeElement as HTMLElement;
+    const popover = fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover);
+    const space = (id: string): KeyboardEvent => {
+      const event = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+      root.querySelector<HTMLElement>(`#${id}`)!.dispatchEvent(event);
+      return event;
+    };
+    return { popover, space };
+  }
+
+  it('leaves a closed Space to the host while its buffer holds a term', () => {
+    const { popover, space } = setup();
+    // Written and read without a change detection pass in between.
+    hostBuffer.set('new');
+    const event = space('bound');
+    expect(event.defaultPrevented).toBe(false);
+    expect(popover.isVisible()).toBe(false);
+  });
+
+  it('opens on a closed Space while the bound buffer is empty', () => {
+    const { popover, space } = setup();
+    expect(space('bound').defaultPrevented).toBe(true);
+    expect(popover.isVisible()).toBe(true);
+  });
+
+  it('opens on a closed Space when no buffer is bound', () => {
+    const { popover, space } = setup();
+    hostBuffer.set('new');
+    expect(space('unbound').defaultPrevented).toBe(true);
+    expect(popover.isVisible()).toBe(true);
+  });
+});
+
 describe('CngxListboxTrigger - reset on a popover close event', () => {
   function createController(withClosed: boolean) {
     const open = signal(false);

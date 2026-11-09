@@ -120,7 +120,7 @@ import {
   type CngxSelectCore,
 } from '../shared/internal/select-core';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
-import { createTypeaheadController } from '../shared/typeahead-controller';
+import { createTypeaheadController, typeaheadAcceptsKey } from '../shared/typeahead-controller';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { injectResolvedTemplate } from '../shared/internal/resolve-template';
 import {
@@ -974,7 +974,7 @@ export class CngxSelectShell<T = unknown>
    *
    * @internal
    */
-  private readonly typeaheadController = createTypeaheadController<T>({
+  protected readonly typeaheadController = createTypeaheadController<T>({
     options: this.flatOptions,
     compareWith: this.compareWith,
     debounceMs: this.typeaheadDebounceInterval,
@@ -1298,7 +1298,7 @@ export class CngxSelectShell<T = unknown>
 
     if (!this.panelOpen() && this.config.typeaheadWhileClosed) {
       const key = event.key;
-      if (key.length === 1 && /\S/.exec(key)) {
+      if (typeaheadAcceptsKey(key, this.typeaheadController.buffer())) {
         const eq = this.compareWith();
         const flat = this.flatOptions();
         const v = this.value();
@@ -1318,6 +1318,12 @@ export class CngxSelectShell<T = unknown>
         if (action.kind === 'select') {
           event.preventDefault();
           this.commitClosedPick(action.option, v);
+          return;
+        }
+        if (key === ' ') {
+          // A space inside a running buffer is part of the term, also when it
+          // matches nothing: it must not reach the trigger as an open key.
+          event.preventDefault();
           return;
         }
       }

@@ -2113,3 +2113,77 @@ describe('CngxSelect - panel row labels across an options swap', () => {
     expect(ad.activeValue()).toBe('teal');
   });
 });
+
+const CITY_OPTIONS: CngxSelectOptionDef<string>[] = [
+  { value: 'nv', label: 'Nevada' },
+  { value: 'nj', label: 'New Jersey' },
+  { value: 'ny', label: 'New York' },
+  { value: 'oh', label: 'Ohio' },
+];
+
+@Component({
+  template: `<cngx-select [label]="'City'" [options]="options" [(value)]="value" />`,
+  imports: [CngxSelect],
+})
+class CityHost {
+  readonly options = CITY_OPTIONS;
+  readonly value = signal<string | undefined>(undefined);
+}
+
+describe('CngxSelect - a space inside a running typeahead buffer', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({ imports: [CityHost] });
+  });
+
+  function setup() {
+    const fixture = TestBed.createComponent(CityHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const selectDe = fixture.debugElement.query(By.directive(CngxSelect));
+    return {
+      fixture,
+      triggerBtn: selectDe.nativeElement.querySelector('.cngx-select__trigger') as HTMLElement,
+      listbox: fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox),
+      popover: fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover),
+    };
+  }
+
+  function type(trigger: HTMLElement, fixture: ComponentFixture<CityHost>, text: string): void {
+    for (const key of text) {
+      trigger.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+      flush(fixture);
+    }
+  }
+
+  it('reaches New York by typing "new y" on the closed trigger, without opening the panel', () => {
+    const { fixture, triggerBtn, popover } = setup();
+    // Back to back, no change detection in between: both keydown listeners of
+    // the trigger see each key before any render.
+    for (const key of 'new y') {
+      triggerBtn.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+    }
+    flush(fixture);
+    expect(popover.isVisible()).toBe(false);
+    expect(fixture.componentInstance.value()).toBe('ny');
+  });
+
+  it('reaches New York by typing "new y" with the panel open, without activating an option', () => {
+    const { fixture, triggerBtn, listbox, popover } = setup();
+    triggerBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
+    flush(fixture);
+    expect(popover.isVisible()).toBe(true);
+
+    type(triggerBtn, fixture, 'new y');
+    expect(popover.isVisible()).toBe(true);
+    expect(listbox.ad.activeValue()).toBe('ny');
+    expect(fixture.componentInstance.value()).toBeUndefined();
+  });
+
+  it('still opens the panel on a space with no buffer running', () => {
+    const { fixture, triggerBtn, popover } = setup();
+    type(triggerBtn, fixture, ' ');
+    expect(popover.isVisible()).toBe(true);
+  });
+});

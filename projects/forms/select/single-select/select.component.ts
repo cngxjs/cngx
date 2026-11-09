@@ -56,7 +56,7 @@ import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import { createFieldSync } from '../shared/field-sync';
 import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
-import { createTypeaheadController } from '../shared/typeahead-controller';
+import { createTypeaheadController, typeaheadAcceptsKey } from '../shared/typeahead-controller';
 import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
 
 import { CngxSelectAnnouncer } from '../shared/announcer';
@@ -776,7 +776,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
    * `shared/typeahead-controller`. Printable-key matching, multi-char
    * buffer, debounce-reset, disabled-skip.
    */
-  private readonly typeaheadController = createTypeaheadController<T>({
+  protected readonly typeaheadController = createTypeaheadController<T>({
     options: this.flatOptions,
     compareWith: this.compareWith,
     debounceMs: this.typeaheadDebounceInterval,
@@ -1148,7 +1148,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     // from the current selection so repeat-taps advance through matches.
     if (!this.panelOpen() && this.config.typeaheadWhileClosed) {
       const key = event.key;
-      if (key.length === 1 && /\S/.exec(key)) {
+      if (typeaheadAcceptsKey(key, this.typeaheadController.buffer())) {
         const eq = this.compareWith();
         const flat = this.flatOptions();
         const v = this.value();
@@ -1168,6 +1168,12 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
         if (action.kind === 'select') {
           event.preventDefault();
           this.commitClosedPick(action.option, v);
+          return;
+        }
+        if (key === ' ') {
+          // A space inside a running buffer is part of the term, also when it
+          // matches nothing: it must not reach the trigger as an open key.
+          event.preventDefault();
           return;
         }
       }

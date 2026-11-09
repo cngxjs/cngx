@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createTypeaheadController,
   resolvePageJumpTarget,
+  typeaheadAcceptsKey,
   type TypeaheadController,
 } from './typeahead-controller';
 import type { CngxSelectOptionDef } from './option.model';
@@ -212,6 +213,23 @@ describe('createTypeaheadController - spaces in the buffer', () => {
     const { controller } = makeController([opt('New York'), opt('Newark')]);
     expect(controller.matchFromIndex(' ', -1)).toBeNull();
     expect(controller.buffer()).toBe('');
+  });
+});
+
+describe('typeaheadAcceptsKey', () => {
+  it('takes a printable key at any time', () => {
+    expect(typeaheadAcceptsKey('n', '')).toBe(true);
+    expect(typeaheadAcceptsKey('n', 'ne')).toBe(true);
+  });
+
+  it('takes a space only while a buffer runs', () => {
+    expect(typeaheadAcceptsKey(' ', '')).toBe(false);
+    expect(typeaheadAcceptsKey(' ', 'new')).toBe(true);
+  });
+
+  it('never takes a named key', () => {
+    expect(typeaheadAcceptsKey('Enter', 'new')).toBe(false);
+    expect(typeaheadAcceptsKey('ArrowDown', '')).toBe(false);
   });
 });
 

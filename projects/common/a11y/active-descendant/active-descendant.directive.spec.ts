@@ -338,6 +338,36 @@ describe('CngxActiveDescendant - typeahead', () => {
     expect(dir.activeItem()?.value).toBe('b');
   });
 
+  it('takes a space into a running term instead of activating', () => {
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.componentInstance.options.set([
+      { value: 'nj', label: 'New Jersey' },
+      { value: 'ny', label: 'New York' },
+    ]);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    const dir = container.injector.get(CngxActiveDescendant);
+    const activated: unknown[] = [];
+    dir.activated.subscribe((v) => activated.push(v));
+    const press = (k: string): KeyboardEvent => {
+      const event = new KeyboardEvent('keydown', { key: k, cancelable: true });
+      container.triggerEventHandler('keydown', event);
+      TestBed.flushEffects();
+      return event;
+    };
+    expect(dir.typeaheadActive()).toBe(false);
+    for (const k of 'new') {
+      press(k);
+    }
+    expect(dir.typeaheadActive()).toBe(true);
+    expect(press(' ').defaultPrevented).toBe(true);
+    press('y');
+    expect(dir.activeItem()?.value).toBe('ny');
+    expect(activated).toEqual([]);
+  });
+
   it('chains characters within debounce window', () => {
     const fixture = TestBed.createComponent(TestHost);
     fixture.componentInstance.options.set([

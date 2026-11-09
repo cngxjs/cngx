@@ -291,6 +291,14 @@ export class CngxActiveDescendant {
     locale: this.locale,
   });
 
+  /**
+   * `true` while a typeahead term is being typed (the buffer has not reset
+   * yet). A space typed then belongs to the term ("new y" reaches "New
+   * York") instead of activating the highlight. External keyboard hosts read
+   * it to route Space through {@link typeaheadChar}.
+   */
+  readonly typeaheadActive = computed<boolean>(() => this.typeaheadWalker.buffer() !== '');
+
   constructor() {
     afterNextRender(() => this.initialized.set(true));
 
@@ -499,6 +507,12 @@ export class CngxActiveDescendant {
       return;
     }
 
+    if (key === ' ' && this.typeahead() && this.typeaheadActive()) {
+      event.preventDefault();
+      this.handleTypeahead(key);
+      return;
+    }
+
     if (key === 'Enter' || key === ' ') {
       this.handleActivationKey(event, key);
       return;
@@ -608,7 +622,8 @@ export class CngxActiveDescendant {
    * semantics on a separate listbox.
    *
    * Consumers should only forward single-character printable keys (`length === 1`,
-   * non-whitespace). Navigation keys and non-printables must not be forwarded.
+   * non-whitespace), plus a space while {@link typeaheadActive} is `true`.
+   * Navigation keys and non-printables must not be forwarded.
    */
   typeaheadChar(ch: string): void {
     if (!this.typeahead()) {
