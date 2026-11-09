@@ -12,9 +12,8 @@ import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import {
   CNGX_ACTION_STATUS,
   CNGX_ANNOUNCEMENT_COVER,
-  CNGX_ASYNC_RUN_STATE,
+  type CngxActionOutcome,
   type CngxAnnouncementCover,
-  type CngxAsyncSettle,
 } from '@cngx/common/interactive';
 import { injectLazySelf } from '@cngx/core/utils';
 
@@ -22,8 +21,9 @@ import { CNGX_POPOVER_PANEL_CONFIG } from './popover-panel.config';
 import { CngxPopover } from './popover.directive';
 
 /**
- * Closes the composing `CngxPopover` after each success of the co-hosted
- * `cngxAsyncClick` run: `CNGX_POPOVER_PANEL_CONFIG.closeOnSuccessDelay`
+ * Closes the composing `CngxPopover` after each success outcome of the
+ * co-hosted `CngxActionStatusBrain` (an own run, or a `success` edge of a
+ * bound `[externalState]`): `CNGX_POPOVER_PANEL_CONFIG.closeOnSuccessDelay`
  * (`withCloseOnSuccess()`), or `[closeOnSuccessDelay]` per instance. A
  * follow-up run cancels a scheduled close. Focus returns to the trigger
  * through the panel's restore claim; this directive restores nothing.
@@ -57,7 +57,6 @@ export class CngxPopoverCloseOnSuccess implements CngxAnnouncementCover {
   private readonly announcer = inject(CngxLiveAnnouncer);
   private readonly status = inject(CNGX_ACTION_STATUS);
   private readonly injector = inject(Injector);
-  private readonly runState = injectLazySelf(CNGX_ASYNC_RUN_STATE);
   private readonly coverUnits = injectLazySelf(CNGX_ANNOUNCEMENT_COVER, { optional: true });
 
   /**
@@ -72,17 +71,14 @@ export class CngxPopoverCloseOnSuccess implements CngxAnnouncementCover {
   private closeOnSuccessTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
-    // The runner cannot be read during construction (it injects the host
-    // state that reads the status brain), and a settle needs a click on the
-    // rendered button.
-    afterNextRender(() => {
-      this.runState().settled.subscribe((settle) => this.handleSettled(settle));
-    });
+    // The status outcome, not the runner's settle: it follows a bound
+    // [externalState] and is silent for the own runs while one is bound.
+    this.status.outcome.subscribe((outcome) => this.handleOutcome(outcome));
 
     // A follow-up run cancels a scheduled close, so a re-triggered action
     // never yanks the panel away mid-interaction.
     effect(() => {
-      if (this.runState().pending()) {
+      if (this.status.status() === 'pending') {
         untracked(() => this.clearCloseOnSuccessTimer());
       }
     });
@@ -95,10 +91,10 @@ export class CngxPopoverCloseOnSuccess implements CngxAnnouncementCover {
     return this.closeDelayFor(status) !== undefined;
   }
 
-  /** One settle: re-arms the close and speaks a closing success outside the panel. */
-  private handleSettled(settle: CngxAsyncSettle): void {
+  /** One outcome: re-arms the close and speaks a closing success outside the panel. */
+  private handleOutcome(outcome: CngxActionOutcome): void {
     this.clearCloseOnSuccessTimer();
-    const delay = this.closeDelayFor(settle.status);
+    const delay = this.closeDelayFor(outcome.status);
     if (delay === undefined) {
       return;
     }

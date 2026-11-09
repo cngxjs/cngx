@@ -1,7 +1,8 @@
-import { Component, inject, signal, viewChild } from '@angular/core';
+import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
+import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 import {
   CNGX_ACTION_STATUS,
   CNGX_ANNOUNCEMENT_COVER,
@@ -20,7 +21,7 @@ import { CngxPopover } from './popover.directive';
   selector: 'button[testCloseHost]',
   hostDirectives: [
     { directive: CngxAsyncClick, inputs: ['cngxAsyncClick: action'] },
-    { directive: CngxActionStatusBrain, inputs: ['succeededAnnouncement'] },
+    { directive: CngxActionStatusBrain, inputs: ['succeededAnnouncement', 'externalState'] },
     { directive: CngxPopoverCloseOnSuccess, inputs: ['closeOnSuccessDelay'] },
   ],
   providers: [
@@ -88,6 +89,7 @@ class ToastedHost {
         testCloseHost
         [action]="action"
         [closeOnSuccessDelay]="delay()"
+        [externalState]="ext()"
         succeededAnnouncement="Saved"
       >
         Save
@@ -98,6 +100,7 @@ class ToastedHost {
 class Host {
   readonly popover = viewChild.required(CngxPopover);
   readonly delay = signal<number | null | undefined>(undefined);
+  readonly ext = signal<CngxAsyncState<unknown> | undefined>(undefined);
   outcome: 'success' | 'error' = 'success';
   resolveFn: (() => void) | null = null;
   readonly action = (): Promise<void> =>
@@ -116,6 +119,17 @@ function stubPopoverElement(el: HTMLElement): void {
   vi.spyOn(globalThis, 'getComputedStyle').mockReturnValue({
     transitionDuration: '0s',
   } as unknown as CSSStyleDeclaration);
+}
+
+function mockState() {
+  const status = signal<AsyncStatus>('idle');
+  const state = buildAsyncStateView<unknown>({
+    status: status.asReadonly(),
+    data: computed(() => undefined),
+    error: computed(() => undefined),
+    lastUpdated: computed(() => undefined),
+  });
+  return { state, status };
 }
 
 function setup(config?: number, delay?: number | null) {
@@ -188,6 +202,30 @@ describe('CngxPopoverCloseOnSuccess', () => {
     expect(popoverEl.hidePopover).not.toHaveBeenCalled();
     expect(announce).not.toHaveBeenCalled();
     expect(region()).toBe('Saved');
+  });
+
+  it('closes on a success edge of a bound external state', async () => {
+    const mock = mockState();
+    const { host, popoverEl, announce, render } = setup(300);
+    host.ext.set(mock.state);
+    render();
+    mock.status.set('pending');
+    render();
+    mock.status.set('success');
+    render();
+    await vi.advanceTimersByTimeAsync(300);
+    expect(popoverEl.hidePopover).toHaveBeenCalled();
+    expect(announce).toHaveBeenCalledWith('Saved', 'polite', expect.anything());
+  });
+
+  it('closes nothing for an own run while an external state is bound', async () => {
+    const mock = mockState();
+    const { host, popoverEl, render, succeed } = setup(300);
+    host.ext.set(mock.state);
+    render();
+    await succeed();
+    await vi.advanceTimersByTimeAsync(500);
+    expect(popoverEl.hidePopover).not.toHaveBeenCalled();
   });
 
   it('closes nothing on an error', async () => {
