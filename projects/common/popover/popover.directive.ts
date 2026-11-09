@@ -909,8 +909,21 @@ export class CngxPopover {
    * end of every close, with the {@link focusOrigin} captured before it is
    * cleared. Runs on every close path (`hide()`, light dismiss), so a close
    * that lands before the next change detection pass still reaches it.
+   * Replacing a different live listener warns in dev mode (CNGX1081).
    */
   registerCloseListener(fn: (origin: HTMLElement | null) => void): void {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      const current = untracked(() => this.closeListenerSlot.current());
+      if (current && current !== fn) {
+        cngxDevWarn(
+          'CNGX1081',
+          '[cngxPopover] a second CngxPopoverTrigger registered on this popover and replaced ' +
+            'the first one. Only the last-registered trigger restores focus on close, so bind ' +
+            'one CngxPopoverTrigger per popover.',
+          this.popoverElement,
+        );
+      }
+    }
     this.closeListenerSlot.register(fn);
   }
 

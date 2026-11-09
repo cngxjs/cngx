@@ -185,6 +185,18 @@ class ConditionalTriggerHost {
 
 @Component({
   template: `
+    <button [cngxPopoverTrigger]="pop" id="first">First</button>
+    <button [cngxPopoverTrigger]="pop" id="second">Second</button>
+    <div cngxPopover #pop="cngxPopover">Content</div>
+  `,
+  imports: [CngxPopover, CngxPopoverTrigger],
+})
+class TwoTriggersHost {
+  readonly popover = viewChild.required(CngxPopover);
+}
+
+@Component({
+  template: `
     @if (showTrigger()) {
       <button [cngxPopoverTrigger]="pop" [restoreFocus]="true" id="trigger">Open</button>
     }
@@ -695,6 +707,32 @@ describe('CngxPopoverTrigger', () => {
       expect(document.activeElement).not.toBe(triggerEl);
       expect(document.activeElement).toBe(document.body);
       fixture.destroy();
+    });
+  });
+
+  describe('close listener', () => {
+    it('warns once when a second trigger takes the close listener of one popover', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const fixture = TestBed.createComponent(TwoTriggersHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const takeovers = warnSpy.mock.calls.filter((call) => /^CNGX1081: /.test(String(call[0])));
+      expect(takeovers).toHaveLength(1);
+      expect(String(takeovers[0][0])).toMatch(/Only the last-registered trigger restores focus/);
+      fixture.destroy();
+    });
+
+    it('does not warn for a single trigger', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const { fixture } = setup(BasicTriggerHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const takeovers = warnSpy.mock.calls.filter((call) => /^CNGX1081: /.test(String(call[0])));
+      expect(takeovers).toHaveLength(0);
     });
   });
 

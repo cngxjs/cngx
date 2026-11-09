@@ -309,6 +309,8 @@ describe('CngxPopover', () => {
       const host = fixture.componentInstance as BasicHost;
       const stale = vi.fn();
       const successor = vi.fn();
+      // The takeover warns (CNGX1081); keep the spec output clean.
+      vi.spyOn(console, 'warn').mockImplementation(() => undefined);
       host.popover().registerCloseListener(stale);
       host.popover().registerCloseListener(successor);
       host.popover().releaseCloseListener(stale);
@@ -322,6 +324,21 @@ describe('CngxPopover', () => {
       host.popover().show();
       host.popover().hide();
       expect(successor).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not warn when the same close listener registers again', () => {
+      const { fixture } = setup(BasicHost);
+      const host = fixture.componentInstance as BasicHost;
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const listener = vi.fn();
+      host.popover().registerCloseListener(listener);
+      host.popover().registerCloseListener(listener);
+      host.popover().releaseCloseListener(listener);
+      host.popover().registerCloseListener(listener);
+
+      const takeovers = warnSpy.mock.calls.filter((call) => /^CNGX1081: /.test(String(call[0])));
+      expect(takeovers).toHaveLength(0);
+      warnSpy.mockRestore();
     });
 
     it('moves focus out of the panel on close so it never sits under aria-hidden', () => {
