@@ -406,6 +406,22 @@ describe('CngxSelect - standalone', () => {
     flush(fixture);
     expect(popover.isVisible()).toBe(false);
   });
+
+  it('leaves no highlight behind when a click outside closes the panel', () => {
+    const { fixture, select, triggerBtn, listbox, popover } = setup();
+    triggerBtn.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
+    );
+    flush(fixture);
+    expect(popover.isVisible()).toBe(true);
+    expect(listbox.ad.activeIndex()).toBeGreaterThanOrEqual(0);
+
+    type WithOutside = { handleClickOutside(): void };
+    (select as unknown as WithOutside).handleClickOutside();
+    flush(fixture);
+    expect(popover.isVisible()).toBe(false);
+    expect(listbox.ad.activeIndex()).toBe(-1);
+  });
 });
 
 describe('CngxSelect - nested inside a CngxPopover', () => {

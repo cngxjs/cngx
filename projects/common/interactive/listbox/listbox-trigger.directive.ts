@@ -7,11 +7,13 @@ import {
   Injector,
   input,
   output,
+  type OutputRef,
 } from '@angular/core';
 import { CNGX_NESTED_INTERACTIVE_SELECTOR } from '@cngx/core/utils';
 
 import { CngxSearch } from '../keyboard/search.directive';
 import { injectHostInteractionBlocked } from '../trigger-guard/host-interaction-blocked';
+import { onPopoverClosed } from '../trigger-guard/on-popover-closed';
 
 import type { CngxListbox } from './listbox.directive';
 import { CngxListboxSearch } from './listbox-search.directive';
@@ -31,6 +33,11 @@ interface PopoverController {
    * reports `false` the trigger leaves Escape alone.
    */
   readonly closeOnEscape?: () => boolean;
+  /**
+   * Close event of the popover (`CngxPopover.closed`). When present, every
+   * close resets the highlight, also one the trigger did not start.
+   */
+  readonly closed?: OutputRef<void>;
 }
 
 /**
@@ -146,6 +153,15 @@ export class CngxListboxTrigger<T = unknown> {
 
   /** Descendants that own Enter / Space; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
   private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
+
+  constructor() {
+    // An outside click or a light dismiss closes the panel past closePanel();
+    // the close event resets the highlight for those as well.
+    onPopoverClosed(
+      () => this.popover(),
+      () => this.listbox().ad.resetHighlight(),
+    );
+  }
 
   protected handleKeydown(event: KeyboardEvent): void {
     // ARIA combobox Alt shortcuts: Alt+ArrowDown opens the panel without moving

@@ -743,3 +743,84 @@ describe('CngxListboxTrigger - settles a pending search term before listbox keys
     expect(search.term()).toBe('gr');
   });
 });
+
+describe('CngxListboxTrigger - reset on a popover close event', () => {
+  function createController(withClosed: boolean) {
+    const open = signal(false);
+    const listeners = new Set<() => void>();
+    const closed = {
+      subscribe: (cb: () => void) => {
+        listeners.add(cb);
+        return { unsubscribe: () => listeners.delete(cb) };
+      },
+    };
+    return {
+      controller: {
+        isVisible: () => open(),
+        show: () => open.set(true),
+        hide: () => open.set(false),
+        ...(withClosed ? { closed } : {}),
+      },
+      // A close the trigger did not start (an outside click, a light dismiss).
+      closeFromOutside(): void {
+        open.set(false);
+        listeners.forEach((cb) => cb());
+      },
+      listenerCount: () => listeners.size,
+    };
+  }
+
+  @Component({
+    template: `
+      <button type="button" [cngxListboxTrigger]="lb" [popover]="ctrl">Select</button>
+      <div cngxListbox [label]="'Colors'" tabindex="0" #lb="cngxListbox">
+        <div cngxOption value="red">Red</div>
+        <div cngxOption value="green">Green</div>
+      </div>
+    `,
+    imports: [CngxListbox, CngxOption, CngxListboxTrigger],
+  })
+  class MockControllerHost {
+    ctrl: ReturnType<typeof createController>['controller'] = createController(false).controller;
+  }
+
+  function setup(mock: ReturnType<typeof createController>) {
+    TestBed.configureTestingModule({ imports: [MockControllerHost] });
+    const fixture = TestBed.createComponent(MockControllerHost);
+    fixture.componentInstance.ctrl = mock.controller;
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const listboxEntry = fixture.debugElement.query(By.directive(CngxListbox));
+    const triggerEl = fixture.debugElement.query(By.directive(CngxListboxTrigger))
+      .nativeElement as HTMLElement;
+    return { fixture, triggerEl, ad: listboxEntry.injector.get(CngxActiveDescendant) };
+  }
+
+  it('resets the highlight on a close the trigger did not start', () => {
+    const mock = createController(true);
+    const { triggerEl, ad } = setup(mock);
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    expect(ad.activeValue()).toBe('red');
+
+    mock.closeFromOutside();
+    expect(ad.activeIndex()).toBe(-1);
+  });
+
+  it('unsubscribes from the close event when the trigger is destroyed', () => {
+    const mock = createController(true);
+    const { fixture } = setup(mock);
+    expect(mock.listenerCount()).toBe(1);
+    fixture.destroy();
+    expect(mock.listenerCount()).toBe(0);
+  });
+
+  it('keeps the highlight of a controller without a close event, as before', () => {
+    const mock = createController(false);
+    const { triggerEl, ad } = setup(mock);
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    expect(ad.activeValue()).toBe('red');
+
+    mock.closeFromOutside();
+    expect(ad.activeValue()).toBe('red');
+  });
+});
