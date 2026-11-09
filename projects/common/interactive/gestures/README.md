@@ -1,4 +1,4 @@
-# Gestures: Long Press and Swipe
+# Gestures
 
 Pointer-based gesture detection directives.
 

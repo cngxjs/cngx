@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxPopoverAnchor: Field-box anchor',
   subtitle:
-    'The focusable <code>&lt;input&gt;</code> is the trigger, the bordered row is the anchor. The panel hangs under the row, not under the inset input.',
+    'The inset <code>&lt;button&gt;</code> is the trigger, the bordered row is the anchor. The panel hangs under the row, not under the button.',
   description:
-    'The row carries <code>[cngxPopoverAnchor]="pop"</code>, the input inside it carries <code>[cngxPopoverTrigger]="pop"</code>. The trigger keeps <code>aria-expanded</code>, <code>aria-controls</code> and <code>aria-haspopup</code>, but yields its <code>anchor-name</code> while the anchor atom holds the popover, so CSS Anchor Positioning and the Floating UI fallback both measure the row. Same idea as Material\'s <code>matAutocompleteOrigin</code>. Focus the input to open, press Escape or click outside to close.',
+    'The row carries <code>[cngxPopoverAnchor]="pop"</code>, the button inside it carries <code>[cngxPopoverTrigger]="pop"</code>. The input stays a plain textbox: <code>aria-expanded</code> is not allowed on the <code>textbox</code> role, so the disclosure state lives on the button, which keeps <code>aria-expanded</code> and <code>aria-controls</code>. <code>haspopup="none"</code> drops <code>aria-haspopup</code>, because a list of plain text items is no listbox. The trigger yields its <code>anchor-name</code> while the anchor atom holds the popover, so CSS Anchor Positioning and the Floating UI fallback both measure the row. Same idea as Material\'s <code>matAutocompleteOrigin</code>. Press the button to toggle, press Escape or click outside to close.',
   level: 'atom',
   audience: ['dev', 'design'],
   artifact: 'building-block',
@@ -30,13 +30,15 @@ export const STORY: DemoSpec = {
     <label for="field-box-anchor-city">City</label>
     <div class="demo-popover-field" [cngxPopoverAnchor]="pop">
       <span aria-hidden="true">@</span>
-      <input
-        id="field-box-anchor-city"
-        type="text"
-        haspopup="listbox"
+      <input id="field-box-anchor-city" type="text" />
+      <button
+        type="button"
+        haspopup="none"
         [cngxPopoverTrigger]="pop"
-        (focus)="pop.show()"
-        (keydown.escape)="pop.hide()" />
+        (click)="pop.toggle()"
+        (keydown.escape)="pop.hide()">
+        Suggestions
+      </button>
     </div>
     <div cngxPopover #pop="cngxPopover" placement="bottom-start" [closeOnOutsideClick]="true"
          class="demo-popover-surface">

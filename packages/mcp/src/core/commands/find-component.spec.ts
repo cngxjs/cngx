@@ -56,8 +56,10 @@ describe('findComponents over a schema-6 snapshot', () => {
   });
 
   // Schema 2 carried the retired `@category` tag `forms/select/single-select`;
-  // schema 6 publishes the coarser feature taxonomy. The drift is intended.
-  it('reports the feature taxonomy, so the retired category fragment no longer matches', () => {
+  // schema 6 derives the category from `feature` alone. The fixture places
+  // `CngxSelect` in the entry-point feature (`key: ""`), so the old fragment
+  // finds nothing.
+  it('derives the category from feature, not from the retired tag', () => {
     expect(findComponents(v6, 'single-select').map((m) => m.name)).not.toContain('CngxSelect');
     expect(findComponents(v6, 'cngx-select').find((m) => m.name === 'CngxSelect')?.category).toBe('forms/select');
   });

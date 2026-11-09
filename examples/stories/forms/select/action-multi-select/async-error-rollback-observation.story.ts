@@ -16,7 +16,7 @@ export const STORY: DemoSpec = {
   moduleImports: [
     'import { CngxActionMultiSelect, type CngxSelectCreateAction, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
     'import { CngxSelectAction } from \'@cngx/forms/select\';',
-    'import { delay, of, throwError } from \'rxjs\';',
+    'import { delay, of, switchMap, throwError, timer } from \'rxjs\';',
   ],
   imports: ['CngxActionMultiSelect', 'CngxSelectAction'],
   setup: `protected readonly tags: CngxSelectOptionDef<{ id: string; name: string }>[] = [
@@ -37,7 +37,7 @@ export const STORY: DemoSpec = {
   protected readonly asyncCreate: CngxSelectCreateAction<{ id: string; name: string }> =
     (_term, draft) => {
       if (this.asyncShouldFail()) {
-        return throwError(() => new Error('Server rejected "' + draft.label + '"')).pipe(delay(500));
+        return timer(500).pipe(switchMap(() => throwError(() => new Error('Server rejected "' + draft.label + '"'))));
       }
       return of({ id: 'srv-' + ++this.asyncCounter, name: draft.label }).pipe(delay(500));
     };

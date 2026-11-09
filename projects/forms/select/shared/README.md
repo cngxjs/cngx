@@ -1,4 +1,4 @@
-# `shared/` - Select-family infrastructure
+# Select Shared
 
 This folder is the spine of `@cngx/forms/select`.
 The data-mode variants (`single-select`, `multi-select`, `combobox`, `typeahead`, `tree-select`, `reorderable-multi-select`, `action-select`, `action-multi-select`) and the projection shell `select-shell` are thin `@Component` declarations that delegate every cross-cutting concern to factories, tokens, slot directives, and config helpers defined here.
