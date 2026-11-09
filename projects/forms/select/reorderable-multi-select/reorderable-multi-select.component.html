@@ -220,6 +220,7 @@
     [closeOnEscape]="sheetWiring.escapeEnabled()"
     (closeRequested)="sheetWiring.handleSheetClose($event)"
     (closing)="hostFocus.refocusOwnerBeforeRemoval()"
+    (opened)="handlePanelOpened()"
   >
     <cngx-select-sheet-header />
     @if (summary.active() && !isEmpty()) {

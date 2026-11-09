@@ -1239,6 +1239,36 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /** Descendants that own Enter / Space; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
   private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
 
+  /**
+   * Flat index of the first selected option in list order, `-1` without a
+   * selection. The index space of a windowed listbox, and the order of the
+   * rendered rows.
+   */
+  private selectedFlatIndex(): number {
+    let lowest = -1;
+    for (const v of this.values()) {
+      const index = this.typeaheadController.matchFromValue(v);
+      if (index >= 0 && (lowest < 0 || index < lowest)) {
+        lowest = index;
+      }
+    }
+    return lowest;
+  }
+
+  /**
+   * The panel opens on the first selected option. It runs after an opening
+   * key set its first or last highlight, so it replaces that highlight;
+   * without a selection the key's highlight stands.
+   *
+   * @internal
+   */
+  protected handlePanelOpened(): void {
+    const index = this.selectedFlatIndex();
+    if (index >= 0) {
+      this.listboxRef()?.ad.highlightByIndex(index);
+    }
+  }
+
   /** @internal */
   protected handleTriggerKeydown(event: KeyboardEvent): void {
     // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
@@ -1290,6 +1320,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       compareWith: this.compareWith,
       disabled: this.disabled,
       typeaheadController: this.typeaheadController,
+      selectedIndex: () => this.selectedFlatIndex(),
     });
   }
 

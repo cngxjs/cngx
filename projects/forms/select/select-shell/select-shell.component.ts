@@ -1257,6 +1257,21 @@ export class CngxSelectShell<T = unknown>
   private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
 
   /**
+   * The panel opens on the selected option, as a native `<select>` does. The
+   * value comes from `selectedOption`, already resolved through
+   * `compareWith`, because the active descendant matches option values by
+   * identity. Without a selection an opening key's highlight stands.
+   *
+   * @internal
+   */
+  protected handlePanelOpened(): void {
+    const selected = this.selectedOption();
+    if (selected) {
+      this.listboxRef()?.ad.highlightByValue(selected.value);
+    }
+  }
+
+  /**
    * Trigger keyboard. Typeahead-while-closed (native `<select>` parity)
    * and PageUp/PageDown jump-N - both delegate to
    * {@link flatNavStrategy}.

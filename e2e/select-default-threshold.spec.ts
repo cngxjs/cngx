@@ -2,6 +2,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 
 const ALL = '/#/forms/select/virtualization/default-threshold-all-variants';
 const GROUPED = '/#/forms/select/virtualization/default-threshold-grouped';
+const PRESELECTED = '/#/forms/select/virtualization/default-threshold-preselected';
 
 interface Host {
   readonly region: string;
@@ -242,6 +243,23 @@ test.describe('select family at the default threshold, desktop', () => {
         await expect(highlightOf(panel)).toContainText('Item 999');
         await expect(highlightOf(panel)).toBeInViewport();
       });
+    });
+  }
+
+  for (const host of BUTTON_LED) {
+    test(`${host.tag} opens on its selected option far down the list, first open by click`, async ({
+      page,
+    }) => {
+      await page.goto(PRESELECTED);
+      // Chips of the selection fill the multi triggers, and a press on a chip
+      // is a reorder gesture there: click the trailing end, where the caret sits.
+      const trigger = triggerOf(page, host);
+      const box = await trigger.boundingBox();
+      await trigger.click({ position: { x: box!.width - 12, y: box!.height / 2 } });
+      await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+      const panel = panelOf(page, host);
+      await expect(highlightOf(panel)).toContainText('Item 900');
+      await expect(highlightOf(panel)).toBeInViewport();
     });
   }
 

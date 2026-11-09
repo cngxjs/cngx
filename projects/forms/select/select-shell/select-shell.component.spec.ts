@@ -288,6 +288,72 @@ describe('CngxSelectShell - stays a plain list at any size', () => {
   });
 });
 
+interface Pet {
+  readonly id: number;
+  readonly name: string;
+}
+
+@Component({
+  template: `
+    <cngx-select-shell [label]="'Pet'" [(value)]="value" [compareWith]="byId">
+      @for (pet of pets; track pet.id) {
+        <cngx-option [value]="pet">{{ pet.name }}</cngx-option>
+      }
+    </cngx-select-shell>
+  `,
+  imports: [CngxSelectShell, CngxSelectOption],
+})
+class CompareWithShellHost {
+  readonly pets: Pet[] = [
+    { id: 1, name: 'Ant' },
+    { id: 2, name: 'Bee' },
+    { id: 3, name: 'Cat' },
+  ];
+  // Equal to the third option by id only, never by identity.
+  readonly value = signal<Pet | undefined>({ id: 3, name: 'Cat' });
+  readonly byId = (a: Pet | undefined, b: Pet | undefined): boolean => a?.id === b?.id;
+}
+
+describe('CngxSelectShell - opens on the selected option', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({});
+  });
+
+  it('highlights a model value that equals an option only under compareWith, on every open', () => {
+    const fixture = TestBed.createComponent(CompareWithShellHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const shell = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .componentInstance as CngxSelectShell<Pet>;
+    const ad = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox).ad;
+
+    shell.open();
+    flush(fixture);
+    expect((ad.activeValue() as Pet | null)?.id).toBe(3);
+
+    shell.close();
+    flush(fixture);
+    shell.open();
+    flush(fixture);
+    expect((ad.activeValue() as Pet | null)?.id).toBe(3);
+  });
+
+  it('keeps the first-row highlight of an opening key without a selection', () => {
+    const fixture = TestBed.createComponent(CompareWithShellHost);
+    fixture.componentInstance.value.set(undefined);
+    fixture.detectChanges();
+    flush(fixture);
+    const trigger = (fixture.nativeElement as HTMLElement).querySelector(
+      '.cngx-select-shell__trigger',
+    ) as HTMLElement;
+    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
+    flush(fixture);
+    const ad = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox).ad;
+    expect((ad.activeValue() as Pet | null)?.id).toBe(1);
+  });
+});
+
 describe('CngxSelectShell - Phase 5 scaffold', () => {
   beforeEach(() => {
     polyfillPopover();

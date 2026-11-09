@@ -108,6 +108,7 @@
     [closeOnEscape]="sheetWiring.escapeEnabled()"
     (closeRequested)="sheetWiring.handleSheetClose($event)"
     (closing)="hostFocus.refocusOwnerBeforeRemoval()"
+    (opened)="handlePanelOpened()"
   >
     <cngx-select-sheet-header />
     <ng-content select="cngx-select-search" />

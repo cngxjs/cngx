@@ -109,6 +109,7 @@ function runPageJump<T>(
     readonly compareWith: () => CngxSelectCompareFn<T>;
     readonly disabled: boolean;
     readonly typeaheadController: TypeaheadController<T>;
+    readonly selectedIndex?: () => number;
   },
 ): boolean {
   if (event.key !== 'PageDown' && event.key !== 'PageUp') {
@@ -136,13 +137,18 @@ function runPageJump<T>(
     listbox,
     deps.virtualSpace ?? deps.flatOptions,
   );
+  // A key that just opened a deferred-render panel finds no active index yet:
+  // the open highlight of the selected option waits for the rows. The jump
+  // starts from the selected option then, as it does once the rows exist.
+  const startIndex =
+    justOpened && currentIndex < 0 ? (deps.selectedIndex?.() ?? currentIndex) : currentIndex;
   const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
   const action = deps.strategy.onPageJump(
     {
       options: deps.flatOptions(),
       listboxItems: items,
       currentFlatIndex: -1,
-      currentListboxIndex: currentIndex,
+      currentListboxIndex: startIndex,
       compareWith: deps.compareWith(),
       disabled: false,
       typeaheadController: deps.typeaheadController,
@@ -181,6 +187,11 @@ export interface FlatNavPageJumpDeps<T> {
   readonly compareWith: () => CngxSelectCompareFn<T>;
   readonly disabled: () => boolean;
   readonly typeaheadController: TypeaheadController<T>;
+  /**
+   * Flat index of the selected option, `-1` without one. A key that opens the
+   * panel jumps from it while the open highlight still waits for the rows.
+   */
+  readonly selectedIndex?: () => number;
 }
 
 /**
@@ -213,5 +224,6 @@ export function handleFlatNavPageJumpKey<T>(
     compareWith: deps.compareWith,
     disabled: deps.disabled(),
     typeaheadController: deps.typeaheadController,
+    selectedIndex: deps.selectedIndex,
   });
 }

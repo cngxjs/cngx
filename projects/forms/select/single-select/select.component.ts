@@ -1102,6 +1102,29 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** Descendants that own Enter / Space; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
   private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
 
+  /**
+   * Flat index of the selected option, `-1` without a selection. The index
+   * space of a windowed listbox, and the order of the rendered rows.
+   */
+  private selectedFlatIndex(): number {
+    const v = this.value();
+    return isEmptyScalar(v) ? -1 : this.typeaheadController.matchFromValue(v);
+  }
+
+  /**
+   * The panel opens on the selected option, as a native `<select>` does. It
+   * runs after an opening key set its first or last highlight, so it replaces
+   * that highlight; without a selection the key's highlight stands.
+   *
+   * @internal
+   */
+  protected handlePanelOpened(): void {
+    const index = this.selectedFlatIndex();
+    if (index >= 0) {
+      this.listboxRef()?.ad.highlightByIndex(index);
+    }
+  }
+
   /** @internal */
   protected handleTriggerKeydown(event: KeyboardEvent): void {
     // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
@@ -1158,6 +1181,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       compareWith: this.compareWith,
       disabled: this.disabled,
       typeaheadController: this.typeaheadController,
+      selectedIndex: () => this.selectedFlatIndex(),
     });
   }
 }

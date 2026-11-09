@@ -300,3 +300,51 @@ describe('B3: both page-jump handlers treat a missing listbox the same way', () 
     expect(flatNav.defaultPrevented).toBe(anchored.defaultPrevented);
   });
 });
+
+describe('handleFlatNavPageJumpKey - a key that opens the panel starts at the selected option', () => {
+  function closedPopover(): CngxPopover {
+    return { isVisible: () => false, show: vi.fn() } as unknown as CngxPopover;
+  }
+
+  function deps(listbox: CngxListbox<unknown>, pop: CngxPopover, selected: number) {
+    return {
+      listbox,
+      popover: pop,
+      strategy: createDefaultFlatNavStrategy(),
+      flatOptions: () => FLAT,
+      compareWith: () => cngxSelectDefaultCompare,
+      disabled: () => false,
+      typeaheadController: createTypeaheadController<number>({
+        options: signal(FLAT),
+        compareWith: signal(cngxSelectDefaultCompare),
+        debounceMs: signal(200),
+        disabled: signal(false),
+      }),
+      selectedIndex: () => selected,
+    };
+  }
+
+  it('first open below the threshold: no rows and no active index yet, jumps from the selection', () => {
+    const { listbox, highlightByIndex } = fakeRenderedListbox(0, -1);
+    handleFlatNavPageJumpKey(key('PageDown'), deps(listbox, closedPopover(), 40));
+    expect(highlightByIndex).toHaveBeenCalledExactlyOnceWith(50);
+  });
+
+  it('reopen: the opened handler already highlighted the selection, the jump starts there', () => {
+    const { listbox, highlightByIndex } = fakeRenderedListbox(100, 40);
+    handleFlatNavPageJumpKey(key('PageDown'), deps(listbox, closedPopover(), 40));
+    expect(highlightByIndex).toHaveBeenCalledExactlyOnceWith(50);
+  });
+
+  it('windowed list: jumps from the absolute index of the selection', () => {
+    const { listbox, highlightByIndex } = fakeVirtualListbox(0, 4000);
+    handleFlatNavPageJumpKey(key('PageUp'), deps(listbox, closedPopover(), 4000));
+    expect(highlightByIndex).toHaveBeenCalledExactlyOnceWith(3990);
+  });
+
+  it('an open panel without an active index ignores the selection', () => {
+    const { listbox, highlightByIndex } = fakeRenderedListbox(100, -1);
+    handleFlatNavPageJumpKey(key('PageDown'), deps(listbox, popover, 40));
+    expect(highlightByIndex).toHaveBeenCalledExactlyOnceWith(10);
+  });
+});
