@@ -3,3 +3,4 @@
  */
 
 export { CngxActionButton } from './action-button';
+export { CngxActionToast } from './action-toast.directive';
