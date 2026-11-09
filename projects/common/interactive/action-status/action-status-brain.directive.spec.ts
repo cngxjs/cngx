@@ -420,6 +420,39 @@ describe('CngxActionStatusBrain', () => {
       expect(region()).toBe('');
     });
 
+    it('does not treat binding a settled state mid-life as an edge', () => {
+      const mock = mockState();
+      mock.status.set('success');
+      const { host, outcomes, region, render } = setup((h) => h.succeededLabel.set('Done'));
+      host.ext.set(mock.state);
+      render();
+      render();
+      expect(outcomes).toHaveLength(0);
+      expect(region()).toBe('');
+      // The next real edge after the bind still counts.
+      mock.status.set('idle');
+      render();
+      mock.status.set('success');
+      render();
+      expect(outcomes).toHaveLength(1);
+      expect(region()).toBe('Done');
+    });
+
+    it('empties the region when the external state is unbound', () => {
+      const mock = mockState();
+      const { host, outcomes, region, render } = setup((h) => {
+        h.ext.set(mock.state);
+        h.succeededLabel.set('Done');
+      });
+      mock.status.set('success');
+      render();
+      expect(region()).toBe('Done');
+      host.ext.set(undefined);
+      render();
+      expect(region()).toBe('');
+      expect(outcomes).toHaveLength(1);
+    });
+
     it('keeps the own runs silent while an external state is bound', async () => {
       const mock = mockState();
       const { host, btn, outcomes, region, render, fixture } = setup((h) => {

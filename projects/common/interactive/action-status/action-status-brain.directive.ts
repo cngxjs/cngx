@@ -126,8 +126,9 @@ export class CngxActionStatusBrain implements CngxActionStatus {
   /**
    * An external async state to reflect. Bound, the status, `state`,
    * `outcome` and the announcement follow it (once per observed `success` /
-   * `error` edge; a state already settled when bound is not an edge), and
-   * the own runs speak nothing. Exclusive with the host's own runs.
+   * `error` edge; binding or swapping a state, also mid-life, is not an
+   * edge), and the own runs speak nothing. Unbinding empties the region.
+   * Exclusive with the host's own runs.
    */
   readonly externalState = input<CngxAsyncState<unknown> | undefined>(undefined);
 
@@ -216,8 +217,20 @@ export class CngxActionStatusBrain implements CngxActionStatus {
     });
 
     const tracker = createTransitionTracker(() => this.status());
+    let boundState = untracked(this.externalState);
     effect(() => {
       const current = tracker.current();
+      const ext = this.externalState();
+      // Binding or unbinding swaps the status source: no edge. An unbind
+      // also ends the external feedback window, so its text leaves the region.
+      if (ext !== boundState) {
+        const unbound = boundState !== undefined;
+        boundState = ext;
+        if (unbound) {
+          untracked(() => this.runState().announce(''));
+        }
+        return;
+      }
       if (current === tracker.previous()) {
         return;
       }
