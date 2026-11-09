@@ -4,7 +4,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  DestroyRef,
   effect,
   ElementRef,
   inject,
@@ -12,16 +11,11 @@ import {
   model,
   signal,
   untracked,
+  viewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import {
-  createTransitionTracker,
-  injectLocale,
-  matchesKeyCombo,
-  numberFormatterFor,
-  parseKeyCombo,
-} from '@cngx/core/utils';
-import { CNGX_HOVER_INTENT_DEFAULTS } from '@cngx/common/interactive';
+import { createTransitionTracker, injectLocale, numberFormatterFor } from '@cngx/core/utils';
+import { CNGX_HOVER_INTENT_DEFAULTS, injectHotkey } from '@cngx/common/interactive';
 import {
   CNGX_CONTAINER_SIZE,
   CNGX_DRAWER_SURFACE_DRIVER,
@@ -29,6 +23,7 @@ import {
   type CngxDrawerModality,
   CngxDrawerSurface,
   type CngxDrawerSurfaceDriver,
+  CngxResizable,
   CngxSidebar,
   type CngxSidebarCollapsedAs,
   type CngxSidebarDriver,
@@ -36,6 +31,7 @@ import {
 import { clamp, cngxDevWarn } from '@cngx/utils';
 
 import { injectSidenavConfig, injectSidenavLabels } from './config/inject-sidenav-config';
+import { CNGX_SIDENAV_ANNOUNCER_FACTORY } from './sidenav-announcer';
 import { CNGX_SIDENAV, CNGX_SIDENAV_LAYOUT, type CngxSidenavContract } from './sidenav-token';
 
 const PERCENT_FORMAT: Intl.NumberFormatOptions = { style: 'percent' };
@@ -181,6 +177,7 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
     '[style.--cngx-sidebar-size]': 'width()',
     '[style.--cngx-sidebar-rail-size]': 'miniWidth()',
   },
+  imports: [CngxResizable],
   template: `
     <ng-content select="cngx-sidenav-header, [cngxSidenavHeader]" />
     <div class="cngx-sidenav__body">
@@ -192,17 +189,16 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
     @if (resizable() && sidebar.state() === 'expanded') {
       <div
         class="cngx-sidenav__resize-handle"
-        (pointerdown)="handleResizeStart($event)"
-        (keydown)="handleResizeKeydown($event)"
-        (focus)="handleResizeFocus()"
-        role="separator"
-        tabindex="0"
-        [attr.aria-label]="resolvedResizeLabel()"
-        [attr.aria-orientation]="'vertical'"
-        [attr.aria-valuenow]="widthValueNow()"
-        [attr.aria-valuetext]="widthValueText()"
-        [attr.aria-valuemin]="minWidthPx()"
-        [attr.aria-valuemax]="maxWidthPx()"
+        cngxResizable
+        [size]="sizePx()"
+        (sizeChange)="handleSizeChange($event)"
+        [min]="minPx()"
+        [max]="maxPx()"
+        [edge]="position() === 'end' ? 'inline-start' : 'inline-end'"
+        [label]="resolvedResizeLabel()"
+        [valueText]="formatValueText()"
+        [attr.aria-controls]="id()"
+        (focus)="measureWidth()"
       ></div>
     }
   `,
@@ -306,9 +302,11 @@ export class CngxSidenav
    */
   readonly shortcut = input<string | undefined>(this.cfg.shortcut);
 
+  /** The resize handle, present while `resizable` and at full width. */
+  private readonly resizeHandle = viewChild(CngxResizable);
+
   /** Whether a resize drag is in progress. */
-  private readonly resizingState = signal(false);
-  readonly resizing = this.resizingState.asReadonly();
+  readonly resizing = computed(() => this.resizeHandle()?.resizing() ?? false);
 
   /** Two-way opened state. Supports `[(opened)]="signal"`. */
   readonly opened = model<boolean>(false);
@@ -433,8 +431,8 @@ export class CngxSidenav
   }
 
   private readonly doc = inject(DOCUMENT);
-  private readonly win = this.doc.defaultView;
   private readonly layoutCoordinator = inject(CNGX_SIDENAV_LAYOUT, { optional: true });
+  private readonly announcer = inject(CNGX_SIDENAV_ANNOUNCER_FACTORY)();
 
   /**
    * Current/previous width-class pair for the open-flag reset. `null` until the
@@ -444,9 +442,6 @@ export class CngxSidenav
   private readonly classTransition = createTransitionTracker<SidenavWidthClass | null>(() =>
     this.rawWidthClass().trim() === '' ? null : this.widthClass(),
   );
-
-  /** Aborts the in-flight resize drag's document listeners (pointerup or teardown). */
-  private resizeAbort: AbortController | null = null;
 
   constructor() {
     // Seed the separator's aria-valuenow for non-px rails: the attribute must
@@ -468,6 +463,21 @@ export class CngxSidenav
       }
     });
 
+    // The toggle hotkey (`shortcut`, `withSidenavShortcut`) in the app's hotkey
+    // registry, under the remap id `sidenav.toggle`. It sits in the rail's own
+    // scope, so while another modal overlay holds focus it stays quiet. It runs
+    // toggle() (never a raw opened flip) and announces the new state, since no
+    // focused trigger conveys aria-expanded.
+    injectHotkey({
+      id: 'sidenav.toggle',
+      combo: computed(() => this.shortcut() ?? ''),
+      enabled: computed(() => !!this.shortcut()),
+      run: () => {
+        this.toggle();
+        this.announcer.announce(this.expanded());
+      },
+    });
+
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       effect(() => {
         const raw = this.rawWidthClass().trim();
@@ -476,31 +486,6 @@ export class CngxSidenav
         }
       });
     }
-
-    inject(DestroyRef).onDestroy(() => this.resizeAbort?.abort());
-
-    // Global hotkey: document listener inside effect(onCleanup) so the combo
-    // signal can re-register at runtime. Host listeners cannot rebind.
-    const isMac = this.win?.navigator?.userAgent?.includes('Mac') ?? false;
-    effect((onCleanup) => {
-      const shortcut = this.shortcut();
-      if (!shortcut) {
-        return;
-      }
-      const combo = parseKeyCombo(shortcut);
-      const handler = (e: KeyboardEvent): void => {
-        if (matchesKeyCombo(e, combo, isMac)) {
-          e.preventDefault();
-          // Through toggle(), not a raw opened flip: close() no-ops in the
-          // always-visible modes, so the hotkey cannot desync the model (and
-          // a router sync would not write ?nav=closed on a rail that stays
-          // visually open).
-          this.toggle();
-        }
-      };
-      this.doc.addEventListener('keydown', handler);
-      onCleanup(() => this.doc.removeEventListener('keydown', handler));
-    });
 
     // Open-flag reset on a width-class change, the one write in an effect here
     // (sidenav-accepted-debt §1): opened is a consumer model(), which cannot be
@@ -599,12 +584,11 @@ export class CngxSidenav
     return this.effectiveMode() === 'side' && !this.railBase();
   }
 
-  // px-strict: a rem/ch width must not leak a lying aria-valuenow (parseInt
-  // on '17.5rem' is 17, below the min). Null omits the attribute instead.
   /** @internal Numeric px of the current width, or null for non-px units. */
   protected readonly widthPx = computed(() => parsePx(this.width()));
-  protected readonly minWidthPx = computed(() => parsePx(this.minWidth()));
-  protected readonly maxWidthPx = computed(() => parsePx(this.maxWidth()));
+  /** @internal Resize bounds in px; a non-px bound falls back to 120 / 600. */
+  protected readonly minPx = computed(() => parsePx(this.minWidth()) ?? 120);
+  protected readonly maxPx = computed(() => parsePx(this.maxWidth()) ?? 600);
 
   /**
    * Rect-measured width for non-px rails: seeded after first render (a
@@ -614,125 +598,36 @@ export class CngxSidenav
    */
   private readonly measuredWidthPx = signal<number | null>(null);
 
-  /**
-   * @internal `aria-valuenow` of the separator: the px width when parseable,
-   * else the rect measurement - the window-splitter pattern wants a valuenow
-   * on a focusable separator even for rem-sized rails.
-   */
-  protected readonly widthValueNow = computed(() => this.widthPx() ?? this.measuredWidthPx());
+  /** @internal The handle's `size`: the px width, else the measured one. */
+  protected readonly sizePx = computed(
+    () => this.widthPx() ?? this.measuredWidthPx() ?? this.minPx(),
+  );
 
   /**
-   * @internal `aria-valuetext` of the separator: its position as a percent of
-   * the min-max range, formatted in the locale, so AT speaks where the handle
-   * sits instead of a bare pixel count. `null` (AT reads `aria-valuenow`) while
-   * the width or a bound is not in px.
+   * @internal `aria-valuetext` of the handle: its position as a percent of the
+   * min-max range, formatted in the locale, so AT speaks where the handle sits
+   * instead of a bare pixel count.
    */
-  protected readonly widthValueText = computed(() => {
-    const width = this.widthValueNow();
-    const min = this.minWidthPx();
-    const max = this.maxWidthPx();
-    if (width === null || min === null || max === null || max <= min) {
-      return null;
-    }
-    const percent = Math.round(clamp((width - min) / (max - min), 0, 1) * 100);
-    const formatted = numberFormatterFor(this.locale(), PERCENT_FORMAT).format(percent / 100);
-    return this.labels().resizeValueText(percent, formatted);
+  protected readonly formatValueText = computed(() => {
+    const min = this.minPx();
+    const max = this.maxPx();
+    const labels = this.labels();
+    const formatter = numberFormatterFor(this.locale(), PERCENT_FORMAT);
+    return (size: number): string => {
+      const percent = max > min ? Math.round(clamp((size - min) / (max - min), 0, 1) * 100) : 0;
+      return labels.resizeValueText(percent, formatter.format(percent / 100));
+    };
   });
 
-  private measureWidth(): void {
+  /** @internal Refresh the measurement the moment AT is about to read it. */
+  protected measureWidth(): void {
     const el = this.elementRef.nativeElement as HTMLElement;
     this.measuredWidthPx.set(Math.round(el.getBoundingClientRect().width) || null);
   }
 
-  /** @internal Refresh the measurement the moment AT is about to read it. */
-  protected handleResizeFocus(): void {
-    this.measureWidth();
-  }
-
-  /**
-   * @internal Arrow-key resize on the separator, so the handle is operable
-   * without a pointer (WCAG 2.1.1): arrows step by 16px (direction-aware for
-   * `position="end"`), Home/End jump to the min/max constraint. Any modified
-   * key (shift included) passes through untouched - browser and AT shortcuts
-   * stay theirs.
-   */
-  protected handleResizeKeydown(event: KeyboardEvent): void {
-    if (!this.resizable() || event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) {
-      return;
-    }
-    const el = this.elementRef.nativeElement as HTMLElement;
-    const current = el.getBoundingClientRect().width;
-    const min = this.minWidthPx() ?? 120;
-    const max = this.maxWidthPx() ?? 600;
-    const isEnd = this.position() === 'end';
-    let target: number;
-    switch (event.key) {
-      case 'ArrowRight':
-        target = current + (isEnd ? -RESIZE_KEY_STEP : RESIZE_KEY_STEP);
-        break;
-      case 'ArrowLeft':
-        target = current + (isEnd ? RESIZE_KEY_STEP : -RESIZE_KEY_STEP);
-        break;
-      case 'Home':
-        target = min;
-        break;
-      case 'End':
-        target = max;
-        break;
-      default:
-        return;
-    }
-    event.preventDefault();
-    this.width.set(`${Math.round(Math.max(min, Math.min(max, target)))}px`);
-  }
-
-  /** @internal */
-  protected handleResizeStart(e: PointerEvent): void {
-    if (!this.resizable() || this.sidebar.state() !== 'expanded') {
-      return;
-    }
-    e.preventDefault();
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-
-    this.resizingState.set(true);
-    const startX = e.clientX;
-    const el = this.elementRef.nativeElement as HTMLElement;
-    const startWidth = el.getBoundingClientRect().width;
-    const isEnd = this.position() === 'end';
-    const min = this.minWidthPx() ?? 120;
-    const max = this.maxWidthPx() ?? 600;
-    let currentWidth = startWidth;
-    let rafId = 0;
-
-    // One controller per drag removes both document listeners in a single abort:
-    // on pointerup below, and - critically - if the component is torn down
-    // mid-drag (the onDestroy hook aborts this.resizeAbort).
-    const controller = new AbortController();
-    this.resizeAbort = controller;
-
-    const onMove = (ev: PointerEvent): void => {
-      const delta = isEnd ? startX - ev.clientX : ev.clientX - startX;
-      currentWidth = Math.round(Math.max(min, Math.min(max, startWidth + delta)));
-      // CSS var on the DOM node directly, no CD per frame during drag.
-      if (!rafId) {
-        rafId = requestAnimationFrame(() => {
-          el.style.setProperty('--cngx-sidenav-width', `${currentWidth}px`);
-          rafId = 0;
-        });
-      }
-    };
-
-    const onUp = (): void => {
-      cancelAnimationFrame(rafId);
-      this.resizingState.set(false);
-      // Single CD on pointerup - model catches up with the DOM.
-      this.width.set(`${currentWidth}px`);
-      controller.abort();
-      this.resizeAbort = null;
-    };
-
-    this.doc.addEventListener('pointermove', onMove, { signal: controller.signal });
-    this.doc.addEventListener('pointerup', onUp, { signal: controller.signal });
+  /** @internal The handle resized: the model takes the px width. */
+  protected handleSizeChange(size: number): void {
+    this.width.set(`${size}px`);
   }
 }
 
@@ -751,13 +646,9 @@ function warnUnknownWidthClass(value: string): void {
   );
 }
 
-/** Per-keypress width change of the arrow-key resize, in px. */
-const RESIZE_KEY_STEP = 16;
-
 /**
  * Numeric value of a px-unit (or unitless) CSS length, `null` for any other
- * unit. rem/ch widths cannot be resolved without layout, and a guessed number
- * would surface as a lying `aria-valuenow`.
+ * unit. rem/ch widths cannot be resolved without layout.
  */
 function parsePx(value: string): number | null {
   const match = /^\s*(\d+(?:\.\d+)?)(?:px)?\s*$/.exec(value);

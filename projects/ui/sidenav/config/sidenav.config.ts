@@ -109,4 +109,11 @@ export interface CngxSidenavLabels {
    * formatted string. Same shape as the feedback `progressValueText`.
    */
   readonly resizeValueText: (percent: number, formatted: string) => string;
+  /**
+   * Spoken when the toggle hotkey hides the full nav: a hotkey has no focused
+   * trigger whose `aria-expanded` would convey the change.
+   */
+  readonly collapsedAnnouncement: string;
+  /** Spoken when the toggle hotkey shows the full nav. */
+  readonly expandedAnnouncement: string;
 }

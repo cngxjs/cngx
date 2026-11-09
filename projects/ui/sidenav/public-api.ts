@@ -10,6 +10,12 @@ export {
   type ResolvedSidenavMode,
 } from './sidenav';
 export { CNGX_SIDENAV, type CngxSidenavContract } from './sidenav-token';
+export {
+  CNGX_SIDENAV_ANNOUNCER_FACTORY,
+  type CngxSidenavAnnouncer,
+  type CngxSidenavAnnouncerFactory,
+  createSidenavAnnouncer,
+} from './sidenav-announcer';
 export { CngxSidenavRouterSync } from './sidenav-router-sync.directive';
 export { CngxSidenavContent } from './sidenav-content';
 export { CngxSidenavHeader } from './sidenav-header';

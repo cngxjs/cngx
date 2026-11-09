@@ -208,7 +208,7 @@ Resolution order for the key: per-instance `[param]` beats `withSidenavRouterSyn
 - **Accessible name:** Every rail is named. Resolution: `[ariaLabel]`, then `withSidenavLabels({ startRegion, endRegion })`, then the `sidenav` language section. The default depends on `position`: `Navigation` for `start`, `Side panel` for `end`, so two rails never share one name.
 - **Keyboard interaction:**
   - `Escape` - Closes overlay mode sidenav
-  - Custom shortcut (if configured) - Toggles opened state globally
+  - Custom shortcut (if configured) - Runs `toggle()` from anywhere on the page and announces "Navigation expanded" / "Navigation collapsed" (`collapsedAnnouncement` / `expandedAnnouncement` labels, `CNGX_SIDENAV_ANNOUNCER_FACTORY` to swap the announcer). It is a `sidenav.toggle` binding in the app hotkey registry, so it stays quiet while another modal holds focus
 - **Screen reader:** The landmark or dialog announces the rail's name; while a page-modal overlay is open everything outside it is `inert`, so the body content is not reachable.
 - **Focus management:** An open overlay (`modality="page"`) traps Tab within the rail, moves focus into the rail on open, and restores focus to the element that opened it on close. Focus inside a closing drawer is moved out before it turns `aria-hidden`.
 
@@ -216,10 +216,10 @@ Resolution order for the key: per-instance `[param]` beats `withSidenavRouterSyn
 
 `CngxSidenav` composes these atoms internally:
 
-- **Responsive media query:** Inline `matchMedia` listener wired to `mediaMatches` signal
-- **Keyboard shortcut:** Global document listener via `effect(onCleanup)`
+- **Width class:** the layout's `CngxContainer` publishes `--cngx-sidenav-width-class`
+- **Keyboard shortcut:** `injectHotkey` binding `sidenav.toggle` in the rail's hotkey scope (`@cngx/common/interactive`)
 - **Overlay:** `CngxDrawerSurface` host directive (focus trap, focus restore, `inert`, scroll lock, Escape / back gesture / outside press), driven per `modality`
-- **Resize:** Pointer-capture drag with RAFed position updates
+- **Resize:** `CngxResizable` (`@cngx/common/layout`) on the handle: window-splitter ARIA, pointer drag, arrow keys
 - **Mini hover intent:** Debounced expand-on-hover via the composed `CngxHoverIntent` host directive (`@cngx/common/interactive`), reading `CNGX_HOVER_INTENT_DEFAULTS` from the resolved config
 
 

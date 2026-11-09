@@ -1,4 +1,12 @@
-import { Component, signal, type DebugElement, type Type } from '@angular/core';
+import { Component, signal, type DebugElement, type Signal, type Type } from '@angular/core';
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
+import {
+  CNGX_HOTKEY_REGISTRY,
+  type CngxHotkeyBinding,
+  type CngxHotkeyScopeNode,
+  createHotkeyRegistry,
+  injectHotkeyRegistryDeps,
+} from '@cngx/common/interactive';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -13,6 +21,7 @@ import type { SidenavMode } from './sidenav';
 import { CngxSidenav } from './sidenav';
 import { CngxSidenavLayout } from './sidenav-layout';
 import { CngxSidenavContent } from './sidenav-content';
+import { CNGX_SIDENAV_ANNOUNCER_FACTORY } from './sidenav-announcer';
 import { provideSidenavConfig } from './config/provide-sidenav-config';
 import { withSidenavDimensions, withSidenavHoverDwell, withSidenavLabels } from './config/features';
 import type { CngxSidenavLabels } from './config/sidenav.config';
@@ -692,7 +701,7 @@ describe('CngxSidenav resizable', () => {
     expect(stripBidiIsolates(resizeHandle(fixture).getAttribute('aria-valuetext'))).toBe('100%');
   });
 
-  it('drops aria-valuetext while a bound is not in px', () => {
+  it('falls back to the 600px bound while maxWidth is not in px', () => {
     TestBed.configureTestingModule({
       providers: [provideSidenavConfig(withSidenavDimensions({ maxWidth: '40rem' }))],
     });
@@ -702,7 +711,8 @@ describe('CngxSidenav resizable', () => {
     fixture.detectChanges();
     const handle = resizeHandle(fixture);
     expect(handle.getAttribute('aria-valuenow')).toBe('300');
-    expect(handle.hasAttribute('aria-valuetext')).toBe(false);
+    expect(handle.getAttribute('aria-valuemax')).toBe('600');
+    expect(stripBidiIsolates(handle.getAttribute('aria-valuetext'))).toBe('38%');
   });
 
   it('names the resize handle from the sidenav labels bundle', () => {
@@ -758,6 +768,7 @@ describe('CngxSidenav resizable', () => {
     (handle as unknown as Record<string, unknown>)['setPointerCapture'] = vi.fn();
     handle.dispatchEvent(
       Object.assign(new Event('pointerdown', { bubbles: true, cancelable: true }), {
+        button: 0,
         clientX: 100,
         pointerId: 1,
       }),
@@ -1039,6 +1050,7 @@ describe('CngxSidenav resize math and shortcut', () => {
     (handle as unknown as Record<string, unknown>)['setPointerCapture'] = vi.fn();
     handle.dispatchEvent(
       Object.assign(new Event('pointerdown', { bubbles: true, cancelable: true }), {
+        button: 0,
         clientX,
         pointerId: 1,
       }),
@@ -1064,6 +1076,7 @@ describe('CngxSidenav resize math and shortcut', () => {
     startDrag(leftEl, 100);
     move(100_000);
     up();
+    fixture.detectChanges();
     expect(left.width()).toBe('600px');
 
     // Dragging far left clamps to min (120).
@@ -1085,6 +1098,7 @@ describe('CngxSidenav resize math and shortcut', () => {
     startDrag(endEl, 100);
     move(100_000);
     up();
+    fixture.detectChanges();
     expect(end.width()).toBe('120px');
 
     startDrag(endEl, 100);
@@ -1107,16 +1121,13 @@ describe('CngxSidenav resize math and shortcut', () => {
     expect(handle.getAttribute('aria-label')).toBe('Resize navigation');
     expect(stripBidiIsolates(handle.getAttribute('aria-valuetext'))).toBe('25%');
 
-    // jsdom has no layout; the handler reads the rendered width via rect.
-    const el = leftDe.nativeElement as HTMLElement;
-    vi.spyOn(el, 'getBoundingClientRect').mockReturnValue({ width: 240 } as DOMRect);
-
     const press = (key: string): void => {
       handle.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
     };
 
     press('ArrowRight');
     expect(left.width()).toBe('256px');
+    press('ArrowLeft');
     press('ArrowLeft');
     expect(left.width()).toBe('224px');
     press('Home');
@@ -1136,17 +1147,21 @@ describe('CngxSidenav resize math and shortcut', () => {
     expect(left.width()).toBe(before);
   });
 
-  it('omits the aria-value trio for a non-px width instead of lying', () => {
+  it('never reports a parsed non-px width: a rem rail reads its rendered width', async () => {
     const fixture = TestBed.createComponent(DualHost);
     fixture.componentInstance.resizable.set(true);
     fixture.componentInstance.width.set('17.5rem');
+    const leftEl = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0]
+      .nativeElement as HTMLElement;
+    vi.spyOn(leftEl, 'getBoundingClientRect').mockReturnValue({ width: 280 } as DOMRect);
     fixture.detectChanges();
-    const handle = (
-      fixture.debugElement.queryAll(By.directive(CngxSidenav))[0].nativeElement as HTMLElement
-    ).querySelector<HTMLElement>('.cngx-sidenav__resize-handle')!;
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const handle = leftEl.querySelector<HTMLElement>('.cngx-sidenav__resize-handle')!;
 
-    // parseInt('17.5rem') would report 17, below the 120 minimum.
-    expect(handle.getAttribute('aria-valuenow')).toBeNull();
+    // parseInt('17.5rem') would report 17, below the 120 minimum; the first
+    // render measures the rail instead.
+    expect(handle.getAttribute('aria-valuenow')).toBe('280');
     expect(handle.getAttribute('aria-valuemin')).toBe('120');
     expect(handle.getAttribute('aria-valuemax')).toBe('600');
   });
@@ -1220,6 +1235,105 @@ describe('CngxSidenav resize math and shortcut', () => {
     fixture.detectChanges();
     expect(host.open()).toBe(true);
     expect(nav.expanded()).toBe(false);
+  });
+});
+
+describe('CngxSidenav toggle hotkey', () => {
+  const pressModB = (): void => {
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'b', ctrlKey: true, metaKey: true }));
+  };
+
+  it('announces the new state through CngxLiveAnnouncer, scoped to the rail', () => {
+    const announce = vi.fn();
+    TestBed.configureTestingModule({
+      providers: [{ provide: CngxLiveAnnouncer, useValue: { announce } }],
+    });
+    const fixture = TestBed.createComponent(ShortcutHost);
+    fixture.detectChanges();
+    const railEl = fixture.debugElement.query(By.directive(CngxSidenav)).nativeElement;
+
+    pressModB();
+    fixture.detectChanges();
+    expect(announce).toHaveBeenLastCalledWith('Navigation expanded', 'polite', railEl);
+
+    pressModB();
+    fixture.detectChanges();
+    expect(announce).toHaveBeenLastCalledWith('Navigation collapsed', 'polite', railEl);
+  });
+
+  it('reads the announcement copy from withSidenavLabels', () => {
+    const announce = vi.fn();
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: CngxLiveAnnouncer, useValue: { announce } },
+        provideSidenavConfig(withSidenavLabels({ expandedAnnouncement: 'Menü offen' })),
+      ],
+    });
+    const fixture = TestBed.createComponent(ShortcutHost);
+    fixture.detectChanges();
+    pressModB();
+    expect(announce.mock.calls[0][0]).toBe('Menü offen');
+  });
+
+  it('lets CNGX_SIDENAV_ANNOUNCER_FACTORY replace the announcer', () => {
+    const spoken: boolean[] = [];
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: CNGX_SIDENAV_ANNOUNCER_FACTORY,
+          useValue: () => ({ announce: (expanded: boolean) => spoken.push(expanded) }),
+        },
+      ],
+    });
+    const fixture = TestBed.createComponent(ShortcutHost);
+    fixture.detectChanges();
+    pressModB();
+    pressModB();
+    expect(spoken).toEqual([true, false]);
+  });
+
+  it('registers no binding while shortcut is unset, and follows a runtime remap', () => {
+    const fixture = TestBed.createComponent(ShortcutHost);
+    fixture.componentInstance.shortcut.set(undefined);
+    fixture.detectChanges();
+    pressModB();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.open()).toBe(false);
+
+    fixture.componentInstance.shortcut.set('mod+k');
+    fixture.detectChanges();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, metaKey: true }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.open()).toBe(true);
+  });
+
+  it('registers under the remap id sidenav.toggle, unlisted', () => {
+    const registered: CngxHotkeyBinding[] = [];
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: CNGX_HOTKEY_REGISTRY,
+          useFactory: () => {
+            const real = createHotkeyRegistry(injectHotkeyRegistryDeps());
+            return {
+              ...real,
+              register: (
+                source: Signal<readonly CngxHotkeyBinding[]>,
+                scope: CngxHotkeyScopeNode | null,
+              ) => {
+                registered.push(...source());
+                return real.register(source, scope);
+              },
+            };
+          },
+        },
+      ],
+    });
+    const fixture = TestBed.createComponent(ShortcutHost);
+    fixture.detectChanges();
+    const binding = registered.find((b) => b.id === 'sidenav.toggle');
+    expect(binding).toBeDefined();
+    expect(binding?.description).toBeUndefined();
   });
 });
 
