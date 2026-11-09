@@ -80,7 +80,7 @@ import {
  * @slot cngxPending Replaces the label while the action runs, once the run outlasts the show delay.
  * @slot cngxSucceeded Replaces the label after the action succeeds, once the busy visual releases.
  * @slot cngxFailed Replaces the label when the action fails, once the busy visual releases; gets the error.
- * <example-url>/#/ui/action-button/async-button/template-slots</example-url>
+ * <example-url>/#/ui/action-button/async-button/ejected-host</example-url>
  * @axis level molecule
  */
 @Directive({

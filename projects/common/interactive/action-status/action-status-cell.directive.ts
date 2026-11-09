@@ -34,7 +34,7 @@ import { CNGX_ACTION_STATUS, type CngxActionStatusCellKind } from './action-stat
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-cell.directive.ts
  * @since 0.1.0
  * @relatedTo CngxActionStatusBrain, CNGX_ACTION_STATUS
- * <example-url>/#/ui/action-button/async-button/template-slots</example-url>
+ * <example-url>/#/ui/action-button/async-button/ejected-host</example-url>
  * @axis level atom
  */
 @Directive({
