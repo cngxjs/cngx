@@ -1130,6 +1130,42 @@ describe('CngxActiveDescendant - window start leading the rendered items', () =>
 
     expect(dir.activeIndex()).toBe(-1);
   });
+
+  it('drops the highlight when a search shrinks the windowed list under the same window start', () => {
+    const fixture = TestBed.createComponent(LaggingWindowHost);
+    settle(fixture);
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    const dir = container.injector.get(CngxActiveDescendant);
+    const picked: unknown[] = [];
+    dir.activated.subscribe((value) => picked.push(value));
+    dir.highlightByIndex(45);
+    TestBed.flushEffects();
+
+    fixture.componentInstance.virtualCount.set(50);
+    settle(fixture);
+    dir.activateCurrent();
+
+    expect(dir.activeIndex()).toBe(-1);
+    expect(picked).toEqual([]);
+  });
+
+  it('drops the highlight when options arrive and the windowed list grows', () => {
+    const fixture = TestBed.createComponent(LaggingWindowHost);
+    fixture.componentInstance.virtualCount.set(300);
+    settle(fixture);
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    const dir = container.injector.get(CngxActiveDescendant);
+    dir.highlightByIndex(45);
+    TestBed.flushEffects();
+
+    fixture.componentInstance.virtualCount.set(400);
+    settle(fixture);
+    expect(dir.activeIndex()).toBe(-1);
+
+    dir.highlightNext();
+    TestBed.flushEffects();
+    expect(dir.activeIndex()).toBe(0);
+  });
 });
 
 /* --- highlighted emission contract --------------------------------------- */

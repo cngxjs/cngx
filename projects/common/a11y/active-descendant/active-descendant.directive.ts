@@ -761,7 +761,9 @@ function resolveIntent(source: ActiveIndexSource & { readonly intent: PendingInt
 /**
  * @internal
  * Re-derives the index for a new item space. A virtual window keeps its
- * absolute index, and that index means nothing once the list turns plain. In a
+ * absolute index while its total holds (a window move); a changed total is a
+ * new list, so the index is dropped rather than left on another option. The
+ * index also means nothing once the list turns plain. In a
  * plain list the previously active value is looked up again; unchanged items,
  * no previous highlight, or an index past the old items keep the index.
  */
@@ -771,7 +773,7 @@ function reResolveIndex(
   previousIndex: number,
 ): number {
   if (source.virtual) {
-    return previousIndex;
+    return source.total === previousSource.total ? previousIndex : -1;
   }
   if (previousSource.virtual) {
     return -1;
