@@ -8,7 +8,13 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { CngxContainer } from '@cngx/common/layout';
-import { CngxSidenav } from './sidenav';
+
+import {
+  CNGX_SIDENAV,
+  CNGX_SIDENAV_LAYOUT,
+  type CngxSidenavContract,
+  type CngxSidenavLayoutCoordinator,
+} from './sidenav-token';
 
 /**
  * Container for one or two `CngxSidenav` panels and a `CngxSidenavContent`.
@@ -53,6 +59,7 @@ import { CngxSidenav } from './sidenav';
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./sidenav-layout.css'],
   hostDirectives: [CngxContainer],
+  providers: [{ provide: CNGX_SIDENAV_LAYOUT, useExisting: CngxSidenavLayout }],
   host: {
     '[class.cngx-sidenav-layout]': 'true',
     '[class.cngx-sidenav-layout--ready]': 'ready()',
@@ -69,12 +76,12 @@ import { CngxSidenav } from './sidenav';
     }
   `,
 })
-export class CngxSidenavLayout {
+export class CngxSidenavLayout implements CngxSidenavLayoutCoordinator {
   private readonly readyState = signal(false);
   /** @internal First render done - gates transitions against an open-on-load flash. */
   protected readonly ready = this.readyState.asReadonly();
 
-  private readonly sidenavs = contentChildren(CngxSidenav);
+  private readonly sidenavs = contentChildren(CNGX_SIDENAV);
 
   /** The start-positioned sidenav, if any. */
   readonly startSidenav = computed(
@@ -100,7 +107,16 @@ export class CngxSidenavLayout {
   /** Closes all sidenavs that are currently in overlay mode. */
   closeAllOverlays(): void {
     for (const nav of this.sidenavs()) {
-      if (nav.isOverlay() && nav.opened()) {
+      if (nav.overlayActive()) {
+        nav.close();
+      }
+    }
+  }
+
+  /** @internal One open overlay per layout: called from a rail's open path. */
+  overlayOpening(rail: CngxSidenavContract): void {
+    for (const nav of this.sidenavs()) {
+      if (nav !== rail && nav.overlayActive()) {
         nav.close();
       }
     }

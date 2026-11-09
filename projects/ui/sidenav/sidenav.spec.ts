@@ -171,6 +171,34 @@ describe('CngxSidenav', () => {
     expect(left.opened()).toBe(true);
   });
 
+  it('keeps at most one overlay open per layout: opening one closes the other', () => {
+    const { fixture, left, right, host } = setupDual();
+    left.open();
+    fixture.detectChanges();
+    expect(host.leftOpen()).toBe(true);
+
+    right.toggle();
+    fixture.detectChanges();
+    expect(host.rightOpen()).toBe(true);
+    expect(host.leftOpen()).toBe(false);
+
+    left.open();
+    fixture.detectChanges();
+    expect(host.leftOpen()).toBe(true);
+    expect(host.rightOpen()).toBe(false);
+  });
+
+  it('leaves a docked rail alone when the other rail opens its overlay', () => {
+    const { fixture, left, right, host } = setupDual();
+    host.mode.set('side');
+    fixture.detectChanges();
+    right.open();
+    fixture.detectChanges();
+    expect(host.rightOpen()).toBe(true);
+    expect(host.leftCollapsed()).toBe(false);
+    expect(left.expanded()).toBe(true);
+  });
+
   it('layout finds start and end sidenavs', () => {
     const { layout } = setupDual();
     expect(layout.startSidenav()).not.toBeNull();

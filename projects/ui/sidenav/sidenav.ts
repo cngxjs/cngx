@@ -36,7 +36,7 @@ import {
 import { clamp, cngxDevWarn } from '@cngx/utils';
 
 import { injectSidenavConfig, injectSidenavLabels } from './config/inject-sidenav-config';
-import { CNGX_SIDENAV } from './sidenav-token';
+import { CNGX_SIDENAV, CNGX_SIDENAV_LAYOUT, type CngxSidenavContract } from './sidenav-token';
 
 const PERCENT_FORMAT: Intl.NumberFormatOptions = { style: 'percent' };
 
@@ -207,7 +207,9 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
     }
   `,
 })
-export class CngxSidenav implements CngxSidebarDriver, CngxDrawerSurfaceDriver {
+export class CngxSidenav
+  implements CngxSidenavContract, CngxSidebarDriver, CngxDrawerSurfaceDriver
+{
   /**
    * Resolved sidenav configuration cascade. Seeds the dimension and
    * `shortcut` input defaults below so a per-instance binding still wins
@@ -432,6 +434,7 @@ export class CngxSidenav implements CngxSidebarDriver, CngxDrawerSurfaceDriver {
 
   private readonly doc = inject(DOCUMENT);
   private readonly win = this.doc.defaultView;
+  private readonly layoutCoordinator = inject(CNGX_SIDENAV_LAYOUT, { optional: true });
 
   /**
    * Current/previous width-class pair for the open-flag reset. `null` until the
@@ -546,7 +549,7 @@ export class CngxSidenav implements CngxSidebarDriver, CngxDrawerSurfaceDriver {
       this.sidebar.pin();
       return;
     }
-    this.opened.set(true);
+    this.openOverlay();
   }
 
   /**
@@ -575,7 +578,20 @@ export class CngxSidenav implements CngxSidebarDriver, CngxDrawerSurfaceDriver {
       this.sidebar.toggle();
       return;
     }
-    this.opened.update((opened) => !opened);
+    if (this.opened()) {
+      this.opened.set(false);
+      return;
+    }
+    this.openOverlay();
+  }
+
+  // One open overlay per layout: the layout closes the other rail's overlay
+  // in the same gesture, before this one engages its surface.
+  private openOverlay(): void {
+    if (!this.opened() && this.isOverlay()) {
+      this.layoutCoordinator?.overlayOpening(this);
+    }
+    this.opened.set(true);
   }
 
   /** Whether `collapsed` (not `opened`) is the state `toggle()` and `close()` change. */
